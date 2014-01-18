@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include <assert.h>
 #include <iostream>
 
-using namespace nsg::FSM;
+using namespace NSG::FSM;
 
 namespace FSMExample0 {
 
@@ -74,17 +74,17 @@ namespace FSMExample0 {
     public:
         Entity() : fsm_(idle_), velocity_(0.0), enableJump_(false) {
 
-            idle_.AddTransition(walk_)->When([this]() { return velocity_ > 0.1; });
-            idle_.AddTransition(jump_)->When([this]() { return enableJump_; });
+            idle_.AddTransition(walk_).When([this]() { return velocity_ > 0.1; });
+            idle_.AddTransition(jump_).When([this]() { return enableJump_; });
 
-            walk_.AddTransition(run_)->When([this]() { return velocity_ > 2; });
-            walk_.AddTransition(idle_)->When([this]() { return velocity_ < 0.1; });
-            walk_.AddTransition(jump_)->When([this]() { return enableJump_; });
+            walk_.AddTransition(run_).When([this]() { return velocity_ > 2; });
+            walk_.AddTransition(idle_).When([this]() { return velocity_ < 0.1; });
+            walk_.AddTransition(jump_).When([this]() { return enableJump_; });
 
-            run_.AddTransition(walk_)->When([this]() { return velocity_ < 2; });
-            run_.AddTransition(jump_)->When([this]() { return enableJump_; });
+            run_.AddTransition(walk_).When([this]() { return velocity_ < 2; });
+            run_.AddTransition(jump_).When([this]() { return enableJump_; });
 
-            jump_.AddTransition(land_)->When([this]() { return !enableJump_; });
+            jump_.AddTransition(land_).When([this]() { return !enableJump_; });
 
             land_.AddTransition(idle_);
         }
@@ -252,13 +252,13 @@ namespace FSMExample1 {
     public:
         Entity() : b1_(b11_), b_(b1_), c_(c1_), fsm_(a_), t1_(false), t2_(false), t3_(false) {
 
-            a_.AddTransition(b_)->When([this]() { return t1_; });
-            b_.AddTransition(c_)->When([this]() { return t2_; });
-            b_.AddTransition(a_)->When([this]() { return !t1_ && !t2_; });
-            c_.AddTransition(a_)->When([this]() { return t1_ && !t2_; });
-            b1_.AddTransition(b2_)->When([this]() { return t3_; });
+            a_.AddTransition(b_).When([this]() { return t1_; });
+            b_.AddTransition(c_).When([this]() { return t2_; });
+            b_.AddTransition(a_).When([this]() { return !t1_ && !t2_; });
+            c_.AddTransition(a_).When([this]() { return t1_ && !t2_; });
+            b1_.AddTransition(b2_).When([this]() { return t3_; });
             c1_.AddTransition(c2_);
-            c2_.AddTransition(c3_)->When([this]() { return t3_; });
+            c2_.AddTransition(c3_).When([this]() { return t3_; });
             c3_.AddTransition(c1_);
             b11_.AddTransition(b12_);
             b12_.AddTransition(b11_);

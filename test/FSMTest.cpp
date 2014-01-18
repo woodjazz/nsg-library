@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #undef NDEBUG
 #include <assert.h>
 
-using namespace nsg::FSM;
+using namespace NSG::FSM;
 
 void FSMTest0()
 {
@@ -45,10 +45,10 @@ void FSMTest0()
     bool condition2 = false;
     bool condition3 = false;
 
-    initializing.AddTransition(busy)->When([&]() { return condition1; });
-    busy.AddTransition(ready)->When([&]() { return condition2; });
-    ready.AddTransition(error)->When([&]() { return condition3; });
-    error.AddTransition(initializing)->When([&]() { return !condition3; });
+    initializing.AddTransition(busy).When([&]() { return condition1; });
+    busy.AddTransition(ready).When([&]() { return condition2; });
+    ready.AddTransition(error).When([&]() { return condition3; });
+    error.AddTransition(initializing).When([&]() { return !condition3; });
 
     Machine machine(initializing);
 
@@ -137,10 +137,10 @@ void FSMTest1()
     bool condition2 = false;
     bool condition3 = false;
 
-    initializing.AddTransition(busy)->When([&]() { return condition1; });
-    busy.AddTransition(ready)->When([&]() { return condition2; });
-    ready.AddTransition(error)->When([&]() { return condition3; });
-    error.AddTransition(initializing)->When([&]() { return !condition3; });
+    initializing.AddTransition(busy).When([&]() { return condition1; });
+    busy.AddTransition(ready).When([&]() { return condition2; });
+    ready.AddTransition(error).When([&]() { return condition3; });
+    error.AddTransition(initializing).When([&]() { return !condition3; });
 
     Machine machine(initializing);
 
@@ -247,11 +247,11 @@ void FSMTest2()
     bool condition2 = false;
     bool condition3 = false;
 
-    initializing.AddTransition(busy)->When([&]() { return condition1; });
+    initializing.AddTransition(busy).When([&]() { return condition1; });
     initialize_jobs.AddTransition(do_jobs);
 
-    busy.AddTransition(ready)->When([&]() { return condition2; });
-    ready.AddTransition(busy)->When([&]() { return condition3; });
+    busy.AddTransition(ready).When([&]() { return condition2; });
+    ready.AddTransition(busy).When([&]() { return condition3; });
 
     Machine machine(initializing);
 

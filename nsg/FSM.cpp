@@ -25,12 +25,24 @@ misrepresented as being the original software.
 */
 #include "FSM.h"
 
-namespace nsg {
+namespace NSG {
 
     namespace FSM {
 
         Condition::Condition(State& newState)
-            : newState_(newState), conditionFunc_(nullptr) {
+            : pNewState_(&newState), conditionFunc_(nullptr) {
+        }
+
+        Condition::Condition(const Condition&& obj) 
+            : pNewState_(obj.pNewState_), conditionFunc_(obj.conditionFunc_) {
+                conditionFunc_ = nullptr;
+        }
+
+        
+        Condition& Condition::operator=(const Condition&& obj) {
+            pNewState_ = obj.pNewState_;
+            conditionFunc_ = obj.conditionFunc_;
+            return *this;
         }
 
         void Condition::When(CONDITION_FUNC conditionFunc) {
@@ -39,8 +51,8 @@ namespace nsg {
 
         Condition::RESULT Condition::Evaluate() {
             if(conditionFunc_)
-                return RESULT(conditionFunc_(), &newState_);
-            return RESULT(true, &newState_);
+                return RESULT(conditionFunc_(), pNewState_);
+            return RESULT(true, pNewState_);
         }
 
         State::State() {
@@ -49,10 +61,10 @@ namespace nsg {
         State::~State() {
         }
 
-        PCondition State::AddTransition(State& to) {
-            PCondition pCondition(new Condition(to));
-            conditions_.push_back(pCondition);
-            return pCondition;
+        Condition& State::AddTransition(State& to) {
+            Condition* pCondition(new Condition(to));
+            conditions_.push_back(PCondition(pCondition));
+            return *pCondition;
         }
 
         State* State::Evaluate() {
@@ -78,11 +90,9 @@ namespace nsg {
 
 
         Machine::Machine(State& initialState, bool isFirstState) 
-            : pInitialState_(&initialState), 
-            pCurrentState_(&initialState) {
-                if(isFirstState) {
+            : pInitialState_(&initialState), pCurrentState_(&initialState) {
+                if(isFirstState)
                     pCurrentState_->InternalBegin();
-                }
         }
 
         Machine::~Machine() {
@@ -110,9 +120,8 @@ namespace nsg {
 
         State* Machine::Evaluate() {
             State* pNewState = this->State::Evaluate();
-            if(pNewState == this) {
+            if(pNewState == this)
                 Update();
-            }
             return pNewState;
         }
     }

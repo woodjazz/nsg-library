@@ -23,13 +23,16 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "MemoryTest.h"
+#pragma once
 
-extern void FSMExamples();
+namespace NSG {
+    class NonCopyable {
+    protected:
+        NonCopyable(){};
+        ~NonCopyable(){};
 
-int main()
-{
-    FSMExamples();
-
-    return 0;
+    private:  
+        NonCopyable(const NonCopyable&);
+        NonCopyable& operator=(const NonCopyable&);
+    }; 
 }

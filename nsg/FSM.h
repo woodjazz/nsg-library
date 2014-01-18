@@ -28,46 +28,45 @@ misrepresented as being the original software.
 #include <memory>
 #include <functional>
 #include <vector>
+#include "NonCopyable.h"
 
-namespace nsg {
+namespace NSG {
 
     namespace FSM {
 
         class State;
-        class Condition {
+        class Condition : NonCopyable{
         public:
             typedef std::function<bool()> CONDITION_FUNC;
             void When(CONDITION_FUNC conditionFunc);
+            Condition(const Condition&&);
+            Condition& operator=(const Condition&&);
         private:
             Condition(State& newState);
-            Condition(const Condition&);
-            Condition& operator=(const Condition&);
             typedef std::pair<bool, State*> RESULT;
             RESULT Evaluate();
 
-            State& newState_;
+            State* pNewState_;
             CONDITION_FUNC conditionFunc_;
             friend class State;
         };
 
-        typedef std::shared_ptr<Condition> PCondition;
-
-        class State {
+        class State : NonCopyable{
         public:
             State();
             virtual ~State();
-            PCondition AddTransition(State& to);
+            Condition& AddTransition(State& to);
             virtual const State* GetState() const { return this; }
         protected:
             virtual void Begin(){}
             virtual void Stay(){}
             virtual void End(){}
         private:
-            State(const State&);
-            State& operator=(const State&);
             virtual State* Evaluate();
             virtual void InternalBegin();
             virtual void InternalEnd();
+
+            typedef std::unique_ptr<Condition> PCondition;
             std::vector<PCondition> conditions_;
             friend class Machine;
         };
@@ -79,8 +78,6 @@ namespace nsg {
             void Update();
             const State* GetState() const { return pCurrentState_; }
         private:
-            Machine(const Machine&);
-            Machine& operator=(const Machine&);
             void InternalBegin();
             void InternalEnd();
             State* Evaluate();

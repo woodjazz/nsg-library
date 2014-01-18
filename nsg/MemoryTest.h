@@ -23,13 +23,29 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "MemoryTest.h"
+#pragma once
 
-extern void FSMExamples();
+#if defined(WIN32) && defined(_MSC_VER)
+//http://msdn.microsoft.com/en-us/library/x98tx3cf.aspx
+// {,,msvcr100d.dll}_crtBreakAlloc
+#  include <stdio.h>
+# define _CRTDBG_MAP_ALLOC
+#  include <stdlib.h>
+#  include <crtdbg.h>
+#  include <windows.h>
 
-int main()
-{
-    FSMExamples();
-
-    return 0;
+namespace NSG {
+    inline int CRTReportHook(int type, char* msg, int* ret) {
+        printf("%s", msg);
+        return 0;
+    }
+    struct MemoryTest {
+        MemoryTest() {
+            _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+            _CrtSetReportHook(CRTReportHook);
+        }
+    } objMemoryReportTest;
 }
+#endif
+
+
