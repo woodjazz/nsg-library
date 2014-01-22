@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
 
-Copyright (c) 2013-2014 Néstor Silveira Gorski
+Copyright (c) 2014-2015 Néstor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -28,21 +28,9 @@ misrepresented as being the original software.
 namespace NSG {
 
     namespace FSM {
-
+        
         Condition::Condition(State& newState)
             : pNewState_(&newState), conditionFunc_(nullptr) {
-        }
-
-        Condition::Condition(const Condition&& obj) 
-            : pNewState_(obj.pNewState_), conditionFunc_(obj.conditionFunc_) {
-                conditionFunc_ = nullptr;
-        }
-
-        
-        Condition& Condition::operator=(const Condition&& obj) {
-            pNewState_ = obj.pNewState_;
-            conditionFunc_ = obj.conditionFunc_;
-            return *this;
         }
 
         void Condition::When(CONDITION_FUNC conditionFunc) {

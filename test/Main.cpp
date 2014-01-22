@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
 
-Copyright (c) 2013-2014 Néstor Silveira Gorski
+Copyright (c) 2014-2015 Néstor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -26,9 +26,12 @@ misrepresented as being the original software.
 #include "MemoryTest.h"
 
 extern void FSMTest();
+extern void TimedTaskTest();
 
 int main()
 {
+    TimedTaskTest();
+
     FSMTest();
 
     return 0;

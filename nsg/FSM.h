@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
 
-Copyright (c) 2013-2014 Néstor Silveira Gorski
+Copyright (c) 2014-2015 Néstor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -39,8 +39,6 @@ namespace NSG {
         public:
             typedef std::function<bool()> CONDITION_FUNC;
             void When(CONDITION_FUNC conditionFunc);
-            Condition(const Condition&&);
-            Condition& operator=(const Condition&&);
         private:
             Condition(State& newState);
             typedef std::pair<bool, State*> RESULT;

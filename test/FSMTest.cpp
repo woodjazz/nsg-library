@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
 
-Copyright (c) 2013-2014 Néstor Silveira Gorski
+Copyright (c) 2014-2015 Néstor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -29,7 +29,7 @@ misrepresented as being the original software.
 
 using namespace NSG::FSM;
 
-void FSMTest0()
+static void FSMTest0()
 {
     struct INITIALIZING : public State {};
     struct BUSY : public State {};
@@ -99,7 +99,7 @@ void FSMTest0()
     assert(machine.GetState() == &ready);
 }
 
-void FSMTest1()
+static void FSMTest1()
 {
     struct CounterState : public State {
 
@@ -223,7 +223,7 @@ void FSMTest1()
     assert(ready.nStart_ == 2 && ready.nStay_ == 2 && ready.nEnd_ == 1);
 }
 
-void FSMTest2()
+static void FSMTest2()
 {
     struct INITIALIZING : public State {};
 
