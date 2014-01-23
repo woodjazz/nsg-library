@@ -76,7 +76,6 @@ namespace NSG {
             End();
         }
 
-
         Machine::Machine(State& initialState, bool isFirstState) 
             : pInitialState_(&initialState), pCurrentState_(&initialState) {
                 if(isFirstState)
@@ -104,7 +103,6 @@ namespace NSG {
             pCurrentState_->InternalEnd();
             End();
         }
-
 
         State* Machine::Evaluate() {
             State* pNewState = this->State::Evaluate();

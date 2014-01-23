@@ -35,8 +35,6 @@ namespace NSG {
 	        return diff.count() > 0;
         }
 
-        static std::atomic<int> s_id(0);
-
         TimedTask::Data::Data(int id, PTask pTask, TimePoint timePoint, Type type, Milliseconds repeatStep, size_t repeatTimes) 
             : id_(id), pTask_(pTask), timePoint_(timePoint), type_(type), repeatStep_(repeatStep), repeatTimes_(repeatTimes), canceled_(false) {
         }
@@ -119,16 +117,18 @@ namespace NSG {
                         run = std::cv_status::timeout == condition_.wait_for(lck, duration);
                     }
                     else {
-                        while(queue_.empty()) {
+                        while(queue_.empty() && taskAlive_) {
                             condition_.wait(lck);
                         }
                     }
                 }
-                if(run) {
+                if(run && taskAlive_) {
                     Run();
                 }
             }
         }
+
+        static std::atomic<int> s_id(0);
 
         int TimedTask::AddTask(PTask pTask, TimePoint timePoint) {
             int id = s_id.fetch_add(1);

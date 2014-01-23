@@ -23,19 +23,27 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "MemoryTest.h"
+#pragma once
+#include <memory>
+#include <chrono>
 
-extern void FSMTest();
-extern void TimedTaskTest();
-extern void QueuedTaskTest();
+namespace NSG {
 
-int main()
-{
-    QueuedTaskTest();
+    namespace Task {
 
-    TimedTaskTest();
+        typedef std::chrono::milliseconds Milliseconds;
+        typedef std::chrono::seconds Seconds;
 
-    FSMTest();
+        struct Task {
+            virtual ~Task() {}
+            virtual void Run() = 0;
+            // OverDue is only used by TimedTask
+            virtual bool OverDue(Milliseconds overDueTime) { 
+                return true; //Run anyway, otherwise return false
+            }
+            virtual void Exception(const std::exception& e) {}
+        };
 
-    return 0;
+        typedef std::shared_ptr<Task> PTask;
+    }
 }
