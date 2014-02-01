@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #ifdef NACL
-#include "NSG/NaClApp.h"
+#include "NaClApp.h"
 #include "NSG/Log.h"
 #include "NSG/NaCl3DInstance.h"
 #include <GLES2/gl2.h>

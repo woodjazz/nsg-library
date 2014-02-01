@@ -24,5 +24,5 @@
 # -------------------------------------------------------------------------------
 # */
 TARGET_EXTENSION = a
-INCLUDES := -I$(CURDIR)/../NSG
+INCLUDES := -I$(CURDIR)/..
 include ../libRules.mk
