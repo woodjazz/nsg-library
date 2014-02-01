@@ -24,9 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "IApp.h"
+#include "NSG/IApp.h"
 #include <thread>
-#include "NaClURLLoader.h"
+#include "NSG/NaClURLLoader.h"
 
 class NaClApp : public NSG::IApp 
 {

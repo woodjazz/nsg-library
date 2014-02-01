@@ -23,9 +23,9 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "FSM.h"
+#include "NSG/FSM.h"
 #include <assert.h>
-#include "Log.h"
+#include "NSG/Log.h"
 
 using namespace NSG::FSM;
 

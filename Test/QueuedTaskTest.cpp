@@ -23,8 +23,8 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "QueuedTask.h"
-#include "Log.h"
+#include "NSG/QueuedTask.h"
+#include "NSG/Log.h"
 #undef NDEBUG
 #include <assert.h>
 #include <vector>

@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #ifndef NACL
-	#include "MemoryTest.h"
+	#include "NSG/MemoryTest.h"
 
 	extern void FSMExamples();
 	extern void FSMTest();

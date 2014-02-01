@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "MemoryTest.h"
+#include "NSG/MemoryTest.h"
 #include "Test/NaClApp.h"
 
 #ifdef NACL

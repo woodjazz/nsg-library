@@ -70,12 +70,6 @@ endif()
 
 find_package(OpenGL REQUIRED)
 
-###########################
-# glew
-###########################
-set(GLEW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew/include)
-include_directories(${GLEW_INCLUDE_DIR})
-add_subdirectory(glew)
 
 ###########################
 # nsg
