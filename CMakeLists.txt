@@ -67,6 +67,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 endif()	
 
+
+find_package(OpenGL REQUIRED)
+
 ###########################
 # glew
 ###########################
@@ -79,7 +82,7 @@ add_subdirectory(glew)
 ###########################
 set(NSG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nsg)
 include_directories(${NSG_INCLUDE_DIR})
-add_subdirectory(nsg)
+add_subdirectory(NSG)
 
 ###########################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -89,6 +92,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ###########################
 if(NSG_BUILD_TESTS)
 	message("Building nsg-library test")
-	add_subdirectory(test)
+	add_subdirectory(Test)
 endif()
 
