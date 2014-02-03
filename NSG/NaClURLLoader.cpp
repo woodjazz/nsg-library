@@ -66,6 +66,11 @@ namespace NSG
       return url_response_body_;
     }
 
+    const std::string& NaClURLLoader::GetURL() const
+    {
+      return url_;
+    }
+
     void NaClURLLoader::Start()
     {
       pp::CompletionCallback cc = cc_factory_.NewCallback(&NaClURLLoader::OnOpen);

@@ -23,9 +23,9 @@
 # 3. This notice may not be removed or altered from any source distribution.
 # -------------------------------------------------------------------------------
 # */
-TARGET_NAME := NSG
+TARGET_NAME := nsg
 TARGET_EXTENSION := pexe
-LIBRARY_NAMES := Test NSG
+LIBRARY_NAMES := Test NSG soil
 DATA_FOLDER_NAMES := web-data
 INCLUDES := -I$(CURDIR)/NSG -I$(CURDIR)
 

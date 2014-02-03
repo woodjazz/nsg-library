@@ -23,11 +23,13 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#if NACL
 #include "GLES2Shader.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
 #include <assert.h>
+#include "Log.h"
 
 namespace NSG 
 {
@@ -49,7 +51,7 @@ namespace NSG
 
 		if(compile_status != GL_TRUE)
 		{
-			GLint logLength;
+			GLint logLength = 0;
 
 			// Instead use GL_INFO_LOG_LENGTH we could use COMPILE_STATUS.
 			// I prefer to take the info log length, because it'll be 0 if the
@@ -60,13 +62,13 @@ namespace NSG
 			if (logLength > 0)
 			{
 				// Allocates the necessary memory to retrieve the message.
-				GLchar *log = (GLchar *)malloc(logLength);
+				GLchar* log = (GLchar*)malloc(logLength);
 
 				// Get the info log message.
 				glGetShaderInfoLog(id_, logLength, &logLength, log);
 
 				// Shows the message in console.
-				printf("Error in Shader Creation:\n%s\n",log);
+				TRACE_LOG("Error in Shader Creation: " << log);
 
 				// Frees the allocated memory.
 				free(log);
@@ -81,3 +83,4 @@ namespace NSG
 		glDeleteShader(id_);
 	}
 }
+#endif

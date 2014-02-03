@@ -23,6 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#if NACL
 #include "GLES2VertexBuffer.h"
 
 namespace NSG 
@@ -36,3 +37,4 @@ namespace NSG
 	{
 	}
 }
+#endif

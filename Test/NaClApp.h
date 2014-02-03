@@ -27,6 +27,14 @@ misrepresented as being the original software.
 #include "NSG/IApp.h"
 #include <thread>
 #include "NSG/NaClURLLoader.h"
+//#include <NSG/GLES2Includes.h>
+#include "NSG/GLES2Program.h"
+#include "NSG/GLES2VertexBuffer.h"
+#include "NSG/GLES2IndexBuffer.h"
+
+
+using namespace NSG;
+using namespace NSG::NaCl;
 
 class NaClApp : public NSG::IApp 
 {
@@ -34,7 +42,7 @@ public:
 	NaClApp();
 	~NaClApp();
 	void Setup();
-	void Update();
+	bool Update();
 	void Draw();
 	void ViewChanged(int32_t width, int32_t height);
 	void HandleMessage(const pp::Var& var_message);
@@ -44,7 +52,21 @@ private:
 	int32_t width_;
 	int32_t height_;
 	std::thread thread_;
-	NSG::NaCl::PNaClURLLoader pLoader_;
-	bool loaded_;
+	PNaClURLLoader pLoader_;
+	PGLES2Program pProgram_;
+	PGLES2IndexBuffer pIBuffer_;
+	PGLES2VertexBuffer pVBuffer_;
+
+	GLuint texture_;
+
+	GLuint texture_loc_;
+	GLuint position_loc_;
+	GLuint texcoord_loc_;
+	GLuint color_loc_;
+	GLuint mvp_loc_;
+
+	float x_angle_;
+	float y_angle_;
+	bool animating_;
 };
 

@@ -68,7 +68,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()	
 
 
-find_package(OpenGL REQUIRED)
+#find_package(OpenGL REQUIRED)
 
 
 ###########################

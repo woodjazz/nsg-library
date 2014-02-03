@@ -24,6 +24,7 @@ namespace NSG
       ~NaClURLLoader();
       bool IsDone() const;
       const std::string& GetData() const;
+      const std::string& GetURL() const;
 
      private:
       void Start();

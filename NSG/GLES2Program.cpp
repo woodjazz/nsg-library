@@ -23,12 +23,14 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#if NACL
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
 #include <assert.h>
 
 #include "GLES2Program.h"
+#include "Log.h"
 
 namespace NSG 
 {
@@ -59,12 +61,13 @@ namespace NSG
 		// Will link the program into OpenGL core.
 		glLinkProgram(id_);
 
-		GLint link_status;
+		GLint link_status = GL_FALSE;
+
 		glGetProgramiv(id_, GL_LINK_STATUS, &link_status);
 
 		if (link_status != GL_TRUE) 
 		{
-			GLint logLength;
+			GLint logLength = 0;
 
 			// Instead use GL_INFO_LOG_LENGTH we could use COMPILE_STATUS.
 			// I prefer to take the info log length, because it'll be 0 if the
@@ -80,8 +83,7 @@ namespace NSG
 				// Get the info log message.
 				glGetProgramInfoLog(id_, logLength, &logLength, log);
 
-				// Shows the message in console.
-				printf("Error in Program Creation:\n%s\n",log);
+				TRACE_LOG("Error in Program Creation: " << log);
 
 				// Frees the allocated memory.
 				free(log);
@@ -106,3 +108,4 @@ namespace NSG
 		return glGetUniformLocation(id_, name.c_str());
 	}
 }
+#endif

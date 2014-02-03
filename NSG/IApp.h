@@ -37,7 +37,7 @@ namespace NSG
 	public:
 		virtual ~IApp() {};
 		virtual void Setup() = 0;
-		virtual void Update() = 0;
+		virtual bool Update() = 0;
 		virtual void Draw() = 0;
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;
 	#if NACL

@@ -1,3 +1,6 @@
 [submodule "glew"]
 	path = glew
 	url = https://github.com/nigels-com/glew.git
+[submodule "glm"]
+	path = glm
+	url = https://github.com/g-truc/glm

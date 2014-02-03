@@ -123,8 +123,9 @@ namespace NSG
 
 		void NaCl3DInstance::MainLoop(int32_t) 
 		{
-			pApp_->Update();
-			pApp_->Draw();
+			if(pApp_->Update())
+				pApp_->Draw();
+			
 			context_.SwapBuffers(callback_factory_.NewCallback(&NaCl3DInstance::MainLoop));
 		}
 
