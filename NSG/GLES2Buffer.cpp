@@ -23,7 +23,6 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if NACL
 #include "GLES2Buffer.h"
 #include <assert.h>
 
@@ -46,4 +45,3 @@ namespace NSG
 		glDeleteBuffers(1, &id_);
 	}
 }
-#endif

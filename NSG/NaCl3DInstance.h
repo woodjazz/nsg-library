@@ -1,11 +1,12 @@
 #pragma once
 
-#include "NSG/IApp.h"
-
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/utility/completion_callback_factory.h"
+
+#include "NSG/IApp.h"
+#include "NSG/Tick.h"
 
 #ifdef WIN32
 #undef PostMessage
@@ -17,7 +18,7 @@ namespace NSG
 {
 	namespace NaCl 
 	{
-		class NaCl3DInstance : public pp::Instance 
+		class NaCl3DInstance : public pp::Instance , Tick
 		{
 			public:
 				explicit NaCl3DInstance(PP_Instance instance, NSG::PApp pApp);
@@ -26,6 +27,10 @@ namespace NSG
 				virtual void DidChangeView(const pp::View& view);
 				virtual void HandleMessage(const pp::Var& message);
 			private:
+				void BeginTick();
+				void DoTick(float delta);
+				void EndTick();
+
 				bool InitGL(int32_t new_width, int32_t new_height);
 				void MainLoop(int32_t);
 

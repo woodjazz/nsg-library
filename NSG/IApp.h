@@ -30,15 +30,18 @@ misrepresented as being the original software.
 #include "ppapi/cpp/var.h"
 #endif
 
+#include "Tick.h"
+
 namespace NSG 
 {
 	class IApp 
 	{
 	public:
 		virtual ~IApp() {};
-		virtual void Setup() = 0;
-		virtual bool Update() = 0;
-		virtual void Draw() = 0;
+		virtual void Start() = 0;
+		virtual void Update(float delta) = 0;
+		virtual void LateUpdate() = 0;
+		virtual void RenderFrame() = 0;
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;
 	#if NACL
 		virtual void HandleMessage(const pp::Var& var_message) = 0;

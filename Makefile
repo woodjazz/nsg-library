@@ -26,7 +26,7 @@
 TARGET_NAME := nsg
 TARGET_EXTENSION := pexe
 LIBRARY_NAMES := Test NSG soil
-DATA_FOLDER_NAMES := web-data
+DATA_FOLDER_NAMES := Data
 INCLUDES := -I$(CURDIR)/NSG -I$(CURDIR)
 
 include exeRules.mk

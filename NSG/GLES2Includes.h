@@ -27,7 +27,9 @@ misrepresented as being the original software.
 
 #if NACL
 #include <GLES2/gl2.h>
-// #else
+#define glClearDepth glClearDepthf
+#else
+#include <GL/glew.h>
 // #define GL_GLEXT_PROTOTYPES
 // #include <GL/gl.h>
 // #include <GL/glu.h>

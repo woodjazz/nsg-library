@@ -60,12 +60,14 @@ namespace NSG
 		{
 			int32_t new_width = view.GetRect().width();
 			int32_t new_height = view.GetRect().height();
-			if (context_.is_null()) {
+			if (context_.is_null()) 
+			{
 				if (!InitGL(new_width, new_height)) 
 				{
+					TRACE_LOG("InitGL has failed!")
 					return; // failed.
 				}
-				pApp_->Setup();
+				Tick::Initialize(30);
 				MainLoop(0);
 			} 
 			else 
@@ -89,6 +91,22 @@ namespace NSG
 		{
 			pApp_->HandleMessage(message);
 		}
+
+		void NaCl3DInstance::BeginTick()
+		{
+			pApp_->Start();
+		}
+		
+		void NaCl3DInstance::DoTick(float delta)
+		{
+			pApp_->Update(delta);
+		}
+
+		void NaCl3DInstance::EndTick()
+		{
+			pApp_->LateUpdate();
+		}
+
 
 		bool NaCl3DInstance::InitGL(int32_t new_width, int32_t new_height) 
 		{
@@ -123,9 +141,8 @@ namespace NSG
 
 		void NaCl3DInstance::MainLoop(int32_t) 
 		{
-			if(pApp_->Update())
-				pApp_->Draw();
-			
+			Tick::PerformTick();
+			pApp_->RenderFrame();		
 			context_.SwapBuffers(callback_factory_.NewCallback(&NaCl3DInstance::MainLoop));
 		}
 
