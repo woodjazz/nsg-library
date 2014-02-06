@@ -138,7 +138,11 @@ file(GLOB hdr "*.h")
 
 add_executable(${PROJECT_NAME} ${src} ${hdr} )
 
-target_link_libraries(${PROJECT_NAME} test nsg glew soil glfw)
+if(NACL)
+	target_link_libraries(${PROJECT_NAME} test nsg soil ppapi ppapi_cpp ppapi_gles2 pthread nacl_io)
+else()
+	target_link_libraries(${PROJECT_NAME} test nsg glew soil glfw)
+endif()
 
 
 

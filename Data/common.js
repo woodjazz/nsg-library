@@ -270,5 +270,5 @@ var common = (function() {
 // Listen for the DOM content to be loaded. This event is fired when parsing of
 // the page's document has finished.
 document.addEventListener('DOMContentLoaded', function() {
-	common.domContentLoaded("nsg_pnacl", "nsg.nmf");
+	common.domContentLoaded("nsg_pnacl", "nsg-library.nmf");
 });

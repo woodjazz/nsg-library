@@ -23,7 +23,7 @@
 # 3. This notice may not be removed or altered from any source distribution.
 # -------------------------------------------------------------------------------
 # */
-TARGET_NAME := nsg
+TARGET_NAME := nsg-library
 TARGET_EXTENSION := pexe
 LIBRARY_NAMES := Test NSG soil
 DATA_FOLDER_NAMES := Data
