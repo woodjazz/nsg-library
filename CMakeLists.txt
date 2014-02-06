@@ -29,6 +29,8 @@ PROJECT(nsg-library)
 
 option(NSG_BUILD_TESTS "Build the nsg-library test programs" ON)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 if(WIN32)
 
 	if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
@@ -71,8 +73,6 @@ macro ( mark_as_disable_and_internal _var )
 	set ( ${_var} OFF CACHE INTERNAL "disable and hide this!" FORCE )
 endmacro( mark_as_disable_and_internal _var )
 
-find_package(OpenGL REQUIRED)
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_definitions(
@@ -82,6 +82,10 @@ add_definitions(
 	-DGLEW_STATIC
 )
 
+set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+if(NOT NACL)
+
 ###########################
 # glew
 ###########################
@@ -89,12 +93,6 @@ add_definitions(
 set(GLEW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew/include)
 include_directories(${GLEW_INCLUDE_DIR})
 add_subdirectory(glew)
-
-###########################
-# soil
-###########################
-set(SOIL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/soil)
-add_subdirectory(soil)
 
 ###########################
 # glfw
@@ -106,6 +104,14 @@ mark_as_disable_and_internal(GLFW_BUILD_TESTS)
 mark_as_disable_and_internal(GLFW_INSTALL)
 add_subdirectory(glfw)
 include_directories(${GLFW_INCLUDE_DIR})
+
+endif()
+
+###########################
+# soil
+###########################
+set(SOIL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/soil)
+add_subdirectory(soil)
 
 ###########################
 # nsg
