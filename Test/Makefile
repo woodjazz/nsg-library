@@ -23,6 +23,11 @@
 # 3. This notice may not be removed or altered from any source distribution.
 # -------------------------------------------------------------------------------
 # */
-TARGET_EXTENSION = a
-INCLUDES := -I$(CURDIR)/..
-include ../libRules.mk
+
+TARGET_NAME := test
+IS_LIBRARY := false
+TARGET_EXTENSION := pexe
+LIBRARY_NAMES := NSG soil
+include ../common.mk
+
+

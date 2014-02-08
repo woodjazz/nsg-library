@@ -1,3 +1,4 @@
+TARGET_NAME := soil
+IS_LIBRARY := true
 TARGET_EXTENSION = a
-#INCLUDES := -I$(CURDIR)/../gles2
-include ../libRules.mk
+include ../common.mk

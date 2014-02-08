@@ -5,7 +5,6 @@ set(PLATFORM_EMBEDDED          ON )
 set(PLATFORM_NAME              "PNaCl" )
 set(PLATFORM_TRIPLET           "pnacl" )
 set(PLATFORM_PREFIX            "$ENV{NACL_SDK_ROOT}/toolchain/linux_pnacl" )
-set(PLATFORM_EXE_SUFFIX        ".pexe" )
 
 set(CMAKE_SYSTEM_PROCESSOR     		"LLVM-IR" CACHE STRING "Target processor." )
 set(CMAKE_AR                   		${PLATFORM_PREFIX}/bin/${PLATFORM_TRIPLET}-ar CACHE STRING "")
@@ -26,7 +25,7 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE 	"-L$ENV{NACL_SDK_ROOT}/lib/pnacl/Release")
 
 macro(pnacl_finalise _target )
   add_custom_command( TARGET ${_target}
-    POST_BUILD COMMAND "${PLATFORM_PREFIX}/bin64/${PLATFORM_TRIPLET}-finalize"
+    POST_BUILD COMMAND "${PLATFORM_PREFIX}/bin/${PLATFORM_TRIPLET}-finalize"
                        "$<TARGET_FILE:${_target}>" )
 endmacro()
 

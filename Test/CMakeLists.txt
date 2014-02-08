@@ -4,14 +4,28 @@ file(GLOB src "*.cpp")
 
 file(GLOB hdr "*.h")
 
-add_library(${PROJECT_NAME} STATIC ${src} ${hdr})
+add_executable(${PROJECT_NAME} ${src} ${hdr} )
 
-#set_source_files_properties(App.cpp PROPERTIES COMPILE_FLAGS "-o ${CMAKE_CURRENT_SOURCE_DIR}/../App.cpp.obj")
-#set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/..")
+if(NACL)
+	target_link_libraries(${PROJECT_NAME} nsg soil ppapi ppapi_cpp ppapi_gles2 pthread nacl_io)
+else()
+	target_link_libraries(${PROJECT_NAME} nsg glew soil glfw)
+endif()
 
-set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/../Data)
+set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/Data)
 
 add_custom_command(
-      TARGET ${PROJECT_NAME} POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/..
-              WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+ 	TARGET ${PROJECT_NAME} POST_BUILD
+    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+if(NACL)
+	
+	pnacl_finalise(test)
+
+	add_custom_command(
+		TARGET ${PROJECT_NAME} POST_BUILD
+      	COMMAND python
+      	ARGS $ENV{NACL_SDK_ROOT}/tools/httpd.py --no_dir_check -C ${CMAKE_CURRENT_BINARY_DIR}
+    )
+endif()

@@ -1,4 +1,4 @@
-# /*
+	# /*
 # -------------------------------------------------------------------------------
 # This file is part of nsg-library.
 # http://nsg-library.googlecode.com/
@@ -33,29 +33,6 @@ CYGWIN ?= nodosfilewarning
 export CYGWIN
 
 ###################################################################################
-# By default this will build a Release configuration.
-CONFIG ?= Release
-###################################################################################
-
-ifeq ($(strip $(TARGETDIR)),) 
-	#TARGETDIR is empty
-	ifeq ($(CONFIG),Release)
-		export TARGETDIR = $(CURDIR)/pnacl/Release
-	else
-		export TARGETDIR = $(CURDIR)/pnacl/Debug
-	endif
-endif
-
-#
-# Compute tool paths
-#
-GETOS := python $(NACL_SDK_ROOT)/tools/getos.py
-OSHELPERS = python $(NACL_SDK_ROOT)/tools/oshelpers.py
-OSNAME := $(shell $(GETOS))
-RM := $(OSHELPERS) rm
-CP := $(OSHELPERS) cp
-MKDIR := $(OSHELPERS) mkdir
-###################################################################################
 
 PNACL_TC_PATH := $(abspath $(NACL_SDK_ROOT)/toolchain/$(OSNAME)_pnacl)
 TOOLCHAIN_CXX := $(PNACL_TC_PATH)/bin/pnacl-clang++
@@ -82,12 +59,16 @@ OBJECTS_C := $(addprefix $(TARGETDIR)/,$(TMP_OBJECTS_C))
 
 OBJECTS := $(OBJECTS_CC) $(OBJECTS_C)
 
+ifeq ($(IS_LIBRARY),true)
+TARGET := $(TARGETDIR)/lib$(TARGET_NAME).$(TARGET_EXTENSION)
+else
 TARGET := $(TARGETDIR)/$(TARGET_NAME).$(TARGET_EXTENSION)
+endif
 TARGET_UNSTRIPPED := $(TARGETDIR)/$(TARGET_NAME)_unstripped.$(TARGET_EXTENSION)
 ###################################################################################
 
 # Declare the ALL target first, to make the 'all' target the default build
-all: $(TARGET) $(COPY_DATA_TARGET)
+all: $(TARGET)
 
 ###################################################################################
 # Compile phase
@@ -130,15 +111,9 @@ endif
 # rules that force the creation of the directory $(TARGETDIR)
 #############################################################	
 $(OBJECTS): | $(TARGETDIR)
-$(DATA_TARGETS): | $(TARGETDIR)
 
 $(TARGETDIR): 
 	$(MKDIR) $(TARGETDIR)	
-
-#############################################################		
-.PHONY: clean
-clean:
-	$(RM) $(TARGETDIR)/*.*
 
 #############################################################		
 
@@ -161,13 +136,56 @@ print:
 	@echo TARGETDIR1=$(TARGETDIR1)
 	$(MAKE) -C web-data print
 
-	
-#############################################################################
-# Makefile target to run the SDK's simple HTTP server and serve this project.
-#############################################################################
-HTTPD_PY := python $(NACL_SDK_ROOT)/tools/httpd.py
+#############################################################	
+# force entering into data folders
+#############################################################	
+# define DATA_FOLDER_RULE_TEMPLATE
+# DATA_FOLDERS += $(TARGETDIR)/$(1)
+# .PHONY: $(TARGETDIR)/$(1)
+# $(TARGETDIR)/$(1): force_non_subsystems$(1)
 
-.PHONY: serve
-serve: all
-	$(HTTPD_PY) --no_dir_check -C $(TARGETDIR)
+# .PHONY:	force_non_subsystems$(1)
+# force_non_subsystems$(1):
+# 	+$(MAKE) -C $(1)
+# endef
+
+# COPY_DATA_TARGET:
+# 	$(foreach dir,$(DATA_FOLDER_NAMES),$(eval $(call DATA_FOLDER_RULE_TEMPLATE,$(dir))))
+
+ifeq ($(IS_LIBRARY),true)
 #############################################################
+# library creation
+#############################################################
+$(TARGET): $(OBJECTS)
+	@echo "******************************************************************************************"
+	@echo "Creating library $(TARGET)"
+	@echo "******************************************************************************************"
+	$(TOOLCHAIN_AR) cr $@ $^
+	@echo ""
+else
+#############################################################
+# executable creation & finalize phase
+#############################################################
+$(TARGET): $(TARGET_UNSTRIPPED) 
+	@echo "******************************************************************************************"
+	@echo "Finalizing executable $(TARGET)"
+	@echo "******************************************************************************************"
+	$(TOOLCHAIN_FINALIZE) -o $@ $<
+	@echo ""
+endif
+
+ifeq ($(CONFIG),Release)
+$(TARGET_UNSTRIPPED): $(LIBRARIES) $(OBJECTS) 
+	@echo "******************************************************************************************"
+	@echo "Creating RELEASE executable $(TARGET)"
+	@echo "******************************************************************************************"
+	$(TOOLCHAIN_CXX) $(OBJECTS) -o $@  $(LD_LIBRARY_FLAGS) $(LDFLAGS_RELEASE)
+	@echo ""
+else
+$(TARGET_UNSTRIPPED): $(LIBRARIES) $(OBJECTS)
+	@echo "******************************************************************************************"
+	@echo "Creating DEBUG executable $(TARGET)"
+	@echo "******************************************************************************************"
+	$(TOOLCHAIN_CXX) $(OBJECTS) -o $@ $(LD_LIBRARY_FLAGS) $(LDFLAGS_DEBUG)
+	@echo ""
+endif

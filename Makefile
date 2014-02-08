@@ -23,11 +23,23 @@
 # 3. This notice may not be removed or altered from any source distribution.
 # -------------------------------------------------------------------------------
 # */
-TARGET_NAME := nsg-library
-TARGET_EXTENSION := pexe
-LIBRARY_NAMES := Test NSG soil
-DATA_FOLDER_NAMES := Data
-INCLUDES := -I$(CURDIR)/NSG -I$(CURDIR)
 
-include exeRules.mk
+include base.mk
+
+all:
+	$(MAKE) -C soil
+	$(MAKE) -C NSG
+	$(MAKE) -C Test
+	$(MAKE) -C Test/Data
+	$(HTTPD_PY) --no_dir_check -C $(TARGETDIR)
+
+
+.PHONY: clean
+clean:
+	$(RM) $(TARGETDIR)/*.*
+	$(RM) $(TARGETDIR)/Data/*.*
+
+.PHONY: serve
+serve:
+	$(HTTPD_PY) --no_dir_check -C $(TARGETDIR)
 

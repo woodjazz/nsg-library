@@ -27,8 +27,6 @@ cmake_minimum_required(VERSION 2.8.4)
 
 PROJECT(nsg-library)
 
-option(NSG_BUILD_TESTS "Build the nsg-library test programs" ON)
-
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if(WIN32)
@@ -86,6 +84,8 @@ set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 if(NOT NACL)
 
+find_package(OpenGL REQUIRED)
+
 ###########################
 # glew
 ###########################
@@ -105,6 +105,10 @@ mark_as_disable_and_internal(GLFW_INSTALL)
 add_subdirectory(glfw)
 include_directories(${GLFW_INCLUDE_DIR})
 
+else()
+
+set(CMAKE_EXECUTABLE_SUFFIX ".pexe")
+
 endif()
 
 ###########################
@@ -123,27 +127,7 @@ add_subdirectory(NSG)
 ###########################
 # test
 ###########################
-if(NSG_BUILD_TESTS)
-	message("Building nsg-library test")
-	add_subdirectory(Test)
-endif()
-
-###########################
-# Main
-###########################
-
-file(GLOB src "*.cpp")
-
-file(GLOB hdr "*.h")
-
-add_executable(${PROJECT_NAME} ${src} ${hdr} )
-
-if(NACL)
-	target_link_libraries(${PROJECT_NAME} test nsg soil ppapi ppapi_cpp ppapi_gles2 pthread nacl_io)
-else()
-	target_link_libraries(${PROJECT_NAME} test nsg glew soil glfw)
-endif()
-
+add_subdirectory(Test)
 
 
 

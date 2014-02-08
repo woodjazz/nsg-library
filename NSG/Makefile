@@ -1,3 +1,4 @@
+TARGET_NAME := NSG
+IS_LIBRARY := true
 TARGET_EXTENSION = a
-#INCLUDES := 
-include ../libRules.mk
+include ../common.mk
