@@ -25,7 +25,7 @@
 	#include <OpenGL/gl.h>
 	#include <Carbon/Carbon.h>
 	#define APIENTRY
-#elif defined(NACL)
+#elif defined(NACL) || defined(ANDROID)
         #include "NSG/GLES2Includes.h"
 	#define APIENTRY
         #define GL_CLAMP     GL_CLAMP_TO_EDGE

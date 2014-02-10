@@ -2,8 +2,8 @@
 set -e
 export SOURCE_FOLDER="$PWD"
 
-if [ ! -n "$NACL_SDK_ROOT" ]; then
-    echo "Environment variable NACL_SDK_ROOT shall be set."
+if [ ! -n "$ANDROID_TOOLCHAIN_ROOT" ]; then
+    echo "Environment variable ANDROID_TOOLCHAIN_ROOT shall be set."
     exit 0
 fi
 
@@ -20,5 +20,5 @@ fi
 
 cd $1
 
-cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/PNaCl.Linux.cmake"
+cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/Android.Linux.cmake"
 make

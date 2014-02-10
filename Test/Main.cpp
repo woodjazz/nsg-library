@@ -33,6 +33,7 @@ misrepresented as being the original software.
 	{
 		Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(NSG::PApp(new App)); }
 	} 
+#elif ANDROID
 #else
 	namespace NSG
 	{

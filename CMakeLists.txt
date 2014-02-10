@@ -82,7 +82,7 @@ add_definitions(
 
 set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-if(NOT NACL)
+if(NOT NACL AND NOT ANDROID)
 
 	find_package(OpenGL REQUIRED)
 
@@ -111,7 +111,13 @@ else()
 		set(CMAKE_LINK_LIBRARY_SUFFIX "")
 	endif()	
 
-	set(CMAKE_EXECUTABLE_SUFFIX ".pexe")
+	if(ANDROID)
+		#include_directories($ENV{ANDROID_TOOLCHAIN_SDK}/sysroot/usr/include)
+	endif()
+
+	if(NACL)
+		set(CMAKE_EXECUTABLE_SUFFIX ".pexe")
+	endif()
 
 endif()
 

@@ -15,4 +15,9 @@ NACL
 ---------------------------
 ANDROID
 ---------------------------
-1- Install SDK and NDK		
+1- Install SDK and NDK
+2- Set the environment variable NDK 	
+3- Make the toolchain:
+	Linux:
+		$NDK/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-4.8 
+		--platform=android-9 --install-dir=$HOME/dev/android-toolchain --llvm-version=3.3	

@@ -23,3 +23,5 @@ endmacro()
 #include_directories( SYSTEM $ENV{NACL_SDK_ROOT}/include )
 link_directories(debug $ENV{NACL_SDK_ROOT}/lib/pnacl/Debug)
 link_directories(optimized $ENV{NACL_SDK_ROOT}/lib/pnacl/Release)
+
+
