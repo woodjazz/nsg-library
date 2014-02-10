@@ -84,30 +84,34 @@ set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 if(NOT NACL)
 
-find_package(OpenGL REQUIRED)
+	find_package(OpenGL REQUIRED)
 
-###########################
-# glew
-###########################
+	###########################
+	# glew
+	###########################
 
-set(GLEW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew/include)
-include_directories(${GLEW_INCLUDE_DIR})
-add_subdirectory(glew)
+	set(GLEW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew/include)
+	include_directories(${GLEW_INCLUDE_DIR})
+	add_subdirectory(glew)
 
-###########################
-# glfw
-###########################
-set(GLFW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw/include)
-mark_as_disable_and_internal(USE_MSVC_RUNTIME_LIBRARY_DLL)
-mark_as_disable_and_internal(GLFW_BUILD_EXAMPLES)
-mark_as_disable_and_internal(GLFW_BUILD_TESTS)
-mark_as_disable_and_internal(GLFW_INSTALL)
-add_subdirectory(glfw)
-include_directories(${GLFW_INCLUDE_DIR})
+	###########################
+	# glfw
+	###########################
+	set(GLFW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw/include)
+	mark_as_disable_and_internal(USE_MSVC_RUNTIME_LIBRARY_DLL)
+	mark_as_disable_and_internal(GLFW_BUILD_EXAMPLES)
+	mark_as_disable_and_internal(GLFW_BUILD_TESTS)
+	mark_as_disable_and_internal(GLFW_INSTALL)
+	add_subdirectory(glfw)
+	include_directories(${GLFW_INCLUDE_DIR})
 
 else()
 
-set(CMAKE_EXECUTABLE_SUFFIX ".pexe")
+	if(WIN32)
+		set(CMAKE_LINK_LIBRARY_SUFFIX "")
+	endif()	
+
+	set(CMAKE_EXECUTABLE_SUFFIX ".pexe")
 
 endif()
 
