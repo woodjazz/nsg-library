@@ -66,13 +66,7 @@ namespace NSG
 
         void QueuedTask::InternalTask() 
         {
-            bool pendingTasks = false;
-            {
-                std::unique_lock<Mutex> lck(mtx_);
-                pendingTasks = pendingTasks_;
-
-            }
-            while(taskAlive_ || pendingTasks) 
+            while(taskAlive_ || pendingTasks_) 
             {
                 PData pData = Pop();
                 
