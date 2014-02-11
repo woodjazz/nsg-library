@@ -25,7 +25,11 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#if defined(NACL) || defined(ANDROID)
+#if defined(NACL)
+#include <GLES2/gl2.h>
+#define glClearDepth glClearDepthf
+#elif defined(ANDROID)
+//#include <GL/glew.h>
 #include <GLES2/gl2.h>
 #define glClearDepth glClearDepthf
 #else

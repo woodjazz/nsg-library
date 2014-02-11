@@ -150,13 +150,13 @@ namespace NSG
             }
         }
 
-        static std::atomic<int> s_id(0);
+        static int s_id(0);
 
         int TimedTask::AddTask(PTask pTask, TimePoint timePoint) 
         {
-            int id = s_id.fetch_add(1);
-            PData pData(new Data(id, pTask, timePoint, Data::ONCE, Milliseconds::zero(), 0));
             std::lock_guard<Mutex> guard(mtx_);
+            int id = ++s_id;
+            PData pData(new Data(id, pTask, timePoint, Data::ONCE, Milliseconds::zero(), 0));
             queue_.push(pData);
             keyDataMap_.insert(MAP_ID_DATA::value_type(id, pData));
             condition_.notify_one();
@@ -165,9 +165,9 @@ namespace NSG
 
         int TimedTask::AddLoopTask(PTask pTask, TimePoint timePoint, Milliseconds repeat) 
         {
-            int id = s_id.fetch_add(1);
-            PData pData(new Data(id, pTask, timePoint, Data::REPEAT_LOOP, repeat, 0));
             std::lock_guard<Mutex> guard(mtx_);
+            int id = ++s_id;
+            PData pData(new Data(id, pTask, timePoint, Data::REPEAT_LOOP, repeat, 0));
             queue_.push(PData(pData));
             keyDataMap_.insert(MAP_ID_DATA::value_type(id, pData));
             condition_.notify_one();
@@ -177,9 +177,9 @@ namespace NSG
         int TimedTask::AddRepeatTask(PTask pTask, TimePoint timePoint, Milliseconds repeat, size_t times) 
         {
             assert(times > 1);
-            int id = s_id.fetch_add(1);
-            PData pData(new Data(id, pTask, timePoint, Data::REPEAT_TIMES, repeat, times-1));
             std::lock_guard<Mutex> guard(mtx_);
+            int id = ++s_id;
+            PData pData(new Data(id, pTask, timePoint, Data::REPEAT_TIMES, repeat, times-1));
             queue_.push(PData(pData));
             keyDataMap_.insert(MAP_ID_DATA::value_type(id, pData));
             condition_.notify_one();

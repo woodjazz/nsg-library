@@ -2,7 +2,7 @@
 
 set SOURCE_FOLDER=%CD%
 
-if %NACL_SDK_ROOT% == "" (
+if "%NACL_SDK_ROOT%" == "" (
 	echo "Environment variable NACL_SDK_ROOT shall be set."
 	@exit /b 1
 )
@@ -20,5 +20,5 @@ if not exist %1 (
 
 cd %1
 
-cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOUCE_FOLDER%/PNaCl.Windows.cmake"
+cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/PNaCl.Windows.cmake"
 %NACL_SDK_ROOT%/tools/make.exe 

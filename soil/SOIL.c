@@ -1999,7 +1999,7 @@ int query_DXT_capability( void )
 				CFRelease( extensionName );
 				CFRelease( bundle );
 			#else
-				#ifndef NACL
+				#if !defined(NACL) && !defined(ANDROID) 
 				ext_addr = (P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC)
 						glXGetProcAddressARB
 						(

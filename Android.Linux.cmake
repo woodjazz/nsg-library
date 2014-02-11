@@ -1,4 +1,3 @@
-
 include( CMakeForceCompiler )
 
 set(ANDROID                     	ON )
@@ -16,7 +15,7 @@ set(CMAKE_CXX_FLAGS            		"-DANDROID -std=c++11" CACHE STRING "")
 #set(CMAKE_EXE_LINKER_FLAGS_RELEASE 	"-L$ENV{NACL_SDK_ROOT}/lib/pnacl/Release")
 
 include_directories( SYSTEM $ENV{ANDROID_TOOLCHAIN_SDK}/sysroot/usr/include)
-#link_directories(debug $ENV{NACL_SDK_ROOT}/lib/pnacl/Debug)
-#link_directories(optimized $ENV{NACL_SDK_ROOT}/lib/pnacl/Release)
+include_directories( SYSTEM $ENV{NDK}/platforms/android9/arch-arm/usr/include)
+link_directories($ENV{NDK}/platforms/android9/arch-arm/usr/lib)
 
 #$NDK/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-clang3.3 --platform=android-9 --install-dir=$HOME/dev/android-toolchain --llvm-version=3.3

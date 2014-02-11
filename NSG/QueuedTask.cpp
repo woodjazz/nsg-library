@@ -35,7 +35,7 @@ namespace NSG
         {
         }
 
-        QueuedTask::QueuedTask() : taskAlive_(true), pendingTasks_(0) 
+        QueuedTask::QueuedTask() : taskAlive_(true) 
         {
             thread_ = Thread([this](){InternalTask();});
         }
@@ -54,11 +54,10 @@ namespace NSG
             {
                 condition_.wait(lck);
             }
-            if(taskAlive_ || pendingTasks_) 
+            if(taskAlive_) 
             {
                 PData pData(queue_.front());
                 queue_.pop_front();
-                --pendingTasks_;
                 return pData;
             }
             return nullptr;
@@ -66,7 +65,7 @@ namespace NSG
 
         void QueuedTask::InternalTask() 
         {
-            while(taskAlive_ || pendingTasks_) 
+            while(taskAlive_) 
             {
                 PData pData = Pop();
                 
@@ -86,12 +85,11 @@ namespace NSG
 
         int QueuedTask::AddTask(PTask pTask) 
         {
-            static std::atomic<int> s_id(0);
-            int id = s_id.fetch_add(1);
-            PData pData(new Data(id, pTask));
             std::lock_guard<Mutex> guard(mtx_);
+            static int s_id(0);
+            int id = ++s_id;
+            PData pData(new Data(id, pTask));
             queue_.push_back(pData);
-            ++pendingTasks_;
             keyDataMap_.insert(MAP_ID_DATA::value_type(id, pData));
             condition_.notify_one();
             return id;

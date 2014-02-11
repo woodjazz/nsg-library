@@ -32,7 +32,6 @@ misrepresented as being the original software.
 #include <mutex>
 #include <condition_variable>
 #include <thread>
-#include <atomic>
 #include "Task.h"
 
 namespace NSG 
@@ -65,8 +64,7 @@ namespace NSG
             typedef std::condition_variable Condition;
             typedef std::thread Thread;
             
-            std::atomic<bool> taskAlive_;
-            std::atomic<int> pendingTasks_;
+            bool taskAlive_;
             mutable Mutex mtx_;
             QUEUE queue_;
             MAP_ID_DATA keyDataMap_;

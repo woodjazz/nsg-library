@@ -8,6 +8,8 @@ add_executable(${PROJECT_NAME} ${src} ${hdr} )
 
 if(NACL)
 	target_link_libraries(${PROJECT_NAME} nsg soil ppapi_cpp ppapi ppapi_gles2 pthread nacl_io)
+elseif(ANDROID)
+	target_link_libraries(${PROJECT_NAME} nsg soil GLESv2 log android EGL)
 else()
 	target_link_libraries(${PROJECT_NAME} nsg glew soil glfw)
 endif()
