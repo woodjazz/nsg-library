@@ -4,22 +4,35 @@ file(GLOB src "*.cpp")
 
 file(GLOB hdr "*.h")
 
-add_executable(${PROJECT_NAME} ${src} ${hdr} )
+set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/Data)
+set(android_host_dir ${CMAKE_CURRENT_SOURCE_DIR}/AndroidHost)
 
 if(NACL)
+	add_executable(${PROJECT_NAME} ${src} ${hdr} )
 	target_link_libraries(${PROJECT_NAME} nsg soil ppapi_cpp ppapi ppapi_gles2 pthread nacl_io)
+	add_custom_command(
+	 	TARGET ${PROJECT_NAME} POST_BUILD
+	    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 elseif(ANDROID)
+	add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
 	target_link_libraries(${PROJECT_NAME} nsg soil GLESv2 log android EGL)
+	add_custom_command(
+	 	TARGET ${PROJECT_NAME} POST_BUILD
+	    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${android_host_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+	add_custom_command(
+	 	TARGET ${PROJECT_NAME} POST_BUILD
+	    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 else()
+	add_executable(${PROJECT_NAME} ${src} ${hdr} )
 	target_link_libraries(${PROJECT_NAME} nsg glew soil glfw)
+	add_custom_command(
+	 	TARGET ${PROJECT_NAME} POST_BUILD
+	    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
-
-set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/Data)
-
-add_custom_command(
- 	TARGET ${PROJECT_NAME} POST_BUILD
-    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 if(NACL)
 	

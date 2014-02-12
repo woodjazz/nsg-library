@@ -108,10 +108,14 @@ namespace NSG
 
         void TimedTask::InternalTask() 
         {
-            while(taskAlive_) 
+            bool isEmpty = true;
+
+            while(taskAlive_ || !isEmpty) 
             {
+                isEmpty = IsEmpty();
+
                 Milliseconds duration(Milliseconds::max());
-                bool isEmpty = IsEmpty();
+
                 if(!isEmpty) 
                 {
                     Data data(GetTop());

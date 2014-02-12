@@ -34,9 +34,17 @@ misrepresented as being the original software.
 		Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(NSG::PApp(new App)); }
 	} 
 #elif ANDROID
-	int main()
+
+	struct android_app;
+
+	namespace NSG
 	{
-		return 0;
+		extern void CreateModule(struct android_app* state, NSG::PApp pApp);
+	}
+
+	extern "C" void android_main(struct android_app* state)
+	{
+		NSG::CreateModule(state, NSG::PApp(new App));
 	}
 #else
 	namespace NSG

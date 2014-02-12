@@ -111,10 +111,6 @@ else()
 		set(CMAKE_LINK_LIBRARY_SUFFIX "")
 	endif()	
 
-	if(ANDROID)
-		#include_directories($ENV{ANDROID_TOOLCHAIN_SDK}/sysroot/usr/include)
-	endif()
-
 	if(NACL)
 		set(CMAKE_EXECUTABLE_SUFFIX ".pexe")
 	endif()

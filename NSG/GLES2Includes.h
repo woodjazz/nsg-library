@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include <GLES2/gl2.h>
 #define glClearDepth glClearDepthf
 #elif defined(ANDROID)
-//#include <GL/glew.h>
 #include <GLES2/gl2.h>
 #define glClearDepth glClearDepthf
 #else

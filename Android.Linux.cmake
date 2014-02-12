@@ -11,8 +11,6 @@ set(CMAKE_C_COMPILER           		${PLATFORM_PREFIX}/bin/${PLATFORM_TRIPLET}-clan
 set(CMAKE_CXX_COMPILER         		${PLATFORM_PREFIX}/bin/${PLATFORM_TRIPLET}-clang++ CACHE STRING "")
 set(CMAKE_C_FLAGS              		"-DANDROID" CACHE STRING "")
 set(CMAKE_CXX_FLAGS            		"-DANDROID -std=c++11" CACHE STRING "")
-#set(CMAKE_EXE_LINKER_FLAGS_DEBUG 	"-L$ENV{NACL_SDK_ROOT}/lib/pnacl/Debug")
-#set(CMAKE_EXE_LINKER_FLAGS_RELEASE 	"-L$ENV{NACL_SDK_ROOT}/lib/pnacl/Release")
 
 include_directories( SYSTEM $ENV{ANDROID_TOOLCHAIN_SDK}/sysroot/usr/include)
 include_directories( SYSTEM $ENV{NDK}/platforms/android9/arch-arm/usr/include)

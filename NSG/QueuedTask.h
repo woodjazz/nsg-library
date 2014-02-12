@@ -47,6 +47,7 @@ namespace NSG
             bool CancelTask(int id);
             void CancelAllTasks();
         private:
+            bool IsEmpty() const;
             void InternalTask();
             struct Data 
             {

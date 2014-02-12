@@ -85,7 +85,7 @@ static void TimedTaskTest0()
 
     std::this_thread::sleep_for(Seconds(7));
 
-        assert(p0->counter_ == 7);
+    assert(p0->counter_ == 7);
     assert(p1->counter_ == 1);
     assert(p2->counter_ == 1);
     assert(p3->counter_ == 2);

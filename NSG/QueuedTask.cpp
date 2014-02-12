@@ -54,7 +54,7 @@ namespace NSG
             {
                 condition_.wait(lck);
             }
-            if(taskAlive_) 
+            if(!queue_.empty()) 
             {
                 PData pData(queue_.front());
                 queue_.pop_front();
@@ -63,9 +63,16 @@ namespace NSG
             return nullptr;
         }
 
+        bool QueuedTask::IsEmpty() const 
+        {
+            std::lock_guard<Mutex> guard(mtx_);
+            return queue_.empty();
+        }
+       
+
         void QueuedTask::InternalTask() 
         {
-            while(taskAlive_) 
+            while(taskAlive_ || !IsEmpty()) 
             {
                 PData pData = Pop();
                 
