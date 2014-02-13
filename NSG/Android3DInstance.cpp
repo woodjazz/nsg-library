@@ -323,8 +323,10 @@ namespace NSG
      */
     void CreateModule(struct android_app* state, NSG::PApp pApp)
     {
+        TRACE_LOG("***1***");
         pApp->SetAssetManager(state->activity->assetManager);
 
+        TRACE_LOG("***2***");
         s_pApp = PInternalApp(new InternalApp(pApp));
 
         struct engine engine;

@@ -13,9 +13,10 @@ NACL
 ---------------------------
 ANDROID
 ---------------------------
-1- Install SDK and NDK
+1- Install SDK,NDK,Java
 2- Install ant (http://ant.apache.org/bindownload.cgi)
-3- Set the environment variables ANDROID_SDK, ANDROID_NDK and ANT_HOME
+	Linux also needed: sudo apt-get install openjdk-7-jdk
+3- Set the environment variables ANDROID_SDK, ANDROID_NDK, ANT_HOME and JAVA_HOME
 4- Make the toolchain (linux only):
 	$NDK/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-4.8 --platform=android-9 --install-dir=$HOME/dev/android-toolchain --llvm-version=3.3
 5- Build
