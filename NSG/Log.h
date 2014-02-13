@@ -33,6 +33,17 @@ extern int PPPrintMessage(const char* format, ...);
 #define printf PPPrintMessage
 #endif
 
+#ifdef ANDROID
+#include <android/log.h>
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
+#define TRACE_LOG(msg) {\
+	::std::stringstream stream; \
+	stream << msg; \
+	::std::string cmsg = stream.str(); \
+	__android_log_print(ANDROID_LOG_INFO, "nsg-library", cmsg.c_str());\
+}
+#else
 #define TRACE_LOG(msg) {\
 	::std::stringstream stream; \
 	stream << msg; \
@@ -40,3 +51,4 @@ extern int PPPrintMessage(const char* format, ...);
 	printf(cmsg.c_str());\
 	fflush(stdout);\
 }
+#endif

@@ -12,13 +12,21 @@
 
 namespace NSG
 {
-	GLES2Texture::GLES2Texture(const char* filename) : texture_(0), filename_(filename), loaded_(false)
+	GLES2Texture::GLES2Texture(const char* filename) 
+	: texture_(0), filename_(filename), loaded_(false)
 	{
-	#if NACL
+#if NACL
 		pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filename);
-	#endif	
-
+#endif	
 	}
+
+#if ANDROID	
+	GLES2Texture::GLES2Texture(AAssetManager* pAAssetManager, const char* filename)
+	: texture_(0), filename_(filename), loaded_(false)
+	{
+		pAAssetManager_ = pAAssetManager;
+	}
+#endif	
 
 	GLES2Texture::~GLES2Texture()
 	{
@@ -34,6 +42,17 @@ namespace NSG
 		if(!pLoader_->IsDone()) return false;
 		pData = pLoader_->GetData().c_str();
 		bytes = pLoader_->GetData().size();
+	#elif ANDROID
+		assert(pAAssetManager_ != nullptr);
+		AAsset* pAsset = AAssetManager_open(pAAssetManager_, filename_.c_str(), AASSET_MODE_BUFFER);
+		off_t filelength = AAsset_seek(pAsset, 0, SEEK_END);
+		AAsset_seek(pAsset, 0, SEEK_SET);
+        std::string buffer;
+        buffer.resize((int)filelength);
+        AAsset_read(pAsset, &buffer[0],filelength);
+		pData = buffer.c_str();
+		bytes = buffer.size();    
+		AAsset_close(pAsset);    
 	#else
         std::ifstream file(filename_, std::ios::binary);
         file.seekg(0,std::ios::end);

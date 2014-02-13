@@ -57,6 +57,9 @@ App::App()
 height_(0),
 x_angle_(0),
 y_angle_(0)
+#if ANDROID
+,pAAssetManager_(nullptr)
+#endif
 {
 }
 
@@ -83,7 +86,14 @@ void App::HandleMessage(const pp::Var& var_message)
 		std::string message = var_message.AsString();
 	}
 }
+#elif ANDROID
+void App::SetAssetManager(AAssetManager* pAAssetManager)
+{
+	TRACE_LOG("App::SetAssetManager");
+	pAAssetManager_ = pAAssetManager;
+}
 #endif
+
 
 const char kFragShaderSource[] = {
 #include "shaders/gles2FragmentShader.h"
@@ -101,7 +111,11 @@ void App::Start()
 
 	pProgram_ = PGLES2Program(new GLES2Program(kVertexShaderSource, kFragShaderSource));
 
-	pMeshObject_ = PMeshObject(new MeshObject(pProgram_, PGLES2Texture(new GLES2Texture("cube_example.png"))));
+	#ifdef ANDROID
+		pMeshObject_ = PMeshObject(new MeshObject(pProgram_, PGLES2Texture(new GLES2Texture(pAAssetManager_, "cube_example.png"))));
+	#else
+		pMeshObject_ = PMeshObject(new MeshObject(pProgram_, PGLES2Texture(new GLES2Texture("cube_example.png"))));
+	#endif
 
 	mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
 
@@ -155,7 +169,7 @@ void App::Start()
 
 void App::Update(float delta) 
 {
-	//TRACE_LOG("Update delta = " << delta);
+	//TRACE_LOG("App::Update delta = " << delta);
 	x_angle_ += glm::pi<float>()/10.0f * delta;
 	y_angle_ += glm::pi<float>() * delta;
 	pMeshObject_->SetRotation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
@@ -163,12 +177,13 @@ void App::Update(float delta)
 
 void App::LateUpdate()
 {
-	//TRACE_LOG("LateUpdate");
+	//TRACE_LOG("App::LateUpdate");
 }
 
 void App::RenderFrame() 
 {
-	glClearColor(0.5f, 0.2f, 0.2f, 1.0f);
+	//TRACE_LOG("App::RenderFrame");
+	glClearColor(0.0f, 0.2f, 0.2f, 1.0f);
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -193,8 +208,8 @@ void App::RenderFrame()
 
 void App::ViewChanged(int32_t width, int32_t height) 
 {
+	TRACE_LOG("App::ViewChanged width=" << width << " height=" << height);	
 	width_ = width;
 	height_ = height;
 	glViewport(0, 0, width_, height_);
-	TRACE_LOG("ViewChanged width=" << width_ << " height=" << height_);
 }

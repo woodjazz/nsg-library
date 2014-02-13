@@ -113,6 +113,7 @@ namespace NSG
 		pTexture_->Bind();
 		glUniform1i(texture_loc_, 0);
 
+
 		//define the attributes of the vertex
 		pVBuffer_->Bind();
 
@@ -146,5 +147,6 @@ namespace NSG
 		pIBuffer_->Bind();
 
         glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
+
 	}
 }

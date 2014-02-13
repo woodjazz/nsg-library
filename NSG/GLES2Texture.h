@@ -6,6 +6,8 @@
 
 #if NACL
 #include "NSG/NaClURLLoader.h"
+#elif ANDROID
+#include <android/asset_manager.h>
 #endif
 
 namespace NSG
@@ -14,6 +16,9 @@ namespace NSG
 	{
 	public:
 		GLES2Texture(const char* filename);
+	#if ANDROID	
+		GLES2Texture(AAssetManager* pAAssetManager, const char* filename);
+	#endif		
 		~GLES2Texture();
 		bool Done();
 		GLuint GetId() const { return texture_; }
@@ -27,6 +32,8 @@ namespace NSG
 
 	#if NACL		
 		NaCl::PNaClURLLoader pLoader_;
+	#elif ANDROID		
+		AAssetManager* pAAssetManager_;		
 	#endif
 	};
 

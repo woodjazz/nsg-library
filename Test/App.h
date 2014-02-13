@@ -43,6 +43,8 @@ public:
 	void ViewChanged(int32_t width, int32_t height);
 #if NACL
 	void HandleMessage(const pp::Var& var_message);
+#elif ANDROID
+	void SetAssetManager(AAssetManager* pAAssetManager);
 #endif
 private:
 	void InternalTask();
@@ -55,6 +57,8 @@ private:
 	GLuint mvp_loc_;
 	float x_angle_;
 	float y_angle_;
-
+#if ANDROID	
+	AAssetManager* pAAssetManager_;
+#endif	
 };
 

@@ -23,7 +23,7 @@ elseif(ANDROID)
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	add_custom_command(
 	 	TARGET ${PROJECT_NAME} POST_BUILD
-	    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
+	    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/assets
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 else()
 	add_executable(${PROJECT_NAME} ${src} ${hdr} )

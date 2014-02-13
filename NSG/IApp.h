@@ -28,6 +28,8 @@ misrepresented as being the original software.
 #include <memory>
 #if NACL
 #include "ppapi/cpp/var.h"
+#elif ANDROID
+#include <android/asset_manager.h>
 #endif
 
 #include "Tick.h"
@@ -45,6 +47,8 @@ namespace NSG
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;
 	#if NACL
 		virtual void HandleMessage(const pp::Var& var_message) = 0;
+	#elif ANDROID
+		virtual void SetAssetManager(AAssetManager* pAAssetManager) = 0;
 	#endif
 	};
 
