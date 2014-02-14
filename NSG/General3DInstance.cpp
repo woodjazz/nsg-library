@@ -7,42 +7,6 @@
 
 namespace NSG
 {
-	struct InternalApp : public Tick
-	{
-		NSG::PApp pApp_;
-
-		InternalApp(NSG::PApp pApp) : pApp_(pApp)
-		{
-		}
-
-		void BeginTick()
-		{
-			pApp_->Start();
-		}
-		
-		void DoTick(float delta)
-		{
-			pApp_->Update(delta);
-		}
-		
-		void EndTick()
-		{
-			pApp_->LateUpdate();
-		}
-
-        void ViewChanged(int32_t width, int32_t height)
-        {
-            pApp_->ViewChanged(width, height);
-        }
-
-        void RenderFrame()
-        {
-            pApp_->RenderFrame();
-        }
-	};
-
-	typedef std::shared_ptr<InternalApp> PInternalApp;
-
 	PInternalApp s_pApp = nullptr;
 
 	void WindowSizeCB(GLFWwindow* window, int width, int height)

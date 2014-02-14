@@ -23,34 +23,34 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include <stdio.h>
-#include <sstream>
-#include <string>
+#include "Node.h"
+#include "NSG/Log.h"
 
-#ifdef NACL
-extern int PPPrintMessage(const char* format, ...);
-#define printf PPPrintMessage
-#endif
+namespace NSG
+{
+	Node::Node() 
+	{
+	}
 
-#ifdef ANDROID
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
-#define TRACE_LOG(msg) {\
-	::std::stringstream stream; \
-	stream << msg; \
-	::std::string cmsg = stream.str(); \
-	__android_log_print(ANDROID_LOG_INFO, "nsg-library", cmsg.c_str());\
+	Node::~Node() 
+	{
+	}
+
+	void Node::SetPosition(const Vertex3& position)
+	{
+		position_ = position;
+		Update();
+	}
+
+	void Node::SetRotation(const Quaternion& q)
+	{
+		q_ = q;
+		Update();
+	}
+
+	void Node::Update()
+	{
+		matModelView_ = glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_);
+	}
+
 }
-extern int AndroidPrintMessage(const char* format, ...);
-#define printf AndroidPrintMessage
-#else
-#define TRACE_LOG(msg) {\
-	::std::stringstream stream; \
-	stream << msg; \
-	::std::string cmsg = stream.str(); \
-	printf(cmsg.c_str());\
-	fflush(stdout);\
-}
-#endif

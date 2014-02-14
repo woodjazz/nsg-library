@@ -30,11 +30,6 @@ misrepresented as being the original software.
 #include <stdlib.h>
 #include <string>
 
-#define GLM_FORCE_RADIANS
-#include "glm/glm/glm.hpp"
-#include "glm/glm/gtc/matrix_transform.hpp"
-#include "glm/glm/gtc/type_ptr.hpp"
-
 extern void FSMExamples();
 extern void FSMTest();
 extern void TimedTaskTest();
@@ -47,19 +42,13 @@ namespace
 	const float kFovY = 45.0f;
 	const float kZNear = 1.0f;
 	const float kZFar = 10.0f;
-	const float kCameraZ = -4.0f;
-	const float kXAngleDelta = 2.0f;
-	const float kYAngleDelta = 0.5f;
 }
 
 App::App() 
-: width_(0), 
-height_(0),
-x_angle_(0),
-y_angle_(0)
-#if ANDROID
-,pAAssetManager_(nullptr)
-#endif
+: x_angle_(0),
+y_angle_(0),
+pCamera1_(new Camera(kFovY, kZNear, kZFar)),
+pCamera2_(new Camera(kFovY, kZNear, kZFar))
 {
 }
 
@@ -75,25 +64,6 @@ void App::InternalTask()
 	TimedTaskTest();
 	QueuedTaskTest();
 }
-
-#if NACL
-void App::HandleMessage(const pp::Var& var_message)
-{
-	TRACE_LOG("App::HandleMessage");
-
-	if(var_message.is_string())
-	{
-		std::string message = var_message.AsString();
-	}
-}
-#elif ANDROID
-void App::SetAssetManager(AAssetManager* pAAssetManager)
-{
-	TRACE_LOG("App::SetAssetManager");
-	pAAssetManager_ = pAAssetManager;
-}
-#endif
-
 
 const char kFragShaderSource[] = {
 #include "shaders/gles2FragmentShader.h"
@@ -111,68 +81,29 @@ void App::Start()
 
 	pProgram_ = PGLES2Program(new GLES2Program(kVertexShaderSource, kFragShaderSource));
 
-	#ifdef ANDROID
-		pMeshObject_ = PMeshObject(new MeshObject(pProgram_, PGLES2Texture(new GLES2Texture(pAAssetManager_, "cube_example.png"))));
-	#else
-		pMeshObject_ = PMeshObject(new MeshObject(pProgram_, PGLES2Texture(new GLES2Texture("cube_example.png"))));
-	#endif
+	pMesh_ = PBoxMesh(new BoxMesh(pProgram_, PGLES2Texture(new GLES2Texture("cube_example.png"))));
 
-	mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
+    pNode1_ = PNode(new Node);
+    pNode2_ = PNode(new Node);
 
-	pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Vertex3(0.5, 0.0, 0.0), Vertex2(0.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Vertex3(0.5, 0.0, 0.0), Vertex2(1.0, 1.0)));
+    pNode1_->SetPosition(Vertex3(-2, 0, 0));
+    pNode2_->SetPosition(Vertex3(2, 0, 0));
 
-	pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Vertex3(0.0, 0.5, 0.0), Vertex2(0.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Vertex3(0.0, 0.5, 0.0), Vertex2(1.0, 1.0)));
+    pCamera1_->SetBackgroundColor(Color(0, 0, 0, 1));
+    pCamera2_->SetBackgroundColor(Color(0.3f, 0.3f, 0.4f, 1));
 
-	pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Vertex3(0.0, 0.0, 0.5), Vertex2(0.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.5), Vertex2(1.0, 1.0)));
-
-	pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Vertex3(1.0, 0.0, 0.0), Vertex2(0.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Vertex3(1.0, 0.0, 0.0), Vertex2(1.0, 0.0)));
-
-	pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Vertex3(0.0, 1.0, 0.0), Vertex2(0.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Vertex3(0.0, 1.0, 0.0), Vertex2(1.0, 0.0)));
-
-	pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 1.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Vertex3(0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
-    pMeshObject_->AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
-
-
-	const IndexType kCubeIndexes[36] = {
-		2,  1,  0,  3,  2,  0,
-		6,  5,  4,  7,  6,  4,
-		10,  9,  8, 11, 10,  8,
-		14, 13, 12, 15, 14, 12,
-		18, 17, 16, 19, 18, 16,
-		22, 21, 20, 23, 22, 20,
-	};
-
-    Indexes indexes;
-    indexes.insert(indexes.end(), &kCubeIndexes[0], &kCubeIndexes[sizeof(kCubeIndexes)/sizeof(IndexType)]);
-    pMeshObject_->SetIndices(indexes);
-    pMeshObject_->Redo();
-
-    pMeshObject_->SetPosition(Vertex3(0, 0, 0));
+    pCamera1_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
+    pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
+    pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 }
 
 void App::Update(float delta) 
 {
 	//TRACE_LOG("App::Update delta = " << delta);
 	x_angle_ += glm::pi<float>()/10.0f * delta;
-	y_angle_ += glm::pi<float>() * delta;
-	pMeshObject_->SetRotation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
+	y_angle_ += glm::pi<float>()/10.0f * delta;
+	pNode1_->SetRotation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
+	pNode2_->SetRotation(glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 }
 
 void App::LateUpdate()
@@ -183,33 +114,22 @@ void App::LateUpdate()
 void App::RenderFrame() 
 {
 	//TRACE_LOG("App::RenderFrame");
-	glClearColor(0.0f, 0.2f, 0.2f, 1.0f);
-	glClearDepth(1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
 
-	// Creates Projection Matrix.
-	const float aspect_ratio = static_cast<float>(width_) / height_;
-	glm::mat4 matProjection = glm::perspective(kFovY, aspect_ratio, kZNear, kZFar);
+    pCamera1_->Activate();
 
-	// Camera matrix
-	glm::mat4 matView = glm::lookAt(
-    	glm::vec3(0,3,3), // Camera position, in World Space
-    	glm::vec3(0,0,0), // looks at
-    	glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-	);	
+    pMesh_->Render(pNode1_);
+    pMesh_->Render(pNode2_);
 
-	glm::mat4 matModelViewProjection = matProjection * matView * pMeshObject_->GetModelView();
+    pCamera2_->Activate(false);
 
-	glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));
+    pMesh_->Render(pNode1_);
+    pMesh_->Render(pNode2_);
 
-    pMeshObject_->Render();
 }
 
 void App::ViewChanged(int32_t width, int32_t height) 
 {
 	TRACE_LOG("App::ViewChanged width=" << width << " height=" << height);	
-	width_ = width;
-	height_ = height;
-	glViewport(0, 0, width_, height_);
+	pCamera1_->ViewChanged(width, height);
+	pCamera2_->ViewChanged(width, height);
 }

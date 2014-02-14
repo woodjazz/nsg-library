@@ -1,8 +1,9 @@
 #include "GLES2Texture.h"
 #include "soil/SOIL.h"
 #include "Log.h"
+#include "IApp.h"
 #if NACL
-#include "NSG/NaCl3DInstance.h"
+#include "NaCl3DInstance.h"
 #endif
 #include <thread>
 #include <chrono>
@@ -17,16 +18,10 @@ namespace NSG
 	{
 #if NACL
 		pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filename);
+#elif ANDROID			
+		pAAssetManager_ = IApp::GetPtrInstance()->GetAssetManager();
 #endif	
 	}
-
-#if ANDROID	
-	GLES2Texture::GLES2Texture(AAssetManager* pAAssetManager, const char* filename)
-	: texture_(0), filename_(filename), loaded_(false)
-	{
-		pAAssetManager_ = pAAssetManager;
-	}
-#endif	
 
 	GLES2Texture::~GLES2Texture()
 	{

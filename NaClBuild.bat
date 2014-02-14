@@ -2,6 +2,8 @@
 
 set SOURCE_FOLDER=%CD%
 
+pushd %SOURCE_FOLDER%
+
 if "%NACL_SDK_ROOT%" == "" (
 	echo "Environment variable NACL_SDK_ROOT shall be set."
 	@exit /b 1

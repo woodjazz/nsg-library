@@ -16,9 +16,6 @@ namespace NSG
 	{
 	public:
 		GLES2Texture(const char* filename);
-	#if ANDROID	
-		GLES2Texture(AAssetManager* pAAssetManager, const char* filename);
-	#endif		
 		~GLES2Texture();
 		bool Done();
 		GLuint GetId() const { return texture_; }

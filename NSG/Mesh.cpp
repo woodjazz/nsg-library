@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "MeshObject.h"
+#include "Mesh.h"
 #include "NSG/Log.h"
 
 #include "glm/glm/gtc/matrix_transform.hpp"
@@ -37,37 +37,39 @@ namespace NSG
 
 	}
 
-	MeshObject::MeshObject(PGLES2Program pProgram, PGLES2Texture pTexture) 
+	Mesh::Mesh(PGLES2Program pProgram, PGLES2Texture pTexture) 
 	: pProgram_(pProgram),
 	pTexture_(pTexture),
 	texture_loc_(0),
 	position_loc_(0),
 	color_loc_(0),
+    mvp_loc_(0),
 	dirty_(false)
 	{
 		texture_loc_ = pProgram_->GetUniformLocation("u_texture");
 		position_loc_ = pProgram_->GetAttributeLocation("a_position");
 		texcoord_loc_ = pProgram_->GetAttributeLocation("a_texcoord");
 		color_loc_ = pProgram_->GetAttributeLocation("a_color");
+       	mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
 	}
 
-	MeshObject::~MeshObject() 
+	Mesh::~Mesh() 
 	{
 	}
 
-	void MeshObject::AddVertexData(const VertexData& data)
+	void Mesh::AddVertexData(const VertexData& data)
 	{
 		vertexsData_.push_back(data);
 		dirty_ = true;
 	}
 
-	void MeshObject::SetIndices(const Indexes& indexes)
+	void Mesh::SetIndices(const Indexes& indexes)
 	{
 		indexes_ = indexes;
 		dirty_ = true;
 	}
 
-	void MeshObject::Redo()
+	void Mesh::Redo()
 	{
 		if(dirty_)
 		{
@@ -84,27 +86,16 @@ namespace NSG
 		}
 	}
 
-	void MeshObject::SetPosition(const Vertex3& position)
-	{
-		position_ = position;
-		Update();
-	}
-
-	void MeshObject::SetRotation(const Quaternion& q)
-	{
-		q_ = q;
-		Update();
-	}
-
-	void MeshObject::Update()
-	{
-		matModelView_ = glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_);
-	}
-
-	void MeshObject::Render() 
+	void Mesh::Render(PNode pNode) 
 	{
 		if(!pTexture_->Done() || !pVBuffer_) 
 			return;
+
+		Camera* pCamera = Camera::GetPtrMainCamera();
+
+		Matrix4 matModelViewProjection = pCamera->GetViewProjection() * pNode->GetModelView();
+
+		glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));
 
 		//set what program to use
 		pProgram_->Use();

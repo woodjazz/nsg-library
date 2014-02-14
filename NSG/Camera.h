@@ -24,33 +24,65 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <stdio.h>
-#include <sstream>
-#include <string>
+#include <memory>
+#include "NSG/Node.h"
 
-#ifdef NACL
-extern int PPPrintMessage(const char* format, ...);
-#define printf PPPrintMessage
-#endif
+namespace NSG
+{
+	class Camera;
 
-#ifdef ANDROID
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
-#define TRACE_LOG(msg) {\
-	::std::stringstream stream; \
-	stream << msg; \
-	::std::string cmsg = stream.str(); \
-	__android_log_print(ANDROID_LOG_INFO, "nsg-library", cmsg.c_str());\
+	typedef std::shared_ptr<Camera> PCamera;
+
+	class Camera
+	{
+	public:
+		Camera(float fovy, float zNear, float zFar);
+		
+		~Camera();
+
+		static Camera* GetPtrMainCamera();
+
+		void Activate(bool clearBackground = true);
+
+		void SetViewport(float xo, float yo, float xf, float yf);
+
+		void ViewChanged(int32_t width, int32_t height);
+
+		void SetLookAt(
+			//Camera position, in World Space
+			const Vertex3& eye, 
+			//Looks at
+			const Vertex3& center, 
+			//Head direction
+			const Vertex3& up);
+
+		void SetBackgroundColor(const Color& color) { backgroundColor_ = color; }
+
+		const glm::mat4& GetViewProjection() const { return matViewProjection_; }
+
+		void SetClearDepth(float clearDepth) { clearDepth_ = clearDepth; }
+
+	private:
+		void Update();		
+
+		Matrix4 matProjection_;
+		Matrix4 matView_;
+		Matrix4 matViewProjection_;
+
+		PNode pNode_;
+
+		float fovy_;
+		float zNear_;
+		float zFar_;
+		Color backgroundColor_;
+		float clearDepth_;
+
+		int32_t width_;
+		int32_t height_;
+
+		float xo_;
+		float yo_;
+		float xf_;
+		float yf_;
+	};
 }
-extern int AndroidPrintMessage(const char* format, ...);
-#define printf AndroidPrintMessage
-#else
-#define TRACE_LOG(msg) {\
-	::std::stringstream stream; \
-	stream << msg; \
-	::std::string cmsg = stream.str(); \
-	printf(cmsg.c_str());\
-	fflush(stdout);\
-}
-#endif

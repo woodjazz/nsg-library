@@ -30,17 +30,12 @@ misrepresented as being the original software.
 #include "NSG/GLES2VertexBuffer.h"
 #include "NSG/GLES2IndexBuffer.h"
 #include "NSG/GLES2Texture.h"
-
-#define GLM_FORCE_RADIANS
-#include "glm/glm/glm.hpp"
-#include <glm/glm/gtc/quaternion.hpp>
+#include "NSG/Types.h"
+#include "Camera.h"
+#include "Node.h"
 
 namespace NSG
 {
-	typedef glm::vec3 Vertex3;
-	typedef glm::vec2 Vertex2;
-	typedef glm::quat Quaternion;
-
 	struct VertexData
 	{
 		Vertex3 position_;
@@ -54,21 +49,17 @@ namespace NSG
 	typedef GLubyte IndexType;
 	typedef std::vector<IndexType> Indexes;
 
-	class MeshObject
+	class Mesh
 	{
 	public:
-		MeshObject(PGLES2Program pProgram, PGLES2Texture pTexture);
-		~MeshObject();
-		void Render();
+		Mesh(PGLES2Program pProgram, PGLES2Texture pTexture);
+		~Mesh();
+		void Render(PNode pNode);
 		void AddVertexData(const VertexData& data);
 		void SetIndices(const Indexes& indexes);
-		const glm::mat4& GetModelView() const { return matModelView_; }
 		void Redo();
-		void SetPosition(const Vertex3& position);
-		void SetRotation(const Quaternion& q);
 
 	private:
-		void Update();		
 
 		PGLES2Program pProgram_;
 		PGLES2IndexBuffer pIBuffer_;
@@ -79,17 +70,13 @@ namespace NSG
 		GLuint position_loc_;
 		GLuint texcoord_loc_;
 		GLuint color_loc_;
-
-		glm::mat4 matModelView_;
+        GLuint mvp_loc_;
 
 		std::vector<VertexData> vertexsData_;
 		Indexes indexes_;
 
 		bool dirty_;
-
-		Vertex3 position_;
-		Quaternion q_;
 	};
 
-	typedef std::shared_ptr<MeshObject> PMeshObject;
+	typedef std::shared_ptr<Mesh> PMesh;
 }

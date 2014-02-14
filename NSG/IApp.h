@@ -39,18 +39,74 @@ namespace NSG
 	class IApp 
 	{
 	public:
-		virtual ~IApp() {};
+        IApp();
+		virtual ~IApp();
 		virtual void Start() = 0;
 		virtual void Update(float delta) = 0;
 		virtual void LateUpdate() = 0;
 		virtual void RenderFrame() = 0;
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;
+        static IApp* GetPtrInstance();
 	#if NACL
-		virtual void HandleMessage(const pp::Var& var_message) = 0;
+		virtual void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID
-		virtual void SetAssetManager(AAssetManager* pAAssetManager) = 0;
+		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
+        AAssetManager* GetAssetManager() { return pAAssetManager_; }
 	#endif
+    private:
+    #if ANDROID        
+        AAssetManager* pAAssetManager_;
+    #endif
 	};
 
 	typedef std::shared_ptr<IApp> PApp;
+
+    struct InternalApp : public Tick
+    {
+        NSG::PApp pApp_;
+
+        InternalApp(NSG::PApp pApp) : pApp_(pApp)
+        {
+        }
+
+        void BeginTick()
+        {
+            pApp_->Start();
+        }
+        
+        void DoTick(float delta)
+        {
+            pApp_->Update(delta);
+        }
+        
+        void EndTick()
+        {
+            pApp_->LateUpdate();
+        }
+
+        void ViewChanged(int32_t width, int32_t height)
+        {
+            pApp_->ViewChanged(width, height);
+        }
+
+        void RenderFrame()
+        {
+            pApp_->RenderFrame();
+        }
+
+	#if NACL
+		void HandleMessage(const pp::Var& var_message)
+		{
+			pApp_->HandleMessage(var_message);
+		}
+	#elif ANDROID
+		void SetAssetManager(AAssetManager* pAAssetManager)
+		{
+			pApp_->SetAssetManager(pAAssetManager);
+		}
+	#endif
+
+    };
+
+    typedef std::shared_ptr<InternalApp> PInternalApp;
 }	

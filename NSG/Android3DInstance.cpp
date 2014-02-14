@@ -27,45 +27,26 @@
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
 
+#include <cmath>
+#include <limits>
+
+ int AndroidPrintMessage(const char* format, ...) 
+{
+    va_list args;
+    const int maxBuffer = 1024;
+    char buffer[maxBuffer];
+    va_start(args, format);
+    int ret_status = vsnprintf(buffer, maxBuffer, format, args);
+    va_end(args);
+
+    __android_log_print(ANDROID_LOG_INFO, "nsg-library", buffer);
+
+    return ret_status;  
+}
+
 
 namespace NSG
 {
-    struct InternalApp : public Tick
-    {
-        NSG::PApp pApp_;
-
-        InternalApp(NSG::PApp pApp) : pApp_(pApp)
-        {
-        }
-
-        void BeginTick()
-        {
-            pApp_->Start();
-        }
-        
-        void DoTick(float delta)
-        {
-            pApp_->Update(delta);
-        }
-        
-        void EndTick()
-        {
-            pApp_->LateUpdate();
-        }
-
-        void ViewChanged(int32_t width, int32_t height)
-        {
-            pApp_->ViewChanged(width, height);
-        }
-
-        void RenderFrame()
-        {
-            pApp_->RenderFrame();
-        }
-    };
-
-    typedef std::shared_ptr<InternalApp> PInternalApp;
-
     PInternalApp s_pApp = nullptr;
 }
 /**
@@ -96,6 +77,7 @@ struct engine
     int32_t height;
     struct saved_state state;
     ANativeWindow* window;
+    bool configurationChanged;
 };
 
 static engine* s_engine = nullptr;
@@ -185,6 +167,13 @@ static void engine_draw_frame(struct engine* engine)
 
     NSG::s_pApp->PerformTick();
 
+    if(engine->configurationChanged)
+    {
+        engine->configurationChanged = false;
+
+        NSG::s_pApp->ViewChanged(s_engine->width, s_engine->height);
+    }
+
     NSG::s_pApp->RenderFrame();
 
     eglSwapBuffers(engine->display, engine->surface);
@@ -238,16 +227,30 @@ static void engine_handle_configuration_changed(ANativeActivity *pActivity)
 {
     TRACE_LOG("engine_handle_configuration_changed");
 
-    if(s_engine && s_engine->window)
+    AConfiguration* pConf = AConfiguration_new();
+
+    AConfiguration_fromAssetManager(pConf, pActivity->assetManager);
+
+    int32_t w = AConfiguration_getScreenWidthDp(pConf);
+    int32_t h = AConfiguration_getScreenHeightDp(pConf);
+    int32_t density = AConfiguration_getDensity(pConf);
+    int32_t screenSize = AConfiguration_getScreenSize(pConf);
+    int32_t screenlong = AConfiguration_getScreenLong(pConf);
+
+    AConfiguration_delete(pConf);
+
+    float current_factor = s_engine->width / s_engine->height;
+    float new_factor = w / h;
+
+    if(std::abs(current_factor - new_factor) > std::numeric_limits<float>::epsilon())
     {
-        int32_t w = ANativeWindow_getWidth(s_engine->window);
-        
-        int32_t h = ANativeWindow_getHeight(s_engine->window);
+        std::swap(s_engine->width, s_engine->height);
 
-        //NSG::s_pApp->ViewChanged(w, h);
-
-        TRACE_LOG("w=" << w << " h=" << h);
+        //NSG::s_pApp->ViewChanged cannot be called here since the real screen rotation has not been performed yet
+        s_engine->configurationChanged = true;
     }
+
+    TRACE_LOG("screenlong=" << screenlong << " screenSize=" << screenSize << " density=" << density << " w=" << w << " h=" << h);
 }
 
 static void engine_handle_window_resized(ANativeActivity* activity, ANativeWindow* window)
@@ -323,11 +326,9 @@ namespace NSG
      */
     void CreateModule(struct android_app* state, NSG::PApp pApp)
     {
-        TRACE_LOG("***1***");
         pApp->SetAssetManager(state->activity->assetManager);
 
-        TRACE_LOG("***2***");
-        s_pApp = PInternalApp(new InternalApp(pApp));
+        NSG::s_pApp = PInternalApp(new InternalApp(pApp));
 
         struct engine engine;
 

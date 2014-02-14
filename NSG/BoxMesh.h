@@ -24,33 +24,23 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <stdio.h>
-#include <sstream>
-#include <string>
+#include <vector>
+#include <memory>
+#include "NSG/GLES2Program.h"
+#include "NSG/GLES2VertexBuffer.h"
+#include "NSG/GLES2IndexBuffer.h"
+#include "NSG/GLES2Texture.h"
+#include "NSG/Types.h"
+#include "Mesh.h"
 
-#ifdef NACL
-extern int PPPrintMessage(const char* format, ...);
-#define printf PPPrintMessage
-#endif
+namespace NSG
+{
+	class BoxMesh : public Mesh
+	{
+	public:
+		BoxMesh(PGLES2Program pProgram, PGLES2Texture pTexture);
+		~BoxMesh();
+	};
 
-#ifdef ANDROID
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
-#define TRACE_LOG(msg) {\
-	::std::stringstream stream; \
-	stream << msg; \
-	::std::string cmsg = stream.str(); \
-	__android_log_print(ANDROID_LOG_INFO, "nsg-library", cmsg.c_str());\
+	typedef std::shared_ptr<BoxMesh> PBoxMesh;
 }
-extern int AndroidPrintMessage(const char* format, ...);
-#define printf AndroidPrintMessage
-#else
-#define TRACE_LOG(msg) {\
-	::std::stringstream stream; \
-	stream << msg; \
-	::std::string cmsg = stream.str(); \
-	printf(cmsg.c_str());\
-	fflush(stdout);\
-}
-#endif

@@ -6,7 +6,6 @@
 #include "ppapi/utility/completion_callback_factory.h"
 
 #include "NSG/IApp.h"
-#include "NSG/Tick.h"
 
 #ifdef WIN32
 #undef PostMessage
@@ -18,10 +17,10 @@ namespace NSG
 {
 	namespace NaCl 
 	{
-		class NaCl3DInstance : public pp::Instance , Tick
+		class NaCl3DInstance : public pp::Instance
 		{
 			public:
-				explicit NaCl3DInstance(PP_Instance instance, NSG::PApp pApp);
+				explicit NaCl3DInstance(PP_Instance instance, PApp pApp);
 				static pp::Instance* GetInstance();
 				virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 				virtual void DidChangeView(const pp::View& view);
@@ -36,7 +35,7 @@ namespace NSG
 
 				pp::CompletionCallbackFactory<NaCl3DInstance> callback_factory_;
 				pp::Graphics3D context_;
-				NSG::PApp pApp_;
+				PInternalApp pApp_;
 		};
 
 		class Graphics3DModule : public pp::Module 
@@ -46,7 +45,7 @@ namespace NSG
 				virtual ~Graphics3DModule();
 				virtual pp::Instance* CreateInstance(PP_Instance instance);
 			private:
-				NSG::PApp pApp_;
+				PApp pApp_;
 		};
 	}
 }

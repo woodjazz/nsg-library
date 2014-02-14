@@ -26,7 +26,9 @@ misrepresented as being the original software.
 #pragma once
 #include <thread>
 #include "NSG/IApp.h"
-#include "NSG/MeshObject.h"
+#include "NSG/BoxMesh.h"
+#include "NSG/Node.h"
+#include "NSG/Camera.h"
 #include "NSG/GLES2Program.h"
 
 using namespace NSG;
@@ -41,24 +43,16 @@ public:
 	void LateUpdate();
 	void RenderFrame();
 	void ViewChanged(int32_t width, int32_t height);
-#if NACL
-	void HandleMessage(const pp::Var& var_message);
-#elif ANDROID
-	void SetAssetManager(AAssetManager* pAAssetManager);
-#endif
 private:
 	void InternalTask();
-
-	int32_t width_;
-	int32_t height_;
 	std::thread thread_;
-	PMeshObject pMeshObject_;
+	PBoxMesh pMesh_;
+	PNode pNode1_;
+	PNode pNode2_;
+	PCamera pCamera1_;
+	PCamera pCamera2_;
 	PGLES2Program pProgram_;
-	GLuint mvp_loc_;
 	float x_angle_;
 	float y_angle_;
-#if ANDROID	
-	AAssetManager* pAAssetManager_;
-#endif	
 };
 

@@ -33,8 +33,8 @@ namespace NSG
 {
 	namespace NaCl 
 	{
-		NaCl3DInstance::NaCl3DInstance(PP_Instance instance, NSG::PApp pApp) 
-		: pp::Instance(instance), callback_factory_(this), pApp_(pApp) 
+		NaCl3DInstance::NaCl3DInstance(PP_Instance instance, PApp pApp) 
+		: pp::Instance(instance), callback_factory_(this), pApp_(new InternalApp(pApp))
 		{
 			s_ppInstance = this;
 		}
@@ -67,7 +67,7 @@ namespace NSG
 					TRACE_LOG("InitGL has failed!")
 					return; // failed.
 				}
-				Tick::Initialize(30);
+				pApp_->Initialize(30);
 				MainLoop(0);
 			} 
 			else 
@@ -91,22 +91,6 @@ namespace NSG
 		{
 			pApp_->HandleMessage(message);
 		}
-
-		void NaCl3DInstance::BeginTick()
-		{
-			pApp_->Start();
-		}
-		
-		void NaCl3DInstance::DoTick(float delta)
-		{
-			pApp_->Update(delta);
-		}
-
-		void NaCl3DInstance::EndTick()
-		{
-			pApp_->LateUpdate();
-		}
-
 
 		bool NaCl3DInstance::InitGL(int32_t new_width, int32_t new_height) 
 		{
@@ -141,7 +125,7 @@ namespace NSG
 
 		void NaCl3DInstance::MainLoop(int32_t) 
 		{
-			Tick::PerformTick();
+			pApp_->PerformTick();
 			pApp_->RenderFrame();		
 			context_.SwapBuffers(callback_factory_.NewCallback(&NaCl3DInstance::MainLoop));
 		}
