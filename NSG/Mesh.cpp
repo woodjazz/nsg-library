@@ -91,11 +91,20 @@ namespace NSG
 		if(!pTexture_->Done() || !pVBuffer_) 
 			return;
 
-		Camera* pCamera = Camera::GetPtrMainCamera();
+		Camera* pCamera = Camera::GetActiveCamera();
 
-		Matrix4 matModelViewProjection = pCamera->GetViewProjection() * pNode->GetModelView();
+		if (pCamera)
+		{
+			Matrix4 matModelViewProjection = pCamera->GetViewProjection() * pNode->GetModelView();
 
-		glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));
+			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));
+		}
+		else
+		{
+			Matrix4 matModelViewProjection = pNode->GetModelView();
+
+			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));			
+		}
 
 		//set what program to use
 		pProgram_->Use();

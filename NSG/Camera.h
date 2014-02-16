@@ -40,9 +40,9 @@ namespace NSG
 		
 		~Camera();
 
-		static Camera* GetPtrMainCamera();
+		static Camera* GetActiveCamera();
 
-		void Activate(bool clearBackground = true);
+		void Activate();
 
 		void SetViewport(float xo, float yo, float xf, float yf);
 
@@ -56,11 +56,7 @@ namespace NSG
 			//Head direction
 			const Vertex3& up);
 
-		void SetBackgroundColor(const Color& color) { backgroundColor_ = color; }
-
 		const glm::mat4& GetViewProjection() const { return matViewProjection_; }
-
-		void SetClearDepth(float clearDepth) { clearDepth_ = clearDepth; }
 
 	private:
 		void Update();		
@@ -74,8 +70,6 @@ namespace NSG
 		float fovy_;
 		float zNear_;
 		float zFar_;
-		Color backgroundColor_;
-		float clearDepth_;
 
 		int32_t width_;
 		int32_t height_;

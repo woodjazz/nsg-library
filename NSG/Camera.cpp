@@ -29,14 +29,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Camera* s_pMainCamera;
+	Camera* s_pActiveCamera;
 
 	Camera::Camera(float fovy, float zNear, float zFar) 
 	: fovy_(fovy), 
 	zNear_(zNear), 
 	zFar_(zFar),
-	backgroundColor_(0, 0, 0, 1),
-	clearDepth_(1.0f),
 	width_(0), 
 	height_(0),
 	xo_(0),
@@ -44,16 +42,16 @@ namespace NSG
 	xf_(1),
 	yf_(1)
 	{
-		s_pMainCamera = this;
+		s_pActiveCamera = this;
 	}
 
 	Camera::~Camera() 
 	{
 	}
 
-	Camera* Camera::GetPtrMainCamera()
+	Camera* Camera::GetActiveCamera()
 	{
-		return s_pMainCamera;
+		return s_pActiveCamera;
 	}
 
 	void Camera::SetViewport(float xo, float yo, float xf, float yf)
@@ -64,20 +62,11 @@ namespace NSG
 		yf_ = yf;
 	}
 
-	void Camera::Activate(bool clearBackground)
+	void Camera::Activate()
 	{
-		s_pMainCamera = this;
+		s_pActiveCamera = this;
 
-		glViewport(width_ * xo_, height_ * yo_, width_ * xf_, height_ * yf_);
-		
-		if(clearBackground)
-		{
-			glClearColor(backgroundColor_.x, backgroundColor_.y, backgroundColor_.z, backgroundColor_.w);
-			glClearDepth(clearDepth_);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		}
-
-		glEnable(GL_DEPTH_TEST);
+		glViewport(width_ * xo_, height_ * yo_, width_ * xf_, height_ * yf_);		
 	}
 
 	void Camera::ViewChanged(int32_t width, int32_t height)

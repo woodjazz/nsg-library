@@ -89,9 +89,6 @@ void App::Start()
     pNode1_->SetPosition(Vertex3(-2, 0, 0));
     pNode2_->SetPosition(Vertex3(2, 0, 0));
 
-    pCamera1_->SetBackgroundColor(Color(0, 0, 0, 1));
-    pCamera2_->SetBackgroundColor(Color(0.3f, 0.3f, 0.4f, 1));
-
     pCamera1_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
@@ -115,12 +112,17 @@ void App::RenderFrame()
 {
 	//TRACE_LOG("App::RenderFrame");
 
+	glClearColor(0, 0, 0, 1);
+	glClearDepth(1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
     pCamera1_->Activate();
 
     pMesh_->Render(pNode1_);
     pMesh_->Render(pNode2_);
 
-    pCamera2_->Activate(false);
+    pCamera2_->Activate();
 
     pMesh_->Render(pNode1_);
     pMesh_->Render(pNode2_);
