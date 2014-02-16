@@ -124,6 +124,13 @@ set(SOIL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/soil)
 add_subdirectory(soil)
 
 ###########################
+# freetype2
+###########################
+set(FREETYPE2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/include)
+include_directories(${FREETYPE2_INCLUDE_DIR})
+add_subdirectory(freetype2)
+
+###########################
 # nsg
 ###########################
 set(NSG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nsg)

@@ -12,6 +12,14 @@ endif()
 	
 add_library(${PROJECT_NAME} STATIC ${src} ${hdr})
 
+if(NACL)
+	target_link_libraries(${PROJECT_NAME} soil freetype ppapi_cpp ppapi ppapi_gles2 pthread nacl_io)
+elseif(ANDROID)
+	target_link_libraries(${PROJECT_NAME} soil freetype GLESv2 log android EGL)
+else()
+	target_link_libraries(${PROJECT_NAME} glew freetype soil glfw)
+endif()
+
 
 
 
