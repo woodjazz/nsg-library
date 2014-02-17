@@ -78,10 +78,17 @@ namespace NSG
 
 		glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
 
-		if (glewInit() != GLEW_OK) {
+		if (glewInit() != GLEW_OK) 
+        {
 			fprintf(stderr, "Failed to initialize GLEW\n");
 			return false;
 		}
+
+        if (!GLEW_VERSION_2_0) 
+        {
+            fprintf(stderr, "No support for OpenGL 2.0 found\n");
+            return false;
+        }
 
 		s_pApp->Initialize(30);
 

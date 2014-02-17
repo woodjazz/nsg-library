@@ -48,7 +48,9 @@ App::App()
 : x_angle_(0),
 y_angle_(0),
 pCamera1_(new Camera(kFovY, kZNear, kZFar)),
-pCamera2_(new Camera(kFovY, kZNear, kZFar))
+pCamera2_(new Camera(kFovY, kZNear, kZFar)),
+width_(1),
+height_(1)
 {
 }
 
@@ -65,11 +67,11 @@ void App::InternalTask()
 	QueuedTaskTest();
 }
 
-const char kFragShaderSource[] = {
+static const char kFragShaderSource[] = {
 #include "shaders/gles2FragmentShader.h"
 };
 
-const char kVertexShaderSource[] = {
+static const char kVertexShaderSource[] = {
 #include "shaders/gles2VertexShader.h"
 };
 
@@ -92,6 +94,8 @@ void App::Start()
     pCamera1_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
+
+    pText_ = PText(new Text("bluebold.ttf", 24));
 }
 
 void App::Update(float delta) 
@@ -112,7 +116,7 @@ void App::RenderFrame()
 {
 	//TRACE_LOG("App::RenderFrame");
 
-	glClearColor(0, 0, 0, 1);
+	glClearColor(1, 1, 1, 1);
 	glClearDepth(1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -122,15 +126,22 @@ void App::RenderFrame()
     pMesh_->Render(pNode1_);
     pMesh_->Render(pNode2_);
 
-    pCamera2_->Activate();
+	float sx = 2.0 / width_;
+    float sy = 2.0 / height_;    
+    pText_->RenderText(Color(1,0,0,1), "nsg-library", -1 + 8 * sx, 1 - 50 * sy, sx, sy);
+
+/*    pCamera2_->Activate();
 
     pMesh_->Render(pNode1_);
-    pMesh_->Render(pNode2_);
+    pMesh_->Render(pNode2_);*/
 
 }
 
 void App::ViewChanged(int32_t width, int32_t height) 
 {
+	width_ = width;
+	height_ = height;
+
 	TRACE_LOG("App::ViewChanged width=" << width << " height=" << height);	
 	pCamera1_->ViewChanged(width, height);
 	pCamera2_->ViewChanged(width, height);

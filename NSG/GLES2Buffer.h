@@ -33,7 +33,7 @@ namespace NSG
 	{
 	public:
 
-		GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid *data);
+		GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid *data, GLenum usage = GL_ELEMENT_ARRAY_BUFFER);
 
 		~GLES2Buffer();
 

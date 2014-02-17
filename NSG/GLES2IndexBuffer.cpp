@@ -28,8 +28,8 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
-	GLES2IndexBuffer::GLES2IndexBuffer(GLsizeiptr size, const GLvoid* data)
-	: GLES2Buffer(GL_ELEMENT_ARRAY_BUFFER, size, data)
+	GLES2IndexBuffer::GLES2IndexBuffer(GLsizeiptr size, const GLvoid* data, GLenum usage)
+	: GLES2Buffer(GL_ELEMENT_ARRAY_BUFFER, size, data, usage)
 	{
 	}
 

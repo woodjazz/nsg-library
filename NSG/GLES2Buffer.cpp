@@ -28,7 +28,7 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
-	GLES2Buffer::GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid *data)
+	GLES2Buffer::GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid* data, GLenum usage)
 	: type_(type)
 	{
 		assert(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER);
@@ -37,7 +37,7 @@ namespace NSG
 		
 		glBindBuffer(type, id_);
 
-		glBufferData(type, size, data, GL_STATIC_DRAW);
+		glBufferData(type, size, data, usage);
 	}
 
 	GLES2Buffer::~GLES2Buffer()

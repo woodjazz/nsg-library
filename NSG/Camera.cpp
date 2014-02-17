@@ -42,7 +42,6 @@ namespace NSG
 	xf_(1),
 	yf_(1)
 	{
-		s_pActiveCamera = this;
 	}
 
 	Camera::~Camera() 

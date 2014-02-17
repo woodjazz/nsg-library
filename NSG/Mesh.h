@@ -60,7 +60,6 @@ namespace NSG
 		void Redo();
 
 	private:
-
 		PGLES2Program pProgram_;
 		PGLES2IndexBuffer pIBuffer_;
 		PGLES2VertexBuffer pVBuffer_;

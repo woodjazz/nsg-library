@@ -27,33 +27,57 @@ misrepresented as being the original software.
 #include <memory>
 #include "ft2build.h"
 #include FT_FREETYPE_H
-#include <string>
-#if NACL
-#include "NSG/NaClURLLoader.h"
-#elif ANDROID
-#include <android/asset_manager.h>
-#endif
+#include "Resource.h"
+#include "GLES2Includes.h"
+#include "GLES2Program.h"
+#include "GLES2VertexBuffer.h"
+#include "Types.h"
 
 namespace NSG
 {
 	class Text
 	{
 	public:
+		static void Initialize();
 		Text(const char* filename, int fontSize);
 		~Text();
+		GLuint GetId() const { return texture_; }
+		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
+		static void UnBind() { glBindTexture(GL_TEXTURE_2D, 0); }
+		void RenderText(Color color, const char *text, float x, float y, float sx, float sy);
 	private:
-		bool Done();
-
-		std::string filename_;
+		bool IsReady();
+		void CreateTextureAtlas();
 		FT_Face face_;
 		int fontSize_;
-		bool loaded_;
+		PResource pResource_;
+		int atlasWidth_;
+		int atlasHeight_;
+		GLuint texture_;
+		PGLES2Program pProgram_;
+		PGLES2VertexBuffer pVBuffer_;
+		GLuint texture_loc_;
+		GLuint position_loc_;
+		GLuint texcoord_loc_;
+		GLuint color_loc_;
 
-	#if NACL		
-		NaCl::PNaClURLLoader pLoader_;
-	#elif ANDROID		
-		AAssetManager* pAAssetManager_;		
-	#endif
+		struct CharacterInfo 
+		{
+			float ax; // advance.x
+			float ay; // advance.y
+
+			float bw; // bitmap.width;
+			float bh; // bitmap.rows;
+
+			float bl; // bitmap_left;
+			float bt; // bitmap_top;
+
+			float tx; // x offset of glyph in texture coordinates
+			float ty; // y offset of glyph in texture coordinates
+		};
+
+		CharacterInfo charInfo_[128];
+
 	};
 
 	typedef std::shared_ptr<Text> PText;

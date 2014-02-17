@@ -24,27 +24,36 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
-#include "GLES2Includes.h"
-#include <memory>
 #include <string>
-#include "Resource.h"
+#include <memory>
+#if NACL
+#include "NSG/NaClURLLoader.h"
+#elif ANDROID
+#include <android/asset_manager.h>
+#endif
 
 namespace NSG
 {
-	class GLES2Texture
+	class Resource
 	{
 	public:
-		GLES2Texture(const char* filename);
-		~GLES2Texture();
+		Resource(const char* filename);
+		~Resource();
 		bool IsReady();
-		GLuint GetId() const { return texture_; }
-		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
-		static void UnBind() { glBindTexture(GL_TEXTURE_2D, 0); }
+		const unsigned char* const GetData() const;
+		size_t GetBytes() const;
 	private:
-		GLuint texture_;
-		PResource pResource_;
+		bool loaded_;
+		std::string filename_;
+		const unsigned char* pData_;
+		std::string buffer_;
+		size_t bytes_;
+	#if NACL		
+		NaCl::PNaClURLLoader pLoader_;
+	#elif ANDROID		
+		AAssetManager* pAAssetManager_;		
+	#endif
 	};
 
-	typedef std::shared_ptr<GLES2Texture> PGLES2Texture;
+	typedef std::shared_ptr<Resource> PResource;
 }

@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "NSG/Node.h"
 #include "NSG/Camera.h"
 #include "NSG/GLES2Program.h"
+#include "NSG/Text.h"
 
 using namespace NSG;
 
@@ -54,5 +55,8 @@ private:
 	PGLES2Program pProgram_;
 	float x_angle_;
 	float y_angle_;
+	PText pText_;
+	int32_t width_;
+	int32_t height_;
 };
 

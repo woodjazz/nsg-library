@@ -88,10 +88,12 @@ namespace NSG
 
 	void Mesh::Render(PNode pNode) 
 	{
-		if(!pTexture_->Done() || !pVBuffer_) 
+		if(!pTexture_->IsReady() || !pVBuffer_) 
 			return;
 
 		Camera* pCamera = Camera::GetActiveCamera();
+
+		pProgram_->Use();
 
 		if (pCamera)
 		{
@@ -105,9 +107,6 @@ namespace NSG
 
 			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));			
 		}
-
-		//set what program to use
-		pProgram_->Use();
 
 		glActiveTexture(GL_TEXTURE0);
 		pTexture_->Bind();
@@ -148,5 +147,8 @@ namespace NSG
 
         glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
 
+        glDisableVertexAttribArray(texcoord_loc_);
+        glDisableVertexAttribArray(color_loc_);
+        glDisableVertexAttribArray(position_loc_);
 	}
 }
