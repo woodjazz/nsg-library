@@ -29,8 +29,8 @@
 
 #include <cmath>
 #include <limits>
-
- int AndroidPrintMessage(const char* format, ...) 
+ 
+int AndroidPrintMessage(const char* format, ...) 
 {
     va_list args;
     const int maxBuffer = 1024;
@@ -85,7 +85,9 @@ static engine* s_engine = nullptr;
 /**
  * Initialize an EGL context for the current display.
  */
-static int engine_init_display(struct engine* engine) {
+static int engine_init_display(struct engine* engine) 
+{
+    TRACE_LOG("engine_init_display");
     // initialize OpenGL ES and EGL
 
     /*
@@ -99,6 +101,7 @@ static int engine_init_display(struct engine* engine) {
             EGL_BLUE_SIZE, 8,
             EGL_GREEN_SIZE, 8,
             EGL_RED_SIZE, 8,
+            EGL_ALPHA_SIZE, 8,
             EGL_DEPTH_SIZE, 24,
             EGL_NONE
     };
@@ -165,16 +168,35 @@ static void engine_draw_frame(struct engine* engine)
 
     engine->animating = true;
 
-    NSG::s_pApp->PerformTick();
-
     if(engine->configurationChanged)
     {
-        engine->configurationChanged = false;
+        EGLint w, h;
+        
+        eglQuerySurface(engine->display, engine->surface, EGL_WIDTH, &w);
+        
+        eglQuerySurface(engine->display, engine->surface, EGL_HEIGHT, &h);
 
-        NSG::s_pApp->ViewChanged(s_engine->width, s_engine->height);
+        if(w == engine->width && h == engine->height)
+        {
+            engine->configurationChanged = false;
+
+            NSG::s_pApp->ViewChanged(engine->width, engine->height);
+        }
+        else
+        {
+            //TRACE_LOG("NO");
+            glClearColor(1, 1, 1, 1);
+            glClearDepth(1);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_DEPTH_TEST);            
+        }
     }
+    else
+    {
+        NSG::s_pApp->PerformTick();
 
-    NSG::s_pApp->RenderFrame();
+        NSG::s_pApp->RenderFrame();
+    }
 
     eglSwapBuffers(engine->display, engine->surface);
 }
@@ -184,6 +206,8 @@ static void engine_draw_frame(struct engine* engine)
  */
 static void engine_term_display(struct engine* engine) 
 {
+    TRACE_LOG("engine_term_display");
+
     if (engine->display != EGL_NO_DISPLAY) 
     {
         eglMakeCurrent(engine->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -211,6 +235,8 @@ static void engine_term_display(struct engine* engine)
  */
 static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
 {
+    TRACE_LOG("engine_handle_input");
+
     struct engine* engine = (struct engine*)app->userData;
 
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) 
@@ -226,6 +252,8 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event)
 static void engine_handle_configuration_changed(ANativeActivity *pActivity)
 {
     TRACE_LOG("engine_handle_configuration_changed");
+
+    s_engine->configurationChanged = true;
 
     AConfiguration* pConf = AConfiguration_new();
 
@@ -247,7 +275,6 @@ static void engine_handle_configuration_changed(ANativeActivity *pActivity)
         std::swap(s_engine->width, s_engine->height);
 
         //NSG::s_pApp->ViewChanged cannot be called here since the real screen rotation has not been performed yet
-        s_engine->configurationChanged = true;
     }
 
     TRACE_LOG("screenlong=" << screenlong << " screenSize=" << screenSize << " density=" << density << " w=" << w << " h=" << h);
@@ -257,8 +284,7 @@ static void engine_handle_window_resized(ANativeActivity* activity, ANativeWindo
 {
     TRACE_LOG("engine_handle_window_resized"); 
 
-    if(s_engine)
-        s_engine->window = window;
+    s_engine->window = window;
 
     int32_t w = ANativeWindow_getWidth(window);
     
@@ -277,12 +303,14 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
     switch (cmd) 
     {
         case APP_CMD_SAVE_STATE:
+            TRACE_LOG("APP_CMD_SAVE_STATE"); 
             // The system has asked us to save our current state.  Do so.
             engine->app->savedState = malloc(sizeof(struct saved_state));
             *((struct saved_state*)engine->app->savedState) = engine->state;
             engine->app->savedStateSize = sizeof(struct saved_state);
             break;
         case APP_CMD_INIT_WINDOW:
+            TRACE_LOG("APP_CMD_INIT_WINDOW"); 
             // The window is being shown, get it ready.
             if (engine->app->window != NULL) 
             {
@@ -291,10 +319,12 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
             }
             break;
         case APP_CMD_TERM_WINDOW:
+            TRACE_LOG("APP_CMD_TERM_WINDOW"); 
             // The window is being hidden or closed, clean it up.
             engine_term_display(engine);
             break;
         case APP_CMD_GAINED_FOCUS:
+            TRACE_LOG("APP_CMD_GAINED_FOCUS"); 
             // When our app gains focus, we start monitoring the accelerometer.
             if (engine->accelerometerSensor != NULL) 
             {
@@ -304,6 +334,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
             }
             break;
         case APP_CMD_LOST_FOCUS:
+            TRACE_LOG("APP_CMD_LOST_FOCUS"); 
             // When our app loses focus, we stop monitoring the accelerometer.
             // This is to avoid consuming battery while not being used.
             if (engine->accelerometerSensor != NULL) 
@@ -326,6 +357,8 @@ namespace NSG
      */
     void CreateModule(struct android_app* state, NSG::PApp pApp)
     {
+        TRACE_LOG("CreateModule"); 
+
         pApp->SetAssetManager(state->activity->assetManager);
 
         NSG::s_pApp = PInternalApp(new InternalApp(pApp));

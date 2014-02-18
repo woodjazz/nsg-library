@@ -95,7 +95,9 @@ void App::Start()
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 
-    pText_ = PText(new Text("bluebold.ttf", 24));
+    pText1_ = PText(new Text("font/bluebold.ttf", 24));
+    pText2_ = PText(new Text("font/FreeSans.ttf", 24));
+    pText3_ = PText(new Text("font/FreeSans.ttf", 48));
 }
 
 void App::Update(float delta) 
@@ -126,23 +128,30 @@ void App::RenderFrame()
     pMesh_->Render(pNode1_);
     pMesh_->Render(pNode2_);
 
-	float sx = 2.0 / width_;
-    float sy = 2.0 / height_;    
-    pText_->RenderText(Color(1,0,0,1), "nsg-library", -1 + 8 * sx, 1 - 50 * sy, sx, sy);
+	float sx = 2.0f / width_;
+    float sy = 2.0f / height_;    
+    pText1_->RenderText(Color(1,0,0,1), "nsg-library", -1 + 8 * sx, 1 - height_ * sy, sx, sy);
+    pText1_->RenderText(Color(1,0,0,1), "nsg-library", 0, 0, 0.01f, 0.01f);
+    pText2_->RenderText(Color(0,0,0,1), "nsg-library", -1 + 8 * sx, 1 - 300 * sy, sx, sy);
+    pText3_->RenderText(Color(0,0,1,1), "nsg-library", -1 + 8 * sx, 1 - 200 * sy, sx, sy);
 
-/*    pCamera2_->Activate();
+    pCamera2_->Activate();
 
     pMesh_->Render(pNode1_);
-    pMesh_->Render(pNode2_);*/
-
+    pMesh_->Render(pNode2_);
 }
 
 void App::ViewChanged(int32_t width, int32_t height) 
 {
-	width_ = width;
-	height_ = height;
+	if(height > 0)
+	{
+		glViewport(0, 0, width, height);
 
-	TRACE_LOG("App::ViewChanged width=" << width << " height=" << height);	
-	pCamera1_->ViewChanged(width, height);
-	pCamera2_->ViewChanged(width, height);
+		width_ = width;
+		height_ = height;
+
+		TRACE_LOG("App::ViewChanged width=" << width << " height=" << height);	
+		pCamera1_->ViewChanged(width, height);
+		pCamera2_->ViewChanged(width, height);
+	}
 }

@@ -31,6 +31,22 @@ misrepresented as being the original software.
 static FT_Library s_ft;
 static bool s_initialized = false;
 
+static void Initialize()
+{
+	if(!s_initialized)
+	{
+		if(FT_Init_FreeType(&s_ft)) 
+		{
+			TRACE_LOG("Could not init freetype library.");
+		}
+		else
+		{
+			s_initialized = true;
+		}
+	}
+}
+
+
 const char s_fragShaderSource[] = {
 #include "shaders/gles2TextFragmentShader.h"
 };
@@ -41,21 +57,6 @@ const char s_vertexShaderSource[] = {
 
 namespace NSG
 {
-	void Text::Initialize()
-	{
-		if(!s_initialized)
-		{
-			if(FT_Init_FreeType(&s_ft)) 
-			{
-				TRACE_LOG("Could not init freetype library.");
-			}
-			else
-			{
-				s_initialized = true;
-			}
-		}
-	}
-
 	Text::Text(const char* filename, int fontSize)
 	: fontSize_(fontSize),
 	pResource_(new Resource(filename)),
@@ -69,7 +70,7 @@ namespace NSG
 	{
 		memset(charInfo_, 0, sizeof(charInfo_));
 
-		Text::Initialize();
+		Initialize();
 
 	}
 
@@ -176,56 +177,57 @@ namespace NSG
 		return pResource_ == nullptr;
 	}
 
-	void Text::RenderText(Color color, const char *text, float x, float y, float sx, float sy) 
+	void Text::RenderText(Color color, const std::string& text, float x, float y, float sx, float sy, GLenum usage) 
 	{
-		if(!IsReady())
+		if(!IsReady() || text.empty())
 			return;
 
-		struct Point 
+		if(lastText_ != text)
 		{
-			GLfloat x;
-			GLfloat y;
-			GLfloat s;
-			GLfloat t;
-		};
-        
-        std::vector<Point> coords;
-        coords.resize(6 * strlen(text));
+	        size_t length = 6 * text.size();
 
-		int c = 0;
-		for(const char *p = text; *p; p++) 
-		{ 
-			float x2 =  x + charInfo_[*p].bl * sx;
-			float y2 = -y - charInfo_[*p].bt * sy;
-			float w = charInfo_[*p].bw * sx;
-			float h = charInfo_[*p].bh * sy;
+	        if(length > coords_.size()) 
+	        	coords_.resize(length);
 
-			/* Advance the cursor to the start of the next character */
-			x += charInfo_[*p].ax * sx;
-			y += charInfo_[*p].ay * sy;
+			int c = 0;
+			for(const char *p = text.c_str(); *p; p++) 
+			{ 
+				float x2 =  x + charInfo_[*p].bl * sx;
+				float y2 = -y - charInfo_[*p].bt * sy;
+				float w = charInfo_[*p].bw * sx;
+				float h = charInfo_[*p].bh * sy;
 
-			/* Skip glyphs that have no pixels */
-			if(!w || !h)
-				continue;
+				/* Advance the cursor to the start of the next character */
+				x += charInfo_[*p].ax * sx;
+				y += charInfo_[*p].ay * sy;
 
-			int idx = (int)*p;
+				/* Skip glyphs that have no pixels */
+				if(!w || !h)
+					continue;
 
-	        Point point1 = {x2, -y2, charInfo_[*p].tx, charInfo_[*p].ty};
-			Point point2 = {x2 + w, -y2, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty};
-			Point point3 = {x2, -y2 - h, charInfo_[*p].tx, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
-			Point point4 = {x2 + w, -y2, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty};
-			Point point5 = {x2, -y2 - h, charInfo_[*p].tx, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
-			Point point6 = {x2 + w, -y2 - h, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};			
+				int idx = (int)*p;
 
-            coords[c++] = point1;
-            coords[c++] = point2;
-            coords[c++] = point3;
-            coords[c++] = point4;
-            coords[c++] = point5;
-            coords[c++] = point6;
+		        Point point1 = {x2, -y2, charInfo_[*p].tx, charInfo_[*p].ty};
+				Point point2 = {x2 + w, -y2, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty};
+				Point point3 = {x2, -y2 - h, charInfo_[*p].tx, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
+				Point point4 = {x2 + w, -y2, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty};
+				Point point5 = {x2, -y2 - h, charInfo_[*p].tx, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
+				Point point6 = {x2 + w, -y2 - h, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};			
+
+	            coords_[c++] = point1;
+	            coords_[c++] = point2;
+	            coords_[c++] = point3;
+	            coords_[c++] = point4;
+	            coords_[c++] = point5;
+	            coords_[c++] = point6;
+			}
+
+			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(Point) * coords_.size(), &coords_[0], usage));
+
+			lastText_ = text;
 		}
 
-		pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(Point) * coords.size(), &coords[0], GL_DYNAMIC_DRAW));
+		assert(pVBuffer_ != nullptr);
 
 		GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
 		glEnable(GL_BLEND);
@@ -233,9 +235,9 @@ namespace NSG
 
 		pProgram_->Use();
 			
-		glActiveTexture(GL_TEXTURE1);
+		glActiveTexture(GL_TEXTURE0);
 		Bind();
-		glUniform1i(texture_loc_, 1);
+		glUniform1i(texture_loc_, 0);
 		glUniform4fv(color_loc_, 1, &color[0]);
 
 		pVBuffer_->Bind();
@@ -243,7 +245,7 @@ namespace NSG
 		glEnableVertexAttribArray(position_loc_);
 		glVertexAttribPointer(position_loc_, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glDrawArrays(GL_TRIANGLES, 0, c);
+		glDrawArrays(GL_TRIANGLES, 0, coords_.size());
 
 		glDisableVertexAttribArray(position_loc_);
 

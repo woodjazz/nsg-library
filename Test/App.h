@@ -55,7 +55,9 @@ private:
 	PGLES2Program pProgram_;
 	float x_angle_;
 	float y_angle_;
-	PText pText_;
+	PText pText1_;
+	PText pText2_;
+	PText pText3_;
 	int32_t width_;
 	int32_t height_;
 };

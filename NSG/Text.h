@@ -25,6 +25,8 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
+#include <vector>
+#include <string>
 #include "ft2build.h"
 #include FT_FREETYPE_H
 #include "Resource.h"
@@ -38,13 +40,12 @@ namespace NSG
 	class Text
 	{
 	public:
-		static void Initialize();
 		Text(const char* filename, int fontSize);
 		~Text();
 		GLuint GetId() const { return texture_; }
 		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
 		static void UnBind() { glBindTexture(GL_TEXTURE_2D, 0); }
-		void RenderText(Color color, const char *text, float x, float y, float sx, float sy);
+		void RenderText(Color color, const std::string& text, float x, float y, float sx, float sy, GLenum usage = GL_STATIC_DRAW);
 	private:
 		bool IsReady();
 		void CreateTextureAtlas();
@@ -78,6 +79,16 @@ namespace NSG
 
 		CharacterInfo charInfo_[128];
 
+		struct Point 
+		{
+			GLfloat x;
+			GLfloat y;
+			GLfloat s;
+			GLfloat t;
+		};
+
+		std::vector<Point> coords_;
+		std::string lastText_;
 	};
 
 	typedef std::shared_ptr<Text> PText;

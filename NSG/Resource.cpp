@@ -25,11 +25,12 @@ misrepresented as being the original software.
 */
 #include "Resource.h"
 #include "Log.h"
+#include "IApp.h"
 #include <fstream>
+#include <assert.h>
 #if NACL
 #include "NaCl3DInstance.h"
 #endif
-
 
 namespace NSG
 {
@@ -63,6 +64,7 @@ namespace NSG
 	bool Resource::IsReady()
 	{
 		if(loaded_) return true;
+
 	#if NACL
 		if(!pLoader_->IsDone()) return false;
 		pData_ = (const unsigned char*)(pLoader_->GetData().c_str());
@@ -70,8 +72,12 @@ namespace NSG
 	#elif ANDROID
 		assert(pAAssetManager_ != nullptr);
 		AAsset* pAsset = AAssetManager_open(pAAssetManager_, filename_.c_str(), AASSET_MODE_BUFFER);
-		off_t filelength = AAsset_seek(pAsset, 0, SEEK_END);
-		AAsset_seek(pAsset, 0, SEEK_SET);
+		if(!pAsset)
+		{
+			TRACE_LOG("Cannot open file: " << filename_);
+			return false;
+		}
+		off_t filelength = AAsset_getLength(pAsset);
         buffer_.resize((int)filelength);
         AAsset_read(pAsset, &buffer_[0],filelength);
 		pData_ = (const unsigned char*)buffer_.c_str();
