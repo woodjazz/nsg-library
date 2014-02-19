@@ -69,5 +69,7 @@ private:
 	bool buttonDown_;
 	bool buttonUp_;
 	GLuint selectedIndex_;
+	GLuint selectionFramebuffer_;
+	GLuint selectionColorRenderbuffer_;
 };
 

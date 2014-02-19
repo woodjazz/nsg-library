@@ -56,7 +56,9 @@ x_(0),
 y_(0),
 buttonDown_(false),
 buttonUp_(false),
-selectedIndex_(0)
+selectedIndex_(0),
+selectionFramebuffer_(0),
+selectionColorRenderbuffer_(0)
 {
 }
 
@@ -120,6 +122,14 @@ void App::Start()
     pText1_ = PText(new Text("font/FreeSans.ttf", 24));
     pText2_ = PText(new Text("font/bluebold.ttf", 24));
     pText3_ = PText(new Text("font/FreeSans.ttf", 48));
+
+	glGenFramebuffers(1, &selectionFramebuffer_);
+	glBindFramebuffer(GL_FRAMEBUFFER, selectionFramebuffer_);
+
+	glGenRenderbuffers(1, &selectionColorRenderbuffer_);
+	glBindRenderbuffer(GL_RENDERBUFFER, selectionColorRenderbuffer_);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, 512, 512);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, selectionColorRenderbuffer_);
 }
 
 void App::Update(float delta) 
@@ -140,19 +150,16 @@ void App::RenderFrame()
 {
 	//TRACE_LOG("App::RenderFrame");
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	glClearColor(1, 1, 1, 1);
 	glClearDepth(1);
-	glClearStencil(0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_STENCIL_TEST);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     pCamera1_->Activate();
 
-	glStencilFunc(GL_ALWAYS, 1, -1);
     pMesh_->Render(pNode1_);
-    glStencilFunc(GL_ALWAYS, 2, -1);
     pMesh_->Render(pNode2_);
 
 	float sx = 2.0f / width_;
@@ -177,7 +184,6 @@ void App::RenderFrame()
 
 	pText1_->RenderText(Color(0,0,0,1), ss.str(), -1, 0, sx, sy, GL_DYNAMIC_DRAW);
 
-
     pText1_->RenderText(Color(1,0,0,1), "(-1,-1)", -1, -1, sx, sy, GL_STATIC_DRAW);
     pText2_->RenderText(Color(0,1,0,1), "(-1,1)", -1, 1, sx, sy, GL_STATIC_DRAW);
     pText3_->RenderText(Color(0,0,1,1), "(1,-1)", 1, -1, sx, sy, GL_STATIC_DRAW);
@@ -185,15 +191,15 @@ void App::RenderFrame()
 
     pCamera2_->Activate();
 
-	glStencilFunc(GL_ALWAYS, 3, -1);
     pMesh_->Render(pNode1_);
-    glStencilFunc(GL_ALWAYS, 4, -1);
     pMesh_->Render(pNode2_);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, selectionFramebuffer_);
 
     GLint x = (GLint)((1 + x_)/2.0 * width_);
     GLint y = (GLint)((1 + y_)/2.0 * height_);
 
-    glReadPixels(x, y, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT, &selectedIndex_);
+    glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, &selectedIndex_);
 }
 
 void App::ViewChanged(int32_t width, int32_t height) 
