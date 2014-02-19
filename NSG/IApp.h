@@ -41,11 +41,14 @@ namespace NSG
 	public:
         IApp();
 		virtual ~IApp();
-		virtual void Start() = 0;
-		virtual void Update(float delta) = 0;
-		virtual void LateUpdate() = 0;
+		virtual void Start() {}
+		virtual void Update(float delta) {}
+		virtual void LateUpdate() {}
 		virtual void RenderFrame() = 0;
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;
+        virtual void OnMouseMove(double x, double y) {}
+        virtual void OnMouseDown() {}
+        virtual void OnMouseUp() {}
         static IApp* GetPtrInstance();
 	#if NACL
 		virtual void HandleMessage(const pp::Var& var_message);
@@ -87,6 +90,21 @@ namespace NSG
         void ViewChanged(int32_t width, int32_t height)
         {
             pApp_->ViewChanged(width, height);
+        }
+
+        void OnMouseMove(double x, double y) 
+        {
+            pApp_->OnMouseMove(x, y);
+        }
+
+        void OnMouseDown() 
+        {
+            pApp_->OnMouseDown();
+        }
+
+        void OnMouseUp() 
+        {
+            pApp_->OnMouseUp();
         }
 
         void RenderFrame()

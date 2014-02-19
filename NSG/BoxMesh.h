@@ -38,8 +38,10 @@ namespace NSG
 	class BoxMesh : public Mesh
 	{
 	public:
-		BoxMesh(PGLES2Program pProgram, PGLES2Texture pTexture);
+		BoxMesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage);
 		~BoxMesh();
+		enum Face {FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM};
+		void SetFaceUVs(Face face, const Vertex2& v10, const Vertex2& v00, const Vertex2& v01, const Vertex2& v11, bool redo = true);
 	};
 
 	typedef std::shared_ptr<BoxMesh> PBoxMesh;

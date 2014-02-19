@@ -44,6 +44,10 @@ public:
 	void LateUpdate();
 	void RenderFrame();
 	void ViewChanged(int32_t width, int32_t height);
+	void OnMouseMove(double x, double y);
+    void OnMouseDown();
+    void OnMouseUp();
+
 private:
 	void InternalTask();
 	std::thread thread_;
@@ -60,5 +64,10 @@ private:
 	PText pText3_;
 	int32_t width_;
 	int32_t height_;
+	double x_;
+	double y_;
+	bool buttonDown_;
+	bool buttonUp_;
+	GLuint selectedIndex_;
 };
 

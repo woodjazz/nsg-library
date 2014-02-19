@@ -37,14 +37,14 @@ namespace NSG
 
 	}
 
-	Mesh::Mesh(PGLES2Program pProgram, PGLES2Texture pTexture) 
+	Mesh::Mesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
 	: pProgram_(pProgram),
 	pTexture_(pTexture),
 	texture_loc_(0),
 	position_loc_(0),
 	color_loc_(0),
     mvp_loc_(0),
-	dirty_(false)
+    usage_(usage)
 	{
 		texture_loc_ = pProgram_->GetUniformLocation("u_texture");
 		position_loc_ = pProgram_->GetAttributeLocation("a_position");
@@ -60,29 +60,22 @@ namespace NSG
 	void Mesh::AddVertexData(const VertexData& data)
 	{
 		vertexsData_.push_back(data);
-		dirty_ = true;
 	}
 
 	void Mesh::SetIndices(const Indexes& indexes)
 	{
 		indexes_ = indexes;
-		dirty_ = true;
 	}
 
 	void Mesh::Redo()
 	{
-		if(dirty_)
+		pVBuffer_ = nullptr;
+		pIBuffer_ = nullptr;
+
+		if(!vertexsData_.empty())
 		{
-			pVBuffer_ = nullptr;
-			pIBuffer_ = nullptr;
-
-			if(!vertexsData_.empty())
-			{
-				pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0]));
-				pIBuffer_ = PGLES2IndexBuffer(new GLES2IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0]));
-			}
-
-			dirty_ = false;
+			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0], usage_));
+			pIBuffer_ = PGLES2IndexBuffer(new GLES2IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0], usage_));
 		}
 	}
 

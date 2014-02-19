@@ -45,7 +45,7 @@ namespace NSG
 		GLuint GetId() const { return texture_; }
 		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
 		static void UnBind() { glBindTexture(GL_TEXTURE_2D, 0); }
-		void RenderText(Color color, const std::string& text, float x, float y, float sx, float sy, GLenum usage = GL_STATIC_DRAW);
+		void RenderText(Color color, const std::string& text, float x, float y, float sx, float sy, GLenum usage);
 	private:
 		bool IsReady();
 		void CreateTextureAtlas();

@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
 
 extern void FSMExamples();
 extern void FSMTest();
@@ -50,7 +51,12 @@ y_angle_(0),
 pCamera1_(new Camera(kFovY, kZNear, kZFar)),
 pCamera2_(new Camera(kFovY, kZNear, kZFar)),
 width_(1),
-height_(1)
+height_(1),
+x_(0),
+y_(0),
+buttonDown_(false),
+buttonUp_(false),
+selectedIndex_(0)
 {
 }
 
@@ -83,7 +89,23 @@ void App::Start()
 
 	pProgram_ = PGLES2Program(new GLES2Program(kVertexShaderSource, kFragShaderSource));
 
-	pMesh_ = PBoxMesh(new BoxMesh(pProgram_, PGLES2Texture(new GLES2Texture("cube_example.png"))));
+	pMesh_ = PBoxMesh(new BoxMesh(pProgram_, PGLES2Texture(new GLES2Texture("cube_example.png")), GL_STATIC_DRAW));
+
+	Vertex2 v10(1, 0);
+	Vertex2 v00(0, 0);
+	Vertex2 v01(0, 1);
+	Vertex2 v11(1, 1);
+
+	const float kOffset = 0.333f;
+
+	Vertex2 base(1, 0);
+	pMesh_->SetFaceUVs(BoxMesh::FRONT, (base + v10) * kOffset, (base + v00) * kOffset, (base + v01) * kOffset, (base + v11) * kOffset, false);
+
+	base = Vertex2(1, 2);
+	pMesh_->SetFaceUVs(BoxMesh::BACK, (base + v10) * kOffset, (base + v00) * kOffset, (base + v01) * kOffset, (base + v11) * kOffset, false);
+
+	pMesh_->Redo();
+
 
     pNode1_ = PNode(new Node);
     pNode2_ = PNode(new Node);
@@ -95,8 +117,8 @@ void App::Start()
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 
-    pText1_ = PText(new Text("font/bluebold.ttf", 24));
-    pText2_ = PText(new Text("font/FreeSans.ttf", 24));
+    pText1_ = PText(new Text("font/FreeSans.ttf", 24));
+    pText2_ = PText(new Text("font/bluebold.ttf", 24));
     pText3_ = PText(new Text("font/FreeSans.ttf", 48));
 }
 
@@ -120,25 +142,58 @@ void App::RenderFrame()
 
 	glClearColor(1, 1, 1, 1);
 	glClearDepth(1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearStencil(0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
     pCamera1_->Activate();
 
+	glStencilFunc(GL_ALWAYS, 1, -1);
     pMesh_->Render(pNode1_);
+    glStencilFunc(GL_ALWAYS, 2, -1);
     pMesh_->Render(pNode2_);
 
 	float sx = 2.0f / width_;
     float sy = 2.0f / height_;    
-    pText1_->RenderText(Color(1,0,0,1), "nsg-library", -1 + 8 * sx, 1 - height_ * sy, sx, sy);
-    pText1_->RenderText(Color(1,0,0,1), "nsg-library", 0, 0, 0.01f, 0.01f);
-    pText2_->RenderText(Color(0,0,0,1), "nsg-library", -1 + 8 * sx, 1 - 300 * sy, sx, sy);
-    pText3_->RenderText(Color(0,0,1,1), "nsg-library", -1 + 8 * sx, 1 - 200 * sy, sx, sy);
+
+    std::stringstream ss;
+    ss << "Mouse x=" << x_ << " y=" << y_;
+
+    if(buttonDown_)
+    {
+    	ss << " BDown";
+    }
+    else if(buttonUp_)
+    {
+    	ss << " BUp";
+    }
+
+    if(selectedIndex_ != 0)
+    {
+    	ss << "Selected=" << selectedIndex_;
+    }
+
+	pText1_->RenderText(Color(0,0,0,1), ss.str(), -1, 0, sx, sy, GL_DYNAMIC_DRAW);
+
+
+    pText1_->RenderText(Color(1,0,0,1), "(-1,-1)", -1, -1, sx, sy, GL_STATIC_DRAW);
+    pText2_->RenderText(Color(0,1,0,1), "(-1,1)", -1, 1, sx, sy, GL_STATIC_DRAW);
+    pText3_->RenderText(Color(0,0,1,1), "(1,-1)", 1, -1, sx, sy, GL_STATIC_DRAW);
+    pText3_->RenderText(Color(0,0,1,1), "(1,1)", 1, 1, sx, sy, GL_STATIC_DRAW);
 
     pCamera2_->Activate();
 
+	glStencilFunc(GL_ALWAYS, 3, -1);
     pMesh_->Render(pNode1_);
+    glStencilFunc(GL_ALWAYS, 4, -1);
     pMesh_->Render(pNode2_);
+
+    GLint x = (GLint)((1 + x_)/2.0 * width_);
+    GLint y = (GLint)((1 + y_)/2.0 * height_);
+
+    glReadPixels(x, y, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT, &selectedIndex_);
 }
 
 void App::ViewChanged(int32_t width, int32_t height) 
@@ -154,4 +209,22 @@ void App::ViewChanged(int32_t width, int32_t height)
 		pCamera1_->ViewChanged(width, height);
 		pCamera2_->ViewChanged(width, height);
 	}
+}
+
+void App::OnMouseMove(double x, double y)
+{
+	x_=x;
+	y_=y;
+}
+
+void App::OnMouseDown()
+{
+	buttonDown_ = true;
+	buttonUp_ = false;
+}
+
+void App::OnMouseUp()
+{
+	buttonDown_ = false;
+	buttonUp_ = true;
 }

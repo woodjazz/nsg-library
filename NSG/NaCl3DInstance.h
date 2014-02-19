@@ -3,6 +3,7 @@
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 #include "NSG/IApp.h"
@@ -25,6 +26,7 @@ namespace NSG
 				virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 				virtual void DidChangeView(const pp::View& view);
 				virtual void HandleMessage(const pp::Var& message);
+				virtual bool HandleInputEvent(const pp::InputEvent& event);
 			private:
 				void BeginTick();
 				void DoTick(float delta);
@@ -36,6 +38,8 @@ namespace NSG
 				pp::CompletionCallbackFactory<NaCl3DInstance> callback_factory_;
 				pp::Graphics3D context_;
 				PInternalApp pApp_;
+				int32_t width_;
+				int32_t height_;
 		};
 
 		class Graphics3DModule : public pp::Module 

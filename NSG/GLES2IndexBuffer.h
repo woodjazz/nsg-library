@@ -35,7 +35,7 @@ namespace NSG
 	{
 	public:
 
-		GLES2IndexBuffer(GLsizeiptr size, const GLvoid* data, GLenum usage = GL_STATIC_DRAW);
+		GLES2IndexBuffer(GLsizeiptr size, const GLvoid* data, GLenum usage);
 
 		~GLES2IndexBuffer();
 	};

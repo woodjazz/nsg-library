@@ -5,17 +5,23 @@
 #include "Tick.h"
 #include <memory>
 
+NSG::PInternalApp s_pApp = nullptr;
+static int s_width = 0;
+static int s_height = 0;
+
 namespace NSG
 {
-	PInternalApp s_pApp = nullptr;
-
 	void WindowSizeCB(GLFWwindow* window, int width, int height)
 	{
+		s_width = width;
+		s_height = height;
 		s_pApp->ViewChanged(width, height);
 	}
 
 	void WindowCursorPos(GLFWwindow* window ,double x, double y)
 	{
+		if(s_width > 0 && s_height > 0)
+			s_pApp->OnMouseMove(-1 + 2 * x/s_width, 1 + -2*y/s_height);
 	}
 
 	void WindowScrollWheel (GLFWwindow* window, double x, double y)
@@ -24,6 +30,10 @@ namespace NSG
 
 	void WindowMouseButton(GLFWwindow* window, int button, int action, int modifier)
 	{
+		if(GLFW_PRESS == action)
+			s_pApp->OnMouseDown();
+		else
+			s_pApp->OnMouseUp();
 	}
 
 	void WindowKey(GLFWwindow* window, int key, int scancode, int action, int modifier)
@@ -92,7 +102,7 @@ namespace NSG
 
 		s_pApp->Initialize(30);
 
-		s_pApp->ViewChanged(WIDTH, HEIGHT);
+		WindowSizeCB(window, WIDTH, HEIGHT);
 
 		while (!glfwWindowShouldClose(window))
 		{

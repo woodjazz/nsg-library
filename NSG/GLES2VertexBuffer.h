@@ -34,7 +34,7 @@ namespace NSG
 	{
 	public:
 
-		GLES2VertexBuffer(GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW);
+		GLES2VertexBuffer(GLsizeiptr size, const GLvoid *data, GLenum usage);
 
 		~GLES2VertexBuffer();
 	};

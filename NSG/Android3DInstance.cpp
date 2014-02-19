@@ -45,22 +45,8 @@ int AndroidPrintMessage(const char* format, ...)
 }
 
 
-namespace NSG
-{
-    PInternalApp s_pApp = nullptr;
-}
-/**
- * Our saved state data.
- */
-struct saved_state {
-    float angle;
-    int32_t x;
-    int32_t y;
-};
+static NSG::PInternalApp s_pApp = nullptr;
 
-/**
- * Shared state for our app.
- */
 struct engine 
 {
     struct android_app* app;
@@ -75,7 +61,6 @@ struct engine
     EGLContext context;
     int32_t width;
     int32_t height;
-    struct saved_state state;
     ANativeWindow* window;
     bool configurationChanged;
 };
@@ -98,6 +83,7 @@ static int engine_init_display(struct engine* engine)
     const EGLint attribs[] = 
     {
             EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_STENCIL_SIZE, 8,
             EGL_BLUE_SIZE, 8,
             EGL_GREEN_SIZE, 8,
             EGL_RED_SIZE, 8,
@@ -146,11 +132,10 @@ static int engine_init_display(struct engine* engine)
     engine->surface = surface;
     engine->width = w;
     engine->height = h;
-    engine->state.angle = 0;
 
-    NSG::s_pApp->Initialize(30);
+    s_pApp->Initialize(30);
 
-    NSG::s_pApp->ViewChanged(w, h);
+    s_pApp->ViewChanged(w, h);
 
     return 0;
 }
@@ -180,12 +165,11 @@ static void engine_draw_frame(struct engine* engine)
         {
             engine->configurationChanged = false;
 
-            NSG::s_pApp->ViewChanged(engine->width, engine->height);
+            s_pApp->ViewChanged(engine->width, engine->height);
         }
         else
         {
-            //TRACE_LOG("NO");
-            glClearColor(1, 1, 1, 1);
+            glClearColor(0, 0, 0, 1);
             glClearDepth(1);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glEnable(GL_DEPTH_TEST);            
@@ -193,9 +177,9 @@ static void engine_draw_frame(struct engine* engine)
     }
     else
     {
-        NSG::s_pApp->PerformTick();
+        s_pApp->PerformTick();
 
-        NSG::s_pApp->RenderFrame();
+        s_pApp->RenderFrame();
     }
 
     eglSwapBuffers(engine->display, engine->surface);
@@ -235,17 +219,28 @@ static void engine_term_display(struct engine* engine)
  */
 static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
 {
-    TRACE_LOG("engine_handle_input");
+    //TRACE_LOG("engine_handle_input");
 
-    struct engine* engine = (struct engine*)app->userData;
-
-    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) 
+    if(AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) 
     {
-        engine->animating = 1;
-        engine->state.x = AMotionEvent_getX(event, 0);
-        engine->state.y = AMotionEvent_getY(event, 0);
+        if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN)
+        {
+            s_pApp->OnMouseDown();
+        }
+        else if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_UP)
+        {
+            s_pApp->OnMouseUp();
+        }
+        else if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE)
+        {
+            if(s_engine->width > 0 && s_engine->height > 0)
+            {
+                s_pApp->OnMouseMove(-1 + 2*AMotionEvent_getX(event, 0)/s_engine->width, 1 - 2*AMotionEvent_getY(event, 0)/s_engine->height);
+            }
+        }
         return 1;
     }
+
     return 0;
 }
 
@@ -274,7 +269,7 @@ static void engine_handle_configuration_changed(ANativeActivity *pActivity)
     {
         std::swap(s_engine->width, s_engine->height);
 
-        //NSG::s_pApp->ViewChanged cannot be called here since the real screen rotation has not been performed yet
+        //s_pApp->ViewChanged cannot be called here since the real screen rotation has not been performed yet
     }
 
     TRACE_LOG("screenlong=" << screenlong << " screenSize=" << screenSize << " density=" << density << " w=" << w << " h=" << h);
@@ -290,7 +285,7 @@ static void engine_handle_window_resized(ANativeActivity* activity, ANativeWindo
     
     int32_t h = ANativeWindow_getHeight(window);
 
-    NSG::s_pApp->ViewChanged(w, h);
+    s_pApp->ViewChanged(w, h);
 }
 
 /**
@@ -304,10 +299,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
     {
         case APP_CMD_SAVE_STATE:
             TRACE_LOG("APP_CMD_SAVE_STATE"); 
-            // The system has asked us to save our current state.  Do so.
-            engine->app->savedState = malloc(sizeof(struct saved_state));
-            *((struct saved_state*)engine->app->savedState) = engine->state;
-            engine->app->savedStateSize = sizeof(struct saved_state);
             break;
         case APP_CMD_INIT_WINDOW:
             TRACE_LOG("APP_CMD_INIT_WINDOW"); 
@@ -361,7 +352,7 @@ namespace NSG
 
         pApp->SetAssetManager(state->activity->assetManager);
 
-        NSG::s_pApp = PInternalApp(new InternalApp(pApp));
+        s_pApp = PInternalApp(new InternalApp(pApp));
 
         struct engine engine;
 
@@ -381,14 +372,6 @@ namespace NSG
         engine.sensorManager = ASensorManager_getInstance();
         engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager, ASENSOR_TYPE_ACCELEROMETER);
         engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager, state->looper, LOOPER_ID_USER, NULL, NULL);
-
-        if (state->savedState != NULL) 
-        {
-            // We are starting with a previous saved state; restore from it.
-            engine.state = *(struct saved_state*)state->savedState;
-        }
-
-        // loop waiting for stuff to do.
 
         while (1) 
         {
@@ -432,19 +415,7 @@ namespace NSG
             }
 
             if (engine.animating) 
-            {
-                // Done with events; draw next animation frame.
-                engine.state.angle += .01f;
-                if (engine.state.angle > 1) 
-                {
-                    engine.state.angle = 0;
-                }
-
-                // Drawing is throttled to the screen update rate, so there
-                // is no need to do timing here.
                 engine_draw_frame(&engine);
-
-            }
         }
     }
 }

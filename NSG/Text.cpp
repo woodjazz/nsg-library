@@ -186,8 +186,7 @@ namespace NSG
 		{
 	        size_t length = 6 * text.size();
 
-	        if(length > coords_.size()) 
-	        	coords_.resize(length);
+	        coords_.resize(length);
 
 			int c = 0;
 			for(const char *p = text.c_str(); *p; p++) 

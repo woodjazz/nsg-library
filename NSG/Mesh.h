@@ -52,12 +52,14 @@ namespace NSG
 	class Mesh
 	{
 	public:
-		Mesh(PGLES2Program pProgram, PGLES2Texture pTexture);
+		Mesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage);
 		~Mesh();
 		void Render(PNode pNode);
 		void AddVertexData(const VertexData& data);
 		void SetIndices(const Indexes& indexes);
 		void Redo();
+		typedef std::vector<VertexData> Data;
+		Data& GetVertexData() { return vertexsData_; }
 
 	private:
 		PGLES2Program pProgram_;
@@ -71,10 +73,10 @@ namespace NSG
 		GLuint color_loc_;
         GLuint mvp_loc_;
 
-		std::vector<VertexData> vertexsData_;
+		Data vertexsData_;
 		Indexes indexes_;
 
-		bool dirty_;
+		GLenum usage_;
 	};
 
 	typedef std::shared_ptr<Mesh> PMesh;
