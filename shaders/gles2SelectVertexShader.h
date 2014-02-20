@@ -1,5 +1,6 @@
 #include "gles2VertexCompatibility.h"
 "\
+uniform mat4 u_mvp;\
 attribute vec4 a_position;\
 \
 void main() \

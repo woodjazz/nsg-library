@@ -56,9 +56,7 @@ x_(0),
 y_(0),
 buttonDown_(false),
 buttonUp_(false),
-selectedIndex_(0),
-selectionFramebuffer_(0),
-selectionColorRenderbuffer_(0)
+selectedIndex_(0)
 {
 }
 
@@ -123,13 +121,6 @@ void App::Start()
     pText2_ = PText(new Text("font/bluebold.ttf", 24));
     pText3_ = PText(new Text("font/FreeSans.ttf", 48));
 
-	glGenFramebuffers(1, &selectionFramebuffer_);
-	glBindFramebuffer(GL_FRAMEBUFFER, selectionFramebuffer_);
-
-	glGenRenderbuffers(1, &selectionColorRenderbuffer_);
-	glBindRenderbuffer(GL_RENDERBUFFER, selectionColorRenderbuffer_);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, 512, 512);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, selectionColorRenderbuffer_);
 }
 
 void App::Update(float delta) 
@@ -177,10 +168,7 @@ void App::RenderFrame()
     	ss << " BUp";
     }
 
-    if(selectedIndex_ != 0)
-    {
-    	ss << "Selected=" << selectedIndex_;
-    }
+	ss << " S=" << selectedIndex_;
 
 	pText1_->RenderText(Color(0,0,0,1), ss.str(), -1, 0, sx, sy, GL_DYNAMIC_DRAW);
 
@@ -194,12 +182,14 @@ void App::RenderFrame()
     pMesh_->Render(pNode1_);
     pMesh_->Render(pNode2_);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, selectionFramebuffer_);
+   	StartSelection();
 
-    GLint x = (GLint)((1 + x_)/2.0 * width_);
-    GLint y = (GLint)((1 + y_)/2.0 * height_);
+    pCamera1_->Activate();
 
-    glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, &selectedIndex_);
+    pMesh_->RenderForSelect(pNode1_, 0xFF00);
+    pMesh_->RenderForSelect(pNode2_, 0x12AB);
+
+    selectedIndex_ = EndSelection(x_, y_);
 }
 
 void App::ViewChanged(int32_t width, int32_t height) 
@@ -223,8 +213,11 @@ void App::OnMouseMove(double x, double y)
 	y_=y;
 }
 
-void App::OnMouseDown()
+void App::OnMouseDown(double x, double y)
 {
+	x_=x;
+	y_=y;
+	
 	buttonDown_ = true;
 	buttonUp_ = false;
 }

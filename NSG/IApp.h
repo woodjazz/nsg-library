@@ -33,6 +33,8 @@ misrepresented as being the original software.
 #endif
 
 #include "Tick.h"
+#include "GLES2Program.h"
+#include "Types.h"
 
 namespace NSG 
 {
@@ -47,9 +49,16 @@ namespace NSG
 		virtual void RenderFrame() = 0;
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;
         virtual void OnMouseMove(double x, double y) {}
-        virtual void OnMouseDown() {}
+        virtual void OnMouseDown(double x, double y) {}
         virtual void OnMouseUp() {}
         static IApp* GetPtrInstance();
+        enum SetupStep {START, VIEW_CHANGED};
+        void Setup(SetupStep step);
+        PGLES2Program GetSelectProgram() const { return pSelectProgram_; }
+        void StartSelection();
+        GLushort EndSelection(double screenX, double screenY);
+        void SetViewDimensions(int32_t viewWidth, int32_t viewHeight);
+        static Color TransformSelectedId2Color(GLushort id);
 	#if NACL
 		virtual void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID
@@ -57,6 +66,14 @@ namespace NSG
         AAssetManager* GetAssetManager() { return pAAssetManager_; }
 	#endif
     private:
+        GLushort GetSelectedIndex() const;
+
+        PGLES2Program pSelectProgram_;
+        GLuint selectionFramebuffer_;
+        GLuint selectionColorRenderbuffer_;
+        GLubyte selectedIndex_[4];
+        int32_t viewWidth_;
+        int32_t viewHeight_;
     #if ANDROID        
         AAssetManager* pAAssetManager_;
     #endif
@@ -68,62 +85,21 @@ namespace NSG
     {
         NSG::PApp pApp_;
 
-        InternalApp(NSG::PApp pApp) : pApp_(pApp)
-        {
-        }
-
-        void BeginTick()
-        {
-            pApp_->Start();
-        }
-        
-        void DoTick(float delta)
-        {
-            pApp_->Update(delta);
-        }
-        
-        void EndTick()
-        {
-            pApp_->LateUpdate();
-        }
-
-        void ViewChanged(int32_t width, int32_t height)
-        {
-            pApp_->ViewChanged(width, height);
-        }
-
-        void OnMouseMove(double x, double y) 
-        {
-            pApp_->OnMouseMove(x, y);
-        }
-
-        void OnMouseDown() 
-        {
-            pApp_->OnMouseDown();
-        }
-
-        void OnMouseUp() 
-        {
-            pApp_->OnMouseUp();
-        }
-
-        void RenderFrame()
-        {
-            pApp_->RenderFrame();
-        }
-
+        InternalApp(NSG::PApp pApp);
+        void Initialize(int fps);
+        void BeginTick();
+        void DoTick(float delta);
+        void EndTick();
+        void ViewChanged(int32_t width, int32_t height);
+        void OnMouseMove(double x, double y);
+        void OnMouseDown(double x, double y);
+        void OnMouseUp();
+        void RenderFrame();
 	#if NACL
-		void HandleMessage(const pp::Var& var_message)
-		{
-			pApp_->HandleMessage(var_message);
-		}
+		void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID
-		void SetAssetManager(AAssetManager* pAAssetManager)
-		{
-			pApp_->SetAssetManager(pAAssetManager);
-		}
+		void SetAssetManager(AAssetManager* pAAssetManager);
 	#endif
-
     };
 
     typedef std::shared_ptr<InternalApp> PInternalApp;

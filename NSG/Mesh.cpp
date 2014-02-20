@@ -24,7 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Mesh.h"
-#include "NSG/Log.h"
+#include "Log.h"
+#include "IApp.h"
 
 #include "glm/glm/gtc/matrix_transform.hpp"
 #include "glm/glm/gtc/type_ptr.hpp"
@@ -44,6 +45,9 @@ namespace NSG
 	position_loc_(0),
 	color_loc_(0),
     mvp_loc_(0),
+	select_mvp_loc_(0),
+	select_position_loc_(0),
+	select_color_loc_(0),
     usage_(usage)
 	{
 		texture_loc_ = pProgram_->GetUniformLocation("u_texture");
@@ -51,6 +55,12 @@ namespace NSG
 		texcoord_loc_ = pProgram_->GetAttributeLocation("a_texcoord");
 		color_loc_ = pProgram_->GetAttributeLocation("a_color");
        	mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
+
+       	pSelectProgram_ = IApp::GetPtrInstance()->GetSelectProgram();
+
+       	select_position_loc_ = pSelectProgram_->GetAttributeLocation("a_position");
+		select_color_loc_ = pSelectProgram_->GetUniformLocation("u_color");
+       	select_mvp_loc_ = pSelectProgram_->GetUniformLocation("u_mvp");
 	}
 
 	Mesh::~Mesh() 
@@ -79,34 +89,37 @@ namespace NSG
 		}
 	}
 
-	void Mesh::Render(PNode pNode) 
+	void Mesh::SetModelViewProjection(GLuint mvp_loc, PNode pNode)
 	{
-		if(!pTexture_->IsReady() || !pVBuffer_) 
-			return;
-
 		Camera* pCamera = Camera::GetActiveCamera();
-
-		pProgram_->Use();
 
 		if (pCamera)
 		{
 			Matrix4 matModelViewProjection = pCamera->GetViewProjection() * pNode->GetModelView();
 
-			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));
+			glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));
 		}
 		else
 		{
 			Matrix4 matModelViewProjection = pNode->GetModelView();
 
-			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));			
+			glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));			
 		}
+	}
+
+	void Mesh::Render(PNode pNode) 
+	{
+		if(!pTexture_->IsReady() || !pVBuffer_) 
+			return;
+
+		pProgram_->Use();
+
+		SetModelViewProjection(mvp_loc_, pNode);
 
 		glActiveTexture(GL_TEXTURE0);
 		pTexture_->Bind();
 		glUniform1i(texture_loc_, 0);
 
-
-		//define the attributes of the vertex
 		pVBuffer_->Bind();
 
 		glVertexAttribPointer(position_loc_,
@@ -144,4 +157,35 @@ namespace NSG
         glDisableVertexAttribArray(color_loc_);
         glDisableVertexAttribArray(position_loc_);
 	}
+
+	void Mesh::RenderForSelect(PNode pNode, GLushort id) 
+	{
+		if(!pVBuffer_) 
+			return;
+
+		pSelectProgram_->Use();
+
+		SetModelViewProjection(select_mvp_loc_, pNode);
+
+		pVBuffer_->Bind();
+
+		glVertexAttribPointer(select_position_loc_,
+				3,
+				GL_FLOAT,
+				GL_FALSE,
+				sizeof(VertexData),
+				reinterpret_cast<void*>(offsetof(VertexData, position_)));
+
+		glEnableVertexAttribArray(select_position_loc_);
+
+		Color color = IApp::TransformSelectedId2Color(id);
+		
+		glUniform4fv(select_color_loc_, 1, &color[0]);
+
+		pIBuffer_->Bind();
+
+        glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
+
+        glDisableVertexAttribArray(select_position_loc_);
+	}	
 }

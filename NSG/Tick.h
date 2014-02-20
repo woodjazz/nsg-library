@@ -33,7 +33,7 @@ namespace NSG
 	public:
 		Tick();
 		~Tick();
-		void Initialize(int fps);
+		virtual void Initialize(int fps);
 		void PerformTick();
 		virtual void BeginTick() = 0;
 		virtual void DoTick(float delta) = 0;

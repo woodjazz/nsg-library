@@ -71,6 +71,7 @@ namespace NSG
 					return; // failed.
 				}
 				pApp_->Initialize(30);
+				pApp_->ViewChanged(width_, height_);
 				MainLoop(0);
 			} 
 			else 
@@ -120,7 +121,12 @@ namespace NSG
 
 				case PP_INPUTEVENT_TYPE_MOUSEDOWN:
 				{
-					pApp_->OnMouseDown();
+					if(height_ > 0 && width_ > 0)
+					{
+						pp::MouseInputEvent mouse_event(event);
+
+						pApp_->OnMouseDown(-1 + 2*(double)mouse_event.GetPosition().x()/width_, 1 + -2*(double)mouse_event.GetPosition().y()/height_);
+					}
 					break;
 				}
 

@@ -225,7 +225,10 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event)
     {
         if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN)
         {
-            s_pApp->OnMouseDown();
+            if(s_engine->width > 0 && s_engine->height > 0)
+            {
+                s_pApp->OnMouseDown(-1 + 2*AMotionEvent_getX(event, 0)/s_engine->width, 1 - 2*AMotionEvent_getY(event, 0)/s_engine->height);
+            }
         }
         else if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_UP)
         {
@@ -285,7 +288,7 @@ static void engine_handle_window_resized(ANativeActivity* activity, ANativeWindo
     
     int32_t h = ANativeWindow_getHeight(window);
 
-    s_pApp->ViewChanged(w, h);
+    //s_pApp->ViewChanged(w, h);
 }
 
 /**

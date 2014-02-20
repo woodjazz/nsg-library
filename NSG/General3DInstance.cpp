@@ -31,7 +31,15 @@ namespace NSG
 	void WindowMouseButton(GLFWwindow* window, int button, int action, int modifier)
 	{
 		if(GLFW_PRESS == action)
-			s_pApp->OnMouseDown();
+		{
+			if(s_width > 0 && s_height > 0)
+			{
+				double x;
+                double y;
+				glfwGetCursorPos(window, &x, &y); 
+				s_pApp->OnMouseDown(-1 + 2 * x/s_width, 1 + -2*y/s_height);
+			}
+		}
 		else
 			s_pApp->OnMouseUp();
 	}

@@ -1,8 +1,8 @@
 #include "gles2FragmentCompatibility.h"
 "\
-uniform ivec4 u_id;\
+uniform vec4 u_color;\
 void main()\
 {\
-	gl_FragColor = u_id;\
+	gl_FragColor = u_color;\
 }\
 "

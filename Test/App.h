@@ -45,7 +45,7 @@ public:
 	void RenderFrame();
 	void ViewChanged(int32_t width, int32_t height);
 	void OnMouseMove(double x, double y);
-    void OnMouseDown();
+    void OnMouseDown(double x, double y);
     void OnMouseUp();
 
 private:
@@ -68,8 +68,6 @@ private:
 	double y_;
 	bool buttonDown_;
 	bool buttonUp_;
-	GLuint selectedIndex_;
-	GLuint selectionFramebuffer_;
-	GLuint selectionColorRenderbuffer_;
+	GLushort selectedIndex_;
 };
 
