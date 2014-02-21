@@ -41,26 +41,13 @@ namespace NSG
 	Mesh::Mesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
 	: pProgram_(pProgram),
 	pTexture_(pTexture),
-	texture_loc_(0),
-	position_loc_(0),
-	color_loc_(0),
-    mvp_loc_(0),
-	select_mvp_loc_(0),
-	select_position_loc_(0),
-	select_color_loc_(0),
+	texture_loc_( pProgram_->GetUniformLocation("u_texture")),
+	texcoord_loc_(pProgram_->GetAttributeLocation("a_texcoord")),
+	position_loc_(pProgram_->GetAttributeLocation("a_position")),
+	color_loc_(pProgram_->GetAttributeLocation("a_color")),
+    mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
     usage_(usage)
 	{
-		texture_loc_ = pProgram_->GetUniformLocation("u_texture");
-		position_loc_ = pProgram_->GetAttributeLocation("a_position");
-		texcoord_loc_ = pProgram_->GetAttributeLocation("a_texcoord");
-		color_loc_ = pProgram_->GetAttributeLocation("a_color");
-       	mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
-
-       	pSelectProgram_ = IApp::GetPtrInstance()->GetSelectProgram();
-
-       	select_position_loc_ = pSelectProgram_->GetAttributeLocation("a_position");
-		select_color_loc_ = pSelectProgram_->GetUniformLocation("u_color");
-       	select_mvp_loc_ = pSelectProgram_->GetUniformLocation("u_mvp");
 	}
 
 	Mesh::~Mesh() 
@@ -96,13 +83,11 @@ namespace NSG
 		if (pCamera)
 		{
 			Matrix4 matModelViewProjection = pCamera->GetViewProjection() * pNode->GetModelView();
-
 			glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));
 		}
 		else
 		{
 			Matrix4 matModelViewProjection = pNode->GetModelView();
-
 			glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));			
 		}
 	}
@@ -112,15 +97,16 @@ namespace NSG
 		if(!pTexture_->IsReady() || !pVBuffer_) 
 			return;
 
-		pProgram_->Use();
+		UseProgram useProgram(*pProgram_);
 
 		SetModelViewProjection(mvp_loc_, pNode);
 
 		glActiveTexture(GL_TEXTURE0);
-		pTexture_->Bind();
+		BindTexture binTexture(*pTexture_);
+
 		glUniform1i(texture_loc_, 0);
 
-		pVBuffer_->Bind();
+		BindBuffer bindVBuffer(*pVBuffer_);
 
 		glVertexAttribPointer(position_loc_,
 				3,
@@ -149,43 +135,31 @@ namespace NSG
 		
 		glEnableVertexAttribArray(texcoord_loc_);
 
-		pIBuffer_->Bind();
+		BindBuffer bindIBuffer(*pIBuffer_);
 
         glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
-
-        glDisableVertexAttribArray(texcoord_loc_);
-        glDisableVertexAttribArray(color_loc_);
-        glDisableVertexAttribArray(position_loc_);
 	}
 
-	void Mesh::RenderForSelect(PNode pNode, GLushort id) 
+	void Mesh::RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc) 
 	{
 		if(!pVBuffer_) 
 			return;
 
-		pSelectProgram_->Use();
+		SetModelViewProjection(mvp_loc, pNode);
 
-		SetModelViewProjection(select_mvp_loc_, pNode);
+		BindBuffer bindVBuffer(*pVBuffer_);
 
-		pVBuffer_->Bind();
-
-		glVertexAttribPointer(select_position_loc_,
+		glVertexAttribPointer(position_loc,
 				3,
 				GL_FLOAT,
 				GL_FALSE,
 				sizeof(VertexData),
 				reinterpret_cast<void*>(offsetof(VertexData, position_)));
 
-		glEnableVertexAttribArray(select_position_loc_);
+		glEnableVertexAttribArray(position_loc);
 
-		Color color = IApp::TransformSelectedId2Color(id);
-		
-		glUniform4fv(select_color_loc_, 1, &color[0]);
-
-		pIBuffer_->Bind();
+		BindBuffer bindIBuffer(*pIBuffer_);
 
         glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
-
-        glDisableVertexAttribArray(select_position_loc_);
 	}	
 }

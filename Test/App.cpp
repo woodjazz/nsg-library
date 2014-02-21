@@ -120,7 +120,6 @@ void App::Start()
     pText1_ = PText(new Text("font/FreeSans.ttf", 24));
     pText2_ = PText(new Text("font/bluebold.ttf", 24));
     pText3_ = PText(new Text("font/FreeSans.ttf", 48));
-
 }
 
 void App::Update(float delta) 
@@ -168,12 +167,20 @@ void App::RenderFrame()
     	ss << " BUp";
     }
 
-	ss << " S=" << selectedIndex_;
+	ss << " S=" << std::hex << selectedIndex_;
 
 	pText1_->RenderText(Color(0,0,0,1), ss.str(), -1, 0, sx, sy, GL_DYNAMIC_DRAW);
 
     pText1_->RenderText(Color(1,0,0,1), "(-1,-1)", -1, -1, sx, sy, GL_STATIC_DRAW);
-    pText2_->RenderText(Color(0,1,0,1), "(-1,1)", -1, 1, sx, sy, GL_STATIC_DRAW);
+
+    static float screenWidth = 0;
+    static float screenHeight = 0;
+
+    pText2_->RenderText(Color(0,1,0,1), "(-1,1)", -1, 1-screenHeight, sx, sy, GL_STATIC_DRAW);
+
+	screenWidth = pText2_->GetWidth();
+	screenHeight = pText2_->GetHeight();
+
     pText3_->RenderText(Color(0,0,1,1), "(1,-1)", 1, -1, sx, sy, GL_STATIC_DRAW);
     pText3_->RenderText(Color(0,0,1,1), "(1,1)", 1, 1, sx, sy, GL_STATIC_DRAW);
 
@@ -182,29 +189,35 @@ void App::RenderFrame()
     pMesh_->Render(pNode1_);
     pMesh_->Render(pNode2_);
 
-   	StartSelection();
+	pFrameColorSelection_->Begin(x_, y_);
 
     pCamera1_->Activate();
 
-    pMesh_->RenderForSelect(pNode1_, 0xFF00);
-    pMesh_->RenderForSelect(pNode2_, 0x12AB);
+    pFrameColorSelection_->Render(0xFF00, pMesh_, pNode1_);
+    pFrameColorSelection_->Render(0x12AB, pMesh_, pNode2_);
 
-    selectedIndex_ = EndSelection(x_, y_);
+    pCamera2_->Activate();
+
+    pFrameColorSelection_->Render(0x0001, pMesh_, pNode1_);
+    pFrameColorSelection_->Render(0x0002, pMesh_, pNode2_);
+
+    pFrameColorSelection_->End();
 }
 
 void App::ViewChanged(int32_t width, int32_t height) 
 {
-	if(height > 0)
-	{
-		glViewport(0, 0, width, height);
+	glViewport(0, 0, width, height);
 
-		width_ = width;
-		height_ = height;
+	width_ = width;
+	height_ = height;
 
-		TRACE_LOG("App::ViewChanged width=" << width << " height=" << height);	
-		pCamera1_->ViewChanged(width, height);
-		pCamera2_->ViewChanged(width, height);
-	}
+	pCamera1_->ViewChanged(width, height);
+	pCamera2_->ViewChanged(width, height);
+
+    if(!pFrameColorSelection_)
+        pFrameColorSelection_ = PFrameColorSelection(new FrameColorSelection());
+
+	pFrameColorSelection_->ViewChanged(width, height);
 }
 
 void App::OnMouseMove(double x, double y)
@@ -220,6 +233,8 @@ void App::OnMouseDown(double x, double y)
 	
 	buttonDown_ = true;
 	buttonUp_ = false;
+
+	selectedIndex_ = pFrameColorSelection_->GetSelected();
 }
 
 void App::OnMouseUp()

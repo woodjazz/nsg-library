@@ -33,8 +33,6 @@ misrepresented as being the original software.
 #endif
 
 #include "Tick.h"
-#include "GLES2Program.h"
-#include "Types.h"
 
 namespace NSG 
 {
@@ -52,13 +50,6 @@ namespace NSG
         virtual void OnMouseDown(double x, double y) {}
         virtual void OnMouseUp() {}
         static IApp* GetPtrInstance();
-        enum SetupStep {START, VIEW_CHANGED};
-        void Setup(SetupStep step);
-        PGLES2Program GetSelectProgram() const { return pSelectProgram_; }
-        void StartSelection();
-        GLushort EndSelection(double screenX, double screenY);
-        void SetViewDimensions(int32_t viewWidth, int32_t viewHeight);
-        static Color TransformSelectedId2Color(GLushort id);
 	#if NACL
 		virtual void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID
@@ -66,14 +57,6 @@ namespace NSG
         AAssetManager* GetAssetManager() { return pAAssetManager_; }
 	#endif
     private:
-        GLushort GetSelectedIndex() const;
-
-        PGLES2Program pSelectProgram_;
-        GLuint selectionFramebuffer_;
-        GLuint selectionColorRenderbuffer_;
-        GLubyte selectedIndex_[4];
-        int32_t viewWidth_;
-        int32_t viewHeight_;
     #if ANDROID        
         AAssetManager* pAAssetManager_;
     #endif

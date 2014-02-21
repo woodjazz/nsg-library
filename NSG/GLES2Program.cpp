@@ -107,4 +107,16 @@ namespace NSG
 	{
 		return glGetUniformLocation(id_, name.c_str());
 	}
+
+	UseProgram::UseProgram(GLES2Program& obj)
+	: obj_(obj)
+	{
+		obj.Use();
+	}
+
+	UseProgram::~UseProgram()
+	{
+		glUseProgram(0);
+	}
+
 }

@@ -23,37 +23,42 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2Buffer.h"
-#include <assert.h>
+#pragma once
+#include <memory>
+#include "GLES2Program.h"
+#include "Mesh.h"
+#include "Node.h"
+#include "Types.h"
 
 namespace NSG 
 {
-	GLES2Buffer::GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid* data, GLenum usage)
-	: type_(type)
-	{
-		assert(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER);
+    class FrameColorSelection
+    {
+    public:
+        FrameColorSelection();
+        ~FrameColorSelection();
+        void ViewChanged(int32_t windowWidth, int32_t windowHeight);
+        void Begin(double screenX, double screenY);
+        void End();
+        GLushort GetSelected() const;
+        void Render(GLushort id, PMesh pMesh, PNode pNode);
+    private:
+        Color TransformSelectedId2Color(GLushort id);
+        PGLES2Program pProgram_;
+        GLuint position_loc_;
+        GLuint color_loc_;
+        GLuint mvp_loc_;
+        int32_t windowWidth_;
+        int32_t windowHeight_;
+        GLuint framebuffer_;
+        GLuint colorRenderbuffer_;
+        GLubyte selected_[4];
+        double screenX_;
+        double screenY_;
+        GLint pixelX_;
+        GLint pixelY_;
+    };
 
-		glGenBuffers(1, &id_);
-		
-		glBindBuffer(type, id_);
-
-		glBufferData(type, size, data, usage);
-	}
-
-	GLES2Buffer::~GLES2Buffer()
-	{
-		glDeleteBuffers(1, &id_);
-	}
-
-	BindBuffer::BindBuffer(GLES2Buffer& obj) 
-	: obj_(obj)
-	{
-		obj.Bind();
-	}
-
-	BindBuffer::~BindBuffer()
-	{
-		obj_.UnBind();
-	}
-
+    typedef std::shared_ptr<FrameColorSelection> PFrameColorSelection;
 }
+

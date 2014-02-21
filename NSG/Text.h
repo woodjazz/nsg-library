@@ -44,8 +44,9 @@ namespace NSG
 		~Text();
 		GLuint GetId() const { return texture_; }
 		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
-		static void UnBind() { glBindTexture(GL_TEXTURE_2D, 0); }
 		void RenderText(Color color, const std::string& text, float x, float y, float sx, float sy, GLenum usage);
+		GLfloat GetWidth() const { return screenWidth_; }
+		GLfloat GetHeight() const { return screenHeight_; }
 	private:
 		bool IsReady();
 		void CreateTextureAtlas();
@@ -89,6 +90,8 @@ namespace NSG
 
 		std::vector<Point> coords_;
 		std::string lastText_;
+		GLfloat screenWidth_;
+		GLfloat screenHeight_;
 	};
 
 	typedef std::shared_ptr<Text> PText;

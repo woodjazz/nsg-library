@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "NSG/Camera.h"
 #include "NSG/GLES2Program.h"
 #include "NSG/Text.h"
+#include "NSG/FrameColorSelection.h"
 
 using namespace NSG;
 
@@ -69,5 +70,6 @@ private:
 	bool buttonDown_;
 	bool buttonUp_;
 	GLushort selectedIndex_;
+	PFrameColorSelection pFrameColorSelection_;
 };
 

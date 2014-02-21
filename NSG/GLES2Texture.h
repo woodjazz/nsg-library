@@ -32,19 +32,30 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class BindTexture;
 	class GLES2Texture
 	{
 	public:
 		GLES2Texture(const char* filename);
 		~GLES2Texture();
 		bool IsReady();
+	private:
 		GLuint GetId() const { return texture_; }
 		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
-		static void UnBind() { glBindTexture(GL_TEXTURE_2D, 0); }
-	private:
 		GLuint texture_;
 		PResource pResource_;
+		friend class BindTexture;
 	};
 
 	typedef std::shared_ptr<GLES2Texture> PGLES2Texture;
+
+	class BindTexture
+	{
+	public:
+		BindTexture(GLES2Texture& obj);
+		~BindTexture();
+	private:
+		GLES2Texture& obj_;
+	};
+
 }

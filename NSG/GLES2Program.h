@@ -33,36 +33,36 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
+	class UseProgram;
 	class GLES2Program
 	{
 	public:
 
 		GLES2Program(const char* vShader, const char* fShader);
-
 		GLES2Program(PGLES2VShader pVShader, PGLES2FShader pFShader);
-
 		~GLES2Program();
-
 		void Initialize();
-
-		operator const GLuint() const { return id_; }
-
-		GLuint GetId() const { return id_; }
-
-		void Use() { glUseProgram(id_); }
-
 		GLuint GetAttributeLocation(const std::string& name);
 		GLuint GetUniformLocation(const std::string& name);
-
-
 	private:
-
+		operator const GLuint() const { return id_; }
+		GLuint GetId() const { return id_; }
+		void Use() { glUseProgram(id_); }
 		GLuint id_;
-
 		PGLES2VShader pVShader_;
-
 		PGLES2FShader pFShader_;
+		friend class UseProgram;
 	};
 
 	typedef std::shared_ptr<GLES2Program> PGLES2Program;
+
+	class UseProgram
+	{
+	public:
+		UseProgram(GLES2Program& obj);
+		~UseProgram();
+	private:
+		GLES2Program& obj_;
+	};
+
 }

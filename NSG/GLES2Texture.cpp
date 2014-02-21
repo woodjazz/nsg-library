@@ -49,4 +49,16 @@ namespace NSG
 
 		return pResource_ == nullptr;
 	}
+
+	BindTexture::BindTexture(GLES2Texture& obj)
+	: obj_(obj)
+	{
+		obj.Bind();
+	}
+
+	BindTexture::~BindTexture()
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
 }

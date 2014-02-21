@@ -66,8 +66,10 @@ namespace NSG
 	pProgram_(new GLES2Program(s_vertexShaderSource, s_fragShaderSource)),
 	texture_loc_(pProgram_->GetUniformLocation("u_texture")),
 	position_loc_(pProgram_->GetAttributeLocation("a_position")),
-	color_loc_(pProgram_->GetUniformLocation("u_color"))
-	{
+	color_loc_(pProgram_->GetUniformLocation("u_color")),
+	screenWidth_(0),
+	screenHeight_(0)
+    {
 		memset(charInfo_, 0, sizeof(charInfo_));
 
 		Initialize();
@@ -184,6 +186,8 @@ namespace NSG
 
 		if(lastText_ != text)
 		{
+			screenWidth_ = screenHeight_ = 0;
+
 	        size_t length = 6 * text.size();
 
 	        coords_.resize(length);
@@ -211,7 +215,10 @@ namespace NSG
 				Point point3 = {x2, -y2 - h, charInfo_[*p].tx, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
 				Point point4 = {x2 + w, -y2, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty};
 				Point point5 = {x2, -y2 - h, charInfo_[*p].tx, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
-				Point point6 = {x2 + w, -y2 - h, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};			
+				Point point6 = {x2 + w, -y2 - h, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
+
+				screenWidth_ = std::max(screenWidth_, x);
+				screenHeight_ = std::max(screenHeight_, y);
 
 	            coords_[c++] = point1;
 	            coords_[c++] = point2;
@@ -232,21 +239,21 @@ namespace NSG
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 
-		pProgram_->Use();
+		UseProgram useProgram(*pProgram_);
 			
 		glActiveTexture(GL_TEXTURE0);
 		Bind();
 		glUniform1i(texture_loc_, 0);
 		glUniform4fv(color_loc_, 1, &color[0]);
 
-		pVBuffer_->Bind();
+		BindBuffer bindVBuffer(*pVBuffer_);
 
 		glEnableVertexAttribArray(position_loc_);
 		glVertexAttribPointer(position_loc_, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 		glDrawArrays(GL_TRIANGLES, 0, coords_.size());
 
-		glDisableVertexAttribArray(position_loc_);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		if(!isBlendEnabled)
 			glDisable(GL_BLEND);

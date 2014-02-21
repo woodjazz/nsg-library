@@ -29,25 +29,29 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
+	class BindBuffer;
 	class GLES2Buffer
 	{
 	public:
-
 		GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW);
-
 		~GLES2Buffer();
-
-		GLuint GetId() const { return id_; }
-
-		void Bind() { glBindBuffer(type_, id_); }
-
-		void UnBind() { glBindBuffer(type_, 0); }
-
 	private:
-
+		GLuint GetId() const { return id_; }
+		void Bind() { glBindBuffer(type_, id_); }
+		void UnBind() { glBindBuffer(type_, 0); }
+	private:
 		GLenum type_;
-
 		GLuint id_;
+		friend class BindBuffer;
+	};
+
+	class BindBuffer
+	{
+	public:
+		BindBuffer(GLES2Buffer& obj);
+		~BindBuffer();
+	private:
+		GLES2Buffer& obj_;
 	};
 }
 

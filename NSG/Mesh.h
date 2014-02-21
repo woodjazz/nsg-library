@@ -55,7 +55,7 @@ namespace NSG
 		Mesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage);
 		~Mesh();
 		void Render(PNode pNode);
-		void RenderForSelect(PNode pNode, GLushort id);
+		void RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc);
 		void AddVertexData(const VertexData& data);
 		void SetIndices(const Indexes& indexes);
 		void Redo();
@@ -71,15 +71,10 @@ namespace NSG
 		PGLES2Texture pTexture_;
 
 		GLuint texture_loc_;
-		GLuint position_loc_;
 		GLuint texcoord_loc_;
+		GLuint position_loc_;
 		GLuint color_loc_;
         GLuint mvp_loc_;
-
-		PGLES2Program pSelectProgram_;
-		GLuint select_mvp_loc_;
-        GLuint select_position_loc_;
-        GLuint select_color_loc_;
 
 		Data vertexsData_;
 		Indexes indexes_;
