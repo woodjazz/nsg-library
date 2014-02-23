@@ -50,7 +50,7 @@ extern int AndroidPrintMessage(const char* format, ...);
 	::std::stringstream stream; \
 	stream << msg; \
 	::std::string cmsg = stream.str(); \
-	printf(cmsg.c_str());\
+	printf("%s",cmsg.c_str());\
 	fflush(stdout);\
 }
 #endif
