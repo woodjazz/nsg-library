@@ -74,9 +74,6 @@ endmacro( mark_as_disable_and_internal _var )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_definitions(
-	-DTW_STATIC
-	-DTW_NO_LIB_PRAGMA
-	-DTW_NO_DIRECT3D
 	-DGLEW_STATIC
 )
 
@@ -85,7 +82,6 @@ set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 if(NOT NACL AND NOT ANDROID)
 
 	find_package(OpenGL REQUIRED)
-
 	###########################
 	# glew
 	###########################

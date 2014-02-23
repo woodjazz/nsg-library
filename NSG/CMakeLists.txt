@@ -17,7 +17,11 @@ if(NACL)
 elseif(ANDROID)
 	target_link_libraries(${PROJECT_NAME} soil freetype GLESv2 log android EGL)
 else()
-	target_link_libraries(${PROJECT_NAME} glew freetype soil glfw)
+	if(UNIX AND NOT APPLE)
+		target_link_libraries(${PROJECT_NAME} freetype soil glfw glew ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB})
+	else()
+		target_link_libraries(${PROJECT_NAME} freetype soil glfw glew)		
+	endif()
 endif()
 
 
