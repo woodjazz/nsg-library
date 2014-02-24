@@ -28,8 +28,11 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Node::Node() 
+	Node::Node(PNode pParent) 
+	: scale_(1,1,1),
+	pParent_(pParent)
 	{
+		Update();
 	}
 
 	Node::~Node() 
@@ -48,9 +51,27 @@ namespace NSG
 		Update();
 	}
 
+	void Node::SetScale(const Vertex3& scale)
+	{
+		scale_ = scale;
+		Update();
+	}
+
 	void Node::Update()
 	{
-		matModelView_ = glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_);
+		matModelView_ = glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_) * glm::scale(glm::mat4(1.0f), scale_);
+	}
+
+	const Matrix4&& Node::GetModelView() const 
+	{ 
+		if(pParent_)
+		{
+			matTemporal_ = matModelView_ * pParent_->GetModelView();
+
+			return std::move(matTemporal_);
+		}
+		else
+			return std::move(matModelView_);
 	}
 
 }

@@ -55,6 +55,8 @@ private:
 	PBoxMesh pMesh_;
 	PNode pNode1_;
 	PNode pNode2_;
+	PNode pTextNode0_;
+	PNode pTextNode1_;
 	PCamera pCamera1_;
 	PCamera pCamera2_;
 	PGLES2Program pProgram_;
@@ -71,5 +73,6 @@ private:
 	bool buttonUp_;
 	GLushort selectedIndex_;
 	PFrameColorSelection pFrameColorSelection_;
+	Vertex3 scale_;
 };
 

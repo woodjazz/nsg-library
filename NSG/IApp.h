@@ -50,6 +50,9 @@ namespace NSG
         virtual void OnMouseDown(double x, double y) {}
         virtual void OnMouseUp() {}
         static IApp* GetPtrInstance();
+        void SetViewSize(int32_t width, int32_t height);
+        std::pair<int32_t, int32_t> GetViewSize() const;
+
 	#if NACL
 		virtual void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID
@@ -60,6 +63,8 @@ namespace NSG
     #if ANDROID        
         AAssetManager* pAAssetManager_;
     #endif
+    int32_t width_;
+    int32_t height_;
 	};
 
 	typedef std::shared_ptr<IApp> PApp;

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Text.h"
 #include "Log.h"
+#include "IApp.h"
 #include <algorithm>
 #include <vector>
 
@@ -57,7 +58,7 @@ const char s_vertexShaderSource[] = {
 
 namespace NSG
 {
-	Text::Text(const char* filename, int fontSize)
+	Text::Text(const char* filename, int fontSize, GLenum usage)
 	: fontSize_(fontSize),
 	pResource_(new Resource(filename)),
 	atlasWidth_(0),
@@ -67,8 +68,12 @@ namespace NSG
 	texture_loc_(pProgram_->GetUniformLocation("u_texture")),
 	position_loc_(pProgram_->GetAttributeLocation("a_position")),
 	color_loc_(pProgram_->GetUniformLocation("u_color")),
+	mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
 	screenWidth_(0),
-	screenHeight_(0)
+	screenHeight_(0),
+	usage_(usage),
+	width_(0),
+	height_(0)
     {
 		memset(charInfo_, 0, sizeof(charInfo_));
 
@@ -179,20 +184,37 @@ namespace NSG
 		return pResource_ == nullptr;
 	}
 
-	void Text::RenderText(Color color, const std::string& text, float x, float y, float sx, float sy, GLenum usage) 
+	void Text::Render(PNode pNode, Color color, const std::string& text) 
 	{
 		if(!IsReady() || text.empty())
 			return;
 
-		if(lastText_ != text)
+		auto viewSize = IApp::GetPtrInstance()->GetViewSize();
+
+		if(viewSize.first != width_ || viewSize.second != height_)
 		{
-			screenWidth_ = screenHeight_ = 0;
+			width_ = viewSize.first;
+			height_ = viewSize.second;
+			lastText_.clear();
+			pVBuffer_ = nullptr;
+		}
+
+		if(lastText_ != text && width_ > 0 && height_ > 0)
+		{
+			float x = 0;
+			float y = 0;
+
+			float sx = 2.0/width_;
+		    float sy = 2.0/height_;    
 
 	        size_t length = 6 * text.size();
+
+	        coords_.clear();
 
 	        coords_.resize(length);
 
 			int c = 0;
+
 			for(const char *p = text.c_str(); *p; p++) 
 			{ 
 				float x2 =  x + charInfo_[*p].bl * sx;
@@ -217,9 +239,6 @@ namespace NSG
 				Point point5 = {x2, -y2 - h, charInfo_[*p].tx, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
 				Point point6 = {x2 + w, -y2 - h, charInfo_[*p].tx + charInfo_[*p].bw / atlasWidth_, charInfo_[*p].ty + charInfo_[*p].bh / atlasHeight_};
 
-				screenWidth_ = std::max(screenWidth_, x);
-				screenHeight_ = std::max(screenHeight_, y);
-
 	            coords_[c++] = point1;
 	            coords_[c++] = point2;
 	            coords_[c++] = point3;
@@ -228,34 +247,41 @@ namespace NSG
 	            coords_[c++] = point6;
 			}
 
-			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(Point) * coords_.size(), &coords_[0], usage));
+            screenWidth_ = x;
+            screenHeight_ = y;
+
+			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(Point) * coords_.size(), &coords_[0], usage_));
 
 			lastText_ = text;
 		}
 
-		assert(pVBuffer_ != nullptr);
+		if(pVBuffer_ != nullptr)
+		{
+			GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 
-		GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+			UseProgram useProgram(*pProgram_);
 
-		UseProgram useProgram(*pProgram_);
-			
-		glActiveTexture(GL_TEXTURE0);
-		Bind();
-		glUniform1i(texture_loc_, 0);
-		glUniform4fv(color_loc_, 1, &color[0]);
+			Matrix4 matModelViewProjection = pNode->GetModelView();
+			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));			
+				
+			glActiveTexture(GL_TEXTURE0);
+			Bind();
+			glUniform1i(texture_loc_, 0);
+			glUniform4fv(color_loc_, 1, &color[0]);
 
-		BindBuffer bindVBuffer(*pVBuffer_);
+			BindBuffer bindVBuffer(*pVBuffer_);
 
-		glEnableVertexAttribArray(position_loc_);
-		glVertexAttribPointer(position_loc_, 4, GL_FLOAT, GL_FALSE, 0, 0);
+			glEnableVertexAttribArray(position_loc_);
+			glVertexAttribPointer(position_loc_, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glDrawArrays(GL_TRIANGLES, 0, coords_.size());
+			glDrawArrays(GL_TRIANGLES, 0, coords_.size());
 
-		glBindTexture(GL_TEXTURE_2D, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);
 
-		if(!isBlendEnabled)
-			glDisable(GL_BLEND);
+			if(!isBlendEnabled)
+				glDisable(GL_BLEND);
+		}
 	}	
 }

@@ -31,7 +31,10 @@ namespace NSG
 {
     IApp* s_pIApp = nullptr;
 
-    IApp::IApp()
+    IApp::IApp() 
+    : width_(0),
+    height_(0)
+
     {
 	    assert(s_pIApp == nullptr);
 
@@ -51,6 +54,17 @@ namespace NSG
 	    return s_pIApp;
     }
 
+    void IApp::SetViewSize(int32_t width, int32_t height)
+    {
+        width_ = width;
+        height_ = height;
+    }
+
+    std::pair<int32_t, int32_t> IApp::GetViewSize() const
+    {
+        return std::pair<int32_t, int32_t>(width_, height_);
+    }
+
 #if NACL
     void IApp::HandleMessage(const pp::Var& var_message)
     {
@@ -63,7 +77,8 @@ namespace NSG
     }
 #endif    
 
-    InternalApp::InternalApp(NSG::PApp pApp) : pApp_(pApp)
+    InternalApp::InternalApp(NSG::PApp pApp) 
+    : pApp_(pApp)
     {
     }
 
@@ -90,6 +105,8 @@ namespace NSG
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
     {
+        pApp_->SetViewSize(width, height);
+
         if(width > 0 && height > 0)
         {
             TRACE_LOG("ViewChanged width=" << width << " height=" << height);  

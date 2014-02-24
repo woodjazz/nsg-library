@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2Program.h"
 #include "GLES2VertexBuffer.h"
+#include "Node.h"
 #include "Types.h"
 
 namespace NSG
@@ -40,11 +41,11 @@ namespace NSG
 	class Text
 	{
 	public:
-		Text(const char* filename, int fontSize);
+		Text(const char* filename, int fontSize, GLenum usage);
 		~Text();
 		GLuint GetId() const { return texture_; }
 		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
-		void RenderText(Color color, const std::string& text, float x, float y, float sx, float sy, GLenum usage);
+		void Render(PNode pNode, Color color, const std::string& text);
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }
 	private:
@@ -62,6 +63,7 @@ namespace NSG
 		GLuint position_loc_;
 		GLuint texcoord_loc_;
 		GLuint color_loc_;
+		GLuint mvp_loc_;
 
 		struct CharacterInfo 
 		{
@@ -92,6 +94,9 @@ namespace NSG
 		std::string lastText_;
 		GLfloat screenWidth_;
 		GLfloat screenHeight_;
+		GLenum usage_;
+		int32_t width_;
+		int32_t height_;
 	};
 
 	typedef std::shared_ptr<Text> PText;

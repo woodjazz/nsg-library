@@ -25,26 +25,32 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include "NSG/Types.h"
+#include "Types.h"
 
 namespace NSG
 {
+	class Node;
+
+	typedef std::shared_ptr<Node> PNode;
+
 	class Node
 	{
 	public:
-		Node();
+		Node(PNode pParent = nullptr);
 		~Node();
 		void SetPosition(const Vertex3& position);
 		void SetRotation(const Quaternion& q);
-		const glm::mat4& GetModelView() const { return matModelView_; }
+		void SetScale(const Vertex3& scale);
+		const Matrix4&& GetModelView() const;
 
 	private:
-		void Update();		
-
+		void Update();	
+		mutable Matrix4 matTemporal_;	
 		Matrix4 matModelView_;
 		Vertex3 position_;
 		Quaternion q_;
-	};
+		Vertex3 scale_;
 
-	typedef std::shared_ptr<Node> PNode;
+		PNode pParent_;
+	};
 }

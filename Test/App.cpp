@@ -56,7 +56,8 @@ x_(0),
 y_(0),
 buttonDown_(false),
 buttonUp_(false),
-selectedIndex_(0)
+selectedIndex_(0),
+scale_(1,1,1)
 {
 }
 
@@ -110,6 +111,9 @@ void App::Start()
     pNode1_ = PNode(new Node);
     pNode2_ = PNode(new Node);
 
+	pTextNode0_ = PNode(new Node);
+    pTextNode1_ = PNode(new Node(pTextNode0_));
+
     pNode1_->SetPosition(Vertex3(-2, 0, 0));
     pNode2_->SetPosition(Vertex3(2, 0, 0));
 
@@ -117,9 +121,9 @@ void App::Start()
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 
-    pText1_ = PText(new Text("font/FreeSans.ttf", 24));
-    pText2_ = PText(new Text("font/bluebold.ttf", 24));
-    pText3_ = PText(new Text("font/FreeSans.ttf", 48));
+    pText1_ = PText(new Text("font/FreeSans.ttf", 24, GL_DYNAMIC_DRAW));
+    pText2_ = PText(new Text("font/bluebold.ttf", 24, GL_STATIC_DRAW));
+    pText3_ = PText(new Text("font/FreeSans.ttf", 48, GL_STATIC_DRAW));
 }
 
 void App::Update(float delta) 
@@ -128,7 +132,23 @@ void App::Update(float delta)
 	x_angle_ += glm::pi<float>()/10.0f * delta;
 	y_angle_ += glm::pi<float>()/10.0f * delta;
 	pNode1_->SetRotation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
-	pNode2_->SetRotation(glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	pNode2_->SetRotation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
+	pNode1_->SetScale(scale_);
+
+	static float factor_scale = 1;
+	scale_ -= delta * 0.1f * factor_scale;
+
+	if(scale_.x < 0.1f && factor_scale > 0)
+		factor_scale *= -1;
+	else if(scale_.x > 1 && factor_scale < 0)
+		factor_scale *= -1;
+
+	pTextNode0_->SetPosition(Vertex3(-pText1_->GetWidth()/2, 0, 0));
+	pTextNode1_->SetRotation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
+
+	//pTextNode1_->SetScale(scale_);
+
+
 }
 
 void App::LateUpdate()
@@ -152,9 +172,6 @@ void App::RenderFrame()
     pMesh_->Render(pNode1_);
     pMesh_->Render(pNode2_);
 
-	float sx = 2.0f / width_;
-    float sy = 2.0f / height_;    
-
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;
 
@@ -169,20 +186,17 @@ void App::RenderFrame()
 
 	ss << " S=" << std::hex << selectedIndex_;
 
-	pText1_->RenderText(Color(0,0,0,1), ss.str(), -1, 0, sx, sy, GL_DYNAMIC_DRAW);
+	pText1_->Render(pTextNode1_, Color(0,0,0,1), ss.str());
 
-    pText1_->RenderText(Color(1,0,0,1), "(-1,-1)", -1, -1, sx, sy, GL_STATIC_DRAW);
+    //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");
 
-    static float screenWidth = 0;
-    static float screenHeight = 0;
+    //pText2_->RenderText(Color(0,1,0,1), "(-1,1)");
 
-    pText2_->RenderText(Color(0,1,0,1), "(-1,1)", -1, 1-screenHeight, sx, sy, GL_STATIC_DRAW);
+//	screenWidth = pText2_->GetWidth();
+//	screenHeight = pText2_->GetHeight();
 
-	screenWidth = pText2_->GetWidth();
-	screenHeight = pText2_->GetHeight();
-
-    pText3_->RenderText(Color(0,0,1,1), "(1,-1)", 1, -1, sx, sy, GL_STATIC_DRAW);
-    pText3_->RenderText(Color(0,0,1,1), "(1,1)", 1, 1, sx, sy, GL_STATIC_DRAW);
+    //pText3_->RenderText(Color(0,0,1,1), "(1,-1)");
+    //pText3_->RenderText(Color(0,0,1,1), "(1,1)");
 
     pCamera2_->Activate();
 
