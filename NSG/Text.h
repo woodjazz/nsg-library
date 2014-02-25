@@ -43,8 +43,6 @@ namespace NSG
 	public:
 		Text(const char* filename, int fontSize, GLenum usage);
 		~Text();
-		GLuint GetId() const { return texture_; }
-		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
 		void Render(PNode pNode, Color color, const std::string& text);
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }

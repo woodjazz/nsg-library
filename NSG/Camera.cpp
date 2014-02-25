@@ -48,6 +48,11 @@ namespace NSG
 	{
 	}
 
+	void Camera::Deactivate()
+	{
+		s_pActiveCamera = nullptr;
+	}
+
 	Camera* Camera::GetActiveCamera()
 	{
 		return s_pActiveCamera;
@@ -93,5 +98,19 @@ namespace NSG
 	{
 		matViewProjection_ = matProjection_ * matView_;
 	}
+
+	Matrix4 Camera::GetModelViewProjection(PNode pNode)
+	{
+		if (s_pActiveCamera)
+		{
+			return s_pActiveCamera->GetViewProjection() * pNode->GetModelView();
+		}
+		else
+		{
+			// if no camera then position is in screen coordinates
+			return pNode->GetModelView();
+		}
+	}
+
 
 }

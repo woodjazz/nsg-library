@@ -32,10 +32,13 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	VertexData::VertexData(Vertex3 position, Vertex3 color, Vertex2 uv)
+	VertexData::VertexData()
+	{
+	}
+
+	VertexData::VertexData(Vertex3 position, Color color, Vertex2 uv)
 	: position_(position), color_(color), uv_(uv)
 	{
-
 	}
 
 	Mesh::Mesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
@@ -44,6 +47,7 @@ namespace NSG
 	texture_loc_( pProgram_->GetUniformLocation("u_texture")),
 	texcoord_loc_(pProgram_->GetAttributeLocation("a_texcoord")),
 	position_loc_(pProgram_->GetAttributeLocation("a_position")),
+	normal_loc_(pProgram_->GetAttributeLocation("a_normal")),
 	color_loc_(pProgram_->GetAttributeLocation("a_color")),
     mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
     usage_(usage)
@@ -71,73 +75,142 @@ namespace NSG
 
 		if(!vertexsData_.empty())
 		{
+			assert(indexes_.size() % 3 == 0);
 			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0], usage_));
 			pIBuffer_ = PGLES2IndexBuffer(new GLES2IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0], usage_));
 		}
 	}
 
-	void Mesh::SetModelViewProjection(GLuint mvp_loc, PNode pNode)
+	void Mesh::CalculateFlatNormals()
 	{
-		Camera* pCamera = Camera::GetActiveCamera();
+		for (int i = 0; i < indexes_.size(); i++) 
+		{
+			if ((i % 3) == 2) 
+			{
+				GLushort ia = indexes_[i-2];
+				GLushort ib = indexes_[i-1];
+				GLushort ic = indexes_[i];
+				
+				vertexsData_[ic].normal_ = vertexsData_[ib].normal_ = vertexsData_[ia].normal_ = glm::normalize(glm::cross(
+					vertexsData_[ic].position_ - vertexsData_[ia].position_,
+					vertexsData_[ib].position_ - vertexsData_[ia].position_));
+			}
+		}	
+	}
 
-		if (pCamera)
+	void Mesh::CalculateAverageNormals()
+	{
+		std::vector<int> nb_seen;
+		nb_seen.resize(vertexsData_.size(), 0);
+
+		for (int i = 0; i < indexes_.size(); i+=3) 
 		{
-			Matrix4 matModelViewProjection = pCamera->GetViewProjection() * pNode->GetModelView();
-			glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));
-		}
-		else
-		{
-			Matrix4 matModelViewProjection = pNode->GetModelView();
-			glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));			
-		}
+			GLushort ia = indexes_[i];
+			GLushort ib = indexes_[i+1];
+			GLushort ic = indexes_[i+2];
+
+			glm::vec3 normal = glm::normalize(glm::cross(
+			  vertexsData_[ib].position_ - vertexsData_[ia].position_,
+			  vertexsData_[ic].position_ - vertexsData_[ia].position_));
+
+			int v[3];  v[0] = ia;  v[1] = ib;  v[2] = ic;
+
+			for (int j = 0; j < 3; j++) 
+			{
+				GLushort cur_v = v[j];
+				nb_seen[cur_v]++;
+				if (nb_seen[cur_v] == 1) 
+				{
+					vertexsData_[cur_v].normal_ = normal;
+				} 
+				else 
+				{
+					// average
+					vertexsData_[cur_v].normal_.x = vertexsData_[cur_v].normal_.x * (1.0 - 1.0/nb_seen[cur_v]) + normal.x * 1.0/nb_seen[cur_v];
+					vertexsData_[cur_v].normal_.y = vertexsData_[cur_v].normal_.y * (1.0 - 1.0/nb_seen[cur_v]) + normal.y * 1.0/nb_seen[cur_v];
+					vertexsData_[cur_v].normal_.z = vertexsData_[cur_v].normal_.z * (1.0 - 1.0/nb_seen[cur_v]) + normal.z * 1.0/nb_seen[cur_v];
+					vertexsData_[cur_v].normal_ = glm::normalize(vertexsData_[cur_v].normal_);
+				}
+			}
+		}		
 	}
 
 	void Mesh::Render(PNode pNode) 
 	{
-		if(!pTexture_->IsReady() || !pVBuffer_) 
+		if((pTexture_ && !pTexture_->IsReady()) || !pVBuffer_) 
 			return;
 
 		UseProgram useProgram(*pProgram_);
 
-		SetModelViewProjection(mvp_loc_, pNode);
+		if(mvp_loc_ != -1)
+		{
+			Matrix4 mvp = Camera::GetModelViewProjection(pNode);
+			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
+		}
 
-		glActiveTexture(GL_TEXTURE0);
-		BindTexture binTexture(*pTexture_);
-
-		glUniform1i(texture_loc_, 0);
+		if(texture_loc_ != -1 && pTexture_)
+		{
+			glActiveTexture(GL_TEXTURE0);
+			pTexture_->Bind();
+			glUniform1i(texture_loc_, 0);
+		}
 
 		BindBuffer bindVBuffer(*pVBuffer_);
 
-		glVertexAttribPointer(position_loc_,
-				3,
-				GL_FLOAT,
-				GL_FALSE,
-				sizeof(VertexData),
-				reinterpret_cast<void*>(offsetof(VertexData, position_)));
+		if(position_loc_ != -1)
+		{
+			glVertexAttribPointer(position_loc_,
+					3,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(VertexData),
+					reinterpret_cast<void*>(offsetof(VertexData, position_)));
 
-		glEnableVertexAttribArray(position_loc_);
+			glEnableVertexAttribArray(position_loc_);
+		}
 
-		glVertexAttribPointer(color_loc_,
-				3,
-				GL_FLOAT,
-				GL_FALSE,
-				sizeof(VertexData),
-				reinterpret_cast<void*>(offsetof(VertexData, color_)));
-		
-		glEnableVertexAttribArray(color_loc_);
+		if(normal_loc_ != -1)
+		{
+			glVertexAttribPointer(normal_loc_,
+					3,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(VertexData),
+					reinterpret_cast<void*>(offsetof(VertexData, normal_)));
+			
+			glEnableVertexAttribArray(color_loc_);
+		}
 
-		glVertexAttribPointer(texcoord_loc_,
-				2,
-				GL_FLOAT,
-				GL_FALSE,
-				sizeof(VertexData),
-				reinterpret_cast<void*>(offsetof(VertexData, uv_)));
-		
-		glEnableVertexAttribArray(texcoord_loc_);
+		if(color_loc_ != -1)
+		{
+			glVertexAttribPointer(color_loc_,
+					4,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(VertexData),
+					reinterpret_cast<void*>(offsetof(VertexData, color_)));
+			
+			glEnableVertexAttribArray(color_loc_);
+		}
+
+		if(texcoord_loc_ != -1)
+		{
+			glVertexAttribPointer(texcoord_loc_,
+					2,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(VertexData),
+					reinterpret_cast<void*>(offsetof(VertexData, uv_)));
+			
+			glEnableVertexAttribArray(texcoord_loc_);
+		}
 
 		BindBuffer bindIBuffer(*pIBuffer_);
 
         glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
+        //glDrawElements(GL_LINES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void Mesh::RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc) 
@@ -145,7 +218,8 @@ namespace NSG
 		if(!pVBuffer_) 
 			return;
 
-		SetModelViewProjection(mvp_loc, pNode);
+		Matrix4 mvp = Camera::GetModelViewProjection(pNode);
+		glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
 
 		BindBuffer bindVBuffer(*pVBuffer_);
 
@@ -160,6 +234,6 @@ namespace NSG
 
 		BindBuffer bindIBuffer(*pIBuffer_);
 
-        glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
+        glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);        
 	}	
 }

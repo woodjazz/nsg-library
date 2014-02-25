@@ -31,40 +31,40 @@ namespace NSG
 	: Mesh(pProgram, pTexture, usage)
 	{
 		// +Z
-		AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Vertex3(0.5, 0.0, 0.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Vertex3(0.5, 0.0, 0.0), Vertex2(1.0, 1.0)));
+		AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Color(0.5, 0.0, 0.0, 1.0), Vertex2(0.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Color(0.5, 0.0, 0.0, 1.0), Vertex2(1.0, 1.0)));
 
 		// +X
-		AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Vertex3(0.0, 0.5, 0.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Vertex3(0.0, 0.5, 0.0), Vertex2(1.0, 1.0)));
+		AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Color(0.0, 0.5, 0.0, 1.0), Vertex2(0.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Color(0.0, 0.5, 0.0, 1.0), Vertex2(1.0, 1.0)));
 
 		// +Y
-		AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Vertex3(0.0, 0.0, 0.5), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.5), Vertex2(1.0, 1.0)));
+		AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Color(0.0, 0.0, 0.5, 1.0), Vertex2(0.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Color(0.0, 0.0, 0.5, 1.0), Vertex2(1.0, 1.0)));
 
 	    // -Z
-		AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Vertex3(1.0, 0.0, 0.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Vertex3(1.0, 0.0, 0.0), Vertex2(1.0, 0.0)));
+		AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Color(1.0, 0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Color(1.0, 0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
 
 	    // -X
-		AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Vertex3(0.0, 1.0, 0.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Vertex3(0.0, 1.0, 0.0), Vertex2(1.0, 0.0)));
+		AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Color(0.0, 1.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Color(0.0, 1.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
 
 		// -Y
-		AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(1.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Vertex3(0.0, 0.0, 0.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Vertex3(0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Vertex3(0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
+		AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 1.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Color(0.0, 0.0, 1.0, 1.0), Vertex2(0.0, 0.0)));
+	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Color(0.0, 0.0, 1.0, 1.0), Vertex2(1.0, 0.0)));
 
 
 		const IndexType kCubeIndexes[36] = {

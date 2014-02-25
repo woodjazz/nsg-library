@@ -25,60 +25,18 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include "NSG/Node.h"
+#include "GLES2Program.h"
+#include "GLES2Texture.h"
+#include "Mesh.h"
 
 namespace NSG
 {
-	class Camera;
-
-	typedef std::shared_ptr<Camera> PCamera;
-
-	class Camera
+	class SphereMesh : public Mesh
 	{
 	public:
-		Camera(float fovy, float zNear, float zFar);
-		
-		~Camera();
-
-		static void Deactivate();
-		static Camera* GetActiveCamera();
-		static Matrix4 GetModelViewProjection(PNode pNode);
-
-		void Activate();
-
-		void SetViewport(float xo, float yo, float xf, float yf);
-
-		void ViewChanged(int32_t width, int32_t height);
-
-		void SetLookAt(
-			//Camera position, in World Space
-			const Vertex3& eye, 
-			//Looks at
-			const Vertex3& center, 
-			//Head direction
-			const Vertex3& up);
-
-		const glm::mat4& GetViewProjection() const { return matViewProjection_; }
-
-	private:
-		void Update();		
-
-		Matrix4 matProjection_;
-		Matrix4 matView_;
-		Matrix4 matViewProjection_;
-
-		PNode pNode_;
-
-		float fovy_;
-		float zNear_;
-		float zFar_;
-
-		int32_t width_;
-		int32_t height_;
-
-		float xo_;
-		float yo_;
-		float xf_;
-		float yf_;
+		SphereMesh(Color color, float radius, int slices, int stacks, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage);
+		~SphereMesh();
 	};
+
+	typedef std::shared_ptr<SphereMesh> PSphereMesh;
 }

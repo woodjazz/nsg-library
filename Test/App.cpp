@@ -90,7 +90,9 @@ void App::Start()
 
 	pProgram_ = PGLES2Program(new GLES2Program(kVertexShaderSource, kFragShaderSource));
 
-	pMesh_ = PBoxMesh(new BoxMesh(pProgram_, PGLES2Texture(new GLES2Texture("cube_example.png")), GL_STATIC_DRAW));
+	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
+
+	pMesh_ = PBoxMesh(new BoxMesh(pProgram_, pTexture, GL_STATIC_DRAW));
 
 	Vertex2 v10(1, 0);
 	Vertex2 v00(0, 0);
@@ -107,6 +109,9 @@ void App::Start()
 
 	pMesh_->Redo();
 
+	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
+
+	pSphereMesh_ = PSphereMesh(new SphereMesh(Color(0,0,0,1), 3, 20, 20, pProgram_, pEarthTexture, GL_STATIC_DRAW));
 
     pNode1_ = PNode(new Node);
     pNode2_ = PNode(new Node);
@@ -132,7 +137,7 @@ void App::Update(float delta)
 	x_angle_ += glm::pi<float>()/10.0f * delta;
 	y_angle_ += glm::pi<float>()/10.0f * delta;
 	pNode1_->SetRotation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
-	pNode2_->SetRotation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
+	pNode2_->SetRotation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));// * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 	pNode1_->SetScale(scale_);
 
 	static float factor_scale = 1;
@@ -170,7 +175,7 @@ void App::RenderFrame()
     pCamera1_->Activate();
 
     pMesh_->Render(pNode1_);
-    pMesh_->Render(pNode2_);
+    pSphereMesh_->Render(pNode2_);
 
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;
@@ -186,6 +191,7 @@ void App::RenderFrame()
 
 	ss << " S=" << std::hex << selectedIndex_;
 
+	Camera::Deactivate();
 	pText1_->Render(pTextNode1_, Color(0,0,0,1), ss.str());
 
     //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");

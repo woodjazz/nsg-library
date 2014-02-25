@@ -24,13 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <vector>
 #include <memory>
-#include "NSG/GLES2Program.h"
-#include "NSG/GLES2VertexBuffer.h"
-#include "NSG/GLES2IndexBuffer.h"
-#include "NSG/GLES2Texture.h"
-#include "NSG/Types.h"
+#include "GLES2Program.h"
+#include "GLES2Texture.h"
 #include "Mesh.h"
 
 namespace NSG

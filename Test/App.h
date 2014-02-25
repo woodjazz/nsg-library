@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include <thread>
 #include "NSG/IApp.h"
 #include "NSG/BoxMesh.h"
+#include "NSG/SphereMesh.h"
 #include "NSG/Node.h"
 #include "NSG/Camera.h"
 #include "NSG/GLES2Program.h"
@@ -53,6 +54,7 @@ private:
 	void InternalTask();
 	std::thread thread_;
 	PBoxMesh pMesh_;
+	PSphereMesh pSphereMesh_;
 	PNode pNode1_;
 	PNode pNode2_;
 	PNode pTextNode0_;

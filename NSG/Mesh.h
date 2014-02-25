@@ -39,11 +39,12 @@ namespace NSG
 	struct VertexData
 	{
 		Vertex3 position_;
-		Vertex3 color_;
-		//Vertex3 normal_;
+		Color color_;
+		Vertex3 normal_;
 		Vertex2 uv_;
 
-		VertexData(Vertex3 position, Vertex3 color, Vertex2 uv);
+		VertexData();
+		VertexData(Vertex3 position, Color color, Vertex2 uv);
 	};
 
 	typedef GLubyte IndexType;
@@ -61,10 +62,9 @@ namespace NSG
 		void Redo();
 		typedef std::vector<VertexData> Data;
 		Data& GetVertexData() { return vertexsData_; }
-
+		void CalculateFlatNormals();
+		void CalculateAverageNormals();
 	private:
-		void SetModelViewProjection(GLuint mvp_loc, PNode pNode);
-
 		PGLES2Program pProgram_;
 		PGLES2IndexBuffer pIBuffer_;
 		PGLES2VertexBuffer pVBuffer_;
@@ -73,6 +73,7 @@ namespace NSG
 		GLuint texture_loc_;
 		GLuint texcoord_loc_;
 		GLuint position_loc_;
+		GLuint normal_loc_;
 		GLuint color_loc_;
         GLuint mvp_loc_;
 

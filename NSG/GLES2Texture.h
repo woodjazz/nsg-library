@@ -39,9 +39,9 @@ namespace NSG
 		GLES2Texture(const char* filename);
 		~GLES2Texture();
 		bool IsReady();
+		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
 	private:
 		GLuint GetId() const { return texture_; }
-		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
 		GLuint texture_;
 		PResource pResource_;
 		friend class BindTexture;

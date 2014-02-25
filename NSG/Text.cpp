@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "Text.h"
 #include "Log.h"
 #include "IApp.h"
+#include "Camera.h"
 #include <algorithm>
 #include <vector>
 
@@ -263,11 +264,11 @@ namespace NSG
 
 			UseProgram useProgram(*pProgram_);
 
-			Matrix4 matModelViewProjection = pNode->GetModelView();
-			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(matModelViewProjection));			
-				
+			Matrix4 mvp = Camera::GetModelViewProjection(pNode);
+			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
+
 			glActiveTexture(GL_TEXTURE0);
-			Bind();
+			glBindTexture(GL_TEXTURE_2D, texture_);
 			glUniform1i(texture_loc_, 0);
 			glUniform4fv(color_loc_, 1, &color[0]);
 
