@@ -103,13 +103,27 @@ namespace NSG
 	{
 		if (s_pActiveCamera)
 		{
-			return s_pActiveCamera->GetViewProjection() * pNode->GetModelView();
+			return s_pActiveCamera->GetViewProjection() * pNode->GetModelMatrix();
 		}
 		else
 		{
 			// if no camera then position is in screen coordinates
-			return pNode->GetModelView();
+			return pNode->GetModelMatrix();
 		}
+	}
+
+	const Matrix4& Camera::GetViewProjectionMatrix()
+	{
+		if (s_pActiveCamera)
+		{
+			return s_pActiveCamera->GetViewProjection();
+		}
+		else
+		{
+			static Matrix4 m(1.0f);
+			return m;
+		}
+
 	}
 
 

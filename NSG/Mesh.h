@@ -47,7 +47,7 @@ namespace NSG
 		VertexData(Vertex3 position, Color color, Vertex2 uv);
 	};
 
-	typedef GLubyte IndexType;
+	typedef GLushort IndexType;
 	typedef std::vector<IndexType> Indexes;
 
 	class Mesh
@@ -64,6 +64,8 @@ namespace NSG
 		Data& GetVertexData() { return vertexsData_; }
 		void CalculateFlatNormals();
 		void CalculateAverageNormals();
+		enum Mode {POINTS, LINES, TRIANGLES};
+		void SetMode(Mode mode);
 	private:
 		PGLES2Program pProgram_;
 		PGLES2IndexBuffer pIBuffer_;
@@ -75,12 +77,16 @@ namespace NSG
 		GLuint position_loc_;
 		GLuint normal_loc_;
 		GLuint color_loc_;
+		GLuint model_inv_transp_loc_;
         GLuint mvp_loc_;
+        GLuint m_loc_;
+        GLuint vp_loc_;
 
 		Data vertexsData_;
 		Indexes indexes_;
 
 		GLenum usage_;
+		GLenum mode_;
 	};
 
 	typedef std::shared_ptr<Mesh> PMesh;

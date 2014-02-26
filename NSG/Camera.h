@@ -43,6 +43,7 @@ namespace NSG
 		static void Deactivate();
 		static Camera* GetActiveCamera();
 		static Matrix4 GetModelViewProjection(PNode pNode);
+		static const Matrix4& GetViewProjectionMatrix();
 
 		void Activate();
 

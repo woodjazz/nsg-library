@@ -29,68 +29,80 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	SphereMesh::SphereMesh(Color color, float radius, int slices, int stacks, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
+	SphereMesh::SphereMesh(Color color, float radius, int res, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
 	: Mesh(pProgram, pTexture, usage)
 	{
 		Mesh::Data& data = GetVertexData();
 
-		for (int i=0; i<slices/2.0; i++) 
+		static const float PI = glm::pi<float>();
+		static const float TWO_PI = 2*PI;
+
+		float doubleRes = res*2.f;
+		float polarInc = PI/(res); // ringAngle
+		float azimInc = TWO_PI/(doubleRes); // segAngle 
+
+		Vertex3 vert;
+    	Vertex2 tcoord;
+    
+		for(float i = 0; i < res+1; i++) 
 		{
-			float r = 2*i*radius/(slices-1);
-			
-			for(int j=0; j<stacks; j++) 
-			{
-				float a = 2*glm::pi<float>() / stacks * j;
-				float x = cos(a) * r;
-				float y = sin(a) * r;
-				float z = sqrt(std::max(0.0f, radius*radius - x*x - y*y));
+		    float tr = sin( PI-i * polarInc );
+		    float ny = cos( PI-i * polarInc );
+		    
+		    tcoord.y = i / res;
+		    
+		    for(float j = 0; j <= doubleRes; j++) {
+		        
+		        float nx = tr * sin(j * azimInc);
+		        float nz = tr * cos(j * azimInc);
+		        
+		        tcoord.x = j / (doubleRes);
 
 				VertexData vertexData;
-				vertexData.position_ = Vertex3(x,y,z);
-				vertexData.normal_ = glm::normalize(vertexData.position_);
+				vertexData.normal_ = Vertex3(nx,ny,nz);
+				vertexData.position_ = vertexData.normal_ * radius;
 				vertexData.color_ = color;
-				vertexData.uv_ = Vertex2((glm::atan(vertexData.normal_.y, vertexData.normal_.x) / glm::pi<float>() + 1.0) * 0.5, 
-					(asin(vertexData.normal_.z) / glm::pi<float>() + 0.5));
-
-				//TRACE_LOG("vertexData.position_=" << vertexData.position_.x << "," << vertexData.position_.y << "," << vertexData.position_.x << "\n");
-
+				vertexData.uv_ = tcoord;
+				
 				data.push_back(vertexData);
-			}
+		    }
 		}
+    
+    	Indexes indexes;
 
-		// Mirror the other half with -z, but in the same stack order
-		for (int i=(int)ceil(slices/2.0); i< slices; i++) 
-		{
-			for(int j=0; j<stacks; j++) 
-			{
-				int idx = (slices-1-i) * stacks + j;
-				Vertex3 ov = data[idx].position_;
-
-				VertexData vertexData;
-				vertexData.position_ = Vertex3(ov.x, ov.y, -ov.z);
-				vertexData.normal_ = glm::normalize(vertexData.position_);
-				vertexData.color_ = color;
-				vertexData.uv_ = Vertex2((glm::atan(vertexData.normal_.y, vertexData.normal_.x) / glm::pi<float>() + 1.0) * 0.5, 
-					(asin(vertexData.normal_.z) / glm::pi<float>() + 0.5));
-
-				data.push_back(vertexData);
-			}
-		}
-
-		Indexes indexes;
-
-		for (int i=0; i<slices-1; i++) 
-		{
-			for (int j=0; j<stacks; j++) 
-			{
-				indexes.push_back(   i  * stacks + j);
-				indexes.push_back((i+1) * stacks + j);
-				indexes.push_back(   i  * stacks + (j+1)%stacks);
-				indexes.push_back(   i  * stacks + (j+1)%stacks);
-				indexes.push_back((i+1) * stacks + j);
-				indexes.push_back((i+1) * stacks + (j+1)%stacks);
-			}
-		}	
+	    int nr = doubleRes+1;
+        
+        int index1, index2, index3;
+        
+        for(float iy = 0; iy < res; iy++) 
+        {
+            for(float ix = 0; ix < doubleRes; ix++) 
+            {
+                // first tri //
+                if(iy > 0) 
+                {
+                    index1 = (iy+0) * (nr) + (ix+0);
+                    index2 = (iy+0) * (nr) + (ix+1);
+                    index3 = (iy+1) * (nr) + (ix+0);
+                    
+                    indexes.push_back(index1);
+                    indexes.push_back(index3);
+                    indexes.push_back(index2);
+                }
+                
+                if(iy < res-1 ) 
+                {
+                    // second tri //
+                    index1 = (iy+0) * (nr) + (ix+1);
+                    index2 = (iy+1) * (nr) + (ix+1);
+                    index3 = (iy+1) * (nr) + (ix+0);
+                    
+                    indexes.push_back(index1);
+                    indexes.push_back(index3);
+                    indexes.push_back(index2);
+                }
+            }
+        }
 
 		SetIndices(indexes);
 

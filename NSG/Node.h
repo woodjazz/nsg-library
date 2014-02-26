@@ -41,12 +41,14 @@ namespace NSG
 		void SetPosition(const Vertex3& position);
 		void SetRotation(const Quaternion& q);
 		void SetScale(const Vertex3& scale);
-		const Matrix4&& GetModelView() const;
+		const Matrix4&& GetModelMatrix() const;
+		const Matrix3&& GetModelInvTRanspMatrix() const;
 
 	private:
 		void Update();	
 		mutable Matrix4 matTemporal_;	
-		Matrix4 matModelView_;
+		Matrix4 matModel_;
+		Matrix3 matModelInvTransp_;
 		Vertex3 position_;
 		Quaternion q_;
 		Vertex3 scale_;

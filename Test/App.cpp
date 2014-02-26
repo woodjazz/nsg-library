@@ -42,7 +42,7 @@ namespace
 {
 	const float kFovY = 45.0f;
 	const float kZNear = 1.0f;
-	const float kZFar = 10.0f;
+	const float kZFar = 20.0f;
 }
 
 App::App() 
@@ -82,6 +82,11 @@ static const char kVertexShaderSource[] = {
 #include "shaders/gles2VertexShader.h"
 };
 
+static const char kVertexDiffuseReflectionShaderSource[] = {
+#include "shaders/gles2VertexDiffuseReflectionShader.h"
+};
+
+
 void App::Start() 
 {
 	TRACE_LOG("Start");
@@ -89,12 +94,13 @@ void App::Start()
 	thread_ = std::thread([this](){InternalTask();});	
 
 	pProgram_ = PGLES2Program(new GLES2Program(kVertexShaderSource, kFragShaderSource));
+	pDiffuseProgram_ = PGLES2Program(new GLES2Program(kVertexDiffuseReflectionShaderSource, kFragShaderSource));
 
 	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
 
-	pMesh_ = PBoxMesh(new BoxMesh(pProgram_, pTexture, GL_STATIC_DRAW));
+	pMesh_ = PBoxMesh(new BoxMesh(Color(1,1,1,1), 1,1,1, 2,2,2, pDiffuseProgram_, pTexture, GL_STATIC_DRAW));
 
-	Vertex2 v10(1, 0);
+	/*Vertex2 v10(1, 0);
 	Vertex2 v00(0, 0);
 	Vertex2 v01(0, 1);
 	Vertex2 v11(1, 1);
@@ -108,10 +114,10 @@ void App::Start()
 	pMesh_->SetFaceUVs(BoxMesh::BACK, (base + v10) * kOffset, (base + v00) * kOffset, (base + v01) * kOffset, (base + v11) * kOffset, false);
 
 	pMesh_->Redo();
-
+*/
 	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
 
-	pSphereMesh_ = PSphereMesh(new SphereMesh(Color(0,0,0,1), 3, 20, 20, pProgram_, pEarthTexture, GL_STATIC_DRAW));
+	pSphereMesh_ = PSphereMesh(new SphereMesh(Color(0,0,0,1), 3, 32, pDiffuseProgram_, pEarthTexture, GL_STATIC_DRAW));
 
     pNode1_ = PNode(new Node);
     pNode2_ = PNode(new Node);
@@ -136,9 +142,9 @@ void App::Update(float delta)
 	//TRACE_LOG("App::Update delta = " << delta);
 	x_angle_ += glm::pi<float>()/10.0f * delta;
 	y_angle_ += glm::pi<float>()/10.0f * delta;
-	pNode1_->SetRotation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
-	pNode2_->SetRotation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));// * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
-	pNode1_->SetScale(scale_);
+	pNode1_->SetRotation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)) * glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
+	pNode2_->SetRotation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	//pNode1_->SetScale(scale_);
 
 	static float factor_scale = 1;
 	scale_ -= delta * 0.1f * factor_scale;
@@ -174,6 +180,9 @@ void App::RenderFrame()
 
     pCamera1_->Activate();
 
+    pMesh_->SetMode(Mesh::TRIANGLES);
+    pSphereMesh_->SetMode(Mesh::TRIANGLES);
+
     pMesh_->Render(pNode1_);
     pSphereMesh_->Render(pNode2_);
 
@@ -204,22 +213,26 @@ void App::RenderFrame()
     //pText3_->RenderText(Color(0,0,1,1), "(1,-1)");
     //pText3_->RenderText(Color(0,0,1,1), "(1,1)");
 
+    
     pCamera2_->Activate();
 
+    pMesh_->SetMode(Mesh::LINES);
+    pSphereMesh_->SetMode(Mesh::LINES);
+
     pMesh_->Render(pNode1_);
-    pMesh_->Render(pNode2_);
+    pSphereMesh_->Render(pNode2_);
 
 	pFrameColorSelection_->Begin(x_, y_);
 
     pCamera1_->Activate();
 
     pFrameColorSelection_->Render(0xFF00, pMesh_, pNode1_);
-    pFrameColorSelection_->Render(0x12AB, pMesh_, pNode2_);
+    pFrameColorSelection_->Render(0x12AB, pSphereMesh_, pNode2_);
 
     pCamera2_->Activate();
 
     pFrameColorSelection_->Render(0x0001, pMesh_, pNode1_);
-    pFrameColorSelection_->Render(0x0002, pMesh_, pNode2_);
+    pFrameColorSelection_->Render(0x0002, pSphereMesh_, pNode2_);
 
     pFrameColorSelection_->End();
 }

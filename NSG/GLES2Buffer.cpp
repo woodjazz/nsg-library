@@ -33,11 +33,19 @@ namespace NSG
 	{
 		assert(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER);
 
+        assert(glGetError() == GL_NO_ERROR);
+
 		glGenBuffers(1, &id_);
+
+        assert(glGetError() == GL_NO_ERROR);
 		
 		glBindBuffer(type, id_);
 
+        assert(glGetError() == GL_NO_ERROR);
+
 		glBufferData(type, size, data, usage);
+
+        assert(glGetError() == GL_NO_ERROR);
 	}
 
 	GLES2Buffer::~GLES2Buffer()

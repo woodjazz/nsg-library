@@ -38,5 +38,6 @@ namespace NSG
 	typedef glm::vec2 Vertex2;
 	typedef glm::quat Quaternion;
     typedef glm::mat4 Matrix4;
+    typedef glm::mat3 Matrix3;
     typedef glm::vec4 Color;
 }

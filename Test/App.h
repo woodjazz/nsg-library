@@ -62,6 +62,7 @@ private:
 	PCamera pCamera1_;
 	PCamera pCamera2_;
 	PGLES2Program pProgram_;
+	PGLES2Program pDiffuseProgram_;
 	float x_angle_;
 	float y_angle_;
 	PText pText1_;

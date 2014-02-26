@@ -59,19 +59,25 @@ namespace NSG
 
 	void Node::Update()
 	{
-		matModelView_ = glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_) * glm::scale(glm::mat4(1.0f), scale_);
+		matModel_ = glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_) * glm::scale(glm::mat4(1.0f), scale_);
+		matModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(GetModelMatrix())));
 	}
 
-	const Matrix4&& Node::GetModelView() const 
+	const Matrix4&& Node::GetModelMatrix() const 
 	{ 
 		if(pParent_)
 		{
-			matTemporal_ = matModelView_ * pParent_->GetModelView();
+			matTemporal_ = matModel_ * pParent_->GetModelMatrix();
 
 			return std::move(matTemporal_);
 		}
 		else
-			return std::move(matModelView_);
+			return std::move(matModel_);
+	}
+
+	const Matrix3&& Node::GetModelInvTRanspMatrix() const
+	{
+		return std::move(matModelInvTransp_);	
 	}
 
 }

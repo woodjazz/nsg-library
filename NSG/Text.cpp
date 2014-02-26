@@ -202,6 +202,8 @@ namespace NSG
 
 		if(lastText_ != text && width_ > 0 && height_ > 0)
 		{
+            pVBuffer_ = nullptr;
+
 			float x = 0;
 			float y = 0;
 
@@ -258,6 +260,8 @@ namespace NSG
 
 		if(pVBuffer_ != nullptr)
 		{
+            assert(glGetError() == GL_NO_ERROR);
+
 			GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
@@ -283,6 +287,8 @@ namespace NSG
 
 			if(!isBlendEnabled)
 				glDisable(GL_BLEND);
+
+            assert(glGetError() == GL_NO_ERROR);
 		}
 	}	
 }

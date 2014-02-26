@@ -44,13 +44,17 @@ namespace NSG
 	Mesh::Mesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
 	: pProgram_(pProgram),
 	pTexture_(pTexture),
+    mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
+    m_loc_(pProgram_->GetUniformLocation("u_m")),
+    vp_loc_(pProgram_->GetUniformLocation("u_vp")),
+	model_inv_transp_loc_(pProgram_->GetUniformLocation("u_model_inv_transp")),
 	texture_loc_( pProgram_->GetUniformLocation("u_texture")),
 	texcoord_loc_(pProgram_->GetAttributeLocation("a_texcoord")),
 	position_loc_(pProgram_->GetAttributeLocation("a_position")),
 	normal_loc_(pProgram_->GetAttributeLocation("a_normal")),
 	color_loc_(pProgram_->GetAttributeLocation("a_color")),
-    mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
-    usage_(usage)
+    usage_(usage),
+    mode_(GL_TRIANGLES)
 	{
 	}
 
@@ -78,6 +82,24 @@ namespace NSG
 			assert(indexes_.size() % 3 == 0);
 			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0], usage_));
 			pIBuffer_ = PGLES2IndexBuffer(new GLES2IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0], usage_));
+		}
+	}
+
+	void Mesh::SetMode(Mode mode)
+	{
+		switch(mode)
+		{
+			case POINTS:
+				mode_ = GL_POINTS;
+				break;
+			case LINES:
+				mode_ = GL_LINES;
+				break;
+			case TRIANGLES:
+				mode_ = GL_TRIANGLES;
+				break;
+			default:
+			assert(false);
 		}
 	}
 
@@ -140,12 +162,32 @@ namespace NSG
 		if((pTexture_ && !pTexture_->IsReady()) || !pVBuffer_) 
 			return;
 
+        assert(glGetError() == GL_NO_ERROR);
+
 		UseProgram useProgram(*pProgram_);
 
 		if(mvp_loc_ != -1)
 		{
-			Matrix4 mvp = Camera::GetModelViewProjection(pNode);
-			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
+			Matrix4 m = Camera::GetModelViewProjection(pNode);
+			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
+		}
+
+		if(m_loc_ != -1)
+		{
+			Matrix4 m = pNode->GetModelMatrix();
+			glUniformMatrix4fv(m_loc_, 1, GL_FALSE, glm::value_ptr(m));
+		}
+
+		if(vp_loc_ != -1)
+		{
+			Matrix4 m = Camera::GetViewProjectionMatrix();
+			glUniformMatrix4fv(vp_loc_, 1, GL_FALSE, glm::value_ptr(m));
+		}
+
+		if(model_inv_transp_loc_ != -1)
+		{
+			Matrix3 m = pNode->GetModelInvTRanspMatrix();
+			glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));			
 		}
 
 		if(texture_loc_ != -1 && pTexture_)
@@ -178,7 +220,7 @@ namespace NSG
 					sizeof(VertexData),
 					reinterpret_cast<void*>(offsetof(VertexData, normal_)));
 			
-			glEnableVertexAttribArray(color_loc_);
+			glEnableVertexAttribArray(normal_loc_);
 		}
 
 		if(color_loc_ != -1)
@@ -207,10 +249,11 @@ namespace NSG
 
 		BindBuffer bindIBuffer(*pIBuffer_);
 
-        glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
-        //glDrawElements(GL_LINES, indexes_.size(), GL_UNSIGNED_BYTE, 0);
+        glDrawElements(mode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);
 
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        assert(glGetError() == GL_NO_ERROR);
 	}
 
 	void Mesh::RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc) 
@@ -218,8 +261,10 @@ namespace NSG
 		if(!pVBuffer_) 
 			return;
 
+        assert(glGetError() == GL_NO_ERROR);
+
 		Matrix4 mvp = Camera::GetModelViewProjection(pNode);
-		glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
+		glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp));
 
 		BindBuffer bindVBuffer(*pVBuffer_);
 
@@ -234,6 +279,8 @@ namespace NSG
 
 		BindBuffer bindIBuffer(*pIBuffer_);
 
-        glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_BYTE, 0);        
+        glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_SHORT, 0);   
+
+        assert(glGetError() == GL_NO_ERROR);
 	}	
 }

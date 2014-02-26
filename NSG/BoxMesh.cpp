@@ -27,57 +27,291 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	BoxMesh::BoxMesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
+	BoxMesh::BoxMesh(Color color, float width, float height, float depth, int resX, int resY, int resZ, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
 	: Mesh(pProgram, pTexture, usage)
 	{
-		// +Z
-		AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Color(0.5, 0.0, 0.0, 1.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Color(0.5, 0.0, 0.0, 1.0), Vertex2(1.0, 1.0)));
+		// halves //
+		float halfW = width * .5f;
+		float halfH = height * .5f;
+		float halfD = depth * .5f;
 
-		// +X
-		AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Color(0.0, 0.5, 0.0, 1.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Color(0.0, 0.5, 0.0, 1.0), Vertex2(1.0, 1.0)));
+		Vertex3 vert;
+		Vertex2 texcoord;
+		Vertex3 normal;
+		int vertOffset = 0;
 
-		// +Y
-		AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, +1.0), Color(0.0, 0.0, 0.5, 1.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Color(0.0, 0.0, 0.5, 1.0), Vertex2(1.0, 1.0)));
+		Mesh::Data& data = GetVertexData();
 
-	    // -Z
-		AddVertexData(VertexData(Vertex3(+1.0, +1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Color(1.0, 0.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Color(1.0, 0.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
+		// TRIANGLES //
 
-	    // -X
-		AddVertexData(VertexData(Vertex3(-1.0, +1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Color(0.0, 1.0, 0.0, 1.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, +1.0, -1.0), Color(0.0, 1.0, 0.0, 1.0), Vertex2(1.0, 0.0)));
+		// Front Face //
+		normal = Vertex3(0, 0, 1);
+		// add the vertexes //
+		for(int iy = 0; iy < resY; iy++) 
+		{
+		    for(int ix = 0; ix < resX; ix++) 
+		    {
+		        
+		        // normalized tex coords //
+		        texcoord.x = ((float)ix/((float)resX-1.f));
+		        texcoord.y = ((float)iy/((float)resY-1.f));
+		        
+		        vert.x = texcoord.x * width - halfW;
+		        vert.y = texcoord.y * height - halfH;
+		        vert.z = halfD;
 
-		// -Y
-		AddVertexData(VertexData(Vertex3(+1.0, -1.0, +1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(1.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(+1.0, -1.0, -1.0), Color(0.0, 0.0, 0.0, 1.0), Vertex2(0.0, 1.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, -1.0), Color(0.0, 0.0, 1.0, 1.0), Vertex2(0.0, 0.0)));
-	    AddVertexData(VertexData(Vertex3(-1.0, -1.0, +1.0), Color(0.0, 0.0, 1.0, 1.0), Vertex2(1.0, 0.0)));
+				VertexData vertexData;
+				vertexData.normal_ = normal;
+				vertexData.position_ = vert;
+				vertexData.color_ = color;
+				vertexData.uv_ = texcoord;
+
+				data.push_back(vertexData);
+		    }
+		}
+
+		Indexes indexes;
+
+		for(int y = 0; y < resY-1; y++)
+		{
+		    for(int x = 0; x < resX-1; x++) 
+		    {
+		        // first triangle //
+		        indexes.push_back((y)*resX + x + vertOffset);
+		        indexes.push_back((y)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x + vertOffset);
+		        
+		        // second triangle //
+		        indexes.push_back((y)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x + vertOffset);
+		    }
+		}
+
+		vertOffset = data.size();
 
 
-		const IndexType kCubeIndexes[36] = {
-			2,  1,  0,  3,  2,  0,
-			6,  5,  4,  7,  6,  4,
-			10,  9,  8, 11, 10,  8,
-			14, 13, 12, 15, 14, 12,
-			18, 17, 16, 19, 18, 16,
-			22, 21, 20, 23, 22, 20,
-		};
+		// Right Side Face //
+		normal = Vertex3(1, 0, 0);
+		// add the vertexes //
+		for(int iy = 0; iy < resY; iy++) 
+		{
+		    for(int ix = 0; ix < resZ; ix++) 
+		    {
+		        // normalized tex coords //
+		        texcoord.x = ((float)ix/((float)resZ-1.f));
+		        texcoord.y = ((float)iy/((float)resY-1.f));
+		        
+		        //vert.x = texcoord.x * width - halfW;
+		        vert.x = halfW;
+		        vert.y = texcoord.y * height - halfH;
+		        vert.z = texcoord.x * -depth + halfD;
+		        
+				VertexData vertexData;
+				vertexData.normal_ = normal;
+				vertexData.position_ = vert;
+				vertexData.color_ = color;
+				vertexData.uv_ = texcoord;
 
-	    Indexes indexes;
-	    indexes.insert(indexes.end(), &kCubeIndexes[0], &kCubeIndexes[sizeof(kCubeIndexes)/sizeof(IndexType)]);
+				data.push_back(vertexData);
+		    }
+		}
+
+		for(int y = 0; y < resY-1; y++) 
+		{
+		    for(int x = 0; x < resZ-1; x++) 
+		    {
+		        // first triangle //
+		        indexes.push_back((y)*resZ + x + vertOffset);
+		        indexes.push_back((y)*resZ + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resZ + x + vertOffset);
+		        
+		        // second triangle //
+		        indexes.push_back((y)*resZ + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resZ + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resZ + x + vertOffset);
+		    }
+		}
+
+		vertOffset = data.size();
+
+		// Left Side Face //
+		normal = Vertex3(-1, 0, 0);
+		// add the vertexes //
+		for(int iy = 0; iy < resY; iy++) 
+		{
+		    for(int ix = 0; ix < resZ; ix++) 
+		    {
+		        
+		        // normalized tex coords //
+		        texcoord.x = ((float)ix/((float)resZ-1.f));
+		        texcoord.y = ((float)iy/((float)resY-1.f));
+		        
+		        //vert.x = texcoord.x * width - halfW;
+		        vert.x = -halfW;
+		        vert.y = texcoord.y * height - halfH;
+		        vert.z = texcoord.x * depth - halfD;
+		        
+				VertexData vertexData;
+				vertexData.normal_ = normal;
+				vertexData.position_ = vert;
+				vertexData.color_ = color;
+				vertexData.uv_ = texcoord;
+
+				data.push_back(vertexData);
+		    }
+		}
+
+		for(int y = 0; y < resY-1; y++) 
+		{
+		    for(int x = 0; x < resZ-1; x++) 
+		    {
+		        // first triangle //
+		        indexes.push_back((y)*resZ + x + vertOffset);
+		        indexes.push_back((y)*resZ + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resZ + x + vertOffset);
+		        
+		        // second triangle //
+		        indexes.push_back((y)*resZ + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resZ + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resZ + x + vertOffset);
+		    }
+		}
+
+		vertOffset = data.size();
+
+
+		// Back Face //
+		normal = Vertex3(0, 0, -1);
+		// add the vertexes //
+		for(int iy = 0; iy < resY; iy++) 
+		{
+		    for(int ix = 0; ix < resX; ix++) 
+		    {
+		        
+		        // normalized tex coords //
+		        texcoord.x = ((float)ix/((float)resX-1.f));
+		        texcoord.y = ((float)iy/((float)resY-1.f));
+		        
+		        vert.x = texcoord.x * -width + halfW;
+		        vert.y = texcoord.y * height - halfH;
+		        vert.z = -halfD;
+		        
+				VertexData vertexData;
+				vertexData.normal_ = normal;
+				vertexData.position_ = vert;
+				vertexData.color_ = color;
+				vertexData.uv_ = texcoord;
+
+				data.push_back(vertexData);
+		    }
+		}
+
+		for(int y = 0; y < resY-1; y++) 
+		{
+		    for(int x = 0; x < resX-1; x++) 
+		    {
+		        // first triangle //
+		        indexes.push_back((y)*resX + x + vertOffset);
+		        indexes.push_back((y)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x + vertOffset);
+		        
+		        // second triangle //
+		        indexes.push_back((y)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x + vertOffset);
+		    }
+		}
+
+		vertOffset = data.size();
+
+		// Top Face //
+		normal = Vertex3(0, -1, 0);
+		// add the vertexes //
+		for(int iy = 0; iy < resZ; iy++) 
+		{
+		    for(int ix = 0; ix < resX; ix++) 
+		    {
+		        
+		        // normalized tex coords //
+		        texcoord.x = ((float)ix/((float)resX-1.f));
+		        texcoord.y = ((float)iy/((float)resZ-1.f));
+		        
+		        vert.x = texcoord.x * width - halfW;
+		        //vert.y = texcoord.y * height - halfH;
+		        vert.y = -halfH;
+		        vert.z = texcoord.y * depth - halfD;
+		        
+				VertexData vertexData;
+				vertexData.normal_ = normal;
+				vertexData.position_ = vert;
+				vertexData.color_ = color;
+				vertexData.uv_ = texcoord;
+
+				data.push_back(vertexData);
+		    }
+		}
+
+		for(int y = 0; y < resZ-1; y++) 
+		{
+		    for(int x = 0; x < resX-1; x++) 
+		    {
+		        // first triangle //
+		        indexes.push_back((y)*resX + x + vertOffset);
+		        indexes.push_back((y)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x + vertOffset);
+		        
+		        // second triangle //
+		        indexes.push_back((y)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x + vertOffset);
+		    }
+		}
+
+		vertOffset = data.size();
+
+		// Bottom Face //
+		normal = Vertex3(0, 1, 0);
+		// add the vertexes //
+		for(int iy = 0; iy < resZ; iy++) 
+		{
+		    for(int ix = 0; ix < resX; ix++) 
+		    {
+		        // normalized tex coords //
+		        texcoord.x = ((float)ix/((float)resX-1.f));
+		        texcoord.y = ((float)iy/((float)resZ-1.f));
+		        
+		        vert.x = texcoord.x * width - halfW;
+		        //vert.y = texcoord.y * height - halfH;
+		        vert.y = halfH;
+		        vert.z = texcoord.y * -depth + halfD;
+		        
+				VertexData vertexData;
+				vertexData.normal_ = normal;
+				vertexData.position_ = vert;
+				vertexData.color_ = color;
+				vertexData.uv_ = texcoord;
+
+				data.push_back(vertexData);
+		    }
+		}
+
+		for(int y = 0; y < resZ-1; y++) 
+		{
+		    for(int x = 0; x < resX-1; x++) 
+		    {
+		        // first triangle //
+		        indexes.push_back((y)*resX + x + vertOffset);
+		        indexes.push_back((y)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x + vertOffset);
+		        
+		        // second triangle //
+		        indexes.push_back((y)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x+1 + vertOffset);
+		        indexes.push_back((y+1)*resX + x + vertOffset);
+		    }
+		}
+
 	    SetIndices(indexes);
 	    Redo();
 	}

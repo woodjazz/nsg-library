@@ -34,7 +34,7 @@ namespace NSG
 	class SphereMesh : public Mesh
 	{
 	public:
-		SphereMesh(Color color, float radius, int slices, int stacks, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage);
+		SphereMesh(Color color, float radius, int res, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage);
 		~SphereMesh();
 	};
 
