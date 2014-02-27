@@ -36,6 +36,8 @@ namespace NSG
 
 	GLES2Shader::GLES2Shader(GLenum type, const char* source)
 	{
+        assert(glGetError() == GL_NO_ERROR);
+
 		// Creates a Shader Object and returns its name/id.
 		id_ = glCreateShader(type);
 
@@ -46,7 +48,7 @@ namespace NSG
 		glCompileShader(id_);
 
 		GLint compile_status = GL_FALSE;
-		
+
 		glGetShaderiv(id_, GL_COMPILE_STATUS, &compile_status);
 
 		if(compile_status != GL_TRUE)
@@ -76,6 +78,8 @@ namespace NSG
 				assert(false);
 			}
 		}
+
+        assert(glGetError() == GL_NO_ERROR);
 	}
 
 	GLES2Shader::~GLES2Shader()

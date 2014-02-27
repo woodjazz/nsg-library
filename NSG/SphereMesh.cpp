@@ -29,8 +29,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	SphereMesh::SphereMesh(Color color, float radius, int res, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
-	: Mesh(pProgram, pTexture, usage)
+	SphereMesh::SphereMesh(Color color, float radius, int res, PGLES2Material pMaterial, GLenum usage) 
+	: Mesh(pMaterial, usage)
 	{
 		Mesh::Data& data = GetVertexData();
 

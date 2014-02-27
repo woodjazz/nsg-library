@@ -25,8 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include "GLES2Program.h"
-#include "GLES2Texture.h"
+#include "GLES2Material.h"
 #include "Mesh.h"
 
 namespace NSG
@@ -34,7 +33,7 @@ namespace NSG
 	class SphereMesh : public Mesh
 	{
 	public:
-		SphereMesh(Color color, float radius, int res, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage);
+		SphereMesh(Color color, float radius, int res, PGLES2Material pMaterial, GLenum usage);
 		~SphereMesh();
 	};
 

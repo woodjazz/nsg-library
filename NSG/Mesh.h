@@ -26,10 +26,9 @@ misrepresented as being the original software.
 #pragma once
 #include <vector>
 #include <memory>
-#include "NSG/GLES2Program.h"
+#include "NSG/GLES2Material.h"
 #include "NSG/GLES2VertexBuffer.h"
 #include "NSG/GLES2IndexBuffer.h"
-#include "NSG/GLES2Texture.h"
 #include "NSG/Types.h"
 #include "Camera.h"
 #include "Node.h"
@@ -53,7 +52,7 @@ namespace NSG
 	class Mesh
 	{
 	public:
-		Mesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage);
+		Mesh(PGLES2Material pMaterial, GLenum usage);
 		~Mesh();
 		void Render(PNode pNode);
 		void RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc);
@@ -62,31 +61,21 @@ namespace NSG
 		void Redo();
 		typedef std::vector<VertexData> Data;
 		Data& GetVertexData() { return vertexsData_; }
-		void CalculateFlatNormals();
-		void CalculateAverageNormals();
 		enum Mode {POINTS, LINES, TRIANGLES};
 		void SetMode(Mode mode);
 	private:
-		PGLES2Program pProgram_;
+		PGLES2Material pMaterial_;
 		PGLES2IndexBuffer pIBuffer_;
 		PGLES2VertexBuffer pVBuffer_;
-		PGLES2Texture pTexture_;
-
-		GLuint texture_loc_;
 		GLuint texcoord_loc_;
 		GLuint position_loc_;
 		GLuint normal_loc_;
 		GLuint color_loc_;
-		GLuint model_inv_transp_loc_;
-        GLuint mvp_loc_;
-        GLuint m_loc_;
-        GLuint vp_loc_;
-
 		Data vertexsData_;
 		Indexes indexes_;
-
 		GLenum usage_;
 		GLenum mode_;
+        bool loaded_;
 	};
 
 	typedef std::shared_ptr<Mesh> PMesh;

@@ -27,8 +27,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	BoxMesh::BoxMesh(Color color, float width, float height, float depth, int resX, int resY, int resZ, PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
-	: Mesh(pProgram, pTexture, usage)
+	BoxMesh::BoxMesh(Color color, float width, float height, float depth, int resX, int resY, int resZ, PGLES2Material pMaterial, GLenum usage) 
+	: Mesh(pMaterial, usage)
 	{
 		// halves //
 		float halfW = width * .5f;
@@ -318,62 +318,5 @@ namespace NSG
 
 	BoxMesh::~BoxMesh() 
 	{
-	}
-
-	void BoxMesh::SetFaceUVs(Face face, const Vertex2& v10, const Vertex2& v00, const Vertex2& v01, const Vertex2& v11, bool redo)
-	{
-		auto& vertexData = GetVertexData();
-
-		switch(face)
-		{
-			case FRONT:
-				vertexData[0].uv_ = v10;
-				vertexData[1].uv_ = v00;
-				vertexData[2].uv_ = v01;
-				vertexData[3].uv_ = v11;
-				break;
-
-			case RIGHT:
-				vertexData[4].uv_ = v10;
-				vertexData[5].uv_ = v00;
-				vertexData[6].uv_ = v01;
-				vertexData[7].uv_ = v11;
-				break;
-
-			case TOP:
-				vertexData[8].uv_  = v10;
-				vertexData[9].uv_  = v00;
-				vertexData[10].uv_ = v01;
-				vertexData[11].uv_ = v11;
-				break;
-				
-
-			case BACK:
-				vertexData[12].uv_ = v11;
-				vertexData[13].uv_ = v01;
-				vertexData[14].uv_ = v00;
-				vertexData[15].uv_ = v10;
-				break;
-
-			case LEFT:
-				vertexData[16].uv_ = v11;
-				vertexData[17].uv_ = v01;
-				vertexData[18].uv_ = v00;
-				vertexData[19].uv_ = v10;
-				break;
-
-			case BOTTOM:
-				vertexData[20].uv_ = v11;
-				vertexData[21].uv_ = v01;
-				vertexData[22].uv_ = v00;
-				vertexData[23].uv_ = v10;
-				break;
-
-			default:
-				assert(false);
-		}
-
-		if(redo)
-			Redo();
 	}
 }

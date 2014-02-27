@@ -37,11 +37,7 @@ namespace NSG
 
 		glGenBuffers(1, &id_);
 
-        assert(glGetError() == GL_NO_ERROR);
-		
 		glBindBuffer(type, id_);
-
-        assert(glGetError() == GL_NO_ERROR);
 
 		glBufferData(type, size, data, usage);
 

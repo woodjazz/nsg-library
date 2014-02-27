@@ -103,7 +103,7 @@ namespace NSG
 	{
 		if (s_pActiveCamera)
 		{
-			return s_pActiveCamera->GetViewProjection() * pNode->GetModelMatrix();
+			return s_pActiveCamera->matViewProjection_ * pNode->GetModelMatrix();
 		}
 		else
 		{
@@ -116,7 +116,7 @@ namespace NSG
 	{
 		if (s_pActiveCamera)
 		{
-			return s_pActiveCamera->GetViewProjection();
+			return s_pActiveCamera->matViewProjection_;
 		}
 		else
 		{

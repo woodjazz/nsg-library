@@ -25,7 +25,8 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include "NSG/Node.h"
+#include "Types.h"
+#include "Node.h"
 
 namespace NSG
 {
@@ -37,46 +38,26 @@ namespace NSG
 	{
 	public:
 		Camera(float fovy, float zNear, float zFar);
-		
 		~Camera();
-
+		void SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
 		static void Deactivate();
 		static Camera* GetActiveCamera();
 		static Matrix4 GetModelViewProjection(PNode pNode);
 		static const Matrix4& GetViewProjectionMatrix();
-
 		void Activate();
-
 		void SetViewport(float xo, float yo, float xf, float yf);
-
 		void ViewChanged(int32_t width, int32_t height);
-
-		void SetLookAt(
-			//Camera position, in World Space
-			const Vertex3& eye, 
-			//Looks at
-			const Vertex3& center, 
-			//Head direction
-			const Vertex3& up);
-
-		const glm::mat4& GetViewProjection() const { return matViewProjection_; }
 
 	private:
 		void Update();		
-
-		Matrix4 matProjection_;
 		Matrix4 matView_;
+		Matrix4 matProjection_;
 		Matrix4 matViewProjection_;
-
-		PNode pNode_;
-
 		float fovy_;
 		float zNear_;
 		float zFar_;
-
 		int32_t width_;
 		int32_t height_;
-
 		float xo_;
 		float yo_;
 		float xf_;

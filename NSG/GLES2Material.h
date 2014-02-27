@@ -24,39 +24,58 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+
+#include "GLES2Includes.h"
+#include "GLES2Texture.h"
+#include "GLES2Program.h"
+#include "Node.h"
 #include <memory>
-#include "Types.h"
+
 
 namespace NSG
 {
-	class Node;
-
-	typedef std::shared_ptr<Node> PNode;
-
-	class Node
+	class UseMaterial;
+	class GLES2Material
 	{
 	public:
-		Node(PNode pParent = nullptr);
-		~Node();
-		virtual void OnUpdate() {}
-		void SetPosition(const Vertex3& position);
-		void SetOrientation(const Quaternion& q);
-		void SetScale(const Vertex3& scale);
-		void SetGlobalPosition(const Vertex3& position);
-		void SetGlobalOrientation(const Quaternion& q);
-		Vertex3 GetGlobalPosition() const;
-		const Matrix4& GetModelMatrix() const;
-		const Matrix3& GetModelInvTranspMatrix() const;
-		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
+		GLES2Material(PGLES2Texture pTexture, PGLES2Program pProgram);
+		~GLES2Material();
+		bool IsReady();
+		GLuint GetTextCoordAttLocation() { return texcoord_loc_; }
+		GLuint GetPositionAttLocation() { return position_loc_; }
+		GLuint GetNormalAttLocation() { return normal_loc_; }
+		GLuint GetColorAttLocation() { return color_loc_; }
+		void SetDiffuseColor(Color diffuse);
 	private:
-		void Update();	
-		mutable Matrix4 matTemporal_;	
-		Matrix4 matModel_;
-		Matrix3 matModelInvTransp_;
-		Vertex3 position_;
-		Quaternion q_;
-		Vertex3 scale_;
+		PGLES2Texture pTexture_;
+		PGLES2Program pProgram_;
 
-		PNode pParent_;
+		GLuint color_difusse_loc_;
+		GLuint texture_loc_;
+		GLuint texcoord_loc_;
+		GLuint position_loc_;
+		GLuint normal_loc_;
+		GLuint color_loc_;
+		GLuint model_inv_transp_loc_;
+        GLuint mvp_loc_;
+        GLuint m_loc_;
+        bool loaded_;
+
+        Color diffuse_;
+
+		friend class UseMaterial;
 	};
+
+	typedef std::shared_ptr<GLES2Material> PGLES2Material;
+
+	class UseMaterial
+	{
+	public:
+		UseMaterial(GLES2Material& obj, PNode pNode);
+		~UseMaterial();
+	private:
+		GLES2Material& obj_;
+		UseProgram useProgram_;
+	};
+
 }

@@ -30,7 +30,6 @@ misrepresented as being the original software.
 #include "NSG/SphereMesh.h"
 #include "NSG/Node.h"
 #include "NSG/Camera.h"
-#include "NSG/GLES2Program.h"
 #include "NSG/Text.h"
 #include "NSG/FrameColorSelection.h"
 
@@ -53,6 +52,7 @@ public:
 private:
 	void InternalTask();
 	std::thread thread_;
+	PGLES2Material pMaterial2_;
 	PBoxMesh pMesh_;
 	PSphereMesh pSphereMesh_;
 	PNode pNode1_;
@@ -61,8 +61,6 @@ private:
 	PNode pTextNode1_;
 	PCamera pCamera1_;
 	PCamera pCamera2_;
-	PGLES2Program pProgram_;
-	PGLES2Program pDiffuseProgram_;
 	float x_angle_;
 	float y_angle_;
 	PText pText1_;

@@ -28,12 +28,28 @@ misrepresented as being the original software.
 #include <stdio.h>
 #include <malloc.h>
 #include <assert.h>
-
+#include <cstring>
+#include <string>
 #include "GLES2Program.h"
 #include "Log.h"
 
+static const char s_fragmentShaderHeader[] = {
+#include "shaders/gles2FragmentCompatibility.h"
+};
+
+static const char s_vertexShaderHeader[] = {
+#include "shaders/gles2VertexCompatibility.h"
+};
+
 namespace NSG 
 {
+	GLES2Program::GLES2Program(PResource pRVShader, PResource pRFShader)
+	: pRVShader_(pRVShader),
+	pRFShader_(pRFShader)
+	{
+		assert(pRVShader && pRFShader);
+	}
+
 	GLES2Program::GLES2Program(const char* vShader, const char* fShader)
 	: pVShader_(new GLES2VShader(vShader)),
 		pFShader_(new GLES2FShader(fShader))
@@ -49,8 +65,39 @@ namespace NSG
 		Initialize();
 	}
 
+	bool GLES2Program::IsReady()
+	{
+		if(pRVShader_)
+		{
+			if(pRVShader_->IsReady() && pRFShader_->IsReady())
+			{
+				std::string vbuffer;
+				size_t vHeaderSize = strlen(s_vertexShaderHeader);
+				size_t fHeaderSize = strlen(s_fragmentShaderHeader);
+				vbuffer.resize(vHeaderSize + pRVShader_->GetBytes());
+				vbuffer = s_vertexShaderHeader;
+				memcpy(&vbuffer[0] + vHeaderSize, pRVShader_->GetData(), pRVShader_->GetBytes());
+				pVShader_ = PGLES2VShader(new GLES2VShader(vbuffer.c_str()));
+				vbuffer = s_fragmentShaderHeader;
+				vbuffer.resize(fHeaderSize + pRFShader_->GetBytes());
+				memcpy(&vbuffer[0] + fHeaderSize, pRFShader_->GetData(), pRFShader_->GetBytes());
+				pFShader_ = PGLES2FShader(new GLES2FShader(vbuffer.c_str()));
+
+                Initialize();
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	void GLES2Program::Initialize()
 	{
+        assert(glGetError() == GL_NO_ERROR);
+
 		// Creates the program name/index.
 		id_ = glCreateProgram();
 
@@ -91,6 +138,8 @@ namespace NSG
 				assert(false);
 			}
 		}
+
+        assert(glGetError() == GL_NO_ERROR);
 	}
 
 	GLES2Program::~GLES2Program()

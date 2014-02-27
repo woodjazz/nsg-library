@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "App.h"
 #include "NSG/Log.h"
 #include "NSG/GLES2Texture.h"
+#include "NSG/Resource.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -41,8 +42,8 @@ using namespace NSG;
 namespace 
 {
 	const float kFovY = 45.0f;
-	const float kZNear = 1.0f;
-	const float kZFar = 20.0f;
+	const float kZNear = 0.1f;
+	const float kZFar = 100.0f;
 }
 
 App::App() 
@@ -74,50 +75,23 @@ void App::InternalTask()
 	QueuedTaskTest();
 }
 
-static const char kFragShaderSource[] = {
-#include "shaders/gles2FragmentShader.h"
-};
-
-static const char kVertexShaderSource[] = {
-#include "shaders/gles2VertexShader.h"
-};
-
-static const char kVertexDiffuseReflectionShaderSource[] = {
-#include "shaders/gles2VertexDiffuseReflectionShader.h"
-};
-
-
 void App::Start() 
 {
 	TRACE_LOG("Start");
 
 	thread_ = std::thread([this](){InternalTask();});	
 
-	pProgram_ = PGLES2Program(new GLES2Program(kVertexShaderSource, kFragShaderSource));
-	pDiffuseProgram_ = PGLES2Program(new GLES2Program(kVertexDiffuseReflectionShaderSource, kFragShaderSource));
-
+	PResource pVResource(new Resource("shaders/VertexDiffuseReflection.vert"));
+	PResource pFResource(new Resource("shaders/Simple.frag"));
+	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
 	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
-
-	pMesh_ = PBoxMesh(new BoxMesh(Color(1,1,1,1), 1,1,1, 2,2,2, pDiffuseProgram_, pTexture, GL_STATIC_DRAW));
-
-	/*Vertex2 v10(1, 0);
-	Vertex2 v00(0, 0);
-	Vertex2 v01(0, 1);
-	Vertex2 v11(1, 1);
-
-	const float kOffset = 0.333f;
-
-	Vertex2 base(1, 0);
-	pMesh_->SetFaceUVs(BoxMesh::FRONT, (base + v10) * kOffset, (base + v00) * kOffset, (base + v01) * kOffset, (base + v11) * kOffset, false);
-
-	base = Vertex2(1, 2);
-	pMesh_->SetFaceUVs(BoxMesh::BACK, (base + v10) * kOffset, (base + v00) * kOffset, (base + v01) * kOffset, (base + v11) * kOffset, false);
-
-	pMesh_->Redo();
-*/
 	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
+	//PGLES2Material pMaterial1(pProgram, pTexture);
+	pMaterial2_ = PGLES2Material(new GLES2Material (pEarthTexture, pDiffuseProgram));
+	PGLES2Material pMaterial3(new GLES2Material (pTexture, pDiffuseProgram));
 
-	pSphereMesh_ = PSphereMesh(new SphereMesh(Color(0,0,0,1), 3, 32, pDiffuseProgram_, pEarthTexture, GL_STATIC_DRAW));
+	pSphereMesh_ = PSphereMesh(new SphereMesh(Color(0,0,0,1), 3, 32, pMaterial2_, GL_STATIC_DRAW));
+	pMesh_ = PBoxMesh(new BoxMesh(Color(1,1,1,1), 1,1,1, 2,2,2, pMaterial3, GL_STATIC_DRAW));
 
     pNode1_ = PNode(new Node);
     pNode2_ = PNode(new Node);
@@ -125,11 +99,13 @@ void App::Start()
 	pTextNode0_ = PNode(new Node);
     pTextNode1_ = PNode(new Node(pTextNode0_));
 
-    pNode1_->SetPosition(Vertex3(-2, 0, 0));
-    pNode2_->SetPosition(Vertex3(2, 0, 0));
+    pNode1_->SetPosition(Vertex3(-5, 0, 0));
+    pNode1_->SetScale(Vertex3(3,3,3));
 
-    pCamera1_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
-    pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0), Vertex3(0,1,0));
+    pNode2_->SetPosition(Vertex3(5, 0, 0));
+
+    pCamera1_->SetLookAt(Vertex3(0,0,10), Vertex3(0,0,0));
+    pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 
     pText1_ = PText(new Text("font/FreeSans.ttf", 24, GL_DYNAMIC_DRAW));
@@ -142,8 +118,8 @@ void App::Update(float delta)
 	//TRACE_LOG("App::Update delta = " << delta);
 	x_angle_ += glm::pi<float>()/10.0f * delta;
 	y_angle_ += glm::pi<float>()/10.0f * delta;
-	pNode1_->SetRotation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)) * glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
-	pNode2_->SetRotation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	pNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)) * glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
+	pNode2_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 	//pNode1_->SetScale(scale_);
 
 	static float factor_scale = 1;
@@ -155,11 +131,11 @@ void App::Update(float delta)
 		factor_scale *= -1;
 
 	pTextNode0_->SetPosition(Vertex3(-pText1_->GetWidth()/2, 0, 0));
-	pTextNode1_->SetRotation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
+	pTextNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
-	//pTextNode1_->SetScale(scale_);
+	pMaterial2_->SetDiffuseColor(Color(scale_.x,0,0,scale_.x));
 
-
+    //pNode1_->SetLookAt(Vertex3(0,scale_.x*25,10));
 }
 
 void App::LateUpdate()
@@ -275,3 +251,4 @@ void App::OnMouseUp()
 	buttonDown_ = false;
 	buttonUp_ = true;
 }
+

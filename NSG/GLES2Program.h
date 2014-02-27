@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2VShader.h"
 #include "GLES2FShader.h"
+#include "Resource.h"
 
 namespace NSG 
 {
@@ -38,12 +39,14 @@ namespace NSG
 	{
 	public:
 
+		GLES2Program(PResource pRVShader, PResource pRFShader);
 		GLES2Program(const char* vShader, const char* fShader);
 		GLES2Program(PGLES2VShader pVShader, PGLES2FShader pFShader);
 		~GLES2Program();
 		void Initialize();
 		GLuint GetAttributeLocation(const std::string& name);
 		GLuint GetUniformLocation(const std::string& name);
+		bool IsReady();
 	private:
 		operator const GLuint() const { return id_; }
 		GLuint GetId() const { return id_; }
@@ -51,6 +54,8 @@ namespace NSG
 		GLuint id_;
 		PGLES2VShader pVShader_;
 		PGLES2FShader pFShader_;
+		PResource pRVShader_;
+		PResource pRFShader_;
 		friend class UseProgram;
 	};
 

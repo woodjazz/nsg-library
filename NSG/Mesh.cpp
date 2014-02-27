@@ -41,20 +41,15 @@ namespace NSG
 	{
 	}
 
-	Mesh::Mesh(PGLES2Program pProgram, PGLES2Texture pTexture, GLenum usage) 
-	: pProgram_(pProgram),
-	pTexture_(pTexture),
-    mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
-    m_loc_(pProgram_->GetUniformLocation("u_m")),
-    vp_loc_(pProgram_->GetUniformLocation("u_vp")),
-	model_inv_transp_loc_(pProgram_->GetUniformLocation("u_model_inv_transp")),
-	texture_loc_( pProgram_->GetUniformLocation("u_texture")),
-	texcoord_loc_(pProgram_->GetAttributeLocation("a_texcoord")),
-	position_loc_(pProgram_->GetAttributeLocation("a_position")),
-	normal_loc_(pProgram_->GetAttributeLocation("a_normal")),
-	color_loc_(pProgram_->GetAttributeLocation("a_color")),
+	Mesh::Mesh(PGLES2Material pMaterial, GLenum usage) 
+	: pMaterial_(pMaterial),
+	texcoord_loc_(pMaterial_->GetTextCoordAttLocation()),
+	position_loc_(pMaterial_->GetPositionAttLocation()),
+	normal_loc_(pMaterial_->GetNormalAttLocation()),
+	color_loc_(pMaterial_->GetColorAttLocation()),
     usage_(usage),
-    mode_(GL_TRIANGLES)
+    mode_(GL_TRIANGLES),
+    loaded_(false)
 	{
 	}
 
@@ -103,99 +98,24 @@ namespace NSG
 		}
 	}
 
-	void Mesh::CalculateFlatNormals()
-	{
-		for (int i = 0; i < indexes_.size(); i++) 
-		{
-			if ((i % 3) == 2) 
-			{
-				GLushort ia = indexes_[i-2];
-				GLushort ib = indexes_[i-1];
-				GLushort ic = indexes_[i];
-				
-				vertexsData_[ic].normal_ = vertexsData_[ib].normal_ = vertexsData_[ia].normal_ = glm::normalize(glm::cross(
-					vertexsData_[ic].position_ - vertexsData_[ia].position_,
-					vertexsData_[ib].position_ - vertexsData_[ia].position_));
-			}
-		}	
-	}
-
-	void Mesh::CalculateAverageNormals()
-	{
-		std::vector<int> nb_seen;
-		nb_seen.resize(vertexsData_.size(), 0);
-
-		for (int i = 0; i < indexes_.size(); i+=3) 
-		{
-			GLushort ia = indexes_[i];
-			GLushort ib = indexes_[i+1];
-			GLushort ic = indexes_[i+2];
-
-			glm::vec3 normal = glm::normalize(glm::cross(
-			  vertexsData_[ib].position_ - vertexsData_[ia].position_,
-			  vertexsData_[ic].position_ - vertexsData_[ia].position_));
-
-			int v[3];  v[0] = ia;  v[1] = ib;  v[2] = ic;
-
-			for (int j = 0; j < 3; j++) 
-			{
-				GLushort cur_v = v[j];
-				nb_seen[cur_v]++;
-				if (nb_seen[cur_v] == 1) 
-				{
-					vertexsData_[cur_v].normal_ = normal;
-				} 
-				else 
-				{
-					// average
-					vertexsData_[cur_v].normal_.x = vertexsData_[cur_v].normal_.x * (1.0 - 1.0/nb_seen[cur_v]) + normal.x * 1.0/nb_seen[cur_v];
-					vertexsData_[cur_v].normal_.y = vertexsData_[cur_v].normal_.y * (1.0 - 1.0/nb_seen[cur_v]) + normal.y * 1.0/nb_seen[cur_v];
-					vertexsData_[cur_v].normal_.z = vertexsData_[cur_v].normal_.z * (1.0 - 1.0/nb_seen[cur_v]) + normal.z * 1.0/nb_seen[cur_v];
-					vertexsData_[cur_v].normal_ = glm::normalize(vertexsData_[cur_v].normal_);
-				}
-			}
-		}		
-	}
-
 	void Mesh::Render(PNode pNode) 
 	{
-		if((pTexture_ && !pTexture_->IsReady()) || !pVBuffer_) 
+		if(!pMaterial_->IsReady()) 
 			return;
+
+        if(!loaded_)
+        {
+	        texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
+	        position_loc_ = pMaterial_->GetPositionAttLocation();
+	        normal_loc_ = pMaterial_->GetNormalAttLocation();
+	        color_loc_ = pMaterial_->GetColorAttLocation();
+        }
+
+		assert(pVBuffer_);
 
         assert(glGetError() == GL_NO_ERROR);
 
-		UseProgram useProgram(*pProgram_);
-
-		if(mvp_loc_ != -1)
-		{
-			Matrix4 m = Camera::GetModelViewProjection(pNode);
-			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
-		}
-
-		if(m_loc_ != -1)
-		{
-			Matrix4 m = pNode->GetModelMatrix();
-			glUniformMatrix4fv(m_loc_, 1, GL_FALSE, glm::value_ptr(m));
-		}
-
-		if(vp_loc_ != -1)
-		{
-			Matrix4 m = Camera::GetViewProjectionMatrix();
-			glUniformMatrix4fv(vp_loc_, 1, GL_FALSE, glm::value_ptr(m));
-		}
-
-		if(model_inv_transp_loc_ != -1)
-		{
-			Matrix3 m = pNode->GetModelInvTRanspMatrix();
-			glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));			
-		}
-
-		if(texture_loc_ != -1 && pTexture_)
-		{
-			glActiveTexture(GL_TEXTURE0);
-			pTexture_->Bind();
-			glUniform1i(texture_loc_, 0);
-		}
+		UseMaterial useMaterial(*pMaterial_, pNode);
 
 		BindBuffer bindVBuffer(*pVBuffer_);
 
@@ -250,8 +170,6 @@ namespace NSG
 		BindBuffer bindIBuffer(*pIBuffer_);
 
         glDrawElements(mode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
 
         assert(glGetError() == GL_NO_ERROR);
 	}
