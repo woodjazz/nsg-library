@@ -83,11 +83,6 @@ namespace NSG
 		}
 	}	
 
-	Vertex3 Node::GetGlobalPosition() const
-	{
-		return Vertex3(GetModelMatrix()[3]);
-	}
-
 	void Node::SetLookAt(const Vertex3& center, const Vertex3& up)
 	{
         Vertex3 upVector(up);
@@ -120,7 +115,12 @@ namespace NSG
     void Node::Update()
 	{
 		matModel_ = glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_) * glm::scale(glm::mat4(1.0f), scale_);
-		matModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(GetModelMatrix())));
+		const Matrix4& globalModel = GetModelMatrix();
+		matModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel)));
+		globalPosition_ = Vertex3(globalModel[3]);
+		globalOrientation_ = glm::quat_cast(globalModel);
+		static Vertex3 localDir(0,0,1);
+		direction_ = globalOrientation_ * localDir;
 		OnUpdate();
 	}
 
@@ -136,9 +136,5 @@ namespace NSG
 			return matModel_;
 	}
 
-	const Matrix3& Node::GetModelInvTranspMatrix() const
-	{
-		return matModelInvTransp_;	
-	}
 
 }

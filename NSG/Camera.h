@@ -42,8 +42,9 @@ namespace NSG
 		void SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
 		static void Deactivate();
 		static Camera* GetActiveCamera();
-		static Matrix4 GetModelViewProjection(PNode pNode);
+		static Matrix4 GetModelViewProjection(Node* pNode);
 		static const Matrix4& GetViewProjectionMatrix();
+		static const Matrix4& GetInverseViewMatrix();
 		void Activate();
 		void SetViewport(float xo, float yo, float xf, float yf);
 		void ViewChanged(int32_t width, int32_t height);
@@ -51,6 +52,7 @@ namespace NSG
 	private:
 		void Update();		
 		Matrix4 matView_;
+		Matrix4 matViewInverse_;
 		Matrix4 matProjection_;
 		Matrix4 matViewProjection_;
 		float fovy_;

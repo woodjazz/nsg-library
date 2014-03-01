@@ -25,43 +25,48 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include "Types.h"
+#include <vector>
+#include "Node.h"
+#include "BoxMesh.h"
 
 namespace NSG
 {
-	class Node;
-
-	typedef std::shared_ptr<Node> PNode;
-
-	class Node
+	class Light : public Node
 	{
 	public:
-		Node(PNode pParent = nullptr);
-		~Node();
-		virtual void OnUpdate() {}
-		void SetPosition(const Vertex3& position);
-		void SetOrientation(const Quaternion& q);
-		void SetScale(const Vertex3& scale);
-		void SetGlobalPosition(const Vertex3& position);
-		void SetGlobalOrientation(const Quaternion& q);
-		const Vertex3& GetGlobalPosition() const { return globalPosition_; }
-		const Quaternion& GetGlobalOrientation() const { return globalOrientation_; }
-		const Matrix4& GetModelMatrix() const;
-		const Matrix3& GetModelInvTranspMatrix() const { return matModelInvTransp_; }
-		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
-		const Vertex3& GetDirection() const { return direction_; }
+		Light();
+		~Light();
+		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
+		const Color& GetDiffuseColor() const { return diffuse_; }
+		void SetSpecularColor(Color specular) { specular_ = specular; }
+		const Color& GetSpecularColor() const { return specular_; }
+		void SetAttenuation(float constant, float linear, float quadratic);
+		struct Attenuation
+		{
+		    float constant;
+		    float linear;
+		    float quadratic;
+		};
+		const Attenuation& GetAttenuation() const { return attenuation_; }
+		void SetPoint();
+		void SetDirectional();
+		void SetSpotlight(float spotCutOff, float exponent);
+		float GetSpotCutOff() const { return spotCutOff_; }
+		float GetSpotExponent() const { return exponent_; }
+		enum Type {POINT, DIRECTIONAL, SPOT};
+		Type GetType() const { return type_; }
+		typedef std::vector<Light*> Lights;
+		static const Lights& GetLights();
+		void Render();
 	private:
-		void Update();	
-		mutable Matrix4 matTemporal_;	
-		Matrix4 matModel_;
-		Matrix3 matModelInvTransp_;
-		Vertex3 position_;
-		Vertex3 globalPosition_;
-		Quaternion q_;
-		Quaternion globalOrientation_;
-		Vertex3 scale_;
-		Vertex3 direction_;
-
-		PNode pParent_;
+		Type type_;
+        Color diffuse_;
+        Color specular_;
+        Attenuation attenuation_;
+        float spotCutOff_;
+        float exponent_;
+        PBoxMesh pMesh_;
 	};
+
+	typedef std::shared_ptr<Light> PLight;
 }

@@ -108,7 +108,7 @@ namespace NSG
             return false;
         }
 
-		s_pApp->Initialize(30);
+		s_pApp->Initialize();
 
 		WindowSizeCB(window, WIDTH, HEIGHT);
 

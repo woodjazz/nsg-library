@@ -58,8 +58,9 @@ namespace NSG
 
 		bool lock = false;
 		int loop = 0;
+		const int MAX_LOOP = 4;
 
-		while ((current_ = Clock::now()) > next_)
+		while ((current_ = Clock::now()) > next_ && loop < MAX_LOOP)
 		{
 			DoTick(fixed_);
 			Milliseconds duration = std::chrono::duration_cast<Milliseconds>(Clock::now() - current_);

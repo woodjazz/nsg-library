@@ -268,7 +268,7 @@ namespace NSG
 
 			UseProgram useProgram(*pProgram_);
 
-			Matrix4 mvp = Camera::GetModelViewProjection(pNode);
+			Matrix4 mvp = Camera::GetModelViewProjection(pNode.get());
 			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
 
 			glActiveTexture(GL_TEXTURE0);

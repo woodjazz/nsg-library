@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "NSG/Node.h"
 #include "NSG/Camera.h"
 #include "NSG/Text.h"
+#include "NSG/Light.h"
 #include "NSG/FrameColorSelection.h"
 
 using namespace NSG;
@@ -40,6 +41,7 @@ class App : public NSG::IApp
 public:
 	App();
 	~App();
+	int GetFPS() const;
 	void Start();
 	void Update(float delta);
 	void LateUpdate();
@@ -52,6 +54,7 @@ public:
 private:
 	void InternalTask();
 	std::thread thread_;
+	PLight pLight0_;
 	PGLES2Material pMaterial2_;
 	PBoxMesh pMesh_;
 	PSphereMesh pSphereMesh_;

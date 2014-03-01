@@ -45,7 +45,8 @@ namespace NSG
 {
 	GLES2Program::GLES2Program(PResource pRVShader, PResource pRFShader)
 	: pRVShader_(pRVShader),
-	pRFShader_(pRFShader)
+	pRFShader_(pRFShader),
+	loaded_(false)
 	{
 		assert(pRVShader && pRFShader);
 	}
@@ -67,10 +68,11 @@ namespace NSG
 
 	bool GLES2Program::IsReady()
 	{
-		if(pRVShader_)
+		if(!loaded_ && pRVShader_)
 		{
 			if(pRVShader_->IsReady() && pRFShader_->IsReady())
 			{
+				loaded_ = true;
 				std::string vbuffer;
 				size_t vHeaderSize = strlen(s_vertexShaderHeader);
 				size_t fHeaderSize = strlen(s_fragmentShaderHeader);

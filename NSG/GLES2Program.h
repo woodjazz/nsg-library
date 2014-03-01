@@ -56,6 +56,7 @@ namespace NSG
 		PGLES2FShader pFShader_;
 		PResource pRVShader_;
 		PResource pRFShader_;
+		bool loaded_;
 		friend class UseProgram;
 	};
 

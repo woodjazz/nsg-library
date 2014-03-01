@@ -55,13 +55,14 @@ namespace NSG
 		Mesh(PGLES2Material pMaterial, GLenum usage);
 		~Mesh();
 		void Render(PNode pNode);
+		void Render(Node* pNode);
 		void RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc);
 		void AddVertexData(const VertexData& data);
 		void SetIndices(const Indexes& indexes);
 		void Redo();
 		typedef std::vector<VertexData> Data;
 		Data& GetVertexData() { return vertexsData_; }
-		enum Mode {POINTS, LINES, TRIANGLES};
+		enum Mode {POINTS, LINES, LINE_STRIP, TRIANGLES};
 		void SetMode(Mode mode);
 	private:
 		PGLES2Material pMaterial_;

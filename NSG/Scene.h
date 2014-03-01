@@ -24,44 +24,13 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
 #include "Types.h"
 
 namespace NSG
 {
-	class Node;
-
-	typedef std::shared_ptr<Node> PNode;
-
-	class Node
+	struct Scene
 	{
-	public:
-		Node(PNode pParent = nullptr);
-		~Node();
-		virtual void OnUpdate() {}
-		void SetPosition(const Vertex3& position);
-		void SetOrientation(const Quaternion& q);
-		void SetScale(const Vertex3& scale);
-		void SetGlobalPosition(const Vertex3& position);
-		void SetGlobalOrientation(const Quaternion& q);
-		const Vertex3& GetGlobalPosition() const { return globalPosition_; }
-		const Quaternion& GetGlobalOrientation() const { return globalOrientation_; }
-		const Matrix4& GetModelMatrix() const;
-		const Matrix3& GetModelInvTranspMatrix() const { return matModelInvTransp_; }
-		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
-		const Vertex3& GetDirection() const { return direction_; }
-	private:
-		void Update();	
-		mutable Matrix4 matTemporal_;	
-		Matrix4 matModel_;
-		Matrix3 matModelInvTransp_;
-		Vertex3 position_;
-		Vertex3 globalPosition_;
-		Quaternion q_;
-		Quaternion globalOrientation_;
-		Vertex3 scale_;
-		Vertex3 direction_;
-
-		PNode pParent_;
+		static Color ambient;
 	};
+
 }

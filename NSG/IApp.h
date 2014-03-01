@@ -41,6 +41,7 @@ namespace NSG
 	public:
         IApp();
 		virtual ~IApp();
+        virtual int GetFPS() const;
 		virtual void Start() {}
 		virtual void Update(float delta) {}
 		virtual void LateUpdate() {}
@@ -74,7 +75,7 @@ namespace NSG
         NSG::PApp pApp_;
 
         InternalApp(NSG::PApp pApp);
-        void Initialize(int fps);
+        void Initialize();
         void BeginTick();
         void DoTick(float delta);
         void EndTick();

@@ -72,10 +72,10 @@ namespace NSG
 				// Shows the message in console.
 				TRACE_LOG("Error in Shader Creation: " << log);
 
+                assert(false);
+
 				// Frees the allocated memory.
 				free(log);
-
-				assert(false);
 			}
 		}
 

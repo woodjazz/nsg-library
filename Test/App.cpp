@@ -75,23 +75,31 @@ void App::InternalTask()
 	QueuedTaskTest();
 }
 
+int App::GetFPS() const
+{
+	return 30;
+}
+
 void App::Start() 
 {
 	TRACE_LOG("Start");
 
 	thread_ = std::thread([this](){InternalTask();});	
 
-	PResource pVResource(new Resource("shaders/VertexDiffuseReflection.vert"));
+	PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
 	PResource pFResource(new Resource("shaders/Simple.frag"));
 	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
 	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
 	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
-	//PGLES2Material pMaterial1(pProgram, pTexture);
 	pMaterial2_ = PGLES2Material(new GLES2Material (pEarthTexture, pDiffuseProgram));
+	pMaterial2_->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
+	pMaterial2_->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
+	pMaterial2_->SetShininess(0.3f);
 	PGLES2Material pMaterial3(new GLES2Material (pTexture, pDiffuseProgram));
 
 	pSphereMesh_ = PSphereMesh(new SphereMesh(Color(0,0,0,1), 3, 32, pMaterial2_, GL_STATIC_DRAW));
 	pMesh_ = PBoxMesh(new BoxMesh(Color(1,1,1,1), 1,1,1, 2,2,2, pMaterial3, GL_STATIC_DRAW));
+
 
     pNode1_ = PNode(new Node);
     pNode2_ = PNode(new Node);
@@ -111,41 +119,50 @@ void App::Start()
     pText1_ = PText(new Text("font/FreeSans.ttf", 24, GL_DYNAMIC_DRAW));
     pText2_ = PText(new Text("font/bluebold.ttf", 24, GL_STATIC_DRAW));
     pText3_ = PText(new Text("font/FreeSans.ttf", 48, GL_STATIC_DRAW));
+
+    pLight0_ = PLight(new Light());
+    pLight0_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
+	//pLight0_->SetDirectional();
+
 }
 
 void App::Update(float delta) 
 {
-	//TRACE_LOG("App::Update delta = " << delta);
+	//TRACE_LOG("App::Update delta = " << delta << "\n");
 	x_angle_ += glm::pi<float>()/10.0f * delta;
 	y_angle_ += glm::pi<float>()/10.0f * delta;
 	pNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)) * glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
 	pNode2_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 	//pNode1_->SetScale(scale_);
 
-	static float factor_scale = 1;
-	scale_ -= delta * 0.1f * factor_scale;
 
-	if(scale_.x < 0.1f && factor_scale > 0)
+	static float factor_scale = 1;
+	scale_ -= delta * 0.7f * factor_scale;
+
+	if(scale_.x < -10 && factor_scale > 0)
 		factor_scale *= -1;
-	else if(scale_.x > 1 && factor_scale < 0)
+	else if(scale_.x > 10 && factor_scale < 0)
 		factor_scale *= -1;
 
 	pTextNode0_->SetPosition(Vertex3(-pText1_->GetWidth()/2, 0, 0));
 	pTextNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
-	pMaterial2_->SetDiffuseColor(Color(scale_.x,0,0,scale_.x));
+	//pMaterial2_->SetDiffuseColor(Color(1,1,1,scale_.x/10.0f));
 
+
+	pLight0_->SetPosition(Vertex3(scale_.x,  2.0,  6.0));
+	//pLight0_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
     //pNode1_->SetLookAt(Vertex3(0,scale_.x*25,10));
 }
 
 void App::LateUpdate()
 {
-	//TRACE_LOG("App::LateUpdate");
+	//TRACE_LOG("App::LateUpdate\n");
 }
 
 void App::RenderFrame() 
 {
-	//TRACE_LOG("App::RenderFrame");
+	//TRACE_LOG("App::RenderFrame\n");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -153,8 +170,14 @@ void App::RenderFrame()
 	glClearDepth(1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_BLEND);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     pCamera1_->Activate();
+
+    pLight0_->Render();
 
     pMesh_->SetMode(Mesh::TRIANGLES);
     pSphereMesh_->SetMode(Mesh::TRIANGLES);

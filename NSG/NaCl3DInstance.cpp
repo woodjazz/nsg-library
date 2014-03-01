@@ -70,7 +70,7 @@ namespace NSG
 					TRACE_LOG("InitGL has failed!")
 					return; // failed.
 				}
-				pApp_->Initialize(30);
+				pApp_->Initialize();
 				pApp_->ViewChanged(width_, height_);
 				MainLoop(0);
 			} 

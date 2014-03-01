@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "GLES2Program.h"
 #include "Node.h"
 #include <memory>
+#include <vector>
 
 
 namespace NSG
@@ -45,23 +46,50 @@ namespace NSG
 		GLuint GetPositionAttLocation() { return position_loc_; }
 		GLuint GetNormalAttLocation() { return normal_loc_; }
 		GLuint GetColorAttLocation() { return color_loc_; }
-		void SetDiffuseColor(Color diffuse);
+		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
+		void SetSpecularColor(Color specular) { specular_ = specular; }
+		void SetShininess(float shininess) { shininess_=shininess; }
 	private:
 		PGLES2Texture pTexture_;
 		PGLES2Program pProgram_;
 
-		GLuint color_difusse_loc_;
+		GLuint color_scene_ambient_loc_;
+		GLuint color_ambient_loc_;
+		GLuint color_diffuse_loc_;
+		GLuint color_specular_loc_;
+		GLuint shininess_loc_;
 		GLuint texture_loc_;
 		GLuint texcoord_loc_;
 		GLuint position_loc_;
 		GLuint normal_loc_;
 		GLuint color_loc_;
 		GLuint model_inv_transp_loc_;
+		GLuint v_inv_loc_;
         GLuint mvp_loc_;
         GLuint m_loc_;
-        bool loaded_;
 
+        struct LightLoc
+        {
+        	GLuint type_loc;
+        	GLuint position_loc;
+	        GLuint diffuse_loc;
+	        GLuint specular_loc;
+	        GLuint constantAttenuation_loc;
+	        GLuint linearAttenuation_loc;
+	        GLuint quadraticAttenuation_loc;
+	        GLuint spotCutoff_loc;
+	        GLuint spotExponent_loc;
+	        GLuint spotDirection_loc;
+	    };
+
+	    typedef std::vector<LightLoc> LightsLoc;
+	    LightsLoc lightsLoc_;
+
+        bool loaded_;
+        Color ambient_;
         Color diffuse_;
+        Color specular_;
+        float shininess_;
 
 		friend class UseMaterial;
 	};
@@ -71,7 +99,7 @@ namespace NSG
 	class UseMaterial
 	{
 	public:
-		UseMaterial(GLES2Material& obj, PNode pNode);
+		UseMaterial(GLES2Material& obj, Node* pNode);
 		~UseMaterial();
 	private:
 		GLES2Material& obj_;

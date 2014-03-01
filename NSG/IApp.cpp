@@ -48,6 +48,11 @@ namespace NSG
 	    s_pIApp = nullptr;
     }
 
+    int IApp::GetFPS() const
+    {
+        return 24;
+    }
+
 
     IApp* IApp::GetPtrInstance()
     {
@@ -82,9 +87,9 @@ namespace NSG
     {
     }
 
-    void InternalApp::Initialize(int fps)
+    void InternalApp::Initialize()
     {
-        Tick::Initialize(fps);
+        Tick::Initialize(pApp_->GetFPS());
     }
 
     void InternalApp::BeginTick()

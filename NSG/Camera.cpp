@@ -91,6 +91,7 @@ namespace NSG
 	void Camera::SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up)
 	{
 		matView_ = glm::lookAt(eye, center, up);
+		matViewInverse_ = glm::inverse(matView_);
 		Update();
 	}
 
@@ -99,7 +100,7 @@ namespace NSG
 		matViewProjection_ = matProjection_ * matView_;
 	}
 
-	Matrix4 Camera::GetModelViewProjection(PNode pNode)
+	Matrix4 Camera::GetModelViewProjection(Node* pNode)
 	{
 		if (s_pActiveCamera)
 		{
@@ -123,8 +124,18 @@ namespace NSG
 			static Matrix4 m(1.0f);
 			return m;
 		}
-
 	}
 
-
+	const Matrix4& Camera::GetInverseViewMatrix()
+	{
+		if (s_pActiveCamera)
+		{
+			return s_pActiveCamera->matViewInverse_;
+		}
+		else
+		{
+			static Matrix4 m(1.0f);
+			return m;
+		}
+	}
 }

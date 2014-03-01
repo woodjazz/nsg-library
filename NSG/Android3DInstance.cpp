@@ -133,7 +133,7 @@ static int engine_init_display(struct engine* engine)
     engine->width = w;
     engine->height = h;
 
-    s_pApp->Initialize(30);
+    s_pApp->Initialize();
 
     s_pApp->ViewChanged(w, h);
 

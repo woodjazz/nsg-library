@@ -90,6 +90,9 @@ namespace NSG
 			case LINES:
 				mode_ = GL_LINES;
 				break;
+			case LINE_STRIP:
+				mode_ = GL_LINE_STRIP;
+				break;
 			case TRIANGLES:
 				mode_ = GL_TRIANGLES;
 				break;
@@ -98,8 +101,14 @@ namespace NSG
 		}
 	}
 
-	void Mesh::Render(PNode pNode) 
+	void Mesh::Render(PNode pNode)
 	{
+		Render(pNode.get());
+	}
+
+	void Mesh::Render(Node* pNode) 
+	{
+
 		if(!pMaterial_->IsReady()) 
 			return;
 
@@ -181,7 +190,7 @@ namespace NSG
 
         assert(glGetError() == GL_NO_ERROR);
 
-		Matrix4 mvp = Camera::GetModelViewProjection(pNode);
+		Matrix4 mvp = Camera::GetModelViewProjection(pNode.get());
 		glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp));
 
 		BindBuffer bindVBuffer(*pVBuffer_);
