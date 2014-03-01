@@ -41,6 +41,10 @@ else()
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
 
+if(APPLE)
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo")
+endif()
+
 target_link_libraries(${PROJECT_NAME} nsg)
 
 if(NACL)

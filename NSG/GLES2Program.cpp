@@ -26,7 +26,9 @@ misrepresented as being the original software.
 
 #include <stdlib.h>
 #include <stdio.h>
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
 #include <assert.h>
 #include <cstring>
 #include <string>

@@ -67,6 +67,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 endif()	
 
+if(APPLE)
+	set(CMAKE_CXX_FLAGS "-std=gnu++11 -stdlib=libc++")
+endif()
+
 macro ( mark_as_disable_and_internal _var )
 	set ( ${_var} OFF CACHE INTERNAL "disable and hide this!" FORCE )
 endmacro( mark_as_disable_and_internal _var )

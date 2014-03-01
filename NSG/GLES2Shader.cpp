@@ -27,7 +27,9 @@ misrepresented as being the original software.
 #include "GLES2Shader.h"
 #include <stdlib.h>
 #include <stdio.h>
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
 #include <assert.h>
 #include "Log.h"
 
