@@ -15,7 +15,7 @@
  *
  */
 #ifdef ANDROID
-#include "IApp.h"
+#include "App.h"
 #include "Tick.h"
 #include "Log.h"
 #include <jni.h>
@@ -413,6 +413,7 @@ namespace NSG
                 if (state->destroyRequested != 0) 
                 {
                     engine_term_display(&engine);
+                    s_pApp->Release();
                     return;
                 }
             }

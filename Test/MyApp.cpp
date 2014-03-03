@@ -11,21 +11,22 @@ warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
 
 Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
+including commercial MyApplications, and to alter it and redistribute it
 freely, subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
-appreciated but is not required.
+MyAppreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "App.h"
+#include "MyApp.h"
 #include "NSG/Log.h"
 #include "NSG/GLES2Texture.h"
+#include "NSG/GLES2IMGUI.h"
 #include "NSG/Resource.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +40,7 @@ extern void QueuedTaskTest();
 
 using namespace NSG;
 
+
 namespace 
 {
 	const float kFovY = 45.0f;
@@ -46,11 +48,11 @@ namespace
 	const float kZFar = 100.0f;
 }
 
-App::App() 
+MyApp::MyApp() 
 : x_angle_(0),
 y_angle_(0),
-pCamera1_(new Camera(kFovY, kZNear, kZFar)),
-pCamera2_(new Camera(kFovY, kZNear, kZFar)),
+pCamera1_(new GLES2Camera(kFovY, kZNear, kZFar)),
+pCamera2_(new GLES2Camera(kFovY, kZNear, kZFar)),
 width_(1),
 height_(1),
 x_(0),
@@ -62,12 +64,12 @@ scale_(1,1,1)
 {
 }
 
-App::~App() 
+MyApp::~MyApp() 
 {
 	thread_.join();
 }
 
-void App::InternalTask() 
+void MyApp::InternalTask() 
 {
 	FSMExamples();
 	FSMTest();
@@ -75,12 +77,20 @@ void App::InternalTask()
 	QueuedTaskTest();
 }
 
-int App::GetFPS() const
+int MyApp::GetFPS() const
 {
 	return 30;
 }
 
-void App::Start() 
+const char s_fragShaderSource[] = {
+#include "shaders/gles2GUIFragmentShader.h"
+};
+
+const char s_vertexShaderSource[] = {
+#include "shaders/gles2GUIVertexShader.h"
+};
+
+void MyApp::Start() 
 {
 	TRACE_LOG("Start");
 
@@ -95,14 +105,15 @@ void App::Start()
 	pMaterial2_->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial2_->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
 	pMaterial2_->SetShininess(0.3f);
+
 	PGLES2Material pMaterial3(new GLES2Material (pTexture, pDiffuseProgram));
 
-	pSphereMesh_ = PSphereMesh(new SphereMesh(Color(0,0,0,1), 3, 32, pMaterial2_, GL_STATIC_DRAW));
-	pMesh_ = PBoxMesh(new BoxMesh(Color(1,1,1,1), 1,1,1, 2,2,2, pMaterial3, GL_STATIC_DRAW));
-
+	pSphereMesh_ = PGLES2SphereMesh(new GLES2SphereMesh(3, 32, pMaterial2_, GL_STATIC_DRAW));
+	pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(1,1,1, 2,2,2, pMaterial3, GL_STATIC_DRAW));
 
     pNode1_ = PNode(new Node);
     pNode2_ = PNode(new Node);
+    pNode3_ = PNode(new Node);
 
 	pTextNode0_ = PNode(new Node);
     pTextNode1_ = PNode(new Node(pTextNode0_));
@@ -110,25 +121,26 @@ void App::Start()
     pNode1_->SetPosition(Vertex3(-5, 0, 0));
     pNode1_->SetScale(Vertex3(3,3,3));
 
+
     pNode2_->SetPosition(Vertex3(5, 0, 0));
 
     pCamera1_->SetLookAt(Vertex3(0,0,10), Vertex3(0,0,0));
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 
-    pText1_ = PText(new Text("font/FreeSans.ttf", 24, GL_DYNAMIC_DRAW));
-    pText2_ = PText(new Text("font/bluebold.ttf", 24, GL_STATIC_DRAW));
-    pText3_ = PText(new Text("font/FreeSans.ttf", 48, GL_STATIC_DRAW));
+    pText1_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 24, GL_DYNAMIC_DRAW));
+    pText2_ = PGLES2Text(new GLES2Text("font/bluebold.ttf", 24, GL_STATIC_DRAW));
+    pText3_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 48, GL_STATIC_DRAW));
 
-    pLight0_ = PLight(new Light());
+    pLight0_ = PGLES2Light(new GLES2Light());
     pLight0_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
 	//pLight0_->SetDirectional();
 
 }
 
-void App::Update(float delta) 
+void MyApp::Update(float delta) 
 {
-	//TRACE_LOG("App::Update delta = " << delta << "\n");
+	//TRACE_LOG("MyApp::Update delta = " << delta << "\n");
 	x_angle_ += glm::pi<float>()/10.0f * delta;
 	y_angle_ += glm::pi<float>()/10.0f * delta;
 	pNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)) * glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
@@ -144,7 +156,7 @@ void App::Update(float delta)
 	else if(scale_.x > 10 && factor_scale < 0)
 		factor_scale *= -1;
 
-	pTextNode0_->SetPosition(Vertex3(-pText1_->GetWidth()/2, 0, 0));
+	pTextNode0_->SetPosition(Vertex3(-pText1_->GetWidth()/2, 0, 0.2f));
 	pTextNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
 	//pMaterial2_->SetDiffuseColor(Color(1,1,1,scale_.x/10.0f));
@@ -155,14 +167,19 @@ void App::Update(float delta)
     //pNode1_->SetLookAt(Vertex3(0,scale_.x*25,10));
 }
 
-void App::LateUpdate()
+void MyApp::LateUpdate()
 {
-	//TRACE_LOG("App::LateUpdate\n");
+	//TRACE_LOG("MyApp::LateUpdate\n");
 }
 
-void App::RenderFrame() 
+void MyApp::RenderGUIFrame()
 {
-	//TRACE_LOG("App::RenderFrame\n");
+	IMGUI::DrawRect(x_, y_, 0.5f, 0.5f);
+}
+
+void MyApp::RenderFrame() 
+{
+	//TRACE_LOG("MyApp::RenderFrame\n");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -179,11 +196,12 @@ void App::RenderFrame()
 
     pLight0_->Render();
 
-    pMesh_->SetMode(Mesh::TRIANGLES);
-    pSphereMesh_->SetMode(Mesh::TRIANGLES);
+    pMesh_->SetMode(GLES2Mesh::TRIANGLES);
+    pSphereMesh_->SetMode(GLES2Mesh::TRIANGLES);
 
     pMesh_->Render(pNode1_);
     pSphereMesh_->Render(pNode2_);
+
 
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;
@@ -199,7 +217,8 @@ void App::RenderFrame()
 
 	ss << " S=" << std::hex << selectedIndex_;
 
-	Camera::Deactivate();
+
+	GLES2Camera::Deactivate();
 	pText1_->Render(pTextNode1_, Color(0,0,0,1), ss.str());
 
     //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");
@@ -215,8 +234,8 @@ void App::RenderFrame()
     
     pCamera2_->Activate();
 
-    pMesh_->SetMode(Mesh::LINES);
-    pSphereMesh_->SetMode(Mesh::LINES);
+    pMesh_->SetMode(GLES2Mesh::LINES);
+    pSphereMesh_->SetMode(GLES2Mesh::LINES);
 
     pMesh_->Render(pNode1_);
     pSphereMesh_->Render(pNode2_);
@@ -236,7 +255,7 @@ void App::RenderFrame()
     pFrameColorSelection_->End();
 }
 
-void App::ViewChanged(int32_t width, int32_t height) 
+void MyApp::ViewChanged(int32_t width, int32_t height) 
 {
 	glViewport(0, 0, width, height);
 
@@ -247,18 +266,18 @@ void App::ViewChanged(int32_t width, int32_t height)
 	pCamera2_->ViewChanged(width, height);
 
     if(!pFrameColorSelection_)
-        pFrameColorSelection_ = PFrameColorSelection(new FrameColorSelection());
+        pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection());
 
 	pFrameColorSelection_->ViewChanged(width, height);
 }
 
-void App::OnMouseMove(double x, double y)
+void MyApp::OnMouseMove(double x, double y)
 {
 	x_=x;
 	y_=y;
 }
 
-void App::OnMouseDown(double x, double y)
+void MyApp::OnMouseDown(double x, double y)
 {
 	x_=x;
 	y_=y;
@@ -269,7 +288,7 @@ void App::OnMouseDown(double x, double y)
 	selectedIndex_ = pFrameColorSelection_->GetSelected();
 }
 
-void App::OnMouseUp()
+void MyApp::OnMouseUp()
 {
 	buttonDown_ = false;
 	buttonUp_ = true;

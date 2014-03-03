@@ -25,11 +25,11 @@ misrepresented as being the original software.
 */
 #include "Resource.h"
 #include "Log.h"
-#include "IApp.h"
+#include "App.h"
 #include <fstream>
 #include <assert.h>
 #if NACL
-#include "NaCl3DInstance.h"
+#include "AppNaCl.h"
 #endif
 
 namespace NSG

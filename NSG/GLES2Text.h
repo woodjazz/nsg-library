@@ -38,11 +38,11 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Text
+	class GLES2Text
 	{
 	public:
-		Text(const char* filename, int fontSize, GLenum usage);
-		~Text();
+		GLES2Text(const char* filename, int fontSize, GLenum usage);
+		~GLES2Text();
 		void Render(PNode pNode, Color color, const std::string& text);
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }
@@ -97,5 +97,5 @@ namespace NSG
 		int32_t height_;
 	};
 
-	typedef std::shared_ptr<Text> PText;
+	typedef std::shared_ptr<GLES2Text> PGLES2Text;
 }

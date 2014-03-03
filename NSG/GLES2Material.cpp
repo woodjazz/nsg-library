@@ -1,7 +1,7 @@
 #include "GLES2Material.h"
 #include "Log.h"
-#include "Camera.h"
-#include "Light.h"
+#include "GLES2Camera.h"
+#include "GLES2Light.h"
 #include "Scene.h"
 #include <assert.h>
 #include <sstream>
@@ -23,7 +23,6 @@ namespace NSG
 	texcoord_loc_(-1),
 	position_loc_(-1),
 	normal_loc_(-1),
-	color_loc_(-1),
 	model_inv_transp_loc_(-1),
 	v_inv_loc_(-1),
     mvp_loc_(-1),
@@ -62,9 +61,8 @@ namespace NSG
 			texcoord_loc_ = pProgram_->GetAttributeLocation("a_texcoord");
 			position_loc_ = pProgram_->GetAttributeLocation("a_position");
 			normal_loc_ = pProgram_->GetAttributeLocation("a_normal");
-			color_loc_ = pProgram_->GetAttributeLocation("a_color");
 
-            const Light::Lights& ligths = Light::GetLights();
+            const GLES2Light::Lights& ligths = GLES2Light::GetLights();
             size_t n = std::min(ligths.size(), MAX_LIGHTS_MATERIAL);
 
 			for(size_t i=0; i<n; i++)
@@ -98,7 +96,7 @@ namespace NSG
 	{
 		if(obj.mvp_loc_ != -1)
 		{
-			Matrix4&& m = Camera::GetModelViewProjection(pNode);
+			Matrix4&& m = GLES2Camera::GetModelViewProjection(pNode);
 			glUniformMatrix4fv(obj.mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
 		}
 
@@ -116,7 +114,7 @@ namespace NSG
 
 		if(obj.v_inv_loc_ != -1)
 		{
-			const Matrix4& m = Camera::GetInverseViewMatrix();
+			const Matrix4& m = GLES2Camera::GetInverseViewMatrix();
 			glUniformMatrix4fv(obj.v_inv_loc_, 1, GL_FALSE, glm::value_ptr(m));			
 		}
 
@@ -127,6 +125,7 @@ namespace NSG
 			glUniform1i(obj.texture_loc_, 0);
 		}
 
+		
 		if(obj.color_ambient_loc_ != -1)
 		{
 			glUniform4fv(obj.color_ambient_loc_, 1, &obj.ambient_[0]);
@@ -152,7 +151,7 @@ namespace NSG
 			glUniform1f(obj.shininess_loc_, obj.shininess_);
 		}
 
-		const Light::Lights& ligths = Light::GetLights();
+		const GLES2Light::Lights& ligths = GLES2Light::GetLights();
 		
 		size_t n = std::min(ligths.size(), MAX_LIGHTS_MATERIAL);
 
@@ -167,7 +166,7 @@ namespace NSG
 
 			if(obj.lightsLoc_[i].position_loc != -1)
 			{
-				if(type == Light::DIRECTIONAL)
+				if(type == GLES2Light::DIRECTIONAL)
 				{
 					const Vertex3& direction = ligths[i]->GetDirection();
 					glUniform3fv(obj.lightsLoc_[i].position_loc, 1, &direction[0]);
@@ -193,23 +192,23 @@ namespace NSG
 
 			if(obj.lightsLoc_[i].constantAttenuation_loc != -1)
 			{
-				const Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
+				const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
 				glUniform1f(obj.lightsLoc_[i].constantAttenuation_loc, attenuation.constant);
 			}
 
 			if(obj.lightsLoc_[i].linearAttenuation_loc != -1)
 			{
-				const Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
+				const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
 				glUniform1f(obj.lightsLoc_[i].linearAttenuation_loc, attenuation.linear);
 			}
 
 			if(obj.lightsLoc_[i].quadraticAttenuation_loc != -1)
 			{
-				const Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
+				const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
 				glUniform1f(obj.lightsLoc_[i].quadraticAttenuation_loc, attenuation.quadratic);
 			}
 
-			if(type == Light::SPOT)
+			if(type == GLES2Light::SPOT)
 			{
 				if(obj.lightsLoc_[i].spotCutoff_loc != -1)
 				{

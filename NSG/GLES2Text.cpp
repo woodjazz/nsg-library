@@ -23,10 +23,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "Text.h"
+#include "GLES2Text.h"
 #include "Log.h"
-#include "IApp.h"
-#include "Camera.h"
+#include "App.h"
+#include "GLES2Camera.h"
 #include <algorithm>
 #include <vector>
 
@@ -59,7 +59,7 @@ const char s_vertexShaderSource[] = {
 
 namespace NSG
 {
-	Text::Text(const char* filename, int fontSize, GLenum usage)
+	GLES2Text::GLES2Text(const char* filename, int fontSize, GLenum usage)
 	: fontSize_(fontSize),
 	pResource_(new Resource(filename)),
 	atlasWidth_(0),
@@ -82,14 +82,14 @@ namespace NSG
 
 	}
 
-	Text::~Text() 
+	GLES2Text::~GLES2Text() 
 	{
 		glDeleteTextures(1, &texture_);
 	}
 
 	#define MAXWIDTH 1024
 
-	void Text::CreateTextureAtlas()
+	void GLES2Text::CreateTextureAtlas()
 	{
 		FT_New_Memory_Face(s_ft, pResource_->GetData(), pResource_->GetBytes(), 0, &face_);
 		FT_Set_Pixel_Sizes(face_, 0, fontSize_);
@@ -174,7 +174,7 @@ namespace NSG
 		glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);	
 	}
 
-	bool Text::IsReady()
+	bool GLES2Text::IsReady()
 	{
 		if(pResource_ != nullptr && pResource_->IsReady())
 		{
@@ -185,12 +185,12 @@ namespace NSG
 		return pResource_ == nullptr;
 	}
 
-	void Text::Render(PNode pNode, Color color, const std::string& text) 
+	void GLES2Text::Render(PNode pNode, Color color, const std::string& text) 
 	{
 		if(!IsReady() || text.empty())
 			return;
 
-		auto viewSize = IApp::GetPtrInstance()->GetViewSize();
+		auto viewSize = App::GetPtrInstance()->GetViewSize();
 
 		if(viewSize.first != width_ || viewSize.second != height_)
 		{
@@ -268,7 +268,7 @@ namespace NSG
 
 			UseProgram useProgram(*pProgram_);
 
-			Matrix4 mvp = Camera::GetModelViewProjection(pNode.get());
+			Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode.get());
 			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
 
 			glActiveTexture(GL_TEXTURE0);

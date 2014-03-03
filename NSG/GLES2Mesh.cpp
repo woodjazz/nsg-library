@@ -23,9 +23,9 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "Mesh.h"
+#include "GLES2Mesh.h"
 #include "Log.h"
-#include "IApp.h"
+#include "App.h"
 
 #include "glm/glm/gtc/matrix_transform.hpp"
 #include "glm/glm/gtc/type_ptr.hpp"
@@ -36,38 +36,37 @@ namespace NSG
 	{
 	}
 
-	VertexData::VertexData(Vertex3 position, Color color, Vertex2 uv)
-	: position_(position), color_(color), uv_(uv)
+	VertexData::VertexData(Vertex3 position, Vertex2 uv)
+	: position_(position), uv_(uv)
 	{
 	}
 
-	Mesh::Mesh(PGLES2Material pMaterial, GLenum usage) 
+	GLES2Mesh::GLES2Mesh(PGLES2Material pMaterial, GLenum usage) 
 	: pMaterial_(pMaterial),
 	texcoord_loc_(pMaterial_->GetTextCoordAttLocation()),
 	position_loc_(pMaterial_->GetPositionAttLocation()),
 	normal_loc_(pMaterial_->GetNormalAttLocation()),
-	color_loc_(pMaterial_->GetColorAttLocation()),
     usage_(usage),
     mode_(GL_TRIANGLES),
     loaded_(false)
 	{
 	}
 
-	Mesh::~Mesh() 
+	GLES2Mesh::~GLES2Mesh() 
 	{
 	}
 
-	void Mesh::AddVertexData(const VertexData& data)
+	void GLES2Mesh::AddVertexData(const VertexData& data)
 	{
 		vertexsData_.push_back(data);
 	}
 
-	void Mesh::SetIndices(const Indexes& indexes)
+	void GLES2Mesh::SetIndices(const Indexes& indexes)
 	{
 		indexes_ = indexes;
 	}
 
-	void Mesh::Redo()
+	void GLES2Mesh::Redo()
 	{
 		pVBuffer_ = nullptr;
 		pIBuffer_ = nullptr;
@@ -80,7 +79,7 @@ namespace NSG
 		}
 	}
 
-	void Mesh::SetMode(Mode mode)
+	void GLES2Mesh::SetMode(Mode mode)
 	{
 		switch(mode)
 		{
@@ -101,12 +100,12 @@ namespace NSG
 		}
 	}
 
-	void Mesh::Render(PNode pNode)
+	void GLES2Mesh::Render(PNode pNode)
 	{
 		Render(pNode.get());
 	}
 
-	void Mesh::Render(Node* pNode) 
+	void GLES2Mesh::Render(Node* pNode) 
 	{
 
 		if(!pMaterial_->IsReady()) 
@@ -117,7 +116,6 @@ namespace NSG
 	        texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
 	        position_loc_ = pMaterial_->GetPositionAttLocation();
 	        normal_loc_ = pMaterial_->GetNormalAttLocation();
-	        color_loc_ = pMaterial_->GetColorAttLocation();
         }
 
 		assert(pVBuffer_);
@@ -152,18 +150,6 @@ namespace NSG
 			glEnableVertexAttribArray(normal_loc_);
 		}
 
-		if(color_loc_ != -1)
-		{
-			glVertexAttribPointer(color_loc_,
-					4,
-					GL_FLOAT,
-					GL_FALSE,
-					sizeof(VertexData),
-					reinterpret_cast<void*>(offsetof(VertexData, color_)));
-			
-			glEnableVertexAttribArray(color_loc_);
-		}
-
 		if(texcoord_loc_ != -1)
 		{
 			glVertexAttribPointer(texcoord_loc_,
@@ -183,14 +169,14 @@ namespace NSG
         assert(glGetError() == GL_NO_ERROR);
 	}
 
-	void Mesh::RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc) 
+	void GLES2Mesh::RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc) 
 	{
 		if(!pVBuffer_) 
 			return;
 
         assert(glGetError() == GL_NO_ERROR);
 
-		Matrix4 mvp = Camera::GetModelViewProjection(pNode.get());
+		Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode.get());
 		glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp));
 
 		BindBuffer bindVBuffer(*pVBuffer_);

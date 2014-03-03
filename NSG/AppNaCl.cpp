@@ -1,6 +1,5 @@
 #ifdef NACL
-#include "NaCl3DInstance.h"
-
+#include "AppNaCl.h"
 #include "sys/mount.h"
 #include "nacl_io/nacl_io.h"
 #include "ppapi/cpp/var.h"
@@ -40,6 +39,11 @@ namespace NSG
 
 			RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL | PP_INPUTEVENT_CLASS_TOUCH);
     		RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);			
+		}
+
+		NaCl3DInstance::~NaCl3DInstance()
+		{
+			pApp_->Release();
 		}
 
 		pp::Instance* NaCl3DInstance::GetInstance()

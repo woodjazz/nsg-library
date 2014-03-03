@@ -23,57 +23,58 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "IApp.h"
+#include "App.h"
 #include "Log.h"
+#include "GLES2IMGUI.h"
 #include <cassert>
 
 namespace NSG
 {
-    IApp* s_pIApp = nullptr;
+    App* s_pApp = nullptr;
 
-    IApp::IApp() 
+    App::App() 
     : width_(0),
     height_(0)
 
     {
-	    assert(s_pIApp == nullptr);
+	    assert(s_pApp == nullptr);
 
-	    s_pIApp = this;
+	    s_pApp = this;
     }
 
-    IApp::~IApp()
+    App::~App()
     {
-	    assert(s_pIApp != nullptr);
+	    assert(s_pApp != nullptr);
 
-	    s_pIApp = nullptr;
+	    s_pApp = nullptr;
     }
 
-    int IApp::GetFPS() const
+    int App::GetFPS() const
     {
         return 24;
     }
 
 
-    IApp* IApp::GetPtrInstance()
+    App* App::GetPtrInstance()
     {
-	    return s_pIApp;
+	    return s_pApp;
     }
 
-    void IApp::SetViewSize(int32_t width, int32_t height)
+    void App::SetViewSize(int32_t width, int32_t height)
     {
         width_ = width;
         height_ = height;
     }
 
-    std::pair<int32_t, int32_t> IApp::GetViewSize() const
+    std::pair<int32_t, int32_t> App::GetViewSize() const
     {
         return std::pair<int32_t, int32_t>(width_, height_);
     }
 
 #if NACL
-    void IApp::HandleMessage(const pp::Var& var_message)
+    void App::HandleMessage(const pp::Var& var_message)
     {
-        TRACE_LOG("IApp::HandleMessage");
+        TRACE_LOG("App::HandleMessage");
 
         if(var_message.is_string())
         {
@@ -89,7 +90,13 @@ namespace NSG
 
     void InternalApp::Initialize()
     {
+        IMGUI::AllocateResources();
         Tick::Initialize(pApp_->GetFPS());
+    }
+
+    void InternalApp::Release()
+    {
+        IMGUI::ReleaseResources();
     }
 
     void InternalApp::BeginTick()
@@ -110,6 +117,8 @@ namespace NSG
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
     {
+        IMGUI::ViewChanged(width, height);
+
         pApp_->SetViewSize(width, height);
 
         if(width > 0 && height > 0)
@@ -138,6 +147,9 @@ namespace NSG
     void InternalApp::RenderFrame()
     {
         pApp_->RenderFrame();
+        IMGUI::Begin();
+        pApp_->RenderGUIFrame();
+        IMGUI::End();
     }
 
 #if NACL

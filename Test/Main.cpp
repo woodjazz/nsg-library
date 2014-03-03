@@ -25,13 +25,13 @@ misrepresented as being the original software.
 */
 
 #include "NSG/MemoryTest.h"
-#include "Test/App.h"
+#include "MyApp.h"
 
 #ifdef NACL
-	#include "NSG/NaCl3DInstance.h"
+	#include "NSG/AppNaCl.h"
 	namespace pp 
 	{
-		Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(NSG::PApp(new App)); }
+		Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(NSG::PApp(new MyApp)); }
 	} 
 #elif ANDROID
 
@@ -44,7 +44,7 @@ misrepresented as being the original software.
 
 	extern "C" void android_main(struct android_app* state)
 	{
-		NSG::CreateModule(state, NSG::PApp(new App));
+		NSG::CreateModule(state, NSG::PApp(new MyApp));
 	}
 #else
 	namespace NSG
@@ -54,7 +54,7 @@ misrepresented as being the original software.
 	
 	int main() 
 	{
-		NSG::CreateModule(NSG::PApp(new App));
+		NSG::CreateModule(NSG::PApp(new MyApp));
 		return 0;
 	}
 #endif

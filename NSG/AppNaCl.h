@@ -6,7 +6,7 @@
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-#include "NSG/IApp.h"
+#include "NSG/App.h"
 
 #ifdef WIN32
 #undef PostMessage
@@ -22,6 +22,7 @@ namespace NSG
 		{
 			public:
 				explicit NaCl3DInstance(PP_Instance instance, PApp pApp);
+				~NaCl3DInstance();
 				static pp::Instance* GetInstance();
 				virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 				virtual void DidChangeView(const pp::View& view);

@@ -1,7 +1,7 @@
 #if !defined(NACL) && !defined(ANDROID)
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
-#include "IApp.h"
+#include "App.h"
 #include "Tick.h"
 #include <memory>
 
@@ -121,6 +121,8 @@ namespace NSG
 		}
 
 		glfwTerminate();
+
+		s_pApp->Release();
 		
 		return true;
 	}

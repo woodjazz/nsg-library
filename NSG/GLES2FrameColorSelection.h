@@ -25,48 +25,40 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include <vector>
+#include "GLES2Program.h"
+#include "GLES2Mesh.h"
 #include "Node.h"
-#include "BoxMesh.h"
+#include "Types.h"
 
-namespace NSG
+namespace NSG 
 {
-	class Light : public Node
-	{
-	public:
-		Light();
-		~Light();
-		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
-		const Color& GetDiffuseColor() const { return diffuse_; }
-		void SetSpecularColor(Color specular) { specular_ = specular; }
-		const Color& GetSpecularColor() const { return specular_; }
-		void SetAttenuation(float constant, float linear, float quadratic);
-		struct Attenuation
-		{
-		    float constant;
-		    float linear;
-		    float quadratic;
-		};
-		const Attenuation& GetAttenuation() const { return attenuation_; }
-		void SetPoint();
-		void SetDirectional();
-		void SetSpotlight(float spotCutOff, float exponent);
-		float GetSpotCutOff() const { return spotCutOff_; }
-		float GetSpotExponent() const { return exponent_; }
-		enum Type {POINT, DIRECTIONAL, SPOT};
-		Type GetType() const { return type_; }
-		typedef std::vector<Light*> Lights;
-		static const Lights& GetLights();
-		void Render();
-	private:
-		Type type_;
-        Color diffuse_;
-        Color specular_;
-        Attenuation attenuation_;
-        float spotCutOff_;
-        float exponent_;
-        PBoxMesh pMesh_;
-	};
+    class GLES2FrameColorSelection
+    {
+    public:
+        GLES2FrameColorSelection();
+        ~GLES2FrameColorSelection();
+        void ViewChanged(int32_t windowWidth, int32_t windowHeight);
+        void Begin(double screenX, double screenY);
+        void End();
+        GLushort GetSelected() const;
+        void Render(GLushort id, PGLES2Mesh pMesh, PNode pNode);
+    private:
+        Color TransformSelectedId2Color(GLushort id);
+        PGLES2Program pProgram_;
+        GLuint position_loc_;
+        GLuint color_loc_;
+        GLuint mvp_loc_;
+        int32_t windowWidth_;
+        int32_t windowHeight_;
+        GLuint framebuffer_;
+        GLuint colorRenderbuffer_;
+        GLubyte selected_[4];
+        double screenX_;
+        double screenY_;
+        GLint pixelX_;
+        GLint pixelY_;
+    };
 
-	typedef std::shared_ptr<Light> PLight;
+    typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;
 }
+

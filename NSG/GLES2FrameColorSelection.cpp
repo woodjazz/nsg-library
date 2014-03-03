@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "FrameColorSelection.h"
+#include "GLES2FrameColorSelection.h"
 #include "Log.h"
 #include <assert.h>
 
@@ -37,7 +37,7 @@ static const char kSelectVertexShaderSource[] = {
 
 namespace NSG
 {
-	FrameColorSelection::FrameColorSelection()
+	GLES2FrameColorSelection::GLES2FrameColorSelection()
 	: pProgram_(new GLES2Program(kSelectVertexShaderSource, kSelectFragShaderSource)),
 	position_loc_(pProgram_->GetAttributeLocation("a_position")),
 	color_loc_(pProgram_->GetUniformLocation("u_color")),
@@ -54,12 +54,12 @@ namespace NSG
         memset(selected_, 0, sizeof(selected_));
 	}
 
-	FrameColorSelection::~FrameColorSelection()
+	GLES2FrameColorSelection::~GLES2FrameColorSelection()
 	{
 
 	}
 
-	void FrameColorSelection::ViewChanged(int32_t windowWidth, int32_t windowHeight)
+	void GLES2FrameColorSelection::ViewChanged(int32_t windowWidth, int32_t windowHeight)
 	{
 		windowWidth_ = windowWidth;
 		windowHeight_ = windowHeight;
@@ -79,7 +79,7 @@ namespace NSG
         }
 	}
 
-    void FrameColorSelection::Begin(double screenX, double screenY)
+    void GLES2FrameColorSelection::Begin(double screenX, double screenY)
     {
     	screenX_ = screenX;
     	screenY_ = screenY;
@@ -98,7 +98,7 @@ namespace NSG
         glEnable(GL_DEPTH_TEST);
     }
 
-    void FrameColorSelection::End()
+    void GLES2FrameColorSelection::End()
     {
         //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glReadPixels(pixelX_, pixelY_, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &selected_);
@@ -108,7 +108,7 @@ namespace NSG
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    GLushort FrameColorSelection::GetSelected() const
+    GLushort GLES2FrameColorSelection::GetSelected() const
     {
         GLushort b3 = (GLushort)selected_[3] / 0x10;
         GLushort b2 = (GLushort)selected_[2] / 0x10;
@@ -118,7 +118,7 @@ namespace NSG
         return index;
     }
 
-    Color FrameColorSelection::TransformSelectedId2Color(GLushort id)
+    Color GLES2FrameColorSelection::TransformSelectedId2Color(GLushort id)
     {
         Color color;
         color[0] = (id & 0x000F) / 15.0f;
@@ -128,7 +128,7 @@ namespace NSG
         return color;
     }
 
-    void FrameColorSelection::Render(GLushort id, PMesh pMesh, PNode pNode)
+    void GLES2FrameColorSelection::Render(GLushort id, PGLES2Mesh pMesh, PNode pNode)
     {
         UseProgram useProgram(*pProgram_);
 

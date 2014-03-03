@@ -23,15 +23,15 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "Camera.h"
+#include "GLES2Camera.h"
 #include "Log.h"
 #include "GLES2Includes.h"
 
 namespace NSG
 {
-	Camera* s_pActiveCamera;
+	GLES2Camera* s_pActiveGLES2Camera;
 
-	Camera::Camera(float fovy, float zNear, float zFar) 
+	GLES2Camera::GLES2Camera(float fovy, float zNear, float zFar) 
 	: fovy_(fovy), 
 	zNear_(zNear), 
 	zFar_(zFar),
@@ -44,21 +44,21 @@ namespace NSG
 	{
 	}
 
-	Camera::~Camera() 
+	GLES2Camera::~GLES2Camera() 
 	{
 	}
 
-	void Camera::Deactivate()
+	void GLES2Camera::Deactivate()
 	{
-		s_pActiveCamera = nullptr;
+		s_pActiveGLES2Camera = nullptr;
 	}
 
-	Camera* Camera::GetActiveCamera()
+	GLES2Camera* GLES2Camera::GetActiveCamera()
 	{
-		return s_pActiveCamera;
+		return s_pActiveGLES2Camera;
 	}
 
-	void Camera::SetViewport(float xo, float yo, float xf, float yf)
+	void GLES2Camera::SetViewport(float xo, float yo, float xf, float yf)
 	{
 		xo_ = xo;
 		yo_ = yo;
@@ -66,14 +66,14 @@ namespace NSG
 		yf_ = yf;
 	}
 
-	void Camera::Activate()
+	void GLES2Camera::Activate()
 	{
-		s_pActiveCamera = this;
+		s_pActiveGLES2Camera = this;
 
 		glViewport(width_ * xo_, height_ * yo_, width_ * xf_, height_ * yf_);		
 	}
 
-	void Camera::ViewChanged(int32_t width, int32_t height)
+	void GLES2Camera::ViewChanged(int32_t width, int32_t height)
 	{
 		if(height > 0)
 		{
@@ -88,36 +88,36 @@ namespace NSG
 		}
 	}
 
-	void Camera::SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up)
+	void GLES2Camera::SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up)
 	{
 		matView_ = glm::lookAt(eye, center, up);
 		matViewInverse_ = glm::inverse(matView_);
 		Update();
 	}
 
-	void Camera::Update()
+	void GLES2Camera::Update()
 	{
 		matViewProjection_ = matProjection_ * matView_;
 	}
 
-	Matrix4 Camera::GetModelViewProjection(Node* pNode)
+	Matrix4 GLES2Camera::GetModelViewProjection(Node* pNode)
 	{
-		if (s_pActiveCamera)
+		if (s_pActiveGLES2Camera)
 		{
-			return s_pActiveCamera->matViewProjection_ * pNode->GetModelMatrix();
+			return s_pActiveGLES2Camera->matViewProjection_ * pNode->GetModelMatrix();
 		}
 		else
 		{
-			// if no camera then position is in screen coordinates
+			// if no GLES2Camera then position is in screen coordinates
 			return pNode->GetModelMatrix();
 		}
 	}
 
-	const Matrix4& Camera::GetViewProjectionMatrix()
+	const Matrix4& GLES2Camera::GetViewProjectionMatrix()
 	{
-		if (s_pActiveCamera)
+		if (s_pActiveGLES2Camera)
 		{
-			return s_pActiveCamera->matViewProjection_;
+			return s_pActiveGLES2Camera->matViewProjection_;
 		}
 		else
 		{
@@ -126,11 +126,11 @@ namespace NSG
 		}
 	}
 
-	const Matrix4& Camera::GetInverseViewMatrix()
+	const Matrix4& GLES2Camera::GetInverseViewMatrix()
 	{
-		if (s_pActiveCamera)
+		if (s_pActiveGLES2Camera)
 		{
-			return s_pActiveCamera->matViewInverse_;
+			return s_pActiveGLES2Camera->matViewInverse_;
 		}
 		else
 		{

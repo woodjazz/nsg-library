@@ -24,59 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <thread>
-#include "NSG/IApp.h"
-#include "NSG/BoxMesh.h"
-#include "NSG/SphereMesh.h"
-#include "NSG/Node.h"
-#include "NSG/Camera.h"
-#include "NSG/Text.h"
-#include "NSG/Light.h"
-#include "NSG/FrameColorSelection.h"
+#include <memory>
+#include "GLES2Material.h"
+#include "GLES2Mesh.h"
 
-using namespace NSG;
-
-class App : public NSG::IApp 
+namespace NSG
 {
-public:
-	App();
-	~App();
-	int GetFPS() const;
-	void Start();
-	void Update(float delta);
-	void LateUpdate();
-	void RenderFrame();
-	void ViewChanged(int32_t width, int32_t height);
-	void OnMouseMove(double x, double y);
-    void OnMouseDown(double x, double y);
-    void OnMouseUp();
+	class GLES2BoxMesh : public GLES2Mesh
+	{
+	public:
+		GLES2BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, PGLES2Material pMaterial, GLenum usage);
+		~GLES2BoxMesh();
+	};
 
-private:
-	void InternalTask();
-	std::thread thread_;
-	PLight pLight0_;
-	PGLES2Material pMaterial2_;
-	PBoxMesh pMesh_;
-	PSphereMesh pSphereMesh_;
-	PNode pNode1_;
-	PNode pNode2_;
-	PNode pTextNode0_;
-	PNode pTextNode1_;
-	PCamera pCamera1_;
-	PCamera pCamera2_;
-	float x_angle_;
-	float y_angle_;
-	PText pText1_;
-	PText pText2_;
-	PText pText3_;
-	int32_t width_;
-	int32_t height_;
-	double x_;
-	double y_;
-	bool buttonDown_;
-	bool buttonUp_;
-	GLushort selectedIndex_;
-	PFrameColorSelection pFrameColorSelection_;
-	Vertex3 scale_;
-};
-
+	typedef std::shared_ptr<GLES2BoxMesh> PGLES2BoxMesh;
+}

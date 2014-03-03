@@ -23,12 +23,12 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "BoxMesh.h"
+#include "GLES2BoxMesh.h"
 
 namespace NSG
 {
-	BoxMesh::BoxMesh(Color color, float width, float height, float depth, int resX, int resY, int resZ, PGLES2Material pMaterial, GLenum usage) 
-	: Mesh(pMaterial, usage)
+	GLES2BoxMesh::GLES2BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, PGLES2Material pMaterial, GLenum usage) 
+	: GLES2Mesh(pMaterial, usage)
 	{
 		// halves //
 		float halfW = width * .5f;
@@ -40,7 +40,7 @@ namespace NSG
 		Vertex3 normal;
 		int vertOffset = 0;
 
-		Mesh::Data& data = GetVertexData();
+		GLES2Mesh::Data& data = GetVertexData();
 
 		// TRIANGLES //
 
@@ -63,7 +63,6 @@ namespace NSG
 				VertexData vertexData;
 				vertexData.normal_ = normal;
 				vertexData.position_ = vert;
-				vertexData.color_ = color;
 				vertexData.uv_ = texcoord;
 
 				data.push_back(vertexData);
@@ -110,7 +109,6 @@ namespace NSG
 				VertexData vertexData;
 				vertexData.normal_ = normal;
 				vertexData.position_ = vert;
-				vertexData.color_ = color;
 				vertexData.uv_ = texcoord;
 
 				data.push_back(vertexData);
@@ -155,7 +153,6 @@ namespace NSG
 				VertexData vertexData;
 				vertexData.normal_ = normal;
 				vertexData.position_ = vert;
-				vertexData.color_ = color;
 				vertexData.uv_ = texcoord;
 
 				data.push_back(vertexData);
@@ -200,7 +197,6 @@ namespace NSG
 				VertexData vertexData;
 				vertexData.normal_ = normal;
 				vertexData.position_ = vert;
-				vertexData.color_ = color;
 				vertexData.uv_ = texcoord;
 
 				data.push_back(vertexData);
@@ -245,7 +241,6 @@ namespace NSG
 				VertexData vertexData;
 				vertexData.normal_ = normal;
 				vertexData.position_ = vert;
-				vertexData.color_ = color;
 				vertexData.uv_ = texcoord;
 
 				data.push_back(vertexData);
@@ -289,7 +284,6 @@ namespace NSG
 				VertexData vertexData;
 				vertexData.normal_ = normal;
 				vertexData.position_ = vert;
-				vertexData.color_ = color;
 				vertexData.uv_ = texcoord;
 
 				data.push_back(vertexData);
@@ -316,7 +310,7 @@ namespace NSG
 	    Redo();
 	}
 
-	BoxMesh::~BoxMesh() 
+	GLES2BoxMesh::~GLES2BoxMesh() 
 	{
 	}
 }

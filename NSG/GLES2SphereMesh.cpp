@@ -23,16 +23,16 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "SphereMesh.h"
+#include "GLES2SphereMesh.h"
 #include "Types.h"
 #include "Log.h"
 
 namespace NSG
 {
-	SphereMesh::SphereMesh(Color color, float radius, int res, PGLES2Material pMaterial, GLenum usage) 
-	: Mesh(pMaterial, usage)
+	GLES2SphereMesh::GLES2SphereMesh(float radius, int res, PGLES2Material pMaterial, GLenum usage) 
+	: GLES2Mesh(pMaterial, usage)
 	{
-		Mesh::Data& data = GetVertexData();
+		GLES2Mesh::Data& data = GetVertexData();
 
 		static const float PI = glm::pi<float>();
 		static const float TWO_PI = 2*PI;
@@ -61,7 +61,6 @@ namespace NSG
 				VertexData vertexData;
 				vertexData.normal_ = Vertex3(nx,ny,nz);
 				vertexData.position_ = vertexData.normal_ * radius;
-				vertexData.color_ = color;
 				vertexData.uv_ = tcoord;
 				
 				data.push_back(vertexData);
@@ -109,7 +108,7 @@ namespace NSG
 	    Redo();
 	}
 
-	SphereMesh::~SphereMesh() 
+	GLES2SphereMesh::~GLES2SphereMesh() 
 	{
 	}
 

@@ -24,41 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
-#include "GLES2Program.h"
-#include "Mesh.h"
-#include "Node.h"
-#include "Types.h"
+
+#include <cstdint>
 
 namespace NSG 
 {
-    class FrameColorSelection
-    {
-    public:
-        FrameColorSelection();
-        ~FrameColorSelection();
-        void ViewChanged(int32_t windowWidth, int32_t windowHeight);
-        void Begin(double screenX, double screenY);
-        void End();
-        GLushort GetSelected() const;
-        void Render(GLushort id, PMesh pMesh, PNode pNode);
-    private:
-        Color TransformSelectedId2Color(GLushort id);
-        PGLES2Program pProgram_;
-        GLuint position_loc_;
-        GLuint color_loc_;
-        GLuint mvp_loc_;
-        int32_t windowWidth_;
-        int32_t windowHeight_;
-        GLuint framebuffer_;
-        GLuint colorRenderbuffer_;
-        GLubyte selected_[4];
-        double screenX_;
-        double screenY_;
-        GLint pixelX_;
-        GLint pixelY_;
-    };
-
-    typedef std::shared_ptr<FrameColorSelection> PFrameColorSelection;
+	namespace IMGUI
+	{
+		void AllocateResources();
+		void ReleaseResources();
+		void Begin();
+		void End();
+		void DrawRect(float x, float y, float w, float h);
+		void ViewChanged(int32_t width, int32_t height);
+	}
 }
-

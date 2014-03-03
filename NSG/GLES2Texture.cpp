@@ -1,9 +1,9 @@
 #include "GLES2Texture.h"
 #include "soil/SOIL.h"
 #include "Log.h"
-#include "IApp.h"
+#include "App.h"
 #if NACL
-#include "NaCl3DInstance.h"
+#include "AppNaCl.h"
 #endif
 #include <thread>
 #include <chrono>

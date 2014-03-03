@@ -26,16 +26,16 @@ misrepresented as being the original software.
 #pragma once
 #include <memory>
 #include "GLES2Material.h"
-#include "Mesh.h"
+#include "GLES2Mesh.h"
 
 namespace NSG
 {
-	class BoxMesh : public Mesh
+	class GLES2PlaneMesh : public GLES2Mesh
 	{
 	public:
-		BoxMesh(Color color, float width, float height, float depth, int resX, int resY, int resZ, PGLES2Material pMaterial, GLenum usage);
-		~BoxMesh();
+		GLES2PlaneMesh(float width, float height, int columns, int rows, PGLES2Material pMaterial, GLenum usage);
+		~GLES2PlaneMesh();
 	};
 
-	typedef std::shared_ptr<BoxMesh> PBoxMesh;
+	typedef std::shared_ptr<GLES2PlaneMesh> PGLES2PlaneMesh;
 }

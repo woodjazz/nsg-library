@@ -26,11 +26,11 @@ misrepresented as being the original software.
 #pragma once
 #include <vector>
 #include <memory>
-#include "NSG/GLES2Material.h"
-#include "NSG/GLES2VertexBuffer.h"
-#include "NSG/GLES2IndexBuffer.h"
-#include "NSG/Types.h"
-#include "Camera.h"
+#include "GLES2Material.h"
+#include "GLES2VertexBuffer.h"
+#include "GLES2IndexBuffer.h"
+#include "Types.h"
+#include "GLES2Camera.h"
 #include "Node.h"
 
 namespace NSG
@@ -38,22 +38,21 @@ namespace NSG
 	struct VertexData
 	{
 		Vertex3 position_;
-		Color color_;
 		Vertex3 normal_;
 		Vertex2 uv_;
 
 		VertexData();
-		VertexData(Vertex3 position, Color color, Vertex2 uv);
+		VertexData(Vertex3 position, Vertex2 uv);
 	};
 
 	typedef GLushort IndexType;
 	typedef std::vector<IndexType> Indexes;
 
-	class Mesh
+	class GLES2Mesh
 	{
 	public:
-		Mesh(PGLES2Material pMaterial, GLenum usage);
-		~Mesh();
+		GLES2Mesh(PGLES2Material pMaterial, GLenum usage);
+		~GLES2Mesh();
 		void Render(PNode pNode);
 		void Render(Node* pNode);
 		void RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc);
@@ -79,5 +78,5 @@ namespace NSG
         bool loaded_;
 	};
 
-	typedef std::shared_ptr<Mesh> PMesh;
+	typedef std::shared_ptr<GLES2Mesh> PGLES2Mesh;
 }

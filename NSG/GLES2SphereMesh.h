@@ -25,44 +25,17 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include "Types.h"
-#include "Node.h"
+#include "GLES2Material.h"
+#include "GLES2Mesh.h"
 
 namespace NSG
 {
-	class Camera;
-
-	typedef std::shared_ptr<Camera> PCamera;
-
-	class Camera
+	class GLES2SphereMesh : public GLES2Mesh
 	{
 	public:
-		Camera(float fovy, float zNear, float zFar);
-		~Camera();
-		void SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
-		static void Deactivate();
-		static Camera* GetActiveCamera();
-		static Matrix4 GetModelViewProjection(Node* pNode);
-		static const Matrix4& GetViewProjectionMatrix();
-		static const Matrix4& GetInverseViewMatrix();
-		void Activate();
-		void SetViewport(float xo, float yo, float xf, float yf);
-		void ViewChanged(int32_t width, int32_t height);
-
-	private:
-		void Update();		
-		Matrix4 matView_;
-		Matrix4 matViewInverse_;
-		Matrix4 matProjection_;
-		Matrix4 matViewProjection_;
-		float fovy_;
-		float zNear_;
-		float zFar_;
-		int32_t width_;
-		int32_t height_;
-		float xo_;
-		float yo_;
-		float xf_;
-		float yf_;
+		GLES2SphereMesh(float radius, int res, PGLES2Material pMaterial, GLenum usage);
+		~GLES2SphereMesh();
 	};
+
+	typedef std::shared_ptr<GLES2SphereMesh> PGLES2SphereMesh;
 }

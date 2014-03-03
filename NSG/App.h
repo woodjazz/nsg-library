@@ -36,21 +36,22 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
-	class IApp 
+	class App 
 	{
 	public:
-        IApp();
-		virtual ~IApp();
+        App();
+		virtual ~App();
         virtual int GetFPS() const;
 		virtual void Start() {}
 		virtual void Update(float delta) {}
 		virtual void LateUpdate() {}
 		virtual void RenderFrame() = 0;
+        virtual void RenderGUIFrame() {}
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;
         virtual void OnMouseMove(double x, double y) {}
         virtual void OnMouseDown(double x, double y) {}
         virtual void OnMouseUp() {}
-        static IApp* GetPtrInstance();
+        static App* GetPtrInstance();
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
 
@@ -68,7 +69,7 @@ namespace NSG
     int32_t height_;
 	};
 
-	typedef std::shared_ptr<IApp> PApp;
+	typedef std::shared_ptr<App> PApp;
 
     struct InternalApp : public Tick
     {
@@ -76,6 +77,7 @@ namespace NSG
 
         InternalApp(NSG::PApp pApp);
         void Initialize();
+        void Release();
         void BeginTick();
         void DoTick(float delta);
         void EndTick();

@@ -45,7 +45,6 @@ namespace NSG
 		GLuint GetTextCoordAttLocation() { return texcoord_loc_; }
 		GLuint GetPositionAttLocation() { return position_loc_; }
 		GLuint GetNormalAttLocation() { return normal_loc_; }
-		GLuint GetColorAttLocation() { return color_loc_; }
 		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
 		void SetSpecularColor(Color specular) { specular_ = specular; }
 		void SetShininess(float shininess) { shininess_=shininess; }
@@ -62,7 +61,6 @@ namespace NSG
 		GLuint texcoord_loc_;
 		GLuint position_loc_;
 		GLuint normal_loc_;
-		GLuint color_loc_;
 		GLuint model_inv_transp_loc_;
 		GLuint v_inv_loc_;
         GLuint mvp_loc_;
