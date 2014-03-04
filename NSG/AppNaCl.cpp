@@ -117,7 +117,7 @@ namespace NSG
 					if(height_ > 0 && width_ > 0)
 					{
 						pp::MouseInputEvent mouse_event(event);
-						pApp_->OnMouseMove(-1 + 2*(double)mouse_event.GetPosition().x()/width_, 1 + -2*(double)mouse_event.GetPosition().y()/height_);
+						pApp_->OnMouseMove(-1 + 2*(float)mouse_event.GetPosition().x()/width_, 1 + -2*(float)mouse_event.GetPosition().y()/height_);
 					}
 					break;
 				}
@@ -129,7 +129,7 @@ namespace NSG
 					{
 						pp::MouseInputEvent mouse_event(event);
 
-						pApp_->OnMouseDown(-1 + 2*(double)mouse_event.GetPosition().x()/width_, 1 + -2*(double)mouse_event.GetPosition().y()/height_);
+						pApp_->OnMouseDown(-1 + 2*(float)mouse_event.GetPosition().x()/width_, 1 + -2*(float)mouse_event.GetPosition().y()/height_);
 					}
 					break;
 				}

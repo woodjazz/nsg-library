@@ -101,12 +101,12 @@ void MyApp::Start()
 	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
 	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
 	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
-	pMaterial2_ = PGLES2Material(new GLES2Material (pEarthTexture, pDiffuseProgram));
+	pMaterial2_ = PGLES2Material(new GLES2Material (pDiffuseProgram, pEarthTexture));
 	pMaterial2_->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial2_->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
 	pMaterial2_->SetShininess(0.3f);
 
-	PGLES2Material pMaterial3(new GLES2Material (pTexture, pDiffuseProgram));
+	PGLES2Material pMaterial3(new GLES2Material (pDiffuseProgram, pTexture));
 
 	pSphereMesh_ = PGLES2SphereMesh(new GLES2SphereMesh(3, 32, pMaterial2_, GL_STATIC_DRAW));
 	pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(1,1,1, 2,2,2, pMaterial3, GL_STATIC_DRAW));
@@ -121,14 +121,13 @@ void MyApp::Start()
     pNode1_->SetPosition(Vertex3(-5, 0, 0));
     pNode1_->SetScale(Vertex3(3,3,3));
 
-
     pNode2_->SetPosition(Vertex3(5, 0, 0));
 
     pCamera1_->SetLookAt(Vertex3(0,0,10), Vertex3(0,0,0));
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 
-    pText1_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 24, GL_DYNAMIC_DRAW));
+    pText1_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 18, GL_DYNAMIC_DRAW));
     pText2_ = PGLES2Text(new GLES2Text("font/bluebold.ttf", 24, GL_STATIC_DRAW));
     pText3_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 48, GL_STATIC_DRAW));
 
@@ -174,7 +173,16 @@ void MyApp::LateUpdate()
 
 void MyApp::RenderGUIFrame()
 {
-	IMGUI::DrawRect(x_, y_, 0.5f, 0.5f);
+	if(IMGUI::Button(1, 0, 0, "Button 1"))
+	{
+		TRACE_LOG("Button 1 pressed\n");
+	}
+	
+    if(IMGUI::Button(2, 0.5f, 0.5f, "Button 2"))
+	{
+		TRACE_LOG("Button 2 pressed\n");
+	}
+
 }
 
 void MyApp::RenderFrame() 
@@ -183,7 +191,7 @@ void MyApp::RenderFrame()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glClearColor(1, 1, 1, 1);
+	glClearColor(0, 0, 0, 1);
 	glClearDepth(1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -202,7 +210,6 @@ void MyApp::RenderFrame()
     pMesh_->Render(pNode1_);
     pSphereMesh_->Render(pNode2_);
 
-
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;
 
@@ -219,7 +226,7 @@ void MyApp::RenderFrame()
 
 
 	GLES2Camera::Deactivate();
-	pText1_->Render(pTextNode1_, Color(0,0,0,1), ss.str());
+	pText1_->Render(pTextNode1_, Color(1,1,1,1), ss.str());
 
     //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");
 
@@ -271,13 +278,13 @@ void MyApp::ViewChanged(int32_t width, int32_t height)
 	pFrameColorSelection_->ViewChanged(width, height);
 }
 
-void MyApp::OnMouseMove(double x, double y)
+void MyApp::OnMouseMove(float x, float y)
 {
 	x_=x;
 	y_=y;
 }
 
-void MyApp::OnMouseDown(double x, double y)
+void MyApp::OnMouseDown(float x, float y)
 {
 	x_=x;
 	y_=y;

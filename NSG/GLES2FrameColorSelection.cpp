@@ -47,7 +47,8 @@ namespace NSG
 	screenX_(0),
 	screenY_(0),
 	pixelX_(0),
-	pixelY_(0)
+	pixelY_(0),
+    isDepthTestEnabled_(false)
 	{
         glGenFramebuffers(1, &framebuffer_);
         glGenRenderbuffers(1, &colorRenderbuffer_);
@@ -79,19 +80,20 @@ namespace NSG
         }
 	}
 
-    void GLES2FrameColorSelection::Begin(double screenX, double screenY)
+    void GLES2FrameColorSelection::Begin(float screenX, float screenY)
     {
     	screenX_ = screenX;
     	screenY_ = screenY;
 
-        pixelX_ = (GLint)((1 + screenX)/2.0 * windowWidth_);
-        pixelY_ = (GLint)((1 + screenY)/2.0 * windowHeight_);
+        pixelX_ = (GLint)((1 + screenX)/2.0f * windowWidth_);
+        pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 #ifndef ANDROID
         glEnable(GL_SCISSOR_TEST);
         glScissor(pixelX_,pixelY_,1,1);
 #endif
+        isDepthTestEnabled_ = glIsEnabled(GL_DEPTH_TEST);
         glClearColor(0, 0, 0, 0);
         glClearDepth(1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -106,6 +108,9 @@ namespace NSG
         glDisable(GL_SCISSOR_TEST);
 #endif        
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        if(!isDepthTestEnabled_)
+            glDisable(GL_DEPTH_TEST);
     }
 
     GLushort GLES2FrameColorSelection::GetSelected() const
@@ -130,13 +135,19 @@ namespace NSG
 
     void GLES2FrameColorSelection::Render(GLushort id, PGLES2Mesh pMesh, PNode pNode)
     {
+        Render(id, pMesh, pNode.get());
+    }
+
+    void GLES2FrameColorSelection::Render(GLushort id, PGLES2Mesh pMesh, Node* pNode)
+    {
         UseProgram useProgram(*pProgram_);
 
-		Color color = TransformSelectedId2Color(id);
-		
-		glUniform4fv(color_loc_, 1, &color[0]);
+        Color color = TransformSelectedId2Color(id);
+        
+        glUniform4fv(color_loc_, 1, &color[0]);
 
-    	pMesh->RenderForSelect(pNode, position_loc_, mvp_loc_);
+        pMesh->RenderForSelect(pNode, position_loc_, mvp_loc_);
+
     }
 
 }

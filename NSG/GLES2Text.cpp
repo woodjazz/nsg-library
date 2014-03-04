@@ -184,15 +184,19 @@ namespace NSG
 
 		return pResource_ == nullptr;
 	}
-
 	void GLES2Text::Render(PNode pNode, Color color, const std::string& text) 
+	{
+		Render(pNode.get(), color, text);
+	}
+
+	void GLES2Text::Render(Node* pNode, Color color, const std::string& text) 
 	{
 		if(!IsReady() || text.empty())
 			return;
 
 		auto viewSize = App::GetPtrInstance()->GetViewSize();
 
-		if(viewSize.first != width_ || viewSize.second != height_)
+		if(lastText_ != text || viewSize.first != width_ || viewSize.second != height_)
 		{
 			width_ = viewSize.first;
 			height_ = viewSize.second;
@@ -200,10 +204,8 @@ namespace NSG
 			pVBuffer_ = nullptr;
 		}
 
-		if(lastText_ != text && width_ > 0 && height_ > 0)
+		if(!pVBuffer_ && width_ > 0 && height_ > 0)
 		{
-            pVBuffer_ = nullptr;
-
 			float x = 0;
 			float y = 0;
 
@@ -215,6 +217,8 @@ namespace NSG
 	        coords_.clear();
 
 	        coords_.resize(length);
+
+            screenHeight_ = 0;
 
 			int c = 0;
 
@@ -248,10 +252,11 @@ namespace NSG
 	            coords_[c++] = point4;
 	            coords_[c++] = point5;
 	            coords_[c++] = point6;
+
+                screenHeight_ = std::max(screenHeight_, h);
 			}
 
             screenWidth_ = x;
-            screenHeight_ = y;
 
 			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(Point) * coords_.size(), &coords_[0], usage_));
 
@@ -260,6 +265,9 @@ namespace NSG
 
 		if(pVBuffer_ != nullptr)
 		{
+            //bool isDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+            //glEnable(GL_DEPTH_TEST);
+
             assert(glGetError() == GL_NO_ERROR);
 
 			GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
@@ -268,7 +276,7 @@ namespace NSG
 
 			UseProgram useProgram(*pProgram_);
 
-			Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode.get());
+			Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
 			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
 
 			glActiveTexture(GL_TEXTURE0);
@@ -288,6 +296,9 @@ namespace NSG
 			if(!isBlendEnabled)
 				glDisable(GL_BLEND);
 
+            //if(!isDepthTestEnabled)
+            //    glDisable(GL_DEPTH_TEST);
+            
             assert(glGetError() == GL_NO_ERROR);
 		}
 	}	

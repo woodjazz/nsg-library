@@ -49,8 +49,8 @@ public:
 	void RenderFrame();
 	void RenderGUIFrame();
 	void ViewChanged(int32_t width, int32_t height);
-	void OnMouseMove(double x, double y);
-    void OnMouseDown(double x, double y);
+	void OnMouseMove(float x, float y);
+    void OnMouseDown(float x, float y);
     void OnMouseUp();
 
 private:
@@ -74,8 +74,8 @@ private:
 	PGLES2Text pText3_;
 	int32_t width_;
 	int32_t height_;
-	double x_;
-	double y_;
+	float x_;
+	float y_;
 	bool buttonDown_;
 	bool buttonUp_;
 	GLushort selectedIndex_;

@@ -44,6 +44,7 @@ namespace NSG
 		GLES2Text(const char* filename, int fontSize, GLenum usage);
 		~GLES2Text();
 		void Render(PNode pNode, Color color, const std::string& text);
+		void Render(Node* pNode, Color color, const std::string& text);
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }
 	private:

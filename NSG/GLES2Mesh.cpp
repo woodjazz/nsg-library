@@ -171,12 +171,17 @@ namespace NSG
 
 	void GLES2Mesh::RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc) 
 	{
+		RenderForSelect(pNode.get(), position_loc, mvp_loc);
+	}	
+
+	void GLES2Mesh::RenderForSelect(Node* pNode, GLuint position_loc, GLuint mvp_loc) 
+	{
 		if(!pVBuffer_) 
 			return;
 
         assert(glGetError() == GL_NO_ERROR);
 
-		Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode.get());
+		Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
 		glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp));
 
 		BindBuffer bindVBuffer(*pVBuffer_);
@@ -196,4 +201,5 @@ namespace NSG
 
         assert(glGetError() == GL_NO_ERROR);
 	}	
+
 }

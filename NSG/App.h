@@ -48,8 +48,8 @@ namespace NSG
 		virtual void RenderFrame() = 0;
         virtual void RenderGUIFrame() {}
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;
-        virtual void OnMouseMove(double x, double y) {}
-        virtual void OnMouseDown(double x, double y) {}
+        virtual void OnMouseMove(float x, float y) {}
+        virtual void OnMouseDown(float x, float y) {}
         virtual void OnMouseUp() {}
         static App* GetPtrInstance();
         void SetViewSize(int32_t width, int32_t height);
@@ -82,8 +82,8 @@ namespace NSG
         void DoTick(float delta);
         void EndTick();
         void ViewChanged(int32_t width, int32_t height);
-        void OnMouseMove(double x, double y);
-        void OnMouseDown(double x, double y);
+        void OnMouseMove(float x, float y);
+        void OnMouseDown(float x, float y);
         void OnMouseUp();
         void RenderFrame();
 	#if NACL

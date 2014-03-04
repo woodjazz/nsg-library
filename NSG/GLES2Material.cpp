@@ -11,7 +11,7 @@ namespace NSG
 {
 	const size_t MAX_LIGHTS_MATERIAL = 4;
 
-	GLES2Material::GLES2Material(PGLES2Texture pTexture, PGLES2Program pProgram) 
+	GLES2Material::GLES2Material(PGLES2Program pProgram, PGLES2Texture pTexture) 
 	: pTexture_(pTexture), 
 	pProgram_(pProgram),
 	color_scene_ambient_loc_(-1),

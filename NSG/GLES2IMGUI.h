@@ -26,6 +26,9 @@ misrepresented as being the original software.
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include "GLES2Includes.h"
+#include "Types.h"
 
 namespace NSG 
 {
@@ -35,7 +38,11 @@ namespace NSG
 		void ReleaseResources();
 		void Begin();
 		void End();
-		void DrawRect(float x, float y, float w, float h);
+		bool Button(GLushort id, float x, float y, const std::string& text);
 		void ViewChanged(int32_t width, int32_t height);
+        void OnMouseMove(float x, float y);
+        void OnMouseDown(float x, float y);
+        void OnMouseUp();
+
 	}
 }

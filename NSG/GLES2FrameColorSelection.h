@@ -38,10 +38,11 @@ namespace NSG
         GLES2FrameColorSelection();
         ~GLES2FrameColorSelection();
         void ViewChanged(int32_t windowWidth, int32_t windowHeight);
-        void Begin(double screenX, double screenY);
+        void Begin(float screenX, float screenY);
         void End();
         GLushort GetSelected() const;
         void Render(GLushort id, PGLES2Mesh pMesh, PNode pNode);
+        void Render(GLushort id, PGLES2Mesh pMesh, Node* pNode);
     private:
         Color TransformSelectedId2Color(GLushort id);
         PGLES2Program pProgram_;
@@ -57,6 +58,7 @@ namespace NSG
         double screenY_;
         GLint pixelX_;
         GLint pixelY_;
+        GLboolean isDepthTestEnabled_;
     };
 
     typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;

@@ -56,6 +56,7 @@ namespace NSG
 		void Render(PNode pNode);
 		void Render(Node* pNode);
 		void RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc);
+		void RenderForSelect(Node* pNode, GLuint position_loc, GLuint mvp_loc);
 		void AddVertexData(const VertexData& data);
 		void SetIndices(const Indexes& indexes);
 		void Redo();
@@ -63,6 +64,7 @@ namespace NSG
 		Data& GetVertexData() { return vertexsData_; }
 		enum Mode {POINTS, LINES, LINE_STRIP, TRIANGLES};
 		void SetMode(Mode mode);
+		PGLES2Material GetMaterial() const { return pMaterial_; }
 	private:
 		PGLES2Material pMaterial_;
 		PGLES2IndexBuffer pIBuffer_;

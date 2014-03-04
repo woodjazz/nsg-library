@@ -117,9 +117,9 @@ namespace NSG
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
     {
-        IMGUI::ViewChanged(width, height);
-
         pApp_->SetViewSize(width, height);
+
+        IMGUI::ViewChanged(width, height);
 
         if(width > 0 && height > 0)
         {
@@ -129,18 +129,21 @@ namespace NSG
         }
     }
 
-    void InternalApp::OnMouseMove(double x, double y) 
+    void InternalApp::OnMouseMove(float x, float y) 
     {
+        IMGUI::OnMouseMove(x, y);
         pApp_->OnMouseMove(x, y);
     }
 
-    void InternalApp::OnMouseDown(double x, double y) 
+    void InternalApp::OnMouseDown(float x, float y) 
     {
+        IMGUI::OnMouseDown(x, y);
         pApp_->OnMouseDown(x, y);
     }
 
     void InternalApp::OnMouseUp() 
     {
+        IMGUI::OnMouseUp();
         pApp_->OnMouseUp();
     }
 

@@ -39,7 +39,7 @@ namespace NSG
 	class GLES2Material
 	{
 	public:
-		GLES2Material(PGLES2Texture pTexture, PGLES2Program pProgram);
+		GLES2Material(PGLES2Program pProgram, PGLES2Texture pTexture = nullptr);
 		~GLES2Material();
 		bool IsReady();
 		GLuint GetTextCoordAttLocation() { return texcoord_loc_; }

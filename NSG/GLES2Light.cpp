@@ -26,7 +26,7 @@ namespace NSG
 		PResource pVResource(new Resource("shaders/LightSimple.vert"));
 		PResource pFResource(new Resource("shaders/LightSimple.frag"));
 		PGLES2Program pProgram(new GLES2Program(pVResource, pFResource));
-		PGLES2Material pMaterial = PGLES2Material(new GLES2Material (nullptr, pProgram));
+		PGLES2Material pMaterial = PGLES2Material(new GLES2Material (pProgram));
 
 		pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(0.2f,0.2f,0.2f, 2,2,2, pMaterial, GL_STATIC_DRAW));
 	}
