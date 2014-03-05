@@ -24,8 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "GLES2IMGUI.h"
-#include "GLES2PlaneMesh.h"
+#include "GLES2RectangleMesh.h"
+#include "GLES2CircleMesh.h"
+#include "GLES2EllipseMesh.h"
 #include "Node.h"
+#include "Constants.h"
 #include "GLES2FrameColorSelection.h"
 #include "GLES2Text.h"
 #include <map>
@@ -40,7 +43,9 @@ const char s_vertexShaderSource[] = {
 #include "shaders/gles2GUIVertexShader.h"
 };
 
-static PGLES2PlaneMesh s_pPlaneMesh;
+static PGLES2RectangleMesh s_pRectangleMesh;
+static PGLES2CircleMesh s_pCircleMesh;
+static PGLES2EllipseMesh s_pEllipseMesh;
 static int32_t s_width = 0;
 static int32_t s_height = 0;
 static GLES2Camera* s_pCamera = nullptr;
@@ -49,6 +54,9 @@ namespace NSG
 {
 	namespace IMGUI
 	{
+		ButtonType buttonType = RECTANGLE;
+		PGLES2Mesh pButtonMesh = s_pRectangleMesh;
+
 		class TextManager
 		{
 		public:
@@ -83,7 +91,7 @@ namespace NSG
 			int fontSize_;
 		};
 
-		TextManager textManager("font/FreeSans.ttf", 18);
+		TextManager textManager("font/FreeSans.ttf", 48);
 
 		struct UIState
 		{
@@ -104,20 +112,24 @@ namespace NSG
 
 		void AllocateResources()
 		{
-			assert(s_pPlaneMesh == nullptr);
-			float width = 1;
-			float height = 1;
-			int columns = 2;
-			int rows = 2;
+			assert(s_pRectangleMesh == nullptr);
 			PGLES2Program pProgram(new GLES2Program(s_vertexShaderSource, s_fragShaderSource));
 			PGLES2Material pMaterial(new GLES2Material(pProgram));
 			pMaterial->SetDiffuseColor(Color(1,0,0,1));
-			s_pPlaneMesh = PGLES2PlaneMesh(new GLES2PlaneMesh(width, height, columns, rows, pMaterial, GL_STATIC_DRAW));
+			s_pRectangleMesh = PGLES2RectangleMesh(new GLES2RectangleMesh(1, 1, pMaterial, GL_STATIC_DRAW));
+            s_pRectangleMesh->SetFilled(false);
+			s_pCircleMesh = PGLES2CircleMesh(new GLES2CircleMesh(0.5f, 64, pMaterial, GL_STATIC_DRAW));
+			s_pCircleMesh->SetFilled(false);
+			s_pEllipseMesh = PGLES2EllipseMesh(new GLES2EllipseMesh(1.0f, 1.0f, 64, pMaterial, GL_STATIC_DRAW, true, true, 0.25f, 0.4f));
+			s_pEllipseMesh->SetFilled(false);
 		}
 
 		void ReleaseResources()
 		{
-			s_pPlaneMesh = nullptr;
+			s_pRectangleMesh = nullptr;
+			s_pCircleMesh = nullptr;
+			s_pEllipseMesh = nullptr;
+			pButtonMesh = nullptr;
 		}
 
 
@@ -157,18 +169,8 @@ namespace NSG
 			Node* pNode = &node;
 			pNode->SetPosition(Vertex3(x, y, 0));
 			pNode->SetScale(Vertex3(w, h, 1));
-
-			/*s_pPlaneMesh->GetMaterial()->SetDiffuseColor(BORDER_COLOR);
-			s_pPlaneMesh->Render(pNode);
-
-			static float OffsetX = uistate.pixelSizeX * 2;
-			static float OffsetY = uistate.pixelSizeY * 2;
-
-			pNode->SetPosition(Vertex3(x, y, 0));
-			pNode->SetScale(Vertex3(w-OffsetX, h-OffsetY, 1));
-			*/
-			s_pPlaneMesh->GetMaterial()->SetDiffuseColor(color);
-			s_pPlaneMesh->Render(pNode);
+			pButtonMesh->GetMaterial()->SetDiffuseColor(color);
+			pButtonMesh->Render(pNode);
 		}
 
 		bool RegionHit(GLushort id, float x, float y, float w, float h)
@@ -182,18 +184,38 @@ namespace NSG
 			pNode->SetScale(Vertex3(w, h, 1));
 
 			pFrameColorSelection->Begin(uistate.mousex, uistate.mousey);
-		    pFrameColorSelection->Render(id, s_pPlaneMesh, pNode);
+	    	pFrameColorSelection->Render(id, pButtonMesh, pNode);
 		    pFrameColorSelection->End();
 
 		    return id == pFrameColorSelection->GetSelected();
+		}
+
+		void SetButtonType(ButtonType type)
+		{
+			buttonType = type;
+
+			switch(buttonType)
+			{
+				case RECTANGLE:
+					pButtonMesh = s_pRectangleMesh;
+					break;
+				case CIRCLE:
+					pButtonMesh = s_pCircleMesh;
+					break;
+				case ELLIPSE:
+					pButtonMesh = s_pEllipseMesh;
+					break;
+				default:
+					assert(false);
+			}
 		}
 
 		bool Button(GLushort id, float x, float y, const std::string& text)
 		{
 			PGLES2Text pTextMesh = textManager.GetTextMesh(id);
 
-			float w = uistate.pixelSizeX * 64;
-			float h = uistate.pixelSizeY * 48;
+			float w = 1.25f * pTextMesh->GetWidth();
+			float h = 2.0f * pTextMesh->GetHeight();
 
 			// Check whether the button should be hot
 			if (RegionHit(id, x, y, w, h))
@@ -274,3 +296,4 @@ namespace NSG
         }
 	}
 }
+

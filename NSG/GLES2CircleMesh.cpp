@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
 
-Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
+Copyright (c) 2014-2015 Néstor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -23,56 +23,56 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include <memory>
-#include <vector>
-#include <string>
-#include "ft2build.h"
-#include FT_FREETYPE_H
-#include "GLES2Includes.h"
-#include "GLES2Program.h"
-#include "GLES2VertexBuffer.h"
-#include "GLES2Texture.h"
-#include "Node.h"
+#include "GLES2CircleMesh.h"
 #include "Types.h"
+#include "Constants.h"
 
 namespace NSG
 {
-	class GLES2Text
+	GLES2CircleMesh::GLES2CircleMesh(float radius, int res, PGLES2Material pMaterial, GLenum usage) 
+	: GLES2Mesh(pMaterial, usage),
+	filled_(true)
 	{
-	public:
-		GLES2Text(const char* filename, int fontSize, GLenum usage);
-		~GLES2Text();
-		void Render(PNode pNode, Color color, const std::string& text);
-		void Render(Node* pNode, Color color, const std::string& text);
-		GLfloat GetWidth() const { return screenWidth_; }
-		GLfloat GetHeight() const { return screenHeight_; }
-	private:
-		PGLES2Texture pAtlas_;
-		PGLES2Program pProgram_;
-		PGLES2VertexBuffer pVBuffer_;
-		GLuint texture_loc_;
-		GLuint position_loc_;
-		GLuint texcoord_loc_;
-		GLuint color_loc_;
-		GLuint mvp_loc_;
+		GLES2Mesh::Data& data = GetVertexData();
 
-		struct Point 
+		SetFilled(filled_);
+		SetSelectMode(S_TRIANGLE_FAN);
+
+		float angle = 0.0f;
+
+		const float angleAdder = TWO_PI / (float)res;
+
+		for (int i = 0; i < res; i++)
 		{
-			GLfloat x;
-			GLfloat y;
-			GLfloat s;
-			GLfloat t;
-		};
+			VertexData vertexData;
+			vertexData.normal_ = Vertex3(0,0,1); // always facing forward
+			vertexData.position_.x = cos(angle);
+			vertexData.position_.y = sin(angle);
+			vertexData.position_.z = 0;
+			vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+			
+			vertexData.position_ *= radius;
 
-		std::vector<Point> coords_;
-		std::string lastText_;
-		GLfloat screenWidth_;
-		GLfloat screenHeight_;
-		GLenum usage_;
-		int32_t width_;
-		int32_t height_;
-	};
+			data.push_back(vertexData);
 
-	typedef std::shared_ptr<GLES2Text> PGLES2Text;
+			angle += angleAdder;
+		}
+
+		Redo();
+	}
+
+	GLES2CircleMesh::~GLES2CircleMesh() 
+	{
+	}
+
+	void GLES2CircleMesh::SetFilled(bool enable) 
+	{ 
+		filled_ = enable;
+
+		if(filled_)
+			SetMode(TRIANGLE_FAN);
+		else
+			SetMode(LINE_LOOP);
+	}
 }
+

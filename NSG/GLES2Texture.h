@@ -28,7 +28,10 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include <memory>
 #include <string>
+#include <vector>
 #include "Resource.h"
+#include "ft2build.h"
+#include FT_FREETYPE_H
 
 namespace NSG
 {
@@ -36,14 +39,43 @@ namespace NSG
 	class GLES2Texture
 	{
 	public:
-		GLES2Texture(const char* filename);
+		GLES2Texture(const char* filename, bool createFontAtlas = false, int fontSize = 0);
 		~GLES2Texture();
 		bool IsReady();
 		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
+
+		struct CharacterInfo 
+		{
+			float ax; // advance.x
+			float ay; // advance.y
+
+			float bw; // bitmap.width;
+			float bh; // bitmap.rows;
+
+			float bl; // bitmap_left;
+			float bt; // bitmap_top;
+
+			float tx; // x offset of glyph in texture coordinates
+			float ty; // y offset of glyph in texture coordinates
+		};
+
+		typedef std::vector<CharacterInfo> CharsInfo;
+
+		const CharsInfo& GetCharInfo() const { return charInfo_;}
+		int GetAtlasWidth() const { return atlasWidth_; }
+		int GetAtlasHeight() const {return atlasHeight_; }
+
 	private:
+		void CreateTextureAtlas();
 		GLuint GetId() const { return texture_; }
 		GLuint texture_;
 		PResource pResource_;
+		bool createFontAtlas_;
+		int atlasWidth_;
+		int atlasHeight_;
+		CharsInfo charInfo_;
+		int fontSize_;
+
 		friend class BindTexture;
 	};
 

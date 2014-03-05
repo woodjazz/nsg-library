@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "GLES2SphereMesh.h"
 #include "Types.h"
+#include "Constants.h"
 #include "Log.h"
 
 namespace NSG
@@ -33,9 +34,6 @@ namespace NSG
 	: GLES2Mesh(pMaterial, usage)
 	{
 		GLES2Mesh::Data& data = GetVertexData();
-
-		static const float PI = glm::pi<float>();
-		static const float TWO_PI = 2*PI;
 
 		float doubleRes = res*2.f;
 		float polarInc = PI/(res); // ringAngle

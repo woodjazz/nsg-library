@@ -23,28 +23,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-
-#include <cstdint>
-#include <string>
-#include "GLES2Includes.h"
 #include "Types.h"
 
-namespace NSG 
+namespace NSG
 {
-	namespace IMGUI
-	{
-		void AllocateResources();
-		void ReleaseResources();
-		void Begin();
-		void End();
-		enum ButtonType {RECTANGLE, CIRCLE, ELLIPSE};
-		void SetButtonType(ButtonType type);
-		bool Button(GLushort id, float x, float y, const std::string& text);
-		void ViewChanged(int32_t width, int32_t height);
-        void OnMouseMove(float x, float y);
-        void OnMouseDown(float x, float y);
-        void OnMouseUp();
-
-	}
+	extern const float PI;
+	extern const float TWO_PI;
 }

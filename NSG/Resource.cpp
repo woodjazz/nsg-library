@@ -43,7 +43,7 @@ namespace NSG
 #if NACL
 		pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filename);
 #elif ANDROID			
-		pAAssetManager_ = IApp::GetPtrInstance()->GetAssetManager();
+		pAAssetManager_ = App::GetPtrInstance()->GetAssetManager();
 #endif
 	}
 

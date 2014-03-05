@@ -173,16 +173,26 @@ void MyApp::LateUpdate()
 
 void MyApp::RenderGUIFrame()
 {
+	IMGUI::SetButtonType(IMGUI::RECTANGLE);
+
 	if(IMGUI::Button(1, 0, 0, "Button 1"))
 	{
 		TRACE_LOG("Button 1 pressed\n");
 	}
+
+	IMGUI::SetButtonType(IMGUI::CIRCLE);
 	
     if(IMGUI::Button(2, 0.5f, 0.5f, "Button 2"))
 	{
 		TRACE_LOG("Button 2 pressed\n");
 	}
 
+	IMGUI::SetButtonType(IMGUI::ELLIPSE);
+	
+    if(IMGUI::Button(3, -0.5f, 0.5f, "Button 3"))
+	{
+		TRACE_LOG("Button 3 pressed\n");
+	}
 }
 
 void MyApp::RenderFrame() 

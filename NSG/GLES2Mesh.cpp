@@ -48,6 +48,7 @@ namespace NSG
 	normal_loc_(pMaterial_->GetNormalAttLocation()),
     usage_(usage),
     mode_(GL_TRIANGLES),
+    selectMode_(GL_TRIANGLES),
     loaded_(false)
 	{
 	}
@@ -75,7 +76,10 @@ namespace NSG
 		{
 			assert(indexes_.size() % 3 == 0);
 			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0], usage_));
-			pIBuffer_ = PGLES2IndexBuffer(new GLES2IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0], usage_));
+			if(!indexes_.empty())
+			{
+				pIBuffer_ = PGLES2IndexBuffer(new GLES2IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0], usage_));
+			}
 		}
 	}
 
@@ -92,12 +96,35 @@ namespace NSG
 			case LINE_STRIP:
 				mode_ = GL_LINE_STRIP;
 				break;
+			case LINE_LOOP:
+				mode_ = GL_LINE_LOOP;
+				break;
 			case TRIANGLES:
 				mode_ = GL_TRIANGLES;
+				break;
+			case TRIANGLE_FAN:
+				mode_ = GL_TRIANGLE_FAN;
 				break;
 			default:
 			assert(false);
 		}
+	}
+
+	void GLES2Mesh::SetSelectMode(SelectMode mode)
+	{
+		switch(mode)
+		{
+			case S_TRIANGLES:
+				selectMode_ = GL_TRIANGLES;
+				break;
+			case S_TRIANGLE_FAN:
+				selectMode_ = GL_TRIANGLE_FAN;
+				break;
+
+			default:
+			assert(false);
+		}
+
 	}
 
 	void GLES2Mesh::Render(PNode pNode)
@@ -107,7 +134,6 @@ namespace NSG
 
 	void GLES2Mesh::Render(Node* pNode) 
 	{
-
 		if(!pMaterial_->IsReady()) 
 			return;
 
@@ -116,6 +142,8 @@ namespace NSG
 	        texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
 	        position_loc_ = pMaterial_->GetPositionAttLocation();
 	        normal_loc_ = pMaterial_->GetNormalAttLocation();
+
+	        loaded_ = true;
         }
 
 		assert(pVBuffer_);
@@ -162,9 +190,16 @@ namespace NSG
 			glEnableVertexAttribArray(texcoord_loc_);
 		}
 
-		BindBuffer bindIBuffer(*pIBuffer_);
+		if(!indexes_.empty())
+		{
+			BindBuffer bindIBuffer(*pIBuffer_);
 
-        glDrawElements(mode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);
+        	glDrawElements(mode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);
+        }
+        else
+        {
+			glDrawArrays(mode_, 0, vertexsData_.size());
+        }
 
         assert(glGetError() == GL_NO_ERROR);
 	}
@@ -195,9 +230,16 @@ namespace NSG
 
 		glEnableVertexAttribArray(position_loc);
 
-		BindBuffer bindIBuffer(*pIBuffer_);
+        if(!indexes_.empty())
+		{
+    		BindBuffer bindIBuffer(*pIBuffer_);
 
-        glDrawElements(GL_TRIANGLES, indexes_.size(), GL_UNSIGNED_SHORT, 0);   
+            glDrawElements(selectMode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);   
+        }
+        else
+        {
+			glDrawArrays(selectMode_, 0, vertexsData_.size());
+        }
 
         assert(glGetError() == GL_NO_ERROR);
 	}	
