@@ -27,18 +27,30 @@ misrepresented as being the original software.
 #include "Log.h"
 #include <assert.h>
 
-static const char kSelectFragShaderSource[] = {
-#include "shaders/gles2SelectFragmentShader.h"
-};
+#define STRINGIFY(S) #S
 
-static const char kSelectVertexShaderSource[] = {
-#include "shaders/gles2SelectVertexShader.h"
-};
+static const char* vShader = STRINGIFY(
+    uniform mat4 u_mvp;
+    attribute vec4 a_position;
+    
+    void main() 
+    {
+        gl_Position = u_mvp * a_position;
+    }
+);
+
+static const char* fShader = STRINGIFY(
+    uniform vec4 u_color;
+    void main()
+    {
+        gl_FragColor = u_color;
+    }
+);
 
 namespace NSG
 {
 	GLES2FrameColorSelection::GLES2FrameColorSelection()
-	: pProgram_(new GLES2Program(kSelectVertexShaderSource, kSelectFragShaderSource)),
+	: pProgram_(new GLES2Program(vShader, fShader)),
 	position_loc_(pProgram_->GetAttributeLocation("a_position")),
 	color_loc_(pProgram_->GetUniformLocation("u_color")),
 	mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
@@ -48,11 +60,17 @@ namespace NSG
 	screenY_(0),
 	pixelX_(0),
 	pixelY_(0),
-    isDepthTestEnabled_(false)
+    isDepthTestEnabled_(false),
+    isBlendEnabled_(false)
 	{
+        assert(glGetError() == GL_NO_ERROR);
+
         glGenFramebuffers(1, &framebuffer_);
         glGenRenderbuffers(1, &colorRenderbuffer_);
         memset(selected_, 0, sizeof(selected_));
+
+        assert(glGetError() == GL_NO_ERROR);
+
 	}
 
 	GLES2FrameColorSelection::~GLES2FrameColorSelection()
@@ -93,6 +111,8 @@ namespace NSG
         glEnable(GL_SCISSOR_TEST);
         glScissor(pixelX_,pixelY_,1,1);
 #endif
+        isBlendEnabled_ = glIsEnabled(GL_BLEND);
+        glDisable(GL_BLEND);
         isDepthTestEnabled_ = glIsEnabled(GL_DEPTH_TEST);
         glClearColor(0, 0, 0, 0);
         glClearDepth(1);
@@ -111,6 +131,9 @@ namespace NSG
 
         if(!isDepthTestEnabled_)
             glDisable(GL_DEPTH_TEST);
+
+        if(isBlendEnabled_)
+            glEnable(GL_BLEND);
     }
 
     GLushort GLES2FrameColorSelection::GetSelected() const

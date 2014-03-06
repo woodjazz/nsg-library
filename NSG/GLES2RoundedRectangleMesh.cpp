@@ -23,25 +23,44 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2EllipseMesh.h"
+#include "GLES2RoundedRectangleMesh.h"
 #include "Types.h"
 #include "Constants.h"
 
 namespace NSG
 {
-	GLES2EllipseMesh::GLES2EllipseMesh(float width, float height, int res, PGLES2Material pMaterial, GLenum usage) 
+	GLES2RoundedRectangleMesh::GLES2RoundedRectangleMesh(float radius, float width, float height, int res, PGLES2Material pMaterial, GLenum usage) 
 	: GLES2Mesh(pMaterial, usage),
 	filled_(true)
 	{
 		GLES2Mesh::Data& data = GetVertexData();
 
-		float halfX = width*0.5;
-		float halfY = height*0.5;	
+		float halfX = width*0.5f;
+		float halfY = height*0.5f;	
 
 		SetFilled(filled_);
 		SetSelectMode(S_TRIANGLE_FAN);
 
 		float angle = 0.0f;
+
+		float radius1 = std::min(radius, std::min(halfX, halfY));
+
+		float totalSizeX = width + 2 * radius1;
+		float totalSizeY = height + 2 * radius1;
+
+		float xOffset = (totalSizeX - width)/2;
+		float yOffset = (totalSizeY - height)/2;
+
+		const float radiusRatio = 0.4f;
+		const float sideRation = 1-radiusRatio;
+		float radiusReduction = radiusRatio * std::min(xOffset, yOffset);
+		float xReduction = sideRation * xOffset;
+		float yReduction = sideRation * yOffset;
+
+		halfX -= xReduction;
+		halfY -= yReduction;
+
+		radius1 -= radiusReduction;
 
 		const float angleAdder = TWO_PI / (float)res;
 
@@ -53,10 +72,27 @@ namespace NSG
 			vertexData.position_.y = sin(angle);
 			vertexData.position_.z = 0;
 			vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
-			
-			vertexData.position_.x *= halfX;
-			vertexData.position_.y *= halfY;
 
+            vertexData.position_ *= radius1;
+			
+            if(angle < PI/2 || angle > 3*PI/2)
+            {
+			    vertexData.position_.x += halfX;
+            }
+            else if(angle > PI/2)
+            {
+                vertexData.position_.x -= halfX;
+            }
+            
+            if(angle >= 0 && angle < PI)
+            {
+			   vertexData.position_.y += halfY;
+            }
+            else if(angle >= PI)
+            {
+               vertexData.position_.y -= halfY;
+            }
+            
 			data.push_back(vertexData);
 
 			angle += angleAdder;
@@ -65,11 +101,11 @@ namespace NSG
 		Redo();
 	}
 
-	GLES2EllipseMesh::~GLES2EllipseMesh() 
+	GLES2RoundedRectangleMesh::~GLES2RoundedRectangleMesh() 
 	{
 	}
 
-	void GLES2EllipseMesh::SetFilled(bool enable) 
+	void GLES2RoundedRectangleMesh::SetFilled(bool enable) 
 	{ 
 		filled_ = enable;
 
@@ -79,4 +115,5 @@ namespace NSG
 			SetMode(LINE_LOOP);
 	}
 }
+
 

@@ -82,14 +82,6 @@ int MyApp::GetFPS() const
 	return 30;
 }
 
-const char s_fragShaderSource[] = {
-#include "shaders/gles2GUIFragmentShader.h"
-};
-
-const char s_vertexShaderSource[] = {
-#include "shaders/gles2GUIVertexShader.h"
-};
-
 void MyApp::Start() 
 {
 	TRACE_LOG("Start");
@@ -101,12 +93,14 @@ void MyApp::Start()
 	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
 	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
 	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
-	pMaterial2_ = PGLES2Material(new GLES2Material (pDiffuseProgram, pEarthTexture));
+	pMaterial2_ = PGLES2Material(new GLES2Material (pDiffuseProgram));
+	pMaterial2_->SetMainTexture(pEarthTexture);
 	pMaterial2_->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial2_->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
 	pMaterial2_->SetShininess(0.3f);
 
-	PGLES2Material pMaterial3(new GLES2Material (pDiffuseProgram, pTexture));
+	PGLES2Material pMaterial3(new GLES2Material (pDiffuseProgram));
+	pMaterial3->SetMainTexture(pTexture);
 
 	pSphereMesh_ = PGLES2SphereMesh(new GLES2SphereMesh(3, 32, pMaterial2_, GL_STATIC_DRAW));
 	pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(1,1,1, 2,2,2, pMaterial3, GL_STATIC_DRAW));
@@ -127,7 +121,7 @@ void MyApp::Start()
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 
-    pText1_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 18, GL_DYNAMIC_DRAW));
+    pText1_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_DYNAMIC_DRAW));
     pText2_ = PGLES2Text(new GLES2Text("font/bluebold.ttf", 24, GL_STATIC_DRAW));
     pText3_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 48, GL_STATIC_DRAW));
 
@@ -173,26 +167,64 @@ void MyApp::LateUpdate()
 
 void MyApp::RenderGUIFrame()
 {
-	IMGUI::SetButtonType(IMGUI::RECTANGLE);
+	IMGUI::SetActiveColor(Color(0,0,1,0.9f));
+	
+	IMGUI::SetButtonType(IMGUI::Rectangle);
 
-	if(IMGUI::Button(1, 0, 0, "Button 1"))
+	IMGUI::SetPosition(Vertex3(0,0,0));
+
+	IMGUI::AdjustButton2Text(true);
+
+	IMGUI::Fill(false);
+
+	IMGUI::SetFont("font/FreeSans.ttf", 24);
+	
+	if(IMGUI::Button(1, "Button 1"))
 	{
 		TRACE_LOG("Button 1 pressed\n");
 	}
 
-	IMGUI::SetButtonType(IMGUI::CIRCLE);
-	
-    if(IMGUI::Button(2, 0.5f, 0.5f, "Button 2"))
+	IMGUI::SetButtonType(IMGUI::Circle);
+
+    Vertex3 position = IMGUI::GetPosition();
+    position.x += IMGUI::GetSize().x;
+	IMGUI::SetPosition(position);	
+    
+    if(IMGUI::Button(2, "Button 2"))
 	{
 		TRACE_LOG("Button 2 pressed\n");
 	}
 
-	IMGUI::SetButtonType(IMGUI::ELLIPSE);
+	IMGUI::AdjustButton2Text(false);
+
+	IMGUI::SetFont("font/FreeSans.ttf", 64);
+
+	IMGUI::SetSize(Vertex3(0.3f, 0.3f, 1));
+
+	IMGUI::SetButtonType(IMGUI::Ellipse);
+
+	IMGUI::SetPosition(Vertex3(-0.5f, 0.5f, 0));	
 	
-    if(IMGUI::Button(3, -0.5f, 0.5f, "Button 3"))
+    if(IMGUI::Button(3, "Button 3"))
 	{
 		TRACE_LOG("Button 3 pressed\n");
 	}
+
+    position = IMGUI::GetPosition();
+    position.y -= IMGUI::GetSize().y;
+	IMGUI::SetPosition(position);	
+
+	IMGUI::SetButtonType(IMGUI::RoundedRectangle);
+
+	IMGUI::AdjustButton2Text(true);
+	
+	IMGUI::Fill(true);
+    
+    if(IMGUI::Button(4, "Button 4"))
+	{
+		TRACE_LOG("Button 4 pressed\n");
+	}
+
 }
 
 void MyApp::RenderFrame() 
@@ -209,6 +241,8 @@ void MyApp::RenderFrame()
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_FRONT);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	//pText1_->ShowAtlas();
 
     pCamera1_->Activate();
 
@@ -236,7 +270,8 @@ void MyApp::RenderFrame()
 
 
 	GLES2Camera::Deactivate();
-	pText1_->Render(pTextNode1_, Color(1,1,1,1), ss.str());
+	pText1_->SetText(ss.str());
+	pText1_->Render(pTextNode1_, Color(1,1,1,1));
 
     //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");
 

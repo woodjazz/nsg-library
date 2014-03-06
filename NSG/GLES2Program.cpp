@@ -54,17 +54,34 @@ namespace NSG
 	}
 
 	GLES2Program::GLES2Program(const char* vShader, const char* fShader)
-	: pVShader_(new GLES2VShader(vShader)),
-		pFShader_(new GLES2FShader(fShader))
+	: vShader_(vShader),
+	fShader_(fShader),
+	loaded_(true)
 	{
-		Initialize();
+		assert(vShader && fShader);
+
+		loaded_ = true;
+		std::string vbuffer;
+		size_t vHeaderSize = strlen(s_vertexShaderHeader);
+		size_t fHeaderSize = strlen(s_fragmentShaderHeader);
+		size_t vBytes = strlen(vShader_);
+		size_t fBytes = strlen(fShader_);
+		vbuffer.resize(vHeaderSize + vBytes);
+		vbuffer = s_vertexShaderHeader;
+		memcpy(&vbuffer[0] + vHeaderSize, vShader_, vBytes);
+		pVShader_ = PGLES2VShader(new GLES2VShader(vbuffer.c_str()));
+		vbuffer = s_fragmentShaderHeader;
+		vbuffer.resize(fHeaderSize + fBytes);
+		memcpy(&vbuffer[0] + fHeaderSize, fShader_, fBytes);
+		pFShader_ = PGLES2FShader(new GLES2FShader(vbuffer.c_str()));
+        Initialize();
 	}
 
-		GLES2Program::GLES2Program(PGLES2VShader pVShader, PGLES2FShader pFShader)
-	: pVShader_(std::move(pVShader)),
-		pFShader_(std::move(pFShader))
+	GLES2Program::GLES2Program(PGLES2VShader pVShader, PGLES2FShader pFShader)
+	: pVShader_(pVShader),
+	pFShader_(pFShader),
+	loaded_(true)
 	{
-
 		Initialize();
 	}
 
@@ -86,8 +103,7 @@ namespace NSG
 				vbuffer.resize(fHeaderSize + pRFShader_->GetBytes());
 				memcpy(&vbuffer[0] + fHeaderSize, pRFShader_->GetData(), pRFShader_->GetBytes());
 				pFShader_ = PGLES2FShader(new GLES2FShader(vbuffer.c_str()));
-
-                Initialize();
+	            Initialize();
 			}
 			else
 			{

@@ -75,7 +75,6 @@ namespace NSG
 		int atlasHeight_;
 		CharsInfo charInfo_;
 		int fontSize_;
-
 		friend class BindTexture;
 	};
 

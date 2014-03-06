@@ -11,9 +11,8 @@ namespace NSG
 {
 	const size_t MAX_LIGHTS_MATERIAL = 4;
 
-	GLES2Material::GLES2Material(PGLES2Program pProgram, PGLES2Texture pTexture) 
-	: pTexture_(pTexture), 
-	pProgram_(pProgram),
+	GLES2Material::GLES2Material(PGLES2Program pProgram) 
+	: pProgram_(pProgram),
 	color_scene_ambient_loc_(-1),
 	color_ambient_loc_(-1),
 	color_diffuse_loc_(-1),
@@ -40,6 +39,11 @@ namespace NSG
 
 	GLES2Material::~GLES2Material()
 	{
+	}
+
+	void GLES2Material::SetMainTexture(PGLES2Texture pTexture)
+	{
+		pTexture_ = pTexture;
 	}
 
 	bool GLES2Material::IsReady()
@@ -94,19 +98,19 @@ namespace NSG
 	: obj_(obj),
 	useProgram_(*obj.pProgram_)
 	{
-		if(obj.mvp_loc_ != -1)
+		if(obj.mvp_loc_ != -1 && pNode)
 		{
 			Matrix4&& m = GLES2Camera::GetModelViewProjection(pNode);
 			glUniformMatrix4fv(obj.mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
 		}
 
-		if(obj.m_loc_ != -1)
+		if(obj.m_loc_ != -1 && pNode)
 		{
 			const Matrix4& m = pNode->GetModelMatrix();
 			glUniformMatrix4fv(obj.m_loc_, 1, GL_FALSE, glm::value_ptr(m));
 		}
 
-		if(obj.model_inv_transp_loc_ != -1)
+		if(obj.model_inv_transp_loc_ != -1 && pNode)
 		{
 			const Matrix3& m = pNode->GetModelInvTranspMatrix();
 			glUniformMatrix3fv(obj.model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));			

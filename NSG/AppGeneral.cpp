@@ -4,6 +4,7 @@
 #include "App.h"
 #include "Tick.h"
 #include <memory>
+#include <assert.h>
 
 NSG::PInternalApp s_pApp = nullptr;
 static int s_width = 0;
@@ -110,9 +111,9 @@ namespace NSG
 
 		s_pApp->Initialize();
 
-		WindowSizeCB(window, WIDTH, HEIGHT);
+       	WindowSizeCB(window, WIDTH, HEIGHT);
 
-		while (!glfwWindowShouldClose(window))
+        while (!glfwWindowShouldClose(window))
 		{
             s_pApp->PerformTick();
 			s_pApp->RenderFrame();

@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "GLES2Program.h"
 #include "GLES2VertexBuffer.h"
 #include "GLES2Texture.h"
+#include "GLES2PlaneMesh.h"
 #include "Node.h"
 #include "Types.h"
 
@@ -43,10 +44,13 @@ namespace NSG
 	public:
 		GLES2Text(const char* filename, int fontSize, GLenum usage);
 		~GLES2Text();
-		void Render(PNode pNode, Color color, const std::string& text);
-		void Render(Node* pNode, Color color, const std::string& text);
+		void Render(PNode pNode, Color color);
+		void Render(Node* pNode, Color color);
+		void SetText(const std::string& text);
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }
+		PGLES2Texture GetAtlas() const { return pAtlas_; }
+		void ShowAtlas();
 	private:
 		PGLES2Texture pAtlas_;
 		PGLES2Program pProgram_;
@@ -72,6 +76,8 @@ namespace NSG
 		GLenum usage_;
 		int32_t width_;
 		int32_t height_;
+		PGLES2PlaneMesh pMesh_;
+
 	};
 
 	typedef std::shared_ptr<GLES2Text> PGLES2Text;

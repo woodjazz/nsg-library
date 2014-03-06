@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
 
-Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
+Copyright (c) 2014-2015 Néstor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -24,53 +24,21 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
 #include <memory>
-#include <string>
-#include "GLES2Includes.h"
-#include "GLES2VShader.h"
-#include "GLES2FShader.h"
-#include "Resource.h"
+#include "GLES2Material.h"
+#include "GLES2Mesh.h"
 
-namespace NSG 
+namespace NSG
 {
-	class UseProgram;
-	class GLES2Program
+	class GLES2RoundedRectangleMesh : public GLES2Mesh
 	{
 	public:
-
-		GLES2Program(PResource pRVShader, PResource pRFShader);
-		GLES2Program(const char* vShader, const char* fShader);
-		GLES2Program(PGLES2VShader pVShader, PGLES2FShader pFShader);
-		~GLES2Program();
-		void Initialize();
-		GLuint GetAttributeLocation(const std::string& name);
-		GLuint GetUniformLocation(const std::string& name);
-		bool IsReady();
+		GLES2RoundedRectangleMesh(float radius, float width, float height, int res, PGLES2Material pMaterial, GLenum usage);
+		~GLES2RoundedRectangleMesh();
+		void SetFilled(bool enable);
 	private:
-		operator const GLuint() const { return id_; }
-		GLuint GetId() const { return id_; }
-		void Use() { glUseProgram(id_); }
-		GLuint id_;
-		PGLES2VShader pVShader_;
-		PGLES2FShader pFShader_;
-		PResource pRVShader_;
-		PResource pRFShader_;
-		const char* vShader_;
-		const char* fShader_;
-		bool loaded_;
-		friend class UseProgram;
+		bool filled_;
 	};
 
-	typedef std::shared_ptr<GLES2Program> PGLES2Program;
-
-	class UseProgram
-	{
-	public:
-		UseProgram(GLES2Program& obj);
-		~UseProgram();
-	private:
-		GLES2Program& obj_;
-	};
-
+	typedef std::shared_ptr<GLES2RoundedRectangleMesh> PGLES2RoundedRectangleMesh;
 }

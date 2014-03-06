@@ -6,6 +6,24 @@
 #include <assert.h>
 #include <algorithm>
 
+ #define STRINGIFY(S) #S
+
+static const char* vShader = STRINGIFY(
+	uniform mat4 u_mvp;
+	attribute vec4 a_position;
+	void main()
+	{
+		gl_Position = u_mvp * a_position;
+	}
+);
+
+static const char* fShader = STRINGIFY(
+	void main()
+	{
+		gl_FragColor = vec4(1,1,0,1);
+	}
+);
+
 namespace NSG
 {
 	static GLES2Light::Lights s_Lights;
@@ -23,9 +41,7 @@ namespace NSG
 
 		s_Lights.push_back(this);
 
-		PResource pVResource(new Resource("shaders/LightSimple.vert"));
-		PResource pFResource(new Resource("shaders/LightSimple.frag"));
-		PGLES2Program pProgram(new GLES2Program(pVResource, pFResource));
+		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
 		PGLES2Material pMaterial = PGLES2Material(new GLES2Material (pProgram));
 
 		pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(0.2f,0.2f,0.2f, 2,2,2, pMaterial, GL_STATIC_DRAW));

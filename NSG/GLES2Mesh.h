@@ -67,6 +67,7 @@ namespace NSG
 		enum SelectMode {S_TRIANGLES, S_TRIANGLE_FAN};
 		void SetSelectMode(SelectMode mode);
 		PGLES2Material GetMaterial() const { return pMaterial_; }
+		virtual void SetFilled(bool enable) {}
 	private:
 		PGLES2Material pMaterial_;
 		PGLES2IndexBuffer pIBuffer_;

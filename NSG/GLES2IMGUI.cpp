@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "GLES2RectangleMesh.h"
 #include "GLES2CircleMesh.h"
 #include "GLES2EllipseMesh.h"
+#include "GLES2RoundedRectangleMesh.h"
 #include "Node.h"
 #include "Constants.h"
 #include "GLES2FrameColorSelection.h"
@@ -35,17 +36,38 @@ misrepresented as being the original software.
 
 using namespace NSG;
 
-const char s_fragShaderSource[] = {
-#include "shaders/gles2GUIFragmentShader.h"
-};
+#define STRINGIFY(S) #S
 
-const char s_vertexShaderSource[] = {
-#include "shaders/gles2GUIVertexShader.h"
-};
+static const char* vShader = STRINGIFY(
+	uniform mat4 u_mvp;
+	attribute vec4 a_position;
+	varying vec4 v_position;
+	
+	void main()
+	{
+		gl_Position = u_mvp * vec4(a_position.xyz, 1);
+		v_position = a_position;
+	}
+);
+
+static const char* fShader = STRINGIFY(
+	struct Material
+	{
+		vec4 diffuse;
+	};
+	uniform Material u_material;
+	varying vec4 v_position;
+	void main()
+	{
+		float factor = 1 - abs(v_position.y);
+		gl_FragColor = u_material.diffuse * vec4(factor, factor, factor, 1);
+	}
+);
 
 static PGLES2RectangleMesh s_pRectangleMesh;
 static PGLES2CircleMesh s_pCircleMesh;
 static PGLES2EllipseMesh s_pEllipseMesh;
+static PGLES2RoundedRectangleMesh s_pRoundedRectangle;
 static int32_t s_width = 0;
 static int32_t s_height = 0;
 static GLES2Camera* s_pCamera = nullptr;
@@ -54,8 +76,18 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		ButtonType buttonType = RECTANGLE;
-		PGLES2Mesh pButtonMesh = s_pRectangleMesh;
+		ButtonType buttonType = RoundedRectangle;
+		PGLES2Mesh pButtonMesh = s_pRoundedRectangle;
+		PNode pCurrentNode(new Node());
+		bool adjustButton2Text = true;
+		Vertex3 currentSize;
+		std::string currentFontFile("font/FreeSans.ttf");
+		int currentFontSize = 18;
+		bool fillEnabled = true;
+		Color activeColor(0,1,0,0.7f);
+		Color normalColor(1,1,1,0.7f);
+		Color hotColor(1,0,0,0.7f);
+
 
 		class TextManager
 		{
@@ -91,7 +123,28 @@ namespace NSG
 			int fontSize_;
 		};
 
-		TextManager textManager("font/FreeSans.ttf", 48);
+		typedef std::shared_ptr<TextManager> PTextManager;
+		typedef std::pair<std::string, int> TextManagerKey;
+		typedef std::map<TextManagerKey, PTextManager> TextManagerMap;
+		TextManagerMap textManagers;
+
+		PGLES2Text GetCurrentTextMesh(GLushort item)
+		{
+			TextManagerKey k(currentFontFile, currentFontSize);
+			
+			auto it = textManagers.find(k);
+
+			if(it != textManagers.end())
+			{
+				return it->second->GetTextMesh(item);
+			}
+			else
+			{
+				PTextManager pTextManager(new TextManager(currentFontFile, currentFontSize));
+				textManagers.insert(TextManagerMap::value_type(k, pTextManager));
+				return pTextManager->GetTextMesh(item);
+			}
+		}
 
 		struct UIState
 		{
@@ -113,15 +166,14 @@ namespace NSG
 		void AllocateResources()
 		{
 			assert(s_pRectangleMesh == nullptr);
-			PGLES2Program pProgram(new GLES2Program(s_vertexShaderSource, s_fragShaderSource));
+			PGLES2Program pProgram(new GLES2Program(vShader, fShader));
 			PGLES2Material pMaterial(new GLES2Material(pProgram));
 			pMaterial->SetDiffuseColor(Color(1,0,0,1));
 			s_pRectangleMesh = PGLES2RectangleMesh(new GLES2RectangleMesh(1, 1, pMaterial, GL_STATIC_DRAW));
-            s_pRectangleMesh->SetFilled(false);
 			s_pCircleMesh = PGLES2CircleMesh(new GLES2CircleMesh(0.5f, 64, pMaterial, GL_STATIC_DRAW));
-			s_pCircleMesh->SetFilled(false);
-			s_pEllipseMesh = PGLES2EllipseMesh(new GLES2EllipseMesh(1.0f, 1.0f, 64, pMaterial, GL_STATIC_DRAW, true, true, 0.25f, 0.4f));
-			s_pEllipseMesh->SetFilled(false);
+			s_pEllipseMesh = PGLES2EllipseMesh(new GLES2EllipseMesh(1.0f, 1.0f, 64, pMaterial, GL_STATIC_DRAW));
+			s_pRoundedRectangle = PGLES2RoundedRectangleMesh(new GLES2RoundedRectangleMesh(0.25f, 1, 1, 64, pMaterial, GL_STATIC_DRAW));
+			
 		}
 
 		void ReleaseResources()
@@ -129,12 +181,18 @@ namespace NSG
 			s_pRectangleMesh = nullptr;
 			s_pCircleMesh = nullptr;
 			s_pEllipseMesh = nullptr;
+			s_pRoundedRectangle = nullptr;
 			pButtonMesh = nullptr;
 		}
 
 
+		GLboolean isBlendEnabled = false;
 		void Begin()
 		{
+			isBlendEnabled = glIsEnabled(GL_BLEND);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+
 			glDisable(GL_DEPTH_TEST);
 			s_pCamera = GLES2Camera::GetActiveCamera();
 			GLES2Camera::Deactivate();
@@ -155,36 +213,27 @@ namespace NSG
 			{
 				if(uistate.activeitem == 0)
 			  		uistate.activeitem = -1;
-			}			
+			}
+
+			if(!isBlendEnabled)
+				glDisable(GL_BLEND);
+			
 		}
 
-		Color BORDER_COLOR(1,1,1,1);
-		Color ACTIVE_HOT_COLOR(0,1,0,1);
-		Color ACTIVE_COLOR(0.1f,0.1f,0.1f,1);
-		Color HOT_COLOR(1,0,0,1);
-
-		void DrawButton(Color color, float x, float y, float w, float h)
+		void DrawButton(Color color)
 		{
-			Node node;
-			Node* pNode = &node;
-			pNode->SetPosition(Vertex3(x, y, 0));
-			pNode->SetScale(Vertex3(w, h, 1));
+            pButtonMesh->SetFilled(fillEnabled);
 			pButtonMesh->GetMaterial()->SetDiffuseColor(color);
-			pButtonMesh->Render(pNode);
+			pButtonMesh->Render(pCurrentNode);
 		}
 
-		bool RegionHit(GLushort id, float x, float y, float w, float h)
+		bool Hit(GLushort id)
 		{
 			if(!pFrameColorSelection)
 				return false;
 
-			Node node;
-			Node* pNode = &node;
-			pNode->SetPosition(Vertex3(x, y, 0));
-			pNode->SetScale(Vertex3(w, h, 1));
-
 			pFrameColorSelection->Begin(uistate.mousex, uistate.mousey);
-	    	pFrameColorSelection->Render(id, pButtonMesh, pNode);
+	    	pFrameColorSelection->Render(id, pButtonMesh, pCurrentNode);
 		    pFrameColorSelection->End();
 
 		    return id == pFrameColorSelection->GetSelected();
@@ -196,29 +245,99 @@ namespace NSG
 
 			switch(buttonType)
 			{
-				case RECTANGLE:
+				case Rectangle:
 					pButtonMesh = s_pRectangleMesh;
 					break;
-				case CIRCLE:
+				case Circle:
 					pButtonMesh = s_pCircleMesh;
 					break;
-				case ELLIPSE:
+				case Ellipse:
 					pButtonMesh = s_pEllipseMesh;
+					break;
+				case RoundedRectangle:
+					pButtonMesh = s_pRoundedRectangle;
 					break;
 				default:
 					assert(false);
 			}
 		}
 
-		bool Button(GLushort id, float x, float y, const std::string& text)
+		void SetPosition(const Vertex3& position)
 		{
-			PGLES2Text pTextMesh = textManager.GetTextMesh(id);
+			pCurrentNode->SetPosition(position);
+		}
 
-			float w = 1.25f * pTextMesh->GetWidth();
-			float h = 2.0f * pTextMesh->GetHeight();
+		const Vertex3& GetPosition()
+		{
+			return pCurrentNode->GetPosition();
+		}
+
+		void SetSize(const Vertex3& size)
+		{
+			currentSize = size;
+		}
+
+		const Vertex3& GetSize()
+		{
+			return pCurrentNode->GetScale();
+		}
+
+		void AdjustButton2Text(bool status)
+		{
+			adjustButton2Text = status;
+		}
+
+		void Fill(bool enable)
+		{
+			fillEnabled = enable;
+		}
+
+		void SetNormalColor(Color color)
+		{
+			normalColor = color;
+		}
+
+		void SetHotColor(Color color)
+		{
+			hotColor = color;
+		}
+
+		void SetActiveColor(Color color)
+		{
+			activeColor = color;
+		}
+
+
+		void SetFont(const std::string& fontFile, int fontSize)
+		{
+			currentFontFile = fontFile;
+			currentFontSize = fontSize;
+		}
+
+		bool Button(GLushort id, const std::string& text)
+		{
+			PGLES2Text pTextMesh = GetCurrentTextMesh(id);
+            pTextMesh->SetText(text);
+
+			if(adjustButton2Text)
+			{
+				float w = std::max(pTextMesh->GetWidth(), currentSize.x);
+				float h = std::max(pTextMesh->GetHeight(), currentSize.y);
+
+				if(buttonType == Circle)
+				{
+					h = w = std::max(w,h);
+				}
+
+				pCurrentNode->SetScale(Vertex3(w,h,1));
+			}
+			else
+			{
+				pCurrentNode->SetScale(currentSize);
+			}
 
 			// Check whether the button should be hot
-			if (RegionHit(id, x, y, w, h))
+			if (Hit(id))
 			{
 				uistate.hotitem = id;
 
@@ -233,18 +352,18 @@ namespace NSG
 				if(uistate.activeitem == id)
 				{
 			  		// Button is both 'hot' and 'active'
-			  		DrawButton(ACTIVE_HOT_COLOR, x, y, w, h);
+			  		DrawButton(activeColor);
 			  	}
 				else
 				{
 					// Button is merely 'hot'
-					DrawButton(HOT_COLOR, x, y, w, h);
+					DrawButton(hotColor);
 				}
 			}
 			else
 			{
 				// button is not hot, but it may be active    
-				DrawButton(ACTIVE_COLOR, x, y, w, h);
+				DrawButton(normalColor);
 			}
 
 			{
@@ -253,10 +372,9 @@ namespace NSG
 
 				Node node(pNode0);
 				Node* pNode = &node;
-				pNode->SetPosition(Vertex3(x, y, 0));
-				//pNode->SetScale(Vertex3(w, h, 1));
+				pNode->SetPosition(pCurrentNode->GetPosition());
 
-				pTextMesh->Render(pNode, Color(1,1,1,1), text);
+				pTextMesh->Render(pNode, Color(1,1,1,1));
 			}
 
 			// If button is hot and active, but mouse button is not

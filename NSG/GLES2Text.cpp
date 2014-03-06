@@ -31,13 +31,52 @@ misrepresented as being the original software.
 #include <vector>
 #include <map>
 
-const char s_fragShaderSource[] = {
-#include "shaders/gles2TextFragmentShader.h"
-};
+#define STRINGIFY(S) #S
 
-const char s_vertexShaderSource[] = {
-#include "shaders/gles2TextVertexShader.h"
-};
+static const char* vShader = STRINGIFY(
+	uniform mat4 u_mvp;
+	attribute vec4 a_position;
+	varying vec2 v_texcoord;
+	
+	void main() 
+	{
+		gl_Position = u_mvp * vec4(a_position.xy, 0, 1);
+		v_texcoord = a_position.zw;
+	}
+);
+
+static const char* fShader = STRINGIFY(
+	varying vec2 v_texcoord;
+	uniform sampler2D u_texture;
+	uniform vec4 u_color;
+	void main()
+	{
+		gl_FragColor = vec4(1, 1, 1, texture2D(u_texture, v_texcoord).a) * u_color;
+	}
+);
+
+#define STRINGIFY(S) #S
+
+static const char* vAtlasShader = STRINGIFY(
+	attribute vec4 a_position;
+	attribute vec2 a_texcoord;
+	varying vec2 v_texcoord;
+	void main()
+	{
+		gl_Position = a_position;
+		v_texcoord = a_texcoord;
+	}
+);
+
+static const char* fAtlasShader = STRINGIFY(
+	uniform sampler2D u_texture;
+	varying vec2 v_texcoord;
+	void main()
+	{
+		gl_FragColor = vec4(1, 1, 1, texture2D(u_texture, v_texcoord).a);
+	}
+);
+
 
 namespace NSG
 {
@@ -46,7 +85,7 @@ namespace NSG
 	Atlas fontAtlas;
 
 	GLES2Text::GLES2Text(const char* filename, int fontSize, GLenum usage)
-	: pProgram_(new GLES2Program(s_vertexShaderSource, s_fragShaderSource)),
+	: pProgram_(new GLES2Program(vShader, fShader)),
 	texture_loc_(pProgram_->GetUniformLocation("u_texture")),
 	position_loc_(pProgram_->GetAttributeLocation("a_position")),
 	color_loc_(pProgram_->GetUniformLocation("u_color")),
@@ -68,22 +107,80 @@ namespace NSG
     		pAtlas_ = PGLES2Texture(new GLES2Texture(filename, true, fontSize));
 			fontAtlas.insert(Atlas::value_type(k, pAtlas_));
     	}
+
+		PGLES2Program pProgram(new GLES2Program(vAtlasShader, fAtlasShader));
+		PGLES2Material pMaterial = PGLES2Material(new GLES2Material (pProgram));
+		pMaterial->SetMainTexture(pAtlas_);
+		pMesh_ = PGLES2PlaneMesh(new GLES2PlaneMesh(2, 2, 2, 2, pMaterial, GL_STATIC_DRAW));
+
 	}
 
 	GLES2Text::~GLES2Text() 
 	{
 	}
 
-	void GLES2Text::Render(PNode pNode, Color color, const std::string& text) 
+	void GLES2Text::ShowAtlas()
 	{
-		Render(pNode.get(), color, text);
+		GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+
+		pMesh_->Render(nullptr);		
+
+		if(!isBlendEnabled)
+			glDisable(GL_BLEND);
 	}
 
-	void GLES2Text::Render(Node* pNode, Color color, const std::string& text) 
+	void GLES2Text::Render(PNode pNode, Color color) 
 	{
-		if(!pAtlas_->IsReady() || text.empty())
-			return;
+		Render(pNode.get(), color);
+	}
 
+	void GLES2Text::Render(Node* pNode, Color color) 
+	{
+		SetText(lastText_);
+
+		if(pVBuffer_ != nullptr)
+		{
+            //bool isDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
+            //glEnable(GL_DEPTH_TEST);
+
+            assert(glGetError() == GL_NO_ERROR);
+
+			GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+
+			UseProgram useProgram(*pProgram_);
+
+			Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
+			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
+
+			glActiveTexture(GL_TEXTURE0);
+
+			BindTexture bindTexture(*pAtlas_);
+			glUniform1i(texture_loc_, 0);
+			glUniform4fv(color_loc_, 1, &color[0]);
+
+			BindBuffer bindVBuffer(*pVBuffer_);
+
+			glEnableVertexAttribArray(position_loc_);
+			glVertexAttribPointer(position_loc_, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+			glDrawArrays(GL_TRIANGLES, 0, coords_.size());
+
+			if(!isBlendEnabled)
+				glDisable(GL_BLEND);
+
+            //if(!isDepthTestEnabled)
+            //    glDisable(GL_DEPTH_TEST);
+            
+            assert(glGetError() == GL_NO_ERROR);
+		}
+	}	
+
+	void GLES2Text::SetText(const std::string& text) 
+	{
 		auto viewSize = App::GetPtrInstance()->GetViewSize();
 
 		if(lastText_ != text || viewSize.first != width_ || viewSize.second != height_)
@@ -93,6 +190,9 @@ namespace NSG
 			lastText_.clear();
 			pVBuffer_ = nullptr;
 		}
+
+		if(!pAtlas_->IsReady() || text.empty())
+			return;
 
 		if(!pVBuffer_ && width_ > 0 && height_ > 0)
 		{
@@ -156,43 +256,6 @@ namespace NSG
 
 			lastText_ = text;
 		}
-
-		if(pVBuffer_ != nullptr)
-		{
-            //bool isDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
-            //glEnable(GL_DEPTH_TEST);
-
-            assert(glGetError() == GL_NO_ERROR);
-
-			GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
-
-			UseProgram useProgram(*pProgram_);
-
-			Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
-			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
-
-			glActiveTexture(GL_TEXTURE0);
-
-			BindTexture bindTexture(*pAtlas_);
-			glUniform1i(texture_loc_, 0);
-			glUniform4fv(color_loc_, 1, &color[0]);
-
-			BindBuffer bindVBuffer(*pVBuffer_);
-
-			glEnableVertexAttribArray(position_loc_);
-			glVertexAttribPointer(position_loc_, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-			glDrawArrays(GL_TRIANGLES, 0, coords_.size());
-
-			if(!isBlendEnabled)
-				glDisable(GL_BLEND);
-
-            //if(!isDepthTestEnabled)
-            //    glDisable(GL_DEPTH_TEST);
-            
-            assert(glGetError() == GL_NO_ERROR);
-		}
 	}	
+
 }

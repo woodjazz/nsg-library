@@ -59,6 +59,7 @@ namespace NSG
         GLint pixelX_;
         GLint pixelY_;
         GLboolean isDepthTestEnabled_;
+        GLboolean isBlendEnabled_;
     };
 
     typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;

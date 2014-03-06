@@ -40,8 +40,10 @@ namespace NSG
 		~Node();
 		virtual void OnUpdate() {}
 		void SetPosition(const Vertex3& position);
+		const Vertex3& GetPosition() const { return position_; }
 		void SetOrientation(const Quaternion& q);
 		void SetScale(const Vertex3& scale);
+		const Vertex3& GetScale() const { return scale_; }
 		void SetGlobalPosition(const Vertex3& position);
 		void SetGlobalOrientation(const Quaternion& q);
 		const Vertex3& GetGlobalPosition() const { return globalPosition_; }
