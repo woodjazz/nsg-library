@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
+#include "GLES2Includes.h"
 #include "Types.h"
 
 namespace NSG
@@ -38,6 +39,10 @@ namespace NSG
 	public:
 		Node(PNode pParent = nullptr);
 		~Node();
+		GLushort GetId()const { return id_; }
+		void EnableSelection(bool enable) { enableSelection_ = enable; }
+		bool IsSelectionEnabled() const { return enableSelection_; }
+        void SetParent(PNode pParent);
 		virtual void OnUpdate() {}
 		void SetPosition(const Vertex3& position);
 		const Vertex3& GetPosition() const { return position_; }
@@ -53,7 +58,8 @@ namespace NSG
 		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
 		const Vertex3& GetDirection() const { return direction_; }
 	private:
-		void Update();	
+		void Update();
+		GLushort id_;	
 		mutable Matrix4 matTemporal_;	
 		Matrix4 matModel_;
 		Matrix3 matModelInvTransp_;
@@ -63,7 +69,7 @@ namespace NSG
 		Quaternion globalOrientation_;
 		Vertex3 scale_;
 		Vertex3 direction_;
-
 		PNode pParent_;
+		bool enableSelection_;
 	};
 }

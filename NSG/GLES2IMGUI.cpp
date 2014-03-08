@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "GLES2RectangleMesh.h"
 #include "GLES2CircleMesh.h"
 #include "GLES2EllipseMesh.h"
+#include "GLES2Camera.h"
 #include "GLES2RoundedRectangleMesh.h"
 #include "Node.h"
 #include "Constants.h"
@@ -59,7 +60,7 @@ static const char* fShader = STRINGIFY(
 	varying vec4 v_position;
 	void main()
 	{
-		float factor = 1 - abs(v_position.y);
+		float factor = 1.0 - abs(v_position.y);
 		gl_FragColor = u_material.diffuse * vec4(factor, factor, factor, 1);
 	}
 );
@@ -68,18 +69,18 @@ static PGLES2RectangleMesh s_pRectangleMesh;
 static PGLES2CircleMesh s_pCircleMesh;
 static PGLES2EllipseMesh s_pEllipseMesh;
 static PGLES2RoundedRectangleMesh s_pRoundedRectangle;
-static int32_t s_width = 0;
-static int32_t s_height = 0;
 static GLES2Camera* s_pCamera = nullptr;
 
 namespace NSG 
 {
 	namespace IMGUI
 	{
+		PGLES2Camera pCamera;
 		ButtonType buttonType = RoundedRectangle;
 		PGLES2Mesh pButtonMesh = s_pRoundedRectangle;
 		PNode pCurrentNode(new Node());
-		bool adjustButton2Text = true;
+        PNode pRenderNode(new Node(pCurrentNode));
+        PNode pRenderTextNode(new Node());
 		Vertex3 currentSize;
 		std::string currentFontFile("font/FreeSans.ttf");
 		int currentFontSize = 18;
@@ -87,7 +88,6 @@ namespace NSG
 		Color activeColor(0,1,0,0.7f);
 		Color normalColor(1,1,1,0.7f);
 		Color hotColor(1,0,0,0.7f);
-
 
 		class TextManager
 		{
@@ -172,12 +172,16 @@ namespace NSG
 			s_pRectangleMesh = PGLES2RectangleMesh(new GLES2RectangleMesh(1, 1, pMaterial, GL_STATIC_DRAW));
 			s_pCircleMesh = PGLES2CircleMesh(new GLES2CircleMesh(0.5f, 64, pMaterial, GL_STATIC_DRAW));
 			s_pEllipseMesh = PGLES2EllipseMesh(new GLES2EllipseMesh(1.0f, 1.0f, 64, pMaterial, GL_STATIC_DRAW));
-			s_pRoundedRectangle = PGLES2RoundedRectangleMesh(new GLES2RoundedRectangleMesh(0.25f, 1, 1, 64, pMaterial, GL_STATIC_DRAW));
-			
+			s_pRoundedRectangle = PGLES2RoundedRectangleMesh(new GLES2RoundedRectangleMesh(0.25f, 1, 0.5f, 64, pMaterial, GL_STATIC_DRAW));
+            pCamera = PGLES2Camera(new GLES2Camera());
+			pCamera->EnableOrtho();
+            pCamera->SetFarClip(1);
+            pCamera->SetNearClip(-1);
 		}
 
 		void ReleaseResources()
 		{
+            pCamera = nullptr;
 			s_pRectangleMesh = nullptr;
 			s_pCircleMesh = nullptr;
 			s_pEllipseMesh = nullptr;
@@ -195,8 +199,7 @@ namespace NSG
 
 			glDisable(GL_DEPTH_TEST);
 			s_pCamera = GLES2Camera::GetActiveCamera();
-			GLES2Camera::Deactivate();
-			glViewport(0, 0, s_width, s_height);
+			pCamera->Activate();
 			uistate.hotitem = 0;
 		}
 
@@ -224,7 +227,7 @@ namespace NSG
 		{
             pButtonMesh->SetFilled(fillEnabled);
 			pButtonMesh->GetMaterial()->SetDiffuseColor(color);
-			pButtonMesh->Render(pCurrentNode);
+			pButtonMesh->Render(pRenderNode);
 		}
 
 		bool Hit(GLushort id)
@@ -233,7 +236,7 @@ namespace NSG
 				return false;
 
 			pFrameColorSelection->Begin(uistate.mousex, uistate.mousey);
-	    	pFrameColorSelection->Render(id, pButtonMesh, pCurrentNode);
+	    	pFrameColorSelection->Render(id, pButtonMesh, pRenderNode);
 		    pFrameColorSelection->End();
 
 		    return id == pFrameColorSelection->GetSelected();
@@ -262,6 +265,22 @@ namespace NSG
 			}
 		}
 
+		Vertex3 ConvertPixels2ScreenCoords(const Vertex3& pixels)
+		{
+			Vertex3 screenCoords(pixels);
+			screenCoords.x *= uistate.pixelSizeX;
+			screenCoords.y *= uistate.pixelSizeY;
+			return screenCoords;
+		}
+
+		Vertex3 ConvertScreenCoords2Pixels(const Vertex3& screenCoords)
+		{
+			Vertex3 pixels(screenCoords);
+			pixels.x /= uistate.pixelSizeX;
+			pixels.y /= uistate.pixelSizeY;
+			return pixels;
+		}
+
 		void SetPosition(const Vertex3& position)
 		{
 			pCurrentNode->SetPosition(position);
@@ -280,11 +299,6 @@ namespace NSG
 		const Vertex3& GetSize()
 		{
 			return pCurrentNode->GetScale();
-		}
-
-		void AdjustButton2Text(bool status)
-		{
-			adjustButton2Text = status;
 		}
 
 		void Fill(bool enable)
@@ -316,25 +330,7 @@ namespace NSG
 
 		bool Button(GLushort id, const std::string& text)
 		{
-			PGLES2Text pTextMesh = GetCurrentTextMesh(id);
-            pTextMesh->SetText(text);
-
-			if(adjustButton2Text)
-			{
-				float w = std::max(pTextMesh->GetWidth(), currentSize.x);
-				float h = std::max(pTextMesh->GetHeight(), currentSize.y);
-
-				if(buttonType == Circle)
-				{
-					h = w = std::max(w,h);
-				}
-
-				pCurrentNode->SetScale(Vertex3(w,h,1));
-			}
-			else
-			{
-				pCurrentNode->SetScale(currentSize);
-			}
+			pCurrentNode->SetScale(currentSize);
 
 			// Check whether the button should be hot
 			if (Hit(id))
@@ -367,14 +363,18 @@ namespace NSG
 			}
 
 			{
+				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
+	            pTextMesh->SetText(text);
+				
 				static PNode pNode0(new Node());
 				pNode0->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
 
-				Node node(pNode0);
-				Node* pNode = &node;
-				pNode->SetPosition(pCurrentNode->GetPosition());
+                static PNode pNode(new Node(pNode0));
+                pNode->SetPosition(pCurrentNode->GetPosition());
 
-				pTextMesh->Render(pNode, Color(1,1,1,1));
+                pRenderTextNode->SetParent(pNode);
+
+				pTextMesh->Render(pRenderTextNode, Color(1,1,1,1));
 			}
 
 			// If button is hot and active, but mouse button is not
@@ -384,8 +384,18 @@ namespace NSG
 
 		void ViewChanged(int32_t width, int32_t height)
 		{
-			s_width = width;
-			s_height = height;
+			//////////////////////////////////////////////////////////////////////////////////////////////////
+			//Since we are using screen coordinates then  we have to recalculate the origin of coordinates 
+			//and the scale to match the ortographic projection
+			Vertex3 coordinates_origin(width/2, height/2, 0);
+			Vertex3 coordinates_scale(width/2, height/2, 1);
+
+            pRenderNode->SetPosition(coordinates_origin);
+            pRenderNode->SetScale(coordinates_scale);
+            pRenderTextNode->SetPosition(coordinates_origin);
+            pRenderTextNode->SetScale(coordinates_scale);
+            //////////////////////////////////////////////////////////////////////////////////////////////////
+            
 			uistate.pixelSizeX = 2/(float)width;
 			uistate.pixelSizeY = 2/(float)height;
 

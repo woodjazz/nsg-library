@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "App.h"
 #include "Log.h"
+#include "GLES2Camera.h"
 #include "GLES2IMGUI.h"
 #include <cassert>
 
@@ -34,8 +35,8 @@ namespace NSG
 
     App::App() 
     : width_(0),
-    height_(0)
-
+    height_(0),
+    selectedIndex_(0)
     {
 	    assert(s_pApp == nullptr);
 
@@ -83,8 +84,23 @@ namespace NSG
     }
 #endif    
 
+    void App::BeginSelection(PGLES2FrameColorSelection pFrameColorSelection) 
+    { 
+        pFrameColorSelection_ = pFrameColorSelection; 
+    }
+
+    void App::EndSelection()
+    {
+        selectedIndex_ = pFrameColorSelection_->GetSelected();
+
+        pFrameColorSelection_ = nullptr;
+    }
+
+
     InternalApp::InternalApp(NSG::PApp pApp) 
-    : pApp_(pApp)
+    : pApp_(pApp),
+    screenX_(0),
+    screenY_(0)
     {
     }
 
@@ -101,7 +117,6 @@ namespace NSG
 
     void InternalApp::BeginTick()
     {
-        
         pApp_->Start();
     }
     
@@ -117,13 +132,25 @@ namespace NSG
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
     {
-        pApp_->SetViewSize(width, height);
-
-        IMGUI::ViewChanged(width, height);
-
         if(width > 0 && height > 0)
         {
-            TRACE_LOG("ViewChanged width=" << width << " height=" << height);  
+            glViewport(0, 0, width, height);
+
+            pApp_->SetViewSize(width, height);
+
+            if(!pFrameColorSelection_)
+                pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection());
+
+            pFrameColorSelection_->ViewChanged(width, height);
+
+            IMGUI::ViewChanged(width, height);
+
+            GLES2Camera::Cameras& cameras = GLES2Camera::GetCameras();
+
+            for(auto &camera : cameras)
+            {
+                camera->ViewChanged(width, height);
+            }
 
             pApp_->ViewChanged(width, height);
         }
@@ -131,12 +158,18 @@ namespace NSG
 
     void InternalApp::OnMouseMove(float x, float y) 
     {
+        screenX_ = x;
+        screenY_ = y;
+
         IMGUI::OnMouseMove(x, y);
         pApp_->OnMouseMove(x, y);
     }
 
     void InternalApp::OnMouseDown(float x, float y) 
     {
+        screenX_ = x;
+        screenY_ = y;
+
         IMGUI::OnMouseDown(x, y);
         pApp_->OnMouseDown(x, y);
     }
@@ -149,7 +182,24 @@ namespace NSG
 
     void InternalApp::RenderFrame()
     {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glClearColor(0, 0, 0, 1);
+        glClearDepth(1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        //glEnable(GL_BLEND);
+        //glEnable(GL_CULL_FACE);
+        //glCullFace(GL_FRONT);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         pApp_->RenderFrame();
+
+        pApp_->BeginSelection(pFrameColorSelection_);
+        pFrameColorSelection_->Begin(screenX_, screenY_);
+        pApp_->RenderFrame();
+        pFrameColorSelection_->End();
+        pApp_->EndSelection();
+
         IMGUI::Begin();
         pApp_->RenderGUIFrame();
         IMGUI::End();

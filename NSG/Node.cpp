@@ -28,9 +28,13 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	static GLushort s_node_id = 1;
+
 	Node::Node(PNode pParent) 
-	: scale_(1,1,1),
-	pParent_(pParent)
+	: id_(s_node_id++),
+	scale_(1,1,1),
+	pParent_(pParent),
+	enableSelection_(true)
 	{
 		Update();
 	}
@@ -38,6 +42,12 @@ namespace NSG
 	Node::~Node() 
 	{
 	}
+
+    void Node::SetParent(PNode pParent)
+    {
+        pParent_ = pParent;
+        Update();
+    }
 
 	void Node::SetPosition(const Vertex3& position)
 	{

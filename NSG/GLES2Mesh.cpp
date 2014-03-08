@@ -134,74 +134,85 @@ namespace NSG
 
 	void GLES2Mesh::Render(Node* pNode) 
 	{
-		if(!pMaterial_->IsReady()) 
-			return;
+		App* pApp = App::GetPtrInstance();
 
-        if(!loaded_)
-        {
-	        texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
-	        position_loc_ = pMaterial_->GetPositionAttLocation();
-	        normal_loc_ = pMaterial_->GetNormalAttLocation();
+		PGLES2FrameColorSelection pSelection = pApp->GetSelection();
 
-	        loaded_ = true;
-        }
-
-		assert(pVBuffer_);
-
-        assert(glGetError() == GL_NO_ERROR);
-
-		UseMaterial useMaterial(*pMaterial_, pNode);
-
-		BindBuffer bindVBuffer(*pVBuffer_);
-
-		if(position_loc_ != -1)
+		if(pSelection && pNode->IsSelectionEnabled())
 		{
-			glVertexAttribPointer(position_loc_,
-					3,
-					GL_FLOAT,
-					GL_FALSE,
-					sizeof(VertexData),
-					reinterpret_cast<void*>(offsetof(VertexData, position_)));
-
-			glEnableVertexAttribArray(position_loc_);
+			pSelection->Render(this, pNode);
 		}
-
-		if(normal_loc_ != -1)
+		else
 		{
-			glVertexAttribPointer(normal_loc_,
-					3,
-					GL_FLOAT,
-					GL_FALSE,
-					sizeof(VertexData),
-					reinterpret_cast<void*>(offsetof(VertexData, normal_)));
-			
-			glEnableVertexAttribArray(normal_loc_);
-		}
+			if(!pMaterial_->IsReady()) 
+				return;
 
-		if(texcoord_loc_ != -1)
-		{
-			glVertexAttribPointer(texcoord_loc_,
-					2,
-					GL_FLOAT,
-					GL_FALSE,
-					sizeof(VertexData),
-					reinterpret_cast<void*>(offsetof(VertexData, uv_)));
-			
-			glEnableVertexAttribArray(texcoord_loc_);
-		}
+	        if(!loaded_)
+	        {
+		        texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
+		        position_loc_ = pMaterial_->GetPositionAttLocation();
+		        normal_loc_ = pMaterial_->GetNormalAttLocation();
 
-		if(!indexes_.empty())
-		{
-			BindBuffer bindIBuffer(*pIBuffer_);
+		        loaded_ = true;
+	        }
 
-        	glDrawElements(mode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);
-        }
-        else
-        {
-			glDrawArrays(mode_, 0, vertexsData_.size());
-        }
+			assert(pVBuffer_);
 
-        assert(glGetError() == GL_NO_ERROR);
+	        assert(glGetError() == GL_NO_ERROR);
+
+			UseMaterial useMaterial(*pMaterial_, pNode);
+
+			BindBuffer bindVBuffer(*pVBuffer_);
+
+			if(position_loc_ != -1)
+			{
+				glVertexAttribPointer(position_loc_,
+						3,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(VertexData),
+						reinterpret_cast<void*>(offsetof(VertexData, position_)));
+
+				glEnableVertexAttribArray(position_loc_);
+			}
+
+			if(normal_loc_ != -1)
+			{
+				glVertexAttribPointer(normal_loc_,
+						3,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(VertexData),
+						reinterpret_cast<void*>(offsetof(VertexData, normal_)));
+				
+				glEnableVertexAttribArray(normal_loc_);
+			}
+
+			if(texcoord_loc_ != -1)
+			{
+				glVertexAttribPointer(texcoord_loc_,
+						2,
+						GL_FLOAT,
+						GL_FALSE,
+						sizeof(VertexData),
+						reinterpret_cast<void*>(offsetof(VertexData, uv_)));
+				
+				glEnableVertexAttribArray(texcoord_loc_);
+			}
+
+			if(!indexes_.empty())
+			{
+				BindBuffer bindIBuffer(*pIBuffer_);
+
+	        	glDrawElements(mode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);
+	        }
+	        else
+	        {
+				glDrawArrays(mode_, 0, vertexsData_.size());
+	        }
+
+	        assert(glGetError() == GL_NO_ERROR);
+	    }
 	}
 
 	void GLES2Mesh::RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc) 

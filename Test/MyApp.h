@@ -33,7 +33,6 @@ misrepresented as being the original software.
 #include "NSG/GLES2Camera.h"
 #include "NSG/GLES2Text.h"
 #include "NSG/GLES2Light.h"
-#include "NSG/GLES2FrameColorSelection.h"
 
 using namespace NSG;
 
@@ -67,19 +66,17 @@ private:
 	PNode pTextNode1_;
 	PGLES2Camera pCamera1_;
 	PGLES2Camera pCamera2_;
+	PGLES2Camera pCamera3_;
 	float x_angle_;
 	float y_angle_;
 	PGLES2Text pText1_;
 	PGLES2Text pText2_;
 	PGLES2Text pText3_;
-	int32_t width_;
-	int32_t height_;
 	float x_;
 	float y_;
 	bool buttonDown_;
 	bool buttonUp_;
 	GLushort selectedIndex_;
-	PGLES2FrameColorSelection pFrameColorSelection_;
 	Vertex3 scale_;
 };
 

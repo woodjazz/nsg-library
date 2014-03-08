@@ -39,13 +39,14 @@ namespace NSG
 		void Begin();
 		void End();
 		enum ButtonType {Rectangle, Circle, Ellipse, RoundedRectangle};
+		Vertex3 ConvertPixels2ScreenCoords(const Vertex3& pixels);
+		Vertex3 ConvertScreenCoords2Pixels(const Vertex3& screenCoords);
 		void SetButtonType(ButtonType type);
 		void SetPosition(const Vertex3& position);
 		const Vertex3& GetPosition();
 		void SetSize(const Vertex3& size);
 		const Vertex3& GetSize();
 		void SetFont(const std::string& fontFile, int fontSize);
-		void AdjustButton2Text(bool status);
 		void Fill(bool enable);
 		void SetNormalColor(Color color);
 		void SetHotColor(Color color);

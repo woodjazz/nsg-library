@@ -48,19 +48,8 @@ namespace NSG
 		float totalSizeX = width + 2 * radius1;
 		float totalSizeY = height + 2 * radius1;
 
-		float xOffset = (totalSizeX - width)/2;
-		float yOffset = (totalSizeY - height)/2;
-
-		const float radiusRatio = 0.4f;
-		const float sideRation = 1-radiusRatio;
-		float radiusReduction = radiusRatio * std::min(xOffset, yOffset);
-		float xReduction = sideRation * xOffset;
-		float yReduction = sideRation * yOffset;
-
-		halfX -= xReduction;
-		halfY -= yReduction;
-
-		radius1 -= radiusReduction;
+		halfX -= (totalSizeX - width)/2;
+		halfY -= (totalSizeY - height)/2;
 
 		const float angleAdder = TWO_PI / (float)res;
 

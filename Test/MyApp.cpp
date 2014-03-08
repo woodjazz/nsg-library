@@ -41,20 +41,9 @@ extern void QueuedTaskTest();
 using namespace NSG;
 
 
-namespace 
-{
-	const float kFovY = 45.0f;
-	const float kZNear = 0.1f;
-	const float kZFar = 100.0f;
-}
-
 MyApp::MyApp() 
 : x_angle_(0),
 y_angle_(0),
-pCamera1_(new GLES2Camera(kFovY, kZNear, kZFar)),
-pCamera2_(new GLES2Camera(kFovY, kZNear, kZFar)),
-width_(1),
-height_(1),
 x_(0),
 y_(0),
 buttonDown_(false),
@@ -88,7 +77,15 @@ void MyApp::Start()
 
 	thread_ = std::thread([this](){InternalTask();});	
 
-	PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
+	pCamera1_ = PGLES2Camera(new GLES2Camera());
+	pCamera2_ = PGLES2Camera(new GLES2Camera());
+	pCamera3_ = PGLES2Camera(new GLES2Camera());
+	pCamera3_->EnableOrtho();
+    pCamera3_->SetLookAt(Vertex3(-500,100,100), Vertex3(0,0,0));
+    pCamera3_->SetFarClip(10000);
+    pCamera3_->SetNearClip(-10000);
+
+    PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
 	PResource pFResource(new Resource("shaders/Simple.frag"));
 	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
 	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
@@ -116,6 +113,7 @@ void MyApp::Start()
     pNode1_->SetScale(Vertex3(3,3,3));
 
     pNode2_->SetPosition(Vertex3(5, 0, 0));
+    //pNode2_->SetScale(Vertex3(30,30,30));
 
     pCamera1_->SetLookAt(Vertex3(0,0,10), Vertex3(0,0,0));
     pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0));
@@ -150,6 +148,7 @@ void MyApp::Update(float delta)
 		factor_scale *= -1;
 
 	pTextNode0_->SetPosition(Vertex3(-pText1_->GetWidth()/2, 0, 0.2f));
+    //pTextNode1_->SetPosition(Vertex3(200, 100, 0));
 	pTextNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
 	//pMaterial2_->SetDiffuseColor(Color(1,1,1,scale_.x/10.0f));
@@ -167,13 +166,13 @@ void MyApp::LateUpdate()
 
 void MyApp::RenderGUIFrame()
 {
+
 	IMGUI::SetActiveColor(Color(0,0,1,0.9f));
 	
 	IMGUI::SetButtonType(IMGUI::Rectangle);
 
 	IMGUI::SetPosition(Vertex3(0,0,0));
-
-	IMGUI::AdjustButton2Text(true);
+	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 100, 1)));
 
 	IMGUI::Fill(false);
 
@@ -195,16 +194,13 @@ void MyApp::RenderGUIFrame()
 		TRACE_LOG("Button 2 pressed\n");
 	}
 
-	IMGUI::AdjustButton2Text(false);
-
 	IMGUI::SetFont("font/FreeSans.ttf", 64);
-
-	IMGUI::SetSize(Vertex3(0.3f, 0.3f, 1));
 
 	IMGUI::SetButtonType(IMGUI::Ellipse);
 
-	IMGUI::SetPosition(Vertex3(-0.5f, 0.5f, 0));	
-	
+	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(-200, 200, 0)));	
+	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 50, 1)));
+
     if(IMGUI::Button(3, "Button 3"))
 	{
 		TRACE_LOG("Button 3 pressed\n");
@@ -212,17 +208,23 @@ void MyApp::RenderGUIFrame()
 
     position = IMGUI::GetPosition();
     position.y -= IMGUI::GetSize().y;
-	IMGUI::SetPosition(position);	
+	IMGUI::SetPosition(position);
 
 	IMGUI::SetButtonType(IMGUI::RoundedRectangle);
 
-	IMGUI::AdjustButton2Text(true);
-	
 	IMGUI::Fill(true);
     
     if(IMGUI::Button(4, "Button 4"))
 	{
 		TRACE_LOG("Button 4 pressed\n");
+	}
+
+	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 150, 0)));	
+	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 300, 1)));
+
+    if(IMGUI::Button(5, "Button 5"))
+	{
+		TRACE_LOG("Button 5 pressed\n");
 	}
 
 }
@@ -231,20 +233,10 @@ void MyApp::RenderFrame()
 {
 	//TRACE_LOG("MyApp::RenderFrame\n");
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	glClearColor(0, 0, 0, 1);
-	glClearDepth(1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_BLEND);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	//pText1_->ShowAtlas();
 
     pCamera1_->Activate();
+    //pCamera3_->Activate();
 
     pLight0_->Render();
 
@@ -269,6 +261,7 @@ void MyApp::RenderFrame()
 	ss << " S=" << std::hex << selectedIndex_;
 
 
+	//pCamera3_->Activate();
 	GLES2Camera::Deactivate();
 	pText1_->SetText(ss.str());
 	pText1_->Render(pTextNode1_, Color(1,1,1,1));
@@ -291,36 +284,10 @@ void MyApp::RenderFrame()
 
     pMesh_->Render(pNode1_);
     pSphereMesh_->Render(pNode2_);
-
-	pFrameColorSelection_->Begin(x_, y_);
-
-    pCamera1_->Activate();
-
-    pFrameColorSelection_->Render(0xFF00, pMesh_, pNode1_);
-    pFrameColorSelection_->Render(0x12AB, pSphereMesh_, pNode2_);
-
-    pCamera2_->Activate();
-
-    pFrameColorSelection_->Render(0x0001, pMesh_, pNode1_);
-    pFrameColorSelection_->Render(0x0002, pSphereMesh_, pNode2_);
-
-    pFrameColorSelection_->End();
 }
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 
 {
-	glViewport(0, 0, width, height);
-
-	width_ = width;
-	height_ = height;
-
-	pCamera1_->ViewChanged(width, height);
-	pCamera2_->ViewChanged(width, height);
-
-    if(!pFrameColorSelection_)
-        pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection());
-
-	pFrameColorSelection_->ViewChanged(width, height);
 }
 
 void MyApp::OnMouseMove(float x, float y)
@@ -337,7 +304,9 @@ void MyApp::OnMouseDown(float x, float y)
 	buttonDown_ = true;
 	buttonUp_ = false;
 
-	selectedIndex_ = pFrameColorSelection_->GetSelected();
+	selectedIndex_ = GetSelectedNode();
+    
+    TRACE_LOG("selected=" << selectedIndex_ << "\n");
 }
 
 void MyApp::OnMouseUp()

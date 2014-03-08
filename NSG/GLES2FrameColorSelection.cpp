@@ -158,10 +158,10 @@ namespace NSG
 
     void GLES2FrameColorSelection::Render(GLushort id, PGLES2Mesh pMesh, PNode pNode)
     {
-        Render(id, pMesh, pNode.get());
+        Render(id, pMesh.get(), pNode.get());
     }
 
-    void GLES2FrameColorSelection::Render(GLushort id, PGLES2Mesh pMesh, Node* pNode)
+    void GLES2FrameColorSelection::Render(GLushort id, GLES2Mesh* pMesh, Node* pNode)
     {
         UseProgram useProgram(*pProgram_);
 
@@ -171,6 +171,11 @@ namespace NSG
 
         pMesh->RenderForSelect(pNode, position_loc_, mvp_loc_);
 
+    }
+
+    void GLES2FrameColorSelection::Render(GLES2Mesh* pMesh, Node* pNode)
+    {
+        Render(pNode->GetId(), pMesh, pNode);
     }
 
 }

@@ -33,6 +33,8 @@ misrepresented as being the original software.
 #endif
 
 #include "Tick.h"
+#include "GLES2FrameColorSelection.h"
+
 
 namespace NSG 
 {
@@ -54,19 +56,25 @@ namespace NSG
         static App* GetPtrInstance();
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
+        void BeginSelection(PGLES2FrameColorSelection pFrameColorSelection);
+        void EndSelection();
+        PGLES2FrameColorSelection GetSelection() const { return pFrameColorSelection_; }
+        GLushort GetSelectedNode() const { return selectedIndex_; }
 
-	#if NACL
+#if NACL
 		virtual void HandleMessage(const pp::Var& var_message);
-	#elif ANDROID
+#elif ANDROID
 		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
         AAssetManager* GetAssetManager() { return pAAssetManager_; }
-	#endif
+#endif
     private:
-    #if ANDROID        
+#if ANDROID        
         AAssetManager* pAAssetManager_;
-    #endif
-    int32_t width_;
-    int32_t height_;
+#endif
+        int32_t width_;
+        int32_t height_;
+        PGLES2FrameColorSelection pFrameColorSelection_;
+        GLushort selectedIndex_;
 	};
 
 	typedef std::shared_ptr<App> PApp;
@@ -74,6 +82,9 @@ namespace NSG
     struct InternalApp : public Tick
     {
         NSG::PApp pApp_;
+        PGLES2FrameColorSelection pFrameColorSelection_;
+        float screenX_;
+        float screenY_;
 
         InternalApp(NSG::PApp pApp);
         void Initialize();

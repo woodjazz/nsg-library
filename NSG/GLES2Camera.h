@@ -24,9 +24,10 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
 #include "Types.h"
 #include "Node.h"
+#include <memory>
+#include <vector>
 
 namespace NSG
 {
@@ -37,8 +38,13 @@ namespace NSG
 	class GLES2Camera
 	{
 	public:
-		GLES2Camera(float fovy, float zNear, float zFar);
+		GLES2Camera();
 		~GLES2Camera();
+		void EnableOrtho();
+		void DisableOrtho();
+		void SetFov(float fovy);
+		void SetNearClip(float zNear);
+		void SetFarClip(float zFar);
 		void SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
 		static void Deactivate();
 		static GLES2Camera* GetActiveCamera();
@@ -48,9 +54,11 @@ namespace NSG
 		void Activate();
 		void SetViewport(float xo, float yo, float xf, float yf);
 		void ViewChanged(int32_t width, int32_t height);
-
+		typedef std::vector<GLES2Camera*> Cameras;
+		static Cameras& GetCameras();
 	private:
-		void Update();		
+		void UpdateProjection();
+		void UpdateViewProjection();
 		Matrix4 matView_;
 		Matrix4 matViewInverse_;
 		Matrix4 matProjection_;
@@ -64,5 +72,6 @@ namespace NSG
 		float yo_;
 		float xf_;
 		float yf_;
+		bool isOrtho_;
 	};
 }
