@@ -35,7 +35,7 @@ namespace NSG
 
 	typedef std::shared_ptr<GLES2Camera> PGLES2Camera;
 
-	class GLES2Camera
+	class GLES2Camera : public Node
 	{
 	public:
 		GLES2Camera();
@@ -45,7 +45,6 @@ namespace NSG
 		void SetFov(float fovy);
 		void SetNearClip(float zNear);
 		void SetFarClip(float zFar);
-		void SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
 		static void Deactivate();
 		static GLES2Camera* GetActiveCamera();
 		static Matrix4 GetModelViewProjection(Node* pNode);
@@ -57,6 +56,7 @@ namespace NSG
 		typedef std::vector<GLES2Camera*> Cameras;
 		static Cameras& GetCameras();
 	private:
+        void OnUpdate();
 		void UpdateProjection();
 		void UpdateViewProjection();
 		Matrix4 matView_;

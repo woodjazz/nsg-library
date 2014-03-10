@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "GLES2FrameColorSelection.h"
 #include "GLES2Text.h"
+#include "GLES2StencilMask.h"
 #include <map>
 
 using namespace NSG;
@@ -167,7 +168,8 @@ namespace NSG
 		{
 			assert(s_pRectangleMesh == nullptr);
 			PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-			PGLES2Material pMaterial(new GLES2Material(pProgram));
+			PGLES2Material pMaterial(new GLES2Material());
+            pMaterial->SetProgram(pProgram);
 			pMaterial->SetDiffuseColor(Color(1,0,0,1));
 			s_pRectangleMesh = PGLES2RectangleMesh(new GLES2RectangleMesh(1, 1, pMaterial, GL_STATIC_DRAW));
 			s_pCircleMesh = PGLES2CircleMesh(new GLES2CircleMesh(0.5f, 64, pMaterial, GL_STATIC_DRAW));
@@ -363,6 +365,10 @@ namespace NSG
 			}
 
 			{
+				GLES2StencilMask stencilMask;
+				stencilMask.Begin();
+				stencilMask.Render(pRenderNode.get(), pButtonMesh.get());
+				stencilMask.End();
 				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
 	            pTextMesh->SetText(text);
 				

@@ -167,16 +167,15 @@ namespace NSG
 		UpdateViewProjection();
 	}
 
-
-	void GLES2Camera::SetLookAt(const Vertex3& eye, const Vertex3& center, const Vertex3& up)
-	{
-		matView_ = glm::lookAt(eye, center, up);
-		matViewInverse_ = glm::inverse(matView_);
-		UpdateViewProjection();
-	}
+    void GLES2Camera::OnUpdate()
+    {
+        UpdateViewProjection();
+    }
 
 	void GLES2Camera::UpdateViewProjection()
 	{
+		matViewInverse_ = GetModelMatrix();
+		matView_ = glm::inverse(matViewInverse_);
 		matViewProjection_ = matProjection_ * matView_;
 	}
 

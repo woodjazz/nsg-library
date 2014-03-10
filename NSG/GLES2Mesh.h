@@ -62,10 +62,9 @@ namespace NSG
 		void Redo();
 		typedef std::vector<VertexData> Data;
 		Data& GetVertexData() { return vertexsData_; }
-		enum Mode {POINTS, LINES, LINE_STRIP, LINE_LOOP, TRIANGLES, TRIANGLE_FAN};
-		void SetMode(Mode mode);
-		enum SelectMode {S_TRIANGLES, S_TRIANGLE_FAN};
-		void SetSelectMode(SelectMode mode);
+		void SetMode(GLenum mode) { mode_ = mode; }
+		GLenum GetMode() const { return mode_; }
+		void SetSelectMode(GLenum mode) { selectMode_ = mode; }
 		PGLES2Material GetMaterial() const { return pMaterial_; }
 		virtual void SetFilled(bool enable) {}
 	private:

@@ -83,50 +83,6 @@ namespace NSG
 		}
 	}
 
-	void GLES2Mesh::SetMode(Mode mode)
-	{
-		switch(mode)
-		{
-			case POINTS:
-				mode_ = GL_POINTS;
-				break;
-			case LINES:
-				mode_ = GL_LINES;
-				break;
-			case LINE_STRIP:
-				mode_ = GL_LINE_STRIP;
-				break;
-			case LINE_LOOP:
-				mode_ = GL_LINE_LOOP;
-				break;
-			case TRIANGLES:
-				mode_ = GL_TRIANGLES;
-				break;
-			case TRIANGLE_FAN:
-				mode_ = GL_TRIANGLE_FAN;
-				break;
-			default:
-			assert(false);
-		}
-	}
-
-	void GLES2Mesh::SetSelectMode(SelectMode mode)
-	{
-		switch(mode)
-		{
-			case S_TRIANGLES:
-				selectMode_ = GL_TRIANGLES;
-				break;
-			case S_TRIANGLE_FAN:
-				selectMode_ = GL_TRIANGLE_FAN;
-				break;
-
-			default:
-			assert(false);
-		}
-
-	}
-
 	void GLES2Mesh::Render(PNode pNode)
 	{
 		Render(pNode.get());

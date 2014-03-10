@@ -109,7 +109,8 @@ namespace NSG
     	}
 
 		PGLES2Program pProgram(new GLES2Program(vAtlasShader, fAtlasShader));
-		PGLES2Material pMaterial = PGLES2Material(new GLES2Material (pProgram));
+		PGLES2Material pMaterial = PGLES2Material(new GLES2Material ());
+        pMaterial->SetProgram(pProgram);
 		pMaterial->SetMainTexture(pAtlas_);
 		pMesh_ = PGLES2PlaneMesh(new GLES2PlaneMesh(2, 2, 2, 2, pMaterial, GL_STATIC_DRAW));
 

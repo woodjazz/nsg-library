@@ -66,7 +66,6 @@ private:
 	PNode pTextNode1_;
 	PGLES2Camera pCamera1_;
 	PGLES2Camera pCamera2_;
-	PGLES2Camera pCamera3_;
 	float x_angle_;
 	float y_angle_;
 	PGLES2Text pText1_;

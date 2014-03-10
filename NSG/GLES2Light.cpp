@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <algorithm>
 
- #define STRINGIFY(S) #S
+#define STRINGIFY(S) #S
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
@@ -42,7 +42,8 @@ namespace NSG
 		s_Lights.push_back(this);
 
 		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-		PGLES2Material pMaterial = PGLES2Material(new GLES2Material (pProgram));
+		PGLES2Material pMaterial = PGLES2Material(new GLES2Material());
+        pMaterial->SetProgram(pProgram);
 
 		pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(0.2f,0.2f,0.2f, 2,2,2, pMaterial, GL_STATIC_DRAW));
 	}

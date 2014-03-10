@@ -39,7 +39,7 @@ namespace NSG
 		float halfY = height*0.5;	
 
 		SetFilled(filled_);
-		SetSelectMode(S_TRIANGLE_FAN);
+		SetSelectMode(GL_TRIANGLE_FAN);
 
 		float angle = 0.0f;
 
@@ -74,9 +74,9 @@ namespace NSG
 		filled_ = enable;
 
 		if(filled_)
-			SetMode(TRIANGLE_FAN);
+			SetMode(GL_TRIANGLE_FAN);
 		else
-			SetMode(LINE_LOOP);
+			SetMode(GL_LINE_LOOP);
 	}
 }
 

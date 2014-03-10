@@ -79,24 +79,21 @@ void MyApp::Start()
 
 	pCamera1_ = PGLES2Camera(new GLES2Camera());
 	pCamera2_ = PGLES2Camera(new GLES2Camera());
-	pCamera3_ = PGLES2Camera(new GLES2Camera());
-	pCamera3_->EnableOrtho();
-    pCamera3_->SetLookAt(Vertex3(-500,100,100), Vertex3(0,0,0));
-    pCamera3_->SetFarClip(10000);
-    pCamera3_->SetNearClip(-10000);
 
     PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
 	PResource pFResource(new Resource("shaders/Simple.frag"));
 	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
 	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
 	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
-	pMaterial2_ = PGLES2Material(new GLES2Material (pDiffuseProgram));
+	pMaterial2_ = PGLES2Material(new GLES2Material ());
+    //pMaterial2_->SetProgram(pDiffuseProgram);
 	pMaterial2_->SetMainTexture(pEarthTexture);
 	pMaterial2_->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial2_->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
 	pMaterial2_->SetShininess(0.3f);
 
-	PGLES2Material pMaterial3(new GLES2Material (pDiffuseProgram));
+	PGLES2Material pMaterial3(new GLES2Material ());
+    pMaterial3->SetProgram(pDiffuseProgram);
 	pMaterial3->SetMainTexture(pTexture);
 
 	pSphereMesh_ = PGLES2SphereMesh(new GLES2SphereMesh(3, 32, pMaterial2_, GL_STATIC_DRAW));
@@ -115,8 +112,11 @@ void MyApp::Start()
     pNode2_->SetPosition(Vertex3(5, 0, 0));
     //pNode2_->SetScale(Vertex3(30,30,30));
 
-    pCamera1_->SetLookAt(Vertex3(0,0,10), Vertex3(0,0,0));
-    pCamera2_->SetLookAt(Vertex3(0,5,5), Vertex3(0,0,0));
+    pCamera1_->SetPosition(Vertex3(0,0,10));
+    pCamera1_->SetLookAt(Vertex3(0,0,0));
+
+    pCamera2_->SetPosition(Vertex3(0,5,5));
+    pCamera2_->SetLookAt(Vertex3(0,0,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
 
     pText1_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_DYNAMIC_DRAW));
@@ -236,12 +236,11 @@ void MyApp::RenderFrame()
 	//pText1_->ShowAtlas();
 
     pCamera1_->Activate();
-    //pCamera3_->Activate();
 
     pLight0_->Render();
 
-    pMesh_->SetMode(GLES2Mesh::TRIANGLES);
-    pSphereMesh_->SetMode(GLES2Mesh::TRIANGLES);
+    pMesh_->SetMode(GL_TRIANGLES);
+    pSphereMesh_->SetMode(GL_TRIANGLES);
 
     pMesh_->Render(pNode1_);
     pSphereMesh_->Render(pNode2_);
@@ -261,7 +260,6 @@ void MyApp::RenderFrame()
 	ss << " S=" << std::hex << selectedIndex_;
 
 
-	//pCamera3_->Activate();
 	GLES2Camera::Deactivate();
 	pText1_->SetText(ss.str());
 	pText1_->Render(pTextNode1_, Color(1,1,1,1));
@@ -279,8 +277,8 @@ void MyApp::RenderFrame()
     
     pCamera2_->Activate();
 
-    pMesh_->SetMode(GLES2Mesh::LINES);
-    pSphereMesh_->SetMode(GLES2Mesh::LINES);
+    pMesh_->SetMode(GL_LINES);
+    pSphereMesh_->SetMode(GL_LINES);
 
     pMesh_->Render(pNode1_);
     pSphereMesh_->Render(pNode2_);

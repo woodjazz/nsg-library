@@ -113,7 +113,8 @@ namespace NSG
 
             SetGlobalOrientation(glm::quat_cast(m));
         }
-/*        float length = glm::length(GetGlobalPosition() - center);
+        /*
+        float length = glm::length(GetGlobalPosition() - center);
         
         if(length > 0)
         {

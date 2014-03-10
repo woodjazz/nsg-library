@@ -38,7 +38,7 @@ namespace NSG
 		GLES2Mesh::Data& data = GetVertexData();
 
 		SetFilled(filled_);
-		SetSelectMode(S_TRIANGLE_FAN);
+		SetSelectMode(GL_TRIANGLE_FAN);
 
 		VertexData vertexData;
 		vertexData.normal_ = Vertex3(-halfX, -halfY, 1); // always facing forward
@@ -71,9 +71,9 @@ namespace NSG
 		filled_ = enable;
 
 		if(filled_)
-			SetMode(TRIANGLE_FAN);
+			SetMode(GL_TRIANGLE_FAN);
 		else
-			SetMode(LINE_LOOP);
+			SetMode(GL_LINE_LOOP);
 	}
 }
 
