@@ -31,6 +31,8 @@ misrepresented as being the original software.
 #include "Node.h"
 #include <memory>
 #include <vector>
+#include <map>
+#include <string>
 
 
 namespace NSG
@@ -50,7 +52,9 @@ namespace NSG
 		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
 		void SetSpecularColor(Color specular) { specular_ = specular; }
 		void SetShininess(float shininess) { shininess_=shininess; }
+		void SetUniform(const char* name, int value);
 	private:
+		void SetIntUniforms();
 		PGLES2Texture pTexture_;
 		PGLES2Program pProgram_;
 
@@ -90,6 +94,9 @@ namespace NSG
         Color diffuse_;
         Color specular_;
         float shininess_;
+
+        typedef std::map<std::string, int> IntUniformMap;
+        IntUniformMap intUniforms_;
 
 		friend class UseMaterial;
 	};

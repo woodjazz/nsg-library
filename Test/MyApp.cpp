@@ -178,7 +178,7 @@ void MyApp::RenderGUIFrame()
 
 	IMGUI::SetFont("font/FreeSans.ttf", 24);
 	
-	if(IMGUI::Button(1, "Button 1"))
+	if(IMGUIButton("Button 1"))
 	{
 		TRACE_LOG("Button 1 pressed\n");
 	}
@@ -189,7 +189,7 @@ void MyApp::RenderGUIFrame()
     position.x += IMGUI::GetSize().x;
 	IMGUI::SetPosition(position);	
     
-    if(IMGUI::Button(2, "Button 2"))
+    if(IMGUIButton("Button 2"))
 	{
 		TRACE_LOG("Button 2 pressed\n");
 	}
@@ -201,7 +201,7 @@ void MyApp::RenderGUIFrame()
 	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(-200, 200, 0)));	
 	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 50, 1)));
 
-    if(IMGUI::Button(3, "Button 3"))
+    if(IMGUIButton("Button 3"))
 	{
 		TRACE_LOG("Button 3 pressed\n");
 	}
@@ -214,7 +214,7 @@ void MyApp::RenderGUIFrame()
 
 	IMGUI::Fill(true);
     
-    if(IMGUI::Button(4, "Button 4"))
+    if(IMGUIButton("Button 4"))
 	{
 		TRACE_LOG("Button 4 pressed\n");
 	}
@@ -222,10 +222,23 @@ void MyApp::RenderGUIFrame()
 	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 150, 0)));	
 	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 300, 1)));
 
-    if(IMGUI::Button(5, "Button 5"))
+    if(IMGUIButton("Button 5"))
 	{
 		TRACE_LOG("Button 5 pressed\n");
 	}
+
+	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -150, 0)));	
+	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
+
+	static std::string str0 = "Abc";
+	str0 = IMGUITextField(str0);
+
+	IMGUI::SetButtonType(IMGUI::Rectangle);
+	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -250, 0)));	
+	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
+
+	static std::string str1 = "XYZ";
+	str1 = IMGUITextField(str1);
 
 }
 
@@ -237,13 +250,13 @@ void MyApp::RenderFrame()
 
     pCamera1_->Activate();
 
-    pLight0_->Render();
+    //pLight0_->Render();
 
     pMesh_->SetMode(GL_TRIANGLES);
     pSphereMesh_->SetMode(GL_TRIANGLES);
 
-    pMesh_->Render(pNode1_);
-    pSphereMesh_->Render(pNode2_);
+    //pMesh_->Render(pNode1_);
+    //pSphereMesh_->Render(pNode2_);
 
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;
@@ -262,7 +275,7 @@ void MyApp::RenderFrame()
 
 	GLES2Camera::Deactivate();
 	pText1_->SetText(ss.str());
-	pText1_->Render(pTextNode1_, Color(1,1,1,1));
+	//pText1_->Render(pTextNode1_, Color(1,1,1,1));
 
     //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");
 
@@ -280,8 +293,8 @@ void MyApp::RenderFrame()
     pMesh_->SetMode(GL_LINES);
     pSphereMesh_->SetMode(GL_LINES);
 
-    pMesh_->Render(pNode1_);
-    pSphereMesh_->Render(pNode2_);
+    //pMesh_->Render(pNode1_);
+    //pSphereMesh_->Render(pNode2_);
 }
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 

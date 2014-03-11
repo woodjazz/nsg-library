@@ -169,6 +169,24 @@ namespace NSG
 		loaded_ = false;
 	}
 
+	void GLES2Material::SetUniform(const char* name, int value)
+	{
+		intUniforms_[name] = value;
+	}
+
+	void GLES2Material::SetIntUniforms()
+	{
+		auto it = intUniforms_.begin();
+
+		while(it != intUniforms_.end())
+		{
+			GLuint loc = pProgram_->GetUniformLocation(it->first);
+			assert(loc != -1);
+			glUniform1i(loc, it->second);
+			++it;
+		}
+	}
+
 	bool GLES2Material::IsReady()
 	{
 		if(!pProgram_)
@@ -224,6 +242,8 @@ namespace NSG
 	: obj_(obj),
 	useProgram_(*obj.pProgram_)
 	{
+		obj.SetIntUniforms();
+		
 		if(obj.mvp_loc_ != -1 && pNode)
 		{
 			Matrix4&& m = GLES2Camera::GetModelViewProjection(pNode);

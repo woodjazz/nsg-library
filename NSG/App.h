@@ -53,6 +53,8 @@ namespace NSG
         virtual void OnMouseMove(float x, float y) {}
         virtual void OnMouseDown(float x, float y) {}
         virtual void OnMouseUp() {}
+        virtual void OnKey(int key, int action, int modifier) {}
+        virtual void OnChar(unsigned int character) {}
         static App* GetPtrInstance();
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
@@ -96,6 +98,8 @@ namespace NSG
         void OnMouseMove(float x, float y);
         void OnMouseDown(float x, float y);
         void OnMouseUp();
+        void OnKey(int key, int action, int modifier);
+        void OnChar(unsigned int character);
         void RenderFrame();
 	#if NACL
 		void HandleMessage(const pp::Var& var_message);

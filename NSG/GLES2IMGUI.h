@@ -51,11 +51,17 @@ namespace NSG
 		void SetNormalColor(Color color);
 		void SetHotColor(Color color);
 		void SetActiveColor(Color color);
-		bool Button(GLushort id, const std::string& text);
+		bool InternalButton(GLushort id, const std::string& text);
+		std::string InternalTextField(GLushort id, const std::string& text);
 		void ViewChanged(int32_t width, int32_t height);
         void OnMouseMove(float x, float y);
         void OnMouseDown(float x, float y);
         void OnMouseUp();
-
+        void OnKey(int key, int action, int modifier);
+        void OnChar(unsigned int character);
+        void DoTick(float delta);
 	}
 }
+
+#define IMGUIButton(text) IMGUI::InternalButton(__LINE__, text)
+#define IMGUITextField(text) IMGUI::InternalTextField(__LINE__, text)

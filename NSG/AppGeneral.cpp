@@ -47,10 +47,12 @@ namespace NSG
 
 	void WindowKey(GLFWwindow* window, int key, int scancode, int action, int modifier)
 	{
+		s_pApp->OnKey(key, action, modifier);
 	}
 
 	void WindowChar(GLFWwindow* window, unsigned int character)
 	{
+		s_pApp->OnChar(character);
 	}
 
 	void setupUI(GLFWwindow* window)

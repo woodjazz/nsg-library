@@ -51,6 +51,7 @@ namespace NSG
 		GLfloat GetHeight() const { return screenHeight_; }
 		PGLES2Texture GetAtlas() const { return pAtlas_; }
 		void ShowAtlas();
+		int GetFontSize() const { return fontSize_; }
 	private:
 		PGLES2Texture pAtlas_;
 		PGLES2Program pProgram_;
@@ -77,6 +78,7 @@ namespace NSG
 		int32_t width_;
 		int32_t height_;
 		PGLES2PlaneMesh pMesh_;
+		int fontSize_;
 
 	};
 

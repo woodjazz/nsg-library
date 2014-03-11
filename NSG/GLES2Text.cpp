@@ -94,7 +94,8 @@ namespace NSG
 	screenHeight_(0),
 	usage_(usage),
 	width_(0),
-	height_(0)
+	height_(0),
+	fontSize_(fontSize)
     {
     	Key k(filename, fontSize);
     	auto it = fontAtlas.find(k);
@@ -143,9 +144,6 @@ namespace NSG
 
 		if(pVBuffer_ != nullptr)
 		{
-            //bool isDepthTestEnabled = glIsEnabled(GL_DEPTH_TEST);
-            //glEnable(GL_DEPTH_TEST);
-
             assert(glGetError() == GL_NO_ERROR);
 
 			GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
@@ -173,9 +171,6 @@ namespace NSG
 			if(!isBlendEnabled)
 				glDisable(GL_BLEND);
 
-            //if(!isDepthTestEnabled)
-            //    glDisable(GL_DEPTH_TEST);
-            
             assert(glGetError() == GL_NO_ERROR);
 		}
 	}	

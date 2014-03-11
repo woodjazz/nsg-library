@@ -122,6 +122,7 @@ namespace NSG
     
     void InternalApp::DoTick(float delta)
     {
+        IMGUI::DoTick(delta);
         pApp_->Update(delta);
     }
     
@@ -178,6 +179,19 @@ namespace NSG
     {
         IMGUI::OnMouseUp();
         pApp_->OnMouseUp();
+    }
+
+    void InternalApp::OnKey(int key, int action, int modifier)
+    {
+        IMGUI::OnKey(key, action, modifier);
+        pApp_->OnKey(key, action, modifier);
+    }
+
+    void InternalApp::OnChar(unsigned int character)
+    {
+        IMGUI::OnChar(character);
+        pApp_->OnChar(character);
+        
     }
 
     void InternalApp::RenderFrame()

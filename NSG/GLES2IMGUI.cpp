@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "GLES2RoundedRectangleMesh.h"
 #include "Node.h"
 #include "Constants.h"
+#include "Keys.h"
 #include "GLES2FrameColorSelection.h"
 #include "GLES2Text.h"
 #include "GLES2StencilMask.h"
@@ -59,10 +60,23 @@ static const char* fShader = STRINGIFY(
 	};
 	uniform Material u_material;
 	varying vec4 v_position;
+	uniform int u_focus;
+
 	void main()
 	{
-		float factor = 1.0 - abs(v_position.y);
-		gl_FragColor = u_material.diffuse * vec4(factor, factor, factor, 1);
+		float factor = 1.0;
+
+		if(u_focus == 0)
+		{
+			factor = 1.0 - abs(v_position.y);
+			gl_FragColor = u_material.diffuse * vec4(factor, factor, factor, 1);
+		}
+		else
+		{
+			gl_FragColor = vec4(u_material.diffuse.xyz, 1) * vec4(factor, factor, factor, 1);
+		}
+
+		
 	}
 );
 
@@ -87,8 +101,9 @@ namespace NSG
 		int currentFontSize = 18;
 		bool fillEnabled = true;
 		Color activeColor(0,1,0,0.7f);
-		Color normalColor(1,1,1,0.7f);
-		Color hotColor(1,0,0,0.7f);
+		Color normalColor(0.5f,0.5f,0.5f,0.5f);
+		Color hotColor(1,0.5f,0.5f,0.7f);
+		int tick = 0;
 
 		class TextManager
 		{
@@ -158,9 +173,16 @@ namespace NSG
 
 			GLushort hotitem;
 			GLushort activeitem;
+
+			GLushort kbditem;
+  			int keyentered;
+  			int keymod;
+  			int keyaction;
+  			unsigned int character;
+  			GLushort lastwidget;			
 		};
 
-		UIState uistate = {0,0,0,0,false,0,0};
+		UIState uistate = {0,0,0,0,false,0,0, 0,0,0,0,0,0};
 
 		PGLES2FrameColorSelection pFrameColorSelection;		
 
@@ -219,6 +241,14 @@ namespace NSG
 				if(uistate.activeitem == 0)
 			  		uistate.activeitem = -1;
 			}
+
+			// If no widget grabbed tab, clear focus
+			if (uistate.keyentered == NSG_KEY_TAB)
+				uistate.kbditem = 0;
+	
+			// Clear the entered key
+			uistate.keyentered = 0;	
+			uistate.character = 0;		
 
 			if(!isBlendEnabled)
 				glDisable(GL_BLEND);
@@ -330,7 +360,7 @@ namespace NSG
 			currentFontSize = fontSize;
 		}
 
-		bool Button(GLushort id, const std::string& text)
+		bool InternalButton(GLushort id, const std::string& text)
 		{
 			pCurrentNode->SetScale(currentSize);
 
@@ -342,8 +372,20 @@ namespace NSG
 				if (uistate.activeitem == 0 && uistate.mousedown)
 				{
 			  		uistate.activeitem = id;
+			  		uistate.kbditem = id;
 			  	}
 			}
+
+			// If no widget has keyboard focus, take it
+			if (uistate.kbditem == 0)
+				uistate.kbditem = id;
+
+			// If we have keyboard focus, show it
+			if (uistate.kbditem == id)
+				pButtonMesh->GetMaterial()->SetUniform("u_focus", 1);
+			else
+				pButtonMesh->GetMaterial()->SetUniform("u_focus", 0);
+
 
 			if(uistate.hotitem == id)
 			{
@@ -383,10 +425,168 @@ namespace NSG
 				pTextMesh->Render(pRenderTextNode, Color(1,1,1,1));
 			}
 
+			// If we have keyboard focus, we'll need to process the keys
+			if (uistate.kbditem == id)
+			{
+				switch (uistate.keyentered)
+				{
+				case NSG_KEY_TAB:
+					// If tab is pressed, lose keyboard focus.
+					// Next widget will grab the focus.
+					uistate.kbditem = 0;
+					// If shift was also pressed, we want to move focus
+					// to the previous widget instead.
+					if (uistate.keymod & NSG_MOD_SHIFT)
+						uistate.kbditem = uistate.lastwidget;
+					// Also clear the key so that next widget
+					// won't process it
+					uistate.keyentered = 0;
+					break;
+
+				case NSG_KEY_ENTER:
+				  // Had keyboard focus, received return,
+				  // so we'll act as if we were clicked.
+				  return true;
+				}
+			}
+
+			uistate.lastwidget = id;
+
+
 			// If button is hot and active, but mouse button is not
 			// down, the user must have clicked the button.
 			return uistate.mousedown == 0 && uistate.hotitem == id &&  uistate.activeitem == id;
 		}		
+
+		std::string InternalTextField(GLushort id, const std::string& text)
+		{
+			std::string currentText = text;
+
+			pCurrentNode->SetScale(currentSize);
+
+			// Check whether the button should be hot
+			if (Hit(id))
+			{
+				uistate.hotitem = id;
+
+				if (uistate.activeitem == 0 && uistate.mousedown)
+				{
+			  		uistate.activeitem = id;
+			  		uistate.kbditem = id;
+			  	}
+			}
+
+			// If no widget has keyboard focus, take it
+			if (uistate.kbditem == 0)
+				uistate.kbditem = id;
+
+			// If we have keyboard focus, show it
+			if (uistate.kbditem == id)
+				pButtonMesh->GetMaterial()->SetUniform("u_focus", 1);
+			else
+				pButtonMesh->GetMaterial()->SetUniform("u_focus", 0);
+
+
+			if(uistate.hotitem == id)
+			{
+				if(uistate.activeitem == id)
+				{
+			  		// Button is both 'hot' and 'active'
+			  		DrawButton(activeColor);
+			  	}
+				else
+				{
+					// Button is merely 'hot'
+					DrawButton(hotColor);
+				}
+			}
+			else
+			{
+				// button is not hot, but it may be active    
+				DrawButton(normalColor);
+			}
+
+			{
+				GLES2StencilMask stencilMask;
+				stencilMask.Begin();
+				stencilMask.Render(pRenderNode.get(), pButtonMesh.get());
+				stencilMask.End();
+				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
+				PGLES2Text pCursorMesh = GetCurrentTextMesh(-1);
+				pCursorMesh->SetText("|");
+
+	            pTextMesh->SetText(currentText);
+				
+				static PNode pNode0(new Node());
+				float xPos = -currentSize.x/2;
+				float yPos = -currentSize.y/4;
+
+				if(pCurrentNode->GetScale().x < pTextMesh->GetWidth())
+				{
+					xPos -= pTextMesh->GetWidth() - currentSize.x;  
+				}
+
+				pNode0->SetPosition(Vertex3(xPos, yPos, 0));
+
+                static PNode pNode(new Node(pNode0));
+                pNode->SetPosition(pCurrentNode->GetPosition());
+
+                pRenderTextNode->SetParent(pNode);
+
+				pTextMesh->Render(pRenderTextNode, Color(1,1,1,1));
+
+				// Render cursor if we have keyboard focus
+				if(uistate.kbditem == id && (tick < 15))
+                {
+                	xPos += pTextMesh->GetWidth();
+                	pNode0->SetPosition(Vertex3(xPos, yPos, 0));
+					pCursorMesh->Render(pRenderTextNode, Color(1,0,0,1));
+                }
+
+			}
+
+			// If we have keyboard focus, we'll need to process the keys
+			if (uistate.kbditem == id)
+			{
+				switch (uistate.keyentered)
+				{
+				case NSG_KEY_TAB:
+					// If tab is pressed, lose keyboard focus.
+					// Next widget will grab the focus.
+					uistate.kbditem = 0;
+					// If shift was also pressed, we want to move focus
+					// to the previous widget instead.
+					if (uistate.keymod & NSG_MOD_SHIFT)
+						uistate.kbditem = uistate.lastwidget;
+					// Also clear the key so that next widget
+					// won't process it
+					uistate.keyentered = 0;
+					break;
+				case NSG_KEY_BACKSPACE:
+					if (currentText.size() > 0)
+					{
+						currentText.resize(currentText.size()-1);
+					}
+					break;    					
+				}
+
+	            if (uistate.character >= 32 && uistate.character < 127 && currentText.size() < 10)
+	            {
+	                currentText.append(1, (char)uistate.character);
+	            }
+			}
+
+			// If button is hot and active, but mouse button is not
+			// down, the user must have clicked the widget; give it 
+			// keyboard focus.
+			if (uistate.mousedown == 0 && uistate.hotitem == id && uistate.activeitem == id)
+				uistate.kbditem = id;
+
+			uistate.lastwidget = id;
+
+			return currentText;
+		}		
+
 
 		void ViewChanged(int32_t width, int32_t height)
 		{
@@ -427,6 +627,29 @@ namespace NSG
         void OnMouseUp()
         {
         	uistate.mousedown = false;
+        }
+
+        void OnKey(int key, int action, int modifier)
+        {
+            if(action == NSG_PRESS)
+            {
+                uistate.keyentered = key;
+                uistate.keyaction = action;
+                uistate.keymod = modifier;
+            }
+        }
+
+        void OnChar(unsigned int character)
+        {
+        	uistate.character = character;
+        }
+
+
+        void DoTick(float delta)
+        {
+        	++tick;
+            if(tick > 30)
+                tick = 0;
         }
 	}
 }
