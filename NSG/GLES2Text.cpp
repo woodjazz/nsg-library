@@ -185,6 +185,8 @@ namespace NSG
 			height_ = viewSize.second;
 			lastText_.clear();
 			pVBuffer_ = nullptr;
+			screenWidth_ = 0;
+			screenHeight_ = 0;
 		}
 
 		if(!pAtlas_->IsReady() || text.empty())

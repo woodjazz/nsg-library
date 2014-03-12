@@ -25,15 +25,21 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#define 	NSG_RELEASE   	0
-#define 	NSG_PRESS   	1
-#define 	NSG_REPEAT   	2
+#define 	NSG_KEY_RELEASE   	0
+#define 	NSG_KEY_PRESS   	1
+#define 	NSG_KEY_REPEAT   	2
 
-#define 	NSG_MOD_SHIFT		0x0001
-#define 	NSG_MOD_CONTROL   	0x0002
-#define 	NSG_MOD_ALT   		0x0004
-#define 	NSG_MOD_SUPER   	0x0008
+#define 	NSG_KEY_MOD_SHIFT		0x0001
+#define 	NSG_KEY_MOD_CONTROL   	0x0002
+#define 	NSG_KEY_MOD_ALT   		0x0004
+#define 	NSG_KEY_MOD_SUPER   	0x0008
 
+#define 	NSG_KEY_TAB   258
+#define 	NSG_KEY_BACKSPACE   259
+#define 	NSG_KEY_ENTER   257
+
+
+#if 0
 #define 	NSG_KEY_UNKNOWN   -1
 #define 	NSG_KEY_SPACE   32
 #define 	NSG_KEY_APOSTROPHE   39 /* ' */
@@ -122,12 +128,6 @@ misrepresented as being the original software.
 #define 	NSG_KEY_WORLD_2   162 /* non-US #2 */
  
 #define 	NSG_KEY_ESCAPE   256
- 
-#define 	NSG_KEY_ENTER   257
- 
-#define 	NSG_KEY_TAB   258
- 
-#define 	NSG_KEY_BACKSPACE   259
  
 #define 	NSG_KEY_INSERT   260
  
@@ -262,3 +262,4 @@ misrepresented as being the original software.
 #define 	NSG_KEY_MENU   348
  
 #define 	NSG_KEY_LAST   NSG_KEY_MENU
+#endif

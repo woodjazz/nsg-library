@@ -23,6 +23,7 @@
 
 #include <EGL/egl.h>
 #include "GLES2Includes.h"
+#include "Keys.h" 
 
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
@@ -214,6 +215,80 @@ static void engine_term_display(struct engine* engine)
     engine->surface = EGL_NO_SURFACE;
 }
 
+static int32_t GetTranslatedModifier(int32_t modifiers)
+{
+    int32_t translated = 0;
+
+    if(modifiers & AMETA_SHIFT_ON)
+        translated |= NSG_KEY_MOD_SHIFT;
+
+    if(modifiers & AMETA_ALT_ON)
+        translated |= NSG_KEY_MOD_ALT;
+
+    if(modifiers & AMETA_CTRL_ON)
+        translated |= NSG_KEY_MOD_CONTROL;
+
+    return translated;
+}
+
+static int GetUnicodeChar(ANativeActivity* pActivity, int eventType, int keyCode, int metaState)
+{
+    JavaVM* javaVM = pActivity->vm;
+    JNIEnv* jniEnv = pActivity->env;
+
+    JavaVMAttachArgs attachArgs;
+    attachArgs.version = JNI_VERSION_1_6;
+    attachArgs.name = "NativeThread";
+    attachArgs.group = NULL;
+
+    jint result = javaVM->AttachCurrentThread(&jniEnv, &attachArgs);
+    if(result == JNI_ERR)
+    {
+        return 0;
+    }
+
+    jclass class_key_event = jniEnv->FindClass("android/view/KeyEvent");
+    int unicodeKey;
+
+    if(metaState == 0)
+    {
+        jmethodID method_get_unicode_char = jniEnv->GetMethodID(class_key_event, "getUnicodeChar", "()I");
+        jmethodID eventConstructor = jniEnv->GetMethodID(class_key_event, "<init>", "(II)V");
+        jobject eventObj = jniEnv->NewObject(class_key_event, eventConstructor, eventType, keyCode);
+
+        unicodeKey = jniEnv->CallIntMethod(eventObj, method_get_unicode_char);
+    }
+
+    else
+    {
+        jmethodID method_get_unicode_char = jniEnv->GetMethodID(class_key_event, "getUnicodeChar", "(I)I");
+        jmethodID eventConstructor = jniEnv->GetMethodID(class_key_event, "<init>", "(II)V");
+        jobject eventObj = jniEnv->NewObject(class_key_event, eventConstructor, eventType, keyCode);
+
+        unicodeKey = jniEnv->CallIntMethod(eventObj, method_get_unicode_char, metaState);
+    }
+
+    javaVM->DetachCurrentThread();
+
+    //LOGI("Unicode key is: %d", unicodeKey);
+    return unicodeKey;
+}
+
+static uint32_t GetTranslatedKeyCode(uint32_t keyCode)
+{
+    switch(keyCode)
+    {
+        case AKEYCODE_DEL:
+            return NSG_KEY_BACKSPACE;
+        case AKEYCODE_TAB:
+            return NSG_KEY_TAB;
+        case AKEYCODE_ENTER:
+            return NSG_KEY_ENTER;
+        default:
+            return keyCode;
+    }
+}
+
 /**
  * Process the next input event.
  */
@@ -241,6 +316,17 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event)
                 s_pApp->OnMouseMove(-1 + 2*AMotionEvent_getX(event, 0)/s_engine->width, 1 - 2*AMotionEvent_getY(event, 0)/s_engine->height);
             }
         }
+        return 1;
+    }
+    else if(AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY) 
+    {
+        int32_t action = AKeyEvent_getAction(event);
+        int32_t modifiers = GetTranslatedModifier(AKeyEvent_getMetaState(event));
+        int32_t keyCode = GetTranslatedKeyCode(AKeyEvent_getKeyCode(event));
+
+        s_pApp->OnKey(keyCode, action, modifiers);
+        s_pApp->OnChar(GetUnicodeChar(app->activity, action, keyCode, modifiers));
+
         return 1;
     }
 
@@ -354,6 +440,7 @@ namespace NSG
         TRACE_LOG("CreateModule"); 
 
         pApp->SetAssetManager(state->activity->assetManager);
+        pApp->SetActivity(state->activity);
 
         s_pApp = PInternalApp(new InternalApp(pApp));
 

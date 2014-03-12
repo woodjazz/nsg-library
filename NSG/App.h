@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "ppapi/cpp/var.h"
 #elif ANDROID
 #include <android/asset_manager.h>
+#include <android/native_activity.h>
 #endif
 
 #include "Tick.h"
@@ -55,6 +56,8 @@ namespace NSG
         virtual void OnMouseUp() {}
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
+        bool ShowKeyboard();
+        bool HideKeyboard();
         static App* GetPtrInstance();
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
@@ -68,10 +71,12 @@ namespace NSG
 #elif ANDROID
 		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
         AAssetManager* GetAssetManager() { return pAAssetManager_; }
+        void SetActivity(ANativeActivity* pActivity) { pActivity_ = pActivity; }
 #endif
     private:
 #if ANDROID        
         AAssetManager* pAAssetManager_;
+        ANativeActivity* pActivity_;
 #endif
         int32_t width_;
         int32_t height_;
@@ -105,6 +110,7 @@ namespace NSG
 		void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID
 		void SetAssetManager(AAssetManager* pAAssetManager);
+        void SetActivity(ANativeActivity* pActivity);
 	#endif
     };
 

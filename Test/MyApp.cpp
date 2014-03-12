@@ -233,6 +233,7 @@ void MyApp::RenderGUIFrame()
 	static std::string str0 = "Abc";
 	str0 = IMGUITextField(str0);
 
+    IMGUI::SetFont("font/FreeSans.ttf", 18);
 	IMGUI::SetButtonType(IMGUI::Rectangle);
 	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -250, 0)));	
 	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));

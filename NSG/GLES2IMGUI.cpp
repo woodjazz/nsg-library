@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "GLES2FrameColorSelection.h"
 #include "GLES2Text.h"
 #include "GLES2StencilMask.h"
+#include "App.h"
 #include <map>
 
 using namespace NSG;
@@ -104,6 +105,7 @@ namespace NSG
 		Color normalColor(0.5f,0.5f,0.5f,0.5f);
 		Color hotColor(1,0.5f,0.5f,0.7f);
 		int tick = 0;
+		size_t textMaxLength = std::numeric_limits<int>::max();
 
 		class TextManager
 		{
@@ -353,11 +355,15 @@ namespace NSG
 			activeColor = color;
 		}
 
-
 		void SetFont(const std::string& fontFile, int fontSize)
 		{
 			currentFontFile = fontFile;
 			currentFontSize = fontSize;
+		}
+
+		void SetTextMaxLength(size_t maxLength)
+		{
+			textMaxLength = maxLength;
 		}
 
 		bool InternalButton(GLushort id, const std::string& text)
@@ -436,7 +442,7 @@ namespace NSG
 					uistate.kbditem = 0;
 					// If shift was also pressed, we want to move focus
 					// to the previous widget instead.
-					if (uistate.keymod & NSG_MOD_SHIFT)
+					if (uistate.keymod & NSG_KEY_MOD_SHIFT)
 						uistate.kbditem = uistate.lastwidget;
 					// Also clear the key so that next widget
 					// won't process it
@@ -473,6 +479,10 @@ namespace NSG
 				{
 			  		uistate.activeitem = id;
 			  		uistate.kbditem = id;
+			  		if(App::GetPtrInstance()->ShowKeyboard())
+			  		{
+			  			pCamera->SetPosition(Vertex3(0, pCurrentNode->GetPosition().y / uistate.pixelSizeY, 0));
+			  		}
 			  	}
 			}
 
@@ -492,7 +502,8 @@ namespace NSG
 				if(uistate.activeitem == id)
 				{
 			  		// Button is both 'hot' and 'active'
-			  		DrawButton(activeColor);
+			  		//DrawButton(activeColor);
+                    DrawButton(hotColor);
 			  	}
 				else
 				{
@@ -519,11 +530,11 @@ namespace NSG
 				
 				static PNode pNode0(new Node());
 				float xPos = -currentSize.x/2;
-				float yPos = -currentSize.y/4;
+				float yPos = 0;//-currentSize.y/2;
 
 				if(pCurrentNode->GetScale().x < pTextMesh->GetWidth())
 				{
-					xPos -= pTextMesh->GetWidth() - currentSize.x;  
+					xPos -= pCursorMesh->GetWidth() + pTextMesh->GetWidth() - currentSize.x;  
 				}
 
 				pNode0->SetPosition(Vertex3(xPos, yPos, 0));
@@ -542,7 +553,6 @@ namespace NSG
                 	pNode0->SetPosition(Vertex3(xPos, yPos, 0));
 					pCursorMesh->Render(pRenderTextNode, Color(1,0,0,1));
                 }
-
 			}
 
 			// If we have keyboard focus, we'll need to process the keys
@@ -556,7 +566,7 @@ namespace NSG
 					uistate.kbditem = 0;
 					// If shift was also pressed, we want to move focus
 					// to the previous widget instead.
-					if (uistate.keymod & NSG_MOD_SHIFT)
+					if (uistate.keymod & NSG_KEY_MOD_SHIFT)
 						uistate.kbditem = uistate.lastwidget;
 					// Also clear the key so that next widget
 					// won't process it
@@ -570,7 +580,7 @@ namespace NSG
 					break;    					
 				}
 
-	            if (uistate.character >= 32 && uistate.character < 127 && currentText.size() < 10)
+	            if (uistate.character >= 32 && uistate.character < 127 && currentText.size() < textMaxLength)
 	            {
 	                currentText.append(1, (char)uistate.character);
 	            }
@@ -631,7 +641,7 @@ namespace NSG
 
         void OnKey(int key, int action, int modifier)
         {
-            if(action == NSG_PRESS)
+            if(action == NSG_KEY_PRESS)
             {
                 uistate.keyentered = key;
                 uistate.keyaction = action;

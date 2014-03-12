@@ -27,6 +27,7 @@ misrepresented as being the original software.
 
 #include <cstdint>
 #include <string>
+#include <limits>
 #include "GLES2Includes.h"
 #include "Types.h"
 
@@ -51,6 +52,7 @@ namespace NSG
 		void SetNormalColor(Color color);
 		void SetHotColor(Color color);
 		void SetActiveColor(Color color);
+		void SetTextMaxLength(size_t maxLength);
 		bool InternalButton(GLushort id, const std::string& text);
 		std::string InternalTextField(GLushort id, const std::string& text);
 		void ViewChanged(int32_t width, int32_t height);

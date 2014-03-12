@@ -6,6 +6,11 @@
 #include "ppapi/cpp/var_array.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 #include "Log.h"
+#include "Keys.h"
+#include <iostream>
+#include <string>
+#include <locale>
+#include <codecvt>
 
 static pp::Instance* s_ppInstance = nullptr;
 
@@ -100,6 +105,21 @@ namespace NSG
 			pApp_->HandleMessage(message);
 		}
 
+		static uint32_t GetTranslatedKeyCode(uint32_t keyCode)
+		{
+			switch(keyCode)
+			{
+				case 0x08:
+					return NSG_KEY_BACKSPACE;
+				case 0x09:
+					return NSG_KEY_TAB;
+				case 0x0D:
+					return NSG_KEY_ENTER;
+				default:
+					return keyCode;
+			}
+		}
+
 		bool NaCl3DInstance::HandleInputEvent(const pp::InputEvent& event) 
 		{
 			switch (event.GetType()) 
@@ -178,11 +198,31 @@ namespace NSG
 				}
 
 				case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
+					break;
 				case PP_INPUTEVENT_TYPE_KEYDOWN:
+				{
+					pp::KeyboardInputEvent key_event(event);
+					pApp_->OnKey(GetTranslatedKeyCode(key_event.GetKeyCode()), NSG_KEY_PRESS, key_event.GetModifiers());
+					break;
+				}
 				case PP_INPUTEVENT_TYPE_KEYUP:
+				{
+					pp::KeyboardInputEvent key_event(event);
+					pApp_->OnKey(GetTranslatedKeyCode(key_event.GetKeyCode()), NSG_KEY_RELEASE, key_event.GetModifiers());
+					break;
+				}
 				case PP_INPUTEVENT_TYPE_CHAR: 
 				{
 					pp::KeyboardInputEvent key_event(event);
+					std::string utf8(key_event.GetCharacterText().AsString());
+					std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
+					std::u16string utf16 = utf16conv.from_bytes(utf8);
+					//TRACE_LOG("UTF16 conversion produced " << utf16.size() << " code points:\n");
+					for (char16_t c : utf16)
+					{			
+						//TRACE_LOG((unsigned int)c);
+						pApp_->OnChar((unsigned int)c);
+					}
 					/*std::ostringstream stream;
 					stream << "Key event:"
 					       << " modifier:" << ModifierToString(key_event.GetModifiers())
