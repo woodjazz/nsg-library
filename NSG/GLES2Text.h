@@ -49,6 +49,7 @@ namespace NSG
 		void SetText(const std::string& text);
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }
+		GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
 		PGLES2Texture GetAtlas() const { return pAtlas_; }
 		void ShowAtlas();
 		int GetFontSize() const { return fontSize_; }

@@ -126,6 +126,7 @@ namespace NSG
 		glfwTerminate();
 
 		s_pApp->Release();
+		s_pApp = nullptr;
 		
 		return true;
 	}

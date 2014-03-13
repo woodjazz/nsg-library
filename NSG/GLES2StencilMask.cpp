@@ -92,7 +92,7 @@ namespace NSG
 	{
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   		glDepthMask(GL_TRUE);
-		glStencilMaskSeparate(GL_FRONT_AND_BACK, 0xFF);
+		glStencilMaskSeparate(GL_FRONT_AND_BACK, 0x00);
 		glStencilFunc(GL_EQUAL, 1, 0xFF); // draw only where stencil's value is 1
 	}
 }

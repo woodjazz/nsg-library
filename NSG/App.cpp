@@ -36,7 +36,8 @@ namespace NSG
     App::App() 
     : width_(0),
     height_(0),
-    selectedIndex_(0)
+    selectedIndex_(0),
+    isKeyboardVisible_(false)
     {
 	    assert(s_pApp == nullptr);
 
@@ -45,6 +46,7 @@ namespace NSG
 
     App::~App()
     {
+        TRACE_LOG("Terminating App\n");
 	    assert(s_pApp != nullptr);
 
 	    s_pApp = nullptr;
@@ -85,7 +87,7 @@ namespace NSG
 #endif    
 
 #if ANDROID
-static void displayKeyboard(ANativeActivity* pActivity, bool pShow) 
+static bool displayKeyboard(ANativeActivity* pActivity, bool pShow) 
 { 
     // Attaches the current thread to the JVM. 
     jint lResult; 
@@ -103,7 +105,8 @@ static void displayKeyboard(ANativeActivity* pActivity, bool pShow)
     
     if (lResult == JNI_ERR) 
     { 
-        return; 
+        TRACE_LOG("AttachCurrentThread:JNI_ERR");
+        return false; 
     } 
 
     // Retrieves NativeActivity. 
@@ -128,11 +131,11 @@ static void displayKeyboard(ANativeActivity* pActivity, bool pShow)
     jmethodID MethodGetDecorView = lJNIEnv->GetMethodID( ClassWindow, "getDecorView", "()Landroid/view/View;"); 
     jobject lDecorView = lJNIEnv->CallObjectMethod(lWindow, MethodGetDecorView); 
 
-    if (pShow) 
+    if(pShow) 
     { 
         // Runs lInputMethodManager.showSoftInput(...). 
         jmethodID MethodShowSoftInput = lJNIEnv->GetMethodID( ClassInputMethodManager, "showSoftInput", "(Landroid/view/View;I)Z"); 
-        jboolean lResult = lJNIEnv->CallBooleanMethod( lInputMethodManager, MethodShowSoftInput, lDecorView, lFlags); 
+        jboolean lResult = lJNIEnv->CallBooleanMethod( lInputMethodManager, MethodShowSoftInput, lDecorView, lFlags);
     } 
     else 
     { 
@@ -148,6 +151,8 @@ static void displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     // Finished with the JVM. 
     lJavaVM->DetachCurrentThread(); 
+
+    return true;
 }    
 #endif
 
@@ -155,9 +160,11 @@ static void displayKeyboard(ANativeActivity* pActivity, bool pShow)
     {
 #if ANDROID
         TRACE_LOG("Showing keyboard")
-        displayKeyboard(pActivity_, true);
+        if(displayKeyboard(pActivity_, true))
+        {
+            isKeyboardVisible_ = true;
+        }
         return true;
-        //ANativeActivity_showSoftInput(pActivity_, ANATIVEACTIVITY_SHOW_SOFT_INPUT_FORCED);
 #else
         return false;        
 #endif        
@@ -168,8 +175,10 @@ static void displayKeyboard(ANativeActivity* pActivity, bool pShow)
     {
 #if ANDROID        
         TRACE_LOG("Hiding keyboard")
-        displayKeyboard(pActivity_, false);
-        //ANativeActivity_hideSoftInput(pActivity_, ANATIVEACTIVITY_HIDE_SOFT_INPUT_IMPLICIT_ONLY);
+        if(displayKeyboard(pActivity_, false))
+        {
+            isKeyboardVisible_ = false;
+        }
         return true;
 #else
         return false;        
@@ -315,6 +324,10 @@ static void displayKeyboard(ANativeActivity* pActivity, bool pShow)
         IMGUI::Begin();
         pApp_->RenderGUIFrame();
         IMGUI::End();
+    }
+    bool InternalApp::HideKeyboard()
+    {
+        return pApp_->HideKeyboard();
     }
 
 #if NACL

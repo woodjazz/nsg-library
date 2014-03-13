@@ -63,12 +63,16 @@ if(WIN32)
 
 endif(WIN32)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
-endif()	
+if (CMAKE_CXX_COMPILER MATCHES ".*clang[++]")
+	set(CMAKE_COMPILER_IS_CLANGXX 1)
+endif ()
 
-if(APPLE)
-	set(CMAKE_CXX_FLAGS "-std=gnu++11 -stdlib=libc++")
+if(CMAKE_COMPILER_IS_CLANGXX)
+	message("detected clang compiler")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -stdlib=libc++")
+elseif(CMAKE_COMPILER_IS_GNUCXX)
+	message("detected GNU compiler")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 endif()
 
 macro ( mark_as_disable_and_internal _var )

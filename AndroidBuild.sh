@@ -20,8 +20,9 @@ fi
 
 cd $1
 
+#-DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4"
 #cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=./Test/AndroidHost
-cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=./Test/AndroidHost
+cmake $SOURCE_FOLDER -G "Unix Makefiles"  -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=./Test/AndroidHost
 make
 cd Test/AndroidHost
 $ANT_HOME/bin/ant debug

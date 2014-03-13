@@ -121,7 +121,7 @@ static int engine_init_display(struct engine* engine)
     context = eglCreateContext(display, config, NULL, attrib_list);
 
     if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
-        LOGW("Unable to eglMakeCurrent");
+        TRACE_LOG("Unable to eglMakeCurrent");
         return -1;
     }
 
@@ -193,6 +193,8 @@ static void engine_term_display(struct engine* engine)
 {
     TRACE_LOG("engine_term_display");
 
+    s_pApp->HideKeyboard();
+
     if (engine->display != EGL_NO_DISPLAY) 
     {
         eglMakeCurrent(engine->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -244,6 +246,7 @@ static int GetUnicodeChar(ANativeActivity* pActivity, int eventType, int keyCode
     jint result = javaVM->AttachCurrentThread(&jniEnv, &attachArgs);
     if(result == JNI_ERR)
     {
+        TRACE_LOG("AttachCurrentThread:JNI_ERR");
         return 0;
     }
 
@@ -270,7 +273,7 @@ static int GetUnicodeChar(ANativeActivity* pActivity, int eventType, int keyCode
 
     javaVM->DetachCurrentThread();
 
-    //LOGI("Unicode key is: %d", unicodeKey);
+    //TRACE_LOG("Unicode key is: " << unicodeKey);
     return unicodeKey;
 }
 
@@ -321,11 +324,18 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event)
     else if(AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY) 
     {
         int32_t action = AKeyEvent_getAction(event);
-        int32_t modifiers = GetTranslatedModifier(AKeyEvent_getMetaState(event));
-        int32_t keyCode = GetTranslatedKeyCode(AKeyEvent_getKeyCode(event));
+        int32_t modifiers = AKeyEvent_getMetaState(event);
+        int32_t keyCode = AKeyEvent_getKeyCode(event);
 
-        s_pApp->OnKey(keyCode, action, modifiers);
-        s_pApp->OnChar(GetUnicodeChar(app->activity, action, keyCode, modifiers));
+        s_pApp->OnKey(GetTranslatedKeyCode(keyCode), action, GetTranslatedModifier(modifiers));
+
+        if(NSG_KEY_PRESS == action)
+        {
+            if(keyCode != AKEYCODE_SHIFT_LEFT && keyCode != AKEYCODE_SHIFT_RIGHT)
+            {
+                s_pApp->OnChar(GetUnicodeChar(app->activity, action, keyCode, modifiers));
+            }
+        }
 
         return 1;
     }
@@ -501,6 +511,7 @@ namespace NSG
                 {
                     engine_term_display(&engine);
                     s_pApp->Release();
+                    s_pApp = nullptr;
                     return;
                 }
             }

@@ -34,9 +34,15 @@ misrepresented as being the original software.
 #define 	NSG_KEY_MOD_ALT   		0x0004
 #define 	NSG_KEY_MOD_SUPER   	0x0008
 
-#define 	NSG_KEY_TAB   258
+#define 	NSG_KEY_TAB         258
 #define 	NSG_KEY_BACKSPACE   259
-#define 	NSG_KEY_ENTER   257
+#define 	NSG_KEY_ENTER       257
+#define 	NSG_KEY_DELETE      261
+#define 	NSG_KEY_RIGHT       262
+#define 	NSG_KEY_LEFT        263
+#define 	NSG_KEY_HOME        268
+#define 	NSG_KEY_END         269
+
 
 
 #if 0
@@ -131,8 +137,6 @@ misrepresented as being the original software.
  
 #define 	NSG_KEY_INSERT   260
  
-#define 	NSG_KEY_DELETE   261
- 
 #define 	NSG_KEY_RIGHT   262
  
 #define 	NSG_KEY_LEFT   263
@@ -144,11 +148,7 @@ misrepresented as being the original software.
 #define 	NSG_KEY_PAGE_UP   266
  
 #define 	NSG_KEY_PAGE_DOWN   267
- 
-#define 	NSG_KEY_HOME   268
- 
-#define 	NSG_KEY_END   269
- 
+
 #define 	NSG_KEY_CAPS_LOCK   280
  
 #define 	NSG_KEY_SCROLL_LOCK   281

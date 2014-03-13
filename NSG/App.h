@@ -58,6 +58,7 @@ namespace NSG
         virtual void OnChar(unsigned int character) {}
         bool ShowKeyboard();
         bool HideKeyboard();
+        bool IsKeyboardVisible() { return isKeyboardVisible_; }
         static App* GetPtrInstance();
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
@@ -82,6 +83,7 @@ namespace NSG
         int32_t height_;
         PGLES2FrameColorSelection pFrameColorSelection_;
         GLushort selectedIndex_;
+        bool isKeyboardVisible_;
 	};
 
 	typedef std::shared_ptr<App> PApp;
@@ -106,6 +108,7 @@ namespace NSG
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void RenderFrame();
+        bool HideKeyboard();
 	#if NACL
 		void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID

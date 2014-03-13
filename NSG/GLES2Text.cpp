@@ -175,6 +175,25 @@ namespace NSG
 		}
 	}	
 
+	GLfloat GLES2Text::GetWidthForCharacterPosition(unsigned int charPos) const
+	{
+		GLfloat pos = 0;
+
+		const char *p = lastText_.c_str();
+
+        float sx = 2.0/width_;
+
+        const GLES2Texture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
+
+		for(int i=0; i<charPos && *p; i++) 
+		{ 
+			pos += charInfo[*p].ax * sx;
+			++p;
+		}
+
+		return pos;
+	}
+
 	void GLES2Text::SetText(const std::string& text) 
 	{
 		auto viewSize = App::GetPtrInstance()->GetViewSize();

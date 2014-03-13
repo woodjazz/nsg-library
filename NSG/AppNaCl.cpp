@@ -115,6 +115,17 @@ namespace NSG
 					return NSG_KEY_TAB;
 				case 0x0D:
 					return NSG_KEY_ENTER;
+				case 0x2E:
+					return NSG_KEY_DELETE;
+				case 0x27:
+					return NSG_KEY_RIGHT;
+				case 0x25:
+					return NSG_KEY_LEFT;
+				case 0x24:
+					return NSG_KEY_HOME;
+				case 0x23:
+					return NSG_KEY_END;
+
 				default:
 					return keyCode;
 			}

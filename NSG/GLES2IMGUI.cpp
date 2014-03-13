@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Constants.h"
 #include "Keys.h"
+#include "Log.h"
 #include "GLES2FrameColorSelection.h"
 #include "GLES2Text.h"
 #include "GLES2StencilMask.h"
@@ -104,6 +105,7 @@ namespace NSG
 		Color activeColor(0,1,0,0.7f);
 		Color normalColor(0.5f,0.5f,0.5f,0.5f);
 		Color hotColor(1,0.5f,0.5f,0.7f);
+		Color borderColor(1,1,1,1);
 		int tick = 0;
 		size_t textMaxLength = std::numeric_limits<int>::max();
 
@@ -181,10 +183,12 @@ namespace NSG
   			int keymod;
   			int keyaction;
   			unsigned int character;
-  			GLushort lastwidget;			
+  			GLushort lastwidget;	
+  			bool activeitem_is_a_text_field;
+  			unsigned int cursor_character_position; 
 		};
 
-		UIState uistate = {0,0,0,0,false,0,0, 0,0,0,0,0,0};
+		UIState uistate = {0,0,0,0,false,0,0, 0,0,0,0,0,0, false, 0};
 
 		PGLES2FrameColorSelection pFrameColorSelection;		
 
@@ -234,14 +238,38 @@ namespace NSG
 			if(s_pCamera)
 				s_pCamera->Activate();
 
-			if(uistate.mousedown == 0)
+			if(!uistate.activeitem_is_a_text_field)
+			{
+				if(App::GetPtrInstance()->IsKeyboardVisible())
+				{
+					App::GetPtrInstance()->HideKeyboard();
+					pCamera->SetPosition(Vertex3(0,0,0));
+				}
+			}
+			else
+			{
+				if(!App::GetPtrInstance()->IsKeyboardVisible())
+				{
+					if(App::GetPtrInstance()->ShowKeyboard())
+					{
+						Vertex3 position(0, pCurrentNode->GetPosition().y - currentSize.y, 0);
+
+			  			pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
+			  		}
+			  	}
+			}
+
+			if(!uistate.mousedown)
 			{
 				uistate.activeitem = 0;
 			}
 			else
 			{
 				if(uistate.activeitem == 0)
+				{
 			  		uistate.activeitem = -1;
+			  		uistate.activeitem_is_a_text_field = false;
+			  	}
 			}
 
 			// If no widget grabbed tab, clear focus
@@ -254,7 +282,6 @@ namespace NSG
 
 			if(!isBlendEnabled)
 				glDisable(GL_BLEND);
-			
 		}
 
 		void DrawButton(Color color)
@@ -340,6 +367,11 @@ namespace NSG
 			fillEnabled = enable;
 		}
 
+		void SetBorderColor(Color color)
+		{
+			borderColor = color;
+		}
+
 		void SetNormalColor(Color color)
 		{
 			normalColor = color;
@@ -377,6 +409,7 @@ namespace NSG
 
 				if (uistate.activeitem == 0 && uistate.mousedown)
 				{
+					uistate.activeitem_is_a_text_field = false;
 			  		uistate.activeitem = id;
 			  		uistate.kbditem = id;
 			  	}
@@ -410,6 +443,13 @@ namespace NSG
 			{
 				// button is not hot, but it may be active    
 				DrawButton(normalColor);
+			}
+
+			if(fillEnabled)
+			{
+				fillEnabled = false;
+				DrawButton(borderColor);
+				fillEnabled = true;
 			}
 
 			{
@@ -464,7 +504,7 @@ namespace NSG
 			return uistate.mousedown == 0 && uistate.hotitem == id &&  uistate.activeitem == id;
 		}		
 
-		std::string InternalTextField(GLushort id, const std::string& text)
+		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex)
 		{
 			std::string currentText = text;
 
@@ -479,10 +519,8 @@ namespace NSG
 				{
 			  		uistate.activeitem = id;
 			  		uistate.kbditem = id;
-			  		if(App::GetPtrInstance()->ShowKeyboard())
-			  		{
-			  			pCamera->SetPosition(Vertex3(0, pCurrentNode->GetPosition().y / uistate.pixelSizeY, 0));
-			  		}
+			  		uistate.activeitem_is_a_text_field = true;
+                    uistate.cursor_character_position = currentText.length();
 			  	}
 			}
 
@@ -517,6 +555,13 @@ namespace NSG
 				DrawButton(normalColor);
 			}
 
+			if(fillEnabled)
+			{
+				fillEnabled = false;
+				DrawButton(borderColor);
+				fillEnabled = true;
+			}
+
 			{
 				GLES2StencilMask stencilMask;
 				stencilMask.Begin();
@@ -530,7 +575,7 @@ namespace NSG
 				
 				static PNode pNode0(new Node());
 				float xPos = -currentSize.x/2;
-				float yPos = 0;//-currentSize.y/2;
+				float yPos = 0;
 
 				if(pCurrentNode->GetScale().x < pTextMesh->GetWidth())
 				{
@@ -549,7 +594,7 @@ namespace NSG
 				// Render cursor if we have keyboard focus
 				if(uistate.kbditem == id && (tick < 15))
                 {
-                	xPos += pTextMesh->GetWidth();
+                	xPos += pTextMesh->GetWidthForCharacterPosition(uistate.cursor_character_position);
                 	pNode0->SetPosition(Vertex3(xPos, yPos, 0));
 					pCursorMesh->Render(pRenderTextNode, Color(1,0,0,1));
                 }
@@ -573,16 +618,61 @@ namespace NSG
 					uistate.keyentered = 0;
 					break;
 				case NSG_KEY_BACKSPACE:
-					if (currentText.size() > 0)
+					if(uistate.cursor_character_position > 0)
 					{
-						currentText.resize(currentText.size()-1);
+                        std::string::iterator it = currentText.begin() + uistate.cursor_character_position - 1;
+                        currentText.erase(it);
+                        --uistate.cursor_character_position;
 					}
-					break;    					
+					break;   
+
+                case NSG_KEY_DELETE:
+					if(uistate.cursor_character_position < currentText.length())
+					{
+                        std::string::iterator it = currentText.begin() + uistate.cursor_character_position;
+                        currentText.erase(it);
+					}
+                    break;
+
+                case NSG_KEY_RIGHT:
+                    if(uistate.cursor_character_position < currentText.length())
+                        ++uistate.cursor_character_position;
+                    break;
+
+                case NSG_KEY_LEFT:
+                    if(uistate.cursor_character_position > 0)
+                        --uistate.cursor_character_position;
+                    break;
+
+                case NSG_KEY_HOME:
+                    uistate.cursor_character_position = 0;
+                    break;
+
+                case NSG_KEY_END:
+                    uistate.cursor_character_position = currentText.length();
+                    break;
 				}
 
 	            if (uistate.character >= 32 && uistate.character < 127 && currentText.size() < textMaxLength)
 	            {
-	                currentText.append(1, (char)uistate.character);
+	            	std::string textCopy = currentText;
+
+                    std::string::iterator it = currentText.begin() + uistate.cursor_character_position;
+	                currentText.insert(it, (char)uistate.character);
+                    ++uistate.cursor_character_position;
+
+	            	if(pRegex)
+	            	{
+	            		TRACE_LOG("***2***");
+	            		if(!regex_match(currentText, *pRegex))
+	            		{
+	            			TRACE_LOG("***3***");
+	            			currentText = textCopy;
+	            			--uistate.cursor_character_position;
+	            			TRACE_LOG("***4***");
+	            		}
+	            		TRACE_LOG("***5***");
+	            	}
 	            }
 			}
 
