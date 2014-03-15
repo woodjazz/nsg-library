@@ -82,32 +82,37 @@ static const char* fShader = STRINGIFY(
 	}
 );
 
-static PGLES2RectangleMesh s_pRectangleMesh;
-static PGLES2CircleMesh s_pCircleMesh;
-static PGLES2EllipseMesh s_pEllipseMesh;
-static PGLES2RoundedRectangleMesh s_pRoundedRectangle;
-static GLES2Camera* s_pCamera = nullptr;
-
 namespace NSG 
 {
 	namespace IMGUI
 	{
 		PGLES2Camera pCamera;
+		PGLES2RectangleMesh pRectangleMesh;
+		PGLES2CircleMesh pCircleMesh;
+		PGLES2EllipseMesh pEllipseMesh;
+		PGLES2RoundedRectangleMesh pRoundedRectangle;
+
 		ButtonType buttonType = RoundedRectangle;
-		PGLES2Mesh pButtonMesh = s_pRoundedRectangle;
+		PGLES2Mesh pButtonMesh = pRoundedRectangle;
+
+		PGLES2FrameColorSelection pFrameColorSelection;		
+
 		PNode pCurrentNode(new Node());
         PNode pRenderNode(new Node(pCurrentNode));
-        PNode pRenderTextNode(new Node());
-		Vertex3 currentSize;
+
 		std::string currentFontFile("font/FreeSans.ttf");
 		int currentFontSize = 18;
+		size_t textMaxLength = std::numeric_limits<int>::max();
+
 		bool fillEnabled = true;
+		
 		Color activeColor(0,1,0,0.7f);
 		Color normalColor(0.5f,0.5f,0.5f,0.5f);
 		Color hotColor(1,0.5f,0.5f,0.7f);
 		Color borderColor(1,1,1,1);
+		
 		int tick = 0;
-		size_t textMaxLength = std::numeric_limits<int>::max();
+		int nestedLayout = 0;
 
 		class TextManager
 		{
@@ -190,19 +195,17 @@ namespace NSG
 
 		UIState uistate = {0,0,0,0,false,0,0, 0,0,0,0,0,0, false, 0};
 
-		PGLES2FrameColorSelection pFrameColorSelection;		
-
 		void AllocateResources()
 		{
-			assert(s_pRectangleMesh == nullptr);
+			assert(pRectangleMesh == nullptr);
 			PGLES2Program pProgram(new GLES2Program(vShader, fShader));
 			PGLES2Material pMaterial(new GLES2Material());
             pMaterial->SetProgram(pProgram);
 			pMaterial->SetDiffuseColor(Color(1,0,0,1));
-			s_pRectangleMesh = PGLES2RectangleMesh(new GLES2RectangleMesh(1, 1, pMaterial, GL_STATIC_DRAW));
-			s_pCircleMesh = PGLES2CircleMesh(new GLES2CircleMesh(0.5f, 64, pMaterial, GL_STATIC_DRAW));
-			s_pEllipseMesh = PGLES2EllipseMesh(new GLES2EllipseMesh(1.0f, 1.0f, 64, pMaterial, GL_STATIC_DRAW));
-			s_pRoundedRectangle = PGLES2RoundedRectangleMesh(new GLES2RoundedRectangleMesh(0.25f, 1, 0.5f, 64, pMaterial, GL_STATIC_DRAW));
+			pRectangleMesh = PGLES2RectangleMesh(new GLES2RectangleMesh(1, 1, pMaterial, GL_STATIC_DRAW));
+			pCircleMesh = PGLES2CircleMesh(new GLES2CircleMesh(0.5f, 64, pMaterial, GL_STATIC_DRAW));
+			pEllipseMesh = PGLES2EllipseMesh(new GLES2EllipseMesh(1.0f, 1.0f, 64, pMaterial, GL_STATIC_DRAW));
+			pRoundedRectangle = PGLES2RoundedRectangleMesh(new GLES2RoundedRectangleMesh(0.25f, 1, 0.5f, 64, pMaterial, GL_STATIC_DRAW));
             pCamera = PGLES2Camera(new GLES2Camera());
 			pCamera->EnableOrtho();
             pCamera->SetFarClip(1);
@@ -212,15 +215,16 @@ namespace NSG
 		void ReleaseResources()
 		{
             pCamera = nullptr;
-			s_pRectangleMesh = nullptr;
-			s_pCircleMesh = nullptr;
-			s_pEllipseMesh = nullptr;
-			s_pRoundedRectangle = nullptr;
+			pRectangleMesh = nullptr;
+			pCircleMesh = nullptr;
+			pEllipseMesh = nullptr;
+			pRoundedRectangle = nullptr;
 			pButtonMesh = nullptr;
 		}
 
 
 		GLboolean isBlendEnabled = false;
+		GLES2Camera* pActiveCamera = nullptr;
 		void Begin()
 		{
 			isBlendEnabled = glIsEnabled(GL_BLEND);
@@ -228,15 +232,15 @@ namespace NSG
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 
 			glDisable(GL_DEPTH_TEST);
-			s_pCamera = GLES2Camera::GetActiveCamera();
+			pActiveCamera = GLES2Camera::GetActiveCamera();
 			pCamera->Activate();
 			uistate.hotitem = 0;
 		}
 
 		void End()
 		{
-			if(s_pCamera)
-				s_pCamera->Activate();
+			if(pActiveCamera)
+				pActiveCamera->Activate();
 
 			if(!uistate.activeitem_is_a_text_field)
 			{
@@ -252,7 +256,7 @@ namespace NSG
 				{
 					if(App::GetPtrInstance()->ShowKeyboard())
 					{
-						Vertex3 position(0, pCurrentNode->GetPosition().y - currentSize.y, 0);
+						Vertex3 position(0, GetPosition().y - GetSize().y, 0);
 
 			  			pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
 			  		}
@@ -310,16 +314,16 @@ namespace NSG
 			switch(buttonType)
 			{
 				case Rectangle:
-					pButtonMesh = s_pRectangleMesh;
+					pButtonMesh = pRectangleMesh;
 					break;
 				case Circle:
-					pButtonMesh = s_pCircleMesh;
+					pButtonMesh = pCircleMesh;
 					break;
 				case Ellipse:
-					pButtonMesh = s_pEllipseMesh;
+					pButtonMesh = pEllipseMesh;
 					break;
 				case RoundedRectangle:
-					pButtonMesh = s_pRoundedRectangle;
+					pButtonMesh = pRoundedRectangle;
 					break;
 				default:
 					assert(false);
@@ -354,7 +358,7 @@ namespace NSG
 
 		void SetSize(const Vertex3& size)
 		{
-			currentSize = size;
+			pCurrentNode->SetScale(size);
 		}
 
 		const Vertex3& GetSize()
@@ -398,9 +402,54 @@ namespace NSG
 			textMaxLength = maxLength;
 		}
 
+		void Try2Add2Layout(GLushort id)
+		{
+			//TODO
+		}
+
+		Vertex3 GetLayoutPositionFor(GLushort id)
+		{
+			//TODO
+			return Vertex3(0,0,0);
+		}
+
+		Vertex3 GetLayoutSizeFor(GLushort id)
+		{
+			//TODO
+			return Vertex3(0,0,0);
+		}
+
+		void BeginHorizontal()
+		{
+			++nestedLayout;
+		}
+
+		void EndHorizontal()
+		{
+			--nestedLayout;
+		}
+
+		void BeginVertical()
+		{
+			++nestedLayout;
+		}
+
+		void EndVertical()
+		{
+			--nestedLayout;
+		}
+
 		bool InternalButton(GLushort id, const std::string& text)
 		{
-			pCurrentNode->SetScale(currentSize);
+			Vertex3 currentPosition = GetPosition();
+			Vertex3 currentSize = GetSize();
+
+			if(nestedLayout)
+			{
+				Try2Add2Layout(id);
+				SetPosition(GetLayoutPositionFor(id));
+				SetSize(GetLayoutSizeFor(id));
+			}
 
 			// Check whether the button should be hot
 			if (Hit(id))
@@ -460,16 +509,17 @@ namespace NSG
 				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
 	            pTextMesh->SetText(text);
 				
-				static PNode pNode0(new Node());
-				pNode0->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
-
-                static PNode pNode(new Node(pNode0));
-                pNode->SetPosition(pCurrentNode->GetPosition());
-
-                pRenderTextNode->SetParent(pNode);
-
-				pTextMesh->Render(pRenderTextNode, Color(1,1,1,1));
+				static PNode pRootTextNode(new Node());
+				pRootTextNode->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
+				pCurrentNode->SetParent(pRootTextNode);
+				Vertex3 scale = pCurrentNode->GetScale();
+				pCurrentNode->SetScale(Vertex3(1,1,1));
+				pTextMesh->Render(pRenderNode, Color(1,1,1,1));
+				pCurrentNode->SetScale(scale);
+                pCurrentNode->SetParent(nullptr);
 			}
+
+			bool enterKey = false;
 
 			// If we have keyboard focus, we'll need to process the keys
 			if (uistate.kbditem == id)
@@ -490,25 +540,40 @@ namespace NSG
 					break;
 
 				case NSG_KEY_ENTER:
-				  // Had keyboard focus, received return,
-				  // so we'll act as if we were clicked.
-				  return true;
+					// Had keyboard focus, received return,
+					// so we'll act as if we were clicked.
+					enterKey = true;
+				  	break;
 				}
 			}
 
 			uistate.lastwidget = id;
 
+			if(nestedLayout)
+			{
+				//Restore user position and size
+				SetPosition(currentPosition);
+				SetSize(currentSize);
+			}
 
 			// If button is hot and active, but mouse button is not
 			// down, the user must have clicked the button.
-			return uistate.mousedown == 0 && uistate.hotitem == id &&  uistate.activeitem == id;
+			return enterKey || (uistate.mousedown == 0 && uistate.hotitem == id &&  uistate.activeitem == id);
 		}		
 
 		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex)
 		{
-			std::string currentText = text;
+			Vertex3 currentPosition = GetPosition();
+			Vertex3 currentSize = GetSize();
 
-			pCurrentNode->SetScale(currentSize);
+			if(nestedLayout)
+			{
+				Try2Add2Layout(id);
+				SetPosition(GetLayoutPositionFor(id));
+				SetSize(GetLayoutSizeFor(id));
+			}
+
+			std::string currentText = text;
 
 			// Check whether the button should be hot
 			if (Hit(id))
@@ -573,31 +638,31 @@ namespace NSG
 
 	            pTextMesh->SetText(currentText);
 				
-				static PNode pNode0(new Node());
-				float xPos = -currentSize.x/2;
+				static PNode pRootTextNode(new Node());
+				float xPos = -GetSize().x/2;
 				float yPos = 0;
 
-				if(pCurrentNode->GetScale().x < pTextMesh->GetWidth())
+				if(GetSize().x < pTextMesh->GetWidth())
 				{
-					xPos -= pCursorMesh->GetWidth() + pTextMesh->GetWidth() - currentSize.x;  
+					xPos -= pCursorMesh->GetWidth() + pTextMesh->GetWidth() - GetSize().x;  
 				}
 
-				pNode0->SetPosition(Vertex3(xPos, yPos, 0));
-
-                static PNode pNode(new Node(pNode0));
-                pNode->SetPosition(pCurrentNode->GetPosition());
-
-                pRenderTextNode->SetParent(pNode);
-
-				pTextMesh->Render(pRenderTextNode, Color(1,1,1,1));
+				pRootTextNode->SetPosition(Vertex3(xPos, yPos, 0));
+				pCurrentNode->SetParent(pRootTextNode);
+				Vertex3 scale = pCurrentNode->GetScale();
+				pCurrentNode->SetScale(Vertex3(1,1,1));
+				pTextMesh->Render(pRenderNode, Color(1,1,1,1));
 
 				// Render cursor if we have keyboard focus
 				if(uistate.kbditem == id && (tick < 15))
                 {
                 	xPos += pTextMesh->GetWidthForCharacterPosition(uistate.cursor_character_position);
-                	pNode0->SetPosition(Vertex3(xPos, yPos, 0));
-					pCursorMesh->Render(pRenderTextNode, Color(1,0,0,1));
+                	pRootTextNode->SetPosition(Vertex3(xPos, yPos, 0));
+					pCursorMesh->Render(pRenderNode, Color(1,0,0,1));
                 }
+
+				pCurrentNode->SetScale(scale);
+                pCurrentNode->SetParent(nullptr);
 			}
 
 			// If we have keyboard focus, we'll need to process the keys
@@ -663,15 +728,11 @@ namespace NSG
 
 	            	if(pRegex)
 	            	{
-	            		TRACE_LOG("***2***");
 	            		if(!regex_match(currentText, *pRegex))
 	            		{
-	            			TRACE_LOG("***3***");
 	            			currentText = textCopy;
 	            			--uistate.cursor_character_position;
-	            			TRACE_LOG("***4***");
 	            		}
-	            		TRACE_LOG("***5***");
 	            	}
 	            }
 			}
@@ -683,6 +744,13 @@ namespace NSG
 				uistate.kbditem = id;
 
 			uistate.lastwidget = id;
+
+			if(nestedLayout)
+			{
+				//Restore user position and size
+				SetPosition(currentPosition);
+				SetSize(currentSize);
+			}
 
 			return currentText;
 		}		
@@ -698,8 +766,6 @@ namespace NSG
 
             pRenderNode->SetPosition(coordinates_origin);
             pRenderNode->SetScale(coordinates_scale);
-            pRenderTextNode->SetPosition(coordinates_origin);
-            pRenderTextNode->SetScale(coordinates_scale);
             //////////////////////////////////////////////////////////////////////////////////////////////////
             
 			uistate.pixelSizeX = 2/(float)width;

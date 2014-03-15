@@ -40,7 +40,7 @@ int AndroidPrintMessage(const char* format, ...)
     int ret_status = vsnprintf(buffer, maxBuffer, format, args);
     va_end(args);
 
-    __android_log_print(ANDROID_LOG_INFO, "nsg-library", buffer);
+    __android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", buffer);
 
     return ret_status;  
 }

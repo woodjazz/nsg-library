@@ -35,13 +35,13 @@ namespace NSG
 	{
 		GLES2Mesh::Data& data = GetVertexData();
 
-		float doubleRes = res*2.f;
+		int doubleRes = res*2;
 		float polarInc = PI/(res); // ringAngle
 		float azimInc = TWO_PI/(doubleRes); // segAngle 
 
 		Vertex3 vert;
     	Vertex2 tcoord;
-    
+            
 		for(float i = 0; i < res+1; i++) 
 		{
 		    float tr = sin( PI-i * polarInc );
@@ -71,11 +71,11 @@ namespace NSG
         
         int index1, index2, index3;
         
-        for(float iy = 0; iy < res; iy++) 
+        for(int iy = 0; iy < res; iy++) 
         {
-            for(float ix = 0; ix < doubleRes; ix++) 
+            for(int ix = 0; ix < doubleRes; ix++) 
             {
-                // first tri //
+                // first tri
                 if(iy > 0) 
                 {
                     index1 = (iy+0) * (nr) + (ix+0);
@@ -89,7 +89,7 @@ namespace NSG
                 
                 if(iy < res-1 ) 
                 {
-                    // second tri //
+                    // second tri
                     index1 = (iy+0) * (nr) + (ix+1);
                     index2 = (iy+1) * (nr) + (ix+1);
                     index3 = (iy+1) * (nr) + (ix+0);

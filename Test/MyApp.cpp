@@ -238,9 +238,9 @@ void MyApp::RenderGUIFrame()
 	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -250, 0)));	
 	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
 
-	//static std::regex pattern("-?[0-9]*([.][0-9]*)?");
+	static std::regex pattern("-?[0-9]*([.][0-9]*)?", std::regex_constants::extended);
 	static std::string str1 = "";
-	str1 = IMGUITextFieldWithPattern(str1, nullptr);
+	str1 = IMGUITextFieldWithPattern(str1, &pattern);
 
 }
 

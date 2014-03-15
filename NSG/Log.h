@@ -41,7 +41,7 @@ extern int PPPrintMessage(const char* format, ...);
 	::std::stringstream stream; \
 	stream << msg; \
 	::std::string cmsg = stream.str(); \
-	__android_log_print(ANDROID_LOG_INFO, "nsg-library", cmsg.c_str());\
+	__android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
 }
 extern int AndroidPrintMessage(const char* format, ...);
 #define printf AndroidPrintMessage

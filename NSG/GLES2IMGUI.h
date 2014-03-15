@@ -40,6 +40,23 @@ namespace NSG
 		void ReleaseResources();
 		void Begin();
 		void End();
+		bool InternalButton(GLushort id, const std::string& text);
+		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex);
+		void ViewChanged(int32_t width, int32_t height);
+        void OnMouseMove(float x, float y);
+        void OnMouseDown(float x, float y);
+        void OnMouseUp();
+        void OnKey(int key, int action, int modifier);
+        void OnChar(unsigned int character);
+        void DoTick(float delta);
+		void Try2Add2Layout(GLushort id);
+		Vertex3 GetLayoutPositionFor(GLushort id);
+		Vertex3 GetLayoutSizeFor(GLushort id);
+
+		//////////////////////////////////////////////////////////////////
+		// Position and size are in OpenGL screen coordinates.
+		// To work with pixels use ConvertPixels2ScreenCoords function.
+        //////////////////////////////////////////////////////////////////
 		enum ButtonType {Rectangle, Circle, Ellipse, RoundedRectangle};
 		Vertex3 ConvertPixels2ScreenCoords(const Vertex3& pixels);
 		Vertex3 ConvertScreenCoords2Pixels(const Vertex3& screenCoords);
@@ -55,15 +72,10 @@ namespace NSG
 		void SetHotColor(Color color);
 		void SetActiveColor(Color color);
 		void SetTextMaxLength(size_t maxLength);
-		bool InternalButton(GLushort id, const std::string& text);
-		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex);
-		void ViewChanged(int32_t width, int32_t height);
-        void OnMouseMove(float x, float y);
-        void OnMouseDown(float x, float y);
-        void OnMouseUp();
-        void OnKey(int key, int action, int modifier);
-        void OnChar(unsigned int character);
-        void DoTick(float delta);
+		void BeginHorizontal();
+		void EndHorizontal();
+		void BeginVertical();
+		void EndVertical();
 	}
 }
 
