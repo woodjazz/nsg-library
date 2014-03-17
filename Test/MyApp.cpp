@@ -164,15 +164,15 @@ void MyApp::LateUpdate()
 	//TRACE_LOG("MyApp::LateUpdate\n");
 }
 
-void MyApp::RenderGUIFrame()
+void MyApp::TestIMGUI1()
 {
 
 	IMGUI::SetActiveColor(Color(0,0,1,0.9f));
 	
 	IMGUI::SetButtonType(IMGUI::Rectangle);
 
-	IMGUI::SetPosition(Vertex3(0,0,0));
-	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 100, 1)));
+	IMGUI::SetAreaPosition(Vertex3(0,0,0));
+	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 100, 1)));
 
 	IMGUI::Fill(false);
 
@@ -185,9 +185,9 @@ void MyApp::RenderGUIFrame()
 
 	IMGUI::SetButtonType(IMGUI::Circle);
 
-    Vertex3 position = IMGUI::GetPosition();
-    position.x += IMGUI::GetSize().x;
-	IMGUI::SetPosition(position);	
+    Vertex3 position = IMGUI::GetAreaPosition();
+    position.x += IMGUI::GetAreaSize().x;
+	IMGUI::SetAreaPosition(position);	
     
     if(IMGUIButton("Button 2"))
 	{
@@ -198,17 +198,17 @@ void MyApp::RenderGUIFrame()
 
 	IMGUI::SetButtonType(IMGUI::Ellipse);
 
-	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(-200, 200, 0)));	
-	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 50, 1)));
+	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(-200, 200, 0)));	
+	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 50, 1)));
 
     if(IMGUIButton("Button 3"))
 	{
 		TRACE_LOG("Button 3 pressed\n");
 	}
 
-    position = IMGUI::GetPosition();
-    position.y -= IMGUI::GetSize().y;
-	IMGUI::SetPosition(position);
+    position = IMGUI::GetAreaPosition();
+    position.y -= IMGUI::GetAreaSize().y;
+	IMGUI::SetAreaPosition(position);
 
 	IMGUI::SetButtonType(IMGUI::RoundedRectangle);
 
@@ -219,29 +219,86 @@ void MyApp::RenderGUIFrame()
 		TRACE_LOG("Button 4 pressed\n");
 	}
 
-	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 150, 0)));	
-	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 300, 1)));
+	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 150, 0)));	
+	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 300, 1)));
 
     if(IMGUIButton("Button 5"))
 	{
 		TRACE_LOG("Button 5 pressed\n");
 	}
 
-	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -150, 0)));	
-	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
+	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -150, 0)));	
+	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
 
 	static std::string str0 = "Abc";
 	str0 = IMGUITextField(str0);
 
     IMGUI::SetFont("font/FreeSans.ttf", 18);
 	IMGUI::SetButtonType(IMGUI::Rectangle);
-	IMGUI::SetPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -250, 0)));	
-	IMGUI::SetSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
+	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -250, 0)));	
+	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
 
 	static std::regex pattern("-?[0-9]*([.][0-9]*)?", std::regex_constants::extended);
 	static std::string str1 = "";
 	str1 = IMGUITextFieldWithPattern(str1, &pattern);
 
+}
+
+void MyApp::TestIMGUI2()
+{
+	IMGUI::SetButtonType(IMGUI::RoundedRectangle);
+	IMGUI::SetFont("font/FreeSans.ttf", 18);
+
+	//IMGUI::SetAreaSize(Vertex3(1,1,1));
+	IMGUIBeginHorizontal();
+	{
+		IMGUISpacer(10);
+
+		static std::string str0 = "Abc";
+		str0 = IMGUITextField(str0);
+
+		static std::string str1 = "xyz";
+		str1 = IMGUITextField(str1);
+
+
+		IMGUIBeginVertical();
+		{
+			//IMGUISpacer(20);
+
+			static std::string str2 = "012";
+			str2 = IMGUITextField(str2);
+
+			static std::string str3 = "jkl";
+			str3 = IMGUITextField(str3);
+
+			IMGUIBeginHorizontal();
+			{
+				static std::string str0 = "cccc";
+				str0 = IMGUITextField(str0);
+
+				static std::string str1 = "dddd";
+				str1 = IMGUITextField(str1);
+
+			}
+			IMGUIEndHorizontal();
+
+			//IMGUISpacer(20);
+		}
+		IMGUIEndVertical();
+
+		IMGUISpacer(50);
+
+		//static std::string str2 = "2222";
+//		str2 = IMGUITextField(str2);
+
+	}
+	IMGUIEndHorizontal();
+}
+
+void MyApp::RenderGUIFrame()
+{
+	//TestIMGUI1();
+	TestIMGUI2();
 }
 
 void MyApp::RenderFrame() 

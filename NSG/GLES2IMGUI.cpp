@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "GLES2StencilMask.h"
 #include "App.h"
 #include <map>
+#include <list>
 
 using namespace NSG;
 
@@ -97,8 +98,8 @@ namespace NSG
 
 		PGLES2FrameColorSelection pFrameColorSelection;		
 
-		PNode pCurrentNode(new Node());
-        PNode pRenderNode(new Node(pCurrentNode));
+		PNode pCurrentAreaNode(new Node());
+        PNode pRenderNode(new Node(pCurrentAreaNode));
 
 		std::string currentFontFile("font/FreeSans.ttf");
 		int currentFontSize = 18;
@@ -112,7 +113,6 @@ namespace NSG
 		Color borderColor(1,1,1,1);
 		
 		int tick = 0;
-		int nestedLayout = 0;
 
 		class TextManager
 		{
@@ -171,6 +171,211 @@ namespace NSG
 			}
 		}
 
+		struct LayoutArea;
+		typedef std::shared_ptr<LayoutArea> PLayoutArea;
+		struct LayoutArea
+		{
+			int percentage_;
+			Vertex3 position_;
+			Vertex3 size_;
+			enum Type {Vertical, Horizontal, Control, Spacer};
+			Type type_;
+			std::list<PLayoutArea> children_;
+
+			LayoutArea(const Vertex3& position, const Vertex3& size, Type type, int percentage) 
+			: position_(position), size_(size), type_(type), percentage_(percentage)
+			{
+			}
+		};
+
+		class LayoutManager
+		{
+		public:
+			LayoutManager() 
+			{
+			}
+
+			PLayoutArea InsertNewArea(GLushort id, LayoutArea::Type type, int percentage)
+			{
+				PLayoutArea pArea;
+
+                if(!nestedAreas_.empty())
+                {
+                	PLayoutArea pCurrentArea(nestedAreas_.back());
+
+                	pArea = PLayoutArea(new LayoutArea(pCurrentArea->position_, pCurrentArea->size_, type, percentage));
+                    
+				    pCurrentArea->children_.push_back(pArea);
+                }
+                else
+                {
+                	pArea = PLayoutArea(new LayoutArea(GetAreaPosition(), GetAreaSize(), type, percentage));
+                }
+
+				areas_.insert(AREAS::value_type(id, pArea));
+
+                if(!nestedAreas_.empty())
+				    RecalculateLayout(nestedAreas_.back());
+
+				return pArea;
+			}
+
+			void SetAreaForControl(GLushort id)
+			{
+				auto it = areas_.find(id);
+				if(it != areas_.end())
+				{
+					SetAreaPosition(it->second->position_);
+					SetAreaSize(it->second->size_);
+				}
+				else if(nestedAreas_.size())
+				{
+					PLayoutArea pArea = InsertNewArea(id, LayoutArea::Control, 0);
+					SetAreaPosition(pArea->position_);
+					SetAreaSize(pArea->size_);
+				}
+			}
+
+			void BeginHorizontal(GLushort id)
+			{
+				PLayoutArea pArea = InsertNewArea(id, LayoutArea::Horizontal, 0);
+				nestedAreas_.push_back(pArea);
+			}
+
+			void EndHorizontal()
+			{
+				PLayoutArea pArea(nestedAreas_.back());
+				assert(pArea->type_ == LayoutArea::Horizontal);
+				nestedAreas_.pop_back();
+			}
+
+			void BeginVertical(GLushort id)
+			{
+				PLayoutArea pArea = InsertNewArea(id, LayoutArea::Vertical, 0);
+				nestedAreas_.push_back(pArea);
+			}
+
+			void EndVertical()
+			{
+				PLayoutArea pArea(nestedAreas_.back());
+				assert(pArea->type_ == LayoutArea::Vertical);
+				nestedAreas_.pop_back();
+			}
+
+			void Spacer(GLushort id, int percentage)
+			{
+				if(nestedAreas_.size())
+				{
+					auto it = areas_.find(id);
+					if(it == areas_.end())
+					{
+						InsertNewArea(id, LayoutArea::Spacer, percentage);
+					}
+				}
+			}
+
+			void RecalculateLayout(PLayoutArea pCurrentArea)
+			{
+				size_t n = pCurrentArea->children_.size();
+
+				if(n < 2)
+					return;
+
+				float areaHeight = pCurrentArea->size_.y;
+				float areaWidth = pCurrentArea->size_.x;
+
+				int nControls = n;
+
+				{
+					auto it = pCurrentArea->children_.begin();
+					while(it != pCurrentArea->children_.end())
+					{
+						PLayoutArea pArea = *it;
+						
+						if(pArea->percentage_)
+						{
+							--nControls;
+							if(pCurrentArea->type_ == LayoutArea::Vertical)
+							{
+								areaHeight -= pCurrentArea->size_.y * pArea->percentage_ /100.0f;
+							}
+							else
+							{
+								assert(pCurrentArea->type_ == LayoutArea::Horizontal);
+								areaWidth -= pCurrentArea->size_.x * pArea->percentage_ /100.0f;
+							}
+						}
+
+						++it;
+					}
+				}
+
+				assert(areaWidth > 0);
+				assert(areaHeight > 0);
+
+				if(nControls > 0)
+				{
+					float stepV = areaHeight / nControls;
+					float stepH = areaWidth / nControls;
+
+					auto it = pCurrentArea->children_.begin();
+
+					if(pCurrentArea->type_ == LayoutArea::Vertical)
+					{
+						float currentYPosition = pCurrentArea->position_.y + pCurrentArea->size_.y/2;
+						while(it != pCurrentArea->children_.end())
+						{
+							float step = stepV;
+							PLayoutArea pArea = *it;
+							if(pArea->percentage_)
+							{
+								step = pCurrentArea->size_.y * pArea->percentage_ / 100.0f;
+							}
+                            pArea->size_.x = pCurrentArea->size_.x;
+							pArea->size_.y = step;
+                            pArea->position_.x = pCurrentArea->position_.x;
+							pArea->position_.y = currentYPosition - step/2;
+							currentYPosition -= step;
+
+							RecalculateLayout(pArea);
+
+							++it;
+						}
+					}
+					else
+					{
+						assert(pCurrentArea->type_ == LayoutArea::Horizontal);
+						float currentXPosition = pCurrentArea->position_.x - pCurrentArea->size_.x/2;
+						while(it != pCurrentArea->children_.end())
+						{
+							float step = stepH;
+							PLayoutArea pArea = *it;
+							if(pArea->percentage_)
+							{
+								step = pCurrentArea->size_.x * pArea->percentage_ / 100.0f;
+							}
+							pArea->size_.x = step;
+                            pArea->size_.y = pCurrentArea->size_.y;
+							pArea->position_.x = currentXPosition + step/2;
+                            pArea->position_.y = pCurrentArea->position_.y;
+                            currentXPosition += step;
+							RecalculateLayout(pArea);
+							++it;
+						}
+					}
+				}
+			}
+
+		private:
+			std::list<PLayoutArea> nestedAreas_;
+			typedef std::map<GLushort, PLayoutArea> AREAS;
+			AREAS areas_;
+		};
+
+		typedef std::shared_ptr<LayoutManager> PLayoutManager;
+
+		PLayoutManager pLayoutManager_(new LayoutManager());
+
 		struct UIState
 		{
 			float pixelSizeX;
@@ -205,7 +410,7 @@ namespace NSG
 			pRectangleMesh = PGLES2RectangleMesh(new GLES2RectangleMesh(1, 1, pMaterial, GL_STATIC_DRAW));
 			pCircleMesh = PGLES2CircleMesh(new GLES2CircleMesh(0.5f, 64, pMaterial, GL_STATIC_DRAW));
 			pEllipseMesh = PGLES2EllipseMesh(new GLES2EllipseMesh(1.0f, 1.0f, 64, pMaterial, GL_STATIC_DRAW));
-			pRoundedRectangle = PGLES2RoundedRectangleMesh(new GLES2RoundedRectangleMesh(0.25f, 1, 0.5f, 64, pMaterial, GL_STATIC_DRAW));
+			pRoundedRectangle = PGLES2RoundedRectangleMesh(new GLES2RoundedRectangleMesh(0.15f, 1, 1, 64, pMaterial, GL_STATIC_DRAW));
             pCamera = PGLES2Camera(new GLES2Camera());
 			pCamera->EnableOrtho();
             pCamera->SetFarClip(1);
@@ -235,6 +440,9 @@ namespace NSG
 			pActiveCamera = GLES2Camera::GetActiveCamera();
 			pCamera->Activate();
 			uistate.hotitem = 0;
+
+			pCurrentAreaNode->SetPosition(Vertex3(0,0,0));
+			pCurrentAreaNode->SetScale(Vertex3(2,2,1));
 		}
 
 		void End()
@@ -256,7 +464,7 @@ namespace NSG
 				{
 					if(App::GetPtrInstance()->ShowKeyboard())
 					{
-						Vertex3 position(0, GetPosition().y - GetSize().y, 0);
+						Vertex3 position(0, GetAreaPosition().y - GetAreaSize().y, 0);
 
 			  			pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
 			  		}
@@ -346,24 +554,24 @@ namespace NSG
 			return pixels;
 		}
 
-		void SetPosition(const Vertex3& position)
+		void SetAreaPosition(const Vertex3& position)
 		{
-			pCurrentNode->SetPosition(position);
+			pCurrentAreaNode->SetPosition(position);
 		}
 
-		const Vertex3& GetPosition()
+		const Vertex3& GetAreaPosition()
 		{
-			return pCurrentNode->GetPosition();
+			return pCurrentAreaNode->GetPosition();
 		}
 
-		void SetSize(const Vertex3& size)
+		void SetAreaSize(const Vertex3& size)
 		{
-			pCurrentNode->SetScale(size);
+			pCurrentAreaNode->SetScale(size);
 		}
 
-		const Vertex3& GetSize()
+		const Vertex3& GetAreaSize()
 		{
-			return pCurrentNode->GetScale();
+			return pCurrentAreaNode->GetScale();
 		}
 
 		void Fill(bool enable)
@@ -402,54 +610,34 @@ namespace NSG
 			textMaxLength = maxLength;
 		}
 
-		void Try2Add2Layout(GLushort id)
+		void InternalBeginHorizontal(GLushort id)
 		{
-			//TODO
+			pLayoutManager_->BeginHorizontal(id);
 		}
 
-		Vertex3 GetLayoutPositionFor(GLushort id)
+		void InternalEndHorizontal()
 		{
-			//TODO
-			return Vertex3(0,0,0);
+			pLayoutManager_->EndHorizontal();
 		}
 
-		Vertex3 GetLayoutSizeFor(GLushort id)
+		void InternalBeginVertical(GLushort id)
 		{
-			//TODO
-			return Vertex3(0,0,0);
+			pLayoutManager_->BeginVertical(id);
 		}
 
-		void BeginHorizontal()
+		void InternalEndVertical()
 		{
-			++nestedLayout;
+			pLayoutManager_->EndVertical();
 		}
 
-		void EndHorizontal()
+		void InternalSpacer(GLushort id, int percentage)
 		{
-			--nestedLayout;
-		}
-
-		void BeginVertical()
-		{
-			++nestedLayout;
-		}
-
-		void EndVertical()
-		{
-			--nestedLayout;
+			pLayoutManager_->Spacer(id, percentage);
 		}
 
 		bool InternalButton(GLushort id, const std::string& text)
 		{
-			Vertex3 currentPosition = GetPosition();
-			Vertex3 currentSize = GetSize();
-
-			if(nestedLayout)
-			{
-				Try2Add2Layout(id);
-				SetPosition(GetLayoutPositionFor(id));
-				SetSize(GetLayoutSizeFor(id));
-			}
+			pLayoutManager_->SetAreaForControl(id);
 
 			// Check whether the button should be hot
 			if (Hit(id))
@@ -466,7 +654,10 @@ namespace NSG
 
 			// If no widget has keyboard focus, take it
 			if (uistate.kbditem == 0)
+			{
 				uistate.kbditem = id;
+				uistate.activeitem_is_a_text_field = false;
+			}
 
 			// If we have keyboard focus, show it
 			if (uistate.kbditem == id)
@@ -511,12 +702,12 @@ namespace NSG
 				
 				static PNode pRootTextNode(new Node());
 				pRootTextNode->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
-				pCurrentNode->SetParent(pRootTextNode);
-				Vertex3 scale = pCurrentNode->GetScale();
-				pCurrentNode->SetScale(Vertex3(1,1,1));
+				pCurrentAreaNode->SetParent(pRootTextNode);
+				Vertex3 scale = pCurrentAreaNode->GetScale();
+				pCurrentAreaNode->SetScale(Vertex3(1,1,1));
 				pTextMesh->Render(pRenderNode, Color(1,1,1,1));
-				pCurrentNode->SetScale(scale);
-                pCurrentNode->SetParent(nullptr);
+				pCurrentAreaNode->SetScale(scale);
+                pCurrentAreaNode->SetParent(nullptr);
 			}
 
 			bool enterKey = false;
@@ -549,13 +740,6 @@ namespace NSG
 
 			uistate.lastwidget = id;
 
-			if(nestedLayout)
-			{
-				//Restore user position and size
-				SetPosition(currentPosition);
-				SetSize(currentSize);
-			}
-
 			// If button is hot and active, but mouse button is not
 			// down, the user must have clicked the button.
 			return enterKey || (uistate.mousedown == 0 && uistate.hotitem == id &&  uistate.activeitem == id);
@@ -563,15 +747,7 @@ namespace NSG
 
 		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex)
 		{
-			Vertex3 currentPosition = GetPosition();
-			Vertex3 currentSize = GetSize();
-
-			if(nestedLayout)
-			{
-				Try2Add2Layout(id);
-				SetPosition(GetLayoutPositionFor(id));
-				SetSize(GetLayoutSizeFor(id));
-			}
+			pLayoutManager_->SetAreaForControl(id);
 
 			std::string currentText = text;
 
@@ -591,7 +767,11 @@ namespace NSG
 
 			// If no widget has keyboard focus, take it
 			if (uistate.kbditem == 0)
+			{
 				uistate.kbditem = id;
+				uistate.activeitem_is_a_text_field = true;
+				uistate.cursor_character_position = currentText.length();
+			}
 
 			// If we have keyboard focus, show it
 			if (uistate.kbditem == id)
@@ -639,18 +819,18 @@ namespace NSG
 	            pTextMesh->SetText(currentText);
 				
 				static PNode pRootTextNode(new Node());
-				float xPos = -GetSize().x/2;
+				float xPos = -GetAreaSize().x/2;
 				float yPos = 0;
 
-				if(GetSize().x < pTextMesh->GetWidth())
+				if(GetAreaSize().x < pTextMesh->GetWidth())
 				{
-					xPos -= pCursorMesh->GetWidth() + pTextMesh->GetWidth() - GetSize().x;  
+					xPos -= pCursorMesh->GetWidth() + pTextMesh->GetWidth() - GetAreaSize().x;  
 				}
 
 				pRootTextNode->SetPosition(Vertex3(xPos, yPos, 0));
-				pCurrentNode->SetParent(pRootTextNode);
-				Vertex3 scale = pCurrentNode->GetScale();
-				pCurrentNode->SetScale(Vertex3(1,1,1));
+				pCurrentAreaNode->SetParent(pRootTextNode);
+				Vertex3 scale = pCurrentAreaNode->GetScale();
+				pCurrentAreaNode->SetScale(Vertex3(1,1,1));
 				pTextMesh->Render(pRenderNode, Color(1,1,1,1));
 
 				// Render cursor if we have keyboard focus
@@ -661,8 +841,8 @@ namespace NSG
 					pCursorMesh->Render(pRenderNode, Color(1,0,0,1));
                 }
 
-				pCurrentNode->SetScale(scale);
-                pCurrentNode->SetParent(nullptr);
+				pCurrentAreaNode->SetScale(scale);
+                pCurrentAreaNode->SetParent(nullptr);
 			}
 
 			// If we have keyboard focus, we'll need to process the keys
@@ -744,13 +924,6 @@ namespace NSG
 				uistate.kbditem = id;
 
 			uistate.lastwidget = id;
-
-			if(nestedLayout)
-			{
-				//Restore user position and size
-				SetPosition(currentPosition);
-				SetSize(currentSize);
-			}
 
 			return currentText;
 		}		

@@ -49,9 +49,11 @@ namespace NSG
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void DoTick(float delta);
-		void Try2Add2Layout(GLushort id);
-		Vertex3 GetLayoutPositionFor(GLushort id);
-		Vertex3 GetLayoutSizeFor(GLushort id);
+		void InternalBeginHorizontal(GLushort id);
+		void InternalEndHorizontal();
+		void InternalBeginVertical(GLushort id);
+		void InternalEndVertical();
+		void InternalSpacer(GLushort id, int percentage);
 
 		//////////////////////////////////////////////////////////////////
 		// Position and size are in OpenGL screen coordinates.
@@ -61,10 +63,10 @@ namespace NSG
 		Vertex3 ConvertPixels2ScreenCoords(const Vertex3& pixels);
 		Vertex3 ConvertScreenCoords2Pixels(const Vertex3& screenCoords);
 		void SetButtonType(ButtonType type);
-		void SetPosition(const Vertex3& position);
-		const Vertex3& GetPosition();
-		void SetSize(const Vertex3& size);
-		const Vertex3& GetSize();
+		void SetAreaPosition(const Vertex3& position);
+		const Vertex3& GetAreaPosition();
+		void SetAreaSize(const Vertex3& size);
+		const Vertex3& GetAreaSize();
 		void SetFont(const std::string& fontFile, int fontSize);
 		void Fill(bool enable);
 		void SetBorderColor(Color color);
@@ -72,13 +74,14 @@ namespace NSG
 		void SetHotColor(Color color);
 		void SetActiveColor(Color color);
 		void SetTextMaxLength(size_t maxLength);
-		void BeginHorizontal();
-		void EndHorizontal();
-		void BeginVertical();
-		void EndVertical();
 	}
 }
 
 #define IMGUIButton(text) IMGUI::InternalButton(__LINE__, text)
 #define IMGUITextField(text) IMGUI::InternalTextField(__LINE__, text, nullptr)
 #define IMGUITextFieldWithPattern(text, pattern) IMGUI::InternalTextField(__LINE__, text, pattern)
+#define IMGUIBeginHorizontal() IMGUI::InternalBeginHorizontal(__LINE__)
+#define IMGUIEndHorizontal() IMGUI::InternalEndHorizontal()
+#define IMGUIBeginVertical() IMGUI::InternalBeginVertical(__LINE__)
+#define IMGUIEndVertical() IMGUI::InternalEndVertical()
+#define IMGUISpacer(percentage) IMGUI::InternalSpacer(__LINE__, percentage)
