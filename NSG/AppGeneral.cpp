@@ -73,7 +73,7 @@ namespace NSG
 		glfwSetCharCallback(window, WindowChar);
 	}
 
-	bool CreateModule(NSG::PApp pApp)
+	bool CreateModule(App* pApp)
 	{
 		s_pApp = PInternalApp(new InternalApp(pApp));
 

@@ -55,7 +55,9 @@ scale_(1,1,1)
 
 MyApp::~MyApp() 
 {
+	TRACE_LOG("MyApp::Destroy Begin");
 	thread_.join();
+	TRACE_LOG("MyApp::Destroy End");
 }
 
 void MyApp::InternalTask() 
@@ -131,7 +133,7 @@ void MyApp::Start()
 
 void MyApp::Update(float delta) 
 {
-	//TRACE_LOG("MyApp::Update delta = " << delta << "\n");
+	//TRACE_LOG("MyApp::Update delta = " << delta);
 	x_angle_ += glm::pi<float>()/10.0f * delta;
 	y_angle_ += glm::pi<float>()/10.0f * delta;
 	pNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)) * glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
@@ -161,7 +163,7 @@ void MyApp::Update(float delta)
 
 void MyApp::LateUpdate()
 {
-	//TRACE_LOG("MyApp::LateUpdate\n");
+	//TRACE_LOG("MyApp::LateUpdate");
 }
 
 void MyApp::TestIMGUI1()
@@ -180,7 +182,7 @@ void MyApp::TestIMGUI1()
 	
 	if(IMGUIButton("Button 1"))
 	{
-		TRACE_LOG("Button 1 pressed\n");
+		TRACE_LOG("Button 1 pressed");
 	}
 
 	IMGUI::SetButtonType(IMGUI::Circle);
@@ -191,7 +193,7 @@ void MyApp::TestIMGUI1()
     
     if(IMGUIButton("Button 2"))
 	{
-		TRACE_LOG("Button 2 pressed\n");
+		TRACE_LOG("Button 2 pressed");
 	}
 
 	IMGUI::SetFont("font/FreeSans.ttf", 64);
@@ -203,7 +205,7 @@ void MyApp::TestIMGUI1()
 
     if(IMGUIButton("Button 3"))
 	{
-		TRACE_LOG("Button 3 pressed\n");
+		TRACE_LOG("Button 3 pressed");
 	}
 
     position = IMGUI::GetAreaPosition();
@@ -216,7 +218,7 @@ void MyApp::TestIMGUI1()
     
     if(IMGUIButton("Button 4"))
 	{
-		TRACE_LOG("Button 4 pressed\n");
+		TRACE_LOG("Button 4 pressed");
 	}
 
 	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 150, 0)));	
@@ -252,10 +254,12 @@ void MyApp::TestIMGUI2()
 	//IMGUI::SetAreaSize(Vertex3(1,1,1));
 	IMGUIBeginHorizontal();
 	{
-		IMGUISpacer(10);
+		//IMGUISpacer(10);
 
 		static std::string str0 = "Abc";
 		str0 = IMGUITextField(str0);
+
+		IMGUIButton("Button 1");
 
 		static std::string str1 = "xyz";
 		str1 = IMGUITextField(str1);
@@ -268,11 +272,15 @@ void MyApp::TestIMGUI2()
 			static std::string str2 = "012";
 			str2 = IMGUITextField(str2);
 
+			IMGUISpacer(5);
+
 			static std::string str3 = "jkl";
 			str3 = IMGUITextField(str3);
 
 			IMGUIBeginHorizontal();
 			{
+				IMGUIButton("Button 2");
+				
 				static std::string str0 = "cccc";
 				str0 = IMGUITextField(str0);
 
@@ -286,7 +294,7 @@ void MyApp::TestIMGUI2()
 		}
 		IMGUIEndVertical();
 
-		IMGUISpacer(50);
+		//IMGUISpacer(50);
 
 		//static std::string str2 = "2222";
 //		str2 = IMGUITextField(str2);
@@ -303,7 +311,7 @@ void MyApp::RenderGUIFrame()
 
 void MyApp::RenderFrame() 
 {
-	//TRACE_LOG("MyApp::RenderFrame\n");
+	//TRACE_LOG("MyApp::RenderFrame");
 
 	//pText1_->ShowAtlas();
 
@@ -376,7 +384,7 @@ void MyApp::OnMouseDown(float x, float y)
 
 	selectedIndex_ = GetSelectedNode();
     
-    TRACE_LOG("selected=" << selectedIndex_ << "\n");
+    TRACE_LOG("selected=" << selectedIndex_);
 }
 
 void MyApp::OnMouseUp()

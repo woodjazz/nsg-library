@@ -195,6 +195,9 @@ static void engine_term_display(struct engine* engine)
 
     s_pApp->HideKeyboard();
 
+    s_pApp->Release();
+    s_pApp = nullptr;
+
     if (engine->display != EGL_NO_DISPLAY) 
     {
         eglMakeCurrent(engine->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -445,7 +448,7 @@ namespace NSG
      * android_native_app_glue.  It runs in its own thread, with its own
      * event loop for receiving input events and doing other things.
      */
-    void CreateModule(struct android_app* state, NSG::PApp pApp)
+    void CreateModule(struct android_app* state, App* pApp)
     {
         TRACE_LOG("CreateModule"); 
 
@@ -510,8 +513,6 @@ namespace NSG
                 if (state->destroyRequested != 0) 
                 {
                     engine_term_display(&engine);
-                    s_pApp->Release();
-                    s_pApp = nullptr;
                     return;
                 }
             }

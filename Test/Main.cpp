@@ -31,7 +31,7 @@ misrepresented as being the original software.
 	#include "NSG/AppNaCl.h"
 	namespace pp 
 	{
-		Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(NSG::PApp(new MyApp)); }
+		Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(new MyApp); }
 	} 
 #elif ANDROID
 
@@ -39,22 +39,22 @@ misrepresented as being the original software.
 
 	namespace NSG
 	{
-		extern void CreateModule(struct android_app* state, NSG::PApp pApp);
+		extern void CreateModule(struct android_app* state, App* pApp);
 	}
 
 	extern "C" void android_main(struct android_app* state)
 	{
-		NSG::CreateModule(state, NSG::PApp(new MyApp));
+		NSG::CreateModule(state, new MyApp);
 	}
 #else
 	namespace NSG
 	{
-		extern bool CreateModule(NSG::PApp pApp);
+		extern bool CreateModule(App* pApp);
 	}
 	
 	int main() 
 	{
-		NSG::CreateModule(NSG::PApp(new MyApp));
+		NSG::CreateModule(new MyApp);
 		return 0;
 	}
 #endif

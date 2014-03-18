@@ -93,7 +93,7 @@ namespace NSG
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if(GL_FRAMEBUFFER_COMPLETE != status)
         {
-            TRACE_LOG("Frame buffer failed with error=" << status << "\n");
+            TRACE_LOG("Frame buffer failed with error=" << status);
             assert(false);
         }
 	}

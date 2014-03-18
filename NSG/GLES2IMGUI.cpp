@@ -310,8 +310,8 @@ namespace NSG
 					}
 				}
 
-				assert(areaWidth > 0);
-				assert(areaHeight > 0);
+				assert(areaWidth > 0 && "Total percentage for spacer exceeds 100%");
+				assert(areaHeight > 0  && "Total percentage for spacer exceeds 100%");
 
 				if(nControls > 0)
 				{
@@ -464,7 +464,7 @@ namespace NSG
 				{
 					if(App::GetPtrInstance()->ShowKeyboard())
 					{
-						Vertex3 position(0, GetAreaPosition().y - GetAreaSize().y, 0);
+						Vertex3 position(0, GetAreaPosition().y, 0);
 
 			  			pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
 			  		}
@@ -490,7 +490,7 @@ namespace NSG
 	
 			// Clear the entered key
 			uistate.keyentered = 0;	
-			uistate.character = 0;		
+			uistate.character = 0;	
 
 			if(!isBlendEnabled)
 				glDisable(GL_BLEND);
@@ -751,6 +751,8 @@ namespace NSG
 
 			std::string currentText = text;
 
+            PGLES2Text pTextMesh = GetCurrentTextMesh(id);
+
 			// Check whether the button should be hot
 			if (Hit(id))
 			{
@@ -761,7 +763,9 @@ namespace NSG
 			  		uistate.activeitem = id;
 			  		uistate.kbditem = id;
 			  		uistate.activeitem_is_a_text_field = true;
-                    uistate.cursor_character_position = currentText.length();
+                    uistate.cursor_character_position = pTextMesh->GetCharacterPositionForWidth(uistate.mousex - (GetAreaPosition().x - GetAreaSize().x/2));
+                    if(uistate.cursor_character_position > 0)
+                    	--uistate.cursor_character_position;
 			  	}
 			}
 
@@ -769,7 +773,6 @@ namespace NSG
 			if (uistate.kbditem == 0)
 			{
 				uistate.kbditem = id;
-				uistate.activeitem_is_a_text_field = true;
 				uistate.cursor_character_position = currentText.length();
 			}
 
@@ -812,17 +815,27 @@ namespace NSG
 				stencilMask.Begin();
 				stencilMask.Render(pRenderNode.get(), pButtonMesh.get());
 				stencilMask.End();
-				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
 				PGLES2Text pCursorMesh = GetCurrentTextMesh(-1);
-				pCursorMesh->SetText("|");
+				pCursorMesh->SetText("_");
 
 	            pTextMesh->SetText(currentText);
 				
 				static PNode pRootTextNode(new Node());
-				float xPos = -GetAreaSize().x/2;
+				float xPos = -GetAreaSize().x/2; //move text to beginning of current area
 				float yPos = 0;
 
-				if(GetAreaSize().x < pTextMesh->GetWidth())
+				float cursorPositionInText = pTextMesh->GetWidthForCharacterPosition(uistate.cursor_character_position);
+
+				if(uistate.kbditem == id)
+				{
+					//If it has the focus
+					//If text does not fit in the current area then show last part of text
+					if(GetAreaSize().x < cursorPositionInText)
+					{
+						xPos -= pCursorMesh->GetWidth() + cursorPositionInText - GetAreaSize().x;  
+					}
+				}
+				else if(GetAreaSize().x < pTextMesh->GetWidth())
 				{
 					xPos -= pCursorMesh->GetWidth() + pTextMesh->GetWidth() - GetAreaSize().x;  
 				}
@@ -836,7 +849,7 @@ namespace NSG
 				// Render cursor if we have keyboard focus
 				if(uistate.kbditem == id && (tick < 15))
                 {
-                	xPos += pTextMesh->GetWidthForCharacterPosition(uistate.cursor_character_position);
+                	xPos += cursorPositionInText;
                 	pRootTextNode->SetPosition(Vertex3(xPos, yPos, 0));
 					pCursorMesh->Render(pRenderNode, Color(1,0,0,1));
                 }
@@ -896,6 +909,18 @@ namespace NSG
                 case NSG_KEY_END:
                     uistate.cursor_character_position = currentText.length();
                     break;
+
+                case NSG_KEY_ENTER:
+					if(App::GetPtrInstance()->IsKeyboardVisible())
+					{
+						App::GetPtrInstance()->HideKeyboard();
+						pCamera->SetPosition(Vertex3(0,0,0));
+					}
+					// Lose keyboard focus.
+					// Next widget will grab the focus.
+					uistate.kbditem = 0;
+					uistate.activeitem_is_a_text_field = false;
+					break;
 				}
 
 	            if (uistate.character >= 32 && uistate.character < 127 && currentText.size() < textMaxLength)

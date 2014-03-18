@@ -37,7 +37,7 @@ namespace NSG
 {
 	namespace NaCl 
 	{
-		NaCl3DInstance::NaCl3DInstance(PP_Instance instance, PApp pApp) 
+		NaCl3DInstance::NaCl3DInstance(PP_Instance instance, App* pApp) 
 		: pp::Instance(instance), callback_factory_(this), pApp_(new InternalApp(pApp)), width_(0), height_(0)
 		{
 			s_ppInstance = this;
@@ -325,7 +325,7 @@ namespace NSG
 			context_.SwapBuffers(callback_factory_.NewCallback(&NaCl3DInstance::MainLoop));
 		}
 
-		Graphics3DModule::Graphics3DModule(NSG::PApp pApp) : pp::Module(), pApp_(pApp) 
+		Graphics3DModule::Graphics3DModule(App* pApp) : pp::Module(), pApp_(pApp) 
 		{
 		}
 

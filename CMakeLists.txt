@@ -32,6 +32,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 if(WIN32)
 
 	if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
+		add_definitions("/Zi /wd4519")
 		add_definitions( "/MP" )
 	endif()
 

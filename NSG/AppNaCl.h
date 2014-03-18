@@ -21,7 +21,7 @@ namespace NSG
 		class NaCl3DInstance : public pp::Instance
 		{
 			public:
-				explicit NaCl3DInstance(PP_Instance instance, PApp pApp);
+				explicit NaCl3DInstance(PP_Instance instance, App* pApp);
 				~NaCl3DInstance();
 				static pp::Instance* GetInstance();
 				virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
@@ -46,11 +46,11 @@ namespace NSG
 		class Graphics3DModule : public pp::Module 
 		{
 			public:
-				Graphics3DModule(NSG::PApp pApp);
+				Graphics3DModule(App* pApp);
 				virtual ~Graphics3DModule();
 				virtual pp::Instance* CreateInstance(PP_Instance instance);
 			private:
-				PApp pApp_;
+				App* pApp_;
 		};
 	}
 }

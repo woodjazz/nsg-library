@@ -50,6 +50,7 @@ namespace NSG
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }
 		GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
+		unsigned int GetCharacterPositionForWidth(float width) const;
 		PGLES2Texture GetAtlas() const { return pAtlas_; }
 		void ShowAtlas();
 		int GetFontSize() const { return fontSize_; }

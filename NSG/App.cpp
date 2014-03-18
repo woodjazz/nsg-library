@@ -46,7 +46,7 @@ namespace NSG
 
     App::~App()
     {
-        TRACE_LOG("Terminating App\n");
+        TRACE_LOG("Terminating App");
 	    assert(s_pApp != nullptr);
 
 	    s_pApp = nullptr;
@@ -200,11 +200,16 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     }
 
 
-    InternalApp::InternalApp(NSG::PApp pApp) 
+    InternalApp::InternalApp(App* pApp) 
     : pApp_(pApp),
     screenX_(0),
     screenY_(0)
     {
+    }
+
+    InternalApp::~InternalApp()
+    {
+        pApp_ = nullptr;
     }
 
     void InternalApp::Initialize()
@@ -271,7 +276,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void InternalApp::OnMouseDown(float x, float y) 
     {
-        TRACE_LOG("Mouse Down\n");
+        TRACE_LOG("Mouse Down");
         screenX_ = x;
         screenY_ = y;
 
@@ -281,7 +286,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void InternalApp::OnMouseUp() 
     {
-        TRACE_LOG("Mouse Up\n");
+        TRACE_LOG("Mouse Up");
         IMGUI::OnMouseUp();
         pApp_->OnMouseUp();
     }

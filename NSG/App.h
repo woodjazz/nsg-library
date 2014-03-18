@@ -90,12 +90,13 @@ namespace NSG
 
     struct InternalApp : public Tick
     {
-        NSG::PApp pApp_;
+        PApp pApp_;
         PGLES2FrameColorSelection pFrameColorSelection_;
         float screenX_;
         float screenY_;
 
-        InternalApp(NSG::PApp pApp);
+        InternalApp(App* pApp);
+        ~InternalApp();
         void Initialize();
         void Release();
         void BeginTick();
