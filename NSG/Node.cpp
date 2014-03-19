@@ -49,49 +49,72 @@ namespace NSG
         Update();
     }
 
-	void Node::SetPosition(const Vertex3& position)
+	void Node::SetPosition(const Vertex3& position, bool update)
 	{
 		position_ = position;
-		Update();
+		
+		if(update)
+			Update();
 	}
 
-	void Node::SetOrientation(const Quaternion& q)
+	void Node::SetOrientation(const Quaternion& q, bool update)
 	{
 		q_ = q;
-		Update();
+	
+		if(update)
+			Update();
 	}
 
-	void Node::SetScale(const Vertex3& scale)
+	void Node::SetScale(const Vertex3& scale, bool update)
 	{
 		scale_ = scale;
+		
+		if(update)
+			Update();
+	}
+
+	void Node::CopyFrom(const PNode& pNode)
+	{
+		position_ = pNode->position_;
+		q_ = pNode->q_;
+		scale_ = pNode->scale_;
 		Update();
 	}
 
-	void Node::SetGlobalPosition(const Vertex3& position) 
+
+	void Node::SetGlobalPosition(const Vertex3& position, bool update) 
 	{
 		if(pParent_ == nullptr) 
 		{
-			SetPosition(position);
+			SetPosition(position, update);
 		} 
 		else 
 		{
-			SetPosition(Vertex3(Vertex4(position, 1) * glm::inverse(pParent_->GetModelMatrix())));
+			SetPosition(Vertex3(Vertex4(position, 1) * glm::inverse(pParent_->GetModelMatrix())), update);
 		}
 	}	
 
-	void Node::SetGlobalOrientation(const Quaternion& q) 
+	void Node::SetGlobalOrientation(const Quaternion& q, bool update) 
 	{
 		if(pParent_ == nullptr) 
 		{
-			SetOrientation(q);
+			SetOrientation(q, update);
 		} 
 		else 
 		{
 			Matrix4 invParent(glm::inverse(pParent_->GetModelMatrix()));
 			Matrix4 m(glm::mat4_cast(q) * invParent);
-			SetOrientation(glm::quat_cast(m));
+			SetOrientation(glm::quat_cast(m), update);
 		}
 	}	
+
+	Vertex3 Node::GetGlobalScale() const 
+	{
+		if(pParent_) 
+			return scale_ * pParent_->GetGlobalScale();
+		else 
+			return scale_;
+	}
 
 	void Node::SetLookAt(const Vertex3& center, const Vertex3& up)
 	{

@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "GLES2Camera.h"
 #include "GLES2IMGUI.h"
+#include "GLES2Text.h"
 #include <cassert>
 
 namespace NSG
@@ -221,6 +222,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     void InternalApp::Release()
     {
         IMGUI::ReleaseResources();
+        GLES2Text::ReleaseAtlasCollection();
     }
 
     void InternalApp::BeginTick()

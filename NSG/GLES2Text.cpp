@@ -121,6 +121,11 @@ namespace NSG
 	{
 	}
 
+	void GLES2Text::ReleaseAtlasCollection()
+	{
+		fontAtlas.clear();
+	}
+
 	void GLES2Text::ShowAtlas()
 	{
 		GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);

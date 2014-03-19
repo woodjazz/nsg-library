@@ -30,6 +30,8 @@ misrepresented as being the original software.
 #include <limits>
 #include <regex>
 #include "GLES2Includes.h"
+#include "GLES2Material.h"
+#include "GLES2Mesh.h"
 #include "Types.h"
 
 namespace NSG 
@@ -56,24 +58,33 @@ namespace NSG
 		void InternalSpacer(GLushort id, int percentage);
 
 		//////////////////////////////////////////////////////////////////
-		// Position and size are in OpenGL screen coordinates.
+		// Node's position and (scale)size are in OpenGL screen coordinates.
 		// To work with pixels use ConvertPixels2ScreenCoords function.
         //////////////////////////////////////////////////////////////////
-		enum ButtonType {Rectangle, Circle, Ellipse, RoundedRectangle};
 		Vertex3 ConvertPixels2ScreenCoords(const Vertex3& pixels);
 		Vertex3 ConvertScreenCoords2Pixels(const Vertex3& screenCoords);
-		void SetButtonType(ButtonType type);
-		void SetAreaPosition(const Vertex3& position);
-		const Vertex3& GetAreaPosition();
-		void SetAreaSize(const Vertex3& size);
-		const Vertex3& GetAreaSize();
-		void SetFont(const std::string& fontFile, int fontSize);
-		void Fill(bool enable);
-		void SetBorderColor(Color color);
-		void SetNormalColor(Color color);
-		void SetHotColor(Color color);
-		void SetActiveColor(Color color);
-		void SetTextMaxLength(size_t maxLength);
+		//PNode GetNode();
+
+		struct Skin
+		{
+			Color activeColor;
+			Color normalColor;
+			Color hotColor;
+			Color borderColor;
+
+			std::string fontFile;
+			int fontSize;
+			size_t textMaxLength;
+
+			bool fillEnabled;
+
+			PGLES2Material pMaterial;
+			PGLES2Mesh pButtonMesh;
+			Skin();
+		};
+
+		typedef std::shared_ptr<Skin> PSkin;
+		extern PSkin pSkin;
 	}
 }
 

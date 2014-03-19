@@ -54,6 +54,7 @@ namespace NSG
 		PGLES2Texture GetAtlas() const { return pAtlas_; }
 		void ShowAtlas();
 		int GetFontSize() const { return fontSize_; }
+		static void ReleaseAtlasCollection();
 	private:
 		PGLES2Texture pAtlas_;
 		PGLES2Program pProgram_;

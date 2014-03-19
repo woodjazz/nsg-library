@@ -140,6 +140,9 @@ void MyApp::Update(float delta)
 	pNode2_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 	//pNode1_->SetScale(scale_);
 
+    //PNode pNode = IMGUI::GetNode();
+    //pNode->SetOrientation(pNode1_->GetOrientation());
+	//IMGUI::SetNode(pNode);
 
 	static float factor_scale = 1;
 	scale_ -= delta * 0.7f * factor_scale;
@@ -166,28 +169,24 @@ void MyApp::LateUpdate()
 	//TRACE_LOG("MyApp::LateUpdate");
 }
 
+
 void MyApp::TestIMGUI1()
 {
+#if 0
+	static PNode pNode(new Node());
+	pNode->SetScale(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 100, 1)));
 
-	IMGUI::SetActiveColor(Color(0,0,1,0.9f));
-	
-	IMGUI::SetButtonType(IMGUI::Rectangle);
+	IMGUI::pSkin->fillEnabled = false;
 
-	IMGUI::SetAreaPosition(Vertex3(0,0,0));
-	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 100, 1)));
-
-	IMGUI::Fill(false);
-
-	IMGUI::SetFont("font/FreeSans.ttf", 24);
+	IMGUI::pSkin->fontSize = 24;
 	
 	if(IMGUIButton("Button 1"))
 	{
 		TRACE_LOG("Button 1 pressed");
 	}
 
-	IMGUI::SetButtonType(IMGUI::Circle);
-
     Vertex3 position = IMGUI::GetAreaPosition();
+    pNode->SetPosition()
     position.x += IMGUI::GetAreaSize().x;
 	IMGUI::SetAreaPosition(position);	
     
@@ -196,9 +195,7 @@ void MyApp::TestIMGUI1()
 		TRACE_LOG("Button 2 pressed");
 	}
 
-	IMGUI::SetFont("font/FreeSans.ttf", 64);
-
-	IMGUI::SetButtonType(IMGUI::Ellipse);
+	IMGUI::pSkin->fontSize = 64;
 
 	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(-200, 200, 0)));	
 	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 50, 1)));
@@ -212,9 +209,7 @@ void MyApp::TestIMGUI1()
     position.y -= IMGUI::GetAreaSize().y;
 	IMGUI::SetAreaPosition(position);
 
-	IMGUI::SetButtonType(IMGUI::RoundedRectangle);
-
-	IMGUI::Fill(true);
+	IMGUI::pSkin->fillEnabled = true;
     
     if(IMGUIButton("Button 4"))
 	{
@@ -235,21 +230,20 @@ void MyApp::TestIMGUI1()
 	static std::string str0 = "Abc";
 	str0 = IMGUITextField(str0);
 
-    IMGUI::SetFont("font/FreeSans.ttf", 18);
-	IMGUI::SetButtonType(IMGUI::Rectangle);
+    IMGUI::pSkin->fontSize = 18;
 	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -250, 0)));	
 	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
 
 	static std::regex pattern("-?[0-9]*([.][0-9]*)?", std::regex_constants::extended);
 	static std::string str1 = "";
 	str1 = IMGUITextFieldWithPattern(str1, &pattern);
-
+#endif
 }
 
 void MyApp::TestIMGUI2()
 {
-	IMGUI::SetButtonType(IMGUI::RoundedRectangle);
-	IMGUI::SetFont("font/FreeSans.ttf", 18);
+	//IMGUI::SetAreaSize(Vertex3(4,4,1));
+	IMGUI::pSkin->fontSize = 18;
 
 	//IMGUI::SetAreaSize(Vertex3(1,1,1));
 	IMGUIBeginHorizontal();
@@ -259,7 +253,21 @@ void MyApp::TestIMGUI2()
 		static std::string str0 = "Abc";
 		str0 = IMGUITextField(str0);
 
-		IMGUIButton("Button 1");
+        static bool enabled = false;
+		if(IMGUIButton("Button 1"))
+		{
+            enabled = true;
+			
+			//IMGUI::GetNode()->SetPosition(IMGUI::GetNode()->GetPosition() + Vertex3(0.1f,0,0));
+		}
+
+        if(enabled)
+        {
+            if(IMGUIButton("Button asas1"))
+            {
+            	enabled = false;
+           	}
+        }
 
 		static std::string str1 = "xyz";
 		str1 = IMGUITextField(str1);

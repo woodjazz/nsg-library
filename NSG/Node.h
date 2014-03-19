@@ -43,22 +43,26 @@ namespace NSG
 		void EnableSelection(bool enable) { enableSelection_ = enable; }
 		bool IsSelectionEnabled() const { return enableSelection_; }
         void SetParent(PNode pParent);
+        PNode GetParent() const { return pParent_; }
 		virtual void OnUpdate() {}
-		void SetPosition(const Vertex3& position);
+		void SetPosition(const Vertex3& position, bool update = true);
 		const Vertex3& GetPosition() const { return position_; }
-		void SetOrientation(const Quaternion& q);
-		void SetScale(const Vertex3& scale);
+		void SetOrientation(const Quaternion& q, bool update = true);
+		const Quaternion& GetOrientation() const { return q_; };
+		void SetScale(const Vertex3& scale, bool update = true);
 		const Vertex3& GetScale() const { return scale_; }
-		void SetGlobalPosition(const Vertex3& position);
-		void SetGlobalOrientation(const Quaternion& q);
+		void SetGlobalPosition(const Vertex3& position, bool update = true);
+		void SetGlobalOrientation(const Quaternion& q, bool update = true);
 		const Vertex3& GetGlobalPosition() const { return globalPosition_; }
 		const Quaternion& GetGlobalOrientation() const { return globalOrientation_; }
+		Vertex3 GetGlobalScale() const; 
 		const Matrix4& GetModelMatrix() const;
 		const Matrix3& GetModelInvTranspMatrix() const { return matModelInvTransp_; }
 		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
 		const Vertex3& GetDirection() const { return direction_; }
-	private:
+		void CopyFrom(const PNode& pNode);
 		void Update();
+	private:
 		GLushort id_;	
 		mutable Matrix4 matTemporal_;	
 		Matrix4 matModel_;
