@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "glm/glm/gtc/matrix_transform.hpp"
 #include "glm/glm/gtc/type_ptr.hpp"
 #include "glm/glm/gtc/constants.hpp"
+#include "glm/glm/gtc/epsilon.hpp"
 
 namespace NSG
 {

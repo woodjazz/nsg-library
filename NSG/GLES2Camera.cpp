@@ -174,9 +174,14 @@ namespace NSG
 
 	void GLES2Camera::UpdateViewProjection()
 	{
-		matViewInverse_ = GetModelMatrix();
+/*		matViewInverse_ = GetModelMatrix();
 		matView_ = glm::inverse(matViewInverse_);
+		matViewProjection_ = matProjection_ * matView_;*/
+
+		matView_ = GetModelMatrix();
+		matViewInverse_ = glm::inverse(matView_);
 		matViewProjection_ = matProjection_ * matView_;
+
 	}
 
 	Matrix4 GLES2Camera::GetModelViewProjection(Node* pNode)

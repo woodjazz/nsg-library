@@ -37,6 +37,7 @@ extern void FSMExamples();
 extern void FSMTest();
 extern void TimedTaskTest();
 extern void QueuedTaskTest();
+extern void NodeTest();
 
 using namespace NSG;
 
@@ -51,6 +52,7 @@ buttonUp_(false),
 selectedIndex_(0),
 scale_(1,1,1)
 {
+	NodeTest();
 }
 
 MyApp::~MyApp() 
@@ -106,7 +108,8 @@ void MyApp::Start()
     pNode3_ = PNode(new Node);
 
 	pTextNode0_ = PNode(new Node);
-    pTextNode1_ = PNode(new Node(pTextNode0_));
+    pTextNode1_ = PNode(new Node());
+    pTextNode1_->SetParent(pTextNode0_);
 
     pNode1_->SetPosition(Vertex3(-5, 0, 0));
     pNode1_->SetScale(Vertex3(3,3,3));
@@ -172,6 +175,11 @@ void MyApp::LateUpdate()
 
 void MyApp::TestIMGUI1()
 {
+	if(IMGUIButton("Button 1"))
+	{
+		TRACE_LOG("Button 1 pressed");
+	}
+
 #if 0
 	static PNode pNode(new Node());
 	pNode->SetScale(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 100, 1)));
@@ -272,32 +280,39 @@ void MyApp::TestIMGUI2()
 		static std::string str1 = "xyz";
 		str1 = IMGUITextField(str1);
 
-
-		IMGUIBeginVertical();
+        IMGUIBeginVertical();
 		{
 			//IMGUISpacer(20);
 
-			static std::string str2 = "012";
-			str2 = IMGUITextField(str2);
+            IMGUIBeginVertical();
+   			//IMGUIBeginHorizontal();
+			{
+                IMGUIButton("Button 2");
+                IMGUIButton("Button 3");
+    			static std::string str2 = "012";
+	    		str2 = IMGUITextField(str2);
+            }
+            //IMGUIEndHorizontal();
+            IMGUIEndVertical();
+			//IMGUISpacer(5);
 
-			IMGUISpacer(5);
-
-			static std::string str3 = "jkl";
+            static std::string str3 = "jkl";
 			str3 = IMGUITextField(str3);
+
 
 			IMGUIBeginHorizontal();
 			{
-				IMGUIButton("Button 2");
+				IMGUIButton("B552");
 				
 				static std::string str0 = "cccc";
 				str0 = IMGUITextField(str0);
 
 				static std::string str1 = "dddd";
 				str1 = IMGUITextField(str1);
-
 			}
 			IMGUIEndHorizontal();
 
+            IMGUIButton("Button 52");
 			//IMGUISpacer(20);
 		}
 		IMGUIEndVertical();
@@ -308,13 +323,67 @@ void MyApp::TestIMGUI2()
 //		str2 = IMGUITextField(str2);
 
 	}
+
 	IMGUIEndHorizontal();
 }
+
+void MyApp::TestIMGUI3()
+{
+	//IMGUI::SetAreaSize(Vertex3(4,4,1));
+	IMGUI::pSkin->fontSize = 18;
+
+	//IMGUI::SetAreaSize(Vertex3(1,1,1));
+	IMGUIBeginHorizontal();
+	{
+        IMGUIBeginVertical();
+        {
+		    IMGUIButton("Button 1 zxczxchkzxjhck");
+            IMGUIButton("Button 2");
+        }
+        IMGUIEndVertical();
+
+//        IMGUIBeginVertical();
+        {
+            static std::string str0 = "Abc";
+		    str0 = IMGUITextField(str0);
+
+            IMGUIButton("Button 1");
+        }
+//        IMGUIEndVertical();
+		
+#if 0
+        IMGUIBeginHorizontal();
+		{
+            IMGUIButton("Button 2");
+            IMGUIButton("Button 3");
+        }
+		IMGUIEndHorizontal();
+#endif
+	}
+	IMGUIEndHorizontal();
+}
+
+void MyApp::TestIMGUI4()
+{
+	IMGUI::pSkin->fontSize = 18;
+
+    IMGUIBeginHorizontal();
+
+    static std::string str0 = "Abc";
+	str0 = IMGUITextField(str0);
+
+    IMGUIButton("Button 1");
+
+    IMGUIEndHorizontal();
+}
+
 
 void MyApp::RenderGUIFrame()
 {
 	//TestIMGUI1();
-	TestIMGUI2();
+	//TestIMGUI2();
+    TestIMGUI3();
+    //TestIMGUI4();
 }
 
 void MyApp::RenderFrame() 
