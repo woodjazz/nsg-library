@@ -252,13 +252,13 @@ namespace NSG
 
 		if(obj.m_loc_ != -1 && pNode)
 		{
-			const Matrix4& m = pNode->GetModelMatrix();
+			const Matrix4& m = pNode->GetGlobalModelMatrix();
 			glUniformMatrix4fv(obj.m_loc_, 1, GL_FALSE, glm::value_ptr(m));
 		}
 
 		if(obj.model_inv_transp_loc_ != -1 && pNode)
 		{
-			const Matrix3& m = pNode->GetModelInvTranspMatrix();
+			const Matrix3& m = pNode->GetGlobalModelInvTranspMatrix();
 			glUniformMatrix3fv(obj.model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));			
 		}
 

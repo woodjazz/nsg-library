@@ -103,13 +103,13 @@ static void Test04()
 	PNode pA(new Node());
     pA->SetPosition(Vertex3(2,0,0));
     pA->SetOrientation(glm::angleAxis(PI, Vertex3(0, 0, 1)));
-    Vertex3 v2(pA->GetModelMatrix() * Vertex4(v1,1));
+    Vertex3 v2(pA->GetGlobalModelMatrix() * Vertex4(v1,1));
 
     assert(glm::distance(v2, Vertex3(1,0,0)) < 2*glm::epsilon<float>());
     
     pA->SetScale(Vertex3(2,2,2));
 
-    v2 = Vertex3(pA->GetModelMatrix() * Vertex4(v1,1));
+    v2 = Vertex3(pA->GetGlobalModelMatrix() * Vertex4(v1,1));
 
     assert(glm::distance(v2, Vertex3(0,0,0)) < 2*glm::epsilon<float>());
 }
@@ -126,13 +126,13 @@ static void Test05()
     pB->SetPosition(Vertex3(1,0,0));
     pB->SetOrientation(glm::angleAxis(PI, Vertex3(0, 0, 1)));
 
-    Vertex3 v2(pB->GetModelMatrix() * Vertex4(v1,1));
+    Vertex3 v2(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
     assert(glm::distance(v2, Vertex3(3,0,0)) < 2*glm::epsilon<float>());
     
     pA->SetScale(Vertex3(2,2,2));
 
-    v2 = Vertex3(pB->GetModelMatrix() * Vertex4(v1,1));
+    v2 = Vertex3(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
     assert(glm::distance(v2, Vertex3(4,0,0)) < 2*glm::epsilon<float>());
 }
@@ -149,7 +149,7 @@ static void Test06()
     pB->SetPosition(Vertex3(-1,0,0));
     pB->SetScale(Vertex3(0.5f, 1, 1));
 
-    Vertex3 v2(pB->GetModelMatrix() * Vertex4(v1,1));
+    Vertex3 v2(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
     assert(glm::distance(v2, Vertex3(-1,0,0)) < 2*glm::epsilon<float>());
 }

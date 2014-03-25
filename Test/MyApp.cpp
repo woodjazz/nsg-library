@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "NSG/GLES2Texture.h"
 #include "NSG/GLES2IMGUI.h"
 #include "NSG/Resource.h"
+#include "NSG/Constants.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -143,9 +144,7 @@ void MyApp::Update(float delta)
 	pNode2_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 	//pNode1_->SetScale(scale_);
 
-    //PNode pNode = IMGUI::GetNode();
-    //pNode->SetOrientation(pNode1_->GetOrientation());
-	//IMGUI::SetNode(pNode);
+    IMGUI::GetNode()->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
 	static float factor_scale = 1;
 	scale_ -= delta * 0.7f * factor_scale;
@@ -256,7 +255,7 @@ void MyApp::TestIMGUI2()
 	//IMGUI::SetAreaSize(Vertex3(1,1,1));
 	IMGUIBeginHorizontal();
 	{
-		//IMGUISpacer(10);
+		IMGUISpacer(10);
 
 		static std::string str0 = "Abc";
 		str0 = IMGUITextField(str0);
@@ -282,7 +281,7 @@ void MyApp::TestIMGUI2()
 
         IMGUIBeginVertical();
 		{
-			//IMGUISpacer(20);
+			IMGUISpacer(20);
 
             IMGUIBeginVertical();
    			//IMGUIBeginHorizontal();
@@ -348,6 +347,10 @@ void MyApp::TestIMGUI3()
 		    str0 = IMGUITextField(str0);
 
             IMGUIButton("Button 1");
+
+            static std::string str1 = "xyz";
+		    str1 = IMGUITextField(str1);
+
         }
 //        IMGUIEndVertical();
 		
@@ -369,20 +372,28 @@ void MyApp::TestIMGUI4()
 
     IMGUIBeginHorizontal();
 
+    IMGUISpacer(25);
+
     static std::string str0 = "Abc";
 	str0 = IMGUITextField(str0);
 
     IMGUIButton("Button 1");
 
+    IMGUISpacer(25);
+    
     IMGUIEndHorizontal();
 }
 
 
 void MyApp::RenderGUIFrame()
 {
+    PNode pNode = IMGUI::GetNode();
+    //pNode->SetOrientation(glm::angleAxis(PI/5, Vertex3(0, 0, 1)));
+    //IMGUI::RecalculateLayout();
+
 	//TestIMGUI1();
-	//TestIMGUI2();
-    TestIMGUI3();
+	TestIMGUI2();
+    //TestIMGUI3();
     //TestIMGUI4();
 }
 

@@ -56,26 +56,28 @@ namespace NSG
 		void SetGlobalOrientation(const Quaternion& q);
 		const Vertex3& GetGlobalPosition() const { return globalPosition_; }
 		const Quaternion& GetGlobalOrientation() const { return globalOrientation_; }
-		Vertex3 GetGlobalScale() const; 
-		const Matrix4& GetModelMatrix() const;
-		const Matrix3& GetModelInvTranspMatrix() const { return matModelInvTransp_; }
+		Vertex3 GetGlobalScale() const { return globalScale_; }
+		const Matrix4& GetGlobalModelMatrix() const;
+		const Matrix3& GetGlobalModelInvTranspMatrix() const { return globalModelInvTransp_; }
 		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
 		const Vertex3& GetDirection() const { return direction_; }
-		Vertex3 GetLocalPositionFromGlobal(const Vertex3& position) const;
+		void SetInheritScale(bool inherit);
 	private:
 		void Update(bool notify = true);
 		GLushort id_;	
-		mutable Matrix4 matTemporal_;	
-		Matrix4 matModel_;
-		Matrix3 matModelInvTransp_;
+        Matrix4 globalModel_;	
+        Matrix4 globalModelInv_;
+		Matrix3 globalModelInvTransp_;
 		Vertex3 position_;
 		Vertex3 globalPosition_;
 		Quaternion q_;
 		Quaternion globalOrientation_;
 		Vertex3 scale_;
+		Vertex3 globalScale_;
 		Vertex3 direction_;
 		PNode pParent_;
 		bool enableSelection_;
 		std::set<Node*> children_;
+		bool inheritScale_;
 	};
 }

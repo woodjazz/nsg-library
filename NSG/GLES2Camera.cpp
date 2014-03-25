@@ -174,26 +174,21 @@ namespace NSG
 
 	void GLES2Camera::UpdateViewProjection()
 	{
-/*		matViewInverse_ = GetModelMatrix();
+		matViewInverse_ = GetGlobalModelMatrix();
 		matView_ = glm::inverse(matViewInverse_);
-		matViewProjection_ = matProjection_ * matView_;*/
-
-		matView_ = GetModelMatrix();
-		matViewInverse_ = glm::inverse(matView_);
 		matViewProjection_ = matProjection_ * matView_;
-
 	}
 
 	Matrix4 GLES2Camera::GetModelViewProjection(Node* pNode)
 	{
 		if (s_pActiveGLES2Camera)
 		{
-			return s_pActiveGLES2Camera->matViewProjection_ * pNode->GetModelMatrix();
+			return s_pActiveGLES2Camera->matViewProjection_ * pNode->GetGlobalModelMatrix();
 		}
 		else
 		{
 			// if no GLES2Camera then position is in screen coordinates
-			return pNode->GetModelMatrix();
+			return pNode->GetGlobalModelMatrix();
 		}
 	}
 

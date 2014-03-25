@@ -90,7 +90,7 @@ namespace NSG
 	{
 		PGLES2Camera pCamera;
 		PGLES2FrameColorSelection pFrameColorSelection;		
-		PNode pCurrentAreaNode;
+		PNode pRootAreaNode;
         PNode pRenderNode;
 		int tick = 0;
 
@@ -200,7 +200,8 @@ namespace NSG
 
 		public:
 			LayoutManager() 
-			: visibleAreas_(0)
+			: layoutChanged_(false),
+            visibleAreas_(0)
 			{
 			}
 
@@ -221,11 +222,16 @@ namespace NSG
                 else
                 {
                 	PNode pNode(new Node());
-                    pNode->SetParent(pCurrentAreaNode);
+                    pNode->SetParent(pRootAreaNode);
                 	pArea = PLayoutArea(new LayoutArea(id, pNode, type, percentage));
                 }
 
-				areas_.insert(AREAS::value_type(id, pArea));
+				auto it = areas_.insert(AREAS::value_type(id, pArea));
+
+                if(++(it.first) != areas_.end())
+                {
+                    layoutChanged_ = true;
+                }
 
                 if(!nestedAreas_.empty())
 				    RecalculateLayout(pCurrentArea);
@@ -237,27 +243,25 @@ namespace NSG
 			{
 				nestedAreas_.clear();
 				areas_.clear();
-				visibleAreas_ = 0;
+				layoutChanged_ = false;
+                visibleAreas_ = 0;
 			}
 
 			void Begin()
 			{
-				visibleAreas_ = 0;
 			}
 
 			void End()
 			{
-				if(visibleAreas_ < areas_.size())
+				if(layoutChanged_ || visibleAreas_ < areas_.size())
 				{
 					Reset();
 				}
-				else
-				{
-					visibleAreas_ = 0;
-				}
+
+                visibleAreas_ = 0;
 			}
 
-			PLayoutArea GetAreaForControl(GLushort id, LayoutArea::Type type = LayoutArea::Control)
+			PLayoutArea GetAreaForControl(GLushort id, LayoutArea::Type type = LayoutArea::Control, int percentage = 0)
 			{
 				PLayoutArea pArea;
 				auto it = areas_.find(id);
@@ -267,11 +271,11 @@ namespace NSG
 				}
 				else if(nestedAreas_.size() || type != LayoutArea::Control)
 				{
-					pArea = InsertNewArea(id, type, 0);
+					pArea = InsertNewArea(id, type, percentage);
 				}
 
-				++visibleAreas_;
-
+                ++visibleAreas_;
+                
 				return pArea;
 			}
 
@@ -297,22 +301,7 @@ namespace NSG
 
 			void Spacer(GLushort id, int percentage)
 			{
-                ++visibleAreas_;
-
-				if(nestedAreas_.size())
-				{
-					auto it = areas_.find(id);
-					if(it == areas_.end())
-					{
-						InsertNewArea(id, LayoutArea::Spacer, percentage);
-					}
-				}
-			}
-
-			void RecalculateLayout()
-			{
-				if(!nestedAreas_.empty())
-				    RecalculateLayout(nestedAreas_.front());
+				GetAreaForControl(id, LayoutArea::Control, percentage);
 			}
 
 			void RecalculateLayout(PLayoutArea pCurrentArea)
@@ -322,19 +311,14 @@ namespace NSG
 				if(n < 2)
 					return;
 
-				float localAreaHeight = 2*pCurrentArea->pNode_->GetScale().y;
-				float localAreaWidth = 2*pCurrentArea->pNode_->GetScale().x;
-
-				float areaHeight = 2*pCurrentArea->pNode_->GetGlobalScale().y;
-				float areaWidth = 2*pCurrentArea->pNode_->GetGlobalScale().x;
-
-				float globalAreaHeight = areaHeight;
-				float globalAreaWidth =  areaWidth;
+				float globalAreaHeight = 2*pCurrentArea->pNode_->GetGlobalScale().y;
+				float globalAreaWidth = 2*pCurrentArea->pNode_->GetGlobalScale().x;
 
                 Vertex3 globalPosition = pCurrentArea->pNode_->GetGlobalPosition();
                 Vertex3 localPosition = pCurrentArea->pNode_->GetPosition();
 
 				int nControls = n;
+				float remainingPercentage = 100;
 				{
 					auto it = pCurrentArea->children_.begin();
 					while(it != pCurrentArea->children_.end())
@@ -343,51 +327,42 @@ namespace NSG
 						
 						if(pArea->percentage_)
 						{
+							remainingPercentage -= pArea->percentage_;
 							--nControls;
-							if(pCurrentArea->type_ == LayoutArea::Vertical)
-							{
-								areaHeight -= globalAreaHeight * pArea->percentage_ /100.0f;
-							}
-							else
-							{
-								assert(pCurrentArea->type_ == LayoutArea::Horizontal);
-								areaWidth -= globalAreaWidth * pArea->percentage_ /100.0f;
-							}
 						}
 
 						++it;
 					}
 				}
 
-				assert(areaWidth > 0 && "Total percentage for spacer exceeds 100%");
-				assert(areaHeight > 0  && "Total percentage for spacer exceeds 100%");
+				remainingPercentage /= 100.0f;
+
+				assert(remainingPercentage >= 0 && "Total percentage for spacer exceeds 100%");
 
 				if(nControls > 0)
 				{
-					float stepV = areaHeight / nControls;
-					float stepH = areaWidth / nControls;
-
 					auto it = pCurrentArea->children_.begin();
 
 					if(pCurrentArea->type_ == LayoutArea::Vertical)
 					{
-                        float scaleY(1.0f/nControls);
                         float yPosition = globalPosition.y + globalAreaHeight/2; //position to the top of current area
 						while(it != pCurrentArea->children_.end())
 						{
-							float step = stepV;
+							float scaleY(remainingPercentage/nControls);
+							
 							PLayoutArea pArea = *it;
+
 							if(pArea->percentage_)
 							{
-								step = globalAreaHeight * pArea->percentage_ / 100.0f;
+								scaleY = pArea->percentage_ / 100.0f;
 							}
+
+							float step = globalAreaHeight * scaleY;
 
                             pArea->pNode_->SetGlobalPosition(Vertex3(globalPosition.x, yPosition - step/2, globalPosition.z));
                             pArea->pNode_->SetScale(Vertex3(1, scaleY, 1));
 
                             yPosition -= step;
-
-							//RecalculateLayout(pArea);
 
 							++it;
 						}
@@ -395,23 +370,22 @@ namespace NSG
 					else
 					{
 						assert(pCurrentArea->type_ == LayoutArea::Horizontal);
-                        float scaleX(1.0f/nControls);
                         float xPosition = globalPosition.x - globalAreaWidth/2; //position to the left of current area
 						while(it != pCurrentArea->children_.end())
 						{
-							float step = stepH;
+							float scaleX(remainingPercentage/nControls);
 							PLayoutArea pArea = *it;
 							if(pArea->percentage_)
 							{
-								step = globalAreaWidth * pArea->percentage_ / 100.0f;
+								scaleX = pArea->percentage_ / 100.0f;
 							}
+
+							float step = globalAreaWidth * scaleX;
 
 							pArea->pNode_->SetGlobalPosition(Vertex3(xPosition + step/2, globalPosition.y, globalPosition.z));
                             pArea->pNode_->SetScale(Vertex3(scaleX, 1, 1));
                             
                             xPosition += step;
-
-							//RecalculateLayout(pArea);
 
 							++it;
 						}
@@ -423,7 +397,8 @@ namespace NSG
 			std::list<PLayoutArea> nestedAreas_;
 			typedef std::map<GLushort, PLayoutArea> AREAS;
 			AREAS areas_;
-			size_t visibleAreas_;
+			bool layoutChanged_;
+            size_t visibleAreas_;
 		};
 
 		typedef std::shared_ptr<LayoutManager> PLayoutManager;
@@ -460,17 +435,20 @@ namespace NSG
 			pSkin = PSkin(new Skin());
             pCamera = PGLES2Camera(new GLES2Camera());
 			pCamera->EnableOrtho();
-            pCamera->SetFarClip(1);
-            pCamera->SetNearClip(-1);
+            //pCamera->SetPosition(Vertex3(0,0,1));
+            //pCamera->SetLookAt(Vertex3(0,0,0));
+            pCamera->SetFarClip(1000000);
+            pCamera->SetNearClip(-1000000);
             pLayoutManager_ = PLayoutManager(new LayoutManager());
 
-			pCurrentAreaNode = PNode(new Node());
+			pRootAreaNode = PNode(new Node());
         	pRenderNode = PNode(new Node());
+			pRootAreaNode->SetParent(pRenderNode);
 
         	pTextManagers = PTextManagerMap(new TextManagerMap());
 
-			pCurrentAreaNode->SetPosition(Vertex3(0,0,0));
-			//pCurrentAreaNode->SetScale(Vertex3(2,2,1));
+			pRootAreaNode->SetPosition(Vertex3(0,0,0));
+			//pRootAreaNode->SetScale(Vertex3(2,2,1));
 		}
 
 		void ReleaseResources()
@@ -478,7 +456,7 @@ namespace NSG
 			TRACE_LOG("IMGUI Releasing resources");
 			pTextManagers = nullptr;
 			pRenderNode = nullptr;
-			pCurrentAreaNode = nullptr;
+			pRootAreaNode = nullptr;
             pCamera = nullptr;
             pLayoutManager_ = nullptr;
 			pSkin = nullptr;
@@ -578,7 +556,7 @@ namespace NSG
 
 		PNode GetNode()
 		{
-			return pCurrentAreaNode;
+			return pRootAreaNode;
 		}
 
 		void InternalBeginHorizontal(GLushort id)
@@ -611,7 +589,7 @@ namespace NSG
             PNode pArea = pLayoutManager_->GetAreaForControl(id)->pNode_;
             Vertex3 scale = pArea->GetScale();
             pArea->SetScale(Vertex3(2)*scale);
-            pCurrentAreaNode->SetParent(pRenderNode);
+            //pRootAreaNode->SetParent(pRenderNode);
 
 			// Check whether the button should be hot
 			if (Hit(id, pArea))
@@ -674,13 +652,20 @@ namespace NSG
 				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
 	            pTextMesh->SetText(text);
 				
-                static PNode pTextNode(new Node());
-                pTextNode->SetParent(pArea);
-                pTextNode->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
-				pTextMesh->Render(pTextNode, Color(1,1,1,1));
+				{
+	                static PNode pTextNode(new Node());
+	                pTextNode->SetParent(pArea);
+	                pTextNode->SetInheritScale(false);
+                    pTextNode->SetScale(pRootAreaNode->GetGlobalScale());
+                    static PNode pTextNode1(new Node());
+                    pTextNode1->SetParent(pTextNode);
+                    pTextNode1->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
+					pTextMesh->Render(pTextNode1, Color(1,1,1,1));
+                    pTextNode->SetParent(nullptr);
+				}
 			}
 
-            pCurrentAreaNode->SetParent(nullptr);
+            //pRootAreaNode->SetParent(nullptr);
             pArea->SetScale(scale);
 
 
@@ -722,9 +707,9 @@ namespace NSG
 		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex)
 		{
 			PNode pArea = pLayoutManager_->GetAreaForControl(id)->pNode_;
-			pCurrentAreaNode->SetParent(pRenderNode);
             Vertex3 scale = pArea->GetScale();
             pArea->SetScale(Vertex3(2)*scale);
+            //pRootAreaNode->SetParent(pRenderNode);
 
             Vertex3 areaPosition = ConvertPixels2ScreenCoords(pArea->GetGlobalPosition());
 			Vertex3 areaSize = ConvertPixels2ScreenCoords(pArea->GetGlobalScale());
@@ -746,7 +731,7 @@ namespace NSG
 			  		uistate.kbditem = id;
 			  		uistate.activeitem_is_a_text_field = true;
 			  		//Calculates cursor's position after click
-                    Vertex3 mouseRelPos(pArea->GetModelMatrix() * Vertex4(uistate.mousex - (- areaSize.x/2 + pCursorMesh->GetWidth()), uistate.mousey, 1.0f, 1.0f));
+                    Vertex3 mouseRelPos(pArea->GetGlobalModelMatrix() * Vertex4(uistate.mousex - (- areaSize.x/2 + pCursorMesh->GetWidth()), uistate.mousey, 1.0f, 1.0f));
                     mouseRelPos = ConvertPixels2ScreenCoords(mouseRelPos);
                     uistate.cursor_character_position = pTextMesh->GetCharacterPositionForWidth(mouseRelPos.x);
 
@@ -811,10 +796,7 @@ namespace NSG
 
 	            pTextMesh->SetText(currentText);
 				
-                //Vertex3 relPos(pArea->GetParent()->GetModelMatrix() * Vertex4(-areaSize.x/2, 1, 1, 1));
-                //relPos = ConvertPixels2ScreenCoords(relPos);
-				float xPos = -areaSize.x/2; //move text to beginning of current area
-				float yPos = 0;
+				float xPos = 0;
 
 				float cursorPositionInText = pTextMesh->GetWidthForCharacterPosition(uistate.cursor_character_position);
 
@@ -833,23 +815,29 @@ namespace NSG
 				}
 
                 static PNode pTextNode(new Node());
-                pTextNode->SetPosition(Vertex3(xPos, yPos, 0));// - Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
-                pTextNode->SetParent(pArea);
-				pTextMesh->Render(pTextNode, Color(1,1,1,1));
+	            pTextNode->SetParent(pArea);
+	            pTextNode->SetPosition(Vertex3(-0.5f, 0, 0)); //move text to the beginning of the current area
+                static PNode pTextNode0(new Node());
+                pTextNode0->SetParent(pTextNode);
+	            pTextNode0->SetInheritScale(false);
+                pTextNode0->SetScale(pRootAreaNode->GetGlobalScale());
+                static PNode pTextNode1(new Node());
+                pTextNode1->SetParent(pTextNode0);
+                pTextNode1->SetPosition(Vertex3(xPos, 0, 0));
+				pTextMesh->Render(pTextNode1, Color(1,1,1,1));
                 
 				// Render cursor if we have keyboard focus
 				if(uistate.kbditem == id && (tick < 15))
                 {
-                	xPos += cursorPositionInText;
-                    pTextNode->SetPosition(Vertex3(xPos, yPos, 0));
-					pCursorMesh->Render(pTextNode, Color(1,0,0,1));
+                    static PNode pCursorNode(new Node());
+                    pCursorNode->SetParent(pTextNode1);
+                    pCursorNode->SetPosition(Vertex3(cursorPositionInText, 0, 0));
+					pCursorMesh->Render(pCursorNode, Color(1,0,0,1));
                 }
-
                 pTextNode->SetParent(nullptr);
-
 			}
 
-            pCurrentAreaNode->SetParent(nullptr);
+            //pRootAreaNode->SetParent(nullptr);
             pArea->SetScale(scale);
 
 
@@ -951,14 +939,17 @@ namespace NSG
 
 		void ViewChanged(int32_t width, int32_t height)
 		{
-			//////////////////////////////////////////////////////////////////////////////////////////////////
-			//Since we are using screen coordinates then  we have to recalculate the origin of coordinates 
-			//and the scale to match the ortographic projection
-			Vertex3 coordinates_origin(width/2, height/2, 0);
-			Vertex3 coordinates_scale(width/2, height/2, 1);
+            if(pCamera->IsOrtho())
+            {
+			    //////////////////////////////////////////////////////////////////////////////////////////////////
+			    //Since we are using screen coordinates then  we have to recalculate the origin of coordinates 
+			    //and the scale to match the ortographic projection
+			    Vertex3 coordinates_origin(width/2, height/2, 0);
+			    Vertex3 coordinates_scale(width/2, height/2, 1);
 
-            pRenderNode->SetPosition(coordinates_origin);
-            pRenderNode->SetScale(coordinates_scale);
+                pRenderNode->SetPosition(coordinates_origin);
+                pRenderNode->SetScale(coordinates_scale);
+            }
             //////////////////////////////////////////////////////////////////////////////////////////////////
             
 			uistate.pixelSizeX = 2/(float)width;

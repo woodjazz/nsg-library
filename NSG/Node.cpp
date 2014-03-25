@@ -33,13 +33,17 @@ namespace NSG
 	Node::Node() 
 	: id_(s_node_id++),
 	scale_(1,1,1),
-	enableSelection_(true)
+	globalScale_(1,1,1),
+	enableSelection_(true),
+	inheritScale_(true)
 	{
         Update(false);
 	}
 
 	Node::~Node() 
 	{
+		if(pParent_)
+			pParent_->children_.erase(this);
 	}
 
     void Node::SetParent(PNode pParent)
@@ -79,18 +83,6 @@ namespace NSG
 		Update();
 	}
 
-	Vertex3 Node::GetLocalPositionFromGlobal(const Vertex3& position) const
-	{
-		if(pParent_ == nullptr) 
-		{
-			return position;
-		} 
-		else 
-		{
-			return Vertex3(Vertex4(position, 1) * glm::inverse(pParent_->GetModelMatrix()));
-		}
-	}	
-
 	void Node::SetGlobalPosition(const Vertex3& position) 
 	{
 		if(pParent_ == nullptr) 
@@ -99,7 +91,7 @@ namespace NSG
 		} 
 		else 
 		{
-			SetPosition(Vertex3(glm::inverse(pParent_->GetModelMatrix()) * Vertex4(position, 1)));
+			SetPosition(Vertex3(pParent_->globalModelInv_ * Vertex4(position, 1)));
 		}
 	}	
 
@@ -111,18 +103,17 @@ namespace NSG
 		} 
 		else 
 		{
-			Matrix4 invParent(glm::inverse(pParent_->GetModelMatrix()));
-			Matrix4 m(invParent * glm::mat4_cast(q));
-			SetOrientation(glm::quat_cast(m));
+            SetOrientation(glm::normalize(Quaternion(pParent_->globalModelInv_) * q));
 		}
 	}	
 
-	Vertex3 Node::GetGlobalScale() const 
-	{
-		if(pParent_) 
-			return pParent_->GetGlobalScale() * scale_;
-		else 
-			return scale_;
+	void Node::SetInheritScale(bool inherit) 
+	{ 
+		if(inheritScale_ != inherit)
+		{
+			inheritScale_ = inherit; 
+			Update();
+		}
 	}
 
 	void Node::SetLookAt(const Vertex3& center, const Vertex3& up)
@@ -130,7 +121,7 @@ namespace NSG
         Vertex3 upVector(up);
 
         if(pParent_) 
-            upVector = glm::inverse(Matrix3(pParent_->GetModelMatrix())) * upVector;	
+            upVector = Matrix3(pParent_->globalModelInv_) * upVector;	
 
         Vertex3 zaxis = glm::normalize(GetGlobalPosition() - center);	
         if (glm::length(zaxis) > 0) 
@@ -157,12 +148,33 @@ namespace NSG
 
     void Node::Update(bool notify)
 	{
-		matModel_ = glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_) * glm::scale(glm::mat4(1.0f), scale_);
-        //matModel_ = glm::scale(glm::mat4(1.0f), scale_) * glm::mat4_cast(q_) * glm::translate(glm::mat4(), position_);
-		const Matrix4& globalModel = GetModelMatrix();
-		matModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel)));
-		globalPosition_ = Vertex3(globalModel[3]);
-		globalOrientation_ = glm::quat_cast(globalModel);
+		if(pParent_)
+		{
+			globalPosition_ = pParent_->globalOrientation_ * (pParent_->globalScale_ * position_);
+            globalPosition_ += pParent_->globalPosition_;
+
+			if(inheritScale_)
+			{
+				globalScale_ = pParent_->globalScale_ * scale_;
+			}
+			else
+			{
+				globalScale_ = scale_;
+			}
+
+			globalOrientation_ = pParent_->globalOrientation_ * q_;
+			
+		}
+		else
+        {
+        	globalPosition_ = position_;
+        	globalOrientation_ = q_;
+        	globalScale_ = scale_;
+        }
+
+        globalModel_ = glm::translate(glm::mat4(), globalPosition_) * glm::mat4_cast(globalOrientation_) * glm::scale(glm::mat4(1.0f), globalScale_);
+        globalModelInv_ = glm::inverse(globalModel_);
+		globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
 		static Vertex3 localDir(0,0,-1);
 		direction_ = globalOrientation_ * localDir;
 
@@ -174,19 +186,14 @@ namespace NSG
         }
 
         if(notify)
+        {
 		    OnUpdate();
+        }
 	}
 
-	const Matrix4& Node::GetModelMatrix() const 
+	const Matrix4& Node::GetGlobalModelMatrix() const 
 	{ 
-		if(pParent_)
-		{
-			matTemporal_ = pParent_->GetModelMatrix() * matModel_;
-
-			return matTemporal_;
-		}
-		else
-			return matModel_;
+        return globalModel_;
 	}
 
 

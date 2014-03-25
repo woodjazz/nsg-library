@@ -55,6 +55,7 @@ namespace NSG
 		void ViewChanged(int32_t width, int32_t height);
 		typedef std::vector<GLES2Camera*> Cameras;
 		static Cameras& GetCameras();
+        bool IsOrtho() const { return isOrtho_; }
 	private:
         void OnUpdate();
 		void UpdateProjection();

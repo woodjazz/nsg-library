@@ -64,7 +64,7 @@ namespace NSG
 		Vertex3 ConvertPixels2ScreenCoords(const Vertex3& pixels);
 		Vertex3 ConvertScreenCoords2Pixels(const Vertex3& screenCoords);
 
-		//PNode GetNode();
+		PNode GetNode();
 
 		struct Skin
 		{
