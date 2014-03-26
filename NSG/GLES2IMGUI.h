@@ -32,6 +32,8 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2Material.h"
 #include "GLES2Mesh.h"
+#include "GLES2Camera.h"
+#include "Node.h"
 #include "Types.h"
 
 namespace NSG 
@@ -58,16 +60,17 @@ namespace NSG
 		void InternalSpacer(GLushort id, int percentage);
 
 		//////////////////////////////////////////////////////////////////
-		// Node's position and (scale)size are in OpenGL screen coordinates.
+		// Node's position and (scale)size are in OpenGL screen coordinates + (1,1,0).
 		// To work with pixels use ConvertPixels2ScreenCoords function.
         //////////////////////////////////////////////////////////////////
 		Vertex3 ConvertPixels2ScreenCoords(const Vertex3& pixels);
 		Vertex3 ConvertScreenCoords2Pixels(const Vertex3& screenCoords);
 
-		PNode GetNode();
-
 		struct Skin
 		{
+			PGLES2Camera pCamera;
+			PNode pNode;
+
 			Color activeColor;
 			Color normalColor;
 			Color hotColor;
@@ -80,7 +83,7 @@ namespace NSG
 			bool fillEnabled;
 
 			PGLES2Material pMaterial;
-			PGLES2Mesh pButtonMesh;
+			PGLES2Mesh pMesh;
 			Skin();
 		};
 

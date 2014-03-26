@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include <string>
 #include <memory>
 #if NACL
-#include "NSG/NaClURLLoader.h"
+#include "NaClURLLoader.h"
 #elif ANDROID
 #include <android/asset_manager.h>
 #endif

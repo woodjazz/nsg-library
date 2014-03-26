@@ -180,6 +180,14 @@ namespace NSG
 		}
 	}	
 
+    static int GetIndex(char ch)
+    {
+        int idx = ch;
+        if(idx < 0)
+            idx += 256;
+        return idx;
+    }
+
 	GLfloat GLES2Text::GetWidthForCharacterPosition(unsigned int charPos) const
 	{
 		GLfloat pos = 0;
@@ -192,7 +200,9 @@ namespace NSG
 
 		for(int i=0; i<charPos && *p; i++) 
 		{ 
-			pos += charInfo[*p].ax * sx;
+            int idx = GetIndex(*p);
+
+			pos += charInfo[idx].ax * sx;
 			++p;
 		}
 
@@ -216,7 +226,9 @@ namespace NSG
 			if(pos >= width)
 				break;
 
-			pos += charInfo[*p].ax * sx;
+            int idx = GetIndex(*p);
+
+			pos += charInfo[idx].ax * sx;
 
 			++p;
 
@@ -225,7 +237,6 @@ namespace NSG
 
 		return charPos;
 	}
-
 
 	void GLES2Text::SetText(const std::string& text) 
 	{
@@ -268,27 +279,27 @@ namespace NSG
 
 			for(const char *p = text.c_str(); *p; p++) 
 			{ 
-				float x2 =  x + charInfo[*p].bl * sx;
-				float y2 = -y - charInfo[*p].bt * sy;
-				float w = charInfo[*p].bw * sx;
-				float h = charInfo[*p].bh * sy;
+                int idx = GetIndex(*p);
+
+				float x2 =  x + charInfo[idx].bl * sx;
+				float y2 = -y - charInfo[idx].bt * sy;
+				float w = charInfo[idx].bw * sx;
+				float h = charInfo[idx].bh * sy;
 
 				/* Advance the cursor to the start of the next character */
-				x += charInfo[*p].ax * sx;
-				y += charInfo[*p].ay * sy;
+				x += charInfo[idx].ax * sx;
+				y += charInfo[idx].ay * sy;
 
 				/* Skip glyphs that have no pixels */
 				if(!w || !h)
 					continue;
 
-				int idx = (int)*p;
-
-		        Point point1 = {x2, -y2, charInfo[*p].tx, charInfo[*p].ty};
-				Point point2 = {x2 + w, -y2, charInfo[*p].tx + charInfo[*p].bw / atlasWidth, charInfo[*p].ty};
-				Point point3 = {x2, -y2 - h, charInfo[*p].tx, charInfo[*p].ty + charInfo[*p].bh / atlasHeight};
-				Point point4 = {x2 + w, -y2, charInfo[*p].tx + charInfo[*p].bw / atlasWidth, charInfo[*p].ty};
-				Point point5 = {x2, -y2 - h, charInfo[*p].tx, charInfo[*p].ty + charInfo[*p].bh / atlasHeight};
-				Point point6 = {x2 + w, -y2 - h, charInfo[*p].tx + charInfo[*p].bw / atlasWidth, charInfo[*p].ty + charInfo[*p].bh / atlasHeight};
+		        Point point1 = {x2, -y2, charInfo[idx].tx, charInfo[idx].ty};
+				Point point2 = {x2 + w, -y2, charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty};
+				Point point3 = {x2, -y2 - h, charInfo[idx].tx, charInfo[idx].ty + charInfo[idx].bh / atlasHeight};
+				Point point4 = {x2 + w, -y2, charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty};
+				Point point5 = {x2, -y2 - h, charInfo[idx].tx, charInfo[idx].ty + charInfo[idx].bh / atlasHeight};
+				Point point6 = {x2 + w, -y2 - h, charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty + charInfo[idx].bh / atlasHeight};
 
 	            coords_[c++] = point1;
 	            coords_[c++] = point2;

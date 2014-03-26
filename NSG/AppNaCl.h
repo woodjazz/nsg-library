@@ -6,7 +6,7 @@
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-#include "NSG/App.h"
+#include "App.h"
 
 #ifdef WIN32
 #undef PostMessage

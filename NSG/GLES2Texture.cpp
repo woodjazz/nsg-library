@@ -85,6 +85,7 @@ namespace NSG
 	}
 
 	#define MAXWIDTH 1024
+    #define MAXCHARS 256
 	void GLES2Texture::CreateTextureAtlas()
 	{
 		FT_Face face;
@@ -97,7 +98,7 @@ namespace NSG
 		int roww = 0;
 		int rowh = 0;
 		 
-		for(int i = 32; i < 128; i++) 
+		for(int i = 32; i < MAXCHARS; i++) 
 		{
 			if(FT_Load_Char(face, i, FT_LOAD_RENDER)) 
 			{
@@ -151,9 +152,9 @@ namespace NSG
         int oy = 0;
         rowh = 0;
 
-        charInfo_.resize(128) ;
+        charInfo_.resize(MAXCHARS) ;
 
-		for(int i = 32; i < 128; i++) 
+		for(int i = 32; i < MAXCHARS; i++) 
 		{
 			if(FT_Load_Char(face, i, FT_LOAD_RENDER))
 			{

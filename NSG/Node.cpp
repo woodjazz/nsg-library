@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Node.h"
-#include "NSG/Log.h"
+#include "Log.h"
 
 namespace NSG
 {
@@ -35,7 +35,8 @@ namespace NSG
 	scale_(1,1,1),
 	globalScale_(1,1,1),
 	enableSelection_(true),
-	inheritScale_(true)
+	inheritScale_(true),
+	updateEnabled_(true)
 	{
         Update(false);
 	}
@@ -148,6 +149,9 @@ namespace NSG
 
     void Node::Update(bool notify)
 	{
+		if(!updateEnabled_)
+			return;
+
 		if(pParent_)
 		{
 			globalPosition_ = pParent_->globalOrientation_ * (pParent_->globalScale_ * position_);
@@ -194,6 +198,19 @@ namespace NSG
 	const Matrix4& Node::GetGlobalModelMatrix() const 
 	{ 
         return globalModel_;
+	}
+
+	void Node::EnableUpdate(bool enable) 
+	{ 
+		updateEnabled_ = enable; 
+
+		auto it = children_.begin();
+		while(it != children_.end())
+        {
+			(*it)->EnableUpdate(enable);
+            ++it;
+        }
+
 	}
 
 

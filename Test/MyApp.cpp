@@ -144,8 +144,6 @@ void MyApp::Update(float delta)
 	pNode2_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 	//pNode1_->SetScale(scale_);
 
-    IMGUI::GetNode()->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
-
 	static float factor_scale = 1;
 	scale_ -= delta * 0.7f * factor_scale;
 
@@ -171,88 +169,10 @@ void MyApp::LateUpdate()
 	//TRACE_LOG("MyApp::LateUpdate");
 }
 
-
-void MyApp::TestIMGUI1()
-{
-	if(IMGUIButton("Button 1"))
-	{
-		TRACE_LOG("Button 1 pressed");
-	}
-
-#if 0
-	static PNode pNode(new Node());
-	pNode->SetScale(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 100, 1)));
-
-	IMGUI::pSkin->fillEnabled = false;
-
-	IMGUI::pSkin->fontSize = 24;
-	
-	if(IMGUIButton("Button 1"))
-	{
-		TRACE_LOG("Button 1 pressed");
-	}
-
-    Vertex3 position = IMGUI::GetAreaPosition();
-    pNode->SetPosition()
-    position.x += IMGUI::GetAreaSize().x;
-	IMGUI::SetAreaPosition(position);	
-    
-    if(IMGUIButton("Button 2"))
-	{
-		TRACE_LOG("Button 2 pressed");
-	}
-
-	IMGUI::pSkin->fontSize = 64;
-
-	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(-200, 200, 0)));	
-	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 50, 1)));
-
-    if(IMGUIButton("Button 3"))
-	{
-		TRACE_LOG("Button 3 pressed");
-	}
-
-    position = IMGUI::GetAreaPosition();
-    position.y -= IMGUI::GetAreaSize().y;
-	IMGUI::SetAreaPosition(position);
-
-	IMGUI::pSkin->fillEnabled = true;
-    
-    if(IMGUIButton("Button 4"))
-	{
-		TRACE_LOG("Button 4 pressed");
-	}
-
-	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, 150, 0)));	
-	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 300, 1)));
-
-    if(IMGUIButton("Button 5"))
-	{
-		TRACE_LOG("Button 5 pressed\n");
-	}
-
-	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -150, 0)));	
-	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
-
-	static std::string str0 = "Abc";
-	str0 = IMGUITextField(str0);
-
-    IMGUI::pSkin->fontSize = 18;
-	IMGUI::SetAreaPosition(IMGUI::ConvertPixels2ScreenCoords(Vertex3(100, -250, 0)));	
-	IMGUI::SetAreaSize(IMGUI::ConvertPixels2ScreenCoords(Vertex3(300, 100, 1)));
-
-	static std::regex pattern("-?[0-9]*([.][0-9]*)?", std::regex_constants::extended);
-	static std::string str1 = "";
-	str1 = IMGUITextFieldWithPattern(str1, &pattern);
-#endif
-}
-
 void MyApp::TestIMGUI2()
 {
-	//IMGUI::SetAreaSize(Vertex3(4,4,1));
 	IMGUI::pSkin->fontSize = 18;
 
-	//IMGUI::SetAreaSize(Vertex3(1,1,1));
 	IMGUIBeginHorizontal();
 	{
 		IMGUISpacer(10);
@@ -264,12 +184,12 @@ void MyApp::TestIMGUI2()
 		if(IMGUIButton("Button 1"))
 		{
             enabled = true;
-			
-			//IMGUI::GetNode()->SetPosition(IMGUI::GetNode()->GetPosition() + Vertex3(0.1f,0,0));
 		}
 
         if(enabled)
         {
+			IMGUI::pSkin->pNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
+
             if(IMGUIButton("Button asas1"))
             {
             	enabled = false;
@@ -284,16 +204,13 @@ void MyApp::TestIMGUI2()
 			IMGUISpacer(20);
 
             IMGUIBeginVertical();
-   			//IMGUIBeginHorizontal();
 			{
                 IMGUIButton("Button 2");
                 IMGUIButton("Button 3");
     			static std::string str2 = "012";
 	    		str2 = IMGUITextField(str2);
             }
-            //IMGUIEndHorizontal();
             IMGUIEndVertical();
-			//IMGUISpacer(5);
 
             static std::string str3 = "jkl";
 			str3 = IMGUITextField(str3);
@@ -312,57 +229,10 @@ void MyApp::TestIMGUI2()
 			IMGUIEndHorizontal();
 
             IMGUIButton("Button 52");
-			//IMGUISpacer(20);
 		}
 		IMGUIEndVertical();
-
-		//IMGUISpacer(50);
-
-		//static std::string str2 = "2222";
-//		str2 = IMGUITextField(str2);
-
 	}
 
-	IMGUIEndHorizontal();
-}
-
-void MyApp::TestIMGUI3()
-{
-	//IMGUI::SetAreaSize(Vertex3(4,4,1));
-	IMGUI::pSkin->fontSize = 18;
-
-	//IMGUI::SetAreaSize(Vertex3(1,1,1));
-	IMGUIBeginHorizontal();
-	{
-        IMGUIBeginVertical();
-        {
-		    IMGUIButton("Button 1 zxczxchkzxjhck");
-            IMGUIButton("Button 2");
-        }
-        IMGUIEndVertical();
-
-//        IMGUIBeginVertical();
-        {
-            static std::string str0 = "Abc";
-		    str0 = IMGUITextField(str0);
-
-            IMGUIButton("Button 1");
-
-            static std::string str1 = "xyz";
-		    str1 = IMGUITextField(str1);
-
-        }
-//        IMGUIEndVertical();
-		
-#if 0
-        IMGUIBeginHorizontal();
-		{
-            IMGUIButton("Button 2");
-            IMGUIButton("Button 3");
-        }
-		IMGUIEndHorizontal();
-#endif
-	}
 	IMGUIEndHorizontal();
 }
 
@@ -387,13 +257,7 @@ void MyApp::TestIMGUI4()
 
 void MyApp::RenderGUIFrame()
 {
-    PNode pNode = IMGUI::GetNode();
-    //pNode->SetOrientation(glm::angleAxis(PI/5, Vertex3(0, 0, 1)));
-    //IMGUI::RecalculateLayout();
-
-	//TestIMGUI1();
 	TestIMGUI2();
-    //TestIMGUI3();
     //TestIMGUI4();
 }
 
@@ -401,7 +265,7 @@ void MyApp::RenderFrame()
 {
 	//TRACE_LOG("MyApp::RenderFrame");
 
-	//pText1_->ShowAtlas();
+	//pText3_->ShowAtlas();
 
     pCamera1_->Activate();
 
@@ -429,7 +293,7 @@ void MyApp::RenderFrame()
 
 
 	GLES2Camera::Deactivate();
-	pText1_->SetText(ss.str());
+	//pText1_->SetText(ss.str());
 	//pText1_->Render(pTextNode1_, Color(1,1,1,1));
 
     //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");

@@ -94,7 +94,7 @@ namespace NSG
 
 		PGLES2FrameColorSelection pSelection = pApp->GetSelection();
 
-		if(pSelection && pNode->IsSelectionEnabled())
+		if(pSelection && pNode && pNode->IsSelectionEnabled())
 		{
 			pSelection->Render(this, pNode);
 		}

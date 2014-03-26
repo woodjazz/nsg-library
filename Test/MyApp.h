@@ -54,9 +54,7 @@ public:
 
 private:
 	void InternalTask();
-	void TestIMGUI1();
 	void TestIMGUI2();
-    void TestIMGUI3();
     void TestIMGUI4();
 	std::thread thread_;
 	PGLES2Light pLight0_;

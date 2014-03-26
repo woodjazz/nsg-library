@@ -245,6 +245,8 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     {
         if(width > 0 && height > 0)
         {
+            TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
+            
             glViewport(0, 0, width, height);
 
             pApp_->SetViewSize(width, height);

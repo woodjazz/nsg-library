@@ -62,8 +62,9 @@ namespace NSG
 		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
 		const Vertex3& GetDirection() const { return direction_; }
 		void SetInheritScale(bool inherit);
-	private:
+		void EnableUpdate(bool enable);
 		void Update(bool notify = true);
+	private:
 		GLushort id_;	
         Matrix4 globalModel_;	
         Matrix4 globalModelInv_;
@@ -79,5 +80,6 @@ namespace NSG
 		bool enableSelection_;
 		std::set<Node*> children_;
 		bool inheritScale_;
+		bool updateEnabled_;
 	};
 }

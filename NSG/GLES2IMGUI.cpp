@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "GLES2RectangleMesh.h"
 #include "GLES2CircleMesh.h"
 #include "GLES2EllipseMesh.h"
-#include "GLES2Camera.h"
 #include "GLES2RoundedRectangleMesh.h"
 #include "Node.h"
 #include "Constants.h"
@@ -88,14 +87,13 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		PGLES2Camera pCamera;
 		PGLES2FrameColorSelection pFrameColorSelection;		
-		PNode pRootAreaNode;
         PNode pRenderNode;
 		int tick = 0;
 
 		Skin::Skin() 
-		: activeColor(0,1,0,0.7f),
+		: pCamera(new GLES2Camera()),
+		activeColor(0,1,0,0.7f),
 		normalColor(0.5f,0.5f,0.5f,0.5f),
 		hotColor(1,0.5f,0.5f,0.7f),
 		borderColor(1,1,1,1),
@@ -104,8 +102,12 @@ namespace NSG
 		textMaxLength(std::numeric_limits<int>::max()),
 		fillEnabled(true),
         pMaterial(new GLES2Material()),
-		pButtonMesh(new GLES2RoundedRectangleMesh(0.15f, 1, 1, 64, pMaterial, GL_STATIC_DRAW))
+		pMesh(new GLES2RoundedRectangleMesh(0.15f, 1, 1, 64, pMaterial, GL_STATIC_DRAW))
 		{
+			pCamera->EnableOrtho();
+            pCamera->SetFarClip(1000000);
+            pCamera->SetNearClip(-1000000);
+
             pMaterial->SetProgram(PGLES2Program(new GLES2Program(vShader, fShader)));
 			pMaterial->SetDiffuseColor(Color(1,0,0,1));
 		}
@@ -201,7 +203,9 @@ namespace NSG
 		public:
 			LayoutManager() 
 			: layoutChanged_(false),
-            visibleAreas_(0)
+            visibleAreas_(0),
+            newControlAdded_(false),
+            isStable_(true)
 			{
 			}
 
@@ -222,7 +226,7 @@ namespace NSG
                 else
                 {
                 	PNode pNode(new Node());
-                    pNode->SetParent(pRootAreaNode);
+                    pNode->SetParent(pRenderNode);
                 	pArea = PLayoutArea(new LayoutArea(id, pNode, type, percentage));
                 }
 
@@ -234,7 +238,10 @@ namespace NSG
                 }
 
                 if(!nestedAreas_.empty())
+                {
+                	pCurrentArea->pNode_->EnableUpdate(false);
 				    RecalculateLayout(pCurrentArea);
+				}
 
 				return pArea;
 			}
@@ -256,6 +263,18 @@ namespace NSG
 				if(layoutChanged_ || visibleAreas_ < areas_.size())
 				{
 					Reset();
+					isStable_ = false;
+				}
+				else if(newControlAdded_)
+				{
+					pRenderNode->EnableUpdate(true);
+					pRenderNode->Update(false);
+					newControlAdded_ = false;
+					isStable_ = false;
+				}
+				else
+				{
+					isStable_ = true;
 				}
 
                 visibleAreas_ = 0;
@@ -272,9 +291,12 @@ namespace NSG
 				else if(nestedAreas_.size() || type != LayoutArea::Control)
 				{
 					pArea = InsertNewArea(id, type, percentage);
+					newControlAdded_ = true;
 				}
 
                 ++visibleAreas_;
+
+                pSkin->pNode = pArea->pNode_;
                 
 				return pArea;
 			}
@@ -311,12 +333,6 @@ namespace NSG
 				if(n < 2)
 					return;
 
-				float globalAreaHeight = 2*pCurrentArea->pNode_->GetGlobalScale().y;
-				float globalAreaWidth = 2*pCurrentArea->pNode_->GetGlobalScale().x;
-
-                Vertex3 globalPosition = pCurrentArea->pNode_->GetGlobalPosition();
-                Vertex3 localPosition = pCurrentArea->pNode_->GetPosition();
-
 				int nControls = n;
 				float remainingPercentage = 100;
 				{
@@ -342,35 +358,35 @@ namespace NSG
 				if(nControls > 0)
 				{
 					auto it = pCurrentArea->children_.begin();
-
 					if(pCurrentArea->type_ == LayoutArea::Vertical)
 					{
-                        float yPosition = globalPosition.y + globalAreaHeight/2; //position to the top of current area
+                        float yPosition = 1; //position to the top of current area
 						while(it != pCurrentArea->children_.end())
 						{
 							float scaleY(remainingPercentage/nControls);
-							
 							PLayoutArea pArea = *it;
-
 							if(pArea->percentage_)
 							{
 								scaleY = pArea->percentage_ / 100.0f;
 							}
-
-							float step = globalAreaHeight * scaleY;
-
-                            pArea->pNode_->SetGlobalPosition(Vertex3(globalPosition.x, yPosition - step/2, globalPosition.z));
-                            pArea->pNode_->SetScale(Vertex3(1, scaleY, 1));
-
-                            yPosition -= step;
-
+							float step = scaleY;
+                            pArea->pNode_->SetPosition(Vertex3(0, yPosition - step, 0));
+                            if(pArea->type_ == LayoutArea::Control)
+                            {
+								pArea->pNode_->SetScale(Vertex3(2, 2*scaleY, 1));
+                            }
+                            else
+                            {
+                            	pArea->pNode_->SetScale(Vertex3(1, scaleY, 1));
+                            }
+                            yPosition -= 2*step;
 							++it;
 						}
 					}
 					else
 					{
 						assert(pCurrentArea->type_ == LayoutArea::Horizontal);
-                        float xPosition = globalPosition.x - globalAreaWidth/2; //position to the left of current area
+                        float xPosition = -1; //position to the left of current area
 						while(it != pCurrentArea->children_.end())
 						{
 							float scaleX(remainingPercentage/nControls);
@@ -379,18 +395,27 @@ namespace NSG
 							{
 								scaleX = pArea->percentage_ / 100.0f;
 							}
-
-							float step = globalAreaWidth * scaleX;
-
-							pArea->pNode_->SetGlobalPosition(Vertex3(xPosition + step/2, globalPosition.y, globalPosition.z));
-                            pArea->pNode_->SetScale(Vertex3(scaleX, 1, 1));
+                            float step = scaleX;
+                            pArea->pNode_->SetPosition(Vertex3(xPosition + step, 0, 0));
+							if(pArea->type_ == LayoutArea::Control)
+                            {
+	                            pArea->pNode_->SetScale(Vertex3(2*scaleX, 2, 1));
+	                        }
+	                        else
+	                        {
+	                        	pArea->pNode_->SetScale(Vertex3(scaleX, 1, 1));
+	                        }
                             
-                            xPosition += step;
-
+                            xPosition += 2*step;
 							++it;
 						}
 					}
 				}
+			}
+
+			bool IsStable() const 
+			{
+				return isStable_;
 			}
 
 		private:
@@ -399,6 +424,8 @@ namespace NSG
 			AREAS areas_;
 			bool layoutChanged_;
             size_t visibleAreas_;
+            bool newControlAdded_;
+            bool isStable_;
 		};
 
 		typedef std::shared_ptr<LayoutManager> PLayoutManager;
@@ -433,22 +460,9 @@ namespace NSG
 		{
 			TRACE_LOG("IMGUI Allocating resources");
 			pSkin = PSkin(new Skin());
-            pCamera = PGLES2Camera(new GLES2Camera());
-			pCamera->EnableOrtho();
-            //pCamera->SetPosition(Vertex3(0,0,1));
-            //pCamera->SetLookAt(Vertex3(0,0,0));
-            pCamera->SetFarClip(1000000);
-            pCamera->SetNearClip(-1000000);
             pLayoutManager_ = PLayoutManager(new LayoutManager());
-
-			pRootAreaNode = PNode(new Node());
         	pRenderNode = PNode(new Node());
-			pRootAreaNode->SetParent(pRenderNode);
-
         	pTextManagers = PTextManagerMap(new TextManagerMap());
-
-			pRootAreaNode->SetPosition(Vertex3(0,0,0));
-			//pRootAreaNode->SetScale(Vertex3(2,2,1));
 		}
 
 		void ReleaseResources()
@@ -456,8 +470,6 @@ namespace NSG
 			TRACE_LOG("IMGUI Releasing resources");
 			pTextManagers = nullptr;
 			pRenderNode = nullptr;
-			pRootAreaNode = nullptr;
-            pCamera = nullptr;
             pLayoutManager_ = nullptr;
 			pSkin = nullptr;
 		}
@@ -472,14 +484,16 @@ namespace NSG
 
 			glDisable(GL_DEPTH_TEST);
 			pActiveCamera = GLES2Camera::GetActiveCamera();
-			pCamera->Activate();
+			pSkin->pCamera->Activate();
 			uistate.hotitem = 0;
 
 			pLayoutManager_->Begin();
+			pLayoutManager_->BeginVertical(0);
 		}
 
 		void End()
 		{
+			pLayoutManager_->EndVertical();
 			pLayoutManager_->End();
 			
 			if(pActiveCamera)
@@ -490,7 +504,7 @@ namespace NSG
 				if(App::GetPtrInstance()->IsKeyboardVisible())
 				{
 					App::GetPtrInstance()->HideKeyboard();
-					pCamera->SetPosition(Vertex3(0,0,0));
+					pSkin->pCamera->SetPosition(Vertex3(0,0,0));
 				}
 			}
 
@@ -521,9 +535,9 @@ namespace NSG
 
 		void DrawButton(Color color, PNode pNode)
 		{
-            pSkin->pButtonMesh->SetFilled(pSkin->fillEnabled);
-			pSkin->pButtonMesh->GetMaterial()->SetDiffuseColor(color);
-			pSkin->pButtonMesh->Render(pNode);
+            pSkin->pMesh->SetFilled(pSkin->fillEnabled);
+			pSkin->pMesh->GetMaterial()->SetDiffuseColor(color);
+			pSkin->pMesh->Render(pNode);
 		}
 
 		bool Hit(GLushort id, PNode pNode)
@@ -532,7 +546,7 @@ namespace NSG
 				return false;
 
 			pFrameColorSelection->Begin(uistate.mousex, uistate.mousey);
-	    	pFrameColorSelection->Render(id, pSkin->pButtonMesh, pNode);
+	    	pFrameColorSelection->Render(id, pSkin->pMesh, pNode);
 		    pFrameColorSelection->End();
 
 		    return id == pFrameColorSelection->GetSelected();
@@ -552,11 +566,6 @@ namespace NSG
 			pixels.x /= uistate.pixelSizeX;
 			pixels.y /= uistate.pixelSizeY;
 			return pixels;
-		}
-
-		PNode GetNode()
-		{
-			return pRootAreaNode;
 		}
 
 		void InternalBeginHorizontal(GLushort id)
@@ -587,9 +596,9 @@ namespace NSG
 		bool InternalButton(GLushort id, const std::string& text)
 		{
             PNode pArea = pLayoutManager_->GetAreaForControl(id)->pNode_;
-            Vertex3 scale = pArea->GetScale();
-            pArea->SetScale(Vertex3(2)*scale);
-            //pRootAreaNode->SetParent(pRenderNode);
+
+			if(!pLayoutManager_->IsStable())
+				return false;
 
 			// Check whether the button should be hot
 			if (Hit(id, pArea))
@@ -613,9 +622,9 @@ namespace NSG
 
 			// If we have keyboard focus, show it
 			if (uistate.kbditem == id)
-				pSkin->pButtonMesh->GetMaterial()->SetUniform("u_focus", 1);
+				pSkin->pMesh->GetMaterial()->SetUniform("u_focus", 1);
 			else
-				pSkin->pButtonMesh->GetMaterial()->SetUniform("u_focus", 0);
+				pSkin->pMesh->GetMaterial()->SetUniform("u_focus", 0);
 
 
 			if(uistate.hotitem == id)
@@ -647,27 +656,25 @@ namespace NSG
 			{
 				GLES2StencilMask stencilMask;
 				stencilMask.Begin();
-				stencilMask.Render(pArea.get(), pSkin->pButtonMesh.get());
+				stencilMask.Render(pArea.get(), pSkin->pMesh.get());
 				stencilMask.End();
 				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
 	            pTextMesh->SetText(text);
 				
 				{
 	                static PNode pTextNode(new Node());
+	                pTextNode->EnableUpdate(false);
 	                pTextNode->SetParent(pArea);
 	                pTextNode->SetInheritScale(false);
-                    pTextNode->SetScale(pRootAreaNode->GetGlobalScale());
+                    pTextNode->SetScale(pRenderNode->GetGlobalScale());
                     static PNode pTextNode1(new Node());
                     pTextNode1->SetParent(pTextNode);
                     pTextNode1->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
+                    pTextNode->EnableUpdate(true);
+                    pTextNode->Update(false);
 					pTextMesh->Render(pTextNode1, Color(1,1,1,1));
-                    pTextNode->SetParent(nullptr);
 				}
 			}
-
-            //pRootAreaNode->SetParent(nullptr);
-            pArea->SetScale(scale);
-
 
 			bool enterKey = false;
 
@@ -707,12 +714,11 @@ namespace NSG
 		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex)
 		{
 			PNode pArea = pLayoutManager_->GetAreaForControl(id)->pNode_;
-            Vertex3 scale = pArea->GetScale();
-            pArea->SetScale(Vertex3(2)*scale);
-            //pRootAreaNode->SetParent(pRenderNode);
 
-            Vertex3 areaPosition = ConvertPixels2ScreenCoords(pArea->GetGlobalPosition());
-			Vertex3 areaSize = ConvertPixels2ScreenCoords(pArea->GetGlobalScale());
+			if(!pLayoutManager_->IsStable())
+				return text;
+
+            Vertex3 areaSize = ConvertPixels2ScreenCoords(pArea->GetGlobalScale()); // 0..2
 
 			std::string currentText = text;
 
@@ -739,9 +745,9 @@ namespace NSG
 					{
 						if(App::GetPtrInstance()->ShowKeyboard())
 						{
-							Vertex3 position(0, areaPosition.y, 0);
-
-				  			pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
+							Vertex3 areaPosition = ConvertPixels2ScreenCoords(pArea->GetGlobalPosition()); // 0..2
+							Vertex3 position(0, areaPosition.y-1, 0);
+				  			pSkin->pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
 				  		}
 				  	}
 			  	}
@@ -756,9 +762,9 @@ namespace NSG
 
 			// If we have keyboard focus, show it
 			if (uistate.kbditem == id)
-				pSkin->pButtonMesh->GetMaterial()->SetUniform("u_focus", 1);
+				pSkin->pMesh->GetMaterial()->SetUniform("u_focus", 1);
 			else
-				pSkin->pButtonMesh->GetMaterial()->SetUniform("u_focus", 0);
+				pSkin->pMesh->GetMaterial()->SetUniform("u_focus", 0);
 
 
 			if(uistate.hotitem == id)
@@ -766,7 +772,6 @@ namespace NSG
 				if(uistate.activeitem == id)
 				{
 			  		// Button is both 'hot' and 'active'
-			  		//DrawButton(activeColor);
                     DrawButton(pSkin->activeColor, pArea);
 			  	}
 				else
@@ -791,7 +796,7 @@ namespace NSG
 			{
 				GLES2StencilMask stencilMask;
 				stencilMask.Begin();
-				stencilMask.Render(pArea.get(), pSkin->pButtonMesh.get());
+				stencilMask.Render(pArea.get(), pSkin->pMesh.get());
 				stencilMask.End();
 
 	            pTextMesh->SetText(currentText);
@@ -815,31 +820,32 @@ namespace NSG
 				}
 
                 static PNode pTextNode(new Node());
+                pTextNode->EnableUpdate(false);
 	            pTextNode->SetParent(pArea);
 	            pTextNode->SetPosition(Vertex3(-0.5f, 0, 0)); //move text to the beginning of the current area
                 static PNode pTextNode0(new Node());
                 pTextNode0->SetParent(pTextNode);
 	            pTextNode0->SetInheritScale(false);
-                pTextNode0->SetScale(pRootAreaNode->GetGlobalScale());
+                pTextNode0->SetScale(pRenderNode->GetGlobalScale());
                 static PNode pTextNode1(new Node());
                 pTextNode1->SetParent(pTextNode0);
                 pTextNode1->SetPosition(Vertex3(xPos, 0, 0));
+                pTextNode->EnableUpdate(true);
+                pTextNode->Update(false);
 				pTextMesh->Render(pTextNode1, Color(1,1,1,1));
                 
 				// Render cursor if we have keyboard focus
 				if(uistate.kbditem == id && (tick < 15))
                 {
                     static PNode pCursorNode(new Node());
+                    pCursorNode->EnableUpdate(false);
                     pCursorNode->SetParent(pTextNode1);
                     pCursorNode->SetPosition(Vertex3(cursorPositionInText, 0, 0));
+                    pCursorNode->EnableUpdate(true);
+                    pCursorNode->Update(false);
 					pCursorMesh->Render(pCursorNode, Color(1,0,0,1));
                 }
-                pTextNode->SetParent(nullptr);
 			}
-
-            //pRootAreaNode->SetParent(nullptr);
-            pArea->SetScale(scale);
-
 
 			// If we have keyboard focus, we'll need to process the keys
 			if (uistate.kbditem == id)
@@ -897,7 +903,7 @@ namespace NSG
 					if(App::GetPtrInstance()->IsKeyboardVisible())
 					{
 						App::GetPtrInstance()->HideKeyboard();
-						pCamera->SetPosition(Vertex3(0,0,0));
+						pSkin->pCamera->SetPosition(Vertex3(0,0,0));
 					}
 					// Lose keyboard focus.
 					// Next widget will grab the focus.
@@ -906,7 +912,7 @@ namespace NSG
 					break;
 				}
 
-	            if (uistate.character >= 32 && uistate.character < 127 && currentText.size() < pSkin->textMaxLength)
+	            if (uistate.character >= 32 && uistate.character < 256 && currentText.size() < pSkin->textMaxLength)
 	            {
 	            	std::string textCopy = currentText;
 
@@ -939,7 +945,7 @@ namespace NSG
 
 		void ViewChanged(int32_t width, int32_t height)
 		{
-            if(pCamera->IsOrtho())
+            if(pSkin->pCamera->IsOrtho())
             {
 			    //////////////////////////////////////////////////////////////////////////////////////////////////
 			    //Since we are using screen coordinates then  we have to recalculate the origin of coordinates 
