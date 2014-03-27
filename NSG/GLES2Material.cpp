@@ -318,7 +318,7 @@ namespace NSG
 			{
 				if(type == GLES2Light::DIRECTIONAL)
 				{
-					const Vertex3& direction = ligths[i]->GetDirection();
+					const Vertex3& direction = ligths[i]->GetLookAtDirection();
 					glUniform3fv(obj.lightsLoc_[i].position_loc, 1, &direction[0]);
 				}
 				else
@@ -374,7 +374,7 @@ namespace NSG
 
 				if(obj.lightsLoc_[i].spotDirection_loc != -1)
 				{
-					const Vertex3& direction = ligths[i]->GetDirection();
+					const Vertex3& direction = ligths[i]->GetLookAtDirection();
 					glUniform3fv(obj.lightsLoc_[i].spotDirection_loc, 1, &direction[0]);
 				}
 			}

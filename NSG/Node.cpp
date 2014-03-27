@@ -119,15 +119,16 @@ namespace NSG
 
 	void Node::SetLookAt(const Vertex3& center, const Vertex3& up)
 	{
+#if 1		
         Vertex3 upVector(up);
 
         if(pParent_) 
-            upVector = Matrix3(pParent_->globalModelInv_) * upVector;	
+            upVector = Matrix3(pParent_->globalModelInv_) * upVector;   
 
-        Vertex3 zaxis = glm::normalize(GetGlobalPosition() - center);	
+        Vertex3 zaxis = glm::normalize(GetGlobalPosition() - center);   
         if (glm::length(zaxis) > 0) 
         {
-            Vertex3 xaxis = glm::normalize(glm::cross(upVector, zaxis));	
+            Vertex3 xaxis = glm::normalize(glm::cross(upVector, zaxis));        
             Vertex3 yaxis = glm::cross(zaxis, xaxis);
 
             Matrix4 m;
@@ -137,14 +138,16 @@ namespace NSG
 
             SetGlobalOrientation(glm::quat_cast(m));
         }
-        /*
+#endif
+#if 0
         float length = glm::length(GetGlobalPosition() - center);
         
         if(length > 0)
         {
-			Matrix4 m = glm::lookAt(GetGlobalPosition(), center, up);
+			Matrix4 m = glm::inverse(glm::lookAt(GetGlobalPosition(), center, up));
 			SetGlobalOrientation(glm::quat_cast(m));
-		}*/
+		}
+#endif
 	}
 
     void Node::Update(bool notify)
@@ -179,8 +182,8 @@ namespace NSG
         globalModel_ = glm::translate(glm::mat4(), globalPosition_) * glm::mat4_cast(globalOrientation_) * glm::scale(glm::mat4(1.0f), globalScale_);
         globalModelInv_ = glm::inverse(globalModel_);
 		globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
-		static Vertex3 localDir(0,0,-1);
-		direction_ = globalOrientation_ * localDir;
+		static Vertex3 localAtDir(0,0,-1);
+		lookAtDirection_ = globalOrientation_ * localAtDir;
 
 		auto it = children_.begin();
 		while(it != children_.end())

@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "glm/glm/gtc/type_ptr.hpp"
 #include "glm/glm/gtc/constants.hpp"
 #include "glm/glm/gtc/epsilon.hpp"
+#include "glm/glm/gtx/spline.hpp"
 
 namespace NSG
 {

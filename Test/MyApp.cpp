@@ -118,9 +118,6 @@ void MyApp::Start()
     pNode2_->SetPosition(Vertex3(5, 0, 0));
     //pNode2_->SetScale(Vertex3(30,30,30));
 
-    pCamera1_->SetPosition(Vertex3(0,0,10));
-    pCamera1_->SetLookAt(Vertex3(0,0,0));
-
     pCamera2_->SetPosition(Vertex3(0,5,5));
     pCamera2_->SetLookAt(Vertex3(0,0,0));
     pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
@@ -133,6 +130,10 @@ void MyApp::Start()
     pLight0_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
 	//pLight0_->SetDirectional();
 
+	camControlPoints_.push_back(Vertex3(-10.0f, 0.0f, 0.0f)); 
+    camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 10.0f));
+	camControlPoints_.push_back(Vertex3(10.0f, 0.0f, 0.0f));
+	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
 }
 
 void MyApp::Update(float delta) 
@@ -162,6 +163,32 @@ void MyApp::Update(float delta)
 	pLight0_->SetPosition(Vertex3(scale_.x,  2.0,  6.0));
 	//pLight0_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
     //pNode1_->SetLookAt(Vertex3(0,scale_.x*25,10));
+
+    static float delta1 = 0;
+
+	Vertex3 position = glm::catmullRom(
+        camControlPoints_[0],
+        camControlPoints_[1],
+        camControlPoints_[2],
+        camControlPoints_[3],
+		delta1);
+
+    pCamera1_->SetPosition(position);
+    pCamera1_->SetLookAt(Vertex3(0));
+
+    delta1 += delta * 0.1f;
+
+    if(delta1 > 1)
+    {
+    	delta1 = 0;
+        Vertex3 p = camControlPoints_.front();
+        camControlPoints_.pop_front();
+        camControlPoints_.push_back(p);
+    }
+
+    //TRACE_LOG("position=" << position);
+	
+
 }
 
 void MyApp::LateUpdate()
@@ -274,8 +301,8 @@ void MyApp::RenderFrame()
     pMesh_->SetMode(GL_TRIANGLES);
     pSphereMesh_->SetMode(GL_TRIANGLES);
 
-    //pMesh_->Render(pNode1_);
-    //pSphereMesh_->Render(pNode2_);
+    pMesh_->Render(pNode1_);
+    pSphereMesh_->Render(pNode2_);
 
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;

@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include <stdio.h>
 #include <sstream>
 #include <string>
+#include "glm/glm/gtx/io.hpp"
 
 #ifdef NACL
 extern int PPPrintMessage(const char* format, ...);

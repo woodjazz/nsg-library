@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <thread>
+#include <deque>
 #include "NSG/App.h"
 #include "NSG/GLES2BoxMesh.h"
 #include "NSG/GLES2SphereMesh.h"
@@ -79,5 +80,6 @@ private:
 	bool buttonUp_;
 	GLushort selectedIndex_;
 	Vertex3 scale_;
+    std::deque<Vertex3> camControlPoints_;
 };
 

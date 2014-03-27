@@ -88,6 +88,11 @@ macro ( mark_as_disable_and_internal _var )
 	set ( ${_var} OFF CACHE INTERNAL "disable and hide this!" FORCE )
 endmacro( mark_as_disable_and_internal _var )
 
+macro ( mark_as_enable _var )
+	set ( ${_var} ON CACHE BOOL "enable this!" FORCE )
+endmacro( mark_as_enable _var )
+
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_definitions(
@@ -142,6 +147,28 @@ add_subdirectory(soil)
 set(FREETYPE2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/include)
 include_directories(${FREETYPE2_INCLUDE_DIR})
 add_subdirectory(freetype2)
+
+###########################
+# alure
+###########################
+# add_definitions(-DAL_LIBTYPE_STATIC)
+# set(ALURE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/alure/include ${CMAKE_CURRENT_SOURCE_DIR}/alure/include/AL)
+# mark_as_enable(BUILD_STATIC)
+# mark_as_disable_and_internal(BUILD_SHARED)
+# mark_as_disable_and_internal(BUILD_EXAMPLES)
+# mark_as_disable_and_internal(DYNLOAD)
+# set(OPENAL_FOUND TRUE FORCE)
+# #include_directories(${OPENAL_SOFT_INCLUDE_DIRS})
+
+# IF(WIN32)
+#     SET(ALURE_LIBRARIES ALURE32-static)
+# ELSE(WIN32)
+#     SET(ALURE_LIBRARIES alure-static)
+# ENDIF(WIN32)
+
+# add_definitions(-DALURE_STATIC_LIBRARY)
+# add_subdirectory(alure)
+
 
 ###########################
 # nsg

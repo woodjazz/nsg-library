@@ -89,11 +89,11 @@ static void Test03()
 {
 	PNode pA(new Node());
 
-    assert(pA->GetDirection() == Vertex3(0,0,-1));
+    assert(pA->GetLookAtDirection() == Vertex3(0,0,-1));
 
     pA->SetLookAt(Vertex3(10,0,0));
 
-    assert(glm::distance(pA->GetDirection(), Vertex3(1,0,0)) < 2*glm::epsilon<float>());
+    assert(glm::distance(pA->GetLookAtDirection(), Vertex3(1,0,0)) < 2*glm::epsilon<float>());
 }
 
 static void Test04()

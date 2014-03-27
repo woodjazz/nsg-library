@@ -60,7 +60,7 @@ namespace NSG
 		const Matrix4& GetGlobalModelMatrix() const;
 		const Matrix3& GetGlobalModelInvTranspMatrix() const { return globalModelInvTransp_; }
 		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
-		const Vertex3& GetDirection() const { return direction_; }
+		const Vertex3& GetLookAtDirection() const { return lookAtDirection_; }
 		void SetInheritScale(bool inherit);
 		void EnableUpdate(bool enable);
 		void Update(bool notify = true);
@@ -75,7 +75,7 @@ namespace NSG
 		Quaternion globalOrientation_;
 		Vertex3 scale_;
 		Vertex3 globalScale_;
-		Vertex3 direction_;
+		Vertex3 lookAtDirection_;
 		PNode pParent_;
 		bool enableSelection_;
 		std::set<Node*> children_;
