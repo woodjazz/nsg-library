@@ -120,7 +120,7 @@ void MyApp::Start()
 
     pCamera2_->SetPosition(Vertex3(0,5,5));
     pCamera2_->SetLookAt(Vertex3(0,0,0));
-    pCamera2_->SetViewport(0.75f, 0.75f, 0.25f, 0.25f);
+    pCamera2_->SetViewportFactor(0.75f, 0.75f, 0.25f, 0.25f);
 
     pText1_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_DYNAMIC_DRAW));
     pText2_ = PGLES2Text(new GLES2Text("font/bluebold.ttf", 24, GL_STATIC_DRAW));
@@ -200,10 +200,19 @@ void MyApp::TestIMGUI2()
 {
 	IMGUI::pSkin->fontSize = 18;
 
+	Vertex3 position = IMGUI::pNode->GetGlobalPosition();
+	Vertex3 size = IMGUI::pNode->GetGlobalScale();
+
+    IMGUI::pCamera->SetNearClip(0.1f);
+    //IMGUI::pCamera->SetFarClip(10000);
+    IMGUI::pCamera->DisableOrtho();
+    IMGUI::pCamera->SetPosition(position + Vertex3(0,0,size.x * 2));
+    IMGUI::pCamera->SetLookAt(Vertex3(200,200,0));
+
+    //IMGUI::pNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
+
 	IMGUIBeginHorizontal();
 	{
-		IMGUISpacer(10);
-
 		static std::string str0 = "Abc";
 		str0 = IMGUITextField(str0);
 
@@ -215,7 +224,7 @@ void MyApp::TestIMGUI2()
 
         if(enabled)
         {
-			IMGUI::pSkin->pNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
+			IMGUI::pNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
             if(IMGUIButton("Button asas1"))
             {
@@ -258,25 +267,40 @@ void MyApp::TestIMGUI2()
             IMGUIButton("Button 52");
 		}
 		IMGUIEndVertical();
-	}
+		
+		IMGUISpacer(50);
 
+	}
 	IMGUIEndHorizontal();
 }
 
 void MyApp::TestIMGUI4()
 {
+	Vertex3 position = IMGUI::pNode->GetGlobalPosition();
+	Vertex3 size = IMGUI::pNode->GetGlobalScale();
+
+    IMGUI::pCamera->SetNearClip(0.1f);
+    IMGUI::pCamera->DisableOrtho();
+    IMGUI::pCamera->SetPosition(position + Vertex3(0,0,size.x * 2));
+    IMGUI::pCamera->SetLookAt(Vertex3(200,200,0));
+
+    //IMGUI::pNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
+
 	IMGUI::pSkin->fontSize = 18;
 
     IMGUIBeginHorizontal();
 
-    IMGUISpacer(25);
+    IMGUISpacer(80);
 
     static std::string str0 = "Abc";
 	str0 = IMGUITextField(str0);
+    //IMGUISpacer(25);
 
-    IMGUIButton("Button 1");
+    
 
-    IMGUISpacer(25);
+    //IMGUIButton("Button 1");
+
+    //IMGUISpacer(25);
     
     IMGUIEndHorizontal();
 }
@@ -284,8 +308,8 @@ void MyApp::TestIMGUI4()
 
 void MyApp::RenderGUIFrame()
 {
-	TestIMGUI2();
-    //TestIMGUI4();
+	//TestIMGUI2();
+    TestIMGUI4();
 }
 
 void MyApp::RenderFrame() 
@@ -301,8 +325,8 @@ void MyApp::RenderFrame()
     pMesh_->SetMode(GL_TRIANGLES);
     pSphereMesh_->SetMode(GL_TRIANGLES);
 
-    pMesh_->Render(pNode1_);
-    pSphereMesh_->Render(pNode2_);
+    //pMesh_->Render(pNode1_);
+    //pSphereMesh_->Render(pNode2_);
 
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;

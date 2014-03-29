@@ -22,7 +22,7 @@ namespace NSG
 	void WindowCursorPos(GLFWwindow* window ,double x, double y)
 	{
 		if(s_width > 0 && s_height > 0)
-			s_pApp->OnMouseMove(-1 + 2 * x/s_width, 1 + -2*y/s_height);
+			s_pApp->OnMouseMove((float)(-1 + 2 * x/s_width),(float)(1 + -2*y/s_height));
 	}
 
 	void WindowScrollWheel (GLFWwindow* window, double x, double y)
@@ -38,7 +38,7 @@ namespace NSG
 				double x;
                 double y;
 				glfwGetCursorPos(window, &x, &y); 
-				s_pApp->OnMouseDown(-1 + 2 * x/s_width, 1 + -2*y/s_height);
+				s_pApp->OnMouseDown((float)(-1 + 2 * x/s_width), (float)(1 + -2*y/s_height));
 			}
 		}
 		else

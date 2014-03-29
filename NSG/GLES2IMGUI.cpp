@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "GLES2FrameColorSelection.h"
 #include "GLES2Text.h"
 #include "GLES2StencilMask.h"
+#include "GLES2Camera.h"
 #include "App.h"
 #include <map>
 #include <list>
@@ -63,13 +64,13 @@ static const char* fShader = STRINGIFY(
 	};
 	uniform Material u_material;
 	varying vec4 v_position;
-	uniform int u_focus;
+	uniform int u_gradient;
 
 	void main()
 	{
 		float factor = 1.0;
 
-		if(u_focus == 0)
+		if(u_gradient == 1)
 		{
 			factor = 1.0 - abs(v_position.y);
 			gl_FragColor = u_material.diffuse * vec4(factor, factor, factor, 1);
@@ -87,13 +88,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		PGLES2FrameColorSelection pFrameColorSelection;		
-        PNode pRenderNode;
-		int tick = 0;
-
 		Skin::Skin() 
-		: pCamera(new GLES2Camera()),
-		activeColor(0,1,0,0.7f),
+		: activeColor(0,1,0,0.7f),
 		normalColor(0.5f,0.5f,0.5f,0.5f),
 		hotColor(1,0.5f,0.5f,0.7f),
 		borderColor(1,1,1,1),
@@ -102,17 +98,19 @@ namespace NSG
 		textMaxLength(std::numeric_limits<int>::max()),
 		fillEnabled(true),
         pMaterial(new GLES2Material()),
-		pMesh(new GLES2RoundedRectangleMesh(0.15f, 1, 1, 64, pMaterial, GL_STATIC_DRAW))
+		pMesh(new GLES2RoundedRectangleMesh(0.15f, 2, 2, 64, pMaterial, GL_STATIC_DRAW))
 		{
-			pCamera->EnableOrtho();
-            pCamera->SetFarClip(1000000);
-            pCamera->SetNearClip(-1000000);
-
             pMaterial->SetProgram(PGLES2Program(new GLES2Program(vShader, fShader)));
 			pMaterial->SetDiffuseColor(Color(1,0,0,1));
 		}
 
 		PSkin pSkin;
+		PGLES2Camera pCamera;
+		PNode pNode;
+		PGLES2FrameColorSelection pFrameColorSelection;		
+        PNode pRenderNode;
+		int tick = 0;
+
 
 		class TextManager
 		{
@@ -296,7 +294,7 @@ namespace NSG
 
                 ++visibleAreas_;
 
-                pSkin->pNode = pArea->pNode_;
+                pNode = pArea->pNode_;
                 
 				return pArea;
 			}
@@ -371,14 +369,7 @@ namespace NSG
 							}
 							float step = scaleY;
                             pArea->pNode_->SetPosition(Vertex3(0, yPosition - step, 0));
-                            if(pArea->type_ == LayoutArea::Control)
-                            {
-								pArea->pNode_->SetScale(Vertex3(2, 2*scaleY, 1));
-                            }
-                            else
-                            {
-                            	pArea->pNode_->SetScale(Vertex3(1, scaleY, 1));
-                            }
+							pArea->pNode_->SetScale(Vertex3(1, scaleY, 1));
                             yPosition -= 2*step;
 							++it;
 						}
@@ -397,15 +388,7 @@ namespace NSG
 							}
                             float step = scaleX;
                             pArea->pNode_->SetPosition(Vertex3(xPosition + step, 0, 0));
-							if(pArea->type_ == LayoutArea::Control)
-                            {
-	                            pArea->pNode_->SetScale(Vertex3(2*scaleX, 2, 1));
-	                        }
-	                        else
-	                        {
-	                        	pArea->pNode_->SetScale(Vertex3(scaleX, 1, 1));
-	                        }
-                            
+							pArea->pNode_->SetScale(Vertex3(scaleX, 1, 1));
                             xPosition += 2*step;
 							++it;
 						}
@@ -460,6 +443,10 @@ namespace NSG
 		{
 			TRACE_LOG("IMGUI Allocating resources");
 			pSkin = PSkin(new Skin());
+			pCamera = PGLES2Camera(new GLES2Camera());
+			pCamera->EnableOrtho();
+            pCamera->SetFarClip(1000000);
+            pCamera->SetNearClip(-1000000);
             pLayoutManager_ = PLayoutManager(new LayoutManager());
         	pRenderNode = PNode(new Node());
         	pTextManagers = PTextManagerMap(new TextManagerMap());
@@ -484,7 +471,7 @@ namespace NSG
 
 			glDisable(GL_DEPTH_TEST);
 			pActiveCamera = GLES2Camera::GetActiveCamera();
-			pSkin->pCamera->Activate();
+			pCamera->Activate();
 			uistate.hotitem = 0;
 
 			pLayoutManager_->Begin();
@@ -504,7 +491,7 @@ namespace NSG
 				if(App::GetPtrInstance()->IsKeyboardVisible())
 				{
 					App::GetPtrInstance()->HideKeyboard();
-					pSkin->pCamera->SetPosition(Vertex3(0,0,0));
+					pCamera->SetPosition(Vertex3(0,0,0));
 				}
 			}
 
@@ -622,9 +609,9 @@ namespace NSG
 
 			// If we have keyboard focus, show it
 			if (uistate.kbditem == id)
-				pSkin->pMesh->GetMaterial()->SetUniform("u_focus", 1);
+				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
 			else
-				pSkin->pMesh->GetMaterial()->SetUniform("u_focus", 0);
+				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 1);
 
 
 			if(uistate.hotitem == id)
@@ -649,6 +636,7 @@ namespace NSG
 			if(pSkin->fillEnabled)
 			{
 				pSkin->fillEnabled = false;
+				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
 				DrawButton(pSkin->borderColor, pArea);
 				pSkin->fillEnabled = true;
 			}
@@ -718,7 +706,9 @@ namespace NSG
 			if(!pLayoutManager_->IsStable())
 				return text;
 
-            Vertex3 areaSize = ConvertPixels2ScreenCoords(pArea->GetGlobalScale()); // 0..2
+
+            //Vertex3 areaSize = Vertex3(2)*ConvertPixels2ScreenCoords(pArea->GetGlobalScale()); // 0..2
+            Vertex4 areaSize = pCamera->GetModelViewProjection(pArea.get()) * Vertex4(2,0,0,0);
 
 			std::string currentText = text;
 
@@ -736,18 +726,32 @@ namespace NSG
 			  		uistate.activeitem = id;
 			  		uistate.kbditem = id;
 			  		uistate.activeitem_is_a_text_field = true;
-			  		//Calculates cursor's position after click
-                    Vertex3 mouseRelPos(pArea->GetGlobalModelMatrix() * Vertex4(uistate.mousex - (- areaSize.x/2 + pCursorMesh->GetWidth()), uistate.mousey, 1.0f, 1.0f));
-                    mouseRelPos = ConvertPixels2ScreenCoords(mouseRelPos);
-                    uistate.cursor_character_position = pTextMesh->GetCharacterPositionForWidth(mouseRelPos.x);
+
+			  		///////////////////////////////////////////////
+                    //Calculates cursor's position after click
+                    Vertex4 worldPos = pArea->GetGlobalModelMatrix() * Vertex4(-1,0,0,1); 
+                    Vertex4 screenPos;
+                    screenPos.x = ConvertPixels2ScreenCoords(Vertex3(worldPos)).x - 1; //in OpenGL screen coords
+                    Vertex3 screenPos2 = pCamera->WorldToScreen(Vertex3(worldPos));
+                    float mouseRelPosX(uistate.mousex - screenPos2.x);
+                    float textEndRelPosX = pTextMesh->GetWidth();
+                    if(mouseRelPosX > textEndRelPosX)
+                    {
+                        uistate.cursor_character_position = currentText.length();
+                    }
+                    else
+                    {
+                        uistate.cursor_character_position = pTextMesh->GetCharacterPositionForWidth(mouseRelPosX)-1;
+                    }
+                    ///////////////////////////////////////////////
 
 					if(!App::GetPtrInstance()->IsKeyboardVisible())
 					{
 						if(App::GetPtrInstance()->ShowKeyboard())
 						{
-							Vertex3 areaPosition = ConvertPixels2ScreenCoords(pArea->GetGlobalPosition()); // 0..2
+							Vertex3 areaPosition = ConvertPixels2ScreenCoords(pArea->GetGlobalPosition()); //0..2
 							Vertex3 position(0, areaPosition.y-1, 0);
-				  			pSkin->pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
+				  			pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
 				  		}
 				  	}
 			  	}
@@ -762,9 +766,9 @@ namespace NSG
 
 			// If we have keyboard focus, show it
 			if (uistate.kbditem == id)
-				pSkin->pMesh->GetMaterial()->SetUniform("u_focus", 1);
+				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
 			else
-				pSkin->pMesh->GetMaterial()->SetUniform("u_focus", 0);
+				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 1);
 
 
 			if(uistate.hotitem == id)
@@ -789,6 +793,7 @@ namespace NSG
 			if(pSkin->fillEnabled)
 			{
 				pSkin->fillEnabled = false;
+				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
 				DrawButton(pSkin->borderColor, pArea);
 				pSkin->fillEnabled = true;
 			}
@@ -803,7 +808,7 @@ namespace NSG
 				
 				float xPos = 0;
 
-				float cursorPositionInText = pTextMesh->GetWidthForCharacterPosition(uistate.cursor_character_position);
+                float cursorPositionInText = pTextMesh->GetWidthForCharacterPosition(uistate.cursor_character_position);
 
 				if(uistate.kbditem == id)
 				{
@@ -822,7 +827,8 @@ namespace NSG
                 static PNode pTextNode(new Node());
                 pTextNode->EnableUpdate(false);
 	            pTextNode->SetParent(pArea);
-	            pTextNode->SetPosition(Vertex3(-0.5f, 0, 0)); //move text to the beginning of the current area
+	            //pTextNode->SetPosition(Vertex3(-0.5f, 0, 0)); //move text to the beginning of the current area
+	            pTextNode->SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
                 static PNode pTextNode0(new Node());
                 pTextNode0->SetParent(pTextNode);
 	            pTextNode0->SetInheritScale(false);
@@ -903,7 +909,7 @@ namespace NSG
 					if(App::GetPtrInstance()->IsKeyboardVisible())
 					{
 						App::GetPtrInstance()->HideKeyboard();
-						pSkin->pCamera->SetPosition(Vertex3(0,0,0));
+						pCamera->SetPosition(Vertex3(0,0,0));
 					}
 					// Lose keyboard focus.
 					// Next widget will grab the focus.
@@ -945,7 +951,7 @@ namespace NSG
 
 		void ViewChanged(int32_t width, int32_t height)
 		{
-            if(pSkin->pCamera->IsOrtho())
+            //if(pCamera->IsOrtho())
             {
 			    //////////////////////////////////////////////////////////////////////////////////////////////////
 			    //Since we are using screen coordinates then  we have to recalculate the origin of coordinates 

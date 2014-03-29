@@ -32,7 +32,6 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2Material.h"
 #include "GLES2Mesh.h"
-#include "GLES2Camera.h"
 #include "Node.h"
 #include "Types.h"
 
@@ -68,9 +67,6 @@ namespace NSG
 
 		struct Skin
 		{
-			PGLES2Camera pCamera;
-			PNode pNode;
-
 			Color activeColor;
 			Color normalColor;
 			Color hotColor;
@@ -89,6 +85,9 @@ namespace NSG
 
 		typedef std::shared_ptr<Skin> PSkin;
 		extern PSkin pSkin;
+		extern PGLES2Camera pCamera;
+		extern PNode pNode;
+
 	}
 }
 

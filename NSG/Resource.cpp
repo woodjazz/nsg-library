@@ -32,6 +32,26 @@ misrepresented as being the original software.
 #include "AppNaCl.h"
 #endif
 
+#ifdef __APPLE__
+#include "CoreFoundation/CFBundle.h"
+#define MAXPATHLEN 1024
+char* AppleGetBundleDirectory()
+{
+	CFURLRef bundleURL;
+	CFStringRef pathStr;
+	static char path[MAXPATHLEN];
+	memset(path, 0, MAXPATHLEN);
+	CFBundleRef mainBundle = CFBundleGetMainBundle();
+
+	bundleURL = CFBundleCopyBundleURL(mainBundle);
+	pathStr = CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle);
+	CFStringGetCString(pathStr, path, MAXPATHLEN, kCFStringEncodingASCII);
+	CFRelease(pathStr);
+	CFRelease(bundleURL);
+	return path;
+}
+#endif
+
 namespace NSG
 {
 	Resource::Resource(const char* filename)
@@ -85,6 +105,17 @@ namespace NSG
 		AAsset_close(pAsset);    
 	#else
         std::ifstream file(filename_, std::ios::binary);
+
+        #if __APPLE__
+    	if(!file.is_open())
+    	{
+    		std::string newName;
+    		newName.resize(2048);
+    		sprintf(&newName[0], "%s/Contents/Resources/Data/%s", AppleGetBundleDirectory(), filename_.c_str());
+    		file.open(newName, std::ios::binary);
+    	}
+        #endif
+        assert(file.is_open());
         file.seekg(0,std::ios::end);
         std::streampos filelength = file.tellg();
         file.seekg(0,std::ios::beg);

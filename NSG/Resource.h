@@ -51,7 +51,7 @@ namespace NSG
 	#if NACL		
 		NaCl::PNaClURLLoader pLoader_;
 	#elif ANDROID		
-		AAssetManager* pAAssetManager_;		
+		AAssetManager* pAAssetManager_;	
 	#endif
 	};
 

@@ -33,17 +33,20 @@ elseif(ANDROID)
 
 	generate_local_properties_for_ant()
 
+elseif(APPLE)
+	add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr} ${data_dir})
+	SET_SOURCE_FILES_PROPERTIES(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo")
+	
 else()
-	add_executable(${PROJECT_NAME} ${src} ${hdr} )
+	add_executable(${PROJECT_NAME} ${src} ${hdr} ${data_dir})
 	add_custom_command(
 	 	TARGET ${PROJECT_NAME} POST_BUILD
 	    	COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
 
-if(APPLE)
-	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo")
-endif()
+
 
 target_link_libraries(${PROJECT_NAME} nsg)
 

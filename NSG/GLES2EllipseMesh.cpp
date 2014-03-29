@@ -35,8 +35,8 @@ namespace NSG
 	{
 		GLES2Mesh::Data& data = GetVertexData();
 
-		float halfX = width*0.5;
-		float halfY = height*0.5;	
+		float halfX = width*0.5f;
+		float halfY = height*0.5f;	
 
 		SetFilled(filled_);
 		SetSelectMode(GL_TRIANGLE_FAN);

@@ -194,11 +194,11 @@ namespace NSG
 
 		const char *p = lastText_.c_str();
 
-        float sx = 2.0/width_;
+        float sx = 2.0f/width_;
 
         const GLES2Texture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
 
-		for(int i=0; i<charPos && *p; i++) 
+		for(unsigned int i=0; i<charPos && *p; i++) 
 		{ 
             int idx = GetIndex(*p);
 
@@ -217,7 +217,7 @@ namespace NSG
 
 		const char *p = lastText_.c_str();
 
-        float sx = 2.0/width_;
+        float sx = 2.0f/width_;
 
         const GLES2Texture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
 
@@ -260,8 +260,8 @@ namespace NSG
 			float x = 0;
 			float y = 0;
 
-			float sx = 2.0/width_;
-		    float sy = 2.0/height_;    
+			float sx = 2.0f/width_;
+		    float sy = 2.0f/height_;    
 
 	        size_t length = 6 * text.size();
 
