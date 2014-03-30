@@ -202,14 +202,15 @@ void MyApp::TestIMGUI2()
 
 	Vertex3 position = IMGUI::pNode->GetGlobalPosition();
 	Vertex3 size = IMGUI::pNode->GetGlobalScale();
-
+    
+    /*
     IMGUI::pCamera->SetNearClip(0.1f);
-    //IMGUI::pCamera->SetFarClip(10000);
     IMGUI::pCamera->DisableOrtho();
     IMGUI::pCamera->SetPosition(position + Vertex3(0,0,size.x * 2));
-    IMGUI::pCamera->SetLookAt(Vertex3(200,200,0));
+    IMGUI::pCamera->SetLookAt(Vertex3(0,0,0));
+*/
 
-    //IMGUI::pNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
+    IMGUI::pNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
 
 	IMGUIBeginHorizontal();
 	{
@@ -268,7 +269,7 @@ void MyApp::TestIMGUI2()
 		}
 		IMGUIEndVertical();
 		
-		IMGUISpacer(50);
+		//IMGUISpacer(50);
 
 	}
 	IMGUIEndHorizontal();
@@ -276,21 +277,22 @@ void MyApp::TestIMGUI2()
 
 void MyApp::TestIMGUI4()
 {
-	Vertex3 position = IMGUI::pNode->GetGlobalPosition();
+/*	Vertex3 position = IMGUI::pNode->GetGlobalPosition();
 	Vertex3 size = IMGUI::pNode->GetGlobalScale();
 
+   
     IMGUI::pCamera->SetNearClip(0.1f);
     IMGUI::pCamera->DisableOrtho();
     IMGUI::pCamera->SetPosition(position + Vertex3(0,0,size.x * 2));
-    IMGUI::pCamera->SetLookAt(Vertex3(200,200,0));
-
+    IMGUI::pCamera->SetLookAt(Vertex3(0,0,0));
+*/
     //IMGUI::pNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
 
 	IMGUI::pSkin->fontSize = 18;
 
     IMGUIBeginHorizontal();
 
-    IMGUISpacer(80);
+    //IMGUISpacer(80);
 
     static std::string str0 = "Abc";
 	str0 = IMGUITextField(str0);

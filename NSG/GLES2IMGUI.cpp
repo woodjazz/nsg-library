@@ -172,6 +172,7 @@ namespace NSG
 
 		class LayoutManager
 		{
+        public:
 			struct LayoutArea;
 			typedef std::shared_ptr<LayoutArea> PLayoutArea;
 			struct LayoutArea
@@ -181,6 +182,7 @@ namespace NSG
 				PNode pNode_;
 				enum Type {Vertical, Horizontal, Control, Spacer};
 				Type type_;
+				float offsetX_;
 
                 struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
                 {
@@ -193,12 +195,11 @@ namespace NSG
 				std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number)
 
 				LayoutArea(GLushort id, PNode pNode, Type type, int percentage) 
-				: id_(id), pNode_(pNode), type_(type), percentage_(percentage)
+				: id_(id), percentage_(percentage), pNode_(pNode), type_(type), offsetX_(0)
 				{
 				}
 			};
 
-		public:
 			LayoutManager() 
 			: layoutChanged_(false),
             visibleAreas_(0),
@@ -701,14 +702,13 @@ namespace NSG
 
 		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex)
 		{
-			PNode pArea = pLayoutManager_->GetAreaForControl(id)->pNode_;
+            LayoutManager::PLayoutArea pArea = pLayoutManager_->GetAreaForControl(id);
+			PNode pAreaNode = pArea->pNode_;
 
 			if(!pLayoutManager_->IsStable())
 				return text;
 
-
-            //Vertex3 areaSize = Vertex3(2)*ConvertPixels2ScreenCoords(pArea->GetGlobalScale()); // 0..2
-            Vertex4 areaSize = pCamera->GetModelViewProjection(pArea.get()) * Vertex4(2,0,0,0);
+            Vertex4 areaSize = pCamera->GetModelViewProjection(pAreaNode.get()) * Vertex4(2,0,0,0);
 
 			std::string currentText = text;
 
@@ -717,7 +717,7 @@ namespace NSG
 			pCursorMesh->SetText("_");
 
 			// Check whether the button should be hot
-			if (Hit(id, pArea))
+			if (Hit(id, pAreaNode))
 			{
 				uistate.hotitem = id;
 
@@ -729,19 +729,35 @@ namespace NSG
 
 			  		///////////////////////////////////////////////
                     //Calculates cursor's position after click
-                    Vertex4 worldPos = pArea->GetGlobalModelMatrix() * Vertex4(-1,0,0,1); 
-                    Vertex4 screenPos;
-                    screenPos.x = ConvertPixels2ScreenCoords(Vertex3(worldPos)).x - 1; //in OpenGL screen coords
-                    Vertex3 screenPos2 = pCamera->WorldToScreen(Vertex3(worldPos));
-                    float mouseRelPosX(uistate.mousex - screenPos2.x);
+                    Vertex4 worldPos = pAreaNode->GetGlobalModelMatrix() * Vertex4(-1,0,0,1); 
+                    Vertex3 screenPos = pCamera->WorldToScreen(Vertex3(worldPos));
+                    //TRACE_LOG("screenPos=" << screenPos);
+                    //TRACE_LOG("uistate.mousex=" << uistate.mousex);
+                    float mouseRelPosX(uistate.mousex - screenPos.x);
                     float textEndRelPosX = pTextMesh->GetWidth();
-                    if(mouseRelPosX > textEndRelPosX)
+                    float textEndPosX = screenPos.x + pTextMesh->GetWidth();
+                    
+                	if (uistate.kbditem == id)
+                	{
+                		float cursorPositionInText = pTextMesh->GetWidthForCharacterPosition(uistate.cursor_character_position);
+                		TRACE_LOG("cursorPositionInText="<< cursorPositionInText);
+                		TRACE_LOG("areaSize.x=" << areaSize.x);
+                		TRACE_LOG("textEndRelPosX=" << textEndRelPosX);
+                		//pArea->offsetX  = areaSize.x * (int)(cursorPositionInText/areaSize.x);
+                	}
+                    TRACE_LOG("pArea->offsetX=" << pArea->offsetX_);
+                    TRACE_LOG("mouseRelPosX="<< mouseRelPosX);
+                    float mouseTotalX = mouseRelPosX  + pArea->offsetX_;
+                    TRACE_LOG("mouseTotalX=" << mouseTotalX);
+                    if(mouseTotalX > textEndRelPosX)
                     {
                         uistate.cursor_character_position = currentText.length();
+                        TRACE_LOG("***1***");
                     }
                     else
                     {
-                        uistate.cursor_character_position = pTextMesh->GetCharacterPositionForWidth(mouseRelPosX)-1;
+                         uistate.cursor_character_position = pTextMesh->GetCharacterPositionForWidth(mouseTotalX)-1;
+                        TRACE_LOG("cursor_character_position=" << uistate.cursor_character_position);
                     }
                     ///////////////////////////////////////////////
 
@@ -749,9 +765,8 @@ namespace NSG
 					{
 						if(App::GetPtrInstance()->ShowKeyboard())
 						{
-							Vertex3 areaPosition = ConvertPixels2ScreenCoords(pArea->GetGlobalPosition()); //0..2
-							Vertex3 position(0, areaPosition.y-1, 0);
-				  			pCamera->SetPosition(ConvertScreenCoords2Pixels(position));
+							Vertex3 position(0, screenPos.y-1, 0);
+				  			pCamera->SetPosition(position);
 				  		}
 				  	}
 			  	}
@@ -776,32 +791,32 @@ namespace NSG
 				if(uistate.activeitem == id)
 				{
 			  		// Button is both 'hot' and 'active'
-                    DrawButton(pSkin->activeColor, pArea);
+                    DrawButton(pSkin->activeColor, pAreaNode);
 			  	}
 				else
 				{
 					// Button is merely 'hot'
-					DrawButton(pSkin->hotColor, pArea);
+					DrawButton(pSkin->hotColor, pAreaNode);
 				}
 			}
 			else
 			{
 				// button is not hot, but it may be active    
-				DrawButton(pSkin->normalColor, pArea);
+				DrawButton(pSkin->normalColor, pAreaNode);
 			}
 
 			if(pSkin->fillEnabled)
 			{
 				pSkin->fillEnabled = false;
 				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
-				DrawButton(pSkin->borderColor, pArea);
+				DrawButton(pSkin->borderColor, pAreaNode);
 				pSkin->fillEnabled = true;
 			}
 
 			{
 				GLES2StencilMask stencilMask;
 				stencilMask.Begin();
-				stencilMask.Render(pArea.get(), pSkin->pMesh.get());
+				stencilMask.Render(pAreaNode.get(), pSkin->pMesh.get());
 				stencilMask.End();
 
 	            pTextMesh->SetText(currentText);
@@ -812,12 +827,16 @@ namespace NSG
 
 				if(uistate.kbditem == id)
 				{
+					pArea->offsetX_ = 0;
 					//If it has the focus
 					//If text does not fit in the current area then show last part of text
 					if(areaSize.x < cursorPositionInText)
 					{
 						xPos -= pCursorMesh->GetWidth() + cursorPositionInText - areaSize.x;  
+						pArea->offsetX_ = -xPos;
 					}
+
+					//pArea->offsetX_ = -xPos;
 				}
 				else if(areaSize.x < pTextMesh->GetWidth())
 				{
@@ -826,7 +845,7 @@ namespace NSG
 
                 static PNode pTextNode(new Node());
                 pTextNode->EnableUpdate(false);
-	            pTextNode->SetParent(pArea);
+	            pTextNode->SetParent(pAreaNode);
 	            //pTextNode->SetPosition(Vertex3(-0.5f, 0, 0)); //move text to the beginning of the current area
 	            pTextNode->SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
                 static PNode pTextNode0(new Node());
@@ -951,19 +970,6 @@ namespace NSG
 
 		void ViewChanged(int32_t width, int32_t height)
 		{
-            //if(pCamera->IsOrtho())
-            {
-			    //////////////////////////////////////////////////////////////////////////////////////////////////
-			    //Since we are using screen coordinates then  we have to recalculate the origin of coordinates 
-			    //and the scale to match the ortographic projection
-			    Vertex3 coordinates_origin(width/2, height/2, 0);
-			    Vertex3 coordinates_scale(width/2, height/2, 1);
-
-                pRenderNode->SetPosition(coordinates_origin);
-                pRenderNode->SetScale(coordinates_scale);
-            }
-            //////////////////////////////////////////////////////////////////////////////////////////////////
-            
 			uistate.pixelSizeX = 2/(float)width;
 			uistate.pixelSizeY = 2/(float)height;
 

@@ -156,23 +156,23 @@ namespace NSG
 
 	void GLES2Camera::UpdateProjection()
 	{
-		if(isOrtho_)
-		{
-			matProjection_ = glm::ortho(0.0f, (float)width_, 0.0f,(float)height_,  zNear_, zFar_);
-		}
-		else
-		{
-			if(height_ > 0)
+        if(height_ > 0)
+        {
+            if(isOrtho_)
             {
-    			float aspect_ratio = static_cast<float>(width_) / height_;
-
-                assert(zNear_ >= 0);
+                matProjection_ = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f,  zNear_, zFar_);
+            }
+            else
+            {
+                float aspect_ratio = static_cast<float>(width_) / height_;
+                
+                assert(zNear_ > 0);
 
 			    matProjection_ = glm::perspective(fovy_, aspect_ratio, zNear_, zFar_);
             }
+            
+            UpdateViewProjection();
 		}
-
-		UpdateViewProjection();
 	}
 
     void GLES2Camera::OnUpdate()
@@ -185,6 +185,7 @@ namespace NSG
 		matViewInverse_ = GetGlobalModelMatrix();
 		matView_ = glm::inverse(matViewInverse_);
 		matViewProjection_ = matProjection_ * matView_;
+		matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 	}
 
 	Matrix4 GLES2Camera::GetModelViewProjection(const Node* pNode)
@@ -205,47 +206,18 @@ namespace NSG
         return matView_;
     }
 
-#if 0
-	Vertex4 GLES2Camera::ScreenToWorld(const Vertex3& screenXYZ, const Node* pNode) const 
+	Vertex3 GLES2Camera::ScreenToWorld(const Vertex3& screenXYZ) const 
 	{
-		//convert from screen to camera
-		/*Vertex3 cameraXYZ;
-		Vertex4 viewport = GetViewport();
-		cameraXYZ.x = 2.0f * (screenXYZ.x - viewport.x) / viewport.z - 1.0f;
-		cameraXYZ.y = 1.0f - 2.0f *(screenXYZ.y - viewport.y) / viewport.w;
-		cameraXYZ.z = screenXYZ.z;
-
-		//get inverse camera matrix
-		Matrix4 inverseCamera = glm::inverse(GetModelViewProjection(pNode));
-
-		//convert camera to world*/
-		//return inverseCamera * Vertex4(cameraXYZ, 1);
-        return GetModelViewProjection(pNode) * Vertex4(screenXYZ, 1);
-
+		Vertex4 worldCoord = matViewProjectionInverse_ * Vertex4(screenXYZ, 1);
+		return Vertex3(worldCoord.x/worldCoord.w, worldCoord.y/worldCoord.w, worldCoord.z/worldCoord.w);
 	}	
-#endif
 
-    Vertex3 GLES2Camera::WorldToScreen(const Vertex3& worldXYZ) const 
+    Vertex3 GLES2Camera::WorldToScreen(const Vertex3& worldXYZ) const
     {
-        if(isOrtho_)
-        {
-            return Vertex3(matViewProjection_ * Vertex4(worldXYZ, 1));
-        }
-        else
-        {
-            Vertex3 cameraXYZ(matViewProjection_ * Vertex4(worldXYZ, 1));
-
-            Vertex4 viewport = GetViewport();
-	    
-	        Vertex3 screenXYZ;
-
-            screenXYZ.x = cameraXYZ.x / viewport.z + viewport.x;
-	        screenXYZ.y = cameraXYZ.y / viewport.w + viewport.y;
-	        screenXYZ.z = cameraXYZ.z;
-
-	        return screenXYZ;
-        }
+		Vertex4 screenCoord = matViewProjection_ * Vertex4(worldXYZ, 1);
+		return Vertex3(screenCoord.x/screenCoord.w, screenCoord.y/screenCoord.w, screenCoord.z/screenCoord.w);
     }
+
 	const Matrix4& GLES2Camera::GetViewProjectionMatrix()
 	{
 		if (s_pActiveGLES2Camera)

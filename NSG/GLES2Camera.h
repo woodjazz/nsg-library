@@ -58,7 +58,7 @@ namespace NSG
 		typedef std::vector<GLES2Camera*> Cameras;
 		static Cameras& GetCameras();
         bool IsOrtho() const { return isOrtho_; }
-        //Vertex4 ScreenToWorld(const Vertex3& screenXYZ, const Node* pNode) const;
+        Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const;
         Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
 	private:
         void OnUpdate();
@@ -68,6 +68,7 @@ namespace NSG
 		Matrix4 matViewInverse_;
 		Matrix4 matProjection_;
 		Matrix4 matViewProjection_;
+		Matrix4 matViewProjectionInverse_;
 		float fovy_;
 		float zNear_;
 		float zFar_;
