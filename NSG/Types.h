@@ -36,6 +36,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    typedef glm::highp_ivec4 Recti;
 	typedef glm::vec4 Vertex4;
 	typedef glm::vec3 Vertex3;
 	typedef glm::vec2 Vertex2;

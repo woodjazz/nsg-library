@@ -39,6 +39,7 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
+    struct InternalApp;
 	class App 
 	{
 	public:
@@ -46,7 +47,7 @@ namespace NSG
 		virtual ~App();
         virtual int GetFPS() const;
 		virtual void Start() {}
-		virtual void Update(float delta) {}
+		virtual void Update() {}
 		virtual void LateUpdate() {}
 		virtual void RenderFrame() = 0;
         virtual void RenderGUIFrame() {}
@@ -66,6 +67,7 @@ namespace NSG
         void EndSelection();
         PGLES2FrameColorSelection GetSelection() const { return pFrameColorSelection_; }
         GLushort GetSelectedNode() const { return selectedIndex_; }
+        float GetDeltaTime() const { return deltaTime_; }
 
 #if NACL
 		virtual void HandleMessage(const pp::Var& var_message);
@@ -84,6 +86,9 @@ namespace NSG
         PGLES2FrameColorSelection pFrameColorSelection_;
         GLushort selectedIndex_;
         bool isKeyboardVisible_;
+        // The time in seconds it took to complete the last frame
+        float deltaTime_;
+        friend struct InternalApp;
 	};
 
 	typedef std::shared_ptr<App> PApp;

@@ -51,22 +51,16 @@ namespace NSG
         void OnMouseUp();
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
-        void DoTick(float delta);
+        void DoTick();
 		void InternalBeginHorizontal(GLushort id);
 		void InternalEndHorizontal();
 		void InternalBeginVertical(GLushort id);
 		void InternalEndVertical();
 		void InternalSpacer(GLushort id, int percentage);
 
-		//////////////////////////////////////////////////////////////////
-		// Node's position and (scale)size are in OpenGL screen coordinates + (1,1,0).
-		// To work with pixels use ConvertPixels2ScreenCoords function.
-        //////////////////////////////////////////////////////////////////
-		Vertex3 ConvertPixels2ScreenCoords(const Vertex3& pixels);
-		Vertex3 ConvertScreenCoords2Pixels(const Vertex3& screenCoords);
-
 		struct Skin
 		{
+			float alphaFactor;
 			Color activeColor;
 			Color normalColor;
 			Color hotColor;
@@ -86,7 +80,7 @@ namespace NSG
 		typedef std::shared_ptr<Skin> PSkin;
 		extern PSkin pSkin;
 		extern PGLES2Camera pCamera;
-		extern PNode pNode;
+		extern PNode pCurrentNode;
 
 	}
 }

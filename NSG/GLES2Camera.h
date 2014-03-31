@@ -53,7 +53,7 @@ namespace NSG
 		static const Matrix4& GetInverseViewMatrix();
 		void Activate();
 		void SetViewportFactor(float xo, float yo, float xf, float yf);
-		Vertex4 GetViewport() const;
+		Recti GetViewport() const;
 		void ViewChanged(int32_t width, int32_t height);
 		typedef std::vector<GLES2Camera*> Cameras;
 		static Cameras& GetCameras();

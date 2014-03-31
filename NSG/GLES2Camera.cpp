@@ -133,16 +133,16 @@ namespace NSG
 		yf_ = yf;
 	}
 
-	Vertex4 GLES2Camera::GetViewport() const
+	Recti GLES2Camera::GetViewport() const
 	{
-		return Vertex4((GLsizei)(width_ * xo_), (GLsizei)(height_ * yo_), (GLsizei)(width_ * xf_), (GLsizei)(height_ * yf_));
+		return Recti((GLsizei)(width_ * xo_), (GLsizei)(height_ * yo_), (GLsizei)(width_ * xf_), (GLsizei)(height_ * yf_));
 	}
 
 	void GLES2Camera::Activate()
 	{
 		s_pActiveGLES2Camera = this;
 
-        Vertex4 viewport = GetViewport();
+        Recti viewport = GetViewport();
 		glViewport(viewport.x, viewport.y, viewport.z, viewport.w);		
 	}
 

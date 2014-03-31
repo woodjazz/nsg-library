@@ -29,6 +29,8 @@ misrepresented as being the original software.
 #include "NSG/GLES2IMGUI.h"
 #include "NSG/Resource.h"
 #include "NSG/Constants.h"
+#include "NSG/GLES2RoundedRectangleMesh.h"
+#include "NSG/GLES2RectangleMesh.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -136,17 +138,19 @@ void MyApp::Start()
 	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
 }
 
-void MyApp::Update(float delta) 
+void MyApp::Update() 
 {
-	//TRACE_LOG("MyApp::Update delta = " << delta);
-	x_angle_ += glm::pi<float>()/10.0f * delta;
-	y_angle_ += glm::pi<float>()/10.0f * delta;
+	//TRACE_LOG("MyApp::Update delta = " << Time::deltaTime);
+    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+
+	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
+	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
 	pNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)) * glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
 	pNode2_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 	//pNode1_->SetScale(scale_);
 
 	static float factor_scale = 1;
-	scale_ -= delta * 0.7f * factor_scale;
+	scale_ -= deltaTime * 0.7f * factor_scale;
 
 	if(scale_.x < -10 && factor_scale > 0)
 		factor_scale *= -1;
@@ -176,7 +180,7 @@ void MyApp::Update(float delta)
     pCamera1_->SetPosition(position);
     pCamera1_->SetLookAt(Vertex3(0));
 
-    delta1 += delta * 0.1f;
+    delta1 += deltaTime * 0.1f;
 
     if(delta1 > 1)
     {
@@ -200,17 +204,17 @@ void MyApp::TestIMGUI2()
 {
 	IMGUI::pSkin->fontSize = 18;
 
-	Vertex3 position = IMGUI::pNode->GetGlobalPosition();
-	Vertex3 size = IMGUI::pNode->GetGlobalScale();
+	Vertex3 position = IMGUI::pCurrentNode->GetGlobalPosition();
+	Vertex3 size = IMGUI::pCurrentNode->GetGlobalScale();
     
-    /*
+    
     IMGUI::pCamera->SetNearClip(0.1f);
     IMGUI::pCamera->DisableOrtho();
     IMGUI::pCamera->SetPosition(position + Vertex3(0,0,size.x * 2));
     IMGUI::pCamera->SetLookAt(Vertex3(0,0,0));
-*/
 
-    IMGUI::pNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
+
+    IMGUI::pCurrentNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
 
 	IMGUIBeginHorizontal();
 	{
@@ -225,7 +229,7 @@ void MyApp::TestIMGUI2()
 
         if(enabled)
         {
-			IMGUI::pNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
+			IMGUI::pCurrentNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
             if(IMGUIButton("Button asas1"))
             {
@@ -277,17 +281,6 @@ void MyApp::TestIMGUI2()
 
 void MyApp::TestIMGUI4()
 {
-/*	Vertex3 position = IMGUI::pNode->GetGlobalPosition();
-	Vertex3 size = IMGUI::pNode->GetGlobalScale();
-
-   
-    IMGUI::pCamera->SetNearClip(0.1f);
-    IMGUI::pCamera->DisableOrtho();
-    IMGUI::pCamera->SetPosition(position + Vertex3(0,0,size.x * 2));
-    IMGUI::pCamera->SetLookAt(Vertex3(0,0,0));
-*/
-    //IMGUI::pNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
-
 	IMGUI::pSkin->fontSize = 18;
 
     IMGUIBeginHorizontal();
@@ -307,11 +300,94 @@ void MyApp::TestIMGUI4()
     IMGUIEndHorizontal();
 }
 
+static void Menu1()
+{
+	static PGLES2RectangleMesh pBoxMesh(new GLES2RectangleMesh(2, 2, IMGUI::pSkin->pMaterial, GL_STATIC_DRAW));
+	static PGLES2RoundedRectangleMesh pRoundBoxMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, IMGUI::pSkin->pMaterial, GL_STATIC_DRAW));
+
+    static float delta = -1;
+    static Vertex3 camControlPoint0(-3, 3, 0);
+    static Vertex3 camControlPoint1(0, 2, 0);
+    static Vertex3 camControlPoint2(0, 0, 0);
+    static Vertex3 camControlPoint3(3, -2, 0);
+
+    static bool menu = false;
+    static float alpha = IMGUI::pSkin->alphaFactor;
+
+    if(delta > 1) delta = 1;
+
+	Vertex3 position = glm::catmullRom(
+        camControlPoint0,
+        camControlPoint1,
+        camControlPoint2,
+        camControlPoint3,
+		delta);
+
+    if(!menu)
+    {
+    	IMGUI::pSkin->pMesh = pRoundBoxMesh;
+        menu = false;
+        IMGUI::pCurrentNode->SetPosition(Vertex3(0,0,0));
+	    IMGUIBeginHorizontal();
+	    {
+		    IMGUIBeginVertical();
+		    {
+			    IMGUISpacer(80);
+			    if(IMGUIButton("Menu"))
+			    {
+			    	IMGUI::pSkin->alphaFactor = alpha;
+                    menu = true;
+				    delta = 0;
+			    }
+		    }
+		    IMGUIEndVertical();
+		    IMGUISpacer(80);
+	    }
+	    IMGUIEndHorizontal();
+	    if(IMGUI::pSkin->normalColor.w < alpha)
+	    	IMGUI::pSkin->alphaFactor += 0.01f;
+	    else
+	    	IMGUI::pSkin->alphaFactor = 1;
+
+    }
+    else
+	{
+		IMGUI::pSkin->pMesh = pBoxMesh;
+		IMGUI::pCurrentNode->SetPosition(position);
+		IMGUISpacer(20);
+		static std::string str = "0123";
+		str = IMGUITextField(str);
+		IMGUISpacer(20);
+        static bool exit = false;
+        IMGUI::pSkin->pMesh = pRoundBoxMesh;
+		if(IMGUIButton("Exit"))
+		{
+            exit = true;
+		}
+
+        if(exit)
+        {
+            delta -= App::GetPtrInstance()->GetDeltaTime();
+        }
+        else
+        {
+            delta += App::GetPtrInstance()->GetDeltaTime();
+        }
+
+        if(delta < 0)
+        {
+            menu = exit = false;
+            IMGUI::pSkin->alphaFactor = 0;
+        }
+	}
+
+}
 
 void MyApp::RenderGUIFrame()
 {
 	//TestIMGUI2();
-    TestIMGUI4();
+    //TestIMGUI4();
+    Menu1();
 }
 
 void MyApp::RenderFrame() 

@@ -232,8 +232,9 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     
     void InternalApp::DoTick(float delta)
     {
-        IMGUI::DoTick(delta);
-        pApp_->Update(delta);
+        pApp_->deltaTime_ = delta;
+        IMGUI::DoTick();
+        pApp_->Update();
     }
     
     void InternalApp::EndTick()

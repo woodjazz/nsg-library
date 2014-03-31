@@ -44,7 +44,7 @@ public:
 	~MyApp();
 	int GetFPS() const;
 	void Start();
-	void Update(float delta);
+	void Update();
 	void LateUpdate();
 	void RenderFrame();
 	void RenderGUIFrame();
