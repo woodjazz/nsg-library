@@ -52,7 +52,9 @@ namespace NSG
 			vertexData.position_.x = cos(angle);
 			vertexData.position_.y = sin(angle);
 			vertexData.position_.z = 0;
-			vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+            vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+            vertexData.uv_.x = (vertexData.uv_.x + 1)/2.0f;
+            vertexData.uv_.y = 1-(vertexData.uv_.y + 1)/2.0f;
 			
 			vertexData.position_.x *= halfX;
 			vertexData.position_.y *= halfY;

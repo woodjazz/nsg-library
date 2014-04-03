@@ -50,6 +50,8 @@ namespace NSG
 
 		halfX -= (totalSizeX - width)/2;
 		halfY -= (totalSizeY - height)/2;
+		float coordXFactor= (2*halfX)/totalSizeX;
+		float coordYFactor= (2*halfY)/totalSizeY;
 
 		const float angleAdder = TWO_PI / (float)res;
 
@@ -67,21 +69,28 @@ namespace NSG
             if(angle < PI/2 || angle > 3*PI/2)
             {
 			    vertexData.position_.x += halfX;
+                vertexData.uv_.x = coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv_.x;
             }
             else if(angle > PI/2)
             {
                 vertexData.position_.x -= halfX;
+                vertexData.uv_.x = -coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv_.x;
             }
             
             if(angle >= 0 && angle < PI)
             {
-			   vertexData.position_.y += halfY;
+				vertexData.position_.y += halfY;
+                vertexData.uv_.y = coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv_.y;
             }
             else if(angle >= PI)
             {
                vertexData.position_.y -= halfY;
+               vertexData.uv_.y = -coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv_.y;
             }
-            
+
+            vertexData.uv_.x = (vertexData.uv_.x + 1)/2.0f;
+            vertexData.uv_.y = 1-(vertexData.uv_.y + 1)/2.0f;
+
 			data.push_back(vertexData);
 
 			angle += angleAdder;

@@ -33,7 +33,9 @@ misrepresented as being the original software.
 #include "NSG/Node.h"
 #include "NSG/GLES2Camera.h"
 #include "NSG/GLES2Text.h"
+#include "NSG/GLES2Texture.h"
 #include "NSG/GLES2Light.h"
+#include "NSG/GLES2IMGUI.h"
 
 using namespace NSG;
 
@@ -57,6 +59,7 @@ private:
 	void InternalTask();
 	void TestIMGUI2();
     void TestIMGUI4();
+    void Menu1();
 	std::thread thread_;
 	PGLES2Light pLight0_;
 	PGLES2Material pMaterial2_;
@@ -81,5 +84,8 @@ private:
 	GLushort selectedIndex_;
 	Vertex3 scale_;
     std::deque<Vertex3> camControlPoints_;
+    IMGUI::PSkin pSkin1_;
+    IMGUI::PSkin pSkin2_;
+    float aspectRatio_;
 };
 

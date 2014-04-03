@@ -48,12 +48,15 @@ using namespace NSG;
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
 	attribute vec4 a_position;
+	attribute vec2 a_texcoord;
 	varying vec4 v_position;
+	varying vec2 v_texcoord;
 	
 	void main()
 	{
 		gl_Position = u_mvp * vec4(a_position.xyz, 1);
 		v_position = a_position;
+		v_texcoord = a_texcoord;
 	}
 );
 
@@ -61,26 +64,42 @@ static const char* fShader = STRINGIFY(
 	struct Material
 	{
 		vec4 diffuse;
+		float alphaFactor;
 	};
 	uniform Material u_material;
+	uniform sampler2D u_texture;
 	varying vec4 v_position;
-	uniform int u_gradient;
+	varying vec2 v_texcoord;
+	uniform int u_hasFocus;
 
 	void main()
 	{
 		float factor = 1.0;
 
-		if(u_gradient == 1)
+		if(u_hasFocus == 1)
 		{
 			factor = 1.0 - abs(v_position.y);
-			gl_FragColor = u_material.diffuse * vec4(factor, factor, factor, 1);
 		}
 		else
 		{
-			gl_FragColor = u_material.diffuse * vec4(factor, factor, factor, 1);
+			factor = abs(v_position.y) - 0.35;
 		}
+	
+		gl_FragColor = texture2D(u_texture, v_texcoord) * u_material.diffuse * vec4(factor, factor, factor, u_material.alphaFactor);
+	}
+);
 
-		
+static const char* fShaderBorder = STRINGIFY(
+	struct Material
+	{
+		vec4 diffuse;
+		float alphaFactor;
+	};
+	uniform Material u_material;
+
+	void main()
+	{
+		gl_FragColor = u_material.diffuse * vec4(1, 1, 1, u_material.alphaFactor);
 	}
 );
 
@@ -90,19 +109,34 @@ namespace NSG
 	{
 		Skin::Skin() 
 		: alphaFactor(1),
-		activeColor(0,1,0,0.7f),
-		normalColor(0.5f,0.5f,0.5f,0.5f),
-		hotColor(1,0.5f,0.5f,0.7f),
-		borderColor(1,1,1,1),
 		fontFile("font/FreeSans.ttf"),
 		fontSize(18),
 		textMaxLength(std::numeric_limits<int>::max()),
 		fillEnabled(true),
-        pMaterial(new GLES2Material()),
-		pMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, pMaterial, GL_STATIC_DRAW))
+		drawBorder(true),
+        pActiveMaterial(new GLES2Material()),
+        pNormalMaterial(new GLES2Material()),
+        pHotMaterial(new GLES2Material()),
+        pBorderMaterial(new GLES2Material()),
+		pMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, pNormalMaterial, GL_STATIC_DRAW))
 		{
-            pMaterial->SetProgram(PGLES2Program(new GLES2Program(vShader, fShader)));
-			pMaterial->SetDiffuseColor(Color(1,0,0,1));
+            PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+            pActiveMaterial->SetProgram(pProgram);
+			pActiveMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
+			//pActiveMaterial->SetDiffuseColor(Color(1,1,1,0.7f));
+			pActiveMaterial->SetUniform("u_hasFocus", 0);
+
+            pNormalMaterial->SetProgram(pProgram);
+			pNormalMaterial->SetDiffuseColor(Color(0.5f,0.5f,0.5f,0.5f));
+			pNormalMaterial->SetUniform("u_hasFocus", 0);
+
+			pHotMaterial->SetProgram(pProgram);
+			pHotMaterial->SetDiffuseColor(Color(1,0.5f,0.5f,0.7f));
+			pHotMaterial->SetUniform("u_hasFocus", 0);
+
+			PGLES2Program pBorderProgram(new GLES2Program(vShader, fShaderBorder));
+			pBorderMaterial->SetProgram(pBorderProgram);
+			pBorderMaterial->SetDiffuseColor(Color(1,1,1,1));
 		}
 
 		PSkin pSkin;
@@ -518,11 +552,12 @@ namespace NSG
 				glDisable(GL_BLEND);
 		}
 
-		void DrawButton(Color color, PNode pNode)
+		void DrawButton(PGLES2Material pMaterial, PNode pNode, bool hasFocus)
 		{
-			color.w *= pSkin->alphaFactor;
             pSkin->pMesh->SetFilled(pSkin->fillEnabled);
-			pSkin->pMesh->GetMaterial()->SetDiffuseColor(color);
+            pMaterial->SetAlphaFactor(pSkin->alphaFactor);
+            pMaterial->SetUniform("u_hasFocus", hasFocus ? 1 : 0);
+			pSkin->pMesh->SetMaterial(pMaterial);
 			pSkin->pMesh->Render(pNode);
 		}
 
@@ -591,37 +626,33 @@ namespace NSG
 			}
 
 			// If we have keyboard focus, show it
-			if (uistate.kbditem == id)
-				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
-			else
-				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 1);
-
+			bool hasFocus = uistate.kbditem == id;
 
 			if(uistate.hotitem == id)
 			{
 				if(uistate.activeitem == id)
 				{
 			  		// Button is both 'hot' and 'active'
-			  		DrawButton(pSkin->activeColor, pNode);
+			  		DrawButton(pSkin->pActiveMaterial, pNode, hasFocus);
 			  	}
 				else
 				{
 					// Button is merely 'hot'
-					DrawButton(pSkin->hotColor, pNode);
+					DrawButton(pSkin->pHotMaterial, pNode, hasFocus);
 				}
 			}
 			else
 			{
 				// button is not hot, but it may be active    
-				DrawButton(pSkin->normalColor, pNode);
+				DrawButton(pSkin->pNormalMaterial, pNode, hasFocus);
 			}
 
-			if(pSkin->fillEnabled)
+			if(pSkin->drawBorder)
 			{
+				bool fillEnabled = pSkin->fillEnabled;
 				pSkin->fillEnabled = false;
-				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
-				DrawButton(pSkin->borderColor, pNode);
-				pSkin->fillEnabled = true;
+				DrawButton(pSkin->pBorderMaterial, pNode, hasFocus);
+				pSkin->fillEnabled = fillEnabled;
 			}
 
 			{
@@ -643,14 +674,14 @@ namespace NSG
                     pTextNode1->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
                     pTextNode->EnableUpdate(true);
                     pTextNode->Update(false);
-					pTextMesh->Render(pTextNode1, Color(1,1,1,1));
+					pTextMesh->Render(pTextNode1, Color(1,1,1,pSkin->alphaFactor));
 				}
 			}
 
 			bool enterKey = false;
 
 			// If we have keyboard focus, we'll need to process the keys
-			if (uistate.kbditem == id)
+			if (hasFocus)
 			{
 				switch (uistate.keyentered)
 				{
@@ -746,41 +777,33 @@ namespace NSG
 			}
 
 			// If we have keyboard focus, show it
-			if (uistate.kbditem == id)
-            {
-				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
-            }
-			else
-            {
-				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 1);
-            }
-
+			bool hasFocus = uistate.kbditem == id;
 
 			if(uistate.hotitem == id)
 			{
 				if(uistate.activeitem == id)
 				{
 			  		// Button is both 'hot' and 'active'
-                    DrawButton(pSkin->activeColor, pNode);
+                    DrawButton(pSkin->pActiveMaterial, pNode, hasFocus);
 			  	}
 				else
 				{
 					// Button is merely 'hot'
-					DrawButton(pSkin->hotColor, pNode);
+					DrawButton(pSkin->pHotMaterial, pNode, hasFocus);
 				}
 			}
 			else
 			{
 				// button is not hot, but it may be active    
-				DrawButton(pSkin->normalColor, pNode);
+				DrawButton(pSkin->pNormalMaterial, pNode, hasFocus);
 			}
 
-			if(pSkin->fillEnabled)
+			if(pSkin->drawBorder)
 			{
+				bool fillEnabled = pSkin->fillEnabled;
 				pSkin->fillEnabled = false;
-				pSkin->pMesh->GetMaterial()->SetUniform("u_gradient", 0);
-				DrawButton(pSkin->borderColor, pNode);
-				pSkin->fillEnabled = true;
+				DrawButton(pSkin->pBorderMaterial, pNode, hasFocus);
+				pSkin->fillEnabled = fillEnabled;
 			}
 
 			{
@@ -820,10 +843,10 @@ namespace NSG
                 pTextNode1->SetPosition(Vertex3(-pArea->textOffsetX_, 0, 0));
                 pTextNode->EnableUpdate(true);
                 pTextNode->Update(false);
-				pTextMesh->Render(pTextNode1, Color(1,1,1,1));
+				pTextMesh->Render(pTextNode1, Color(1,1,1,pSkin->alphaFactor));
                 
 				// Render cursor if we have keyboard focus
-				if(uistate.kbditem == id && (tick < 15))
+				if(hasFocus && (tick < 15))
                 {
                     static PNode pCursorNode(new Node());
                     pCursorNode->EnableUpdate(false);
@@ -831,12 +854,12 @@ namespace NSG
                     pCursorNode->SetPosition(Vertex3(cursorPositionInText, 0, 0));
                     pCursorNode->EnableUpdate(true);
                     pCursorNode->Update(false);
-					pCursorMesh->Render(pCursorNode, Color(1,0,0,1));
+					pCursorMesh->Render(pCursorNode, Color(1,0,0,pSkin->alphaFactor));
                 }
 			}
 
 			// If we have keyboard focus, we'll need to process the keys
-			if (uistate.kbditem == id)
+			if (hasFocus)
 			{
 				switch (uistate.keyentered)
 				{

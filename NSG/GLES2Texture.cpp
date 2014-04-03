@@ -37,9 +37,23 @@ namespace NSG
 	createFontAtlas_(createFontAtlas),
 	atlasWidth_(0),
 	atlasHeight_(0),
-	fontSize_(fontSize)
+	fontSize_(fontSize),
+	isLoaded_(false)
 	{
-		Initialize();
+		if(fontSize_ > 0)
+		{
+			Initialize();
+		}
+	}
+
+	GLES2Texture::GLES2Texture() 
+	: texture_(0), 
+	createFontAtlas_(false),
+	atlasWidth_(0),
+	atlasHeight_(0),
+	fontSize_(0),
+	isLoaded_(false)
+	{
 	}
 
 	GLES2Texture::~GLES2Texture()
@@ -49,39 +63,91 @@ namespace NSG
 
 	bool GLES2Texture::IsReady()
 	{
-		if(pResource_ != nullptr && pResource_->IsReady())
-		{
-			if(createFontAtlas_)
-			{
-				CreateTextureAtlas();
-			}
-			else
-			{
-				int img_width = 0;
-				int img_height = 0;
-				unsigned char* img = SOIL_load_image_from_memory(pResource_->GetData(), pResource_->GetBytes(), &img_width, &img_height, nullptr, 0);
-				glGenTextures(1, &texture_);
-				glBindTexture(GL_TEXTURE_2D, texture_);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexImage2D(GL_TEXTURE_2D,
-					0,
-					GL_RGB,
-					img_width,
-					img_height,
-					0,
-					GL_RGB,
-					GL_UNSIGNED_BYTE,
-					img);
-				SOIL_free_image_data(img);
-			}
+		if(isLoaded_)
+			return true;
 
-			pResource_ = nullptr;
+		if(pResource_ != nullptr)
+		{
+			if(pResource_->IsReady())
+			{
+				if(createFontAtlas_)
+				{
+					CreateTextureAtlas();
+				}
+				else
+				{
+					int img_width = 0;
+					int img_height = 0;
+	                int channels = 0;
+					unsigned char* img = SOIL_load_image_from_memory(pResource_->GetData(), pResource_->GetBytes(), &img_width, &img_height, &channels, 0);
+					glGenTextures(1, &texture_);
+					glBindTexture(GL_TEXTURE_2D, texture_);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	                GLint internalformat = GL_RGBA;
+
+	                if(channels == 4)
+	                {
+	                    internalformat = GL_RGBA;
+	                }
+	                else if(channels == 3)
+	                {
+	                    internalformat = GL_RGB;
+	                }
+	                else
+	                {
+	                    assert(false && "Unknown format");
+	                }
+
+					glTexImage2D(GL_TEXTURE_2D,
+						0,
+						internalformat,
+						img_width,
+						img_height,
+						0,
+						internalformat,
+						GL_UNSIGNED_BYTE,
+						img);
+
+					SOIL_free_image_data(img);
+				}
+
+				pResource_ = nullptr;
+
+				isLoaded_ = true;
+			}
+		}
+		else
+		{
+			assert(pResource_ == nullptr);
+
+			glGenTextures(1, &texture_);
+			glBindTexture(GL_TEXTURE_2D, texture_);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			unsigned char img[3];
+			memset(&img[0], 0xFF, sizeof(unsigned char)*3);
+
+			glTexImage2D(GL_TEXTURE_2D,
+				0,
+				GL_RGB,
+				1,
+				1,
+				0,
+				GL_RGB,
+				GL_UNSIGNED_BYTE,
+				&img[0]);
+
+			isLoaded_ = true;
 		}
 
-		return pResource_ == nullptr;
+		return isLoaded_;
 	}
 
 	#define MAXWIDTH 1024

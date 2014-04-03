@@ -42,15 +42,12 @@ namespace NSG
 	}
 
 	GLES2Mesh::GLES2Mesh(PGLES2Material pMaterial, GLenum usage) 
-	: pMaterial_(pMaterial),
-	texcoord_loc_(pMaterial_->GetTextCoordAttLocation()),
-	position_loc_(pMaterial_->GetPositionAttLocation()),
-	normal_loc_(pMaterial_->GetNormalAttLocation()),
-    usage_(usage),
+	: usage_(usage),
     mode_(GL_TRIANGLES),
     selectMode_(GL_TRIANGLES),
     loaded_(false)
 	{
+		SetMaterial(pMaterial);
 	}
 
 	GLES2Mesh::~GLES2Mesh() 
@@ -81,6 +78,14 @@ namespace NSG
 				pIBuffer_ = PGLES2IndexBuffer(new GLES2IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0], usage_));
 			}
 		}
+	}
+
+	void GLES2Mesh::SetMaterial(PGLES2Material pMaterial)
+	{
+		pMaterial_ = pMaterial;
+		texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
+		position_loc_ = pMaterial_->GetPositionAttLocation();
+		normal_loc_ = pMaterial_->GetNormalAttLocation();
 	}
 
 	void GLES2Mesh::Render(PNode pNode)

@@ -61,18 +61,18 @@ namespace NSG
 		struct Skin
 		{
 			float alphaFactor;
-			Color activeColor;
-			Color normalColor;
-			Color hotColor;
-			Color borderColor;
 
 			std::string fontFile;
 			int fontSize;
 			size_t textMaxLength;
 
 			bool fillEnabled;
+			bool drawBorder;
 
-			PGLES2Material pMaterial;
+			PGLES2Material pActiveMaterial;
+			PGLES2Material pNormalMaterial;
+			PGLES2Material pHotMaterial;
+			PGLES2Material pBorderMaterial;
 			PGLES2Mesh pMesh;
 			Skin();
 		};

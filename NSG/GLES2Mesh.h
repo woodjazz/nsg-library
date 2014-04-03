@@ -66,6 +66,7 @@ namespace NSG
 		GLenum GetMode() const { return mode_; }
 		void SetSelectMode(GLenum mode) { selectMode_ = mode; }
 		PGLES2Material GetMaterial() const { return pMaterial_; }
+		void SetMaterial(PGLES2Material pMaterial);
 		virtual void SetFilled(bool enable) {}
 	private:
 		PGLES2Material pMaterial_;

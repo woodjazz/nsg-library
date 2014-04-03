@@ -40,6 +40,8 @@ namespace NSG
 	{
 	public:
 		GLES2Texture(const char* filename, bool createFontAtlas = false, int fontSize = 0);
+		// Creates 1x1 white texture 
+		GLES2Texture();
 		~GLES2Texture();
 		bool IsReady();
 		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
@@ -75,6 +77,7 @@ namespace NSG
 		int atlasHeight_;
 		CharsInfo charInfo_;
 		int fontSize_;
+		bool isLoaded_;
 		friend class BindTexture;
 	};
 

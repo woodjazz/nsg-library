@@ -41,22 +41,22 @@ namespace NSG
 		SetSelectMode(GL_TRIANGLE_FAN);
 
 		VertexData vertexData;
-		vertexData.normal_ = Vertex3(-halfX, -halfY, 1); // always facing forward
+		vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
 		
 		vertexData.position_ = Vertex3(-halfX, -halfY, 0);
-		vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+		vertexData.uv_ = Vertex2(0, 1);
 		data.push_back(vertexData);
 
 		vertexData.position_ = Vertex3(halfX, -halfY, 0);
-		vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+		vertexData.uv_ = Vertex2(1, 1);
 		data.push_back(vertexData);
 
 		vertexData.position_ = Vertex3(halfX, halfY, 0);
-		vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+		vertexData.uv_ = Vertex2(1, 0);
 		data.push_back(vertexData);
 
 		vertexData.position_ = Vertex3(-halfX, halfY, 0);
-		vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+		vertexData.uv_ = Vertex2(0, 0);
 		data.push_back(vertexData);		
 
 		Redo();

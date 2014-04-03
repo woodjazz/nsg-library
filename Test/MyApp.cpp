@@ -53,7 +53,8 @@ y_(0),
 buttonDown_(false),
 buttonUp_(false),
 selectedIndex_(0),
-scale_(1,1,1)
+scale_(1,1,1),
+aspectRatio_(1)
 {
 	NodeTest();
 }
@@ -136,6 +137,18 @@ void MyApp::Start()
     camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 10.0f));
 	camControlPoints_.push_back(Vertex3(10.0f, 0.0f, 0.0f));
 	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
+
+	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cell.png"));
+	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cube_example.png"));
+	PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("Earthmap720x360_grid.jpg"));
+	
+
+	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin());
+	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin());
+	pSkin2_->drawBorder = false;
+	pSkin2_->pMesh =  PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, IMGUI::pSkin->pNormalMaterial, GL_STATIC_DRAW));
+	pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
+	pSkin1_->pActiveMaterial->SetMainTexture(pCellTexture);
 }
 
 void MyApp::Update() 
@@ -281,7 +294,9 @@ void MyApp::TestIMGUI2()
 
 void MyApp::TestIMGUI4()
 {
+	IMGUI::pSkin = pSkin2_;
 	IMGUI::pSkin->fontSize = 18;
+	IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
 
     IMGUIBeginHorizontal();
 
@@ -300,11 +315,8 @@ void MyApp::TestIMGUI4()
     IMGUIEndHorizontal();
 }
 
-static void Menu1()
+void MyApp::Menu1()
 {
-	static PGLES2RectangleMesh pBoxMesh(new GLES2RectangleMesh(2, 2, IMGUI::pSkin->pMaterial, GL_STATIC_DRAW));
-	static PGLES2RoundedRectangleMesh pRoundBoxMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, IMGUI::pSkin->pMaterial, GL_STATIC_DRAW));
-
     static float delta = -1;
     static Vertex3 camControlPoint0(-3, 3, 0);
     static Vertex3 camControlPoint1(0, 2, 0);
@@ -325,7 +337,7 @@ static void Menu1()
 
     if(!menu)
     {
-    	IMGUI::pSkin->pMesh = pRoundBoxMesh;
+    	IMGUI::pSkin = pSkin1_;
         menu = false;
         IMGUI::pCurrentNode->SetPosition(Vertex3(0,0,0));
 	    IMGUIBeginHorizontal();
@@ -344,7 +356,7 @@ static void Menu1()
 		    IMGUISpacer(80);
 	    }
 	    IMGUIEndHorizontal();
-	    if(IMGUI::pSkin->normalColor.w < alpha)
+        if(IMGUI::pSkin->pNormalMaterial->GetDiffuseColor().w < alpha)
 	    	IMGUI::pSkin->alphaFactor += 0.01f;
 	    else
 	    	IMGUI::pSkin->alphaFactor = 1;
@@ -352,14 +364,14 @@ static void Menu1()
     }
     else
 	{
-		IMGUI::pSkin->pMesh = pBoxMesh;
+		IMGUI::pSkin = pSkin2_;
 		IMGUI::pCurrentNode->SetPosition(position);
 		IMGUISpacer(20);
 		static std::string str = "0123";
 		str = IMGUITextField(str);
 		IMGUISpacer(20);
         static bool exit = false;
-        IMGUI::pSkin->pMesh = pRoundBoxMesh;
+        IMGUI::pSkin = pSkin1_;
 		if(IMGUIButton("Exit"))
 		{
             exit = true;
@@ -403,8 +415,8 @@ void MyApp::RenderFrame()
     pMesh_->SetMode(GL_TRIANGLES);
     pSphereMesh_->SetMode(GL_TRIANGLES);
 
-    //pMesh_->Render(pNode1_);
-    //pSphereMesh_->Render(pNode2_);
+    pMesh_->Render(pNode1_);
+    pSphereMesh_->Render(pNode2_);
 
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;
@@ -422,8 +434,8 @@ void MyApp::RenderFrame()
 
 
 	GLES2Camera::Deactivate();
-	//pText1_->SetText(ss.str());
-	//pText1_->Render(pTextNode1_, Color(1,1,1,1));
+	pText1_->SetText(ss.str());
+	pText1_->Render(pTextNode1_, Color(1,1,1,1));
 
     //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");
 
@@ -447,6 +459,7 @@ void MyApp::RenderFrame()
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 
 {
+    //aspectRatio_ = (float)height/(float)width;
 }
 
 void MyApp::OnMouseMove(float x, float y)
