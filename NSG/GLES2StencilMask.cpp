@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "GLES2StencilMask.h"
 #include "Node.h"
+#include "Check.h"
 #include "GLES2Mesh.h"
 
 #define STRINGIFY(S) #S
@@ -52,30 +53,31 @@ namespace NSG
 		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
 		pMaterial_ = PGLES2Material(new GLES2Material()); 
         pMaterial_->SetProgram(pProgram);
-		glGetBooleanv(GL_COLOR_WRITEMASK, save_color_mask_);
-	  	glGetBooleanv(GL_DEPTH_WRITEMASK, &save_depth_mask_);
-		glEnable(GL_STENCIL_TEST);
 	}
 
 	GLES2StencilMask::~GLES2StencilMask()
 	{
-		glColorMask(save_color_mask_[0], save_color_mask_[1], save_color_mask_[2], save_color_mask_[3]);
-	  	glDepthMask(save_depth_mask_);
-	  	glDisable(GL_STENCIL_TEST);
 	}
 
 	void GLES2StencilMask::Begin()
 	{
+		glGetBooleanv(GL_COLOR_WRITEMASK, save_color_mask_);
+	  	glGetBooleanv(GL_DEPTH_WRITEMASK, &save_depth_mask_);
+        glEnable(GL_STENCIL_TEST);
 	  	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 	  	glDepthMask(GL_FALSE);
 	  	glStencilFunc(GL_NEVER, 1, 0xFF);
 	  	glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
 	  	glStencilMaskSeparate(GL_FRONT_AND_BACK, 0xFF);
 	  	glClear(GL_STENCIL_BUFFER_BIT);
+
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	}
 
 	void GLES2StencilMask::Render(Node* pNode, GLES2Mesh* pMesh)
 	{
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
 		GLenum mode = pMesh->GetMode();
 		
 		if(mode == GL_LINE_LOOP)
@@ -86,6 +88,8 @@ namespace NSG
 		pMesh->Render(pNode);
 		
 		pMesh->SetMode(mode);
+
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	}
 
 	void GLES2StencilMask::End()
@@ -94,5 +98,10 @@ namespace NSG
   		glDepthMask(GL_TRUE);
 		glStencilMaskSeparate(GL_FRONT_AND_BACK, 0x00);
 		glStencilFunc(GL_EQUAL, 1, 0xFF); // draw only where stencil's value is 1
+        glDisable(GL_STENCIL_TEST);
+		glColorMask(save_color_mask_[0], save_color_mask_[1], save_color_mask_[2], save_color_mask_[3]);
+	  	glDepthMask(save_depth_mask_);
+
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	}
 }

@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "GLES2Camera.h"
 #include "GLES2IMGUI.h"
+#include "GLES2Render2Texture.h"
 #include "GLES2Text.h"
 #include <cassert>
 
@@ -256,6 +257,12 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
                 pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection());
 
             pFrameColorSelection_->ViewChanged(width, height);
+
+            GLES2Render2Texture::Renderers& renderers = GLES2Render2Texture::GetRenderers();
+            for(auto &renderer : renderers)
+            {
+                renderer->ViewChanged(width, height);
+            }
 
             IMGUI::ViewChanged(width, height);
 

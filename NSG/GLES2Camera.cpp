@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "GLES2Camera.h"
 #include "Log.h"
+#include "Check.h"
 #include "GLES2Includes.h"
 #include "App.h"
 #include <algorithm>
@@ -115,9 +116,24 @@ namespace NSG
         }
 	}
 
-	void GLES2Camera::Deactivate()
+	GLES2Camera* GLES2Camera::Deactivate()
 	{
+		GLES2Camera* pCurrent = s_pActiveGLES2Camera;
 		s_pActiveGLES2Camera = nullptr;
+		std::pair<int32_t, int32_t> size = App::GetPtrInstance()->GetViewSize();
+		glViewport(0, 0, size.first, size.second);
+		return pCurrent;
+	}
+
+	GLES2Camera* GLES2Camera::Activate(GLES2Camera* pCamera)
+	{
+		GLES2Camera* pCurrent = GLES2Camera::Deactivate();
+
+		if(pCamera)
+			pCamera->Activate();
+
+		return pCurrent;
+
 	}
 
 	GLES2Camera* GLES2Camera::GetActiveCamera()

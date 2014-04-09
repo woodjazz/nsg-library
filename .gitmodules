@@ -10,3 +10,9 @@
 [submodule "freetype2"]
 	path = freetype2
 	url = git://git.sv.nongnu.org/freetype/freetype2.git
+[submodule "codecs/vorbis"]
+	path = codecs/vorbis
+	url = https://git.xiph.org/mirrors/vorbis.git
+[submodule "codecs/ogg"]
+	path = codecs/ogg
+	url = https://git.xiph.org/mirrors/ogg.git

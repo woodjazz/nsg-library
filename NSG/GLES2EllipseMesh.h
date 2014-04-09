@@ -33,7 +33,7 @@ namespace NSG
 	class GLES2EllipseMesh : public GLES2Mesh
 	{
 	public:
-		GLES2EllipseMesh(float width, float height, int res, PGLES2Material pMaterial, GLenum usage);
+		GLES2EllipseMesh(float width, float height, int res, GLenum usage);
 		~GLES2EllipseMesh();
 		void SetFilled(bool enable);
 	private:

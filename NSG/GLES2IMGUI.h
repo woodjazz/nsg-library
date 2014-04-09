@@ -75,6 +75,7 @@ namespace NSG
 			PGLES2Material pBorderMaterial;
 			PGLES2Mesh pMesh;
 			Skin();
+			Skin(const Skin& obj);
 		};
 
 		typedef std::shared_ptr<Skin> PSkin;

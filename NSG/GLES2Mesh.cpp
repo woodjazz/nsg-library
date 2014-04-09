@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "GLES2Mesh.h"
 #include "Log.h"
+#include "Check.h"
 #include "App.h"
 
 #include "glm/glm/gtc/matrix_transform.hpp"
@@ -41,17 +42,28 @@ namespace NSG
 	{
 	}
 
-	GLES2Mesh::GLES2Mesh(PGLES2Material pMaterial, GLenum usage) 
+	GLES2Mesh::GLES2Mesh(GLenum usage) 
 	: usage_(usage),
     mode_(GL_TRIANGLES),
     selectMode_(GL_TRIANGLES),
-    loaded_(false)
+    loaded_(false),
+    blendMode_(ALPHA),
+    enableDepthTest_(true)
 	{
-		SetMaterial(pMaterial);
 	}
 
 	GLES2Mesh::~GLES2Mesh() 
 	{
+	}
+
+	void GLES2Mesh::SetBlendMode(BLEND_MODE mode)
+	{
+		blendMode_ = mode;
+	}
+
+	void GLES2Mesh::EnableDepthTest(bool enable)
+	{
+		enableDepthTest_ = enable;
 	}
 
 	void GLES2Mesh::AddVertexData(const VertexData& data)
@@ -82,6 +94,7 @@ namespace NSG
 
 	void GLES2Mesh::SetMaterial(PGLES2Material pMaterial)
 	{
+        CHECK_ASSERT(pMaterial, __FILE__, __LINE__);
 		pMaterial_ = pMaterial;
 		texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
 		position_loc_ = pMaterial_->GetPositionAttLocation();
@@ -95,6 +108,8 @@ namespace NSG
 
 	void GLES2Mesh::Render(Node* pNode) 
 	{
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
 		App* pApp = App::GetPtrInstance();
 
 		PGLES2FrameColorSelection pSelection = pApp->GetSelection();
@@ -105,7 +120,7 @@ namespace NSG
 		}
 		else
 		{
-			if(!pMaterial_->IsReady()) 
+			if(!pMaterial_ || !pMaterial_->IsReady()) 
 				return;
 
 	        if(!loaded_)
@@ -117,13 +132,42 @@ namespace NSG
 		        loaded_ = true;
 	        }
 
-			assert(pVBuffer_);
+			CHECK_ASSERT(pVBuffer_, __FILE__, __LINE__);
 
-	        assert(glGetError() == GL_NO_ERROR);
+	        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
+	        switch(blendMode_)
+	       	{
+	        	case NONE:
+		        	glDisable(GL_BLEND);
+		        	break;
+
+		        case ALPHA:
+		        	glEnable(GL_BLEND);
+		        	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		        	break;
+
+		        default:
+		        	CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
+		        	break;
+	        }
+            
+            if(enableDepthTest_)
+            {
+            	glEnable(GL_DEPTH_TEST);
+            }
+            else
+            {
+            	glDisable(GL_DEPTH_TEST);
+            }
 
 			UseMaterial useMaterial(*pMaterial_, pNode);
 
+            CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
 			BindBuffer bindVBuffer(*pVBuffer_);
+
+            CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
 			if(position_loc_ != -1)
 			{
@@ -161,6 +205,8 @@ namespace NSG
 				glEnableVertexAttribArray(texcoord_loc_);
 			}
 
+            CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
 			if(!indexes_.empty())
 			{
 				BindBuffer bindIBuffer(*pIBuffer_);
@@ -172,7 +218,22 @@ namespace NSG
 				glDrawArrays(mode_, 0, vertexsData_.size());
 	        }
 
-	        assert(glGetError() == GL_NO_ERROR);
+			if(position_loc_ != -1)
+			{
+				glDisableVertexAttribArray(position_loc_);	
+			}
+
+			if(normal_loc_ != -1)
+			{
+				glDisableVertexAttribArray(normal_loc_);	
+			}
+
+			if(texcoord_loc_ != -1)
+			{
+				glDisableVertexAttribArray(texcoord_loc_);	
+			}
+
+			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	    }
 	}
 

@@ -33,7 +33,7 @@ namespace NSG
 	class GLES2BoxMesh : public GLES2Mesh
 	{
 	public:
-		GLES2BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, PGLES2Material pMaterial, GLenum usage);
+		GLES2BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, GLenum usage);
 		~GLES2BoxMesh();
 	};
 

@@ -51,8 +51,10 @@ namespace NSG
 	class GLES2Mesh
 	{
 	public:
-		GLES2Mesh(PGLES2Material pMaterial, GLenum usage);
+		GLES2Mesh(GLenum usage);
 		~GLES2Mesh();
+		void SetBlendMode(BLEND_MODE mode);
+		void EnableDepthTest(bool enable);
 		void Render(PNode pNode);
 		void Render(Node* pNode);
 		void RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc);
@@ -82,7 +84,7 @@ namespace NSG
 		GLenum mode_;
 		GLenum selectMode_;
         bool loaded_;
+        BLEND_MODE blendMode_;
+        bool enableDepthTest_;
 	};
-
-	typedef std::shared_ptr<GLES2Mesh> PGLES2Mesh;
 }

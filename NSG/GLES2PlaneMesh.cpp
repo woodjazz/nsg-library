@@ -28,8 +28,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	GLES2PlaneMesh::GLES2PlaneMesh(float width, float height, int columns, int rows, PGLES2Material pMaterial, GLenum usage) 
-	: GLES2Mesh(pMaterial, usage)
+	GLES2PlaneMesh::GLES2PlaneMesh(float width, float height, int columns, int rows, GLenum usage) 
+	: GLES2Mesh(usage)
 	{
 		GLES2Mesh::Data& data = GetVertexData();
 		Indexes indexes;

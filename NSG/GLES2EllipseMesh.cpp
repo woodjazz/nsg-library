@@ -29,8 +29,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	GLES2EllipseMesh::GLES2EllipseMesh(float width, float height, int res, PGLES2Material pMaterial, GLenum usage) 
-	: GLES2Mesh(pMaterial, usage),
+	GLES2EllipseMesh::GLES2EllipseMesh(float width, float height, int res, GLenum usage) 
+	: GLES2Mesh(usage),
 	filled_(true)
 	{
 		GLES2Mesh::Data& data = GetVertexData();

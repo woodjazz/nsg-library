@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "GLES2Text.h"
 #include "Log.h"
+#include "Check.h"
 #include "App.h"
 #include "GLES2Camera.h"
 #include <algorithm>
@@ -81,7 +82,7 @@ static const char* fAtlasShader = STRINGIFY(
 namespace NSG
 {
 	typedef std::pair<std::string, int> Key;
-	typedef std::map<Key, PGLES2Texture> Atlas;
+	typedef std::map<Key, PGLES2FontAtlasTexture> Atlas;
 	Atlas fontAtlas;
 
 	GLES2Text::GLES2Text(const char* filename, int fontSize, GLenum usage)
@@ -95,7 +96,9 @@ namespace NSG
 	usage_(usage),
 	width_(0),
 	height_(0),
-	fontSize_(fontSize)
+	fontSize_(fontSize),
+    blendMode_(ALPHA),
+    enableDepthTest_(true)
     {
     	Key k(filename, fontSize);
     	auto it = fontAtlas.find(k);
@@ -105,20 +108,23 @@ namespace NSG
     	}
     	else
     	{
-    		pAtlas_ = PGLES2Texture(new GLES2Texture(filename, true, fontSize));
+    		pAtlas_ = PGLES2FontAtlasTexture(new GLES2FontAtlasTexture(filename, fontSize));
 			fontAtlas.insert(Atlas::value_type(k, pAtlas_));
     	}
-
-		PGLES2Program pProgram(new GLES2Program(vAtlasShader, fAtlasShader));
-		PGLES2Material pMaterial = PGLES2Material(new GLES2Material ());
-        pMaterial->SetProgram(pProgram);
-		pMaterial->SetMainTexture(pAtlas_);
-		pMesh_ = PGLES2PlaneMesh(new GLES2PlaneMesh(2, 2, 2, 2, pMaterial, GL_STATIC_DRAW));
-
 	}
 
 	GLES2Text::~GLES2Text() 
 	{
+	}
+
+	void GLES2Text::SetBlendMode(BLEND_MODE mode)
+	{
+		blendMode_ = mode;
+	}
+
+	void GLES2Text::EnableDepthTest(bool enable)
+	{
+		enableDepthTest_ = enable;
 	}
 
 	void GLES2Text::ReleaseAtlasCollection()
@@ -126,17 +132,6 @@ namespace NSG
 		fontAtlas.clear();
 	}
 
-	void GLES2Text::ShowAtlas()
-	{
-		GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
-
-		pMesh_->Render(nullptr);		
-
-		if(!isBlendEnabled)
-			glDisable(GL_BLEND);
-	}
 
 	void GLES2Text::Render(PNode pNode, Color color) 
 	{
@@ -151,9 +146,30 @@ namespace NSG
 		{
             assert(glGetError() == GL_NO_ERROR);
 
-			GLboolean isBlendEnabled = glIsEnabled(GL_BLEND);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+	        switch(blendMode_)
+	       	{
+	        	case NONE:
+		        	glDisable(GL_BLEND);
+		        	break;
+
+		        case ALPHA:
+		        	glEnable(GL_BLEND);
+		        	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		        	break;
+
+		        default:
+		        	CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
+		        	break;
+	        }
+            
+            if(enableDepthTest_)
+            {
+            	glEnable(GL_DEPTH_TEST);
+            }
+            else
+            {
+            	glDisable(GL_DEPTH_TEST);
+            }
 
 			UseProgram useProgram(*pProgram_);
 
@@ -173,8 +189,7 @@ namespace NSG
 
 			glDrawArrays(GL_TRIANGLES, 0, coords_.size());
 
-			if(!isBlendEnabled)
-				glDisable(GL_BLEND);
+            glDisableVertexAttribArray(position_loc_);
 
             assert(glGetError() == GL_NO_ERROR);
 		}
@@ -196,7 +211,7 @@ namespace NSG
 
         float sx = 2.0f/width_;
 
-        const GLES2Texture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
+        const GLES2FontAtlasTexture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
 
 		for(unsigned int i=0; i<charPos && *p; i++) 
 		{ 
@@ -219,7 +234,7 @@ namespace NSG
 
         float sx = 2.0f/width_;
 
-        const GLES2Texture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
+        const GLES2FontAtlasTexture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
 
 		while(*p) 
 		{ 
@@ -273,7 +288,7 @@ namespace NSG
 
 			int c = 0;
 
-			const GLES2Texture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
+			const GLES2FontAtlasTexture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
 			int atlasWidth = pAtlas_->GetAtlasWidth();
 			int atlasHeight = pAtlas_->GetAtlasHeight();
 

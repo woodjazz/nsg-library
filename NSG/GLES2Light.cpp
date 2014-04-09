@@ -45,7 +45,8 @@ namespace NSG
 		PGLES2Material pMaterial = PGLES2Material(new GLES2Material());
         pMaterial->SetProgram(pProgram);
 
-		pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(0.2f,0.2f,0.2f, 2,2,2, pMaterial, GL_STATIC_DRAW));
+		pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(0.2f,0.2f,0.2f, 2,2,2, GL_STATIC_DRAW));
+        pMesh_->SetMaterial(pMaterial);
 	}
 
 	GLES2Light::~GLES2Light()

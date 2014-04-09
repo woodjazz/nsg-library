@@ -24,36 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Log.h"
 
-#define GLM_FORCE_RADIANS
-#include "glm/glm/glm.hpp"
-#include <glm/glm/gtc/quaternion.hpp>
-#include "glm/glm/gtc/matrix_transform.hpp"
-#include "glm/glm/gtc/type_ptr.hpp"
-#include "glm/glm/gtc/constants.hpp"
-#include "glm/glm/gtc/epsilon.hpp"
-#include "glm/glm/gtx/spline.hpp"
-#include <memory>
-
-namespace NSG
-{
-    typedef glm::highp_ivec4 Recti;
-	typedef glm::vec4 Vertex4;
-	typedef glm::vec3 Vertex3;
-	typedef glm::vec2 Vertex2;
-	typedef glm::quat Quaternion;
-    typedef glm::mat4 Matrix4;
-    typedef glm::mat3 Matrix3;
-    typedef glm::vec4 Color;
-
-    class GLES2Mesh;
-    typedef std::shared_ptr<GLES2Mesh> PGLES2Mesh;
-
-    class GLES2Texture;
-    typedef std::shared_ptr<GLES2Texture> PGLES2Texture;
-
-    class GLES2Material;
-    typedef std::shared_ptr<GLES2Material> PGLES2Material;
-
-    enum BLEND_MODE {NONE, ALPHA};
+#define CHECK_ASSERT(f, file, line) if (!(f)) {\
+	TRACE_LOG((#f) << " has failed in file " << file << " line " << line);\
+	assert(false);\
 }

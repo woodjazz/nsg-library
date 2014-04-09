@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "GLES2Buffer.h"
+#include "Check.h"
 #include <assert.h>
 
 namespace NSG 
@@ -31,7 +32,7 @@ namespace NSG
 	GLES2Buffer::GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid* data, GLenum usage)
 	: type_(type)
 	{
-		assert(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER);
+		CHECK_ASSERT(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER, __FILE__, __LINE__);
 
         assert(glGetError() == GL_NO_ERROR);
 
@@ -41,7 +42,7 @@ namespace NSG
 
 		glBufferData(type, size, data, usage);
 
-        assert(glGetError() == GL_NO_ERROR);
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	}
 
 	GLES2Buffer::~GLES2Buffer()

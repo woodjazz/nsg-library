@@ -45,4 +45,6 @@ namespace NSG
 		GLboolean save_depth_mask_;
 		PGLES2Material pMaterial_;
 	};
+
+    typedef std::shared_ptr<GLES2StencilMask> PGLES2StencilMask;
 }

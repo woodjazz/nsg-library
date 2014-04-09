@@ -45,6 +45,7 @@ namespace NSG
 		~GLES2Material();
 		void SetProgram(PGLES2Program pProgram);
 		void SetMainTexture(PGLES2Texture pTexture);
+        PGLES2Texture GetMainTexture() const { return pTexture_; }
 		bool IsReady();
 		GLuint GetTextCoordAttLocation() { return texcoord_loc_; }
 		GLuint GetPositionAttLocation() { return position_loc_; }
@@ -102,10 +103,10 @@ namespace NSG
         typedef std::map<std::string, int> IntUniformMap;
         IntUniformMap intUniforms_;
 
+        bool hasLights_;
+
 		friend class UseMaterial;
 	};
-
-	typedef std::shared_ptr<GLES2Material> PGLES2Material;
 
 	class UseMaterial
 	{

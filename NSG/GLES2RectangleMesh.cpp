@@ -29,8 +29,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	GLES2RectangleMesh::GLES2RectangleMesh(float width, float height, PGLES2Material pMaterial, GLenum usage) 
-	: GLES2Mesh(pMaterial, usage),
+	GLES2RectangleMesh::GLES2RectangleMesh(float width, float height, GLenum usage) 
+	: GLES2Mesh(usage),
 	filled_(true)
 	{
 		float halfX = width * 0.5f;

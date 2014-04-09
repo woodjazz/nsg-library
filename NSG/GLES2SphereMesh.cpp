@@ -30,8 +30,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	GLES2SphereMesh::GLES2SphereMesh(float radius, int res, PGLES2Material pMaterial, GLenum usage) 
-	: GLES2Mesh(pMaterial, usage)
+	GLES2SphereMesh::GLES2SphereMesh(float radius, int res, GLenum usage) 
+	: GLES2Mesh(usage)
 	{
 		GLES2Mesh::Data& data = GetVertexData();
 

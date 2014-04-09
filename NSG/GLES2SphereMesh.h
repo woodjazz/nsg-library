@@ -33,7 +33,7 @@ namespace NSG
 	class GLES2SphereMesh : public GLES2Mesh
 	{
 	public:
-		GLES2SphereMesh(float radius, int res, PGLES2Material pMaterial, GLenum usage);
+		GLES2SphereMesh(float radius, int res, GLenum usage);
 		~GLES2SphereMesh();
 	};
 

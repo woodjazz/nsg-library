@@ -104,8 +104,13 @@ void MyApp::Start()
     pMaterial3->SetProgram(pDiffuseProgram);
 	pMaterial3->SetMainTexture(pTexture);
 
-	pSphereMesh_ = PGLES2SphereMesh(new GLES2SphereMesh(3, 32, pMaterial2_, GL_STATIC_DRAW));
-	pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(1,1,1, 2,2,2, pMaterial3, GL_STATIC_DRAW));
+	pSphereMesh_ = PGLES2SphereMesh(new GLES2SphereMesh(3, 32, GL_STATIC_DRAW));
+    pSphereMesh_->SetMaterial(pMaterial2_);
+	pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
+    pMesh_ ->SetMaterial(pMaterial3);
+
+    //pMesh_->SetBlendMode(NONE);
+    //pSphereMesh_->SetBlendMode(NONE);
 
     pNode1_ = PNode(new Node);
     pNode2_ = PNode(new Node);
@@ -141,14 +146,22 @@ void MyApp::Start()
 	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cell.png"));
 	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cube_example.png"));
 	PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("Earthmap720x360_grid.jpg"));
-	
 
-	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin());
-	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin());
+	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::pSkin));
+	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::pSkin));
 	pSkin2_->drawBorder = false;
-	pSkin2_->pMesh =  PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, IMGUI::pSkin->pNormalMaterial, GL_STATIC_DRAW));
-	pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
-	pSkin1_->pActiveMaterial->SetMainTexture(pCellTexture);
+	pSkin2_->pMesh =  PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, GL_STATIC_DRAW));
+	pSkin2_->pMesh->EnableDepthTest(false);
+	//pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
+	//pSkin1_->pActiveMaterial->SetMainTexture(pCellTexture);
+
+	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 256, 256, nullptr));
+
+	pSkin2_->pActiveMaterial->SetMainTexture(pRenderedTexture_);
+	pSkin1_->pActiveMaterial->SetMainTexture(pRenderedTexture_);
+
+    pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(pRenderedTexture_));
+
 }
 
 void MyApp::Update() 
@@ -342,6 +355,7 @@ void MyApp::Menu1()
         IMGUI::pCurrentNode->SetPosition(Vertex3(0,0,0));
 	    IMGUIBeginHorizontal();
 	    {
+	    	
 		    IMGUIBeginVertical();
 		    {
 			    IMGUISpacer(80);
@@ -354,13 +368,15 @@ void MyApp::Menu1()
 		    }
 		    IMGUIEndVertical();
 		    IMGUISpacer(80);
+		    
 	    }
 	    IMGUIEndHorizontal();
+	    
         if(IMGUI::pSkin->pNormalMaterial->GetDiffuseColor().w < alpha)
 	    	IMGUI::pSkin->alphaFactor += 0.01f;
 	    else
 	    	IMGUI::pSkin->alphaFactor = 1;
-
+		
     }
     else
 	{
@@ -392,7 +408,6 @@ void MyApp::Menu1()
             IMGUI::pSkin->alphaFactor = 0;
         }
 	}
-
 }
 
 void MyApp::RenderGUIFrame()
@@ -406,7 +421,8 @@ void MyApp::RenderFrame()
 {
 	//TRACE_LOG("MyApp::RenderFrame");
 
-	//pText3_->ShowAtlas();
+	pText3_->GetAtlas()->Show(pText3_->GetAtlas());
+    //pMaterial2_->GetMainTexture()->Show(pMaterial2_->GetMainTexture());
 
     pCamera1_->Activate();
 
@@ -415,8 +431,10 @@ void MyApp::RenderFrame()
     pMesh_->SetMode(GL_TRIANGLES);
     pSphereMesh_->SetMode(GL_TRIANGLES);
 
+	pRender2Texture_->Begin();
     pMesh_->Render(pNode1_);
     pSphereMesh_->Render(pNode2_);
+    pRender2Texture_->End();
 
     std::stringstream ss;
     ss << "Mouse x=" << x_ << " y=" << y_;
@@ -434,8 +452,8 @@ void MyApp::RenderFrame()
 
 
 	GLES2Camera::Deactivate();
-	pText1_->SetText(ss.str());
-	pText1_->Render(pTextNode1_, Color(1,1,1,1));
+	//pText1_->SetText(ss.str());
+	//pText1_->Render(pTextNode1_, Color(1,1,1,1));
 
     //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");
 

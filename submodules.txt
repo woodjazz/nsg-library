@@ -1,0 +1,2 @@
+git submodule add https://git.xiph.org/mirrors/vorbis.git ./codecs/vorbis
+git submodule add https://git.xiph.org/mirrors/ogg.git ./codecs/ogg

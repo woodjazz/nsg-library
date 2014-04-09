@@ -29,6 +29,11 @@ PROJECT(nsg-library)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+# Include necessary submodules
+set(CMAKE_MODULE_PATH 
+  "${CMAKE_CURRENT_SOURCE_DIR}/CMake"
+)
+
 if(WIN32)
 
 	if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
@@ -148,6 +153,24 @@ add_subdirectory(soil)
 set(FREETYPE2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/include)
 include_directories(${FREETYPE2_INCLUDE_DIR})
 add_subdirectory(freetype2)
+
+###########################
+# codecs
+###########################
+add_subdirectory(codecs)
+
+###########################
+# rtaudio
+###########################
+# if(WIN32)
+# 	find_package(DirectSound REQUIRED)
+# 	include_directories(${DIRECTSOUND_INCLUDE_DIRS})
+# 	add_definitions(-D__WINDOWS_DS__)
+# endif()
+
+# include_directories(codecs/vorbis/include)
+# include_directories(codecs/ogg/include)
+# add_subdirectory(rtaudio)
 
 ###########################
 # alure

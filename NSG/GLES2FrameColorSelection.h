@@ -56,13 +56,12 @@ namespace NSG
         int32_t windowHeight_;
         GLuint framebuffer_;
         GLuint colorRenderbuffer_;
+        GLuint depthRenderBuffer_;
         GLubyte selected_[4];
         double screenX_;
         double screenY_;
         GLint pixelX_;
         GLint pixelY_;
-        GLboolean isDepthTestEnabled_;
-        GLboolean isBlendEnabled_;
     };
 
     typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;

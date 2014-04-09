@@ -33,7 +33,7 @@ namespace NSG
 	class GLES2PlaneMesh : public GLES2Mesh
 	{
 	public:
-		GLES2PlaneMesh(float width, float height, int columns, int rows, PGLES2Material pMaterial, GLenum usage);
+		GLES2PlaneMesh(float width, float height, int columns, int rows, GLenum usage);
 		~GLES2PlaneMesh();
 	};
 

@@ -36,6 +36,7 @@ misrepresented as being the original software.
 #include "NSG/GLES2Texture.h"
 #include "NSG/GLES2Light.h"
 #include "NSG/GLES2IMGUI.h"
+#include "NSG/GLES2Render2Texture.h"
 
 using namespace NSG;
 
@@ -87,5 +88,7 @@ private:
     IMGUI::PSkin pSkin1_;
     IMGUI::PSkin pSkin2_;
     float aspectRatio_;
+    PGLES2Texture pRenderedTexture_;
+    PGLES2Render2Texture pRender2Texture_;
 };
 

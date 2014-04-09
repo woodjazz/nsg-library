@@ -40,6 +40,7 @@ misrepresented as being the original software.
 #include <map>
 #include <list>
 #include <set>
+#include <cassert>
 
 using namespace NSG;
 
@@ -118,8 +119,10 @@ namespace NSG
         pNormalMaterial(new GLES2Material()),
         pHotMaterial(new GLES2Material()),
         pBorderMaterial(new GLES2Material()),
-		pMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, pNormalMaterial, GL_STATIC_DRAW))
+		pMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW))
 		{
+			pMesh->SetBlendMode(ALPHA);
+			pMesh->EnableDepthTest(false);
             PGLES2Program pProgram(new GLES2Program(vShader, fShader));
             pActiveMaterial->SetProgram(pProgram);
 			pActiveMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
@@ -139,11 +142,27 @@ namespace NSG
 			pBorderMaterial->SetDiffuseColor(Color(1,1,1,1));
 		}
 
+		Skin::Skin(const Skin& obj)
+		: alphaFactor(obj.alphaFactor),
+		fontFile(obj.fontFile),
+		fontSize(obj.fontSize),
+		textMaxLength(obj.textMaxLength),
+		fillEnabled(obj.fillEnabled),
+		drawBorder(obj.drawBorder),
+		pActiveMaterial(obj.pActiveMaterial),
+		pNormalMaterial(obj.pNormalMaterial),
+		pHotMaterial(obj.pHotMaterial),
+		pBorderMaterial(obj.pBorderMaterial),
+		pMesh(obj.pMesh)
+		{
+		}
+
 		PSkin pSkin;
 		PGLES2Camera pCamera;
 		PNode pCurrentNode;
 		PGLES2FrameColorSelection pFrameColorSelection;		
         PNode pRootNode;
+        PGLES2StencilMask pStencilMask;
 		int tick = 0;
 
 
@@ -264,6 +283,8 @@ namespace NSG
                 }
 
 				auto it = areas_.insert(AREAS::value_type(id, pArea));
+
+                assert(it.second);
 
                 if(++(it.first) != areas_.end())
                 {
@@ -481,26 +502,22 @@ namespace NSG
             pLayoutManager_ = PLayoutManager(new LayoutManager());
         	pRootNode = PNode(new Node());
         	pTextManagers = PTextManagerMap(new TextManagerMap());
+        	pStencilMask = PGLES2StencilMask(new GLES2StencilMask());
 		}
 
 		void ReleaseResources()
 		{
 			TRACE_LOG("IMGUI Releasing resources");
+			pStencilMask = nullptr;
 			pTextManagers = nullptr;
 			pRootNode = nullptr;
             pLayoutManager_ = nullptr;
 			pSkin = nullptr;
 		}
 
-		GLboolean isBlendEnabled = false;
 		GLES2Camera* pActiveCamera = nullptr;
 		void Begin()
 		{
-			isBlendEnabled = glIsEnabled(GL_BLEND);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
-
-			glDisable(GL_DEPTH_TEST);
 			pActiveCamera = GLES2Camera::GetActiveCamera();
 			pCamera->Activate();
 			uistate.hotitem = 0;
@@ -547,13 +564,11 @@ namespace NSG
 			// Clear the entered key
 			uistate.keyentered = 0;	
 			uistate.character = 0;	
-
-			if(!isBlendEnabled)
-				glDisable(GL_BLEND);
 		}
 
 		void DrawButton(PGLES2Material pMaterial, PNode pNode, bool hasFocus)
 		{
+            assert(pMaterial);
             pSkin->pMesh->SetFilled(pSkin->fillEnabled);
             pMaterial->SetAlphaFactor(pSkin->alphaFactor);
             pMaterial->SetUniform("u_hasFocus", hasFocus ? 1 : 0);
@@ -601,6 +616,7 @@ namespace NSG
 		bool InternalButton(GLushort id, const std::string& text)
 		{
             PNode pNode = pLayoutManager_->GetAreaForControl(id)->pNode_;
+            assert(pNode);
 
 			if(!pLayoutManager_->IsStable())
 				return false;
@@ -617,7 +633,6 @@ namespace NSG
 			  		uistate.kbditem = id;
 			  	}
 			}
-
 			// If no widget has keyboard focus, take it
 			if (uistate.kbditem == 0)
 			{
@@ -656,10 +671,9 @@ namespace NSG
 			}
 
 			{
-				GLES2StencilMask stencilMask;
-				stencilMask.Begin();
-				stencilMask.Render(pNode.get(), pSkin->pMesh.get());
-				stencilMask.End();
+				pStencilMask->Begin();
+				pStencilMask->Render(pNode.get(), pSkin->pMesh.get());
+				pStencilMask->End();
 				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
 	            pTextMesh->SetText(text);
 				
@@ -807,10 +821,9 @@ namespace NSG
 			}
 
 			{
-				GLES2StencilMask stencilMask;
-				stencilMask.Begin();
-				stencilMask.Render(pNode.get(), pSkin->pMesh.get());
-				stencilMask.End();
+				pStencilMask->Begin();
+				pStencilMask->Render(pNode.get(), pSkin->pMesh.get());
+				pStencilMask->End();
 
 	            pTextMesh->SetText(currentText);
 				

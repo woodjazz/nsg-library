@@ -45,7 +45,8 @@ namespace NSG
 		void SetFov(float fovy);
 		void SetNearClip(float zNear);
 		void SetFarClip(float zFar);
-		static void Deactivate();
+		static GLES2Camera* Deactivate();
+		static GLES2Camera* Activate(GLES2Camera* pCamera);
 		static GLES2Camera* GetActiveCamera();
 		static Matrix4 GetModelViewProjection(const Node* pNode);
         Matrix4 GetView();

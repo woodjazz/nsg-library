@@ -27,8 +27,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	GLES2BoxMesh::GLES2BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, PGLES2Material pMaterial, GLenum usage) 
-	: GLES2Mesh(pMaterial, usage)
+	GLES2BoxMesh::GLES2BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, GLenum usage) 
+	: GLES2Mesh(usage)
 	{
 		// halves //
 		float halfW = width * .5f;

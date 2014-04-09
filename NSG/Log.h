@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include <stdio.h>
 #include <sstream>
 #include <string>
+#define GLM_FORCE_RADIANS
 #include "glm/glm/gtx/io.hpp"
 
 #ifdef NACL

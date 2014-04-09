@@ -33,7 +33,7 @@ namespace NSG
 	class GLES2RoundedRectangleMesh : public GLES2Mesh
 	{
 	public:
-		GLES2RoundedRectangleMesh(float radius, float width, float height, int res, PGLES2Material pMaterial, GLenum usage);
+		GLES2RoundedRectangleMesh(float radius, float width, float height, int res, GLenum usage);
 		~GLES2RoundedRectangleMesh();
 		void SetFilled(bool enable);
 	private:

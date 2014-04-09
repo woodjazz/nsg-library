@@ -32,8 +32,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2Program.h"
 #include "GLES2VertexBuffer.h"
-#include "GLES2Texture.h"
-#include "GLES2PlaneMesh.h"
+#include "GLES2FontAtlasTexture.h"
 #include "Node.h"
 #include "Types.h"
 
@@ -44,6 +43,8 @@ namespace NSG
 	public:
 		GLES2Text(const char* filename, int fontSize, GLenum usage);
 		~GLES2Text();
+		void SetBlendMode(BLEND_MODE mode);
+		void EnableDepthTest(bool enable);
 		void Render(PNode pNode, Color color);
 		void Render(Node* pNode, Color color);
 		void SetText(const std::string& text);
@@ -52,11 +53,10 @@ namespace NSG
 		GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
 		unsigned int GetCharacterPositionForWidth(float width) const;
 		PGLES2Texture GetAtlas() const { return pAtlas_; }
-		void ShowAtlas();
 		int GetFontSize() const { return fontSize_; }
 		static void ReleaseAtlasCollection();
 	private:
-		PGLES2Texture pAtlas_;
+		PGLES2FontAtlasTexture pAtlas_;
 		PGLES2Program pProgram_;
 		PGLES2VertexBuffer pVBuffer_;
 		GLuint texture_loc_;
@@ -80,9 +80,9 @@ namespace NSG
 		GLenum usage_;
 		int32_t width_;
 		int32_t height_;
-		PGLES2PlaneMesh pMesh_;
 		int fontSize_;
-
+        BLEND_MODE blendMode_;
+        bool enableDepthTest_;
 	};
 
 	typedef std::shared_ptr<GLES2Text> PGLES2Text;

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "GLES2FrameColorSelection.h"
 #include "Log.h"
+#include "Check.h"
 #include <assert.h>
 
 #define STRINGIFY(S) #S
@@ -59,42 +60,60 @@ namespace NSG
 	screenX_(0),
 	screenY_(0),
 	pixelX_(0),
-	pixelY_(0),
-    isDepthTestEnabled_(false),
-    isBlendEnabled_(false)
+	pixelY_(0)
 	{
-        assert(glGetError() == GL_NO_ERROR);
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
         glGenRenderbuffers(1, &colorRenderbuffer_);
+        glGenRenderbuffers(1, &depthRenderBuffer_);
+
         memset(selected_, 0, sizeof(selected_));
 
-        assert(glGetError() == GL_NO_ERROR);
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
 	}
 
 	GLES2FrameColorSelection::~GLES2FrameColorSelection()
 	{
-
+        glDeleteRenderbuffers(1, &depthRenderBuffer_);
+        glDeleteRenderbuffers(1, &colorRenderbuffer_);
+        glDeleteFramebuffers(1, &framebuffer_);
 	}
 
 	void GLES2FrameColorSelection::ViewChanged(int32_t windowWidth, int32_t windowHeight)
 	{
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
 		windowWidth_ = windowWidth;
 		windowHeight_ = windowHeight;
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+
+        //////////////////////////////////////////////////////////////////////////////////
+        // Color buffer
         glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
 #if defined(NACL) || defined(ANDROID)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, windowWidth, windowHeight);
 #else                
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, windowWidth, windowHeight);
-#endif                
+#endif  
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
+        //////////////////////////////////////////////////////////////////////////////////              
+
+        //////////////////////////////////////////////////////////////////////////////////
+        // The depth buffer
+        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
+        //////////////////////////////////////////////////////////////////////////////////
+
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if(GL_FRAMEBUFFER_COMPLETE != status)
         {
             TRACE_LOG("Frame buffer failed with error=" << status);
-            assert(false);
+            CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
 	}
 
@@ -107,17 +126,15 @@ namespace NSG
         pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
 #ifndef ANDROID
         glEnable(GL_SCISSOR_TEST);
         glScissor(pixelX_,pixelY_,1,1);
 #endif
-        isBlendEnabled_ = glIsEnabled(GL_BLEND);
-        glDisable(GL_BLEND);
-        isDepthTestEnabled_ = glIsEnabled(GL_DEPTH_TEST);
         glClearColor(0, 0, 0, 0);
         glClearDepth(1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
     }
 
     void GLES2FrameColorSelection::End()
@@ -128,12 +145,6 @@ namespace NSG
         glDisable(GL_SCISSOR_TEST);
 #endif        
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        if(!isDepthTestEnabled_)
-            glDisable(GL_DEPTH_TEST);
-
-        if(isBlendEnabled_)
-            glEnable(GL_BLEND);
     }
 
     GLushort GLES2FrameColorSelection::GetSelected() const

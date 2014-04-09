@@ -1,5 +1,6 @@
 #include "GLES2Material.h"
 #include "Log.h"
+#include "Check.h"
 #include "GLES2Camera.h"
 #include "GLES2Light.h"
 #include "Scene.h"
@@ -130,8 +131,7 @@ namespace NSG
 	const size_t MAX_LIGHTS_MATERIAL = 4;
 
 	GLES2Material::GLES2Material() 
-	: pTexture_(new GLES2Texture()),
-	color_scene_ambient_loc_(-1),
+	: color_scene_ambient_loc_(-1),
 	color_ambient_loc_(-1),
 	color_diffuse_loc_(-1),
 	color_specular_loc_(-1),
@@ -150,9 +150,10 @@ namespace NSG
 	diffuse_(1,1,1,1),
 	specular_(1,1,1,1),
 	shininess_(1),
-	alphaFactor_(1)
+	alphaFactor_(1),
+    hasLights_(false)
 	{
-        assert(glGetError() == GL_NO_ERROR);
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
         lightsLoc_.resize(MAX_LIGHTS_MATERIAL);
         memset(&lightsLoc_[0], 0, sizeof(lightsLoc_) * MAX_LIGHTS_MATERIAL);
 	}
@@ -198,9 +199,17 @@ namespace NSG
 		if(!pProgram_)
 			pProgram_ = PGLES2Program(new GLES2Program(vShader, fShader));
 
-		if(!loaded_ && pProgram_->IsReady() && (!pTexture_ || pTexture_->IsReady()))
+        if(!pTexture_)
+        {
+             // Creates 1x1 white texture 
+		    unsigned char img[3];
+		    memset(&img[0], 0xFF, sizeof(unsigned char)*3);
+            pTexture_ = PGLES2Texture(new GLES2Texture(GL_RGB, GL_UNSIGNED_BYTE, 1, 1, img));
+        }
+
+		if(!loaded_ && pProgram_->IsReady() && pTexture_->IsReady())
 		{
-			assert(glGetError() == GL_NO_ERROR);
+			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
 			color_ambient_loc_ = pProgram_->GetUniformLocation("u_material.ambient");
             color_scene_ambient_loc_ = pProgram_->GetUniformLocation("u_scene_ambient");
@@ -235,9 +244,14 @@ namespace NSG
 				lightsLoc_[i].spotCutoff_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotCutoff");
 				lightsLoc_[i].spotExponent_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotExponent");
 				lightsLoc_[i].spotDirection_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotDirection");
+
+                if(lightsLoc_[i].type_loc != -1)
+                {
+                    hasLights_ = true;
+                }
 			}
 
-			assert(glGetError() == GL_NO_ERROR);
+			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
 			loaded_ = true;
 		}
@@ -313,84 +327,87 @@ namespace NSG
 			glUniform1f(obj.alphaFactor_loc_, obj.alphaFactor_);
 		}
 
-		const GLES2Light::Lights& ligths = GLES2Light::GetLights();
+        if(obj.hasLights_)
+        {
+		    const GLES2Light::Lights& ligths = GLES2Light::GetLights();
 		
-		size_t n = std::min(ligths.size(), MAX_LIGHTS_MATERIAL);
+		    size_t n = std::min(ligths.size(), MAX_LIGHTS_MATERIAL);
 
-		for(size_t i=0; i<n; i++)
-		{
-			GLint type = ligths[i]->GetType();
+		    for(size_t i=0; i<n; i++)
+		    {
+			    GLint type = ligths[i]->GetType();
 
-			if(obj.lightsLoc_[i].type_loc != -1)
-			{
-				glUniform1i(obj.lightsLoc_[i].type_loc, type);
-			}
+			    if(obj.lightsLoc_[i].type_loc != -1)
+			    {
+				    glUniform1i(obj.lightsLoc_[i].type_loc, type);
+			    }
 
-			if(obj.lightsLoc_[i].position_loc != -1)
-			{
-				if(type == GLES2Light::DIRECTIONAL)
-				{
-					const Vertex3& direction = ligths[i]->GetLookAtDirection();
-					glUniform3fv(obj.lightsLoc_[i].position_loc, 1, &direction[0]);
-				}
-				else
-				{
-					const Vertex3& position = ligths[i]->GetGlobalPosition();
-					glUniform3fv(obj.lightsLoc_[i].position_loc, 1, &position[0]);
-				}
-			}
+			    if(obj.lightsLoc_[i].position_loc != -1)
+			    {
+				    if(type == GLES2Light::DIRECTIONAL)
+				    {
+					    const Vertex3& direction = ligths[i]->GetLookAtDirection();
+					    glUniform3fv(obj.lightsLoc_[i].position_loc, 1, &direction[0]);
+				    }
+				    else
+				    {
+					    const Vertex3& position = ligths[i]->GetGlobalPosition();
+					    glUniform3fv(obj.lightsLoc_[i].position_loc, 1, &position[0]);
+				    }
+			    }
 			
-			if(obj.lightsLoc_[i].diffuse_loc != -1)
-			{
-				const Color& diffuse = ligths[i]->GetDiffuseColor();
-				glUniform4fv(obj.lightsLoc_[i].diffuse_loc, 1, &diffuse[0]);
-			}
+			    if(obj.lightsLoc_[i].diffuse_loc != -1)
+			    {
+				    const Color& diffuse = ligths[i]->GetDiffuseColor();
+				    glUniform4fv(obj.lightsLoc_[i].diffuse_loc, 1, &diffuse[0]);
+			    }
 
-			if(obj.lightsLoc_[i].specular_loc != -1)
-			{
-				const Color& specular = ligths[i]->GetSpecularColor();
-				glUniform4fv(obj.lightsLoc_[i].specular_loc, 1, &specular[0]);
-			}
+			    if(obj.lightsLoc_[i].specular_loc != -1)
+			    {
+				    const Color& specular = ligths[i]->GetSpecularColor();
+				    glUniform4fv(obj.lightsLoc_[i].specular_loc, 1, &specular[0]);
+			    }
 
-			if(obj.lightsLoc_[i].constantAttenuation_loc != -1)
-			{
-				const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
-				glUniform1f(obj.lightsLoc_[i].constantAttenuation_loc, attenuation.constant);
-			}
+			    if(obj.lightsLoc_[i].constantAttenuation_loc != -1)
+			    {
+				    const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
+				    glUniform1f(obj.lightsLoc_[i].constantAttenuation_loc, attenuation.constant);
+			    }
 
-			if(obj.lightsLoc_[i].linearAttenuation_loc != -1)
-			{
-				const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
-				glUniform1f(obj.lightsLoc_[i].linearAttenuation_loc, attenuation.linear);
-			}
+			    if(obj.lightsLoc_[i].linearAttenuation_loc != -1)
+			    {
+				    const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
+				    glUniform1f(obj.lightsLoc_[i].linearAttenuation_loc, attenuation.linear);
+			    }
 
-			if(obj.lightsLoc_[i].quadraticAttenuation_loc != -1)
-			{
-				const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
-				glUniform1f(obj.lightsLoc_[i].quadraticAttenuation_loc, attenuation.quadratic);
-			}
+			    if(obj.lightsLoc_[i].quadraticAttenuation_loc != -1)
+			    {
+				    const GLES2Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
+				    glUniform1f(obj.lightsLoc_[i].quadraticAttenuation_loc, attenuation.quadratic);
+			    }
 
-			if(type == GLES2Light::SPOT)
-			{
-				if(obj.lightsLoc_[i].spotCutoff_loc != -1)
-				{
-					float cutOff = ligths[i]->GetSpotCutOff();
-					glUniform1f(obj.lightsLoc_[i].spotCutoff_loc, cutOff);
-				}
+			    if(type == GLES2Light::SPOT)
+			    {
+				    if(obj.lightsLoc_[i].spotCutoff_loc != -1)
+				    {
+					    float cutOff = ligths[i]->GetSpotCutOff();
+					    glUniform1f(obj.lightsLoc_[i].spotCutoff_loc, cutOff);
+				    }
 
-				if(obj.lightsLoc_[i].spotExponent_loc != -1)
-				{
-					float exponent = ligths[i]->GetSpotExponent();
-					glUniform1f(obj.lightsLoc_[i].spotExponent_loc, exponent);
-				}
+				    if(obj.lightsLoc_[i].spotExponent_loc != -1)
+				    {
+					    float exponent = ligths[i]->GetSpotExponent();
+					    glUniform1f(obj.lightsLoc_[i].spotExponent_loc, exponent);
+				    }
 
-				if(obj.lightsLoc_[i].spotDirection_loc != -1)
-				{
-					const Vertex3& direction = ligths[i]->GetLookAtDirection();
-					glUniform3fv(obj.lightsLoc_[i].spotDirection_loc, 1, &direction[0]);
-				}
-			}
-		}
+				    if(obj.lightsLoc_[i].spotDirection_loc != -1)
+				    {
+					    const Vertex3& direction = ligths[i]->GetLookAtDirection();
+					    glUniform3fv(obj.lightsLoc_[i].spotDirection_loc, 1, &direction[0]);
+				    }
+			    }
+		    }
+        }
 	}
 
 	UseMaterial::~UseMaterial()

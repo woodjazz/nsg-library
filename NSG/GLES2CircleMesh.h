@@ -33,7 +33,7 @@ namespace NSG
 	class GLES2CircleMesh : public GLES2Mesh
 	{
 	public:
-		GLES2CircleMesh(float radius, int res, PGLES2Material pMaterial, GLenum usage);
+		GLES2CircleMesh(float radius, int res, GLenum usage);
 		~GLES2CircleMesh();
 		void SetFilled(bool enable);
 	private:
