@@ -2,7 +2,6 @@
 #include "Log.h"
 #include "Resource.h"
 #include "GLES2Program.h"
-#include "GLES2Material.h"
 #include <assert.h>
 #include <algorithm>
 
@@ -33,7 +32,8 @@ namespace NSG
 	diffuse_(1,1,1,1),
 	specular_(1,1,1,1),
 	spotCutOff_(45),
-    exponent_(20)
+    exponent_(20),
+    pMaterial_(new GLES2Material())
 	{
 	    attenuation_.constant = 1;
 	    attenuation_.linear = 0;
@@ -42,11 +42,9 @@ namespace NSG
 		s_Lights.push_back(this);
 
 		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-		PGLES2Material pMaterial = PGLES2Material(new GLES2Material());
-        pMaterial->SetProgram(pProgram);
+        pMaterial_->SetProgram(pProgram);
 
 		pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(0.2f,0.2f,0.2f, 2,2,2, GL_STATIC_DRAW));
-        pMesh_->SetMaterial(pMaterial);
 	}
 
 	GLES2Light::~GLES2Light()
@@ -87,6 +85,9 @@ namespace NSG
 
 	void GLES2Light::Render()
 	{
-		pMesh_->Render(this);
+        if(pMaterial_->IsReady())
+        {
+		    pMaterial_->Render(true, this, pMesh_.get());
+        }
 	}
 }

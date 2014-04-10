@@ -24,6 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "MyApp.h"
+#include "EarthBehavior.h"
+#include "CubeBehavior.h"
+
 #include "NSG/Log.h"
 #include "NSG/GLES2Texture.h"
 #include "NSG/GLES2IMGUI.h"
@@ -35,6 +38,7 @@ misrepresented as being the original software.
 #include <stdlib.h>
 #include <string>
 #include <sstream>
+
 
 extern void FSMExamples();
 extern void FSMTest();
@@ -88,43 +92,15 @@ void MyApp::Start()
 	pCamera1_ = PGLES2Camera(new GLES2Camera());
 	pCamera2_ = PGLES2Camera(new GLES2Camera());
 
-    PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
-	PResource pFResource(new Resource("shaders/Simple.frag"));
-	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
-	PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
-	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
-	pMaterial2_ = PGLES2Material(new GLES2Material ());
-    //pMaterial2_->SetProgram(pDiffuseProgram);
-	pMaterial2_->SetMainTexture(pEarthTexture);
-	pMaterial2_->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
-	pMaterial2_->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
-	pMaterial2_->SetShininess(0.3f);
+    pEarthSceneNode_ = PSceneNode(new SceneNode());
+    pEarthSceneNode_->SetBehavior(PBehavior(new EarthBehavior()));
 
-	PGLES2Material pMaterial3(new GLES2Material ());
-    pMaterial3->SetProgram(pDiffuseProgram);
-	pMaterial3->SetMainTexture(pTexture);
-
-	pSphereMesh_ = PGLES2SphereMesh(new GLES2SphereMesh(3, 32, GL_STATIC_DRAW));
-    pSphereMesh_->SetMaterial(pMaterial2_);
-	pMesh_ = PGLES2BoxMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
-    pMesh_ ->SetMaterial(pMaterial3);
-
-    //pMesh_->SetBlendMode(NONE);
-    //pSphereMesh_->SetBlendMode(NONE);
-
-    pNode1_ = PNode(new Node);
-    pNode2_ = PNode(new Node);
-    pNode3_ = PNode(new Node);
+    pCubeSceneNode_ = PSceneNode(new SceneNode());
+    pCubeSceneNode_->SetBehavior(PBehavior(new CubeBehavior()));
 
 	pTextNode0_ = PNode(new Node);
     pTextNode1_ = PNode(new Node());
     pTextNode1_->SetParent(pTextNode0_);
-
-    pNode1_->SetPosition(Vertex3(-5, 0, 0));
-    pNode1_->SetScale(Vertex3(3,3,3));
-
-    pNode2_->SetPosition(Vertex3(5, 0, 0));
-    //pNode2_->SetScale(Vertex3(30,30,30));
 
     pCamera2_->SetPosition(Vertex3(0,5,5));
     pCamera2_->SetLookAt(Vertex3(0,0,0));
@@ -151,7 +127,7 @@ void MyApp::Start()
 	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::pSkin));
 	pSkin2_->drawBorder = false;
 	pSkin2_->pMesh =  PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, GL_STATIC_DRAW));
-	pSkin2_->pMesh->EnableDepthTest(false);
+	//pSkin2_->pMesh->EnableDepthTest(false);
 	//pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
 	//pSkin1_->pActiveMaterial->SetMainTexture(pCellTexture);
 
@@ -171,9 +147,6 @@ void MyApp::Update()
 
 	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
 	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
-	pNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)) * glm::angleAxis(y_angle_, Vertex3(0, 0, 1)));
-	pNode2_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
-	//pNode1_->SetScale(scale_);
 
 	static float factor_scale = 1;
 	scale_ -= deltaTime * 0.7f * factor_scale;
@@ -187,12 +160,9 @@ void MyApp::Update()
     //pTextNode1_->SetPosition(Vertex3(200, 100, 0));
 	pTextNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
-	//pMaterial2_->SetDiffuseColor(Color(1,1,1,scale_.x/10.0f));
-
 
 	pLight0_->SetPosition(Vertex3(scale_.x,  2.0,  6.0));
 	//pLight0_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
-    //pNode1_->SetLookAt(Vertex3(0,scale_.x*25,10));
 
     static float delta1 = 0;
 
@@ -422,18 +392,14 @@ void MyApp::RenderFrame()
 	//TRACE_LOG("MyApp::RenderFrame");
 
 	pText3_->GetAtlas()->Show(pText3_->GetAtlas());
-    //pMaterial2_->GetMainTexture()->Show(pMaterial2_->GetMainTexture());
 
     pCamera1_->Activate();
 
-    //pLight0_->Render();
-
-    pMesh_->SetMode(GL_TRIANGLES);
-    pSphereMesh_->SetMode(GL_TRIANGLES);
+    pLight0_->Render();
 
 	pRender2Texture_->Begin();
-    pMesh_->Render(pNode1_);
-    pSphereMesh_->Render(pNode2_);
+    pCubeSceneNode_->Render(true);
+    pEarthSceneNode_->Render(true);
     pRender2Texture_->End();
 
     std::stringstream ss;
@@ -450,29 +416,11 @@ void MyApp::RenderFrame()
 
 	ss << " S=" << std::hex << selectedIndex_;
 
-
 	GLES2Camera::Deactivate();
-	//pText1_->SetText(ss.str());
-	//pText1_->Render(pTextNode1_, Color(1,1,1,1));
+	pText1_->SetText(ss.str());
+	pText1_->Render(pTextNode1_, Color(1,1,1,1));
 
-    //pText1_->RenderText(Color(1,0,0,1), "(-1,-1)");
-
-    //pText2_->RenderText(Color(0,1,0,1), "(-1,1)");
-
-//	screenWidth = pText2_->GetWidth();
-//	screenHeight = pText2_->GetHeight();
-
-    //pText3_->RenderText(Color(0,0,1,1), "(1,-1)");
-    //pText3_->RenderText(Color(0,0,1,1), "(1,1)");
-
-    
-    pCamera2_->Activate();
-
-    pMesh_->SetMode(GL_LINES);
-    pSphereMesh_->SetMode(GL_LINES);
-
-    //pMesh_->Render(pNode1_);
-    //pSphereMesh_->Render(pNode2_);
+	pCamera1_->Activate();
 }
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 

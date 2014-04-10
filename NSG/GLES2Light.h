@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include <vector>
 #include "Node.h"
 #include "GLES2BoxMesh.h"
+#include "GLES2Material.h"
 
 namespace NSG
 {
@@ -65,6 +66,7 @@ namespace NSG
         Attenuation attenuation_;
         float spotCutOff_;
         float exponent_;
+        PGLES2Material pMaterial_;
         PGLES2BoxMesh pMesh_;
 	};
 

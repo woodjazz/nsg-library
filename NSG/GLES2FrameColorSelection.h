@@ -32,6 +32,7 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
+    class SceneNode;
     class GLES2FrameColorSelection
     {
     public:
@@ -40,10 +41,10 @@ namespace NSG
         void ViewChanged(int32_t windowWidth, int32_t windowHeight);
         void Begin(float screenX, float screenY);
         void End();
+        bool IsEnabled() const { return enabled_; }
         GLushort GetSelected() const;
-        void Render(GLushort id, PGLES2Mesh pMesh, PNode pNode);
+        void Render(SceneNode* pSceneNode);
         void Render(GLushort id, GLES2Mesh* pMesh, Node* pNode);
-        void Render(GLES2Mesh* pMesh, Node* pNode);
         GLuint GetPositionLoc() const { return position_loc_; }
         GLuint GetMVPLoc() const { return mvp_loc_; }
     private:
@@ -62,6 +63,7 @@ namespace NSG
         double screenY_;
         GLint pixelX_;
         GLint pixelY_;
+        bool enabled_;
     };
 
     typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;

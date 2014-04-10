@@ -26,11 +26,9 @@ misrepresented as being the original software.
 #pragma once
 #include <vector>
 #include <memory>
-#include "GLES2Material.h"
 #include "GLES2VertexBuffer.h"
 #include "GLES2IndexBuffer.h"
 #include "Types.h"
-#include "GLES2Camera.h"
 #include "Node.h"
 
 namespace NSG
@@ -53,38 +51,17 @@ namespace NSG
 	public:
 		GLES2Mesh(GLenum usage);
 		~GLES2Mesh();
-		void SetBlendMode(BLEND_MODE mode);
-		void EnableDepthTest(bool enable);
-		void Render(PNode pNode);
-		void Render(Node* pNode);
-		void RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc);
-		void RenderForSelect(Node* pNode, GLuint position_loc, GLuint mvp_loc);
-		void AddVertexData(const VertexData& data);
-		void SetIndices(const Indexes& indexes);
+		void Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc);
 		void Redo();
+		virtual GLenum GetWireFrameDrawMode() const = 0;
+		virtual GLenum GetSolidDrawMode() const = 0;
+	protected:
 		typedef std::vector<VertexData> Data;
-		Data& GetVertexData() { return vertexsData_; }
-		void SetMode(GLenum mode) { mode_ = mode; }
-		GLenum GetMode() const { return mode_; }
-		void SetSelectMode(GLenum mode) { selectMode_ = mode; }
-		PGLES2Material GetMaterial() const { return pMaterial_; }
-		void SetMaterial(PGLES2Material pMaterial);
-		virtual void SetFilled(bool enable) {}
-	private:
-		PGLES2Material pMaterial_;
-		PGLES2IndexBuffer pIBuffer_;
-		PGLES2VertexBuffer pVBuffer_;
-		GLuint texcoord_loc_;
-		GLuint position_loc_;
-		GLuint normal_loc_;
-		GLuint color_loc_;
 		Data vertexsData_;
 		Indexes indexes_;
+    private:
+		PGLES2IndexBuffer pIBuffer_;
+		PGLES2VertexBuffer pVBuffer_;
 		GLenum usage_;
-		GLenum mode_;
-		GLenum selectMode_;
-        bool loaded_;
-        BLEND_MODE blendMode_;
-        bool enableDepthTest_;
 	};
 }

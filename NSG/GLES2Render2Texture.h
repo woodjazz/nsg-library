@@ -36,19 +36,13 @@ namespace NSG
 	public:
 		GLES2Render2Texture(PGLES2Texture pTexture);
 		~GLES2Render2Texture();
-		void ViewChanged(int32_t windowWidth, int32_t windowHeight);
 		void Begin();
 		void End();
-		typedef std::vector<GLES2Render2Texture*> Renderers;
-		static Renderers& GetRenderers();
-
 
 	private:
 		PGLES2Texture pTexture_;
 		GLuint framebuffer_;
 		GLuint depthRenderBuffer_;
-        int32_t windowWidth_;
-        int32_t windowHeight_;
 	};
 
 	typedef std::shared_ptr<GLES2Render2Texture> PGLES2Render2Texture;

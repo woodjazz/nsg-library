@@ -23,55 +23,21 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
+#include "Behavior.h"
 
-#include "GLES2Includes.h"
-#include "GLES2Mesh.h"
-#include "Node.h"
-#include "Resource.h"
-#include "Types.h"
-#include <memory>
-#include <string>
-#include <vector>
-
-namespace NSG
+namespace NSG 
 {
-	class BindTexture;
-	class GLES2Texture
+	Behavior::Behavior()
 	{
-	public:
-		GLES2Texture(const char* filename);
-		GLES2Texture(GLint format, GLenum type, GLsizei width, GLsizei height, const GLvoid* pixels); 
-		~GLES2Texture();
-		virtual bool IsReady();
-		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
-		GLuint GetID() const { return texture_; }
-		void Show(PGLES2Texture pTexture);
-		GLsizei GetWidth() const { return width_; }
-		GLsizei GetHeight() const { return height_; }
+	}
 
-	private:
-		void InitializeCommonSettings();
-
-	protected:
-		GLuint texture_;
-		PResource pResource_;
-		bool isLoaded_;
-        PGLES2Material pMaterial_; // used to show the texture on the screen
-		PGLES2Mesh pMesh_; // used to show the texture on the screen
-		GLsizei width_;
-		GLsizei height_;
-
-		friend class BindTexture;
-	};
-
-	class BindTexture
+	Behavior::~Behavior()
 	{
-	public:
-		BindTexture(GLES2Texture& obj);
-		~BindTexture();
-	private:
-		GLES2Texture& obj_;
-	};
 
+	}
+
+	void Behavior::SetSceneNode(SceneNode* pSceneNode) 
+	{
+		pSceneNode_ = pSceneNode; 
+	}
 }

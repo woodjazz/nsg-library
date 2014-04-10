@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2Material.h"
 #include "GLES2Mesh.h"
+#include "GLES2Camera.h"
 #include "Node.h"
 #include "Types.h"
 

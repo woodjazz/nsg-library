@@ -35,6 +35,8 @@ namespace NSG
 	public:
 		GLES2SphereMesh(float radius, int res, GLenum usage);
 		~GLES2SphereMesh();
+		GLenum GetWireFrameDrawMode() const;
+		GLenum GetSolidDrawMode() const;
 	};
 
 	typedef std::shared_ptr<GLES2SphereMesh> PGLES2SphereMesh;

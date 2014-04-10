@@ -1,5 +1,6 @@
 #include "GLES2Texture.h"
 #include "GLES2PlaneMesh.h"
+#include "GLES2Camera.h"
 #include "soil/SOIL.h"
 #include "Log.h"
 #include "Check.h"
@@ -43,13 +44,14 @@ namespace NSG
 	: texture_(0), 
 	pResource_(new Resource(filename)), 
 	isLoaded_(false),
-	pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW))
+    pMaterial_(new GLES2Material ()),
+	pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
+	width_(0),
+	height_(0)
 	{
 		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-		PGLES2Material pMaterial = PGLES2Material(new GLES2Material ());
-		pMaterial->SetProgram(pProgram);
-		pMesh_->SetMaterial(pMaterial);
-		pMesh_->EnableDepthTest(false);
+		pMaterial_->SetProgram(pProgram);
+		pMaterial_->EnableDepthTest(false);
 
 		InitializeCommonSettings();
 
@@ -64,7 +66,9 @@ namespace NSG
 
 	GLES2Texture::GLES2Texture(GLint format, GLenum type, GLsizei width, GLsizei height, const GLvoid* pixels) 
 	: texture_(0), 
-	isLoaded_(true)
+	isLoaded_(true),
+	width_(width),
+	height_(height)
 	{
 		InitializeCommonSettings();
 
@@ -103,6 +107,9 @@ namespace NSG
 			int img_height = 0;
             int channels = 0;
 			unsigned char* img = SOIL_load_image_from_memory(pResource_->GetData(), pResource_->GetBytes(), &img_width, &img_height, &channels, 0);
+
+			width_ = img_width;
+			height_ = img_height;
 
             GLint internalformat = GL_RGBA;
 
@@ -147,11 +154,16 @@ namespace NSG
 		{
 			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-			pMesh_->GetMaterial()->SetMainTexture(pTexture);
+			pMaterial_->SetMainTexture(pTexture);
 
-			GLES2Camera* pCurrent = GLES2Camera::Deactivate();
-            pMesh_->Render(nullptr);
-			GLES2Camera::Activate(pCurrent);
+			if(pMaterial_->IsReady())
+			{
+				GLES2Camera* pCurrent = GLES2Camera::Deactivate();
+
+				pMaterial_->Render(true, nullptr, pMesh_.get());
+
+				GLES2Camera::Activate(pCurrent);
+			}
 
 			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 		}

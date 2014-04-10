@@ -27,8 +27,8 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "GLES2Camera.h"
 #include "GLES2IMGUI.h"
-#include "GLES2Render2Texture.h"
 #include "GLES2Text.h"
+#include "SceneNode.h"
 #include <cassert>
 
 namespace NSG
@@ -188,19 +188,41 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 #endif        
     }
 
-
-    void App::BeginSelection(PGLES2FrameColorSelection pFrameColorSelection) 
+    void App::BeginSelection(float screenX, float screenY) 
     { 
-        pFrameColorSelection_ = pFrameColorSelection; 
+        pFrameColorSelection_->Begin(screenX, screenY);
     }
 
     void App::EndSelection()
     {
+        pFrameColorSelection_->End();
         selectedIndex_ = pFrameColorSelection_->GetSelected();
+    }
 
+    void App::Initialize()
+    {
+        pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection());
+        IMGUI::AllocateResources();
+    }
+
+    void App::Release()
+    {
+        IMGUI::ReleaseResources();
+        GLES2Text::ReleaseAtlasCollection();
         pFrameColorSelection_ = nullptr;
     }
 
+    void App::DoTick(float delta)
+    {
+        deltaTime_ = delta;
+        IMGUI::DoTick();
+        Update();
+        SceneNode::Update();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     InternalApp::InternalApp(App* pApp) 
     : pApp_(pApp),
@@ -216,31 +238,30 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void InternalApp::Initialize()
     {
-        IMGUI::AllocateResources();
+        pApp_->Initialize();
         Tick::Initialize(pApp_->GetFPS());
     }
 
     void InternalApp::Release()
     {
-        IMGUI::ReleaseResources();
-        GLES2Text::ReleaseAtlasCollection();
+        pApp_->Release();
     }
 
     void InternalApp::BeginTick()
     {
         pApp_->Start();
+        SceneNode::Start();
     }
     
     void InternalApp::DoTick(float delta)
     {
-        pApp_->deltaTime_ = delta;
-        IMGUI::DoTick();
-        pApp_->Update();
+        pApp_->DoTick(delta);
     }
     
     void InternalApp::EndTick()
     {
         pApp_->LateUpdate();
+        SceneNode::LateUpdate();
     }
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
@@ -253,18 +274,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
             pApp_->SetViewSize(width, height);
 
-            if(!pFrameColorSelection_)
-                pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection());
-
-            pFrameColorSelection_->ViewChanged(width, height);
-
-            GLES2Render2Texture::Renderers& renderers = GLES2Render2Texture::GetRenderers();
-            for(auto &renderer : renderers)
-            {
-                renderer->ViewChanged(width, height);
-            }
-
-            IMGUI::ViewChanged(width, height);
+            pApp_->pFrameColorSelection_->ViewChanged(width, height);
 
             GLES2Camera::Cameras& cameras = GLES2Camera::GetCameras();
 
@@ -272,6 +282,8 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
             {
                 camera->ViewChanged(width, height);
             }
+
+            IMGUI::ViewChanged(width, height);
 
             pApp_->ViewChanged(width, height);
         }
@@ -332,10 +344,14 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         pApp_->RenderFrame();
 
-        pApp_->BeginSelection(pFrameColorSelection_);
-        pFrameColorSelection_->Begin(screenX_, screenY_);
+        pApp_->BeginSelection(screenX_, screenY_);
         pApp_->RenderFrame();
-        pFrameColorSelection_->End();
+        pApp_->EndSelection();
+
+        SceneNode::Render();
+
+        pApp_->BeginSelection(screenX_, screenY_);
+        SceneNode::Render();
         pApp_->EndSelection();
 
         IMGUI::Begin();

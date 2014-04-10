@@ -24,54 +24,43 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
-#include "GLES2Includes.h"
-#include "GLES2Mesh.h"
 #include "Node.h"
-#include "Resource.h"
-#include "Types.h"
+#include "GLES2Includes.h"
+#include "GLES2Material.h"
+#include "GLES2Mesh.h"
+#include "Behavior.h"
+#include "GLES2FrameColorSelection.h"
 #include <memory>
-#include <string>
-#include <vector>
 
 namespace NSG
 {
-	class BindTexture;
-	class GLES2Texture
+	class App;
+	class SceneNode : public Node
 	{
 	public:
-		GLES2Texture(const char* filename);
-		GLES2Texture(GLint format, GLenum type, GLsizei width, GLsizei height, const GLvoid* pixels); 
-		~GLES2Texture();
-		virtual bool IsReady();
-		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
-		GLuint GetID() const { return texture_; }
-		void Show(PGLES2Texture pTexture);
-		GLsizei GetWidth() const { return width_; }
-		GLsizei GetHeight() const { return height_; }
+		SceneNode();
+		~SceneNode();
+		PGLES2Material GetMaterial() const { return pMaterial_; }
+		void SetMaterial(PGLES2Material pMaterial);
+		void SetMesh(PGLES2Mesh pMesh);
+		PGLES2Mesh GetMesh() const { return pMesh_; }
+		void SetBehavior(PBehavior pBehavior);
+		PBehavior GetBehavior() const { return pBehavior_; }
+		void Render(bool solid);
+		void RenderForSelect(GLuint position_loc);
+		
+		static void Start();
+		static void Update();
+		static void LateUpdate();
+		static void Render();
 
 	private:
-		void InitializeCommonSettings();
-
-	protected:
-		GLuint texture_;
-		PResource pResource_;
-		bool isLoaded_;
-        PGLES2Material pMaterial_; // used to show the texture on the screen
-		PGLES2Mesh pMesh_; // used to show the texture on the screen
-		GLsizei width_;
-		GLsizei height_;
-
-		friend class BindTexture;
+		App* pApp_;
+		PGLES2FrameColorSelection pSelection_;
+		PGLES2Material pMaterial_;
+		PGLES2Mesh pMesh_;
+		PBehavior pBehavior_;
 	};
 
-	class BindTexture
-	{
-	public:
-		BindTexture(GLES2Texture& obj);
-		~BindTexture();
-	private:
-		GLES2Texture& obj_;
-	};
-
+	typedef std::shared_ptr<SceneNode> PSceneNode;
 }

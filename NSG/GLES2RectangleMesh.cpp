@@ -30,15 +30,11 @@ misrepresented as being the original software.
 namespace NSG
 {
 	GLES2RectangleMesh::GLES2RectangleMesh(float width, float height, GLenum usage) 
-	: GLES2Mesh(usage),
-	filled_(true)
+	: GLES2Mesh(usage)
 	{
 		float halfX = width * 0.5f;
 		float halfY = height * 0.5f;
-		GLES2Mesh::Data& data = GetVertexData();
-
-		SetFilled(filled_);
-		SetSelectMode(GL_TRIANGLE_FAN);
+        GLES2Mesh::Data& data = vertexsData_;
 
 		VertexData vertexData;
 		vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
@@ -66,14 +62,15 @@ namespace NSG
 	{
 	}
 
-	void GLES2RectangleMesh::SetFilled(bool enable) 
-	{ 
-		filled_ = enable;
-
-		if(filled_)
-			SetMode(GL_TRIANGLE_FAN);
-		else
-			SetMode(GL_LINE_LOOP);
+	GLenum GLES2RectangleMesh::GetWireFrameDrawMode() const
+	{
+		return GL_LINE_LOOP;
 	}
+
+	GLenum GLES2RectangleMesh::GetSolidDrawMode() const
+	{
+		return GL_TRIANGLE_FAN;
+	}
+
 }
 

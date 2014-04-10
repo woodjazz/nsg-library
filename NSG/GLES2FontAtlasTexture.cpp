@@ -62,9 +62,9 @@ namespace NSG
 	atlasHeight_(0),
 	fontSize_(fontSize)
 	{
-		pMesh_->SetBlendMode(ALPHA);
+		pMaterial_->SetBlendMode(ALPHA);
         PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-        pMesh_->GetMaterial()->SetProgram(pProgram);
+        pMaterial_->SetProgram(pProgram);
 
 		if(fontSize_ > 0)
 		{

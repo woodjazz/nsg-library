@@ -32,59 +32,24 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	static GLES2Render2Texture::Renderers s_Renderers;
-
 	GLES2Render2Texture::GLES2Render2Texture(PGLES2Texture pTexture)
-	: pTexture_(pTexture),
-    windowWidth_(0),
-    windowHeight_(0)
+	: pTexture_(pTexture)
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
         CHECK_ASSERT(pTexture != nullptr, __FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
         glGenRenderbuffers(1, &depthRenderBuffer_);
-
-        App* pApp = App::GetPtrInstance();
-
-        if(pApp)
-        {
-		    auto viewSize = pApp->GetViewSize();
-		    ViewChanged(viewSize.first, viewSize.second);
-        }
-
-
-        s_Renderers.push_back(this);
-	}
-
-	GLES2Render2Texture::~GLES2Render2Texture()
-	{
-		auto it = std::find(s_Renderers.begin(), s_Renderers.end(), this);
-		assert(it != s_Renderers.end());
-		s_Renderers.erase(it);
-
-		glDeleteRenderbuffers(1, &depthRenderBuffer_);
-		glDeleteFramebuffers(1, &framebuffer_);
-	}
-
-	GLES2Render2Texture::Renderers& GLES2Render2Texture::GetRenderers()
-	{
-		return s_Renderers;
-	}
-
-	void GLES2Render2Texture::ViewChanged(int32_t windowWidth, int32_t windowHeight)
-	{
-		windowWidth_ = windowWidth;
-		windowHeight_ = windowHeight;
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
+		//////////////////////////////////////////////////////////////////////////////////
         // The color buffer
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTexture_->GetID(), 0);
 
         //////////////////////////////////////////////////////////////////////////////////
         // The depth buffer
         glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, pTexture_->GetWidth(), pTexture_->GetHeight());
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
         //////////////////////////////////////////////////////////////////////////////////
 
@@ -96,6 +61,11 @@ namespace NSG
         }
 	}
 
+	GLES2Render2Texture::~GLES2Render2Texture()
+	{
+		glDeleteRenderbuffers(1, &depthRenderBuffer_);
+		glDeleteFramebuffers(1, &framebuffer_);
+	}
 
 	void GLES2Render2Texture::Begin()
 	{

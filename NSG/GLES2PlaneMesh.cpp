@@ -31,8 +31,7 @@ namespace NSG
 	GLES2PlaneMesh::GLES2PlaneMesh(float width, float height, int columns, int rows, GLenum usage) 
 	: GLES2Mesh(usage)
 	{
-		GLES2Mesh::Data& data = GetVertexData();
-		Indexes indexes;
+		GLES2Mesh::Data& data = vertexsData_;
 
 		Vertex3 vert;
 		Vertex3 normal(0, 0, 1); // always facing forward //
@@ -68,18 +67,16 @@ namespace NSG
 	        for(int x = 0; x < columns-1; x++) 
 	        {
 	            // first triangle //
-	            indexes.push_back((y)*columns + x);
-	            indexes.push_back((y)*columns + x+1);
-	            indexes.push_back((y+1)*columns + x);
+	            indexes_.push_back((y)*columns + x);
+	            indexes_.push_back((y)*columns + x+1);
+	            indexes_.push_back((y+1)*columns + x);
 	            
 	            // second triangle //
-	            indexes.push_back((y)*columns + x+1);
-	            indexes.push_back((y+1)*columns + x+1);
-	            indexes.push_back((y+1)*columns + x);
+	            indexes_.push_back((y)*columns + x+1);
+	            indexes_.push_back((y+1)*columns + x+1);
+	            indexes_.push_back((y+1)*columns + x);
 	        }
 	    }
-
-	    SetIndices(indexes);
 
 	    Redo();
 	}
@@ -87,4 +84,15 @@ namespace NSG
 	GLES2PlaneMesh::~GLES2PlaneMesh() 
 	{
 	}
+
+	GLenum GLES2PlaneMesh::GetWireFrameDrawMode() const
+	{
+		return GL_LINE_LOOP;
+	}
+
+	GLenum GLES2PlaneMesh::GetSolidDrawMode() const
+	{
+		return GL_TRIANGLES;
+	}
+
 }

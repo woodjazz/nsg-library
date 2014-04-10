@@ -33,7 +33,7 @@ namespace NSG
 	GLES2SphereMesh::GLES2SphereMesh(float radius, int res, GLenum usage) 
 	: GLES2Mesh(usage)
 	{
-		GLES2Mesh::Data& data = GetVertexData();
+        GLES2Mesh::Data& data = vertexsData_;
 
 		int doubleRes = res*2;
 		float polarInc = PI/(res); // ringAngle
@@ -82,9 +82,9 @@ namespace NSG
                     index2 = (iy+0) * (nr) + (ix+1);
                     index3 = (iy+1) * (nr) + (ix+0);
                     
-                    indexes.push_back(index1);
-                    indexes.push_back(index3);
-                    indexes.push_back(index2);
+                    indexes_.push_back(index1);
+                    indexes_.push_back(index3);
+                    indexes_.push_back(index2);
                 }
                 
                 if(iy < res-1 ) 
@@ -94,20 +94,28 @@ namespace NSG
                     index2 = (iy+1) * (nr) + (ix+1);
                     index3 = (iy+1) * (nr) + (ix+0);
                     
-                    indexes.push_back(index1);
-                    indexes.push_back(index3);
-                    indexes.push_back(index2);
+                    indexes_.push_back(index1);
+                    indexes_.push_back(index3);
+                    indexes_.push_back(index2);
                 }
             }
         }
-
-		SetIndices(indexes);
 
 	    Redo();
 	}
 
 	GLES2SphereMesh::~GLES2SphereMesh() 
 	{
+	}
+
+	GLenum GLES2SphereMesh::GetWireFrameDrawMode() const
+	{
+		return GL_LINE_LOOP;
+	}
+
+	GLenum GLES2SphereMesh::GetSolidDrawMode() const
+	{
+		return GL_TRIANGLES;
 	}
 
 }

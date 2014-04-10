@@ -36,6 +36,8 @@ namespace NSG
 		GLES2CircleMesh(float radius, int res, GLenum usage);
 		~GLES2CircleMesh();
 		void SetFilled(bool enable);
+		GLenum GetWireFrameDrawMode() const;
+		GLenum GetSolidDrawMode() const;
 	private:
 		bool filled_;
 	};

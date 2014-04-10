@@ -57,13 +57,16 @@ namespace NSG
         virtual void OnMouseUp() {}
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
+        void Initialize();
+        void Release();
+        void DoTick(float delta);
         bool ShowKeyboard();
         bool HideKeyboard();
         bool IsKeyboardVisible() { return isKeyboardVisible_; }
         static App* GetPtrInstance();
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
-        void BeginSelection(PGLES2FrameColorSelection pFrameColorSelection);
+        void BeginSelection(float screenX, float screenY);
         void EndSelection();
         PGLES2FrameColorSelection GetSelection() const { return pFrameColorSelection_; }
         GLushort GetSelectedNode() const { return selectedIndex_; }
@@ -96,7 +99,6 @@ namespace NSG
     struct InternalApp : public Tick
     {
         PApp pApp_;
-        PGLES2FrameColorSelection pFrameColorSelection_;
         float screenX_;
         float screenY_;
 

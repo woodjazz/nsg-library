@@ -151,7 +151,9 @@ namespace NSG
 	specular_(1,1,1,1),
 	shininess_(1),
 	alphaFactor_(1),
-    hasLights_(false)
+    hasLights_(false),
+    blendMode_(ALPHA),
+    enableDepthTest_(true)
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
         lightsLoc_.resize(MAX_LIGHTS_MATERIAL);
@@ -160,6 +162,16 @@ namespace NSG
 
 	GLES2Material::~GLES2Material()
 	{
+	}
+
+	void GLES2Material::SetBlendMode(BLEND_MODE mode)
+	{
+		blendMode_ = mode;
+	}
+
+	void GLES2Material::EnableDepthTest(bool enable)
+	{
+		enableDepthTest_ = enable;
 	}
 
 	void GLES2Material::SetProgram(PGLES2Program pProgram)
@@ -259,15 +271,49 @@ namespace NSG
 		return loaded_;
 	}
 
+	void GLES2Material::Render(bool solid, Node* pNode, GLES2Mesh* pMesh)
+	{
+		UseMaterial useMaterial(*this, pNode);
+
+		GLenum mode = solid ? pMesh->GetSolidDrawMode() : pMesh->GetWireFrameDrawMode();
+
+        pMesh->Render(mode, position_loc_, texcoord_loc_, normal_loc_);
+	}
+
 	UseMaterial::UseMaterial(GLES2Material& obj, Node* pNode)
 	: obj_(obj),
 	useProgram_(*obj.pProgram_)
 	{
+        switch(obj.blendMode_)
+       	{
+        	case NONE:
+	        	glDisable(GL_BLEND);
+	        	break;
+
+	        case ALPHA:
+	        	glEnable(GL_BLEND);
+	        	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	        	break;
+
+	        default:
+	        	CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
+	        	break;
+        }
+        
+        if(obj.enableDepthTest_)
+        {
+        	glEnable(GL_DEPTH_TEST);
+        }
+        else
+        {
+        	glDisable(GL_DEPTH_TEST);
+        }
+
 		obj.SetIntUniforms();
 		
 		if(obj.mvp_loc_ != -1 && pNode)
 		{
-			Matrix4&& m = GLES2Camera::GetModelViewProjection(pNode);
+			Matrix4 m = GLES2Camera::GetModelViewProjection(pNode);
 			glUniformMatrix4fv(obj.mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
 		}
 

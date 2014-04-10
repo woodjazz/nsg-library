@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "NSG/GLES2Light.h"
 #include "NSG/GLES2IMGUI.h"
 #include "NSG/GLES2Render2Texture.h"
+#include "NSG/SceneNode.h"
 
 using namespace NSG;
 
@@ -63,12 +64,6 @@ private:
     void Menu1();
 	std::thread thread_;
 	PGLES2Light pLight0_;
-	PGLES2Material pMaterial2_;
-	PGLES2BoxMesh pMesh_;
-	PGLES2SphereMesh pSphereMesh_;
-	PNode pNode1_;
-	PNode pNode2_;
-	PNode pNode3_;
 	PNode pTextNode0_;
 	PNode pTextNode1_;
 	PGLES2Camera pCamera1_;
@@ -90,5 +85,7 @@ private:
     float aspectRatio_;
     PGLES2Texture pRenderedTexture_;
     PGLES2Render2Texture pRender2Texture_;
+    PSceneNode pEarthSceneNode_;
+    PSceneNode pCubeSceneNode_;
 };
 

@@ -43,37 +43,12 @@ namespace NSG
 	}
 
 	GLES2Mesh::GLES2Mesh(GLenum usage) 
-	: usage_(usage),
-    mode_(GL_TRIANGLES),
-    selectMode_(GL_TRIANGLES),
-    loaded_(false),
-    blendMode_(ALPHA),
-    enableDepthTest_(true)
+	: usage_(usage)
 	{
 	}
 
 	GLES2Mesh::~GLES2Mesh() 
 	{
-	}
-
-	void GLES2Mesh::SetBlendMode(BLEND_MODE mode)
-	{
-		blendMode_ = mode;
-	}
-
-	void GLES2Mesh::EnableDepthTest(bool enable)
-	{
-		enableDepthTest_ = enable;
-	}
-
-	void GLES2Mesh::AddVertexData(const VertexData& data)
-	{
-		vertexsData_.push_back(data);
-	}
-
-	void GLES2Mesh::SetIndices(const Indexes& indexes)
-	{
-		indexes_ = indexes;
 	}
 
 	void GLES2Mesh::Redo()
@@ -92,189 +67,78 @@ namespace NSG
 		}
 	}
 
-	void GLES2Mesh::SetMaterial(PGLES2Material pMaterial)
+	void GLES2Mesh::Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc)
 	{
-        CHECK_ASSERT(pMaterial, __FILE__, __LINE__);
-		pMaterial_ = pMaterial;
-		texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
-		position_loc_ = pMaterial_->GetPositionAttLocation();
-		normal_loc_ = pMaterial_->GetNormalAttLocation();
-	}
-
-	void GLES2Mesh::Render(PNode pNode)
-	{
-		Render(pNode.get());
-	}
-
-	void GLES2Mesh::Render(Node* pNode) 
-	{
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
-
-		App* pApp = App::GetPtrInstance();
-
-		PGLES2FrameColorSelection pSelection = pApp->GetSelection();
-
-		if(pSelection && pNode && pNode->IsSelectionEnabled())
-		{
-			pSelection->Render(this, pNode);
-		}
-		else
-		{
-			if(!pMaterial_ || !pMaterial_->IsReady()) 
-				return;
-
-	        if(!loaded_)
-	        {
-		        texcoord_loc_ = pMaterial_->GetTextCoordAttLocation();
-		        position_loc_ = pMaterial_->GetPositionAttLocation();
-		        normal_loc_ = pMaterial_->GetNormalAttLocation();
-
-		        loaded_ = true;
-	        }
-
-			CHECK_ASSERT(pVBuffer_, __FILE__, __LINE__);
-
-	        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
-
-	        switch(blendMode_)
-	       	{
-	        	case NONE:
-		        	glDisable(GL_BLEND);
-		        	break;
-
-		        case ALPHA:
-		        	glEnable(GL_BLEND);
-		        	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		        	break;
-
-		        default:
-		        	CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
-		        	break;
-	        }
-            
-            if(enableDepthTest_)
-            {
-            	glEnable(GL_DEPTH_TEST);
-            }
-            else
-            {
-            	glDisable(GL_DEPTH_TEST);
-            }
-
-			UseMaterial useMaterial(*pMaterial_, pNode);
-
-            CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
-
-			BindBuffer bindVBuffer(*pVBuffer_);
-
-            CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
-
-			if(position_loc_ != -1)
-			{
-				glVertexAttribPointer(position_loc_,
-						3,
-						GL_FLOAT,
-						GL_FALSE,
-						sizeof(VertexData),
-						reinterpret_cast<void*>(offsetof(VertexData, position_)));
-
-				glEnableVertexAttribArray(position_loc_);
-			}
-
-			if(normal_loc_ != -1)
-			{
-				glVertexAttribPointer(normal_loc_,
-						3,
-						GL_FLOAT,
-						GL_FALSE,
-						sizeof(VertexData),
-						reinterpret_cast<void*>(offsetof(VertexData, normal_)));
-				
-				glEnableVertexAttribArray(normal_loc_);
-			}
-
-			if(texcoord_loc_ != -1)
-			{
-				glVertexAttribPointer(texcoord_loc_,
-						2,
-						GL_FLOAT,
-						GL_FALSE,
-						sizeof(VertexData),
-						reinterpret_cast<void*>(offsetof(VertexData, uv_)));
-				
-				glEnableVertexAttribArray(texcoord_loc_);
-			}
-
-            CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
-
-			if(!indexes_.empty())
-			{
-				BindBuffer bindIBuffer(*pIBuffer_);
-
-	        	glDrawElements(mode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);
-	        }
-	        else
-	        {
-				glDrawArrays(mode_, 0, vertexsData_.size());
-	        }
-
-			if(position_loc_ != -1)
-			{
-				glDisableVertexAttribArray(position_loc_);	
-			}
-
-			if(normal_loc_ != -1)
-			{
-				glDisableVertexAttribArray(normal_loc_);	
-			}
-
-			if(texcoord_loc_ != -1)
-			{
-				glDisableVertexAttribArray(texcoord_loc_);	
-			}
-
-			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
-	    }
-	}
-
-	void GLES2Mesh::RenderForSelect(PNode pNode, GLuint position_loc, GLuint mvp_loc) 
-	{
-		RenderForSelect(pNode.get(), position_loc, mvp_loc);
-	}	
-
-	void GLES2Mesh::RenderForSelect(Node* pNode, GLuint position_loc, GLuint mvp_loc) 
-	{
-		if(!pVBuffer_) 
-			return;
-
-        assert(glGetError() == GL_NO_ERROR);
-
-		Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
-		glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp));
+		CHECK_ASSERT(pVBuffer_, __FILE__, __LINE__);
 
 		BindBuffer bindVBuffer(*pVBuffer_);
 
-		glVertexAttribPointer(position_loc,
-				3,
-				GL_FLOAT,
-				GL_FALSE,
-				sizeof(VertexData),
-				reinterpret_cast<void*>(offsetof(VertexData, position_)));
+	    CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-		glEnableVertexAttribArray(position_loc);
-
-        if(!indexes_.empty())
+		if(position_loc != -1)
 		{
-    		BindBuffer bindIBuffer(*pIBuffer_);
+			glVertexAttribPointer(position_loc,
+					3,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(VertexData),
+					reinterpret_cast<void*>(offsetof(VertexData, position_)));
 
-            glDrawElements(selectMode_, indexes_.size(), GL_UNSIGNED_SHORT, 0);   
-        }
-        else
-        {
-			glDrawArrays(selectMode_, 0, vertexsData_.size());
-        }
+			glEnableVertexAttribArray(position_loc);
+		}
 
-        assert(glGetError() == GL_NO_ERROR);
-	}	
+		if(normal_loc != -1)
+		{
+			glVertexAttribPointer(normal_loc,
+					3,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(VertexData),
+					reinterpret_cast<void*>(offsetof(VertexData, normal_)));
+			
+			glEnableVertexAttribArray(normal_loc);
+		}
 
+		if(texcoord_loc != -1)
+		{
+			glVertexAttribPointer(texcoord_loc,
+					2,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(VertexData),
+					reinterpret_cast<void*>(offsetof(VertexData, uv_)));
+			
+			glEnableVertexAttribArray(texcoord_loc);
+		}
+
+	    CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
+		if(!indexes_.empty())
+		{
+			BindBuffer bindIBuffer(*pIBuffer_);
+
+	    	glDrawElements(mode, indexes_.size(), GL_UNSIGNED_SHORT, 0);
+	    }
+	    else
+	    {
+			glDrawArrays(mode, 0, vertexsData_.size());
+	    }
+
+		if(position_loc != -1)
+		{
+			glDisableVertexAttribArray(position_loc);	
+		}
+
+		if(normal_loc != -1)
+		{
+			glDisableVertexAttribArray(normal_loc);	
+		}
+
+		if(texcoord_loc != -1)
+		{
+			glDisableVertexAttribArray(texcoord_loc);	
+		}
+
+		CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+	}
 }

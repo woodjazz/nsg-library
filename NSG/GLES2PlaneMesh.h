@@ -35,6 +35,8 @@ namespace NSG
 	public:
 		GLES2PlaneMesh(float width, float height, int columns, int rows, GLenum usage);
 		~GLES2PlaneMesh();
+		GLenum GetWireFrameDrawMode() const;
+		GLenum GetSolidDrawMode() const;
 	};
 
 	typedef std::shared_ptr<GLES2PlaneMesh> PGLES2PlaneMesh;

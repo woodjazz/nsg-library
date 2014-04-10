@@ -35,6 +35,9 @@ namespace NSG
 	public:
 		GLES2BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, GLenum usage);
 		~GLES2BoxMesh();
+		GLenum GetWireFrameDrawMode() const;
+		GLenum GetSolidDrawMode() const;
+
 	};
 
 	typedef std::shared_ptr<GLES2BoxMesh> PGLES2BoxMesh;

@@ -43,6 +43,8 @@ namespace NSG
 	public:
 		GLES2Material();
 		~GLES2Material();
+		void SetBlendMode(BLEND_MODE mode);
+		void EnableDepthTest(bool enable);
 		void SetProgram(PGLES2Program pProgram);
 		void SetMainTexture(PGLES2Texture pTexture);
         PGLES2Texture GetMainTexture() const { return pTexture_; }
@@ -50,12 +52,15 @@ namespace NSG
 		GLuint GetTextCoordAttLocation() { return texcoord_loc_; }
 		GLuint GetPositionAttLocation() { return position_loc_; }
 		GLuint GetNormalAttLocation() { return normal_loc_; }
+		GLuint GetMVPAttLocation() { return mvp_loc_; }
 		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
 		Color GetDiffuseColor() const { return diffuse_; }
 		void SetSpecularColor(Color specular) { specular_ = specular; }
 		void SetShininess(float shininess) { shininess_=shininess; }
 		void SetAlphaFactor(float alphaFactor) {alphaFactor_ = alphaFactor;}
 		void SetUniform(const char* name, int value);
+		void Render(bool solid, Node* pNode, GLES2Mesh* pMesh);
+
 	private:
 		void SetIntUniforms();
 		PGLES2Texture pTexture_;
@@ -104,6 +109,9 @@ namespace NSG
         IntUniformMap intUniforms_;
 
         bool hasLights_;
+
+        BLEND_MODE blendMode_;
+        bool enableDepthTest_;
 
 		friend class UseMaterial;
 	};

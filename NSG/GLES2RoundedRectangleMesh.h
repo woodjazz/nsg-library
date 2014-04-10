@@ -35,9 +35,8 @@ namespace NSG
 	public:
 		GLES2RoundedRectangleMesh(float radius, float width, float height, int res, GLenum usage);
 		~GLES2RoundedRectangleMesh();
-		void SetFilled(bool enable);
-	private:
-		bool filled_;
+		GLenum GetWireFrameDrawMode() const;
+		GLenum GetSolidDrawMode() const;
 	};
 
 	typedef std::shared_ptr<GLES2RoundedRectangleMesh> PGLES2RoundedRectangleMesh;

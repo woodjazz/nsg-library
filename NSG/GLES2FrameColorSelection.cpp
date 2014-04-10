@@ -26,6 +26,8 @@ misrepresented as being the original software.
 #include "GLES2FrameColorSelection.h"
 #include "Log.h"
 #include "Check.h"
+#include "SceneNode.h"
+#include "GLES2Camera.h"
 #include <assert.h>
 
 #define STRINGIFY(S) #S
@@ -119,6 +121,8 @@ namespace NSG
 
     void GLES2FrameColorSelection::Begin(float screenX, float screenY)
     {
+        enabled_ = true;
+
     	screenX_ = screenX;
     	screenY_ = screenY;
 
@@ -145,6 +149,8 @@ namespace NSG
         glDisable(GL_SCISSOR_TEST);
 #endif        
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        enabled_ = false;
     }
 
     GLushort GLES2FrameColorSelection::GetSelected() const
@@ -167,9 +173,11 @@ namespace NSG
         return color;
     }
 
-    void GLES2FrameColorSelection::Render(GLushort id, PGLES2Mesh pMesh, PNode pNode)
+    void GLES2FrameColorSelection::Render(SceneNode* pSceneNode)
     {
-        Render(id, pMesh.get(), pNode.get());
+        Node* pNode = pSceneNode;
+
+        Render(pNode->GetId(), pSceneNode->GetMesh().get(), pNode);
     }
 
     void GLES2FrameColorSelection::Render(GLushort id, GLES2Mesh* pMesh, Node* pNode)
@@ -180,13 +188,11 @@ namespace NSG
         
         glUniform4fv(color_loc_, 1, &color[0]);
 
-        pMesh->RenderForSelect(pNode, position_loc_, mvp_loc_);
+        Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
+        glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));        
 
+        pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1);
     }
 
-    void GLES2FrameColorSelection::Render(GLES2Mesh* pMesh, Node* pNode)
-    {
-        Render(pNode->GetId(), pMesh, pNode);
-    }
 
 }

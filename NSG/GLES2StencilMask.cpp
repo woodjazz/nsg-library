@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Check.h"
 #include "GLES2Mesh.h"
+#include "GLES2Camera.h"
 
 #define STRINGIFY(S) #S
 
@@ -48,11 +49,11 @@ namespace NSG
 		}
 	);
 
-	GLES2StencilMask::GLES2StencilMask()
+	GLES2StencilMask::GLES2StencilMask() 
+	: pProgram_(new GLES2Program(vShader, fShader)),
+	position_loc_(pProgram_->GetAttributeLocation("a_position")),
+	mvp_loc_(pProgram_->GetUniformLocation("u_mvp"))
 	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-		pMaterial_ = PGLES2Material(new GLES2Material()); 
-        pMaterial_->SetProgram(pProgram);
 	}
 
 	GLES2StencilMask::~GLES2StencilMask()
@@ -78,16 +79,14 @@ namespace NSG
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-		GLenum mode = pMesh->GetMode();
-		
-		if(mode == GL_LINE_LOOP)
-			pMesh->SetMode(GL_TRIANGLE_FAN);
-		else if(mode != GL_TRIANGLE_FAN)
-			pMesh->SetMode(GL_TRIANGLES);
+        UseProgram useProgram(*pProgram_);
 
-		pMesh->Render(pNode);
-		
-		pMesh->SetMode(mode);
+        Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
+        glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));        
+
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
+        pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1);
 
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	}

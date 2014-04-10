@@ -24,54 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
-#include "GLES2Includes.h"
-#include "GLES2Mesh.h"
-#include "Node.h"
-#include "Resource.h"
-#include "Types.h"
 #include <memory>
-#include <string>
-#include <vector>
 
-namespace NSG
+namespace NSG 
 {
-	class BindTexture;
-	class GLES2Texture
+	class SceneNode;
+	class Behavior
 	{
 	public:
-		GLES2Texture(const char* filename);
-		GLES2Texture(GLint format, GLenum type, GLsizei width, GLsizei height, const GLvoid* pixels); 
-		~GLES2Texture();
-		virtual bool IsReady();
-		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
-		GLuint GetID() const { return texture_; }
-		void Show(PGLES2Texture pTexture);
-		GLsizei GetWidth() const { return width_; }
-		GLsizei GetHeight() const { return height_; }
-
-	private:
-		void InitializeCommonSettings();
-
+		Behavior();
+		virtual ~Behavior();
+		virtual void Start() {}
+		virtual void Update() {}
+		virtual void LateUpdate() {}
+		virtual void Render() {};
+		void SetSceneNode(SceneNode* pSceneNode);
 	protected:
-		GLuint texture_;
-		PResource pResource_;
-		bool isLoaded_;
-        PGLES2Material pMaterial_; // used to show the texture on the screen
-		PGLES2Mesh pMesh_; // used to show the texture on the screen
-		GLsizei width_;
-		GLsizei height_;
-
-		friend class BindTexture;
+		SceneNode* pSceneNode_;
 	};
 
-	class BindTexture
-	{
-	public:
-		BindTexture(GLES2Texture& obj);
-		~BindTexture();
-	private:
-		GLES2Texture& obj_;
-	};
-
+	typedef std::shared_ptr<Behavior> PBehavior;
 }

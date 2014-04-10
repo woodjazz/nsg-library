@@ -35,9 +35,8 @@ namespace NSG
 	public:
 		GLES2EllipseMesh(float width, float height, int res, GLenum usage);
 		~GLES2EllipseMesh();
-		void SetFilled(bool enable);
-	private:
-		bool filled_;
+		GLenum GetWireFrameDrawMode() const;
+		GLenum GetSolidDrawMode() const;
 	};
 
 	typedef std::shared_ptr<GLES2EllipseMesh> PGLES2EllipseMesh;

@@ -121,8 +121,15 @@ namespace NSG
         pBorderMaterial(new GLES2Material()),
 		pMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW))
 		{
-			pMesh->SetBlendMode(ALPHA);
-			pMesh->EnableDepthTest(false);
+			pActiveMaterial->SetBlendMode(ALPHA);
+			pActiveMaterial->EnableDepthTest(false);
+			pNormalMaterial->SetBlendMode(ALPHA);
+			pNormalMaterial->EnableDepthTest(false);
+			pHotMaterial->SetBlendMode(ALPHA);
+			pHotMaterial->EnableDepthTest(false);
+			pBorderMaterial->SetBlendMode(ALPHA);
+			pBorderMaterial->EnableDepthTest(false);
+
             PGLES2Program pProgram(new GLES2Program(vShader, fShader));
             pActiveMaterial->SetProgram(pProgram);
 			pActiveMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
@@ -568,12 +575,12 @@ namespace NSG
 
 		void DrawButton(PGLES2Material pMaterial, PNode pNode, bool hasFocus)
 		{
-            assert(pMaterial);
-            pSkin->pMesh->SetFilled(pSkin->fillEnabled);
-            pMaterial->SetAlphaFactor(pSkin->alphaFactor);
-            pMaterial->SetUniform("u_hasFocus", hasFocus ? 1 : 0);
-			pSkin->pMesh->SetMaterial(pMaterial);
-			pSkin->pMesh->Render(pNode);
+            if(pMaterial->IsReady())
+            {
+                pMaterial->SetAlphaFactor(pSkin->alphaFactor);
+                pMaterial->SetUniform("u_hasFocus", hasFocus ? 1 : 0);
+                pMaterial->Render(pSkin->fillEnabled, pNode.get(), pSkin->pMesh.get());
+            }
 		}
 
 		bool Hit(GLushort id, PNode pNode)
@@ -582,7 +589,7 @@ namespace NSG
 				return false;
 
 			pFrameColorSelection->Begin(uistate.mousex, uistate.mousey);
-	    	pFrameColorSelection->Render(id, pSkin->pMesh, pNode);
+	    	pFrameColorSelection->Render(id, pSkin->pMesh.get(), pNode.get());
 		    pFrameColorSelection->End();
 
 		    return id == pFrameColorSelection->GetSelected();
