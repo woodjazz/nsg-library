@@ -41,7 +41,6 @@ namespace NSG
         void ViewChanged(int32_t windowWidth, int32_t windowHeight);
         void Begin(float screenX, float screenY);
         void End();
-        bool IsEnabled() const { return enabled_; }
         GLushort GetSelected() const;
         void Render(SceneNode* pSceneNode);
         void Render(GLushort id, GLES2Mesh* pMesh, Node* pNode);

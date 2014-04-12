@@ -34,7 +34,6 @@ namespace NSG
 	: id_(s_node_id++),
 	scale_(1,1,1),
 	globalScale_(1,1,1),
-	enableSelection_(true),
 	inheritScale_(true),
 	updateEnabled_(true)
 	{

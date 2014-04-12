@@ -217,7 +217,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         deltaTime_ = delta;
         IMGUI::DoTick();
         Update();
-        SceneNode::Update();
+        SceneNode::UpdateAll();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     void InternalApp::BeginTick()
     {
         pApp_->Start();
-        SceneNode::Start();
+        SceneNode::StartAll();
     }
     
     void InternalApp::DoTick(float delta)
@@ -261,7 +261,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     void InternalApp::EndTick()
     {
         pApp_->LateUpdate();
-        SceneNode::LateUpdate();
+        SceneNode::LateUpdateAll();
     }
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
@@ -296,6 +296,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
         IMGUI::OnMouseMove(x, y);
         pApp_->OnMouseMove(x, y);
+        SceneNode::OnMouseMoveAll(x, y);
     }
 
     void InternalApp::OnMouseDown(float x, float y) 
@@ -306,6 +307,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
         IMGUI::OnMouseDown(x, y);
         pApp_->OnMouseDown(x, y);
+        SceneNode::OnMouseDownAll(x, y);
     }
 
     void InternalApp::OnMouseUp() 
@@ -313,6 +315,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         TRACE_LOG("Mouse Up");
         IMGUI::OnMouseUp();
         pApp_->OnMouseUp();
+        SceneNode::OnMouseUpAll();
     }
 
     void InternalApp::OnKey(int key, int action, int modifier)
@@ -320,6 +323,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
         IMGUI::OnKey(key, action, modifier);
         pApp_->OnKey(key, action, modifier);
+        SceneNode::OnKeyAll(key, action, modifier);
     }
 
     void InternalApp::OnChar(unsigned int character)
@@ -327,7 +331,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         TRACE_LOG("character=" << character);
         IMGUI::OnChar(character);
         pApp_->OnChar(character);
-        
+        SceneNode::OnCharAll(character);
     }
 
     void InternalApp::RenderFrame()
@@ -344,14 +348,10 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         pApp_->RenderFrame();
 
-        pApp_->BeginSelection(screenX_, screenY_);
-        pApp_->RenderFrame();
-        pApp_->EndSelection();
-
-        SceneNode::Render();
+        SceneNode::RenderAll();
 
         pApp_->BeginSelection(screenX_, screenY_);
-        SceneNode::Render();
+        SceneNode::Render2SelectAll();
         pApp_->EndSelection();
 
         IMGUI::Begin();

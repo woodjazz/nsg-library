@@ -28,6 +28,7 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
+	class App;
 	class SceneNode;
 	class Behavior
 	{
@@ -38,8 +39,15 @@ namespace NSG
 		virtual void Update() {}
 		virtual void LateUpdate() {}
 		virtual void Render() {};
+		virtual void Render2Select() {};
+        virtual void OnMouseMove(float x, float y) {}
+        virtual void OnMouseDown(float x, float y) {}
+        virtual void OnMouseUp() {}
+        virtual void OnKey(int key, int action, int modifier) {}
+        virtual void OnChar(unsigned int character) {}
 		void SetSceneNode(SceneNode* pSceneNode);
 	protected:
+		App* pApp_;
 		SceneNode* pSceneNode_;
 	};
 

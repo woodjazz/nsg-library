@@ -26,13 +26,11 @@ misrepresented as being the original software.
 #pragma once
 #include <memory>
 #include <vector>
-#include "Node.h"
-#include "GLES2BoxMesh.h"
-#include "GLES2Material.h"
+#include "SceneNode.h"
 
 namespace NSG
 {
-	class GLES2Light : public Node
+	class GLES2Light : public SceneNode
 	{
 	public:
 		GLES2Light();
@@ -58,7 +56,6 @@ namespace NSG
 		Type GetType() const { return type_; }
 		typedef std::vector<GLES2Light*> Lights;
 		static const Lights& GetLights();
-		void Render();
 	private:
 		Type type_;
         Color diffuse_;
@@ -66,8 +63,6 @@ namespace NSG
         Attenuation attenuation_;
         float spotCutOff_;
         float exponent_;
-        PGLES2Material pMaterial_;
-        PGLES2BoxMesh pMesh_;
 	};
 
 	typedef std::shared_ptr<GLES2Light> PGLES2Light;

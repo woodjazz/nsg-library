@@ -33,56 +33,41 @@ misrepresented as being the original software.
 #include "GLES2Program.h"
 #include "GLES2VertexBuffer.h"
 #include "GLES2FontAtlasTexture.h"
+#include "GLES2Mesh.h"
 #include "Node.h"
 #include "Types.h"
 
 namespace NSG
 {
-	class GLES2Text
+	class App;
+	class GLES2Text : public GLES2Mesh
 	{
 	public:
 		GLES2Text(const char* filename, int fontSize, GLenum usage);
 		~GLES2Text();
-		void SetBlendMode(BLEND_MODE mode);
-		void EnableDepthTest(bool enable);
-		void Render(PNode pNode, Color color);
-		void Render(Node* pNode, Color color);
 		void SetText(const std::string& text);
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }
 		GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
 		unsigned int GetCharacterPositionForWidth(float width) const;
 		PGLES2Texture GetAtlas() const { return pAtlas_; }
+		PGLES2Program GetProgram() const { return pProgram_; }
 		int GetFontSize() const { return fontSize_; }
 		static void ReleaseAtlasCollection();
+		GLenum GetWireFrameDrawMode() const;
+		GLenum GetSolidDrawMode() const;
+
 	private:
+		App* pApp_;
 		PGLES2FontAtlasTexture pAtlas_;
 		PGLES2Program pProgram_;
-		PGLES2VertexBuffer pVBuffer_;
-		GLuint texture_loc_;
-		GLuint position_loc_;
-		GLuint texcoord_loc_;
-		GLuint color_loc_;
-		GLuint mvp_loc_;
 
-		struct Point 
-		{
-			GLfloat x;
-			GLfloat y;
-			GLfloat s;
-			GLfloat t;
-		};
-
-		std::vector<Point> coords_;
 		std::string lastText_;
 		GLfloat screenWidth_;
 		GLfloat screenHeight_;
-		GLenum usage_;
 		int32_t width_;
 		int32_t height_;
 		int fontSize_;
-        BLEND_MODE blendMode_;
-        bool enableDepthTest_;
 	};
 
 	typedef std::shared_ptr<GLES2Text> PGLES2Text;

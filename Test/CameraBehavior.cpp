@@ -23,65 +23,64 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "CubeBehavior.h"
+#include "CameraBehavior.h"
 #include "NSG/SceneNode.h"
 #include "NSG/App.h"
-#include "NSG/GLES2BoxMesh.h"
 
-CubeBehavior::CubeBehavior()
-: x_angle_(0),
-y_angle_(0)
+CameraBehavior::CameraBehavior()
 {
 
 }
 	
-CubeBehavior::~CubeBehavior()
+CameraBehavior::~CameraBehavior()
 {
 
 }
 
-void CubeBehavior::Start()
+void CameraBehavior::Start()
 {
-	PGLES2BoxMesh pMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
-    pSceneNode_->SetMesh(pMesh);
-
-	PGLES2Material pMaterial(new GLES2Material ());
-
-    PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
-	PResource pFResource(new Resource("shaders/Simple.frag"));
-	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
-    pMaterial->SetProgram(pDiffuseProgram);
-
-    PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
-	pMaterial->SetMainTexture(pTexture);
-    pSceneNode_->SetMaterial(pMaterial);
-
-    pSceneNode_->SetPosition(Vertex3(-5, 0, 0));
-    pSceneNode_->SetScale(Vertex3(3,3,3));
+	camControlPoints_.push_back(Vertex3(-10.0f, 0.0f, 0.0f)); 
+    camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 10.0f));
+	camControlPoints_.push_back(Vertex3(10.0f, 0.0f, 0.0f));
+	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
+	
 }
 
-void CubeBehavior::Update()
+void CameraBehavior::Update()
 {
     float deltaTime = App::GetPtrInstance()->GetDeltaTime();
 
-	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
-	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
+    static float delta1 = 0;
 
-	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	Vertex3 position = glm::catmullRom(
+        camControlPoints_[0],
+        camControlPoints_[1],
+        camControlPoints_[2],
+        camControlPoints_[3],
+		delta1);
+
+    pSceneNode_->SetPosition(position);
+    pSceneNode_->SetLookAt(Vertex3(0));
+
+    delta1 += deltaTime * 0.1f;
+
+    if(delta1 > 1)
+    {
+    	delta1 = 0;
+        Vertex3 p = camControlPoints_.front();
+        camControlPoints_.pop_front();
+        camControlPoints_.push_back(p);
+    }
 
 }
 
-void CubeBehavior::LateUpdate()
+void CameraBehavior::LateUpdate()
 {
 
 }
 
-void CubeBehavior::Render()
+void CameraBehavior::Render()
 {
-	//pSceneNode_->Render(true);
+	pSceneNode_->Render(true);
 }
 
-void CubeBehavior::Render2Select()
-{
-	pSceneNode_->Render2Select();
-}

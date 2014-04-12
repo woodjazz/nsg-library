@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <thread>
-#include <deque>
 #include "NSG/App.h"
 #include "NSG/GLES2BoxMesh.h"
 #include "NSG/GLES2SphereMesh.h"
@@ -64,28 +63,14 @@ private:
     void Menu1();
 	std::thread thread_;
 	PGLES2Light pLight0_;
-	PNode pTextNode0_;
-	PNode pTextNode1_;
 	PGLES2Camera pCamera1_;
 	PGLES2Camera pCamera2_;
-	float x_angle_;
-	float y_angle_;
-	PGLES2Text pText1_;
-	PGLES2Text pText2_;
-	PGLES2Text pText3_;
-	float x_;
-	float y_;
-	bool buttonDown_;
-	bool buttonUp_;
-	GLushort selectedIndex_;
-	Vertex3 scale_;
-    std::deque<Vertex3> camControlPoints_;
     IMGUI::PSkin pSkin1_;
     IMGUI::PSkin pSkin2_;
-    float aspectRatio_;
     PGLES2Texture pRenderedTexture_;
     PGLES2Render2Texture pRender2Texture_;
     PSceneNode pEarthSceneNode_;
     PSceneNode pCubeSceneNode_;
+    PSceneNode pTextSceneNode_;
 };
 

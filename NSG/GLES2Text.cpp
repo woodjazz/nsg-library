@@ -32,52 +32,44 @@ misrepresented as being the original software.
 #include <vector>
 #include <map>
 
+struct Point 
+{
+	GLfloat x;
+	GLfloat y;
+	GLfloat s;
+	GLfloat t;
+};
+
 #define STRINGIFY(S) #S
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
 	attribute vec4 a_position;
+	attribute vec2 a_texcoord;
 	varying vec2 v_texcoord;
 	
 	void main() 
 	{
-		gl_Position = u_mvp * vec4(a_position.xy, 0, 1);
-		v_texcoord = a_position.zw;
+		gl_Position = u_mvp * a_position;
+		v_texcoord = a_texcoord;
 	}
 );
 
 static const char* fShader = STRINGIFY(
 	varying vec2 v_texcoord;
 	uniform sampler2D u_texture;
-	uniform vec4 u_color;
+	struct Material
+	{
+		vec4 diffuse;
+	};
+
+	uniform Material u_material;
+
 	void main()
 	{
-		gl_FragColor = vec4(1, 1, 1, texture2D(u_texture, v_texcoord).a) * u_color;
+		gl_FragColor = vec4(u_material.diffuse.w, u_material.diffuse.w, u_material.diffuse.w, texture2D(u_texture, v_texcoord).a) * vec4(u_material.diffuse.x, u_material.diffuse.y, u_material.diffuse.z, 1);
 	}
 );
-
-#define STRINGIFY(S) #S
-
-static const char* vAtlasShader = STRINGIFY(
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec2 v_texcoord;
-	void main()
-	{
-		gl_Position = a_position;
-		v_texcoord = a_texcoord;
-	}
-);
-
-static const char* fAtlasShader = STRINGIFY(
-	uniform sampler2D u_texture;
-	varying vec2 v_texcoord;
-	void main()
-	{
-		gl_FragColor = vec4(1, 1, 1, texture2D(u_texture, v_texcoord).a);
-	}
-);
-
 
 namespace NSG
 {
@@ -86,19 +78,14 @@ namespace NSG
 	Atlas fontAtlas;
 
 	GLES2Text::GLES2Text(const char* filename, int fontSize, GLenum usage)
-	: pProgram_(new GLES2Program(vShader, fShader)),
-	texture_loc_(pProgram_->GetUniformLocation("u_texture")),
-	position_loc_(pProgram_->GetAttributeLocation("a_position")),
-	color_loc_(pProgram_->GetUniformLocation("u_color")),
-	mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
+	: GLES2Mesh(usage),
+	pApp_(App::GetPtrInstance()),
+	pProgram_(new GLES2Program(vShader, fShader)),
 	screenWidth_(0),
 	screenHeight_(0),
-	usage_(usage),
 	width_(0),
 	height_(0),
-	fontSize_(fontSize),
-    blendMode_(ALPHA),
-    enableDepthTest_(true)
+	fontSize_(fontSize)
     {
     	Key k(filename, fontSize);
     	auto it = fontAtlas.find(k);
@@ -117,83 +104,10 @@ namespace NSG
 	{
 	}
 
-	void GLES2Text::SetBlendMode(BLEND_MODE mode)
-	{
-		blendMode_ = mode;
-	}
-
-	void GLES2Text::EnableDepthTest(bool enable)
-	{
-		enableDepthTest_ = enable;
-	}
-
 	void GLES2Text::ReleaseAtlasCollection()
 	{
 		fontAtlas.clear();
 	}
-
-
-	void GLES2Text::Render(PNode pNode, Color color) 
-	{
-		Render(pNode.get(), color);
-	}
-
-	void GLES2Text::Render(Node* pNode, Color color) 
-	{
-		SetText(lastText_);
-
-		if(pVBuffer_ != nullptr)
-		{
-            assert(glGetError() == GL_NO_ERROR);
-
-	        switch(blendMode_)
-	       	{
-	        	case NONE:
-		        	glDisable(GL_BLEND);
-		        	break;
-
-		        case ALPHA:
-		        	glEnable(GL_BLEND);
-		        	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		        	break;
-
-		        default:
-		        	CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
-		        	break;
-	        }
-            
-            if(enableDepthTest_)
-            {
-            	glEnable(GL_DEPTH_TEST);
-            }
-            else
-            {
-            	glDisable(GL_DEPTH_TEST);
-            }
-
-			UseProgram useProgram(*pProgram_);
-
-			Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
-			glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));
-
-			glActiveTexture(GL_TEXTURE0);
-
-			BindTexture bindTexture(*pAtlas_);
-			glUniform1i(texture_loc_, 0);
-			glUniform4fv(color_loc_, 1, &color[0]);
-
-			BindBuffer bindVBuffer(*pVBuffer_);
-
-			glEnableVertexAttribArray(position_loc_);
-			glVertexAttribPointer(position_loc_, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-			glDrawArrays(GL_TRIANGLES, 0, coords_.size());
-
-            glDisableVertexAttribArray(position_loc_);
-
-            assert(glGetError() == GL_NO_ERROR);
-		}
-	}	
 
     static int GetIndex(char ch)
     {
@@ -255,83 +169,98 @@ namespace NSG
 
 	void GLES2Text::SetText(const std::string& text) 
 	{
-		auto viewSize = App::GetPtrInstance()->GetViewSize();
+        if(!pAtlas_->IsReady())
+            return;
+
+		auto viewSize = pApp_->GetViewSize();
 
 		if(lastText_ != text || viewSize.first != width_ || viewSize.second != height_)
 		{
+		    vertexsData_.clear();
+
 			width_ = viewSize.first;
 			height_ = viewSize.second;
-			lastText_.clear();
-			pVBuffer_ = nullptr;
-			screenWidth_ = 0;
-			screenHeight_ = 0;
-		}
 
-		if(!pAtlas_->IsReady() || text.empty())
-			return;
+			if(width_ > 0 && height_ > 0)
+			{
+				float x = 0;
+				float y = 0;
 
-		if(!pVBuffer_ && width_ > 0 && height_ > 0)
-		{
-			float x = 0;
-			float y = 0;
+				float sx = 2.0f/width_;
+			    float sy = 2.0f/height_;    
 
-			float sx = 2.0f/width_;
-		    float sy = 2.0f/height_;    
+		        vertexsData_.resize(6 * text.size());
 
-	        size_t length = 6 * text.size();
+	            screenHeight_ = 0;
 
-	        coords_.clear();
+				const GLES2FontAtlasTexture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
+				int atlasWidth = pAtlas_->GetAtlasWidth();
+				int atlasHeight = pAtlas_->GetAtlasHeight();
 
-	        coords_.resize(length);
+				for(const char *p = text.c_str(); *p; p++) 
+				{ 
+	                int idx = GetIndex(*p);
 
-            screenHeight_ = 0;
+					float x2 =  x + charInfo[idx].bl * sx;
+					float y2 = -y - charInfo[idx].bt * sy;
+					float w = charInfo[idx].bw * sx;
+					float h = charInfo[idx].bh * sy;
 
-			int c = 0;
+					/* Advance the cursor to the start of the next character */
+					x += charInfo[idx].ax * sx;
+					y += charInfo[idx].ay * sy;
 
-			const GLES2FontAtlasTexture::CharsInfo& charInfo = pAtlas_->GetCharInfo();
-			int atlasWidth = pAtlas_->GetAtlasWidth();
-			int atlasHeight = pAtlas_->GetAtlasHeight();
+					/* Skip glyphs that have no pixels */
+					if(!w || !h)
+						continue;
 
-			for(const char *p = text.c_str(); *p; p++) 
-			{ 
-                int idx = GetIndex(*p);
+					VertexData data;
+					data.normal_ = Vertex3(0, 0, 1); // always facing forward
+					
+					data.position_ = Vertex3(x2, -y2, 0);
+					data.uv_ = Vertex2(charInfo[idx].tx, charInfo[idx].ty);
+					vertexsData_.push_back(data);
 
-				float x2 =  x + charInfo[idx].bl * sx;
-				float y2 = -y - charInfo[idx].bt * sy;
-				float w = charInfo[idx].bw * sx;
-				float h = charInfo[idx].bh * sy;
+					data.position_ = Vertex3(x2 + w, -y2, 0);
+					data.uv_ = Vertex2(charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty);
+					vertexsData_.push_back(data);
 
-				/* Advance the cursor to the start of the next character */
-				x += charInfo[idx].ax * sx;
-				y += charInfo[idx].ay * sy;
+					data.position_ = Vertex3(x2, -y2 - h, 0);
+					data.uv_ = Vertex2(charInfo[idx].tx, charInfo[idx].ty + charInfo[idx].bh / atlasHeight);
+					vertexsData_.push_back(data);
 
-				/* Skip glyphs that have no pixels */
-				if(!w || !h)
-					continue;
+					data.position_ = Vertex3(x2 + w, -y2, 0);
+					data.uv_ = Vertex2(charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty);
+					vertexsData_.push_back(data);
 
-		        Point point1 = {x2, -y2, charInfo[idx].tx, charInfo[idx].ty};
-				Point point2 = {x2 + w, -y2, charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty};
-				Point point3 = {x2, -y2 - h, charInfo[idx].tx, charInfo[idx].ty + charInfo[idx].bh / atlasHeight};
-				Point point4 = {x2 + w, -y2, charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty};
-				Point point5 = {x2, -y2 - h, charInfo[idx].tx, charInfo[idx].ty + charInfo[idx].bh / atlasHeight};
-				Point point6 = {x2 + w, -y2 - h, charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty + charInfo[idx].bh / atlasHeight};
+					data.position_ = Vertex3(x2, -y2 - h, 0);
+					data.uv_ = Vertex2(charInfo[idx].tx, charInfo[idx].ty + charInfo[idx].bh / atlasHeight);
+					vertexsData_.push_back(data);
 
-	            coords_[c++] = point1;
-	            coords_[c++] = point2;
-	            coords_[c++] = point3;
-	            coords_[c++] = point4;
-	            coords_[c++] = point5;
-	            coords_[c++] = point6;
+					data.position_ = Vertex3(x2 + w, -y2 - h, 0);
+					data.uv_ = Vertex2(charInfo[idx].tx + charInfo[idx].bw / atlasWidth, charInfo[idx].ty + charInfo[idx].bh / atlasHeight);
+					vertexsData_.push_back(data);
 
-                screenHeight_ = std::max(screenHeight_, h);
+	                screenHeight_ = std::max(screenHeight_, h);
+				}
+
+	            screenWidth_ = x;
+
+				lastText_ = text;
 			}
-
-            screenWidth_ = x;
-
-			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(Point) * coords_.size(), &coords_[0], usage_));
-
-			lastText_ = text;
+            
+            Redo();
 		}
 	}	
+
+	GLenum GLES2Text::GetWireFrameDrawMode() const
+	{
+		return GL_LINE_LOOP;
+	}
+
+	GLenum GLES2Text::GetSolidDrawMode() const
+	{
+		return GL_TRIANGLES;
+	}
 
 }

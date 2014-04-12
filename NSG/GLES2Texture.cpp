@@ -49,10 +49,6 @@ namespace NSG
 	width_(0),
 	height_(0)
 	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-		pMaterial_->SetProgram(pProgram);
-		pMaterial_->EnableDepthTest(false);
-
 		InitializeCommonSettings();
 
 		glGenTextures(1, &texture_);
@@ -67,6 +63,8 @@ namespace NSG
 	GLES2Texture::GLES2Texture(GLint format, GLenum type, GLsizei width, GLsizei height, const GLvoid* pixels) 
 	: texture_(0), 
 	isLoaded_(true),
+    pMaterial_(new GLES2Material ()),
+    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
 	width_(width),
 	height_(height)
 	{
@@ -92,6 +90,9 @@ namespace NSG
 
 	void GLES2Texture::InitializeCommonSettings()
 	{
+		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+		pMaterial_->SetProgram(pProgram);
+		pMaterial_->EnableDepthTest(false);
 	}
 
 	GLES2Texture::~GLES2Texture()

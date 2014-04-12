@@ -23,65 +23,66 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "CubeBehavior.h"
+#include "LightBehavior.h"
 #include "NSG/SceneNode.h"
 #include "NSG/App.h"
-#include "NSG/GLES2BoxMesh.h"
+#include "NSG/GLES2Program.h"
+#include "NSG/GLES2SphereMesh.h"
 
-CubeBehavior::CubeBehavior()
-: x_angle_(0),
-y_angle_(0)
+#define STRINGIFY(S) #S
+
+static const char* vShader = STRINGIFY(
+	uniform mat4 u_mvp;
+	attribute vec4 a_position;
+	void main()
+	{
+		gl_Position = u_mvp * a_position;
+	}
+);
+
+static const char* fShader = STRINGIFY(
+	void main()
+	{
+		gl_FragColor = vec4(1,1,0,1);
+	}
+);
+
+
+LightBehavior::LightBehavior()
 {
 
 }
 	
-CubeBehavior::~CubeBehavior()
+LightBehavior::~LightBehavior()
 {
 
 }
 
-void CubeBehavior::Start()
+void LightBehavior::Start()
 {
-	PGLES2BoxMesh pMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
-    pSceneNode_->SetMesh(pMesh);
-
-	PGLES2Material pMaterial(new GLES2Material ());
-
-    PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
-	PResource pFResource(new Resource("shaders/Simple.frag"));
-	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
-    pMaterial->SetProgram(pDiffuseProgram);
-
-    PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
-	pMaterial->SetMainTexture(pTexture);
+	PGLES2Material pMaterial(new GLES2Material());
+	PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+    pMaterial->SetProgram(pProgram);
     pSceneNode_->SetMaterial(pMaterial);
 
-    pSceneNode_->SetPosition(Vertex3(-5, 0, 0));
-    pSceneNode_->SetScale(Vertex3(3,3,3));
+	PGLES2Mesh pMesh(new GLES2SphereMesh(0.2f, 32, GL_STATIC_DRAW));
+	pSceneNode_->SetMesh(pMesh);
+
+    pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
 }
 
-void CubeBehavior::Update()
+void LightBehavior::Update()
 {
-    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
-
-	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
-	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
-
-	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
-
+//    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
 }
 
-void CubeBehavior::LateUpdate()
+void LightBehavior::LateUpdate()
 {
 
 }
 
-void CubeBehavior::Render()
+void LightBehavior::Render()
 {
 	//pSceneNode_->Render(true);
 }
 
-void CubeBehavior::Render2Select()
-{
-	pSceneNode_->Render2Select();
-}

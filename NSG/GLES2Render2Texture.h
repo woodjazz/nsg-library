@@ -31,6 +31,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class App;
 	class GLES2Render2Texture
 	{
 	public:
@@ -43,6 +44,8 @@ namespace NSG
 		PGLES2Texture pTexture_;
 		GLuint framebuffer_;
 		GLuint depthRenderBuffer_;
+		Recti viewport_;
+		App* pApp_;
 	};
 
 	typedef std::shared_ptr<GLES2Render2Texture> PGLES2Render2Texture;

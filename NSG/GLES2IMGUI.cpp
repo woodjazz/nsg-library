@@ -690,12 +690,19 @@ namespace NSG
 	                pTextNode->SetParent(pNode);
 	                pTextNode->SetInheritScale(false);
                     pTextNode->SetScale(pRootNode->GetGlobalScale());
-                    static PNode pTextNode1(new Node());
+                    static PSceneNode pTextNode1(new SceneNode());
                     pTextNode1->SetParent(pTextNode);
                     pTextNode1->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
                     pTextNode->EnableUpdate(true);
                     pTextNode->Update(false);
-					pTextMesh->Render(pTextNode1, Color(1,1,1,pSkin->alphaFactor));
+
+                    pTextNode1->SetMesh(pTextMesh);
+                    static PGLES2Material pTextMaterial(new GLES2Material());
+                    pTextMaterial->SetMainTexture(pTextMesh->GetAtlas());
+                    pTextMaterial->SetProgram(pTextMesh->GetProgram());
+                    pTextNode1->SetMaterial(pTextMaterial);
+                    pTextMaterial->SetDiffuseColor(Color(1,1,1,pSkin->alphaFactor));
+                    pTextNode1->Render(true);
 				}
 			}
 
@@ -858,23 +865,36 @@ namespace NSG
                 pTextNode0->SetParent(pTextNode);
 	            pTextNode0->SetInheritScale(false);
                 pTextNode0->SetScale(pRootNode->GetGlobalScale());
-                static PNode pTextNode1(new Node());
+                static PSceneNode pTextNode1(new SceneNode());
                 pTextNode1->SetParent(pTextNode0);
                 pTextNode1->SetPosition(Vertex3(-pArea->textOffsetX_, 0, 0));
                 pTextNode->EnableUpdate(true);
                 pTextNode->Update(false);
-				pTextMesh->Render(pTextNode1, Color(1,1,1,pSkin->alphaFactor));
+                pTextNode1->SetMesh(pTextMesh);
+                static PGLES2Material pTextMaterial(new GLES2Material());
+                pTextMaterial->SetMainTexture(pTextMesh->GetAtlas());
+                pTextMaterial->SetProgram(pTextMesh->GetProgram());
+                pTextNode1->SetMaterial(pTextMaterial);
+                pTextMaterial->SetDiffuseColor(Color(1,1,1,pSkin->alphaFactor));
+                pTextNode1->Render(true);
                 
 				// Render cursor if we have keyboard focus
 				if(hasFocus && (tick < 15))
                 {
-                    static PNode pCursorNode(new Node());
+                    static PSceneNode pCursorNode(new SceneNode());
                     pCursorNode->EnableUpdate(false);
                     pCursorNode->SetParent(pTextNode1);
                     pCursorNode->SetPosition(Vertex3(cursorPositionInText, 0, 0));
                     pCursorNode->EnableUpdate(true);
                     pCursorNode->Update(false);
-					pCursorMesh->Render(pCursorNode, Color(1,0,0,pSkin->alphaFactor));
+
+                    pCursorNode->SetMesh(pTextMesh);
+                    static PGLES2Material pTextMaterial(new GLES2Material());
+                    pTextMaterial->SetMainTexture(pTextMesh->GetAtlas());
+                    pTextMaterial->SetProgram(pTextMesh->GetProgram());
+                    pCursorNode->SetMaterial(pTextMaterial);
+                    pTextMaterial->SetDiffuseColor(Color(1,0,0,pSkin->alphaFactor));
+                    pCursorNode->Render(true);
                 }
 			}
 

@@ -23,65 +23,67 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "CubeBehavior.h"
+#include "TextBehavior.h"
 #include "NSG/SceneNode.h"
+#include "NSG/GLES2Camera.h"
 #include "NSG/App.h"
-#include "NSG/GLES2BoxMesh.h"
+#include <string>
+#include <sstream>
 
-CubeBehavior::CubeBehavior()
-: x_angle_(0),
-y_angle_(0)
+
+TextBehavior::TextBehavior()
 {
 
 }
 	
-CubeBehavior::~CubeBehavior()
+TextBehavior::~TextBehavior()
 {
 
 }
 
-void CubeBehavior::Start()
+void TextBehavior::Start()
 {
-	PGLES2BoxMesh pMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
-    pSceneNode_->SetMesh(pMesh);
+	PNode pParent(new Node);
+	pSceneNode_->SetParent(pParent);
 
-	PGLES2Material pMaterial(new GLES2Material ());
+    pText_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_DYNAMIC_DRAW));
+    pSceneNode_->SetMesh(pText_);
 
-    PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
-	PResource pFResource(new Resource("shaders/Simple.frag"));
-	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
-    pMaterial->SetProgram(pDiffuseProgram);
-
-    PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
-	pMaterial->SetMainTexture(pTexture);
+    PGLES2Material pMaterial(new GLES2Material());
+    pMaterial->SetMainTexture(pText_->GetAtlas());
+    pMaterial->SetProgram(pText_->GetProgram());
     pSceneNode_->SetMaterial(pMaterial);
-
-    pSceneNode_->SetPosition(Vertex3(-5, 0, 0));
-    pSceneNode_->SetScale(Vertex3(3,3,3));
 }
 
-void CubeBehavior::Update()
+void TextBehavior::Update()
 {
-    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+//    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
 
-	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
-	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
-
-	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	pSceneNode_->GetParent()->SetPosition(Vertex3(-pText_->GetWidth()/2, 0, 0.2f));
 
 }
 
-void CubeBehavior::LateUpdate()
+void TextBehavior::LateUpdate()
 {
 
 }
 
-void CubeBehavior::Render()
+void TextBehavior::Render()
 {
-	//pSceneNode_->Render(true);
+	GLES2Camera* pCamera = GLES2Camera::Deactivate();
+
+	pSceneNode_->Render(true);
+
+	GLES2Camera::Activate(pCamera);
 }
 
-void CubeBehavior::Render2Select()
+void TextBehavior::OnMouseDown(float x, float y)
 {
-	pSceneNode_->Render2Select();
+	GLushort id = pApp_->GetSelectedNode();
+
+    std::stringstream ss;
+    ss << "Selected Id=" << std::hex << id;
+
+    pText_->SetText(ss.str());
 }
+

@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Node.h"
+#include "SceneNode.h"
 #include <memory>
 #include <vector>
 
@@ -35,7 +35,7 @@ namespace NSG
 
 	typedef std::shared_ptr<GLES2Camera> PGLES2Camera;
 
-	class GLES2Camera : public Node
+	class GLES2Camera : public SceneNode
 	{
 	public:
 		GLES2Camera();

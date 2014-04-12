@@ -26,6 +26,9 @@ misrepresented as being the original software.
 #include "MyApp.h"
 #include "EarthBehavior.h"
 #include "CubeBehavior.h"
+#include "LightBehavior.h"
+#include "CameraBehavior.h"
+#include "TextBehavior.h"
 
 #include "NSG/Log.h"
 #include "NSG/GLES2Texture.h"
@@ -50,15 +53,6 @@ using namespace NSG;
 
 
 MyApp::MyApp() 
-: x_angle_(0),
-y_angle_(0),
-x_(0),
-y_(0),
-buttonDown_(false),
-buttonUp_(false),
-selectedIndex_(0),
-scale_(1,1,1),
-aspectRatio_(1)
 {
 	NodeTest();
 }
@@ -90,6 +84,8 @@ void MyApp::Start()
 	thread_ = std::thread([this](){InternalTask();});	
 
 	pCamera1_ = PGLES2Camera(new GLES2Camera());
+	pCamera1_->SetBehavior(PBehavior(new CameraBehavior()));
+
 	pCamera2_ = PGLES2Camera(new GLES2Camera());
 
     pEarthSceneNode_ = PSceneNode(new SceneNode());
@@ -98,26 +94,15 @@ void MyApp::Start()
     pCubeSceneNode_ = PSceneNode(new SceneNode());
     pCubeSceneNode_->SetBehavior(PBehavior(new CubeBehavior()));
 
-	pTextNode0_ = PNode(new Node);
-    pTextNode1_ = PNode(new Node());
-    pTextNode1_->SetParent(pTextNode0_);
+    pTextSceneNode_ = PSceneNode(new SceneNode());
+    pTextSceneNode_->SetBehavior(PBehavior(new TextBehavior()));
 
     pCamera2_->SetPosition(Vertex3(0,5,5));
     pCamera2_->SetLookAt(Vertex3(0,0,0));
     pCamera2_->SetViewportFactor(0.75f, 0.75f, 0.25f, 0.25f);
 
-    pText1_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_DYNAMIC_DRAW));
-    pText2_ = PGLES2Text(new GLES2Text("font/bluebold.ttf", 24, GL_STATIC_DRAW));
-    pText3_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 48, GL_STATIC_DRAW));
-
     pLight0_ = PGLES2Light(new GLES2Light());
-    pLight0_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
-	//pLight0_->SetDirectional();
-
-	camControlPoints_.push_back(Vertex3(-10.0f, 0.0f, 0.0f)); 
-    camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 10.0f));
-	camControlPoints_.push_back(Vertex3(10.0f, 0.0f, 0.0f));
-	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
+    pLight0_->SetBehavior(PBehavior(new LightBehavior()));
 
 	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cell.png"));
 	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cube_example.png"));
@@ -133,8 +118,8 @@ void MyApp::Start()
 
 	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 256, 256, nullptr));
 
-	pSkin2_->pActiveMaterial->SetMainTexture(pRenderedTexture_);
-	pSkin1_->pActiveMaterial->SetMainTexture(pRenderedTexture_);
+	pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
+	pSkin1_->pNormalMaterial->SetMainTexture(pRenderedTexture_);
 
     pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(pRenderedTexture_));
 
@@ -143,51 +128,7 @@ void MyApp::Start()
 void MyApp::Update() 
 {
 	//TRACE_LOG("MyApp::Update delta = " << Time::deltaTime);
-    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
-
-	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
-	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
-
-	static float factor_scale = 1;
-	scale_ -= deltaTime * 0.7f * factor_scale;
-
-	if(scale_.x < -10 && factor_scale > 0)
-		factor_scale *= -1;
-	else if(scale_.x > 10 && factor_scale < 0)
-		factor_scale *= -1;
-
-	pTextNode0_->SetPosition(Vertex3(-pText1_->GetWidth()/2, 0, 0.2f));
-    //pTextNode1_->SetPosition(Vertex3(200, 100, 0));
-	pTextNode1_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
-
-
-	pLight0_->SetPosition(Vertex3(scale_.x,  2.0,  6.0));
-	//pLight0_->SetOrientation(glm::angleAxis(x_angle_, Vertex3(1, 0, 0)));
-
-    static float delta1 = 0;
-
-	Vertex3 position = glm::catmullRom(
-        camControlPoints_[0],
-        camControlPoints_[1],
-        camControlPoints_[2],
-        camControlPoints_[3],
-		delta1);
-
-    pCamera1_->SetPosition(position);
-    pCamera1_->SetLookAt(Vertex3(0));
-
-    delta1 += deltaTime * 0.1f;
-
-    if(delta1 > 1)
-    {
-    	delta1 = 0;
-        Vertex3 p = camControlPoints_.front();
-        camControlPoints_.pop_front();
-        camControlPoints_.push_back(p);
-    }
-
-    //TRACE_LOG("position=" << position);
-	
+//    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
 
 }
 
@@ -225,7 +166,7 @@ void MyApp::TestIMGUI2()
 
         if(enabled)
         {
-			IMGUI::pCurrentNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
+			//IMGUI::pCurrentNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
             if(IMGUIButton("Button asas1"))
             {
@@ -279,7 +220,7 @@ void MyApp::TestIMGUI4()
 {
 	IMGUI::pSkin = pSkin2_;
 	IMGUI::pSkin->fontSize = 18;
-	IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
+	//IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
 
     IMGUIBeginHorizontal();
 
@@ -391,36 +332,14 @@ void MyApp::RenderFrame()
 {
 	//TRACE_LOG("MyApp::RenderFrame");
 
-	pText3_->GetAtlas()->Show(pText3_->GetAtlas());
-
     pCamera1_->Activate();
-
-    pLight0_->Render();
 
 	pRender2Texture_->Begin();
     pCubeSceneNode_->Render(true);
     pEarthSceneNode_->Render(true);
     pRender2Texture_->End();
 
-    std::stringstream ss;
-    ss << "Mouse x=" << x_ << " y=" << y_;
-
-    if(buttonDown_)
-    {
-    	ss << " BDown";
-    }
-    else if(buttonUp_)
-    {
-    	ss << " BUp";
-    }
-
-	ss << " S=" << std::hex << selectedIndex_;
-
-	GLES2Camera::Deactivate();
-	pText1_->SetText(ss.str());
-	pText1_->Render(pTextNode1_, Color(1,1,1,1));
-
-	pCamera1_->Activate();
+    //pRenderedTexture_->Show(pRenderedTexture_);
 }
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 
@@ -430,26 +349,13 @@ void MyApp::ViewChanged(int32_t width, int32_t height)
 
 void MyApp::OnMouseMove(float x, float y)
 {
-	x_=x;
-	y_=y;
 }
 
 void MyApp::OnMouseDown(float x, float y)
 {
-	x_=x;
-	y_=y;
-	
-	buttonDown_ = true;
-	buttonUp_ = false;
-
-	selectedIndex_ = GetSelectedNode();
-    
-    TRACE_LOG("selected=" << selectedIndex_);
 }
 
 void MyApp::OnMouseUp()
 {
-	buttonDown_ = false;
-	buttonUp_ = true;
 }
 

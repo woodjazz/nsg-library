@@ -69,7 +69,8 @@ namespace NSG
 
 	void GLES2Mesh::Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc)
 	{
-		CHECK_ASSERT(pVBuffer_, __FILE__, __LINE__);
+        if(!pVBuffer_)
+            return;
 
 		BindBuffer bindVBuffer(*pVBuffer_);
 

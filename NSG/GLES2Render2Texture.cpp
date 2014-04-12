@@ -33,7 +33,8 @@ misrepresented as being the original software.
 namespace NSG
 {
 	GLES2Render2Texture::GLES2Render2Texture(PGLES2Texture pTexture)
-	: pTexture_(pTexture)
+	: pTexture_(pTexture),
+    pApp_(App::GetPtrInstance())
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
         CHECK_ASSERT(pTexture != nullptr, __FILE__, __LINE__);
@@ -59,6 +60,8 @@ namespace NSG
             TRACE_LOG("Frame buffer failed with error=" << status);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
+
+        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	}
 
 	GLES2Render2Texture::~GLES2Render2Texture()
@@ -69,15 +72,18 @@ namespace NSG
 
 	void GLES2Render2Texture::Begin()
 	{
+        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
         glClearColor(0, 0, 0, 0);
         glClearDepth(1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
 	}
 
 	void GLES2Render2Texture::End()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(viewport_.x, viewport_.y, viewport_.z, viewport_.w); 
+       	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 }

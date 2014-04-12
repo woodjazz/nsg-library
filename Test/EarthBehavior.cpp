@@ -75,6 +75,12 @@ void EarthBehavior::LateUpdate()
 
 void EarthBehavior::Render()
 {
-	pSceneNode_->Render(true);
+	//pSceneNode_->Render(true);
 }
+
+void EarthBehavior::Render2Select()
+{
+	pSceneNode_->Render2Select();
+}
+
 

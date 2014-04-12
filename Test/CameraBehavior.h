@@ -25,19 +25,21 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "NSG/Behavior.h"
+#include "NSG/Types.h"
+#include <deque>
 using namespace NSG;
-class EarthBehavior : public Behavior
+class CameraBehavior : public Behavior
 {
 public:
-	EarthBehavior();
-	~EarthBehavior();
+	CameraBehavior();
+	~CameraBehavior();
 
 	void Start();
 	void Update();
 	void LateUpdate();
 	void Render();
-	void Render2Select();
+
 private:
-	float x_angle_;
-	float y_angle_;
+    std::deque<Vertex3> camControlPoints_;
+
 };

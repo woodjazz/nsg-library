@@ -71,14 +71,12 @@ namespace NSG
 
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-		if(pSelection_->IsEnabled() && IsSelectionEnabled())
-		{
-			pSelection_->Render(this);
-		}
-		else
-		{
-			pMaterial_->Render(solid, this, pMesh_.get());
-	    }
+		pMaterial_->Render(solid, this, pMesh_.get());
+	}
+
+	void SceneNode::Render2Select()
+	{
+		pSelection_->Render(this);
 	}
 
 	void SceneNode::RenderForSelect(GLuint position_loc)
@@ -86,7 +84,7 @@ namespace NSG
 		pMesh_->Render(pMesh_->GetSolidDrawMode(), position_loc, -1, -1);
 	}
 
-	void SceneNode::Start()
+	void SceneNode::StartAll()
 	{
         for(auto &obj : s_SceneNodes)
         {
@@ -95,7 +93,7 @@ namespace NSG
         }
     }
 
-	void SceneNode::Update()
+	void SceneNode::UpdateAll()
 	{
         for(auto &obj : s_SceneNodes)
         {
@@ -104,7 +102,7 @@ namespace NSG
         }
 	}
 
-	void SceneNode::LateUpdate()
+	void SceneNode::LateUpdateAll()
 	{
         for(auto &obj : s_SceneNodes)
         {
@@ -113,7 +111,7 @@ namespace NSG
         }
 	}
 
-	void SceneNode::Render()
+	void SceneNode::RenderAll()
 	{
         for(auto &obj : s_SceneNodes)
         {
@@ -122,5 +120,57 @@ namespace NSG
         }
 	}
 
+	void SceneNode::Render2SelectAll()
+	{
+        for(auto &obj : s_SceneNodes)
+        {
+            if(obj->pBehavior_)
+                obj->pBehavior_->Render2Select();
+        }
+	}
 
+    void SceneNode::OnMouseMoveAll(float x, float y)
+    {
+        for(auto &obj : s_SceneNodes)
+        {
+            if(obj->pBehavior_)
+                obj->pBehavior_->OnMouseMove(x, y);
+        }
+    }
+
+    void SceneNode::OnMouseDownAll(float x, float y)
+    {
+        for(auto &obj : s_SceneNodes)
+        {
+            if(obj->pBehavior_)
+                obj->pBehavior_->OnMouseDown(x, y);
+        }
+    }
+
+    void SceneNode::OnMouseUpAll()
+    {
+        for(auto &obj : s_SceneNodes)
+        {
+            if(obj->pBehavior_)
+                obj->pBehavior_->OnMouseUp();
+        }
+    }
+
+    void SceneNode::OnKeyAll(int key, int action, int modifier)
+    {
+        for(auto &obj : s_SceneNodes)
+        {
+            if(obj->pBehavior_)
+                obj->pBehavior_->OnKey(key, action, modifier);
+        }
+    }
+
+    void SceneNode::OnCharAll(unsigned int character)
+    {
+        for(auto &obj : s_SceneNodes)
+        {
+            if(obj->pBehavior_)
+                obj->pBehavior_->OnChar(character);
+        }
+    }
 }

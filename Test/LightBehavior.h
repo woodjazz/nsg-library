@@ -26,18 +26,14 @@ misrepresented as being the original software.
 #pragma once
 #include "NSG/Behavior.h"
 using namespace NSG;
-class EarthBehavior : public Behavior
+class LightBehavior : public Behavior
 {
 public:
-	EarthBehavior();
-	~EarthBehavior();
+	LightBehavior();
+	~LightBehavior();
 
 	void Start();
 	void Update();
 	void LateUpdate();
 	void Render();
-	void Render2Select();
-private:
-	float x_angle_;
-	float y_angle_;
 };

@@ -47,12 +47,20 @@ namespace NSG
 		void SetBehavior(PBehavior pBehavior);
 		PBehavior GetBehavior() const { return pBehavior_; }
 		void Render(bool solid);
+		void Render2Select();
 		void RenderForSelect(GLuint position_loc);
 		
-		static void Start();
-		static void Update();
-		static void LateUpdate();
-		static void Render();
+		static void StartAll();
+		static void UpdateAll();
+		static void LateUpdateAll();
+		static void RenderAll();
+		static void Render2SelectAll();
+        static void OnMouseMoveAll(float x, float y);
+        static void OnMouseDownAll(float x, float y);
+        static void OnMouseUpAll();
+        static void OnKeyAll(int key, int action, int modifier);
+        static void OnCharAll(unsigned int character);
+
 
 	private:
 		App* pApp_;

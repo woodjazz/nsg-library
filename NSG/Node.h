@@ -41,8 +41,6 @@ namespace NSG
 		Node();
 		~Node();
 		GLushort GetId()const { return id_; }
-		void EnableSelection(bool enable) { enableSelection_ = enable; }
-		bool IsSelectionEnabled() const { return enableSelection_; }
         void SetParent(PNode pParent);
         PNode GetParent() const { return pParent_; }
 		virtual void OnUpdate() {}
@@ -77,7 +75,6 @@ namespace NSG
 		Vertex3 globalScale_;
 		Vertex3 lookAtDirection_;
 		PNode pParent_;
-		bool enableSelection_;
 		std::set<Node*> children_;
 		bool inheritScale_;
 		bool updateEnabled_;

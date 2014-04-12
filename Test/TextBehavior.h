@@ -25,19 +25,20 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "NSG/Behavior.h"
+#include "NSG/GLES2Text.h"
+
 using namespace NSG;
-class EarthBehavior : public Behavior
+class TextBehavior : public Behavior
 {
 public:
-	EarthBehavior();
-	~EarthBehavior();
+	TextBehavior();
+	~TextBehavior();
 
 	void Start();
 	void Update();
 	void LateUpdate();
 	void Render();
-	void Render2Select();
+	void OnMouseDown(float x, float y);
 private:
-	float x_angle_;
-	float y_angle_;
+	PGLES2Text pText_;
 };

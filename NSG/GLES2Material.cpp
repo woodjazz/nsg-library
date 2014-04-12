@@ -176,14 +176,16 @@ namespace NSG
 
 	void GLES2Material::SetProgram(PGLES2Program pProgram)
 	{
-		pProgram_ = pProgram;
-		loaded_ = false;
+		if(pProgram_ != pProgram)
+		{
+			pProgram_ = pProgram;
+			loaded_ = false;
+		}
 	}
 
 	void GLES2Material::SetMainTexture(PGLES2Texture pTexture)
 	{
 		pTexture_ = pTexture;
-		loaded_ = false;
 	}
 
 	void GLES2Material::SetUniform(const char* name, int value)

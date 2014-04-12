@@ -36,6 +36,7 @@ public:
 	void Update();
 	void LateUpdate();
 	void Render();
+	void Render2Select();
 private:
 	float x_angle_;
 	float y_angle_;

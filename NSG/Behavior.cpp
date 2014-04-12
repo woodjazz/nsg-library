@@ -24,10 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Behavior.h"
+#include "App.h"
 
 namespace NSG 
 {
 	Behavior::Behavior()
+	: pApp_(App::GetPtrInstance())
 	{
 	}
 

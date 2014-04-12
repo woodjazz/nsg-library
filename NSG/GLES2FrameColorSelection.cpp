@@ -62,7 +62,8 @@ namespace NSG
 	screenX_(0),
 	screenY_(0),
 	pixelX_(0),
-	pixelY_(0)
+	pixelY_(0),
+    enabled_(false)
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
@@ -182,6 +183,8 @@ namespace NSG
 
     void GLES2FrameColorSelection::Render(GLushort id, GLES2Mesh* pMesh, Node* pNode)
     {
+        CHECK_ASSERT(enabled_ && "Rendering to select when disabled!!!", __FILE__, __LINE__);
+        
         UseProgram useProgram(*pProgram_);
 
         Color color = TransformSelectedId2Color(id);
