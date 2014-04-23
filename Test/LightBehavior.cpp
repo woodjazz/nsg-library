@@ -76,11 +76,6 @@ void LightBehavior::Update()
 //    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
 }
 
-void LightBehavior::LateUpdate()
-{
-
-}
-
 void LightBehavior::Render()
 {
 	//pSceneNode_->Render(true);

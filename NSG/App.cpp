@@ -28,7 +28,7 @@ misrepresented as being the original software.
 #include "GLES2Camera.h"
 #include "GLES2IMGUI.h"
 #include "GLES2Text.h"
-#include "SceneNode.h"
+#include "Behavior.h"
 #include <cassert>
 
 namespace NSG
@@ -201,7 +201,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void App::Initialize()
     {
-        pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection());
+        pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection(true));
         IMGUI::AllocateResources();
     }
 
@@ -217,7 +217,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         deltaTime_ = delta;
         IMGUI::DoTick();
         Update();
-        SceneNode::UpdateAll();
+        Behavior::UpdateAll();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     void InternalApp::BeginTick()
     {
         pApp_->Start();
-        SceneNode::StartAll();
+        Behavior::StartAll();
     }
     
     void InternalApp::DoTick(float delta)
@@ -260,8 +260,6 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     
     void InternalApp::EndTick()
     {
-        pApp_->LateUpdate();
-        SceneNode::LateUpdateAll();
     }
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
@@ -296,7 +294,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
         IMGUI::OnMouseMove(x, y);
         pApp_->OnMouseMove(x, y);
-        SceneNode::OnMouseMoveAll(x, y);
+        Behavior::OnMouseMoveAll(x, y);
     }
 
     void InternalApp::OnMouseDown(float x, float y) 
@@ -307,7 +305,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
         IMGUI::OnMouseDown(x, y);
         pApp_->OnMouseDown(x, y);
-        SceneNode::OnMouseDownAll(x, y);
+        Behavior::OnMouseDownAll(x, y);
     }
 
     void InternalApp::OnMouseUp() 
@@ -315,7 +313,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         TRACE_LOG("Mouse Up");
         IMGUI::OnMouseUp();
         pApp_->OnMouseUp();
-        SceneNode::OnMouseUpAll();
+        Behavior::OnMouseUpAll();
     }
 
     void InternalApp::OnKey(int key, int action, int modifier)
@@ -323,7 +321,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
         IMGUI::OnKey(key, action, modifier);
         pApp_->OnKey(key, action, modifier);
-        SceneNode::OnKeyAll(key, action, modifier);
+        Behavior::OnKeyAll(key, action, modifier);
     }
 
     void InternalApp::OnChar(unsigned int character)
@@ -331,27 +329,26 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         TRACE_LOG("character=" << character);
         IMGUI::OnChar(character);
         pApp_->OnChar(character);
-        SceneNode::OnCharAll(character);
+        Behavior::OnCharAll(character);
     }
 
     void InternalApp::RenderFrame()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+       
         glClearColor(0, 0, 0, 1);
         glClearDepth(1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
-        //glEnable(GL_BLEND);
         //glEnable(GL_CULL_FACE);
         //glCullFace(GL_FRONT);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         pApp_->RenderFrame();
 
-        SceneNode::RenderAll();
+        Behavior::RenderAll();
 
         pApp_->BeginSelection(screenX_, screenY_);
-        SceneNode::Render2SelectAll();
+        Behavior::Render2SelectAll();
         pApp_->EndSelection();
 
         IMGUI::Begin();

@@ -36,7 +36,6 @@ public:
 
 	void Start();
 	void Update();
-	void LateUpdate();
 	void Render();
 	void OnMouseDown(float x, float y);
 private:

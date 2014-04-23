@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "LightBehavior.h"
 #include "CameraBehavior.h"
 #include "TextBehavior.h"
-
 #include "NSG/Log.h"
 #include "NSG/GLES2Texture.h"
 #include "NSG/GLES2IMGUI.h"
@@ -121,7 +120,10 @@ void MyApp::Start()
 	pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
 	pSkin1_->pNormalMaterial->SetMainTexture(pRenderedTexture_);
 
-    pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(pRenderedTexture_));
+    pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(pRenderedTexture_, true));
+
+    pModel_ = PModel(new Model());
+    pModel_->Load("cube.dae");
 
 }
 
@@ -130,11 +132,6 @@ void MyApp::Update()
 	//TRACE_LOG("MyApp::Update delta = " << Time::deltaTime);
 //    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
 
-}
-
-void MyApp::LateUpdate()
-{
-	//TRACE_LOG("MyApp::LateUpdate");
 }
 
 void MyApp::TestIMGUI2()
@@ -338,6 +335,8 @@ void MyApp::RenderFrame()
     pCubeSceneNode_->Render(true);
     pEarthSceneNode_->Render(true);
     pRender2Texture_->End();
+
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //pRenderedTexture_->Show(pRenderedTexture_);
 }

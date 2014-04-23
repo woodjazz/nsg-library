@@ -63,11 +63,6 @@ void TextBehavior::Update()
 
 }
 
-void TextBehavior::LateUpdate()
-{
-
-}
-
 void TextBehavior::Render()
 {
 	GLES2Camera* pCamera = GLES2Camera::Deactivate();

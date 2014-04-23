@@ -68,11 +68,6 @@ void EarthBehavior::Update()
 
 }
 
-void EarthBehavior::LateUpdate()
-{
-
-}
-
 void EarthBehavior::Render()
 {
 	//pSceneNode_->Render(true);

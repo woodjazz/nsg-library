@@ -16,3 +16,6 @@
 [submodule "codecs/ogg"]
 	path = codecs/ogg
 	url = https://git.xiph.org/mirrors/ogg.git
+[submodule "assimp"]
+	path = assimp
+	url = https://github.com/assimp/assimp

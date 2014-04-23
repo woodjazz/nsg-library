@@ -32,27 +32,36 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	GLES2Render2Texture::GLES2Render2Texture(PGLES2Texture pTexture)
+	GLES2Render2Texture::GLES2Render2Texture(PGLES2Texture pTexture, bool createDepthBuffer)
 	: pTexture_(pTexture),
-    pApp_(App::GetPtrInstance())
+    pApp_(App::GetPtrInstance()),
+    createDepthBuffer_(createDepthBuffer)
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
         CHECK_ASSERT(pTexture != nullptr, __FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
-        glGenRenderbuffers(1, &depthRenderBuffer_);
+
+        if(createDepthBuffer_)
+        {
+            glGenRenderbuffers(1, &depthRenderBuffer_);
+        }
+
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
 		//////////////////////////////////////////////////////////////////////////////////
         // The color buffer
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTexture_->GetID(), 0);
 
-        //////////////////////////////////////////////////////////////////////////////////
-        // The depth buffer
-        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, pTexture_->GetWidth(), pTexture_->GetHeight());
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
-        //////////////////////////////////////////////////////////////////////////////////
+        if(createDepthBuffer_)
+        {
+            //////////////////////////////////////////////////////////////////////////////////
+            // The depth buffer
+            glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, pTexture_->GetWidth(), pTexture_->GetHeight());
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
+            //////////////////////////////////////////////////////////////////////////////////
+        }
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if(GL_FRAMEBUFFER_COMPLETE != status)
@@ -66,24 +75,44 @@ namespace NSG
 
 	GLES2Render2Texture::~GLES2Render2Texture()
 	{
-		glDeleteRenderbuffers(1, &depthRenderBuffer_);
+        if(createDepthBuffer_)
+        {
+            glDeleteRenderbuffers(1, &depthRenderBuffer_);
+        }
+
 		glDeleteFramebuffers(1, &framebuffer_);
 	}
 
 	void GLES2Render2Texture::Begin()
 	{
+        glGetFloatv(GL_COLOR_CLEAR_VALUE, &clear_color_[0]);
+        glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
+        glGetBooleanv(GL_DEPTH_TEST, &depth_enable_);
         glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+        glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
+        glEnable(GL_DEPTH_TEST);
         glClearColor(0, 0, 0, 0);
         glClearDepth(1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
+        
 	}
 
 	void GLES2Render2Texture::End()
 	{
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(viewport_.x, viewport_.y, viewport_.z, viewport_.w); 
-       	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        if(!depth_enable_)
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
+
+        glClearColor(clear_color_[0], clear_color_[1], clear_color_[2], clear_color_[3]);
+        glClearDepth(clear_depth_);
+        //glClear(GL_DEPTH_BUFFER_BIT);
+        
 	}
 
 }

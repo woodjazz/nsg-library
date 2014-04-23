@@ -35,7 +35,7 @@ namespace NSG
 	class GLES2Render2Texture
 	{
 	public:
-		GLES2Render2Texture(PGLES2Texture pTexture);
+		GLES2Render2Texture(PGLES2Texture pTexture, bool createDepthBuffer);
 		~GLES2Render2Texture();
 		void Begin();
 		void End();
@@ -45,7 +45,11 @@ namespace NSG
 		GLuint framebuffer_;
 		GLuint depthRenderBuffer_;
 		Recti viewport_;
+		GLfloat clear_color_[4];
+		GLfloat clear_depth_;
+		GLboolean depth_enable_;
 		App* pApp_;
+		bool createDepthBuffer_;
 	};
 
 	typedef std::shared_ptr<GLES2Render2Texture> PGLES2Render2Texture;

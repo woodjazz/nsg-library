@@ -34,7 +34,6 @@ public:
 
 	void Start();
 	void Update();
-	void LateUpdate();
 	void Render();
 	void Render2Select();
 private:

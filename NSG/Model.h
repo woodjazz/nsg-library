@@ -24,42 +24,30 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "SceneNode.h"
+#include "assimp/IOSystem.hpp"
 #include <memory>
 
-namespace NSG 
+struct aiScene;
+struct aiNode;
+namespace NSG
 {
-	class App;
-	class SceneNode;
-	class Behavior
+	class Model : public Assimp::IOSystem
 	{
 	public:
-		Behavior();
-		virtual ~Behavior();
-		virtual void Start() {}
-		virtual void Update() {}
-		virtual void Render() {};
-		virtual void Render2Select() {};
-        virtual void OnMouseMove(float x, float y) {}
-        virtual void OnMouseDown(float x, float y) {}
-        virtual void OnMouseUp() {}
-        virtual void OnKey(int key, int action, int modifier) {}
-        virtual void OnChar(unsigned int character) {}
-		void SetSceneNode(SceneNode* pSceneNode);
+		Model();
+		~Model();
+		void Load(const char* filename);
 
-		static void StartAll();
-		static void UpdateAll();
-		static void RenderAll();
-		static void Render2SelectAll();
-        static void OnMouseMoveAll(float x, float y);
-        static void OnMouseDownAll(float x, float y);
-        static void OnMouseUpAll();
-        static void OnKeyAll(int key, int action, int modifier);
-        static void OnCharAll(unsigned int character);
+        bool Exists(const char* filename) const;
+		char getOsSeparator() const;
+	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb");
+		void Close(Assimp::IOStream* pFile);
 
-	protected:
-		App* pApp_;
-		SceneNode* pSceneNode_;
+	private:
+		void RecursiveLoad(const aiScene *sc, const aiNode* nd);
+		PSceneNode pRoot_;
 	};
 
-	typedef std::shared_ptr<Behavior> PBehavior;
+	typedef std::shared_ptr<Model> PModel;
 }

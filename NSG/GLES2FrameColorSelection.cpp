@@ -52,7 +52,7 @@ static const char* fShader = STRINGIFY(
 
 namespace NSG
 {
-	GLES2FrameColorSelection::GLES2FrameColorSelection()
+	GLES2FrameColorSelection::GLES2FrameColorSelection(bool createDepthBuffer)
 	: pProgram_(new GLES2Program(vShader, fShader)),
 	position_loc_(pProgram_->GetAttributeLocation("a_position")),
 	color_loc_(pProgram_->GetUniformLocation("u_color")),
@@ -63,13 +63,18 @@ namespace NSG
 	screenY_(0),
 	pixelX_(0),
 	pixelY_(0),
-    enabled_(false)
+    enabled_(false),
+    createDepthBuffer_(createDepthBuffer)
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
         glGenRenderbuffers(1, &colorRenderbuffer_);
-        glGenRenderbuffers(1, &depthRenderBuffer_);
+
+        if(createDepthBuffer)
+        {
+            glGenRenderbuffers(1, &depthRenderBuffer_);
+        }
 
         memset(selected_, 0, sizeof(selected_));
 
@@ -79,7 +84,11 @@ namespace NSG
 
 	GLES2FrameColorSelection::~GLES2FrameColorSelection()
 	{
-        glDeleteRenderbuffers(1, &depthRenderBuffer_);
+        if(createDepthBuffer_)
+        {
+            glDeleteRenderbuffers(1, &depthRenderBuffer_);
+        }
+
         glDeleteRenderbuffers(1, &colorRenderbuffer_);
         glDeleteFramebuffers(1, &framebuffer_);
 	}
@@ -103,12 +112,15 @@ namespace NSG
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
         //////////////////////////////////////////////////////////////////////////////////              
 
-        //////////////////////////////////////////////////////////////////////////////////
-        // The depth buffer
-        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
-        //////////////////////////////////////////////////////////////////////////////////
+        if(createDepthBuffer_)
+        {
+            //////////////////////////////////////////////////////////////////////////////////
+            // The depth buffer
+            glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
+            //////////////////////////////////////////////////////////////////////////////////
+        }
 
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
@@ -130,27 +142,49 @@ namespace NSG
         pixelX_ = (GLint)((1 + screenX)/2.0f * windowWidth_);
         pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
 
+        glGetFloatv(GL_COLOR_CLEAR_VALUE, &clear_color_[0]);
+        glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
+        glGetBooleanv(GL_BLEND, &blend_enable_);
+        glGetBooleanv(GL_DEPTH_TEST, &depth_enable_);
+        
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
+
+        glClearColor(0, 0, 0, 0);
+        glClearDepth(1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 #ifndef ANDROID
         glEnable(GL_SCISSOR_TEST);
         glScissor(pixelX_,pixelY_,1,1);
 #endif
-        glClearColor(0, 0, 0, 0);
-        glClearDepth(1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void GLES2FrameColorSelection::End()
     {
         //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glReadPixels(pixelX_, pixelY_, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &selected_);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        if(blend_enable_)
+        {
+            glEnable(GL_BLEND);
+        }
+
+        if(!depth_enable_)
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
+
 #ifndef ANDROID
         glDisable(GL_SCISSOR_TEST);
 #endif        
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+        glClearColor(clear_color_[0], clear_color_[1], clear_color_[2], clear_color_[3]);
+        glClearDepth(clear_depth_);
+        //glClear(GL_DEPTH_BUFFER_BIT);
+        
         enabled_ = false;
     }
 

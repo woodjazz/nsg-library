@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "NSG/GLES2IMGUI.h"
 #include "NSG/GLES2Render2Texture.h"
 #include "NSG/SceneNode.h"
+#include "NSG/Model.h"
 
 using namespace NSG;
 
@@ -48,7 +49,6 @@ public:
 	int GetFPS() const;
 	void Start();
 	void Update();
-	void LateUpdate();
 	void RenderFrame();
 	void RenderGUIFrame();
 	void ViewChanged(int32_t width, int32_t height);
@@ -72,5 +72,6 @@ private:
     PSceneNode pEarthSceneNode_;
     PSceneNode pCubeSceneNode_;
     PSceneNode pTextSceneNode_;
+    PModel pModel_;
 };
 

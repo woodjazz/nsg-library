@@ -48,7 +48,6 @@ namespace NSG
         virtual int GetFPS() const;
 		virtual void Start() {}
 		virtual void Update() {}
-		virtual void LateUpdate() {}
 		virtual void RenderFrame() = 0;
         virtual void RenderGUIFrame() {}
 		virtual void ViewChanged(int32_t width, int32_t height) = 0;

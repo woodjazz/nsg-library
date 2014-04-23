@@ -65,28 +65,21 @@ static const char* fShader = STRINGIFY(
 	struct Material
 	{
 		vec4 diffuse;
-		float alphaFactor;
+		float shininess;
 	};
 	uniform Material u_material;
 	uniform sampler2D u_texture;
 	varying vec4 v_position;
 	varying vec2 v_texcoord;
-	uniform int u_hasFocus;
 
 	void main()
 	{
-		float factor = 1.0;
+		float factor = u_material.shininess - abs(v_position.y);
 
-		if(u_hasFocus == 1)
-		{
-			factor = 1.0 - abs(v_position.y);
-		}
-		else
-		{
-			factor = abs(v_position.y) - 0.35;
-		}
-	
-		gl_FragColor = texture2D(u_texture, v_texcoord) * u_material.diffuse * vec4(factor, factor, factor, u_material.alphaFactor);
+        if(u_material.shininess < 0.0)
+            factor = abs(v_position.y) + u_material.shininess;
+
+		gl_FragColor = texture2D(u_texture, v_texcoord) * u_material.diffuse * vec4(factor, factor, factor, 1.0);
 	}
 );
 
@@ -94,13 +87,12 @@ static const char* fShaderBorder = STRINGIFY(
 	struct Material
 	{
 		vec4 diffuse;
-		float alphaFactor;
 	};
 	uniform Material u_material;
 
 	void main()
 	{
-		gl_FragColor = u_material.diffuse * vec4(1, 1, 1, u_material.alphaFactor);
+		gl_FragColor = u_material.diffuse;
 	}
 );
 
@@ -134,15 +126,15 @@ namespace NSG
             pActiveMaterial->SetProgram(pProgram);
 			pActiveMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
 			//pActiveMaterial->SetDiffuseColor(Color(1,1,1,0.7f));
-			pActiveMaterial->SetUniform("u_hasFocus", 0);
+			pActiveMaterial->SetShininess(0);
 
             pNormalMaterial->SetProgram(pProgram);
 			pNormalMaterial->SetDiffuseColor(Color(0.5f,0.5f,0.5f,0.5f));
-			pNormalMaterial->SetUniform("u_hasFocus", 0);
+			pNormalMaterial->SetShininess(0);
 
 			pHotMaterial->SetProgram(pProgram);
 			pHotMaterial->SetDiffuseColor(Color(1,0.5f,0.5f,0.7f));
-			pHotMaterial->SetUniform("u_hasFocus", 0);
+			pHotMaterial->SetShininess(0);
 
 			PGLES2Program pBorderProgram(new GLES2Program(vShader, fShaderBorder));
 			pBorderMaterial->SetProgram(pBorderProgram);
@@ -525,6 +517,8 @@ namespace NSG
 		GLES2Camera* pActiveCamera = nullptr;
 		void Begin()
 		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 			pActiveCamera = GLES2Camera::GetActiveCamera();
 			pCamera->Activate();
 			uistate.hotitem = 0;
@@ -565,7 +559,7 @@ namespace NSG
 			}
 
 			// If no widget grabbed tab, clear focus
-			if (uistate.keyentered == NSG_KEY_TAB)
+			if (uistate.keyentered == NSG_KEY_TAB || !pLayoutManager_->IsStable())
 				uistate.kbditem = 0;
 	
 			// Clear the entered key
@@ -577,9 +571,15 @@ namespace NSG
 		{
             if(pMaterial->IsReady())
             {
-                pMaterial->SetAlphaFactor(pSkin->alphaFactor);
-                pMaterial->SetUniform("u_hasFocus", hasFocus ? 1 : 0);
+            	Color diffuse = pMaterial->GetDiffuseColor();
+            	float shininess = pMaterial->GetShininess();
+
+                pMaterial->SetDiffuseColor(diffuse * Color(1,1,1, pSkin->alphaFactor));
+                pMaterial->SetShininess(hasFocus ? 1 : -0.25f);
                 pMaterial->Render(pSkin->fillEnabled, pNode.get(), pSkin->pMesh.get());
+                
+                pMaterial->SetShininess(shininess);
+                pMaterial->SetDiffuseColor(diffuse);
             }
 		}
 
@@ -888,7 +888,7 @@ namespace NSG
                     pCursorNode->EnableUpdate(true);
                     pCursorNode->Update(false);
 
-                    pCursorNode->SetMesh(pTextMesh);
+                    pCursorNode->SetMesh(pCursorMesh);
                     static PGLES2Material pTextMaterial(new GLES2Material());
                     pTextMaterial->SetMainTexture(pTextMesh->GetAtlas());
                     pTextMaterial->SetProgram(pTextMesh->GetProgram());
@@ -993,7 +993,7 @@ namespace NSG
 		void ViewChanged(int32_t width, int32_t height)
 		{
 			if(!pFrameColorSelection)
-        		pFrameColorSelection = PGLES2FrameColorSelection(new GLES2FrameColorSelection());
+        		pFrameColorSelection = PGLES2FrameColorSelection(new GLES2FrameColorSelection(false));
 
         	pFrameColorSelection->ViewChanged(width, height);
 		}

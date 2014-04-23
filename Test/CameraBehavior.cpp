@@ -74,11 +74,6 @@ void CameraBehavior::Update()
 
 }
 
-void CameraBehavior::LateUpdate()
-{
-
-}
-
 void CameraBehavior::Render()
 {
 	pSceneNode_->Render(true);

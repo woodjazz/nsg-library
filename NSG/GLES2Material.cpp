@@ -31,7 +31,6 @@ static const char* vShader = STRINGIFY(
 		vec4 diffuse;
 		vec4 specular;
 		float shininess;
-		float alphaFactor;
 	};
 
 	const int POINT_LIGHT = 0;
@@ -110,7 +109,7 @@ static const char* vShader = STRINGIFY(
 			* pow(max(0.0, dot(reflect(-lightDirection, normalDirection), viewDirection)), u_material.shininess);
 		}	
 
-		v_color = vec4(ambientLighting + diffuseReflection + specularReflection, u_material.diffuse.w * u_material.alphaFactor);
+		v_color = vec4(ambientLighting + diffuseReflection + specularReflection, u_material.diffuse.w);
 		gl_Position = u_mvp * a_position;
 		v_texcoord = a_texcoord;
 	}
@@ -136,7 +135,6 @@ namespace NSG
 	color_diffuse_loc_(-1),
 	color_specular_loc_(-1),
 	shininess_loc_(-1),
-	alphaFactor_loc_(-1),
 	texture_loc_(-1),
 	texcoord_loc_(-1),
 	position_loc_(-1),
@@ -150,7 +148,6 @@ namespace NSG
 	diffuse_(1,1,1,1),
 	specular_(1,1,1,1),
 	shininess_(1),
-	alphaFactor_(1),
     hasLights_(false),
     blendMode_(ALPHA),
     enableDepthTest_(true)
@@ -188,26 +185,6 @@ namespace NSG
 		pTexture_ = pTexture;
 	}
 
-	void GLES2Material::SetUniform(const char* name, int value)
-	{
-		intUniforms_[name] = value;
-	}
-
-	void GLES2Material::SetIntUniforms()
-	{
-		auto it = intUniforms_.begin();
-
-		while(it != intUniforms_.end())
-		{
-			GLuint loc = pProgram_->GetUniformLocation(it->first);
-			if(loc != -1)
-            {
-			    glUniform1i(loc, it->second);
-            }
-			++it;
-		}
-	}
-
 	bool GLES2Material::IsReady()
 	{
 		if(!pProgram_)
@@ -230,7 +207,6 @@ namespace NSG
 			color_diffuse_loc_ = pProgram_->GetUniformLocation("u_material.diffuse");
 			color_specular_loc_ = pProgram_->GetUniformLocation("u_material.specular");
 			shininess_loc_ = pProgram_->GetUniformLocation("u_material.shininess");
-			alphaFactor_loc_ = pProgram_->GetUniformLocation("u_material.alphaFactor");
 		    mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
 		    m_loc_ = pProgram_->GetUniformLocation("u_m");
 			model_inv_transp_loc_ = pProgram_->GetUniformLocation("u_model_inv_transp");
@@ -311,8 +287,6 @@ namespace NSG
         	glDisable(GL_DEPTH_TEST);
         }
 
-		obj.SetIntUniforms();
-		
 		if(obj.mvp_loc_ != -1 && pNode)
 		{
 			Matrix4 m = GLES2Camera::GetModelViewProjection(pNode);
@@ -368,11 +342,6 @@ namespace NSG
 		if(obj.shininess_loc_ != -1)
 		{
 			glUniform1f(obj.shininess_loc_, obj.shininess_);
-		}
-
-		if(obj.alphaFactor_loc_ != -1)
-		{
-			glUniform1f(obj.alphaFactor_loc_, obj.alphaFactor_);
 		}
 
         if(obj.hasLights_)

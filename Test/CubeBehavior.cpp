@@ -71,11 +71,6 @@ void CubeBehavior::Update()
 
 }
 
-void CubeBehavior::LateUpdate()
-{
-
-}
-
 void CubeBehavior::Render()
 {
 	//pSceneNode_->Render(true);

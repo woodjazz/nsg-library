@@ -36,7 +36,7 @@ namespace NSG
     class GLES2FrameColorSelection
     {
     public:
-        GLES2FrameColorSelection();
+        GLES2FrameColorSelection(bool createDepthBuffer);
         ~GLES2FrameColorSelection();
         void ViewChanged(int32_t windowWidth, int32_t windowHeight);
         void Begin(float screenX, float screenY);
@@ -63,6 +63,11 @@ namespace NSG
         GLint pixelX_;
         GLint pixelY_;
         bool enabled_;
+        bool createDepthBuffer_;
+        GLfloat clear_color_[4];
+        GLfloat clear_depth_;
+        GLboolean blend_enable_;
+        GLboolean depth_enable_;
     };
 
     typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;

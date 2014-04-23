@@ -57,12 +57,12 @@ namespace NSG
 		Color GetDiffuseColor() const { return diffuse_; }
 		void SetSpecularColor(Color specular) { specular_ = specular; }
 		void SetShininess(float shininess) { shininess_=shininess; }
-		void SetAlphaFactor(float alphaFactor) {alphaFactor_ = alphaFactor;}
-		void SetUniform(const char* name, int value);
+		float GetShininess() const { return shininess_; }
+		void SetUniformValue(const char* name, int value);
+		int GetUniformValue(const char* name) const;
 		void Render(bool solid, Node* pNode, GLES2Mesh* pMesh);
 
 	private:
-		void SetIntUniforms();
 		PGLES2Texture pTexture_;
 		PGLES2Program pProgram_;
 
@@ -71,7 +71,6 @@ namespace NSG
 		GLuint color_diffuse_loc_;
 		GLuint color_specular_loc_;
 		GLuint shininess_loc_;
-		GLuint alphaFactor_loc_;
 		GLuint texture_loc_;
 		GLuint texcoord_loc_;
 		GLuint position_loc_;
@@ -103,10 +102,6 @@ namespace NSG
         Color diffuse_;
         Color specular_;
         float shininess_;
-        float alphaFactor_;
-
-        typedef std::map<std::string, int> IntUniformMap;
-        IntUniformMap intUniforms_;
 
         bool hasLights_;
 

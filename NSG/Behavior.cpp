@@ -25,21 +25,103 @@ misrepresented as being the original software.
 */
 #include "Behavior.h"
 #include "App.h"
+#include "Check.h"
+#include <vector>
+#include <algorithm>
+
+typedef std::vector<NSG::Behavior*> Collection;
+static Collection collection;
 
 namespace NSG 
 {
 	Behavior::Behavior()
 	: pApp_(App::GetPtrInstance())
 	{
+		collection.push_back(this);
 	}
 
 	Behavior::~Behavior()
 	{
-
+		auto it = std::find(collection.begin(), collection.end(), this);
+		CHECK_ASSERT(it != collection.end(), __FILE__, __LINE__);
+		collection.erase(it);
 	}
 
 	void Behavior::SetSceneNode(SceneNode* pSceneNode) 
 	{
 		pSceneNode_ = pSceneNode; 
 	}
+
+	void Behavior::StartAll()
+	{
+        for(auto &obj : collection)
+        {
+			obj->Start();
+        }
+    }
+
+	void Behavior::UpdateAll()
+	{
+        for(auto &obj : collection)
+        {
+			obj->Update();
+        }
+	}
+
+	void Behavior::RenderAll()
+	{
+        for(auto &obj : collection)
+        {
+			obj->Render();
+        }
+	}
+
+	void Behavior::Render2SelectAll()
+	{
+        for(auto &obj : collection)
+        {
+			obj->Render2Select();
+        }
+	}
+
+    void Behavior::OnMouseMoveAll(float x, float y)
+    {
+        for(auto &obj : collection)
+        {
+			obj->OnMouseMove(x, y);
+        }
+    }
+
+    void Behavior::OnMouseDownAll(float x, float y)
+    {
+        for(auto &obj : collection)
+        {
+			obj->OnMouseDown(x, y);
+        }
+    }
+
+    void Behavior::OnMouseUpAll()
+    {
+        for(auto &obj : collection)
+        {
+			obj->OnMouseUp();
+        }
+    }
+
+    void Behavior::OnKeyAll(int key, int action, int modifier)
+    {
+        for(auto &obj : collection)
+        {
+			obj->OnKey(key, action, modifier);
+        }
+    }
+
+    void Behavior::OnCharAll(unsigned int character)
+    {
+        for(auto &obj : collection)
+        {
+			obj->OnChar(character);
+        }
+    }
+
 }

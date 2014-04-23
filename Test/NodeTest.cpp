@@ -154,6 +154,39 @@ static void Test06()
     assert(glm::distance(v2, Vertex3(-1,0,0)) < 2*glm::epsilon<float>());
 }
 
+static void Test07()
+{
+	PNode pA(new Node());
+    Vertex3 position = Vertex3(2,1,3);
+    pA->SetPosition(position);
+    Vertex3 scale = Vertex3(3,4,5);
+    pA->SetScale(scale);
+    Quaternion q = glm::angleAxis(PI, Vertex3(0, 1, 0));
+    pA->SetOrientation(q);
+
+    Matrix4 m = pA->GetGlobalModelMatrix();
+
+    Vertex3 columns[3];
+    columns[0] = Vertex3(m[0].x, m[0].y, m[0].z);
+    columns[1] = Vertex3(m[1].x, m[1].y, m[1].z);
+    columns[2] = Vertex3(m[2].x, m[2].y, m[2].z);
+
+    Vertex3 scaling;
+    // extract the scaling factors
+    scaling.x = glm::length(columns[0]);
+    scaling.y = glm::length(columns[1]);
+    scaling.z = glm::length(columns[2]);
+
+    Matrix3 m1(glm::inverse(glm::scale(glm::mat4(1.0f), scaling)) * m);
+
+    Quaternion q1 = glm::quat_cast(m1);
+    Vertex3 a1 = glm::eulerAngles(q1);
+    Vertex3 a2 = glm::eulerAngles(q);
+
+    Vertex3 position1(m[3]);
+    assert(position == position1);
+}
+
 void NodeTest()
 {
 	Test01();
@@ -162,4 +195,5 @@ void NodeTest()
     Test04();
     Test05();
     Test06();
+    Test07();
 }
