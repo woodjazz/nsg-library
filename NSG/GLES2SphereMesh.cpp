@@ -65,8 +65,6 @@ namespace NSG
 		    }
 		}
     
-    	Indexes indexes;
-
 	    int nr = doubleRes+1;
         
         int index1, index2, index3;

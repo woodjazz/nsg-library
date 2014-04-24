@@ -62,6 +62,9 @@ namespace NSG
 		void SetInheritScale(bool inherit);
 		void EnableUpdate(bool enable);
 		void Update(bool notify = true);
+    protected:
+		PNode pParent_;
+		std::set<Node*> children_;
 	private:
 		GLushort id_;	
         Matrix4 globalModel_;	
@@ -74,8 +77,6 @@ namespace NSG
 		Vertex3 scale_;
 		Vertex3 globalScale_;
 		Vertex3 lookAtDirection_;
-		PNode pParent_;
-		std::set<Node*> children_;
 		bool inheritScale_;
 		bool updateEnabled_;
 	};

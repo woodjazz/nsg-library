@@ -24,36 +24,22 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SceneNode.h"
-#include "assimp/IOSystem.hpp"
 #include <memory>
-#include <vector>
+#include "GLES2Mesh.h"
 
-struct aiScene;
-struct aiNode;
+struct aiMesh;
 namespace NSG
 {
-	class Model : public Assimp::IOSystem
+	class GLES2ModelMesh : public GLES2Mesh
 	{
 	public:
-		Model();
-		~Model();
-		void Load(const char* filename);
-        void Render(bool solid);
-        PSceneNode GetRootSceneNode() const { return pRoot_; }
-
-        bool Exists(const char* filename) const;
-		char getOsSeparator() const;
-	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb");
-		void Close(Assimp::IOStream* pFile);
-
-	private:
-		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode pSceneNode);
-		PSceneNode pRoot_;
-		typedef std::vector<PSceneNode> Children;
-		Children children_; // just to keep a reference to children and avoid deletion
-
+		GLES2ModelMesh(GLenum usage, const aiMesh* mesh);
+		~GLES2ModelMesh();
+		GLenum GetWireFrameDrawMode() const;
+		GLenum GetSolidDrawMode() const;
+    private:
+        GLenum face_mode_;
 	};
 
-	typedef std::shared_ptr<Model> PModel;
+	typedef std::shared_ptr<GLES2ModelMesh> PGLES2ModelMesh;
 }

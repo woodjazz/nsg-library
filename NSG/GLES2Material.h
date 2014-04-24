@@ -45,17 +45,22 @@ namespace NSG
 		~GLES2Material();
 		void SetBlendMode(BLEND_MODE mode);
 		void EnableDepthTest(bool enable);
+		void EnableCullFace(bool enable);
 		void SetProgram(PGLES2Program pProgram);
-		void SetMainTexture(PGLES2Texture pTexture);
-        PGLES2Texture GetMainTexture() const { return pTexture_; }
+		void SetDiffuseTexture(PGLES2Texture pTexture);
+        PGLES2Texture GetDiffuseTexture() const { return pDiffuseTexture_; }
 		bool IsReady();
 		GLuint GetTextCoordAttLocation() { return texcoord_loc_; }
 		GLuint GetPositionAttLocation() { return position_loc_; }
 		GLuint GetNormalAttLocation() { return normal_loc_; }
+        GLuint GetColorAttLocation() { return color_loc_; }
 		GLuint GetMVPAttLocation() { return mvp_loc_; }
 		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
 		Color GetDiffuseColor() const { return diffuse_; }
 		void SetSpecularColor(Color specular) { specular_ = specular; }
+		Color GetSpecularColor() const { return specular_; }
+		void SetAmbientColor(Color ambient) { ambient_ = ambient; }
+		Color GetAmbientColor() const { return ambient_; }
 		void SetShininess(float shininess) { shininess_=shininess; }
 		float GetShininess() const { return shininess_; }
 		void SetUniformValue(const char* name, int value);
@@ -63,7 +68,7 @@ namespace NSG
 		void Render(bool solid, Node* pNode, GLES2Mesh* pMesh);
 
 	private:
-		PGLES2Texture pTexture_;
+		PGLES2Texture pDiffuseTexture_;
 		PGLES2Program pProgram_;
 
 		GLuint color_scene_ambient_loc_;
@@ -75,6 +80,7 @@ namespace NSG
 		GLuint texcoord_loc_;
 		GLuint position_loc_;
 		GLuint normal_loc_;
+        GLuint color_loc_;
 		GLuint model_inv_transp_loc_;
 		GLuint v_inv_loc_;
         GLuint mvp_loc_;
@@ -107,6 +113,7 @@ namespace NSG
 
         BLEND_MODE blendMode_;
         bool enableDepthTest_;
+        bool enableCullFace_;
 
 		friend class UseMaterial;
 	};

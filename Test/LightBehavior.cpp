@@ -78,6 +78,6 @@ void LightBehavior::Update()
 
 void LightBehavior::Render()
 {
-	//pSceneNode_->Render(true);
+	pSceneNode_->Render(true);
 }
 

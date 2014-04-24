@@ -23,37 +23,30 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "SceneNode.h"
-#include "assimp/IOSystem.hpp"
-#include <memory>
-#include <vector>
 
-struct aiScene;
-struct aiNode;
+#include "Util.h"
+
+#ifdef NACL
+char* realpath(const char* in, char* out)
+{
+	return nullptr;
+}
+#endif
+
 namespace NSG
 {
-	class Model : public Assimp::IOSystem
+	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
 	{
-	public:
-		Model();
-		~Model();
-		void Load(const char* filename);
-        void Render(bool solid);
-        PSceneNode GetRootSceneNode() const { return pRoot_; }
+	    Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
 
-        bool Exists(const char* filename) const;
-		char getOsSeparator() const;
-	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb");
-		void Close(Assimp::IOStream* pFile);
+	    Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1)/scaling) * m);
 
-	private:
-		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode pSceneNode);
-		PSceneNode pRoot_;
-		typedef std::vector<PSceneNode> Children;
-		Children children_; // just to keep a reference to children and avoid deletion
+	    q = glm::quat_cast(tmp1);
 
-	};
+	    position = Vertex3(m[3]);
 
-	typedef std::shared_ptr<Model> PModel;
+	    Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
+
+	    scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
+	}
 }

@@ -86,7 +86,7 @@ namespace NSG
 
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-        pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1);
+        pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1, -1);
 
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	}

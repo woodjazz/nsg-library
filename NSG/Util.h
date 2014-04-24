@@ -24,36 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SceneNode.h"
-#include "assimp/IOSystem.hpp"
-#include <memory>
-#include <vector>
+#include "Types.h"
 
-struct aiScene;
-struct aiNode;
 namespace NSG
 {
-	class Model : public Assimp::IOSystem
-	{
-	public:
-		Model();
-		~Model();
-		void Load(const char* filename);
-        void Render(bool solid);
-        PSceneNode GetRootSceneNode() const { return pRoot_; }
-
-        bool Exists(const char* filename) const;
-		char getOsSeparator() const;
-	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb");
-		void Close(Assimp::IOStream* pFile);
-
-	private:
-		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode pSceneNode);
-		PSceneNode pRoot_;
-		typedef std::vector<PSceneNode> Children;
-		Children children_; // just to keep a reference to children and avoid deletion
-
-	};
-
-	typedef std::shared_ptr<Model> PModel;
+	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
 }

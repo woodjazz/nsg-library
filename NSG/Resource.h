@@ -42,6 +42,7 @@ namespace NSG
 		bool IsReady();
 		const unsigned char* const GetData() const;
 		size_t GetBytes() const;
+        std::string GetFilename() const { return filename_; }
 	private:
 		bool loaded_;
 		std::string filename_;

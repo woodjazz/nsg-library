@@ -26,8 +26,8 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Log.h"
 #include "App.h"
+#include "Check.h"
 #include <fstream>
-#include <assert.h>
 #if NACL
 #include "AppNaCl.h"
 #endif
@@ -115,7 +115,8 @@ namespace NSG
     		file.open(newName, std::ios::binary);
     	}
         #endif
-        assert(file.is_open());
+
+        CHECK_ASSERT(file.is_open(), __FILE__, __LINE__);
         file.seekg(0,std::ios::end);
         std::streampos filelength = file.tellg();
         file.seekg(0,std::ios::beg);

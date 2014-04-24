@@ -53,7 +53,7 @@ void CubeBehavior::Start()
     pMaterial->SetProgram(pDiffuseProgram);
 
     PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
-	pMaterial->SetMainTexture(pTexture);
+	pMaterial->SetDiffuseTexture(pTexture);
     pSceneNode_->SetMaterial(pMaterial);
 
     pSceneNode_->SetPosition(Vertex3(-5, 0, 0));

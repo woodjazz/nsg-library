@@ -34,11 +34,7 @@ misrepresented as being the original software.
 namespace NSG
 {
 	VertexData::VertexData()
-	{
-	}
-
-	VertexData::VertexData(Vertex3 position, Vertex2 uv)
-	: position_(position), uv_(uv)
+	: color_(1,1,1,1)
 	{
 	}
 
@@ -58,7 +54,7 @@ namespace NSG
 
 		if(!vertexsData_.empty())
 		{
-			assert(indexes_.size() % 3 == 0);
+			CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
 			pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0], usage_));
 			if(!indexes_.empty())
 			{
@@ -67,7 +63,7 @@ namespace NSG
 		}
 	}
 
-	void GLES2Mesh::Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc)
+	void GLES2Mesh::Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc)
 	{
         if(!pVBuffer_)
             return;
@@ -112,6 +108,19 @@ namespace NSG
 			glEnableVertexAttribArray(texcoord_loc);
 		}
 
+		if(color_loc != -1)
+		{
+			glVertexAttribPointer(color_loc,
+					3,
+					GL_FLOAT,
+					GL_FALSE,
+					sizeof(VertexData),
+					reinterpret_cast<void*>(offsetof(VertexData, color_)));
+			
+			glEnableVertexAttribArray(color_loc);
+		}
+
+
 	    CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
 		if(!indexes_.empty())
@@ -139,6 +148,12 @@ namespace NSG
 		{
 			glDisableVertexAttribArray(texcoord_loc);	
 		}
+
+		if(color_loc != -1)
+		{
+			glDisableVertexAttribArray(color_loc);	
+		}
+
 
 		CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 	}

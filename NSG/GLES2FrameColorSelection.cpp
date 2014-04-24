@@ -228,7 +228,7 @@ namespace NSG
         Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
         glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));        
 
-        pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1);
+        pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1, -1);
     }
 
 

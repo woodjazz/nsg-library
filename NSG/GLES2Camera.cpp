@@ -39,7 +39,7 @@ namespace NSG
 	GLES2Camera::GLES2Camera() 
 	: fovy_(45), 
 	zNear_(0.1f), 
-	zFar_(100),
+	zFar_(250),
 	width_(0), 
 	height_(0),
 	xo_(0),

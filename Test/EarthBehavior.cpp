@@ -47,7 +47,7 @@ void EarthBehavior::Start()
 
 	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
 	PGLES2Material pMaterial(new GLES2Material ());
-	pMaterial->SetMainTexture(pEarthTexture);
+	pMaterial->SetDiffuseTexture(pEarthTexture);
 	pMaterial->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
 	pMaterial->SetShininess(0.3f);

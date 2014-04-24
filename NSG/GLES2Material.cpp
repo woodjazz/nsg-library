@@ -47,7 +47,9 @@ static const char* vShader = STRINGIFY(
 	attribute vec2 a_texcoord;
 	attribute vec4 a_position;
 	attribute vec3 a_normal;
+	attribute vec4 a_color;
 	varying vec4 v_color;
+    varying vec4 v_vertex_color;
 	varying vec2 v_texcoord;
 
 	void main()
@@ -112,16 +114,18 @@ static const char* vShader = STRINGIFY(
 		v_color = vec4(ambientLighting + diffuseReflection + specularReflection, u_material.diffuse.w);
 		gl_Position = u_mvp * a_position;
 		v_texcoord = a_texcoord;
+		v_vertex_color = a_color;
 	}
 );
 
 static const char* fShader = STRINGIFY(
+	varying vec4 v_vertex_color;
 	varying vec4 v_color;
 	varying vec2 v_texcoord;
 	uniform sampler2D u_texture;
 	void main()
 	{
-		gl_FragColor = v_color * texture2D(u_texture, v_texcoord);
+		gl_FragColor = v_color * texture2D(u_texture, v_texcoord) * v_vertex_color;
 	}
 );
 
@@ -139,6 +143,7 @@ namespace NSG
 	texcoord_loc_(-1),
 	position_loc_(-1),
 	normal_loc_(-1),
+    color_loc_(-1),
 	model_inv_transp_loc_(-1),
 	v_inv_loc_(-1),
     mvp_loc_(-1),
@@ -150,7 +155,8 @@ namespace NSG
 	shininess_(1),
     hasLights_(false),
     blendMode_(ALPHA),
-    enableDepthTest_(true)
+    enableDepthTest_(true),
+    enableCullFace_(false)
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
         lightsLoc_.resize(MAX_LIGHTS_MATERIAL);
@@ -171,6 +177,11 @@ namespace NSG
 		enableDepthTest_ = enable;
 	}
 
+	void GLES2Material::EnableCullFace(bool enable)
+	{
+		enableCullFace_ = enable;
+	}
+
 	void GLES2Material::SetProgram(PGLES2Program pProgram)
 	{
 		if(pProgram_ != pProgram)
@@ -180,9 +191,9 @@ namespace NSG
 		}
 	}
 
-	void GLES2Material::SetMainTexture(PGLES2Texture pTexture)
+	void GLES2Material::SetDiffuseTexture(PGLES2Texture pTexture)
 	{
-		pTexture_ = pTexture;
+		pDiffuseTexture_ = pTexture;
 	}
 
 	bool GLES2Material::IsReady()
@@ -190,15 +201,15 @@ namespace NSG
 		if(!pProgram_)
 			pProgram_ = PGLES2Program(new GLES2Program(vShader, fShader));
 
-        if(!pTexture_)
+        if(!pDiffuseTexture_)
         {
              // Creates 1x1 white texture 
 		    unsigned char img[3];
 		    memset(&img[0], 0xFF, sizeof(unsigned char)*3);
-            pTexture_ = PGLES2Texture(new GLES2Texture(GL_RGB, GL_UNSIGNED_BYTE, 1, 1, img));
+            pDiffuseTexture_ = PGLES2Texture(new GLES2Texture(GL_RGB, GL_UNSIGNED_BYTE, 1, 1, img));
         }
 
-		if(!loaded_ && pProgram_->IsReady() && pTexture_->IsReady())
+		if(!loaded_ && pProgram_->IsReady() && pDiffuseTexture_->IsReady())
 		{
 			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
@@ -215,6 +226,7 @@ namespace NSG
 			texcoord_loc_ = pProgram_->GetAttributeLocation("a_texcoord");
 			position_loc_ = pProgram_->GetAttributeLocation("a_position");
 			normal_loc_ = pProgram_->GetAttributeLocation("a_normal");
+            color_loc_ = pProgram_->GetAttributeLocation("a_color");
 
             const GLES2Light::Lights& ligths = GLES2Light::GetLights();
             size_t n = std::min(ligths.size(), MAX_LIGHTS_MATERIAL);
@@ -255,13 +267,23 @@ namespace NSG
 
 		GLenum mode = solid ? pMesh->GetSolidDrawMode() : pMesh->GetWireFrameDrawMode();
 
-        pMesh->Render(mode, position_loc_, texcoord_loc_, normal_loc_);
+        pMesh->Render(mode, position_loc_, texcoord_loc_, normal_loc_, color_loc_);
 	}
 
 	UseMaterial::UseMaterial(GLES2Material& obj, Node* pNode)
 	: obj_(obj),
 	useProgram_(*obj.pProgram_)
 	{
+		if(obj.enableCullFace_)
+		{
+			glEnable(GL_CULL_FACE);
+			//glCullFace(GL_FRONT);
+		}
+		else
+		{
+			glDisable(GL_CULL_FACE);
+		}
+
         switch(obj.blendMode_)
        	{
         	case NONE:
@@ -311,10 +333,10 @@ namespace NSG
 			glUniformMatrix4fv(obj.v_inv_loc_, 1, GL_FALSE, glm::value_ptr(m));			
 		}
 
-		if(obj.texture_loc_ != -1 && obj.pTexture_)
+		if(obj.texture_loc_ != -1 && obj.pDiffuseTexture_)
 		{
 			glActiveTexture(GL_TEXTURE0);
-			obj.pTexture_->Bind();
+			obj.pDiffuseTexture_->Bind();
 			glUniform1i(obj.texture_loc_, 0);
 		}
 

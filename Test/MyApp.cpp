@@ -117,13 +117,21 @@ void MyApp::Start()
 
 	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 256, 256, nullptr));
 
-	pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
-	pSkin1_->pNormalMaterial->SetMainTexture(pRenderedTexture_);
+	pSkin2_->pActiveMaterial->SetDiffuseTexture(pCellTexture);
+	pSkin1_->pNormalMaterial->SetDiffuseTexture(pRenderedTexture_);
 
     pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(pRenderedTexture_, true));
 
     pModel_ = PModel(new Model());
-    pModel_->Load("cube.dae");
+    //pModel_->Load("spider.obj");
+    //pModel_->GetRootSceneNode()->SetScale(Vertex3(0.04f, 0.04f, 0.04f));
+    //pModel_->GetRootSceneNode()->SetPosition(Vertex3(0,-2, 0));
+
+    pModel_->Load("duck.dae");
+    pModel_->GetRootSceneNode()->SetScale(pModel_->GetRootSceneNode()->GetScale() * Vertex3(2));
+
+    //pModel_->Load("cube.dae");
+    //pModel_->GetRootSceneNode()->SetScale(pModel_->GetRootSceneNode()->GetScale() * Vertex3(2));
 
 }
 
@@ -331,10 +339,14 @@ void MyApp::RenderFrame()
 
     pCamera1_->Activate();
 
+    pModel_->Render(true);
+
+    
 	pRender2Texture_->Begin();
     pCubeSceneNode_->Render(true);
     pEarthSceneNode_->Render(true);
     pRender2Texture_->End();
+    
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

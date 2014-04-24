@@ -57,22 +57,54 @@ namespace NSG
 
 	void SceneNode::Render(bool solid)
 	{
-		if(!pMaterial_ || !pMaterial_->IsReady()) 
-			return;
-
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-		pMaterial_->Render(solid, this, pMesh_.get());
+		if(pMaterial_ && pMaterial_->IsReady()) 
+        {
+            pMaterial_->Render(solid, this, pMesh_.get());
+        }
+
+        auto it = children_.begin();
+
+        while(it != children_.end())
+        {
+            SceneNode* p = static_cast<SceneNode*>(*it);
+            CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
+            p->Render(solid);
+            ++it;
+        }
+
 	}
 
 	void SceneNode::Render2Select()
 	{
 		pSelection_->Render(this);
+
+        auto it = children_.begin();
+
+        while(it != children_.end())
+        {
+            SceneNode* p = static_cast<SceneNode*>(*it);
+            CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
+            p->Render2Select();
+            ++it;
+        }
 	}
 
 	void SceneNode::RenderForSelect(GLuint position_loc)
 	{
-		pMesh_->Render(pMesh_->GetSolidDrawMode(), position_loc, -1, -1);
+		pMesh_->Render(pMesh_->GetSolidDrawMode(), position_loc, -1, -1, -1);
+
+        auto it = children_.begin();
+
+        while(it != children_.end())
+        {
+            SceneNode* p = static_cast<SceneNode*>(*it);
+            CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
+            p->RenderForSelect(position_loc);
+            ++it;
+        }
+
 	}
 
 }

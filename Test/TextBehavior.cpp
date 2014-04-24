@@ -50,7 +50,7 @@ void TextBehavior::Start()
     pSceneNode_->SetMesh(pText_);
 
     PGLES2Material pMaterial(new GLES2Material());
-    pMaterial->SetMainTexture(pText_->GetAtlas());
+    pMaterial->SetDiffuseTexture(pText_->GetAtlas());
     pMaterial->SetProgram(pText_->GetProgram());
     pSceneNode_->SetMaterial(pMaterial);
 }

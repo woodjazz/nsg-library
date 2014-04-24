@@ -124,7 +124,8 @@ namespace NSG
             }
             else
             {
-                assert(false && "Unknown format");
+                internalformat = GL_RGB;
+                TRACE_LOG(pResource_->GetFilename() << " Unknown internalformat");
             }
 
             glBindTexture(GL_TEXTURE_2D, texture_);
@@ -155,7 +156,7 @@ namespace NSG
 		{
 			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-			pMaterial_->SetMainTexture(pTexture);
+			pMaterial_->SetDiffuseTexture(pTexture);
 
 			if(pMaterial_->IsReady())
 			{

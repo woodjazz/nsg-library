@@ -38,9 +38,9 @@ namespace NSG
 		Vertex3 position_;
 		Vertex3 normal_;
 		Vertex2 uv_;
+		Color color_;
 
 		VertexData();
-		VertexData(Vertex3 position, Vertex2 uv);
 	};
 
 	typedef GLushort IndexType;
@@ -51,7 +51,7 @@ namespace NSG
 	public:
 		GLES2Mesh(GLenum usage);
 		~GLES2Mesh();
-		void Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc);
+		void Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc);
 		void Redo();
 		virtual GLenum GetWireFrameDrawMode() const = 0;
 		virtual GLenum GetSolidDrawMode() const = 0;

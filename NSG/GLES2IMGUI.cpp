@@ -698,7 +698,7 @@ namespace NSG
 
                     pTextNode1->SetMesh(pTextMesh);
                     static PGLES2Material pTextMaterial(new GLES2Material());
-                    pTextMaterial->SetMainTexture(pTextMesh->GetAtlas());
+                    pTextMaterial->SetDiffuseTexture(pTextMesh->GetAtlas());
                     pTextMaterial->SetProgram(pTextMesh->GetProgram());
                     pTextNode1->SetMaterial(pTextMaterial);
                     pTextMaterial->SetDiffuseColor(Color(1,1,1,pSkin->alphaFactor));
@@ -872,7 +872,7 @@ namespace NSG
                 pTextNode->Update(false);
                 pTextNode1->SetMesh(pTextMesh);
                 static PGLES2Material pTextMaterial(new GLES2Material());
-                pTextMaterial->SetMainTexture(pTextMesh->GetAtlas());
+                pTextMaterial->SetDiffuseTexture(pTextMesh->GetAtlas());
                 pTextMaterial->SetProgram(pTextMesh->GetProgram());
                 pTextNode1->SetMaterial(pTextMaterial);
                 pTextMaterial->SetDiffuseColor(Color(1,1,1,pSkin->alphaFactor));
@@ -890,7 +890,7 @@ namespace NSG
 
                     pCursorNode->SetMesh(pCursorMesh);
                     static PGLES2Material pTextMaterial(new GLES2Material());
-                    pTextMaterial->SetMainTexture(pTextMesh->GetAtlas());
+                    pTextMaterial->SetDiffuseTexture(pTextMesh->GetAtlas());
                     pTextMaterial->SetProgram(pTextMesh->GetProgram());
                     pCursorNode->SetMaterial(pTextMaterial);
                     pTextMaterial->SetDiffuseColor(Color(1,0,0,pSkin->alphaFactor));

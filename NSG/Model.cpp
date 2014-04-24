@@ -26,6 +26,9 @@ misrepresented as being the original software.
 #include "Model.h"
 #include "Resource.h"
 #include "Check.h"
+#include "Util.h"
+#include "GLES2ModelMesh.h"
+#include "GLES2ModelMaterial.h"
 #include "assimp/IOStream.hpp"
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
@@ -132,6 +135,7 @@ namespace NSG
 	};	
 
 	Model::Model()
+	: pRoot_(new SceneNode())
 	{
 
 	}
@@ -141,20 +145,60 @@ namespace NSG
 		
 	}
 
+    void Model::Render(bool solid)
+    {
+        pRoot_->Render(solid);
+    }
+
 	void Model::Load(const char* filename)
 	{
 		Assimp::Importer importer;
 		importer.SetIOHandler(this);
 		const aiScene* pScene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_MaxQuality);	
-  		importer.SetIOHandler(nullptr);	
-  		RecursiveLoad(pScene, pScene->mRootNode);
+  		RecursiveLoad(pScene, pScene->mRootNode, pRoot_);
+        importer.SetIOHandler(nullptr);	
 	}
 
-	void Model::RecursiveLoad(const aiScene *sc, const aiNode* nd)
+	void Model::RecursiveLoad(const aiScene* sc, const aiNode* nd, PSceneNode pSceneNode)
 	{
 		Matrix4 localModel;
 		CopyMat(&nd->mTransformation, localModel);
+		Vertex3 position;
+		Quaternion q;
+		Vertex3 scale;
+		DecomposeMatrix(localModel, position, q, scale);
+		pSceneNode->EnableUpdate(false);
+		pSceneNode->SetPosition(position);
+		pSceneNode->SetOrientation(q);
+		pSceneNode->SetScale(scale);
+		pSceneNode->EnableUpdate(true);
+		pSceneNode->Update(false);
 
+		for (size_t i=0; i < nd->mNumMeshes; ++i) 
+		{
+			PSceneNode pMeshSceneNode(new SceneNode());
+            children_.push_back(pMeshSceneNode);
+			pMeshSceneNode->SetParent(pSceneNode);
+
+			const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[i]];
+
+			PGLES2ModelMesh pMesh(new GLES2ModelMesh(GL_STATIC_DRAW, mesh));
+
+			pMeshSceneNode->SetMesh(pMesh);
+
+			PGLES2ModelMaterial pMaterial(new GLES2ModelMaterial(sc->mMaterials[mesh->mMaterialIndex]));
+
+			pMeshSceneNode->SetMaterial(pMaterial);
+		}
+
+		for (size_t i=0; i<nd->mNumChildren; ++i) 
+		{
+			PSceneNode pChild(new SceneNode());
+			children_.push_back(pChild);
+			pChild->SetParent(pSceneNode);
+
+			RecursiveLoad(sc, nd->mChildren[i], pChild);
+		}
 	}
 
 	bool Model::Exists(const char* filename) const 
