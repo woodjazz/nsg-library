@@ -36,23 +36,22 @@ namespace NSG
 	class Model : public Assimp::IOSystem
 	{
 	public:
-		Model();
+		Model(const char* filename);
 		~Model();
-		void Load(const char* filename);
-        void Render(bool solid);
-        PSceneNode GetRootSceneNode() const { return pRoot_; }
-
+		bool IsReady();
+		void SetBehavior(PBehavior pBehavior);
         bool Exists(const char* filename) const;
 		char getOsSeparator() const;
 	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb");
 		void Close(Assimp::IOStream* pFile);
-
 	private:
 		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode pSceneNode);
+
+		PResource pResource_;
 		PSceneNode pRoot_;
 		typedef std::vector<PSceneNode> Children;
 		Children children_; // just to keep a reference to children and avoid deletion
-
+		bool isLoaded_;
 	};
 
 	typedef std::shared_ptr<Model> PModel;

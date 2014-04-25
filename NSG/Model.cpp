@@ -50,6 +50,40 @@ namespace NSG
 		to[2][3] = from->d3; to[3][3] = from->d4;
 	}	
 
+	class ModelSceneNode : public SceneNode
+	{
+	public:
+		ModelSceneNode(Model* model)
+		: model_(model)
+		{
+
+		}
+
+		~ModelSceneNode()
+		{
+		}
+
+		void Render(bool solid)
+		{
+	    	if(model_->IsReady())
+	    	{
+	        	SceneNode::Render(solid);
+	        }
+		}
+
+		void Render2Select()
+		{
+	    	if(model_->IsReady())
+	    	{
+	        	SceneNode::Render2Select();
+	        }
+		}
+
+	private:
+		Model* model_;
+	};
+
+
 	class MyIOStream : public Assimp::IOStream
 	{
 		friend class Model;
@@ -134,10 +168,11 @@ namespace NSG
 		size_t pos_;
 	};	
 
-	Model::Model()
-	: pRoot_(new SceneNode())
+	Model::Model(const char* filename)
+	: pResource_(new Resource(filename)),
+	isLoaded_(false)
 	{
-
+		pRoot_ = PSceneNode(new ModelSceneNode(this));
 	}
 
 	Model::~Model()
@@ -145,19 +180,28 @@ namespace NSG
 		
 	}
 
-    void Model::Render(bool solid)
-    {
-        pRoot_->Render(solid);
-    }
-
-	void Model::Load(const char* filename)
+	bool Model::IsReady()
 	{
-		Assimp::Importer importer;
-		importer.SetIOHandler(this);
-		const aiScene* pScene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_MaxQuality);	
-  		RecursiveLoad(pScene, pScene->mRootNode, pRoot_);
-        importer.SetIOHandler(nullptr);	
+		if(!isLoaded_ && pResource_->IsReady())
+		{
+			Assimp::Importer importer;
+			importer.SetIOHandler(this);
+            const aiScene* pScene = importer.ReadFile(pResource_->GetFilename().c_str(), aiProcessPreset_TargetRealtime_MaxQuality);	
+	  		RecursiveLoad(pScene, pScene->mRootNode, pRoot_);
+	        importer.SetIOHandler(nullptr);	
+
+			pResource_ = nullptr;
+
+			isLoaded_ = true;
+		}
+
+		return isLoaded_;
 	}
+
+    void Model::SetBehavior(PBehavior pBehavior)
+    {
+    	pRoot_->SetBehavior(pBehavior);
+    }
 
 	void Model::RecursiveLoad(const aiScene* sc, const aiNode* nd, PSceneNode pSceneNode)
 	{
@@ -213,19 +257,14 @@ namespace NSG
 
 	Assimp::IOStream* Model::Open(const char* filename, const char* mode) 
 	{
-		PResource pResource(new Resource(filename));
-
-		while(!pResource->IsReady())
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		}
-
-		return new MyIOStream(pResource); 
+		return new MyIOStream(pResource_); 
 	}
 
 	void Model::Close(Assimp::IOStream* pFile) 
 	{ 
 		delete pFile; 
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////
 
 }

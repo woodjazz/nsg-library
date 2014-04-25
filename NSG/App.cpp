@@ -201,7 +201,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void App::Initialize()
     {
-        pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection(true));
+        pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection(false));
         IMGUI::AllocateResources();
     }
 

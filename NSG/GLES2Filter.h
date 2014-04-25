@@ -23,33 +23,31 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#pragma once
 
-#include "Util.h"
+#include "GLES2Includes.h"
+#include "GLES2Texture.h"
+#include "GLES2Material.h"
+#include "GLES2Mesh.h"
+#include "GLES2FShader.h"
+#include "GLES2Render2Texture.h"
+#include <memory>
 
 namespace NSG
 {
-	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
+	class GLES2Filter
 	{
-	    Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
+	public:
+		GLES2Filter(PGLES2Texture input, PGLES2Texture output, const char* fragment);
+		~GLES2Filter();
+		void Render();
+		PGLES2Material GetMaterial() const { return pMaterial_; }
+	private:
+        PGLES2Material pMaterial_; 
+		PGLES2Mesh pMesh_;
+		PGLES2Render2Texture pRender2Texture_;
+		PGLES2Texture input_;
+	};
 
-	    Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1)/scaling) * m);
-
-	    q = glm::quat_cast(tmp1);
-
-	    position = Vertex3(m[3]);
-
-	    Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
-
-	    scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
-	}
-
-	void ReplaceChar(std::string& source, char from, char to)
-	{
-		for(;;)
-		{
-			const size_t last_slash_idx = source.find_last_of(from);
-			if (std::string::npos == last_slash_idx) break;
-			source.replace(last_slash_idx, 1, 1, to);
-		}
-	}
+	typedef std::shared_ptr<GLES2Filter> PGLES2Filter;
 }

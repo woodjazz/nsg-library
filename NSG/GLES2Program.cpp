@@ -36,11 +36,11 @@ misrepresented as being the original software.
 #include "Log.h"
 
 static const char s_fragmentShaderHeader[] = {
-#include "shaders/gles2FragmentCompatibility.h"
+#include "GLES2FragmentCompatibility.h"
 };
 
 static const char s_vertexShaderHeader[] = {
-#include "shaders/gles2VertexCompatibility.h"
+#include "GLES2VertexCompatibility.h"
 };
 
 namespace NSG 

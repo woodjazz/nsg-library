@@ -24,9 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include <string>
 #include "Types.h"
 
 namespace NSG
 {
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
+	void ReplaceChar(std::string& source, char from, char to);
 }

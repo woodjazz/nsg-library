@@ -23,33 +23,37 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#include "ModelBehavior.h"
+#include "NSG/SceneNode.h"
+#include "NSG/App.h"
 
-#include "Util.h"
-
-namespace NSG
+ModelBehavior::ModelBehavior()
 {
-	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
-	{
-	    Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
 
-	    Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1)/scaling) * m);
+}
+	
+ModelBehavior::~ModelBehavior()
+{
 
-	    q = glm::quat_cast(tmp1);
+}
 
-	    position = Vertex3(m[3]);
+void ModelBehavior::Start()
+{
+	//pSceneNode_->SetScale(Vertex3(0.04f, 0.04f, 0.04f));
+    //pSceneNode_->SetPosition(Vertex3(0,-2, 0));
 
-	    Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
+}
 
-	    scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
-	}
+void ModelBehavior::Update()
+{
+}
 
-	void ReplaceChar(std::string& source, char from, char to)
-	{
-		for(;;)
-		{
-			const size_t last_slash_idx = source.find_last_of(from);
-			if (std::string::npos == last_slash_idx) break;
-			source.replace(last_slash_idx, 1, 1, to);
-		}
-	}
+void ModelBehavior::Render()
+{
+	//pSceneNode_->Render(true);
+}
+
+void ModelBehavior::Render2Select()
+{
+	pSceneNode_->Render2Select();
 }

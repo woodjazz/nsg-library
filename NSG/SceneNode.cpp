@@ -59,7 +59,7 @@ namespace NSG
 	{
         CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-		if(pMaterial_ && pMaterial_->IsReady()) 
+		if(pMesh_ && pMaterial_ && pMaterial_->IsReady()) 
         {
             pMaterial_->Render(solid, this, pMesh_.get());
         }
@@ -78,7 +78,10 @@ namespace NSG
 
 	void SceneNode::Render2Select()
 	{
-		pSelection_->Render(this);
+        if(pMesh_)
+        {
+		    pSelection_->Render(this);
+        }
 
         auto it = children_.begin();
 
@@ -90,21 +93,4 @@ namespace NSG
             ++it;
         }
 	}
-
-	void SceneNode::RenderForSelect(GLuint position_loc)
-	{
-		pMesh_->Render(pMesh_->GetSolidDrawMode(), position_loc, -1, -1, -1);
-
-        auto it = children_.begin();
-
-        while(it != children_.end())
-        {
-            SceneNode* p = static_cast<SceneNode*>(*it);
-            CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
-            p->RenderForSelect(position_loc);
-            ++it;
-        }
-
-	}
-
 }

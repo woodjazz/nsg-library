@@ -46,9 +46,8 @@ namespace NSG
 		PGLES2Mesh GetMesh() const { return pMesh_; }
 		void SetBehavior(PBehavior pBehavior);
 		PBehavior GetBehavior() const { return pBehavior_; }
-		void Render(bool solid);
-		void Render2Select();
-		void RenderForSelect(GLuint position_loc);
+		virtual void Render(bool solid);
+		virtual void Render2Select();
 		
 	private:
 		App* pApp_;

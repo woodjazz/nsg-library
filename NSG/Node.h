@@ -39,7 +39,7 @@ namespace NSG
 	{
 	public:
 		Node();
-		~Node();
+		virtual ~Node();
 		GLushort GetId()const { return id_; }
         void SetParent(PNode pParent);
         PNode GetParent() const { return pParent_; }

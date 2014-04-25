@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "GLES2ModelMaterial.h"
 #include "Check.h"
+#include "Util.h"
 #include "assimp/material.h"
 
 
@@ -90,12 +91,12 @@ namespace NSG
 
             if(AI_SUCCESS == mtl->GetTexture (aiTextureType_DIFFUSE, 0, &path))
             {
-            	//PGLES2Texture pTexture(new GLES2Texture(path.C_Str()));
             	std::string filename = path.C_Str();
-				const size_t last_slash_idx = filename.find_last_of("\\/");
-				if (std::string::npos != last_slash_idx)
+            	//ReplaceChar(filename, '\\', '/');
+				const size_t idx = filename.find("./");
+				if (std::string::npos != idx && idx == 0)
 				{
-				    filename.erase(0, last_slash_idx + 1);
+				    filename.erase(0, 2);
 				}
 
                 PGLES2Texture pTexture(new GLES2Texture(filename.c_str()));

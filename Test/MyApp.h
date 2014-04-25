@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "NSG/GLES2Render2Texture.h"
 #include "NSG/SceneNode.h"
 #include "NSG/Model.h"
+#include "NSG/GLES2Filter.h"
 
 using namespace NSG;
 
@@ -73,5 +74,7 @@ private:
     PSceneNode pCubeSceneNode_;
     PSceneNode pTextSceneNode_;
     PModel pModel_;
+    PGLES2Filter pFilter_;
+    PGLES2Texture pFilteredTexture_;
 };
 

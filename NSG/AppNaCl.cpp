@@ -12,6 +12,16 @@
 #include <locale>
 #include <codecvt>
 
+////////////////////////////////////////////////////////
+// Stub for realpath (posix)
+// NACL does not implement this function in libc++
+// and is required by assimp
+char* realpath(const char* in, char* out) 
+{
+	return nullptr;
+}
+//////////////////////////////////////////
+
 static pp::Instance* s_ppInstance = nullptr;
 
 int PPPrintMessage(const char* format, ...) 

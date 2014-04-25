@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "CubeBehavior.h"
 #include "LightBehavior.h"
 #include "CameraBehavior.h"
+#include "ModelBehavior.h"
 #include "TextBehavior.h"
 #include "NSG/Log.h"
 #include "NSG/GLES2Texture.h"
@@ -76,6 +77,27 @@ int MyApp::GetFPS() const
 	return 30;
 }
 
+#define STRINGIFY(S) #S
+static const char* fShader = STRINGIFY(
+	uniform sampler2D u_texture;
+	varying vec2 v_texcoord;
+
+	struct Material
+	{
+		float shininess;
+	};
+
+	uniform Material u_material;
+
+	void main()
+	{
+        vec2 texcoord = v_texcoord;
+		texcoord.x += sin(texcoord.y * 4*2*3.14159 + u_material.shininess) / 100;
+		gl_FragColor = texture2D(u_texture, texcoord);
+	}
+);
+
+
 void MyApp::Start() 
 {
 	TRACE_LOG("Start");
@@ -120,19 +142,18 @@ void MyApp::Start()
 	pSkin2_->pActiveMaterial->SetDiffuseTexture(pCellTexture);
 	pSkin1_->pNormalMaterial->SetDiffuseTexture(pRenderedTexture_);
 
+
     pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(pRenderedTexture_, true));
 
-    pModel_ = PModel(new Model());
-    //pModel_->Load("spider.obj");
-    //pModel_->GetRootSceneNode()->SetScale(Vertex3(0.04f, 0.04f, 0.04f));
-    //pModel_->GetRootSceneNode()->SetPosition(Vertex3(0,-2, 0));
+    //pModel_ = PModel(new Model("cube.dae"));
+    pModel_ = PModel(new Model("duck.dae"));
+    //pModel_ = PModel(new Model("spider.obj"));
+    pModel_->SetBehavior(PBehavior(new ModelBehavior()));
 
-    pModel_->Load("duck.dae");
-    pModel_->GetRootSceneNode()->SetScale(pModel_->GetRootSceneNode()->GetScale() * Vertex3(2));
+    pFilteredTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 256, 256, nullptr));
 
-    //pModel_->Load("cube.dae");
-    //pModel_->GetRootSceneNode()->SetScale(pModel_->GetRootSceneNode()->GetScale() * Vertex3(2));
-
+    pFilter_ = PGLES2Filter(new GLES2Filter(pRenderedTexture_, pFilteredTexture_, fShader));
+   
 }
 
 void MyApp::Update() 
@@ -339,13 +360,18 @@ void MyApp::RenderFrame()
 
     pCamera1_->Activate();
 
-    pModel_->Render(true);
-
-    
 	pRender2Texture_->Begin();
     pCubeSceneNode_->Render(true);
     pEarthSceneNode_->Render(true);
     pRender2Texture_->End();
+
+	float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+	float move = deltaTime * TWO_PI * 0.25f;  // 1/4 of a wave cycle per second
+    pFilter_->GetMaterial()->SetShininess(move);
+    pFilter_->Render();
+
+    //pRenderedTexture_->Show(pRenderedTexture_);
+    pFilteredTexture_->Show(pFilteredTexture_);
     
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
