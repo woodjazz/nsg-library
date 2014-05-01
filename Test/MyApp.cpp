@@ -92,7 +92,7 @@ static const char* fShader = STRINGIFY(
 	void main()
 	{
         vec2 texcoord = v_texcoord;
-		texcoord.x += sin(texcoord.y * 4*2*3.14159 + u_material.shininess) / 100;
+		texcoord.x += sin(texcoord.y * 4.0 * 2.0 * 3.14159 + u_material.shininess) / 100.0;
 		gl_FragColor = texture2D(u_texture, texcoord);
 	}
 );
