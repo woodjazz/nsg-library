@@ -30,3 +30,11 @@ misrepresented as being the original software.
 	TRACE_LOG((#f) << " has failed in file " << file << " line " << line);\
 	assert(false);\
 }
+
+#define CHECK_GL_STATUS(file, line) {\
+	GLenum status = glGetError();\
+	if(status != GL_NO_ERROR)\
+	{\
+		TRACE_LOG("GL has failed with status = 0x" << std::hex << status << " in file " << file << " line " << line);\
+	}\
+}

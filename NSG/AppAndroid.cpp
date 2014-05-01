@@ -31,21 +31,6 @@
 #include <cmath>
 #include <limits>
  
-int AndroidPrintMessage(const char* format, ...) 
-{
-    va_list args;
-    const int maxBuffer = 1024;
-    char buffer[maxBuffer];
-    va_start(args, format);
-    int ret_status = vsnprintf(buffer, maxBuffer, format, args);
-    va_end(args);
-
-    __android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", buffer);
-
-    return ret_status;  
-}
-
-
 static NSG::PInternalApp s_pApp = nullptr;
 
 struct engine 

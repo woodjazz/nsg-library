@@ -31,28 +31,47 @@ misrepresented as being the original software.
 #include "glm/glm/gtx/io.hpp"
 
 #ifdef NACL
-extern int PPPrintMessage(const char* format, ...);
-#define printf PPPrintMessage
+
+	extern int PPPrintMessage(const char* format, ...);
+	#define printf PPPrintMessage
+	
 #endif
 
 #ifdef ANDROID
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
-#define TRACE_LOG(msg) {\
-	::std::stringstream stream; \
-	stream << msg; \
-	::std::string cmsg = stream.str(); \
-	__android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
-}
-extern int AndroidPrintMessage(const char* format, ...);
-#define printf AndroidPrintMessage
+	
+	#include <android/log.h>
+	#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
+	#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
+	#define TRACE_LOG(msg) {\
+		::std::stringstream stream; \
+		stream << msg; \
+		::std::string cmsg = stream.str(); \
+		__android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
+	}
+	extern int AndroidPrintMessage(const char* format, ...);
+	#define printf AndroidPrintMessage
+
+#elif _MSC_VER
+
+    #include "windows.h"
+
+	#define TRACE_LOG(msg) {\
+		::std::stringstream stream; \
+		stream << msg; \
+		::std::string cmsg = stream.str(); \
+		printf("%s\n",cmsg.c_str());\
+		fflush(stdout);\
+	    OutputDebugString(cmsg.c_str());\
+	    OutputDebugString("\n");\
+	}
 #else
-#define TRACE_LOG(msg) {\
-	::std::stringstream stream; \
-	stream << msg; \
-	::std::string cmsg = stream.str(); \
-	printf("%s\n",cmsg.c_str());\
-	fflush(stdout);\
-}
+
+	#define TRACE_LOG(msg) {\
+		::std::stringstream stream; \
+		stream << msg; \
+		::std::string cmsg = stream.str(); \
+		printf("%s\n",cmsg.c_str());\
+		fflush(stdout);\
+	}
+
 #endif

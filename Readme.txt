@@ -4,11 +4,12 @@ NACL
 1- Install SDK
 	https://developers.google.com/native-client/dev/sdk/download
 2- Set the environment variable NACL_SDK_ROOT
+	2.1- Linux: edit ~/.bash_profile with EXPORT NACL_SDK_ROOT=~/nacl_sdk/pepper_xx
 3- Build
 	Linux: 
-		NaClBuild.sh [output-dir]
+		NaClBuildLinux.sh [output-dir]
 	Windows:
-		NaClBuild.bat [output-dir]
+		NaClBuildWindows.bat [output-dir]
 
 ---------------------------
 ANDROID
