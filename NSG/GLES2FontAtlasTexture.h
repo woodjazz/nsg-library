@@ -31,8 +31,13 @@ misrepresented as being the original software.
 #include <string>
 #include <vector>
 #include "Resource.h"
+#ifdef FREETYPE
 #include "ft2build.h"
 #include FT_FREETYPE_H
+#else
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"
+#endif
 
 namespace NSG
 {
@@ -70,6 +75,14 @@ namespace NSG
 		int atlasHeight_;
 		CharsInfo charInfo_;
 		int fontSize_;
+
+		static const int MAXCHARS = 256;
+
+	#ifndef FREETYPE	
+		static const int FIRST_CHAR = 32;
+    	static const int NUM_CHARS = MAXCHARS - FIRST_CHAR + 2; 	
+		stbtt_bakedchar cdata_[NUM_CHARS]; // glyphs
+	#endif
 	};
 
 	typedef std::shared_ptr<GLES2FontAtlasTexture> PGLES2FontAtlasTexture;

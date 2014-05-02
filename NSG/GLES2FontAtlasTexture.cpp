@@ -36,6 +36,8 @@ static const char* fShader = STRINGIFY(
 	}
 );
 
+#ifdef FREETYPE
+
 static FT_Library s_ft;
 static bool s_initialized = false;
 
@@ -53,6 +55,7 @@ static void Initialize()
 		}
 	}
 }
+#endif
 
 namespace NSG
 {
@@ -66,10 +69,13 @@ namespace NSG
         PGLES2Program pProgram(new GLES2Program(vShader, fShader));
         pMaterial_->SetProgram(pProgram);
 
+	#ifdef FREETYPE
+
 		if(fontSize_ > 0)
 		{
 			Initialize();
 		}
+	#endif
 	}
 
 	GLES2FontAtlasTexture::~GLES2FontAtlasTexture()
@@ -90,8 +96,25 @@ namespace NSG
 		return isLoaded_;
 	}
 
-	#define MAXWIDTH 1024
-    #define MAXCHARS 256
+#ifndef FREETYPE
+
+    void GLES2FontAtlasTexture::CreateTextureAtlas()
+    {
+    	atlasWidth_ = 512;
+    	atlasHeight_ = 512;
+
+    	std::vector<unsigned char> temp_bitmap(atlasWidth_ * atlasHeight_, 0);
+
+		stbtt_BakeFontBitmap(pResource_->GetData(), 0, fontSize_, &temp_bitmap[0], atlasWidth_, atlasHeight_, FIRST_CHAR, NUM_CHARS, cdata_); // no guarantee this fits!
+
+		glBindTexture(GL_TEXTURE_2D, texture_);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, atlasWidth_, atlasHeight_, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &temp_bitmap[0]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
+
+#else
+
+    #define MAXWIDTH 1024
 	void GLES2FontAtlasTexture::CreateTextureAtlas()
 	{
 		FT_Face face;
@@ -183,5 +206,7 @@ namespace NSG
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);	
 	}
+
+#endif
 
 }

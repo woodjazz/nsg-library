@@ -101,9 +101,6 @@ endmacro( mark_as_enable _var )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_definitions(
-	-DGLEW_STATIC
-)
 
 set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -114,9 +111,11 @@ if(NOT NACL AND NOT ANDROID)
 	# glew
 	###########################
 
+	add_definitions(-DGLEW_STATIC)
 	set(GLEW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew/include)
 	include_directories(${GLEW_INCLUDE_DIR})
 	add_subdirectory(glew)
+	list(APPEND LIBRARIES_2_LINK glew) 
 
 	###########################
 	# glfw
@@ -128,6 +127,7 @@ if(NOT NACL AND NOT ANDROID)
 	mark_as_disable_and_internal(GLFW_INSTALL)
 	add_subdirectory(glfw)
 	include_directories(${GLFW_INCLUDE_DIR})
+	list(APPEND LIBRARIES_2_LINK glfw) 
 
 else()
 
@@ -146,6 +146,7 @@ endif()
 ###########################
 set(SOIL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/soil)
 add_subdirectory(soil)
+list(APPEND LIBRARIES_2_LINK soil) 
 
 ###########################
 # freetype2
@@ -153,11 +154,21 @@ add_subdirectory(soil)
 set(FREETYPE2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/include)
 include_directories(${FREETYPE2_INCLUDE_DIR})
 add_subdirectory(freetype2)
+list(APPEND LIBRARIES_2_LINK freetype)
+add_definitions(-DFREETYPE)
 
 ###########################
 # codecs
 ###########################
-add_subdirectory(codecs)
+#add_subdirectory(codecs)
+#list(APPEND LIBRARIES_2_LINK codecs) 
+
+###########################
+# stb
+###########################
+# add_subdirectory(stb)
+# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/stb)
+# list(APPEND LIBRARIES_2_LINK stb) 
 
 ###########################
 # assimp
@@ -188,6 +199,7 @@ mark_as_disable_and_internal(ASSIMP_BUILD_ASSIMP_TOOLS)
 set(ASSIMP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assimp/include)
 include_directories(${ASSIMP_INCLUDE_DIR})
 add_subdirectory(assimp)
+list(APPEND LIBRARIES_2_LINK assimp) 
 
 ###########################
 # rtaudio
