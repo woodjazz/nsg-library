@@ -155,7 +155,6 @@ set(FREETYPE2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/include)
 include_directories(${FREETYPE2_INCLUDE_DIR})
 add_subdirectory(freetype2)
 list(APPEND LIBRARIES_2_LINK freetype)
-add_definitions(-DFREETYPE)
 
 ###########################
 # codecs
