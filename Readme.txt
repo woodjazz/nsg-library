@@ -7,9 +7,9 @@ NACL
 	2.1- Linux: edit ~/.bash_profile with EXPORT NACL_SDK_ROOT=~/nacl_sdk/pepper_xx
 3- Build
 	Linux: 
-		NaClBuildLinux.sh [output-dir]
+		cmake_nacl_linux.sh [output-dir]
 	Windows:
-		NaClBuildWindows.bat [output-dir]
+		cmake_nacl_windows.bat [output-dir]
 
 ---------------------------
 ANDROID
@@ -19,10 +19,8 @@ ANDROID
 2- Install ant (http://ant.apache.org/bindownload.cgi)
 	Linux also needed: sudo apt-get install openjdk-7-jdk
 3- Set the environment variables ANDROID_SDK, ANDROID_NDK, ANT_HOME and JAVA_HOME
-4- Make the toolchain (linux only):
-	$NDK/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-4.8 --platform=android-9 --install-dir=$HOME/dev/android-toolchain --llvm-version=3.3
-5- Build
+4- Build
 	Linux: 
-		AndroidBuild.sh [output-dir]
+		cmake_android.sh [output-dir]
 	Windows
-		AndroidBuild.bat [output-dir]
+		cmake_android.bat [output-dir]

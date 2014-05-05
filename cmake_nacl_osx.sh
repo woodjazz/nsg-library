@@ -20,5 +20,5 @@ fi
 
 cd $1
 
-cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/PNaCl.Linux.cmake"
+cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/CMake/Toolchains/PNaCl.OSX.cmake"
 make

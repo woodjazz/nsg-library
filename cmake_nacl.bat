@@ -22,5 +22,5 @@ if not exist %1 (
 
 cd %1
 
-cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/PNaCl.Windows.cmake"
+cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/CMake/Toolchains/PNaCl.Windows.cmake"
 %NACL_SDK_ROOT%/tools/make.exe 
