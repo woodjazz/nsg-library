@@ -100,7 +100,7 @@ namespace NSG
 				}
 
                 PGLES2Texture pTexture(new GLES2Texture(filename.c_str()));
-            	SetDiffuseTexture(pTexture);
+            	SetTexture0(pTexture);
             }
         }
 

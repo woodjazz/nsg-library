@@ -28,8 +28,6 @@ misrepresented as being the original software.
 #include "GLES2Camera.h"
 #include "Check.h"
 
-#define STRINGIFY(S) #S
-
 static const char* vShader = STRINGIFY(
 	attribute vec4 a_position;
 	attribute vec2 a_texcoord;
@@ -51,7 +49,7 @@ namespace NSG
 	{
 		PGLES2Program pProgram(new GLES2Program(vShader, fragment));
 		pMaterial_->SetProgram(pProgram);
-		pMaterial_->SetDiffuseTexture(input);
+		pMaterial_->SetTexture0(input);
 
 		pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(output, true));
 	}

@@ -8,8 +8,6 @@
 #include <sstream>
 #include <algorithm>
 
-#define STRINGIFY(S) #S
-
 static const char* vShader = STRINGIFY(
 	struct LightSource
 	{
@@ -122,10 +120,10 @@ static const char* fShader = STRINGIFY(
 	varying vec4 v_vertex_color;
 	varying vec4 v_color;
 	varying vec2 v_texcoord;
-	uniform sampler2D u_texture;
+	uniform sampler2D u_texture0;
 	void main()
 	{
-		gl_FragColor = v_color * texture2D(u_texture, v_texcoord) * v_vertex_color;
+		gl_FragColor = v_color * texture2D(u_texture0, v_texcoord) * v_vertex_color;
 	}
 );
 
@@ -134,12 +132,14 @@ namespace NSG
 	const size_t MAX_LIGHTS_MATERIAL = 4;
 
 	GLES2Material::GLES2Material() 
-	: color_scene_ambient_loc_(-1),
+	: pExtraMaterialUniforms_(nullptr),
+	color_scene_ambient_loc_(-1),
 	color_ambient_loc_(-1),
 	color_diffuse_loc_(-1),
 	color_specular_loc_(-1),
 	shininess_loc_(-1),
-	texture_loc_(-1),
+	texture0_loc_(-1),
+	texture1_loc_(-1),
 	texcoord_loc_(-1),
 	position_loc_(-1),
 	normal_loc_(-1),
@@ -191,27 +191,38 @@ namespace NSG
 		}
 	}
 
-	void GLES2Material::SetDiffuseTexture(PGLES2Texture pTexture)
+	void GLES2Material::SetTexture0(PGLES2Texture pTexture)
 	{
-		pDiffuseTexture_ = pTexture;
+		pTexture0_ = pTexture;
 	}
+
+	void GLES2Material::SetTexture1(PGLES2Texture pTexture)
+	{
+		pTexture1_ = pTexture;
+	}
+
 
 	bool GLES2Material::IsReady()
 	{
 		if(!pProgram_)
 			pProgram_ = PGLES2Program(new GLES2Program(vShader, fShader));
 
-        if(!pDiffuseTexture_)
+        if(!pTexture0_)
         {
              // Creates 1x1 white texture 
 		    unsigned char img[3];
 		    memset(&img[0], 0xFF, sizeof(unsigned char)*3);
-            pDiffuseTexture_ = PGLES2Texture(new GLES2Texture(GL_RGB, GL_UNSIGNED_BYTE, 1, 1, img));
+            pTexture0_ = PGLES2Texture(new GLES2Texture(GL_RGB, GL_UNSIGNED_BYTE, 1, 1, img));
         }
 
-		if(!loaded_ && pProgram_->IsReady() && pDiffuseTexture_->IsReady())
+		if(!loaded_ && pProgram_->IsReady() && pTexture0_->IsReady() && (!pTexture1_ || pTexture1_->IsReady()))
 		{
 			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+
+			if(pExtraMaterialUniforms_)
+			{
+				pExtraMaterialUniforms_->SetLocations();
+			}
 
 			color_ambient_loc_ = pProgram_->GetUniformLocation("u_material.ambient");
             color_scene_ambient_loc_ = pProgram_->GetUniformLocation("u_scene_ambient");
@@ -222,7 +233,8 @@ namespace NSG
 		    m_loc_ = pProgram_->GetUniformLocation("u_m");
 			model_inv_transp_loc_ = pProgram_->GetUniformLocation("u_model_inv_transp");
 			v_inv_loc_ = pProgram_->GetUniformLocation("u_v_inv");
-			texture_loc_ = pProgram_->GetUniformLocation("u_texture");
+			texture0_loc_ = pProgram_->GetUniformLocation("u_texture0");
+			texture1_loc_ = pProgram_->GetUniformLocation("u_texture1");
 			texcoord_loc_ = pProgram_->GetAttributeLocation("a_texcoord");
 			position_loc_ = pProgram_->GetAttributeLocation("a_position");
 			normal_loc_ = pProgram_->GetAttributeLocation("a_normal");
@@ -309,6 +321,12 @@ namespace NSG
         	glDisable(GL_DEPTH_TEST);
         }
 
+		if(obj.pExtraMaterialUniforms_)
+		{
+			obj.pExtraMaterialUniforms_->AssignValues();
+		}
+        
+
 		if(obj.mvp_loc_ != -1 && pNode)
 		{
 			Matrix4 m = GLES2Camera::GetModelViewProjection(pNode);
@@ -333,11 +351,18 @@ namespace NSG
 			glUniformMatrix4fv(obj.v_inv_loc_, 1, GL_FALSE, glm::value_ptr(m));			
 		}
 
-		if(obj.texture_loc_ != -1 && obj.pDiffuseTexture_)
+		if(obj.texture0_loc_ != -1 && obj.pTexture0_)
 		{
 			glActiveTexture(GL_TEXTURE0);
-			obj.pDiffuseTexture_->Bind();
-			glUniform1i(obj.texture_loc_, 0);
+			obj.pTexture0_->Bind();
+			glUniform1i(obj.texture0_loc_, 0);
+		}
+
+		if(obj.texture1_loc_ != -1 && obj.pTexture1_)
+		{
+			glActiveTexture(GL_TEXTURE1);
+			obj.pTexture1_->Bind();
+			glUniform1i(obj.texture1_loc_, 1);
 		}
 
 		

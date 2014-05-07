@@ -34,12 +34,12 @@ static void FSMTest0()
 {
     struct INITIALIZING : public State {};
     struct BUSY : public State {};
-    struct ERROR : public State {};
+    struct ERROR1 : public State {};
     struct READY : public State {};
 
     INITIALIZING initializing;
     BUSY busy;
-    ERROR error;
+    ERROR1 error;
     READY ready;
 
     bool condition1 = false;
@@ -131,12 +131,12 @@ static void FSMTest1()
 
     struct INITIALIZING : public CounterState {};
     struct BUSY : public CounterState {};
-    struct ERROR : public CounterState {};
+    struct ERROR1 : public CounterState {};
     struct READY : public CounterState {};
 
     INITIALIZING initializing;
     BUSY busy;
-    ERROR error;
+    ERROR1 error;
     READY ready;
 
     bool condition1 = false;
@@ -241,7 +241,7 @@ static void FSMTest2()
     };
 
     struct READY : public State {};
-    struct ERROR : public State {};
+    struct ERROR1 : public State {};
 
     INITIALIZING initializing;
     INITIALIZE_JOBS initialize_jobs;

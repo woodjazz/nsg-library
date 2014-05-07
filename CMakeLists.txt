@@ -29,10 +29,11 @@ PROJECT(nsg-library)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-# Include necessary submodules
-set(CMAKE_MODULE_PATH 
-  "${CMAKE_CURRENT_SOURCE_DIR}/CMake"
-)
+# Set CMake modules search path
+set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake/Modules)
+
+# Include NSG cmake common module
+include (Common)
 
 if(WIN32)
 
@@ -115,7 +116,6 @@ if(NOT NACL AND NOT ANDROID)
 	set(GLEW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew/include)
 	include_directories(${GLEW_INCLUDE_DIR})
 	add_subdirectory(glew)
-	list(APPEND LIBRARIES_2_LINK glew) 
 
 	###########################
 	# glfw
@@ -127,7 +127,7 @@ if(NOT NACL AND NOT ANDROID)
 	mark_as_disable_and_internal(GLFW_INSTALL)
 	add_subdirectory(glfw)
 	include_directories(${GLFW_INCLUDE_DIR})
-	list(APPEND LIBRARIES_2_LINK glfw) 
+	list(APPEND LIBRARIES_2_LINK glfw glew) # important: glew after glfw
 
 else()
 

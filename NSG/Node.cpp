@@ -118,7 +118,7 @@ namespace NSG
 
 	void Node::SetLookAt(const Vertex3& center, const Vertex3& up)
 	{
-#if 1		
+#if 0		
         Vertex3 upVector(up);
 
         if(pParent_) 
@@ -138,7 +138,7 @@ namespace NSG
             SetGlobalOrientation(glm::quat_cast(m));
         }
 #endif
-#if 0
+#if 1
         float length = glm::length(GetGlobalPosition() - center);
         
         if(length > 0)

@@ -42,7 +42,7 @@ namespace NSG
 		~GLES2Filter();
 		void Render();
 		PGLES2Material GetMaterial() const { return pMaterial_; }
-	private:
+	protected:
         PGLES2Material pMaterial_; 
 		PGLES2Mesh pMesh_;
 		PGLES2Render2Texture pRender2Texture_;

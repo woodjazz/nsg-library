@@ -75,6 +75,8 @@ private:
     PSceneNode pTextSceneNode_;
     PModel pModel_;
     PGLES2Filter pFilter_;
+    PGLES2Filter pFilterBlend_;
     PGLES2Texture pFilteredTexture_;
+    PGLES2Texture pBlendedTexture_;
 };
 

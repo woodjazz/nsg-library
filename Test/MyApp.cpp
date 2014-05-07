@@ -37,6 +37,8 @@ misrepresented as being the original software.
 #include "NSG/Constants.h"
 #include "NSG/GLES2RoundedRectangleMesh.h"
 #include "NSG/GLES2RectangleMesh.h"
+#include "NSG/GLES2FilterBlur.h"
+#include "NSG/GLES2FilterBlend.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -77,9 +79,8 @@ int MyApp::GetFPS() const
 	return 30;
 }
 
-#define STRINGIFY(S) #S
 static const char* fShader = STRINGIFY(
-	uniform sampler2D u_texture;
+	uniform sampler2D u_texture0;
 	varying vec2 v_texcoord;
 
 	struct Material
@@ -93,7 +94,7 @@ static const char* fShader = STRINGIFY(
 	{
         vec2 texcoord = v_texcoord;
 		texcoord.x += sin(texcoord.y * 4.0 * 2.0 * 3.14159 + u_material.shininess) / 100.0;
-		gl_FragColor = texture2D(u_texture, texcoord);
+		gl_FragColor = texture2D(u_texture0, texcoord);
 	}
 );
 
@@ -137,10 +138,10 @@ void MyApp::Start()
 	//pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
 	//pSkin1_->pActiveMaterial->SetMainTexture(pCellTexture);
 
-	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 256, 256, nullptr));
+	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 1024, 1024, nullptr));
 
-	pSkin2_->pActiveMaterial->SetDiffuseTexture(pCellTexture);
-	pSkin1_->pNormalMaterial->SetDiffuseTexture(pRenderedTexture_);
+	pSkin2_->pActiveMaterial->SetTexture0(pCellTexture);
+	pSkin1_->pNormalMaterial->SetTexture0(pRenderedTexture_);
 
 
     pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(pRenderedTexture_, true));
@@ -150,10 +151,14 @@ void MyApp::Start()
     //pModel_ = PModel(new Model("spider.obj"));
     pModel_->SetBehavior(PBehavior(new ModelBehavior()));
 
-    pFilteredTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 256, 256, nullptr));
+    pFilteredTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 16, 16, nullptr));
 
-    pFilter_ = PGLES2Filter(new GLES2Filter(pRenderedTexture_, pFilteredTexture_, fShader));
-   
+    //pFilter_ = PGLES2Filter(new GLES2Filter(pRenderedTexture_, pFilteredTexture_, fShader));
+    pFilter_ = PGLES2Filter(new GLES2FilterBlur(pRenderedTexture_, pFilteredTexture_));
+
+    pBlendedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 1024, 1024, nullptr));
+
+    pFilterBlend_ = PGLES2Filter(new GLES2FilterBlend(pFilteredTexture_, pRenderedTexture_, pBlendedTexture_));
 }
 
 void MyApp::Update() 
@@ -363,6 +368,7 @@ void MyApp::RenderFrame()
 	pRender2Texture_->Begin();
     pCubeSceneNode_->Render(true);
     pEarthSceneNode_->Render(true);
+    pModel_->GetSceneNode()->Render(true);
     pRender2Texture_->End();
 
 	float deltaTime = App::GetPtrInstance()->GetDeltaTime();
@@ -370,8 +376,11 @@ void MyApp::RenderFrame()
     pFilter_->GetMaterial()->SetShininess(move);
     pFilter_->Render();
 
+    pFilterBlend_->Render();
+
     //pRenderedTexture_->Show(pRenderedTexture_);
-    pFilteredTexture_->Show(pFilteredTexture_);
+    //pFilteredTexture_->Show(pFilteredTexture_);
+    pBlendedTexture_->Show(pBlendedTexture_);
     
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

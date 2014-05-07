@@ -13,8 +13,6 @@
 #include <sstream>
 #include <assert.h>
 
-#define STRINGIFY(S) #S
-
 static const char* vShader = STRINGIFY(
 	attribute vec4 a_position;
 	attribute vec2 a_texcoord;
@@ -28,11 +26,11 @@ static const char* vShader = STRINGIFY(
 );
 
 static const char* fShader = STRINGIFY(
-	uniform sampler2D u_texture;
+	uniform sampler2D u_texture0;
 	varying vec2 v_texcoord;
 	void main()
 	{
-        gl_FragColor = vec4(1, 1, 1, texture2D(u_texture, v_texcoord).a);
+        gl_FragColor = vec4(1, 1, 1, texture2D(u_texture0, v_texcoord).a);
 	}
 );
 

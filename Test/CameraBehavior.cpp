@@ -43,10 +43,15 @@ void CameraBehavior::Start()
     camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 10.0f));
 	camControlPoints_.push_back(Vertex3(10.0f, 0.0f, 0.0f));
 	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
+
+    pSceneNode_->SetPosition(Vertex3(0,0,10));
+    pSceneNode_->SetLookAt(Vertex3(0));
+
 }
 
 void CameraBehavior::Update()
 {
+#if 1
     float deltaTime = App::GetPtrInstance()->GetDeltaTime();
 
     static float delta1 = 0;
@@ -71,7 +76,7 @@ void CameraBehavior::Update()
         camControlPoints_.pop_front();
         camControlPoints_.push_back(p);
     }
-
+#endif
 }
 
 void CameraBehavior::Render()

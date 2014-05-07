@@ -35,6 +35,8 @@ misrepresented as being the original software.
 #include "glm/glm/gtx/spline.hpp"
 #include <memory>
 
+#define STRINGIFY(S) #S
+
 namespace NSG
 {
     typedef glm::highp_ivec4 Recti;

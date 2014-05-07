@@ -30,8 +30,6 @@ misrepresented as being the original software.
 #include "GLES2Camera.h"
 #include <assert.h>
 
-#define STRINGIFY(S) #S
-
 static const char* vShader = STRINGIFY(
     uniform mat4 u_mvp;
     attribute vec4 a_position;

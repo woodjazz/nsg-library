@@ -29,8 +29,6 @@ misrepresented as being the original software.
 #include "NSG/GLES2Program.h"
 #include "NSG/GLES2SphereMesh.h"
 
-#define STRINGIFY(S) #S
-
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
 	attribute vec4 a_position;
@@ -78,6 +76,6 @@ void LightBehavior::Update()
 
 void LightBehavior::Render()
 {
-	pSceneNode_->Render(true);
+	//pSceneNode_->Render(true);
 }
 

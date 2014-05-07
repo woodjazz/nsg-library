@@ -23,40 +23,32 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "ModelBehavior.h"
-#include "NSG/SceneNode.h"
-#include "NSG/App.h"
-#include "NSG/Constants.h"
+#pragma once
 
-ModelBehavior::ModelBehavior()
+#include "GLES2Filter.h"
+
+namespace NSG
 {
+	class GLES2FilterBlur : public GLES2Filter, public ExtraMaterialUniforms
+	{
+	public:
+		GLES2FilterBlur(PGLES2Texture input, PGLES2Texture output);
+		~GLES2FilterBlur();
 
-}
-	
-ModelBehavior::~ModelBehavior()
-{
+		void SetLocations();
+		void AssignValues();
 
-}
+	private:
+		GLuint texelSize_loc_;
+		GLuint orientation_loc_;
+		GLuint blurAmount_loc_;
+		GLuint blurScale_loc_;
+		GLuint blurStrength_loc_;
 
-void ModelBehavior::Start()
-{
-    //pSceneNode_->SetOrientation(glm::angleAxis(PI, Vertex3(1, 0, 0)));
-	pSceneNode_->SetScale(Vertex3(2, 2, 2));
-    //pSceneNode_->SetPosition(Vertex3(0,-2, 0));
-    //pSceneNode_->SetPosition(Vertex3(0,-5, 5));
-
-}
-
-void ModelBehavior::Update()
-{
-}
-
-void ModelBehavior::Render()
-{
-	//pSceneNode_->Render(true);
-}
-
-void ModelBehavior::Render2Select()
-{
-	pSceneNode_->Render2Select();
+		Vertex2 texelSize_;
+		int orientation_;
+		int blurAmount_;
+		float blurScale_;
+		float blurStrength_;
+	};
 }

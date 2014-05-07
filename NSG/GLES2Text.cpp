@@ -40,8 +40,6 @@ struct Point
 	GLfloat t;
 };
 
-#define STRINGIFY(S) #S
-
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
 	attribute vec4 a_position;
@@ -57,7 +55,7 @@ static const char* vShader = STRINGIFY(
 
 static const char* fShader = STRINGIFY(
 	varying vec2 v_texcoord;
-	uniform sampler2D u_texture;
+	uniform sampler2D u_texture0;
 	struct Material
 	{
 		vec4 diffuse;
@@ -67,7 +65,7 @@ static const char* fShader = STRINGIFY(
 
 	void main()
 	{
-		gl_FragColor = vec4(u_material.diffuse.w, u_material.diffuse.w, u_material.diffuse.w, texture2D(u_texture, v_texcoord).a) * vec4(u_material.diffuse.x, u_material.diffuse.y, u_material.diffuse.z, 1);
+		gl_FragColor = vec4(u_material.diffuse.w, u_material.diffuse.w, u_material.diffuse.w, texture2D(u_texture0, v_texcoord).a) * vec4(u_material.diffuse.x, u_material.diffuse.y, u_material.diffuse.z, 1);
 	}
 );
 

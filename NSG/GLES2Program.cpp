@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include <string>
 #include "GLES2Program.h"
 #include "Log.h"
+#include "Check.h"
 
 static const char s_fragmentShaderHeader[] = {
 #include "GLES2FragmentCompatibility.h"
@@ -116,7 +117,7 @@ namespace NSG
 
 	void GLES2Program::Initialize()
 	{
-        assert(glGetError() == GL_NO_ERROR);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		// Creates the program name/index.
 		id_ = glCreateProgram();
@@ -152,14 +153,14 @@ namespace NSG
 
 				TRACE_LOG("Error in Program Creation: " << log);
 
+                assert(false);
+
 				// Frees the allocated memory.
 				free(log);
-
-				assert(false);
 			}
 		}
 
-        assert(glGetError() == GL_NO_ERROR);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
 	GLES2Program::~GLES2Program()

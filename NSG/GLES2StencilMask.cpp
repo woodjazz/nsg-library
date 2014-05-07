@@ -29,8 +29,6 @@ misrepresented as being the original software.
 #include "GLES2Mesh.h"
 #include "GLES2Camera.h"
 
-#define STRINGIFY(S) #S
-
 namespace NSG
 {
 	static const char* vShader = STRINGIFY(

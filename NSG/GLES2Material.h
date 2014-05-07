@@ -37,18 +37,28 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	struct ExtraMaterialUniforms
+	{
+		virtual void SetLocations() = 0;
+		virtual void AssignValues() = 0;
+	};
+
 	class UseMaterial;
 	class GLES2Material
 	{
 	public:
 		GLES2Material();
 		~GLES2Material();
+		void Set(ExtraMaterialUniforms* pExtraMaterialUniforms) { pExtraMaterialUniforms_ = pExtraMaterialUniforms; }
 		void SetBlendMode(BLEND_MODE mode);
 		void EnableDepthTest(bool enable);
 		void EnableCullFace(bool enable);
 		void SetProgram(PGLES2Program pProgram);
-		void SetDiffuseTexture(PGLES2Texture pTexture);
-        PGLES2Texture GetDiffuseTexture() const { return pDiffuseTexture_; }
+		PGLES2Program GetProgram() const { return pProgram_; }
+		void SetTexture0(PGLES2Texture pTexture);
+		void SetTexture1(PGLES2Texture pTexture);
+        PGLES2Texture GetTexture0() const { return pTexture0_; }
+        PGLES2Texture GetTexture1() const { return pTexture1_; }
 		bool IsReady();
 		GLuint GetTextCoordAttLocation() { return texcoord_loc_; }
 		GLuint GetPositionAttLocation() { return position_loc_; }
@@ -68,7 +78,9 @@ namespace NSG
 		void Render(bool solid, Node* pNode, GLES2Mesh* pMesh);
 
 	private:
-		PGLES2Texture pDiffuseTexture_;
+		ExtraMaterialUniforms* pExtraMaterialUniforms_;
+		PGLES2Texture pTexture0_;
+		PGLES2Texture pTexture1_;
 		PGLES2Program pProgram_;
 
 		GLuint color_scene_ambient_loc_;
@@ -76,7 +88,8 @@ namespace NSG
 		GLuint color_diffuse_loc_;
 		GLuint color_specular_loc_;
 		GLuint shininess_loc_;
-		GLuint texture_loc_;
+		GLuint texture0_loc_;
+		GLuint texture1_loc_;
 		GLuint texcoord_loc_;
 		GLuint position_loc_;
 		GLuint normal_loc_;

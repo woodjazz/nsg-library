@@ -44,8 +44,6 @@ misrepresented as being the original software.
 
 using namespace NSG;
 
-#define STRINGIFY(S) #S
-
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
 	attribute vec4 a_position;
@@ -68,7 +66,7 @@ static const char* fShader = STRINGIFY(
 		float shininess;
 	};
 	uniform Material u_material;
-	uniform sampler2D u_texture;
+	uniform sampler2D u_texture0;
 	varying vec4 v_position;
 	varying vec2 v_texcoord;
 
@@ -79,7 +77,7 @@ static const char* fShader = STRINGIFY(
         if(u_material.shininess < 0.0)
             factor = abs(v_position.y) + u_material.shininess;
 
-		gl_FragColor = texture2D(u_texture, v_texcoord) * u_material.diffuse * vec4(factor, factor, factor, 1.0);
+		gl_FragColor = texture2D(u_texture0, v_texcoord) * u_material.diffuse * vec4(factor, factor, factor, 1.0);
 	}
 );
 
@@ -698,7 +696,7 @@ namespace NSG
 
                     pTextNode1->SetMesh(pTextMesh);
                     static PGLES2Material pTextMaterial(new GLES2Material());
-                    pTextMaterial->SetDiffuseTexture(pTextMesh->GetAtlas());
+                    pTextMaterial->SetTexture0(pTextMesh->GetAtlas());
                     pTextMaterial->SetProgram(pTextMesh->GetProgram());
                     pTextNode1->SetMaterial(pTextMaterial);
                     pTextMaterial->SetDiffuseColor(Color(1,1,1,pSkin->alphaFactor));
@@ -872,7 +870,7 @@ namespace NSG
                 pTextNode->Update(false);
                 pTextNode1->SetMesh(pTextMesh);
                 static PGLES2Material pTextMaterial(new GLES2Material());
-                pTextMaterial->SetDiffuseTexture(pTextMesh->GetAtlas());
+                pTextMaterial->SetTexture0(pTextMesh->GetAtlas());
                 pTextMaterial->SetProgram(pTextMesh->GetProgram());
                 pTextNode1->SetMaterial(pTextMaterial);
                 pTextMaterial->SetDiffuseColor(Color(1,1,1,pSkin->alphaFactor));
@@ -890,7 +888,7 @@ namespace NSG
 
                     pCursorNode->SetMesh(pCursorMesh);
                     static PGLES2Material pTextMaterial(new GLES2Material());
-                    pTextMaterial->SetDiffuseTexture(pTextMesh->GetAtlas());
+                    pTextMaterial->SetTexture0(pTextMesh->GetAtlas());
                     pTextMaterial->SetProgram(pTextMesh->GetProgram());
                     pCursorNode->SetMaterial(pTextMaterial);
                     pTextMaterial->SetDiffuseColor(Color(1,0,0,pSkin->alphaFactor));

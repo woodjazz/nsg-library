@@ -23,40 +23,23 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "ModelBehavior.h"
-#include "NSG/SceneNode.h"
-#include "NSG/App.h"
-#include "NSG/Constants.h"
+#pragma once
 
-ModelBehavior::ModelBehavior()
+#include "GLES2Filter.h"
+
+namespace NSG
 {
+	class GLES2FilterBlend : public GLES2Filter, public ExtraMaterialUniforms
+	{
+	public:
+		GLES2FilterBlend(PGLES2Texture input0, PGLES2Texture input1, PGLES2Texture output);
+		~GLES2FilterBlend();
 
-}
-	
-ModelBehavior::~ModelBehavior()
-{
+		void SetLocations();
+		void AssignValues();
 
-}
-
-void ModelBehavior::Start()
-{
-    //pSceneNode_->SetOrientation(glm::angleAxis(PI, Vertex3(1, 0, 0)));
-	pSceneNode_->SetScale(Vertex3(2, 2, 2));
-    //pSceneNode_->SetPosition(Vertex3(0,-2, 0));
-    //pSceneNode_->SetPosition(Vertex3(0,-5, 5));
-
-}
-
-void ModelBehavior::Update()
-{
-}
-
-void ModelBehavior::Render()
-{
-	//pSceneNode_->Render(true);
-}
-
-void ModelBehavior::Render2Select()
-{
-	pSceneNode_->Render2Select();
+	private:
+		GLuint blendMode_loc_;
+		int blendMode_;
+	};
 }

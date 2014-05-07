@@ -14,8 +14,6 @@
 #include <sstream>
 #include <assert.h>
 
-#define STRINGIFY(S) #S
-
 static const char* vShader = STRINGIFY(
 	attribute vec4 a_position;
 	attribute vec2 a_texcoord;
@@ -29,11 +27,11 @@ static const char* vShader = STRINGIFY(
 );
 
 static const char* fShader = STRINGIFY(
-	uniform sampler2D u_texture;
+	uniform sampler2D u_texture0;
 	varying vec2 v_texcoord;
 	void main()
 	{
-		gl_FragColor = texture2D(u_texture, v_texcoord);
+		gl_FragColor = texture2D(u_texture0, v_texcoord);
 	}
 );
 
@@ -156,7 +154,7 @@ namespace NSG
 		{
 			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
 
-			pMaterial_->SetDiffuseTexture(pTexture);
+			pMaterial_->SetTexture0(pTexture);
 
 			if(pMaterial_->IsReady())
 			{

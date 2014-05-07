@@ -44,11 +44,13 @@ namespace NSG
 		char getOsSeparator() const;
 	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb");
 		void Close(Assimp::IOStream* pFile);
+        PSceneNode GetSceneNode() const { return pRoot_; }
 	private:
 		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode pSceneNode);
 
 		PResource pResource_;
 		PSceneNode pRoot_;
+        PSceneNode pModelRoot_;
 		typedef std::vector<PSceneNode> Children;
 		Children children_; // just to keep a reference to children and avoid deletion
 		bool isLoaded_;

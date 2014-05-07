@@ -172,7 +172,10 @@ namespace NSG
 	: pResource_(new Resource(filename)),
 	isLoaded_(false)
 	{
-		pRoot_ = PSceneNode(new ModelSceneNode(this));
+        pRoot_= PSceneNode(new ModelSceneNode(this));
+        pModelRoot_ = PSceneNode(new SceneNode());
+
+        pModelRoot_->SetParent(pRoot_);
 	}
 
 	Model::~Model()
@@ -187,7 +190,9 @@ namespace NSG
 			Assimp::Importer importer;
 			importer.SetIOHandler(this);
             const aiScene* pScene = importer.ReadFile(pResource_->GetFilename().c_str(), aiProcessPreset_TargetRealtime_MaxQuality);	
-	  		RecursiveLoad(pScene, pScene->mRootNode, pRoot_);
+
+            RecursiveLoad(pScene, pScene->mRootNode, pModelRoot_);
+            
 	        importer.SetIOHandler(nullptr);	
 
 			pResource_ = nullptr;
