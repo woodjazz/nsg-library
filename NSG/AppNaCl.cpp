@@ -356,8 +356,11 @@ namespace NSG
 		void NaCl3DInstance::MainLoop(int32_t) 
 		{
 			pApp_->PerformTick();
-			pApp_->RenderFrame();		
-			context_.SwapBuffers(callback_factory_.NewCallback(&NaCl3DInstance::MainLoop));
+			pApp_->RenderFrame();	
+			if(!pApp_->ShallExit())
+			{
+				context_.SwapBuffers(callback_factory_.NewCallback(&NaCl3DInstance::MainLoop));
+			}
 		}
 
 		Graphics3DModule::Graphics3DModule(App* pApp) : pp::Module(), pApp_(pApp) 

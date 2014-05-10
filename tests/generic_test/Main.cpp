@@ -23,54 +23,50 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Types.h"
-#include <stdio.h>
-#include <sstream>
-#include <string>
 
-#ifdef NACL
+#include "NSG/Main.h"
+#include "NSG.h"
+#include <thread>
+using namespace NSG;
 
-	extern int PPPrintMessage(const char* format, ...);
-	#define printf PPPrintMessage
-	
-#endif
+extern void NodeTest();
+extern void FSMExamples();
+extern void FSMTest();
+extern void TimedTaskTest();
+extern void QueuedTaskTest();
 
-#ifdef ANDROID
-	
-	#include <android/log.h>
-	#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
-	#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
-	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
-		stream << msg; \
-		::std::string cmsg = stream.str(); \
-		__android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
-	}
-	extern int AndroidPrintMessage(const char* format, ...);
-	#define printf AndroidPrintMessage
+struct Test : public App 
+{
+	std::thread thread_;
 
-#elif _MSC_VER
+	Test()
+	{
+		thread_ = std::thread([this](){InternalTask();});	
 
-    #include "windows.h"
-
-	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
-		stream << msg; \
-		::std::string cmsg = stream.str(); \
-		printf("%s\n",cmsg.c_str());\
-		fflush(stdout);\
-	    OutputDebugString(cmsg.c_str());\
-	    OutputDebugString("\n");\
-	}
-#else
-
-	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
-		stream << msg; \
-		::std::string cmsg = stream.str(); \
-		printf("%s\n",cmsg.c_str());\
-		fflush(stdout);\
+		NodeTest();
 	}
 
-#endif
+	~Test()
+	{
+		TRACE_LOG("Destroy Begin");
+		thread_.join();
+		TRACE_LOG("Destroy End");
+	}
+
+	void InternalTask() 
+	{
+		FSMExamples();
+		FSMTest();
+		TimedTaskTest();
+		QueuedTaskTest();
+	}
+
+
+	bool ShallExit() const 
+	{ 
+		return true; 
+	}
+};
+
+
+NSG_MAIN(Test);

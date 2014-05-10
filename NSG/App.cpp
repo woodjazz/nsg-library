@@ -360,6 +360,11 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         return pApp_->HideKeyboard();
     }
 
+    bool InternalApp::ShallExit() const
+    {
+        return pApp_->ShallExit();
+    }
+
 #if NACL
     void InternalApp::HandleMessage(const pp::Var& var_message)
     {

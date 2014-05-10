@@ -23,62 +23,56 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2Filter.h"
-#include "GLES2PlaneMesh.h"
-#include "GLES2Camera.h"
-#include "Check.h"
+#include "EarthBehavior.h"
 
-static const char* vShader = STRINGIFY(
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec2 v_texcoord;
-
-	void main()
-	{
-		gl_Position = a_position;
-		v_texcoord = a_texcoord;
-	}
-);
-
-namespace NSG
+EarthBehavior::EarthBehavior()
+: x_angle_(0),
+y_angle_(0)
 {
-	GLES2Filter::GLES2Filter(PGLES2Texture input, PGLES2Texture output, const char* fragment)
-    : pMaterial_(new GLES2Material ()),
-    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
-    input_(input)
-	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fragment));
-		pMaterial_->SetProgram(pProgram);
-		pMaterial_->SetTexture0(input);
 
-		pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(output, true));
-	}
-
-	GLES2Filter::~GLES2Filter()
-	{
-
-	}
-
-	void GLES2Filter::Render()
-	{
-		if(input_->IsReady())
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-
-			if(pMaterial_->IsReady())
-			{
-				GLES2Camera* pCurrent = GLES2Camera::Deactivate();
-
-				pRender2Texture_->Begin();
-
-				pMaterial_->Render(true, nullptr, pMesh_.get());
-
-				pRender2Texture_->End();
-
-				GLES2Camera::Activate(pCurrent);
-			}
-
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
-	}
 }
+	
+EarthBehavior::~EarthBehavior()
+{
+
+}
+
+void EarthBehavior::Start()
+{
+	PGLES2SphereMesh pSphereMesh(new GLES2SphereMesh(3, 32, GL_STATIC_DRAW));
+    pSceneNode_->SetMesh(pSphereMesh);
+
+	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
+	PGLES2Material pMaterial(new GLES2Material ());
+	pMaterial->SetTexture0(pEarthTexture);
+	pMaterial->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
+	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
+	pMaterial->SetShininess(0.3f);
+
+    pSceneNode_->SetMaterial(pMaterial);
+
+    pSceneNode_->SetPosition(Vertex3(5, 0, 0));
+}
+
+void EarthBehavior::Update()
+{
+    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+
+	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
+	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
+
+	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+
+}
+
+void EarthBehavior::Render()
+{
+	//pSceneNode_->Render(true);
+}
+
+void EarthBehavior::Render2Select()
+{
+	pSceneNode_->Render2Select();
+}
+
+

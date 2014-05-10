@@ -23,62 +23,54 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2Filter.h"
-#include "GLES2PlaneMesh.h"
-#include "GLES2Camera.h"
-#include "Check.h"
+#include "LightBehavior.h"
 
 static const char* vShader = STRINGIFY(
+	uniform mat4 u_mvp;
 	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec2 v_texcoord;
-
 	void main()
 	{
-		gl_Position = a_position;
-		v_texcoord = a_texcoord;
+		gl_Position = u_mvp * a_position;
 	}
 );
 
-namespace NSG
+static const char* fShader = STRINGIFY(
+	void main()
+	{
+		gl_FragColor = vec4(1,1,0,1);
+	}
+);
+
+
+LightBehavior::LightBehavior()
 {
-	GLES2Filter::GLES2Filter(PGLES2Texture input, PGLES2Texture output, const char* fragment)
-    : pMaterial_(new GLES2Material ()),
-    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
-    input_(input)
-	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fragment));
-		pMaterial_->SetProgram(pProgram);
-		pMaterial_->SetTexture0(input);
-
-		pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(output, true));
-	}
-
-	GLES2Filter::~GLES2Filter()
-	{
-
-	}
-
-	void GLES2Filter::Render()
-	{
-		if(input_->IsReady())
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-
-			if(pMaterial_->IsReady())
-			{
-				GLES2Camera* pCurrent = GLES2Camera::Deactivate();
-
-				pRender2Texture_->Begin();
-
-				pMaterial_->Render(true, nullptr, pMesh_.get());
-
-				pRender2Texture_->End();
-
-				GLES2Camera::Activate(pCurrent);
-			}
-
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
-	}
 }
+	
+LightBehavior::~LightBehavior()
+{
+
+}
+
+void LightBehavior::Start()
+{
+	PGLES2Material pMaterial(new GLES2Material());
+	PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+    pMaterial->SetProgram(pProgram);
+    pSceneNode_->SetMaterial(pMaterial);
+
+	PGLES2Mesh pMesh(new GLES2SphereMesh(0.2f, 32, GL_STATIC_DRAW));
+	pSceneNode_->SetMesh(pMesh);
+
+    pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
+}
+
+void LightBehavior::Update()
+{
+//    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+}
+
+void LightBehavior::Render()
+{
+	//pSceneNode_->Render(true);
+}
+

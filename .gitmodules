@@ -19,3 +19,15 @@
 [submodule "assimp"]
 	path = assimp
 	url = https://github.com/assimp/assimp
+[submodule "externals/assimp"]
+	path = externals/assimp
+	url = https://github.com/assimp/assimp
+[submodule "externals/freetype2"]
+	path = externals/freetype2
+	url = http://git.savannah.gnu.org/r/freetype/freetype2.git
+[submodule "externals/glfw"]
+	path = externals/glfw
+	url = https://github.com/glfw/glfw
+[submodule "externals/glm"]
+	path = externals/glm
+	url = https://github.com/g-truc/glm

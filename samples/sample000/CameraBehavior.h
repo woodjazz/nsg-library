@@ -23,42 +23,21 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2Buffer.h"
-#include "Check.h"
-#include <assert.h>
-
-namespace NSG 
+#pragma once
+#include "NSG.h"
+#include <deque>
+using namespace NSG;
+class CameraBehavior : public Behavior
 {
-	GLES2Buffer::GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid* data, GLenum usage)
-	: type_(type)
-	{
-		CHECK_ASSERT(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER, __FILE__, __LINE__);
+public:
+	CameraBehavior();
+	~CameraBehavior();
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+	void Start();
+	void Update();
+	void Render();
 
-		glGenBuffers(1, &id_);
+private:
+    std::deque<Vertex3> camControlPoints_;
 
-		glBindBuffer(type, id_);
-
-		glBufferData(type, size, data, usage);
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
-
-	GLES2Buffer::~GLES2Buffer()
-	{
-		glDeleteBuffers(1, &id_);
-	}
-
-	BindBuffer::BindBuffer(GLES2Buffer& obj) 
-	: obj_(obj)
-	{
-		obj.Bind();
-	}
-
-	BindBuffer::~BindBuffer()
-	{
-		obj_.UnBind();
-	}
-
-}
+};

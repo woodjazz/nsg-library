@@ -1,7 +1,7 @@
 #include "GLES2Texture.h"
 #include "GLES2PlaneMesh.h"
 #include "GLES2Camera.h"
-#include "soil/SOIL.h"
+#include "SOIL.h"
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
@@ -152,7 +152,7 @@ namespace NSG
 	{
 		if(pTexture->IsReady())
 		{
-			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+			CHECK_GL_STATUS(__FILE__, __LINE__);
 
 			pMaterial_->SetTexture0(pTexture);
 
@@ -165,7 +165,7 @@ namespace NSG
 				GLES2Camera::Activate(pCurrent);
 			}
 
-			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+			CHECK_GL_STATUS(__FILE__, __LINE__);
 		}
 	}
 

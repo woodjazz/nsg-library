@@ -64,7 +64,7 @@ namespace NSG
     enabled_(false),
     createDepthBuffer_(createDepthBuffer)
 	{
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
         glGenRenderbuffers(1, &colorRenderbuffer_);
@@ -76,7 +76,7 @@ namespace NSG
 
         memset(selected_, 0, sizeof(selected_));
 
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
 	}
 
@@ -93,7 +93,7 @@ namespace NSG
 
 	void GLES2FrameColorSelection::ViewChanged(int32_t windowWidth, int32_t windowHeight)
 	{
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		windowWidth_ = windowWidth;
 		windowHeight_ = windowHeight;
@@ -120,7 +120,7 @@ namespace NSG
             //////////////////////////////////////////////////////////////////////////////////
         }
 
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if(GL_FRAMEBUFFER_COMPLETE != status)

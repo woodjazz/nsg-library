@@ -123,5 +123,4 @@ namespace NSG
 			obj->OnChar(character);
         }
     }
-
 }

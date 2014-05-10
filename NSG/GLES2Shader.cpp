@@ -32,13 +32,14 @@ misrepresented as being the original software.
 #endif
 #include <assert.h>
 #include "Log.h"
+#include "Check.h"
 
 namespace NSG 
 {
 
 	GLES2Shader::GLES2Shader(GLenum type, const char* source)
 	{
-        assert(glGetError() == GL_NO_ERROR);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		// Creates a Shader Object and returns its name/id.
 		id_ = glCreateShader(type);
@@ -83,7 +84,7 @@ namespace NSG
 			}
 		}
 
-        assert(glGetError() == GL_NO_ERROR);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
 	GLES2Shader::~GLES2Shader()

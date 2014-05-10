@@ -1,6 +1,6 @@
 #include "GLES2FontAtlasTexture.h"
 #include "GLES2PlaneMesh.h"
-#include "soil/SOIL.h"
+#include "SOIL.h"
 #include "Log.h"
 #include "Check.h"
 #include "App.h"

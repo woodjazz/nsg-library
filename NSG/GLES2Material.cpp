@@ -158,7 +158,7 @@ namespace NSG
     enableDepthTest_(true),
     enableCullFace_(false)
 	{
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
         lightsLoc_.resize(MAX_LIGHTS_MATERIAL);
         memset(&lightsLoc_[0], 0, sizeof(lightsLoc_) * MAX_LIGHTS_MATERIAL);
 	}
@@ -217,7 +217,7 @@ namespace NSG
 
 		if(!loaded_ && pProgram_->IsReady() && pTexture0_->IsReady() && (!pTexture1_ || pTexture1_->IsReady()))
 		{
-			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+			CHECK_GL_STATUS(__FILE__, __LINE__);
 
 			if(pExtraMaterialUniforms_)
 			{
@@ -265,7 +265,7 @@ namespace NSG
                 }
 			}
 
-			CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+			CHECK_GL_STATUS(__FILE__, __LINE__);
 
 			loaded_ = true;
 		}

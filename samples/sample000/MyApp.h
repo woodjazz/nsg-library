@@ -24,53 +24,44 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include <stdio.h>
-#include <sstream>
-#include <string>
+#include "NSG.h"
+using namespace NSG;
 
-#ifdef NACL
 
-	extern int PPPrintMessage(const char* format, ...);
-	#define printf PPPrintMessage
-	
-#endif
+class MyApp : public NSG::App 
+{
+public:
+	MyApp();
+	~MyApp();
+	int GetFPS() const;
+	void Start();
+	void Update();
+	void RenderFrame();
+	void RenderGUIFrame();
+	void ViewChanged(int32_t width, int32_t height);
+	void OnMouseMove(float x, float y);
+    void OnMouseDown(float x, float y);
+    void OnMouseUp();
 
-#ifdef ANDROID
-	
-	#include <android/log.h>
-	#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
-	#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
-	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
-		stream << msg; \
-		::std::string cmsg = stream.str(); \
-		__android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
-	}
-	extern int AndroidPrintMessage(const char* format, ...);
-	#define printf AndroidPrintMessage
+private:
+	void InternalTask();
+	void TestIMGUI2();
+    void TestIMGUI4();
+    void Menu1();
+	PGLES2Light pLight0_;
+	PGLES2Camera pCamera1_;
+	PGLES2Camera pCamera2_;
+    IMGUI::PSkin pSkin1_;
+    IMGUI::PSkin pSkin2_;
+    PGLES2Texture pRenderedTexture_;
+    PGLES2Render2Texture pRender2Texture_;
+    PSceneNode pEarthSceneNode_;
+    PSceneNode pCubeSceneNode_;
+    PSceneNode pTextSceneNode_;
+    PModel pModel_;
+    PGLES2Filter pFilter_;
+    PGLES2Filter pFilterBlend_;
+    PGLES2Texture pFilteredTexture_;
+    PGLES2Texture pBlendedTexture_;
+};
 
-#elif _MSC_VER
-
-    #include "windows.h"
-
-	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
-		stream << msg; \
-		::std::string cmsg = stream.str(); \
-		printf("%s\n",cmsg.c_str());\
-		fflush(stdout);\
-	    OutputDebugString(cmsg.c_str());\
-	    OutputDebugString("\n");\
-	}
-#else
-
-	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
-		stream << msg; \
-		::std::string cmsg = stream.str(); \
-		printf("%s\n",cmsg.c_str());\
-		fflush(stdout);\
-	}
-
-#endif

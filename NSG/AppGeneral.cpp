@@ -140,7 +140,7 @@ namespace NSG
 
        	WindowSizeCB(window, WIDTH, HEIGHT);
 
-        while (!glfwWindowShouldClose(window))
+        while (!glfwWindowShouldClose(window) && !s_pApp->ShallExit())
 		{
             s_pApp->PerformTick();
 			s_pApp->RenderFrame();

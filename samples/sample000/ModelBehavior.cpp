@@ -23,42 +23,37 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2Buffer.h"
-#include "Check.h"
-#include <assert.h>
+#include "ModelBehavior.h"
 
-namespace NSG 
+ModelBehavior::ModelBehavior()
 {
-	GLES2Buffer::GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid* data, GLenum usage)
-	: type_(type)
-	{
-		CHECK_ASSERT(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER, __FILE__, __LINE__);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+}
+	
+ModelBehavior::~ModelBehavior()
+{
 
-		glGenBuffers(1, &id_);
+}
 
-		glBindBuffer(type, id_);
+void ModelBehavior::Start()
+{
+    //pSceneNode_->SetOrientation(glm::angleAxis(PI, Vertex3(1, 0, 0)));
+	pSceneNode_->SetScale(Vertex3(2, 2, 2));
+    //pSceneNode_->SetPosition(Vertex3(0,-2, 0));
+    //pSceneNode_->SetPosition(Vertex3(0,-5, 5));
 
-		glBufferData(type, size, data, usage);
+}
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
+void ModelBehavior::Update()
+{
+}
 
-	GLES2Buffer::~GLES2Buffer()
-	{
-		glDeleteBuffers(1, &id_);
-	}
+void ModelBehavior::Render()
+{
+	//pSceneNode_->Render(true);
+}
 
-	BindBuffer::BindBuffer(GLES2Buffer& obj) 
-	: obj_(obj)
-	{
-		obj.Bind();
-	}
-
-	BindBuffer::~BindBuffer()
-	{
-		obj_.UnBind();
-	}
-
+void ModelBehavior::Render2Select()
+{
+	pSceneNode_->Render2Select();
 }

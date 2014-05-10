@@ -28,9 +28,6 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "App.h"
 
-#include "glm/glm/gtc/matrix_transform.hpp"
-#include "glm/glm/gtc/type_ptr.hpp"
-
 namespace NSG
 {
 	VertexData::VertexData()
@@ -70,7 +67,7 @@ namespace NSG
 
 		BindBuffer bindVBuffer(*pVBuffer_);
 
-	    CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+	    CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		if(position_loc != -1)
 		{
@@ -121,7 +118,7 @@ namespace NSG
 		}
 
 
-	    CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+	    CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		if(!indexes_.empty())
 		{
@@ -155,6 +152,6 @@ namespace NSG
 		}
 
 
-		CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 }

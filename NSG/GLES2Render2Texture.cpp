@@ -37,7 +37,7 @@ namespace NSG
     pApp_(App::GetPtrInstance()),
     createDepthBuffer_(createDepthBuffer)
 	{
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
         CHECK_ASSERT(pTexture != nullptr, __FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
@@ -70,7 +70,7 @@ namespace NSG
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
 
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
 	GLES2Render2Texture::~GLES2Render2Texture()

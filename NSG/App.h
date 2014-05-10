@@ -48,14 +48,15 @@ namespace NSG
         virtual int GetFPS() const;
 		virtual void Start() {}
 		virtual void Update() {}
-		virtual void RenderFrame() = 0;
+		virtual void RenderFrame() {};
         virtual void RenderGUIFrame() {}
-		virtual void ViewChanged(int32_t width, int32_t height) = 0;
+		virtual void ViewChanged(int32_t width, int32_t height) {};
         virtual void OnMouseMove(float x, float y) {}
         virtual void OnMouseDown(float x, float y) {}
         virtual void OnMouseUp() {}
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
+        virtual bool ShallExit() const { return false; }
         void Initialize();
         void Release();
         void DoTick(float delta);
@@ -116,6 +117,7 @@ namespace NSG
         void OnChar(unsigned int character);
         void RenderFrame();
         bool HideKeyboard();
+        bool ShallExit() const;
 	#if NACL
 		void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID

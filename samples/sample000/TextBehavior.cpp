@@ -23,62 +23,59 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2Filter.h"
-#include "GLES2PlaneMesh.h"
-#include "GLES2Camera.h"
-#include "Check.h"
+#include "TextBehavior.h"
+#include <string>
+#include <sstream>
 
-static const char* vShader = STRINGIFY(
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec2 v_texcoord;
 
-	void main()
-	{
-		gl_Position = a_position;
-		v_texcoord = a_texcoord;
-	}
-);
-
-namespace NSG
+TextBehavior::TextBehavior()
 {
-	GLES2Filter::GLES2Filter(PGLES2Texture input, PGLES2Texture output, const char* fragment)
-    : pMaterial_(new GLES2Material ()),
-    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
-    input_(input)
-	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fragment));
-		pMaterial_->SetProgram(pProgram);
-		pMaterial_->SetTexture0(input);
 
-		pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(output, true));
-	}
-
-	GLES2Filter::~GLES2Filter()
-	{
-
-	}
-
-	void GLES2Filter::Render()
-	{
-		if(input_->IsReady())
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-
-			if(pMaterial_->IsReady())
-			{
-				GLES2Camera* pCurrent = GLES2Camera::Deactivate();
-
-				pRender2Texture_->Begin();
-
-				pMaterial_->Render(true, nullptr, pMesh_.get());
-
-				pRender2Texture_->End();
-
-				GLES2Camera::Activate(pCurrent);
-			}
-
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
-	}
 }
+	
+TextBehavior::~TextBehavior()
+{
+
+}
+
+void TextBehavior::Start()
+{
+	PNode pParent(new Node);
+	pSceneNode_->SetParent(pParent);
+
+    pText_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_DYNAMIC_DRAW));
+    pSceneNode_->SetMesh(pText_);
+
+    PGLES2Material pMaterial(new GLES2Material());
+    pMaterial->SetTexture0(pText_->GetAtlas());
+    pMaterial->SetProgram(pText_->GetProgram());
+    pSceneNode_->SetMaterial(pMaterial);
+}
+
+void TextBehavior::Update()
+{
+//    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+
+	pSceneNode_->GetParent()->SetPosition(Vertex3(-pText_->GetWidth()/2, 0, 0.2f));
+
+}
+
+void TextBehavior::Render()
+{
+	GLES2Camera* pCamera = GLES2Camera::Deactivate();
+
+	pSceneNode_->Render(true);
+
+	GLES2Camera::Activate(pCamera);
+}
+
+void TextBehavior::OnMouseDown(float x, float y)
+{
+	GLushort id = pApp_->GetSelectedNode();
+
+    std::stringstream ss;
+    ss << "Selected Id=" << std::hex << id;
+
+    pText_->SetText(ss.str());
+}
+

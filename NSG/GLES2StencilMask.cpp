@@ -70,23 +70,23 @@ namespace NSG
 	  	glStencilMaskSeparate(GL_FRONT_AND_BACK, 0xFF);
 	  	glClear(GL_STENCIL_BUFFER_BIT);
 
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
 	void GLES2StencilMask::Render(Node* pNode, GLES2Mesh* pMesh)
 	{
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         UseProgram useProgram(*pProgram_);
 
         Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
         glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));        
 
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1, -1);
 
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
 	void GLES2StencilMask::End()
@@ -99,6 +99,6 @@ namespace NSG
 		glColorMask(save_color_mask_[0], save_color_mask_[1], save_color_mask_[2], save_color_mask_[3]);
 	  	glDepthMask(save_depth_mask_);
 
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 }

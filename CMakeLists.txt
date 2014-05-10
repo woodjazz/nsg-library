@@ -30,137 +30,55 @@ PROJECT(nsg-library)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set CMake modules search path
-set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake/Modules)
+set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 # Include NSG cmake common module
 include (Common)
 
-if(WIN32)
-
-	if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
-		add_definitions("/Zi /wd4519")
-		add_definitions( "/MP" )
-	endif()
-
-	if (MSVC)
-		add_definitions( -D_CRT_SECURE_NO_WARNINGS )
-		add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
-		add_definitions( -DNOMINMAX)
-
-		#We statically link to reduce dependancies
-		FOREACH(flag_var    CMAKE_CXX_FLAGS 
-							CMAKE_CXX_FLAGS_DEBUG 
-							CMAKE_CXX_FLAGS_RELEASE 
-							CMAKE_CXX_FLAGS_MINSIZEREL 
-							CMAKE_CXX_FLAGS_RELWITHDEBINFO
-							CMAKE_C_FLAGS_DEBUG
-							CMAKE_C_FLAGS_RELEASE
-							CMAKE_C_FLAGS_MINSIZEREL 
-							CMAKE_C_FLAGS_RELWITHDEBINFO
-							)
-			IF(${flag_var} MATCHES "/MD")
-				STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-			ENDIF(${flag_var} MATCHES "/MD")
-			IF(${flag_var} MATCHES "/MDd")
-				STRING(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
-			ENDIF(${flag_var} MATCHES "/MDd")
-		ENDFOREACH(flag_var)
-
-	ENDIF(MSVC)
-
-endif(WIN32)
-
-if (CMAKE_CXX_COMPILER MATCHES ".*clang[++]")
-	set(CMAKE_COMPILER_IS_CLANGXX 1)
-endif ()
-
-if(CMAKE_COMPILER_IS_CLANGXX)
-	message("detected clang compiler")
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -pthread")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-elseif(CMAKE_COMPILER_IS_GNUCXX)
-	message("detected GNU compiler")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -pthread")
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -pthread")
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-endif()
-
-if(APPLE)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-	SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-endif()
-
-macro ( mark_as_disable_and_internal _var )
-	set ( ${_var} OFF CACHE INTERNAL "disable and hide this!" FORCE )
-endmacro( mark_as_disable_and_internal _var )
-
-macro ( mark_as_enable _var )
-	set ( ${_var} ON CACHE BOOL "enable this!" FORCE )
-endmacro( mark_as_enable _var )
-
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+#set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-
-if(NOT NACL AND NOT ANDROID)
-
-	find_package(OpenGL REQUIRED)
-	###########################
-	# glew
-	###########################
-
-	add_definitions(-DGLEW_STATIC)
-	set(GLEW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew/include)
-	include_directories(${GLEW_INCLUDE_DIR})
-	add_subdirectory(glew)
-
-	###########################
-	# glfw
-	###########################
-	set(GLFW_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw/include)
-	mark_as_disable_and_internal(USE_MSVC_RUNTIME_LIBRARY_DLL)
-	mark_as_disable_and_internal(GLFW_BUILD_EXAMPLES)
-	mark_as_disable_and_internal(GLFW_BUILD_TESTS)
-	mark_as_disable_and_internal(GLFW_INSTALL)
-	add_subdirectory(glfw)
-	include_directories(${GLFW_INCLUDE_DIR})
-	list(APPEND LIBRARIES_2_LINK glfw glew) # important: glew after glfw
-
-else()
-
-	if(WIN32)
-		set(CMAKE_LINK_LIBRARY_SUFFIX "")
-	endif()	
-
-	if(NACL)
-		set(CMAKE_EXECUTABLE_SUFFIX ".pexe")
-	endif()
-
-endif()
+set(DEPENDENCIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies)
+set(EXTERNALS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/externals)
+set(EXTERNALS_BYNARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/externals)
 
 ###########################
 # soil
 ###########################
-set(SOIL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/soil)
-add_subdirectory(soil)
+add_subdirectory(${DEPENDENCIES_DIR}/soil)
+include_directories(${DEPENDENCIES_DIR}/soil) 
 list(APPEND LIBRARIES_2_LINK soil) 
+
+###########################
+# glfw
+###########################
+if(NOT NACL AND NOT ANDROID)
+	mark_as_disable_and_internal(USE_MSVC_RUNTIME_LIBRARY_DLL)
+	mark_as_disable_and_internal(GLFW_BUILD_EXAMPLES)
+	mark_as_disable_and_internal(GLFW_BUILD_TESTS)
+	mark_as_disable_and_internal(GLFW_INSTALL)
+	add_subdirectory(${EXTERNALS_DIR}/glfw)
+	include_directories(${EXTERNALS_DIR}/glfw/include)
+	list(APPEND LIBRARIES_2_LINK glfw)
+
+##################################
+# glew (IMPORTANT GLEW after GLFW)
+##################################
+	find_package(OpenGL REQUIRED)
+	add_definitions(-DGLEW_STATIC)
+	include_directories(${DEPENDENCIES_DIR}/glew/include)
+	add_subdirectory(${DEPENDENCIES_DIR}/glew)
+	list(APPEND LIBRARIES_2_LINK glew) 
+endif()
 
 ###########################
 # freetype2
 ###########################
-set(FREETYPE2_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/freetype2/include)
+set(FREETYPE2_INCLUDE_DIR ${EXTERNALS_DIR}/freetype2/include)
 include_directories(${FREETYPE2_INCLUDE_DIR})
-add_subdirectory(freetype2)
+add_subdirectory(${EXTERNALS_DIR}/freetype2)
 list(APPEND LIBRARIES_2_LINK freetype)
-
-###########################
-# codecs
-###########################
-#add_subdirectory(codecs)
-#list(APPEND LIBRARIES_2_LINK codecs) 
 
 ###########################
 # stb
@@ -173,13 +91,11 @@ list(APPEND LIBRARIES_2_LINK freetype)
 # assimp
 ###########################
 macro ( generate_memory_h)
-	if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/assimp/memory.h")
-		set (LOCAL_PROPERTIES_FILE ${CMAKE_CURRENT_BINARY_DIR}/assimp/memory.h)
+	if(NOT EXISTS "${EXTERNALS_BYNARY_DIR}/assimp/memory.h")
+		set (LOCAL_PROPERTIES_FILE ${EXTERNALS_BYNARY_DIR}/assimp/memory.h)
 		file(WRITE ${LOCAL_PROPERTIES_FILE} "//Autogenerated by cmake\n")
 		file(APPEND ${LOCAL_PROPERTIES_FILE} "#pragma once\n")
 		file(APPEND ${LOCAL_PROPERTIES_FILE} "#include <memory>\n")
-#		file(APPEND ${LOCAL_PROPERTIES_FILE} "#include <algorithm>\n")
-#		file(APPEND ${LOCAL_PROPERTIES_FILE} "#include <functional>\n")
 		file(APPEND ${LOCAL_PROPERTIES_FILE} "extern char* realpath(const char* in, char* out);\n")
 	endif()
 endmacro( generate_memory_h)
@@ -187,17 +103,15 @@ endmacro( generate_memory_h)
 if(NACL)
 	#include <memory.h> is not found on NACL
 	generate_memory_h() # this solves the issue
-	include_directories(${CMAKE_CURRENT_BINARY_DIR}/assimp)
+	include_directories(${EXTERNALS_BYNARY_DIR}/assimp)
 endif(NACL)
 
-#add_definitions( -DASSIMP_BUILD_BOOST_WORKAROUND )
 mark_as_disable_and_internal(BUILD_SHARED_LIB)
 mark_as_enable(ASSIMP_ENABLE_BOOST_WORKAROUND)
 mark_as_disable_and_internal(BUILD_SHARED_LIBS)
 mark_as_disable_and_internal(ASSIMP_BUILD_ASSIMP_TOOLS)
-set(ASSIMP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assimp/include)
-include_directories(${ASSIMP_INCLUDE_DIR})
-add_subdirectory(assimp)
+include_directories(${EXTERNALS_DIR}/assimp/include)
+add_subdirectory(${EXTERNALS_DIR}/assimp)
 list(APPEND LIBRARIES_2_LINK assimp) 
 
 ###########################
@@ -234,18 +148,34 @@ list(APPEND LIBRARIES_2_LINK assimp)
 # add_definitions(-DALURE_STATIC_LIBRARY)
 # add_subdirectory(alure)
 
+###########################
+# glm
+###########################
+include_directories(${EXTERNALS_DIR}/glm)
 
 ###########################
 # nsg
 ###########################
-set(NSG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nsg)
-include_directories(${NSG_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/NSG)
 add_subdirectory(NSG)
 
 ###########################
-# test
+# samples
 ###########################
-add_subdirectory(Test)
+set(SAMPLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples)
+SUBDIRLIST(SUBDIRS ${SAMPLES_DIR})
+FOREACH(subdir ${SUBDIRS})
+    ADD_SUBDIRECTORY(${SAMPLES_DIR}/${subdir})
+ENDFOREACH()
+
+###########################
+# tests
+###########################
+set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+SUBDIRLIST(SUBDIRS ${TEST_DIR})
+FOREACH(subdir ${SUBDIRS})
+    ADD_SUBDIRECTORY(${TEST_DIR}/${subdir})
+ENDFOREACH()
 
 
 

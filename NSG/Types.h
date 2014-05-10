@@ -26,13 +26,14 @@ misrepresented as being the original software.
 #pragma once
 
 #define GLM_FORCE_RADIANS
-#include "glm/glm/glm.hpp"
-#include <glm/glm/gtc/quaternion.hpp>
-#include "glm/glm/gtc/matrix_transform.hpp"
-#include "glm/glm/gtc/type_ptr.hpp"
-#include "glm/glm/gtc/constants.hpp"
-#include "glm/glm/gtc/epsilon.hpp"
-#include "glm/glm/gtx/spline.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/constants.hpp"
+#include "glm/gtc/epsilon.hpp"
+#include "glm/gtx/spline.hpp"
+#include "glm/gtx/io.hpp"
 #include <memory>
 
 #define STRINGIFY(S) #S

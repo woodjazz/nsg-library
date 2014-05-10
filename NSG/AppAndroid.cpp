@@ -131,7 +131,7 @@ static int engine_init_display(struct engine* engine)
  */
 static void engine_draw_frame(struct engine* engine) 
 {
-    if (engine->display == NULL) 
+    if (engine->display == NULL || s_pApp->ShallExit()) 
     {
         // No display.
         return;

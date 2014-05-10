@@ -57,7 +57,7 @@ namespace NSG
 
 	void SceneNode::Render(bool solid)
 	{
-        CHECK_ASSERT(glGetError() == GL_NO_ERROR, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		if(pMesh_ && pMaterial_ && pMaterial_->IsReady()) 
         {

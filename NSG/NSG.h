@@ -23,42 +23,33 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2Buffer.h"
-#include "Check.h"
-#include <assert.h>
+#pragma once
+#include "TimedTask.h"
+#include "QueuedTask.h"
+#include "FSM.h"
+#include "Types.h"
+#include "SceneNode.h"
+#include "Model.h"
+#include "App.h"
+#include "Log.h"
+#include "Util.h"
+#include "Constants.h"
 
-namespace NSG 
-{
-	GLES2Buffer::GLES2Buffer(GLenum type, GLsizeiptr size, const GLvoid* data, GLenum usage)
-	: type_(type)
-	{
-		CHECK_ASSERT(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER, __FILE__, __LINE__);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+#include "GLES2Camera.h"
+#include "Behavior.h"
+#include "GLES2BoxMesh.h"
+#include "GLES2SphereMesh.h"
+#include "GLES2PlaneMesh.h"
+#include "GLES2Camera.h"
+#include "GLES2Text.h"
+#include "GLES2Texture.h"
+#include "GLES2Light.h"
+#include "GLES2IMGUI.h"
+#include "GLES2Render2Texture.h"
+#include "GLES2Filter.h"
+#include "GLES2FilterBlur.h"
+#include "GLES2FilterBlend.h"
+#include "GLES2RectangleMesh.h"
 
-		glGenBuffers(1, &id_);
 
-		glBindBuffer(type, id_);
-
-		glBufferData(type, size, data, usage);
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
-
-	GLES2Buffer::~GLES2Buffer()
-	{
-		glDeleteBuffers(1, &id_);
-	}
-
-	BindBuffer::BindBuffer(GLES2Buffer& obj) 
-	: obj_(obj)
-	{
-		obj.Bind();
-	}
-
-	BindBuffer::~BindBuffer()
-	{
-		obj_.UnBind();
-	}
-
-}

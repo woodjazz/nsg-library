@@ -23,62 +23,52 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "GLES2Filter.h"
-#include "GLES2PlaneMesh.h"
-#include "GLES2Camera.h"
-#include "Check.h"
+#pragma once
 
-static const char* vShader = STRINGIFY(
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec2 v_texcoord;
+#include "MemoryTest.h"
 
-	void main()
-	{
-		gl_Position = a_position;
-		v_texcoord = a_texcoord;
-	}
-);
+
+#ifdef NACL
+
+#include "NSG/AppNaCl.h"
+#define NSG_MAIN(ClassName)\
+namespace pp\
+{\
+	Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(new ClassName); }\
+}
+
+#elif ANDROID
+
+#include "App.h"
+
+struct android_app;
 
 namespace NSG
 {
-	GLES2Filter::GLES2Filter(PGLES2Texture input, PGLES2Texture output, const char* fragment)
-    : pMaterial_(new GLES2Material ()),
-    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
-    input_(input)
-	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fragment));
-		pMaterial_->SetProgram(pProgram);
-		pMaterial_->SetTexture0(input);
-
-		pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(output, true));
-	}
-
-	GLES2Filter::~GLES2Filter()
-	{
-
-	}
-
-	void GLES2Filter::Render()
-	{
-		if(input_->IsReady())
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-
-			if(pMaterial_->IsReady())
-			{
-				GLES2Camera* pCurrent = GLES2Camera::Deactivate();
-
-				pRender2Texture_->Begin();
-
-				pMaterial_->Render(true, nullptr, pMesh_.get());
-
-				pRender2Texture_->End();
-
-				GLES2Camera::Activate(pCurrent);
-			}
-
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
-	}
+	extern void CreateModule(struct android_app* state, App* pApp);
 }
+
+#define NSG_MAIN(ClassName)\
+extern "C" void android_main(struct android_app* state)\
+{\
+	NSG::CreateModule(state, new ClassName);\
+}
+
+#else
+
+#include "App.h"
+namespace NSG
+{
+	extern bool CreateModule(App* pApp);
+}
+
+#define NSG_MAIN(ClassName)\
+int main()\
+{\
+    NSG::CreateModule(new ClassName);\
+	return 0;\
+}
+
+#endif
+
+
