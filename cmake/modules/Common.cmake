@@ -80,7 +80,7 @@ macro (setup_executable)
 
         target_link_libraries(${PROJECT_NAME} ppapi_cpp ppapi ppapi_gles2 pthread nacl_io)
 
-        set(nacl_host_dir ${CMAKE_SOURCE_DIR}/host/pnacl)
+        set(nacl_host_dir ${CMAKE_SOURCE_DIR}/host/nacl)
 
         if(EXISTS "${nacl_host_dir}")
             add_custom_command(
