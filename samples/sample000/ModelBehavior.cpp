@@ -27,7 +27,6 @@ misrepresented as being the original software.
 
 ModelBehavior::ModelBehavior()
 {
-
 }
 	
 ModelBehavior::~ModelBehavior()

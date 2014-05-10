@@ -144,18 +144,19 @@ macro (setup_executable)
         endif()
 
     elseif(APPLE)
-        add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr})
+        if(EXISTS "${data_dir}")
+            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr} ${data_dir})
+            SET_SOURCE_FILES_PROPERTIES(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+        else()
+            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr})
+        endif()
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
-
-        if(EXISTS "${data_dir}")
-            SET_SOURCE_FILES_PROPERTIES(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
-        endif()
 
         set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo")
         
     else()        
-        add_executable(${PROJECT_NAME} ${src} ${hdr})
+        add_executable(${PROJECT_NAME} ${src} ${hdr} )
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 

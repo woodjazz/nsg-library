@@ -70,6 +70,7 @@ namespace NSG
 			Initialize();
 		}
 	}
+	
 
 	GLES2FontAtlasTexture::~GLES2FontAtlasTexture()
 	{
