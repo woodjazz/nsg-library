@@ -22,3 +22,7 @@ cd $1
 
 cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/PNaCl.OSX.cmake"
 make
+
+@echo "Starting HTTP Server"
+python $NACL_SDK_ROOT/tools/httpd.py --no_dir_check -C $PWD/tests/generic_test
+rem python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C $PWD/samples/sample000

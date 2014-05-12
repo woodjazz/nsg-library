@@ -40,6 +40,7 @@ namespace NSG
     height_(0),
     selectedIndex_(0),
     isKeyboardVisible_(false)
+
     {
 	    assert(s_pApp == nullptr);
 
@@ -49,9 +50,12 @@ namespace NSG
     App::~App()
     {
         TRACE_LOG("Terminating App");
-	    assert(s_pApp != nullptr);
+	    
+        assert(s_pApp != nullptr);
 
 	    s_pApp = nullptr;
+
+        TRACE_LOG("App Terminated");
     }
 
     int App::GetFPS() const
@@ -207,6 +211,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void App::Release()
     {
+        HideKeyboard();
         IMGUI::ReleaseResources();
         GLES2Text::ReleaseAtlasCollection();
         pFrameColorSelection_ = nullptr;

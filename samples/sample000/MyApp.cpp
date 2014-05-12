@@ -231,6 +231,7 @@ void MyApp::TestIMGUI4()
 
     static std::string str0 = "Abc";
 	str0 = IMGUITextField(str0);
+	//IMGUIButton("Button 52");
     //IMGUISpacer(25);
 
     

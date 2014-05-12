@@ -46,6 +46,8 @@ namespace NSG
 
 	void GLES2Mesh::Redo()
 	{
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
 		pVBuffer_ = nullptr;
 		pIBuffer_ = nullptr;
 
@@ -58,16 +60,19 @@ namespace NSG
 				pIBuffer_ = PGLES2IndexBuffer(new GLES2IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0], usage_));
 			}
 		}
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
 	}
 
 	void GLES2Mesh::Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc)
 	{
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+		
         if(!pVBuffer_)
             return;
 
 		BindBuffer bindVBuffer(*pVBuffer_);
-
-	    CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		if(position_loc != -1)
 		{

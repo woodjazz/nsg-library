@@ -100,12 +100,6 @@ macro (setup_executable)
 
         pnacl_finalise(${PROJECT_NAME})
 
-        add_custom_command(
-            TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND python
-            ARGS $ENV{NACL_SDK_ROOT}/tools/httpd.py --no_dir_check -C ${CMAKE_CURRENT_BINARY_DIR}
-        )
-
     elseif(ANDROID)
         
         add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
@@ -134,12 +128,37 @@ macro (setup_executable)
 
             generate_local_properties_for_ant()
 
+            add_custom_command(
+                TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${LIBRARY_OUTPUT_PATH_ROOT}/libs ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/libs
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    COMMENT "Copying libraries to AndroidHost" VERBATIM)
+
+            add_custom_command(
+                TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E remove ${LIBRARY_OUTPUT_PATH_ROOT}/libs/${ANDROID_NDK_ABI_NAME}/${CMAKE_SHARED_LIBRARY_PREFIX}${PROJECT_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    COMMENT "Removing generated library from libs (just to not have a copy of it in the next project)" VERBATIM)
+
+
             if(EXISTS "${data_dir}")
                 add_custom_command(
                     TARGET ${PROJECT_NAME} POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/assets
                         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
             endif()
+
+            add_custom_command(
+                TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND $ENV{ANT_HOME}/bin/ant debug
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
+                    COMMENT "Generating APK (${PROJECT_NAME})" VERBATIM)
+
+            add_custom_command(
+                TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND $ENV{ANDROID_SDK}/platform-tools/adb -d install -r "bin/${PROJECT_NAME}-debug.apk"
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
+                    COMMENT "Installing APK (${PROJECT_NAME}) on device" VERBATIM)
 
         endif()
 

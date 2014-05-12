@@ -41,9 +41,6 @@ struct Test : public App
 
 	Test()
 	{
-		thread_ = std::thread([this](){InternalTask();});	
-
-		NodeTest();
 	}
 
 	~Test()
@@ -51,6 +48,12 @@ struct Test : public App
 		TRACE_LOG("Destroy Begin");
 		thread_.join();
 		TRACE_LOG("Destroy End");
+	}
+
+	void Start()
+	{
+		thread_ = std::thread([this](){InternalTask();});	
+		NodeTest();
 	}
 
 	void InternalTask() 

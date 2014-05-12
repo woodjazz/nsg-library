@@ -54,6 +54,7 @@ namespace NSG
 		void InitializeCommonSettings();
 
 	protected:
+		std::string filename_;
 		GLuint texture_;
 		PResource pResource_;
 		bool isLoaded_;

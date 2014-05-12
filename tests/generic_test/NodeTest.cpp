@@ -83,6 +83,7 @@ static void Test02()
     assert(pB->GetGlobalPosition() == Vertex3(-2,0,0));
 }
 
+
 static void Test03()
 {
 	PNode pA(new Node());

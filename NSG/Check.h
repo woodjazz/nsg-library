@@ -35,6 +35,7 @@ misrepresented as being the original software.
 	GLenum status = glGetError();\
 	if(status != GL_NO_ERROR)\
 	{\
-		TRACE_LOG("GL has failed with status = 0x" << std::hex << status << " in file " << file << " line " << line);\
+		TRACE_LOG("GL has failed with status = 0x" << std::hex << status << " in file " << file << " line " << std::dec << line);\
+		assert(false);\
 	}\
 }

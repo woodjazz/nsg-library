@@ -86,6 +86,7 @@ static const char* fShaderBorder = STRINGIFY(
 	{
 		vec4 diffuse;
 	};
+
 	uniform Material u_material;
 
 	void main()
@@ -505,10 +506,13 @@ namespace NSG
 		void ReleaseResources()
 		{
 			TRACE_LOG("IMGUI Releasing resources");
+			pFrameColorSelection = nullptr;
 			pStencilMask = nullptr;
 			pTextManagers = nullptr;
 			pRootNode = nullptr;
             pLayoutManager_ = nullptr;
+            pCurrentNode = nullptr;
+            pCamera = nullptr;
 			pSkin = nullptr;
 		}
 
@@ -683,19 +687,19 @@ namespace NSG
 	            pTextMesh->SetText(text);
 				
 				{
-	                static PNode pTextNode(new Node());
+	                PNode pTextNode(new Node());
 	                pTextNode->EnableUpdate(false);
 	                pTextNode->SetParent(pNode);
 	                pTextNode->SetInheritScale(false);
                     pTextNode->SetScale(pRootNode->GetGlobalScale());
-                    static PSceneNode pTextNode1(new SceneNode());
+                    PSceneNode pTextNode1(new SceneNode());
                     pTextNode1->SetParent(pTextNode);
                     pTextNode1->SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
                     pTextNode->EnableUpdate(true);
                     pTextNode->Update(false);
 
                     pTextNode1->SetMesh(pTextMesh);
-                    static PGLES2Material pTextMaterial(new GLES2Material());
+                    PGLES2Material pTextMaterial(new GLES2Material());
                     pTextMaterial->SetTexture0(pTextMesh->GetAtlas());
                     pTextMaterial->SetProgram(pTextMesh->GetProgram());
                     pTextNode1->SetMaterial(pTextMaterial);
@@ -855,21 +859,21 @@ namespace NSG
                         pArea->textOffsetX_ = 0;
                 }
 
-                static PNode pTextNode(new Node());
+                PNode pTextNode(new Node());
                 pTextNode->EnableUpdate(false);
 	            pTextNode->SetParent(pNode);
 	            pTextNode->SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
-                static PNode pTextNode0(new Node());
+                PNode pTextNode0(new Node());
                 pTextNode0->SetParent(pTextNode);
 	            pTextNode0->SetInheritScale(false);
                 pTextNode0->SetScale(pRootNode->GetGlobalScale());
-                static PSceneNode pTextNode1(new SceneNode());
+                PSceneNode pTextNode1(new SceneNode());
                 pTextNode1->SetParent(pTextNode0);
                 pTextNode1->SetPosition(Vertex3(-pArea->textOffsetX_, 0, 0));
                 pTextNode->EnableUpdate(true);
                 pTextNode->Update(false);
                 pTextNode1->SetMesh(pTextMesh);
-                static PGLES2Material pTextMaterial(new GLES2Material());
+                PGLES2Material pTextMaterial(new GLES2Material());
                 pTextMaterial->SetTexture0(pTextMesh->GetAtlas());
                 pTextMaterial->SetProgram(pTextMesh->GetProgram());
                 pTextNode1->SetMaterial(pTextMaterial);
@@ -879,7 +883,7 @@ namespace NSG
 				// Render cursor if we have keyboard focus
 				if(hasFocus && (tick < 15))
                 {
-                    static PSceneNode pCursorNode(new SceneNode());
+                    PSceneNode pCursorNode(new SceneNode());
                     pCursorNode->EnableUpdate(false);
                     pCursorNode->SetParent(pTextNode1);
                     pCursorNode->SetPosition(Vertex3(cursorPositionInText, 0, 0));
@@ -887,7 +891,7 @@ namespace NSG
                     pCursorNode->Update(false);
 
                     pCursorNode->SetMesh(pCursorMesh);
-                    static PGLES2Material pTextMaterial(new GLES2Material());
+                    PGLES2Material pTextMaterial(new GLES2Material());
                     pTextMaterial->SetTexture0(pTextMesh->GetAtlas());
                     pTextMaterial->SetProgram(pTextMesh->GetProgram());
                     pCursorNode->SetMaterial(pTextMaterial);

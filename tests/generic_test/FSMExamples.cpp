@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "NSG.h"
 #include <assert.h>
 
+
 using namespace NSG::FSM;
 
 namespace FSMExample0 

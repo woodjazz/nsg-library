@@ -39,7 +39,8 @@ static const char* fShader = STRINGIFY(
 namespace NSG
 {
 	GLES2Texture::GLES2Texture(const char* filename) 
-	: texture_(0), 
+	: filename_(filename),
+	texture_(0), 
 	pResource_(new Resource(filename)), 
 	isLoaded_(false),
     pMaterial_(new GLES2Material ()),

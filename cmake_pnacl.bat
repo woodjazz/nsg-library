@@ -24,3 +24,7 @@ cd %1
 
 cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/cmake/toolchains/PNaCl.Windows.cmake"
 %NACL_SDK_ROOT%/tools/make.exe 
+
+@echo "Starting HTTP Server"
+python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/tests/generic_test
+rem python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/samples/sample000

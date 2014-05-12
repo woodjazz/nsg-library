@@ -53,9 +53,7 @@ struct engine
 
 static engine* s_engine = nullptr;
 
-/**
- * Initialize an EGL context for the current display.
- */
+//Initialize an EGL context for the current display.
 static int engine_init_display(struct engine* engine) 
 {
     TRACE_LOG("engine_init_display");
@@ -120,15 +118,12 @@ static int engine_init_display(struct engine* engine)
     engine->height = h;
 
     s_pApp->Initialize();
-
     s_pApp->ViewChanged(w, h);
 
     return 0;
 }
 
-/**
- * Just the current frame in the display.
- */
+ //Just the current frame in the display.
 static void engine_draw_frame(struct engine* engine) 
 {
     if (engine->display == NULL || s_pApp->ShallExit()) 
@@ -171,19 +166,12 @@ static void engine_draw_frame(struct engine* engine)
     eglSwapBuffers(engine->display, engine->surface);
 }
 
-/**
- * Tear down the EGL context currently associated with the display.
- */
+//Tear down the EGL context currently associated with the display.
 static void engine_term_display(struct engine* engine) 
 {
     TRACE_LOG("engine_term_display");
 
-    s_pApp->HideKeyboard();
-
-    s_pApp->Release();
-    s_pApp = nullptr;
-
-    if (engine->display != EGL_NO_DISPLAY) 
+     if (engine->display != EGL_NO_DISPLAY) 
     {
         eglMakeCurrent(engine->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     
@@ -280,9 +268,8 @@ static uint32_t GetTranslatedKeyCode(uint32_t keyCode)
     }
 }
 
-/**
- * Process the next input event.
- */
+
+//Process the next input event.
 static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
 {
     //TRACE_LOG("engine_handle_input");
@@ -314,6 +301,15 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event)
         int32_t action = AKeyEvent_getAction(event);
         int32_t modifiers = AKeyEvent_getMetaState(event);
         int32_t keyCode = AKeyEvent_getKeyCode(event);
+
+        if(AKEYCODE_BACK == keyCode)
+        {
+            TRACE_LOG("AKEYCODE_BACK PRESSED");
+            // Stop animating.
+            s_engine->animating = 0;
+            engine_draw_frame(s_engine);
+            return 0;
+        }
 
         s_pApp->OnKey(GetTranslatedKeyCode(keyCode), action, GetTranslatedModifier(modifiers));
 
@@ -372,6 +368,8 @@ static void engine_handle_window_resized(ANativeActivity* activity, ANativeWindo
     
     int32_t h = ANativeWindow_getHeight(window);
 
+    TRACE_LOG("w=" << w << " h=" << h);
+
     //s_pApp->ViewChanged(w, h);
 }
 
@@ -387,6 +385,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
         case APP_CMD_SAVE_STATE:
             TRACE_LOG("APP_CMD_SAVE_STATE"); 
             break;
+        
         case APP_CMD_INIT_WINDOW:
             TRACE_LOG("APP_CMD_INIT_WINDOW"); 
             // The window is being shown, get it ready.
@@ -396,11 +395,15 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
                 engine_draw_frame(engine);
             }
             break;
+
         case APP_CMD_TERM_WINDOW:
             TRACE_LOG("APP_CMD_TERM_WINDOW"); 
+            //s_pApp->HideKeyboard();
             // The window is being hidden or closed, clean it up.
+            s_pApp->Release();
             engine_term_display(engine);
             break;
+
         case APP_CMD_GAINED_FOCUS:
             TRACE_LOG("APP_CMD_GAINED_FOCUS"); 
             // When our app gains focus, we start monitoring the accelerometer.
@@ -411,6 +414,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
                 ASensorEventQueue_setEventRate(engine->sensorEventQueue, engine->accelerometerSensor, (1000L/60)*1000);
             }
             break;
+
         case APP_CMD_LOST_FOCUS:
             TRACE_LOG("APP_CMD_LOST_FOCUS"); 
             // When our app loses focus, we stop monitoring the accelerometer.
@@ -422,6 +426,39 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
             // Also stop animating.
             engine->animating = 0;
             engine_draw_frame(engine);
+            break;
+
+        case APP_CMD_CONTENT_RECT_CHANGED:
+            TRACE_LOG("APP_CMD_CONTENT_RECT_CHANGED"); 
+            break;
+        case APP_CMD_WINDOW_REDRAW_NEEDED:
+            TRACE_LOG("APP_CMD_WINDOW_REDRAW_NEEDED"); 
+            break;
+        case APP_CMD_WINDOW_RESIZED:
+            TRACE_LOG("APP_CMD_WINDOW_RESIZED"); 
+            break;
+        case APP_CMD_INPUT_CHANGED:
+            TRACE_LOG("APP_CMD_INPUT_CHANGED"); 
+            break;
+        case APP_CMD_LOW_MEMORY:
+            TRACE_LOG("APP_CMD_LOW_MEMORY"); 
+            break;
+        case APP_CMD_START:            
+            TRACE_LOG("APP_CMD_START"); 
+            break;
+        case APP_CMD_RESUME:
+            TRACE_LOG("APP_CMD_PAUSE"); 
+            break;
+        case APP_CMD_PAUSE:
+            TRACE_LOG("APP_CMD_PAUSE"); 
+            break;
+        case APP_CMD_STOP:
+            TRACE_LOG("APP_CMD_STOP"); 
+            break;
+
+        case APP_CMD_DESTROY:
+            TRACE_LOG("APP_CMD_DESTROY");
+            s_pApp = nullptr;
             break;
     }
 }
@@ -497,7 +534,8 @@ namespace NSG
                 // Check if we are exiting.
                 if (state->destroyRequested != 0) 
                 {
-                    engine_term_display(&engine);
+                    TRACE_LOG("Destroy requested");
+                    //engine_term_display(&engine);
                     return;
                 }
             }
@@ -505,6 +543,9 @@ namespace NSG
             if (engine.animating) 
                 engine_draw_frame(&engine);
         }
+
+        s_pApp = nullptr;
+
     }
 }
 
