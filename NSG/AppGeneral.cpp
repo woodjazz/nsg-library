@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "GLFW/glfw3.h"
 #include "App.h"
 #include "Tick.h"
+#include "Check.h"
 #include <memory>
 #include <assert.h>
 
@@ -136,7 +137,7 @@ namespace NSG
             return false;
         }
 
-		s_pApp->Initialize();
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
        	WindowSizeCB(window, WIDTH, HEIGHT);
 
@@ -148,10 +149,9 @@ namespace NSG
 			glfwPollEvents();
 		}
 
-		glfwTerminate();
-
-		s_pApp->Release();
 		s_pApp = nullptr;
+
+        glfwTerminate();
 		
 		return true;
 	}

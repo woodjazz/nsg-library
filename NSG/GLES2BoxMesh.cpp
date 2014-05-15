@@ -28,7 +28,13 @@ misrepresented as being the original software.
 namespace NSG
 {
 	GLES2BoxMesh::GLES2BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, GLenum usage) 
-	: GLES2Mesh(usage)
+	: GLES2Mesh(usage),
+	width_(width),
+	height_(height),
+	depth_(depth),
+	resX_(resX),
+	resY_(resY),
+	resZ_(resZ)
 	{
 		// halves //
 		float halfW = width * .5f;
@@ -305,8 +311,6 @@ namespace NSG
 		        indexes_.push_back((y+1)*resX + x + vertOffset);
 		    }
 		}
-
-	    Redo();
 	}
 
 	GLES2BoxMesh::~GLES2BoxMesh() 

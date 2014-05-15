@@ -117,9 +117,6 @@ static int engine_init_display(struct engine* engine)
     engine->width = w;
     engine->height = h;
 
-    s_pApp->Initialize();
-    s_pApp->ViewChanged(w, h);
-
     return 0;
 }
 
@@ -392,6 +389,11 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
             if (engine->app->window != NULL) 
             {
                 engine_init_display(engine);
+
+                //s_pApp->Initialize();
+                
+                s_pApp->ViewChanged(engine->width, engine->height);
+
                 engine_draw_frame(engine);
             }
             break;
@@ -400,7 +402,9 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
             TRACE_LOG("APP_CMD_TERM_WINDOW"); 
             //s_pApp->HideKeyboard();
             // The window is being hidden or closed, clean it up.
-            s_pApp->Release();
+            
+            //s_pApp->Release();
+
             engine_term_display(engine);
             break;
 
@@ -423,35 +427,43 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
             {
                 ASensorEventQueue_disableSensor(engine->sensorEventQueue, engine->accelerometerSensor);
             }
+            s_pApp->InvalidateContext();
             // Also stop animating.
             engine->animating = 0;
-            engine_draw_frame(engine);
+            //engine_draw_frame(engine);
             break;
 
         case APP_CMD_CONTENT_RECT_CHANGED:
             TRACE_LOG("APP_CMD_CONTENT_RECT_CHANGED"); 
             break;
+
         case APP_CMD_WINDOW_REDRAW_NEEDED:
             TRACE_LOG("APP_CMD_WINDOW_REDRAW_NEEDED"); 
             break;
+
         case APP_CMD_WINDOW_RESIZED:
             TRACE_LOG("APP_CMD_WINDOW_RESIZED"); 
             break;
+
         case APP_CMD_INPUT_CHANGED:
             TRACE_LOG("APP_CMD_INPUT_CHANGED"); 
             break;
+
         case APP_CMD_LOW_MEMORY:
             TRACE_LOG("APP_CMD_LOW_MEMORY"); 
             break;
         case APP_CMD_START:            
             TRACE_LOG("APP_CMD_START"); 
             break;
+
         case APP_CMD_RESUME:
             TRACE_LOG("APP_CMD_PAUSE"); 
             break;
+
         case APP_CMD_PAUSE:
             TRACE_LOG("APP_CMD_PAUSE"); 
             break;
+
         case APP_CMD_STOP:
             TRACE_LOG("APP_CMD_STOP"); 
             break;
@@ -534,7 +546,7 @@ namespace NSG
                 // Check if we are exiting.
                 if (state->destroyRequested != 0) 
                 {
-                    TRACE_LOG("Destroy requested");
+                    TRACE_LOG("Destroy requested (exiting loop)");
                     //engine_term_display(&engine);
                     return;
                 }

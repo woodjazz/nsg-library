@@ -29,11 +29,12 @@ misrepresented as being the original software.
 #include "GLES2Mesh.h"
 #include "Node.h"
 #include "Types.h"
+#include "GLES2GPUObject.h"
 
 namespace NSG 
 {
     class SceneNode;
-    class GLES2FrameColorSelection
+    class GLES2FrameColorSelection : public GLES2GPUObject
     {
     public:
         GLES2FrameColorSelection(bool createDepthBuffer);
@@ -46,6 +47,9 @@ namespace NSG
         void Render(GLushort id, GLES2Mesh* pMesh, Node* pNode);
         GLuint GetPositionLoc() const { return position_loc_; }
         GLuint GetMVPLoc() const { return mvp_loc_; }
+        virtual bool IsValid();
+        virtual void AllocateResources();
+        virtual void ReleaseResources();
     private:
         Color TransformSelectedId2Color(GLushort id);
         PGLES2Program pProgram_;

@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Check.h"
 #include "Util.h"
+#include "Context.h"
 #include "GLES2ModelMesh.h"
 #include "GLES2ModelMaterial.h"
 #include "assimp/IOStream.hpp"
@@ -103,7 +104,7 @@ namespace NSG
 
 		size_t Read(void* pvBuffer, size_t pSize, size_t pCount) 
 		{
-			const unsigned char* pData = pResource_->GetData();
+			const char* pData = pResource_->GetData();
 			size_t totalBytes = pResource_->GetBytes();
 			size_t bytes2Read = pSize * pCount;
 			if(pos_ + bytes2Read > totalBytes)
@@ -169,38 +170,41 @@ namespace NSG
 	};	
 
 	Model::Model(const char* filename)
-	: pResource_(new Resource(filename)),
-	isLoaded_(false)
+	: pResource_(new Resource(filename))
 	{
         pRoot_= PSceneNode(new ModelSceneNode(this));
-        pModelRoot_ = PSceneNode(new SceneNode());
 
-        pModelRoot_->SetParent(pRoot_);
+        Context::this_->Add(this);
+        Release();
 	}
 
 	Model::~Model()
 	{
-		
+		Context::this_->Remove(this);	
 	}
 
-	bool Model::IsReady()
+	bool Model::IsValid()
 	{
-		if(!isLoaded_ && pResource_->IsReady())
-		{
-			Assimp::Importer importer;
-			importer.SetIOHandler(this);
-            const aiScene* pScene = importer.ReadFile(pResource_->GetFilename().c_str(), aiProcessPreset_TargetRealtime_MaxQuality);	
+		return pResource_->IsLoaded();
+	}
 
-            RecursiveLoad(pScene, pScene->mRootNode, pModelRoot_);
-            
-	        importer.SetIOHandler(nullptr);	
+	void Model::AllocateResources()
+	{
+        pModelRoot_ = PSceneNode(new SceneNode());
+        pModelRoot_->SetParent(pRoot_);
 
-			pResource_ = nullptr;
+		Assimp::Importer importer;
+		importer.SetIOHandler(this);
+	    const aiScene* pScene = importer.ReadFile(pResource_->GetFilename().c_str(), aiProcessPreset_TargetRealtime_MaxQuality);	
 
-			isLoaded_ = true;
-		}
+	    RecursiveLoad(pScene, pScene->mRootNode, pModelRoot_);
+	    
+	    importer.SetIOHandler(nullptr);	
+	}
 
-		return isLoaded_;
+	void Model::ReleaseResources()
+	{
+		pModelRoot_ = nullptr;
 	}
 
     void Model::SetBehavior(PBehavior pBehavior)

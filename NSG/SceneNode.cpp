@@ -44,6 +44,21 @@ namespace NSG
 		pMaterial_ = pMaterial;
 	}
 
+    void SceneNode::SetMaterial(GLES2Material* pMaterial)
+    {
+		struct D 
+		{ 
+		    void operator()(GLES2Material* p) const 
+		    {
+		        //delete p; //do not delete
+		    }
+		};    	
+
+		PGLES2Material pObj(pMaterial, D());
+		SetMaterial(pObj);
+    }
+
+
 	void SceneNode::SetMesh(PGLES2Mesh pMesh)
 	{
 		pMesh_ = pMesh;
@@ -59,7 +74,7 @@ namespace NSG
 	{
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		if(pMesh_ && pMaterial_ && pMaterial_->IsReady()) 
+		if(pMesh_ && pMesh_->IsReady() && pMaterial_ && pMaterial_->IsReady()) 
         {
             pMaterial_->Render(solid, this, pMesh_.get());
         }

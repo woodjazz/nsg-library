@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "GLES2Program.h"
 #include "Log.h"
 #include "Check.h"
+#include "Context.h"
 
 static const char s_fragmentShaderHeader[] = {
 #include "GLES2FragmentCompatibility.h"
@@ -48,71 +49,54 @@ namespace NSG
 {
 	GLES2Program::GLES2Program(PResource pRVShader, PResource pRFShader)
 	: pRVShader_(pRVShader),
-	pRFShader_(pRFShader),
-	loaded_(false)
+	pRFShader_(pRFShader)
 	{
-		assert(pRVShader && pRFShader);
+		CHECK_ASSERT(pRVShader && pRFShader, __FILE__, __LINE__);
+		Context::this_->Add(this);
 	}
 
 	GLES2Program::GLES2Program(const char* vShader, const char* fShader)
-	: vShader_(vShader),
-	fShader_(fShader),
-	loaded_(true)
+	: pRVShader_(new Resource(vShader, strlen(vShader))),
+	pRFShader_(new Resource(fShader, strlen(fShader))),
+    vShader_(vShader),
+    fShader_(fShader)
 	{
-		assert(vShader && fShader);
+		CHECK_ASSERT(vShader && fShader, __FILE__, __LINE__);
+		Context::this_->Add(this);
+	}
 
-		loaded_ = true;
+	bool GLES2Program::IsValid()
+	{
+		return pRVShader_->IsLoaded() && pRFShader_->IsLoaded();
+	}
+
+	void GLES2Program::AllocateResources()
+	{
 		std::string vbuffer;
 		size_t vHeaderSize = strlen(s_vertexShaderHeader);
 		size_t fHeaderSize = strlen(s_fragmentShaderHeader);
-		size_t vBytes = strlen(vShader_);
-		size_t fBytes = strlen(fShader_);
-		vbuffer.resize(vHeaderSize + vBytes);
+		vbuffer.resize(vHeaderSize + pRVShader_->GetBytes());
 		vbuffer = s_vertexShaderHeader;
-		memcpy(&vbuffer[0] + vHeaderSize, vShader_, vBytes);
+		memcpy(&vbuffer[0] + vHeaderSize, pRVShader_->GetData(), pRVShader_->GetBytes());
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 		pVShader_ = PGLES2VShader(new GLES2VShader(vbuffer.c_str()));
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 		vbuffer = s_fragmentShaderHeader;
-		vbuffer.resize(fHeaderSize + fBytes);
-		memcpy(&vbuffer[0] + fHeaderSize, fShader_, fBytes);
+		vbuffer.resize(fHeaderSize + pRFShader_->GetBytes());
+		memcpy(&vbuffer[0] + fHeaderSize, pRFShader_->GetData(), pRFShader_->GetBytes());
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 		pFShader_ = PGLES2FShader(new GLES2FShader(vbuffer.c_str()));
-        Initialize();
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+	    Initialize();
 	}
 
-	GLES2Program::GLES2Program(PGLES2VShader pVShader, PGLES2FShader pFShader)
-	: pVShader_(pVShader),
-	pFShader_(pFShader),
-	loaded_(true)
+	void GLES2Program::ReleaseResources()
 	{
-		Initialize();
-	}
-
-	bool GLES2Program::IsReady()
-	{
-		if(!loaded_ && pRVShader_)
-		{
-			if(pRVShader_->IsReady() && pRFShader_->IsReady())
-			{
-				loaded_ = true;
-				std::string vbuffer;
-				size_t vHeaderSize = strlen(s_vertexShaderHeader);
-				size_t fHeaderSize = strlen(s_fragmentShaderHeader);
-				vbuffer.resize(vHeaderSize + pRVShader_->GetBytes());
-				vbuffer = s_vertexShaderHeader;
-				memcpy(&vbuffer[0] + vHeaderSize, pRVShader_->GetData(), pRVShader_->GetBytes());
-				pVShader_ = PGLES2VShader(new GLES2VShader(vbuffer.c_str()));
-				vbuffer = s_fragmentShaderHeader;
-				vbuffer.resize(fHeaderSize + pRFShader_->GetBytes());
-				memcpy(&vbuffer[0] + fHeaderSize, pRFShader_->GetData(), pRFShader_->GetBytes());
-				pFShader_ = PGLES2FShader(new GLES2FShader(vbuffer.c_str()));
-	            Initialize();
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		return true;
+		glDetachShader(id_, pVShader_->GetId());
+		glDetachShader(id_, pFShader_->GetId());
+		pVShader_ = nullptr;
+		pFShader_ = nullptr;
+        glDeleteProgram(id_);
 	}
 
 	void GLES2Program::Initialize()
@@ -165,7 +149,7 @@ namespace NSG
 
 	GLES2Program::~GLES2Program()
 	{
-		glDeleteProgram(id_);
+		Context::this_->Remove(this);
 	}
 
 	GLuint GLES2Program::GetAttributeLocation(const std::string& name) 

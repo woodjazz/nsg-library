@@ -1,6 +1,7 @@
 #include "GLES2FontAtlasTexture.h"
 #include "GLES2PlaneMesh.h"
 #include "SOIL.h"
+#include "FreeType.h"
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
@@ -35,40 +36,26 @@ static const char* fShader = STRINGIFY(
 );
 
 static const int MAXCHARS = 256;
-static FT_Library s_ft;
-static bool s_initialized = false;
-
-static void Initialize()
-{
-	if(!s_initialized)
-	{
-		if(FT_Init_FreeType(&s_ft)) 
-		{
-			TRACE_LOG("Could not init freetype library.");
-		}
-		else
-		{
-			s_initialized = true;
-		}
-	}
-}
 
 namespace NSG
 {
+    static FreeType freeTypeObj;
+
 	GLES2FontAtlasTexture::GLES2FontAtlasTexture(const char* filename, int fontSize) 
 	: GLES2Texture(filename), 
 	atlasWidth_(0),
 	atlasHeight_(0),
 	fontSize_(fontSize)
 	{
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
 		pMaterial_->SetBlendMode(ALPHA);
+
         PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+
         pMaterial_->SetProgram(pProgram);
 
-		if(fontSize_ > 0)
-		{
-			Initialize();
-		}
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 	
 
@@ -76,26 +63,29 @@ namespace NSG
 	{
 	}
 
-	bool GLES2FontAtlasTexture::IsReady()
-	{
-		if(!isLoaded_  && pResource_->IsReady())
-		{
-			CreateTextureAtlas();
+    bool GLES2FontAtlasTexture::IsValid()
+    {
+        return pResource_->IsLoaded();
+    }
 
-			pResource_ = nullptr;
+    void GLES2FontAtlasTexture::AllocateResources()
+    {
+        CreateTextureAtlas();
+    }
 
-			isLoaded_ = true;
-		}
-
-		return isLoaded_;
-	}
+    void GLES2FontAtlasTexture::ReleaseResources()
+    {
+        charInfo_.clear();
+        atlasWidth_ = atlasHeight_ = 0;
+        glDeleteTextures(1, &texture_);
+    }
 
     #define MAXWIDTH 1024
 	void GLES2FontAtlasTexture::CreateTextureAtlas()
 	{
 		FT_Face face;
 
-		FT_New_Memory_Face(s_ft, pResource_->GetData(), pResource_->GetBytes(), 0, &face);
+		FT_New_Memory_Face(freeTypeObj.GetHandle(), (const FT_Byte*)pResource_->GetData(), pResource_->GetBytes(), 0, &face);
 		FT_Set_Pixel_Sizes(face, 0, fontSize_);
 
 		FT_GlyphSlot g = face->glyph;
@@ -124,7 +114,9 @@ namespace NSG
         }
 
 		atlasWidth_ = std::max(atlasWidth_, roww);
-        atlasHeight_ += rowh;        
+        atlasHeight_ += rowh;     
+
+        glGenTextures(1, &texture_);
 
 		GLint unpackAlign = 0;
 		glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpackAlign);

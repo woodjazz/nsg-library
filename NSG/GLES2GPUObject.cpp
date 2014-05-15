@@ -23,31 +23,70 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include <chrono>
+#include "GLES2GPUObject.h"
+#include "Check.h"
+#include "App.h"
 
 namespace NSG 
 {
-	class Tick
+	GLES2GPUObject::GLES2GPUObject()
+	: isValid_(false),
+	releaseCalled_(false),
+	resourcesAllocated_(false),
+	app_(App::GetPtrInstance())
 	{
-	public:
-		Tick();
-		~Tick();
-        virtual int GetFPS() const = 0;
-		void PerformTick();
-		virtual void BeginTick() = 0;
-		virtual void DoTick(float delta) = 0;
-		virtual void EndTick() = 0;
-	private:
-		typedef std::chrono::milliseconds Milliseconds;
-		typedef std::chrono::seconds Seconds;
-        typedef std::chrono::steady_clock Clock;
-        typedef Clock::time_point TimePoint;
+	}
+		
+	GLES2GPUObject::~GLES2GPUObject()
+	{
+		CHECK_ASSERT(releaseCalled_ && "You shall call Release in the destructor!", __FILE__, __LINE__);	
+	}
 
-        TimePoint current_;
-        TimePoint next_;
-        Milliseconds ticks_;
-        float fixed_;
-        bool init_;
-	};
+	void GLES2GPUObject::Invalidate()
+	{
+		isValid_ = false;
+		if(resourcesAllocated_)
+		{
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+			ReleaseResources();
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+			resourcesAllocated_ = false;
+		}
+	}
+
+	bool GLES2GPUObject::IsReady()
+	{
+		auto viewSize = app_->GetViewSize();
+
+		if(viewSize.first <= 0 || viewSize.second <= 0)
+			return false;
+		
+		if(!isValid_)
+		{
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+
+			isValid_ = IsValid();
+
+			if(isValid_)
+			{
+				CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
+				AllocateResources();
+				resourcesAllocated_ = true;
+			}
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+		}
+
+		return isValid_;
+	}
+
+	void GLES2GPUObject::Release()
+	{
+		releaseCalled_ = true;
+
+		if(isValid_)
+		{
+			ReleaseResources();
+		}
+	}
 }

@@ -46,7 +46,6 @@ namespace NSG
         PGLES2Material pMaterial_; 
 		PGLES2Mesh pMesh_;
 		PGLES2Render2Texture pRender2Texture_;
-		PGLES2Texture input_;
 	};
 
 	typedef std::shared_ptr<GLES2Filter> PGLES2Filter;

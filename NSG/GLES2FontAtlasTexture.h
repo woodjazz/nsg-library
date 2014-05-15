@@ -31,8 +31,6 @@ misrepresented as being the original software.
 #include <string>
 #include <vector>
 #include "Resource.h"
-#include "ft2build.h"
-#include FT_FREETYPE_H
 
 namespace NSG
 {
@@ -41,7 +39,9 @@ namespace NSG
 	public:
 		GLES2FontAtlasTexture(const char* filename, int fontSize);
 		~GLES2FontAtlasTexture();
-		bool IsReady();
+		virtual bool IsValid();
+		virtual void AllocateResources();
+        virtual void ReleaseResources();
 
 		struct CharacterInfo 
 		{

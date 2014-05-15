@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #endif
 
 #include "Tick.h"
+#include "Context.h"
 #include "GLES2FrameColorSelection.h"
 
 
@@ -57,8 +58,6 @@ namespace NSG
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
         virtual bool ShallExit() const { return false; }
-        void Initialize();
-        void Release();
         void DoTick(float delta);
         bool ShowKeyboard();
         bool HideKeyboard();
@@ -71,6 +70,7 @@ namespace NSG
         PGLES2FrameColorSelection GetSelection() const { return pFrameColorSelection_; }
         GLushort GetSelectedNode() const { return selectedIndex_; }
         float GetDeltaTime() const { return deltaTime_; }
+        void InvalidateContext();
 
 #if NACL
 		virtual void HandleMessage(const pp::Var& var_message);
@@ -80,6 +80,8 @@ namespace NSG
         void SetActivity(ANativeActivity* pActivity) { pActivity_ = pActivity; }
 #endif
     private:
+        void Initialize();
+        void Release();
 #if ANDROID        
         AAssetManager* pAAssetManager_;
         ANativeActivity* pActivity_;
@@ -91,6 +93,8 @@ namespace NSG
         bool isKeyboardVisible_;
         // The time in seconds it took to complete the last frame
         float deltaTime_;
+        Context context_;
+        bool isInit_;
         friend struct InternalApp;
 	};
 
@@ -104,8 +108,7 @@ namespace NSG
 
         InternalApp(App* pApp);
         ~InternalApp();
-        void Initialize();
-        void Release();
+        virtual int GetFPS() const;
         void BeginTick();
         void DoTick(float delta);
         void EndTick();
@@ -118,6 +121,7 @@ namespace NSG
         void RenderFrame();
         bool HideKeyboard();
         bool ShallExit() const;
+        void InvalidateContext();
 	#if NACL
 		void HandleMessage(const pp::Var& var_message);
 	#elif ANDROID

@@ -59,8 +59,6 @@ namespace NSG
 
 			angle += angleAdder;
 		}
-
-		Redo();
 	}
 
 	GLES2EllipseMesh::~GLES2EllipseMesh() 

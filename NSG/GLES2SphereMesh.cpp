@@ -98,8 +98,6 @@ namespace NSG
                 }
             }
         }
-
-	    Redo();
 	}
 
 	GLES2SphereMesh::~GLES2SphereMesh() 

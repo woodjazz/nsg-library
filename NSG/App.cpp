@@ -26,9 +26,10 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Log.h"
 #include "GLES2Camera.h"
-#include "GLES2IMGUI.h"
+#include "IMGUI.h"
 #include "GLES2Text.h"
 #include "Behavior.h"
+#include "Check.h"
 #include <cassert>
 
 namespace NSG
@@ -39,8 +40,8 @@ namespace NSG
     : width_(0),
     height_(0),
     selectedIndex_(0),
-    isKeyboardVisible_(false)
-
+    isKeyboardVisible_(false),
+    isInit_(false)
     {
 	    assert(s_pApp == nullptr);
 
@@ -50,6 +51,8 @@ namespace NSG
     App::~App()
     {
         TRACE_LOG("Terminating App");
+
+        Release();
 	    
         assert(s_pApp != nullptr);
 
@@ -205,16 +208,32 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void App::Initialize()
     {
+        CHECK_ASSERT(!isInit_, __FILE__, __LINE__);
+
+        TRACE_LOG("App::Initialize");
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+            
         pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection(false));
+
         IMGUI::AllocateResources();
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        isInit_ = true;
     }
 
     void App::Release()
     {
+        CHECK_ASSERT(isInit_, __FILE__, __LINE__);
+
+        TRACE_LOG("App::Release");
+            
         HideKeyboard();
         IMGUI::ReleaseResources();
         GLES2Text::ReleaseAtlasCollection();
         pFrameColorSelection_ = nullptr;
+        isInit_ = false;
     }
 
     void App::DoTick(float delta)
@@ -223,6 +242,13 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         IMGUI::DoTick();
         Update();
         Behavior::UpdateAll();
+    }
+
+    void App::InvalidateContext()
+    {
+        TRACE_LOG("App::InvalidateContext");
+
+        context_.Invalidate();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,19 +267,14 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         pApp_ = nullptr;
     }
 
-    void InternalApp::Initialize()
+    int InternalApp::GetFPS() const
     {
-        pApp_->Initialize();
-        Tick::Initialize(pApp_->GetFPS());
-    }
-
-    void InternalApp::Release()
-    {
-        pApp_->Release();
+        return pApp_->GetFPS();
     }
 
     void InternalApp::BeginTick()
     {
+        pApp_->Initialize();
         pApp_->Start();
         Behavior::StartAll();
     }
@@ -269,15 +290,18 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
     {
+        pApp_->SetViewSize(width, height);
+
         if(width > 0 && height > 0)
         {
             TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
             
             glViewport(0, 0, width, height);
 
-            pApp_->SetViewSize(width, height);
-
-            pApp_->pFrameColorSelection_->ViewChanged(width, height);
+            if(pApp_->pFrameColorSelection_)
+            {
+                pApp_->pFrameColorSelection_->ViewChanged(width, height);
+            }
 
             GLES2Camera::Cameras& cameras = GLES2Camera::GetCameras();
 
@@ -355,11 +379,16 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         Behavior::Render2SelectAll();
         pApp_->EndSelection();
 
+        GLES2Camera* pActiveCamera = GLES2Camera::GetActiveCamera();
         IMGUI::Begin();
         pApp_->RenderGUIFrame();
         IMGUI::End();
-        
+		if(pActiveCamera)
+        {
+			pActiveCamera->Activate();
+        }
     }
+
     bool InternalApp::HideKeyboard()
     {
         return pApp_->HideKeyboard();
@@ -368,6 +397,11 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     bool InternalApp::ShallExit() const
     {
         return pApp_->ShallExit();
+    }
+
+    void InternalApp::InvalidateContext()
+    {
+        pApp_->InvalidateContext();
     }
 
 #if NACL

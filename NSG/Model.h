@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SceneNode.h"
+#include "GLES2GPUObject.h"
 #include "assimp/IOSystem.hpp"
 #include <memory>
 #include <vector>
@@ -33,18 +34,21 @@ struct aiScene;
 struct aiNode;
 namespace NSG
 {
-	class Model : public Assimp::IOSystem
+	class Model : public GLES2GPUObject, public Assimp::IOSystem
 	{
 	public:
 		Model(const char* filename);
 		~Model();
-		bool IsReady();
 		void SetBehavior(PBehavior pBehavior);
         bool Exists(const char* filename) const;
 		char getOsSeparator() const;
 	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb");
 		void Close(Assimp::IOStream* pFile);
         PSceneNode GetSceneNode() const { return pRoot_; }
+		virtual bool IsValid();
+		virtual void AllocateResources();
+		virtual void ReleaseResources();
+
 	private:
 		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode pSceneNode);
 
@@ -53,7 +57,6 @@ namespace NSG
         PSceneNode pModelRoot_;
 		typedef std::vector<PSceneNode> Children;
 		Children children_; // just to keep a reference to children and avoid deletion
-		bool isLoaded_;
 	};
 
 	typedef std::shared_ptr<Model> PModel;

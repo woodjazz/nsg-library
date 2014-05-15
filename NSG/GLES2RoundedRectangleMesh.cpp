@@ -91,8 +91,6 @@ namespace NSG
 
 			angle += angleAdder;
 		}
-
-		Redo();
 	}
 
 	GLES2RoundedRectangleMesh::~GLES2RoundedRectangleMesh() 

@@ -42,6 +42,7 @@ namespace NSG
 		virtual ~Node();
 		GLushort GetId()const { return id_; }
         void SetParent(PNode pParent);
+        void SetParent(Node* pParent);
         PNode GetParent() const { return pParent_; }
 		virtual void OnUpdate() {}
 		void SetPosition(const Vertex3& position);

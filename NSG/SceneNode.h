@@ -42,6 +42,7 @@ namespace NSG
 		~SceneNode();
 		PGLES2Material GetMaterial() const { return pMaterial_; }
 		void SetMaterial(PGLES2Material pMaterial);
+		void SetMaterial(GLES2Material* pMaterial);
 		void SetMesh(PGLES2Mesh pMesh);
 		PGLES2Mesh GetMesh() const { return pMesh_; }
 		void SetBehavior(PBehavior pBehavior);

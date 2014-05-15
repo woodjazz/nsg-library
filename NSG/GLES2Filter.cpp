@@ -44,8 +44,7 @@ namespace NSG
 {
 	GLES2Filter::GLES2Filter(PGLES2Texture input, PGLES2Texture output, const char* fragment)
     : pMaterial_(new GLES2Material ()),
-    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
-    input_(input)
+    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW))
 	{
 		PGLES2Program pProgram(new GLES2Program(vShader, fragment));
 		pMaterial_->SetProgram(pProgram);
@@ -61,22 +60,19 @@ namespace NSG
 
 	void GLES2Filter::Render()
 	{
-		if(input_->IsReady())
+		if(pMaterial_->IsReady() && pRender2Texture_->IsReady())
 		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			if(pMaterial_->IsReady())
-			{
-				GLES2Camera* pCurrent = GLES2Camera::Deactivate();
+			GLES2Camera* pCurrent = GLES2Camera::Deactivate();
 
-				pRender2Texture_->Begin();
+			pRender2Texture_->Begin();
 
-				pMaterial_->Render(true, nullptr, pMesh_.get());
+			pMaterial_->Render(true, nullptr, pMesh_.get());
 
-				pRender2Texture_->End();
+			pRender2Texture_->End();
 
-				GLES2Camera::Activate(pCurrent);
-			}
+			GLES2Camera::Activate(pCurrent);
 
 			CHECK_GL_STATUS(__FILE__, __LINE__);
 		}

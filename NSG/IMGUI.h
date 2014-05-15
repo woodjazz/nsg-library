@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "GLES2Material.h"
 #include "GLES2Mesh.h"
 #include "GLES2Camera.h"
+#include "IMGUISkin.h"
 #include "Node.h"
 #include "Types.h"
 
@@ -59,27 +60,6 @@ namespace NSG
 		void InternalEndVertical();
 		void InternalSpacer(GLushort id, int percentage);
 
-		struct Skin
-		{
-			float alphaFactor;
-
-			std::string fontFile;
-			int fontSize;
-			size_t textMaxLength;
-
-			bool fillEnabled;
-			bool drawBorder;
-
-			PGLES2Material pActiveMaterial;
-			PGLES2Material pNormalMaterial;
-			PGLES2Material pHotMaterial;
-			PGLES2Material pBorderMaterial;
-			PGLES2Mesh pMesh;
-			Skin();
-			Skin(const Skin& obj);
-		};
-
-		typedef std::shared_ptr<Skin> PSkin;
 		extern PSkin pSkin;
 		extern PGLES2Camera pCamera;
 		extern PNode pCurrentNode;

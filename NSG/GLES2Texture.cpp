@@ -1,6 +1,7 @@
 #include "GLES2Texture.h"
 #include "GLES2PlaneMesh.h"
 #include "GLES2Camera.h"
+#include "Context.h"
 #include "SOIL.h"
 #include "Log.h"
 #include "Check.h"
@@ -42,14 +43,43 @@ namespace NSG
 	: filename_(filename),
 	texture_(0), 
 	pResource_(new Resource(filename)), 
-	isLoaded_(false),
     pMaterial_(new GLES2Material ()),
 	pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
 	width_(0),
-	height_(0)
+	height_(0),
+	format_(GL_RGBA)
 	{
-		InitializeCommonSettings();
+		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+		pMaterial_->SetProgram(pProgram);
+		pMaterial_->EnableDepthTest(false);
+		
+		Context::this_->Add(this);
+	}
 
+	GLES2Texture::GLES2Texture(GLint format, GLsizei width, GLsizei height, const char* pixels) 
+	: texture_(0), 
+    pResource_(new Resource(pixels, width*height)),
+    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
+	width_(width),
+	height_(height),
+	format_(format)
+	{
+		Context::this_->Add(this);
+	}
+
+
+	GLES2Texture::~GLES2Texture()
+	{
+		Context::this_->Remove(this);
+	}
+
+	bool GLES2Texture::IsValid()
+	{
+		return pResource_->IsLoaded();
+	}
+
+	void GLES2Texture::AllocateResources()
+	{
 		glGenTextures(1, &texture_);
 		glBindTexture(GL_TEXTURE_2D, texture_);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -57,73 +87,22 @@ namespace NSG
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	}
-
-	GLES2Texture::GLES2Texture(GLint format, GLenum type, GLsizei width, GLsizei height, const GLvoid* pixels) 
-	: texture_(0), 
-	isLoaded_(true),
-    pMaterial_(new GLES2Material ()),
-    pMesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
-	width_(width),
-	height_(height)
-	{
-		InitializeCommonSettings();
-
-		glGenTextures(1, &texture_);
-		glBindTexture(GL_TEXTURE_2D, texture_);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		glTexImage2D(GL_TEXTURE_2D,
-			0,
-			format,
-			width,
-			height,
-			0,
-			format,
-			type,
-			pixels);
-	}
-
-	void GLES2Texture::InitializeCommonSettings()
-	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-		pMaterial_->SetProgram(pProgram);
-		pMaterial_->EnableDepthTest(false);
-	}
-
-	GLES2Texture::~GLES2Texture()
-	{
-		glDeleteTextures(1, &texture_);
-	}
-
-	bool GLES2Texture::IsReady()
-	{
-		if(!isLoaded_ && pResource_->IsReady())
+		if(!pResource_->GetFilename().empty())
 		{
-			int img_width = 0;
-			int img_height = 0;
             int channels = 0;
-			unsigned char* img = SOIL_load_image_from_memory(pResource_->GetData(), pResource_->GetBytes(), &img_width, &img_height, &channels, 0);
-
-			width_ = img_width;
-			height_ = img_height;
-
-            GLint internalformat = GL_RGBA;
+			unsigned char* img = SOIL_load_image_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels, 0);
 
             if(channels == 4)
             {
-                internalformat = GL_RGBA;
+                format_ = GL_RGBA;
             }
             else if(channels == 3)
             {
-                internalformat = GL_RGB;
+                format_ = GL_RGB;
             }
             else
             {
-                internalformat = GL_RGB;
+                format_ = GL_RGB;
                 TRACE_LOG(pResource_->GetFilename() << " Unknown internalformat");
             }
 
@@ -131,29 +110,92 @@ namespace NSG
 
 			glTexImage2D(GL_TEXTURE_2D,
 				0,
-				internalformat,
-				img_width,
-				img_height,
+				format_,
+				width_,
+				height_,
 				0,
-				internalformat,
+				format_,
 				GL_UNSIGNED_BYTE,
 				img);
 
+			glBindTexture(GL_TEXTURE_2D, 0);
+
 			SOIL_free_image_data(img);
-
-			pResource_ = nullptr;
-
-			isLoaded_ = true;
 		}
+		else
+		{
+			const char* data = nullptr;
 
-		return isLoaded_;
+			if(pResource_->GetBytes())
+			{
+            	CHECK_ASSERT(width_*height_ == pResource_->GetBytes(), __FILE__, __LINE__);
+            	data = pResource_->GetData();
+            }
+
+			glBindTexture(GL_TEXTURE_2D, texture_);
+
+			glTexImage2D(GL_TEXTURE_2D,
+				0,
+				format_,
+				width_,
+				height_,
+				0,
+				format_,
+				GL_UNSIGNED_BYTE,
+				data);
+
+            if(data == nullptr)
+            {
+            	int channels = 0;
+
+            	switch(format_)
+            	{
+            		case GL_ALPHA:
+            		case GL_LUMINANCE:
+            			channels = 1;
+            			break;
+            		case GL_LUMINANCE_ALPHA:
+            			channels = 2;
+            			break;
+            		case GL_RGB:
+            			channels = 3;
+            			break;
+            		case GL_RGBA:
+            			channels = 4;
+            			break;
+            		default:
+            			CHECK_ASSERT(false && "Unknown format", __FILE__, __LINE__);
+            			break; 
+            	}
+
+		        std::vector<GLubyte> emptyData(width_ * height_ * channels, 0);
+		        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width_, height_, format_, GL_UNSIGNED_BYTE, &emptyData[0]);		
+            }
+
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+		}
+	}
+
+	void GLES2Texture::ReleaseResources()
+	{
+		glDeleteTextures(1, &texture_);
 	}
 
 	void GLES2Texture::Show(PGLES2Texture pTexture)
 	{
-		if(pTexture->IsReady())
+		if(IsReady() && pTexture->IsReady())
 		{
 			CHECK_GL_STATUS(__FILE__, __LINE__);
+
+            if(!pMaterial_)
+            {
+                pMaterial_ = PGLES2Material(new GLES2Material ());
+
+		        PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+		        pMaterial_->SetProgram(pProgram);
+		        pMaterial_->EnableDepthTest(false);
+            }
 
 			pMaterial_->SetTexture0(pTexture);
 

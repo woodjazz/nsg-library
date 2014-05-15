@@ -56,8 +56,6 @@ namespace NSG
 
 			angle += angleAdder;
 		}
-
-		Redo();
 	}
 
 	GLES2CircleMesh::~GLES2CircleMesh() 

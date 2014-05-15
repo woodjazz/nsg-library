@@ -85,8 +85,6 @@ namespace NSG
 				}	
 			}		
 		}
-
-		Redo();
 	}
 
 	GLES2ModelMesh::~GLES2ModelMesh()

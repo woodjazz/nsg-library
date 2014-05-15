@@ -56,6 +56,9 @@ namespace NSG
 		static void ReleaseAtlasCollection();
 		GLenum GetWireFrameDrawMode() const;
 		GLenum GetSolidDrawMode() const;
+		virtual bool IsValid();
+		virtual void AllocateResources();
+		virtual void ReleaseResources();
 
 	private:
 		App* pApp_;

@@ -3,6 +3,7 @@
 #include "Check.h"
 #include "GLES2Camera.h"
 #include "GLES2Light.h"
+#include "Context.h"
 #include "Scene.h"
 #include <assert.h>
 #include <sstream>
@@ -132,7 +133,8 @@ namespace NSG
 	const size_t MAX_LIGHTS_MATERIAL = 4;
 
 	GLES2Material::GLES2Material() 
-	: pExtraMaterialUniforms_(nullptr),
+	: pProgram_(new GLES2Program(vShader, fShader)),
+    pExtraMaterialUniforms_(nullptr),
 	color_scene_ambient_loc_(-1),
 	color_ambient_loc_(-1),
 	color_diffuse_loc_(-1),
@@ -148,7 +150,6 @@ namespace NSG
 	v_inv_loc_(-1),
     mvp_loc_(-1),
     m_loc_(-1),
-	loaded_(false),
 	ambient_(1,1,1,1),
 	diffuse_(1,1,1,1),
 	specular_(1,1,1,1),
@@ -161,10 +162,14 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
         lightsLoc_.resize(MAX_LIGHTS_MATERIAL);
         memset(&lightsLoc_[0], 0, sizeof(lightsLoc_) * MAX_LIGHTS_MATERIAL);
+
+        Context::this_->Add(this);
+
 	}
 
 	GLES2Material::~GLES2Material()
 	{
+        Context::this_->Remove(this);
 	}
 
 	void GLES2Material::SetBlendMode(BLEND_MODE mode)
@@ -187,105 +192,117 @@ namespace NSG
 		if(pProgram_ != pProgram)
 		{
 			pProgram_ = pProgram;
-			loaded_ = false;
+            Invalidate();
+
 		}
 	}
 
 	void GLES2Material::SetTexture0(PGLES2Texture pTexture)
 	{
-		pTexture0_ = pTexture;
+        if(pTexture0_ != pTexture)
+        {
+		    pTexture0_ = pTexture;
+            Invalidate();
+        }
 	}
 
 	void GLES2Material::SetTexture1(PGLES2Texture pTexture)
 	{
-		pTexture1_ = pTexture;
+        if(pTexture1_ != pTexture)
+        {
+		    pTexture1_ = pTexture;
+            Invalidate();
+        }
 	}
 
-
-	bool GLES2Material::IsReady()
+	bool GLES2Material::IsValid()
 	{
-		if(!pProgram_)
-			pProgram_ = PGLES2Program(new GLES2Program(vShader, fShader));
+        return pProgram_->IsReady() && (!pTexture0_ || pTexture0_->IsReady()) && (!pTexture1_ || pTexture1_->IsReady());
+	}
 
-        if(!pTexture0_)
-        {
-             // Creates 1x1 white texture 
-		    unsigned char img[3];
-		    memset(&img[0], 0xFF, sizeof(unsigned char)*3);
-            pTexture0_ = PGLES2Texture(new GLES2Texture(GL_RGB, GL_UNSIGNED_BYTE, 1, 1, img));
-        }
+	void GLES2Material::AllocateResources()
+	{
+	    CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		if(!loaded_ && pProgram_->IsReady() && pTexture0_->IsReady() && (!pTexture1_ || pTexture1_->IsReady()))
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+	    if(!pTexture0_)
+	    {
+	        // Creates 1x1 white texture 
+			char img[3];
+			memset(&img[0], 0xFF, sizeof(unsigned char)*3);
+	        pTexture0_ = PGLES2Texture(new GLES2Texture(GL_RGB, 1, 1, &img[0]));
+	    }
 
-			if(pExtraMaterialUniforms_)
-			{
-				pExtraMaterialUniforms_->SetLocations();
-			}
+	    if(pExtraMaterialUniforms_)
+	    {
+		    pExtraMaterialUniforms_->SetLocations();
+	    }
 
-			color_ambient_loc_ = pProgram_->GetUniformLocation("u_material.ambient");
-            color_scene_ambient_loc_ = pProgram_->GetUniformLocation("u_scene_ambient");
-			color_diffuse_loc_ = pProgram_->GetUniformLocation("u_material.diffuse");
-			color_specular_loc_ = pProgram_->GetUniformLocation("u_material.specular");
-			shininess_loc_ = pProgram_->GetUniformLocation("u_material.shininess");
-		    mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
-		    m_loc_ = pProgram_->GetUniformLocation("u_m");
-			model_inv_transp_loc_ = pProgram_->GetUniformLocation("u_model_inv_transp");
-			v_inv_loc_ = pProgram_->GetUniformLocation("u_v_inv");
-			texture0_loc_ = pProgram_->GetUniformLocation("u_texture0");
-			texture1_loc_ = pProgram_->GetUniformLocation("u_texture1");
-			texcoord_loc_ = pProgram_->GetAttributeLocation("a_texcoord");
-			position_loc_ = pProgram_->GetAttributeLocation("a_position");
-			normal_loc_ = pProgram_->GetAttributeLocation("a_normal");
-            color_loc_ = pProgram_->GetAttributeLocation("a_color");
+	    color_ambient_loc_ = pProgram_->GetUniformLocation("u_material.ambient");
+        color_scene_ambient_loc_ = pProgram_->GetUniformLocation("u_scene_ambient");
+	    color_diffuse_loc_ = pProgram_->GetUniformLocation("u_material.diffuse");
+	    color_specular_loc_ = pProgram_->GetUniformLocation("u_material.specular");
+	    shininess_loc_ = pProgram_->GetUniformLocation("u_material.shininess");
+        mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
+        m_loc_ = pProgram_->GetUniformLocation("u_m");
+	    model_inv_transp_loc_ = pProgram_->GetUniformLocation("u_model_inv_transp");
+	    v_inv_loc_ = pProgram_->GetUniformLocation("u_v_inv");
+	    texture0_loc_ = pProgram_->GetUniformLocation("u_texture0");
+	    texture1_loc_ = pProgram_->GetUniformLocation("u_texture1");
+	    texcoord_loc_ = pProgram_->GetAttributeLocation("a_texcoord");
+	    position_loc_ = pProgram_->GetAttributeLocation("a_position");
+	    normal_loc_ = pProgram_->GetAttributeLocation("a_normal");
+        color_loc_ = pProgram_->GetAttributeLocation("a_color");
 
-            const GLES2Light::Lights& ligths = GLES2Light::GetLights();
-            size_t n = std::min(ligths.size(), MAX_LIGHTS_MATERIAL);
+        const GLES2Light::Lights& ligths = GLES2Light::GetLights();
+        size_t n = std::min(ligths.size(), MAX_LIGHTS_MATERIAL);
 
-			for(size_t i=0; i<n; i++)
-			{
-				std::stringstream u_light_index;
-				u_light_index << "u_light" << i << ".";
+	    for(size_t i=0; i<n; i++)
+	    {
+		    std::stringstream u_light_index;
+		    u_light_index << "u_light" << i << ".";
 
-				lightsLoc_[i].type_loc = pProgram_->GetUniformLocation(u_light_index.str() + "type");
-				lightsLoc_[i].position_loc = pProgram_->GetUniformLocation(u_light_index.str() + "position");
-				lightsLoc_[i].diffuse_loc = pProgram_->GetUniformLocation(u_light_index.str() + "diffuse");
-				lightsLoc_[i].specular_loc = pProgram_->GetUniformLocation(u_light_index.str() + "specular");
-				lightsLoc_[i].constantAttenuation_loc = pProgram_->GetUniformLocation(u_light_index.str() + "constantAttenuation");
-				lightsLoc_[i].linearAttenuation_loc = pProgram_->GetUniformLocation(u_light_index.str() + "linearAttenuation");
-				lightsLoc_[i].quadraticAttenuation_loc = pProgram_->GetUniformLocation(u_light_index.str() + "quadraticAttenuation");
-				lightsLoc_[i].spotCutoff_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotCutoff");
-				lightsLoc_[i].spotExponent_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotExponent");
-				lightsLoc_[i].spotDirection_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotDirection");
+		    lightsLoc_[i].type_loc = pProgram_->GetUniformLocation(u_light_index.str() + "type");
+		    lightsLoc_[i].position_loc = pProgram_->GetUniformLocation(u_light_index.str() + "position");
+		    lightsLoc_[i].diffuse_loc = pProgram_->GetUniformLocation(u_light_index.str() + "diffuse");
+		    lightsLoc_[i].specular_loc = pProgram_->GetUniformLocation(u_light_index.str() + "specular");
+		    lightsLoc_[i].constantAttenuation_loc = pProgram_->GetUniformLocation(u_light_index.str() + "constantAttenuation");
+		    lightsLoc_[i].linearAttenuation_loc = pProgram_->GetUniformLocation(u_light_index.str() + "linearAttenuation");
+		    lightsLoc_[i].quadraticAttenuation_loc = pProgram_->GetUniformLocation(u_light_index.str() + "quadraticAttenuation");
+		    lightsLoc_[i].spotCutoff_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotCutoff");
+		    lightsLoc_[i].spotExponent_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotExponent");
+		    lightsLoc_[i].spotDirection_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotDirection");
 
-                if(lightsLoc_[i].type_loc != -1)
-                {
-                    hasLights_ = true;
-                }
-			}
+            if(lightsLoc_[i].type_loc != -1)
+            {
+                hasLights_ = true;
+            }
+	    }
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+	    CHECK_GL_STATUS(__FILE__, __LINE__);
+	}
 
-			loaded_ = true;
-		}
-
-		return loaded_;
+	void GLES2Material::ReleaseResources()
+	{
 	}
 
 	void GLES2Material::Render(bool solid, Node* pNode, GLES2Mesh* pMesh)
 	{
-		UseMaterial useMaterial(*this, pNode);
+		if(IsReady())
+		{
+			UseMaterial useMaterial(*this, pNode);
 
-		GLenum mode = solid ? pMesh->GetSolidDrawMode() : pMesh->GetWireFrameDrawMode();
+			GLenum mode = solid ? pMesh->GetSolidDrawMode() : pMesh->GetWireFrameDrawMode();
 
-        pMesh->Render(mode, position_loc_, texcoord_loc_, normal_loc_, color_loc_);
+	        pMesh->Render(mode, position_loc_, texcoord_loc_, normal_loc_, color_loc_);
+	    }
 	}
 
 	UseMaterial::UseMaterial(GLES2Material& obj, Node* pNode)
 	: obj_(obj),
 	useProgram_(*obj.pProgram_)
 	{
+		CHECK_ASSERT(obj.IsReady(), __FILE__, __LINE__);
+
 		if(obj.enableCullFace_)
 		{
 			glEnable(GL_CULL_FACE);

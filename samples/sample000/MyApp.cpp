@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "CubeBehavior.h"
 #include "TextBehavior.h"
 #include "LightBehavior.h"
+#include "Check.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -77,6 +78,8 @@ void MyApp::Start()
 {
 	TRACE_LOG("Start");
 
+    CHECK_GL_STATUS(__FILE__, __LINE__);
+
 	pCamera1_ = PGLES2Camera(new GLES2Camera());
 	pCamera1_->SetBehavior(PBehavior(new CameraBehavior()));
 
@@ -108,9 +111,9 @@ void MyApp::Start()
 	pSkin2_->pMesh =  PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, GL_STATIC_DRAW));
 	//pSkin2_->pMesh->EnableDepthTest(false);
 	//pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
-	//pSkin1_->pActiveMaterial->SetMainTexture(pCellTexture);
+	//pSkin1_->pActiveMaterial->SetTexture0(pCellTexture);
 
-	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 1024, 1024, nullptr));
+	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, 1024, 1024, nullptr));
 
 	pSkin2_->pActiveMaterial->SetTexture0(pCellTexture);
 	pSkin1_->pNormalMaterial->SetTexture0(pRenderedTexture_);
@@ -123,12 +126,12 @@ void MyApp::Start()
     //pModel_ = PModel(new Model("spider.obj"));
     pModel_->SetBehavior(PBehavior(new ModelBehavior()));
 
-    pFilteredTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 16, 16, nullptr));
+    pFilteredTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, 16, 16, nullptr));
 
     //pFilter_ = PGLES2Filter(new GLES2Filter(pRenderedTexture_, pFilteredTexture_, fShader));
     pFilter_ = PGLES2Filter(new GLES2FilterBlur(pRenderedTexture_, pFilteredTexture_));
 
-    pBlendedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, GL_UNSIGNED_BYTE, 1024, 1024, nullptr));
+    pBlendedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, 1024, 1024, nullptr));
 
     pFilterBlend_ = PGLES2Filter(new GLES2FilterBlend(pFilteredTexture_, pRenderedTexture_, pBlendedTexture_));
 }
@@ -335,13 +338,12 @@ void MyApp::RenderGUIFrame()
 void MyApp::RenderFrame() 
 {
 	//TRACE_LOG("MyApp::RenderFrame");
-
     pCamera1_->Activate();
 
 	pRender2Texture_->Begin();
     //pCubeSceneNode_->Render(true);
     //pEarthSceneNode_->Render(true);
-    pModel_->GetSceneNode()->Render(true);
+    //pModel_->GetSceneNode()->Render(true);
     pRender2Texture_->End();
 
 	float deltaTime = App::GetPtrInstance()->GetDeltaTime();
@@ -353,7 +355,8 @@ void MyApp::RenderFrame()
 
     //pRenderedTexture_->Show(pRenderedTexture_);
     //pFilteredTexture_->Show(pFilteredTexture_);
-    pBlendedTexture_->Show(pBlendedTexture_);
+    
+    //pBlendedTexture_->Show(pBlendedTexture_);
     
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -364,6 +367,7 @@ void MyApp::RenderFrame()
 void MyApp::ViewChanged(int32_t width, int32_t height) 
 {
     //aspectRatio_ = (float)height/(float)width;
+    //InvalidateContext();
 }
 
 void MyApp::OnMouseMove(float x, float y)
@@ -376,5 +380,6 @@ void MyApp::OnMouseDown(float x, float y)
 
 void MyApp::OnMouseUp()
 {
+	
 }
 

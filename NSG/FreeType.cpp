@@ -23,62 +23,24 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "TextBehavior.h"
-#include <string>
-#include <sstream>
+#include "FreeType.h"
+#include "Check.h"
 
-
-TextBehavior::TextBehavior()
+namespace NSG
 {
+   	FreeType::FreeType()
+    {
+	    if(FT_Init_FreeType(&obj_)) 
+	    {
+		    CHECK_ASSERT(false && "Can not init freetype library.", __FILE__, __LINE__);
+	    }
+    }
 
+    FreeType::~FreeType()
+    {
+        if(FT_Done_FreeType(obj_))
+	    {
+		    CHECK_ASSERT(false && "Cannot remove freetype library.", __FILE__, __LINE__);
+	    }
+    }
 }
-	
-TextBehavior::~TextBehavior()
-{
-
-}
-
-void TextBehavior::Start()
-{
-	PNode pParent(new Node);
-	pSceneNode_->SetParent(pParent);
-
-    pText_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_STATIC_DRAW));
-
-    pSceneNode_->SetMesh(pText_);
-
-    PGLES2Material pMaterial(new GLES2Material());
-    pMaterial->SetTexture0(pText_->GetAtlas());
-    pMaterial->SetProgram(pText_->GetProgram());
-    pSceneNode_->SetMaterial(pMaterial);
-}
-
-void TextBehavior::Update()
-{
-//    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
-
-	pSceneNode_->GetParent()->SetPosition(Vertex3(-pText_->GetWidth()/2, 0, 0.2f));
-
-}
-
-void TextBehavior::Render()
-{
-	GLES2Camera* pCamera = GLES2Camera::Deactivate();
-
-	pSceneNode_->Render(true);
-
-	GLES2Camera::Activate(pCamera);
-
-    //pText_->GetAtlas()->Show(pText_->GetAtlas());
-}
-
-void TextBehavior::OnMouseDown(float x, float y)
-{
-	GLushort id = pApp_->GetSelectedNode();
-
-    std::stringstream ss;
-    ss << "Selected Id=" << std::hex << id;
-
-    pText_->SetText(ss.str());
-}
-

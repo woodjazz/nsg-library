@@ -54,8 +54,6 @@ namespace NSG
 		vertexData.position_ = Vertex3(-halfX, halfY, 0);
 		vertexData.uv_ = Vertex2(0, 0);
 		data.push_back(vertexData);		
-
-		Redo();
 	}
 
 	GLES2RectangleMesh::~GLES2RectangleMesh() 

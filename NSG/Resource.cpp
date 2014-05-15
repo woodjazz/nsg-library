@@ -67,11 +67,26 @@ namespace NSG
 #endif
 	}
 
+	Resource::Resource(const char* buffer, size_t bytes)
+	: pData_(nullptr),
+	bytes_(0),
+	loaded_(true)
+	{
+		if(buffer != nullptr)
+		{
+			CHECK_ASSERT(bytes > 0, __FILE__, __LINE__);
+			bytes_ = bytes;
+			buffer_.resize(bytes);
+			pData_ = buffer_.c_str();
+			memcpy((void*)pData_, buffer, bytes);
+		}
+	}
+
 	Resource::~Resource()
 	{
 	}
 
-	const unsigned char* const Resource::GetData() const
+	const char* const Resource::GetData() const
 	{
 		return pData_;
 	}
@@ -81,13 +96,13 @@ namespace NSG
 		return bytes_;
 	}
 
-	bool Resource::IsReady()
+	bool Resource::IsLoaded()
 	{
 		if(loaded_) return true;
 
 	#if NACL
 		if(!pLoader_->IsDone()) return false;
-		pData_ = (const unsigned char*)(pLoader_->GetData().c_str());
+		pData_ = pLoader_->GetData().c_str();
 		bytes_ = pLoader_->GetData().size();
 	#elif ANDROID
 		assert(pAAssetManager_ != nullptr);
@@ -100,7 +115,7 @@ namespace NSG
 		off_t filelength = AAsset_getLength(pAsset);
         buffer_.resize((int)filelength);
         AAsset_read(pAsset, &buffer_[0],filelength);
-		pData_ = (const unsigned char*)buffer_.c_str();
+		pData_ = buffer_.c_str();
 		bytes_ = buffer_.size();    
 		AAsset_close(pAsset);    
 	#else
@@ -122,7 +137,7 @@ namespace NSG
         file.seekg(0,std::ios::beg);
         buffer_.resize((int)filelength);
         file.read(&buffer_[0],filelength);
-		pData_ = (const unsigned char*)buffer_.c_str();
+		pData_ = buffer_.c_str();
 		bytes_ = buffer_.size();
 	#endif	
 		loaded_ = true;

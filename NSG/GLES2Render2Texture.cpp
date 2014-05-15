@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
+#include "Context.h"
 #include <assert.h>
 #include <algorithm>
 
@@ -35,10 +36,31 @@ namespace NSG
 	GLES2Render2Texture::GLES2Render2Texture(PGLES2Texture pTexture, bool createDepthBuffer)
 	: pTexture_(pTexture),
     pApp_(App::GetPtrInstance()),
-    createDepthBuffer_(createDepthBuffer)
+    createDepthBuffer_(createDepthBuffer),
+    enabled_(false)
 	{
+        Context::this_->Add(this);
+	}
+
+	GLES2Render2Texture::~GLES2Render2Texture()
+	{
+        Context::this_->Remove(this);
+	}
+
+    bool GLES2Render2Texture::IsValid()
+    {
+        return pTexture_->IsReady();
+    }
+
+    void GLES2Render2Texture::AllocateResources()
+    {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        CHECK_ASSERT(pTexture != nullptr, __FILE__, __LINE__);
+
+        auto windowSize = App::GetPtrInstance()->GetViewSize();
+
+        CHECK_ASSERT(windowSize.first > 0 && windowSize.second > 0, __FILE__, __LINE__);
+
+        CHECK_ASSERT(pTexture_ != nullptr, __FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
 
@@ -47,11 +69,17 @@ namespace NSG
             glGenRenderbuffers(1, &depthRenderBuffer_);
         }
 
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
-		//////////////////////////////////////////////////////////////////////////////////
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        //////////////////////////////////////////////////////////////////////////////////
         // The color buffer
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTexture_->GetID(), 0);
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         if(createDepthBuffer_)
         {
@@ -63,56 +91,80 @@ namespace NSG
             //////////////////////////////////////////////////////////////////////////////////
         }
 
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if(GL_FRAMEBUFFER_COMPLETE != status)
         {
-            TRACE_LOG("Frame buffer failed with error=" << status);
+            TRACE_LOG("Frame buffer failed with error=0x" << std::hex << status);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
+    }
 
-	GLES2Render2Texture::~GLES2Render2Texture()
-	{
+    void GLES2Render2Texture::ReleaseResources()
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
         if(createDepthBuffer_)
         {
             glDeleteRenderbuffers(1, &depthRenderBuffer_);
         }
 
-		glDeleteFramebuffers(1, &framebuffer_);
-	}
+        glDeleteFramebuffers(1, &framebuffer_);
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        enabled_ = false;
+    }
 
 	void GLES2Render2Texture::Begin()
 	{
-        glGetFloatv(GL_COLOR_CLEAR_VALUE, &clear_color_[0]);
-        glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
-        glGetBooleanv(GL_DEPTH_TEST, &depth_enable_);
-        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
+        if(IsReady())
+        {
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-        glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
-        glEnable(GL_DEPTH_TEST);
-        glClearColor(0, 0, 0, 0);
-        glClearDepth(1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glGetFloatv(GL_COLOR_CLEAR_VALUE, &clear_color_[0]);
+            glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
+            glGetBooleanv(GL_DEPTH_TEST, &depth_enable_);
+            glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
+
+    		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+            glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
+            glEnable(GL_DEPTH_TEST);
+            glClearColor(0, 0, 0, 0);
+            glClearDepth(1);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+
+            enabled_ = true;
+        }
         
 	}
 
 	void GLES2Render2Texture::End()
 	{
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(viewport_.x, viewport_.y, viewport_.z, viewport_.w); 
-
-        if(!depth_enable_)
+        if(IsReady() && enabled_)
         {
-            glDisable(GL_DEPTH_TEST);
-        }
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        glClearColor(clear_color_[0], clear_color_[1], clear_color_[2], clear_color_[3]);
-        glClearDepth(clear_depth_);
-        //glClear(GL_DEPTH_BUFFER_BIT);
-        
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(viewport_.x, viewport_.y, viewport_.z, viewport_.w); 
+
+            if(!depth_enable_)
+            {
+                glDisable(GL_DEPTH_TEST);
+            }
+
+            glClearColor(clear_color_[0], clear_color_[1], clear_color_[2], clear_color_[3]);
+            glClearDepth(clear_depth_);
+            //glClear(GL_DEPTH_BUFFER_BIT);
+
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+
+            enabled_ = false;
+        }        
 	}
-
 }

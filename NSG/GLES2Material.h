@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2Texture.h"
 #include "GLES2Program.h"
+#include "GLES2GPUObject.h"
 #include "Node.h"
 #include <memory>
 #include <vector>
@@ -44,7 +45,7 @@ namespace NSG
 	};
 
 	class UseMaterial;
-	class GLES2Material
+	class GLES2Material : public GLES2GPUObject
 	{
 	public:
 		GLES2Material();
@@ -59,7 +60,6 @@ namespace NSG
 		void SetTexture1(PGLES2Texture pTexture);
         PGLES2Texture GetTexture0() const { return pTexture0_; }
         PGLES2Texture GetTexture1() const { return pTexture1_; }
-		bool IsReady();
 		GLuint GetTextCoordAttLocation() { return texcoord_loc_; }
 		GLuint GetPositionAttLocation() { return position_loc_; }
 		GLuint GetNormalAttLocation() { return normal_loc_; }
@@ -76,6 +76,10 @@ namespace NSG
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
 		void Render(bool solid, Node* pNode, GLES2Mesh* pMesh);
+
+		virtual bool IsValid();
+		virtual void AllocateResources();
+		virtual void ReleaseResources();
 
 	private:
 		ExtraMaterialUniforms* pExtraMaterialUniforms_;
@@ -116,7 +120,6 @@ namespace NSG
 	    typedef std::vector<LightLoc> LightsLoc;
 	    LightsLoc lightsLoc_;
 
-        bool loaded_;
         Color ambient_;
         Color diffuse_;
         Color specular_;

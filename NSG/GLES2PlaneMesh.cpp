@@ -77,8 +77,6 @@ namespace NSG
 	            indexes_.push_back((y+1)*columns + x);
 	        }
 	    }
-
-	    Redo();
 	}
 
 	GLES2PlaneMesh::~GLES2PlaneMesh() 

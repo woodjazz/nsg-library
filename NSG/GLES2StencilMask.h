@@ -27,12 +27,13 @@ misrepresented as being the original software.
 #include <memory>
 #include "GLES2Includes.h"
 #include "GLES2Material.h"
+#include "GLES2GPUObject.h"
 
 namespace NSG
 {
 	class Node;
 	class GLES2Mesh;
-	class GLES2StencilMask
+	class GLES2StencilMask : public GLES2GPUObject
 	{
 	public:
 		GLES2StencilMask();
@@ -40,12 +41,16 @@ namespace NSG
 		void Begin();
 		void Render(Node* pNode, GLES2Mesh* pMesh);
 		void End();
+		virtual bool IsValid();
+		virtual void AllocateResources();
+		virtual void ReleaseResources();
 	private:
 		GLboolean save_color_mask_[4];
 		GLboolean save_depth_mask_;
 		PGLES2Program pProgram_;
         GLuint position_loc_;
         GLuint mvp_loc_;
+        bool enabled_;
 	};
 
     typedef std::shared_ptr<GLES2StencilMask> PGLES2StencilMask;

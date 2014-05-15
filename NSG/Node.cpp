@@ -65,6 +65,20 @@ namespace NSG
         }
     }
 
+    void Node::SetParent(Node* pParent)
+    {
+		struct D 
+		{ 
+		    void operator()(Node* p) const 
+		    {
+		        //delete p; //do not delete
+		    }
+		};    	
+
+		PNode pNode(pParent, D());
+		SetParent(pNode);
+    }
+
 	void Node::SetPosition(const Vertex3& position)
 	{
 		position_ = position;

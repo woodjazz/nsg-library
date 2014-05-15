@@ -83,7 +83,6 @@ namespace NSG
 
 		NaCl3DInstance::~NaCl3DInstance()
 		{
-			pApp_->Release();
 		}
 
 		pp::Instance* NaCl3DInstance::GetInstance()
@@ -114,7 +113,6 @@ namespace NSG
 					TRACE_LOG("InitGL has failed!")
 					return; // failed.
 				}
-				pApp_->Initialize();
 				pApp_->ViewChanged(width_, height_);
 				MainLoop(0);
 			} 

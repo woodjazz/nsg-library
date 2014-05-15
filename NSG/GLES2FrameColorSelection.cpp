@@ -28,6 +28,8 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "SceneNode.h"
 #include "GLES2Camera.h"
+#include "App.h"
+#include "Context.h"
 #include <assert.h>
 
 static const char* vShader = STRINGIFY(
@@ -52,11 +54,11 @@ namespace NSG
 {
 	GLES2FrameColorSelection::GLES2FrameColorSelection(bool createDepthBuffer)
 	: pProgram_(new GLES2Program(vShader, fShader)),
-	position_loc_(pProgram_->GetAttributeLocation("a_position")),
-	color_loc_(pProgram_->GetUniformLocation("u_color")),
-	mvp_loc_(pProgram_->GetUniformLocation("u_mvp")),
-	windowWidth_(0),
-	windowHeight_(0),
+    position_loc_(-1),
+    color_loc_(-1),
+    mvp_loc_(-1),
+    windowWidth_(0),
+    windowHeight_(0),
 	screenX_(0),
 	screenY_(0),
 	pixelX_(0),
@@ -66,10 +68,39 @@ namespace NSG
 	{
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
+        Context::this_->Add(this);
+	}
+
+	GLES2FrameColorSelection::~GLES2FrameColorSelection()
+	{
+        Context::this_->Remove(this);
+	}
+
+	bool GLES2FrameColorSelection::IsValid()
+    {
+        return pProgram_->IsReady();
+    }
+
+	void GLES2FrameColorSelection::AllocateResources()
+    {
+        auto windowSize = App::GetPtrInstance()->GetViewSize();
+        
+        windowWidth_ = windowSize.first;
+        
+        windowHeight_ = windowSize.second;
+
+        CHECK_ASSERT(windowWidth_ > 0 && windowHeight_ > 0, __FILE__, __LINE__);
+
+        position_loc_ = pProgram_->GetAttributeLocation("a_position");
+        color_loc_ = pProgram_->GetUniformLocation("u_color");
+        mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
         glGenFramebuffers(1, &framebuffer_);
         glGenRenderbuffers(1, &colorRenderbuffer_);
 
-        if(createDepthBuffer)
+        if(createDepthBuffer_)
         {
             glGenRenderbuffers(1, &depthRenderBuffer_);
         }
@@ -78,34 +109,15 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	}
-
-	GLES2FrameColorSelection::~GLES2FrameColorSelection()
-	{
-        if(createDepthBuffer_)
-        {
-            glDeleteRenderbuffers(1, &depthRenderBuffer_);
-        }
-
-        glDeleteRenderbuffers(1, &colorRenderbuffer_);
-        glDeleteFramebuffers(1, &framebuffer_);
-	}
-
-	void GLES2FrameColorSelection::ViewChanged(int32_t windowWidth, int32_t windowHeight)
-	{
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-		windowWidth_ = windowWidth;
-		windowHeight_ = windowHeight;
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
         //////////////////////////////////////////////////////////////////////////////////
         // Color buffer
         glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
 #if defined(NACL) || defined(ANDROID)
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, windowWidth, windowHeight);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, windowWidth_, windowHeight_);
 #else                
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, windowWidth, windowHeight);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, windowWidth_, windowHeight_);
 #endif  
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
         //////////////////////////////////////////////////////////////////////////////////              
@@ -115,7 +127,7 @@ namespace NSG
             //////////////////////////////////////////////////////////////////////////////////
             // The depth buffer
             glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, windowWidth, windowHeight);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, windowWidth_, windowHeight_);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
             //////////////////////////////////////////////////////////////////////////////////
         }
@@ -128,62 +140,93 @@ namespace NSG
             TRACE_LOG("Frame buffer failed with error=" << status);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
+
+	void GLES2FrameColorSelection::ReleaseResources()
+    {
+        if(createDepthBuffer_)
+        {
+            glDeleteRenderbuffers(1, &depthRenderBuffer_);
+        }
+
+        glDeleteRenderbuffers(1, &colorRenderbuffer_);
+        glDeleteFramebuffers(1, &framebuffer_);
+    }
+
+	void GLES2FrameColorSelection::ViewChanged(int32_t windowWidth, int32_t windowHeight)
+	{
+        Invalidate();
 	}
 
     void GLES2FrameColorSelection::Begin(float screenX, float screenY)
     {
-        enabled_ = true;
+        if(IsReady())
+        {
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-    	screenX_ = screenX;
-    	screenY_ = screenY;
+            enabled_ = true;
 
-        pixelX_ = (GLint)((1 + screenX)/2.0f * windowWidth_);
-        pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
+    	    screenX_ = screenX;
+    	    screenY_ = screenY;
 
-        glGetFloatv(GL_COLOR_CLEAR_VALUE, &clear_color_[0]);
-        glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
-        glGetBooleanv(GL_BLEND, &blend_enable_);
-        glGetBooleanv(GL_DEPTH_TEST, &depth_enable_);
+            pixelX_ = (GLint)((1 + screenX)/2.0f * windowWidth_);
+            pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
+
+            glGetFloatv(GL_COLOR_CLEAR_VALUE, &clear_color_[0]);
+            glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
+            glGetBooleanv(GL_BLEND, &blend_enable_);
+            glGetBooleanv(GL_DEPTH_TEST, &depth_enable_);
         
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-        glDisable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
 
-        glClearColor(0, 0, 0, 0);
-        glClearDepth(1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClearColor(0, 0, 0, 0);
+            glClearDepth(1);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 #ifndef ANDROID
-        glEnable(GL_SCISSOR_TEST);
-        glScissor(pixelX_,pixelY_,1,1);
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(pixelX_,pixelY_,1,1);
 #endif
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+        }
     }
 
     void GLES2FrameColorSelection::End()
     {
-        //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(pixelX_, pixelY_, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &selected_);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        if(blend_enable_)
+        if(enabled_ && IsReady())
         {
-            glEnable(GL_BLEND);
-        }
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        if(!depth_enable_)
-        {
-            glDisable(GL_DEPTH_TEST);
-        }
+            //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glReadPixels(pixelX_, pixelY_, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &selected_);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            if(blend_enable_)
+            {
+                glEnable(GL_BLEND);
+            }
+
+            if(!depth_enable_)
+            {
+                glDisable(GL_DEPTH_TEST);
+            }
 
 #ifndef ANDROID
-        glDisable(GL_SCISSOR_TEST);
+            glDisable(GL_SCISSOR_TEST);
 #endif        
-        glClearColor(clear_color_[0], clear_color_[1], clear_color_[2], clear_color_[3]);
-        glClearDepth(clear_depth_);
-        //glClear(GL_DEPTH_BUFFER_BIT);
+            glClearColor(clear_color_[0], clear_color_[1], clear_color_[2], clear_color_[3]);
+            glClearDepth(clear_depth_);
+            //glClear(GL_DEPTH_BUFFER_BIT);
         
-        enabled_ = false;
+            enabled_ = false;
+
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+        }
     }
 
     GLushort GLES2FrameColorSelection::GetSelected() const
@@ -215,19 +258,18 @@ namespace NSG
 
     void GLES2FrameColorSelection::Render(GLushort id, GLES2Mesh* pMesh, Node* pNode)
     {
-        CHECK_ASSERT(enabled_ && "Rendering to select when disabled!!!", __FILE__, __LINE__);
+        if(IsReady() && enabled_)
+        {
+            UseProgram useProgram(*pProgram_);
+
+            Color color = TransformSelectedId2Color(id);
         
-        UseProgram useProgram(*pProgram_);
+            glUniform4fv(color_loc_, 1, &color[0]);
 
-        Color color = TransformSelectedId2Color(id);
-        
-        glUniform4fv(color_loc_, 1, &color[0]);
+            Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
+            glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));        
 
-        Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
-        glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));        
-
-        pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1, -1);
+            pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1, -1);
+        }
     }
-
-
 }

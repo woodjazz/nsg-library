@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "GLES2IndexBuffer.h"
 #include "Types.h"
 #include "Node.h"
+#include "GLES2GPUObject.h"
 
 namespace NSG
 {
@@ -46,20 +47,21 @@ namespace NSG
 	typedef GLushort IndexType;
 	typedef std::vector<IndexType> Indexes;
 
-	class GLES2Mesh
+	class GLES2Mesh : public GLES2GPUObject
 	{
 	public:
 		GLES2Mesh(GLenum usage);
 		~GLES2Mesh();
 		void Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc);
-		void Redo();
 		virtual GLenum GetWireFrameDrawMode() const = 0;
 		virtual GLenum GetSolidDrawMode() const = 0;
+		virtual bool IsValid();
+		virtual void AllocateResources();
+		virtual void ReleaseResources();
 	protected:
 		typedef std::vector<VertexData> Data;
 		Data vertexsData_;
 		Indexes indexes_;
-    private:
 		PGLES2IndexBuffer pIBuffer_;
 		PGLES2VertexBuffer pVBuffer_;
 		GLenum usage_;

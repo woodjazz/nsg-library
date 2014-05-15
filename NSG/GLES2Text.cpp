@@ -85,6 +85,8 @@ namespace NSG
 	height_(0),
 	fontSize_(fontSize)
     {
+    	CHECK_GL_STATUS(__FILE__, __LINE__);
+
     	Key k(filename, fontSize);
     	auto it = fontAtlas.find(k);
     	if(it != fontAtlas.end())
@@ -96,10 +98,35 @@ namespace NSG
     		pAtlas_ = PGLES2FontAtlasTexture(new GLES2FontAtlasTexture(filename, fontSize));
 			fontAtlas.insert(Atlas::value_type(k, pAtlas_));
     	}
+
+    	CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
 	GLES2Text::~GLES2Text() 
 	{
+	}
+
+	bool GLES2Text::IsValid()
+	{
+		return pProgram_->IsReady() && pAtlas_->IsReady() && GLES2Mesh::IsValid();
+	}
+
+	void GLES2Text::AllocateResources()
+	{
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		CHECK_ASSERT(pVBuffer_ == nullptr, __FILE__, __LINE__);
+		CHECK_ASSERT(pIBuffer_ == nullptr, __FILE__, __LINE__);
+
+		CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
+		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
+		pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0], usage_));
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+	}
+
+	void GLES2Text::ReleaseResources()
+	{
+        pVBuffer_ = nullptr;
 	}
 
 	void GLES2Text::ReleaseAtlasCollection()
@@ -167,15 +194,13 @@ namespace NSG
 
 	void GLES2Text::SetText(const std::string& text) 
 	{
-        if(!pAtlas_->IsReady())
+        if(!pProgram_->IsReady() || !pAtlas_->IsReady())
             return;
 
 		auto viewSize = pApp_->GetViewSize();
 
 		if(lastText_ != text || viewSize.first != width_ || viewSize.second != height_)
 		{
-		    vertexsData_.clear();
-
 			width_ = viewSize.first;
 			height_ = viewSize.second;
 
@@ -185,7 +210,9 @@ namespace NSG
 				float y = 0;
 
 				float sx = 2.0f/width_;
-			    float sy = 2.0f/height_;    
+			    float sy = 2.0f/height_;   
+
+                vertexsData_.clear();
 
 		        vertexsData_.resize(6 * text.size());
 
@@ -245,9 +272,9 @@ namespace NSG
 	            screenWidth_ = x;
 
 				lastText_ = text;
+
+                Invalidate();
 			}
-            
-            Redo();
 		}
 	}	
 

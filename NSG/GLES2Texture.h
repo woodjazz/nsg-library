@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Resource.h"
 #include "Types.h"
+#include "GLES2GPUObject.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -37,18 +38,21 @@ misrepresented as being the original software.
 namespace NSG
 {
 	class BindTexture;
-	class GLES2Texture
+	class GLES2Texture : public GLES2GPUObject
 	{
 	public:
 		GLES2Texture(const char* filename);
-		GLES2Texture(GLint format, GLenum type, GLsizei width, GLsizei height, const GLvoid* pixels); 
+		GLES2Texture(GLint format, GLsizei width, GLsizei height, const char* pixels); 
 		~GLES2Texture();
-		virtual bool IsReady();
 		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
 		GLuint GetID() const { return texture_; }
 		void Show(PGLES2Texture pTexture);
 		GLsizei GetWidth() const { return width_; }
 		GLsizei GetHeight() const { return height_; }
+		GLint GetFormat() const { return format_; }
+		virtual bool IsValid();
+		virtual void AllocateResources();
+		virtual void ReleaseResources();
 
 	private:
 		void InitializeCommonSettings();
@@ -57,11 +61,11 @@ namespace NSG
 		std::string filename_;
 		GLuint texture_;
 		PResource pResource_;
-		bool isLoaded_;
         PGLES2Material pMaterial_; // used to show the texture on the screen
 		PGLES2Mesh pMesh_; // used to show the texture on the screen
 		GLsizei width_;
 		GLsizei height_;
+		GLint format_;
 
 		friend class BindTexture;
 	};

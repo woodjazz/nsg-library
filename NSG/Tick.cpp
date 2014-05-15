@@ -39,21 +39,17 @@ namespace NSG
 	{
 	}
 
-	void Tick::Initialize(int fps)
-	{
-		fps = std::max<int>(1, fps);
-		ticks_ = Milliseconds(1000 / fps);
-		fixed_ = 1.0f / (float)fps;
-		init_ = false;
-	}
-
 	void Tick::PerformTick()
 	{
 		if (!init_)
 		{
+            int fps = GetFPS();
+		    fps = std::max<int>(1, fps);
+		    ticks_ = Milliseconds(1000 / fps);
+		    fixed_ = 1.0f / (float)fps;
 			BeginTick();
-			init_ = true;
 			current_ = next_ = Clock::now();
+            init_ = true;
 		}
 
 		bool lock = false;

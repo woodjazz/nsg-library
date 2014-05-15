@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Log.h"
+#include "GLES2Includes.h"
 
 #define CHECK_ASSERT(f, file, line) if (!(f)) {\
 	TRACE_LOG((#f) << " has failed in file " << file << " line " << line);\

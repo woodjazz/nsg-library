@@ -27,20 +27,23 @@ misrepresented as being the original software.
 
 #include "GLES2Includes.h"
 #include "GLES2Texture.h"
+#include "GLES2GPUObject.h"
 #include <memory>
 
 namespace NSG
 {
 	class App;
-	class GLES2Render2Texture
+	class GLES2Render2Texture : public GLES2GPUObject
 	{
 	public:
 		GLES2Render2Texture(PGLES2Texture pTexture, bool createDepthBuffer);
 		~GLES2Render2Texture();
 		void Begin();
 		void End();
-
 	private:
+		virtual bool IsValid();
+		virtual void AllocateResources();
+		virtual void ReleaseResources();
 		PGLES2Texture pTexture_;
 		GLuint framebuffer_;
 		GLuint depthRenderBuffer_;
@@ -50,6 +53,7 @@ namespace NSG
 		GLboolean depth_enable_;
 		App* pApp_;
 		bool createDepthBuffer_;
+		bool enabled_;
 	};
 
 	typedef std::shared_ptr<GLES2Render2Texture> PGLES2Render2Texture;

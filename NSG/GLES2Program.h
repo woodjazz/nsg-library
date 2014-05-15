@@ -31,22 +31,24 @@ misrepresented as being the original software.
 #include "GLES2VShader.h"
 #include "GLES2FShader.h"
 #include "Resource.h"
+#include "GLES2GPUObject.h"
 
 namespace NSG 
 {
 	class UseProgram;
-	class GLES2Program
+	class GLES2Program : public GLES2GPUObject
 	{
 	public:
 
 		GLES2Program(PResource pRVShader, PResource pRFShader);
 		GLES2Program(const char* vShader, const char* fShader);
-		GLES2Program(PGLES2VShader pVShader, PGLES2FShader pFShader);
 		~GLES2Program();
 		void Initialize();
 		GLuint GetAttributeLocation(const std::string& name);
 		GLuint GetUniformLocation(const std::string& name);
-		bool IsReady();
+		virtual bool IsValid();
+		virtual void AllocateResources();
+		virtual void ReleaseResources();
 	private:
 		operator const GLuint() const { return id_; }
 		GLuint GetId() const { return id_; }
@@ -58,7 +60,6 @@ namespace NSG
 		PResource pRFShader_;
 		const char* vShader_;
 		const char* fShader_;
-		bool loaded_;
 		friend class UseProgram;
 	};
 

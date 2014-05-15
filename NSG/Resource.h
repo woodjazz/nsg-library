@@ -38,15 +38,16 @@ namespace NSG
 	{
 	public:
 		Resource(const char* filename);
+		Resource(const char* buffer, size_t bytes);
 		~Resource();
-		bool IsReady();
-		const unsigned char* const GetData() const;
+		bool IsLoaded();
+		const char* const GetData() const;
 		size_t GetBytes() const;
         std::string GetFilename() const { return filename_; }
 	private:
 		bool loaded_;
 		std::string filename_;
-		const unsigned char* pData_;
+		const char* pData_;
 		std::string buffer_;
 		size_t bytes_;
 	#if NACL		

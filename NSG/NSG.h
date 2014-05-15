@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Util.h"
 #include "Constants.h"
+#include "Check.h"
 
 
 #include "GLES2Camera.h"
@@ -45,7 +46,7 @@ misrepresented as being the original software.
 #include "GLES2Text.h"
 #include "GLES2Texture.h"
 #include "GLES2Light.h"
-#include "GLES2IMGUI.h"
+#include "IMGUI.h"
 #include "GLES2Render2Texture.h"
 #include "GLES2Filter.h"
 #include "GLES2FilterBlur.h"
