@@ -30,8 +30,6 @@ misrepresented as being the original software.
 namespace NSG
 {
 	SceneNode::SceneNode() 
-	: pApp_(App::GetPtrInstance()),
-	pSelection_(pApp_->GetSelection())
 	{
 	}
 		
@@ -95,7 +93,7 @@ namespace NSG
 	{
         if(pMesh_)
         {
-		    pSelection_->Render(this);
+		    Context::this_->pFrameColorSelection_->Render(this);
         }
 
         auto it = children_.begin();

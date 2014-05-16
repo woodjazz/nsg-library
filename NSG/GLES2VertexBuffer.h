@@ -38,6 +38,4 @@ namespace NSG
 
 		~GLES2VertexBuffer();
 	};
-
-	typedef std::shared_ptr<GLES2VertexBuffer> PGLES2VertexBuffer;
 }

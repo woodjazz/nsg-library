@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "GLES2Text.h"
 #include "IMGUISkin.h"
+#include "Singleton.h"
 #include <memory>
 #include <map>
 #include <string>
@@ -34,7 +35,7 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		class TextManager
+		class TextManager : public Singleton<TextManager>
 		{
 		public:
 			TextManager();
@@ -57,6 +58,5 @@ namespace NSG
 			TextMap textMap_;
 		};
 
-		typedef std::shared_ptr<TextManager> PTextManager;
 	}
 }

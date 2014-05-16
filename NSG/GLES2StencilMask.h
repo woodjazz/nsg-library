@@ -52,6 +52,4 @@ namespace NSG
         GLuint mvp_loc_;
         bool enabled_;
 	};
-
-    typedef std::shared_ptr<GLES2StencilMask> PGLES2StencilMask;
 }

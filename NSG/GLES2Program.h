@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "GLES2FShader.h"
 #include "Resource.h"
 #include "GLES2GPUObject.h"
+#include "SharedPointers.h"
 
 namespace NSG 
 {
@@ -39,7 +40,6 @@ namespace NSG
 	class GLES2Program : public GLES2GPUObject
 	{
 	public:
-
 		GLES2Program(PResource pRVShader, PResource pRFShader);
 		GLES2Program(const char* vShader, const char* fShader);
 		~GLES2Program();
@@ -62,8 +62,6 @@ namespace NSG
 		const char* fShader_;
 		friend class UseProgram;
 	};
-
-	typedef std::shared_ptr<GLES2Program> PGLES2Program;
 
 	class UseProgram
 	{

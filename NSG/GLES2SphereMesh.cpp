@@ -33,7 +33,7 @@ namespace NSG
 	GLES2SphereMesh::GLES2SphereMesh(float radius, int res, GLenum usage) 
 	: GLES2Mesh(usage)
 	{
-        GLES2Mesh::Data& data = vertexsData_;
+        VertexsData& data = vertexsData_;
 
 		int doubleRes = res*2;
 		float polarInc = PI/(res); // ringAngle

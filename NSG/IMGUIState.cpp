@@ -23,54 +23,21 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "LightBehavior.h"
+#include "IMGUIState.h"
+#include <cstring>
 
-static const char* vShader = STRINGIFY(
-	uniform mat4 u_mvp;
-	attribute vec4 a_position;
-	void main()
+namespace NSG 
+{
+	namespace IMGUI
 	{
-		gl_Position = u_mvp * a_position;
+		State::State()
+		{
+			memset(this, 0, sizeof(*this));
+		}
+
+		State::~State()
+		{
+			
+		}
 	}
-);
-
-static const char* fShader = STRINGIFY(
-	void main()
-	{
-		gl_FragColor = vec4(1,1,0,1);
-	}
-);
-
-
-LightBehavior::LightBehavior()
-{
 }
-	
-LightBehavior::~LightBehavior()
-{
-
-}
-
-void LightBehavior::Start()
-{
-	PGLES2Material pMaterial(new GLES2Material());
-	PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-    pMaterial->SetProgram(pProgram);
-    pSceneNode_->SetMaterial(pMaterial);
-
-	PGLES2Mesh pMesh(new GLES2SphereMesh(0.2f, 32, GL_STATIC_DRAW));
-	pSceneNode_->SetMesh(pMesh);
-
-    pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
-}
-
-void LightBehavior::Update()
-{
-//    float deltaTime = App::this_->GetDeltaTime();
-}
-
-void LightBehavior::Render()
-{
-	//pSceneNode_->Render(true);
-}
-

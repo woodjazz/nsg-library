@@ -74,3 +74,13 @@ misrepresented as being the original software.
 	}
 
 #endif
+
+namespace NSG
+{
+	struct ScopedLog
+	{
+		ScopedLog(const std::string& msg);
+		~ScopedLog();
+	};
+}
+

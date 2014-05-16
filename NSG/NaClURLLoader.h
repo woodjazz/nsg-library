@@ -11,14 +11,14 @@
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "NonCopyable.h"
+#include "SharedPointers.h"
 
 namespace NSG
 {
   namespace NaCl 
   {
-    class NaClURLLoader;
-    typedef std::shared_ptr<NaClURLLoader> PNaClURLLoader;
-    class NaClURLLoader : NSG::NonCopyable {
+    class NaClURLLoader : NSG::NonCopyable 
+    {
      public:
       static PNaClURLLoader Create(pp::Instance* instance_, const std::string& url);
       ~NaClURLLoader();

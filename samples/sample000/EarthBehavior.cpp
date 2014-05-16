@@ -56,7 +56,7 @@ void EarthBehavior::Start()
 
 void EarthBehavior::Update()
 {
-    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+    float deltaTime = App::this_->GetDeltaTime();
 
 	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
 	y_angle_ += glm::pi<float>()/10.0f * deltaTime;

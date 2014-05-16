@@ -31,7 +31,7 @@ namespace NSG
 	GLES2PlaneMesh::GLES2PlaneMesh(float width, float height, int columns, int rows, GLenum usage) 
 	: GLES2Mesh(usage)
 	{
-		GLES2Mesh::Data& data = vertexsData_;
+		VertexsData& data = vertexsData_;
 
 		Vertex3 vert;
 		Vertex3 normal(0, 0, 1); // always facing forward //

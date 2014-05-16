@@ -34,7 +34,7 @@ namespace NSG
 	{
 		float halfX = width * 0.5f;
 		float halfY = height * 0.5f;
-        GLES2Mesh::Data& data = vertexsData_;
+        VertexsData& data = vertexsData_;
 
 		VertexData vertexData;
 		vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward

@@ -26,22 +26,22 @@ misrepresented as being the original software.
 #pragma once
 
 #include <memory>
-#if NACL
-#include "ppapi/cpp/var.h"
-#elif ANDROID
-#include <android/asset_manager.h>
-#include <android/native_activity.h>
-#endif
-
 #include "Tick.h"
 #include "Context.h"
+#include "Singleton.h"
 #include "GLES2FrameColorSelection.h"
 
+class AAssetManager;
+class ANativeActivity;
+namespace pp
+{
+    class Var;
+}
 
 namespace NSG 
 {
     struct InternalApp;
-	class App 
+	class App : public Singleton<App>
 	{
 	public:
         App();
@@ -62,43 +62,28 @@ namespace NSG
         bool ShowKeyboard();
         bool HideKeyboard();
         bool IsKeyboardVisible() { return isKeyboardVisible_; }
-        static App* GetPtrInstance();
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
         void BeginSelection(float screenX, float screenY);
         void EndSelection();
-        PGLES2FrameColorSelection GetSelection() const { return pFrameColorSelection_; }
         GLushort GetSelectedNode() const { return selectedIndex_; }
         float GetDeltaTime() const { return deltaTime_; }
-        void InvalidateContext();
-
-#if NACL
 		virtual void HandleMessage(const pp::Var& var_message);
-#elif ANDROID
 		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
         AAssetManager* GetAssetManager() { return pAAssetManager_; }
         void SetActivity(ANativeActivity* pActivity) { pActivity_ = pActivity; }
-#endif
     private:
-        void Initialize();
-        void Release();
-#if ANDROID        
         AAssetManager* pAAssetManager_;
         ANativeActivity* pActivity_;
-#endif
         int32_t width_;
         int32_t height_;
-        PGLES2FrameColorSelection pFrameColorSelection_;
         GLushort selectedIndex_;
         bool isKeyboardVisible_;
         // The time in seconds it took to complete the last frame
         float deltaTime_;
         Context context_;
-        bool isInit_;
         friend struct InternalApp;
 	};
-
-	typedef std::shared_ptr<App> PApp;
 
     struct InternalApp : public Tick
     {
@@ -121,14 +106,11 @@ namespace NSG
         void RenderFrame();
         bool HideKeyboard();
         bool ShallExit() const;
-        void InvalidateContext();
-	#if NACL
+        void InvalidateGPUContext();
 		void HandleMessage(const pp::Var& var_message);
-	#elif ANDROID
 		void SetAssetManager(AAssetManager* pAAssetManager);
         void SetActivity(ANativeActivity* pActivity);
-	#endif
+	
     };
 
-    typedef std::shared_ptr<InternalApp> PInternalApp;
 }	

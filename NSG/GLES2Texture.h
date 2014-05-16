@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Resource.h"
 #include "Types.h"
+#include "SharedPointers.h"
 #include "GLES2GPUObject.h"
 #include <memory>
 #include <string>

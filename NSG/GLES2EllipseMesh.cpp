@@ -32,7 +32,7 @@ namespace NSG
 	GLES2EllipseMesh::GLES2EllipseMesh(float width, float height, int res, GLenum usage) 
 	: GLES2Mesh(usage)
 	{
-		GLES2Mesh::Data& data = vertexsData_;
+		VertexsData& data = vertexsData_;
 
 		float halfX = width*0.5f;
 		float halfY = height*0.5f;	

@@ -40,6 +40,4 @@ namespace NSG
     private:
         GLenum face_mode_;
 	};
-
-	typedef std::shared_ptr<GLES2ModelMesh> PGLES2ModelMesh;
 }

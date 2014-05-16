@@ -45,6 +45,4 @@ namespace NSG
 		int resY_;
 		int resZ_;
 	};
-
-	typedef std::shared_ptr<GLES2BoxMesh> PGLES2BoxMesh;
 }

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Node.h"
+#include "SharedPointers.h"
 #include <list>
 #include <map>
 
@@ -32,39 +33,35 @@ namespace NSG
 {
 	namespace IMGUI
 	{
+		struct LayoutArea
+		{
+			GLushort id_;
+			int percentage_;
+			PNode pNode_;
+			enum Type {Vertical, Horizontal, Control, Spacer};
+			Type type_;
+			float textOffsetX_;
+			unsigned int cursor_character_position_; 
+
+            struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
+            {
+                bool operator()(const PLayoutArea& a, const PLayoutArea& b) const
+                {
+                    return a->id_ < b->id_;
+                }
+            };
+
+			std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number)
+
+			LayoutArea(GLushort id, PNode pNode, Type type, int percentage) 
+			: id_(id), percentage_(percentage), pNode_(pNode), type_(type), textOffsetX_(0), cursor_character_position_(0)
+			{
+			}
+		};
+
 		class LayoutManager
 		{
         public:
-			struct LayoutArea;
-
-			typedef std::shared_ptr<LayoutArea> PLayoutArea;
-
-			struct LayoutArea
-			{
-				GLushort id_;
-				int percentage_;
-				PNode pNode_;
-				enum Type {Vertical, Horizontal, Control, Spacer};
-				Type type_;
-				float textOffsetX_;
-				unsigned int cursor_character_position_; 
-
-                struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
-                {
-                    bool operator()(const PLayoutArea& a, const PLayoutArea& b) const
-                    {
-                        return a->id_ < b->id_;
-                    }
-                };
-
-				std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number)
-
-				LayoutArea(GLushort id, PNode pNode, Type type, int percentage) 
-				: id_(id), percentage_(percentage), pNode_(pNode), type_(type), textOffsetX_(0), cursor_character_position_(0)
-				{
-				}
-			};
-
 			LayoutManager(PNode pRootNode, PNode pCurrentNode); 
 			PLayoutArea InsertNewArea(GLushort id, LayoutArea::Type type, int percentage);
 			void Reset();
@@ -90,7 +87,5 @@ namespace NSG
             PNode pRootNode_;
             PNode pCurrentNode_;
 		};
-
-		typedef std::shared_ptr<LayoutManager> PLayoutManager;
 	}
 }	

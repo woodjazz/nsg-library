@@ -49,14 +49,5 @@ namespace NSG
     typedef glm::mat3 Matrix3;
     typedef glm::vec4 Color;
 
-    class GLES2Mesh;
-    typedef std::shared_ptr<GLES2Mesh> PGLES2Mesh;
-
-    class GLES2Texture;
-    typedef std::shared_ptr<GLES2Texture> PGLES2Texture;
-
-    class GLES2Material;
-    typedef std::shared_ptr<GLES2Material> PGLES2Material;
-
     enum BLEND_MODE {NONE, ALPHA};
 }

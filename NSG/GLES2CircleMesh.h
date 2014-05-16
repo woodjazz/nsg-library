@@ -41,6 +41,4 @@ namespace NSG
 	private:
 		bool filled_;
 	};
-
-	typedef std::shared_ptr<GLES2CircleMesh> PGLES2CircleMesh;
 }

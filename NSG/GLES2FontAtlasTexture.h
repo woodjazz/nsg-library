@@ -27,9 +27,11 @@ misrepresented as being the original software.
 
 #include "GLES2Includes.h"
 #include "GLES2Texture.h"
+#include "GLES2Mesh.h"
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
 #include "Resource.h"
 
 namespace NSG
@@ -42,6 +44,9 @@ namespace NSG
 		virtual bool IsValid();
 		virtual void AllocateResources();
         virtual void ReleaseResources();
+        typedef std::vector<VertexData> CharMesh;
+        typedef std::map<char, CharMesh> CharsMesh;
+        CharsMesh GetCharsMesh() const { return charsMesh_; }
 
 		struct CharacterInfo 
 		{
@@ -64,14 +69,23 @@ namespace NSG
 		int GetAtlasWidth() const { return atlasWidth_; }
 		int GetAtlasHeight() const {return atlasHeight_; }
 
+		static const int MAXCHARS = 256;
+
+		bool SetTextMesh(const std::string& text, VertexsData& vertexsData, GLfloat& screenWidth, GLfloat& screenHeight);
+		GLfloat GetWidthForCharacterPosition(const char* text, unsigned int charPos);
+		unsigned int GetCharacterPositionForWidth(const char* text, float width);
+
 	private:
 		void CreateTextureAtlas();
+        void GenerateMeshesForAllChars();
 		int atlasWidth_;
 		int atlasHeight_;
 		CharsInfo charInfo_;
+		std::string filename_;
 		int fontSize_;
-
+		int32_t viewWidth_;
+		int32_t viewHeight_;
+        CharsMesh charsMesh_;
 	};
 
-	typedef std::shared_ptr<GLES2FontAtlasTexture> PGLES2FontAtlasTexture;
 }

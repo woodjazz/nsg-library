@@ -105,8 +105,8 @@ void MyApp::Start()
 	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cube_example.png"));
 	PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("Earthmap720x360_grid.jpg"));
 
-	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::pSkin));
-	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::pSkin));
+	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
+	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
 	pSkin2_->drawBorder = false;
 	pSkin2_->pMesh =  PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, GL_STATIC_DRAW));
 	//pSkin2_->pMesh->EnableDepthTest(false);
@@ -116,6 +116,7 @@ void MyApp::Start()
 	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, 1024, 1024, nullptr));
 
 	pSkin2_->pActiveMaterial->SetTexture0(pCellTexture);
+	//pSkin2_->pHotMaterial->SetTexture0(pCellTexture);
 	pSkin1_->pNormalMaterial->SetTexture0(pRenderedTexture_);
 
 
@@ -139,25 +140,25 @@ void MyApp::Start()
 void MyApp::Update() 
 {
 	//TRACE_LOG("MyApp::Update delta = " << Time::deltaTime);
-//    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+//    float deltaTime = App::this_->GetDeltaTime();
 
 }
 
 void MyApp::TestIMGUI2()
 {
-	IMGUI::pSkin->fontSize = 18;
+	IMGUI::Context::this_->pSkin_->fontSize = 18;
 
-	Vertex3 position = IMGUI::pCurrentNode->GetGlobalPosition();
-	Vertex3 size = IMGUI::pCurrentNode->GetGlobalScale();
+	Vertex3 position = IMGUI::Context::this_->pCurrentNode_->GetGlobalPosition();
+	Vertex3 size = IMGUI::Context::this_->pCurrentNode_->GetGlobalScale();
     
     
-    IMGUI::pCamera->SetNearClip(0.1f);
-    IMGUI::pCamera->DisableOrtho();
-    IMGUI::pCamera->SetPosition(position + Vertex3(0,0,size.x * 2));
-    IMGUI::pCamera->SetLookAt(Vertex3(0,0,0));
+    IMGUI::Context::this_->pCamera_->SetNearClip(0.1f);
+    IMGUI::Context::this_->pCamera_->DisableOrtho();
+    IMGUI::Context::this_->pCamera_->SetPosition(position + Vertex3(0,0,size.x * 2));
+    IMGUI::Context::this_->pCamera_->SetLookAt(Vertex3(0,0,0));
 
 
-    IMGUI::pCurrentNode->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
+    IMGUI::Context::this_->pCurrentNode_->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
 
 	IMGUIBeginHorizontal();
 	{
@@ -224,8 +225,8 @@ void MyApp::TestIMGUI2()
 
 void MyApp::TestIMGUI4()
 {
-	IMGUI::pSkin = pSkin2_;
-	IMGUI::pSkin->fontSize = 18;
+	IMGUI::Context::this_->pSkin_ = pSkin2_;
+	IMGUI::Context::this_->pSkin_->fontSize = 18;
 	//IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
 
     IMGUIBeginHorizontal();
@@ -255,7 +256,7 @@ void MyApp::Menu1()
     static Vertex3 camControlPoint3(3, -2, 0);
 
     static bool menu = false;
-    static float alpha = IMGUI::pSkin->alphaFactor;
+    static float alpha = IMGUI::Context::this_->pSkin_->alphaFactor;
 
     if(delta > 1) delta = 1;
 
@@ -268,9 +269,9 @@ void MyApp::Menu1()
 
     if(!menu)
     {
-    	IMGUI::pSkin = pSkin1_;
+    	IMGUI::Context::this_->pSkin_ = pSkin1_;
         menu = false;
-        IMGUI::pCurrentNode->SetPosition(Vertex3(0,0,0));
+        IMGUI::Context::this_->pCurrentNode_->SetPosition(Vertex3(0,0,0));
 	    IMGUIBeginHorizontal();
 	    {
 	    	
@@ -279,7 +280,7 @@ void MyApp::Menu1()
 			    IMGUISpacer(80);
 			    if(IMGUIButton("Menu"))
 			    {
-			    	IMGUI::pSkin->alphaFactor = alpha;
+			    	IMGUI::Context::this_->pSkin_->alphaFactor = alpha;
                     menu = true;
 				    delta = 0;
 			    }
@@ -290,22 +291,22 @@ void MyApp::Menu1()
 	    }
 	    IMGUIEndHorizontal();
 	    
-        if(IMGUI::pSkin->pNormalMaterial->GetDiffuseColor().w < alpha)
-	    	IMGUI::pSkin->alphaFactor += 0.01f;
+        if(IMGUI::Context::this_->pSkin_->pNormalMaterial->GetDiffuseColor().w < alpha)
+	    	IMGUI::Context::this_->pSkin_->alphaFactor += 0.01f;
 	    else
-	    	IMGUI::pSkin->alphaFactor = 1;
+	    	IMGUI::Context::this_->pSkin_->alphaFactor = 1;
 		
     }
     else
 	{
-		IMGUI::pSkin = pSkin2_;
-		IMGUI::pCurrentNode->SetPosition(position);
+		IMGUI::Context::this_->pSkin_ = pSkin2_;
+		IMGUI::Context::this_->pCurrentNode_->SetPosition(position);
 		IMGUISpacer(20);
 		static std::string str = "0123";
 		str = IMGUITextField(str);
 		IMGUISpacer(20);
         static bool exit = false;
-        IMGUI::pSkin = pSkin1_;
+        IMGUI::Context::this_->pSkin_ = pSkin1_;
 		if(IMGUIButton("Exit"))
 		{
             exit = true;
@@ -313,17 +314,17 @@ void MyApp::Menu1()
 
         if(exit)
         {
-            delta -= App::GetPtrInstance()->GetDeltaTime();
+            delta -= App::this_->GetDeltaTime();
         }
         else
         {
-            delta += App::GetPtrInstance()->GetDeltaTime();
+            delta += App::this_->GetDeltaTime();
         }
 
         if(delta < 0)
         {
             menu = exit = false;
-            IMGUI::pSkin->alphaFactor = 0;
+            IMGUI::Context::this_->pSkin_->alphaFactor = 0;
         }
 	}
 }
@@ -341,12 +342,12 @@ void MyApp::RenderFrame()
     pCamera1_->Activate();
 
 	pRender2Texture_->Begin();
-    //pCubeSceneNode_->Render(true);
-    //pEarthSceneNode_->Render(true);
-    //pModel_->GetSceneNode()->Render(true);
+//    pCubeSceneNode_->Render(true);
+//    pEarthSceneNode_->Render(true);
+//    pModel_->GetSceneNode()->Render(true);
     pRender2Texture_->End();
 
-	float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+	float deltaTime = App::this_->GetDeltaTime();
 	float move = deltaTime * TWO_PI * 0.25f;  // 1/4 of a wave cycle per second
     pFilter_->GetMaterial()->SetShininess(move);
     pFilter_->Render();

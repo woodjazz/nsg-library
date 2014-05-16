@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "IMGUI.h"
 #include "IMGUILayoutManager.h"
 #include "IMGUITextManager.h"
+#include "IMGUIState.h"
 #include "GLES2RectangleMesh.h"
 #include "GLES2CircleMesh.h"
 #include "GLES2EllipseMesh.h"
@@ -38,6 +39,7 @@ misrepresented as being the original software.
 #include "GLES2Text.h"
 #include "GLES2StencilMask.h"
 #include "GLES2Camera.h"
+#include "SharedPointers.h"
 #include "App.h"
 #include "Check.h"
 #include <map>
@@ -51,129 +53,57 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		PSkin pSkin;
-		PGLES2Camera pCamera;
-		PNode pCurrentNode;
-		PGLES2FrameColorSelection pFrameColorSelection;		
-        PNode pRootNode;
-        PGLES2StencilMask pStencilMask;
-		int tick = 0;
-
-		PTextManager pTextManager;
-		PLayoutManager pLayoutManager_;
-
-		struct UIState
-		{
-			float mousex;
-			float mousey;
-			bool mousedown;
-
-			GLushort hotitem;
-			GLushort activeitem;
-
-			GLushort kbditem;
-  			int keyentered;
-  			int keymod;
-  			int keyaction;
-  			unsigned int character;
-  			GLushort lastwidget;	
-  			bool activeitem_is_a_text_field;
-		} uistate;
-
 		PGLES2Text GetCurrentTextMesh(GLushort item)
 		{
-			return pTextManager->GetTextMesh(item, pSkin->fontFile, pSkin->fontSize);
-		}
-
-		void AllocateResources()
-		{
-			TRACE_LOG("IMGUI Allocating resources");
-            
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-			
-            memset(&uistate, 0, sizeof(uistate));
-			pSkin = PSkin(new Skin());
-            
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-			
-            pCamera = PGLES2Camera(new GLES2Camera());
-			pCamera->EnableOrtho();
-            pCamera->SetFarClip(1000000);
-            pCamera->SetNearClip(-1000000);
-            pRootNode = PNode(new Node());
-            pLayoutManager_ = PLayoutManager(new LayoutManager(pRootNode, pCurrentNode));
-        	pTextManager = PTextManager(new TextManager());
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        	pStencilMask = PGLES2StencilMask(new GLES2StencilMask());
-
-        	pFrameColorSelection = PGLES2FrameColorSelection(new GLES2FrameColorSelection(false));
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
-
-		void ReleaseResources()
-		{
-			TRACE_LOG("IMGUI Releasing resources");
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-			pFrameColorSelection = nullptr;
-			pStencilMask = nullptr;
-			pTextManager = nullptr;
-			pRootNode = nullptr;
-            pLayoutManager_ = nullptr;
-            pCurrentNode = nullptr;
-            pCamera = nullptr;
-			pSkin = nullptr;
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+			return Context::this_->pTextManager_->GetTextMesh(item, Context::this_->pSkin_->fontFile, Context::this_->pSkin_->fontSize);
 		}
 
 		void Begin()
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			pCamera->Activate();
-			uistate.hotitem = 0;
+			Context::this_->pCamera_->Activate();
+			Context::this_->state_->hotitem = 0;
 
-			pCurrentNode = pRootNode;
-			pLayoutManager_->Begin();
-			pLayoutManager_->BeginVertical(0);
+			Context::this_->pCurrentNode_ = Context::this_->pRootNode_;
+			Context::this_->pLayoutManager_->Begin();
+			Context::this_->pLayoutManager_->BeginVertical(0);
 		}
 
 		void End()
 		{
-			pLayoutManager_->EndVertical();
-			pLayoutManager_->End();
+			Context::this_->pLayoutManager_->EndVertical();
+			Context::this_->pLayoutManager_->End();
 			
-			if(!uistate.activeitem_is_a_text_field)
+			if(!Context::this_->state_->activeitem_is_a_text_field)
 			{
-				if(App::GetPtrInstance()->IsKeyboardVisible())
+				if(App::this_->IsKeyboardVisible())
 				{
-					App::GetPtrInstance()->HideKeyboard();
-					pCamera->SetPosition(Vertex3(0,0,0));
+					App::this_->HideKeyboard();
+					Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
 				}
 			}
 
-			if(!uistate.mousedown)
+			if(!Context::this_->state_->mousedown)
 			{
-				uistate.activeitem = 0;
+				Context::this_->state_->activeitem = 0;
 			}
 			else
 			{
-				if(uistate.activeitem == 0)
+				if(Context::this_->state_->activeitem == 0)
 				{
-			  		uistate.activeitem = -1;
-			  		uistate.activeitem_is_a_text_field = false;
+			  		Context::this_->state_->activeitem = -1;
+			  		Context::this_->state_->activeitem_is_a_text_field = false;
 			  	}
 			}
 
 			// If no widget grabbed tab, clear focus
-			if (uistate.keyentered == NSG_KEY_TAB || !pLayoutManager_->IsStable())
-				uistate.kbditem = 0;
+			if (Context::this_->state_->keyentered == NSG_KEY_TAB || !Context::this_->pLayoutManager_->IsStable())
+				Context::this_->state_->kbditem = 0;
 	
 			// Clear the entered key
-			uistate.keyentered = 0;	
-			uistate.character = 0;	
+			Context::this_->state_->keyentered = 0;	
+			Context::this_->state_->character = 0;	
 		}
 
 		void DrawButton(PGLES2Material pMaterial, PNode pNode, bool hasFocus)
@@ -183,9 +113,9 @@ namespace NSG
             	Color diffuse = pMaterial->GetDiffuseColor();
             	float shininess = pMaterial->GetShininess();
 
-                pMaterial->SetDiffuseColor(diffuse * Color(1,1,1, pSkin->alphaFactor));
+                pMaterial->SetDiffuseColor(diffuse * Color(1,1,1, Context::this_->pSkin_->alphaFactor));
                 pMaterial->SetShininess(hasFocus ? 1 : -0.25f);
-                pMaterial->Render(pSkin->fillEnabled, pNode.get(), pSkin->pMesh.get());
+                pMaterial->Render(Context::this_->pSkin_->fillEnabled, pNode.get(), Context::this_->pSkin_->pMesh.get());
                 
                 pMaterial->SetShininess(shininess);
                 pMaterial->SetDiffuseColor(diffuse);
@@ -194,59 +124,61 @@ namespace NSG
 
 		bool Hit(GLushort id, PNode pNode)
 		{
-			if(!pFrameColorSelection)
+			if(!Context::this_->pFrameColorSelection_)
 				return false;
 
-			pFrameColorSelection->Begin(uistate.mousex, uistate.mousey);
-	    	pFrameColorSelection->Render(id, pSkin->pMesh.get(), pNode.get());
-		    pFrameColorSelection->End();
+			Context::this_->pFrameColorSelection_->Begin(Context::this_->state_->mousex, Context::this_->state_->mousey);
+	    	Context::this_->pFrameColorSelection_->Render(id, Context::this_->pSkin_->pMesh.get(), pNode.get());
+		    Context::this_->pFrameColorSelection_->End();
 
-		    return id == pFrameColorSelection->GetSelected();
+		    return id == Context::this_->pFrameColorSelection_->GetSelected();
 		}
 
 		void InternalBeginHorizontal(GLushort id)
 		{
-			pLayoutManager_->BeginHorizontal(id);
+			Context::this_->pLayoutManager_->BeginHorizontal(id);
 		}
 
 		void InternalEndHorizontal()
 		{
-			pLayoutManager_->EndHorizontal();
+			Context::this_->pLayoutManager_->EndHorizontal();
 		}
 
 		void InternalBeginVertical(GLushort id)
 		{
-			pLayoutManager_->BeginVertical(id);
+			Context::this_->pLayoutManager_->BeginVertical(id);
 		}
 
 		void InternalEndVertical()
 		{
-			pLayoutManager_->EndVertical();
+			Context::this_->pLayoutManager_->EndVertical();
 		}
 
 		void InternalSpacer(GLushort id, int percentage)
 		{
-			pLayoutManager_->Spacer(id, percentage);
+			Context::this_->pLayoutManager_->Spacer(id, percentage);
 		}
 
 		bool InternalButton(GLushort id, const std::string& text)
 		{
-            PNode pNode = pLayoutManager_->GetAreaForControl(id)->pNode_;
-            assert(pNode);
+            State& uistate = *Context::this_->state_;
 
-			if(!pLayoutManager_->IsStable())
+            PNode pNode = Context::this_->pLayoutManager_->GetAreaForControl(id)->pNode_;
+            CHECK_ASSERT(pNode, __FILE__, __LINE__);
+
+			if(!Context::this_->pLayoutManager_->IsStable())
 				return false;
 
 			// Check whether the button should be hot
 			if (Hit(id, pNode))
 			{
-				uistate.hotitem = id;
+				Context::this_->state_->hotitem = id;
 
 				if (uistate.activeitem == 0 && uistate.mousedown)
 				{
-					uistate.activeitem_is_a_text_field = false;
-			  		uistate.activeitem = id;
-			  		uistate.kbditem = id;
+					Context::this_->state_->activeitem_is_a_text_field = false;
+			  		Context::this_->state_->activeitem = id;
+			  		Context::this_->state_->kbditem = id;
 			  	}
 			}
 			// If no widget has keyboard focus, take it
@@ -266,36 +198,36 @@ namespace NSG
 				if(uistate.activeitem == id)
 				{
 			  		// Button is both 'hot' and 'active'
-			  		DrawButton(pSkin->pActiveMaterial, pNode, hasFocus);
+			  		DrawButton(Context::this_->pSkin_->pActiveMaterial, pNode, hasFocus);
 			  	}
 				else
 				{
 					// Button is merely 'hot'
-					DrawButton(pSkin->pHotMaterial, pNode, hasFocus);
+					DrawButton(Context::this_->pSkin_->pHotMaterial, pNode, hasFocus);
 				}
 			}
 			else
 			{
 				// button is not hot, but it may be active    
-				DrawButton(pSkin->pNormalMaterial, pNode, hasFocus);
+				DrawButton(Context::this_->pSkin_->pNormalMaterial, pNode, hasFocus);
 			}
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			if(pSkin->drawBorder)
+			if(Context::this_->pSkin_->drawBorder)
 			{
-				bool fillEnabled = pSkin->fillEnabled;
-				pSkin->fillEnabled = false;
-				DrawButton(pSkin->pBorderMaterial, pNode, hasFocus);
-				pSkin->fillEnabled = fillEnabled;
+				bool fillEnabled = Context::this_->pSkin_->fillEnabled;
+				Context::this_->pSkin_->fillEnabled = false;
+				DrawButton(Context::this_->pSkin_->pBorderMaterial, pNode, hasFocus);
+				Context::this_->pSkin_->fillEnabled = fillEnabled;
 			}
 
 			{
                 CHECK_GL_STATUS(__FILE__, __LINE__);
 
-				pStencilMask->Begin();
-				pStencilMask->Render(pNode.get(), pSkin->pMesh.get());
-				pStencilMask->End();
+				Context::this_->pStencilMask_->Begin();
+				Context::this_->pStencilMask_->Render(pNode.get(), Context::this_->pSkin_->pMesh.get());
+				Context::this_->pStencilMask_->End();
 				PGLES2Text pTextMesh = GetCurrentTextMesh(id);
 	            pTextMesh->SetText(text);
 
@@ -306,7 +238,7 @@ namespace NSG
 	                textNode.EnableUpdate(false);
 	                textNode.SetParent(pNode);
 	                textNode.SetInheritScale(false);
-                    textNode.SetScale(pRootNode->GetGlobalScale());
+                    textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
                     SceneNode textNode1;
                     textNode1.SetParent(&textNode);
                     textNode1.SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
@@ -318,7 +250,7 @@ namespace NSG
                     textMaterial.SetTexture0(pTextMesh->GetAtlas());
                     textMaterial.SetProgram(pTextMesh->GetProgram());
                     textNode1.SetMaterial(&textMaterial);
-                    textMaterial.SetDiffuseColor(Color(1,1,1,pSkin->alphaFactor));
+                    textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor));
                     textNode1.Render(true);
 				}
 			}
@@ -360,13 +292,15 @@ namespace NSG
 
 		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex)
 		{
-            LayoutManager::PLayoutArea pArea = pLayoutManager_->GetAreaForControl(id);
+            State& uistate = *Context::this_->state_;
+
+            PLayoutArea pArea = Context::this_->pLayoutManager_->GetAreaForControl(id);
 			PNode pNode = pArea->pNode_;
 
-			if(!pLayoutManager_->IsStable())
+			if(!Context::this_->pLayoutManager_->IsStable())
 				return text;
 
-            Vertex4 areaSize = pCamera->GetModelViewProjection(pNode.get()) * Vertex4(2,0,0,0);
+            Vertex4 areaSize = Context::this_->pCamera_->GetModelViewProjection(pNode.get()) * Vertex4(2,0,0,0);
 
 			std::string currentText = text;
 
@@ -388,7 +322,7 @@ namespace NSG
 			  		///////////////////////////////////////////////
                     //Calculates cursor's position after click
                     Vertex4 worldPos = pNode->GetGlobalModelMatrix() * Vertex4(-1,0,0,1); //left border in world coords
-                    Vertex3 screenPos = pCamera->WorldToScreen(Vertex3(worldPos)); //left border in screen coords
+                    Vertex3 screenPos = Context::this_->pCamera_->WorldToScreen(Vertex3(worldPos)); //left border in screen coords
                     float mouseRelPosX(uistate.mousex - screenPos.x);
                     float textEndRelPosX = pTextMesh->GetWidth();
                     float mouseTotalX = mouseRelPosX  + pArea->textOffsetX_;
@@ -403,12 +337,12 @@ namespace NSG
                     }
                     ///////////////////////////////////////////////
 
-					if(!App::GetPtrInstance()->IsKeyboardVisible())
+					if(!App::this_->IsKeyboardVisible())
 					{
-						if(App::GetPtrInstance()->ShowKeyboard())
+						if(App::this_->ShowKeyboard())
 						{
 							Vertex3 position(0, screenPos.y, 0);
-				  			pCamera->SetPosition(position);
+				  			Context::this_->pCamera_->SetPosition(position);
 				  		}
 				  	}
 			  	}
@@ -429,34 +363,33 @@ namespace NSG
 				if(uistate.activeitem == id)
 				{
 			  		// Button is both 'hot' and 'active'
-                    DrawButton(pSkin->pActiveMaterial, pNode, hasFocus);
+                    DrawButton(Context::this_->pSkin_->pActiveMaterial, pNode, hasFocus);
 			  	}
 				else
 				{
 					// Button is merely 'hot'
-					DrawButton(pSkin->pHotMaterial, pNode, hasFocus);
+					DrawButton(Context::this_->pSkin_->pHotMaterial, pNode, hasFocus);
 				}
 			}
 			else
 			{
 				// button is not hot, but it may be active    
-				DrawButton(pSkin->pNormalMaterial, pNode, hasFocus);
+				DrawButton(Context::this_->pSkin_->pNormalMaterial, pNode, hasFocus);
 			}
 
-			if(pSkin->drawBorder)
+			if(Context::this_->pSkin_->drawBorder)
 			{
-				bool fillEnabled = pSkin->fillEnabled;
-				pSkin->fillEnabled = false;
-				DrawButton(pSkin->pBorderMaterial, pNode, hasFocus);
-				pSkin->fillEnabled = fillEnabled;
+				bool fillEnabled = Context::this_->pSkin_->fillEnabled;
+				Context::this_->pSkin_->fillEnabled = false;
+				DrawButton(Context::this_->pSkin_->pBorderMaterial, pNode, hasFocus);
+				Context::this_->pSkin_->fillEnabled = fillEnabled;
 			}
 
 			{
-                /*
-				pStencilMask->Begin();
-				pStencilMask->Render(pNode.get(), pSkin->pMesh.get());
-				pStencilMask->End();
-                */
+                
+				Context::this_->pStencilMask_->Begin();
+				Context::this_->pStencilMask_->Render(pNode.get(), Context::this_->pSkin_->pMesh.get());
+				Context::this_->pStencilMask_->End();
                 
 	            pTextMesh->SetText(currentText);
 				
@@ -483,7 +416,7 @@ namespace NSG
                 Node textNode0;
                 textNode0.SetParent(&textNode);
 	            textNode0.SetInheritScale(false);
-                textNode0.SetScale(pRootNode->GetGlobalScale());
+                textNode0.SetScale(Context::this_->pRootNode_->GetGlobalScale());
                 SceneNode textNode1;
                 textNode1.SetParent(&textNode0);
                 textNode1.SetPosition(Vertex3(-pArea->textOffsetX_, 0, 0));
@@ -494,11 +427,11 @@ namespace NSG
                 textMaterial.SetTexture0(pTextMesh->GetAtlas());
                 textMaterial.SetProgram(pTextMesh->GetProgram());
                 textNode1.SetMaterial(&textMaterial);
-                textMaterial.SetDiffuseColor(Color(1,1,1,pSkin->alphaFactor));
+                textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor));
                 textNode1.Render(true);
                 
 				// Render cursor if we have keyboard focus
-				if(hasFocus && (tick < 15))
+				if(hasFocus && (uistate.tick < 15))
                 {
                     SceneNode cursorNode;
                     cursorNode.EnableUpdate(false);
@@ -512,7 +445,7 @@ namespace NSG
                     textMaterial.SetTexture0(pTextMesh->GetAtlas());
                     textMaterial.SetProgram(pTextMesh->GetProgram());
                     cursorNode.SetMaterial(&textMaterial);
-                    textMaterial.SetDiffuseColor(Color(1,0,0,pSkin->alphaFactor));
+                    textMaterial.SetDiffuseColor(Color(1,0,0,Context::this_->pSkin_->alphaFactor));
                     cursorNode.Render(true);
                 }
                 
@@ -571,15 +504,15 @@ namespace NSG
                     break;
 
                 case NSG_KEY_ENTER:
-					if(App::GetPtrInstance()->IsKeyboardVisible())
+					if(App::this_->IsKeyboardVisible())
 					{
-						App::GetPtrInstance()->HideKeyboard();
-						pCamera->SetPosition(Vertex3(0,0,0));
+						App::this_->HideKeyboard();
+						Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
 					}
 					break;
 				}
 
-	            if (uistate.character >= 32 && uistate.character < 256 && currentText.size() < pSkin->textMaxLength)
+	            if (uistate.character >= 32 && uistate.character < 256 && currentText.size() < Context::this_->pSkin_->textMaxLength)
 	            {
 	            	std::string textCopy = currentText;
 
@@ -609,21 +542,18 @@ namespace NSG
 			return currentText;
 		}		
 
-
-		void ViewChanged(int32_t width, int32_t height)
-		{
-        	if(pFrameColorSelection)
-        		pFrameColorSelection->ViewChanged(width, height);
-		}
-
         void OnMouseMove(float x, float y)
         {
+            State& uistate = *Context::this_->state_;
+
         	uistate.mousex = x;
         	uistate.mousey = y;
         }
 
         void OnMouseDown(float x, float y)
         {
+            State& uistate = *Context::this_->state_;
+
         	uistate.mousex = x;
         	uistate.mousey = y;
         	uistate.mousedown = true;
@@ -631,6 +561,8 @@ namespace NSG
 
         void OnMouseUp()
         {
+            State& uistate = *Context::this_->state_;
+
         	uistate.mousedown = false;
         }
 
@@ -638,6 +570,8 @@ namespace NSG
         {
             if(action == NSG_KEY_PRESS)
             {
+                State& uistate = *Context::this_->state_;
+
                 uistate.keyentered = key;
                 uistate.keyaction = action;
                 uistate.keymod = modifier;
@@ -646,15 +580,21 @@ namespace NSG
 
         void OnChar(unsigned int character)
         {
+            State& uistate = *Context::this_->state_;
+
         	uistate.character = character;
         }
 
 
         void DoTick()
         {
-        	++tick;
-            if(tick > 30)
-                tick = 0;
+            State& uistate = *Context::this_->state_;
+
+        	++uistate.tick;
+            if(uistate.tick > 30)
+            {
+                uistate.tick = 0;
+            }
         }
 	}
 }

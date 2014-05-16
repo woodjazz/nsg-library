@@ -33,7 +33,7 @@ namespace NSG
 	: GLES2Mesh(usage),
     face_mode_(-1)
 	{
-		GLES2Mesh::Data& data = vertexsData_;
+		VertexsData& data = vertexsData_;
 
 		for(size_t v=0; v<mesh->mNumVertices; v++)
 		{

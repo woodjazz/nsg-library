@@ -39,5 +39,4 @@ namespace NSG
 		GLenum GetSolidDrawMode() const;
 	};
 
-	typedef std::shared_ptr<GLES2EllipseMesh> PGLES2EllipseMesh;
 }

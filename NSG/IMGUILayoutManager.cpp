@@ -39,7 +39,7 @@ namespace NSG
 		{
 		}
 
-		LayoutManager::PLayoutArea LayoutManager::InsertNewArea(GLushort id, LayoutArea::Type type, int percentage)
+		PLayoutArea LayoutManager::InsertNewArea(GLushort id, LayoutArea::Type type, int percentage)
 		{
             PLayoutArea pCurrentArea;
 
@@ -110,7 +110,7 @@ namespace NSG
             visibleAreas_ = 0;
 		}
 
-		LayoutManager::PLayoutArea LayoutManager::GetAreaForControl(GLushort id, LayoutArea::Type type, int percentage)
+		PLayoutArea LayoutManager::GetAreaForControl(GLushort id, LayoutArea::Type type, int percentage)
 		{
 			PLayoutArea pArea;
 			auto it = areas_.find(id);

@@ -23,54 +23,39 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "LightBehavior.h"
+#include "IMGUIContext.h"
+#include "IMGUISkin.h"
+#include "GLES2Camera.h"
+#include "Node.h"
+#include "IMGUILayoutManager.h"
+#include "IMGUITextManager.h"
+#include "GLES2StencilMask.h"
+#include "GLES2FrameColorSelection.h"
+#include "IMGUIState.h"
 
-static const char* vShader = STRINGIFY(
-	uniform mat4 u_mvp;
-	attribute vec4 a_position;
-	void main()
-	{
-		gl_Position = u_mvp * a_position;
-	}
-);
-
-static const char* fShader = STRINGIFY(
-	void main()
-	{
-		gl_FragColor = vec4(1,1,0,1);
-	}
-);
-
-
-LightBehavior::LightBehavior()
+namespace NSG
 {
-}
+	namespace IMGUI
+	{
+		Context::Context()
+        : state_(new State),
+        pSkin_(new Skin),
+		pCamera_(new GLES2Camera),
+		pCurrentNode_(new Node),
+        pRootNode_(new Node),
+        pLayoutManager_(new LayoutManager(pRootNode_, pCurrentNode_)),
+    	pTextManager_(new TextManager),
+    	pStencilMask_(new GLES2StencilMask),
+    	pFrameColorSelection_(new GLES2FrameColorSelection(false))
+    	{
+			pCamera_->EnableOrtho();
+            pCamera_->SetFarClip(1000000);
+            pCamera_->SetNearClip(-1000000);
+		}
+
+		Context::~Context()
+		{
+		}
+	}
 	
-LightBehavior::~LightBehavior()
-{
-
 }
-
-void LightBehavior::Start()
-{
-	PGLES2Material pMaterial(new GLES2Material());
-	PGLES2Program pProgram(new GLES2Program(vShader, fShader));
-    pMaterial->SetProgram(pProgram);
-    pSceneNode_->SetMaterial(pMaterial);
-
-	PGLES2Mesh pMesh(new GLES2SphereMesh(0.2f, 32, GL_STATIC_DRAW));
-	pSceneNode_->SetMesh(pMesh);
-
-    pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
-}
-
-void LightBehavior::Update()
-{
-//    float deltaTime = App::this_->GetDeltaTime();
-}
-
-void LightBehavior::Render()
-{
-	//pSceneNode_->Render(true);
-}
-

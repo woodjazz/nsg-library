@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include <memory>
 #include <vector>
 #include <string>
+#include <map>
 #include "ft2build.h"
 #include FT_FREETYPE_H
 #include "GLES2Includes.h"
@@ -53,7 +54,6 @@ namespace NSG
 		PGLES2Texture GetAtlas() const { return pAtlas_; }
 		PGLES2Program GetProgram() const { return pProgram_; }
 		int GetFontSize() const { return fontSize_; }
-		static void ReleaseAtlasCollection();
 		GLenum GetWireFrameDrawMode() const;
 		GLenum GetSolidDrawMode() const;
 		virtual bool IsValid();
@@ -61,17 +61,12 @@ namespace NSG
 		virtual void ReleaseResources();
 
 	private:
-		App* pApp_;
 		PGLES2FontAtlasTexture pAtlas_;
 		PGLES2Program pProgram_;
 
 		std::string lastText_;
 		GLfloat screenWidth_;
 		GLfloat screenHeight_;
-		int32_t width_;
-		int32_t height_;
 		int fontSize_;
 	};
-
-	typedef std::shared_ptr<GLES2Text> PGLES2Text;
 }

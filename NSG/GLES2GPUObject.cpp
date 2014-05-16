@@ -32,8 +32,7 @@ namespace NSG
 	GLES2GPUObject::GLES2GPUObject()
 	: isValid_(false),
 	releaseCalled_(false),
-	resourcesAllocated_(false),
-	app_(App::GetPtrInstance())
+	resourcesAllocated_(false)
 	{
 	}
 		
@@ -56,7 +55,7 @@ namespace NSG
 
 	bool GLES2GPUObject::IsReady()
 	{
-		auto viewSize = app_->GetViewSize();
+		auto viewSize = App::this_->GetViewSize();
 
 		if(viewSize.first <= 0 || viewSize.second <= 0)
 			return false;

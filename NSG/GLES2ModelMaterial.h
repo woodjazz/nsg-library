@@ -36,6 +36,4 @@ namespace NSG
 		GLES2ModelMaterial(const aiMaterial* mtl);
 		~GLES2ModelMaterial();
 	};
-
-	typedef std::shared_ptr<GLES2ModelMaterial> PGLES2ModelMaterial;
 }

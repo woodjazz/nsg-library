@@ -44,3 +44,16 @@ misrepresented as being the original software.
 	    return ret_status;  
 	}
 #endif
+
+namespace NSG
+{
+	ScopedLog::ScopedLog(const std::string& msg)
+	{
+		//TRACE_LOG()
+	}
+
+	ScopedLog::~ScopedLog()
+	{
+
+	}
+}

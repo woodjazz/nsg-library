@@ -27,14 +27,11 @@ misrepresented as being the original software.
 #include <memory>
 #include "GLES2Includes.h"
 #include "Types.h"
+#include "SharedPointers.h"
 #include <set>
 
 namespace NSG
 {
-	class Node;
-
-	typedef std::shared_ptr<Node> PNode;
-
 	class Node
 	{
 	public:

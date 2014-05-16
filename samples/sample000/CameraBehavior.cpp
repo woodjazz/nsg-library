@@ -48,7 +48,7 @@ void CameraBehavior::Start()
 void CameraBehavior::Update()
 {
 #if 1
-    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+    float deltaTime = App::this_->GetDeltaTime();
 
     static float delta1 = 0;
 
@@ -60,7 +60,6 @@ void CameraBehavior::Update()
 		delta1);
 
     pSceneNode_->SetPosition(position);
-    //pSceneNode_->SetPosition(Vertex3(-200, 100, 0));
     pSceneNode_->SetLookAt(Vertex3(0));
 
     delta1 += deltaTime * 0.1f;

@@ -44,6 +44,7 @@ namespace NSG
 		VertexData();
 	};
 
+    typedef std::vector<VertexData> VertexsData;
 	typedef GLushort IndexType;
 	typedef std::vector<IndexType> Indexes;
 
@@ -59,8 +60,7 @@ namespace NSG
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
 	protected:
-		typedef std::vector<VertexData> Data;
-		Data vertexsData_;
+		VertexsData vertexsData_;
 		Indexes indexes_;
 		PGLES2IndexBuffer pIBuffer_;
 		PGLES2VertexBuffer pVBuffer_;

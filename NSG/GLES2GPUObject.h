@@ -43,6 +43,5 @@ namespace NSG
 		bool isValid_;
 		bool releaseCalled_;
 		bool resourcesAllocated_;
-		App* app_;
 	};
 }

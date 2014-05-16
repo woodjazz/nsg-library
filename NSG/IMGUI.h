@@ -41,13 +41,10 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		void AllocateResources();
-		void ReleaseResources();
 		void Begin();
 		void End();
 		bool InternalButton(GLushort id, const std::string& text);
 		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex);
-		void ViewChanged(int32_t width, int32_t height);
         void OnMouseMove(float x, float y);
         void OnMouseDown(float x, float y);
         void OnMouseUp();
@@ -59,11 +56,6 @@ namespace NSG
 		void InternalBeginVertical(GLushort id);
 		void InternalEndVertical();
 		void InternalSpacer(GLushort id, int percentage);
-
-		extern PSkin pSkin;
-		extern PGLES2Camera pCamera;
-		extern PNode pCurrentNode;
-
 	}
 }
 

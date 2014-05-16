@@ -26,5 +26,5 @@ cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/
 %NACL_SDK_ROOT%/tools/make.exe 
 
 @echo "Starting HTTP Server"
-python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/tests/generic_test
-rem python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/samples/sample000
+rem python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/tests/generic_test
+python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/samples/sample000

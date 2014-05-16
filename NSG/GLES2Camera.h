@@ -33,8 +33,6 @@ namespace NSG
 {
 	class GLES2Camera;
 
-	typedef std::shared_ptr<GLES2Camera> PGLES2Camera;
-
 	class GLES2Camera : public SceneNode
 	{
 	public:
@@ -55,13 +53,11 @@ namespace NSG
 		void Activate();
 		void SetViewportFactor(float xo, float yo, float xf, float yf);
 		Recti GetViewport() const;
-		void ViewChanged(int32_t width, int32_t height);
-		typedef std::vector<GLES2Camera*> Cameras;
-		static Cameras& GetCameras();
         bool IsOrtho() const { return isOrtho_; }
         Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const;
         Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
 	private:
+		void Invalidate();
         void OnUpdate();
 		void UpdateProjection();
 		void UpdateViewProjection();
@@ -73,8 +69,6 @@ namespace NSG
 		float fovy_;
 		float zNear_;
 		float zFar_;
-		int32_t width_;
-		int32_t height_;
 		float xo_;
 		float yo_;
 		float xf_;

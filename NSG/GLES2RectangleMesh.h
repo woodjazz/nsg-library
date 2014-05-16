@@ -38,6 +38,4 @@ namespace NSG
 		GLenum GetWireFrameDrawMode() const;
 		GLenum GetSolidDrawMode() const;
 	};
-
-	typedef std::shared_ptr<GLES2RectangleMesh> PGLES2RectangleMesh;
 }

@@ -57,9 +57,6 @@ namespace NSG
         static void OnCharAll(unsigned int character);
 
 	protected:
-		App* pApp_;
 		SceneNode* pSceneNode_;
 	};
-
-	typedef std::shared_ptr<Behavior> PBehavior;
 }

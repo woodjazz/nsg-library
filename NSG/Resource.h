@@ -26,9 +26,8 @@ misrepresented as being the original software.
 #pragma once
 #include <string>
 #include <memory>
-#if NACL
-#include "NaClURLLoader.h"
-#elif ANDROID
+#include "SharedPointers.h"
+#if ANDROID
 #include <android/asset_manager.h>
 #endif
 
@@ -56,6 +55,4 @@ namespace NSG
 		AAssetManager* pAAssetManager_;	
 	#endif
 	};
-
-	typedef std::shared_ptr<Resource> PResource;
 }

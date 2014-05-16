@@ -51,10 +51,7 @@ namespace NSG
 		GLfloat clear_color_[4];
 		GLfloat clear_depth_;
 		GLboolean depth_enable_;
-		App* pApp_;
 		bool createDepthBuffer_;
 		bool enabled_;
 	};
-
-	typedef std::shared_ptr<GLES2Render2Texture> PGLES2Render2Texture;
 }

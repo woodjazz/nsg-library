@@ -55,7 +55,7 @@ void TextBehavior::Start()
 
 void TextBehavior::Update()
 {
-//    float deltaTime = App::GetPtrInstance()->GetDeltaTime();
+//    float deltaTime = App::this_->GetDeltaTime();
 
 	pSceneNode_->GetParent()->SetPosition(Vertex3(-pText_->GetWidth()/2, 0, 0.2f));
 
@@ -74,7 +74,7 @@ void TextBehavior::Render()
 
 void TextBehavior::OnMouseDown(float x, float y)
 {
-	GLushort id = pApp_->GetSelectedNode();
+	GLushort id = App::this_->GetSelectedNode();
 
     std::stringstream ss;
     ss << "Selected Id=" << std::hex << id;

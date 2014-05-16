@@ -27,19 +27,23 @@ misrepresented as being the original software.
 #include <memory>
 #include <set>
 #include "GLES2GPUObject.h"
+#include "SharedPointers.h"
+#include "Singleton.h"
+#include "IMGUIContext.h"
 
 namespace NSG
 {
-	class Context
+	struct Context : public Singleton<Context>
 	{
-	public:
-		static Context* this_;
+		std::set<GLES2GPUObject*> objects_;
+		PGLES2FontAtlasTextureManager atlasManager_;
+		PGLES2FrameColorSelection pFrameColorSelection_;
+		IMGUI::PContext imgui_;
+
 		Context();
 		~Context();
 		void Add(GLES2GPUObject* object);
 		void Remove(GLES2GPUObject* object);
-		void Invalidate();
-	private:
-		std::set<GLES2GPUObject*> objects_;
+		void InvalidateGPUResources();
 	};
 }

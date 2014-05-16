@@ -32,7 +32,7 @@ namespace NSG
 	GLES2CircleMesh::GLES2CircleMesh(float radius, int res, GLenum usage) 
 	: GLES2Mesh(usage)
 	{
-		GLES2Mesh::Data& data = vertexsData_;
+		VertexsData& data = vertexsData_;
 
 		float angle = 0.0f;
 

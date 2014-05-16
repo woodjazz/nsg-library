@@ -64,6 +64,4 @@ namespace NSG
         float spotCutOff_;
         float exponent_;
 	};
-
-	typedef std::shared_ptr<GLES2Light> PGLES2Light;
 }

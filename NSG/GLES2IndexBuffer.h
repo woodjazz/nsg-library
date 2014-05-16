@@ -39,6 +39,4 @@ namespace NSG
 
 		~GLES2IndexBuffer();
 	};
-
-	typedef std::shared_ptr<GLES2IndexBuffer> PGLES2IndexBuffer;
 }

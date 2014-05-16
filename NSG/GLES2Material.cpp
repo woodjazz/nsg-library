@@ -159,9 +159,16 @@ namespace NSG
     enableDepthTest_(true),
     enableCullFace_(false)
 	{
-        CHECK_GL_STATUS(__FILE__, __LINE__);
         lightsLoc_.resize(MAX_LIGHTS_MATERIAL);
         memset(&lightsLoc_[0], 0, sizeof(lightsLoc_) * MAX_LIGHTS_MATERIAL);
+
+	    if(!pTexture0_)
+	    {
+	        // Creates 1x1 white texture 
+			char img[3];
+			memset(&img[0], 0xFF, sizeof(unsigned char)*3);
+	        pTexture0_ = PGLES2Texture(new GLES2Texture(GL_RGB, 1, 1, &img[0]));
+	    }
 
         Context::this_->Add(this);
 
@@ -224,14 +231,6 @@ namespace NSG
 	{
 	    CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	    if(!pTexture0_)
-	    {
-	        // Creates 1x1 white texture 
-			char img[3];
-			memset(&img[0], 0xFF, sizeof(unsigned char)*3);
-	        pTexture0_ = PGLES2Texture(new GLES2Texture(GL_RGB, 1, 1, &img[0]));
-	    }
-
 	    if(pExtraMaterialUniforms_)
 	    {
 		    pExtraMaterialUniforms_->SetLocations();
@@ -253,6 +252,8 @@ namespace NSG
 	    normal_loc_ = pProgram_->GetAttributeLocation("a_normal");
         color_loc_ = pProgram_->GetAttributeLocation("a_color");
 
+		hasLights_ = false;
+
         const GLES2Light::Lights& ligths = GLES2Light::GetLights();
         size_t n = std::min(ligths.size(), MAX_LIGHTS_MATERIAL);
 
@@ -262,6 +263,12 @@ namespace NSG
 		    u_light_index << "u_light" << i << ".";
 
 		    lightsLoc_[i].type_loc = pProgram_->GetUniformLocation(u_light_index.str() + "type");
+		    
+		    if(lightsLoc_[i].type_loc == -1)
+		    {
+		    	break;
+		    }
+
 		    lightsLoc_[i].position_loc = pProgram_->GetUniformLocation(u_light_index.str() + "position");
 		    lightsLoc_[i].diffuse_loc = pProgram_->GetUniformLocation(u_light_index.str() + "diffuse");
 		    lightsLoc_[i].specular_loc = pProgram_->GetUniformLocation(u_light_index.str() + "specular");
@@ -271,12 +278,12 @@ namespace NSG
 		    lightsLoc_[i].spotCutoff_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotCutoff");
 		    lightsLoc_[i].spotExponent_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotExponent");
 		    lightsLoc_[i].spotDirection_loc = pProgram_->GetUniformLocation(u_light_index.str() + "spotDirection");
-
-            if(lightsLoc_[i].type_loc != -1)
-            {
-                hasLights_ = true;
-            }
 	    }
+
+        if(lightsLoc_[0].type_loc != -1)
+        {
+            hasLights_ = true;
+        }
 
 	    CHECK_GL_STATUS(__FILE__, __LINE__);
 	}

@@ -46,7 +46,7 @@ namespace NSG
 		Vertex3 normal;
 		int vertOffset = 0;
 
-		GLES2Mesh::Data& data = vertexsData_;
+		VertexsData& data = vertexsData_;
 
 		// TRIANGLES //
 

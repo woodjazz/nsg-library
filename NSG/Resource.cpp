@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include <fstream>
 #if NACL
 #include "AppNaCl.h"
+#include "NaClURLLoader.h"
 #endif
 
 #ifdef __APPLE__
@@ -63,7 +64,7 @@ namespace NSG
 #if NACL
 		pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filename);
 #elif ANDROID			
-		pAAssetManager_ = App::GetPtrInstance()->GetAssetManager();
+		pAAssetManager_ = App::this_->GetAssetManager();
 #endif
 	}
 

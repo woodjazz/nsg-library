@@ -35,7 +35,6 @@ namespace NSG
 {
 	GLES2Render2Texture::GLES2Render2Texture(PGLES2Texture pTexture, bool createDepthBuffer)
 	: pTexture_(pTexture),
-    pApp_(App::GetPtrInstance()),
     createDepthBuffer_(createDepthBuffer),
     enabled_(false)
 	{
@@ -56,7 +55,7 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        auto windowSize = App::GetPtrInstance()->GetViewSize();
+        auto windowSize = App::this_->GetViewSize();
 
         CHECK_ASSERT(windowSize.first > 0 && windowSize.second > 0, __FILE__, __LINE__);
 

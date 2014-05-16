@@ -427,7 +427,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
             {
                 ASensorEventQueue_disableSensor(engine->sensorEventQueue, engine->accelerometerSensor);
             }
-            s_pApp->InvalidateContext();
+            s_pApp->InvalidateGPUContext();
             // Also stop animating.
             engine->animating = 0;
             //engine_draw_frame(engine);

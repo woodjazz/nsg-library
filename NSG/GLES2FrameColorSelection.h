@@ -39,7 +39,6 @@ namespace NSG
     public:
         GLES2FrameColorSelection(bool createDepthBuffer);
         ~GLES2FrameColorSelection();
-        void ViewChanged(int32_t windowWidth, int32_t windowHeight);
         void Begin(float screenX, float screenY);
         void End();
         GLushort GetSelected() const;
@@ -73,7 +72,5 @@ namespace NSG
         GLboolean blend_enable_;
         GLboolean depth_enable_;
     };
-
-    typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;
 }
 

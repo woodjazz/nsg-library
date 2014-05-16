@@ -30,46 +30,33 @@ misrepresented as being the original software.
 #include "GLES2Text.h"
 #include "Behavior.h"
 #include "Check.h"
+#include "Context.h"
+#if NACL
+#include "ppapi/cpp/var.h"
+#elif ANDROID
+#include <android/asset_manager.h>
+#include <android/native_activity.h>
+#endif
 #include <cassert>
 
 namespace NSG
 {
-    App* s_pApp = nullptr;
-
     App::App() 
     : width_(0),
     height_(0),
     selectedIndex_(0),
-    isKeyboardVisible_(false),
-    isInit_(false)
+    isKeyboardVisible_(false)
     {
-	    assert(s_pApp == nullptr);
-
-	    s_pApp = this;
     }
 
     App::~App()
     {
-        TRACE_LOG("Terminating App");
-
-        Release();
-	    
-        assert(s_pApp != nullptr);
-
-	    s_pApp = nullptr;
-
         TRACE_LOG("App Terminated");
     }
 
     int App::GetFPS() const
     {
         return 24;
-    }
-
-
-    App* App::GetPtrInstance()
-    {
-	    return s_pApp;
     }
 
     void App::SetViewSize(int32_t width, int32_t height)
@@ -83,21 +70,22 @@ namespace NSG
         return std::pair<int32_t, int32_t>(width_, height_);
     }
 
-#if NACL
     void App::HandleMessage(const pp::Var& var_message)
     {
+#if NACL
         TRACE_LOG("App::HandleMessage");
 
         if(var_message.is_string())
         {
             std::string message = var_message.AsString();
         }
+#endif  
     }
-#endif    
+  
 
-#if ANDROID
 static bool displayKeyboard(ANativeActivity* pActivity, bool pShow) 
 { 
+#if ANDROID    
     // Attaches the current thread to the JVM. 
     jint lResult; 
     jint lFlags = 0; 
@@ -162,78 +150,42 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     lJavaVM->DetachCurrentThread(); 
 
     return true;
-}    
+#else
+    return false;
 #endif
+}    
 
     bool App::ShowKeyboard()
     {
-#if ANDROID
         TRACE_LOG("Showing keyboard")
+
         if(displayKeyboard(pActivity_, true))
         {
             isKeyboardVisible_ = true;
         }
-        return true;
-#else
-        return false;        
-#endif        
 
+        return isKeyboardVisible_;
     }
 
     bool App::HideKeyboard()
     {
-#if ANDROID        
         TRACE_LOG("Hiding keyboard")
         if(displayKeyboard(pActivity_, false))
         {
             isKeyboardVisible_ = false;
         }
-        return true;
-#else
-        return false;        
-       
-#endif        
+        return isKeyboardVisible_;
     }
 
     void App::BeginSelection(float screenX, float screenY) 
     { 
-        pFrameColorSelection_->Begin(screenX, screenY);
+        Context::this_->pFrameColorSelection_->Begin(screenX, screenY);
     }
 
     void App::EndSelection()
     {
-        pFrameColorSelection_->End();
-        selectedIndex_ = pFrameColorSelection_->GetSelected();
-    }
-
-    void App::Initialize()
-    {
-        CHECK_ASSERT(!isInit_, __FILE__, __LINE__);
-
-        TRACE_LOG("App::Initialize");
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-            
-        pFrameColorSelection_ = PGLES2FrameColorSelection(new GLES2FrameColorSelection(false));
-
-        IMGUI::AllocateResources();
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        isInit_ = true;
-    }
-
-    void App::Release()
-    {
-        CHECK_ASSERT(isInit_, __FILE__, __LINE__);
-
-        TRACE_LOG("App::Release");
-            
-        HideKeyboard();
-        IMGUI::ReleaseResources();
-        GLES2Text::ReleaseAtlasCollection();
-        pFrameColorSelection_ = nullptr;
-        isInit_ = false;
+        Context::this_->pFrameColorSelection_->End();
+        selectedIndex_ = Context::this_->pFrameColorSelection_->GetSelected();
     }
 
     void App::DoTick(float delta)
@@ -242,13 +194,6 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         IMGUI::DoTick();
         Update();
         Behavior::UpdateAll();
-    }
-
-    void App::InvalidateContext()
-    {
-        TRACE_LOG("App::InvalidateContext");
-
-        context_.Invalidate();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -274,7 +219,6 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void InternalApp::BeginTick()
     {
-        pApp_->Initialize();
         pApp_->Start();
         Behavior::StartAll();
     }
@@ -290,30 +234,13 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
     {
+        TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
+
         pApp_->SetViewSize(width, height);
 
-        if(width > 0 && height > 0)
-        {
-            TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
-            
-            glViewport(0, 0, width, height);
+        Context::this_->InvalidateGPUResources();
 
-            if(pApp_->pFrameColorSelection_)
-            {
-                pApp_->pFrameColorSelection_->ViewChanged(width, height);
-            }
-
-            GLES2Camera::Cameras& cameras = GLES2Camera::GetCameras();
-
-            for(auto &camera : cameras)
-            {
-                camera->ViewChanged(width, height);
-            }
-
-            IMGUI::ViewChanged(width, height);
-
-            pApp_->ViewChanged(width, height);
-        }
+        pApp_->ViewChanged(width, height);
     }
 
     void InternalApp::OnMouseMove(float x, float y) 
@@ -364,6 +291,9 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
     void InternalApp::RenderFrame()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        CHECK_ASSERT(pApp_->width_ > 0 && pApp_->height_ > 0, __FILE__, __LINE__);
+		glViewport(0, 0, pApp_->width_, pApp_->height_);
        
         glClearColor(0, 0, 0, 1);
         glClearDepth(1);
@@ -372,7 +302,6 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
         pApp_->RenderFrame();
 
-        
         Behavior::RenderAll();
 
         pApp_->BeginSelection(screenX_, screenY_);
@@ -399,9 +328,9 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         return pApp_->ShallExit();
     }
 
-    void InternalApp::InvalidateContext()
+    void InternalApp::InvalidateGPUContext()
     {
-        pApp_->InvalidateContext();
+        Context::this_->InvalidateGPUResources();
     }
 
 #if NACL

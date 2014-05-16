@@ -32,43 +32,27 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	static GLES2Camera::Cameras s_Cameras;
-
-	GLES2Camera* s_pActiveGLES2Camera;
+	GLES2Camera* activeCamera = nullptr;
 
 	GLES2Camera::GLES2Camera() 
 	: fovy_(45), 
 	zNear_(0.1f), 
 	zFar_(250),
-	width_(0), 
-	height_(0),
 	xo_(0),
 	yo_(0),
 	xf_(1),
 	yf_(1),
 	isOrtho_(false)
 	{
-		s_Cameras.push_back(this);
-
-        App* pApp = App::GetPtrInstance();
-
-        if(pApp)
-        {
-		    auto viewSize = pApp->GetViewSize();
-		    ViewChanged(viewSize.first, viewSize.second);
-        }
 	}
 
 	GLES2Camera::~GLES2Camera() 
 	{
-		auto it = std::find(s_Cameras.begin(), s_Cameras.end(), this);
-		assert(it != s_Cameras.end());
-		s_Cameras.erase(it);
 	}
 
-	GLES2Camera::Cameras& GLES2Camera::GetCameras()
+	void GLES2Camera::Invalidate()
 	{
-		return s_Cameras;
+		UpdateProjection();
 	}
 
 	void GLES2Camera::EnableOrtho() 
@@ -76,7 +60,7 @@ namespace NSG
 		if(!isOrtho_)
 		{
 			isOrtho_ = true;
-			UpdateProjection();
+			Invalidate();
 		}
 	}
 
@@ -85,7 +69,7 @@ namespace NSG
 		if(isOrtho_)
 		{
 			isOrtho_ = false;
-			UpdateProjection();
+			Invalidate();
 		}
 	}	
 
@@ -94,7 +78,7 @@ namespace NSG
         if(fovy_ != fovy)
         {
 		    fovy_ = fovy;
-            UpdateProjection();
+            Invalidate();
         }
 	}
 
@@ -103,7 +87,7 @@ namespace NSG
         if(zNear_ != zNear)
         {
 		    zNear_ = zNear;
-            UpdateProjection();
+            Invalidate();
         }
 	}
 
@@ -112,16 +96,14 @@ namespace NSG
         if(zFar_ != zFar)
         {
 		    zFar_ = zFar;
-            UpdateProjection();
+            Invalidate();
         }
 	}
 
 	GLES2Camera* GLES2Camera::Deactivate()
 	{
-		GLES2Camera* pCurrent = s_pActiveGLES2Camera;
-		s_pActiveGLES2Camera = nullptr;
-		std::pair<int32_t, int32_t> size = App::GetPtrInstance()->GetViewSize();
-		glViewport(0, 0, size.first, size.second);
+		GLES2Camera* pCurrent = activeCamera;
+		activeCamera = nullptr;
 		return pCurrent;
 	}
 
@@ -138,7 +120,7 @@ namespace NSG
 
 	GLES2Camera* GLES2Camera::GetActiveCamera()
 	{
-		return s_pActiveGLES2Camera;
+		return activeCamera;
 	}
 
 	void GLES2Camera::SetViewportFactor(float xo, float yo, float xf, float yf)
@@ -151,28 +133,29 @@ namespace NSG
 
 	Recti GLES2Camera::GetViewport() const
 	{
-		return Recti((GLsizei)(width_ * xo_), (GLsizei)(height_ * yo_), (GLsizei)(width_ * xf_), (GLsizei)(height_ * yf_));
+	    auto viewSize = App::this_->GetViewSize();
+	    auto width = viewSize.first;
+	    auto height = viewSize.second;
+
+		return Recti((GLsizei)(width * xo_), (GLsizei)(height * yo_), (GLsizei)(width * xf_), (GLsizei)(height * yf_));
 	}
 
 	void GLES2Camera::Activate()
 	{
-		s_pActiveGLES2Camera = this;
+		activeCamera = this;
 
         Recti viewport = GetViewport();
+
 		glViewport(viewport.x, viewport.y, viewport.z, viewport.w);		
-	}
-
-	void GLES2Camera::ViewChanged(int32_t width, int32_t height)
-	{
-		width_ = width;
-		height_ = height;
-
-		UpdateProjection();
 	}
 
 	void GLES2Camera::UpdateProjection()
 	{
-        if(height_ > 0)
+		auto viewSize = App::this_->GetViewSize();
+		auto width = viewSize.first;
+		auto height = viewSize.second;
+
+		if(width > 0 && height > 0)
         {
             if(isOrtho_)
             {
@@ -180,20 +163,20 @@ namespace NSG
             }
             else
             {
-                float aspect_ratio = static_cast<float>(width_) / height_;
-                
+                float aspect_ratio = static_cast<float>(width) / height;
+            
                 assert(zNear_ > 0);
 
-			    matProjection_ = glm::perspective(fovy_, aspect_ratio, zNear_, zFar_);
+		        matProjection_ = glm::perspective(fovy_, aspect_ratio, zNear_, zFar_);
             }
-            
+        
             UpdateViewProjection();
-		}
+        }
 	}
 
     void GLES2Camera::OnUpdate()
     {
-        UpdateViewProjection();
+        Invalidate();
     }
 
 	void GLES2Camera::UpdateViewProjection()
@@ -206,9 +189,9 @@ namespace NSG
 
 	Matrix4 GLES2Camera::GetModelViewProjection(const Node* pNode)
 	{
-		if (s_pActiveGLES2Camera)
+		if (activeCamera)
 		{
-			return s_pActiveGLES2Camera->matViewProjection_ * pNode->GetGlobalModelMatrix();
+			return activeCamera->matViewProjection_ * pNode->GetGlobalModelMatrix();
 		}
 		else
 		{
@@ -236,9 +219,9 @@ namespace NSG
 
 	const Matrix4& GLES2Camera::GetViewProjectionMatrix()
 	{
-		if (s_pActiveGLES2Camera)
+		if (activeCamera)
 		{
-			return s_pActiveGLES2Camera->matViewProjection_;
+			return activeCamera->matViewProjection_;
 		}
 		else
 		{
@@ -249,9 +232,9 @@ namespace NSG
 
 	const Matrix4& GLES2Camera::GetInverseViewMatrix()
 	{
-		if (s_pActiveGLES2Camera)
+		if (activeCamera)
 		{
-			return s_pActiveGLES2Camera->matViewInverse_;
+			return activeCamera->matViewInverse_;
 		}
 		else
 		{

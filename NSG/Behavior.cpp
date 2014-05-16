@@ -35,7 +35,6 @@ static Collection collection;
 namespace NSG 
 {
 	Behavior::Behavior()
-	: pApp_(App::GetPtrInstance())
 	{
 		collection.push_back(this);
 	}

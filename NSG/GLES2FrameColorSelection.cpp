@@ -66,8 +66,6 @@ namespace NSG
     enabled_(false),
     createDepthBuffer_(createDepthBuffer)
 	{
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
         Context::this_->Add(this);
 	}
 
@@ -83,7 +81,7 @@ namespace NSG
 
 	void GLES2FrameColorSelection::AllocateResources()
     {
-        auto windowSize = App::GetPtrInstance()->GetViewSize();
+        auto windowSize = App::this_->GetViewSize();
         
         windowWidth_ = windowSize.first;
         
@@ -154,11 +152,6 @@ namespace NSG
         glDeleteRenderbuffers(1, &colorRenderbuffer_);
         glDeleteFramebuffers(1, &framebuffer_);
     }
-
-	void GLES2FrameColorSelection::ViewChanged(int32_t windowWidth, int32_t windowHeight)
-	{
-        Invalidate();
-	}
 
     void GLES2FrameColorSelection::Begin(float screenX, float screenY)
     {

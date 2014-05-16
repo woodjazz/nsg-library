@@ -24,9 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GLES2Material.h"
-#include "IMGUISkin.h"
-#include <memory>
+#include "SharedPointers.h"
+#include <string>
 
 namespace NSG 
 {
@@ -51,7 +50,5 @@ namespace NSG
 			Skin();
 			Skin(const Skin& obj);
 		};
-
-		typedef std::shared_ptr<Skin> PSkin;
 	}
 }

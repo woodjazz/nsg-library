@@ -25,26 +25,21 @@ misrepresented as being the original software.
 */
 #include "Context.h"
 #include "Check.h"
+#include "GLES2FontAtlasTextureManager.h"
+#include "GLES2FrameColorSelection.h"
 
 namespace NSG
 {
-	Context* Context::this_ = nullptr;
-
 	Context::Context()
+	: pFrameColorSelection_(new GLES2FrameColorSelection(false)),
+	atlasManager_(new GLES2FontAtlasTextureManager),
+	imgui_(new IMGUI::Context)
 	{
-		CHECK_ASSERT(Context::this_ == nullptr, __FILE__, __LINE__);
-
-		Context::this_ = this;
 	}
 		
 	Context::~Context()
 	{
-		if(objects_.size() > 0)
-		{
-			CHECK_ASSERT(false && "Not all objects have been removed from context", __FILE__, __LINE__);
-		}
-
-		Context::this_ = nullptr;
+		atlasManager_ = nullptr;
 	}
 
 	void Context::Add(GLES2GPUObject* object)
@@ -61,14 +56,18 @@ namespace NSG
 		CHECK_ASSERT(result && "Context::Remove has failed in file", __FILE__, __LINE__);
 	}
 
-	void Context::Invalidate()
+	void Context::InvalidateGPUResources()
 	{
+        TRACE_LOG("Context::InvalidateGPUResources...");
+
 		auto it = objects_.begin();
 		while(it != objects_.end())
 		{
 			(*it)->Invalidate();
 			++it;
 		}
+
+        TRACE_LOG("Context::InvalidateGPUResources done");
 	}
 
 }

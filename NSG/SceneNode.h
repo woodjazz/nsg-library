@@ -51,12 +51,8 @@ namespace NSG
 		virtual void Render2Select();
 		
 	private:
-		App* pApp_;
-		PGLES2FrameColorSelection pSelection_;
 		PGLES2Material pMaterial_;
 		PGLES2Mesh pMesh_;
 		PBehavior pBehavior_;
 	};
-
-	typedef std::shared_ptr<SceneNode> PSceneNode;
 }

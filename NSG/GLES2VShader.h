@@ -39,6 +39,4 @@ namespace NSG
 
 		~GLES2VShader();
 	};
-
-	typedef std::shared_ptr<GLES2VShader> PGLES2VShader;
 }

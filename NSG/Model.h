@@ -58,6 +58,4 @@ namespace NSG
 		typedef std::vector<PSceneNode> Children;
 		Children children_; // just to keep a reference to children and avoid deletion
 	};
-
-	typedef std::shared_ptr<Model> PModel;
 }
