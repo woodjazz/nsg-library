@@ -53,7 +53,7 @@ list(APPEND LIBRARIES_2_LINK soil)
 ###########################
 # glfw
 ###########################
-if(NOT NACL AND NOT ANDROID)
+if(NOT NACL AND NOT ANDROID AND NOT IOS)
 	mark_as_disable_and_internal(USE_MSVC_RUNTIME_LIBRARY_DLL)
 	mark_as_disable_and_internal(GLFW_BUILD_EXAMPLES)
 	mark_as_disable_and_internal(GLFW_BUILD_TESTS)
@@ -67,6 +67,9 @@ if(NOT NACL AND NOT ANDROID)
 ##################################
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DGLEW_STATIC)
+	if(IOS)
+		add_definitions(-DGLEW_NO_GLU)
+	endif()
 	include_directories(${DEPENDENCIES_DIR}/glew/include)
 	add_subdirectory(${DEPENDENCIES_DIR}/glew)
 	list(APPEND LIBRARIES_2_LINK glew) 

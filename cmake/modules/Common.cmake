@@ -40,6 +40,10 @@ endif ()
 if(CMAKE_COMPILER_IS_CLANGXX)
     message("detected clang compiler")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    if(IOS)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -x objective-c++")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -x objective-c")
+    endif()
 elseif(CMAKE_COMPILER_IS_GNUCXX)
     message("detected GNU compiler")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -pthread")
@@ -48,6 +52,9 @@ endif()
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
     SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+    if(IOS)
+        add_definitions(-DIOS)
+    endif()
 endif()
 
 if(NACL)
@@ -66,15 +73,15 @@ endif()
 ##################################################################################
 macro (setup_executable)
 
-    file(GLOB src "*.cpp")
-
+    file(GLOB src0 "*.cpp")
+    file(GLOB src1 "*.m")
     file(GLOB hdr "*.h")
 
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/Data)
 
     if(NACL)
         
-        add_executable(${PROJECT_NAME} ${src} ${hdr})
+        add_executable(${PROJECT_NAME} ${src0} ${src1} ${hdr})
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 
@@ -102,7 +109,7 @@ macro (setup_executable)
 
     elseif(ANDROID)
         
-        add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
+        add_library(${PROJECT_NAME} SHARED ${src0} ${src1} ${hdr})
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 
@@ -163,19 +170,30 @@ macro (setup_executable)
         endif()
 
     elseif(APPLE)
+
         if(EXISTS "${data_dir}")
-            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr} ${data_dir})
+            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src0} ${src1} ${hdr} ${data_dir})
             SET_SOURCE_FILES_PROPERTIES(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
         else()
-            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr})
+            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src0} ${src1} ${hdr})
         endif()
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 
-        set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo")
+        if(IOS)
+            set (CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_32_64_BIT)")
+            set (CMAKE_XCODE_EFFECTIVE_PLATFORMS -iphoneos -iphonesimulator)
+            set (CMAKE_OSX_SYSROOT iphoneos)    # Set Base SDK to "Latest iOS"
+            set (MACOSX_BUNDLE_GUI_IDENTIFIER com.xxxx.xxxx.\${PRODUCT_NAME:xxxxxx})
+            set_target_properties (${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
+            set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioToolbox -framework CoreAudio -framework CoreGraphics -framework Foundation -framework OpenGLES -framework QuartzCore -framework UIKit")
+        else()
+            set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo")
+        endif()
+
         
     else()        
-        add_executable(${PROJECT_NAME} ${src} ${hdr} )
+        add_executable(${PROJECT_NAME} ${src0} ${src1} ${hdr} )
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 

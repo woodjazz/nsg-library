@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if !defined(NACL) && !defined(ANDROID)
+#if !defined(NACL) && !defined(ANDROID) && !defined(IOS)
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "App.h"

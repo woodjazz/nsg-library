@@ -112,7 +112,7 @@ namespace NSG
         //////////////////////////////////////////////////////////////////////////////////
         // Color buffer
         glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
-#if defined(NACL) || defined(ANDROID)
+#if defined(NACL) || defined(ANDROID) || defined(IOS)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, windowWidth_, windowHeight_);
 #else                
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, windowWidth_, windowHeight_);

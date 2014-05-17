@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include <vector>
 #include <map>
 
+/*
 struct Point 
 {
 	GLfloat x;
@@ -40,6 +41,7 @@ struct Point
 	GLfloat s;
 	GLfloat t;
 };
+*/
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;

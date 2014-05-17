@@ -20,15 +20,14 @@
 	#include <windows.h>
 	#include <wingdi.h>
 	#include <GL/gl.h>
-#elif defined(__APPLE__) || defined(__APPLE_CC__)
+#elif !defined(IOS) && (defined(__APPLE__) || defined(__APPLE_CC__))
 	/*	I can't test this Apple stuff!	*/
-	#include <OpenGL/gl.h>
-	#include <Carbon/Carbon.h>
+    #include <OpenGL/gl.h>
+    #include <Carbon/Carbon.h>
 	#define APIENTRY
-#elif defined(NACL) || defined(ANDROID)
-        #include "NSG/GLES2Includes.h"
+#elif defined(NACL) || defined(ANDROID) || defined(IOS)
+    #include "NSG/GLES2Includes.h"
 	#define APIENTRY
-        #define GL_CLAMP     GL_CLAMP_TO_EDGE
 #else
 	#include <GL/gl.h>
 	#include <GL/glx.h>
