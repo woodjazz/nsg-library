@@ -107,7 +107,7 @@ namespace NSG
 	blurScale_(4),
 	blurStrength_(0.2f)
 	{
-        pMaterial_->Set(this);
+        pMaterial_->GetProgram()->Set(this);
 	}
 
 	GLES2FilterBlur::~GLES2FilterBlur()

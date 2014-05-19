@@ -44,17 +44,13 @@ namespace NSG
         GLushort GetSelected() const;
         void Render(SceneNode* pSceneNode);
         void Render(GLushort id, GLES2Mesh* pMesh, Node* pNode);
-        GLuint GetPositionLoc() const { return position_loc_; }
-        GLuint GetMVPLoc() const { return mvp_loc_; }
         virtual bool IsValid();
         virtual void AllocateResources();
         virtual void ReleaseResources();
     private:
         Color TransformSelectedId2Color(GLushort id);
         PGLES2Program pProgram_;
-        GLuint position_loc_;
         GLuint color_loc_;
-        GLuint mvp_loc_;
         int32_t windowWidth_;
         int32_t windowHeight_;
         GLuint framebuffer_;

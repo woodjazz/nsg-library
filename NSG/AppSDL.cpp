@@ -32,14 +32,12 @@ misrepresented as being the original software.
 #include <memory>
 #include <string>
 #include <locale>
-#ifndef ANDROID
+#ifndef __GNUC__
 #include <codecvt>
 #endif
 #include <assert.h>
 
 NSG::PInternalApp s_pApp = nullptr;
-static int s_width = 0;
-static int s_height = 0;
 
 namespace NSG
 {
@@ -111,10 +109,8 @@ namespace NSG
         }
 #endif
         
-		s_pApp->Initialize();
-
-        s_width = WIDTH;
-        s_height = HEIGHT;
+		int width = WIDTH;
+		int height = HEIGHT;
 
         s_pApp->ViewChanged(WIDTH, HEIGHT);
 
@@ -130,9 +126,9 @@ namespace NSG
         			switch (event.window.event) 
         			{	
 						case SDL_WINDOWEVENT_RESIZED:
-							s_width = event.window.data1;
-							s_height = event.window.data2;
-            				s_pApp->ViewChanged(s_width, s_height);
+							width = event.window.data1;
+							height = event.window.data2;
+            				s_pApp->ViewChanged(width, height);
             				break;
             			default:
             				break;
@@ -148,7 +144,7 @@ namespace NSG
 					int scancode = event.key.keysym.scancode;
 					int action = NSG_KEY_PRESS;
 					int modifier = event.key.keysym.mod;
-					s_pApp->OnKey(scancode, action, modifier);
+					s_pApp->OnKey(key, action, modifier);
 				}
 				else if(event.type == SDL_KEYUP)
 				{
@@ -156,16 +152,17 @@ namespace NSG
 					int scancode = event.key.keysym.scancode;
 					int action = NSG_KEY_RELEASE;
 					int modifier = event.key.keysym.mod;
-					s_pApp->OnKey(scancode, action, modifier);
+					s_pApp->OnKey(key, action, modifier);
 				}
 
 				else if (event.type == SDL_TEXTINPUT)
 				{
-					#ifndef ANDROID
+					#ifndef __GNUC__
 					std::string utf8(event.text.text);
 					std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
 					std::u16string utf16 = utf16conv.from_bytes(utf8);
-					TRACE_LOG("UTF16 conversion produced " << utf16.size() << " code points:\n");
+					TRACE_LOG("utf8=" << utf8);
+                    TRACE_LOG("UTF16 conversion produced " << utf16.size() << " code points:\n");
 					for (char16_t c : utf16)
 					{			
 						TRACE_LOG((unsigned int)c);
@@ -178,7 +175,7 @@ namespace NSG
 				{
 					double x = event.button.x;
                 	double y = event.button.y;
-					s_pApp->OnMouseDown((float)(-1 + 2 * x/s_width), (float)(1 + -2*y/s_height));
+					s_pApp->OnMouseDown((float)(-1 + 2 * x/width), (float)(1 + -2*y/height));
 				}
 				else if (event.type == SDL_MOUSEBUTTONUP)
 				{
@@ -186,11 +183,11 @@ namespace NSG
 				}
 				else if (event.type == SDL_MOUSEMOTION)
 				{
-					if(s_width > 0 && s_height > 0)
+					if(width > 0 && height > 0)
 					{
 						double x = event.button.x;
 	                	double y = event.button.y;
-						s_pApp->OnMouseMove((float)(-1 + 2 * x/s_width),(float)(1 + -2*y/s_height));
+						s_pApp->OnMouseMove((float)(-1 + 2 * x/width),(float)(1 + -2*y/height));
 					}
 				}
 			}
@@ -201,10 +198,11 @@ namespace NSG
 	        SDL_GL_SwapWindow(win);  
 		}        
 
+        s_pApp = nullptr;
+
+
 		SDL_Quit();
 
-		s_pApp->Release();
-		s_pApp = nullptr;
 		
 		return true;
 	}

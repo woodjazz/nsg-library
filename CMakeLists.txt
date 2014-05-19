@@ -37,9 +37,12 @@ include (Common)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+set(USE_SDL "Use SDL" ON)
+
 #set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 set(DEPENDENCIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies)
+set(DEPENDENCIES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dependencies)
 set(EXTERNALS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/externals)
 set(EXTERNALS_BYNARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/externals)
 
@@ -50,26 +53,26 @@ add_subdirectory(${DEPENDENCIES_DIR}/soil)
 include_directories(${DEPENDENCIES_DIR}/soil) 
 list(APPEND LIBRARIES_2_LINK soil) 
 
-###########################
-# glfw
-###########################
-if(NOT NACL AND NOT ANDROID AND NOT IOS)
-	mark_as_disable_and_internal(USE_MSVC_RUNTIME_LIBRARY_DLL)
-	mark_as_disable_and_internal(GLFW_BUILD_EXAMPLES)
-	mark_as_disable_and_internal(GLFW_BUILD_TESTS)
-	mark_as_disable_and_internal(GLFW_INSTALL)
-	add_subdirectory(${EXTERNALS_DIR}/glfw)
-	include_directories(${EXTERNALS_DIR}/glfw/include)
-	list(APPEND LIBRARIES_2_LINK glfw)
+if(NOT GLES2)
+	
+	if(NOT USE_SDL)
+		###########################
+		# glfw
+		###########################
+		mark_as_disable_and_internal(USE_MSVC_RUNTIME_LIBRARY_DLL)
+		mark_as_disable_and_internal(GLFW_BUILD_EXAMPLES)
+		mark_as_disable_and_internal(GLFW_BUILD_TESTS)
+		mark_as_disable_and_internal(GLFW_INSTALL)
+		add_subdirectory(${EXTERNALS_DIR}/glfw)
+		include_directories(${EXTERNALS_DIR}/glfw/include)
+		list(APPEND LIBRARIES_2_LINK glfw)
+	endif()
 
-##################################
-# glew (IMPORTANT GLEW after GLFW)
-##################################
+	##################################
+	# glew (IMPORTANT GLEW after GLFW)
+	##################################
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DGLEW_STATIC)
-	if(IOS)
-		add_definitions(-DGLEW_NO_GLU)
-	endif()
 	include_directories(${DEPENDENCIES_DIR}/glew/include)
 	add_subdirectory(${DEPENDENCIES_DIR}/glew)
 	list(APPEND LIBRARIES_2_LINK glew) 
@@ -82,6 +85,19 @@ set(FREETYPE2_INCLUDE_DIR ${EXTERNALS_DIR}/freetype2/include)
 include_directories(${FREETYPE2_INCLUDE_DIR})
 add_subdirectory(${EXTERNALS_DIR}/freetype2)
 list(APPEND LIBRARIES_2_LINK freetype)
+
+###########################
+# SDL
+###########################
+if(USE_SDL AND NOT NACL AND NOT ANDROID)
+	add_definitions(-DSDL)
+	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
+	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
+	mark_as_disable_and_internal(SDL_SHARED)
+	mark_as_disable_and_internal(HAVE_DINPUT_H)
+	add_subdirectory(${DEPENDENCIES_DIR}/SDL)
+	list(APPEND LIBRARIES_2_LINK SDL2-static)
+endif()
 
 ###########################
 # stb

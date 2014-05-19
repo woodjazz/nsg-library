@@ -25,7 +25,7 @@
     #include <OpenGL/gl.h>
     #include <Carbon/Carbon.h>
 	#define APIENTRY
-#elif defined(NACL) || defined(ANDROID) || defined(IOS)
+#elif defined(GLES2)
     #include "NSG/GLES2Includes.h"
 	#define APIENTRY
 #else
@@ -1998,7 +1998,7 @@ int query_DXT_capability( void )
 				CFRelease( extensionName );
 				CFRelease( bundle );
 			#else
-				#if !defined(NACL) && !defined(ANDROID) 
+				#if !defined(GLES2)
 				ext_addr = (P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC)
 						glXGetProcAddressARB
 						(

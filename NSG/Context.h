@@ -26,19 +26,20 @@ misrepresented as being the original software.
 #pragma once
 #include <memory>
 #include <set>
-#include "GLES2GPUObject.h"
 #include "SharedPointers.h"
 #include "Singleton.h"
 #include "IMGUIContext.h"
 
 namespace NSG
 {
+	class GLES2GPUObject;
 	struct Context : public Singleton<Context>
 	{
 		std::set<GLES2GPUObject*> objects_;
 		PGLES2FontAtlasTextureManager atlasManager_;
 		PGLES2FrameColorSelection pFrameColorSelection_;
 		IMGUI::PContext imgui_;
+		PGLES2Texture whiteTexture_;
 
 		Context();
 		~Context();

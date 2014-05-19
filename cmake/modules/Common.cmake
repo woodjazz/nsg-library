@@ -1,35 +1,40 @@
+if(NACL OR ANDROID OR IOS)
+    set(GLES2 1)
+    add_definitions(-DGLES2)
+endif()
+
 if(WIN32)
 
-    if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
-        add_definitions("/Zi /wd4519")
-        add_definitions( "/MP" )
-    endif()
+    # if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
+    #     add_definitions("/Zi /wd4519")
+    #     add_definitions( "/MP" )
+    # endif()
 
-    if (MSVC)
-        add_definitions( -D_CRT_SECURE_NO_WARNINGS )
-        add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
-        add_definitions( -DNOMINMAX)
+    # if (MSVC)
+    #     add_definitions( -D_CRT_SECURE_NO_WARNINGS )
+    #     add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
+         add_definitions( -DNOMINMAX)
 
-        #We statically link to reduce dependancies
-        FOREACH(flag_var    CMAKE_CXX_FLAGS 
-                            CMAKE_CXX_FLAGS_DEBUG 
-                            CMAKE_CXX_FLAGS_RELEASE 
-                            CMAKE_CXX_FLAGS_MINSIZEREL 
-                            CMAKE_CXX_FLAGS_RELWITHDEBINFO
-                            CMAKE_C_FLAGS_DEBUG
-                            CMAKE_C_FLAGS_RELEASE
-                            CMAKE_C_FLAGS_MINSIZEREL 
-                            CMAKE_C_FLAGS_RELWITHDEBINFO
-                            )
-            IF(${flag_var} MATCHES "/MD")
-                STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-            ENDIF(${flag_var} MATCHES "/MD")
-            IF(${flag_var} MATCHES "/MDd")
-                STRING(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
-            ENDIF(${flag_var} MATCHES "/MDd")
-        ENDFOREACH(flag_var)
+    #     #We statically link to reduce dependancies
+    #     FOREACH(flag_var    CMAKE_CXX_FLAGS 
+    #                         CMAKE_CXX_FLAGS_DEBUG 
+    #                         CMAKE_CXX_FLAGS_RELEASE 
+    #                         CMAKE_CXX_FLAGS_MINSIZEREL 
+    #                         CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    #                         CMAKE_C_FLAGS_DEBUG
+    #                         CMAKE_C_FLAGS_RELEASE
+    #                         CMAKE_C_FLAGS_MINSIZEREL 
+    #                         CMAKE_C_FLAGS_RELWITHDEBINFO
+    #                         )
+    #         IF(${flag_var} MATCHES "/MD")
+    #             STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    #         ENDIF(${flag_var} MATCHES "/MD")
+    #         IF(${flag_var} MATCHES "/MDd")
+    #             STRING(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
+    #         ENDIF(${flag_var} MATCHES "/MDd")
+    #     ENDFOREACH(flag_var)
 
-    ENDIF(MSVC)
+    # ENDIF(MSVC)
 
 endif(WIN32)
 
@@ -73,15 +78,14 @@ endif()
 ##################################################################################
 macro (setup_executable)
 
-    file(GLOB src0 "*.cpp")
-    file(GLOB src1 "*.m")
+    file(GLOB src "*.cpp")
     file(GLOB hdr "*.h")
 
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/Data)
 
     if(NACL)
         
-        add_executable(${PROJECT_NAME} ${src0} ${src1} ${hdr})
+        add_executable(${PROJECT_NAME} ${src} ${hdr})
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 
@@ -109,7 +113,7 @@ macro (setup_executable)
 
     elseif(ANDROID)
         
-        add_library(${PROJECT_NAME} SHARED ${src0} ${src1} ${hdr})
+        add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 
@@ -172,10 +176,10 @@ macro (setup_executable)
     elseif(APPLE)
 
         if(EXISTS "${data_dir}")
-            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src0} ${src1} ${hdr} ${data_dir})
+            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr} ${data_dir})
             SET_SOURCE_FILES_PROPERTIES(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
         else()
-            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src0} ${src1} ${hdr})
+            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr})
         endif()
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
@@ -193,7 +197,7 @@ macro (setup_executable)
 
         
     else()        
-        add_executable(${PROJECT_NAME} ${src0} ${src1} ${hdr} )
+        add_executable(${PROJECT_NAME} ${src} ${hdr} )
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 

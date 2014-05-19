@@ -67,9 +67,8 @@ extern "C" void android_main(struct android_app* state)\
 #define NSG_MAIN(ClassName)\
 int main(int argc, char * argv[])\
 {\
-    @autoreleasepool {\
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));\
-    }\
+    NSG::CreateModule(new ClassName);\
+	return 0;\
 }
 
 #else

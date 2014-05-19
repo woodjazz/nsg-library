@@ -25,8 +25,10 @@ misrepresented as being the original software.
 */
 #include "Context.h"
 #include "Check.h"
+#include "GLES2GPUObject.h"
 #include "GLES2FontAtlasTextureManager.h"
 #include "GLES2FrameColorSelection.h"
+#include "GLES2Texture.h"
 
 namespace NSG
 {
@@ -35,6 +37,10 @@ namespace NSG
 	atlasManager_(new GLES2FontAtlasTextureManager),
 	imgui_(new IMGUI::Context)
 	{
+	        // Creates 1x1 white texture 
+			char img[3];
+			memset(&img[0], 0xFF, sizeof(unsigned char)*3);
+	        whiteTexture_ = PGLES2Texture(new GLES2Texture(GL_RGB, 1, 1, &img[0]));
 	}
 		
 	Context::~Context()

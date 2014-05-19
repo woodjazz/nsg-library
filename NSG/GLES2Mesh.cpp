@@ -48,7 +48,7 @@ namespace NSG
 	}
 
 
-	void GLES2Mesh::Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc)
+	void GLES2Mesh::Render(bool solid, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc)
 	{
 	   	if(IsReady())
 	   	{
@@ -106,6 +106,8 @@ namespace NSG
 
 
 		    CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		    GLenum mode = solid ? GetSolidDrawMode() : GetWireFrameDrawMode();
 
 			if(!indexes_.empty())
 			{

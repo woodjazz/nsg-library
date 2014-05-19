@@ -1,9 +1,6 @@
 PROJECT(NSG)
 
-file(GLOB src0 "*.cpp")
-file(GLOB src1 "*.m")
-
-
+file(GLOB src "*.cpp")
 file(GLOB hdr "*.h")
 
 if(ANDROID)
@@ -15,7 +12,7 @@ elseif(IOS)
 
 endif()
 	
-add_library(${PROJECT_NAME} STATIC ${src0} ${src1} ${hdr})
+add_library(${PROJECT_NAME} STATIC ${src}  ${hdr})
 
 
 

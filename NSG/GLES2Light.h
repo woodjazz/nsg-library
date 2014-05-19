@@ -30,6 +30,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	const size_t MAX_LIGHTS = 4;
+	
 	class GLES2Light : public SceneNode
 	{
 	public:

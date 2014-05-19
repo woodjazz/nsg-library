@@ -48,8 +48,6 @@ namespace NSG
 		GLboolean save_color_mask_[4];
 		GLboolean save_depth_mask_;
 		PGLES2Program pProgram_;
-        GLuint position_loc_;
-        GLuint mvp_loc_;
         bool enabled_;
 	};
 }

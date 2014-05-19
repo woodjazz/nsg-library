@@ -77,7 +77,7 @@ namespace NSG
 	blendMode_(0)
 	{
 		pMaterial_->SetTexture1(input1);
-        pMaterial_->Set(this);
+        pMaterial_->GetProgram()->Set(this);
 	}
 
 	GLES2FilterBlend::~GLES2FilterBlend()

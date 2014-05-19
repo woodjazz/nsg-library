@@ -53,7 +53,7 @@ namespace NSG
 	public:
 		GLES2Mesh(GLenum usage);
 		~GLES2Mesh();
-		void Render(GLenum mode, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc);
+		void Render(bool solid, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc);
 		virtual GLenum GetWireFrameDrawMode() const = 0;
 		virtual GLenum GetSolidDrawMode() const = 0;
 		virtual bool IsValid();

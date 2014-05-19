@@ -26,10 +26,11 @@ misrepresented as being the original software.
 #pragma once
 
 #include "GLES2Filter.h"
+#include "ExtraUniforms.h"
 
 namespace NSG
 {
-	class GLES2FilterBlur : public GLES2Filter, public ExtraMaterialUniforms
+	class GLES2FilterBlur : public GLES2Filter, public ExtraUniforms
 	{
 	public:
 		GLES2FilterBlur(PGLES2Texture input, PGLES2Texture output);

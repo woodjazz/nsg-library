@@ -54,9 +54,7 @@ namespace NSG
 {
 	GLES2FrameColorSelection::GLES2FrameColorSelection(bool createDepthBuffer)
 	: pProgram_(new GLES2Program(vShader, fShader)),
-    position_loc_(-1),
     color_loc_(-1),
-    mvp_loc_(-1),
     windowWidth_(0),
     windowHeight_(0),
 	screenX_(0),
@@ -89,9 +87,7 @@ namespace NSG
 
         CHECK_ASSERT(windowWidth_ > 0 && windowHeight_ > 0, __FILE__, __LINE__);
 
-        position_loc_ = pProgram_->GetAttributeLocation("a_position");
         color_loc_ = pProgram_->GetUniformLocation("u_color");
-        mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -112,7 +108,7 @@ namespace NSG
         //////////////////////////////////////////////////////////////////////////////////
         // Color buffer
         glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
-#if defined(NACL) || defined(ANDROID) || defined(IOS)
+#if defined(GLES2)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, windowWidth_, windowHeight_);
 #else                
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, windowWidth_, windowHeight_);
@@ -253,16 +249,13 @@ namespace NSG
     {
         if(IsReady() && enabled_)
         {
-            UseProgram useProgram(*pProgram_);
+            UseProgram useProgram(*pProgram_, nullptr, pNode);
 
             Color color = TransformSelectedId2Color(id);
         
             glUniform4fv(color_loc_, 1, &color[0]);
 
-            Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
-            glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));        
-
-            pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1, -1);
+            pProgram_->Render(true, pMesh);
         }
     }
 }

@@ -49,9 +49,7 @@ namespace NSG
 	);
 
 	GLES2StencilMask::GLES2StencilMask() 
-	: pProgram_(new GLES2Program(vShader, fShader)),
-	position_loc_(-1),
-	mvp_loc_(-1)
+	: pProgram_(new GLES2Program(vShader, fShader))
 	{
         Context::this_->Add(this);
 	}
@@ -68,8 +66,6 @@ namespace NSG
 
 	void GLES2StencilMask::AllocateResources()
 	{
-	    position_loc_ = pProgram_->GetAttributeLocation("a_position");
-	    mvp_loc_ = pProgram_->GetUniformLocation("u_mvp");
 	}
 
 	void GLES2StencilMask::ReleaseResources()
@@ -106,14 +102,11 @@ namespace NSG
 		{
 	        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	        UseProgram useProgram(*pProgram_);
-
-	        Matrix4 mvp = GLES2Camera::GetModelViewProjection(pNode);
-	        glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(mvp));        
+	        UseProgram useProgram(*pProgram_, nullptr, pNode);
 
 	        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	        pMesh->Render(pMesh->GetSolidDrawMode(), position_loc_, -1, -1, -1);
+            pProgram_->Render(true, pMesh);
 
 	        CHECK_GL_STATUS(__FILE__, __LINE__);
 	    }
