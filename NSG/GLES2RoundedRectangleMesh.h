@@ -37,5 +37,12 @@ namespace NSG
 		~GLES2RoundedRectangleMesh();
 		GLenum GetWireFrameDrawMode() const;
 		GLenum GetSolidDrawMode() const;
+		virtual void Build();
+		virtual const char* GetName() const;
+	private:
+		float radius_;
+		float width_;
+		float height_;
+		int res_;
 	};
 }

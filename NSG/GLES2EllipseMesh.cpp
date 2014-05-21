@@ -26,22 +26,47 @@ misrepresented as being the original software.
 #include "GLES2EllipseMesh.h"
 #include "Types.h"
 #include "Constants.h"
+#include "Check.h"
 
 namespace NSG
 {
 	GLES2EllipseMesh::GLES2EllipseMesh(float width, float height, int res, GLenum usage) 
-	: GLES2Mesh(usage)
+	: GLES2Mesh(usage),
+	width_(width),
+	height_(height),
+	res_(res)
 	{
+	}
+
+	GLES2EllipseMesh::~GLES2EllipseMesh() 
+	{
+	}
+
+	GLenum GLES2EllipseMesh::GetWireFrameDrawMode() const
+	{
+		return GL_LINE_LOOP;
+	}
+
+	GLenum GLES2EllipseMesh::GetSolidDrawMode() const
+	{
+		return GL_TRIANGLE_FAN;
+	}
+
+	void GLES2EllipseMesh::Build()
+	{
+		vertexsData_.clear();
+		indexes_.clear();
+		
 		VertexsData& data = vertexsData_;
 
-		float halfX = width*0.5f;
-		float halfY = height*0.5f;	
+		float halfX = width_*0.5f;
+		float halfY = height_*0.5f;	
 
 		float angle = 0.0f;
 
-		const float angleAdder = TWO_PI / (float)res;
+		const float angleAdder = TWO_PI / (float)res_;
 
-		for (int i = 0; i < res; i++)
+		for (int i = 0; i < res_; i++)
 		{
 			VertexData vertexData;
 			vertexData.normal_ = Vertex3(0,0,1); // always facing forward
@@ -59,20 +84,12 @@ namespace NSG
 
 			angle += angleAdder;
 		}
+
 	}
 
-	GLES2EllipseMesh::~GLES2EllipseMesh() 
+	const char* GLES2EllipseMesh::GetName() const
 	{
-	}
-
-	GLenum GLES2EllipseMesh::GetWireFrameDrawMode() const
-	{
-		return GL_LINE_LOOP;
-	}
-
-	GLenum GLES2EllipseMesh::GetSolidDrawMode() const
-	{
-		return GL_TRIANGLE_FAN;
+		return "EllipseMesh";
 	}
 
 }

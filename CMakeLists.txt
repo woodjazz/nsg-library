@@ -192,6 +192,8 @@ ENDFOREACH()
 ###########################
 # tests
 ###########################
+enable_testing()
+#include( CTest )
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 SUBDIRLIST(SUBDIRS ${TEST_DIR})
 FOREACH(subdir ${SUBDIRS})

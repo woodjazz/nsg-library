@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Keys.h"
 #include "Log.h"
+#include "Keyboard.h"
 #include "GLES2FrameColorSelection.h"
 #include "GLES2Text.h"
 #include "GLES2StencilMask.h"
@@ -77,9 +78,8 @@ namespace NSG
 			
 			if(!Context::this_->state_->activeitem_is_a_text_field)
 			{
-				if(App::this_->IsKeyboardVisible())
-				{
-					App::this_->HideKeyboard();
+				if(Keyboard::this_->Disable())
+                {
 					Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
 				}
 			}
@@ -337,13 +337,10 @@ namespace NSG
                     }
                     ///////////////////////////////////////////////
 
-					if(!App::this_->IsKeyboardVisible())
+					if(Keyboard::this_->Enable())
 					{
-						if(App::this_->ShowKeyboard())
-						{
-							Vertex3 position(0, screenPos.y, 0);
-				  			Context::this_->pCamera_->SetPosition(position);
-				  		}
+						Vertex3 position(0, screenPos.y, 0);
+				  		Context::this_->pCamera_->SetPosition(position);
 				  	}
 			  	}
 			}
@@ -504,11 +501,8 @@ namespace NSG
                     break;
 
                 case NSG_KEY_ENTER:
-					if(App::this_->IsKeyboardVisible())
-					{
-						App::this_->HideKeyboard();
-						Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
-					}
+					Keyboard::this_->Disable();
+					Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
 					break;
 				}
 

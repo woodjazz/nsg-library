@@ -3,12 +3,14 @@ if(NACL OR ANDROID OR IOS)
     add_definitions(-DGLES2)
 endif()
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 if(WIN32)
 
-    # if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
-    #     add_definitions("/Zi /wd4519")
-    #     add_definitions( "/MP" )
-    # endif()
+    if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
+        add_definitions("/Zi /wd4519")
+        add_definitions( "/MP" )
+    endif()
 
     # if (MSVC)
     #     add_definitions( -D_CRT_SECURE_NO_WARNINGS )
@@ -76,7 +78,11 @@ endif()
 ##################################################################################
 ##################################################################################
 ##################################################################################
-macro (setup_executable)
+macro (setup_common)
+
+    get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    
+    PROJECT(${PROJECT_NAME})
 
     file(GLOB src "*.cpp")
     file(GLOB hdr "*.h")
@@ -215,7 +221,38 @@ macro (setup_executable)
     endif()
 
 
+endmacro (setup_common)
+
+##################################################################################
+##################################################################################
+##################################################################################
+macro (setup_executable)
+    setup_common()
 endmacro (setup_executable)
+
+##################################################################################
+##################################################################################
+##################################################################################
+macro (setup_sample)
+    setup_common()
+    set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
+endmacro (setup_sample)
+
+##################################################################################
+##################################################################################
+##################################################################################
+macro (setup_test)
+    setup_common()
+    set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tests")
+    add_test(${PROJECT_NAME} ${PROJECT_NAME})
+    if(NOT NACL AND NOT IOS AND NOT ANDROID)
+        # add_custom_command(TARGET ${PROJECT_NAME}
+        #                        POST_BUILD
+        #                        COMMAND ${PROJECT_NAME}
+        #                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        #                        COMMENT "Running ${PROJECT_NAME}" VERBATIM)
+    endif()
+endmacro (setup_test)
 
 ##################################################################################
 ##################################################################################

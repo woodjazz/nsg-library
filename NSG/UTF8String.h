@@ -24,34 +24,19 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "TimedTask.h"
-#include "QueuedTask.h"
-#include "FSM.h"
-#include "Types.h"
-#include "SceneNode.h"
-#include "Model.h"
-#include "App.h"
-#include "Log.h"
-#include "Util.h"
-#include "Constants.h"
-#include "Check.h"
-#include "Main.h"
+#include <string>
 
+namespace NSG
+{
+	class UTF8String : std::string
+	{
+	public:
+		UTF8String(const char* str);
+		~UTF8String();
+		unsigned int DecodeUTF8(const char*& src) const;
+		unsigned int ByteOffsetUTF8(unsigned int index) const;
+		unsigned int NextUTF8Char(unsigned& byteOffset) const;
+		unsigned int AtUTF8(unsigned index) const;
 
-#include "GLES2Camera.h"
-#include "Behavior.h"
-#include "GLES2BoxMesh.h"
-#include "GLES2SphereMesh.h"
-#include "GLES2PlaneMesh.h"
-#include "GLES2Camera.h"
-#include "GLES2Text.h"
-#include "GLES2Texture.h"
-#include "GLES2Light.h"
-#include "IMGUI.h"
-#include "GLES2Render2Texture.h"
-#include "GLES2Filter.h"
-#include "GLES2FilterBlur.h"
-#include "GLES2FilterBlend.h"
-#include "GLES2RectangleMesh.h"
-
-
+	};
+}

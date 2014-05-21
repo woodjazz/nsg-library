@@ -24,8 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "NSG.h"
-#undef NDEBUG
-#include <assert.h>
 #include <vector>
 
 using namespace NSG::Task;
@@ -58,7 +56,7 @@ struct Task2 : BaseTask
     void Run() 
     {
         BaseTask::executedTasks_.push_back(2);
-        std::this_thread::sleep_for(Seconds(2));
+        std::this_thread::sleep_for(Milliseconds(200));
     }
 };
 
@@ -104,8 +102,8 @@ static void QueuedTaskTest0()
     }
 
     int expectedSequence[] = {0,1,2,0,3,3,1};
-    assert(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
-    assert(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
+    CHECK_ASSERT(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int), __FILE__, __LINE__);
+    CHECK_ASSERT(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence), __FILE__, __LINE__);
     BaseTask::executedTasks_.clear();
 }
 
@@ -135,13 +133,13 @@ static void QueuedTaskTest1()
         tasks.AddTask(pTask3);
         tasks.AddTask(pTask1);
 
-        std::this_thread::sleep_for(Seconds(1));
+        std::this_thread::sleep_for(Milliseconds(100));
         tasks.CancelTask(id4);
     }
 
     int expectedSequence[] = {0,1,2,0,3,3,1};
-    assert(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
-    assert(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
+    CHECK_ASSERT(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int), __FILE__, __LINE__);
+    CHECK_ASSERT(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence), __FILE__, __LINE__);
     BaseTask::executedTasks_.clear();
 }
 
@@ -174,22 +172,19 @@ static void QueuedTaskTest2()
         tasks.AddTask(pTask3);
         tasks.AddTask(pTask1);
 
-        std::this_thread::sleep_for(Seconds(1));
+        std::this_thread::sleep_for(Milliseconds(100));
         tasks.CancelAllTasks();
     }
 
     int expectedSequence[] = {2};
-    assert(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
-    assert(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
+    CHECK_ASSERT(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int), __FILE__, __LINE__);
+    CHECK_ASSERT(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence), __FILE__, __LINE__);
     BaseTask::executedTasks_.clear();
 }
 
 void QueuedTaskTest()
 {
-    printf("QueuedTaskTest0\n");
     QueuedTaskTest0();
-    printf("QueuedTaskTest1\n");
     QueuedTaskTest1();
-    printf("QueuedTaskTest2\n");
     QueuedTaskTest2();
 }

@@ -24,9 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "NSG.h"
-#undef NDEBUG
-#include <assert.h>
-
 using namespace NSG::Task;
 
 static void TimedTaskTest0()
@@ -55,7 +52,7 @@ static void TimedTaskTest0()
 
     struct Task4 : TaskBase {};
 
-    TimedTask tasks(Milliseconds(100));
+    TimedTask tasks(Milliseconds(10));
 
     Task0* p0(new Task0);
     Task1* p1(new Task1);
@@ -70,32 +67,32 @@ static void TimedTaskTest0()
     PTask pTask4(p4);
 
 
-    TimePoint t0 = Clock::now() + Milliseconds(500);
-    TimePoint t1 = Clock::now() + Milliseconds(800);
-    TimePoint t2 = Clock::now() + Milliseconds(1000);
-    TimePoint t3 = Clock::now() + Milliseconds(1500);
-    TimePoint t4 = Clock::now() + Milliseconds(4000);
+    TimePoint t0 = Clock::now() + Milliseconds(50);
+    TimePoint t1 = Clock::now() + Milliseconds(80);
+    TimePoint t2 = Clock::now() + Milliseconds(100);
+    TimePoint t3 = Clock::now() + Milliseconds(150);
+    TimePoint t4 = Clock::now() + Milliseconds(400);
 
-    int id0 = tasks.AddLoopTask(pTask0, t0, Seconds(1));
+    int id0 = tasks.AddLoopTask(pTask0, t0, Milliseconds(100));
     int id1 = tasks.AddTask(pTask1, t1);
     int id2 = tasks.AddTask(pTask2, t2);
-    int id3 = tasks.AddRepeatTask(pTask3, t3, Seconds(2), 2);
-    int id4 = tasks.AddLoopTask(pTask4, t4, Seconds(4));
+    int id3 = tasks.AddRepeatTask(pTask3, t3, Milliseconds(200), 2);
+    int id4 = tasks.AddLoopTask(pTask4, t4, Milliseconds(400));
 
-    std::this_thread::sleep_for(Seconds(7));
+    std::this_thread::sleep_for(Milliseconds(700));
 
-    assert(p0->counter_ == 7);
-    assert(p1->counter_ == 1);
-    assert(p2->counter_ == 1);
-    assert(p3->counter_ == 2);
-    assert(p4->counter_ == 1);
+    CHECK_ASSERT(p0->counter_ == 7, __FILE__, __LINE__);
+    CHECK_ASSERT(p1->counter_ == 1, __FILE__, __LINE__);
+    CHECK_ASSERT(p2->counter_ == 1, __FILE__, __LINE__);
+    CHECK_ASSERT(p3->counter_ == 2, __FILE__, __LINE__);
+    CHECK_ASSERT(p4->counter_ == 1, __FILE__, __LINE__);
 
-    assert(tasks.CancelTask(id0));
+    CHECK_ASSERT(tasks.CancelTask(id0), __FILE__, __LINE__);
 
-    std::this_thread::sleep_for(Seconds(6));
+    std::this_thread::sleep_for(Milliseconds(600));
 
-    assert(p0->counter_ == 7);
-    assert(p4->counter_ == 3);
+    CHECK_ASSERT(p0->counter_ == 7, __FILE__, __LINE__);
+    CHECK_ASSERT(p4->counter_ == 3, __FILE__, __LINE__);
 }
 
 static void TimedTaskTest1()
@@ -133,7 +130,7 @@ static void TimedTaskTest1()
         void Run() 
         {
             TaskBase::Run();
-            std::this_thread::sleep_for(Seconds(1));
+            std::this_thread::sleep_for(Milliseconds(100));
         }
     };
 
@@ -155,7 +152,7 @@ static void TimedTaskTest1()
         }
     };
 
-    TimedTask tasks(Milliseconds(100));
+    TimedTask tasks(Milliseconds(10));
 
     Task0* p0(new Task0);
     Task1* p1(new Task1);
@@ -165,26 +162,24 @@ static void TimedTaskTest1()
     PTask pTask1(p1);
     PTask pTask2(p2);
 
-    TimePoint t = Clock::now() + Seconds(1);
+    TimePoint t = Clock::now() + Milliseconds(100);
 
-    tasks.AddLoopTask(pTask0, t, Milliseconds(1500));
+    tasks.AddLoopTask(pTask0, t, Milliseconds(150));
     tasks.AddTask(pTask1, t);
     tasks.AddTask(pTask2, t);
 
-    std::this_thread::sleep_for(Milliseconds(2500));
+    std::this_thread::sleep_for(Milliseconds(250));
 
-    assert(p0->counter_ == 1);
-    assert(p1->overdue_);
-    assert(p1->counter_ == 0);
-    assert(p2->overdue_);
-    assert(p2->counter_ == 1);
-    //assert(p2->hasException_);
+    CHECK_ASSERT(p0->counter_ == 1, __FILE__, __LINE__);
+    CHECK_ASSERT(p1->overdue_, __FILE__, __LINE__);
+    CHECK_ASSERT(p1->counter_ == 0, __FILE__, __LINE__);
+    CHECK_ASSERT(p2->overdue_, __FILE__, __LINE__);
+    CHECK_ASSERT(p2->counter_ == 1, __FILE__, __LINE__);
+    //CHECK_ASSERT(p2->hasException_, __FILE__, __LINE__);
 }
 
 void TimedTaskTest()
 {
-    printf("TimedTaskTest0\n");
     TimedTaskTest0();
-    printf("TimedTaskTest1\n");
     TimedTaskTest1();
 }

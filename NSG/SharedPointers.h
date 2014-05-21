@@ -41,13 +41,13 @@ namespace NSG
     typedef std::shared_ptr<GLES2FontAtlasTexture> PGLES2FontAtlasTexture;
 
     class GLES2FontAtlasTextureManager;
-    typedef std::shared_ptr<GLES2FontAtlasTextureManager> PGLES2FontAtlasTextureManager;
+    typedef std::unique_ptr<GLES2FontAtlasTextureManager> PGLES2FontAtlasTextureManager;
 
     class App;
-	typedef std::shared_ptr<App> PApp;
+	typedef std::unique_ptr<App> PApp;
 
 	struct InternalApp;
-	typedef std::shared_ptr<InternalApp> PInternalApp;
+	typedef std::unique_ptr<InternalApp> PInternalApp;
 
 	class Behavior;
 	typedef std::shared_ptr<Behavior> PBehavior;
@@ -121,16 +121,16 @@ namespace NSG
 		typedef std::shared_ptr<LayoutArea> PLayoutArea;
 
 		class LayoutManager;
-		typedef std::shared_ptr<LayoutManager> PLayoutManager;
+		typedef std::unique_ptr<LayoutManager> PLayoutManager;
 
 		struct Skin;
 		typedef std::shared_ptr<Skin> PSkin;
 
 		class TextManager;
-	    typedef std::shared_ptr<TextManager> PTextManager;
+	    typedef std::unique_ptr<TextManager> PTextManager;
 
 	    struct Context;
-	    typedef std::shared_ptr<Context> PContext;
+	    typedef std::unique_ptr<Context> PContext;
 
 	    struct State;
 	    typedef std::shared_ptr<State> PState;
@@ -154,6 +154,6 @@ namespace NSG
 	class SceneNode;
 	typedef std::shared_ptr<SceneNode> PSceneNode;
 
-
-
+	class Keyboard;
+	typedef std::unique_ptr<Keyboard> PKeyboard;
 }

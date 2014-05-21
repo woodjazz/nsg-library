@@ -27,11 +27,15 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "App.h"
 #include "Check.h"
+#include "Context.h"
 #include <fstream>
 #if NACL
 #include "AppNaCl.h"
 #include "NaClURLLoader.h"
+#elif ANDROID
+#include <android/asset_manager.h>
 #endif
+
 
 #ifdef __APPLE__
 #include "CoreFoundation/CFBundle.h"
@@ -55,36 +59,43 @@ char* AppleGetBundleDirectory()
 
 namespace NSG
 {
+	Resource::Resource(IProceduralResource* obj)
+	: loaded_(false),
+	pData_(nullptr),
+	bytes_(0),
+	proceduralObj_(obj)	
+	{
+		Context::this_->Add(this);
+	}
+
 	Resource::Resource(const char* filename)
 	: loaded_(false),
 	filename_(filename),
 	pData_(nullptr),
-	bytes_(0)
+	bytes_(0),
+	proceduralObj_(nullptr)
 	{
 #if NACL
 		pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filename);
 #elif ANDROID			
 		pAAssetManager_ = App::this_->GetAssetManager();
 #endif
+		Context::this_->Add(this);
 	}
 
-	Resource::Resource(const char* buffer, size_t bytes)
+	Resource::Resource(const char* staticBuffer, size_t bytes)
 	: pData_(nullptr),
-	bytes_(0),
-	loaded_(true)
+	staticBuffer_(staticBuffer),
+	bytes_(bytes),
+	loaded_(false),
+	proceduralObj_(nullptr)
 	{
-		if(buffer != nullptr)
-		{
-			CHECK_ASSERT(bytes > 0, __FILE__, __LINE__);
-			bytes_ = bytes;
-			buffer_.resize(bytes);
-			pData_ = buffer_.c_str();
-			memcpy((void*)pData_, buffer, bytes);
-		}
+		Context::this_->Add(this);
 	}
 
 	Resource::~Resource()
 	{
+		Context::this_->Remove(this);
 	}
 
 	const char* const Resource::GetData() const
@@ -97,52 +108,79 @@ namespace NSG
 		return bytes_;
 	}
 
+	void Resource::Invalidate()
+	{
+		pData_ = nullptr;
+		buffer_.clear();
+		loaded_ = false;
+	}
+
 	bool Resource::IsLoaded()
 	{
 		if(loaded_) return true;
 
-	#if NACL
-		if(!pLoader_->IsDone()) return false;
-		pData_ = pLoader_->GetData().c_str();
-		bytes_ = pLoader_->GetData().size();
-	#elif ANDROID
-		assert(pAAssetManager_ != nullptr);
-		AAsset* pAsset = AAssetManager_open(pAAssetManager_, filename_.c_str(), AASSET_MODE_BUFFER);
-		if(!pAsset)
+		if(proceduralObj_)
 		{
-			TRACE_LOG("Cannot open file: " << filename_);
-			return false;
+			proceduralObj_->Build();
+			TRACE_LOG("Resource::Procedural=" << proceduralObj_->GetName() << " has been built.");
 		}
-		off_t filelength = AAsset_getLength(pAsset);
-        buffer_.resize((int)filelength);
-        AAsset_read(pAsset, &buffer_[0],filelength);
-		pData_ = buffer_.c_str();
-		bytes_ = buffer_.size();    
-		AAsset_close(pAsset);    
-	#else
-        std::ifstream file(filename_, std::ios::binary);
+		else if(!filename_.empty())
+		{
+			// Load from file
+		#if NACL
+			if(!pLoader_->IsDone()) return false;
+			pData_ = pLoader_->GetData().c_str();
+			bytes_ = pLoader_->GetData().size();
+		#elif ANDROID
+			assert(pAAssetManager_ != nullptr);
+			AAsset* pAsset = AAssetManager_open(pAAssetManager_, filename_.c_str(), AASSET_MODE_BUFFER);
+			if(!pAsset)
+			{
+				TRACE_LOG("Cannot open file: " << filename_);
+				return false;
+			}
+			off_t filelength = AAsset_getLength(pAsset);
+	        buffer_.resize((int)filelength);
+	        AAsset_read(pAsset, &buffer_[0],filelength);
+			pData_ = buffer_.c_str();
+			bytes_ = buffer_.size();    
+			AAsset_close(pAsset);    
+		#else
+	        std::ifstream file(filename_, std::ios::binary);
 
-        #if __APPLE__
-    	if(!file.is_open())
-    	{
-    		std::string newName;
-    		newName.resize(2048);
-    		sprintf(&newName[0], "%s/Contents/Resources/Data/%s", AppleGetBundleDirectory(), filename_.c_str());
-    		file.open(newName, std::ios::binary);
-    	}
-        #endif
+	        #if __APPLE__
+	    	if(!file.is_open())
+	    	{
+	    		std::string newName;
+	    		newName.resize(2048);
+	    		sprintf(&newName[0], "%s/Contents/Resources/Data/%s", AppleGetBundleDirectory(), filename_.c_str());
+	    		file.open(newName, std::ios::binary);
+	    	}
+	        #endif
 
-        CHECK_ASSERT(file.is_open(), __FILE__, __LINE__);
-        file.seekg(0,std::ios::end);
-        std::streampos filelength = file.tellg();
-        file.seekg(0,std::ios::beg);
-        buffer_.resize((int)filelength);
-        file.read(&buffer_[0],filelength);
-		pData_ = buffer_.c_str();
-		bytes_ = buffer_.size();
-	#endif	
+	        CHECK_ASSERT(file.is_open(), __FILE__, __LINE__);
+	        file.seekg(0,std::ios::end);
+	        std::streampos filelength = file.tellg();
+	        file.seekg(0,std::ios::beg);
+	        buffer_.resize((int)filelength);
+	        file.read(&buffer_[0],filelength);
+			pData_ = buffer_.c_str();
+			bytes_ = buffer_.size();
+		#endif	
+			TRACE_LOG("Resource::File=" << filename_ << " has been loaded with size=" << bytes_);
+		}
+		else
+		{
+			if(staticBuffer_ != nullptr)
+            {
+			    CHECK_ASSERT(bytes_ > 0, __FILE__, __LINE__);
+			    buffer_.resize(bytes_);
+			    pData_ = buffer_.c_str();
+			    memcpy((void*)pData_, staticBuffer_, bytes_);
+            }
+		}
+
 		loaded_ = true;
-		TRACE_LOG("File=" << filename_ << " has been loaded with size=" << bytes_);
 		return true;
 	}
 

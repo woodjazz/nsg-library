@@ -26,32 +26,58 @@ misrepresented as being the original software.
 #include "GLES2RoundedRectangleMesh.h"
 #include "Types.h"
 #include "Constants.h"
+#include "Check.h"
 
 namespace NSG
 {
 	GLES2RoundedRectangleMesh::GLES2RoundedRectangleMesh(float radius, float width, float height, int res, GLenum usage) 
-	: GLES2Mesh(usage)
+	: GLES2Mesh(usage),
+	radius_(radius),
+	width_(width),
+	height_(height),
+	res_(res)
 	{
+	}
+
+	GLES2RoundedRectangleMesh::~GLES2RoundedRectangleMesh() 
+	{
+	}
+
+	GLenum GLES2RoundedRectangleMesh::GetWireFrameDrawMode() const
+	{
+		return GL_LINE_LOOP;
+	}
+
+	GLenum GLES2RoundedRectangleMesh::GetSolidDrawMode() const
+	{
+		return GL_TRIANGLE_FAN;
+	}
+
+	void GLES2RoundedRectangleMesh::Build()
+	{
+		vertexsData_.clear();
+		indexes_.clear();
+		
         VertexsData& data = vertexsData_;
 
-		float halfX = width*0.5f;
-		float halfY = height*0.5f;	
+		float halfX = width_*0.5f;
+		float halfY = height_*0.5f;	
 
 		float angle = 0.0f;
 
-		float radius1 = std::min(radius, std::min(halfX, halfY));
+		float radius1 = std::min(radius_, std::min(halfX, halfY));
 
-		float totalSizeX = width + 2 * radius1;
-		float totalSizeY = height + 2 * radius1;
+		float totalSizeX = width_ + 2 * radius1;
+		float totalSizeY = height_ + 2 * radius1;
 
-		halfX -= (totalSizeX - width)/2;
-		halfY -= (totalSizeY - height)/2;
+		halfX -= (totalSizeX - width_)/2;
+		halfY -= (totalSizeY - height_)/2;
 		float coordXFactor= (2*halfX)/totalSizeX;
 		float coordYFactor= (2*halfY)/totalSizeY;
 
-		const float angleAdder = TWO_PI / (float)res;
+		const float angleAdder = TWO_PI / (float)res_;
 
-		for (int i = 0; i < res; i++)
+		for (int i = 0; i < res_; i++)
 		{
 			VertexData vertexData;
 			vertexData.normal_ = Vertex3(0,0,1); // always facing forward
@@ -93,19 +119,11 @@ namespace NSG
 		}
 	}
 
-	GLES2RoundedRectangleMesh::~GLES2RoundedRectangleMesh() 
+	const char* GLES2RoundedRectangleMesh::GetName() const
 	{
+		return "RoundedRectangleMesh";
 	}
 
-	GLenum GLES2RoundedRectangleMesh::GetWireFrameDrawMode() const
-	{
-		return GL_LINE_LOOP;
-	}
-
-	GLenum GLES2RoundedRectangleMesh::GetSolidDrawMode() const
-	{
-		return GL_TRIANGLE_FAN;
-	}
 
 }
 

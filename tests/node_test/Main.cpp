@@ -24,46 +24,17 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 
-#include "NSG/Main.h"
 #include "NSG.h"
-#include <thread>
 using namespace NSG;
 
 extern void NodeTest();
-extern void FSMExamples();
-extern void FSMTest();
-extern void TimedTaskTest();
-extern void QueuedTaskTest();
 
 struct Test : public App 
 {
-	std::thread thread_;
-
-	Test()
-	{
-	}
-
-	~Test()
-	{
-		TRACE_LOG("Destroy Begin");
-		thread_.join();
-		TRACE_LOG("Destroy End");
-	}
-
 	void Start()
 	{
-		thread_ = std::thread([this](){InternalTask();});	
 		NodeTest();
 	}
-
-	void InternalTask() 
-	{
-		FSMExamples();
-		FSMTest();
-		TimedTaskTest();
-		QueuedTaskTest();
-	}
-
 
 	bool ShallExit() const 
 	{ 

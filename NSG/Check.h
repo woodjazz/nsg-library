@@ -26,17 +26,32 @@ misrepresented as being the original software.
 #pragma once
 #include "Log.h"
 #include "GLES2Includes.h"
+#include <stdlib.h>
+
+#if SDL
+#include "SDL.h"
+#undef main
+#define SHOW_ASSERT_POPUP_ERROR(msg) SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Assert failed", msg, nullptr)
+#else
+#define SHOW_ASSERT_POPUP_ERROR(msg) ((void)0)
+#endif
 
 #define CHECK_ASSERT(f, file, line) if (!(f)) {\
-	TRACE_LOG((#f) << " has failed in file " << file << " line " << line);\
-	assert(false);\
+	::std::stringstream stream;\
+	stream << "Assert has failed in file " << file << " line " << line;\
+	TRACE_LOG((#f) << stream.str());\
+	SHOW_ASSERT_POPUP_ERROR(stream.str().c_str());\
+	exit(1);\
 }
 
 #define CHECK_GL_STATUS(file, line) {\
 	GLenum status = glGetError();\
 	if(status != GL_NO_ERROR)\
 	{\
-		TRACE_LOG("GL has failed with status = 0x" << std::hex << status << " in file " << file << " line " << std::dec << line);\
-		assert(false);\
+		::std::stringstream stream;\
+		stream << "GL has failed with status = 0x" << std::hex << status << " in file " << file << " line " << std::dec << line;\
+		TRACE_LOG(stream.str());\
+		SHOW_ASSERT_POPUP_ERROR(stream.str().c_str());\
+		exit(1);\
 	}\
 }

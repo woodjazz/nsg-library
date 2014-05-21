@@ -24,24 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "GLES2Text.h"
-#include "Log.h"
-#include "Check.h"
-#include "App.h"
 #include "GLES2FontAtlasTextureManager.h"
-#include "GLES2Camera.h"
-#include <algorithm>
-#include <vector>
-#include <map>
-
-/*
-struct Point 
-{
-	GLfloat x;
-	GLfloat y;
-	GLfloat s;
-	GLfloat t;
-};
-*/
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
@@ -143,5 +126,16 @@ namespace NSG
 	{
 		return GL_TRIANGLES;
 	}
+
+	void GLES2Text::Build()
+	{
+		CHECK_ASSERT(false, __FILE__, __LINE__);
+	}
+
+	const char* GLES2Text::GetName() const
+	{
+		return "Text";
+	}
+
 
 }

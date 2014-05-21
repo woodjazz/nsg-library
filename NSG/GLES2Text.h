@@ -59,6 +59,8 @@ namespace NSG
 		virtual bool IsValid();
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
+		virtual void Build();
+		virtual const char* GetName() const;
 
 	private:
 		PGLES2FontAtlasTexture pAtlas_;

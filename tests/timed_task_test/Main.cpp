@@ -23,5 +23,37 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "MyApp.h"
-NSG_MAIN(MyApp);
+
+#include "NSG.h"
+#include <thread>
+using namespace NSG;
+
+extern void TimedTaskTest();
+
+struct Test : public App 
+{
+	std::thread thread_;
+
+	~Test()
+	{
+		thread_.join();
+	}
+
+	void Start()
+	{
+		thread_ = std::thread([this](){InternalTask();});	
+	}
+
+	void InternalTask() 
+	{
+		TimedTaskTest();
+	}
+
+	bool ShallExit() const 
+	{ 
+		return true; 
+	}
+};
+
+
+NSG_MAIN(Test);

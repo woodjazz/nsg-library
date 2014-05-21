@@ -24,34 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "TimedTask.h"
-#include "QueuedTask.h"
-#include "FSM.h"
-#include "Types.h"
-#include "SceneNode.h"
-#include "Model.h"
-#include "App.h"
-#include "Log.h"
-#include "Util.h"
-#include "Constants.h"
-#include "Check.h"
-#include "Main.h"
+#include "Singleton.h"
 
+class ANativeActivity;
 
-#include "GLES2Camera.h"
-#include "Behavior.h"
-#include "GLES2BoxMesh.h"
-#include "GLES2SphereMesh.h"
-#include "GLES2PlaneMesh.h"
-#include "GLES2Camera.h"
-#include "GLES2Text.h"
-#include "GLES2Texture.h"
-#include "GLES2Light.h"
-#include "IMGUI.h"
-#include "GLES2Render2Texture.h"
-#include "GLES2Filter.h"
-#include "GLES2FilterBlur.h"
-#include "GLES2FilterBlend.h"
-#include "GLES2RectangleMesh.h"
+namespace NSG
+{
+	class Keyboard : public Singleton<Keyboard>
+	{
+	public:
+		Keyboard();
+		~Keyboard();
+		bool Enable();
+		bool Disable();
+		bool IsEnabled() const { return enabled_; }
+		void SetActivity(ANativeActivity* activity) { activity_ = activity; }
+	private:
+		bool enabled_;
+		ANativeActivity* activity_;
+	};
 
-
+}

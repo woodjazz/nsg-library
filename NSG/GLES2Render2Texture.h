@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2Texture.h"
 #include "GLES2GPUObject.h"
+#include "Types.h"
 #include <memory>
 
 namespace NSG

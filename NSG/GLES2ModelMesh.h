@@ -37,7 +37,10 @@ namespace NSG
 		~GLES2ModelMesh();
 		GLenum GetWireFrameDrawMode() const;
 		GLenum GetSolidDrawMode() const;
+		virtual void Build();
+		virtual const char* GetName() const;
     private:
         GLenum face_mode_;
+        const aiMesh* mesh_;
 	};
 }

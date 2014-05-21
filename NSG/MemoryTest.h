@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
 
-Copyright (c) 2014-2015 Néstor Silveira Gorski
+Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
 #if defined(WIN32) && defined(_MSC_VER)
 //http://msdn.microsoft.com/en-us/library/x98tx3cf.aspx
 // {,,msvcr100d.dll}_crtBreakAlloc
@@ -41,13 +40,16 @@ namespace NSG
         printf("%s", msg);
         return 0;
     }
-    struct MemoryTest 
+
+    struct MemoryTest
     {
         MemoryTest() 
         {
             _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
             _CrtSetReportHook(CRTReportHook);
         }
-    } objMemoryReportTest;
+    };
+
+    static MemoryTest memoryTest;
 }
 #endif

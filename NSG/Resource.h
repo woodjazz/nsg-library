@@ -27,15 +27,20 @@ misrepresented as being the original software.
 #include <string>
 #include <memory>
 #include "SharedPointers.h"
-#if ANDROID
-#include <android/asset_manager.h>
-#endif
 
+class AAssetManager;
 namespace NSG
 {
+	struct IProceduralResource
+	{
+		virtual void Build() = 0;
+		virtual const char* GetName() const = 0;
+	};
+
 	class Resource
 	{
 	public:
+		Resource(IProceduralResource* obj);
 		Resource(const char* filename);
 		Resource(const char* buffer, size_t bytes);
 		~Resource();
@@ -43,16 +48,16 @@ namespace NSG
 		const char* const GetData() const;
 		size_t GetBytes() const;
         std::string GetFilename() const { return filename_; }
+        void Invalidate();
 	private:
 		bool loaded_;
 		std::string filename_;
 		const char* pData_;
 		std::string buffer_;
+		const char* staticBuffer_;
 		size_t bytes_;
-	#if NACL		
 		NaCl::PNaClURLLoader pLoader_;
-	#elif ANDROID		
 		AAssetManager* pAAssetManager_;	
-	#endif
+		IProceduralResource* proceduralObj_;
 	};
 }

@@ -23,5 +23,24 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "MyApp.h"
-NSG_MAIN(MyApp);
+
+#include "NSG.h"
+using namespace NSG;
+
+extern void QueuedTaskTest();
+
+struct Test : public App 
+{
+	void Start()
+	{
+		QueuedTaskTest();
+	}
+
+	bool ShallExit() const 
+	{ 
+		return true; 
+	}
+};
+
+
+NSG_MAIN(Test);

@@ -29,13 +29,15 @@ misrepresented as being the original software.
 #include "GLES2FontAtlasTextureManager.h"
 #include "GLES2FrameColorSelection.h"
 #include "GLES2Texture.h"
+#include "Keyboard.h"
 
 namespace NSG
 {
 	Context::Context()
 	: pFrameColorSelection_(new GLES2FrameColorSelection(false)),
 	atlasManager_(new GLES2FontAtlasTextureManager),
-	imgui_(new IMGUI::Context)
+	imgui_(new IMGUI::Context),
+	keyboard_(new Keyboard)
 	{
 	        // Creates 1x1 white texture 
 			char img[3];
@@ -76,4 +78,30 @@ namespace NSG
         TRACE_LOG("Context::InvalidateGPUResources done");
 	}
 
+	void Context::Add(Resource* object)
+	{
+		auto result = resources_.insert(object);
+
+		CHECK_ASSERT(result.second && "Context::Add has failed in file", __FILE__, __LINE__);
+	}
+
+	void Context::Remove(Resource* object)
+	{
+		auto result = resources_.erase(object);
+		CHECK_ASSERT(result && "Context::Remove has failed in file", __FILE__, __LINE__);
+	}
+
+	void Context::InvalidateResources()
+	{
+        TRACE_LOG("Context::InvalidateResources...");
+
+		auto it = resources_.begin();
+		while(it != resources_.end())
+		{
+			(*it)->Invalidate();
+			++it;
+		}
+
+        TRACE_LOG("Context::InvalidateResources done");
+	}
 }

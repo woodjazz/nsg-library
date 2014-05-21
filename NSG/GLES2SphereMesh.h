@@ -37,5 +37,10 @@ namespace NSG
 		~GLES2SphereMesh();
 		GLenum GetWireFrameDrawMode() const;
 		GLenum GetSolidDrawMode() const;
+		virtual void Build();
+		virtual const char* GetName() const;
+	private:
+		float radius_;
+		int res_;
 	};
 }

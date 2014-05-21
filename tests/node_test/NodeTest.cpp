@@ -24,9 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "NSG.h"
-#undef NDEBUG
-#include <assert.h>
-
 using namespace NSG;
 
 static void Test01()
@@ -37,38 +34,38 @@ static void Test01()
 	pA->SetPosition(Vertex3(1,0,0));
 	pB->SetPosition(Vertex3(-2,0,0));
 	
-	assert(pA->GetPosition() == Vertex3(1,0,0));
-	assert(pA->GetGlobalPosition() == Vertex3(1,0,0));
-	assert(pB->GetPosition() == Vertex3(-2,0,0));
-	assert(pB->GetGlobalPosition() == Vertex3(-1,0,0));
+	CHECK_ASSERT(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
 
     pA->SetPosition(Vertex3(2,0,0));
 
-	assert(pA->GetPosition() == Vertex3(2,0,0));
-	assert(pA->GetGlobalPosition() == Vertex3(2,0,0));
-	assert(pB->GetPosition() == Vertex3(-2,0,0));
-	assert(pB->GetGlobalPosition() == Vertex3(0,0,0));
+	CHECK_ASSERT(pA->GetPosition() == Vertex3(2,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(2,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(0,0,0), __FILE__, __LINE__);
 
     pA->SetPosition(Vertex3(1,0,0));
 
-	assert(pA->GetPosition() == Vertex3(1,0,0));
-	assert(pA->GetGlobalPosition() == Vertex3(1,0,0));
-	assert(pB->GetPosition() == Vertex3(-2,0,0));
-	assert(pB->GetGlobalPosition() == Vertex3(-1,0,0));
+	CHECK_ASSERT(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
 	
 	pB->SetScale(Vertex3(2,2,2));
 
-   	assert(pA->GetPosition() == Vertex3(1,0,0));
-	assert(pA->GetGlobalPosition() == Vertex3(1,0,0));
-	assert(pB->GetPosition() == Vertex3(-2,0,0));
-	assert(pB->GetGlobalPosition() == Vertex3(-1,0,0));
+   	CHECK_ASSERT(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
 
     pA->SetScale(Vertex3(2,2,2));
 
-	assert(pA->GetPosition() == Vertex3(1,0,0));
-	assert(pA->GetGlobalPosition() == Vertex3(1,0,0));
-	assert(pB->GetPosition() == Vertex3(-2,0,0));
-	assert(pB->GetGlobalPosition() == Vertex3(-3,0,0));
+	CHECK_ASSERT(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-3,0,0), __FILE__, __LINE__);
 }
 
 static void Test02()
@@ -79,8 +76,8 @@ static void Test02()
 	pA->SetPosition(Vertex3(1,0,0));
 	pB->SetGlobalPosition(Vertex3(-2,0,0));
 
-    assert(pB->GetPosition() == Vertex3(-3,0,0));
-    assert(pB->GetGlobalPosition() == Vertex3(-2,0,0));
+    CHECK_ASSERT(pB->GetPosition() == Vertex3(-3,0,0), __FILE__, __LINE__);
+    CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
 }
 
 
@@ -88,11 +85,11 @@ static void Test03()
 {
 	PNode pA(new Node());
 
-    assert(pA->GetLookAtDirection() == Vertex3(0,0,-1));
+    CHECK_ASSERT(pA->GetLookAtDirection() == Vertex3(0,0,-1), __FILE__, __LINE__);
 
     pA->SetLookAt(Vertex3(10,0,0));
 
-    assert(glm::distance(pA->GetLookAtDirection(), Vertex3(1,0,0)) < 2*glm::epsilon<float>());
+    CHECK_ASSERT(glm::distance(pA->GetLookAtDirection(), Vertex3(1,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 }
 
 static void Test04()
@@ -104,13 +101,13 @@ static void Test04()
     pA->SetOrientation(glm::angleAxis(PI, Vertex3(0, 0, 1)));
     Vertex3 v2(pA->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    assert(glm::distance(v2, Vertex3(1,0,0)) < 2*glm::epsilon<float>());
+    CHECK_ASSERT(glm::distance(v2, Vertex3(1,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
     
     pA->SetScale(Vertex3(2,2,2));
 
     v2 = Vertex3(pA->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    assert(glm::distance(v2, Vertex3(0,0,0)) < 2*glm::epsilon<float>());
+    CHECK_ASSERT(glm::distance(v2, Vertex3(0,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 }
 
 static void Test05()
@@ -127,13 +124,13 @@ static void Test05()
 
     Vertex3 v2(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    assert(glm::distance(v2, Vertex3(3,0,0)) < 2*glm::epsilon<float>());
+    CHECK_ASSERT(glm::distance(v2, Vertex3(3,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
     
     pA->SetScale(Vertex3(2,2,2));
 
     v2 = Vertex3(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    assert(glm::distance(v2, Vertex3(4,0,0)) < 2*glm::epsilon<float>());
+    CHECK_ASSERT(glm::distance(v2, Vertex3(4,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 }
 
 static void Test06()
@@ -150,7 +147,7 @@ static void Test06()
 
     Vertex3 v2(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    assert(glm::distance(v2, Vertex3(-1,0,0)) < 2*glm::epsilon<float>());
+    CHECK_ASSERT(glm::distance(v2, Vertex3(-1,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 }
 
 static void Test07()
@@ -174,11 +171,11 @@ static void Test07()
     Vertex3 a1 = glm::eulerAngles(q1);
     Vertex3 a2 = glm::eulerAngles(q);
 
-    assert(glm::distance(a1, a2) < 2*glm::epsilon<float>());
+    CHECK_ASSERT(glm::distance(a1, a2) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 
-    assert(position == position1);
+    CHECK_ASSERT(position == position1, __FILE__, __LINE__);
 
-    assert(scale == scale1);
+    CHECK_ASSERT(scale == scale1, __FILE__, __LINE__);
 }
 
 void NodeTest()

@@ -26,10 +26,6 @@ misrepresented as being the original software.
 #pragma once
 
 #include "GLES2Includes.h"
-#include "GLES2Mesh.h"
-#include "Node.h"
-#include "Resource.h"
-#include "Types.h"
 #include "SharedPointers.h"
 #include "GLES2GPUObject.h"
 #include <memory>

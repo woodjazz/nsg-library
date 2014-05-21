@@ -25,10 +25,12 @@ misrepresented as being the original software.
 */
 #if SDL
 #include "SDL.h"
+#undef main
 #include "App.h"
 #include "Tick.h"
 #include "Keys.h"
 #include "Log.h"
+#include "UTF8String.h"
 #include <memory>
 #include <string>
 #include <locale>
@@ -71,8 +73,14 @@ namespace NSG
 		const int WIDTH = 320;
 		const int HEIGHT = 200;
 
-		SDL_Window* win = SDL_CreateWindow("NSG!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 
-			SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+#if IOS
+        Uint32 flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+#else
+		Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+#endif
+		
+
+		SDL_Window* win = SDL_CreateWindow("NSG!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, flags);
 
 		if (win == nullptr)
 		{
@@ -109,14 +117,15 @@ namespace NSG
         }
 #endif
         
-		int width = WIDTH;
-		int height = HEIGHT;
+		int width = 0;
+		int height = 0;
 
-        s_pApp->ViewChanged(WIDTH, HEIGHT);
+        SDL_GetWindowSize(win, &width, &height);
+
+        s_pApp->ViewChanged(width, height);
 
 		SDL_Event event;
 		bool quit = false;
-		//SDL_StartTextInput();
 		while (!quit)
 		{
 			while (SDL_PollEvent(&event))
@@ -157,19 +166,22 @@ namespace NSG
 
 				else if (event.type == SDL_TEXTINPUT)
 				{
-					#ifndef __GNUC__
-					std::string utf8(event.text.text);
-					std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
-					std::u16string utf16 = utf16conv.from_bytes(utf8);
-					TRACE_LOG("utf8=" << utf8);
-                    TRACE_LOG("UTF16 conversion produced " << utf16.size() << " code points:\n");
-					for (char16_t c : utf16)
-					{			
-						TRACE_LOG((unsigned int)c);
-						s_pApp->OnChar((unsigned int)c);
+                #ifndef __GNUC__
+                    std::string utf8(event.text.text);
+                    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
+                    std::u16string utf16 = utf16conv.from_bytes(utf8);
+                    for (char16_t c : utf16)
+                    {                       
+                        s_pApp->OnChar((unsigned int)c);
+                    }
+                #else
+    				UTF8String utf8(event.text.text);
+					unsigned unicode = utf8.AtUTF8(0);
+					if(unicode)
+					{
+						s_pApp->OnChar(unicode);
 					}
-					#endif
-
+                #endif
 				}
 				else if (event.type == SDL_MOUSEBUTTONDOWN)
 				{
@@ -196,6 +208,8 @@ namespace NSG
 			s_pApp->RenderFrame();
 
 	        SDL_GL_SwapWindow(win);  
+
+	        quit = quit || s_pApp->ShallExit();
 		}        
 
         s_pApp = nullptr;

@@ -39,6 +39,7 @@ namespace NSG
 	GLES2Mesh::GLES2Mesh(GLenum usage) 
 	: usage_(usage)
 	{
+		resource_ = PResource(new Resource(this));
 		Context::this_->Add(this);
 	}
 
@@ -147,7 +148,7 @@ namespace NSG
 
 	bool GLES2Mesh::IsValid()
 	{
-		return !vertexsData_.empty();
+		return resource_->IsLoaded();
 	}
 
 	void GLES2Mesh::AllocateResources()

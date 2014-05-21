@@ -37,5 +37,12 @@ namespace NSG
 		~GLES2PlaneMesh();
 		GLenum GetWireFrameDrawMode() const;
 		GLenum GetSolidDrawMode() const;
+		virtual void Build();
+		virtual const char* GetName() const;
+	private:
+		float width_;
+		float height_;
+		int columns_;
+		int rows_;
 	};
 }

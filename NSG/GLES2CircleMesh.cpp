@@ -26,36 +26,15 @@ misrepresented as being the original software.
 #include "GLES2CircleMesh.h"
 #include "Types.h"
 #include "Constants.h"
+#include "Check.h"
 
 namespace NSG
 {
 	GLES2CircleMesh::GLES2CircleMesh(float radius, int res, GLenum usage) 
-	: GLES2Mesh(usage)
+	: GLES2Mesh(usage),
+	radius_(radius),
+	res_(res)
 	{
-		VertexsData& data = vertexsData_;
-
-		float angle = 0.0f;
-
-		const float angleAdder = TWO_PI / (float)res;
-
-		for (int i = 0; i < res; i++)
-		{
-			VertexData vertexData;
-			vertexData.normal_ = Vertex3(0,0,1); // always facing forward
-			vertexData.position_.x = cos(angle);
-			vertexData.position_.y = sin(angle);
-			vertexData.position_.z = 0;
-            vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
-
-            vertexData.uv_.x = (vertexData.uv_.x + 1)/2.0f;
-            vertexData.uv_.y = 1-(vertexData.uv_.y + 1)/2.0f;
-			
-			vertexData.position_ *= radius;
-
-			data.push_back(vertexData);
-
-			angle += angleAdder;
-		}
 	}
 
 	GLES2CircleMesh::~GLES2CircleMesh() 
@@ -71,6 +50,42 @@ namespace NSG
 	GLenum GLES2CircleMesh::GetSolidDrawMode() const
 	{
 		return GL_TRIANGLE_FAN;
+	}
+
+	void GLES2CircleMesh::Build()
+	{
+		vertexsData_.clear();
+		indexes_.clear();
+		
+		VertexsData& data = vertexsData_;
+
+		float angle = 0.0f;
+
+		const float angleAdder = TWO_PI / (float)res_;
+
+		for (int i = 0; i < res_; i++)
+		{
+			VertexData vertexData;
+			vertexData.normal_ = Vertex3(0,0,1); // always facing forward
+			vertexData.position_.x = cos(angle);
+			vertexData.position_.y = sin(angle);
+			vertexData.position_.z = 0;
+            vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+
+            vertexData.uv_.x = (vertexData.uv_.x + 1)/2.0f;
+            vertexData.uv_.y = 1-(vertexData.uv_.y + 1)/2.0f;
+			
+			vertexData.position_ *= radius_;
+
+			data.push_back(vertexData);
+
+			angle += angleAdder;
+		}
+	}
+
+	const char* GLES2CircleMesh::GetName() const
+	{
+		return "CircleMesh";
 	}
 
 }

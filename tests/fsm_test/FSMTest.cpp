@@ -24,9 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "NSG.h"
-#undef NDEBUG
-#include <assert.h>
-
 using namespace NSG::FSM;
 
 static void FSMTest0()
@@ -52,51 +49,51 @@ static void FSMTest0()
 
     Machine machine(initializing);
 
-    assert(machine.GetState() == &initializing);
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &initializing);
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
     condition1 = true;
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
     condition2 = true;
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     condition3 = true;
 
     machine.Update();
 
-    assert(machine.GetState() == &error);
+    CHECK_ASSERT(machine.GetState() == &error, __FILE__, __LINE__);
 
     condition3 = false;
 
     machine.Update();
 
-    assert(machine.GetState() == &initializing);
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 }
 
 static void FSMTest1()
@@ -149,83 +146,83 @@ static void FSMTest1()
 
     Machine machine(initializing);
 
-    assert(machine.GetState() == &initializing);
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
-    assert(initializing.nStart_ == 1 && initializing.nStay_ == 0 && initializing.nEnd_ == 0);
+    CHECK_ASSERT(initializing.nStart_ == 1 && initializing.nStay_ == 0 && initializing.nEnd_ == 0, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 0);
+    CHECK_ASSERT(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 0, __FILE__, __LINE__);
 
-    assert(machine.GetState() == &initializing);
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
     condition1 = true;
 
     machine.Update();
 
-    assert(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 1);
+    CHECK_ASSERT(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 1, __FILE__, __LINE__);
 
-    assert(machine.GetState() == &busy);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
-    assert(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 0);
+    CHECK_ASSERT(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 0, __FILE__, __LINE__);
 
     condition2 = true;
 
     machine.Update();
 
-    assert(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 1);
+    CHECK_ASSERT(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 1, __FILE__, __LINE__);
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
-    assert(ready.nStart_ == 1 && ready.nStay_ == 0 && ready.nEnd_ == 0);
+    CHECK_ASSERT(ready.nStart_ == 1 && ready.nStay_ == 0 && ready.nEnd_ == 0, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 0);
+    CHECK_ASSERT(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 0, __FILE__, __LINE__);
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     condition3 = true;
 
     machine.Update();
 
-    assert(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 1);
+    CHECK_ASSERT(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 1, __FILE__, __LINE__);
 
-    assert(machine.GetState() == &error);
+    CHECK_ASSERT(machine.GetState() == &error, __FILE__, __LINE__);
 
-    assert(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 0);
+    CHECK_ASSERT(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 0, __FILE__, __LINE__);
 
     condition3 = false;
 
     machine.Update();
 
-    assert(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 1);
+    CHECK_ASSERT(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 1, __FILE__, __LINE__);
 
-    assert(machine.GetState() == &initializing);
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
-    assert(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 1);
-
-    machine.Update();
-
-    assert(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 2);
-
-    assert(machine.GetState() == &busy);
-
-    assert(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 1);
+    CHECK_ASSERT(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 1, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 2);
+    CHECK_ASSERT(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 2, __FILE__, __LINE__);
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
-    assert(ready.nStart_ == 2 && ready.nStay_ == 1 && ready.nEnd_ == 1);
+    CHECK_ASSERT(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 1, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 2, __FILE__, __LINE__);
 
-    assert(ready.nStart_ == 2 && ready.nStay_ == 2 && ready.nEnd_ == 1);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
+
+    CHECK_ASSERT(ready.nStart_ == 2 && ready.nStay_ == 1 && ready.nEnd_ == 1, __FILE__, __LINE__);
+
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
+
+    CHECK_ASSERT(ready.nStart_ == 2 && ready.nStay_ == 2 && ready.nEnd_ == 1, __FILE__, __LINE__);
 }
 
 static void FSMTest2()
@@ -260,52 +257,52 @@ static void FSMTest2()
 
     Machine machine(initializing);
 
-    assert(machine.GetState() == &initializing);
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &initializing);
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
     condition1 = true;
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
-    assert(machine.GetState()->GetState() == &initialize_jobs);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
 
     condition2 = true;
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     condition3 = true;
     condition2 = false;
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
-    assert(machine.GetState()->GetState() == &initialize_jobs);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
-    assert(machine.GetState()->GetState() == &do_jobs);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
-    assert(machine.GetState()->GetState() == &do_jobs);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
 
     condition2 = true;
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     machine.Update();
 
@@ -313,43 +310,40 @@ static void FSMTest2()
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     condition3 = true;
     condition2 = false;
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
-    assert(machine.GetState()->GetState() == &initialize_jobs);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
-    assert(machine.GetState()->GetState() == &do_jobs);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
 
     machine.Update();
 
-    assert(machine.GetState() == &busy);
-    assert(machine.GetState()->GetState() == &do_jobs);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
 
     condition2 = true;
 
     machine.Update();
 
-    assert(machine.GetState() == &ready);
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 }
 
 void FSMTest()
 {
-    printf("FSMTest0\n");
     FSMTest0();
-    printf("FSMTest1\n");
     FSMTest1();
-    printf("FSMTest2\n");
     FSMTest2();
 }

@@ -38,7 +38,10 @@ namespace NSG
 		void SetFilled(bool enable);
 		GLenum GetWireFrameDrawMode() const;
 		GLenum GetSolidDrawMode() const;
+		virtual void Build();
+		virtual const char* GetName() const;
 	private:
-		bool filled_;
+		float radius_;
+		int res_;
 	};
 }

@@ -31,11 +31,9 @@ misrepresented as being the original software.
 #include "Behavior.h"
 #include "Check.h"
 #include "Context.h"
+#include "Keyboard.h"
 #if NACL
 #include "ppapi/cpp/var.h"
-#elif ANDROID
-#include <android/asset_manager.h>
-#include <android/native_activity.h>
 #endif
 #include <cassert>
 
@@ -44,8 +42,7 @@ namespace NSG
     App::App() 
     : width_(0),
     height_(0),
-    selectedIndex_(0),
-    isKeyboardVisible_(false)
+    selectedIndex_(0)
     {
     }
 
@@ -82,101 +79,6 @@ namespace NSG
 #endif  
     }
   
-
-static bool displayKeyboard(ANativeActivity* pActivity, bool pShow) 
-{ 
-#if ANDROID    
-    // Attaches the current thread to the JVM. 
-    jint lResult; 
-    jint lFlags = 0; 
-
-    JavaVM* lJavaVM = pActivity->vm; 
-    JNIEnv* lJNIEnv = pActivity->env; 
-
-    JavaVMAttachArgs lJavaVMAttachArgs; 
-    lJavaVMAttachArgs.version = JNI_VERSION_1_6; 
-    lJavaVMAttachArgs.name = "NativeThread"; 
-    lJavaVMAttachArgs.group = NULL; 
-
-    lResult=lJavaVM->AttachCurrentThread(&lJNIEnv, &lJavaVMAttachArgs); 
-    
-    if (lResult == JNI_ERR) 
-    { 
-        TRACE_LOG("AttachCurrentThread:JNI_ERR");
-        return false; 
-    } 
-
-    // Retrieves NativeActivity. 
-    jobject lNativeActivity = pActivity->clazz; 
-    jclass ClassNativeActivity = lJNIEnv->GetObjectClass(lNativeActivity); 
-
-    // Retrieves Context.INPUT_METHOD_SERVICE. 
-    jclass ClassContext = lJNIEnv->FindClass("android/content/Context"); 
-    jfieldID FieldINPUT_METHOD_SERVICE = lJNIEnv->GetStaticFieldID(ClassContext, "INPUT_METHOD_SERVICE", "Ljava/lang/String;"); 
-    jobject INPUT_METHOD_SERVICE = lJNIEnv->GetStaticObjectField(ClassContext, FieldINPUT_METHOD_SERVICE); 
-    //jniCheck(INPUT_METHOD_SERVICE); 
-
-    // Runs getSystemService(Context.INPUT_METHOD_SERVICE). 
-    jclass ClassInputMethodManager = lJNIEnv->FindClass( "android/view/inputmethod/InputMethodManager"); 
-    jmethodID MethodGetSystemService = lJNIEnv->GetMethodID( ClassNativeActivity, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;"); 
-    jobject lInputMethodManager = lJNIEnv->CallObjectMethod(lNativeActivity, MethodGetSystemService, INPUT_METHOD_SERVICE); 
-
-    // Runs getWindow().getDecorView(). 
-    jmethodID MethodGetWindow = lJNIEnv->GetMethodID(ClassNativeActivity, "getWindow", "()Landroid/view/Window;"); 
-    jobject lWindow = lJNIEnv->CallObjectMethod(lNativeActivity, MethodGetWindow); 
-    jclass ClassWindow = lJNIEnv->FindClass( "android/view/Window"); 
-    jmethodID MethodGetDecorView = lJNIEnv->GetMethodID( ClassWindow, "getDecorView", "()Landroid/view/View;"); 
-    jobject lDecorView = lJNIEnv->CallObjectMethod(lWindow, MethodGetDecorView); 
-
-    if(pShow) 
-    { 
-        // Runs lInputMethodManager.showSoftInput(...). 
-        jmethodID MethodShowSoftInput = lJNIEnv->GetMethodID( ClassInputMethodManager, "showSoftInput", "(Landroid/view/View;I)Z"); 
-        jboolean lResult = lJNIEnv->CallBooleanMethod( lInputMethodManager, MethodShowSoftInput, lDecorView, lFlags);
-    } 
-    else 
-    { 
-        // Runs lWindow.getViewToken() 
-        jclass ClassView = lJNIEnv->FindClass( "android/view/View"); 
-        jmethodID MethodGetWindowToken = lJNIEnv->GetMethodID( ClassView, "getWindowToken", "()Landroid/os/IBinder;"); 
-        jobject lBinder = lJNIEnv->CallObjectMethod(lDecorView,MethodGetWindowToken); 
-
-        // lInputMethodManager.hideSoftInput(...). 
-        jmethodID MethodHideSoftInput = lJNIEnv->GetMethodID( ClassInputMethodManager, "hideSoftInputFromWindow", "(Landroid/os/IBinder;I)Z"); 
-        jboolean lRes = lJNIEnv->CallBooleanMethod( lInputMethodManager, MethodHideSoftInput, lBinder, lFlags); 
-    } 
-
-    // Finished with the JVM. 
-    lJavaVM->DetachCurrentThread(); 
-
-    return true;
-#else
-    return false;
-#endif
-}    
-
-    bool App::ShowKeyboard()
-    {
-        TRACE_LOG("Showing keyboard")
-
-        if(displayKeyboard(pActivity_, true))
-        {
-            isKeyboardVisible_ = true;
-        }
-
-        return isKeyboardVisible_;
-    }
-
-    bool App::HideKeyboard()
-    {
-        TRACE_LOG("Hiding keyboard")
-        if(displayKeyboard(pActivity_, false))
-        {
-            isKeyboardVisible_ = false;
-        }
-        return isKeyboardVisible_;
-    }
-
     void App::BeginSelection(float screenX, float screenY) 
     { 
         Context::this_->pFrameColorSelection_->Begin(screenX, screenY);
@@ -239,6 +141,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         pApp_->SetViewSize(width, height);
 
         Context::this_->InvalidateGPUResources();
+        Context::this_->InvalidateResources();
 
         pApp_->ViewChanged(width, height);
     }
@@ -318,11 +221,6 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         }
     }
 
-    bool InternalApp::HideKeyboard()
-    {
-        return pApp_->HideKeyboard();
-    }
-
     bool InternalApp::ShallExit() const
     {
         return pApp_->ShallExit();
@@ -333,12 +231,11 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
         Context::this_->InvalidateGPUResources();
     }
 
-#if NACL
     void InternalApp::HandleMessage(const pp::Var& var_message)
     {
         pApp_->HandleMessage(var_message);
     }
-#elif ANDROID
+
     void InternalApp::SetAssetManager(AAssetManager* pAAssetManager)
     {
         pApp_->SetAssetManager(pAAssetManager);
@@ -346,8 +243,7 @@ static bool displayKeyboard(ANativeActivity* pActivity, bool pShow)
 
     void InternalApp::SetActivity(ANativeActivity* pActivity)
     {
-        pApp_->SetActivity(pActivity);
+        Keyboard::this_->SetActivity(pActivity);
     }
-#endif
 
 }

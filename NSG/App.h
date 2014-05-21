@@ -33,6 +33,7 @@ misrepresented as being the original software.
 
 class AAssetManager;
 class ANativeActivity;
+
 namespace pp
 {
     class Var;
@@ -59,9 +60,6 @@ namespace NSG
         virtual void OnChar(unsigned int character) {}
         virtual bool ShallExit() const { return false; }
         void DoTick(float delta);
-        bool ShowKeyboard();
-        bool HideKeyboard();
-        bool IsKeyboardVisible() { return isKeyboardVisible_; }
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
         void BeginSelection(float screenX, float screenY);
@@ -71,14 +69,11 @@ namespace NSG
 		virtual void HandleMessage(const pp::Var& var_message);
 		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
         AAssetManager* GetAssetManager() { return pAAssetManager_; }
-        void SetActivity(ANativeActivity* pActivity) { pActivity_ = pActivity; }
     private:
         AAssetManager* pAAssetManager_;
-        ANativeActivity* pActivity_;
         int32_t width_;
         int32_t height_;
         GLushort selectedIndex_;
-        bool isKeyboardVisible_;
         // The time in seconds it took to complete the last frame
         float deltaTime_;
         Context context_;
@@ -104,13 +99,11 @@ namespace NSG
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void RenderFrame();
-        bool HideKeyboard();
         bool ShallExit() const;
         void InvalidateGPUContext();
 		void HandleMessage(const pp::Var& var_message);
 		void SetAssetManager(AAssetManager* pAAssetManager);
         void SetActivity(ANativeActivity* pActivity);
-	
     };
 
 }	

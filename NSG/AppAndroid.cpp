@@ -24,6 +24,7 @@
 #include <EGL/egl.h>
 #include "GLES2Includes.h"
 #include "Keys.h" 
+#include "Keyboard.h"
 
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
@@ -400,7 +401,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd)
 
         case APP_CMD_TERM_WINDOW:
             TRACE_LOG("APP_CMD_TERM_WINDOW"); 
-            //s_pApp->HideKeyboard();
             // The window is being hidden or closed, clean it up.
             
             //s_pApp->Release();
@@ -487,7 +487,7 @@ namespace NSG
         TRACE_LOG("CreateModule"); 
 
         pApp->SetAssetManager(state->activity->assetManager);
-        pApp->SetActivity(state->activity);
+        Keyboard::this_->SetActivity(state->activity);
 
         s_pApp = PInternalApp(new InternalApp(pApp));
 

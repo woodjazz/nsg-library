@@ -31,34 +31,37 @@ namespace NSG
 {
 	GLES2ModelMesh::GLES2ModelMesh(GLenum usage, const aiMesh* mesh) 
 	: GLES2Mesh(usage),
-    face_mode_(-1)
+    face_mode_(-1),
+    mesh_(mesh)
 	{
 		VertexsData& data = vertexsData_;
 
-		for(size_t v=0; v<mesh->mNumVertices; v++)
+		CHECK_ASSERT(data.empty(), __FILE__, __LINE__);
+
+		for(size_t v=0; v<mesh_->mNumVertices; v++)
 		{
 			VertexData vertexData;
 
-			vertexData.position_ = Vertex3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+			vertexData.position_ = Vertex3(mesh_->mVertices[v].x, mesh_->mVertices[v].y, mesh_->mVertices[v].z);
 
-			if(mesh->HasNormals())
+			if(mesh_->HasNormals())
 			{
-				vertexData.normal_ = Vertex3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
+				vertexData.normal_ = Vertex3(mesh_->mNormals[v].x, mesh_->mNormals[v].y, mesh_->mNormals[v].z);
 			}
 
-			if(mesh->HasTextureCoords(0))
+			if(mesh_->HasTextureCoords(0))
 			{
-				vertexData.uv_ = Vertex2(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y);
+				vertexData.uv_ = Vertex2(mesh_->mTextureCoords[0][v].x, mesh_->mTextureCoords[0][v].y);
 			}
 
             data.push_back(vertexData);
 		}
 		
-		if(mesh->HasFaces())
+		if(mesh_->HasFaces())
 		{
-			for (size_t j=0; j<mesh->mNumFaces; ++j) 
+			for (size_t j=0; j<mesh_->mNumFaces; ++j) 
 			{
-				const struct aiFace* face = &mesh->mFaces[j];
+				const struct aiFace* face = &mesh_->mFaces[j];
 
 				GLenum face_mode;
 
@@ -89,7 +92,6 @@ namespace NSG
 
 	GLES2ModelMesh::~GLES2ModelMesh()
 	{
-
 	}
 
 	GLenum GLES2ModelMesh::GetWireFrameDrawMode() const
@@ -101,5 +103,15 @@ namespace NSG
 	{
 		return face_mode_;
 	}
+
+	void GLES2ModelMesh::Build()
+	{
+	}
+
+	const char* GLES2ModelMesh::GetName() const
+	{
+		return "ModelMesh";
+	}
+
 
 }

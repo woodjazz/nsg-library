@@ -24,11 +24,13 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "GLES2Camera.h"
+#include "App.h"
+/*
 #include "Log.h"
 #include "Check.h"
 #include "GLES2Includes.h"
-#include "App.h"
-#include <algorithm>
+
+#include <algorithm>*/
 
 namespace NSG
 {

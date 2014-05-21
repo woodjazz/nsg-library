@@ -26,15 +26,40 @@ misrepresented as being the original software.
 #include "GLES2RectangleMesh.h"
 #include "Types.h"
 #include "Constants.h"
+#include "Check.h"
 
 namespace NSG
 {
 	GLES2RectangleMesh::GLES2RectangleMesh(float width, float height, GLenum usage) 
-	: GLES2Mesh(usage)
+	: GLES2Mesh(usage),
+	width_(width),
+	height_(height)
 	{
-		float halfX = width * 0.5f;
-		float halfY = height * 0.5f;
-        VertexsData& data = vertexsData_;
+	}
+
+	GLES2RectangleMesh::~GLES2RectangleMesh() 
+	{
+	}
+
+	GLenum GLES2RectangleMesh::GetWireFrameDrawMode() const
+	{
+		return GL_LINE_LOOP;
+	}
+
+	GLenum GLES2RectangleMesh::GetSolidDrawMode() const
+	{
+		return GL_TRIANGLE_FAN;
+	}
+
+	void GLES2RectangleMesh::Build()
+	{
+		vertexsData_.clear();
+		indexes_.clear();
+		
+		VertexsData& data = vertexsData_;
+
+		float halfX = width_ * 0.5f;
+		float halfY = height_ * 0.5f;
 
 		VertexData vertexData;
 		vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
@@ -56,19 +81,11 @@ namespace NSG
 		data.push_back(vertexData);		
 	}
 
-	GLES2RectangleMesh::~GLES2RectangleMesh() 
+	const char* GLES2RectangleMesh::GetName() const
 	{
+		return "RectangleMesh";
 	}
 
-	GLenum GLES2RectangleMesh::GetWireFrameDrawMode() const
-	{
-		return GL_LINE_LOOP;
-	}
-
-	GLenum GLES2RectangleMesh::GetSolidDrawMode() const
-	{
-		return GL_TRIANGLE_FAN;
-	}
 
 }
 

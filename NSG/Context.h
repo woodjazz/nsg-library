@@ -33,18 +33,25 @@ misrepresented as being the original software.
 namespace NSG
 {
 	class GLES2GPUObject;
+	class Resource;
 	struct Context : public Singleton<Context>
 	{
 		std::set<GLES2GPUObject*> objects_;
+		std::set<Resource*> resources_;
 		PGLES2FontAtlasTextureManager atlasManager_;
 		PGLES2FrameColorSelection pFrameColorSelection_;
 		IMGUI::PContext imgui_;
 		PGLES2Texture whiteTexture_;
+		PKeyboard keyboard_;
 
 		Context();
 		~Context();
 		void Add(GLES2GPUObject* object);
 		void Remove(GLES2GPUObject* object);
 		void InvalidateGPUResources();
+		void Add(Resource* object);
+		void Remove(Resource* object);
+		void InvalidateResources();
+
 	};
 }
