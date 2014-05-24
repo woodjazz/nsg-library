@@ -42,7 +42,7 @@ void EarthBehavior::Start()
 	PGLES2SphereMesh pSphereMesh(new GLES2SphereMesh(3, 32, GL_STATIC_DRAW));
     pSceneNode_->SetMesh(pSphereMesh);
 
-	PGLES2Texture pEarthTexture(new GLES2Texture("Earthmap720x360_grid.jpg"));
+	PTexture pEarthTexture(new TextureFile("Earthmap720x360_grid.jpg"));
 	PGLES2Material pMaterial(new GLES2Material ());
 	pMaterial->SetTexture0(pEarthTexture);
 	pMaterial->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));

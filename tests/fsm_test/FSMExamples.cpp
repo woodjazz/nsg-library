@@ -107,6 +107,7 @@ namespace FSMExample0
             velocity_ = velocity;
             enableJump_ = jump;
             fsm_.Update();
+            fsm_.Update(); // give a chance to process end state
         }
 
         Idle idle_;
@@ -307,6 +308,7 @@ namespace FSMExample1
             t1_ = t1;
             t2_ = t2;
             t3_ = t3;
+            fsm_.Update();
             fsm_.Update();
         }
 

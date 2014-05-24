@@ -178,6 +178,11 @@ include_directories(${EXTERNALS_DIR}/glm)
 # nsg
 ###########################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/NSG)
+SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/NSG)
+FOREACH(subdir ${SUBDIRS})
+   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/NSG/${subdir})
+ENDFOREACH()
+
 add_subdirectory(NSG)
 
 ###########################

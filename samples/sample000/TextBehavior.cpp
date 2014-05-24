@@ -51,6 +51,9 @@ void TextBehavior::Start()
     pMaterial->SetTexture0(pText_->GetAtlas());
     pMaterial->SetProgram(pText_->GetProgram());
     pSceneNode_->SetMaterial(pMaterial);
+
+    showTexture_ = PShowTexture(new ShowTexture);
+    showTexture_->SetFont(pText_->GetAtlas());
 }
 
 void TextBehavior::Update()
@@ -63,13 +66,13 @@ void TextBehavior::Update()
 
 void TextBehavior::Render()
 {
-	GLES2Camera* pCamera = GLES2Camera::Deactivate();
+	Camera* pCamera = Camera::Deactivate();
 
 	pSceneNode_->Render(true);
 
-	GLES2Camera::Activate(pCamera);
+	Camera::Activate(pCamera);
 
-    //pText_->GetAtlas()->Show(pText_->GetAtlas());
+    //showTexture_->Show();
 }
 
 void TextBehavior::OnMouseDown(float x, float y)

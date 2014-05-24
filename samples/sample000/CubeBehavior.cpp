@@ -42,12 +42,12 @@ void CubeBehavior::Start()
 
 	PGLES2Material pMaterial(new GLES2Material ());
 
-    PResource pVResource(new Resource("shaders/DiffuseSpecularReflection.vert"));
-	PResource pFResource(new Resource("shaders/Simple.frag"));
+    PResource pVResource(new ResourceFile("shaders/DiffuseSpecularReflection.vert"));
+	PResource pFResource(new ResourceFile("shaders/Simple.frag"));
 	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
     pMaterial->SetProgram(pDiffuseProgram);
 
-    PGLES2Texture pTexture(new GLES2Texture("cube_example.png"));
+    PTexture pTexture(new TextureFile("cube_example.png"));
 	pMaterial->SetTexture0(pTexture);
     pSceneNode_->SetMaterial(pMaterial);
 

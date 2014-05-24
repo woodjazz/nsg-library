@@ -48,20 +48,21 @@ private:
 	void TestIMGUI2();
     void TestIMGUI4();
     void Menu1();
-	PGLES2Light pLight0_;
-	PGLES2Camera pCamera1_;
-	PGLES2Camera pCamera2_;
+	PLight pLight0_;
+	PCamera pCamera1_;
+	PCamera pCamera2_;
     IMGUI::PSkin pSkin1_;
     IMGUI::PSkin pSkin2_;
-    PGLES2Texture pRenderedTexture_;
-    PGLES2Render2Texture pRender2Texture_;
+    PTexture pRenderedTexture_;
+    PRender2Texture pRender2Texture_;
     PSceneNode pEarthSceneNode_;
     PSceneNode pCubeSceneNode_;
     PSceneNode pTextSceneNode_;
     PModel pModel_;
     PGLES2Filter pFilter_;
     PGLES2Filter pFilterBlend_;
-    PGLES2Texture pFilteredTexture_;
-    PGLES2Texture pBlendedTexture_;
+    PTexture pFilteredTexture_;
+    PTexture pBlendedTexture_;
+    PShowTexture showTexture_;
 };
 

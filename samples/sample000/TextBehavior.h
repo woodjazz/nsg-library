@@ -39,4 +39,5 @@ public:
 	void OnMouseDown(float x, float y);
 private:
 	PGLES2Text pText_;
+	PShowTexture showTexture_;
 };

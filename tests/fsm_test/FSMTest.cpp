@@ -59,9 +59,21 @@ static void FSMTest0()
 
     machine.Update();
 
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
+    
+    machine.Update();
+
     CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
     condition2 = true;
+
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     machine.Update();
 
@@ -75,9 +87,21 @@ static void FSMTest0()
 
     machine.Update();
 
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
+
+    machine.Update();
+
     CHECK_ASSERT(machine.GetState() == &error, __FILE__, __LINE__);
 
     condition3 = false;
+
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &error, __FILE__, __LINE__);
+
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
 
     machine.Update();
 
@@ -89,8 +113,16 @@ static void FSMTest0()
 
     machine.Update();
 
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+
+    machine.Update();
+
     CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
+    
     machine.Update();
 
     CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
@@ -159,8 +191,12 @@ static void FSMTest1()
     condition1 = true;
 
     machine.Update();
-
+    
     CHECK_ASSERT(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 1, __FILE__, __LINE__);
+  
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
+
+    machine.Update();
 
     CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
@@ -171,6 +207,10 @@ static void FSMTest1()
     machine.Update();
 
     CHECK_ASSERT(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 1, __FILE__, __LINE__);
+
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+
+    machine.Update();
 
     CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
@@ -185,6 +225,7 @@ static void FSMTest1()
     condition3 = true;
 
     machine.Update();
+    machine.Update();
 
     CHECK_ASSERT(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 1, __FILE__, __LINE__);
 
@@ -195,6 +236,7 @@ static void FSMTest1()
     condition3 = false;
 
     machine.Update();
+    machine.Update();
 
     CHECK_ASSERT(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 1, __FILE__, __LINE__);
 
@@ -202,6 +244,7 @@ static void FSMTest1()
 
     CHECK_ASSERT(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 1, __FILE__, __LINE__);
 
+    machine.Update();
     machine.Update();
 
     CHECK_ASSERT(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 2, __FILE__, __LINE__);
@@ -214,9 +257,13 @@ static void FSMTest1()
 
     CHECK_ASSERT(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 2, __FILE__, __LINE__);
 
+    machine.Update();
+
     CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     CHECK_ASSERT(ready.nStart_ == 2 && ready.nStay_ == 1 && ready.nEnd_ == 1, __FILE__, __LINE__);
+
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     machine.Update();
 
@@ -267,10 +314,18 @@ static void FSMTest2()
 
     machine.Update();
 
+    CHECK_ASSERT(machine.GetState() == &initializing, __FILE__, __LINE__);
+
+    machine.Update();
+
     CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
     CHECK_ASSERT(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
 
     condition2 = true;
+
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
     machine.Update();
 
@@ -285,6 +340,10 @@ static void FSMTest2()
 
     machine.Update();
 
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
+
+    machine.Update();
+
     CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
     CHECK_ASSERT(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
 
@@ -302,15 +361,22 @@ static void FSMTest2()
 
     machine.Update();
 
-    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
     machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     condition3 = false;
 
     machine.Update();
 
     CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
+   
+
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
 
     machine.Update();
 
@@ -321,12 +387,20 @@ static void FSMTest2()
 
     machine.Update();
 
+    CHECK_ASSERT(machine.GetState() == &ready, __FILE__, __LINE__);
+
+    machine.Update();
+
     CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
     CHECK_ASSERT(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
 
     machine.Update();
 
     CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_ASSERT(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
+
+    machine.Update();
+
     CHECK_ASSERT(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
 
     machine.Update();
@@ -335,6 +409,10 @@ static void FSMTest2()
     CHECK_ASSERT(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
 
     condition2 = true;
+
+    machine.Update();
+
+    CHECK_ASSERT(machine.GetState() == &busy, __FILE__, __LINE__);
 
     machine.Update();
 

@@ -80,10 +80,10 @@ void MyApp::Start()
 
     CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	pCamera1_ = PGLES2Camera(new GLES2Camera());
+	pCamera1_ = PCamera(new Camera());
 	pCamera1_->SetBehavior(PBehavior(new CameraBehavior()));
 
-	pCamera2_ = PGLES2Camera(new GLES2Camera());
+	pCamera2_ = PCamera(new Camera());
 
     pEarthSceneNode_ = PSceneNode(new SceneNode());
     pEarthSceneNode_->SetBehavior(PBehavior(new EarthBehavior()));
@@ -98,43 +98,49 @@ void MyApp::Start()
     pCamera2_->SetLookAt(Vertex3(0,0,0));
     pCamera2_->SetViewportFactor(0.75f, 0.75f, 0.25f, 0.25f);
 
-    pLight0_ = PGLES2Light(new GLES2Light());
+    pLight0_ = PLight(new Light());
     pLight0_->SetBehavior(PBehavior(new LightBehavior()));
 
 	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cell.png"));
 	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cube_example.png"));
-	PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("Earthmap720x360_grid.jpg"));
+	PTexture pCellTexture(new TextureFile("Earthmap720x360_grid.jpg"));
 
+	IMGUI::Context::this_->pSkin_->fontFile = "font/FreeSans.ttf";
 	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
 	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
-	pSkin2_->drawBorder = false;
-	pSkin2_->pMesh =  PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, GL_STATIC_DRAW));
+	//pSkin2_->pActiveTechnique->GetPass(0)->SetMesh(PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, GL_STATIC_DRAW)));
 	//pSkin2_->pMesh->EnableDepthTest(false);
 	//pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
 	//pSkin1_->pActiveMaterial->SetTexture0(pCellTexture);
 
-	pRenderedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, 1024, 1024, nullptr));
+	pRenderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
 
-	pSkin2_->pActiveMaterial->SetTexture0(pCellTexture);
-	//pSkin2_->pHotMaterial->SetTexture0(pCellTexture);
-	pSkin1_->pNormalMaterial->SetTexture0(pRenderedTexture_);
+	//pSkin2_->pActiveTechnique->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
+	//pSkin2_->pNormalTechnique->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
+	//pSkin2_->pHotTechnique->GetPass(0)->GetMaterial()->SetTexture0(pRenderedTexture_);
+	//pSkin1_->pNormalTechnique->GetPass(0)->GetMaterial()->SetTexture0(pRenderedTexture_);
 
 
-    pRender2Texture_ = PGLES2Render2Texture(new GLES2Render2Texture(pRenderedTexture_, true));
+    pRender2Texture_ = PRender2Texture(new Render2Texture(pRenderedTexture_, true));
 
     //pModel_ = PModel(new Model("cube.dae"));
     pModel_ = PModel(new Model("duck.dae"));
     //pModel_ = PModel(new Model("spider.obj"));
     pModel_->SetBehavior(PBehavior(new ModelBehavior()));
 
-    pFilteredTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, 16, 16, nullptr));
+    pFilteredTexture_ = PTexture (new TextureMemory(GL_RGBA, 16, 16, nullptr));
 
     //pFilter_ = PGLES2Filter(new GLES2Filter(pRenderedTexture_, pFilteredTexture_, fShader));
     pFilter_ = PGLES2Filter(new GLES2FilterBlur(pRenderedTexture_, pFilteredTexture_));
 
-    pBlendedTexture_ = PGLES2Texture (new GLES2Texture(GL_RGBA, 1024, 1024, nullptr));
+    pBlendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
 
     pFilterBlend_ = PGLES2Filter(new GLES2FilterBlend(pFilteredTexture_, pRenderedTexture_, pBlendedTexture_));
+
+    showTexture_ = PShowTexture(new ShowTexture);
+    //showTexture_->SetNormal(pRenderedTexture_);
+    showTexture_->SetNormal(pBlendedTexture_);
+    
 }
 
 void MyApp::Update() 
@@ -291,7 +297,7 @@ void MyApp::Menu1()
 	    }
 	    IMGUIEndHorizontal();
 	    
-        if(IMGUI::Context::this_->pSkin_->pNormalMaterial->GetDiffuseColor().w < alpha)
+        if(IMGUI::Context::this_->pSkin_->pNormalTechnique->GetPass(0)->GetMaterial()->GetDiffuseColor().w < alpha)
 	    	IMGUI::Context::this_->pSkin_->alphaFactor += 0.01f;
 	    else
 	    	IMGUI::Context::this_->pSkin_->alphaFactor = 1;
@@ -342,9 +348,9 @@ void MyApp::RenderFrame()
     pCamera1_->Activate();
 
 	pRender2Texture_->Begin();
-//    pCubeSceneNode_->Render(true);
-//    pEarthSceneNode_->Render(true);
-//    pModel_->GetSceneNode()->Render(true);
+    pCubeSceneNode_->Render(true);
+    pEarthSceneNode_->Render(true);
+    pModel_->GetSceneNode()->Render(true);
     pRender2Texture_->End();
 
 	float deltaTime = App::this_->GetDeltaTime();
@@ -362,7 +368,7 @@ void MyApp::RenderFrame()
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //pRenderedTexture_->Show(pRenderedTexture_);
+    showTexture_->Show();
 }
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 
