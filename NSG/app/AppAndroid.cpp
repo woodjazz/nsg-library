@@ -156,8 +156,6 @@ static void engine_draw_frame(struct engine* engine)
     }
     else
     {
-        s_pApp->PerformTick();
-
         s_pApp->RenderFrame();
     }
 

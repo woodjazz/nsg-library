@@ -108,19 +108,6 @@ namespace NSG
 			Context::this_->state_->character = 0;	
 		}
 
-		void DrawButton(PNode pNode, bool hasFocus)
-		{
-            State& uistate = *Context::this_->state_;
-
-            float alphaFactor = uistate.currentTechnique->GetAlphaFactor();
-            float shininessFactor = uistate.currentTechnique->GetShininessFactor();
-			uistate.currentTechnique->SetAlphaFactor(Context::this_->pSkin_->alphaFactor);
-			uistate.currentTechnique->SetShininessFactor(hasFocus ? 1 : -0.25f);
-			uistate.currentTechnique->Render(pNode.get());
-            uistate.currentTechnique->SetShininessFactor(shininessFactor);
-            uistate.currentTechnique->SetAlphaFactor(alphaFactor);
-		}
-
 		bool Hit(GLushort id, PNode pNode)
 		{
 			if(!Context::this_->pFrameColorSelection_)
@@ -130,16 +117,21 @@ namespace NSG
 
             if(uistate.currentTechnique)
             {
-                PGLES2Mesh currentMesh(uistate.currentTechnique->GetCurrentRenderedMesh());
+            	PPass pass = uistate.currentTechnique->GetPass(0);
 
-                if(currentMesh)
-                {
-			        Context::this_->pFrameColorSelection_->Begin(Context::this_->state_->mousex, Context::this_->state_->mousey);
-	    	        Context::this_->pFrameColorSelection_->Render(id, currentMesh.get(), pNode.get());
-		            Context::this_->pFrameColorSelection_->End();
+            	if(pass)
+            	{
+                	PGLES2Mesh mesh = pass->GetMesh(0);
 
-		            return id == Context::this_->pFrameColorSelection_->GetSelected();
-                }
+	                if(mesh)
+	                {
+				        Context::this_->pFrameColorSelection_->Begin(Context::this_->state_->mousex, Context::this_->state_->mousey);
+		    	        Context::this_->pFrameColorSelection_->Render(id, mesh.get(), pNode.get());
+			            Context::this_->pFrameColorSelection_->End();
+
+			            return id == Context::this_->pFrameColorSelection_->GetSelected();
+	                }
+	            }
             }
 
             return false;
@@ -200,13 +192,16 @@ namespace NSG
                 uistate.currentTechnique  = Context::this_->pSkin_->pNormalTechnique;
 			}
 
-            DrawButton(pNode, hasFocus);
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-			Context::this_->pStencilMask_->Begin();
-            Context::this_->pStencilMask_->Render(pNode.get(), uistate.currentTechnique->GetCurrentRenderedMesh().get());
-			Context::this_->pStencilMask_->End();
+            float shininessFactor = hasFocus ? 1 : -0.25f;
+            PGLES2Material material = uistate.currentTechnique->GetPass(0)->GetMaterial();
+            float shininess = material->GetShininess();
+            Color diffuse = material->GetDiffuseColor();
+        	material->SetShininess(shininess * shininessFactor);
+            material->SetDiffuseColor(diffuse * Color(1,1,1, Context::this_->pSkin_->alphaFactor));
+            uistate.currentTechnique->Set(pNode.get());
+			uistate.currentTechnique->Render();
+			material->SetDiffuseColor(diffuse);
+			material->SetShininess(shininess);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }
@@ -248,32 +243,37 @@ namespace NSG
             {
                 CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			
                 PGLES2Text pTextMesh = GetCurrentTextMesh(id);
 	            pTextMesh->SetText(text);
+	            pTextMesh->SetTextHorizontalAlignment(CENTER_ALIGNMENT);
+	            pTextMesh->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
 
-                CHECK_GL_STATUS(__FILE__, __LINE__);
-				
 				{
-	                Node textNode;
+	                SceneNode textNode;
 	                textNode.EnableUpdate(false);
 	                textNode.SetParent(pNode);
 	                textNode.SetInheritScale(false);
                     textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
-                    SceneNode textNode1;
-                    textNode1.SetParent(&textNode);
-                    textNode1.SetPosition(Vertex3(-pTextMesh->GetWidth()/2, -pTextMesh->GetHeight()/2, 0));
                     textNode.EnableUpdate(true);
                     textNode.Update(false);
 
-                    textNode1.SetMesh(pTextMesh);
+                    Technique technique;
+                    Pass pass;
+                    technique.Add(&pass);
+                    pass.Add(pTextMesh);
+
                     GLES2Material textMaterial;
+                    textMaterial.EnableStencilTest(true);
                     textMaterial.SetTexture0(pTextMesh->GetAtlas());
                     textMaterial.SetProgram(pTextMesh->GetProgram());
-                    textNode1.SetMaterial(&textMaterial);
                     textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor));
-                    textNode1.Render(true);
+                    textNode.Set(&technique);
+                    pass.Set(&textMaterial);
+
+                    textNode.Render();
 				}
+
+                CHECK_GL_STATUS(__FILE__, __LINE__);
 			}
 
 			bool enterKey = false;
@@ -380,7 +380,9 @@ namespace NSG
 
 			{
 	            pTextMesh->SetText(currentText);
-				
+	            pTextMesh->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
+	            pTextMesh->SetTextVerticalAlignment(BOTTOM_ALIGNMENT);
+
                 float cursorPositionInText = pTextMesh->GetWidthForCharacterPosition(pArea->cursor_character_position_);
 
                 if(pArea->textOffsetX_ + areaSize.x < cursorPositionInText)
@@ -397,46 +399,59 @@ namespace NSG
                         pArea->textOffsetX_ = 0;
                 }
                 
-                Node textNode;
-                textNode.EnableUpdate(false);
-	            textNode.SetParent(pNode);
-	            textNode.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
                 Node textNode0;
-                textNode0.SetParent(&textNode);
-	            textNode0.SetInheritScale(false);
-                textNode0.SetScale(Context::this_->pRootNode_->GetGlobalScale());
-                SceneNode textNode1;
+                textNode0.EnableUpdate(false);
+	            textNode0.SetParent(pNode);
+	            textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
+
+                Node textNode1;
                 textNode1.SetParent(&textNode0);
-                textNode1.SetPosition(Vertex3(-pArea->textOffsetX_, 0, 0));
-                textNode.EnableUpdate(true);
-                textNode.Update(false);
-                textNode1.SetMesh(pTextMesh);
+	            textNode1.SetInheritScale(false);
+                textNode1.SetScale(Context::this_->pRootNode_->GetGlobalScale());
+
+                SceneNode textNode2;
+                textNode2.SetParent(&textNode1);
+                textNode2.SetPosition(Vertex3(-pArea->textOffsetX_, 0, 0));
+
+                textNode0.EnableUpdate(true);
+                textNode0.Update(false);
+
+                Technique technique;
+                textNode2.Set(&technique);
+                Pass pass;
+                technique.Add(&pass);
+                pass.Add(pTextMesh);
                 GLES2Material textMaterial;
+                textMaterial.EnableStencilTest(true);
                 textMaterial.SetTexture0(pTextMesh->GetAtlas());
                 textMaterial.SetProgram(pTextMesh->GetProgram());
-                textNode1.SetMaterial(&textMaterial);
+                pass.Set(&textMaterial);
                 textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor));
-                textNode1.Render(true);
+                textNode2.Render();
                 
 				// Render cursor if we have keyboard focus
 				if(hasFocus && (uistate.tick < 15))
                 {
                     SceneNode cursorNode;
                     cursorNode.EnableUpdate(false);
-                    cursorNode.SetParent(&textNode1);
+                    cursorNode.SetParent(&textNode2);
                     cursorNode.SetPosition(Vertex3(cursorPositionInText, 0, 0));
                     cursorNode.EnableUpdate(true);
                     cursorNode.Update(false);
 
-                    cursorNode.SetMesh(pCursorMesh);
+                    Technique technique;
+                    cursorNode.Set(&technique);
+                    Pass pass;
+                    technique.Add(&pass);
+                    pass.Add(pCursorMesh);
                     GLES2Material textMaterial;
+                    textMaterial.EnableStencilTest(true);
                     textMaterial.SetTexture0(pTextMesh->GetAtlas());
                     textMaterial.SetProgram(pTextMesh->GetProgram());
-                    cursorNode.SetMaterial(&textMaterial);
+                    pass.Set(&textMaterial);
                     textMaterial.SetDiffuseColor(Color(1,0,0,Context::this_->pSkin_->alphaFactor));
-                    cursorNode.Render(true);
+                    cursorNode.Render();
                 }
-                
 			}
 
 			// If we have keyboard focus, we'll need to process the keys

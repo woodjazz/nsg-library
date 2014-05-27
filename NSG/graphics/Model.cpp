@@ -28,6 +28,8 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Util.h"
 #include "Context.h"
+#include "Technique.h"
+#include "Pass.h"
 #include "GLES2ModelMesh.h"
 #include "ModelMaterial.h"
 #include "assimp/IOStream.hpp"
@@ -64,11 +66,11 @@ namespace NSG
 		{
 		}
 
-		void Render(bool solid)
+		void Render()
 		{
 	    	if(model_->IsReady())
 	    	{
-	        	SceneNode::Render(solid);
+	        	SceneNode::Render();
 	        }
 		}
 
@@ -236,11 +238,13 @@ namespace NSG
 
 			PGLES2ModelMesh pMesh(new GLES2ModelMesh(GL_STATIC_DRAW, mesh));
 
-			pMeshSceneNode->SetMesh(pMesh);
-
+            PTechnique technique(new Technique);
+            pMeshSceneNode->Set(technique);
+            PPass pass(new Pass);
+            pass->Add(pMesh);
+            technique->Add(pass);
 			PModelMaterial pMaterial(new ModelMaterial(sc->mMaterials[mesh->mMaterialIndex]));
-
-			pMeshSceneNode->SetMaterial(pMaterial);
+            pass->Set(pMaterial);
 		}
 
 		for (size_t i=0; i<nd->mNumChildren; ++i) 

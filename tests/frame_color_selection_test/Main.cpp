@@ -40,9 +40,10 @@ public:
 	void Start()
 	{
 		PGLES2BoxMesh pMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
-    	pSceneNode_->SetMesh(pMesh);
-    	//PGLES2Material material(new GLES2Material);
-    	//pSceneNode_->SetMaterial(material);
+        PTechnique technique(new Technique);
+        pSceneNode_->Set(technique);
+        PPass pass(new Pass);
+    	pass->Add(pMesh);
 	}
 
 	void Update()
@@ -74,7 +75,7 @@ struct Test : public App
 		camera_->Activate();
 	}
 
-	void Update()
+	void Render()
 	{
 		sceneNode_->SetPosition(Vertex3(0, 0, 0));
 		BeginSelection(0, 0);

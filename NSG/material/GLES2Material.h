@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "GLES2GPUObject.h"
 #include "GLES2Program.h"
 #include "Types.h"
+#include <vector>
 
 namespace NSG
 {
@@ -41,6 +42,7 @@ namespace NSG
 		void SetBlendMode(BLEND_MODE mode);
 		void EnableDepthTest(bool enable);
 		void EnableCullFace(bool enable);
+		void EnableStencilTest(bool enable);
 		void SetProgram(PGLES2Program pProgram);
 		PGLES2Program GetProgram() const { return pProgram_; }
 		void SetTexture0(PTexture pTexture);
@@ -58,12 +60,15 @@ namespace NSG
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
 		void Render(bool solid, Node* pNode, GLES2Mesh* pMesh);
+		void Render(bool solid, Node* pNode, const std::vector<PGLES2Mesh>& meshes);
 
 		virtual bool IsValid();
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
 
 	private:
+		void Use();
+		
 		PTexture pTexture0_;
 		PTexture pTexture1_;
 		PGLES2Program pProgram_;
@@ -76,19 +81,9 @@ namespace NSG
         BLEND_MODE blendMode_;
         bool enableDepthTest_;
         bool enableCullFace_;
+        bool enableStencilTest_;
 
 		friend class UseMaterial;
-		friend class UseProgram;
+		friend class GLES2Program;
 	};
-
-	class UseMaterial
-	{
-	public:
-		UseMaterial(GLES2Material& obj, Node* pNode);
-		~UseMaterial();
-	private:
-		GLES2Material& obj_;
-		UseProgram useProgram_;
-	};
-
 }

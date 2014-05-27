@@ -26,14 +26,14 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "Check.h"
 #include "Context.h"
-
-#include <fstream>
+#include "App.h"
 #if NACL
 #include "AppNaCl.h"
 #include "NaClURLLoader.h"
 #elif ANDROID
 #include <android/asset_manager.h>
 #endif
+#include <fstream>
 
 #ifdef __APPLE__
 #include "CoreFoundation/CFBundle.h"
@@ -78,7 +78,8 @@ namespace NSG
 		{
 		#if NACL
 			if(!pLoader_->IsDone()) return false;
-			buffer_ = pLoader_->GetData().c_str();
+			buffer_.resize(pLoader_->GetData().size());
+			memcpy(&buffer_[0], pLoader_->GetData().c_str(), pLoader_->GetData().size());
 			pLoader_ = nullptr;
 		#elif ANDROID
 			assert(pAAssetManager_ != nullptr);
@@ -104,7 +105,8 @@ namespace NSG
 	    		file.open(newName, std::ios::binary);
 	    	}
 	        #endif
-
+	    	if(!file.is_open())
+	    		TRACE_LOG("Cannot open filename=" << filename_);
 	        CHECK_ASSERT(file.is_open(), __FILE__, __LINE__);
 	        file.seekg(0,std::ios::end);
 	        std::streampos filelength = file.tellg();

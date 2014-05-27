@@ -25,14 +25,24 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
+#include <vector>
 
 namespace NSG
 {
+
 	class Technique;
 	typedef std::shared_ptr<Technique> PTechnique;
 
+	class PassFilter;
+	typedef std::shared_ptr<PassFilter> PPassFilter;
+
+	class Pass2Texture;
+	typedef std::shared_ptr<Pass2Texture> PPass2Texture;
+
 	class Pass;
 	typedef std::shared_ptr<Pass> PPass;
+
+	typedef std::vector<PPass> PASSES;
 
 	namespace FSM
 	{
@@ -87,6 +97,9 @@ namespace NSG
 
 	class GLES2Filter;
 	typedef std::shared_ptr<GLES2Filter> PGLES2Filter;
+
+	class GLES2FilterBlur;
+	typedef std::shared_ptr<GLES2FilterBlur> PGLES2FilterBlur;
 
 	class GLES2FrameColorSelection;
     typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;

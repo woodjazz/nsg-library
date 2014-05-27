@@ -45,6 +45,7 @@ namespace NSG
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
 		void SetSceneNode(SceneNode* pSceneNode);
+		SceneNode* GetSceneNode() const { return pSceneNode_; }
 
 		static void StartAll();
 		static void UpdateAll();

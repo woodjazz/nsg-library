@@ -46,21 +46,21 @@ namespace NSG
 	{
 		Texture::AllocateResources();
 
-        int channels = 0;
-		unsigned char* img = SOIL_load_image_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels, 0);
+		unsigned char* img = SOIL_load_image_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 0);
 
-        if(channels == 4)
+        if(channels_ == 4)
         {
             format_ = GL_RGBA;
         }
-        else if(channels == 3)
+        else if(channels_ == 3)
         {
             format_ = GL_RGB;
         }
         else
         {
             format_ = GL_RGB;
-            TRACE_LOG("Unknown internalformat");
+            TRACE_LOG("Filename=" << filename_.c_str() << " unknown internalformat. Channels = " << channels_ << " Width=" << width_ << " Height=" << height_);
+            CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
         }
 
         glBindTexture(GL_TEXTURE_2D, texture_);

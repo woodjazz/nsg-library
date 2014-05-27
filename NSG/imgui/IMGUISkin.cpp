@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "IMGUISkin.h"
 #include "Technique.h"
 #include "Pass.h"
+#include "Pass2Stencil.h"
 #include "GLES2Material.h"
 #include "GLES2RoundedRectangleMesh.h"
 
@@ -98,21 +99,21 @@ namespace NSG
 			pActiveMaterial->EnableDepthTest(false);
             PGLES2Program pProgram(new GLES2Program(vShader, fShader));
             pActiveMaterial->SetProgram(pProgram);
-			pActiveMaterial->SetDiffuseColor(Color(1,0,1,0.7f));
+			pActiveMaterial->SetDiffuseColor(Color(1,0,0,0.7f));
 			pActiveMaterial->SetShininess(1);
 
 			PGLES2Material pNormalMaterial(new GLES2Material);
 			pNormalMaterial->SetBlendMode(ALPHA);
 			pNormalMaterial->EnableDepthTest(false);
             pNormalMaterial->SetProgram(pProgram);
-			pNormalMaterial->SetDiffuseColor(Color(1,1,1,0.7f));
+			pNormalMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
 			pNormalMaterial->SetShininess(1);
 
 			PGLES2Material pHotMaterial(new GLES2Material);
 			pHotMaterial->SetBlendMode(ALPHA);
 			pHotMaterial->EnableDepthTest(false);
 			pHotMaterial->SetProgram(pProgram);
-			pHotMaterial->SetDiffuseColor(Color(1,0,0,0.7f));
+			pHotMaterial->SetDiffuseColor(Color(0,0,1,0.7f));
 			pHotMaterial->SetShininess(1);
 
 			PGLES2Material pBorderMaterial(new GLES2Material);
@@ -124,20 +125,37 @@ namespace NSG
 
             PGLES2Mesh pMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
 
-			PPass activePass(new Pass(pActiveMaterial, pMesh));
-			PPass normalPass(new Pass(pNormalMaterial, pMesh));
-			PPass hotPass(new Pass(pHotMaterial, pMesh));
-			PPass borderPass(new Pass(pBorderMaterial, pMesh));
+			PPass activePass(new Pass);
+			activePass->Set(pActiveMaterial);
+			activePass->Add(pMesh);
+
+			PPass normalPass(new Pass);
+			normalPass->Set(pNormalMaterial);
+			normalPass->Add(pMesh);
+
+			PPass hotPass(new Pass);
+			hotPass->Set(pHotMaterial);
+			hotPass->Add(pMesh);
+
+			PPass borderPass(new Pass);
+			borderPass->Set(pBorderMaterial);
+			borderPass->Add(pMesh);
 			borderPass->SetDrawMode(Pass::WIREFRAME);
+
+			PPass stencilPass(new Pass2Stencil);
+			stencilPass->Add(pMesh);
 
 			pActiveTechnique->Add(activePass);
 			pActiveTechnique->Add(borderPass);
+			pActiveTechnique->Add(stencilPass);
 
 			pNormalTechnique->Add(normalPass);
 			pNormalTechnique->Add(borderPass);
+			pNormalTechnique->Add(stencilPass);
 
 			pHotTechnique->Add(hotPass);
 			pHotTechnique->Add(borderPass);
+			pHotTechnique->Add(stencilPass);
 		}
 
 		Skin::Skin(const Skin& obj)

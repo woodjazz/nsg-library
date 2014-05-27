@@ -81,7 +81,7 @@ namespace NSG
 #endif
 		
 
-		SDL_Window* win = SDL_CreateWindow("NSG!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, flags);
+		SDL_Window* win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, flags);
 
 		if (win == nullptr)
 		{
@@ -205,7 +205,6 @@ namespace NSG
 				}
 			}
 
-	        s_pApp->PerformTick();
 			s_pApp->RenderFrame();
 
 	        SDL_GL_SwapWindow(win);  

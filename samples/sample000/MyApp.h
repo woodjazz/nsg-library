@@ -53,16 +53,10 @@ private:
 	PCamera pCamera2_;
     IMGUI::PSkin pSkin1_;
     IMGUI::PSkin pSkin2_;
-    PTexture pRenderedTexture_;
-    PRender2Texture pRender2Texture_;
     PSceneNode pEarthSceneNode_;
     PSceneNode pCubeSceneNode_;
     PSceneNode pTextSceneNode_;
     PModel pModel_;
-    PGLES2Filter pFilter_;
-    PGLES2Filter pFilterBlend_;
-    PTexture pFilteredTexture_;
-    PTexture pBlendedTexture_;
-    PShowTexture showTexture_;
+    PSceneNode render2TextureSceneNode_;
 };
 

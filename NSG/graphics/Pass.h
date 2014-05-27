@@ -25,25 +25,32 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SharedPointers.h"
+#include <vector>
 
 namespace NSG
 {
+	typedef std::vector<PGLES2Mesh> MESHES;
 	class Pass
 	{
 	public:
-		Pass(PGLES2Material material, PGLES2Mesh mesh);
-		~Pass();
-		void Render(Node* node, float alphaFactor, float shininessFactor);
+		Pass();
+		virtual ~Pass();
 		enum Mode {SOLID, WIREFRAME};
 		void SetDrawMode(Mode mode) { drawMode_ = mode; }
-		PGLES2Mesh GetMesh() const { return mesh_; }
+		void SetNode(Node* node);
+		void Set(PGLES2Material material);
+		void Set(GLES2Material* pMaterial);
+		void Add(PGLES2Mesh mesh);
+		virtual void Render();
+		PGLES2Mesh GetMesh(int idx) const;
+		const MESHES& GetMeshes() const { return meshes_; }
 		PGLES2Material GetMaterial() const { return material_; }
-		void SetMesh(PGLES2Mesh mesh) { mesh_ = mesh; }
-		void SetMaterial(PGLES2Material material) { material_ = material; }
-	private:
+	protected:
+		Node* node_;
 		PGLES2Material material_;
-		PGLES2Mesh mesh_;
+		MESHES meshes_;
 		Mode drawMode_;
+		friend class Technique;
 
 	};
 }

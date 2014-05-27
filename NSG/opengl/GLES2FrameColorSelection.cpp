@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Camera.h"
 #include "App.h"
+#include "Pass.h"
 #include "Context.h"
 #include <assert.h>
 
@@ -189,7 +190,6 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glReadPixels(pixelX_, pixelY_, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &selected_);
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -237,24 +237,67 @@ namespace NSG
         return color;
     }
 
-    void GLES2FrameColorSelection::Render(SceneNode* pSceneNode)
+    void GLES2FrameColorSelection::Render(SceneNode* pSceneNode, PASSES passes)
     {
-        Node* pNode = pSceneNode;
+        if(IsReady() && enabled_)
+        {
+            Node* pNode = pSceneNode;
 
-        Render(pNode->GetId(), pSceneNode->GetMesh().get(), pNode);
+            UseProgram useProgram(*pProgram_);
+
+            pProgram_->Use(pNode);
+
+            GLushort id = pSceneNode->GetId();
+
+            Color color = TransformSelectedId2Color(id);
+            glUniform4fv(color_loc_, 1, &color[0]);
+
+            GLuint positionLoc = pProgram_->GetPositionLoc();
+            GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
+            GLuint normalLoc = pProgram_->GetNormalLoc();
+            GLuint colorLoc = pProgram_->GetColorLoc();
+
+            auto it = passes.begin();
+            while(it != passes.end())
+            {
+                PPass pass = *it;
+
+                if(pass)
+                {
+                    auto meshes = pass->GetMeshes();
+                    auto it1 = meshes.begin();
+                    while(it1 != meshes.end()) 
+                    {
+                        PGLES2Mesh mesh = *it1;
+                        if(mesh)
+                        {
+                            mesh->Render(true, positionLoc, texcoordLoc, normalLoc, colorLoc);                
+                        }    
+                        ++it1;
+                    }
+                }
+                ++it;
+            }
+        }
     }
 
     void GLES2FrameColorSelection::Render(GLushort id, GLES2Mesh* pMesh, Node* pNode)
     {
-        if(IsReady() && enabled_)
+        if(IsReady() && pMesh && pMesh->IsReady() && enabled_)
         {
-            UseProgram useProgram(*pProgram_, nullptr, pNode);
+            UseProgram useProgram(*pProgram_);
+
+            pProgram_->Use(pNode);
 
             Color color = TransformSelectedId2Color(id);
-        
             glUniform4fv(color_loc_, 1, &color[0]);
 
-            pProgram_->Render(true, pMesh);
+			GLuint positionLoc = pProgram_->GetPositionLoc();
+			GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
+			GLuint normalLoc = pProgram_->GetNormalLoc();
+			GLuint colorLoc = pProgram_->GetColorLoc();
+
+			pMesh->Render(true, positionLoc, texcoordLoc, normalLoc, colorLoc);
         }
     }
 }

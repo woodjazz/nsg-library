@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "CubeBehavior.h"
 #include "TextBehavior.h"
 #include "LightBehavior.h"
+#include "Render2TextureBehavior.h"
 #include "Check.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,6 +86,11 @@ void MyApp::Start()
 
 	pCamera2_ = PCamera(new Camera());
 
+    render2TextureSceneNode_ = PSceneNode(new SceneNode());
+    Render2TextureBehavior* pRender2TextureBehavior = new Render2TextureBehavior;
+    PBehavior render2TextureBehavior(pRender2TextureBehavior);
+    render2TextureSceneNode_->SetBehavior(render2TextureBehavior);
+
     pEarthSceneNode_ = PSceneNode(new SceneNode());
     pEarthSceneNode_->SetBehavior(PBehavior(new EarthBehavior()));
 
@@ -113,34 +119,16 @@ void MyApp::Start()
 	//pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
 	//pSkin1_->pActiveMaterial->SetTexture0(pCellTexture);
 
-	pRenderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-
 	//pSkin2_->pActiveTechnique->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
-	//pSkin2_->pNormalTechnique->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
+	pSkin2_->pNormalTechnique->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
 	//pSkin2_->pHotTechnique->GetPass(0)->GetMaterial()->SetTexture0(pRenderedTexture_);
-	//pSkin1_->pNormalTechnique->GetPass(0)->GetMaterial()->SetTexture0(pRenderedTexture_);
 
-
-    pRender2Texture_ = PRender2Texture(new Render2Texture(pRenderedTexture_, true));
 
     //pModel_ = PModel(new Model("cube.dae"));
     pModel_ = PModel(new Model("duck.dae"));
     //pModel_ = PModel(new Model("spider.obj"));
     pModel_->SetBehavior(PBehavior(new ModelBehavior()));
-
-    pFilteredTexture_ = PTexture (new TextureMemory(GL_RGBA, 16, 16, nullptr));
-
-    //pFilter_ = PGLES2Filter(new GLES2Filter(pRenderedTexture_, pFilteredTexture_, fShader));
-    pFilter_ = PGLES2Filter(new GLES2FilterBlur(pRenderedTexture_, pFilteredTexture_));
-
-    pBlendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-
-    pFilterBlend_ = PGLES2Filter(new GLES2FilterBlend(pFilteredTexture_, pRenderedTexture_, pBlendedTexture_));
-
-    showTexture_ = PShowTexture(new ShowTexture);
-    //showTexture_->SetNormal(pRenderedTexture_);
-    showTexture_->SetNormal(pBlendedTexture_);
-    
+   
 }
 
 void MyApp::Update() 
@@ -308,8 +296,12 @@ void MyApp::Menu1()
 		IMGUI::Context::this_->pSkin_ = pSkin2_;
 		IMGUI::Context::this_->pCurrentNode_->SetPosition(position);
 		IMGUISpacer(20);
-		static std::string str = "0123";
-		str = IMGUITextField(str);
+        IMGUIBeginHorizontal();
+            IMGUISpacer(20);
+		    static std::string str = "0123fasdjfhasdkfjh asdkjfhasldfjhasldashdl fhasdlf aslfhasdlk fjhasldfjkh asdjfhlaf";
+		    str = IMGUITextField(str);
+            IMGUISpacer(20);
+        IMGUIEndHorizontal();
 		IMGUISpacer(20);
         static bool exit = false;
         IMGUI::Context::this_->pSkin_ = pSkin1_;
@@ -346,20 +338,14 @@ void MyApp::RenderFrame()
 {
 	//TRACE_LOG("MyApp::RenderFrame");
     pCamera1_->Activate();
-
-	pRender2Texture_->Begin();
-    pCubeSceneNode_->Render(true);
-    pEarthSceneNode_->Render(true);
-    pModel_->GetSceneNode()->Render(true);
-    pRender2Texture_->End();
-
+/*
 	float deltaTime = App::this_->GetDeltaTime();
 	float move = deltaTime * TWO_PI * 0.25f;  // 1/4 of a wave cycle per second
     pFilter_->GetMaterial()->SetShininess(move);
     pFilter_->Render();
 
     pFilterBlend_->Render();
-
+*/
     //pRenderedTexture_->Show(pRenderedTexture_);
     //pFilteredTexture_->Show(pFilteredTexture_);
     
@@ -368,7 +354,7 @@ void MyApp::RenderFrame()
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    showTexture_->Show();
+    //showTexture_->Show();
 }
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 

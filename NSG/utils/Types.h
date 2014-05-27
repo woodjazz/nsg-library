@@ -49,4 +49,7 @@ namespace NSG
     typedef glm::vec4 Color;
 
     typedef enum {NONE, ALPHA} BLEND_MODE ;
+
+    typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
+    typedef enum {TOP_ALIGNMENT, MIDDLE_ALIGNMENT, BOTTOM_ALIGNMENT} VerticalAlignment;
 }

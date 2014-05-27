@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SharedPointers.h"
-#include <vector>
 
 namespace NSG
 {
@@ -35,17 +34,14 @@ namespace NSG
 		Technique();
 		~Technique();
 		void Add(PPass pass);
-		void Render(Node* node);
-		void SetAlphaFactor(float alphaFactor) { alphaFactor_=alphaFactor; }
-        float GetAlphaFactor() const { return alphaFactor_; }
-		void SetShininessFactor(float shininessFactor) { shininessFactor_ = shininessFactor; }
-        float GetShininessFactor() const { return shininessFactor_; }
-		PGLES2Mesh GetCurrentRenderedMesh() const { return mesh_; }
+		void Add(Pass* pass);
+		void Set(Node* node) { node_ = node; }
+		void Render();
+		size_t GetNumPasses() const;
+		const PASSES& GetPasses() const { return passes_; }
 		PPass GetPass(unsigned int idx) { return passes_.at(idx); }
 	private:
-		std::vector<PPass> passes_;
-		float alphaFactor_;
-		float shininessFactor_;
-		PGLES2Mesh mesh_;
+		PASSES passes_;
+		Node* node_;
 	};
 }

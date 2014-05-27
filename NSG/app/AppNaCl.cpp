@@ -353,7 +353,6 @@ namespace NSG
 
 		void NaCl3DInstance::MainLoop(int32_t) 
 		{
-			pApp_->PerformTick();
 			pApp_->RenderFrame();	
 			if(!pApp_->ShallExit())
 			{

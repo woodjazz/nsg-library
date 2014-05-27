@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Check.h"
 #include "Behavior.h"
-#include "GLES2Material.h"
+#include "Technique.h"
 
 namespace NSG
 {
@@ -39,30 +39,25 @@ namespace NSG
 	{
 	}
 
-	void SceneNode::SetMaterial(PGLES2Material pMaterial)
+	void SceneNode::Set(PTechnique technique)
 	{
-		pMaterial_ = pMaterial;
+		technique_ = technique;
+        technique_->Set(this);
 	}
 
-    void SceneNode::SetMaterial(GLES2Material* pMaterial)
+    void SceneNode::Set(Technique* technique)
     {
 		struct D 
 		{ 
-		    void operator()(GLES2Material* p) const 
+		    void operator()(Technique* p) const 
 		    {
 		        //delete p; //do not delete
 		    }
 		};    	
 
-		PGLES2Material pObj(pMaterial, D());
-		SetMaterial(pObj);
+		PTechnique pObj(technique, D());
+		Set(pObj);
     }
-
-
-	void SceneNode::SetMesh(PGLES2Mesh pMesh)
-	{
-		pMesh_ = pMesh;
-	}
 
 	void SceneNode::SetBehavior(PBehavior pBehavior)
 	{
@@ -70,22 +65,19 @@ namespace NSG
 		pBehavior_->SetSceneNode(this);
 	}
 
-	void SceneNode::Render(bool solid)
+	void SceneNode::Render()
 	{
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		if(pMesh_ && pMesh_->IsReady() && pMaterial_ && pMaterial_->IsReady()) 
-        {
-            pMaterial_->Render(solid, this, pMesh_.get());
-        }
+		if(technique_) 
+            technique_->Render();
 
         auto it = children_.begin();
-
         while(it != children_.end())
         {
             SceneNode* p = static_cast<SceneNode*>(*it);
             CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
-            p->Render(solid);
+            p->Render();
             ++it;
         }
 
@@ -93,19 +85,20 @@ namespace NSG
 
 	void SceneNode::Render2Select()
 	{
-        if(pMesh_)
+        if(technique_)
         {
-		    Context::this_->pFrameColorSelection_->Render(this);
-        }
+            auto passes = technique_->GetPasses();
 
-        auto it = children_.begin();
+	        Context::this_->pFrameColorSelection_->Render(this, passes);
 
-        while(it != children_.end())
-        {
-            SceneNode* p = static_cast<SceneNode*>(*it);
-            CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
-            p->Render2Select();
-            ++it;
+            auto it = children_.begin();
+            while(it != children_.end())
+            {
+                SceneNode* p = static_cast<SceneNode*>(*it);
+                CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
+                p->Render2Select();
+                ++it;
+            }
         }
 	}
 }

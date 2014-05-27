@@ -25,14 +25,14 @@ misrepresented as being the original software.
 */
 #include "Technique.h"
 #include "Pass.h"
+#include "SceneNode.h"
+#include "Check.h"
 
 namespace NSG
 {
 	Technique::Technique()
-	: alphaFactor_(1),
-	shininessFactor_(1)
+	: node_(nullptr)
 	{
-
 	}
 
 	Technique::~Technique()
@@ -42,19 +42,51 @@ namespace NSG
 
 	void Technique::Add(PPass pass)
 	{
+		if(node_ && !pass->node_)
+		{
+			pass->SetNode(node_);
+		}
+
 		passes_.push_back(pass);
 	}
 
-	void Technique::Render(Node* node)
+    void Technique::Add(Pass* pass)
+    {
+		struct D 
+		{ 
+		    void operator()(Pass* p) const 
+		    {
+		        //delete p; //do not delete
+		    }
+		};    	
+
+		PPass pObj(pass, D());
+		Add(pObj);
+    }
+
+
+	size_t Technique::GetNumPasses() const
+	{
+		return passes_.size();
+	}
+
+	void Technique::Render()
 	{
 		auto it = passes_.begin();
 		while(it != passes_.end())
 		{
 			PPass pass = *it;
 
-			mesh_ = pass->GetMesh();
-
-			pass->Render(node, alphaFactor_, shininessFactor_);
+			if(node_ && !pass->node_)
+			{
+				pass->SetNode(node_);
+				pass->Render();
+				pass->SetNode(nullptr);
+			}
+			else
+			{
+				pass->Render();
+			}
 			
 			++it;
 		}

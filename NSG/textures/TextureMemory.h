@@ -34,7 +34,5 @@ namespace NSG
 		TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels); 
 		~TextureMemory();
 		virtual void AllocateResources();
-	private:
-		int channels_;
 	};
 }

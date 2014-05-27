@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "EarthBehavior.h"
+#include "Render2TextureBehavior.h"
 
 EarthBehavior::EarthBehavior()
 : x_angle_(0),
@@ -40,7 +41,13 @@ EarthBehavior::~EarthBehavior()
 void EarthBehavior::Start()
 {
 	PGLES2SphereMesh pSphereMesh(new GLES2SphereMesh(3, 32, GL_STATIC_DRAW));
-    pSceneNode_->SetMesh(pSphereMesh);
+    PTechnique technique(new Technique);
+    pSceneNode_->Set(technique);
+    PPass pass(new Pass);
+    pass->Add(pSphereMesh);
+    technique->Add(pass);
+
+    Render2TextureBehavior::this_->AddPass(pass);
 
 	PTexture pEarthTexture(new TextureFile("Earthmap720x360_grid.jpg"));
 	PGLES2Material pMaterial(new GLES2Material ());
@@ -49,7 +56,7 @@ void EarthBehavior::Start()
 	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
 	pMaterial->SetShininess(0.3f);
 
-    pSceneNode_->SetMaterial(pMaterial);
+    pass->Set(pMaterial);
 
     pSceneNode_->SetPosition(Vertex3(5, 0, 0));
 }

@@ -49,6 +49,7 @@ namespace NSG
 		virtual ~App();
         virtual int GetFPS() const;
 		virtual void Start() {}
+        virtual void LastStart() {}
 		virtual void Update() {}
 		virtual void RenderFrame() {};
         virtual void RenderGUIFrame() {}

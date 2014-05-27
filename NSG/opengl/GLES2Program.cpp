@@ -272,12 +272,76 @@ namespace NSG
 		return glGetUniformLocation(id_, name.c_str());
 	}
 
-	void GLES2Program::Render(bool solid, GLES2Mesh* pMesh)
+	void GLES2Program::Use(Node* node)
 	{
-		pMesh->Render(solid, position_loc_, texcoord_loc_, normal_loc_, color_loc_);
+		if(node)
+		{
+			if(mvp_loc_ != -1)
+			{
+				Matrix4 m = Camera::GetModelViewProjection(node);
+				glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
+			}
+
+			if(m_loc_ != -1)
+			{
+				const Matrix4& m = node->GetGlobalModelMatrix();
+				glUniformMatrix4fv(m_loc_, 1, GL_FALSE, glm::value_ptr(m));
+			}
+
+			if(model_inv_transp_loc_ != -1)
+			{
+				const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
+				glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));			
+			}
+		}
 	}
 
-	UseProgram::UseProgram(GLES2Program& obj, GLES2Material* material, Node* node)
+	void GLES2Program::Use(GLES2Material* material)
+	{
+        if(material)
+        {
+		    if(texture0_loc_ != -1 && material->pTexture0_)
+		    {
+			    glActiveTexture(GL_TEXTURE0);
+			    material->pTexture0_->Bind();
+			    glUniform1i(texture0_loc_, 0);
+		    }
+
+		    if(texture1_loc_ != -1 && material->pTexture1_)
+		    {
+			    glActiveTexture(GL_TEXTURE1);
+			    material->pTexture1_->Bind();
+			    glUniform1i(texture1_loc_, 1);
+		    }
+
+		    if(color_ambient_loc_ != -1)
+		    {
+			    glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
+		    }
+
+		    if(color_scene_ambient_loc_ != -1)
+		    {
+			    glUniform4fv(color_scene_ambient_loc_, 1, &Scene::ambient[0]);
+		    }
+
+		    if(color_diffuse_loc_ != -1)
+		    {
+			    glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
+		    }
+
+		    if(color_specular_loc_ != -1)
+		    {
+			    glUniform4fv(color_specular_loc_, 1, &material->specular_[0]);
+		    }
+
+		    if(shininess_loc_ != -1)
+		    {
+			    glUniform1f(shininess_loc_, material->shininess_);
+		    }
+        }
+	}	
+
+	UseProgram::UseProgram(GLES2Program& obj)
 	: obj_(obj)
 	{
 		obj.Use();
@@ -287,74 +351,11 @@ namespace NSG
 			obj.pExtraUniforms_->AssignValues();
 		}
 
-		if(node)
-		{
-			if(obj.mvp_loc_ != -1)
-			{
-				Matrix4 m = Camera::GetModelViewProjection(node);
-				glUniformMatrix4fv(obj.mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
-			}
-
-			if(obj.m_loc_ != -1)
-			{
-				const Matrix4& m = node->GetGlobalModelMatrix();
-				glUniformMatrix4fv(obj.m_loc_, 1, GL_FALSE, glm::value_ptr(m));
-			}
-
-			if(obj.model_inv_transp_loc_ != -1)
-			{
-				const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
-				glUniformMatrix3fv(obj.model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));			
-			}
-		}
-
 		if(obj.v_inv_loc_ != -1)
 		{
 			const Matrix4& m = Camera::GetInverseViewMatrix();
 			glUniformMatrix4fv(obj.v_inv_loc_, 1, GL_FALSE, glm::value_ptr(m));			
 		}
-
-        if(material)
-        {
-		    if(obj.texture0_loc_ != -1 && material->pTexture0_)
-		    {
-			    glActiveTexture(GL_TEXTURE0);
-			    material->pTexture0_->Bind();
-			    glUniform1i(obj.texture0_loc_, 0);
-		    }
-
-		    if(obj.texture1_loc_ != -1 && material->pTexture1_)
-		    {
-			    glActiveTexture(GL_TEXTURE1);
-			    material->pTexture1_->Bind();
-			    glUniform1i(obj.texture1_loc_, 1);
-		    }
-
-		    if(obj.color_ambient_loc_ != -1)
-		    {
-			    glUniform4fv(obj.color_ambient_loc_, 1, &material->ambient_[0]);
-		    }
-
-		    if(obj.color_scene_ambient_loc_ != -1)
-		    {
-			    glUniform4fv(obj.color_scene_ambient_loc_, 1, &Scene::ambient[0]);
-		    }
-
-		    if(obj.color_diffuse_loc_ != -1)
-		    {
-			    glUniform4fv(obj.color_diffuse_loc_, 1, &material->diffuse_[0]);
-		    }
-
-		    if(obj.color_specular_loc_ != -1)
-		    {
-			    glUniform4fv(obj.color_specular_loc_, 1, &material->specular_[0]);
-		    }
-
-		    if(obj.shininess_loc_ != -1)
-		    {
-			    glUniform1f(obj.shininess_loc_, material->shininess_);
-		    }
-        }
 
         if(obj.hasLights_)
         {

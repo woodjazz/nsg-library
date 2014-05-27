@@ -85,7 +85,7 @@ namespace NSG
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-		glfwSetWindowTitle(window, "Simple Example");
+		glfwSetWindowTitle(window, "");
 
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
@@ -143,7 +143,6 @@ namespace NSG
 
         while (!glfwWindowShouldClose(window) && !s_pApp->ShallExit())
 		{
-            s_pApp->PerformTick();
 			s_pApp->RenderFrame();
 			glfwSwapBuffers(window);
 			glfwPollEvents();

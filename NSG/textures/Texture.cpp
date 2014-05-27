@@ -34,7 +34,8 @@ namespace NSG
 	: texture_(0), 
 	width_(0),
 	height_(0),
-	format_(GL_RGBA)
+	format_(GL_RGBA),
+	channels_(0)
 	{
 	}
 

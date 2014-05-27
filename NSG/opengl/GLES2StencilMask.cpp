@@ -50,13 +50,19 @@ namespace NSG
 	);
 
 	GLES2StencilMask::GLES2StencilMask() 
-	: pProgram_(new GLES2Program(vShader, fShader))
+	: pProgram_(new GLES2Program(vShader, fShader)),
+	clearBuffer_(true)
 	{
 	}
 
 	GLES2StencilMask::~GLES2StencilMask()
 	{
 		Context::this_->Remove(this);
+	}
+
+	void GLES2StencilMask::ClearBuffer(bool clear)
+	{
+		clearBuffer_ = clear;
 	}
 
 	bool GLES2StencilMask::IsValid()
@@ -84,10 +90,12 @@ namespace NSG
 	        glEnable(GL_STENCIL_TEST);
 		  	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		  	glDepthMask(GL_FALSE);
-		  	glStencilFunc(GL_NEVER, 1, 0xFF);
-		  	glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP);
+		  	glStencilFunc(GL_NEVER, 1, 0xFF); //Always fails.
+		  	glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP); //replace value in stencil buffer (always)
 		  	glStencilMaskSeparate(GL_FRONT_AND_BACK, 0xFF);
-		  	glClear(GL_STENCIL_BUFFER_BIT);
+
+		  	if(clearBuffer_)
+		  		glClear(GL_STENCIL_BUFFER_BIT);
 
 	        CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -98,18 +106,54 @@ namespace NSG
 
 	void GLES2StencilMask::Render(Node* pNode, GLES2Mesh* pMesh)
 	{
+		if(IsReady() && pMesh->IsReady() && enabled_)
+		{
+			//Draw in stencil buffer
+	        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+	        UseProgram useProgram(*pProgram_);
+            pProgram_->Use(pNode);
+
+			GLuint positionLoc = pProgram_->GetPositionLoc();
+			GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
+			GLuint normalLoc = pProgram_->GetNormalLoc();
+			GLuint colorLoc = pProgram_->GetColorLoc();
+
+			pMesh->Render(true, positionLoc, texcoordLoc, normalLoc, colorLoc);
+
+	        CHECK_GL_STATUS(__FILE__, __LINE__);
+	    }
+	}
+
+	void GLES2StencilMask::Render(Node* pNode, const std::vector<PGLES2Mesh>& meshes)
+	{
 		if(IsReady() && enabled_)
 		{
 	        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	        UseProgram useProgram(*pProgram_, nullptr, pNode);
+	        UseProgram useProgram(*pProgram_);
+            pProgram_->Use(pNode);
 
-	        CHECK_GL_STATUS(__FILE__, __LINE__);
+			GLuint positionLoc = pProgram_->GetPositionLoc();
+			GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
+			GLuint normalLoc = pProgram_->GetNormalLoc();
+			GLuint colorLoc = pProgram_->GetColorLoc();
 
-            pProgram_->Render(true, pMesh);
+			auto it = meshes.begin();
+			while(it != meshes.end())
+			{
+				PGLES2Mesh mesh = *it;
 
-	        CHECK_GL_STATUS(__FILE__, __LINE__);
-	    }
+				if(mesh->IsReady())
+				{
+					mesh->Render(true, positionLoc, texcoordLoc, normalLoc, colorLoc);
+				}
+
+				++it;
+			}
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+		}
 	}
 
 	void GLES2StencilMask::End()

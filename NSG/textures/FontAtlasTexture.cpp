@@ -85,9 +85,6 @@ namespace NSG
 		atlasWidth_ = std::max(atlasWidth_, roww);
         atlasHeight_ += rowh;     
 
-		GLint unpackAlign = 0;
-		glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpackAlign);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, atlasWidth_, atlasHeight_, 0, GL_ALPHA, GL_UNSIGNED_BYTE, 0);
 		std::vector<GLubyte> emptyData(atlasWidth_ * atlasHeight_, 0);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlasWidth_, atlasHeight_, GL_ALPHA, GL_UNSIGNED_BYTE, &emptyData[0]);		
@@ -128,8 +125,6 @@ namespace NSG
 
             rowh = std::max(rowh, g->bitmap.rows);
 		}
-
-		glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);	
 
 		TRACE_LOG("FontAtlasTexture::CreateTextureAtlas done.");
 	}

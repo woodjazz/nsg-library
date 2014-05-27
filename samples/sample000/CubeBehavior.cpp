@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "CubeBehavior.h"
+#include "Render2TextureBehavior.h"
 
 CubeBehavior::CubeBehavior()
 : x_angle_(0),
@@ -37,8 +38,17 @@ CubeBehavior::~CubeBehavior()
 
 void CubeBehavior::Start()
 {
+    PTechnique technique(new Technique);
+    pSceneNode_->Set(technique);
+
+    PPass pass(new Pass);
+    technique->Add(pass);
+
+    Render2TextureBehavior::this_->AddPass(pass);
+
 	PGLES2BoxMesh pMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
-    pSceneNode_->SetMesh(pMesh);
+
+    pass->Add(pMesh);
 
 	PGLES2Material pMaterial(new GLES2Material ());
 
@@ -49,7 +59,7 @@ void CubeBehavior::Start()
 
     PTexture pTexture(new TextureFile("cube_example.png"));
 	pMaterial->SetTexture0(pTexture);
-    pSceneNode_->SetMaterial(pMaterial);
+    pass->Set(pMaterial);
 
     pSceneNode_->SetPosition(Vertex3(-5, 0, 0));
     pSceneNode_->SetScale(Vertex3(3,3,3));

@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "SharedPointers.h"
 #include "GLES2Mesh.h"
 #include "FontAtlasTexture.h"
+#include "Types.h"
 
 namespace NSG
 {
@@ -54,16 +55,21 @@ namespace NSG
 		virtual bool IsValid();
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
-		virtual void Build();
-		virtual const char* GetName() const;
+		void SetTextHorizontalAlignment(HorizontalAlignment align);
+		void SetTextVerticalAlignment(VerticalAlignment align);
 
 	private:
+		void Move(float offsetX, float offsetY);
 		PFontAtlasTexture pAtlas_;
 		PGLES2Program pProgram_;
 
-		std::string lastText_;
+		std::string text_;
 		GLfloat screenWidth_;
 		GLfloat screenHeight_;
 		int fontSize_;
+		HorizontalAlignment hAlignment_;
+		VerticalAlignment vAlignment_;
+		float alignmentOffsetX_;
+		float alignmentOffsetY_;
 	};
 }

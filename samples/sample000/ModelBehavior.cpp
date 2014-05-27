@@ -49,7 +49,7 @@ void ModelBehavior::Update()
 
 void ModelBehavior::Render()
 {
-	//pSceneNode_->Render(true);
+	//pSceneNode_->Render();
 }
 
 void ModelBehavior::Render2Select()

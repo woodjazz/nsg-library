@@ -51,6 +51,7 @@ namespace NSG
 		GLsizei width_;
 		GLsizei height_;
 		GLint format_;
+		int channels_;
 
 		friend class BindTexture;
 	};

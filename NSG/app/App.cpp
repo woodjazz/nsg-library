@@ -123,6 +123,7 @@ namespace NSG
     {
         pApp_->Start();
         Behavior::StartAll();
+        pApp_->LastStart();
     }
     
     void InternalApp::DoTick(float delta)
@@ -192,6 +193,12 @@ namespace NSG
 
     void InternalApp::RenderFrame()
     {
+        // Set up texture data read/write alignment
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        
+        PerformTick();
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         CHECK_ASSERT(pApp_->width_ > 0 && pApp_->height_ > 0, __FILE__, __LINE__);

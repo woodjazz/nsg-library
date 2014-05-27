@@ -36,19 +36,15 @@ namespace NSG
 	public:
 		SceneNode();
 		~SceneNode();
-		PGLES2Material GetMaterial() const { return pMaterial_; }
-		void SetMaterial(PGLES2Material pMaterial);
-		void SetMaterial(GLES2Material* pMaterial);
-		void SetMesh(PGLES2Mesh pMesh);
-		PGLES2Mesh GetMesh() const { return pMesh_; }
+		void Set(PTechnique technique);
+		void Set(Technique* technique);
+		PTechnique GetTechnique() const { return technique_; }
 		void SetBehavior(PBehavior pBehavior);
 		PBehavior GetBehavior() const { return pBehavior_; }
-		virtual void Render(bool solid);
+		virtual void Render();
 		virtual void Render2Select();
-		
 	private:
-		PGLES2Material pMaterial_;
-		PGLES2Mesh pMesh_;
+		PTechnique technique_;
 		PBehavior pBehavior_;
 	};
 }

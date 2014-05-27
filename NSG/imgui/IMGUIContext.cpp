@@ -45,7 +45,6 @@ namespace NSG
         pRootNode_(new Node),
         pLayoutManager_(new LayoutManager(pRootNode_, pCurrentNode_)),
     	pTextManager_(new TextManager),
-    	pStencilMask_(new GLES2StencilMask),
     	pFrameColorSelection_(new GLES2FrameColorSelection(false))
     	{
 			pCamera_->EnableOrtho();

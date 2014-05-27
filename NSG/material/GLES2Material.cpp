@@ -1,4 +1,5 @@
 #include "GLES2Material.h"
+#include "GLES2Mesh.h"
 #include "Check.h"
 #include "Camera.h"
 #include "Context.h"
@@ -141,7 +142,8 @@ namespace NSG
 	shininess_(1),
     blendMode_(ALPHA),
     enableDepthTest_(true),
-    enableCullFace_(false)
+    enableCullFace_(false),
+    enableStencilTest_(false)
 	{
 	}
 
@@ -163,6 +165,11 @@ namespace NSG
 	void GLES2Material::EnableCullFace(bool enable)
 	{
 		enableCullFace_ = enable;
+	}
+
+	void GLES2Material::EnableStencilTest(bool enable)
+	{
+		enableStencilTest_ = enable;	
 	}
 
 	void GLES2Material::SetProgram(PGLES2Program pProgram)
@@ -225,21 +232,18 @@ namespace NSG
 	{
 	}
 
-	void GLES2Material::Render(bool solid, Node* pNode, GLES2Mesh* pMesh)
+	void GLES2Material::Use()
 	{
-		if(IsReady())
+		if(enableStencilTest_)
 		{
-			UseMaterial useMaterial(*this, pNode);
+			glEnable(GL_STENCIL_TEST);
+		}
+		else
+		{
+			glDisable(GL_STENCIL_TEST);
+		}
 
-			pProgram_->Render(solid, pMesh);
-	    }
-	}
-
-	UseMaterial::UseMaterial(GLES2Material& obj, Node* pNode)
-	: obj_(obj),
-	useProgram_(*obj.pProgram_, &obj, pNode)
-	{
-		if(obj.enableCullFace_)
+		if(enableCullFace_)
 		{
 			glEnable(GL_CULL_FACE);
 			//glCullFace(GL_FRONT);
@@ -249,7 +253,7 @@ namespace NSG
 			glDisable(GL_CULL_FACE);
 		}
 
-        switch(obj.blendMode_)
+        switch(blendMode_)
        	{
         	case NONE:
 	        	glDisable(GL_BLEND);
@@ -265,7 +269,7 @@ namespace NSG
 	        	break;
         }
         
-        if(obj.enableDepthTest_)
+        if(enableDepthTest_)
         {
         	glEnable(GL_DEPTH_TEST);
         }
@@ -275,7 +279,52 @@ namespace NSG
         }
 	}
 
-	UseMaterial::~UseMaterial()
+	void GLES2Material::Render(bool solid, Node* pNode, GLES2Mesh* pMesh)
 	{
+		if(IsReady() && pMesh->IsReady())
+		{
+			Use();
+
+			UseProgram useProgram(*pProgram_);
+			pProgram_->Use(this);
+
+			pProgram_->Use(pNode);
+			GLuint positionLoc = pProgram_->GetPositionLoc();
+			GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
+			GLuint normalLoc = pProgram_->GetNormalLoc();
+			GLuint colorLoc = pProgram_->GetColorLoc();
+
+			pMesh->Render(solid, positionLoc, texcoordLoc, normalLoc, colorLoc);
+	    }
 	}
+
+	void GLES2Material::Render(bool solid, Node* pNode, const std::vector<PGLES2Mesh>& meshes)
+	{
+		if(IsReady())
+		{
+			Use();
+
+			UseProgram useProgram(*pProgram_);
+			pProgram_->Use(this);
+
+			pProgram_->Use(pNode);
+			GLuint positionLoc = pProgram_->GetPositionLoc();
+			GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
+			GLuint normalLoc = pProgram_->GetNormalLoc();
+			GLuint colorLoc = pProgram_->GetColorLoc();
+
+			auto it = meshes.begin();
+			while(it != meshes.end())
+			{
+				PGLES2Mesh mesh = *it;
+				if(mesh->IsReady())
+				{
+					mesh->Render(solid, positionLoc, texcoordLoc, normalLoc, colorLoc);
+				}
+				++it;
+			}
+	    }
+	}
+
+	
 }

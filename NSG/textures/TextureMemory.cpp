@@ -32,8 +32,11 @@ misrepresented as being the original software.
 namespace NSG
 {
 	TextureMemory::TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels) 
-	: channels_(0)
 	{
+	    width_ = width;
+	    height_ = height;
+	    format_ = format;
+
        	switch(format_)
     	{
     		case GL_ALPHA:
@@ -50,14 +53,11 @@ namespace NSG
     			channels_ = 4;
     			break;
     		default:
-    			CHECK_ASSERT(false && "Unknown format", __FILE__, __LINE__);
+    			CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
     			break; 
     	}	   
 
 		pResource_ = PResource(new ResourceMemory(pixels, width*height*channels_));
-		width_ = width;
-		height_ = height;
-		format_ = format;
 
 	}
 

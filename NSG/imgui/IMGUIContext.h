@@ -39,7 +39,6 @@ namespace NSG
 			PNode pCurrentNode_;
 			PNode pRootNode_;
 			PGLES2FrameColorSelection pFrameColorSelection_;		
-	        PGLES2StencilMask pStencilMask_;
 			PTextManager pTextManager_;
 			PLayoutManager pLayoutManager_;
 

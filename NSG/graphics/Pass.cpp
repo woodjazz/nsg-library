@@ -29,10 +29,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Pass::Pass(PGLES2Material material, PGLES2Mesh mesh)
-	: material_(material),
-	mesh_(mesh),
-	drawMode_(SOLID)
+	Pass::Pass()
+	: drawMode_(SOLID),
+	node_(nullptr)
 	{
 
 	}
@@ -42,17 +41,45 @@ namespace NSG
 
 	}
 
-	void Pass::Render(Node* node, float alphaFactor, float shininessFactor)
+	void Pass::SetNode(Node* node)
 	{
-		if(material_->IsReady() && mesh_->IsReady())
+		node_ = node;
+	}
+
+	void Pass::Set(PGLES2Material material)
+	{
+		material_ = material;
+	}
+
+    void Pass::Set(GLES2Material* pMaterial)
+    {
+		struct D 
+		{ 
+		    void operator()(GLES2Material* p) const 
+		    {
+		        //delete p; //do not delete
+		    }
+		};    	
+
+		PGLES2Material pObj(pMaterial, D());
+		Set(pObj);
+    }
+
+	void Pass::Add(PGLES2Mesh mesh)
+	{
+		meshes_.push_back(mesh);
+	}
+
+	PGLES2Mesh Pass::GetMesh(int idx) const 
+	{ 
+		return meshes_.at(idx); 
+	}
+
+	void Pass::Render()
+	{
+		if(material_)
 		{
-			float shininess = material_->GetShininess();
-        	Color diffuse = material_->GetDiffuseColor();
-        	material_->SetShininess(shininess * shininessFactor);
-            material_->SetDiffuseColor(diffuse * Color(1,1,1, alphaFactor));
-			material_->Render(drawMode_ == SOLID, node, mesh_.get());
-			material_->SetDiffuseColor(diffuse);
-			material_->SetShininess(shininess);
+			material_->Render(drawMode_ == SOLID, node_, meshes_);
 		}
 	}
 }

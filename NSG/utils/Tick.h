@@ -34,6 +34,7 @@ namespace NSG
 		Tick();
 		~Tick();
         virtual int GetFPS() const = 0;
+    protected:
 		void PerformTick();
 		virtual void BeginTick() = 0;
 		virtual void DoTick(float delta) = 0;

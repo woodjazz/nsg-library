@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "GLES2GPUObject.h"
 #include "SharedPointers.h"
+#include <vector>
 
 namespace NSG
 {
@@ -37,8 +38,10 @@ namespace NSG
 	public:
 		GLES2StencilMask();
 		~GLES2StencilMask();
+		void ClearBuffer(bool clear);
 		void Begin();
 		void Render(Node* pNode, GLES2Mesh* pMesh);
+        void Render(Node* pNode, const std::vector<PGLES2Mesh>& meshes);
 		void End();
 		virtual bool IsValid();
 		virtual void AllocateResources();
@@ -48,5 +51,6 @@ namespace NSG
 		GLboolean save_depth_mask_;
 		PGLES2Program pProgram_;
         bool enabled_;
+        bool clearBuffer_;
 	};
 }

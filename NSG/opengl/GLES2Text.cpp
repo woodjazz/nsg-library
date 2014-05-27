@@ -64,7 +64,11 @@ namespace NSG
 	pProgram_(new GLES2Program(vShader, fShader)),
 	screenWidth_(0),
 	screenHeight_(0),
-	fontSize_(fontSize)
+	fontSize_(fontSize),
+	hAlignment_(LEFT_ALIGNMENT),
+	vAlignment_(BOTTOM_ALIGNMENT),
+	alignmentOffsetX_(0),
+	alignmentOffsetY_(0)
     {
     	pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(FontAtlasTextureManager::Key(filename, fontSize));
 	}
@@ -86,8 +90,13 @@ namespace NSG
 		CHECK_ASSERT(pIBuffer_ == nullptr, __FILE__, __LINE__);
 
 		CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
+
+		Move(alignmentOffsetX_, alignmentOffsetY_);
+		
 		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
+		
 		pVBuffer_ = PGLES2VertexBuffer(new GLES2VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0], usage_));
+        
         CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
@@ -98,21 +107,81 @@ namespace NSG
 
 	GLfloat GLES2Text::GetWidthForCharacterPosition(unsigned int charPos) const
 	{
-		return pAtlas_->GetWidthForCharacterPosition(lastText_.c_str(), charPos);
+		return pAtlas_->GetWidthForCharacterPosition(text_.c_str(), charPos);
 	}
 
 	unsigned int GLES2Text::GetCharacterPositionForWidth(float width) const
 	{
-		return pAtlas_->GetCharacterPositionForWidth(lastText_.c_str(), width);
+		return pAtlas_->GetCharacterPositionForWidth(text_.c_str(), width);
+	}
+
+	void GLES2Text::SetTextHorizontalAlignment(HorizontalAlignment align)
+	{
+		if(align != hAlignment_)
+		{
+			alignmentOffsetX_ = 0;
+
+			if(hAlignment_ == CENTER_ALIGNMENT)
+				alignmentOffsetX_ = screenWidth_/2;
+			else if(hAlignment_ == RIGHT_ALIGNMENT)
+				alignmentOffsetX_ = screenWidth_;
+
+			if(align == CENTER_ALIGNMENT)
+				alignmentOffsetX_ -= screenWidth_/2;
+			else if(align == RIGHT_ALIGNMENT)
+				alignmentOffsetX_ -= screenWidth_;
+
+			hAlignment_ = align;
+		}
+	}
+
+	void GLES2Text::SetTextVerticalAlignment(VerticalAlignment align)
+	{
+		if(align != vAlignment_)
+		{
+			alignmentOffsetY_ = 0;
+
+			if(vAlignment_ == MIDDLE_ALIGNMENT)
+				alignmentOffsetY_ = screenHeight_/2;
+			else if(vAlignment_ == TOP_ALIGNMENT)
+				alignmentOffsetY_ = screenHeight_;
+
+			if(align == MIDDLE_ALIGNMENT)
+				alignmentOffsetY_ -= screenHeight_/2;
+			else if(align == TOP_ALIGNMENT)
+				alignmentOffsetY_ -= screenHeight_;
+
+			vAlignment_ = align;
+		}
+	}
+
+
+	void GLES2Text::Move(float offsetX, float offsetY)
+	{
+		auto it = vertexsData_.begin();
+		while(it != vertexsData_.end())
+		{
+			VertexData& data = *it;
+			data.position_.x += offsetX;
+			data.position_.y += offsetY;
+			++it;
+		}
 	}
 
 	void GLES2Text::SetText(const std::string& text) 
 	{
-		if(lastText_ != text)
+		if(text_ != text)
 		{
 			if(pAtlas_->SetTextMesh(text, vertexsData_, screenWidth_, screenHeight_))
             {
-			    lastText_ = text;
+			    text_ = text;
+
+			    HorizontalAlignment hAlign = hAlignment_;
+			    VerticalAlignment vAlign = vAlignment_;
+			    hAlignment_ = LEFT_ALIGNMENT;
+			    vAlignment_ = BOTTOM_ALIGNMENT;
+			    SetTextHorizontalAlignment(hAlign);
+			    SetTextVerticalAlignment(vAlign);
 
                 Invalidate();
             }
@@ -128,16 +197,4 @@ namespace NSG
 	{
 		return GL_TRIANGLES;
 	}
-
-	void GLES2Text::Build()
-	{
-		CHECK_ASSERT(false, __FILE__, __LINE__);
-	}
-
-	const char* GLES2Text::GetName() const
-	{
-		return "Text";
-	}
-
-
 }

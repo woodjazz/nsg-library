@@ -45,12 +45,16 @@ void TextBehavior::Start()
 
     pText_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_STATIC_DRAW));
 
-    pSceneNode_->SetMesh(pText_);
+    PTechnique technique(new Technique);
+    pSceneNode_->Set(technique);
+    PPass pass(new Pass);
+    pass->Add(pText_);
+    technique->Add(pass);
 
     PGLES2Material pMaterial(new GLES2Material());
     pMaterial->SetTexture0(pText_->GetAtlas());
     pMaterial->SetProgram(pText_->GetProgram());
-    pSceneNode_->SetMaterial(pMaterial);
+    pass->Set(pMaterial);
 
     showTexture_ = PShowTexture(new ShowTexture);
     showTexture_->SetFont(pText_->GetAtlas());
@@ -68,7 +72,7 @@ void TextBehavior::Render()
 {
 	Camera* pCamera = Camera::Deactivate();
 
-	pSceneNode_->Render(true);
+	pSceneNode_->Render();
 
 	Camera::Activate(pCamera);
 

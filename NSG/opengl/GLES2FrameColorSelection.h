@@ -42,7 +42,7 @@ namespace NSG
         void Begin(float screenX, float screenY);
         void End();
         GLushort GetSelected() const;
-        void Render(SceneNode* pSceneNode);
+        void Render(SceneNode* pSceneNode, PASSES passes);
         void Render(GLushort id, GLES2Mesh* pMesh, Node* pNode);
         virtual bool IsValid();
         virtual void AllocateResources();

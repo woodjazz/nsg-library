@@ -48,13 +48,17 @@ namespace NSG
 		~GLES2Program();
 		bool Initialize();
 		void Set(ExtraUniforms* pExtraUniforms) { pExtraUniforms_ = pExtraUniforms; }
-
 		GLuint GetAttributeLocation(const std::string& name);
 		GLuint GetUniformLocation(const std::string& name);
-		void Render(bool solid, GLES2Mesh* pMesh);
 		virtual bool IsValid();
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
+		GLuint GetPositionLoc() const { return position_loc_; }
+		GLuint GetTextCoordLoc() const { return texcoord_loc_; }
+		GLuint GetNormalLoc() const { return normal_loc_; }
+		GLuint GetColorLoc() const { return color_loc_; }
+		void Use(Node* node);
+		void Use(GLES2Material* material);
 	private:
 		operator const GLuint() const { return id_; }
 		GLuint GetId() const { return id_; }
@@ -109,7 +113,7 @@ namespace NSG
 	class UseProgram
 	{
 	public:
-		UseProgram(GLES2Program& obj, GLES2Material* material, Node* node);
+		UseProgram(GLES2Program& obj);
 		~UseProgram();
 	private:
 		GLES2Program& obj_;
