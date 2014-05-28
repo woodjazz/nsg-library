@@ -24,13 +24,14 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Model.h"
+#include "SceneNode.h"
 #include "ResourceFile.h"
 #include "Check.h"
 #include "Util.h"
 #include "Context.h"
 #include "Technique.h"
 #include "Pass.h"
-#include "GLES2ModelMesh.h"
+#include "ModelMesh.h"
 #include "ModelMaterial.h"
 #include "assimp/IOStream.hpp"
 #include "assimp/Importer.hpp"
@@ -236,12 +237,12 @@ namespace NSG
 
 			const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[i]];
 
-			PGLES2ModelMesh pMesh(new GLES2ModelMesh(GL_STATIC_DRAW, mesh));
+			PModelMesh pMesh(new ModelMesh(GL_STATIC_DRAW, mesh));
 
             PTechnique technique(new Technique);
             pMeshSceneNode->Set(technique);
             PPass pass(new Pass);
-            pass->Add(pMesh);
+            pass->Add(pMeshSceneNode.get(), pMesh);
             technique->Add(pass);
 			PModelMaterial pMaterial(new ModelMaterial(sc->mMaterials[mesh->mMaterialIndex]));
             pass->Set(pMaterial);

@@ -33,7 +33,7 @@ namespace NSG
 		{
 		}
 
-		PGLES2Text TextManager::GetTextMesh(GLushort item, const std::string& fontFile, int fontSize)
+		PTextMesh TextManager::GetTextMesh(GLushort item, const std::string& fontFile, int fontSize)
 		{
 			Key k = {item, fontFile, fontSize};
 
@@ -41,7 +41,7 @@ namespace NSG
 
 			if(it == textMap_.end())
 			{
-				PGLES2Text pTextMesh(new GLES2Text(fontFile.c_str(), fontSize, GL_STATIC_DRAW));
+				PTextMesh pTextMesh(new TextMesh(fontFile.c_str(), fontSize, GL_STATIC_DRAW));
 
 				textMap_.insert(TextMap::value_type(k, pTextMesh));
 

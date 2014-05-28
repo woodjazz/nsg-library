@@ -46,15 +46,15 @@ void CubeBehavior::Start()
 
     Render2TextureBehavior::this_->AddPass(pass);
 
-	PGLES2BoxMesh pMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
+	PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
 
-    pass->Add(pMesh);
+    pass->Add(pSceneNode_, pMesh);
 
-	PGLES2Material pMaterial(new GLES2Material ());
+	PMaterial pMaterial(new Material ());
 
     PResource pVResource(new ResourceFile("shaders/DiffuseSpecularReflection.vert"));
 	PResource pFResource(new ResourceFile("shaders/Simple.frag"));
-	PGLES2Program pDiffuseProgram(new GLES2Program(pVResource, pFResource));
+	PProgram pDiffuseProgram(new Program(pVResource, pFResource));
     pMaterial->SetProgram(pDiffuseProgram);
 
     PTexture pTexture(new TextureFile("cube_example.png"));

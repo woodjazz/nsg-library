@@ -24,10 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SceneNode.h"
-#include "GLES2GPUObject.h"
+#include "Types.h"
+#include "GPUObject.h"
 #include "assimp/IOSystem.hpp"
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -35,7 +34,7 @@ struct aiScene;
 struct aiNode;
 namespace NSG
 {
-	class Model : public GLES2GPUObject, public Assimp::IOSystem
+	class Model : public GPUObject, public Assimp::IOSystem
 	{
 	public:
 		Model(const char* filename);

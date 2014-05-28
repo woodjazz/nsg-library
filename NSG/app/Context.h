@@ -26,28 +26,26 @@ misrepresented as being the original software.
 #pragma once
 #include "SharedPointers.h"
 #include "Singleton.h"
-#include "IMGUIContext.h"
-#include <memory>
 #include <set>
 
 namespace NSG
 {
-	class GLES2GPUObject;
+	class GPUObject;
 	class Resource;
 	struct Context : public Singleton<Context>
 	{
-		std::set<GLES2GPUObject*> objects_;
+		std::set<GPUObject*> objects_;
 		std::set<Resource*> resources_;
 		PFontAtlasTextureManager atlasManager_;
-		PGLES2FrameColorSelection pFrameColorSelection_;
+		PFrameColorSelection pFrameColorSelection_;
 		IMGUI::PContext imgui_;
 		PKeyboard keyboard_;
 		PFreeType freeType_;
 
 		Context();
 		~Context();
-		void Add(GLES2GPUObject* object);
-		void Remove(GLES2GPUObject* object);
+		void Add(GPUObject* object);
+		void Remove(GPUObject* object);
 		void InvalidateGPUResources();
 		void Add(Resource* object);
 		void Remove(Resource* object);

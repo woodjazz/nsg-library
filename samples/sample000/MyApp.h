@@ -37,6 +37,7 @@ public:
 	void Start();
 	void Update();
 	void RenderFrame();
+	void Render2Select();
 	void RenderGUIFrame();
 	void ViewChanged(int32_t width, int32_t height);
 	void OnMouseMove(float x, float y);

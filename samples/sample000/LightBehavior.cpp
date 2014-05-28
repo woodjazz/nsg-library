@@ -53,8 +53,8 @@ LightBehavior::~LightBehavior()
 
 void LightBehavior::Start()
 {
-	PGLES2Material pMaterial(new GLES2Material());
-	PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+	PMaterial pMaterial(new Material());
+	PProgram pProgram(new Program(vShader, fShader));
     pMaterial->SetProgram(pProgram);
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);
@@ -62,8 +62,8 @@ void LightBehavior::Start()
     pass->Set(pMaterial);
     technique->Add(pass);
 
-	PGLES2Mesh pMesh(new GLES2SphereMesh(0.2f, 32, GL_STATIC_DRAW));
-	pass->Add(pMesh);
+	PMesh pMesh(new SphereMesh(0.2f, 32, GL_STATIC_DRAW));
+	pass->Add(pSceneNode_, pMesh);
 
     pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
 }

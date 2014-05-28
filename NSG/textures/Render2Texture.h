@@ -26,14 +26,14 @@ misrepresented as being the original software.
 #pragma once
 
 #include "GLES2Includes.h"
-#include "GLES2GPUObject.h"
+#include "GPUObject.h"
 #include "SharedPointers.h"
 #include "Types.h"
 
 namespace NSG
 {
 	class App;
-	class Render2Texture : public GLES2GPUObject
+	class Render2Texture : public GPUObject
 	{
 	public:
 		Render2Texture(PTexture pTexture, bool createDepthBuffer);

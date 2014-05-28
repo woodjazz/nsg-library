@@ -25,17 +25,19 @@ misrepresented as being the original software.
 */
 #include "Context.h"
 #include "Check.h"
-#include "GLES2GPUObject.h"
+#include "GPUObject.h"
 #include "FontAtlasTextureManager.h"
-#include "GLES2FrameColorSelection.h"
+#include "FrameColorSelection.h"
 #include "TextureMemory.h"
 #include "Keyboard.h"
 #include "FreeTypeClass.h"
+#include "Resource.h"
+#include "IMGUIContext.h"
 
 namespace NSG
 {
 	Context::Context()
-	: pFrameColorSelection_(new GLES2FrameColorSelection(false)),
+	: pFrameColorSelection_(new FrameColorSelection(false)),
 	atlasManager_(new FontAtlasTextureManager),
 	imgui_(new IMGUI::Context),
 	keyboard_(new Keyboard),
@@ -48,14 +50,14 @@ namespace NSG
 		atlasManager_ = nullptr;
 	}
 
-	void Context::Add(GLES2GPUObject* object)
+	void Context::Add(GPUObject* object)
 	{
 		auto result = objects_.insert(object);
 
 		CHECK_ASSERT(result.second && "Context::Add has failed in file", __FILE__, __LINE__);
 	}
 
-	void Context::Remove(GLES2GPUObject* object)
+	void Context::Remove(GPUObject* object)
 	{
 		object->Release();
 		auto result = objects_.erase(object);

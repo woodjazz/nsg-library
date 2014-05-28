@@ -107,14 +107,14 @@ void MyApp::Start()
     pLight0_ = PLight(new Light());
     pLight0_->SetBehavior(PBehavior(new LightBehavior()));
 
-	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cell.png"));
-	//PGLES2Texture pCellTexture = PGLES2Texture(new GLES2Texture("cube_example.png"));
+	//PTextMeshure pCellTexture = PTextMeshure(new TextMeshure("cell.png"));
+	//PTextMeshure pCellTexture = PTextMeshure(new TextMeshure("cube_example.png"));
 	PTexture pCellTexture(new TextureFile("Earthmap720x360_grid.jpg"));
 
 	IMGUI::Context::this_->pSkin_->fontFile = "font/FreeSans.ttf";
 	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
 	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
-	//pSkin2_->pActiveTechnique->GetPass(0)->SetMesh(PGLES2RectangleMesh(new GLES2RectangleMesh(2, 2, GL_STATIC_DRAW)));
+	//pSkin2_->pActiveTechnique->GetPass(0)->SetMesh(PRectangleMesh(new RectangleMesh(2, 2, GL_STATIC_DRAW)));
 	//pSkin2_->pMesh->EnableDepthTest(false);
 	//pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
 	//pSkin1_->pActiveMaterial->SetTexture0(pCellTexture);
@@ -128,6 +128,8 @@ void MyApp::Start()
     pModel_ = PModel(new Model("duck.dae"));
     //pModel_ = PModel(new Model("spider.obj"));
     pModel_->SetBehavior(PBehavior(new ModelBehavior()));
+
+    Behavior::StartAll();
    
 }
 
@@ -135,6 +137,8 @@ void MyApp::Update()
 {
 	//TRACE_LOG("MyApp::Update delta = " << Time::deltaTime);
 //    float deltaTime = App::this_->GetDeltaTime();
+
+	Behavior::UpdateAll();
 
 }
 
@@ -355,6 +359,13 @@ void MyApp::RenderFrame()
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //showTexture_->Show();
+
+    //Behavior::RenderAll();
+}
+
+void MyApp::Render2Select()
+{
+	Behavior::Render2SelectAll();
 }
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 

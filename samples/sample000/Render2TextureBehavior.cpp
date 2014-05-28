@@ -42,12 +42,12 @@ void Render2TextureBehavior::Start()
     technique->Add(pass_);
 
     pFilteredTexture_ = PTexture(new TextureMemory(GL_RGBA, 16, 16, nullptr));
-    PGLES2Filter blurFilter(new GLES2FilterBlur(pRenderedTexture_, pFilteredTexture_));
+    PFilter blurFilter(new FilterBlur(pRenderedTexture_, pFilteredTexture_));
     PPassFilter passBlur(new PassFilter(blurFilter));
     technique->Add(passBlur);
 
     pBlendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-    PGLES2Filter blendFilter(new GLES2FilterBlend(pFilteredTexture_, pRenderedTexture_, pBlendedTexture_));
+    PFilter blendFilter(new FilterBlend(pFilteredTexture_, pRenderedTexture_, pBlendedTexture_));
     PPassFilter passBlend(new PassFilter(blendFilter));
     technique->Add(passBlend);
 

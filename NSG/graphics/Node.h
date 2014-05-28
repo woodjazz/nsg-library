@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #pragma once
 #include "GLES2Includes.h"
 #include "Types.h"
-#include "SharedPointers.h"
 #include <set>
 
 namespace NSG

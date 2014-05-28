@@ -34,6 +34,8 @@ misrepresented as being the original software.
 #include "glm/gtc/epsilon.hpp"
 #include "glm/gtx/spline.hpp"
 #include "glm/gtx/io.hpp"
+#include "SharedPointers.h"
+#include "GLES2Includes.h"
 
 #define STRINGIFY(S) #S
 
@@ -52,4 +54,7 @@ namespace NSG
 
     typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
     typedef enum {TOP_ALIGNMENT, MIDDLE_ALIGNMENT, BOTTOM_ALIGNMENT} VerticalAlignment;
+
+    typedef std::pair<PNode, PMesh> MeshNode;
+
 }

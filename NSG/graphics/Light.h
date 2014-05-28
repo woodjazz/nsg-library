@@ -24,9 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
-#include <vector>
 #include "SceneNode.h"
+#include <vector>
 
 namespace NSG
 {

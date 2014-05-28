@@ -27,10 +27,10 @@ misrepresented as being the original software.
 #include "IMGUILayoutManager.h"
 #include "IMGUITextManager.h"
 #include "IMGUIState.h"
-#include "GLES2RectangleMesh.h"
-#include "GLES2CircleMesh.h"
-#include "GLES2EllipseMesh.h"
-#include "GLES2RoundedRectangleMesh.h"
+#include "RectangleMesh.h"
+#include "CircleMesh.h"
+#include "EllipseMesh.h"
+#include "RoundedRectangleMesh.h"
 #include "Technique.h"
 #include "Pass.h"
 #include "Node.h"
@@ -38,17 +38,18 @@ misrepresented as being the original software.
 #include "Keys.h"
 #include "Log.h"
 #include "Keyboard.h"
-#include "GLES2FrameColorSelection.h"
-#include "GLES2Text.h"
-#include "GLES2StencilMask.h"
+#include "FrameColorSelection.h"
+#include "TextMesh.h"
+#include "StencilMask.h"
 #include "Camera.h"
 #include "SharedPointers.h"
 #include "App.h"
 #include "Check.h"
+#include "Material.h"
+#include "IMGUIContext.h"
 #include <map>
 #include <list>
 #include <set>
-#include <cassert>
 
 using namespace NSG;
 
@@ -56,7 +57,7 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		PGLES2Text GetCurrentTextMesh(GLushort item)
+		PTextMesh GetCurrentTextMesh(GLushort item)
 		{
 			return Context::this_->pTextManager_->GetTextMesh(item, Context::this_->pSkin_->fontFile, Context::this_->pSkin_->fontSize);
 		}
@@ -121,7 +122,7 @@ namespace NSG
 
             	if(pass)
             	{
-                	PGLES2Mesh mesh = pass->GetMesh(0);
+                	PMesh mesh = pass->GetMesh(0);
 
 	                if(mesh)
 	                {
@@ -193,12 +194,12 @@ namespace NSG
 			}
 
             float shininessFactor = hasFocus ? 1 : -0.25f;
-            PGLES2Material material = uistate.currentTechnique->GetPass(0)->GetMaterial();
+            PMaterial material = uistate.currentTechnique->GetPass(0)->GetMaterial();
             float shininess = material->GetShininess();
             Color diffuse = material->GetDiffuseColor();
         	material->SetShininess(shininess * shininessFactor);
             material->SetDiffuseColor(diffuse * Color(1,1,1, Context::this_->pSkin_->alphaFactor));
-            uistate.currentTechnique->Set(pNode.get());
+            uistate.currentTechnique->Set(pNode);
 			uistate.currentTechnique->Render();
 			material->SetDiffuseColor(diffuse);
 			material->SetShininess(shininess);
@@ -243,7 +244,7 @@ namespace NSG
             {
                 CHECK_GL_STATUS(__FILE__, __LINE__);
 
-                PGLES2Text pTextMesh = GetCurrentTextMesh(id);
+                PTextMesh pTextMesh = GetCurrentTextMesh(id);
 	            pTextMesh->SetText(text);
 	            pTextMesh->SetTextHorizontalAlignment(CENTER_ALIGNMENT);
 	            pTextMesh->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
@@ -260,17 +261,16 @@ namespace NSG
                     Technique technique;
                     Pass pass;
                     technique.Add(&pass);
-                    pass.Add(pTextMesh);
+                    pass.Add(&textNode, pTextMesh);
 
-                    GLES2Material textMaterial;
+                    Material textMaterial;
                     textMaterial.EnableStencilTest(true);
                     textMaterial.SetTexture0(pTextMesh->GetAtlas());
                     textMaterial.SetProgram(pTextMesh->GetProgram());
                     textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor));
-                    textNode.Set(&technique);
                     pass.Set(&textMaterial);
 
-                    textNode.Render();
+                    technique.Render();
 				}
 
                 CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -325,8 +325,8 @@ namespace NSG
 
 			std::string currentText = text;
 
-            PGLES2Text pTextMesh = GetCurrentTextMesh(id);
-			PGLES2Text pCursorMesh = GetCurrentTextMesh(-1);
+            PTextMesh pTextMesh = GetCurrentTextMesh(id);
+			PTextMesh pCursorMesh = GetCurrentTextMesh(-1);
 			pCursorMesh->SetText("_");
 
 			// Check whether the button should be hot
@@ -417,17 +417,16 @@ namespace NSG
                 textNode0.Update(false);
 
                 Technique technique;
-                textNode2.Set(&technique);
                 Pass pass;
                 technique.Add(&pass);
-                pass.Add(pTextMesh);
-                GLES2Material textMaterial;
+                pass.Add(&textNode2, pTextMesh);
+                Material textMaterial;
                 textMaterial.EnableStencilTest(true);
                 textMaterial.SetTexture0(pTextMesh->GetAtlas());
                 textMaterial.SetProgram(pTextMesh->GetProgram());
                 pass.Set(&textMaterial);
                 textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor));
-                textNode2.Render();
+                technique.Render();
                 
 				// Render cursor if we have keyboard focus
 				if(hasFocus && (uistate.tick < 15))
@@ -440,17 +439,16 @@ namespace NSG
                     cursorNode.Update(false);
 
                     Technique technique;
-                    cursorNode.Set(&technique);
                     Pass pass;
                     technique.Add(&pass);
-                    pass.Add(pCursorMesh);
-                    GLES2Material textMaterial;
+                    pass.Add(&cursorNode, pCursorMesh);
+                    Material textMaterial;
                     textMaterial.EnableStencilTest(true);
                     textMaterial.SetTexture0(pTextMesh->GetAtlas());
                     textMaterial.SetProgram(pTextMesh->GetProgram());
                     pass.Set(&textMaterial);
                     textMaterial.SetDiffuseColor(Color(1,0,0,Context::this_->pSkin_->alphaFactor));
-                    cursorNode.Render();
+                    technique.Render();
                 }
 			}
 

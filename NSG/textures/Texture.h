@@ -26,12 +26,12 @@ misrepresented as being the original software.
 #pragma once
 #include "GLES2Includes.h"
 #include "SharedPointers.h"
-#include "GLES2GPUObject.h"
+#include "GPUObject.h"
 
 namespace NSG
 {
 	class BindTexture;
-	class Texture : public GLES2GPUObject
+	class Texture : public GPUObject
 	{
 	public:
 		Texture(); 

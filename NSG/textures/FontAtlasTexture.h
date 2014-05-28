@@ -27,7 +27,7 @@ misrepresented as being the original software.
 
 #include "GLES2Includes.h"
 #include "Texture.h"
-#include "GLES2Mesh.h"
+#include "Mesh.h"
 #include <string>
 #include <vector>
 #include <map>

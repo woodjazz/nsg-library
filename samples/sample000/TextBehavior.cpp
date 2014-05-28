@@ -43,15 +43,15 @@ void TextBehavior::Start()
 	PNode pParent(new Node);
 	pSceneNode_->SetParent(pParent);
 
-    pText_ = PGLES2Text(new GLES2Text("font/FreeSans.ttf", 12, GL_STATIC_DRAW));
+    pText_ = PTextMesh(new TextMesh("font/FreeSans.ttf", 12, GL_STATIC_DRAW));
 
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);
     PPass pass(new Pass);
-    pass->Add(pText_);
+    pass->Add(pSceneNode_, pText_);
     technique->Add(pass);
 
-    PGLES2Material pMaterial(new GLES2Material());
+    PMaterial pMaterial(new Material());
     pMaterial->SetTexture0(pText_->GetAtlas());
     pMaterial->SetProgram(pText_->GetProgram());
     pass->Set(pMaterial);

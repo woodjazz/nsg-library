@@ -27,8 +27,8 @@ misrepresented as being the original software.
 #include "Technique.h"
 #include "Pass.h"
 #include "Pass2Stencil.h"
-#include "GLES2Material.h"
-#include "GLES2RoundedRectangleMesh.h"
+#include "Material.h"
+#include "RoundedRectangleMesh.h"
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
@@ -94,56 +94,56 @@ namespace NSG
         pNormalTechnique(new Technique),
         pHotTechnique(new Technique)
 		{
-			PGLES2Material pActiveMaterial(new GLES2Material);
+			PMaterial pActiveMaterial(new Material);
 			pActiveMaterial->SetBlendMode(ALPHA);
 			pActiveMaterial->EnableDepthTest(false);
-            PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+            PProgram pProgram(new Program(vShader, fShader));
             pActiveMaterial->SetProgram(pProgram);
 			pActiveMaterial->SetDiffuseColor(Color(1,0,0,0.7f));
 			pActiveMaterial->SetShininess(1);
 
-			PGLES2Material pNormalMaterial(new GLES2Material);
+			PMaterial pNormalMaterial(new Material);
 			pNormalMaterial->SetBlendMode(ALPHA);
 			pNormalMaterial->EnableDepthTest(false);
             pNormalMaterial->SetProgram(pProgram);
 			pNormalMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
 			pNormalMaterial->SetShininess(1);
 
-			PGLES2Material pHotMaterial(new GLES2Material);
+			PMaterial pHotMaterial(new Material);
 			pHotMaterial->SetBlendMode(ALPHA);
 			pHotMaterial->EnableDepthTest(false);
 			pHotMaterial->SetProgram(pProgram);
 			pHotMaterial->SetDiffuseColor(Color(0,0,1,0.7f));
 			pHotMaterial->SetShininess(1);
 
-			PGLES2Material pBorderMaterial(new GLES2Material);
-			PGLES2Program pBorderProgram(new GLES2Program(vShader, fShaderBorder));
+			PMaterial pBorderMaterial(new Material);
+			PProgram pBorderProgram(new Program(vShader, fShaderBorder));
 			pBorderMaterial->SetBlendMode(ALPHA);
 			pBorderMaterial->EnableDepthTest(false);
 			pBorderMaterial->SetProgram(pBorderProgram);
 			pBorderMaterial->SetDiffuseColor(Color(1,1,1,1));
 
-            PGLES2Mesh pMesh(new GLES2RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
+            PMesh pMesh(new RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
 
 			PPass activePass(new Pass);
 			activePass->Set(pActiveMaterial);
-			activePass->Add(pMesh);
+			activePass->Add(nullptr, pMesh);
 
 			PPass normalPass(new Pass);
 			normalPass->Set(pNormalMaterial);
-			normalPass->Add(pMesh);
+			normalPass->Add(nullptr, pMesh);
 
 			PPass hotPass(new Pass);
 			hotPass->Set(pHotMaterial);
-			hotPass->Add(pMesh);
+			hotPass->Add(nullptr, pMesh);
 
 			PPass borderPass(new Pass);
 			borderPass->Set(pBorderMaterial);
-			borderPass->Add(pMesh);
+			borderPass->Add(nullptr, pMesh);
 			borderPass->SetDrawMode(Pass::WIREFRAME);
 
 			PPass stencilPass(new Pass2Stencil);
-			stencilPass->Add(pMesh);
+			stencilPass->Add(nullptr, pMesh);
 
 			pActiveTechnique->Add(activePass);
 			pActiveTechnique->Add(borderPass);

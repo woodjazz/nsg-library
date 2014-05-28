@@ -40,17 +40,19 @@ EarthBehavior::~EarthBehavior()
 
 void EarthBehavior::Start()
 {
-	PGLES2SphereMesh pSphereMesh(new GLES2SphereMesh(3, 32, GL_STATIC_DRAW));
+	PSphereMesh pSphereMesh(new SphereMesh(3, 32, GL_STATIC_DRAW));
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);
     PPass pass(new Pass);
-    pass->Add(pSphereMesh);
+    pass->Add(pSceneNode_, pSphereMesh);
     technique->Add(pass);
 
     Render2TextureBehavior::this_->AddPass(pass);
 
 	PTexture pEarthTexture(new TextureFile("Earthmap720x360_grid.jpg"));
-	PGLES2Material pMaterial(new GLES2Material ());
+	PMaterial pMaterial(new Material ());
+	PProgram perVertex(new ProgramPerVertex);
+	pMaterial->SetProgram(perVertex);
 	pMaterial->SetTexture0(pEarthTexture);
 	pMaterial->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));

@@ -27,15 +27,14 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Camera.h"
 #include "IMGUI.h"
-#include "GLES2Text.h"
-#include "Behavior.h"
+#include "TextMesh.h"
 #include "Check.h"
 #include "Context.h"
 #include "Keyboard.h"
+#include "FrameColorSelection.h"
 #if NACL
 #include "ppapi/cpp/var.h"
 #endif
-#include <cassert>
 
 namespace NSG
 {
@@ -95,7 +94,6 @@ namespace NSG
         deltaTime_ = delta;
         IMGUI::DoTick();
         Update();
-        Behavior::UpdateAll();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,9 +119,16 @@ namespace NSG
 
     void InternalApp::BeginTick()
     {
+        // Set up texture data read/write alignment
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        CHECK_ASSERT(pApp_->width_ > 0 && pApp_->height_ > 0, __FILE__, __LINE__);
+        glViewport(0, 0, pApp_->width_, pApp_->height_);
+
         pApp_->Start();
-        Behavior::StartAll();
-        pApp_->LastStart();
     }
     
     void InternalApp::DoTick(float delta)
@@ -153,78 +158,58 @@ namespace NSG
 
         IMGUI::OnMouseMove(x, y);
         pApp_->OnMouseMove(x, y);
-        Behavior::OnMouseMoveAll(x, y);
     }
 
     void InternalApp::OnMouseDown(float x, float y) 
     {
-        TRACE_LOG("Mouse Down");
+        //TRACE_LOG("Mouse Down");
         screenX_ = x;
         screenY_ = y;
 
         IMGUI::OnMouseDown(x, y);
         pApp_->OnMouseDown(x, y);
-        Behavior::OnMouseDownAll(x, y);
     }
 
     void InternalApp::OnMouseUp() 
     {
-        TRACE_LOG("Mouse Up");
+        //TRACE_LOG("Mouse Up");
         IMGUI::OnMouseUp();
         pApp_->OnMouseUp();
-        Behavior::OnMouseUpAll();
-    }
+   }
 
     void InternalApp::OnKey(int key, int action, int modifier)
     {
-        TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
+        //TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
         IMGUI::OnKey(key, action, modifier);
         pApp_->OnKey(key, action, modifier);
-        Behavior::OnKeyAll(key, action, modifier);
     }
 
     void InternalApp::OnChar(unsigned int character)
     {
-        TRACE_LOG("character=" << character);
+        //TRACE_LOG("character=" << character);
         IMGUI::OnChar(character);
         pApp_->OnChar(character);
-        Behavior::OnCharAll(character);
     }
 
     void InternalApp::RenderFrame()
     {
-        // Set up texture data read/write alignment
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        
         PerformTick();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        CHECK_ASSERT(pApp_->width_ > 0 && pApp_->height_ > 0, __FILE__, __LINE__);
-		glViewport(0, 0, pApp_->width_, pApp_->height_);
-       
         glClearColor(0, 0, 0, 1);
         glClearDepth(1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
 
         pApp_->RenderFrame();
 
-        Behavior::RenderAll();
-
         pApp_->BeginSelection(screenX_, screenY_);
-        Behavior::Render2SelectAll();
+        pApp_->Render2Select();
         pApp_->EndSelection();
 
-        Camera* pActiveCamera = Camera::GetActiveCamera();
+        Camera* camera(Camera::GetActiveCamera());
         IMGUI::Begin();
         pApp_->RenderGUIFrame();
         IMGUI::End();
-		if(pActiveCamera)
-        {
-			pActiveCamera->Activate();
-        }
+		Camera::Activate(camera);
     }
 
     bool InternalApp::ShallExit() const

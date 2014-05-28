@@ -57,16 +57,73 @@ struct Sample : App
         technique_ = PTechnique(new Technique);
 
         showTexture_ = PShowTexture(new ShowTexture);
-	}
 
-    void LastStart() 
-    {
+        Behavior::StartAll();
+
+        {
+            //box passes
+
+            PPass2Texture pass2Texture(new Pass2Texture(boxBehavior_->renderedTexture_, true));
+            technique_->Add(pass2Texture);
+
+            PPass pass00 = PPass(new Pass);
+            PMaterial material(new Material);
+            material->EnableColorBuffer(false);
+            PProgram whiteColor(new ProgramWhiteColor);
+            material->SetProgram(whiteColor);
+            pass00->Set(material);
+            pass00->Add(sphereBehavior_->GetSceneNode(), sphereBehavior_->mesh_);
+            pass2Texture->Add(pass00);
+
+            PPass pass01(new Pass);
+            pass01->Add(boxBehavior_->GetSceneNode(), boxBehavior_->mesh_);
+            pass01->Set(boxBehavior_->material_);
+            pass2Texture->Add(pass01);
+
+            PPassFilter filterPass(new PassFilter(boxBehavior_->filter_));
+            technique_->Add(filterPass);
+        }
+
+        {
+            //sphere passes
+    
+            PPass2Texture pass2Texture(new Pass2Texture(sphereBehavior_->renderedTexture_, true));
+            technique_->Add(pass2Texture);
+
+            PPass pass00 = PPass(new Pass);
+            PMaterial material(new Material);
+            material->EnableColorBuffer(false);
+            PProgram whiteColor(new ProgramWhiteColor);
+            material->SetProgram(whiteColor);
+            pass00->Set(material);
+            pass00->Add(boxBehavior_->GetSceneNode(), boxBehavior_->mesh_);
+            pass2Texture->Add(pass00);
+            
+
+            PPass pass01(new Pass);
+            pass01->Add(sphereBehavior_->GetSceneNode(), sphereBehavior_->mesh_);
+            pass01->Set(sphereBehavior_->material_);
+            pass2Texture->Add(pass01);
+
+
+            PPassFilter filterPass(new PassFilter(sphereBehavior_->filter_));
+            technique_->Add(filterPass);
+
+            PPassFilter passBlend(new PassFilter(sphereBehavior_->blendFilter_));
+            technique_->Add(passBlend);
+        }
+
+
         blendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
         showTexture_->SetNormal(blendedTexture_);
-        PGLES2Filter blendFilter(new GLES2FilterBlend(sphereBehavior_->blendedTexture_, boxBehavior_->filteredTexture_, blendedTexture_));
+        PFilter blendFilter(new FilterBlend(sphereBehavior_->blendedTexture_, boxBehavior_->filteredTexture_, blendedTexture_));
         PPassFilter passBlend(new PassFilter(blendFilter));
         technique_->Add(passBlend);
+    }
 
+    void Update()
+    {
+        Behavior::UpdateAll();
     }
 
     void RenderFrame()
@@ -75,10 +132,5 @@ struct Sample : App
         showTexture_->Show();
     }
 };
-
-void AddPass(PPass pass)
-{
-    static_cast<Sample*>(Sample::this_)->technique_->Add(pass);
-}
 
 NSG_MAIN(Sample);

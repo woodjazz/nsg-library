@@ -38,7 +38,7 @@ namespace NSG
 			PCamera pCamera_;
 			PNode pCurrentNode_;
 			PNode pRootNode_;
-			PGLES2FrameColorSelection pFrameColorSelection_;		
+			PFrameColorSelection pFrameColorSelection_;		
 			PTextManager pTextManager_;
 			PLayoutManager pLayoutManager_;
 

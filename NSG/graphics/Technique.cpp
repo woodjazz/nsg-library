@@ -31,7 +31,6 @@ misrepresented as being the original software.
 namespace NSG
 {
 	Technique::Technique()
-	: node_(nullptr)
 	{
 	}
 
@@ -42,11 +41,6 @@ namespace NSG
 
 	void Technique::Add(PPass pass)
 	{
-		if(node_ && !pass->node_)
-		{
-			pass->SetNode(node_);
-		}
-
 		passes_.push_back(pass);
 	}
 
@@ -64,6 +58,12 @@ namespace NSG
 		Add(pObj);
     }
 
+    void Technique::Set(PNode node)
+    {
+    	auto it = passes_.begin();
+    	while(it != passes_.end())
+    		(*it++)->SetAll(node);
+    }
 
 	size_t Technique::GetNumPasses() const
 	{
@@ -74,21 +74,6 @@ namespace NSG
 	{
 		auto it = passes_.begin();
 		while(it != passes_.end())
-		{
-			PPass pass = *it;
-
-			if(node_ && !pass->node_)
-			{
-				pass->SetNode(node_);
-				pass->Render();
-				pass->SetNode(nullptr);
-			}
-			else
-			{
-				pass->Render();
-			}
-			
-			++it;
-		}
+			(*it++)->Render();
 	}
 }

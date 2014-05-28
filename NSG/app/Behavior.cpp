@@ -75,6 +75,15 @@ namespace NSG
         }
 	}
 
+    void Behavior::RenderAllBut(const Behavior* behavior)
+    {
+        for(auto &obj : collection)
+        {
+            if(obj != behavior)
+                obj->Render();
+        }
+    }
+
 	void Behavior::Render2SelectAll()
 	{
         for(auto &obj : collection)

@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "BoxBehavior.h"
-extern void AddPass(PPass pass);
 
 static const char* fShader = STRINGIFY(
     uniform sampler2D u_texture0;
@@ -47,39 +46,60 @@ static const char* fShader = STRINGIFY(
 
 void BoxBehavior::Start()
 {
-	PGLES2BoxMesh pMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
+	controlPoints_.push_back(Vertex3(-5.0f, 0.0f, 0.0f)); 
+    controlPoints_.push_back(Vertex3(0.0f, 0.0f, 5.0f));
+	controlPoints_.push_back(Vertex3(5.0f, 0.0f, 0.0f));
+	controlPoints_.push_back(Vertex3(0.0f, 0.0f, -5.0f)); 
 
-	PGLES2Material material(new GLES2Material);
+	mesh_ = PBoxMesh(new BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
+
+	material_ = PMaterial(new Material);
+    PProgram unlit(new ProgramUnlit);
+    material_->SetProgram(unlit);
     PTexture texture(new TextureFile("cube.png"));
-	material->SetTexture0(texture);
+	material_->SetTexture0(texture);
 
     renderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-    PPass2Texture pass0(new Pass2Texture(renderedTexture_, true));
-    AddPass(pass0);
-
-    PPass pass00(new Pass);
-    pass00->Add(pMesh);
-    pass00->Set(material);
-    pass00->SetNode(pSceneNode_);
-    pass0->Add(pass00);
-
-
-    pSceneNode_->SetPosition(Vertex3(-5, 0, 0));
-    pSceneNode_->SetScale(Vertex3(3,3,3));
 
     filteredTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-    filter_ = PGLES2Filter(new GLES2Filter(renderedTexture_, filteredTexture_, fShader));
-    PPassFilter pass1(new PassFilter(filter_));
-    AddPass(pass1);
-  
+    filter_ = PFilter(new Filter(renderedTexture_, filteredTexture_, fShader));
+
+    pSceneNode_->SetScale(Vertex3(3,3,3));
+
 }
 
 void BoxBehavior::Update()
 {
     float deltaTime = App::this_->GetDeltaTime();
-    static float move = -1;
-    move += deltaTime * TWO_PI * 0.25f;  // 1/4 of a wave cycle per second
-    filter_->GetMaterial()->SetShininess(move);
+
+    {
+        static float delta1 = 0;
+
+	    Vertex3 position = glm::catmullRom(
+            controlPoints_[0],
+            controlPoints_[1],
+            controlPoints_[2],
+            controlPoints_[3],
+		    delta1);
+
+        pSceneNode_->SetPosition(position);
+
+        delta1 += deltaTime * 0.3f;
+
+        if(delta1 > 1)
+        {
+    	    delta1 = 0;
+            Vertex3 p = controlPoints_.front();
+            controlPoints_.pop_front();
+            controlPoints_.push_back(p);
+        }
+    }
+
+    {
+        static float move = -1;
+        move += deltaTime * TWO_PI * 0.25f;  // 1/4 of a wave cycle per second
+        filter_->GetMaterial()->SetShininess(move);
+    }
 }
 
 

@@ -25,8 +25,8 @@ misrepresented as being the original software.
 */
 #include "ShowTexture.h"
 #include "Types.h"
-#include "GLES2Material.h"
-#include "GLES2PlaneMesh.h"
+#include "Material.h"
+#include "PlaneMesh.h"
 #include "Context.h"
 #include "Camera.h"
 
@@ -64,8 +64,8 @@ static const char* fFontShader = STRINGIFY(
 namespace NSG
 {
 	ShowTexture::ShowTexture()
-	: material_(new GLES2Material),
-	mesh_(new GLES2PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW))
+	: material_(new Material),
+	mesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW))
 	{
 		material_->EnableDepthTest(false);
 	}
@@ -92,14 +92,14 @@ namespace NSG
 
 	void ShowTexture::SetNormal(PTexture texture)
 	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fShader));
+		PProgram pProgram(new Program(vShader, fShader));
 		material_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}
 
 	void ShowTexture::SetFont(PTexture texture)
 	{
-		PGLES2Program pProgram(new GLES2Program(vShader, fFontShader));
+		PProgram pProgram(new Program(vShader, fFontShader));
 		material_->SetBlendMode(ALPHA);
 		material_->SetProgram(pProgram);
 		material_->SetTexture0(texture);

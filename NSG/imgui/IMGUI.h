@@ -24,17 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
-#include <cstdint>
-#include <string>
-#include <limits>
 #include <regex>
-#include "GLES2Includes.h"
-#include "GLES2Material.h"
-#include "GLES2Mesh.h"
-#include "Camera.h"
-#include "IMGUISkin.h"
-#include "Node.h"
 #include "Types.h"
 
 namespace NSG 

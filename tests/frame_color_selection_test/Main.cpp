@@ -39,11 +39,11 @@ public:
 
 	void Start()
 	{
-		PGLES2BoxMesh pMesh(new GLES2BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
+		PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
         PTechnique technique(new Technique);
         pSceneNode_->Set(technique);
         PPass pass(new Pass);
-    	pass->Add(pMesh);
+    	pass->Add(pSceneNode_, pMesh);
 	}
 
 	void Update()

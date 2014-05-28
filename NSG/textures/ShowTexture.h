@@ -24,12 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GLES2GPUObject.h"
+#include "GPUObject.h"
 #include "SharedPointers.h"
 
 namespace NSG
 {
-	class ShowTexture : public GLES2GPUObject
+	class ShowTexture : public GPUObject
 	{
 	public:
 		ShowTexture();
@@ -41,7 +41,7 @@ namespace NSG
 		void SetFont(PTexture texture);
 		void Show();
 	private:
-        PGLES2Material material_; 
-		PGLES2Mesh mesh_;
+        PMaterial material_; 
+		PMesh mesh_;
 	};
 }

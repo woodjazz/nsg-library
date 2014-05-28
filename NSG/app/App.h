@@ -25,15 +25,13 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include <memory>
+#include "Types.h"
 #include "Tick.h"
 #include "Context.h"
 #include "Singleton.h"
-#include "GLES2FrameColorSelection.h"
 
 class AAssetManager;
 class ANativeActivity;
-
 namespace pp
 {
     class Var;
@@ -49,9 +47,9 @@ namespace NSG
 		virtual ~App();
         virtual int GetFPS() const;
 		virtual void Start() {}
-        virtual void LastStart() {}
 		virtual void Update() {}
 		virtual void RenderFrame() {};
+        virtual void Render2Select() {};
         virtual void RenderGUIFrame() {}
 		virtual void ViewChanged(int32_t width, int32_t height) {};
         virtual void OnMouseMove(float x, float y) {}

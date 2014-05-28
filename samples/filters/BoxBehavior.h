@@ -26,12 +26,16 @@ misrepresented as being the original software.
 #pragma once
 #include "NSG.h"
 using namespace NSG;
+#include <deque>
 
 struct BoxBehavior : Behavior
 {
 	PTexture renderedTexture_;
 	PTexture filteredTexture_;
-	PGLES2Filter filter_;
+	PFilter filter_;
+    std::deque<Vertex3> controlPoints_;
+    PBoxMesh mesh_;
+    PMaterial material_;
 
 	void Start();
 	void Update();

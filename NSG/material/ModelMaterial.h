@@ -25,12 +25,12 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include "GLES2Material.h"
+#include "Material.h"
 
 struct aiMaterial;
 namespace NSG
 {
-	class ModelMaterial : public GLES2Material
+	class ModelMaterial : public Material
 	{
 	public:
 		ModelMaterial(const aiMaterial* mtl);

@@ -29,8 +29,8 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "IMGUILayoutManager.h"
 #include "IMGUITextManager.h"
-#include "GLES2StencilMask.h"
-#include "GLES2FrameColorSelection.h"
+#include "StencilMask.h"
+#include "FrameColorSelection.h"
 #include "IMGUIState.h"
 
 namespace NSG
@@ -45,7 +45,7 @@ namespace NSG
         pRootNode_(new Node),
         pLayoutManager_(new LayoutManager(pRootNode_, pCurrentNode_)),
     	pTextManager_(new TextManager),
-    	pFrameColorSelection_(new GLES2FrameColorSelection(false))
+    	pFrameColorSelection_(new FrameColorSelection(false))
     	{
 			pCamera_->EnableOrtho();
             pCamera_->SetFarClip(1000000);

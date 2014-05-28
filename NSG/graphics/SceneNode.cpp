@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "SceneNode.h"
+#include "FrameColorSelection.h"
 #include "App.h"
 #include "Check.h"
 #include "Behavior.h"
@@ -42,7 +43,6 @@ namespace NSG
 	void SceneNode::Set(PTechnique technique)
 	{
 		technique_ = technique;
-        technique_->Set(this);
 	}
 
     void SceneNode::Set(Technique* technique)

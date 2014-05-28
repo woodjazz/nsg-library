@@ -59,14 +59,14 @@ namespace NSG
 	class FreeTypeClass;
 	typedef std::unique_ptr<FreeTypeClass> PFreeType;
 
-    class GLES2Mesh;
-    typedef std::shared_ptr<GLES2Mesh> PGLES2Mesh;
+    class Mesh;
+    typedef std::shared_ptr<Mesh> PMesh;
 
     class Texture;
     typedef std::shared_ptr<Texture> PTexture;
 
-    class GLES2Material;
-    typedef std::shared_ptr<GLES2Material> PGLES2Material;
+    class Material;
+    typedef std::shared_ptr<Material> PMaterial;
 
     class FontAtlasTexture;
     typedef std::shared_ptr<FontAtlasTexture> PFontAtlasTexture;
@@ -83,32 +83,32 @@ namespace NSG
 	class Behavior;
 	typedef std::shared_ptr<Behavior> PBehavior;
 
-	class GLES2BoxMesh;
-	typedef std::shared_ptr<GLES2BoxMesh> PGLES2BoxMesh;
+	class BoxMesh;
+	typedef std::shared_ptr<BoxMesh> PBoxMesh;
 
 	class Camera;
 	typedef std::shared_ptr<Camera> PCamera;
 
-	class GLES2CircleMesh;
-	typedef std::shared_ptr<GLES2CircleMesh> PGLES2CircleMesh;
+	class CircleMesh;
+	typedef std::shared_ptr<CircleMesh> PCircleMesh;
 
-	class GLES2EllipseMesh;
-	typedef std::shared_ptr<GLES2EllipseMesh> PGLES2EllipseMesh;
+	class EllipseMesh;
+	typedef std::shared_ptr<EllipseMesh> PEllipseMesh;
 
-	class GLES2Filter;
-	typedef std::shared_ptr<GLES2Filter> PGLES2Filter;
+	class Filter;
+	typedef std::shared_ptr<Filter> PFilter;
 
-	class GLES2FilterBlur;
-	typedef std::shared_ptr<GLES2FilterBlur> PGLES2FilterBlur;
+	class FilterBlur;
+	typedef std::shared_ptr<FilterBlur> PFilterBlur;
 
-	class GLES2FrameColorSelection;
-    typedef std::shared_ptr<GLES2FrameColorSelection> PGLES2FrameColorSelection;
+	class FrameColorSelection;
+    typedef std::shared_ptr<FrameColorSelection> PFrameColorSelection;
 
-    class GLES2FShader;
-	typedef std::shared_ptr<GLES2FShader> PGLES2FShader;
+    class FragmentShader;
+	typedef std::shared_ptr<FragmentShader> PFragmentShader;
 
-	class GLES2IndexBuffer;
-	typedef std::shared_ptr<GLES2IndexBuffer> PGLES2IndexBuffer;
+	class IndexBuffer;
+	typedef std::shared_ptr<IndexBuffer> PIndexBuffer;
 
 	class Light;
 	typedef std::shared_ptr<Light> PLight;
@@ -116,38 +116,47 @@ namespace NSG
 	class ModelMaterial;
 	typedef std::shared_ptr<ModelMaterial> PModelMaterial;
 
-	class GLES2ModelMesh;
-	typedef std::shared_ptr<GLES2ModelMesh> PGLES2ModelMesh;
+	class ModelMesh;
+	typedef std::shared_ptr<ModelMesh> PModelMesh;
 
-	class GLES2PlaneMesh;
-	typedef std::shared_ptr<GLES2PlaneMesh> PGLES2PlaneMesh;
+	class PlaneMesh;
+	typedef std::shared_ptr<PlaneMesh> PPlaneMesh;
 
-	class GLES2Program;
-	typedef std::shared_ptr<GLES2Program> PGLES2Program;
+	class Program;
+	typedef std::shared_ptr<Program> PProgram;
 
-	class GLES2RectangleMesh;
-	typedef std::shared_ptr<GLES2RectangleMesh> PGLES2RectangleMesh;
+	class ProgramPerVertex;
+	typedef std::shared_ptr<ProgramPerVertex> PProgramPerVertex;
+
+	class ProgramUnlit;
+	typedef std::shared_ptr<ProgramUnlit> PProgramUnlit;
+
+	class ProgramWhiteColor;
+	typedef std::shared_ptr<ProgramWhiteColor> PProgramWhiteColor;
+
+	class RectangleMesh;
+	typedef std::shared_ptr<RectangleMesh> PRectangleMesh;
 
 	class Render2Texture;
 	typedef std::shared_ptr<Render2Texture> PRender2Texture;
 
-	class GLES2RoundedRectangleMesh;
-	typedef std::shared_ptr<GLES2RoundedRectangleMesh> PGLES2RoundedRectangleMesh;
+	class RoundedRectangleMesh;
+	typedef std::shared_ptr<RoundedRectangleMesh> PRoundedRectangleMesh;
 
-	class GLES2SphereMesh;
-	typedef std::shared_ptr<GLES2SphereMesh> PGLES2SphereMesh;
+	class SphereMesh;
+	typedef std::shared_ptr<SphereMesh> PSphereMesh;
 
-	class GLES2StencilMask;
-	typedef std::shared_ptr<GLES2StencilMask> PGLES2StencilMask;
+	class StencilMask;
+	typedef std::shared_ptr<StencilMask> PStencilMask;
 
-	class GLES2Text;
-	typedef std::shared_ptr<GLES2Text> PGLES2Text;
+	class TextMesh;
+	typedef std::shared_ptr<TextMesh> PTextMesh;
 
-	class GLES2VertexBuffer;
-	typedef std::shared_ptr<GLES2VertexBuffer> PGLES2VertexBuffer;
+	class VertexBuffer;
+	typedef std::shared_ptr<VertexBuffer> PVertexBuffer;
 
-	class GLES2VShader;
-	typedef std::shared_ptr<GLES2VShader> PGLES2VShader;
+	class VertexShader;
+	typedef std::shared_ptr<VertexShader> PVertexShader;
 
 	namespace IMGUI
 	{

@@ -38,6 +38,6 @@ public:
 	void Render();
 	void OnMouseDown(float x, float y);
 private:
-	PGLES2Text pText_;
+	PTextMesh pText_;
 	PShowTexture showTexture_;
 };

@@ -31,7 +31,10 @@ struct SphereBehavior : Behavior
     PTexture renderedTexture_;
 	PTexture filteredTexture_;
     PTexture blendedTexture_;
-	PGLES2Filter filter_;
+	PFilter filter_;
+	PSphereMesh mesh_;
+	PMaterial material_;
+	PFilter blendFilter_;
 
 	void Start();
     void Update();

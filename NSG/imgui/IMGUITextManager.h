@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GLES2Text.h"
+#include "TextMesh.h"
 #include "IMGUISkin.h"
 #include "Singleton.h"
 #include <memory>
@@ -39,7 +39,7 @@ namespace NSG
 		{
 		public:
 			TextManager();
-			PGLES2Text GetTextMesh(GLushort item, const std::string& fontFile, int fontSize);
+			PTextMesh GetTextMesh(GLushort item, const std::string& fontFile, int fontSize);
 			
 		private:
 			struct Key
@@ -54,7 +54,7 @@ namespace NSG
 				}
 			};
 
-			typedef std::map<Key, PGLES2Text> TextMap;
+			typedef std::map<Key, PTextMesh> TextMap;
 			TextMap textMap_;
 		};
 
