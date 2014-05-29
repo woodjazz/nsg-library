@@ -23,43 +23,35 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "SharedPointers.h"
-#include "GLES2Includes.h"
+#include "IMGUILabel.h"
+#include "IMGUIContext.h"
+#include "IMGUISkin.h"
+#include "TextMesh.h"
 
-namespace NSG 
+namespace NSG
 {
 	namespace IMGUI
 	{
-		struct State
+		Label::Label(GLushort id, const std::string& text)
+		: Button(id, text)
 		{
-            PTechnique currentTechnique_;
+            pTextMesh_->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
+            pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
+		}
 
-			float mousex_;
-			float mousey_;
-			bool mousedown_;
+		Label::~Label()
+		{
 
-			GLushort hotitem_;
-			GLushort activeitem_;
-			GLushort kbditem_;
-  			int keyentered_;
-  			int keymod_;
-  			int keyaction_;
-  			unsigned int character_;
-  			GLushort lastwidget_;	
-  			bool activeitem_needs_keyboard_;
+		}
 
-			int tick_;
+		PTechnique Label::GetNormalTechnique() const
+		{
+			return Context::this_->pSkin_->labelTechnique_;
+		}
 
-  			State();
-  			~State();
-
-        	void OnMouseMove(float x, float y);
-	        void OnMouseDown(float x, float y);
-	        void OnMouseUp();
-	        void OnKey(int key, int action, int modifier);
-	        void OnChar(unsigned int character);
-	        void DoTick();
-		};
+		void Label::operator()()
+		{
+			Button::operator()();
+		}		
 	}
 }

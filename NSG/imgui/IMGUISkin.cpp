@@ -87,12 +87,13 @@ namespace NSG
 	namespace IMGUI
 	{
 		Skin::Skin() 
-		: alphaFactor(1),
-		fontSize(18),
-		textMaxLength(std::numeric_limits<int>::max()),
-        pActiveTechnique(new Technique),
-        pNormalTechnique(new Technique),
-        pHotTechnique(new Technique)
+		: alphaFactor_(1),
+		fontSize_(18),
+		textMaxLength_(std::numeric_limits<int>::max()),
+        activeTechnique_(new Technique),
+        normalTechnique_(new Technique),
+        hotTechnique_(new Technique),
+        labelTechnique_(new Technique)
 		{
 			PMaterial pActiveMaterial(new Material);
 			pActiveMaterial->SetBlendMode(ALPHA);
@@ -145,27 +146,42 @@ namespace NSG
 			PPass stencilPass(new Pass2Stencil);
 			stencilPass->Add(nullptr, pMesh);
 
-			pActiveTechnique->Add(activePass);
-			pActiveTechnique->Add(borderPass);
-			pActiveTechnique->Add(stencilPass);
+			activeTechnique_->Add(activePass);
+			activeTechnique_->Add(borderPass);
+			activeTechnique_->Add(stencilPass);
 
-			pNormalTechnique->Add(normalPass);
-			pNormalTechnique->Add(borderPass);
-			pNormalTechnique->Add(stencilPass);
+			normalTechnique_->Add(normalPass);
+			normalTechnique_->Add(borderPass);
+			normalTechnique_->Add(stencilPass);
 
-			pHotTechnique->Add(hotPass);
-			pHotTechnique->Add(borderPass);
-			pHotTechnique->Add(stencilPass);
+			hotTechnique_->Add(hotPass);
+			hotTechnique_->Add(borderPass);
+			hotTechnique_->Add(stencilPass);
+
+			PMaterial labelMaterial(new Material);
+			labelMaterial->SetBlendMode(ALPHA);
+			labelMaterial->EnableDepthTest(false);
+            labelMaterial->SetProgram(pProgram);
+			labelMaterial->SetDiffuseColor(Color(0,0,0,0.0f));
+			labelMaterial->SetShininess(1);
+
+			PPass labelPass(new Pass);
+			labelPass->Set(labelMaterial);
+			labelPass->Add(nullptr, pMesh);
+
+			labelTechnique_->Add(labelPass);
+			labelTechnique_->Add(stencilPass);
 		}
 
 		Skin::Skin(const Skin& obj)
-		: alphaFactor(obj.alphaFactor),
-		fontFile(obj.fontFile),
-		fontSize(obj.fontSize),
-		textMaxLength(obj.textMaxLength),
-		pActiveTechnique(obj.pActiveTechnique),
-		pNormalTechnique(obj.pNormalTechnique),
-		pHotTechnique(obj.pHotTechnique)
+		: alphaFactor_(obj.alphaFactor_),
+		fontFile_(obj.fontFile_),
+		fontSize_(obj.fontSize_),
+		textMaxLength_(obj.textMaxLength_),
+		activeTechnique_(obj.activeTechnique_),
+		normalTechnique_(obj.normalTechnique_),
+		hotTechnique_(obj.hotTechnique_),
+		labelTechnique_(obj.labelTechnique_)
 		{
 		}
 	}

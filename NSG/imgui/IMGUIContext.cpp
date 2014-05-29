@@ -27,6 +27,8 @@ misrepresented as being the original software.
 #include "IMGUISkin.h"
 #include "Camera.h"
 #include "Node.h"
+#include "Keys.h"
+#include "Keyboard.h"
 #include "IMGUILayoutManager.h"
 #include "IMGUITextManager.h"
 #include "StencilMask.h"
@@ -45,7 +47,8 @@ namespace NSG
         pRootNode_(new Node),
         pLayoutManager_(new LayoutManager(pRootNode_, pCurrentNode_)),
     	pTextManager_(new TextManager),
-    	pFrameColorSelection_(new FrameColorSelection(false))
+    	pFrameColorSelection_(new FrameColorSelection(false)),
+    	lastId_(0)
     	{
 			pCamera_->EnableOrtho();
             pCamera_->SetFarClip(1000000);
@@ -54,6 +57,76 @@ namespace NSG
 
 		Context::~Context()
 		{
+		}
+
+		bool Context::IsStable() const
+		{
+			return pLayoutManager_->IsStable();
+		}
+
+		void Context::Begin()
+		{
+			lastId_ = 0;
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			pCamera_->Activate();
+			state_->hotitem_ = 0;
+
+			pCurrentNode_ = Context::this_->pRootNode_;
+			pLayoutManager_->Begin();
+			pLayoutManager_->BeginVertical(0);
+		}
+
+		void Context::End()
+		{
+			pLayoutManager_->EndVertical();
+			pLayoutManager_->End();
+			
+			if(!state_->activeitem_needs_keyboard_)
+			{
+				if(Keyboard::this_->Disable())
+                {
+					pCamera_->SetPosition(Vertex3(0,0,0));
+				}
+			}
+
+			if(!state_->mousedown_)
+			{
+				state_->activeitem_ = GLushort(-1);
+			}
+			else
+			{
+				if(state_->activeitem_ == GLushort(-1))
+				{
+			  		state_->activeitem_needs_keyboard_ = false;
+			  	}
+			}
+
+			// If no widget grabbed tab, clear focus
+			if (state_->keyentered_ == NSG_KEY_TAB || !IsStable())
+				state_->kbditem_ = 0;
+	
+			// Clear the entered key
+			state_->keyentered_ = 0;	
+			state_->character_ = 0;	
+		}
+
+		PTextMesh Context::GetCurrentTextMesh(GLushort item)
+		{
+			return pTextManager_->GetTextMesh(item, pSkin_->fontFile_, pSkin_->fontSize_);
+		}
+
+		GLushort Context::GetValidId(GLushort id)
+		{
+			CHECK_ASSERT(id > 0, __FILE__, __LINE__);
+
+			while(lastId_ >= id)
+				++id;
+
+			lastId_ = id;
+
+			return id;
 		}
 	}
 	

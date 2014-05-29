@@ -33,15 +33,17 @@ namespace NSG
 	{
 		struct Skin
 		{
-			float alphaFactor;
+			float alphaFactor_;
 
-			std::string fontFile;
-			int fontSize;
-			size_t textMaxLength;
+			std::string fontFile_;
+			int fontSize_;
+			size_t textMaxLength_;
 
-			PTechnique pActiveTechnique;
-			PTechnique pNormalTechnique;
-			PTechnique pHotTechnique;
+			PTechnique activeTechnique_;
+			PTechnique normalTechnique_;
+			PTechnique hotTechnique_;
+			
+			PTechnique labelTechnique_;
 
 			Skin();
 			Skin(const Skin& obj);

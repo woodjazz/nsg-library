@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Singleton.h"
 #include "SharedPointers.h"
+#include <set>
 
 namespace NSG
 {
@@ -44,6 +45,17 @@ namespace NSG
 
 			Context();
 			~Context();
+			void Begin();
+			void End();
+			bool IsStable() const;
+			PTextMesh GetCurrentTextMesh(GLushort item);
+
+			// Used to avoid the same ID when more than one control lays in the same line
+			GLushort GetValidId(GLushort id);
+
+		private:
+			GLushort lastId_;
+
 		};
 	}
 }

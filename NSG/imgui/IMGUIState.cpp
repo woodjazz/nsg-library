@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "IMGUIState.h"
+#include "Keys.h"
 #include <cstring>
 
 namespace NSG 
@@ -31,19 +32,19 @@ namespace NSG
 	namespace IMGUI
 	{
 		State::State()
-            : mousex(0),
-            mousey(0),
-            mousedown(false),
-            hotitem(-1),
-			activeitem(-1),
-			kbditem(-1),
-            keyentered(0),
-            keymod(0),
-            keyaction(0),
-            character(0),
-            lastwidget(0),
-            activeitem_is_a_text_field(false),
-            tick(0)
+            : mousex_(0),
+            mousey_(0),
+            mousedown_(false),
+            hotitem_(-1),
+			activeitem_(-1),
+			kbditem_(-1),
+            keyentered_(0),
+            keymod_(0),
+            keyaction_(0),
+            character_(0),
+            lastwidget_(0),
+            activeitem_needs_keyboard_(false),
+            tick_(0)
 		{
 		}
 
@@ -51,5 +52,47 @@ namespace NSG
 		{
 			
 		}
+
+        void State::OnMouseMove(float x, float y)
+        {
+        	mousex_ = x;
+        	mousey_ = y;
+        }
+
+        void State::OnMouseDown(float x, float y)
+        {
+        	mousex_ = x;
+        	mousey_ = y;
+        	mousedown_ = true;
+        }
+
+        void State::OnMouseUp()
+        {
+        	mousedown_ = false;
+        }
+
+        void State::OnKey(int key, int action, int modifier)
+        {
+            if(action == NSG_KEY_PRESS)
+            {
+                keyentered_ = key;
+                keyaction_ = action;
+                keymod_ = modifier;
+            }
+        }
+
+        void State::OnChar(unsigned int character)
+        {
+        	character_ = character;
+        }
+
+        void State::DoTick()
+        {
+        	++tick_;
+            if(tick_ > 30)
+            {
+                tick_ = 0;
+            }
+        }
 	}
 }

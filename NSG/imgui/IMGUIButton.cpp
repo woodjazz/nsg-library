@@ -1,0 +1,121 @@
+/*
+-------------------------------------------------------------------------------
+This file is part of nsg-library.
+http://nsg-library.googlecode.com/
+
+Copyright (c) 2014-2015 Néstor Silveira Gorski
+
+-------------------------------------------------------------------------------
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+claim that you wrote the original software. If you use this software
+in a product, an acknowledgment in the product documentation would be
+appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be
+misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+-------------------------------------------------------------------------------
+*/
+#include "IMGUIButton.h"
+#include "IMGUIContext.h"
+#include "IMGUIState.h"
+#include "IMGUISkin.h"
+#include "IMGUILayoutManager.h"
+#include "TextMesh.h"
+#include "SceneNode.h"
+#include "Technique.h"
+#include "Pass.h"
+#include "Material.h"
+#include "Keys.h"
+
+namespace NSG
+{
+	namespace IMGUI
+	{
+		Button::Button(GLushort id, const std::string& text)
+		: Object(id),
+		currentText_(text),
+		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
+		pressed_(false)
+		{
+            pTextMesh_->SetText(currentText_);
+            pTextMesh_->SetTextHorizontalAlignment(CENTER_ALIGNMENT);
+            pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
+		}
+
+		Button::~Button()
+		{
+
+		}
+
+		void Button::OnKey(int key)
+		{
+			if(key == NSG_KEY_ENTER)
+				pressed_ = true;
+		}
+
+		void Button::OnActive()
+		{
+			pressed_ = true;
+		}
+
+		void Button::UpdateControl()
+		{
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+
+	        Node textNode0;
+	        textNode0.EnableUpdate(false);
+	        textNode0.SetParent(node_);
+
+            if(pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
+	            textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
+            if(pTextMesh_->GetTextHorizontalAlignment() == RIGHT_ALIGNMENT)
+	            textNode0.SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
+
+            if(pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
+	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
+            else if(pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
+	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
+
+            SceneNode textNode;
+            textNode.EnableUpdate(false);
+            textNode.SetParent(&textNode0);
+            textNode.SetInheritScale(false);
+            textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
+
+	        textNode0.EnableUpdate(true);
+	        textNode0.Update(false);
+
+            Technique technique;
+            Pass pass;
+            technique.Add(&pass);
+            pass.Add(&textNode, pTextMesh_);
+
+            Material textMaterial;
+            textMaterial.EnableStencilTest(true);
+            textMaterial.SetTexture0(pTextMesh_->GetAtlas());
+            textMaterial.SetProgram(pTextMesh_->GetProgram());
+            textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor_));
+            pass.Set(&textMaterial);
+
+            technique.Render();
+
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+		}
+
+		bool Button::operator()()
+		{
+			if(!Update())
+				return false;
+
+			return pressed_;
+		}		
+	}
+}

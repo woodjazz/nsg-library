@@ -111,7 +111,7 @@ void MyApp::Start()
 	//PTextMeshure pCellTexture = PTextMeshure(new TextMeshure("cube_example.png"));
 	PTexture pCellTexture(new TextureFile("Earthmap720x360_grid.jpg"));
 
-	IMGUI::Context::this_->pSkin_->fontFile = "font/FreeSans.ttf";
+	IMGUI::Context::this_->pSkin_->fontFile_ = "font/FreeSans.ttf";
 	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
 	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
 	//pSkin2_->pActiveTechnique->GetPass(0)->SetMesh(PRectangleMesh(new RectangleMesh(2, 2, GL_STATIC_DRAW)));
@@ -120,7 +120,7 @@ void MyApp::Start()
 	//pSkin1_->pActiveMaterial->SetTexture0(pCellTexture);
 
 	//pSkin2_->pActiveTechnique->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
-	pSkin2_->pNormalTechnique->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
+	pSkin2_->normalTechnique_->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
 	//pSkin2_->pHotTechnique->GetPass(0)->GetMaterial()->SetTexture0(pRenderedTexture_);
 
 
@@ -144,7 +144,7 @@ void MyApp::Update()
 
 void MyApp::TestIMGUI2()
 {
-	IMGUI::Context::this_->pSkin_->fontSize = 18;
+	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
 
 	Vertex3 position = IMGUI::Context::this_->pCurrentNode_->GetGlobalPosition();
 	Vertex3 size = IMGUI::Context::this_->pCurrentNode_->GetGlobalScale();
@@ -224,7 +224,7 @@ void MyApp::TestIMGUI2()
 void MyApp::TestIMGUI4()
 {
 	IMGUI::Context::this_->pSkin_ = pSkin2_;
-	IMGUI::Context::this_->pSkin_->fontSize = 18;
+	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
 	//IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
 
     IMGUIBeginHorizontal();
@@ -254,7 +254,7 @@ void MyApp::Menu1()
     static Vertex3 camControlPoint3(3, -2, 0);
 
     static bool menu = false;
-    static float alpha = IMGUI::Context::this_->pSkin_->alphaFactor;
+    static float alpha = IMGUI::Context::this_->pSkin_->alphaFactor_;
 
     if(delta > 1) delta = 1;
 
@@ -278,7 +278,7 @@ void MyApp::Menu1()
 			    IMGUISpacer(80);
 			    if(IMGUIButton("Menu"))
 			    {
-			    	IMGUI::Context::this_->pSkin_->alphaFactor = alpha;
+			    	IMGUI::Context::this_->pSkin_->alphaFactor_ = alpha;
                     menu = true;
 				    delta = 0;
 			    }
@@ -289,10 +289,10 @@ void MyApp::Menu1()
 	    }
 	    IMGUIEndHorizontal();
 	    
-        if(IMGUI::Context::this_->pSkin_->pNormalTechnique->GetPass(0)->GetMaterial()->GetDiffuseColor().w < alpha)
-	    	IMGUI::Context::this_->pSkin_->alphaFactor += 0.01f;
+        if(IMGUI::Context::this_->pSkin_->normalTechnique_->GetPass(0)->GetMaterial()->GetDiffuseColor().w < alpha)
+	    	IMGUI::Context::this_->pSkin_->alphaFactor_ += 0.01f;
 	    else
-	    	IMGUI::Context::this_->pSkin_->alphaFactor = 1;
+	    	IMGUI::Context::this_->pSkin_->alphaFactor_ = 1;
 		
     }
     else
@@ -302,7 +302,9 @@ void MyApp::Menu1()
 		IMGUISpacer(20);
         IMGUIBeginHorizontal();
             IMGUISpacer(20);
-		    static std::string str = "0123fasdjfhasdkfjh asdkjfhasldfjhasldashdl fhasdlf aslfhasdlk fjhasldfjkh asdjfhlaf";
+            IMGUILabel("Label 1:"); 
+            //IMGUILabel("Label 2:");
+		    static std::string str = "Label 1:";
 		    str = IMGUITextField(str);
             IMGUISpacer(20);
         IMGUIEndHorizontal();
@@ -326,7 +328,7 @@ void MyApp::Menu1()
         if(delta < 0)
         {
             menu = exit = false;
-            IMGUI::Context::this_->pSkin_->alphaFactor = 0;
+            IMGUI::Context::this_->pSkin_->alphaFactor_ = 0;
         }
 	}
 }

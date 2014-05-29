@@ -121,19 +121,16 @@ namespace NSG
 	{
 		if(align != hAlignment_)
 		{
-			alignmentOffsetX_ = 0;
-
-			if(hAlignment_ == CENTER_ALIGNMENT)
-				alignmentOffsetX_ = screenWidth_/2;
-			else if(hAlignment_ == RIGHT_ALIGNMENT)
-				alignmentOffsetX_ = screenWidth_;
-
 			if(align == CENTER_ALIGNMENT)
-				alignmentOffsetX_ -= screenWidth_/2;
+				alignmentOffsetX_ = -screenWidth_/2;
 			else if(align == RIGHT_ALIGNMENT)
-				alignmentOffsetX_ -= screenWidth_;
+				alignmentOffsetX_ = -screenWidth_;
+            else
+                alignmentOffsetX_ = 0;
 
 			hAlignment_ = align;
+
+            Invalidate();
 		}
 	}
 
@@ -141,19 +138,16 @@ namespace NSG
 	{
 		if(align != vAlignment_)
 		{
-			alignmentOffsetY_ = 0;
-
-			if(vAlignment_ == MIDDLE_ALIGNMENT)
-				alignmentOffsetY_ = screenHeight_/2;
-			else if(vAlignment_ == TOP_ALIGNMENT)
-				alignmentOffsetY_ = screenHeight_;
-
 			if(align == MIDDLE_ALIGNMENT)
-				alignmentOffsetY_ -= screenHeight_/2;
+				alignmentOffsetY_ = -screenHeight_/2;
 			else if(align == TOP_ALIGNMENT)
-				alignmentOffsetY_ -= screenHeight_;
+				alignmentOffsetY_ = -screenHeight_;
+            else
+                alignmentOffsetY_ = 0;
 
 			vAlignment_ = align;
+
+            Invalidate();
 		}
 	}
 
@@ -177,13 +171,6 @@ namespace NSG
 			if(pAtlas_->SetTextMesh(text, vertexsData_, screenWidth_, screenHeight_))
             {
 			    text_ = text;
-
-			    HorizontalAlignment hAlign = hAlignment_;
-			    VerticalAlignment vAlign = vAlignment_;
-			    hAlignment_ = LEFT_ALIGNMENT;
-			    vAlignment_ = BOTTOM_ALIGNMENT;
-			    SetTextHorizontalAlignment(hAlign);
-			    SetTextVerticalAlignment(vAlign);
 
                 Invalidate();
             }

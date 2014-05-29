@@ -24,42 +24,27 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
-#include "GLES2Includes.h"
-
-namespace NSG 
+#include "IMGUIObject.h"
+#include "Types.h"
+#include <string>
+namespace NSG
 {
 	namespace IMGUI
 	{
-		struct State
+		class Button : public Object
 		{
-            PTechnique currentTechnique_;
-
-			float mousex_;
-			float mousey_;
-			bool mousedown_;
-
-			GLushort hotitem_;
-			GLushort activeitem_;
-			GLushort kbditem_;
-  			int keyentered_;
-  			int keymod_;
-  			int keyaction_;
-  			unsigned int character_;
-  			GLushort lastwidget_;	
-  			bool activeitem_needs_keyboard_;
-
-			int tick_;
-
-  			State();
-  			~State();
-
-        	void OnMouseMove(float x, float y);
-	        void OnMouseDown(float x, float y);
-	        void OnMouseUp();
-	        void OnKey(int key, int action, int modifier);
-	        void OnChar(unsigned int character);
-	        void DoTick();
+		public:
+			Button(GLushort id, const std::string& text);
+			~Button();
+			bool operator()();
+			void OnKey(int key);
+			void OnActive();
+			void UpdateControl();
+		protected:
+			std::string currentText_;
+			PTextMesh pTextMesh_;
+		private:			
+			bool pressed_;
 		};
 	}
 }

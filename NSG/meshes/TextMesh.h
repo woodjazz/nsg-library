@@ -58,6 +58,10 @@ namespace NSG
 		void SetTextHorizontalAlignment(HorizontalAlignment align);
 		void SetTextVerticalAlignment(VerticalAlignment align);
 
+        HorizontalAlignment GetTextHorizontalAlignment() const { return hAlignment_; }
+        VerticalAlignment GetTextVerticalAlignment() const { return vAlignment_; }
+
+
 	private:
 		void Move(VertexsData& obj, float offsetX, float offsetY);
 		PFontAtlasTexture pAtlas_;

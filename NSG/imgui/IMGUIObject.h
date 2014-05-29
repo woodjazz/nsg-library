@@ -24,42 +24,39 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
-#include "GLES2Includes.h"
+#include "Types.h"
 
-namespace NSG 
+namespace NSG
 {
 	namespace IMGUI
 	{
-		struct State
+		class Object
 		{
-            PTechnique currentTechnique_;
-
-			float mousex_;
-			float mousey_;
-			bool mousedown_;
-
-			GLushort hotitem_;
-			GLushort activeitem_;
-			GLushort kbditem_;
-  			int keyentered_;
-  			int keymod_;
-  			int keyaction_;
-  			unsigned int character_;
-  			GLushort lastwidget_;	
-  			bool activeitem_needs_keyboard_;
-
-			int tick_;
-
-  			State();
-  			~State();
-
-        	void OnMouseMove(float x, float y);
-	        void OnMouseDown(float x, float y);
-	        void OnMouseUp();
-	        void OnKey(int key, int action, int modifier);
-	        void OnChar(unsigned int character);
-	        void DoTick();
+		public:
+			Object(GLushort id);
+			~Object();
+			bool IsStable() const;
+			bool Hit();
+			void Draw();
+			bool Update();
+			virtual void UpdateControl() {};
+			bool HasFocus() const;
+			bool IsActive() const;
+			virtual bool IsReadOnly() const { return false; }
+			virtual bool NeedsKeyboard() const { return false; }
+			virtual void OnFocus() {};
+			virtual void OnActive() {};
+			virtual void OnKey(int key) {}
+			virtual void OnChar(unsigned int character) {}
+			virtual PTechnique GetActiveTechnique() const;
+			virtual PTechnique GetHotTechnique() const;
+			virtual PTechnique GetNormalTechnique() const;
+		protected:
+			GLushort id_;
+			State& uistate_;
+			PLayoutArea area_;
+			PNode node_;
+			Vertex4 areaSize_;
 		};
 	}
 }

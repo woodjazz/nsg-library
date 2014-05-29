@@ -211,14 +211,18 @@ namespace NSG
 		{ 
             int idx = (unsigned char)(*p);
 
-			float x2 = x + charInfo_[idx].bl * sx;
-			float y2 = -y - charInfo_[idx].bt * sy;
-			float w = charInfo_[idx].bw * sx;
-			float h = charInfo_[idx].bh * sy;
+            const CharacterInfo& charInfo = charInfo_[idx];
+
+			float x2 = x + charInfo.bl * sx;
+			float y2 = -y - charInfo.bt * sy;
+			float w = charInfo.bw * sx;
+			float h = charInfo.bh * sy;
+
+            float charBottom = (charInfo.bt - charInfo.bh) * sy;
 
 			// Advance the cursor to the start of the next character
-			x += charInfo_[idx].ax * sx;
-			y += charInfo_[idx].ay * sy;
+			x += charInfo.ax * sx;
+			y += charInfo.ay * sy;
 
             auto it = charsMesh_.find(idx);
             if(it == charsMesh_.end())
