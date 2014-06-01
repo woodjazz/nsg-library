@@ -48,7 +48,6 @@ private:
 	void InternalTask();
 	void TestIMGUI2();
     void TestIMGUI4();
-    void Menu1();
 	PLight pLight0_;
 	PCamera pCamera1_;
 	PCamera pCamera2_;

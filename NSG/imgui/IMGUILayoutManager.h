@@ -38,7 +38,7 @@ namespace NSG
 			GLushort id_;
 			int percentage_;
 			PNode pNode_;
-			enum Type {Vertical, Horizontal, Control, Spacer};
+			enum Type {Vertical, Horizontal, Control};
 			Type type_;
 			float textOffsetX_;
 			unsigned int cursor_character_position_; 
@@ -67,15 +67,14 @@ namespace NSG
 			void Reset();
 			void Begin();
 			void End();
-			PLayoutArea GetAreaForControl(GLushort id, LayoutArea::Type type = LayoutArea::Control, int percentage = 0);
-			void BeginHorizontal(GLushort id);
+			PLayoutArea GetAreaForControl(GLushort id, LayoutArea::Type type, int percentage);
+			void BeginHorizontal(GLushort id, int percentage);
 			void EndHorizontal();
-			void BeginVertical(GLushort id);
+			void BeginVertical(GLushort id, int percentage);
 			void EndVertical();
 			void Spacer(GLushort id, int percentage);
 			void RecalculateLayout(PLayoutArea pCurrentArea);
 			bool IsStable() const;
-
 		private:
 			std::list<PLayoutArea> nestedAreas_;
 			typedef std::map<GLushort, PLayoutArea> AREAS;

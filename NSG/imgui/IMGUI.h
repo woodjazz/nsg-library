@@ -31,32 +31,38 @@ namespace NSG
 {
 	namespace IMGUI
 	{
+		bool Button_(GLushort id, const std::string& text, int percentage);
+		void Label_(GLushort id, const std::string& text, int percentage);
+		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentage);
+		void BeginHorizontal_(GLushort id, int percentage);
+		void EndHorizontal_();
+		void BeginVertical_(GLushort id, int percentage);
+		void EndVertical_();
+		void Spacer_(GLushort id, int percentage);
+		PSkin& Skin_();
+		PNode& Node_();
+		
+		bool IsStable();
 		void Begin();
 		void End();
-		bool InternalButton(GLushort id, const std::string& text);
-		void InternalLabel(GLushort id, const std::string& text);
-		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex);
         void OnMouseMove(float x, float y);
         void OnMouseDown(float x, float y);
         void OnMouseUp();
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void DoTick();
-		void InternalBeginHorizontal(GLushort id);
-		void InternalEndHorizontal();
-		void InternalBeginVertical(GLushort id);
-		void InternalEndVertical();
-		void InternalSpacer(GLushort id, int percentage);
-		bool IsStable();
 	}
 }
 
-#define IMGUIButton(text) IMGUI::InternalButton(__LINE__, text)
-#define IMGUILabel(text) IMGUI::InternalLabel(__LINE__, text)
-#define IMGUITextField(text) IMGUI::InternalTextField(__LINE__, text, nullptr)
-#define IMGUITextFieldWithPattern(text, pattern) IMGUI::InternalTextField(__LINE__, text, pattern)
-#define IMGUIBeginHorizontal() IMGUI::InternalBeginHorizontal(__LINE__)
-#define IMGUIEndHorizontal() IMGUI::InternalEndHorizontal()
-#define IMGUIBeginVertical() IMGUI::InternalBeginVertical(__LINE__)
-#define IMGUIEndVertical() IMGUI::InternalEndVertical()
-#define IMGUISpacer(percentage) IMGUI::InternalSpacer(__LINE__, percentage)
+#define IMGUIButton(text, percentage) IMGUI::Button_(__LINE__, text, percentage)
+#define IMGUILabel(text, percentage) IMGUI::Label_(__LINE__, text, percentage)
+#define IMGUITextField(text, percentage) IMGUI::TextField_(__LINE__, text, nullptr, percentage)
+#define IMGUITextFieldWithPattern(text, pattern, percentage) IMGUI::TextField_(__LINE__, text, pattern, percentage)
+#define IMGUIBeginHorizontal(percentage) IMGUI::BeginHorizontal_(__LINE__, percentage)
+#define IMGUIEndHorizontal() IMGUI::EndHorizontal_()
+#define IMGUIBeginVertical(percentage) IMGUI::BeginVertical_(__LINE__, percentage)
+#define IMGUIEndVertical() IMGUI::EndVertical_()
+#define IMGUISpacer(percentage) IMGUI::Spacer_(__LINE__, percentage)
+#define IMGUISetPercentage(percentage) IMGUI::SetPercentage_(percentage)
+#define IMGUISkin() IMGUI::Skin_()
+#define IMGUINode() IMGUI::Node_()

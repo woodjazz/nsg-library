@@ -33,7 +33,7 @@ namespace NSG
 		class Object
 		{
 		public:
-			Object(GLushort id);
+			Object(GLushort id, int percentage);
 			~Object();
 			bool IsStable() const;
 			bool Hit();

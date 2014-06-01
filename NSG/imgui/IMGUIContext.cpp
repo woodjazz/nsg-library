@@ -75,7 +75,7 @@ namespace NSG
 
 			pCurrentNode_ = Context::this_->pRootNode_;
 			pLayoutManager_->Begin();
-			pLayoutManager_->BeginVertical(0);
+			pLayoutManager_->BeginVertical(0, 0);
 		}
 
 		void Context::End()

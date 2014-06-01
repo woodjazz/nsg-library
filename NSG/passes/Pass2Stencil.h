@@ -33,6 +33,7 @@ namespace NSG
 	{
 	public:
 		Pass2Stencil();
+		Pass2Stencil(Pass2Stencil* pass);
 		~Pass2Stencil();
 		void ClearBuffer(bool clear);
 		virtual void Render();

@@ -34,7 +34,7 @@ namespace NSG
 		class Label : public Button
 		{
 		public:
-			Label(GLushort id, const std::string& text);
+			Label(GLushort id, const std::string& text, int percentage);
 			~Label();
 			bool IsReadOnly() const { return true; }
 			void operator()();

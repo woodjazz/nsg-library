@@ -39,8 +39,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Button::Button(GLushort id, const std::string& text)
-		: Object(id),
+		Button::Button(GLushort id, const std::string& text, int percentage)
+		: Object(id, percentage),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
 		pressed_(false)
@@ -83,6 +83,8 @@ namespace NSG
 	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
             else if(pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
 	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
+            else if(pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
+                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
 
             SceneNode textNode;
             textNode.EnableUpdate(false);

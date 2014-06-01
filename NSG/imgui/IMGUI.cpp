@@ -37,6 +37,74 @@ namespace NSG
 {
 	namespace IMGUI
 	{
+		void BeginHorizontal_(GLushort id, int percentage)
+		{
+			id = Context::this_->GetValidId(id);
+
+			Context::this_->pLayoutManager_->BeginHorizontal(id, percentage);
+		}
+
+		void EndHorizontal_()
+		{
+			Context::this_->pLayoutManager_->EndHorizontal();
+		}
+
+		void BeginVertical_(GLushort id, int percentage)
+		{
+			id = Context::this_->GetValidId(id);
+
+			Context::this_->pLayoutManager_->BeginVertical(id, percentage);
+		}
+
+		void EndVertical_()
+		{
+			Context::this_->pLayoutManager_->EndVertical();
+		}
+
+		void Spacer_(GLushort id, int percentage)
+		{
+			id = Context::this_->GetValidId(id);
+
+			Context::this_->pLayoutManager_->Spacer(id, percentage);
+		}
+
+		bool Button_(GLushort id, const std::string& text, int percentage)
+		{
+			id = Context::this_->GetValidId(id);
+
+			Button obj(id, text, percentage);
+			
+			return obj();
+		}		
+
+		void Label_(GLushort id, const std::string& text, int percentage)
+		{
+			id = Context::this_->GetValidId(id);
+
+			Label obj(id, text, percentage);
+
+			return obj();
+		}
+
+		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentage)
+		{	
+			id = Context::this_->GetValidId(id);
+
+			Text obj(id, text, pRegex, percentage);
+
+			return obj();
+		}	
+
+		PSkin& Skin_()
+		{
+			return Context::this_->pSkin_;
+		}
+
+		PNode& Node_()
+		{
+			return Context::this_->pCurrentNode_;	
+		}
+
 		void Begin()
 		{
 			Context::this_->Begin();
@@ -51,64 +119,6 @@ namespace NSG
 		{
 			return Context::this_->IsStable();
 		}
-
-		void InternalBeginHorizontal(GLushort id)
-		{
-			id = Context::this_->GetValidId(id);
-
-			Context::this_->pLayoutManager_->BeginHorizontal(id);
-		}
-
-		void InternalEndHorizontal()
-		{
-			Context::this_->pLayoutManager_->EndHorizontal();
-		}
-
-		void InternalBeginVertical(GLushort id)
-		{
-			id = Context::this_->GetValidId(id);
-
-			Context::this_->pLayoutManager_->BeginVertical(id);
-		}
-
-		void InternalEndVertical()
-		{
-			Context::this_->pLayoutManager_->EndVertical();
-		}
-
-		void InternalSpacer(GLushort id, int percentage)
-		{
-			id = Context::this_->GetValidId(id);
-
-			Context::this_->pLayoutManager_->Spacer(id, percentage);
-		}
-
-		bool InternalButton(GLushort id, const std::string& text)
-		{
-			id = Context::this_->GetValidId(id);
-
-			Button obj(id, text);
-			
-			return obj();
-		}		
-
-		void InternalLabel(GLushort id, const std::string& text)
-		{
-			id = Context::this_->GetValidId(id);
-
-			Label obj(id, text);
-
-			return obj();
-		}
-
-		std::string InternalTextField(GLushort id, const std::string& text, std::regex* pRegex)
-		{	
-			id = Context::this_->GetValidId(id);
-
-			Text obj(id, text, pRegex);
-
-			return obj();
-		}		
 
         void OnMouseMove(float x, float y)
         {

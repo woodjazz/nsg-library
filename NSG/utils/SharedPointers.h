@@ -42,6 +42,10 @@ namespace NSG
 	class Pass;
 	typedef std::shared_ptr<Pass> PPass;
 
+	class Pass2Stencil;
+	typedef std::shared_ptr<Pass2Stencil> PPass2Stencil;
+
+
 	typedef std::vector<PPass> PASSES;
 
 	namespace FSM

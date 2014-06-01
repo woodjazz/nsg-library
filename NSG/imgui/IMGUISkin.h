@@ -39,6 +39,8 @@ namespace NSG
 			int fontSize_;
 			size_t textMaxLength_;
 
+			PTechnique areaTechnique_;
+
 			PTechnique activeTechnique_;
 			PTechnique normalTechnique_;
 			PTechnique hotTechnique_;

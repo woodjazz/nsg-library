@@ -79,6 +79,9 @@ namespace NSG
 		enabled_ = false;
 	}
 
+	static const GLint RefValue = 0x01;
+	static const GLint Mask = 0xFF;
+
 	void StencilMask::Begin()
 	{
 		if(IsReady())
@@ -87,15 +90,22 @@ namespace NSG
 
 			glGetBooleanv(GL_COLOR_WRITEMASK, save_color_mask_);
 		  	glGetBooleanv(GL_DEPTH_WRITEMASK, &save_depth_mask_);
-	        glEnable(GL_STENCIL_TEST);
 		  	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		  	glDepthMask(GL_FALSE);
-		  	glStencilFunc(GL_NEVER, 1, 0xFF); //Always fails.
-		  	glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP); //replace value in stencil buffer (always)
-		  	glStencilMaskSeparate(GL_FRONT_AND_BACK, 0xFF);
+
+		  	glEnable(GL_STENCIL_TEST);
+			glStencilMaskSeparate(GL_FRONT_AND_BACK, Mask); //Enables writting in the stencil buffer
+		  	glStencilOp(GL_REPLACE, GL_KEEP, GL_KEEP); //Put RefValue in the stencil buffer when test fails
 
 		  	if(clearBuffer_)
-		  		glClear(GL_STENCIL_BUFFER_BIT);
+            {
+		  		glStencilFunc(GL_NEVER, RefValue, Mask); //When buffer is initially cleared then always fail the test (and writes in the stencil buffer)
+                glClear(GL_STENCIL_BUFFER_BIT);
+            }
+		  	else
+            {
+		  		glStencilFunc(GL_NOTEQUAL, RefValue, Mask); //If stencil buffer already contains RefValue then  fail the test if equal
+            }
 
 	        CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -161,8 +171,8 @@ namespace NSG
 		{
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	  		glDepthMask(GL_TRUE);
-			glStencilMaskSeparate(GL_FRONT_AND_BACK, 0x00);
-			glStencilFunc(GL_EQUAL, 1, 0xFF); // draw only where stencil's value is 1
+			glStencilMaskSeparate(GL_FRONT_AND_BACK, 0x00); //Disables writting in the stencil buffer
+			glStencilFunc(GL_EQUAL, RefValue, Mask); // draw only where stencil's value is RefValue
 	        glDisable(GL_STENCIL_TEST); //remember to enable when (and where) stencil buffer has to be used
 			glColorMask(save_color_mask_[0], save_color_mask_[1], save_color_mask_[2], save_color_mask_[3]);
 		  	glDepthMask(save_depth_mask_);

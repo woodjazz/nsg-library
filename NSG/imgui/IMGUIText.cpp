@@ -41,8 +41,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Text::Text(GLushort id, const std::string& text, std::regex* pRegex)
-		: Object(id),
+		Text::Text(GLushort id, const std::string& text, std::regex* pRegex, int percentage)
+		: Object(id, percentage),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
         pCursorMesh_(Context::this_->GetCurrentTextMesh(-1)),
@@ -192,6 +192,8 @@ namespace NSG
 	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
             else if(pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
 	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
+            else if(pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
+                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
 
 	        Node textNode1;
 	        textNode1.SetParent(&textNode0);

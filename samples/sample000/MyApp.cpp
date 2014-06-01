@@ -46,34 +46,12 @@ MyApp::MyApp()
 
 MyApp::~MyApp() 
 {
-	TRACE_LOG("MyApp::Destroy Begin");
-	TRACE_LOG("MyApp::Destroy End");
 }
 
 int MyApp::GetFPS() const
 {
 	return 30;
 }
-
-static const char* fShader = STRINGIFY(
-	uniform sampler2D u_texture0;
-	varying vec2 v_texcoord;
-
-	struct Material
-	{
-		float shininess;
-	};
-
-	uniform Material u_material;
-
-	void main()
-	{
-        vec2 texcoord = v_texcoord;
-		texcoord.x += sin(texcoord.y * 4.0 * 2.0 * 3.14159 + u_material.shininess) / 100.0;
-		gl_FragColor = texture2D(u_texture0, texcoord);
-	}
-);
-
 
 void MyApp::Start() 
 {
@@ -158,13 +136,13 @@ void MyApp::TestIMGUI2()
 
     IMGUI::Context::this_->pCurrentNode_->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
 
-	IMGUIBeginHorizontal();
+	IMGUIBeginHorizontal(0);
 	{
 		static std::string str0 = "Abc";
-		str0 = IMGUITextField(str0);
+		str0 = IMGUITextField(str0, 0);
 
         static bool enabled = false;
-		if(IMGUIButton("Button 1"))
+		if(IMGUIButton("Button 1", 0))
 		{
             enabled = true;
 		}
@@ -173,45 +151,45 @@ void MyApp::TestIMGUI2()
         {
 			//IMGUI::pCurrentNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
-            if(IMGUIButton("Button asas1"))
+            if(IMGUIButton("Button asas1", 0))
             {
             	enabled = false;
            	}
         }
 
 		static std::string str1 = "xyz";
-		str1 = IMGUITextField(str1);
+		str1 = IMGUITextField(str1, 0);
 
-        IMGUIBeginVertical();
+        IMGUIBeginVertical(0);
 		{
 			IMGUISpacer(20);
 
-            IMGUIBeginVertical();
+            IMGUIBeginVertical(0);
 			{
-                IMGUIButton("Button 2");
-                IMGUIButton("Button 3");
+                IMGUIButton("Button 2", 0);
+                IMGUIButton("Button 3", 0);
     			static std::string str2 = "012";
-	    		str2 = IMGUITextField(str2);
+	    		str2 = IMGUITextField(str2, 0);
             }
             IMGUIEndVertical();
 
             static std::string str3 = "jkl";
-			str3 = IMGUITextField(str3);
+			str3 = IMGUITextField(str3, 0);
 
 
-			IMGUIBeginHorizontal();
+			IMGUIBeginHorizontal(0);
 			{
-				IMGUIButton("B552");
+				IMGUIButton("B552", 0);
 				
 				static std::string str0 = "cccc";
-				str0 = IMGUITextField(str0);
+				str0 = IMGUITextField(str0, 0);
 
 				static std::string str1 = "dddd";
-				str1 = IMGUITextField(str1);
+				str1 = IMGUITextField(str1, 0);
 			}
 			IMGUIEndHorizontal();
 
-            IMGUIButton("Button 52");
+            IMGUIButton("Button 52", 0);
 		}
 		IMGUIEndVertical();
 		
@@ -227,12 +205,16 @@ void MyApp::TestIMGUI4()
 	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
 	//IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
 
-    IMGUIBeginHorizontal();
+    IMGUIBeginVertical(200);
+
+    //IMGUIBeginHorizontal();
 
     //IMGUISpacer(80);
 
     static std::string str0 = "Abc";
-	str0 = IMGUITextField(str0);
+	str0 = IMGUITextField(str0, 25);
+    //IMGUISetPercentage(70);
+    IMGUIButton("sdjfhsdjkfh", 0);
 	//IMGUIButton("Button 52");
     //IMGUISpacer(25);
 
@@ -240,104 +222,18 @@ void MyApp::TestIMGUI4()
 
     //IMGUIButton("Button 1");
 
-    //IMGUISpacer(25);
+    //IMGUISpacer(70);
     
-    IMGUIEndHorizontal();
+    //IMGUIEndHorizontal();
+
+    IMGUIEndVertical();
 }
 
-void MyApp::Menu1()
-{
-    static float delta = -1;
-    static Vertex3 camControlPoint0(-3, 3, 0);
-    static Vertex3 camControlPoint1(0, 2, 0);
-    static Vertex3 camControlPoint2(0, 0, 0);
-    static Vertex3 camControlPoint3(3, -2, 0);
-
-    static bool menu = false;
-    static float alpha = IMGUI::Context::this_->pSkin_->alphaFactor_;
-
-    if(delta > 1) delta = 1;
-
-	Vertex3 position = glm::catmullRom(
-        camControlPoint0,
-        camControlPoint1,
-        camControlPoint2,
-        camControlPoint3,
-		delta);
-
-    if(!menu)
-    {
-    	IMGUI::Context::this_->pSkin_ = pSkin1_;
-        menu = false;
-        IMGUI::Context::this_->pCurrentNode_->SetPosition(Vertex3(0,0,0));
-	    IMGUIBeginHorizontal();
-	    {
-	    	
-		    IMGUIBeginVertical();
-		    {
-			    IMGUISpacer(80);
-			    if(IMGUIButton("Menu"))
-			    {
-			    	IMGUI::Context::this_->pSkin_->alphaFactor_ = alpha;
-                    menu = true;
-				    delta = 0;
-			    }
-		    }
-		    IMGUIEndVertical();
-		    IMGUISpacer(80);
-		    
-	    }
-	    IMGUIEndHorizontal();
-	    
-        if(IMGUI::Context::this_->pSkin_->normalTechnique_->GetPass(0)->GetMaterial()->GetDiffuseColor().w < alpha)
-	    	IMGUI::Context::this_->pSkin_->alphaFactor_ += 0.01f;
-	    else
-	    	IMGUI::Context::this_->pSkin_->alphaFactor_ = 1;
-		
-    }
-    else
-	{
-		IMGUI::Context::this_->pSkin_ = pSkin2_;
-		IMGUI::Context::this_->pCurrentNode_->SetPosition(position);
-		IMGUISpacer(20);
-        IMGUIBeginHorizontal();
-            IMGUISpacer(20);
-            IMGUILabel("Label 1:"); 
-            //IMGUILabel("Label 2:");
-		    static std::string str = "Label 1:";
-		    str = IMGUITextField(str);
-            IMGUISpacer(20);
-        IMGUIEndHorizontal();
-		IMGUISpacer(20);
-        static bool exit = false;
-        IMGUI::Context::this_->pSkin_ = pSkin1_;
-		if(IMGUIButton("Exit"))
-		{
-            exit = true;
-		}
-
-        if(exit)
-        {
-            delta -= App::this_->GetDeltaTime();
-        }
-        else
-        {
-            delta += App::this_->GetDeltaTime();
-        }
-
-        if(delta < 0)
-        {
-            menu = exit = false;
-            IMGUI::Context::this_->pSkin_->alphaFactor_ = 0;
-        }
-	}
-}
 
 void MyApp::RenderGUIFrame()
 {
 	//TestIMGUI2();
-    //TestIMGUI4();
-    Menu1();
+    TestIMGUI4();
 }
 
 void MyApp::RenderFrame() 

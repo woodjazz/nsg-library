@@ -24,6 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "IMGUILayoutManager.h"
+#include "IMGUIContext.h"
+#include "IMGUIState.h"
+#include "IMGUISkin.h"
+#include "Technique.h"
+#include <algorithm>
 
 namespace NSG 
 {
@@ -64,6 +69,7 @@ namespace NSG
 
             if(++(it.first) != areas_.end())
             {
+            	// The new area has been inserted in the middle => the layout has changed
                 layoutChanged_ = true;
             }
 
@@ -131,9 +137,20 @@ namespace NSG
 			return pArea;
 		}
 
-		void LayoutManager::BeginHorizontal(GLushort id)
+		void LayoutManager::BeginHorizontal(GLushort id, int percentage)
 		{
-			nestedAreas_.push_back(GetAreaForControl(id, LayoutArea::Horizontal));
+            PLayoutArea area = GetAreaForControl(id, LayoutArea::Horizontal, percentage);
+            PNode node = area->pNode_;
+            
+            State& uistate = *Context::this_->state_;
+
+            uistate.currentTechnique_ = Context::this_->pSkin_->areaTechnique_;
+            uistate.currentTechnique_->Set(node);
+
+			uistate.currentTechnique_->Render();
+
+
+			nestedAreas_.push_back(area);
 		}
 
 		void LayoutManager::EndHorizontal()
@@ -141,9 +158,21 @@ namespace NSG
 			nestedAreas_.pop_back();
 		}
 
-		void LayoutManager::BeginVertical(GLushort id)
+		void LayoutManager::BeginVertical(GLushort id, int percentage)
 		{
-			nestedAreas_.push_back(GetAreaForControl(id, LayoutArea::Vertical));
+            PLayoutArea area = GetAreaForControl(id, LayoutArea::Vertical, percentage);
+            PNode node = area->pNode_;
+            
+            State& uistate = *Context::this_->state_;
+
+            uistate.currentTechnique_ = Context::this_->pSkin_->areaTechnique_;
+            uistate.currentTechnique_->Set(node);
+
+			uistate.currentTechnique_->Render();
+
+
+			nestedAreas_.push_back(area);
+
 		}
 
 		void LayoutManager::EndVertical()
@@ -158,13 +187,17 @@ namespace NSG
 
 		void LayoutManager::RecalculateLayout(PLayoutArea pCurrentArea)
 		{
-			size_t n = pCurrentArea->children_.size();
+            if(pCurrentArea->children_.empty())
+                return;
 
-			if(n < 2)
-				return;
+            float currentAreaPercentage = 100;
+			if(pCurrentArea->percentage_ > 0)
+				currentAreaPercentage = pCurrentArea->percentage_;
 
-			int nControls = n;
-			float remainingPercentage = 100;
+			int nControls = pCurrentArea->children_.size();
+
+			float remainingPercentage = currentAreaPercentage; // percentage to be equally distributed in the controls with 0 percentage
+
 			{
 				auto it = pCurrentArea->children_.begin();
 				while(it != pCurrentArea->children_.end())
@@ -173,7 +206,7 @@ namespace NSG
 					
 					if(pArea->percentage_)
 					{
-						remainingPercentage -= pArea->percentage_;
+						remainingPercentage -= currentAreaPercentage * pArea->percentage_ / 100.0f;
 						--nControls;
 					}
 
@@ -183,47 +216,65 @@ namespace NSG
 
 			remainingPercentage /= 100.0f;
 
-			assert(remainingPercentage >= 0 && "Total percentage for spacer exceeds 100%");
+            currentAreaPercentage /= 100.0f;
 
-			if(nControls > 0)
+			//assert(remainingPercentage >= 0 && "Total percentage for spacer exceeds 100%");
+
+			auto it = pCurrentArea->children_.begin();
+			if(pCurrentArea->type_ == LayoutArea::Vertical)
 			{
-				auto it = pCurrentArea->children_.begin();
-				if(pCurrentArea->type_ == LayoutArea::Vertical)
+                float yPosition = 1; //position to the top of current area
+				while(it != pCurrentArea->children_.end())
 				{
-                    float yPosition = 1; //position to the top of current area
-					while(it != pCurrentArea->children_.end())
+					float scaleY(1);
+					PLayoutArea pArea = *it;
+
+					if(pArea->percentage_)
 					{
-						float scaleY(remainingPercentage/nControls);
-						PLayoutArea pArea = *it;
-						if(pArea->percentage_)
-						{
-							scaleY = pArea->percentage_ / 100.0f;
-						}
-						float step = scaleY;
-                        pArea->pNode_->SetPosition(Vertex3(0, yPosition - step, 0));
-						pArea->pNode_->SetScale(Vertex3(1, scaleY, 1));
-                        yPosition -= 2*step;
-						++it;
+						scaleY = pArea->percentage_ / 100.0f * currentAreaPercentage;
 					}
+                    else
+                    {
+                        CHECK_ASSERT(nControls && "At least should be a control with 0 percentage!!!", __FILE__, __LINE__);
+                        scaleY = remainingPercentage/nControls;
+                    }
+
+                    if(pArea->type_ != LayoutArea::Control && scaleY > 1) //Only controls can scale up (areas have to fit in the screen)
+                        scaleY = 1;
+
+					float step = scaleY;
+                    pArea->pNode_->SetPosition(Vertex3(0, yPosition - step, 0));
+					pArea->pNode_->SetScale(Vertex3(1, scaleY, 1));
+                    yPosition -= 2*step;
+					++it;
 				}
-				else
+			}
+			else
+			{
+				assert(pCurrentArea->type_ == LayoutArea::Horizontal);
+                float xPosition = -1; //position to the left of current area
+				while(it != pCurrentArea->children_.end())
 				{
-					assert(pCurrentArea->type_ == LayoutArea::Horizontal);
-                    float xPosition = -1; //position to the left of current area
-					while(it != pCurrentArea->children_.end())
+					float scaleX(1);
+					PLayoutArea pArea = *it;
+					if(pArea->percentage_)
 					{
-						float scaleX(remainingPercentage/nControls);
-						PLayoutArea pArea = *it;
-						if(pArea->percentage_)
-						{
-							scaleX = pArea->percentage_ / 100.0f;
-						}
-                        float step = scaleX;
-                        pArea->pNode_->SetPosition(Vertex3(xPosition + step, 0, 0));
-						pArea->pNode_->SetScale(Vertex3(scaleX, 1, 1));
-                        xPosition += 2*step;
-						++it;
+						scaleX = pArea->percentage_ / 100.0f * currentAreaPercentage;
 					}
+                    else
+                    {
+                        CHECK_ASSERT(nControls && "At least should be a control with 0 percentage!!!", __FILE__, __LINE__);
+                        scaleX = remainingPercentage/nControls;
+                    }
+
+                    if(pArea->type_ != LayoutArea::Control && scaleX > 1) //Only controls can scale up (areas have to fit in the screen)
+                        scaleX = 1;
+
+                    float step = scaleX;
+                    pArea->pNode_->SetPosition(Vertex3(xPosition + step, 0, 0));
+					pArea->pNode_->SetScale(Vertex3(scaleX, 1, 1));
+                    xPosition += 2*step;
+					++it;
 				}
 			}
 		}

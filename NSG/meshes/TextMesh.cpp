@@ -139,11 +139,11 @@ namespace NSG
 		if(align != vAlignment_)
 		{
 			if(align == MIDDLE_ALIGNMENT)
-				alignmentOffsetY_ = -screenHeight_/2;
+				alignmentOffsetY_ = 0;
 			else if(align == TOP_ALIGNMENT)
 				alignmentOffsetY_ = -screenHeight_;
             else
-                alignmentOffsetY_ = 0;
+                alignmentOffsetY_ = screenHeight_;
 
 			vAlignment_ = align;
 

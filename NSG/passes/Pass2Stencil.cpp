@@ -33,6 +33,12 @@ namespace NSG
 	: stencilMask_(new StencilMask),
 	clearBuffer_(true)
 	{
+	}
+
+	Pass2Stencil::Pass2Stencil(Pass2Stencil* pass)
+	: stencilMask_(pass->stencilMask_),
+	clearBuffer_(false)
+	{
 
 	}
 

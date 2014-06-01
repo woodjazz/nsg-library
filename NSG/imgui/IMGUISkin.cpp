@@ -28,6 +28,8 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Pass2Stencil.h"
 #include "Material.h"
+#include "PlaneMesh.h"
+#include "CircleMesh.h"
 #include "RoundedRectangleMesh.h"
 
 static const char* vShader = STRINGIFY(
@@ -90,11 +92,25 @@ namespace NSG
 		: alphaFactor_(1),
 		fontSize_(18),
 		textMaxLength_(std::numeric_limits<int>::max()),
+		areaTechnique_(new Technique),
         activeTechnique_(new Technique),
         normalTechnique_(new Technique),
         hotTechnique_(new Technique),
         labelTechnique_(new Technique)
 		{
+            Pass2Stencil* pPass2Stencil = new Pass2Stencil;
+            pPass2Stencil->ClearBuffer(false);
+
+			{
+                PPass areaStencilPass(pPass2Stencil);
+				PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
+				//PMesh areaMesh(new CircleMesh(1, 32, GL_STATIC_DRAW));
+				
+				areaStencilPass->Add(nullptr, areaMesh);
+				areaTechnique_->Add(areaStencilPass);
+			}
+
+
 			PMaterial pActiveMaterial(new Material);
 			pActiveMaterial->SetBlendMode(ALPHA);
 			pActiveMaterial->EnableDepthTest(false);
@@ -102,6 +118,7 @@ namespace NSG
             pActiveMaterial->SetProgram(pProgram);
 			pActiveMaterial->SetDiffuseColor(Color(1,0,0,0.7f));
 			pActiveMaterial->SetShininess(1);
+			pActiveMaterial->EnableStencilTest(true);
 
 			PMaterial pNormalMaterial(new Material);
 			pNormalMaterial->SetBlendMode(ALPHA);
@@ -109,6 +126,7 @@ namespace NSG
             pNormalMaterial->SetProgram(pProgram);
 			pNormalMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
 			pNormalMaterial->SetShininess(1);
+			pNormalMaterial->EnableStencilTest(true);
 
 			PMaterial pHotMaterial(new Material);
 			pHotMaterial->SetBlendMode(ALPHA);
@@ -116,6 +134,7 @@ namespace NSG
 			pHotMaterial->SetProgram(pProgram);
 			pHotMaterial->SetDiffuseColor(Color(0,0,1,0.7f));
 			pHotMaterial->SetShininess(1);
+			pHotMaterial->EnableStencilTest(true);
 
 			PMaterial pBorderMaterial(new Material);
 			PProgram pBorderProgram(new Program(vShader, fShaderBorder));
@@ -123,6 +142,7 @@ namespace NSG
 			pBorderMaterial->EnableDepthTest(false);
 			pBorderMaterial->SetProgram(pBorderProgram);
 			pBorderMaterial->SetDiffuseColor(Color(1,1,1,1));
+			pBorderMaterial->EnableStencilTest(true);
 
             PMesh pMesh(new RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
 
@@ -143,7 +163,7 @@ namespace NSG
 			borderPass->Add(nullptr, pMesh);
 			borderPass->SetDrawMode(Pass::WIREFRAME);
 
-			PPass stencilPass(new Pass2Stencil);
+			PPass stencilPass(new Pass2Stencil(pPass2Stencil));
 			stencilPass->Add(nullptr, pMesh);
 
 			activeTechnique_->Add(activePass);
@@ -178,6 +198,7 @@ namespace NSG
 		fontFile_(obj.fontFile_),
 		fontSize_(obj.fontSize_),
 		textMaxLength_(obj.textMaxLength_),
+        areaTechnique_(obj.areaTechnique_),
 		activeTechnique_(obj.activeTechnique_),
 		normalTechnique_(obj.normalTechnique_),
 		hotTechnique_(obj.hotTechnique_),

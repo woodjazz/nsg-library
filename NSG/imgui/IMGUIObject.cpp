@@ -41,10 +41,10 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Object::Object(GLushort id)
+		Object::Object(GLushort id, int percentage)
 		: id_(id),
 		uistate_(*Context::this_->state_),
-		area_(Context::this_->pLayoutManager_->GetAreaForControl(id)),
+		area_(Context::this_->pLayoutManager_->GetAreaForControl(id, LayoutArea::Control, percentage)),
         node_(area_->pNode_),
         areaSize_(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(2,0,0,0))
 		{
