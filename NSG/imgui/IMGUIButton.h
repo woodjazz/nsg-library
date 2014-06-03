@@ -34,7 +34,7 @@ namespace NSG
 		class Button : public Object
 		{
 		public:
-			Button(GLushort id, const std::string& text, int percentage);
+			Button(GLushort id, const std::string& text, int percentageX, int percentageY);
             ~Button();
 			bool operator()();
 			void OnKey(int key);

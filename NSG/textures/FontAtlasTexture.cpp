@@ -297,6 +297,10 @@ namespace NSG
 			    ++charPos;
 		    }
         }
+        else
+        {
+            charPos = strlen(text);
+        }
 
 		return charPos;
 	}

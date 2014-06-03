@@ -116,6 +116,9 @@ struct Sample : App
 
         blendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
         showTexture_->SetNormal(blendedTexture_);
+        //showTexture_->SetNormal(sphereBehavior_->blendedTexture_);
+        //showTexture_->SetNormal(boxBehavior_->filteredTexture_);
+        //showTexture_->SetNormal(boxBehavior_->renderedTexture_);
         PFilter blendFilter(new FilterBlend(sphereBehavior_->blendedTexture_, boxBehavior_->filteredTexture_, blendedTexture_));
         PPassFilter passBlend(new PassFilter(blendFilter));
         technique_->Add(passBlend);

@@ -68,7 +68,8 @@ namespace NSG
 	hAlignment_(LEFT_ALIGNMENT),
 	vAlignment_(BOTTOM_ALIGNMENT),
 	alignmentOffsetX_(0),
-	alignmentOffsetY_(0)
+	alignmentOffsetY_(0),
+    hasBeenInvalidatedExternally_(false)
     {
     	pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(FontAtlasTextureManager::Key(filename, fontSize));
 	}
@@ -105,6 +106,7 @@ namespace NSG
 	void TextMesh::ReleaseResources()
 	{
         pVBuffer_ = nullptr;
+        hasBeenInvalidatedExternally_ = true; //When GPU objects have been invalidated
 	}
 
 	GLfloat TextMesh::GetWidthForCharacterPosition(unsigned int charPos) const
@@ -166,13 +168,15 @@ namespace NSG
 
 	void TextMesh::SetText(const std::string& text) 
 	{
-		if(text_ != text)
+		if(text_ != text || hasBeenInvalidatedExternally_)
 		{
 			if(pAtlas_->SetTextMesh(text, vertexsData_, screenWidth_, screenHeight_))
             {
 			    text_ = text;
 
                 Invalidate();
+
+                hasBeenInvalidatedExternally_ = false;
             }
 		}
 	}	

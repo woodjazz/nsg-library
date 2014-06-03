@@ -37,11 +37,11 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		void BeginHorizontal_(GLushort id, int percentage)
+		void BeginHorizontal_(GLushort id, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->BeginHorizontal(id, percentage);
+			Context::this_->pLayoutManager_->BeginHorizontal(id, percentageX, percentageY);
 		}
 
 		void EndHorizontal_()
@@ -49,11 +49,11 @@ namespace NSG
 			Context::this_->pLayoutManager_->EndHorizontal();
 		}
 
-		void BeginVertical_(GLushort id, int percentage)
+		void BeginVertical_(GLushort id, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->BeginVertical(id, percentage);
+			Context::this_->pLayoutManager_->BeginVertical(id, percentageX, percentageY);
 		}
 
 		void EndVertical_()
@@ -61,36 +61,36 @@ namespace NSG
 			Context::this_->pLayoutManager_->EndVertical();
 		}
 
-		void Spacer_(GLushort id, int percentage)
+		void Spacer_(GLushort id, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->Spacer(id, percentage);
+			Context::this_->pLayoutManager_->Spacer(id, percentageX, percentageY);
 		}
 
-		bool Button_(GLushort id, const std::string& text, int percentage)
+		bool Button_(GLushort id, const std::string& text, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Button obj(id, text, percentage);
+			Button obj(id, text, percentageX, percentageY);
 			
 			return obj();
 		}		
 
-		void Label_(GLushort id, const std::string& text, int percentage)
+		void Label_(GLushort id, const std::string& text, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Label obj(id, text, percentage);
+			Label obj(id, text, percentageX, percentageY);
 
 			return obj();
 		}
 
-		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentage)
+		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentageX, int percentageY)
 		{	
 			id = Context::this_->GetValidId(id);
 
-			Text obj(id, text, pRegex, percentage);
+			Text obj(id, text, pRegex, percentageX, percentageY);
 
 			return obj();
 		}	

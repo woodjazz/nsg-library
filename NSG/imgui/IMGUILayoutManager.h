@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Node.h"
-#include "SharedPointers.h"
+#include "Types.h"
 #include <list>
 #include <map>
 
@@ -36,12 +36,16 @@ namespace NSG
 		struct LayoutArea
 		{
 			GLushort id_;
-			int percentage_;
+			int percentageX_;
+			int percentageY_;
 			PNode pNode_;
-			enum Type {Vertical, Horizontal, Control};
-			Type type_;
+			LayoutType type_;
+			bool isReadOnly_;
 			float textOffsetX_;
 			unsigned int cursor_character_position_; 
+			LayoutArea* parent_;
+			GLint stencilRefValue_;
+			GLuint stencilMaskValue_;
 
             struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
             {
@@ -53,8 +57,11 @@ namespace NSG
 
 			std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number)
 
-			LayoutArea(GLushort id, PNode pNode, Type type, int percentage) 
-			: id_(id), percentage_(percentage), pNode_(pNode), type_(type), textOffsetX_(0), cursor_character_position_(0)
+			LayoutArea(GLushort id, LayoutArea* parent, GLint stencilRefValue, GLuint stencilMaskValue, PNode pNode, LayoutType type, int percentageX, int percentageY) 
+			: id_(id), percentageX_(percentageX), percentageY_(percentageY), pNode_(pNode), type_(type), isReadOnly_(false), textOffsetX_(0), 
+			cursor_character_position_(0), parent_(parent),
+			stencilRefValue_(stencilRefValue),
+			stencilMaskValue_(stencilMaskValue)
 			{
 			}
 		};
@@ -63,16 +70,17 @@ namespace NSG
 		{
         public:
 			LayoutManager(PNode pRootNode, PNode pCurrentNode); 
-			PLayoutArea InsertNewArea(GLushort id, LayoutArea::Type type, int percentage);
+			PLayoutArea InsertNewArea(GLushort id, LayoutType type, int percentageX, int percentageY);
 			void Reset();
 			void Begin();
 			void End();
-			PLayoutArea GetAreaForControl(GLushort id, LayoutArea::Type type, int percentage);
-			void BeginHorizontal(GLushort id, int percentage);
+			PLayoutArea GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY);
+			PLayoutArea GetArea(GLushort id) const;
+			void BeginHorizontal(GLushort id, int percentageX = 0, int percentageY = 0);
 			void EndHorizontal();
-			void BeginVertical(GLushort id, int percentage);
+			void BeginVertical(GLushort id, int percentageX = 0, int percentageY = 0);
 			void EndVertical();
-			void Spacer(GLushort id, int percentage);
+			void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
 			void RecalculateLayout(PLayoutArea pCurrentArea);
 			bool IsStable() const;
 		private:

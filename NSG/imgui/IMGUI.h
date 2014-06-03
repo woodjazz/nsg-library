@@ -31,14 +31,14 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		bool Button_(GLushort id, const std::string& text, int percentage);
-		void Label_(GLushort id, const std::string& text, int percentage);
-		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentage);
-		void BeginHorizontal_(GLushort id, int percentage);
+		bool Button_(GLushort id, const std::string& text, int percentageX = 0, int percentageY = 0);
+		void Label_(GLushort id, const std::string& text, int percentageX = 0, int percentageY = 0);
+		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentageX = 0, int percentageY = 0);
+		void BeginHorizontal_(GLushort id, int percentageX = 0, int percentageY = 0);
 		void EndHorizontal_();
-		void BeginVertical_(GLushort id, int percentage);
+		void BeginVertical_(GLushort id, int percentageX = 0, int percentageY = 0);
 		void EndVertical_();
-		void Spacer_(GLushort id, int percentage);
+		void Spacer_(GLushort id, int percentageX = 0, int percentageY = 0);
 		PSkin& Skin_();
 		PNode& Node_();
 		
@@ -54,15 +54,15 @@ namespace NSG
 	}
 }
 
-#define IMGUIButton(text, percentage) IMGUI::Button_(__LINE__, text, percentage)
-#define IMGUILabel(text, percentage) IMGUI::Label_(__LINE__, text, percentage)
-#define IMGUITextField(text, percentage) IMGUI::TextField_(__LINE__, text, nullptr, percentage)
-#define IMGUITextFieldWithPattern(text, pattern, percentage) IMGUI::TextField_(__LINE__, text, pattern, percentage)
-#define IMGUIBeginHorizontal(percentage) IMGUI::BeginHorizontal_(__LINE__, percentage)
+#define IMGUICOUNTER __COUNTER__ + 1
+#define IMGUIButton(text, ...) IMGUI::Button_(IMGUICOUNTER, text, ##__VA_ARGS__ )
+#define IMGUILabel(text, ...) IMGUI::Label_(IMGUICOUNTER, text, ##__VA_ARGS__ )
+#define IMGUITextField(text, ...) IMGUI::TextField_(IMGUICOUNTER, text, nullptr, ##__VA_ARGS__ )
+#define IMGUITextFieldWithPattern(text, pattern, ...) IMGUI::TextField_(IMGUICOUNTER, text, pattern, ##__VA_ARGS__ )
+#define IMGUIBeginHorizontal(...) IMGUI::BeginHorizontal_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUIEndHorizontal() IMGUI::EndHorizontal_()
-#define IMGUIBeginVertical(percentage) IMGUI::BeginVertical_(__LINE__, percentage)
+#define IMGUIBeginVertical(...) IMGUI::BeginVertical_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUIEndVertical() IMGUI::EndVertical_()
-#define IMGUISpacer(percentage) IMGUI::Spacer_(__LINE__, percentage)
-#define IMGUISetPercentage(percentage) IMGUI::SetPercentage_(percentage)
+#define IMGUISpacer(...) IMGUI::Spacer_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUISkin() IMGUI::Skin_()
 #define IMGUINode() IMGUI::Node_()

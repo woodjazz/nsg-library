@@ -41,8 +41,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Text::Text(GLushort id, const std::string& text, std::regex* pRegex, int percentage)
-		: Object(id, percentage),
+		Text::Text(GLushort id, const std::string& text, std::regex* pRegex, int percentageX, int percentageY)
+        : Object(id, LayoutType::Control, percentageX, percentageY),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
         pCursorMesh_(Context::this_->GetCurrentTextMesh(-1)),
@@ -55,6 +55,7 @@ namespace NSG
 			pCursorMesh_->SetText("_");
 	        pCursorMesh_->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
 	        pCursorMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
+            area_->isReadOnly_ = IsReadOnly();
 		}
 
 		Text::~Text()
@@ -79,6 +80,7 @@ namespace NSG
 	        else
 	        {
 	             area_->cursor_character_position_ = pTextMesh_->GetCharacterPositionForWidth(mouseTotalX)-1;
+                 CHECK_ASSERT(area_->cursor_character_position_ <= currentText_.length(), __FILE__, __LINE__);
 	        }
 	        ///////////////////////////////////////////////
 
@@ -158,6 +160,8 @@ namespace NSG
 	        			--area_->cursor_character_position_;
 	        		}
 	        	}
+
+                pTextMesh_->SetText(currentText_);
 	        }
 		}
 
@@ -168,7 +172,7 @@ namespace NSG
 	        if(area_->textOffsetX_ + areaSize_.x < cursorPositionInText)
 			{
 	            //If cursor moves to the right of the area then scroll
-					area_->textOffsetX_ = pCursorMesh_->GetWidth() + cursorPositionInText - areaSize_.x;  
+				area_->textOffsetX_ = pCursorMesh_->GetWidth() + cursorPositionInText - areaSize_.x;  
 			}
 	        else if(cursorPositionInText - area_->textOffsetX_ < 0) 
 	        {
@@ -215,6 +219,8 @@ namespace NSG
 	        textMaterial.EnableStencilTest(true);
 	        textMaterial.SetTexture0(pTextMesh_->GetAtlas());
 	        textMaterial.SetProgram(pTextMesh_->GetProgram());
+            GLint mask = area_->stencilRefValue_;
+            textMaterial.SetStencilFunc(GL_EQUAL, area_->stencilRefValue_, mask);
 	        pass.Set(&textMaterial);
 	        textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor_));
 	        technique.Render();
@@ -233,12 +239,9 @@ namespace NSG
 	            Pass pass;
 	            technique.Add(&pass);
 	            pass.Add(&cursorNode, pCursorMesh_);
-	            Material textMaterial;
-	            textMaterial.EnableStencilTest(true);
-	            textMaterial.SetTexture0(pTextMesh_->GetAtlas());
-	            textMaterial.SetProgram(pTextMesh_->GetProgram());
-	            pass.Set(&textMaterial);
 	            textMaterial.SetDiffuseColor(Color(1,0,0,Context::this_->pSkin_->alphaFactor_));
+	            pass.Set(&textMaterial);
+	            
 	            technique.Render();
 	        }
 		}

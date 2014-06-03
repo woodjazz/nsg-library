@@ -33,7 +33,7 @@ namespace NSG
 		class Object
 		{
 		public:
-			Object(GLushort id, int percentage);
+			Object(GLushort id, LayoutType type, int percentageX, int percentageY);
 			~Object();
 			bool IsStable() const;
 			bool Hit();
@@ -51,6 +51,7 @@ namespace NSG
 			virtual PTechnique GetActiveTechnique() const;
 			virtual PTechnique GetHotTechnique() const;
 			virtual PTechnique GetNormalTechnique() const;
+			PLayoutArea GetArea() const { return area_; }
 		protected:
 			GLushort id_;
 			State& uistate_;

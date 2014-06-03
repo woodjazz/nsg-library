@@ -33,7 +33,7 @@ struct Sample : App
 	void Start()
 	{
         IMGUISkin()->fontFile_ = "font/FreeSans.ttf";
-        IMGUISkin()->alphaFactor_ = 0;
+        IMGUISkin()->alphaFactor_ = 1;
     }
 
     void RenderGUIFrame()
@@ -64,10 +64,10 @@ struct Sample : App
 
             if(show_menu_button)
             {
-                IMGUIBeginHorizontal(0);
-                IMGUIBeginVertical(0);
-                IMGUISpacer(80);
-                menu_choosen = IMGUIButton("Menu", 0);
+                IMGUIBeginHorizontal();
+                IMGUIBeginVertical();
+                IMGUISpacer(0, 80);
+                menu_choosen = IMGUIButton("Menugdsfgsdfgsdfgsdfg");
                 IMGUIEndVertical();
                 IMGUISpacer(80);
                 IMGUIEndHorizontal();
@@ -76,10 +76,10 @@ struct Sample : App
             if(menu_choosen)
             {
                 show_menu_button = false;
-                IMGUIBeginVertical(0);
-                IMGUILabel("Are you sure?", 0);
-                IMGUIBeginHorizontal(0);
-                if(IMGUIButton("Yes", 0))
+                IMGUIBeginVertical();
+                IMGUILabel("Are you sure?");
+                IMGUIBeginHorizontal();
+                if(IMGUIButton("Yes"))
                 {
                     IMGUISkin()->alphaFactor_ = 1;
                     menu = true;
@@ -88,7 +88,7 @@ struct Sample : App
                     show_menu_button = true;
 
                 }
-                if(IMGUIButton("No", 0))
+                if(IMGUIButton("No"))
                 {
                     menu_choosen = false;
                     show_menu_button = true;
@@ -118,10 +118,10 @@ struct Sample : App
                 std::stringstream label;
                 label << "Label " << i << ":";
 
-                IMGUIBeginHorizontal(0);
+                IMGUIBeginHorizontal();
                 IMGUISpacer(20);
-                IMGUILabel(label.str(), 0); 
-		        field[i] = IMGUITextField(field[i], 0);
+                IMGUILabel(label.str()); 
+		        field[i] = IMGUITextField(field[i]);
                 IMGUISpacer(20);
                 IMGUIEndHorizontal();
             }
@@ -131,11 +131,9 @@ struct Sample : App
 
             static bool exit = false;
 
-            IMGUIBeginHorizontal(30);
-            //IMGUISpacer(30);
-            if(IMGUIButton("Exit", 0))
+            IMGUIBeginHorizontal(0, 30);
+            if(IMGUIButton("Exit"))
                 exit = true;
-            //IMGUISpacer(30);
             IMGUIEndHorizontal();
 
             if(exit)

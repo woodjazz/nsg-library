@@ -55,6 +55,11 @@ namespace NSG
     typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
     typedef enum {TOP_ALIGNMENT, MIDDLE_ALIGNMENT, BOTTOM_ALIGNMENT} VerticalAlignment;
 
+    namespace IMGUI
+    {
+        typedef enum {Vertical, Horizontal, Control} LayoutType;
+    }
+
     typedef std::pair<PNode, PMesh> MeshNode;
 
 }

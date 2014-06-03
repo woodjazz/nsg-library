@@ -23,34 +23,55 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "GLES2Includes.h"
-#include "GPUObject.h"
-#include "Types.h"
-#include <vector>
+#include "IMGUIArea.h"
+#include "IMGUIContext.h"
+#include "IMGUIState.h"
+#include "IMGUISkin.h"
+#include "IMGUILayoutManager.h"
+#include "TextMesh.h"
+#include "SceneNode.h"
+#include "Technique.h"
+#include "Pass.h"
+#include "Material.h"
+#include "Keys.h"
 
 namespace NSG
 {
-	class Node;
-	class Mesh;
-	class StencilMask : public GPUObject
+	namespace IMGUI
 	{
-	public:
-		StencilMask();
-		~StencilMask();
-		void ClearBuffer(bool clear);
-		void Begin();
-		void Render(Node* pNode, Mesh* pMesh);
-        void Render(const std::vector<MeshNode>& meshNodes);
-		void End();
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
-	private:
-		GLboolean save_color_mask_[4];
-		GLboolean save_depth_mask_;
-		PProgram pProgram_;
-        bool enabled_;
-        bool clearBuffer_;
-	};
+		Area::Area(GLushort id, LayoutType type, int percentageX, int percentageY)
+		: Object(id, type, percentageX, percentageY)
+		{
+            CHECK_ASSERT(type == LayoutType::Horizontal || type == LayoutType::Vertical, __FILE__, __LINE__);
+            area_->isReadOnly_ = IsReadOnly();
+		}
+
+		Area::~Area()
+		{
+
+		}
+
+		void Area::operator()()
+		{
+//            Context::this_->pSkin_->stencilPass_->GetStencilMask()->SetStencilFunc(GL_GEQUAL, area_->stencilRefValue_, area_->stencilMaskValue_);
+
+			Update();
+		}	
+
+		PTechnique Area::GetActiveTechnique() const
+		{
+			return Context::this_->pSkin_->areaTechnique_;
+		}
+
+		PTechnique Area::GetHotTechnique() const
+		{
+			return Context::this_->pSkin_->areaTechnique_;
+		}
+
+		PTechnique Area::GetNormalTechnique() const
+		{
+			return Context::this_->pSkin_->areaTechnique_;
+		}
+
+	}
 }

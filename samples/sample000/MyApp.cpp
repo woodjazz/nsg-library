@@ -201,20 +201,26 @@ void MyApp::TestIMGUI2()
 
 void MyApp::TestIMGUI4()
 {
-	IMGUI::Context::this_->pSkin_ = pSkin2_;
+	//IMGUI::Context::this_->pSkin_ = pSkin2_;
 	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
 	//IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
 
-    IMGUIBeginVertical(200);
+    IMGUIBeginVertical(50, 60);
 
-    //IMGUIBeginHorizontal();
+    IMGUIBeginHorizontal(90, 100);
 
-    //IMGUISpacer(80);
+    static std::string str0 = "CCCCCCCCCC";
+	str0 = IMGUITextField(str0, 0);
 
-    static std::string str0 = "Abc";
-	str0 = IMGUITextField(str0, 25);
-    //IMGUISetPercentage(70);
-    IMGUIButton("sdjfhsdjkfh", 0);
+    /*
+    IMGUISpacer(10);
+
+    IMGUILabel("yyyyyyy", 0, 25);
+    static std::string str0 = "CCCCCCCCCC";
+	str0 = IMGUITextField(str0, 25, 25);
+    IMGUIButton("BBBBBBBBBB", 0, 50);
+    IMGUILabel("xxxxxxxxxxxx", 0, 50);
+    IMGUIButton("AAAAAAAAAAAAAAA", 50, 50);*/
 	//IMGUIButton("Button 52");
     //IMGUISpacer(25);
 
@@ -224,7 +230,7 @@ void MyApp::TestIMGUI4()
 
     //IMGUISpacer(70);
     
-    //IMGUIEndHorizontal();
+    IMGUIEndHorizontal();
 
     IMGUIEndVertical();
 }

@@ -41,6 +41,7 @@ namespace NSG
 
 	void Technique::Add(PPass pass)
 	{
+		CHECK_ASSERT(passes_.size() < Technique::MAX_PASSES, __FILE__, __LINE__);
 		passes_.push_back(pass);
 	}
 

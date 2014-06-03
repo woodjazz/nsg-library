@@ -171,7 +171,9 @@ namespace NSG
         
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
             glDisable(GL_BLEND);
+            glDisable(GL_STENCIL_TEST);
             glEnable(GL_DEPTH_TEST);
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
             glClearColor(0, 0, 0, 0);
             glClearDepth(1);

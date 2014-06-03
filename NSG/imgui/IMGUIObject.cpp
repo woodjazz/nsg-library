@@ -41,19 +41,23 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Object::Object(GLushort id, int percentage)
+		Object::Object(GLushort id, LayoutType type, int percentageX, int percentageY)
 		: id_(id),
 		uistate_(*Context::this_->state_),
-		area_(Context::this_->pLayoutManager_->GetAreaForControl(id, LayoutArea::Control, percentage)),
+		area_(Context::this_->pLayoutManager_->GetAreaForControl(id, type, percentageX, percentageY)),
         node_(area_->pNode_),
         areaSize_(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(2,0,0,0))
 		{
 			CHECK_ASSERT(node_, __FILE__, __LINE__);
+			area_->isReadOnly_ = IsReadOnly();
 		}
 
 		Object::~Object()
 		{
-			uistate_.lastwidget_ = id_;
+            if(!area_->isReadOnly_)
+            {
+			    uistate_.lastwidget_ = id_;
+            }
 		}
 
 		bool Object::IsStable() const
@@ -126,16 +130,34 @@ namespace NSG
                 uistate_.currentTechnique_  = GetNormalTechnique();
 			}
 
-            float shininessFactor = HasFocus() ? 1 : -0.25f;
-            PMaterial material = uistate_.currentTechnique_->GetPass(0)->GetMaterial();
-            float shininess = material->GetShininess();
-            Color diffuse = material->GetDiffuseColor();
-        	material->SetShininess(shininess * shininessFactor);
-            material->SetDiffuseColor(diffuse * Color(1,1,1, Context::this_->pSkin_->alphaFactor_));
-            uistate_.currentTechnique_->Set(node_);
+			size_t nPasses = uistate_.currentTechnique_->GetNumPasses();
+			uistate_.currentTechnique_->Set(node_);
+
+            float shininess[Technique::MAX_PASSES];
+            Color diffuse[Technique::MAX_PASSES];
+
+			for(size_t i=0; i<nPasses; i++)
+			{
+            	PMaterial material = uistate_.currentTechnique_->GetPass(i)->GetMaterial();
+
+	            material->SetStencilFunc(GL_GREATER, area_->stencilRefValue_, area_->stencilMaskValue_);
+
+	            float shininessFactor = HasFocus() ? 1 : -0.25f;
+	            shininess[i] = material->GetShininess();
+	            diffuse[i] = material->GetDiffuseColor();
+	        	material->SetShininess(shininess[i] * shininessFactor);
+	            material->SetDiffuseColor(diffuse[i] * Color(1,1,1, Context::this_->pSkin_->alphaFactor_));
+	        }
+            
 			uistate_.currentTechnique_->Render();
-			material->SetDiffuseColor(diffuse);
-			material->SetShininess(shininess);
+
+			for(size_t i=0; i<nPasses; i++)
+			{
+            	PMaterial material = uistate_.currentTechnique_->GetPass(i)->GetMaterial();
+
+				material->SetDiffuseColor(diffuse[i]);
+				material->SetShininess(shininess[i]);
+			}
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }
@@ -183,13 +205,18 @@ namespace NSG
 					switch (uistate_.keyentered_)
 					{
 					case NSG_KEY_TAB:
-						// If tab is pressed, lose keyboard focus.
-						// Next widget will grab the focus.
-						uistate_.kbditem_ = 0;
 						// If shift was also pressed, we want to move focus
 						// to the previous widget instead.
 						if (uistate_.keymod_ & NSG_KEY_MOD_SHIFT)
-							uistate_.kbditem_ = uistate_.lastwidget_;
+						{
+                            uistate_.kbditem_ = uistate_.lastwidget_;
+						}
+                        else
+                        {
+						    // If tab is pressed, lose keyboard focus.
+						    // Next widget will grab the focus.
+						    uistate_.kbditem_ = 0;
+                        }
 						// Also clear the key so that next widget
 						// won't process it
 						uistate_.keyentered_ = 0;

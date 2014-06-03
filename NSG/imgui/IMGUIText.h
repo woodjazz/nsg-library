@@ -36,7 +36,7 @@ namespace NSG
 		class Text : public Object
 		{
 		public:
-			Text(GLushort id, const std::string& text, std::regex* pRegex, int percentage);
+			Text(GLushort id, const std::string& text, std::regex* pRegex, int percentageX, int percentageY);
 			~Text();
 			std::string operator()();
 			bool NeedsKeyboard() const { return true; }

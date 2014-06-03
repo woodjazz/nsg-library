@@ -31,6 +31,7 @@ namespace NSG
 	class Technique
 	{
 	public:
+		static const size_t MAX_PASSES = 10;
 		Technique();
 		~Technique();
 		void Add(PPass pass);

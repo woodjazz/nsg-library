@@ -27,16 +27,18 @@ misrepresented as being the original software.
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
 #include "TextMesh.h"
+#include "IMGUILayoutManager.h"
 
 namespace NSG
 {
 	namespace IMGUI
 	{
-		Label::Label(GLushort id, const std::string& text, int percentage)
-		: Button(id, text, percentage)
+		Label::Label(GLushort id, const std::string& text, int percentageX, int percentageY)
+		: Button(id, text, percentageX, percentageY)
 		{
             pTextMesh_->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
             pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
+            area_->isReadOnly_ = IsReadOnly();
 		}
 
 		Label::~Label()

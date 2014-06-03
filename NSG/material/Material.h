@@ -45,6 +45,9 @@ namespace NSG
 		void EnableDepthTest(bool enable);
 		void EnableCullFace(bool enable);
 		void EnableStencilTest(bool enable);
+		void SetStencilMask(GLuint mask);
+		void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
+		void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
 		void SetProgram(PProgram pProgram);
 		PProgram GetProgram() const { return pProgram_; }
 		void SetTexture0(PTexture pTexture);
@@ -84,6 +87,13 @@ namespace NSG
         bool enableDepthTest_;
         bool enableCullFace_;
         bool enableStencilTest_;
+        GLuint stencilMask_;
+        GLenum sfailStencilOp_;
+        GLenum dpfailStencilOp_;
+        GLenum dppassStencilOp_;
+        GLenum stencilFunc_;
+        GLint stencilRefValue_;
+        GLuint stencilMaskValue_;
         bool enableColorBuffer_;
         bool enableDepthBuffer_;
 

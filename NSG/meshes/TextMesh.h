@@ -75,5 +75,6 @@ namespace NSG
 		VerticalAlignment vAlignment_;
 		float alignmentOffsetX_;
 		float alignmentOffsetY_;
+        bool hasBeenInvalidatedExternally_;
 	};
 }

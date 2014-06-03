@@ -64,7 +64,6 @@ misrepresented as being the original software.
 #include "ResourceMemory.h"
 #include "Technique.h"
 #include "Pass.h"
-#include "Pass2Stencil.h"
 #include "Pass2Texture.h"
 #include "PassFilter.h"
 #include "ProgramPerVertex.h"

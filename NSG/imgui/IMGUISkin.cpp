@@ -26,11 +26,11 @@ misrepresented as being the original software.
 #include "IMGUISkin.h"
 #include "Technique.h"
 #include "Pass.h"
-#include "Pass2Stencil.h"
 #include "Material.h"
 #include "PlaneMesh.h"
 #include "CircleMesh.h"
 #include "RoundedRectangleMesh.h"
+#include "ProgramWhiteColor.h"
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
@@ -98,19 +98,6 @@ namespace NSG
         hotTechnique_(new Technique),
         labelTechnique_(new Technique)
 		{
-            Pass2Stencil* pPass2Stencil = new Pass2Stencil;
-            pPass2Stencil->ClearBuffer(false);
-
-			{
-                PPass areaStencilPass(pPass2Stencil);
-				PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
-				//PMesh areaMesh(new CircleMesh(1, 32, GL_STATIC_DRAW));
-				
-				areaStencilPass->Add(nullptr, areaMesh);
-				areaTechnique_->Add(areaStencilPass);
-			}
-
-
 			PMaterial pActiveMaterial(new Material);
 			pActiveMaterial->SetBlendMode(ALPHA);
 			pActiveMaterial->EnableDepthTest(false);
@@ -121,7 +108,6 @@ namespace NSG
 			pActiveMaterial->EnableStencilTest(true);
 
 			PMaterial pNormalMaterial(new Material);
-			pNormalMaterial->SetBlendMode(ALPHA);
 			pNormalMaterial->EnableDepthTest(false);
             pNormalMaterial->SetProgram(pProgram);
 			pNormalMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
@@ -129,7 +115,6 @@ namespace NSG
 			pNormalMaterial->EnableStencilTest(true);
 
 			PMaterial pHotMaterial(new Material);
-			pHotMaterial->SetBlendMode(ALPHA);
 			pHotMaterial->EnableDepthTest(false);
 			pHotMaterial->SetProgram(pProgram);
 			pHotMaterial->SetDiffuseColor(Color(0,0,1,0.7f));
@@ -138,59 +123,71 @@ namespace NSG
 
 			PMaterial pBorderMaterial(new Material);
 			PProgram pBorderProgram(new Program(vShader, fShaderBorder));
-			pBorderMaterial->SetBlendMode(ALPHA);
 			pBorderMaterial->EnableDepthTest(false);
 			pBorderMaterial->SetProgram(pBorderProgram);
 			pBorderMaterial->SetDiffuseColor(Color(1,1,1,1));
 			pBorderMaterial->EnableStencilTest(true);
 
-            PMesh pMesh(new RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
-
-			PPass activePass(new Pass);
-			activePass->Set(pActiveMaterial);
-			activePass->Add(nullptr, pMesh);
-
-			PPass normalPass(new Pass);
-			normalPass->Set(pNormalMaterial);
-			normalPass->Add(nullptr, pMesh);
-
-			PPass hotPass(new Pass);
-			hotPass->Set(pHotMaterial);
-			hotPass->Add(nullptr, pMesh);
-
-			PPass borderPass(new Pass);
-			borderPass->Set(pBorderMaterial);
-			borderPass->Add(nullptr, pMesh);
-			borderPass->SetDrawMode(Pass::WIREFRAME);
-
-			PPass stencilPass(new Pass2Stencil(pPass2Stencil));
-			stencilPass->Add(nullptr, pMesh);
-
-			activeTechnique_->Add(activePass);
-			activeTechnique_->Add(borderPass);
-			activeTechnique_->Add(stencilPass);
-
-			normalTechnique_->Add(normalPass);
-			normalTechnique_->Add(borderPass);
-			normalTechnique_->Add(stencilPass);
-
-			hotTechnique_->Add(hotPass);
-			hotTechnique_->Add(borderPass);
-			hotTechnique_->Add(stencilPass);
-
 			PMaterial labelMaterial(new Material);
-			labelMaterial->SetBlendMode(ALPHA);
 			labelMaterial->EnableDepthTest(false);
             labelMaterial->SetProgram(pProgram);
 			labelMaterial->SetDiffuseColor(Color(0,0,0,0.0f));
 			labelMaterial->SetShininess(1);
+			labelMaterial->EnableStencilTest(true);
+
+			PMaterial areaMaterial(new Material);
+			PProgram pAreaProgram(new ProgramWhiteColor);
+            areaMaterial->SetProgram(pAreaProgram);
+            areaMaterial->EnableDepthTest(false);
+			areaMaterial->EnableStencilTest(true);
+			areaMaterial->EnableColorBuffer(false);
+
+
+            PMesh controlMesh(new RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
+            PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
+			//PMesh areaMesh(new CircleMesh(1, 32, GL_STATIC_DRAW));
+
+			PPass activePass(new Pass);
+			activePass->Set(pActiveMaterial);
+			activePass->Add(nullptr, controlMesh);
+
+			PPass normalPass(new Pass);
+			normalPass->Set(pNormalMaterial);
+			normalPass->Add(nullptr, controlMesh);
+
+			PPass hotPass(new Pass);
+			hotPass->Set(pHotMaterial);
+			hotPass->Add(nullptr, controlMesh);
+
+			PPass borderPass(new Pass);
+			borderPass->Set(pBorderMaterial);
+			borderPass->Add(nullptr, controlMesh);
+			borderPass->SetDrawMode(Pass::WIREFRAME);
+
+            PPass areaPass(new Pass);
+            //areaPass->Set(pNormalMaterial);
+            areaPass->Set(areaMaterial);
+			areaPass->Add(nullptr, areaMesh);
+
+			areaTechnique_->Add(areaPass);
+
+			activeTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
+			activeTechnique_->Add(activePass);
+			activeTechnique_->Add(borderPass);
+
+			normalTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
+			normalTechnique_->Add(normalPass);
+			normalTechnique_->Add(borderPass);
+
+			hotTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
+			hotTechnique_->Add(hotPass);
+			hotTechnique_->Add(borderPass);
 
 			PPass labelPass(new Pass);
 			labelPass->Set(labelMaterial);
-			labelPass->Add(nullptr, pMesh);
+			labelPass->Add(nullptr, controlMesh);
 
 			labelTechnique_->Add(labelPass);
-			labelTechnique_->Add(stencilPass);
 		}
 
 		Skin::Skin(const Skin& obj)

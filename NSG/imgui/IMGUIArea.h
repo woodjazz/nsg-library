@@ -23,40 +23,24 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "Pass2Stencil.h"
-#include "StencilMask.h"
-#include "Mesh.h"
-
+#pragma once
+#include "IMGUIObject.h"
+#include "Types.h"
 namespace NSG
 {
-	Pass2Stencil::Pass2Stencil() 
-	: stencilMask_(new StencilMask),
-	clearBuffer_(true)
+	namespace IMGUI
 	{
-	}
+		class Area : public Object
+		{
+		public:
+			Area(GLushort id, LayoutType type, int percentageX, int percentageY);
+            ~Area();
+			void operator()();
+			bool IsReadOnly() const { return true; }
+			PTechnique GetActiveTechnique() const;
+			PTechnique GetHotTechnique() const;
+			PTechnique GetNormalTechnique() const;
 
-	Pass2Stencil::Pass2Stencil(Pass2Stencil* pass)
-	: stencilMask_(pass->stencilMask_),
-	clearBuffer_(false)
-	{
-
-	}
-
-	Pass2Stencil::~Pass2Stencil()
-	{
-
-	}
-
-	void Pass2Stencil::ClearBuffer(bool clear)
-	{
-
-	}
-
-	void Pass2Stencil::Render()
-	{
-		stencilMask_->ClearBuffer(clearBuffer_);
-		stencilMask_->Begin();
-		stencilMask_->Render(meshNodes_);
-		stencilMask_->End();
+		};
 	}
 }

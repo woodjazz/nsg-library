@@ -29,9 +29,9 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Keys.h"
 #include "Keyboard.h"
+#include "Material.h"
 #include "IMGUILayoutManager.h"
 #include "IMGUITextManager.h"
-#include "StencilMask.h"
 #include "FrameColorSelection.h"
 #include "IMGUIState.h"
 
@@ -69,13 +69,15 @@ namespace NSG
 			lastId_ = 0;
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glClearStencil(0);
+			glClear(GL_STENCIL_BUFFER_BIT);
 
 			pCamera_->Activate();
 			state_->hotitem_ = 0;
 
 			pCurrentNode_ = Context::this_->pRootNode_;
 			pLayoutManager_->Begin();
-			pLayoutManager_->BeginVertical(0, 0);
+			pLayoutManager_->BeginVertical(0);
 		}
 
 		void Context::End()
@@ -104,8 +106,10 @@ namespace NSG
 			}
 
 			// If no widget grabbed tab, clear focus
-			if (state_->keyentered_ == NSG_KEY_TAB || !IsStable())
+			if (!IsStable())
 				state_->kbditem_ = 0;
+            else if(state_->keyentered_ == NSG_KEY_TAB && !state_->keymod_)
+                state_->kbditem_ = 0;
 	
 			// Clear the entered key
 			state_->keyentered_ = 0;	

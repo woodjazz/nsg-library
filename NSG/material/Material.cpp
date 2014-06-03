@@ -21,6 +21,13 @@ namespace NSG
     enableDepthTest_(true),
     enableCullFace_(false),
     enableStencilTest_(false),
+    stencilMask_(0xFF),
+	sfailStencilOp_(GL_KEEP),
+	dpfailStencilOp_(GL_KEEP),
+	dppassStencilOp_(GL_REPLACE),
+	stencilFunc_(GL_ALWAYS),
+	stencilRefValue_(0x00),
+	stencilMaskValue_(0xFF),
     enableColorBuffer_(true),
     enableDepthBuffer_(true)
 	{
@@ -60,6 +67,25 @@ namespace NSG
 	{
 		enableStencilTest_ = enable;	
 	}
+
+	void Material::SetStencilMask(GLuint mask)
+	{
+		stencilMask_ = mask;
+	}
+
+	void Material::SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass)
+	{
+        sfailStencilOp_ = sfail;
+        dpfailStencilOp_ = dpfail;
+        dppassStencilOp_ = dppass;
+	}
+
+	void Material::SetStencilFunc(GLenum func, GLint ref, GLuint mask)
+	{
+        stencilFunc_ = func;
+        stencilRefValue_ = ref;
+        stencilMaskValue_ = mask;
+    }
 
 	void Material::SetProgram(PProgram pProgram)
 	{
@@ -144,6 +170,9 @@ namespace NSG
 		if(enableStencilTest_)
 		{
 			glEnable(GL_STENCIL_TEST);
+			glStencilMaskSeparate(GL_FRONT_AND_BACK, stencilMask_); 
+			glStencilOp(sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_);
+			glStencilFunc(stencilFunc_, stencilRefValue_, stencilMaskValue_); 
 		}
 		else
 		{

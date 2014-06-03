@@ -39,8 +39,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Button::Button(GLushort id, const std::string& text, int percentage)
-		: Object(id, percentage),
+		Button::Button(GLushort id, const std::string& text, int percentageX, int percentageY)
+        : Object(id, LayoutType::Control, percentageX, percentageY),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
 		pressed_(false)
@@ -48,6 +48,7 @@ namespace NSG
             pTextMesh_->SetText(currentText_);
             pTextMesh_->SetTextHorizontalAlignment(CENTER_ALIGNMENT);
             pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
+            area_->isReadOnly_ = IsReadOnly();
 		}
 
 		Button::~Button()
@@ -105,6 +106,8 @@ namespace NSG
             textMaterial.SetTexture0(pTextMesh_->GetAtlas());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
             textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor_));
+            GLint mask = area_->stencilRefValue_;
+            textMaterial.SetStencilFunc(GL_EQUAL, area_->stencilRefValue_, mask);
             pass.Set(&textMaterial);
 
             technique.Render();
