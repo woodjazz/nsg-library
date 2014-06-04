@@ -36,7 +36,7 @@ public:
 	void Start();
 	void Update();
 	void Render();
-	void Render2Select();
+	//void Render2Select();
 private:
 	PTexture pRenderedTexture_;
     PTexture pFilteredTexture_;

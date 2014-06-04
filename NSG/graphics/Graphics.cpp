@@ -24,27 +24,53 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
-#include "Node.h"
-
+#include "Graphics.h"
+#include "GLES2Includes.h"
 
 namespace NSG
 {
-	class App;
-	class SceneNode : public Node
+	void ClearAllBuffers()
 	{
-	public:
-		SceneNode();
-		~SceneNode();
-		void Set(PTechnique technique);
-		void Set(Technique* technique);
-		PTechnique GetTechnique() const { return technique_; }
-		void SetBehavior(PBehavior pBehavior);
-		PBehavior GetBehavior() const { return pBehavior_; }
-		virtual void Render();
-		//virtual void Render2Select();
-	private:
-		PTechnique technique_;
-		PBehavior pBehavior_;
-	};
+        glClearColor(0, 0, 0, 0);
+        glClearDepth(1);
+        glClearStencil(0);
+
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glDepthMask(GL_TRUE);
+        glStencilMask(~GLuint(0));
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	}
+
+	void ClearBuffers(bool color, bool depth, bool stencil)
+	{
+		GLbitfield mask(0);
+		if(color)
+		{
+			mask |= GL_COLOR_BUFFER_BIT;
+			glClearColor(0, 0, 0, 0);
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		}
+
+		if(depth)
+		{
+			mask |= GL_DEPTH_BUFFER_BIT;
+			glClearDepth(1);
+			glDepthMask(GL_TRUE);
+		}
+
+		if(stencil)
+		{
+			glClearStencil(0);
+			glStencilMask(~GLuint(0));
+		}
+
+		glClear(mask);
+	}
+
+	void ClearStencilBuffer()
+	{
+		glClearStencil(0);
+		glStencilMask(~GLuint(0));
+		glClear(GL_STENCIL_BUFFER_BIT);
+	}
 }

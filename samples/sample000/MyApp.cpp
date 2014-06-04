@@ -205,12 +205,13 @@ void MyApp::TestIMGUI4()
 	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
 	//IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
 
-    IMGUIBeginVertical(50, 60);
+    //IMGUIBeginVertical(50, 60);
 
-    IMGUIBeginHorizontal(90, 100);
+    //IMGUIBeginHorizontal(90, 100);
 
-    static std::string str0 = "CCCCCCCCCC";
-	str0 = IMGUITextField(str0, 0);
+    //static std::string str0 = "CCCCCCCCCC";
+	//str0 = IMGUITextField(str0);
+    IMGUIButton("x");
 
     /*
     IMGUISpacer(10);
@@ -230,9 +231,9 @@ void MyApp::TestIMGUI4()
 
     //IMGUISpacer(70);
     
-    IMGUIEndHorizontal();
+    //IMGUIEndHorizontal();
 
-    IMGUIEndVertical();
+    //IMGUIEndVertical();
 }
 
 
@@ -267,10 +268,12 @@ void MyApp::RenderFrame()
     //Behavior::RenderAll();
 }
 
+#if 0
 void MyApp::Render2Select()
 {
 	Behavior::Render2SelectAll();
 }
+#endif
 
 void MyApp::ViewChanged(int32_t width, int32_t height) 
 {

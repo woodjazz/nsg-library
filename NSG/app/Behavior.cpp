@@ -84,6 +84,7 @@ namespace NSG
         }
     }
 
+#if 0
 	void Behavior::Render2SelectAll()
 	{
         for(auto &obj : collection)
@@ -91,7 +92,7 @@ namespace NSG
 			obj->Render2Select();
         }
 	}
-
+#endif
     void Behavior::OnMouseMoveAll(float x, float y)
     {
         for(auto &obj : collection)

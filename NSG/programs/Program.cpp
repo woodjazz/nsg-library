@@ -66,10 +66,11 @@ namespace NSG
 	shininess_loc_(-1),
 	texture0_loc_(-1),
 	texture1_loc_(-1),
-	texcoord_loc_(-1),
-	position_loc_(-1),
-	normal_loc_(-1),
-    color_loc_(-1),
+	color_loc_(-1),
+	att_texcoord_loc_(-1),
+	att_position_loc_(-1),
+	att_normal_loc_(-1),
+    att_color_loc_(-1),
 	model_inv_transp_loc_(-1),
 	v_inv_loc_(-1),
     mvp_loc_(-1),
@@ -93,10 +94,11 @@ namespace NSG
 	shininess_loc_(-1),
 	texture0_loc_(-1),
 	texture1_loc_(-1),
-	texcoord_loc_(-1),
-	position_loc_(-1),
-	normal_loc_(-1),
-    color_loc_(-1),
+	color_loc_(-1),
+	att_texcoord_loc_(-1),
+	att_position_loc_(-1),
+	att_normal_loc_(-1),
+    att_color_loc_(-1),
 	model_inv_transp_loc_(-1),
 	v_inv_loc_(-1),
     mvp_loc_(-1),
@@ -150,10 +152,12 @@ namespace NSG
 		    v_inv_loc_ = GetUniformLocation("u_v_inv");
 		    texture0_loc_ = GetUniformLocation("u_texture0");
 		    texture1_loc_ = GetUniformLocation("u_texture1");
-		    texcoord_loc_ = GetAttributeLocation("a_texcoord");
-		    position_loc_ = GetAttributeLocation("a_position");
-		    normal_loc_ = GetAttributeLocation("a_normal");
-	        color_loc_ = GetAttributeLocation("a_color");
+		    color_loc_ = GetUniformLocation("u_color");
+		    
+		    att_texcoord_loc_ = GetAttributeLocation("a_texcoord");
+		    att_position_loc_ = GetAttributeLocation("a_position");
+		    att_normal_loc_ = GetAttributeLocation("a_normal");
+	        att_color_loc_ = GetAttributeLocation("a_color");
 
 			hasLights_ = false;
 
@@ -310,6 +314,11 @@ namespace NSG
 			    glActiveTexture(GL_TEXTURE1);
 			    material->pTexture1_->Bind();
 			    glUniform1i(texture1_loc_, 1);
+		    }
+
+		    if(color_loc_ != -1)
+		    {
+		    	glUniform4fv(color_loc_, 1, &material->color_[0]);
 		    }
 
 		    if(color_ambient_loc_ != -1)

@@ -153,11 +153,9 @@ namespace NSG
 			
 			if(!pArea)
 			{
-				if(nestedAreas_.size() || type != LayoutType::Control)
-				{
-					pArea = InsertNewArea(id, type, percentageX, percentageY);
-					newControlAdded_ = true;
-				}
+				CHECK_ASSERT(nestedAreas_.size() || type != LayoutType::Control, __FILE__, __LINE__);
+				pArea = InsertNewArea(id, type, percentageX, percentageY);
+				newControlAdded_ = true;
 			}
 
 			CHECK_ASSERT(pArea, __FILE__, __LINE__);
@@ -310,7 +308,7 @@ namespace NSG
 
 		bool LayoutManager::IsStable() const 
 		{
-			return isStable_;
+			return !newControlAdded_ && isStable_;
 		}
 	}
 }

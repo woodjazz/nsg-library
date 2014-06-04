@@ -54,6 +54,8 @@ namespace NSG
 		void SetTexture1(PTexture pTexture);
         PTexture GetTexture0() const { return pTexture0_; }
         PTexture GetTexture1() const { return pTexture1_; }
+        void SetColor(Color color) { color_ = color; }
+        Color GetColor() const { return color_; }
 		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
 		Color GetDiffuseColor() const { return diffuse_; }
 		void SetSpecularColor(Color specular) { specular_ = specular; }
@@ -82,6 +84,8 @@ namespace NSG
         Color diffuse_;
         Color specular_;
         float shininess_;
+
+        Color color_;
 
         BLEND_MODE blendMode_;
         bool enableDepthTest_;

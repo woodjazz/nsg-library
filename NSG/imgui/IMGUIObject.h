@@ -52,6 +52,7 @@ namespace NSG
 			virtual PTechnique GetHotTechnique() const;
 			virtual PTechnique GetNormalTechnique() const;
 			PLayoutArea GetArea() const { return area_; }
+            void FixCurrentTecnique();
 		protected:
 			GLushort id_;
 			State& uistate_;

@@ -105,7 +105,6 @@ namespace NSG
             textMaterial.EnableStencilTest(true);
             textMaterial.SetTexture0(pTextMesh_->GetAtlas());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
-            textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor_));
             GLint mask = area_->stencilRefValue_;
             textMaterial.SetStencilFunc(GL_EQUAL, area_->stencilRefValue_, mask);
             pass.Set(&textMaterial);

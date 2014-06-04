@@ -24,27 +24,14 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
-#include "Node.h"
+#include "Program.h"
 
-
-namespace NSG
+namespace NSG 
 {
-	class App;
-	class SceneNode : public Node
+	class ProgramSimpleColor : public Program
 	{
 	public:
-		SceneNode();
-		~SceneNode();
-		void Set(PTechnique technique);
-		void Set(Technique* technique);
-		PTechnique GetTechnique() const { return technique_; }
-		void SetBehavior(PBehavior pBehavior);
-		PBehavior GetBehavior() const { return pBehavior_; }
-		virtual void Render();
-		//virtual void Render2Select();
-	private:
-		PTechnique technique_;
-		PBehavior pBehavior_;
+		ProgramSimpleColor();
+		~ProgramSimpleColor();
 	};
 }

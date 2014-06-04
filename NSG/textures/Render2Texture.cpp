@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Context.h"
 #include "Texture.h"
+#include "Graphics.h"
 #include <algorithm>
 
 namespace NSG
@@ -123,17 +124,12 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            glGetFloatv(GL_COLOR_CLEAR_VALUE, &clear_color_[0]);
-            glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
-            glGetBooleanv(GL_DEPTH_TEST, &depth_enable_);
             glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
 
     		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
             glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
-            glEnable(GL_DEPTH_TEST);
-            glClearColor(0, 0, 0, 0);
-            glClearDepth(1);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            ClearAllBuffers();
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -150,15 +146,6 @@ namespace NSG
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glViewport(viewport_.x, viewport_.y, viewport_.z, viewport_.w); 
-
-            if(!depth_enable_)
-            {
-                glDisable(GL_DEPTH_TEST);
-            }
-
-            glClearColor(clear_color_[0], clear_color_[1], clear_color_[2], clear_color_[3]);
-            glClearDepth(clear_depth_);
-            //glClear(GL_DEPTH_BUFFER_BIT);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 

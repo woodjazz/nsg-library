@@ -78,10 +78,11 @@ void EarthBehavior::Render()
 {
 	//pSceneNode_->Render(true);
 }
-
+#if 0
 void EarthBehavior::Render2Select()
 {
 	pSceneNode_->Render2Select();
 }
+#endif
 
 

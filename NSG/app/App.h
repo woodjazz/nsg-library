@@ -49,7 +49,7 @@ namespace NSG
 		virtual void Start() {}
 		virtual void Update() {}
 		virtual void RenderFrame() {};
-        virtual void Render2Select() {};
+        //virtual void Render2Select() {};
         virtual void RenderGUIFrame() {}
 		virtual void ViewChanged(int32_t width, int32_t height) {};
         virtual void OnMouseMove(float x, float y) {}
@@ -61,9 +61,9 @@ namespace NSG
         void DoTick(float delta);
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
-        void BeginSelection(float screenX, float screenY);
-        void EndSelection();
-        GLushort GetSelectedNode() const { return selectedIndex_; }
+        //void BeginSelection(float screenX, float screenY);
+        //void EndSelection();
+        //GLushort GetSelectedNode() const { return selectedIndex_; }
         float GetDeltaTime() const { return deltaTime_; }
 		virtual void HandleMessage(const pp::Var& var_message);
 		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
@@ -72,7 +72,7 @@ namespace NSG
         AAssetManager* pAAssetManager_;
         int32_t width_;
         int32_t height_;
-        GLushort selectedIndex_;
+        //GLushort selectedIndex_;
         // The time in seconds it took to complete the last frame
         float deltaTime_;
         Context context_;

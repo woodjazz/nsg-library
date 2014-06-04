@@ -26,7 +26,7 @@
     #include <Carbon/Carbon.h>
 	#define APIENTRY
 #elif defined(GLES2)
-    #include "NSG/opengl/GLES2Includes.h"
+    #include "NSG/graphics/GLES2Includes.h"
 	#define APIENTRY
 #else
 	#include <GL/gl.h>

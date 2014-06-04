@@ -48,9 +48,6 @@ namespace NSG
 		GLuint framebuffer_;
 		GLuint depthRenderBuffer_;
 		Recti viewport_;
-		GLfloat clear_color_[4];
-		GLfloat clear_depth_;
-		GLboolean depth_enable_;
 		bool createDepthBuffer_;
 		bool enabled_;
 	};

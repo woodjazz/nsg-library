@@ -70,7 +70,9 @@ void Render2TextureBehavior::Render()
     showTexture_->Show();
 }
 
+#if 0
 void Render2TextureBehavior::Render2Select()
 {
 	//pSceneNode_->Render2Select();
 }
+#endif

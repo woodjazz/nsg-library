@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Context.h"
 #include "Keyboard.h"
+#include "Graphics.h"
 #include "FrameColorSelection.h"
 #if NACL
 #include "ppapi/cpp/var.h"
@@ -40,8 +41,8 @@ namespace NSG
 {
     App::App() 
     : width_(0),
-    height_(0),
-    selectedIndex_(0)
+    height_(0)
+    //selectedIndex_(0)
     {
     }
 
@@ -77,7 +78,7 @@ namespace NSG
         }
 #endif  
     }
-  
+  #if 0
     void App::BeginSelection(float screenX, float screenY) 
     { 
         Context::this_->pFrameColorSelection_->Begin(screenX, screenY);
@@ -88,7 +89,7 @@ namespace NSG
         Context::this_->pFrameColorSelection_->End();
         selectedIndex_ = Context::this_->pFrameColorSelection_->GetSelected();
     }
-
+#endif
     void App::DoTick(float delta)
     {
         deltaTime_ = delta;
@@ -195,15 +196,15 @@ namespace NSG
     {
         PerformTick();
 
-        glClearColor(0, 0, 0, 1);
-        glClearDepth(1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        ClearAllBuffers();
 
         pApp_->RenderFrame();
 
+#if 0
         pApp_->BeginSelection(screenX_, screenY_);
         pApp_->Render2Select();
         pApp_->EndSelection();
+#endif        
 
         Camera* camera(Camera::GetActiveCamera());
         IMGUI::Begin();

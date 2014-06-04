@@ -31,66 +31,14 @@ misrepresented as being the original software.
 #include "CircleMesh.h"
 #include "RoundedRectangleMesh.h"
 #include "ProgramWhiteColor.h"
-
-static const char* vShader = STRINGIFY(
-	uniform mat4 u_mvp;
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec4 v_position;
-	varying vec2 v_texcoord;
-	
-	void main()
-	{
-		gl_Position = u_mvp * vec4(a_position.xyz, 1);
-		v_position = a_position;
-		v_texcoord = a_texcoord;
-	}
-);
-
-static const char* fShader = STRINGIFY(
-	struct Material
-	{
-		vec4 diffuse;
-		float shininess;
-	};
-	uniform Material u_material;
-	uniform sampler2D u_texture0;
-	varying vec4 v_position;
-	varying vec2 v_texcoord;
-
-	void main()
-	{
-		float factor = u_material.shininess - abs(v_position.y);
-
-        if(u_material.shininess < 0.0)
-            factor = abs(v_position.y) + u_material.shininess;
-
-		gl_FragColor = texture2D(u_texture0, v_texcoord) * u_material.diffuse * vec4(factor, factor, factor, 1.0);
-	}
-);
-
-static const char* fShaderBorder = STRINGIFY(
-	struct Material
-	{
-		vec4 diffuse;
-	};
-
-	uniform Material u_material;
-
-	void main()
-	{
-		gl_FragColor = u_material.diffuse;
-	}
-);
-
+#include "ProgramUnlit.h"
 
 namespace NSG 
 {
 	namespace IMGUI
 	{
 		Skin::Skin() 
-		: alphaFactor_(1),
-		fontSize_(18),
+		: fontSize_(18),
 		textMaxLength_(std::numeric_limits<int>::max()),
 		areaTechnique_(new Technique),
         activeTechnique_(new Technique),
@@ -99,40 +47,35 @@ namespace NSG
         labelTechnique_(new Technique)
 		{
 			PMaterial pActiveMaterial(new Material);
-			pActiveMaterial->SetBlendMode(ALPHA);
 			pActiveMaterial->EnableDepthTest(false);
-            PProgram pProgram(new Program(vShader, fShader));
+            PProgram pProgram(new ProgramUnlit);
             pActiveMaterial->SetProgram(pProgram);
-			pActiveMaterial->SetDiffuseColor(Color(1,0,0,0.7f));
-			pActiveMaterial->SetShininess(1);
+			pActiveMaterial->SetColor(Color(1,0,0,0.7f));
 			pActiveMaterial->EnableStencilTest(true);
 
 			PMaterial pNormalMaterial(new Material);
 			pNormalMaterial->EnableDepthTest(false);
             pNormalMaterial->SetProgram(pProgram);
-			pNormalMaterial->SetDiffuseColor(Color(0,1,0,0.7f));
-			pNormalMaterial->SetShininess(1);
+			pNormalMaterial->SetColor(Color(0,1,0,0.7f));
 			pNormalMaterial->EnableStencilTest(true);
 
 			PMaterial pHotMaterial(new Material);
 			pHotMaterial->EnableDepthTest(false);
 			pHotMaterial->SetProgram(pProgram);
-			pHotMaterial->SetDiffuseColor(Color(0,0,1,0.7f));
-			pHotMaterial->SetShininess(1);
+			pHotMaterial->SetColor(Color(0,0,1,0.7f));
 			pHotMaterial->EnableStencilTest(true);
 
 			PMaterial pBorderMaterial(new Material);
-			PProgram pBorderProgram(new Program(vShader, fShaderBorder));
+			PProgram pBorderProgram(new ProgramUnlit);
 			pBorderMaterial->EnableDepthTest(false);
 			pBorderMaterial->SetProgram(pBorderProgram);
-			pBorderMaterial->SetDiffuseColor(Color(1,1,1,1));
+			pBorderMaterial->SetColor(Color(1,1,1,1));
 			pBorderMaterial->EnableStencilTest(true);
 
 			PMaterial labelMaterial(new Material);
 			labelMaterial->EnableDepthTest(false);
             labelMaterial->SetProgram(pProgram);
-			labelMaterial->SetDiffuseColor(Color(0,0,0,0.0f));
-			labelMaterial->SetShininess(1);
+			labelMaterial->SetColor(Color(0,0,0,0.0f));
 			labelMaterial->EnableStencilTest(true);
 
 			PMaterial areaMaterial(new Material);
@@ -191,8 +134,7 @@ namespace NSG
 		}
 
 		Skin::Skin(const Skin& obj)
-		: alphaFactor_(obj.alphaFactor_),
-		fontFile_(obj.fontFile_),
+		: fontFile_(obj.fontFile_),
 		fontSize_(obj.fontSize_),
 		textMaxLength_(obj.textMaxLength_),
         areaTechnique_(obj.areaTechnique_),

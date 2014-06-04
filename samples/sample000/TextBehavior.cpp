@@ -81,11 +81,13 @@ void TextBehavior::Render()
 
 void TextBehavior::OnMouseDown(float x, float y)
 {
+#if 0
 	GLushort id = App::this_->GetSelectedNode();
 
     std::stringstream ss;
     ss << "Selected Id=" << std::hex << id;
 
     pText_->SetText(ss.str());
+#endif
 }
 

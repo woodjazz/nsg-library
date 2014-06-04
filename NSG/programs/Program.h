@@ -53,10 +53,10 @@ namespace NSG
 		virtual bool IsValid();
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
-		GLuint GetPositionLoc() const { return position_loc_; }
-		GLuint GetTextCoordLoc() const { return texcoord_loc_; }
-		GLuint GetNormalLoc() const { return normal_loc_; }
-		GLuint GetColorLoc() const { return color_loc_; }
+		GLuint GetAttPositionLoc() const { return att_position_loc_; }
+		GLuint GetAttTextCoordLoc() const { return att_texcoord_loc_; }
+		GLuint GetAttNormalLoc() const { return att_normal_loc_; }
+		GLuint GetAttColorLoc() const { return att_color_loc_; }
 		void Use(Node* node);
 		void Use(Material* material);
 	private:
@@ -79,10 +79,13 @@ namespace NSG
 		GLuint shininess_loc_;
 		GLuint texture0_loc_;
 		GLuint texture1_loc_;
-		GLuint texcoord_loc_;
-		GLuint position_loc_;
-		GLuint normal_loc_;
-        GLuint color_loc_;
+		GLuint color_loc_;
+
+		GLuint att_texcoord_loc_;
+		GLuint att_position_loc_;
+		GLuint att_normal_loc_;
+        GLuint att_color_loc_;
+
 		GLuint model_inv_transp_loc_;
 		GLuint v_inv_loc_;
         GLuint mvp_loc_;

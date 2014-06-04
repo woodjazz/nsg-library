@@ -72,21 +72,9 @@ namespace NSG
 
             if(uistate_.currentTechnique_)
             {
-            	PPass pass = uistate_.currentTechnique_->GetPass(0);
-
-            	if(pass)
-            	{
-                	PMesh mesh = pass->GetMesh(0);
-
-	                if(mesh)
-	                {
-				        Context::this_->pFrameColorSelection_->Begin(Context::this_->state_->mousex_, Context::this_->state_->mousey_);
-		    	        Context::this_->pFrameColorSelection_->Render(id_, mesh.get(), node_.get());
-			            Context::this_->pFrameColorSelection_->End();
-
-			            return id_ == Context::this_->pFrameColorSelection_->GetSelected();
-	                }
-	            }
+            	uistate_.currentTechnique_->Set(node_);
+            	if(Context::this_->pFrameColorSelection_->Render(id_, Context::this_->state_->mousex_, Context::this_->state_->mousey_, uistate_.currentTechnique_.get()))
+            		return id_ == Context::this_->pFrameColorSelection_->GetSelected();
             }
 
             return false;
@@ -111,53 +99,15 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			if(uistate_.hotitem_ == id_)
-			{
-				if(uistate_.activeitem_ == id_)
-				{
-                    // Button is both 'hot' and 'active'
-                    uistate_.currentTechnique_ = GetActiveTechnique();
-			  	}
-				else
-				{
-					// Button is merely 'hot'
-                    uistate_.currentTechnique_ = GetHotTechnique();
-				}
-			}
-			else
-			{
-				// button is not hot, but it may be active    
-                uistate_.currentTechnique_  = GetNormalTechnique();
-			}
-
 			size_t nPasses = uistate_.currentTechnique_->GetNumPasses();
-			uistate_.currentTechnique_->Set(node_);
-
-            float shininess[Technique::MAX_PASSES];
-            Color diffuse[Technique::MAX_PASSES];
-
 			for(size_t i=0; i<nPasses; i++)
 			{
             	PMaterial material = uistate_.currentTechnique_->GetPass(i)->GetMaterial();
-
 	            material->SetStencilFunc(GL_GREATER, area_->stencilRefValue_, area_->stencilMaskValue_);
-
-	            float shininessFactor = HasFocus() ? 1 : -0.25f;
-	            shininess[i] = material->GetShininess();
-	            diffuse[i] = material->GetDiffuseColor();
-	        	material->SetShininess(shininess[i] * shininessFactor);
-	            material->SetDiffuseColor(diffuse[i] * Color(1,1,1, Context::this_->pSkin_->alphaFactor_));
 	        }
             
+			uistate_.currentTechnique_->Set(node_);
 			uistate_.currentTechnique_->Render();
-
-			for(size_t i=0; i<nPasses; i++)
-			{
-            	PMaterial material = uistate_.currentTechnique_->GetPass(i)->GetMaterial();
-
-				material->SetDiffuseColor(diffuse[i]);
-				material->SetShininess(shininess[i]);
-			}
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }
@@ -172,13 +122,30 @@ namespace NSG
 			return uistate_.activeitem_ == id_;
 		}
 
+        void Object::FixCurrentTecnique()
+        {
+			if(uistate_.hotitem_ == id_)
+			{
+				if(uistate_.activeitem_ == id_ || uistate_.kbditem_ == id_) // Button is both 'hot' and 'active'
+                    uistate_.currentTechnique_ = GetActiveTechnique();
+				else // Button is merely 'hot'
+                    uistate_.currentTechnique_ = GetHotTechnique();
+			}
+			else if(uistate_.activeitem_ == id_ || uistate_.kbditem_ == id_) // button is not hot, but it is active
+				uistate_.currentTechnique_ = GetActiveTechnique();
+			else 
+                uistate_.currentTechnique_ = GetNormalTechnique();
+        }
+
 		bool Object::Update()
 		{
 			if(!IsStable())
 				return false;
-			
+
 			if(!IsReadOnly())			
 			{
+                FixCurrentTecnique();
+
 				if (Hit()) // Check whether the button should be hot
 				{
 					uistate_.hotitem_ = id_;
@@ -255,6 +222,8 @@ namespace NSG
 		           		OnChar(uistate_.character_);
 				}
 			}
+
+            FixCurrentTecnique();
 
             Draw();
 

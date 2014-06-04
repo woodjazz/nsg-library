@@ -35,34 +35,32 @@ namespace NSG
     public:
         FrameColorSelection(bool createDepthBuffer);
         ~FrameColorSelection();
-        void Begin(float screenX, float screenY);
-        void End();
         GLushort GetSelected() const;
-        void Render(SceneNode* pSceneNode, PASSES passes);
-        void Render(GLushort id, Mesh* pMesh, Node* pNode);
+
         virtual bool IsValid();
         virtual void AllocateResources();
         virtual void ReleaseResources();
+        
+        void SetLocations();
+        void AssignValues();
+
+        bool Render(GLushort id, float screenX, float screenY, Technique* technique);
+
     private:
         Color TransformSelectedId2Color(GLushort id);
-        PProgram pProgram_;
-        GLuint color_loc_;
+        void Begin(float screenX, float screenY);
+        void End();
+
+        PMaterial material_;
         int32_t windowWidth_;
         int32_t windowHeight_;
         GLuint framebuffer_;
         GLuint colorRenderbuffer_;
         GLuint depthRenderBuffer_;
         GLubyte selected_[4];
-        double screenX_;
-        double screenY_;
         GLint pixelX_;
         GLint pixelY_;
-        bool enabled_;
         bool createDepthBuffer_;
-        GLfloat clear_color_[4];
-        GLfloat clear_depth_;
-        GLboolean blend_enable_;
-        GLboolean depth_enable_;
     };
 }
 

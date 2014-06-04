@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Keys.h"
 #include "Keyboard.h"
+#include "Graphics.h"
 #include "Material.h"
 #include "IMGUILayoutManager.h"
 #include "IMGUITextManager.h"
@@ -69,8 +70,8 @@ namespace NSG
 			lastId_ = 0;
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glClearStencil(0);
-			glClear(GL_STENCIL_BUFFER_BIT);
+
+			ClearStencilBuffer();
 
 			pCamera_->Activate();
 			state_->hotitem_ = 0;

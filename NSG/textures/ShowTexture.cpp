@@ -100,7 +100,6 @@ namespace NSG
 	void ShowTexture::SetFont(PTexture texture)
 	{
 		PProgram pProgram(new Program(vShader, fFontShader));
-		material_->SetBlendMode(ALPHA);
 		material_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}

@@ -80,8 +80,9 @@ void CubeBehavior::Render()
 {
 	//pSceneNode_->Render(true);
 }
-
+#if 0
 void CubeBehavior::Render2Select()
 {
 	pSceneNode_->Render2Select();
 }
+#endif

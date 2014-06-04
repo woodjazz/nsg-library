@@ -29,43 +29,27 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Camera.h"
 #include "App.h"
+#include "Graphics.h"
 #include "Pass.h"
 #include "Context.h"
-#include "Program.h"
+#include "ProgramSimpleColor.h"
+#include "Material.h"
+#include "Technique.h"
 #include "Mesh.h"
-
-static const char* vShader = STRINGIFY(
-    uniform mat4 u_mvp;
-    attribute vec4 a_position;
-    
-    void main() 
-    {
-        gl_Position = u_mvp * a_position;
-    }
-);
-
-static const char* fShader = STRINGIFY(
-    uniform vec4 u_color;
-    void main()
-    {
-        gl_FragColor = u_color;
-    }
-);
 
 namespace NSG
 {
 	FrameColorSelection::FrameColorSelection(bool createDepthBuffer)
-	: pProgram_(new Program(vShader, fShader)),
-    color_loc_(-1),
+	: material_(new Material),
     windowWidth_(0),
     windowHeight_(0),
-	screenX_(0),
-	screenY_(0),
 	pixelX_(0),
 	pixelY_(0),
-    enabled_(false),
     createDepthBuffer_(createDepthBuffer)
 	{
+        Program* program = new ProgramSimpleColor;
+        material_->SetProgram(PProgram(program));
+        material_->SetBlendMode(BLEND_NONE);
 	}
 
 	FrameColorSelection::~FrameColorSelection()
@@ -75,7 +59,7 @@ namespace NSG
 
 	bool FrameColorSelection::IsValid()
     {
-        return pProgram_->IsReady();
+        return material_->IsReady();
     }
 
 	void FrameColorSelection::AllocateResources()
@@ -87,8 +71,6 @@ namespace NSG
         windowHeight_ = windowSize.second;
 
         CHECK_ASSERT(windowWidth_ > 0 && windowHeight_ > 0, __FILE__, __LINE__);
-
-        color_loc_ = pProgram_->GetUniformLocation("u_color");
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -152,72 +134,32 @@ namespace NSG
 
     void FrameColorSelection::Begin(float screenX, float screenY)
     {
-        if(IsReady())
-        {
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            enabled_ = true;
+        pixelX_ = (GLint)((1 + screenX)/2.0f * windowWidth_);
+        pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
 
-    	    screenX_ = screenX;
-    	    screenY_ = screenY;
-
-            pixelX_ = (GLint)((1 + screenX)/2.0f * windowWidth_);
-            pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
-
-            glGetFloatv(GL_COLOR_CLEAR_VALUE, &clear_color_[0]);
-            glGetFloatv(GL_DEPTH_CLEAR_VALUE, &clear_depth_);
-            glGetBooleanv(GL_BLEND, &blend_enable_);
-            glGetBooleanv(GL_DEPTH_TEST, &depth_enable_);
-        
-            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-            glDisable(GL_BLEND);
-            glDisable(GL_STENCIL_TEST);
-            glEnable(GL_DEPTH_TEST);
-            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-            glClearColor(0, 0, 0, 0);
-            glClearDepth(1);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+        ClearBuffers(true, true, false);
 
 #ifndef ANDROID
-            glEnable(GL_SCISSOR_TEST);
-            glScissor(pixelX_,pixelY_,1,1);
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(pixelX_,pixelY_,1,1);
 #endif
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-        }
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     void FrameColorSelection::End()
     {
-        if(enabled_ && IsReady())
-        {
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            glReadPixels(pixelX_, pixelY_, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &selected_);
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-            if(blend_enable_)
-            {
-                glEnable(GL_BLEND);
-            }
-
-            if(!depth_enable_)
-            {
-                glDisable(GL_DEPTH_TEST);
-            }
+        glReadPixels(pixelX_, pixelY_, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &selected_);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 #ifndef ANDROID
-            glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_SCISSOR_TEST);
 #endif        
-            glClearColor(clear_color_[0], clear_color_[1], clear_color_[2], clear_color_[3]);
-            glClearDepth(clear_depth_);
-            //glClear(GL_DEPTH_BUFFER_BIT);
-        
-            enabled_ = false;
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-        }
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     GLushort FrameColorSelection::GetSelected() const
@@ -240,64 +182,45 @@ namespace NSG
         return color;
     }
 
-    void FrameColorSelection::Render(SceneNode* pSceneNode, PASSES passes)
+    bool FrameColorSelection::Render(GLushort id, float screenX, float screenY, Technique* technique)
     {
-        if(IsReady() && enabled_)
+        if(IsReady())
         {
-            Node* pNode = pSceneNode;
-
-            UseProgram useProgram(*pProgram_);
-
-            pProgram_->Use(pNode);
-
-            GLushort id = pSceneNode->GetId();
-
-            Color color = TransformSelectedId2Color(id);
-            glUniform4fv(color_loc_, 1, &color[0]);
-
-            GLuint positionLoc = pProgram_->GetPositionLoc();
-            GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
-            GLuint normalLoc = pProgram_->GetNormalLoc();
-            GLuint colorLoc = pProgram_->GetColorLoc();
-
-            auto it = passes.begin();
-            while(it != passes.end())
+            Begin(screenX, screenY);
             {
-                PPass pass = *it;
+                Mesh* lastMesh = nullptr;
+			    Node* lastNode = nullptr;
 
-                if(pass)
+                material_->SetColor(TransformSelectedId2Color(id));
+
+                const PASSES& passes = technique->GetPasses();
+                auto it = passes.begin();
+                while(it != passes.end())
                 {
-                    auto meshNodes = pass->GetMeshNodes();
-                    auto it1 = meshNodes.begin();
-                    while(it1 != meshNodes.end()) 
+                    PPass pass = *(it++);
+                    if(pass)
                     {
-                        PMesh mesh = (it1++)->second;
-                        if(mesh)
-                            mesh->Render(true, positionLoc, texcoordLoc, normalLoc, colorLoc);                
+                        const MESHNODES& meshNodes = pass->GetMeshNodes();
+                        auto meshNodeIt = meshNodes.begin();
+                        while(meshNodeIt != meshNodes.end())
+                        {
+                            Mesh* mesh = meshNodeIt->second.get();
+                            Node* node = meshNodeIt->first.get();
+
+                            if(lastMesh != mesh || lastNode != node) // optimization to not render always the same
+                            {
+                                material_->Render(true, node, mesh);
+                                lastMesh = mesh;
+                                lastNode = node;
+                            }
+                            ++meshNodeIt;
+                        }
                     }
                 }
-                ++it;
             }
+            End();
+            return true;
         }
-    }
-
-    void FrameColorSelection::Render(GLushort id, Mesh* pMesh, Node* pNode)
-    {
-        if(IsReady() && pMesh && pMesh->IsReady() && enabled_)
-        {
-            UseProgram useProgram(*pProgram_);
-
-            pProgram_->Use(pNode);
-
-            Color color = TransformSelectedId2Color(id);
-            glUniform4fv(color_loc_, 1, &color[0]);
-
-			GLuint positionLoc = pProgram_->GetPositionLoc();
-			GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
-			GLuint normalLoc = pProgram_->GetNormalLoc();
-			GLuint colorLoc = pProgram_->GetColorLoc();
-
-			pMesh->Render(true, positionLoc, texcoordLoc, normalLoc, colorLoc);
-        }
+        return false;
     }
 }

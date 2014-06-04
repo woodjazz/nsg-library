@@ -33,8 +33,6 @@ namespace NSG
 	{
 		struct Skin
 		{
-			float alphaFactor_;
-
 			std::string fontFile_;
 			int fontSize_;
 			size_t textMaxLength_;

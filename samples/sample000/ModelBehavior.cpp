@@ -52,7 +52,9 @@ void ModelBehavior::Render()
 	//pSceneNode_->Render();
 }
 
+#if 0
 void ModelBehavior::Render2Select()
 {
 	pSceneNode_->Render2Select();
 }
+#endif

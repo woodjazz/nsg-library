@@ -222,7 +222,6 @@ namespace NSG
             GLint mask = area_->stencilRefValue_;
             textMaterial.SetStencilFunc(GL_EQUAL, area_->stencilRefValue_, mask);
 	        pass.Set(&textMaterial);
-	        textMaterial.SetDiffuseColor(Color(1,1,1,Context::this_->pSkin_->alphaFactor_));
 	        technique.Render();
 	        
 			// Render cursor if we have keyboard focus
@@ -239,7 +238,6 @@ namespace NSG
 	            Pass pass;
 	            technique.Add(&pass);
 	            pass.Add(&cursorNode, pCursorMesh_);
-	            textMaterial.SetDiffuseColor(Color(1,0,0,Context::this_->pSkin_->alphaFactor_));
 	            pass.Set(&textMaterial);
 	            
 	            technique.Render();

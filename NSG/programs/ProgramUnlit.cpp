@@ -47,9 +47,10 @@ static const char* fShader = STRINGIFY(
 	varying vec4 v_vertex_color;
 	varying vec2 v_texcoord;
 	uniform sampler2D u_texture0;
+	uniform vec4 u_color;
 	void main()
 	{
-		gl_FragColor = texture2D(u_texture0, v_texcoord) * v_vertex_color;
+		gl_FragColor = texture2D(u_texture0, v_texcoord) * v_vertex_color * u_color;
 	}
 );
 

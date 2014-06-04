@@ -23,28 +23,37 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "SharedPointers.h"
-#include "Node.h"
 
+#include "ProgramSimpleColor.h"
+#include "Types.h"
 
-namespace NSG
+static const char* vShader = STRINGIFY(
+    uniform mat4 u_mvp;
+    attribute vec4 a_position;
+    
+    void main() 
+    {
+        gl_Position = u_mvp * a_position;
+    }
+);
+
+static const char* fShader = STRINGIFY(
+    uniform vec4 u_color;
+    void main()
+    {
+        gl_FragColor = u_color;
+    }
+);
+
+namespace NSG 
 {
-	class App;
-	class SceneNode : public Node
+	ProgramSimpleColor::ProgramSimpleColor()
+	: Program(vShader, fShader)
 	{
-	public:
-		SceneNode();
-		~SceneNode();
-		void Set(PTechnique technique);
-		void Set(Technique* technique);
-		PTechnique GetTechnique() const { return technique_; }
-		void SetBehavior(PBehavior pBehavior);
-		PBehavior GetBehavior() const { return pBehavior_; }
-		virtual void Render();
-		//virtual void Render2Select();
-	private:
-		PTechnique technique_;
-		PBehavior pBehavior_;
-	};
+	}
+
+	ProgramSimpleColor::~ProgramSimpleColor()
+	{
+		
+	}
 }

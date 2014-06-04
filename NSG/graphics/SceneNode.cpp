@@ -83,13 +83,12 @@ namespace NSG
 
 	}
 
+#if 0
 	void SceneNode::Render2Select()
 	{
         if(technique_)
         {
-            auto passes = technique_->GetPasses();
-
-	        Context::this_->pFrameColorSelection_->Render(this, passes);
+	        Context::this_->pFrameColorSelection_->Render(this, technique_);
 
             auto it = children_.begin();
             while(it != children_.end())
@@ -101,4 +100,5 @@ namespace NSG
             }
         }
 	}
+#endif	
 }

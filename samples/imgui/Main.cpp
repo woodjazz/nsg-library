@@ -33,7 +33,6 @@ struct Sample : App
 	void Start()
 	{
         IMGUISkin()->fontFile_ = "font/FreeSans.ttf";
-        IMGUISkin()->alphaFactor_ = 1;
     }
 
     void RenderGUIFrame()
@@ -81,7 +80,6 @@ struct Sample : App
                 IMGUIBeginHorizontal();
                 if(IMGUIButton("Yes"))
                 {
-                    IMGUISkin()->alphaFactor_ = 1;
                     menu = true;
                     delta = 0;
                     menu_choosen = false;
@@ -96,11 +94,6 @@ struct Sample : App
                 IMGUIEndHorizontal();
                 IMGUIEndVertical();
             }
-            
-            if(IMGUISkin()->alphaFactor_ < 1)
-                IMGUISkin()->alphaFactor_ += 0.01f;
-            else
-                IMGUISkin()->alphaFactor_ = 1;
         }
         else
         {
@@ -148,7 +141,6 @@ struct Sample : App
             if(delta < 0)
             {
                 menu = exit = false;
-                IMGUISkin()->alphaFactor_ = 0;
             }
             IMGUIEndVertical();
         }

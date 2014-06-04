@@ -54,20 +54,23 @@ public:
 	{
 		//pSceneNode_->Render(true);
 	}
-
+#if 0
 	void Render2Select()
 	{
 		pSceneNode_->Render2Select();
 	}
+#endif	
 };
 
 struct Test : public App 
 {
     PSceneNode sceneNode_;
     PCamera camera_;
+    PFrameColorSelection colorSelection_;
 
 	void Start()
 	{
+        colorSelection_ = PFrameColorSelection(new FrameColorSelection(false));
 		sceneNode_ = PSceneNode(new SceneNode);
 		sceneNode_->SetBehavior(PBehavior(new MyBehavior));	
 		camera_ = PCamera(new Camera);
@@ -78,31 +81,23 @@ struct Test : public App
 	void Render()
 	{
 		sceneNode_->SetPosition(Vertex3(0, 0, 0));
-		BeginSelection(0, 0);
-		sceneNode_->GetBehavior()->Render2Select();
-		EndSelection();
-		GLushort id = GetSelectedNode();
+        colorSelection_->Render(sceneNode_->GetId(), 0, 0, sceneNode_->GetTechnique().get());
+        GLushort id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id == sceneNode_->GetId(), __FILE__, __LINE__);
 		
 		sceneNode_->SetPosition(Vertex3(-1, 0, 0));
-		BeginSelection(0, 0);
-		sceneNode_->GetBehavior()->Render2Select();
-		EndSelection();
-        id = GetSelectedNode();
+        colorSelection_->Render(sceneNode_->GetId(), 0, 0, sceneNode_->GetTechnique().get());
+        id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id == 0, __FILE__, __LINE__);
 
 		sceneNode_->SetPosition(Vertex3(-1, 0, 0));
-		BeginSelection(-1, 0);
-		sceneNode_->GetBehavior()->Render2Select();
-		EndSelection();
-        id = GetSelectedNode();
+        colorSelection_->Render(sceneNode_->GetId(), 0, 0, sceneNode_->GetTechnique().get());
+        id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id == sceneNode_->GetId(), __FILE__, __LINE__);
 
 		sceneNode_->SetPosition(Vertex3(1, 1, 0));
-		BeginSelection(0.9f, 0.9f);
-		sceneNode_->GetBehavior()->Render2Select();
-		EndSelection();
-        id = GetSelectedNode();
+        colorSelection_->Render(sceneNode_->GetId(), 0, 0, sceneNode_->GetTechnique().get());
+        id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id == sceneNode_->GetId(), __FILE__, __LINE__);
 	}
 

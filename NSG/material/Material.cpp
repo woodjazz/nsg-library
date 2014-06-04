@@ -17,7 +17,8 @@ namespace NSG
 	diffuse_(1,1,1,1),
 	specular_(1,1,1,1),
 	shininess_(1),
-    blendMode_(ALPHA),
+	color_(1,1,1,1),
+    blendMode_(BLEND_ALPHA),
     enableDepthTest_(true),
     enableCullFace_(false),
     enableStencilTest_(false),
@@ -191,11 +192,11 @@ namespace NSG
 
         switch(blendMode_)
        	{
-        	case NONE:
+        	case BLEND_NONE:
 	        	glDisable(GL_BLEND);
 	        	break;
 
-	        case ALPHA:
+	        case BLEND_ALPHA:
 	        	glEnable(GL_BLEND);
 	        	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	        	break;
@@ -225,10 +226,10 @@ namespace NSG
 			pProgram_->Use(this);
 
 			pProgram_->Use(pNode);
-			GLuint positionLoc = pProgram_->GetPositionLoc();
-			GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
-			GLuint normalLoc = pProgram_->GetNormalLoc();
-			GLuint colorLoc = pProgram_->GetColorLoc();
+			GLuint positionLoc = pProgram_->GetAttPositionLoc();
+			GLuint texcoordLoc = pProgram_->GetAttTextCoordLoc();
+			GLuint normalLoc = pProgram_->GetAttNormalLoc();
+			GLuint colorLoc = pProgram_->GetAttColorLoc();
 
 			pMesh->Render(solid, positionLoc, texcoordLoc, normalLoc, colorLoc);
 	    }
@@ -243,20 +244,31 @@ namespace NSG
 			UseProgram useProgram(*pProgram_);
 			pProgram_->Use(this);
 
-			GLuint positionLoc = pProgram_->GetPositionLoc();
-			GLuint texcoordLoc = pProgram_->GetTextCoordLoc();
-			GLuint normalLoc = pProgram_->GetNormalLoc();
-			GLuint colorLoc = pProgram_->GetColorLoc();
+			GLuint positionLoc = pProgram_->GetAttPositionLoc();
+			GLuint texcoordLoc = pProgram_->GetAttTextCoordLoc();
+			GLuint normalLoc = pProgram_->GetAttNormalLoc();
+			GLuint colorLoc = pProgram_->GetAttColorLoc();
+
+			Mesh* lastMesh = nullptr;
+			Node* lastNode = nullptr;
 
 			auto it = meshNodes.begin();
 			while(it != meshNodes.end())
 			{
-                pProgram_->Use(it->first.get());
+				Mesh* mesh = it->second.get();
+				Node* node = it->first.get();
 
-                if(it->second->IsReady())
+				if(lastMesh != mesh || lastNode != node) // optimization to not render always the same
 				{
-					it->second->Render(solid, positionLoc, texcoordLoc, normalLoc, colorLoc);
+	                if(mesh->IsReady())
+					{
+		                pProgram_->Use(node);
+						it->second->Render(solid, positionLoc, texcoordLoc, normalLoc, colorLoc);
+						lastMesh = mesh;
+						lastNode = node;
+					}
 				}
+
 				++it;
 			}
 	    }

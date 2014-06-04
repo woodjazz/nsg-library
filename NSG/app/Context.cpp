@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "GPUObject.h"
 #include "FontAtlasTextureManager.h"
-#include "FrameColorSelection.h"
+//#include "FrameColorSelection.h"
 #include "TextureMemory.h"
 #include "Keyboard.h"
 #include "FreeTypeClass.h"
@@ -37,7 +37,7 @@ misrepresented as being the original software.
 namespace NSG
 {
 	Context::Context()
-	: pFrameColorSelection_(new FrameColorSelection(false)),
+	:// pFrameColorSelection_(new FrameColorSelection(false)),
 	atlasManager_(new FontAtlasTextureManager),
 	imgui_(new IMGUI::Context),
 	keyboard_(new Keyboard),
