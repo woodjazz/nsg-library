@@ -33,14 +33,15 @@ misrepresented as being the original software.
 #include "Technique.h"
 #include "Pass.h"
 #include "Material.h"
+#include "Graphics.h"
 #include "Keys.h"
 
 namespace NSG
 {
 	namespace IMGUI
 	{
-		Button::Button(GLushort id, const std::string& text, int percentageX, int percentageY)
-        : Object(id, LayoutType::Control, percentageX, percentageY),
+		Button::Button(GLushort id, bool isReadOnly, const std::string& text, int percentageX, int percentageY)
+        : Object(id, isReadOnly, LayoutType::Control, percentageX, percentageY),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
 		pressed_(false)
@@ -48,12 +49,10 @@ namespace NSG
             pTextMesh_->SetText(currentText_);
             pTextMesh_->SetTextHorizontalAlignment(CENTER_ALIGNMENT);
             pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
-            area_->isReadOnly_ = IsReadOnly();
 		}
 
 		Button::~Button()
 		{
-
 		}
 
 		void Button::OnKey(int key)
@@ -64,11 +63,15 @@ namespace NSG
 
 		void Button::OnActive()
 		{
-			pressed_ = true;
 		}
 
 		void Button::UpdateControl()
 		{
+            if(uistate_.mouseup_ && Hit(uistate_.mouseDownX_, uistate_.mouseDownY_) && Hit(uistate_.mousex_, uistate_.mousey_))
+			{
+				pressed_ = true;
+			}
+
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
 	        Node textNode0;
@@ -105,8 +108,8 @@ namespace NSG
             textMaterial.EnableStencilTest(true);
             textMaterial.SetTexture0(pTextMesh_->GetAtlas());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
-            GLint mask = area_->stencilRefValue_;
-            textMaterial.SetStencilFunc(GL_EQUAL, area_->stencilRefValue_, mask);
+            size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
+            textMaterial.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
             pass.Set(&textMaterial);
 
             technique.Render();

@@ -34,11 +34,10 @@ namespace NSG
 	namespace IMGUI
 	{
 		Label::Label(GLushort id, const std::string& text, int percentageX, int percentageY)
-		: Button(id, text, percentageX, percentageY)
+		: Button(id, true, text, percentageX, percentageY)
 		{
             pTextMesh_->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
             pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
-            area_->isReadOnly_ = IsReadOnly();
 		}
 
 		Label::~Label()

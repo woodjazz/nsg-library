@@ -171,12 +171,18 @@ namespace NSG
         pApp_->OnMouseDown(x, y);
     }
 
-    void InternalApp::OnMouseUp() 
+    void InternalApp::OnMouseUp(float x, float y) 
     {
         //TRACE_LOG("Mouse Up");
-        IMGUI::OnMouseUp();
-        pApp_->OnMouseUp();
+        IMGUI::OnMouseUp(x, y);
+        pApp_->OnMouseUp(x, y);
    }
+
+    void InternalApp::OnMouseWheel(float x, float y)
+    {
+        IMGUI::OnMouseWheel(x, y);
+        pApp_->OnMouseWheel(x, y);
+    }
 
     void InternalApp::OnKey(int key, int action, int modifier)
     {

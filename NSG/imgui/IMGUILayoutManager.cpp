@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "IMGUISkin.h"
 #include "IMGUIArea.h"
 #include "Technique.h"
+#include "Graphics.h"
 #include <algorithm>
 
 namespace NSG 
@@ -45,41 +46,23 @@ namespace NSG
 		{
 		}
 
-		PLayoutArea LayoutManager::InsertNewArea(GLushort id, LayoutType type, int percentageX, int percentageY)
+		PLayoutArea LayoutManager::InsertNewArea(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY)
 		{
-			GLuint stencilMaskValue = 0x1 << nestedAreas_.size();
-
-            CHECK_ASSERT(stencilMaskValue > nestedAreas_.size() && "Limit for nesting has been reached!!!", __FILE__, __LINE__);
-
-            if(nestedAreas_.size())
-            {
-                //Current mask + father's mask
-                stencilMaskValue = stencilMaskValue | stencilMaskValue >> 1;
-            }
-
-            GLint stencilRefValue = stencilMaskValue | nestedAreas_.size();
-
             PLayoutArea pCurrentArea;
-
 			PLayoutArea pArea;
 
             if(!nestedAreas_.empty())
             {
             	pCurrentArea = nestedAreas_.back();
                 PNode pNode(new Node());
-                pNode->SetParent(pCurrentArea->pNode_);
-            	pArea = PLayoutArea(new LayoutArea(id, pCurrentArea.get(), stencilRefValue, stencilMaskValue, pNode, type, percentageX, percentageY));
+                pNode->SetParent(pCurrentArea->childrenRoot_);
+            	pArea = PLayoutArea(new LayoutArea(id, isReadOnly, pCurrentArea.get(), pNode, type, percentageX, percentageY));
+                CHECK_ASSERT(pCurrentArea->type_ != LayoutType::Control, __FILE__, __LINE__);
 			    pCurrentArea->children_.insert(pArea);
-
-			    if(type == LayoutType::Control)
-			    {
-			    	pArea->stencilRefValue_ += pCurrentArea->children_.size();
-                    pArea->stencilRefValue_ |= stencilMaskValue;
-			    }
             }
             else
             {
-				pArea = PLayoutArea(new LayoutArea(id, nullptr, stencilRefValue, stencilMaskValue, pRootNode_, type, percentageX, percentageY));
+				pArea = PLayoutArea(new LayoutArea(id, isReadOnly, nullptr, pRootNode_, type, percentageX, percentageY));
             }
 
 			auto it = areas_.insert(AREAS::value_type(id, pArea));
@@ -111,10 +94,13 @@ namespace NSG
 
 		void LayoutManager::Begin()
 		{
+			BeginVertical(0);
 		}
 
 		void LayoutManager::End()
 		{
+            EndVertical();
+
 			if(layoutChanged_ || visibleAreas_ < areas_.size())
 			{
 				Reset();
@@ -147,14 +133,14 @@ namespace NSG
 			return pArea;
 		}
 
-		PLayoutArea LayoutManager::GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY)
+		PLayoutArea LayoutManager::GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY)
 		{
 			PLayoutArea pArea = GetArea(id);
 			
 			if(!pArea)
 			{
 				CHECK_ASSERT(nestedAreas_.size() || type != LayoutType::Control, __FILE__, __LINE__);
-				pArea = InsertNewArea(id, type, percentageX, percentageY);
+				pArea = InsertNewArea(id, isReadOnly, type, percentageX, percentageY);
 				newControlAdded_ = true;
 			}
 
@@ -193,7 +179,7 @@ namespace NSG
 
 		void LayoutManager::Spacer(GLushort id, int percentageX, int percentageY)
 		{
-			GetAreaForControl(id, LayoutType::Control, percentageX, percentageY);
+			GetAreaForControl(id, true, LayoutType::Control, percentageX, percentageY);
 		}
 
 		void LayoutManager::RecalculateLayout(PLayoutArea pCurrentArea)
@@ -267,8 +253,8 @@ namespace NSG
                     scaleY = remainingPercentageY/nEquallyDistributedControlsY;
                 }
 
-                if(pArea->type_ != LayoutType::Control && scaleY > 1) //Only controls can scale up (areas have to fit in the screen)
-                    scaleY = 1;
+                //if(pArea->type_ != LayoutType::Control && scaleY > 1) //Only controls can scale up (areas have to fit in the screen)
+                //    scaleY = 1;
 
 				if(pArea->percentageX_)
 				{
@@ -280,8 +266,8 @@ namespace NSG
                     scaleX = remainingPercentageX/nEquallyDistributedControlsX;
                 }
 
-                if(pArea->type_ != LayoutType::Control && scaleX > 1) //Only controls can scale up (areas have to fit in the screen)
-                    scaleX = 1;
+                //if(pArea->type_ != LayoutType::Control && scaleX > 1) //Only controls can scale up (areas have to fit in the screen)
+                //    scaleX = 1;
 
                 float stepY = scaleY;
                 float stepX = scaleX;

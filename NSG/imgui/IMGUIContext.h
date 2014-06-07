@@ -55,8 +55,6 @@ namespace NSG
 
 		private:
 			GLushort lastId_;
-			int currentPercentage_;
-
 		};
 	}
 }

@@ -192,17 +192,32 @@ namespace NSG
 				}
 				else if (event.type == SDL_MOUSEBUTTONUP)
 				{
-					s_pApp->OnMouseUp();
+					double x = event.button.x;
+                	double y = event.button.y;
+					s_pApp->OnMouseUp((float)(-1 + 2 * x/width), (float)(1 + -2*y/height));
 				}
 				else if (event.type == SDL_MOUSEMOTION)
 				{
 					if(width > 0 && height > 0)
 					{
-						double x = event.button.x;
-	                	double y = event.button.y;
+						double x = event.motion.x;
+	                	double y = event.motion.y;
 						s_pApp->OnMouseMove((float)(-1 + 2 * x/width),(float)(1 + -2*y/height));
 					}
 				}
+				else if (event.type == SDL_MOUSEWHEEL)
+				{
+					if(width > 0 && height > 0)
+					{
+                        const float FACTOR = 15;
+                        float x = FACTOR * event.wheel.x;
+	                	float y = FACTOR * event.wheel.y;
+                        float screenX = x/(float)width;
+                        float screenY = y/(float)height;
+						s_pApp->OnMouseWheel(screenX, screenY);
+					}
+				}
+                
 			}
 
 			s_pApp->RenderFrame();

@@ -67,9 +67,9 @@ namespace NSG
 		glClear(mask);
 	}
 
-	void ClearStencilBuffer()
+	void ClearStencilBuffer(GLint value)
 	{
-		glClearStencil(0);
+		glClearStencil(value);
 		glStencilMask(~GLuint(0));
 		glClear(GL_STENCIL_BUFFER_BIT);
 	}

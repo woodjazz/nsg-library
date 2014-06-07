@@ -70,29 +70,45 @@ namespace NSG
 
 		bool Button_(GLushort id, const std::string& text, int percentageX, int percentageY)
 		{
+			//BeginVertical_(id);
+
 			id = Context::this_->GetValidId(id);
 
-			Button obj(id, text, percentageX, percentageY);
+			Button obj(id, false, text, percentageX, percentageY);
 			
-			return obj();
+			bool result = obj();
+
+			//EndVertical_();
+
+			return result;
 		}		
 
 		void Label_(GLushort id, const std::string& text, int percentageX, int percentageY)
 		{
+			//BeginVertical_(id);
+
 			id = Context::this_->GetValidId(id);
 
 			Label obj(id, text, percentageX, percentageY);
 
-			return obj();
+			obj();
+
+			//EndVertical_();
 		}
 
 		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentageX, int percentageY)
 		{	
+			//BeginVertical_(id);
+
 			id = Context::this_->GetValidId(id);
 
 			Text obj(id, text, pRegex, percentageX, percentageY);
 
-			return obj();
+			std::string result = obj();
+
+			//EndVertical_();
+
+			return result;
 		}	
 
 		PSkin& Skin_()
@@ -130,10 +146,15 @@ namespace NSG
             Context::this_->state_->OnMouseDown(x, y);
         }
 
-        void OnMouseUp()
+        void OnMouseUp(float x, float y)
         {
-            Context::this_->state_->OnMouseUp();
+            Context::this_->state_->OnMouseUp(x, y);
         }
+
+		void OnMouseWheel(float x, float y)
+		{
+			Context::this_->state_->OnMouseWheel(x, y);	
+		}
 
         void OnKey(int key, int action, int modifier)
         {

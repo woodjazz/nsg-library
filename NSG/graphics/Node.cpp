@@ -81,20 +81,29 @@ namespace NSG
 
 	void Node::SetPosition(const Vertex3& position)
 	{
-		position_ = position;
-		Update();
+        if(position_ != position)
+        {
+		    position_ = position;
+		    Update();
+        }
 	}
 
 	void Node::SetOrientation(const Quaternion& q)
 	{
-		q_ = q;
-		Update();
+        if(q_ != q)
+        {
+		    q_ = q;
+		    Update();
+        }
 	}
 
 	void Node::SetScale(const Vertex3& scale)
 	{
-		scale_ = scale;
-		Update();
+        if(scale_ != scale)
+        {
+		    scale_ = scale;
+		    Update();
+        }
 	}
 
 	void Node::SetGlobalPosition(const Vertex3& position) 

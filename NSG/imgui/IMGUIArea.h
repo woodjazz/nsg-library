@@ -36,10 +36,10 @@ namespace NSG
 			Area(GLushort id, LayoutType type, int percentageX, int percentageY);
             ~Area();
 			void operator()();
-			bool IsReadOnly() const { return true; }
 			PTechnique GetActiveTechnique() const;
 			PTechnique GetHotTechnique() const;
 			PTechnique GetNormalTechnique() const;
+			void UpdateControl();
 
 		};
 	}

@@ -121,7 +121,7 @@ namespace NSG
 
 	void TextMesh::SetTextHorizontalAlignment(HorizontalAlignment align)
 	{
-		if(align != hAlignment_)
+		if(align != hAlignment_ || hasBeenInvalidatedExternally_)
 		{
 			if(align == CENTER_ALIGNMENT)
 				alignmentOffsetX_ = -screenWidth_/2;
@@ -138,7 +138,7 @@ namespace NSG
 
 	void TextMesh::SetTextVerticalAlignment(VerticalAlignment align)
 	{
-		if(align != vAlignment_)
+		if(align != vAlignment_ || hasBeenInvalidatedExternally_)
 		{
 			if(align == MIDDLE_ALIGNMENT)
 				alignmentOffsetY_ = 0;
@@ -173,6 +173,12 @@ namespace NSG
 			if(pAtlas_->SetTextMesh(text, vertexsData_, screenWidth_, screenHeight_))
             {
 			    text_ = text;
+
+                if(hasBeenInvalidatedExternally_)
+                {
+                    SetTextHorizontalAlignment(hAlignment_);
+                    SetTextVerticalAlignment(vAlignment_);
+                }
 
                 Invalidate();
 

@@ -30,7 +30,7 @@ misrepresented as being the original software.
 #include "PlaneMesh.h"
 #include "CircleMesh.h"
 #include "RoundedRectangleMesh.h"
-#include "ProgramWhiteColor.h"
+#include "ProgramSimpleColor.h"
 #include "ProgramUnlit.h"
 
 namespace NSG 
@@ -79,11 +79,13 @@ namespace NSG
 			labelMaterial->EnableStencilTest(true);
 
 			PMaterial areaMaterial(new Material);
-			PProgram pAreaProgram(new ProgramWhiteColor);
-            areaMaterial->SetProgram(pAreaProgram);
+            areaMaterial->SetColor(Color(0,1,1,0.5f));
+			//PProgram pAreaProgram(new ProgramSimpleColor);
+            //areaMaterial->SetProgram(pAreaProgram);
+            areaMaterial->SetProgram(pProgram);
             areaMaterial->EnableDepthTest(false);
 			areaMaterial->EnableStencilTest(true);
-			areaMaterial->EnableColorBuffer(false);
+			//areaMaterial->EnableColorBuffer(false);
 
 
             PMesh controlMesh(new RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));

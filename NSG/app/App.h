@@ -54,7 +54,8 @@ namespace NSG
 		virtual void ViewChanged(int32_t width, int32_t height) {};
         virtual void OnMouseMove(float x, float y) {}
         virtual void OnMouseDown(float x, float y) {}
-        virtual void OnMouseUp() {}
+        virtual void OnMouseWheel(float x, float y) {}
+        virtual void OnMouseUp(float x, float y) {}
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
         virtual bool ShallExit() const { return false; }
@@ -93,8 +94,9 @@ namespace NSG
         void EndTick();
         void ViewChanged(int32_t width, int32_t height);
         void OnMouseMove(float x, float y);
+        void OnMouseWheel(float x, float y);
         void OnMouseDown(float x, float y);
-        void OnMouseUp();
+        void OnMouseUp(float x, float y);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void RenderFrame();

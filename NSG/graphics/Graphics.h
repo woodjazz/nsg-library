@@ -24,10 +24,10 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
+#include "GLES2Includes.h"
 namespace NSG
 {
 	void ClearAllBuffers();
 	void ClearBuffers(bool color, bool depth, bool stencil);
-	void ClearStencilBuffer();
+	void ClearStencilBuffer(GLint value = 0);
 }

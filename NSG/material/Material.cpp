@@ -27,8 +27,8 @@ namespace NSG
 	dpfailStencilOp_(GL_KEEP),
 	dppassStencilOp_(GL_REPLACE),
 	stencilFunc_(GL_ALWAYS),
-	stencilRefValue_(0x00),
-	stencilMaskValue_(0xFF),
+	stencilRefValue_(0),
+	stencilMaskValue_(~GLuint(0)),
     enableColorBuffer_(true),
     enableDepthBuffer_(true)
 	{

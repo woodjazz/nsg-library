@@ -60,7 +60,8 @@ namespace NSG
 		void Update(bool notify = true);
     protected:
 		PNode pParent_;
-		std::set<Node*> children_;
+        std::set<Node*> children_;
+		
 	private:
 		GLushort id_;	
         Matrix4 globalModel_;	

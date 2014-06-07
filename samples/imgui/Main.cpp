@@ -66,7 +66,7 @@ struct Sample : App
                 IMGUIBeginHorizontal();
                 IMGUIBeginVertical();
                 IMGUISpacer(0, 80);
-                menu_choosen = IMGUIButton("Menugdsfgsdfgsdfgsdfg");
+                menu_choosen = IMGUIButton("Menu");
                 IMGUIEndVertical();
                 IMGUISpacer(80);
                 IMGUIEndHorizontal();
@@ -97,27 +97,31 @@ struct Sample : App
         }
         else
         {
-            IMGUIBeginVertical(100);
+            //IMGUIBeginVertical(100, 0);
             int fontSize = IMGUISkin()->fontSize_;
             IMGUISkin()->fontSize_ = 12;
             IMGUINode()->SetPosition(position);
             
             IMGUISpacer(5);
 
-            static const int MAX_FIELDS = 5;
+            IMGUIBeginVertical(0, 50);
+
+            static const int MAX_FIELDS = 15;
             static std::string field[MAX_FIELDS];
             for(int i=0; i<MAX_FIELDS; i++)
             {
                 std::stringstream label;
                 label << "Label " << i << ":";
 
-                IMGUIBeginHorizontal();
-                IMGUISpacer(20);
+                IMGUIBeginHorizontal(0,25);
                 IMGUILabel(label.str()); 
 		        field[i] = IMGUITextField(field[i]);
                 IMGUISpacer(20);
                 IMGUIEndHorizontal();
             }
+
+            IMGUIEndVertical();
+
             IMGUISkin()->fontSize_ = fontSize;
 
             IMGUISpacer(5);
@@ -142,7 +146,7 @@ struct Sample : App
             {
                 menu = exit = false;
             }
-            IMGUIEndVertical();
+            //IMGUIEndVertical();
         }
     }
 };

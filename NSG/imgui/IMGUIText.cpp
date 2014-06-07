@@ -42,7 +42,7 @@ namespace NSG
 	namespace IMGUI
 	{
 		Text::Text(GLushort id, const std::string& text, std::regex* pRegex, int percentageX, int percentageY)
-        : Object(id, LayoutType::Control, percentageX, percentageY),
+        : Object(id, false, LayoutType::Control, percentageX, percentageY),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
         pCursorMesh_(Context::this_->GetCurrentTextMesh(-1)),
@@ -55,7 +55,6 @@ namespace NSG
 			pCursorMesh_->SetText("_");
 	        pCursorMesh_->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
 	        pCursorMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
-            area_->isReadOnly_ = IsReadOnly();
 		}
 
 		Text::~Text()
@@ -219,9 +218,11 @@ namespace NSG
 	        textMaterial.EnableStencilTest(true);
 	        textMaterial.SetTexture0(pTextMesh_->GetAtlas());
 	        textMaterial.SetProgram(pTextMesh_->GetProgram());
-            GLint mask = area_->stencilRefValue_;
-            textMaterial.SetStencilFunc(GL_EQUAL, area_->stencilRefValue_, mask);
-	        pass.Set(&textMaterial);
+            //textMaterial.SetStencilFunc(GL_EQUAL, 1, ~GLuint(0));
+            size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
+            textMaterial.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
+
+            pass.Set(&textMaterial);
 	        technique.Render();
 	        
 			// Render cursor if we have keyboard focus

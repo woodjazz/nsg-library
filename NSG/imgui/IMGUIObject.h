@@ -33,16 +33,15 @@ namespace NSG
 		class Object
 		{
 		public:
-			Object(GLushort id, LayoutType type, int percentageX, int percentageY);
+			Object(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 			~Object();
 			bool IsStable() const;
-			bool Hit();
+			bool Hit(float x, float y);
 			void Draw();
 			bool Update();
 			virtual void UpdateControl() {};
 			bool HasFocus() const;
 			bool IsActive() const;
-			virtual bool IsReadOnly() const { return false; }
 			virtual bool NeedsKeyboard() const { return false; }
 			virtual void OnFocus() {};
 			virtual void OnActive() {};
@@ -59,6 +58,7 @@ namespace NSG
 			PLayoutArea area_;
 			PNode node_;
 			Vertex4 areaSize_;
+			PTechnique currentTechnique_;
 		};
 	}
 }

@@ -31,13 +31,24 @@ namespace NSG
 {
 	namespace IMGUI
 	{
+		struct MouseRelPosition
+		{
+			float x_;
+			float y_;
+		};
+
 		struct State
 		{
-            PTechnique currentTechnique_;
+			float mouseDownX_;
+			float mouseDownY_;
 
 			float mousex_;
 			float mousey_;
 			bool mousedown_;
+            bool mouseup_;
+
+			float mouseRelX_; //The amount scrolled horizontally (in screen coordinates)
+			float mouseRelY_; //The amount scrolled vertically (in screen coordinates)
 
 			GLushort hotitem_;
 			GLushort activeitem_;
@@ -48,18 +59,31 @@ namespace NSG
   			unsigned int character_;
   			GLushort lastwidget_;	
   			bool activeitem_needs_keyboard_;
+            int lastScrollHit_;
 
 			int tick_;
 
   			State();
   			~State();
 
+  			void Begin();
+  			void End();
+
         	void OnMouseMove(float x, float y);
 	        void OnMouseDown(float x, float y);
-	        void OnMouseUp();
+	        void OnMouseUp(float x, float y);
+	        void OnMouseWheel(float x, float y);
 	        void OnKey(int key, int action, int modifier);
 	        void OnChar(unsigned int character);
 	        void DoTick();
+
+	        MouseRelPosition GetMouseRelPosition() const;
+
+        private:
+            float mouseRelDownX_;
+			float mouseRelDownY_;
+
+
 		};
 	}
 }

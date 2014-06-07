@@ -36,7 +36,6 @@ namespace NSG
 		public:
 			Label(GLushort id, const std::string& text, int percentageX, int percentageY);
 			~Label();
-			bool IsReadOnly() const { return true; }
 			void operator()();
 			PTechnique GetNormalTechnique() const;
 		};

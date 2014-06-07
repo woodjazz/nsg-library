@@ -35,25 +35,49 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Check.h"
 #include "Camera.h"
+#include "Graphics.h"
 #include "Keys.h"
 
 namespace NSG
 {
 	namespace IMGUI
 	{
-		Object::Object(GLushort id, LayoutType type, int percentageX, int percentageY)
+		Object::Object(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY)
 		: id_(id),
 		uistate_(*Context::this_->state_),
-		area_(Context::this_->pLayoutManager_->GetAreaForControl(id, type, percentageX, percentageY)),
+		area_(Context::this_->pLayoutManager_->GetAreaForControl(id, isReadOnly, type, percentageX, percentageY)),
         node_(area_->pNode_),
         areaSize_(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(2,0,0,0))
 		{
 			CHECK_ASSERT(node_, __FILE__, __LINE__);
-			area_->isReadOnly_ = IsReadOnly();
 		}
 
 		Object::~Object()
 		{
+#if 1
+			size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
+			if(level > 0)
+			{
+	            if(currentTechnique_ && area_->type_ == LayoutType::Control)
+	            {
+				    size_t nPasses = currentTechnique_->GetNumPasses();
+				    for(size_t i=0; i<nPasses; i++)
+				    {
+	            	    PMaterial material = currentTechnique_->GetPass(i)->GetMaterial();
+	                    material->SetStencilOp(GL_DECR, GL_KEEP, GL_KEEP);
+					    material->SetStencilFunc(GL_NEVER, 0, 0);
+		            }
+				    currentTechnique_->Set(node_);
+				    currentTechnique_->Render();
+
+				    for(size_t i=0; i<nPasses; i++)
+				    {
+	            	    PMaterial material = currentTechnique_->GetPass(i)->GetMaterial();
+	                    material->SetStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		            }
+	            }
+	        }
+#endif
             if(!area_->isReadOnly_)
             {
 			    uistate_.lastwidget_ = id_;
@@ -65,15 +89,15 @@ namespace NSG
 			return Context::this_->pLayoutManager_->IsStable();
 		}
 
-		bool Object::Hit()
+		bool Object::Hit(float x, float y)
 		{
 			if(!Context::this_->pFrameColorSelection_)
 				return false;
 
-            if(uistate_.currentTechnique_)
+            if(currentTechnique_)
             {
-            	uistate_.currentTechnique_->Set(node_);
-            	if(Context::this_->pFrameColorSelection_->Render(id_, Context::this_->state_->mousex_, Context::this_->state_->mousey_, uistate_.currentTechnique_.get()))
+            	currentTechnique_->Set(node_);
+            	if(Context::this_->pFrameColorSelection_->Render(id_, x, y, currentTechnique_.get()))
             		return id_ == Context::this_->pFrameColorSelection_->GetSelected();
             }
 
@@ -99,15 +123,31 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			size_t nPasses = uistate_.currentTechnique_->GetNumPasses();
+			size_t nPasses = currentTechnique_->GetNumPasses();
 			for(size_t i=0; i<nPasses; i++)
 			{
-            	PMaterial material = uistate_.currentTechnique_->GetPass(i)->GetMaterial();
-	            material->SetStencilFunc(GL_GREATER, area_->stencilRefValue_, area_->stencilMaskValue_);
+            	PMaterial material = currentTechnique_->GetPass(i)->GetMaterial();
+            	size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
+                if(level > 0)
+                {
+                    material->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+            	    material->SetStencilFunc(GL_EQUAL, level-1, ~GLuint(0));
+                }
+                else
+                {
+                    material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+            	    material->SetStencilFunc(GL_NEVER, 0, 0);
+                }
+
+
+/*                if(area_->type_ == LayoutType::Control)
+					material->SetStencilFunc(GL_LESS, 1, ~GLuint(0));
+                else
+	            	material->SetStencilFunc(GL_ALWAYS, 2, 0);*/
 	        }
             
-			uistate_.currentTechnique_->Set(node_);
-			uistate_.currentTechnique_->Render();
+			currentTechnique_->Set(node_);
+			currentTechnique_->Render();
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }
@@ -127,14 +167,14 @@ namespace NSG
 			if(uistate_.hotitem_ == id_)
 			{
 				if(uistate_.activeitem_ == id_ || uistate_.kbditem_ == id_) // Button is both 'hot' and 'active'
-                    uistate_.currentTechnique_ = GetActiveTechnique();
+                    currentTechnique_ = GetActiveTechnique();
 				else // Button is merely 'hot'
-                    uistate_.currentTechnique_ = GetHotTechnique();
+                    currentTechnique_ = GetHotTechnique();
 			}
 			else if(uistate_.activeitem_ == id_ || uistate_.kbditem_ == id_) // button is not hot, but it is active
-				uistate_.currentTechnique_ = GetActiveTechnique();
+				currentTechnique_ = GetActiveTechnique();
 			else 
-                uistate_.currentTechnique_ = GetNormalTechnique();
+                currentTechnique_ = GetNormalTechnique();
         }
 
 		bool Object::Update()
@@ -142,11 +182,11 @@ namespace NSG
 			if(!IsStable())
 				return false;
 
-			if(!IsReadOnly())			
+            if(!area_->isReadOnly_)			
 			{
                 FixCurrentTecnique();
 
-				if (Hit()) // Check whether the button should be hot
+				if (Hit(Context::this_->state_->mousex_, Context::this_->state_->mousey_)) // Check whether the button should be hot
 				{
 					uistate_.hotitem_ = id_;
 

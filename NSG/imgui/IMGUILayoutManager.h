@@ -44,8 +44,6 @@ namespace NSG
 			float textOffsetX_;
 			unsigned int cursor_character_position_; 
 			LayoutArea* parent_;
-			GLint stencilRefValue_;
-			GLuint stencilMaskValue_;
 
             struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
             {
@@ -55,14 +53,16 @@ namespace NSG
                 }
             };
 
-			std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number)
+			PNode childrenRoot_; //node used to perform the scrolling
+			std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number or __COUNTER__)
+            std::string hierachicalBits_;
 
-			LayoutArea(GLushort id, LayoutArea* parent, GLint stencilRefValue, GLuint stencilMaskValue, PNode pNode, LayoutType type, int percentageX, int percentageY) 
-			: id_(id), percentageX_(percentageX), percentageY_(percentageY), pNode_(pNode), type_(type), isReadOnly_(false), textOffsetX_(0), 
+			LayoutArea(GLushort id, bool isReadOnly, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY) 
+			: id_(id), percentageX_(percentageX), percentageY_(percentageY), pNode_(pNode), type_(type), isReadOnly_(isReadOnly), textOffsetX_(0), 
 			cursor_character_position_(0), parent_(parent),
-			stencilRefValue_(stencilRefValue),
-			stencilMaskValue_(stencilMaskValue)
+			childrenRoot_(new Node)
 			{
+				childrenRoot_->SetParent(pNode);
 			}
 		};
 
@@ -70,11 +70,11 @@ namespace NSG
 		{
         public:
 			LayoutManager(PNode pRootNode, PNode pCurrentNode); 
-			PLayoutArea InsertNewArea(GLushort id, LayoutType type, int percentageX, int percentageY);
+			PLayoutArea InsertNewArea(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 			void Reset();
 			void Begin();
 			void End();
-			PLayoutArea GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY);
+			PLayoutArea GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 			PLayoutArea GetArea(GLushort id) const;
 			void BeginHorizontal(GLushort id, int percentageX = 0, int percentageY = 0);
 			void EndHorizontal();
@@ -83,6 +83,7 @@ namespace NSG
 			void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
 			void RecalculateLayout(PLayoutArea pCurrentArea);
 			bool IsStable() const;
+			size_t GetNestingLevel() const {return nestedAreas_.size(); }
 		private:
 			std::list<PLayoutArea> nestedAreas_;
 			typedef std::map<GLushort, PLayoutArea> AREAS;
