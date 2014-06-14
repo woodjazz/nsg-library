@@ -32,6 +32,7 @@ static const char* vShader = STRINGIFY(
 	attribute vec2 a_texcoord;
 	attribute vec4 a_position;
 	attribute vec4 a_color;
+
     varying vec4 v_vertex_color;
 	varying vec2 v_texcoord;
 

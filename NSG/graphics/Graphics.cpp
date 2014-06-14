@@ -47,7 +47,7 @@ namespace NSG
 		if(color)
 		{
 			mask |= GL_COLOR_BUFFER_BIT;
-			glClearColor(0, 0, 0, 0);
+			glClearColor(0, 0, 0, 1);
 			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 		}
 

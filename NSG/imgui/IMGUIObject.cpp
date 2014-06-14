@@ -47,18 +47,22 @@ namespace NSG
 		uistate_(*Context::this_->state_),
 		area_(Context::this_->pLayoutManager_->GetAreaForControl(id, isReadOnly, type, percentageX, percentageY)),
         node_(area_->pNode_),
-        areaSize_(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(2,0,0,0))
+        areaSize_(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(2,0,0,0)),
+		mouseDownX_(Context::this_->state_->mouseDownX_),
+		mouseDownY_(Context::this_->state_->mouseDownY_),
+		mousex_(Context::this_->state_->mousex_),
+		mousey_(Context::this_->state_->mousey_),
+		mousedown_(Context::this_->state_->mousedown_)
 		{
 			CHECK_ASSERT(node_, __FILE__, __LINE__);
 		}
 
 		Object::~Object()
 		{
-#if 1
 			size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
 			if(level > 0)
 			{
-	            if(currentTechnique_ && area_->type_ == LayoutType::Control)
+	            if(currentTechnique_)
 	            {
 				    size_t nPasses = currentTechnique_->GetNumPasses();
 				    for(size_t i=0; i<nPasses; i++)
@@ -67,7 +71,7 @@ namespace NSG
 	                    material->SetStencilOp(GL_DECR, GL_KEEP, GL_KEEP);
 					    material->SetStencilFunc(GL_NEVER, 0, 0);
 		            }
-				    currentTechnique_->Set(node_);
+
 				    currentTechnique_->Render();
 
 				    for(size_t i=0; i<nPasses; i++)
@@ -77,7 +81,6 @@ namespace NSG
 		            }
 	            }
 	        }
-#endif
             if(!area_->isReadOnly_)
             {
 			    uistate_.lastwidget_ = id_;
@@ -89,19 +92,32 @@ namespace NSG
 			return Context::this_->pLayoutManager_->IsStable();
 		}
 
+		void Object::SetStencilTestForHit()
+		{
+        	PMaterial material = Context::this_->pFrameColorSelection_->GetMaterial();
+        	size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
+            if(level > 0)
+            {
+                material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        	    material->SetStencilFunc(GL_NEVER, level-1, ~GLuint(0));
+            }
+            else
+            {
+                material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        	    material->SetStencilFunc(GL_NEVER, 0, 0);
+            }
+		}
+
 		bool Object::Hit(float x, float y)
 		{
-			if(!Context::this_->pFrameColorSelection_)
-				return false;
+			SetStencilTestForHit();
+        	return Context::this_->pFrameColorSelection_->Hit(id_, x, y, currentTechnique_.get());
+		}
 
-            if(currentTechnique_)
-            {
-            	currentTechnique_->Set(node_);
-            	if(Context::this_->pFrameColorSelection_->Render(id_, x, y, currentTechnique_.get()))
-            		return id_ == Context::this_->pFrameColorSelection_->GetSelected();
-            }
-
-            return false;
+		bool Object::Hit(GLushort id, float x, float y, const PTechnique& technique)
+		{
+			SetStencilTestForHit();
+			return Context::this_->pFrameColorSelection_->Hit(id, x, y, technique.get());	
 		}
 
 		PTechnique Object::GetActiveTechnique() const
@@ -138,15 +154,8 @@ namespace NSG
                     material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             	    material->SetStencilFunc(GL_NEVER, 0, 0);
                 }
-
-
-/*                if(area_->type_ == LayoutType::Control)
-					material->SetStencilFunc(GL_LESS, 1, ~GLuint(0));
-                else
-	            	material->SetStencilFunc(GL_ALWAYS, 2, 0);*/
 	        }
             
-			currentTechnique_->Set(node_);
 			currentTechnique_->Render();
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -175,6 +184,8 @@ namespace NSG
 				currentTechnique_ = GetActiveTechnique();
 			else 
                 currentTechnique_ = GetNormalTechnique();
+
+            currentTechnique_->Set(node_);
         }
 
 		bool Object::Update()

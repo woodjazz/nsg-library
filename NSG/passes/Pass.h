@@ -40,6 +40,7 @@ namespace NSG
 		void SetDrawMode(Mode mode) { drawMode_ = mode; }
 		void SetNode(int idx, PNode node);
         void SetAll(PNode node);
+        void SetAll(Node* node);
 		void Set(PMaterial material);
 		void Set(Material* pMaterial);
 		void Add(PNode node, PMesh mesh);

@@ -66,6 +66,13 @@ namespace NSG
     		(*it++)->SetAll(node);
     }
 
+    void Technique::Set(Node* node)
+    {
+    	auto it = passes_.begin();
+    	while(it != passes_.end())
+    		(*it++)->SetAll(node);
+    }
+
 	size_t Technique::GetNumPasses() const
 	{
 		return passes_.size();

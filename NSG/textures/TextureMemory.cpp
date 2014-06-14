@@ -74,8 +74,8 @@ namespace NSG
 
 		if(pResource_->GetBytes())
 		{
-        	CHECK_ASSERT(width_*height_*channels_ == pResource_->GetBytes(), __FILE__, __LINE__);
-        	data = pResource_->GetData();
+			CHECK_ASSERT(width_*height_*channels_ == pResource_->GetBytes(), __FILE__, __LINE__);
+			data = pResource_->GetData();
         }
 
 		glBindTexture(GL_TEXTURE_2D, texture_);
@@ -89,6 +89,7 @@ namespace NSG
 			format_,
 			GL_UNSIGNED_BYTE,
 			data);
+
 
         if(data == nullptr)
         {

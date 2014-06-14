@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Node.h"
 #include "Types.h"
+#include "Check.h"
 #include <list>
 #include <map>
 
@@ -44,6 +45,10 @@ namespace NSG
 			float textOffsetX_;
 			unsigned int cursor_character_position_; 
 			LayoutArea* parent_;
+			PNode childrenRoot_; //node used to perform the scrolling
+			bool isScrollable_;
+			float scrollFactorAreaX_;
+			float scrollFactorAreaY_;
 
             struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
             {
@@ -53,17 +58,10 @@ namespace NSG
                 }
             };
 
-			PNode childrenRoot_; //node used to perform the scrolling
-			std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number or __COUNTER__)
-            std::string hierachicalBits_;
+            std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number or __COUNTER__)
 
-			LayoutArea(GLushort id, bool isReadOnly, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY) 
-			: id_(id), percentageX_(percentageX), percentageY_(percentageY), pNode_(pNode), type_(type), isReadOnly_(isReadOnly), textOffsetX_(0), 
-			cursor_character_position_(0), parent_(parent),
-			childrenRoot_(new Node)
-			{
-				childrenRoot_->SetParent(pNode);
-			}
+			LayoutArea(GLushort id, bool isReadOnly, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY);
+			void CalculateScrollAreaFactor();
 		};
 
 		class LayoutManager
@@ -76,16 +74,15 @@ namespace NSG
 			void End();
 			PLayoutArea GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 			PLayoutArea GetArea(GLushort id) const;
-			void BeginHorizontal(GLushort id, int percentageX = 0, int percentageY = 0);
-			void EndHorizontal();
-			void BeginVertical(GLushort id, int percentageX = 0, int percentageY = 0);
-			void EndVertical();
+			void BeginHorizontalArea(GLushort id, int percentageX = 0, int percentageY = 0);
+			void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
+			float EndArea(float scroll);
 			void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
 			void RecalculateLayout(PLayoutArea pCurrentArea);
 			bool IsStable() const;
 			size_t GetNestingLevel() const {return nestedAreas_.size(); }
 		private:
-			std::list<PLayoutArea> nestedAreas_;
+			std::list<PArea> nestedAreas_;
 			typedef std::map<GLushort, PLayoutArea> AREAS;
 			AREAS areas_;
 			bool layoutChanged_;

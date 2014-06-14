@@ -112,9 +112,10 @@ namespace NSG
 			const int WIDTH = 1;
 			const int HEIGHT = 1;
 			// Creates 1x1 white texture 
-			unsigned char img[WIDTH*HEIGHT*3];
+			static unsigned char img[WIDTH*HEIGHT*3];
 			memset(&img[0], 0xFF, sizeof(img));
 	        whiteTexture_ = PTexture(new TextureMemory(GL_RGB, WIDTH, HEIGHT, (char*)&img[0]));
+	        TRACE_LOG("White texture has been generated.")
 	    }
 
 	    return whiteTexture_;

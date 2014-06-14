@@ -45,6 +45,8 @@ namespace NSG
 			
 			PTechnique labelTechnique_;
 
+			PTechnique sliderTechnique_;
+
 			Skin();
 			Skin(const Skin& obj);
 		};

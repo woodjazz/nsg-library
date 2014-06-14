@@ -22,7 +22,7 @@ namespace NSG
     enableDepthTest_(true),
     enableCullFace_(false),
     enableStencilTest_(false),
-    stencilMask_(0xFF),
+    stencilMask_(~GLuint(0)),
 	sfailStencilOp_(GL_KEEP),
 	dpfailStencilOp_(GL_KEEP),
 	dppassStencilOp_(GL_REPLACE),

@@ -33,7 +33,7 @@ namespace NSG
     class FrameColorSelection : public GPUObject
     {
     public:
-        FrameColorSelection(bool createDepthBuffer);
+        FrameColorSelection(bool createDepthBuffer, bool createStencilBuffer);
         ~FrameColorSelection();
         GLushort GetSelected() const;
 
@@ -45,6 +45,9 @@ namespace NSG
         void AssignValues();
 
         bool Render(GLushort id, float screenX, float screenY, Technique* technique);
+        bool Hit(GLushort id, float screenX, float screenY, Technique* technique);
+
+        PMaterial GetMaterial() const { return material_; }
 
     private:
         Color TransformSelectedId2Color(GLushort id);
@@ -57,10 +60,12 @@ namespace NSG
         GLuint framebuffer_;
         GLuint colorRenderbuffer_;
         GLuint depthRenderBuffer_;
+        GLuint stencilRenderBuffer_;
         GLubyte selected_[4];
         GLint pixelX_;
         GLint pixelY_;
         bool createDepthBuffer_;
+        bool createStencilBuffer_;
     };
 }
 

@@ -181,6 +181,10 @@ namespace NSG
 
 	    struct State;
 	    typedef std::shared_ptr<State> PState;
+
+	    class Area;
+	    typedef std::shared_ptr<Area> PArea;
+
 	}
 
 	class Model;

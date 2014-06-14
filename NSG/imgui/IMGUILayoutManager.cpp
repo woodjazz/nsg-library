@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "IMGUIState.h"
 #include "IMGUISkin.h"
 #include "IMGUIArea.h"
+#include "IMGUI.h"
 #include "Technique.h"
 #include "Graphics.h"
 #include <algorithm>
@@ -36,6 +37,55 @@ namespace NSG
 {
 	namespace IMGUI
 	{
+		LayoutArea::LayoutArea(GLushort id, bool isReadOnly, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY) 
+		: id_(id), percentageX_(percentageX), percentageY_(percentageY), pNode_(pNode), type_(type), isReadOnly_(isReadOnly), textOffsetX_(0), 
+		cursor_character_position_(0), parent_(parent),
+		childrenRoot_(new Node),
+		isScrollable_(false),
+		scrollFactorAreaX_(0),
+		scrollFactorAreaY_(0)
+		{
+			CHECK_ASSERT(percentageX > 0 && percentageY > 0, __FILE__, __LINE__);
+			childrenRoot_->SetParent(pNode);
+		}
+
+		void LayoutArea::CalculateScrollAreaFactor()
+		{
+			scrollFactorAreaX_ = 0;
+			scrollFactorAreaY_ = 0;
+
+			if(type_ == LayoutType::Vertical)
+			{
+	            auto it = children_.begin();
+	            while(it != children_.end())
+	            {
+	                PLayoutArea child = *(it++);
+	                scrollFactorAreaX_ = std::max<float>(scrollFactorAreaX_, child->percentageX_);
+	                scrollFactorAreaY_ += child->percentageY_;
+	            }
+	        }
+	        else
+	        {
+	            auto it = children_.begin();
+	            while(it != children_.end())
+	            {
+	                PLayoutArea child = *(it++);
+	                scrollFactorAreaX_ += child->percentageX_;
+	                scrollFactorAreaY_ = std::max<float>(scrollFactorAreaY_, child->percentageY_);
+	            }
+	        }
+
+            scrollFactorAreaX_ /= 100.0f;
+            scrollFactorAreaY_ /= 100.0f;
+
+	        isScrollable_ = scrollFactorAreaX_ > 1 || scrollFactorAreaY_ > 1; 
+		}
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		LayoutManager::LayoutManager(PNode pRootNode, PNode pCurrentNode) 
 		: layoutChanged_(false),
         visibleAreas_(0),
@@ -51,9 +101,15 @@ namespace NSG
             PLayoutArea pCurrentArea;
 			PLayoutArea pArea;
 
+			if(percentageX == 0)
+				percentageX = 100;
+
+			if(percentageY == 0)
+				percentageY = 100;
+
             if(!nestedAreas_.empty())
             {
-            	pCurrentArea = nestedAreas_.back();
+            	pCurrentArea = nestedAreas_.back()->GetArea();
                 PNode pNode(new Node());
                 pNode->SetParent(pCurrentArea->childrenRoot_);
             	pArea = PLayoutArea(new LayoutArea(id, isReadOnly, pCurrentArea.get(), pNode, type, percentageX, percentageY));
@@ -79,6 +135,7 @@ namespace NSG
             {
             	pCurrentArea->pNode_->EnableUpdate(false);
 			    RecalculateLayout(pCurrentArea);
+			    pCurrentArea->CalculateScrollAreaFactor();
 			}
 
 			return pArea;
@@ -94,12 +151,12 @@ namespace NSG
 
 		void LayoutManager::Begin()
 		{
-			BeginVertical(0);
+			BeginVerticalArea(IMGUI_FIRST_VERTICAL_AREA_ID);
 		}
 
 		void LayoutManager::End()
 		{
-            EndVertical();
+            EndArea(-1);
 
 			if(layoutChanged_ || visibleAreas_ < areas_.size())
 			{
@@ -153,28 +210,34 @@ namespace NSG
 			return pArea;
 		}
 
-		void LayoutManager::BeginHorizontal(GLushort id, int percentageX, int percentageY)
+		void LayoutManager::BeginHorizontalArea(GLushort id, int percentageX, int percentageY)
 		{
-			Area obj(id, LayoutType::Horizontal, percentageX, percentageY);
-			obj();			
-			nestedAreas_.push_back(obj.GetArea());
+			PArea obj(new Area(id, LayoutType::Horizontal, percentageX, percentageY));
+			(*obj)();			
+			nestedAreas_.push_back(obj);
 		}
 
-		void LayoutManager::EndHorizontal()
+		void LayoutManager::BeginVerticalArea(GLushort id, int percentageX, int percentageY)
 		{
+			PArea obj(new Area(id, LayoutType::Vertical, percentageX, percentageY));
+			(*obj)();			
+			nestedAreas_.push_back(obj);
+		}
+
+		float LayoutManager::EndArea(float scroll)
+		{
+			PArea obj = nestedAreas_.back();
+
+			if(scroll >= 0 && scroll <= 1)
+			{
+				obj->SetScroll(scroll);
+			}
+
+			scroll = obj->GetScroll();
+
 			nestedAreas_.pop_back();
-		}
 
-		void LayoutManager::BeginVertical(GLushort id, int percentageX, int percentageY)
-		{
-			Area obj(id, LayoutType::Vertical, percentageX, percentageY);
-			obj();			
-			nestedAreas_.push_back(obj.GetArea());
-		}
-
-		void LayoutManager::EndVertical()
-		{
-			nestedAreas_.pop_back();
+			return scroll;
 		}
 
 		void LayoutManager::Spacer(GLushort id, int percentageX, int percentageY)
@@ -187,52 +250,6 @@ namespace NSG
             if(pCurrentArea->children_.empty())
                 return;
 
-            float currentAreaPercentageX = 100;
-			float currentAreaPercentageY = 100;			
-
-			if(pCurrentArea->percentageX_ > 0)
-				currentAreaPercentageX = pCurrentArea->percentageX_;
-
-			if(pCurrentArea->percentageY_ > 0)
-				currentAreaPercentageY = pCurrentArea->percentageY_;
-
-			int nEquallyDistributedControlsX = pCurrentArea->children_.size();
-			int nEquallyDistributedControlsY = nEquallyDistributedControlsX;
-
-			float remainingPercentageX = 100; // percentage of X to be equally distributed in the controls with 0 percentage
-			float remainingPercentageY = 100; // percentage of Y to be equally distributed in the controls with 0 percentage
-
-            {
-				auto it = pCurrentArea->children_.begin();
-				while(it != pCurrentArea->children_.end())
-				{
-					PLayoutArea pArea = *(it++);
-
-                    if(pArea->percentageX_ || pArea->percentageY_)
-                    {
-					    if(pArea->percentageX_)
-					    {
-                            --nEquallyDistributedControlsX;
-                            remainingPercentageX -= pArea->percentageX_;
-					    }
-					
-                        if(pArea->percentageY_)
-					    {
-                            --nEquallyDistributedControlsY;
-						    remainingPercentageY -= pArea->percentageY_;
-					    }
-                    }
-				}
-			}
-
-            remainingPercentageX /= 100.0f;
-			remainingPercentageY /= 100.0f;
-
-            currentAreaPercentageX /= 100.0f;
-            currentAreaPercentageY /= 100.0f;
-
-			//assert(remainingPercentage >= 0 && "Total percentage for spacer exceeds 100%");
-
 			auto it = pCurrentArea->children_.begin();
             float yPosition = 1; //y position to the top of current area
             float xPosition = -1; //x position to the left of current area
@@ -243,31 +260,8 @@ namespace NSG
 				float scaleX(1);
 				Vertex3 position(0);
 
-				if(pArea->percentageY_)
-				{
-					scaleY = pArea->percentageY_ / 100.0f;// * currentAreaPercentageY;
-				}
-                else if(pCurrentArea->type_ == LayoutType::Vertical)
-                {
-                    CHECK_ASSERT(nEquallyDistributedControlsY && "At least should be a control with 0 percentage!!!", __FILE__, __LINE__);
-                    scaleY = remainingPercentageY/nEquallyDistributedControlsY;
-                }
-
-                //if(pArea->type_ != LayoutType::Control && scaleY > 1) //Only controls can scale up (areas have to fit in the screen)
-                //    scaleY = 1;
-
-				if(pArea->percentageX_)
-				{
-					scaleX = pArea->percentageX_ / 100.0f;// * currentAreaPercentageX;
-				}
-                else if(pCurrentArea->type_ == LayoutType::Horizontal)
-                {
-                    CHECK_ASSERT(nEquallyDistributedControlsX && "At least should be a control with 0 percentage!!!", __FILE__, __LINE__);
-                    scaleX = remainingPercentageX/nEquallyDistributedControlsX;
-                }
-
-                //if(pArea->type_ != LayoutType::Control && scaleX > 1) //Only controls can scale up (areas have to fit in the screen)
-                //    scaleX = 1;
+                scaleY = pArea->percentageY_ / 100.0f;
+			    scaleX = pArea->percentageX_ / 100.0f;
 
                 float stepY = scaleY;
                 float stepX = scaleX;

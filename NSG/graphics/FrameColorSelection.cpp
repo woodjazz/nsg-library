@@ -39,13 +39,14 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	FrameColorSelection::FrameColorSelection(bool createDepthBuffer)
+	FrameColorSelection::FrameColorSelection(bool createDepthBuffer, bool createStencilBuffer)
 	: material_(new Material),
     windowWidth_(0),
     windowHeight_(0),
 	pixelX_(0),
 	pixelY_(0),
-    createDepthBuffer_(createDepthBuffer)
+    createDepthBuffer_(createDepthBuffer),
+    createStencilBuffer_(createStencilBuffer)
 	{
         Program* program = new ProgramSimpleColor;
         material_->SetProgram(PProgram(program));
@@ -82,6 +83,11 @@ namespace NSG
             glGenRenderbuffers(1, &depthRenderBuffer_);
         }
 
+        if(createStencilBuffer_)
+        {
+            glGenRenderbuffers(1, &stencilRenderBuffer_);
+        }
+
         memset(selected_, 0, sizeof(selected_));
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -109,12 +115,23 @@ namespace NSG
             //////////////////////////////////////////////////////////////////////////////////
         }
 
+        if(createStencilBuffer_)
+        {
+            //////////////////////////////////////////////////////////////////////////////////
+            // The stencil buffer
+            glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderBuffer_);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, windowWidth_, windowHeight_);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRenderBuffer_);
+            //////////////////////////////////////////////////////////////////////////////////
+
+        }
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if(GL_FRAMEBUFFER_COMPLETE != status)
         {
-            TRACE_LOG("Frame buffer failed with error=" << status);
+            TRACE_LOG("Frame buffer failed with error = 0x" << std::hex << status);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
 
@@ -123,6 +140,11 @@ namespace NSG
 
 	void FrameColorSelection::ReleaseResources()
     {
+        if(createStencilBuffer_)
+        {
+            glDeleteRenderbuffers(1, &stencilRenderBuffer_);
+        }
+
         if(createDepthBuffer_)
         {
             glDeleteRenderbuffers(1, &depthRenderBuffer_);
@@ -186,6 +208,8 @@ namespace NSG
     {
         if(IsReady())
         {
+            CHECK_ASSERT(technique, __FILE__, __LINE__);
+
             Begin(screenX, screenY);
             {
                 Mesh* lastMesh = nullptr;
@@ -221,6 +245,14 @@ namespace NSG
             End();
             return true;
         }
+        return false;
+    }
+
+    bool FrameColorSelection::Hit(GLushort id, float screenX, float screenY, Technique* technique)
+    {
+        if(Render(id, screenX, screenY, technique))
+            return id == GetSelected();
+
         return false;
     }
 }

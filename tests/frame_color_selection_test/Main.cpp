@@ -70,7 +70,7 @@ struct Test : public App
 
 	void Start()
 	{
-        colorSelection_ = PFrameColorSelection(new FrameColorSelection(false));
+        colorSelection_ = PFrameColorSelection(new FrameColorSelection(false, false));
 		sceneNode_ = PSceneNode(new SceneNode);
 		sceneNode_->SetBehavior(PBehavior(new MyBehavior));	
 		camera_ = PCamera(new Camera);

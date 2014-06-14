@@ -35,9 +35,8 @@ namespace NSG
 		void Label_(GLushort id, const std::string& text, int percentageX = 0, int percentageY = 0);
 		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentageX = 0, int percentageY = 0);
 		void BeginHorizontal_(GLushort id, int percentageX = 0, int percentageY = 0);
-		void EndHorizontal_();
 		void BeginVertical_(GLushort id, int percentageX = 0, int percentageY = 0);
-		void EndVertical_();
+		float EndArea_(float scroll = -1);
 		void Spacer_(GLushort id, int percentageX = 0, int percentageY = 0);
 		PSkin& Skin_();
 		PNode& Node_();
@@ -55,15 +54,18 @@ namespace NSG
 	}
 }
 
-#define IMGUICOUNTER __COUNTER__ + 1
+#define IMGUI_UNKNOWN_ID 0
+#define IMGUI_FIRST_VERTICAL_AREA_ID 1
+#define IMGUI_VERTICAL_SLIDER_ID 2
+#define IMGUI_HORIZONTAL_SLIDER_ID 3
+#define IMGUICOUNTER __COUNTER__ + 10 //first 10th positions are reserved
 #define IMGUIButton(text, ...) IMGUI::Button_(IMGUICOUNTER, text, ##__VA_ARGS__ )
 #define IMGUILabel(text, ...) IMGUI::Label_(IMGUICOUNTER, text, ##__VA_ARGS__ )
 #define IMGUITextField(text, ...) IMGUI::TextField_(IMGUICOUNTER, text, nullptr, ##__VA_ARGS__ )
 #define IMGUITextFieldWithPattern(text, pattern, ...) IMGUI::TextField_(IMGUICOUNTER, text, pattern, ##__VA_ARGS__ )
 #define IMGUIBeginHorizontal(...) IMGUI::BeginHorizontal_(IMGUICOUNTER, ##__VA_ARGS__ )
-#define IMGUIEndHorizontal() IMGUI::EndHorizontal_()
 #define IMGUIBeginVertical(...) IMGUI::BeginVertical_(IMGUICOUNTER, ##__VA_ARGS__ )
-#define IMGUIEndVertical() IMGUI::EndVertical_()
+#define IMGUIEndArea(scroll) IMGUI::EndArea_(scroll)
 #define IMGUISpacer(...) IMGUI::Spacer_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUISkin() IMGUI::Skin_()
 #define IMGUINode() IMGUI::Node_()

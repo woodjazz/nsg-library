@@ -171,7 +171,7 @@ void MyApp::TestIMGUI2()
     			static std::string str2 = "012";
 	    		str2 = IMGUITextField(str2, 0);
             }
-            IMGUIEndVertical();
+            IMGUIEndArea();
 
             static std::string str3 = "jkl";
 			str3 = IMGUITextField(str3, 0);
@@ -187,24 +187,42 @@ void MyApp::TestIMGUI2()
 				static std::string str1 = "dddd";
 				str1 = IMGUITextField(str1, 0);
 			}
-			IMGUIEndHorizontal();
+			IMGUIEndArea();
 
             IMGUIButton("Button 52", 0);
 		}
-		IMGUIEndVertical();
+		IMGUIEndArea();
 		
 		//IMGUISpacer(50);
 
 	}
-	IMGUIEndHorizontal();
+	IMGUIEndArea();
 }
 
 void MyApp::TestIMGUI4()
 {
 	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
+
+    IMGUIBeginVertical(75, 50);
+    IMGUIButton("AMS1", 150, 120);
+    IMGUIButton("AMS2", 175, 120);
+    IMGUIButton("AMS3", 150, 120);
+    IMGUIButton("AMS4", 150, 520);
+    static float scroll = 0;
+    static float scrollFactor = 1;
+    IMGUIEndArea(scroll);
+    scroll+=0.01f * scrollFactor;
+    if(scroll>1 || scroll < 0)
+        scrollFactor *= -1;
+
+#if 0   
 	//IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));
 
-    IMGUIButton("AMS1", 25, 100);
+    IMGUIButton("AMS0", 50, 50);
+    
+    IMGUIBeginVertical(150, 100);
+    IMGUIButton("AMS1");
+    IMGUIEndArea();
 /*
     IMGUIBeginHorizontal(100, 100);
 
@@ -218,7 +236,7 @@ void MyApp::TestIMGUI4()
     //IMGUI::Context::this_->pSkin_ = pSkin1_;
 
     //IMGUIBeginVertical(100, 200);
-    IMGUIBeginVertical(100, 50);
+    IMGUIBeginVertical(75, 50);
 
     //static std::string str0 = "CCCCCCCCCC";
 	//str0 = IMGUITextField(str0);
@@ -230,11 +248,11 @@ void MyApp::TestIMGUI4()
     {
         std::stringstream ss;
         ss << i+1;
-        IMGUIBeginHorizontal(50, 25);
-        IMGUILabel("label " + ss.str());
+        IMGUIBeginHorizontal(150, 25);
+        IMGUILabel("label " + ss.str(), 50);
         ss << "012345678901234567890123456789";
-        IMGUIButton(ss.str());
-        IMGUIEndHorizontal();
+        IMGUIButton(ss.str(), 50);
+        IMGUIEndArea();
     }
 #endif
     /*
@@ -255,16 +273,17 @@ void MyApp::TestIMGUI4()
 
     //IMGUISpacer(70);
     
-    IMGUIEndVertical();
+    IMGUIEndArea();
 #if 1
     IMGUIBeginHorizontal(0, 50);
     IMGUIButton("Exit");
-    IMGUIEndHorizontal();
+    IMGUIEndArea();
 #endif
     //IMGUIEndVertical();
 
 
 //    IMGUIEndHorizontal();
+#endif
 }
 
 

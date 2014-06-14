@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Keyboard.h"
 #include "Camera.h"
 #include "IMGUIContext.h"
+#include "IMGUI.h"
 #include <cstring>
 
 namespace NSG 
@@ -52,7 +53,8 @@ namespace NSG
             character_(0),
             lastwidget_(0),
             activeitem_needs_keyboard_(false),
-            lastScrollHit_(-1),
+            lastScrollHit_(IMGUI_UNKNOWN_ID),
+            lastSliderHit_(IMGUI_UNKNOWN_ID),
             tick_(0),
             mouseRelDownX_(0),
             mouseRelDownY_(0)
@@ -93,6 +95,8 @@ namespace NSG
 
         	mousedown_ = false;
             mouseup_ = true;
+
+            lastSliderHit_ = IMGUI_UNKNOWN_ID;
         }
 
         void State::OnMouseWheel(float x, float y)

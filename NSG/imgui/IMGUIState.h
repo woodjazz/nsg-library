@@ -59,7 +59,8 @@ namespace NSG
   			unsigned int character_;
   			GLushort lastwidget_;	
   			bool activeitem_needs_keyboard_;
-            int lastScrollHit_;
+            GLushort lastScrollHit_;
+            GLushort lastSliderHit_;
 
 			int tick_;
 

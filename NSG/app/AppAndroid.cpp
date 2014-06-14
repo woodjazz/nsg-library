@@ -272,24 +272,25 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event)
 
     if(AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) 
     {
-        if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN)
+        if(s_engine->width > 0 && s_engine->height > 0)
         {
-            if(s_engine->width > 0 && s_engine->height > 0)
+            float x = -1 + 2*AMotionEvent_getX(event, 0)/s_engine->width;
+            float y = 1 - 2*AMotionEvent_getY(event, 0)/s_engine->height;
+
+            if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN)
             {
-                s_pApp->OnMouseDown(-1 + 2*AMotionEvent_getX(event, 0)/s_engine->width, 1 - 2*AMotionEvent_getY(event, 0)/s_engine->height);
+                s_pApp->OnMouseDown(x, y);
+            }
+            else if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_UP)
+            {
+                s_pApp->OnMouseUp(x, y);
+            }
+            else if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE)
+            {
+                s_pApp->OnMouseMove(x, y);
             }
         }
-        else if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_UP)
-        {
-            s_pApp->OnMouseUp();
-        }
-        else if(AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_MOVE)
-        {
-            if(s_engine->width > 0 && s_engine->height > 0)
-            {
-                s_pApp->OnMouseMove(-1 + 2*AMotionEvent_getX(event, 0)/s_engine->width, 1 - 2*AMotionEvent_getY(event, 0)/s_engine->height);
-            }
-        }
+
         return 1;
     }
     else if(AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY) 

@@ -181,7 +181,9 @@ namespace NSG
 					if(height_ > 0 && width_ > 0)
 					{
 						pp::MouseInputEvent mouse_event(event);
-						pApp_->OnMouseMove(-1 + 2*(float)mouse_event.GetPosition().x()/width_, 1 + -2*(float)mouse_event.GetPosition().y()/height_);
+						float x = -1 + 2*(float)mouse_event.GetPosition().x()/width_;
+						float y = 1 + -2*(float)mouse_event.GetPosition().y()/height_;
+						pApp_->OnMouseMove(x, y);
 					}
 					break;
 				}
@@ -192,15 +194,19 @@ namespace NSG
 					if(height_ > 0 && width_ > 0)
 					{
 						pp::MouseInputEvent mouse_event(event);
-
-						pApp_->OnMouseDown(-1 + 2*(float)mouse_event.GetPosition().x()/width_, 1 + -2*(float)mouse_event.GetPosition().y()/height_);
+						float x = -1 + 2*(float)mouse_event.GetPosition().x()/width_;
+						float y = 1 + -2*(float)mouse_event.GetPosition().y()/height_;
+						pApp_->OnMouseDown(x, y);
 					}
 					break;
 				}
 
 				case PP_INPUTEVENT_TYPE_MOUSEUP:
 				{
-					pApp_->OnMouseUp();
+					pp::MouseInputEvent mouse_event(event);
+					float x = -1 + 2*(float)mouse_event.GetPosition().x()/width_;
+					float y = 1 + -2*(float)mouse_event.GetPosition().y()/height_;
+					pApp_->OnMouseUp(x, y);
 					break;
 				}
 
@@ -227,6 +233,9 @@ namespace NSG
 				case PP_INPUTEVENT_TYPE_WHEEL: 
 				{
 					pp::WheelInputEvent wheel_event(event);
+					float x = wheel_event.GetDelta().x();
+					float y = wheel_event.GetDelta().y();
+					pApp_->OnMouseWheel(x, y);
 					/*
 					std::ostringstream stream;
 					stream << "Wheel event:"

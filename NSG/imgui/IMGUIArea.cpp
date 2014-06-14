@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "IMGUIContext.h"
 #include "IMGUIState.h"
 #include "IMGUISkin.h"
+#include "IMGUI.h"
 #include "IMGUILayoutManager.h"
 #include "FrameColorSelection.h"
 #include "TextMesh.h"
@@ -36,83 +37,261 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Material.h"
 #include "Keys.h"
+#include "Node.h"
+#include "App.h"
+#include <algorithm>
 
 namespace NSG
 {
 	namespace IMGUI
 	{
+        static const float SLIDER_WIDTH = 15; //pixels 
+
 		Area::Area(GLushort id, LayoutType type, int percentageX, int percentageY)
-		: Object(id, true, type, percentageX, percentageY)
+		: Object(id, true, type, percentageX, percentageY),
+		lastScrollHit_(Context::this_->state_->lastScrollHit_),
+		lastSliderHit_(Context::this_->state_->lastSliderHit_),
+		sliderTechnique_(Context::this_->pSkin_->sliderTechnique_)
 		{
-            CHECK_ASSERT(type == LayoutType::Horizontal || type == LayoutType::Vertical, __FILE__, __LINE__);
+			CHECK_ASSERT(type == LayoutType::Horizontal || type == LayoutType::Vertical, __FILE__, __LINE__);
+
+			maxPosX_ = 2*(area_->scrollFactorAreaX_-1);
+			maxPosY_ = 2*(area_->scrollFactorAreaY_-1);
 		}
 
 		Area::~Area()
 		{
+			UpdateScrolling();
 		}
+
+		void Area::SetScroll(float scroll) 
+		{ 
+			CHECK_ASSERT(scroll >=0 && scroll <= 1, __FILE__, __LINE__);
+
+			if(area_->type_ == LayoutType::Horizontal)
+			{
+				if(maxPosX_ > 0)
+				{
+					Vertex3 position = area_->childrenRoot_->GetPosition();
+					position.x = scroll*maxPosX_;
+					area_->childrenRoot_->SetPosition(position);
+				}
+			}
+			else
+			{
+				if(maxPosY_ > 0)
+				{
+					Vertex3 position = area_->childrenRoot_->GetPosition();
+					position.y = scroll*maxPosY_;
+					area_->childrenRoot_->SetPosition(position);
+				}
+			}
+		}
+
+		float Area::GetScroll() const 
+		{ 
+			float scroll = 0;
+
+			if(area_->type_ == LayoutType::Horizontal)
+			{
+				if(maxPosX_ > 0)
+				{
+					Vertex3 position = area_->childrenRoot_->GetPosition();
+					scroll = position.x/maxPosX_;
+				}
+			}
+			else
+			{
+				if(maxPosY_ > 0)
+				{
+					Vertex3 position = area_->childrenRoot_->GetPosition();
+					scroll = position.y/maxPosY_;
+				}
+			}
+
+			return scroll;
+		}
+
 
 		void Area::operator()()
 		{
 			Update();
 		}
 
-		void Area::UpdateControl()
+		bool Area::HandleVerticalSlider(float maxPosY, float& yPosition)
 		{
-			float scrollx = 0;//area_->percentageX_/100.0f;
-			float scrolly = 0;//area_->percentageY_/100.0f;
+	        // Draw slider
+		    Node node;
+		    node.SetParent(area_->pNode_);
 
-            auto it = area_->children_.begin();
-            while(it != area_->children_.end())
-            {
-                PLayoutArea child = *(it++);
+		    float yScale = 0.5f/area_->scrollFactorAreaY_;
+            std::pair<int32_t, int32_t> viewSize = App::this_->GetViewSize();
+            float xScale = SLIDER_WIDTH/(float)viewSize.first;
+		    node.SetScale(Vertex3(xScale, yScale, 1));
 
-                scrollx += child->percentageX_;
-                scrolly += child->percentageY_;
-            }
+	        float offset = yPosition/maxPosY; //0..1
+            float blind_area = SLIDER_WIDTH/(float)viewSize.second;;
+            float ypos = 1 - yScale - 2*(1 - yScale - blind_area)*offset;
+            Vertex3 globalScale = node.GetGlobalScale();
+            float xpos = 1 - globalScale.x;
+	        node.SetPosition(Vertex3(xpos, ypos, 0));
 
-            scrollx /= 100.0f;
-            scrolly /= 100.0f;
+		    sliderTechnique_->Set(&node);
+		    sliderTechnique_->Render();
 
-            MouseRelPosition relPos = uistate_.GetMouseRelPosition();
+		    if(mousedown_)
+		    {
+		    	Vertex3 position = node.GetPosition();
+		    	Vertex3 scale = node.GetScale();
+		    	position.y = 0;
+		    	scale.y=1;
+		    	// In order to hit all the slider area: reset position and scale 
+		    	node.SetPosition(position);
+		    	node.SetScale(scale);
 
-			if((scrollx > 1 || scrolly > 1) &&  Hit(Context::this_->state_->mouseDownX_, Context::this_->state_->mouseDownY_))
+		    	if(Hit(IMGUI_VERTICAL_SLIDER_ID, mouseDownX_, mouseDownY_, sliderTechnique_) || lastSliderHit_ == IMGUI_VERTICAL_SLIDER_ID)
+		    	{
+		    		lastSliderHit_ = IMGUI_VERTICAL_SLIDER_ID;
+
+	            	Vertex3 globalPos = area_->pNode_->GetGlobalPosition();
+	                Vertex3 globalScale = area_->pNode_->GetGlobalScale();
+	                float yTop = globalPos.y + globalScale.y;
+	            	float yBottom = globalPos.y - globalScale.y;
+
+	                float y1 = mousey_;
+	                if(y1 <= yTop && y1 >= yBottom)
+	                {
+		                float a2 = 1/(yBottom-yTop);
+		                float y2 = a2*y1-a2*yTop;
+		                CHECK_ASSERT(y2 >=0 && y2 <= 1, __FILE__, __LINE__);
+						yPosition = y2 * maxPosY;
+		            }
+                    return true;
+		    	}
+		    }
+
+		    return false;
+		}
+
+		bool Area::HandleHorizontalSlider(float maxPosX, float& xPosition)
+		{
+	        // Draw slider
+		    Node node;
+		    node.SetParent(area_->pNode_);
+
+            std::pair<int32_t, int32_t> viewSize = App::this_->GetViewSize();
+            float yScale = SLIDER_WIDTH/(float)viewSize.second;
+		    float xScale = 0.5f/area_->scrollFactorAreaX_;
+		    node.SetScale(Vertex3(xScale, yScale, 1));
+
+	        float offset = -xPosition/maxPosX; //0..1
+            float blind_area = SLIDER_WIDTH/(float)viewSize.first;
+            float xpos = -1 + xScale + 2*(1 - xScale - blind_area)*offset;
+            Vertex3 globalScale = node.GetGlobalScale();
+            float ypos = -1 + globalScale.y;
+	        node.SetPosition(Vertex3(xpos, ypos, 0));
+
+		    sliderTechnique_->Set(&node);
+		    sliderTechnique_->Render();
+
+		    if(mousedown_)
+		    {
+		    	Vertex3 position = node.GetPosition();
+		    	Vertex3 scale = node.GetScale();
+		    	position.x = 0;
+		    	scale.x=1;
+		    	// In order to hit all the slider area: reset position and scale 
+		    	node.SetPosition(position);
+		    	node.SetScale(scale);
+
+		    	if(Hit(IMGUI_HORIZONTAL_SLIDER_ID, mouseDownX_, mouseDownY_, sliderTechnique_) || lastSliderHit_ == IMGUI_HORIZONTAL_SLIDER_ID)
+		    	{
+		    		lastSliderHit_ = IMGUI_HORIZONTAL_SLIDER_ID;
+
+	                Vertex3 globalPos = area_->pNode_->GetGlobalPosition();
+                    Vertex3 globalScale = area_->pNode_->GetGlobalScale();
+	                float xLeft = globalPos.x - globalScale.x;
+	                float xRight = globalPos.x + globalScale.x;
+
+                    float x1 = mousex_;
+                    if(x1 >= xLeft && x1 <= xRight)
+                    {
+	                    float a2 = 1/(xRight-xLeft);
+	                    float x2 = a2*x1-a2*xLeft;
+	                    CHECK_ASSERT(x2 >=0 && x2 <= 1, __FILE__, __LINE__);
+					    xPosition = -x2 * maxPosX;
+                    }
+                    return true;
+		    	}
+		    }
+
+		    return false;
+		}
+
+		void Area::UpdateScrolling()
+		{
+            FixCurrentTecnique();
+			if(area_->isScrollable_ &&  Hit(mouseDownX_, mouseDownY_))
 			{
-                if(uistate_.lastScrollHit_ <= id_)
-                    uistate_.lastScrollHit_ = id_;
+                if(lastScrollHit_ <= id_)
+                    lastScrollHit_ = id_; // keep the top area
                 else
-                    return;
-                
+                    return; //only scroll the top area 
+
+                MouseRelPosition relPos = uistate_.GetMouseRelPosition();
+
                 //Context::this_->pSkin_->areaTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.5f,0.5f,0.5f,1));
 
-				MouseRelPosition relPos = uistate_.GetMouseRelPosition();
-
 				Vertex3 position = area_->childrenRoot_->GetPosition();
-                Vertex3 scale = area_->pNode_->GetScale();
 
-				//TRACE_LOG("scale=" << scale << "scrolly=" << scrolly << " position=" <<position);
+				bool userMovedSlider = false;
 
-				if(scrollx >= 1)
+                float maxPosX = 2*(area_->scrollFactorAreaX_-1);
+                float maxPosY = 2*(area_->scrollFactorAreaY_-1);
+                
+				if(area_->scrollFactorAreaX_ > 1)
+                    userMovedSlider = HandleHorizontalSlider(maxPosX, position.x);
+
+                if(area_->scrollFactorAreaY_ > 1 && !userMovedSlider)
+                    userMovedSlider = HandleVerticalSlider(maxPosY, position.y);
+
+				if(!userMovedSlider)
 				{
-					float x = position.x;
-					x += relPos.x_;
-					if(x < 0 && -x <= (scrollx-1)*2)
-						position.x = x;
-				}
+					if(area_->scrollFactorAreaX_ > 1)
+					{
+                        if(relPos.x_ != 0)
+                        {
+                    	    float x = position.x;
 
-				if(scrolly >= 1)
-				{
-					float y = position.y;
-					y += relPos.y_;
-					if(y > 0 && y <= (scrolly-1)*2)
-						position.y = y;
+                            float step = relPos.x_ * maxPosX / std::floor(area_->scrollFactorAreaX_);
+
+                            x += step;
+
+                            position.x = std::min<float>(0, std::max<float>(x, -maxPosX));
+                        }
+					}
+
+					if(area_->scrollFactorAreaY_ > 1)
+					{
+                        if(relPos.y_ != 0)
+                        {
+                    	    float y = position.y;
+
+                            float step = relPos.y_ * maxPosY / std::floor(area_->scrollFactorAreaY_);
+
+                            y += step;
+
+                            position.y = std::max<float>(0, std::min<float>(y, maxPosY));
+                        }
+					}
 				}
 
 				area_->childrenRoot_->SetPosition(position);
 			}
             else
             {
-                if(uistate_.lastScrollHit_ == id_)
-                    uistate_.lastScrollHit_ = -1;
+                if(lastScrollHit_ == id_)
+                    lastScrollHit_ = 0;
 
                 //Context::this_->pSkin_->areaTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.5f,0.5f,0.5f,0));
             }

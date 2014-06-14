@@ -37,6 +37,7 @@ namespace NSG
 			~Object();
 			bool IsStable() const;
 			bool Hit(float x, float y);
+			bool Hit(GLushort id, float x, float y, const PTechnique& technique);
 			void Draw();
 			bool Update();
 			virtual void UpdateControl() {};
@@ -52,6 +53,7 @@ namespace NSG
 			virtual PTechnique GetNormalTechnique() const;
 			PLayoutArea GetArea() const { return area_; }
             void FixCurrentTecnique();
+            void SetStencilTestForHit();
 		protected:
 			GLushort id_;
 			State& uistate_;
@@ -59,6 +61,14 @@ namespace NSG
 			PNode node_;
 			Vertex4 areaSize_;
 			PTechnique currentTechnique_;
+
+			const float& mouseDownX_;
+			const float& mouseDownY_;
+			const float& mousex_;
+			const float& mousey_;
+			const bool& mousedown_;
+
+
 		};
 	}
 }

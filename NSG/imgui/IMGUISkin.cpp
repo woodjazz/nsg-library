@@ -44,7 +44,8 @@ namespace NSG
         activeTechnique_(new Technique),
         normalTechnique_(new Technique),
         hotTechnique_(new Technique),
-        labelTechnique_(new Technique)
+        labelTechnique_(new Technique),
+        sliderTechnique_(new Technique)
 		{
 			PMaterial pActiveMaterial(new Material);
 			pActiveMaterial->EnableDepthTest(false);
@@ -80,13 +81,19 @@ namespace NSG
 
 			PMaterial areaMaterial(new Material);
             areaMaterial->SetColor(Color(0,1,1,0.5f));
-			//PProgram pAreaProgram(new ProgramSimpleColor);
-            //areaMaterial->SetProgram(pAreaProgram);
-            areaMaterial->SetProgram(pProgram);
+            //areaMaterial->SetColor(Color(0,0,0,0));
+			PProgram pAreaProgram(new ProgramSimpleColor);
+            areaMaterial->SetProgram(pAreaProgram);
+            //areaMaterial->SetProgram(pProgram);
             areaMaterial->EnableDepthTest(false);
 			areaMaterial->EnableStencilTest(true);
 			//areaMaterial->EnableColorBuffer(false);
 
+			PMaterial sliderMaterial(new Material);
+			sliderMaterial->EnableDepthTest(false);
+            sliderMaterial->SetProgram(pProgram);
+			sliderMaterial->SetColor(Color(0.5f,0.5f,0.5f,0.6f));
+			sliderMaterial->EnableStencilTest(true);
 
             PMesh controlMesh(new RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
             PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
@@ -114,6 +121,12 @@ namespace NSG
             areaPass->Set(areaMaterial);
 			areaPass->Add(nullptr, areaMesh);
 
+			PPass sliderPass(new Pass);
+			sliderPass->Set(sliderMaterial);
+			sliderPass->Add(nullptr, areaMesh);
+
+			sliderTechnique_->Add(sliderPass);
+			
 			areaTechnique_->Add(areaPass);
 
 			activeTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer

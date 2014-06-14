@@ -47,12 +47,14 @@ namespace NSG
         pRootNode_(new Node),
         pLayoutManager_(new LayoutManager(pRootNode_, pCurrentNode_)),
     	pTextManager_(new TextManager),
-    	pFrameColorSelection_(new FrameColorSelection(false)),
+    	pFrameColorSelection_(new FrameColorSelection(false, false)),
     	lastId_(0)
     	{
 			pCamera_->EnableOrtho();
             pCamera_->SetFarClip(1000000);
             pCamera_->SetNearClip(-1000000);
+            pFrameColorSelection_->GetMaterial()->EnableStencilTest(true);
+            pFrameColorSelection_->GetMaterial()->EnableDepthTest(false);
 		}
 
 		Context::~Context()

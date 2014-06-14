@@ -39,8 +39,19 @@ namespace NSG
 			PTechnique GetActiveTechnique() const;
 			PTechnique GetHotTechnique() const;
 			PTechnique GetNormalTechnique() const;
-			void UpdateControl();
+			void SetScroll(float scroll);
+			float GetScroll() const;
 
+		private:
+			void UpdateScrolling();
+			bool HandleVerticalSlider(float maxPosY, float& yPosition);
+			bool HandleHorizontalSlider(float maxPosX, float& xPosition);
+
+            GLushort& lastScrollHit_;
+            GLushort& lastSliderHit_;
+            PTechnique& sliderTechnique_;
+            float maxPosX_;
+            float maxPosY_;
 		};
 	}
 }

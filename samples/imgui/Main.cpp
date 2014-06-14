@@ -63,22 +63,16 @@ struct Sample : App
 
             if(show_menu_button)
             {
-                IMGUIBeginHorizontal();
-                IMGUIBeginVertical();
                 IMGUISpacer(0, 80);
-                menu_choosen = IMGUIButton("Menu");
-                IMGUIEndVertical();
-                IMGUISpacer(80);
-                IMGUIEndHorizontal();
+                menu_choosen = IMGUIButton("Menu", 20, 20);
             }
 
             if(menu_choosen)
             {
                 show_menu_button = false;
-                IMGUIBeginVertical();
-                IMGUILabel("Are you sure?");
-                IMGUIBeginHorizontal();
-                if(IMGUIButton("Yes"))
+                IMGUILabel("Are you sure?", 100, 50);
+                IMGUIBeginHorizontal(100, 50);
+                if(IMGUIButton("Yes", 50))
                 {
                     menu = true;
                     delta = 0;
@@ -86,52 +80,49 @@ struct Sample : App
                     show_menu_button = true;
 
                 }
-                if(IMGUIButton("No"))
+                if(IMGUIButton("No", 50))
                 {
                     menu_choosen = false;
                     show_menu_button = true;
                 }
-                IMGUIEndHorizontal();
-                IMGUIEndVertical();
+                IMGUIEndArea();
             }
         }
         else
         {
-            //IMGUIBeginVertical(100, 0);
             int fontSize = IMGUISkin()->fontSize_;
             IMGUISkin()->fontSize_ = 12;
             IMGUINode()->SetPosition(position);
             
-            IMGUISpacer(5);
+            IMGUISpacer(0, 5);
 
-            IMGUIBeginVertical(0, 50);
+            IMGUIBeginVertical(0, 70);
 
-            static const int MAX_FIELDS = 15;
-            static std::string field[MAX_FIELDS];
-            for(int i=0; i<MAX_FIELDS; i++)
-            {
-                std::stringstream label;
-                label << "Label " << i << ":";
+                static const int MAX_FIELDS = 15;
+                static std::string field[MAX_FIELDS];
+                for(int i=0; i<MAX_FIELDS; i++)
+                {
+                    std::stringstream label;
+                    label << "Label " << i << ":";
 
-                IMGUIBeginHorizontal(0,25);
-                IMGUILabel(label.str()); 
-		        field[i] = IMGUITextField(field[i]);
-                IMGUISpacer(20);
-                IMGUIEndHorizontal();
-            }
+                    IMGUIBeginHorizontal(0,25);
+                        IMGUILabel(label.str(), 50); 
+		                field[i] = IMGUITextField(field[i], 50);
+                    IMGUIEndArea();
+                }
 
-            IMGUIEndVertical();
+            IMGUIEndArea();
 
             IMGUISkin()->fontSize_ = fontSize;
 
-            IMGUISpacer(5);
+            IMGUISpacer(0, 5);
 
             static bool exit = false;
 
-            IMGUIBeginHorizontal(0, 30);
+            IMGUIBeginHorizontal(0, 20);
             if(IMGUIButton("Exit"))
                 exit = true;
-            IMGUIEndHorizontal();
+            IMGUIEndArea();
 
             if(exit)
             {
@@ -146,7 +137,6 @@ struct Sample : App
             {
                 menu = exit = false;
             }
-            //IMGUIEndVertical();
         }
     }
 };

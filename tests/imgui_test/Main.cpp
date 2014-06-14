@@ -151,23 +151,19 @@ struct Test : public App
 
 	void RenderGUIFrame()
 	{
-        IMGUIBeginVertical();
-            
-            buttonPressed = IMGUIButton("Button");
+        buttonPressed = IMGUIButton("Button", 100, 50);
 
-            if(buttonPressed)
-            {
-                text1 = "State2";
-            }
+        if(buttonPressed)
+        {
+            text1 = "State2";
+        }
 	        
-            IMGUIBeginHorizontal();
+        IMGUIBeginHorizontal(100, 50);
 
-		        text1 = IMGUITextField(text1);
-                text2 = IMGUITextField(text2);
+		    text1 = IMGUITextField(text1, 50);
+            text2 = IMGUITextField(text2, 50);
 	    
-	        IMGUIEndHorizontal();
-
-        IMGUIEndVertical();
+	    IMGUIEndArea();
 	}
 
 	bool ShallExit() const 

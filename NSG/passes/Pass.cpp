@@ -64,7 +64,7 @@ namespace NSG
 
 	void Pass::Add(Node* node, PMesh mesh)
 	{
-		struct D {void operator()(Node* p) const {}};    	
+		struct D {void operator()(Node* p) const {}};
 		PNode obj(node, D());
 		Add(obj, mesh);
 	}
@@ -74,6 +74,15 @@ namespace NSG
         auto it = meshNodes_.begin();
         while(it != meshNodes_.end())
             (it++)->first = node;
+    }
+
+    void Pass::SetAll(Node* node)
+    {
+    	struct D {void operator()(Node* p) const {}};
+    	PNode obj(node, D());
+        auto it = meshNodes_.begin();
+        while(it != meshNodes_.end())
+            (it++)->first = obj;
     }
 
 	PMesh Pass::GetMesh(int idx) const 

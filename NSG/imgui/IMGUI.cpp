@@ -41,24 +41,19 @@ namespace NSG
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->BeginHorizontal(id, percentageX, percentageY);
-		}
-
-		void EndHorizontal_()
-		{
-			Context::this_->pLayoutManager_->EndHorizontal();
+			Context::this_->pLayoutManager_->BeginHorizontalArea(id, percentageX, percentageY);
 		}
 
 		void BeginVertical_(GLushort id, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->BeginVertical(id, percentageX, percentageY);
+			Context::this_->pLayoutManager_->BeginVerticalArea(id, percentageX, percentageY);
 		}
 
-		void EndVertical_()
+		float EndArea_(float scroll)
 		{
-			Context::this_->pLayoutManager_->EndVertical();
+			return Context::this_->pLayoutManager_->EndArea(scroll);
 		}
 
 		void Spacer_(GLushort id, int percentageX, int percentageY)
