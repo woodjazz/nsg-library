@@ -37,6 +37,8 @@ namespace NSG
 			int fontSize_;
 			size_t textMaxLength_;
 
+			PTechnique windowTechnique_;
+
 			PTechnique areaTechnique_;
 
 			PTechnique activeTechnique_;
@@ -46,6 +48,9 @@ namespace NSG
 			PTechnique labelTechnique_;
 
 			PTechnique sliderTechnique_;
+
+			PTechnique titleTechnique_;
+			PTechnique borderTechnique_;
 
 			Skin();
 			Skin(const Skin& obj);

@@ -38,7 +38,7 @@ void Render2TextureBehavior::Start()
     pRenderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);
-    pass_ = PPass2Texture(new Pass2Texture(pRenderedTexture_, true));
+    pass_ = PPass2Texture(new Pass2Texture(pRenderedTexture_, true, false));
     technique->Add(pass_);
 
     pFilteredTexture_ = PTexture(new TextureMemory(GL_RGBA, 16, 16, nullptr));

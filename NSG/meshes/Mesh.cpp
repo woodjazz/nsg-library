@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
+#include "AppStatistics.h"
 #include "Context.h"
 
 namespace NSG
@@ -113,11 +114,20 @@ namespace NSG
 				BindBuffer bindIBuffer(*pIBuffer_);
 
 		    	glDrawElements(mode, indexes_.size(), GL_UNSIGNED_SHORT, 0);
+
+                if(AppStatistics::this_)
+		    	    AppStatistics::this_->NewTriangles(indexes_.size()/3);
 		    }
 		    else
 		    {
 				glDrawArrays(mode, 0, vertexsData_.size());
+
+                if(AppStatistics::this_)
+				    AppStatistics::this_->NewTriangles(vertexsData_.size()/3);
 		    }
+
+            if(AppStatistics::this_)
+		        AppStatistics::this_->NewDrawCall();
 
 			if(position_loc != -1)
 			{

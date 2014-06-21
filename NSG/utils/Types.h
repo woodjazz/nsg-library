@@ -36,6 +36,7 @@ misrepresented as being the original software.
 #include "glm/gtx/io.hpp"
 #include "SharedPointers.h"
 #include "GLES2Includes.h"
+#include <chrono>
 
 #define STRINGIFY(S) #S
 
@@ -61,5 +62,21 @@ namespace NSG
     }
 
     typedef std::pair<PNode, PMesh> MeshNode;
+
+    typedef std::chrono::milliseconds Milliseconds;
+    typedef std::chrono::seconds Seconds;
+    typedef std::chrono::steady_clock Clock;
+    typedef Clock::time_point TimePoint;
+
+    typedef enum {OUTSIDE, INTERSECTS, INSIDE} Intersection;
+
+    typedef enum {
+        IMGUI_UNKNOWN_ID, 
+        IMGUI_FIRST_VERTICAL_AREA_ID, 
+        IMGUI_VERTICAL_SLIDER_ID, 
+        IMGUI_HORIZONTAL_SLIDER_ID, 
+        IMGUI_TITLE_ID,
+        IMGUI_FIRST_VALID_ID
+    } IMGUI_IDS;
 
 }

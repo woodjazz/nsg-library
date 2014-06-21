@@ -34,6 +34,10 @@ misrepresented as being the original software.
 #include "IMGUITextManager.h"
 #include "FrameColorSelection.h"
 #include "IMGUIState.h"
+#include "App.h"
+#include "AppConfiguration.h"
+#include "AppStatistics.h"
+#include "IMGUI.h"
 
 namespace NSG
 {
@@ -45,9 +49,9 @@ namespace NSG
 		pCamera_(new Camera),
 		pCurrentNode_(new Node),
         pRootNode_(new Node),
-        pLayoutManager_(new LayoutManager(pRootNode_, pCurrentNode_)),
+        pLayoutManager_(new LayoutManager(pRootNode_)),
     	pTextManager_(new TextManager),
-    	pFrameColorSelection_(new FrameColorSelection(false, false)),
+    	pFrameColorSelection_(new FrameColorSelection(true, true)),
     	lastId_(0)
     	{
 			pCamera_->EnableOrtho();
@@ -61,32 +65,29 @@ namespace NSG
 		{
 		}
 
+		void Context::Invalidate()
+		{
+			pLayoutManager_->Invalidate();
+		}
+
 		bool Context::IsStable() const
 		{
 			return pLayoutManager_->IsStable();
 		}
 
-		void Context::Begin()
+		void Context::RenderGUI()
 		{
 			state_->Begin();
 
-			lastId_ = 0;
-
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-			ClearStencilBuffer();
-
+            lastId_ = 0;
+			
 			pCamera_->Activate();
+			pCurrentNode_ = pRootNode_;
 
-			pCurrentNode_ = Context::this_->pRootNode_;
-			pLayoutManager_->Begin();
-		}
-
-		void Context::End()
-		{
-			pLayoutManager_->End();
+			pLayoutManager_->Render();
 
 			state_->End();
+
 		}
 
 		PTextMesh Context::GetCurrentTextMesh(GLushort item)
@@ -96,15 +97,15 @@ namespace NSG
 
 		GLushort Context::GetValidId(GLushort id)
 		{
-			CHECK_ASSERT(id > 0, __FILE__, __LINE__);
+            CHECK_ASSERT(id > 0, __FILE__, __LINE__);
 
-			if(lastId_ >= id)
-				id = ++lastId_;
-			else
-				lastId_ = id;
+            if(lastId_ >= id)
+                id = ++lastId_;
+            else
+                lastId_ = id;
 
-			return id;
-		}
+            return id;		
+        }
 	}
 	
 }

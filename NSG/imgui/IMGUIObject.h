@@ -36,8 +36,8 @@ namespace NSG
 			Object(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 			~Object();
 			bool IsStable() const;
-			bool Hit(float x, float y);
-			bool Hit(GLushort id, float x, float y, const PTechnique& technique);
+			bool HitIncStencil(float x, float y);
+			bool HitKeepStencil(float x, float y);
 			void Draw();
 			bool Update();
 			virtual void UpdateControl() {};
@@ -53,7 +53,6 @@ namespace NSG
 			virtual PTechnique GetNormalTechnique() const;
 			PLayoutArea GetArea() const { return area_; }
             void FixCurrentTecnique();
-            void SetStencilTestForHit();
 		protected:
 			GLushort id_;
 			State& uistate_;
@@ -67,8 +66,12 @@ namespace NSG
 			const float& mousex_;
 			const float& mousey_;
 			const bool& mousedown_;
+			const float& mouseRelX_;
+			const float& mouseRelY_;
+			GLushort& activeWindow_;
+			GLushort& activeArea_;
 
-
+			size_t level_;
 		};
 	}
 }

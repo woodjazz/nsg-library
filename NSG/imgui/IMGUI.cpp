@@ -65,43 +65,31 @@ namespace NSG
 
 		bool Button_(GLushort id, const std::string& text, int percentageX, int percentageY)
 		{
-			//BeginVertical_(id);
-
 			id = Context::this_->GetValidId(id);
 
 			Button obj(id, false, text, percentageX, percentageY);
 			
 			bool result = obj();
 
-			//EndVertical_();
-
 			return result;
 		}		
 
 		void Label_(GLushort id, const std::string& text, int percentageX, int percentageY)
 		{
-			//BeginVertical_(id);
-
 			id = Context::this_->GetValidId(id);
 
 			Label obj(id, text, percentageX, percentageY);
 
 			obj();
-
-			//EndVertical_();
 		}
 
 		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentageX, int percentageY)
 		{	
-			//BeginVertical_(id);
-
 			id = Context::this_->GetValidId(id);
 
 			Text obj(id, text, pRegex, percentageX, percentageY);
 
 			std::string result = obj();
-
-			//EndVertical_();
 
 			return result;
 		}	
@@ -116,14 +104,9 @@ namespace NSG
 			return Context::this_->pCurrentNode_;	
 		}
 
-		void Begin()
+		void Window_(IWindow* obj, int percentageX, int percentageY)
 		{
-			Context::this_->Begin();
-		}
-
-		void End()
-		{
-			Context::this_->End();
+			Context::this_->pLayoutManager_->Window(obj, percentageX, percentageY);
 		}
 
 		bool IsStable()

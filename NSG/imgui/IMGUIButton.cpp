@@ -67,9 +67,9 @@ namespace NSG
 
 		void Button::UpdateControl()
 		{
-            if(uistate_.mouseup_ && Hit(uistate_.mouseDownX_, uistate_.mouseDownY_) && Hit(uistate_.mousex_, uistate_.mousey_))
+            if(uistate_.mouseup_ && HitKeepStencil(uistate_.mouseDownX_, uistate_.mouseDownY_))
 			{
-				pressed_ = true;
+				pressed_ = HitKeepStencil(uistate_.mousex_, uistate_.mousey_);
 			}
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -105,11 +105,11 @@ namespace NSG
             pass.Add(&textNode, pTextMesh_);
 
             Material textMaterial;
+            textMaterial.EnableDepthTest(false);
             textMaterial.EnableStencilTest(true);
             textMaterial.SetTexture0(pTextMesh_->GetAtlas());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
-            size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
-            textMaterial.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
+            textMaterial.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
             pass.Set(&textMaterial);
 
             technique.Render();

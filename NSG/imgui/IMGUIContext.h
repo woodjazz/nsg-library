@@ -45,10 +45,10 @@ namespace NSG
 
 			Context();
 			~Context();
-			void Begin();
-			void End();
+			void RenderGUI();
 			bool IsStable() const;
 			PTextMesh GetCurrentTextMesh(GLushort item);
+			void Invalidate();
 
 			// Used to avoid the same ID when more than one control lays in the same line
 			GLushort GetValidId(GLushort id);

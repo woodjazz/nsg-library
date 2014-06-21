@@ -24,6 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "App.h"
+#include "AppConfiguration.h"
+#include "AppStatistics.h"
 #include "Log.h"
 #include "Camera.h"
 #include "IMGUI.h"
@@ -33,6 +35,8 @@ misrepresented as being the original software.
 #include "Keyboard.h"
 #include "Graphics.h"
 #include "FrameColorSelection.h"
+#include "AppStatistics.h"
+#include "IMGUIContext.h"
 #if NACL
 #include "ppapi/cpp/var.h"
 #endif
@@ -41,19 +45,21 @@ namespace NSG
 {
     App::App() 
     : width_(0),
-    height_(0)
-    //selectedIndex_(0)
+    height_(0),
+    configuration_(new AppConfiguration)
+    {
+    }
+
+    App::App(PAppConfiguration configuration) 
+    : width_(0),
+    height_(0),
+    configuration_(configuration)
     {
     }
 
     App::~App()
     {
         TRACE_LOG("App Terminated");
-    }
-
-    int App::GetFPS() const
-    {
-        return 24;
     }
 
     void App::SetViewSize(int32_t width, int32_t height)
@@ -78,18 +84,6 @@ namespace NSG
         }
 #endif  
     }
-  #if 0
-    void App::BeginSelection(float screenX, float screenY) 
-    { 
-        Context::this_->pFrameColorSelection_->Begin(screenX, screenY);
-    }
-
-    void App::EndSelection()
-    {
-        Context::this_->pFrameColorSelection_->End();
-        selectedIndex_ = Context::this_->pFrameColorSelection_->GetSelected();
-    }
-#endif
     void App::DoTick(float delta)
     {
         deltaTime_ = delta;
@@ -102,7 +96,8 @@ namespace NSG
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     InternalApp::InternalApp(App* pApp) 
-    : pApp_(pApp),
+    : Tick(pApp->configuration_->fps_),
+    pApp_(pApp),
     screenX_(0),
     screenY_(0)
     {
@@ -111,11 +106,6 @@ namespace NSG
     InternalApp::~InternalApp()
     {
         pApp_ = nullptr;
-    }
-
-    int InternalApp::GetFPS() const
-    {
-        return pApp_->GetFPS();
     }
 
     void InternalApp::BeginTick()
@@ -128,6 +118,9 @@ namespace NSG
 
         CHECK_ASSERT(pApp_->width_ > 0 && pApp_->height_ > 0, __FILE__, __LINE__);
         glViewport(0, 0, pApp_->width_, pApp_->height_);
+
+        if(AppStatistics::this_)
+            AppStatistics::this_->Reset();
 
         pApp_->Start();
     }
@@ -148,6 +141,8 @@ namespace NSG
         pApp_->SetViewSize(width, height);
 
         Context::this_->InvalidateGPUResources();
+
+        IMGUI::Context::this_->Invalidate();
 
         pApp_->ViewChanged(width, height);
     }
@@ -206,17 +201,14 @@ namespace NSG
 
         pApp_->RenderFrame();
 
-#if 0
-        pApp_->BeginSelection(screenX_, screenY_);
-        pApp_->Render2Select();
-        pApp_->EndSelection();
-#endif        
-
         Camera* camera(Camera::GetActiveCamera());
-        IMGUI::Begin();
-        pApp_->RenderGUIFrame();
-        IMGUI::End();
+
+        IMGUI::Context::this_->RenderGUI();
+
 		Camera::Activate(camera);
+
+        if(AppStatistics::this_)
+            AppStatistics::this_->NewFrame();
     }
 
     bool InternalApp::ShallExit() const

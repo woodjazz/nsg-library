@@ -49,11 +49,12 @@ namespace NSG
 
 		Area::Area(GLushort id, LayoutType type, int percentageX, int percentageY)
 		: Object(id, true, type, percentageX, percentageY),
-		lastScrollHit_(Context::this_->state_->lastScrollHit_),
 		lastSliderHit_(Context::this_->state_->lastSliderHit_),
 		sliderTechnique_(Context::this_->pSkin_->sliderTechnique_)
 		{
 			CHECK_ASSERT(type == LayoutType::Horizontal || type == LayoutType::Vertical, __FILE__, __LINE__);
+
+			area_->controlArea_ = this;
 
 			maxPosX_ = 2*(area_->scrollFactorAreaX_-1);
 			maxPosY_ = 2*(area_->scrollFactorAreaY_-1);
@@ -61,8 +62,20 @@ namespace NSG
 
 		Area::~Area()
 		{
-			UpdateScrolling();
+            if(activeWindow_ <= id_)
+			    UpdateScrolling();
 		}
+
+		float Area::GetTopPosition() const
+		{
+			return 1; //y position to the top of current area
+		}
+
+		float Area::GetLeftPosition() const
+		{
+			return -1; //x position to the left of current area
+		}
+
 
 		void Area::SetScroll(float scroll) 
 		{ 
@@ -118,6 +131,52 @@ namespace NSG
 			Update();
 		}
 
+		void Area::RenderSlider()
+		{
+			size_t nPasses = sliderTechnique_->GetNumPasses();
+			for(size_t i=0; i<nPasses; i++)
+			{
+            	PMaterial material = sliderTechnique_->GetPass(i)->GetMaterial();
+                material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        	    material->SetStencilFunc(GL_ALWAYS, 0, 0);
+	        }
+
+		    sliderTechnique_->Render();
+		}
+
+		bool Area::HitArea(GLushort id, float screenX, float screenY)
+		{
+			if(area_->IsInside(Vertex3(screenX, screenY, 0)))
+			{
+				FixCurrentTecnique();
+
+				if(currentTechnique_)
+				{
+					PMaterial material = Context::this_->pFrameColorSelection_->GetMaterial();
+			        material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+			        material->SetStencilFunc(GL_ALWAYS, 0, 0);
+
+				   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, currentTechnique_.get());
+				}
+			}
+
+			return false;
+		}
+
+		bool Area::HitSlider(GLushort id, float screenX, float screenY)
+		{
+			if(area_->IsInside(Vertex3(screenX, screenY, 0)))
+			{
+		        PMaterial material = Context::this_->pFrameColorSelection_->GetMaterial();
+		        material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		        material->SetStencilFunc(GL_ALWAYS, 0, 0);
+
+			   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, sliderTechnique_.get());
+			}
+
+			return false;
+		}
+
 		bool Area::HandleVerticalSlider(float maxPosY, float& yPosition)
 		{
 	        // Draw slider
@@ -137,7 +196,8 @@ namespace NSG
 	        node.SetPosition(Vertex3(xpos, ypos, 0));
 
 		    sliderTechnique_->Set(&node);
-		    sliderTechnique_->Render();
+
+		    RenderSlider();
 
 		    if(mousedown_)
 		    {
@@ -149,7 +209,7 @@ namespace NSG
 		    	node.SetPosition(position);
 		    	node.SetScale(scale);
 
-		    	if(Hit(IMGUI_VERTICAL_SLIDER_ID, mouseDownX_, mouseDownY_, sliderTechnique_) || lastSliderHit_ == IMGUI_VERTICAL_SLIDER_ID)
+		    	if(HitSlider(IMGUI_VERTICAL_SLIDER_ID, mouseDownX_, mouseDownY_) || lastSliderHit_ == IMGUI_VERTICAL_SLIDER_ID)
 		    	{
 		    		lastSliderHit_ = IMGUI_VERTICAL_SLIDER_ID;
 
@@ -192,7 +252,8 @@ namespace NSG
 	        node.SetPosition(Vertex3(xpos, ypos, 0));
 
 		    sliderTechnique_->Set(&node);
-		    sliderTechnique_->Render();
+
+		    RenderSlider();
 
 		    if(mousedown_)
 		    {
@@ -204,7 +265,7 @@ namespace NSG
 		    	node.SetPosition(position);
 		    	node.SetScale(scale);
 
-		    	if(Hit(IMGUI_HORIZONTAL_SLIDER_ID, mouseDownX_, mouseDownY_, sliderTechnique_) || lastSliderHit_ == IMGUI_HORIZONTAL_SLIDER_ID)
+		    	if(HitSlider(IMGUI_HORIZONTAL_SLIDER_ID, mouseDownX_, mouseDownY_) || lastSliderHit_ == IMGUI_HORIZONTAL_SLIDER_ID)
 		    	{
 		    		lastSliderHit_ = IMGUI_HORIZONTAL_SLIDER_ID;
 
@@ -228,19 +289,24 @@ namespace NSG
 		    return false;
 		}
 
+	    void Area::UpdateControl()
+	    {
+	    	if(mousedown_)
+	    	{
+	    		if(activeArea_ < id_ && HitArea(id_, mouseDownX_, mouseDownY_))
+					activeArea_ = id_;
+            }
+	    	else if(activeArea_ == id_)
+	    	{
+	    		activeArea_ = IMGUI_UNKNOWN_ID;
+	    	}
+	    }
+
 		void Area::UpdateScrolling()
 		{
-            FixCurrentTecnique();
-			if(area_->isScrollable_ &&  Hit(mouseDownX_, mouseDownY_))
+			if(area_->isScrollable_ && (activeArea_ == id_ || (activeArea_ > id_ && HitArea(id_, mouseDownX_, mouseDownY_))))
 			{
-                if(lastScrollHit_ <= id_)
-                    lastScrollHit_ = id_; // keep the top area
-                else
-                    return; //only scroll the top area 
-
                 MouseRelPosition relPos = uistate_.GetMouseRelPosition();
-
-                //Context::this_->pSkin_->areaTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.5f,0.5f,0.5f,1));
 
 				Vertex3 position = area_->childrenRoot_->GetPosition();
 
@@ -288,13 +354,6 @@ namespace NSG
 
 				area_->childrenRoot_->SetPosition(position);
 			}
-            else
-            {
-                if(lastScrollHit_ == id_)
-                    lastScrollHit_ = 0;
-
-                //Context::this_->pSkin_->areaTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.5f,0.5f,0.5f,0));
-            }
 		}	
 
 		PTechnique Area::GetActiveTechnique() const

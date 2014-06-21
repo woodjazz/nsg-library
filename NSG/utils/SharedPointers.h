@@ -29,6 +29,11 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	struct AppConfiguration;
+	typedef std::shared_ptr<AppConfiguration> PAppConfiguration;
+	
+	class AppStatistics;
+	typedef std::unique_ptr<AppStatistics> PAppStatistics;
 
 	class Technique;
 	typedef std::shared_ptr<Technique> PTechnique;
@@ -184,6 +189,9 @@ namespace NSG
 
 	    class Area;
 	    typedef std::shared_ptr<Area> PArea;
+
+	    class Window;
+	    typedef std::shared_ptr<Window> PWindow;
 
 	}
 

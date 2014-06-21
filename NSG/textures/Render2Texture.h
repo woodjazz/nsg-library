@@ -36,7 +36,7 @@ namespace NSG
 	class Render2Texture : public GPUObject
 	{
 	public:
-		Render2Texture(PTexture pTexture, bool createDepthBuffer);
+		Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer);
 		~Render2Texture();
 		void Begin();
 		void End();
@@ -47,8 +47,10 @@ namespace NSG
 		PTexture pTexture_;
 		GLuint framebuffer_;
 		GLuint depthRenderBuffer_;
+		GLuint depthStencilRenderBuffer_;
 		Recti viewport_;
 		bool createDepthBuffer_;
+		bool createDepthStencilBuffer_;
 		bool enabled_;
 	};
 }

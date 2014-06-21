@@ -33,7 +33,6 @@ class MyApp : public NSG::App
 public:
 	MyApp();
 	~MyApp();
-	int GetFPS() const;
 	void Start();
 	void Update();
 	void RenderFrame();

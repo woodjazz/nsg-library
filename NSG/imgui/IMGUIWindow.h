@@ -24,54 +24,35 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Graphics.h"
-#include "GLES2Includes.h"
+#include "IMGUIArea.h"
 
 namespace NSG
 {
-	void ClearAllBuffers()
+	namespace IMGUI
 	{
-        glClearColor(0, 0, 0, 0);
-        glClearDepth(1);
-        glClearStencil(0);
-
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDepthMask(GL_TRUE);
-        glStencilMask(~GLuint(0));
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-
-	void ClearBuffers(bool color, bool depth, bool stencil)
-	{
-		GLbitfield mask(0);
-		if(color)
+		class Window : public Area
 		{
-			mask |= GL_COLOR_BUFFER_BIT;
-			glClearColor(0, 0, 0, 1);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		}
+		public:
+			Window(GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY);
+            ~Window();
+			void operator()();
+			void UpdateControl();
+			PTechnique GetActiveTechnique() const;
+			PTechnique GetHotTechnique() const;
+			PTechnique GetNormalTechnique() const;
+			float GetTopPosition() const;
 
-		if(depth)
-		{
-			mask |= GL_DEPTH_BUFFER_BIT;
-			glClearDepth(1);
-			glDepthMask(GL_TRUE);
-		}
+		private:
+			bool HitTitle(GLushort id, float screenX, float screenY);
+			void RenderTitle();
+			void RenderBorder();
+			PTechnique& titleTechnique_;
+			PTechnique& borderTechnique_;
+			bool showTitle_;
+			bool showBorder_;
+			GLushort& lastTitleHit_;
+			std::pair<int32_t, int32_t> viewSize_;
+		};
 
-		if(stencil)
-		{
-			mask |= GL_STENCIL_BUFFER_BIT;
-			glClearStencil(0);
-			glStencilMask(~GLuint(0));
-		}
-
-		glClear(mask);
-	}
-
-	void ClearStencilBuffer(GLint value)
-	{
-		glClearStencil(value);
-		glStencilMask(~GLuint(0));
-		glClear(GL_STENCIL_BUFFER_BIT);
 	}
 }

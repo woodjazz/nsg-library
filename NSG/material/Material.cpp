@@ -159,15 +159,6 @@ namespace NSG
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		}
 
-		if(enableDepthBuffer_)
-		{
-			glDepthMask(GL_TRUE);
-		}
-		else
-		{
-			glDepthMask(GL_FALSE);
-		}
-
 		if(enableStencilTest_)
 		{
 			glEnable(GL_STENCIL_TEST);
@@ -209,10 +200,16 @@ namespace NSG
         if(enableDepthTest_)
         {
         	glEnable(GL_DEPTH_TEST);
+
+			if(enableDepthBuffer_)
+				glDepthMask(GL_TRUE);
+			else
+				glDepthMask(GL_FALSE);
         }
         else
         {
         	glDisable(GL_DEPTH_TEST);
+        	glDepthMask(GL_FALSE);
         }
 	}
 

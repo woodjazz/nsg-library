@@ -40,10 +40,20 @@ namespace NSG
 		void Spacer_(GLushort id, int percentageX = 0, int percentageY = 0);
 		PSkin& Skin_();
 		PNode& Node_();
+
+        struct IWindow
+        {
+        	virtual ~IWindow() {};
+        	virtual void StartWindow() {};
+        	virtual void RenderWindow() = 0;
+        	virtual void EndWindow() {};
+        };
+		
+		void Window_(IWindow* obj, int percentageX = 0, int percentageY = 0);
 		
 		bool IsStable();
-		void Begin();
-		void End();
+		//void Begin();
+		//void End();
         void OnMouseMove(float x, float y);
         void OnMouseDown(float x, float y);
         void OnMouseWheel(float x, float y);
@@ -54,11 +64,7 @@ namespace NSG
 	}
 }
 
-#define IMGUI_UNKNOWN_ID 0
-#define IMGUI_FIRST_VERTICAL_AREA_ID 1
-#define IMGUI_VERTICAL_SLIDER_ID 2
-#define IMGUI_HORIZONTAL_SLIDER_ID 3
-#define IMGUICOUNTER __COUNTER__ + 10 //first 10th positions are reserved
+#define IMGUICOUNTER __COUNTER__ + IMGUI_FIRST_VALID_ID //first positions are reserved
 #define IMGUIButton(text, ...) IMGUI::Button_(IMGUICOUNTER, text, ##__VA_ARGS__ )
 #define IMGUILabel(text, ...) IMGUI::Label_(IMGUICOUNTER, text, ##__VA_ARGS__ )
 #define IMGUITextField(text, ...) IMGUI::TextField_(IMGUICOUNTER, text, nullptr, ##__VA_ARGS__ )
@@ -69,3 +75,4 @@ namespace NSG
 #define IMGUISpacer(...) IMGUI::Spacer_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUISkin() IMGUI::Skin_()
 #define IMGUINode() IMGUI::Node_()
+#define IMGUIWindow(obj, ...) IMGUI::Window_(obj, ##__VA_ARGS__)

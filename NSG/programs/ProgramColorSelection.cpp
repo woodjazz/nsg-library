@@ -23,55 +23,47 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Graphics.h"
-#include "GLES2Includes.h"
 
-namespace NSG
+#include "ProgramColorSelection.h"
+#include "Types.h"
+
+static const char* vShader = STRINGIFY(
+    uniform mat4 u_mvp;
+	attribute vec2 a_texcoord;
+	attribute vec4 a_position;
+	varying vec2 v_texcoord;
+
+	void main()
+	{
+		gl_Position = u_mvp * a_position;
+		v_texcoord = a_texcoord;
+	}
+);
+
+static const char* fShader = STRINGIFY(
+	varying vec2 v_texcoord;
+	uniform sampler2D u_texture0;
+	uniform vec4 u_color;
+	void main()
+	{
+		vec4 textColor = texture2D(u_texture0, v_texcoord);
+		
+		if(length(textColor) != 0.0)
+			gl_FragColor = u_color;
+		else
+			gl_FragColor = vec4(0.0);
+	}
+);
+
+namespace NSG 
 {
-	void ClearAllBuffers()
+	ProgramColorSelection::ProgramColorSelection()
+	: Program(vShader, fShader)
 	{
-        glClearColor(0, 0, 0, 0);
-        glClearDepth(1);
-        glClearStencil(0);
-
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDepthMask(GL_TRUE);
-        glStencilMask(~GLuint(0));
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
-	void ClearBuffers(bool color, bool depth, bool stencil)
+	ProgramColorSelection::~ProgramColorSelection()
 	{
-		GLbitfield mask(0);
-		if(color)
-		{
-			mask |= GL_COLOR_BUFFER_BIT;
-			glClearColor(0, 0, 0, 1);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		}
-
-		if(depth)
-		{
-			mask |= GL_DEPTH_BUFFER_BIT;
-			glClearDepth(1);
-			glDepthMask(GL_TRUE);
-		}
-
-		if(stencil)
-		{
-			mask |= GL_STENCIL_BUFFER_BIT;
-			glClearStencil(0);
-			glStencilMask(~GLuint(0));
-		}
-
-		glClear(mask);
-	}
-
-	void ClearStencilBuffer(GLint value)
-	{
-		glClearStencil(value);
-		glStencilMask(~GLuint(0));
-		glClear(GL_STENCIL_BUFFER_BIT);
+		
 	}
 }

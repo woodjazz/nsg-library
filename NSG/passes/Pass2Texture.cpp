@@ -28,9 +28,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Pass2Texture::Pass2Texture(PTexture texture, bool createDepthBuffer)
+	Pass2Texture::Pass2Texture(PTexture texture, bool createDepthBuffer, bool createDepthStencilBuffer)
 	: texture_(texture),
-	render2Texture_(new Render2Texture(texture, createDepthBuffer))
+	render2Texture_(new Render2Texture(texture, createDepthBuffer, createDepthStencilBuffer))
 	{
 
 	}

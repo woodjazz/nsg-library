@@ -52,7 +52,7 @@ namespace NSG
 		pMaterial_->SetProgram(pProgram);
 		pMaterial_->SetTexture0(input);
 
-		pRender2Texture_ = PRender2Texture(new Render2Texture(output, true));
+		pRender2Texture_ = PRender2Texture(new Render2Texture(output, true, false));
 	}
 
 	Filter::~Filter()

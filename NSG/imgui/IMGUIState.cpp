@@ -53,8 +53,10 @@ namespace NSG
             character_(0),
             lastwidget_(0),
             activeitem_needs_keyboard_(false),
-            lastScrollHit_(IMGUI_UNKNOWN_ID),
             lastSliderHit_(IMGUI_UNKNOWN_ID),
+            lastTitleHit_(IMGUI_UNKNOWN_ID),
+            activeWindow_(IMGUI_UNKNOWN_ID),
+            activeArea_(IMGUI_UNKNOWN_ID),
             tick_(0),
             mouseRelDownX_(0),
             mouseRelDownY_(0)
@@ -96,7 +98,8 @@ namespace NSG
         	mousedown_ = false;
             mouseup_ = true;
 
-            lastSliderHit_ = IMGUI_UNKNOWN_ID;
+            lastTitleHit_ = lastSliderHit_ = IMGUI_UNKNOWN_ID;
+
         }
 
         void State::OnMouseWheel(float x, float y)

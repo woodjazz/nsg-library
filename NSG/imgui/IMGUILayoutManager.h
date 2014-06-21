@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Types.h"
 #include "Check.h"
+#include "BoundingBox.h"
 #include <list>
 #include <map>
 
@@ -34,6 +35,7 @@ namespace NSG
 {
 	namespace IMGUI
 	{
+        struct IWindow;
 		struct LayoutArea
 		{
 			GLushort id_;
@@ -49,6 +51,7 @@ namespace NSG
 			bool isScrollable_;
 			float scrollFactorAreaX_;
 			float scrollFactorAreaY_;
+			Area* controlArea_;
 
             struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
             {
@@ -62,35 +65,68 @@ namespace NSG
 
 			LayoutArea(GLushort id, bool isReadOnly, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY);
 			void CalculateScrollAreaFactor();
+			bool IsVisible() const;
+			void Set(const Vertex3& position, const Vertex3& scale);
+			bool IsInside(const Vertex3& point) const;
 		};
 
 		class LayoutManager
 		{
         public:
-			LayoutManager(PNode pRootNode, PNode pCurrentNode); 
-			PLayoutArea InsertNewArea(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
-			void Reset();
-			void Begin();
-			void End();
+			LayoutManager(PNode pRootNode); 
+			void Render();
 			PLayoutArea GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
-			PLayoutArea GetArea(GLushort id) const;
 			void BeginHorizontalArea(GLushort id, int percentageX = 0, int percentageY = 0);
 			void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
 			float EndArea(float scroll);
 			void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
-			void RecalculateLayout(PLayoutArea pCurrentArea);
+			size_t GetNestingLevel();
 			bool IsStable() const;
-			size_t GetNestingLevel() const {return nestedAreas_.size(); }
+			void Window(IMGUI::IWindow* obj, int percentageX, int percentageY);
+			void Invalidate();
+	
 		private:
-			std::list<PArea> nestedAreas_;
-			typedef std::map<GLushort, PLayoutArea> AREAS;
-			AREAS areas_;
-			bool layoutChanged_;
-            size_t visibleAreas_;
-            bool newControlAdded_;
-            bool isStable_;
-            PNode pRootNode_;
-            PNode pCurrentNode_;
+
+			struct WindowManager
+			{
+				typedef std::list<PArea> NestedAreas;
+				NestedAreas nestedAreas_;
+				typedef std::map<GLushort, PLayoutArea> AREAS;
+				AREAS areas_;
+				bool layoutChanged_;
+            	size_t visibleAreas_;
+            	bool newControlAdded_;
+            	bool isStable_;
+            	PNode pRootNode_;
+            	bool visible_;
+            	int percentageX_;
+            	int percentageY_;
+
+            	WindowManager(PNode pRootNode, int percentageX, int percentageY);
+				PLayoutArea InsertNewArea(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
+				void Reset();
+				void Begin(bool showTitle, bool showBorder);
+				void End();
+				PLayoutArea GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
+				PLayoutArea GetArea(GLushort id) const;
+			    void BeginWindow(GLushort id, bool showTitle, bool showBorder, int percentageX = 0, int percentageY = 0);
+			    void EndWindow();
+				void BeginHorizontalArea(GLushort id, int percentageX = 0, int percentageY = 0);
+				void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
+				float EndArea(float scroll);
+				void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
+				bool IsStable() const;
+				size_t GetNestingLevel();
+				void RecalculateLayout(PLayoutArea pCurrentArea);
+            };
+
+            typedef std::shared_ptr<WindowManager> PWindowManager;
+            typedef std::map<IMGUI::IWindow*, PWindowManager> WindowManagers;
+
+			PWindowManager mainWindowManager_;
+            WindowManagers windowManagers_;
+            PWindowManager currentWindowManager_;
+
 		};
 	}
 }	

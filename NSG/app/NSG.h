@@ -69,5 +69,7 @@ misrepresented as being the original software.
 #include "ProgramPerVertex.h"
 #include "ProgramUnlit.h"
 #include "ProgramWhiteColor.h"
+#include "AppConfiguration.h"
+#include "AppStatistics.h"
 
 

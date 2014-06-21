@@ -23,55 +23,13 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Graphics.h"
-#include "GLES2Includes.h"
+#include "AppConfiguration.h"
 
-namespace NSG
+namespace NSG 
 {
-	void ClearAllBuffers()
+	AppConfiguration::AppConfiguration()
+	: fps_(24),
+	showStatistics_(true)
 	{
-        glClearColor(0, 0, 0, 0);
-        glClearDepth(1);
-        glClearStencil(0);
-
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDepthMask(GL_TRUE);
-        glStencilMask(~GLuint(0));
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-
-	void ClearBuffers(bool color, bool depth, bool stencil)
-	{
-		GLbitfield mask(0);
-		if(color)
-		{
-			mask |= GL_COLOR_BUFFER_BIT;
-			glClearColor(0, 0, 0, 1);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		}
-
-		if(depth)
-		{
-			mask |= GL_DEPTH_BUFFER_BIT;
-			glClearDepth(1);
-			glDepthMask(GL_TRUE);
-		}
-
-		if(stencil)
-		{
-			mask |= GL_STENCIL_BUFFER_BIT;
-			glClearStencil(0);
-			glStencilMask(~GLuint(0));
-		}
-
-		glClear(mask);
-	}
-
-	void ClearStencilBuffer(GLint value)
-	{
-		glClearStencil(value);
-		glStencilMask(~GLuint(0));
-		glClear(GL_STENCIL_BUFFER_BIT);
-	}
+	};
 }

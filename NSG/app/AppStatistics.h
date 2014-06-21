@@ -24,54 +24,34 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Graphics.h"
-#include "GLES2Includes.h"
 
-namespace NSG
+#include "Singleton.h"
+#include "IMGUI.h"
+#include <vector>
+
+namespace NSG 
 {
-	void ClearAllBuffers()
+	class AppStatistics : public Singleton<AppStatistics>, public IMGUI::IWindow
 	{
-        glClearColor(0, 0, 0, 0);
-        glClearDepth(1);
-        glClearStencil(0);
+	public:
+		AppStatistics();
+		~AppStatistics();
+		void Reset();
+		void NewFrame();
+		void NewDrawCall();
+		void NewTriangles(size_t n);
+		void Show();
+		bool Collect(bool collect);
+		void StartWindow();
+		void RenderWindow();
+		void EndWindow();
+	private:
+        typedef std::pair<size_t, size_t> Counter;
+		void Add2LastSecond(Counter& counter, size_t n);
 
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDepthMask(GL_TRUE);
-        glStencilMask(~GLuint(0));
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-
-	void ClearBuffers(bool color, bool depth, bool stencil)
-	{
-		GLbitfield mask(0);
-		if(color)
-		{
-			mask |= GL_COLOR_BUFFER_BIT;
-			glClearColor(0, 0, 0, 1);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		}
-
-		if(depth)
-		{
-			mask |= GL_DEPTH_BUFFER_BIT;
-			glClearDepth(1);
-			glDepthMask(GL_TRUE);
-		}
-
-		if(stencil)
-		{
-			mask |= GL_STENCIL_BUFFER_BIT;
-			glClearStencil(0);
-			glStencilMask(~GLuint(0));
-		}
-
-		glClear(mask);
-	}
-
-	void ClearStencilBuffer(GLint value)
-	{
-		glClearStencil(value);
-		glStencilMask(~GLuint(0));
-		glClear(GL_STENCIL_BUFFER_BIT);
-	}
+        TimePoint tpReset_;
+        enum Type {FRAMES, DRAWCALLS, TRIANGLES, MAX_COUNTERS};
+        Counter counters_[MAX_COUNTERS];
+        bool collect_;
+	};
 }

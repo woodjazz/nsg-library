@@ -24,15 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Tick.h"
+#include "Check.h"
 #include <algorithm>
 
 namespace NSG
 {
-	Tick::Tick() 
+	Tick::Tick(size_t fps) 
 	: ticks_(0), 
 	fixed_(0), 
-	init_(false)
+	init_(false),
+    fps_(fps)
 	{
+		CHECK_ASSERT(fps_ > 0, __FILE__, __LINE__);
 	}
 
 	Tick::~Tick()
@@ -43,10 +46,8 @@ namespace NSG
 	{
 		if (!init_)
 		{
-            int fps = GetFPS();
-		    fps = std::max<int>(1, fps);
-		    ticks_ = Milliseconds(1000 / fps);
-		    fixed_ = 1.0f / (float)fps;
+		    ticks_ = Milliseconds(1000 / fps_);
+		    fixed_ = 1.0f / (float)fps_;
 			BeginTick();
 			current_ = next_ = Clock::now();
             init_ = true;
@@ -54,7 +55,7 @@ namespace NSG
 
 		bool lock = false;
 		int loop = 0;
-		const int MAX_LOOP = 4;
+		const int MAX_LOOP = 10;
 
 		while ((current_ = Clock::now()) > next_ && loop < MAX_LOOP)
 		{

@@ -32,23 +32,23 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Pass.h"
 #include "Context.h"
-#include "ProgramSimpleColor.h"
+#include "ProgramColorSelection.h"
 #include "Material.h"
 #include "Technique.h"
 #include "Mesh.h"
 
 namespace NSG
 {
-	FrameColorSelection::FrameColorSelection(bool createDepthBuffer, bool createStencilBuffer)
+	FrameColorSelection::FrameColorSelection(bool createDepthBuffer, bool createDepthStencilBuffer)
 	: material_(new Material),
     windowWidth_(0),
     windowHeight_(0),
 	pixelX_(0),
 	pixelY_(0),
     createDepthBuffer_(createDepthBuffer),
-    createStencilBuffer_(createStencilBuffer)
+    createDepthStencilBuffer_(createDepthStencilBuffer)
 	{
-        Program* program = new ProgramSimpleColor;
+        Program* program = new ProgramColorSelection;
         material_->SetProgram(PProgram(program));
         material_->SetBlendMode(BLEND_NONE);
 	}
@@ -73,57 +73,45 @@ namespace NSG
 
         CHECK_ASSERT(windowWidth_ > 0 && windowHeight_ > 0, __FILE__, __LINE__);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        glGenFramebuffers(1, &framebuffer_);
-        glGenRenderbuffers(1, &colorRenderbuffer_);
-
-        if(createDepthBuffer_)
-        {
-            glGenRenderbuffers(1, &depthRenderBuffer_);
-        }
-
-        if(createStencilBuffer_)
-        {
-            glGenRenderbuffers(1, &stencilRenderBuffer_);
-        }
-
         memset(selected_, 0, sizeof(selected_));
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
+        glGenFramebuffers(1, &framebuffer_);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 
-        //////////////////////////////////////////////////////////////////////////////////
-        // Color buffer
-        glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
-#if defined(GLES2)
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, windowWidth_, windowHeight_);
-#else                
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, windowWidth_, windowHeight_);
-#endif  
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
-        //////////////////////////////////////////////////////////////////////////////////              
-
-        if(createDepthBuffer_)
         {
-            //////////////////////////////////////////////////////////////////////////////////
+            // Color buffer
+            glGenRenderbuffers(1, &colorRenderbuffer_);
+            glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
+#if defined(GLES2)
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, windowWidth_, windowHeight_);
+#else                
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, windowWidth_, windowHeight_);
+#endif  
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
+        }
+
+        if(createDepthStencilBuffer_)
+        {
+            // The depth stencil buffer
+            glGenRenderbuffers(1, &depthStencilRenderBuffer_);
+            glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
+        #if defined(GLES2)            
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, windowWidth_, windowHeight_);
+        #else
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_EXT, windowWidth_, windowHeight_);
+        #endif
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+        }
+        else if(createDepthBuffer_)
+        {
             // The depth buffer
+            glGenRenderbuffers(1, &depthRenderBuffer_);
             glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, windowWidth_, windowHeight_);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
-            //////////////////////////////////////////////////////////////////////////////////
-        }
-
-        if(createStencilBuffer_)
-        {
-            //////////////////////////////////////////////////////////////////////////////////
-            // The stencil buffer
-            glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderBuffer_);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, windowWidth_, windowHeight_);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRenderBuffer_);
-            //////////////////////////////////////////////////////////////////////////////////
-
         }
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -140,15 +128,10 @@ namespace NSG
 
 	void FrameColorSelection::ReleaseResources()
     {
-        if(createStencilBuffer_)
-        {
-            glDeleteRenderbuffers(1, &stencilRenderBuffer_);
-        }
-
-        if(createDepthBuffer_)
-        {
+        if(createDepthStencilBuffer_)
+            glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
+        else if(createDepthBuffer_)
             glDeleteRenderbuffers(1, &depthRenderBuffer_);
-        }
 
         glDeleteRenderbuffers(1, &colorRenderbuffer_);
         glDeleteFramebuffers(1, &framebuffer_);
@@ -162,7 +145,7 @@ namespace NSG
         pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-        ClearBuffers(true, true, false);
+        ClearBuffers(true, false, false);
 
 #ifndef ANDROID
         glEnable(GL_SCISSOR_TEST);
@@ -254,5 +237,14 @@ namespace NSG
             return id == GetSelected();
 
         return false;
+    }
+
+    void FrameColorSelection::ClearDepthStencil()
+    {
+        if(IsReady())
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+            ClearBuffers(false, true, true);
+        }
     }
 }

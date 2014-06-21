@@ -78,7 +78,9 @@ namespace NSG
 	        }
 	        else
 	        {
-	             area_->cursor_character_position_ = pTextMesh_->GetCharacterPositionForWidth(mouseTotalX)-1;
+	             area_->cursor_character_position_ = pTextMesh_->GetCharacterPositionForWidth(mouseTotalX);
+                 if(area_->cursor_character_position_ > 0)
+                     --area_->cursor_character_position_;
                  CHECK_ASSERT(area_->cursor_character_position_ <= currentText_.length(), __FILE__, __LINE__);
 	        }
 	        ///////////////////////////////////////////////
@@ -215,6 +217,7 @@ namespace NSG
 	        technique.Add(&pass);
 	        pass.Add(&textNode2, pTextMesh_);
 	        Material textMaterial;
+	        textMaterial.EnableDepthTest(false);
 	        textMaterial.EnableStencilTest(true);
 	        textMaterial.SetTexture0(pTextMesh_->GetAtlas());
 	        textMaterial.SetProgram(pTextMesh_->GetProgram());

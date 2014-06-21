@@ -48,11 +48,6 @@ MyApp::~MyApp()
 {
 }
 
-int MyApp::GetFPS() const
-{
-	return 30;
-}
-
 void MyApp::Start() 
 {
 	TRACE_LOG("Start");
@@ -202,7 +197,13 @@ void MyApp::TestIMGUI2()
 void MyApp::TestIMGUI4()
 {
 	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
+    IMGUIButton("");
+#if 0
+    IMGUIButton("AMS1", 200, 200);
+    IMGUIButton("AMS2", 100, 100);
+#endif
 
+#if 0
     IMGUIBeginVertical(75, 50);
     IMGUIButton("AMS1", 150, 120);
     IMGUIButton("AMS2", 175, 120);
@@ -210,10 +211,13 @@ void MyApp::TestIMGUI4()
     IMGUIButton("AMS4", 150, 520);
     static float scroll = 0;
     static float scrollFactor = 1;
-    IMGUIEndArea(scroll);
+    //IMGUIEndArea(scroll);
+    IMGUIEndArea();
+    IMGUIButton("DO");
     scroll+=0.01f * scrollFactor;
     if(scroll>1 || scroll < 0)
         scrollFactor *= -1;
+#endif
 
 #if 0   
 	//IMGUI::pCurrentNode->SetScale(Vertex3(aspectRatio_, 1, 1));

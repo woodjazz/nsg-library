@@ -41,13 +41,20 @@ namespace NSG
 			PTechnique GetNormalTechnique() const;
 			void SetScroll(float scroll);
 			float GetScroll() const;
+			virtual float GetTopPosition() const;
+			virtual float GetLeftPosition() const;
+			void UpdateControl();
+		protected:
+			bool HitArea(GLushort id, float screenX, float screenY);
 
 		private:
+			void RenderSlider();
+			bool HitSlider(GLushort id, float screenX, float screenY);
 			void UpdateScrolling();
 			bool HandleVerticalSlider(float maxPosY, float& yPosition);
 			bool HandleHorizontalSlider(float maxPosX, float& xPosition);
 
-            GLushort& lastScrollHit_;
+        private:
             GLushort& lastSliderHit_;
             PTechnique& sliderTechnique_;
             float maxPosX_;

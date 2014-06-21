@@ -42,6 +42,8 @@ struct Sample : App
 
 	void Start()
 	{
+        IMGUISkin()->fontFile_ = "font/FreeSans.ttf";
+
         camera_ = PCamera(new Camera);
         camera_->SetPosition(Vertex3(0,0,10));
         camera_->Activate();
@@ -63,7 +65,7 @@ struct Sample : App
         {
             //box passes
 
-            PPass2Texture pass2Texture(new Pass2Texture(boxBehavior_->renderedTexture_, true));
+            PPass2Texture pass2Texture(new Pass2Texture(boxBehavior_->renderedTexture_, true, false));
             technique_->Add(pass2Texture);
 
             PPass pass00 = PPass(new Pass);
@@ -87,7 +89,7 @@ struct Sample : App
         {
             //sphere passes
     
-            PPass2Texture pass2Texture(new Pass2Texture(sphereBehavior_->renderedTexture_, true));
+            PPass2Texture pass2Texture(new Pass2Texture(sphereBehavior_->renderedTexture_, true, false));
             technique_->Add(pass2Texture);
 
             PPass pass00 = PPass(new Pass);
@@ -128,6 +130,7 @@ struct Sample : App
     {
         Behavior::UpdateAll();
     }
+
 
     void RenderFrame()
     {
