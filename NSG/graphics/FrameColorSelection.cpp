@@ -41,6 +41,7 @@ namespace NSG
 {
 	FrameColorSelection::FrameColorSelection(bool createDepthBuffer, bool createDepthStencilBuffer)
 	: material_(new Material),
+    pass_(new Pass),
     windowWidth_(0),
     windowHeight_(0),
 	pixelX_(0),
@@ -50,7 +51,8 @@ namespace NSG
 	{
         Program* program = new ProgramColorSelection;
         material_->SetProgram(PProgram(program));
-        material_->SetBlendMode(BLEND_NONE);
+        pass_->Set(material_);
+        pass_->SetBlendMode(BLEND_NONE);
 	}
 
 	FrameColorSelection::~FrameColorSelection()
@@ -216,7 +218,9 @@ namespace NSG
 
                             if(lastMesh != mesh || lastNode != node) // optimization to not render always the same
                             {
-                                material_->Render(true, node, mesh);
+                                pass_->ClearMeshNodes();
+                                pass_->Add(node, meshNodeIt->second);
+                                pass_->Render();
                                 lastMesh = mesh;
                                 lastNode = node;
                             }

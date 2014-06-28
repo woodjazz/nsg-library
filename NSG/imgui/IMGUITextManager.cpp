@@ -33,15 +33,15 @@ namespace NSG
 		{
 		}
 
-		PTextMesh TextManager::GetTextMesh(GLushort item, const std::string& fontFile, int fontSize)
+		PTextMesh TextManager::GetTextMesh(GLushort item, int maxLength, const std::string& fontFile, int fontSize)
 		{
-			Key k = {item, fontFile, fontSize};
+			Key k = {item, maxLength, fontFile, fontSize};
 
 			auto it = textMap_.find(k);
 
 			if(it == textMap_.end())
 			{
-				PTextMesh pTextMesh(new TextMesh(fontFile.c_str(), fontSize, GL_STATIC_DRAW));
+				PTextMesh pTextMesh(new TextMesh(maxLength, fontFile.c_str(), fontSize, GL_STATIC_DRAW));
 
 				textMap_.insert(TextMap::value_type(k, pTextMesh));
 

@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "PlaneMesh.h"
 #include "Context.h"
 #include "Camera.h"
+#include "Pass.h"
 
 static const char* vShader = STRINGIFY(
 	attribute vec4 a_position;
@@ -65,13 +66,17 @@ namespace NSG
 {
 	ShowTexture::ShowTexture()
 	: material_(new Material),
+    pass_(new Pass),
 	mesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW))
 	{
-		material_->EnableDepthTest(false);
+		pass_->EnableDepthTest(false);
+        pass_->Set(material_);
+        pass_->Add(nullptr, mesh_);
 	}
 
 	ShowTexture::~ShowTexture()
 	{
+        pass_ = nullptr;
 		Context::this_->Remove(this);
 	}
 
@@ -112,7 +117,7 @@ namespace NSG
 
 			Camera* pCurrent = Camera::Deactivate();
 
-			material_->Render(true, nullptr, mesh_.get());
+			pass_->Render();
 
 			Camera::Activate(pCurrent);
 

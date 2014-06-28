@@ -62,7 +62,7 @@ namespace NSG
             GLushort lastSliderHit_;
             GLushort lastTitleHit_;
             GLushort activeWindow_;
-            GLushort activeArea_;
+            GLushort activeScrollArea_;
 
 			int tick_;
 

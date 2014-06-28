@@ -56,7 +56,7 @@ namespace NSG
             lastSliderHit_(IMGUI_UNKNOWN_ID),
             lastTitleHit_(IMGUI_UNKNOWN_ID),
             activeWindow_(IMGUI_UNKNOWN_ID),
-            activeArea_(IMGUI_UNKNOWN_ID),
+            activeScrollArea_(IMGUI_UNKNOWN_ID),
             tick_(0),
             mouseRelDownX_(0),
             mouseRelDownY_(0)
@@ -82,6 +82,7 @@ namespace NSG
 
         void State::OnMouseDown(float x, float y)
         {
+            activeWindow_ = activeScrollArea_ = IMGUI_UNKNOWN_ID;
             mouseRelDownX_ = mouseDownX_ = x;
             mouseRelDownY_ = mouseDownY_ = y;
         	mousex_ = x;

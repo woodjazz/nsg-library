@@ -27,6 +27,9 @@ misrepresented as being the original software.
 #include "FontAtlasTextureManager.h"
 #include "Program.h"
 #include "FontAtlasTexture.h"
+#include "BufferManager.h"
+#include "Graphics.h"
+#include "Context.h"
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
@@ -59,7 +62,7 @@ static const char* fShader = STRINGIFY(
 
 namespace NSG
 {
-	TextMesh::TextMesh(const char* filename, int fontSize, GLenum usage)
+	TextMesh::TextMesh(int maxLength, const char* filename, int fontSize, GLenum usage)
 	: Mesh(usage),
 	pProgram_(new Program(vShader, fShader)),
 	screenWidth_(0),
@@ -69,7 +72,7 @@ namespace NSG
 	vAlignment_(BOTTOM_ALIGNMENT),
 	alignmentOffsetX_(0),
 	alignmentOffsetY_(0),
-    hasBeenInvalidatedExternally_(false)
+	maxLength_(maxLength)
     {
     	pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(FontAtlasTextureManager::Key(filename, fontSize));
 	}
@@ -82,33 +85,68 @@ namespace NSG
 	{
         return pProgram_->IsReady() && pAtlas_->IsReady() && !vertexsData_.empty();
 	}
-
+	
 	void TextMesh::AllocateResources()
 	{
+		vertexDataCopy_ = vertexsData_;
+		Move(vertexsData_, alignmentOffsetX_, alignmentOffsetY_);
+
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		CHECK_ASSERT(pVBuffer_ == nullptr, __FILE__, __LINE__);
-		CHECK_ASSERT(pIBuffer_ == nullptr, __FILE__, __LINE__);
-
 		CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
-
-        VertexsData tmp(vertexsData_);
-
-        Move(tmp, alignmentOffsetX_, alignmentOffsetY_);
-		
+		CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
 		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
-		
-		pVBuffer_ = PVertexBuffer(new VertexBuffer(sizeof(VertexData) * tmp.size(), &tmp[0], usage_));
-        
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
 
+		if (pVBuffer_ && bufferVertexData_->data_)
+		{
+			CHECK_ASSERT(bufferVertexData_, __FILE__, __LINE__);
+			pVBuffer_->UpdateData(*bufferVertexData_, vertexsData_);
+		}
+		else
+		{
+			const size_t VERTEX_PER_CHAR = 6;
+			
+			const GLsizeiptr MAX_BYTES_VERTEX_BUFFER = VERTEX_PER_CHAR * maxLength_ * sizeof(VertexData);
+			GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
+			CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
+			pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, bytesNeeded, &vertexsData_[0]);
+			bufferVertexData_ = pVBuffer_->GetLastAllocation();
+			CHECK_ASSERT(bufferVertexData_->maxSize_ && bufferVertexData_->size_, __FILE__, __LINE__);
+		}
+		
+		if (pIBuffer_ && bufferIndexData_->data_)
+		{
+			CHECK_ASSERT(bufferIndexData_, __FILE__, __LINE__);
+
+			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
+
+			pIBuffer_->UpdateData(*bufferIndexData_, indexes_, indexBase);
+		}
+		else
+		{
+			const size_t INDEXES_PER_CHAR = 6;
+			const GLsizeiptr MAX_BYTES_INDEX_BUFFER = INDEXES_PER_CHAR * maxLength_ * sizeof(IndexType);
+			GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
+			CHECK_ASSERT(bytesNeeded <= MAX_BYTES_INDEX_BUFFER, __FILE__, __LINE__);
+
+			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
+			pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, bytesNeeded, &indexes_[0], indexBase);
+			bufferIndexData_ = pIBuffer_->GetLastAllocation();
+			CHECK_ASSERT(bufferIndexData_->maxSize_ && bufferIndexData_->size_, __FILE__, __LINE__);
+		}
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+		
+		vertexsData_ = vertexDataCopy_;
+	}
+	
 	void TextMesh::ReleaseResources()
 	{
-        pVBuffer_ = nullptr;
-        hasBeenInvalidatedExternally_ = true; //When GPU objects have been invalidated
-	}
+		Mesh::ReleaseResources();
 
+		text_.clear(); // Force SetText (when window's resized)
+	}
+	
 	GLfloat TextMesh::GetWidthForCharacterPosition(unsigned int charPos) const
 	{
 		return pAtlas_->GetWidthForCharacterPosition(text_.c_str(), charPos);
@@ -118,41 +156,6 @@ namespace NSG
 	{
 		return pAtlas_->GetCharacterPositionForWidth(text_.c_str(), width);
 	}
-
-	void TextMesh::SetTextHorizontalAlignment(HorizontalAlignment align)
-	{
-		if(align != hAlignment_ || hasBeenInvalidatedExternally_)
-		{
-			if(align == CENTER_ALIGNMENT)
-				alignmentOffsetX_ = -screenWidth_/2;
-			else if(align == RIGHT_ALIGNMENT)
-				alignmentOffsetX_ = -screenWidth_;
-            else
-                alignmentOffsetX_ = 0;
-
-			hAlignment_ = align;
-
-            Invalidate();
-		}
-	}
-
-	void TextMesh::SetTextVerticalAlignment(VerticalAlignment align)
-	{
-		if(align != vAlignment_ || hasBeenInvalidatedExternally_)
-		{
-			if(align == MIDDLE_ALIGNMENT)
-				alignmentOffsetY_ = 0;
-			else if(align == TOP_ALIGNMENT)
-				alignmentOffsetY_ = -screenHeight_;
-            else
-                alignmentOffsetY_ = screenHeight_;
-
-			vAlignment_ = align;
-
-            Invalidate();
-		}
-	}
-
 
 	void TextMesh::Move(VertexsData& obj, float offsetX, float offsetY)
 	{
@@ -166,24 +169,48 @@ namespace NSG
 		}
 	}
 
-	void TextMesh::SetText(const std::string& text) 
+	void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
 	{
-		if(text_ != text || hasBeenInvalidatedExternally_)
+		bool changed = false;
+		std::string tmpText = text;
+		if(tmpText.size() > maxLength_)
+			tmpText.resize(maxLength_);
+
+		if (text_ != tmpText)
 		{
-			if(pAtlas_->SetTextMesh(text, vertexsData_, screenWidth_, screenHeight_))
-            {
-			    text_ = text;
+			if (pAtlas_->SetTextMesh(tmpText, vertexsData_, indexes_, screenWidth_, screenHeight_))
+			{
+				text_ = tmpText;
 
-                if(hasBeenInvalidatedExternally_)
-                {
-                    SetTextHorizontalAlignment(hAlignment_);
-                    SetTextVerticalAlignment(vAlignment_);
-                }
+				changed = true;
+			}
+		}
+		
+		if (changed || hAlign != hAlignment_ || vAlign != vAlignment_)
+		{
+			if (hAlign == CENTER_ALIGNMENT)
+				alignmentOffsetX_ = -screenWidth_ / 2;
+			else if (hAlign == RIGHT_ALIGNMENT)
+				alignmentOffsetX_ = -screenWidth_;
+			else
+				alignmentOffsetX_ = 0;
 
-                Invalidate();
+			if (vAlign == MIDDLE_ALIGNMENT)
+				alignmentOffsetY_ = 0;
+			else if (vAlign == TOP_ALIGNMENT)
+				alignmentOffsetY_ = -screenHeight_;
+			else
+				alignmentOffsetY_ = screenHeight_;
 
-                hasBeenInvalidatedExternally_ = false;
-            }
+			hAlignment_ = hAlign;
+			vAlignment_ = vAlign;
+
+			changed = true;
+		}
+
+		if (changed && IsValid())
+		{
+			AllocateResources(); // Don't call invalidate because we'll enter in a loop
 		}
 	}	
 

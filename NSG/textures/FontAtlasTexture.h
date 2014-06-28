@@ -68,7 +68,7 @@ namespace NSG
 
 		static const int MAXCHARS = 256;
 
-		bool SetTextMesh(const std::string& text, VertexsData& vertexsData, GLfloat& screenWidth, GLfloat& screenHeight);
+		bool SetTextMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
 		GLfloat GetWidthForCharacterPosition(const char* text, unsigned int charPos);
 		unsigned int GetCharacterPositionForWidth(const char* text, float width);
 

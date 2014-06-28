@@ -47,7 +47,7 @@ namespace NSG
 			~Context();
 			void RenderGUI();
 			bool IsStable() const;
-			PTextMesh GetCurrentTextMesh(GLushort item);
+			PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
 			void Invalidate();
 
 			// Used to avoid the same ID when more than one control lays in the same line

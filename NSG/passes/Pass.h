@@ -36,6 +36,14 @@ namespace NSG
 	public:
 		Pass();
 		virtual ~Pass();
+		void SetBlendMode(BLEND_MODE mode);
+		void EnableColorBuffer(bool enable);
+		void EnableDepthBuffer(bool enable);
+		void EnableDepthTest(bool enable);
+		void EnableStencilTest(bool enable);
+		void SetStencilMask(GLuint mask);
+		void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
+		void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
 		enum Mode {SOLID, WIREFRAME};
 		void SetDrawMode(Mode mode) { drawMode_ = mode; }
 		void SetNode(int idx, PNode node);
@@ -45,11 +53,25 @@ namespace NSG
 		void Set(Material* pMaterial);
 		void Add(PNode node, PMesh mesh);
 		void Add(Node* node, PMesh mesh);
+		void ClearMeshNodes();
 		virtual void Render();
 		PMesh GetMesh(int idx) const;
 		const MESHNODES& GetMeshNodes() const { return meshNodes_; }
 		PMaterial GetMaterial() const { return material_; }
 	protected:
+        BLEND_MODE blendMode_;
+        bool enableDepthTest_;
+        bool enableStencilTest_;
+        GLuint stencilMask_;
+        GLenum sfailStencilOp_;
+        GLenum dpfailStencilOp_;
+        GLenum dppassStencilOp_;
+        GLenum stencilFunc_;
+        GLint stencilRefValue_;
+        GLuint stencilMaskValue_;
+        bool enableColorBuffer_;
+        bool enableDepthBuffer_;
+
 		PMaterial material_;
 		MESHNODES meshNodes_;
 		Mode drawMode_;

@@ -25,33 +25,47 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include "GLES2Includes.h"
+#include "Types.h"
+#include <vector>
 
 namespace NSG 
 {
-	class BindBuffer;
 	class Buffer
 	{
 	public:
-		Buffer(GLenum type, GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW);
+
+		struct Data
+		{
+			GLintptr offset_;
+			GLsizeiptr maxSize_;
+			GLsizeiptr size_;
+			const GLvoid* data_;
+
+			Data()
+			{
+				memset(this, 0, sizeof(*this));
+			}
+
+			Data(GLintptr offset, GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)
+				: offset_(offset), maxSize_(maxSize), size_(size), data_(data)
+			{
+			}
+		};
+
 		~Buffer();
-	private:
-		GLuint GetId() const { return id_; }
+
+		Data* GetLastAllocation();
 		void Bind() { glBindBuffer(type_, id_); }
-		void UnBind() { glBindBuffer(type_, 0); }
-	private:
+		virtual bool ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
+		virtual void RedoBuffer();
+	protected:
+		Buffer(GLenum type, GLsizeiptr maxSize, GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW);
+		GLsizeiptr GetTotalBytes() const;
 		GLenum type_;
 		GLuint id_;
-		friend class BindBuffer;
-	};
-
-	class BindBuffer
-	{
-	public:
-		BindBuffer(Buffer& obj);
-		~BindBuffer();
+		GLenum usage_;
 	private:
-		Buffer& obj_;
+		std::vector<Data> dataCollection_;
 	};
 }
 

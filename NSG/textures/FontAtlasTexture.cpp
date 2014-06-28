@@ -11,6 +11,7 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 #include <assert.h>
 
 namespace NSG
@@ -188,7 +189,7 @@ namespace NSG
 		TRACE_LOG("FontAtlasTexture::GenerateMeshesForAllChars done.");
 	}
 
-	bool FontAtlasTexture::SetTextMesh(const std::string& text, VertexsData& vertexsData, GLfloat& screenWidth, GLfloat& screenHeight)
+	bool FontAtlasTexture::SetTextMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight)
 	{
         if(!IsReady())
             return false;
@@ -196,8 +197,10 @@ namespace NSG
 		CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0, __FILE__, __LINE__);
 			
 		vertexsData.clear();
+		indexes.clear();
 
 	    vertexsData.reserve(6 * text.size());
+		indexes.reserve(vertexsData.size());
 
         screenWidth = screenHeight = 0;
 
@@ -206,6 +209,8 @@ namespace NSG
 
 		float x = 0;
 		float y = 0;
+
+		int index = 0;
 
 		for(const char *p = text.c_str(); *p; p++) 
 		{ 
@@ -240,6 +245,7 @@ namespace NSG
                 data.position_.x += x2;
                 data.position_.y -= y2;
 				vertexsData.push_back(data);
+				indexes.push_back(index++);
 				++it0;
 			}
 		}

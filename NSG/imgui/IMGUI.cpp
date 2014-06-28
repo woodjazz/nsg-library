@@ -63,31 +63,31 @@ namespace NSG
 			Context::this_->pLayoutManager_->Spacer(id, percentageX, percentageY);
 		}
 
-		bool Button_(GLushort id, const std::string& text, int percentageX, int percentageY)
+		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Button obj(id, false, text, percentageX, percentageY);
+			Button obj(id, false, text, maxLength, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY);
 			
 			bool result = obj();
 
 			return result;
 		}		
 
-		void Label_(GLushort id, const std::string& text, int percentageX, int percentageY)
+		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Label obj(id, text, percentageX, percentageY);
+			Label obj(id, text, maxLength, percentageX, percentageY);
 
 			obj();
 		}
 
-		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentageX, int percentageY)
+		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY)
 		{	
 			id = Context::this_->GetValidId(id);
 
-			Text obj(id, text, pRegex, percentageX, percentageY);
+			Text obj(id, text, maxLength, pRegex, percentageX, percentageY);
 
 			std::string result = obj();
 
@@ -104,9 +104,9 @@ namespace NSG
 			return Context::this_->pCurrentNode_;	
 		}
 
-		void Window_(IWindow* obj, int percentageX, int percentageY)
+		void Window_(GLushort id, IWindow* obj, int percentageX, int percentageY)
 		{
-			Context::this_->pLayoutManager_->Window(obj, percentageX, percentageY);
+			Context::this_->pLayoutManager_->Window(id, obj, percentageX, percentageY);
 		}
 
 		bool IsStable()

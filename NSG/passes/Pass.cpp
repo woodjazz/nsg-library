@@ -26,11 +26,25 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Check.h"
+#include "Graphics.h"
 
 namespace NSG
 {
 	Pass::Pass()
-	: drawMode_(SOLID)
+	: blendMode_(BLEND_ALPHA),
+    enableDepthTest_(true),
+    enableStencilTest_(false),
+    stencilMask_(~GLuint(0)),
+	sfailStencilOp_(GL_KEEP),
+	dpfailStencilOp_(GL_KEEP),
+	dppassStencilOp_(GL_REPLACE),
+	stencilFunc_(GL_ALWAYS),
+	stencilRefValue_(0),
+	stencilMaskValue_(~GLuint(0)),
+    enableColorBuffer_(true),
+    enableDepthBuffer_(true),
+	drawMode_(SOLID)
 	{
 
 	}
@@ -39,6 +53,51 @@ namespace NSG
 	{
 
 	}
+
+	void Pass::SetBlendMode(BLEND_MODE mode)
+	{
+		blendMode_ = mode;
+	}
+
+	void Pass::EnableColorBuffer(bool enable)
+	{
+		enableColorBuffer_ = enable;
+	}
+
+	void Pass::EnableDepthBuffer(bool enable)
+	{
+		enableDepthBuffer_ = enable;
+	}
+
+	void Pass::EnableDepthTest(bool enable)
+	{
+		enableDepthTest_ = enable;
+	}
+
+	void Pass::EnableStencilTest(bool enable)
+	{
+		enableStencilTest_ = enable;	
+	}
+
+	void Pass::SetStencilMask(GLuint mask)
+	{
+		stencilMask_ = mask;
+	}
+
+	void Pass::SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass)
+	{
+        sfailStencilOp_ = sfail;
+        dpfailStencilOp_ = dpfail;
+        dppassStencilOp_ = dppass;
+	}
+
+	void Pass::SetStencilFunc(GLenum func, GLint ref, GLuint mask)
+	{
+        stencilFunc_ = func;
+        stencilRefValue_ = ref;
+        stencilMaskValue_ = mask;
+    }
+
 
 	void Pass::SetNode(int idx, PNode node)
 	{
@@ -90,9 +149,20 @@ namespace NSG
 		return meshNodes_.at(idx).second; 
 	}
 
+	void Pass::ClearMeshNodes()
+	{
+		meshNodes_.clear();
+	}
+
 	void Pass::Render()
 	{
 		if(material_)
+		{
+			SetColorMask(enableColorBuffer_);
+			SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_, stencilFunc_, stencilRefValue_, stencilMaskValue_);
+			SetBlendModeTest(blendMode_);
+			SetDepthTest(enableDepthTest_, enableDepthBuffer_);
 			material_->Render(drawMode_ == SOLID, meshNodes_);
+		}
 	}
 }

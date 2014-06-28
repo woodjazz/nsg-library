@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Check.h"
 #include "ResourceProcedural.h"
+#include <algorithm>
 
 namespace NSG
 {

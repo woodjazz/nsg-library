@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "ResourceMemory.h"
 #include "Material.h"
+#include "Graphics.h"
 #include <stdlib.h>
 #include <stdio.h>
 #if !defined(__APPLE__)
@@ -154,9 +155,9 @@ namespace NSG
 		    texture1_loc_ = GetUniformLocation("u_texture1");
 		    color_loc_ = GetUniformLocation("u_color");
 		    
-		    att_texcoord_loc_ = GetAttributeLocation("a_texcoord");
 		    att_position_loc_ = GetAttributeLocation("a_position");
 		    att_normal_loc_ = GetAttributeLocation("a_normal");
+		    att_texcoord_loc_ = GetAttributeLocation("a_texcoord");
 	        att_color_loc_ = GetAttributeLocation("a_color");
 
 			hasLights_ = false;
@@ -302,17 +303,15 @@ namespace NSG
 	{
         if(material)
         {
-		    if(texture0_loc_ != -1 && material->pTexture0_)
+		    if(texture0_loc_ != -1)
 		    {
-			    glActiveTexture(GL_TEXTURE0);
-			    material->pTexture0_->Bind();
+		    	SetTexture(0, material->pTexture0_.get());
 			    glUniform1i(texture0_loc_, 0);
 		    }
 
-		    if(texture1_loc_ != -1 && material->pTexture1_)
+		    if(texture1_loc_ != -1)
 		    {
-			    glActiveTexture(GL_TEXTURE1);
-			    material->pTexture1_->Bind();
+		    	SetTexture(1, material->pTexture1_.get());
 			    glUniform1i(texture1_loc_, 1);
 		    }
 
@@ -451,7 +450,6 @@ namespace NSG
 
 	UseProgram::~UseProgram()
 	{
-		glBindTexture(GL_TEXTURE_2D, 0);
 		glUseProgram(0);
 	}
 

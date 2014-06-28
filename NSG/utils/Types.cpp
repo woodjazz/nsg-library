@@ -23,26 +23,12 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "GPUObject.h"
-#include "SharedPointers.h"
+#include "Types.h"
 
 namespace NSG
 {
-	class ShowTexture : public GPUObject
+	VertexData::VertexData()
+	: color_(1)
 	{
-	public:
-		ShowTexture();
-		~ShowTexture();
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
-		void SetNormal(PTexture texture);
-		void SetFont(PTexture texture);
-		void Show();
-	private:
-        PPass pass_;
-        PMaterial material_; 
-		PMesh mesh_;
-	};
+	}
 }

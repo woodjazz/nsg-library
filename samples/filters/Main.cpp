@@ -70,7 +70,7 @@ struct Sample : App
 
             PPass pass00 = PPass(new Pass);
             PMaterial material(new Material);
-            material->EnableColorBuffer(false);
+            pass00->EnableColorBuffer(false);
             PProgram whiteColor(new ProgramWhiteColor);
             material->SetProgram(whiteColor);
             pass00->Set(material);
@@ -94,7 +94,7 @@ struct Sample : App
 
             PPass pass00 = PPass(new Pass);
             PMaterial material(new Material);
-            material->EnableColorBuffer(false);
+            pass00->EnableColorBuffer(false);
             PProgram whiteColor(new ProgramWhiteColor);
             material->SetProgram(whiteColor);
             pass00->Set(material);

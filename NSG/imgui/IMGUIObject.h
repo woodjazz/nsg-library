@@ -69,7 +69,7 @@ namespace NSG
 			const float& mouseRelX_;
 			const float& mouseRelY_;
 			GLushort& activeWindow_;
-			GLushort& activeArea_;
+			GLushort& activeScrollArea_;
 
 			size_t level_;
 		};

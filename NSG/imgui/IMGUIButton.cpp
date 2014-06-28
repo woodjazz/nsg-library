@@ -40,15 +40,13 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Button::Button(GLushort id, bool isReadOnly, const std::string& text, int percentageX, int percentageY)
+		Button::Button(GLushort id, bool isReadOnly, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY)
         : Object(id, isReadOnly, LayoutType::Control, percentageX, percentageY),
 		currentText_(text),
-		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
+		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength)),
 		pressed_(false)
 		{
-            pTextMesh_->SetText(currentText_);
-            pTextMesh_->SetTextHorizontalAlignment(CENTER_ALIGNMENT);
-            pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
+			pTextMesh_->SetText(currentText_, hAlign, vAlign);
 		}
 
 		Button::~Button()
@@ -103,13 +101,14 @@ namespace NSG
             Pass pass;
             technique.Add(&pass);
             pass.Add(&textNode, pTextMesh_);
+            pass.EnableDepthTest(false);
+            pass.EnableStencilTest(true);
+            pass.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
 
             Material textMaterial;
-            textMaterial.EnableDepthTest(false);
-            textMaterial.EnableStencilTest(true);
             textMaterial.SetTexture0(pTextMesh_->GetAtlas());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
-            textMaterial.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+            
             pass.Set(&textMaterial);
 
             technique.Render();

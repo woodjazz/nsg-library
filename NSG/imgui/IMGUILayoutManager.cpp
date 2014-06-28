@@ -132,8 +132,9 @@ namespace NSG
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		LayoutManager::WindowManager::WindowManager(PNode pRootNode, int percentageX, int percentageY)
-		: layoutChanged_(false),
+		LayoutManager::WindowManager::WindowManager(GLushort id, PNode pRootNode, int percentageX, int percentageY)
+		: id_(id),
+		layoutChanged_(false),
         visibleAreas_(0),
         newControlAdded_(false),
         isStable_(false),
@@ -208,8 +209,7 @@ namespace NSG
 			Context::this_->pFrameColorSelection_->ClearDepthStencil();
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			ClearStencilBuffer();
-			//BeginWindow(IMGUI_FIRST_VERTICAL_AREA_ID, showTitle, percentageX_, percentageY_);
-			BeginWindow(Context::this_->GetValidId(IMGUICOUNTER), showTitle, showBorder, percentageX_, percentageY_);
+			BeginWindow(id_, showTitle, showBorder, percentageX_, percentageY_);
 			
 		}
 
@@ -269,18 +269,25 @@ namespace NSG
 			return pArea;
 		}
 
+		void LayoutManager::WindowManager::InsertArea(PArea area)
+		{
+			CHECK_ASSERT(area->GetArea()->type_ == LayoutType::Horizontal || area->GetArea()->type_ == LayoutType::Vertical, __FILE__, __LINE__);
+			nestedAreas_.push_back(area);
+		}
+
 		void LayoutManager::WindowManager::BeginHorizontalArea(GLushort id, int percentageX, int percentageY)
 		{
 			PArea obj(new Area(id, LayoutType::Horizontal, percentageX, percentageY));
-			(*obj)();			
-			nestedAreas_.push_back(obj);
+			(*obj)();	
+			InsertArea(obj);
 		}
 
 		void LayoutManager::WindowManager::BeginWindow(GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY)
 		{
             IMGUI::Window* window = new IMGUI::Window(id, showTitle, showBorder, percentageX, percentageY);
-            (*window)();			
-			nestedAreas_.push_back(PArea(window));
+			CHECK_ASSERT(window->GetArea()->type_ == LayoutType::Vertical, __FILE__, __LINE__);
+            (*window)();	
+			InsertArea(PArea(window));
 		}
 
 		void LayoutManager::WindowManager::EndWindow()
@@ -291,8 +298,8 @@ namespace NSG
 		void LayoutManager::WindowManager::BeginVerticalArea(GLushort id, int percentageX, int percentageY)
 		{
 			PArea obj(new Area(id, LayoutType::Vertical, percentageX, percentageY));
-			(*obj)();			
-			nestedAreas_.push_back(obj);
+			(*obj)();	
+			InsertArea(obj);
 		}
 
 		float LayoutManager::WindowManager::EndArea(float scroll)
@@ -313,7 +320,7 @@ namespace NSG
 
 		void LayoutManager::WindowManager::Spacer(GLushort id, int percentageX, int percentageY)
 		{
-			GetAreaForControl(id, true, LayoutType::Control, percentageX, percentageY);
+			GetAreaForControl(id, true, LayoutType::Spacer, percentageX, percentageY);
 		}
 
 		bool LayoutManager::WindowManager::IsStable() const 
@@ -370,7 +377,7 @@ namespace NSG
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		LayoutManager::LayoutManager(PNode pRootNode) 
-		: mainWindowManager_(new WindowManager(pRootNode, 100, 100))
+			: mainWindowManager_(new WindowManager(IMGUI_FIRST_VERTICAL_AREA_ID, pRootNode, 100, 100))
 		{
 		}
 
@@ -427,13 +434,13 @@ namespace NSG
 			    AppStatistics::this_->Collect(true);
 		}
 
-		void LayoutManager::Window(IMGUI::IWindow* obj, int percentageX, int percentageY)
+		void LayoutManager::Window(GLushort id, IMGUI::IWindow* obj, int percentageX, int percentageY)
 		{
 			auto it = windowManagers_.find(obj);
 			if(it == windowManagers_.end())
 			{
 				PNode rootNode(new Node);
-                PWindowManager windowManager(new WindowManager(rootNode, percentageX, percentageY));
+                PWindowManager windowManager(new WindowManager(id, rootNode, percentageX, percentageY));
 				auto result = windowManagers_.insert(WindowManagers::value_type(obj, windowManager));
 				CHECK_ASSERT(result.second == true, __FILE__, __LINE__);
 			}

@@ -40,9 +40,9 @@ namespace NSG
 	class TextMesh : public Mesh
 	{
 	public:
-		TextMesh(const char* filename, int fontSize, GLenum usage);
+		TextMesh(int maxLength, const char* filename, int fontSize, GLenum usage);
 		~TextMesh();
-		void SetText(const std::string& text);
+		void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
 		GLfloat GetWidth() const { return screenWidth_; }
 		GLfloat GetHeight() const { return screenHeight_; }
 		GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
@@ -55,8 +55,6 @@ namespace NSG
 		virtual bool IsValid();
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
-		void SetTextHorizontalAlignment(HorizontalAlignment align);
-		void SetTextVerticalAlignment(VerticalAlignment align);
 
         HorizontalAlignment GetTextHorizontalAlignment() const { return hAlignment_; }
         VerticalAlignment GetTextVerticalAlignment() const { return vAlignment_; }
@@ -75,6 +73,7 @@ namespace NSG
 		VerticalAlignment vAlignment_;
 		float alignmentOffsetX_;
 		float alignmentOffsetY_;
-        bool hasBeenInvalidatedExternally_;
+		VertexsData vertexDataCopy_;
+		int maxLength_;
 	};
 }

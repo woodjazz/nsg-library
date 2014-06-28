@@ -27,19 +27,26 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
+#include "Graphics.h"
 #include "AppStatistics.h"
 #include "Context.h"
+#include "BufferManager.h"
 
 namespace NSG
 {
-	VertexData::VertexData()
-	: color_(1,1,1,1)
-	{
-	}
+	const size_t MAX_VERTEXES_PER_MESH = 10000;
+	const IndexType MAX_INDEXES_PER_MESH = ~IndexType(0);
 
 	Mesh::Mesh(GLenum usage) 
-	: usage_(usage)
+	: pVBuffer_(nullptr),
+	pIBuffer_(nullptr),
+	usage_(usage),
+	bufferVertexData_(nullptr),
+	bufferIndexData_(nullptr)
 	{
+		// we do not want reallocation of these buffers
+		vertexsData_.reserve(MAX_VERTEXES_PER_MESH);
+		indexes_.reserve(MAX_INDEXES_PER_MESH);
 	}
 
 	Mesh::~Mesh() 
@@ -52,9 +59,14 @@ namespace NSG
 	{
 	   	if(IsReady())
 	   	{
+	   		CHECK_ASSERT(vertexsData_.size() < MAX_VERTEXES_PER_MESH, __FILE__, __LINE__); // we do not want reallocation of these buffers
+			CHECK_ASSERT(indexes_.size() < MAX_INDEXES_PER_MESH, __FILE__, __LINE__); // we do not want reallocation of these buffers
+
 			CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			BindBuffer bindVBuffer(*pVBuffer_);
+			CHECK_ASSERT(pVBuffer_, __FILE__, __LINE__);
+			
+			SetVertexBuffer(pVBuffer_);
 
 			if(position_loc != -1)
 			{
@@ -111,19 +123,33 @@ namespace NSG
 
 			if(!indexes_.empty())
 			{
-				BindBuffer bindIBuffer(*pIBuffer_);
+				SetIndexBuffer(pIBuffer_);
 
-		    	glDrawElements(mode, indexes_.size(), GL_UNSIGNED_SHORT, 0);
+				const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData_->offset_);
 
-                if(AppStatistics::this_)
-		    	    AppStatistics::this_->NewTriangles(indexes_.size()/3);
+				glDrawElements(mode, indexes_.size(), GL_UNSIGNED_SHORT, offset);
+
+				CHECK_GL_STATUS(__FILE__, __LINE__);
+
+				if (AppStatistics::this_)
+				{
+					CHECK_ASSERT(GetSolidDrawMode() == GL_TRIANGLES && indexes_.size() % 3 == 0, __FILE__, __LINE__);
+					AppStatistics::this_->NewTriangles(indexes_.size() / 3);
+				}
 		    }
 		    else
 		    {
-				glDrawArrays(mode, 0, vertexsData_.size());
+				GLint first = bufferVertexData_->offset_ / sizeof(VertexData);
 
-                if(AppStatistics::this_)
-				    AppStatistics::this_->NewTriangles(vertexsData_.size()/3);
+				glDrawArrays(mode, first, vertexsData_.size());
+
+				CHECK_GL_STATUS(__FILE__, __LINE__);
+
+				if (AppStatistics::this_ && solid)
+				{
+					CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || vertexsData_.size() % 3 == 0, __FILE__, __LINE__);
+					AppStatistics::this_->NewTriangles(vertexsData_.size() / 3);
+				}
 		    }
 
             if(AppStatistics::this_)
@@ -171,11 +197,19 @@ namespace NSG
 
 		CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
 		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
-		pVBuffer_ = PVertexBuffer(new VertexBuffer(sizeof(VertexData) * vertexsData_.size(), &vertexsData_[0], usage_));
 
+		GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
+		pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(bytesNeeded, bytesNeeded, &vertexsData_[0]);
+		bufferVertexData_ = pVBuffer_->GetLastAllocation();
+		CHECK_ASSERT(bufferVertexData_->maxSize_ && bufferVertexData_->size_, __FILE__, __LINE__);
+		
 		if(!indexes_.empty())
 		{
-			pIBuffer_ = PIndexBuffer(new IndexBuffer(sizeof(IndexType) * indexes_.size(), &indexes_[0], usage_));
+			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
+			GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
+			pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(bytesNeeded, bytesNeeded, &indexes_[0], indexBase);
+			bufferIndexData_ = pIBuffer_->GetLastAllocation();
+			CHECK_ASSERT(bufferIndexData_->maxSize_ && bufferIndexData_->size_, __FILE__, __LINE__);
 		}
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -185,5 +219,7 @@ namespace NSG
 	{
 		pVBuffer_ = nullptr;
 		pIBuffer_ = nullptr;
+		bufferVertexData_ = nullptr;
+		bufferIndexData_ = nullptr;
 	}
 }

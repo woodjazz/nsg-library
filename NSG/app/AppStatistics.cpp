@@ -32,7 +32,9 @@ misrepresented as being the original software.
 namespace NSG 
 {
 	AppStatistics::AppStatistics()
-    : collect_(true)
+    : collect_(true),
+	vertexBuffers_(0),
+	indexBuffers_(0)
 	{
 		memset(&counters_[0], 0, sizeof(counters_));
 	}
@@ -77,6 +79,26 @@ namespace NSG
         }
 	}
 
+	void AppStatistics::ResetVertexBuffer()
+	{
+		vertexBuffers_ = 0;
+	}
+
+	void AppStatistics::ResetIndexBuffer()
+	{
+		indexBuffers_ = 0;
+	}
+
+	void AppStatistics::NewVertexBuffer()
+	{
+		++vertexBuffers_;
+	}
+
+	void AppStatistics::NewIndexBuffer()
+	{
+		++indexBuffers_;
+	}
+
 	void AppStatistics::NewFrame()
 	{
 		Add2LastSecond(counters_[FRAMES], 1);
@@ -92,14 +114,6 @@ namespace NSG
 		Add2LastSecond(counters_[TRIANGLES], n);	
 	}
 
-	void AppStatistics::Show()
-	{
-		if(AppConfiguration::this_->showStatistics_)
-		{
-			IMGUIWindow(this, 25, 25);
-		}
-	}
-
 	void AppStatistics::StartWindow()
 	{
 	}
@@ -111,24 +125,37 @@ namespace NSG
 		Collect(false);
 		static std::string emptys;
 
+		IMGUISpacer(0, 10);
+
+		const int MAX_LABEL_SIZE = 20;
         size_t fps = counters_[FRAMES].first;;
 	    std::stringstream ss;
 	    ss << "FPS:" << fps;
-	    IMGUILabel(ss.str(), 0, 20);
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
 
 	    ss.str(emptys);
 
         size_t drawCalls = counters_[DRAWCALLS].first;
         if(fps) drawCalls/=fps;
 	    ss << "DrawCalls:" << drawCalls;
-	    IMGUILabel(ss.str(), 0, 20);
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
 
 	    ss.str(emptys);
 
         size_t triangles = counters_[TRIANGLES].first;
         if(fps) triangles/=fps;
 	    ss << "Triangles:" << triangles;
-	    IMGUILabel(ss.str(), 0, 20);
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
+
+	    ss.str(emptys);
+
+		ss << "VertexBuffers:" << vertexBuffers_;
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
+
+	    ss.str(emptys);
+
+	    ss << "IndexBuffers:" << indexBuffers_;
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
 
 	    Collect(true);
 

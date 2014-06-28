@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "AppConfiguration.h"
 #include "AppStatistics.h"
 #include "IMGUI.h"
+#include "Pass.h"
 
 namespace NSG
 {
@@ -57,8 +58,8 @@ namespace NSG
 			pCamera_->EnableOrtho();
             pCamera_->SetFarClip(1000000);
             pCamera_->SetNearClip(-1000000);
-            pFrameColorSelection_->GetMaterial()->EnableStencilTest(true);
-            pFrameColorSelection_->GetMaterial()->EnableDepthTest(false);
+            pFrameColorSelection_->GetPass()->EnableStencilTest(true);
+            pFrameColorSelection_->GetPass()->EnableDepthTest(false);
 		}
 
 		Context::~Context()
@@ -90,14 +91,18 @@ namespace NSG
 
 		}
 
-		PTextMesh Context::GetCurrentTextMesh(GLushort item)
+		PTextMesh Context::GetCurrentTextMesh(GLushort item, int maxLength)
 		{
-			return pTextManager_->GetTextMesh(item, pSkin_->fontFile_, pSkin_->fontSize_);
+			return pTextManager_->GetTextMesh(item, maxLength, pSkin_->fontFile_, pSkin_->fontSize_);
 		}
 
 		GLushort Context::GetValidId(GLushort id)
 		{
             CHECK_ASSERT(id > 0, __FILE__, __LINE__);
+
+            GLushort windowId = pLayoutManager_->GetCurrentWindowId();
+
+            id += windowId;
 
             if(lastId_ >= id)
                 id = ++lastId_;

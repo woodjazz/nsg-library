@@ -75,6 +75,7 @@ namespace NSG
         public:
 			LayoutManager(PNode pRootNode); 
 			void Render();
+			GLushort GetCurrentWindowId() const { return currentWindowManager_->id_; }
 			PLayoutArea GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 			void BeginHorizontalArea(GLushort id, int percentageX = 0, int percentageY = 0);
 			void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
@@ -82,13 +83,14 @@ namespace NSG
 			void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
 			size_t GetNestingLevel();
 			bool IsStable() const;
-			void Window(IMGUI::IWindow* obj, int percentageX, int percentageY);
+			void Window(GLushort id, IMGUI::IWindow* obj, int percentageX, int percentageY);
 			void Invalidate();
 	
 		private:
 
 			struct WindowManager
 			{
+				GLushort id_;
 				typedef std::list<PArea> NestedAreas;
 				NestedAreas nestedAreas_;
 				typedef std::map<GLushort, PLayoutArea> AREAS;
@@ -102,7 +104,7 @@ namespace NSG
             	int percentageX_;
             	int percentageY_;
 
-            	WindowManager(PNode pRootNode, int percentageX, int percentageY);
+            	WindowManager(GLushort id, PNode pRootNode, int percentageX, int percentageY);
 				PLayoutArea InsertNewArea(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 				void Reset();
 				void Begin(bool showTitle, bool showBorder);
@@ -111,6 +113,7 @@ namespace NSG
 				PLayoutArea GetArea(GLushort id) const;
 			    void BeginWindow(GLushort id, bool showTitle, bool showBorder, int percentageX = 0, int percentageY = 0);
 			    void EndWindow();
+				void InsertArea(PArea area);
 				void BeginHorizontalArea(GLushort id, int percentageX = 0, int percentageY = 0);
 				void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
 				float EndArea(float scroll);

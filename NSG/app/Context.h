@@ -41,6 +41,7 @@ namespace NSG
 		IMGUI::PContext imgui_;
 		PKeyboard keyboard_;
 		PFreeType freeType_;
+		PBufferManager bufferManager_;
 
 		Context();
 		~Context();

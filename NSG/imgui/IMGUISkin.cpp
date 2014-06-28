@@ -54,43 +54,31 @@ namespace NSG
 			PProgram unlitProgram(new ProgramUnlit);
 
 			PMaterial pActiveMaterial(new Material);
-			pActiveMaterial->EnableDepthTest(false);
             pActiveMaterial->SetProgram(unlitProgram);
 			pActiveMaterial->SetColor(Color(1,0,0,0.7f));
-			pActiveMaterial->EnableStencilTest(true);
 
 			PMaterial pNormalMaterial(new Material);
-			pNormalMaterial->EnableDepthTest(false);
             pNormalMaterial->SetProgram(unlitProgram);
 			pNormalMaterial->SetColor(Color(0,1,0,0.7f));
-			pNormalMaterial->EnableStencilTest(true);
 
 			PMaterial pHotMaterial(new Material);
-			pHotMaterial->EnableDepthTest(false);
 			pHotMaterial->SetProgram(unlitProgram);
 			pHotMaterial->SetColor(Color(0,0,1,0.7f));
-			pHotMaterial->EnableStencilTest(true);
 
 			PMaterial pBorderMaterial(new Material);
 			PProgram pBorderProgram(new ProgramUnlit);
-			pBorderMaterial->EnableDepthTest(false);
 			pBorderMaterial->SetProgram(pBorderProgram);
 			pBorderMaterial->SetColor(Color(1,1,1,1));
-			pBorderMaterial->EnableStencilTest(true);
 
 			PMaterial labelMaterial(new Material);
-			labelMaterial->EnableDepthTest(false);
             labelMaterial->SetProgram(unlitProgram);
 			labelMaterial->SetColor(Color(0,0,0,0.0f));
-			labelMaterial->EnableStencilTest(true);
 
 			PMaterial windowMaterial(new Material);
             //windowMaterial->SetColor(Color(0,1,1,0.5f));
             windowMaterial->SetColor(Color(0,0,0,0));
             windowMaterial->SetProgram(unlitProgram);
             //windowMaterial->SetProgram(pProgram);
-            windowMaterial->EnableDepthTest(false);
-			windowMaterial->EnableStencilTest(true);
 			//windowMaterial->EnableColorBuffer(false);
 
 
@@ -99,21 +87,15 @@ namespace NSG
             areaMaterial->SetColor(Color(0,0,0,0));
             areaMaterial->SetProgram(unlitProgram);
             //areaMaterial->SetProgram(pProgram);
-            areaMaterial->EnableDepthTest(false);
-			areaMaterial->EnableStencilTest(true);
 			//areaMaterial->EnableColorBuffer(false);
 
 			PMaterial sliderMaterial(new Material);
-			sliderMaterial->EnableDepthTest(false);
             sliderMaterial->SetProgram(unlitProgram);
 			sliderMaterial->SetColor(Color(0.5f,0.5f,0.5f,0.6f));
-			sliderMaterial->EnableStencilTest(true);
 
 			PMaterial titleMaterial(new Material);
-			titleMaterial->EnableDepthTest(false);
             titleMaterial->SetProgram(unlitProgram);
 			titleMaterial->SetColor(Color(0.5f,0.5f,1.0f,0.6f));
-			titleMaterial->EnableStencilTest(true);
 			
 
 			PMesh borderMesh(new RectangleMesh(2, 2, GL_STATIC_DRAW));
@@ -121,44 +103,64 @@ namespace NSG
             //PMesh areaMesh(new CircleMesh(1, 32, GL_STATIC_DRAW));
             
             //PMesh controlMesh(new RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
-
+            //PMesh controlMesh(new CircleMesh(1, 32, GL_STATIC_DRAW));
+            //PMesh controlMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
             PMesh controlMesh = areaMesh;
 
 			PPass activePass(new Pass);
 			activePass->Set(pActiveMaterial);
 			activePass->Add(nullptr, controlMesh);
+			activePass->EnableDepthTest(false);
+			activePass->EnableStencilTest(true);
 
 			PPass normalPass(new Pass);
 			normalPass->Set(pNormalMaterial);
 			normalPass->Add(nullptr, controlMesh);
+			normalPass->EnableDepthTest(false);
+			normalPass->EnableStencilTest(true);
 
 			PPass hotPass(new Pass);
 			hotPass->Set(pHotMaterial);
 			hotPass->Add(nullptr, controlMesh);
+			hotPass->EnableDepthTest(false);
+			hotPass->EnableStencilTest(true);
+
 
 			PPass borderPass(new Pass);
 			borderPass->Set(pBorderMaterial);
 			borderPass->Add(nullptr, borderMesh);
 			borderPass->SetDrawMode(Pass::WIREFRAME);
+			borderPass->EnableDepthTest(false);
+			borderPass->EnableStencilTest(true);
+
 
             PPass windowPass(new Pass);
             //windowPass->Set(pNormalMaterial);
             windowPass->Set(windowMaterial);
 			windowPass->Add(nullptr, areaMesh);
+            windowPass->EnableDepthTest(false);
+			windowPass->EnableStencilTest(true);
+
 
 
             PPass areaPass(new Pass);
             //areaPass->Set(pNormalMaterial);
             areaPass->Set(areaMaterial);
 			areaPass->Add(nullptr, areaMesh);
+            areaPass->EnableDepthTest(false);
+			areaPass->EnableStencilTest(true);
 
 			PPass sliderPass(new Pass);
 			sliderPass->Set(sliderMaterial);
 			sliderPass->Add(nullptr, areaMesh);
+            sliderPass->EnableDepthTest(false);
+			sliderPass->EnableStencilTest(true);
 
 			PPass titlePass(new Pass);
 			titlePass->Set(titleMaterial);
 			titlePass->Add(nullptr, areaMesh);
+            titlePass->EnableDepthTest(false);
+			titlePass->EnableStencilTest(true);
 
 
 			sliderTechnique_->Add(sliderPass);
@@ -187,6 +189,9 @@ namespace NSG
 			PPass labelPass(new Pass);
 			labelPass->Set(labelMaterial);
 			labelPass->Add(nullptr, controlMesh);
+            labelPass->EnableDepthTest(false);
+			labelPass->EnableStencilTest(true);
+
 
 			labelTechnique_->Add(labelPass);
 		}

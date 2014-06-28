@@ -33,16 +33,13 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Label::Label(GLushort id, const std::string& text, int percentageX, int percentageY)
-		: Button(id, true, text, percentageX, percentageY)
+		Label::Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
+			: Button(id, true, text, maxLength, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY)
 		{
-            pTextMesh_->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
-            pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
 		}
 
 		Label::~Label()
 		{
-
 		}
 
 		PTechnique Label::GetNormalTechnique() const

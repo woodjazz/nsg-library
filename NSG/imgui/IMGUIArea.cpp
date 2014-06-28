@@ -136,9 +136,9 @@ namespace NSG
 			size_t nPasses = sliderTechnique_->GetNumPasses();
 			for(size_t i=0; i<nPasses; i++)
 			{
-            	PMaterial material = sliderTechnique_->GetPass(i)->GetMaterial();
-                material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        	    material->SetStencilFunc(GL_ALWAYS, 0, 0);
+            	PPass pass = sliderTechnique_->GetPass(i);
+                pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        	    pass->SetStencilFunc(GL_ALWAYS, 0, 0);
 	        }
 
 		    sliderTechnique_->Render();
@@ -152,9 +152,9 @@ namespace NSG
 
 				if(currentTechnique_)
 				{
-					PMaterial material = Context::this_->pFrameColorSelection_->GetMaterial();
-			        material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-			        material->SetStencilFunc(GL_ALWAYS, 0, 0);
+					PPass pass = Context::this_->pFrameColorSelection_->GetPass();
+			        pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+			        pass->SetStencilFunc(GL_ALWAYS, 0, 0);
 
 				   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, currentTechnique_.get());
 				}
@@ -167,9 +167,9 @@ namespace NSG
 		{
 			if(area_->IsInside(Vertex3(screenX, screenY, 0)))
 			{
-		        PMaterial material = Context::this_->pFrameColorSelection_->GetMaterial();
-		        material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		        material->SetStencilFunc(GL_ALWAYS, 0, 0);
+		        PPass pass = Context::this_->pFrameColorSelection_->GetPass();
+		        pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		        pass->SetStencilFunc(GL_ALWAYS, 0, 0);
 
 			   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, sliderTechnique_.get());
 			}
@@ -293,18 +293,14 @@ namespace NSG
 	    {
 	    	if(mousedown_)
 	    	{
-	    		if(activeArea_ < id_ && HitArea(id_, mouseDownX_, mouseDownY_))
-					activeArea_ = id_;
+	    		if(activeScrollArea_ < id_ && area_->isScrollable_ && HitArea(id_, mouseDownX_, mouseDownY_))
+					activeScrollArea_ = id_;
             }
-	    	else if(activeArea_ == id_)
-	    	{
-	    		activeArea_ = IMGUI_UNKNOWN_ID;
-	    	}
 	    }
 
 		void Area::UpdateScrolling()
 		{
-			if(area_->isScrollable_ && (activeArea_ == id_ || (activeArea_ > id_ && HitArea(id_, mouseDownX_, mouseDownY_))))
+            if(activeScrollArea_ <= id_ && HitArea(id_, mouseDownX_, mouseDownY_))
 			{
                 MouseRelPosition relPos = uistate_.GetMouseRelPosition();
 

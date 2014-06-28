@@ -29,6 +29,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Buffer;
+	typedef std::shared_ptr<Buffer> PBuffer;
+
+	class BufferManager;
+	typedef std::unique_ptr<BufferManager> PBufferManager;
+	
 	struct AppConfiguration;
 	typedef std::shared_ptr<AppConfiguration> PAppConfiguration;
 	

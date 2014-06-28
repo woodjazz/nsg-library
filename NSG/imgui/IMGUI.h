@@ -31,9 +31,9 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		bool Button_(GLushort id, const std::string& text, int percentageX = 0, int percentageY = 0);
-		void Label_(GLushort id, const std::string& text, int percentageX = 0, int percentageY = 0);
-		std::string TextField_(GLushort id, const std::string& text, std::regex* pRegex, int percentageX = 0, int percentageY = 0);
+		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
+		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
+		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX = 0, int percentageY = 0);
 		void BeginHorizontal_(GLushort id, int percentageX = 0, int percentageY = 0);
 		void BeginVertical_(GLushort id, int percentageX = 0, int percentageY = 0);
 		float EndArea_(float scroll = -1);
@@ -49,11 +49,9 @@ namespace NSG
         	virtual void EndWindow() {};
         };
 		
-		void Window_(IWindow* obj, int percentageX = 0, int percentageY = 0);
+		void Window_(GLushort id, IWindow* obj, int percentageX = 0, int percentageY = 0);
 		
 		bool IsStable();
-		//void Begin();
-		//void End();
         void OnMouseMove(float x, float y);
         void OnMouseDown(float x, float y);
         void OnMouseWheel(float x, float y);
@@ -65,14 +63,14 @@ namespace NSG
 }
 
 #define IMGUICOUNTER __COUNTER__ + IMGUI_FIRST_VALID_ID //first positions are reserved
-#define IMGUIButton(text, ...) IMGUI::Button_(IMGUICOUNTER, text, ##__VA_ARGS__ )
-#define IMGUILabel(text, ...) IMGUI::Label_(IMGUICOUNTER, text, ##__VA_ARGS__ )
-#define IMGUITextField(text, ...) IMGUI::TextField_(IMGUICOUNTER, text, nullptr, ##__VA_ARGS__ )
-#define IMGUITextFieldWithPattern(text, pattern, ...) IMGUI::TextField_(IMGUICOUNTER, text, pattern, ##__VA_ARGS__ )
+#define IMGUIButton(maxLength, text, ...) IMGUI::Button_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )
+#define IMGUILabel(maxLength, text,...) IMGUI::Label_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )
+#define IMGUITextField(maxLength, text,...) IMGUI::TextField_(IMGUICOUNTER, text, maxLength, nullptr, ##__VA_ARGS__ )
+#define IMGUITextFieldWithPattern(maxLength, text, pattern, ...) IMGUI::TextField_(IMGUICOUNTER, text, maxLength, pattern, ##__VA_ARGS__ )
 #define IMGUIBeginHorizontal(...) IMGUI::BeginHorizontal_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUIBeginVertical(...) IMGUI::BeginVertical_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUIEndArea(scroll) IMGUI::EndArea_(scroll)
 #define IMGUISpacer(...) IMGUI::Spacer_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUISkin() IMGUI::Skin_()
 #define IMGUINode() IMGUI::Node_()
-#define IMGUIWindow(obj, ...) IMGUI::Window_(obj, ##__VA_ARGS__)
+#define IMGUIWindow(obj, ...) IMGUI::Window_(IMGUICOUNTER, obj, ##__VA_ARGS__)

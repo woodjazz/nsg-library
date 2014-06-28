@@ -151,7 +151,9 @@ struct Test : public App
 
 	void RenderGUIFrame()
 	{
-        buttonPressed = IMGUIButton("Button", 100, 50);
+		const int MAX_TEXT_SIZE = 15;
+
+		buttonPressed = IMGUIButton(MAX_TEXT_SIZE, "Button", 100, 50);
 
         if(buttonPressed)
         {
@@ -160,8 +162,8 @@ struct Test : public App
 	        
         IMGUIBeginHorizontal(100, 50);
 
-		    text1 = IMGUITextField(text1, 50);
-            text2 = IMGUITextField(text2, 50);
+		    text1 = IMGUITextField(MAX_TEXT_SIZE, text1, 50);
+			text2 = IMGUITextField(MAX_TEXT_SIZE, text2, 50);
 	    
 	    IMGUIEndArea();
 	}

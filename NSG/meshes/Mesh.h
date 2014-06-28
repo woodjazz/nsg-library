@@ -32,23 +32,10 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "GPUObject.h"
 #include "Resource.h"
+#include "Buffer.h"
 
 namespace NSG
 {
-	struct VertexData
-	{
-		Vertex3 position_;
-		Vertex3 normal_;
-		Vertex2 uv_;
-		Color color_;
-
-		VertexData();
-	};
-
-    typedef std::vector<VertexData> VertexsData;
-	typedef GLushort IndexType;
-	typedef std::vector<IndexType> Indexes;
-
 	class Mesh : public GPUObject
 	{
 	public:
@@ -63,9 +50,11 @@ namespace NSG
 	protected:
 		VertexsData vertexsData_;
 		Indexes indexes_;
-		PIndexBuffer pIBuffer_;
-		PVertexBuffer pVBuffer_;
+		IndexBuffer* pIBuffer_;
+		VertexBuffer* pVBuffer_;
 		GLenum usage_;
         PResource resource_;
+        Buffer::Data* bufferVertexData_;
+        Buffer::Data* bufferIndexData_;
 	};
 }

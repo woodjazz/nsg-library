@@ -25,18 +25,19 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include <memory>
 #include "Buffer.h"
 
 namespace NSG 
 {
-
+	class BufferManager;
 	class IndexBuffer : public Buffer
 	{
 	public:
-
-		IndexBuffer(GLsizeiptr size, const GLvoid* data, GLenum usage);
-
+		IndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLenum usage);
 		~IndexBuffer();
+		static void UnBind();
+		bool ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
+		void RedoBuffer();
+		void UpdateData(Buffer::Data& obj, const Indexes& indexes, GLintptr indexBase);
 	};
 }

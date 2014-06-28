@@ -34,7 +34,7 @@ namespace NSG
 		class Label : public Button
 		{
 		public:
-			Label(GLushort id, const std::string& text, int percentageX, int percentageY);
+			Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY);
 			~Label();
 			void operator()();
 			PTechnique GetNormalTechnique() const;

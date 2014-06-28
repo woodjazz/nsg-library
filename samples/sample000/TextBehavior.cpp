@@ -43,7 +43,7 @@ void TextBehavior::Start()
 	PNode pParent(new Node);
 	pSceneNode_->SetParent(pParent);
 
-    pText_ = PTextMesh(new TextMesh("font/FreeSans.ttf", 12, GL_STATIC_DRAW));
+    pText_ = PTextMesh(new TextMesh(25, "font/FreeSans.ttf", 12, GL_STATIC_DRAW));
 
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);

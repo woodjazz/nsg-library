@@ -24,10 +24,21 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GLES2Includes.h"
+#include "Types.h"
 namespace NSG
 {
+    class Buffer;
+
+    void ResetCachedState();
 	void ClearAllBuffers();
 	void ClearBuffers(bool color, bool depth, bool stencil);
 	void ClearStencilBuffer(GLint value = 0);
+	void SetStencilTest(bool enable, GLuint writeMask, GLenum sfail, GLenum dpfail, GLenum dppass, GLenum func, GLint ref, GLuint compareMask);
+	void SetColorMask(bool enable);
+	void SetBlendModeTest(BLEND_MODE blendMode);
+	void SetDepthTest(bool enableDepthTest, bool enableDepthBuffer);
+	void SetCullFace(bool enable);
+	void SetTexture(unsigned index, Texture* texture);
+	bool SetVertexBuffer(Buffer* buffer);
+	bool SetIndexBuffer(Buffer* buffer);
 }

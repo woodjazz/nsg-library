@@ -41,20 +41,13 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Text::Text(GLushort id, const std::string& text, std::regex* pRegex, int percentageX, int percentageY)
+		Text::Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY)
         : Object(id, false, LayoutType::Control, percentageX, percentageY),
 		currentText_(text),
-		pTextMesh_(Context::this_->GetCurrentTextMesh(id)),
-        pCursorMesh_(Context::this_->GetCurrentTextMesh(-1)),
+		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength)),
+        pCursorMesh_(Context::this_->GetCurrentTextMesh(-1, 1)),
 		pRegex_(pRegex)
 		{
-            pTextMesh_->SetText(currentText_);
-	        pTextMesh_->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
-	        pTextMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
-
-			pCursorMesh_->SetText("_");
-	        pCursorMesh_->SetTextHorizontalAlignment(LEFT_ALIGNMENT);
-	        pCursorMesh_->SetTextVerticalAlignment(MIDDLE_ALIGNMENT);
 		}
 
 		Text::~Text()
@@ -162,12 +155,15 @@ namespace NSG
 	        		}
 	        	}
 
-                pTextMesh_->SetText(currentText_);
+                //pTextMesh_->SetText(currentText_);
 	        }
 		}
 
 		void Text::UpdateControl()
 		{
+			pTextMesh_->SetText(currentText_, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
+			pCursorMesh_->SetText("_", LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
+
 	        float cursorPositionInText = pTextMesh_->GetWidthForCharacterPosition(area_->cursor_character_position_);
 
 	        if(area_->textOffsetX_ + areaSize_.x < cursorPositionInText)
@@ -217,13 +213,13 @@ namespace NSG
 	        technique.Add(&pass);
 	        pass.Add(&textNode2, pTextMesh_);
 	        Material textMaterial;
-	        textMaterial.EnableDepthTest(false);
-	        textMaterial.EnableStencilTest(true);
+	        pass.EnableDepthTest(false);
+	        pass.EnableStencilTest(true);
 	        textMaterial.SetTexture0(pTextMesh_->GetAtlas());
 	        textMaterial.SetProgram(pTextMesh_->GetProgram());
             //textMaterial.SetStencilFunc(GL_EQUAL, 1, ~GLuint(0));
             size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
-            textMaterial.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
+            pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 
             pass.Set(&textMaterial);
 	        technique.Render();

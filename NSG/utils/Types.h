@@ -58,7 +58,7 @@ namespace NSG
 
     namespace IMGUI
     {
-        typedef enum {Vertical, Horizontal, Control} LayoutType;
+        typedef enum {Vertical, Horizontal, Control, Spacer} LayoutType;
     }
 
     typedef std::pair<PNode, PMesh> MeshNode;
@@ -79,4 +79,22 @@ namespace NSG
         IMGUI_FIRST_VALID_ID
     } IMGUI_IDS;
 
+
+    struct VertexData
+    {
+        Vertex3 position_;
+        Vertex3 normal_;
+        Vertex2 uv_;
+        Color color_;
+
+        VertexData();
+    };
+
+    typedef std::vector<VertexData> VertexsData;
+    typedef GLushort IndexType;
+    typedef std::vector<IndexType> Indexes;
+
+    typedef enum {ATT_POSITION, ATT_NORMAL, ATT_TEXTURECOORD, ATT_COLOR} AttributesLoc;
+
+	const IndexType MAX_INDEX_VALUE = ~IndexType(0);
 }

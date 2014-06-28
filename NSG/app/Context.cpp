@@ -27,12 +27,13 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "GPUObject.h"
 #include "FontAtlasTextureManager.h"
-//#include "FrameColorSelection.h"
 #include "TextureMemory.h"
 #include "Keyboard.h"
 #include "FreeTypeClass.h"
 #include "Resource.h"
 #include "IMGUIContext.h"
+#include "Graphics.h"
+#include "BufferManager.h"
 
 namespace NSG
 {
@@ -41,7 +42,8 @@ namespace NSG
 	atlasManager_(new FontAtlasTextureManager),
 	imgui_(new IMGUI::Context),
 	keyboard_(new Keyboard),
-	freeType_(new FreeTypeClass)
+	freeType_(new FreeTypeClass),
+	bufferManager_(new BufferManager)
 	{
 	}
 		
@@ -74,6 +76,10 @@ namespace NSG
 			(*it)->Invalidate();
 			++it;
 		}
+
+		ResetCachedState();
+
+		bufferManager_->Invalidate();
 
         TRACE_LOG("Context::InvalidateGPUResources done");
 	}

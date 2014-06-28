@@ -39,12 +39,13 @@ namespace NSG
 		{
 		public:
 			TextManager();
-			PTextMesh GetTextMesh(GLushort item, const std::string& fontFile, int fontSize);
+			PTextMesh GetTextMesh(GLushort item, int maxLength, const std::string& fontFile, int fontSize);
 			
 		private:
 			struct Key
 			{
 				GLushort item;
+				int maxLength;
 				std::string fontFile_;
 				int fontSize_;
 

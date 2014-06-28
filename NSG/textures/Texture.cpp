@@ -62,16 +62,4 @@ namespace NSG
 	{
 		glDeleteTextures(1, &texture_);
 	}
-
-	BindTexture::BindTexture(Texture& obj)
-	: obj_(obj)
-	{
-		obj.Bind();
-	}
-
-	BindTexture::~BindTexture()
-	{
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-
 }

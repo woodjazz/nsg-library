@@ -56,7 +56,7 @@ namespace NSG
 		mouseRelX_(Context::this_->state_->mouseRelX_),
 		mouseRelY_(Context::this_->state_->mouseRelY_),
 		activeWindow_(Context::this_->state_->activeWindow_),
-		activeArea_(Context::this_->state_->activeArea_),
+		activeScrollArea_(Context::this_->state_->activeScrollArea_),
 		level_(Context::this_->pLayoutManager_->GetNestingLevel())
 		{
 			CHECK_ASSERT(node_, __FILE__, __LINE__);
@@ -81,9 +81,9 @@ namespace NSG
 			{
 				FixCurrentTecnique();
 
-	        	PMaterial material = Context::this_->pFrameColorSelection_->GetMaterial();
-				material->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-	            material->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
+	        	PPass pass = Context::this_->pFrameColorSelection_->GetPass();
+				pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+	            pass->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
 	        	return Context::this_->pFrameColorSelection_->Hit(id_, x, y, currentTechnique_.get());
 	        }
 	        return false;
@@ -94,9 +94,9 @@ namespace NSG
 			if(area_->IsInside(Vertex3(x, y, 0)))
 			{
 	            FixCurrentTecnique();
-	        	PMaterial material = Context::this_->pFrameColorSelection_->GetMaterial();
-	            material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	        	material->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+	        	PPass pass = Context::this_->pFrameColorSelection_->GetPass();
+	            pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	        	pass->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
 	        	return Context::this_->pFrameColorSelection_->Hit(id_, x, y, currentTechnique_.get());
 	        }
 	        return false;
@@ -129,9 +129,9 @@ namespace NSG
 			size_t nPasses = currentTechnique_->GetNumPasses();
 			for(size_t i=0; i<nPasses; i++)
 			{
-            	PMaterial material = currentTechnique_->GetPass(i)->GetMaterial();
-                material->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-        	    material->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
+            	PPass pass = currentTechnique_->GetPass(i);
+                pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+        	    pass->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
 	        }
             
 			currentTechnique_->Render();

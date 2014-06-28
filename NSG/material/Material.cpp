@@ -5,6 +5,7 @@
 #include "Context.h"
 #include "Texture.h"
 #include "Scene.h"
+#include "Graphics.h"
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
@@ -18,19 +19,7 @@ namespace NSG
 	specular_(1,1,1,1),
 	shininess_(1),
 	color_(1,1,1,1),
-    blendMode_(BLEND_ALPHA),
-    enableDepthTest_(true),
-    enableCullFace_(false),
-    enableStencilTest_(false),
-    stencilMask_(~GLuint(0)),
-	sfailStencilOp_(GL_KEEP),
-	dpfailStencilOp_(GL_KEEP),
-	dppassStencilOp_(GL_REPLACE),
-	stencilFunc_(GL_ALWAYS),
-	stencilRefValue_(0),
-	stencilMaskValue_(~GLuint(0)),
-    enableColorBuffer_(true),
-    enableDepthBuffer_(true)
+	enableCullFace_(false)
 	{
 	}
 
@@ -39,54 +28,10 @@ namespace NSG
 		Context::this_->Remove(this);
 	}
 
-	void Material::SetBlendMode(BLEND_MODE mode)
-	{
-		blendMode_ = mode;
-	}
-
-	void Material::EnableColorBuffer(bool enable)
-	{
-		enableColorBuffer_ = enable;
-	}
-
-	void Material::EnableDepthBuffer(bool enable)
-	{
-		enableDepthBuffer_ = enable;
-	}
-
-	void Material::EnableDepthTest(bool enable)
-	{
-		enableDepthTest_ = enable;
-	}
-
 	void Material::EnableCullFace(bool enable)
 	{
 		enableCullFace_ = enable;
 	}
-
-	void Material::EnableStencilTest(bool enable)
-	{
-		enableStencilTest_ = enable;	
-	}
-
-	void Material::SetStencilMask(GLuint mask)
-	{
-		stencilMask_ = mask;
-	}
-
-	void Material::SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass)
-	{
-        sfailStencilOp_ = sfail;
-        dpfailStencilOp_ = dpfail;
-        dppassStencilOp_ = dppass;
-	}
-
-	void Material::SetStencilFunc(GLenum func, GLint ref, GLuint mask)
-	{
-        stencilFunc_ = func;
-        stencilRefValue_ = ref;
-        stencilMaskValue_ = mask;
-    }
 
 	void Material::SetProgram(PProgram pProgram)
 	{
@@ -150,67 +95,7 @@ namespace NSG
 
 	void Material::Use()
 	{
-		if(enableColorBuffer_)
-		{
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		}
-		else
-		{
-			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		}
-
-		if(enableStencilTest_)
-		{
-			glEnable(GL_STENCIL_TEST);
-			glStencilMaskSeparate(GL_FRONT_AND_BACK, stencilMask_); 
-			glStencilOp(sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_);
-			glStencilFunc(stencilFunc_, stencilRefValue_, stencilMaskValue_); 
-		}
-		else
-		{
-			glDisable(GL_STENCIL_TEST);
-		}
-
-		if(enableCullFace_)
-		{
-			glEnable(GL_CULL_FACE);
-			//glCullFace(GL_FRONT);
-		}
-		else
-		{
-			glDisable(GL_CULL_FACE);
-		}
-
-        switch(blendMode_)
-       	{
-        	case BLEND_NONE:
-	        	glDisable(GL_BLEND);
-	        	break;
-
-	        case BLEND_ALPHA:
-	        	glEnable(GL_BLEND);
-	        	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	        	break;
-
-	        default:
-	        	CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
-	        	break;
-        }
-        
-        if(enableDepthTest_)
-        {
-        	glEnable(GL_DEPTH_TEST);
-
-			if(enableDepthBuffer_)
-				glDepthMask(GL_TRUE);
-			else
-				glDepthMask(GL_FALSE);
-        }
-        else
-        {
-        	glDisable(GL_DEPTH_TEST);
-        	glDepthMask(GL_FALSE);
-        }
+		SetCullFace(enableCullFace_);
 	}
 
 	void Material::Render(bool solid, Node* pNode, Mesh* pMesh)
@@ -260,7 +145,7 @@ namespace NSG
 	                if(mesh->IsReady())
 					{
 		                pProgram_->Use(node);
-						it->second->Render(solid, positionLoc, texcoordLoc, normalLoc, colorLoc);
+						mesh->Render(solid, positionLoc, texcoordLoc, normalLoc, colorLoc);
 						lastMesh = mesh;
 						lastNode = node;
 					}

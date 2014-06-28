@@ -110,7 +110,7 @@ struct Sample : App
 
     void RenderGUIFrame()
     {
-        statistics_.Show();
+		const int MAX_TEXT_SIZE = 15;
 
         static float delta = -1;
         static Vertex3 camControlPoint0(-3, 3, 0);
@@ -140,16 +140,16 @@ struct Sample : App
             {
                 //AppConfiguration::this_->showStatistics_ = true;
                 IMGUISpacer(0, 80);
-                menu_choosen = IMGUIButton("Menu", 20, 20);
+				menu_choosen = IMGUIButton(MAX_TEXT_SIZE, "Menu", 20, 20);
             }
 
             if(menu_choosen)
             {
                 //AppConfiguration::this_->showStatistics_ = false;
                 show_menu_button = false;
-                IMGUILabel("Are you sure?", 100, 50);
+				IMGUILabel(MAX_TEXT_SIZE, "Are you sure?", 100, 50);
                 IMGUIBeginHorizontal(100, 50);
-                if(IMGUIButton("Yes", 50))
+				if (IMGUIButton(MAX_TEXT_SIZE, "Yes", 50))
                 {
                     menu = true;
                     delta = 0;
@@ -157,7 +157,7 @@ struct Sample : App
                     show_menu_button = true;
 
                 }
-                if(IMGUIButton("No", 50))
+				if (IMGUIButton(MAX_TEXT_SIZE, "No", 50))
                 {
                     menu_choosen = false;
                     show_menu_button = true;
@@ -183,8 +183,8 @@ struct Sample : App
                     label << "Label " << i << ":";
 
                     IMGUIBeginHorizontal(0,25);
-                        IMGUILabel(label.str(), 50); 
-		                field[i] = IMGUITextField(field[i], 50);
+					IMGUILabel(MAX_TEXT_SIZE, label.str(), 50);
+					field[i] = IMGUITextField(MAX_TEXT_SIZE, field[i], 50);
                     IMGUIEndArea();
                 }
 
@@ -197,7 +197,7 @@ struct Sample : App
             static bool exit = false;
 
             IMGUIBeginHorizontal(0, 20);
-            if(IMGUIButton("Exit"))
+			if (IMGUIButton(MAX_TEXT_SIZE, "Exit"))
                 exit = true;
             IMGUIEndArea();
 
@@ -215,6 +215,9 @@ struct Sample : App
                 menu = exit = false;
             }
         }
+
+		IMGUIWindow(&statistics_, 50, 75);
+
     }
 };
 

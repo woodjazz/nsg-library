@@ -47,7 +47,7 @@ namespace NSG
         bool Render(GLushort id, float screenX, float screenY, Technique* technique);
         bool Hit(GLushort id, float screenX, float screenY, Technique* technique);
 
-        PMaterial GetMaterial() const { return material_; }
+        PPass GetPass() const { return pass_; }
 
         void ClearDepthStencil();
 
@@ -56,6 +56,7 @@ namespace NSG
         void Begin(float screenX, float screenY);
         void End();
 
+        PPass pass_;
         PMaterial material_;
         int32_t windowWidth_;
         int32_t windowHeight_;

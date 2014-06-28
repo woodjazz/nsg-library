@@ -24,25 +24,32 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Types.h"
 #include "GPUObject.h"
-#include "SharedPointers.h"
+#include <vector>
 
 namespace NSG
 {
-	class ShowTexture : public GPUObject
+	class BufferManager
 	{
 	public:
-		ShowTexture();
-		~ShowTexture();
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
-		void SetNormal(PTexture texture);
-		void SetFont(PTexture texture);
-		void Show();
+		BufferManager();
+		~BufferManager();
+
+		void Invalidate();
+
+		VertexBuffer* GetStaticVertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
+		IndexBuffer* GetStaticIndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
+		VertexBuffer* GetDynamicVertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
+		IndexBuffer* GetDynamicIndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
+
 	private:
-        PPass pass_;
-        PMaterial material_; 
-		PMesh mesh_;
+		std::vector<PBuffer> buffers_;
+		VertexBuffer* currentStaticVertexBuffer_;
+		IndexBuffer* currentStaticIndexBuffer_;
+		VertexBuffer* currentDynamicVertexBuffer_;
+		IndexBuffer* currentDynamicIndexBuffer_;
+
+
 	};
 }

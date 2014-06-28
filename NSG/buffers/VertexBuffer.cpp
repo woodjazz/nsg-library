@@ -23,17 +23,69 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-
 #include "VertexBuffer.h"
+#include "Graphics.h"
+#include "Check.h"
 
 namespace NSG 
 {
-	VertexBuffer::VertexBuffer(GLsizeiptr size, const GLvoid* data, GLenum usage) 
-	: Buffer(GL_ARRAY_BUFFER, size, data, usage)
+	VertexBuffer::VertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLenum usage) 
+	: Buffer(GL_ARRAY_BUFFER, maxSize, size, data, usage)
 	{
+		RedoBuffer();
 	}
 
 	VertexBuffer::~VertexBuffer()
 	{
+	}
+
+	bool VertexBuffer::ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)
+	{
+		if(Buffer::ReallocateSpaceFor(maxSize, size, data))
+		{
+			const Data* obj = GetLastAllocation();
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+
+			SetVertexBuffer(this);
+
+			glBufferSubData(type_, obj->offset_, obj->size_, obj->data_);
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void VertexBuffer::RedoBuffer()
+	{
+		SetVertexBuffer(this);
+		Buffer::RedoBuffer();
+	}
+
+	void VertexBuffer::UnBind() 
+	{ 
+		glBindBuffer(GL_ARRAY_BUFFER, 0); 
+	}
+
+	void VertexBuffer::UpdateData(Buffer::Data& obj, const VertexsData& vertexes)
+	{
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		CHECK_ASSERT(obj.data_ == &vertexes[0], __FILE__, __LINE__);
+
+		GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
+
+		CHECK_ASSERT(bytes2Set <= obj.maxSize_, __FILE__, __LINE__);
+
+		obj.size_ = bytes2Set;
+
+		SetVertexBuffer(this);
+
+		glBufferSubData(type_, obj.offset_, obj.size_, obj.data_);
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 }

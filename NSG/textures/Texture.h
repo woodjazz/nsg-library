@@ -55,14 +55,4 @@ namespace NSG
 
 		friend class BindTexture;
 	};
-
-	class BindTexture
-	{
-	public:
-		BindTexture(Texture& obj);
-		~BindTexture();
-	private:
-		Texture& obj_;
-	};
-
 }

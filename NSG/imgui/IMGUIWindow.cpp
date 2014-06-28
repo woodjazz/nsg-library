@@ -56,50 +56,6 @@ namespace NSG
 
 	    Window::~Window()
 	    {
-
-	    }
-
-		float Window::GetTopPosition() const
-		{
-			if(showTitle_)
-			{
-	            Vertex3 windowScale = area_->pNode_->GetScale();
-	            float yScale = TITLE_HEIGHT/((float)viewSize_.second*windowScale.y);
-				return 1-(2*yScale);
-			}
-			else
-			{
-				return 1;
-			}
-		}
-
-		bool Window::HitTitle(GLushort id, float screenX, float screenY)
-		{
-			if(area_->IsInside(Vertex3(screenX, screenY, 0)))
-			{
-		        PMaterial material = Context::this_->pFrameColorSelection_->GetMaterial();
-		        material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		        material->SetStencilFunc(GL_ALWAYS, 0, 0);
-
-			   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, titleTechnique_.get());
-			}
-
-			return false;
-		}
-
-
-	    void Window::UpdateControl()
-	    {
-	    	if(mousedown_)
-	    	{
-	    		if(activeWindow_ < id_ && HitArea(id_, mouseDownX_, mouseDownY_))
-					activeWindow_ = id_;
-            }
-	    	else if(activeWindow_ == id_)
-	    	{
-	    		activeWindow_ = IMGUI_UNKNOWN_ID;
-	    	}
-
 		    if(showTitle_)
 		    {
 				Node node;
@@ -123,12 +79,56 @@ namespace NSG
 		    		area_->pNode_->SetPosition(position);
 		    	}
 			}
-
+#if 0
 			if(showBorder_)
 			{
 				borderTechnique_->Set(area_->pNode_);
 				RenderBorder();
 			}
+#endif
+	    }
+
+		float Window::GetTopPosition() const
+		{
+			if(showTitle_)
+			{
+	            Vertex3 windowScale = area_->pNode_->GetScale();
+	            float yScale = TITLE_HEIGHT/((float)viewSize_.second*windowScale.y);
+				return 1-(2*yScale);
+			}
+			else
+			{
+				return 1;
+			}
+		}
+
+		bool Window::HitTitle(GLushort id, float screenX, float screenY)
+		{
+			if(area_->IsInside(Vertex3(screenX, screenY, 0)))
+			{
+		        PPass pass = Context::this_->pFrameColorSelection_->GetPass();
+		        pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		        pass->SetStencilFunc(GL_ALWAYS, 0, 0);
+
+			   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, titleTechnique_.get());
+			}
+
+			return false;
+		}
+
+
+	    void Window::UpdateControl()
+	    {
+	    	if(mousedown_)
+	    	{
+	    		if(activeWindow_ < id_ && HitArea(id_, mouseDownX_, mouseDownY_))
+                {
+					activeWindow_ = id_;
+
+                    if(area_->isScrollable_)
+                        activeScrollArea_ = id_;
+                }
+            }
 	    }
 
 		void Window::RenderTitle()
@@ -136,9 +136,9 @@ namespace NSG
 			size_t nPasses = titleTechnique_->GetNumPasses();
 			for(size_t i=0; i<nPasses; i++)
 			{
-            	PMaterial material = titleTechnique_->GetPass(i)->GetMaterial();
-                material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        	    material->SetStencilFunc(GL_ALWAYS, 0, 0);
+            	PPass pass = titleTechnique_->GetPass(i);
+                pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        	    pass->SetStencilFunc(GL_ALWAYS, 0, 0);
 	        }
 
 		    titleTechnique_->Render();
@@ -149,9 +149,9 @@ namespace NSG
 			size_t nPasses = borderTechnique_->GetNumPasses();
 			for(size_t i=0; i<nPasses; i++)
 			{
-            	PMaterial material = borderTechnique_->GetPass(i)->GetMaterial();
-                material->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        	    material->SetStencilFunc(GL_ALWAYS, 0, 0);
+            	PPass pass = borderTechnique_->GetPass(i);
+                pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        	    pass->SetStencilFunc(GL_ALWAYS, 0, 0);
 	        }
 
 		    borderTechnique_->Render();
