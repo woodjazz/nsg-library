@@ -24,3 +24,9 @@ ANDROID
 		cmake_android.sh [output-dir]
 	Windows
 		cmake_android.bat [output-dir]
+
+-------------------------
+Linux (Debian/Ubuntu)
+-------------------------
+apt-get install xorg-dev
+apt-get install libglu1-mesa-dev
