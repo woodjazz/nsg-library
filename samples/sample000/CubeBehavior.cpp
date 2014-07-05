@@ -78,7 +78,7 @@ void CubeBehavior::Update()
 
 void CubeBehavior::Render()
 {
-	//pSceneNode_->Render(true);
+	//pSceneNode_->Render();
 }
 #if 0
 void CubeBehavior::Render2Select()

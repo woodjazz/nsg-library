@@ -42,22 +42,28 @@ namespace NSG
 {
 	namespace IMGUI
 	{
+		static const Vertex3 AREA_SCREEN_SIZE(2,2,1); //default area size in screen coordinates
+
 		Object::Object(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY)
 		: id_(id),
 		uistate_(*Context::this_->state_),
+		skin_(*Context::this_->pSkin_),
+		layoutManager_(*Context::this_->pLayoutManager_),
 		area_(Context::this_->pLayoutManager_->GetAreaForControl(id, isReadOnly, type, percentageX, percentageY)),
+		lastTitleHit_(Context::this_->state_->lastTitleHit_),
         node_(area_->pNode_),
-        areaSize_(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(2,0,0,0)),
+        areaSize_(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(AREA_SCREEN_SIZE, 0)),
 		mouseDownX_(Context::this_->state_->mouseDownX_),
 		mouseDownY_(Context::this_->state_->mouseDownY_),
 		mousex_(Context::this_->state_->mousex_),
 		mousey_(Context::this_->state_->mousey_),
 		mousedown_(Context::this_->state_->mousedown_),
+		mouseup_(Context::this_->state_->mouseup_),
 		mouseRelX_(Context::this_->state_->mouseRelX_),
 		mouseRelY_(Context::this_->state_->mouseRelY_),
-		activeWindow_(Context::this_->state_->activeWindow_),
 		activeScrollArea_(Context::this_->state_->activeScrollArea_),
-		level_(Context::this_->pLayoutManager_->GetNestingLevel())
+		level_(Context::this_->pLayoutManager_->GetNestingLevel()),
+		type_(type)
 		{
 			CHECK_ASSERT(node_, __FILE__, __LINE__);
 		}
@@ -70,36 +76,9 @@ namespace NSG
             }
 		}
 
-		bool Object::IsStable() const
+		bool Object::IsReady() const
 		{
-			return Context::this_->pLayoutManager_->IsStable();
-		}
-
-		bool Object::HitIncStencil(float x, float y)
-		{
-			if(area_->IsInside(Vertex3(x, y, 0)))
-			{
-				FixCurrentTecnique();
-
-	        	PPass pass = Context::this_->pFrameColorSelection_->GetPass();
-				pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-	            pass->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
-	        	return Context::this_->pFrameColorSelection_->Hit(id_, x, y, currentTechnique_.get());
-	        }
-	        return false;
-		}
-
-		bool Object::HitKeepStencil(float x, float y)
-		{
-			if(area_->IsInside(Vertex3(x, y, 0)))
-			{
-	            FixCurrentTecnique();
-	        	PPass pass = Context::this_->pFrameColorSelection_->GetPass();
-	            pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	        	pass->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
-	        	return Context::this_->pFrameColorSelection_->Hit(id_, x, y, currentTechnique_.get());
-	        }
-	        return false;
+			return Context::this_->pLayoutManager_->IsReady();
 		}
 
 		PTechnique Object::GetActiveTechnique() const
@@ -153,12 +132,12 @@ namespace NSG
         {
 			if(uistate_.hotitem_ == id_)
 			{
-				if(uistate_.activeitem_ == id_ || uistate_.kbditem_ == id_) // Button is both 'hot' and 'active'
+				if(uistate_.activeitem_ == id_)// Button is both 'hot' and 'active'
                     currentTechnique_ = GetActiveTechnique();
 				else // Button is merely 'hot'
                     currentTechnique_ = GetHotTechnique();
 			}
-			else if(uistate_.activeitem_ == id_ || uistate_.kbditem_ == id_) // button is not hot, but it is active
+			else if(uistate_.activeitem_ == id_)// button is not hot, but it is active
 				currentTechnique_ = GetActiveTechnique();
 			else 
                 currentTechnique_ = GetNormalTechnique();
@@ -166,18 +145,24 @@ namespace NSG
             currentTechnique_->Set(node_);
         }
 
+        bool Object::IsMouseInArea() const
+        {
+        	return area_->IsInside(Vertex3(mousex_, mousey_, 0));
+        }
+
+        bool Object::IsMouseButtonPressedInArea() const
+        {
+        	return area_->IsInside(Vertex3(mouseDownX_, mouseDownY_, 0));
+        }
+
 		bool Object::Update()
 		{
-			if(!IsStable() || !area_->IsVisible())
+			if(!IsReady() || !area_->IsVisible())
 				return false;
 
-			FixCurrentTecnique();
-
-			bool hot = HitIncStencil(mousex_, mousey_);
-
-            if(!area_->isReadOnly_ && activeWindow_ <= id_)			
+			if (!area_->isReadOnly_ && layoutManager_.IsCurrentWindowActive() && !lastTitleHit_)
 			{
-				if (hot) // Check whether the button should be hot
+				if (IsMouseInArea()) // Check whether the button should be hot
 				{
 					uistate_.hotitem_ = id_;
 

@@ -62,7 +62,7 @@ namespace NSG
 
 	void Filter::Render()
 	{
-		if(pMaterial_->IsReady() && pRender2Texture_->IsReady())
+		if(pMesh_->IsReady() && pMaterial_->IsReady() && pRender2Texture_->IsReady())
 		{
             CHECK_GL_STATUS(__FILE__, __LINE__);
 

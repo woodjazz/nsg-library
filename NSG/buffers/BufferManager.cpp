@@ -32,12 +32,11 @@ misrepresented as being the original software.
 namespace NSG
 {
 	BufferManager::BufferManager()
-	: currentStaticVertexBuffer_(nullptr),
-	currentStaticIndexBuffer_(nullptr),
-	currentDynamicVertexBuffer_(nullptr),
-	currentDynamicIndexBuffer_(nullptr)
+		: currentStaticVertexBuffer_(nullptr),
+		currentStaticIndexBuffer_(nullptr),
+		currentDynamicVertexBuffer_(nullptr),
+		currentDynamicIndexBuffer_(nullptr)
 	{
-
 	}
 
 	BufferManager::~BufferManager()
@@ -55,9 +54,9 @@ namespace NSG
 		SetVertexBuffer(nullptr);
 		SetIndexBuffer(nullptr);
 
-		if(AppStatistics::this_)
+		if (AppStatistics::this_)
 		{
-			AppStatistics::this_->ResetVertexBuffer();	
+			AppStatistics::this_->ResetVertexBuffer();
 			AppStatistics::this_->ResetIndexBuffer();
 		}
 	}
@@ -68,9 +67,10 @@ namespace NSG
 		if (!currentStaticVertexBuffer_ || !currentStaticVertexBuffer_->ReallocateSpaceFor(maxSize, size, data))
 		{
 			currentStaticVertexBuffer_ = new VertexBuffer(maxSize, size, data, GL_STATIC_DRAW);
+
 			buffers_.push_back(PBuffer(currentStaticVertexBuffer_));
 
-			if(AppStatistics::this_)
+			if (AppStatistics::this_)
 				AppStatistics::this_->NewVertexBuffer();
 
 		}
@@ -83,9 +83,10 @@ namespace NSG
 		if (!currentStaticIndexBuffer_ || !currentStaticIndexBuffer_->ReallocateSpaceFor(maxSize, size, data, indexBase))
 		{
 			currentStaticIndexBuffer_ = new IndexBuffer(maxSize, size, data, GL_STATIC_DRAW);
+
 			buffers_.push_back(PBuffer(currentStaticIndexBuffer_));
 
-			if(AppStatistics::this_)
+			if (AppStatistics::this_)
 				AppStatistics::this_->NewIndexBuffer();
 
 		}
@@ -93,15 +94,15 @@ namespace NSG
 		return currentStaticIndexBuffer_;
 	}
 
-
 	VertexBuffer* BufferManager::GetDynamicVertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)
 	{
 		if (!currentDynamicVertexBuffer_ || !currentDynamicVertexBuffer_->ReallocateSpaceFor(maxSize, size, data))
 		{
 			currentDynamicVertexBuffer_ = new VertexBuffer(maxSize, size, data, GL_DYNAMIC_DRAW);
+
 			buffers_.push_back(PBuffer(currentDynamicVertexBuffer_));
 
-			if(AppStatistics::this_)
+			if (AppStatistics::this_)
 				AppStatistics::this_->NewVertexBuffer();
 
 		}
@@ -114,9 +115,10 @@ namespace NSG
 		if (!currentDynamicIndexBuffer_ || !currentDynamicIndexBuffer_->ReallocateSpaceFor(maxSize, size, data, indexBase))
 		{
 			currentDynamicIndexBuffer_ = new IndexBuffer(maxSize, size, data, GL_DYNAMIC_DRAW);
+
 			buffers_.push_back(PBuffer(currentDynamicIndexBuffer_));
 
-			if(AppStatistics::this_)
+			if (AppStatistics::this_)
 				AppStatistics::this_->NewIndexBuffer();
 
 		}
@@ -124,5 +126,16 @@ namespace NSG
 		return currentDynamicIndexBuffer_;
 	}
 
+	bool BufferManager::IsValidBufferPtr(Buffer* p) const
+	{
+		auto it = buffers_.begin();
+		while (it != buffers_.end())
+		{
+			if (it->get() == p)
+				return true;
+			++it;
+		}
 
+		return false;
+	}
 }

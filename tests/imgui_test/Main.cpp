@@ -143,13 +143,13 @@ struct Test : public App
 
 	void Update()
 	{
-        if(IMGUI::IsStable())
+        if(IMGUI::IsReady())
         {
 		    machine_->Update();
         }
 	}
 
-	void RenderGUIFrame()
+	void RenderGUIWindow()
 	{
 		const int MAX_TEXT_SIZE = 15;
 

@@ -26,7 +26,8 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
-#include <vector>
+#include "Allocators.h"
+#include "PODVector.h"
 
 namespace NSG 
 {
@@ -57,15 +58,17 @@ namespace NSG
 		Data* GetLastAllocation();
 		void Bind() { glBindBuffer(type_, id_); }
 		virtual bool ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
-		virtual void RedoBuffer();
 	protected:
 		Buffer(GLenum type, GLsizeiptr maxSize, GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW);
 		GLsizeiptr GetTotalBytes() const;
 		GLenum type_;
 		GLuint id_;
 		GLenum usage_;
+		static const size_t MAX_BUFFER_SIZE = 2 * 1000 * 1000;
 	private:
-		std::vector<Data> dataCollection_;
+		static const size_t VERTEXES_PER_TRIANGLE = 3;
+		static const size_t MAX_OBJECTS_PER_BUFFER = MAX_BUFFER_SIZE / VERTEXES_PER_TRIANGLE;
+		PODVector<Data, MAX_OBJECTS_PER_BUFFER> dataCollection_;
 	};
 }
 

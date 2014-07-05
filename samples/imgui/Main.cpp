@@ -51,13 +51,51 @@ static const char* fShader = STRINGIFY(
 );
 
 
+struct Window0 : IMGUI::IWindow
+{
+    int fontSize_;
+	PMaterial material_;
+    void StartGUIWindow() 
+    {
+		material_ = IMGUISkin()->windowTechnique_->GetPass(0)->GetMaterial();
+        fontSize_ = IMGUISkin()->fontSize_;
+        IMGUISkin()->fontSize_ = 18;
+		material_->SetColor(Color(0, 0, 0, 0.7f));
+    }
+
+    void RenderGUIWindow()
+    {
+		IMGUIBeginVertical();
+		const int MAX_TEXT_SIZE = 15;
+        static const int MAX_FIELDS = 10;
+        static std::string field[MAX_FIELDS];
+        for(int i=0; i<MAX_FIELDS; i++)
+        {
+            std::stringstream label;
+            label << "Label " << i << ":";
+
+            IMGUIBeginHorizontal(0,50);
+            IMGUILabel(MAX_TEXT_SIZE, label.str(), 50);
+            field[i] = IMGUITextField(MAX_TEXT_SIZE, field[i], 50);
+            IMGUIEndArea();
+        }
+
+		IMGUIEndArea();
+    }
+
+    void EndGUIWindow()
+    {
+        IMGUISkin()->fontSize_ = fontSize_;
+    }
+};
+
 struct Statistics : public AppStatistics
 {
     PTexture texture_;
     PMaterial material_;
     PProgram program_;
 
-    void StartWindow()
+    void StartGUIWindow()
     {
         if(!texture_)
         {
@@ -71,7 +109,7 @@ struct Statistics : public AppStatistics
 
     }
 
-    void EndWindow()
+    void EndGUIWindow()
     {
         material_->SetTexture0(PTexture());  
         material_->SetColor(Color(0,0,0,0));
@@ -82,6 +120,7 @@ struct Sample : App
 {
 
     Statistics statistics_;
+    Window0 window0_;
 
 	void Start()
 	{
@@ -108,8 +147,9 @@ struct Sample : App
         }
     }
 
-    void RenderGUIFrame()
+    void RenderGUIWindow()
     {
+#if 1		
 		const int MAX_TEXT_SIZE = 15;
 
         static float delta = -1;
@@ -134,7 +174,7 @@ struct Sample : App
             static bool show_menu_button = true;
             static bool menu_choosen = false;
             menu = false;
-            IMGUINode()->SetPosition(Vertex3(0,0,0));
+			IMGUINode()->SetPosition(Vertex3(0, 0, IMGUINode()->GetPosition().z));
 
             if(show_menu_button)
             {
@@ -215,8 +255,9 @@ struct Sample : App
                 menu = exit = false;
             }
         }
-
+#endif
 		IMGUIWindow(&statistics_, 50, 75);
+        IMGUIWindow(&window0_, 60, 60);
 
     }
 };

@@ -77,9 +77,11 @@ namespace NSG
 			++it;
 		}
 
-		ResetCachedState();
-
 		bufferManager_->Invalidate();
+
+		//atlasManager_->Invalidate();
+
+		ResetCachedState();
 
         TRACE_LOG("Context::InvalidateGPUResources done");
 	}

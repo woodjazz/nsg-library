@@ -294,10 +294,10 @@ void MyApp::TestIMGUI4()
 }
 
 
-void MyApp::RenderGUIFrame()
+void MyApp::RenderGUIWindow()
 {
 	//TestIMGUI2();
-    TestIMGUI4();
+    //TestIMGUI4();
 }
 
 void MyApp::RenderFrame() 
@@ -322,7 +322,7 @@ void MyApp::RenderFrame()
 
     //showTexture_->Show();
 
-    //Behavior::RenderAll();
+    Behavior::RenderAll();
 }
 
 #if 0

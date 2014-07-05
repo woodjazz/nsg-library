@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Material.h"
 #include "IMGUILayoutManager.h"
-#include "IMGUITextManager.h"
 #include "FrameColorSelection.h"
 #include "IMGUIState.h"
 #include "App.h"
@@ -50,16 +49,11 @@ namespace NSG
 		pCamera_(new Camera),
 		pCurrentNode_(new Node),
         pRootNode_(new Node),
-        pLayoutManager_(new LayoutManager(pRootNode_)),
-    	pTextManager_(new TextManager),
-    	pFrameColorSelection_(new FrameColorSelection(true, true)),
-    	lastId_(0)
+        pLayoutManager_(new LayoutManager(pRootNode_))
     	{
 			pCamera_->EnableOrtho();
             pCamera_->SetFarClip(1000000);
             pCamera_->SetNearClip(-1000000);
-            pFrameColorSelection_->GetPass()->EnableStencilTest(true);
-            pFrameColorSelection_->GetPass()->EnableDepthTest(false);
 		}
 
 		Context::~Context()
@@ -71,45 +65,33 @@ namespace NSG
 			pLayoutManager_->Invalidate();
 		}
 
-		bool Context::IsStable() const
+		bool Context::IsReady() const
 		{
-			return pLayoutManager_->IsStable();
+			return pLayoutManager_->IsReady();
 		}
 
 		void Context::RenderGUI()
 		{
 			state_->Begin();
 
-            lastId_ = 0;
-			
 			pCamera_->Activate();
 			pCurrentNode_ = pRootNode_;
 
 			pLayoutManager_->Render();
 
 			state_->End();
-
 		}
 
 		PTextMesh Context::GetCurrentTextMesh(GLushort item, int maxLength)
 		{
-			return pTextManager_->GetTextMesh(item, maxLength, pSkin_->fontFile_, pSkin_->fontSize_);
+			return pLayoutManager_->GetCurrentTextMesh(item, maxLength);
 		}
 
 		GLushort Context::GetValidId(GLushort id)
 		{
             CHECK_ASSERT(id > 0, __FILE__, __LINE__);
 
-            GLushort windowId = pLayoutManager_->GetCurrentWindowId();
-
-            id += windowId;
-
-            if(lastId_ >= id)
-                id = ++lastId_;
-            else
-                lastId_ = id;
-
-            return id;		
+			return pLayoutManager_->GetValidId(id);
         }
 	}
 	

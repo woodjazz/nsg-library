@@ -30,6 +30,7 @@ namespace NSG
 	namespace IMGUI
 	{
 		TextManager::TextManager()
+			: textMap_(TextMap::key_compare(), MapAllocator(pool_))
 		{
 		}
 
@@ -51,5 +52,9 @@ namespace NSG
 			return it->second;
 		}
 			
+		void TextManager::Invalidate()
+		{
+			textMap_.clear();
+		}
 	}
 }

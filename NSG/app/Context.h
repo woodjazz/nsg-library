@@ -37,7 +37,6 @@ namespace NSG
 		std::set<GPUObject*> objects_;
 		std::set<Resource*> resources_;
 		PFontAtlasTextureManager atlasManager_;
-		//PFrameColorSelection pFrameColorSelection_;
 		IMGUI::PContext imgui_;
 		PKeyboard keyboard_;
 		PFreeType freeType_;

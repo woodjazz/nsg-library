@@ -62,7 +62,7 @@ static const char* fShader = STRINGIFY(
 
 namespace NSG
 {
-	TextMesh::TextMesh(int maxLength, const char* filename, int fontSize, GLenum usage)
+	TextMesh::TextMesh(size_t maxLength, const char* filename, int fontSize, GLenum usage)
 	: Mesh(usage),
 	pProgram_(new Program(vShader, fShader)),
 	screenWidth_(0),
@@ -85,6 +85,44 @@ namespace NSG
 	{
         return pProgram_->IsReady() && pAtlas_->IsReady() && !vertexsData_.empty();
 	}
+
+	void TextMesh::UpdateBuffers()
+	{
+		if (vertexsData_.empty())
+			return;
+
+		vertexDataCopy_ = vertexsData_;
+		Move(vertexsData_, alignmentOffsetX_, alignmentOffsetY_);
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		//CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
+		CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
+		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
+
+		CHECK_ASSERT(pVBuffer_ && bufferVertexData_->data_, __FILE__, __LINE__);
+		{
+			CHECK_ASSERT(Context::this_->bufferManager_->IsValidBufferPtr(pVBuffer_), __FILE__, __LINE__);
+			CHECK_ASSERT(bufferVertexData_, __FILE__, __LINE__);
+			pVBuffer_->UpdateData(*bufferVertexData_, vertexsData_);
+		}
+		
+		CHECK_ASSERT(pIBuffer_ && bufferIndexData_->data_, __FILE__, __LINE__);
+		{
+			CHECK_ASSERT(Context::this_->bufferManager_->IsValidBufferPtr(pIBuffer_), __FILE__, __LINE__);
+
+			CHECK_ASSERT(bufferIndexData_, __FILE__, __LINE__);
+
+			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
+
+			pIBuffer_->UpdateData(*bufferIndexData_, indexes_, indexBase);
+		}
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+		
+		vertexsData_ = vertexDataCopy_;
+	}
+
 	
 	void TextMesh::AllocateResources()
 	{
@@ -97,12 +135,7 @@ namespace NSG
 		CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
 		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
 
-		if (pVBuffer_ && bufferVertexData_->data_)
-		{
-			CHECK_ASSERT(bufferVertexData_, __FILE__, __LINE__);
-			pVBuffer_->UpdateData(*bufferVertexData_, vertexsData_);
-		}
-		else
+		CHECK_ASSERT(!pVBuffer_, __FILE__, __LINE__);
 		{
 			const size_t VERTEX_PER_CHAR = 6;
 			
@@ -110,19 +143,12 @@ namespace NSG
 			GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
 			CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
 			pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, bytesNeeded, &vertexsData_[0]);
+			//pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(MAX_BYTES_VERTEX_BUFFER, bytesNeeded, &vertexsData_[0]);
 			bufferVertexData_ = pVBuffer_->GetLastAllocation();
 			CHECK_ASSERT(bufferVertexData_->maxSize_ && bufferVertexData_->size_, __FILE__, __LINE__);
 		}
 		
-		if (pIBuffer_ && bufferIndexData_->data_)
-		{
-			CHECK_ASSERT(bufferIndexData_, __FILE__, __LINE__);
-
-			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
-
-			pIBuffer_->UpdateData(*bufferIndexData_, indexes_, indexBase);
-		}
-		else
+		CHECK_ASSERT(!pIBuffer_, __FILE__, __LINE__);
 		{
 			const size_t INDEXES_PER_CHAR = 6;
 			const GLsizeiptr MAX_BYTES_INDEX_BUFFER = INDEXES_PER_CHAR * maxLength_ * sizeof(IndexType);
@@ -131,6 +157,7 @@ namespace NSG
 
 			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
 			pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, bytesNeeded, &indexes_[0], indexBase);
+			//pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(MAX_BYTES_INDEX_BUFFER, bytesNeeded, &indexes_[0], indexBase);
 			bufferIndexData_ = pIBuffer_->GetLastAllocation();
 			CHECK_ASSERT(bufferIndexData_->maxSize_ && bufferIndexData_->size_, __FILE__, __LINE__);
 		}
@@ -208,9 +235,9 @@ namespace NSG
 			changed = true;
 		}
 
-		if (changed && IsValid())
+		if (changed && IsReady())
 		{
-			AllocateResources(); // Don't call invalidate because we'll enter in a loop
+			UpdateBuffers();
 		}
 	}	
 

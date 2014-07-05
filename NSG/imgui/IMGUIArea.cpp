@@ -47,10 +47,11 @@ namespace NSG
 	{
         static const float SLIDER_WIDTH = 15; //pixels 
 
-		Area::Area(GLushort id, LayoutType type, int percentageX, int percentageY)
+		Area::Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY)
 		: Object(id, true, type, percentageX, percentageY),
-		lastSliderHit_(Context::this_->state_->lastSliderHit_),
-		sliderTechnique_(Context::this_->pSkin_->sliderTechnique_)
+		lastSliderHit_(uistate_.lastSliderHit_),
+		sliderTechnique_(skin_.sliderTechnique_),
+		isWindow_(isWindow)
 		{
 			CHECK_ASSERT(type == LayoutType::Horizontal || type == LayoutType::Vertical, __FILE__, __LINE__);
 
@@ -62,7 +63,7 @@ namespace NSG
 
 		Area::~Area()
 		{
-            if(activeWindow_ <= id_)
+			if(IsReady() && layoutManager_.IsCurrentWindowActive())
 			    UpdateScrolling();
 		}
 
@@ -144,39 +145,6 @@ namespace NSG
 		    sliderTechnique_->Render();
 		}
 
-		bool Area::HitArea(GLushort id, float screenX, float screenY)
-		{
-			if(area_->IsInside(Vertex3(screenX, screenY, 0)))
-			{
-				FixCurrentTecnique();
-
-				if(currentTechnique_)
-				{
-					PPass pass = Context::this_->pFrameColorSelection_->GetPass();
-			        pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-			        pass->SetStencilFunc(GL_ALWAYS, 0, 0);
-
-				   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, currentTechnique_.get());
-				}
-			}
-
-			return false;
-		}
-
-		bool Area::HitSlider(GLushort id, float screenX, float screenY)
-		{
-			if(area_->IsInside(Vertex3(screenX, screenY, 0)))
-			{
-		        PPass pass = Context::this_->pFrameColorSelection_->GetPass();
-		        pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		        pass->SetStencilFunc(GL_ALWAYS, 0, 0);
-
-			   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, sliderTechnique_.get());
-			}
-
-			return false;
-		}
-
 		bool Area::HandleVerticalSlider(float maxPosY, float& yPosition)
 		{
 	        // Draw slider
@@ -189,10 +157,12 @@ namespace NSG
 		    node.SetScale(Vertex3(xScale, yScale, 1));
 
 	        float offset = yPosition/maxPosY; //0..1
-            float blind_area = SLIDER_WIDTH/(float)viewSize.second;;
-            float ypos = 1 - yScale - 2*(1 - yScale - blind_area)*offset;
+            float blind_area = SLIDER_WIDTH/(float)viewSize.second;
+			const float TOP_POS = 1;
+			float ypos = TOP_POS - yScale - 2 * (1 - yScale - blind_area)*offset;
             Vertex3 globalScale = node.GetGlobalScale();
-            float xpos = 1 - globalScale.x;
+			const float RIGHT_POS = 1;
+			float xpos = RIGHT_POS - globalScale.x;
 	        node.SetPosition(Vertex3(xpos, ypos, 0));
 
 		    sliderTechnique_->Set(&node);
@@ -209,24 +179,24 @@ namespace NSG
 		    	node.SetPosition(position);
 		    	node.SetScale(scale);
 
-		    	if(HitSlider(IMGUI_VERTICAL_SLIDER_ID, mouseDownX_, mouseDownY_) || lastSliderHit_ == IMGUI_VERTICAL_SLIDER_ID)
+		    	if(node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0)) || lastSliderHit_ == id_ + IMGUI_VERTICAL_SLIDER_ID)
 		    	{
-		    		lastSliderHit_ = IMGUI_VERTICAL_SLIDER_ID;
+		    		lastSliderHit_ = id_ + IMGUI_VERTICAL_SLIDER_ID;
 
 	            	Vertex3 globalPos = area_->pNode_->GetGlobalPosition();
 	                Vertex3 globalScale = area_->pNode_->GetGlobalScale();
 	                float yTop = globalPos.y + globalScale.y;
-	            	float yBottom = globalPos.y - globalScale.y;
+					float yBottom = globalPos.y - globalScale.y;
 
 	                float y1 = mousey_;
-	                if(y1 <= yTop && y1 >= yBottom)
+					if(y1 <= yTop && y1 >= yBottom)
 	                {
 		                float a2 = 1/(yBottom-yTop);
 		                float y2 = a2*y1-a2*yTop;
 		                CHECK_ASSERT(y2 >=0 && y2 <= 1, __FILE__, __LINE__);
 						yPosition = y2 * maxPosY;
 		            }
-                    return true;
+					return true;
 		    	}
 		    }
 
@@ -246,9 +216,11 @@ namespace NSG
 
 	        float offset = -xPosition/maxPosX; //0..1
             float blind_area = SLIDER_WIDTH/(float)viewSize.first;
-            float xpos = -1 + xScale + 2*(1 - xScale - blind_area)*offset;
+			const float LEFT_POS = -1;
+			float xpos = LEFT_POS + xScale + 2 * (1 - xScale - blind_area)*offset;
             Vertex3 globalScale = node.GetGlobalScale();
-            float ypos = -1 + globalScale.y;
+			const float BOTTOM_POS = -1;
+			float ypos = BOTTOM_POS + globalScale.y;
 	        node.SetPosition(Vertex3(xpos, ypos, 0));
 
 		    sliderTechnique_->Set(&node);
@@ -265,9 +237,9 @@ namespace NSG
 		    	node.SetPosition(position);
 		    	node.SetScale(scale);
 
-		    	if(HitSlider(IMGUI_HORIZONTAL_SLIDER_ID, mouseDownX_, mouseDownY_) || lastSliderHit_ == IMGUI_HORIZONTAL_SLIDER_ID)
+		    	if(node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0)) || lastSliderHit_ == id_ + IMGUI_HORIZONTAL_SLIDER_ID)
 		    	{
-		    		lastSliderHit_ = IMGUI_HORIZONTAL_SLIDER_ID;
+		    		lastSliderHit_ = id_ + IMGUI_HORIZONTAL_SLIDER_ID;
 
 	                Vertex3 globalPos = area_->pNode_->GetGlobalPosition();
                     Vertex3 globalScale = area_->pNode_->GetGlobalScale();
@@ -275,14 +247,15 @@ namespace NSG
 	                float xRight = globalPos.x + globalScale.x;
 
                     float x1 = mousex_;
-                    if(x1 >= xLeft && x1 <= xRight)
+					if(x1 >= xLeft && x1 <= xRight)
                     {
 	                    float a2 = 1/(xRight-xLeft);
 	                    float x2 = a2*x1-a2*xLeft;
 	                    CHECK_ASSERT(x2 >=0 && x2 <= 1, __FILE__, __LINE__);
 					    xPosition = -x2 * maxPosX;
                     }
-                    return true;
+					return true;
+
 		    	}
 		    }
 
@@ -291,64 +264,72 @@ namespace NSG
 
 	    void Area::UpdateControl()
 	    {
-	    	if(mousedown_)
+			if (layoutManager_.IsCurrentWindowActive() && mousedown_ && !lastTitleHit_)
 	    	{
-	    		if(activeScrollArea_ < id_ && area_->isScrollable_ && HitArea(id_, mouseDownX_, mouseDownY_))
+	    		if(area_->isScrollable_ && IsMouseButtonPressedInArea())
 					activeScrollArea_ = id_;
             }
 	    }
 
 		void Area::UpdateScrolling()
 		{
-            if(activeScrollArea_ <= id_ && HitArea(id_, mouseDownX_, mouseDownY_))
+            if(activeScrollArea_ == id_)
 			{
-                MouseRelPosition relPos = uistate_.GetMouseRelPosition();
-
 				Vertex3 position = area_->childrenRoot_->GetPosition();
 
 				bool userMovedSlider = false;
 
                 float maxPosX = 2*(area_->scrollFactorAreaX_-1);
                 float maxPosY = 2*(area_->scrollFactorAreaY_-1);
-                
-				if(area_->scrollFactorAreaX_ > 1)
+				
+				if(area_->isXScrollable_)
                     userMovedSlider = HandleHorizontalSlider(maxPosX, position.x);
 
-                if(area_->scrollFactorAreaY_ > 1 && !userMovedSlider)
+                if(area_->isYScrollable_ && !userMovedSlider)
                     userMovedSlider = HandleVerticalSlider(maxPosY, position.y);
-
+				
+				bool scrolled = false;
 				if(!userMovedSlider)
 				{
-					if(area_->scrollFactorAreaX_ > 1)
+					if (area_->isXScrollable_)
 					{
-                        if(relPos.x_ != 0)
+						if (mouseRelX_ != 0)
                         {
                     	    float x = position.x;
 
-                            float step = relPos.x_ * maxPosX / std::floor(area_->scrollFactorAreaX_);
+							float step = mouseRelX_ / area_->scrollFactorAreaX_;
 
                             x += step;
 
                             position.x = std::min<float>(0, std::max<float>(x, -maxPosX));
+
+                            scrolled = true;
                         }
 					}
 
-					if(area_->scrollFactorAreaY_ > 1)
+					if (area_->isYScrollable_)
 					{
-                        if(relPos.y_ != 0)
+						if (mouseRelY_ != 0)
                         {
                     	    float y = position.y;
 
-                            float step = relPos.y_ * maxPosY / std::floor(area_->scrollFactorAreaY_);
+							float step = mouseRelY_ * area_->scrollFactorAreaY_;
 
                             y += step;
 
                             position.y = std::max<float>(0, std::min<float>(y, maxPosY));
+
+                            scrolled = true;
                         }
 					}
 				}
+				else
+				{
+					scrolled = true;
+				}
 
-				area_->childrenRoot_->SetPosition(position);
+				if(scrolled)
+					area_->childrenRoot_->SetPosition(position);
 			}
 		}	
 

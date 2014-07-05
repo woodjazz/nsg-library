@@ -37,6 +37,7 @@ namespace NSG
 		~FontAtlasTextureManager();
 		typedef std::pair<std::string, int> Key;
 		PFontAtlasTexture GetAtlas(const Key& key);
+		void Invalidate();
 	private:
 		
 		typedef std::map<Key, PFontAtlasTexture> Atlas;

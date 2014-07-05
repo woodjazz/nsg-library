@@ -34,9 +34,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	const size_t MAX_VERTEXES_PER_MESH = 10000;
-	const IndexType MAX_INDEXES_PER_MESH = ~IndexType(0);
-
 	Mesh::Mesh(GLenum usage) 
 	: pVBuffer_(nullptr),
 	pIBuffer_(nullptr),
@@ -44,9 +41,6 @@ namespace NSG
 	bufferVertexData_(nullptr),
 	bufferIndexData_(nullptr)
 	{
-		// we do not want reallocation of these buffers
-		vertexsData_.reserve(MAX_VERTEXES_PER_MESH);
-		indexes_.reserve(MAX_INDEXES_PER_MESH);
 	}
 
 	Mesh::~Mesh() 
@@ -59,9 +53,6 @@ namespace NSG
 	{
 	   	if(IsReady())
 	   	{
-	   		CHECK_ASSERT(vertexsData_.size() < MAX_VERTEXES_PER_MESH, __FILE__, __LINE__); // we do not want reallocation of these buffers
-			CHECK_ASSERT(indexes_.size() < MAX_INDEXES_PER_MESH, __FILE__, __LINE__); // we do not want reallocation of these buffers
-
 			CHECK_GL_STATUS(__FILE__, __LINE__);
 
 			CHECK_ASSERT(pVBuffer_, __FILE__, __LINE__);
@@ -221,5 +212,7 @@ namespace NSG
 		pIBuffer_ = nullptr;
 		bufferVertexData_ = nullptr;
 		bufferIndexData_ = nullptr;
+		//vertexsData_.clear();
+		//indexes_.clear();
 	}
 }

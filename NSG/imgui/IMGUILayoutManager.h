@@ -49,6 +49,8 @@ namespace NSG
 			LayoutArea* parent_;
 			PNode childrenRoot_; //node used to perform the scrolling
 			bool isScrollable_;
+			bool isXScrollable_;
+			bool isYScrollable_;
 			float scrollFactorAreaX_;
 			float scrollFactorAreaY_;
 			Area* controlArea_;
@@ -72,25 +74,33 @@ namespace NSG
 
 		class LayoutManager
 		{
+			struct WindowManager;
         public:
 			LayoutManager(PNode pRootNode); 
 			void Render();
-			GLushort GetCurrentWindowId() const { return currentWindowManager_->id_; }
+			void RenderUserWindow();
 			PLayoutArea GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 			void BeginHorizontalArea(GLushort id, int percentageX = 0, int percentageY = 0);
 			void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
 			float EndArea(float scroll);
 			void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
 			size_t GetNestingLevel();
-			bool IsStable() const;
+			bool IsReady() const;
 			void Window(GLushort id, IMGUI::IWindow* obj, int percentageX, int percentageY);
 			void Invalidate();
+			void SetWindowFocus(float x, float y);
+			GLushort GetValidId(GLushort id);
+			PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
+			bool IsCurrentWindowActive() const;
+			bool IsFirstOnTopOfSecond(IWindow* first, IWindow* second) const;
+
 	
 		private:
 
 			struct WindowManager
 			{
 				GLushort id_;
+				GLushort lastId_;
 				typedef std::list<PArea> NestedAreas;
 				NestedAreas nestedAreas_;
 				typedef std::map<GLushort, PLayoutArea> AREAS;
@@ -103,8 +113,11 @@ namespace NSG
             	bool visible_;
             	int percentageX_;
             	int percentageY_;
+            	IWindow* userWindow_;
+				PTextManager pTextManager_;
 
-            	WindowManager(GLushort id, PNode pRootNode, int percentageX, int percentageY);
+
+            	WindowManager(IWindow* userWindow, GLushort id, PNode pRootNode, int percentageX, int percentageY);
 				PLayoutArea InsertNewArea(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
 				void Reset();
 				void Begin(bool showTitle, bool showBorder);
@@ -118,17 +131,23 @@ namespace NSG
 				void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
 				float EndArea(float scroll);
 				void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
-				bool IsStable() const;
+				bool IsReady() const;
 				size_t GetNestingLevel();
 				void RecalculateLayout(PLayoutArea pCurrentArea);
+				GLushort GetValidId(GLushort id);
+				PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
+				void Invalidate();
+
             };
 
             typedef std::shared_ptr<WindowManager> PWindowManager;
-            typedef std::map<IMGUI::IWindow*, PWindowManager> WindowManagers;
+            typedef std::map<IWindow*, PWindowManager> WindowManagers;
 
-			PWindowManager mainWindowManager_;
             WindowManagers windowManagers_;
             PWindowManager currentWindowManager_;
+			IWindow* focusedUserWindow_;
+			bool focusHasChanged_;
+			std::list<IWindow*> windowsSequence_; //Contains the sequence in what the windows are rendered
 
 		};
 	}

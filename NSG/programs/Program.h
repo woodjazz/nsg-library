@@ -59,10 +59,11 @@ namespace NSG
 		GLuint GetAttColorLoc() const { return att_color_loc_; }
 		void Use(Node* node);
 		void Use(Material* material);
+		void Use();
+		void Bind() { glUseProgram(id_); }
 	private:
 		operator const GLuint() const { return id_; }
 		GLuint GetId() const { return id_; }
-		void Use() { glUseProgram(id_); }
 		GLuint id_;
 		PVertexShader pVShader_;
 		PFragmentShader pFShader_;
@@ -112,14 +113,4 @@ namespace NSG
 
 		friend class UseProgram;
 	};
-
-	class UseProgram
-	{
-	public:
-		UseProgram(Program& obj);
-		~UseProgram();
-	private:
-		Program& obj_;
-	};
-
 }

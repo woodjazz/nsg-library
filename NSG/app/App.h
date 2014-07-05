@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Tick.h"
 #include "Context.h"
 #include "Singleton.h"
+#include "IMGUI.h"
 
 class AAssetManager;
 class ANativeActivity;
@@ -40,7 +41,7 @@ namespace pp
 namespace NSG 
 {
     struct InternalApp;
-	class App : public Singleton<App>
+	class App : public IMGUI::IWindow, public Singleton<App>
 	{
 	public:
         App();
@@ -49,7 +50,6 @@ namespace NSG
 		virtual void Start() {}
 		virtual void Update() {}
 		virtual void RenderFrame() {};
-        virtual void RenderGUIFrame() {}
 		virtual void ViewChanged(int32_t width, int32_t height) {};
         virtual void OnMouseMove(float x, float y) {}
         virtual void OnMouseDown(float x, float y) {}

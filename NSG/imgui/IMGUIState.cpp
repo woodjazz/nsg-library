@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Keyboard.h"
 #include "Camera.h"
 #include "IMGUIContext.h"
+#include "IMGUILayoutManager.h"
 #include "IMGUI.h"
 #include <cstring>
 
@@ -55,7 +56,6 @@ namespace NSG
             activeitem_needs_keyboard_(false),
             lastSliderHit_(IMGUI_UNKNOWN_ID),
             lastTitleHit_(IMGUI_UNKNOWN_ID),
-            activeWindow_(IMGUI_UNKNOWN_ID),
             activeScrollArea_(IMGUI_UNKNOWN_ID),
             tick_(0),
             mouseRelDownX_(0),
@@ -82,13 +82,14 @@ namespace NSG
 
         void State::OnMouseDown(float x, float y)
         {
-            activeWindow_ = activeScrollArea_ = IMGUI_UNKNOWN_ID;
+            activeScrollArea_ = IMGUI_UNKNOWN_ID;
             mouseRelDownX_ = mouseDownX_ = x;
             mouseRelDownY_ = mouseDownY_ = y;
         	mousex_ = x;
         	mousey_ = y;
         	mousedown_ = true;
             mouseup_ = false;
+            Context::this_->pLayoutManager_->SetWindowFocus(x, y);
         }
 
         void State::OnMouseUp(float x, float y)
@@ -174,7 +175,7 @@ namespace NSG
             }
 
             // If no widget grabbed tab, clear focus
-            if (!Context::this_->IsStable())
+            if (!Context::this_->IsReady())
                 kbditem_ = 0;
             else if(keyentered_ == NSG_KEY_TAB && !keymod_)
                 kbditem_ = 0;

@@ -46,9 +46,13 @@ namespace NSG
 	{
 	}
 
-	void Camera::Invalidate()
+	void Camera::Update() const
 	{
-		UpdateProjection();
+		if (dirty_)
+		{
+			UpdateProjection();
+			dirty_ = false;
+		}
 	}
 
 	void Camera::EnableOrtho() 
@@ -56,7 +60,7 @@ namespace NSG
 		if(!isOrtho_)
 		{
 			isOrtho_ = true;
-			Invalidate();
+			dirty_ = true;
 		}
 	}
 
@@ -65,7 +69,7 @@ namespace NSG
 		if(isOrtho_)
 		{
 			isOrtho_ = false;
-			Invalidate();
+			dirty_ = true;
 		}
 	}	
 
@@ -74,7 +78,7 @@ namespace NSG
         if(fovy_ != fovy)
         {
 		    fovy_ = fovy;
-            Invalidate();
+			dirty_ = true;
         }
 	}
 
@@ -83,7 +87,7 @@ namespace NSG
         if(zNear_ != zNear)
         {
 		    zNear_ = zNear;
-            Invalidate();
+			dirty_ = true;
         }
 	}
 
@@ -92,7 +96,7 @@ namespace NSG
         if(zFar_ != zFar)
         {
 		    zFar_ = zFar;
-            Invalidate();
+			dirty_ = true;
         }
 	}
 
@@ -125,6 +129,8 @@ namespace NSG
 		yo_ = yo;
 		xf_ = xf;
 		yf_ = yf;
+
+		dirty_ = true;
 	}
 
 	Recti Camera::GetViewport() const
@@ -145,7 +151,7 @@ namespace NSG
 		glViewport(viewport.x, viewport.y, viewport.z, viewport.w);		
 	}
 
-	void Camera::UpdateProjection()
+	void Camera::UpdateProjection() const
 	{
 		auto viewSize = App::this_->GetViewSize();
 		auto width = viewSize.first;
@@ -170,12 +176,13 @@ namespace NSG
         }
 	}
 
-    void Camera::OnUpdate()
+    void Camera::OnUpdate() const
     {
-        Invalidate();
+		dirty_ = true;
+        Update();
     }
 
-	void Camera::UpdateViewProjection()
+	void Camera::UpdateViewProjection() const
 	{
 		matViewInverse_ = GetGlobalModelMatrix();
 		matView_ = glm::inverse(matViewInverse_);
@@ -183,11 +190,20 @@ namespace NSG
 		matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 	}
 
+	const Matrix4& Camera::GetMatViewProjection() const
+	{
+		if (dirty_)
+			Update();
+
+		return matViewProjection_;
+
+	}
+
 	Matrix4 Camera::GetModelViewProjection(const Node* pNode)
 	{
 		if (activeCamera)
 		{
-			return activeCamera->matViewProjection_ * pNode->GetGlobalModelMatrix();
+			return activeCamera->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
 		}
 		else
 		{
@@ -196,10 +212,29 @@ namespace NSG
 		}
 	}
 
-    Matrix4 Camera::GetView()
+    const Matrix4& Camera::GetView() const
     {
+		if (dirty_)
+			Update();
+
         return matView_;
     }
+
+	const Matrix4& Camera::GetInverseViewMatrix() const
+	{
+		if (dirty_)
+			Update();
+
+		return matViewInverse_;
+	}
+
+	const Matrix4& Camera::GetViewProjectionMatrix() const
+	{
+		if (dirty_)
+			Update();
+
+		return matViewProjection_;
+	}
 
 	Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const 
 	{
@@ -212,30 +247,4 @@ namespace NSG
 		Vertex4 screenCoord = matViewProjection_ * Vertex4(worldXYZ, 1);
 		return Vertex3(screenCoord.x/screenCoord.w, screenCoord.y/screenCoord.w, screenCoord.z/screenCoord.w);
     }
-
-	const Matrix4& Camera::GetViewProjectionMatrix()
-	{
-		if (activeCamera)
-		{
-			return activeCamera->matViewProjection_;
-		}
-		else
-		{
-			static Matrix4 m(1.0f);
-			return m;
-		}
-	}
-
-	const Matrix4& Camera::GetInverseViewMatrix()
-	{
-		if (activeCamera)
-		{
-			return activeCamera->matViewInverse_;
-		}
-		else
-		{
-			static Matrix4 m(1.0f);
-			return m;
-		}
-	}
 }

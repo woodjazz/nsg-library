@@ -25,8 +25,9 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Allocators.h"
 #include "GPUObject.h"
-#include <vector>
+#include "PODVector.h"
 
 namespace NSG
 {
@@ -42,9 +43,11 @@ namespace NSG
 		IndexBuffer* GetStaticIndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
 		VertexBuffer* GetDynamicVertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
 		IndexBuffer* GetDynamicIndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
+		bool IsValidBufferPtr(Buffer* p) const;
 
 	private:
-		std::vector<PBuffer> buffers_;
+		static const size_t MAX_BUFFERS = 100;
+		PODVector<PBuffer, MAX_BUFFERS> buffers_;
 		VertexBuffer* currentStaticVertexBuffer_;
 		IndexBuffer* currentStaticIndexBuffer_;
 		VertexBuffer* currentDynamicVertexBuffer_;

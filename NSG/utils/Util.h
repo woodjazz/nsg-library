@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include <string>
 #include "Types.h"
+#include "Check.h"
 
 namespace NSG
 {

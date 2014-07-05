@@ -23,13 +23,13 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
 #include "Graphics.h"
 #include "GLES2Includes.h"
 #include "Check.h"
 #include "Texture.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "Program.h"
 
 namespace NSG
 {
@@ -64,8 +64,12 @@ namespace NSG
 		for(unsigned idx=0; idx<MAX_TEXTURE_UNITS; idx++)
 			SetTexture(idx, nullptr);
 
+		SetVertexBuffer(nullptr);
+		SetIndexBuffer(nullptr);
 		VertexBuffer::UnBind();
 		IndexBuffer::UnBind();
+
+		SetProgram(nullptr);
 	}
 
 
@@ -315,9 +319,28 @@ namespace NSG
 			    buffer->Bind();
     			return true;
             }
+  
 		}
 
 		return false;
+	}
+
+	void SetProgram(Program* program)
+	{
+		static Program* program_ = nullptr;
+
+		if(program != program_)
+		{
+            program_ = program;
+            if(program)
+            {
+			    program->Bind();
+            }
+            else
+            {
+                glUseProgram(0);
+            }
+		}
 	}
 
 }

@@ -65,15 +65,14 @@ namespace NSG
 
 		void Button::UpdateControl()
 		{
-            if(uistate_.mouseup_ && HitKeepStencil(uistate_.mouseDownX_, uistate_.mouseDownY_))
+            if(uistate_.mouseup_ && IsMouseButtonPressedInArea())
 			{
-				pressed_ = HitKeepStencil(uistate_.mousex_, uistate_.mousey_);
+				pressed_ = IsMouseInArea();
 			}
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
 	        Node textNode0;
-	        textNode0.EnableUpdate(false);
 	        textNode0.SetParent(node_);
 
             if(pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
@@ -89,13 +88,9 @@ namespace NSG
                 textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
 
             SceneNode textNode;
-            textNode.EnableUpdate(false);
             textNode.SetParent(&textNode0);
             textNode.SetInheritScale(false);
             textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
-
-	        textNode0.EnableUpdate(true);
-	        textNode0.Update(false);
 
             Technique technique;
             Pass pass;

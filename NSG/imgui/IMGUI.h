@@ -44,14 +44,14 @@ namespace NSG
         struct IWindow
         {
         	virtual ~IWindow() {};
-        	virtual void StartWindow() {};
-        	virtual void RenderWindow() = 0;
-        	virtual void EndWindow() {};
+        	virtual void StartGUIWindow() {};
+			virtual void RenderGUIWindow() {};
+        	virtual void EndGUIWindow() {};
         };
 		
 		void Window_(GLushort id, IWindow* obj, int percentageX = 0, int percentageY = 0);
 		
-		bool IsStable();
+		bool IsReady();
         void OnMouseMove(float x, float y);
         void OnMouseDown(float x, float y);
         void OnMouseWheel(float x, float y);

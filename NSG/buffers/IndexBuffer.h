@@ -37,7 +37,6 @@ namespace NSG
 		~IndexBuffer();
 		static void UnBind();
 		bool ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
-		void RedoBuffer();
 		void UpdateData(Buffer::Data& obj, const Indexes& indexes, GLintptr indexBase);
 	};
 }

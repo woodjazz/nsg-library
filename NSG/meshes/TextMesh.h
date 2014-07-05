@@ -40,7 +40,7 @@ namespace NSG
 	class TextMesh : public Mesh
 	{
 	public:
-		TextMesh(int maxLength, const char* filename, int fontSize, GLenum usage);
+		TextMesh(size_t maxLength, const char* filename, int fontSize, GLenum usage);
 		~TextMesh();
 		void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
 		GLfloat GetWidth() const { return screenWidth_; }
@@ -61,6 +61,7 @@ namespace NSG
 
 
 	private:
+		void UpdateBuffers();
 		void Move(VertexsData& obj, float offsetX, float offsetY);
 		PFontAtlasTexture pAtlas_;
 		PProgram pProgram_;
@@ -74,6 +75,6 @@ namespace NSG
 		float alignmentOffsetX_;
 		float alignmentOffsetY_;
 		VertexsData vertexDataCopy_;
-		int maxLength_;
+		size_t maxLength_;
 	};
 }

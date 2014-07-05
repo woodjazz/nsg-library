@@ -13,6 +13,7 @@
 #include <sstream>
 #include <algorithm>
 #include <assert.h>
+#include <cmath>
 
 namespace NSG
 {
@@ -35,9 +36,8 @@ namespace NSG
     void FontAtlasTexture::AllocateResources()
     {
     	Texture::AllocateResources();
-        CreateTextureAtlas();
+        CreateTextureAtlas(false);
         GenerateMeshesForAllChars();
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     void FontAtlasTexture::ReleaseResources()
@@ -45,12 +45,15 @@ namespace NSG
     	charsMesh_.clear();
         charInfo_.clear();
         atlasWidth_ = atlasHeight_ = 0;
+        viewWidth_ = viewHeight_ = 0;
         Texture::ReleaseResources();
     }
 
-    #define MAXWIDTH 1024
-	void FontAtlasTexture::CreateTextureAtlas()
+	
+	void FontAtlasTexture::CreateTextureAtlas(bool generateMipmaps)
 	{
+		const size_t MAXWIDTH = 512; // Maximum allowed witdh for the texture 
+
 		TRACE_LOG("FontAtlasTexture::CreateTextureAtlas: File=" << filename_ << " fontSize=" << fontSize_);
 
 		FT_Face face;
@@ -84,11 +87,42 @@ namespace NSG
         }
 
 		atlasWidth_ = std::max(atlasWidth_, roww);
-        atlasHeight_ += rowh;     
+        atlasHeight_ += rowh;  
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, atlasWidth_, atlasHeight_, 0, GL_ALPHA, GL_UNSIGNED_BYTE, 0);
-		std::vector<GLubyte> emptyData(atlasWidth_ * atlasHeight_, 0);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlasWidth_, atlasHeight_, GL_ALPHA, GL_UNSIGNED_BYTE, &emptyData[0]);		
+        if(generateMipmaps)
+        {
+			int maxValue = std::max(atlasWidth_, atlasHeight_);
+
+			double log2Value = log2(maxValue);
+			double pow2Value = std::pow(2, std::ceil(log2Value));
+
+			atlasWidth_ = atlasHeight_ = (int)pow2Value;
+			int numMipmaps = (int)std::floor(log2(std::max(atlasWidth_, atlasHeight_))) + 1;
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+			glGenerateMipmap(GL_TEXTURE_2D);
+
+			GLsizei levelSize = atlasWidth_;
+			for (GLint level = 0; level < numMipmaps; level++)
+			{
+				glTexImage2D(GL_TEXTURE_2D, level, GL_ALPHA, levelSize, levelSize, 0, GL_ALPHA, GL_UNSIGNED_BYTE, 0);
+				std::vector<GLubyte> emptyData(levelSize * levelSize, 0);
+				glTexSubImage2D(GL_TEXTURE_2D, level, 0, 0, levelSize, levelSize, GL_ALPHA, GL_UNSIGNED_BYTE, &emptyData[0]);
+
+				log2Value = log2(levelSize) - 1;
+				levelSize = (GLsizei)exp2(log2Value);
+			}
+		}
+		else
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, atlasWidth_, atlasHeight_, 0, GL_ALPHA, GL_UNSIGNED_BYTE, 0);
+			std::vector<GLubyte> emptyData(atlasWidth_ * atlasHeight_, 0);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlasWidth_, atlasHeight_, GL_ALPHA, GL_UNSIGNED_BYTE, &emptyData[0]);
+		}
 
 		int ox = 0;
         int oy = 0;
@@ -198,9 +232,6 @@ namespace NSG
 			
 		vertexsData.clear();
 		indexes.clear();
-
-	    vertexsData.reserve(6 * text.size());
-		indexes.reserve(vertexsData.size());
 
         screenWidth = screenHeight = 0;
 

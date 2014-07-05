@@ -82,10 +82,11 @@ struct Sample : App
             pass01->Set(boxBehavior_->material_);
             pass2Texture->Add(pass01);
 
+
             PPassFilter filterPass(new PassFilter(boxBehavior_->filter_));
             technique_->Add(filterPass);
         }
-
+#if 1
         {
             //sphere passes
     
@@ -114,7 +115,7 @@ struct Sample : App
             PPassFilter passBlend(new PassFilter(sphereBehavior_->blendFilter_));
             technique_->Add(passBlend);
         }
-
+#endif
 
         blendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
         showTexture_->SetNormal(blendedTexture_);

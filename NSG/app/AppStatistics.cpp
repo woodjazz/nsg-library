@@ -114,11 +114,7 @@ namespace NSG
 		Add2LastSecond(counters_[TRIANGLES], n);	
 	}
 
-	void AppStatistics::StartWindow()
-	{
-	}
-
-	void AppStatistics::RenderWindow()
+	void AppStatistics::RenderGUIWindow()
 	{
         int fontSize = IMGUI::Context::this_->pSkin_->fontSize_;
         IMGUI::Context::this_->pSkin_->fontSize_ = 14;
@@ -161,9 +157,4 @@ namespace NSG
 
         IMGUI::Context::this_->pSkin_->fontSize_ = fontSize;
 	}
-
-	void AppStatistics::EndWindow()
-	{
-	}
-
 }

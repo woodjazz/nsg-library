@@ -39,22 +39,17 @@ namespace NSG
 			PCamera pCamera_;
 			PNode pCurrentNode_;
 			PNode pRootNode_;
-			PFrameColorSelection pFrameColorSelection_;		
-			PTextManager pTextManager_;
 			PLayoutManager pLayoutManager_;
 
 			Context();
 			~Context();
 			void RenderGUI();
-			bool IsStable() const;
+			bool IsReady() const;
 			PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
 			void Invalidate();
 
 			// Used to avoid the same ID when more than one control lays in the same line
 			GLushort GetValidId(GLushort id);
-
-		private:
-			GLushort lastId_;
 		};
 	}
 }

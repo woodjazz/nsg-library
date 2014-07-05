@@ -42,50 +42,56 @@ namespace NSG
 	{
 		static const float TITLE_HEIGHT = 25; //pixels 
 
-		Window::Window(GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY)
-		: Area(id, LayoutType::Vertical, percentageX, percentageY),
+		Window::Window(IWindow* userWindow, GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY)
+		: Area(id, true, LayoutType::Vertical, percentageX, percentageY),
 		titleTechnique_(Context::this_->pSkin_->titleTechnique_),
 		borderTechnique_(Context::this_->pSkin_->borderTechnique_),
 		showTitle_(showTitle),
 		showBorder_(showBorder),
-		lastTitleHit_(Context::this_->state_->lastTitleHit_),
-        viewSize_(App::this_->GetViewSize())
+        viewSize_(App::this_->GetViewSize()),
+        userWindow_(userWindow)
 		{
 
 		}
 
 	    Window::~Window()
 	    {
-		    if(showTitle_)
-		    {
-				Node node;
-				node.SetParent(area_->pNode_);
-		        Vertex3 windowScale = area_->pNode_->GetScale();
-		        float yScale = TITLE_HEIGHT/((float)viewSize_.second * windowScale.y);
-				node.SetScale(Vertex3(1, yScale, 1));
+	    	if(IsReady())
+	    	{
+			    if(showTitle_)
+			    {
+					Node node;
+					node.SetParent(area_->pNode_);
+			        Vertex3 windowScale = area_->pNode_->GetScale();
+			        float yScale = TITLE_HEIGHT/((float)viewSize_.second * windowScale.y);
+					node.SetScale(Vertex3(1, yScale, 1));
 
-		        float ypos = 1 - yScale;
+			        float ypos = 1 - yScale;
 
-				node.SetPosition(Vertex3(0,ypos,0));
-				titleTechnique_->Set(&node);
-				RenderTitle();
+					node.SetPosition(Vertex3(0,ypos,0));
+					titleTechnique_->Set(&node);
+					RenderTitle();
 
-		    	if(mousedown_ && HitTitle(IMGUI_TITLE_ID, mouseDownX_, mouseDownY_) || lastTitleHit_ == IMGUI_TITLE_ID)
-		    	{
-		    		lastTitleHit_ = IMGUI_TITLE_ID;
-		    		Vertex3 position = area_->pNode_->GetPosition();
-		    		position.x += mouseRelX_;
-		    		position.y += mouseRelY_;
-		    		area_->pNode_->SetPosition(position);
-		    	}
-			}
-#if 0
-			if(showBorder_)
-			{
-				borderTechnique_->Set(area_->pNode_);
-				RenderBorder();
-			}
+					if(layoutManager_.IsCurrentWindowActive() && mousedown_)
+					{
+				    	if(node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0)) || lastTitleHit_ == id_)
+				    	{
+							lastTitleHit_ = id_;
+				    		Vertex3 position = area_->pNode_->GetPosition();
+				    		position.x += mouseRelX_;
+				    		position.y += mouseRelY_;
+				    		area_->pNode_->SetPosition(position);
+				    	}
+				    }
+				}
+#if 1
+				if(showBorder_)
+				{
+					borderTechnique_->Set(area_->pNode_);
+					RenderBorder();
+				}
 #endif
+			}
 	    }
 
 		float Window::GetTopPosition() const
@@ -102,33 +108,8 @@ namespace NSG
 			}
 		}
 
-		bool Window::HitTitle(GLushort id, float screenX, float screenY)
-		{
-			if(area_->IsInside(Vertex3(screenX, screenY, 0)))
-			{
-		        PPass pass = Context::this_->pFrameColorSelection_->GetPass();
-		        pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		        pass->SetStencilFunc(GL_ALWAYS, 0, 0);
-
-			   	return Context::this_->pFrameColorSelection_->Hit(id, screenX, screenY, titleTechnique_.get());
-			}
-
-			return false;
-		}
-
-
 	    void Window::UpdateControl()
 	    {
-	    	if(mousedown_)
-	    	{
-	    		if(activeWindow_ < id_ && HitArea(id_, mouseDownX_, mouseDownY_))
-                {
-					activeWindow_ = id_;
-
-                    if(area_->isScrollable_)
-                        activeScrollArea_ = id_;
-                }
-            }
 	    }
 
 		void Window::RenderTitle()

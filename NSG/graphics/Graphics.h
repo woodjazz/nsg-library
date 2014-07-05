@@ -41,4 +41,5 @@ namespace NSG
 	void SetTexture(unsigned index, Texture* texture);
 	bool SetVertexBuffer(Buffer* buffer);
 	bool SetIndexBuffer(Buffer* buffer);
+	void SetProgram(Program* program);
 }

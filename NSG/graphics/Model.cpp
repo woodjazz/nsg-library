@@ -223,12 +223,9 @@ namespace NSG
 		Quaternion q;
 		Vertex3 scale;
 		DecomposeMatrix(localModel, position, q, scale);
-		pSceneNode->EnableUpdate(false);
 		pSceneNode->SetPosition(position);
 		pSceneNode->SetOrientation(q);
 		pSceneNode->SetScale(scale);
-		pSceneNode->EnableUpdate(true);
-		pSceneNode->Update(false);
 
 		for (size_t i=0; i < nd->mNumMeshes; ++i) 
 		{

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "IMGUIArea.h"
+#include "IMGUI.h"
 
 namespace NSG
 {
@@ -33,7 +34,7 @@ namespace NSG
 		class Window : public Area
 		{
 		public:
-			Window(GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY);
+			Window(IWindow* userWindow, GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY);
             ~Window();
 			void operator()();
 			void UpdateControl();
@@ -43,15 +44,14 @@ namespace NSG
 			float GetTopPosition() const;
 
 		private:
-			bool HitTitle(GLushort id, float screenX, float screenY);
 			void RenderTitle();
 			void RenderBorder();
 			PTechnique& titleTechnique_;
 			PTechnique& borderTechnique_;
 			bool showTitle_;
 			bool showBorder_;
-			GLushort& lastTitleHit_;
 			std::pair<int32_t, int32_t> viewSize_;
+			IWindow* userWindow_;
 		};
 
 	}

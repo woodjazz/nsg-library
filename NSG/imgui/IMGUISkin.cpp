@@ -76,7 +76,7 @@ namespace NSG
 
 			PMaterial windowMaterial(new Material);
             //windowMaterial->SetColor(Color(0,1,1,0.5f));
-            windowMaterial->SetColor(Color(0,0,0,0));
+            windowMaterial->SetColor(Color(0,0,0,0.8f));
             windowMaterial->SetProgram(unlitProgram);
             //windowMaterial->SetProgram(pProgram);
 			//windowMaterial->EnableColorBuffer(false);

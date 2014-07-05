@@ -181,7 +181,6 @@ namespace NSG
 	        }
 	        
 	        Node textNode0;
-	        textNode0.EnableUpdate(false);
 	        textNode0.SetParent(node_);
 
             if(pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
@@ -205,10 +204,7 @@ namespace NSG
 	        textNode2.SetParent(&textNode1);
 	        textNode2.SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
 
-	        textNode0.EnableUpdate(true);
-	        textNode0.Update(false);
-
-	        Technique technique;
+			Technique technique;
 	        Pass pass;
 	        technique.Add(&pass);
 	        pass.Add(&textNode2, pTextMesh_);
@@ -217,7 +213,6 @@ namespace NSG
 	        pass.EnableStencilTest(true);
 	        textMaterial.SetTexture0(pTextMesh_->GetAtlas());
 	        textMaterial.SetProgram(pTextMesh_->GetProgram());
-            //textMaterial.SetStencilFunc(GL_EQUAL, 1, ~GLuint(0));
             size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
             pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 
@@ -228,17 +223,17 @@ namespace NSG
 			if(HasFocus() && (uistate_.tick_ < 15))
 	        {
 	            SceneNode cursorNode;
-	            cursorNode.EnableUpdate(false);
 	            cursorNode.SetParent(&textNode2);
 	            cursorNode.SetPosition(Vertex3(cursorPositionInText, 0, 0));
-	            cursorNode.EnableUpdate(true);
-	            cursorNode.Update(false);
 
 	            Technique technique;
 	            Pass pass;
+				pass.EnableDepthTest(false);
+				pass.EnableStencilTest(true);
 	            technique.Add(&pass);
 	            pass.Add(&cursorNode, pCursorMesh_);
 	            pass.Set(&textMaterial);
+				pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 	            
 	            technique.Render();
 	        }

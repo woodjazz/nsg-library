@@ -104,9 +104,8 @@ namespace NSG
 		{
 			Use();
 
-			UseProgram useProgram(*pProgram_);
+			pProgram_->Use();
 			pProgram_->Use(this);
-
 			pProgram_->Use(pNode);
 			GLuint positionLoc = pProgram_->GetAttPositionLoc();
 			GLuint texcoordLoc = pProgram_->GetAttTextCoordLoc();
@@ -123,7 +122,7 @@ namespace NSG
 		{
 			Use();
 
-			UseProgram useProgram(*pProgram_);
+			pProgram_->Use();
 			pProgram_->Use(this);
 
 			GLuint positionLoc = pProgram_->GetAttPositionLoc();

@@ -61,7 +61,6 @@ namespace NSG
   			bool activeitem_needs_keyboard_;
             GLushort lastSliderHit_;
             GLushort lastTitleHit_;
-            GLushort activeWindow_;
             GLushort activeScrollArea_;
 
 			int tick_;

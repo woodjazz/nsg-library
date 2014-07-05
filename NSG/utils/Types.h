@@ -36,6 +36,8 @@ misrepresented as being the original software.
 #include "glm/gtx/io.hpp"
 #include "SharedPointers.h"
 #include "GLES2Includes.h"
+#include "Allocators.h"
+#include "PODVector.h"
 #include <chrono>
 
 #define STRINGIFY(S) #S
@@ -75,7 +77,6 @@ namespace NSG
         IMGUI_FIRST_VERTICAL_AREA_ID, 
         IMGUI_VERTICAL_SLIDER_ID, 
         IMGUI_HORIZONTAL_SLIDER_ID, 
-        IMGUI_TITLE_ID,
         IMGUI_FIRST_VALID_ID
     } IMGUI_IDS;
 
@@ -90,11 +91,18 @@ namespace NSG
         VertexData();
     };
 
-    typedef std::vector<VertexData> VertexsData;
     typedef GLushort IndexType;
-    typedef std::vector<IndexType> Indexes;
 
     typedef enum {ATT_POSITION, ATT_NORMAL, ATT_TEXTURECOORD, ATT_COLOR} AttributesLoc;
 
 	const IndexType MAX_INDEX_VALUE = ~IndexType(0);
+	//const IndexType MAX_INDEXES_PER_MESH = ~IndexType(0);
+	//const size_t MAX_VERTEXES_PER_MESH = 10000;
+	//typedef PODVector<VertexData, MAX_VERTEXES_PER_MESH> VertexsData;
+	//typedef PODVector<IndexType, MAX_INDEXES_PER_MESH > Indexes;
+
+	typedef std::vector<VertexData> VertexsData;
+	typedef std::vector<IndexType> Indexes;
+
+	static const Matrix4 IDENTITY_MATRIX(1.0f);
 }

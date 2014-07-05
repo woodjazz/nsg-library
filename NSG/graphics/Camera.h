@@ -45,25 +45,26 @@ namespace NSG
 		static Camera* Activate(Camera* pCamera);
 		static Camera* GetActiveCamera();
 		static Matrix4 GetModelViewProjection(const Node* pNode);
-        Matrix4 GetView();
-		static const Matrix4& GetViewProjectionMatrix();
-		static const Matrix4& GetInverseViewMatrix();
 		void Activate();
 		void SetViewportFactor(float xo, float yo, float xf, float yf);
 		Recti GetViewport() const;
         bool IsOrtho() const { return isOrtho_; }
         Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const;
         Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
+		const Matrix4& GetView() const;
+		const Matrix4& GetMatViewProjection() const;
+		const Matrix4& GetInverseViewMatrix() const;
+		const Matrix4& GetViewProjectionMatrix() const;
 	private:
-		void Invalidate();
-        void OnUpdate();
-		void UpdateProjection();
-		void UpdateViewProjection();
-		Matrix4 matView_;
-		Matrix4 matViewInverse_;
-		Matrix4 matProjection_;
-		Matrix4 matViewProjection_;
-		Matrix4 matViewProjectionInverse_;
+		void Update() const;
+        void OnUpdate() const;
+		void UpdateProjection() const;
+		void UpdateViewProjection() const;
+		mutable Matrix4 matView_;
+		mutable Matrix4 matViewInverse_;
+		mutable Matrix4 matProjection_;
+		mutable Matrix4 matViewProjection_;
+		mutable Matrix4 matViewProjectionInverse_;
 		float fovy_;
 		float zNear_;
 		float zFar_;
@@ -72,5 +73,6 @@ namespace NSG
 		float xf_;
 		float yf_;
 		bool isOrtho_;
+		mutable bool dirty_;
 	};
 }

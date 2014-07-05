@@ -33,7 +33,7 @@ namespace NSG
 		class Area : public Object
 		{
 		public:
-			Area(GLushort id, LayoutType type, int percentageX, int percentageY);
+			Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY);
             ~Area();
 			void operator()();
 			PTechnique GetActiveTechnique() const;
@@ -44,13 +44,12 @@ namespace NSG
 			virtual float GetTopPosition() const;
 			virtual float GetLeftPosition() const;
 			void UpdateControl();
+
 		protected:
-			bool HitArea(GLushort id, float screenX, float screenY);
+			void UpdateScrolling();
 
 		private:
 			void RenderSlider();
-			bool HitSlider(GLushort id, float screenX, float screenY);
-			void UpdateScrolling();
 			bool HandleVerticalSlider(float maxPosY, float& yPosition);
 			bool HandleHorizontalSlider(float maxPosX, float& xPosition);
 
@@ -59,6 +58,7 @@ namespace NSG
             PTechnique& sliderTechnique_;
             float maxPosX_;
             float maxPosY_;
+			bool isWindow_;
 		};
 	}
 }

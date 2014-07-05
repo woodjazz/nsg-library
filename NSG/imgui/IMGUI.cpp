@@ -109,9 +109,9 @@ namespace NSG
 			Context::this_->pLayoutManager_->Window(id, obj, percentageX, percentageY);
 		}
 
-		bool IsStable()
+		bool IsReady()
 		{
-			return Context::this_->IsStable();
+			return Context::this_->IsReady();
 		}
 
         void OnMouseMove(float x, float y)

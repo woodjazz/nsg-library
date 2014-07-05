@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "TextMesh.h"
 #include "IMGUISkin.h"
-#include "Singleton.h"
+#include "Allocators.h"
 #include <memory>
 #include <map>
 #include <string>
@@ -35,11 +35,12 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		class TextManager : public Singleton<TextManager>
+		class TextManager
 		{
 		public:
 			TextManager();
 			PTextMesh GetTextMesh(GLushort item, int maxLength, const std::string& fontFile, int fontSize);
+			void Invalidate();
 			
 		private:
 			struct Key
@@ -55,7 +56,12 @@ namespace NSG
 				}
 			};
 
-			typedef std::map<Key, PTextMesh> TextMap;
+			typedef std::pair<const Key, PTextMesh> MapValueType;
+			static const int MAX_TEXT_IN_ARENA = 100;
+			static const size_t ARENA_BYTES = sizeof(MapValueType) * MAX_TEXT_IN_ARENA;
+			typedef Allocator<MapValueType, ARENA_BYTES> MapAllocator;
+			typedef std::map<Key, PTextMesh, std::less<Key>, MapAllocator > TextMap;
+			Arena<ARENA_BYTES> pool_;
 			TextMap textMap_;
 		};
 

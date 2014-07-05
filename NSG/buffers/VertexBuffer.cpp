@@ -32,7 +32,12 @@ namespace NSG
 	VertexBuffer::VertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLenum usage) 
 	: Buffer(GL_ARRAY_BUFFER, maxSize, size, data, usage)
 	{
-		RedoBuffer();
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+		SetVertexBuffer(this);
+		CHECK_ASSERT(maxSize <= MAX_BUFFER_SIZE, __FILE__, __LINE__);
+		glBufferData(type_, MAX_BUFFER_SIZE, nullptr, usage_);
+		glBufferSubData(type_, 0, size, data);
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
 	VertexBuffer::~VertexBuffer()
@@ -59,12 +64,6 @@ namespace NSG
 		return false;
 	}
 
-	void VertexBuffer::RedoBuffer()
-	{
-		SetVertexBuffer(this);
-		Buffer::RedoBuffer();
-	}
-
 	void VertexBuffer::UnBind() 
 	{ 
 		glBindBuffer(GL_ARRAY_BUFFER, 0); 
@@ -74,8 +73,6 @@ namespace NSG
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		CHECK_ASSERT(obj.data_ == &vertexes[0], __FILE__, __LINE__);
-
 		GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
 
 		CHECK_ASSERT(bytes2Set <= obj.maxSize_, __FILE__, __LINE__);
@@ -84,7 +81,7 @@ namespace NSG
 
 		SetVertexBuffer(this);
 
-		glBufferSubData(type_, obj.offset_, obj.size_, obj.data_);
+		glBufferSubData(type_, obj.offset_, obj.size_, &vertexes[0]);
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}

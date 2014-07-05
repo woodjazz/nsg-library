@@ -30,16 +30,10 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
-	const unsigned int MAX_BUFFER_SIZE = 2 * 1000 * 1000;
-	const unsigned int VERTEXES_PER_TRIANGLE = 3;
-	const unsigned int MAX_OBJEXTS_PER_BUFFER = MAX_BUFFER_SIZE / VERTEXES_PER_TRIANGLE;
-
 	Buffer::Buffer(GLenum type, GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLenum usage)
 	: type_(type),
 	usage_(usage)
 	{
-		dataCollection_.reserve(MAX_OBJEXTS_PER_BUFFER); // we do not want reallocation on this buffer
-
 		CHECK_ASSERT(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER, __FILE__, __LINE__);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -47,7 +41,6 @@ namespace NSG
 		glGenBuffers(1, &id_);
 
 		dataCollection_.push_back(Data(0, maxSize, size, data));
-
 	}
 
 	Buffer::~Buffer()
@@ -62,31 +55,15 @@ namespace NSG
 		if (totalBytes + maxSize >= MAX_BUFFER_SIZE)
 			return false;
 
-		CHECK_ASSERT(dataCollection_.size() < MAX_OBJEXTS_PER_BUFFER, __FILE__, __LINE__); // we do not want reallocation on this buffer
-
 		dataCollection_.push_back(Data{totalBytes, maxSize, size, data });
 
 		return true;
 	}
 
-	void Buffer::RedoBuffer()
-	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-
-		glBufferData(type_, MAX_BUFFER_SIZE, nullptr, usage_);
-
-		auto it = dataCollection_.begin();
-		while (it != dataCollection_.end())
-		{
-			const Data& obj = *(it++);
-			glBufferSubData(type_, obj.offset_, obj.size_, obj.data_);
-		}
-
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
-
 	Buffer::Data* Buffer::GetLastAllocation()
 	{
+		CHECK_ASSERT(dataCollection_.size() < MAX_OBJECTS_PER_BUFFER, __FILE__, __LINE__);
+
 		Data& obj = dataCollection_[dataCollection_.size()-1];
 		return &obj;
 	}

@@ -39,7 +39,7 @@ namespace NSG
         void SetParent(PNode pParent);
         void SetParent(Node* pParent);
         PNode GetParent() const { return pParent_; }
-		virtual void OnUpdate() {}
+		virtual void OnUpdate() const {}
 		void SetPosition(const Vertex3& position);
 		const Vertex3& GetPosition() const { return position_; }
 		void SetOrientation(const Quaternion& q);
@@ -48,33 +48,35 @@ namespace NSG
 		const Vertex3& GetScale() const { return scale_; }
 		void SetGlobalPosition(const Vertex3& position);
 		void SetGlobalOrientation(const Quaternion& q);
-		const Vertex3& GetGlobalPosition() const { return globalPosition_; }
-		const Quaternion& GetGlobalOrientation() const { return globalOrientation_; }
-		Vertex3 GetGlobalScale() const { return globalScale_; }
+		const Vertex3& GetGlobalPosition() const;
+		const Quaternion& GetGlobalOrientation() const;
+		Vertex3 GetGlobalScale() const;
 		const Matrix4& GetGlobalModelMatrix() const;
-		const Matrix3& GetGlobalModelInvTranspMatrix() const { return globalModelInvTransp_; }
-		void SetLookAt(const Vertex3& center, const Vertex3& up = Vertex3(0,1,0));
-		const Vertex3& GetLookAtDirection() const { return lookAtDirection_; }
+		const Matrix3& GetGlobalModelInvTranspMatrix() const;
+		const Matrix4& GetGlobalModelInvMatrix() const;
+		static Vertex3 UP;
+		void SetLookAt(const Vertex3& center, const Vertex3& up = UP);
+		const Vertex3& GetLookAtDirection() const;
 		void SetInheritScale(bool inherit);
-		void EnableUpdate(bool enable);
-		void Update(bool notify = true);
+		bool IsPointInsideBB(const Vertex3& point) const;
     protected:
 		PNode pParent_;
         std::set<Node*> children_;
-		
 	private:
+		void MarkAsDirty();
+		void Update(bool updateChildren = true) const;
 		GLushort id_;	
-        Matrix4 globalModel_;	
-        Matrix4 globalModelInv_;
-		Matrix3 globalModelInvTransp_;
+        mutable Matrix4 globalModel_;	
+        mutable Matrix4 globalModelInv_;
+		mutable Matrix3 globalModelInvTransp_;
 		Vertex3 position_;
-		Vertex3 globalPosition_;
 		Quaternion q_;
-		Quaternion globalOrientation_;
 		Vertex3 scale_;
-		Vertex3 globalScale_;
-		Vertex3 lookAtDirection_;
+		mutable Vertex3 globalPosition_;
+		mutable Quaternion globalOrientation_;
+		mutable Vertex3 globalScale_;
+		mutable Vertex3 lookAtDirection_;
 		bool inheritScale_;
-		bool updateEnabled_;
+		mutable bool dirty_;
 	};
 }

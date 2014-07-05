@@ -73,7 +73,7 @@ namespace NSG
 		unsigned int GetCharacterPositionForWidth(const char* text, float width);
 
 	private:
-		void CreateTextureAtlas();
+		void CreateTextureAtlas(bool generateMipmaps);
         void GenerateMeshesForAllChars();
         std::string filename_;
 		int atlasWidth_;

@@ -23,39 +23,37 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "FontAtlasTextureManager.h"
-#include "FontAtlasTexture.h"
-#include "Check.h"
+#pragma once
+#include <cassert>
+#include <vector>
 
 namespace NSG
 {
-	FontAtlasTextureManager::FontAtlasTextureManager()
+	template<typename T, size_t N>
+	class PODVector : public std::vector<T>
 	{
-	}
+	public:
+		PODVector()
+		{
+			reserve(N);
+		}
 
-	FontAtlasTextureManager::~FontAtlasTextureManager()
-	{
-	}
+		~PODVector()
+		{
+		}
 
-	PFontAtlasTexture FontAtlasTextureManager::GetAtlas(const Key& key)
-	{
-    	auto it = fontAtlas_.find(key);
-    	
-    	if(it != fontAtlas_.end())
-    	{
-    		return it->second;
-    	}
-    	else
-    	{
-    		PFontAtlasTexture pAtlas = PFontAtlasTexture(new FontAtlasTexture(key.first.c_str(), key.second));
-			fontAtlas_.insert(Atlas::value_type(key, pAtlas));
-			return pAtlas;
-    	}
-    }
+		typedef typename std::vector<T>::value_type value_type;
+		typedef typename std::vector<T>::size_type size_type;
 
-    void FontAtlasTextureManager::Invalidate()
-    {
-        fontAtlas_.clear();
-    }
+		void push_back(const value_type& value)
+		{
+			assert(std::vector<T>::size() < N);
+			std::vector<T>::push_back(value);
+		}
+	private:
+		void reserve(size_type count)
+		{
+			std::vector<T>::reserve(count);
+		}
+	};
 }
-

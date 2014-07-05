@@ -142,6 +142,10 @@ namespace NSG
 
         Context::this_->InvalidateGPUResources();
 
+#if 0
+		Context::this_->ReleaseResourcesFromMemory();
+#endif        
+
         IMGUI::Context::this_->Invalidate();
 
         pApp_->ViewChanged(width, height);

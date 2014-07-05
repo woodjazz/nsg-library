@@ -25,9 +25,12 @@ misrepresented as being the original software.
 */
 #include "Node.h"
 #include "Log.h"
+#include "BoundingBox.h"
 
 namespace NSG
 {
+	Vertex3 Node::UP = Vertex3(0,1,0);
+
 	static GLushort s_node_id = 1;
 
 	Node::Node() 
@@ -35,9 +38,8 @@ namespace NSG
 	scale_(1,1,1),
 	globalScale_(1,1,1),
 	inheritScale_(true),
-	updateEnabled_(true)
+	dirty_(true)
 	{
-        Update(false);
 	}
 
 	Node::~Node() 
@@ -61,7 +63,7 @@ namespace NSG
             
             pParent_ = pParent;
 
-			Update();
+			MarkAsDirty();
         }
     }
 
@@ -84,7 +86,7 @@ namespace NSG
         if(position_ != position)
         {
 		    position_ = position;
-		    Update();
+			MarkAsDirty();
         }
 	}
 
@@ -93,7 +95,7 @@ namespace NSG
         if(q_ != q)
         {
 		    q_ = q;
-		    Update();
+			MarkAsDirty();
         }
 	}
 
@@ -102,7 +104,7 @@ namespace NSG
         if(scale_ != scale)
         {
 		    scale_ = scale;
-		    Update();
+			MarkAsDirty();
         }
 	}
 
@@ -114,7 +116,7 @@ namespace NSG
 		} 
 		else 
 		{
-			SetPosition(Vertex3(pParent_->globalModelInv_ * Vertex4(position, 1)));
+			SetPosition(Vertex3(pParent_->GetGlobalModelInvMatrix() * Vertex4(position, 1)));
 		}
 	}	
 
@@ -126,16 +128,41 @@ namespace NSG
 		} 
 		else 
 		{
-            SetOrientation(glm::normalize(Quaternion(pParent_->globalModelInv_) * q));
+			SetOrientation(glm::normalize(Quaternion(pParent_->GetGlobalModelInvMatrix()) * q));
 		}
 	}	
+
+	const Vertex3& Node::GetGlobalPosition() const
+	{ 
+		if(dirty_)
+			Update();
+
+		return globalPosition_; 
+	}
+
+	const Quaternion& Node::GetGlobalOrientation() const
+	{ 
+		if(dirty_)
+			Update();
+
+		return globalOrientation_; 
+	}
+
+	Vertex3 Node::GetGlobalScale() const
+	{ 
+		if(dirty_)
+			Update();
+
+		return globalScale_; 
+	}
+
 
 	void Node::SetInheritScale(bool inherit) 
 	{ 
 		if(inheritScale_ != inherit)
 		{
 			inheritScale_ = inherit; 
-			Update();
+			dirty_ = true;
 		}
 	}
 
@@ -145,7 +172,7 @@ namespace NSG
         Vertex3 upVector(up);
 
         if(pParent_) 
-            upVector = Matrix3(pParent_->globalModelInv_) * upVector;   
+			upVector = Matrix3(pParent_->GetGlobalModelInvMatrix()) * upVector;   
 
         Vertex3 zaxis = glm::normalize(GetGlobalPosition() - center);   
         if (glm::length(zaxis) > 0) 
@@ -160,8 +187,7 @@ namespace NSG
 
             SetGlobalOrientation(glm::quat_cast(m));
         }
-#endif
-#if 1
+#else
         float length = glm::length(GetGlobalPosition() - center);
         
         if(length > 0)
@@ -172,13 +198,16 @@ namespace NSG
 #endif
 	}
 
-    void Node::Update(bool notify)
+    void Node::Update(bool updateChildren) const
 	{
-		if(!updateEnabled_)
+		if(!dirty_)
 			return;
 
 		if(pParent_)
 		{
+			if(pParent_->dirty_)
+				pParent_->Update(false);
+
 			globalPosition_ = pParent_->globalOrientation_ * (pParent_->globalScale_ * position_);
             globalPosition_ += pParent_->globalPosition_;
 
@@ -207,36 +236,70 @@ namespace NSG
 		static Vertex3 localAtDir(0,0,-1);
 		lookAtDirection_ = globalOrientation_ * localAtDir;
 
-		auto it = children_.begin();
-		while(it != children_.end())
-        {
-			(*it)->Update();
-            ++it;
-        }
+		if (updateChildren)
+		{
+			auto it = children_.begin();
+			while (it != children_.end())
+			{
+				(*it)->dirty_ = true;
+				(*it)->Update();
+				++it;
+			}
+		}
 
-        if(notify)
-        {
-		    OnUpdate();
-        }
+		dirty_ = false;
+
+		OnUpdate();
 	}
 
-	const Matrix4& Node::GetGlobalModelMatrix() const 
+	const Matrix4& Node::GetGlobalModelMatrix() const
 	{ 
+		if(dirty_)
+			Update();
+
         return globalModel_;
 	}
 
-	void Node::EnableUpdate(bool enable) 
+	const Matrix3& Node::GetGlobalModelInvTranspMatrix() const
 	{ 
-		updateEnabled_ = enable; 
+		if(dirty_)
+			Update();
 
-		auto it = children_.begin();
-		while(it != children_.end())
-        {
-			(*it)->EnableUpdate(enable);
-            ++it;
-        }
+		return globalModelInvTransp_; 
+	}	
 
+	const Matrix4& Node::GetGlobalModelInvMatrix() const
+	{
+		if (dirty_)
+			Update();
+
+		return globalModelInv_;
 	}
 
+
+	const Vertex3& Node::GetLookAtDirection() const
+	{ 
+		if(dirty_)
+			Update();
+
+		return lookAtDirection_; 
+	}
+
+	bool Node::IsPointInsideBB(const Vertex3& point) const
+	{
+		if(dirty_)
+			Update();
+
+		BoundingBox box(*this);
+		return box.IsInside(point) != OUTSIDE;
+	}
+
+	void Node::MarkAsDirty()
+	{
+		dirty_ = true;
+		auto it = children_.begin();
+		while (it != children_.end())
+			(*(it++))->MarkAsDirty();
+	}
 
 }
