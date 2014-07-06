@@ -325,13 +325,6 @@ void MyApp::RenderFrame()
     Behavior::RenderAll();
 }
 
-#if 0
-void MyApp::Render2Select()
-{
-	Behavior::Render2SelectAll();
-}
-#endif
-
 void MyApp::ViewChanged(int32_t width, int32_t height) 
 {
     //aspectRatio_ = (float)height/(float)width;

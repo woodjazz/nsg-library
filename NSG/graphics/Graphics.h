@@ -40,6 +40,9 @@ namespace NSG
 	void SetCullFace(bool enable);
 	void SetTexture(unsigned index, Texture* texture);
 	bool SetVertexBuffer(Buffer* buffer);
+	Buffer* GetVertexBuffer();
 	bool SetIndexBuffer(Buffer* buffer);
+	Buffer* GetIndexBuffer();
 	void SetProgram(Program* program);
+	Program* GetProgram();
 }

@@ -36,11 +36,12 @@ ModelBehavior::~ModelBehavior()
 
 void ModelBehavior::Start()
 {
+#if ENABLED 
     //pSceneNode_->SetOrientation(glm::angleAxis(PI, Vertex3(1, 0, 0)));
 	pSceneNode_->SetScale(Vertex3(2, 2, 2));
     //pSceneNode_->SetPosition(Vertex3(0,-2, 0));
     //pSceneNode_->SetPosition(Vertex3(0,-5, 5));
-
+#endif
 }
 
 void ModelBehavior::Update()
@@ -49,12 +50,9 @@ void ModelBehavior::Update()
 
 void ModelBehavior::Render()
 {
-	//pSceneNode_->Render();
+#if ENABLED 	
+	pSceneNode_->Render();
+#endif	
 }
 
-#if 0
-void ModelBehavior::Render2Select()
-{
-	pSceneNode_->Render2Select();
-}
-#endif
+

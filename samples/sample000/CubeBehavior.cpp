@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #include "CubeBehavior.h"
 #include "Render2TextureBehavior.h"
-
+#define ENABLED 1
 CubeBehavior::CubeBehavior()
 : x_angle_(0),
 y_angle_(0)
@@ -38,6 +38,7 @@ CubeBehavior::~CubeBehavior()
 
 void CubeBehavior::Start()
 {
+#if ENABLED    
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);
 
@@ -63,26 +64,26 @@ void CubeBehavior::Start()
 
     pSceneNode_->SetPosition(Vertex3(-5, 0, 0));
     pSceneNode_->SetScale(Vertex3(3,3,3));
+#endif    
 }
 
 void CubeBehavior::Update()
 {
+#if ENABLED    
     float deltaTime = App::this_->GetDeltaTime();
 
 	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
 	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
 
 	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+#endif    
 
 }
 
 void CubeBehavior::Render()
 {
+#if ENABLED    
 	//pSceneNode_->Render();
+#endif    
 }
-#if 0
-void CubeBehavior::Render2Select()
-{
-	pSceneNode_->Render2Select();
-}
-#endif
+

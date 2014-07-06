@@ -29,8 +29,20 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
+struct Statistics : public AppStatistics
+{
+    void StartGUIWindow()
+    {
+    }
+
+    void EndGUIWindow()
+    {
+    }
+};
+
 struct Sample : App
 {
+    Statistics statistics_;
     PCamera camera_;
     PSceneNode box_;
     PSceneNode sphere_;
@@ -52,6 +64,7 @@ struct Sample : App
         boxBehavior_ = new BoxBehavior;
         box_->SetBehavior(PBehavior(boxBehavior_));
         
+#if 1        
         sphere_ = PSceneNode(new SceneNode);
         sphereBehavior_ = new SphereBehavior;
         sphere_->SetBehavior(PBehavior(sphereBehavior_));
@@ -59,12 +72,13 @@ struct Sample : App
         technique_ = PTechnique(new Technique);
 
         showTexture_ = PShowTexture(new ShowTexture);
-
+#endif
         Behavior::StartAll();
-
+#if 1
         {
             //box passes
 
+            
             PPass2Texture pass2Texture(new Pass2Texture(boxBehavior_->renderedTexture_, true, false));
             technique_->Add(pass2Texture);
 
@@ -81,11 +95,13 @@ struct Sample : App
             pass01->Add(boxBehavior_->GetSceneNode(), boxBehavior_->mesh_);
             pass01->Set(boxBehavior_->material_);
             pass2Texture->Add(pass01);
-
-
+            
             PPassFilter filterPass(new PassFilter(boxBehavior_->filter_));
             technique_->Add(filterPass);
+            
+            
         }
+#endif        
 #if 1
         {
             //sphere passes
@@ -115,7 +131,7 @@ struct Sample : App
             PPassFilter passBlend(new PassFilter(sphereBehavior_->blendFilter_));
             technique_->Add(passBlend);
         }
-#endif
+
 
         blendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
         showTexture_->SetNormal(blendedTexture_);
@@ -125,7 +141,8 @@ struct Sample : App
         PFilter blendFilter(new FilterBlend(sphereBehavior_->blendedTexture_, boxBehavior_->filteredTexture_, blendedTexture_));
         PPassFilter passBlend(new PassFilter(blendFilter));
         technique_->Add(passBlend);
-    }
+#endif        
+     }
 
     void Update()
     {
@@ -135,8 +152,14 @@ struct Sample : App
 
     void RenderFrame()
     {
+        //Behavior::RenderAll();
         technique_->Render();
         showTexture_->Show();
+    }
+
+    void RenderGUIWindow()
+    {
+        //IMGUIWindow(&statistics_, 50, 75);
     }
 };
 

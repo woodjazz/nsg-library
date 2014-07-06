@@ -45,6 +45,9 @@ namespace NSG
 
 	IndexBuffer::~IndexBuffer()
 	{
+		if(GetIndexBuffer() == this)
+			SetIndexBuffer(nullptr);
+
 	}
 
 	void IndexBuffer::UnBind() 

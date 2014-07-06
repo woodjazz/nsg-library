@@ -206,6 +206,9 @@ namespace NSG
 		pVShader_ = nullptr;
 		pFShader_ = nullptr;
         glDeleteProgram(id_);
+        
+        if(GetProgram() == this)
+        	SetProgram(nullptr);
 	}
 
 	bool Program::Initialize()

@@ -76,13 +76,8 @@ void EarthBehavior::Update()
 
 void EarthBehavior::Render()
 {
-	//pSceneNode_->Render(true);
+	//pSceneNode_->Render();
 }
-#if 0
-void EarthBehavior::Render2Select()
-{
-	pSceneNode_->Render2Select();
-}
-#endif
+
 
 

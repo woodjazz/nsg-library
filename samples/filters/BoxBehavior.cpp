@@ -46,6 +46,10 @@ static const char* fShader = STRINGIFY(
 
 void BoxBehavior::Start()
 {
+    technique_ = PTechnique(new Technique);
+    PPass pass = PPass(new Pass);
+    technique_->Add(pass); 
+
 	controlPoints_.push_back(Vertex3(-5.0f, 0.0f, 0.0f)); 
     controlPoints_.push_back(Vertex3(0.0f, 0.0f, 5.0f));
 	controlPoints_.push_back(Vertex3(5.0f, 0.0f, 0.0f));
@@ -58,13 +62,18 @@ void BoxBehavior::Start()
     material_->SetProgram(unlit);
     PTexture texture(new TextureFile("cube.png"));
 	material_->SetTexture0(texture);
-
+#if 1
     renderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
 
     filteredTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
     filter_ = PFilter(new Filter(renderedTexture_, filteredTexture_, fShader));
-
+#endif
     pSceneNode_->SetScale(Vertex3(3,3,3));
+
+    
+    pass->Set(material_);
+    pass->Add(pSceneNode_, mesh_);
+               
 
 }
 
@@ -100,6 +109,11 @@ void BoxBehavior::Update()
         move += deltaTime * TWO_PI * 0.25f;  // 1/4 of a wave cycle per second
         filter_->GetMaterial()->SetShininess(move);
     }
+}
+
+void BoxBehavior::Render()
+{
+    technique_->Render();
 }
 
 

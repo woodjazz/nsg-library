@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include <string>
 #include <sstream>
 
+//#define ENABLED
 
 TextBehavior::TextBehavior()
 {
@@ -40,6 +41,7 @@ TextBehavior::~TextBehavior()
 
 void TextBehavior::Start()
 {
+#if ENABLED     
 	PNode pParent(new Node);
 	pSceneNode_->SetParent(pParent);
 
@@ -58,18 +60,21 @@ void TextBehavior::Start()
 
     showTexture_ = PShowTexture(new ShowTexture);
     showTexture_->SetFont(pText_->GetAtlas());
+#endif    
 }
 
 void TextBehavior::Update()
 {
 //    float deltaTime = App::this_->GetDeltaTime();
-
+#if ENABLED 
 	pSceneNode_->GetParent()->SetPosition(Vertex3(-pText_->GetWidth()/2, 0, 0.2f));
+#endif    
 
 }
 
 void TextBehavior::Render()
 {
+#if ENABLED     
 	Camera* pCamera = Camera::Deactivate();
 
 	pSceneNode_->Render();
@@ -77,6 +82,7 @@ void TextBehavior::Render()
 	Camera::Activate(pCamera);
 
     //showTexture_->Show();
+#endif    
 }
 
 void TextBehavior::OnMouseDown(float x, float y)

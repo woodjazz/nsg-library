@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Render2TextureBehavior.h"
-
+#define ENABLED 1
 Render2TextureBehavior::Render2TextureBehavior()
 {
 }
@@ -35,6 +35,7 @@ Render2TextureBehavior::~Render2TextureBehavior()
 
 void Render2TextureBehavior::Start()
 {
+#if ENABLED    
     pRenderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);
@@ -53,11 +54,14 @@ void Render2TextureBehavior::Start()
 
     showTexture_ = PShowTexture(new ShowTexture);
     showTexture_->SetNormal(pBlendedTexture_);
+#endif    
 }
 
 void Render2TextureBehavior::AddPass(PPass pass)
 {
+#if ENABLED 
     pass_->Add(pass);
+#endif
 }
 
 void Render2TextureBehavior::Update()
@@ -66,13 +70,9 @@ void Render2TextureBehavior::Update()
 
 void Render2TextureBehavior::Render()
 {
+#if ENABLED     
 	pSceneNode_->Render();
     showTexture_->Show();
+#endif    
 }
 
-#if 0
-void Render2TextureBehavior::Render2Select()
-{
-	//pSceneNode_->Render2Select();
-}
-#endif

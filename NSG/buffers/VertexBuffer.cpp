@@ -42,6 +42,8 @@ namespace NSG
 
 	VertexBuffer::~VertexBuffer()
 	{
+		if(GetVertexBuffer() == this)
+			SetVertexBuffer(nullptr);
 	}
 
 	bool VertexBuffer::ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)

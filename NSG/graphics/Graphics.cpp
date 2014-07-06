@@ -289,13 +289,12 @@ namespace NSG
 	    }
 	}
 
+	static Buffer* vertexBuffer_ = nullptr;
 	bool SetVertexBuffer(Buffer* buffer)
 	{
-		static Buffer* buffer_ = nullptr;
-
-		if(buffer != buffer_)
+		if(buffer != vertexBuffer_)
 		{
-            buffer_ = buffer;
+            vertexBuffer_ = buffer;
 
             if(buffer)
             {
@@ -307,13 +306,17 @@ namespace NSG
 		return false;
 	}
 
+	Buffer* GetVertexBuffer()
+	{
+		return vertexBuffer_;
+	}
+
+	static Buffer* indexBuffer_ = nullptr;
 	bool SetIndexBuffer(Buffer* buffer)
 	{
-		static Buffer* buffer_ = nullptr;
-
-		if(buffer != buffer_)
+		if(buffer != indexBuffer_)
 		{
-            buffer_ = buffer;
+            indexBuffer_ = buffer;
             if(buffer)
             {
 			    buffer->Bind();
@@ -325,10 +328,14 @@ namespace NSG
 		return false;
 	}
 
+	Buffer* GetIndexBuffer()
+	{
+		return indexBuffer_;
+	}
+
+	static Program* program_ = nullptr;
 	void SetProgram(Program* program)
 	{
-		static Program* program_ = nullptr;
-
 		if(program != program_)
 		{
             program_ = program;
@@ -341,6 +348,11 @@ namespace NSG
                 glUseProgram(0);
             }
 		}
+	}
+
+	Program* GetProgram()
+	{
+		return program_;
 	}
 
 }
