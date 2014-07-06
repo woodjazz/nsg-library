@@ -38,7 +38,8 @@ namespace NSG
 	yo_(0),
 	xf_(1),
 	yf_(1),
-	isOrtho_(false)
+	isOrtho_(false),
+	dirty_(true)
 	{
 	}
 

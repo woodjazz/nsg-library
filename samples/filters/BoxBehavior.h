@@ -36,7 +36,7 @@ struct BoxBehavior : Behavior
     std::deque<Vertex3> controlPoints_;
     PBoxMesh mesh_;
     PMaterial material_;
-    PTechnique technique_;
+    //PTechnique technique_;
 
 	void Start();
 	void Update();
