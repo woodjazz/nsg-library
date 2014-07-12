@@ -40,8 +40,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Button::Button(GLushort id, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY, bool keepAspectRatio)
-			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY, keepAspectRatio),
+		Button::Button(GLushort id, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY)
+			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength)),
 		pressed_(false)

@@ -36,7 +36,7 @@ namespace NSG
 		class Text : public Object
 		{
 		public:
-			Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY, bool keepAspectRatio);
+			Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY);
 			~Text();
 			std::string Render();
 			void OnActive();

@@ -29,24 +29,24 @@ misrepresented as being the original software.
 #include <string>
 namespace NSG
 {
-	namespace IMGUI
-	{
-		class Button : public Object
-		{
-		public:
-			Button(GLushort id, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY, bool keepAspectRatio);
+    namespace IMGUI
+    {
+        class Button : public Object
+        {
+        public:
+            Button(GLushort id, const std::string &text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY);
             ~Button();
-			bool Render();
-			void OnKey(int key);
-			void OnActive();
-			void OnHot();
-			void OnFocus(bool needsKeyboard);
-			void UpdateControl();
-		protected:
-			std::string currentText_;
-			PTextMesh pTextMesh_;
-		private:			
-			bool pressed_;
-		};
-	}
+            bool Render();
+            void OnKey(int key);
+            void OnActive();
+            void OnHot();
+            void OnFocus(bool needsKeyboard);
+            void UpdateControl();
+        protected:
+            std::string currentText_;
+            PTextMesh pTextMesh_;
+        private:
+            bool pressed_;
+        };
+    }
 }

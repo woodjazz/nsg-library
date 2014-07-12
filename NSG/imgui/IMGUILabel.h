@@ -34,7 +34,7 @@ namespace NSG
 		class Label : public Object
 		{
 		public:
-			Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio);
+			Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY);
 			~Label();
 			void Render();
 			void UpdateControl();

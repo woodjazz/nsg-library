@@ -38,18 +38,18 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		void BeginHorizontal_(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
+		void BeginHorizontal_(GLushort id, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->BeginHorizontalArea(id, percentageX, percentageY, keepAspectRatio);
+			Context::this_->pLayoutManager_->BeginHorizontalArea(id, percentageX, percentageY);
 		}
 
-		void BeginVertical_(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
+		void BeginVertical_(GLushort id, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->BeginVerticalArea(id, percentageX, percentageY, keepAspectRatio);
+			Context::this_->pLayoutManager_->BeginVerticalArea(id, percentageX, percentageY);
 		}
 
 		float EndArea_(float scroll)
@@ -57,47 +57,47 @@ namespace NSG
 			return Context::this_->pLayoutManager_->EndArea(scroll);
 		}
 
-		void Spacer_(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
+		void Spacer_(GLushort id, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->Spacer(id, percentageX, percentageY, keepAspectRatio);
+			Context::this_->pLayoutManager_->Spacer(id, percentageX, percentageY);
 		}
 
-		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
+		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Button obj(id, text, maxLength, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY, keepAspectRatio);
+			Button obj(id, text, maxLength, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY);
 			
 			bool result = obj.Render();
 
 			return result;
 		}		
 
-		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
+		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Label obj(id, text, maxLength, percentageX, percentageY, keepAspectRatio);
+			Label obj(id, text, maxLength, percentageX, percentageY);
 
 			obj.Render();
 		}
 
-		void Title_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
+		void Title_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Title obj(id, text, maxLength, percentageX, percentageY, keepAspectRatio);
+			Title obj(id, text, maxLength, percentageX, percentageY);
 
 			obj.Render();
 		}
 
-		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY, bool keepAspectRatio)
+		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY)
 		{	
 			id = Context::this_->GetValidId(id);
 
-			Text obj(id, text, maxLength, pRegex, percentageX, percentageY, keepAspectRatio);
+			Text obj(id, text, maxLength, pRegex, percentageX, percentageY);
 
 			std::string result = obj.Render();
 
@@ -114,9 +114,9 @@ namespace NSG
 			return Context::this_->pCurrentNode_;	
 		}
 
-		void Window_(GLushort id, IWindow* obj, int percentageX, int percentageY, bool keepAspectRatio)
+		void Window_(GLushort id, IWindow* obj, int percentageX, int percentageY)
 		{
-			Context::this_->pLayoutManager_->Window(id, obj, percentageX, percentageY, keepAspectRatio);
+			Context::this_->pLayoutManager_->Window(id, obj, percentageX, percentageY);
 		}
 
 		bool IsReady()

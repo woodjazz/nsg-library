@@ -34,7 +34,7 @@ namespace NSG
 		class Sizer : public Object
 		{
 		public:
-			Sizer(GLushort id, SizerType type, int percentageX, int percentageY, bool keepAspectRatio);
+			Sizer(GLushort id, SizerType type, int percentageX, int percentageY);
 			~Sizer();
 			void Render();
 			void UpdateControl();

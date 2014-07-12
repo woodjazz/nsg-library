@@ -28,32 +28,32 @@ misrepresented as being the original software.
 #include "Types.h"
 namespace NSG
 {
-	namespace IMGUI
-	{
-		class Area : public Object
-		{
-		public:
-			Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio);
+    namespace IMGUI
+    {
+        class Area : public Object
+        {
+        public:
+            Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY);
             ~Area();
-			void Render();
-			PTechnique GetNormalTechnique() const;
-			void SetScroll(float scroll);
-			float GetScroll() const;
-			void UpdateControl();
+            void Render();
+            PTechnique GetNormalTechnique() const;
+            void SetScroll(float scroll);
+            float GetScroll() const;
+            void UpdateControl();
 
-		protected:
-			void UpdateScrolling();
-
-		private:
-			void RenderSlider();
-			bool HandleVerticalSlider(float maxPosY, float& yPosition);
-			bool HandleHorizontalSlider(float maxPosX, float& xPosition);
+        protected:
+            void UpdateScrolling();
 
         private:
-            GLushort& lastSliderHit_;
-            PTechnique& sliderTechnique_;
+            void RenderSlider();
+            bool HandleVerticalSlider(float maxPosY, float &yPosition);
+            bool HandleHorizontalSlider(float maxPosX, float &xPosition);
+
+        private:
+            GLushort &lastSliderHit_;
+            PTechnique &sliderTechnique_;
             float maxPosX_;
             float maxPosY_;
-		};
-	}
+        };
+    }
 }

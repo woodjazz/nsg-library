@@ -31,8 +31,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Sizer::Sizer(GLushort id, SizerType type, int percentageX, int percentageY, bool keepAspectRatio)
-		: Object(id, LayoutType::CONTROL, false, percentageX, percentageY, keepAspectRatio),
+		Sizer::Sizer(GLushort id, SizerType type, int percentageX, int percentageY)
+		: Object(id, LayoutType::CONTROL, false, percentageX, percentageY),
 		type_(type)
 		{
 			switch(type_)

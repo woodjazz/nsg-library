@@ -33,7 +33,7 @@ namespace NSG
 		class Object
 		{
 		public:
-			Object(GLushort id, LayoutType type, bool isWindow, int percentageX, int percentageY, bool keepAspectRatio);
+			Object(GLushort id, LayoutType type, bool isWindow, int percentageX, int percentageY);
 			~Object();
 			bool IsReady() const;
 			void Draw();
@@ -89,7 +89,6 @@ namespace NSG
 			GLushort& lastwidget_;
 			bool& activeitem_needs_keyboard_;	
 			std::pair<int32_t, int32_t> viewSize_;
-			bool keepAspectRatio_;
 
 		};
 	}

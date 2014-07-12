@@ -34,7 +34,7 @@ namespace NSG
 		class Window : public Area
 		{
 		public:
-			Window(IWindow* userWindow, GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
+			Window(IWindow* userWindow, GLushort id, int percentageX, int percentageY);
             ~Window();
 			void Render();
 			void BeginRenderUserWindow();

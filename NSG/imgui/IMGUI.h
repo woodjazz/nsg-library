@@ -27,32 +27,32 @@ misrepresented as being the original software.
 #include "Types.h"
 #include <regex>
 
-namespace NSG 
+namespace NSG
 {
-	namespace IMGUI
-	{
-		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
-		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
-		void Title_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
-		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
-		void BeginHorizontal_(GLushort id, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
-		void BeginVertical_(GLushort id, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
-		float EndArea_(float scroll = -1);
-		void Spacer_(GLushort id, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
-		PSkin& Skin_();
-		PNode& Node_();
+    namespace IMGUI
+    {
+        bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
+        void Label_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
+        void Title_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
+        std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX = 0, int percentageY = 0);
+        void BeginHorizontal_(GLushort id, int percentageX = 0, int percentageY = 0);
+        void BeginVertical_(GLushort id, int percentageX = 0, int percentageY = 0);
+        float EndArea_(float scroll = -1);
+        void Spacer_(GLushort id, int percentageX = 0, int percentageY = 0);
+        PSkin& Skin_();
+        PNode& Node_();
 
         struct IWindow
         {
-        	virtual ~IWindow() {};
-        	virtual void StartGUIWindow() {};
-			virtual void RenderGUIWindow() {};
-        	virtual void EndGUIWindow() {};
+            virtual ~IWindow() {};
+            virtual void StartGUIWindow() {};
+            virtual void RenderGUIWindow() {};
+            virtual void EndGUIWindow() {};
         };
-		
-		void Window_(GLushort id, IWindow* obj, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
-		
-		bool IsReady();
+
+        void Window_(GLushort id, IWindow* obj, int percentageX = 0, int percentageY = 0);
+
+        bool IsReady();
         void OnMouseMove(float x, float y);
         void OnMouseDown(float x, float y);
         void OnMouseWheel(float x, float y);
@@ -60,7 +60,7 @@ namespace NSG
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void DoTick();
-	}
+    }
 }
 #define IMGUICOUNTER __COUNTER__ + IMGUI::IMGUI_FIRST_VALID_ID //first positions are reserved
 #define IMGUIButton(maxLength, text, ...) IMGUI::Button_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )

@@ -46,13 +46,13 @@ namespace NSG
 	{
 		static const Vertex3 AREA_SCREEN_SIZE(2,2,1); //default area size in screen coordinates
 
-		Object::Object(GLushort id, LayoutType type, bool isWindow, int percentageX, int percentageY, bool keepAspectRatio)
+		Object::Object(GLushort id, LayoutType type, bool isWindow, int percentageX, int percentageY)
 		: id_(id),
 		uistate_(*Context::this_->state_),
 		skin_(*Context::this_->pSkin_),
 		layoutManager_(*Context::this_->pLayoutManager_),
 		currentWindowManager_(layoutManager_.GetCurrentWindowManager()),
-		area_(layoutManager_.GetAreaForControl(id, type, percentageX, percentageY, keepAspectRatio)),
+		area_(layoutManager_.GetAreaForControl(id, type, percentageX, percentageY)),
 		lastTitleHit_(uistate_.lastTitleHit_),
 		lastSizerHit_(uistate_.lastSizerHit_),
         node_(area_->pNode_),
@@ -75,8 +75,7 @@ namespace NSG
 		kbditem_(currentWindowManager_->kbditem_),
 		lastwidget_(currentWindowManager_->lastwidget_),
 		activeitem_needs_keyboard_(uistate_.activeitem_needs_keyboard_),
-		viewSize_(App::this_->GetViewSize()),
-		keepAspectRatio_(keepAspectRatio)
+		viewSize_(App::this_->GetViewSize())
 		{
 			CHECK_ASSERT(node_, __FILE__, __LINE__);
 		}

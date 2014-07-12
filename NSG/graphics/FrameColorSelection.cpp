@@ -39,38 +39,38 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	FrameColorSelection::FrameColorSelection(bool createDepthBuffer, bool createDepthStencilBuffer)
-	: material_(new Material),
-    pass_(new Pass),
-    windowWidth_(0),
-    windowHeight_(0),
-	pixelX_(0),
-	pixelY_(0),
-    createDepthBuffer_(createDepthBuffer),
-    createDepthStencilBuffer_(createDepthStencilBuffer)
-	{
-        Program* program = new ProgramColorSelection;
+    FrameColorSelection::FrameColorSelection(bool createDepthBuffer, bool createDepthStencilBuffer)
+        : material_(new Material),
+          pass_(new Pass),
+          windowWidth_(0),
+          windowHeight_(0),
+          pixelX_(0),
+          pixelY_(0),
+          createDepthBuffer_(createDepthBuffer),
+          createDepthStencilBuffer_(createDepthStencilBuffer)
+    {
+        Program *program = new ProgramColorSelection;
         material_->SetProgram(PProgram(program));
         pass_->Set(material_);
         pass_->SetBlendMode(BLEND_NONE);
-	}
+    }
 
-	FrameColorSelection::~FrameColorSelection()
-	{
+    FrameColorSelection::~FrameColorSelection()
+    {
         Context::this_->Remove(this);
-	}
+    }
 
-	bool FrameColorSelection::IsValid()
+    bool FrameColorSelection::IsValid()
     {
         return material_->IsReady();
     }
 
-	void FrameColorSelection::AllocateResources()
+    void FrameColorSelection::AllocateResources()
     {
         auto windowSize = App::this_->GetViewSize();
-        
+
         windowWidth_ = windowSize.first;
-        
+
         windowHeight_ = windowSize.second;
 
         CHECK_ASSERT(windowWidth_ > 0 && windowHeight_ > 0, __FILE__, __LINE__);
@@ -89,26 +89,26 @@ namespace NSG
             glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
 #if defined(GLES2)
             glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, windowWidth_, windowHeight_);
-#else                
+#else
             glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, windowWidth_, windowHeight_);
-#endif  
+#endif
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
         }
 
-        if(createDepthStencilBuffer_)
+        if (createDepthStencilBuffer_)
         {
             // The depth stencil buffer
             glGenRenderbuffers(1, &depthStencilRenderBuffer_);
             glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
-        #if defined(GLES2)            
+#if defined(GLES2)
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, windowWidth_, windowHeight_);
-        #else
+#else
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_EXT, windowWidth_, windowHeight_);
-        #endif
+#endif
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
         }
-        else if(createDepthBuffer_)
+        else if (createDepthBuffer_)
         {
             // The depth buffer
             glGenRenderbuffers(1, &depthRenderBuffer_);
@@ -120,7 +120,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if(GL_FRAMEBUFFER_COMPLETE != status)
+        if (GL_FRAMEBUFFER_COMPLETE != status)
         {
             TRACE_LOG("Frame buffer failed with error = 0x" << std::hex << status);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
@@ -129,11 +129,11 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-	void FrameColorSelection::ReleaseResources()
+    void FrameColorSelection::ReleaseResources()
     {
-        if(createDepthStencilBuffer_)
+        if (createDepthStencilBuffer_)
             glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
-        else if(createDepthBuffer_)
+        else if (createDepthBuffer_)
             glDeleteRenderbuffers(1, &depthRenderBuffer_);
 
         glDeleteRenderbuffers(1, &colorRenderbuffer_);
@@ -144,15 +144,15 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        pixelX_ = (GLint)((1 + screenX)/2.0f * windowWidth_);
-        pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
+        pixelX_ = (GLint)((1 + screenX) / 2.0f * windowWidth_);
+        pixelY_ = (GLint)((1 + screenY) / 2.0f * windowHeight_);
 
         SetFrameBuffer(framebuffer_);
         ClearBuffers(true, false, false);
 
 #ifndef ANDROID
         glEnable(GL_SCISSOR_TEST);
-        glScissor(pixelX_,pixelY_,1,1);
+        glScissor(pixelX_, pixelY_, 1, 1);
 #endif
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
@@ -166,7 +166,7 @@ namespace NSG
 
 #ifndef ANDROID
         glDisable(GL_SCISSOR_TEST);
-#endif        
+#endif
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
@@ -186,38 +186,38 @@ namespace NSG
         color[0] = (id & 0x000F) / 15.0f;
         color[1] = ((id & 0x00F0) >> 4) / 15.0f;
         color[2] = ((id & 0x0F00) >> 8) / 15.0f;
-        color[3] = ((id & 0xF000) >> 12)/ 15.0f;
+        color[3] = ((id & 0xF000) >> 12) / 15.0f;
         return color;
     }
 
-    bool FrameColorSelection::Render(GLushort id, float screenX, float screenY, Technique* technique)
+    bool FrameColorSelection::Render(GLushort id, float screenX, float screenY, Technique *technique)
     {
-        if(IsReady())
+        if (IsReady())
         {
             CHECK_ASSERT(technique, __FILE__, __LINE__);
 
             Begin(screenX, screenY);
             {
-                Mesh* lastMesh = nullptr;
-			    Node* lastNode = nullptr;
+                Mesh *lastMesh = nullptr;
+                Node *lastNode = nullptr;
 
                 material_->SetColor(TransformSelectedId2Color(id));
 
-                const PASSES& passes = technique->GetPasses();
+                const PASSES &passes = technique->GetPasses();
                 auto it = passes.begin();
-                while(it != passes.end())
+                while (it != passes.end())
                 {
                     PPass pass = *(it++);
-                    if(pass)
+                    if (pass)
                     {
-                        const MESHNODES& meshNodes = pass->GetMeshNodes();
+                        const MESHNODES &meshNodes = pass->GetMeshNodes();
                         auto meshNodeIt = meshNodes.begin();
-                        while(meshNodeIt != meshNodes.end())
+                        while (meshNodeIt != meshNodes.end())
                         {
-                            Mesh* mesh = meshNodeIt->second.get();
-                            Node* node = meshNodeIt->first.get();
+                            Mesh *mesh = meshNodeIt->second.get();
+                            Node *node = meshNodeIt->first.get();
 
-                            if(lastMesh != mesh || lastNode != node) // optimization to not render always the same
+                            if (lastMesh != mesh || lastNode != node) // optimization to not render always the same
                             {
                                 pass_->ClearMeshNodes();
                                 pass_->Add(node, meshNodeIt->second);
@@ -236,9 +236,9 @@ namespace NSG
         return false;
     }
 
-    bool FrameColorSelection::Hit(GLushort id, float screenX, float screenY, Technique* technique)
+    bool FrameColorSelection::Hit(GLushort id, float screenX, float screenY, Technique *technique)
     {
-        if(Render(id, screenX, screenY, technique))
+        if (Render(id, screenX, screenY, technique))
             return id == GetSelected();
 
         return false;
@@ -246,7 +246,7 @@ namespace NSG
 
     void FrameColorSelection::ClearDepthStencil()
     {
-        if(IsReady())
+        if (IsReady())
         {
             SetFrameBuffer(framebuffer_);
             ClearBuffers(false, true, true);

@@ -33,8 +33,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Title::Title(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
-			: Label(id, text, maxLength, percentageX, percentageY, keepAspectRatio)
+		Title::Title(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
+			: Label(id, text, maxLength, percentageX, percentageY)
 		{
 		}
 

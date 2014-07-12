@@ -46,8 +46,8 @@ namespace NSG
 		static const float TITLE_WIDTH = 30; //pixels 
 		static const float SIZER_WIDTH = 10; //pixels 
 
-		Window::Window(IWindow* userWindow, GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
-			: Area(id, true, LayoutType::VERTICAL, percentageX, percentageY, keepAspectRatio),
+		Window::Window(IWindow* userWindow, GLushort id, int percentageX, int percentageY)
+			: Area(id, true, LayoutType::VERTICAL, percentageX, percentageY),
         userWindow_(userWindow),
 		sizerSizeX_(PIXELS2PERCENTAGEX(SIZER_WIDTH)),
 		longSizerSizeX_(100 - 2 * sizerSizeX_),
@@ -83,41 +83,41 @@ namespace NSG
 			if (userWindow_ == App::this_)
 				return;
 
-			layoutManager_.BeginHorizontalArea(id_ + IMGUI_WINDOW_AREA_ID0, 100, sizerSizeY_, keepAspectRatio_);
+			layoutManager_.BeginHorizontalArea(id_ + IMGUI_WINDOW_AREA_ID0, 100, sizerSizeY_);
 			{
 				{
-					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID1, LEFT_TOP_SIZER, sizerSizeX_, 100, true);
+					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID1, LEFT_TOP_SIZER, sizerSizeX_, 100);
 					obj.Render();
 				}
 
 				{
-					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID2, TOP_SIZER, longSizerSizeX_, 100, true);
+					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID2, TOP_SIZER, longSizerSizeX_, 100);
 					obj.Render();
 				}
 
 				{
-					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID3, RIGHT_TOP_SIZER, sizerSizeX_, 100, true);
+					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID3, RIGHT_TOP_SIZER, sizerSizeX_, 100);
 					obj.Render();
 				}
 			}
 			layoutManager_.EndArea(-1);
 
-			layoutManager_.BeginHorizontalArea(id_ + IMGUI_WINDOW_AREA_ID4, 100, longSizerSizeY_, keepAspectRatio_);
+			layoutManager_.BeginHorizontalArea(id_ + IMGUI_WINDOW_AREA_ID4, 100, longSizerSizeY_);
 			{
 				{
-					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID5, LEFT_SIZER, sizerSizeX_, 100, keepAspectRatio_);
+					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID5, LEFT_SIZER, sizerSizeX_, 100);
 					obj.Render();
 				}
 
-				layoutManager_.BeginVerticalArea(id_ + IMGUI_WINDOW_AREA_ID6, longSizerSizeX_, 100, keepAspectRatio_);
+				layoutManager_.BeginVerticalArea(id_ + IMGUI_WINDOW_AREA_ID6, longSizerSizeX_, 100);
 
 				float titlePercentage = PIXELS2PERCENTAGEY(TITLE_WIDTH);
 				{
-					Title obj(id_ + IMGUI_WINDOW_AREA_ID7, "Title", 10, 100, titlePercentage, true);
+					Title obj(id_ + IMGUI_WINDOW_AREA_ID7, "Title", 10, 100, titlePercentage);
 					obj.Render();				
 				}
 
-				layoutManager_.BeginVerticalArea(id_ + IMGUI_WINDOW_AREA_ID8, 100, 100 - titlePercentage, keepAspectRatio_);
+				layoutManager_.BeginVerticalArea(id_ + IMGUI_WINDOW_AREA_ID8, 100, 100 - titlePercentage);
 
 			}
 		}
@@ -132,26 +132,26 @@ namespace NSG
 			layoutManager_.EndArea(-1); // Vertical
 
 			{
-				Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_ID9), RIGHT_SIZER, sizerSizeX_, 100, true);
+				Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_ID9), RIGHT_SIZER, sizerSizeX_, 100);
 				obj.Render();
 			}
 			
 			layoutManager_.EndArea(-1); // Horizontal
 
-			layoutManager_.BeginHorizontalArea(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDA), 100, sizerSizeY_, keepAspectRatio_);
+			layoutManager_.BeginHorizontalArea(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDA), 100, sizerSizeY_);
 			{
 				{
-					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDB), LEFT_BOTTOM_SIZER, sizerSizeX_, 100, true);
+					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDB), LEFT_BOTTOM_SIZER, sizerSizeX_, 100);
 					obj.Render();
 				}
 
 				{
-					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDC), BOTTOM_SIZER, longSizerSizeX_, 100, true);
+					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDC), BOTTOM_SIZER, longSizerSizeX_, 100);
 					obj.Render();
 				}
 
 				{
-					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDD), RIGHT_BOTTOM_SIZER, sizerSizeX_, 100, true);
+					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDD), RIGHT_BOTTOM_SIZER, sizerSizeX_, 100);
 					obj.Render();
 				}
 			}

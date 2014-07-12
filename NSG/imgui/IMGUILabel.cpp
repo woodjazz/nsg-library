@@ -38,8 +38,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Label::Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
-			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY, keepAspectRatio),
+		Label::Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
+			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength))
 		{
 			pTextMesh_->SetText(text, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);

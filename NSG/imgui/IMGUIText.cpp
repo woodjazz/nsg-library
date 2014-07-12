@@ -41,8 +41,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Text::Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY, bool keepAspectRatio)
-			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY, keepAspectRatio),
+		Text::Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY)
+			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength)),
         pCursorMesh_(Context::this_->GetCurrentTextMesh(-1, 1)),
