@@ -33,9 +33,9 @@ namespace NSG
 	class VertexBuffer : public Buffer
 	{
 	public:
-		VertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid *data, GLenum usage);
+		VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage);
 		~VertexBuffer();
-		bool ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
+		bool AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes);
 		void UpdateData(Buffer::Data& obj, const VertexsData& vertexes);
 		static void UnBind();
 	};

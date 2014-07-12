@@ -34,24 +34,22 @@ namespace NSG
 		class Window : public Area
 		{
 		public:
-			Window(IWindow* userWindow, GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY);
+			Window(IWindow* userWindow, GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
             ~Window();
-			void operator()();
+			void Render();
+			void BeginRenderUserWindow();
+			void EndRenderUserWindow();
 			void UpdateControl();
-			PTechnique GetActiveTechnique() const;
-			PTechnique GetHotTechnique() const;
 			PTechnique GetNormalTechnique() const;
-			float GetTopPosition() const;
 
 		private:
 			void RenderTitle();
 			void RenderBorder();
-			PTechnique& titleTechnique_;
-			PTechnique& borderTechnique_;
-			bool showTitle_;
-			bool showBorder_;
-			std::pair<int32_t, int32_t> viewSize_;
 			IWindow* userWindow_;
+			int sizerSizeX_;
+			int longSizerSizeX_;
+			int sizerSizeY_;
+			int longSizerSizeY_;
 		};
 
 	}

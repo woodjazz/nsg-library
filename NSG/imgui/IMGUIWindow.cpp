@@ -27,7 +27,10 @@ misrepresented as being the original software.
 #include "IMGUI.h"
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
+#include "IMGUILabel.h"
 #include "IMGUIState.h"
+#include "IMGUITitle.h"
+#include "IMGUISizer.h"
 #include "IMGUILayoutManager.h"
 #include "FrameColorSelection.h"
 #include "Node.h"
@@ -40,123 +43,119 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		static const float TITLE_HEIGHT = 25; //pixels 
+		static const float TITLE_WIDTH = 30; //pixels 
+		static const float SIZER_WIDTH = 10; //pixels 
 
-		Window::Window(IWindow* userWindow, GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY)
-		: Area(id, true, LayoutType::Vertical, percentageX, percentageY),
-		titleTechnique_(Context::this_->pSkin_->titleTechnique_),
-		borderTechnique_(Context::this_->pSkin_->borderTechnique_),
-		showTitle_(showTitle),
-		showBorder_(showBorder),
-        viewSize_(App::this_->GetViewSize()),
-        userWindow_(userWindow)
+		Window::Window(IWindow* userWindow, GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
+			: Area(id, true, LayoutType::VERTICAL, percentageX, percentageY, keepAspectRatio),
+        userWindow_(userWindow),
+		sizerSizeX_(PIXELS2PERCENTAGEX(SIZER_WIDTH)),
+		longSizerSizeX_(100 - 2 * sizerSizeX_),
+		sizerSizeY_(PIXELS2PERCENTAGEY(SIZER_WIDTH)),
+		longSizerSizeY_(100 - 2 * sizerSizeY_)
 		{
-
 		}
 
 	    Window::~Window()
 	    {
-	    	if(IsReady())
-	    	{
-			    if(showTitle_)
-			    {
-					Node node;
-					node.SetParent(area_->pNode_);
-			        Vertex3 windowScale = area_->pNode_->GetScale();
-			        float yScale = TITLE_HEIGHT/((float)viewSize_.second * windowScale.y);
-					node.SetScale(Vertex3(1, yScale, 1));
-
-			        float ypos = 1 - yScale;
-
-					node.SetPosition(Vertex3(0,ypos,0));
-					titleTechnique_->Set(&node);
-					RenderTitle();
-
-					if(layoutManager_.IsCurrentWindowActive() && mousedown_)
-					{
-				    	if(node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0)) || lastTitleHit_ == id_)
-				    	{
-							lastTitleHit_ = id_;
-				    		Vertex3 position = area_->pNode_->GetPosition();
-				    		position.x += mouseRelX_;
-				    		position.y += mouseRelY_;
-				    		area_->pNode_->SetPosition(position);
-				    	}
-				    }
-				}
-#if 1
-				if(showBorder_)
-				{
-					borderTechnique_->Set(area_->pNode_);
-					RenderBorder();
-				}
-#endif
-			}
 	    }
-
-		float Window::GetTopPosition() const
-		{
-			if(showTitle_)
-			{
-	            Vertex3 windowScale = area_->pNode_->GetScale();
-	            float yScale = TITLE_HEIGHT/((float)viewSize_.second*windowScale.y);
-				return 1-(2*yScale);
-			}
-			else
-			{
-				return 1;
-			}
-		}
 
 	    void Window::UpdateControl()
 	    {
+			Area::UpdateControl();
 	    }
 
-		void Window::RenderTitle()
-		{
-			size_t nPasses = titleTechnique_->GetNumPasses();
-			for(size_t i=0; i<nPasses; i++)
-			{
-            	PPass pass = titleTechnique_->GetPass(i);
-                pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        	    pass->SetStencilFunc(GL_ALWAYS, 0, 0);
-	        }
-
-		    titleTechnique_->Render();
-		}
-
-		void Window::RenderBorder()
-		{
-			size_t nPasses = borderTechnique_->GetNumPasses();
-			for(size_t i=0; i<nPasses; i++)
-			{
-            	PPass pass = borderTechnique_->GetPass(i);
-                pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        	    pass->SetStencilFunc(GL_ALWAYS, 0, 0);
-	        }
-
-		    borderTechnique_->Render();
-		}
-
-		void Window::operator()()
+		void Window::Render()
 		{
 			Update();
 		}
 
-		PTechnique Window::GetActiveTechnique() const
-		{
-			return Context::this_->pSkin_->windowTechnique_;
-		}
-
-		PTechnique Window::GetHotTechnique() const
-		{
-			return Context::this_->pSkin_->windowTechnique_;
-		}
-
 		PTechnique Window::GetNormalTechnique() const
 		{
-			return Context::this_->pSkin_->windowTechnique_;
+			if(userWindow_ == App::this_)
+				return skin_.mainWindowTechnique_;
+
+			return skin_.windowTechnique_;
 		}
 
+		void Window::BeginRenderUserWindow()
+		{
+			if (userWindow_ == App::this_)
+				return;
+
+			layoutManager_.BeginHorizontalArea(id_ + IMGUI_WINDOW_AREA_ID0, 100, sizerSizeY_, keepAspectRatio_);
+			{
+				{
+					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID1, LEFT_TOP_SIZER, sizerSizeX_, 100, true);
+					obj.Render();
+				}
+
+				{
+					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID2, TOP_SIZER, longSizerSizeX_, 100, true);
+					obj.Render();
+				}
+
+				{
+					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID3, RIGHT_TOP_SIZER, sizerSizeX_, 100, true);
+					obj.Render();
+				}
+			}
+			layoutManager_.EndArea(-1);
+
+			layoutManager_.BeginHorizontalArea(id_ + IMGUI_WINDOW_AREA_ID4, 100, longSizerSizeY_, keepAspectRatio_);
+			{
+				{
+					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID5, LEFT_SIZER, sizerSizeX_, 100, keepAspectRatio_);
+					obj.Render();
+				}
+
+				layoutManager_.BeginVerticalArea(id_ + IMGUI_WINDOW_AREA_ID6, longSizerSizeX_, 100, keepAspectRatio_);
+
+				float titlePercentage = PIXELS2PERCENTAGEY(TITLE_WIDTH);
+				{
+					Title obj(id_ + IMGUI_WINDOW_AREA_ID7, "Title", 10, 100, titlePercentage, true);
+					obj.Render();				
+				}
+
+				layoutManager_.BeginVerticalArea(id_ + IMGUI_WINDOW_AREA_ID8, 100, 100 - titlePercentage, keepAspectRatio_);
+
+			}
+		}
+
+		void Window::EndRenderUserWindow()
+		{
+			if (userWindow_ == App::this_)
+				return;
+
+			layoutManager_.EndArea(-1); // Vertical
+
+			layoutManager_.EndArea(-1); // Vertical
+
+			{
+				Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_ID9), RIGHT_SIZER, sizerSizeX_, 100, true);
+				obj.Render();
+			}
+			
+			layoutManager_.EndArea(-1); // Horizontal
+
+			layoutManager_.BeginHorizontalArea(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDA), 100, sizerSizeY_, keepAspectRatio_);
+			{
+				{
+					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDB), LEFT_BOTTOM_SIZER, sizerSizeX_, 100, true);
+					obj.Render();
+				}
+
+				{
+					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDC), BOTTOM_SIZER, longSizerSizeX_, 100, true);
+					obj.Render();
+				}
+
+				{
+					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDD), RIGHT_BOTTOM_SIZER, sizerSizeX_, 100, true);
+					obj.Render();
+				}
+			}
+			layoutManager_.EndArea(-1); // Horizontal
+		}
 	}
 }

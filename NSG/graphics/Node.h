@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "GLES2Includes.h"
 #include "Types.h"
-#include <set>
+#include <vector>
 
 namespace NSG
 {
@@ -59,10 +59,12 @@ namespace NSG
 		const Vertex3& GetLookAtDirection() const;
 		void SetInheritScale(bool inherit);
 		bool IsPointInsideBB(const Vertex3& point) const;
+		Node* GetChild(size_t idx) const { return children_.at(idx); }
     protected:
 		PNode pParent_;
-        std::set<Node*> children_;
+        std::vector<Node*> children_;
 	private:
+		void RemoveFromParent();
 		void MarkAsDirty();
 		void Update(bool updateChildren = true) const;
 		GLushort id_;	

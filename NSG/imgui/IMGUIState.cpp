@@ -45,17 +45,14 @@ namespace NSG
             mouseup_(false),
             mouseRelX_(0),
             mouseRelY_(0),
-            hotitem_(-1),
-			activeitem_(-1),
-			kbditem_(-1),
             keyentered_(0),
             keymod_(0),
             keyaction_(0),
             character_(0),
-            lastwidget_(0),
             activeitem_needs_keyboard_(false),
             lastSliderHit_(IMGUI_UNKNOWN_ID),
             lastTitleHit_(IMGUI_UNKNOWN_ID),
+            lastSizerHit_(IMGUI_UNKNOWN_ID),
             activeScrollArea_(IMGUI_UNKNOWN_ID),
             tick_(0),
             mouseRelDownX_(0),
@@ -100,7 +97,7 @@ namespace NSG
         	mousedown_ = false;
             mouseup_ = true;
 
-            lastTitleHit_ = lastSliderHit_ = IMGUI_UNKNOWN_ID;
+            lastSizerHit_ = lastTitleHit_ = lastSliderHit_ = IMGUI_UNKNOWN_ID;
 
         }
 
@@ -142,7 +139,6 @@ namespace NSG
 
         void State::Begin()
         {
-            hotitem_ = 0;
         }
 
         void State::End()
@@ -153,6 +149,12 @@ namespace NSG
 
             mouseRelDownX_ = mousex_;
             mouseRelDownY_ = mousey_;
+/*
+			if (Context::this_->pLayoutManager_->GetCurrentWindowManager()->activeitem_ == GLushort(-1))
+            {
+                activeitem_needs_keyboard_ = false;
+            }
+
             
             if(!activeitem_needs_keyboard_)
             {
@@ -161,25 +163,7 @@ namespace NSG
                     Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
                 }
             }
-
-            if(!mousedown_)
-            {
-                activeitem_ = GLushort(-1);
-            }
-            else
-            {
-                if(activeitem_ == GLushort(-1))
-                {
-                    activeitem_needs_keyboard_ = false;
-                }
-            }
-
-            // If no widget grabbed tab, clear focus
-            if (!Context::this_->IsReady())
-                kbditem_ = 0;
-            else if(keyentered_ == NSG_KEY_TAB && !keymod_)
-                kbditem_ = 0;
-    
+*/
             // Clear the entered key
             keyentered_ = 0;    
             character_ = 0; 

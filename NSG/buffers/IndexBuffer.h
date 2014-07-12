@@ -33,10 +33,10 @@ namespace NSG
 	class IndexBuffer : public Buffer
 	{
 	public:
-		IndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLenum usage);
+		IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage);
 		~IndexBuffer();
 		static void UnBind();
-		bool ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
-		void UpdateData(Buffer::Data& obj, const Indexes& indexes, GLintptr indexBase);
+		bool AllocateSpaceFor(GLsizeiptr maxSize, const Indexes& indexes);
+		void UpdateData(Buffer::Data& obj, const Indexes& indexes);
 	};
 }

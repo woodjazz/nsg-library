@@ -54,6 +54,7 @@ misrepresented as being the original software.
 #include "IMGUI.h"
 #include "IMGUISkin.h"
 #include "IMGUIContext.h"
+#include "IMGUITitle.h"
 #include "Render2Texture.h"
 #include "Filter.h"
 #include "FilterBlur.h"

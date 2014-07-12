@@ -26,16 +26,23 @@ misrepresented as being the original software.
 #include "IMGUILabel.h"
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
-#include "TextMesh.h"
+#include "TextMesh.h"ç
+#include "SceneNode.h"
+#include "Technique.h"
+#include "Pass.h"
+#include "Material.h"
+#include "Graphics.h"
 #include "IMGUILayoutManager.h"
 
 namespace NSG
 {
 	namespace IMGUI
 	{
-		Label::Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
-			: Button(id, true, text, maxLength, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY)
+		Label::Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
+			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY, keepAspectRatio),
+		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength))
 		{
+			pTextMesh_->SetText(text, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
 		}
 
 		Label::~Label()
@@ -44,12 +51,57 @@ namespace NSG
 
 		PTechnique Label::GetNormalTechnique() const
 		{
-			return Context::this_->pSkin_->labelTechnique_;
+			return skin_.labelTechnique_;
 		}
 
-		void Label::operator()()
+		void Label::Render()
 		{
-			Button::operator()();
+			Update();
 		}		
+
+		void Label::UpdateControl()
+		{
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+
+	        Node textNode0;
+	        textNode0.SetParent(node_);
+
+            if(pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
+	            textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
+            if(pTextMesh_->GetTextHorizontalAlignment() == RIGHT_ALIGNMENT)
+	            textNode0.SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
+
+            if(pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
+	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
+            else if(pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
+	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
+            else if(pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
+                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
+
+            SceneNode textNode;
+            textNode.SetParent(&textNode0);
+            textNode.SetInheritScale(false);
+            textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
+
+            Technique technique;
+            Pass pass;
+            technique.Add(&pass);
+            pass.Add(&textNode, pTextMesh_);
+            pass.EnableDepthTest(false);
+            pass.EnableStencilTest(true);
+            pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+            pass.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+
+            Material textMaterial;
+            textMaterial.SetTexture0(pTextMesh_->GetAtlas());
+            textMaterial.SetProgram(pTextMesh_->GetProgram());
+            
+            pass.Set(&textMaterial);
+
+            technique.Render();
+
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+		}
+
 	}
 }

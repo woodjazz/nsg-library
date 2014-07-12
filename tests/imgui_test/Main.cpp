@@ -43,6 +43,7 @@ struct Test : public App
     	{
             if(text1 == "")
             {
+				IMGUI::OnMouseUp(-0.5f, -0.5f);
                 IMGUI::OnChar('i');
             }
     		else if(text1 == "i")
@@ -61,7 +62,6 @@ struct Test : public App
 
     	void End()
     	{
-            IMGUI::OnMouseUp(-0.5f, -0.5f);
     		CHECK_ASSERT(text1 == "init", __FILE__, __LINE__);
     	}
     };
@@ -94,7 +94,6 @@ struct Test : public App
 
         void End()
         {
-            IMGUI::OnMouseUp(0.5f, -0.5f);
             CHECK_ASSERT(text2 == "st1", __FILE__, __LINE__);
         }
     };

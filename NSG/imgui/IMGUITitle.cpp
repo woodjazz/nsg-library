@@ -23,37 +23,53 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "IMGUIObject.h"
-#include "Types.h"
+#include "IMGUITitle.h"
+#include "IMGUIContext.h"
+#include "IMGUISkin.h"
+#include "TextMesh.h"
+#include "IMGUILayoutManager.h"
+
 namespace NSG
 {
 	namespace IMGUI
 	{
-		class Area : public Object
+		Title::Title(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
+			: Label(id, text, maxLength, percentageX, percentageY, keepAspectRatio)
 		{
-		public:
-			Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio);
-            ~Area();
-			void Render();
-			PTechnique GetNormalTechnique() const;
-			void SetScroll(float scroll);
-			float GetScroll() const;
-			void UpdateControl();
+		}
 
-		protected:
-			void UpdateScrolling();
+		Title::~Title()
+		{
+		}
 
-		private:
-			void RenderSlider();
-			bool HandleVerticalSlider(float maxPosY, float& yPosition);
-			bool HandleHorizontalSlider(float maxPosX, float& xPosition);
+		PTechnique Title::GetNormalTechnique() const
+		{
+			return skin_.titleTechnique_;
+		}
 
-        private:
-            GLushort& lastSliderHit_;
-            PTechnique& sliderTechnique_;
-            float maxPosX_;
-            float maxPosY_;
-		};
+		void Title::Render()
+		{
+			Update();
+		}		
+
+	    void Title::UpdateControl()
+	    {
+	    	Label::UpdateControl();
+	    	
+			if(layoutManager_.IsCurrentWindowActive() && mousedown_ && !lastSizerHit_)
+			{
+		    	if((!lastTitleHit_ && node_->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastTitleHit_ == id_)
+		    	{
+		    		lastTitleHit_ = id_;
+		    		PNode windowNode = layoutManager_.GetCurrentWindowNode();
+					Vertex3 position = windowNode->GetPosition();
+		    		position.x += mouseRelX_;
+		    		position.y += mouseRelY_;
+					windowNode->SetPosition(position);
+		    	}
+		    }
+	    	
+	    }
+
 	}
 }

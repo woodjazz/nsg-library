@@ -45,8 +45,20 @@ namespace NSG
 	Node::~Node() 
 	{
 		if(pParent_)
-			pParent_->children_.erase(this);
+		{
+			RemoveFromParent();
+		}
 	}
+
+	void Node::RemoveFromParent() 
+	{
+		CHECK_ASSERT(pParent_ && "parent does not exist!!!", __FILE__, __LINE__);
+		
+		auto it = std::find(pParent_->children_.begin(), pParent_->children_.end(), this);
+		CHECK_ASSERT(it != pParent_->children_.end() && "Child not found!!!", __FILE__, __LINE__);
+		pParent_->children_.erase(it);
+	}
+
 
     void Node::SetParent(PNode pParent)
     {
@@ -54,11 +66,11 @@ namespace NSG
     	{
 			if(pParent)
 			{
-				pParent->children_.insert(this);
+				pParent->children_.push_back(this);
 			}
 			else
 			{
-				pParent_->children_.erase(this);
+				RemoveFromParent();
 			}
             
             pParent_ = pParent;

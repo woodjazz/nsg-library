@@ -38,6 +38,7 @@ namespace NSG
 		void Render();
 		PMaterial GetMaterial() const { return pMaterial_; }
 	protected:
+		PTechnique technique_;
         PMaterial pMaterial_; 
 		PMesh pMesh_;
 		PRender2Texture pRender2Texture_;

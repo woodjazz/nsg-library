@@ -33,7 +33,7 @@ namespace NSG
 		class Object
 		{
 		public:
-			Object(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
+			Object(GLushort id, LayoutType type, bool isWindow, int percentageX, int percentageY, bool keepAspectRatio);
 			~Object();
 			bool IsReady() const;
 			void Draw();
@@ -41,9 +41,11 @@ namespace NSG
 			virtual void UpdateControl() {};
 			bool HasFocus() const;
 			bool IsActive() const;
-			virtual bool NeedsKeyboard() const { return false; }
-			virtual void OnFocus() {};
-			virtual void OnActive() {};
+			bool IsHot() const;
+			static void DisableKeyboard();
+			virtual void OnFocus(bool needsKeyboard);
+			virtual void OnActive();
+			virtual void OnHot();
 			virtual void OnKey(int key) {}
 			virtual void OnChar(unsigned int character) {}
 			virtual PTechnique GetActiveTechnique() const;
@@ -58,8 +60,10 @@ namespace NSG
 			State& uistate_;
 			Skin& skin_;
 			LayoutManager& layoutManager_;
+			PWindowManager currentWindowManager_;
 			PLayoutArea area_;
 			GLushort& lastTitleHit_;
+			GLushort& lastSizerHit_;
 			PNode node_;
 			Vertex3 areaSize_;
 			PTechnique currentTechnique_;
@@ -76,6 +80,17 @@ namespace NSG
 
 			size_t level_;
 			LayoutType type_;
+			bool isWindow_;
+			bool drawn_;
+
+			GLushort& hotitem_;
+			GLushort& activeitem_;
+			GLushort& kbditem_;
+			GLushort& lastwidget_;
+			bool& activeitem_needs_keyboard_;	
+			std::pair<int32_t, int32_t> viewSize_;
+			bool keepAspectRatio_;
+
 		};
 	}
 }

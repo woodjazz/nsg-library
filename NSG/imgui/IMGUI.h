@@ -24,20 +24,21 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <regex>
 #include "Types.h"
+#include <regex>
 
 namespace NSG 
 {
 	namespace IMGUI
 	{
-		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
-		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
-		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX = 0, int percentageY = 0);
-		void BeginHorizontal_(GLushort id, int percentageX = 0, int percentageY = 0);
-		void BeginVertical_(GLushort id, int percentageX = 0, int percentageY = 0);
+		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
+		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
+		void Title_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
+		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
+		void BeginHorizontal_(GLushort id, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
+		void BeginVertical_(GLushort id, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
 		float EndArea_(float scroll = -1);
-		void Spacer_(GLushort id, int percentageX = 0, int percentageY = 0);
+		void Spacer_(GLushort id, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
 		PSkin& Skin_();
 		PNode& Node_();
 
@@ -49,7 +50,7 @@ namespace NSG
         	virtual void EndGUIWindow() {};
         };
 		
-		void Window_(GLushort id, IWindow* obj, int percentageX = 0, int percentageY = 0);
+		void Window_(GLushort id, IWindow* obj, int percentageX = 0, int percentageY = 0, bool keepAspectRatio = false);
 		
 		bool IsReady();
         void OnMouseMove(float x, float y);
@@ -61,10 +62,10 @@ namespace NSG
         void DoTick();
 	}
 }
-
-#define IMGUICOUNTER __COUNTER__ + IMGUI_FIRST_VALID_ID //first positions are reserved
+#define IMGUICOUNTER __COUNTER__ + IMGUI::IMGUI_FIRST_VALID_ID //first positions are reserved
 #define IMGUIButton(maxLength, text, ...) IMGUI::Button_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )
 #define IMGUILabel(maxLength, text,...) IMGUI::Label_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )
+#define IMGUITitle(maxLength, text,...) IMGUI::Title_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )
 #define IMGUITextField(maxLength, text,...) IMGUI::TextField_(IMGUICOUNTER, text, maxLength, nullptr, ##__VA_ARGS__ )
 #define IMGUITextFieldWithPattern(maxLength, text, pattern, ...) IMGUI::TextField_(IMGUICOUNTER, text, maxLength, pattern, ##__VA_ARGS__ )
 #define IMGUIBeginHorizontal(...) IMGUI::BeginHorizontal_(IMGUICOUNTER, ##__VA_ARGS__ )

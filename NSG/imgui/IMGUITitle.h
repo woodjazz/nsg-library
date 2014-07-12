@@ -24,36 +24,21 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "IMGUIObject.h"
+#include "IMGUILabel.h"
 #include "Types.h"
+#include <string>
 namespace NSG
 {
 	namespace IMGUI
 	{
-		class Area : public Object
+		class Title : public Label
 		{
 		public:
-			Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio);
-            ~Area();
+			Title(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio);
+			~Title();
 			void Render();
 			PTechnique GetNormalTechnique() const;
-			void SetScroll(float scroll);
-			float GetScroll() const;
 			void UpdateControl();
-
-		protected:
-			void UpdateScrolling();
-
-		private:
-			void RenderSlider();
-			bool HandleVerticalSlider(float maxPosY, float& yPosition);
-			bool HandleHorizontalSlider(float maxPosX, float& xPosition);
-
-        private:
-            GLushort& lastSliderHit_;
-            PTechnique& sliderTechnique_;
-            float maxPosX_;
-            float maxPosY_;
 		};
 	}
 }

@@ -38,7 +38,7 @@ namespace NSG
 	public:
 		Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer);
 		~Render2Texture();
-		void Begin();
+		bool Begin();
 		void End();
 	private:
 		virtual bool IsValid();

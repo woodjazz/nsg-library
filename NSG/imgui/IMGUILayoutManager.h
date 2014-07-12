@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include <list>
 #include <map>
+#include <set>
 
 namespace NSG 
 {
@@ -41,9 +42,9 @@ namespace NSG
 			GLushort id_;
 			int percentageX_;
 			int percentageY_;
+			bool keepAspectRatio_;
 			PNode pNode_;
 			LayoutType type_;
-			bool isReadOnly_;
 			float textOffsetX_;
 			unsigned int cursor_character_position_; 
 			LayoutArea* parent_;
@@ -65,82 +66,89 @@ namespace NSG
 
             std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number or __COUNTER__)
 
-			LayoutArea(GLushort id, bool isReadOnly, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY);
+			LayoutArea(GLushort id, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio);
 			void CalculateScrollAreaFactor();
 			bool IsVisible() const;
 			void Set(const Vertex3& position, const Vertex3& scale);
 			bool IsInside(const Vertex3& point) const;
 		};
 
+		struct WindowManager
+		{
+			State& uistate_;
+			GLushort id_;
+			GLushort lastId_;
+			typedef std::list<PArea> NestedAreas;
+			NestedAreas nestedAreas_;
+			typedef std::map<GLushort, PLayoutArea> AREAS;
+			AREAS areas_;
+			bool layoutChanged_;
+        	size_t visibleAreas_;
+        	bool newControlAdded_;
+        	bool isStable_;
+        	PNode pRootNode_;
+        	bool visible_;
+        	int percentageX_;
+        	int percentageY_;
+			bool keepAspectRatio_;
+        	IWindow* userWindow_;
+			PTextManager pTextManager_;
+			GLushort hotitem_;
+			GLushort activeitem_;
+			GLushort kbditem_;
+  			GLushort lastwidget_;
+  			Window* currentWindow_;	
+
+			WindowManager(IWindow* userWindow, GLushort id, PNode pRootNode, int percentageX, int percentageY, bool keepAspectRatio);
+			PLayoutArea InsertNewArea(GLushort id, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio);
+			void Reset();
+			void Begin();
+			void End();
+			PLayoutArea GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio);
+			PLayoutArea GetArea(GLushort id) const;
+			void BeginWindow(GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
+		    void EndWindow();
+			void InsertArea(PArea area);
+			void BeginHorizontalArea(GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
+			void BeginVerticalArea(GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
+			float EndArea(float scroll);
+			void Spacer(GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
+			bool IsReady() const;
+			bool IsStable() const;
+			size_t GetNestingLevel();
+			void RecalculateLayout(PLayoutArea pCurrentArea);
+			GLushort GetValidId(GLushort id);
+			PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
+			void Invalidate();
+
+        };
+		
+
 		class LayoutManager
 		{
-			struct WindowManager;
         public:
 			LayoutManager(PNode pRootNode); 
 			void Render();
 			void RenderUserWindow();
-			PLayoutArea GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
-			void BeginHorizontalArea(GLushort id, int percentageX = 0, int percentageY = 0);
-			void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
+			PLayoutArea GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio);
+			void BeginHorizontalArea(GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
+			void BeginVerticalArea(GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
 			float EndArea(float scroll);
-			void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
+			void Spacer(GLushort id, int percentageX, int percentageY, bool keepAspectRatio);
 			size_t GetNestingLevel();
 			bool IsReady() const;
-			void Window(GLushort id, IMGUI::IWindow* obj, int percentageX, int percentageY);
+			void Window(GLushort id, IMGUI::IWindow* obj, int percentageX, int percentageY, bool keepAspectRatio);
 			void Invalidate();
 			void SetWindowFocus(float x, float y);
 			GLushort GetValidId(GLushort id);
 			PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
 			bool IsCurrentWindowActive() const;
 			bool IsFirstOnTopOfSecond(IWindow* first, IWindow* second) const;
+			PNode GetCurrentWindowNode() const;
+			PWindowManager GetCurrentWindowManager() const;
 
-	
-		private:
+        private:
 
-			struct WindowManager
-			{
-				GLushort id_;
-				GLushort lastId_;
-				typedef std::list<PArea> NestedAreas;
-				NestedAreas nestedAreas_;
-				typedef std::map<GLushort, PLayoutArea> AREAS;
-				AREAS areas_;
-				bool layoutChanged_;
-            	size_t visibleAreas_;
-            	bool newControlAdded_;
-            	bool isStable_;
-            	PNode pRootNode_;
-            	bool visible_;
-            	int percentageX_;
-            	int percentageY_;
-            	IWindow* userWindow_;
-				PTextManager pTextManager_;
-
-
-            	WindowManager(IWindow* userWindow, GLushort id, PNode pRootNode, int percentageX, int percentageY);
-				PLayoutArea InsertNewArea(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
-				void Reset();
-				void Begin(bool showTitle, bool showBorder);
-				void End();
-				PLayoutArea GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY);
-				PLayoutArea GetArea(GLushort id) const;
-			    void BeginWindow(GLushort id, bool showTitle, bool showBorder, int percentageX = 0, int percentageY = 0);
-			    void EndWindow();
-				void InsertArea(PArea area);
-				void BeginHorizontalArea(GLushort id, int percentageX = 0, int percentageY = 0);
-				void BeginVerticalArea(GLushort id, int percentageX = 0, int percentageY = 0);
-				float EndArea(float scroll);
-				void Spacer(GLushort id, int percentageX = 0, int percentageY = 0);
-				bool IsReady() const;
-				size_t GetNestingLevel();
-				void RecalculateLayout(PLayoutArea pCurrentArea);
-				GLushort GetValidId(GLushort id);
-				PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
-				void Invalidate();
-
-            };
-
-            typedef std::shared_ptr<WindowManager> PWindowManager;
             typedef std::map<IWindow*, PWindowManager> WindowManagers;
 
             WindowManagers windowManagers_;

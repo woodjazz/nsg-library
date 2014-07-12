@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "IMGUI.h"
 #include "IMGUIButton.h"
 #include "IMGUILabel.h"
+#include "IMGUITitle.h"
 #include "IMGUIText.h"
 #include "IMGUILayoutManager.h"
 #include "IMGUIState.h"
@@ -37,18 +38,18 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		void BeginHorizontal_(GLushort id, int percentageX, int percentageY)
+		void BeginHorizontal_(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->BeginHorizontalArea(id, percentageX, percentageY);
+			Context::this_->pLayoutManager_->BeginHorizontalArea(id, percentageX, percentageY, keepAspectRatio);
 		}
 
-		void BeginVertical_(GLushort id, int percentageX, int percentageY)
+		void BeginVertical_(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->BeginVerticalArea(id, percentageX, percentageY);
+			Context::this_->pLayoutManager_->BeginVerticalArea(id, percentageX, percentageY, keepAspectRatio);
 		}
 
 		float EndArea_(float scroll)
@@ -56,40 +57,49 @@ namespace NSG
 			return Context::this_->pLayoutManager_->EndArea(scroll);
 		}
 
-		void Spacer_(GLushort id, int percentageX, int percentageY)
+		void Spacer_(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Context::this_->pLayoutManager_->Spacer(id, percentageX, percentageY);
+			Context::this_->pLayoutManager_->Spacer(id, percentageX, percentageY, keepAspectRatio);
 		}
 
-		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
+		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Button obj(id, false, text, maxLength, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY);
+			Button obj(id, text, maxLength, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY, keepAspectRatio);
 			
-			bool result = obj();
+			bool result = obj.Render();
 
 			return result;
 		}		
 
-		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
+		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
 		{
 			id = Context::this_->GetValidId(id);
 
-			Label obj(id, text, maxLength, percentageX, percentageY);
+			Label obj(id, text, maxLength, percentageX, percentageY, keepAspectRatio);
 
-			obj();
+			obj.Render();
 		}
 
-		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY)
+		void Title_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio)
+		{
+			id = Context::this_->GetValidId(id);
+
+			Title obj(id, text, maxLength, percentageX, percentageY, keepAspectRatio);
+
+			obj.Render();
+		}
+
+		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY, bool keepAspectRatio)
 		{	
 			id = Context::this_->GetValidId(id);
 
-			Text obj(id, text, maxLength, pRegex, percentageX, percentageY);
+			Text obj(id, text, maxLength, pRegex, percentageX, percentageY, keepAspectRatio);
 
-			std::string result = obj();
+			std::string result = obj.Render();
 
 			return result;
 		}	
@@ -104,9 +114,9 @@ namespace NSG
 			return Context::this_->pCurrentNode_;	
 		}
 
-		void Window_(GLushort id, IWindow* obj, int percentageX, int percentageY)
+		void Window_(GLushort id, IWindow* obj, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-			Context::this_->pLayoutManager_->Window(id, obj, percentageX, percentageY);
+			Context::this_->pLayoutManager_->Window(id, obj, percentageX, percentageY, keepAspectRatio);
 		}
 
 		bool IsReady()

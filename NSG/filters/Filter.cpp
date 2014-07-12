@@ -28,6 +28,8 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Camera.h"
 #include "Check.h"
+#include "Technique.h"
+#include "Pass.h"
 #include "Render2Texture.h"
 
 static const char* vShader = STRINGIFY(
@@ -46,13 +48,19 @@ namespace NSG
 {
 	Filter::Filter(PTexture input, PTexture output, const char* fragment)
     : pMaterial_(new Material ()),
-    pMesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW))
+    pMesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
+    technique_(new Technique)
 	{
 		PProgram pProgram(new Program(vShader, fragment));
 		pMaterial_->SetProgram(pProgram);
 		pMaterial_->SetTexture0(input);
 
 		pRender2Texture_ = PRender2Texture(new Render2Texture(output, true, false));
+
+		PPass pass(new Pass);
+		pass->Set(pMaterial_);
+		pass->Add(nullptr, pMesh_);
+		technique_->Add(pass);
 	}
 
 	Filter::~Filter()
@@ -70,7 +78,7 @@ namespace NSG
 
 			pRender2Texture_->Begin();
 
-			pMaterial_->Render(true, nullptr, pMesh_.get());
+			technique_->Render();
 
 			pRender2Texture_->End();
 

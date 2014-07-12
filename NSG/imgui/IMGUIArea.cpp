@@ -47,13 +47,12 @@ namespace NSG
 	{
         static const float SLIDER_WIDTH = 15; //pixels 
 
-		Area::Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY)
-		: Object(id, true, type, percentageX, percentageY),
+		Area::Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio)
+			: Object(id, type, isWindow, percentageX, percentageY, keepAspectRatio),
 		lastSliderHit_(uistate_.lastSliderHit_),
-		sliderTechnique_(skin_.sliderTechnique_),
-		isWindow_(isWindow)
+		sliderTechnique_(skin_.sliderTechnique_)
 		{
-			CHECK_ASSERT(type == LayoutType::Horizontal || type == LayoutType::Vertical, __FILE__, __LINE__);
+			CHECK_ASSERT(type == LayoutType::HORIZONTAL || type == LayoutType::VERTICAL, __FILE__, __LINE__);
 
 			area_->controlArea_ = this;
 
@@ -67,22 +66,11 @@ namespace NSG
 			    UpdateScrolling();
 		}
 
-		float Area::GetTopPosition() const
-		{
-			return 1; //y position to the top of current area
-		}
-
-		float Area::GetLeftPosition() const
-		{
-			return -1; //x position to the left of current area
-		}
-
-
 		void Area::SetScroll(float scroll) 
 		{ 
 			CHECK_ASSERT(scroll >=0 && scroll <= 1, __FILE__, __LINE__);
 
-			if(area_->type_ == LayoutType::Horizontal)
+			if (area_->type_ == LayoutType::HORIZONTAL)
 			{
 				if(maxPosX_ > 0)
 				{
@@ -106,7 +94,7 @@ namespace NSG
 		{ 
 			float scroll = 0;
 
-			if(area_->type_ == LayoutType::Horizontal)
+			if (area_->type_ == LayoutType::HORIZONTAL)
 			{
 				if(maxPosX_ > 0)
 				{
@@ -127,7 +115,7 @@ namespace NSG
 		}
 
 
-		void Area::operator()()
+		void Area::Render()
 		{
 			Update();
 		}
@@ -148,24 +136,31 @@ namespace NSG
 		bool Area::HandleVerticalSlider(float maxPosY, float& yPosition)
 		{
 	        // Draw slider
+			Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
+
 		    Node node;
 		    node.SetParent(area_->pNode_);
+			node.SetInheritScale(false);
 
 		    float yScale = 0.5f/area_->scrollFactorAreaY_;
             std::pair<int32_t, int32_t> viewSize = App::this_->GetViewSize();
             float xScale = SLIDER_WIDTH/(float)viewSize.first;
-		    node.SetScale(Vertex3(xScale, yScale, 1));
+			
+			Vertex3 globalScale(xScale, areaGlobalScale.y * yScale, 1);
+		    node.SetScale(globalScale);
 
 	        float offset = yPosition/maxPosY; //0..1
-            float blind_area = SLIDER_WIDTH/(float)viewSize.second;
+            float blind_area = area_->isXScrollable_ ? 2*SLIDER_WIDTH/(float)viewSize.second : 0;
 			const float TOP_POS = 1;
 			float ypos = TOP_POS - yScale - 2 * (1 - yScale - blind_area)*offset;
-            Vertex3 globalScale = node.GetGlobalScale();
-			const float RIGHT_POS = 1;
-			float xpos = RIGHT_POS - globalScale.x;
-	        node.SetPosition(Vertex3(xpos, ypos, 0));
 
-		    sliderTechnique_->Set(&node);
+			node.SetPosition(Vertex3(0, ypos, 0));
+
+			Vertex3 globalPosition = node.GetGlobalPosition();
+			globalPosition.x += areaGlobalScale.x - globalScale.x;
+			node.SetGlobalPosition(globalPosition);
+
+			sliderTechnique_->Set(&node);
 
 		    RenderSlider();
 
@@ -205,23 +200,29 @@ namespace NSG
 
 		bool Area::HandleHorizontalSlider(float maxPosX, float& xPosition)
 		{
+			Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
 	        // Draw slider
 		    Node node;
 		    node.SetParent(area_->pNode_);
+			node.SetInheritScale(false);
 
             std::pair<int32_t, int32_t> viewSize = App::this_->GetViewSize();
             float yScale = SLIDER_WIDTH/(float)viewSize.second;
 		    float xScale = 0.5f/area_->scrollFactorAreaX_;
-		    node.SetScale(Vertex3(xScale, yScale, 1));
+
+			Vertex3 globalScale(areaGlobalScale.x * xScale, yScale, 1);
+			node.SetScale(globalScale);
 
 	        float offset = -xPosition/maxPosX; //0..1
-            float blind_area = SLIDER_WIDTH/(float)viewSize.first;
+            float blind_area = area_->isYScrollable_ ? 2*SLIDER_WIDTH/(float)viewSize.first : 0;
 			const float LEFT_POS = -1;
 			float xpos = LEFT_POS + xScale + 2 * (1 - xScale - blind_area)*offset;
-            Vertex3 globalScale = node.GetGlobalScale();
-			const float BOTTOM_POS = -1;
-			float ypos = BOTTOM_POS + globalScale.y;
-	        node.SetPosition(Vertex3(xpos, ypos, 0));
+
+			node.SetPosition(Vertex3(xpos, 0, 0));
+
+			Vertex3 globalPosition = node.GetGlobalPosition();
+			globalPosition.y -= areaGlobalScale.y - globalScale.y;
+			node.SetGlobalPosition(globalPosition);
 
 		    sliderTechnique_->Set(&node);
 
@@ -264,7 +265,7 @@ namespace NSG
 
 	    void Area::UpdateControl()
 	    {
-			if (layoutManager_.IsCurrentWindowActive() && mousedown_ && !lastTitleHit_)
+			if (layoutManager_.IsCurrentWindowActive() && mousedown_ && !lastTitleHit_ && !lastSizerHit_)
 	    	{
 	    		if(area_->isScrollable_ && IsMouseButtonPressedInArea())
 					activeScrollArea_ = id_;
@@ -332,16 +333,6 @@ namespace NSG
 					area_->childrenRoot_->SetPosition(position);
 			}
 		}	
-
-		PTechnique Area::GetActiveTechnique() const
-		{
-			return Context::this_->pSkin_->areaTechnique_;
-		}
-
-		PTechnique Area::GetHotTechnique() const
-		{
-			return Context::this_->pSkin_->areaTechnique_;
-		}
 
 		PTechnique Area::GetNormalTechnique() const
 		{

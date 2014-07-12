@@ -26,34 +26,22 @@ misrepresented as being the original software.
 #pragma once
 #include "IMGUIObject.h"
 #include "Types.h"
+
 namespace NSG
 {
 	namespace IMGUI
 	{
-		class Area : public Object
+		class Sizer : public Object
 		{
 		public:
-			Area(GLushort id, bool isWindow, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio);
-            ~Area();
+			Sizer(GLushort id, SizerType type, int percentageX, int percentageY, bool keepAspectRatio);
+			~Sizer();
 			void Render();
-			PTechnique GetNormalTechnique() const;
-			void SetScroll(float scroll);
-			float GetScroll() const;
 			void UpdateControl();
-
-		protected:
-			void UpdateScrolling();
-
+			PTechnique GetNormalTechnique() const;
 		private:
-			void RenderSlider();
-			bool HandleVerticalSlider(float maxPosY, float& yPosition);
-			bool HandleHorizontalSlider(float maxPosX, float& xPosition);
-
-        private:
-            GLushort& lastSliderHit_;
-            PTechnique& sliderTechnique_;
-            float maxPosX_;
-            float maxPosY_;
+			SizerType type_;
+			PTechnique normalTechnique_;
 		};
 	}
 }

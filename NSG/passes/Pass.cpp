@@ -38,7 +38,7 @@ namespace NSG
     stencilMask_(~GLuint(0)),
 	sfailStencilOp_(GL_KEEP),
 	dpfailStencilOp_(GL_KEEP),
-	dppassStencilOp_(GL_REPLACE),
+	dppassStencilOp_(GL_KEEP),
 	stencilFunc_(GL_ALWAYS),
 	stencilRefValue_(0),
 	stencilMaskValue_(~GLuint(0)),

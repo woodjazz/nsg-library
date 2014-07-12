@@ -33,8 +33,10 @@ namespace NSG
 {
 	AppStatistics::AppStatistics()
     : collect_(true),
-	vertexBuffers_(0),
-	indexBuffers_(0)
+	staticVertexBuffers_(0),
+	staticIndexBuffers_(0),
+	dynamicVertexBuffers_(0),
+	dynamicIndexBuffers_(0)
 	{
 		memset(&counters_[0], 0, sizeof(counters_));
 	}
@@ -79,24 +81,36 @@ namespace NSG
         }
 	}
 
-	void AppStatistics::ResetVertexBuffer()
+	void AppStatistics::AddVertexBuffer(bool dynamic)
 	{
-		vertexBuffers_ = 0;
+		if(dynamic)
+			++dynamicVertexBuffers_;
+		else
+			++staticVertexBuffers_;
 	}
 
-	void AppStatistics::ResetIndexBuffer()
+	void AppStatistics::AddIndexBuffer(bool dynamic)
 	{
-		indexBuffers_ = 0;
+		if(dynamic)
+			++dynamicIndexBuffers_;
+		else
+			++staticIndexBuffers_;
 	}
 
-	void AppStatistics::NewVertexBuffer()
+	void AppStatistics::RemoveVertexBuffer(bool dynamic)
 	{
-		++vertexBuffers_;
+		if(dynamic)
+			--dynamicVertexBuffers_;
+		else
+			--staticVertexBuffers_;
 	}
 
-	void AppStatistics::NewIndexBuffer()
+	void AppStatistics::RemoveIndexBuffer(bool dynamic)
 	{
-		++indexBuffers_;
+		if(dynamic)
+			--dynamicIndexBuffers_;
+		else
+			--staticIndexBuffers_;
 	}
 
 	void AppStatistics::NewFrame()
@@ -120,41 +134,54 @@ namespace NSG
         IMGUI::Context::this_->pSkin_->fontSize_ = 14;
 		Collect(false);
 		static std::string emptys;
-
+#if 1
 		IMGUISpacer(0, 10);
 
-		const int MAX_LABEL_SIZE = 20;
+		const int MAX_LABEL_SIZE = 40;
+		const int LABEL_HEIGTH = 15;
         size_t fps = counters_[FRAMES].first;;
 	    std::stringstream ss;
 	    ss << "FPS:" << fps;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
         size_t drawCalls = counters_[DRAWCALLS].first;
         if(fps) drawCalls/=fps;
 	    ss << "DrawCalls:" << drawCalls;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
         size_t triangles = counters_[TRIANGLES].first;
         if(fps) triangles/=fps;
 	    ss << "Triangles:" << triangles;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
-		ss << "VertexBuffers:" << vertexBuffers_;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
+		ss << "StaticVertexBuffers:" << staticVertexBuffers_;
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
-	    ss << "IndexBuffers:" << indexBuffers_;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, 15);
+	    ss << "StaticIndexBuffers:" << staticIndexBuffers_;
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+
+	    ss.str(emptys);
+
+		ss << "DynamicVertexBuffers:" << dynamicVertexBuffers_;
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+
+	    ss.str(emptys);
+
+	    ss << "DynamicIndexBuffers:" << dynamicIndexBuffers_;
+		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
 
 	    Collect(true);
 
         IMGUI::Context::this_->pSkin_->fontSize_ = fontSize;
+#endif
+		
 	}
 }

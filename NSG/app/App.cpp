@@ -29,6 +29,8 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Camera.h"
 #include "IMGUI.h"
+#include "IMGUIContext.h"
+#include "IMGUISkin.h"
 #include "TextMesh.h"
 #include "Check.h"
 #include "Context.h"
@@ -114,7 +116,7 @@ namespace NSG
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        SetFrameBuffer(0);
 
         CHECK_ASSERT(pApp_->width_ > 0 && pApp_->height_ > 0, __FILE__, __LINE__);
         glViewport(0, 0, pApp_->width_, pApp_->height_);

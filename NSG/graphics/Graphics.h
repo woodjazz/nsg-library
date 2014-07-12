@@ -39,10 +39,11 @@ namespace NSG
 	void SetDepthTest(bool enableDepthTest, bool enableDepthBuffer);
 	void SetCullFace(bool enable);
 	void SetTexture(unsigned index, Texture* texture);
-	bool SetVertexBuffer(Buffer* buffer);
-	Buffer* GetVertexBuffer();
-	bool SetIndexBuffer(Buffer* buffer);
-	Buffer* GetIndexBuffer();
+	bool SetVertexBuffer(VertexBuffer* buffer);
+	VertexBuffer* GetVertexBuffer();
+	bool SetIndexBuffer(IndexBuffer* buffer);
+	IndexBuffer* GetIndexBuffer();
 	void SetProgram(Program* program);
 	Program* GetProgram();
+	void SetFrameBuffer(GLuint value);
 }

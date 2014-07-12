@@ -37,10 +37,8 @@ namespace NSG
 		~Keyboard();
 		bool Enable();
 		bool Disable();
-		bool IsEnabled() const { return enabled_; }
 		void SetActivity(ANativeActivity* activity) { activity_ = activity; }
 	private:
-		bool enabled_;
 		ANativeActivity* activity_;
 	};
 

@@ -55,6 +55,7 @@ namespace NSG
 
 	void ResetCachedState()
 	{
+		SetFrameBuffer(0);
 		SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL, 
 			DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
 		SetColorMask(DEFAULT_COLOR_MASK);
@@ -72,6 +73,16 @@ namespace NSG
 		SetProgram(nullptr);
 	}
 
+	static GLuint frameBuffer_ = 0;
+	void SetFrameBuffer(GLuint value)
+	{
+		if(value != frameBuffer_)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, value);
+			frameBuffer_ = value;	
+		}
+	}
+
 
 	void ClearAllBuffers()
 	{
@@ -79,7 +90,7 @@ namespace NSG
         glClearDepth(1);
         glClearStencil(0);
 
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		SetColorMask(true);
         glDepthMask(GL_TRUE);
         glStencilMask(~GLuint(0));
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -92,7 +103,7 @@ namespace NSG
 		{
 			mask |= GL_COLOR_BUFFER_BIT;
 			glClearColor(0, 0, 0, 1);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+			SetColorMask(true);
 		}
 
 		if(depth)
@@ -164,11 +175,12 @@ namespace NSG
 	    }
 	}
 
+	static GLuint colorMaskFrameBuffer_ = frameBuffer_;
 	void SetColorMask(bool enable)
 	{
 		static bool enable_ = DEFAULT_COLOR_MASK;
 
-		if(enable != enable_)
+		if(enable != enable_ || colorMaskFrameBuffer_ != frameBuffer_)
 		{
 			if(enable)
 				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -176,6 +188,7 @@ namespace NSG
 				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 			enable_ = enable;
+			colorMaskFrameBuffer_ = frameBuffer_;
 		}
 	}
 
@@ -289,8 +302,8 @@ namespace NSG
 	    }
 	}
 
-	static Buffer* vertexBuffer_ = nullptr;
-	bool SetVertexBuffer(Buffer* buffer)
+	static VertexBuffer* vertexBuffer_ = nullptr;
+	bool SetVertexBuffer(VertexBuffer* buffer)
 	{
 		if(buffer != vertexBuffer_)
 		{
@@ -306,13 +319,13 @@ namespace NSG
 		return false;
 	}
 
-	Buffer* GetVertexBuffer()
+	VertexBuffer* GetVertexBuffer()
 	{
 		return vertexBuffer_;
 	}
 
-	static Buffer* indexBuffer_ = nullptr;
-	bool SetIndexBuffer(Buffer* buffer)
+	static IndexBuffer* indexBuffer_ = nullptr;
+	bool SetIndexBuffer(IndexBuffer* buffer)
 	{
 		if(buffer != indexBuffer_)
 		{
@@ -328,7 +341,7 @@ namespace NSG
 		return false;
 	}
 
-	Buffer* GetIndexBuffer()
+	IndexBuffer* GetIndexBuffer()
 	{
 		return indexBuffer_;
 	}

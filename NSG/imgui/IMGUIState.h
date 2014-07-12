@@ -50,17 +50,15 @@ namespace NSG
 			float mouseRelX_; //The amount scrolled horizontally (in screen coordinates)
 			float mouseRelY_; //The amount scrolled vertically (in screen coordinates)
 
-			GLushort hotitem_;
-			GLushort activeitem_;
-			GLushort kbditem_;
+  			bool activeitem_needs_keyboard_;
+			
   			int keyentered_;
   			int keymod_;
   			int keyaction_;
   			unsigned int character_;
-  			GLushort lastwidget_;	
-  			bool activeitem_needs_keyboard_;
             GLushort lastSliderHit_;
             GLushort lastTitleHit_;
+            GLushort lastSizerHit_;
             GLushort activeScrollArea_;
 
 			int tick_;

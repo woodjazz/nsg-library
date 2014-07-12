@@ -50,8 +50,8 @@ namespace NSG
 	protected:
 		VertexsData vertexsData_;
 		Indexes indexes_;
-		IndexBuffer* pIBuffer_;
-		VertexBuffer* pVBuffer_;
+		PIndexBuffer pIBuffer_;
+		PVertexBuffer pVBuffer_;
 		GLenum usage_;
         PResource resource_;
         Buffer::Data* bufferVertexData_;

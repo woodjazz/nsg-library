@@ -80,7 +80,8 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+
+        SetFrameBuffer(framebuffer_);
 
         {
             // Color buffer
@@ -146,7 +147,7 @@ namespace NSG
         pixelX_ = (GLint)((1 + screenX)/2.0f * windowWidth_);
         pixelY_ = (GLint)((1 + screenY)/2.0f * windowHeight_);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+        SetFrameBuffer(framebuffer_);
         ClearBuffers(true, false, false);
 
 #ifndef ANDROID
@@ -161,7 +162,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         glReadPixels(pixelX_, pixelY_, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &selected_);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        SetFrameBuffer(0);
 
 #ifndef ANDROID
         glDisable(GL_SCISSOR_TEST);
@@ -247,7 +248,7 @@ namespace NSG
     {
         if(IsReady())
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+            SetFrameBuffer(framebuffer_);
             ClearBuffers(false, true, true);
         }
     }

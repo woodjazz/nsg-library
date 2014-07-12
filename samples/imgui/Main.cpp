@@ -55,17 +55,20 @@ struct Window0 : IMGUI::IWindow
 {
     int fontSize_;
 	PMaterial material_;
+    Color color_;
     void StartGUIWindow() 
     {
+#if 1
 		material_ = IMGUISkin()->windowTechnique_->GetPass(0)->GetMaterial();
         fontSize_ = IMGUISkin()->fontSize_;
         IMGUISkin()->fontSize_ = 18;
+        color_ = material_->GetColor();
 		material_->SetColor(Color(0, 0, 0, 0.7f));
+#endif
     }
 
     void RenderGUIWindow()
     {
-		IMGUIBeginVertical();
 		const int MAX_TEXT_SIZE = 15;
         static const int MAX_FIELDS = 10;
         static std::string field[MAX_FIELDS];
@@ -74,45 +77,60 @@ struct Window0 : IMGUI::IWindow
             std::stringstream label;
             label << "Label " << i << ":";
 
-            IMGUIBeginHorizontal(0,50);
+            IMGUIBeginHorizontal(150,50);
             IMGUILabel(MAX_TEXT_SIZE, label.str(), 50);
             field[i] = IMGUITextField(MAX_TEXT_SIZE, field[i], 50);
             IMGUIEndArea();
         }
-
-		IMGUIEndArea();
     }
 
     void EndGUIWindow()
     {
+#if 1
         IMGUISkin()->fontSize_ = fontSize_;
+        material_->SetColor(color_);
+#endif
     }
 };
 
 struct Statistics : public AppStatistics
 {
-    PTexture texture_;
+    PTexture newTexture_;
+    PTexture oldTexture_;
     PMaterial material_;
-    PProgram program_;
+    PProgram oldProgram_;
+    PProgram newProgram_;
+    Color color_;
+
 
     void StartGUIWindow()
     {
-        if(!texture_)
+#if 1
+        if(!newTexture_)
         {
-            texture_ = PTexture(new TextureFile("blackBump.png"));
-            program_ = PProgram(new Program(vShader, fShader));
             material_ = IMGUISkin()->windowTechnique_->GetPass(0)->GetMaterial();
-            material_->SetProgram(program_);
-        }
-        material_->SetTexture0(texture_);  
-        material_->SetColor(Color(1,1,1,1));
 
+            newTexture_ = PTexture(new TextureFile("blackBump.png"));
+            newProgram_ = PProgram(new Program(vShader, fShader));
+
+            oldTexture_ = material_->GetTexture0();
+            oldProgram_ = material_->GetProgram();
+            color_ = material_->GetColor();
+      }
+
+        material_->SetProgram(newProgram_);        
+        material_->SetTexture0(newTexture_);  
+        material_->SetColor(Color(1,1,1,1));
+#endif
     }
 
     void EndGUIWindow()
     {
-        material_->SetTexture0(PTexture());  
-        material_->SetColor(Color(0,0,0,0));
+#if 1
+        material_->SetTexture0(oldTexture_);  
+        material_->SetProgram(oldProgram_);
+        material_->SetColor(color_);
+#endif
     }
 };
 
@@ -139,12 +157,12 @@ struct Sample : App
             material->SetTexture0(texture);        
         }
 
-        {
+/*        {
             PTexture texture(new TextureFile("blackBump.png"));
             PMaterial material = IMGUISkin()->windowTechnique_->GetPass(0)->GetMaterial();
             material->SetTexture0(texture);  
             material->SetColor(Color(1,1,1,1));
-        }
+        }*/
     }
 
     void RenderGUIWindow()
@@ -256,8 +274,10 @@ struct Sample : App
             }
         }
 #endif
+#if 1        
 		IMGUIWindow(&statistics_, 50, 75);
         IMGUIWindow(&window0_, 60, 60);
+#endif        
 
     }
 };

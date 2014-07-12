@@ -37,10 +37,10 @@ namespace NSG
 		AppStatistics();
 		~AppStatistics();
 		void Reset();
-		void ResetVertexBuffer();
-		void ResetIndexBuffer();
-		void NewVertexBuffer();
-		void NewIndexBuffer();
+		void AddVertexBuffer(bool dynamic);
+		void AddIndexBuffer(bool dynamic);
+		void RemoveVertexBuffer(bool dynamic);
+		void RemoveIndexBuffer(bool dynamic);
 		void NewFrame();
 		void NewDrawCall();
 		void NewTriangles(size_t n);
@@ -53,8 +53,10 @@ namespace NSG
         TimePoint tpReset_;
         enum Type {FRAMES, DRAWCALLS, TRIANGLES, MAX_COUNTERS};
         Counter counters_[MAX_COUNTERS];
-		size_t vertexBuffers_;
-		size_t indexBuffers_;
+		size_t staticVertexBuffers_;
+		size_t staticIndexBuffers_;
+		size_t dynamicVertexBuffers_;
+		size_t dynamicIndexBuffers_;
         bool collect_;
 	};
 }

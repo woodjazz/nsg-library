@@ -36,7 +36,9 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Camera.h"
 #include "Graphics.h"
+#include "Keyboard.h"
 #include "Keys.h"
+#include "App.h"
 
 namespace NSG
 {
@@ -44,36 +46,54 @@ namespace NSG
 	{
 		static const Vertex3 AREA_SCREEN_SIZE(2,2,1); //default area size in screen coordinates
 
-		Object::Object(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY)
+		Object::Object(GLushort id, LayoutType type, bool isWindow, int percentageX, int percentageY, bool keepAspectRatio)
 		: id_(id),
 		uistate_(*Context::this_->state_),
 		skin_(*Context::this_->pSkin_),
 		layoutManager_(*Context::this_->pLayoutManager_),
-		area_(Context::this_->pLayoutManager_->GetAreaForControl(id, isReadOnly, type, percentageX, percentageY)),
-		lastTitleHit_(Context::this_->state_->lastTitleHit_),
+		currentWindowManager_(layoutManager_.GetCurrentWindowManager()),
+		area_(layoutManager_.GetAreaForControl(id, type, percentageX, percentageY, keepAspectRatio)),
+		lastTitleHit_(uistate_.lastTitleHit_),
+		lastSizerHit_(uistate_.lastSizerHit_),
         node_(area_->pNode_),
         areaSize_(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(AREA_SCREEN_SIZE, 0)),
-		mouseDownX_(Context::this_->state_->mouseDownX_),
-		mouseDownY_(Context::this_->state_->mouseDownY_),
-		mousex_(Context::this_->state_->mousex_),
-		mousey_(Context::this_->state_->mousey_),
-		mousedown_(Context::this_->state_->mousedown_),
-		mouseup_(Context::this_->state_->mouseup_),
-		mouseRelX_(Context::this_->state_->mouseRelX_),
-		mouseRelY_(Context::this_->state_->mouseRelY_),
-		activeScrollArea_(Context::this_->state_->activeScrollArea_),
-		level_(Context::this_->pLayoutManager_->GetNestingLevel()),
-		type_(type)
+		mouseDownX_(uistate_.mouseDownX_),
+		mouseDownY_(uistate_.mouseDownY_),
+		mousex_(uistate_.mousex_),
+		mousey_(uistate_.mousey_),
+		mousedown_(uistate_.mousedown_),
+		mouseup_(uistate_.mouseup_),
+		mouseRelX_(uistate_.mouseRelX_),
+		mouseRelY_(uistate_.mouseRelY_),
+		activeScrollArea_(uistate_.activeScrollArea_),
+		level_(layoutManager_.GetNestingLevel()),
+		type_(type),
+		isWindow_(isWindow),
+		drawn_(false),
+		hotitem_(currentWindowManager_->hotitem_),
+		activeitem_(currentWindowManager_->activeitem_),
+		kbditem_(currentWindowManager_->kbditem_),
+		lastwidget_(currentWindowManager_->lastwidget_),
+		activeitem_needs_keyboard_(uistate_.activeitem_needs_keyboard_),
+		viewSize_(App::this_->GetViewSize()),
+		keepAspectRatio_(keepAspectRatio)
 		{
 			CHECK_ASSERT(node_, __FILE__, __LINE__);
 		}
 
 		Object::~Object()
 		{
-            if(!area_->isReadOnly_)
-            {
-			    uistate_.lastwidget_ = id_;
-            }
+			if (drawn_ && !isWindow_)
+			{
+				CHECK_GL_STATUS(__FILE__, __LINE__);
+
+				skin_.stencilTechnique_->GetPass(0)->SetStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
+				skin_.stencilTechnique_->GetPass(0)->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+				skin_.stencilTechnique_->Set(node_);
+				skin_.stencilTechnique_->Render();
+
+				CHECK_GL_STATUS(__FILE__, __LINE__);
+			}
 		}
 
 		bool Object::IsReady() const
@@ -105,40 +125,58 @@ namespace NSG
             // see material->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
 			CHECK_ASSERT(level_ > 0, __FILE__, __LINE__);
 
+			skin_.stencilTechnique_->GetPass(0)->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+			skin_.stencilTechnique_->GetPass(0)->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
+			skin_.stencilTechnique_->Set(node_);
+			skin_.stencilTechnique_->Render();
+
 			size_t nPasses = currentTechnique_->GetNumPasses();
 			for(size_t i=0; i<nPasses; i++)
 			{
             	PPass pass = currentTechnique_->GetPass(i);
-                pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-        	    pass->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
+        	    pass->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
 	        }
             
 			currentTechnique_->Render();
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
+
+            drawn_ = true;
         }
 
 		bool Object::HasFocus() const
 		{
-			return uistate_.kbditem_ == id_;
+			return kbditem_ == id_;
 		}
+
+		void Object::OnFocus(bool needsKeyboard)
+		{
+		}	
+
+		void Object::OnActive()
+		{
+		}	
+
+		void Object::OnHot()
+		{
+		}	
 
 		bool Object::IsActive() const
 		{
-			return uistate_.activeitem_ == id_;
+			return activeitem_ == id_;
+		}
+
+		bool Object::IsHot() const
+		{
+			return hotitem_ == id_;
 		}
 
         void Object::FixCurrentTecnique()
         {
-			if(uistate_.hotitem_ == id_)
-			{
-				if(uistate_.activeitem_ == id_)// Button is both 'hot' and 'active'
-                    currentTechnique_ = GetActiveTechnique();
-				else // Button is merely 'hot'
-                    currentTechnique_ = GetHotTechnique();
-			}
-			else if(uistate_.activeitem_ == id_)// button is not hot, but it is active
+			if(activeitem_ == id_)// button is not hot, but it is active
 				currentTechnique_ = GetActiveTechnique();
+			else if(hotitem_ == id_)
+				currentTechnique_ = GetHotTechnique();
 			else 
                 currentTechnique_ = GetNormalTechnique();
 
@@ -155,31 +193,41 @@ namespace NSG
         	return area_->IsInside(Vertex3(mouseDownX_, mouseDownY_, 0));
         }
 
+		void Object::DisableKeyboard()
+		{
+			if(Keyboard::this_->Disable())
+			{
+				Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
+			}
+		}
+
 		bool Object::Update()
 		{
 			if(!IsReady() || !area_->IsVisible())
 				return false;
 
-			if (!area_->isReadOnly_ && layoutManager_.IsCurrentWindowActive() && !lastTitleHit_)
+			if (layoutManager_.IsCurrentWindowActive())
 			{
-				if (IsMouseInArea()) // Check whether the button should be hot
+				if(!lastSizerHit_ && !lastTitleHit_ && IsMouseInArea()) // Check whether the button should be hot
 				{
-					uistate_.hotitem_ = id_;
+					OnHot();
 
-					if (uistate_.activeitem_ == GLushort(-1) && uistate_.mousedown_)
+					if (IsHot())
 					{
-				  		uistate_.activeitem_ = id_;
-				  		uistate_.kbditem_ = id_;
-				  		uistate_.activeitem_needs_keyboard_ = NeedsKeyboard();
-				  		OnActive();
-				  	}
+						if (mousedown_ && activeitem_ == GLushort(-1) && IsMouseButtonPressedInArea())
+						{
+					  		OnActive();
+					  	}
+						else if (mouseup_ && IsMouseButtonPressedInArea())
+						{
+							OnFocus(true);
+						}
+					}
 				}
 				// If no widget has keyboard focus, take it
-				if (uistate_.kbditem_ == 0)
+				if (kbditem_ == 0)
 				{
-					uistate_.kbditem_ = id_;
-					uistate_.activeitem_needs_keyboard_ = NeedsKeyboard();
-					OnFocus();
+					OnFocus(false);
 				}
 
 				// If we have keyboard focus, we'll need to process the keys
@@ -192,13 +240,13 @@ namespace NSG
 						// to the previous widget instead.
 						if (uistate_.keymod_ & NSG_KEY_MOD_SHIFT)
 						{
-                            uistate_.kbditem_ = uistate_.lastwidget_;
+                            kbditem_ = lastwidget_;
 						}
                         else
                         {
 						    // If tab is pressed, lose keyboard focus.
 						    // Next widget will grab the focus.
-						    uistate_.kbditem_ = 0;
+						    kbditem_ = 0;
                         }
 						// Also clear the key so that next widget
 						// won't process it

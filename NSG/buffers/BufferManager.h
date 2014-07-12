@@ -39,19 +39,16 @@ namespace NSG
 
 		void Invalidate();
 
-		VertexBuffer* GetStaticVertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
-		IndexBuffer* GetStaticIndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
-		VertexBuffer* GetDynamicVertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
-		IndexBuffer* GetDynamicIndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase);
-		bool IsValidBufferPtr(Buffer* p) const;
+		PVertexBuffer GetStaticVertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes);
+		PIndexBuffer GetStaticIndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes);
+		PVertexBuffer GetDynamicVertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes);
+		PIndexBuffer GetDynamicIndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes);
 
 	private:
-		static const size_t MAX_BUFFERS = 100;
-		PODVector<PBuffer, MAX_BUFFERS> buffers_;
-		VertexBuffer* currentStaticVertexBuffer_;
-		IndexBuffer* currentStaticIndexBuffer_;
-		VertexBuffer* currentDynamicVertexBuffer_;
-		IndexBuffer* currentDynamicIndexBuffer_;
+		PVertexBuffer currentStaticVertexBuffer_;
+		PIndexBuffer currentStaticIndexBuffer_;
+		PVertexBuffer currentDynamicVertexBuffer_;
+		PIndexBuffer currentDynamicIndexBuffer_;
 
 
 	};

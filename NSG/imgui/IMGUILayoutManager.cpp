@@ -38,19 +38,20 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "BoundingBox.h"
 #include "Context.h"
+#include "Keys.h"
 #include <algorithm>
 
 namespace NSG 
 {
 	namespace IMGUI
 	{
-		LayoutArea::LayoutArea(GLushort id, bool isReadOnly, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY) 
+		LayoutArea::LayoutArea(GLushort id, LayoutArea* parent, PNode pNode, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio) 
 		: id_(id), 
 		percentageX_(percentageX), 
 		percentageY_(percentageY), 
+		keepAspectRatio_(keepAspectRatio),
 		pNode_(pNode), 
 		type_(type), 
-		isReadOnly_(isReadOnly), 
 		textOffsetX_(0), 
 		cursor_character_position_(0), 
 		parent_(parent),
@@ -66,19 +67,15 @@ namespace NSG
 			float scaleX = percentageX/100.0f;
 			float scaleY = percentageY/100.0f;
 			pNode->SetScale(Vertex3(scaleX, scaleY, 1));
-			childrenRoot_->SetParent(pNode);
+			childrenRoot_->SetParent(pNode_);
 		}
 
 		void LayoutArea::CalculateScrollAreaFactor()
 		{
 			scrollFactorAreaX_ = 0;
 			scrollFactorAreaY_ = 0;
-			/*
-			float yPosition = controlArea_->GetTopPosition(); //y position to the top of current area
-			float xPosition = controlArea_->GetLeftPosition(); //x position to the left of current area
-			float areaYPercentage = 100 + (1 - yPosition) * 100;
-			*/
-			if(type_ == LayoutType::Vertical)
+
+			if(type_ == LayoutType::VERTICAL)
 			{
 	            auto it = children_.begin();
 	            while(it != children_.end())
@@ -101,7 +98,7 @@ namespace NSG
 
 			
             scrollFactorAreaX_ /= 100.0f;
-			scrollFactorAreaY_ /= 100.0f;// areaYPercentage;
+			scrollFactorAreaY_ /= 100.0f;
 
 			isXScrollable_ = scrollFactorAreaX_ > 1;
 			isYScrollable_ = scrollFactorAreaY_ > 1;
@@ -134,8 +131,9 @@ namespace NSG
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		LayoutManager::WindowManager::WindowManager(IWindow* userWindow, GLushort id, PNode pRootNode, int percentageX, int percentageY)
-		: id_(id),
+		WindowManager::WindowManager(IWindow* userWindow, GLushort id, PNode pRootNode, int percentageX, int percentageY, bool keepAspectRatio)
+		: uistate_(*Context::this_->state_),
+		id_(id),
 		lastId_(0),
 		layoutChanged_(false),
         visibleAreas_(0),
@@ -145,18 +143,24 @@ namespace NSG
         visible_(false),
         percentageX_(percentageX),
         percentageY_(percentageY),
+		keepAspectRatio_(keepAspectRatio),
         userWindow_(userWindow),
-		pTextManager_(new TextManager)
+		pTextManager_(new TextManager),
+        hotitem_(-1),
+		activeitem_(-1),
+		kbditem_(-1),
+        lastwidget_(0),
+        currentWindow_(nullptr)
        	{
 
        	}
         
-		size_t LayoutManager::WindowManager::GetNestingLevel() 
+		size_t WindowManager::GetNestingLevel() 
 		{
 			return nestedAreas_.size() + 1; 
 		}
 
-		PLayoutArea LayoutManager::WindowManager::InsertNewArea(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY)
+		PLayoutArea WindowManager::InsertNewArea(GLushort id, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio)
 		{
             PLayoutArea pCurrentArea;
 			PLayoutArea pArea;
@@ -170,15 +174,15 @@ namespace NSG
             if(!nestedAreas_.empty())
             {
             	pCurrentArea = nestedAreas_.back()->GetArea();
-                CHECK_ASSERT(pCurrentArea->type_ != LayoutType::Control, __FILE__, __LINE__);
+				CHECK_ASSERT(pCurrentArea->type_ != LayoutType::CONTROL, __FILE__, __LINE__);
                 PNode pNode(new Node());
                 pNode->SetParent(pCurrentArea->childrenRoot_);
-            	pArea = PLayoutArea(new LayoutArea(id, isReadOnly, pCurrentArea.get(), pNode, type, percentageX, percentageY));
+            	pArea = PLayoutArea(new LayoutArea(id, pCurrentArea.get(), pNode, type, percentageX, percentageY, keepAspectRatio));
 			    pCurrentArea->children_.insert(pArea);
             }
             else
             {
-				pArea = PLayoutArea(new LayoutArea(id, isReadOnly, nullptr, pRootNode_, type, percentageX, percentageY));
+				pArea = PLayoutArea(new LayoutArea(id, nullptr, pRootNode_, type, percentageX, percentageY, keepAspectRatio));
             }
 
 			auto it = areas_.insert(WindowManager::AREAS::value_type(id, pArea));
@@ -200,7 +204,7 @@ namespace NSG
 			return pArea;
 		}
 
-		void LayoutManager::WindowManager::Reset()
+		void WindowManager::Reset()
 		{
 			nestedAreas_.clear();
 			areas_.clear();
@@ -208,15 +212,16 @@ namespace NSG
             visibleAreas_ = 0;
 		}
 
-		void LayoutManager::WindowManager::Begin(bool showTitle, bool showBorder)
+		void WindowManager::Begin()
 		{
+			hotitem_ = 0;
 			lastId_ = 0;
 			ClearStencilBuffer();
-			BeginWindow(id_, showTitle, showBorder, percentageX_, percentageY_);
+			BeginWindow(id_, percentageX_, percentageY_, keepAspectRatio_);
 			
 		}
 
-		void LayoutManager::WindowManager::End()
+		void WindowManager::End()
 		{
             EndWindow();
 
@@ -236,9 +241,20 @@ namespace NSG
 			}
 
             visibleAreas_ = 0;
+
+            if(!uistate_.mousedown_)
+            {
+                activeitem_ = GLushort(-1);
+            }
+
+            if (!IsStable())
+                kbditem_ = 0; //layout changed
+            else if(uistate_.keyentered_ == NSG_KEY_TAB && !uistate_.keymod_) //clear focus
+                kbditem_ = 0;
+
 		}
 
-		PLayoutArea LayoutManager::WindowManager::GetArea(GLushort id) const
+		PLayoutArea WindowManager::GetArea(GLushort id) const
 		{
 			PLayoutArea pArea;
 
@@ -250,14 +266,14 @@ namespace NSG
 			return pArea;
 		}
 
-		PLayoutArea LayoutManager::WindowManager::GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY)
+		PLayoutArea WindowManager::GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio)
 		{
 			PLayoutArea pArea = GetArea(id);
 			
 			if(!pArea)
 			{
-				CHECK_ASSERT(nestedAreas_.size() || type == LayoutType::Horizontal || type == LayoutType::Vertical, __FILE__, __LINE__);
-				pArea = InsertNewArea(id, isReadOnly, type, percentageX, percentageY);
+				CHECK_ASSERT(nestedAreas_.size() || type == LayoutType::HORIZONTAL || type == LayoutType::VERTICAL, __FILE__, __LINE__);
+				pArea = InsertNewArea(id, type, percentageX, percentageY, keepAspectRatio);
 				newControlAdded_ = true;
 			}
 
@@ -270,40 +286,45 @@ namespace NSG
 			return pArea;
 		}
 
-		void LayoutManager::WindowManager::InsertArea(PArea area)
+		void WindowManager::InsertArea(PArea area)
 		{
-			CHECK_ASSERT(area->GetArea()->type_ == LayoutType::Horizontal || area->GetArea()->type_ == LayoutType::Vertical, __FILE__, __LINE__);
+			CHECK_ASSERT(area->GetArea()->type_ == LayoutType::HORIZONTAL || area->GetArea()->type_ == LayoutType::VERTICAL, __FILE__, __LINE__);
 			nestedAreas_.push_back(area);
 		}
 
-		void LayoutManager::WindowManager::BeginHorizontalArea(GLushort id, int percentageX, int percentageY)
+		void WindowManager::BeginHorizontalArea(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-			PArea obj(new Area(id, false, LayoutType::Horizontal, percentageX, percentageY));
-			(*obj)();	
+			PArea obj(new Area(id, false, LayoutType::HORIZONTAL, percentageX, percentageY, keepAspectRatio));
 			InsertArea(obj);
+			obj->Render();	
+			
 		}
 
-		void LayoutManager::WindowManager::BeginWindow(GLushort id, bool showTitle, bool showBorder, int percentageX, int percentageY)
+		void WindowManager::BeginWindow(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-            IMGUI::Window* window = new IMGUI::Window(userWindow_, id, showTitle, showBorder, percentageX, percentageY);
-			CHECK_ASSERT(window->GetArea()->type_ == LayoutType::Vertical, __FILE__, __LINE__);
-            (*window)();	
-			InsertArea(PArea(window));
+			CHECK_ASSERT(currentWindow_ == nullptr, __FILE__, __LINE__);
+			currentWindow_ = new IMGUI::Window(userWindow_, id, percentageX, percentageY, keepAspectRatio);
+			CHECK_ASSERT(currentWindow_->GetArea()->type_ == LayoutType::VERTICAL, __FILE__, __LINE__);
+			InsertArea(PArea(currentWindow_));
+            currentWindow_->Render();	
+			
 		}
 
-		void LayoutManager::WindowManager::EndWindow()
+		void WindowManager::EndWindow()
 		{
 			nestedAreas_.pop_back();
+			currentWindow_ = nullptr;
 		}
 
-		void LayoutManager::WindowManager::BeginVerticalArea(GLushort id, int percentageX, int percentageY)
+		void WindowManager::BeginVerticalArea(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-			PArea obj(new Area(id, false, LayoutType::Vertical, percentageX, percentageY));
-			(*obj)();	
+			PArea obj(new Area(id, false, LayoutType::VERTICAL, percentageX, percentageY, keepAspectRatio));
 			InsertArea(obj);
+			obj->Render();	
+			
 		}
 
-		float LayoutManager::WindowManager::EndArea(float scroll)
+		float WindowManager::EndArea(float scroll)
 		{
 			PArea obj = nestedAreas_.back();
 
@@ -319,24 +340,29 @@ namespace NSG
 			return scroll;
 		}
 
-		void LayoutManager::WindowManager::Spacer(GLushort id, int percentageX, int percentageY)
+		void WindowManager::Spacer(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-			GetAreaForControl(id, true, LayoutType::Spacer, percentageX, percentageY);
+			GetAreaForControl(id, LayoutType::SPACER, percentageX, percentageY, keepAspectRatio);
 		}
 
-		bool LayoutManager::WindowManager::IsReady() const 
+		bool WindowManager::IsReady() const 
 		{
-			return !newControlAdded_ && isStable_ && visible_;
+			return IsStable() && visible_;
 		}
 
-		void LayoutManager::WindowManager::RecalculateLayout(PLayoutArea pCurrentArea)
+		bool WindowManager::IsStable() const
+		{
+			return !newControlAdded_ && isStable_;
+		}
+
+		void WindowManager::RecalculateLayout(PLayoutArea pCurrentArea)
 		{
             if(pCurrentArea->children_.empty())
                 return;
 
 			auto it = pCurrentArea->children_.begin();
-            float yPosition = pCurrentArea->controlArea_->GetTopPosition(); //y position to the top of current area
-            float xPosition = pCurrentArea->controlArea_->GetLeftPosition(); //x position to the left of current area
+            float yPosition = 1; //y position to the top of current area
+            float xPosition = -1; //x position to the left of current area
 
 			while(it != pCurrentArea->children_.end())
 			{
@@ -351,7 +377,7 @@ namespace NSG
                 float stepY = scaleY;
                 float stepX = scaleX;
 
-				if(pCurrentArea->type_ == LayoutType::Vertical)
+				if (pCurrentArea->type_ == LayoutType::VERTICAL)
 				{
 					position.x = xPosition + stepX;
 					position.y = yPosition - stepY;
@@ -360,18 +386,19 @@ namespace NSG
 	            }
 	            else
 	            {
-	            	CHECK_ASSERT(pCurrentArea->type_ == LayoutType::Horizontal, __FILE__, __LINE__);
+					CHECK_ASSERT(pCurrentArea->type_ == LayoutType::HORIZONTAL, __FILE__, __LINE__);
                     position.x = xPosition + stepX;
                     position.y = yPosition - stepY;
                     xPosition += 2*stepX;
 	            }
 
 				pArea->pNode_->SetPosition(position);
+				//pArea->pNode_->SetInheritScale(!pArea->keepAspectRatio_);
 				pArea->pNode_->SetScale(Vertex3(scaleX, scaleY, 1));
 			}
 		}
 
-		GLushort LayoutManager::WindowManager::GetValidId(GLushort id)
+		GLushort WindowManager::GetValidId(GLushort id)
 		{
 			id += id_;
 
@@ -383,12 +410,12 @@ namespace NSG
 			return id;
 		}
 
-		PTextMesh LayoutManager::WindowManager::GetCurrentTextMesh(GLushort item, int maxLength)
+		PTextMesh WindowManager::GetCurrentTextMesh(GLushort item, int maxLength)
 		{
 			return pTextManager_->GetTextMesh(item, maxLength, Context::this_->pSkin_->fontFile_, Context::this_->pSkin_->fontSize_);
 		}
 
-		void LayoutManager::WindowManager::Invalidate()
+		void WindowManager::Invalidate()
 		{
 			layoutChanged_ = true;
 			pTextManager_->Invalidate();
@@ -400,10 +427,10 @@ namespace NSG
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		LayoutManager::LayoutManager(PNode pRootNode) 
-		: focusedUserWindow_(nullptr),
+		: focusedUserWindow_(App::this_),
 		focusHasChanged_(false)
 		{
-			Window(IMGUI_FIRST_VERTICAL_AREA_ID, App::this_, 100, 100); // Create main window
+			Window(IMGUI_MAIN_WINDOW_ID, App::this_, 100, 100, false); // Create main window
 		}
 
 		void LayoutManager::RenderUserWindow()
@@ -412,15 +439,14 @@ namespace NSG
 
 			userWindow->StartGUIWindow();
 
-			if (userWindow == App::this_)
-				currentWindowManager_->Begin(false, false);
-			else
-				currentWindowManager_->Begin(true, true);
+			currentWindowManager_->Begin();
 
 			if (AppStatistics::this_)
 				AppStatistics::this_->Collect(true);
 
+			currentWindowManager_->currentWindow_->BeginRenderUserWindow();
 			userWindow->RenderGUIWindow();
+			currentWindowManager_->currentWindow_->EndRenderUserWindow();
 
 			if (AppStatistics::this_)
 				AppStatistics::this_->Collect(false);
@@ -453,13 +479,13 @@ namespace NSG
 				AppStatistics::this_->Collect(true);
 		}
 
-		void LayoutManager::Window(GLushort id, IMGUI::IWindow* obj, int percentageX, int percentageY)
+		void LayoutManager::Window(GLushort id, IMGUI::IWindow* obj, int percentageX, int percentageY, bool keepAspectRatio)
 		{
 			auto it = windowManagers_.find(obj);
 			if(it == windowManagers_.end())
 			{
 				PNode rootNode(new Node);
-                PWindowManager windowManager(new WindowManager(obj, id, rootNode, percentageX, percentageY));
+				PWindowManager windowManager(new WindowManager(obj, id, rootNode, percentageX, percentageY, keepAspectRatio));
 				auto result = windowManagers_.insert(WindowManagers::value_type(obj, windowManager));
 				CHECK_ASSERT(result.second == true, __FILE__, __LINE__);
 				windowsSequence_.push_back(obj);
@@ -499,38 +525,43 @@ namespace NSG
 			{
 				IWindow* userWindow = *(it++);
 				PWindowManager windowManager = windowManagers_.find(userWindow)->second;
-				PLayoutArea area = windowManager->areas_.find(windowManager->id_)->second;
-				if(area->IsInside(Vertex3(x, y, 0)))
+				auto itArea = windowManager->areas_.find(windowManager->id_);
+				if (itArea != windowManager->areas_.end())
 				{
-					focusedUserWindow_ = userWindow;
-					focusHasChanged_ = true;
-
-					if (userWindow != App::this_) // check it is not the main window
+					PLayoutArea area = itArea->second;
+					if (area->IsInside(Vertex3(x, y, 0)))
 					{
-						windowsSequence_.remove(userWindow);
-						windowsSequence_.push_back(userWindow); // move window to the end of the list (will be the last one rendered)
-					}
+						focusedUserWindow_ = userWindow;
+						focusHasChanged_ = true;
 
-					break;
+						if (userWindow != App::this_) // check it is not the main window
+						{
+							windowsSequence_.remove(userWindow);
+							windowsSequence_.push_back(userWindow); // move window to the end of the list (will be the last one rendered)
+						}
+
+						break;
+					}
+					CHECK_ASSERT(focusedUserWindow_ != nullptr, __FILE__, __LINE__);
 				}
 			}
 
-			CHECK_ASSERT(focusedUserWindow_ != nullptr, __FILE__, __LINE__);
+			
 		}
 
-		PLayoutArea LayoutManager::GetAreaForControl(GLushort id, bool isReadOnly, LayoutType type, int percentageX, int percentageY)
+		PLayoutArea LayoutManager::GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-			return currentWindowManager_->GetAreaForControl(id, isReadOnly, type, percentageX, percentageY);
+			return currentWindowManager_->GetAreaForControl(id, type, percentageX, percentageY, keepAspectRatio);
 		}
 
-		void LayoutManager::BeginHorizontalArea(GLushort id, int percentageX, int percentageY)
+		void LayoutManager::BeginHorizontalArea(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-			currentWindowManager_->BeginHorizontalArea(id, percentageX, percentageY);
+			currentWindowManager_->BeginHorizontalArea(id, percentageX, percentageY, keepAspectRatio);
 		}
 
-		void LayoutManager::BeginVerticalArea(GLushort id, int percentageX, int percentageY)
+		void LayoutManager::BeginVerticalArea(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-			currentWindowManager_->BeginVerticalArea(id, percentageX, percentageY);
+			currentWindowManager_->BeginVerticalArea(id, percentageX, percentageY, keepAspectRatio);
 		}
 
 		float LayoutManager::EndArea(float scroll)
@@ -538,9 +569,9 @@ namespace NSG
 			return currentWindowManager_->EndArea(scroll);
 		}
 
-		void LayoutManager::Spacer(GLushort id, int percentageX, int percentageY)
+		void LayoutManager::Spacer(GLushort id, int percentageX, int percentageY, bool keepAspectRatio)
 		{
-			currentWindowManager_->Spacer(id, percentageX, percentageY);
+			currentWindowManager_->Spacer(id, percentageX, percentageY, keepAspectRatio);
 		}
 
 		size_t LayoutManager::GetNestingLevel()
@@ -574,5 +605,14 @@ namespace NSG
 			return currentWindowManager_ && currentWindowManager_->userWindow_ == focusedUserWindow_;
 		}
 
+		PNode LayoutManager::GetCurrentWindowNode() const
+		{
+			return currentWindowManager_->pRootNode_;
+		}
+
+		PWindowManager LayoutManager::GetCurrentWindowManager() const
+		{
+			return currentWindowManager_;
+		}
 	}
 }

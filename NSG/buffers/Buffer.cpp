@@ -26,36 +26,52 @@ misrepresented as being the original software.
 #include "Buffer.h"
 #include "Check.h"
 #include "Graphics.h"
+#include "AppStatistics.h"
 #include <assert.h>
 
 namespace NSG 
 {
-	Buffer::Buffer(GLenum type, GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLenum usage)
+	Buffer::Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage)
 	: type_(type),
-	usage_(usage)
+	usage_(usage),
+	dynamic_(usage != GL_STATIC_DRAW)
 	{
-		CHECK_ASSERT(type == GL_ARRAY_BUFFER || type == GL_ELEMENT_ARRAY_BUFFER, __FILE__, __LINE__);
-
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		glGenBuffers(1, &id_);
 
-		dataCollection_.push_back(Data(0, maxSize, size, data));
+		dataCollection_.push_back(Data(0, bytesNeeded));
+
+		if (AppStatistics::this_)
+		{
+			if(type_ == GL_ARRAY_BUFFER)
+				AppStatistics::this_->AddVertexBuffer(dynamic_);
+			else
+				AppStatistics::this_->AddIndexBuffer(dynamic_);
+		}
 	}
 
 	Buffer::~Buffer()
 	{
+		if (AppStatistics::this_)
+		{
+			if(type_ == GL_ARRAY_BUFFER)
+				AppStatistics::this_->RemoveVertexBuffer(dynamic_);
+			else
+				AppStatistics::this_->RemoveIndexBuffer(dynamic_);
+		}
+
 		glDeleteBuffers(1, &id_);
 	}
 
-	bool Buffer::ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)
+	bool Buffer::AllocateSpaceFor(GLsizeiptr bytesNeeded)
 	{
 		GLsizeiptr totalBytes = GetTotalBytes();
 
-		if (totalBytes + maxSize >= MAX_BUFFER_SIZE)
+		if (totalBytes + bytesNeeded >= bufferSize_)
 			return false;
 
-		dataCollection_.push_back(Data{totalBytes, maxSize, size, data });
+		dataCollection_.push_back(Data{totalBytes, bytesNeeded});
 
 		return true;
 	}

@@ -47,14 +47,16 @@ namespace NSG
 
 	void Pass2Texture::Render()
 	{
-		render2Texture_->Begin();
-		auto it = passes_.begin();
-		while(it != passes_.end())
+		if(render2Texture_->Begin())
 		{
-			PPass pass = *it;
-			pass->Render();
-			++it;
+			auto it = passes_.begin();
+			while(it != passes_.end())
+			{
+				PPass pass = *it;
+				pass->Render();
+				++it;
+			}
+			render2Texture_->End();
 		}
-		render2Texture_->End();
 	}
 }

@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "Graphics.h"
-#include "AppStatistics.h"
 
 namespace NSG
 {
@@ -45,7 +44,6 @@ namespace NSG
 
 	void BufferManager::Invalidate()
 	{
-		buffers_.clear();
 		currentStaticVertexBuffer_ = nullptr;
 		currentStaticIndexBuffer_ = nullptr;
 		currentDynamicVertexBuffer_ = nullptr;
@@ -53,89 +51,66 @@ namespace NSG
 
 		SetVertexBuffer(nullptr);
 		SetIndexBuffer(nullptr);
-
-		if (AppStatistics::this_)
-		{
-			AppStatistics::this_->ResetVertexBuffer();
-			AppStatistics::this_->ResetIndexBuffer();
-		}
 	}
 
-
-	VertexBuffer* BufferManager::GetStaticVertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)
+	PVertexBuffer BufferManager::GetStaticVertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes)
 	{
-		if (!currentStaticVertexBuffer_ || !currentStaticVertexBuffer_->ReallocateSpaceFor(maxSize, size, data))
+		if (!currentStaticVertexBuffer_ || !currentStaticVertexBuffer_->AllocateSpaceFor(bytesNeeded, vertexes))
 		{
-			currentStaticVertexBuffer_ = new VertexBuffer(maxSize, size, data, GL_STATIC_DRAW);
+			PVertexBuffer p(new VertexBuffer(bufferSize, bytesNeeded, vertexes, GL_STATIC_DRAW));
 
-			buffers_.push_back(PBuffer(currentStaticVertexBuffer_));
+			if(bufferSize > bytesNeeded)
+				currentStaticVertexBuffer_ = p;
 
-			if (AppStatistics::this_)
-				AppStatistics::this_->NewVertexBuffer();
-
+			return p;
 		}
 
 		return currentStaticVertexBuffer_;
 	}
 
-	IndexBuffer* BufferManager::GetStaticIndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase)
+	PIndexBuffer BufferManager::GetStaticIndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes)
 	{
-		if (!currentStaticIndexBuffer_ || !currentStaticIndexBuffer_->ReallocateSpaceFor(maxSize, size, data, indexBase))
+		if (!currentStaticIndexBuffer_ || !currentStaticIndexBuffer_->AllocateSpaceFor(bytesNeeded, indexes))
 		{
-			currentStaticIndexBuffer_ = new IndexBuffer(maxSize, size, data, GL_STATIC_DRAW);
+			PIndexBuffer p(new IndexBuffer(bufferSize, bytesNeeded, indexes, GL_STATIC_DRAW));
 
-			buffers_.push_back(PBuffer(currentStaticIndexBuffer_));
+			if(bufferSize > bytesNeeded)
+				currentStaticIndexBuffer_ = p;
 
-			if (AppStatistics::this_)
-				AppStatistics::this_->NewIndexBuffer();
-
+			return p;
 		}
 
 		return currentStaticIndexBuffer_;
 	}
 
-	VertexBuffer* BufferManager::GetDynamicVertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)
+	PVertexBuffer BufferManager::GetDynamicVertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes)
 	{
-		if (!currentDynamicVertexBuffer_ || !currentDynamicVertexBuffer_->ReallocateSpaceFor(maxSize, size, data))
+		if (!currentDynamicVertexBuffer_ || !currentDynamicVertexBuffer_->AllocateSpaceFor(bytesNeeded, vertexes))
 		{
-			currentDynamicVertexBuffer_ = new VertexBuffer(maxSize, size, data, GL_DYNAMIC_DRAW);
+			PVertexBuffer p(new VertexBuffer(bufferSize, bytesNeeded, vertexes, GL_STREAM_DRAW));
 
-			buffers_.push_back(PBuffer(currentDynamicVertexBuffer_));
+			if(bufferSize > bytesNeeded)
+				currentDynamicVertexBuffer_ = p;
 
-			if (AppStatistics::this_)
-				AppStatistics::this_->NewVertexBuffer();
-
+			return p;
 		}
 
 		return currentDynamicVertexBuffer_;
 	}
 
-	IndexBuffer* BufferManager::GetDynamicIndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase)
+	PIndexBuffer BufferManager::GetDynamicIndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes)
 	{
-		if (!currentDynamicIndexBuffer_ || !currentDynamicIndexBuffer_->ReallocateSpaceFor(maxSize, size, data, indexBase))
+		if (!currentDynamicIndexBuffer_ || !currentDynamicIndexBuffer_->AllocateSpaceFor(bytesNeeded, indexes))
 		{
-			currentDynamicIndexBuffer_ = new IndexBuffer(maxSize, size, data, GL_DYNAMIC_DRAW);
+			PIndexBuffer p(new IndexBuffer(bufferSize, bytesNeeded, indexes, GL_STREAM_DRAW));
 
-			buffers_.push_back(PBuffer(currentDynamicIndexBuffer_));
+			if(bufferSize > bytesNeeded)
+				currentDynamicIndexBuffer_ = p;
 
-			if (AppStatistics::this_)
-				AppStatistics::this_->NewIndexBuffer();
+			return p;
 
 		}
 
 		return currentDynamicIndexBuffer_;
-	}
-
-	bool BufferManager::IsValidBufferPtr(Buffer* p) const
-	{
-		auto it = buffers_.begin();
-		while (it != buffers_.end())
-		{
-			if (it->get() == p)
-				return true;
-			++it;
-		}
-
-		return false;
 	}
 }

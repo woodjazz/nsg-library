@@ -74,7 +74,6 @@ namespace NSG
 		VerticalAlignment vAlignment_;
 		float alignmentOffsetX_;
 		float alignmentOffsetY_;
-		VertexsData vertexDataCopy_;
 		size_t maxLength_;
 	};
 }

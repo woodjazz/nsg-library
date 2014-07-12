@@ -41,8 +41,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Text::Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY)
-        : Object(id, false, LayoutType::Control, percentageX, percentageY),
+		Text::Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY, bool keepAspectRatio)
+			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY, keepAspectRatio),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength)),
         pCursorMesh_(Context::this_->GetCurrentTextMesh(-1, 1)),
@@ -52,11 +52,13 @@ namespace NSG
 
 		Text::~Text()
 		{
-
+			lastwidget_ = id_;
 		}
 
 		void Text::OnActive()
 		{
+			activeitem_ = id_;
+
 	  		///////////////////////////////////////////////
 	        //Calculates cursor's position after click
 	        Vertex4 worldPos = node_->GetGlobalModelMatrix() * Vertex4(-1,0,0,1); //left border in world coords
@@ -77,17 +79,28 @@ namespace NSG
                  CHECK_ASSERT(area_->cursor_character_position_ <= currentText_.length(), __FILE__, __LINE__);
 	        }
 	        ///////////////////////////////////////////////
+		}
 
-			if(Keyboard::this_->Enable())
+		void Text::OnHot()
+		{
+			hotitem_ = id_;
+		}	
+
+		void Text::OnFocus(bool needsKeyboard)
+		{
+			kbditem_ = id_;
+
+			area_->cursor_character_position_ = currentText_.length();
+
+			if(needsKeyboard && Keyboard::this_->Enable())
 			{
+				Vertex4 worldPos = node_->GetGlobalModelMatrix() * Vertex4(0, -1, 0, 1); //bottom border in world coords
+				Vertex3 screenPos = Context::this_->pCamera_->WorldToScreen(Vertex3(worldPos)); //bottom border in screen coords
+
 				Vertex3 position(0, screenPos.y, 0);
 		  		Context::this_->pCamera_->SetPosition(position);
 		  	}
-		}
 
-		void Text::OnFocus()
-		{
-			area_->cursor_character_position_ = currentText_.length();
 		}
 
 		void Text::OnKey(int key)
@@ -154,8 +167,6 @@ namespace NSG
 	        			--area_->cursor_character_position_;
 	        		}
 	        	}
-
-                //pTextMesh_->SetText(currentText_);
 	        }
 		}
 
@@ -214,13 +225,14 @@ namespace NSG
 	        textMaterial.SetTexture0(pTextMesh_->GetAtlas());
 	        textMaterial.SetProgram(pTextMesh_->GetProgram());
             size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
+            pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 
             pass.Set(&textMaterial);
 	        technique.Render();
 	        
 			// Render cursor if we have keyboard focus
-			if(HasFocus() && (uistate_.tick_ < 15))
+			if(HasFocus() && layoutManager_.IsCurrentWindowActive() && (uistate_.tick_ < 15))
 	        {
 	            SceneNode cursorNode;
 	            cursorNode.SetParent(&textNode2);
@@ -233,6 +245,7 @@ namespace NSG
 	            technique.Add(&pass);
 	            pass.Add(&cursorNode, pCursorMesh_);
 	            pass.Set(&textMaterial);
+	            pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 				pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 	            
 	            technique.Render();
@@ -240,7 +253,7 @@ namespace NSG
 		}
 
 
-		std::string Text::operator()()
+		std::string Text::Render()
 		{
 			Update();
 				

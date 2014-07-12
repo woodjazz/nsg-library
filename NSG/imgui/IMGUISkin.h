@@ -37,6 +37,7 @@ namespace NSG
 			int fontSize_;
 			size_t textMaxLength_;
 
+			PTechnique mainWindowTechnique_;
 			PTechnique windowTechnique_;
 
 			PTechnique areaTechnique_;
@@ -51,6 +52,17 @@ namespace NSG
 
 			PTechnique titleTechnique_;
 			PTechnique borderTechnique_;
+
+			PTechnique stencilTechnique_;
+
+			PTechnique sizerLeftTopTechnique_;
+			PTechnique sizerTopTechnique_;
+			PTechnique sizerRightTopTechnique_;
+			PTechnique sizerLeftTechnique_;
+			PTechnique sizerRightTechnique_;
+			PTechnique sizerLeftBottomTechnique_;
+			PTechnique sizerBottomTechnique_;
+			PTechnique sizerRightBottomTechnique_;
 
 			Skin();
 			Skin(const Skin& obj);

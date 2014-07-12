@@ -107,7 +107,6 @@ namespace NSG
 #endif
 
 	Keyboard::Keyboard()
-	: enabled_(false)
 	{
 
 	}
@@ -119,40 +118,22 @@ namespace NSG
 
 	bool Keyboard::Enable()
 	{
-		if(!enabled_)
-		{
-        #if SDL
-            SDL_StartTextInput();
-        #endif
-		#if ANDROID	
-    		enabled_ = DisplayKeyboard(activity_, true);
-    	#else
-    		enabled_ = false;
-    	#endif
-    	}
-
-        return enabled_;
+#if ANDROID	
+		return DisplayKeyboard(activity_, true);
+#elif SDL
+		SDL_StartTextInput();
+#endif
+		return true;
 	}
 
 	bool Keyboard::Disable()
 	{
-		if(enabled_)
-		{
-        #if SDL
-            SDL_StopTextInput();
-        #endif
-
-		#if ANDROID	
-    		if(DisplayKeyboard(activity_, false))
-    		{
-    			enabled_ = false;
-    		}
-    	#else
-    		enabled_ = true;
-    	#endif
-    	}
-
-        return !enabled_;
+#if ANDROID	
+		return DisplayKeyboard(activity_, false);
+#elif SDL
+		SDL_StopTextInput();
+#endif
+		return true;
     }
 
 }

@@ -33,13 +33,21 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
-	IndexBuffer::IndexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLenum usage)
-	: Buffer(GL_ELEMENT_ARRAY_BUFFER, maxSize, size, data, usage)
+	IndexBuffer::IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage)
+	: Buffer(bufferSize, bytesNeeded, GL_ELEMENT_ARRAY_BUFFER, usage)
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
-		SetVertexBuffer(this);
-		glBufferData(type_, MAX_BUFFER_SIZE, nullptr, usage_);
-		glBufferSubData(type_, 0, maxSize, data);
+
+		bool ok = SetIndexBuffer(this);
+		CHECK_ASSERT(ok, __FILE__, __LINE__);
+
+		glBufferData(type_, bufferSize, nullptr, usage_);
+
+		GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
+		CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
+
+		glBufferSubData(type_, 0, bytes2Set, &indexes[0]);
+		
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
@@ -47,7 +55,6 @@ namespace NSG
 	{
 		if(GetIndexBuffer() == this)
 			SetIndexBuffer(nullptr);
-
 	}
 
 	void IndexBuffer::UnBind() 
@@ -55,23 +62,19 @@ namespace NSG
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); 
 	}
 
-	bool IndexBuffer::ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLintptr indexBase)
+	bool IndexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const Indexes& indexes)
 	{
-		if (Buffer::ReallocateSpaceFor(maxSize, size, data))
+		if (Buffer::AllocateSpaceFor(maxSize))
 		{
-			const IndexType* old_indexes = static_cast<const IndexType*>(data);
-			GLsizeiptr n = size / sizeof(IndexType);
-			std::vector<IndexType> indexes;
-			indexes.reserve(n);
-			std::copy_n(old_indexes, n, std::back_inserter(indexes));
-			std::for_each(indexes.begin(), indexes.end(), [&](IndexType& x) { x += indexBase; CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__); });
-
 			CHECK_GL_STATUS(__FILE__, __LINE__);
 
 			SetIndexBuffer(this);
 
 			const Data* obj = GetLastAllocation();
-			glBufferSubData(type_, obj->offset_, size, &indexes[0]);
+
+			GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
+
+			glBufferSubData(type_, obj->offset_, bytes2Set, &indexes[0]);
 
 			CHECK_GL_STATUS(__FILE__, __LINE__);
 			
@@ -80,7 +83,7 @@ namespace NSG
 		return false;
 	}
 
-	void IndexBuffer::UpdateData(Buffer::Data& obj, const Indexes& indexes, GLintptr indexBase)
+	void IndexBuffer::UpdateData(Buffer::Data& obj, const Indexes& indexes)
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -88,14 +91,9 @@ namespace NSG
 
 		CHECK_ASSERT(bytes2Set <= obj.maxSize_, __FILE__, __LINE__);
 
-		obj.size_ = bytes2Set;
+		SetIndexBuffer(this);
 
-		Indexes tmpIndexes(indexes);
-		std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType& x) { x += indexBase; CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__); });
-
-		SetVertexBuffer(this);
-
-		glBufferSubData(type_, obj.offset_, bytes2Set, &tmpIndexes[0]);
+		glBufferSubData(type_, obj.offset_, bytes2Set, &indexes[0]);
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 		

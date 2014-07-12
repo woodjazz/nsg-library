@@ -29,14 +29,21 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
-	VertexBuffer::VertexBuffer(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data, GLenum usage) 
-	: Buffer(GL_ARRAY_BUFFER, maxSize, size, data, usage)
+	VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage) 
+	: Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage)
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
-		SetVertexBuffer(this);
-		CHECK_ASSERT(maxSize <= MAX_BUFFER_SIZE, __FILE__, __LINE__);
-		glBufferData(type_, MAX_BUFFER_SIZE, nullptr, usage_);
-		glBufferSubData(type_, 0, size, data);
+		
+		bool ok = SetVertexBuffer(this);
+		CHECK_ASSERT(ok, __FILE__, __LINE__);
+
+		glBufferData(type_, bufferSize, nullptr, usage_);
+
+		GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
+		CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
+
+		glBufferSubData(type_, 0, bytes2Set, &vertexes[0]);
+		
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 
@@ -46,9 +53,9 @@ namespace NSG
 			SetVertexBuffer(nullptr);
 	}
 
-	bool VertexBuffer::ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)
+	bool VertexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes)
 	{
-		if(Buffer::ReallocateSpaceFor(maxSize, size, data))
+		if(Buffer::AllocateSpaceFor(maxSize))
 		{
 			const Data* obj = GetLastAllocation();
 
@@ -56,7 +63,9 @@ namespace NSG
 
 			SetVertexBuffer(this);
 
-			glBufferSubData(type_, obj->offset_, obj->size_, obj->data_);
+			GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
+
+			glBufferSubData(type_, obj->offset_, bytes2Set, &vertexes[0]);
 
 			CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -79,11 +88,9 @@ namespace NSG
 
 		CHECK_ASSERT(bytes2Set <= obj.maxSize_, __FILE__, __LINE__);
 
-		obj.size_ = bytes2Set;
-
 		SetVertexBuffer(this);
 
-		glBufferSubData(type_, obj.offset_, obj.size_, &vertexes[0]);
+		glBufferSubData(type_, obj.offset_, bytes2Set, &vertexes[0]);
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}

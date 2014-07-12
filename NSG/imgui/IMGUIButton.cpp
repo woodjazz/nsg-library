@@ -40,8 +40,8 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Button::Button(GLushort id, bool isReadOnly, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY)
-        : Object(id, isReadOnly, LayoutType::Control, percentageX, percentageY),
+		Button::Button(GLushort id, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY, bool keepAspectRatio)
+			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY, keepAspectRatio),
 		currentText_(text),
 		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength)),
 		pressed_(false)
@@ -51,7 +51,23 @@ namespace NSG
 
 		Button::~Button()
 		{
+			lastwidget_ = id_;
 		}
+
+		void Button::OnActive()
+		{
+			activeitem_ = id_;
+		}	
+
+		void Button::OnFocus(bool needsKeyboard)
+		{
+			kbditem_ = id_;
+		}
+
+		void Button::OnHot()
+		{
+			hotitem_ = id_;
+		}	
 
 		void Button::OnKey(int key)
 		{
@@ -59,13 +75,9 @@ namespace NSG
 				pressed_ = true;
 		}
 
-		void Button::OnActive()
-		{
-		}
-
 		void Button::UpdateControl()
 		{
-            if(uistate_.mouseup_ && IsMouseButtonPressedInArea())
+            if(uistate_.mouseup_ && layoutManager_.IsCurrentWindowActive() && IsMouseButtonPressedInArea())
 			{
 				pressed_ = IsMouseInArea();
 			}
@@ -98,6 +110,7 @@ namespace NSG
             pass.Add(&textNode, pTextMesh_);
             pass.EnableDepthTest(false);
             pass.EnableStencilTest(true);
+            pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             pass.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
 
             Material textMaterial;
@@ -111,7 +124,7 @@ namespace NSG
             CHECK_GL_STATUS(__FILE__, __LINE__);
 		}
 
-		bool Button::operator()()
+		bool Button::Render()
 		{
 			if(!Update())
 				return false;

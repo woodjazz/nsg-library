@@ -36,12 +36,12 @@ namespace NSG
 		class Text : public Object
 		{
 		public:
-			Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY);
+			Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY, bool keepAspectRatio);
 			~Text();
-			std::string operator()();
-			bool NeedsKeyboard() const { return true; }
+			std::string Render();
 			void OnActive();
-			void OnFocus();
+			void OnHot();
+			void OnFocus(bool needsKeyboard);
 			void OnKey(int key);
 			void OnChar(unsigned int character);
 			void UpdateControl();

@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "BufferManager.h"
 #include "Graphics.h"
 #include "Context.h"
+#include <algorithm>
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
@@ -91,87 +92,73 @@ namespace NSG
 		if (vertexsData_.empty())
 			return;
 
-		vertexDataCopy_ = vertexsData_;
-		Move(vertexsData_, alignmentOffsetX_, alignmentOffsetY_);
-
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		//CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
+		CHECK_ASSERT(pVBuffer_ && bufferVertexData_, __FILE__, __LINE__);
+		CHECK_ASSERT(pIBuffer_ && bufferIndexData_, __FILE__, __LINE__);
 		CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
 		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
 
-		CHECK_ASSERT(pVBuffer_ && bufferVertexData_->data_, __FILE__, __LINE__);
-		{
-			CHECK_ASSERT(Context::this_->bufferManager_->IsValidBufferPtr(pVBuffer_), __FILE__, __LINE__);
-			CHECK_ASSERT(bufferVertexData_, __FILE__, __LINE__);
-			pVBuffer_->UpdateData(*bufferVertexData_, vertexsData_);
-		}
+		VertexsData tmpVertexData(vertexsData_);
+		Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
+
+		pVBuffer_->UpdateData(*bufferVertexData_, tmpVertexData);
 		
-		CHECK_ASSERT(pIBuffer_ && bufferIndexData_->data_, __FILE__, __LINE__);
-		{
-			CHECK_ASSERT(Context::this_->bufferManager_->IsValidBufferPtr(pIBuffer_), __FILE__, __LINE__);
+		Indexes tmpIndexes(indexes_);
+		
+		GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
 
-			CHECK_ASSERT(bufferIndexData_, __FILE__, __LINE__);
+		if(indexBase)
+			std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType& x) { x += indexBase; CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__); });
 
-			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
-
-			pIBuffer_->UpdateData(*bufferIndexData_, indexes_, indexBase);
-		}
+		pIBuffer_->UpdateData(*bufferIndexData_, tmpIndexes);
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
-		
-		vertexsData_ = vertexDataCopy_;
 	}
 
 	
 	void TextMesh::AllocateResources()
 	{
-		vertexDataCopy_ = vertexsData_;
-		Move(vertexsData_, alignmentOffsetX_, alignmentOffsetY_);
-
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-
 		CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
 		CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
-		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
-
-		CHECK_ASSERT(!pVBuffer_, __FILE__, __LINE__);
-		{
-			const size_t VERTEX_PER_CHAR = 6;
-			
-			const GLsizeiptr MAX_BYTES_VERTEX_BUFFER = VERTEX_PER_CHAR * maxLength_ * sizeof(VertexData);
-			GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
-			CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
-			pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, bytesNeeded, &vertexsData_[0]);
-			//pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(MAX_BYTES_VERTEX_BUFFER, bytesNeeded, &vertexsData_[0]);
-			bufferVertexData_ = pVBuffer_->GetLastAllocation();
-			CHECK_ASSERT(bufferVertexData_->maxSize_ && bufferVertexData_->size_, __FILE__, __LINE__);
-		}
-		
-		CHECK_ASSERT(!pIBuffer_, __FILE__, __LINE__);
-		{
-			const size_t INDEXES_PER_CHAR = 6;
-			const GLsizeiptr MAX_BYTES_INDEX_BUFFER = INDEXES_PER_CHAR * maxLength_ * sizeof(IndexType);
-			GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
-			CHECK_ASSERT(bytesNeeded <= MAX_BYTES_INDEX_BUFFER, __FILE__, __LINE__);
-
-			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
-			pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, bytesNeeded, &indexes_[0], indexBase);
-			//pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(MAX_BYTES_INDEX_BUFFER, bytesNeeded, &indexes_[0], indexBase);
-			bufferIndexData_ = pIBuffer_->GetLastAllocation();
-			CHECK_ASSERT(bufferIndexData_->maxSize_ && bufferIndexData_->size_, __FILE__, __LINE__);
-		}
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
-		
-		vertexsData_ = vertexDataCopy_;
+		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
+		CHECK_ASSERT(!pVBuffer_, __FILE__, __LINE__);
+		CHECK_ASSERT(!pIBuffer_, __FILE__, __LINE__);
+
+		VertexsData tmpVertexData(vertexsData_);
+		Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
+		Indexes tmpIndexes(indexes_);
+
+		const size_t VERTEX_PER_CHAR = 6;
+		const GLsizeiptr MAX_BYTES_VERTEX_BUFFER = VERTEX_PER_CHAR * maxLength_ * sizeof(VertexData);
+		GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
+		CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
+		pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
+		bufferVertexData_ = pVBuffer_->GetLastAllocation();
+
+		const size_t INDEXES_PER_CHAR = 6;
+		const GLsizeiptr MAX_BYTES_INDEX_BUFFER = INDEXES_PER_CHAR * maxLength_ * sizeof(IndexType);
+		bytesNeeded = sizeof(IndexType) * indexes_.size();
+		CHECK_ASSERT(bytesNeeded <= MAX_BYTES_INDEX_BUFFER, __FILE__, __LINE__);
+		if (bufferVertexData_)
+		{
+			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
+			if(indexBase)
+				std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType& x) { x += indexBase; CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__); });
+		}
+		pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
+		bufferIndexData_ = pIBuffer_->GetLastAllocation();
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 	
 	void TextMesh::ReleaseResources()
 	{
 		Mesh::ReleaseResources();
 
-		text_.clear(); // Force SetText (when window's resized)
+		text_.clear(); // Force SetText (when window's resizes)
 	}
 	
 	GLfloat TextMesh::GetWidthForCharacterPosition(unsigned int charPos) const

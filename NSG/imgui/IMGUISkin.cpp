@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "RectangleMesh.h"
 #include "ProgramSimpleColor.h"
 #include "ProgramUnlit.h"
+#include "ProgramWhiteColor.h"
 
 namespace NSG 
 {
@@ -41,6 +42,7 @@ namespace NSG
 		Skin::Skin() 
 		: fontSize_(18),
 		textMaxLength_(std::numeric_limits<int>::max()),
+		mainWindowTechnique_(new Technique),
 		windowTechnique_(new Technique),
 		areaTechnique_(new Technique),
         activeTechnique_(new Technique),
@@ -49,7 +51,16 @@ namespace NSG
         labelTechnique_(new Technique),
         sliderTechnique_(new Technique),
         titleTechnique_(new Technique),
-        borderTechnique_(new Technique)
+        borderTechnique_(new Technique),
+		stencilTechnique_(new Technique),
+		sizerLeftTopTechnique_(new Technique),
+		sizerTopTechnique_(new Technique),
+		sizerRightTopTechnique_(new Technique),
+		sizerLeftTechnique_(new Technique),
+		sizerRightTechnique_(new Technique),
+		sizerLeftBottomTechnique_(new Technique),
+		sizerBottomTechnique_(new Technique),
+		sizerRightBottomTechnique_(new Technique)
 		{
 			PProgram unlitProgram(new ProgramUnlit);
 
@@ -74,9 +85,14 @@ namespace NSG
             labelMaterial->SetProgram(unlitProgram);
 			labelMaterial->SetColor(Color(0,0,0,0.0f));
 
+			PMaterial mainWindowMaterial(new Material);
+            mainWindowMaterial->SetColor(Color(0,0,0,0.0f));
+            mainWindowMaterial->SetProgram(unlitProgram);
+
+
 			PMaterial windowMaterial(new Material);
             //windowMaterial->SetColor(Color(0,1,1,0.5f));
-            windowMaterial->SetColor(Color(0,0,0,0.0f));
+            windowMaterial->SetColor(Color(0,0,1,0.6f));
             windowMaterial->SetProgram(unlitProgram);
             //windowMaterial->SetProgram(pProgram);
 			//windowMaterial->EnableColorBuffer(false);
@@ -95,7 +111,11 @@ namespace NSG
 
 			PMaterial titleMaterial(new Material);
             titleMaterial->SetProgram(unlitProgram);
-			titleMaterial->SetColor(Color(0.5f,0.5f,1.0f,0.6f));
+			titleMaterial->SetColor(Color(0.5f,0.5f,1.0f,0.9f));
+
+			PMaterial sizerMaterial(new Material);
+            sizerMaterial->SetProgram(unlitProgram);
+			sizerMaterial->SetColor(Color(0.1f,0.1f,0.5f,0.9f));
 			
 
 			PMesh borderMesh(new RectangleMesh(2, 2, GL_STATIC_DRAW));
@@ -135,16 +155,19 @@ namespace NSG
 
 
             PPass windowPass(new Pass);
-            //windowPass->Set(pNormalMaterial);
             windowPass->Set(windowMaterial);
 			windowPass->Add(nullptr, areaMesh);
             windowPass->EnableDepthTest(false);
 			windowPass->EnableStencilTest(true);
 
+            PPass mainWindowPass(new Pass);
+            mainWindowPass->Set(mainWindowMaterial);
+			mainWindowPass->Add(nullptr, areaMesh);
+            mainWindowPass->EnableDepthTest(false);
+			mainWindowPass->EnableStencilTest(true);
 
 
             PPass areaPass(new Pass);
-            //areaPass->Set(pNormalMaterial);
             areaPass->Set(areaMaterial);
 			areaPass->Add(nullptr, areaMesh);
             areaPass->EnableDepthTest(false);
@@ -162,38 +185,63 @@ namespace NSG
             titlePass->EnableDepthTest(false);
 			titlePass->EnableStencilTest(true);
 
-
-			sliderTechnique_->Add(sliderPass);
-
-			titleTechnique_->Add(titlePass);
-			titleTechnique_->Add(borderPass);
-
-			borderTechnique_->Add(borderPass);
-			
-			windowTechnique_->Add(windowPass);
-
-			areaTechnique_->Add(areaPass);
-
-			//activeTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
-			activeTechnique_->Add(activePass);
-			//activeTechnique_->Add(borderPass);
-
-			//normalTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
-			normalTechnique_->Add(normalPass);
-			//normalTechnique_->Add(borderPass);
-
-			//hotTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
-			hotTechnique_->Add(hotPass);
-			//hotTechnique_->Add(borderPass);
-
 			PPass labelPass(new Pass);
 			labelPass->Set(labelMaterial);
 			labelPass->Add(nullptr, controlMesh);
             labelPass->EnableDepthTest(false);
 			labelPass->EnableStencilTest(true);
 
+			PPass sizerPass(new Pass);
+			sizerPass->Set(sizerMaterial);
+			sizerPass->Add(nullptr, controlMesh);
+            sizerPass->EnableDepthTest(false);
+			sizerPass->EnableStencilTest(true);
 
+
+			sliderTechnique_->Add(sliderPass);
+			titleTechnique_->Add(titlePass);
+			//titleTechnique_->Add(borderPass);
+			borderTechnique_->Add(borderPass);
+			mainWindowTechnique_->Add(mainWindowPass);
+			windowTechnique_->Add(windowPass);
+			areaTechnique_->Add(areaPass);
+			//activeTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
+			activeTechnique_->Add(activePass);
+			//activeTechnique_->Add(borderPass);
+			//normalTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
+			normalTechnique_->Add(normalPass);
+			//normalTechnique_->Add(borderPass);
+			//hotTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
+			hotTechnique_->Add(hotPass);
+			//hotTechnique_->Add(borderPass);
 			labelTechnique_->Add(labelPass);
+
+			sizerLeftTopTechnique_->Add(sizerPass);
+			sizerTopTechnique_->Add(sizerPass);
+			sizerRightTopTechnique_->Add(sizerPass);
+			sizerLeftTechnique_->Add(sizerPass);
+			sizerRightTechnique_->Add(sizerPass);
+			sizerLeftBottomTechnique_->Add(sizerPass);
+			sizerBottomTechnique_->Add(sizerPass);
+			sizerRightBottomTechnique_->Add(sizerPass);
+
+
+			{
+				// stencil technique
+				PProgram program(new ProgramWhiteColor);
+				PMaterial material(new Material);
+				material->SetColor(Color(1,0,1,0.7f));
+				material->SetProgram(program);
+				PPass pass(new Pass);
+				pass->Set(material);
+				pass->Add(nullptr, areaMesh);
+	            pass->EnableDepthTest(false);
+				pass->EnableDepthBuffer(false);
+				pass->EnableStencilTest(true);
+				pass->EnableColorBuffer(false);
+				pass->SetBlendMode(BLEND_NONE);
+				stencilTechnique_->Add(pass);
+			}
 		}
 
 		Skin::Skin(const Skin& obj)

@@ -34,11 +34,13 @@ namespace NSG
 		class Button : public Object
 		{
 		public:
-			Button(GLushort id, bool isReadOnly, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY);
+			Button(GLushort id, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY, bool keepAspectRatio);
             ~Button();
-			bool operator()();
+			bool Render();
 			void OnKey(int key);
 			void OnActive();
+			void OnHot();
+			void OnFocus(bool needsKeyboard);
 			void UpdateControl();
 		protected:
 			std::string currentText_;

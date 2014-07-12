@@ -24,20 +24,23 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "IMGUIButton.h"
+#include "IMGUIObject.h"
 #include "Types.h"
 #include <string>
 namespace NSG
 {
 	namespace IMGUI
 	{
-		class Label : public Button
+		class Label : public Object
 		{
 		public:
-			Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY);
+			Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY, bool keepAspectRatio);
 			~Label();
-			void operator()();
+			void Render();
+			void UpdateControl();
 			PTechnique GetNormalTechnique() const;
+		private:
+			PTextMesh pTextMesh_;
 		};
 	}
 }

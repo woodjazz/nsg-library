@@ -60,7 +60,45 @@ namespace NSG
 
     namespace IMGUI
     {
-        typedef enum {Vertical, Horizontal, Control, Spacer} LayoutType;
+        typedef enum {
+            VERTICAL, 
+            HORIZONTAL, 
+            CONTROL, 
+            SPACER
+        } LayoutType;
+
+        typedef enum {
+            IMGUI_UNKNOWN_ID, 
+			IMGUI_MAIN_WINDOW_ID,
+            IMGUI_WINDOW_AREA_ID0,
+			IMGUI_WINDOW_AREA_ID1,
+			IMGUI_WINDOW_AREA_ID2,
+			IMGUI_WINDOW_AREA_ID3,
+			IMGUI_WINDOW_AREA_ID4,
+			IMGUI_WINDOW_AREA_ID5,
+			IMGUI_WINDOW_AREA_ID6,
+			IMGUI_WINDOW_AREA_ID7,
+			IMGUI_WINDOW_AREA_ID8,
+			IMGUI_WINDOW_AREA_ID9,
+            IMGUI_WINDOW_AREA_IDA,
+            IMGUI_WINDOW_AREA_IDB,
+            IMGUI_WINDOW_AREA_IDC,
+            IMGUI_WINDOW_AREA_IDD,
+            IMGUI_VERTICAL_SLIDER_ID, 
+            IMGUI_HORIZONTAL_SLIDER_ID, 
+            IMGUI_FIRST_VALID_ID
+        } IdsTypes;
+
+        typedef enum {
+            LEFT_TOP_SIZER,
+            TOP_SIZER,
+            RIGHT_TOP_SIZER,
+            LEFT_SIZER,
+            RIGHT_SIZER,
+            LEFT_BOTTOM_SIZER,
+            BOTTOM_SIZER,
+            RIGHT_BOTTOM_SIZER
+        } SizerType;
     }
 
     typedef std::pair<PNode, PMesh> MeshNode;
@@ -71,15 +109,6 @@ namespace NSG
     typedef Clock::time_point TimePoint;
 
     typedef enum {OUTSIDE, INTERSECTS, INSIDE} Intersection;
-
-    typedef enum {
-        IMGUI_UNKNOWN_ID, 
-        IMGUI_FIRST_VERTICAL_AREA_ID, 
-        IMGUI_VERTICAL_SLIDER_ID, 
-        IMGUI_HORIZONTAL_SLIDER_ID, 
-        IMGUI_FIRST_VALID_ID
-    } IMGUI_IDS;
-
 
     struct VertexData
     {
@@ -93,13 +122,14 @@ namespace NSG
 
     typedef GLushort IndexType;
 
-    typedef enum {ATT_POSITION, ATT_NORMAL, ATT_TEXTURECOORD, ATT_COLOR} AttributesLoc;
+    typedef enum {
+        ATT_POSITION, 
+        ATT_NORMAL, 
+        ATT_TEXTURECOORD, 
+        ATT_COLOR
+    } AttributesLoc;
 
 	const IndexType MAX_INDEX_VALUE = ~IndexType(0);
-	//const IndexType MAX_INDEXES_PER_MESH = ~IndexType(0);
-	//const size_t MAX_VERTEXES_PER_MESH = 10000;
-	//typedef PODVector<VertexData, MAX_VERTEXES_PER_MESH> VertexsData;
-	//typedef PODVector<IndexType, MAX_INDEXES_PER_MESH > Indexes;
 
 	typedef std::vector<VertexData> VertexsData;
 	typedef std::vector<IndexType> Indexes;

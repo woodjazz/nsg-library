@@ -35,37 +35,38 @@ namespace NSG
 	{
 	public:
 
+		static const size_t MAX_BUFFER_SIZE = 2 * 1000 * 1000;
+
 		struct Data
 		{
 			GLintptr offset_;
 			GLsizeiptr maxSize_;
-			GLsizeiptr size_;
-			const GLvoid* data_;
 
 			Data()
 			{
 				memset(this, 0, sizeof(*this));
 			}
 
-			Data(GLintptr offset, GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data)
-				: offset_(offset), maxSize_(maxSize), size_(size), data_(data)
+			Data(GLintptr offset, GLsizeiptr maxSize)
+				: offset_(offset), maxSize_(maxSize)
 			{
 			}
 		};
 
 		~Buffer();
-
 		Data* GetLastAllocation();
 		void Bind() { glBindBuffer(type_, id_); }
-		virtual bool ReallocateSpaceFor(GLsizeiptr maxSize, GLsizeiptr size, const GLvoid* data);
 	protected:
-		Buffer(GLenum type, GLsizeiptr maxSize, GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW);
-		GLsizeiptr GetTotalBytes() const;
+		bool AllocateSpaceFor(GLsizeiptr bytesNeeded);
+		Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage = GL_STATIC_DRAW);
+		
 		GLenum type_;
 		GLuint id_;
 		GLenum usage_;
-		static const size_t MAX_BUFFER_SIZE = 2 * 1000 * 1000;
+		GLsizeiptr bufferSize_;
+		bool dynamic_;
 	private:
+		GLsizeiptr GetTotalBytes() const;
 		static const size_t VERTEXES_PER_TRIANGLE = 3;
 		static const size_t MAX_OBJECTS_PER_BUFFER = MAX_BUFFER_SIZE / VERTEXES_PER_TRIANGLE;
 		PODVector<Data, MAX_OBJECTS_PER_BUFFER> dataCollection_;

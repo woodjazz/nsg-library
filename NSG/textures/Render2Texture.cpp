@@ -63,7 +63,8 @@ namespace NSG
         CHECK_ASSERT(pTexture_ != nullptr, __FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+
+        SetFrameBuffer(framebuffer_);
 
         {
             // The color buffer
@@ -118,7 +119,7 @@ namespace NSG
         enabled_ = false;
     }
 
-	void Render2Texture::Begin()
+	bool Render2Texture::Begin()
 	{
         if(IsReady())
         {
@@ -126,7 +127,8 @@ namespace NSG
 
             glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
 
-    		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+            SetFrameBuffer(framebuffer_);
+
             glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
 
             ClearAllBuffers();
@@ -135,6 +137,8 @@ namespace NSG
 
             enabled_ = true;
         }
+
+        return enabled_;
         
 	}
 
@@ -144,7 +148,8 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            SetFrameBuffer(0);
+            
             glViewport(viewport_.x, viewport_.y, viewport_.z, viewport_.w); 
 
             CHECK_GL_STATUS(__FILE__, __LINE__);

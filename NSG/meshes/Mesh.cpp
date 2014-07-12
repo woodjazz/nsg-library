@@ -37,9 +37,7 @@ namespace NSG
 	Mesh::Mesh(GLenum usage) 
 	: pVBuffer_(nullptr),
 	pIBuffer_(nullptr),
-	usage_(usage),
-	bufferVertexData_(nullptr),
-	bufferIndexData_(nullptr)
+	usage_(usage)
 	{
 	}
 
@@ -57,7 +55,7 @@ namespace NSG
 
 			CHECK_ASSERT(pVBuffer_, __FILE__, __LINE__);
 			
-			SetVertexBuffer(pVBuffer_);
+			SetVertexBuffer(pVBuffer_.get());
 
 			if(position_loc != -1)
 			{
@@ -114,7 +112,7 @@ namespace NSG
 
 			if(!indexes_.empty())
 			{
-				SetIndexBuffer(pIBuffer_);
+				SetIndexBuffer(pIBuffer_.get());
 
 				const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData_->offset_);
 
@@ -190,17 +188,21 @@ namespace NSG
 		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
 
 		GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
-		pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(bytesNeeded, bytesNeeded, &vertexsData_[0]);
+		pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(Buffer::MAX_BUFFER_SIZE, bytesNeeded, vertexsData_);
 		bufferVertexData_ = pVBuffer_->GetLastAllocation();
-		CHECK_ASSERT(bufferVertexData_->maxSize_ && bufferVertexData_->size_, __FILE__, __LINE__);
+		CHECK_ASSERT(bufferVertexData_->maxSize_, __FILE__, __LINE__);
 		
 		if(!indexes_.empty())
 		{
 			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
-			GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
-			pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(bytesNeeded, bytesNeeded, &indexes_[0], indexBase);
+			Indexes tmpIndexes(indexes_);
+			if(indexBase)
+				std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType& x) { x += indexBase; CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__); });
+			
+			GLsizeiptr bytesNeeded = sizeof(IndexType) * tmpIndexes.size();
+			pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(Buffer::MAX_BUFFER_SIZE, bytesNeeded, tmpIndexes);
 			bufferIndexData_ = pIBuffer_->GetLastAllocation();
-			CHECK_ASSERT(bufferIndexData_->maxSize_ && bufferIndexData_->size_, __FILE__, __LINE__);
+			CHECK_ASSERT(bufferIndexData_->maxSize_, __FILE__, __LINE__);
 		}
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
