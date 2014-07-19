@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Material.h"
 #include "IMGUILayoutManager.h"
+//#include "IMGUITextManager.h"
 #include "FrameColorSelection.h"
 #include "IMGUIState.h"
 #include "App.h"
@@ -50,6 +51,7 @@ namespace NSG
 		pCurrentNode_(new Node),
         pRootNode_(new Node),
         pLayoutManager_(new LayoutManager(pRootNode_))
+		//textManager_(new TextManager)
     	{
 			pCamera_->EnableOrtho();
             pCamera_->SetFarClip(1000000);
@@ -58,11 +60,6 @@ namespace NSG
 
 		Context::~Context()
 		{
-		}
-
-		void Context::Invalidate()
-		{
-			pLayoutManager_->Invalidate();
 		}
 
 		bool Context::IsReady() const
@@ -82,16 +79,14 @@ namespace NSG
 			state_->End();
 		}
 
-		PTextMesh Context::GetCurrentTextMesh(GLushort item, int maxLength)
+/*		PTextMesh Context::GetCurrentTextMesh(const std::string& data)
 		{
-			return pLayoutManager_->GetCurrentTextMesh(item, maxLength);
+			return textManager_->GetTextMesh(data, pSkin_->fontFile_, pSkin_->fontSize_);
 		}
-
-		GLushort Context::GetValidId(GLushort id)
+*/
+		IdType Context::GetValidId()
 		{
-            CHECK_ASSERT(id > 0, __FILE__, __LINE__);
-
-			return pLayoutManager_->GetValidId(id);
+			return pLayoutManager_->GetValidId();
         }
 	}
 	

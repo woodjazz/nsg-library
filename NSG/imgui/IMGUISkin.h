@@ -25,47 +25,38 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SharedPointers.h"
-#include <string>
 
-namespace NSG 
+namespace NSG
 {
-	namespace IMGUI
-	{
-		struct Skin
-		{
-			std::string fontFile_;
-			int fontSize_;
-			size_t textMaxLength_;
-
-			PTechnique mainWindowTechnique_;
-			PTechnique windowTechnique_;
-
-			PTechnique areaTechnique_;
-
-			PTechnique activeTechnique_;
-			PTechnique normalTechnique_;
-			PTechnique hotTechnique_;
+    namespace IMGUI
+    {
+        struct Skin
+        {
+            PStyle mainWindowStyle_;
+            PStyle windowStyle_;
+            PStyle areaStyle_;
+            PStyle labelStyle_;
+            PStyle buttonStyle_;
+			PStyle textStyle_;
+            PStyle areaSliderStyle_;
+            PStyle titleStyle_;
+			PStyle sizerLeftTopStyle_;
+			PStyle sizerTopStyle_;
+			PStyle sizerRightTopStyle_;
+			PStyle sizerLeftStyle_;
+			PStyle sizerRightStyle_;
+			PStyle sizerLeftBottomStyle_;
+			PStyle sizerBottomStyle_;
+			PStyle sizerRightBottomStyle_;
 			
-			PTechnique labelTechnique_;
+			PStyle vSliderStyle_;
+			PStyle vThumbSliderStyle_;
+			PStyle hSliderStyle_;
+			PStyle hThumbSliderStyle_;
 
-			PTechnique sliderTechnique_;
+            PTechnique stencilTechnique_;
 
-			PTechnique titleTechnique_;
-			PTechnique borderTechnique_;
-
-			PTechnique stencilTechnique_;
-
-			PTechnique sizerLeftTopTechnique_;
-			PTechnique sizerTopTechnique_;
-			PTechnique sizerRightTopTechnique_;
-			PTechnique sizerLeftTechnique_;
-			PTechnique sizerRightTechnique_;
-			PTechnique sizerLeftBottomTechnique_;
-			PTechnique sizerBottomTechnique_;
-			PTechnique sizerRightBottomTechnique_;
-
-			Skin();
-			Skin(const Skin& obj);
-		};
-	}
+            Skin();
+        };
+    }
 }

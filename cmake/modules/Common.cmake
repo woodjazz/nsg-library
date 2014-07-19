@@ -10,6 +10,7 @@ if(WIN32)
     if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
         add_definitions("/Zi /wd4519")
         add_definitions( "/MP" )
+        add_definitions (-D_CRT_SECURE_NO_WARNINGS)
     endif()
 
     # if (MSVC)
@@ -63,6 +64,11 @@ if(APPLE)
         add_definitions(-DIOS)
     endif()
 endif()
+
+set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG")
+set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNDEBUG")
+#set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+#set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
 
 if(NACL)
 
@@ -192,13 +198,14 @@ macro (setup_common)
 
         if(IOS)
             set (CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_32_64_BIT)")
-            set (CMAKE_XCODE_EFFECTIVE_PLATFORMS -iphoneos -iphonesimulator)
+            #set (CMAKE_XCODE_EFFECTIVE_PLATFORMS -iphoneos -iphonesimulator)
             set (CMAKE_OSX_SYSROOT iphoneos)    # Set Base SDK to "Latest iOS"
             set (MACOSX_BUNDLE_GUI_IDENTIFIER com.xxxx.xxxx.\${PRODUCT_NAME:xxxxxx})
             set_target_properties (${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
             set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioToolbox -framework CoreAudio -framework CoreGraphics -framework Foundation -framework OpenGLES -framework QuartzCore -framework UIKit")
         else()
-            set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework IOKit -framework Cocoa -framework Carbon -framework OpenGL -framework CoreVideo")
+            set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioUnit -framework Carbon -framework Cocoa -framework CoreAudio -framework ForceFeedback -framework IOKit -framework OpenGL -framework CoreServices")
+            
         endif()
 
         

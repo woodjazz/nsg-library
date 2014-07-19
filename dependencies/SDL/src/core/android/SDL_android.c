@@ -18,6 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+// Modified by Lasse Oorni for Urho3D
+
 #include "../../SDL_internal.h"
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
@@ -27,6 +30,7 @@
 
 #include "SDL_system.h"
 #include "SDL_android.h"
+
 #include <EGL/egl.h>
 
 #include "../../events/SDL_events_c.h"
@@ -81,6 +85,9 @@ static jmethodID midPollInputDevices;
 static float fLastAccelerometer[3];
 static bool bHasNewData;
 
+// Urho3D: application files dir
+static char* mFilesDir = 0;
+
 /*******************************************************************************
                  Functions called by JNI
 *******************************************************************************/
@@ -107,12 +114,33 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     return JNI_VERSION_1_4;
 }
 
+// Urho3D: added function
+const char* SDL_Android_GetFilesDir()
+{
+    return mFilesDir;
+}
+
 /* Called before SDL_main() to initialize JNI bindings */
-void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
+// Urho3D: added passing user files directory from SDLActivity on startup
+void SDL_Android_Init(JNIEnv* mEnv, jclass cls, jstring filesDir)
 {
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init()");
 
     Android_JNI_SetupThread();
+
+    // Copy the files dir
+    const char *str;
+    str = (*mEnv)->GetStringUTFChars(mEnv, filesDir, 0);
+    if (str)
+    {
+        if (mFilesDir)
+            free(mFilesDir);
+
+        size_t length = strlen(str) + 1;
+        mFilesDir = (char*)malloc(length);
+        memcpy(mFilesDir, str, length);
+        (*mEnv)->ReleaseStringUTFChars(mEnv, filesDir, str);
+    }
 
     mActivityClass = (jclass)((*mEnv)->NewGlobalRef(mEnv, cls));
 
@@ -315,6 +343,9 @@ void Java_org_libsdl_app_SDLActivity_nativeLowMemory(
 void Java_org_libsdl_app_SDLActivity_nativeQuit(
                                     JNIEnv* env, jclass cls)
 {
+    // Urho3D: added log print
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeQuit()");
+
     /* Discard previous events. The user should have handled state storage
      * in SDL_APP_WILLENTERBACKGROUND. After nativeQuit() is called, no
      * events other than SDL_QUIT and SDL_APP_TERMINATING should fire */

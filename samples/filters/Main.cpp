@@ -54,7 +54,7 @@ struct Sample : App
 
 	void Start()
 	{
-        IMGUISkin()->fontFile_ = "font/FreeSans.ttf";
+        //IMGUISkin()->fontFile_ = "font/FreeSans.ttf";
 
         camera_ = PCamera(new Camera);
         camera_->SetPosition(Vertex3(0,0,10));

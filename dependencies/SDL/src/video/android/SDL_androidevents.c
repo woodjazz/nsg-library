@@ -18,12 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+// Modified by Lasse Oorni for Urho3D
+
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_ANDROID
 
 /* We're going to do this by default */
-#define SDL_ANDROID_BLOCK_ON_PAUSE  1
+// Urho3D: do not block on pause to allow exiting the application
+//#define SDL_ANDROID_BLOCK_ON_PAUSE  1
 
 #include "SDL_androidevents.h"
 #include "SDL_events.h"
@@ -33,14 +37,13 @@ void android_egl_context_backup();
 void android_egl_context_restore();
 
 void 
-android_egl_context_restore() 
+android_egl_context_restore()
 {
     SDL_WindowData *data = (SDL_WindowData *) Android_Window->driverdata;
-    if (SDL_GL_MakeCurrent(Android_Window, (SDL_GLContext) data->egl_context) < 0) {
-        /* The context is no longer valid, create a new one */
-        /* FIXME: Notify the user that the context changed and textures need to be re created */
-        data->egl_context = (EGLContext) SDL_GL_CreateContext(Android_Window);
-        SDL_GL_MakeCurrent(Android_Window, (SDL_GLContext) data->egl_context);
+    // Urho3D: make sure there is a valid stored context to restore
+    if (data->egl_context && SDL_GL_MakeCurrent(Android_Window, (SDL_GLContext) data->egl_context) < 0) {
+        // Urho3D: if the old context could not be restored, leave it to the Graphics subsystem to create a new one
+        data->egl_context = NULL;
     }
 }
 

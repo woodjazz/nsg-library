@@ -53,17 +53,17 @@ namespace NSG
         	box.max_.y < min_.y || box.min_.y > max_.y ||
             box.max_.z < min_.z || box.min_.z > max_.z)
         {
-            return OUTSIDE;
+			return Intersection::OUTSIDE;
         }
         else if (box.min_.x < min_.x || box.max_.x > max_.x || 
         	box.min_.y < min_.y || box.max_.y > max_.y ||
             box.min_.z < min_.z || box.max_.z > max_.z)
         {
-            return INTERSECTS;
+			return Intersection::INTERSECTS;
         }
         else
        	{
-            return INSIDE;
+			return Intersection::INSIDE;
         }
 	}
 
@@ -73,11 +73,11 @@ namespace NSG
 			point.y < min_.y || point.y > max_.y ||
             point.z < min_.z || point.z > max_.z)
         {
-            return OUTSIDE;
+			return Intersection::OUTSIDE;
         }
         else
         {
-            return INSIDE;
+			return Intersection::INSIDE;
         }
 	}
 

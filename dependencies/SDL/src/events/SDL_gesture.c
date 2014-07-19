@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+// Modified by Lasse Oorni for Urho3D
+
 #include "../SDL_internal.h"
 
 /* General mouse handling code for SDL */
@@ -137,7 +139,8 @@ int SDL_SaveAllDollarTemplates(SDL_RWops *dst)
     for (i = 0; i < SDL_numGestureTouches; i++) {
         SDL_GestureTouch* touch = &SDL_gestureTouch[i];
         for (j = 0; j < touch->numDollarTemplates; j++) {
-            rtrn += SaveTemplate(&touch->dollarTemplate[i], dst);
+            // Urho3D: fix index variable (i -> j)
+            rtrn += SaveTemplate(&touch->dollarTemplate[j], dst);
         }
     }
     return rtrn;
@@ -149,12 +152,60 @@ int SDL_SaveDollarTemplate(SDL_GestureID gestureId, SDL_RWops *dst)
     for (i = 0; i < SDL_numGestureTouches; i++) {
         SDL_GestureTouch* touch = &SDL_gestureTouch[i];
         for (j = 0; j < touch->numDollarTemplates; j++) {
-            if (touch->dollarTemplate[i].hash == gestureId) {
-                return SaveTemplate(&touch->dollarTemplate[i], dst);
+            // Urho3D: gesture IDs are stored as 32bit, so check the low bits only. Fix index variable (i -> j)
+            if ((touch->dollarTemplate[j].hash & 0xffffffff) == (gestureId & 0xffffffff)) {
+                return SaveTemplate(&touch->dollarTemplate[j], dst);
             }
         }
     }
     return SDL_SetError("Unknown gestureId");
+}
+
+// Urho3D: added function
+static void SDL_RemoveDollarTemplate_one(SDL_GestureTouch* inTouch, int index)
+{
+    if (index < inTouch->numDollarTemplates - 1) {
+        SDL_memmove(&inTouch->dollarTemplate[index], &inTouch->dollarTemplate[index + 1],
+            (inTouch->numDollarTemplates - 1 - index) * sizeof(SDL_DollarTemplate));
+    }
+    if (inTouch->numDollarTemplates > 1) {
+        inTouch->dollarTemplate = SDL_realloc(inTouch->dollarTemplate,
+            (inTouch->numDollarTemplates - 1) * sizeof(SDL_DollarTemplate));
+    }
+    else {
+        SDL_free(inTouch->dollarTemplate);
+        inTouch->dollarTemplate = NULL;
+    }
+    --inTouch->numDollarTemplates;
+}
+
+// Urho3D: added function
+int SDL_RemoveDollarTemplate(SDL_GestureID gestureId)
+{
+    int i,j,ret = 0;
+    for (i = 0; i < SDL_numGestureTouches; i++) {
+        SDL_GestureTouch* touch = &SDL_gestureTouch[i];
+        for (j = 0; j < touch->numDollarTemplates; j++) {
+            // Urho3D: gesture IDs are stored as 32bit, so check the low bits only
+            if ((touch->dollarTemplate[j].hash & 0xffffffff) == (gestureId & 0xffffffff)) {
+                SDL_RemoveDollarTemplate_one(touch, j);
+                ret = 1;
+            }
+        }
+    }
+    return ret;
+}
+
+// Urho3D: added function
+void SDL_RemoveAllDollarTemplates(void)
+{
+    int i;
+    for (i = 0; i < SDL_numGestureTouches; i++) {
+        SDL_GestureTouch* touch = &SDL_gestureTouch[i];
+        SDL_free(touch->dollarTemplate);
+        touch->dollarTemplate = NULL;
+        touch->numDollarTemplates = 0;
+    }
 }
 
 /* path is an already sampled set of points
@@ -454,8 +505,9 @@ static int SDL_SendGestureDollar(SDL_GestureTouch* touch,
     SDL_Event event;
     event.dgesture.type = SDL_DOLLARGESTURE;
     event.dgesture.touchId = touch->id;
-    event.mgesture.x = touch->centroid.x;
-    event.mgesture.y = touch->centroid.y;
+    // Urho3D: fixed to store x,y into event.dgesture instead of event.mgesture
+    event.dgesture.x = touch->centroid.x;
+    event.dgesture.y = touch->centroid.y;
     event.dgesture.gestureId = gestureId;
     event.dgesture.error = error;
     /* A finger came up to trigger this event. */

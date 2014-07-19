@@ -45,11 +45,8 @@ namespace NSG
 			~Context();
 			void RenderGUI();
 			bool IsReady() const;
-			PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
-			void Invalidate();
-
-			// Used to avoid the same ID when more than one control lays in the same line
-			GLushort GetValidId(GLushort id);
+			//PTextMesh GetCurrentTextMesh(const std::string& data);
+			IdType GetValidId();
 		};
 	}
 }

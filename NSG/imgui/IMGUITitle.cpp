@@ -33,18 +33,13 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Title::Title(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
-			: Label(id, text, maxLength, percentageX, percentageY)
+		Title::Title(const std::string& text, float percentageX, float percentageY, Style& style)
+			: Label(text, percentageX, percentageY, style)
 		{
 		}
 
 		Title::~Title()
 		{
-		}
-
-		PTechnique Title::GetNormalTechnique() const
-		{
-			return skin_.titleTechnique_;
 		}
 
 		void Title::Render()
@@ -56,11 +51,11 @@ namespace NSG
 	    {
 	    	Label::UpdateControl();
 	    	
-			if(layoutManager_.IsCurrentWindowActive() && mousedown_ && !lastSizerHit_)
+			if(layoutManager_.IsCurrentWindowActive() && mousedown_)
 			{
-		    	if((!lastTitleHit_ && node_->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastTitleHit_ == id_)
+		    	if((!lastHit_ && node_->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == id_)
 		    	{
-		    		lastTitleHit_ = id_;
+		    		lastHit_ = id_;
 		    		PNode windowNode = layoutManager_.GetCurrentWindowNode();
 					Vertex3 position = windowNode->GetPosition();
 		    		position.x += mouseRelX_;

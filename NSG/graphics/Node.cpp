@@ -26,12 +26,13 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Log.h"
 #include "BoundingBox.h"
+#include <algorithm>
 
 namespace NSG
 {
 	Vertex3 Node::UP = Vertex3(0,1,0);
 
-	static GLushort s_node_id = 1;
+	static IdType s_node_id = 1;
 
 	Node::Node() 
 	: id_(s_node_id++),
@@ -58,7 +59,6 @@ namespace NSG
 		CHECK_ASSERT(it != pParent_->children_.end() && "Child not found!!!", __FILE__, __LINE__);
 		pParent_->children_.erase(it);
 	}
-
 
     void Node::SetParent(PNode pParent)
     {
@@ -119,6 +119,24 @@ namespace NSG
 			MarkAsDirty();
         }
 	}
+
+	void Node::SetGlobalScale(const Vertex3& scale)
+	{
+		if(pParent_ == nullptr) 
+		{
+			SetScale(scale);
+		}		
+        else
+        {
+			Vertex3 globalScale(pParent_->GetGlobalScale());
+			globalScale.x = 1 / globalScale.x;
+			globalScale.y = 1 / globalScale.y;
+			globalScale.z = 1 / globalScale.z;
+
+			SetScale(globalScale * scale);
+        }
+	}
+
 
 	void Node::SetGlobalPosition(const Vertex3& position) 
 	{
@@ -303,7 +321,7 @@ namespace NSG
 			Update();
 
 		BoundingBox box(*this);
-		return box.IsInside(point) != OUTSIDE;
+		return box.IsInside(point) != Intersection::OUTSIDE;
 	}
 
 	void Node::MarkAsDirty()

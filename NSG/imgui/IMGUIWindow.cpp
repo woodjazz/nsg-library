@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "IMGUI.h"
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
+#include "IMGUIStyle.h"
 #include "IMGUILabel.h"
 #include "IMGUIState.h"
 #include "IMGUITitle.h"
@@ -36,22 +37,22 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Technique.h"
 #include "Pass.h"
-#include "App.h"
 #include "Material.h"
+#include "App.h"
 
 namespace NSG
 {
 	namespace IMGUI
 	{
-		static const float TITLE_WIDTH = 30; //pixels 
-		static const float SIZER_WIDTH = 10; //pixels 
+		static const int TITLE_WIDTH = 20; //pixels 
+		static const int SIZER_WIDTH = 5; //pixels 
 
-		Window::Window(IWindow* userWindow, GLushort id, int percentageX, int percentageY)
-			: Area(id, true, LayoutType::VERTICAL, percentageX, percentageY),
+		Window::Window(IWindow* userWindow, float percentageX, float percentageY)
+			: Area(LayoutType::WINDOW, percentageX, percentageY, userWindow->GetStyle()),
         userWindow_(userWindow),
-		sizerSizeX_(PIXELS2PERCENTAGEX(SIZER_WIDTH)),
+		sizerSizeX_(Pixels2PercentageX(SIZER_WIDTH)),
 		longSizerSizeX_(100 - 2 * sizerSizeX_),
-		sizerSizeY_(PIXELS2PERCENTAGEY(SIZER_WIDTH)),
+		sizerSizeY_(Pixels2PercentageY(SIZER_WIDTH)),
 		longSizerSizeY_(100 - 2 * sizerSizeY_)
 		{
 		}
@@ -70,55 +71,62 @@ namespace NSG
 			Update();
 		}
 
-		PTechnique Window::GetNormalTechnique() const
-		{
-			if(userWindow_ == App::this_)
-				return skin_.mainWindowTechnique_;
-
-			return skin_.windowTechnique_;
-		}
-
 		void Window::BeginRenderUserWindow()
 		{
 			if (userWindow_ == App::this_)
 				return;
 
-			layoutManager_.BeginHorizontalArea(id_ + IMGUI_WINDOW_AREA_ID0, 100, sizerSizeY_);
+			if(userWindow_->resizable_)
 			{
+				layoutManager_.BeginHorizontalArea(100, sizerSizeY_, *skin_.areaStyle_);
 				{
-					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID1, LEFT_TOP_SIZER, sizerSizeX_, 100);
-					obj.Render();
-				}
+					{
+						Sizer obj(SizerType::LEFT_TOP_SIZER, sizerSizeX_, 100, *skin_.sizerLeftTopStyle_);
+						obj.Render();
+					}
 
-				{
-					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID2, TOP_SIZER, longSizerSizeX_, 100);
-					obj.Render();
-				}
+					{
+						Sizer obj(SizerType::TOP_SIZER, longSizerSizeX_, 100, *skin_.sizerTopStyle_);
+						obj.Render();
+					}
 
+					{
+						Sizer obj(SizerType::RIGHT_TOP_SIZER, sizerSizeX_, 100, *skin_.sizerRightTopStyle_);
+						obj.Render();
+					}
+				}
+				layoutManager_.EndArea(-1);
+
+				layoutManager_.BeginHorizontalArea(100, longSizerSizeY_, *skin_.areaStyle_);
 				{
-					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID3, RIGHT_TOP_SIZER, sizerSizeX_, 100);
-					obj.Render();
+					{
+						Sizer obj(SizerType::LEFT_SIZER, sizerSizeX_, 100, *skin_.sizerLeftStyle_);
+						obj.Render();
+					}
+
+					layoutManager_.BeginVerticalArea(longSizerSizeX_, 100, *skin_.areaStyle_);
+
+					if(userWindow_->hasTitle_)
+					{
+						float titlePercentage = Pixels2PercentageY(TITLE_WIDTH);
+						{
+							Title obj(userWindow_->title_, 100, titlePercentage, *skin_.titleStyle_);
+							obj.Render();				
+						}
+
+						layoutManager_.BeginVerticalArea(100, 100 - titlePercentage, *skin_.areaStyle_);
+					}
 				}
 			}
-			layoutManager_.EndArea(-1);
-
-			layoutManager_.BeginHorizontalArea(id_ + IMGUI_WINDOW_AREA_ID4, 100, longSizerSizeY_);
+			else if(userWindow_->hasTitle_)
 			{
+				float titlePercentage = Pixels2PercentageY(TITLE_WIDTH);
 				{
-					Sizer obj(id_ + IMGUI_WINDOW_AREA_ID5, LEFT_SIZER, sizerSizeX_, 100);
-					obj.Render();
-				}
-
-				layoutManager_.BeginVerticalArea(id_ + IMGUI_WINDOW_AREA_ID6, longSizerSizeX_, 100);
-
-				float titlePercentage = PIXELS2PERCENTAGEY(TITLE_WIDTH);
-				{
-					Title obj(id_ + IMGUI_WINDOW_AREA_ID7, "Title", 10, 100, titlePercentage);
+					Title obj(userWindow_->title_, 100, titlePercentage, *skin_.titleStyle_);
 					obj.Render();				
 				}
 
-				layoutManager_.BeginVerticalArea(id_ + IMGUI_WINDOW_AREA_ID8, 100, 100 - titlePercentage);
-
+				layoutManager_.BeginVerticalArea(100, 100 - titlePercentage, *skin_.areaStyle_);
 			}
 		}
 
@@ -127,35 +135,43 @@ namespace NSG
 			if (userWindow_ == App::this_)
 				return;
 
-			layoutManager_.EndArea(-1); // Vertical
-
-			layoutManager_.EndArea(-1); // Vertical
-
+			if(userWindow_->resizable_)
 			{
-				Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_ID9), RIGHT_SIZER, sizerSizeX_, 100);
-				obj.Render();
-			}
-			
-			layoutManager_.EndArea(-1); // Horizontal
+				if(userWindow_->hasTitle_)
+					layoutManager_.EndArea(-1); // Vertical
 
-			layoutManager_.BeginHorizontalArea(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDA), 100, sizerSizeY_);
+				layoutManager_.EndArea(-1); // Vertical
+
+				{
+					Sizer obj(SizerType::RIGHT_SIZER, sizerSizeX_, 100, *skin_.sizerRightStyle_);
+					obj.Render();
+				}
+				
+				layoutManager_.EndArea(-1); // Horizontal
+
+				layoutManager_.BeginHorizontalArea(100, sizerSizeY_, *skin_.areaStyle_);
+				{
+					{
+						Sizer obj(SizerType::LEFT_BOTTOM_SIZER, sizerSizeX_, 100, *skin_.sizerLeftBottomStyle_);
+						obj.Render();
+					}
+
+					{
+						Sizer obj(SizerType::BOTTOM_SIZER, longSizerSizeX_, 100, *skin_.sizerBottomStyle_);
+						obj.Render();
+					}
+
+					{
+						Sizer obj(SizerType::RIGHT_BOTTOM_SIZER, sizerSizeX_, 100, *skin_.sizerRightBottomStyle_);
+						obj.Render();
+					}
+				}
+				layoutManager_.EndArea(-1); // Horizontal
+			}
+			else if(userWindow_->hasTitle_)
 			{
-				{
-					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDB), LEFT_BOTTOM_SIZER, sizerSizeX_, 100);
-					obj.Render();
-				}
-
-				{
-					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDC), BOTTOM_SIZER, longSizerSizeX_, 100);
-					obj.Render();
-				}
-
-				{
-					Sizer obj(layoutManager_.GetValidId(id_ + IMGUI_WINDOW_AREA_IDD), RIGHT_BOTTOM_SIZER, sizerSizeX_, 100);
-					obj.Render();
-				}
+				layoutManager_.EndArea(-1); // Vertical
 			}
-			layoutManager_.EndArea(-1); // Horizontal
 		}
 	}
 }

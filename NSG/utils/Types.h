@@ -45,10 +45,10 @@ misrepresented as being the original software.
 namespace NSG
 {
     typedef glm::highp_ivec4 Recti;
-	typedef glm::vec4 Vertex4;
-	typedef glm::vec3 Vertex3;
-	typedef glm::vec2 Vertex2;
-	typedef glm::quat Quaternion;
+    typedef glm::vec4 Vertex4;
+    typedef glm::vec3 Vertex3;
+    typedef glm::vec2 Vertex2;
+    typedef glm::quat Quaternion;
     typedef glm::mat4 Matrix4;
     typedef glm::mat3 Matrix3;
     typedef glm::vec4 Color;
@@ -58,38 +58,30 @@ namespace NSG
     typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
     typedef enum {TOP_ALIGNMENT, MIDDLE_ALIGNMENT, BOTTOM_ALIGNMENT} VerticalAlignment;
 
+    typedef GLushort IdType;
+
     namespace IMGUI
     {
-        typedef enum {
-            VERTICAL, 
-            HORIZONTAL, 
-            CONTROL, 
+        enum class LayoutType
+        {
+            WINDOW,
+            VERTICAL,
+            HORIZONTAL,
+            CONTROL,
             SPACER
-        } LayoutType;
+        };
 
-        typedef enum {
-            IMGUI_UNKNOWN_ID, 
-			IMGUI_MAIN_WINDOW_ID,
-            IMGUI_WINDOW_AREA_ID0,
-			IMGUI_WINDOW_AREA_ID1,
-			IMGUI_WINDOW_AREA_ID2,
-			IMGUI_WINDOW_AREA_ID3,
-			IMGUI_WINDOW_AREA_ID4,
-			IMGUI_WINDOW_AREA_ID5,
-			IMGUI_WINDOW_AREA_ID6,
-			IMGUI_WINDOW_AREA_ID7,
-			IMGUI_WINDOW_AREA_ID8,
-			IMGUI_WINDOW_AREA_ID9,
-            IMGUI_WINDOW_AREA_IDA,
-            IMGUI_WINDOW_AREA_IDB,
-            IMGUI_WINDOW_AREA_IDC,
-            IMGUI_WINDOW_AREA_IDD,
-            IMGUI_VERTICAL_SLIDER_ID, 
-            IMGUI_HORIZONTAL_SLIDER_ID, 
+        enum class IdsTypes : IdType
+        {
+            IMGUI_UNKNOWN_ID,
+            IMGUI_MAIN_WINDOW_ID,
+            IMGUI_VERTICAL_SLIDER_ID,
+            IMGUI_HORIZONTAL_SLIDER_ID,
             IMGUI_FIRST_VALID_ID
-        } IdsTypes;
+        } ;
 
-        typedef enum {
+        enum class SizerType
+        {
             LEFT_TOP_SIZER,
             TOP_SIZER,
             RIGHT_TOP_SIZER,
@@ -98,7 +90,7 @@ namespace NSG
             LEFT_BOTTOM_SIZER,
             BOTTOM_SIZER,
             RIGHT_BOTTOM_SIZER
-        } SizerType;
+        } ;
     }
 
     typedef std::pair<PNode, PMesh> MeshNode;
@@ -108,7 +100,10 @@ namespace NSG
     typedef std::chrono::steady_clock Clock;
     typedef Clock::time_point TimePoint;
 
-    typedef enum {OUTSIDE, INTERSECTS, INSIDE} Intersection;
+    enum class Intersection
+    {
+        OUTSIDE, INTERSECTS, INSIDE
+    } ;
 
     struct VertexData
     {
@@ -122,17 +117,18 @@ namespace NSG
 
     typedef GLushort IndexType;
 
-    typedef enum {
-        ATT_POSITION, 
-        ATT_NORMAL, 
-        ATT_TEXTURECOORD, 
+    enum class AttributesLoc
+    {
+        ATT_POSITION,
+        ATT_NORMAL,
+        ATT_TEXTURECOORD,
         ATT_COLOR
-    } AttributesLoc;
+    };
 
-	const IndexType MAX_INDEX_VALUE = ~IndexType(0);
+    const IndexType MAX_INDEX_VALUE = ~IndexType(0);
 
-	typedef std::vector<VertexData> VertexsData;
-	typedef std::vector<IndexType> Indexes;
+    typedef std::vector<VertexData> VertexsData;
+    typedef std::vector<IndexType> Indexes;
 
-	static const Matrix4 IDENTITY_MATRIX(1.0f);
+    static const Matrix4 IDENTITY_MATRIX(1.0f);
 }

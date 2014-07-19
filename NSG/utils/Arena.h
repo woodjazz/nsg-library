@@ -45,7 +45,7 @@ namespace NSG
 		{
 		    assert(pointer_in_buffer(ptr_) && "pointer is not in buffer");
 
-			if (buffer_ + N - ptr_ >= n)
+			if ((size_t)(buffer_ + N - ptr_) >= n)
 		    {
 		        char* r = ptr_;
 		        ptr_ += n;

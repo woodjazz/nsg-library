@@ -25,32 +25,27 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "IMGUIStyle.h"
+#include "IMGUIContext.h"
+#include "IMGUISkin.h"
 #include <regex>
 
 namespace NSG
 {
     namespace IMGUI
     {
-        bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
-        void Label_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
-        void Title_(GLushort id, const std::string& text, int maxLength, int percentageX = 0, int percentageY = 0);
-        std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX = 0, int percentageY = 0);
-        void BeginHorizontal_(GLushort id, int percentageX = 0, int percentageY = 0);
-        void BeginVertical_(GLushort id, int percentageX = 0, int percentageY = 0);
-        float EndArea_(float scroll = -1);
-        void Spacer_(GLushort id, int percentageX = 0, int percentageY = 0);
-        PSkin& Skin_();
-        PNode& Node_();
-
         struct IWindow
         {
-            virtual ~IWindow() {};
-            virtual void StartGUIWindow() {};
-            virtual void RenderGUIWindow() {};
-            virtual void EndGUIWindow() {};
+            bool hasTitle_;
+            bool resizable_;
+            std::string title_;
+            IWindow() : hasTitle_(false), resizable_(false) {}
+            virtual ~IWindow() {}
+            virtual void StartGUIWindow() {}
+            virtual void RenderGUIWindow() {}
+            virtual void EndGUIWindow() {}
+            virtual Style& GetStyle();
         };
-
-        void Window_(GLushort id, IWindow* obj, int percentageX = 0, int percentageY = 0);
 
         bool IsReady();
         void OnMouseMove(float x, float y);
@@ -60,18 +55,40 @@ namespace NSG
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void DoTick();
+        float Pixels2PercentageX(int pixels);
+        float Pixels2PercentageY(int pixels);
     }
+
+	bool IMGUIButton(const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->buttonStyle_);
+	float IMGUIVSlider(float value, float percentageX = 100, float percentageY = 100, float thumbPercentageX = 25, float thumbPercentageY = 25, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->vSliderStyle_, IMGUI::Style& thumbStyle = *IMGUI::Context::this_->pSkin_->vThumbSliderStyle_);
+	float IMGUIHSlider(float value, float percentageX = 100, float percentageY = 100, float thumbPercentageX = 25, float thumbPercentageY = 25, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->hSliderStyle_, IMGUI::Style& thumbStyle = *IMGUI::Context::this_->pSkin_->hThumbSliderStyle_);
+	float IMGUIVSliderThumb(float value, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->vThumbSliderStyle_);
+	float IMGUIHSliderThumb(float value, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->hThumbSliderStyle_);
+	void IMGUILabel(const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->labelStyle_);
+	void IMGUITitle(const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->titleStyle_);
+	std::string IMGUITextField(const std::string& text, float percentageX = 100, float percentageY = 100, std::regex* pRegex = nullptr, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->textStyle_);
+	void IMGUIBeginHorizontal(float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->areaStyle_);
+	void IMGUIBeginVertical(float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->areaStyle_);
+    float IMGUIEndArea(float scroll = -1);
+    void IMGUISpacer(float percentageX = 100, float percentageY = 100);
+	IMGUI::PSkin& IMGUISkin();
+    PNode& IMGUINode();
+	void IMGUIWindow(IMGUI::IWindow* obj, float percentageX = 100, float percentageY = 100);
 }
-#define IMGUICOUNTER __COUNTER__ + IMGUI::IMGUI_FIRST_VALID_ID //first positions are reserved
-#define IMGUIButton(maxLength, text, ...) IMGUI::Button_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )
-#define IMGUILabel(maxLength, text,...) IMGUI::Label_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )
-#define IMGUITitle(maxLength, text,...) IMGUI::Title_(IMGUICOUNTER, text, maxLength, ##__VA_ARGS__ )
-#define IMGUITextField(maxLength, text,...) IMGUI::TextField_(IMGUICOUNTER, text, maxLength, nullptr, ##__VA_ARGS__ )
-#define IMGUITextFieldWithPattern(maxLength, text, pattern, ...) IMGUI::TextField_(IMGUICOUNTER, text, maxLength, pattern, ##__VA_ARGS__ )
+
+/*
+#define IMGUICOUNTER __COUNTER__ + (int)(IMGUI::IdsTypes::IMGUI_FIRST_VALID_ID) //first positions are reserved
+#define IMGUIButton(text, ...) IMGUI::Button_(IMGUICOUNTER, text, ##__VA_ARGS__ )
+#define IMGUIVSlider(value, ...) IMGUI::VSlider_(IMGUICOUNTER, value, ##__VA_ARGS__ )
+#define IMGUILabel(text,...) IMGUI::Label_(IMGUICOUNTER, text, ##__VA_ARGS__ )
+#define IMGUITitle(text,...) IMGUI::Title_(IMGUICOUNTER, text, ##__VA_ARGS__ )
+#define IMGUITextField(text,...) IMGUI::TextField_(IMGUICOUNTER, text, nullptr, ##__VA_ARGS__ )
+#define IMGUITextFieldWithPattern(text, pattern, ...) IMGUI::TextField_(IMGUICOUNTER, text, pattern, ##__VA_ARGS__ )
 #define IMGUIBeginHorizontal(...) IMGUI::BeginHorizontal_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUIBeginVertical(...) IMGUI::BeginVertical_(IMGUICOUNTER, ##__VA_ARGS__ )
-#define IMGUIEndArea(scroll) IMGUI::EndArea_(scroll)
+#define IMGUIEndArea(...) IMGUI::EndArea_(##__VA_ARGS__ )
 #define IMGUISpacer(...) IMGUI::Spacer_(IMGUICOUNTER, ##__VA_ARGS__ )
 #define IMGUISkin() IMGUI::Skin_()
 #define IMGUINode() IMGUI::Node_()
 #define IMGUIWindow(obj, ...) IMGUI::Window_(IMGUICOUNTER, obj, ##__VA_ARGS__)
+*/

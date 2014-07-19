@@ -34,11 +34,10 @@ namespace NSG
 		class Title : public Label
 		{
 		public:
-			Title(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY);
+			Title(const std::string& text, float percentageX, float percentageY, Style& style);
 			~Title();
 			void Render();
-			PTechnique GetNormalTechnique() const;
-			void UpdateControl();
+			virtual void UpdateControl() override;
 		};
 	}
 }

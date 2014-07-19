@@ -34,14 +34,12 @@ namespace NSG
 		class Sizer : public Object
 		{
 		public:
-			Sizer(GLushort id, SizerType type, int percentageX, int percentageY);
+			Sizer(SizerType type, float percentageX, float percentageY, Style& style);
 			~Sizer();
 			void Render();
-			void UpdateControl();
-			PTechnique GetNormalTechnique() const;
+			virtual void UpdateControl() override;
 		private:
 			SizerType type_;
-			PTechnique normalTechnique_;
 		};
 	}
 }

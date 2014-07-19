@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GLES2Includes.h"
 #include "Types.h"
 #include <vector>
 
@@ -35,7 +34,7 @@ namespace NSG
 	public:
 		Node();
 		virtual ~Node();
-		GLushort GetId()const { return id_; }
+		IdType GetId() const { return id_;  }
         void SetParent(PNode pParent);
         void SetParent(Node* pParent);
         PNode GetParent() const { return pParent_; }
@@ -48,6 +47,7 @@ namespace NSG
 		const Vertex3& GetScale() const { return scale_; }
 		void SetGlobalPosition(const Vertex3& position);
 		void SetGlobalOrientation(const Quaternion& q);
+		void SetGlobalScale(const Vertex3& scale);
 		const Vertex3& GetGlobalPosition() const;
 		const Quaternion& GetGlobalOrientation() const;
 		Vertex3 GetGlobalScale() const;
@@ -67,7 +67,7 @@ namespace NSG
 		void RemoveFromParent();
 		void MarkAsDirty();
 		void Update(bool updateChildren = true) const;
-		GLushort id_;	
+		IdType id_;	
         mutable Matrix4 globalModel_;	
         mutable Matrix4 globalModelInv_;
 		mutable Matrix3 globalModelInvTransp_;

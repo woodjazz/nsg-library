@@ -63,23 +63,30 @@ static const char* fShader = STRINGIFY(
 
 namespace NSG
 {
-	TextMesh::TextMesh(size_t maxLength, const char* filename, int fontSize, GLenum usage)
+	TextMesh::TextMesh(const std::string& fontFilename, int fontSize, GLenum usage)
 	: Mesh(usage),
 	pProgram_(new Program(vShader, fShader)),
 	screenWidth_(0),
 	screenHeight_(0),
+	fontFilename_(fontFilename),
 	fontSize_(fontSize),
 	hAlignment_(LEFT_ALIGNMENT),
 	vAlignment_(BOTTOM_ALIGNMENT),
 	alignmentOffsetX_(0),
 	alignmentOffsetY_(0),
-	maxLength_(maxLength)
+	maxLength_(0),
+	isStatic_(usage == GL_STATIC_DRAW)
     {
-    	pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(FontAtlasTextureManager::Key(filename, fontSize));
+    	pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(FontAtlasTextureManager::Key(fontFilename, fontSize));
 	}
 
 	TextMesh::~TextMesh() 
 	{
+	}
+
+	bool TextMesh::Has(const std::string& fontFilename, int fontSize) const
+	{
+		return fontFilename_ == fontFilename && fontSize_ == fontSize;
 	}
 
 	bool TextMesh::IsValid()
@@ -89,6 +96,8 @@ namespace NSG
 
 	void TextMesh::UpdateBuffers()
 	{
+		CHECK_ASSERT(!isStatic_ && "Trying to update an static buffer", __FILE__, __LINE__);
+
 		if (vertexsData_.empty())
 			return;
 
@@ -135,7 +144,11 @@ namespace NSG
 		const GLsizeiptr MAX_BYTES_VERTEX_BUFFER = VERTEX_PER_CHAR * maxLength_ * sizeof(VertexData);
 		GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
 		CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
-		pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
+		if(isStatic_)
+			pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
+		else
+			pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
+
 		bufferVertexData_ = pVBuffer_->GetLastAllocation();
 
 		const size_t INDEXES_PER_CHAR = 6;
@@ -148,7 +161,11 @@ namespace NSG
 			if(indexBase)
 				std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType& x) { x += indexBase; CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__); });
 		}
-		pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
+		if(isStatic_)
+			pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
+		else
+			pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
+
 		bufferIndexData_ = pIBuffer_->GetLastAllocation();
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -185,16 +202,20 @@ namespace NSG
 
 	void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
 	{
-		bool changed = false;
-		std::string tmpText = text;
-		if(tmpText.size() > maxLength_)
-			tmpText.resize(maxLength_);
-
-		if (text_ != tmpText)
+		if(text.size() > maxLength_)
 		{
-			if (pAtlas_->SetTextMesh(tmpText, vertexsData_, indexes_, screenWidth_, screenHeight_))
+			maxLength_ = text.size();
+			Invalidate();
+			return;
+		}
+
+		bool changed = false;
+		
+		if (text_ != text)
+		{
+			if (pAtlas_->SetTextMesh(text, vertexsData_, indexes_, screenWidth_, screenHeight_))
 			{
-				text_ = tmpText;
+				text_ = text;
 
 				changed = true;
 			}

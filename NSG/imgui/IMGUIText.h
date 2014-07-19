@@ -36,15 +36,15 @@ namespace NSG
 		class Text : public Object
 		{
 		public:
-			Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY);
+			Text(const std::string& text, std::regex* pRegex, float percentageX, float percentageY, Style& style);
 			~Text();
 			std::string Render();
-			void OnActive();
-			void OnHot();
-			void OnFocus(bool needsKeyboard);
-			void OnKey(int key);
-			void OnChar(unsigned int character);
-			void UpdateControl();
+			virtual bool OnActive() override;
+			virtual bool OnHot() override;
+			virtual bool OnFocus(bool needsKeyboard) override;
+			virtual void OnKey(int key) override;
+			virtual void OnChar(unsigned int character) override;
+			virtual void UpdateControl() override;
 		private:
 			std::string currentText_;
 			PTextMesh pTextMesh_;

@@ -30,7 +30,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include <list>
 #include <map>
-#include <set>
+#include <vector>
 
 namespace NSG
 {
@@ -39,86 +39,94 @@ namespace NSG
         struct IWindow;
         struct LayoutArea
         {
-            GLushort id_;
-            int percentageX_;
-            int percentageY_;
+            IdType id_;
+            float percentageX_;
+            float percentageY_;
             PNode pNode_;
             LayoutType type_;
             float textOffsetX_;
             unsigned int cursor_character_position_;
-            LayoutArea *parent_;
+            LayoutArea* parent_;
             PNode childrenRoot_; //node used to perform the scrolling
             bool isScrollable_;
             bool isXScrollable_;
             bool isYScrollable_;
             float scrollFactorAreaX_;
             float scrollFactorAreaY_;
-            Area *controlArea_;
+            PTextMesh textMesh_;
+            PTextMesh cursorMesh_;
 
+/*
             struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
             {
-                bool operator()(const PLayoutArea &a, const PLayoutArea &b) const
+                bool operator()(const PLayoutArea& a, const PLayoutArea& b) const
                 {
                     return a->id_ < b->id_;
                 }
             };
+*/
+            //std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number or __COUNTER__)
+            std::vector<PLayoutArea> children_;
 
-            std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number or __COUNTER__)
-
-            LayoutArea(GLushort id, LayoutArea *parent, PNode pNode, LayoutType type, int percentageX, int percentageY);
+            LayoutArea(IdType id, LayoutArea* parent, PNode pNode, LayoutType type, float percentageX, float percentageY);
             void CalculateScrollAreaFactor();
             bool IsVisible() const;
-            void Set(const Vertex3 &position, const Vertex3 &scale);
-            bool IsInside(const Vertex3 &point) const;
+            void Set(const Vertex3& position, const Vertex3& scale);
+            bool IsInside(const Vertex3& point) const;
+            bool HasSizeChanged(float percentageX, float percentageY) const;
+
         };
 
         struct WindowManager
         {
-            State &uistate_;
-            GLushort id_;
-            GLushort lastId_;
+            State& uistate_;
+            IdType id_;
+            IdType lastId_;
             typedef std::list<PArea> NestedAreas;
             NestedAreas nestedAreas_;
-            typedef std::map<GLushort, PLayoutArea> AREAS;
+            struct AreaKey
+            {
+                IdType id_;
+                LayoutType type_;
+				bool operator < (const AreaKey& obj) const
+				{
+					return (id_ < obj.id_ || (!(obj.id_ < id_) && type_ < obj.type_));
+				}
+            };
+            typedef std::map<AreaKey, PLayoutArea> AREAS;
             AREAS areas_;
             bool layoutChanged_;
-            size_t visibleAreas_;
-            bool newControlAdded_;
+            size_t retrievedAreas_;
             bool isStable_;
             PNode pRootNode_;
             bool visible_;
-            int percentageX_;
-            int percentageY_;
-            IWindow *userWindow_;
-            PTextManager pTextManager_;
-            GLushort hotitem_;
-            GLushort activeitem_;
-            GLushort kbditem_;
-            GLushort lastwidget_;
-            Window *currentWindow_;
+            float percentageX_;
+            float percentageY_;
+            IWindow* userWindow_;
+            IdType hotitem_;
+            IdType activeitem_;
+            IdType kbditem_;
+            IdType lastwidget_;
+            Window* currentWindow_;
+            bool created_; // true if the user is calling IMGUIWindow
 
-            WindowManager(IWindow *userWindow, GLushort id, PNode pRootNode, int percentageX, int percentageY);
-            PLayoutArea InsertNewArea(GLushort id, LayoutType type, int percentageX, int percentageY);
-            void Reset();
+            WindowManager(IWindow* userWindow, IdType id, PNode pRootNode, float percentageX, float percentageY);
+            PLayoutArea InsertNewArea(IdType id, LayoutType type, float percentageX, float percentageY);
             void Begin();
             void End();
-            PLayoutArea GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY);
-            PLayoutArea GetArea(GLushort id) const;
-            void BeginWindow(GLushort id, int percentageX, int percentageY);
+            PLayoutArea GetAreaForControl(IdType id, LayoutType type, float percentageX, float percentageY);
+			PLayoutArea GetArea(IdType id, LayoutType type) const;
+            void BeginWindow(float percentageX, float percentageY);
             void EndWindow();
-            void InsertArea(PArea area);
-            void BeginHorizontalArea(GLushort id, int percentageX, int percentageY);
-            void BeginVerticalArea(GLushort id, int percentageX, int percentageY);
+			void BeginHorizontalArea(float percentageX, float percentageY, Style& style);
+			void BeginVerticalArea(float percentageX, float percentageY, Style& style);
             float EndArea(float scroll);
-            void Spacer(GLushort id, int percentageX, int percentageY);
+            void Spacer(float percentageX, float percentageY);
             bool IsReady() const;
             bool IsStable() const;
             size_t GetNestingLevel();
-            void RecalculateLayout(PLayoutArea pCurrentArea);
-            GLushort GetValidId(GLushort id);
-            PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
-            void Invalidate();
-
+            void RecalculateLayout(LayoutArea* area);
+            IdType GetValidId();
         };
 
 
@@ -128,32 +136,31 @@ namespace NSG
             LayoutManager(PNode pRootNode);
             void Render();
             void RenderUserWindow();
-            PLayoutArea GetAreaForControl(GLushort id, LayoutType type, int percentageX, int percentageY);
-            void BeginHorizontalArea(GLushort id, int percentageX, int percentageY);
-            void BeginVerticalArea(GLushort id, int percentageX, int percentageY);
+            PLayoutArea GetAreaForControl(IdType id, LayoutType type, float percentageX, float percentageY);
+            void BeginHorizontalArea(float percentageX, float percentageY, Style& style);
+            void BeginVerticalArea(float percentageX, float percentageY, Style& style);
             float EndArea(float scroll);
-            void Spacer(GLushort id, int percentageX, int percentageY);
+            void Spacer(float percentageX, float percentageY);
             size_t GetNestingLevel();
             bool IsReady() const;
-            void Window(GLushort id, IMGUI::IWindow *obj, int percentageX, int percentageY);
-            void Invalidate();
+			void Window(IMGUI::IWindow* obj, float percentageX, float percentageY);
             void SetWindowFocus(float x, float y);
-            GLushort GetValidId(GLushort id);
-            PTextMesh GetCurrentTextMesh(GLushort item, int maxLength);
+            IdType GetValidId();
             bool IsCurrentWindowActive() const;
-            bool IsFirstOnTopOfSecond(IWindow *first, IWindow *second) const;
             PNode GetCurrentWindowNode() const;
             PWindowManager GetCurrentWindowManager() const;
+            void MarkAllWindowsAsNonCreated();
+			void RemoveAllNonCreatedWindows();
 
         private:
 
-            typedef std::map<IWindow *, PWindowManager> WindowManagers;
+            typedef std::map<IWindow*, PWindowManager> WindowManagers;
 
             WindowManagers windowManagers_;
             PWindowManager currentWindowManager_;
-            IWindow *focusedUserWindow_;
+            IWindow* focusedUserWindow_;
             bool focusHasChanged_;
-            std::list<IWindow *> windowsSequence_; //Contains the sequence in what the windows are rendered
+            std::list<IWindow*> windowsSequence_;  //Contains the sequence in what the windows are rendered
 
         };
     }

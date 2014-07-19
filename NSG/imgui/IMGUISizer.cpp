@@ -26,191 +26,150 @@ misrepresented as being the original software.
 #include "IMGUISizer.h"
 #include "IMGUISkin.h"
 #include "IMGUILayoutManager.h"
+#include "App.h"
 
 namespace NSG
 {
-	namespace IMGUI
-	{
-		Sizer::Sizer(GLushort id, SizerType type, int percentageX, int percentageY)
-		: Object(id, LayoutType::CONTROL, false, percentageX, percentageY),
-		type_(type)
-		{
-			switch(type_)
-			{
-				case LEFT_TOP_SIZER:
-					normalTechnique_ = skin_.sizerLeftTopTechnique_;
-					break;
+    namespace IMGUI
+    {
+        Sizer::Sizer(SizerType type, float percentageX, float percentageY, Style& style)
+            : Object(LayoutType::CONTROL, percentageX, percentageY, style),
+              type_(type)
+        {
+        }
 
-            	case TOP_SIZER:
-            		normalTechnique_ = skin_.sizerTopTechnique_;
-            		break;
-            
-            	case RIGHT_TOP_SIZER:
-            		normalTechnique_ = skin_.sizerRightTopTechnique_;
-            		break;
+        Sizer::~Sizer()
+        {
 
-            	case LEFT_SIZER:
-            		normalTechnique_ = skin_.sizerLeftTechnique_;
-            		break;
+        }
 
-            	case RIGHT_SIZER:
-            		normalTechnique_ = skin_.sizerRightTechnique_;
-            		break;
+        void Sizer::Render()
+        {
+            Update();
+        }
 
-            	case LEFT_BOTTOM_SIZER:
-            		normalTechnique_ = skin_.sizerLeftBottomTechnique_;
-            		break;
-            
-            	case BOTTOM_SIZER:
-            		normalTechnique_ = skin_.sizerBottomTechnique_;
-            		break;
+        void Sizer::UpdateControl()
+        {
 
-            	case RIGHT_BOTTOM_SIZER:
-            		normalTechnique_ = skin_.sizerRightBottomTechnique_;
-            		break;
+            if (layoutManager_.IsCurrentWindowActive() && mousedown_)
+            {
+                if ((!lastHit_ && node_->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == id_)
+                {
+                    lastHit_ = id_;
+                    PNode windowNode = layoutManager_.GetCurrentWindowNode();
+                    Vertex3 globalScale0 = windowNode->GetGlobalScale();
+                    Vertex3 scale0 = windowNode->GetScale();
+                    Vertex3 globalPosition0 = windowNode->GetGlobalPosition();
 
-            	default:
-            		CHECK_ASSERT(false && "Unkonwn sizer type", __FILE__, __LINE__);
-            		break;
-			}
+                    switch (type_)
+                    {
+                    case SizerType::LEFT_TOP_SIZER:
+                    {
+                        Vertex3 scaleOffset = Vertex3(-mouseRelX_, mouseRelY_, 0);
+                        Vertex3 scale = windowNode->GetScale();
+                        windowNode->SetScale(scale + 0.5f * scaleOffset);
+                        Vertex3 globalScale1 = windowNode->GetGlobalScale();
+                        Vertex3 offset = globalScale1 - globalScale0;
+                        windowNode->SetGlobalPosition(globalPosition0 + Vertex3(-offset.x, offset.y, 0));
+                        break;
+                    }
 
-		}
+                    case SizerType::TOP_SIZER:
+                    {
+                        Vertex3 scaleOffset = Vertex3(0, mouseRelY_, 0);
+                        Vertex3 scale = windowNode->GetScale();
+                        windowNode->SetScale(scale + 0.5f * scaleOffset);
+                        Vertex3 globalScale1 = windowNode->GetGlobalScale();
+                        Vertex3 offset = globalScale1 - globalScale0;
+                        windowNode->SetGlobalPosition(globalPosition0 + offset);
+                        break;
+                    }
 
-		Sizer::~Sizer()
-		{
+                    case SizerType::RIGHT_TOP_SIZER:
+                    {
+                        Vertex3 scaleOffset = Vertex3(mouseRelX_, mouseRelY_, 0);
+                        Vertex3 scale = windowNode->GetScale();
+                        windowNode->SetScale(scale + 0.5f * scaleOffset);
+                        Vertex3 globalScale1 = windowNode->GetGlobalScale();
+                        Vertex3 offset = globalScale1 - globalScale0;
+                        windowNode->SetGlobalPosition(globalPosition0 + offset);
+                        break;
+                    }
 
-		}
+                    case SizerType::LEFT_SIZER:
+                    {
+                        Vertex3 scaleOffset = Vertex3(-mouseRelX_, 0, 0);
+                        Vertex3 scale = windowNode->GetScale();
+                        windowNode->SetScale(scale + 0.5f * scaleOffset);
+                        Vertex3 globalScale1 = windowNode->GetGlobalScale();
+                        Vertex3 offset = globalScale1 - globalScale0;
+                        windowNode->SetGlobalPosition(globalPosition0 - offset);
+                        break;
+                    }
 
-		void Sizer::Render()
-		{
-			Update();
-		}
+                    case SizerType::RIGHT_SIZER:
+                    {
+                        Vertex3 scaleOffset = Vertex3(mouseRelX_, 0, 0);
+                        Vertex3 scale = windowNode->GetScale();
+                        windowNode->SetScale(scale + 0.5f * scaleOffset);
+                        Vertex3 globalScale1 = windowNode->GetGlobalScale();
+                        Vertex3 offset = globalScale1 - globalScale0;
+                        windowNode->SetGlobalPosition(globalPosition0 + offset);
+                        break;
+                    }
 
-		void Sizer::UpdateControl()
-		{
-			
-			if(layoutManager_.IsCurrentWindowActive() && mousedown_ && !lastTitleHit_)
-			{
-				if ((!lastSizerHit_ && node_->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastSizerHit_ == id_)
-		    	{
-		    		lastSizerHit_ = id_;
-		    		PNode windowNode = layoutManager_.GetCurrentWindowNode();
-					Vertex3 globalScale0 = windowNode->GetGlobalScale();
+                    case SizerType::LEFT_BOTTOM_SIZER:
+                    {
+                        Vertex3 scaleOffset = Vertex3(-mouseRelX_, -mouseRelY_, 0);
+                        Vertex3 scale = windowNode->GetScale();
+                        windowNode->SetScale(scale + 0.5f * scaleOffset);
+                        Vertex3 globalScale1 = windowNode->GetGlobalScale();
+                        Vertex3 offset = globalScale1 - globalScale0;
+                        windowNode->SetGlobalPosition(globalPosition0 - offset);
+                        break;
+                    }
 
-					switch (type_)
-					{
-					case LEFT_TOP_SIZER:
-					{
-						Vertex3 scaleOffset = Vertex3(-mouseRelX_, mouseRelY_, 0);
-						Vertex3 scale = windowNode->GetScale();
-						windowNode->SetScale(scale + 0.5f * scaleOffset);
-						Vertex3 globalPosition = windowNode->GetGlobalPosition();
-						Vertex3 globalScale1 = windowNode->GetGlobalScale();
-						Vertex3 offset = globalScale1 - globalScale0;
-						windowNode->SetGlobalPosition(globalPosition + Vertex3(-offset.x, offset.y, 0));
-						break;
-					}
+                    case SizerType::BOTTOM_SIZER:
+                    {
+                        Vertex3 scaleOffset = Vertex3(0, -mouseRelY_, 0);
+                        Vertex3 scale = windowNode->GetScale();
+                        windowNode->SetScale(scale + 0.5f * scaleOffset);
+                        Vertex3 globalScale1 = windowNode->GetGlobalScale();
+                        Vertex3 offset = globalScale1 - globalScale0;
+                        windowNode->SetGlobalPosition(globalPosition0 - offset);
+                        break;
+                    }
 
-					case TOP_SIZER:
-					{
-						Vertex3 scaleOffset = Vertex3(0, mouseRelY_, 0);
-						Vertex3 scale = windowNode->GetScale();
-						windowNode->SetScale(scale + 0.5f * scaleOffset);
-						Vertex3 globalPosition = windowNode->GetGlobalPosition();
-						Vertex3 globalScale1 = windowNode->GetGlobalScale();
-						Vertex3 offset = globalScale1 - globalScale0;
-						windowNode->SetGlobalPosition(globalPosition + offset);
-						break;
-					}
+                    case SizerType::RIGHT_BOTTOM_SIZER:
+                    {
+                        Vertex3 scaleOffset = Vertex3(mouseRelX_, -mouseRelY_, 0);
+                        Vertex3 scale = windowNode->GetScale();
+                        windowNode->SetScale(scale + 0.5f * scaleOffset);
+                        Vertex3 globalScale1 = windowNode->GetGlobalScale();
+                        Vertex3 offset = globalScale1 - globalScale0;
+                        windowNode->SetGlobalPosition(globalPosition0 + Vertex3(offset.x, -offset.y, 0));
+                        break;
+                    }
 
-					case RIGHT_TOP_SIZER:
-					{
-						Vertex3 scaleOffset = Vertex3(mouseRelX_, mouseRelY_, 0);
-						Vertex3 scale = windowNode->GetScale();
-						windowNode->SetScale(scale + 0.5f * scaleOffset);
-						Vertex3 globalPosition = windowNode->GetGlobalPosition();
-						Vertex3 globalScale1 = windowNode->GetGlobalScale();
-						Vertex3 offset = globalScale1 - globalScale0;
-						windowNode->SetGlobalPosition(globalPosition + offset);
-						break;
-					}
+                    default:
+                        CHECK_ASSERT(false && "Unkonwn sizer type", __FILE__, __LINE__);
+                        break;
+                    }
 
-					case LEFT_SIZER:
-					{
-						Vertex3 scaleOffset = Vertex3(-mouseRelX_, 0, 0);
-						Vertex3 scale = windowNode->GetScale();
-						windowNode->SetScale(scale + 0.5f * scaleOffset);
-						Vertex3 globalPosition = windowNode->GetGlobalPosition();
-						Vertex3 globalScale1 = windowNode->GetGlobalScale();
-						Vertex3 offset = globalScale1 - globalScale0;
-						windowNode->SetGlobalPosition(globalPosition - offset);
-						break;
-					}
+                    {
+                        // Check limits
+                        Vertex3 globalScale = windowNode->GetGlobalScale();
+                        float pixelsX = globalScale.x * App::this_->GetViewSize().first;
+                        float pixelsY = globalScale.y * App::this_->GetViewSize().second;
+                        if (pixelsX < 40 || pixelsY < 40)
+                        {
+                            windowNode->SetGlobalPosition(globalPosition0);
+                            windowNode->SetScale(scale0);
+                        }
+                    }
+                }
+            }
 
-					case RIGHT_SIZER:
-					{
-						Vertex3 scaleOffset = Vertex3(mouseRelX_, 0, 0);
-						Vertex3 scale = windowNode->GetScale();
-						windowNode->SetScale(scale + 0.5f * scaleOffset);
-						Vertex3 globalPosition = windowNode->GetGlobalPosition();
-						Vertex3 globalScale1 = windowNode->GetGlobalScale();
-						Vertex3 offset = globalScale1 - globalScale0;
-						windowNode->SetGlobalPosition(globalPosition + offset);
-						break;
-					}
-
-					case LEFT_BOTTOM_SIZER:
-					{
-						Vertex3 scaleOffset = Vertex3(-mouseRelX_, -mouseRelY_, 0);
-						Vertex3 scale = windowNode->GetScale();
-						windowNode->SetScale(scale + 0.5f * scaleOffset);
-						Vertex3 globalPosition = windowNode->GetGlobalPosition();
-						Vertex3 globalScale1 = windowNode->GetGlobalScale();
-						Vertex3 offset = globalScale1 - globalScale0;
-						windowNode->SetGlobalPosition(globalPosition - offset);
-						break;
-					}
-
-					case BOTTOM_SIZER:
-					{
-						Vertex3 scaleOffset = Vertex3(0, -mouseRelY_, 0);
-						Vertex3 scale = windowNode->GetScale();
-						windowNode->SetScale(scale + 0.5f * scaleOffset);
-						Vertex3 globalPosition = windowNode->GetGlobalPosition();
-						Vertex3 globalScale1 = windowNode->GetGlobalScale();
-						Vertex3 offset = globalScale1 - globalScale0;
-						windowNode->SetGlobalPosition(globalPosition - offset);
-						break;
-					}
-
-					case RIGHT_BOTTOM_SIZER:
-					{
-						Vertex3 scaleOffset = Vertex3(mouseRelX_, -mouseRelY_, 0);
-						Vertex3 scale = windowNode->GetScale();
-						windowNode->SetScale(scale + 0.5f * scaleOffset);
-						Vertex3 globalPosition = windowNode->GetGlobalPosition();
-						Vertex3 globalScale1 = windowNode->GetGlobalScale();
-						Vertex3 offset = globalScale1 - globalScale0;
-						windowNode->SetGlobalPosition(globalPosition + Vertex3(offset.x, -offset.y, 0));
-						break;
-					}
-
-					default:
-						CHECK_ASSERT(false && "Unkonwn sizer type", __FILE__, __LINE__);
-						break;
-					}
-
-					
-
-
-		    	}
-		    }
-
-		}
-
-		PTechnique Sizer::GetNormalTechnique() const
-		{
-			return normalTechnique_;
-		}
-	}
+        }
+    }
 }

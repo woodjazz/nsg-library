@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "IMGUIContext.h"
 #include "IMGUIState.h"
 #include "IMGUISkin.h"
+#include "IMGUIStyle.h"
 #include "IMGUILayoutManager.h"
 #include "TextMesh.h"
 #include "SceneNode.h"
@@ -39,225 +40,231 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	namespace IMGUI
-	{
-		Text::Text(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY)
-			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY),
-		currentText_(text),
-		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength)),
-        pCursorMesh_(Context::this_->GetCurrentTextMesh(-1, 1)),
-		pRegex_(pRegex)
-		{
-		}
+    namespace IMGUI
+    {
+        Text::Text(const std::string& text, std::regex* pRegex, float percentageX, float percentageY, Style& style)
+            : Object(LayoutType::CONTROL, percentageX, percentageY, style),
+              currentText_(text),
+              pTextMesh_(area_->textMesh_),
+              pCursorMesh_(area_->cursorMesh_),
+              pRegex_(pRegex)
+        {
+			if (!pTextMesh_ || !pTextMesh_->Has(style.fontFile_, style.fontSize_))
+            {
+				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontFile_, style.fontSize_, GL_STREAM_DRAW));
+            }
 
-		Text::~Text()
-		{
-			lastwidget_ = id_;
-		}
+			if (!pCursorMesh_ || !pCursorMesh_->Has(style.fontFile_, style.fontSize_))
+            {
+				pCursorMesh_ = area_->cursorMesh_ = PTextMesh(new TextMesh(style.fontFile_, style.fontSize_, GL_STREAM_DRAW));
+            }
+        }
 
-		void Text::OnActive()
-		{
-			activeitem_ = id_;
+        Text::~Text()
+        {
+            lastwidget_ = id_;
+        }
 
-	  		///////////////////////////////////////////////
-	        //Calculates cursor's position after click
-	        Vertex4 worldPos = node_->GetGlobalModelMatrix() * Vertex4(-1,0,0,1); //left border in world coords
-	        Vertex3 screenPos = Context::this_->pCamera_->WorldToScreen(Vertex3(worldPos)); //left border in screen coords
-	        float mouseRelPosX(uistate_.mousex_ - screenPos.x);
-	        float textEndRelPosX = pTextMesh_->GetWidth();
-	        float mouseTotalX = mouseRelPosX  + area_->textOffsetX_;
-	        if(mouseTotalX > textEndRelPosX)
-	        {
-	        	// mouse exceeded text length
-	            area_->cursor_character_position_ = currentText_.length();
-	        }
-	        else
-	        {
-	             area_->cursor_character_position_ = pTextMesh_->GetCharacterPositionForWidth(mouseTotalX);
-                 if(area_->cursor_character_position_ > 0)
-                     --area_->cursor_character_position_;
-                 CHECK_ASSERT(area_->cursor_character_position_ <= currentText_.length(), __FILE__, __LINE__);
-	        }
-	        ///////////////////////////////////////////////
-		}
+        bool Text::OnActive()
+        {
+            //Calculates cursor's position after click
+            Vertex4 worldPos = node_->GetGlobalModelMatrix() * Vertex4(-1, 0, 0, 1); //left border in world coords
+            Vertex3 screenPos = Context::this_->pCamera_->WorldToScreen(Vertex3(worldPos)); //left border in screen coords
+            float mouseRelPosX(uistate_.mousex_ - screenPos.x);
+            float textEndRelPosX = pTextMesh_->GetWidth();
+            float mouseTotalX = mouseRelPosX  + area_->textOffsetX_;
+            if (mouseTotalX > textEndRelPosX)
+            {
+                // mouse exceeded text length
+                area_->cursor_character_position_ = currentText_.length();
+            }
+            else
+            {
+                area_->cursor_character_position_ = pTextMesh_->GetCharacterPositionForWidth(mouseTotalX);
+                if (area_->cursor_character_position_ > 0)
+                    --area_->cursor_character_position_;
+                CHECK_ASSERT(area_->cursor_character_position_ <= currentText_.length(), __FILE__, __LINE__);
+            }
 
-		void Text::OnHot()
-		{
-			hotitem_ = id_;
-		}	
+            return true;
+        }
 
-		void Text::OnFocus(bool needsKeyboard)
-		{
-			kbditem_ = id_;
+        bool Text::OnHot()
+        {
+            return true;
+        }
 
-			area_->cursor_character_position_ = currentText_.length();
+        bool Text::OnFocus(bool needsKeyboard)
+        {
+            area_->cursor_character_position_ = currentText_.length();
 
-			if(needsKeyboard && Keyboard::this_->Enable())
-			{
-				Vertex4 worldPos = node_->GetGlobalModelMatrix() * Vertex4(0, -1, 0, 1); //bottom border in world coords
-				Vertex3 screenPos = Context::this_->pCamera_->WorldToScreen(Vertex3(worldPos)); //bottom border in screen coords
+            if (needsKeyboard && Keyboard::this_->Enable())
+            {
+                Vertex4 worldPos = node_->GetGlobalModelMatrix() * Vertex4(0, -1, 0, 1); //bottom border in world coords
+                Vertex3 screenPos = Context::this_->pCamera_->WorldToScreen(Vertex3(worldPos)); //bottom border in screen coords
 
-				Vertex3 position(0, screenPos.y, 0);
-		  		Context::this_->pCamera_->SetPosition(position);
-		  	}
+                Vertex3 position(0, screenPos.y, 0);
+                Context::this_->pCamera_->SetPosition(position);
+            }
 
-		}
+            return true;
+        }
 
-		void Text::OnKey(int key)
-		{
-			switch (key)
-			{
-			case NSG_KEY_BACKSPACE:
-				if(area_->cursor_character_position_ > 0)
-				{
-	                std::string::iterator it = currentText_.begin() + area_->cursor_character_position_ - 1;
-	                currentText_.erase(it);
-	                --area_->cursor_character_position_;
-				}
-				break;   
+        void Text::OnKey(int key)
+        {
+            switch (key)
+            {
+            case NSG_KEY_BACKSPACE:
+                if (area_->cursor_character_position_ > 0)
+                {
+                    std::string::iterator it = currentText_.begin() + area_->cursor_character_position_ - 1;
+                    currentText_.erase(it);
+                    --area_->cursor_character_position_;
+                }
+                break;
 
-	        case NSG_KEY_DELETE:
-				if(area_->cursor_character_position_ < currentText_.length())
-				{
-	                std::string::iterator it = currentText_.begin() + area_->cursor_character_position_;
-	                currentText_.erase(it);
-				}
-	            break;
+            case NSG_KEY_DELETE:
+                if (area_->cursor_character_position_ < currentText_.length())
+                {
+                    std::string::iterator it = currentText_.begin() + area_->cursor_character_position_;
+                    currentText_.erase(it);
+                }
+                break;
 
-	        case NSG_KEY_RIGHT:
-	            if(area_->cursor_character_position_ < currentText_.length())
-	                ++area_->cursor_character_position_;
-	            break;
+            case NSG_KEY_RIGHT:
+                if (area_->cursor_character_position_ < currentText_.length())
+                    ++area_->cursor_character_position_;
+                break;
 
-	        case NSG_KEY_LEFT:
-	            if(area_->cursor_character_position_ > 0)
-	                --area_->cursor_character_position_;
-	            break;
+            case NSG_KEY_LEFT:
+                if (area_->cursor_character_position_ > 0)
+                    --area_->cursor_character_position_;
+                break;
 
-	        case NSG_KEY_HOME:
-	            area_->cursor_character_position_ = 0;
-	            break;
+            case NSG_KEY_HOME:
+                area_->cursor_character_position_ = 0;
+                break;
 
-	        case NSG_KEY_END:
-	            area_->cursor_character_position_ = currentText_.length();
-	            break;
+            case NSG_KEY_END:
+                area_->cursor_character_position_ = currentText_.length();
+                break;
 
-	        case NSG_KEY_ENTER:
-				Keyboard::this_->Disable();
-				Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
-				break;
-			}
-		}
+            case NSG_KEY_ENTER:
+                Keyboard::this_->Disable();
+                Context::this_->pCamera_->SetPosition(Vertex3(0, 0, 0));
+                break;
+            }
+        }
 
-		void Text::OnChar(unsigned int character)
-		{
-	        if (character >= 32 && character < 256 && currentText_.size() < Context::this_->pSkin_->textMaxLength_)
-	        {
-	        	std::string textCopy = currentText_;
+        void Text::OnChar(unsigned int character)
+        {
+            if (character >= 32 && character < 256 && currentText_.size() < style_.textMaxLength_)
+            {
+                std::string textCopy = currentText_;
 
-	            std::string::iterator it = currentText_.begin() + area_->cursor_character_position_;
-	            currentText_.insert(it, (char)character);
-	            ++area_->cursor_character_position_;
+                std::string::iterator it = currentText_.begin() + area_->cursor_character_position_;
+                currentText_.insert(it, (char)character);
+                ++area_->cursor_character_position_;
 
-	        	if(pRegex_)
-	        	{
-	        		if(!regex_match(currentText_, *pRegex_))
-	        		{
-	        			currentText_ = textCopy;
-	        			--area_->cursor_character_position_;
-	        		}
-	        	}
-	        }
-		}
+                if (pRegex_)
+                {
+                    if (!regex_match(currentText_, *pRegex_))
+                    {
+                        currentText_ = textCopy;
+                        --area_->cursor_character_position_;
+                    }
+                }
+            }
+        }
 
-		void Text::UpdateControl()
-		{
-			pTextMesh_->SetText(currentText_, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
-			pCursorMesh_->SetText("_", LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
+        void Text::UpdateControl()
+        {
+            pTextMesh_->SetText(currentText_, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
+            pCursorMesh_->SetText("_", LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
 
-	        float cursorPositionInText = pTextMesh_->GetWidthForCharacterPosition(area_->cursor_character_position_);
+            float cursorPositionInText = pTextMesh_->GetWidthForCharacterPosition(area_->cursor_character_position_);
 
-	        if(area_->textOffsetX_ + areaSize_.x < cursorPositionInText)
-			{
-	            //If cursor moves to the right of the area then scroll
-				area_->textOffsetX_ = pCursorMesh_->GetWidth() + cursorPositionInText - areaSize_.x;  
-			}
-	        else if(cursorPositionInText - area_->textOffsetX_ < 0) 
-	        {
-	            // if cursor moves to the left of the area then scroll
-	            area_->textOffsetX_ -= areaSize_.x /4;
+            if (area_->textOffsetX_ + areaSize_.x < cursorPositionInText)
+            {
+                //If cursor moves to the right of the area then scroll
+                area_->textOffsetX_ = pCursorMesh_->GetWidth() + cursorPositionInText - areaSize_.x;
+            }
+            else if (cursorPositionInText - area_->textOffsetX_ < 0)
+            {
+                // if cursor moves to the left of the area then scroll
+                area_->textOffsetX_ -= areaSize_.x / 4;
 
-	            if(area_->textOffsetX_ < 0)
-	                area_->textOffsetX_ = 0;
-	        }
-	        
-	        Node textNode0;
-	        textNode0.SetParent(node_);
+                if (area_->textOffsetX_ < 0)
+                    area_->textOffsetX_ = 0;
+            }
 
-            if(pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
-	            textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
-            if(pTextMesh_->GetTextHorizontalAlignment() == RIGHT_ALIGNMENT)
-	            textNode0.SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
+            Node textNode0;
+            textNode0.SetParent(node_);
 
-            if(pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
-	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
-            else if(pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
-	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
-            else if(pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
+            if (pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
+                textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
+            if (pTextMesh_->GetTextHorizontalAlignment() == RIGHT_ALIGNMENT)
+                textNode0.SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
+
+            if (pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
+                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
+            else if (pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
+                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
+            else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
                 textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
 
-	        Node textNode1;
-	        textNode1.SetParent(&textNode0);
-	        textNode1.SetInheritScale(false);
-	        textNode1.SetScale(Context::this_->pRootNode_->GetGlobalScale());
+            Node textNode1;
+            textNode1.SetParent(&textNode0);
+            textNode1.SetInheritScale(false);
+            textNode1.SetScale(Context::this_->pRootNode_->GetGlobalScale());
 
-	        SceneNode textNode2;
-	        textNode2.SetParent(&textNode1);
-	        textNode2.SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
+            SceneNode textNode2;
+            textNode2.SetParent(&textNode1);
+            textNode2.SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
 
-			Technique technique;
-	        Pass pass;
-	        technique.Add(&pass);
-	        pass.Add(&textNode2, pTextMesh_);
-	        Material textMaterial;
-	        pass.EnableDepthTest(false);
-	        pass.EnableStencilTest(true);
-	        textMaterial.SetTexture0(pTextMesh_->GetAtlas());
-	        textMaterial.SetProgram(pTextMesh_->GetProgram());
+            Technique technique;
+            Pass pass;
+            technique.Add(&pass);
+            pass.Add(&textNode2, pTextMesh_);
+            Material textMaterial;
+            pass.EnableDepthTest(false);
+            pass.EnableStencilTest(true);
+            textMaterial.SetTexture0(pTextMesh_->GetAtlas());
+            textMaterial.SetProgram(pTextMesh_->GetProgram());
             size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
             pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 
             pass.Set(&textMaterial);
-	        technique.Render();
-	        
-			// Render cursor if we have keyboard focus
-			if(HasFocus() && layoutManager_.IsCurrentWindowActive() && (uistate_.tick_ < 15))
-	        {
-	            SceneNode cursorNode;
-	            cursorNode.SetParent(&textNode2);
-	            cursorNode.SetPosition(Vertex3(cursorPositionInText, 0, 0));
+            technique.Render();
 
-	            Technique technique;
-	            Pass pass;
-				pass.EnableDepthTest(false);
-				pass.EnableStencilTest(true);
-	            technique.Add(&pass);
-	            pass.Add(&cursorNode, pCursorMesh_);
-	            pass.Set(&textMaterial);
-	            pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-				pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
-	            
-	            technique.Render();
-	        }
-		}
+            // Render cursor if we have keyboard focus
+            if (HasFocus() && layoutManager_.IsCurrentWindowActive() && (uistate_.tick_ < 15))
+            {
+                SceneNode cursorNode;
+                cursorNode.SetParent(&textNode2);
+                cursorNode.SetPosition(Vertex3(cursorPositionInText, 0, 0));
+
+                Technique technique;
+                Pass pass;
+                pass.EnableDepthTest(false);
+                pass.EnableStencilTest(true);
+                technique.Add(&pass);
+                pass.Add(&cursorNode, pCursorMesh_);
+                pass.Set(&textMaterial);
+                pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+                pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
+
+                technique.Render();
+            }
+        }
 
 
-		std::string Text::Render()
-		{
-			Update();
-				
-			return currentText_;
-		}	
-	}
+        std::string Text::Render()
+        {
+            Update();
+
+            return currentText_;
+        }
+    }
 }

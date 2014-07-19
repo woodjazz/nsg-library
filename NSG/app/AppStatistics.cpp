@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "AppConfiguration.h"
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
+#include "IMGUIStyle.h"
 
 
 namespace NSG 
@@ -38,6 +39,10 @@ namespace NSG
 	dynamicVertexBuffers_(0),
 	dynamicIndexBuffers_(0)
 	{
+		IWindow::hasTitle_ = true;
+		IWindow::resizable_ = false;
+		IWindow::title_ = "Stats";
+
 		memset(&counters_[0], 0, sizeof(counters_));
 	}
 
@@ -130,57 +135,52 @@ namespace NSG
 
 	void AppStatistics::RenderGUIWindow()
 	{
-        int fontSize = IMGUI::Context::this_->pSkin_->fontSize_;
-        IMGUI::Context::this_->pSkin_->fontSize_ = 14;
 		Collect(false);
 		static std::string emptys;
 #if 1
-		IMGUISpacer(0, 10);
+		IMGUISpacer(100, 10);
 
-		const int MAX_LABEL_SIZE = 40;
-		const int LABEL_HEIGTH = 15;
+		const float LABEL_HEIGTH = 15;
         size_t fps = counters_[FRAMES].first;;
 	    std::stringstream ss;
 	    ss << "FPS:" << fps;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
         size_t drawCalls = counters_[DRAWCALLS].first;
         if(fps) drawCalls/=fps;
 	    ss << "DrawCalls:" << drawCalls;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
         size_t triangles = counters_[TRIANGLES].first;
         if(fps) triangles/=fps;
 	    ss << "Triangles:" << triangles;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
 		ss << "StaticVertexBuffers:" << staticVertexBuffers_;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
 	    ss << "StaticIndexBuffers:" << staticIndexBuffers_;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
 		ss << "DynamicVertexBuffers:" << dynamicVertexBuffers_;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
 	    ss << "DynamicIndexBuffers:" << dynamicIndexBuffers_;
-		IMGUILabel(MAX_LABEL_SIZE, ss.str(), 0, LABEL_HEIGTH);
+		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    Collect(true);
-
-        IMGUI::Context::this_->pSkin_->fontSize_ = fontSize;
 #endif
 		
 	}

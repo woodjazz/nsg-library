@@ -24,32 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "IMGUIArea.h"
-#include "IMGUI.h"
-
+#include "IMGUIObject.h"
+#include "Types.h"
 namespace NSG
 {
-	namespace IMGUI
-	{
-		class Window : public Area
-		{
-		public:
-			Window(IWindow* userWindow, float percentageX, float percentageY);
-            ~Window();
-			void Render();
-			void BeginRenderUserWindow();
-			void EndRenderUserWindow();
-			virtual void UpdateControl() override;
-
-		private:
-			void RenderTitle();
-			void RenderBorder();
-			IWindow* userWindow_;
-			float sizerSizeX_;
-			float longSizerSizeX_;
-			float sizerSizeY_;
-			float longSizerSizeY_;
-		};
-
-	}
+    namespace IMGUI
+    {
+        class VSliderThumb : public Object
+        {
+        public:
+            VSliderThumb(float value, float percentageX, float percentageY, Style& style);
+            ~VSliderThumb();
+            float Render();
+            virtual bool OnActive() override;
+			virtual bool OnHot() override;
+			virtual bool OnFocus(bool needsKeyboard) override;
+            virtual void UpdateControl() override;
+        private:
+            float value_;
+        };
+    }
 }

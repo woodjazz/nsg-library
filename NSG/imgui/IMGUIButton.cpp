@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "IMGUIContext.h"
 #include "IMGUIState.h"
 #include "IMGUISkin.h"
+#include "IMGUIStyle.h"
 #include "IMGUILayoutManager.h"
 #include "TextMesh.h"
 #include "SceneNode.h"
@@ -38,65 +39,70 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	namespace IMGUI
-	{
-		Button::Button(GLushort id, const std::string& text, int maxLength, HorizontalAlignment hAlign, VerticalAlignment vAlign, int percentageX, int percentageY)
-			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY),
-		currentText_(text),
-		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength)),
-		pressed_(false)
-		{
-			pTextMesh_->SetText(currentText_, hAlign, vAlign);
-		}
+    namespace IMGUI
+    {
+        Button::Button(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign, float percentageX, float percentageY, Style& style)
+            : Object(LayoutType::CONTROL, percentageX, percentageY, style),
+              currentText_(text),
+              pTextMesh_(area_->textMesh_),
+              pressed_(false)
+        {
+			if (!pTextMesh_ || !pTextMesh_->Has(style.fontFile_, style.fontSize_))
+            {
+				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontFile_, style.fontSize_, GL_STREAM_DRAW));
+            }
 
-		Button::~Button()
-		{
-			lastwidget_ = id_;
-		}
+            pTextMesh_->SetText(currentText_, hAlign, vAlign);
+        }
 
-		void Button::OnActive()
-		{
-			activeitem_ = id_;
-		}	
+        Button::~Button()
+        {
+            lastwidget_ = id_;
+        }
 
-		void Button::OnFocus(bool needsKeyboard)
-		{
-			kbditem_ = id_;
-		}
+        bool Button::OnActive()
+        {
+            return true;
+        }
 
-		void Button::OnHot()
-		{
-			hotitem_ = id_;
-		}	
+        bool Button::OnFocus(bool needsKeyboard)
+        {
+            return true;
+        }
 
-		void Button::OnKey(int key)
-		{
-			if(key == NSG_KEY_ENTER)
-				pressed_ = true;
-		}
+        bool Button::OnHot()
+        {
+            return true;
+        }
 
-		void Button::UpdateControl()
-		{
-            if(uistate_.mouseup_ && layoutManager_.IsCurrentWindowActive() && IsMouseButtonPressedInArea())
-			{
-				pressed_ = IsMouseInArea();
-			}
+        void Button::OnKey(int key)
+        {
+            if (key == NSG_KEY_ENTER)
+                pressed_ = true;
+        }
+
+        void Button::UpdateControl()
+        {
+            if (uistate_.mouseup_ && layoutManager_.IsCurrentWindowActive() && IsMouseButtonPressedInArea())
+            {
+                pressed_ = IsMouseInArea();
+            }
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	        Node textNode0;
-	        textNode0.SetParent(node_);
+            Node textNode0;
+            textNode0.SetParent(node_);
 
-            if(pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
-	            textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
-            if(pTextMesh_->GetTextHorizontalAlignment() == RIGHT_ALIGNMENT)
-	            textNode0.SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
+            if (pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
+                textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
+            if (pTextMesh_->GetTextHorizontalAlignment() == RIGHT_ALIGNMENT)
+                textNode0.SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
 
-            if(pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
-	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
-            else if(pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
-	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
-            else if(pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
+            if (pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
+                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
+            else if (pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
+                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
+            else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
                 textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
 
             SceneNode textNode;
@@ -116,20 +122,20 @@ namespace NSG
             Material textMaterial;
             textMaterial.SetTexture0(pTextMesh_->GetAtlas());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
-            
+
             pass.Set(&textMaterial);
 
             technique.Render();
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
+        }
 
-		bool Button::Render()
-		{
-			if(!Update())
-				return false;
+        bool Button::Render()
+        {
+            if (!Update())
+                return false;
 
-			return pressed_;
-		}		
-	}
+            return pressed_;
+        }
+    }
 }

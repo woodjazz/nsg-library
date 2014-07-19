@@ -24,32 +24,25 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "IMGUIArea.h"
-#include "IMGUI.h"
+#include "SharedPointers.h"
+#include <string>
 
-namespace NSG
+namespace NSG 
 {
 	namespace IMGUI
 	{
-		class Window : public Area
+		struct Style
 		{
-		public:
-			Window(IWindow* userWindow, float percentageX, float percentageY);
-            ~Window();
-			void Render();
-			void BeginRenderUserWindow();
-			void EndRenderUserWindow();
-			virtual void UpdateControl() override;
+			std::string fontFile_;
+			int fontSize_;
+			size_t textMaxLength_;
 
-		private:
-			void RenderTitle();
-			void RenderBorder();
-			IWindow* userWindow_;
-			float sizerSizeX_;
-			float longSizerSizeX_;
-			float sizerSizeY_;
-			float longSizerSizeY_;
+			PTechnique activeTechnique_;
+			PTechnique normalTechnique_;
+			PTechnique hotTechnique_;
+
+			Style();
+			Style(const Style& obj);
 		};
-
 	}
 }

@@ -34,11 +34,10 @@ namespace NSG
 		class Label : public Object
 		{
 		public:
-			Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY);
+			Label(const std::string& text, float percentageX, float percentageY, Style& style);
 			~Label();
 			void Render();
-			void UpdateControl();
-			PTechnique GetNormalTechnique() const;
+			virtual void UpdateControl() override;
 		private:
 			PTextMesh pTextMesh_;
 		};

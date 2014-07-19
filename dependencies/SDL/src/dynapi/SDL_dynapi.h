@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+// Modified by Lasse Oorni for Urho3D
+
 #ifndef _SDL_dynapi_h
 #define _SDL_dynapi_h
 
@@ -39,17 +41,8 @@
 #error Nope, you have to edit this file to force this off.
 #endif
 
-#ifdef __APPLE__
-#include "TargetConditionals.h"
-#endif
-
-#if TARGET_OS_IPHONE  /* probably not useful on iOS. */
+// Urho3D: disabled dynamic API
 #define SDL_DYNAMIC_API 0
-#elif SDL_BUILDING_WINRT /* probaly not useful on WinRT, given current .dll loading restrictions */
-#define SDL_DYNAMIC_API 0
-#else   /* everyone else. */
-#define SDL_DYNAMIC_API 1
-#endif
 
 #endif
 

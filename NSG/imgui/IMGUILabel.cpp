@@ -26,7 +26,8 @@ misrepresented as being the original software.
 #include "IMGUILabel.h"
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
-#include "TextMesh.h"ç
+#include "IMGUIStyle.h"
+#include "TextMesh.h"
 #include "SceneNode.h"
 #include "Technique.h"
 #include "Pass.h"
@@ -38,20 +39,20 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Label::Label(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
-			: Object(id, LayoutType::CONTROL, false, percentageX, percentageY),
-		pTextMesh_(Context::this_->GetCurrentTextMesh(id, maxLength))
+		Label::Label(const std::string& text, float percentageX, float percentageY, Style& style)
+			: Object(LayoutType::CONTROL, percentageX, percentageY, style),
+			pTextMesh_(area_->textMesh_)
 		{
+			if (!pTextMesh_ || !pTextMesh_->Has(style.fontFile_, style.fontSize_))
+			{
+				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontFile_, style.fontSize_, GL_STREAM_DRAW));
+			}
+			
 			pTextMesh_->SetText(text, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
 		}
 
 		Label::~Label()
 		{
-		}
-
-		PTechnique Label::GetNormalTechnique() const
-		{
-			return skin_.labelTechnique_;
 		}
 
 		void Label::Render()

@@ -32,45 +32,43 @@ misrepresented as being the original software.
 #include "IMGUI.h"
 #include <cstring>
 
-namespace NSG 
+namespace NSG
 {
-	namespace IMGUI
-	{
-		State::State()
+    namespace IMGUI
+    {
+        State::State()
             : mouseDownX_(-2),
-            mouseDownY_(-2),
-            mousex_(0),
-            mousey_(0),
-            mousedown_(false),
-            mouseup_(false),
-            mouseRelX_(0),
-            mouseRelY_(0),
-            keyentered_(0),
-            keymod_(0),
-            keyaction_(0),
-            character_(0),
-            activeitem_needs_keyboard_(false),
-            lastSliderHit_(IMGUI_UNKNOWN_ID),
-            lastTitleHit_(IMGUI_UNKNOWN_ID),
-            lastSizerHit_(IMGUI_UNKNOWN_ID),
-            activeScrollArea_(IMGUI_UNKNOWN_ID),
-            tick_(0),
-            mouseRelDownX_(0),
-            mouseRelDownY_(0)
-		{
-		}
+              mouseDownY_(-2),
+              mousex_(0),
+              mousey_(0),
+              mousedown_(false),
+              mouseup_(false),
+              mouseRelX_(0),
+              mouseRelY_(0),
+              keyentered_(0),
+              keymod_(0),
+              keyaction_(0),
+              character_(0),
+              activeitem_needs_keyboard_(false),
+              lastHit_(static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID)),
+              activeScrollArea_(static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID)),
+              tick_(0),
+              mouseRelDownX_(0),
+              mouseRelDownY_(0)
+        {
+        }
 
-		State::~State()
-		{
-			
-		}
+        State::~State()
+        {
+
+        }
 
         void State::OnMouseMove(float x, float y)
         {
-        	mousex_ = x;
-        	mousey_ = y;
+            mousex_ = x;
+            mousey_ = y;
 
-            if(mousedown_)
+            if (mousedown_)
             {
                 mouseRelX_ = mousex_ - mouseRelDownX_;
                 mouseRelY_ = mousey_ - mouseRelDownY_;
@@ -79,12 +77,12 @@ namespace NSG
 
         void State::OnMouseDown(float x, float y)
         {
-            activeScrollArea_ = IMGUI_UNKNOWN_ID;
+            activeScrollArea_ = static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID);
             mouseRelDownX_ = mouseDownX_ = x;
             mouseRelDownY_ = mouseDownY_ = y;
-        	mousex_ = x;
-        	mousey_ = y;
-        	mousedown_ = true;
+            mousex_ = x;
+            mousey_ = y;
+            mousedown_ = true;
             mouseup_ = false;
             Context::this_->pLayoutManager_->SetWindowFocus(x, y);
         }
@@ -94,10 +92,10 @@ namespace NSG
             mousex_ = x;
             mousey_ = y;
 
-        	mousedown_ = false;
+            mousedown_ = false;
             mouseup_ = true;
 
-            lastSizerHit_ = lastTitleHit_ = lastSliderHit_ = IMGUI_UNKNOWN_ID;
+            lastHit_ = static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID);
 
         }
 
@@ -115,7 +113,7 @@ namespace NSG
 
         void State::OnKey(int key, int action, int modifier)
         {
-            if(action == NSG_KEY_PRESS)
+            if (action == NSG_KEY_PRESS)
             {
                 keyentered_ = key;
                 keyaction_ = action;
@@ -125,13 +123,13 @@ namespace NSG
 
         void State::OnChar(unsigned int character)
         {
-        	character_ = character;
+            character_ = character;
         }
 
         void State::DoTick()
         {
-        	++tick_;
-            if(tick_ > 30)
+            ++tick_;
+            if (tick_ > 30)
             {
                 tick_ = 0;
             }
@@ -149,25 +147,11 @@ namespace NSG
 
             mouseRelDownX_ = mousex_;
             mouseRelDownY_ = mousey_;
-/*
-			if (Context::this_->pLayoutManager_->GetCurrentWindowManager()->activeitem_ == GLushort(-1))
-            {
-                activeitem_needs_keyboard_ = false;
-            }
 
-            
-            if(!activeitem_needs_keyboard_)
-            {
-                if(Keyboard::this_->Disable())
-                {
-                    Context::this_->pCamera_->SetPosition(Vertex3(0,0,0));
-                }
-            }
-*/
             // Clear the entered key
-            keyentered_ = 0;    
-            character_ = 0; 
+            keyentered_ = 0;
+            character_ = 0;
         }
 
-	}
+    }
 }

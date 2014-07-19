@@ -84,9 +84,9 @@ void MyApp::Start()
 	//PTextMeshure pCellTexture = PTextMeshure(new TextMeshure("cube_example.png"));
 	PTexture pCellTexture(new TextureFile("Earthmap720x360_grid.jpg"));
 
-	IMGUI::Context::this_->pSkin_->fontFile_ = "font/FreeSans.ttf";
-	pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
-	pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
+	//IMGUI::Context::this_->pSkin_->fontFile_ = "font/FreeSans.ttf";
+	//pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
+	//pSkin2_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
 	//pSkin2_->pActiveTechnique->GetPass(0)->SetMesh(PRectangleMesh(new RectangleMesh(2, 2, GL_STATIC_DRAW)));
 	//pSkin2_->pMesh->EnableDepthTest(false);
 	//pSkin2_->pActiveMaterial->SetMainTexture(pCellTexture);
@@ -96,7 +96,7 @@ void MyApp::Start()
 	//pSkin2_->normalTechnique_->GetPass(1)->GetMaterial()->SetTexture0(pCellTexture);
 	//pSkin2_->pHotTechnique->GetPass(1)->GetMaterial()->SetTexture0(pRenderedTexture_);
 
-    IMGUI::Context::this_->pSkin_->areaTechnique_->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
+    //IMGUI::Context::this_->pSkin_->areaTechnique_->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
     //pModel_ = PModel(new Model("cube.dae"));
     pModel_ = PModel(new Model("duck.dae"));
     //pModel_ = PModel(new Model("spider.obj"));
@@ -117,7 +117,7 @@ void MyApp::Update()
 
 void MyApp::TestIMGUI2()
 {
-	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
+	//IMGUI::Context::this_->pSkin_->fontSize_ = 18;
 
 	Vertex3 position = IMGUI::Context::this_->pCurrentNode_->GetGlobalPosition();
 	Vertex3 size = IMGUI::Context::this_->pCurrentNode_->GetGlobalScale();
@@ -131,15 +131,13 @@ void MyApp::TestIMGUI2()
 
     IMGUI::Context::this_->pCurrentNode_->SetOrientation(glm::angleAxis(PI/4, Vertex3(0, 1, 0)));
 
-	const int MAX_TEXT_SIZE = 20;
-
 	IMGUIBeginHorizontal(0);
 	{
 		static std::string str0 = "Abc";
-		str0 = IMGUITextField(MAX_TEXT_SIZE, str0, 0);
+		str0 = IMGUITextField(str0, 0);
 
         static bool enabled = false;
-		if (IMGUIButton(MAX_TEXT_SIZE, "Button 1", 0))
+		if (IMGUIButton("Button 1", 0))
 		{
             enabled = true;
 		}
@@ -148,14 +146,14 @@ void MyApp::TestIMGUI2()
         {
 			//IMGUI::pCurrentNode->SetOrientation(glm::angleAxis(x_angle_, Vertex3(0, 0, 1)));
 
-			if (IMGUIButton(MAX_TEXT_SIZE, "Button asas1", 0))
+			if (IMGUIButton("Button asas1", 0))
             {
             	enabled = false;
            	}
         }
 
 		static std::string str1 = "xyz";
-		str1 = IMGUITextField(MAX_TEXT_SIZE, str1, 0);
+		str1 = IMGUITextField(str1, 0);
 
         IMGUIBeginVertical(0);
 		{
@@ -163,30 +161,30 @@ void MyApp::TestIMGUI2()
 
             IMGUIBeginVertical(0);
 			{
-				IMGUIButton(MAX_TEXT_SIZE, "Button 2", 0);
-				IMGUIButton(MAX_TEXT_SIZE, "Button 3", 0);
+				IMGUIButton("Button 2", 0);
+				IMGUIButton("Button 3", 0);
     			static std::string str2 = "012";
-				str2 = IMGUITextField(MAX_TEXT_SIZE, str2, 0);
+				str2 = IMGUITextField(str2, 0);
             }
             IMGUIEndArea();
 
             static std::string str3 = "jkl";
-			str3 = IMGUITextField(MAX_TEXT_SIZE, str3, 0);
+			str3 = IMGUITextField(str3, 0);
 
 
 			IMGUIBeginHorizontal(0);
 			{
-				IMGUIButton(MAX_TEXT_SIZE, "B552", 0);
+				IMGUIButton("B552", 0);
 				
 				static std::string str0 = "cccc";
-				str0 = IMGUITextField(MAX_TEXT_SIZE, str0, 0);
+				str0 = IMGUITextField(str0, 0);
 
 				static std::string str1 = "dddd";
-				str1 = IMGUITextField(MAX_TEXT_SIZE, str1, 0);
+				str1 = IMGUITextField(str1, 0);
 			}
 			IMGUIEndArea();
 
-			IMGUIButton(MAX_TEXT_SIZE, "Button 52", 0);
+			IMGUIButton("Button 52", 0);
 		}
 		IMGUIEndArea();
 		
@@ -198,7 +196,7 @@ void MyApp::TestIMGUI2()
 
 void MyApp::TestIMGUI4()
 {
-	IMGUI::Context::this_->pSkin_->fontSize_ = 18;
+	//IMGUI::Context::this_->pSkin_->fontSize_ = 18;
     //IMGUIButton("");
 #if 0
     IMGUIButton("AMS1", 200, 200);
@@ -206,17 +204,16 @@ void MyApp::TestIMGUI4()
 #endif
 
 #if 1
-	const int MAX_TEXT_SIZE = 10;
     IMGUIBeginVertical(75, 50);
-	IMGUIButton(MAX_TEXT_SIZE, "AMS1", 150, 120);
-	IMGUIButton(MAX_TEXT_SIZE, "AMS2", 175, 120);
-	IMGUIButton(MAX_TEXT_SIZE, "AMS3", 150, 120);
-	IMGUIButton(MAX_TEXT_SIZE, "AMS4", 150, 520);
+	IMGUIButton("AMS1", 150, 120);
+	IMGUIButton("AMS2", 175, 120);
+	IMGUIButton("AMS3", 150, 120);
+	IMGUIButton("AMS4", 150, 520);
     static float scroll = 0;
     static float scrollFactor = 1;
     //IMGUIEndArea(scroll);
     IMGUIEndArea();
-	IMGUIButton(MAX_TEXT_SIZE, "DO", 2);
+	IMGUIButton("DO", 2);
     scroll+=0.01f * scrollFactor;
     if(scroll>1 || scroll < 0)
         scrollFactor *= -1;

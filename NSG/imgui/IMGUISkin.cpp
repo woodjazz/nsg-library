@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "IMGUISkin.h"
+#include "IMGUIStyle.h"
 #include "Technique.h"
 #include "Pass.h"
 #include "Material.h"
@@ -35,225 +36,95 @@ misrepresented as being the original software.
 #include "ProgramUnlit.h"
 #include "ProgramWhiteColor.h"
 
-namespace NSG 
+namespace NSG
 {
-	namespace IMGUI
-	{
-		Skin::Skin() 
-		: fontSize_(18),
-		textMaxLength_(std::numeric_limits<int>::max()),
-		mainWindowTechnique_(new Technique),
-		windowTechnique_(new Technique),
-		areaTechnique_(new Technique),
-        activeTechnique_(new Technique),
-        normalTechnique_(new Technique),
-        hotTechnique_(new Technique),
-        labelTechnique_(new Technique),
-        sliderTechnique_(new Technique),
-        titleTechnique_(new Technique),
-        borderTechnique_(new Technique),
-		stencilTechnique_(new Technique),
-		sizerLeftTopTechnique_(new Technique),
-		sizerTopTechnique_(new Technique),
-		sizerRightTopTechnique_(new Technique),
-		sizerLeftTechnique_(new Technique),
-		sizerRightTechnique_(new Technique),
-		sizerLeftBottomTechnique_(new Technique),
-		sizerBottomTechnique_(new Technique),
-		sizerRightBottomTechnique_(new Technique)
-		{
-			PProgram unlitProgram(new ProgramUnlit);
-
-			PMaterial pActiveMaterial(new Material);
-            pActiveMaterial->SetProgram(unlitProgram);
-			pActiveMaterial->SetColor(Color(1,0,0,0.7f));
-
-			PMaterial pNormalMaterial(new Material);
-            pNormalMaterial->SetProgram(unlitProgram);
-			pNormalMaterial->SetColor(Color(0,1,0,0.7f));
-
-			PMaterial pHotMaterial(new Material);
-			pHotMaterial->SetProgram(unlitProgram);
-			pHotMaterial->SetColor(Color(0,0,1,0.7f));
-
-			PMaterial pBorderMaterial(new Material);
-			PProgram pBorderProgram(new ProgramUnlit);
-			pBorderMaterial->SetProgram(pBorderProgram);
-			pBorderMaterial->SetColor(Color(1,1,1,1));
-
-			PMaterial labelMaterial(new Material);
-            labelMaterial->SetProgram(unlitProgram);
-			labelMaterial->SetColor(Color(0,0,0,0.0f));
-
-			PMaterial mainWindowMaterial(new Material);
-            mainWindowMaterial->SetColor(Color(0,0,0,0.0f));
-            mainWindowMaterial->SetProgram(unlitProgram);
-
-
-			PMaterial windowMaterial(new Material);
-            //windowMaterial->SetColor(Color(0,1,1,0.5f));
-            windowMaterial->SetColor(Color(0,0,1,0.6f));
-            windowMaterial->SetProgram(unlitProgram);
-            //windowMaterial->SetProgram(pProgram);
-			//windowMaterial->EnableColorBuffer(false);
-
-
-			PMaterial areaMaterial(new Material);
-            //areaMaterial->SetColor(Color(0,1,1,0.5f));
-            areaMaterial->SetColor(Color(0,0,0,0));
-            areaMaterial->SetProgram(unlitProgram);
-            //areaMaterial->SetProgram(pProgram);
-			//areaMaterial->EnableColorBuffer(false);
-
-			PMaterial sliderMaterial(new Material);
-            sliderMaterial->SetProgram(unlitProgram);
-			sliderMaterial->SetColor(Color(0.5f,0.5f,0.5f,0.6f));
-
-			PMaterial titleMaterial(new Material);
-            titleMaterial->SetProgram(unlitProgram);
-			titleMaterial->SetColor(Color(0.5f,0.5f,1.0f,0.9f));
-
-			PMaterial sizerMaterial(new Material);
-            sizerMaterial->SetProgram(unlitProgram);
-			sizerMaterial->SetColor(Color(0.1f,0.1f,0.5f,0.9f));
-			
-
-			PMesh borderMesh(new RectangleMesh(2, 2, GL_STATIC_DRAW));
-            PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
-            //PMesh areaMesh(new CircleMesh(1, 32, GL_STATIC_DRAW));
-            
-            //PMesh controlMesh(new RoundedRectangleMesh(0.5f, 2, 2, 64, GL_STATIC_DRAW));
-            //PMesh controlMesh(new CircleMesh(1, 32, GL_STATIC_DRAW));
-            //PMesh controlMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
-            PMesh controlMesh = areaMesh;
-
-			PPass activePass(new Pass);
-			activePass->Set(pActiveMaterial);
-			activePass->Add(nullptr, controlMesh);
-			activePass->EnableDepthTest(false);
-			activePass->EnableStencilTest(true);
-
-			PPass normalPass(new Pass);
-			normalPass->Set(pNormalMaterial);
-			normalPass->Add(nullptr, controlMesh);
-			normalPass->EnableDepthTest(false);
-			normalPass->EnableStencilTest(true);
-
-			PPass hotPass(new Pass);
-			hotPass->Set(pHotMaterial);
-			hotPass->Add(nullptr, controlMesh);
-			hotPass->EnableDepthTest(false);
-			hotPass->EnableStencilTest(true);
-
-
-			PPass borderPass(new Pass);
-			borderPass->Set(pBorderMaterial);
-			borderPass->Add(nullptr, borderMesh);
-			borderPass->SetDrawMode(Pass::WIREFRAME);
-			borderPass->EnableDepthTest(false);
-			borderPass->EnableStencilTest(true);
-
-
-            PPass windowPass(new Pass);
-            windowPass->Set(windowMaterial);
-			windowPass->Add(nullptr, areaMesh);
-            windowPass->EnableDepthTest(false);
-			windowPass->EnableStencilTest(true);
-
-            PPass mainWindowPass(new Pass);
-            mainWindowPass->Set(mainWindowMaterial);
-			mainWindowPass->Add(nullptr, areaMesh);
-            mainWindowPass->EnableDepthTest(false);
-			mainWindowPass->EnableStencilTest(true);
-
-
-            PPass areaPass(new Pass);
-            areaPass->Set(areaMaterial);
-			areaPass->Add(nullptr, areaMesh);
-            areaPass->EnableDepthTest(false);
-			areaPass->EnableStencilTest(true);
-
-			PPass sliderPass(new Pass);
-			sliderPass->Set(sliderMaterial);
-			sliderPass->Add(nullptr, areaMesh);
-            sliderPass->EnableDepthTest(false);
-			sliderPass->EnableStencilTest(true);
-
-			PPass titlePass(new Pass);
-			titlePass->Set(titleMaterial);
-			titlePass->Add(nullptr, areaMesh);
-            titlePass->EnableDepthTest(false);
-			titlePass->EnableStencilTest(true);
-
-			PPass labelPass(new Pass);
-			labelPass->Set(labelMaterial);
-			labelPass->Add(nullptr, controlMesh);
-            labelPass->EnableDepthTest(false);
-			labelPass->EnableStencilTest(true);
-
-			PPass sizerPass(new Pass);
-			sizerPass->Set(sizerMaterial);
-			sizerPass->Add(nullptr, controlMesh);
-            sizerPass->EnableDepthTest(false);
-			sizerPass->EnableStencilTest(true);
-
-
-			sliderTechnique_->Add(sliderPass);
-			titleTechnique_->Add(titlePass);
-			//titleTechnique_->Add(borderPass);
-			borderTechnique_->Add(borderPass);
-			mainWindowTechnique_->Add(mainWindowPass);
-			windowTechnique_->Add(windowPass);
-			areaTechnique_->Add(areaPass);
-			//activeTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
-			activeTechnique_->Add(activePass);
-			//activeTechnique_->Add(borderPass);
-			//normalTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
-			normalTechnique_->Add(normalPass);
-			//normalTechnique_->Add(borderPass);
-			//hotTechnique_->Add(borderPass); //needed to have accurate precision in the stencil buffer
-			hotTechnique_->Add(hotPass);
-			//hotTechnique_->Add(borderPass);
-			labelTechnique_->Add(labelPass);
-
-			sizerLeftTopTechnique_->Add(sizerPass);
-			sizerTopTechnique_->Add(sizerPass);
-			sizerRightTopTechnique_->Add(sizerPass);
-			sizerLeftTechnique_->Add(sizerPass);
-			sizerRightTechnique_->Add(sizerPass);
-			sizerLeftBottomTechnique_->Add(sizerPass);
-			sizerBottomTechnique_->Add(sizerPass);
-			sizerRightBottomTechnique_->Add(sizerPass);
-
+    namespace IMGUI
+    {
+        Skin::Skin()
+            : mainWindowStyle_(new Style),
+              windowStyle_(new Style),
+              areaStyle_(new Style),
+              labelStyle_(new Style),
+              buttonStyle_(new Style),
+			  textStyle_(new Style),
+              areaSliderStyle_(new Style),
+              titleStyle_(new Style),
+              sizerLeftTopStyle_(new Style),
+              sizerTopStyle_(new Style),
+              sizerRightTopStyle_(new Style),
+              sizerLeftStyle_(new Style),
+              sizerRightStyle_(new Style),
+              sizerLeftBottomStyle_(new Style),
+              sizerBottomStyle_(new Style),
+              sizerRightBottomStyle_(new Style),
+              vSliderStyle_(new Style),
+              vThumbSliderStyle_(new Style),
+              hSliderStyle_(new Style),
+              hThumbSliderStyle_(new Style),
+              stencilTechnique_(new Technique)
+        {
+			{
+				mainWindowStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+				mainWindowStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+				mainWindowStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+			}
 
 			{
-				// stencil technique
-				PProgram program(new ProgramWhiteColor);
-				PMaterial material(new Material);
-				material->SetColor(Color(1,0,1,0.7f));
-				material->SetProgram(program);
-				PPass pass(new Pass);
-				pass->Set(material);
-				pass->Add(nullptr, areaMesh);
-	            pass->EnableDepthTest(false);
-				pass->EnableDepthBuffer(false);
-				pass->EnableStencilTest(true);
-				pass->EnableColorBuffer(false);
-				pass->SetBlendMode(BLEND_NONE);
-				stencilTechnique_->Add(pass);
+				windowStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
+				windowStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
+				windowStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
 			}
-		}
 
-		Skin::Skin(const Skin& obj)
-		: fontFile_(obj.fontFile_),
-		fontSize_(obj.fontSize_),
-		textMaxLength_(obj.textMaxLength_),
-        areaTechnique_(obj.areaTechnique_),
-		activeTechnique_(obj.activeTechnique_),
-		normalTechnique_(obj.normalTechnique_),
-		hotTechnique_(obj.hotTechnique_),
-		labelTechnique_(obj.labelTechnique_)
-		{
-		}
-	}
+			{
+				areaStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+				areaStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+				areaStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+			}
+
+			{
+				labelStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+				labelStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+				labelStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+			}
+
+			{
+				buttonStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
+				buttonStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
+				buttonStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
+			}
+
+			{
+				textStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
+				textStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
+				textStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
+			}
+
+			{
+				areaSliderStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
+				areaSliderStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
+				areaSliderStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
+			}
+
+			{
+				titleStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
+				titleStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
+				titleStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
+			}
+
+			PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
+            PProgram program(new ProgramWhiteColor);
+            PMaterial material(new Material);
+            material->SetColor(Color(1, 0, 1, 0.7f));
+            material->SetProgram(program);
+            PPass pass(new Pass);
+            pass->Set(material);
+            pass->Add(nullptr, areaMesh);
+            pass->EnableDepthTest(false);
+            pass->EnableDepthBuffer(false);
+            pass->EnableStencilTest(true);
+            pass->EnableColorBuffer(false);
+            pass->SetBlendMode(BLEND_NONE);
+            stencilTechnique_->Add(pass);
+        }
+    }
 }

@@ -31,98 +31,133 @@ misrepresented as being the original software.
 #include "IMGUILayoutManager.h"
 #include "IMGUIState.h"
 #include "IMGUIContext.h"
+#include "IMGUIVSliderThumb.h"
+#include "IMGUIHSliderThumb.h"
+#include "App.h"
 
 using namespace NSG;
 
-namespace NSG 
+namespace NSG
 {
-	namespace IMGUI
-	{
-		void BeginHorizontal_(GLushort id, int percentageX, int percentageY)
-		{
-			id = Context::this_->GetValidId(id);
+    void IMGUIBeginHorizontal(float percentageX, float percentageY, IMGUI::Style& style)
+    {
+		IMGUI::Context::this_->pLayoutManager_->BeginHorizontalArea(percentageX, percentageY, style);
+    }
 
-			Context::this_->pLayoutManager_->BeginHorizontalArea(id, percentageX, percentageY);
-		}
+    void IMGUIBeginVertical(float percentageX, float percentageY, IMGUI::Style& style)
+    {
+		IMGUI::Context::this_->pLayoutManager_->BeginVerticalArea(percentageX, percentageY, style);
+    }
 
-		void BeginVertical_(GLushort id, int percentageX, int percentageY)
-		{
-			id = Context::this_->GetValidId(id);
+    float IMGUIEndArea(float scroll)
+    {
+		return IMGUI::Context::this_->pLayoutManager_->EndArea(scroll);
+    }
 
-			Context::this_->pLayoutManager_->BeginVerticalArea(id, percentageX, percentageY);
-		}
+    void IMGUISpacer(float percentageX, float percentageY)
+    {
+		IMGUI::Context::this_->pLayoutManager_->Spacer(percentageX, percentageY);
+    }
 
-		float EndArea_(float scroll)
-		{
-			return Context::this_->pLayoutManager_->EndArea(scroll);
-		}
+	bool IMGUIButton(const std::string& text, float percentageX, float percentageY, IMGUI::Style& style)
+    {
+		IMGUI::Button obj(text, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY, style);
 
-		void Spacer_(GLushort id, int percentageX, int percentageY)
-		{
-			id = Context::this_->GetValidId(id);
+        bool result = obj.Render();
 
-			Context::this_->pLayoutManager_->Spacer(id, percentageX, percentageY);
-		}
+        return result;
+    }
 
-		bool Button_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
-		{
-			id = Context::this_->GetValidId(id);
+	float IMGUIVSlider(float value, float percentageX, float percentageY, float thumbPercentageX, float thumbPercentageY, IMGUI::Style& style, IMGUI::Style& thumbStyle)
+    {
+		IMGUIBeginHorizontal(percentageX, percentageY, style);
+        float percentageHSpace = 0.5f * (100 - thumbPercentageX);
+        IMGUISpacer(percentageHSpace);
+		value = IMGUIVSliderThumb(value, thumbPercentageX, thumbPercentageY, thumbStyle);
+        IMGUISpacer(percentageHSpace);
+        IMGUIEndArea();
+        return value;
+    }
 
-			Button obj(id, text, maxLength, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY);
-			
-			bool result = obj.Render();
+	float IMGUIHSlider(float value, float percentageX, float percentageY, float thumbPercentageX, float thumbPercentageY, IMGUI::Style& style, IMGUI::Style& thumbStyle)
+    {
+		IMGUIBeginVertical(percentageX, percentageY, style);
+        float percentageVSpace = 0.5f * (100 - thumbPercentageY);
+        IMGUISpacer(100, percentageVSpace);
+		value = IMGUIHSliderThumb(value, thumbPercentageX, thumbPercentageY, thumbStyle);
+        IMGUISpacer(100, percentageVSpace);
+        IMGUIEndArea();
+        return value;
+    }
 
-			return result;
-		}		
 
-		void Label_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
-		{
-			id = Context::this_->GetValidId(id);
+	float IMGUIVSliderThumb(float value, float percentageX, float percentageY, IMGUI::Style& style)
+    {
+		IMGUI::VSliderThumb obj(value, percentageX, percentageY, style);
 
-			Label obj(id, text, maxLength, percentageX, percentageY);
+        float result = obj.Render();
 
-			obj.Render();
-		}
+        return result;
+    }
 
-		void Title_(GLushort id, const std::string& text, int maxLength, int percentageX, int percentageY)
-		{
-			id = Context::this_->GetValidId(id);
+	float IMGUIHSliderThumb(float value, float percentageX, float percentageY, IMGUI::Style& style)
+    {
+        IMGUI::HSliderThumb obj(value, percentageX, percentageY, style);
 
-			Title obj(id, text, maxLength, percentageX, percentageY);
+        float result = obj.Render();
 
-			obj.Render();
-		}
+        return result;
+    }
 
-		std::string TextField_(GLushort id, const std::string& text, int maxLength, std::regex* pRegex, int percentageX, int percentageY)
-		{	
-			id = Context::this_->GetValidId(id);
+	void IMGUILabel(const std::string& text, float percentageX, float percentageY, IMGUI::Style& style)
+    {
+		IMGUI::Label obj(text, percentageX, percentageY, style);
 
-			Text obj(id, text, maxLength, pRegex, percentageX, percentageY);
+        obj.Render();
+    }
 
-			std::string result = obj.Render();
+	void IMGUITitle(const std::string& text, float percentageX, float percentageY, IMGUI::Style& style)
+    {
+		IMGUI::Title obj(text, percentageX, percentageY, style);
 
-			return result;
-		}	
+        obj.Render();
+    }
 
-		PSkin& Skin_()
-		{
-			return Context::this_->pSkin_;
-		}
+	std::string IMGUITextField(const std::string& text, float percentageX, float percentageY, std::regex* pRegex, IMGUI::Style& style)
+    {
+		IMGUI::Text obj(text, pRegex, percentageX, percentageY, style);
 
-		PNode& Node_()
-		{
-			return Context::this_->pCurrentNode_;	
-		}
+        std::string result = obj.Render();
 
-		void Window_(GLushort id, IWindow* obj, int percentageX, int percentageY)
-		{
-			Context::this_->pLayoutManager_->Window(id, obj, percentageX, percentageY);
-		}
+        return result;
+    }
 
-		bool IsReady()
-		{
-			return Context::this_->IsReady();
-		}
+	IMGUI::PSkin& IMGUISkin()
+    {
+		return IMGUI::Context::this_->pSkin_;
+    }
+
+    PNode& IMGUINode()
+    {
+        return IMGUI::Context::this_->pCurrentNode_;
+    }
+
+	void IMGUIWindow(IMGUI::IWindow* obj, float percentageX, float percentageY)
+    {
+		IMGUI::Context::this_->pLayoutManager_->Window(obj, percentageX, percentageY);
+    }
+
+    namespace IMGUI
+    {
+        Style& IWindow::GetStyle()
+        {
+            return *Context::this_->pSkin_->windowStyle_;
+        }
+
+        bool IsReady()
+        {
+            return Context::this_->IsReady();
+        }
 
         void OnMouseMove(float x, float y)
         {
@@ -139,25 +174,44 @@ namespace NSG
             Context::this_->state_->OnMouseUp(x, y);
         }
 
-		void OnMouseWheel(float x, float y)
-		{
-			Context::this_->state_->OnMouseWheel(x, y);	
-		}
+        void OnMouseWheel(float x, float y)
+        {
+            Context::this_->state_->OnMouseWheel(x, y);
+        }
 
         void OnKey(int key, int action, int modifier)
         {
-        	Context::this_->state_->OnKey(key, action, modifier);
+            Context::this_->state_->OnKey(key, action, modifier);
         }
 
         void OnChar(unsigned int character)
         {
-        	Context::this_->state_->OnChar(character);
+            Context::this_->state_->OnChar(character);
         }
 
         void DoTick()
         {
-        	Context::this_->state_->DoTick();
+            Context::this_->state_->DoTick();
         }
-	}
+
+        float Pixels2PercentageX(int pixels)
+        {
+            PNode node = IMGUINode();
+            Vertex3 globalScale = node->GetGlobalScale();
+            float xPixelsNodeSize = globalScale.x * (float)App::this_->GetViewSize().first;
+            float percentage = 100 * pixels / xPixelsNodeSize;
+            return percentage;
+        }
+
+        float Pixels2PercentageY(int pixels)
+        {
+            PNode node = IMGUINode();
+            Vertex3 globalScale = node->GetGlobalScale();
+            float yPixelsNodeSize = globalScale.y * (float)App::this_->GetViewSize().second;
+            float percentage = 100 * pixels / yPixelsNodeSize;
+            return percentage;
+        }
+
+    }
 }
 

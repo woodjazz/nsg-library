@@ -201,6 +201,9 @@ namespace NSG
 
 		struct WindowManager;
 		typedef std::shared_ptr<WindowManager> PWindowManager;
+
+		struct Style;
+		typedef std::shared_ptr<Style> PStyle;
 	}
 
 	class Model;

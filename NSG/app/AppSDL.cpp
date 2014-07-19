@@ -41,14 +41,21 @@ misrepresented as being the original software.
 
 NSG::PInternalApp s_pApp = nullptr;
 
+#ifdef IOS
+static void RenderFrame(void* data)
+{
+    s_pApp->RenderFrame();
+}
+#endif
+
 namespace NSG
 {
 	bool CreateModule(App* pApp)
 	{
 		s_pApp = PInternalApp(new InternalApp(pApp));
 
-		//if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE) != 0)
-		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) != 0)
+		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE) != 0)
+		//if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) != 0)
 		{
 			TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
 			return false;
@@ -220,8 +227,12 @@ namespace NSG
                 
 			}
 
-			s_pApp->RenderFrame();
 
+#ifndef IOS
+			s_pApp->RenderFrame();
+#else
+			SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);
+#endif			
 	        SDL_GL_SwapWindow(win);  
 
 	        quit = quit || s_pApp->ShallExit();

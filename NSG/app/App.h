@@ -65,6 +65,7 @@ namespace NSG
 		virtual void HandleMessage(const pp::Var& var_message);
 		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
         AAssetManager* GetAssetManager() { return pAAssetManager_; }
+        virtual IMGUI::Style& GetStyle() override;
 
     private:
         AAssetManager* pAAssetManager_;
@@ -103,7 +104,4 @@ namespace NSG
         void SetActivity(ANativeActivity* pActivity);
     };
 }	
-
-#define PIXELS2PERCENTAGEX(pixels) (ceil(100 * pixels/(float)App::this_->GetViewSize().first))
-#define PIXELS2PERCENTAGEY(pixels) (ceil(100 * pixels/(float)App::this_->GetViewSize().second))
 

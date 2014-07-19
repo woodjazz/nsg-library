@@ -95,13 +95,16 @@ namespace NSG
 			AAsset_close(pAsset);    
 		#else
 	        std::ifstream file(filename_, std::ios::binary);
-
+            
 	        #if __APPLE__
 	    	if(!file.is_open())
 	    	{
-	    		std::string newName;
-	    		newName.resize(2048);
-	    		sprintf(&newName[0], "%s/Contents/Resources/Data/%s", AppleGetBundleDirectory(), filename_.c_str());
+	    		char newName[2048];
+ 	    	#if IOS
+	    		sprintf(newName, "%s/Data/%s", AppleGetBundleDirectory(), filename_.c_str());
+	    	#else
+	    		sprintf(newName, "%s/Contents/Resources/Data/%s", AppleGetBundleDirectory(), filename_.c_str());
+	    	#endif
 	    		file.open(newName, std::ios::binary);
 	    	}
 	        #endif

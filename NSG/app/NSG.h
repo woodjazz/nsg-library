@@ -53,6 +53,7 @@ misrepresented as being the original software.
 #include "Light.h"
 #include "IMGUI.h"
 #include "IMGUISkin.h"
+#include "IMGUIStyle.h"
 #include "IMGUIContext.h"
 #include "IMGUITitle.h"
 #include "Render2Texture.h"

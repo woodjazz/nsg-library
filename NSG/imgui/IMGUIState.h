@@ -24,8 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
-#include "GLES2Includes.h"
+#include "Types.h"
 
 namespace NSG 
 {
@@ -56,10 +55,8 @@ namespace NSG
   			int keymod_;
   			int keyaction_;
   			unsigned int character_;
-            GLushort lastSliderHit_;
-            GLushort lastTitleHit_;
-            GLushort lastSizerHit_;
-            GLushort activeScrollArea_;
+  			IdType lastHit_;
+            IdType activeScrollArea_;
 
 			int tick_;
 

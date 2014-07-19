@@ -87,26 +87,6 @@ add_subdirectory(${EXTERNALS_DIR}/freetype2)
 list(APPEND LIBRARIES_2_LINK freetype)
 
 ###########################
-# SDL
-###########################
-if(USE_SDL AND NOT NACL AND NOT ANDROID)
-	add_definitions(-DSDL)
-	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
-	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
-	mark_as_disable_and_internal(SDL_SHARED)
-	mark_as_disable_and_internal(HAVE_DINPUT_H)
-	add_subdirectory(${DEPENDENCIES_DIR}/SDL)
-	list(APPEND LIBRARIES_2_LINK SDL2-static)
-endif()
-
-###########################
-# stb
-###########################
-# add_subdirectory(stb)
-# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/stb)
-# list(APPEND LIBRARIES_2_LINK stb) 
-
-###########################
 # assimp
 ###########################
 macro ( generate_memory_h)
@@ -133,7 +113,40 @@ mark_as_disable_and_internal(ASSIMP_BUILD_TESTS)
 mark_as_disable_and_internal(ASSIMP_BUILD_SAMPLES)
 include_directories(${EXTERNALS_DIR}/assimp/include)
 add_subdirectory(${EXTERNALS_DIR}/assimp)
-list(APPEND LIBRARIES_2_LINK assimp) 
+list(APPEND LIBRARIES_2_LINK assimp)
+
+###########################
+# SDL
+###########################
+if(USE_SDL AND NOT NACL AND NOT ANDROID)
+	include (CheckIncludeFiles)	
+	add_definitions(-DSDL)
+	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
+	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
+	#mark_as_disable_and_internal(SDL_SHARED)
+	#mark_as_disable_and_internal(HAVE_DINPUT_H)
+	add_subdirectory(${DEPENDENCIES_DIR}/SDL)
+	#list(APPEND LIBRARIES_2_LINK SDL2-static)
+    if (WIN32)
+		if (MSVC)
+		    find_package (Direct3D)
+		    if (DIRECT3D_FOUND)
+		        include_directories (${DIRECT3D_INCLUDE_DIRS})
+		        list (APPEND LIBRARIES_2_LINK ${DIRECT3D_LIBRARIES} ${DIRECT3D_COMPILER_LIBRARIES})
+		    endif ()
+		endif ()
+        list (APPEND LIBRARIES_2_LINK user32 gdi32 winmm imm32 ole32 oleaut32 version uuid )
+    endif()
+
+	list(APPEND LIBRARIES_2_LINK SDL)
+endif()
+
+###########################
+# stb
+###########################
+# add_subdirectory(stb)
+# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/stb)
+# list(APPEND LIBRARIES_2_LINK stb) 
 
 ###########################
 # rtaudio

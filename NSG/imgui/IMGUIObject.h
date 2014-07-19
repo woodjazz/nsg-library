@@ -28,68 +28,67 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	namespace IMGUI
-	{
-		class Object
-		{
-		public:
-			Object(GLushort id, LayoutType type, bool isWindow, int percentageX, int percentageY);
-			~Object();
-			bool IsReady() const;
-			void Draw();
-			bool Update();
-			virtual void UpdateControl() {};
-			bool HasFocus() const;
-			bool IsActive() const;
-			bool IsHot() const;
-			static void DisableKeyboard();
-			virtual void OnFocus(bool needsKeyboard);
-			virtual void OnActive();
-			virtual void OnHot();
-			virtual void OnKey(int key) {}
-			virtual void OnChar(unsigned int character) {}
-			virtual PTechnique GetActiveTechnique() const;
-			virtual PTechnique GetHotTechnique() const;
-			virtual PTechnique GetNormalTechnique() const;
-			PLayoutArea GetArea() const { return area_; }
+    namespace IMGUI
+    {
+        class Object
+        {
+        public:
+            Object(LayoutType type, float percentageX, float percentageY, Style& style);
+            ~Object();
+            bool IsReady() const;
+            void Draw();
+            bool Update();
+            bool HasFocus() const;
+            bool IsActive() const;
+            bool IsHot() const;
+            static void DisableKeyboard();
+            virtual void UpdateControl() {};
+            virtual bool OnFocus(bool needsKeyboard);
+            virtual bool OnActive();
+            virtual bool OnHot();
+            virtual void OnKey(int key) {}
+            virtual void OnChar(unsigned int character) {}
+            PLayoutArea GetArea() const
+            {
+                return area_;
+            }
             void FixCurrentTecnique();
             bool IsMouseInArea() const;
             bool IsMouseButtonPressedInArea() const;
-		protected:
-			GLushort id_;
-			State& uistate_;
-			Skin& skin_;
+        protected:
 			LayoutManager& layoutManager_;
-			PWindowManager currentWindowManager_;
-			PLayoutArea area_;
-			GLushort& lastTitleHit_;
-			GLushort& lastSizerHit_;
-			PNode node_;
-			Vertex3 areaSize_;
-			PTechnique currentTechnique_;
+            IdType id_;
+            State& uistate_;
+            Skin& skin_;
+            PWindowManager currentWindowManager_;
+            PLayoutArea area_;
+            IdType& lastHit_;
+            PNode node_;
+            Vertex3 areaSize_;
+            PTechnique currentTechnique_;
+            Style& style_;
 
-			const float& mouseDownX_;
-			const float& mouseDownY_;
-			const float& mousex_;
-			const float& mousey_;
-			const bool& mousedown_;
-			const bool& mouseup_;
-			const float& mouseRelX_;
-			const float& mouseRelY_;
-			GLushort& activeScrollArea_;
+            const float& mouseDownX_;
+            const float& mouseDownY_;
+            const float& mousex_;
+            const float& mousey_;
+            const bool& mousedown_;
+            const bool& mouseup_;
+            const float& mouseRelX_;
+            const float& mouseRelY_;
+            IdType& activeScrollArea_;
 
-			size_t level_;
-			LayoutType type_;
-			bool isWindow_;
-			bool drawn_;
+            size_t level_;
+            LayoutType type_;
+            bool drawn_;
 
-			GLushort& hotitem_;
-			GLushort& activeitem_;
-			GLushort& kbditem_;
-			GLushort& lastwidget_;
-			bool& activeitem_needs_keyboard_;	
-			std::pair<int32_t, int32_t> viewSize_;
+            IdType& hotitem_;
+            IdType& activeitem_;
+            IdType& kbditem_;
+            IdType& lastwidget_;
+            bool& activeitem_needs_keyboard_;
+            std::pair<int32_t, int32_t> viewSize_;
 
-		};
-	}
+        };
+    }
 }

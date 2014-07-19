@@ -133,7 +133,8 @@ struct Test : public App
 
 	void Start()
 	{
-		IMGUI::Context::this_->pSkin_->fontFile_ = "font/FreeSans.ttf";
+		IMGUI::Context::this_->pSkin_->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
+		IMGUI::Context::this_->pSkin_->textStyle_->fontFile_ = "font/FreeSans.ttf";
 	    initializing_.AddTransition(state1_).When([&]() { return text1 == "init"; });
 	    state1_.AddTransition(state2_).When([&]() { return text2 == "st1"; });
 	    state2_.AddTransition(end_).When([&]() { return text1 == "State2"; });
@@ -150,9 +151,7 @@ struct Test : public App
 
 	void RenderGUIWindow()
 	{
-		const int MAX_TEXT_SIZE = 15;
-
-		buttonPressed = IMGUIButton(MAX_TEXT_SIZE, "Button", 100, 50);
+		buttonPressed = IMGUIButton("Button", 100, 50);
 
         if(buttonPressed)
         {
@@ -161,8 +160,8 @@ struct Test : public App
 	        
         IMGUIBeginHorizontal(100, 50);
 
-		    text1 = IMGUITextField(MAX_TEXT_SIZE, text1, 50);
-			text2 = IMGUITextField(MAX_TEXT_SIZE, text2, 50);
+		    text1 = IMGUITextField(text1, 50);
+			text2 = IMGUITextField(text2, 50);
 	    
 	    IMGUIEndArea();
 	}

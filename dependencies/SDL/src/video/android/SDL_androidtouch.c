@@ -18,6 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+// Modified by Lasse Oorni for Urho3D
+
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_ANDROID
@@ -85,22 +88,23 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
         case ACTION_DOWN:
             /* Primary pointer down */
             Android_GetWindowCoordinates(x, y, &window_x, &window_y);
+            // Urho3D: do not send emulated mouse events
             /* send moved event */
-            SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
+            //SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
             /* send mouse down event */
-            SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+            //SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
             pointerFingerID = fingerId;
         case ACTION_POINTER_DOWN:
             /* Non primary pointer down */
             SDL_SendTouch(touchDeviceId, fingerId, SDL_TRUE, x, y, p);
             break;
-            
+
         case ACTION_MOVE:
             if (!pointerFingerID) {
                 Android_GetWindowCoordinates(x, y, &window_x, &window_y);
 
                 /* send moved event */
-                SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
+                //SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
             }
             SDL_SendTouchMotion(touchDeviceId, fingerId, x, y, p);
             break;
@@ -109,7 +113,7 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
             /* Primary pointer up */
             /* send mouse up */
             pointerFingerID = (SDL_FingerID) 0;
-            SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+            //SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
         case ACTION_POINTER_UP:
             /* Non primary pointer up */
             SDL_SendTouch(touchDeviceId, fingerId, SDL_FALSE, x, y, p);
