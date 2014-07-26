@@ -52,22 +52,6 @@ namespace NSG
             lastwidget_ = id_;
         }
 
-        bool HSliderThumb::OnActive()
-        {
-			return true;
-        }
-
-        bool HSliderThumb::OnHot()
-        {
-			return true;
-        }
-
-		bool HSliderThumb::OnFocus(bool needsKeyboard)
-		{
-			return true;
-		}
-
-
         void HSliderThumb::UpdateControl()
         {
             if (layoutManager_.IsCurrentWindowActive()) 

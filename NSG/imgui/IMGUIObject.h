@@ -48,11 +48,8 @@ namespace NSG
             virtual bool OnHot();
             virtual void OnKey(int key) {}
             virtual void OnChar(unsigned int character) {}
-            PLayoutArea GetArea() const
-            {
-                return area_;
-            }
-            void FixCurrentTecnique();
+            PLayoutArea GetArea() const { return area_; }
+            virtual void FixCurrentTechnique();
             bool IsMouseInArea() const;
             bool IsMouseButtonPressedInArea() const;
         protected:

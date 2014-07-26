@@ -24,8 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
-#include <string>
+#include "Types.h"
 
 namespace NSG 
 {
@@ -33,9 +32,12 @@ namespace NSG
 	{
 		struct Style
 		{
-			std::string fontFile_;
-			int fontSize_;
-			size_t textMaxLength_;
+			static PProgram unlitProgram_;
+			static PMesh controlMesh_;
+
+			bool enableActive_;
+			bool enableHot_;
+			bool enableFocus_;
 
 			PTechnique activeTechnique_;
 			PTechnique normalTechnique_;
@@ -44,5 +46,106 @@ namespace NSG
 			Style();
 			Style(const Style& obj);
 		};
+
+		struct LineStyle : Style
+		{
+			size_t pixels_;
+			LineStyle();
+			LineStyle(const LineStyle& obj);
+		};
+
+		struct AreaStyle : Style
+		{
+			bool showVScroll_;
+			bool showHScroll_;
+			PTechnique vScrollTechnique_;
+			PTechnique hScrollTechnique_;
+
+			AreaStyle();
+			AreaStyle(const AreaStyle& obj);
+		};
+
+		struct SliderStyle : AreaStyle
+		{
+			PStyle thumbSliderStyle_;
+
+			SliderStyle();
+			SliderStyle(const SliderStyle& obj);
+		};
+
+		struct SizerStyle : Style
+		{
+			SizerStyle();
+			SizerStyle(const SizerStyle& obj);
+		};
+
+		struct LabelStyle : Style
+		{
+			Color textColor_;
+			std::string fontAtlasFile_;
+
+			LabelStyle();
+			LabelStyle(const LabelStyle& obj);
+		};
+
+		struct ButtonStyle : Style
+		{
+			Color textColor_;
+			std::string fontAtlasFile_;
+
+			ButtonStyle();
+			ButtonStyle(const ButtonStyle& obj);
+		};
+
+		struct CheckButtonStyle : ButtonStyle
+		{
+			PStyle pressedStyle_;
+
+			CheckButtonStyle();
+			CheckButtonStyle(const CheckButtonStyle& obj);
+		};
+
+		struct TextStyle : Style
+		{
+			Color textColor_;
+			std::string fontAtlasFile_;
+			size_t textMaxLength_;
+
+			TextStyle();
+			TextStyle(const TextStyle& obj);
+		};
+
+		struct TitleStyle : Style
+		{
+			Color textColor_;
+			size_t pixelsHeight_;
+			std::string fontAtlasFile_;
+
+			TitleStyle();
+			TitleStyle(const TitleStyle& obj);
+		};
+
+		struct WindowStyle : AreaStyle
+		{
+			std::string fontAtlasFile_;
+			size_t sizerPixels_;
+
+
+			PTitleStyle titleStyle_;
+
+			PSizerStyle sizerLeftTopStyle_;
+			PSizerStyle sizerTopStyle_;
+			PSizerStyle sizerRightTopStyle_;
+			PSizerStyle sizerLeftStyle_;
+			PSizerStyle sizerRightStyle_;
+			PSizerStyle sizerLeftBottomStyle_;
+			PSizerStyle sizerBottomStyle_;
+			PSizerStyle sizerRightBottomStyle_;
+
+
+			WindowStyle();
+			WindowStyle(const WindowStyle& obj);
+		};
+
 	}
 }

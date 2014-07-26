@@ -1,14 +1,15 @@
 #include "FontAtlasTexture.h"
-#include "FreeTypeClass.h"
 #include "Check.h"
 #include "Context.h"
+#include "TextureFile.h"
 #include "ResourceFile.h"
+#include "ResourceMemory.h"
+#include "Mesh.h"
 #include "App.h"
-#if NACL
-#include "AppNaCl.h"
-#endif
-#include <thread>
-#include <chrono>
+#include "UTF8String.h"
+#include "tinyxml2.h"
+#include "fonts/anonymous_pro_regular_14_png.inl"
+#include "fonts/anonymous_pro_regular_14_xml.inl"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -17,328 +18,227 @@
 
 namespace NSG
 {
-	FontAtlasTexture::FontAtlasTexture(const char* filename, int fontSize) 
-	: filename_(filename),
-    atlasWidth_(0),
-	atlasHeight_(0),
-	fontSize_(fontSize),
-	viewWidth_(0),
-	viewHeight_(0)
-	{
-        pResource_ = PResource(new ResourceFile(filename));
-	}
-
-	FontAtlasTexture::~FontAtlasTexture()
-	{
-        Context::this_->Remove(this);
-	}
-
-    void FontAtlasTexture::AllocateResources()
+    FontAtlasTexture::FontAtlasTexture(const std::string& filename)
+        : viewWidth_(0),
+          viewHeight_(0),
+		  filename_(filename)
     {
-    	Texture::AllocateResources();
-        CreateTextureAtlas(false);
-        GenerateMeshesForAllChars();
-    }
-
-    void FontAtlasTexture::ReleaseResources()
-    {
-    	charsMesh_.clear();
-        charInfo_.clear();
-        atlasWidth_ = atlasHeight_ = 0;
-        viewWidth_ = viewHeight_ = 0;
-        Texture::ReleaseResources();
-    }
-
-	
-	void FontAtlasTexture::CreateTextureAtlas(bool generateMipmaps)
-	{
-		const size_t MAXWIDTH = 512; // Maximum allowed witdh for the texture 
-
-		TRACE_LOG("FontAtlasTexture::CreateTextureAtlas: File=" << filename_ << " fontSize=" << fontSize_);
-
-		FT_Face face;
-
-		FT_New_Memory_Face(Context::this_->freeType_->GetHandle(), (const FT_Byte*)pResource_->GetData(), pResource_->GetBytes(), 0, &face);
-		FT_Set_Pixel_Sizes(face, 0, fontSize_);
-
-		FT_GlyphSlot g = face->glyph;
-		
-		int roww = 0;
-		int rowh = 0;
-		 
-		for(int i = 32; i < FontAtlasTexture::MAXCHARS; i++) 
-		{
-			if(FT_Load_Char(face, i, FT_LOAD_RENDER)) 
-			{
-				TRACE_LOG("Loading character " << (char)i << " failed!");
-				continue;
-			}
-			
-			if (roww + g->bitmap.width + 1 >= MAXWIDTH) 
-			{
-                atlasWidth_ = std::max(atlasWidth_, roww);
-                atlasHeight_ += rowh;
-                roww = 0;
-                rowh = 0;
+        if(filename.empty())
+        {
+			texture_ = PTexture(new TextureFile(PResource(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_PNG, ANONYMOUS_PRO_REGULAR_14_PNG_SIZE))));
+            xmlResource_ = PResource(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_XML, ANONYMOUS_PRO_REGULAR_14_XML_SIZE)); 
+        }
+        else
+        {
+            texture_ = PTexture(new TextureFile(filename.c_str()));
+            std::string::size_type idx = filename.find_last_of(".");
+            if (idx != std::string::npos)
+            {
+                std::string xmlFilename = filename;
+                xmlFilename.replace(xmlFilename.begin() + idx, xmlFilename.end(), ".xml"); //divo compatible (generated with font builder)
+                xmlResource_ = PResourceFile(new ResourceFile(xmlFilename.c_str()));
             }
+        }
+    }
 
-            roww += g->bitmap.width + 1;
-            rowh = std::max(rowh, g->bitmap.rows);		
+    FontAtlasTexture::~FontAtlasTexture()
+    {
+    }
+
+    bool FontAtlasTexture::IsReady()
+    {
+        if (xmlResource_ && xmlResource_->IsLoaded() && texture_->IsReady())
+        {
+            if (charsMap_.empty())
+                ParseXML();
+
+            return true;
         }
 
-		atlasWidth_ = std::max(atlasWidth_, roww);
-        atlasHeight_ += rowh;  
+        return false;
+    }
 
-        if(generateMipmaps)
-        {
-			int maxValue = std::max(atlasWidth_, atlasHeight_);
-
-			double log2Value = log2(maxValue);
-			double pow2Value = std::pow(2, std::ceil(log2Value));
-
-			atlasWidth_ = atlasHeight_ = (int)pow2Value;
-			int numMipmaps = (int)std::floor(log2(std::max(atlasWidth_, atlasHeight_))) + 1;
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-			glGenerateMipmap(GL_TEXTURE_2D);
-
-			GLsizei levelSize = atlasWidth_;
-			for (GLint level = 0; level < numMipmaps; level++)
-			{
-				glTexImage2D(GL_TEXTURE_2D, level, GL_ALPHA, levelSize, levelSize, 0, GL_ALPHA, GL_UNSIGNED_BYTE, 0);
-				std::vector<GLubyte> emptyData(levelSize * levelSize, 0);
-				glTexSubImage2D(GL_TEXTURE_2D, level, 0, 0, levelSize, levelSize, GL_ALPHA, GL_UNSIGNED_BYTE, &emptyData[0]);
-
-				log2Value = log2(levelSize) - 1;
-				levelSize = (GLsizei)exp2(log2Value);
-			}
-		}
-		else
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, atlasWidth_, atlasHeight_, 0, GL_ALPHA, GL_UNSIGNED_BYTE, 0);
-			std::vector<GLubyte> emptyData(atlasWidth_ * atlasHeight_, 0);
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlasWidth_, atlasHeight_, GL_ALPHA, GL_UNSIGNED_BYTE, &emptyData[0]);
-		}
-
-		int ox = 0;
-        int oy = 0;
-        rowh = 0;
-
-        charInfo_.resize(FontAtlasTexture::MAXCHARS) ;
-
-		for(int i = 32; i < FontAtlasTexture::MAXCHARS; i++) 
-		{
-			if(FT_Load_Char(face, i, FT_LOAD_RENDER))
-			{
-				TRACE_LOG("Loading character " << (char)i << " failed!");
-				continue;
-			}
-
-			if(ox + g->bitmap.width + 1 >= MAXWIDTH) 
-			{
-                oy += rowh;
-                rowh = 0;
-                ox = 0;
-            }			
-
-			glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, g->bitmap.width, g->bitmap.rows, GL_ALPHA, GL_UNSIGNED_BYTE, g->bitmap.buffer);
-
-			charInfo_[i].ax = g->advance.x >> 6;
-			charInfo_[i].ay = g->advance.y >> 6;
-			charInfo_[i].bw = g->bitmap.width;
-			charInfo_[i].bh = g->bitmap.rows;
-			charInfo_[i].bl = g->bitmap_left;
-			charInfo_[i].bt = g->bitmap_top;
-			charInfo_[i].tx = (float)ox / atlasWidth_;			
-			charInfo_[i].ty = (float)oy / atlasHeight_;	
-
-			ox += g->bitmap.width + 1;
-
-            rowh = std::max(rowh, g->bitmap.rows);
-		}
-
-		TRACE_LOG("FontAtlasTexture::CreateTextureAtlas done.");
-	}
-
-	void FontAtlasTexture::GenerateMeshesForAllChars()
-	{
-		TRACE_LOG("FontAtlasTexture::GenerateMeshesForAllChars...");
-
-		auto viewSize = App::this_->GetViewSize();
-
-		viewWidth_ = viewSize.first;
-		viewHeight_ = viewSize.second;
-
-		CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0, __FILE__, __LINE__);
-
-		float sx = 2.0f/viewWidth_;
-	    float sy = 2.0f/viewHeight_;   
-
-		for(int idx = 32; idx < FontAtlasTexture::MAXCHARS; idx++) 
-		{ 
-			float w = charInfo_[idx].bw * sx;
-			float h = charInfo_[idx].bh * sy;
-
-			/* Skip glyphs that have no pixels */
-			if(!w || !h)
-				continue;
-
-			VertexData data;
-			CharMesh mesh;
-            
-			data.normal_ = Vertex3(0, 0, 1); // always facing forward
+    void FontAtlasTexture::ParseXML()
+    {
 		
-			data.position_ = Vertex3(0, 0, 0);
-			data.uv_ = Vertex2(charInfo_[idx].tx, charInfo_[idx].ty);
+		TRACE_LOG("FontAtlasTexture::Parsing: " << (filename_.empty() ? "internal font" : filename_));
 
-			mesh.push_back(data);
-            
-			data.position_ = Vertex3(w, 0, 0);
-			data.uv_ = Vertex2(charInfo_[idx].tx + charInfo_[idx].bw / atlasWidth_, charInfo_[idx].ty);
-			mesh.push_back(data);
+        tinyxml2::XMLDocument doc;
+        tinyxml2::XMLError xmlStatus = doc.Parse(xmlResource_->GetData(), xmlResource_->GetBytes());
+        CHECK_ASSERT(xmlStatus == tinyxml2::XML_SUCCESS, __FILE__, __LINE__);
+        const tinyxml2::XMLElement* charElement = doc.FirstChildElement("Font");
+        int height = 0;
+        charElement->QueryAttribute("height", &height);
+        charElement = charElement->FirstChildElement("Char");
+        while (charElement)
+        {
+            CharInfo charInfo;
+            charInfo.height = height;
 
-			data.position_ = Vertex3(0, -h, 0);
-			data.uv_ = Vertex2(charInfo_[idx].tx, charInfo_[idx].ty + charInfo_[idx].bh / atlasHeight_);
-			mesh.push_back(data);
+            charElement->QueryAttribute("width", &charInfo.width);
+            {
+                std::stringstream ss;
+                ss << charElement->Attribute("offset");
+                ss >> charInfo.offset.x;
+                ss >> charInfo.offset.y;
+            }
 
-			data.position_ = Vertex3(w, 0, 0);
-			data.uv_ = Vertex2(charInfo_[idx].tx + charInfo_[idx].bw / atlasWidth_, charInfo_[idx].ty);
-			mesh.push_back(data);
+            {
+                std::stringstream ss;
+                ss << charElement->Attribute("rect");
+                ss >> charInfo.rect.x;
+                ss >> charInfo.rect.y;
+                ss >> charInfo.rect.z;
+                ss >> charInfo.rect.w;
+            }
 
-			data.position_ = Vertex3(0, -h, 0);
-			data.uv_ = Vertex2(charInfo_[idx].tx, charInfo_[idx].ty + charInfo_[idx].bh / atlasHeight_);
-			mesh.push_back(data);
+            int code = 0;
+            const tinyxml2::XMLAttribute* att = charElement->FindAttribute("code");
+            UTF8String utf8(att->Value());
+            unsigned unicode = utf8.AtUTF8(0);
+            charsMap_[unicode] = charInfo;
+            charElement = charElement->NextSiblingElement("Char");
+        }
 
-			data.position_ = Vertex3(w, -h, 0);
-			data.uv_ = Vertex2(charInfo_[idx].tx + charInfo_[idx].bw / atlasWidth_, charInfo_[idx].ty + charInfo_[idx].bh / atlasHeight_);
-			mesh.push_back(data);
-            
-			charsMesh_[idx] = mesh;
-		}
+        TRACE_LOG("FontAtlasTexture::Parsing done.");
+    }
 
-		TRACE_LOG("FontAtlasTexture::GenerateMeshesForAllChars done.");
-	}
-
-	bool FontAtlasTexture::SetTextMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight)
-	{
-        if(!IsReady())
+    bool FontAtlasTexture::GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight)
+    {
+        if (!IsReady())
             return false;
 
-		CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0, __FILE__, __LINE__);
-			
-		vertexsData.clear();
-		indexes.clear();
+        vertexsData.clear();
+        indexes.clear();
 
         screenWidth = screenHeight = 0;
 
-		float sx = 2.0f/viewWidth_;
-		float sy = 2.0f/viewHeight_;
+        auto viewSize = App::this_->GetViewSize();
+        viewWidth_ = viewSize.first;
+        viewHeight_ = viewSize.second;
 
-		float x = 0;
-		float y = 0;
+        CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0, __FILE__, __LINE__);
 
-		int index = 0;
+        float sx = 2.0f / viewWidth_;
+        float sy = 2.0f / viewHeight_;
 
-		for(const char *p = text.c_str(); *p; p++) 
-		{ 
-            int idx = (unsigned char)(*p);
+        GLsizei textureWidth = texture_->GetWidth();
+        GLsizei textureHeight = texture_->GetHeight();
 
-            const CharacterInfo& charInfo = charInfo_[idx];
+        float x = 0;
+        float y = 0;
 
-			float x2 = x + charInfo.bl * sx;
-			float y2 = -y - charInfo.bt * sy;
-			float w = charInfo.bw * sx;
-			float h = charInfo.bh * sy;
+        int index = 0;
 
-            float charBottom = (charInfo.bt - charInfo.bh) * sy;
+        const char* p = text.c_str();
 
-			// Advance the cursor to the start of the next character
-			x += charInfo.ax * sx;
-			y += charInfo.ay * sy;
+        while (*p)
+        {
+            int idx = (unsigned char)(*p++);
 
-            auto it = charsMesh_.find(idx);
-            if(it == charsMesh_.end())
+            const CharInfo& charInfo = charsMap_[idx];
+
+            VertexData vertex[6];
             {
-            	continue;
+                float w = (float)charInfo.rect.z * sx;
+                float h = -(float)charInfo.rect.w * sy;
+
+                float offsetX = (float)charInfo.offset.x * sx;
+                float offsetY = -(float)charInfo.offset.y * sy;
+
+                float ux = (float)charInfo.rect.x / textureWidth;
+                float uy = (float)charInfo.rect.y / textureHeight;
+                float uw = (float)charInfo.rect.z / textureWidth;
+                float uh = (float)charInfo.rect.w / textureHeight;
+
+
+                vertex[0].position_ = Vertex3(offsetX, offsetY, 0);
+                vertex[0].uv_ = Vertex2(ux, uy);
+
+                vertex[1].position_ = Vertex3(offsetX + w, offsetY, 0);
+                vertex[1].uv_ = Vertex2(ux + uw, uy);
+
+                vertex[2].position_ = Vertex3(offsetX, offsetY + h, 0);
+                vertex[2].uv_ = Vertex2(ux, uy + uh);
+
+                vertex[3] = vertex[1];
+                vertex[4] = vertex[2];
+
+                vertex[5].position_ = Vertex3(offsetX + w, offsetY + h, 0);
+                vertex[5].uv_ = Vertex2(ux + uw, uy + uh);
             }
 
-			screenHeight = std::max(screenHeight, h);
+            for (int i = 0; i < 6; i++)
+            {
+                vertex[i].position_.x += x;
+                vertexsData.push_back(vertex[i]);
+                indexes.push_back(index++);
+            }
 
-			auto it0 = it->second.begin();
+            x += charInfo.width * sx;
+            //y += charInfo.height * sy;
 
-			while(it0 != it->second.end())
-			{
-				VertexData data = *it0;
-                data.position_.x += x2;
-                data.position_.y -= y2;
-				vertexsData.push_back(data);
-				indexes.push_back(index++);
-				++it0;
-			}
-		}
-
-		screenWidth = x;
-
-        return true;
-	}	
-
-	GLfloat FontAtlasTexture::GetWidthForCharacterPosition(const char* text, unsigned int charPos)
-	{
-		GLfloat pos = 0;
-
-        if(IsReady())
-        {
-		    const char* p = text;
-
-            float sx = 2.0f/viewWidth_;
-
-		    for(unsigned int i=0; i<charPos && *p; i++) 
-		    { 
-                int idx = (unsigned char)(*p);
-
-			    pos += charInfo_[idx].ax * sx;
-			    ++p;
-		    }
+            screenHeight = charInfo.height * sy;
         }
 
-		return pos;
-	}
+        screenWidth = x;
 
-	unsigned int FontAtlasTexture::GetCharacterPositionForWidth(const char* text, float width)
-	{
-		unsigned int charPos = 0;
+        return true;
+    }
 
-        if(IsReady())
+    GLfloat FontAtlasTexture::GetWidthForCharacterPosition(const char* text, unsigned int charPos)
+    {
+        GLfloat pos = 0;
+
+        if (IsReady())
         {
-		    GLfloat pos = 0;
+            const char* p = text;
 
-		    const char *p = text;
+            float sx = 2.0f / viewWidth_;
 
-            float sx = 2.0f/viewWidth_;
+            for (unsigned int i = 0; i < charPos && *p; i++)
+            {
+                int idx = (unsigned char)(*p++);
+                const CharInfo& charInfo = charsMap_[idx];
+                pos += charInfo.width * sx;
+            }
+        }
+        return pos;
+    }
 
-		    while(*p) 
-		    { 
-			    if(pos >= viewWidth_)
-				    break;
+    unsigned int FontAtlasTexture::GetCharacterPositionForWidth(const char* text, float width)
+    {
+        unsigned int charPos = 0;
+
+        if (IsReady())
+        {
+            GLfloat pos = 0;
+
+            const char* p = text;
+
+            float sx = 2.0f / viewWidth_;
+
+            while (*p)
+            {
+                if (pos >= viewWidth_)
+                    break;
 
                 int idx = (unsigned char)(*p);
 
-			    pos += charInfo_[idx].ax * sx;
+                const CharInfo& charInfo = charsMap_[idx];
 
-			    ++p;
+                pos += charInfo.width * sx;
 
-			    ++charPos;
-		    }
+                ++p;
+
+                ++charPos;
+            }
         }
         else
         {
             charPos = strlen(text);
         }
 
-		return charPos;
-	}
+        return charPos;
+    }
 }

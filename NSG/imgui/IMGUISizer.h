@@ -34,7 +34,7 @@ namespace NSG
 		class Sizer : public Object
 		{
 		public:
-			Sizer(SizerType type, float percentageX, float percentageY, Style& style);
+			Sizer(SizerType type, float percentageX, float percentageY, SizerStyle& style);
 			~Sizer();
 			void Render();
 			virtual void UpdateControl() override;

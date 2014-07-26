@@ -39,6 +39,11 @@ misrepresented as being the original software.
 #include <GLKit/GLKit.h>
 #define glClearDepth glClearDepthf
 #define GL_CLAMP GL_CLAMP_TO_EDGE
+#elif defined(EMSCRIPTEN)
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#define glClearDepth glClearDepthf
+#define GL_CLAMP GL_CLAMP_TO_EDGE
 #else
 #include <GL/glew.h>
 // #define GL_GLEXT_PROTOTYPES

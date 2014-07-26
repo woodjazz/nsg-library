@@ -32,26 +32,17 @@ namespace NSG
     {
         struct Skin
         {
-            PStyle mainWindowStyle_;
-            PStyle windowStyle_;
-            PStyle areaStyle_;
-            PStyle labelStyle_;
-            PStyle buttonStyle_;
-			PStyle textStyle_;
-            PStyle areaSliderStyle_;
-            PStyle titleStyle_;
-			PStyle sizerLeftTopStyle_;
-			PStyle sizerTopStyle_;
-			PStyle sizerRightTopStyle_;
-			PStyle sizerLeftStyle_;
-			PStyle sizerRightStyle_;
-			PStyle sizerLeftBottomStyle_;
-			PStyle sizerBottomStyle_;
-			PStyle sizerRightBottomStyle_;
-			
-			PStyle vSliderStyle_;
+            PWindowStyle mainWindowStyle_;
+            PWindowStyle windowStyle_;
+            PLineStyle lineStyle_;
+            PAreaStyle areaStyle_;
+            PLabelStyle labelStyle_;
+            PButtonStyle buttonStyle_;
+            PCheckButtonStyle checkButtonStyle_;
+			PTextStyle textStyle_;
+			PSliderStyle vSliderStyle_;
+            PSliderStyle hSliderStyle_;
 			PStyle vThumbSliderStyle_;
-			PStyle hSliderStyle_;
 			PStyle hThumbSliderStyle_;
 
             PTechnique stencilTechnique_;

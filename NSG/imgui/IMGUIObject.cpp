@@ -142,17 +142,17 @@ namespace NSG
 
         bool Object::OnFocus(bool needsKeyboard)
         {
-            return false;
+            return style_.enableFocus_;
         }
 
         bool Object::OnActive()
         {
-            return false;
+            return style_.enableActive_;
         }
 
         bool Object::OnHot()
         {
-            return false;
+            return style_.enableHot_;
         }
 
         bool Object::IsActive() const
@@ -165,11 +165,11 @@ namespace NSG
             return hotitem_ == id_;
         }
 
-        void Object::FixCurrentTecnique()
+        void Object::FixCurrentTechnique()
         {
-            if (activeitem_ == id_) // button is not hot, but it is active
+            if (IsActive()) 
                 currentTechnique_ = style_.activeTechnique_;
-            else if (hotitem_ == id_)
+            else if (IsHot())
                 currentTechnique_ = style_.hotTechnique_;
             else
                 currentTechnique_ = style_.normalTechnique_;
@@ -208,7 +208,7 @@ namespace NSG
                     {
                         hotitem_ = id_;
 
-                        if (mousedown_ && activeitem_ == IdType(-1) && IsMouseButtonPressedInArea())
+                        if (mousedown_ && IsMouseButtonPressedInArea())
                         {
                             if (OnActive())
                                 activeitem_ = id_;
@@ -283,7 +283,7 @@ namespace NSG
                 }
             }
 
-            FixCurrentTecnique();
+            FixCurrentTechnique();
 
             Draw();
 

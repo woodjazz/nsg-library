@@ -35,26 +35,6 @@ misrepresented as being the original software.
 #endif
 #include <fstream>
 
-#ifdef __APPLE__
-#include "CoreFoundation/CFBundle.h"
-#define MAXPATHLEN 1024
-char* AppleGetBundleDirectory()
-{
-	CFURLRef bundleURL;
-	CFStringRef pathStr;
-	static char path[MAXPATHLEN];
-	memset(path, 0, MAXPATHLEN);
-	CFBundleRef mainBundle = CFBundleGetMainBundle();
-
-	bundleURL = CFBundleCopyBundleURL(mainBundle);
-	pathStr = CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle);
-	CFStringGetCString(pathStr, path, MAXPATHLEN, kCFStringEncodingASCII);
-	CFRelease(pathStr);
-	CFRelease(bundleURL);
-	return path;
-}
-#endif
-
 namespace NSG
 {
 	ResourceFile::ResourceFile(const char* filename)
@@ -99,13 +79,10 @@ namespace NSG
 	        #if __APPLE__
 	    	if(!file.is_open())
 	    	{
-	    		char newName[2048];
- 	    	#if IOS
-	    		sprintf(newName, "%s/Data/%s", AppleGetBundleDirectory(), filename_.c_str());
-	    	#else
-	    		sprintf(newName, "%s/Contents/Resources/Data/%s", AppleGetBundleDirectory(), filename_.c_str());
-	    	#endif
-	    		file.open(newName, std::ios::binary);
+	    		const char* base_path = SDL_GetBasePath();
+                std::string path(base_path);
+                path += filename_;
+	    		file.open(path.c_str(), std::ios::binary);
 	    	}
 	        #endif
 	    	if(!file.is_open())

@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "FontAtlasTextureManager.h"
 #include "TextureMemory.h"
 #include "Keyboard.h"
-#include "FreeTypeClass.h"
 #include "Resource.h"
 #include "IMGUIContext.h"
 #include "Graphics.h"
@@ -42,7 +41,6 @@ namespace NSG
 	atlasManager_(new FontAtlasTextureManager),
 	imgui_(new IMGUI::Context),
 	keyboard_(new Keyboard),
-	freeType_(new FreeTypeClass),
 	bufferManager_(new BufferManager)
 	{
 	}

@@ -65,7 +65,6 @@ namespace NSG
 		virtual void HandleMessage(const pp::Var& var_message);
 		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
         AAssetManager* GetAssetManager() { return pAAssetManager_; }
-        virtual IMGUI::Style& GetStyle() override;
 
     private:
         AAssetManager* pAAssetManager_;

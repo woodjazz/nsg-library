@@ -74,15 +74,6 @@ namespace NSG
 	        	SceneNode::Render();
 	        }
 		}
-#if 0
-		void Render2Select()
-		{
-	    	if(model_->IsReady())
-	    	{
-	        	SceneNode::Render2Select();
-	        }
-		}
-#endif		
 
 	private:
 		Model* model_;

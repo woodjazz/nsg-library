@@ -35,12 +35,11 @@ namespace NSG
 	public:
 		FontAtlasTextureManager();
 		~FontAtlasTextureManager();
-		typedef std::pair<std::string, int> Key;
-		PFontAtlasTexture GetAtlas(const Key& key);
+		PFontAtlasTexture GetAtlas(const std::string& textureFilename);
 		void Invalidate();
 	private:
 		
-		typedef std::map<Key, PFontAtlasTexture> Atlas;
+		typedef std::map<std::string, PFontAtlasTexture> Atlas;
 		Atlas fontAtlas_;
 	};
 }

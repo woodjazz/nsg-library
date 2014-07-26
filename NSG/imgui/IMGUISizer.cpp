@@ -32,7 +32,7 @@ namespace NSG
 {
     namespace IMGUI
     {
-        Sizer::Sizer(SizerType type, float percentageX, float percentageY, Style& style)
+        Sizer::Sizer(SizerType type, float percentageX, float percentageY, SizerStyle& style)
             : Object(LayoutType::CONTROL, percentageX, percentageY, style),
               type_(type)
         {

@@ -34,12 +34,15 @@ namespace NSG
 	{
 		struct Context : public Singleton<Context>
 		{
+	        PProgram unlitProgram_;
+	        PMesh controlMesh_;
 			PState state_;
 			PSkin pSkin_;
 			PCamera pCamera_;
 			PNode pCurrentNode_;
 			PNode pRootNode_;
 			PLayoutManager pLayoutManager_;
+			PAreaStyle transparentAreaStyle_;
 
 			Context();
 			~Context();

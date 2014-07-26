@@ -81,11 +81,11 @@ namespace NSG
 		const int WIDTH = 320;
 		const int HEIGHT = 200;
 
-#if IOS
+	#if IOS
         Uint32 flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
-#else
+	#else
 		Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-#endif
+	#endif
 		
 
 		SDL_Window* win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, flags);
@@ -101,7 +101,7 @@ namespace NSG
 		/* This makes our buffer swap syncronized with the monitor's vertical refresh */
     	//SDL_GL_SetSwapInterval(1);	  
 
-#ifndef GL_ES_VERSION_2_0
+	#ifndef GL_ES_VERSION_2_0
 
 		glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
 
@@ -123,8 +123,8 @@ namespace NSG
             TRACE_LOG("EXT_framebuffer_object and EXT_packed_depth_stencil OpenGL extensions are required");
             return false;
         }
-#endif
-        
+	#endif
+
 		int width = 0;
 		int height = 0;
 
@@ -232,7 +232,7 @@ namespace NSG
 			s_pApp->RenderFrame();
 #else
 			SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);
-#endif			
+#endif		
 	        SDL_GL_SwapWindow(win);  
 
 	        quit = quit || s_pApp->ShallExit();

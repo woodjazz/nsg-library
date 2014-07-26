@@ -36,16 +36,16 @@ namespace NSG
 		class Text : public Object
 		{
 		public:
-			Text(const std::string& text, std::regex* pRegex, float percentageX, float percentageY, Style& style);
+			Text(const std::string& text, std::regex* pRegex, float percentageX, float percentageY, TextStyle& style);
 			~Text();
 			std::string Render();
 			virtual bool OnActive() override;
-			virtual bool OnHot() override;
 			virtual bool OnFocus(bool needsKeyboard) override;
 			virtual void OnKey(int key) override;
 			virtual void OnChar(unsigned int character) override;
 			virtual void UpdateControl() override;
 		private:
+			TextStyle& textStyle_;
 			std::string currentText_;
 			PTextMesh pTextMesh_;
             PTextMesh pCursorMesh_;

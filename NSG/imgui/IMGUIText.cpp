@@ -42,21 +42,22 @@ namespace NSG
 {
     namespace IMGUI
     {
-        Text::Text(const std::string& text, std::regex* pRegex, float percentageX, float percentageY, Style& style)
+        Text::Text(const std::string& text, std::regex* pRegex, float percentageX, float percentageY, TextStyle& style)
             : Object(LayoutType::CONTROL, percentageX, percentageY, style),
+			textStyle_(style),
               currentText_(text),
               pTextMesh_(area_->textMesh_),
               pCursorMesh_(area_->cursorMesh_),
               pRegex_(pRegex)
         {
-			if (!pTextMesh_ || !pTextMesh_->Has(style.fontFile_, style.fontSize_))
+			if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
             {
-				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontFile_, style.fontSize_, GL_STREAM_DRAW));
+				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
             }
 
-			if (!pCursorMesh_ || !pCursorMesh_->Has(style.fontFile_, style.fontSize_))
+			if (!pCursorMesh_ || !pCursorMesh_->Has(style.fontAtlasFile_))
             {
-				pCursorMesh_ = area_->cursorMesh_ = PTextMesh(new TextMesh(style.fontFile_, style.fontSize_, GL_STREAM_DRAW));
+				pCursorMesh_ = area_->cursorMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
             }
         }
 
@@ -86,12 +87,7 @@ namespace NSG
                 CHECK_ASSERT(area_->cursor_character_position_ <= currentText_.length(), __FILE__, __LINE__);
             }
 
-            return true;
-        }
-
-        bool Text::OnHot()
-        {
-            return true;
+            return Object::OnActive();
         }
 
         bool Text::OnFocus(bool needsKeyboard)
@@ -107,7 +103,7 @@ namespace NSG
                 Context::this_->pCamera_->SetPosition(position);
             }
 
-            return true;
+            return Object::OnFocus(needsKeyboard);
         }
 
         void Text::OnKey(int key)
@@ -158,7 +154,7 @@ namespace NSG
 
         void Text::OnChar(unsigned int character)
         {
-            if (character >= 32 && character < 256 && currentText_.size() < style_.textMaxLength_)
+            if (character >= 32 && character < 256 && currentText_.size() < textStyle_.textMaxLength_)
             {
                 std::string textCopy = currentText_;
 
@@ -227,9 +223,10 @@ namespace NSG
             technique.Add(&pass);
             pass.Add(&textNode2, pTextMesh_);
             Material textMaterial;
+            textMaterial.SetColor(textStyle_.textColor_);
             pass.EnableDepthTest(false);
             pass.EnableStencilTest(true);
-            textMaterial.SetTexture0(pTextMesh_->GetAtlas());
+			textMaterial.SetTexture0(pTextMesh_->GetTexture());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
             size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
             pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);

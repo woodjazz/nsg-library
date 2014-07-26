@@ -30,8 +30,11 @@ misrepresented as being the original software.
 #include "Keys.h"
 #include "Graphics.h"
 #include "Material.h"
+#include "Technique.h"
+#include "Pass.h"
+#include "ProgramUnlit.h"
+#include "PlaneMesh.h"
 #include "IMGUILayoutManager.h"
-//#include "IMGUITextManager.h"
 #include "FrameColorSelection.h"
 #include "IMGUIState.h"
 #include "App.h"
@@ -42,52 +45,59 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	namespace IMGUI
-	{
-		Context::Context()
-        : state_(new State),
-        pSkin_(new Skin),
-		pCamera_(new Camera),
-		pCurrentNode_(new Node),
-        pRootNode_(new Node),
-        pLayoutManager_(new LayoutManager(pRootNode_))
-		//textManager_(new TextManager)
-    	{
-			pCamera_->EnableOrtho();
+    namespace IMGUI
+    {
+        Context::Context()
+            : unlitProgram_(new ProgramUnlit),
+              controlMesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
+              state_(new State),
+              pSkin_(new Skin),
+              pCamera_(new Camera),
+              pCurrentNode_(new Node),
+              pRootNode_(new Node),
+              pLayoutManager_(new LayoutManager(pRootNode_)),
+              transparentAreaStyle_(new AreaStyle)
+        {
+            pCamera_->EnableOrtho();
             pCamera_->SetFarClip(1000000);
             pCamera_->SetNearClip(-1000000);
-		}
 
-		Context::~Context()
-		{
-		}
+            transparentAreaStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+            transparentAreaStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+            transparentAreaStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
 
-		bool Context::IsReady() const
-		{
-			return pLayoutManager_->IsReady();
-		}
-
-		void Context::RenderGUI()
-		{
-			state_->Begin();
-
-			pCamera_->Activate();
-			pCurrentNode_ = pRootNode_;
-
-			pLayoutManager_->Render();
-
-			state_->End();
-		}
-
-/*		PTextMesh Context::GetCurrentTextMesh(const std::string& data)
-		{
-			return textManager_->GetTextMesh(data, pSkin_->fontFile_, pSkin_->fontSize_);
-		}
-*/
-		IdType Context::GetValidId()
-		{
-			return pLayoutManager_->GetValidId();
         }
-	}
-	
+
+        Context::~Context()
+        {
+        }
+
+        bool Context::IsReady() const
+        {
+            return pLayoutManager_->IsReady();
+        }
+
+        void Context::RenderGUI()
+        {
+            state_->Begin();
+
+            pCamera_->Activate();
+            pCurrentNode_ = pRootNode_;
+
+            pLayoutManager_->Render();
+
+            state_->End();
+        }
+
+        /*      PTextMesh Context::GetCurrentTextMesh(const std::string& data)
+                {
+                    return textManager_->GetTextMesh(data, pSkin_->fontFile_, pSkin_->fontSize_);
+                }
+        */
+        IdType Context::GetValidId()
+        {
+            return pLayoutManager_->GetValidId();
+        }
+    }
+
 }

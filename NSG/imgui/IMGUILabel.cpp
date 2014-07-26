@@ -39,13 +39,14 @@ namespace NSG
 {
 	namespace IMGUI
 	{
-		Label::Label(const std::string& text, float percentageX, float percentageY, Style& style)
+		Label::Label(const std::string& text, float percentageX, float percentageY, LabelStyle& style)
 			: Object(LayoutType::CONTROL, percentageX, percentageY, style),
+			labelStyle_(style),
 			pTextMesh_(area_->textMesh_)
 		{
-			if (!pTextMesh_ || !pTextMesh_->Has(style.fontFile_, style.fontSize_))
+			if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
 			{
-				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontFile_, style.fontSize_, GL_STREAM_DRAW));
+				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
 			}
 			
 			pTextMesh_->SetText(text, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
@@ -94,7 +95,8 @@ namespace NSG
             pass.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
 
             Material textMaterial;
-            textMaterial.SetTexture0(pTextMesh_->GetAtlas());
+            textMaterial.SetColor(labelStyle_.textColor_);
+            textMaterial.SetTexture0(pTextMesh_->GetTexture());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
             
             pass.Set(&textMaterial);

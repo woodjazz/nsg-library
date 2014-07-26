@@ -41,15 +41,16 @@ namespace NSG
 {
     namespace IMGUI
     {
-        Button::Button(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign, float percentageX, float percentageY, Style& style)
+        Button::Button(const std::string& text, bool pressed, HorizontalAlignment hAlign, VerticalAlignment vAlign, float percentageX, float percentageY, ButtonStyle& style)
             : Object(LayoutType::CONTROL, percentageX, percentageY, style),
               currentText_(text),
               pTextMesh_(area_->textMesh_),
-              pressed_(false)
+              pressed_(pressed),
+              buttonStyle_(style)
         {
-			if (!pTextMesh_ || !pTextMesh_->Has(style.fontFile_, style.fontSize_))
+            if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
             {
-				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontFile_, style.fontSize_, GL_STREAM_DRAW));
+				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
             }
 
             pTextMesh_->SetText(currentText_, hAlign, vAlign);
@@ -60,33 +61,16 @@ namespace NSG
             lastwidget_ = id_;
         }
 
-        bool Button::OnActive()
-        {
-            return true;
-        }
-
-        bool Button::OnFocus(bool needsKeyboard)
-        {
-            return true;
-        }
-
-        bool Button::OnHot()
-        {
-            return true;
-        }
-
         void Button::OnKey(int key)
         {
             if (key == NSG_KEY_ENTER)
-                pressed_ = true;
+				pressed_ = !pressed_;
         }
 
         void Button::UpdateControl()
         {
-            if (uistate_.mouseup_ && layoutManager_.IsCurrentWindowActive() && IsMouseButtonPressedInArea())
-            {
-                pressed_ = IsMouseInArea();
-            }
+			if (uistate_.mouseup_ && layoutManager_.IsCurrentWindowActive() && IsMouseButtonPressedInArea() && IsMouseInArea())
+				pressed_ = !pressed_;
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -120,7 +104,8 @@ namespace NSG
             pass.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
 
             Material textMaterial;
-            textMaterial.SetTexture0(pTextMesh_->GetAtlas());
+            textMaterial.SetColor(buttonStyle_.textColor_);
+            textMaterial.SetTexture0(pTextMesh_->GetTexture());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
 
             pass.Set(&textMaterial);
@@ -132,8 +117,7 @@ namespace NSG
 
         bool Button::Render()
         {
-            if (!Update())
-                return false;
+			Update();
 
             return pressed_;
         }

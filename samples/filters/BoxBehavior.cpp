@@ -60,7 +60,7 @@ void BoxBehavior::Start()
 	material_ = PMaterial(new Material);
     PProgram unlit(new ProgramUnlit);
     material_->SetProgram(unlit);
-    PTexture texture(new TextureFile("cube.png"));
+    PTexture texture(new TextureFile("data/cube.png"));
 	material_->SetTexture0(texture);
 
     renderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));

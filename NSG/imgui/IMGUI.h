@@ -44,7 +44,6 @@ namespace NSG
             virtual void StartGUIWindow() {}
             virtual void RenderGUIWindow() {}
             virtual void EndGUIWindow() {}
-            virtual Style& GetStyle();
         };
 
         bool IsReady();
@@ -59,21 +58,22 @@ namespace NSG
         float Pixels2PercentageY(int pixels);
     }
 
-	bool IMGUIButton(const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->buttonStyle_);
-	float IMGUIVSlider(float value, float percentageX = 100, float percentageY = 100, float thumbPercentageX = 25, float thumbPercentageY = 25, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->vSliderStyle_, IMGUI::Style& thumbStyle = *IMGUI::Context::this_->pSkin_->vThumbSliderStyle_);
-	float IMGUIHSlider(float value, float percentageX = 100, float percentageY = 100, float thumbPercentageX = 25, float thumbPercentageY = 25, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->hSliderStyle_, IMGUI::Style& thumbStyle = *IMGUI::Context::this_->pSkin_->hThumbSliderStyle_);
+	bool IMGUIButton(const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::ButtonStyle& style = *IMGUI::Context::this_->pSkin_->buttonStyle_);
+    bool IMGUICheckButton(bool pressed, const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::CheckButtonStyle& style = *IMGUI::Context::this_->pSkin_->checkButtonStyle_);
+	float IMGUIVSlider(float value, float percentageX = 100, float percentageY = 100, float thumbPercentageX = 25, float thumbPercentageY = 25, IMGUI::SliderStyle& style = *IMGUI::Context::this_->pSkin_->vSliderStyle_);
+	float IMGUIHSlider(float value, float percentageX = 100, float percentageY = 100, float thumbPercentageX = 25, float thumbPercentageY = 25, IMGUI::SliderStyle& style = *IMGUI::Context::this_->pSkin_->hSliderStyle_);
 	float IMGUIVSliderThumb(float value, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->vThumbSliderStyle_);
 	float IMGUIHSliderThumb(float value, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->hThumbSliderStyle_);
-	void IMGUILabel(const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->labelStyle_);
-	void IMGUITitle(const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->titleStyle_);
-	std::string IMGUITextField(const std::string& text, float percentageX = 100, float percentageY = 100, std::regex* pRegex = nullptr, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->textStyle_);
-	void IMGUIBeginHorizontal(float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->areaStyle_);
-	void IMGUIBeginVertical(float percentageX = 100, float percentageY = 100, IMGUI::Style& style = *IMGUI::Context::this_->pSkin_->areaStyle_);
+	void IMGUILabel(const std::string& text, float percentageX = 100, float percentageY = 100, IMGUI::LabelStyle& style = *IMGUI::Context::this_->pSkin_->labelStyle_);
+	std::string IMGUITextField(const std::string& text, float percentageX = 100, float percentageY = 100, std::regex* pRegex = nullptr, IMGUI::TextStyle& style = *IMGUI::Context::this_->pSkin_->textStyle_);
+	void IMGUIBeginHorizontal(float percentageX = 100, float percentageY = 100, IMGUI::AreaStyle& style = *IMGUI::Context::this_->pSkin_->areaStyle_);
+	void IMGUIBeginVertical(float percentageX = 100, float percentageY = 100, IMGUI::AreaStyle& style = *IMGUI::Context::this_->pSkin_->areaStyle_);
     float IMGUIEndArea(float scroll = -1);
     void IMGUISpacer(float percentageX = 100, float percentageY = 100);
+    float IMGUILine(IMGUI::LineStyle& style = *IMGUI::Context::this_->pSkin_->lineStyle_);
 	IMGUI::PSkin& IMGUISkin();
     PNode& IMGUINode();
-	void IMGUIWindow(IMGUI::IWindow* obj, float percentageX = 100, float percentageY = 100);
+	void IMGUIWindow(IMGUI::IWindow* obj, float percentageX = 100, float percentageY = 100, IMGUI::PWindowStyle style = IMGUI::Context::this_->pSkin_->windowStyle_);
 }
 
 /*

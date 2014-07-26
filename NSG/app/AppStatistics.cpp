@@ -144,6 +144,7 @@ namespace NSG
         size_t fps = counters_[FRAMES].first;;
 	    std::stringstream ss;
 	    ss << "FPS:" << fps;
+		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
@@ -151,6 +152,7 @@ namespace NSG
         size_t drawCalls = counters_[DRAWCALLS].first;
         if(fps) drawCalls/=fps;
 	    ss << "DrawCalls:" << drawCalls;
+		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
@@ -158,26 +160,31 @@ namespace NSG
         size_t triangles = counters_[TRIANGLES].first;
         if(fps) triangles/=fps;
 	    ss << "Triangles:" << triangles;
+		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
 		ss << "StaticVertexBuffers:" << staticVertexBuffers_;
+		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
 	    ss << "StaticIndexBuffers:" << staticIndexBuffers_;
+		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
 		ss << "DynamicVertexBuffers:" << dynamicVertexBuffers_;
+		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    ss.str(emptys);
 
 	    ss << "DynamicIndexBuffers:" << dynamicIndexBuffers_;
+		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
 	    Collect(true);

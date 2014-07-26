@@ -42,9 +42,9 @@ misrepresented as being the original software.
 	#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
 	#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
 	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
+		std::stringstream stream; \
 		stream << msg; \
-		::std::string cmsg = stream.str(); \
+		std::string cmsg = stream.str(); \
 		__android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
 	}
 	extern int AndroidPrintMessage(const char* format, ...);
@@ -55,23 +55,35 @@ misrepresented as being the original software.
     #include "windows.h"
 
 	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
+		std::stringstream stream; \
 		stream << msg; \
-		::std::string cmsg = stream.str(); \
+		std::string cmsg = stream.str(); \
 		printf("%s\n",cmsg.c_str());\
 		fflush(stdout);\
 	    OutputDebugString(cmsg.c_str());\
 	    OutputDebugString("\n");\
 	}
+#elif __APPLE__
+
+    #include <Foundation/NSString.h>
+	#define TRACE_LOG(msg) {\
+		std::stringstream stream;\
+		stream << msg;\
+		std::string cmsg = stream.str();\
+		NSLog(@"%@", [NSString stringWithUTF8String: cmsg.c_str()]);\
+	}
+
 #else
 
 	#define TRACE_LOG(msg) {\
-		::std::stringstream stream; \
+		std::stringstream stream; \
 		stream << msg; \
-		::std::string cmsg = stream.str(); \
+		std::string cmsg = stream.str(); \
 		printf("%s\n",cmsg.c_str());\
 		fflush(stdout);\
 	}
+
+
 
 #endif
 

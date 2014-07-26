@@ -33,7 +33,7 @@ namespace NSG
         class Area : public Object
         {
         public:
-            Area(LayoutType type, float percentageX, float percentageY, Style& style);
+            Area(LayoutType type, float percentageX, float percentageY, AreaStyle& style);
             ~Area();
             void Render();
             void SetScroll(float scroll);
@@ -42,10 +42,11 @@ namespace NSG
         protected:
             void UpdateScrolling();
         private:
-            void RenderSlider();
+            void RenderSlider(PTechnique technique);
             bool HandleVerticalSlider(float maxPosY, float& yPosition);
             bool HandleHorizontalSlider(float maxPosX, float& xPosition);
 
+            AreaStyle& areaStyle_;
 			float maxPosX_;
             float maxPosY_;
         };

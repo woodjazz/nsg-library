@@ -31,3 +31,6 @@
 [submodule "externals/glm"]
 	path = externals/glm
 	url = https://github.com/g-truc/glm
+[submodule "externals/tinyxml2"]
+	path = externals/tinyxml2
+	url = https://github.com/leethomason/tinyxml2

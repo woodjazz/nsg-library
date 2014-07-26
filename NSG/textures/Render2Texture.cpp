@@ -76,7 +76,7 @@ namespace NSG
             // The depth stencil buffer
             glGenRenderbuffers(1, &depthStencilRenderBuffer_);
             glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
-        #if defined(GLES2)            
+        #if defined(GLES2)      
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, pTexture_->GetWidth(), pTexture_->GetHeight());
         #else
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_EXT, pTexture_->GetWidth(), pTexture_->GetHeight());

@@ -25,8 +25,10 @@ misrepresented as being the original software.
 */
 #include "IMGUI.h"
 #include "IMGUIButton.h"
+#include "IMGUICheckButton.h"
 #include "IMGUILabel.h"
 #include "IMGUITitle.h"
+#include "IMGUILine.h"
 #include "IMGUIText.h"
 #include "IMGUILayoutManager.h"
 #include "IMGUIState.h"
@@ -39,12 +41,12 @@ using namespace NSG;
 
 namespace NSG
 {
-    void IMGUIBeginHorizontal(float percentageX, float percentageY, IMGUI::Style& style)
+    void IMGUIBeginHorizontal(float percentageX, float percentageY, IMGUI::AreaStyle& style)
     {
 		IMGUI::Context::this_->pLayoutManager_->BeginHorizontalArea(percentageX, percentageY, style);
     }
 
-    void IMGUIBeginVertical(float percentageX, float percentageY, IMGUI::Style& style)
+    void IMGUIBeginVertical(float percentageX, float percentageY, IMGUI::AreaStyle& style)
     {
 		IMGUI::Context::this_->pLayoutManager_->BeginVerticalArea(percentageX, percentageY, style);
     }
@@ -59,32 +61,41 @@ namespace NSG
 		IMGUI::Context::this_->pLayoutManager_->Spacer(percentageX, percentageY);
     }
 
-	bool IMGUIButton(const std::string& text, float percentageX, float percentageY, IMGUI::Style& style)
+    float IMGUILine(IMGUI::LineStyle& style)
     {
-		IMGUI::Button obj(text, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY, style);
-
-        bool result = obj.Render();
-
-        return result;
+        IMGUI::Line obj(style);
+        return obj.Render();
     }
 
-	float IMGUIVSlider(float value, float percentageX, float percentageY, float thumbPercentageX, float thumbPercentageY, IMGUI::Style& style, IMGUI::Style& thumbStyle)
+	bool IMGUIButton(const std::string& text, float percentageX, float percentageY, IMGUI::ButtonStyle& style)
+    {
+		IMGUI::Button obj(text, false, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY, style);
+        return obj.Render();
+    }
+
+    bool IMGUICheckButton(bool pressed, const std::string& text, float percentageX, float percentageY, IMGUI::CheckButtonStyle& style)
+    {
+        IMGUI::CheckButton obj(pressed, text, CENTER_ALIGNMENT, MIDDLE_ALIGNMENT, percentageX, percentageY, style);
+        return obj.Render();
+    }
+
+	float IMGUIVSlider(float value, float percentageX, float percentageY, float thumbPercentageX, float thumbPercentageY, IMGUI::SliderStyle& style)
     {
 		IMGUIBeginHorizontal(percentageX, percentageY, style);
         float percentageHSpace = 0.5f * (100 - thumbPercentageX);
         IMGUISpacer(percentageHSpace);
-		value = IMGUIVSliderThumb(value, thumbPercentageX, thumbPercentageY, thumbStyle);
+		value = IMGUIVSliderThumb(value, thumbPercentageX, thumbPercentageY, *style.thumbSliderStyle_);
         IMGUISpacer(percentageHSpace);
         IMGUIEndArea();
         return value;
     }
 
-	float IMGUIHSlider(float value, float percentageX, float percentageY, float thumbPercentageX, float thumbPercentageY, IMGUI::Style& style, IMGUI::Style& thumbStyle)
+	float IMGUIHSlider(float value, float percentageX, float percentageY, float thumbPercentageX, float thumbPercentageY, IMGUI::SliderStyle& style)
     {
 		IMGUIBeginVertical(percentageX, percentageY, style);
         float percentageVSpace = 0.5f * (100 - thumbPercentageY);
         IMGUISpacer(100, percentageVSpace);
-		value = IMGUIHSliderThumb(value, thumbPercentageX, thumbPercentageY, thumbStyle);
+		value = IMGUIHSliderThumb(value, thumbPercentageX, thumbPercentageY, *style.thumbSliderStyle_);
         IMGUISpacer(100, percentageVSpace);
         IMGUIEndArea();
         return value;
@@ -109,21 +120,14 @@ namespace NSG
         return result;
     }
 
-	void IMGUILabel(const std::string& text, float percentageX, float percentageY, IMGUI::Style& style)
+	void IMGUILabel(const std::string& text, float percentageX, float percentageY, IMGUI::LabelStyle& style)
     {
 		IMGUI::Label obj(text, percentageX, percentageY, style);
 
         obj.Render();
     }
 
-	void IMGUITitle(const std::string& text, float percentageX, float percentageY, IMGUI::Style& style)
-    {
-		IMGUI::Title obj(text, percentageX, percentageY, style);
-
-        obj.Render();
-    }
-
-	std::string IMGUITextField(const std::string& text, float percentageX, float percentageY, std::regex* pRegex, IMGUI::Style& style)
+	std::string IMGUITextField(const std::string& text, float percentageX, float percentageY, std::regex* pRegex, IMGUI::TextStyle& style)
     {
 		IMGUI::Text obj(text, pRegex, percentageX, percentageY, style);
 
@@ -142,18 +146,13 @@ namespace NSG
         return IMGUI::Context::this_->pCurrentNode_;
     }
 
-	void IMGUIWindow(IMGUI::IWindow* obj, float percentageX, float percentageY)
+	void IMGUIWindow(IMGUI::IWindow* obj, float percentageX, float percentageY, IMGUI::PWindowStyle style)
     {
-		IMGUI::Context::this_->pLayoutManager_->Window(obj, percentageX, percentageY);
+		IMGUI::Context::this_->pLayoutManager_->Window(obj, percentageX, percentageY, style);
     }
 
     namespace IMGUI
     {
-        Style& IWindow::GetStyle()
-        {
-            return *Context::this_->pSkin_->windowStyle_;
-        }
-
         bool IsReady()
         {
             return Context::this_->IsReady();

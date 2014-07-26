@@ -36,6 +36,7 @@ namespace NSG
 		ResourceFile(const char* filename);
 		~ResourceFile();
 		virtual bool IsLoaded();
+		const std::string& GetFilename() const { return filename_; }
 	private:
 		std::string filename_;
 		NaCl::PNaClURLLoader pLoader_;

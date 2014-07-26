@@ -24,20 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "IMGUILabel.h"
+#include "IMGUIObject.h"
 #include "Types.h"
 #include <string>
 namespace NSG
 {
 	namespace IMGUI
 	{
-		class Title : public Label
+		class Title : public Object
 		{
 		public:
-			Title(const std::string& text, float percentageX, float percentageY, Style& style);
+			Title(const std::string& text, TitleStyle& style);
 			~Title();
-			void Render();
+			Vertex3 Render();
 			virtual void UpdateControl() override;
+		private:
+			TitleStyle& titleStyle_;
+			PTextMesh pTextMesh_;
+			Vertex3 windowOffset_;
 		};
 	}
 }

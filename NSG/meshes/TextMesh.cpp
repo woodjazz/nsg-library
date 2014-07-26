@@ -48,28 +48,21 @@ static const char* vShader = STRINGIFY(
 static const char* fShader = STRINGIFY(
 	varying vec2 v_texcoord;
 	uniform sampler2D u_texture0;
-	struct Material
-	{
-		vec4 diffuse;
-	};
-
-	uniform Material u_material;
-
+	uniform vec4 u_color;
 	void main()
 	{
-		gl_FragColor = vec4(u_material.diffuse.w, u_material.diffuse.w, u_material.diffuse.w, texture2D(u_texture0, v_texcoord).a) * vec4(u_material.diffuse.x, u_material.diffuse.y, u_material.diffuse.z, 1);
+		gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a) * vec4(u_color.x, u_color.y, u_color.z, 1.0);
 	}
 );
 
 namespace NSG
 {
-	TextMesh::TextMesh(const std::string& fontFilename, int fontSize, GLenum usage)
+	TextMesh::TextMesh(const std::string& textureFilename, GLenum usage)
 	: Mesh(usage),
 	pProgram_(new Program(vShader, fShader)),
 	screenWidth_(0),
 	screenHeight_(0),
-	fontFilename_(fontFilename),
-	fontSize_(fontSize),
+	textureFilename_(textureFilename),
 	hAlignment_(LEFT_ALIGNMENT),
 	vAlignment_(BOTTOM_ALIGNMENT),
 	alignmentOffsetX_(0),
@@ -77,16 +70,16 @@ namespace NSG
 	maxLength_(0),
 	isStatic_(usage == GL_STATIC_DRAW)
     {
-    	pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(FontAtlasTextureManager::Key(fontFilename, fontSize));
+		pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
 	}
 
 	TextMesh::~TextMesh() 
 	{
 	}
 
-	bool TextMesh::Has(const std::string& fontFilename, int fontSize) const
+	bool TextMesh::Has(const std::string& textureFilename) const
 	{
-		return fontFilename_ == fontFilename && fontSize_ == fontSize;
+		return textureFilename_ == textureFilename;
 	}
 
 	bool TextMesh::IsValid()
@@ -213,7 +206,7 @@ namespace NSG
 		
 		if (text_ != text)
 		{
-			if (pAtlas_->SetTextMesh(text, vertexsData_, indexes_, screenWidth_, screenHeight_))
+			if (pAtlas_->GenerateMesh(text, vertexsData_, indexes_, screenWidth_, screenHeight_))
 			{
 				text_ = text;
 
@@ -231,7 +224,7 @@ namespace NSG
 				alignmentOffsetX_ = 0;
 
 			if (vAlign == MIDDLE_ALIGNMENT)
-				alignmentOffsetY_ = 0;
+				alignmentOffsetY_ = screenHeight_/2;
 			else if (vAlign == TOP_ALIGNMENT)
 				alignmentOffsetY_ = -screenHeight_;
 			else

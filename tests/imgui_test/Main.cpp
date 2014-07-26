@@ -133,8 +133,8 @@ struct Test : public App
 
 	void Start()
 	{
-		IMGUI::Context::this_->pSkin_->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
-		IMGUI::Context::this_->pSkin_->textStyle_->fontFile_ = "font/FreeSans.ttf";
+		//IMGUI::Context::this_->pSkin_->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
+		//IMGUI::Context::this_->pSkin_->textStyle_->fontFile_ = "font/FreeSans.ttf";
 	    initializing_.AddTransition(state1_).When([&]() { return text1 == "init"; });
 	    state1_.AddTransition(state2_).When([&]() { return text2 == "st1"; });
 	    state2_.AddTransition(end_).When([&]() { return text1 == "State2"; });

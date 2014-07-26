@@ -41,77 +41,27 @@ namespace NSG
     namespace IMGUI
     {
         Skin::Skin()
-            : mainWindowStyle_(new Style),
-              windowStyle_(new Style),
-              areaStyle_(new Style),
-              labelStyle_(new Style),
-              buttonStyle_(new Style),
-			  textStyle_(new Style),
-              areaSliderStyle_(new Style),
-              titleStyle_(new Style),
-              sizerLeftTopStyle_(new Style),
-              sizerTopStyle_(new Style),
-              sizerRightTopStyle_(new Style),
-              sizerLeftStyle_(new Style),
-              sizerRightStyle_(new Style),
-              sizerLeftBottomStyle_(new Style),
-              sizerBottomStyle_(new Style),
-              sizerRightBottomStyle_(new Style),
-              vSliderStyle_(new Style),
+            : mainWindowStyle_(new WindowStyle),
+              windowStyle_(new WindowStyle),
+              lineStyle_(new LineStyle),
+              areaStyle_(new AreaStyle),
+              labelStyle_(new LabelStyle),
+              buttonStyle_(new ButtonStyle),
+              checkButtonStyle_(new CheckButtonStyle),
+              textStyle_(new TextStyle),
+              vSliderStyle_(new SliderStyle),
+              hSliderStyle_(new SliderStyle),
               vThumbSliderStyle_(new Style),
-              hSliderStyle_(new Style),
               hThumbSliderStyle_(new Style),
               stencilTechnique_(new Technique)
         {
-			{
-				mainWindowStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-				mainWindowStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-				mainWindowStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-			}
+            {
+                mainWindowStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+                mainWindowStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+                mainWindowStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+            }
 
-			{
-				windowStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
-				windowStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
-				windowStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
-			}
-
-			{
-				areaStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-				areaStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-				areaStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-			}
-
-			{
-				labelStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-				labelStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-				labelStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-			}
-
-			{
-				buttonStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
-				buttonStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
-				buttonStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
-			}
-
-			{
-				textStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
-				textStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
-				textStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
-			}
-
-			{
-				areaSliderStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
-				areaSliderStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
-				areaSliderStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
-			}
-
-			{
-				titleStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
-				titleStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
-				titleStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
-			}
-
-			PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
+            PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
             PProgram program(new ProgramWhiteColor);
             PMaterial material(new Material);
             material->SetColor(Color(1, 0, 1, 0.7f));

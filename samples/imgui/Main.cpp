@@ -79,16 +79,22 @@ struct Window0 : IMGUI::IWindow
     {
         static const int MAX_FIELDS = 10;
         static std::string field[MAX_FIELDS];
-        for(int i=0; i<MAX_FIELDS; i++)
-        {
-            std::stringstream label;
-            label << "Label " << i << ":";
+		static bool showFields = false;
+		showFields = IMGUICheckButton(showFields, showFields ? "Hide Fields" : "Show Fields", 100, 20);
+		if (showFields)
+		{
+			for (int i = 0; i < MAX_FIELDS; i++)
+			{
+				std::stringstream label;
+				label << "Label " << i << ":";
 
-            IMGUIBeginHorizontal(150,50);
-            IMGUILabel(label.str(), 50);
-            field[i] = IMGUITextField(field[i], 50);
-            IMGUIEndArea();
-        }
+				IMGUIBeginHorizontal(150, 50);
+				IMGUILabel(label.str(), 50);
+				float linePercentage = IMGUILine();
+				field[i] = IMGUITextField(field[i], 50 - linePercentage);
+				IMGUIEndArea();
+			}
+		}
     }
 
     void EndGUIWindow()
@@ -115,15 +121,15 @@ struct Statistics : public AppStatistics
 #if 1
         if(!newTexture_)
         {
-			IMGUISkin()->labelStyle_->fontFile_ = "font/FreeSans.ttf";
-			IMGUISkin()->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
-			IMGUISkin()->textStyle_->fontFile_ = "font/FreeSans.ttf";
+			IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
+			IMGUISkin()->buttonStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
+			IMGUISkin()->textStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
 
             material_ = IMGUISkin()->windowStyle_->normalTechnique_->GetPass(0)->GetMaterial();
 			IMGUISkin()->windowStyle_->activeTechnique_->GetPass(0)->Set(material_);
 			IMGUISkin()->windowStyle_->hotTechnique_->GetPass(0)->Set(material_);
 
-            newTexture_ = PTexture(new TextureFile("blackBump.png"));
+            newTexture_ = PTexture(new TextureFile("data/blackBump.png"));
             newProgram_ = PProgram(new Program(vShader, fShader));
 
             oldTexture_ = material_->GetTexture0();
@@ -151,19 +157,19 @@ struct Sample : App
 {
     Statistics statistics_;
     Window0 window0_;
-	IMGUI::PStyle style_;
+	IMGUI::PWindowStyle style_;
 
 	void Start()
 	{
 		if (!style_)
 		{
-			IMGUISkin()->labelStyle_->fontFile_ = "font/FreeSans.ttf";
-			IMGUISkin()->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
-			IMGUISkin()->textStyle_->fontFile_ = "font/FreeSans.ttf";
-			style_ = IMGUI::PStyle(new IMGUI::Style);
-			style_->fontFile_ = "font/FreeSans.ttf";
+			IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
+			IMGUISkin()->buttonStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
+			IMGUISkin()->textStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
+			style_ = IMGUI::PWindowStyle(new IMGUI::WindowStyle);
+			//style_->fontFile_ = "font/FreeSans.ttf";
 
-			PTexture texture(new TextureFile("metal.png"));
+			PTexture texture(new TextureFile("data/metal.png"));
 			PMaterial material = style_->activeTechnique_->GetPass(0)->GetMaterial();
             //material->SetColor(Color(1,1,1,0.5f));
             material->SetTexture0(texture);
@@ -214,6 +220,7 @@ struct Sample : App
 
             if(show_menu_button)
             {
+				#if 1
 				IMGUIBeginHorizontal(100, 40);
 				{
 					static float sliderValue = 0.5f;
@@ -233,8 +240,10 @@ struct Sample : App
                     sliderValue = IMGUIHSlider(sliderValue, 50, 100);
                 }
                 IMGUIEndArea();
+				#endif
 
 				menu_choosen = IMGUIButton("Menu", 20, 20);
+				//menu_choosen = IMGUIButton("ABCDEFGabcdefghijk0123456");
             }
 
             if(menu_choosen)
@@ -276,7 +285,8 @@ struct Sample : App
                     std::stringstream label;
                     label << "Label " << i << ":";
 
-                    IMGUIBeginHorizontal(100,25);
+					IMGUILine();
+                    IMGUIBeginHorizontal(100, 25);
 					IMGUILabel(label.str(), 50);
 					field[i] = IMGUITextField(field[i], 50);
                     IMGUIEndArea();

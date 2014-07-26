@@ -39,7 +39,6 @@ namespace NSG
 		PFontAtlasTextureManager atlasManager_;
 		IMGUI::PContext imgui_;
 		PKeyboard keyboard_;
-		PFreeType freeType_;
 		PBufferManager bufferManager_;
 
 		Context();

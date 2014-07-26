@@ -71,15 +71,15 @@ namespace NSG
 	class ShowTexture;
 	typedef std::shared_ptr<ShowTexture> PShowTexture;
 
-	class FreeTypeClass;
-	typedef std::unique_ptr<FreeTypeClass> PFreeType;
-
     class Mesh;
     typedef std::shared_ptr<Mesh> PMesh;
 
     class Texture;
     typedef std::shared_ptr<Texture> PTexture;
 
+    class TextureFile;
+    typedef std::shared_ptr<TextureFile> PTextureFile;
+    
     class Material;
     typedef std::shared_ptr<Material> PMaterial;
 
@@ -196,6 +196,9 @@ namespace NSG
 	    class Area;
 	    typedef std::shared_ptr<Area> PArea;
 
+	    class Title;
+	    typedef std::shared_ptr<Title> PTitle;
+
 	    class Window;
 	    typedef std::shared_ptr<Window> PWindow;
 
@@ -204,6 +207,36 @@ namespace NSG
 
 		struct Style;
 		typedef std::shared_ptr<Style> PStyle;
+
+		struct ButtonStyle;
+		typedef std::shared_ptr<ButtonStyle> PButtonStyle;
+
+		struct LabelStyle;
+		typedef std::shared_ptr<LabelStyle> PLabelStyle;
+
+		struct TextStyle;
+		typedef std::shared_ptr<TextStyle> PTextStyle;
+
+		struct TitleStyle;
+		typedef std::shared_ptr<TitleStyle> PTitleStyle;
+
+		struct WindowStyle;
+		typedef std::shared_ptr<WindowStyle> PWindowStyle;
+
+		struct AreaStyle;
+		typedef std::shared_ptr<AreaStyle> PAreaStyle;
+
+		struct SliderStyle;
+		typedef std::shared_ptr<SliderStyle> PSliderStyle;
+
+		struct SizerStyle;
+		typedef std::shared_ptr<SizerStyle> PSizerStyle;
+
+		struct LineStyle;
+		typedef std::shared_ptr<LineStyle> PLineStyle;
+
+		struct CheckButtonStyle;
+		typedef std::shared_ptr<CheckButtonStyle> PCheckButtonStyle;
 	}
 
 	class Model;

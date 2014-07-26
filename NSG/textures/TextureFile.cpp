@@ -37,6 +37,11 @@ namespace NSG
         pResource_ = PResourceFile(new ResourceFile(filename));
 	}
 
+	TextureFile::TextureFile(PResource resource)
+	{
+		pResource_ = resource;
+	}
+
 	TextureFile::~TextureFile()
 	{
 		Context::this_->Remove(this);

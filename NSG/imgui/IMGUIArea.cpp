@@ -48,8 +48,9 @@ namespace NSG
     {
         static const float SLIDER_WIDTH = 15; //pixels
 
-        Area::Area(LayoutType type, float percentageX, float percentageY, Style& style)
-            : Object(type, percentageX, percentageY, style)
+        Area::Area(LayoutType type, float percentageX, float percentageY, AreaStyle& style)
+            : Object(type, percentageX, percentageY, style),
+              areaStyle_(style)
         {
             CHECK_ASSERT(type == LayoutType::WINDOW || type == LayoutType::HORIZONTAL || type == LayoutType::VERTICAL, __FILE__, __LINE__);
 
@@ -117,17 +118,17 @@ namespace NSG
             Update();
         }
 
-        void Area::RenderSlider()
+        void Area::RenderSlider(PTechnique technique)
         {
-            size_t nPasses = skin_.areaSliderStyle_->normalTechnique_->GetNumPasses();
+            size_t nPasses = technique->GetNumPasses();
             for (size_t i = 0; i < nPasses; i++)
             {
-				PPass pass = skin_.areaSliderStyle_->normalTechnique_->GetPass(i);
+                PPass pass = technique->GetPass(i);
                 pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
                 pass->SetStencilFunc(GL_ALWAYS, 0, 0);
             }
 
-			skin_.areaSliderStyle_->normalTechnique_->Render();
+            technique->Render();
         }
 
         bool Area::HandleVerticalSlider(float maxPosY, float& yPosition)
@@ -147,7 +148,7 @@ namespace NSG
             node.SetScale(globalScale);
 
             float offset = yPosition / maxPosY; //0..1
-            float blind_area = area_->isXScrollable_ ? 2 * SLIDER_WIDTH / (float)viewSize.second : 0;
+            float blind_area = (area_->isXScrollable_ && areaStyle_.showHScroll_) ? 2 * SLIDER_WIDTH / (float)viewSize.second : 0;
             const float TOP_POS = 1;
             float ypos = TOP_POS - yScale - 2 * (1 - yScale - blind_area) * offset;
 
@@ -157,9 +158,9 @@ namespace NSG
             globalPosition.x += areaGlobalScale.x - globalScale.x;
             node.SetGlobalPosition(globalPosition);
 
-			skin_.areaSliderStyle_->normalTechnique_->Set(&node);
+            areaStyle_.vScrollTechnique_->Set(&node);
 
-            RenderSlider();
+            RenderSlider(areaStyle_.vScrollTechnique_);
 
             if (mousedown_)
             {
@@ -211,7 +212,7 @@ namespace NSG
             node.SetScale(globalScale);
 
             float offset = -xPosition / maxPosX; //0..1
-            float blind_area = area_->isYScrollable_ ? 2 * SLIDER_WIDTH / (float)viewSize.first : 0;
+            float blind_area = (area_->isYScrollable_ && areaStyle_.showVScroll_) ? 2 * SLIDER_WIDTH / (float)viewSize.first : 0;
             const float LEFT_POS = -1;
             float xpos = LEFT_POS + xScale + 2 * (1 - xScale - blind_area) * offset;
 
@@ -221,9 +222,9 @@ namespace NSG
             globalPosition.y -= areaGlobalScale.y - globalScale.y;
             node.SetGlobalPosition(globalPosition);
 
-			skin_.areaSliderStyle_->normalTechnique_->Set(&node);
+            areaStyle_.hScrollTechnique_->Set(&node);
 
-            RenderSlider();
+            RenderSlider(areaStyle_.hScrollTechnique_);
 
             if (mousedown_)
             {
@@ -280,11 +281,11 @@ namespace NSG
                 float maxPosX = 2 * (area_->scrollFactorAreaX_ - 1);
                 float maxPosY = 2 * (area_->scrollFactorAreaY_ - 1);
 
-                if (area_->isXScrollable_)
+                if (area_->isXScrollable_ && areaStyle_.showHScroll_)
                     userMovedSlider = HandleHorizontalSlider(maxPosX, position.x);
 
-                if (area_->isYScrollable_ && !userMovedSlider)
-                    userMovedSlider = HandleVerticalSlider(maxPosY, position.y);
+                if (area_->isYScrollable_ && areaStyle_.showVScroll_)
+                    userMovedSlider = HandleVerticalSlider(maxPosY, position.y) || userMovedSlider;
 
                 bool scrolled = false;
                 if (!userMovedSlider)

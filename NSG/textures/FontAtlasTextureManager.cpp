@@ -37,9 +37,9 @@ namespace NSG
 	{
 	}
 
-	PFontAtlasTexture FontAtlasTextureManager::GetAtlas(const Key& key)
+	PFontAtlasTexture FontAtlasTextureManager::GetAtlas(const std::string& textureFilename)
 	{
-    	auto it = fontAtlas_.find(key);
+    	auto it = fontAtlas_.find(textureFilename);
     	
     	if(it != fontAtlas_.end())
     	{
@@ -47,8 +47,8 @@ namespace NSG
     	}
     	else
     	{
-    		PFontAtlasTexture pAtlas = PFontAtlasTexture(new FontAtlasTexture(key.first.c_str(), key.second));
-			fontAtlas_.insert(Atlas::value_type(key, pAtlas));
+			PFontAtlasTexture pAtlas = PFontAtlasTexture(new FontAtlasTexture(textureFilename));
+			fontAtlas_.insert(Atlas::value_type(textureFilename, pAtlas));
 			return pAtlas;
     	}
     }

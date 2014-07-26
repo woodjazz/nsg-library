@@ -34,11 +34,12 @@ namespace NSG
 		class Label : public Object
 		{
 		public:
-			Label(const std::string& text, float percentageX, float percentageY, Style& style);
+			Label(const std::string& text, float percentageX, float percentageY, LabelStyle& style);
 			~Label();
 			void Render();
 			virtual void UpdateControl() override;
 		private:
+			LabelStyle& labelStyle_;
 			PTextMesh pTextMesh_;
 		};
 	}

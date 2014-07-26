@@ -43,7 +43,7 @@ misrepresented as being the original software.
 #define FORCE_BREAKPOINT() ((void)0)
 #endif
 
-#ifndef NDEBUG
+#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 	#define CHECK_ASSERT(f, file, line) if (!(f)) {\
 		::std::stringstream stream;\
 		stream << "Assert has failed in file " << file << " line " << line;\

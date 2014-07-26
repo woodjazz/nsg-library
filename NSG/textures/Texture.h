@@ -41,9 +41,9 @@ namespace NSG
 		GLsizei GetWidth() const { return width_; }
 		GLsizei GetHeight() const { return height_; }
 		GLint GetFormat() const { return format_; }
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
+		virtual bool IsValid() override;
+		virtual void AllocateResources() override;
+		virtual void ReleaseResources() override;
 
 	protected:
 		GLuint texture_;

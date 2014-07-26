@@ -34,7 +34,7 @@ namespace NSG
 		class Window : public Area
 		{
 		public:
-			Window(IWindow* userWindow, float percentageX, float percentageY);
+			Window(IWindow* userWindow, float percentageX, float percentageY, WindowStyle& style);
             ~Window();
 			void Render();
 			void BeginRenderUserWindow();
@@ -45,10 +45,13 @@ namespace NSG
 			void RenderTitle();
 			void RenderBorder();
 			IWindow* userWindow_;
+			WindowStyle& windowStyle_;
 			float sizerSizeX_;
 			float longSizerSizeX_;
 			float sizerSizeY_;
 			float longSizerSizeY_;
+			Vertex3 windowOffset_;
+			AreaStyle& transparentAreaStyle_;
 		};
 
 	}

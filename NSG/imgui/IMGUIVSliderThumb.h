@@ -36,9 +36,6 @@ namespace NSG
             VSliderThumb(float value, float percentageX, float percentageY, Style& style);
             ~VSliderThumb();
             float Render();
-            virtual bool OnActive() override;
-			virtual bool OnHot() override;
-			virtual bool OnFocus(bool needsKeyboard) override;
             virtual void UpdateControl() override;
         private:
             float value_;

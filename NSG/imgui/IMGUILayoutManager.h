@@ -109,17 +109,18 @@ namespace NSG
             IdType lastwidget_;
             Window* currentWindow_;
             bool created_; // true if the user is calling IMGUIWindow
+            PWindowStyle style_;
 
-            WindowManager(IWindow* userWindow, IdType id, PNode pRootNode, float percentageX, float percentageY);
+            WindowManager(IWindow* userWindow, IdType id, PNode pRootNode, float percentageX, float percentageY, PWindowStyle style);
             PLayoutArea InsertNewArea(IdType id, LayoutType type, float percentageX, float percentageY);
             void Begin();
             void End();
             PLayoutArea GetAreaForControl(IdType id, LayoutType type, float percentageX, float percentageY);
 			PLayoutArea GetArea(IdType id, LayoutType type) const;
-            void BeginWindow(float percentageX, float percentageY);
+            void BeginWindow();
             void EndWindow();
-			void BeginHorizontalArea(float percentageX, float percentageY, Style& style);
-			void BeginVerticalArea(float percentageX, float percentageY, Style& style);
+			void BeginHorizontalArea(float percentageX, float percentageY, AreaStyle& style);
+			void BeginVerticalArea(float percentageX, float percentageY, AreaStyle& style);
             float EndArea(float scroll);
             void Spacer(float percentageX, float percentageY);
             bool IsReady() const;
@@ -137,13 +138,13 @@ namespace NSG
             void Render();
             void RenderUserWindow();
             PLayoutArea GetAreaForControl(IdType id, LayoutType type, float percentageX, float percentageY);
-            void BeginHorizontalArea(float percentageX, float percentageY, Style& style);
-            void BeginVerticalArea(float percentageX, float percentageY, Style& style);
+            void BeginHorizontalArea(float percentageX, float percentageY, AreaStyle& style);
+            void BeginVerticalArea(float percentageX, float percentageY, AreaStyle& style);
             float EndArea(float scroll);
             void Spacer(float percentageX, float percentageY);
             size_t GetNestingLevel();
             bool IsReady() const;
-			void Window(IMGUI::IWindow* obj, float percentageX, float percentageY);
+			void Window(IMGUI::IWindow* obj, float percentageX, float percentageY, PWindowStyle style);
             void SetWindowFocus(float x, float y);
             IdType GetValidId();
             bool IsCurrentWindowActive() const;
@@ -160,7 +161,7 @@ namespace NSG
             PWindowManager currentWindowManager_;
             IWindow* focusedUserWindow_;
             bool focusHasChanged_;
-            std::list<IWindow*> windowsSequence_;  //Contains the sequence in what the windows are rendered
+            std::vector<IWindow*> windowsSequence_;  //Contains the sequence in what the windows are rendered
 
         };
     }

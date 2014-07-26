@@ -34,19 +34,17 @@ namespace NSG
         class Button : public Object
         {
         public:
-            Button(const std::string &text, HorizontalAlignment hAlign, VerticalAlignment vAlign, float percentageX, float percentageY, Style& style);
+            Button(const std::string &text, bool pressed, HorizontalAlignment hAlign, VerticalAlignment vAlign, float percentageX, float percentageY, ButtonStyle& style);
             ~Button();
             bool Render();
             virtual void OnKey(int key) override;
-            virtual bool OnActive() override;
-			virtual bool OnHot() override;
-			virtual bool OnFocus(bool needsKeyboard) override;
             virtual void UpdateControl() override;
         protected:
             std::string currentText_;
             PTextMesh pTextMesh_;
-        private:
             bool pressed_;
+        private:
+            ButtonStyle& buttonStyle_;
         };
     }
 }

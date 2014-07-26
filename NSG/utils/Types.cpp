@@ -28,7 +28,8 @@ misrepresented as being the original software.
 namespace NSG
 {
 	VertexData::VertexData()
-	: color_(1)
+	: color_(1),
+	normal_(0, 0, 1) // always facing forward
 	{
 	}
 }

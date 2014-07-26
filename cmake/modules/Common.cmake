@@ -1,4 +1,20 @@
-if(NACL OR ANDROID OR IOS)
+if (CMAKE_GENERATOR STREQUAL Xcode)
+   set (XCODE TRUE)
+endif ()
+
+if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set (CMAKE_BUILD_TYPE Release)
+endif ()
+
+if(ANDROID OR IOS)
+    set(IS_TARGET_MOBILE 1)
+endif()
+
+if(EMSCRIPTEN OR NACL)
+    set(IS_TARGET_WEB 1)
+endif()
+
+if(NACL OR ANDROID OR IOS OR EMSCRIPTEN)
     set(GLES2 1)
     add_definitions(-DGLES2)
 endif()
@@ -48,13 +64,22 @@ endif ()
 if(CMAKE_COMPILER_IS_CLANGXX)
     message("detected clang compiler")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-    if(IOS)
+    if(APPLE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -x objective-c++")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -x objective-c")
     endif()
 elseif(CMAKE_COMPILER_IS_GNUCXX)
     message("detected GNU compiler")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -pthread")
+elseif(EMSCRIPTEN)
+    add_definitions(-s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH})
+    message("detected emscripten compiler")
+    set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
+    set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
+    set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g${EMS_DEBUG_LEVEL} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
+    set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g${EMS_DEBUG_LEVEL} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    add_definitions(-DEMSCRIPTEN)
 endif()
 
 if(APPLE)
@@ -62,15 +87,22 @@ if(APPLE)
     SET(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
     if(IOS)
         add_definitions(-DIOS)
+        set (CMAKE_XCODE_EFFECTIVE_PLATFORMS -iphoneos -iphonesimulator)
+        set (CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_32_64_BIT)")
+        set (CMAKE_OSX_SYSROOT iphoneos) #Set Base SDK to "Latest iOS"
+        set (MACOSX_BUNDLE_GUI_IDENTIFIER com.xxxx.xxxx.\${PRODUCT_NAME:xxxxxx})
+    elseif(XCODE)
+        set (CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_32_64_BIT)")
+        set (CMAKE_OSX_SYSROOT macosx)  #Set Base SDK to "Latest OS X"
     endif()
 endif()
 
-set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG")
-set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNDEBUG")
-#set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
-#set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
-
 if(NACL)
+
+    set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_NDEBUG")
+    set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -D_NDEBUG")
+    set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+    set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 
     if(WIN32)
         #NaCl libraries on Windows have ".a" extension not ".lib"
@@ -93,7 +125,7 @@ macro (setup_common)
     file(GLOB src "*.cpp")
     file(GLOB hdr "*.h")
 
-    set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/Data)
+    set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
 
     if(NACL)
         
@@ -117,7 +149,7 @@ macro (setup_common)
         if(EXISTS "${data_dir}")
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
         endif()
 
@@ -167,7 +199,7 @@ macro (setup_common)
             if(EXISTS "${data_dir}")
                 add_custom_command(
                     TARGET ${PROJECT_NAME} POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/assets
+                        COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/assets/data
                         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
             endif()
 
@@ -189,7 +221,7 @@ macro (setup_common)
 
         if(EXISTS "${data_dir}")
             add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr} ${data_dir})
-            SET_SOURCE_FILES_PROPERTIES(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+            set_source_files_properties(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
         else()
             add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr})
         endif()
@@ -197,19 +229,41 @@ macro (setup_common)
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 
         if(IOS)
-            set (CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_32_64_BIT)")
-            #set (CMAKE_XCODE_EFFECTIVE_PLATFORMS -iphoneos -iphonesimulator)
-            set (CMAKE_OSX_SYSROOT iphoneos)    # Set Base SDK to "Latest iOS"
-            set (MACOSX_BUNDLE_GUI_IDENTIFIER com.xxxx.xxxx.\${PRODUCT_NAME:xxxxxx})
             set_target_properties (${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
             set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioToolbox -framework CoreAudio -framework CoreGraphics -framework Foundation -framework OpenGLES -framework QuartzCore -framework UIKit")
         else()
             set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioUnit -framework Carbon -framework Cocoa -framework CoreAudio -framework ForceFeedback -framework IOKit -framework OpenGL -framework CoreServices")
-            
         endif()
 
-        
-    else()        
+    elseif(EMSCRIPTEN)
+
+        set(CMAKE_EXECUTABLE_SUFFIX ".bc")
+        add_executable(${PROJECT_NAME} ${src} ${hdr} )
+
+        target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
+
+        if(EXISTS "${data_dir}")
+            add_custom_command(
+                TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+        endif()
+
+        add_custom_command(
+            TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -o ${PROJECT_NAME}.html -g${EMS_DEBUG_LEVEL} -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --embed-file data 
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                COMMENT "Generating HTML with Emscripten" VERBATIM)
+
+        # add_custom_command(
+        #     TARGET ${PROJECT_NAME} POST_BUILD
+        #         COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -o ${PROJECT_NAME}.html -g${EMS_DEBUG_LEVEL} -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --preload-file data
+        #         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        #         COMMENT "Generating HTML with Emscripten" VERBATIM)
+
+
+    else()
+
         add_executable(${PROJECT_NAME} ${src} ${hdr} )
 
         target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
@@ -221,7 +275,7 @@ macro (setup_common)
         if(EXISTS "${data_dir}")
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
         endif()
 
@@ -229,6 +283,19 @@ macro (setup_common)
 
 
 endmacro (setup_common)
+
+##################################################################################
+##################################################################################
+##################################################################################
+macro (setup_tool)
+   
+    get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    PROJECT(${PROJECT_NAME})
+    file(GLOB src "*.cpp")
+    file(GLOB hdr "*.h")
+    add_executable(${PROJECT_NAME} ${src} ${hdr} )
+    target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
+endmacro (setup_tool)
 
 ##################################################################################
 ##################################################################################

@@ -82,7 +82,7 @@ void MyApp::Start()
 
 	//PTextMeshure pCellTexture = PTextMeshure(new TextMeshure("cell.png"));
 	//PTextMeshure pCellTexture = PTextMeshure(new TextMeshure("cube_example.png"));
-	PTexture pCellTexture(new TextureFile("Earthmap720x360_grid.jpg"));
+	PTexture pCellTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
 
 	//IMGUI::Context::this_->pSkin_->fontFile_ = "font/FreeSans.ttf";
 	//pSkin1_ = IMGUI::PSkin(new IMGUI::Skin(*IMGUI::Context::this_->pSkin_));
@@ -98,9 +98,9 @@ void MyApp::Start()
 
     //IMGUI::Context::this_->pSkin_->areaTechnique_->GetPass(0)->GetMaterial()->SetTexture0(pCellTexture);
     //pModel_ = PModel(new Model("cube.dae"));
-    pModel_ = PModel(new Model("duck.dae"));
+    //pModel_ = PModel(new Model("data/duck.dae"));
     //pModel_ = PModel(new Model("spider.obj"));
-    pModel_->SetBehavior(PBehavior(new ModelBehavior()));
+    //pModel_->SetBehavior(PBehavior(new ModelBehavior()));
 
     Behavior::StartAll();
    

@@ -25,64 +25,40 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include "GLES2Includes.h"
-#include "Texture.h"
-#include "Mesh.h"
+#include "Types.h"
 #include <string>
-#include <vector>
 #include <map>
 
 namespace NSG
 {
-	class FontAtlasTexture : public Texture
+	class FontAtlasTexture
 	{
 	public:
-		FontAtlasTexture(const char* filename, int fontSize);
+		FontAtlasTexture(const std::string& filename);
 		~FontAtlasTexture();
-		virtual void AllocateResources();
-        virtual void ReleaseResources();
-        typedef std::vector<VertexData> CharMesh;
-        typedef std::map<char, CharMesh> CharsMesh;
-        CharsMesh GetCharsMesh() const { return charsMesh_; }
-
-		struct CharacterInfo 
-		{
-			float ax; // advance.x
-			float ay; // advance.y
-
-			float bw; // bitmap.width;
-			float bh; // bitmap.rows;
-
-			float bl; // bitmap_left;
-			float bt; // bitmap_top;
-
-			float tx; // x offset of glyph in texture coordinates
-			float ty; // y offset of glyph in texture coordinates
-		};
-
-		typedef std::vector<CharacterInfo> CharsInfo;
-
-		const CharsInfo& GetCharInfo() const { return charInfo_;}
-		int GetAtlasWidth() const { return atlasWidth_; }
-		int GetAtlasHeight() const {return atlasHeight_; }
-
-		static const int MAXCHARS = 256;
-
-		bool SetTextMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
+		bool GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
 		GLfloat GetWidthForCharacterPosition(const char* text, unsigned int charPos);
 		unsigned int GetCharacterPositionForWidth(const char* text, float width);
-
+		bool IsReady();
+		PTexture GetTexture() const { return texture_; }
 	private:
-		void CreateTextureAtlas(bool generateMipmaps);
-        void GenerateMeshesForAllChars();
-        std::string filename_;
-		int atlasWidth_;
-		int atlasHeight_;
-		CharsInfo charInfo_;
-		int fontSize_;
+        void ParseXML();
+        PTexture texture_;
+        PResource xmlResource_;
 		int32_t viewWidth_;
 		int32_t viewHeight_;
-        CharsMesh charsMesh_;
+
+        struct CharInfo
+        {
+        	int width;
+        	int height;
+        	Vertex2 offset;
+        	Rect rect;
+        };
+		
+		typedef std::map<int, CharInfo> CharsMap;
+        CharsMap charsMap_;
+		std::string filename_;
 	};
 
 }

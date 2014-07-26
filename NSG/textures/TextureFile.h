@@ -33,9 +33,11 @@ namespace NSG
 	{
 	public:
 		TextureFile(const char* filename);
+		TextureFile(PResource resource);
 		~TextureFile();
 		virtual void AllocateResources();
 	private:
 		std::string filename_;
+		bool onlyAlpha_;
 	};
 }
