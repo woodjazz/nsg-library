@@ -39,10 +39,13 @@ namespace NSG
                 xmlResource_ = PResourceFile(new ResourceFile(xmlFilename.c_str()));
             }
         }
+
+        App::Add(this);
     }
 
     FontAtlasTexture::~FontAtlasTexture()
     {
+        App::Remove(this);
     }
 
     bool FontAtlasTexture::IsReady()
@@ -112,10 +115,6 @@ namespace NSG
         indexes.clear();
 
         screenWidth = screenHeight = 0;
-
-        auto viewSize = App::this_->GetViewSize();
-        viewWidth_ = viewSize.first;
-        viewHeight_ = viewSize.second;
 
         CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0, __FILE__, __LINE__);
 
@@ -240,5 +239,11 @@ namespace NSG
         }
 
         return charPos;
+    }
+
+    void FontAtlasTexture::OnViewChanged(int32_t width, int32_t height)
+    {
+        viewWidth_ = width;
+        viewHeight_ = height;
     }
 }

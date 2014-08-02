@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if SDL
+#if SDL || EMSCRIPTEN
 #include "SDL.h"
 #undef main
 #include "App.h"
@@ -31,88 +31,297 @@ misrepresented as being the original software.
 #include "Keys.h"
 #include "Log.h"
 #include "UTF8String.h"
+#include "AppConfiguration.h"
 #include <memory>
 #include <string>
 #include <locale>
 #ifndef __GNUC__
 #include <codecvt>
 #endif
-#include <assert.h>
-
-NSG::PInternalApp s_pApp = nullptr;
-
-#ifdef IOS
-static void RenderFrame(void* data)
-{
-    s_pApp->RenderFrame();
-}
+#if EMSCRIPTEN
+#include <emscripten.h>
+static bool ems_terminating = false;
 #endif
 
 namespace NSG
 {
-	bool CreateModule(App* pApp)
-	{
-		s_pApp = PInternalApp(new InternalApp(pApp));
+    NSG::PInternalApp app = nullptr;
+    static bool quit = false;
+    static int width = 0;
+    static int height = 0;
+    static bool minimized = false;
 
-		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE) != 0)
-		//if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) != 0)
-		{
-			TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
-			return false;
-		}
+    static void RenderFrame(void* data = nullptr)
+    {
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_WINDOWEVENT)
+            {
+                switch (event.window.event)
+                {
+                case SDL_WINDOWEVENT_MINIMIZED:
+                    minimized = true;
+                    app->InvalidateGPUContext();
+                    app->ReleaseResourcesFromMemory();
+                    break;
 
-	    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-#ifndef GL_ES_VERSION_2_0
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+#if !EMSCRIPTEN
+                case SDL_WINDOWEVENT_RESIZED:
+                case SDL_WINDOWEVENT_RESTORED:
+                {
+                    SDL_Window* win = static_cast<SDL_Window*>(data);
+                    minimized = false;
+                    SDL_GetWindowSize(win, &width, &height);
+                    app->ViewChanged(width, height);
+                    break;
+                }
 #endif
 
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
- 
-	    /* Turn on double buffering with a 24bit Z buffer.
-	     * You may need to change this to 16 or 32 for your system */
-	    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);		
+                default:
+                    break;
+                }
+            }
+#if EMSCRIPTEN
+            else if (event.type == SDL_VIDEORESIZE)
+            {
+                SDL_ResizeEvent* r = (SDL_ResizeEvent*)&event;
+                width = r->w;
+                height = r->h;
+                app->ViewChanged(width, height);
+            }
+#endif
+            else if (event.type == SDL_QUIT)
+            {
+                quit = true;
+            }
+            else if (event.type == SDL_KEYDOWN)
+            {
+                int key = event.key.keysym.sym;
+                int scancode = event.key.keysym.scancode;
+                int action = NSG_KEY_PRESS;
+                int modifier = event.key.keysym.mod;
+                app->OnKey(key, action, modifier);
+            }
+            else if (event.type == SDL_KEYUP)
+            {
+                int key = event.key.keysym.sym;
+                int scancode = event.key.keysym.scancode;
+                int action = NSG_KEY_RELEASE;
+                int modifier = event.key.keysym.mod;
+                app->OnKey(key, action, modifier);
+            }
 
-		const int WIDTH = 320;
-		const int HEIGHT = 200;
+            else if (event.type == SDL_TEXTINPUT)
+            {
+#ifndef __GNUC__
+                std::string utf8(event.text.text);
+                std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
+                std::u16string utf16 = utf16conv.from_bytes(utf8);
+                for (char16_t c : utf16)
+                {
+                    app->OnChar((unsigned int)c);
+                }
+#else
+                UTF8String utf8(event.text.text);
+                unsigned unicode = utf8.AtUTF8(0);
+                if (unicode)
+                {
+                    app->OnChar(unicode);
+                }
+#endif
+            }
+            else if (event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                double x = event.button.x;
+                double y = event.button.y;
+                app->OnMouseDown((float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
+            }
+            else if (event.type == SDL_MOUSEBUTTONUP)
+            {
+                double x = event.button.x;
+                double y = event.button.y;
+                app->OnMouseUp((float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
+            }
+            else if (event.type == SDL_MOUSEMOTION)
+            {
+                if (width > 0 && height > 0)
+                {
+                    double x = event.motion.x;
+                    double y = event.motion.y;
+                    app->OnMouseMove((float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
+                }
+            }
+            else if (event.type == SDL_MOUSEWHEEL)
+            {
+                if (width > 0 && height > 0)
+                {
+                    const float FACTOR = 15;
+                    float x = FACTOR * event.wheel.x;
+                    float y = FACTOR * event.wheel.y;
+                    float screenX = x / (float)width;
+                    float screenY = y / (float)height;
+                    app->OnMouseWheel(screenX, screenY);
+                }
+            }
+            else if (event.type == SDL_FINGERDOWN)
+            {
+                double x = event.tfinger.x;
+                double y = event.tfinger.y;
+                app->OnMouseDown((float)(-1 + 2 * x), (float)(1 + -2 * y));
+            }
+            else if (event.type == SDL_FINGERUP)
+            {
+                double x = event.tfinger.x;
+                double y = event.tfinger.y;
+                app->OnMouseUp((float)(-1 + 2 * x), (float)(1 + -2 * y));
+            }
+            else if (event.type == SDL_FINGERMOTION)
+            {
+                double x = event.tfinger.x;
+                double y = event.tfinger.y;
+                app->OnMouseMove((float)(-1 + 2 * x), (float)(1 + -2 * y));
+            }
+        }
 
-	#if IOS
+#ifndef IOS
+        if (quit)
+        {
+#if EMSCRIPTEN
+            if (!ems_terminating)
+            {
+                TRACE_LOG("App terminating...");
+                ems_terminating = true;
+                emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+            }
+#else
+            TRACE_LOG("App terminating...");
+#endif
+        }
+        else if (app->ShallExit())
+        {
+            TRACE_LOG("App's logic forced exit!");
+            quit = true;
+        }
+        else if (!minimized)
+        {
+            app->RenderFrame();
+        }
+#else
+        if (!minimized)
+        {
+            app->RenderFrame();
+            SDL_Window* win = static_cast<SDL_Window*>(data);
+            SDL_GL_SwapWindow(win);
+        }
+#endif
+    }
+
+    bool CreateModule(App* pApp)
+    {
+        // Since android can keep the status of global/static variables between runs then variables need to be initializated here again/
+        quit = false;
+        width = 0;
+        height = 0;
+        minimized = false;
+
+        app = PInternalApp(new InternalApp(pApp));
+
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE))
+        {
+            TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
+            return false;
+        }
+
+        const int DOUBLE_BUFFER = 1;
+        const int DEPTH_SIZE = 24;
+        const int RED_SIZE = 8;
+        const int GREEN_SIZE = 8;
+        const int BLUE_SIZE = 8;
+        const int ALPHA_SIZE = 8;
+        const int STENCIL_SIZE = 8;
+        const int CONTEXT_MAJOR_VERSION = 2;
+        const int CONTEXT_MINOR_VERSION = 0;
+
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, DOUBLE_BUFFER);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, DEPTH_SIZE);
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, RED_SIZE);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, GREEN_SIZE);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, BLUE_SIZE);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, ALPHA_SIZE);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, STENCIL_SIZE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, CONTEXT_MAJOR_VERSION);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CONTEXT_MINOR_VERSION);
+
+#if IOS || ANDROID
         Uint32 flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
-	#else
-		Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-	#endif
-		
+#else
+        Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+#endif
+        width = AppConfiguration::this_->width_;
+        height = AppConfiguration::this_->height_;
 
-		SDL_Window* win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, flags);
+#if EMSCRIPTEN
 
-		if (win == nullptr)
-		{
-			TRACE_LOG("SDL_CreateWindow Error: " << SDL_GetError() << std::endl);
-			return false;
-		}
+        SDL_Surface* screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
+        if (!screen)
+        {
+            TRACE_LOG("Failed to set screen video mode \n");
+            return false;
+        }
 
- 		SDL_GLContext maincontext = SDL_GL_CreateContext(win);
+#else
+        SDL_Window* win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
 
-		/* This makes our buffer swap syncronized with the monitor's vertical refresh */
-    	//SDL_GL_SetSwapInterval(1);	  
+        if (win == nullptr)
+        {
+            TRACE_LOG("SDL_CreateWindow Error: " << SDL_GetError() << std::endl);
+            return false;
+        }
 
-	#ifndef GL_ES_VERSION_2_0
+        SDL_GLContext maincontext = SDL_GL_CreateContext(win);
 
-		glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
+        SDL_GetWindowSize(win, &width, &height);
+
+        if (SDL_GL_SetSwapInterval(AppConfiguration::this_->swapInterval_))
+        {
+            if (AppConfiguration::this_->swapInterval_ == -1)
+                SDL_GL_SetSwapInterval(1);
+        }
+#endif
+
+        int value = 0;
+        SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
+        CHECK_ASSERT(value == DOUBLE_BUFFER, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
+		CHECK_ASSERT(value == DEPTH_SIZE, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
+		CHECK_ASSERT(value == RED_SIZE, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
+		CHECK_ASSERT(value == GREEN_SIZE, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
+		CHECK_ASSERT(value == BLUE_SIZE, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &value);
+		CHECK_ASSERT(value == ALPHA_SIZE, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
+		CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
+		CHECK_ASSERT(value == CONTEXT_MAJOR_VERSION, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
+		CHECK_ASSERT(value == CONTEXT_MINOR_VERSION, __FILE__, __LINE__);
+
+#ifndef GL_ES_VERSION_2_0
+
+        glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
 
         GLenum err = glewInit();
-		if (err != GLEW_OK) 
+        if (err != GLEW_OK)
         {
-			TRACE_LOG("Failed to initialize GLEW with error = " << glewGetErrorString(err));
-			return false;
-		}
+            TRACE_LOG("Failed to initialize GLEW with error = " << glewGetErrorString(err));
+            return false;
+        }
 
-        if (!GLEW_VERSION_2_0) 
+        if (!GLEW_VERSION_2_0)
         {
             TRACE_LOG("No support for OpenGL 2.0 found\n");
             return false;
@@ -123,128 +332,26 @@ namespace NSG
             TRACE_LOG("EXT_framebuffer_object and EXT_packed_depth_stencil OpenGL extensions are required");
             return false;
         }
-	#endif
+#endif
+        app->SetViewSize(width, height);
 
-		int width = 0;
-		int height = 0;
-
-        SDL_GetWindowSize(win, &width, &height);
-
-        s_pApp->ViewChanged(width, height);
-
-		SDL_Event event;
-		bool quit = false;
-		while (!quit)
-		{
-			while (SDL_PollEvent(&event))
-			{
-				if (event.type == SDL_WINDOWEVENT) 
-				{
-        			switch (event.window.event) 
-        			{	
-						case SDL_WINDOWEVENT_RESIZED:
-							width = event.window.data1;
-							height = event.window.data2;
-            				s_pApp->ViewChanged(width, height);
-            				break;
-            			default:
-            				break;
-        			}
-        		}			
-				else if (event.type == SDL_QUIT)
-				{
-					quit = true;
-				}
-				else if(event.type == SDL_KEYDOWN)
-				{
-					int key = event.key.keysym.sym;
-					int scancode = event.key.keysym.scancode;
-					int action = NSG_KEY_PRESS;
-					int modifier = event.key.keysym.mod;
-					s_pApp->OnKey(key, action, modifier);
-				}
-				else if(event.type == SDL_KEYUP)
-				{
-					int key = event.key.keysym.sym;
-					int scancode = event.key.keysym.scancode;
-					int action = NSG_KEY_RELEASE;
-					int modifier = event.key.keysym.mod;
-					s_pApp->OnKey(key, action, modifier);
-				}
-
-				else if (event.type == SDL_TEXTINPUT)
-				{
-                #ifndef __GNUC__
-                    std::string utf8(event.text.text);
-                    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
-                    std::u16string utf16 = utf16conv.from_bytes(utf8);
-                    for (char16_t c : utf16)
-                    {                       
-                        s_pApp->OnChar((unsigned int)c);
-                    }
-                #else
-    				UTF8String utf8(event.text.text);
-					unsigned unicode = utf8.AtUTF8(0);
-					if(unicode)
-					{
-						s_pApp->OnChar(unicode);
-					}
-                #endif
-				}
-				else if (event.type == SDL_MOUSEBUTTONDOWN)
-				{
-					double x = event.button.x;
-                	double y = event.button.y;
-					s_pApp->OnMouseDown((float)(-1 + 2 * x/width), (float)(1 + -2*y/height));
-				}
-				else if (event.type == SDL_MOUSEBUTTONUP)
-				{
-					double x = event.button.x;
-                	double y = event.button.y;
-					s_pApp->OnMouseUp((float)(-1 + 2 * x/width), (float)(1 + -2*y/height));
-				}
-				else if (event.type == SDL_MOUSEMOTION)
-				{
-					if(width > 0 && height > 0)
-					{
-						double x = event.motion.x;
-	                	double y = event.motion.y;
-						s_pApp->OnMouseMove((float)(-1 + 2 * x/width),(float)(1 + -2*y/height));
-					}
-				}
-				else if (event.type == SDL_MOUSEWHEEL)
-				{
-					if(width > 0 && height > 0)
-					{
-                        const float FACTOR = 15;
-                        float x = FACTOR * event.wheel.x;
-	                	float y = FACTOR * event.wheel.y;
-                        float screenX = x/(float)width;
-                        float screenY = y/(float)height;
-						s_pApp->OnMouseWheel(screenX, screenY);
-					}
-				}
-                
-			}
-
-
-#ifndef IOS
-			s_pApp->RenderFrame();
+#if IOS
+        SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, win);
+#elif EMSCRIPTEN
+        SDL_StartTextInput();
+        emscripten_set_main_loop_arg(&RenderFrame, screen, 0, 1);
+        emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
 #else
-			SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);
-#endif		
-	        SDL_GL_SwapWindow(win);  
+        while (!quit)
+        {
+            RenderFrame(win);
+            SDL_GL_SwapWindow(win);
+        }
+        app = nullptr;
+        SDL_Quit();
+#endif
 
-	        quit = quit || s_pApp->ShallExit();
-		}        
-
-        s_pApp = nullptr;
-
-
-		SDL_Quit();
-
-		
-		return true;
-	}
+        return true;
+    }
 }
 #endif

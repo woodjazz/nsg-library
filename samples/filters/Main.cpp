@@ -52,6 +52,12 @@ struct Sample : App
     BoxBehavior* boxBehavior_;
     SphereBehavior* sphereBehavior_;
 
+	Sample()
+	{
+		AppConfiguration::this_->width_ = 50;
+		AppConfiguration::this_->height_ = 50;
+	}
+
 	void Start()
 	{
         //IMGUISkin()->fontFile_ = "font/FreeSans.ttf";

@@ -25,6 +25,9 @@ misrepresented as being the original software.
 */
 
 #include "Util.h"
+#include <string>
+#include <algorithm>
+#include <cctype>
 
 namespace NSG
 {
@@ -51,5 +54,19 @@ namespace NSG
 			if (std::string::npos == last_slash_idx) break;
 			source.replace(last_slash_idx, 1, 1, to);
 		}
+	}
+
+	std::string GetLowercaseFileExtension(const std::string& filename)
+	{
+		std::string extension;
+		std::string::size_type pos = filename.find_last_of(".");
+		if (pos != std::string::npos)
+		{
+			std::copy(filename.begin() + pos, filename.end(), std::back_inserter(extension));
+			for (auto& ch : extension)
+				ch = std::tolower(ch);
+		}
+
+		return extension;
 	}
 }

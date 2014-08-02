@@ -40,18 +40,25 @@ namespace NSG
 		IMGUI::PContext imgui_;
 		PKeyboard keyboard_;
 		PBufferManager bufferManager_;
+		PAudio audio_;
 
 		Context();
 		~Context();
-		void Add(GPUObject* object);
-		void Remove(GPUObject* object);
+		void Initialize();
+		static void AddObject(GPUObject* object);
+		static void RemoveObject(GPUObject* object);
 		void InvalidateGPUResources();
-		void Add(Resource* object);
-		void Remove(Resource* object);
+		static void AddResource(Resource* object);
+		static void RemoveResource(Resource* object);
 		void ReleaseResourcesFromMemory();
 		PTexture GetWhiteTexture();
 
 	private:
+		void Add(GPUObject* object);
+		void Remove(GPUObject* object);
+		void Add(Resource* object);
+		void Remove(Resource* object);
+
 		PTexture whiteTexture_;
 	};
 }

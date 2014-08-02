@@ -42,14 +42,14 @@ namespace NSG
 	{
 	#if NACL
 		pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filename);
-	#elif ANDROID			
+	#elif defined(ANDROID) && !defined(SDL)
 		pAAssetManager_ = App::this_->GetAssetManager();
 	#endif
 	}
 
 	ResourceFile::~ResourceFile()
 	{
-		Context::this_->Remove(this);
+		Context::RemoveResource(this);
 	}
 
 	bool ResourceFile::IsLoaded()
@@ -62,17 +62,25 @@ namespace NSG
 			memcpy(&buffer_[0], pLoader_->GetData().c_str(), pLoader_->GetData().size());
 			pLoader_ = nullptr;
 		#elif ANDROID
-			assert(pAAssetManager_ != nullptr);
-			AAsset* pAsset = AAssetManager_open(pAAssetManager_, filename_.c_str(), AASSET_MODE_BUFFER);
-			if(!pAsset)
-			{
-				TRACE_LOG("Cannot open file: " << filename_);
-				return false;
-			}
-			off_t filelength = AAsset_getLength(pAsset);
-	        buffer_.resize((int)filelength);
-	        AAsset_read(pAsset, &buffer_[0],filelength);
-			AAsset_close(pAsset);    
+			#if SDL
+	    		SDL_RWops* assetHandle = SDL_RWFromFile(filename_.c_str(), "rb");
+				off_t filelength = assetHandle->hidden.androidio.size;
+		        buffer_.resize((int)filelength);
+	    		SDL_RWread(assetHandle, &buffer_[0], filelength, 1);
+	    		SDL_RWclose(assetHandle);
+			#else
+				assert(pAAssetManager_ != nullptr);
+				AAsset* pAsset = AAssetManager_open(pAAssetManager_, filename_.c_str(), AASSET_MODE_BUFFER);
+				if(!pAsset)
+				{
+					TRACE_LOG("Cannot open file: " << filename_);
+					return false;
+				}
+				off_t filelength = AAsset_getLength(pAsset);
+		        buffer_.resize((int)filelength);
+		        AAsset_read(pAsset, &buffer_[0],filelength);
+				AAsset_close(pAsset); 
+			#endif
 		#else
 	        std::ifstream file(filename_, std::ios::binary);
             
@@ -84,7 +92,7 @@ namespace NSG
                 path += filename_;
 	    		file.open(path.c_str(), std::ios::binary);
 	    	}
-	        #endif
+	    	#endif
 	    	if(!file.is_open())
 	    		TRACE_LOG("Cannot open filename=" << filename_);
 	        CHECK_ASSERT(file.is_open(), __FILE__, __LINE__);

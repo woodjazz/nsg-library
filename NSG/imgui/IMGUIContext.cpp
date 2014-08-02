@@ -45,6 +45,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    template<> IMGUI::Context* Singleton<IMGUI::Context>::this_ = nullptr;
+
     namespace IMGUI
     {
         Context::Context()
@@ -70,6 +72,7 @@ namespace NSG
 
         Context::~Context()
         {
+			Context::this_ = nullptr;
         }
 
         bool Context::IsReady() const
@@ -89,11 +92,6 @@ namespace NSG
             state_->End();
         }
 
-        /*      PTextMesh Context::GetCurrentTextMesh(const std::string& data)
-                {
-                    return textManager_->GetTextMesh(data, pSkin_->fontFile_, pSkin_->fontSize_);
-                }
-        */
         IdType Context::GetValidId()
         {
             return pLayoutManager_->GetValidId();

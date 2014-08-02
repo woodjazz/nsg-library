@@ -45,22 +45,28 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    App::App() 
-    : width_(0),
-    height_(0),
-    configuration_(new AppConfiguration)
+	template <> App* Singleton<App>::this_ = nullptr;
+
+    App::App()
+		: width_(0),
+          height_(0)
     {
+		context_ = PContext(new Context);
+		configuration_ = PAppConfiguration(new AppConfiguration);
+
     }
 
-    App::App(PAppConfiguration configuration) 
-    : width_(0),
-    height_(0),
-    configuration_(configuration)
+    App::App(PAppConfiguration configuration)
+        : width_(0),
+          height_(0)
     {
+        context_ = PContext(new Context);
+        configuration_ = configuration;
     }
 
     App::~App()
     {
+		App::this_ = nullptr;
         TRACE_LOG("App Terminated");
     }
 
@@ -68,6 +74,9 @@ namespace NSG
     {
         width_ = width;
         height_ = height;
+
+        for (auto& listener : viewChangedListeners_)
+            listener->OnViewChanged(width, height);
     }
 
     std::pair<int32_t, int32_t> App::GetViewSize() const
@@ -80,11 +89,11 @@ namespace NSG
 #if NACL
         TRACE_LOG("App::HandleMessage");
 
-        if(var_message.is_string())
+        if (var_message.is_string())
         {
             std::string message = var_message.AsString();
         }
-#endif  
+#endif
     }
     void App::DoTick(float delta)
     {
@@ -93,15 +102,43 @@ namespace NSG
         Update();
     }
 
+    void App::AddListener(IViewChangedListener* listener)
+    {
+        viewChangedListeners_.push_back(listener);
+		listener->OnViewChanged(width_, height_); //notify inmediately to have correct view size
+    }
+
+    void App::RemoveListener(IViewChangedListener* listener)
+    {
+        viewChangedListeners_.erase(std::find(viewChangedListeners_.begin(), viewChangedListeners_.end(), listener));
+    }
+
+    void App::Add(IViewChangedListener* listener)
+    {
+		if (App::this_)
+		{
+			App::this_->AddListener(listener);
+		}
+    }
+
+    void App::Remove(IViewChangedListener* listener)
+    {
+		if (App::this_)
+		{
+			App::this_->RemoveListener(listener);
+		}
+    }
+
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    InternalApp::InternalApp(App* pApp) 
-    : Tick(pApp->configuration_->fps_),
-    pApp_(pApp),
-    screenX_(0),
-    screenY_(0)
+    InternalApp::InternalApp(App* pApp)
+        : Tick(pApp->configuration_->fps_),
+          pApp_(pApp),
+          screenX_(0),
+          screenY_(0)
     {
     }
 
@@ -121,37 +158,37 @@ namespace NSG
         CHECK_ASSERT(pApp_->width_ > 0 && pApp_->height_ > 0, __FILE__, __LINE__);
         glViewport(0, 0, pApp_->width_, pApp_->height_);
 
-        if(AppStatistics::this_)
+        if (AppStatistics::this_)
             AppStatistics::this_->Reset();
+
+        Context::this_->Initialize();
 
         pApp_->Start();
     }
-    
+
     void InternalApp::DoTick(float delta)
     {
         pApp_->DoTick(delta);
     }
-    
+
     void InternalApp::EndTick()
     {
+    }
+
+    void InternalApp::SetViewSize(int32_t width, int32_t height)
+    {
+        TRACE_LOG("SetViewSize: width=" << width << " height=" << height);
+        pApp_->SetViewSize(width, height);
     }
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
     {
         TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
-
         pApp_->SetViewSize(width, height);
-
-        Context::this_->InvalidateGPUResources();
-
-#if 0
-		Context::this_->ReleaseResourcesFromMemory();
-#endif        
-
         pApp_->ViewChanged(width, height);
     }
 
-    void InternalApp::OnMouseMove(float x, float y) 
+    void InternalApp::OnMouseMove(float x, float y)
     {
         screenX_ = x;
         screenY_ = y;
@@ -160,7 +197,7 @@ namespace NSG
         pApp_->OnMouseMove(x, y);
     }
 
-    void InternalApp::OnMouseDown(float x, float y) 
+    void InternalApp::OnMouseDown(float x, float y)
     {
         //TRACE_LOG("Mouse Down");
         screenX_ = x;
@@ -170,12 +207,12 @@ namespace NSG
         pApp_->OnMouseDown(x, y);
     }
 
-    void InternalApp::OnMouseUp(float x, float y) 
+    void InternalApp::OnMouseUp(float x, float y)
     {
         //TRACE_LOG("Mouse Up");
         IMGUI::OnMouseUp(x, y);
         pApp_->OnMouseUp(x, y);
-   }
+    }
 
     void InternalApp::OnMouseWheel(float x, float y)
     {
@@ -185,7 +222,7 @@ namespace NSG
 
     void InternalApp::OnKey(int key, int action, int modifier)
     {
-        //TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
+        TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
         IMGUI::OnKey(key, action, modifier);
         pApp_->OnKey(key, action, modifier);
     }
@@ -209,15 +246,20 @@ namespace NSG
 
         IMGUI::Context::this_->RenderGUI();
 
-		Camera::Activate(camera);
+        Camera::Activate(camera);
 
-        if(AppStatistics::this_)
+        if (AppStatistics::this_)
             AppStatistics::this_->NewFrame();
     }
 
     bool InternalApp::ShallExit() const
     {
         return pApp_->ShallExit();
+    }
+
+    void InternalApp::ReleaseResourcesFromMemory()
+    {
+        Context::this_->ReleaseResourcesFromMemory();
     }
 
     void InternalApp::InvalidateGPUContext()

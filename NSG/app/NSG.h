@@ -72,5 +72,9 @@ misrepresented as being the original software.
 #include "ProgramWhiteColor.h"
 #include "AppConfiguration.h"
 #include "AppStatistics.h"
+#include "Sound.h"
+#include "Music.h"
+#include "BoundingBox.h"
+#include "Frustum.h"
 
 

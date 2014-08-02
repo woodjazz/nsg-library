@@ -63,7 +63,7 @@ namespace NSG
 
 	TextureMemory::~TextureMemory()
 	{
-		Context::this_->Remove(this);		
+		Context::RemoveObject(this);
 	}
 
 	void TextureMemory::AllocateResources()

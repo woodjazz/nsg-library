@@ -26,20 +26,21 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "GPUObject.h"
+#include "AppListeners.h"
 
 namespace NSG 
 {
     class SceneNode;
-    class FrameColorSelection : public GPUObject
+    class FrameColorSelection : public GPUObject, IViewChangedListener
     {
     public:
         FrameColorSelection(bool createDepthBuffer, bool createDepthStencilBuffer);
         ~FrameColorSelection();
         GLushort GetSelected() const;
 
-        virtual bool IsValid();
-        virtual void AllocateResources();
-        virtual void ReleaseResources();
+        virtual bool IsValid() override;
+        virtual void AllocateResources() override;
+        virtual void ReleaseResources() override;
         
         void SetLocations();
         void AssignValues();
@@ -50,6 +51,7 @@ namespace NSG
         PPass GetPass() const { return pass_; }
 
         void ClearDepthStencil();
+        virtual void OnViewChanged(int32_t width, int32_t height) override;
 
     private:
         Color TransformSelectedId2Color(GLushort id);

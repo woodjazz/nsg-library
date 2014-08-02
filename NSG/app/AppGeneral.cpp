@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Tick.h"
 #include "Check.h"
+#include "AppConfiguration.h"
 #include <memory>
 #include <assert.h>
 
@@ -108,8 +109,8 @@ namespace NSG
 		if (!glfwInit())
 			return false;
 		
-		const int WIDTH = 320;
-		const int HEIGHT = 200;
+		int WIDTH =  AppConfiguration::this_->width_;
+		int HEIGHT = AppConfiguration::this_->height_;
 
 		/* Create a windowed mode window and its OpenGL context */
 		window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", nullptr, nullptr);

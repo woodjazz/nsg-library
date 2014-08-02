@@ -27,6 +27,10 @@ cmake_minimum_required(VERSION 2.8.4)
 
 PROJECT(nsg-library)
 
+if(NOT BUILD_PROJECT)
+	set(BUILD_PROJECT "all")
+endif()	
+
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set CMake modules search path
@@ -34,6 +38,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 # Include NSG cmake common module
 include (Common)
+setup_common() #has to be called before anything
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -97,15 +102,12 @@ endif()
 ###########################
 # SDL
 ###########################
-if(USE_SDL AND NOT NACL AND NOT ANDROID AND NOT EMSCRIPTEN)
+if(USE_SDL AND NOT NACL AND NOT EMSCRIPTEN)
 	include (CheckIncludeFiles)	
 	add_definitions(-DSDL)
 	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
 	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
-	#mark_as_disable_and_internal(SDL_SHARED)
-	#mark_as_disable_and_internal(HAVE_DINPUT_H)
 	add_subdirectory(${DEPENDENCIES_DIR}/SDL)
-	#list(APPEND LIBRARIES_2_LINK SDL2-static)
     if (WIN32)
 		if (MSVC)
 		    find_package (Direct3D)
@@ -117,14 +119,24 @@ if(USE_SDL AND NOT NACL AND NOT ANDROID AND NOT EMSCRIPTEN)
         list (APPEND LIBRARIES_2_LINK user32 gdi32 winmm imm32 ole32 oleaut32 version uuid )
     endif()
 
+	###########################
+	# SDL_mixer
+	###########################
+	add_subdirectory(${DEPENDENCIES_DIR}/SDL_mixer)
+	include_directories(${DEPENDENCIES_DIR}/SDL_mixer)
+	list(APPEND LIBRARIES_2_LINK SDL_mixer) # this shall go before SDL to avoid undefined SDL references
 	list(APPEND LIBRARIES_2_LINK SDL)
 endif()
+
+if(EMSCRIPTEN)
+	add_definitions(-DSDL)
+endif()	
 
 ###########################
 # stb
 ###########################
-# add_subdirectory(stb)
-# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/stb)
+# add_subdirectory(${DEPENDENCIES_DIR}/stb)
+# include_directories(${DEPENDENCIES_DIR}/stb)
 # list(APPEND LIBRARIES_2_LINK stb) 
 
 ###########################
@@ -220,7 +232,6 @@ SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/NSG)
 FOREACH(subdir ${SUBDIRS})
    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/NSG/${subdir})
 ENDFOREACH()
-
 add_subdirectory(NSG)
 
 ###########################
@@ -229,19 +240,26 @@ add_subdirectory(NSG)
 set(SAMPLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples)
 SUBDIRLIST(SUBDIRS ${SAMPLES_DIR})
 FOREACH(subdir ${SUBDIRS})
-    ADD_SUBDIRECTORY(${SAMPLES_DIR}/${subdir})
+	IF(${BUILD_PROJECT} STREQUAL "all"  OR ${BUILD_PROJECT} STREQUAL "samples/${subdir}")
+    	ADD_SUBDIRECTORY(${SAMPLES_DIR}/${subdir})
+	ENDIF()
 ENDFOREACH()
+#ADD_SUBDIRECTORY(${SAMPLES_DIR}/filters)
 
 ###########################
 # tests
 ###########################
-enable_testing()
-#include( CTest )
-set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-SUBDIRLIST(SUBDIRS ${TEST_DIR})
-FOREACH(subdir ${SUBDIRS})
-   ADD_SUBDIRECTORY(${TEST_DIR}/${subdir})
-ENDFOREACH()
+#if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
+	enable_testing()
+	#include( CTest )
+	set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+	SUBDIRLIST(SUBDIRS ${TEST_DIR})
+	FOREACH(subdir ${SUBDIRS})
+		IF(${BUILD_PROJECT} STREQUAL "all"  OR ${BUILD_PROJECT} STREQUAL "tests/${subdir}")
+	   		ADD_SUBDIRECTORY(${TEST_DIR}/${subdir})
+	   	ENDIF()
+	ENDFOREACH()
+#endif()
 
 
 

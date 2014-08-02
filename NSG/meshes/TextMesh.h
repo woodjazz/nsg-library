@@ -33,48 +33,68 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include "FontAtlasTexture.h"
 #include "Types.h"
+#include "AppListeners.h"
 
 namespace NSG
 {
-	class App;
-	class TextMesh : public Mesh
-	{
-	public:
-		TextMesh(const std::string& textureFilename, GLenum usage);
-		~TextMesh();
-		bool Has(const std::string& textureFilename) const;
-		void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
-		GLfloat GetWidth() const { return screenWidth_; }
-		GLfloat GetHeight() const { return screenHeight_; }
-		GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
-		unsigned int GetCharacterPositionForWidth(float width) const;
-		PTexture GetTexture() const { return pAtlas_->GetTexture(); }
-		PProgram GetProgram() const { return pProgram_; }
-		GLenum GetWireFrameDrawMode() const;
-		GLenum GetSolidDrawMode() const;
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
+    class App;
+    class TextMesh : public Mesh, IViewChangedListener
+    {
+    public:
+        TextMesh(const std::string& textureFilename, GLenum usage);
+        ~TextMesh();
+        bool Has(const std::string& textureFilename) const;
+        void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
+        GLfloat GetWidth() const
+        {
+            return screenWidth_;
+        }
+        GLfloat GetHeight() const
+        {
+            return screenHeight_;
+        }
+        GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
+        unsigned int GetCharacterPositionForWidth(float width) const;
+        PTexture GetTexture() const
+        {
+            return pAtlas_->GetTexture();
+        }
+        PProgram GetProgram() const
+        {
+            return pProgram_;
+        }
+        GLenum GetWireFrameDrawMode() const override;
+        GLenum GetSolidDrawMode() const override;
+        virtual bool IsValid() override;
+        virtual void AllocateResources() override;
+        virtual void ReleaseResources() override;
+        virtual void OnViewChanged(int32_t width, int32_t height) override;
 
-        HorizontalAlignment GetTextHorizontalAlignment() const { return hAlignment_; }
-        VerticalAlignment GetTextVerticalAlignment() const { return vAlignment_; }
+        HorizontalAlignment GetTextHorizontalAlignment() const
+        {
+            return hAlignment_;
+        }
+        VerticalAlignment GetTextVerticalAlignment() const
+        {
+            return vAlignment_;
+        }
 
 
-	private:
-		void UpdateBuffers();
-		void Move(VertexsData& obj, float offsetX, float offsetY);
-		PFontAtlasTexture pAtlas_;
-		PProgram pProgram_;
+    private:
+        void UpdateBuffers();
+        void Move(VertexsData& obj, float offsetX, float offsetY);
+        PFontAtlasTexture pAtlas_;
+        PProgram pProgram_;
 
-		std::string text_;
-		GLfloat screenWidth_;
-		GLfloat screenHeight_;
-		std::string textureFilename_;
-		HorizontalAlignment hAlignment_;
-		VerticalAlignment vAlignment_;
-		float alignmentOffsetX_;
-		float alignmentOffsetY_;
-		size_t maxLength_;
-		bool isStatic_;
-	};
+        std::string text_;
+        GLfloat screenWidth_;
+        GLfloat screenHeight_;
+        std::string textureFilename_;
+        HorizontalAlignment hAlignment_;
+        VerticalAlignment vAlignment_;
+        float alignmentOffsetX_;
+        float alignmentOffsetY_;
+        size_t maxLength_;
+        bool isStatic_;
+    };
 }

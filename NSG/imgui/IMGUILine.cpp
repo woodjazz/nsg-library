@@ -34,7 +34,7 @@ namespace NSG
     namespace IMGUI
     {
         Line::Line(LineStyle& style)
-            : Object(LayoutType::CONTROL, 100, 100, style)
+            : Object(LayoutType::LINE, 100, 100, style)
         {
             if (area_->parent_->type_ == LayoutType::VERTICAL)
             {

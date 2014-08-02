@@ -35,10 +35,10 @@ namespace NSG
 		CircleMesh(float radius, int res, GLenum usage);
 		~CircleMesh();
 		void SetFilled(bool enable);
-		GLenum GetWireFrameDrawMode() const;
-		GLenum GetSolidDrawMode() const;
-		virtual void Build();
-		virtual const char* GetName() const;
+		GLenum GetWireFrameDrawMode() const override;
+		GLenum GetSolidDrawMode() const override;
+		virtual void Build() override;
+		virtual const char* GetName() const override;
 	private:
 		float radius_;
 		int res_;

@@ -159,6 +159,12 @@ struct Sample : App
     Window0 window0_;
 	IMGUI::PWindowStyle style_;
 
+    Sample()
+    {
+        AppConfiguration::this_->width_ = 320;
+        AppConfiguration::this_->height_ = 200;
+    }
+
 	void Start()
 	{
 		if (!style_)

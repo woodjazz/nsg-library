@@ -37,13 +37,14 @@ namespace NSG
 	Mesh::Mesh(GLenum usage) 
 	: pVBuffer_(nullptr),
 	pIBuffer_(nullptr),
-	usage_(usage)
+	usage_(usage),
+	bb_(Vertex3(0))
 	{
 	}
 
 	Mesh::~Mesh() 
 	{
-		Context::this_->Remove(this);
+		Context::RemoveObject(this);
 	}
 
 
@@ -206,6 +207,9 @@ namespace NSG
 		}
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		for(auto& vertex : vertexsData_)
+			bb_.Merge(vertex.position_);
 	}
 
 	void Mesh::ReleaseResources()

@@ -41,9 +41,9 @@ namespace NSG
 		bool Begin();
 		void End();
 	private:
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
+		virtual bool IsValid() override;
+		virtual void AllocateResources() override;
+		virtual void ReleaseResources() override;
 		PTexture pTexture_;
 		GLuint framebuffer_;
 		GLuint depthRenderBuffer_;
@@ -52,5 +52,7 @@ namespace NSG
 		bool createDepthBuffer_;
 		bool createDepthStencilBuffer_;
 		bool enabled_;
+        int32_t windowWidth_;
+        int32_t windowHeight_;
 	};
 }

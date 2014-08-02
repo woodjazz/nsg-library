@@ -59,15 +59,11 @@ namespace NSG
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
 		void Render(bool solid, Node* pNode, Mesh* pMesh);
-		void Render(bool solid, const std::vector<MeshNode>& meshNodes);
-
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
-
+		virtual bool IsValid() override;
+		virtual void AllocateResources() override;
+		virtual void ReleaseResources() override;
 	private:
 		void Use();
-		
 		PTexture pTexture0_;
 		PTexture pTexture1_;
 		PProgram pProgram_;

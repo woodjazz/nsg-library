@@ -38,14 +38,5 @@ namespace NSG
 			CHECK_ASSERT(Singleton::this_ == nullptr, __FILE__, __LINE__);
 			Singleton::this_ = static_cast<T*>(this);
 		}
-
-		virtual ~Singleton()
-		{
-			CHECK_ASSERT(Singleton::this_ != nullptr, __FILE__, __LINE__);
-			Singleton::this_ = nullptr;
-		}
 	};
-
-	template<typename T> 
-	T* Singleton<T>::this_ = nullptr;
 }

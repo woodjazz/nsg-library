@@ -32,6 +32,8 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
+	template <> AppStatistics* Singleton<AppStatistics>::this_ = nullptr;
+
 	AppStatistics::AppStatistics()
     : collect_(true),
 	staticVertexBuffers_(0),

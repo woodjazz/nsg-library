@@ -34,7 +34,7 @@ namespace NSG
 	releaseCalled_(false),
 	resourcesAllocated_(false)
 	{
-		Context::this_->Add(this);
+		Context::AddObject(this);
 	}
 		
 	GPUObject::~GPUObject()
@@ -56,11 +56,6 @@ namespace NSG
 
 	bool GPUObject::IsReady()
 	{
-		auto viewSize = App::this_->GetViewSize();
-
-		if(viewSize.first <= 0 || viewSize.second <= 0)
-			return false;
-		
 		if(!isValid_)
 		{
 			CHECK_GL_STATUS(__FILE__, __LINE__);

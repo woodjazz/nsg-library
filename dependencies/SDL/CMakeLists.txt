@@ -120,6 +120,5 @@ set (INSTALL_INCLUDE_DIRS ${INSTALL_INCLUDE_DIRS} SDL PARENT_SCOPE)
 # Define dependency libs
 set (INCLUDE_DIRS_ONLY include)
 
-# Setup target
-#setup_library ()
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+setup_library()
+

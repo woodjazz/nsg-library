@@ -30,6 +30,8 @@ misrepresented as being the original software.
 #include "Context.h"
 #include "Singleton.h"
 #include "IMGUI.h"
+#include "AppListeners.h"
+#include <vector>
 
 class AAssetManager;
 class ANativeActivity;
@@ -38,44 +40,62 @@ namespace pp
     class Var;
 }
 
-namespace NSG 
+namespace NSG
 {
     struct InternalApp;
-	class App : public IMGUI::IWindow, public Singleton<App>
-	{
-	public:
+    class App : public IMGUI::IWindow, public Singleton<App>
+    {
+    public:
         App();
         App(PAppConfiguration configuration);
-		virtual ~App();
-		virtual void Start() {}
-		virtual void Update() {}
-		virtual void RenderFrame() {};
-		virtual void ViewChanged(int32_t width, int32_t height) {};
+        virtual ~App();
+        virtual void Start() {}
+        virtual void Update() {}
+        virtual void RenderFrame() {};
+        virtual void ViewChanged(int32_t width, int32_t height) {};
         virtual void OnMouseMove(float x, float y) {}
         virtual void OnMouseDown(float x, float y) {}
         virtual void OnMouseWheel(float x, float y) {}
         virtual void OnMouseUp(float x, float y) {}
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
-        virtual bool ShallExit() const { return false; }
+        virtual bool ShallExit() const
+        {
+            return false;
+        }
         void DoTick(float delta);
         void SetViewSize(int32_t width, int32_t height);
         std::pair<int32_t, int32_t> GetViewSize() const;
-        float GetDeltaTime() const { return deltaTime_; }
-		virtual void HandleMessage(const pp::Var& var_message);
-		void SetAssetManager(AAssetManager* pAAssetManager) { pAAssetManager_ = pAAssetManager; }
-        AAssetManager* GetAssetManager() { return pAAssetManager_; }
+        float GetDeltaTime() const
+        {
+            return deltaTime_;
+        }
+        virtual void HandleMessage(const pp::Var& var_message);
+        void SetAssetManager(AAssetManager* pAAssetManager)
+        {
+            pAAssetManager_ = pAAssetManager;
+        }
+        AAssetManager* GetAssetManager()
+        {
+            return pAAssetManager_;
+        }
+
+        static void Add(IViewChangedListener* listener);
+        static void Remove(IViewChangedListener* listener);
 
     private:
+        void AddListener(IViewChangedListener* listener);
+        void RemoveListener(IViewChangedListener* listener);
+
         AAssetManager* pAAssetManager_;
         int32_t width_;
         int32_t height_;
-        // The time in seconds it took to complete the last frame
-        float deltaTime_;
-        Context context_;
+        float deltaTime_; // The time in seconds it took to complete the last frame
+        PContext context_;
         PAppConfiguration configuration_;
         friend struct InternalApp;
-	};
+        std::vector<IViewChangedListener*> viewChangedListeners_;
+    };
 
     struct InternalApp : public Tick
     {
@@ -88,6 +108,7 @@ namespace NSG
         void BeginTick();
         void DoTick(float delta);
         void EndTick();
+        void SetViewSize(int32_t width, int32_t height);
         void ViewChanged(int32_t width, int32_t height);
         void OnMouseMove(float x, float y);
         void OnMouseWheel(float x, float y);
@@ -98,9 +119,10 @@ namespace NSG
         void RenderFrame();
         bool ShallExit() const;
         void InvalidateGPUContext();
-		void HandleMessage(const pp::Var& var_message);
-		void SetAssetManager(AAssetManager* pAAssetManager);
+        void ReleaseResourcesFromMemory();
+        void HandleMessage(const pp::Var& var_message);
+        void SetAssetManager(AAssetManager* pAAssetManager);
         void SetActivity(ANativeActivity* pActivity);
     };
-}	
+}
 

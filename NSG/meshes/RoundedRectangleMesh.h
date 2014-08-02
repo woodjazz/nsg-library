@@ -34,10 +34,10 @@ namespace NSG
 	public:
 		RoundedRectangleMesh(float radius, float width, float height, int res, GLenum usage);
 		~RoundedRectangleMesh();
-		GLenum GetWireFrameDrawMode() const;
-		GLenum GetSolidDrawMode() const;
-		virtual void Build();
-		virtual const char* GetName() const;
+		GLenum GetWireFrameDrawMode() const override;
+		GLenum GetSolidDrawMode() const override;
+		virtual void Build() override;
+		virtual const char* GetName() const override;
 	private:
 		float radius_;
 		float width_;

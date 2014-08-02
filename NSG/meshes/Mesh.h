@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "GPUObject.h"
 #include "Resource.h"
 #include "Buffer.h"
+#include "BoundingBox.h"
 
 namespace NSG
 {
@@ -44,9 +45,10 @@ namespace NSG
 		void Render(bool solid, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc);
 		virtual GLenum GetWireFrameDrawMode() const = 0;
 		virtual GLenum GetSolidDrawMode() const = 0;
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
+		virtual bool IsValid() override;
+		virtual void AllocateResources() override;
+		virtual void ReleaseResources() override;
+		const BoundingBox& GetBB() const { return bb_; }
 	protected:
 		VertexsData vertexsData_;
 		Indexes indexes_;
@@ -56,5 +58,6 @@ namespace NSG
         PResource resource_;
         Buffer::Data* bufferVertexData_;
         Buffer::Data* bufferIndexData_;
+        BoundingBox bb_;
 	};
 }

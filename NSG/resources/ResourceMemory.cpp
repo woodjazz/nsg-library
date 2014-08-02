@@ -37,7 +37,7 @@ namespace NSG
 
 	ResourceMemory::~ResourceMemory()
 	{
-		Context::this_->Remove(this);
+		Context::RemoveResource(this);
 	}
 
 	bool ResourceMemory::IsLoaded()

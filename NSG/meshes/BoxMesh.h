@@ -30,22 +30,22 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class BoxMesh : public Mesh, public IProceduralResource
-	{
-	public:
-		BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, GLenum usage);
-		~BoxMesh();
-		GLenum GetWireFrameDrawMode() const;
-		GLenum GetSolidDrawMode() const;
-		virtual void Build();
-		virtual const char* GetName() const;
+    class BoxMesh : public Mesh, public IProceduralResource
+    {
+    public:
+        BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, GLenum usage);
+        ~BoxMesh();
+        GLenum GetWireFrameDrawMode() const override;
+        GLenum GetSolidDrawMode() const override;
+        virtual void Build() override;
+        virtual const char* GetName() const override;
 
-	private:
-		float width_;
-		float height_;
-		float depth_;
-		int resX_;
-		int resY_;
-		int resZ_;
-	};
+    private:
+        float width_;
+        float height_;
+        float depth_;
+        int resX_;
+        int resY_;
+        int resZ_;
+    };
 }

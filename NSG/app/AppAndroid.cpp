@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-#ifdef ANDROID
+#if defined(ANDROID) && !defined(SDL)
 #include "App.h"
 #include "Tick.h"
 #include "Log.h"

@@ -25,6 +25,9 @@ misrepresented as being the original software.
 */
 #include "Render2TextureBehavior.h"
 #define ENABLED 1
+
+template<> Render2TextureBehavior* Singleton<Render2TextureBehavior>::this_ = nullptr;
+
 Render2TextureBehavior::Render2TextureBehavior()
 {
 }

@@ -34,7 +34,7 @@ namespace NSG
 	Resource::Resource()
 	: loaded_(false)
 	{
-		Context::this_->Add(this);
+		Context::AddResource(this);
 	}
 
 	Resource::~Resource()

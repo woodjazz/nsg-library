@@ -5,8 +5,8 @@
 #   Usage: ${TARGET} ${OUTFILE} ${SOURCE0} ... ${SOURCE[N]}                   #
 #                                                                             #
 # ----------------------------------------------------------------------------#
-subdirs(${CMAKE_CURRENT_SOURCE_DIR}/tools/template_compiler)
-set(TCL_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/template_compiler/${CMAKE_CFG_INTDIR}/tcl)
+subdirs(${CMAKE_CURRENT_SOURCE_DIR}/tools/tcl)
+set(TCL_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/tcl/${CMAKE_CFG_INTDIR}/tcl)
 # ----------------------------------------------------------------------------#
 #                                                                             #
 # Get a list of absolute paths                                                #
@@ -43,7 +43,7 @@ macro(ADD_TEMPLATES BINARY OUT GENERATED)
 	    	COMMENT "Building ${ONAME}:${TCL_CMD}"
 	    )
 	else()
-		message("${CMAKE_CURRENT_SOURCE_DIR}/tools/template_compiler")
+		message("${CMAKE_CURRENT_SOURCE_DIR}/tools/tcl")
 		message("If needed (Build): ${ONAME}:${TCL_CMD}")
 	endif()
 

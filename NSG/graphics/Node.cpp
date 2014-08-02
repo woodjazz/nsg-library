@@ -321,7 +321,7 @@ namespace NSG
 			Update();
 
 		BoundingBox box(*this);
-		return box.IsInside(point) != Intersection::OUTSIDE;
+		return box.IsInside(point);
 	}
 
 	void Node::MarkAsDirty()

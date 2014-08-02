@@ -36,14 +36,20 @@ if "%1" == "" (
 	@exit /b 1
 )
 
+if "%2" == "" (
+	set BUILD_PROJECT="all"
+) else (
+	set BUILD_PROJECT=%2
+)
+
 cd ..
 cmake -E make_directory %1
 cd %1
 @echo "*** CONFIGURING PROJECTS ***"
-::cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_MAKE_PROGRAM="%ANDROID_NDK%/prebuilt/windows/bin/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/CMake/Toolchains/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=%CD%
-cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_MAKE_PROGRAM="%ANDROID_NDK%/prebuilt/windows/bin/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/CMake/Toolchains/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=%CD%
+::cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DBUILD_PROJECT="%BUILD_PROJECT%" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_MAKE_PROGRAM="%ANDROID_NDK%/prebuilt/windows/bin/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/CMake/Toolchains/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=%CD%
+cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DBUILD_PROJECT="%BUILD_PROJECT%" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_MAKE_PROGRAM="%ANDROID_NDK%/prebuilt/windows/bin/make.exe" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/CMake/Toolchains/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=%CD%
 
-@echo "*** MAKING ***"
+@echo "*** BUILDING %2 ***"
 %ANDROID_NDK%/prebuilt/windows/bin/make.exe 
 
 @echo "*** CLEARING LOGCAT ****"
@@ -53,7 +59,7 @@ cmd /C %ANDROID_SDK%/platform-tools/adb logcat -c
 ::cmd /C %ANDROID_SDK%/platform-tools/adb shell am start -a android.intent.action.MAIN -n com.nsg.sample000/android.app.sample000
 
 @echo "*** FILTERING LOGCAT FOR nsg-library ***"
-cmd /C %ANDROID_SDK%/platform-tools/adb logcat nsg-library *:S
+cmd /C %ANDROID_SDK%/platform-tools/adb logcat SDL nsg-library AndroidRuntime *:S
 
 
 

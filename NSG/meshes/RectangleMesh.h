@@ -34,10 +34,10 @@ namespace NSG
 	public:
 		RectangleMesh(float width, float height, GLenum usage);
 		~RectangleMesh();
-		GLenum GetWireFrameDrawMode() const;
-		GLenum GetSolidDrawMode() const;
-		virtual void Build();
-		virtual const char* GetName() const;
+		GLenum GetWireFrameDrawMode() const override;
+		GLenum GetSolidDrawMode() const override;
+		virtual void Build() override;
+		virtual const char* GetName() const override;
 	private:
 		float width_;
 		float height_;

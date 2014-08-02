@@ -25,11 +25,23 @@ misrepresented as being the original software.
 */
 #include "AppConfiguration.h"
 
-namespace NSG 
+namespace NSG
 {
-	AppConfiguration::AppConfiguration()
-	: fps_(24),
-	showStatistics_(true)
+	template<> AppConfiguration* Singleton<AppConfiguration>::this_ = nullptr;
+
+    AppConfiguration::AppConfiguration()
+        : fps_(60),
+          width_(640),
+          height_(480),
+          swapInterval_(0)
+    {
+#if IS_TARGET_MOBILE || IS_TARGET_WEB
+        swapInterval_ = -1;
+#endif
+    };
+
+	AppConfiguration::~AppConfiguration()
 	{
-	};
+		AppConfiguration::this_ = nullptr;
+	}
 }

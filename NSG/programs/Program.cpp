@@ -265,7 +265,7 @@ namespace NSG
 
 	Program::~Program()
 	{
-		Context::this_->Remove(this);
+		Context::RemoveObject(this);
 	}
 
 	GLuint Program::GetAttributeLocation(const std::string& name) 

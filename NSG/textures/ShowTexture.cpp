@@ -77,7 +77,7 @@ namespace NSG
 	ShowTexture::~ShowTexture()
 	{
         pass_ = nullptr;
-		Context::this_->Remove(this);
+		Context::RemoveObject(this);
 	}
 
 	bool ShowTexture::IsValid()

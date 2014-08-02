@@ -44,7 +44,7 @@ namespace NSG
 
 	TextureFile::~TextureFile()
 	{
-		Context::this_->Remove(this);
+		Context::RemoveObject(this);
 	}
 
 	void TextureFile::AllocateResources()

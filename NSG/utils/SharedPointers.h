@@ -29,11 +29,26 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Frustum;
+	typedef std::shared_ptr<Frustum> PFrustum;
+	
+	class Audio;
+	typedef std::unique_ptr<Audio> PAudio;
+
+	class Music;
+	typedef std::unique_ptr<Music> PMusic;
+	
+	class Sound;
+	typedef std::shared_ptr<Sound> PSound;
+
 	class Buffer;
 	typedef std::shared_ptr<Buffer> PBuffer;
 
 	class BufferManager;
 	typedef std::unique_ptr<BufferManager> PBufferManager;
+
+	struct Context;
+	typedef std::unique_ptr<Context> PContext;
 	
 	struct AppConfiguration;
 	typedef std::shared_ptr<AppConfiguration> PAppConfiguration;
@@ -55,7 +70,6 @@ namespace NSG
 
 	class Pass2Stencil;
 	typedef std::shared_ptr<Pass2Stencil> PPass2Stencil;
-
 
 	typedef std::vector<PPass> PASSES;
 

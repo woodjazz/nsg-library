@@ -42,7 +42,6 @@ namespace NSG
 		void SetBehavior(PBehavior pBehavior);
 		PBehavior GetBehavior() const { return pBehavior_; }
 		virtual void Render();
-		//virtual void Render2Select();
 	private:
 		PTechnique technique_;
 		PBehavior pBehavior_;

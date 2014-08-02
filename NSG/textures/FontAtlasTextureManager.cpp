@@ -29,12 +29,15 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	template<> FontAtlasTextureManager* Singleton<FontAtlasTextureManager>::this_ = nullptr;
+
 	FontAtlasTextureManager::FontAtlasTextureManager()
 	{
 	}
 
 	FontAtlasTextureManager::~FontAtlasTextureManager()
 	{
+		FontAtlasTextureManager::this_ = nullptr;
 	}
 
 	PFontAtlasTexture FontAtlasTextureManager::GetAtlas(const std::string& textureFilename)

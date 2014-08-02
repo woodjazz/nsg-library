@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "NSG.h"
 using namespace NSG;
-class Render2TextureBehavior : public Behavior, public Singleton<Render2TextureBehavior>
+class Render2TextureBehavior : public Singleton<Render2TextureBehavior>, public Behavior
 {
 public:
 	Render2TextureBehavior();
@@ -36,7 +36,6 @@ public:
 	void Start();
 	void Update();
 	void Render();
-	//void Render2Select();
 private:
 	PTexture pRenderedTexture_;
     PTexture pFilteredTexture_;

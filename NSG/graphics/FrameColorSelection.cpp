@@ -53,11 +53,19 @@ namespace NSG
         material_->SetProgram(PProgram(program));
         pass_->Set(material_);
         pass_->SetBlendMode(BLEND_NONE);
+        App::Add(this);
     }
 
     FrameColorSelection::~FrameColorSelection()
     {
-        Context::this_->Remove(this);
+        App::Remove(this);
+		Context::RemoveObject(this);
+    }
+
+    void FrameColorSelection::OnViewChanged(int32_t width, int32_t height)
+    {
+        windowWidth_ =  width;
+        windowHeight_ = height;
     }
 
     bool FrameColorSelection::IsValid()
@@ -67,12 +75,6 @@ namespace NSG
 
     void FrameColorSelection::AllocateResources()
     {
-        auto windowSize = App::this_->GetViewSize();
-
-        windowWidth_ = windowSize.first;
-
-        windowHeight_ = windowSize.second;
-
         CHECK_ASSERT(windowWidth_ > 0 && windowHeight_ > 0, __FILE__, __LINE__);
 
         memset(selected_, 0, sizeof(selected_));
@@ -122,7 +124,7 @@ namespace NSG
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (GL_FRAMEBUFFER_COMPLETE != status)
         {
-            TRACE_LOG("Frame buffer failed with error = 0x" << std::hex << status);
+            TRACE_LOG("Frame buffer failed with error = 0x" << std::hex << status << " in file = " << __FILE__ << " line = " << __LINE__);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
 
@@ -138,6 +140,7 @@ namespace NSG
 
         glDeleteRenderbuffers(1, &colorRenderbuffer_);
         glDeleteFramebuffers(1, &framebuffer_);
+        SetFrameBuffer(0);
     }
 
     void FrameColorSelection::Begin(float screenX, float screenY)

@@ -62,7 +62,11 @@ namespace NSG
               scrollFactorAreaX_(0),
               scrollFactorAreaY_(0)
         {
-            CHECK_ASSERT(percentageX > 0 && percentageY > 0, __FILE__, __LINE__);
+			if (percentageX < 0)
+				percentageX = 100;
+			if (percentageY < 0)
+				percentageY = 100;
+
             float scaleX = percentageX / 100.0f;
             float scaleY = percentageY / 100.0f;
             pNode->SetScale(Vertex3(scaleX, scaleY, 1));
@@ -127,10 +131,13 @@ namespace NSG
 
         bool LayoutArea::HasSizeChanged(float percentageX, float percentageY) const
         {
-            if (percentageX != percentageX_)
-                return true;
-            else if (percentageY != percentageY_)
-                return true;
+			//if (type_ != LayoutType::LINE)
+			{
+				if (percentageX != percentageX_)
+					return true;
+				else if (percentageY != percentageY_)
+					return true;
+			}
 
             return false;
         }
@@ -186,10 +193,10 @@ namespace NSG
                 pArea = PLayoutArea(new LayoutArea(id, nullptr, pRootNode_, type, percentageX, percentageY));
             }
 
-			auto it = areas_.insert(WindowManager::AREAS::value_type({ id, type }, pArea));
+            auto it = areas_.insert(WindowManager::AREAS::value_type({ id, type }, pArea));
             CHECK_ASSERT(it.second, __FILE__, __LINE__);
 
-			layoutChanged_ = true;
+            layoutChanged_ = true;
 
             return pArea;
         }
@@ -197,7 +204,7 @@ namespace NSG
         void WindowManager::Begin()
         {
             hotitem_ = 0;
-			lastId_ = static_cast<IdType>(IdsTypes::IMGUI_FIRST_VALID_ID);
+            lastId_ = static_cast<IdType>(IdsTypes::IMGUI_FIRST_VALID_ID);
             ClearStencilBuffer();
             BeginWindow();
         }
@@ -237,11 +244,11 @@ namespace NSG
 
         }
 
-		PLayoutArea WindowManager::GetArea(IdType id, LayoutType type) const
+        PLayoutArea WindowManager::GetArea(IdType id, LayoutType type) const
         {
             PLayoutArea pArea;
 
-			auto it = areas_.find(AreaKey{ id, type });
+            auto it = areas_.find(AreaKey { id, type });
 
             if (it != areas_.end())
                 pArea = it->second;
@@ -255,12 +262,12 @@ namespace NSG
 
             if (!pArea)
             {
-				CHECK_ASSERT(nestedAreas_.size() || type == LayoutType::WINDOW || type == LayoutType::HORIZONTAL || type == LayoutType::VERTICAL, __FILE__, __LINE__);
+                CHECK_ASSERT(nestedAreas_.size() || type == LayoutType::WINDOW || type == LayoutType::HORIZONTAL || type == LayoutType::VERTICAL, __FILE__, __LINE__);
                 pArea = InsertNewArea(id, type, percentageX, percentageY);
                 if (pArea->parent_)
                     RecalculateLayout(pArea->parent_);
             }
-            else if (pArea->HasSizeChanged(percentageX, percentageY))
+			else if (pArea->HasSizeChanged(percentageX, percentageY))
             {
                 pArea->percentageX_ = percentageX;
                 pArea->percentageY_ = percentageY;
@@ -276,7 +283,7 @@ namespace NSG
             return pArea;
         }
 
-		void WindowManager::BeginHorizontalArea(float percentageX, float percentageY, AreaStyle& style)
+        void WindowManager::BeginHorizontalArea(float percentageX, float percentageY, AreaStyle& style)
         {
             PArea obj = std::make_shared<Area>(LayoutType::HORIZONTAL, percentageX, percentageY, style);
             nestedAreas_.push_back(obj);
@@ -284,7 +291,7 @@ namespace NSG
 
         }
 
-		void WindowManager::BeginWindow()
+        void WindowManager::BeginWindow()
         {
             CHECK_ASSERT(currentWindow_ == nullptr, __FILE__, __LINE__);
             currentWindow_ = new IMGUI::Window(userWindow_, percentageX_, percentageY_, *style_);
@@ -299,7 +306,7 @@ namespace NSG
             currentWindow_ = nullptr;
         }
 
-		void WindowManager::BeginVerticalArea(float percentageX, float percentageY, AreaStyle& style)
+        void WindowManager::BeginVerticalArea(float percentageX, float percentageY, AreaStyle& style)
         {
             PArea obj = std::make_shared<Area>(LayoutType::VERTICAL, percentageX, percentageY, style);
             nestedAreas_.push_back(obj);
@@ -358,7 +365,7 @@ namespace NSG
                     float stepY = scaleY;
                     float stepX = scaleX;
 
-					if (area->type_ == LayoutType::VERTICAL || area->type_ == LayoutType::WINDOW)
+                    if (area->type_ == LayoutType::VERTICAL || area->type_ == LayoutType::WINDOW)
                     {
                         position.x = xPosition + stepX;
                         position.y = yPosition - stepY;
@@ -394,7 +401,7 @@ namespace NSG
             : focusedUserWindow_(App::this_),
               focusHasChanged_(false)
         {
-			Window(App::this_, 100, 100, Context::this_->pSkin_->mainWindowStyle_); // Create main window
+            Window(App::this_, 100, 100, Context::this_->pSkin_->mainWindowStyle_); // Create main window
         }
 
         void LayoutManager::RenderUserWindow()
@@ -472,17 +479,17 @@ namespace NSG
                 AppStatistics::this_->Collect(true);
         }
 
-		void LayoutManager::Window(IMGUI::IWindow* obj, float percentageX, float percentageY, PWindowStyle style)
+        void LayoutManager::Window(IMGUI::IWindow* obj, float percentageX, float percentageY, PWindowStyle style)
         {
             auto it = windowManagers_.find(obj);
             if (it == windowManagers_.end())
             {
                 PNode rootNode(new Node);
-				
-				IdType id = static_cast<IdType>(IdsTypes::IMGUI_MAIN_WINDOW_ID);
-				
-				if (!windowsSequence_.empty())
-					id = currentWindowManager_->GetValidId();
+
+                IdType id = static_cast<IdType>(IdsTypes::IMGUI_MAIN_WINDOW_ID);
+
+                if (!windowsSequence_.empty())
+                    id = currentWindowManager_->GetValidId();
 
                 PWindowManager windowManager(new WindowManager(obj, id, rootNode, percentageX, percentageY, style));
                 auto result = windowManagers_.insert(WindowManagers::value_type(obj, windowManager));
@@ -503,7 +510,7 @@ namespace NSG
             {
                 IWindow* userWindow = *(it++);
                 PWindowManager windowManager = windowManagers_.find(userWindow)->second;
-				auto itArea = windowManager->areas_.find({windowManager->id_, LayoutType::WINDOW});
+                auto itArea = windowManager->areas_.find({windowManager->id_, LayoutType::WINDOW});
                 if (itArea != windowManager->areas_.end())
                 {
                     PLayoutArea area = itArea->second;
@@ -514,7 +521,7 @@ namespace NSG
 
                         if (userWindow != App::this_)   // check it is not the main window
                         {
-							windowsSequence_.erase(std::find(windowsSequence_.begin(), windowsSequence_.end(), userWindow));
+                            windowsSequence_.erase(std::find(windowsSequence_.begin(), windowsSequence_.end(), userWindow));
                             windowsSequence_.push_back(userWindow); // move window to the end of the list (will be the last one rendered)
                         }
 

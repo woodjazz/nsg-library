@@ -29,14 +29,16 @@ misrepresented as being the original software.
 #undef main
 #endif
 
-#if ANDROID
+#if defined(ANDROID) && !defined(SDL)
 #include <android/asset_manager.h>
 #include <android/native_activity.h>
 #endif
 
 namespace NSG
 {
-#if ANDROID	
+	template<> Keyboard* Singleton<Keyboard>::this_ = nullptr;
+
+#if defined(ANDROID) && !defined(SDL)
     bool DisplayKeyboard(ANativeActivity* pActivity, bool pShow) 
     { 
         // Attaches the current thread to the JVM. 
@@ -113,14 +115,14 @@ namespace NSG
 
 	Keyboard::~Keyboard()
 	{
-
+		Keyboard::this_ = nullptr;
 	}
 
 	bool Keyboard::Enable()
 	{
-#if ANDROID	
+#if defined(ANDROID) && !defined(SDL)
 		return DisplayKeyboard(activity_, true);
-#elif SDL
+#elif defined(SDL)
 		SDL_StartTextInput();
 #endif
 		return true;
@@ -128,9 +130,9 @@ namespace NSG
 
 	bool Keyboard::Disable()
 	{
-#if ANDROID	
+#if defined(ANDROID) && !defined(SDL)
 		return DisplayKeyboard(activity_, false);
-#elif SDL
+#elif defined(SDL)
 		SDL_StopTextInput();
 #endif
 		return true;

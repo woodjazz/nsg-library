@@ -24,14 +24,14 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
 #include "Types.h"
+#include "AppListeners.h"
 #include <string>
 #include <map>
 
 namespace NSG
 {
-	class FontAtlasTexture
+	class FontAtlasTexture : public IViewChangedListener
 	{
 	public:
 		FontAtlasTexture(const std::string& filename);
@@ -41,6 +41,8 @@ namespace NSG
 		unsigned int GetCharacterPositionForWidth(const char* text, float width);
 		bool IsReady();
 		PTexture GetTexture() const { return texture_; }
+		virtual void OnViewChanged(int32_t width, int32_t height) override;
+
 	private:
         void ParseXML();
         PTexture texture_;

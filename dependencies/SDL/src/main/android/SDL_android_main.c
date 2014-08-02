@@ -1,3 +1,4 @@
+#if 0
 /*
     SDL_android_main.c, placed in the public domain by Sam Lantinga  3/13/14
 */
@@ -18,6 +19,7 @@
 extern void SDL_Android_Init(JNIEnv* env, jclass cls, jstring filesDir);
 
 /* Start up the SDL app */
+
 void Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jstring filesDir)
 {
     /* This interface could expand with ABI negotiation, calbacks, etc. */
@@ -37,5 +39,5 @@ void Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jstring
 }
 
 #endif /* __ANDROID__ */
-
+#endif
 /* vi: set ts=4 sw=4 expandtab: */

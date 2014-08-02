@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <string>
+#include <algorithm>
 #include "Types.h"
 #include "Check.h"
 
@@ -32,4 +33,24 @@ namespace NSG
 {
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
 	void ReplaceChar(std::string& source, char from, char to);
+	std::string GetLowercaseFileExtension(const std::string& filename);
+	
+	template<typename T> 
+	T Clamp(T value, T lower, T upper)
+	{
+		return std::max(lower, std::min(value, upper));
+	}
+
+	inline unsigned NextPowerOfTwo(unsigned value)
+	{
+	    unsigned ret = 1;
+	    while (ret < value && ret < 0x80000000)
+	        ret <<= 1;
+	    return ret;
+	}
+
+	inline float Abs(float value) 
+	{ 
+		return value >= 0.0f ? value : -value; 
+	}
 }

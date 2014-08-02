@@ -28,6 +28,9 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include "Check.h"
 #include "Graphics.h"
+#include "Camera.h"
+#include "BoundingBox.h"
+#include "Frustum.h"
 
 namespace NSG
 {
@@ -162,7 +165,15 @@ namespace NSG
 			SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_, stencilFunc_, stencilRefValue_, stencilMaskValue_);
 			SetBlendModeTest(blendMode_);
 			SetDepthTest(enableDepthTest_, enableDepthBuffer_);
-			material_->Render(drawMode_ == SOLID, meshNodes_);
+			const Camera* camera = Camera::GetActiveCamera();
+			for(auto& meshNode : meshNodes_)
+			{
+				Node* node = meshNode.first.get();
+				Mesh* mesh = meshNode.second.get();
+
+				//if (!camera || camera->IsVisible(*node, *mesh))
+					material_->Render(drawMode_ == SOLID, node, mesh);
+			}
 		}
 	}
 }

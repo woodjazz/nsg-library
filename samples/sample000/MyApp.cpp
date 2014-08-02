@@ -41,7 +41,8 @@ using namespace NSG;
 
 MyApp::MyApp() 
 {
-	
+	AppConfiguration::this_->width_ = 50;
+	AppConfiguration::this_->height_ = 50;
 }
 
 MyApp::~MyApp() 

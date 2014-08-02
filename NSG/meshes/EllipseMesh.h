@@ -34,9 +34,9 @@ namespace NSG
 	public:
 		EllipseMesh(float width, float height, int res, GLenum usage);
 		~EllipseMesh();
-		GLenum GetWireFrameDrawMode() const;
-		GLenum GetSolidDrawMode() const;
-		virtual void Build();
+		GLenum GetWireFrameDrawMode() const override;
+		GLenum GetSolidDrawMode() const override;
+		virtual void Build() override;
 		virtual const char* GetName() const;
 	private:
 		float width_;

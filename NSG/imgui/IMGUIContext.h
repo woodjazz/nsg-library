@@ -48,7 +48,6 @@ namespace NSG
 			~Context();
 			void RenderGUI();
 			bool IsReady() const;
-			//PTextMesh GetCurrentTextMesh(const std::string& data);
 			IdType GetValidId();
 		};
 	}

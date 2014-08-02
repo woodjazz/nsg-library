@@ -33,23 +33,40 @@ misrepresented as being the original software.
 #include "IMGUIContext.h"
 #include "Graphics.h"
 #include "BufferManager.h"
+#include "Audio.h"
 
 namespace NSG
 {
-	Context::Context()
-	:// pFrameColorSelection_(new FrameColorSelection(false)),
-	atlasManager_(new FontAtlasTextureManager),
-	imgui_(new IMGUI::Context),
-	keyboard_(new Keyboard),
-	bufferManager_(new BufferManager)
-	{
-	}
-		
-	Context::~Context()
-	{
-		atlasManager_ = nullptr;
-	}
+	template<> Context* Singleton<Context>::this_ = nullptr;
 
+    Context::Context()
+        : atlasManager_(new FontAtlasTextureManager),
+        imgui_(new IMGUI::Context),
+        keyboard_(new Keyboard),
+        bufferManager_(new BufferManager)
+    {
+    }
+
+    Context::~Context()
+    {
+		Context::this_ = nullptr;
+        atlasManager_ = nullptr;
+    }
+
+	void Context::AddObject(GPUObject* object)
+    {
+		if (Context::this_)
+			Context::this_->Add(object);
+    }
+
+	void Context::RemoveObject(GPUObject* object)
+    {
+		object->Release();
+
+		if (Context::this_)
+			Context::this_->Remove(object);
+	}
+	
 	void Context::Add(GPUObject* object)
 	{
 		auto result = objects_.insert(object);
@@ -59,71 +76,86 @@ namespace NSG
 
 	void Context::Remove(GPUObject* object)
 	{
-		object->Release();
 		auto result = objects_.erase(object);
 		CHECK_ASSERT(result && "Context::Remove has failed in file", __FILE__, __LINE__);
 	}
 
-	void Context::InvalidateGPUResources()
-	{
+    void Context::InvalidateGPUResources()
+    {
         TRACE_LOG("Context::InvalidateGPUResources...");
 
-		auto it = objects_.begin();
-		while(it != objects_.end())
-		{
-			(*it)->Invalidate();
-			++it;
-		}
+        auto it = objects_.begin();
+        while (it != objects_.end())
+        {
+            (*it)->Invalidate();
+            ++it;
+        }
 
-		bufferManager_->Invalidate();
+        bufferManager_->Invalidate();
 
-		//atlasManager_->Invalidate();
-
-		ResetCachedState();
+        ResetCachedState();
 
         TRACE_LOG("Context::InvalidateGPUResources done");
+    }
+
+	void Context::AddResource(Resource* object)
+	{
+		if (Context::this_)
+			Context::this_->Add(object);
 	}
 
-	void Context::Add(Resource* object)
+	void Context::RemoveResource(Resource* object)
 	{
-		auto result = resources_.insert(object);
-
-		CHECK_ASSERT(result.second && "Context::Add has failed in file", __FILE__, __LINE__);
+		if (Context::this_)
+			Context::this_->Remove(object);
 	}
 
-	void Context::Remove(Resource* object)
-	{
-		auto result = resources_.erase(object);
-		CHECK_ASSERT(result && "Context::Remove has failed in file", __FILE__, __LINE__);
-	}
 
-	void Context::ReleaseResourcesFromMemory()
-	{
+    void Context::Add(Resource* object)
+    {
+        auto result = resources_.insert(object);
+
+        CHECK_ASSERT(result.second && "Context::Add has failed in file", __FILE__, __LINE__);
+    }
+
+    void Context::Remove(Resource* object)
+    {
+        auto result = resources_.erase(object);
+        CHECK_ASSERT(result && "Context::Remove has failed in file", __FILE__, __LINE__);
+    }
+
+    void Context::ReleaseResourcesFromMemory()
+    {
         TRACE_LOG("Context::ReleaseResourcesFromMemory...");
 
-		auto it = resources_.begin();
-		while(it != resources_.end())
-		{
-			(*it)->Invalidate();
-			++it;
-		}
+        auto it = resources_.begin();
+        while (it != resources_.end())
+        {
+            (*it)->Invalidate();
+            ++it;
+        }
 
         TRACE_LOG("Context::ReleaseResourcesFromMemory done");
-	}
+    }
 
-	PTexture Context::GetWhiteTexture()
-	{
-		if(!whiteTexture_)
-		{
-			const int WIDTH = 1;
-			const int HEIGHT = 1;
-			// Creates 1x1 white texture 
-			static unsigned char img[WIDTH*HEIGHT*3];
-			memset(&img[0], 0xFF, sizeof(img));
-	        whiteTexture_ = PTexture(new TextureMemory(GL_RGB, WIDTH, HEIGHT, (char*)&img[0]));
-	        TRACE_LOG("White texture has been generated.")
-	    }
+    PTexture Context::GetWhiteTexture()
+    {
+        if (!whiteTexture_)
+        {
+            const int WIDTH = 1;
+            const int HEIGHT = 1;
+            // Creates 1x1 white texture
+            static unsigned char img[WIDTH * HEIGHT * 3];
+            memset(&img[0], 0xFF, sizeof(img));
+            whiteTexture_ = PTexture(new TextureMemory(GL_RGB, WIDTH, HEIGHT, (char*)&img[0]));
+            TRACE_LOG("White texture has been generated.")
+        }
 
-	    return whiteTexture_;
-	}
+        return whiteTexture_;
+    }
+
+    void Context::Initialize()
+    {
+        audio_ = PAudio(new Audio);
+    }
 }

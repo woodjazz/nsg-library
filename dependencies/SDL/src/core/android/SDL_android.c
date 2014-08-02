@@ -168,6 +168,30 @@ void SDL_Android_Init(JNIEnv* mEnv, jclass cls, jstring filesDir)
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init() finished!");
 }
 
+
+#if 1
+void Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jstring filesDir)
+{
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "nativeInit begin");
+    /* This interface could expand with ABI negotiation, calbacks, etc. */
+    SDL_Android_Init(env, cls, filesDir);
+
+    SDL_SetMainReady();
+
+    /* Run the application code! */
+    int status;
+    char *argv[2];
+    argv[0] = SDL_strdup("SDL_app");
+    argv[1] = NULL;
+    status = SDL_main(1, argv);
+
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "nativeInit end");
+
+    /* Do not issue an exit or the whole application will terminate instead of just the SDL thread */
+    /* exit(status); */
+}
+#endif
+
 /* Resize */
 void Java_org_libsdl_app_SDLActivity_onNativeResize(
                                     JNIEnv* env, jclass jcls,

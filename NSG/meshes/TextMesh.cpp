@@ -30,225 +30,242 @@ misrepresented as being the original software.
 #include "BufferManager.h"
 #include "Graphics.h"
 #include "Context.h"
+#include "App.h"
 #include <algorithm>
 
 static const char* vShader = STRINGIFY(
-	uniform mat4 u_mvp;
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec2 v_texcoord;
-	
-	void main() 
-	{
-		gl_Position = u_mvp * a_position;
-		v_texcoord = a_texcoord;
-	}
-);
+                                 uniform mat4 u_mvp;
+                                 attribute vec4 a_position;
+                                 attribute vec2 a_texcoord;
+                                 varying vec2 v_texcoord;
+
+                                 void main()
+{
+    gl_Position = u_mvp * a_position;
+    v_texcoord = a_texcoord;
+}
+                             );
 
 static const char* fShader = STRINGIFY(
-	varying vec2 v_texcoord;
-	uniform sampler2D u_texture0;
-	uniform vec4 u_color;
-	void main()
-	{
-		gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a) * vec4(u_color.x, u_color.y, u_color.z, 1.0);
-	}
-);
+                                 varying vec2 v_texcoord;
+                                 uniform sampler2D u_texture0;
+                                 uniform vec4 u_color;
+                                 void main()
+{
+    gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a) * vec4(u_color.x, u_color.y, u_color.z, 1.0);
+}
+                             );
 
 namespace NSG
 {
-	TextMesh::TextMesh(const std::string& textureFilename, GLenum usage)
-	: Mesh(usage),
-	pProgram_(new Program(vShader, fShader)),
-	screenWidth_(0),
-	screenHeight_(0),
-	textureFilename_(textureFilename),
-	hAlignment_(LEFT_ALIGNMENT),
-	vAlignment_(BOTTOM_ALIGNMENT),
-	alignmentOffsetX_(0),
-	alignmentOffsetY_(0),
-	maxLength_(0),
-	isStatic_(usage == GL_STATIC_DRAW)
+    TextMesh::TextMesh(const std::string& textureFilename, GLenum usage)
+        : Mesh(usage),
+          pProgram_(new Program(vShader, fShader)),
+          screenWidth_(0),
+          screenHeight_(0),
+          textureFilename_(textureFilename),
+          hAlignment_(LEFT_ALIGNMENT),
+          vAlignment_(BOTTOM_ALIGNMENT),
+          alignmentOffsetX_(0),
+          alignmentOffsetY_(0),
+          maxLength_(0),
+          isStatic_(usage == GL_STATIC_DRAW)
     {
-		pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
-	}
+        pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
+        App::Add(this);
+    }
 
-	TextMesh::~TextMesh() 
-	{
-	}
+    TextMesh::~TextMesh()
+    {
+    	App::Remove(this);
+    }
 
-	bool TextMesh::Has(const std::string& textureFilename) const
-	{
-		return textureFilename_ == textureFilename;
-	}
+    bool TextMesh::Has(const std::string& textureFilename) const
+    {
+        return textureFilename_ == textureFilename;
+    }
 
-	bool TextMesh::IsValid()
-	{
+    bool TextMesh::IsValid()
+    {
         return pProgram_->IsReady() && pAtlas_->IsReady() && !vertexsData_.empty();
-	}
+    }
 
-	void TextMesh::UpdateBuffers()
-	{
-		CHECK_ASSERT(!isStatic_ && "Trying to update an static buffer", __FILE__, __LINE__);
+    void TextMesh::UpdateBuffers()
+    {
+        CHECK_ASSERT(!isStatic_ && "Trying to update an static buffer", __FILE__, __LINE__);
 
-		if (vertexsData_.empty())
-			return;
+        if (vertexsData_.empty())
+            return;
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		CHECK_ASSERT(pVBuffer_ && bufferVertexData_, __FILE__, __LINE__);
-		CHECK_ASSERT(pIBuffer_ && bufferIndexData_, __FILE__, __LINE__);
-		CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
-		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
+        CHECK_ASSERT(pVBuffer_ && bufferVertexData_, __FILE__, __LINE__);
+        CHECK_ASSERT(pIBuffer_ && bufferIndexData_, __FILE__, __LINE__);
+        CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
+        CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
 
-		VertexsData tmpVertexData(vertexsData_);
-		Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
+        VertexsData tmpVertexData(vertexsData_);
+        Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
 
-		pVBuffer_->UpdateData(*bufferVertexData_, tmpVertexData);
-		
-		Indexes tmpIndexes(indexes_);
-		
-		GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
+        pVBuffer_->UpdateData(*bufferVertexData_, tmpVertexData);
 
-		if(indexBase)
-			std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType& x) { x += indexBase; CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__); });
+        Indexes tmpIndexes(indexes_);
 
-		pIBuffer_->UpdateData(*bufferIndexData_, tmpIndexes);
+        GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
+        if (indexBase)
+            std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType & x)
+        {
+            x += indexBase;
+            CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__);
+        });
 
-	
-	void TextMesh::AllocateResources()
-	{
-		CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
-		CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
+        pIBuffer_->UpdateData(*bufferIndexData_, tmpIndexes);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-		CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
-		CHECK_ASSERT(!pVBuffer_, __FILE__, __LINE__);
-		CHECK_ASSERT(!pIBuffer_, __FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
 
-		VertexsData tmpVertexData(vertexsData_);
-		Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
-		Indexes tmpIndexes(indexes_);
 
-		const size_t VERTEX_PER_CHAR = 6;
-		const GLsizeiptr MAX_BYTES_VERTEX_BUFFER = VERTEX_PER_CHAR * maxLength_ * sizeof(VertexData);
-		GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
-		CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
-		if(isStatic_)
-			pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
-		else
-			pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
+    void TextMesh::AllocateResources()
+    {
+        CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
+        CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
 
-		bufferVertexData_ = pVBuffer_->GetLastAllocation();
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
+        CHECK_ASSERT(!pVBuffer_, __FILE__, __LINE__);
+        CHECK_ASSERT(!pIBuffer_, __FILE__, __LINE__);
 
-		const size_t INDEXES_PER_CHAR = 6;
-		const GLsizeiptr MAX_BYTES_INDEX_BUFFER = INDEXES_PER_CHAR * maxLength_ * sizeof(IndexType);
-		bytesNeeded = sizeof(IndexType) * indexes_.size();
-		CHECK_ASSERT(bytesNeeded <= MAX_BYTES_INDEX_BUFFER, __FILE__, __LINE__);
-		if (bufferVertexData_)
-		{
-			GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
-			if(indexBase)
-				std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType& x) { x += indexBase; CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__); });
-		}
-		if(isStatic_)
-			pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
-		else
-			pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
+        VertexsData tmpVertexData(vertexsData_);
+        Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
+        Indexes tmpIndexes(indexes_);
 
-		bufferIndexData_ = pIBuffer_->GetLastAllocation();
+        const size_t VERTEX_PER_CHAR = 6;
+        const GLsizeiptr MAX_BYTES_VERTEX_BUFFER = VERTEX_PER_CHAR * maxLength_ * sizeof(VertexData);
+        GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
+        CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
+        if (isStatic_)
+            pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
+        else
+            pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
-	
-	void TextMesh::ReleaseResources()
-	{
-		Mesh::ReleaseResources();
+        bufferVertexData_ = pVBuffer_->GetLastAllocation();
 
-		text_.clear(); // Force SetText (when window's resizes)
-	}
-	
-	GLfloat TextMesh::GetWidthForCharacterPosition(unsigned int charPos) const
-	{
-		return pAtlas_->GetWidthForCharacterPosition(text_.c_str(), charPos);
-	}
+        const size_t INDEXES_PER_CHAR = 6;
+        const GLsizeiptr MAX_BYTES_INDEX_BUFFER = INDEXES_PER_CHAR * maxLength_ * sizeof(IndexType);
+        bytesNeeded = sizeof(IndexType) * indexes_.size();
+        CHECK_ASSERT(bytesNeeded <= MAX_BYTES_INDEX_BUFFER, __FILE__, __LINE__);
+        if (bufferVertexData_)
+        {
+            GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
+            if (indexBase)
+                std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType & x)
+            {
+                x += indexBase;
+                CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__);
+            });
+        }
+        if (isStatic_)
+            pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
+        else
+            pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
 
-	unsigned int TextMesh::GetCharacterPositionForWidth(float width) const
-	{
-		return pAtlas_->GetCharacterPositionForWidth(text_.c_str(), width);
-	}
+        bufferIndexData_ = pIBuffer_->GetLastAllocation();
 
-	void TextMesh::Move(VertexsData& obj, float offsetX, float offsetY)
-	{
-		auto it = obj.begin();
-		while(it != obj.end())
-		{
-			VertexData& data = *it;
-			data.position_.x += offsetX;
-			data.position_.y += offsetY;
-			++it;
-		}
-	}
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
 
-	void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
-	{
-		if(text.size() > maxLength_)
-		{
-			maxLength_ = text.size();
-			Invalidate();
-			return;
-		}
+    void TextMesh::ReleaseResources()
+    {
+        Mesh::ReleaseResources();
 
-		bool changed = false;
-		
-		if (text_ != text)
-		{
-			if (pAtlas_->GenerateMesh(text, vertexsData_, indexes_, screenWidth_, screenHeight_))
-			{
-				text_ = text;
+        text_.clear(); // Force SetText (when window's resizes)
+    }
 
-				changed = true;
-			}
-		}
-		
-		if (changed || hAlign != hAlignment_ || vAlign != vAlignment_)
-		{
-			if (hAlign == CENTER_ALIGNMENT)
-				alignmentOffsetX_ = -screenWidth_ / 2;
-			else if (hAlign == RIGHT_ALIGNMENT)
-				alignmentOffsetX_ = -screenWidth_;
-			else
-				alignmentOffsetX_ = 0;
+    GLfloat TextMesh::GetWidthForCharacterPosition(unsigned int charPos) const
+    {
+        return pAtlas_->GetWidthForCharacterPosition(text_.c_str(), charPos);
+    }
 
-			if (vAlign == MIDDLE_ALIGNMENT)
-				alignmentOffsetY_ = screenHeight_/2;
-			else if (vAlign == TOP_ALIGNMENT)
-				alignmentOffsetY_ = -screenHeight_;
-			else
-				alignmentOffsetY_ = screenHeight_;
+    unsigned int TextMesh::GetCharacterPositionForWidth(float width) const
+    {
+        return pAtlas_->GetCharacterPositionForWidth(text_.c_str(), width);
+    }
 
-			hAlignment_ = hAlign;
-			vAlignment_ = vAlign;
+    void TextMesh::Move(VertexsData& obj, float offsetX, float offsetY)
+    {
+        auto it = obj.begin();
+        while (it != obj.end())
+        {
+            VertexData& data = *it;
+            data.position_.x += offsetX;
+            data.position_.y += offsetY;
+            ++it;
+        }
+    }
 
-			changed = true;
-		}
+    void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
+    {
+        if (text.size() > maxLength_)
+        {
+            maxLength_ = text.size();
+            Invalidate();
+            return;
+        }
 
-		if (changed && IsReady())
-		{
-			UpdateBuffers();
-		}
-	}	
+        bool changed = false;
 
-	GLenum TextMesh::GetWireFrameDrawMode() const
-	{
-		return GL_LINE_LOOP;
-	}
+        if (text_ != text)
+        {
+            if (pAtlas_->GenerateMesh(text, vertexsData_, indexes_, screenWidth_, screenHeight_))
+            {
+                text_ = text;
 
-	GLenum TextMesh::GetSolidDrawMode() const
-	{
-		return GL_TRIANGLES;
-	}
+                changed = true;
+            }
+        }
+
+        if (changed || hAlign != hAlignment_ || vAlign != vAlignment_)
+        {
+            if (hAlign == CENTER_ALIGNMENT)
+                alignmentOffsetX_ = -screenWidth_ / 2;
+            else if (hAlign == RIGHT_ALIGNMENT)
+                alignmentOffsetX_ = -screenWidth_;
+            else
+                alignmentOffsetX_ = 0;
+
+            if (vAlign == MIDDLE_ALIGNMENT)
+                alignmentOffsetY_ = screenHeight_ / 2;
+            else if (vAlign == TOP_ALIGNMENT)
+                alignmentOffsetY_ = -screenHeight_;
+            else
+                alignmentOffsetY_ = screenHeight_;
+
+            hAlignment_ = hAlign;
+            vAlignment_ = vAlign;
+
+            changed = true;
+        }
+
+        if (changed && IsReady())
+        {
+            UpdateBuffers();
+        }
+    }
+
+    GLenum TextMesh::GetWireFrameDrawMode() const
+    {
+        return GL_LINE_LOOP;
+    }
+
+    GLenum TextMesh::GetSolidDrawMode() const
+    {
+        return GL_TRIANGLES;
+    }
+
+    void TextMesh::OnViewChanged(int32_t width, int32_t height)
+    {
+        Invalidate();
+    }
+
 }

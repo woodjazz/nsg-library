@@ -45,10 +45,13 @@ misrepresented as being the original software.
 namespace NSG
 {
     typedef glm::highp_ivec4 Recti;
-    typedef glm::vec4 Vertex4;
     typedef glm::vec4 Rect;
+    typedef glm::vec4 Vertex4;
+    typedef glm::vec4 Vector4;
     typedef glm::vec3 Vertex3;
+    typedef glm::vec3 Vector3;
     typedef glm::vec2 Vertex2;
+    typedef glm::vec2 Vector2;
     typedef glm::quat Quaternion;
     typedef glm::mat4 Matrix4;
     typedef glm::mat3 Matrix3;
@@ -69,7 +72,8 @@ namespace NSG
             VERTICAL,
             HORIZONTAL,
             CONTROL,
-            SPACER
+            SPACER,
+			LINE
         };
 
         enum class IdsTypes : IdType

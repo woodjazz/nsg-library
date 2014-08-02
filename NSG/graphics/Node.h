@@ -60,6 +60,7 @@ namespace NSG
 		void SetInheritScale(bool inherit);
 		bool IsPointInsideBB(const Vertex3& point) const;
 		Node* GetChild(size_t idx) const { return children_.at(idx); }
+		bool IsDirty() const { return dirty_; }
     protected:
 		PNode pParent_;
         std::vector<Node*> children_;

@@ -37,7 +37,7 @@ namespace NSG
 
 	ResourceProcedural::~ResourceProcedural()
 	{
-		Context::this_->Remove(this);
+		Context::RemoveResource(this);
 	}
 
 	bool ResourceProcedural::IsLoaded()

@@ -82,23 +82,4 @@ namespace NSG
         }
 
 	}
-
-#if 0
-	void SceneNode::Render2Select()
-	{
-        if(technique_)
-        {
-	        Context::this_->pFrameColorSelection_->Render(this, technique_);
-
-            auto it = children_.begin();
-            while(it != children_.end())
-            {
-                SceneNode* p = static_cast<SceneNode*>(*it);
-                CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
-                p->Render2Select();
-                ++it;
-            }
-        }
-	}
-#endif	
 }

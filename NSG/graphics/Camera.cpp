@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Camera.h"
 #include "App.h"
+#include "Frustum.h"
 
 namespace NSG
 {
@@ -39,12 +40,17 @@ namespace NSG
 	xf_(1),
 	yf_(1),
 	isOrtho_(false),
-	dirty_(true)
+	dirty_(true),
+	viewWidth_(0),
+	viewHeight_(0),
+	aspectRatio_(1)
 	{
+		App::Add(this);
 	}
 
 	Camera::~Camera() 
 	{
+		App::Remove(this);
 	}
 
 	void Camera::Update() const
@@ -136,11 +142,7 @@ namespace NSG
 
 	Recti Camera::GetViewport() const
 	{
-	    auto viewSize = App::this_->GetViewSize();
-	    auto width = viewSize.first;
-	    auto height = viewSize.second;
-
-		return Recti((GLsizei)(width * xo_), (GLsizei)(height * yo_), (GLsizei)(width * xf_), (GLsizei)(height * yf_));
+		return Recti((GLsizei)(viewWidth_ * xo_), (GLsizei)(viewHeight_ * yo_), (GLsizei)(viewWidth_ * xf_), (GLsizei)(viewHeight_ * yf_));
 	}
 
 	void Camera::Activate()
@@ -152,29 +154,41 @@ namespace NSG
 		glViewport(viewport.x, viewport.y, viewport.z, viewport.w);		
 	}
 
+	bool Camera::IsDirty() const
+	{
+		return Node::IsDirty() || dirty_;
+	}
+
+	const PFrustum Camera::GetFrustum() const
+	{
+		if (IsDirty() || !frustum_)
+		{
+	        Matrix4 worldTransform = GetGlobalModelMatrix();
+        
+	        if (isOrtho_)
+	            frustum_ = PFrustum(new Frustum(worldTransform, 1, aspectRatio_, zNear_, zFar_));
+	        else
+	        	frustum_ = PFrustum(new Frustum(fovy_, aspectRatio_, zNear_, zFar_, worldTransform));
+	    }
+
+	    return frustum_;
+	}
+
+
 	void Camera::UpdateProjection() const
 	{
-		auto viewSize = App::this_->GetViewSize();
-		auto width = viewSize.first;
-		auto height = viewSize.second;
-
-		if(width > 0 && height > 0)
+        if(isOrtho_)
         {
-            if(isOrtho_)
-            {
-                matProjection_ = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f,  zNear_, zFar_);
-            }
-            else
-            {
-                float aspect_ratio = static_cast<float>(width) / height;
-            
-                assert(zNear_ > 0);
-
-		        matProjection_ = glm::perspective(fovy_, aspect_ratio, zNear_, zFar_);
-            }
-        
-            UpdateViewProjection();
+            matProjection_ = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f,  zNear_, zFar_);
         }
+        else
+        {
+            CHECK_ASSERT(zNear_ > 0, __FILE__, __LINE__);
+
+	        matProjection_ = glm::perspective(fovy_, aspectRatio_, zNear_, zFar_);
+        }
+    
+        UpdateViewProjection();
 	}
 
     void Camera::OnUpdate() const
@@ -247,5 +261,20 @@ namespace NSG
     {
 		Vertex4 screenCoord = matViewProjection_ * Vertex4(worldXYZ, 1);
 		return Vertex3(screenCoord.x/screenCoord.w, screenCoord.y/screenCoord.w, screenCoord.z/screenCoord.w);
+    }
+
+    void Camera::OnViewChanged(int32_t width, int32_t height)
+    {
+    	viewWidth_ = width;
+    	viewHeight_ = height;
+		if (viewHeight_ > 0)
+			aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
+		else
+			aspectRatio_ = 1;
+    }
+
+    bool Camera::IsVisible(const Node& node, Mesh& mesh) const
+    {
+		return GetFrustum()->IsVisible(node, mesh);
     }
 }

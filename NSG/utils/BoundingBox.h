@@ -28,18 +28,21 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class BoundingBox
+	struct BoundingBox
 	{
-	public:
-		BoundingBox(const Vertex3& min, const Vertex3& max);
-		BoundingBox(const Node& node);
-		~BoundingBox();
-		Intersection IsInside(const BoundingBox& box) const;
-		Intersection IsInside(const Vertex3& point) const;
-	private:
 		Vertex3 min_;
 		Vertex3 max_;
 
+		BoundingBox(const Vertex3& min, const Vertex3& max);
+    	BoundingBox(const Vector3& point);
+		BoundingBox(const Node& node);
+		~BoundingBox();
+	    void Merge(const Vector3& point);
+	    void Transform(const Node& node);
+		Intersection IsInside(const BoundingBox& box) const;
+		bool IsInside(const Vertex3& point) const;
+	    Vector3 Center() const { return (max_ + min_) * 0.5f; }
+	    Vector3 Size() const { return max_ - min_; }
 	};
 
 }

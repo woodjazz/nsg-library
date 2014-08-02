@@ -34,10 +34,10 @@ namespace NSG
 	public:
 		SphereMesh(float radius, int res, GLenum usage);
 		~SphereMesh();
-		GLenum GetWireFrameDrawMode() const;
-		GLenum GetSolidDrawMode() const;
-		virtual void Build();
-		virtual const char* GetName() const;
+		GLenum GetWireFrameDrawMode() const override;
+		GLenum GetSolidDrawMode() const override;
+		virtual void Build() override;
+		virtual const char* GetName() const override;
 	private:
 		float radius_;
 		int res_;
