@@ -70,6 +70,7 @@ misrepresented as being the original software.
 #include "ProgramPerVertex.h"
 #include "ProgramUnlit.h"
 #include "ProgramWhiteColor.h"
+#include "ProgramSimpleColor.h"
 #include "AppConfiguration.h"
 #include "AppStatistics.h"
 #include "Sound.h"

@@ -69,6 +69,8 @@ macro (setup_common)
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -x objective-c")
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "libc++")
             set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+            set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+            set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
         else()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
         endif()
@@ -116,6 +118,16 @@ macro (setup_common)
     endif()
 
 endmacro (setup_common)
+
+macro (setup_common_ios_properties)
+    if(IOS)
+        # Maybe you want to change these
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "5.1")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_VALID_ARCHS "armv7;armv7s")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")
+    endif()
+endmacro (setup_common_ios_properties)
 
 ##################################################################################
 ##################################################################################
@@ -231,10 +243,9 @@ macro (setup_executable)
 
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
+        setup_common_ios_properties()
+
         if(IOS)
-            #set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "5.1")
-            set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
-            #set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_VALID_ARCHS "armv7")
             set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioToolbox -framework CoreAudio -framework CoreGraphics -framework Foundation -framework OpenGLES -framework QuartzCore -framework UIKit")
         else()
             set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioUnit -framework Carbon -framework Cocoa -framework CoreAudio -framework ForceFeedback -framework IOKit -framework OpenGL -framework CoreServices")
@@ -299,11 +310,7 @@ endmacro (setup_tool)
 ##################################################################################
 macro (setup_library)
     add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${src} ${hdr} ${assets})
-    if(IOS)
-        #set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "5.1")
-        #set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
-        #set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_VALID_ARCHS "armv7")
-    endif()    
+    setup_common_ios_properties()
 endmacro (setup_library)
 
 ##################################################################################

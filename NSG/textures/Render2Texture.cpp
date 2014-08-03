@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Render2Texture.h"
+#include "SDL.h"
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
@@ -74,8 +75,8 @@ namespace NSG
 			// The depth stencil buffer
 			glGenRenderbuffers(1, &depthStencilRenderBuffer_);
 			glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
-#if defined(GLES2)      
-			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, pTexture_->GetWidth(), pTexture_->GetHeight());
+#if defined(GLES2)    
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, pTexture_->GetWidth(), pTexture_->GetHeight());	
 #else
 			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_EXT, pTexture_->GetWidth(), pTexture_->GetHeight());
 #endif
