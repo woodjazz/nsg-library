@@ -41,6 +41,7 @@ namespace NSG
 		GLsizei GetWidth() const { return width_; }
 		GLsizei GetHeight() const { return height_; }
 		GLint GetFormat() const { return format_; }
+		int GetChannels() const { return channels_; }
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;

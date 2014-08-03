@@ -1,4 +1,4 @@
-	/*
+/*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
@@ -23,38 +23,59 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
+#include "CameraBehavior.h"
 
-#include "GLES2Includes.h"
-#include "GPUObject.h"
-#include "SharedPointers.h"
-#include "Types.h"
-
-namespace NSG
+CameraBehavior::CameraBehavior()
 {
-	class App;
-	class Render2Texture : public GPUObject
-	{
-	public:
-		Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer);
-		~Render2Texture();
-		bool Begin();
-		void End();
-		PTexture GetTexture() const { return pTexture_; }
-	private:
-		virtual bool IsValid() override;
-		virtual void AllocateResources() override;
-		virtual void ReleaseResources() override;
-		PTexture pTexture_;
-		PTexture depthTexture_; 
-		GLuint framebuffer_;
-		GLuint depthRenderBuffer_;
-		GLuint depthStencilRenderBuffer_;
-		Recti viewport_;
-		bool createDepthBuffer_;
-		bool createDepthStencilBuffer_;
-		bool enabled_;
-        int32_t windowWidth_;
-        int32_t windowHeight_;
-	};
 }
+	
+CameraBehavior::~CameraBehavior()
+{
+}
+
+void CameraBehavior::Start()
+{
+	camControlPoints_.push_back(Vertex3(-10.0f, 0.0f, 0.0f)); 
+    camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 10.0f));
+	camControlPoints_.push_back(Vertex3(10.0f, 0.0f, 0.0f));
+	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
+
+    pSceneNode_->SetPosition(Vertex3(0,0,10));
+    pSceneNode_->SetLookAt(Vertex3(0));
+
+}
+
+void CameraBehavior::Update()
+{
+#if 1
+    float deltaTime = App::this_->GetDeltaTime();
+
+    static float delta1 = 0;
+
+	Vertex3 position = glm::catmullRom(
+        camControlPoints_[0],
+        camControlPoints_[1],
+        camControlPoints_[2],
+        camControlPoints_[3],
+		delta1);
+
+    pSceneNode_->SetPosition(position);
+    pSceneNode_->SetLookAt(Vertex3(0));
+
+    delta1 += deltaTime * 0.1f;
+
+    if(delta1 > 1)
+    {
+    	delta1 = 0;
+        Vertex3 p = camControlPoints_.front();
+        camControlPoints_.pop_front();
+        camControlPoints_.push_back(p);
+    }
+#endif
+}
+
+void CameraBehavior::Render()
+{
+	pSceneNode_->Render();
+}
+

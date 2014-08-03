@@ -1,5 +1,6 @@
 #include "Light.h"
 #include "Log.h"
+#include "Check.h"
 #include "Resource.h"
 #include <assert.h>
 #include <algorithm>
@@ -25,7 +26,7 @@ namespace NSG
 	Light::~Light()
 	{
 		auto it = std::find(s_Lights.begin(), s_Lights.end(), this);
-		assert(it != s_Lights.end());
+		CHECK_ASSERT(it != s_Lights.end(), __FILE__, __LINE__);
 		s_Lights.erase(it);
 	}
 

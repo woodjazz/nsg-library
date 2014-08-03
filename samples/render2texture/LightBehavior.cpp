@@ -1,4 +1,4 @@
-	/*
+/*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
@@ -23,38 +23,42 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
+#include "LightBehavior.h"
 
-#include "GLES2Includes.h"
-#include "GPUObject.h"
-#include "SharedPointers.h"
-#include "Types.h"
-
-namespace NSG
+LightBehavior::LightBehavior()
 {
-	class App;
-	class Render2Texture : public GPUObject
-	{
-	public:
-		Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer);
-		~Render2Texture();
-		bool Begin();
-		void End();
-		PTexture GetTexture() const { return pTexture_; }
-	private:
-		virtual bool IsValid() override;
-		virtual void AllocateResources() override;
-		virtual void ReleaseResources() override;
-		PTexture pTexture_;
-		PTexture depthTexture_; 
-		GLuint framebuffer_;
-		GLuint depthRenderBuffer_;
-		GLuint depthStencilRenderBuffer_;
-		Recti viewport_;
-		bool createDepthBuffer_;
-		bool createDepthStencilBuffer_;
-		bool enabled_;
-        int32_t windowWidth_;
-        int32_t windowHeight_;
-	};
 }
+
+LightBehavior::~LightBehavior()
+{
+
+}
+
+void LightBehavior::Start()
+{
+    PMaterial pMaterial(new Material);
+    pMaterial->SetColor(Color(1,0,0,1));
+    PProgram pProgram(new ProgramSimpleColor);
+    pMaterial->SetProgram(pProgram);
+    PTechnique technique(new Technique);
+    PPass pass(new Pass);
+    pass->Set(pMaterial);
+    technique->Add(pass);
+
+    pSceneNode_->Set(technique);
+
+    PMesh pMesh(new SphereMesh(0.2f, 16, GL_STATIC_DRAW));
+    pass->Add(pSceneNode_, pMesh);
+
+    pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
+}
+
+void LightBehavior::Update()
+{
+}
+
+void LightBehavior::Render()
+{
+    //pSceneNode_->Render();
+}
+

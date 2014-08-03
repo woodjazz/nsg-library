@@ -1,4 +1,4 @@
-	/*
+/*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
@@ -24,37 +24,20 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
-#include "GLES2Includes.h"
-#include "GPUObject.h"
-#include "SharedPointers.h"
-#include "Types.h"
-
-namespace NSG
+#include "NSG.h"
+#include <deque>
+using namespace NSG;
+class CameraBehavior : public Behavior
 {
-	class App;
-	class Render2Texture : public GPUObject
-	{
-	public:
-		Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer);
-		~Render2Texture();
-		bool Begin();
-		void End();
-		PTexture GetTexture() const { return pTexture_; }
-	private:
-		virtual bool IsValid() override;
-		virtual void AllocateResources() override;
-		virtual void ReleaseResources() override;
-		PTexture pTexture_;
-		PTexture depthTexture_; 
-		GLuint framebuffer_;
-		GLuint depthRenderBuffer_;
-		GLuint depthStencilRenderBuffer_;
-		Recti viewport_;
-		bool createDepthBuffer_;
-		bool createDepthStencilBuffer_;
-		bool enabled_;
-        int32_t windowWidth_;
-        int32_t windowHeight_;
-	};
-}
+public:
+	CameraBehavior();
+	~CameraBehavior();
+
+	void Start();
+	void Update();
+	void Render();
+
+private:
+    std::deque<Vertex3> camControlPoints_;
+
+};
