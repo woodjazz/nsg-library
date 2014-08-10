@@ -36,7 +36,6 @@ namespace NSG
 	public:
 		Texture(); 
 		virtual ~Texture();
-		void Bind() { glBindTexture(GL_TEXTURE_2D, texture_); }
 		GLuint GetID() const { return texture_; }
 		GLsizei GetWidth() const { return width_; }
 		GLsizei GetHeight() const { return height_; }
@@ -52,6 +51,7 @@ namespace NSG
 		GLsizei width_;
 		GLsizei height_;
 		GLint format_;
+		GLenum type_;
 		int channels_;
 
 		friend class BindTexture;

@@ -33,339 +33,358 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	static const unsigned MAX_TEXTURE_UNITS = 8;
+    static const unsigned MAX_TEXTURE_UNITS = 8;
+ 
+    static const bool DEFAULT_STENCIL_ENABLE = false;
+    static const GLuint DEFAULT_STENCIL_WRITEMASK = ~GLuint(0);
+    static const GLenum DEFAULT_STENCIL_SFAIL = GL_KEEP;
+    static const GLenum DEFAULT_STENCIL_DPFAIL = GL_KEEP;
+    static const GLenum DEFAULT_STENCIL_DPPASS = GL_KEEP;
+    static const GLenum DEFAULT_STENCIL_FUNC = GL_ALWAYS;
+    static const GLint DEFAULT_STENCIL_REF = 0;
+    static const GLuint DEFAULT_STENCIL_COMPAREMASK = ~GLuint(0);
 
-	static const bool DEFAULT_STENCIL_ENABLE = false;
-	static const GLuint DEFAULT_STENCIL_WRITEMASK = ~GLuint(0);
-	static const GLenum DEFAULT_STENCIL_SFAIL = GL_KEEP;
-	static const GLenum DEFAULT_STENCIL_DPFAIL = GL_KEEP;
-	static const GLenum DEFAULT_STENCIL_DPPASS = GL_KEEP;
-	static const GLenum DEFAULT_STENCIL_FUNC = GL_ALWAYS;
-	static const GLint DEFAULT_STENCIL_REF = 0;
-	static const GLuint DEFAULT_STENCIL_COMPAREMASK = ~GLuint(0);
+    static const bool DEFAULT_COLOR_MASK = true;
 
-	static const bool DEFAULT_COLOR_MASK = true;
+    static const BLEND_MODE DEFAULT_BLEND_MODE = BLEND_NONE;
 
-	static const BLEND_MODE DEFAULT_BLEND_MODE = BLEND_NONE;
+    static const bool DEFAULT_DEPTH_TEST_ENABLE = false;
+    static const bool DEFAULT_DEPTH_BUFFER_ENABLE = true;
 
-	static const bool DEFAULT_DEPTH_TEST_ENABLE = false;
-	static const bool DEFAULT_DEPTH_BUFFER_ENABLE = true;
+    static const bool DEFAULT_CULL_FACE_ENABLE = false;
 
-	static const bool DEFAULT_CULL_FACE_ENABLE = false;
+    bool CheckExtension(const std::string& name)
+    {
+        std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
+        return extensions.find(name) != std::string::npos;
+    }
 
-	void ResetCachedState()
-	{
-		SetFrameBuffer(0);
-		SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL, 
-			DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
-		SetColorMask(DEFAULT_COLOR_MASK);
-		SetBlendModeTest(DEFAULT_BLEND_MODE);
-		SetDepthTest(DEFAULT_DEPTH_TEST_ENABLE, DEFAULT_DEPTH_BUFFER_ENABLE);
-		SetCullFace(DEFAULT_CULL_FACE_ENABLE);
-		for(unsigned idx=0; idx<MAX_TEXTURE_UNITS; idx++)
-			SetTexture(idx, nullptr);
+    void ResetCachedState()
+    {
+        SetFrameBuffer(0);
+        SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL,
+                       DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
+        SetColorMask(DEFAULT_COLOR_MASK);
+        SetBlendModeTest(DEFAULT_BLEND_MODE);
+        SetDepthTest(DEFAULT_DEPTH_TEST_ENABLE, DEFAULT_DEPTH_BUFFER_ENABLE);
+        SetCullFace(DEFAULT_CULL_FACE_ENABLE);
+        for (unsigned idx = 0; idx < MAX_TEXTURE_UNITS; idx++)
+            SetTexture(idx, nullptr);
 
-		SetVertexBuffer(nullptr);
-		SetIndexBuffer(nullptr);
-		VertexBuffer::UnBind();
-		IndexBuffer::UnBind();
+        SetVertexBuffer(nullptr);
+        SetIndexBuffer(nullptr);
+        VertexBuffer::UnBind();
+        IndexBuffer::UnBind();
 
-		SetProgram(nullptr);
-	}
+        SetProgram(nullptr);
+    }
 
-	static GLuint frameBuffer_ = 0;
-	void SetFrameBuffer(GLuint value)
-	{
-		if(value != frameBuffer_)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, value);
-			frameBuffer_ = value;	
-		}
-	}
+    static GLuint frameBuffer_ = 0;
+#if IOS
+    static bool iosHack_ = false;
+    static GLint iosSystemFbo = 0;
+#endif
+    void SetFrameBuffer(GLuint value)
+    {
+#if IOS
+        if (!iosHack_)
+        {
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &iosSystemFbo);
+            iosHack_ = true;
+        }
 
+        if (value == 0)
+            value = iosSystemFbo;
+#endif
+        if (value != frameBuffer_)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, value);
+            frameBuffer_ = value;
+        }
+    }
 
-	void ClearAllBuffers()
-	{
+    void ClearAllBuffers()
+    {
         glClearColor(0, 0, 0, 1);
         glClearDepth(1);
         glClearStencil(0);
 
-		SetColorMask(true);
+        SetColorMask(true);
         glDepthMask(GL_TRUE);
         glStencilMask(~GLuint(0));
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
+    }
 
-	void ClearBuffers(bool color, bool depth, bool stencil)
-	{
-		GLbitfield mask(0);
-		if(color)
-		{
-			mask |= GL_COLOR_BUFFER_BIT;
-			glClearColor(0, 0, 0, 1);
-			SetColorMask(true);
-		}
+    void ClearBuffers(bool color, bool depth, bool stencil)
+    {
+        GLbitfield mask(0);
+        if (color)
+        {
+            mask |= GL_COLOR_BUFFER_BIT;
+            glClearColor(0, 0, 0, 1);
+            SetColorMask(true);
+        }
 
-		if(depth)
-		{
-			mask |= GL_DEPTH_BUFFER_BIT;
-			glClearDepth(1);
-			glDepthMask(GL_TRUE);
-		}
+        if (depth)
+        {
+            mask |= GL_DEPTH_BUFFER_BIT;
+            glClearDepth(1);
+            glDepthMask(GL_TRUE);
+        }
 
-		if(stencil)
-		{
-			mask |= GL_STENCIL_BUFFER_BIT;
-			glClearStencil(0);
-			glStencilMask(~GLuint(0));
-		}
+        if (stencil)
+        {
+            mask |= GL_STENCIL_BUFFER_BIT;
+            glClearStencil(0);
+            glStencilMask(~GLuint(0));
+        }
 
-		glClear(mask);
-	}
+        glClear(mask);
+    }
 
-	void ClearStencilBuffer(GLint value)
-	{
-		glClearStencil(value);
-		glStencilMask(~GLuint(0));
-		glClear(GL_STENCIL_BUFFER_BIT);
-	}
+    void ClearStencilBuffer(GLint value)
+    {
+        glClearStencil(value);
+        glStencilMask(~GLuint(0));
+        glClear(GL_STENCIL_BUFFER_BIT);
+    }
 
-	void SetStencilTest(bool enable, GLuint writeMask, GLenum sfail, GLenum dpfail, GLenum dppass, GLenum func, GLint ref, GLuint compareMask)
-	{
-		static bool enable_ = DEFAULT_STENCIL_ENABLE;
-		static GLuint writeMask_ = DEFAULT_STENCIL_WRITEMASK;
-		static GLenum sfail_ = DEFAULT_STENCIL_SFAIL;
-		static GLenum dpfail_ = DEFAULT_STENCIL_DPFAIL;
-		static GLenum dppass_ = DEFAULT_STENCIL_DPPASS;
-		static GLenum func_ = DEFAULT_STENCIL_FUNC;
-		static GLint ref_ = DEFAULT_STENCIL_REF;
-		static GLuint compareMask_ = DEFAULT_STENCIL_COMPAREMASK;
+    void SetStencilTest(bool enable, GLuint writeMask, GLenum sfail, GLenum dpfail, GLenum dppass, GLenum func, GLint ref, GLuint compareMask)
+    {
+        static bool enable_ = DEFAULT_STENCIL_ENABLE;
+        static GLuint writeMask_ = DEFAULT_STENCIL_WRITEMASK;
+        static GLenum sfail_ = DEFAULT_STENCIL_SFAIL;
+        static GLenum dpfail_ = DEFAULT_STENCIL_DPFAIL;
+        static GLenum dppass_ = DEFAULT_STENCIL_DPPASS;
+        static GLenum func_ = DEFAULT_STENCIL_FUNC;
+        static GLint ref_ = DEFAULT_STENCIL_REF;
+        static GLuint compareMask_ = DEFAULT_STENCIL_COMPAREMASK;
 
-	    if (enable != enable_)
-	    {
-	        if (enable)
-	            glEnable(GL_STENCIL_TEST);
-	        else
-	            glDisable(GL_STENCIL_TEST);
-	        
-	        enable_ = enable;
-	    }
-	    
-	    if(enable)
-	    {
-	        if(func != func_ || ref != ref_ || compareMask != compareMask_)
-	        {
-	            glStencilFunc(func, ref, compareMask);
-	            func_ = func;
-	            ref_ = ref;
-	            compareMask_ = compareMask;
-	        }
-	        if (writeMask != writeMask_)
-	        {
-	            glStencilMask(writeMask);
-	            writeMask_ = writeMask;
-	        }
-	        if (sfail != sfail_ || dpfail != dpfail_ || dppass != dppass_)
-	        {
-	            glStencilOp(sfail, dpfail, dppass);
-	            sfail_ = sfail;
-	            dpfail_ = dpfail;
-	            dppass_ = dppass;
-	        }
-	    }
-	}
+        if (enable != enable_)
+        {
+            if (enable)
+                glEnable(GL_STENCIL_TEST);
+            else
+                glDisable(GL_STENCIL_TEST);
 
-	static GLuint colorMaskFrameBuffer_ = frameBuffer_;
-	void SetColorMask(bool enable)
-	{
-		static bool enable_ = DEFAULT_COLOR_MASK;
+            enable_ = enable;
+        }
 
-		if(enable != enable_ || colorMaskFrameBuffer_ != frameBuffer_)
-		{
-			if(enable)
-				glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			else
-				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        if (enable)
+        {
+            if (func != func_ || ref != ref_ || compareMask != compareMask_)
+            {
+                glStencilFunc(func, ref, compareMask);
+                func_ = func;
+                ref_ = ref;
+                compareMask_ = compareMask;
+            }
+            if (writeMask != writeMask_)
+            {
+                glStencilMask(writeMask);
+                writeMask_ = writeMask;
+            }
+            if (sfail != sfail_ || dpfail != dpfail_ || dppass != dppass_)
+            {
+                glStencilOp(sfail, dpfail, dppass);
+                sfail_ = sfail;
+                dpfail_ = dpfail;
+                dppass_ = dppass;
+            }
+        }
+    }
 
-			enable_ = enable;
-			colorMaskFrameBuffer_ = frameBuffer_;
-		}
-	}
+    static GLuint colorMaskFrameBuffer_ = frameBuffer_;
+    void SetColorMask(bool enable)
+    {
+        static bool enable_ = DEFAULT_COLOR_MASK;
 
-	void SetBlendModeTest(BLEND_MODE blendMode)
-	{
-		static BLEND_MODE blendMode_ = DEFAULT_BLEND_MODE;
+        if (enable != enable_ || colorMaskFrameBuffer_ != frameBuffer_)
+        {
+            if (enable)
+                glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+            else
+                glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-		if(blendMode != blendMode_)
-		{
-			switch(blendMode)
-			{
-				case BLEND_NONE:
-			    	glDisable(GL_BLEND);
-			    	break;
+            enable_ = enable;
+            colorMaskFrameBuffer_ = frameBuffer_;
+        }
+    }
 
-			    case BLEND_ALPHA:
-			    	glEnable(GL_BLEND);
-			    	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			    	break;
+    void SetBlendModeTest(BLEND_MODE blendMode)
+    {
+        static BLEND_MODE blendMode_ = DEFAULT_BLEND_MODE;
 
-			    default:
-			    	CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
-			    	break;
-			}
+        if (blendMode != blendMode_)
+        {
+            switch (blendMode)
+            {
+            case BLEND_NONE:
+                glDisable(GL_BLEND);
+                break;
 
-			blendMode_ = blendMode;
-		}
-	}
+            case BLEND_ALPHA:
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                break;
 
-	void SetDepthTest(bool enableDepthTest, bool enableDepthBuffer)
-	{
-		static bool enableDepthTest_ = DEFAULT_DEPTH_TEST_ENABLE;
-		static bool enableDepthBuffer_ = DEFAULT_DEPTH_BUFFER_ENABLE;
+            default:
+                CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
+                break;
+            }
 
-		if(enableDepthTest != enableDepthTest_)
-		{
-			if(enableDepthTest)
-				glEnable(GL_DEPTH_TEST);
+            blendMode_ = blendMode;
+        }
+    }
+
+    void SetDepthTest(bool enableDepthTest, bool enableDepthBuffer)
+    {
+        static bool enableDepthTest_ = DEFAULT_DEPTH_TEST_ENABLE;
+        static bool enableDepthBuffer_ = DEFAULT_DEPTH_BUFFER_ENABLE;
+
+        if (enableDepthTest != enableDepthTest_)
+        {
+            if (enableDepthTest)
+                glEnable(GL_DEPTH_TEST);
             else
                 glDisable(GL_DEPTH_TEST);
 
-			enableDepthTest_ = enableDepthTest;
-		}
+            enableDepthTest_ = enableDepthTest;
+        }
 
-		if(enableDepthBuffer != enableDepthBuffer_)
-		{
-			if(enableDepthBuffer)
-				glDepthMask(GL_TRUE);
-			else
-				glDepthMask(GL_FALSE);
+        if (enableDepthBuffer != enableDepthBuffer_)
+        {
+            if (enableDepthBuffer)
+                glDepthMask(GL_TRUE);
+            else
+                glDepthMask(GL_FALSE);
 
-			enableDepthBuffer_ = enableDepthBuffer;
-		}
-	}
+            enableDepthBuffer_ = enableDepthBuffer;
+        }
+    }
 
-	void SetCullFace(bool enable)
-	{
-		static bool enable_ = DEFAULT_CULL_FACE_ENABLE;
+    void SetCullFace(bool enable)
+    {
+        static bool enable_ = DEFAULT_CULL_FACE_ENABLE;
 
-		if(enable != enable_)
-		{
-			if(enable)
-			{
-				glEnable(GL_CULL_FACE);
-				//glCullFace(GL_FRONT);
-			}
-			else
-			{
-				glDisable(GL_CULL_FACE);
-			}
+        if (enable != enable_)
+        {
+            if (enable)
+            {
+                glEnable(GL_CULL_FACE);
+                //glCullFace(GL_FRONT);
+            }
+            else
+            {
+                glDisable(GL_CULL_FACE);
+            }
 
-			enable_ = enable;
-		}
-	}
+            enable_ = enable;
+        }
+    }
 
-	void SetTexture(unsigned index, Texture* texture)
-	{
-	    if (index >= MAX_TEXTURE_UNITS)
-	        return;
-	    
-	    static Texture* textures_[MAX_TEXTURE_UNITS];
+    void SetTexture(unsigned index, Texture* texture)
+    {
+        if (index >= MAX_TEXTURE_UNITS)
+            return;
 
-	    static bool init_ = false;
+        static Texture* textures_[MAX_TEXTURE_UNITS];
 
-	    if(!init_)
-	    {
-	    	memset(&textures_[0], 0, sizeof(textures_));
-	    	init_ = true;
-	    }
+        static bool init_ = false;
 
-	    static unsigned activeTexture_ = 0;
+        if (!init_)
+        {
+            memset(&textures_[0], 0, sizeof(textures_));
+            init_ = true;
+        }
 
-	    if(textures_[index] != texture)
-	    {
-	        if(activeTexture_ != index)
-	        {
-	            glActiveTexture(GL_TEXTURE0 + index);
-	            activeTexture_ = index;
-	        }
-	        
-	        if(texture)
-	        {
-	            glBindTexture(GL_TEXTURE_2D, texture->GetID());
-	        }
-	        else
-	        {
-				glBindTexture(GL_TEXTURE_2D, 0);
-	        }
-	        
-	        textures_[index] = texture;
-	    }
-	}
+        static unsigned activeTexture_ = 0;
 
-	static VertexBuffer* vertexBuffer_ = nullptr;
-	bool SetVertexBuffer(VertexBuffer* buffer)
-	{
-		if(buffer != vertexBuffer_)
-		{
+        if (textures_[index] != texture)
+        {
+            if (activeTexture_ != index)
+            {
+                glActiveTexture(GL_TEXTURE0 + index);
+                activeTexture_ = index;
+            }
+
+            if (texture)
+            {
+                glBindTexture(GL_TEXTURE_2D, texture->GetID());
+            }
+            else
+            {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+
+            textures_[index] = texture;
+        }
+    }
+
+    static VertexBuffer* vertexBuffer_ = nullptr;
+    bool SetVertexBuffer(VertexBuffer* buffer)
+    {
+        if (buffer != vertexBuffer_)
+        {
             vertexBuffer_ = buffer;
 
-            if(buffer)
+            if (buffer)
             {
-			    buffer->Bind();
-    			return true;
+                buffer->Bind();
+                return true;
             }
-		}
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	VertexBuffer* GetVertexBuffer()
-	{
-		return vertexBuffer_;
-	}
+    VertexBuffer* GetVertexBuffer()
+    {
+        return vertexBuffer_;
+    }
 
-	static IndexBuffer* indexBuffer_ = nullptr;
-	bool SetIndexBuffer(IndexBuffer* buffer)
-	{
-		if(buffer != indexBuffer_)
-		{
+    static IndexBuffer* indexBuffer_ = nullptr;
+    bool SetIndexBuffer(IndexBuffer* buffer)
+    {
+        if (buffer != indexBuffer_)
+        {
             indexBuffer_ = buffer;
-            if(buffer)
+            if (buffer)
             {
-			    buffer->Bind();
-    			return true;
+                buffer->Bind();
+                return true;
             }
-  
-		}
 
-		return false;
-	}
+        }
 
-	IndexBuffer* GetIndexBuffer()
-	{
-		return indexBuffer_;
-	}
+        return false;
+    }
 
-	static Program* program_ = nullptr;
-	void SetProgram(Program* program)
-	{
-		if(program != program_)
-		{
+    IndexBuffer* GetIndexBuffer()
+    {
+        return indexBuffer_;
+    }
+
+    static Program* program_ = nullptr;
+    void SetProgram(Program* program)
+    {
+        if (program != program_)
+        {
             program_ = program;
-            if(program)
+            if (program)
             {
-			    program->Bind();
+                program->Bind();
             }
             else
             {
                 glUseProgram(0);
             }
-		}
-	}
+        }
+    }
 
-	Program* GetProgram()
-	{
-		return program_;
-	}
+    Program* GetProgram()
+    {
+        return program_;
+    }
 
 }

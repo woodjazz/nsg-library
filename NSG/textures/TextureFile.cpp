@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "ResourceFile.h"
 #include "Context.h"
+#include "Graphics.h"
 
 namespace NSG
 {
@@ -68,7 +69,7 @@ namespace NSG
             CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
         }
 
-        glBindTexture(GL_TEXTURE_2D, texture_);
+		SetTexture(0, this);
 
 		glTexImage2D(GL_TEXTURE_2D,
 			0,
@@ -77,10 +78,11 @@ namespace NSG
 			height_,
 			0,
 			format_,
-			GL_UNSIGNED_BYTE,
+			type_,
 			img);
 
-		glBindTexture(GL_TEXTURE_2D, 0);
+		SetTexture(0, nullptr);
+
 
 		SOIL_free_image_data(img);
 	}

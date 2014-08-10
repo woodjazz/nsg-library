@@ -39,7 +39,7 @@ EarthBehavior::~EarthBehavior()
 
 void EarthBehavior::Start()
 {
-	PTexture texture(new TextureMemory(GL_RGBA, 768, 1024, nullptr));
+	PTexture texture(new TextureMemory(GL_RGBA, 512, 512, nullptr));
 	showTexture_.SetNormal(texture);
 	render2texture_ = PRender2Texture(new Render2Texture(texture, true, false));
 

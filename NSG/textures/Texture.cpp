@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Context.h"
 #include "Resource.h"
 #include "Check.h"
+#include "Graphics.h"
 
 namespace NSG
 {
@@ -35,7 +36,8 @@ namespace NSG
 	width_(0),
 	height_(0),
 	format_(GL_RGBA),
-	channels_(0)
+	channels_(0),
+	type_(GL_UNSIGNED_BYTE)
 	{
 	}
 
@@ -51,12 +53,16 @@ namespace NSG
 	void Texture::AllocateResources()
 	{
 		glGenTextures(1, &texture_);
-		glBindTexture(GL_TEXTURE_2D, texture_);
+		
+		SetTexture(0, this);
+
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		SetTexture(0, nullptr);
 	}
 
 	void Texture::ReleaseResources()

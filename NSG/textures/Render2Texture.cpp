@@ -38,11 +38,14 @@ namespace NSG
 {
     Render2Texture::Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer)
         : pTexture_(pTexture),
+          depthRenderBuffer_(0),
+          depthStencilRenderBuffer_(0),
           createDepthBuffer_(createDepthBuffer),
           createDepthStencilBuffer_(createDepthStencilBuffer),
           enabled_(false),
           windowWidth_(0),
-          windowHeight_(0)
+          windowHeight_(0),
+          has_discard_framebuffer_(false)
     {
     }
 
@@ -62,6 +65,9 @@ namespace NSG
 
         CHECK_ASSERT(pTexture_ != nullptr, __FILE__, __LINE__);
 
+        if (CheckExtension("EXT_discard_framebuffer"))
+             has_discard_framebuffer_ = true;
+ 
         GLint width  = pTexture_->GetWidth();
         GLint height = pTexture_->GetHeight();
         //glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
@@ -91,17 +97,30 @@ namespace NSG
         }
         else if (createDepthBuffer_)
         {
-        	#if 1
+#if IOS
+            if (CheckExtension("GL_OES_depth_texture"))
+            {
+                depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width, height, nullptr));
+                if (depthTexture_->IsReady())
+                {
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
+                }
+                else
+                {
+                    CHECK_ASSERT(!"Failed to create depth texture!!!", __FILE__, __LINE__);
+                }
+            }
+            else
+            {
+                CHECK_ASSERT(!"Extension: GL_OES_depth_texture not found!", __FILE__, __LINE__);
+            }
+#else
             // The depth buffer
             glGenRenderbuffers(1, &depthRenderBuffer_);
             glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
-            #else
-            depthTexture_ = PTexture(new TextureMemory(pTexture_->GetFormat(), width, height, nullptr));
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
-
-            #endif
+#endif
         }
 
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -118,9 +137,9 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        if (createDepthStencilBuffer_)
+        if (depthStencilRenderBuffer_)
             glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
-        else if (createDepthBuffer_)
+        else if (depthRenderBuffer_)
             glDeleteRenderbuffers(1, &depthRenderBuffer_);
 
         glDeleteFramebuffers(1, &framebuffer_);
@@ -144,25 +163,12 @@ namespace NSG
 
             glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
 
-            if(createDepthStencilBuffer_)
-            	ClearAllBuffers();
-            else if(createDepthBuffer_)
-            {
-            	if(depthTexture_)
-            	{
-            		SetTexture(0, depthTexture_.get());
-                    GLint width = depthTexture_->GetWidth();
-                    GLint height = depthTexture_->GetHeight();
-					std::vector<GLubyte> emptyData(width * height * depthTexture_->GetChannels(), 0);
-	        		//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, depthTexture_->GetFormat(), GL_UNSIGNED_BYTE, &emptyData[0]);
-            	}
-            	else
-            	{	
-            		ClearBuffers(true, true, false);
-            	}
-            }
+            if (createDepthStencilBuffer_)
+                ClearAllBuffers();
+            else if (createDepthBuffer_)
+                ClearBuffers(true, true, false);
             else
-            	ClearBuffers(true, false, false);
+                ClearBuffers(true, false, false);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -178,6 +184,12 @@ namespace NSG
         if (IsReady() && enabled_)
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
+
+            /*if(has_discard_framebuffer_)
+            {
+                const GLenum discards[]  = {GL_DEPTH_ATTACHMENT};
+                glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, discards);
+            }*/
 
             SetFrameBuffer(0);
 

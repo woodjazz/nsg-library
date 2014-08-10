@@ -27,76 +27,82 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "ResourceMemory.h"
 #include "Context.h"
+#include "Graphics.h"
 #include <vector>
 
 namespace NSG
 {
-	TextureMemory::TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels) 
-	{
-	    width_ = width;
-	    height_ = height;
-	    format_ = format;
+    TextureMemory::TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels)
+    {
+        width_ = width;
+        height_ = height;
+        format_ = format;
 
-       	switch(format_)
-    	{
-    		case GL_ALPHA:
-    		case GL_LUMINANCE:
-    			channels_ = 1;
-    			break;
-    		case GL_LUMINANCE_ALPHA:
-    			channels_ = 2;
-    			break;
-    		case GL_RGB:
-    			channels_ = 3;
-    			break;
-    		case GL_RGBA:
-    			channels_ = 4;
-    			break;
-    		default:
-    			CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
-    			break; 
-    	}	   
-
-		pResource_ = PResource(new ResourceMemory(pixels, width*height*channels_));
-
-	}
-
-	TextureMemory::~TextureMemory()
-	{
-		Context::RemoveObject(this);
-	}
-
-	void TextureMemory::AllocateResources()
-	{
-		Texture::AllocateResources();
-
-		const char* data = nullptr;
-
-		if(pResource_->GetBytes())
-		{
-			CHECK_ASSERT(width_*height_*channels_ == pResource_->GetBytes(), __FILE__, __LINE__);
-			data = pResource_->GetData();
-        }
-
-		glBindTexture(GL_TEXTURE_2D, texture_);
-
-		glTexImage2D(GL_TEXTURE_2D,
-			0,
-			format_,
-			width_,
-			height_,
-			0,
-			format_,
-			GL_UNSIGNED_BYTE,
-			data);
-
-
-        if(data == nullptr)
+        switch (format_)
         {
-	        std::vector<GLubyte> emptyData(width_ * height_ * channels_, 0);
-	        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width_, height_, format_, GL_UNSIGNED_BYTE, &emptyData[0]);		
+        case GL_ALPHA:
+        case GL_LUMINANCE:
+            channels_ = 1;
+            break;
+        case GL_LUMINANCE_ALPHA:
+            channels_ = 2;
+            break;
+        case GL_RGB:
+            channels_ = 3;
+            break;
+        case GL_RGBA:
+            channels_ = 4;
+            break;
+        case GL_DEPTH_COMPONENT:
+            channels_ = 0;
+            type_ = GL_UNSIGNED_INT;
+            break;
+        default:
+            CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
+            break;
         }
 
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
+        pResource_ = PResource(new ResourceMemory(pixels, width * height * channels_));
+
+    }
+
+    TextureMemory::~TextureMemory()
+    {
+        Context::RemoveObject(this);
+    }
+
+    void TextureMemory::AllocateResources()
+    {
+        Texture::AllocateResources();
+
+        const char* data = nullptr;
+
+        if (pResource_->GetBytes())
+        {
+            CHECK_ASSERT(width_ * height_ * channels_ == pResource_->GetBytes(), __FILE__, __LINE__);
+            data = pResource_->GetData();
+        }
+
+        SetTexture(0, this);
+
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     format_,
+                     width_,
+                     height_,
+                     0,
+                     format_,
+                     type_,
+                     data);
+
+#if 0
+        if (data == nullptr)
+        {
+            std::vector<GLubyte> emptyData(width_ * height_ * channels_, 0);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width_, height_, format_, GL_UNSIGNED_BYTE, &emptyData[0]);
+        }
+#endif
+
+        SetTexture(0, nullptr);
+    }
 }

@@ -50,6 +50,7 @@ namespace NSG
     static int width = 0;
     static int height = 0;
     static bool minimized = false;
+    static SDL_Window* win = nullptr;
 
     static void RenderFrame(void* data = nullptr)
     {
@@ -70,7 +71,6 @@ namespace NSG
                 case SDL_WINDOWEVENT_RESIZED:
                 case SDL_WINDOWEVENT_RESTORED:
                 {
-                    SDL_Window* win = static_cast<SDL_Window*>(data);
                     minimized = false;
                     SDL_GetWindowSize(win, &width, &height);
                     app->ViewChanged(width, height);
@@ -211,7 +211,6 @@ namespace NSG
         if (!minimized)
         {
             app->RenderFrame();
-            SDL_Window* win = static_cast<SDL_Window*>(data);
             SDL_GL_SwapWindow(win);
         }
 #endif
@@ -244,12 +243,14 @@ namespace NSG
         const int CONTEXT_MINOR_VERSION = 0;
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, DOUBLE_BUFFER);
+        //#ifndef GL_ES_VERSION_2_0
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, DEPTH_SIZE);
         SDL_GL_SetAttribute(SDL_GL_RED_SIZE, RED_SIZE);
         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, GREEN_SIZE);
         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, BLUE_SIZE);
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, ALPHA_SIZE);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, STENCIL_SIZE);
+        //#endif
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, CONTEXT_MAJOR_VERSION);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CONTEXT_MINOR_VERSION);
 
@@ -271,7 +272,7 @@ namespace NSG
         }
 
 #else
-        SDL_Window* win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+        win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
 
         if (win == nullptr)
         {
@@ -293,22 +294,24 @@ namespace NSG
         int value = 0;
         SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
         CHECK_ASSERT(value == DOUBLE_BUFFER, __FILE__, __LINE__);
+//#ifndef GL_ES_VERSION_2_0
         SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-		CHECK_ASSERT(value == DEPTH_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == DEPTH_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
-		CHECK_ASSERT(value == RED_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == RED_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
-		CHECK_ASSERT(value == GREEN_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == GREEN_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
-		CHECK_ASSERT(value == BLUE_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == BLUE_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &value);
-		CHECK_ASSERT(value == ALPHA_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == ALPHA_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
-		CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
+        //#endif
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
-		CHECK_ASSERT(value == CONTEXT_MAJOR_VERSION, __FILE__, __LINE__);
+        CHECK_ASSERT(value == CONTEXT_MAJOR_VERSION, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
-		CHECK_ASSERT(value == CONTEXT_MINOR_VERSION, __FILE__, __LINE__);
+        CHECK_ASSERT(value == CONTEXT_MINOR_VERSION, __FILE__, __LINE__);
 
 #ifndef GL_ES_VERSION_2_0
 
@@ -336,7 +339,7 @@ namespace NSG
         app->SetViewSize(width, height);
 
 #if IOS
-        SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, win);
+        SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);
 #elif EMSCRIPTEN
         SDL_StartTextInput();
         emscripten_set_main_loop_arg(&RenderFrame, screen, 0, 1);
@@ -344,7 +347,7 @@ namespace NSG
 #else
         while (!quit)
         {
-            RenderFrame(win);
+            RenderFrame();
             SDL_GL_SwapWindow(win);
         }
         app = nullptr;

@@ -76,6 +76,6 @@ void CameraBehavior::Update()
 
 void CameraBehavior::Render()
 {
-	pSceneNode_->Render();
+	//pSceneNode_->Render();
 }
 

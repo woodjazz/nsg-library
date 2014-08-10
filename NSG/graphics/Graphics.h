@@ -28,7 +28,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     class Buffer;
-
+    bool CheckExtension(const std::string& name);
     void ResetCachedState();
 	void ClearAllBuffers();
 	void ClearBuffers(bool color, bool depth, bool stencil);

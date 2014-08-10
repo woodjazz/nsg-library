@@ -38,4 +38,4 @@ cd $1
 
 cmake $SOURCE_FOLDER -G "Xcode" -DIOS=ON
 #xcodebuild -list -project nsg-library.xcodeproj
-#xcodebuild 
+#xcodebuild -configuration Release

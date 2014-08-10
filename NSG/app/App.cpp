@@ -249,7 +249,7 @@ namespace NSG
         Camera::Activate(camera);
 
         if (AppStatistics::this_)
-            AppStatistics::this_->NewFrame();
+            AppStatistics::this_->NewFrame(); 
     }
 
     bool InternalApp::ShallExit() const
