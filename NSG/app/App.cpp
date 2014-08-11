@@ -39,20 +39,21 @@ misrepresented as being the original software.
 #include "FrameColorSelection.h"
 #include "AppStatistics.h"
 #include "IMGUIContext.h"
+#include "Graphics.h"
 #if NACL
 #include "ppapi/cpp/var.h"
 #endif
 
 namespace NSG
 {
-	template <> App* Singleton<App>::this_ = nullptr;
+    template <> App* Singleton<App>::this_ = nullptr;
 
     App::App()
-		: width_(0),
+        : width_(0),
           height_(0)
     {
-		context_ = PContext(new Context);
-		configuration_ = PAppConfiguration(new AppConfiguration);
+        context_ = PContext(new Context);
+        configuration_ = PAppConfiguration(new AppConfiguration);
 
     }
 
@@ -66,7 +67,7 @@ namespace NSG
 
     App::~App()
     {
-		App::this_ = nullptr;
+        App::this_ = nullptr;
         TRACE_LOG("App Terminated");
     }
 
@@ -105,7 +106,7 @@ namespace NSG
     void App::AddListener(IViewChangedListener* listener)
     {
         viewChangedListeners_.push_back(listener);
-		listener->OnViewChanged(width_, height_); //notify inmediately to have correct view size
+        listener->OnViewChanged(width_, height_); //notify inmediately to have correct view size
     }
 
     void App::RemoveListener(IViewChangedListener* listener)
@@ -115,18 +116,18 @@ namespace NSG
 
     void App::Add(IViewChangedListener* listener)
     {
-		if (App::this_)
-		{
-			App::this_->AddListener(listener);
-		}
+        if (App::this_)
+        {
+            App::this_->AddListener(listener);
+        }
     }
 
     void App::Remove(IViewChangedListener* listener)
     {
-		if (App::this_)
-		{
-			App::this_->RemoveListener(listener);
-		}
+        if (App::this_)
+        {
+            App::this_->RemoveListener(listener);
+        }
     }
 
 
@@ -249,7 +250,10 @@ namespace NSG
         Camera::Activate(camera);
 
         if (AppStatistics::this_)
-            AppStatistics::this_->NewFrame(); 
+            AppStatistics::this_->NewFrame();
+
+        EndFrame();
+
     }
 
     bool InternalApp::ShallExit() const

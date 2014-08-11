@@ -172,7 +172,7 @@ namespace NSG
                 node.SetPosition(position);
                 node.SetScale(scale);
 
-                if (!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0)) || lastHit_ == static_cast<IdType>(IdsTypes::IMGUI_VERTICAL_SLIDER_ID))
+                if ((!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == static_cast<IdType>(IdsTypes::IMGUI_VERTICAL_SLIDER_ID))
                 {
                     lastHit_ = static_cast<IdType>(IdsTypes::IMGUI_VERTICAL_SLIDER_ID);
 

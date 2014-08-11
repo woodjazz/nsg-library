@@ -30,6 +30,9 @@ namespace NSG
     class Buffer;
     bool CheckExtension(const std::string& name);
     void ResetCachedState();
+    void SetClearColor(const Color& color);
+    void SetClearDepth(GLclampf depth);
+    void SetClearStencil(GLint clear);
 	void ClearAllBuffers();
 	void ClearBuffers(bool color, bool depth, bool stencil);
 	void ClearStencilBuffer(GLint value = 0);
@@ -43,7 +46,8 @@ namespace NSG
 	VertexBuffer* GetVertexBuffer();
 	bool SetIndexBuffer(IndexBuffer* buffer);
 	IndexBuffer* GetIndexBuffer();
-	void SetProgram(Program* program);
+	bool SetProgram(Program* program);
 	Program* GetProgram();
 	void SetFrameBuffer(GLuint value);
+	void EndFrame();
 }

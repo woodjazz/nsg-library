@@ -278,7 +278,7 @@ namespace NSG
 		}
 
 		dirty_ = false;
-
+		
 		OnUpdate();
 	}
 

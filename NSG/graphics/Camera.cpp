@@ -29,155 +29,138 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Camera* activeCamera = nullptr;
+    Camera* activeCamera = nullptr;
 
-	Camera::Camera() 
-	: fovy_(45), 
-	zNear_(0.1f), 
-	zFar_(250),
-	xo_(0),
-	yo_(0),
-	xf_(1),
-	yf_(1),
-	isOrtho_(false),
-	dirty_(true),
-	viewWidth_(0),
-	viewHeight_(0),
-	aspectRatio_(1)
-	{
-		App::Add(this);
-	}
+    Camera::Camera()
+        : fovy_(45),
+          zNear_(0.1f),
+          zFar_(250),
+          xo_(0),
+          yo_(0),
+          xf_(1),
+          yf_(1),
+          isOrtho_(false),
+          viewWidth_(0),
+          viewHeight_(0),
+          aspectRatio_(1)
+    {
+        App::Add(this);
+    }
 
-	Camera::~Camera() 
-	{
-		App::Remove(this);
-	}
+    Camera::~Camera()
+    {
+        App::Remove(this);
+    }
 
-	void Camera::Update() const
-	{
-		if (dirty_)
-		{
-			UpdateProjection();
-			dirty_ = false;
-		}
-	}
-
-	void Camera::EnableOrtho() 
-	{
-		if(!isOrtho_)
-		{
-			isOrtho_ = true;
-			dirty_ = true;
-		}
-	}
-
-	void Camera::DisableOrtho() 
-	{
-		if(isOrtho_)
-		{
-			isOrtho_ = false;
-			dirty_ = true;
-		}
-	}	
-
-	void Camera::SetFov(float fovy)
-	{
-        if(fovy_ != fovy)
+    void Camera::EnableOrtho()
+    {
+        if (!isOrtho_)
         {
-		    fovy_ = fovy;
-			dirty_ = true;
+            isOrtho_ = true;
+            UpdateProjection();
         }
-	}
+    }
 
-	void Camera::SetNearClip(float zNear)
-	{
-        if(zNear_ != zNear)
+    void Camera::DisableOrtho()
+    {
+        if (isOrtho_)
         {
-		    zNear_ = zNear;
-			dirty_ = true;
+            isOrtho_ = false;
+            UpdateProjection();
         }
-	}
+    }
 
-	void Camera::SetFarClip(float zFar)
-	{
-        if(zFar_ != zFar)
+    void Camera::SetFov(float fovy)
+    {
+        if (fovy_ != fovy)
         {
-		    zFar_ = zFar;
-			dirty_ = true;
+            fovy_ = fovy;
+            UpdateProjection();
         }
-	}
+    }
 
-	Camera* Camera::Deactivate()
-	{
-		Camera* pCurrent = activeCamera;
-		activeCamera = nullptr;
-		return pCurrent;
-	}
+    void Camera::SetNearClip(float zNear)
+    {
+        if (zNear_ != zNear)
+        {
+            zNear_ = zNear;
+            UpdateProjection();
+        }
+    }
 
-	Camera* Camera::Activate(Camera* pCamera)
-	{
-		Camera* pCurrent = Camera::Deactivate();
+    void Camera::SetFarClip(float zFar)
+    {
+        if (zFar_ != zFar)
+        {
+            zFar_ = zFar;
+            UpdateProjection();
+        }
+    }
 
-		if(pCamera)
-			pCamera->Activate();
+    Camera* Camera::Deactivate()
+    {
+        Camera* pCurrent = activeCamera;
+        activeCamera = nullptr;
+        return pCurrent;
+    }
 
-		return pCurrent;
+    Camera* Camera::Activate(Camera* pCamera)
+    {
+        Camera* pCurrent = Camera::Deactivate();
 
-	}
+        if (pCamera)
+            pCamera->Activate();
 
-	Camera* Camera::GetActiveCamera()
-	{
-		return activeCamera;
-	}
+        return pCurrent;
 
-	void Camera::SetViewportFactor(float xo, float yo, float xf, float yf)
-	{
-		xo_ = xo;
-		yo_ = yo;
-		xf_ = xf;
-		yf_ = yf;
+    }
 
-		dirty_ = true;
-	}
+    Camera* Camera::GetActiveCamera()
+    {
+        return activeCamera;
+    }
 
-	Recti Camera::GetViewport() const
-	{
-		return Recti((GLsizei)(viewWidth_ * xo_), (GLsizei)(viewHeight_ * yo_), (GLsizei)(viewWidth_ * xf_), (GLsizei)(viewHeight_ * yf_));
-	}
+    void Camera::SetViewportFactor(float xo, float yo, float xf, float yf)
+    {
+        xo_ = xo;
+        yo_ = yo;
+        xf_ = xf;
+        yf_ = yf;
+    }
 
-	void Camera::Activate()
-	{
-		activeCamera = this;
+    Recti Camera::GetViewport() const
+    {
+        return Recti((GLsizei)(viewWidth_ * xo_), (GLsizei)(viewHeight_ * yo_), (GLsizei)(viewWidth_ * xf_), (GLsizei)(viewHeight_ * yf_));
+    }
+
+    void Camera::Activate()
+    {
+        activeCamera = this;
 
         Recti viewport = GetViewport();
 
-		glViewport(viewport.x, viewport.y, viewport.z, viewport.w);		
-	}
+        glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+    }
 
-	bool Camera::IsDirty() const
-	{
-		return Node::IsDirty() || dirty_;
-	}
+    const PFrustum Camera::GetFrustum() const
+    {
+        if (IsDirty() || !frustum_)
+        {
+            Matrix4 worldTransform = GetGlobalModelMatrix();
 
-	const PFrustum Camera::GetFrustum() const
-	{
-		if (IsDirty() || !frustum_)
-		{
-	        Matrix4 worldTransform = GetGlobalModelMatrix();
-        
-	        if (isOrtho_)
-	            frustum_ = PFrustum(new Frustum(worldTransform, 1, aspectRatio_, zNear_, zFar_));
-	        else
-	        	frustum_ = PFrustum(new Frustum(fovy_, aspectRatio_, zNear_, zFar_, worldTransform));
-	    }
+            if (isOrtho_)
+                frustum_ = PFrustum(new Frustum(worldTransform, 1, aspectRatio_, zNear_, zFar_));
+            else
+                frustum_ = PFrustum(new Frustum(fovy_, aspectRatio_, zNear_, zFar_, worldTransform));
+        }
 
-	    return frustum_;
-	}
+        return frustum_;
+    }
 
 
-	void Camera::UpdateProjection() const
-	{
-        if(isOrtho_)
+    void Camera::UpdateProjection() const
+    {
+        if (isOrtho_)
         {
             matProjection_ = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f,  zNear_, zFar_);
         }
@@ -185,96 +168,101 @@ namespace NSG
         {
             CHECK_ASSERT(zNear_ > 0, __FILE__, __LINE__);
 
-	        matProjection_ = glm::perspective(fovy_, aspectRatio_, zNear_, zFar_);
+            matProjection_ = glm::perspective(fovy_, aspectRatio_, zNear_, zFar_);
         }
-    
-        UpdateViewProjection();
-	}
 
-    void Camera::OnUpdate() const
-    {
-		dirty_ = true;
-        Update();
+        UpdateViewProjection();
     }
 
-	void Camera::UpdateViewProjection() const
-	{
-		matViewInverse_ = GetGlobalModelMatrix();
-		matView_ = glm::inverse(matViewInverse_);
-		matViewProjection_ = matProjection_ * matView_;
-		matViewProjectionInverse_ = glm::inverse(matViewProjection_);
-	}
+    void Camera::UpdateViewProjection() const
+    {
+        matViewInverse_ = GetGlobalModelMatrix();
+        matView_ = glm::inverse(matViewInverse_);
+        matViewProjection_ = matProjection_ * matView_;
+        matViewProjectionInverse_ = glm::inverse(matViewProjection_);
+    }
 
-	const Matrix4& Camera::GetMatViewProjection() const
-	{
-		if (dirty_)
-			Update();
+    const Matrix4& Camera::GetMatViewProjection() const
+    {
+        if (IsDirty())
+            UpdateProjection();
 
-		return matViewProjection_;
+        return matViewProjection_;
 
-	}
+    }
 
-	Matrix4 Camera::GetModelViewProjection(const Node* pNode)
-	{
-		if (activeCamera)
-		{
-			return activeCamera->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
-		}
-		else
-		{
-			// if no Camera then position is in screen coordinates
-			return pNode->GetGlobalModelMatrix();
-		}
-	}
+    Matrix4 Camera::GetModelViewProjection(const Node* pNode)
+    {
+        if (activeCamera)
+        {
+            return activeCamera->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
+        }
+        else
+        {
+            // if no Camera then position is in screen coordinates
+            return pNode->GetGlobalModelMatrix();
+        }
+    }
 
     const Matrix4& Camera::GetView() const
     {
-		if (dirty_)
-			Update();
+        if (IsDirty())
+            UpdateProjection();
 
         return matView_;
     }
 
-	const Matrix4& Camera::GetInverseViewMatrix() const
-	{
-		if (dirty_)
-			Update();
+    const Matrix4& Camera::GetInverseViewMatrix() const
+    {
+        if (IsDirty())
+            UpdateProjection();
 
-		return matViewInverse_;
-	}
+        return matViewInverse_;
+    }
 
-	const Matrix4& Camera::GetViewProjectionMatrix() const
-	{
-		if (dirty_)
-			Update();
+    const Matrix4& Camera::GetViewProjectionMatrix() const
+    {
+        if (IsDirty())
+            UpdateProjection();
 
-		return matViewProjection_;
-	}
+        return matViewProjection_;
+    }
 
-	Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const 
-	{
-		Vertex4 worldCoord = matViewProjectionInverse_ * Vertex4(screenXYZ, 1);
-		return Vertex3(worldCoord.x/worldCoord.w, worldCoord.y/worldCoord.w, worldCoord.z/worldCoord.w);
-	}	
+    Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
+    {
+        if (IsDirty())
+            UpdateProjection();
+
+        Vertex4 worldCoord = matViewProjectionInverse_ * Vertex4(screenXYZ, 1);
+        return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
+    }
 
     Vertex3 Camera::WorldToScreen(const Vertex3& worldXYZ) const
     {
-		Vertex4 screenCoord = matViewProjection_ * Vertex4(worldXYZ, 1);
-		return Vertex3(screenCoord.x/screenCoord.w, screenCoord.y/screenCoord.w, screenCoord.z/screenCoord.w);
+        if (IsDirty())
+            UpdateProjection();
+
+        Vertex4 screenCoord = matViewProjection_ * Vertex4(worldXYZ, 1);
+        return Vertex3(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w);
     }
 
     void Camera::OnViewChanged(int32_t width, int32_t height)
     {
-    	viewWidth_ = width;
-    	viewHeight_ = height;
-		if (viewHeight_ > 0)
-			aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
-		else
-			aspectRatio_ = 1;
+        if (viewWidth_ != width || viewHeight_ != height)
+        {
+            viewWidth_ = width;
+            viewHeight_ = height;
+            if (viewHeight_ > 0)
+                aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
+            else
+                aspectRatio_ = 1;
+
+            UpdateProjection();
+        }
     }
 
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
     {
-		return GetFrustum()->IsVisible(node, mesh);
+        return GetFrustum()->IsVisible(node, mesh);
     }
 }

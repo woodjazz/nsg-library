@@ -49,6 +49,7 @@ namespace NSG
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;
 		const BoundingBox& GetBB() const { return bb_; }
+		void SetHasChanged(bool changed);
 	protected:
 		VertexsData vertexsData_;
 		Indexes indexes_;
@@ -59,5 +60,6 @@ namespace NSG
         Buffer::Data* bufferVertexData_;
         Buffer::Data* bufferIndexData_;
         BoundingBox bb_;
+        bool hasChanged_;
 	};
 }

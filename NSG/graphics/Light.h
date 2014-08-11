@@ -36,9 +36,9 @@ namespace NSG
 	public:
 		Light();
 		~Light();
-		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
+		void SetDiffuseColor(Color diffuse);
 		const Color& GetDiffuseColor() const { return diffuse_; }
-		void SetSpecularColor(Color specular) { specular_ = specular; }
+		void SetSpecularColor(Color specular);
 		const Color& GetSpecularColor() const { return specular_; }
 		void SetAttenuation(float constant, float linear, float quadratic);
 		struct Attenuation
@@ -57,6 +57,8 @@ namespace NSG
 		Type GetType() const { return type_; }
 		typedef std::vector<Light*> Lights;
 		static const Lights& GetLights();
+		bool HasChanged() const { return hasChanged_; }
+		void SetHasChanged(bool changed);
 	private:
 		Type type_;
         Color diffuse_;
@@ -64,5 +66,6 @@ namespace NSG
         Attenuation attenuation_;
         float spotCutOff_;
         float exponent_;
+        bool hasChanged_;
 	};
 }

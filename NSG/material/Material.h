@@ -46,15 +46,15 @@ namespace NSG
 		void SetTexture1(PTexture pTexture);
         PTexture GetTexture0() const { return pTexture0_; }
         PTexture GetTexture1() const { return pTexture1_; }
-        void SetColor(Color color) { color_ = color; }
+        void SetColor(Color color);
         Color GetColor() const { return color_; }
-		void SetDiffuseColor(Color diffuse) { diffuse_ = diffuse; }
+		void SetDiffuseColor(Color diffuse);
 		Color GetDiffuseColor() const { return diffuse_; }
-		void SetSpecularColor(Color specular) { specular_ = specular; }
+		void SetSpecularColor(Color specular);
 		Color GetSpecularColor() const { return specular_; }
-		void SetAmbientColor(Color ambient) { ambient_ = ambient; }
+		void SetAmbientColor(Color ambient);
 		Color GetAmbientColor() const { return ambient_; }
-		void SetShininess(float shininess) { shininess_=shininess; }
+		void SetShininess(float shininess);
 		float GetShininess() const { return shininess_; }
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
@@ -62,6 +62,7 @@ namespace NSG
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;
+		bool HasChanged() const { return hasChanged_; }
 	private:
 		void Use();
 		PTexture pTexture0_;
@@ -76,6 +77,8 @@ namespace NSG
         Color color_;
 
         bool enableCullFace_;
+
+        bool hasChanged_;
 
 		friend class UseMaterial;
 		friend class Program;

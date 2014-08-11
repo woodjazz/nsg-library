@@ -34,7 +34,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     static const unsigned MAX_TEXTURE_UNITS = 8;
- 
+
     static const bool DEFAULT_STENCIL_ENABLE = false;
     static const GLuint DEFAULT_STENCIL_WRITEMASK = ~GLuint(0);
     static const GLenum DEFAULT_STENCIL_SFAIL = GL_KEEP;
@@ -61,6 +61,9 @@ namespace NSG
 
     void ResetCachedState()
     {
+        SetClearColor(Color(0, 0, 0, 1));
+        SetClearDepth(1);
+        SetClearStencil(0);
         SetFrameBuffer(0);
         SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL,
                        DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
@@ -103,15 +106,47 @@ namespace NSG
         }
     }
 
+    void SetClearColor(const Color& color)
+    {
+        static Color color_(0, 0, 0, 1);
+
+        //if (color_ != color)
+        {
+            glClearColor(color.r, color.g, color.b, color.a);
+            SetColorMask(true);
+            color_ = color;
+        }
+    }
+
+    void SetClearDepth(GLclampf depth)
+    {
+        static GLclampf depth_ = 1;
+
+        //if (depth_ != depth)
+        {
+            glClearDepth(depth);
+            glDepthMask(GL_TRUE);
+            depth_ = depth;
+        }
+    }
+
+    void SetClearStencil(GLint clear)
+    {
+        static GLint clear_ = 0;
+
+        //if (clear_ != clear)
+        {
+            glClearStencil(clear);
+            glStencilMask(~GLuint(0));
+            clear_ = clear;
+        }
+    }
     void ClearAllBuffers()
     {
-        glClearColor(0, 0, 0, 1);
-        glClearDepth(1);
-        glClearStencil(0);
+        SetClearColor(Color(0, 0, 0, 1));
+        SetClearDepth(1);
+        SetClearStencil(0);
 
-        SetColorMask(true);
-        glDepthMask(GL_TRUE);
-        glStencilMask(~GLuint(0));
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
@@ -121,22 +156,19 @@ namespace NSG
         if (color)
         {
             mask |= GL_COLOR_BUFFER_BIT;
-            glClearColor(0, 0, 0, 1);
-            SetColorMask(true);
+            SetClearColor(Color(0, 0, 0, 1));
         }
 
         if (depth)
         {
             mask |= GL_DEPTH_BUFFER_BIT;
-            glClearDepth(1);
-            glDepthMask(GL_TRUE);
+            SetClearDepth(1);
         }
 
         if (stencil)
         {
             mask |= GL_STENCIL_BUFFER_BIT;
-            glClearStencil(0);
-            glStencilMask(~GLuint(0));
+            SetClearStencil(0);
         }
 
         glClear(mask);
@@ -144,8 +176,7 @@ namespace NSG
 
     void ClearStencilBuffer(GLint value)
     {
-        glClearStencil(value);
-        glStencilMask(~GLuint(0));
+        SetClearStencil(value);
         glClear(GL_STENCIL_BUFFER_BIT);
     }
 
@@ -366,20 +397,24 @@ namespace NSG
     }
 
     static Program* program_ = nullptr;
-    void SetProgram(Program* program)
+    bool SetProgram(Program* program)
     {
         if (program != program_)
         {
             program_ = program;
             if (program)
             {
-                program->Bind();
+                glUseProgram(program->GetId());
             }
             else
             {
                 glUseProgram(0);
             }
+
+            return true;
         }
+
+        return false;
     }
 
     Program* GetProgram()
@@ -387,4 +422,22 @@ namespace NSG
         return program_;
     }
 
+    void EndFrame()
+    {
+        static bool init_ = false;
+        static bool has_discard_framebuffer_ = false;
+
+        if (!init_)
+        {
+            init_ = true;
+            if (CheckExtension("EXT_discard_framebuffer"))
+                has_discard_framebuffer_ = true;
+        }
+
+        if (has_discard_framebuffer_)
+        {
+            const GLenum attachments[3] = { GL_COLOR_ATTACHMENT0 , GL_DEPTH_ATTACHMENT , GL_STENCIL_ATTACHMENT };
+            glDiscardFramebufferEXT( GL_FRAMEBUFFER , 3, attachments);
+        }
+    }
 }

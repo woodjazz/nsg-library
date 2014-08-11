@@ -59,10 +59,7 @@ namespace NSG
 		virtual void OnViewChanged(int32_t width, int32_t height) override;
 		const PFrustum GetFrustum() const;
 		bool IsVisible(const Node& node, Mesh& mesh) const;
-		bool IsDirty() const;
 	private:
-		void Update() const;
-        void OnUpdate() const;
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
 		mutable Matrix4 matView_;
@@ -78,7 +75,6 @@ namespace NSG
 		float xf_;
 		float yf_;
 		bool isOrtho_;
-		mutable bool dirty_;
 		int32_t viewWidth_;
 		int32_t viewHeight_;
 		float aspectRatio_;

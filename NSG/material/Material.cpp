@@ -19,7 +19,8 @@ namespace NSG
           specular_(1, 1, 1, 1),
           shininess_(1),
           color_(1, 1, 1, 1),
-          enableCullFace_(false)
+          enableCullFace_(false),
+          hasChanged_(true)
     {
     }
 
@@ -28,9 +29,58 @@ namespace NSG
         Context::RemoveObject(this);
     }
 
+    void Material::SetColor(Color color)
+    {
+        if(color != color_)
+        {
+            color_ = color;
+            hasChanged_ = true;
+        }
+    }
+
+    void Material::SetDiffuseColor(Color diffuse)
+    {
+        if(diffuse_ != diffuse)
+        {
+            diffuse_ = diffuse;
+            hasChanged_ = true;
+        }
+    }
+
+    void Material::SetSpecularColor(Color specular)
+    {
+        if(specular_ != specular)
+        {
+            specular_ = specular;
+            hasChanged_ = true;
+        }
+    }
+
+    void Material::SetAmbientColor(Color ambient)
+    {
+        if(ambient_ != ambient)
+        {
+            ambient_ = ambient;
+            hasChanged_ = true;
+        }
+    }
+
+    void Material::SetShininess(float shininess)
+    {
+        if(shininess_ != shininess)
+        {
+            shininess_ = shininess;
+            hasChanged_ = true;
+        }
+    }
+
     void Material::EnableCullFace(bool enable)
     {
-        enableCullFace_ = enable;
+        if(enableCullFace_ != enable)
+        {
+            enableCullFace_ = enable;
+            hasChanged_ = true;
+        }
     }
 
     void Material::SetProgram(PProgram pProgram)
@@ -38,6 +88,7 @@ namespace NSG
         if (pProgram_ != pProgram)
         {
             pProgram_ = pProgram;
+            hasChanged_ = true;
             Invalidate();
 
         }
@@ -48,6 +99,7 @@ namespace NSG
         if (pTexture0_ != pTexture)
         {
             pTexture0_ = pTexture;
+            hasChanged_ = true;
             Invalidate();
         }
     }
@@ -57,6 +109,7 @@ namespace NSG
         if (pTexture1_ != pTexture)
         {
             pTexture1_ = pTexture;
+            hasChanged_ = true;
             Invalidate();
         }
     }
@@ -64,6 +117,7 @@ namespace NSG
     bool Material::IsValid()
     {
         bool isReady = pProgram_ && pProgram_->IsReady();
+
         if (isReady)
         {
             if (pTexture0_)
@@ -104,9 +158,10 @@ namespace NSG
         {
             Use();
 
-            pProgram_->Use();
-            pProgram_->Use(this);
-            pProgram_->Use(pNode);
+            pProgram_->Use(this, pNode);
+
+            hasChanged_ = false;
+            
             GLuint positionLoc = pProgram_->GetAttPositionLoc();
             GLuint texcoordLoc = pProgram_->GetAttTextCoordLoc();
             GLuint normalLoc = pProgram_->GetAttNormalLoc();

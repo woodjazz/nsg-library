@@ -46,409 +46,453 @@ misrepresented as being the original software.
 #include <string>
 #include <algorithm>
 
-static const char s_fragmentShaderHeader[] = {
+static const char s_fragmentShaderHeader[] =
+{
 #include "FragmentCompatibility.h"
 };
 
-static const char s_vertexShaderHeader[] = {
+static const char s_vertexShaderHeader[] =
+{
 #include "VertexCompatibility.h"
 };
 
-namespace NSG 
+namespace NSG
 {
-	Program::Program(PResource pRVShader, PResource pRFShader)
-	: pRVShader_(pRVShader),
-	pRFShader_(pRFShader),
-    pExtraUniforms_(nullptr),
-	color_scene_ambient_loc_(-1),
-	color_ambient_loc_(-1),
-	color_diffuse_loc_(-1),
-	color_specular_loc_(-1),
-	shininess_loc_(-1),
-	texture0_loc_(-1),
-	texture1_loc_(-1),
-	color_loc_(-1),
-	att_texcoord_loc_(-1),
-	att_position_loc_(-1),
-	att_normal_loc_(-1),
-    att_color_loc_(-1),
-	model_inv_transp_loc_(-1),
-	v_inv_loc_(-1),
-    mvp_loc_(-1),
-    m_loc_(-1),
-    numOfLights_loc_(-1),
-	hasLights_(false)
-	{
-		CHECK_ASSERT(pRVShader && pRFShader, __FILE__, __LINE__);
-	}
+    Program::Program(PResource pRVShader, PResource pRFShader)
+        : pRVShader_(pRVShader),
+          pRFShader_(pRFShader),
+          pExtraUniforms_(nullptr),
+          color_scene_ambient_loc_(-1),
+          color_ambient_loc_(-1),
+          color_diffuse_loc_(-1),
+          color_specular_loc_(-1),
+          shininess_loc_(-1),
+          texture0_loc_(-1),
+          texture1_loc_(-1),
+          color_loc_(-1),
+          att_texcoord_loc_(-1),
+          att_position_loc_(-1),
+          att_normal_loc_(-1),
+          att_color_loc_(-1),
+          model_inv_transp_loc_(-1),
+          v_inv_loc_(-1),
+          mvp_loc_(-1),
+          m_loc_(-1),
+          numOfLights_loc_(-1),
+          hasLights_(false),
+          nLights_(0),
+          activeCamera_(nullptr),
+          activeMaterial_(nullptr),
+          activeNode_(nullptr)
+    {
+        CHECK_ASSERT(pRVShader&&  pRFShader, __FILE__, __LINE__);
+    }
 
-	Program::Program(const char* vShader, const char* fShader)
-	: pRVShader_(new ResourceMemory(vShader, strlen(vShader))),
-	pRFShader_(new ResourceMemory(fShader, strlen(fShader))),
-    vShader_(vShader),
-    fShader_(fShader),
-    pExtraUniforms_(nullptr),
-	color_scene_ambient_loc_(-1),
-	color_ambient_loc_(-1),
-	color_diffuse_loc_(-1),
-	color_specular_loc_(-1),
-	shininess_loc_(-1),
-	texture0_loc_(-1),
-	texture1_loc_(-1),
-	color_loc_(-1),
-	att_texcoord_loc_(-1),
-	att_position_loc_(-1),
-	att_normal_loc_(-1),
-    att_color_loc_(-1),
-	model_inv_transp_loc_(-1),
-	v_inv_loc_(-1),
-    mvp_loc_(-1),
-    m_loc_(-1),
-    numOfLights_loc_(-1),
-	hasLights_(false)
-	{
-		CHECK_ASSERT(vShader && fShader, __FILE__, __LINE__);
-	}
+    Program::Program(const char* vShader, const char* fShader)
+        : pRVShader_(new ResourceMemory(vShader, strlen(vShader))),
+          pRFShader_(new ResourceMemory(fShader, strlen(fShader))),
+          vShader_(vShader),
+          fShader_(fShader),
+          pExtraUniforms_(nullptr),
+          color_scene_ambient_loc_(-1),
+          color_ambient_loc_(-1),
+          color_diffuse_loc_(-1),
+          color_specular_loc_(-1),
+          shininess_loc_(-1),
+          texture0_loc_(-1),
+          texture1_loc_(-1),
+          color_loc_(-1),
+          att_texcoord_loc_(-1),
+          att_position_loc_(-1),
+          att_normal_loc_(-1),
+          att_color_loc_(-1),
+          model_inv_transp_loc_(-1),
+          v_inv_loc_(-1),
+          mvp_loc_(-1),
+          m_loc_(-1),
+          numOfLights_loc_(-1),
+          hasLights_(false),
+          nLights_(0),
+          activeCamera_(nullptr),
+          activeMaterial_(nullptr),
+          activeNode_(nullptr)        
+    {
+        CHECK_ASSERT(vShader && fShader, __FILE__, __LINE__);
+    }
 
-	bool Program::IsValid()
-	{
-		return pRVShader_->IsLoaded() && pRFShader_->IsLoaded();
-	}
+    bool Program::IsValid()
+    {
+        return pRVShader_->IsLoaded() && pRFShader_->IsLoaded();
+    }
 
-	void Program::AllocateResources()
-	{
+    void Program::AllocateResources()
+    {
         lightsLoc_.resize(MAX_LIGHTS);
         memset(&lightsLoc_[0], 0, sizeof(lightsLoc_) * MAX_LIGHTS);
 
-		std::string vbuffer;
-		size_t vHeaderSize = strlen(s_vertexShaderHeader);
-		size_t fHeaderSize = strlen(s_fragmentShaderHeader);
-		vbuffer.resize(vHeaderSize + pRVShader_->GetBytes());
-		vbuffer = s_vertexShaderHeader;
-		memcpy(&vbuffer[0] + vHeaderSize, pRVShader_->GetData(), pRVShader_->GetBytes());
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-		pVShader_ = PVertexShader(new VertexShader(vbuffer.c_str()));
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-		vbuffer = s_fragmentShaderHeader;
-		vbuffer.resize(fHeaderSize + pRFShader_->GetBytes());
-		memcpy(&vbuffer[0] + fHeaderSize, pRFShader_->GetData(), pRFShader_->GetBytes());
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-		pFShader_ = PFragmentShader(new FragmentShader(vbuffer.c_str()));
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	    if(Initialize())
-	    {
-		    CHECK_GL_STATUS(__FILE__, __LINE__);
+        std::string vbuffer;
+        size_t vHeaderSize = strlen(s_vertexShaderHeader);
+        size_t fHeaderSize = strlen(s_fragmentShaderHeader);
+        vbuffer.resize(vHeaderSize + pRVShader_->GetBytes());
+        vbuffer = s_vertexShaderHeader;
+        memcpy(&vbuffer[0] + vHeaderSize, pRVShader_->GetData(), pRVShader_->GetBytes());
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        pVShader_ = PVertexShader(new VertexShader(vbuffer.c_str()));
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        vbuffer = s_fragmentShaderHeader;
+        vbuffer.resize(fHeaderSize + pRFShader_->GetBytes());
+        memcpy(&vbuffer[0] + fHeaderSize, pRFShader_->GetData(), pRFShader_->GetBytes());
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        pFShader_ = PFragmentShader(new FragmentShader(vbuffer.c_str()));
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        if (Initialize())
+        {
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		    if(pExtraUniforms_)
-			    pExtraUniforms_->SetLocations();
+            if (pExtraUniforms_)
+                pExtraUniforms_->SetLocations();
 
-		    color_ambient_loc_ = GetUniformLocation("u_material.ambient");
-	        color_scene_ambient_loc_ = GetUniformLocation("u_scene_ambient");
-		    color_diffuse_loc_ = GetUniformLocation("u_material.diffuse");
-		    color_specular_loc_ = GetUniformLocation("u_material.specular");
-		    shininess_loc_ = GetUniformLocation("u_material.shininess");
-	        mvp_loc_ = GetUniformLocation("u_mvp");
-	        m_loc_ = GetUniformLocation("u_m");
-		    model_inv_transp_loc_ = GetUniformLocation("u_model_inv_transp");
-		    v_inv_loc_ = GetUniformLocation("u_v_inv");
-		    texture0_loc_ = GetUniformLocation("u_texture0");
-		    texture1_loc_ = GetUniformLocation("u_texture1");
-		    color_loc_ = GetUniformLocation("u_color");
-		    
-		    att_position_loc_ = GetAttributeLocation("a_position");
-		    att_normal_loc_ = GetAttributeLocation("a_normal");
-		    att_texcoord_loc_ = GetAttributeLocation("a_texcoord");
-	        att_color_loc_ = GetAttributeLocation("a_color");
+            color_ambient_loc_ = GetUniformLocation("u_material.ambient");
+            color_scene_ambient_loc_ = GetUniformLocation("u_scene_ambient");
+            color_diffuse_loc_ = GetUniformLocation("u_material.diffuse");
+            color_specular_loc_ = GetUniformLocation("u_material.specular");
+            shininess_loc_ = GetUniformLocation("u_material.shininess");
+            mvp_loc_ = GetUniformLocation("u_mvp");
+            m_loc_ = GetUniformLocation("u_m");
+            model_inv_transp_loc_ = GetUniformLocation("u_model_inv_transp");
+            v_inv_loc_ = GetUniformLocation("u_v_inv");
+            texture0_loc_ = GetUniformLocation("u_texture0");
+            texture1_loc_ = GetUniformLocation("u_texture1");
+            color_loc_ = GetUniformLocation("u_color");
 
-			hasLights_ = false;
+            att_position_loc_ = GetAttributeLocation("a_position");
+            att_normal_loc_ = GetAttributeLocation("a_normal");
+            att_texcoord_loc_ = GetAttributeLocation("a_texcoord");
+            att_color_loc_ = GetAttributeLocation("a_color");
 
-	        const Light::Lights& ligths = Light::GetLights();
-	        size_t n = std::min(ligths.size(), MAX_LIGHTS);
+            hasLights_ = false;
 
-	        numOfLights_loc_ = GetUniformLocation("u_numOfLights");
+            const Light::Lights& ligths = Light::GetLights();
+            size_t n = std::min(ligths.size(), MAX_LIGHTS);
 
-		    for(size_t i=0; i<n; i++)
-		    {
-			    std::stringstream u_light_index;
-			    u_light_index << "u_light" << i << ".";
+            numOfLights_loc_ = GetUniformLocation("u_numOfLights");
 
-			    lightsLoc_[i].type_loc = GetUniformLocation(u_light_index.str() + "type");
-			    
-			    if(lightsLoc_[i].type_loc == -1)
-			    {
-			    	break;
-			    }
+            for (size_t i = 0; i < n; i++)
+            {
+                std::stringstream u_light_index;
+                u_light_index << "u_light" << i << ".";
 
-			    lightsLoc_[i].position_loc = GetUniformLocation(u_light_index.str() + "position");
-			    lightsLoc_[i].diffuse_loc = GetUniformLocation(u_light_index.str() + "diffuse");
-			    lightsLoc_[i].specular_loc = GetUniformLocation(u_light_index.str() + "specular");
-			    lightsLoc_[i].constantAttenuation_loc = GetUniformLocation(u_light_index.str() + "constantAttenuation");
-			    lightsLoc_[i].linearAttenuation_loc = GetUniformLocation(u_light_index.str() + "linearAttenuation");
-			    lightsLoc_[i].quadraticAttenuation_loc = GetUniformLocation(u_light_index.str() + "quadraticAttenuation");
-			    lightsLoc_[i].spotCutoff_loc = GetUniformLocation(u_light_index.str() + "spotCutoff");
-			    lightsLoc_[i].spotExponent_loc = GetUniformLocation(u_light_index.str() + "spotExponent");
-			    lightsLoc_[i].spotDirection_loc = GetUniformLocation(u_light_index.str() + "spotDirection");
-		    }
+                lightsLoc_[i].type_loc = GetUniformLocation(u_light_index.str() + "type");
 
-	        if(lightsLoc_[0].type_loc != -1)
-	        {
-	            hasLights_ = true;
-	        }
+                if (lightsLoc_[i].type_loc == -1)
+                {
+                    break;
+                }
 
-		    CHECK_GL_STATUS(__FILE__, __LINE__);
-	    }
-	}
+                lightsLoc_[i].position_loc = GetUniformLocation(u_light_index.str() + "position");
+                lightsLoc_[i].diffuse_loc = GetUniformLocation(u_light_index.str() + "diffuse");
+                lightsLoc_[i].specular_loc = GetUniformLocation(u_light_index.str() + "specular");
+                lightsLoc_[i].constantAttenuation_loc = GetUniformLocation(u_light_index.str() + "constantAttenuation");
+                lightsLoc_[i].linearAttenuation_loc = GetUniformLocation(u_light_index.str() + "linearAttenuation");
+                lightsLoc_[i].quadraticAttenuation_loc = GetUniformLocation(u_light_index.str() + "quadraticAttenuation");
+                lightsLoc_[i].spotCutoff_loc = GetUniformLocation(u_light_index.str() + "spotCutoff");
+                lightsLoc_[i].spotExponent_loc = GetUniformLocation(u_light_index.str() + "spotExponent");
+                lightsLoc_[i].spotDirection_loc = GetUniformLocation(u_light_index.str() + "spotDirection");
+            }
 
-	void Program::ReleaseResources()
-	{
-		glDetachShader(id_, pVShader_->GetId());
-		glDetachShader(id_, pFShader_->GetId());
-		pVShader_ = nullptr;
-		pFShader_ = nullptr;
+            if (lightsLoc_[0].type_loc != -1)
+            {
+                hasLights_ = true;
+            }
+
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+        }
+    }
+
+    void Program::ReleaseResources()
+    {
+        glDetachShader(id_, pVShader_->GetId());
+        glDetachShader(id_, pFShader_->GetId());
+        pVShader_ = nullptr;
+        pFShader_ = nullptr;
         glDeleteProgram(id_);
-        
-        if(GetProgram() == this)
-        	SetProgram(nullptr);
-	}
 
-	bool Program::Initialize()
-	{
+        if (GetProgram() == this)
+            SetProgram(nullptr);
+    }
+
+    bool Program::Initialize()
+    {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		// Creates the program name/index.
-		id_ = glCreateProgram();
+        // Creates the program name/index.
+        id_ = glCreateProgram();
 
-		// Will attach the fragment and vertex shaders to the program object.
-		glAttachShader(id_, pVShader_->GetId());
-		glAttachShader(id_, pFShader_->GetId());
+        // Will attach the fragment and vertex shaders to the program object.
+        glAttachShader(id_, pVShader_->GetId());
+        glAttachShader(id_, pFShader_->GetId());
 
-		// Will link the program into OpenGL core.
-		glLinkProgram(id_);
+        // Will link the program into OpenGL core.
+        glLinkProgram(id_);
 
-		GLint link_status = GL_FALSE;
+        GLint link_status = GL_FALSE;
 
-		glGetProgramiv(id_, GL_LINK_STATUS, &link_status);
+        glGetProgramiv(id_, GL_LINK_STATUS, &link_status);
 
-		if (link_status != GL_TRUE) 
-		{
-			GLint logLength = 0;
+        if (link_status != GL_TRUE)
+        {
+            GLint logLength = 0;
 
-			// Instead use GL_INFO_LOG_LENGTH we could use COMPILE_STATUS.
-			// I prefer to take the info log length, because it'll be 0 if the
-			// shader was successful compiled. If we use COMPILE_STATUS
-			// we will need to take info log length in case of a fail anyway.
-			glGetProgramiv(id_, GL_INFO_LOG_LENGTH, &logLength);
+            // Instead use GL_INFO_LOG_LENGTH we could use COMPILE_STATUS.
+            // I prefer to take the info log length, because it'll be 0 if the
+            // shader was successful compiled. If we use COMPILE_STATUS
+            // we will need to take info log length in case of a fail anyway.
+            glGetProgramiv(id_, GL_INFO_LOG_LENGTH, &logLength);
 
-			if (logLength > 0)
-			{
-				// Allocates the necessary memory to retrieve the message.
-				GLchar *log = (GLchar *)malloc(logLength);
+            if (logLength > 0)
+            {
+                // Allocates the necessary memory to retrieve the message.
+                GLchar* log = (GLchar*)malloc(logLength);
 
-				// Get the info log message.
-				glGetProgramInfoLog(id_, logLength, &logLength, log);
+                // Get the info log message.
+                glGetProgramInfoLog(id_, logLength, &logLength, log);
 
-				TRACE_LOG("Error in Program Creation: " << log);
+                TRACE_LOG("Error in Program Creation: " << log);
 
-				// Frees the allocated memory.
-				free(log);
+                // Frees the allocated memory.
+                free(log);
 
                 CHECK_ASSERT(false && "Error in program(shader) creation", __FILE__, __LINE__);
-			}
+            }
 
-			return false;
-		}
+            return false;
+        }
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         return true;
-	}
+    }
 
-	Program::~Program()
-	{
-		Context::RemoveObject(this);
-	}
+    Program::~Program()
+    {
+        Context::RemoveObject(this);
+    }
 
-	GLuint Program::GetAttributeLocation(const std::string& name) 
-	{
-		return glGetAttribLocation(id_, name.c_str());
-	}
+    GLuint Program::GetAttributeLocation(const std::string& name)
+    {
+        return glGetAttribLocation(id_, name.c_str());
+    }
 
-	GLuint Program::GetUniformLocation(const std::string& name)
-	{
-		return glGetUniformLocation(id_, name.c_str());
-	}
+    GLuint Program::GetUniformLocation(const std::string& name)
+    {
+        return glGetUniformLocation(id_, name.c_str());
+    }
 
-	void Program::Use(Node* node)
-	{
-		if(node)
-		{
-			if(mvp_loc_ != -1)
-			{
-				Matrix4 m = Camera::GetModelViewProjection(node);
-				glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
-			}
+    void Program::Use(Node* node)
+    {
+        if (node)
+        {
+            if (mvp_loc_ != -1)
+            {
+                Matrix4 m = Camera::GetModelViewProjection(node);
+                glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
+            }
 
-			if(m_loc_ != -1)
-			{
-				const Matrix4& m = node->GetGlobalModelMatrix();
-				glUniformMatrix4fv(m_loc_, 1, GL_FALSE, glm::value_ptr(m));
-			}
+            if (m_loc_ != -1)
+            {
+                const Matrix4& m = node->GetGlobalModelMatrix();
+                glUniformMatrix4fv(m_loc_, 1, GL_FALSE, glm::value_ptr(m));
+            }
 
-			if(model_inv_transp_loc_ != -1)
-			{
-				const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
-				glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));			
-			}
-		}
-	}
+            if (model_inv_transp_loc_ != -1)
+            {
+                const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
+                glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));
+            }
+        }
+    }
 
-	void Program::Use(Material* material)
-	{
-		if (material)
-		{
-			if (texture0_loc_ != -1)
-			{
-				SetTexture(0, material->pTexture0_.get());
-				glUniform1i(texture0_loc_, 0);
-			}
+    void Program::Use(Material* material)
+    {
+        if (material)
+        {
+            if (texture0_loc_ != -1)
+            {
+                SetTexture(0, material->pTexture0_.get());
+                glUniform1i(texture0_loc_, 0);
+            }
 
-			if (texture1_loc_ != -1)
-			{
-				SetTexture(1, material->pTexture1_.get());
-				glUniform1i(texture1_loc_, 1);
-			}
+            if (texture1_loc_ != -1)
+            {
+                SetTexture(1, material->pTexture1_.get());
+                glUniform1i(texture1_loc_, 1);
+            }
 
-			if (color_loc_ != -1)
-			{
-				glUniform4fv(color_loc_, 1, &material->color_[0]);
-			}
+            if (color_loc_ != -1)
+            {
+                glUniform4fv(color_loc_, 1, &material->color_[0]);
+            }
 
-			if (color_ambient_loc_ != -1)
-			{
-				glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
-			}
+            if (color_ambient_loc_ != -1)
+            {
+                glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
+            }
 
-			if (color_scene_ambient_loc_ != -1)
-			{
-				glUniform4fv(color_scene_ambient_loc_, 1, &Scene::ambient[0]);
-			}
+            if (color_scene_ambient_loc_ != -1)
+            {
+                glUniform4fv(color_scene_ambient_loc_, 1, &Scene::ambient[0]);
+            }
 
-			if (color_diffuse_loc_ != -1)
-			{
-				glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
-			}
+            if (color_diffuse_loc_ != -1)
+            {
+                glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
+            }
 
-			if (color_specular_loc_ != -1)
-			{
-				glUniform4fv(color_specular_loc_, 1, &material->specular_[0]);
-			}
+            if (color_specular_loc_ != -1)
+            {
+                glUniform4fv(color_specular_loc_, 1, &material->specular_[0]);
+            }
 
-			if (shininess_loc_ != -1)
-			{
-				glUniform1f(shininess_loc_, material->shininess_);
-			}
-		}
-	}
+            if (shininess_loc_ != -1)
+            {
+                glUniform1f(shininess_loc_, material->shininess_);
+            }
+        }
+    }
 
-	void Program::Use()
-	{
-		SetProgram(this);
+    void Program::Use(Material* material, Node* node)
+    {
+        bool programChanged = SetProgram(this);
 
-		if (pExtraUniforms_)
-		{
-			pExtraUniforms_->AssignValues();
-		}
+        //if (activeMaterial_ != material || (material && material->HasChanged()) || programChanged)
+        {
+        	activeMaterial_ = material;
+            Use(material);
+        }
 
-		if (v_inv_loc_ != -1)
-		{
-			if (Camera::GetActiveCamera())
-				glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetActiveCamera()->GetInverseViewMatrix()));
-			else
-				glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(IDENTITY_MATRIX));
-		}
+        //if (activeNode_ != node || (node && node->IsDirty()) || programChanged)
+        {
+        	activeNode_ = node;
+            Use(node);
+        }
 
-		if (hasLights_)
-		{
-			const Light::Lights& ligths = Light::GetLights();
+        if (pExtraUniforms_)
+        {
+            pExtraUniforms_->AssignValues();
+        }
 
-			size_t n = std::min(ligths.size(), MAX_LIGHTS);
+        if (v_inv_loc_ != -1)
+        {
+            Camera* camera = Camera::GetActiveCamera();
 
-			glUniform1i(numOfLights_loc_, n);
+            if (camera)
+            {
+                //if (activeCamera_ != camera || camera->IsDirty() || programChanged)
+                {
+                    activeCamera_ = camera;
+                    glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetActiveCamera()->GetInverseViewMatrix()));
+                }
+            }
+            else //if (activeCamera_ != camera || programChanged)
+            {
+                activeCamera_ = nullptr;
+                glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(IDENTITY_MATRIX));
+            }
+        }
 
-			for (size_t i = 0; i < n; i++)
-			{
-				GLint type = ligths[i]->GetType();
+        if (hasLights_)
+        {
+            const Light::Lights& ligths = Light::GetLights();
 
-				if (lightsLoc_[i].type_loc != -1)
-				{
-					glUniform1i(lightsLoc_[i].type_loc, type);
-				}
+            size_t n = std::min(ligths.size(), MAX_LIGHTS);
 
-				if (lightsLoc_[i].position_loc != -1)
-				{
-					if (type == Light::DIRECTIONAL)
-					{
-						const Vertex3& direction = ligths[i]->GetLookAtDirection();
-						glUniform3fv(lightsLoc_[i].position_loc, 1, &direction[0]);
-					}
-					else
-					{
-						const Vertex3& position = ligths[i]->GetGlobalPosition();
-						glUniform3fv(lightsLoc_[i].position_loc, 1, &position[0]);
-					}
-				}
+            if (nLights_ != n || programChanged)
+            {
+                glUniform1i(numOfLights_loc_, n);
+                nLights_ = n;
+            }
 
-				if (lightsLoc_[i].diffuse_loc != -1)
-				{
-					const Color& diffuse = ligths[i]->GetDiffuseColor();
-					glUniform4fv(lightsLoc_[i].diffuse_loc, 1, &diffuse[0]);
-				}
+            for (size_t i = 0; i < n; i++)
+            {
+                Light* light = ligths[i];
 
-				if (lightsLoc_[i].specular_loc != -1)
-				{
-					const Color& specular = ligths[i]->GetSpecularColor();
-					glUniform4fv(lightsLoc_[i].specular_loc, 1, &specular[0]);
-				}
+                //if (light->HasChanged() || programChanged)
+                {
+                    light->SetHasChanged(false);
 
-				if (lightsLoc_[i].constantAttenuation_loc != -1)
-				{
-					const Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
-					glUniform1f(lightsLoc_[i].constantAttenuation_loc, attenuation.constant);
-				}
+                    GLint type = light->GetType();
 
-				if (lightsLoc_[i].linearAttenuation_loc != -1)
-				{
-					const Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
-					glUniform1f(lightsLoc_[i].linearAttenuation_loc, attenuation.linear);
-				}
+                    if (lightsLoc_[i].type_loc != -1)
+                    {
+                        glUniform1i(lightsLoc_[i].type_loc, type);
+                    }
 
-				if (lightsLoc_[i].quadraticAttenuation_loc != -1)
-				{
-					const Light::Attenuation& attenuation = ligths[i]->GetAttenuation();
-					glUniform1f(lightsLoc_[i].quadraticAttenuation_loc, attenuation.quadratic);
-				}
+                    if (lightsLoc_[i].position_loc != -1)
+                    {
+                        if (type == Light::DIRECTIONAL)
+                        {
+                            const Vertex3& direction = light->GetLookAtDirection();
+                            glUniform3fv(lightsLoc_[i].position_loc, 1, &direction[0]);
+                        }
+                        else
+                        {
+                            const Vertex3& position = light->GetGlobalPosition();
+                            glUniform3fv(lightsLoc_[i].position_loc, 1, &position[0]);
+                        }
+                    }
 
-				if (type == Light::SPOT)
-				{
-					if (lightsLoc_[i].spotCutoff_loc != -1)
-					{
-						float cutOff = ligths[i]->GetSpotCutOff();
-						glUniform1f(lightsLoc_[i].spotCutoff_loc, cutOff);
-					}
+                    if (lightsLoc_[i].diffuse_loc != -1)
+                    {
+                        const Color& diffuse = light->GetDiffuseColor();
+                        glUniform4fv(lightsLoc_[i].diffuse_loc, 1, &diffuse[0]);
+                    }
 
-					if (lightsLoc_[i].spotExponent_loc != -1)
-					{
-						float exponent = ligths[i]->GetSpotExponent();
-						glUniform1f(lightsLoc_[i].spotExponent_loc, exponent);
-					}
+                    if (lightsLoc_[i].specular_loc != -1)
+                    {
+                        const Color& specular = light->GetSpecularColor();
+                        glUniform4fv(lightsLoc_[i].specular_loc, 1, &specular[0]);
+                    }
 
-					if (lightsLoc_[i].spotDirection_loc != -1)
-					{
-						const Vertex3& direction = ligths[i]->GetLookAtDirection();
-						glUniform3fv(lightsLoc_[i].spotDirection_loc, 1, &direction[0]);
-					}
-				}
-			}
-		}
-	}	
+                    if (lightsLoc_[i].constantAttenuation_loc != -1)
+                    {
+                        const Light::Attenuation& attenuation = light->GetAttenuation();
+                        glUniform1f(lightsLoc_[i].constantAttenuation_loc, attenuation.constant);
+                    }
+
+                    if (lightsLoc_[i].linearAttenuation_loc != -1)
+                    {
+                        const Light::Attenuation& attenuation = light->GetAttenuation();
+                        glUniform1f(lightsLoc_[i].linearAttenuation_loc, attenuation.linear);
+                    }
+
+                    if (lightsLoc_[i].quadraticAttenuation_loc != -1)
+                    {
+                        const Light::Attenuation& attenuation = light->GetAttenuation();
+                        glUniform1f(lightsLoc_[i].quadraticAttenuation_loc, attenuation.quadratic);
+                    }
+
+                    if (type == Light::SPOT)
+                    {
+                        if (lightsLoc_[i].spotCutoff_loc != -1)
+                        {
+                            float cutOff = ligths[i]->GetSpotCutOff();
+                            glUniform1f(lightsLoc_[i].spotCutoff_loc, cutOff);
+                        }
+
+                        if (lightsLoc_[i].spotExponent_loc != -1)
+                        {
+                            float exponent = light->GetSpotExponent();
+                            glUniform1f(lightsLoc_[i].spotExponent_loc, exponent);
+                        }
+
+                        if (lightsLoc_[i].spotDirection_loc != -1)
+                        {
+                            const Vertex3& direction = light->GetLookAtDirection();
+                            glUniform3fv(lightsLoc_[i].spotDirection_loc, 1, &direction[0]);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
