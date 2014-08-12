@@ -67,7 +67,8 @@ namespace NSG
         CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
 
         GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
-        pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(Buffer::MAX_BUFFER_SIZE, bytesNeeded, vertexsData_);
+        //pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(Buffer::MAX_BUFFER_SIZE, bytesNeeded, vertexsData_);
+        pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(bytesNeeded, bytesNeeded, vertexsData_);
         bufferVertexData_ = pVBuffer_->GetLastAllocation();
         CHECK_ASSERT(bufferVertexData_->maxSize_, __FILE__, __LINE__);
 
@@ -83,7 +84,8 @@ namespace NSG
             });
 
             GLsizeiptr bytesNeeded = sizeof(IndexType) * tmpIndexes.size();
-            pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(Buffer::MAX_BUFFER_SIZE, bytesNeeded, tmpIndexes);
+            //pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(Buffer::MAX_BUFFER_SIZE, bytesNeeded, tmpIndexes);
+            pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(bytesNeeded, bytesNeeded, tmpIndexes);
             bufferIndexData_ = pIBuffer_->GetLastAllocation();
             CHECK_ASSERT(bufferIndexData_->maxSize_, __FILE__, __LINE__);
         }
