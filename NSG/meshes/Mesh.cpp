@@ -49,7 +49,7 @@ namespace NSG
     }
 
 
-    void Mesh::Render(bool solid, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc)
+    void Mesh::Render(bool solid, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc, bool programHasChanged)
     {
         if (IsReady())
         {
@@ -59,9 +59,11 @@ namespace NSG
 
             bool vboChanged = SetVertexBuffer(pVBuffer_.get());
 
+            bool updateAttributes = vboChanged || hasChanged_ || programHasChanged;
+
             if (position_loc != -1)
             {
-                //if (vboChanged || hasChanged_)
+                if (updateAttributes)
                     glVertexAttribPointer(position_loc,
                                           3,
                                           GL_FLOAT,
@@ -74,7 +76,7 @@ namespace NSG
 
             if (normal_loc != -1)
             {
-                //if (vboChanged || hasChanged_)
+                if (updateAttributes)
                     glVertexAttribPointer(normal_loc,
                                           3,
                                           GL_FLOAT,
@@ -87,7 +89,7 @@ namespace NSG
 
             if (texcoord_loc != -1)
             {
-                //if (vboChanged || hasChanged_)
+                if (updateAttributes)
                     glVertexAttribPointer(texcoord_loc,
                                           2,
                                           GL_FLOAT,
@@ -100,7 +102,7 @@ namespace NSG
 
             if (color_loc != -1)
             {
-                //if (vboChanged || hasChanged_)
+                if (updateAttributes)
                     glVertexAttribPointer(color_loc,
                                           3,
                                           GL_FLOAT,

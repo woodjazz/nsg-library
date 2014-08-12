@@ -57,8 +57,6 @@ namespace NSG
 		Type GetType() const { return type_; }
 		typedef std::vector<Light*> Lights;
 		static const Lights& GetLights();
-		bool HasChanged() const { return hasChanged_; }
-		void SetHasChanged(bool changed);
 	private:
 		Type type_;
         Color diffuse_;
@@ -66,6 +64,5 @@ namespace NSG
         Attenuation attenuation_;
         float spotCutOff_;
         float exponent_;
-        bool hasChanged_;
 	};
 }

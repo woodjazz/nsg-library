@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
 
-Copyright (c) 2014-2015 Néstor Silveira Gorski
+Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -24,42 +24,16 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <vector>
-#include <memory>
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "Types.h"
-#include "Node.h"
-#include "GPUObject.h"
-#include "Resource.h"
-#include "Buffer.h"
-#include "BoundingBox.h"
 
-namespace NSG
+namespace NSG 
 {
-	class Mesh : public GPUObject
+	struct UniformsUpdate
 	{
-	public:
-		Mesh(GLenum usage);
-		~Mesh();
-		void Render(bool solid, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc, bool programHasChanged);
-		virtual GLenum GetWireFrameDrawMode() const = 0;
-		virtual GLenum GetSolidDrawMode() const = 0;
-		virtual bool IsValid() override;
-		virtual void AllocateResources() override;
-		virtual void ReleaseResources() override;
-		const BoundingBox& GetBB() const { return bb_; }
-		void SetHasChanged(bool changed);
-	protected:
-		VertexsData vertexsData_;
-		Indexes indexes_;
-		PIndexBuffer pIBuffer_;
-		PVertexBuffer pVBuffer_;
-		GLenum usage_;
-        PResource resource_;
-        Buffer::Data* bufferVertexData_;
-        Buffer::Data* bufferIndexData_;
-        BoundingBox bb_;
-        bool hasChanged_;
+		UniformsUpdate() { needUpdate_ = true; }
+		bool UniformsNeedUpdate() const { return needUpdate_; }
+		void ClearUniformsNeedUpdate() const { needUpdate_ = false; }
+		void SetUniformsNeedUpdate() const { needUpdate_ = true; }
+	private:
+		mutable bool needUpdate_;
 	};
 }

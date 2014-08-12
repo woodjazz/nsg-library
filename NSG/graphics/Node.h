@@ -25,11 +25,12 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "UniformsUpdate.h"
 #include <vector>
 
 namespace NSG
 {
-	class Node
+	class Node : public UniformsUpdate
 	{
 	public:
 		Node();

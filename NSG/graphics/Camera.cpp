@@ -172,6 +172,8 @@ namespace NSG
         }
 
         UpdateViewProjection();
+
+        SetUniformsNeedUpdate();
     }
 
     void Camera::UpdateViewProjection() const

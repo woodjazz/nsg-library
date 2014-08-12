@@ -72,7 +72,7 @@ namespace NSG
         {
             return att_color_loc_;
         }
-        void Use(Material* material, Node* node);
+        bool Use(Material* material, Node* node);
         GLuint GetId() const
         {
             return id_;

@@ -29,12 +29,13 @@ misrepresented as being the original software.
 #include "GPUObject.h"
 #include "Program.h"
 #include "Types.h"
+#include "UniformsUpdate.h"
 #include <vector>
 
 namespace NSG
 {
 	class UseMaterial;
-	class Material : public GPUObject
+	class Material : public GPUObject, UniformsUpdate
 	{
 	public:
 		Material();
@@ -62,7 +63,6 @@ namespace NSG
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;
-		bool HasChanged() const { return hasChanged_; }
 	private:
 		void Use();
 		PTexture pTexture0_;
@@ -77,8 +77,6 @@ namespace NSG
         Color color_;
 
         bool enableCullFace_;
-
-        bool hasChanged_;
 
 		friend class UseMaterial;
 		friend class Program;

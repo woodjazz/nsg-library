@@ -14,8 +14,7 @@ namespace NSG
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
           spotCutOff_(45),
-          exponent_(20),
-          hasChanged_(true)
+          exponent_(20)
     {
         attenuation_.constant = 1;
         attenuation_.linear = 0;
@@ -41,7 +40,7 @@ namespace NSG
         if (diffuse_ != diffuse)
         {
             diffuse_ = diffuse;
-            hasChanged_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -50,7 +49,7 @@ namespace NSG
         if (specular_ != specular)
         {
             specular_ = specular;
-            hasChanged_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -62,7 +61,7 @@ namespace NSG
             attenuation_.constant = constant;
             attenuation_.linear = linear;
             attenuation_.quadratic = quadratic;
-            hasChanged_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -71,7 +70,7 @@ namespace NSG
         if (type_ != POINT)
         {
             type_ = POINT;
-            hasChanged_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -80,7 +79,7 @@ namespace NSG
         if (type_ != DIRECTIONAL)
         {
             type_ = DIRECTIONAL;
-            hasChanged_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -91,12 +90,7 @@ namespace NSG
             type_ = SPOT;
             spotCutOff_ = spotCutOff;
             exponent_ = exponent;
-            hasChanged_ = true;
+            SetUniformsNeedUpdate();
         }
-    }
-
-    void Light::SetHasChanged(bool changed)
-    {
-    	hasChanged_ = changed;
     }
 }

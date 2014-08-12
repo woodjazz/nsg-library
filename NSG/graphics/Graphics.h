@@ -38,8 +38,10 @@ namespace NSG
 	void ClearStencilBuffer(GLint value = 0);
 	void SetStencilTest(bool enable, GLuint writeMask, GLenum sfail, GLenum dpfail, GLenum dppass, GLenum func, GLint ref, GLuint compareMask);
 	void SetColorMask(bool enable);
+	void SetDepthMask(bool enable);
+	void SetStencilMask(GLuint mask);
 	void SetBlendModeTest(BLEND_MODE blendMode);
-	void SetDepthTest(bool enableDepthTest, bool enableDepthBuffer);
+	void SetDepthTest(bool enable);
 	void SetCullFace(bool enable);
 	void SetTexture(unsigned index, Texture* texture);
 	bool SetVertexBuffer(VertexBuffer* buffer);
@@ -49,5 +51,5 @@ namespace NSG
 	bool SetProgram(Program* program);
 	Program* GetProgram();
 	void SetFrameBuffer(GLuint value);
-	void EndFrame();
+	void DiscardFramebuffer();
 }

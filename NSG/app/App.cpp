@@ -242,17 +242,17 @@ namespace NSG
         ClearAllBuffers();
 
         pApp_->RenderFrame();
-
+#if 0
         Camera* camera(Camera::GetActiveCamera());
 
         IMGUI::Context::this_->RenderGUI();
 
         Camera::Activate(camera);
-
+#endif
         if (AppStatistics::this_)
             AppStatistics::this_->NewFrame();
 
-        EndFrame();
+        DiscardFramebuffer();
 
     }
 

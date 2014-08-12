@@ -309,6 +309,8 @@ namespace NSG
                 const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
                 glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));
             }
+            
+            node->ClearUniformsNeedUpdate();
         }
     }
 
@@ -357,20 +359,22 @@ namespace NSG
             {
                 glUniform1f(shininess_loc_, material->shininess_);
             }
+            
+            material->ClearUniformsNeedUpdate();
         }
     }
 
-    void Program::Use(Material* material, Node* node)
+    bool Program::Use(Material* material, Node* node)
     {
         bool programChanged = SetProgram(this);
 
-        //if (activeMaterial_ != material || (material && material->HasChanged()) || programChanged)
+        if (activeMaterial_ != material || (material && material->UniformsNeedUpdate()) || programChanged)
         {
         	activeMaterial_ = material;
             Use(material);
         }
 
-        //if (activeNode_ != node || (node && node->IsDirty()) || programChanged)
+        if (activeNode_ != node || (node && node->UniformsNeedUpdate()) || programChanged)
         {
         	activeNode_ = node;
             Use(node);
@@ -387,13 +391,14 @@ namespace NSG
 
             if (camera)
             {
-                //if (activeCamera_ != camera || camera->IsDirty() || programChanged)
+                if (activeCamera_ != camera || camera->UniformsNeedUpdate() || programChanged)
                 {
                     activeCamera_ = camera;
                     glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetActiveCamera()->GetInverseViewMatrix()));
+                    camera->ClearUniformsNeedUpdate();
                 }
             }
-            else //if (activeCamera_ != camera || programChanged)
+            else if (activeCamera_ != camera || programChanged)
             {
                 activeCamera_ = nullptr;
                 glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(IDENTITY_MATRIX));
@@ -416,9 +421,9 @@ namespace NSG
             {
                 Light* light = ligths[i];
 
-                //if (light->HasChanged() || programChanged)
+                if (light->UniformsNeedUpdate() || programChanged)
                 {
-                    light->SetHasChanged(false);
+                    light->ClearUniformsNeedUpdate();
 
                     GLint type = light->GetType();
 
@@ -494,5 +499,7 @@ namespace NSG
                 }
             }
         }
+
+        return programChanged;
     }
 }

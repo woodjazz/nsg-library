@@ -192,7 +192,7 @@ namespace NSG
 		if(inheritScale_ != inherit)
 		{
 			inheritScale_ = inherit; 
-			dirty_ = true;
+			MarkAsDirty();
 		}
 	}
 
@@ -272,6 +272,7 @@ namespace NSG
 			while (it != children_.end())
 			{
 				(*it)->dirty_ = true;
+				(*it)->SetUniformsNeedUpdate();
 				(*it)->Update();
 				++it;
 			}
@@ -327,6 +328,7 @@ namespace NSG
 	void Node::MarkAsDirty()
 	{
 		dirty_ = true;
+		SetUniformsNeedUpdate();
 		auto it = children_.begin();
 		while (it != children_.end())
 			(*(it++))->MarkAsDirty();

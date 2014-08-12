@@ -45,11 +45,12 @@ namespace NSG
     static const GLuint DEFAULT_STENCIL_COMPAREMASK = ~GLuint(0);
 
     static const bool DEFAULT_COLOR_MASK = true;
+    static const bool DEFAULT_DEPTH_MASK = true;
+    static const GLuint DEFAULT_STENCIL_MASK = ~GLuint(0);
 
     static const BLEND_MODE DEFAULT_BLEND_MODE = BLEND_NONE;
 
     static const bool DEFAULT_DEPTH_TEST_ENABLE = false;
-    static const bool DEFAULT_DEPTH_BUFFER_ENABLE = true;
 
     static const bool DEFAULT_CULL_FACE_ENABLE = false;
 
@@ -68,8 +69,10 @@ namespace NSG
         SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL,
                        DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
         SetColorMask(DEFAULT_COLOR_MASK);
+        SetDepthMask(DEFAULT_DEPTH_MASK);
+        SetStencilMask(DEFAULT_STENCIL_MASK);
         SetBlendModeTest(DEFAULT_BLEND_MODE);
-        SetDepthTest(DEFAULT_DEPTH_TEST_ENABLE, DEFAULT_DEPTH_BUFFER_ENABLE);
+        SetDepthTest(DEFAULT_DEPTH_TEST_ENABLE);
         SetCullFace(DEFAULT_CULL_FACE_ENABLE);
         for (unsigned idx = 0; idx < MAX_TEXTURE_UNITS; idx++)
             SetTexture(idx, nullptr);
@@ -110,10 +113,10 @@ namespace NSG
     {
         static Color color_(0, 0, 0, 1);
 
-        //if (color_ != color)
+        if (color_ != color)
         {
             glClearColor(color.r, color.g, color.b, color.a);
-            SetColorMask(true);
+            
             color_ = color;
         }
     }
@@ -122,10 +125,10 @@ namespace NSG
     {
         static GLclampf depth_ = 1;
 
-        //if (depth_ != depth)
+        if (depth_ != depth)
         {
             glClearDepth(depth);
-            glDepthMask(GL_TRUE);
+            
             depth_ = depth;
         }
     }
@@ -134,18 +137,21 @@ namespace NSG
     {
         static GLint clear_ = 0;
 
-        //if (clear_ != clear)
+        if (clear_ != clear)
         {
             glClearStencil(clear);
-            glStencilMask(~GLuint(0));
+            
             clear_ = clear;
         }
     }
     void ClearAllBuffers()
     {
         SetClearColor(Color(0, 0, 0, 1));
+        SetColorMask(true);
         SetClearDepth(1);
+        SetDepthMask(true);
         SetClearStencil(0);
+        SetStencilMask(~GLuint(0));
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
@@ -156,18 +162,21 @@ namespace NSG
         if (color)
         {
             mask |= GL_COLOR_BUFFER_BIT;
+            SetColorMask(true);
             SetClearColor(Color(0, 0, 0, 1));
         }
 
         if (depth)
         {
             mask |= GL_DEPTH_BUFFER_BIT;
+            SetDepthMask(true);
             SetClearDepth(1);
         }
 
         if (stencil)
         {
             mask |= GL_STENCIL_BUFFER_BIT;
+            SetStencilMask(~GLuint(0));
             SetClearStencil(0);
         }
 
@@ -225,12 +234,11 @@ namespace NSG
         }
     }
 
-    static GLuint colorMaskFrameBuffer_ = frameBuffer_;
     void SetColorMask(bool enable)
     {
         static bool enable_ = DEFAULT_COLOR_MASK;
 
-        if (enable != enable_ || colorMaskFrameBuffer_ != frameBuffer_)
+        if (enable != enable_)
         {
             if (enable)
                 glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -238,7 +246,33 @@ namespace NSG
                 glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
             enable_ = enable;
-            colorMaskFrameBuffer_ = frameBuffer_;
+        }
+    }
+
+    void SetDepthMask(bool enable)
+    {
+        static bool enable_ = DEFAULT_DEPTH_MASK;
+
+        if (enable != enable_)
+        {
+            if (enable)
+                glDepthMask(GL_TRUE);
+            else
+                glDepthMask(GL_FALSE);
+
+            enable_ = enable;
+        }
+    }
+
+    void SetStencilMask(GLuint mask)
+    {
+        static GLuint mask_ = DEFAULT_STENCIL_MASK;
+
+        if (mask != mask_)
+        {
+            glStencilMask(mask);
+ 
+            mask_ = mask;
         }
     }
 
@@ -268,29 +302,18 @@ namespace NSG
         }
     }
 
-    void SetDepthTest(bool enableDepthTest, bool enableDepthBuffer)
+    void SetDepthTest(bool enable)
     {
-        static bool enableDepthTest_ = DEFAULT_DEPTH_TEST_ENABLE;
-        static bool enableDepthBuffer_ = DEFAULT_DEPTH_BUFFER_ENABLE;
+        static bool enable_ = DEFAULT_DEPTH_TEST_ENABLE;
 
-        if (enableDepthTest != enableDepthTest_)
+        if (enable != enable_)
         {
-            if (enableDepthTest)
+            if (enable)
                 glEnable(GL_DEPTH_TEST);
             else
                 glDisable(GL_DEPTH_TEST);
 
-            enableDepthTest_ = enableDepthTest;
-        }
-
-        if (enableDepthBuffer != enableDepthBuffer_)
-        {
-            if (enableDepthBuffer)
-                glDepthMask(GL_TRUE);
-            else
-                glDepthMask(GL_FALSE);
-
-            enableDepthBuffer_ = enableDepthBuffer;
+            enable_ = enable;
         }
     }
 
@@ -422,7 +445,7 @@ namespace NSG
         return program_;
     }
 
-    void EndFrame()
+    void DiscardFramebuffer()
     {
         static bool init_ = false;
         static bool has_discard_framebuffer_ = false;

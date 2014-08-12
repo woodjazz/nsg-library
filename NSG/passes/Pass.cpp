@@ -164,7 +164,8 @@ namespace NSG
 			SetColorMask(enableColorBuffer_);
 			SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_, stencilFunc_, stencilRefValue_, stencilMaskValue_);
 			SetBlendModeTest(blendMode_);
-			SetDepthTest(enableDepthTest_, enableDepthBuffer_);
+			SetDepthTest(enableDepthTest_);
+            SetDepthMask(enableDepthBuffer_);
 			const Camera* camera = Camera::GetActiveCamera();
 			for(auto& meshNode : meshNodes_)
 			{
