@@ -29,6 +29,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Graphics;
+	typedef std::unique_ptr<Graphics> PGraphics;
+
 	class Frustum;
 	typedef std::shared_ptr<Frustum> PFrustum;
 	

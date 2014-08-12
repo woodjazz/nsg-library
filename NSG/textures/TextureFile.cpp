@@ -69,7 +69,7 @@ namespace NSG
             CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
         }
 
-		SetTexture(0, this);
+		Graphics::this_->SetTexture(0, this);
 
 		glTexImage2D(GL_TEXTURE_2D,
 			0,
@@ -81,7 +81,7 @@ namespace NSG
 			type_,
 			img);
 
-		SetTexture(0, nullptr);
+		Graphics::this_->SetTexture(0, nullptr);
 
 
 		SOIL_free_image_data(img);

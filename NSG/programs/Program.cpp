@@ -217,8 +217,8 @@ namespace NSG
         pFShader_ = nullptr;
         glDeleteProgram(id_);
 
-        if (GetProgram() == this)
-            SetProgram(nullptr);
+        if (Graphics::this_->GetProgram() == this)
+            Graphics::this_->SetProgram(nullptr);
     }
 
     bool Program::Initialize()
@@ -320,13 +320,13 @@ namespace NSG
         {
             if (texture0_loc_ != -1)
             {
-                SetTexture(0, material->pTexture0_.get());
+                Graphics::this_->SetTexture(0, material->pTexture0_.get());
                 glUniform1i(texture0_loc_, 0);
             }
 
             if (texture1_loc_ != -1)
             {
-                SetTexture(1, material->pTexture1_.get());
+                Graphics::this_->SetTexture(1, material->pTexture1_.get());
                 glUniform1i(texture1_loc_, 1);
             }
 
@@ -366,7 +366,7 @@ namespace NSG
 
     bool Program::Use(Material* material, Node* node)
     {
-        bool programChanged = SetProgram(this);
+        bool programChanged = Graphics::this_->SetProgram(this);
 
         if (activeMaterial_ != material || (material && material->UniformsNeedUpdate()) || programChanged)
         {

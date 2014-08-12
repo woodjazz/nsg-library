@@ -27,6 +27,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	extern const float PI;
-	extern const float TWO_PI;
+	static const float PI = glm::pi<float>();
+	static const float TWO_PI = 2*PI;
+	static const unsigned MAX_TEXTURE_UNITS = 8;
 }

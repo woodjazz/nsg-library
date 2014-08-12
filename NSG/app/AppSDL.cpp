@@ -52,32 +52,52 @@ namespace NSG
     static bool minimized = false;
     static SDL_Window* win = nullptr;
 
+    static void AppEnterBackground()
+    {
+        if (!minimized)
+        {
+            minimized = true;
+            app->InvalidateGPUContext();
+            app->ReleaseResourcesFromMemory();
+        }
+    }
+
+    static void AppEnterForeground()
+    {
+        minimized = false;
+    }
+
     static void RenderFrame(void* data = nullptr)
     {
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_WINDOWEVENT)
+            if (event.type == SDL_APP_DIDENTERBACKGROUND)
+            {
+                AppEnterBackground();
+            }
+            else if (event.type == SDL_APP_DIDENTERFOREGROUND)
+            {
+                AppEnterForeground();
+            }
+            else if (event.type == SDL_WINDOWEVENT)
             {
                 switch (event.window.event)
                 {
                 case SDL_WINDOWEVENT_MINIMIZED:
-                    minimized = true;
-                    app->InvalidateGPUContext();
-                    app->ReleaseResourcesFromMemory();
+                    AppEnterBackground();
                     break;
 
 #if !EMSCRIPTEN
                 case SDL_WINDOWEVENT_RESIZED:
                 case SDL_WINDOWEVENT_RESTORED:
                 {
-                    minimized = false;
+                    AppEnterForeground();
                     SDL_GetWindowSize(win, &width, &height);
                     app->ViewChanged(width, height);
                     break;
                 }
 #endif
-
                 default:
                     break;
                 }
@@ -294,7 +314,7 @@ namespace NSG
         int value = 0;
         SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
         CHECK_ASSERT(value == DOUBLE_BUFFER, __FILE__, __LINE__);
-//#ifndef GL_ES_VERSION_2_0
+        //#ifndef GL_ES_VERSION_2_0
         SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
         CHECK_ASSERT(value == DEPTH_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);

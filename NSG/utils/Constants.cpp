@@ -26,6 +26,4 @@ misrepresented as being the original software.
 #include "Constants.h"
 namespace NSG
 {
-	const float PI = glm::pi<float>();
-	const float TWO_PI = 2*PI;
 }

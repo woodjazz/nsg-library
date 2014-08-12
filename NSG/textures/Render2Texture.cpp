@@ -65,7 +65,7 @@ namespace NSG
 
         CHECK_ASSERT(pTexture_ != nullptr, __FILE__, __LINE__);
 
-        if (CheckExtension("EXT_discard_framebuffer"))
+        if (Graphics::this_->CheckExtension("EXT_discard_framebuffer"))
              has_discard_framebuffer_ = true;
  
         GLint width  = pTexture_->GetWidth();
@@ -75,7 +75,7 @@ namespace NSG
 
         glGenFramebuffers(1, &framebuffer_);
 
-        SetFrameBuffer(framebuffer_);
+        Graphics::this_->SetFrameBuffer(framebuffer_);
 
         {
             // The color buffer
@@ -98,7 +98,7 @@ namespace NSG
         else if (createDepthBuffer_)
         {
 #if IOS
-            if (CheckExtension("GL_OES_depth_texture"))
+            if (Graphics::this_->CheckExtension("GL_OES_depth_texture"))
             {
                 depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width, height, nullptr));
                 if (depthTexture_->IsReady())
@@ -146,7 +146,7 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        SetFrameBuffer(0);
+        Graphics::this_->SetFrameBuffer(0);
 
         enabled_ = false;
     }
@@ -159,16 +159,16 @@ namespace NSG
 
             glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
 
-            SetFrameBuffer(framebuffer_);
+            Graphics::this_->SetFrameBuffer(framebuffer_);
 
             glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
 
             if (createDepthStencilBuffer_)
-                ClearAllBuffers();
+                Graphics::this_->ClearAllBuffers();
             else if (createDepthBuffer_)
-                ClearBuffers(true, true, false);
+                Graphics::this_->ClearBuffers(true, true, false);
             else
-                ClearBuffers(true, false, false);
+                Graphics::this_->ClearBuffers(true, false, false);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -191,7 +191,7 @@ namespace NSG
                 glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, discards);
             }*/
 
-            SetFrameBuffer(0);
+            Graphics::this_->SetFrameBuffer(0);
 
             glViewport(viewport_.x, viewport_.y, viewport_.z, viewport_.w);
 

@@ -205,7 +205,7 @@ namespace NSG
         {
             hotitem_ = 0;
             lastId_ = static_cast<IdType>(IdsTypes::IMGUI_FIRST_VALID_ID);
-            ClearStencilBuffer();
+            Graphics::this_->ClearStencilBuffer();
             BeginWindow();
         }
 

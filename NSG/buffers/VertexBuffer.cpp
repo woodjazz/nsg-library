@@ -34,7 +34,7 @@ namespace NSG
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 		
-		bool ok = SetVertexBuffer(this);
+		bool ok = Graphics::this_->SetVertexBuffer(this);
 		CHECK_ASSERT(ok, __FILE__, __LINE__);
 
 		glBufferData(type_, bufferSize, nullptr, usage_);
@@ -49,8 +49,8 @@ namespace NSG
 
 	VertexBuffer::~VertexBuffer()
 	{
-		if(GetVertexBuffer() == this)
-			SetVertexBuffer(nullptr);
+		if(Graphics::this_->GetVertexBuffer() == this)
+			Graphics::this_->SetVertexBuffer(nullptr);
 	}
 
 	bool VertexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes)
@@ -61,7 +61,7 @@ namespace NSG
 
 			CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			SetVertexBuffer(this);
+			Graphics::this_->SetVertexBuffer(this);
 
 			GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
 
@@ -88,7 +88,7 @@ namespace NSG
 
 		CHECK_ASSERT(bytes2Set <= obj.maxSize_, __FILE__, __LINE__);
 
-		SetVertexBuffer(this);
+		Graphics::this_->SetVertexBuffer(this);
 
 		glBufferSubData(type_, obj.offset_, bytes2Set, &vertexes[0]);
 

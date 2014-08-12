@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "BufferManager.h"
 #include "Audio.h"
+#include "Graphics.h"
 
 namespace NSG
 {
@@ -93,7 +94,7 @@ namespace NSG
 
         bufferManager_->Invalidate();
 
-        ResetCachedState();
+        Graphics::this_->ResetCachedState();
 
         TRACE_LOG("Context::InvalidateGPUResources done");
     }
@@ -156,6 +157,8 @@ namespace NSG
 
     void Context::Initialize()
     {
+        graphics_ = PGraphics(new Graphics);
+        
         audio_ = PAudio(new Audio);
     }
 }

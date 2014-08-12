@@ -83,7 +83,7 @@ namespace NSG
             data = pResource_->GetData();
         }
 
-        SetTexture(0, this);
+        Graphics::this_->SetTexture(0, this);
 
         glTexImage2D(GL_TEXTURE_2D,
                      0,
@@ -103,6 +103,6 @@ namespace NSG
         }
 #endif
 
-        SetTexture(0, nullptr);
+        Graphics::this_->SetTexture(0, nullptr);
     }
 }

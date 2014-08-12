@@ -150,19 +150,10 @@ namespace NSG
 
     void InternalApp::BeginTick()
     {
-        // Set up texture data read/write alignment
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        SetFrameBuffer(0);
-
-        CHECK_ASSERT(pApp_->width_ > 0 && pApp_->height_ > 0, __FILE__, __LINE__);
-        glViewport(0, 0, pApp_->width_, pApp_->height_);
+        Context::this_->Initialize();
 
         if (AppStatistics::this_)
             AppStatistics::this_->Reset();
-
-        Context::this_->Initialize();
 
         pApp_->Start();
     }
@@ -239,10 +230,10 @@ namespace NSG
     {
         PerformTick();
 
-        ClearAllBuffers();
+        Graphics::this_->ClearAllBuffers();
 
         pApp_->RenderFrame();
-#if 0
+#if 1
         Camera* camera(Camera::GetActiveCamera());
 
         IMGUI::Context::this_->RenderGUI();
@@ -252,7 +243,7 @@ namespace NSG
         if (AppStatistics::this_)
             AppStatistics::this_->NewFrame();
 
-        DiscardFramebuffer();
+        Graphics::this_->DiscardFramebuffer();
 
     }
 

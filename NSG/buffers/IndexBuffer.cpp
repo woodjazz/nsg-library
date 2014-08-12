@@ -38,7 +38,7 @@ namespace NSG
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		bool ok = SetIndexBuffer(this);
+		bool ok = Graphics::this_->SetIndexBuffer(this);
 		CHECK_ASSERT(ok, __FILE__, __LINE__);
 
 		glBufferData(type_, bufferSize, nullptr, usage_);
@@ -53,8 +53,8 @@ namespace NSG
 
 	IndexBuffer::~IndexBuffer()
 	{
-		if(GetIndexBuffer() == this)
-			SetIndexBuffer(nullptr);
+		if(Graphics::this_->GetIndexBuffer() == this)
+			Graphics::this_->SetIndexBuffer(nullptr);
 	}
 
 	void IndexBuffer::UnBind() 
@@ -68,7 +68,7 @@ namespace NSG
 		{
 			CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			SetIndexBuffer(this);
+			Graphics::this_->SetIndexBuffer(this);
 
 			const Data* obj = GetLastAllocation();
 
@@ -91,7 +91,7 @@ namespace NSG
 
 		CHECK_ASSERT(bytes2Set <= obj.maxSize_, __FILE__, __LINE__);
 
-		SetIndexBuffer(this);
+		Graphics::this_->SetIndexBuffer(this);
 
 		glBufferSubData(type_, obj.offset_, bytes2Set, &indexes[0]);
 

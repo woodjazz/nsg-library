@@ -49,8 +49,8 @@ namespace NSG
 		currentDynamicVertexBuffer_ = nullptr;
 		currentDynamicIndexBuffer_ = nullptr;
 
-		SetVertexBuffer(nullptr);
-		SetIndexBuffer(nullptr);
+		Graphics::this_->SetVertexBuffer(nullptr);
+		Graphics::this_->SetIndexBuffer(nullptr);
 	}
 
 	PVertexBuffer BufferManager::GetStaticVertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes)

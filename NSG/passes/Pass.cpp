@@ -161,19 +161,20 @@ namespace NSG
 	{
 		if(material_)
 		{
-			SetColorMask(enableColorBuffer_);
-			SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_, stencilFunc_, stencilRefValue_, stencilMaskValue_);
-			SetBlendModeTest(blendMode_);
-			SetDepthTest(enableDepthTest_);
-            SetDepthMask(enableDepthBuffer_);
+			Graphics::this_->SetColorMask(enableColorBuffer_);
+			Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_, stencilFunc_, stencilRefValue_, stencilMaskValue_);
+			Graphics::this_->SetBlendModeTest(blendMode_);
+			Graphics::this_->SetDepthTest(enableDepthTest_);
+            Graphics::this_->SetDepthMask(enableDepthBuffer_);
 			const Camera* camera = Camera::GetActiveCamera();
 			for(auto& meshNode : meshNodes_)
 			{
 				Node* node = meshNode.first.get();
 				Mesh* mesh = meshNode.second.get();
+				Material* material = material_.get();
 
 				//if (!camera || camera->IsVisible(*node, *mesh))
-					material_->Render(drawMode_ == SOLID, node, mesh);
+					Graphics::this_->Draw(drawMode_ == SOLID, material, node, mesh);
 			}
 		}
 	}

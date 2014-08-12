@@ -118,13 +118,13 @@ namespace NSG
 
 	void FilterBlur::SetLocations()
 	{
-		PProgram pProgram = pMaterial_->GetProgram();
+		Program* program = pMaterial_->GetProgram();
 
-		texelSize_loc_ = pProgram->GetUniformLocation("u_texelSize");
-		orientation_loc_ = pProgram->GetUniformLocation("u_orientation");
-		blurAmount_loc_ = pProgram->GetUniformLocation("u_blurAmount");
-		blurScale_loc_ = pProgram->GetUniformLocation("u_blurScale");
-		blurStrength_loc_ = pProgram->GetUniformLocation("u_blurStrength");
+		texelSize_loc_ = program->GetUniformLocation("u_texelSize");
+		orientation_loc_ = program->GetUniformLocation("u_orientation");
+		blurAmount_loc_ = program->GetUniformLocation("u_blurAmount");
+		blurScale_loc_ = program->GetUniformLocation("u_blurScale");
+		blurStrength_loc_ = program->GetUniformLocation("u_blurStrength");
 	}
 
 	void FilterBlur::AssignValues()

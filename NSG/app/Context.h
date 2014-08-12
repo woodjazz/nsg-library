@@ -41,6 +41,7 @@ namespace NSG
 		PKeyboard keyboard_;
 		PBufferManager bufferManager_;
 		PAudio audio_;
+		PGraphics graphics_;
 
 		Context();
 		~Context();

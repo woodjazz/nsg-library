@@ -34,22 +34,27 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Buffer.h"
 #include "BoundingBox.h"
+#include "UniformsUpdate.h"
 
 namespace NSG
 {
-	class Mesh : public GPUObject
+	class Mesh : public GPUObject, public UniformsUpdate
 	{
 	public:
 		Mesh(GLenum usage);
 		~Mesh();
-		void Render(bool solid, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc, bool programHasChanged);
 		virtual GLenum GetWireFrameDrawMode() const = 0;
 		virtual GLenum GetSolidDrawMode() const = 0;
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;
 		const BoundingBox& GetBB() const { return bb_; }
-		void SetHasChanged(bool changed);
+		VertexBuffer* GetVertexBuffer() const { return pVBuffer_.get(); }
+		IndexBuffer* GetIndexBuffer() const { return pIBuffer_.get(); }
+		const VertexsData& GetVertexsData() const { return vertexsData_; }
+		const Indexes& GetIndexes() const { return indexes_; }
+		Buffer::Data* GetBufferVertexData() const { return bufferVertexData_; }
+		Buffer::Data* GetBufferIndexData() const { return bufferIndexData_; }
 	protected:
 		VertexsData vertexsData_;
 		Indexes indexes_;
@@ -60,6 +65,5 @@ namespace NSG
         Buffer::Data* bufferVertexData_;
         Buffer::Data* bufferIndexData_;
         BoundingBox bb_;
-        bool hasChanged_;
 	};
 }

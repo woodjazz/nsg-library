@@ -42,7 +42,7 @@ namespace NSG
 		~Material();
 		void EnableCullFace(bool enable);
 		void SetProgram(PProgram pProgram);
-		PProgram GetProgram() const { return pProgram_; }
+		Program* GetProgram() const { return pProgram_.get(); }
 		void SetTexture0(PTexture pTexture);
 		void SetTexture1(PTexture pTexture);
         PTexture GetTexture0() const { return pTexture0_; }
@@ -59,12 +59,11 @@ namespace NSG
 		float GetShininess() const { return shininess_; }
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
-		void Render(bool solid, Node* pNode, Mesh* pMesh);
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;
-	private:
 		void Use();
+	private:
 		PTexture pTexture0_;
 		PTexture pTexture1_;
 		PProgram pProgram_;

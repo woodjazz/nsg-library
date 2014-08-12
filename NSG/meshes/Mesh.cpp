@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "App.h"
 #include "Graphics.h"
-#include "AppStatistics.h"
 #include "Context.h"
 #include "BufferManager.h"
 
@@ -38,144 +37,13 @@ namespace NSG
         : pVBuffer_(nullptr),
           pIBuffer_(nullptr),
           usage_(usage),
-          bb_(Vertex3(0)),
-          hasChanged_(true)
+          bb_(Vertex3(0))
     {
     }
 
     Mesh::~Mesh()
     {
         Context::RemoveObject(this);
-    }
-
-
-    void Mesh::Render(bool solid, GLuint position_loc, GLuint texcoord_loc, GLuint normal_loc, GLuint color_loc, bool programHasChanged)
-    {
-        if (IsReady())
-        {
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            CHECK_ASSERT(pVBuffer_, __FILE__, __LINE__);
-
-            bool vboChanged = SetVertexBuffer(pVBuffer_.get());
-
-            bool updateAttributes = vboChanged || hasChanged_ || programHasChanged;
-
-            if (position_loc != -1)
-            {
-                if (updateAttributes)
-                    glVertexAttribPointer(position_loc,
-                                          3,
-                                          GL_FLOAT,
-                                          GL_FALSE,
-                                          sizeof(VertexData),
-                                          reinterpret_cast<void*>(offsetof(VertexData, position_)));
-
-                glEnableVertexAttribArray(position_loc);
-            }
-
-            if (normal_loc != -1)
-            {
-                if (updateAttributes)
-                    glVertexAttribPointer(normal_loc,
-                                          3,
-                                          GL_FLOAT,
-                                          GL_FALSE,
-                                          sizeof(VertexData),
-                                          reinterpret_cast<void*>(offsetof(VertexData, normal_)));
-
-                glEnableVertexAttribArray(normal_loc);
-            }
-
-            if (texcoord_loc != -1)
-            {
-                if (updateAttributes)
-                    glVertexAttribPointer(texcoord_loc,
-                                          2,
-                                          GL_FLOAT,
-                                          GL_FALSE,
-                                          sizeof(VertexData),
-                                          reinterpret_cast<void*>(offsetof(VertexData, uv_)));
-
-                glEnableVertexAttribArray(texcoord_loc);
-            }
-
-            if (color_loc != -1)
-            {
-                if (updateAttributes)
-                    glVertexAttribPointer(color_loc,
-                                          3,
-                                          GL_FLOAT,
-                                          GL_FALSE,
-                                          sizeof(VertexData),
-                                          reinterpret_cast<void*>(offsetof(VertexData, color_)));
-
-                glEnableVertexAttribArray(color_loc);
-            }
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            GLenum mode = solid ? GetSolidDrawMode() : GetWireFrameDrawMode();
-
-            if (!indexes_.empty())
-            {
-                SetIndexBuffer(pIBuffer_.get());
-
-                const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData_->offset_);
-
-                glDrawElements(mode, indexes_.size(), GL_UNSIGNED_SHORT, offset);
-
-                CHECK_GL_STATUS(__FILE__, __LINE__);
-
-                if (AppStatistics::this_)
-                {
-                    CHECK_ASSERT(GetSolidDrawMode() == GL_TRIANGLES && indexes_.size() % 3 == 0, __FILE__, __LINE__);
-                    AppStatistics::this_->NewTriangles(indexes_.size() / 3);
-                }
-            }
-            else
-            {
-                GLint first = bufferVertexData_->offset_ / sizeof(VertexData);
-
-                glDrawArrays(mode, first, vertexsData_.size());
-
-                CHECK_GL_STATUS(__FILE__, __LINE__);
-
-                if (AppStatistics::this_ && solid)
-                {
-                    CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || vertexsData_.size() % 3 == 0, __FILE__, __LINE__);
-                    AppStatistics::this_->NewTriangles(vertexsData_.size() / 3);
-                }
-            }
-
-            if (AppStatistics::this_)
-                AppStatistics::this_->NewDrawCall();
-
-            if (position_loc != -1)
-            {
-                glDisableVertexAttribArray(position_loc);
-            }
-
-            if (normal_loc != -1)
-            {
-                glDisableVertexAttribArray(normal_loc);
-            }
-
-            if (texcoord_loc != -1)
-            {
-                glDisableVertexAttribArray(texcoord_loc);
-            }
-
-            if (color_loc != -1)
-            {
-                glDisableVertexAttribArray(color_loc);
-            }
-
-
-            hasChanged_ = false;
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-        }
     }
 
     bool Mesh::IsValid()
@@ -188,7 +56,7 @@ namespace NSG
 
     void Mesh::AllocateResources()
     {
-        hasChanged_ = true;
+        SetUniformsNeedUpdate();
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -234,10 +102,5 @@ namespace NSG
         bufferIndexData_ = nullptr;
         //vertexsData_.clear();
         //indexes_.clear();
-    }
-
-    void Mesh::SetHasChanged(bool changed)
-    {
-        hasChanged_ = changed;
     }
 }

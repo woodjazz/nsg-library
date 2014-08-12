@@ -148,23 +148,6 @@ namespace NSG
 
     void Material::Use()
     {
-        SetCullFace(enableCullFace_);
-    }
-
-    void Material::Render(bool solid, Node* pNode, Mesh* pMesh)
-    {
-        if (IsReady() && pMesh->IsReady())
-        {
-            Use();
-
-            bool programHasChanged = pProgram_->Use(this, pNode);
-            
-            GLuint positionLoc = pProgram_->GetAttPositionLoc();
-            GLuint texcoordLoc = pProgram_->GetAttTextCoordLoc();
-            GLuint normalLoc = pProgram_->GetAttNormalLoc();
-            GLuint colorLoc = pProgram_->GetAttColorLoc();
-
-            pMesh->Render(solid, positionLoc, texcoordLoc, normalLoc, colorLoc, programHasChanged);
-        }
+        Graphics::this_->SetCullFace(enableCullFace_);
     }
 }
