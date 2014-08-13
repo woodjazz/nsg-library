@@ -25,12 +25,19 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "UniformsUpdate.h"
+#include "Singleton.h"
 
 namespace NSG
 {
-	struct Scene
+	class Scene : public UniformsUpdate, public Singleton<Scene>
 	{
-		static Color ambient;
+	public:
+		Scene();
+		~Scene();
+		void SetAmbientColor(Color ambient);
+		const Color& GetAmbientColor() const { return ambient_; }
+	private:
+		Color ambient_;
 	};
-
 }

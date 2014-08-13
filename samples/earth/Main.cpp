@@ -60,6 +60,8 @@ struct Sample : App
         music_->Play();
 
         Behavior::StartAll();
+
+        Scene::this_->SetAmbientColor(Color(0,0,0,1));
     }
 
     void Update()

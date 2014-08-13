@@ -85,7 +85,7 @@ namespace NSG
           activeMaterial_(nullptr),
           activeNode_(nullptr)
     {
-        CHECK_ASSERT(pRVShader&&  pRFShader, __FILE__, __LINE__);
+        CHECK_ASSERT(pRVShader &&  pRFShader, __FILE__, __LINE__);
     }
 
     Program::Program(const char* vShader, const char* fShader)
@@ -115,7 +115,7 @@ namespace NSG
           nLights_(0),
           activeCamera_(nullptr),
           activeMaterial_(nullptr),
-          activeNode_(nullptr)        
+          activeNode_(nullptr)
     {
         CHECK_ASSERT(vShader && fShader, __FILE__, __LINE__);
     }
@@ -309,7 +309,7 @@ namespace NSG
                 const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
                 glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));
             }
-            
+
             node->ClearUniformsNeedUpdate();
         }
     }
@@ -354,7 +354,7 @@ namespace NSG
             {
                 glUniform1f(shininess_loc_, material->shininess_);
             }
-            
+
             material->ClearUniformsNeedUpdate();
         }
     }
@@ -363,23 +363,15 @@ namespace NSG
     {
         bool programChanged = Graphics::this_->SetProgram(this);
 
-        if(programChanged)
-        {
-            if (color_scene_ambient_loc_ != -1)
-            {
-                glUniform4fv(color_scene_ambient_loc_, 1, &Scene::ambient[0]);
-            }
-        }
-
         if (activeMaterial_ != material || (material && material->UniformsNeedUpdate()) || programChanged)
         {
-        	activeMaterial_ = material;
+            activeMaterial_ = material;
             Use(material);
         }
 
         if (activeNode_ != node || (node && node->UniformsNeedUpdate()) || programChanged)
         {
-        	activeNode_ = node;
+            activeNode_ = node;
             Use(node);
         }
 

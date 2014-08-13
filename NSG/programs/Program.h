@@ -77,6 +77,10 @@ namespace NSG
         {
             return id_;
         }
+        GLuint GetUniformSceneAmbientLoc() const
+        {
+            return color_scene_ambient_loc_;
+        }
     private:
         void Use(Node* node);
         void Use(Material* material);

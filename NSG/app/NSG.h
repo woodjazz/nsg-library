@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Constants.h"
 #include "Context.h"
+#include "Scene.h"
 
 #include "Check.h"
 #include "Main.h"

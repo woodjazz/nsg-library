@@ -42,6 +42,7 @@ namespace NSG
 		PBufferManager bufferManager_;
 		PAudio audio_;
 		PGraphics graphics_;
+		PScene scene_;
 
 		Context();
 		~Context();

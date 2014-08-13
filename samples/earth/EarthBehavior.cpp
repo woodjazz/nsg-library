@@ -53,7 +53,7 @@ void EarthBehavior::Start()
 	pMaterial->SetTexture0(pEarthTexture);
 	pMaterial->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
-	pMaterial->SetShininess(0.3f);
+	pMaterial->SetShininess(10);
 
     pass->Set(pMaterial);
 

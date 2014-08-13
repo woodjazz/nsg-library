@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "BufferManager.h"
 #include "Audio.h"
 #include "Graphics.h"
+#include "Scene.h"
 
 namespace NSG
 {
@@ -157,6 +158,8 @@ namespace NSG
 
     void Context::Initialize()
     {
+        scene_ = PScene(new Scene);
+        
         graphics_ = PGraphics(new Graphics);
         
         audio_ = PAudio(new Audio);

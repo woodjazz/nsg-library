@@ -30,8 +30,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Camera;
-
 	class Camera : public SceneNode, IViewChangedListener
 	{
 	public:

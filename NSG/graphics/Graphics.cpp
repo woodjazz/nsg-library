@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Mesh.h"
 #include "AppStatistics.h"
+#include "Scene.h"
 
 namespace NSG
 {
@@ -67,10 +68,9 @@ namespace NSG
         memset(&textures_[0], 0, sizeof(textures_));
         activeTexture_ = 0;
         enabledAttributes_ = 0;
-        position_loc_ = -1;
-        texcoord_loc_ = -1;
-        normal_loc_ = -1;
-        color_loc_ = -1;
+
+        memset(&attributes_, -1, sizeof(Attributes));
+        memset(&uniforms_, -1, sizeof(Uniforms));
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -444,6 +444,22 @@ namespace NSG
         }
     }
 
+    void Graphics::SetSceneVariables(Program* program)
+    {
+        GLuint color_scene_ambient_loc = program->GetUniformSceneAmbientLoc();
+
+        if (color_scene_ambient_loc != -1)
+        {
+            if(color_scene_ambient_loc != uniforms_.color_scene_ambient_loc_ || Scene::this_->UniformsNeedUpdate())
+            {
+                glUniform4fv(color_scene_ambient_loc, 1, &Scene::this_->GetAmbientColor()[0]);
+                Scene::this_->ClearUniformsNeedUpdate();
+            }
+        }
+
+        uniforms_.color_scene_ambient_loc_ = color_scene_ambient_loc;
+    }
+
     void Graphics::Draw(bool solid, Material* material, Node* node, Mesh* mesh)
     {
         if (material->IsReady() && mesh->IsReady())
@@ -455,6 +471,8 @@ namespace NSG
             Program* program = material->GetProgram();
 
             program->Use(material, node);
+            
+            SetSceneVariables(program);
 
             GLuint position_loc = program->GetAttPositionLoc();
             GLuint texcoord_loc = program->GetAttTextCoordLoc();
@@ -482,7 +500,7 @@ namespace NSG
                     enabledAttributes_ |= positionBit;
                     glEnableVertexAttribArray(position_loc);
                 }
-                else if (vboHasChanged || position_loc != position_loc_)
+                else if (vboHasChanged || position_loc != attributes_.position_loc_)
                 {
                     glVertexAttribPointer(position_loc,
                                           3,
@@ -510,7 +528,7 @@ namespace NSG
                     enabledAttributes_ |= positionBit;
                     glEnableVertexAttribArray(normal_loc);
                 }
-                else if (vboHasChanged || normal_loc != normal_loc_)
+                else if (vboHasChanged || normal_loc != attributes_.normal_loc_)
                 {
                     glVertexAttribPointer(normal_loc,
                                           3,
@@ -519,7 +537,7 @@ namespace NSG
                                           sizeof(VertexData),
                                           reinterpret_cast<void*>(offsetof(VertexData, normal_)));
                 }
-  
+
             }
 
             if (texcoord_loc != -1)
@@ -539,7 +557,7 @@ namespace NSG
                     enabledAttributes_ |= positionBit;
                     glEnableVertexAttribArray(texcoord_loc);
                 }
-                else if (vboHasChanged || texcoord_loc != texcoord_loc_)
+                else if (vboHasChanged || texcoord_loc != attributes_.texcoord_loc_)
                 {
                     glVertexAttribPointer(texcoord_loc,
                                           2,
@@ -567,7 +585,7 @@ namespace NSG
                     enabledAttributes_ |= positionBit;
                     glEnableVertexAttribArray(color_loc);
                 }
-                else if (vboHasChanged || color_loc_ != color_loc)
+                else if (vboHasChanged || color_loc != attributes_.color_loc_)
                 {
                     glVertexAttribPointer(color_loc,
                                           3,
@@ -578,10 +596,10 @@ namespace NSG
                 }
             }
 
-            position_loc_ = position_loc;
-            normal_loc_ = normal_loc;
-            texcoord_loc_ = texcoord_loc;
-            color_loc_ = color_loc;
+            attributes_.position_loc_ = position_loc;
+            attributes_.normal_loc_ = normal_loc;
+            attributes_.texcoord_loc_ = texcoord_loc;
+            attributes_.color_loc_ = color_loc;
 
             {
                 /////////////////////////////

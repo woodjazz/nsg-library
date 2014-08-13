@@ -57,6 +57,7 @@ namespace NSG
         bool SetProgram(Program* program);
         Program* GetProgram() const { return program_; }
         void SetFrameBuffer(GLuint value);
+        void SetSceneVariables(Program* program);
         void Draw(bool solid, Material* material, Node* node, Mesh* mesh);
         void DiscardFramebuffer();
       private:
@@ -67,14 +68,24 @@ namespace NSG
       	Program* program_;
       	Texture* textures_[MAX_TEXTURE_UNITS];
       	unsigned activeTexture_;
-      	unsigned enabledAttributes_;
+      	unsigned enabledAttributes_; //positions' bits for enabled attributes
         //////////////////////////////////
         // active attributes' locations
         //////////////////////////////////
-        GLuint position_loc_; 
-        GLuint texcoord_loc_;
-        GLuint normal_loc_;
-        GLuint color_loc_;
+        struct Attributes
+        {
+            GLuint position_loc_; 
+            GLuint texcoord_loc_;
+            GLuint normal_loc_;
+            GLuint color_loc_;
+        } attributes_;
+        //////////////////////////////////
+        // active uniforms' locations
+        //////////////////////////////////
+        struct Uniforms
+        {
+            GLuint color_scene_ambient_loc_;
+        } uniforms_;
         //////////////////////////////////
     };
 }
