@@ -68,5 +68,13 @@ namespace NSG
       	Texture* textures_[MAX_TEXTURE_UNITS];
       	unsigned activeTexture_;
       	unsigned enabledAttributes_;
+        //////////////////////////////////
+        // active attributes' locations
+        //////////////////////////////////
+        GLuint position_loc_; 
+        GLuint texcoord_loc_;
+        GLuint normal_loc_;
+        GLuint color_loc_;
+        //////////////////////////////////
     };
 }

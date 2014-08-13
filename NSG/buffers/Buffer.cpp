@@ -91,7 +91,7 @@ namespace NSG
 		while (it != dataCollection_.end())
 		{
 			const Data& obj = *(it++);
-			totalBytes += obj.maxSize_;
+			totalBytes += obj.bytes_;
 		}
 
 		return totalBytes;

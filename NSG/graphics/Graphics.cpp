@@ -67,6 +67,10 @@ namespace NSG
         memset(&textures_[0], 0, sizeof(textures_));
         activeTexture_ = 0;
         enabledAttributes_ = 0;
+        position_loc_ = -1;
+        texcoord_loc_ = -1;
+        normal_loc_ = -1;
+        color_loc_ = -1;
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -444,20 +448,20 @@ namespace NSG
     {
         if (material->IsReady() && mesh->IsReady())
         {
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+
             material->Use();
 
             Program* program = material->GetProgram();
 
-            bool programHasChanged = program->Use(material, node);
+            program->Use(material, node);
 
             GLuint position_loc = program->GetAttPositionLoc();
             GLuint texcoord_loc = program->GetAttTextCoordLoc();
             GLuint normal_loc = program->GetAttNormalLoc();
             GLuint color_loc = program->GetAttColorLoc();
 
-            bool vboChanged = Graphics::this_->SetVertexBuffer(mesh->GetVertexBuffer());
-
-            bool updateAttributes = vboChanged || mesh->UniformsNeedUpdate() || programHasChanged;
+            bool vboHasChanged = Graphics::this_->SetVertexBuffer(mesh->GetVertexBuffer());
 
             unsigned newAttributes = 0;
 
@@ -466,7 +470,19 @@ namespace NSG
                 unsigned positionBit = 1 << position_loc;
                 newAttributes |= positionBit;
 
-                if (updateAttributes)
+                if ((enabledAttributes_ & positionBit) == 0)
+                {
+                    glVertexAttribPointer(position_loc,
+                                          3,
+                                          GL_FLOAT,
+                                          GL_FALSE,
+                                          sizeof(VertexData),
+                                          reinterpret_cast<void*>(offsetof(VertexData, position_)));
+
+                    enabledAttributes_ |= positionBit;
+                    glEnableVertexAttribArray(position_loc);
+                }
+                else if (vboHasChanged || position_loc != position_loc_)
                 {
                     glVertexAttribPointer(position_loc,
                                           3,
@@ -475,12 +491,6 @@ namespace NSG
                                           sizeof(VertexData),
                                           reinterpret_cast<void*>(offsetof(VertexData, position_)));
                 }
-
-                if ((enabledAttributes_ & positionBit) == 0)
-                {
-                    enabledAttributes_ |= positionBit;
-                    glEnableVertexAttribArray(position_loc);
-                }
             }
 
             if (normal_loc != -1)
@@ -488,7 +498,19 @@ namespace NSG
                 unsigned positionBit = 1 << normal_loc;
                 newAttributes |= positionBit;
 
-                if (updateAttributes)
+                if ((enabledAttributes_ & positionBit) == 0)
+                {
+                    glVertexAttribPointer(normal_loc,
+                                          3,
+                                          GL_FLOAT,
+                                          GL_FALSE,
+                                          sizeof(VertexData),
+                                          reinterpret_cast<void*>(offsetof(VertexData, normal_)));
+
+                    enabledAttributes_ |= positionBit;
+                    glEnableVertexAttribArray(normal_loc);
+                }
+                else if (vboHasChanged || normal_loc != normal_loc_)
                 {
                     glVertexAttribPointer(normal_loc,
                                           3,
@@ -497,12 +519,7 @@ namespace NSG
                                           sizeof(VertexData),
                                           reinterpret_cast<void*>(offsetof(VertexData, normal_)));
                 }
-
-                if ((enabledAttributes_ & positionBit) == 0)
-                {
-                    enabledAttributes_ |= positionBit;
-                    glEnableVertexAttribArray(normal_loc);
-                }
+  
             }
 
             if (texcoord_loc != -1)
@@ -510,7 +527,19 @@ namespace NSG
                 unsigned positionBit = 1 << texcoord_loc;
                 newAttributes |= positionBit;
 
-                if (updateAttributes)
+                if ((enabledAttributes_ & positionBit) == 0)
+                {
+                    glVertexAttribPointer(texcoord_loc,
+                                          2,
+                                          GL_FLOAT,
+                                          GL_FALSE,
+                                          sizeof(VertexData),
+                                          reinterpret_cast<void*>(offsetof(VertexData, uv_)));
+
+                    enabledAttributes_ |= positionBit;
+                    glEnableVertexAttribArray(texcoord_loc);
+                }
+                else if (vboHasChanged || texcoord_loc != texcoord_loc_)
                 {
                     glVertexAttribPointer(texcoord_loc,
                                           2,
@@ -519,12 +548,6 @@ namespace NSG
                                           sizeof(VertexData),
                                           reinterpret_cast<void*>(offsetof(VertexData, uv_)));
                 }
-
-                if ((enabledAttributes_ & positionBit) == 0)
-                {
-                    enabledAttributes_ |= positionBit;
-                    glEnableVertexAttribArray(texcoord_loc);
-                }
             }
 
             if (color_loc != -1)
@@ -532,7 +555,19 @@ namespace NSG
                 unsigned positionBit = 1 << color_loc;
                 newAttributes |= positionBit;
 
-                if (updateAttributes)
+                if ((enabledAttributes_ & positionBit) == 0)
+                {
+                    glVertexAttribPointer(color_loc,
+                                          3,
+                                          GL_FLOAT,
+                                          GL_FALSE,
+                                          sizeof(VertexData),
+                                          reinterpret_cast<void*>(offsetof(VertexData, color_)));
+
+                    enabledAttributes_ |= positionBit;
+                    glEnableVertexAttribArray(color_loc);
+                }
+                else if (vboHasChanged || color_loc_ != color_loc)
                 {
                     glVertexAttribPointer(color_loc,
                                           3,
@@ -541,15 +576,30 @@ namespace NSG
                                           sizeof(VertexData),
                                           reinterpret_cast<void*>(offsetof(VertexData, color_)));
                 }
-
-                if ((enabledAttributes_ & positionBit) == 0)
-                {
-                    enabledAttributes_ |= positionBit;
-                    glEnableVertexAttribArray(color_loc);
-                }
             }
 
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+            position_loc_ = position_loc;
+            normal_loc_ = normal_loc;
+            texcoord_loc_ = texcoord_loc;
+            color_loc_ = color_loc;
+
+            {
+                /////////////////////////////
+                // Disable unused attributes
+                /////////////////////////////
+                unsigned disableAttributes = enabledAttributes_ & (~newAttributes);
+                unsigned disableIndex = 0;
+                while (disableAttributes)
+                {
+                    if (disableAttributes & 1)
+                    {
+                        glDisableVertexAttribArray(disableIndex);
+                        enabledAttributes_ &= ~(1 << disableIndex);
+                    }
+                    disableAttributes >>= 1;
+                    ++disableIndex;
+                }
+            }
 
             GLenum mode = solid ? mesh->GetSolidDrawMode() : mesh->GetWireFrameDrawMode();
 
@@ -564,8 +614,6 @@ namespace NSG
                 const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
 
                 glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, offset);
-
-                CHECK_GL_STATUS(__FILE__, __LINE__);
 
                 if (AppStatistics::this_)
                 {
@@ -583,8 +631,6 @@ namespace NSG
 
                 glDrawArrays(mode, first, vertexsData.size());
 
-                CHECK_GL_STATUS(__FILE__, __LINE__);
-
                 if (AppStatistics::this_ && solid)
                 {
                     CHECK_ASSERT(mesh->GetSolidDrawMode() != GL_TRIANGLES || vertexsData.size() % 3 == 0, __FILE__, __LINE__);
@@ -595,20 +641,7 @@ namespace NSG
             if (AppStatistics::this_)
                 AppStatistics::this_->NewDrawCall();
 
-            unsigned disableAttributes = enabledAttributes_ & (~newAttributes);
-            unsigned disableIndex = 0;
-            while (disableAttributes)
-            {
-                if (disableAttributes & 1)
-                {
-                    glDisableVertexAttribArray(disableIndex);
-                    enabledAttributes_ &= ~(1 << disableIndex);
-                }
-                disableAttributes >>= 1;
-                ++disableIndex;
-            }
-
-            mesh->ClearUniformsNeedUpdate();
+            CHECK_GL_STATUS(__FILE__, __LINE__);
         }
     }
 }

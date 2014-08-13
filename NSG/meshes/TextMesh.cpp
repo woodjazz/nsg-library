@@ -94,8 +94,6 @@ namespace NSG
     {
         CHECK_ASSERT(!isStatic_ && "Trying to update an static buffer", __FILE__, __LINE__);
 
-        SetUniformsNeedUpdate();
-
         if (vertexsData_.empty())
             return;
 
@@ -137,8 +135,6 @@ namespace NSG
         CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
         CHECK_ASSERT(!pVBuffer_, __FILE__, __LINE__);
         CHECK_ASSERT(!pIBuffer_, __FILE__, __LINE__);
-
-        SetUniformsNeedUpdate();
 
         VertexsData tmpVertexData(vertexsData_);
         Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);

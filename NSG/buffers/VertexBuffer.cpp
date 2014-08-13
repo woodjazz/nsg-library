@@ -27,71 +27,73 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Check.h"
 
-namespace NSG 
+namespace NSG
 {
-	VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage) 
-	: Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage)
-	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-		
-		bool ok = Graphics::this_->SetVertexBuffer(this);
-		CHECK_ASSERT(ok, __FILE__, __LINE__);
+    VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
+        : Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage)
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		glBufferData(type_, bufferSize, nullptr, usage_);
+        bool ok = Graphics::this_->SetVertexBuffer(this);
+        CHECK_ASSERT(ok, __FILE__, __LINE__);
 
-		GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
-		CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
+        std::vector<GLubyte> emptyData(bufferSize, 0);
 
-		glBufferSubData(type_, 0, bytes2Set, &vertexes[0]);
-		
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
+        glBufferData(type_, bufferSize, &emptyData[0], usage_); //created with initialized data to avoid warnings when profiling
 
-	VertexBuffer::~VertexBuffer()
-	{
-		if(Graphics::this_->GetVertexBuffer() == this)
-			Graphics::this_->SetVertexBuffer(nullptr);
-	}
+        GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
+        CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
 
-	bool VertexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes)
-	{
-		if(Buffer::AllocateSpaceFor(maxSize))
-		{
-			const Data* obj = GetLastAllocation();
+        glBufferSubData(type_, 0, bytes2Set, &vertexes[0]);
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
 
-			Graphics::this_->SetVertexBuffer(this);
+    VertexBuffer::~VertexBuffer()
+    {
+        if (Graphics::this_->GetVertexBuffer() == this)
+            Graphics::this_->SetVertexBuffer(nullptr);
+    }
 
-			GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
+    bool VertexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes)
+    {
+        if (Buffer::AllocateSpaceFor(maxSize))
+        {
+            const Data* obj = GetLastAllocation();
 
-			glBufferSubData(type_, obj->offset_, bytes2Set, &vertexes[0]);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            Graphics::this_->SetVertexBuffer(this);
 
-			return true;
-		}
+            GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
 
-		return false;
-	}
+            glBufferSubData(type_, obj->offset_, bytes2Set, &vertexes[0]);
 
-	void VertexBuffer::UnBind() 
-	{ 
-		glBindBuffer(GL_ARRAY_BUFFER, 0); 
-	}
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	void VertexBuffer::UpdateData(Buffer::Data& obj, const VertexsData& vertexes)
-	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+            return true;
+        }
 
-		GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
+        return false;
+    }
 
-		CHECK_ASSERT(bytes2Set <= obj.maxSize_, __FILE__, __LINE__);
+    void VertexBuffer::UnBind()
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 
-		Graphics::this_->SetVertexBuffer(this);
+    void VertexBuffer::UpdateData(Buffer::Data& obj, const VertexsData& vertexes)
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		glBufferSubData(type_, obj.offset_, bytes2Set, &vertexes[0]);
+        GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
+        CHECK_ASSERT(bytes2Set <= obj.bytes_, __FILE__, __LINE__);
+
+        Graphics::this_->SetVertexBuffer(this);
+
+        glBufferSubData(type_, obj.offset_, bytes2Set, &vertexes[0]);
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
 }

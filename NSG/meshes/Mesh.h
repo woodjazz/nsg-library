@@ -34,11 +34,10 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Buffer.h"
 #include "BoundingBox.h"
-#include "UniformsUpdate.h"
 
 namespace NSG
 {
-	class Mesh : public GPUObject, public UniformsUpdate
+	class Mesh : public GPUObject
 	{
 	public:
 		Mesh(GLenum usage);

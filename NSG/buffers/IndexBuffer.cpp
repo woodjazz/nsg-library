@@ -41,7 +41,8 @@ namespace NSG
 		bool ok = Graphics::this_->SetIndexBuffer(this);
 		CHECK_ASSERT(ok, __FILE__, __LINE__);
 
-		glBufferData(type_, bufferSize, nullptr, usage_);
+		std::vector<GLubyte> emptyData(bufferSize, 0);
+		glBufferData(type_, bufferSize, &emptyData[0], usage_); //created with initialized data to avoid warnings when profiling
 
 		GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
 		CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
@@ -89,7 +90,7 @@ namespace NSG
 
 		GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
 
-		CHECK_ASSERT(bytes2Set <= obj.maxSize_, __FILE__, __LINE__);
+		CHECK_ASSERT(bytes2Set <= obj.bytes_, __FILE__, __LINE__);
 
 		Graphics::this_->SetIndexBuffer(this);
 

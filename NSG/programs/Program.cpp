@@ -340,11 +340,6 @@ namespace NSG
                 glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
             }
 
-            if (color_scene_ambient_loc_ != -1)
-            {
-                glUniform4fv(color_scene_ambient_loc_, 1, &Scene::ambient[0]);
-            }
-
             if (color_diffuse_loc_ != -1)
             {
                 glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
@@ -367,6 +362,14 @@ namespace NSG
     bool Program::Use(Material* material, Node* node)
     {
         bool programChanged = Graphics::this_->SetProgram(this);
+
+        if(programChanged)
+        {
+            if (color_scene_ambient_loc_ != -1)
+            {
+                glUniform4fv(color_scene_ambient_loc_, 1, &Scene::ambient[0]);
+            }
+        }
 
         if (activeMaterial_ != material || (material && material->UniformsNeedUpdate()) || programChanged)
         {

@@ -40,15 +40,15 @@ namespace NSG
 		struct Data
 		{
 			GLintptr offset_;
-			GLsizeiptr maxSize_;
+			GLsizeiptr bytes_;
 
 			Data()
 			{
 				memset(this, 0, sizeof(*this));
 			}
 
-			Data(GLintptr offset, GLsizeiptr maxSize)
-				: offset_(offset), maxSize_(maxSize)
+			Data(GLintptr offset, GLsizeiptr bytes)
+				: offset_(offset), bytes_(bytes)
 			{
 			}
 		};

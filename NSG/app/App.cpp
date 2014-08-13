@@ -233,7 +233,7 @@ namespace NSG
         Graphics::this_->ClearAllBuffers();
 
         pApp_->RenderFrame();
-#if 1
+#if 0
         Camera* camera(Camera::GetActiveCamera());
 
         IMGUI::Context::this_->RenderGUI();
