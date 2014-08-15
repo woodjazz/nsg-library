@@ -210,7 +210,7 @@ namespace NSG
             }
 
             Graphics::this_->SetProgram(this);
-            
+
             if (texture0_loc_ != -1)
             {
                 glUniform1i(texture0_loc_, 0);
@@ -387,7 +387,7 @@ namespace NSG
             Graphics::this_->SetTexture(1, material->pTexture1_.get());
         }
 
-        if (activeMaterial_ != material || (material && material->UniformsNeedUpdate()))
+        if (activeMaterial_ != material || material->UniformsNeedUpdate())
         {
             Use(material);
         }
@@ -406,20 +406,22 @@ namespace NSG
 
         Camera* camera = Camera::GetActiveCamera();
 
-        if (v_inv_loc_ != -1)
-        {
-            if (activeCamera_ != camera || camera->UniformsNeedUpdate() || !nullCameraSet_)
-            {
-                glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetInverseView()));
-            }
-        }
+        bool update_camera = (mvp_loc_ != -1 || v_inv_loc_ != -1);
 
-        if (mvp_loc_ != -1 && node)
+        update_camera = update_camera && (activeCamera_ != camera || (camera && camera->UniformsNeedUpdate()));
+        update_camera = update_camera || !nullCameraSet_;
+
+        if (update_camera)
         {
-            if (activeCamera_ != camera || camera->UniformsNeedUpdate() || !nullCameraSet_ || activeNode_ != node || node->UniformsNeedUpdate())
-            {
+            if (v_inv_loc_ != -1)
+                glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetInverseView()));
+
+            if (mvp_loc_ != -1)
                 glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
-            }
+        }
+        else if (mvp_loc_ != -1 && (activeNode_ != node || (node && node->UniformsNeedUpdate())))// && !(*activeNode_ == *node))))
+        {
+            glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
         }
 
         activeNode_ = node;

@@ -35,6 +35,7 @@ namespace NSG
 	public:
 		Node();
 		virtual ~Node();
+		bool operator == (const Node& obj) const;
 		IdType GetId() const { return id_;  }
         void SetParent(PNode pParent);
         void SetParent(Node* pParent);

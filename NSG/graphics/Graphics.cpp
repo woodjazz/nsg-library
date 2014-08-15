@@ -54,6 +54,8 @@ namespace NSG
     static const GLuint DEFAULT_STENCIL_MASK = ~GLuint(0);
 
     static const BLEND_MODE DEFAULT_BLEND_MODE = BLEND_NONE;
+    static GLenum DEFAULT_BLEND_SFACTOR = GL_ONE;
+    static GLenum DEFAULT_BLEND_DFACTOR = GL_ZERO;
 
     static const bool DEFAULT_DEPTH_TEST_ENABLE = false;
 
@@ -312,6 +314,8 @@ namespace NSG
     void Graphics::SetBlendModeTest(BLEND_MODE blendMode)
     {
         static BLEND_MODE blendMode_ = DEFAULT_BLEND_MODE;
+        static GLenum blendSFactor_ = DEFAULT_BLEND_SFACTOR;
+        static GLenum blendDFactor_ = DEFAULT_BLEND_DFACTOR;
 
         if (blendMode != blendMode_)
         {
@@ -319,11 +323,23 @@ namespace NSG
             {
             case BLEND_NONE:
                 glDisable(GL_BLEND);
+                if (blendSFactor_ != GL_ONE || blendDFactor_ != GL_ZERO)
+                {
+                    glBlendFunc(GL_ONE, GL_ZERO);
+                    blendSFactor_ = GL_ONE;
+                    blendDFactor_ = GL_ZERO;
+                }
+
                 break;
 
             case BLEND_ALPHA:
                 glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                if (blendSFactor_ != GL_SRC_ALPHA || blendDFactor_ != GL_ONE_MINUS_SRC_ALPHA)
+                {
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    blendSFactor_ = GL_SRC_ALPHA;
+                    blendDFactor_ = GL_ONE_MINUS_SRC_ALPHA;
+                }
                 break;
 
             default:
@@ -451,11 +467,13 @@ namespace NSG
 
     void Graphics::DiscardFramebuffer()
     {
+#if IS_TARGET_MOBILE
         if (has_discard_framebuffer_ext_)
         {
             const GLenum attachments[3] = { GL_COLOR_ATTACHMENT0 , GL_DEPTH_ATTACHMENT , GL_STENCIL_ATTACHMENT };
             glDiscardFramebufferEXT( GL_FRAMEBUFFER , 3, attachments);
         }
+#endif
     }
 
     void Graphics::BeginFrame()
@@ -466,7 +484,7 @@ namespace NSG
 
     void Graphics::EndFrame()
     {
-        DiscardFramebuffer();
+        //DiscardFramebuffer();
 
         if (!uniformsNeedUpdate_)
             UniformsUpdate::ClearAllUpdates();
@@ -510,8 +528,6 @@ namespace NSG
     {
         if (material->IsReady() && mesh->IsReady())
         {
-            CHECK_ASSERT(node != nullptr, __FILE__, __LINE__);
-            
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
             material->Use();

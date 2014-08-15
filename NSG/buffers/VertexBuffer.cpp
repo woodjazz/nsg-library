@@ -27,6 +27,14 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Check.h"
 
+#if IS_TARGET_MOBILE
+#define glGenVertexArrays glGenVertexArraysOES
+#define glBindVertexArray glBindVertexArrayOES
+#define glDeleteVertexArrays glDeleteVertexArraysOES
+#define glBindVertexArray glBindVertexArrayOES
+#endif
+
+
 namespace NSG
 {
     VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
@@ -37,8 +45,8 @@ namespace NSG
 #if 1
         if (Graphics::this_->HasVertexArrayObject())
         {
-            glGenVertexArraysOES(1, &vao_);
-            glBindVertexArrayOES(vao_);
+            glGenVertexArrays(1, &vao_);
+            glBindVertexArray(vao_);
             glBindBuffer(GL_ARRAY_BUFFER, id_);
             glEnableVertexAttribArray(ATTRIBUTE_LOC::POSITION);
             glEnableVertexAttribArray(ATTRIBUTE_LOC::NORMAL);
@@ -67,7 +75,7 @@ namespace NSG
             Graphics::this_->SetVertexBuffer(nullptr);
 
         if (vao_)
-            glDeleteVertexArraysOES(1, &vao_);
+            glDeleteVertexArrays(1, &vao_);
     }
 
     void VertexBuffer::Bind()
@@ -78,8 +86,7 @@ namespace NSG
         }
         else
         {
-            glBindVertexArrayOES(vao_);
-            Buffer::Bind();
+            glBindVertexArray(vao_);
         }
     }
 
@@ -87,7 +94,7 @@ namespace NSG
     {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         if (Graphics::this_->HasVertexArrayObject())
-            glBindVertexArrayOES(0);
+            glBindVertexArray(0);
     }
 
     bool VertexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes)
@@ -120,7 +127,9 @@ namespace NSG
 
         CHECK_ASSERT(bytes2Set <= obj.bytes_, __FILE__, __LINE__);
 
-        Graphics::this_->SetVertexBuffer(this);
+        Graphics::this_->SetVertexBuffer(nullptr);
+        
+        Buffer::Bind();
 
         glBufferSubData(type_, obj.offset_, bytes2Set, &vertexes[0]);
 
