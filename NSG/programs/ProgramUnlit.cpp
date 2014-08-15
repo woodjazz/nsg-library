@@ -29,8 +29,8 @@ misrepresented as being the original software.
 
 static const char* vShader = STRINGIFY(
     uniform mat4 u_mvp;
+    attribute vec4 a_position;
 	attribute vec2 a_texcoord;
-	attribute vec4 a_position;
 	attribute vec4 a_color;
 
     varying vec4 v_vertex_color;

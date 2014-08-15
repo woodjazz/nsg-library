@@ -43,6 +43,7 @@ namespace NSG
 		PAudio audio_;
 		PGraphics graphics_;
 		PScene scene_;
+		bool allGPUObjectAreValid_;
 
 		Context();
 		~Context();

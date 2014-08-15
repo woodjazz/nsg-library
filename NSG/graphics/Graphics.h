@@ -60,6 +60,11 @@ namespace NSG
         void SetSceneVariables(Program* program);
         void Draw(bool solid, Material* material, Node* node, Mesh* mesh);
         void DiscardFramebuffer();
+        void BeginFrame();
+        void EndFrame();
+        void SetUniformsNeedUpdate() { uniformsNeedUpdate_ = true;}
+        bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
+        void SetVertexAttrPointers();
       private:
       	GLint systemFbo_;
       	GLuint currentFbo_;
@@ -69,23 +74,9 @@ namespace NSG
       	Texture* textures_[MAX_TEXTURE_UNITS];
       	unsigned activeTexture_;
       	unsigned enabledAttributes_; //positions' bits for enabled attributes
-        //////////////////////////////////
-        // active attributes' locations
-        //////////////////////////////////
-        struct Attributes
-        {
-            GLuint position_loc_; 
-            GLuint texcoord_loc_;
-            GLuint normal_loc_;
-            GLuint color_loc_;
-        } attributes_;
-        //////////////////////////////////
-        // active uniforms' locations
-        //////////////////////////////////
-        struct Uniforms
-        {
-            GLuint color_scene_ambient_loc_;
-        } uniforms_;
-        //////////////////////////////////
+        bool uniformsNeedUpdate_;
+        Mesh* activeMesh_; // last mesh drawn
+        bool has_discard_framebuffer_ext_;
+        bool has_vertex_array_object_ext_;
     };
 }

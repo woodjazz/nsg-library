@@ -55,7 +55,8 @@ namespace NSG
 
 		~Buffer();
 		Data* GetLastAllocation();
-		void Bind() { glBindBuffer(type_, id_); }
+		virtual void Bind();
+		bool IsDynamic() const { return dynamic_; }
 	protected:
 		bool AllocateSpaceFor(GLsizeiptr bytesNeeded);
 		Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage = GL_STATIC_DRAW);

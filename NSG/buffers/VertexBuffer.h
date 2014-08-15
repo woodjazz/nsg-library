@@ -37,6 +37,10 @@ namespace NSG
 		~VertexBuffer();
 		bool AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes);
 		void UpdateData(Buffer::Data& obj, const VertexsData& vertexes);
-		static void UnBind();
+		virtual void Bind() override;
+		static void Unbind();
+		bool HasVAO() const { return vao_ != 0;}
+	private:
+		GLuint vao_; // vertex array object (only used if hardware supports it)
 	};
 }

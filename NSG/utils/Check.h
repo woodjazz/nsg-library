@@ -44,28 +44,37 @@ misrepresented as being the original software.
 #endif
 
 #if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
-	#define CHECK_ASSERT(f, file, line) if (!(f)) {\
-		::std::stringstream stream;\
-		stream << "Assert has failed in file " << file << " line " << line;\
-		TRACE_LOG((#f) << stream.str());\
-		SHOW_ASSERT_POPUP_ERROR(stream.str().c_str());\
-	    FORCE_BREAKPOINT();\
-		exit(1);\
-	}
+#define CHECK_ASSERT(f, file, line) if (!(f)) {\
+        ::std::stringstream stream;\
+        stream << "Assert has failed in file " << file << " line " << line;\
+        TRACE_LOG((#f) << stream.str());\
+        SHOW_ASSERT_POPUP_ERROR(stream.str().c_str());\
+        FORCE_BREAKPOINT();\
+        exit(1);\
+    }
 
-	#define CHECK_GL_STATUS(file, line) {\
-		GLenum status = glGetError();\
-		if(status != GL_NO_ERROR)\
-		{\
-			::std::stringstream stream;\
-			stream << "GL has failed with status = 0x" << std::hex << status << " in file " << file << " line " << std::dec << line;\
-			TRACE_LOG(stream.str());\
-			SHOW_ASSERT_POPUP_ERROR(stream.str().c_str());\
-	        FORCE_BREAKPOINT();\
-			exit(1);\
-		}\
-	}
+#define CHECK_GL_STATUS(file, line) {\
+        GLenum status = glGetError();\
+        if(status != GL_NO_ERROR)\
+        {\
+            ::std::stringstream stream;\
+            stream << "GL has failed with status = 0x" << std::hex << status << " in file " << file << " line " << std::dec << line;\
+            TRACE_LOG(stream.str());\
+            SHOW_ASSERT_POPUP_ERROR(stream.str().c_str());\
+            FORCE_BREAKPOINT();\
+            exit(1);\
+        }\
+    }
 #else
-	#define CHECK_ASSERT(f, file, line) ((void)0)
-	#define CHECK_GL_STATUS(file, line) ((void)0)
+#define CHECK_ASSERT(f, file, line) ((void)0)
+#define CHECK_GL_STATUS(file, line) ((void)0)
 #endif
+
+#define CHECK_CONDITION(f, file, line) if (!(f)) {\
+        ::std::stringstream stream;\
+        stream << "Assert has failed in file " << file << " line " << line;\
+        TRACE_LOG((#f) << stream.str());\
+        SHOW_ASSERT_POPUP_ERROR(stream.str().c_str());\
+        FORCE_BREAKPOINT();\
+        exit(1);\
+    }

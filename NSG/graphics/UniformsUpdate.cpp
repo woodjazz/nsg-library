@@ -23,18 +23,29 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
+#include "UniformsUpdate.h"
+#include <set>
 
-namespace NSG 
+namespace NSG
 {
-	struct UniformsUpdate
-	{
-		UniformsUpdate();
-		virtual ~UniformsUpdate();
-		bool UniformsNeedUpdate() const { return needUpdate_; }
-		void SetUniformsNeedUpdate() const { needUpdate_ = true; }
-		static void ClearAllUpdates();
-	private:
-		mutable bool needUpdate_;
-	};
-}
+	static std::set<UniformsUpdate*> uniformObjs;
+
+    UniformsUpdate::UniformsUpdate()
+    {
+        needUpdate_ = true;
+        uniformObjs.insert(this);
+    }
+
+    UniformsUpdate::~UniformsUpdate()
+   	{
+   		uniformObjs.erase(this);
+   	}
+
+   	void UniformsUpdate::ClearAllUpdates()
+   	{
+   		for(auto& obj : uniformObjs)
+   		{
+   			obj->needUpdate_ = false;
+   		}
+   	}
+}   

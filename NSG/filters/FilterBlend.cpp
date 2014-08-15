@@ -90,7 +90,7 @@ namespace NSG
 
 	void FilterBlend::SetLocations()
 	{
-		Program* program = pMaterial_->GetProgram();
+		PProgram program = pMaterial_->GetProgram();
 
 		blendMode_loc_ = program->GetUniformLocation("u_blendMode");
 	}

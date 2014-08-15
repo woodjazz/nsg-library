@@ -23,6 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#pragma once
 #include "Types.h"
 
 namespace NSG
@@ -30,4 +31,13 @@ namespace NSG
 	static const float PI = glm::pi<float>();
 	static const float TWO_PI = 2*PI;
 	static const unsigned MAX_TEXTURE_UNITS = 8;
+	static const size_t MAX_LIGHTS = 4;
+
+	enum ATTRIBUTE_LOC
+	{
+		POSITION,
+		NORMAL,
+		COORD,
+		COLOR
+	};
 }

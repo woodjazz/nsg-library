@@ -35,8 +35,8 @@ namespace NSG
 	public:
 		IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage);
 		~IndexBuffer();
-		static void UnBind();
 		bool AllocateSpaceFor(GLsizeiptr maxSize, const Indexes& indexes);
 		void UpdateData(Buffer::Data& obj, const Indexes& indexes);
+		static void Unbind();
 	};
 }

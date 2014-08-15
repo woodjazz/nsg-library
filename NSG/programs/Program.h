@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "GPUObject.h"
 #include "SharedPointers.h"
+#include "Constants.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -72,16 +73,13 @@ namespace NSG
         {
             return att_color_loc_;
         }
-        bool Use(Material* material, Node* node);
+        void Use(Material* material, Node* node);
         GLuint GetId() const
         {
             return id_;
         }
-        GLuint GetUniformSceneAmbientLoc() const
-        {
-            return color_scene_ambient_loc_;
-        }
     private:
+        void SetSceneVariables();
         void Use(Node* node);
         void Use(Material* material);
         operator const GLuint() const
@@ -136,8 +134,11 @@ namespace NSG
         bool hasLights_;
         size_t nLights_;
         Camera* activeCamera_;
+        bool nullCameraSet_;
         Material* activeMaterial_;
         Node* activeNode_;
+        Scene* activeScene_;
+        Light* activeLights_[MAX_LIGHTS];
 
         friend class UseProgram;
     };

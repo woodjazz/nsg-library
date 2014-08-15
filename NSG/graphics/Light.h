@@ -28,9 +28,7 @@ misrepresented as being the original software.
 #include <vector>
 
 namespace NSG
-{
-	const size_t MAX_LIGHTS = 4;
-	
+{	
 	class Light : public SceneNode
 	{
 	public:

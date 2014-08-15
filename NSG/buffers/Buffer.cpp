@@ -29,71 +29,76 @@ misrepresented as being the original software.
 #include "AppStatistics.h"
 #include <assert.h>
 
-namespace NSG 
+namespace NSG
 {
-	Buffer::Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage)
-	: type_(type),
-	usage_(usage),
-	dynamic_(usage != GL_STATIC_DRAW)
-	{
+    Buffer::Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage)
+        : type_(type),
+          usage_(usage),
+          dynamic_(usage != GL_STATIC_DRAW)
+    {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		glGenBuffers(1, &id_);
+        glGenBuffers(1, &id_);
 
-		dataCollection_.push_back(Data(0, bytesNeeded));
+        dataCollection_.push_back(Data(0, bytesNeeded));
 
-		if (AppStatistics::this_)
-		{
-			if(type_ == GL_ARRAY_BUFFER)
-				AppStatistics::this_->AddVertexBuffer(dynamic_);
-			else
-				AppStatistics::this_->AddIndexBuffer(dynamic_);
-		}
-	}
+        if (AppStatistics::this_)
+        {
+            if (type_ == GL_ARRAY_BUFFER)
+                AppStatistics::this_->AddVertexBuffer(dynamic_);
+            else
+                AppStatistics::this_->AddIndexBuffer(dynamic_);
+        }
+    }
 
-	Buffer::~Buffer()
-	{
-		if (AppStatistics::this_)
-		{
-			if(type_ == GL_ARRAY_BUFFER)
-				AppStatistics::this_->RemoveVertexBuffer(dynamic_);
-			else
-				AppStatistics::this_->RemoveIndexBuffer(dynamic_);
-		}
+    Buffer::~Buffer()
+    {
+        if (AppStatistics::this_)
+        {
+            if (type_ == GL_ARRAY_BUFFER)
+                AppStatistics::this_->RemoveVertexBuffer(dynamic_);
+            else
+                AppStatistics::this_->RemoveIndexBuffer(dynamic_);
+        }
 
-		glDeleteBuffers(1, &id_);
-	}
+        glDeleteBuffers(1, &id_);
+    }
 
-	bool Buffer::AllocateSpaceFor(GLsizeiptr bytesNeeded)
-	{
-		GLsizeiptr totalBytes = GetTotalBytes();
+    void Buffer::Bind()
+    {
+        glBindBuffer(type_, id_);
+    }
 
-		if (totalBytes + bytesNeeded >= bufferSize_)
-			return false;
+    bool Buffer::AllocateSpaceFor(GLsizeiptr bytesNeeded)
+    {
+        GLsizeiptr totalBytes = GetTotalBytes();
 
-		dataCollection_.push_back(Data{totalBytes, bytesNeeded});
+        if (totalBytes + bytesNeeded >= bufferSize_)
+            return false;
 
-		return true;
-	}
+        dataCollection_.push_back(Data {totalBytes, bytesNeeded});
 
-	Buffer::Data* Buffer::GetLastAllocation()
-	{
-		CHECK_ASSERT(dataCollection_.size() < MAX_OBJECTS_PER_BUFFER, __FILE__, __LINE__);
+        return true;
+    }
 
-		Data& obj = dataCollection_[dataCollection_.size()-1];
-		return &obj;
-	}
+    Buffer::Data* Buffer::GetLastAllocation()
+    {
+        CHECK_ASSERT(dataCollection_.size() < MAX_OBJECTS_PER_BUFFER, __FILE__, __LINE__);
 
-	GLsizeiptr Buffer::GetTotalBytes() const
-	{
-		GLsizeiptr totalBytes = 0;
-		auto it = dataCollection_.begin();
-		while (it != dataCollection_.end())
-		{
-			const Data& obj = *(it++);
-			totalBytes += obj.bytes_;
-		}
+        Data& obj = dataCollection_[dataCollection_.size() - 1];
+        return &obj;
+    }
 
-		return totalBytes;
-	}
+    GLsizeiptr Buffer::GetTotalBytes() const
+    {
+        GLsizeiptr totalBytes = 0;
+        auto it = dataCollection_.begin();
+        while (it != dataCollection_.end())
+        {
+            const Data& obj = *(it++);
+            totalBytes += obj.bytes_;
+        }
+
+        return totalBytes;
+    }
 }

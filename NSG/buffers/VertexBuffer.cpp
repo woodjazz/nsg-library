@@ -30,12 +30,24 @@ misrepresented as being the original software.
 namespace NSG
 {
     VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
-        : Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage)
+        : Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage),
+          vao_(0)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        bool ok = Graphics::this_->SetVertexBuffer(this);
-        CHECK_ASSERT(ok, __FILE__, __LINE__);
+#if 1
+        if (Graphics::this_->HasVertexArrayObject())
+        {
+            glGenVertexArraysOES(1, &vao_);
+            glBindVertexArrayOES(vao_);
+            glBindBuffer(GL_ARRAY_BUFFER, id_);
+            glEnableVertexAttribArray(ATTRIBUTE_LOC::POSITION);
+            glEnableVertexAttribArray(ATTRIBUTE_LOC::NORMAL);
+            glEnableVertexAttribArray(ATTRIBUTE_LOC::COORD);
+            glEnableVertexAttribArray(ATTRIBUTE_LOC::COLOR);
+            Graphics::this_->SetVertexAttrPointers();
+        }
+#endif
+        CHECK_CONDITION(Graphics::this_->SetVertexBuffer(this), __FILE__, __LINE__);
 
         std::vector<GLubyte> emptyData(bufferSize, 0);
 
@@ -53,6 +65,29 @@ namespace NSG
     {
         if (Graphics::this_->GetVertexBuffer() == this)
             Graphics::this_->SetVertexBuffer(nullptr);
+
+        if (vao_)
+            glDeleteVertexArraysOES(1, &vao_);
+    }
+
+    void VertexBuffer::Bind()
+    {
+        if (!vao_)
+        {
+            Buffer::Bind();
+        }
+        else
+        {
+            glBindVertexArrayOES(vao_);
+            Buffer::Bind();
+        }
+    }
+
+    void VertexBuffer::Unbind()
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        if (Graphics::this_->HasVertexArrayObject())
+            glBindVertexArrayOES(0);
     }
 
     bool VertexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes)
@@ -75,11 +110,6 @@ namespace NSG
         }
 
         return false;
-    }
-
-    void VertexBuffer::UnBind()
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     void VertexBuffer::UpdateData(Buffer::Data& obj, const VertexsData& vertexes)

@@ -44,6 +44,7 @@ namespace NSG
 		static Camera* Activate(Camera* pCamera);
 		static Camera* GetActiveCamera();
 		static Matrix4 GetModelViewProjection(const Node* pNode);
+		static Matrix4 GetInverseView();
 		void Activate();
 		void SetViewportFactor(float xo, float yo, float xf, float yf);
 		Recti GetViewport() const;

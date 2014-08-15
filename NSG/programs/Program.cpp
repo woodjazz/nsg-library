@@ -36,6 +36,7 @@ misrepresented as being the original software.
 #include "ResourceMemory.h"
 #include "Material.h"
 #include "Graphics.h"
+#include "Constants.h"
 #include <stdlib.h>
 #include <stdio.h>
 #if !defined(__APPLE__)
@@ -83,8 +84,10 @@ namespace NSG
           nLights_(0),
           activeCamera_(nullptr),
           activeMaterial_(nullptr),
+          nullCameraSet_(false),
           activeNode_(nullptr)
     {
+        memset(&activeLights_[0], 0, sizeof(activeLights_));
         CHECK_ASSERT(pRVShader &&  pRFShader, __FILE__, __LINE__);
     }
 
@@ -115,7 +118,8 @@ namespace NSG
           nLights_(0),
           activeCamera_(nullptr),
           activeMaterial_(nullptr),
-          activeNode_(nullptr)
+          activeNode_(nullptr),
+          activeScene_(nullptr)
     {
         CHECK_ASSERT(vShader && fShader, __FILE__, __LINE__);
     }
@@ -205,6 +209,18 @@ namespace NSG
                 hasLights_ = true;
             }
 
+            Graphics::this_->SetProgram(this);
+            
+            if (texture0_loc_ != -1)
+            {
+                glUniform1i(texture0_loc_, 0);
+            }
+
+            if (texture1_loc_ != -1)
+            {
+                glUniform1i(texture1_loc_, 1);
+            }
+
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }
     }
@@ -219,6 +235,13 @@ namespace NSG
 
         if (Graphics::this_->GetProgram() == this)
             Graphics::this_->SetProgram(nullptr);
+
+        activeCamera_ = nullptr;
+        nullCameraSet_ = false;
+        activeMaterial_ = nullptr;
+        activeNode_ = nullptr;
+        activeScene_ = nullptr;
+        memset(&activeLights_[0], 0, sizeof(activeLights_));
     }
 
     bool Program::Initialize()
@@ -227,6 +250,12 @@ namespace NSG
 
         // Creates the program name/index.
         id_ = glCreateProgram();
+
+        // Bind vertex attribute locations to ensure they are the same in all shaders
+        glBindAttribLocation(id_, ATTRIBUTE_LOC::POSITION, "a_position");
+        glBindAttribLocation(id_, ATTRIBUTE_LOC::NORMAL, "a_normal");
+        glBindAttribLocation(id_, ATTRIBUTE_LOC::COORD, "a_texcoord");
+        glBindAttribLocation(id_, ATTRIBUTE_LOC::COLOR, "a_color");
 
         // Will attach the fragment and vertex shaders to the program object.
         glAttachShader(id_, pVShader_->GetId());
@@ -288,90 +317,85 @@ namespace NSG
         return glGetUniformLocation(id_, name.c_str());
     }
 
+    void Program::SetSceneVariables()
+    {
+        if (color_scene_ambient_loc_ != -1)
+        {
+            if (activeScene_ != Scene::this_ || Scene::this_->UniformsNeedUpdate())
+            {
+                glUniform4fv(color_scene_ambient_loc_, 1, &Scene::this_->GetAmbientColor()[0]);
+                //Scene::this_->ClearUniformsNeedUpdate();
+
+            }
+        }
+
+        activeScene_ = Scene::this_;
+    }
+
     void Program::Use(Node* node)
     {
-        if (node)
+        if (m_loc_ != -1)
         {
-            if (mvp_loc_ != -1)
-            {
-                Matrix4 m = Camera::GetModelViewProjection(node);
-                glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(m));
-            }
+            const Matrix4& m = node->GetGlobalModelMatrix();
+            glUniformMatrix4fv(m_loc_, 1, GL_FALSE, glm::value_ptr(m));
+        }
 
-            if (m_loc_ != -1)
-            {
-                const Matrix4& m = node->GetGlobalModelMatrix();
-                glUniformMatrix4fv(m_loc_, 1, GL_FALSE, glm::value_ptr(m));
-            }
-
-            if (model_inv_transp_loc_ != -1)
-            {
-                const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
-                glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));
-            }
-
-            node->ClearUniformsNeedUpdate();
+        if (model_inv_transp_loc_ != -1)
+        {
+            const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
+            glUniformMatrix3fv(model_inv_transp_loc_, 1, GL_FALSE, glm::value_ptr(m));
         }
     }
 
     void Program::Use(Material* material)
     {
-        if (material)
+        if (color_loc_ != -1)
         {
-            if (texture0_loc_ != -1)
-            {
-                Graphics::this_->SetTexture(0, material->pTexture0_.get());
-                glUniform1i(texture0_loc_, 0);
-            }
+            glUniform4fv(color_loc_, 1, &material->color_[0]);
+        }
 
-            if (texture1_loc_ != -1)
-            {
-                Graphics::this_->SetTexture(1, material->pTexture1_.get());
-                glUniform1i(texture1_loc_, 1);
-            }
+        if (color_ambient_loc_ != -1)
+        {
+            glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
+        }
 
-            if (color_loc_ != -1)
-            {
-                glUniform4fv(color_loc_, 1, &material->color_[0]);
-            }
+        if (color_diffuse_loc_ != -1)
+        {
+            glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
+        }
 
-            if (color_ambient_loc_ != -1)
-            {
-                glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
-            }
+        if (color_specular_loc_ != -1)
+        {
+            glUniform4fv(color_specular_loc_, 1, &material->specular_[0]);
+        }
 
-            if (color_diffuse_loc_ != -1)
-            {
-                glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
-            }
-
-            if (color_specular_loc_ != -1)
-            {
-                glUniform4fv(color_specular_loc_, 1, &material->specular_[0]);
-            }
-
-            if (shininess_loc_ != -1)
-            {
-                glUniform1f(shininess_loc_, material->shininess_);
-            }
-
-            material->ClearUniformsNeedUpdate();
+        if (shininess_loc_ != -1)
+        {
+            glUniform1f(shininess_loc_, material->shininess_);
         }
     }
 
-    bool Program::Use(Material* material, Node* node)
+    void Program::Use(Material* material, Node* node)
     {
-        bool programChanged = Graphics::this_->SetProgram(this);
-
-        if (activeMaterial_ != material || (material && material->UniformsNeedUpdate()) || programChanged)
+        if (texture0_loc_ != -1)
         {
-            activeMaterial_ = material;
+            Graphics::this_->SetTexture(0, material->pTexture0_.get());
+        }
+
+        if (texture1_loc_ != -1)
+        {
+            Graphics::this_->SetTexture(1, material->pTexture1_.get());
+        }
+
+        if (activeMaterial_ != material || (material && material->UniformsNeedUpdate()))
+        {
             Use(material);
         }
 
-        if (activeNode_ != node || (node && node->UniformsNeedUpdate()) || programChanged)
+        activeMaterial_ = material;
+
+        if (activeNode_ != node || (node && node->UniformsNeedUpdate()))
         {
-            activeNode_ = node;
             Use(node);
         }
 
@@ -380,25 +404,27 @@ namespace NSG
             pExtraUniforms_->AssignValues();
         }
 
+        Camera* camera = Camera::GetActiveCamera();
+
         if (v_inv_loc_ != -1)
         {
-            Camera* camera = Camera::GetActiveCamera();
-
-            if (camera)
+            if (activeCamera_ != camera || camera->UniformsNeedUpdate() || !nullCameraSet_)
             {
-                if (activeCamera_ != camera || camera->UniformsNeedUpdate() || programChanged)
-                {
-                    activeCamera_ = camera;
-                    glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetActiveCamera()->GetInverseViewMatrix()));
-                    camera->ClearUniformsNeedUpdate();
-                }
-            }
-            else if (activeCamera_ != camera || programChanged)
-            {
-                activeCamera_ = nullptr;
-                glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(IDENTITY_MATRIX));
+                glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetInverseView()));
             }
         }
+
+        if (mvp_loc_ != -1 && node)
+        {
+            if (activeCamera_ != camera || camera->UniformsNeedUpdate() || !nullCameraSet_ || activeNode_ != node || node->UniformsNeedUpdate())
+            {
+                glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
+            }
+        }
+
+        activeNode_ = node;
+        nullCameraSet_ = true;
+        activeCamera_ = camera;
 
         if (hasLights_)
         {
@@ -406,7 +432,7 @@ namespace NSG
 
             size_t n = std::min(ligths.size(), MAX_LIGHTS);
 
-            if (nLights_ != n || programChanged)
+            if (nLights_ != n)
             {
                 glUniform1i(numOfLights_loc_, n);
                 nLights_ = n;
@@ -416,10 +442,8 @@ namespace NSG
             {
                 Light* light = ligths[i];
 
-                if (light->UniformsNeedUpdate() || programChanged)
+                if (activeLights_[i] != light || light->UniformsNeedUpdate())
                 {
-                    light->ClearUniformsNeedUpdate();
-
                     GLint type = light->GetType();
 
                     if (lightsLoc_[i].type_loc != -1)
@@ -492,9 +516,9 @@ namespace NSG
                         }
                     }
                 }
+
+                activeLights_[i] = light;
             }
         }
-
-        return programChanged;
     }
 }

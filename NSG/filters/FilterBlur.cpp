@@ -118,7 +118,7 @@ namespace NSG
 
 	void FilterBlur::SetLocations()
 	{
-		Program* program = pMaterial_->GetProgram();
+		PProgram program = pMaterial_->GetProgram();
 
 		texelSize_loc_ = program->GetUniformLocation("u_texelSize");
 		orientation_loc_ = program->GetUniformLocation("u_orientation");

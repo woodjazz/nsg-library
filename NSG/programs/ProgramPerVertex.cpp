@@ -28,6 +28,12 @@ misrepresented as being the original software.
 #include "Types.h"
 
 static const char* vShader = STRINGIFY(
+
+	attribute vec4 a_position;
+	attribute vec2 a_texcoord;
+	attribute vec3 a_normal;
+	attribute vec4 a_color;
+	
 	struct LightSource
 	{
 		int type;
@@ -62,10 +68,6 @@ static const char* vShader = STRINGIFY(
 	uniform mat3 u_model_inv_transp;
 	uniform mat4 u_v_inv;
 	uniform vec4 u_scene_ambient;
-	attribute vec2 a_texcoord;
-	attribute vec4 a_position;
-	attribute vec3 a_normal;
-	attribute vec4 a_color;
 	
 	varying vec4 v_color;
     varying vec4 v_vertex_color;

@@ -34,10 +34,11 @@ namespace NSG
 		Tick(size_t fps);
 		~Tick();
     protected:
-		void PerformTick();
-		virtual void BeginTick() = 0;
+		void PerformTicks();
+		virtual void InitializeTicks() = 0;
+		virtual void BeginTicks() = 0;
 		virtual void DoTick(float delta) = 0;
-		virtual void EndTick() = 0;
+		virtual void EndTicks() = 0;
 	private:
         TimePoint current_;
         TimePoint next_;

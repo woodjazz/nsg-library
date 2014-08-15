@@ -42,7 +42,7 @@ namespace NSG
 		~Material();
 		void EnableCullFace(bool enable);
 		void SetProgram(PProgram pProgram);
-		Program* GetProgram() const { return pProgram_.get(); }
+		PProgram GetProgram() const { return pProgram_; }
 		void SetTexture0(PTexture pTexture);
 		void SetTexture1(PTexture pTexture);
         PTexture GetTexture0() const { return pTexture0_; }

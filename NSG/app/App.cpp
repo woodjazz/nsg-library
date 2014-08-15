@@ -148,7 +148,7 @@ namespace NSG
         pApp_ = nullptr;
     }
 
-    void InternalApp::BeginTick()
+    void InternalApp::InitializeTicks()
     {
         Context::this_->Initialize();
 
@@ -158,13 +158,28 @@ namespace NSG
         pApp_->Start();
     }
 
+    void InternalApp::BeginTicks()
+    {
+        Graphics::this_->BeginFrame();
+    }
+
     void InternalApp::DoTick(float delta)
     {
         pApp_->DoTick(delta);
     }
 
-    void InternalApp::EndTick()
+    void InternalApp::EndTicks()
     {
+        Graphics::this_->ClearAllBuffers();
+        pApp_->RenderFrame();
+#if 1
+        Camera* camera(Camera::GetActiveCamera());
+
+        IMGUI::Context::this_->RenderGUI();
+
+        Camera::Activate(camera);
+#endif
+        Graphics::this_->EndFrame();
     }
 
     void InternalApp::SetViewSize(int32_t width, int32_t height)
@@ -228,23 +243,7 @@ namespace NSG
 
     void InternalApp::RenderFrame()
     {
-        PerformTick();
-
-        Graphics::this_->ClearAllBuffers();
-
-        pApp_->RenderFrame();
-#if 0
-        Camera* camera(Camera::GetActiveCamera());
-
-        IMGUI::Context::this_->RenderGUI();
-
-        Camera::Activate(camera);
-#endif
-        if (AppStatistics::this_)
-            AppStatistics::this_->NewFrame();
-
-        Graphics::this_->DiscardFramebuffer();
-
+        PerformTicks();
     }
 
     bool InternalApp::ShallExit() const

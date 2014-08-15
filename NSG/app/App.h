@@ -105,9 +105,10 @@ namespace NSG
 
         InternalApp(App* pApp);
         ~InternalApp();
-        void BeginTick();
-        void DoTick(float delta);
-        void EndTick();
+        virtual void InitializeTicks() override;
+        virtual void BeginTicks() override;
+        virtual void DoTick(float delta) override;
+        virtual void EndTicks() override;
         void SetViewSize(int32_t width, int32_t height);
         void ViewChanged(int32_t width, int32_t height);
         void OnMouseMove(float x, float y);

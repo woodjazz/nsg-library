@@ -206,6 +206,17 @@ namespace NSG
         }
     }
 
+    Matrix4 Camera::GetInverseView()
+    {
+        if (activeCamera)
+        {
+            return activeCamera->GetInverseViewMatrix();
+        }
+        else
+        {
+            return IDENTITY_MATRIX;
+        }
+    }
     const Matrix4& Camera::GetView() const
     {
         if (IsDirty())

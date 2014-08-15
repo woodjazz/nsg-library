@@ -47,7 +47,7 @@ void EarthBehavior::Start()
     technique->Add(pass);
 
 	PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
-	PMaterial pMaterial(new Material ());
+	PMaterial pMaterial(new Material);
 	PProgram perVertex(new ProgramPerVertex);
 	pMaterial->SetProgram(perVertex);
 	pMaterial->SetTexture0(pEarthTexture);

@@ -58,9 +58,9 @@ namespace NSG
 			Graphics::this_->SetIndexBuffer(nullptr);
 	}
 
-	void IndexBuffer::UnBind() 
-	{ 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); 
+	void IndexBuffer::Unbind()
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	bool IndexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const Indexes& indexes)

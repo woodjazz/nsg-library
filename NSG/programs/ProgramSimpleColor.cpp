@@ -28,8 +28,10 @@ misrepresented as being the original software.
 #include "Types.h"
 
 static const char* vShader = STRINGIFY(
-    uniform mat4 u_mvp;
+
     attribute vec4 a_position;
+ 
+    uniform mat4 u_mvp;
     
     void main() 
     {

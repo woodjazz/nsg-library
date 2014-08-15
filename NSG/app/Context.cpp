@@ -45,7 +45,8 @@ namespace NSG
         : atlasManager_(new FontAtlasTextureManager),
         imgui_(new IMGUI::Context),
         keyboard_(new Keyboard),
-        bufferManager_(new BufferManager)
+        bufferManager_(new BufferManager),
+        allGPUObjectAreValid_(true)
     {
     }
 
