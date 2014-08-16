@@ -185,11 +185,7 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            /*if(has_discard_framebuffer_)
-            {
-                const GLenum discards[]  = {GL_DEPTH_ATTACHMENT};
-                glDiscardFramebufferEXT(GL_FRAMEBUFFER, 2, discards);
-            }*/
+            Graphics::this_->DiscardFramebuffer();
 
             Graphics::this_->SetFrameBuffer(0);
 

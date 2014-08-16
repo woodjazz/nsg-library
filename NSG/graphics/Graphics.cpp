@@ -440,7 +440,6 @@ namespace NSG
             if (vertexBuffer)
             {
                 IndexBuffer* indexBuffer = mesh->GetIndexBuffer();
-                const Indexes& indexes = mesh->GetIndexes();
                 if (indexBuffer)
                 {
                     if (!hasVAO)
@@ -471,13 +470,12 @@ namespace NSG
             if (buffer)
             {
                 buffer->Bind();
-                return true;
             }
             else
             {
                 VertexBuffer::Unbind();
-                return true;
             }
+            return true;
         }
 
         return false;
@@ -491,12 +489,12 @@ namespace NSG
             if (buffer)
             {
                 buffer->Bind();
-                return true;
             }
             else
             {
                 IndexBuffer::Unbind();
             }
+            return true;
 
         }
         return false;
