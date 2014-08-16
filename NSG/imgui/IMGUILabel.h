@@ -39,6 +39,7 @@ namespace NSG
 			void Render();
 			virtual void UpdateControl() override;
 		private:
+			const std::string& currentText_;
 			LabelStyle& labelStyle_;
 			PTextMesh pTextMesh_;
 		};

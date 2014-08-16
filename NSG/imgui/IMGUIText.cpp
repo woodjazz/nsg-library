@@ -46,13 +46,13 @@ namespace NSG
             : Object(LayoutType::CONTROL, percentageX, percentageY, style),
 			textStyle_(style),
               currentText_(text),
-              pTextMesh_(area_->textMesh_),
+              pTextMesh_(area_->textMesh0_),
               pCursorMesh_(area_->cursorMesh_),
               pRegex_(pRegex)
         {
 			if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
             {
-				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
+				pTextMesh_ = area_->textMesh0_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
             }
 
 			if (!pCursorMesh_ || !pCursorMesh_->Has(style.fontAtlasFile_))
@@ -194,7 +194,7 @@ namespace NSG
                     area_->textOffsetX_ = 0;
             }
 
-            Node textNode0;
+            Node& textNode0 = *area_->controlNodes_.node0_;
             textNode0.SetParent(node_);
 
             if (pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
@@ -209,12 +209,12 @@ namespace NSG
             else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
                 textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
 
-            Node textNode1;
+            Node& textNode1 = *area_->controlNodes_.node1_;
             textNode1.SetParent(&textNode0);
             textNode1.SetInheritScale(false);
             textNode1.SetScale(Context::this_->pRootNode_->GetGlobalScale());
 
-            SceneNode textNode2;
+            Node& textNode2 = *area_->controlNodes_.node2_;
             textNode2.SetParent(&textNode1);
             textNode2.SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
 
@@ -238,7 +238,7 @@ namespace NSG
             // Render cursor if we have keyboard focus
             if (HasFocus() && layoutManager_.IsCurrentWindowActive() && (uistate_.tick_ < 15))
             {
-                SceneNode cursorNode;
+                Node& cursorNode = *area_->controlNodes_.node3_;
                 cursorNode.SetParent(&textNode2);
                 cursorNode.SetPosition(Vertex3(cursorPositionInText, 0, 0));
 
@@ -254,6 +254,8 @@ namespace NSG
 
                 technique.Render();
             }
+            
+            
         }
 
 

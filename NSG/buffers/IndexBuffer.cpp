@@ -39,7 +39,6 @@ namespace NSG
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		CHECK_CONDITION(Graphics::this_->SetIndexBuffer(this), __FILE__, __LINE__);
-		//Buffer::Bind();
 
 		std::vector<GLubyte> emptyData(bufferSize, 0);
 		glBufferData(type_, bufferSize, &emptyData[0], usage_); //created with initialized data to avoid warnings when profiling
@@ -60,9 +59,7 @@ namespace NSG
 
 	void IndexBuffer::Bind()
 	{
-		//if (!Graphics::this_->HasVertexArrayObject())
-			return Buffer::Bind();
-		//otherwise has been already bin in the vertex buffer object
+		return Buffer::Bind();
 	}
 
 	void IndexBuffer::Unbind()

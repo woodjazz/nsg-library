@@ -139,7 +139,7 @@ namespace NSG
 	{
 		Collect(false);
 		static std::string emptys;
-#if 1
+
 		IMGUISpacer(100, 10);
 
 		const float LABEL_HEIGTH = 15;
@@ -148,7 +148,7 @@ namespace NSG
 	    ss << "FPS:" << fps;
 		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
-
+#if 1
 	    ss.str(emptys);
 
         size_t drawCalls = counters_[DRAWCALLS].first;
@@ -188,9 +188,9 @@ namespace NSG
 	    ss << "DynamicIndexBuffers:" << dynamicIndexBuffers_;
 		IMGUILine();
 		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
-
-	    Collect(true);
 #endif
+	    Collect(true);
+
 		
 	}
 }

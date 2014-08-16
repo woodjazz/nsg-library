@@ -107,6 +107,8 @@ namespace NSG
         VertexsData tmpVertexData(vertexsData_);
         Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
 
+        Graphics::this_->SetBuffers(this);
+
         pVBuffer_->UpdateData(*bufferVertexData_, tmpVertexData);
 
         Indexes tmpIndexes(indexes_);
@@ -204,13 +206,13 @@ namespace NSG
         }
     }
 
-    void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
+    bool TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
     {
         if (text.size() > maxLength_)
         {
             maxLength_ = text.size();
             Invalidate();
-            return;
+            return false;;
         }
 
         bool changed = false;
@@ -250,7 +252,10 @@ namespace NSG
         if (changed && IsReady())
         {
             UpdateBuffers();
+            return true;
         }
+
+        return false;
     }
 
     GLenum TextMesh::GetWireFrameDrawMode() const

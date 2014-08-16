@@ -29,7 +29,7 @@ misrepresented as being the original software.
 #include "IMGUISkin.h"
 #include "IMGUILayoutManager.h"
 #include "TextMesh.h"
-#include "SceneNode.h"
+#include "Node.h"
 #include "Technique.h"
 #include "Pass.h"
 #include "Material.h"
@@ -60,7 +60,7 @@ namespace NSG
 				{
 					Vertex3 parentGlobalScale = area_->parent_->pNode_->GetGlobalScale();
 					Vertex3 globalScale = node_->GetGlobalScale();
-					Node node;
+					Node& node = *area_->controlNodes_.node0_;
 					node.SetParent(node_);
 					node.SetInheritScale(false);
 					globalScale.y = parentGlobalScale.y; // In order to hit all the slider area: reset scale

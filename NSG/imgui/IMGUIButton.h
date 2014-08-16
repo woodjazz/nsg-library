@@ -40,7 +40,7 @@ namespace NSG
             virtual void OnKey(int key) override;
             virtual void UpdateControl() override;
         protected:
-            std::string currentText_;
+            const std::string& currentText_;
             PTextMesh pTextMesh_;
             bool pressed_;
         private:

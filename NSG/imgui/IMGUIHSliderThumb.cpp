@@ -60,13 +60,13 @@ namespace NSG
 				{
 					Vertex3 parentGlobalScale = area_->parent_->pNode_->GetGlobalScale();
 					Vertex3 globalScale = node_->GetGlobalScale();
-					Node node;
+					Node& node = *area_->controlNodes_.node0_;
 					node.SetParent(node_);
 					node.SetInheritScale(false);
 					globalScale.x = parentGlobalScale.x; // In order to hit all the slider area: reset scale
 					node.SetScale(globalScale);
 
-					if (!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0)) || lastHit_ == id_)
+					if ((!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == id_)
 					{
 						lastHit_ = id_;
 						Vertex3 globalPos = area_->parent_->pNode_->GetGlobalPosition();

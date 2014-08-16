@@ -44,7 +44,7 @@ namespace NSG
         TextMesh(const std::string& textureFilename, GLenum usage);
         ~TextMesh();
         bool Has(const std::string& textureFilename) const;
-        void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
+        bool SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
         GLfloat GetWidth() const
         {
             return screenWidth_;

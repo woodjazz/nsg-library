@@ -34,148 +34,157 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Pass::Pass()
-	: blendMode_(BLEND_ALPHA),
-    enableDepthTest_(true),
-    enableStencilTest_(false),
-    stencilMask_(~GLuint(0)),
-	sfailStencilOp_(GL_KEEP),
-	dpfailStencilOp_(GL_KEEP),
-	dppassStencilOp_(GL_KEEP),
-	stencilFunc_(GL_ALWAYS),
-	stencilRefValue_(0),
-	stencilMaskValue_(~GLuint(0)),
-    enableColorBuffer_(true),
-    enableDepthBuffer_(true),
-	drawMode_(SOLID)
-	{
+    Pass::Pass()
+        : blendMode_(BLEND_ALPHA),
+          enableDepthTest_(true),
+          enableStencilTest_(false),
+          stencilMask_(~GLuint(0)),
+          sfailStencilOp_(GL_KEEP),
+          dpfailStencilOp_(GL_KEEP),
+          dppassStencilOp_(GL_KEEP),
+          stencilFunc_(GL_ALWAYS),
+          stencilRefValue_(0),
+          stencilMaskValue_(~GLuint(0)),
+          enableColorBuffer_(true),
+          enableDepthBuffer_(true),
+          drawMode_(SOLID)
+    {
 
-	}
+    }
 
-	Pass::~Pass()
-	{
+    Pass::~Pass()
+    {
 
-	}
+    }
 
-	void Pass::SetBlendMode(BLEND_MODE mode)
-	{
-		blendMode_ = mode;
-	}
+    void Pass::SetBlendMode(BLEND_MODE mode)
+    {
+        blendMode_ = mode;
+    }
 
-	void Pass::EnableColorBuffer(bool enable)
-	{
-		enableColorBuffer_ = enable;
-	}
+    void Pass::EnableColorBuffer(bool enable)
+    {
+        enableColorBuffer_ = enable;
+    }
 
-	void Pass::EnableDepthBuffer(bool enable)
-	{
-		enableDepthBuffer_ = enable;
-	}
+    void Pass::EnableDepthBuffer(bool enable)
+    {
+        enableDepthBuffer_ = enable;
+    }
 
-	void Pass::EnableDepthTest(bool enable)
-	{
-		enableDepthTest_ = enable;
-	}
+    void Pass::EnableDepthTest(bool enable)
+    {
+        enableDepthTest_ = enable;
+    }
 
-	void Pass::EnableStencilTest(bool enable)
-	{
-		enableStencilTest_ = enable;	
-	}
+    void Pass::EnableStencilTest(bool enable)
+    {
+        enableStencilTest_ = enable;
+    }
 
-	void Pass::SetStencilMask(GLuint mask)
-	{
-		stencilMask_ = mask;
-	}
+    void Pass::SetStencilMask(GLuint mask)
+    {
+        stencilMask_ = mask;
+    }
 
-	void Pass::SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass)
-	{
+    void Pass::SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass)
+    {
         sfailStencilOp_ = sfail;
         dpfailStencilOp_ = dpfail;
         dppassStencilOp_ = dppass;
-	}
+    }
 
-	void Pass::SetStencilFunc(GLenum func, GLint ref, GLuint mask)
-	{
+    void Pass::SetStencilFunc(GLenum func, GLint ref, GLuint mask)
+    {
         stencilFunc_ = func;
         stencilRefValue_ = ref;
         stencilMaskValue_ = mask;
     }
 
 
-	void Pass::SetNode(int idx, PNode node)
-	{
-		meshNodes_.at(idx).first = node;
-	}
+    void Pass::SetNode(int idx, PNode node)
+    {
+        meshNodes_.at(idx).first = node;
+    }
 
-	void Pass::Set(PMaterial material)
-	{
-		material_ = material;
-	}
+    void Pass::Set(PMaterial material)
+    {
+        material_ = material;
+    }
 
     void Pass::Set(Material* pMaterial)
     {
-		struct D {void operator()(Material* p) const {}};    	
-		PMaterial pObj(pMaterial, D());
-		Set(pObj);
+        struct D
+        {
+            void operator()(Material* p) const {}
+        };
+        PMaterial pObj(pMaterial, D());
+        Set(pObj);
     }
 
-	void Pass::Add(PNode node, PMesh mesh)
-	{
-		meshNodes_.push_back(MeshNode(node, mesh));
-	}
+    void Pass::Add(PNode node, PMesh mesh)
+    {
+        meshNodes_.push_back(MeshNode(node, mesh));
+    }
 
-	void Pass::Add(Node* node, PMesh mesh)
-	{
-		struct D {void operator()(Node* p) const {}};
-		PNode obj(node, D());
-		Add(obj, mesh);
-	}
+    void Pass::Add(Node* node, PMesh mesh)
+    {
+        struct D
+        {
+            void operator()(Node* p) const {}
+        };
+        PNode obj(node, D());
+        Add(obj, mesh);
+    }
 
     void Pass::SetAll(PNode node)
     {
         auto it = meshNodes_.begin();
-        while(it != meshNodes_.end())
+        while (it != meshNodes_.end())
             (it++)->first = node;
     }
 
     void Pass::SetAll(Node* node)
     {
-    	struct D {void operator()(Node* p) const {}};
-    	PNode obj(node, D());
+        struct D
+        {
+            void operator()(Node* p) const {}
+        };
+        PNode obj(node, D());
         auto it = meshNodes_.begin();
-        while(it != meshNodes_.end())
+        while (it != meshNodes_.end())
             (it++)->first = obj;
     }
 
-	PMesh Pass::GetMesh(int idx) const 
-	{ 
-		return meshNodes_.at(idx).second; 
-	}
+    PMesh Pass::GetMesh(int idx) const
+    {
+        return meshNodes_.at(idx).second;
+    }
 
-	void Pass::ClearMeshNodes()
-	{
-		meshNodes_.clear();
-	}
+    void Pass::ClearMeshNodes()
+    {
+        meshNodes_.clear();
+    }
 
-	void Pass::Render()
-	{
-		if(material_)
-		{
-			Graphics::this_->SetColorMask(enableColorBuffer_);
-			Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_, stencilFunc_, stencilRefValue_, stencilMaskValue_);
-			Graphics::this_->SetBlendModeTest(blendMode_);
-			Graphics::this_->SetDepthTest(enableDepthTest_);
-            Graphics::this_->SetDepthMask(enableDepthBuffer_);
-			const Camera* camera = Camera::GetActiveCamera();
-			for(auto& meshNode : meshNodes_)
-			{
-				Node* node = meshNode.first.get();
-				Mesh* mesh = meshNode.second.get();
-				Material* material = material_.get();
+    bool Pass::Render()
+    {
+    	bool drawn = false;
+        Graphics::this_->SetColorMask(enableColorBuffer_);
+        Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_, dpfailStencilOp_, dppassStencilOp_, stencilFunc_, stencilRefValue_, stencilMaskValue_);
+        Graphics::this_->SetBlendModeTest(blendMode_);
+        Graphics::this_->SetDepthTest(enableDepthTest_);
+        Graphics::this_->SetDepthMask(enableDepthBuffer_);
+        //const Camera* camera = Camera::GetActiveCamera();
+        for (auto& meshNode : meshNodes_)
+        {
+            Node* node = meshNode.first.get();
+            Mesh* mesh = meshNode.second.get();
+            Material* material = material_.get();
 
-				//if (!camera || camera->IsVisible(*node, *mesh))
-					Graphics::this_->Draw(drawMode_ == SOLID, material, node, mesh);
-			}
-		}
-	}
+            //if (!camera || camera->IsVisible(*node, *mesh))
+            drawn |= Graphics::this_->Draw(drawMode_ == SOLID, material, node, mesh);
+        }
+
+        return drawn;
+    }
 }

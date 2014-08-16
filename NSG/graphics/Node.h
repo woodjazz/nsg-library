@@ -26,16 +26,16 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "UniformsUpdate.h"
+#include "NonCopyable.h"
 #include <vector>
 
 namespace NSG
 {
-	class Node : public UniformsUpdate
+	class Node : NonCopyable, public UniformsUpdate
 	{
 	public:
 		Node();
 		virtual ~Node();
-		bool operator == (const Node& obj) const;
 		IdType GetId() const { return id_;  }
         void SetParent(PNode pParent);
         void SetParent(Node* pParent);

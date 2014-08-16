@@ -32,7 +32,7 @@ misrepresented as being the original software.
 #include "IMGUILayoutManager.h"
 #include "FrameColorSelection.h"
 #include "TextMesh.h"
-#include "SceneNode.h"
+#include "Node.h"
 #include "Technique.h"
 #include "Graphics.h"
 #include "Pass.h"
@@ -136,7 +136,7 @@ namespace NSG
             // Draw slider
             Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
 
-            Node node;
+            Node& node = *area_->controlNodes_.node0_;
             node.SetParent(area_->pNode_);
             node.SetInheritScale(false);
 
@@ -200,7 +200,7 @@ namespace NSG
         {
             Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
             // Draw slider
-            Node node;
+            Node& node = *area_->controlNodes_.node1_;
             node.SetParent(area_->pNode_);
             node.SetInheritScale(false);
 
@@ -236,7 +236,7 @@ namespace NSG
                 node.SetPosition(position);
                 node.SetScale(scale);
 
-                if (!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0)) || lastHit_ == static_cast<IdType>(IdsTypes::IMGUI_HORIZONTAL_SLIDER_ID))
+                if ((!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == static_cast<IdType>(IdsTypes::IMGUI_HORIZONTAL_SLIDER_ID))
                 {
                     lastHit_ = static_cast<IdType>(IdsTypes::IMGUI_HORIZONTAL_SLIDER_ID);
 

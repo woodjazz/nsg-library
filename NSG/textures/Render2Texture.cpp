@@ -161,7 +161,7 @@ namespace NSG
 
             Graphics::this_->SetFrameBuffer(framebuffer_);
 
-            glViewport(0, 0, pTexture_->GetWidth(), pTexture_->GetHeight());
+            Graphics::this_->SetViewport(Recti{0, 0, pTexture_->GetWidth(), pTexture_->GetHeight()});
 
             if (createDepthStencilBuffer_)
                 Graphics::this_->ClearAllBuffers();

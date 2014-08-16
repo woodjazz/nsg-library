@@ -118,7 +118,7 @@ namespace NSG
             else if (event.type == SDL_KEYDOWN)
             {
                 int key = event.key.keysym.sym;
-                int scancode = event.key.keysym.scancode;
+                //int scancode = event.key.keysym.scancode;
                 int action = NSG_KEY_PRESS;
                 int modifier = event.key.keysym.mod;
                 app->OnKey(key, action, modifier);
@@ -126,7 +126,7 @@ namespace NSG
             else if (event.type == SDL_KEYUP)
             {
                 int key = event.key.keysym.sym;
-                int scancode = event.key.keysym.scancode;
+                //int scancode = event.key.keysym.scancode;
                 int action = NSG_KEY_RELEASE;
                 int modifier = event.key.keysym.mod;
                 app->OnKey(key, action, modifier);

@@ -54,7 +54,7 @@ namespace NSG
 		void Add(PNode node, PMesh mesh);
 		void Add(Node* node, PMesh mesh);
 		void ClearMeshNodes();
-		virtual void Render();
+		virtual bool Render();
 		PMesh GetMesh(int idx) const;
 		const MESHNODES& GetMeshNodes() const { return meshNodes_; }
 		PMaterial GetMaterial() const { return material_; }

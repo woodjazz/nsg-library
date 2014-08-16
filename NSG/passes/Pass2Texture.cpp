@@ -45,18 +45,22 @@ namespace NSG
 		passes_.push_back(pass);
 	}
 
-	void Pass2Texture::Render()
+	bool Pass2Texture::Render()
 	{
+		bool drawn = false;
+
 		if(render2Texture_->Begin())
 		{
 			auto it = passes_.begin();
 			while(it != passes_.end())
 			{
 				PPass pass = *it;
-				pass->Render();
+				drawn |= pass->Render();
 				++it;
 			}
 			render2Texture_->End();
 		}
+
+		return drawn;
 	}
 }

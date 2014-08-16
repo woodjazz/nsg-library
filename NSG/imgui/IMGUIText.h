@@ -46,7 +46,7 @@ namespace NSG
 			virtual void UpdateControl() override;
 		private:
 			TextStyle& textStyle_;
-			std::string currentText_;
+            std::string currentText_;
 			PTextMesh pTextMesh_;
             PTextMesh pCursorMesh_;
 			std::regex* pRegex_;

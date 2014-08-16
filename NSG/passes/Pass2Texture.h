@@ -35,7 +35,7 @@ namespace NSG
 		Pass2Texture(PTexture texture, bool createDepthBuffer, bool createDepthStencilBuffer);
 		~Pass2Texture();
 		void Add(PPass pass);
-		virtual void Render();
+		virtual bool Render() override;
 		PTexture GetTexture() const { return texture_; }
 	private:
 		PRender2Texture render2Texture_;

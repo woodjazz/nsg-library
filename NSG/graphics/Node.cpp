@@ -51,18 +51,6 @@ namespace NSG
 		}
 	}
 
-	bool Node::operator == (const Node& obj) const
-	{
-		if(this != &obj)
-		{
-			if(dirty_)
-				Update();
-			
-			return globalPosition_ == obj.GetGlobalPosition() && globalOrientation_ == obj.GetGlobalOrientation() && globalScale_ == obj.GetGlobalScale();
-		}
-		return true;
-	}
-
 	void Node::RemoveFromParent() 
 	{
 		CHECK_ASSERT(pParent_ && "parent does not exist!!!", __FILE__, __LINE__);

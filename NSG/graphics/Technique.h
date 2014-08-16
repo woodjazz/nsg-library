@@ -38,7 +38,7 @@ namespace NSG
 		void Add(Pass* pass);
 		void Set(PNode node);
 		void Set(Node* node);
-		void Render();
+		bool Render();
 		size_t GetNumPasses() const;
 		const PASSES& GetPasses() const { return passes_; }
 		PPass GetPass(unsigned int idx) { return passes_.at(idx); }

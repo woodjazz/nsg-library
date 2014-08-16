@@ -84,7 +84,7 @@ namespace NSG
           nLights_(0),
           activeCamera_(nullptr),
           activeMaterial_(nullptr),
-          nullCameraSet_(false),
+          neverUsed_(true),
           activeNode_(nullptr)
     {
         memset(&activeLights_[0], 0, sizeof(activeLights_));
@@ -117,6 +117,7 @@ namespace NSG
           hasLights_(false),
           nLights_(0),
           activeCamera_(nullptr),
+          neverUsed_(true),
           activeMaterial_(nullptr),
           activeNode_(nullptr),
           activeScene_(nullptr)
@@ -237,7 +238,7 @@ namespace NSG
             Graphics::this_->SetProgram(nullptr);
 
         activeCamera_ = nullptr;
-        nullCameraSet_ = false;
+        neverUsed_ = true;
         activeMaterial_ = nullptr;
         activeNode_ = nullptr;
         activeScene_ = nullptr;
@@ -324,15 +325,13 @@ namespace NSG
             if (activeScene_ != Scene::this_ || Scene::this_->UniformsNeedUpdate())
             {
                 glUniform4fv(color_scene_ambient_loc_, 1, &Scene::this_->GetAmbientColor()[0]);
-                //Scene::this_->ClearUniformsNeedUpdate();
-
             }
         }
 
         activeScene_ = Scene::this_;
     }
 
-    void Program::Use(Node* node)
+    void Program::SetVariables(Node* node)
     {
         if (m_loc_ != -1)
         {
@@ -347,35 +346,35 @@ namespace NSG
         }
     }
 
-    void Program::Use(Material* material)
+    void Program::SetVariables(Material* material)
     {
-        if (color_loc_ != -1)
+        if (color_loc_ != -1 && (!material_ || material_->color_ != material->color_))
         {
             glUniform4fv(color_loc_, 1, &material->color_[0]);
         }
 
-        if (color_ambient_loc_ != -1)
+        if (color_ambient_loc_ != -1 && (!material_ || material_->ambient_ != material->ambient_))
         {
             glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
         }
 
-        if (color_diffuse_loc_ != -1)
+        if (color_diffuse_loc_ != -1 && (!material_ || material_->diffuse_ != material->diffuse_))
         {
             glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
         }
 
-        if (color_specular_loc_ != -1)
+        if (color_specular_loc_ != -1 && (!material_ || material_->specular_ != material->specular_))
         {
             glUniform4fv(color_specular_loc_, 1, &material->specular_[0]);
         }
 
-        if (shininess_loc_ != -1)
+        if (shininess_loc_ != -1 && (!material_ || material_->shininess_ != material->shininess_))
         {
             glUniform1f(shininess_loc_, material->shininess_);
         }
     }
 
-    void Program::Use(Material* material, Node* node)
+    void Program::SetVariables(Material* material, Node* node)
     {
         if (texture0_loc_ != -1)
         {
@@ -389,14 +388,19 @@ namespace NSG
 
         if (activeMaterial_ != material || material->UniformsNeedUpdate())
         {
-            Use(material);
+            SetVariables(material);
         }
 
         activeMaterial_ = material;
 
+        if(!material_)
+            material_ = PMaterial(new Material);
+        else
+            *material_ = *material;
+
         if (activeNode_ != node || (node && node->UniformsNeedUpdate()))
         {
-            Use(node);
+            SetVariables(node);
         }
 
         if (pExtraUniforms_)
@@ -409,23 +413,35 @@ namespace NSG
         bool update_camera = (mvp_loc_ != -1 || v_inv_loc_ != -1);
 
         update_camera = update_camera && (activeCamera_ != camera || (camera && camera->UniformsNeedUpdate()));
-        update_camera = update_camera || !nullCameraSet_;
+        update_camera = update_camera || neverUsed_;
 
         if (update_camera)
         {
+            neverUsed_ = false;
+
             if (v_inv_loc_ != -1)
                 glUniformMatrix4fv(v_inv_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetInverseView()));
 
             if (mvp_loc_ != -1)
                 glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
         }
-        else if (mvp_loc_ != -1 && (activeNode_ != node || (node && node->UniformsNeedUpdate())))// && !(*activeNode_ == *node))))
+        else if (mvp_loc_ != -1 && (activeNode_ != node || (node && node->UniformsNeedUpdate())))
         {
-            glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
+            if(!node)
+            {
+                activeNodeGlobalModel_ = IDENTITY_MATRIX;
+                glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
+            }
+            // some GUI updates (RecalculateLayout for lines)
+            // end up with the same global transform (so there is not need to update the uniform)
+            else if(activeNodeGlobalModel_ != node->GetGlobalModelMatrix()) 
+            {
+                activeNodeGlobalModel_ = node->GetGlobalModelMatrix();
+                glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
+            }
         }
 
         activeNode_ = node;
-        nullCameraSet_ = true;
         activeCamera_ = camera;
 
         if (hasLights_)

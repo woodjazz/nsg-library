@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "App.h"
 #include "Frustum.h"
+#include "Graphics.h"
 
 namespace NSG
 {
@@ -137,9 +138,7 @@ namespace NSG
     {
         activeCamera = this;
 
-        Recti viewport = GetViewport();
-
-        glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+        Graphics::this_->SetViewport(GetViewport());
     }
 
     const PFrustum Camera::GetFrustum() const

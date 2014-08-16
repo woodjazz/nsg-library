@@ -40,6 +40,7 @@ namespace NSG
 	public:
 		Material();
 		~Material();
+		const Material& operator = (const Material& obj);
 		void EnableCullFace(bool enable);
 		void SetProgram(PProgram pProgram);
 		PProgram GetProgram() const { return pProgram_; }
@@ -72,9 +73,7 @@ namespace NSG
         Color diffuse_;
         Color specular_;
         float shininess_;
-
         Color color_;
-
         bool enableCullFace_;
 
 		friend class UseMaterial;

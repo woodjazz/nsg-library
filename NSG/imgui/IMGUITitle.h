@@ -39,6 +39,7 @@ namespace NSG
 			Vertex3 Render();
 			virtual void UpdateControl() override;
 		private:
+			const std::string& currentText_;
 			TitleStyle& titleStyle_;
 			PTextMesh pTextMesh_;
 			Vertex3 windowOffset_;

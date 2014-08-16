@@ -33,58 +33,61 @@ misrepresented as being the original software.
 #include "Render2Texture.h"
 
 static const char* vShader = STRINGIFY(
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec2 v_texcoord;
+                                 attribute vec4 a_position;
+                                 attribute vec2 a_texcoord;
+                                 varying vec2 v_texcoord;
 
-	void main()
-	{
-		gl_Position = a_position;
-		v_texcoord = a_texcoord;
-	}
-);
+                                 void main()
+{
+    gl_Position = a_position;
+    v_texcoord = a_texcoord;
+}
+                             );
 
 namespace NSG
 {
-	Filter::Filter(PTexture input, PTexture output, const char* fragment)
-    : pMaterial_(new Material ()),
-    pMesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
-    technique_(new Technique)
-	{
-		PProgram pProgram(new Program(vShader, fragment));
-		pMaterial_->SetProgram(pProgram);
-		pMaterial_->SetTexture0(input);
+    Filter::Filter(PTexture input, PTexture output, const char* fragment)
+        : pMaterial_(new Material ()),
+          pMesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
+          technique_(new Technique)
+    {
+        PProgram pProgram(new Program(vShader, fragment));
+        pMaterial_->SetProgram(pProgram);
+        pMaterial_->SetTexture0(input);
 
-		pRender2Texture_ = PRender2Texture(new Render2Texture(output, true, false));
+        pRender2Texture_ = PRender2Texture(new Render2Texture(output, true, false));
 
-		PPass pass(new Pass);
-		pass->Set(pMaterial_);
-		pass->Add(nullptr, pMesh_);
-		technique_->Add(pass);
-	}
+        PPass pass(new Pass);
+        pass->Set(pMaterial_);
+        pass->Add(nullptr, pMesh_);
+        technique_->Add(pass);
+    }
 
-	Filter::~Filter()
-	{
+    Filter::~Filter()
+    {
 
-	}
+    }
 
-	void Filter::Render()
-	{
-		if(pMesh_->IsReady() && pMaterial_->IsReady() && pRender2Texture_->IsReady())
-		{
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+    bool Filter::Render()
+    {
+        if (!pMesh_->IsReady() || !pMaterial_->IsReady() || !pRender2Texture_->IsReady())
+            return false;
 
-			Camera* pCurrent = Camera::Deactivate();
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			pRender2Texture_->Begin();
+        Camera* pCurrent = Camera::Deactivate();
 
-			technique_->Render();
+        pRender2Texture_->Begin();
 
-			pRender2Texture_->End();
+        bool drawn = technique_->Render();
 
-			Camera::Activate(pCurrent);
+        pRender2Texture_->End();
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
-	}
+        Camera::Activate(pCurrent);
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        return drawn;
+
+    }
 }

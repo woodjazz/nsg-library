@@ -90,6 +90,8 @@ namespace NSG
         uniformsNeedUpdate_ = true;
         activeMesh_ = nullptr;
 
+        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
+
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -108,6 +110,7 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
+        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
         uniformsNeedUpdate_ = true;
         SetClearColor(Color(0, 0, 0, 1));
         SetClearDepth(1);
@@ -412,6 +415,53 @@ namespace NSG
         }
     }
 
+    void Graphics::SetViewport(const Recti& viewport)
+    {
+        if(viewport_ != viewport)
+        {
+            glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+            viewport_ = viewport;
+        }
+    }
+
+
+    bool Graphics::SetBuffers(Mesh* mesh)
+    {
+        bool hasVAO;
+        return SetBuffers(mesh, hasVAO);
+    }
+
+    bool Graphics::SetBuffers(Mesh* mesh, bool& hasVAO)
+    {
+        VertexBuffer* vertexBuffer = mesh->GetVertexBuffer();
+        hasVAO = vertexBuffer->HasVAO();
+        if (SetVertexBuffer(vertexBuffer))
+        {
+            if (vertexBuffer)
+            {
+                IndexBuffer* indexBuffer = mesh->GetIndexBuffer();
+                const Indexes& indexes = mesh->GetIndexes();
+                if (indexBuffer)
+                {
+                    if (!hasVAO)
+                        CHECK_CONDITION(SetIndexBuffer(indexBuffer), __FILE__, __LINE__);
+                }
+                else
+                {
+                    CHECK_CONDITION(SetIndexBuffer(nullptr), __FILE__, __LINE__);
+                }
+            }
+            else
+            {
+                CHECK_CONDITION(SetIndexBuffer(nullptr), __FILE__, __LINE__);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     bool Graphics::SetVertexBuffer(VertexBuffer* buffer)
     {
         if (buffer != vertexBuffer_)
@@ -426,6 +476,7 @@ namespace NSG
             else
             {
                 VertexBuffer::Unbind();
+                return true;
             }
         }
 
@@ -484,7 +535,7 @@ namespace NSG
 
     void Graphics::EndFrame()
     {
-        //DiscardFramebuffer();
+        DiscardFramebuffer();
 
         if (!uniformsNeedUpdate_)
             UniformsUpdate::ClearAllUpdates();
@@ -524,148 +575,148 @@ namespace NSG
 
     }
 
-    void Graphics::Draw(bool solid, Material* material, Node* node, Mesh* mesh)
+    bool Graphics::Draw(bool solid, Material* material, Node* node, Mesh* mesh)
     {
-        if (material->IsReady() && mesh->IsReady())
+        if (!material->IsReady() || !mesh->IsReady())
+            return false;
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        material->Use();
+
+        PProgram program = material->GetProgram();
+
+        SetProgram(program.get());
+        program->SetVariables(material, node);
+
+        bool hasVAO = false;
+        SetBuffers(mesh, hasVAO);
+
+        if (!hasVAO)
         {
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            material->Use();
-
-            PProgram program = material->GetProgram();
-
-            SetProgram(program.get());
-            program->Use(material, node);
-
-            VertexBuffer* vertexBuffer = mesh->GetVertexBuffer();
-            SetVertexBuffer(vertexBuffer);
-
-            if (!vertexBuffer->HasVAO())
+            if (activeMesh_ != mesh)
             {
-                if (activeMesh_ != mesh)
+                GLuint position_loc = program->GetAttPositionLoc();
+                GLuint texcoord_loc = program->GetAttTextCoordLoc();
+                GLuint normal_loc = program->GetAttNormalLoc();
+                GLuint color_loc = program->GetAttColorLoc();
+
+                unsigned newAttributes = 0;
+
+                if (position_loc != -1)
                 {
-                    GLuint position_loc = program->GetAttPositionLoc();
-                    GLuint texcoord_loc = program->GetAttTextCoordLoc();
-                    GLuint normal_loc = program->GetAttNormalLoc();
-                    GLuint color_loc = program->GetAttColorLoc();
+                    unsigned positionBit = 1 << position_loc;
+                    newAttributes |= positionBit;
 
-                    unsigned newAttributes = 0;
-
-                    if (position_loc != -1)
+                    if ((enabledAttributes_ & positionBit) == 0)
                     {
-                        unsigned positionBit = 1 << position_loc;
-                        newAttributes |= positionBit;
-
-                        if ((enabledAttributes_ & positionBit) == 0)
-                        {
-                            enabledAttributes_ |= positionBit;
-                            glEnableVertexAttribArray(position_loc);
-                        }
-
-                    }
-
-                    if (normal_loc != -1)
-                    {
-                        unsigned positionBit = 1 << normal_loc;
-                        newAttributes |= positionBit;
-
-                        if ((enabledAttributes_ & positionBit) == 0)
-                        {
-                            enabledAttributes_ |= positionBit;
-                            glEnableVertexAttribArray(normal_loc);
-                        }
-                    }
-
-                    if (texcoord_loc != -1)
-                    {
-                        unsigned positionBit = 1 << texcoord_loc;
-                        newAttributes |= positionBit;
-
-                        if ((enabledAttributes_ & positionBit) == 0)
-                        {
-                            enabledAttributes_ |= positionBit;
-                            glEnableVertexAttribArray(texcoord_loc);
-                        }
-                    }
-
-                    if (color_loc != -1)
-                    {
-                        unsigned positionBit = 1 << color_loc;
-                        newAttributes |= positionBit;
-
-                        if ((enabledAttributes_ & positionBit) == 0)
-                        {
-                            enabledAttributes_ |= positionBit;
-                            glEnableVertexAttribArray(color_loc);
-                        }
-                    }
-
-                    SetVertexAttrPointers();
-
-                    {
-                        /////////////////////////////
-                        // Disable unused attributes
-                        /////////////////////////////
-                        unsigned disableAttributes = enabledAttributes_ & (~newAttributes);
-                        unsigned disableIndex = 0;
-                        while (disableAttributes)
-                        {
-                            if (disableAttributes & 1)
-                            {
-                                glDisableVertexAttribArray(disableIndex);
-                                enabledAttributes_ &= ~(1 << disableIndex);
-                            }
-                            disableAttributes >>= 1;
-                            ++disableIndex;
-                        }
+                        enabledAttributes_ |= positionBit;
+                        glEnableVertexAttribArray(position_loc);
                     }
 
                 }
-            }
 
-            activeMesh_ = mesh;
-
-            GLenum mode = solid ? mesh->GetSolidDrawMode() : mesh->GetWireFrameDrawMode();
-
-            const Indexes& indexes = mesh->GetIndexes();
-
-            if (!indexes.empty())
-            {
-                Graphics::this_->SetIndexBuffer(mesh->GetIndexBuffer());
-
-                Buffer::Data* bufferIndexData = mesh->GetBufferIndexData();
-
-                const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
-
-                glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, offset);
-
-                if (AppStatistics::this_)
+                if (normal_loc != -1)
                 {
-                    CHECK_ASSERT(mesh->GetSolidDrawMode() == GL_TRIANGLES && indexes.size() % 3 == 0, __FILE__, __LINE__);
-                    AppStatistics::this_->NewTriangles(indexes.size() / 3);
+                    unsigned positionBit = 1 << normal_loc;
+                    newAttributes |= positionBit;
+
+                    if ((enabledAttributes_ & positionBit) == 0)
+                    {
+                        enabledAttributes_ |= positionBit;
+                        glEnableVertexAttribArray(normal_loc);
+                    }
                 }
-            }
-            else
-            {
-                Buffer::Data* bufferVertexData = mesh->GetBufferVertexData();
 
-                GLint first = bufferVertexData->offset_ / sizeof(VertexData);
-
-                const VertexsData& vertexsData = mesh->GetVertexsData();
-
-                glDrawArrays(mode, first, vertexsData.size());
-
-                if (AppStatistics::this_ && solid)
+                if (texcoord_loc != -1)
                 {
-                    CHECK_ASSERT(mesh->GetSolidDrawMode() != GL_TRIANGLES || vertexsData.size() % 3 == 0, __FILE__, __LINE__);
-                    AppStatistics::this_->NewTriangles(vertexsData.size() / 3);
+                    unsigned positionBit = 1 << texcoord_loc;
+                    newAttributes |= positionBit;
+
+                    if ((enabledAttributes_ & positionBit) == 0)
+                    {
+                        enabledAttributes_ |= positionBit;
+                        glEnableVertexAttribArray(texcoord_loc);
+                    }
                 }
+
+                if (color_loc != -1)
+                {
+                    unsigned positionBit = 1 << color_loc;
+                    newAttributes |= positionBit;
+
+                    if ((enabledAttributes_ & positionBit) == 0)
+                    {
+                        enabledAttributes_ |= positionBit;
+                        glEnableVertexAttribArray(color_loc);
+                    }
+                }
+
+                SetVertexAttrPointers();
+
+                {
+                    /////////////////////////////
+                    // Disable unused attributes
+                    /////////////////////////////
+                    unsigned disableAttributes = enabledAttributes_ & (~newAttributes);
+                    unsigned disableIndex = 0;
+                    while (disableAttributes)
+                    {
+                        if (disableAttributes & 1)
+                        {
+                            glDisableVertexAttribArray(disableIndex);
+                            enabledAttributes_ &= ~(1 << disableIndex);
+                        }
+                        disableAttributes >>= 1;
+                        ++disableIndex;
+                    }
+                }
+
             }
+        }
+
+        activeMesh_ = mesh;
+
+        GLenum mode = solid ? mesh->GetSolidDrawMode() : mesh->GetWireFrameDrawMode();
+
+        const Indexes& indexes = mesh->GetIndexes();
+
+        if (!indexes.empty())
+        {
+            Buffer::Data* bufferIndexData = mesh->GetBufferIndexData();
+
+            const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
+
+            glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, offset);
 
             if (AppStatistics::this_)
-                AppStatistics::this_->NewDrawCall();
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+            {
+                CHECK_ASSERT(mesh->GetSolidDrawMode() == GL_TRIANGLES && indexes.size() % 3 == 0, __FILE__, __LINE__);
+                AppStatistics::this_->NewTriangles(indexes.size() / 3);
+            }
         }
+        else
+        {
+            Buffer::Data* bufferVertexData = mesh->GetBufferVertexData();
+
+            GLint first = bufferVertexData->offset_ / sizeof(VertexData);
+
+            const VertexsData& vertexsData = mesh->GetVertexsData();
+
+            glDrawArrays(mode, first, vertexsData.size());
+
+            if (AppStatistics::this_ && solid)
+            {
+                CHECK_ASSERT(mesh->GetSolidDrawMode() != GL_TRIANGLES || vertexsData.size() % 3 == 0, __FILE__, __LINE__);
+                AppStatistics::this_->NewTriangles(vertexsData.size() / 3);
+            }
+        }
+
+        if (AppStatistics::this_)
+            AppStatistics::this_->NewDrawCall();
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        return true;
     }
 }

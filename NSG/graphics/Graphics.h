@@ -50,6 +50,9 @@ namespace NSG
         void SetDepthTest(bool enable);
         void SetCullFace(bool enable);
         void SetTexture(unsigned index, Texture* texture);
+        void SetViewport(const Recti& viewport);
+        bool SetBuffers(Mesh* mesh);
+        bool SetBuffers(Mesh* mesh, bool& hasVAO);
         bool SetVertexBuffer(VertexBuffer* buffer);
         VertexBuffer* GetVertexBuffer() const { return vertexBuffer_; }
         bool SetIndexBuffer(IndexBuffer* buffer);
@@ -58,7 +61,7 @@ namespace NSG
         Program* GetProgram() const { return program_; }
         void SetFrameBuffer(GLuint value);
         void SetSceneVariables(Program* program);
-        void Draw(bool solid, Material* material, Node* node, Mesh* mesh);
+        bool Draw(bool solid, Material* material, Node* node, Mesh* mesh);
         void DiscardFramebuffer();
         void BeginFrame();
         void EndFrame();
@@ -66,6 +69,7 @@ namespace NSG
         bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
         void SetVertexAttrPointers();
       private:
+        Recti viewport_;
       	GLint systemFbo_;
       	GLuint currentFbo_;
       	VertexBuffer* vertexBuffer_;

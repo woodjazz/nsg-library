@@ -41,15 +41,17 @@ namespace NSG
 	{
 		Label::Label(const std::string& text, float percentageX, float percentageY, LabelStyle& style)
 			: Object(LayoutType::CONTROL, percentageX, percentageY, style),
+			currentText_(text),
 			labelStyle_(style),
-			pTextMesh_(area_->textMesh_)
+			pTextMesh_(area_->textMesh0_)
 		{
 			if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
 			{
-				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
+				pTextMesh_ = area_->textMesh0_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
 			}
 			
 			pTextMesh_->SetText(text, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
+
 		}
 
 		Label::~Label()
@@ -65,22 +67,24 @@ namespace NSG
 		{
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	        Node textNode0;
+	        Node& textNode0 = *area_->controlNodes_.node0_;
 	        textNode0.SetParent(node_);
 
+	        Vertex3 position;
+
             if(pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
-	            textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
+	            position = Vertex3(-1, 0, 0); //move text to the beginning of the current area
             if(pTextMesh_->GetTextHorizontalAlignment() == RIGHT_ALIGNMENT)
-	            textNode0.SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
+	            position = Vertex3(1, 0, 0); //move text to the end of the current area
 
             if(pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
-	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
+	            textNode0.SetPosition(position + Vertex3(0, -1, 0)); //move text to the bottom of the current area
             else if(pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
-	            textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
+	            textNode0.SetPosition(position + Vertex3(0, 1, 0)); //move text to the top of the current area
             else if(pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
-                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
+                textNode0.SetPosition(position + Vertex3(0, -0.25f, 0));
 
-            SceneNode textNode;
+            Node& textNode = *area_->controlNodes_.node1_;
             textNode.SetParent(&textNode0);
             textNode.SetInheritScale(false);
             textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());

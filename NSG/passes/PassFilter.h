@@ -34,7 +34,7 @@ namespace NSG
 	public:
 		PassFilter(PFilter filter);
 		~PassFilter();
-		virtual void Render();
+		virtual bool Render() override;
 	private:
 		PFilter filter_;
 	};

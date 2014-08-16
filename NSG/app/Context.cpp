@@ -72,15 +72,12 @@ namespace NSG
 	
 	void Context::Add(GPUObject* object)
 	{
-		auto result = objects_.insert(object);
-
-		CHECK_ASSERT(result.second && "Context::Add has failed in file", __FILE__, __LINE__);
+		CHECK_CONDITION(objects_.insert(object).second, __FILE__, __LINE__);
 	}
 
 	void Context::Remove(GPUObject* object)
 	{
-		auto result = objects_.erase(object);
-		CHECK_ASSERT(result && "Context::Remove has failed in file", __FILE__, __LINE__);
+		CHECK_CONDITION(objects_.erase(object), __FILE__, __LINE__);
 	}
 
     void Context::InvalidateGPUResources()
@@ -116,15 +113,12 @@ namespace NSG
 
     void Context::Add(Resource* object)
     {
-        auto result = resources_.insert(object);
-
-        CHECK_ASSERT(result.second && "Context::Add has failed in file", __FILE__, __LINE__);
+        CHECK_CONDITION(resources_.insert(object).second, __FILE__, __LINE__);
     }
 
     void Context::Remove(Resource* object)
     {
-        auto result = resources_.erase(object);
-        CHECK_ASSERT(result && "Context::Remove has failed in file", __FILE__, __LINE__);
+        CHECK_CONDITION(resources_.erase(object), __FILE__, __LINE__);
     }
 
     void Context::ReleaseResourcesFromMemory()

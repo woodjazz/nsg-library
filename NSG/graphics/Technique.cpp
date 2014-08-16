@@ -78,10 +78,12 @@ namespace NSG
 		return passes_.size();
 	}
 
-	void Technique::Render()
+	bool Technique::Render()
 	{
+		bool drawn = false;
 		auto it = passes_.begin();
 		while(it != passes_.end())
-			(*it++)->Render();
+			drawn |= (*it++)->Render();
+		return drawn;
 	}
 }

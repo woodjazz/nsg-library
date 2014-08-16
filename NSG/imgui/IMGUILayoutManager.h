@@ -53,19 +53,17 @@ namespace NSG
             bool isYScrollable_;
             float scrollFactorAreaX_;
             float scrollFactorAreaY_;
-            PTextMesh textMesh_;
+            PTextMesh textMesh0_;
             PTextMesh cursorMesh_;
-
-/*
-            struct Sorting : public std::binary_function<PLayoutArea, PLayoutArea, bool>
+            struct Nodes
             {
-                bool operator()(const PLayoutArea& a, const PLayoutArea& b) const
-                {
-                    return a->id_ < b->id_;
-                }
-            };
-*/
-            //std::set<PLayoutArea, Sorting> children_; // ordered by id_ (line number or __COUNTER__)
+                PNode node0_;
+                PNode node1_;
+                PNode node2_;
+                PNode node3_;
+
+            } controlNodes_;
+
             std::vector<PLayoutArea> children_;
 
             LayoutArea(IdType id, LayoutArea* parent, PNode pNode, LayoutType type, float percentageX, float percentageY);
@@ -88,10 +86,10 @@ namespace NSG
             {
                 IdType id_;
                 LayoutType type_;
-				bool operator < (const AreaKey& obj) const
-				{
-					return (id_ < obj.id_ || (!(obj.id_ < id_) && type_ < obj.type_));
-				}
+                bool operator < (const AreaKey& obj) const
+                {
+                    return (id_ < obj.id_ || (!(obj.id_ < id_) && type_ < obj.type_));
+                }
             };
             typedef std::map<AreaKey, PLayoutArea> AREAS;
             AREAS areas_;
@@ -116,11 +114,11 @@ namespace NSG
             void Begin();
             void End();
             PLayoutArea GetAreaForControl(IdType id, LayoutType type, float percentageX, float percentageY);
-			PLayoutArea GetArea(IdType id, LayoutType type) const;
+            PLayoutArea GetArea(IdType id, LayoutType type) const;
             void BeginWindow();
             void EndWindow();
-			void BeginHorizontalArea(float percentageX, float percentageY, AreaStyle& style);
-			void BeginVerticalArea(float percentageX, float percentageY, AreaStyle& style);
+            void BeginHorizontalArea(float percentageX, float percentageY, AreaStyle& style);
+            void BeginVerticalArea(float percentageX, float percentageY, AreaStyle& style);
             float EndArea(float scroll);
             void Spacer(float percentageX, float percentageY);
             bool IsReady() const;
@@ -144,14 +142,14 @@ namespace NSG
             void Spacer(float percentageX, float percentageY);
             size_t GetNestingLevel();
             bool IsReady() const;
-			void Window(IMGUI::IWindow* obj, float percentageX, float percentageY, PWindowStyle style);
+            void Window(IMGUI::IWindow* obj, float percentageX, float percentageY, PWindowStyle style);
             void SetWindowFocus(float x, float y);
             IdType GetValidId();
             bool IsCurrentWindowActive() const;
             PNode GetCurrentWindowNode() const;
             PWindowManager GetCurrentWindowManager() const;
             void MarkAllWindowsAsNonCreated();
-			void RemoveAllNonCreatedWindows();
+            void RemoveAllNonCreatedWindows();
 
         private:
 

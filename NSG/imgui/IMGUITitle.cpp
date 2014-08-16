@@ -41,12 +41,13 @@ namespace NSG
     {
         Title::Title(const std::string& text, TitleStyle& style)
             : Object(LayoutType::CONTROL, 100, Pixels2PercentageY(style.pixelsHeight_), style),
+              currentText_(text),
               titleStyle_(style),
-              pTextMesh_(area_->textMesh_)
+              pTextMesh_(area_->textMesh0_)
         {
-			if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
+            if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
             {
-				pTextMesh_ = area_->textMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
+                pTextMesh_ = area_->textMesh0_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
             }
 
             pTextMesh_->SetText(text, LEFT_ALIGNMENT, MIDDLE_ALIGNMENT);
@@ -68,7 +69,7 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            Node textNode0;
+            Node& textNode0 = *area_->controlNodes_.node0_;
             textNode0.SetParent(node_);
 
             if (pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
@@ -83,7 +84,7 @@ namespace NSG
             else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
                 textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
 
-            SceneNode textNode;
+            Node& textNode = *area_->controlNodes_.node1_;
             textNode.SetParent(&textNode0);
             textNode.SetInheritScale(false);
             textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
@@ -99,7 +100,7 @@ namespace NSG
 
             Material textMaterial;
             textMaterial.SetColor(titleStyle_.textColor_);
-			textMaterial.SetTexture0(pTextMesh_->GetTexture());
+            textMaterial.SetTexture0(pTextMesh_->GetTexture());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
 
             pass.Set(&textMaterial);
@@ -113,11 +114,12 @@ namespace NSG
                 if ((!lastHit_ && node_->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == id_)
                 {
                     lastHit_ = id_;
-					windowOffset_.x += mouseRelX_;
-					windowOffset_.y += mouseRelY_;
-                    
+                    windowOffset_.x += mouseRelX_;
+                    windowOffset_.y += mouseRelY_;
+
                 }
             }
+
 
         }
     }

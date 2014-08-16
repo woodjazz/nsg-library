@@ -28,9 +28,27 @@ namespace NSG
         Context::RemoveObject(this);
     }
 
+    const Material& Material::operator = (const Material& obj)
+    {
+        if (this != &obj)
+        {
+            pTexture0_ = obj.pTexture0_;
+            pTexture1_ = obj.pTexture1_;
+            pProgram_ = obj.pProgram_;
+            ambient_ = obj.ambient_;
+            diffuse_ = obj.diffuse_;
+            specular_ = obj.specular_;
+            shininess_ = obj.shininess_;
+            color_ = obj.color_;
+            enableCullFace_ = obj.enableCullFace_;
+        }
+
+        return *this;
+    }
+
     void Material::SetColor(Color color)
     {
-        if(color != color_)
+        if (color != color_)
         {
             color_ = color;
             SetUniformsNeedUpdate();
@@ -39,7 +57,7 @@ namespace NSG
 
     void Material::SetDiffuseColor(Color diffuse)
     {
-        if(diffuse_ != diffuse)
+        if (diffuse_ != diffuse)
         {
             diffuse_ = diffuse;
             SetUniformsNeedUpdate();
@@ -48,7 +66,7 @@ namespace NSG
 
     void Material::SetSpecularColor(Color specular)
     {
-        if(specular_ != specular)
+        if (specular_ != specular)
         {
             specular_ = specular;
             SetUniformsNeedUpdate();
@@ -57,7 +75,7 @@ namespace NSG
 
     void Material::SetAmbientColor(Color ambient)
     {
-        if(ambient_ != ambient)
+        if (ambient_ != ambient)
         {
             ambient_ = ambient;
             SetUniformsNeedUpdate();
@@ -66,7 +84,7 @@ namespace NSG
 
     void Material::SetShininess(float shininess)
     {
-        if(shininess_ != shininess)
+        if (shininess_ != shininess)
         {
             shininess_ = shininess;
             SetUniformsNeedUpdate();
@@ -75,7 +93,7 @@ namespace NSG
 
     void Material::EnableCullFace(bool enable)
     {
-        if(enableCullFace_ != enable)
+        if (enableCullFace_ != enable)
         {
             enableCullFace_ = enable;
             SetUniformsNeedUpdate();

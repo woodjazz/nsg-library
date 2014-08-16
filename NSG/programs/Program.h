@@ -73,15 +73,15 @@ namespace NSG
         {
             return att_color_loc_;
         }
-        void Use(Material* material, Node* node);
+        void SetVariables(Material* material, Node* node);
         GLuint GetId() const
         {
             return id_;
         }
     private:
         void SetSceneVariables();
-        void Use(Node* node);
-        void Use(Material* material);
+        void SetVariables(Node* node);
+        void SetVariables(Material* material);
         operator const GLuint() const
         {
             return id_;
@@ -134,9 +134,11 @@ namespace NSG
         bool hasLights_;
         size_t nLights_;
         Camera* activeCamera_;
-        bool nullCameraSet_;
+        bool neverUsed_;
         Material* activeMaterial_;
+        PMaterial material_;
         Node* activeNode_;
+        Matrix4 activeNodeGlobalModel_;
         Scene* activeScene_;
         Light* activeLights_[MAX_LIGHTS];
 

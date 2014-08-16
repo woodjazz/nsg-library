@@ -35,7 +35,7 @@ namespace NSG
 	public:
 		Filter(PTexture input, PTexture output, const char* fragment);
 		~Filter();
-		void Render();
+		bool Render();
 		PMaterial GetMaterial() const { return pMaterial_; }
 	protected:
 		PTechnique technique_;
