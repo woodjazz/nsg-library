@@ -33,7 +33,7 @@ namespace NSG
     class BoxMesh : public Mesh, public IProceduralResource
     {
     public:
-        BoxMesh(float width, float height, float depth, int resX, int resY, int resZ, GLenum usage);
+        BoxMesh(float width, float height, float depth, int resX, int resY, int resZ);
         ~BoxMesh();
         GLenum GetWireFrameDrawMode() const override;
         GLenum GetSolidDrawMode() const override;

@@ -43,7 +43,6 @@ namespace NSG
 
     Context::Context()
         : atlasManager_(new FontAtlasTextureManager),
-        imgui_(new IMGUI::Context),
         keyboard_(new Keyboard),
         bufferManager_(new BufferManager),
         allGPUObjectAreValid_(true)
@@ -153,10 +152,12 @@ namespace NSG
 
     void Context::Initialize()
     {
+        graphics_ = PGraphics(new Graphics);
+
         scene_ = PScene(new Scene);
         
-        graphics_ = PGraphics(new Graphics);
-        
         audio_ = PAudio(new Audio);
+        
+        imgui_ = IMGUI::PContext(new IMGUI::Context);
     }
 }

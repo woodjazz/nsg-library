@@ -32,7 +32,7 @@ namespace NSG
 	class CircleMesh : public Mesh, public IProceduralResource
 	{
 	public:
-		CircleMesh(float radius, int res, GLenum usage);
+		CircleMesh(float radius, int res);
 		~CircleMesh();
 		void SetFilled(bool enable);
 		GLenum GetWireFrameDrawMode() const override;

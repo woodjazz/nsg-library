@@ -58,8 +58,8 @@ static const char* fShader = STRINGIFY(
 
 namespace NSG
 {
-    TextMesh::TextMesh(const std::string& textureFilename, GLenum usage)
-        : Mesh(usage),
+    TextMesh::TextMesh(const std::string& textureFilename, bool dynamic)
+        : Mesh(dynamic),
           pProgram_(new Program(vShader, fShader)),
           screenWidth_(0),
           screenHeight_(0),
@@ -68,8 +68,7 @@ namespace NSG
           vAlignment_(BOTTOM_ALIGNMENT),
           alignmentOffsetX_(0),
           alignmentOffsetY_(0),
-          maxLength_(0),
-          isStatic_(usage == GL_STATIC_DRAW)
+          maxLength_(0)
     {
         pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
         App::Add(this);
@@ -107,8 +106,6 @@ namespace NSG
         VertexsData tmpVertexData(vertexsData_);
         Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
 
-        Graphics::this_->SetBuffers(this);
-
         pVBuffer_->UpdateData(*bufferVertexData_, tmpVertexData);
 
         Indexes tmpIndexes(indexes_);
@@ -123,6 +120,8 @@ namespace NSG
         });
 
         pIBuffer_->UpdateData(*bufferIndexData_, tmpIndexes);
+
+
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }

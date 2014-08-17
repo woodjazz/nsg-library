@@ -47,7 +47,7 @@ void CubeBehavior::Start()
 
     Render2TextureBehavior::this_->AddPass(pass);
 
-	PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
+	PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2));
 
     pass->Add(pSceneNode_, pMesh);
 

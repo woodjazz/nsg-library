@@ -27,14 +27,6 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Check.h"
 
-#if IS_TARGET_MOBILE
-#define glGenVertexArrays glGenVertexArraysOES
-#define glBindVertexArray glBindVertexArrayOES
-#define glDeleteVertexArrays glDeleteVertexArraysOES
-#define glBindVertexArray glBindVertexArrayOES
-#endif
-
-
 namespace NSG
 {
     VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
@@ -42,19 +34,7 @@ namespace NSG
           vao_(0)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-#if 1
-        if (Graphics::this_->HasVertexArrayObject())
-        {
-            glGenVertexArrays(1, &vao_);
-            glBindVertexArray(vao_);
-            glBindBuffer(GL_ARRAY_BUFFER, id_);
-            glEnableVertexAttribArray(ATTRIBUTE_LOC::POSITION);
-            glEnableVertexAttribArray(ATTRIBUTE_LOC::NORMAL);
-            glEnableVertexAttribArray(ATTRIBUTE_LOC::COORD);
-            glEnableVertexAttribArray(ATTRIBUTE_LOC::COLOR);
-            Graphics::this_->SetVertexAttrPointers();
-        }
-#endif
+
         CHECK_CONDITION(Graphics::this_->SetVertexBuffer(this), __FILE__, __LINE__);
 
         std::vector<GLubyte> emptyData(bufferSize, 0);
@@ -73,28 +53,11 @@ namespace NSG
     {
         if (Graphics::this_->GetVertexBuffer() == this)
             Graphics::this_->SetVertexBuffer(nullptr);
-
-        if (vao_)
-            glDeleteVertexArrays(1, &vao_);
-    }
-
-    void VertexBuffer::Bind()
-    {
-        if (!vao_)
-        {
-            Buffer::Bind();
-        }
-        else
-        {
-            glBindVertexArray(vao_);
-        }
     }
 
     void VertexBuffer::Unbind()
     {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        if (Graphics::this_->HasVertexArrayObject())
-            glBindVertexArray(0);
     }
 
     bool VertexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes)
@@ -127,9 +90,7 @@ namespace NSG
 
         CHECK_ASSERT(bytes2Set <= obj.bytes_, __FILE__, __LINE__);
 
-        Graphics::this_->SetVertexBuffer(nullptr);
-        
-        Buffer::Bind();
+        Graphics::this_->SetVertexBuffer(this);
 
         glBufferSubData(type_, obj.offset_, bytes2Set, &vertexes[0]);
 

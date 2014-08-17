@@ -47,7 +47,7 @@ void LightBehavior::Start()
 
     pSceneNode_->Set(technique);
 
-    PMesh pMesh(new SphereMesh(0.2f, 16, GL_STATIC_DRAW));
+    PMesh pMesh(new SphereMesh(0.2f, 16));
     pass->Add(pSceneNode_, pMesh);
 
     pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));

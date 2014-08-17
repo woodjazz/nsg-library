@@ -32,64 +32,63 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	CircleMesh::CircleMesh(float radius, int res, GLenum usage) 
-	: Mesh(usage),
-	radius_(radius),
-	res_(res)
-	{
-		resource_ = PResource(new ResourceProcedural(this));
-	}
+    CircleMesh::CircleMesh(float radius, int res)
+        : radius_(radius),
+          res_(res)
+    {
+        resource_ = PResource(new ResourceProcedural(this));
+    }
 
-	CircleMesh::~CircleMesh() 
-	{
-	}
+    CircleMesh::~CircleMesh()
+    {
+    }
 
 
-	GLenum CircleMesh::GetWireFrameDrawMode() const
-	{
-		return GL_LINE_LOOP;
-	}
+    GLenum CircleMesh::GetWireFrameDrawMode() const
+    {
+        return GL_LINE_LOOP;
+    }
 
-	GLenum CircleMesh::GetSolidDrawMode() const
-	{
-		return GL_TRIANGLE_FAN;
-	}
+    GLenum CircleMesh::GetSolidDrawMode() const
+    {
+        return GL_TRIANGLE_FAN;
+    }
 
-	void CircleMesh::Build()
-	{
-		vertexsData_.clear();
-		indexes_.clear();
-		
-		VertexsData& data = vertexsData_;
+    void CircleMesh::Build()
+    {
+        vertexsData_.clear();
+        indexes_.clear();
 
-		float angle = 0.0f;
+        VertexsData& data = vertexsData_;
 
-		const float angleAdder = TWO_PI / (float)res_;
+        float angle = 0.0f;
 
-		for (int i = 0; i < res_; i++)
-		{
-			VertexData vertexData;
-			vertexData.normal_ = Vertex3(0,0,1); // always facing forward
-			vertexData.position_.x = cos(angle);
-			vertexData.position_.y = sin(angle);
-			vertexData.position_.z = 0;
+        const float angleAdder = TWO_PI / (float)res_;
+
+        for (int i = 0; i < res_; i++)
+        {
+            VertexData vertexData;
+            vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
+            vertexData.position_.x = cos(angle);
+            vertexData.position_.y = sin(angle);
+            vertexData.position_.z = 0;
             vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
 
-            vertexData.uv_.x = (vertexData.uv_.x + 1)/2.0f;
-            vertexData.uv_.y = 1-(vertexData.uv_.y + 1)/2.0f;
-			
-			vertexData.position_ *= radius_;
+            vertexData.uv_.x = (vertexData.uv_.x + 1) / 2.0f;
+            vertexData.uv_.y = 1 - (vertexData.uv_.y + 1) / 2.0f;
 
-			data.push_back(vertexData);
+            vertexData.position_ *= radius_;
 
-			angle += angleAdder;
-		}
-	}
+            data.push_back(vertexData);
 
-	const char* CircleMesh::GetName() const
-	{
-		return "CircleMesh";
-	}
+            angle += angleAdder;
+        }
+    }
+
+    const char* CircleMesh::GetName() const
+    {
+        return "CircleMesh";
+    }
 
 }
 

@@ -23,36 +23,20 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "SphereBehavior.h"
+#pragma once
 
-void SphereBehavior::Start()
+#include "Types.h"
+
+namespace NSG 
 {
-	mesh_ = PSphereMesh(new SphereMesh(3, 32));
-
-	material_ = PMaterial(new Material);
-    PProgram unlit(new ProgramUnlit);
-    material_->SetProgram(unlit);
-    PTexture texture(new TextureFile("data/Earth.jpg"));
-	material_->SetTexture0(texture);
-
-    renderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-
-    filteredTexture_ = PTexture(new TextureMemory(GL_RGBA, 16, 16, nullptr));
-    filter_ = PFilter(new FilterBlur(renderedTexture_, filteredTexture_));
-
-    blendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-    blendFilter_ = PFilter(new FilterBlend(filteredTexture_, renderedTexture_, blendedTexture_));
+	class VertexArrayObj
+	{
+	public:
+		VertexArrayObj(Program* program, Mesh* mesh);
+		~VertexArrayObj();
+		void Bind();
+		static void Unbind();
+	private:
+		GLuint vao_; // vertex array object
+	};
 }
-
-void SphereBehavior::Update()
-{
-    float deltaTime = App::this_->GetDeltaTime();
-
-	static float y_angle = 0;
-
-    y_angle += glm::pi<float>()/10.0f * deltaTime;
-
-	pSceneNode_->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
-}
-
-

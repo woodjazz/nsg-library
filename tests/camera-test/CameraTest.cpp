@@ -29,7 +29,7 @@ using namespace NSG;
 static void Test01()
 {
 	{
-		SphereMesh sphere(1, 100, GL_STATIC_DRAW);
+		SphereMesh sphere(1, 100);
 		Node node;
 
 		Camera camera;
@@ -43,7 +43,7 @@ static void Test01()
 	}
 
 	{
-		SphereMesh sphere(100, 100, GL_STATIC_DRAW);
+		SphereMesh sphere(100, 100);
 		Node node;
 		node.SetPosition(Vertex3(20));
 
@@ -58,7 +58,7 @@ static void Test01()
 	}
 
 	{
-		SphereMesh sphere(1, 100, GL_STATIC_DRAW);
+		SphereMesh sphere(1, 100);
 		Node node;
 		node.SetPosition(Vertex3(0, 0, 40));
 
@@ -72,7 +72,7 @@ static void Test01()
 	}
 
 	{
-		SphereMesh sphere(1, 100, GL_STATIC_DRAW);
+		SphereMesh sphere(1, 100);
 		Node node;
 		node.SetPosition(Vertex3(10, 0, 40));
 
@@ -97,7 +97,7 @@ static void Test01()
 		CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
 
 		{
-			SphereMesh sphere(0.9f, 100, GL_STATIC_DRAW);
+			SphereMesh sphere(0.9f, 100);
 			CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
 		}
 	}
@@ -106,7 +106,7 @@ static void Test01()
 static void Test02()
 {
 	{
-		BoxMesh box(2, 4, 2, 2, 2, 2, GL_STATIC_DRAW);
+		BoxMesh box(2, 4, 2, 2, 2, 2);
 		Node node;
 
 		Camera camera;

@@ -61,7 +61,7 @@ namespace NSG
                 mainWindowStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
             }
 
-            PMesh areaMesh(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW));
+            PMesh areaMesh(new PlaneMesh(2, 2, 2, 2));
             PProgram program(new ProgramWhiteColor);
             PMaterial material(new Material);
             material->SetColor(Color(1, 0, 1, 0.7f));

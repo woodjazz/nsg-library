@@ -24,28 +24,29 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "UniformsUpdate.h"
-#include <set>
+#include "Graphics.h"
 
 namespace NSG
 {
-	static std::set<UniformsUpdate*> uniformObjs;
-
     UniformsUpdate::UniformsUpdate()
     {
         needUpdate_ = true;
-        uniformObjs.insert(this);
+
+        Graphics::this_->InsertUniformObj(this);
     }
 
     UniformsUpdate::~UniformsUpdate()
-   	{
-   		uniformObjs.erase(this);
-   	}
+    {
+        Graphics::this_->RemoveUniformObj(this);
+    }
 
-   	void UniformsUpdate::ClearAllUpdates()
-   	{
-   		for(auto& obj : uniformObjs)
-   		{
-   			obj->needUpdate_ = false;
-   		}
-   	}
-}   
+    void UniformsUpdate::ClearAllUpdates()
+    {
+        UniformObjs& uniformObjs = Graphics::this_->GetUniformObjs();
+
+        for (auto& obj : uniformObjs)
+        {
+            obj->needUpdate_ = false;
+        }
+    }
+}

@@ -30,14 +30,16 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Context.h"
 #include "BufferManager.h"
+#include "VertexArrayObj.h"
+#include "AppStatistics.h"
 
 namespace NSG
 {
-    Mesh::Mesh(GLenum usage)
+    Mesh::Mesh(bool dynamic)
         : pVBuffer_(nullptr),
           pIBuffer_(nullptr),
-          usage_(usage),
-          bb_(Vertex3(0))
+          bb_(Vertex3(0)),
+          isStatic_(!dynamic)
     {
     }
 
@@ -98,5 +100,63 @@ namespace NSG
         bufferIndexData_ = nullptr;
         //vertexsData_.clear();
         //indexes_.clear();
+    }
+
+    void Mesh::SetBuffersAndAttributes(Program* program)
+    {
+#if 0
+        if (Graphics::this_->HasVertexArrayObject())
+        {
+            auto it = vaoMap_.find(program);
+            if (it != vaoMap_.end())
+            {
+                Graphics::this_->SetVertexArrayObj(it->second.get());
+            }
+            else
+            {
+                VertexArrayObj* vao = new VertexArrayObj(program, this);
+                CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(program, PVertexArrayObj(vao))).second, __FILE__, __LINE__);
+                Graphics::this_->SetVertexArrayObj(vao);
+            }
+        }
+        else
+#endif        
+        {
+            //Graphics::this_->SetVertexArrayObj(nullptr);
+            Graphics::this_->SetVertexBuffer(pVBuffer_.get());
+            Graphics::this_->SetAttributes(this, program);
+            Graphics::this_->SetIndexBuffer(pIBuffer_.get());
+        }
+    }
+
+    void Mesh::Draw(bool solid)
+    {
+        GLenum mode = solid ? GetSolidDrawMode() : GetWireFrameDrawMode();
+
+        if (!indexes_.empty())
+        {
+            const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData_->offset_);
+
+            glDrawElements(mode, indexes_.size(), GL_UNSIGNED_SHORT, offset);
+
+            if (AppStatistics::this_)
+            {
+                CHECK_ASSERT(GetSolidDrawMode() == GL_TRIANGLES && indexes_.size() % 3 == 0, __FILE__, __LINE__);
+                AppStatistics::this_->NewTriangles(indexes_.size() / 3);
+            }
+        }
+        else
+        {
+            GLint first = bufferVertexData_->offset_ / sizeof(VertexData);
+
+            glDrawArrays(mode, first, vertexsData_.size());
+
+            if (AppStatistics::this_ && solid)
+            {
+                CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || vertexsData_.size() % 3 == 0, __FILE__, __LINE__);
+                AppStatistics::this_->NewTriangles(vertexsData_.size() / 3);
+            }
+        }
+
     }
 }

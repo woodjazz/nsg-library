@@ -60,8 +60,6 @@ struct Sample : App
 
 	void Start()
 	{
-        //IMGUISkin()->fontFile_ = "font/FreeSans.ttf";
-
         camera_ = PCamera(new Camera);
         camera_->SetPosition(Vertex3(0,0,10));
         camera_->Activate();
@@ -75,16 +73,14 @@ struct Sample : App
         sphereBehavior_ = new SphereBehavior;
         sphere_->SetBehavior(PBehavior(sphereBehavior_));
 
-        technique_ = PTechnique(new Technique);
-
         showTexture_ = PShowTexture(new ShowTexture);
 
         Behavior::StartAll();
 
+        technique_ = PTechnique(new Technique);
         {
             //box passes
 
-            
             PPass2Texture pass2Texture(new Pass2Texture(boxBehavior_->renderedTexture_, true, false));
             technique_->Add(pass2Texture);
 
@@ -104,8 +100,6 @@ struct Sample : App
             
             PPassFilter filterPass(new PassFilter(boxBehavior_->filter_));
             technique_->Add(filterPass);
-            
-            
         }
 
         {

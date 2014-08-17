@@ -87,7 +87,7 @@ namespace NSG
 	{
 		if (!currentDynamicVertexBuffer_ || !currentDynamicVertexBuffer_->AllocateSpaceFor(bytesNeeded, vertexes))
 		{
-			PVertexBuffer p(new VertexBuffer(bufferSize, bytesNeeded, vertexes, GL_STREAM_DRAW));
+			PVertexBuffer p(new VertexBuffer(bufferSize, bytesNeeded, vertexes, GL_DYNAMIC_DRAW));
 
 			if(bufferSize > bytesNeeded)
 				currentDynamicVertexBuffer_ = p;
@@ -102,7 +102,7 @@ namespace NSG
 	{
 		if (!currentDynamicIndexBuffer_ || !currentDynamicIndexBuffer_->AllocateSpaceFor(bytesNeeded, indexes))
 		{
-			PIndexBuffer p(new IndexBuffer(bufferSize, bytesNeeded, indexes, GL_STREAM_DRAW));
+			PIndexBuffer p(new IndexBuffer(bufferSize, bytesNeeded, indexes, GL_DYNAMIC_DRAW));
 
 			if(bufferSize > bytesNeeded)
 				currentDynamicIndexBuffer_ = p;

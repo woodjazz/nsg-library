@@ -55,7 +55,7 @@ namespace NSG
 
 		~Buffer();
 		Data* GetLastAllocation();
-		virtual void Bind();
+		void Bind();
 		bool IsDynamic() const { return dynamic_; }
 	protected:
 		bool AllocateSpaceFor(GLsizeiptr bytesNeeded);

@@ -32,104 +32,104 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	SphereMesh::SphereMesh(float radius, int res, GLenum usage) 
-	: Mesh(usage),
-	radius_(radius),
-	res_(res)
-	{
-		resource_ = PResource(new ResourceProcedural(this));
-	}
+    SphereMesh::SphereMesh(float radius, int res)
+        : radius_(radius),
+          res_(res)
+    {
+        resource_ = PResource(new ResourceProcedural(this));
+    }
 
-	SphereMesh::~SphereMesh() 
-	{
-	}
+    SphereMesh::~SphereMesh()
+    {
+    }
 
-	GLenum SphereMesh::GetWireFrameDrawMode() const
-	{
-		return GL_LINE_LOOP;
-	}
+    GLenum SphereMesh::GetWireFrameDrawMode() const
+    {
+        return GL_LINE_LOOP;
+    }
 
-	GLenum SphereMesh::GetSolidDrawMode() const
-	{
-		return GL_TRIANGLES;
-	}
+    GLenum SphereMesh::GetSolidDrawMode() const
+    {
+        return GL_TRIANGLES;
+    }
 
-	void SphereMesh::Build()
-	{
-		vertexsData_.clear();
-		indexes_.clear();
-		
+    void SphereMesh::Build()
+    {
+        vertexsData_.clear();
+        indexes_.clear();
+
         VertexsData& data = vertexsData_;
 
-		int doubleRes = res_*2;
-		float polarInc = PI/(res_); // ringAngle
-		float azimInc = TWO_PI/(doubleRes); // segAngle 
+        int doubleRes = res_ * 2;
+        float polarInc = PI / (res_); // ringAngle
+        float azimInc = TWO_PI / (doubleRes); // segAngle
 
-		Vertex3 vert;
-    	Vertex2 tcoord;
-            
-		for(float i = 0; i < res_+1; i++) 
-		{
-		    float tr = sin( PI-i * polarInc );
-		    float ny = cos( PI-i * polarInc );
-		    
-		    tcoord.y = i / res_;
-		    
-		    for(float j = 0; j <= doubleRes; j++) {
-		        
-		        float nx = tr * sin(j * azimInc);
-		        float nz = tr * cos(j * azimInc);
-		        
-		        tcoord.x = j / (doubleRes);
+        Vertex3 vert;
+        Vertex2 tcoord;
 
-				VertexData vertexData;
-				vertexData.normal_ = Vertex3(nx,ny,nz);
-				vertexData.position_ = vertexData.normal_ * radius_;
-				vertexData.uv_ = tcoord;
-				
-				data.push_back(vertexData);
-		    }
-		}
-    
-	    int nr = doubleRes+1;
-        
-        int index1, index2, index3;
-        
-        for(int iy = 0; iy < res_; iy++) 
+        for (float i = 0; i < res_ + 1; i++)
         {
-            for(int ix = 0; ix < doubleRes; ix++) 
+            float tr = sin( PI - i * polarInc );
+            float ny = cos( PI - i * polarInc );
+
+            tcoord.y = i / res_;
+
+            for (float j = 0; j <= doubleRes; j++)
+            {
+
+                float nx = tr * sin(j * azimInc);
+                float nz = tr * cos(j * azimInc);
+
+                tcoord.x = j / (doubleRes);
+
+                VertexData vertexData;
+                vertexData.normal_ = Vertex3(nx, ny, nz);
+                vertexData.position_ = vertexData.normal_ * radius_;
+                vertexData.uv_ = tcoord;
+
+                data.push_back(vertexData);
+            }
+        }
+
+        int nr = doubleRes + 1;
+
+        int index1, index2, index3;
+
+        for (int iy = 0; iy < res_; iy++)
+        {
+            for (int ix = 0; ix < doubleRes; ix++)
             {
                 // first tri
-                if(iy > 0) 
+                if (iy > 0)
                 {
-                    index1 = (iy+0) * (nr) + (ix+0);
-                    index2 = (iy+0) * (nr) + (ix+1);
-                    index3 = (iy+1) * (nr) + (ix+0);
-                    
+                    index1 = (iy + 0) * (nr) + (ix + 0);
+                    index2 = (iy + 0) * (nr) + (ix + 1);
+                    index3 = (iy + 1) * (nr) + (ix + 0);
+
                     indexes_.push_back(index1);
                     indexes_.push_back(index3);
                     indexes_.push_back(index2);
                 }
-                
-                if(iy < res_-1 ) 
+
+                if (iy < res_ - 1 )
                 {
                     // second tri
-                    index1 = (iy+0) * (nr) + (ix+1);
-                    index2 = (iy+1) * (nr) + (ix+1);
-                    index3 = (iy+1) * (nr) + (ix+0);
-                    
+                    index1 = (iy + 0) * (nr) + (ix + 1);
+                    index2 = (iy + 1) * (nr) + (ix + 1);
+                    index3 = (iy + 1) * (nr) + (ix + 0);
+
                     indexes_.push_back(index1);
                     indexes_.push_back(index3);
                     indexes_.push_back(index2);
                 }
             }
         }
-	}
+    }
 
-	const char* SphereMesh::GetName() const
-	{
-		return "SphereMesh";
-	}
+    const char* SphereMesh::GetName() const
+    {
+        return "SphereMesh";
+    }
 
 
 }

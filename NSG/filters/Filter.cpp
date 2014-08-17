@@ -48,7 +48,7 @@ namespace NSG
 {
     Filter::Filter(PTexture input, PTexture output, const char* fragment)
         : pMaterial_(new Material ()),
-          pMesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
+          pMesh_(new PlaneMesh(2, 2, 2, 2)),
           technique_(new Technique)
     {
         PProgram pProgram(new Program(vShader, fragment));

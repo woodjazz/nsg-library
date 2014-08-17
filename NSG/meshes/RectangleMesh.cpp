@@ -30,9 +30,8 @@ misrepresented as being the original software.
 #include "ResourceProcedural.h"
 namespace NSG
 {
-	RectangleMesh::RectangleMesh(float width, float height, GLenum usage) 
-	: Mesh(usage),
-	width_(width),
+	RectangleMesh::RectangleMesh(float width, float height)
+	: width_(width),
 	height_(height)
 	{
 		resource_ = PResource(new ResourceProcedural(this));

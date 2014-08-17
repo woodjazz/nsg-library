@@ -189,7 +189,7 @@ namespace NSG
 
             Graphics::this_->SetFrameBuffer(0);
 
-            glViewport(viewport_.x, viewport_.y, viewport_.z, viewport_.w);
+            Graphics::this_->SetViewport(viewport_);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 

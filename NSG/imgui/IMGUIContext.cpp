@@ -51,7 +51,7 @@ namespace NSG
     {
         Context::Context()
             : unlitProgram_(new ProgramUnlit),
-              controlMesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW)),
+              controlMesh_(new PlaneMesh(2, 2, 2, 2)),
               state_(new State),
               pSkin_(new Skin),
               pCamera_(new Camera),

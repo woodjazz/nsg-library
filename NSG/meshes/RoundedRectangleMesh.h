@@ -32,7 +32,7 @@ namespace NSG
 	class RoundedRectangleMesh : public Mesh, public IProceduralResource
 	{
 	public:
-		RoundedRectangleMesh(float radius, float width, float height, int res, GLenum usage);
+		RoundedRectangleMesh(float radius, float width, float height, int res);
 		~RoundedRectangleMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;

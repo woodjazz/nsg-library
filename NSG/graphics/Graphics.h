@@ -27,6 +27,8 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Constants.h"
 #include "Singleton.h"
+#include <set>
+
 namespace NSG
 {
     class Graphics : public Singleton<Graphics>
@@ -52,7 +54,8 @@ namespace NSG
         void SetTexture(unsigned index, Texture* texture);
         void SetViewport(const Recti& viewport);
         bool SetBuffers(Mesh* mesh);
-        bool SetBuffers(Mesh* mesh, bool& hasVAO);
+        bool SetVertexArrayObj(VertexArrayObj* obj);
+        VertexArrayObj* GetVertexArrayObj() const { return vertexArrayObj_; }
         bool SetVertexBuffer(VertexBuffer* buffer);
         VertexBuffer* GetVertexBuffer() const { return vertexBuffer_; }
         bool SetIndexBuffer(IndexBuffer* buffer);
@@ -68,10 +71,16 @@ namespace NSG
         void SetUniformsNeedUpdate() { uniformsNeedUpdate_ = true;}
         bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
         void SetVertexAttrPointers();
+        void SetAttributes(const Mesh* mesh, const Program* program);
+        void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
+        void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
+        UniformObjs& GetUniformObjs() { return uniformObjs_; }
+
       private:
         Recti viewport_;
       	GLint systemFbo_;
       	GLuint currentFbo_;
+        VertexArrayObj* vertexArrayObj_;
       	VertexBuffer* vertexBuffer_;
       	IndexBuffer* indexBuffer_;
       	Program* program_;
@@ -82,5 +91,6 @@ namespace NSG
         Mesh* activeMesh_; // last mesh drawn
         bool has_discard_framebuffer_ext_;
         bool has_vertex_array_object_ext_;
+        UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
     };
 }

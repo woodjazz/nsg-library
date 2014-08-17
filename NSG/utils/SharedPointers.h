@@ -145,6 +145,9 @@ namespace NSG
 	class IndexBuffer;
 	typedef std::shared_ptr<IndexBuffer> PIndexBuffer;
 
+	class VertexArrayObj;
+	typedef std::shared_ptr<VertexArrayObj> PVertexArrayObj;
+
 	class Light;
 	typedef std::shared_ptr<Light> PLight;
 

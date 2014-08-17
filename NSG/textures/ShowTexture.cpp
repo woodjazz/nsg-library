@@ -67,7 +67,7 @@ namespace NSG
 	ShowTexture::ShowTexture()
 	: material_(new Material),
     pass_(new Pass),
-	mesh_(new PlaneMesh(2, 2, 2, 2, GL_STATIC_DRAW))
+	mesh_(new PlaneMesh(2, 2, 2, 2))
 	{
 		pass_->EnableDepthTest(false);
         pass_->Set(material_);

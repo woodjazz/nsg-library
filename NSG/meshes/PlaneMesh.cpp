@@ -29,87 +29,86 @@ misrepresented as being the original software.
 #include "ResourceProcedural.h"
 namespace NSG
 {
-	PlaneMesh::PlaneMesh(float width, float height, int columns, int rows, GLenum usage) 
-	: Mesh(usage),
-	 width_(width),
-	 height_(height),
-	 columns_(columns),
-	 rows_(rows)
-	{
-		resource_ = PResource(new ResourceProcedural(this));
-	}
+    PlaneMesh::PlaneMesh(float width, float height, int columns, int rows)
+        : width_(width),
+          height_(height),
+          columns_(columns),
+          rows_(rows)
+    {
+        resource_ = PResource(new ResourceProcedural(this));
+    }
 
-	PlaneMesh::~PlaneMesh() 
-	{
-	}
+    PlaneMesh::~PlaneMesh()
+    {
+    }
 
-	GLenum PlaneMesh::GetWireFrameDrawMode() const
-	{
-		return GL_LINE_LOOP;
-	}
+    GLenum PlaneMesh::GetWireFrameDrawMode() const
+    {
+        return GL_LINE_LOOP;
+    }
 
-	GLenum PlaneMesh::GetSolidDrawMode() const
-	{
-		return GL_TRIANGLES;
-	}
+    GLenum PlaneMesh::GetSolidDrawMode() const
+    {
+        return GL_TRIANGLES;
+    }
 
-	void PlaneMesh::Build()
-	{
-		vertexsData_.clear();
-		indexes_.clear();
-		
-		VertexsData& data = vertexsData_;
+    void PlaneMesh::Build()
+    {
+        vertexsData_.clear();
+        indexes_.clear();
 
-		Vertex3 vert;
-		Vertex3 normal(0, 0, 1); // always facing forward //
-		Vertex2 texcoord;
+        VertexsData& data = vertexsData_;
 
-		// the origin of the plane is the center //
-		float halfW = width_/2.f;
-		float halfH = height_/2.f;
-		// add the vertexes //
-		for(int iy = 0; iy < rows_; iy++) 
-		{
-		    for(int ix = 0; ix < columns_; ix++) 
-		    {
-		        // normalized tex coords //
-		        texcoord.x = ((float)ix/((float)columns_-1.f));
-		        texcoord.y = ((float)iy/((float)rows_-1.f));
-		        
-		        vert.x = texcoord.x * width_ - halfW;
-		        vert.y = texcoord.y * height_ - halfH;
+        Vertex3 vert;
+        Vertex3 normal(0, 0, 1); // always facing forward //
+        Vertex2 texcoord;
 
-				VertexData vertexData;
-				vertexData.normal_ = normal;
-				vertexData.position_ = vert;
-				vertexData.uv_ = texcoord;
+        // the origin of the plane is the center //
+        float halfW = width_ / 2.f;
+        float halfH = height_ / 2.f;
+        // add the vertexes //
+        for (int iy = 0; iy < rows_; iy++)
+        {
+            for (int ix = 0; ix < columns_; ix++)
+            {
+                // normalized tex coords //
+                texcoord.x = ((float)ix / ((float)columns_ - 1.f));
+                texcoord.y = ((float)iy / ((float)rows_ - 1.f));
 
-				data.push_back(vertexData);
-		    }
-		}
+                vert.x = texcoord.x * width_ - halfW;
+                vert.y = texcoord.y * height_ - halfH;
 
-	    // Triangles //
-	    for(int y = 0; y < rows_-1; y++) 
-	    {
-	        for(int x = 0; x < columns_-1; x++) 
-	        {
-	            // first triangle //
-	            indexes_.push_back((y)*columns_ + x);
-	            indexes_.push_back((y)*columns_ + x+1);
-	            indexes_.push_back((y+1)*columns_ + x);
-	            
-	            // second triangle //
-	            indexes_.push_back((y)*columns_ + x+1);
-	            indexes_.push_back((y+1)*columns_ + x+1);
-	            indexes_.push_back((y+1)*columns_ + x);
-	        }
-	    }
-	}
+                VertexData vertexData;
+                vertexData.normal_ = normal;
+                vertexData.position_ = vert;
+                vertexData.uv_ = texcoord;
 
-	const char* PlaneMesh::GetName() const
-	{
-		return "PlaneMesh";
-	}
+                data.push_back(vertexData);
+            }
+        }
+
+        // Triangles //
+        for (int y = 0; y < rows_ - 1; y++)
+        {
+            for (int x = 0; x < columns_ - 1; x++)
+            {
+                // first triangle //
+                indexes_.push_back((y)*columns_ + x);
+                indexes_.push_back((y)*columns_ + x + 1);
+                indexes_.push_back((y + 1)*columns_ + x);
+
+                // second triangle //
+                indexes_.push_back((y)*columns_ + x + 1);
+                indexes_.push_back((y + 1)*columns_ + x + 1);
+                indexes_.push_back((y + 1)*columns_ + x);
+            }
+        }
+    }
+
+    const char* PlaneMesh::GetName() const
+    {
+        return "PlaneMesh";
+    }
 
 
 }

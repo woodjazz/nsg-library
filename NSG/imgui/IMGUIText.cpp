@@ -52,12 +52,12 @@ namespace NSG
         {
 			if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
             {
-				pTextMesh_ = area_->textMesh0_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
+				pTextMesh_ = area_->textMesh0_ = PTextMesh(new TextMesh(style.fontAtlasFile_));
             }
 
 			if (!pCursorMesh_ || !pCursorMesh_->Has(style.fontAtlasFile_))
             {
-				pCursorMesh_ = area_->cursorMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_, GL_STREAM_DRAW));
+				pCursorMesh_ = area_->cursorMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_));
             }
         }
 

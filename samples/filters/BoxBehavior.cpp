@@ -46,16 +46,12 @@ static const char* fShader = STRINGIFY(
 
 void BoxBehavior::Start()
 {
-    //technique_ = PTechnique(new Technique);
-    //PPass pass = PPass(new Pass);
-    //technique_->Add(pass); 
-
 	controlPoints_.push_back(Vertex3(-5.0f, 0.0f, 0.0f)); 
     controlPoints_.push_back(Vertex3(0.0f, 0.0f, 5.0f));
 	controlPoints_.push_back(Vertex3(5.0f, 0.0f, 0.0f));
 	controlPoints_.push_back(Vertex3(0.0f, 0.0f, -5.0f)); 
 
-	mesh_ = PBoxMesh(new BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
+	mesh_ = PBoxMesh(new BoxMesh(1,1,1, 2,2,2));
 
 	material_ = PMaterial(new Material);
     PProgram unlit(new ProgramUnlit);
@@ -69,12 +65,6 @@ void BoxBehavior::Start()
     filter_ = PFilter(new Filter(renderedTexture_, filteredTexture_, fShader));
 
     pSceneNode_->SetScale(Vertex3(3,3,3));
-
-    
-    //pass->Set(material_);
-    //pass->Add(pSceneNode_, mesh_);
-               
-
 }
 
 void BoxBehavior::Update()

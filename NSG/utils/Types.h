@@ -39,6 +39,7 @@ misrepresented as being the original software.
 #include "Allocators.h"
 #include "PODVector.h"
 #include <chrono>
+#include <set>
 
 #define STRINGIFY(S) #S
 
@@ -130,10 +131,9 @@ namespace NSG
         ATT_COLOR
     };
 
-    const IndexType MAX_INDEX_VALUE = ~IndexType(0);
-
     typedef std::vector<VertexData> VertexsData;
     typedef std::vector<IndexType> Indexes;
-
-    static const Matrix4 IDENTITY_MATRIX(1.0f);
+    
+    struct UniformsUpdate;
+    typedef std::set<UniformsUpdate*> UniformObjs;
 }

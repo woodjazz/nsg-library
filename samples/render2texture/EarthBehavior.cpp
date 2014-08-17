@@ -43,7 +43,7 @@ void EarthBehavior::Start()
 	showTexture_.SetNormal(texture);
 	render2texture_ = PRender2Texture(new Render2Texture(texture, true, false));
 
-	PSphereMesh pSphereMesh(new SphereMesh(3, 32, GL_STATIC_DRAW));
+	PSphereMesh pSphereMesh(new SphereMesh(3, 32));
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);
     PPass pass(new Pass);

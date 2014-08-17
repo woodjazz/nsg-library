@@ -39,7 +39,7 @@ public:
 
 	void Start() override
 	{
-		PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2, GL_STATIC_DRAW));
+		PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2));
         PTechnique technique(new Technique);
         pSceneNode_->Set(technique);
         PPass pass(new Pass);

@@ -32,7 +32,7 @@ namespace NSG
 	class EllipseMesh : public Mesh, public IProceduralResource
 	{
 	public:
-		EllipseMesh(float width, float height, int res, GLenum usage);
+		EllipseMesh(float width, float height, int res);
 		~EllipseMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;

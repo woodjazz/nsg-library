@@ -40,4 +40,7 @@ namespace NSG
 		COORD,
 		COLOR
 	};
+
+	static const IndexType MAX_INDEX_VALUE = ~IndexType(0);
+    static const Matrix4 IDENTITY_MATRIX(1.0f);
 }

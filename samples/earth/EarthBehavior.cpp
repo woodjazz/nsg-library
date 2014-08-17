@@ -39,7 +39,7 @@ EarthBehavior::~EarthBehavior()
 
 void EarthBehavior::Start()
 {
-	PSphereMesh pSphereMesh(new SphereMesh(3, 32, GL_STATIC_DRAW));
+	PSphereMesh pSphereMesh(new SphereMesh(3, 32));
     PTechnique technique(new Technique);
     pSceneNode_->Set(technique);
     PPass pass(new Pass);
