@@ -120,13 +120,17 @@ macro (setup_common)
 endmacro (setup_common)
 
 macro (setup_common_ios_properties)
-    if(IOS)
-        # Maybe you want to change these
-        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "5.1")
-        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_VALID_ARCHS "armv7;armv7s")
-        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
-        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")
-    endif()
+    if(APPLE)
+        if(IOS)
+            # Maybe you want to change these
+            set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "5.1")
+            set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_VALID_ARCHS "armv7;armv7s")
+            set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
+            set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")
+        else()
+            set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET "10.8")
+        endif()
+    endif(APPLE)
 endmacro (setup_common_ios_properties)
 
 ##################################################################################

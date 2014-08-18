@@ -121,7 +121,7 @@ namespace NSG
 
         pIBuffer_->UpdateData(*bufferIndexData_, tmpIndexes);
 
-
+        RedoVAO(pProgram_.get());
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }

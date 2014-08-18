@@ -76,9 +76,10 @@ namespace NSG
         {
             return bufferIndexData_;
         }
-        void SetBuffersAndAttributes(Program* program);
-        void Draw(bool solid);
+        void Draw(bool solid, Program* program);
     protected:
+        void SetBuffersAndAttributes(Program* program);
+        void RedoVAO(Program* program);
         VertexsData vertexsData_;
         Indexes indexes_;
         PIndexBuffer pIBuffer_;

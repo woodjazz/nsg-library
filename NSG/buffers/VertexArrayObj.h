@@ -34,9 +34,12 @@ namespace NSG
 	public:
 		VertexArrayObj(Program* program, Mesh* mesh);
 		~VertexArrayObj();
+		void Redo();
 		void Bind();
 		static void Unbind();
 	private:
 		GLuint vao_; // vertex array object
+		Program* program_;
+		Mesh* mesh_;
 	};
 }

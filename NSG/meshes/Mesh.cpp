@@ -104,7 +104,6 @@ namespace NSG
 
     void Mesh::SetBuffersAndAttributes(Program* program)
     {
-#if 0
         if (Graphics::this_->HasVertexArrayObject())
         {
             auto it = vaoMap_.find(program);
@@ -120,17 +119,29 @@ namespace NSG
             }
         }
         else
-#endif        
         {
-            //Graphics::this_->SetVertexArrayObj(nullptr);
             Graphics::this_->SetVertexBuffer(pVBuffer_.get());
             Graphics::this_->SetAttributes(this, program);
             Graphics::this_->SetIndexBuffer(pIBuffer_.get());
         }
     }
 
-    void Mesh::Draw(bool solid)
+    void Mesh::RedoVAO(Program* program)
     {
+        if (Graphics::this_->HasVertexArrayObject())
+        {
+            auto it = vaoMap_.find(program);
+            if (it != vaoMap_.end())
+            {
+                it->second->Redo();
+            }
+        }
+    }
+
+    void Mesh::Draw(bool solid, Program* program)
+    {
+        SetBuffersAndAttributes(program);
+
         GLenum mode = solid ? GetSolidDrawMode() : GetWireFrameDrawMode();
 
         if (!indexes_.empty())
@@ -157,6 +168,8 @@ namespace NSG
                 AppStatistics::this_->NewTriangles(vertexsData_.size() / 3);
             }
         }
+
+        Graphics::this_->SetVertexArrayObj(nullptr);
 
     }
 }

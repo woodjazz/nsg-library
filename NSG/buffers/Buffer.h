@@ -60,6 +60,7 @@ namespace NSG
 	protected:
 		bool AllocateSpaceFor(GLsizeiptr bytesNeeded);
 		Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage = GL_STATIC_DRAW);
+		void SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data);
 		
 		GLenum type_;
 		GLuint id_;

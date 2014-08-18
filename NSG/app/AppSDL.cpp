@@ -261,18 +261,17 @@ namespace NSG
         const int STENCIL_SIZE = 8;
         const int CONTEXT_MAJOR_VERSION = 2;
         const int CONTEXT_MINOR_VERSION = 0;
+        
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, CONTEXT_MAJOR_VERSION);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CONTEXT_MINOR_VERSION);
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, DOUBLE_BUFFER);
-        //#ifndef GL_ES_VERSION_2_0
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, DEPTH_SIZE);
         SDL_GL_SetAttribute(SDL_GL_RED_SIZE, RED_SIZE);
         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, GREEN_SIZE);
         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, BLUE_SIZE);
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, ALPHA_SIZE);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, STENCIL_SIZE);
-        //#endif
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, CONTEXT_MAJOR_VERSION);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CONTEXT_MINOR_VERSION);
 
 #if IOS || ANDROID
         Uint32 flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
@@ -300,7 +299,8 @@ namespace NSG
             return false;
         }
 
-        SDL_GLContext maincontext = SDL_GL_CreateContext(win);
+        //SDL_GLContext maincontext =
+        SDL_GL_CreateContext(win);
 
         SDL_GetWindowSize(win, &width, &height);
 
@@ -312,9 +312,12 @@ namespace NSG
 #endif
 
         int value = 0;
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
+        CHECK_ASSERT(value >= CONTEXT_MAJOR_VERSION, __FILE__, __LINE__);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
+        CHECK_ASSERT(value >= CONTEXT_MINOR_VERSION, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
         CHECK_ASSERT(value == DOUBLE_BUFFER, __FILE__, __LINE__);
-        //#ifndef GL_ES_VERSION_2_0
         SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
         CHECK_ASSERT(value == DEPTH_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
@@ -327,11 +330,6 @@ namespace NSG
         CHECK_ASSERT(value == ALPHA_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
         CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
-        //#endif
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
-        CHECK_ASSERT(value == CONTEXT_MAJOR_VERSION, __FILE__, __LINE__);
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
-        CHECK_ASSERT(value == CONTEXT_MINOR_VERSION, __FILE__, __LINE__);
 
 #ifndef GL_ES_VERSION_2_0
 

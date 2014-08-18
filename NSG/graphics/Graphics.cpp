@@ -64,22 +64,32 @@ namespace NSG
 
     Graphics::Graphics()
     {
+        std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
+        TRACE_LOG("Detected extensions: " << extensions);
+
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
         has_discard_framebuffer_ext_ = false;
-
         if (CheckExtension("EXT_discard_framebuffer"))
         {
             has_discard_framebuffer_ext_ = true;
-            TRACE_LOG("Detected extension: EXT_discard_framebuffer");
+            TRACE_LOG("Using extension: EXT_discard_framebuffer");
         }
 
         has_vertex_array_object_ext_ = false;
         if (CheckExtension("OES_vertex_array_object"))
         {
             has_vertex_array_object_ext_ = true;
-            TRACE_LOG("Detected extension: OES_vertex_array_object");
+            TRACE_LOG("Using extension: OES_vertex_array_object");
         }
+
+        has_map_buffer_range_ext_ = false;
+        if (CheckExtension("EXT_map_buffer_range"))
+        {
+            has_map_buffer_range_ext_ = true;
+            TRACE_LOG("Using extension: EXT_map_buffer_range");
+        }
+        
 
         currentFbo_ = 0; //the default framebuffer (except for IOS)
         vertexArrayObj_ = nullptr;
@@ -564,6 +574,8 @@ namespace NSG
     {
         if (activeMesh_ != mesh)
         {
+            activeMesh_ = mesh;
+
             GLuint position_loc = program->GetAttPositionLoc();
             GLuint texcoord_loc = program->GetAttTextCoordLoc();
             GLuint normal_loc = program->GetAttNormalLoc();
@@ -656,11 +668,7 @@ namespace NSG
         SetProgram(program);
         program->SetVariables(material, node);
 
-        mesh->SetBuffersAndAttributes(program);
-
-        activeMesh_ = mesh;
-
-        mesh->Draw(solid);
+        mesh->Draw(solid, program);
 
         if (AppStatistics::this_)
             AppStatistics::this_->NewDrawCall();

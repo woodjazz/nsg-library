@@ -37,14 +37,16 @@ namespace NSG
 
         CHECK_CONDITION(Graphics::this_->SetVertexBuffer(this), __FILE__, __LINE__);
 
+        glBufferData(type_, bufferSize, nullptr, usage_);
+
         std::vector<GLubyte> emptyData(bufferSize, 0);
 
-        glBufferData(type_, bufferSize, &emptyData[0], usage_); //created with initialized data to avoid warnings when profiling
+        SetBufferSubData(0, bufferSize, &emptyData[0]); //created with initialized data to avoid warnings when profiling
 
         GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
         CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
 
-        glBufferSubData(type_, 0, bytes2Set, &vertexes[0]);
+        SetBufferSubData(0, bytes2Set, &vertexes[0]);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
@@ -72,7 +74,7 @@ namespace NSG
 
             GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
 
-            glBufferSubData(type_, obj->offset_, bytes2Set, &vertexes[0]);
+            SetBufferSubData(obj->offset_, bytes2Set, &vertexes[0]);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -92,7 +94,7 @@ namespace NSG
 
         Graphics::this_->SetVertexBuffer(this);
 
-        glBufferSubData(type_, obj.offset_, bytes2Set, &vertexes[0]);
+        SetBufferSubData(obj.offset_, bytes2Set, &vertexes[0]);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }

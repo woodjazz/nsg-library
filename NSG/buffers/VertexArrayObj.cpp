@@ -35,13 +35,14 @@ misrepresented as being the original software.
 #define glGenVertexArrays glGenVertexArraysOES
 #define glBindVertexArray glBindVertexArrayOES
 #define glDeleteVertexArrays glDeleteVertexArraysOES
-#define glBindVertexArray glBindVertexArrayOES
 #endif
 
 namespace NSG
 {
     VertexArrayObj::VertexArrayObj(Program* program, Mesh* mesh)
-        : vao_(0)
+        : vao_(0),
+        program_(program),
+        mesh_(mesh)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -49,16 +50,33 @@ namespace NSG
 
         CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
 
+        Redo();
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
+
+    VertexArrayObj::~VertexArrayObj()
+    {
+        if (Graphics::this_->GetVertexArrayObj() == this)
+            Graphics::this_->SetVertexArrayObj(nullptr);
+
+        glDeleteVertexArrays(1, &vao_);
+    }
+
+    void VertexArrayObj::Redo()
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
         CHECK_CONDITION(Graphics::this_->SetVertexArrayObj(this), __FILE__, __LINE__);
 
-        VertexBuffer* vertexBuffer = mesh->GetVertexBuffer();
-        //Graphics::this_->SetVertexBuffer(nullptr); // force binding in VAO (not sure if needed since VBO binding is NOT part of VAO)
+        VertexBuffer* vertexBuffer = mesh_->GetVertexBuffer();
+        Graphics::this_->SetVertexBuffer(nullptr); // force binding in VAO (not sure if needed since VBO binding is NOT part of VAO)
         Graphics::this_->SetVertexBuffer(vertexBuffer);
 
-        GLuint position_loc = program->GetAttPositionLoc();
-        GLuint texcoord_loc = program->GetAttTextCoordLoc();
-        GLuint normal_loc = program->GetAttNormalLoc();
-        GLuint color_loc = program->GetAttColorLoc();
+        GLuint position_loc = program_->GetAttPositionLoc();
+        GLuint texcoord_loc = program_->GetAttTextCoordLoc();
+        GLuint normal_loc = program_->GetAttNormalLoc();
+        GLuint color_loc = program_->GetAttColorLoc();
 
         if (position_loc != -1)
             glEnableVertexAttribArray(ATTRIBUTE_LOC::POSITION);
@@ -74,23 +92,13 @@ namespace NSG
 
         Graphics::this_->SetVertexAttrPointers();
 
-        IndexBuffer* indexBuffer = mesh->GetIndexBuffer();
+        IndexBuffer* indexBuffer = mesh_->GetIndexBuffer();
         Graphics::this_->SetIndexBuffer(nullptr); // forces binding in VAO (this shall be needed since IBO binding is part of VAO)
         Graphics::this_->SetIndexBuffer(indexBuffer);
 
         Graphics::this_->SetVertexArrayObj(nullptr);
-        Graphics::this_->SetVertexBuffer(nullptr);
-        Graphics::this_->SetIndexBuffer(nullptr);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
-    }
-
-    VertexArrayObj::~VertexArrayObj()
-    {
-        if (Graphics::this_->GetVertexArrayObj() == this)
-            Graphics::this_->SetVertexArrayObj(nullptr);
-
-        glDeleteVertexArrays(1, &vao_);
     }
 
     void VertexArrayObj::Bind()
