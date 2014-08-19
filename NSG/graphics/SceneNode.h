@@ -36,14 +36,17 @@ namespace NSG
 	public:
 		SceneNode();
 		~SceneNode();
-		void Set(PTechnique technique);
-		void Set(Technique* technique);
-		PTechnique GetTechnique() const { return technique_; }
+		void Set(PMaterial material) { material_ = material; }
+		void Set(Material* material);
+		void Set(PMesh mesh) { mesh_ = mesh; }
+		void Set(Mesh* mesh);
+		PMesh GetMesh() const { return mesh_; }
 		void SetBehavior(PBehavior pBehavior);
 		PBehavior GetBehavior() const { return pBehavior_; }
 		virtual void Render();
 	private:
-		PTechnique technique_;
+		PMaterial material_;
+		PMesh mesh_;
 		PBehavior pBehavior_;
 	};
 }

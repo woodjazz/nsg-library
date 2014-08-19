@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "Context.h"
 #include "Camera.h"
 #include "Pass.h"
+#include "Graphics.h"
 
 static const char* vShader = STRINGIFY(
 	attribute vec4 a_position;
@@ -70,8 +71,6 @@ namespace NSG
 	mesh_(new PlaneMesh(2, 2, 2, 2))
 	{
 		pass_->EnableDepthTest(false);
-        pass_->Set(material_);
-        pass_->Add(nullptr, mesh_);
 	}
 
 	ShowTexture::~ShowTexture()
@@ -117,6 +116,9 @@ namespace NSG
 
 			Camera* pCurrent = Camera::Deactivate();
 
+            Graphics::this_->Set(material_.get());
+            Graphics::this_->Set((Node*)nullptr);
+            Graphics::this_->Set(mesh_.get());
 			pass_->Render();
 
 			Camera::Activate(pCurrent);

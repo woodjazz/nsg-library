@@ -36,11 +36,10 @@ namespace NSG
 		~Technique();
 		void Add(PPass pass);
 		void Add(Pass* pass);
-		void Set(PNode node);
-		void Set(Node* node);
 		bool Render();
 		size_t GetNumPasses() const;
 		const PASSES& GetPasses() const { return passes_; }
+		void SetPass(unsigned int idx, PPass pass) { passes_.at(idx) = pass; }
 		PPass GetPass(unsigned int idx) { return passes_.at(idx); }
 	private:
 		PASSES passes_;

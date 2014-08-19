@@ -32,7 +32,5 @@ public:
 	LightBehavior();
 	~LightBehavior();
 
-	void Start();
-	void Update();
-	void Render();
+	void Start() override;
 };

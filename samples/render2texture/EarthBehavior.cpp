@@ -42,21 +42,14 @@ void EarthBehavior::Start()
 	PTexture texture(new TextureMemory(GL_RGBA, 512, 512, nullptr));
 	showTexture_.SetNormal(texture);
 	render2texture_ = PRender2Texture(new Render2Texture(texture, true, false));
-
-	PSphereMesh pSphereMesh(new SphereMesh(3, 32));
-    PTechnique technique(new Technique);
-    pSceneNode_->Set(technique);
-    PPass pass(new Pass);
-    pass->Add(pSceneNode_, pSphereMesh);
-    technique->Add(pass);
+    pSceneNode_->Set(PSphereMesh(new SphereMesh(3, 32)));
 
 	PTexture pEarthTexture(new TextureFile("data/stone.jpg"));
 	PMaterial pMaterial(new Material ());
 	PProgram program(new ProgramUnlit);
 	pMaterial->SetProgram(program);
 	pMaterial->SetTexture0(pEarthTexture);
-
-    pass->Set(pMaterial);
+    pSceneNode_->Set(pMaterial);
  
     pSceneNode_->SetPosition(Vertex3(5, 0, 0));
 }

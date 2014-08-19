@@ -32,10 +32,8 @@ public:
 	CubeBehavior();
 	~CubeBehavior();
 
-	void Start();
-	void Update();
-	void Render();
-	//void Render2Select();
+	void Start() override;
+	void Update() override;
 private:
 	float x_angle_;
 	float y_angle_;

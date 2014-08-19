@@ -29,8 +29,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	typedef std::vector<MeshNode> MESHNODES;
-
 	class Pass
 	{
 	public:
@@ -46,18 +44,7 @@ namespace NSG
 		void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
 		enum Mode {SOLID, WIREFRAME};
 		void SetDrawMode(Mode mode) { drawMode_ = mode; }
-		void SetNode(int idx, PNode node);
-        void SetAll(PNode node);
-        void SetAll(Node* node);
-		void Set(PMaterial material);
-		void Set(Material* pMaterial);
-		void Add(PNode node, PMesh mesh);
-		void Add(Node* node, PMesh mesh);
-		void ClearMeshNodes();
 		virtual bool Render();
-		PMesh GetMesh(int idx) const;
-		const MESHNODES& GetMeshNodes() const { return meshNodes_; }
-		PMaterial GetMaterial() const { return material_; }
 	protected:
         BLEND_MODE blendMode_;
         bool enableDepthTest_;
@@ -71,11 +58,6 @@ namespace NSG
         GLuint stencilMaskValue_;
         bool enableColorBuffer_;
         bool enableDepthBuffer_;
-
-		PMaterial material_;
-		MESHNODES meshNodes_;
 		Mode drawMode_;
-		friend class Technique;
-
 	};
 }

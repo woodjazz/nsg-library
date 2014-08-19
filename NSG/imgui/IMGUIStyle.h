@@ -32,16 +32,15 @@ namespace NSG
 	{
 		struct Style
 		{
-			static PProgram unlitProgram_;
-			static PMesh controlMesh_;
-
 			bool enableActive_;
 			bool enableHot_;
 			bool enableFocus_;
 
-			PTechnique activeTechnique_;
-			PTechnique normalTechnique_;
-			PTechnique hotTechnique_;
+			PMaterial normalMaterial_;
+			PMaterial activeMaterial_;
+			PMaterial hotMaterial_;
+
+			PPass pass_;
 
 			Style();
 			Style(const Style& obj);
@@ -58,8 +57,8 @@ namespace NSG
 		{
 			bool showVScroll_;
 			bool showHScroll_;
-			PTechnique vScrollTechnique_;
-			PTechnique hScrollTechnique_;
+			PMaterial scrollMaterial_;
+			PPass scrollPass_;
 
 			AreaStyle();
 			AreaStyle(const AreaStyle& obj);

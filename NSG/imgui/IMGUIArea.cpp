@@ -118,17 +118,15 @@ namespace NSG
             Update();
         }
 
-        void Area::RenderSlider(PTechnique technique)
+        void Area::RenderSlider()
         {
-            size_t nPasses = technique->GetNumPasses();
-            for (size_t i = 0; i < nPasses; i++)
-            {
-                PPass pass = technique->GetPass(i);
-                pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-                pass->SetStencilFunc(GL_ALWAYS, 0, 0);
-            }
-
-            technique->Render();
+            Graphics::this_->Set(Context::this_->controlMesh_.get());
+            Graphics::this_->Set(areaStyle_.scrollMaterial_.get());
+            PPass pass = areaStyle_.scrollPass_;
+            pass->SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+            pass->SetStencilFunc(GL_ALWAYS, 0, 0);
+            pass->Render();
+            Graphics::this_->Set(Context::this_->controlMesh_.get());
         }
 
         bool Area::HandleVerticalSlider(float maxPosY, float& yPosition)
@@ -158,9 +156,9 @@ namespace NSG
             globalPosition.x += areaGlobalScale.x - globalScale.x;
             node.SetGlobalPosition(globalPosition);
 
-            areaStyle_.vScrollTechnique_->Set(&node);
+            Graphics::this_->Set(&node);
 
-            RenderSlider(areaStyle_.vScrollTechnique_);
+            RenderSlider();
 
             if (mousedown_)
             {
@@ -222,9 +220,9 @@ namespace NSG
             globalPosition.y -= areaGlobalScale.y - globalScale.y;
             node.SetGlobalPosition(globalPosition);
 
-            areaStyle_.hScrollTechnique_->Set(&node);
+            Graphics::this_->Set(&node);
 
-            RenderSlider(areaStyle_.hScrollTechnique_);
+            RenderSlider();
 
             if (mousedown_)
             {

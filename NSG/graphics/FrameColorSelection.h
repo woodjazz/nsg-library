@@ -45,10 +45,8 @@ namespace NSG
         void SetLocations();
         void AssignValues();
 
-        bool Render(GLushort id, float screenX, float screenY, Technique* technique);
-        bool Hit(GLushort id, float screenX, float screenY, Technique* technique);
-
-        PPass GetPass() const { return pass_; }
+        bool Render(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
+        bool Hit(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
 
         void ClearDepthStencil();
         virtual void OnViewChanged(int32_t width, int32_t height) override;
@@ -58,7 +56,6 @@ namespace NSG
         void Begin(float screenX, float screenY);
         void End();
 
-        PPass pass_;
         PMaterial material_;
         int32_t windowWidth_;
         int32_t windowHeight_;

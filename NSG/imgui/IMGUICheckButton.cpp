@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "IMGUICheckButton.h"
 #include "IMGUIStyle.h"
 #include "Technique.h"
+#include "Graphics.h"
 
 namespace NSG
 {
@@ -47,13 +48,11 @@ namespace NSG
             if(pressed_)
             {
                 if (IsActive()) 
-					currentTechnique_ = checkButtonStyle_.pressedStyle_->activeTechnique_;
+					currentMaterial_ = checkButtonStyle_.pressedStyle_->activeMaterial_;
                 else if (IsHot())
-					currentTechnique_ = checkButtonStyle_.pressedStyle_->hotTechnique_;
+					currentMaterial_ = checkButtonStyle_.pressedStyle_->hotMaterial_;
                 else
-					currentTechnique_ = checkButtonStyle_.pressedStyle_->normalTechnique_;
-
-                currentTechnique_->Set(node_);
+					currentMaterial_ = checkButtonStyle_.pressedStyle_->normalMaterial_;
             }
             else
             {

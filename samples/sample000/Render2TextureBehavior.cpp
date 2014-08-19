@@ -24,47 +24,44 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Render2TextureBehavior.h"
-#define ENABLED 1
+#include "Material.h"
 
 template<> Render2TextureBehavior* Singleton<Render2TextureBehavior>::this_ = nullptr;
 
 Render2TextureBehavior::Render2TextureBehavior()
 {
 }
-	
+
 Render2TextureBehavior::~Render2TextureBehavior()
 {
 }
 
 void Render2TextureBehavior::Start()
 {
-#if ENABLED    
+    PMaterial material(new Material);
+    pSceneNode_->Set(material);
+    
     pRenderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-    PTechnique technique(new Technique);
-    pSceneNode_->Set(technique);
     pass_ = PPass2Texture(new Pass2Texture(pRenderedTexture_, true, false));
-    technique->Add(pass_);
+    material->GetTechnique()->SetPass(0, pass_);
 
     pFilteredTexture_ = PTexture(new TextureMemory(GL_RGBA, 16, 16, nullptr));
     PFilter blurFilter(new FilterBlur(pRenderedTexture_, pFilteredTexture_));
     PPassFilter passBlur(new PassFilter(blurFilter));
-    technique->Add(passBlur);
+    material->GetTechnique()->Add(passBlur);
 
     pBlendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
     PFilter blendFilter(new FilterBlend(pFilteredTexture_, pRenderedTexture_, pBlendedTexture_));
     PPassFilter passBlend(new PassFilter(blendFilter));
-    technique->Add(passBlend);
+    material->GetTechnique()->Add(passBlend);
 
     showTexture_ = PShowTexture(new ShowTexture);
     showTexture_->SetNormal(pBlendedTexture_);
-#endif    
 }
 
-void Render2TextureBehavior::AddPass(PPass pass)
+void Render2TextureBehavior::Add(PPass pass, Node* node, PMaterial material, PMesh mesh)
 {
-#if ENABLED 
-    pass_->Add(pass);
-#endif
+    pass_->Add(pass, node, material, mesh);
 }
 
 void Render2TextureBehavior::Update()
@@ -73,9 +70,7 @@ void Render2TextureBehavior::Update()
 
 void Render2TextureBehavior::Render()
 {
-#if ENABLED     
-	pSceneNode_->Render();
+    pSceneNode_->Render();
     showTexture_->Show();
-#endif    
 }
 

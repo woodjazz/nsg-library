@@ -41,7 +41,6 @@ namespace NSG
 {
     FrameColorSelection::FrameColorSelection(bool createDepthBuffer, bool createDepthStencilBuffer)
         : material_(new Material),
-          pass_(new Pass),
           windowWidth_(0),
           windowHeight_(0),
           pixelX_(0),
@@ -51,8 +50,11 @@ namespace NSG
     {
         Program *program = new ProgramColorSelection;
         material_->SetProgram(PProgram(program));
-        pass_->Set(material_);
-        pass_->SetBlendMode(BLEND_NONE);
+        PTechnique technique(new Technique);
+        PPass pass(new Pass);
+        technique->Add(pass);
+        material_->SetTechnique(technique);
+        pass->SetBlendMode(BLEND_NONE);
         App::Add(this);
     }
 
@@ -193,44 +195,21 @@ namespace NSG
         return color;
     }
 
-    bool FrameColorSelection::Render(GLushort id, float screenX, float screenY, Technique *technique)
+    bool FrameColorSelection::Render(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes)
     {
         if (IsReady())
         {
-            CHECK_ASSERT(technique, __FILE__, __LINE__);
-
             Begin(screenX, screenY);
             {
-                Mesh *lastMesh = nullptr;
-                Node *lastNode = nullptr;
-
                 material_->SetColor(TransformSelectedId2Color(id));
-
-                const PASSES &passes = technique->GetPasses();
-                auto it = passes.begin();
-                while (it != passes.end())
+                
+                Graphics::this_->Set(material_.get());
+                
+                for(auto& obj : nodes)
                 {
-                    PPass pass = *(it++);
-                    if (pass)
-                    {
-                        const MESHNODES &meshNodes = pass->GetMeshNodes();
-                        auto meshNodeIt = meshNodes.begin();
-                        while (meshNodeIt != meshNodes.end())
-                        {
-                            Mesh *mesh = meshNodeIt->second.get();
-                            Node *node = meshNodeIt->first.get();
-
-                            if (lastMesh != mesh || lastNode != node) // optimization to not render always the same
-                            {
-                                pass_->ClearMeshNodes();
-                                pass_->Add(node, meshNodeIt->second);
-                                pass_->Render();
-                                lastMesh = mesh;
-                                lastNode = node;
-                            }
-                            ++meshNodeIt;
-                        }
-                    }
+                    Graphics::this_->Set(obj);
+                    Graphics::this_->Set(obj->GetMesh().get());
+                    material_->GetTechnique()->Render();
                 }
             }
             End();
@@ -239,9 +218,9 @@ namespace NSG
         return false;
     }
 
-    bool FrameColorSelection::Hit(GLushort id, float screenX, float screenY, Technique *technique)
+    bool FrameColorSelection::Hit(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes)
     {
-        if (Render(id, screenX, screenY, technique))
+        if (Render(id, screenX, screenY, nodes))
             return id == GetSelected();
 
         return false;

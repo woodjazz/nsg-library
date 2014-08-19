@@ -38,7 +38,6 @@ namespace NSG
 		virtual void Start() {}
 		virtual void Update() {}
 		virtual void Render() {};
-		//virtual void Render2Select() {};
         virtual void OnMouseMove(float x, float y) {}
         virtual void OnMouseDown(float x, float y) {}
         virtual void OnMouseUp() {}

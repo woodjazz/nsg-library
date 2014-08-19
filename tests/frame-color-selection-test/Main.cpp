@@ -27,27 +27,6 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-class MyBehavior : public Behavior
-{
-public:
-	MyBehavior()
-	{
-	}
-	~MyBehavior()
-	{
-	}
-
-	void Start() override
-	{
-		PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2));
-        PTechnique technique(new Technique);
-        pSceneNode_->Set(technique);
-        PPass pass(new Pass);
-    	pass->Add(pSceneNode_, pMesh);
-		technique->Add(pass);
-	}
-};
-
 struct Test : public App 
 {
     PSceneNode sceneNode_;
@@ -63,9 +42,13 @@ struct Test : public App
 
 	void Start() override
 	{
-        colorSelection_ = PFrameColorSelection(new FrameColorSelection(false, false));
+        PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2));
+        
 		sceneNode_ = PSceneNode(new SceneNode);
-		sceneNode_->SetBehavior(PBehavior(new MyBehavior));	
+        sceneNode_->Set(pMesh);
+
+        colorSelection_ = PFrameColorSelection(new FrameColorSelection(false, false));
+        
 		camera_ = PCamera(new Camera);
         camera_->EnableOrtho();
 		camera_->Activate();
@@ -75,29 +58,31 @@ struct Test : public App
 
 	void RenderFrame() override
 	{
-		Technique* technique = sceneNode_->GetTechnique().get();
 		sceneNode_->SetPosition(Vertex3(0, 0, 0));
-		colorSelection_->Render(sceneNode_->GetId(), 0, 0, technique);
+        std::vector<SceneNode*> nodes;
+        nodes.push_back(sceneNode_.get());
+        
+		colorSelection_->Render(sceneNode_->GetId(), 0, 0, nodes);
         GLushort id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id == sceneNode_->GetId(), __FILE__, __LINE__);
 		
 		sceneNode_->SetPosition(Vertex3(-1, 0, 0));
-		colorSelection_->Render(sceneNode_->GetId(), 0, 0, technique);
+		colorSelection_->Render(sceneNode_->GetId(), 0, 0, nodes);
         id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id != sceneNode_->GetId(), __FILE__, __LINE__);
 
 		sceneNode_->SetPosition(Vertex3(-1, 0, 0));
-		colorSelection_->Render(sceneNode_->GetId(), -0.7f, 0, technique);
+		colorSelection_->Render(sceneNode_->GetId(), -0.7f, 0, nodes);
         id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id == sceneNode_->GetId(), __FILE__, __LINE__);
 
 		sceneNode_->SetPosition(Vertex3(1, 1, 0));
-		colorSelection_->Render(sceneNode_->GetId(), -0.7f, 0, technique);
+		colorSelection_->Render(sceneNode_->GetId(), -0.7f, 0, nodes);
         id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id != sceneNode_->GetId(), __FILE__, __LINE__);
 
 		sceneNode_->SetPosition(Vertex3(1, 1, 0));
-		colorSelection_->Render(sceneNode_->GetId(), 0.75f, 0.75f, technique);
+		colorSelection_->Render(sceneNode_->GetId(), 0.75f, 0.75f, nodes);
 		id = colorSelection_->GetSelected();
 		CHECK_ASSERT(id == sceneNode_->GetId(), __FILE__, __LINE__);
 

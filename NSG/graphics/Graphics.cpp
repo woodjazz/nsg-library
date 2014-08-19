@@ -64,8 +64,11 @@ namespace NSG
 
     Graphics::Graphics()
     {
-        std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
-        TRACE_LOG("Detected extensions: " << extensions);
+        TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
+        TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
+        TRACE_LOG("GL_VERSION = " << (const char*)glGetString(GL_VERSION));
+        TRACE_LOG("GL_SHADING_LANGUAGE_VERSION = " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+        TRACE_LOG("GL_EXTENSIONS = " << (const char*)glGetString(GL_EXTENSIONS));
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
@@ -100,7 +103,12 @@ namespace NSG
         activeTexture_ = 0;
         enabledAttributes_ = 0;
         uniformsNeedUpdate_ = true;
+        lastMesh_ = nullptr;
+        lastMaterial_ = nullptr;
+        lastNode_ = nullptr;
         activeMesh_ = nullptr;
+        activeMaterial_ = nullptr;
+        activeNode_ = nullptr;
 
         glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
 
@@ -572,10 +580,8 @@ namespace NSG
 
     void Graphics::SetAttributes(const Mesh* mesh, const Program* program)
     {
-        if (activeMesh_ != mesh)
+        if (lastMesh_ != mesh)
         {
-            activeMesh_ = mesh;
-
             GLuint position_loc = program->GetAttPositionLoc();
             GLuint texcoord_loc = program->GetAttTextCoordLoc();
             GLuint normal_loc = program->GetAttNormalLoc();
@@ -654,21 +660,25 @@ namespace NSG
         }
     }
 
-    bool Graphics::Draw(bool solid, Material* material, Node* node, Mesh* mesh)
+    bool Graphics::Draw(bool solid)
     {
-        if (!material->IsReady() || !mesh->IsReady())
+        if (!activeMaterial_->IsReady() || !activeMesh_->IsReady())
             return false;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        material->Use();
+        activeMaterial_->Use();
 
-        Program* program = material->GetProgram().get();
+        Program* program = activeMaterial_->GetProgram().get();
 
         SetProgram(program);
-        program->SetVariables(material, node);
+        program->SetVariables(activeMaterial_, activeNode_);
 
-        mesh->Draw(solid, program);
+        activeMesh_->Draw(solid, program);
+
+        lastMesh_ = activeMesh_;
+        lastMaterial_ = activeMaterial_;
+        lastNode_ = activeNode_;
 
         if (AppStatistics::this_)
             AppStatistics::this_->NewDrawCall();

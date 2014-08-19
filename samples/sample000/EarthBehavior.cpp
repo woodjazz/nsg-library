@@ -40,14 +40,8 @@ EarthBehavior::~EarthBehavior()
 
 void EarthBehavior::Start()
 {
-	PSphereMesh pSphereMesh(new SphereMesh(3, 32));
-    PTechnique technique(new Technique);
-    pSceneNode_->Set(technique);
-    PPass pass(new Pass);
-    pass->Add(pSceneNode_, pSphereMesh);
-    technique->Add(pass);
-
-    Render2TextureBehavior::this_->AddPass(pass);
+    PSphereMesh mesh(new SphereMesh(3, 32));
+    pSceneNode_->Set(mesh);
 
 	PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
 	PMaterial pMaterial(new Material ());
@@ -58,9 +52,11 @@ void EarthBehavior::Start()
 	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
 	pMaterial->SetShininess(0.3f);
 
-    pass->Set(pMaterial);
+    pSceneNode_->Set(pMaterial);
 
     pSceneNode_->SetPosition(Vertex3(5, 0, 0));
+    
+    Render2TextureBehavior::this_->Add(PPass(new Pass), pSceneNode_, pMaterial, mesh);
 }
 
 void EarthBehavior::Update()
@@ -72,11 +68,6 @@ void EarthBehavior::Update()
 
 	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 
-}
-
-void EarthBehavior::Render()
-{
-	//pSceneNode_->Render();
 }
 
 

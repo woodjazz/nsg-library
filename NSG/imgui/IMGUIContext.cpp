@@ -64,10 +64,9 @@ namespace NSG
             pCamera_->SetFarClip(1000000);
             pCamera_->SetNearClip(-1000000);
 
-            transparentAreaStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-            transparentAreaStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-            transparentAreaStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-
+            transparentAreaStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
+            transparentAreaStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
+            transparentAreaStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
         }
 
         Context::~Context()

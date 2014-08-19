@@ -64,6 +64,8 @@ namespace NSG
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;
 		void Use();
+		void SetTechnique(PTechnique technique) { technique_ = technique; }
+		PTechnique GetTechnique() const { return technique_; }
 	private:
 		PTexture pTexture0_;
 		PTexture pTexture1_;
@@ -75,6 +77,8 @@ namespace NSG
         float shininess_;
         Color color_;
         bool enableCullFace_;
+
+        PTechnique technique_;
 
 		friend class UseMaterial;
 		friend class Program;

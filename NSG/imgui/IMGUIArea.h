@@ -42,7 +42,7 @@ namespace NSG
         protected:
             void UpdateScrolling();
         private:
-            void RenderSlider(PTechnique technique);
+            void RenderSlider();
             bool HandleVerticalSlider(float maxPosY, float& yPosition);
             bool HandleHorizontalSlider(float maxPosX, float& xPosition);
 

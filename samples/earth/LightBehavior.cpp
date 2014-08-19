@@ -40,15 +40,11 @@ void LightBehavior::Start()
     pMaterial->SetColor(Color(1,0,0,1));
     PProgram pProgram(new ProgramSimpleColor);
     pMaterial->SetProgram(pProgram);
-    PTechnique technique(new Technique);
-    PPass pass(new Pass);
-    pass->Set(pMaterial);
-    technique->Add(pass);
 
-    pSceneNode_->Set(technique);
-
+    pSceneNode_->Set(pMaterial);
+    
     PMesh pMesh(new SphereMesh(0.2f, 16));
-    pass->Add(pSceneNode_, pMesh);
+    pSceneNode_->Set(pMesh);
 
     pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
 }

@@ -53,28 +53,22 @@ namespace NSG
               hSliderStyle_(new SliderStyle),
               vThumbSliderStyle_(new Style),
               hThumbSliderStyle_(new Style),
-              stencilTechnique_(new Technique)
+              stencilMaterial_(new Material),
+              stencilPass_(new Pass)
         {
             {
-                mainWindowStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-                mainWindowStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-                mainWindowStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+                mainWindowStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
+                mainWindowStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
+                mainWindowStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
             }
 
-            PMesh areaMesh(new PlaneMesh(2, 2, 2, 2));
             PProgram program(new ProgramWhiteColor);
-            PMaterial material(new Material);
-            material->SetColor(Color(1, 0, 1, 0.7f));
-            material->SetProgram(program);
-            PPass pass(new Pass);
-            pass->Set(material);
-            pass->Add(nullptr, areaMesh);
-            pass->EnableDepthTest(false);
-            pass->EnableDepthBuffer(false);
-            pass->EnableStencilTest(true);
-            pass->EnableColorBuffer(false);
-            pass->SetBlendMode(BLEND_NONE);
-            stencilTechnique_->Add(pass);
+            stencilMaterial_->SetProgram(program);
+            stencilPass_->EnableDepthTest(false);
+            stencilPass_->EnableDepthBuffer(false);
+            stencilPass_->EnableStencilTest(true);
+            stencilPass_->EnableColorBuffer(false);
+            stencilPass_->SetBlendMode(BLEND_NONE);
         }
     }
 }

@@ -36,6 +36,6 @@ struct SphereBehavior : Behavior
 	PMaterial material_;
 	PFilter blendFilter_;
 
-	void Start();
-    void Update();
+	void Start() override;
+    void Update() override;
 };

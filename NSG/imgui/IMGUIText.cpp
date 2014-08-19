@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "Keys.h"
 #include "Camera.h"
 #include "Keyboard.h"
+#include "Graphics.h"
 
 namespace NSG
 {
@@ -218,10 +219,10 @@ namespace NSG
             textNode2.SetParent(&textNode1);
             textNode2.SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
 
-            Technique technique;
+            Graphics::this_->Set(&textNode2);
+            Graphics::this_->Set(pTextMesh_.get());
+
             Pass pass;
-            technique.Add(&pass);
-            pass.Add(&textNode2, pTextMesh_);
             Material textMaterial;
             textMaterial.SetColor(textStyle_.textColor_);
             pass.EnableDepthTest(false);
@@ -232,8 +233,8 @@ namespace NSG
             pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 
-            pass.Set(&textMaterial);
-            technique.Render();
+            Graphics::this_->Set(&textMaterial);
+            pass.Render();
 
             // Render cursor if we have keyboard focus
             if (HasFocus() && layoutManager_.IsCurrentWindowActive() && (uistate_.tick_ < 15))
@@ -242,20 +243,16 @@ namespace NSG
                 cursorNode.SetParent(&textNode2);
                 cursorNode.SetPosition(Vertex3(cursorPositionInText, 0, 0));
 
-                Technique technique;
+                Graphics::this_->Set(&cursorNode);
+                Graphics::this_->Set(pCursorMesh_.get());
+                
                 Pass pass;
                 pass.EnableDepthTest(false);
                 pass.EnableStencilTest(true);
-                technique.Add(&pass);
-                pass.Add(&cursorNode, pCursorMesh_);
-                pass.Set(&textMaterial);
                 pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
                 pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
-
-                technique.Render();
+                pass.Render();
             }
-            
-            
         }
 
 

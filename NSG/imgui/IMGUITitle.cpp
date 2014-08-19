@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "SceneNode.h"
 #include "IMGUILayoutManager.h"
+#include "Graphics.h"
 
 namespace NSG
 {
@@ -89,10 +90,10 @@ namespace NSG
             textNode.SetInheritScale(false);
             textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
 
-            Technique technique;
+            Graphics::this_->Set(&textNode);
+            Graphics::this_->Set(pTextMesh_.get());
+            
             Pass pass;
-            technique.Add(&pass);
-            pass.Add(&textNode, pTextMesh_);
             pass.EnableDepthTest(false);
             pass.EnableStencilTest(true);
             pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
@@ -103,9 +104,9 @@ namespace NSG
             textMaterial.SetTexture0(pTextMesh_->GetTexture());
             textMaterial.SetProgram(pTextMesh_->GetProgram());
 
-            pass.Set(&textMaterial);
+            Graphics::this_->Set(&textMaterial);
 
-            technique.Render();
+            pass.Render();
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -119,8 +120,6 @@ namespace NSG
 
                 }
             }
-
-
         }
     }
 }

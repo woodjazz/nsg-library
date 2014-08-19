@@ -64,7 +64,7 @@ namespace NSG
         Program* GetProgram() const { return program_; }
         void SetFrameBuffer(GLuint value);
         void SetSceneVariables(Program* program);
-        bool Draw(bool solid, Material* material, Node* node, Mesh* mesh);
+        bool Draw(bool solid);
         void DiscardFramebuffer();
         void BeginFrame();
         void EndFrame();
@@ -76,6 +76,9 @@ namespace NSG
         void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
         void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
         UniformObjs& GetUniformObjs() { return uniformObjs_; }
+        void Set(Mesh* mesh) { activeMesh_ = mesh; }
+        void Set(Material* material) { activeMaterial_ = material; }
+        void Set(Node* node) { activeNode_ = node; }
 
       private:
         Recti viewport_;
@@ -89,7 +92,12 @@ namespace NSG
       	unsigned activeTexture_;
       	unsigned enabledAttributes_; //positions' bits for enabled attributes
         bool uniformsNeedUpdate_;
-        const Mesh* activeMesh_; // last mesh drawn
+        Mesh* lastMesh_; // last mesh drawn
+        Material* lastMaterial_; // last used material
+        Node* lastNode_; // last used node
+        Mesh* activeMesh_; // mesh that is going to be drawn
+        Material* activeMaterial_; //material that is going to be used to draw
+        Node* activeNode_; //node that is going to be used to draw
         bool has_discard_framebuffer_ext_;
         bool has_vertex_array_object_ext_;
         bool has_map_buffer_range_ext_;

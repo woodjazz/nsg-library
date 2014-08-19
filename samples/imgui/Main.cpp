@@ -125,9 +125,9 @@ struct Statistics : public AppStatistics
 			IMGUISkin()->buttonStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
 			IMGUISkin()->textStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
 
-            material_ = IMGUISkin()->windowStyle_->normalTechnique_->GetPass(0)->GetMaterial();
-			IMGUISkin()->windowStyle_->activeTechnique_->GetPass(0)->Set(material_);
-			IMGUISkin()->windowStyle_->hotTechnique_->GetPass(0)->Set(material_);
+            material_ = IMGUISkin()->windowStyle_->normalMaterial_;
+			IMGUISkin()->windowStyle_->activeMaterial_ = material_;
+			IMGUISkin()->windowStyle_->hotMaterial_ = material_;
 
             newTexture_ = PTexture(new TextureFile("data/blackBump.png"));
             newProgram_ = PProgram(new Program(vShader, fShader));
@@ -176,14 +176,14 @@ struct Sample : App
 			//style_->fontFile_ = "font/FreeSans.ttf";
 
 			PTexture texture(new TextureFile("data/metal.png"));
-			PMaterial material = style_->activeTechnique_->GetPass(0)->GetMaterial();
+			PMaterial material = style_->activeMaterial_;
             //material->SetColor(Color(1,1,1,0.5f));
             material->SetTexture0(texture);
 
-			material = style_->normalTechnique_->GetPass(0)->GetMaterial();
+			material = style_->normalMaterial_;
             material->SetTexture0(texture);        
 
-			material = style_->hotTechnique_->GetPass(0)->GetMaterial();
+			material = style_->hotMaterial_;
             material->SetTexture0(texture);   
 
 			IMGUISkin()->windowStyle_ = style_;

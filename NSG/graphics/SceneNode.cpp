@@ -29,6 +29,8 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Behavior.h"
 #include "Technique.h"
+#include "Graphics.h"
+#include "Material.h"
 
 namespace NSG
 {
@@ -40,23 +42,32 @@ namespace NSG
 	{
 	}
 
-	void SceneNode::Set(PTechnique technique)
-	{
-		technique_ = technique;
-	}
-
-    void SceneNode::Set(Technique* technique)
+    void SceneNode::Set(Material* material)
     {
 		struct D 
 		{ 
-		    void operator()(Technique* p) const 
+		    void operator()(Material* p) const 
 		    {
 		        //delete p; //do not delete
 		    }
 		};    	
 
-		PTechnique pObj(technique, D());
-		Set(pObj);
+		PMaterial obj(material, D());
+		Set(obj);
+    }
+
+    void SceneNode::Set(Mesh* mesh)
+    {
+		struct D 
+		{ 
+		    void operator()(Mesh* p) const 
+		    {
+		        //delete p; //do not delete
+		    }
+		};    	
+
+		PMesh obj(mesh, D());
+		Set(obj);
     }
 
 	void SceneNode::SetBehavior(PBehavior pBehavior)
@@ -69,13 +80,16 @@ namespace NSG
 	{
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		if(technique_) 
-            technique_->Render();
+        Graphics::this_->Set(material_.get());
+        Graphics::this_->Set(mesh_.get());
+        Graphics::this_->Set(this);
+
+        material_->GetTechnique()->Render();
 
         auto it = children_.begin();
         while(it != children_.end())
         {
-            SceneNode* p = static_cast<SceneNode*>(*it);
+            SceneNode* p = dynamic_cast<SceneNode*>(*it);
             CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
             p->Render();
             ++it;

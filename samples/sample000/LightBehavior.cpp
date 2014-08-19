@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "LightBehavior.h"
+#include "Render2TextureBehavior.h"
 
 static const char* vShader = STRINGIFY(
 	uniform mat4 u_mvp;
@@ -56,25 +57,12 @@ void LightBehavior::Start()
 	PMaterial pMaterial(new Material());
 	PProgram pProgram(new Program(vShader, fShader));
     pMaterial->SetProgram(pProgram);
-    PTechnique technique(new Technique);
-    pSceneNode_->Set(technique);
-    PPass pass(new Pass);
-    pass->Set(pMaterial);
-    technique->Add(pass);
 
 	PMesh pMesh(new SphereMesh(0.2f, 32));
-	pass->Add(pSceneNode_, pMesh);
 
     pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
+
+    Render2TextureBehavior::this_->Add(PPass(new Pass), pSceneNode_, pMaterial, pMesh);
 }
 
-void LightBehavior::Update()
-{
-//    float deltaTime = App::this_->GetDeltaTime();
-}
-
-void LightBehavior::Render()
-{
-	//pSceneNode_->Render();
-}
 

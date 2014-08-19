@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "SharedPointers.h"
 #include "Pass.h"
+#include <vector>
 
 namespace NSG
 {
@@ -34,13 +35,20 @@ namespace NSG
 	public:
 		Pass2Texture(PTexture texture, bool createDepthBuffer, bool createDepthStencilBuffer);
 		~Pass2Texture();
-		void Add(PPass pass);
-		virtual bool Render() override;
+		void Add(PPass pass, Node* node, PMaterial material, PMesh mesh) { passes_.push_back(PassData{pass, node, material, mesh}); }
+		virtual bool Render();
 		PTexture GetTexture() const { return texture_; }
 	private:
 		PRender2Texture render2Texture_;
 		PTexture texture_;
-		PASSES passes_;
+		struct PassData
+		{
+			PPass pass_;
+			Node* node_;
+			PMaterial material_;
+			PMesh mesh_;
+		};
+		std::vector<PassData> passes_;
 	};
 
 }

@@ -45,7 +45,8 @@ namespace NSG
 			PStyle vThumbSliderStyle_;
 			PStyle hThumbSliderStyle_;
 
-            PTechnique stencilTechnique_;
+            PMaterial stencilMaterial_;
+            PPass stencilPass_;
 
             Skin();
         };

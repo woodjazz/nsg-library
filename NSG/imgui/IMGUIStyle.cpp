@@ -36,63 +36,46 @@ namespace NSG
     namespace IMGUI
     {
         Style::Style()
-            : activeTechnique_(new Technique),
-              normalTechnique_(new Technique),
-              hotTechnique_(new Technique),
-              enableActive_(true),
+            : enableActive_(true),
               enableHot_(true),
-              enableFocus_(true)
+              enableFocus_(true),
+              normalMaterial_(new Material),
+              activeMaterial_(new Material),
+              hotMaterial_(new Material),
+              pass_(new Pass)
         {
             Context& context = *Context::this_;
 
-            PMaterial pActiveMaterial(new Material);
-            pActiveMaterial->SetProgram(context.unlitProgram_);
-            pActiveMaterial->SetColor(Color(1, 0, 0, 0.7f));
+            pass_->EnableDepthTest(false);
+            pass_->EnableStencilTest(true);
 
-            PMaterial pNormalMaterial(new Material);
-            pNormalMaterial->SetProgram(context.unlitProgram_);
-            pNormalMaterial->SetColor(Color(0, 1, 0, 0.7f));
+            activeMaterial_->SetProgram(context.unlitProgram_);
+            activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
 
-            PMaterial pHotMaterial(new Material);
-            pHotMaterial->SetProgram(context.unlitProgram_);
-            pHotMaterial->SetColor(Color(0, 0, 1, 0.7f));
+            normalMaterial_->SetProgram(context.unlitProgram_);
+            normalMaterial_->SetColor(Color(0, 1, 0, 0.7f));
 
-            PPass activePass(new Pass);
-            activePass->Set(pActiveMaterial);
-            activePass->Add(nullptr, context.controlMesh_);
-            activePass->EnableDepthTest(false);
-            activePass->EnableStencilTest(true);
-
-            PPass normalPass(new Pass);
-            normalPass->Set(pNormalMaterial);
-            normalPass->Add(nullptr, context.controlMesh_);
-            normalPass->EnableDepthTest(false);
-            normalPass->EnableStencilTest(true);
-
-            PPass hotPass(new Pass);
-            hotPass->Set(pHotMaterial);
-            hotPass->Add(nullptr, context.controlMesh_);
-            hotPass->EnableDepthTest(false);
-            hotPass->EnableStencilTest(true);
-
-            activeTechnique_->Add(activePass);
-            normalTechnique_->Add(normalPass);
-            hotTechnique_->Add(hotPass);
+            hotMaterial_->SetProgram(context.unlitProgram_);
+            hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
         }
 
         Style::Style(const Style& obj)
-            : activeTechnique_(obj.activeTechnique_),
-              normalTechnique_(obj.normalTechnique_),
-              hotTechnique_(obj.hotTechnique_)
+            : enableActive_(obj.enableActive_),
+              enableHot_(obj.enableHot_),
+              enableFocus_(obj.enableFocus_),
+              normalMaterial_(obj.normalMaterial_),
+              activeMaterial_(obj.activeMaterial_),
+              hotMaterial_(obj.hotMaterial_),
+              pass_(obj.pass_)
         {
         }
 
         LineStyle::LineStyle()
             : pixels_(1)
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 1, 1, 1));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 1, 1, 1));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.5f, 0.5f, 0.5f, 0.9f));
+            hotMaterial_->SetColor(Color(1, 1, 1, 1));
+            activeMaterial_->SetColor(Color(1, 1, 1, 1));
+            normalMaterial_->SetColor(Color(0.5f, 0.5f, 0.5f, 0.9f));
         }
 
         LineStyle::LineStyle(const LineStyle& obj)
@@ -104,47 +87,40 @@ namespace NSG
         AreaStyle::AreaStyle()
             : showVScroll_(true),
               showHScroll_(true),
-              vScrollTechnique_(new Technique),
-              hScrollTechnique_(new Technique)
+              scrollMaterial_(new Material),
+              scrollPass_(new Pass)
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+            hotMaterial_->SetColor(Color(0, 0, 0, 0));
+            activeMaterial_->SetColor(Color(0, 0, 0, 0));
+            normalMaterial_->SetColor(Color(0, 0, 0, 0));
 
             Context& context = *Context::this_;
-            PMaterial material(new Material);
-            material->SetProgram(context.unlitProgram_);
-            material->SetColor(Color(0.3f, 0.3f, 0.3f, 0.9f));
+            scrollMaterial_->SetProgram(context.unlitProgram_);
+            scrollMaterial_->SetColor(Color(0.3f, 0.3f, 0.3f, 0.9f));
 
-            PPass pass(new Pass);
-            pass->Set(material);
-            pass->Add(nullptr, context.controlMesh_);
-            pass->EnableDepthTest(false);
-            pass->EnableStencilTest(true);
-
-            vScrollTechnique_->Add(pass);
-            hScrollTechnique_->Add(pass);
+            scrollPass_->EnableDepthTest(false);
+            scrollPass_->EnableStencilTest(true);
         }
 
         AreaStyle::AreaStyle(const AreaStyle& obj)
             : Style(obj),
               showVScroll_(obj.showVScroll_),
               showHScroll_(obj.showHScroll_),
-              vScrollTechnique_(obj.vScrollTechnique_),
-              hScrollTechnique_(obj.hScrollTechnique_)
+              scrollMaterial_(obj.scrollMaterial_),
+              scrollPass_(obj.scrollPass_)
         {
         }
 
         SliderStyle::SliderStyle()
             : thumbSliderStyle_(new Style)
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.2f, 0.2f, 1, 0.5f));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0.2f, 0.2f, 0.5f));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.2f, 1, 0.2f, 0.5f));
+            hotMaterial_->SetColor(Color(0.2f, 0.2f, 1, 0.5f));
+            activeMaterial_->SetColor(Color(1, 0.2f, 0.2f, 0.5f));
+            normalMaterial_->SetColor(Color(0.2f, 1, 0.2f, 0.5f));
 
-            thumbSliderStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.3f, 0.3f, 1, 0.9f));
-            thumbSliderStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0.3f, 0.3f, 0.9f));
-            thumbSliderStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.3f, 1, 0.3f, 0.9f));
+            thumbSliderStyle_->hotMaterial_->SetColor(Color(0.3f, 0.3f, 1, 0.9f));
+            thumbSliderStyle_->activeMaterial_->SetColor(Color(1, 0.3f, 0.3f, 0.9f));
+            thumbSliderStyle_->normalMaterial_->SetColor(Color(0.3f, 1, 0.3f, 0.9f));
         }
 
         SliderStyle::SliderStyle(const SliderStyle& obj)
@@ -155,9 +131,9 @@ namespace NSG
 
         SizerStyle::SizerStyle()
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.2f, 0.2f, 0.2f, 0.9f));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0.2f, 0.2f, 0.9f));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.2f, 0.2f, 0.2f, 0.5f));
+            hotMaterial_->SetColor(Color(0.2f, 0.2f, 0.2f, 0.9f));
+            activeMaterial_->SetColor(Color(1, 0.2f, 0.2f, 0.9f));
+            normalMaterial_->SetColor(Color(0.2f, 0.2f, 0.2f, 0.5f));
         }
 
         SizerStyle::SizerStyle(const SizerStyle& obj)
@@ -169,62 +145,61 @@ namespace NSG
         LabelStyle::LabelStyle()
             : textColor_(1, 1, 1, 1)
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0, 0));
+            hotMaterial_->SetColor(Color(0, 0, 0, 0));
+            activeMaterial_->SetColor(Color(0, 0, 0, 0));
+            normalMaterial_->SetColor(Color(0, 0, 0, 0));
         }
 
         LabelStyle::LabelStyle(const LabelStyle& obj)
             : Style(obj),
               textColor_(obj.textColor_),
-			  fontAtlasFile_(obj.fontAtlasFile_)
+              fontAtlasFile_(obj.fontAtlasFile_)
         {
         }
 
         ButtonStyle::ButtonStyle()
             : textColor_(1, 1, 1, 1)
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
+            hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
+            activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
+            normalMaterial_->SetColor(Color(0, 1, 0, 0.7f));
         }
 
         ButtonStyle::ButtonStyle(const ButtonStyle& obj)
             : Style(obj),
               textColor_(obj.textColor_),
-			  fontAtlasFile_(obj.fontAtlasFile_)
+              fontAtlasFile_(obj.fontAtlasFile_)
         {
         }
 
         CheckButtonStyle::CheckButtonStyle()
-        : pressedStyle_(new Style)
+            : pressedStyle_(new Style)
         {
-            pressedStyle_->hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 0.5f, 0.9f));
-            pressedStyle_->activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.5f, 0, 0, 0.9f));
-            pressedStyle_->normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0.5f, 0, 0.9f));
+            pressedStyle_->hotMaterial_->SetColor(Color(0, 0, 0.5f, 0.9f));
+            pressedStyle_->activeMaterial_->SetColor(Color(0.5f, 0, 0, 0.9f));
+            pressedStyle_->normalMaterial_->SetColor(Color(0, 0.5f, 0, 0.9f));
         }
 
         CheckButtonStyle::CheckButtonStyle(const CheckButtonStyle& obj)
-        : ButtonStyle(obj),
-        pressedStyle_(obj.pressedStyle_)
+            : ButtonStyle(obj),
+              pressedStyle_(obj.pressedStyle_)
         {
 
         }
-
 
         TextStyle::TextStyle()
             : textColor_(1, 1, 1, 1),
               textMaxLength_(std::numeric_limits<int>::max())
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.7f));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(1, 0, 0, 0.7f));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 1, 0, 0.7f));
+            hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
+            activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
+            normalMaterial_->SetColor(Color(0, 1, 0, 0.7f));
         }
 
         TextStyle::TextStyle(const TextStyle& obj)
             : Style(obj),
               textColor_(obj.textColor_),
-			  fontAtlasFile_(obj.fontAtlasFile_),
+              fontAtlasFile_(obj.fontAtlasFile_),
               textMaxLength_(obj.textMaxLength_)
         {
         }
@@ -233,15 +208,15 @@ namespace NSG
             : textColor_(0, 0, 0, 1),
               pixelsHeight_(25)
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.9f, 0.7f, 0.7f, 0.7f));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.7f, 0.7f, 0.7f, 1));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0.7f, 0.7f, 0.7f, 0.7f));
+            hotMaterial_->SetColor(Color(0.9f, 0.7f, 0.7f, 0.7f));
+            activeMaterial_->SetColor(Color(0.7f, 0.7f, 0.7f, 1));
+            normalMaterial_->SetColor(Color(0.7f, 0.7f, 0.7f, 0.7f));
         }
 
         TitleStyle::TitleStyle(const TitleStyle& obj)
             : Style(obj),
               pixelsHeight_(obj.pixelsHeight_),
-			  fontAtlasFile_(obj.fontAtlasFile_)
+              fontAtlasFile_(obj.fontAtlasFile_)
         {
         }
 
@@ -258,14 +233,14 @@ namespace NSG
               sizerRightBottomStyle_(new SizerStyle)
 
         {
-            hotTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
-            activeTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
-            normalTechnique_->GetPass(0)->GetMaterial()->SetColor(Color(0, 0, 1, 0.6f));
+            hotMaterial_->SetColor(Color(0, 0, 1, 0.6f));
+            activeMaterial_->SetColor(Color(0, 0, 1, 0.6f));
+            normalMaterial_->SetColor(Color(0, 0, 1, 0.6f));
         }
 
         WindowStyle::WindowStyle(const WindowStyle& obj)
             : AreaStyle(obj),
-			fontAtlasFile_(obj.fontAtlasFile_),
+              fontAtlasFile_(obj.fontAtlasFile_),
               sizerPixels_(obj.sizerPixels_),
               titleStyle_(obj.titleStyle_),
               sizerLeftTopStyle_(obj.sizerLeftTopStyle_),

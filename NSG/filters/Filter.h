@@ -37,6 +37,7 @@ namespace NSG
 		~Filter();
 		bool Render();
 		PMaterial GetMaterial() const { return pMaterial_; }
+		PTexture GetTexture() const;
 	protected:
 		PTechnique technique_;
         PMaterial pMaterial_; 

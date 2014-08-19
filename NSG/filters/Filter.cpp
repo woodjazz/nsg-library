@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Technique.h"
 #include "Pass.h"
 #include "Render2Texture.h"
+#include "Graphics.h"
 
 static const char* vShader = STRINGIFY(
                                  attribute vec4 a_position;
@@ -58,8 +59,6 @@ namespace NSG
         pRender2Texture_ = PRender2Texture(new Render2Texture(output, true, false));
 
         PPass pass(new Pass);
-        pass->Set(pMaterial_);
-        pass->Add(nullptr, pMesh_);
         technique_->Add(pass);
     }
 
@@ -79,6 +78,10 @@ namespace NSG
 
         pRender2Texture_->Begin();
 
+        Graphics::this_->Set((Node*)nullptr);
+        Graphics::this_->Set(pMesh_.get());
+        Graphics::this_->Set(pMaterial_.get());
+
         bool drawn = technique_->Render();
 
         pRender2Texture_->End();
@@ -89,5 +92,10 @@ namespace NSG
 
         return drawn;
 
+    }
+
+    PTexture Filter::GetTexture() const
+    {
+        return pRender2Texture_->GetTexture();
     }
 }

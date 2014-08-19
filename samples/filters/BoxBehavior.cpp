@@ -52,7 +52,6 @@ void BoxBehavior::Start()
 	controlPoints_.push_back(Vertex3(0.0f, 0.0f, -5.0f)); 
 
 	mesh_ = PBoxMesh(new BoxMesh(1,1,1, 2,2,2));
-
 	material_ = PMaterial(new Material);
     PProgram unlit(new ProgramUnlit);
     material_->SetProgram(unlit);
@@ -99,11 +98,6 @@ void BoxBehavior::Update()
         move += deltaTime * TWO_PI * 0.25f;  // 1/4 of a wave cycle per second
         filter_->GetMaterial()->SetShininess(move);
     }
-}
-
-void BoxBehavior::Render()
-{
-    //technique_->Render();
 }
 
 

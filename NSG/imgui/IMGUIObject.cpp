@@ -93,10 +93,12 @@ namespace NSG
             {
                 CHECK_GL_STATUS(__FILE__, __LINE__);
 
-                skin_.stencilTechnique_->GetPass(0)->SetStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
-                skin_.stencilTechnique_->GetPass(0)->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
-                skin_.stencilTechnique_->Set(node_);
-                skin_.stencilTechnique_->Render();
+                Graphics::this_->Set(skin_.stencilMaterial_.get());
+                Graphics::this_->Set(node_.get());
+
+                skin_.stencilPass_->SetStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
+                skin_.stencilPass_->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+                skin_.stencilPass_->Render();
 
                 CHECK_GL_STATUS(__FILE__, __LINE__);
             }
@@ -115,20 +117,18 @@ namespace NSG
             // stencil's reference value is clamped to the range 0 2n-1 (so negative values become 0)
             // see material->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
             CHECK_ASSERT(level_ > 0, __FILE__, __LINE__);
+            
+            Graphics::this_->Set(node_.get());
+            Graphics::this_->Set(Context::this_->controlMesh_.get());
 
-            skin_.stencilTechnique_->GetPass(0)->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-            skin_.stencilTechnique_->GetPass(0)->SetStencilFunc(GL_EQUAL, level_ - 1, ~GLuint(0));
-            skin_.stencilTechnique_->Set(node_);
-            skin_.stencilTechnique_->Render();
+            Graphics::this_->Set(skin_.stencilMaterial_.get());
+            skin_.stencilPass_->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+            skin_.stencilPass_->SetStencilFunc(GL_EQUAL, level_ - 1, ~GLuint(0));
+            skin_.stencilPass_->Render();
 
-            size_t nPasses = currentTechnique_->GetNumPasses();
-            for (size_t i = 0; i < nPasses; i++)
-            {
-                PPass pass = currentTechnique_->GetPass(i);
-                pass->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
-            }
-
-            currentTechnique_->Render();
+            Graphics::this_->Set(currentMaterial_.get());
+            style_.pass_->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+            style_.pass_->Render();
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -168,13 +168,11 @@ namespace NSG
         void Object::FixCurrentTechnique()
         {
             if (IsActive()) 
-                currentTechnique_ = style_.activeTechnique_;
+                currentMaterial_ = style_.activeMaterial_;
             else if (IsHot())
-                currentTechnique_ = style_.hotTechnique_;
+                currentMaterial_ = style_.hotMaterial_;
             else
-                currentTechnique_ = style_.normalTechnique_;
-
-            currentTechnique_->Set(node_);
+                currentMaterial_ = style_.normalMaterial_;
         }
 
         bool Object::IsMouseInArea() const

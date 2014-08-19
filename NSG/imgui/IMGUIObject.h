@@ -62,7 +62,8 @@ namespace NSG
             IdType& lastHit_;
             PNode node_;
             Vertex3 areaSize_;
-            PTechnique currentTechnique_;
+            PMaterial currentMaterial_;
+            PPass currentPass_;
             Style& style_;
 
             const float& mouseDownX_;

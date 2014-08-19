@@ -31,7 +31,7 @@ class Render2TextureBehavior : public Singleton<Render2TextureBehavior>, public 
 public:
 	Render2TextureBehavior();
 	~Render2TextureBehavior();
-	void AddPass(PPass pass);
+	void Add(PPass pass, Node* node, PMaterial material, PMesh mesh);
 
 	void Start();
 	void Update();

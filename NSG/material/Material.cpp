@@ -6,6 +6,8 @@
 #include "Texture.h"
 #include "Scene.h"
 #include "Graphics.h"
+#include "Technique.h"
+#include "Pass.h"
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
@@ -19,8 +21,10 @@ namespace NSG
           specular_(1, 1, 1, 1),
           shininess_(1),
           color_(1, 1, 1, 1),
-          enableCullFace_(false)
+          enableCullFace_(false),
+          technique_(new Technique)
     {
+        technique_->Add(PPass(new Pass));
     }
 
     Material::~Material()
