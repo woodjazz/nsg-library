@@ -177,7 +177,8 @@ namespace NSG
 
             hasLights_ = false;
 
-            const Light::Lights& ligths = Light::GetLights();
+            Scene* scene = Context::this_->scene_.get();
+            const Scene::Lights& ligths = scene->GetLights();
             size_t n = std::min(ligths.size(), MAX_LIGHTS);
 
             numOfLights_loc_ = GetUniformLocation("u_numOfLights");
@@ -322,13 +323,16 @@ namespace NSG
     {
         if (color_scene_ambient_loc_ != -1)
         {
-            if (activeScene_ != Scene::this_ || Scene::this_->UniformsNeedUpdate())
+            Scene* scene = Context::this_->scene_.get();
+            
+            if (activeScene_ != scene || scene->UniformsNeedUpdate())
             {
-                glUniform4fv(color_scene_ambient_loc_, 1, &Scene::this_->GetAmbientColor()[0]);
+                glUniform4fv(color_scene_ambient_loc_, 1, &scene->GetAmbientColor()[0]);
             }
+            
+            activeScene_ = scene;
         }
 
-        activeScene_ = Scene::this_;
     }
 
     void Program::SetVariables(Node* node)
@@ -446,7 +450,8 @@ namespace NSG
 
         if (hasLights_)
         {
-            const Light::Lights& ligths = Light::GetLights();
+            Scene* scene = Context::this_->scene_.get();
+            const Scene::Lights& ligths = scene->GetLights();
 
             size_t n = std::min(ligths.size(), MAX_LIGHTS);
 

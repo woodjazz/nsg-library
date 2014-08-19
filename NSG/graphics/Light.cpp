@@ -7,9 +7,7 @@
 
 namespace NSG
 {
-    static Light::Lights s_Lights;
-
-    Light::Light()
+     Light::Light()
         : type_(POINT),
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
@@ -19,20 +17,10 @@ namespace NSG
         attenuation_.constant = 1;
         attenuation_.linear = 0;
         attenuation_.quadratic = 0;
-
-        s_Lights.push_back(this);
     }
 
     Light::~Light()
     {
-        auto it = std::find(s_Lights.begin(), s_Lights.end(), this);
-        CHECK_ASSERT(it != s_Lights.end(), __FILE__, __LINE__);
-        s_Lights.erase(it);
-    }
-
-    const Light::Lights& Light::GetLights()
-    {
-        return s_Lights;
     }
 
     void Light::SetDiffuseColor(Color diffuse)

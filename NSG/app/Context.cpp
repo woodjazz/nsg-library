@@ -52,7 +52,6 @@ namespace NSG
     Context::~Context()
     {
 		Context::this_ = nullptr;
-        atlasManager_ = nullptr;
     }
 
 	void Context::AddObject(GPUObject* object)

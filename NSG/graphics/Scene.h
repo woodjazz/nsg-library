@@ -26,18 +26,32 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "UniformsUpdate.h"
-#include "Singleton.h"
+#include <vector>
 
 namespace NSG
 {
-	class Scene : public UniformsUpdate, public Singleton<Scene>
+	class Scene : public UniformsUpdate
 	{
 	public:
 		Scene();
 		~Scene();
 		void SetAmbientColor(Color ambient);
 		const Color& GetAmbientColor() const { return ambient_; }
+		void Add(PSceneNode node);
+		void Start();
+		void Update();
+		void Render();
+        void OnMouseMove(float x, float y);
+        void OnMouseDown(float x, float y);
+        void OnMouseUp();
+        void OnKey(int key, int action, int modifier);
+        void OnChar(unsigned int character);
+        typedef std::vector<Light*> Lights;
+		const Lights& GetLights();
+
 	private:
 		Color ambient_;
+		std::vector<PSceneNode> nodes_;
+		Lights lights_;
 	};
 }

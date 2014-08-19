@@ -34,6 +34,7 @@ namespace NSG
 	class Resource;
 	struct Context : public Singleton<Context>
 	{
+		PGraphics graphics_;
 		std::set<GPUObject*> objects_;
 		std::set<Resource*> resources_;
 		PFontAtlasTextureManager atlasManager_;
@@ -41,7 +42,6 @@ namespace NSG
 		PKeyboard keyboard_;
 		PBufferManager bufferManager_;
 		PAudio audio_;
-		PGraphics graphics_;
 		PScene scene_;
 		bool allGPUObjectAreValid_;
 
@@ -55,6 +55,7 @@ namespace NSG
 		static void RemoveResource(Resource* object);
 		void ReleaseResourcesFromMemory();
 		PTexture GetWhiteTexture();
+		void SetScene(PScene scene) { scene_ = scene; } 
 
 	private:
 		void Add(GPUObject* object);

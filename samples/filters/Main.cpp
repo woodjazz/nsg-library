@@ -42,6 +42,7 @@ struct Statistics : public AppStatistics
 
 struct Sample : App
 {
+    PScene scene_;
     Statistics statistics_;
     PCamera camera_;
     PSceneNode box_;
@@ -60,21 +61,27 @@ struct Sample : App
 
 	void Start()
 	{
+        scene_ = PScene(new Scene);
+        Context::this_->SetScene(scene_);
+        
         camera_ = PCamera(new Camera);
+        scene_->Add(camera_);
         camera_->SetPosition(Vertex3(0,0,10));
         camera_->Activate();
 
         box_ = PSceneNode(new SceneNode);
+        scene_->Add(box_);
         boxBehavior_ = new BoxBehavior;
         box_->SetBehavior(PBehavior(boxBehavior_));
         
         sphere_ = PSceneNode(new SceneNode);
+        scene_->Add(sphere_);
         sphereBehavior_ = new SphereBehavior;
         sphere_->SetBehavior(PBehavior(sphereBehavior_));
 
         showTexture_ = PShowTexture(new ShowTexture);
 
-        Behavior::StartAll();
+        scene_->Start();
         
         PMaterial depthMaterial(new Material);
         depthMaterial->SetProgram(PProgram(new ProgramWhiteColor));
@@ -129,13 +136,12 @@ struct Sample : App
 
     void Update()
     {
-        Behavior::UpdateAll();
+        scene_->Update();
     }
 
 
     void RenderFrame()
     {
-        //Behavior::RenderAll();
         technique_->Render();
         showTexture_->Show();
     }

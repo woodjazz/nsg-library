@@ -30,7 +30,7 @@ misrepresented as being the original software.
 namespace NSG
 {
 	class Scene;
-	typedef std::unique_ptr<Scene> PScene;
+	typedef std::shared_ptr<Scene> PScene;
 
 	class Graphics;
 	typedef std::unique_ptr<Graphics> PGraphics;

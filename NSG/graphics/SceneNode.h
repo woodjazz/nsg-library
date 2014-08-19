@@ -42,7 +42,7 @@ namespace NSG
 		void Set(Mesh* mesh);
 		PMesh GetMesh() const { return mesh_; }
 		void SetBehavior(PBehavior pBehavior);
-		PBehavior GetBehavior() const { return pBehavior_; }
+		Behavior* GetBehavior() const { return pBehavior_.get(); }
 		virtual void Render();
 	private:
 		PMaterial material_;

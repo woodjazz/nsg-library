@@ -53,8 +53,6 @@ namespace NSG
 		float GetSpotExponent() const { return exponent_; }
 		enum Type {POINT, DIRECTIONAL, SPOT};
 		Type GetType() const { return type_; }
-		typedef std::vector<Light*> Lights;
-		static const Lights& GetLights();
 	private:
 		Type type_;
         Color diffuse_;

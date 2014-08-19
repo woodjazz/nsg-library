@@ -32,6 +32,7 @@ using namespace NSG;
 
 struct Sample : App
 {
+    PScene scene_;
     AppStatistics statistics_;
     PCamera camera_;
     PSceneNode earth_;
@@ -45,28 +46,33 @@ struct Sample : App
 
     void Start()
     {
+        scene_ = PScene(new Scene);
+        Context::this_->SetScene(scene_);
         camera_ = PCamera(new Camera);
+        scene_->Add(camera_);
         camera_->SetBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
         earth_ = PSceneNode(new SceneNode);
+        scene_->Add(earth_);
         earth_->SetBehavior(PBehavior(new EarthBehavior));
 
         light_ = PLight(new Light);
+        scene_->Add(light_);
         light_->SetBehavior(PBehavior(new LightBehavior));
 
-        Behavior::StartAll();
+        scene_->Start();
     }
 
     void Update()
     {
-        Behavior::UpdateAll();
+        scene_->Update();
     }
 
 
     void RenderFrame()
     {
-        Behavior::RenderAll();
+        scene_->Render();
     }
 
     void RenderGUIWindow()

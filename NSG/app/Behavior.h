@@ -45,17 +45,6 @@ namespace NSG
         virtual void OnChar(unsigned int character) {}
 		void SetSceneNode(SceneNode* pSceneNode);
 		SceneNode* GetSceneNode() const { return pSceneNode_; }
-
-		static void StartAll();
-		static void UpdateAll();
-		static void RenderAll();
-		static void RenderAllBut(const Behavior* behavior);
-		static void Render2SelectAll();
-        static void OnMouseMoveAll(float x, float y);
-        static void OnMouseDownAll(float x, float y);
-        static void OnMouseUpAll();
-        static void OnKeyAll(int key, int action, int modifier);
-        static void OnCharAll(unsigned int character);
     protected:
 		SceneNode* pSceneNode_;
 	};
