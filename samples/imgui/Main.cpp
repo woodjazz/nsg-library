@@ -127,6 +127,9 @@ struct Sample : App
     Statistics statistics_;
     Window0 window0_;
 	IMGUI::PWindowStyle style_;
+    PScene scene_;
+    PCamera camera_;
+
 
     Sample()
     {
@@ -136,6 +139,10 @@ struct Sample : App
 
 	void Start()
 	{
+        scene_ = PScene(new Scene);
+        camera_ = PCamera(new Camera);
+        scene_->Add(camera_);
+        camera_->Activate();
 		if (!style_)
 		{
 			IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";

@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "AppConfiguration.h"
 #include "AppStatistics.h"
 #include "Log.h"
-#include "Camera.h"
 #include "IMGUI.h"
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
@@ -173,11 +172,7 @@ namespace NSG
         Graphics::this_->ClearAllBuffers();
         pApp_->RenderFrame();
 #if 1
-        Camera* camera(Camera::GetActiveCamera());
-
         IMGUI::Context::this_->RenderGUI();
-
-        Camera::Activate(camera);
 #endif
         Graphics::this_->EndFrame();
     }

@@ -38,7 +38,6 @@ namespace NSG
 	        PMesh controlMesh_;
 			PState state_;
 			PSkin pSkin_;
-			PCamera pCamera_;
 			PNode pCurrentNode_;
 			PNode pRootNode_;
 			PLayoutManager pLayoutManager_;

@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Types.h"
 #include "Pass.h"
+#include "Program.h"
 
 static const char* fShader = STRINGIFY(
 

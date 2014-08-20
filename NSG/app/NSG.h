@@ -68,6 +68,7 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Pass2Texture.h"
 #include "PassFilter.h"
+#include "ProgramPerVertex1PointLight.h"
 #include "ProgramPerVertex.h"
 #include "ProgramUnlit.h"
 #include "ProgramWhiteColor.h"

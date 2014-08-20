@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "FilterBlur.h"
 #include "Material.h"
 #include "Pass.h"
+#include "Program.h"
 
 static const char* fShader = STRINGIFY(
 

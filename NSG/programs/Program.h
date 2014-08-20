@@ -25,16 +25,10 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include "GLES2Includes.h"
-#include "VertexShader.h"
-#include "FragmentShader.h"
+#include "Types.h"
 #include "Resource.h"
 #include "GPUObject.h"
-#include "SharedPointers.h"
 #include "Constants.h"
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace NSG
 {

@@ -163,6 +163,9 @@ namespace NSG
 	class Program;
 	typedef std::shared_ptr<Program> PProgram;
 
+	class ProgramPerVertex1PointLight;
+	typedef std::shared_ptr<ProgramPerVertex1PointLight> PProgramPerVertex1PointLight;
+
 	class ProgramPerVertex;
 	typedef std::shared_ptr<ProgramPerVertex> PProgramPerVertex;
 

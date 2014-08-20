@@ -25,6 +25,8 @@ misrepresented as being the original software.
 */
 
 #include "Program.h"
+#include "VertexShader.h"
+#include "FragmentShader.h"
 #include "Texture.h"
 #include "Check.h"
 #include "Context.h"

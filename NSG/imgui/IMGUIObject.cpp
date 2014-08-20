@@ -33,7 +33,6 @@ misrepresented as being the original software.
 #include "FrameColorSelection.h"
 #include "Material.h"
 #include "Check.h"
-#include "Camera.h"
 #include "Graphics.h"
 #include "Keyboard.h"
 #include "Keys.h"
@@ -52,6 +51,7 @@ namespace NSG
               skin_(*Context::this_->pSkin_),
               currentWindowManager_(layoutManager_.GetCurrentWindowManager()),
               lastHit_(uistate_.lastHit_),
+              areaSize_(AREA_SCREEN_SIZE),
               mouseDownX_(uistate_.mouseDownX_),
               mouseDownY_(uistate_.mouseDownY_),
               mousex_(uistate_.mousex_),
@@ -70,7 +70,7 @@ namespace NSG
               lastwidget_(currentWindowManager_->lastwidget_),
               activeitem_needs_keyboard_(uistate_.activeitem_needs_keyboard_),
               viewSize_(App::this_->GetViewSize()),
-              style_(style)
+              style_(style)  
         {
             if (type == LayoutType::WINDOW)
                 id_ = currentWindowManager_->id_;
@@ -80,9 +80,6 @@ namespace NSG
             area_ = layoutManager_.GetAreaForControl(id_, type, percentageX, percentageY);
 
             node_ = area_->pNode_;
-
-            areaSize_ = Vertex3(Context::this_->pCamera_->GetModelViewProjection(node_.get()) * Vertex4(AREA_SCREEN_SIZE, 0));
-
 
             CHECK_ASSERT(node_, __FILE__, __LINE__);
         }
@@ -189,7 +186,6 @@ namespace NSG
         {
             if (Keyboard::this_->Disable())
             {
-                Context::this_->pCamera_->SetPosition(Vertex3(0, 0, 0));
             }
         }
 

@@ -25,16 +25,12 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include "SharedPointers.h"
-#include "GPUObject.h"
-#include "Program.h"
 #include "Types.h"
+#include "GPUObject.h"
 #include "UniformsUpdate.h"
-#include <vector>
 
 namespace NSG
 {
-	class UseMaterial;
 	class Material : public GPUObject, UniformsUpdate
 	{
 	public:
@@ -72,10 +68,7 @@ namespace NSG
         float shininess_;
         Color color_;
         bool enableCullFace_;
-
         PTechnique technique_;
-
-		friend class UseMaterial;
-		friend class Program;
+        friend class Program;
 	};
 }

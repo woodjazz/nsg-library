@@ -35,7 +35,6 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Material.h"
 #include "Keys.h"
-#include "Camera.h"
 #include "Keyboard.h"
 #include "Graphics.h"
 
@@ -70,9 +69,7 @@ namespace NSG
         bool Text::OnActive()
         {
             //Calculates cursor's position after click
-            Vertex4 worldPos = node_->GetGlobalModelMatrix() * Vertex4(-1, 0, 0, 1); //left border in world coords
-            Vertex3 screenPos = Context::this_->pCamera_->WorldToScreen(Vertex3(worldPos)); //left border in screen coords
-            float mouseRelPosX(uistate_.mousex_ - screenPos.x);
+            float mouseRelPosX(uistate_.mousex_);
             float textEndRelPosX = pTextMesh_->GetWidth();
             float mouseTotalX = mouseRelPosX  + area_->textOffsetX_;
             if (mouseTotalX > textEndRelPosX)
@@ -97,11 +94,6 @@ namespace NSG
 
             if (needsKeyboard && Keyboard::this_->Enable())
             {
-                Vertex4 worldPos = node_->GetGlobalModelMatrix() * Vertex4(0, -1, 0, 1); //bottom border in world coords
-                Vertex3 screenPos = Context::this_->pCamera_->WorldToScreen(Vertex3(worldPos)); //bottom border in screen coords
-
-                Vertex3 position(0, screenPos.y, 0);
-                Context::this_->pCamera_->SetPosition(position);
             }
 
             return Object::OnFocus(needsKeyboard);
@@ -148,7 +140,6 @@ namespace NSG
 
             case NSG_KEY_ENTER:
                 Keyboard::this_->Disable();
-                Context::this_->pCamera_->SetPosition(Vertex3(0, 0, 0));
                 break;
             }
         }
@@ -252,6 +243,7 @@ namespace NSG
                 pass.EnableStencilTest(true);
                 pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
                 pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
+                pass.SetProgram(pCursorMesh_->GetProgram());
                 pass.Render();
             }
         }

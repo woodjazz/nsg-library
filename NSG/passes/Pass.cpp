@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Frustum.h"
 #include "Context.h"
+#include "Program.h"
 
 namespace NSG
 {

@@ -23,38 +23,15 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "LightBehavior.h"
+#pragma once
+#include "Program.h"
 
-LightBehavior::LightBehavior()
+namespace NSG 
 {
+	class ProgramPerVertex1PointLight : public Program
+	{
+	public:
+		ProgramPerVertex1PointLight();
+		~ProgramPerVertex1PointLight();
+	};
 }
-
-LightBehavior::~LightBehavior()
-{
-
-}
-
-void LightBehavior::Start()
-{
-    PMaterial pMaterial(new Material);
-    pMaterial->SetColor(Color(1,0,0,1));
-    PProgram pProgram(new ProgramSimpleColor);
-    PTechnique technique(new Technique);
-    PPass pass(new Pass);
-    technique->Add(pass);
-    pass->SetProgram(pProgram);
-    pMaterial->SetTechnique(technique);
-
-    pSceneNode_->Set(pMaterial);
-    
-    PMesh pMesh(new SphereMesh(0.2f, 16));
-    pSceneNode_->Set(pMesh);
-
-    pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
-}
-
-void LightBehavior::Render()
-{
-    pSceneNode_->Render();
-}
-

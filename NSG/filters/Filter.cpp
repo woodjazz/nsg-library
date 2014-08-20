@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Render2Texture.h"
 #include "Graphics.h"
+#include "Program.h"
 
 static const char* vShader = STRINGIFY(
                                  void main()

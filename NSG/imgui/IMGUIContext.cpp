@@ -54,16 +54,11 @@ namespace NSG
               controlMesh_(new PlaneMesh(2, 2, 2, 2)),
               state_(new State),
               pSkin_(new Skin),
-              pCamera_(new Camera),
               pCurrentNode_(new Node),
               pRootNode_(new Node),
               pLayoutManager_(new LayoutManager(pRootNode_)),
               transparentAreaStyle_(new AreaStyle)
         {
-            pCamera_->EnableOrtho();
-            pCamera_->SetFarClip(1000000);
-            pCamera_->SetNearClip(-1000000);
-
             transparentAreaStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
@@ -81,14 +76,17 @@ namespace NSG
 
         void Context::RenderGUI()
         {
+            Camera* camera = Camera::Deactivate();    
+
             state_->Begin();
 
-            pCamera_->Activate();
             pCurrentNode_ = pRootNode_;
 
             pLayoutManager_->Render();
 
             state_->End();
+
+            Camera::Activate(camera);
         }
 
         IdType Context::GetValidId()
