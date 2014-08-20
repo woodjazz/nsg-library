@@ -28,8 +28,6 @@ misrepresented as being the original software.
 #include "Types.h"
 
 static const char* vShader = STRINGIFY(
-    uniform mat4 u_mvp;
-	attribute vec4 a_position;
 
 	void main()
 	{
@@ -38,6 +36,7 @@ static const char* vShader = STRINGIFY(
 );
 
 static const char* fShader = STRINGIFY(
+	
 	void main()
 	{
 		gl_FragColor = vec4(1,1,1,1);

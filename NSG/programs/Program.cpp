@@ -50,11 +50,14 @@ misrepresented as being the original software.
 static const char s_fragmentShaderHeader[] =
 {
 #include "FragmentCompatibility.h"
+#include "UniformsCompatibility.h"
 };
 
 static const char s_vertexShaderHeader[] =
 {
 #include "VertexCompatibility.h"
+#include "UniformsCompatibility.h"
+#include "AttributesCompatibility.h"
 };
 
 namespace NSG

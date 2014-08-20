@@ -29,9 +29,6 @@ misrepresented as being the original software.
 
 static const char* fShader = STRINGIFY(
 
-	varying vec2 v_texcoord;
-	uniform sampler2D u_texture0;
-
 	uniform vec2 u_texelSize;
 	uniform int u_orientation;
 	uniform int u_blurAmount;

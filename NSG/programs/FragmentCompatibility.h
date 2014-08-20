@@ -12,3 +12,8 @@
 "#define mediump\n"
 "#define highp  \n"
 #endif
+"varying vec4 v_color;\n"
+"varying vec3 v_normal;\n"
+"varying vec2 v_texcoord;\n"
+"uniform sampler2D u_texture0;\n"
+"uniform sampler2D u_texture1;\n"

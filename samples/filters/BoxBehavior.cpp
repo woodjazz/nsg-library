@@ -26,15 +26,6 @@ misrepresented as being the original software.
 #include "BoxBehavior.h"
 
 static const char* fShader = STRINGIFY(
-    uniform sampler2D u_texture0;
-    varying vec2 v_texcoord;
-
-    struct Material
-    {
-        float shininess;
-    };
-
-    uniform Material u_material;
 
     void main()
     {

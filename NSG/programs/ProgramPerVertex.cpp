@@ -28,51 +28,7 @@ misrepresented as being the original software.
 #include "Types.h"
 
 static const char* vShader = STRINGIFY(
-
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	attribute vec3 a_normal;
-	attribute vec4 a_color;
-	
-	struct LightSource
-	{
-		int type;
-		vec3 position;
-		vec4 diffuse;
-		vec4 specular;
-		float constantAttenuation;
-        float linearAttenuation;
-        float quadraticAttenuation;
-		float spotCutoff;
-        float spotExponent;
-		vec3 spotDirection;
-	};
-
-	struct Material
-	{
-		vec4 ambient;
-		vec4 diffuse;
-		vec4 specular;
-		float shininess;
-	};
-
-	const int POINT_LIGHT = 0;
-	const int DIRECTIONAL_LIGHT = 1;
-	const int SPOT_LIGHT = 2;
-    
-    uniform int u_numOfLights;
-	uniform LightSource u_light0;
-	uniform Material u_material;
-	uniform mat4 u_m;
-    uniform mat4 u_mvp;
-	uniform mat3 u_model_inv_transp;
-	uniform mat4 u_v_inv;
-	uniform vec4 u_scene_ambient;
-	
-	varying vec4 v_color;
-    varying vec4 v_vertex_color;
-	varying vec2 v_texcoord;
-
+		
 	void main()
 	{
 		vec3 normalDirection = normalize(u_model_inv_transp * a_normal);
@@ -135,21 +91,17 @@ static const char* vShader = STRINGIFY(
 			}	
 		}
 		
-		v_color = vec4(ambientLighting + diffuseReflection + specularReflection, u_material.diffuse.w);
+		v_color = a_color * vec4(ambientLighting + diffuseReflection + specularReflection, u_material.diffuse.w);
 		gl_Position = u_mvp * a_position;
 		v_texcoord = a_texcoord;
-		v_vertex_color = a_color;
 	}
 );
 
 static const char* fShader = STRINGIFY(
-	varying vec4 v_vertex_color;
-	varying vec4 v_color;
-	varying vec2 v_texcoord;
-	uniform sampler2D u_texture0;
+
 	void main()
 	{
-		gl_FragColor = v_color * texture2D(u_texture0, v_texcoord) * v_vertex_color;
+		gl_FragColor = v_color * texture2D(u_texture0, v_texcoord);
 	}
 );
 

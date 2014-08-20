@@ -33,23 +33,16 @@ misrepresented as being the original software.
 #include "App.h"
 #include <algorithm>
 
-static const char* vShader = STRINGIFY(
-                                 uniform mat4 u_mvp;
-                                 attribute vec4 a_position;
-                                 attribute vec2 a_texcoord;
-                                 varying vec2 v_texcoord;
-
-                                 void main()
+static const char* vShader =
+    STRINGIFY(
+        void main()
 {
     gl_Position = u_mvp * a_position;
     v_texcoord = a_texcoord;
 }
-                             );
+    );
 
 static const char* fShader = STRINGIFY(
-                                 varying vec2 v_texcoord;
-                                 uniform sampler2D u_texture0;
-                                 uniform vec4 u_color;
                                  void main()
 {
     gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a) * vec4(u_color.x, u_color.y, u_color.z, 1.0);
@@ -76,7 +69,7 @@ namespace NSG
 
     TextMesh::~TextMesh()
     {
-    	App::Remove(this);
+        App::Remove(this);
     }
 
     bool TextMesh::Has(const std::string& textureFilename) const

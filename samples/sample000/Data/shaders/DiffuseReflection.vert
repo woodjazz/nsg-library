@@ -1,32 +1,3 @@
-struct LightSource
-{
-	int type;
-	vec3 position;
-	vec4 diffuse;
-	float constantAttenuation, linearAttenuation, quadraticAttenuation;
-	float spotCutoff, spotExponent;
-	vec3 spotDirection;
-};
-
-struct Material
-{
-	vec4 diffuse;
-};
-
-#define POINT_LIGHT 0
-#define DIRECTIONAL_LIGHT 1
-#define SPOT_LIGHT 2
-
-uniform LightSource u_light0;
-uniform Material u_material;
-uniform mat4 u_m, u_mvp;
-uniform mat3 u_model_inv_transp;
-attribute vec2 a_texcoord;
-attribute vec4 a_position;
-attribute vec3 a_normal;
-
-varying vec4 v_color;
-varying vec2 v_texcoord;
 
 void main()
 {

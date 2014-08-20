@@ -29,6 +29,7 @@ CameraBehavior::CameraBehavior()
 {
 }
 	
+    
 CameraBehavior::~CameraBehavior()
 {
 }

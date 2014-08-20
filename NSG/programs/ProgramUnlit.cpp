@@ -28,30 +28,20 @@ misrepresented as being the original software.
 #include "Types.h"
 
 static const char* vShader = STRINGIFY(
-    uniform mat4 u_mvp;
-    attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	attribute vec4 a_color;
-
-    varying vec4 v_vertex_color;
-	varying vec2 v_texcoord;
 
 	void main()
 	{
 		gl_Position = u_mvp * a_position;
 		v_texcoord = a_texcoord;
-		v_vertex_color = a_color;
+		v_color = a_color * u_color;
 	}
 );
 
 static const char* fShader = STRINGIFY(
-	varying vec4 v_vertex_color;
-	varying vec2 v_texcoord;
-	uniform sampler2D u_texture0;
-	uniform vec4 u_color;
+
 	void main()
 	{
-		gl_FragColor = texture2D(u_texture0, v_texcoord) * v_vertex_color * u_color;
+		gl_FragColor = texture2D(u_texture0, v_texcoord) * v_color;
 	}
 );
 

@@ -28,10 +28,6 @@ misrepresented as being the original software.
 #include "Types.h"
 
 static const char* vShader = STRINGIFY(
-    uniform mat4 u_mvp;
-	attribute vec2 a_texcoord;
-	attribute vec4 a_position;
-	varying vec2 v_texcoord;
 
 	void main()
 	{
@@ -41,9 +37,7 @@ static const char* vShader = STRINGIFY(
 );
 
 static const char* fShader = STRINGIFY(
-	varying vec2 v_texcoord;
-	uniform sampler2D u_texture0;
-	uniform vec4 u_color;
+
 	void main()
 	{
 		vec4 textColor = texture2D(u_texture0, v_texcoord);

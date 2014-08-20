@@ -33,9 +33,6 @@ misrepresented as being the original software.
 #include "Graphics.h"
 
 static const char* vShader = STRINGIFY(
-	attribute vec4 a_position;
-	attribute vec2 a_texcoord;
-	varying vec2 v_texcoord;
 
 	void main()
 	{
@@ -45,8 +42,7 @@ static const char* vShader = STRINGIFY(
 );
 
 static const char* fShader = STRINGIFY(
-	uniform sampler2D u_texture0;
-	varying vec2 v_texcoord;
+
 	void main()
 	{
 		gl_FragColor = texture2D(u_texture0, v_texcoord);
@@ -54,8 +50,6 @@ static const char* fShader = STRINGIFY(
 );
 
 static const char* fFontShader = STRINGIFY(
-	uniform sampler2D u_texture0;
-	varying vec2 v_texcoord;
 	void main()
 	{
         gl_FragColor = vec4(1, 1, 1, texture2D(u_texture0, v_texcoord).a);
