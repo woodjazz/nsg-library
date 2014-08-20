@@ -63,7 +63,7 @@ namespace NSG
             }
 
             PProgram program(new ProgramWhiteColor);
-            stencilMaterial_->SetProgram(program);
+            stencilPass_->SetProgram(program);
             stencilPass_->EnableDepthTest(false);
             stencilPass_->EnableDepthBuffer(false);
             stencilPass_->EnableStencilTest(true);

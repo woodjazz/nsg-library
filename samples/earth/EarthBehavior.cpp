@@ -45,7 +45,11 @@ void EarthBehavior::Start()
 	PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
 	PMaterial pMaterial(new Material);
 	PProgram perVertex(new ProgramPerVertex);
-	pMaterial->SetProgram(perVertex);
+    PTechnique technique(new Technique);
+    PPass pass(new Pass);
+    technique->Add(pass);
+	pass->SetProgram(perVertex);
+    pMaterial->SetTechnique(technique);
 	pMaterial->SetTexture0(pEarthTexture);
 	pMaterial->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));

@@ -96,11 +96,12 @@ namespace NSG
             pass.EnableStencilTest(true);
             pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             pass.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+            pass.SetProgram(pTextMesh_->GetProgram());
 
             Material textMaterial;
             textMaterial.SetColor(labelStyle_.textColor_);
             textMaterial.SetTexture0(pTextMesh_->GetTexture());
-            textMaterial.SetProgram(pTextMesh_->GetProgram());
+            
             
             Graphics::this_->Set(&textMaterial);
 

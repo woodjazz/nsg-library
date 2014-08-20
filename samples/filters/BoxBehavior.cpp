@@ -53,8 +53,6 @@ void BoxBehavior::Start()
 
 	mesh_ = PBoxMesh(new BoxMesh(1,1,1, 2,2,2));
 	material_ = PMaterial(new Material);
-    PProgram unlit(new ProgramUnlit);
-    material_->SetProgram(unlit);
     PTexture texture(new TextureFile("data/cube.png"));
 	material_->SetTexture0(texture);
 

@@ -21,10 +21,8 @@ namespace NSG
           specular_(1, 1, 1, 1),
           shininess_(1),
           color_(1, 1, 1, 1),
-          enableCullFace_(false),
-          technique_(new Technique)
+          enableCullFace_(false)
     {
-        technique_->Add(PPass(new Pass));
     }
 
     Material::~Material()
@@ -38,7 +36,7 @@ namespace NSG
         {
             pTexture0_ = obj.pTexture0_;
             pTexture1_ = obj.pTexture1_;
-            pProgram_ = obj.pProgram_;
+            technique_ = obj.technique_;
             ambient_ = obj.ambient_;
             diffuse_ = obj.diffuse_;
             specular_ = obj.specular_;
@@ -104,17 +102,6 @@ namespace NSG
         }
     }
 
-    void Material::SetProgram(PProgram pProgram)
-    {
-        if (pProgram_ != pProgram)
-        {
-            pProgram_ = pProgram;
-            SetUniformsNeedUpdate();
-            Invalidate();
-
-        }
-    }
-
     void Material::SetTexture0(PTexture pTexture)
     {
         if (pTexture0_ != pTexture)
@@ -137,35 +124,24 @@ namespace NSG
 
     bool Material::IsValid()
     {
-        bool isReady = pProgram_ && pProgram_->IsReady();
+        bool isReady = false;
 
-        if (isReady)
+        if (pTexture0_)
         {
-            if (pTexture0_)
-            {
-                isReady = pTexture0_->IsReady();
-            }
-            else
-            {
-                pTexture0_ = Context::this_->GetWhiteTexture();
-                isReady = pTexture0_->IsReady();
-            }
+            isReady = pTexture0_->IsReady();
+        }
+        else
+        {
+            pTexture0_ = Context::this_->GetWhiteTexture();
+            isReady = pTexture0_->IsReady();
+        }
 
-            if (isReady && pTexture1_)
-            {
-                isReady = pTexture1_->IsReady();
-            }
+        if (isReady && pTexture1_)
+        {
+            isReady = pTexture1_->IsReady();
         }
 
         return isReady;
-    }
-
-    void Material::AllocateResources()
-    {
-    }
-
-    void Material::ReleaseResources()
-    {
     }
 
     void Material::Use()

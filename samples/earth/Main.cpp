@@ -48,7 +48,6 @@ struct Sample : App
     void Start()
     {
         scene_ = PScene(new Scene);
-        Context::this_->SetScene(scene_);
 
         camera_ = PCamera(new Camera);
         camera_->SetBehavior(PBehavior(new CameraBehavior));

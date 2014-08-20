@@ -27,30 +27,6 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-static const char* vShader = STRINGIFY(
-    uniform mat4 u_mvp;
-    attribute vec2 a_texcoord;
-    attribute vec4 a_position;
-    varying vec2 v_texcoord;
-
-    void main()
-    {
-        gl_Position = u_mvp * a_position;
-        v_texcoord = a_texcoord;
-    }
-);
-
-static const char* fShader = STRINGIFY(
-    varying vec2 v_texcoord;
-    uniform sampler2D u_texture0;
-    uniform vec4 u_color;
-    void main()
-    {
-        gl_FragColor = texture2D(u_texture0, v_texcoord) * u_color;
-    }
-);
-
-
 struct Window0 : IMGUI::IWindow
 {
     int fontSize_;
@@ -111,8 +87,6 @@ struct Statistics : public AppStatistics
     PTexture newTexture_;
     PTexture oldTexture_;
     PMaterial material_;
-    PProgram oldProgram_;
-    PProgram newProgram_;
     Color color_;
 
 
@@ -130,15 +104,11 @@ struct Statistics : public AppStatistics
 			IMGUISkin()->windowStyle_->hotMaterial_ = material_;
 
             newTexture_ = PTexture(new TextureFile("data/blackBump.png"));
-            newProgram_ = PProgram(new Program(vShader, fShader));
-
             oldTexture_ = material_->GetTexture0();
-            oldProgram_ = material_->GetProgram();
             color_ = material_->GetColor();
       }
 
-        material_->SetProgram(newProgram_);        
-        material_->SetTexture0(newTexture_);  
+        material_->SetTexture0(newTexture_);
         material_->SetColor(Color(1,1,1,1));
 #endif
     }
@@ -147,7 +117,6 @@ struct Statistics : public AppStatistics
     {
 #if 1
         material_->SetTexture0(oldTexture_);  
-        material_->SetProgram(oldProgram_);
         material_->SetColor(color_);
 #endif
     }

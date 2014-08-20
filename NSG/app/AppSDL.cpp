@@ -232,6 +232,11 @@ namespace NSG
         {
             app->RenderFrame();
             SDL_GL_SwapWindow(win);
+            if (app->ShallExit())
+            {
+                SDL_Quit();
+                exit(0); //force quit on IOS
+            }
         }
 #endif
     }
@@ -261,7 +266,7 @@ namespace NSG
         const int STENCIL_SIZE = 8;
         const int CONTEXT_MAJOR_VERSION = 2;
         const int CONTEXT_MINOR_VERSION = 0;
-        
+
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, CONTEXT_MAJOR_VERSION);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CONTEXT_MINOR_VERSION);
 

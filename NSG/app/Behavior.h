@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
 
 namespace NSG 
 {
@@ -38,11 +37,6 @@ namespace NSG
 		virtual void Start() {}
 		virtual void Update() {}
 		virtual void Render() {};
-        virtual void OnMouseMove(float x, float y) {}
-        virtual void OnMouseDown(float x, float y) {}
-        virtual void OnMouseUp() {}
-        virtual void OnKey(int key, int action, int modifier) {}
-        virtual void OnChar(unsigned int character) {}
 		void SetSceneNode(SceneNode* pSceneNode);
 		SceneNode* GetSceneNode() const { return pSceneNode_; }
     protected:

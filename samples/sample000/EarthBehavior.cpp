@@ -46,7 +46,8 @@ void EarthBehavior::Start()
 	PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
 	PMaterial pMaterial(new Material ());
 	PProgram perVertex(new ProgramPerVertex);
-	pMaterial->SetProgram(perVertex);
+    PPass pass(new Pass);
+	pass->SetProgram(perVertex);
 	pMaterial->SetTexture0(pEarthTexture);
 	pMaterial->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
 	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
@@ -56,7 +57,7 @@ void EarthBehavior::Start()
 
     pSceneNode_->SetPosition(Vertex3(5, 0, 0));
     
-    Render2TextureBehavior::this_->Add(PPass(new Pass), pSceneNode_, pMaterial, mesh);
+    Render2TextureBehavior::this_->Add(pass, pSceneNode_, pMaterial, mesh);
 }
 
 void EarthBehavior::Update()

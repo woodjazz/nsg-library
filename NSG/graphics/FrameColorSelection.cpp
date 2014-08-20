@@ -48,10 +48,12 @@ namespace NSG
           createDepthBuffer_(createDepthBuffer),
           createDepthStencilBuffer_(createDepthStencilBuffer)
     {
-        Program *program = new ProgramColorSelection;
-        material_->SetProgram(PProgram(program));
-        PTechnique technique(new Technique);
+        
         PPass pass(new Pass);
+        Program* program = new ProgramColorSelection;
+        pass->SetProgram(PProgram(program));
+
+        PTechnique technique(new Technique);
         technique->Add(pass);
         material_->SetTechnique(technique);
         pass->SetBlendMode(BLEND_NONE);

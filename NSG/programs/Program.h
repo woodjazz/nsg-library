@@ -54,9 +54,9 @@ namespace NSG
         }
         GLuint GetAttributeLocation(const std::string& name);
         GLuint GetUniformLocation(const std::string& name);
-        virtual bool IsValid();
-        virtual void AllocateResources();
-        virtual void ReleaseResources();
+        virtual bool IsValid() override;
+        virtual void AllocateResources() override;
+        virtual void ReleaseResources() override;
         GLuint GetAttPositionLoc() const
         {
             return att_position_loc_;
@@ -141,6 +141,7 @@ namespace NSG
         Matrix4 activeNodeGlobalModel_;
         Scene* activeScene_;
         Light* activeLights_[MAX_LIGHTS];
+        Color sceneColor_;
 
         friend class UseProgram;
     };

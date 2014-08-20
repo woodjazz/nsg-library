@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Behavior.h"
-#include "App.h"
 #include "Check.h"
 
 namespace NSG 

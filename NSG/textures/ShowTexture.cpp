@@ -66,8 +66,8 @@ static const char* fFontShader = STRINGIFY(
 namespace NSG
 {
 	ShowTexture::ShowTexture()
-	: material_(new Material),
-    pass_(new Pass),
+	: pass_(new Pass),
+    material_(new Material),
 	mesh_(new PlaneMesh(2, 2, 2, 2))
 	{
 		pass_->EnableDepthTest(false);
@@ -97,14 +97,14 @@ namespace NSG
 	void ShowTexture::SetNormal(PTexture texture)
 	{
 		PProgram pProgram(new Program(vShader, fShader));
-		material_->SetProgram(pProgram);
+		pass_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}
 
 	void ShowTexture::SetFont(PTexture texture)
 	{
 		PProgram pProgram(new Program(vShader, fFontShader));
-		material_->SetProgram(pProgram);
+		pass_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}
 

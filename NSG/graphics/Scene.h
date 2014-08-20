@@ -41,11 +41,6 @@ namespace NSG
 		void Start();
 		void Update();
 		void Render();
-        void OnMouseMove(float x, float y);
-        void OnMouseDown(float x, float y);
-        void OnMouseUp();
-        void OnKey(int key, int action, int modifier);
-        void OnChar(unsigned int character);
         typedef std::vector<Light*> Lights;
 		const Lights& GetLights();
 

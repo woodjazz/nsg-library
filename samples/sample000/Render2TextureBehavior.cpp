@@ -39,21 +39,23 @@ Render2TextureBehavior::~Render2TextureBehavior()
 void Render2TextureBehavior::Start()
 {
     PMaterial material(new Material);
+    PTechnique technique(new Technique);
+    material->SetTechnique(technique);
     pSceneNode_->Set(material);
     
     pRenderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
     pass_ = PPass2Texture(new Pass2Texture(pRenderedTexture_, true, false));
-    material->GetTechnique()->SetPass(0, pass_);
+    technique->Add(pass_);
 
     pFilteredTexture_ = PTexture(new TextureMemory(GL_RGBA, 16, 16, nullptr));
     PFilter blurFilter(new FilterBlur(pRenderedTexture_, pFilteredTexture_));
     PPassFilter passBlur(new PassFilter(blurFilter));
-    material->GetTechnique()->Add(passBlur);
+    technique->Add(passBlur);
 
     pBlendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
     PFilter blendFilter(new FilterBlend(pFilteredTexture_, pRenderedTexture_, pBlendedTexture_));
     PPassFilter passBlend(new PassFilter(blendFilter));
-    material->GetTechnique()->Add(passBlend);
+    technique->Add(passBlend);
 
     showTexture_ = PShowTexture(new ShowTexture);
     showTexture_->SetNormal(pBlendedTexture_);

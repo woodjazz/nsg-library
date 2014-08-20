@@ -2,6 +2,7 @@
 #include "SceneNode.h"
 #include "Behavior.h"
 #include "Light.h"
+#include "Context.h"
 
 namespace NSG
 {
@@ -55,61 +56,13 @@ namespace NSG
 
     void Scene::Render()
     {
+        Context::this_->SetScene(this);
+
         for (auto& obj : nodes_)
         {
             Behavior* behavior = obj->GetBehavior();
             if(behavior)
                 behavior->Render();
-        }
-    }
-
-    void Scene::OnMouseMove(float x, float y)
-    {
-        for (auto& obj : nodes_)
-        {
-            Behavior* behavior = obj->GetBehavior();
-            if(behavior)
-                behavior->OnMouseMove(x, y);
-        }
-    }
-
-    void Scene::OnMouseDown(float x, float y)
-    {
-        for (auto& obj : nodes_)
-        {
-            Behavior* behavior = obj->GetBehavior();
-            if(behavior)
-                behavior->OnMouseDown(x, y);
-        }
-    }
-
-    void Scene::OnMouseUp()
-    {
-        for (auto& obj : nodes_)
-        {
-            Behavior* behavior = obj->GetBehavior();
-            if(behavior)
-                behavior->OnMouseUp();
-        }
-    }
-
-    void Scene::OnKey(int key, int action, int modifier)
-    {
-        for (auto& obj : nodes_)
-        {
-            Behavior* behavior = obj->GetBehavior();
-            if(behavior)
-                behavior->OnKey(key, action, modifier);
-        }
-    }
-
-    void Scene::OnChar(unsigned int character)
-    {
-        for (auto& obj : nodes_)
-        {
-            Behavior* behavior = obj->GetBehavior();
-            if(behavior)
-                behavior->OnChar(character);
         }
     }
 

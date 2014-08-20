@@ -223,17 +223,18 @@ namespace NSG
             Graphics::this_->Set(pTextMesh_.get());
 
             Pass pass;
-            Material textMaterial;
-            textMaterial.SetColor(textStyle_.textColor_);
             pass.EnableDepthTest(false);
             pass.EnableStencilTest(true);
-			textMaterial.SetTexture0(pTextMesh_->GetTexture());
-            textMaterial.SetProgram(pTextMesh_->GetProgram());
+            pass.SetProgram(pTextMesh_->GetProgram());
             size_t level = Context::this_->pLayoutManager_->GetNestingLevel();
             pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 
+            Material textMaterial;
+            textMaterial.SetColor(textStyle_.textColor_);
+			textMaterial.SetTexture0(pTextMesh_->GetTexture());
             Graphics::this_->Set(&textMaterial);
+            
             pass.Render();
 
             // Render cursor if we have keyboard focus

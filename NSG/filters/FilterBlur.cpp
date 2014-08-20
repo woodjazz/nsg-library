@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "FilterBlur.h"
 #include "Material.h"
+#include "Pass.h"
 
 static const char* fShader = STRINGIFY(
 
@@ -108,7 +109,7 @@ namespace NSG
 	blurScale_(4),
 	blurStrength_(0.2f)
 	{
-        pMaterial_->GetProgram()->Set(this);
+        pass_->GetProgram()->Set(this);
 	}
 
 	FilterBlur::~FilterBlur()
@@ -118,7 +119,7 @@ namespace NSG
 
 	void FilterBlur::SetLocations()
 	{
-		PProgram program = pMaterial_->GetProgram();
+		PProgram program = pass_->GetProgram();
 
 		texelSize_loc_ = program->GetUniformLocation("u_texelSize");
 		orientation_loc_ = program->GetUniformLocation("u_orientation");

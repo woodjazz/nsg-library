@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "Material.h"
 #include "Types.h"
+#include "Pass.h"
 
 static const char* fShader = STRINGIFY(
 
@@ -80,7 +81,7 @@ namespace NSG
 	blendMode_(0)
 	{
 		pMaterial_->SetTexture1(input1);
-        pMaterial_->GetProgram()->Set(this);
+        pass_->GetProgram()->Set(this);
 	}
 
 	FilterBlend::~FilterBlend()
@@ -90,7 +91,7 @@ namespace NSG
 
 	void FilterBlend::SetLocations()
 	{
-		PProgram program = pMaterial_->GetProgram();
+		PProgram program = pass_->GetProgram();
 
 		blendMode_loc_ = program->GetUniformLocation("u_blendMode");
 	}

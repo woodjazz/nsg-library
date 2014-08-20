@@ -52,8 +52,6 @@ struct Test : public App
 		camera_ = PCamera(new Camera);
         camera_->EnableOrtho();
 		camera_->Activate();
-
-		Behavior::StartAll();
 	}
 
 	void RenderFrame() override

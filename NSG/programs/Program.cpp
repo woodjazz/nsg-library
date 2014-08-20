@@ -85,7 +85,8 @@ namespace NSG
           activeCamera_(nullptr),
           activeMaterial_(nullptr),
           neverUsed_(true),
-          activeNode_(nullptr)
+          activeNode_(nullptr),
+          sceneColor_(-1)
     {
         memset(&activeLights_[0], 0, sizeof(activeLights_));
         CHECK_ASSERT(pRVShader &&  pRFShader, __FILE__, __LINE__);
@@ -120,7 +121,8 @@ namespace NSG
           neverUsed_(true),
           activeMaterial_(nullptr),
           activeNode_(nullptr),
-          activeScene_(nullptr)
+          activeScene_(nullptr),
+          sceneColor_(-1)
     {
         CHECK_ASSERT(vShader && fShader, __FILE__, __LINE__);
     }
@@ -177,38 +179,41 @@ namespace NSG
 
             hasLights_ = false;
 
-            Scene* scene = Context::this_->scene_.get();
-            const Scene::Lights& ligths = scene->GetLights();
-            size_t n = std::min(ligths.size(), MAX_LIGHTS);
-
-            numOfLights_loc_ = GetUniformLocation("u_numOfLights");
-
-            for (size_t i = 0; i < n; i++)
+            Scene* scene = Context::this_->scene_;
+            if(scene)
             {
-                std::stringstream u_light_index;
-                u_light_index << "u_light" << i << ".";
+                const Scene::Lights& ligths = scene->GetLights();
+                size_t n = std::min(ligths.size(), MAX_LIGHTS);
 
-                lightsLoc_[i].type_loc = GetUniformLocation(u_light_index.str() + "type");
+                numOfLights_loc_ = GetUniformLocation("u_numOfLights");
 
-                if (lightsLoc_[i].type_loc == -1)
+                for (size_t i = 0; i < n; i++)
                 {
-                    break;
+                    std::stringstream u_light_index;
+                    u_light_index << "u_light" << i << ".";
+
+                    lightsLoc_[i].type_loc = GetUniformLocation(u_light_index.str() + "type");
+
+                    if (lightsLoc_[i].type_loc == -1)
+                    {
+                        break;
+                    }
+
+                    lightsLoc_[i].position_loc = GetUniformLocation(u_light_index.str() + "position");
+                    lightsLoc_[i].diffuse_loc = GetUniformLocation(u_light_index.str() + "diffuse");
+                    lightsLoc_[i].specular_loc = GetUniformLocation(u_light_index.str() + "specular");
+                    lightsLoc_[i].constantAttenuation_loc = GetUniformLocation(u_light_index.str() + "constantAttenuation");
+                    lightsLoc_[i].linearAttenuation_loc = GetUniformLocation(u_light_index.str() + "linearAttenuation");
+                    lightsLoc_[i].quadraticAttenuation_loc = GetUniformLocation(u_light_index.str() + "quadraticAttenuation");
+                    lightsLoc_[i].spotCutoff_loc = GetUniformLocation(u_light_index.str() + "spotCutoff");
+                    lightsLoc_[i].spotExponent_loc = GetUniformLocation(u_light_index.str() + "spotExponent");
+                    lightsLoc_[i].spotDirection_loc = GetUniformLocation(u_light_index.str() + "spotDirection");
                 }
 
-                lightsLoc_[i].position_loc = GetUniformLocation(u_light_index.str() + "position");
-                lightsLoc_[i].diffuse_loc = GetUniformLocation(u_light_index.str() + "diffuse");
-                lightsLoc_[i].specular_loc = GetUniformLocation(u_light_index.str() + "specular");
-                lightsLoc_[i].constantAttenuation_loc = GetUniformLocation(u_light_index.str() + "constantAttenuation");
-                lightsLoc_[i].linearAttenuation_loc = GetUniformLocation(u_light_index.str() + "linearAttenuation");
-                lightsLoc_[i].quadraticAttenuation_loc = GetUniformLocation(u_light_index.str() + "quadraticAttenuation");
-                lightsLoc_[i].spotCutoff_loc = GetUniformLocation(u_light_index.str() + "spotCutoff");
-                lightsLoc_[i].spotExponent_loc = GetUniformLocation(u_light_index.str() + "spotExponent");
-                lightsLoc_[i].spotDirection_loc = GetUniformLocation(u_light_index.str() + "spotDirection");
-            }
-
-            if (lightsLoc_[0].type_loc != -1)
-            {
-                hasLights_ = true;
+                if (lightsLoc_[0].type_loc != -1)
+                {
+                    hasLights_ = true;
+                }
             }
 
             Graphics::this_->SetProgram(this);
@@ -243,6 +248,7 @@ namespace NSG
         activeMaterial_ = nullptr;
         activeNode_ = nullptr;
         activeScene_ = nullptr;
+        sceneColor_ = Color(-1);
         memset(&activeLights_[0], 0, sizeof(activeLights_));
     }
 
@@ -323,16 +329,23 @@ namespace NSG
     {
         if (color_scene_ambient_loc_ != -1)
         {
-            Scene* scene = Context::this_->scene_.get();
-            
-            if (activeScene_ != scene || scene->UniformsNeedUpdate())
+            Scene* scene = Context::this_->scene_;
+
+            if (scene)
             {
-                glUniform4fv(color_scene_ambient_loc_, 1, &scene->GetAmbientColor()[0]);
+                if (activeScene_ != scene || scene->UniformsNeedUpdate())
+                {
+                    glUniform4fv(color_scene_ambient_loc_, 1, &scene->GetAmbientColor()[0]);
+                }
             }
-            
+            else if (activeScene_ != scene || sceneColor_ == Color(-1))
+            {
+                sceneColor_ = Color(0, 0, 0, 1);
+                glUniform4fv(color_scene_ambient_loc_, 1, &sceneColor_[0]);
+            }
+
             activeScene_ = scene;
         }
-
     }
 
     void Program::SetVariables(Node* node)
@@ -380,26 +393,29 @@ namespace NSG
 
     void Program::SetVariables(Material* material, Node* node)
     {
-        if (texture0_loc_ != -1)
+        if (material)
         {
-            Graphics::this_->SetTexture(0, material->pTexture0_.get());
-        }
+            if (texture0_loc_ != -1)
+            {
+                Graphics::this_->SetTexture(0, material->pTexture0_.get());
+            }
 
-        if (texture1_loc_ != -1)
-        {
-            Graphics::this_->SetTexture(1, material->pTexture1_.get());
-        }
+            if (texture1_loc_ != -1)
+            {
+                Graphics::this_->SetTexture(1, material->pTexture1_.get());
+            }
 
-        if (activeMaterial_ != material || material->UniformsNeedUpdate())
-        {
-            SetVariables(material);
+            if (activeMaterial_ != material || material->UniformsNeedUpdate())
+            {
+                SetVariables(material);
+            }
         }
 
         activeMaterial_ = material;
 
-        if(!material_)
+        if (!material_)
             material_ = PMaterial(new Material);
-        else
+        else if (material)
             *material_ = *material;
 
         if (activeNode_ != node || (node && node->UniformsNeedUpdate()))
@@ -431,14 +447,14 @@ namespace NSG
         }
         else if (mvp_loc_ != -1 && (activeNode_ != node || (node && node->UniformsNeedUpdate())))
         {
-            if(!node)
+            if (!node)
             {
                 activeNodeGlobalModel_ = IDENTITY_MATRIX;
                 glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
             }
             // some GUI updates (RecalculateLayout for lines)
             // end up with the same global transform (so there is not need to update the uniform)
-            else if(activeNodeGlobalModel_ != node->GetGlobalModelMatrix()) 
+            else if (activeNodeGlobalModel_ != node->GetGlobalModelMatrix())
             {
                 activeNodeGlobalModel_ = node->GetGlobalModelMatrix();
                 glUniformMatrix4fv(mvp_loc_, 1, GL_FALSE, glm::value_ptr(Camera::GetModelViewProjection(node)));
@@ -448,9 +464,10 @@ namespace NSG
         activeNode_ = node;
         activeCamera_ = camera;
 
-        if (hasLights_)
+        Scene* scene = Context::this_->scene_;
+
+        if (hasLights_ && scene)
         {
-            Scene* scene = Context::this_->scene_.get();
             const Scene::Lights& ligths = scene->GetLights();
 
             size_t n = std::min(ligths.size(), MAX_LIGHTS);

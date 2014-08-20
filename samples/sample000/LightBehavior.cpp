@@ -56,13 +56,14 @@ void LightBehavior::Start()
 {
 	PMaterial pMaterial(new Material());
 	PProgram pProgram(new Program(vShader, fShader));
-    pMaterial->SetProgram(pProgram);
+    PPass pass(new Pass);
+    pass->SetProgram(pProgram);
 
 	PMesh pMesh(new SphereMesh(0.2f, 32));
 
     pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
 
-    Render2TextureBehavior::this_->Add(PPass(new Pass), pSceneNode_, pMaterial, pMesh);
+    Render2TextureBehavior::this_->Add(pass, pSceneNode_, pMaterial, pMesh);
 }
 
 

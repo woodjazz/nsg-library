@@ -33,28 +33,15 @@ class MyApp : public NSG::App
 public:
 	MyApp();
 	~MyApp();
-	void Start();
-	void Update();
-	void RenderFrame();
-	void RenderGUIWindow();
-	void ViewChanged(int32_t width, int32_t height);
-	void OnMouseMove(float x, float y);
-    void OnMouseDown(float x, float y);
-    void OnMouseUp();
-
+	void Start() override;
+	void Update() override;
+	void RenderFrame() override;
 private:
-	void InternalTask();
-	void TestIMGUI2();
-    void TestIMGUI4();
+    PScene scene_;
 	PLight pLight0_;
 	PCamera pCamera1_;
-	PCamera pCamera2_;
-    IMGUI::PSkin pSkin1_;
-    IMGUI::PSkin pSkin2_;
     PSceneNode pEarthSceneNode_;
     PSceneNode pCubeSceneNode_;
-    PSceneNode pTextSceneNode_;
-    PModel pModel_;
     PSceneNode render2TextureSceneNode_;
 };
 

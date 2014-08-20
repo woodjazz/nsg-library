@@ -42,7 +42,7 @@ namespace NSG
 		PKeyboard keyboard_;
 		PBufferManager bufferManager_;
 		PAudio audio_;
-		PScene scene_;
+		Scene* scene_;
 		bool allGPUObjectAreValid_;
 
 		Context();
@@ -55,7 +55,7 @@ namespace NSG
 		static void RemoveResource(Resource* object);
 		void ReleaseResourcesFromMemory();
 		PTexture GetWhiteTexture();
-		void SetScene(PScene scene) { scene_ = scene; } 
+		void SetScene(Scene* scene) { scene_ = scene; }
 
 	private:
 		void Add(GPUObject* object);

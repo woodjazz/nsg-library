@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "BoundingBox.h"
 #include "Frustum.h"
+#include "Context.h"
 
 namespace NSG
 {
@@ -54,7 +55,7 @@ namespace NSG
 
     Pass::~Pass()
     {
-
+        Context::RemoveObject(this);
     }
 
     void Pass::SetBlendMode(BLEND_MODE mode)
@@ -103,13 +104,36 @@ namespace NSG
 
     bool Pass::Render()
     {
-        Graphics::this_->SetColorMask(enableColorBuffer_);
-        Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
-                                        dpfailStencilOp_, dppassStencilOp_, stencilFunc_, 
-                                        stencilRefValue_, stencilMaskValue_);
-        Graphics::this_->SetBlendModeTest(blendMode_);
-        Graphics::this_->SetDepthTest(enableDepthTest_);
-        Graphics::this_->SetDepthMask(enableDepthBuffer_);
-        return Graphics::this_->Draw(drawMode_ == SOLID);
+        if(IsReady())
+        {
+            Graphics::this_->SetColorMask(enableColorBuffer_);
+            Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
+                                            dpfailStencilOp_, dppassStencilOp_, stencilFunc_, 
+                                            stencilRefValue_, stencilMaskValue_);
+            Graphics::this_->SetBlendModeTest(blendMode_);
+            Graphics::this_->SetDepthTest(enableDepthTest_);
+            Graphics::this_->SetDepthMask(enableDepthBuffer_);
+            Graphics::this_->SetProgram(pProgram_.get());
+
+            return Graphics::this_->Draw(drawMode_ == SOLID);
+        }
+
+        return false;
     }
+    
+    void Pass::SetProgram(PProgram pProgram)
+    {
+        if (pProgram_ != pProgram)
+        {
+            pProgram_ = pProgram;
+            SetUniformsNeedUpdate();
+            Invalidate();
+        }
+    }
+
+    bool Pass::IsValid()
+    {
+        return pProgram_ && pProgram_->IsReady();
+    }
+
 }

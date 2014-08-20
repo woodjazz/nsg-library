@@ -30,8 +30,6 @@ void SphereBehavior::Start()
 	mesh_ = PSphereMesh(new SphereMesh(3, 32));
 
 	material_ = PMaterial(new Material);
-    PProgram unlit(new ProgramUnlit);
-    material_->SetProgram(unlit);
     PTexture texture(new TextureFile("data/Earth.jpg"));
 	material_->SetTexture0(texture);
 

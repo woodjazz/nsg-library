@@ -47,7 +47,11 @@ void EarthBehavior::Start()
 	PTexture pEarthTexture(new TextureFile("data/stone.jpg"));
 	PMaterial pMaterial(new Material ());
 	PProgram program(new ProgramUnlit);
-	pMaterial->SetProgram(program);
+    PTechnique technique(new Technique);
+    PPass pass(new Pass);
+    technique->Add(pass);
+	pass->SetProgram(program);
+    pMaterial->SetTechnique(technique);
 	pMaterial->SetTexture0(pEarthTexture);
     pSceneNode_->Set(pMaterial);
  

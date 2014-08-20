@@ -40,6 +40,7 @@ namespace NSG
 		PTexture GetTexture() const;
 	protected:
 		PTechnique technique_;
+		PPass pass_;
         PMaterial pMaterial_; 
 		PMesh pMesh_;
 		PRender2Texture pRender2Texture_;

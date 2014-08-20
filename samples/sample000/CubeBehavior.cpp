@@ -45,12 +45,13 @@ void CubeBehavior::Start()
     PResource pVResource(new ResourceFile("data/shaders/DiffuseSpecularReflection.vert"));
 	PResource pFResource(new ResourceFile("data/shaders/Simple.frag"));
 	PProgram pDiffuseProgram(new Program(pVResource, pFResource));
-    pMaterial->SetProgram(pDiffuseProgram);
+    PPass pass(new Pass);
+    pass->SetProgram(pDiffuseProgram);
 
     PTexture pTexture(new TextureFile("data/cube_example.png"));
 	pMaterial->SetTexture0(pTexture);
     
-    Render2TextureBehavior::this_->Add(PPass(new Pass), pSceneNode_, pMaterial, pMesh);
+    Render2TextureBehavior::this_->Add(pass, pSceneNode_, pMaterial, pMesh);
 
     pSceneNode_->SetPosition(Vertex3(-5, 0, 0));
     pSceneNode_->SetScale(Vertex3(3,3,3));

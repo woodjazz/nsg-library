@@ -25,27 +25,39 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "UniformsUpdate.h"
+#include "GPUObject.h"
 #include <vector>
 
 namespace NSG
 {
-	class Pass
-	{
-	public:
-		Pass();
-		virtual ~Pass();
-		void SetBlendMode(BLEND_MODE mode);
-		void EnableColorBuffer(bool enable);
-		void EnableDepthBuffer(bool enable);
-		void EnableDepthTest(bool enable);
-		void EnableStencilTest(bool enable);
-		void SetStencilMask(GLuint mask);
-		void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
-		void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
-		enum Mode {SOLID, WIREFRAME};
-		void SetDrawMode(Mode mode) { drawMode_ = mode; }
-		virtual bool Render();
-	protected:
+    class Pass : public GPUObject, UniformsUpdate
+    {
+    public:
+        Pass();
+        virtual ~Pass();
+        void SetBlendMode(BLEND_MODE mode);
+        void EnableColorBuffer(bool enable);
+        void EnableDepthBuffer(bool enable);
+        void EnableDepthTest(bool enable);
+        void EnableStencilTest(bool enable);
+        void SetStencilMask(GLuint mask);
+        void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
+        void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
+        enum Mode {SOLID, WIREFRAME};
+        void SetDrawMode(Mode mode)
+        {
+            drawMode_ = mode;
+        }
+        void SetProgram(PProgram pProgram);
+        PProgram GetProgram() const
+        {
+            return pProgram_;
+        }
+        virtual bool Render();
+        virtual bool IsValid() override;
+    protected:
+        PProgram pProgram_;
         BLEND_MODE blendMode_;
         bool enableDepthTest_;
         bool enableStencilTest_;
@@ -58,6 +70,6 @@ namespace NSG
         GLuint stencilMaskValue_;
         bool enableColorBuffer_;
         bool enableDepthBuffer_;
-		Mode drawMode_;
-	};
+        Mode drawMode_;
+    };
 }

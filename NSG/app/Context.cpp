@@ -45,7 +45,8 @@ namespace NSG
         : atlasManager_(new FontAtlasTextureManager),
         keyboard_(new Keyboard),
         bufferManager_(new BufferManager),
-        allGPUObjectAreValid_(true)
+        allGPUObjectAreValid_(true),
+        scene_(nullptr)
     {
     }
 
@@ -152,8 +153,6 @@ namespace NSG
     void Context::Initialize()
     {
         graphics_ = PGraphics(new Graphics);
-
-        scene_ = PScene(new Scene);
         
         audio_ = PAudio(new Audio);
         

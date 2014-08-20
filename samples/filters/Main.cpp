@@ -62,7 +62,6 @@ struct Sample : App
 	void Start()
 	{
         scene_ = PScene(new Scene);
-        Context::this_->SetScene(scene_);
         
         camera_ = PCamera(new Camera);
         scene_->Add(camera_);
@@ -82,22 +81,22 @@ struct Sample : App
         showTexture_ = PShowTexture(new ShowTexture);
 
         scene_->Start();
-        
-        PMaterial depthMaterial(new Material);
-        depthMaterial->SetProgram(PProgram(new ProgramWhiteColor));
 
         technique_ = PTechnique(new Technique);
         
         PPass normalPass(new Pass);
+        normalPass->SetProgram(PProgram(new ProgramUnlit));
+
         PPass depthPass(new Pass);
         depthPass->EnableColorBuffer(false);
+        depthPass->SetProgram(PProgram(new ProgramWhiteColor));
         
         {
             //box passes
 
             PPass2Texture pass2Texture(new Pass2Texture(boxBehavior_->renderedTexture_, true, false));
             technique_->Add(pass2Texture);
-            pass2Texture->Add(depthPass, sphereBehavior_->GetSceneNode(), depthMaterial, sphereBehavior_->mesh_);
+            pass2Texture->Add(depthPass, sphereBehavior_->GetSceneNode(), nullptr, sphereBehavior_->mesh_);
             pass2Texture->Add(normalPass, boxBehavior_->GetSceneNode(), boxBehavior_->material_, boxBehavior_->mesh_);
             
             PPassFilter filterPass(new PassFilter(boxBehavior_->filter_));
@@ -109,7 +108,7 @@ struct Sample : App
     
             PPass2Texture pass2Texture(new Pass2Texture(sphereBehavior_->renderedTexture_, true, false));
             technique_->Add(pass2Texture);
-            pass2Texture->Add(depthPass, boxBehavior_->GetSceneNode(), depthMaterial, boxBehavior_->mesh_);
+            pass2Texture->Add(depthPass, boxBehavior_->GetSceneNode(), nullptr, boxBehavior_->mesh_);
             pass2Texture->Add(normalPass, sphereBehavior_->GetSceneNode(), sphereBehavior_->material_, sphereBehavior_->mesh_);
 
             PPassFilter filterPass(new PassFilter(sphereBehavior_->filter_));

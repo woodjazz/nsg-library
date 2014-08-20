@@ -662,19 +662,17 @@ namespace NSG
 
     bool Graphics::Draw(bool solid)
     {
-        if (!activeMaterial_->IsReady() || !activeMesh_->IsReady())
+        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady())
             return false;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        activeMaterial_->Use();
+        if(activeMaterial_)
+            activeMaterial_->Use();
 
-        Program* program = activeMaterial_->GetProgram().get();
+        program_->SetVariables(activeMaterial_, activeNode_);
 
-        SetProgram(program);
-        program->SetVariables(activeMaterial_, activeNode_);
-
-        activeMesh_->Draw(solid, program);
+        activeMesh_->Draw(solid, program_);
 
         lastMesh_ = activeMesh_;
         lastMaterial_ = activeMaterial_;

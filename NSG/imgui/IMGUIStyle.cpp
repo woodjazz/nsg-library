@@ -48,14 +48,10 @@ namespace NSG
 
             pass_->EnableDepthTest(false);
             pass_->EnableStencilTest(true);
-
-            activeMaterial_->SetProgram(context.unlitProgram_);
+            pass_->SetProgram(context.unlitProgram_);
+            
             activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
-
-            normalMaterial_->SetProgram(context.unlitProgram_);
             normalMaterial_->SetColor(Color(0, 1, 0, 0.7f));
-
-            hotMaterial_->SetProgram(context.unlitProgram_);
             hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
         }
 
@@ -93,11 +89,11 @@ namespace NSG
             hotMaterial_->SetColor(Color(0, 0, 0, 0));
             activeMaterial_->SetColor(Color(0, 0, 0, 0));
             normalMaterial_->SetColor(Color(0, 0, 0, 0));
-
-            Context& context = *Context::this_;
-            scrollMaterial_->SetProgram(context.unlitProgram_);
+            
             scrollMaterial_->SetColor(Color(0.3f, 0.3f, 0.3f, 0.9f));
 
+            Context& context = *Context::this_;
+            scrollPass_->SetProgram(context.unlitProgram_);
             scrollPass_->EnableDepthTest(false);
             scrollPass_->EnableStencilTest(true);
         }

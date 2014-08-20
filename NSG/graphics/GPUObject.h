@@ -36,8 +36,8 @@ namespace NSG
 		void Invalidate();
 		bool IsReady();
 		virtual bool IsValid() = 0;
-		virtual void AllocateResources() = 0;
-		virtual void ReleaseResources()	= 0;
+		virtual void AllocateResources() {}
+		virtual void ReleaseResources()	{}
 		void Release();
 	private:
 		bool isValid_;
