@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Allocators.h"
 #include "GPUObject.h"
-#include "PODVector.h"
 
 namespace NSG
 {
@@ -49,7 +48,5 @@ namespace NSG
 		PIndexBuffer currentStaticIndexBuffer_;
 		PVertexBuffer currentDynamicVertexBuffer_;
 		PIndexBuffer currentDynamicIndexBuffer_;
-
-
 	};
 }

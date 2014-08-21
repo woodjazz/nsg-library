@@ -57,8 +57,10 @@ namespace NSG
               pCurrentNode_(new Node),
               pRootNode_(new Node),
               pLayoutManager_(new LayoutManager(pRootNode_)),
-              transparentAreaStyle_(new AreaStyle)
+              transparentAreaStyle_(new AreaStyle),
+              viewport_(0)
         {
+            App::Add(this);
             transparentAreaStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
@@ -66,6 +68,7 @@ namespace NSG
 
         Context::~Context()
         {
+            App::Remove(this);
 			Context::this_ = nullptr;
         }
 
@@ -76,7 +79,9 @@ namespace NSG
 
         void Context::RenderGUI()
         {
-            Camera* camera = Camera::Deactivate();    
+            Camera* camera = Camera::Deactivate(); 
+
+            Graphics::this_->SetViewport(viewport_);   
 
             state_->Begin();
 
@@ -92,6 +97,13 @@ namespace NSG
         IdType Context::GetValidId()
         {
             return pLayoutManager_->GetValidId();
+        }
+
+        void Context::OnViewChanged(int32_t width, int32_t height)
+        {
+            viewport_.z = width;
+            viewport_.w = height;
+
         }
     }
 

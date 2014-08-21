@@ -94,6 +94,7 @@ namespace NSG
 
     void Mesh::ReleaseResources()
     {
+        bb_.Define(Vertex3(0));
         pVBuffer_ = nullptr;
         pIBuffer_ = nullptr;
         bufferVertexData_ = nullptr;

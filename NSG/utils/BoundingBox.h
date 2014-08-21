@@ -36,7 +36,9 @@ namespace NSG
 		BoundingBox(const Vertex3& min, const Vertex3& max);
     	BoundingBox(const Vector3& point);
 		BoundingBox(const Node& node);
+		BoundingBox(const BoundingBox& obj);
 		~BoundingBox();
+		void Define(const Vector3& point);
 	    void Merge(const Vector3& point);
 	    void Transform(const Node& node);
 		Intersection IsInside(const BoundingBox& box) const;

@@ -49,8 +49,21 @@ namespace NSG
         max_ = pos + scale;
     }
 
+    BoundingBox::BoundingBox(const BoundingBox& obj)
+        : min_(obj.min_),
+          max_(obj.max_)
+    {
+
+    }
+
     BoundingBox::~BoundingBox()
     {
+    }
+
+    void BoundingBox::Define(const Vector3& point)
+    {
+        min_ = point;
+        max_ = point;
     }
 
     void BoundingBox::Transform(const Node& node)
@@ -111,11 +124,11 @@ namespace NSG
                 point.y < min_.y || point.y > max_.y ||
                 point.z < min_.z || point.z > max_.z)
         {
-			return false;
+            return false;
         }
         else
         {
-			return true;
+            return true;
         }
     }
 

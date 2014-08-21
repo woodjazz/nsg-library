@@ -26,13 +26,14 @@ misrepresented as being the original software.
 #pragma once
 #include "Singleton.h"
 #include "SharedPointers.h"
+#include "AppListeners.h"
 #include <set>
 
 namespace NSG
 {
 	namespace IMGUI
 	{
-		struct Context : public Singleton<Context>
+		struct Context : public IViewChangedListener, Singleton<Context>
 		{
 	        PProgram unlitProgram_;
 	        PMesh controlMesh_;
@@ -42,12 +43,14 @@ namespace NSG
 			PNode pRootNode_;
 			PLayoutManager pLayoutManager_;
 			PAreaStyle transparentAreaStyle_;
+			Recti viewport_;
 
 			Context();
 			~Context();
 			void RenderGUI();
 			bool IsReady() const;
 			IdType GetValidId();
+			virtual void OnViewChanged(int32_t width, int32_t height) override;
 		};
 	}
 }

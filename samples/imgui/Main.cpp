@@ -29,10 +29,6 @@ using namespace NSG;
 
 struct Window0 : IMGUI::IWindow
 {
-    int fontSize_;
-	PMaterial material_;
-    Color color_;
-
     Window0()
     {
         IWindow::hasTitle_ = true;
@@ -42,13 +38,6 @@ struct Window0 : IMGUI::IWindow
 
     void StartGUIWindow() 
     {
-#if 0
-		material_ = IMGUISkin()->windowTechnique_->GetPass(0)->GetMaterial();
-        fontSize_ = IMGUISkin()->fontSize_;
-        IMGUISkin()->fontSize_ = 18;
-        color_ = material_->GetColor();
-		material_->SetColor(Color(0, 0, 0, 0.7f));
-#endif
     }
 
     void RenderGUIWindow()
@@ -75,10 +64,6 @@ struct Window0 : IMGUI::IWindow
 
     void EndGUIWindow()
     {
-#if 0
-        IMGUISkin()->fontSize_ = fontSize_;
-        material_->SetColor(color_);
-#endif
     }
 };
 
@@ -89,10 +74,8 @@ struct Statistics : public AppStatistics
     PMaterial material_;
     Color color_;
 
-
     void StartGUIWindow()
     {
-#if 1
         if(!newTexture_)
         {
 			IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
@@ -110,15 +93,13 @@ struct Statistics : public AppStatistics
 
         material_->SetTexture0(newTexture_);
         material_->SetColor(Color(1,1,1,1));
-#endif
+
     }
 
     void EndGUIWindow()
     {
-#if 1
         material_->SetTexture0(oldTexture_);  
         material_->SetColor(color_);
-#endif
     }
 };
 
@@ -127,9 +108,6 @@ struct Sample : App
     Statistics statistics_;
     Window0 window0_;
 	IMGUI::PWindowStyle style_;
-    PScene scene_;
-    PCamera camera_;
-
 
     Sample()
     {
@@ -139,21 +117,15 @@ struct Sample : App
 
 	void Start()
 	{
-        scene_ = PScene(new Scene);
-        camera_ = PCamera(new Camera);
-        scene_->Add(camera_);
-        camera_->Activate();
 		if (!style_)
 		{
 			IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
 			IMGUISkin()->buttonStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
 			IMGUISkin()->textStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
 			style_ = IMGUI::PWindowStyle(new IMGUI::WindowStyle);
-			//style_->fontFile_ = "font/FreeSans.ttf";
 
 			PTexture texture(new TextureFile("data/metal.png"));
 			PMaterial material = style_->activeMaterial_;
-            //material->SetColor(Color(1,1,1,0.5f));
             material->SetTexture0(texture);
 
 			material = style_->normalMaterial_;
@@ -164,18 +136,10 @@ struct Sample : App
 
 			IMGUISkin()->windowStyle_ = style_;
         }
-
-/*        {
-            PTexture texture(new TextureFile("blackBump.png"));
-            PMaterial material = IMGUISkin()->windowTechnique_->GetPass(0)->GetMaterial();
-            material->SetTexture0(texture);  
-            material->SetColor(Color(1,1,1,1));
-        }*/
     }
 
     void RenderGUIWindow()
-    {
-#if 1		
+    {	
         static float delta = -1;
         static Vertex3 camControlPoint0(-3, 3, 0);
         static Vertex3 camControlPoint1(0, 2, 0);
@@ -252,8 +216,6 @@ struct Sample : App
         }
         else
         {
-            //int fontSize = IMGUISkin()->fontSize_;
-            //IMGUISkin()->fontSize_ = 12;
             IMGUINode()->SetPosition(position);
             
             IMGUISpacer(100, 5);
@@ -275,8 +237,6 @@ struct Sample : App
                 }
 
             IMGUIEndArea();
-
-            //IMGUISkin()->fontSize_ = fontSize;
 
             IMGUISpacer(100, 5);
 
@@ -301,7 +261,7 @@ struct Sample : App
                 menu = exit = false;
             }
         }
-#endif
+
 		IMGUIWindow(&statistics_, 50, 75);
     }
 };

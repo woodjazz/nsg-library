@@ -61,6 +61,8 @@ namespace NSG
 	private:
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
+		void UpdateFrustum();
+
 		mutable Matrix4 matView_;
 		mutable Matrix4 matViewInverse_;
 		mutable Matrix4 matProjection_;

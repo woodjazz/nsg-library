@@ -28,10 +28,11 @@ using namespace NSG;
 
 static void Test01()
 {
-	{
-		SphereMesh sphere(1, 100);
-		Node node;
+	SphereMesh sphere(1, 100);
 
+	{
+		
+		Node node;
 		Camera camera;
 		camera.SetFov(45);
 		camera.SetNearClip(0.1f);
@@ -43,9 +44,9 @@ static void Test01()
 	}
 
 	{
-		SphereMesh sphere(100, 100);
 		Node node;
 		node.SetPosition(Vertex3(20));
+		node.SetScale(Vector3(100));
 
 		Camera camera;
 		camera.SetFov(45);
@@ -58,7 +59,6 @@ static void Test01()
 	}
 
 	{
-		SphereMesh sphere(1, 100);
 		Node node;
 		node.SetPosition(Vertex3(0, 0, 40));
 
@@ -72,16 +72,15 @@ static void Test01()
 	}
 
 	{
-		SphereMesh sphere(1, 100);
 		Node node;
-		node.SetPosition(Vertex3(10, 0, 40));
+		node.SetPosition(Vertex3(2, 0, 40));
 
 		Camera camera;
 		camera.SetFov(170);
 		camera.SetNearClip(0.1f);
 		camera.SetFarClip(1000);
 		CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
-		camera.SetFov(5);
+		camera.SetFov(1);
 		CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
 		node.SetPosition(Vertex3(0, 0, 40));
 		CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
@@ -95,11 +94,8 @@ static void Test01()
 		CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
 		camera.SetFarClip(4);
 		CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
-
-		{
-			SphereMesh sphere(0.9f, 100);
-			CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
-		}
+        node.SetScale(Vector3(0.9f));
+        CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
 	}
 }
 

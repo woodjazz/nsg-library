@@ -43,6 +43,7 @@ namespace NSG
     Buffer::Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage)
         : type_(type),
           usage_(usage),
+          bufferSize_(bufferSize),
           dynamic_(usage != GL_STATIC_DRAW)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);

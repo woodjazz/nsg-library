@@ -141,22 +141,6 @@ namespace NSG
         Graphics::this_->SetViewport(GetViewport());
     }
 
-    const PFrustum Camera::GetFrustum() const
-    {
-        if (IsDirty() || !frustum_)
-        {
-            Matrix4 worldTransform = GetGlobalModelMatrix();
-
-            if (isOrtho_)
-                frustum_ = PFrustum(new Frustum(worldTransform, 1, aspectRatio_, zNear_, zFar_));
-            else
-                frustum_ = PFrustum(new Frustum(fovy_, aspectRatio_, zNear_, zFar_, worldTransform));
-        }
-
-        return frustum_;
-    }
-
-
     void Camera::UpdateProjection() const
     {
         if (isOrtho_)
@@ -181,6 +165,20 @@ namespace NSG
         matView_ = glm::inverse(matViewInverse_);
         matViewProjection_ = matProjection_ * matView_;
         matViewProjectionInverse_ = glm::inverse(matViewProjection_);
+
+       if (isOrtho_)
+            frustum_ = PFrustum(new Frustum(matViewInverse_, 1, aspectRatio_, zNear_, zFar_));
+        else
+            frustum_ = PFrustum(new Frustum(fovy_, aspectRatio_, zNear_, zFar_, matViewInverse_));
+
+    }
+
+    const PFrustum Camera::GetFrustum() const
+    {
+        if (IsDirty())
+            UpdateProjection();
+
+        return frustum_;
     }
 
     const Matrix4& Camera::GetMatViewProjection() const
