@@ -90,7 +90,7 @@ namespace NSG
         AAssetManager* pAAssetManager_;
         int32_t width_;
         int32_t height_;
-        float deltaTime_; // The time in seconds it took to complete the last frame
+        float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
         PContext context_;
         PAppConfiguration configuration_;
         friend struct InternalApp;

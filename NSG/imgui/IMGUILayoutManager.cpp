@@ -418,15 +418,9 @@ namespace NSG
 
             currentWindowManager_->Begin();
 
-            if (AppStatistics::this_)
-                AppStatistics::this_->Collect(true);
-
             currentWindowManager_->currentWindow_->BeginRenderUserWindow();
             userWindow->RenderGUIWindow();
             currentWindowManager_->currentWindow_->EndRenderUserWindow();
-
-            if (AppStatistics::this_)
-                AppStatistics::this_->Collect(false);
 
             currentWindowManager_->End();
 
@@ -480,9 +474,6 @@ namespace NSG
             }
 
             RemoveAllNonCreatedWindows(); // windows have to be removed if the user never calls them (IMGUIWindow)
-
-            if (AppStatistics::this_)
-                AppStatistics::this_->Collect(true);
         }
 
         void LayoutManager::Window(IMGUI::IWindow* obj, float percentageX, float percentageY, PWindowStyle style)

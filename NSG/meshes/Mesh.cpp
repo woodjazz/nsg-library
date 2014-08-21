@@ -151,10 +151,9 @@ namespace NSG
 
             glDrawElements(mode, indexes_.size(), GL_UNSIGNED_SHORT, offset);
 
-            if (AppStatistics::this_)
+            if (AppStatistics::this_ && solid)
             {
-                CHECK_ASSERT(GetSolidDrawMode() == GL_TRIANGLES && indexes_.size() % 3 == 0, __FILE__, __LINE__);
-                AppStatistics::this_->NewTriangles(indexes_.size() / 3);
+                 AppStatistics::this_->NewTriangles(GetNumberOfTriangles());
             }
         }
         else
@@ -165,8 +164,7 @@ namespace NSG
 
             if (AppStatistics::this_ && solid)
             {
-                CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || vertexsData_.size() % 3 == 0, __FILE__, __LINE__);
-                AppStatistics::this_->NewTriangles(vertexsData_.size() / 3);
+                AppStatistics::this_->NewTriangles(GetNumberOfTriangles());
             }
         }
 

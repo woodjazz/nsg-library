@@ -55,6 +55,11 @@ namespace NSG
         return GL_TRIANGLE_FAN;
     }
 
+    size_t RoundedRectangleMesh::GetNumberOfTriangles() const
+    {
+        return vertexsData_.size() - 2;
+    }
+
     void RoundedRectangleMesh::Build()
     {
         vertexsData_.clear();

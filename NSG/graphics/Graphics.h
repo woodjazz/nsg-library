@@ -95,6 +95,7 @@ namespace NSG
         bool uniformsNeedUpdate_;
         Mesh* lastMesh_; // last mesh drawn
         Material* lastMaterial_; // last used material
+        Program* lastProgram_; // kast used program
         Node* lastNode_; // last used node
         Mesh* activeMesh_; // mesh that is going to be drawn
         Material* activeMaterial_; //material that is going to be used to draw

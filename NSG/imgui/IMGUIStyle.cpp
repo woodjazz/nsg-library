@@ -28,8 +28,6 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Material.h"
 #include "IMGUIContext.h"
-//#include "ProgramSimpleColor.h"
-//#include "ProgramWhiteColor.h"
 
 namespace NSG
 {

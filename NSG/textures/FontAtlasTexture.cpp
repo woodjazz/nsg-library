@@ -137,7 +137,8 @@ namespace NSG
 
             const CharInfo& charInfo = charsMap_[idx];
 
-            VertexData vertex[6];
+            // Front Face CCW
+            VertexData vertex[4];
             {
                 float w = (float)charInfo.rect.z * sx;
                 float h = -(float)charInfo.rect.w * sy;
@@ -159,20 +160,26 @@ namespace NSG
 
                 vertex[2].position_ = Vertex3(offsetX, offsetY + h, 0);
                 vertex[2].uv_ = Vertex2(ux, uy + uh);
-
-                vertex[3] = vertex[1];
-                vertex[4] = vertex[2];
-
-                vertex[5].position_ = Vertex3(offsetX + w, offsetY + h, 0);
-                vertex[5].uv_ = Vertex2(ux + uw, uy + uh);
+                
+                vertex[3].position_ = Vertex3(offsetX + w, offsetY + h, 0);
+                vertex[3].uv_ = Vertex2(ux + uw, uy + uh);
             }
 
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 4; i++)
             {
                 vertex[i].position_.x += x;
                 vertexsData.push_back(vertex[i]);
-                indexes.push_back(index++);
             }
+
+            indexes.push_back(index + 0);
+            indexes.push_back(index + 2);
+            indexes.push_back(index + 1);
+            
+            indexes.push_back(index + 1);
+            indexes.push_back(index + 2);
+            indexes.push_back(index + 3);
+            
+            index += 4;
 
             x += charInfo.width * sx;
             //y += charInfo.height * sy;

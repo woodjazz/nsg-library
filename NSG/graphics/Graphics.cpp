@@ -63,6 +63,26 @@ namespace NSG
     static const bool DEFAULT_CULL_FACE_ENABLE = false;
 
     Graphics::Graphics()
+        : currentFbo_(0),  //the default framebuffer (except for IOS)
+        vertexArrayObj_(nullptr),
+        vertexBuffer_(nullptr),
+        indexBuffer_(nullptr),
+        program_(nullptr),
+        activeTexture_(0),
+        enabledAttributes_(0),
+        uniformsNeedUpdate_(true),
+        lastMesh_(nullptr),
+        lastMaterial_(nullptr),
+        lastProgram_(nullptr),
+        lastNode_(nullptr),
+        activeMesh_(nullptr),
+        activeMaterial_(nullptr),
+        activeNode_(nullptr),
+        has_discard_framebuffer_ext_(false),
+        has_vertex_array_object_ext_(false),
+        has_map_buffer_range_ext_(false),
+        cullFaceMode_(CullFaceMode::DEFAULT),
+        frontFaceMode_(FrontFaceMode::DEFAULT)
     {
         TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
         TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
@@ -70,30 +90,32 @@ namespace NSG
         TRACE_LOG("GL_SHADING_LANGUAGE_VERSION = " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
         TRACE_LOG("GL_EXTENSIONS = " << (const char*)glGetString(GL_EXTENSIONS));
 
+        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
-        has_discard_framebuffer_ext_ = false;
+        memset(&textures_[0], 0, sizeof(textures_));
+
         if (CheckExtension("EXT_discard_framebuffer"))
         {
             has_discard_framebuffer_ext_ = true;
             TRACE_LOG("Using extension: EXT_discard_framebuffer");
         }
 
-        has_vertex_array_object_ext_ = false;
         if (CheckExtension("OES_vertex_array_object"))
         {
             has_vertex_array_object_ext_ = true;
             TRACE_LOG("Using extension: OES_vertex_array_object");
         }
 
-        has_map_buffer_range_ext_ = false;
         if (CheckExtension("EXT_map_buffer_range"))
         {
             has_map_buffer_range_ext_ = true;
             TRACE_LOG("Using extension: EXT_map_buffer_range");
         }
-        
-        ResetCachedState();
+
+        // Set up texture data read/write alignment
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
 
     Graphics::~Graphics()
@@ -109,29 +131,17 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
-        activeTexture_ = 0;
-        enabledAttributes_ = 0;
-        uniformsNeedUpdate_ = true;
-        lastMesh_ = nullptr;
-        lastMaterial_ = nullptr;
-        lastNode_ = nullptr;
-        activeMesh_ = nullptr;
-        activeMaterial_ = nullptr;
-        activeNode_ = nullptr;
-
-        // Set up texture data read/write alignment
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        currentFbo_ = 0; //the default framebuffer (except for IOS)
-        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
-        uniformsNeedUpdate_ = true;
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        
         SetClearColor(Color(0, 0, 0, 1));
         SetClearDepth(1);
         SetClearStencil(0);
         SetFrameBuffer(0);
         SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL,
                        DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
         SetColorMask(DEFAULT_COLOR_MASK);
         SetDepthMask(DEFAULT_DEPTH_MASK);
         SetStencilMask(DEFAULT_STENCIL_MASK);
@@ -140,14 +150,17 @@ namespace NSG
         EnableCullFace(DEFAULT_CULL_FACE_ENABLE);
         SetCullFace(CullFaceMode::DEFAULT);
         SetFrontFace(FrontFaceMode::DEFAULT);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
         for (unsigned idx = 0; idx < MAX_TEXTURE_UNITS; idx++)
             SetTexture(idx, nullptr);
 
         SetVertexArrayObj(nullptr);
         SetVertexBuffer(nullptr);
         SetIndexBuffer(nullptr);
-
         SetProgram(nullptr);
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     void Graphics::SetFrameBuffer(GLuint value)
@@ -546,8 +559,6 @@ namespace NSG
 
     void Graphics::BeginFrame()
     {
-        if (AppStatistics::this_)
-            AppStatistics::this_->NewFrame();
     }
 
     void Graphics::EndFrame()
@@ -594,7 +605,7 @@ namespace NSG
 
     void Graphics::SetAttributes(const Mesh* mesh, const Program* program)
     {
-        if (lastMesh_ != mesh)
+        if (lastMesh_ != mesh || lastProgram_ != program)
         {
             GLuint position_loc = program->GetAttPositionLoc();
             GLuint texcoord_loc = program->GetAttTextCoordLoc();
@@ -688,6 +699,7 @@ namespace NSG
         lastMesh_ = activeMesh_;
         lastMaterial_ = activeMaterial_;
         lastNode_ = activeNode_;
+        lastProgram_ = program_;
 
         if (AppStatistics::this_)
             AppStatistics::this_->NewDrawCall();

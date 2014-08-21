@@ -151,9 +151,6 @@ namespace NSG
     {
         Context::this_->Initialize();
 
-        if (AppStatistics::this_)
-            AppStatistics::this_->Reset();
-
         pApp_->Start();
     }
 
@@ -175,7 +172,7 @@ namespace NSG
         IMGUI::Context::this_->RenderGUI();
 #endif
         Graphics::this_->EndFrame();
-    }
+     }
 
     void InternalApp::SetViewSize(int32_t width, int32_t height)
     {
@@ -239,6 +236,9 @@ namespace NSG
     void InternalApp::RenderFrame()
     {
         PerformTicks();
+
+        if (AppStatistics::this_)
+            AppStatistics::this_->Reset();
     }
 
     bool InternalApp::ShallExit() const

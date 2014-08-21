@@ -45,6 +45,7 @@ namespace NSG
         ~Mesh();
         virtual GLenum GetWireFrameDrawMode() const = 0;
         virtual GLenum GetSolidDrawMode() const = 0;
+        virtual size_t GetNumberOfTriangles() const = 0;
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
@@ -77,6 +78,7 @@ namespace NSG
             return bufferIndexData_;
         }
         void Draw(bool solid, Program* program);
+
     protected:
         void SetBuffersAndAttributes(Program* program);
         void RedoVAO(Program* program);

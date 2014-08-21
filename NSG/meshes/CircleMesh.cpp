@@ -54,6 +54,12 @@ namespace NSG
         return GL_TRIANGLE_FAN;
     }
 
+    size_t CircleMesh::GetNumberOfTriangles() const
+    {
+        return vertexsData_.size() - 2;
+    }
+
+
     void CircleMesh::Build()
     {
         vertexsData_.clear();

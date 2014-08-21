@@ -26,12 +26,12 @@ misrepresented as being the original software.
 #include "EarthBehavior.h"
 
 EarthBehavior::EarthBehavior()
-: x_angle_(0),
-y_angle_(0)
+    : x_angle_(0),
+      y_angle_(0)
 {
 
 }
-	
+
 EarthBehavior::~EarthBehavior()
 {
 
@@ -39,26 +39,26 @@ EarthBehavior::~EarthBehavior()
 
 void EarthBehavior::Start()
 {
-	PSphereMesh pSphereMesh(new SphereMesh(3, 24));
+    PSphereMesh pSphereMesh(new SphereMesh(3, 24));
     pSceneNode_->Set(pSphereMesh);
-    
-	PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
-	PMaterial pMaterial(new Material);
-	PProgram perVertex(new ProgramPerVertex1PointLight);
+
+    PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
+    PMaterial pMaterial(new Material);
+    PProgram perVertex(new ProgramPerVertex1PointLight);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
     //pass->SetDrawMode(DrawMode::WIREFRAME);
- 	pass->EnableCullFace(true);
-	//pass->SetCullFace(CullFaceMode::FRONT);
-	pass->SetFrontFace(FrontFaceMode::CW);
+    //pass->SetCullFace(CullFaceMode::FRONT);
+    //pass->EnableCullFace(false);
+    //pass->SetFrontFace(FrontFaceMode::CW);
 
     technique->Add(pass);
-	pass->SetProgram(perVertex);
+    pass->SetProgram(perVertex);
     pMaterial->SetTechnique(technique);
-	pMaterial->SetTexture0(pEarthTexture);
-	pMaterial->SetDiffuseColor(Color(0.8f,0.8f,0.8f,1));
-	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
-	pMaterial->SetShininess(10);
+    pMaterial->SetTexture0(pEarthTexture);
+    pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
+    pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
+    pMaterial->SetShininess(10);
 
     pSceneNode_->Set(pMaterial);
 
@@ -69,16 +69,16 @@ void EarthBehavior::Update()
 {
     float deltaTime = App::this_->GetDeltaTime();
 
-	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
-	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
+    x_angle_ += glm::pi<float>() / 10.0f * deltaTime;
+    y_angle_ += glm::pi<float>() / 10.0f * deltaTime;
 
-	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+    pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 
 }
 
 void EarthBehavior::Render()
 {
-	pSceneNode_->Render();
+    pSceneNode_->Render();
 }
 
 

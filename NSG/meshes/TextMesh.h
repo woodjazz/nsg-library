@@ -65,6 +65,7 @@ namespace NSG
         }
         GLenum GetWireFrameDrawMode() const override;
         GLenum GetSolidDrawMode() const override;
+        virtual size_t GetNumberOfTriangles() const override;
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
@@ -78,8 +79,6 @@ namespace NSG
         {
             return vAlignment_;
         }
-
-
     private:
         void UpdateBuffers();
         void Move(VertexsData& obj, float offsetX, float offsetY);

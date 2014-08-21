@@ -86,6 +86,8 @@ struct Sample : App
         
         PPass normalPass(new Pass);
         normalPass->SetProgram(PProgram(new ProgramUnlit));
+        normalPass->SetFrontFace(FrontFaceMode::CW);
+
 
         PPass depthPass(new Pass);
         depthPass->EnableColorBuffer(false);

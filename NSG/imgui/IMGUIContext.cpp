@@ -33,7 +33,7 @@ misrepresented as being the original software.
 #include "Technique.h"
 #include "Pass.h"
 #include "ProgramUnlit.h"
-#include "PlaneMesh.h"
+#include "RectangleMesh.h"
 #include "IMGUILayoutManager.h"
 #include "FrameColorSelection.h"
 #include "IMGUIState.h"
@@ -51,7 +51,7 @@ namespace NSG
     {
         Context::Context()
             : unlitProgram_(new ProgramUnlit),
-              controlMesh_(new PlaneMesh(2, 2, 2, 2)),
+              controlMesh_(new RectangleMesh(2, 2)),
               state_(new State),
               pSkin_(new Skin),
               pCurrentNode_(new Node),

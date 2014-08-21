@@ -41,22 +41,19 @@ namespace NSG
 		void AddIndexBuffer(bool dynamic);
 		void RemoveVertexBuffer(bool dynamic);
 		void RemoveIndexBuffer(bool dynamic);
-		void NewFrame();
-		void NewDrawCall();
-		void NewTriangles(size_t n);
-		bool Collect(bool collect);
+		void NewDrawCall() { if(collect_) ++drawCalls_; }
+		void NewTriangles(size_t n) { if(collect_) triangles_ += n; }
 		void RenderGUIWindow();
 	private:
-        typedef std::pair<size_t, size_t> Counter;
-		void Add2LastSecond(Counter& counter, size_t n);
-
-        TimePoint tpReset_;
-        enum Type {FRAMES, DRAWCALLS, TRIANGLES, MAX_COUNTERS};
-        Counter counters_[MAX_COUNTERS];
-		size_t staticVertexBuffers_;
+  		size_t staticVertexBuffers_;
 		size_t staticIndexBuffers_;
 		size_t dynamicVertexBuffers_;
 		size_t dynamicIndexBuffers_;
+		size_t triangles_;
+		size_t drawCalls_;
+		size_t fps_;
+		size_t frames_;
         bool collect_;
-	};
+        TimePoint startTime_;
+ 	};
 }

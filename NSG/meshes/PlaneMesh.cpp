@@ -52,6 +52,11 @@ namespace NSG
         return GL_TRIANGLES;
     }
 
+    size_t PlaneMesh::GetNumberOfTriangles() const
+    {
+        return vertexsData_.size() / 3;
+    }
+
     void PlaneMesh::Build()
     {
         vertexsData_.clear();
@@ -60,13 +65,13 @@ namespace NSG
         VertexsData& data = vertexsData_;
 
         Vertex3 vert;
-        Vertex3 normal(0, 0, 1); // always facing forward //
+        Vertex3 normal(0, 0, 1); // always facing forward
         Vertex2 texcoord;
 
-        // the origin of the plane is the center //
+        // the origin of the plane is the center
         float halfW = width_ / 2.f;
         float halfH = height_ / 2.f;
-        // add the vertexes //
+        // add the vertexes
         for (int iy = 0; iy < rows_; iy++)
         {
             for (int ix = 0; ix < columns_; ix++)
@@ -87,20 +92,26 @@ namespace NSG
             }
         }
 
-        // Triangles //
+        // Triangles
+        // Front Face CCW
         for (int y = 0; y < rows_ - 1; y++)
         {
             for (int x = 0; x < columns_ - 1; x++)
             {
-                // first triangle //
-                indexes_.push_back((y)*columns_ + x);
-                indexes_.push_back((y)*columns_ + x + 1);
-                indexes_.push_back((y + 1)*columns_ + x);
+                IndexType i0 = y*columns_ + x;
+                IndexType i1 = y*columns_ + x + 1;
+                IndexType i2 = (y + 1)*columns_ + x;
+                IndexType i3 = (y + 1)*columns_ + x + 1;
+                
+                // first triangle
+                indexes_.push_back(i0);
+                indexes_.push_back(i1);
+                indexes_.push_back(i2);
 
-                // second triangle //
-                indexes_.push_back((y)*columns_ + x + 1);
-                indexes_.push_back((y + 1)*columns_ + x + 1);
-                indexes_.push_back((y + 1)*columns_ + x);
+                // second triangle
+                indexes_.push_back(i1);
+                indexes_.push_back(i3);
+                indexes_.push_back(i2);
             }
         }
     }

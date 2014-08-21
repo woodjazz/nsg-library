@@ -54,6 +54,11 @@ namespace NSG
         return GL_TRIANGLE_FAN;
     }
 
+    size_t EllipseMesh::GetNumberOfTriangles() const
+    {
+        return vertexsData_.size() - 2;
+    }
+
     void EllipseMesh::Build()
     {
         vertexsData_.clear();

@@ -53,6 +53,11 @@ namespace NSG
         return GL_TRIANGLES;
     }
 
+    size_t SphereMesh::GetNumberOfTriangles() const
+    {
+        return vertexsData_.size()/3;
+    }
+
     void SphereMesh::Build()
     {
         vertexsData_.clear();
@@ -95,6 +100,8 @@ namespace NSG
 
         int index1, index2, index3;
 
+        // Triangles
+        // Front Face CCW
         for (int iy = 0; iy < res_; iy++)
         {
             for (int ix = 0; ix < doubleRes; ix++)
@@ -107,8 +114,8 @@ namespace NSG
                     index3 = (iy + 1) * (nr) + (ix + 0);
 
                     indexes_.push_back(index1);
-                    indexes_.push_back(index3);
                     indexes_.push_back(index2);
+                    indexes_.push_back(index3);
                 }
 
                 if (iy < res_ - 1 )
@@ -119,8 +126,8 @@ namespace NSG
                     index3 = (iy + 1) * (nr) + (ix + 0);
 
                     indexes_.push_back(index1);
-                    indexes_.push_back(index3);
                     indexes_.push_back(index2);
+                    indexes_.push_back(index3);
                 }
             }
         }

@@ -28,169 +28,151 @@ misrepresented as being the original software.
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
 #include "IMGUIStyle.h"
+#include "App.h"
 
 
-namespace NSG 
+namespace NSG
 {
-	template <> AppStatistics* Singleton<AppStatistics>::this_ = nullptr;
+    template <> AppStatistics* Singleton<AppStatistics>::this_ = nullptr;
 
-	AppStatistics::AppStatistics()
-    : collect_(true),
-	staticVertexBuffers_(0),
-	staticIndexBuffers_(0),
-	dynamicVertexBuffers_(0),
-	dynamicIndexBuffers_(0)
-	{
-		IWindow::hasTitle_ = true;
-		IWindow::resizable_ = false;
-		IWindow::title_ = "Stats";
+    AppStatistics::AppStatistics()
+        : collect_(true),
+          staticVertexBuffers_(0),
+          staticIndexBuffers_(0),
+          dynamicVertexBuffers_(0),
+          dynamicIndexBuffers_(0),
+          triangles_(0),
+          drawCalls_(0),
+          fps_(0),
+          frames_(0)
+    {
+        IWindow::hasTitle_ = true;
+        IWindow::resizable_ = false;
+        IWindow::title_ = "Stats";
+        startTime_ = Clock::now();
+    }
 
-		memset(&counters_[0], 0, sizeof(counters_));
-	}
+    AppStatistics::~AppStatistics()
+    {
 
-	AppStatistics::~AppStatistics()
-	{
+    }
 
-	}
-
-	bool AppStatistics::Collect(bool collect)
-	{
-		bool status = collect_;
-		collect_ = collect;
-		return status;
-	}
-
-	void AppStatistics::Reset()
-	{
-		tpReset_ = Clock::now();
-	}
-
-	void AppStatistics::Add2LastSecond(Counter& counter, size_t n)
-	{
-		if(!collect_)
-			return;
-
-		Milliseconds ms = std::chrono::duration_cast<Milliseconds>(Clock::now() - tpReset_);
-
-		if(ms.count() >= 1000)
-		{
-            for(int i=0; i<MAX_COUNTERS; i++)
-            {
-                Counter& obj = counters_[i];
-                obj.first = obj.second;
-                obj.second = 0;
-            }
-			Reset();
-		}		
+    void AppStatistics::Reset()
+    {
+    	Milliseconds ms = std::chrono::duration_cast<Milliseconds>(Clock::now() - startTime_);
+        if(ms.count() >= 1000)
+        {
+            startTime_ = Clock::now();
+            fps_ = frames_;
+            frames_ = 0;
+        }
         else
         {
-            counter.second += n;
+        	++frames_;
         }
-	}
+        
+        triangles_ = 0;
+        drawCalls_ = 0;
+        
+    }
 
-	void AppStatistics::AddVertexBuffer(bool dynamic)
-	{
-		if(dynamic)
-			++dynamicVertexBuffers_;
-		else
-			++staticVertexBuffers_;
-	}
 
-	void AppStatistics::AddIndexBuffer(bool dynamic)
-	{
-		if(dynamic)
-			++dynamicIndexBuffers_;
-		else
-			++staticIndexBuffers_;
-	}
+    void AppStatistics::AddVertexBuffer(bool dynamic)
+    {
+        if (collect_)
+        {
+            if (dynamic)
+                ++dynamicVertexBuffers_;
+            else
+                ++staticVertexBuffers_;
+        }
+    }
 
-	void AppStatistics::RemoveVertexBuffer(bool dynamic)
-	{
-		if(dynamic)
-			--dynamicVertexBuffers_;
-		else
-			--staticVertexBuffers_;
-	}
+    void AppStatistics::AddIndexBuffer(bool dynamic)
+    {
+        if (collect_)
+        {
+            if (dynamic)
+                ++dynamicIndexBuffers_;
+            else
+                ++staticIndexBuffers_;
+        }
+    }
 
-	void AppStatistics::RemoveIndexBuffer(bool dynamic)
-	{
-		if(dynamic)
-			--dynamicIndexBuffers_;
-		else
-			--staticIndexBuffers_;
-	}
+    void AppStatistics::RemoveVertexBuffer(bool dynamic)
+    {
+        if (collect_)
+        {
+            if (dynamic)
+                --dynamicVertexBuffers_;
+            else
+                --staticVertexBuffers_;
+        }
+    }
 
-	void AppStatistics::NewFrame()
-	{
-		Add2LastSecond(counters_[FRAMES], 1);
-	}
+    void AppStatistics::RemoveIndexBuffer(bool dynamic)
+    {
+        if (collect_)
+        {
+            if (dynamic)
+                --dynamicIndexBuffers_;
+            else
+                --staticIndexBuffers_;
+        }
+    }
 
-	void AppStatistics::NewDrawCall()
-	{
-		Add2LastSecond(counters_[DRAWCALLS], 1);
-	}
+    void AppStatistics::RenderGUIWindow()
+    {
+        collect_ = false;
 
-	void AppStatistics::NewTriangles(size_t n)
-	{
-		Add2LastSecond(counters_[TRIANGLES], n);	
-	}
+        static std::string emptys;
 
-	void AppStatistics::RenderGUIWindow()
-	{
-		Collect(false);
-		static std::string emptys;
+        IMGUISpacer(100, 10);
 
-		IMGUISpacer(100, 10);
+        const float LABEL_HEIGTH = 15;
+        std::stringstream ss;
+        ss << "FPS:" << fps_;
+        IMGUILine();
+        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
-		const float LABEL_HEIGTH = 15;
-        size_t fps = counters_[FRAMES].first;;
-	    std::stringstream ss;
-	    ss << "FPS:" << fps;
-		IMGUILine();
-		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
-#if 1
-	    ss.str(emptys);
+        ss.str(emptys);
 
-        size_t drawCalls = counters_[DRAWCALLS].first;
-        if(fps) drawCalls/=fps;
-	    ss << "DrawCalls:" << drawCalls;
-		IMGUILine();
-		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
+        ss << "DrawCalls:" << drawCalls_;
+        IMGUILine();
+        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
-	    ss.str(emptys);
+        ss.str(emptys);
 
-        size_t triangles = counters_[TRIANGLES].first;
-        if(fps) triangles/=fps;
-	    ss << "Triangles:" << triangles;
-		IMGUILine();
-		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
+        ss << "Triangles:" << triangles_;
+        IMGUILine();
+        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
-	    ss.str(emptys);
+        ss.str(emptys);
 
-		ss << "StaticVertexBuffers:" << staticVertexBuffers_;
-		IMGUILine();
-		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
+        ss << "StaticVertexBuffers:" << staticVertexBuffers_;
+        IMGUILine();
+        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
-	    ss.str(emptys);
+        ss.str(emptys);
 
-	    ss << "StaticIndexBuffers:" << staticIndexBuffers_;
-		IMGUILine();
-		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
+        ss << "StaticIndexBuffers:" << staticIndexBuffers_;
+        IMGUILine();
+        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
-	    ss.str(emptys);
+        ss.str(emptys);
 
-		ss << "DynamicVertexBuffers:" << dynamicVertexBuffers_;
-		IMGUILine();
-		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
+        ss << "DynamicVertexBuffers:" << dynamicVertexBuffers_;
+        IMGUILine();
+        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
-	    ss.str(emptys);
+        ss.str(emptys);
 
-	    ss << "DynamicIndexBuffers:" << dynamicIndexBuffers_;
-		IMGUILine();
-		IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
-#endif
-	    Collect(true);
+        ss << "DynamicIndexBuffers:" << dynamicIndexBuffers_;
+        IMGUILine();
+        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
 
-		
-	}
+        collect_ = true;
+
+
+    }
 }

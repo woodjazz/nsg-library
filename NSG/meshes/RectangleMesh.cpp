@@ -51,6 +51,11 @@ namespace NSG
 		return GL_TRIANGLE_FAN;
 	}
 
+    size_t RectangleMesh::GetNumberOfTriangles() const
+    {
+        return vertexsData_.size() - 2;
+    }
+
 	void RectangleMesh::Build()
 	{
 		vertexsData_.clear();

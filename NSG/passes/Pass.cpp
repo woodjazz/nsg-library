@@ -50,7 +50,7 @@ namespace NSG
           enableColorBuffer_(true),
           enableDepthBuffer_(true),
           drawMode_(DrawMode::SOLID),
-          enableCullFace_(false),
+          enableCullFace_(true),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT)
     {

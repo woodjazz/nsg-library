@@ -54,6 +54,11 @@ namespace NSG
         return GL_TRIANGLES;
     }
 
+    size_t BoxMesh::GetNumberOfTriangles() const
+    {
+        return vertexsData_.size()/3;
+    }
+
     void BoxMesh::Build()
     {
         // halves //
@@ -97,8 +102,6 @@ namespace NSG
                 data.push_back(vertexData);
             }
         }
-
-        Indexes indexes;
 
         for (int y = 0; y < resY_ - 1; y++)
         {

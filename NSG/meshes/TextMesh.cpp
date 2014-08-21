@@ -260,6 +260,11 @@ namespace NSG
         return GL_TRIANGLES;
     }
 
+    size_t TextMesh::GetNumberOfTriangles() const
+    {
+        return vertexsData_.size()/3;
+    }
+
     void TextMesh::OnViewChanged(int32_t width, int32_t height)
     {
         Invalidate();

@@ -101,6 +101,8 @@ namespace NSG
 
     typedef std::pair<PNode, PMesh> MeshNode;
 
+    typedef std::chrono::nanoseconds Nanoseconds;
+    typedef std::chrono::microseconds Microseconds;
     typedef std::chrono::milliseconds Milliseconds;
     typedef std::chrono::seconds Seconds;
     typedef std::chrono::steady_clock Clock;

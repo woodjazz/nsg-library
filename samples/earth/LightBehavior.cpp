@@ -43,9 +43,9 @@ void LightBehavior::Start()
     PPass pass(new Pass);
     technique->Add(pass);
     pass->SetProgram(pProgram);
-    pass->EnableCullFace(true);
+    //pass->EnableCullFace(false);
     //pass->SetCullFace(CullFaceMode::FRONT);
-    pass->SetFrontFace(FrontFaceMode::CW);
+    //pass->SetFrontFace(FrontFaceMode::CW);
     pMaterial->SetTechnique(technique);
 
     pSceneNode_->Set(pMaterial);
