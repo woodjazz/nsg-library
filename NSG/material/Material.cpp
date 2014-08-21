@@ -20,8 +20,7 @@ namespace NSG
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
           shininess_(1),
-          color_(1, 1, 1, 1),
-          enableCullFace_(false)
+          color_(1, 1, 1, 1)
     {
     }
 
@@ -42,7 +41,6 @@ namespace NSG
             specular_ = obj.specular_;
             shininess_ = obj.shininess_;
             color_ = obj.color_;
-            enableCullFace_ = obj.enableCullFace_;
         }
 
         return *this;
@@ -93,15 +91,6 @@ namespace NSG
         }
     }
 
-    void Material::EnableCullFace(bool enable)
-    {
-        if (enableCullFace_ != enable)
-        {
-            enableCullFace_ = enable;
-            SetUniformsNeedUpdate();
-        }
-    }
-
     void Material::SetTexture0(PTexture pTexture)
     {
         if (pTexture0_ != pTexture)
@@ -142,10 +131,5 @@ namespace NSG
         }
 
         return isReady;
-    }
-
-    void Material::Use()
-    {
-        Graphics::this_->SetCullFace(enableCullFace_);
     }
 }

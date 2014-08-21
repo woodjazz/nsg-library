@@ -136,4 +136,25 @@ namespace NSG
     
     struct UniformsUpdate;
     typedef std::set<UniformsUpdate*> UniformObjs;
+
+    enum class CullFaceMode
+    {
+        DEFAULT = GL_BACK,
+        BACK = GL_BACK,
+        FRONT = GL_FRONT,
+        FRONT_AND_BACK = GL_FRONT_AND_BACK
+    };
+
+    enum class FrontFaceMode
+    {
+        DEFAULT = GL_CCW,
+        CCW = GL_CCW,
+        CW = GL_CW
+    };
+
+    enum class DrawMode 
+    {
+        SOLID, 
+        WIREFRAME
+    };
 }

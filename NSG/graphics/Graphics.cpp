@@ -93,28 +93,7 @@ namespace NSG
             TRACE_LOG("Using extension: EXT_map_buffer_range");
         }
         
-
-        currentFbo_ = 0; //the default framebuffer (except for IOS)
-        vertexArrayObj_ = nullptr;
-        vertexBuffer_ = nullptr;
-        indexBuffer_ = nullptr;
-        program_ = nullptr;
-        memset(&textures_[0], 0, sizeof(textures_));
-        activeTexture_ = 0;
-        enabledAttributes_ = 0;
-        uniformsNeedUpdate_ = true;
-        lastMesh_ = nullptr;
-        lastMaterial_ = nullptr;
-        lastNode_ = nullptr;
-        activeMesh_ = nullptr;
-        activeMaterial_ = nullptr;
-        activeNode_ = nullptr;
-
-        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
-
-        // Set up texture data read/write alignment
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        ResetCachedState();
     }
 
     Graphics::~Graphics()
@@ -130,6 +109,21 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
+        activeTexture_ = 0;
+        enabledAttributes_ = 0;
+        uniformsNeedUpdate_ = true;
+        lastMesh_ = nullptr;
+        lastMaterial_ = nullptr;
+        lastNode_ = nullptr;
+        activeMesh_ = nullptr;
+        activeMaterial_ = nullptr;
+        activeNode_ = nullptr;
+
+        // Set up texture data read/write alignment
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        currentFbo_ = 0; //the default framebuffer (except for IOS)
         glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
         uniformsNeedUpdate_ = true;
         SetClearColor(Color(0, 0, 0, 1));
@@ -142,8 +136,10 @@ namespace NSG
         SetDepthMask(DEFAULT_DEPTH_MASK);
         SetStencilMask(DEFAULT_STENCIL_MASK);
         SetBlendModeTest(DEFAULT_BLEND_MODE);
-        SetDepthTest(DEFAULT_DEPTH_TEST_ENABLE);
-        SetCullFace(DEFAULT_CULL_FACE_ENABLE);
+        EnableDepthTest(DEFAULT_DEPTH_TEST_ENABLE);
+        EnableCullFace(DEFAULT_CULL_FACE_ENABLE);
+        SetCullFace(CullFaceMode::DEFAULT);
+        SetFrontFace(FrontFaceMode::DEFAULT);
         for (unsigned idx = 0; idx < MAX_TEXTURE_UNITS; idx++)
             SetTexture(idx, nullptr);
 
@@ -375,7 +371,7 @@ namespace NSG
         }
     }
 
-    void Graphics::SetDepthTest(bool enable)
+    void Graphics::EnableDepthTest(bool enable)
     {
         static bool enable_ = DEFAULT_DEPTH_TEST_ENABLE;
 
@@ -390,7 +386,7 @@ namespace NSG
         }
     }
 
-    void Graphics::SetCullFace(bool enable)
+    void Graphics::EnableCullFace(bool enable)
     {
         static bool enable_ = DEFAULT_CULL_FACE_ENABLE;
 
@@ -399,7 +395,6 @@ namespace NSG
             if (enable)
             {
                 glEnable(GL_CULL_FACE);
-                //glCullFace(GL_FRONT);
             }
             else
             {
@@ -409,6 +404,25 @@ namespace NSG
             enable_ = enable;
         }
     }
+
+    void Graphics::SetCullFace(CullFaceMode mode)
+    {
+        if (mode != cullFaceMode_)
+        {
+            glCullFace((GLenum)mode);
+            cullFaceMode_ = mode;
+        }
+    }
+
+    void Graphics::SetFrontFace(FrontFaceMode mode)
+    {
+        if (mode != frontFaceMode_)
+        {
+            glFrontFace((GLenum)mode);
+            frontFaceMode_ = mode;
+        }
+    }
+
 
     void Graphics::SetTexture(unsigned index, Texture* texture)
     {
@@ -666,9 +680,6 @@ namespace NSG
             return false;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        if(activeMaterial_)
-            activeMaterial_->Use();
 
         program_->SetVariables(activeMaterial_, activeNode_);
 

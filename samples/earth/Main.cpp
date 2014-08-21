@@ -48,6 +48,7 @@ struct Sample : App
     void Start()
     {
         scene_ = PScene(new Scene);
+        scene_->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
 
         camera_ = PCamera(new Camera);
         camera_->SetBehavior(PBehavior(new CameraBehavior));
@@ -70,7 +71,6 @@ struct Sample : App
 
         scene_->Start();
 
-        scene_->SetAmbientColor(Color(0,0,0,1));
     }
 
     void Update()

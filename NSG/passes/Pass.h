@@ -44,16 +44,12 @@ namespace NSG
         void SetStencilMask(GLuint mask);
         void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
         void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
-        enum Mode {SOLID, WIREFRAME};
-        void SetDrawMode(Mode mode)
-        {
-            drawMode_ = mode;
-        }
+        void SetDrawMode(DrawMode mode);
+        void EnableCullFace(bool enable);
+        void SetCullFace(CullFaceMode mode);
+        void SetFrontFace(FrontFaceMode mode);
         void SetProgram(PProgram pProgram);
-        PProgram GetProgram() const
-        {
-            return pProgram_;
-        }
+        PProgram GetProgram() const;
         virtual bool Render();
         virtual bool IsValid() override;
     protected:
@@ -70,6 +66,9 @@ namespace NSG
         GLuint stencilMaskValue_;
         bool enableColorBuffer_;
         bool enableDepthBuffer_;
-        Mode drawMode_;
+        DrawMode drawMode_;
+        bool enableCullFace_;
+        CullFaceMode cullFaceMode_;
+        FrontFaceMode frontFaceMode_;
     };
 }

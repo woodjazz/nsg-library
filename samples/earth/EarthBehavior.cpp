@@ -39,7 +39,7 @@ EarthBehavior::~EarthBehavior()
 
 void EarthBehavior::Start()
 {
-	PSphereMesh pSphereMesh(new SphereMesh(3, 32));
+	PSphereMesh pSphereMesh(new SphereMesh(3, 24));
     pSceneNode_->Set(pSphereMesh);
     
 	PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
@@ -47,11 +47,16 @@ void EarthBehavior::Start()
 	PProgram perVertex(new ProgramPerVertex1PointLight);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
+    //pass->SetDrawMode(DrawMode::WIREFRAME);
+ 	pass->EnableCullFace(true);
+	//pass->SetCullFace(CullFaceMode::FRONT);
+	pass->SetFrontFace(FrontFaceMode::CW);
+
     technique->Add(pass);
 	pass->SetProgram(perVertex);
     pMaterial->SetTechnique(technique);
 	pMaterial->SetTexture0(pEarthTexture);
-	pMaterial->SetDiffuseColor(Color(1.0f,1.0f,1.0f,1));
+	pMaterial->SetDiffuseColor(Color(0.8f,0.8f,0.8f,1));
 	pMaterial->SetSpecularColor(Color(1.0f,0.0f,0.0f,1));
 	pMaterial->SetShininess(10);
 

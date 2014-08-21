@@ -398,6 +398,8 @@ namespace NSG
 
     void Program::SetVariables(Material* material, Node* node)
     {
+        SetSceneVariables();
+        
         if (material)
         {
             if (texture0_loc_ != -1)

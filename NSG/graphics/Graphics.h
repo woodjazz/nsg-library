@@ -49,8 +49,10 @@ namespace NSG
         void SetDepthMask(bool enable);
         void SetStencilMask(GLuint mask);
         void SetBlendModeTest(BLEND_MODE blendMode);
-        void SetDepthTest(bool enable);
-        void SetCullFace(bool enable);
+        void EnableDepthTest(bool enable);
+        void EnableCullFace(bool enable);
+        void SetCullFace(CullFaceMode mode);
+        void SetFrontFace(FrontFaceMode mode);
         void SetTexture(unsigned index, Texture* texture);
         void SetViewport(const Recti& viewport);
         bool SetBuffers(Mesh* mesh);
@@ -63,7 +65,6 @@ namespace NSG
         bool SetProgram(Program* program);
         Program* GetProgram() const { return program_; }
         void SetFrameBuffer(GLuint value);
-        void SetSceneVariables(Program* program);
         bool Draw(bool solid);
         void DiscardFramebuffer();
         void BeginFrame();
@@ -102,5 +103,7 @@ namespace NSG
         bool has_vertex_array_object_ext_;
         bool has_map_buffer_range_ext_;
         UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
+        CullFaceMode cullFaceMode_;
+        FrontFaceMode frontFaceMode_;
     };
 }

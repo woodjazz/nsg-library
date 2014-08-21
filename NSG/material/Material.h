@@ -37,7 +37,6 @@ namespace NSG
 		Material();
 		~Material();
 		const Material& operator = (const Material& obj);
-		void EnableCullFace(bool enable);
 		void SetTexture0(PTexture pTexture);
 		void SetTexture1(PTexture pTexture);
         PTexture GetTexture0() const { return pTexture0_; }
@@ -55,19 +54,16 @@ namespace NSG
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
 		virtual bool IsValid() override;
-		void Use();
 		void SetTechnique(PTechnique technique) { technique_ = technique; }
 		PTechnique GetTechnique() const { return technique_; }
 	private:
 		PTexture pTexture0_;
 		PTexture pTexture1_;
-
         Color ambient_;
         Color diffuse_;
         Color specular_;
         float shininess_;
         Color color_;
-        bool enableCullFace_;
         PTechnique technique_;
         friend class Program;
 	};

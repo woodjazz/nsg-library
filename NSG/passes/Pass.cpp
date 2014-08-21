@@ -49,7 +49,10 @@ namespace NSG
           stencilMaskValue_(~GLuint(0)),
           enableColorBuffer_(true),
           enableDepthBuffer_(true),
-          drawMode_(SOLID)
+          drawMode_(DrawMode::SOLID),
+          enableCullFace_(false),
+          cullFaceMode_(CullFaceMode::DEFAULT),
+          frontFaceMode_(FrontFaceMode::DEFAULT)
     {
 
     }
@@ -103,25 +106,64 @@ namespace NSG
         stencilMaskValue_ = mask;
     }
 
+    void Pass::SetDrawMode(DrawMode mode)
+    {
+        drawMode_ = mode;
+    }
+
+    void Pass::EnableCullFace(bool enable)
+    {
+        enableCullFace_ = enable;
+    }
+
+    void Pass::SetCullFace(CullFaceMode mode)
+    {
+        cullFaceMode_ = mode;
+    }
+
+    void Pass::SetFrontFace(FrontFaceMode mode)
+    {
+        frontFaceMode_ = mode;
+    }
+
+    PProgram Pass::GetProgram() const
+    {
+        return pProgram_;
+    }
+
     bool Pass::Render()
     {
-        if(IsReady())
+        if (IsReady())
         {
             Graphics::this_->SetColorMask(enableColorBuffer_);
+
             Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
-                                            dpfailStencilOp_, dppassStencilOp_, stencilFunc_, 
+                                            dpfailStencilOp_, dppassStencilOp_, stencilFunc_,
                                             stencilRefValue_, stencilMaskValue_);
+
             Graphics::this_->SetBlendModeTest(blendMode_);
-            Graphics::this_->SetDepthTest(enableDepthTest_);
-            Graphics::this_->SetDepthMask(enableDepthBuffer_);
+            
+            Graphics::this_->EnableDepthTest(enableDepthTest_);
+            if(enableDepthTest_)
+            {
+                Graphics::this_->SetDepthMask(enableDepthBuffer_);
+            }
+
+            Graphics::this_->EnableCullFace(enableCullFace_);
+            if(enableCullFace_)
+            {    
+                Graphics::this_->SetCullFace(cullFaceMode_);
+                Graphics::this_->SetFrontFace(frontFaceMode_);
+            }
+
             Graphics::this_->SetProgram(pProgram_.get());
 
-            return Graphics::this_->Draw(drawMode_ == SOLID);
+            return Graphics::this_->Draw(drawMode_ == DrawMode::SOLID);
         }
 
         return false;
     }
-    
+
     void Pass::SetProgram(PProgram pProgram)
     {
         if (pProgram_ != pProgram)
