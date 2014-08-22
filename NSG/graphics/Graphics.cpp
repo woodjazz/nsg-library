@@ -82,6 +82,7 @@ namespace NSG
           has_vertex_array_object_ext_(false),
           has_map_buffer_range_ext_(false),
           has_depth_texture_ext_(false),
+          has_depth_component24_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT)
     {
@@ -120,6 +121,15 @@ namespace NSG
             TRACE_LOG("Using extension: GL_OES_depth_texture");
         }
 
+        if (CheckExtension("GL_OES_depth24"))
+        {
+            has_depth_component24_ext_ = true;
+            TRACE_LOG("Using extension: GL_OES_depth24"); // mandatory for DEPTH_COMPONENT24_OES
+        }
+
+#if GLES2
+        CHECK_CONDITION(has_depth_component24_ext_, __FILE__, __LINE__);
+#endif
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);

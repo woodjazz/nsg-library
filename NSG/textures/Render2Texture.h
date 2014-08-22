@@ -56,6 +56,5 @@ namespace NSG
 		bool enabled_;
         int32_t windowWidth_;
         int32_t windowHeight_;
-        bool has_discard_framebuffer_;
 	};
 }

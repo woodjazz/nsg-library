@@ -34,6 +34,12 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include <algorithm>
 
+#if defined(GLES2)
+#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
+#else
+//#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_EXT
+#endif
+
 namespace NSG
 {
     Render2Texture::Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer)
@@ -44,8 +50,7 @@ namespace NSG
           createDepthStencilBuffer_(createDepthStencilBuffer),
           enabled_(false),
           windowWidth_(0),
-          windowHeight_(0),
-          has_discard_framebuffer_(false)
+          windowHeight_(0)
     {
     }
 
@@ -65,9 +70,6 @@ namespace NSG
 
         CHECK_ASSERT(pTexture_ != nullptr, __FILE__, __LINE__);
 
-        if (Graphics::this_->CheckExtension("EXT_discard_framebuffer"))
-            has_discard_framebuffer_ = true;
-
         GLint width  = pTexture_->GetWidth();
         GLint height = pTexture_->GetHeight();
         //glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
@@ -85,19 +87,28 @@ namespace NSG
         if (createDepthStencilBuffer_)
         {
             // The depth stencil buffer
+#if IOS
+            //I do not know why but depth render buffer does not work on IOS
+            //The alternative solution is to use a depth texture
+            CHECK_CONDITION(Graphics::this_->HasDepthTexture(), __FILE__, __LINE__);
+            depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width, height, nullptr));
+            CHECK_CONDITION(depthTexture_->IsReady(), __FILE__, __LINE__);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
+
+#else
             glGenRenderbuffers(1, &depthStencilRenderBuffer_);
             glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
-#if defined(GLES2)
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, width, height);
-#else
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_EXT, width, height);
-#endif
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+#endif
         }
         else if (createDepthBuffer_)
         {
 #if IOS
+            //I do not know why but depth render buffer does not work on IOS
+            //The alternative solution is to use a depth texture
             CHECK_CONDITION(Graphics::this_->HasDepthTexture(), __FILE__, __LINE__);
             depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width, height, nullptr));
             CHECK_CONDITION(depthTexture_->IsReady(), __FILE__, __LINE__);

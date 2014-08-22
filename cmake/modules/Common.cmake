@@ -284,10 +284,10 @@ macro (setup_executable)
     else()
 
         add_executable(${PROJECT_NAME} ${src} ${hdr} )
-        target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
+        target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
 
         if(UNIX)
-            target_link_libraries(${PROJECT_NAME} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB})
+            target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB})
         endif()
 
         if(EXISTS "${data_dir}")

@@ -47,7 +47,7 @@ struct Test : public App
 		sceneNode_ = PSceneNode(new SceneNode);
         sceneNode_->Set(pMesh);
 
-        colorSelection_ = PFrameColorSelection(new FrameColorSelection(false, false));
+        colorSelection_ = PFrameColorSelection(new FrameColorSelection(true, true));
         
 		camera_ = PCamera(new Camera);
         camera_->EnableOrtho();
