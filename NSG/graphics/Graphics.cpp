@@ -701,8 +701,7 @@ namespace NSG
         lastNode_ = activeNode_;
         lastProgram_ = program_;
 
-        if (AppStatistics::this_)
-            AppStatistics::this_->NewDrawCall();
+        AppStatistics::this_->NewDrawCall();
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 

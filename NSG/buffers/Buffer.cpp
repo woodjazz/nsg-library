@@ -52,24 +52,18 @@ namespace NSG
 
         dataCollection_.push_back(Data(0, bytesNeeded));
 
-        if (AppStatistics::this_)
-        {
-            if (type_ == GL_ARRAY_BUFFER)
-                AppStatistics::this_->AddVertexBuffer(dynamic_);
-            else
-                AppStatistics::this_->AddIndexBuffer(dynamic_);
-        }
+        if (type_ == GL_ARRAY_BUFFER)
+            AppStatistics::this_->AddVertexBuffer(dynamic_);
+        else
+            AppStatistics::this_->AddIndexBuffer(dynamic_);
     }
 
     Buffer::~Buffer()
     {
-        if (AppStatistics::this_)
-        {
-            if (type_ == GL_ARRAY_BUFFER)
-                AppStatistics::this_->RemoveVertexBuffer(dynamic_);
-            else
-                AppStatistics::this_->RemoveIndexBuffer(dynamic_);
-        }
+        if (type_ == GL_ARRAY_BUFFER)
+            AppStatistics::this_->RemoveVertexBuffer(dynamic_);
+        else
+            AppStatistics::this_->RemoveIndexBuffer(dynamic_);
 
         glDeleteBuffers(1, &id_);
     }

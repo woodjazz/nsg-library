@@ -61,7 +61,7 @@ namespace NSG
 
     void BoxMesh::Build()
     {
-        // halves //
+        // halves
         float halfW = width_ * .5f;
         float halfH = height_ * .5f;
         float halfD = depth_ * .5f;
@@ -76,17 +76,16 @@ namespace NSG
 
         VertexsData& data = vertexsData_;
 
-        // TRIANGLES //
-
-        // Front Face //
+        // TRIANGLES 
+        // Front Face
         normal = Vertex3(0, 0, 1);
-        // add the vertexes //
+
         for (int iy = 0; iy < resY_; iy++)
         {
             for (int ix = 0; ix < resX_; ix++)
             {
 
-                // normalized tex coords //
+                // normalized tex coords
                 texcoord.x = ((float)ix / ((float)resX_ - 1.f));
                 texcoord.y = ((float)iy / ((float)resY_ - 1.f));
 
@@ -103,17 +102,18 @@ namespace NSG
             }
         }
 
+        // Front face CCW
         for (int y = 0; y < resY_ - 1; y++)
         {
             for (int x = 0; x < resX_ - 1; x++)
             {
-                // first triangle //
-                indexes_.push_back((y)*resX_ + x + vertOffset);
-                indexes_.push_back((y)*resX_ + x + 1 + vertOffset);
+                // first triangle
+                indexes_.push_back(y*resX_ + x + vertOffset);
+                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
 
-                // second triangle //
-                indexes_.push_back((y)*resX_ + x + 1 + vertOffset);
+                // second triangle
+                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }
@@ -122,18 +122,16 @@ namespace NSG
         vertOffset = data.size();
 
 
-        // Right Side Face //
+        // Right Side Face
         normal = Vertex3(1, 0, 0);
-        // add the vertexes //
         for (int iy = 0; iy < resY_; iy++)
         {
             for (int ix = 0; ix < resZ_; ix++)
             {
-                // normalized tex coords //
+                // normalized tex coords
                 texcoord.x = ((float)ix / ((float)resZ_ - 1.f));
                 texcoord.y = ((float)iy / ((float)resY_ - 1.f));
 
-                //vert.x = texcoord.x * width - halfW;
                 vert.x = halfW;
                 vert.y = texcoord.y * height_ - halfH;
                 vert.z = texcoord.x * -depth_ + halfD;
@@ -151,13 +149,13 @@ namespace NSG
         {
             for (int x = 0; x < resZ_ - 1; x++)
             {
-                // first triangle //
-                indexes_.push_back((y)*resZ_ + x + vertOffset);
-                indexes_.push_back((y)*resZ_ + x + 1 + vertOffset);
+                // first triangle
+                indexes_.push_back(y*resZ_ + x + vertOffset);
+                indexes_.push_back(y*resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
 
-                // second triangle //
-                indexes_.push_back((y)*resZ_ + x + 1 + vertOffset);
+                // second triangle
+                indexes_.push_back(y*resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
             }
@@ -165,19 +163,17 @@ namespace NSG
 
         vertOffset = data.size();
 
-        // Left Side Face //
+        // Left Side Face
         normal = Vertex3(-1, 0, 0);
-        // add the vertexes //
+
         for (int iy = 0; iy < resY_; iy++)
         {
             for (int ix = 0; ix < resZ_; ix++)
             {
-
-                // normalized tex coords //
+                // normalized tex coords
                 texcoord.x = ((float)ix / ((float)resZ_ - 1.f));
                 texcoord.y = ((float)iy / ((float)resY_ - 1.f));
 
-                //vert.x = texcoord.x * width - halfW;
                 vert.x = -halfW;
                 vert.y = texcoord.y * height_ - halfH;
                 vert.z = texcoord.x * depth_ - halfD;
@@ -195,13 +191,13 @@ namespace NSG
         {
             for (int x = 0; x < resZ_ - 1; x++)
             {
-                // first triangle //
-                indexes_.push_back((y)*resZ_ + x + vertOffset);
-                indexes_.push_back((y)*resZ_ + x + 1 + vertOffset);
+                // first triangle
+                indexes_.push_back(y*resZ_ + x + vertOffset);
+                indexes_.push_back(y*resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
 
-                // second triangle //
-                indexes_.push_back((y)*resZ_ + x + 1 + vertOffset);
+                // second triangle
+                indexes_.push_back(y*resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
             }
@@ -210,15 +206,14 @@ namespace NSG
         vertOffset = data.size();
 
 
-        // Back Face //
+        // Back Face 
         normal = Vertex3(0, 0, -1);
-        // add the vertexes //
         for (int iy = 0; iy < resY_; iy++)
         {
             for (int ix = 0; ix < resX_; ix++)
             {
 
-                // normalized tex coords //
+                // normalized tex coords
                 texcoord.x = ((float)ix / ((float)resX_ - 1.f));
                 texcoord.y = ((float)iy / ((float)resY_ - 1.f));
 
@@ -239,13 +234,13 @@ namespace NSG
         {
             for (int x = 0; x < resX_ - 1; x++)
             {
-                // first triangle //
-                indexes_.push_back((y)*resX_ + x + vertOffset);
-                indexes_.push_back((y)*resX_ + x + 1 + vertOffset);
+                // first triangle
+                indexes_.push_back(y*resX_ + x + vertOffset);
+                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
 
-                // second triangle //
-                indexes_.push_back((y)*resX_ + x + 1 + vertOffset);
+                // second triangle
+                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }
@@ -253,20 +248,18 @@ namespace NSG
 
         vertOffset = data.size();
 
-        // Top Face //
-        normal = Vertex3(0, -1, 0);
-        // add the vertexes //
+        // Top Face
+        normal = Vertex3(0, 1, 0);
         for (int iy = 0; iy < resZ_; iy++)
         {
             for (int ix = 0; ix < resX_; ix++)
             {
 
-                // normalized tex coords //
+                // normalized tex coords
                 texcoord.x = ((float)ix / ((float)resX_ - 1.f));
                 texcoord.y = ((float)iy / ((float)resZ_ - 1.f));
 
                 vert.x = texcoord.x * width_ - halfW;
-                //vert.y = texcoord.y * height - halfH;
                 vert.y = -halfH;
                 vert.z = texcoord.y * depth_ - halfD;
 
@@ -283,13 +276,13 @@ namespace NSG
         {
             for (int x = 0; x < resX_ - 1; x++)
             {
-                // first triangle //
-                indexes_.push_back((y)*resX_ + x + vertOffset);
-                indexes_.push_back((y)*resX_ + x + 1 + vertOffset);
+                // first triangle
+                indexes_.push_back(y*resX_ + x + vertOffset);
+                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
 
-                // second triangle //
-                indexes_.push_back((y)*resX_ + x + 1 + vertOffset);
+                // second triangle
+                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }
@@ -297,19 +290,17 @@ namespace NSG
 
         vertOffset = data.size();
 
-        // Bottom Face //
-        normal = Vertex3(0, 1, 0);
-        // add the vertexes //
+        // Bottom Face
+        normal = Vertex3(0, -1, 0);
         for (int iy = 0; iy < resZ_; iy++)
         {
             for (int ix = 0; ix < resX_; ix++)
             {
-                // normalized tex coords //
+                // normalized tex coords
                 texcoord.x = ((float)ix / ((float)resX_ - 1.f));
                 texcoord.y = ((float)iy / ((float)resZ_ - 1.f));
 
                 vert.x = texcoord.x * width_ - halfW;
-                //vert.y = texcoord.y * height - halfH;
                 vert.y = halfH;
                 vert.z = texcoord.y * -depth_ + halfD;
 
@@ -326,13 +317,13 @@ namespace NSG
         {
             for (int x = 0; x < resX_ - 1; x++)
             {
-                // first triangle //
-                indexes_.push_back((y)*resX_ + x + vertOffset);
-                indexes_.push_back((y)*resX_ + x + 1 + vertOffset);
+                // first triangle
+                indexes_.push_back(y*resX_ + x + vertOffset);
+                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
 
-                // second triangle //
-                indexes_.push_back((y)*resX_ + x + 1 + vertOffset);
+                // second triangle
+                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }

@@ -44,6 +44,7 @@ namespace NSG
 			PLayoutManager pLayoutManager_;
 			PAreaStyle transparentAreaStyle_;
 			Recti viewport_;
+			bool hasAppGUI_;
 
 			Context();
 			~Context();

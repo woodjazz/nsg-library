@@ -25,31 +25,54 @@ misrepresented as being the original software.
 */
 #include "AppStatistics.h"
 #include "AppConfiguration.h"
-#include "IMGUIContext.h"
-#include "IMGUISkin.h"
-#include "IMGUIStyle.h"
 #include "App.h"
-
+#include "Node.h"
+#include "Pass.h"
+#include "TextMesh.h"
+#include "Material.h"
+#include "Graphics.h"
 
 namespace NSG
 {
     template <> AppStatistics* Singleton<AppStatistics>::this_ = nullptr;
 
     AppStatistics::AppStatistics()
-        : collect_(true),
-          staticVertexBuffers_(0),
-          staticIndexBuffers_(0),
-          dynamicVertexBuffers_(0),
-          dynamicIndexBuffers_(0),
-          triangles_(0),
-          drawCalls_(0),
-          fps_(0),
-          frames_(0)
+        : frames_(0),
+          collect_(true),
+          pass_(new Pass),
+          material_(new Material)
     {
-        IWindow::hasTitle_ = true;
-        IWindow::resizable_ = false;
-        IWindow::title_ = "Stats";
         startTime_ = Clock::now();
+
+        pass_->EnableDepthTest(false);
+        pass_->EnableStencilTest(false);
+
+        material_->SetColor(Color(1, 1, 1, 1));
+
+
+        for (int i = 0; i < (int)Stats::MAX_STATS; i++)
+        {
+            stats_[i] = 0;
+            text_[i] = PTextMesh(new TextMesh);
+            node_[i] = PNode(new Node);
+            if (i > 0)
+            {
+                node_[i]->SetParent(node_[i - 1]);
+            }
+        }
+
+        pass_->SetProgram(text_[0]->GetProgram());
+        material_->SetTexture0(text_[0]->GetTexture());
+
+        node_[0]->SetPosition(Vertex3(-1, 1, 0));
+
+        label_[(int)Stats::FPS] = "Fps:";
+        label_[(int)Stats::DRAW_CALLS] = "Draw calls:";
+        label_[(int)Stats::TRIANGLES] = "Triangles:";
+        label_[(int)Stats::STATIC_VBO] = "Static VBO:";
+        label_[(int)Stats::STATIC_IBO] = "Static IBO:";
+        label_[(int)Stats::DYNAMIC_VBO] = "Dynamic VBO:";
+        label_[(int)Stats::DYNAMIC_IBO] = "Dynamic IBO:";
     }
 
     AppStatistics::~AppStatistics()
@@ -57,122 +80,98 @@ namespace NSG
 
     }
 
-    void AppStatistics::Reset()
+    void AppStatistics::NewDrawCall()
     {
-    	Milliseconds ms = std::chrono::duration_cast<Milliseconds>(Clock::now() - startTime_);
-        if(ms.count() >= 1000)
+        if (collect_)
+            ++stats_[(int)Stats::DRAW_CALLS];
+    }
+
+    void AppStatistics::NewTriangles(size_t n)
+    {
+        if (collect_)
+            stats_[(int)Stats::TRIANGLES] += n;
+    }
+
+    void AppStatistics::NewFrame()
+    {
+        Milliseconds ms = std::chrono::duration_cast<Milliseconds>(Clock::now() - startTime_);
+        if (ms.count() >= 1000)
         {
             startTime_ = Clock::now();
-            fps_ = frames_;
+            stats_[(int)Stats::FPS] = frames_;
             frames_ = 0;
         }
         else
         {
-        	++frames_;
+            ++frames_;
         }
-        
-        triangles_ = 0;
-        drawCalls_ = 0;
-        
+
+        stats_[(int)Stats::TRIANGLES] = 0;
+        stats_[(int)Stats::DRAW_CALLS] = 0;
     }
 
 
     void AppStatistics::AddVertexBuffer(bool dynamic)
     {
-        if (collect_)
-        {
-            if (dynamic)
-                ++dynamicVertexBuffers_;
-            else
-                ++staticVertexBuffers_;
-        }
+        if (dynamic)
+            ++stats_[(int)Stats::DYNAMIC_VBO];
+        else
+            ++stats_[(int)Stats::STATIC_VBO];
     }
 
     void AppStatistics::AddIndexBuffer(bool dynamic)
     {
-        if (collect_)
-        {
-            if (dynamic)
-                ++dynamicIndexBuffers_;
-            else
-                ++staticIndexBuffers_;
-        }
+        if (dynamic)
+            ++stats_[(int)Stats::DYNAMIC_IBO];
+        else
+            ++stats_[(int)Stats::STATIC_IBO];
     }
 
     void AppStatistics::RemoveVertexBuffer(bool dynamic)
     {
-        if (collect_)
-        {
-            if (dynamic)
-                --dynamicVertexBuffers_;
-            else
-                --staticVertexBuffers_;
-        }
+        if (dynamic)
+            --stats_[(int)Stats::DYNAMIC_VBO];
+        else
+            --stats_[(int)Stats::STATIC_VBO];
     }
 
     void AppStatistics::RemoveIndexBuffer(bool dynamic)
     {
-        if (collect_)
-        {
-            if (dynamic)
-                --dynamicIndexBuffers_;
-            else
-                --staticIndexBuffers_;
-        }
+        if (dynamic)
+            --stats_[(int)Stats::DYNAMIC_IBO];
+        else
+            --stats_[(int)Stats::STATIC_IBO];
     }
 
-    void AppStatistics::RenderGUIWindow()
+    void AppStatistics::Show()
     {
+        stats_[(int)Stats::DYNAMIC_VBO] -= (int)Stats::MAX_STATS;
+        stats_[(int)Stats::DYNAMIC_IBO] -= (int)Stats::MAX_STATS;
+
         collect_ = false;
 
-        static std::string emptys;
+        Graphics::this_->Set(material_.get());
 
-        IMGUISpacer(100, 10);
-
-        const float LABEL_HEIGTH = 15;
         std::stringstream ss;
-        ss << "FPS:" << fps_;
-        IMGUILine();
-        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
+        for (int i = 0; i < (int)Stats::MAX_STATS; i++)
+        {
+            Graphics::this_->Set(node_[i].get());
+            Graphics::this_->Set(text_[i].get());
 
-        ss.str(emptys);
+            if (i > 0)
+                node_[i]->SetPosition(Vertex3(0, -text_[i - 1]->GetHeight(), 0));
 
-        ss << "DrawCalls:" << drawCalls_;
-        IMGUILine();
-        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
+            ss << stats_[i];
+            text_[i]->SetText(label_[i] + ss.str(), LEFT_ALIGNMENT, TOP_ALIGNMENT);
+            ss.str("");
 
-        ss.str(emptys);
-
-        ss << "Triangles:" << triangles_;
-        IMGUILine();
-        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
-
-        ss.str(emptys);
-
-        ss << "StaticVertexBuffers:" << staticVertexBuffers_;
-        IMGUILine();
-        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
-
-        ss.str(emptys);
-
-        ss << "StaticIndexBuffers:" << staticIndexBuffers_;
-        IMGUILine();
-        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
-
-        ss.str(emptys);
-
-        ss << "DynamicVertexBuffers:" << dynamicVertexBuffers_;
-        IMGUILine();
-        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
-
-        ss.str(emptys);
-
-        ss << "DynamicIndexBuffers:" << dynamicIndexBuffers_;
-        IMGUILine();
-        IMGUILabel(ss.str(), 100, LABEL_HEIGTH);
+            pass_->Render();
+        }
 
         collect_ = true;
 
+        stats_[(int)Stats::DYNAMIC_VBO] += (int)Stats::MAX_STATS;
+        stats_[(int)Stats::DYNAMIC_IBO] += (int)Stats::MAX_STATS;
 
     }
 }

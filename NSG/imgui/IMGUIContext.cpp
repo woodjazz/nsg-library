@@ -58,7 +58,8 @@ namespace NSG
               pRootNode_(new Node),
               pLayoutManager_(new LayoutManager(pRootNode_)),
               transparentAreaStyle_(new AreaStyle),
-              viewport_(0)
+              viewport_(0),
+              hasAppGUI_(true)
         {
             App::Add(this);
             transparentAreaStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
@@ -69,7 +70,7 @@ namespace NSG
         Context::~Context()
         {
             App::Remove(this);
-			Context::this_ = nullptr;
+            Context::this_ = nullptr;
         }
 
         bool Context::IsReady() const
@@ -79,19 +80,38 @@ namespace NSG
 
         void Context::RenderGUI()
         {
-            Camera* camera = Camera::Deactivate(); 
+            if (hasAppGUI_)
+            {
+                Camera* camera = Camera::Deactivate();
 
-            Graphics::this_->SetViewport(viewport_);   
+                Graphics::this_->SetViewport(viewport_);
 
-            state_->Begin();
+                state_->Begin();
 
-            pCurrentNode_ = pRootNode_;
+                pCurrentNode_ = pRootNode_;
 
-            pLayoutManager_->Render();
+                pLayoutManager_->Render();
 
-            state_->End();
+                state_->End();
 
-            Camera::Activate(camera);
+                if (AppConfiguration::this_->showStatistics_)
+                    AppStatistics::this_->Show();
+
+                Camera::Activate(camera);
+
+                hasAppGUI_ = pLayoutManager_->HasAppGUI();
+            }
+            else
+            {
+                Camera* camera = Camera::Deactivate();
+
+                Graphics::this_->SetViewport(viewport_);
+
+                if (AppConfiguration::this_->showStatistics_)
+                    AppStatistics::this_->Show();
+
+                Camera::Activate(camera);
+            }
         }
 
         IdType Context::GetValidId()

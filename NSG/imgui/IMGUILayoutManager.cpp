@@ -588,5 +588,13 @@ namespace NSG
         {
             return currentWindowManager_;
         }
+
+        bool LayoutManager::HasAppGUI() const
+        {
+            if(windowManagers_.size() == 1 && currentWindowManager_->areas_.size() == 1)
+                return false;
+
+            return true;
+        }
     }
 }

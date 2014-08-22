@@ -171,6 +171,7 @@ namespace NSG
 #if 1
         IMGUI::Context::this_->RenderGUI();
 #endif
+
         Graphics::this_->EndFrame();
      }
 
@@ -182,7 +183,7 @@ namespace NSG
 
     void InternalApp::ViewChanged(int32_t width, int32_t height)
     {
-        TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
+        //TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
         pApp_->SetViewSize(width, height);
         pApp_->ViewChanged(width, height);
     }
@@ -221,7 +222,7 @@ namespace NSG
 
     void InternalApp::OnKey(int key, int action, int modifier)
     {
-        TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
+        //TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
         IMGUI::OnKey(key, action, modifier);
         pApp_->OnKey(key, action, modifier);
     }
@@ -237,8 +238,7 @@ namespace NSG
     {
         PerformTicks();
 
-        if (AppStatistics::this_)
-            AppStatistics::this_->Reset();
+        AppStatistics::this_->NewFrame();
     }
 
     bool InternalApp::ShallExit() const

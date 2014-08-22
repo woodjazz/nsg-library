@@ -29,21 +29,9 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-struct Statistics : public AppStatistics
-{
-    void StartGUIWindow()
-    {
-    }
-
-    void EndGUIWindow()
-    {
-    }
-};
-
 struct Sample : App
 {
     PScene scene_;
-    Statistics statistics_;
     PCamera camera_;
     PSceneNode box_;
     PSceneNode sphere_;
@@ -55,8 +43,9 @@ struct Sample : App
 
 	Sample()
 	{
-		AppConfiguration::this_->width_ = 50;
-		AppConfiguration::this_->height_ = 50;
+		AppConfiguration::this_->width_ = 640;
+		AppConfiguration::this_->height_ = 480;
+        AppConfiguration::this_->showStatistics_ = true;
 	}
 
 	void Start()
@@ -86,8 +75,6 @@ struct Sample : App
         
         PPass normalPass(new Pass);
         normalPass->SetProgram(PProgram(new ProgramUnlit));
-        normalPass->SetFrontFace(FrontFaceMode::CW);
-
 
         PPass depthPass(new Pass);
         depthPass->EnableColorBuffer(false);
@@ -145,11 +132,6 @@ struct Sample : App
     {
         technique_->Render();
         showTexture_->Show();
-    }
-
-    void RenderGUIWindow()
-    {
-        IMGUIWindow(&statistics_, 25, 25);
     }
 };
 

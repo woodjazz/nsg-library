@@ -24,36 +24,36 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
+#include "Types.h"
 #include "Singleton.h"
-#include "IMGUI.h"
-#include <vector>
+#include <string>
 
 namespace NSG 
 {
-	class AppStatistics : public Singleton<AppStatistics>, public IMGUI::IWindow
+	class AppStatistics : public Singleton<AppStatistics>
 	{
 	public:
 		AppStatistics();
 		~AppStatistics();
-		void Reset();
+		void NewFrame();
 		void AddVertexBuffer(bool dynamic);
 		void AddIndexBuffer(bool dynamic);
 		void RemoveVertexBuffer(bool dynamic);
 		void RemoveIndexBuffer(bool dynamic);
-		void NewDrawCall() { if(collect_) ++drawCalls_; }
-		void NewTriangles(size_t n) { if(collect_) triangles_ += n; }
-		void RenderGUIWindow();
+		void NewDrawCall();
+		void NewTriangles(size_t n);
+		void Show();
 	private:
-  		size_t staticVertexBuffers_;
-		size_t staticIndexBuffers_;
-		size_t dynamicVertexBuffers_;
-		size_t dynamicIndexBuffers_;
-		size_t triangles_;
-		size_t drawCalls_;
-		size_t fps_;
+		enum class Stats {FPS, DRAW_CALLS, TRIANGLES, STATIC_VBO, STATIC_IBO, DYNAMIC_VBO, DYNAMIC_IBO, MAX_STATS};
+		static const int LINES = 7;
+		std::string label_[(int)Stats::MAX_STATS];
+		size_t stats_[(int)Stats::MAX_STATS];
 		size_t frames_;
         bool collect_;
         TimePoint startTime_;
+        PPass pass_;
+        PMaterial material_;
+        PTextMesh text_[(int)Stats::MAX_STATS];
+        PNode node_[(int)Stats::MAX_STATS];
  	};
 }

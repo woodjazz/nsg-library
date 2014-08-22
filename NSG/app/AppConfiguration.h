@@ -35,6 +35,7 @@ namespace NSG
 		int32_t width_;
 		int32_t height_;
 		int swapInterval_; // See https://wiki.libsdl.org/SDL_GL_SetSwapInterval
+		bool showStatistics_;
 		AppConfiguration();
 		~AppConfiguration();
 	};

@@ -41,7 +41,7 @@ namespace NSG
     class TextMesh : public Mesh, IViewChangedListener
     {
     public:
-        TextMesh(const std::string& textureFilename, bool dynamic = true);
+        TextMesh(const std::string& textureFilename = "", bool dynamic = true);
         ~TextMesh();
         bool Has(const std::string& textureFilename) const;
         bool SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);

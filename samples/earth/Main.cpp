@@ -32,7 +32,6 @@ using namespace NSG;
 
 struct Sample : App
 {
-    AppStatistics statistics_;
     PScene scene_;
     PCamera camera_;
     PSceneNode earth_;
@@ -43,6 +42,7 @@ struct Sample : App
     {
         AppConfiguration::this_->width_ = 640;
         AppConfiguration::this_->height_ = 480;
+        AppConfiguration::this_->showStatistics_ = true;
     }
 
     void Start()
@@ -81,11 +81,6 @@ struct Sample : App
     void RenderFrame()
     {
         scene_->Render();
-    }
-
-    void RenderGUIWindow()
-    {
-        IMGUIWindow(&statistics_, 25, 25);
     }
 };
 

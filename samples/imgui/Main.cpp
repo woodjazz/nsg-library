@@ -67,45 +67,8 @@ struct Window0 : IMGUI::IWindow
     }
 };
 
-struct Statistics : public AppStatistics
-{
-    PTexture newTexture_;
-    PTexture oldTexture_;
-    PMaterial material_;
-    Color color_;
-
-    void StartGUIWindow()
-    {
-        if(!newTexture_)
-        {
-			IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
-			IMGUISkin()->buttonStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
-			IMGUISkin()->textStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
-
-            material_ = IMGUISkin()->windowStyle_->normalMaterial_;
-			IMGUISkin()->windowStyle_->activeMaterial_ = material_;
-			IMGUISkin()->windowStyle_->hotMaterial_ = material_;
-
-            newTexture_ = PTexture(new TextureFile("data/blackBump.png"));
-            oldTexture_ = material_->GetTexture0();
-            color_ = material_->GetColor();
-      }
-
-        material_->SetTexture0(newTexture_);
-        material_->SetColor(Color(1,1,1,1));
-
-    }
-
-    void EndGUIWindow()
-    {
-        material_->SetTexture0(oldTexture_);  
-        material_->SetColor(color_);
-    }
-};
-
 struct Sample : App
 {
-    Statistics statistics_;
     Window0 window0_;
 	IMGUI::PWindowStyle style_;
 
@@ -113,6 +76,7 @@ struct Sample : App
     {
         AppConfiguration::this_->width_ = 320;
         AppConfiguration::this_->height_ = 200;
+        AppConfiguration::this_->showStatistics_ = true;
     }
 
 	void Start()
@@ -261,8 +225,6 @@ struct Sample : App
                 menu = exit = false;
             }
         }
-
-		IMGUIWindow(&statistics_, 50, 75);
     }
 };
 

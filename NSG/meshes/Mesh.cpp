@@ -151,9 +151,9 @@ namespace NSG
 
             glDrawElements(mode, indexes_.size(), GL_UNSIGNED_SHORT, offset);
 
-            if (AppStatistics::this_ && solid)
+            if (solid)
             {
-                 AppStatistics::this_->NewTriangles(GetNumberOfTriangles());
+                AppStatistics::this_->NewTriangles(GetNumberOfTriangles());
             }
         }
         else
@@ -162,7 +162,7 @@ namespace NSG
 
             glDrawArrays(mode, first, vertexsData_.size());
 
-            if (AppStatistics::this_ && solid)
+            if (solid)
             {
                 AppStatistics::this_->NewTriangles(GetNumberOfTriangles());
             }

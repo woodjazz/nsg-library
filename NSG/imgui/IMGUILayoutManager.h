@@ -150,6 +150,7 @@ namespace NSG
             PWindowManager GetCurrentWindowManager() const;
             void MarkAllWindowsAsNonCreated();
             void RemoveAllNonCreatedWindows();
+            bool HasAppGUI() const;
 
         private:
 

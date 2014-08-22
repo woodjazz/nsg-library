@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "SharedPointers.h"
 #include "Singleton.h"
+#include "AppStatistics.h"
 #include <set>
 
 namespace NSG
@@ -44,6 +45,7 @@ namespace NSG
 		PAudio audio_;
 		Scene* scene_;
 		bool allGPUObjectAreValid_;
+		PAppStatistics statistics_;
 
 		Context();
 		~Context();
