@@ -70,7 +70,7 @@ namespace NSG
     static void RenderFrame(void* data = nullptr)
     {
         SDL_Event event;
-        while (SDL_PollEvent(&event))
+        if (SDL_PollEvent(&event))
         {
             if (event.type == SDL_APP_DIDENTERBACKGROUND)
             {
