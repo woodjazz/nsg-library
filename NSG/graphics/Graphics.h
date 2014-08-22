@@ -72,6 +72,7 @@ namespace NSG
         void SetUniformsNeedUpdate() { uniformsNeedUpdate_ = true;}
         bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
         bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
+        bool HasDepthTexture() const { return has_depth_texture_ext_; }
         void SetVertexAttrPointers();
         void SetAttributes(const Mesh* mesh, const Program* program);
         void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
@@ -103,6 +104,7 @@ namespace NSG
         bool has_discard_framebuffer_ext_;
         bool has_vertex_array_object_ext_;
         bool has_map_buffer_range_ext_;
+        bool has_depth_texture_ext_;
         UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
         CullFaceMode cullFaceMode_;
         FrontFaceMode frontFaceMode_;

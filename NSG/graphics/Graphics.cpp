@@ -64,25 +64,26 @@ namespace NSG
 
     Graphics::Graphics()
         : currentFbo_(0),  //the default framebuffer (except for IOS)
-        vertexArrayObj_(nullptr),
-        vertexBuffer_(nullptr),
-        indexBuffer_(nullptr),
-        program_(nullptr),
-        activeTexture_(0),
-        enabledAttributes_(0),
-        uniformsNeedUpdate_(true),
-        lastMesh_(nullptr),
-        lastMaterial_(nullptr),
-        lastProgram_(nullptr),
-        lastNode_(nullptr),
-        activeMesh_(nullptr),
-        activeMaterial_(nullptr),
-        activeNode_(nullptr),
-        has_discard_framebuffer_ext_(false),
-        has_vertex_array_object_ext_(false),
-        has_map_buffer_range_ext_(false),
-        cullFaceMode_(CullFaceMode::DEFAULT),
-        frontFaceMode_(FrontFaceMode::DEFAULT)
+          vertexArrayObj_(nullptr),
+          vertexBuffer_(nullptr),
+          indexBuffer_(nullptr),
+          program_(nullptr),
+          activeTexture_(0),
+          enabledAttributes_(0),
+          uniformsNeedUpdate_(true),
+          lastMesh_(nullptr),
+          lastMaterial_(nullptr),
+          lastProgram_(nullptr),
+          lastNode_(nullptr),
+          activeMesh_(nullptr),
+          activeMaterial_(nullptr),
+          activeNode_(nullptr),
+          has_discard_framebuffer_ext_(false),
+          has_vertex_array_object_ext_(false),
+          has_map_buffer_range_ext_(false),
+          has_depth_texture_ext_(false),
+          cullFaceMode_(CullFaceMode::DEFAULT),
+          frontFaceMode_(FrontFaceMode::DEFAULT)
     {
         TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
         TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
@@ -113,6 +114,13 @@ namespace NSG
             TRACE_LOG("Using extension: EXT_map_buffer_range");
         }
 
+        if (CheckExtension("GL_OES_depth_texture"))
+        {
+            has_depth_texture_ext_ = true;
+            TRACE_LOG("Using extension: GL_OES_depth_texture");
+        }
+
+
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -132,7 +140,7 @@ namespace NSG
     void Graphics::ResetCachedState()
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        
+
         SetClearColor(Color(0, 0, 0, 1));
         SetClearDepth(1);
         SetClearStencil(0);

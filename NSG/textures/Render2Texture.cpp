@@ -66,8 +66,8 @@ namespace NSG
         CHECK_ASSERT(pTexture_ != nullptr, __FILE__, __LINE__);
 
         if (Graphics::this_->CheckExtension("EXT_discard_framebuffer"))
-             has_discard_framebuffer_ = true;
- 
+            has_discard_framebuffer_ = true;
+
         GLint width  = pTexture_->GetWidth();
         GLint height = pTexture_->GetHeight();
         //glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
@@ -98,22 +98,10 @@ namespace NSG
         else if (createDepthBuffer_)
         {
 #if IOS
-            if (Graphics::this_->CheckExtension("GL_OES_depth_texture"))
-            {
-                depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width, height, nullptr));
-                if (depthTexture_->IsReady())
-                {
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
-                }
-                else
-                {
-                    CHECK_ASSERT(!"Failed to create depth texture!!!", __FILE__, __LINE__);
-                }
-            }
-            else
-            {
-                CHECK_ASSERT(!"Extension: GL_OES_depth_texture not found!", __FILE__, __LINE__);
-            }
+            CHECK_CONDITION(Graphics::this_->HasDepthTexture(), __FILE__, __LINE__);
+            depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width, height, nullptr));
+            CHECK_CONDITION(depthTexture_->IsReady(), __FILE__, __LINE__);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
 #else
             // The depth buffer
             glGenRenderbuffers(1, &depthRenderBuffer_);
@@ -161,7 +149,7 @@ namespace NSG
 
             Graphics::this_->SetFrameBuffer(framebuffer_);
 
-            Graphics::this_->SetViewport(Recti{0, 0, pTexture_->GetWidth(), pTexture_->GetHeight()});
+            Graphics::this_->SetViewport(Recti {0, 0, pTexture_->GetWidth(), pTexture_->GetHeight()});
 
             if (createDepthStencilBuffer_)
                 Graphics::this_->ClearAllBuffers();
