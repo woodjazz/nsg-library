@@ -284,7 +284,7 @@ macro (setup_executable)
     else()
 
         add_executable(${PROJECT_NAME} ${src} ${hdr} )
-        target_link_libraries(${PROJECT_NAME} NSG ${LIBRARIES_2_LINK})
+        target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
         if(UNIX)
             target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB})
@@ -322,7 +322,6 @@ endmacro (setup_library)
 ##################################################################################
 macro (setup_sample)
     setup_executable()
-    target_link_libraries(${PROJECT_NAME} NSG)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
 endmacro (setup_sample)
 
@@ -331,7 +330,6 @@ endmacro (setup_sample)
 ##################################################################################
 macro (setup_test)
     setup_executable()
-    target_link_libraries(${PROJECT_NAME} NSG)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tests")
     add_test(${PROJECT_NAME} ${PROJECT_NAME})
 endmacro (setup_test)

@@ -234,6 +234,8 @@ FOREACH(subdir ${SUBDIRS})
 ENDFOREACH()
 add_subdirectory(NSG)
 
+set(LIBRARIES_2_LINK NSG) #NSG will have all the dependencies already set 
+
 ###########################
 # samples
 ###########################
@@ -244,7 +246,6 @@ FOREACH(subdir ${SUBDIRS})
     	ADD_SUBDIRECTORY(${SAMPLES_DIR}/${subdir})
 	ENDIF()
 ENDFOREACH()
-#ADD_SUBDIRECTORY(${SAMPLES_DIR}/filters)
 
 ###########################
 # tests

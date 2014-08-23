@@ -31,6 +31,7 @@ if(ANDROID AND NOT USE_SDL)
 endif()
 	
 setup_library()
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
 
 

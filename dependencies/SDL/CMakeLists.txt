@@ -121,4 +121,7 @@ set (INSTALL_INCLUDE_DIRS ${INSTALL_INCLUDE_DIRS} SDL PARENT_SCOPE)
 set (INCLUDE_DIRS_ONLY include)
 
 setup_library()
+if(UNIX)
+    target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
+endif()
 
