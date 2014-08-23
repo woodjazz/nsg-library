@@ -99,7 +99,7 @@ namespace NSG
         {
             startTime_ = Clock::now();
             stats_[(int)Stats::FPS] = frames_;
-            frames_ = 0;
+            frames_ = 1;
         }
         else
         {

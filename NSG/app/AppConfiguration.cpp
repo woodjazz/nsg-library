@@ -33,12 +33,9 @@ namespace NSG
         : fps_(60),
           width_(640),
           height_(480),
-          swapInterval_(0),
+          vertical_sync_(true),
           showStatistics_(false)
     {
-#if IS_TARGET_MOBILE || IS_TARGET_WEB
-        swapInterval_ = -1;
-#endif
     };
 
 	AppConfiguration::~AppConfiguration()

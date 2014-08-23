@@ -46,9 +46,12 @@ misrepresented as being the original software.
 #define GL_CLAMP GL_CLAMP_TO_EDGE
 #else
 #include <GL/glew.h>
-// #define GL_GLEXT_PROTOTYPES
-// #include <GL/gl.h>
-// #include <GL/glu.h>
-// #include <GL/glx.h>
-// #include <GL/glext.h>
 #endif
+
+#if defined(GLES2)
+#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
+#define glGenVertexArrays glGenVertexArraysOES
+#define glBindVertexArray glBindVertexArrayOES
+#define glDeleteVertexArrays glDeleteVertexArraysOES
+#endif
+

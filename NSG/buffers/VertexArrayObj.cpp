@@ -31,12 +31,6 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Check.h"
 
-#if IS_TARGET_MOBILE
-#define glGenVertexArrays glGenVertexArraysOES
-#define glBindVertexArray glBindVertexArrayOES
-#define glDeleteVertexArrays glDeleteVertexArraysOES
-#endif
-
 namespace NSG
 {
     VertexArrayObj::VertexArrayObj(Program* program, Mesh* mesh)

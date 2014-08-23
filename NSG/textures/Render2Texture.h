@@ -54,7 +54,5 @@ namespace NSG
 		bool createDepthBuffer_;
 		bool createDepthStencilBuffer_;
 		bool enabled_;
-        int32_t windowWidth_;
-        int32_t windowHeight_;
 	};
 }

@@ -34,12 +34,6 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include <algorithm>
 
-#if defined(GLES2)
-#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
-#else
-//#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_EXT
-#endif
-
 namespace NSG
 {
     Render2Texture::Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer)
@@ -48,9 +42,7 @@ namespace NSG
           depthStencilRenderBuffer_(0),
           createDepthBuffer_(createDepthBuffer),
           createDepthStencilBuffer_(createDepthStencilBuffer),
-          enabled_(false),
-          windowWidth_(0),
-          windowHeight_(0)
+          enabled_(false)
     {
     }
 

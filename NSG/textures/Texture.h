@@ -30,7 +30,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class BindTexture;
 	class Texture : public GPUObject
 	{
 	public:
@@ -44,7 +43,6 @@ namespace NSG
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;
-
 	protected:
 		GLuint texture_;
 		PResource pResource_;
@@ -53,7 +51,5 @@ namespace NSG
 		GLint format_;
 		GLenum type_;
 		int channels_;
-
-		friend class BindTexture;
 	};
 }

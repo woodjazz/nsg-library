@@ -309,11 +309,7 @@ namespace NSG
 
         SDL_GetWindowSize(win, &width, &height);
 
-        if (SDL_GL_SetSwapInterval(AppConfiguration::this_->swapInterval_))
-        {
-            if (AppConfiguration::this_->swapInterval_ == -1)
-                SDL_GL_SetSwapInterval(1);
-        }
+        SDL_GL_SetSwapInterval(AppConfiguration::this_->vertical_sync_ ? 1 : 0);
 #endif
 
         int value = 0;
