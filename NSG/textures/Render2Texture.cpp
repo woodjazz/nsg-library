@@ -24,26 +24,29 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Render2Texture.h"
-#include "SDL.h"
+#include "FrameBuffer.h"
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
 #include "Context.h"
-#include "Texture.h"
-#include "TextureMemory.h"
 #include "Graphics.h"
 #include <algorithm>
 
 namespace NSG
 {
-    Render2Texture::Render2Texture(PTexture pTexture, bool createDepthBuffer, bool createDepthStencilBuffer)
-        : pTexture_(pTexture),
-          depthRenderBuffer_(0),
-          depthStencilRenderBuffer_(0),
-          createDepthBuffer_(createDepthBuffer),
-          createDepthStencilBuffer_(createDepthStencilBuffer),
+    Render2Texture::Render2Texture(int width, int height, UseBuffer buffer)
+        : buffer_(buffer),
+          width_(width),
+          height_(height),
           enabled_(false)
     {
+		FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE)); // always use texture for color buffer
+		if (buffer_ == UseBuffer::DEPTH)
+            frameBufferFlags |= FrameBuffer::DEPTH;
+        else if (buffer_ == UseBuffer::DEPTH_STENCIL)
+            frameBufferFlags |= FrameBuffer::STENCIL;
+
+        frameBuffer_ = PFrameBuffer(new FrameBuffer(width, height, frameBufferFlags));
     }
 
     Render2Texture::~Render2Texture()
@@ -51,95 +54,14 @@ namespace NSG
         Context::RemoveObject(this);
     }
 
+    PTexture Render2Texture::GetTexture() const
+    {
+        return frameBuffer_->GetColorTexture();
+    }
+
     bool Render2Texture::IsValid()
     {
-        return pTexture_->IsReady();
-    }
-
-    void Render2Texture::AllocateResources()
-    {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        CHECK_ASSERT(pTexture_ != nullptr, __FILE__, __LINE__);
-
-        GLint width  = pTexture_->GetWidth();
-        GLint height = pTexture_->GetHeight();
-        //glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
-        //glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &height);
-
-        glGenFramebuffers(1, &framebuffer_);
-
-        Graphics::this_->SetFrameBuffer(framebuffer_);
-
-        {
-            // The color buffer
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTexture_->GetID(), 0);
-        }
-
-        if (createDepthStencilBuffer_)
-        {
-            // The depth stencil buffer
-#if IOS
-            //I do not know why but depth render buffer does not work on IOS
-            //The alternative solution is to use a depth texture
-            CHECK_CONDITION(Graphics::this_->HasDepthTexture(), __FILE__, __LINE__);
-            depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width, height, nullptr));
-            CHECK_CONDITION(depthTexture_->IsReady(), __FILE__, __LINE__);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
-
-#else
-            glGenRenderbuffers(1, &depthStencilRenderBuffer_);
-            glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-#endif
-        }
-        else if (createDepthBuffer_)
-        {
-#if IOS
-            //I do not know why but depth render buffer does not work on IOS
-            //The alternative solution is to use a depth texture
-            CHECK_CONDITION(Graphics::this_->HasDepthTexture(), __FILE__, __LINE__);
-            depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width, height, nullptr));
-            CHECK_CONDITION(depthTexture_->IsReady(), __FILE__, __LINE__);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
-#else
-            // The depth buffer
-            glGenRenderbuffers(1, &depthRenderBuffer_);
-            glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer_);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer_);
-#endif
-        }
-
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (GL_FRAMEBUFFER_COMPLETE != status)
-        {
-            TRACE_LOG("Frame buffer failed with error = 0x" << std::hex << status << " in file = " << __FILE__ << " line = " << __LINE__);
-            CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
-        }
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-    }
-
-    void Render2Texture::ReleaseResources()
-    {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        if (depthStencilRenderBuffer_)
-            glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
-        else if (depthRenderBuffer_)
-            glDeleteRenderbuffers(1, &depthRenderBuffer_);
-
-        glDeleteFramebuffers(1, &framebuffer_);
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        Graphics::this_->SetFrameBuffer(0);
-
-        enabled_ = false;
+        return frameBuffer_->IsReady();
     }
 
     bool Render2Texture::Begin()
@@ -150,13 +72,13 @@ namespace NSG
 
             glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
 
-            Graphics::this_->SetFrameBuffer(framebuffer_);
+            Graphics::this_->SetFrameBuffer(frameBuffer_->GetId());
 
-            Graphics::this_->SetViewport(Recti {0, 0, pTexture_->GetWidth(), pTexture_->GetHeight()});
+            Graphics::this_->SetViewport(Recti {0, 0, width_, height_});
 
-            if (createDepthStencilBuffer_)
+            if (buffer_ == UseBuffer::DEPTH_STENCIL)
                 Graphics::this_->ClearAllBuffers();
-            else if (createDepthBuffer_)
+            else if (buffer_ == UseBuffer::DEPTH)
                 Graphics::this_->ClearBuffers(true, true, false);
             else
                 Graphics::this_->ClearBuffers(true, false, false);

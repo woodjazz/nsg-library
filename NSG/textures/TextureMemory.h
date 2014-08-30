@@ -33,6 +33,6 @@ namespace NSG
 	public:
 		TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels); 
 		~TextureMemory();
-		virtual void AllocateResources();
+		virtual const unsigned char* GetImageData() override;
 	};
 }

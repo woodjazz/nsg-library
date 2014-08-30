@@ -28,7 +28,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include <stdlib.h>
 
-#if SDL
+#if defined(SDL) && !defined(EMSCRIPTEN)
 #include "SDL.h"
 #undef main
 #define SHOW_ASSERT_POPUP_ERROR(msg) SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Assert failed", msg, nullptr)
@@ -40,7 +40,7 @@ misrepresented as being the original software.
 #include <intrin.h>
 #define FORCE_BREAKPOINT() __debugbreak()
 #else
-#define FORCE_BREAKPOINT() ((void)0)
+#define FORCE_BREAKPOINT() assert(false)
 #endif
 
 #if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)

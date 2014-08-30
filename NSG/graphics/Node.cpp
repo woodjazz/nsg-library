@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Log.h"
 #include "BoundingBox.h"
+#include "Constants.h"
 #include <algorithm>
 
 namespace NSG
@@ -196,36 +197,23 @@ namespace NSG
 		}
 	}
 
-	void Node::SetLookAt(const Vertex3& center, const Vertex3& up)
+	void Node::SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up)
 	{
-#if 0		
-        Vertex3 upVector(up);
-
-        if(pParent_) 
-			upVector = Matrix3(pParent_->GetGlobalModelInvMatrix()) * upVector;   
-
-        Vertex3 zaxis = glm::normalize(GetGlobalPosition() - center);   
-        if (glm::length(zaxis) > 0) 
-        {
-            Vertex3 xaxis = glm::normalize(glm::cross(upVector, zaxis));        
-            Vertex3 yaxis = glm::cross(zaxis, xaxis);
-
-            Matrix4 m;
-            m[0] = Vertex4(xaxis.x, xaxis.y, xaxis.z, 0);
-            m[1] = Vertex4(yaxis.x, yaxis.y, yaxis.z, 0);
-            m[2] = Vertex4(zaxis.x, zaxis.y, zaxis.z, 0);
-
-            SetGlobalOrientation(glm::quat_cast(m));
-        }
-#else
-        float length = glm::length(GetGlobalPosition() - center);
+		const Vertex3& position = GetGlobalPosition();
+        float length = glm::length(position - lookAtPosition);
         
         if(length > 0)
         {
-			Matrix4 m = glm::inverse(glm::lookAt(GetGlobalPosition(), center, up));
+        	// we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+			Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up)); 
 			SetGlobalOrientation(glm::quat_cast(m));
 		}
-#endif
+	}
+
+	void Node::SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up)
+	{
+		SetGlobalPosition(newPosition);
+		SetLookAt(lookAtPosition, up);
 	}
 
     void Node::Update(bool updateChildren) const
@@ -263,8 +251,7 @@ namespace NSG
         globalModel_ = glm::translate(glm::mat4(), globalPosition_) * glm::mat4_cast(globalOrientation_) * glm::scale(glm::mat4(1.0f), globalScale_);
         globalModelInv_ = glm::inverse(globalModel_);
 		globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
-		static Vertex3 localAtDir(0,0,-1);
-		lookAtDirection_ = globalOrientation_ * localAtDir;
+		lookAtDirection_ = globalOrientation_ * VECTOR3_FORWARD;
 
 		if (updateChildren)
 		{
@@ -279,8 +266,6 @@ namespace NSG
 		}
 
 		dirty_ = false;
-		
-		OnUpdate();
 	}
 
 	const Matrix4& Node::GetGlobalModelMatrix() const
@@ -329,6 +314,7 @@ namespace NSG
 	{
 		dirty_ = true;
 		SetUniformsNeedUpdate();
+		OnDirty();
 		auto it = children_.begin();
 		while (it != children_.end())
 			(*(it++))->MarkAsDirty();

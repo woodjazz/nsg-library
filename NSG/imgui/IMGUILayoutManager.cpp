@@ -410,6 +410,11 @@ namespace NSG
             Window(App::this_, 100, 100, Context::this_->pSkin_->mainWindowStyle_); // Create main window
         }
 
+		LayoutManager::~LayoutManager()
+		{
+
+		}
+
         void LayoutManager::RenderUserWindow()
         {
             IWindow* userWindow = currentWindowManager_->userWindow_;

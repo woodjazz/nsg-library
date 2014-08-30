@@ -133,6 +133,7 @@ namespace NSG
         {
         public:
             LayoutManager(PNode pRootNode);
+			~LayoutManager();
             void Render();
             void RenderUserWindow();
             PLayoutArea GetAreaForControl(IdType id, LayoutType type, float percentageX, float percentageY);

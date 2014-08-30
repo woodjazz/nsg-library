@@ -139,6 +139,10 @@ namespace NSG
 
     bool Music::IsPaused() const
     {
+#ifdef SDL        
         return Mix_PausedMusic() ? true : false;
+#else
+        return false;        
+#endif        
     }
 }

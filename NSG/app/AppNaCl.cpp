@@ -113,7 +113,8 @@ namespace NSG
 					TRACE_LOG("InitGL has failed!")
 					return; // failed.
 				}
-				pApp_->ViewChanged(width_, height_);
+				pApp_->SetViewSize(width_, height_);
+				pApp_->Initialize();
 				MainLoop(0);
 			} 
 			else 

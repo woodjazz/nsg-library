@@ -37,9 +37,6 @@ public:
 	void Update();
 	void Render();
 private:
-	PTexture pRenderedTexture_;
-    PTexture pFilteredTexture_;
-    PTexture pBlendedTexture_;
 	PShowTexture showTexture_;
 	PPass2Texture pass_;
 };

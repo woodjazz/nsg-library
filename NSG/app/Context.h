@@ -36,16 +36,17 @@ namespace NSG
 	struct Context : public Singleton<Context>
 	{
 		PGraphics graphics_;
-		std::set<GPUObject*> objects_;
-		std::set<Resource*> resources_;
+		PAppStatistics statistics_;
+		PBufferManager bufferManager_;
 		PFontAtlasTextureManager atlasManager_;
 		IMGUI::PContext imgui_;
-		PKeyboard keyboard_;
-		PBufferManager bufferManager_;
 		PAudio audio_;
+		
+		std::set<GPUObject*> objects_;
+		std::set<Resource*> resources_;
+		PKeyboard keyboard_;
 		Scene* scene_;
 		bool allGPUObjectAreValid_;
-		PAppStatistics statistics_;
 
 		Context();
 		~Context();

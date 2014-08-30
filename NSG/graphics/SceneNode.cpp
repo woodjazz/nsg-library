@@ -31,53 +31,73 @@ misrepresented as being the original software.
 #include "Technique.h"
 #include "Graphics.h"
 #include "Material.h"
+#include "Mesh.h"
+#include "Scene.h"
 
 namespace NSG
 {
-	SceneNode::SceneNode() 
-	{
-	}
-		
-	SceneNode::~SceneNode()
-	{
-	}
+    SceneNode::SceneNode()
+        : octant_(nullptr),
+          occludee_(true),
+          worldBBNeedsUpdate_(true)
+    {
+    }
+
+    SceneNode::~SceneNode()
+    {
+    }
+
+    void SceneNode::Set(PMaterial material)
+    {
+        material_ = material;
+    }
 
     void SceneNode::Set(Material* material)
     {
-		struct D 
-		{ 
-		    void operator()(Material* p) const 
-		    {
-		        //delete p; //do not delete
-		    }
-		};    	
+        struct D
+        {
+            void operator()(Material* p) const
+            {
+                //delete p; //do not delete
+            }
+        };
 
-		PMaterial obj(material, D());
-		Set(obj);
+        PMaterial obj(material, D());
+        Set(obj);
+    }
+
+    void SceneNode::Set(PMesh mesh)
+    {
+        if (mesh != mesh_)
+        {
+            mesh_ = mesh;
+            worldBB_ = BoundingBox();
+            OnDirty();
+        }
     }
 
     void SceneNode::Set(Mesh* mesh)
     {
-		struct D 
-		{ 
-		    void operator()(Mesh* p) const 
-		    {
-		        //delete p; //do not delete
-		    }
-		};    	
+        struct D
+        {
+            void operator()(Mesh* p) const
+            {
+                //delete p; //do not delete
+            }
+        };
 
-		PMesh obj(mesh, D());
-		Set(obj);
+        PMesh obj(mesh, D());
+        Set(obj);
     }
 
-	void SceneNode::SetBehavior(PBehavior pBehavior)
-	{
-		pBehavior_ = pBehavior;
-		pBehavior_->SetSceneNode(this);
-	}
+    void SceneNode::SetBehavior(PBehavior pBehavior)
+    {
+        pBehavior_ = pBehavior;
+        pBehavior_->SetSceneNode(this);
+    }
 
-	void SceneNode::Render()
-	{
+    void SceneNode::Render()
+    {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         Graphics::this_->Set(material_.get());
@@ -87,13 +107,34 @@ namespace NSG
         material_->GetTechnique()->Render();
 
         auto it = children_.begin();
-        while(it != children_.end())
+        while (it != children_.end())
         {
             SceneNode* p = dynamic_cast<SceneNode*>(*it);
             CHECK_ASSERT(p && "Cannot cast to SceneNode", __FILE__, __LINE__);
             p->Render();
             ++it;
         }
+    }
 
-	}
+    void SceneNode::OnDirty() const
+    {
+        worldBBNeedsUpdate_ = true;
+
+        if (octant_ && Context::this_->scene_)
+            Context::this_->scene_->Update(this);
+    }
+
+    const BoundingBox& SceneNode::GetWorldBoundingBox() const
+    {
+        if (worldBBNeedsUpdate_)
+        {
+            if (mesh_ && mesh_->IsReady())
+            {
+                worldBB_ = mesh_->GetBB();
+                worldBB_.Transform(*this);
+                worldBBNeedsUpdate_ = false;
+            }
+        }
+        return worldBB_;
+    }
 }

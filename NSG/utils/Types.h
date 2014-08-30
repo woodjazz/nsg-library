@@ -74,7 +74,7 @@ namespace NSG
             HORIZONTAL,
             CONTROL,
             SPACER,
-			LINE
+            LINE
         };
 
         enum class IdsTypes : IdType
@@ -135,7 +135,7 @@ namespace NSG
 
     typedef std::vector<VertexData> VertexsData;
     typedef std::vector<IndexType> Indexes;
-    
+
     struct UniformsUpdate;
     typedef std::set<UniformsUpdate*> UniformObjs;
 
@@ -154,9 +154,16 @@ namespace NSG
         CW = GL_CW
     };
 
-    enum class DrawMode 
+    enum class DrawMode
     {
-        SOLID, 
+        SOLID,
         WIREFRAME
+    };
+
+    enum class UseBuffer
+    {
+        NONE,
+        DEPTH, 
+        DEPTH_STENCIL
     };
 }

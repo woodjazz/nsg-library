@@ -32,14 +32,6 @@ void SphereBehavior::Start()
 	material_ = PMaterial(new Material);
     PTexture texture(new TextureFile("data/Earth.jpg"));
 	material_->SetTexture0(texture);
-
-    renderedTexture_ = PTexture(new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-
-    filteredTexture_ = PTexture(new TextureMemory(GL_RGBA, 16, 16, nullptr));
-    filter_ = PFilter(new FilterBlur(renderedTexture_, filteredTexture_));
-
-    blendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-    blendFilter_ = PFilter(new FilterBlend(filteredTexture_, renderedTexture_, blendedTexture_));
 }
 
 void SphereBehavior::Update()

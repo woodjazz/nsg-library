@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "UniformsUpdate.h"
 #include <vector>
+#include <set>
 
 namespace NSG
 {
@@ -37,16 +38,23 @@ namespace NSG
 		~Scene();
 		void SetAmbientColor(Color ambient);
 		const Color& GetAmbientColor() const { return ambient_; }
-		void Add(PSceneNode node);
+		PCamera CreateCamera();
+		PSceneNode CreateSceneNode();
+		PLight CreateLight();
 		void Start();
 		void Update();
 		void Render();
-        typedef std::vector<Light*> Lights;
-		const Lights& GetLights();
+        typedef std::vector<PLight> Lights;
+		const Lights& GetLights() { return lights_; }
+		void Update(const SceneNode* obj);
+		void GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles);
 
 	private:
 		Color ambient_;
+		std::vector<PCamera> cameras_;
 		std::vector<PSceneNode> nodes_;
 		Lights lights_;
+		POctree octree_;
+		std::set<const SceneNode*> needUpdate_;
 	};
 }

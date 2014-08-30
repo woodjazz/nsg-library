@@ -28,14 +28,10 @@ misrepresented as being the original software.
 using namespace NSG;
 struct SphereBehavior : Behavior
 {
-    PTexture renderedTexture_;
-	PTexture filteredTexture_;
-    PTexture blendedTexture_;
-	PFilter filter_;
-	PSphereMesh mesh_;
 	PMaterial material_;
-	PFilter blendFilter_;
+	PSphereMesh mesh_;
 
 	void Start() override;
     void Update() override;
+
 };

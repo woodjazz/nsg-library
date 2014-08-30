@@ -35,16 +35,12 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Set CMake modules search path
 set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
-
 # Include NSG cmake common module
 include (Common)
 setup_common() #has to be called before anything
 
+set(USE_SDL ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-set(USE_SDL "Use SDL" ON)
-
-#set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 set(DEPENDENCIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies)
 set(DEPENDENCIES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dependencies)
@@ -59,31 +55,10 @@ include_directories(${TINYXML2_INCLUDE_DIR})
 #add_subdirectory(${EXTERNALS_DIR}/tinyxml2)
 #list(APPEND LIBRARIES_2_LINK tinyxml2)
 
-###########################
-# soil
-###########################
-add_subdirectory(${DEPENDENCIES_DIR}/soil)
-include_directories(${DEPENDENCIES_DIR}/soil) 
-list(APPEND LIBRARIES_2_LINK soil) 
-
+##################################
+# glew
+##################################
 if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
-	
-	if(NOT USE_SDL)
-		###########################
-		# glfw
-		###########################
-		mark_as_disable_and_internal(USE_MSVC_RUNTIME_LIBRARY_DLL)
-		mark_as_disable_and_internal(GLFW_BUILD_EXAMPLES)
-		mark_as_disable_and_internal(GLFW_BUILD_TESTS)
-		mark_as_disable_and_internal(GLFW_INSTALL)
-		add_subdirectory(${EXTERNALS_DIR}/glfw)
-		include_directories(${EXTERNALS_DIR}/glfw/include)
-		list(APPEND LIBRARIES_2_LINK glfw)
-	endif()
-
-	##################################
-	# glew (IMPORTANT GLEW after GLFW)
-	##################################
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DGLEW_STATIC)
 	include_directories(${DEPENDENCIES_DIR}/glew/include)
@@ -92,17 +67,9 @@ if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 endif()
 
 ###########################
-# freetype2
-###########################
-# set(FREETYPE2_INCLUDE_DIR ${EXTERNALS_DIR}/freetype2/include)
-# include_directories(${FREETYPE2_INCLUDE_DIR})
-# add_subdirectory(${EXTERNALS_DIR}/freetype2)
-# list(APPEND LIBRARIES_2_LINK freetype)
-
-###########################
 # SDL
 ###########################
-if(USE_SDL AND NOT NACL AND NOT EMSCRIPTEN)
+if(NOT NACL AND NOT EMSCRIPTEN)
 	include (CheckIncludeFiles)	
 	add_definitions(-DSDL)
 	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
@@ -135,43 +102,9 @@ endif()
 ###########################
 # stb
 ###########################
-# add_subdirectory(${DEPENDENCIES_DIR}/stb)
-# include_directories(${DEPENDENCIES_DIR}/stb)
-# list(APPEND LIBRARIES_2_LINK stb) 
-
-###########################
-# rtaudio
-###########################
-# if(WIN32)
-# 	find_package(DirectSound REQUIRED)
-# 	include_directories(${DIRECTSOUND_INCLUDE_DIRS})
-# 	add_definitions(-D__WINDOWS_DS__)
-# endif()
-
-# include_directories(codecs/vorbis/include)
-# include_directories(codecs/ogg/include)
-# add_subdirectory(rtaudio)
-
-###########################
-# alure
-###########################
-# add_definitions(-DAL_LIBTYPE_STATIC)
-# set(ALURE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/alure/include ${CMAKE_CURRENT_SOURCE_DIR}/alure/include/AL)
-# mark_as_enable(BUILD_STATIC)
-# mark_as_disable_and_internal(BUILD_SHARED)
-# mark_as_disable_and_internal(BUILD_EXAMPLES)
-# mark_as_disable_and_internal(DYNLOAD)
-# set(OPENAL_FOUND TRUE FORCE)
-# #include_directories(${OPENAL_SOFT_INCLUDE_DIRS})
-
-# IF(WIN32)
-#     SET(ALURE_LIBRARIES ALURE32-static)
-# ELSE(WIN32)
-#     SET(ALURE_LIBRARIES alure-static)
-# ENDIF(WIN32)
-
-# add_definitions(-DALURE_STATIC_LIBRARY)
-# add_subdirectory(alure)
+include_directories(${EXTERNALS_DIR}/stb)
+#add_subdirectory(${EXTERNALS_DIR})
+#list(APPEND LIBRARIES_2_LINK stb) 
 
 ###########################
 # glm
@@ -182,6 +115,14 @@ include_directories(${EXTERNALS_DIR}/glm)
 # tools
 ###########################
 if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
+
+	###########################
+	# freetype2
+	###########################
+	# set(FREETYPE2_INCLUDE_DIR ${EXTERNALS_DIR}/freetype2/include)
+	# include_directories(${FREETYPE2_INCLUDE_DIR})
+	# add_subdirectory(${EXTERNALS_DIR}/freetype2)
+	# list(APPEND LIBRARIES_2_LINK freetype)
 
 	###########################
 	###########################

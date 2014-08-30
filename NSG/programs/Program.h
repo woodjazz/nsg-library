@@ -130,12 +130,20 @@ namespace NSG
         Camera* activeCamera_;
         bool neverUsed_;
         Material* activeMaterial_;
-        PMaterial material_;
         Node* activeNode_;
         Matrix4 activeNodeGlobalModel_;
         Scene* activeScene_;
         Light* activeLights_[MAX_LIGHTS];
         Color sceneColor_;
+		struct MaterialProgram 
+		{
+			Color color_;
+			Color ambient_;
+			Color diffuse_;
+			Color specular_;
+			float shininess_;
+			MaterialProgram() : shininess_(0) {}
+		} material_; //used to avoid setting the same uniform value twice
 
         friend class UseProgram;
     };

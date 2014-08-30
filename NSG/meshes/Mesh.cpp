@@ -39,7 +39,8 @@ namespace NSG
         : pVBuffer_(nullptr),
           pIBuffer_(nullptr),
           bb_(Vertex3(0)),
-          isStatic_(!dynamic)
+          isStatic_(!dynamic),
+          boundingSphereRadius_(0)
     {
     }
 
@@ -89,7 +90,10 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         for (auto& vertex : vertexsData_)
+        {
             bb_.Merge(vertex.position_);
+            boundingSphereRadius_ = std::max(boundingSphereRadius_, glm::length(vertex.position_));
+        }
     }
 
     void Mesh::ReleaseResources()

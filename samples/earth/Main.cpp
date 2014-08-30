@@ -50,21 +50,15 @@ struct Sample : App
         scene_ = PScene(new Scene);
         scene_->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
 
-        camera_ = PCamera(new Camera);
+		camera_ = scene_->CreateCamera();;
         camera_->SetBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
-        scene_->Add(camera_);
-
-        earth_ = PSceneNode(new SceneNode);
+		earth_ = scene_->CreateSceneNode();
         earth_->SetBehavior(PBehavior(new EarthBehavior));
 
-        scene_->Add(earth_);
-
-        light_ = PLight(new Light);
+		light_ = scene_->CreateLight();
         light_->SetBehavior(PBehavior(new LightBehavior));
-
-        scene_->Add(light_);
 
         music_ = PMusic(new Music("data/nice_music.ogg"));
         music_->Play();

@@ -73,8 +73,8 @@ static const char* fShader = STRINGIFY(
 
 namespace NSG
 {
-	FilterBlend::FilterBlend(PTexture input0, PTexture input1, PTexture output)
-	: Filter(input0, output, fShader),
+	FilterBlend::FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height)
+	: Filter(input0, output_width, output_height, fShader),
 	blendMode_loc_(-1),
 	blendMode_(0)
 	{

@@ -37,6 +37,14 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Constants.h"
 
+#if defined(ANDROID) || defined(EMSCRIPTEN)
+PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT;
+PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
+PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;
+PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES;
+PFNGLISVERTEXARRAYOESPROC glIsVertexArrayOES;
+#endif
+
 namespace NSG
 {
     template <> Graphics* Singleton<Graphics>::this_ = nullptr;
@@ -83,9 +91,18 @@ namespace NSG
           has_map_buffer_range_ext_(false),
           has_depth_texture_ext_(false),
           has_depth_component24_ext_(false),
+          has_texture_non_power_of_two_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT)
     {
+
+#if defined(ANDROID) || defined(EMSCRIPTEN)
+        glDiscardFramebufferEXT = (PFNGLDISCARDFRAMEBUFFEREXTPROC)eglGetProcAddress ( "glDiscardFramebufferEXT" );
+        glGenVertexArraysOES = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress ( "glGenVertexArraysOES" );
+        glBindVertexArrayOES = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress ( "glBindVertexArrayOES" );
+        glDeleteVertexArraysOES = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress ( "glDeleteVertexArraysOES" );
+        glIsVertexArrayOES = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress ( "glIsVertexArrayOES" );
+#endif
         TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
         TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
         TRACE_LOG("GL_VERSION = " << (const char*)glGetString(GL_VERSION));
@@ -105,8 +122,10 @@ namespace NSG
 
         if (CheckExtension("OES_vertex_array_object"))
         {
+#if !defined(NACL)
             has_vertex_array_object_ext_ = true;
             TRACE_LOG("Using extension: OES_vertex_array_object");
+#endif
         }
 
         if (CheckExtension("EXT_map_buffer_range"))
@@ -124,12 +143,15 @@ namespace NSG
         if (CheckExtension("GL_OES_depth24"))
         {
             has_depth_component24_ext_ = true;
-            TRACE_LOG("Using extension: GL_OES_depth24"); // mandatory for DEPTH_COMPONENT24_OES
+            TRACE_LOG("Using extension: GL_OES_depth24");
         }
 
-#if GLES2
-        CHECK_CONDITION(has_depth_component24_ext_, __FILE__, __LINE__);
-#endif
+        if (CheckExtension("GL_ARB_texture_non_power_of_two"))
+        {
+            has_texture_non_power_of_two_ext_ = true;
+            TRACE_LOG("Using extension: GL_ARB_texture_non_power_of_two");
+        }
+        
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -196,7 +218,7 @@ namespace NSG
 
     void Graphics::SetClearColor(const Color& color)
     {
-        static Color color_(0, 0, 0, 1);
+        static Color color_(0, 0, 0, 0);
 
         if (color_ != color)
         {
@@ -566,11 +588,11 @@ namespace NSG
 
     void Graphics::DiscardFramebuffer()
     {
-#if IS_TARGET_MOBILE
+#if defined(GLES2) && !defined(NACL)
         if (has_discard_framebuffer_ext_)
         {
-            const GLenum attachments[3] = { GL_COLOR_ATTACHMENT0 , GL_DEPTH_ATTACHMENT , GL_STENCIL_ATTACHMENT };
-            glDiscardFramebufferEXT( GL_FRAMEBUFFER , 3, attachments);
+            const GLenum attachments[] = { GL_DEPTH_ATTACHMENT , GL_STENCIL_ATTACHMENT };
+            glDiscardFramebuffer( GL_FRAMEBUFFER , sizeof(attachments) / sizeof(GLenum), attachments);
         }
 #endif
     }
@@ -581,8 +603,6 @@ namespace NSG
 
     void Graphics::EndFrame()
     {
-        DiscardFramebuffer();
-
         if (!uniformsNeedUpdate_)
             UniformsUpdate::ClearAllUpdates();
 

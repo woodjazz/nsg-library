@@ -72,15 +72,7 @@ namespace NSG
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_APP_DIDENTERBACKGROUND)
-            {
-                AppEnterBackground();
-            }
-            else if (event.type == SDL_APP_DIDENTERFOREGROUND)
-            {
-                AppEnterForeground();
-            }
-            else if (event.type == SDL_WINDOWEVENT)
+            if (event.type == SDL_WINDOWEVENT)
             {
                 switch (event.window.event)
                 {
@@ -110,6 +102,16 @@ namespace NSG
                 height = r->h;
                 app->ViewChanged(width, height);
             }
+#else            
+            else if (event.type == SDL_APP_DIDENTERBACKGROUND)
+            {
+                AppEnterBackground();
+            }
+            else if (event.type == SDL_APP_DIDENTERFOREGROUND)
+            {
+                AppEnterForeground();
+            }
+
 #endif
             else if (event.type == SDL_QUIT)
             {
@@ -355,7 +357,9 @@ namespace NSG
             return false;
         }
 #endif
-        app->SetViewSize(width, height);
+		app->SetViewSize(width, height);
+        app->Initialize();
+        
 
 #if IOS
         SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);

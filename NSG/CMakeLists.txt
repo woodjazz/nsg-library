@@ -16,7 +16,7 @@ include_directories(${ASSETS_DIR})
 
 SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
 FOREACH(subdir ${SUBDIRS})
-	file(GLOB tmp_src "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.cpp")
+	file(GLOB tmp_src "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.c")
 	file(GLOB tmp_hdr "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.h")
 	set(src ${src} ${tmp_src})
 	set(hdr ${hdr} ${tmp_hdr})

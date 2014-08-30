@@ -30,11 +30,11 @@ namespace NSG
 {
     struct  Plane
     {
-		static const Plane UP;
+        static const Plane UP;
 
-		Vector3 normal_;
-		Vector3 absNormal_;
-		float d_;
+        enum class Side {INPLANE, BEHIND, INFRONT};
+
+        Vector4 normald_;
 
         Plane();
         Plane(const Plane& plane);
@@ -43,9 +43,8 @@ namespace NSG
         Plane(const Vector4& plane);
         void Define(const Vector3& v0, const Vector3& v1, const Vector3& v2);
         void Define(const Vector3& normal, const Vector3& point);
-        Vector3 Project(const Vector3& point) const;
         float Distance(const Vector3& point) const;
-        Vector3 Reflect(const Vector3& direction) const;
+        Side SideOfPlane(const Vector3& point) const;
     };
 
 }

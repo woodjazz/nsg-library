@@ -32,7 +32,6 @@ namespace NSG
 	Tick::Tick(size_t fps) 
 	: ticks_(0), 
 	fixed_(0), 
-	init_(false),
     fps_(fps)
 	{
 		CHECK_ASSERT(fps_ > 0, __FILE__, __LINE__);
@@ -42,17 +41,16 @@ namespace NSG
 	{
 	}
 
+	void Tick::Initialize()
+	{
+	    ticks_ = Milliseconds(1000 / fps_);
+	    fixed_ = 1.0f / (float)fps_;
+		InitializeTicks();
+		current_ = next_ = Clock::now();
+	}
+
 	void Tick::PerformTicks()
 	{
-		if (!init_)
-		{
-		    ticks_ = Milliseconds(1000 / fps_);
-		    fixed_ = 1.0f / (float)fps_;
-			InitializeTicks();
-			current_ = next_ = Clock::now();
-            init_ = true;
-		}
-
 		bool lock = false;
 		int loop = 0;
 		const int MAX_LOOP = 10;

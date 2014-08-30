@@ -33,6 +33,7 @@ namespace NSG
 	public:
 		Tick(size_t fps);
 		~Tick();
+		void Initialize();
     protected:
 		void PerformTicks();
 		virtual void InitializeTicks() = 0;
@@ -44,7 +45,6 @@ namespace NSG
         TimePoint next_;
         Milliseconds ticks_;
         float fixed_;
-        bool init_;
         size_t fps_;
 	};
 }

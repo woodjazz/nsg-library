@@ -28,6 +28,12 @@ misrepresented as being the original software.
 #include "Util.h"
 namespace NSG
 {
+    BoundingBox::BoundingBox() :
+        min_(0),
+        max_(0)
+    {
+    }
+
     BoundingBox::BoundingBox(const Vertex3& min, const Vertex3& max)
         : min_(min),
           max_(max)
@@ -55,6 +61,13 @@ namespace NSG
     {
 
     }
+
+    BoundingBox::BoundingBox(float min, float max)
+        : min_(Vector3(min, min, min)),
+          max_(Vector3(max, max, max))
+    {
+    }
+
 
     BoundingBox::~BoundingBox()
     {
@@ -130,6 +143,25 @@ namespace NSG
         {
             return true;
         }
+    }
+
+    void BoundingBox::GetVertices(Vertex3 vertices[8]) const
+    {
+        vertices[0] = min_;
+        vertices[1] = Vertex3(min_.x, min_.y, max_.z);
+        vertices[2] = Vertex3(min_.x, max_.y, min_.z);
+        vertices[3] = Vertex3(max_.x, min_.y, min_.z);
+        vertices[4] = max_;
+        vertices[5] = Vertex3(max_.x, max_.y, min_.z);
+        vertices[6] = Vertex3(max_.x, min_.y, max_.z);
+        vertices[7] = Vertex3(min_.x, max_.y, max_.z);
+    }
+
+    std::ostream& operator << (std::ostream& s , const BoundingBox& obj)
+    {
+        s << obj.min_ << " - " << obj.max_;
+        
+        return s;
     }
 
 }

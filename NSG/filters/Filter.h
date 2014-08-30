@@ -33,7 +33,7 @@ namespace NSG
 	class Filter
 	{
 	public:
-		Filter(PTexture input, PTexture output, const char* fragment);
+		Filter(PTexture input, int output_width, int output_height, const char* fragment);
 		~Filter();
 		bool Render();
 		PMaterial GetMaterial() const { return pMaterial_; }

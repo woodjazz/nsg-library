@@ -55,9 +55,18 @@ namespace NSG
 		const Matrix4& GetMatViewProjection() const;
 		const Matrix4& GetInverseViewMatrix() const;
 		const Matrix4& GetViewProjectionMatrix() const;
+		const Matrix4& GetViewProjectionInverseMatrix() const;
+		const Matrix4& GetMatProjection() const;
 		virtual void OnViewChanged(int32_t width, int32_t height) override;
 		const PFrustum GetFrustum() const;
+		const Frustum* GetFrustumPointer() const;
 		bool IsVisible(const Node& node, Mesh& mesh) const;
+		virtual void OnDirty() const override;
+		float GetZNear() const { return zNear_; }
+		float GetZFar() const { return zFar_; }
+		float GetFov() const { return fovy_; }
+		float GetAspectRatio() const { return aspectRatio_; }
+		float GetOrthoSize() const { return 1; }
 	private:
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
@@ -80,5 +89,6 @@ namespace NSG
 		int32_t viewHeight_;
 		float aspectRatio_;
 		mutable PFrustum frustum_;
+		mutable bool cameraIsDirty_;
 	};
 }

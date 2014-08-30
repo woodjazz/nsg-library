@@ -25,49 +25,37 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Constants.h"
 #include "GPUObject.h"
 #include "AppListeners.h"
 
-namespace NSG 
+namespace NSG
 {
     class SceneNode;
-    class FrameColorSelection : public GPUObject, IViewChangedListener
+    class FrameColorSelection : public GPUObject
     {
     public:
-        FrameColorSelection(bool createDepthBuffer, bool createDepthStencilBuffer);
+        FrameColorSelection(UseBuffer buffer = UseBuffer::DEPTH);
         ~FrameColorSelection();
         GLushort GetSelected() const;
-
         virtual bool IsValid() override;
-        virtual void AllocateResources() override;
-        virtual void ReleaseResources() override;
-        
         void SetLocations();
         void AssignValues();
-
         bool Render(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
         bool Hit(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
-
-        void ClearDepthStencil();
-        virtual void OnViewChanged(int32_t width, int32_t height) override;
-
     private:
         Color TransformSelectedId2Color(GLushort id);
         void Begin(float screenX, float screenY);
         void End();
 
+        UseBuffer buffer_;
+        PFrameBuffer frameBuffer_;
         PMaterial material_;
         int32_t windowWidth_;
         int32_t windowHeight_;
-        GLuint framebuffer_;
-        GLuint colorRenderbuffer_;
-        GLuint depthRenderBuffer_;
-        GLuint depthStencilRenderBuffer_;
         GLubyte selected_[4];
         GLint pixelX_;
         GLint pixelY_;
-        bool createDepthBuffer_;
-        bool createDepthStencilBuffer_;
     };
 }
 

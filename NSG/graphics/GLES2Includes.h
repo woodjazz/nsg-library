@@ -26,32 +26,56 @@ misrepresented as being the original software.
 #pragma once
 
 #if defined(NACL)
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #define glClearDepth glClearDepthf
 #define GL_CLAMP GL_CLAMP_TO_EDGE
 #elif defined(ANDROID)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <EGL/eglplatform.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #define glClearDepth glClearDepthf
 #define GL_CLAMP GL_CLAMP_TO_EDGE
+extern PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT;
+extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
+extern PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;
+extern PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES;
+extern PFNGLISVERTEXARRAYOESPROC glIsVertexArrayOES;
 #elif defined(IOS)
 #include <GLKit/GLKit.h>
 #define glClearDepth glClearDepthf
 #define GL_CLAMP GL_CLAMP_TO_EDGE
 #elif defined(EMSCRIPTEN)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <EGL/eglplatform.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #define glClearDepth glClearDepthf
 #define GL_CLAMP GL_CLAMP_TO_EDGE
+extern PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT;
+extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
+extern PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;
+extern PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES;
+extern PFNGLISVERTEXARRAYOESPROC glIsVertexArrayOES;
 #else
 #include <GL/glew.h>
 #endif
 
 #if defined(GLES2)
+#define glDiscardFramebuffer glDiscardFramebufferEXT
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
 #define glGenVertexArrays glGenVertexArraysOES
 #define glBindVertexArray glBindVertexArrayOES
 #define glDeleteVertexArrays glDeleteVertexArraysOES
+#define glMapBufferRange glMapBufferRangeEXT
+#define glFlushMappedBufferRange glFlushMappedBufferRangeEXT
+#define glUnmapBuffer glUnmapBufferOES
+#define GL_MAP_WRITE_BIT GL_MAP_WRITE_BIT_EXT
+#define GL_MAP_FLUSH_EXPLICIT_BIT GL_MAP_FLUSH_EXPLICIT_BIT_EXT
+#define GL_MAP_UNSYNCHRONIZED_BIT GL_MAP_UNSYNCHRONIZED_BIT_EXT
 #endif
 

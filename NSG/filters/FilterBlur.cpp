@@ -94,8 +94,8 @@ static const char* fShader = STRINGIFY(
 
 namespace NSG
 {
-	FilterBlur::FilterBlur(PTexture input, PTexture output)
-	: Filter(input, output, fShader),
+	FilterBlur::FilterBlur(PTexture input, int output_width, int output_height)
+	: Filter(input, output_width, output_height, fShader),
 	texelSize_loc_(-1),
 	orientation_loc_(-1),
 	blurAmount_loc_(-1),

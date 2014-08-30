@@ -29,15 +29,6 @@ misrepresented as being the original software.
 #include "AppStatistics.h"
 #include <assert.h>
 
-#if IS_TARGET_MOBILE
-#define glMapBufferRange glMapBufferRangeEXT
-#define glFlushMappedBufferRange glFlushMappedBufferRangeEXT
-#define glUnmapBuffer glUnmapBufferOES
-#define GL_MAP_WRITE_BIT GL_MAP_WRITE_BIT_EXT
-#define GL_MAP_FLUSH_EXPLICIT_BIT GL_MAP_FLUSH_EXPLICIT_BIT_EXT
-#define GL_MAP_UNSYNCHRONIZED_BIT GL_MAP_UNSYNCHRONIZED_BIT_EXT
-#endif
-
 namespace NSG
 {
     Buffer::Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage)
@@ -108,6 +99,7 @@ namespace NSG
 
     void Buffer::SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data)
     {
+#if !defined(ANDROID) && !defined(EMSCRIPTEN) && !defined(NACL)
         if (Graphics::this_->HasMapBufferRange())
         {
             void* old_data = glMapBufferRange(type_, offset, size,
@@ -122,6 +114,7 @@ namespace NSG
             CHECK_CONDITION(glUnmapBuffer(type_), __FILE__, __LINE__);
         }
         else
+#endif            
         {
             glBufferSubData(type_, offset, size, data);
         }

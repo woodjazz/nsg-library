@@ -30,14 +30,16 @@ using namespace NSG;
 
 struct BoxBehavior : Behavior
 {
-	PTexture renderedTexture_;
-	PTexture filteredTexture_;
-	PFilter filter_;
+	PMaterial material_;
     std::deque<Vertex3> controlPoints_;
     PBoxMesh mesh_;
-    PMaterial material_;
+	static const char* GetFS();
 
 	void Start() override;
 	void Update() override;
+	void SetFilterMaterial(PMaterial material) { filterMaterial_ = material; }
+
+private:
+	PMaterial filterMaterial_;
 
 };

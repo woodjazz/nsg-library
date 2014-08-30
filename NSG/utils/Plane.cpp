@@ -24,20 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Plane.h"
+#include "Constants.h"
 
 namespace NSG
 {
-    const Plane Plane::UP(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f));
+    const Plane Plane::UP(WORLD_Y_COORD, Vector3(0));
 
-    Plane::Plane() :
-        d_(0.0f)
+    Plane::Plane()
     {
     }
 
     Plane::Plane(const Plane& plane) :
-        normal_(plane.normal_),
-        absNormal_(plane.absNormal_),
-        d_(plane.d_)
+        normald_(plane.normald_)
     {
     }
 
@@ -55,28 +53,29 @@ namespace NSG
     {
         Vector3 dist1 = v1 - v0;
         Vector3 dist2 = v2 - v0;
-		Define(glm::cross(dist1, dist2), v0);
+		Define(glm::normalize(glm::cross(dist1, dist2)), v1);
     }
 
     void Plane::Define(const Vector3& normal, const Vector3& point)
     {
-        normal_ = glm::normalize(normal);
-        absNormal_ = glm::abs(normal_);
-        d_ = -glm::dot(normal_, point);
-    }
-
-    Vector3 Plane::Project(const Vector3& point) const
-    {
-        return point - normal_ * (glm::dot(normal_, point) + d_);
+        normald_ = Vector4(normal, -glm::dot(normal, point));
+/*		normald_.z = -normald_.z;
+		normald_.w = -normald_.w;*/
     }
 
     float Plane::Distance(const Vector3& point) const
     {
-        return glm::dot(normal_, point) + d_;
+        return glm::dot(Vector3(normald_), point) + normald_.w;
     }
 
-    Vector3 Plane::Reflect(const Vector3& direction) const
+	Plane::Side Plane::SideOfPlane(const Vector3& point) const
     {
-        return direction - (2.0f * glm::dot(normal_, direction) * normal_);
+		float dotValue = Distance(point);
+
+		if (dotValue > 0)
+            return Side::INFRONT;
+		else if (dotValue < 0)
+            return Side::BEHIND;
+        return Side::INPLANE;
     }
 }

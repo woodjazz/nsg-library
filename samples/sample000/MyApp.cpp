@@ -41,8 +41,9 @@ using namespace NSG;
 
 MyApp::MyApp() 
 {
-	AppConfiguration::this_->width_ = 320;
-	AppConfiguration::this_->height_ = 200;
+	AppConfiguration::this_->width_ = 640;
+	AppConfiguration::this_->height_ = 480;
+	AppConfiguration::this_->showStatistics_ = true;
 }
 
 MyApp::~MyApp() 
@@ -55,26 +56,21 @@ void MyApp::Start()
 
     scene_ = PScene(new Scene);
 
-	pCamera1_ = PCamera(new Camera());
+	pCamera1_ = scene_->CreateCamera();
     pCamera1_->Activate();
-    scene_->Add(pCamera1_);
 	pCamera1_->SetBehavior(PBehavior(new CameraBehavior()));
 
-    render2TextureSceneNode_ = PSceneNode(new SceneNode());
+	render2TextureSceneNode_ = scene_->CreateSceneNode();
     render2TextureSceneNode_->SetBehavior(PBehavior(new Render2TextureBehavior));
-    scene_->Add(render2TextureSceneNode_);
 
-    pEarthSceneNode_ = PSceneNode(new SceneNode());
+	pEarthSceneNode_ = scene_->CreateSceneNode();
     pEarthSceneNode_->SetBehavior(PBehavior(new EarthBehavior()));
-    scene_->Add(pEarthSceneNode_);
 
-    pCubeSceneNode_ = PSceneNode(new SceneNode());
+	pCubeSceneNode_ = scene_->CreateSceneNode();
     pCubeSceneNode_->SetBehavior(PBehavior(new CubeBehavior()));
-    scene_->Add(pCubeSceneNode_);
 
-    pLight0_ = PLight(new Light());
+	pLight0_ = scene_->CreateLight();
     pLight0_->SetBehavior(PBehavior(new LightBehavior()));
-    scene_->Add(pLight0_);
 
     scene_->Start();
    

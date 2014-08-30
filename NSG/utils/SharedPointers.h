@@ -29,6 +29,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Octree;
+	typedef std::shared_ptr<Octree> POctree;
+
+	struct BoundingBox;
+	typedef std::shared_ptr<BoundingBox> PBoundingBox;
+
 	class Scene;
 	typedef std::shared_ptr<Scene> PScene;
 
@@ -135,6 +141,9 @@ namespace NSG
 
 	class FilterBlur;
 	typedef std::shared_ptr<FilterBlur> PFilterBlur;
+
+	class FrameBuffer;
+    typedef std::shared_ptr<FrameBuffer> PFrameBuffer;
 
 	class FrameColorSelection;
     typedef std::shared_ptr<FrameColorSelection> PFrameColorSelection;

@@ -48,17 +48,14 @@ struct Sample : App
     {
         scene_ = PScene(new Scene);
 
-        camera_ = PCamera(new Camera);
-        scene_->Add(camera_);
+		camera_ = scene_->CreateCamera();
         camera_->SetBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
-        earth_ = PSceneNode(new SceneNode);
-        scene_->Add(earth_);
+		earth_ = scene_->CreateSceneNode();
         earth_->SetBehavior(PBehavior(new EarthBehavior));
 
-        light_ = PLight(new Light);
-        scene_->Add(light_);
+		light_ = scene_->CreateLight();
         light_->SetBehavior(PBehavior(new LightBehavior));
 
         scene_->Start();

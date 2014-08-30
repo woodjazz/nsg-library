@@ -53,6 +53,10 @@ namespace NSG
         {
             return bb_;
         }
+        float GetBoundingSphereRadius() const
+        {
+            return boundingSphereRadius_;
+        }
         VertexBuffer* GetVertexBuffer() const
         {
             return pVBuffer_.get();
@@ -90,6 +94,7 @@ namespace NSG
         Buffer::Data* bufferVertexData_;
         Buffer::Data* bufferIndexData_;
         BoundingBox bb_;
+        float boundingSphereRadius_;
         typedef std::map<Program*, PVertexArrayObj> VAOMap;
         VAOMap vaoMap_;
         bool isStatic_;

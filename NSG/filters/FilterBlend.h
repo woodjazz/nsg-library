@@ -33,7 +33,7 @@ namespace NSG
 	class FilterBlend : public Filter, public ExtraUniforms
 	{
 	public:
-		FilterBlend(PTexture input0, PTexture input1, PTexture output);
+		FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height);
 		~FilterBlend();
 
 		void SetLocations();

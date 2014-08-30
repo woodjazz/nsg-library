@@ -32,7 +32,7 @@ namespace NSG
 	class SphereMesh : public Mesh, public IProceduralResource
 	{
 	public:
-		SphereMesh(float radius, int res);
+		SphereMesh(float radius = 1, int res = 8);
 		~SphereMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;

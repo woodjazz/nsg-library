@@ -33,6 +33,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     TextureMemory::TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels)
+    : Texture(0)
     {
         width_ = width;
         height_ = height;
@@ -71,38 +72,16 @@ namespace NSG
         Context::RemoveObject(this);
     }
 
-    void TextureMemory::AllocateResources()
+    const unsigned char* TextureMemory::GetImageData()
     {
-        Texture::AllocateResources();
-
-        const char* data = nullptr;
+       const unsigned char* img = nullptr;
 
         if (pResource_->GetBytes())
         {
             CHECK_ASSERT(width_ * height_ * channels_ == pResource_->GetBytes(), __FILE__, __LINE__);
-            data = pResource_->GetData();
+            img = (const unsigned char*)pResource_->GetData();
         }
 
-        Graphics::this_->SetTexture(0, this);
-
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     format_,
-                     width_,
-                     height_,
-                     0,
-                     format_,
-                     type_,
-                     data);
-
-#if 0
-        if (data == nullptr)
-        {
-            std::vector<GLubyte> emptyData(width_ * height_ * channels_, 0);
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width_, height_, format_, GL_UNSIGNED_BYTE, &emptyData[0]);
-        }
-#endif
-
-        Graphics::this_->SetTexture(0, nullptr);
+        return img;
     }
 }

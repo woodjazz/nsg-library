@@ -74,6 +74,7 @@ namespace NSG
         bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
         bool HasDepthTexture() const { return has_depth_texture_ext_; }
         bool HasDepthComponent24() const { return has_depth_component24_ext_; }
+        bool HasNonPowerOfTwo() const { return has_texture_non_power_of_two_ext_; }
         
         void SetVertexAttrPointers();
         void SetAttributes(const Mesh* mesh, const Program* program);
@@ -108,6 +109,7 @@ namespace NSG
         bool has_map_buffer_range_ext_;
         bool has_depth_texture_ext_;
         bool has_depth_component24_ext_;
+        bool has_texture_non_power_of_two_ext_;
         UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
         CullFaceMode cullFaceMode_;
         FrontFaceMode frontFaceMode_;

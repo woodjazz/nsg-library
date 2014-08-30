@@ -1,14 +1,20 @@
 #include "Scene.h"
 #include "SceneNode.h"
+#include "Camera.h"
+#include "Light.h"
 #include "Behavior.h"
 #include "Light.h"
 #include "Context.h"
+#include "Octree.h"
+#include "OctreeQuery.h"
 
 namespace NSG
 {
     Scene::Scene()
-        : ambient_(0.3f, 0.3f, 0.3f, 1)
+        : ambient_(0.3f, 0.3f, 0.3f, 1),
+        octree_(new Octree)
     {
+        Context::this_->SetScene(this);
     }
 
     Scene::~Scene()
@@ -24,14 +30,30 @@ namespace NSG
         }
     }
 
-    void Scene::Add(PSceneNode node)
+    PCamera Scene::CreateCamera()
     {
-        Light* light = dynamic_cast<Light*>(node.get());
-        
-        if (light)
-            lights_.push_back(light);
+        PCamera obj(new Camera);
+        cameras_.push_back(obj);
+        nodes_.push_back(obj);
+        octree_->InsertDrawable(obj.get());
+        return obj;
+    }
 
-        nodes_.push_back(node);
+    PSceneNode Scene::CreateSceneNode()    
+    {
+        PSceneNode obj(new SceneNode);
+        nodes_.push_back(obj);
+		octree_->InsertDrawable(obj.get());
+        return obj;
+    }
+
+    PLight Scene::CreateLight()
+    {
+        PLight obj(new Light);
+        lights_.push_back(obj);
+        nodes_.push_back(obj);
+		octree_->InsertDrawable(obj.get());
+        return obj;
     }
 
     void Scene::Start()
@@ -54,20 +76,43 @@ namespace NSG
         }
     }
 
+    void Scene::GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles)
+    {
+        auto it = needUpdate_.begin();
+        while(it != needUpdate_.end())
+        {
+            const SceneNode* node = *it;
+            octree_->Update(node);
+            it = needUpdate_.erase(it);
+        }
+
+        FrustumOctreeQuery query(visibles, *camera->GetFrustumPointer());
+        octree_->GetDrawables(query);
+    }
+
     void Scene::Render()
     {
-        Context::this_->SetScene(this);
-
-        for (auto& obj : nodes_)
+        Camera* camera = Camera::GetActiveCamera();
+        
+        if(camera)
         {
-            Behavior* behavior = obj->GetBehavior();
-            if(behavior)
-                behavior->Render();
+            std::vector<const SceneNode*> visibles;
+            GetVisibleNodes(camera, visibles);
+
+            AppStatistics::this_->SetNodes(nodes_.size(), visibles.size());
+
+            for (auto& obj : visibles)
+			//for (auto& obj : nodes_)
+            {
+                Behavior* behavior = obj->GetBehavior();
+                if(behavior)
+                    behavior->Render();
+            }
         }
     }
 
-    const Scene::Lights& Scene::GetLights()
+    void Scene::Update(const SceneNode* obj)
     {
-        return lights_;
+        needUpdate_.insert(obj);
     }
 }

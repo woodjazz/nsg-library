@@ -26,27 +26,37 @@ misrepresented as being the original software.
 #pragma once
 #include "SharedPointers.h"
 #include "Node.h"
-
+#include "BoundingBox.h"
 
 namespace NSG
 {
-	class App;
+	class Octant;
 	class SceneNode : public Node
 	{
 	public:
 		SceneNode();
 		~SceneNode();
-		void Set(PMaterial material) { material_ = material; }
+		void Set(PMaterial material);
 		void Set(Material* material);
-		void Set(PMesh mesh) { mesh_ = mesh; }
+		void Set(PMesh mesh);
 		void Set(Mesh* mesh);
 		PMesh GetMesh() const { return mesh_; }
+		Mesh* GetMeshPointer() const { return mesh_.get(); }
 		void SetBehavior(PBehavior pBehavior);
 		Behavior* GetBehavior() const { return pBehavior_.get(); }
 		virtual void Render();
+		void SetOctant(Octant* octant) const { octant_ = octant; }
+		const BoundingBox& GetWorldBoundingBox() const;
+		bool IsOccludee() const { return occludee_; }
+		Octant* GetOctant() const { return octant_; }
+		virtual void OnDirty() const override;
 	private:
 		PMaterial material_;
 		PMesh mesh_;
 		PBehavior pBehavior_;
+		mutable Octant* octant_;
+		mutable BoundingBox worldBB_;
+		bool occludee_;
+		mutable bool worldBBNeedsUpdate_;
 	};
 }

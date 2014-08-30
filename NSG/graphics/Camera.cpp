@@ -43,8 +43,10 @@ namespace NSG
           isOrtho_(false),
           viewWidth_(0),
           viewHeight_(0),
-          aspectRatio_(1)
+          aspectRatio_(1),
+          cameraIsDirty_(false)
     {
+		UpdateProjection();
         App::Add(this);
     }
 
@@ -161,46 +163,61 @@ namespace NSG
 
     void Camera::UpdateViewProjection() const
     {
+		cameraIsDirty_ = false;
+
         matViewInverse_ = GetGlobalModelMatrix();
-        matView_ = glm::inverse(matViewInverse_);
-        matViewProjection_ = matProjection_ * matView_;
+		matView_ = glm::inverse(matViewInverse_);
+        
+		matViewProjection_ = matProjection_ * matView_;
         matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 
-       if (isOrtho_)
-            frustum_ = PFrustum(new Frustum(matViewInverse_, 1, aspectRatio_, zNear_, zFar_));
-        else
-            frustum_ = PFrustum(new Frustum(fovy_, aspectRatio_, zNear_, zFar_, matViewInverse_));
-
+        frustum_ = PFrustum(new Frustum(this));
     }
 
     const PFrustum Camera::GetFrustum() const
     {
-        if (IsDirty())
+        if(cameraIsDirty_)
             UpdateProjection();
 
         return frustum_;
     }
 
+    const Frustum* Camera::GetFrustumPointer() const
+    {
+        if(cameraIsDirty_)
+            UpdateProjection();
+
+        return frustum_.get();
+
+    }
+
     const Matrix4& Camera::GetMatViewProjection() const
     {
-        if (IsDirty())
+        if(cameraIsDirty_)
             UpdateProjection();
 
         return matViewProjection_;
-
     }
 
     Matrix4 Camera::GetModelViewProjection(const Node* pNode)
     {
         if (activeCamera)
         {
-            return activeCamera->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
+			return activeCamera->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
         }
         else
         {
             // if no Camera then position is in screen coordinates
             return pNode->GetGlobalModelMatrix();
         }
+    }
+
+    const Matrix4& Camera::GetMatProjection() const
+    {
+        if(cameraIsDirty_)
+            UpdateProjection();
+
+        return matProjection_;
     }
 
     Matrix4 Camera::GetInverseView()
@@ -216,7 +233,7 @@ namespace NSG
     }
     const Matrix4& Camera::GetView() const
     {
-        if (IsDirty())
+        if(cameraIsDirty_)
             UpdateProjection();
 
         return matView_;
@@ -224,7 +241,7 @@ namespace NSG
 
     const Matrix4& Camera::GetInverseViewMatrix() const
     {
-        if (IsDirty())
+        if(cameraIsDirty_)
             UpdateProjection();
 
         return matViewInverse_;
@@ -232,27 +249,29 @@ namespace NSG
 
     const Matrix4& Camera::GetViewProjectionMatrix() const
     {
-        if (IsDirty())
+        if(cameraIsDirty_)
             UpdateProjection();
 
         return matViewProjection_;
     }
 
-    Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
+    const Matrix4& Camera::GetViewProjectionInverseMatrix() const
     {
-        if (IsDirty())
+        if(cameraIsDirty_)
             UpdateProjection();
 
-        Vertex4 worldCoord = matViewProjectionInverse_ * Vertex4(screenXYZ, 1);
+        return matViewProjectionInverse_;
+    }
+
+    Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
+    {
+        Vertex4 worldCoord = GetViewProjectionInverseMatrix() * Vertex4(screenXYZ, 1);
         return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
     }
 
     Vertex3 Camera::WorldToScreen(const Vertex3& worldXYZ) const
     {
-        if (IsDirty())
-            UpdateProjection();
-
-        Vertex4 screenCoord = matViewProjection_ * Vertex4(worldXYZ, 1);
+        Vertex4 screenCoord = GetViewProjectionMatrix() * Vertex4(worldXYZ, 1);
         return Vertex3(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w);
     }
 
@@ -274,5 +293,10 @@ namespace NSG
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
     {
         return GetFrustum()->IsVisible(node, mesh);
+    }
+
+    void Camera::OnDirty() const
+    {
+        cameraIsDirty_ = true;
     }
 }

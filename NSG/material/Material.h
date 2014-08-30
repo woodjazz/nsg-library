@@ -36,7 +36,6 @@ namespace NSG
 	public:
 		Material();
 		~Material();
-		const Material& operator = (const Material& obj);
 		void SetTexture0(PTexture pTexture);
 		void SetTexture1(PTexture pTexture);
         PTexture GetTexture0() const { return pTexture0_; }

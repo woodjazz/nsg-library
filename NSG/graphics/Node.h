@@ -40,7 +40,7 @@ namespace NSG
         void SetParent(PNode pParent);
         void SetParent(Node* pParent);
         PNode GetParent() const { return pParent_; }
-		virtual void OnUpdate() const {}
+		virtual void OnDirty() const {};
 		void SetPosition(const Vertex3& position);
 		const Vertex3& GetPosition() const { return position_; }
 		void SetOrientation(const Quaternion& q);
@@ -57,7 +57,8 @@ namespace NSG
 		const Matrix3& GetGlobalModelInvTranspMatrix() const;
 		const Matrix4& GetGlobalModelInvMatrix() const;
 		static Vertex3 UP;
-		void SetLookAt(const Vertex3& center, const Vertex3& up = UP);
+		void SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up = UP);
+		void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = UP);
 		const Vertex3& GetLookAtDirection() const;
 		void SetInheritScale(bool inherit);
 		bool IsPointInsideBB(const Vertex3& point) const;

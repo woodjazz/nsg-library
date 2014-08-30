@@ -34,7 +34,7 @@ namespace NSG
 	class FilterBlur : public Filter, public ExtraUniforms
 	{
 	public:
-		FilterBlur(PTexture input, PTexture output);
+		FilterBlur(PTexture input, int output_width, int output_height);
 		~FilterBlur();
 
 		void SetLocations();

@@ -3,8 +3,10 @@
 "#define GLES2\n"
 "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
 	"precision highp float;\n"
+	"precision highp int;\n"
 "#else\n"
 	"precision mediump float;\n"
+	"precision mediump int;\n"
 "#endif\n"
 #else
 "#version 120\n"

@@ -32,10 +32,11 @@ namespace NSG
 	class TextureFile : public Texture
 	{
 	public:
-		TextureFile(const char* filename);
-		TextureFile(PResource resource);
+		TextureFile(const char* filename, Flags flags = Flag::GENERATE_MIPMAPS);
+		TextureFile(PResource resource, Flags flags = Flag::GENERATE_MIPMAPS);
 		~TextureFile();
-		virtual void AllocateResources();
+		virtual const unsigned char* GetImageData() override;
+		virtual void FreeImageData(const unsigned char* img) override;
 	private:
 		std::string filename_;
 		bool onlyAlpha_;

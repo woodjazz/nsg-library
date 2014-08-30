@@ -73,6 +73,8 @@ namespace NSG
         label_[(int)Stats::STATIC_IBO] = "Static IBO:";
         label_[(int)Stats::DYNAMIC_VBO] = "Dynamic VBO:";
         label_[(int)Stats::DYNAMIC_IBO] = "Dynamic IBO:";
+        label_[(int)Stats::VISIBLES_NODES] = "Visibles nodes:";
+        label_[(int)Stats::TOTAL_NODES] = "Total nodes::";
     }
 
     AppStatistics::~AppStatistics()
@@ -90,6 +92,12 @@ namespace NSG
     {
         if (collect_)
             stats_[(int)Stats::TRIANGLES] += n;
+    }
+
+    void AppStatistics::SetNodes(size_t total, size_t visibles)
+    {
+        stats_[(int)Stats::VISIBLES_NODES] = visibles;
+        stats_[(int)Stats::TOTAL_NODES] = total;
     }
 
     void AppStatistics::NewFrame()

@@ -24,27 +24,17 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
+#include <bitset>
 
-namespace NSG
+template <class T, std::size_t N = 32 >
+struct FlagSet : std::bitset<N>
 {
-	struct BoundingBox
+	FlagSet(int bits) : std::bitset<N>(bits)
+    {
+    }
+
+	operator unsigned long() const
 	{
-		Vertex3 min_;
-		Vertex3 max_;
-
-		BoundingBox(const Vertex3& min, const Vertex3& max);
-    	BoundingBox(const Vector3& point);
-		BoundingBox(const Node& node);
-		BoundingBox(const BoundingBox& obj);
-		~BoundingBox();
-		void Define(const Vector3& point);
-	    void Merge(const Vector3& point);
-	    void Transform(const Node& node);
-		Intersection IsInside(const BoundingBox& box) const;
-		bool IsInside(const Vertex3& point) const;
-	    Vector3 Center() const { return (max_ + min_) * 0.5f; }
-	    Vector3 Size() const { return max_ - min_; }
-	};
-
-}
+		return std::bitset<N>::to_ulong();
+	}
+};

@@ -83,13 +83,107 @@ static void Test02()
 
 static void Test03()
 {
-	PNode pA(new Node());
 
-    CHECK_ASSERT(pA->GetLookAtDirection() == Vertex3(0,0,-1), __FILE__, __LINE__);
+	{
+		Node node;
+		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
 
-    pA->SetLookAt(Vertex3(10,0,0));
+		Vector3 lookAt = -WORLD_X_COORD;
+		node.SetLookAt(lookAt);
 
-    CHECK_ASSERT(glm::distance(pA->GetLookAtDirection(), Vertex3(1,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+
+		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
+		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
+		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
+
+		CHECK_ASSERT(glm::distance(vx, -WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vz, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+	}
+
+	{
+		Node node;
+		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+
+		Vector3 lookAt = -WORLD_Z_COORD;
+		node.SetLookAt(lookAt);
+
+		CHECK_ASSERT(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+
+		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
+		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
+		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
+
+		CHECK_ASSERT(glm::distance(vx, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vz, WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+	}
+
+	{
+		Node node;
+		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+
+		Vector3 lookAt = -WORLD_Z_COORD;
+		node.SetPosition(WORLD_Z_COORD);
+		node.SetLookAt(lookAt);
+
+		CHECK_ASSERT(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+
+		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
+		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
+		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
+
+		CHECK_ASSERT(glm::distance(vx, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vz, WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+	}
+
+	{
+		Node node;
+		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+
+		Vector3 lookAt = WORLD_Z_COORD;
+		node.SetPosition(-WORLD_Z_COORD);
+		node.SetLookAt(lookAt);
+
+		CHECK_ASSERT(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+
+		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
+		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
+		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
+
+		CHECK_ASSERT(glm::distance(vx, -WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vz, -WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+	}
+
+	{
+		Node node;
+		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+
+		Vector3 lookAt = WORLD_Z_COORD;
+		node.SetPosition(WORLD_X_COORD + WORLD_Y_COORD + WORLD_Z_COORD);
+		node.SetLookAt(lookAt);
+
+		Vector3 expectedLookAt = Vector3(-0.7071068f, -0.7071068f, 0);
+		Vector3 currentLookAt = node.GetLookAtDirection();
+		CHECK_ASSERT(glm::distance(currentLookAt, expectedLookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+
+		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
+		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
+		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
+
+		Vector3 expectedVy = Vector3(-0.7071068f, 0.7071068f, 0);
+		Vector3 expectedVz = -expectedLookAt;
+		Vector3 expectedVx = glm::cross(expectedVy, expectedVz);
+
+		CHECK_ASSERT(glm::distance(vx, expectedVx) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vy, expectedVy) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(vz, expectedVz) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+	}
+
+	
 }
 
 static void Test04()

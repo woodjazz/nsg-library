@@ -29,23 +29,6 @@ namespace NSG
         Context::RemoveObject(this);
     }
 
-    const Material& Material::operator = (const Material& obj)
-    {
-        if (this != &obj)
-        {
-            pTexture0_ = obj.pTexture0_;
-            pTexture1_ = obj.pTexture1_;
-            technique_ = obj.technique_;
-            ambient_ = obj.ambient_;
-            diffuse_ = obj.diffuse_;
-            specular_ = obj.specular_;
-            shininess_ = obj.shininess_;
-            color_ = obj.color_;
-        }
-
-        return *this;
-    }
-
     void Material::SetColor(Color color)
     {
         if (color != color_)

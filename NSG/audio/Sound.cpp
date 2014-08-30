@@ -52,7 +52,11 @@ namespace NSG
 
     bool Sound::IsPlaying() const
     {
+#ifdef SDL        
         return Mix_Playing(channel_) ? true : false;
+#else
+        return false;
+#endif        
     }
 
     bool Sound::IsReady()

@@ -29,40 +29,49 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Pass2Texture::Pass2Texture(PTexture texture, bool createDepthBuffer, bool createDepthStencilBuffer)
-	: texture_(texture),
-	render2Texture_(new Render2Texture(texture, createDepthBuffer, createDepthStencilBuffer))
-	{
+    Pass2Texture::Pass2Texture(int width, int height, UseBuffer buffer)
+        : render2Texture_(new Render2Texture(width, height, buffer))
+    {
 
-	}
+    }
 
-	Pass2Texture::~Pass2Texture()
-	{
+    Pass2Texture::~Pass2Texture()
+    {
 
-	}
+    }
 
-	bool Pass2Texture::Render()
-	{
-		bool drawn = false;
+    PTexture Pass2Texture::GetTexture() const
+    {
+        return render2Texture_->GetTexture();
+    }
 
-		if(render2Texture_->Begin())
-		{
-			auto it = passes_.begin();
-			
-			while(it != passes_.end())
-			{
-				Graphics::this_->Set(it->mesh_.get());
-				Graphics::this_->Set(it->material_.get());
-				Graphics::this_->Set(it->node_);
+    void Pass2Texture::Add(PPass pass, Node* node, PMaterial material, PMesh mesh)
+    {
+        passes_.push_back(PassData {pass, node, material, mesh});
+    }
 
-				drawn |= it->pass_->Render();
+    bool Pass2Texture::Render()
+    {
+        bool drawn = false;
 
-				++it;
-			}
+        if (render2Texture_->Begin())
+        {
+            auto it = passes_.begin();
 
-			render2Texture_->End();
-		}
+            while (it != passes_.end())
+            {
+                Graphics::this_->Set(it->mesh_.get());
+                Graphics::this_->Set(it->material_.get());
+                Graphics::this_->Set(it->node_);
 
-		return drawn;
-	}
+                drawn |= it->pass_->Render();
+
+                ++it;
+            }
+
+            render2Texture_->End();
+        }
+
+        return drawn;
+    }
 }

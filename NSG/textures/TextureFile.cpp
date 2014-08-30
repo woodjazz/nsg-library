@@ -23,8 +23,9 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#define STB_IMAGE_IMPLEMENTATION
 #include "TextureFile.h"
-#include "SOIL.h"
+#include "stb_image.h"
 #include "Check.h"
 #include "ResourceFile.h"
 #include "Context.h"
@@ -32,13 +33,15 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	TextureFile::TextureFile(const char* filename) 
-	: filename_(filename)
+	TextureFile::TextureFile(const char* filename, Flags flags) 
+	: Texture(flags),
+	filename_(filename)
 	{
         pResource_ = PResourceFile(new ResourceFile(filename));
 	}
 
-	TextureFile::TextureFile(PResource resource)
+	TextureFile::TextureFile(PResource resource, Flags flags)
+	: Texture(flags)
 	{
 		pResource_ = resource;
 	}
@@ -48,11 +51,9 @@ namespace NSG
 		Context::RemoveObject(this);
 	}
 
-	void TextureFile::AllocateResources()
+	const unsigned char* TextureFile::GetImageData()
 	{
-		Texture::AllocateResources();
-
-		unsigned char* img = SOIL_load_image_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 0);
+		const unsigned char* img = stbi_load_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 0);
 
         if(channels_ == 4)
         {
@@ -69,21 +70,11 @@ namespace NSG
             CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
         }
 
-		Graphics::this_->SetTexture(0, this);
+		return img;
+	}
 
-		glTexImage2D(GL_TEXTURE_2D,
-			0,
-			format_,
-			width_,
-			height_,
-			0,
-			format_,
-			type_,
-			img);
-
-		Graphics::this_->SetTexture(0, nullptr);
-
-
-		SOIL_free_image_data(img);
+	void TextureFile::FreeImageData(const unsigned char* img)
+	{
+		stbi_image_free((void*)img);
 	}
 }

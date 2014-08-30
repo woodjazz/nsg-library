@@ -44,12 +44,12 @@ static const char* vShader = STRINGIFY(
 
 namespace NSG
 {
-    Filter::Filter(PTexture input, PTexture output, const char* fragment)
+    Filter::Filter(PTexture input, int output_width, int output_height, const char* fragment)
         : technique_(new Technique),
           pass_(new Pass),
           pMaterial_(new Material),
           pMesh_(new PlaneMesh(2, 2, 2, 2)),
-          pRender2Texture_(new Render2Texture(output, true, false))
+          pRender2Texture_(new Render2Texture(output_width, output_height))
     {
         technique_->Add(pass_);
         pMaterial_->SetTexture0(input);

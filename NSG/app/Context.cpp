@@ -42,9 +42,7 @@ namespace NSG
 	template<> Context* Singleton<Context>::this_ = nullptr;
 
     Context::Context()
-        : atlasManager_(new FontAtlasTextureManager),
-        keyboard_(new Keyboard),
-        bufferManager_(new BufferManager),
+        : keyboard_(new Keyboard),
         scene_(nullptr),
         allGPUObjectAreValid_(true)
     {
@@ -153,11 +151,15 @@ namespace NSG
     void Context::Initialize()
     {
         graphics_ = PGraphics(new Graphics);
-        
+
+		bufferManager_ = PBufferManager(new BufferManager);
+
+		atlasManager_ = PFontAtlasTextureManager(new FontAtlasTextureManager);
+		
+		imgui_ = IMGUI::PContext(new IMGUI::Context);
+
         audio_ = PAudio(new Audio);
         
-        imgui_ = IMGUI::PContext(new IMGUI::Context);
-
         statistics_ = PAppStatistics(new AppStatistics);
     }
 }

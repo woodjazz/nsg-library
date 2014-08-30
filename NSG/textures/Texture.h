@@ -24,16 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GLES2Includes.h"
-#include "SharedPointers.h"
+#include "Types.h"
 #include "GPUObject.h"
+#include "FlagSet.h"
 
 namespace NSG
 {
 	class Texture : public GPUObject
 	{
 	public:
-		Texture(); 
+		enum Flag {GENERATE_MIPMAPS = 1};
+		typedef FlagSet<Flag> Flags;
+		Texture(Flags flags); 
 		virtual ~Texture();
 		GLuint GetID() const { return texture_; }
 		GLsizei GetWidth() const { return width_; }
@@ -43,7 +45,10 @@ namespace NSG
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void ReleaseResources() override;
+		virtual const unsigned char* GetImageData() = 0;
+		virtual void FreeImageData(const unsigned char* img) {}
 	protected:
+		Flags flags_;
 		GLuint texture_;
 		PResource pResource_;
 		GLsizei width_;

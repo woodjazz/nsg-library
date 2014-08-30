@@ -37,7 +37,6 @@ struct Sample : App
     PSceneNode sphere_;
     PTechnique technique_;
     PShowTexture showTexture_;
-    PTexture blendedTexture_;
     BoxBehavior* boxBehavior_;
     SphereBehavior* sphereBehavior_;
 
@@ -52,18 +51,15 @@ struct Sample : App
 	{
         scene_ = PScene(new Scene);
         
-        camera_ = PCamera(new Camera);
-        scene_->Add(camera_);
+		camera_ = scene_->CreateCamera();
         camera_->SetPosition(Vertex3(0,0,10));
         camera_->Activate();
 
-        box_ = PSceneNode(new SceneNode);
-        scene_->Add(box_);
+		box_ = scene_->CreateSceneNode();
         boxBehavior_ = new BoxBehavior;
         box_->SetBehavior(PBehavior(boxBehavior_));
         
-        sphere_ = PSceneNode(new SceneNode);
-        scene_->Add(sphere_);
+		sphere_ = scene_->CreateSceneNode();
         sphereBehavior_ = new SphereBehavior;
         sphere_->SetBehavior(PBehavior(sphereBehavior_));
 
@@ -80,45 +76,55 @@ struct Sample : App
         depthPass->EnableColorBuffer(false);
         depthPass->SetProgram(PProgram(new ProgramWhiteColor));
         
+		PFilter boxFilter;
         {
             //box passes
 
-            PPass2Texture pass2Texture(new Pass2Texture(boxBehavior_->renderedTexture_, true, false));
-            technique_->Add(pass2Texture);
-            pass2Texture->Add(depthPass, sphereBehavior_->GetSceneNode(), nullptr, sphereBehavior_->mesh_);
-            pass2Texture->Add(normalPass, boxBehavior_->GetSceneNode(), boxBehavior_->material_, boxBehavior_->mesh_);
+			PPass2Texture pass2Texture(new Pass2Texture(1024, 1024));
+			technique_->Add(pass2Texture);
+
+			boxFilter = PFilter(new Filter(pass2Texture->GetTexture(), 1024, 1024, BoxBehavior::GetFS()));
             
-            PPassFilter filterPass(new PassFilter(boxBehavior_->filter_));
+            pass2Texture->Add(depthPass, sphereBehavior_->GetSceneNode(), nullptr, sphereBehavior_->mesh_);
+			pass2Texture->Add(normalPass, boxBehavior_->GetSceneNode(), boxBehavior_->material_, boxBehavior_->mesh_);
+            
+			boxBehavior_->SetFilterMaterial(boxFilter->GetMaterial());
+			PPassFilter filterPass(new PassFilter(boxFilter));
             technique_->Add(filterPass);
         }
 
+		PFilter sphereBlendFilter;
         {
             //sphere passes
     
-            PPass2Texture pass2Texture(new Pass2Texture(sphereBehavior_->renderedTexture_, true, false));
+            PPass2Texture pass2Texture(new Pass2Texture(1024, 1024));
             technique_->Add(pass2Texture);
             pass2Texture->Add(depthPass, boxBehavior_->GetSceneNode(), nullptr, boxBehavior_->mesh_);
             pass2Texture->Add(normalPass, sphereBehavior_->GetSceneNode(), sphereBehavior_->material_, sphereBehavior_->mesh_);
 
-            PPassFilter filterPass(new PassFilter(sphereBehavior_->filter_));
+			PFilter blurFilter(new FilterBlur(pass2Texture->GetTexture(), 16, 16));
+			    
+			PPassFilter filterPass(new PassFilter(blurFilter));
             technique_->Add(filterPass);
 
-            PPassFilter passBlend(new PassFilter(sphereBehavior_->blendFilter_));
+			sphereBlendFilter = PFilter(new FilterBlend(blurFilter->GetTexture(), pass2Texture->GetTexture(), 1024, 1024));
+
+			PPassFilter passBlend(new PassFilter(sphereBlendFilter));
             technique_->Add(passBlend);
         }
 
+		PFilter blendFilter(new FilterBlend(sphereBlendFilter->GetTexture(), boxFilter->GetTexture(), 1024, 1024));
+		PPassFilter passBlend(new PassFilter(blendFilter));
+		technique_->Add(passBlend);
 
-        blendedTexture_ = PTexture (new TextureMemory(GL_RGBA, 1024, 1024, nullptr));
-        showTexture_->SetNormal(blendedTexture_);
+
+		showTexture_->SetNormal(blendFilter->GetTexture());
         //showTexture_->SetNormal(sphereBehavior_->blendedTexture_);
         //showTexture_->SetNormal(boxBehavior_->filteredTexture_);
         //showTexture_->SetNormal(boxBehavior_->renderedTexture_);
         //showTexture_->SetNormal(sphereBehavior_->renderedTexture_);
         //showTexture_->SetNormal(sphereBehavior_->filteredTexture_);
         
-        PFilter blendFilter(new FilterBlend(sphereBehavior_->blendedTexture_, boxBehavior_->filteredTexture_, blendedTexture_));
-        PPassFilter passBlend(new PassFilter(blendFilter));
-        technique_->Add(passBlend);
       
      }
 

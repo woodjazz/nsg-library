@@ -198,12 +198,6 @@ namespace NSG
                     u_light_index << "u_light" << i << ".";
 
                     lightsLoc_[i].type_loc = GetUniformLocation(u_light_index.str() + "type");
-
-                    if (lightsLoc_[i].type_loc == -1)
-                    {
-                        break;
-                    }
-
                     lightsLoc_[i].position_loc = GetUniformLocation(u_light_index.str() + "position");
                     lightsLoc_[i].diffuse_loc = GetUniformLocation(u_light_index.str() + "diffuse");
                     lightsLoc_[i].specular_loc = GetUniformLocation(u_light_index.str() + "specular");
@@ -215,7 +209,7 @@ namespace NSG
                     lightsLoc_[i].spotDirection_loc = GetUniformLocation(u_light_index.str() + "spotDirection");
                 }
 
-                if (lightsLoc_[0].type_loc != -1)
+				if (lightsLoc_[0].position_loc != -1)
                 {
                     hasLights_ = true;
                 }
@@ -370,28 +364,33 @@ namespace NSG
 
     void Program::SetVariables(Material* material)
     {
-        if (color_loc_ != -1 && (!material_ || material_->color_ != material->color_))
+		if (color_loc_ != -1 && material_.color_ != material->color_)
         {
+			material_.color_ = material->color_;
             glUniform4fv(color_loc_, 1, &material->color_[0]);
         }
 
-        if (color_ambient_loc_ != -1 && (!material_ || material_->ambient_ != material->ambient_))
+        if (color_ambient_loc_ != -1 && material_.ambient_ != material->ambient_)
         {
+			material_.ambient_ = material->ambient_;
             glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
         }
 
-        if (color_diffuse_loc_ != -1 && (!material_ || material_->diffuse_ != material->diffuse_))
+        if (color_diffuse_loc_ != -1 && material_.diffuse_ != material->diffuse_)
         {
+			material_.diffuse_ = material->diffuse_;
             glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
         }
 
-        if (color_specular_loc_ != -1 && (!material_ || material_->specular_ != material->specular_))
+        if (color_specular_loc_ != -1 && material_.specular_ != material->specular_)
         {
+			material_.specular_ = material->specular_;
             glUniform4fv(color_specular_loc_, 1, &material->specular_[0]);
         }
 
-        if (shininess_loc_ != -1 && (!material_ || material_->shininess_ != material->shininess_))
+        if (shininess_loc_ != -1 && material_.shininess_ != material->shininess_)
         {
+			material_.shininess_ = material->shininess_;
             glUniform1f(shininess_loc_, material->shininess_);
         }
     }
@@ -420,12 +419,7 @@ namespace NSG
 
         activeMaterial_ = material;
 
-        if (!material_)
-            material_ = PMaterial(new Material);
-        else if (material)
-            *material_ = *material;
-
-        if (activeNode_ != node || (node && node->UniformsNeedUpdate()))
+		if (activeNode_ != node || (node && node->UniformsNeedUpdate()))
         {
             SetVariables(node);
         }
@@ -481,13 +475,16 @@ namespace NSG
 
             if (nLights_ != n)
             {
-                glUniform1i(numOfLights_loc_, n);
+				if (numOfLights_loc_ != -1)
+				{
+					glUniform1i(numOfLights_loc_, n);
+				}
                 nLights_ = n;
             }
 
             for (size_t i = 0; i < n; i++)
             {
-                Light* light = ligths[i];
+                Light* light = ligths[i].get();
 
                 if (activeLights_[i] != light || light->UniformsNeedUpdate())
                 {

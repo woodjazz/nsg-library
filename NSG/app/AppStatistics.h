@@ -42,9 +42,10 @@ namespace NSG
 		void RemoveIndexBuffer(bool dynamic);
 		void NewDrawCall();
 		void NewTriangles(size_t n);
+		void SetNodes(size_t total, size_t visibles);
 		void Show();
 	private:
-		enum class Stats {FPS, DRAW_CALLS, TRIANGLES, STATIC_VBO, STATIC_IBO, DYNAMIC_VBO, DYNAMIC_IBO, MAX_STATS};
+		enum class Stats {FPS, DRAW_CALLS, TRIANGLES, STATIC_VBO, STATIC_IBO, DYNAMIC_VBO, DYNAMIC_IBO, VISIBLES_NODES, TOTAL_NODES, MAX_STATS};
 		static const int LINES = 7;
 		std::string label_[(int)Stats::MAX_STATS];
 		size_t stats_[(int)Stats::MAX_STATS];
