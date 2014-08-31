@@ -33,7 +33,7 @@ namespace NSG
 	class Texture : public GPUObject
 	{
 	public:
-		enum Flag {GENERATE_MIPMAPS = 1};
+		enum Flag {NONE=0, GENERATE_MIPMAPS = 1};
 		typedef FlagSet<Flag> Flags;
 		Texture(Flags flags); 
 		virtual ~Texture();

@@ -1,5 +1,5 @@
 git submodule add https://github.com/assimp/assimp externals/assimp
 git submodule add http://git.savannah.gnu.org/r/freetype/freetype2.git externals/freetype2
 git submodule add https://github.com/g-truc/glm externals/glm
-git submodule add https://github.com/leethomason/tinyxml2 externals/tinyxml2
 git submodule add https://github.com/nothings/stb externals/stb
+git submodule add https://github.com/zeux/pugixml/ externals/pugixml

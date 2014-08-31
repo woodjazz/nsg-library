@@ -33,7 +33,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     TextureMemory::TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels)
-    : Texture(0)
+    : Texture(Flag::NONE)
     {
         width_ = width;
         height_ = height;

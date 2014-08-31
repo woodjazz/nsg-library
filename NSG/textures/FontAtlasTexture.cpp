@@ -7,7 +7,7 @@
 #include "Mesh.h"
 #include "App.h"
 #include "UTF8String.h"
-#include "tinyxml2.h"
+#include "pugixml.hpp"
 #include "fonts/anonymous_pro_regular_14_png.inl"
 #include "fonts/anonymous_pro_regular_14_xml.inl"
 #include <fstream>
@@ -21,16 +21,17 @@ namespace NSG
     FontAtlasTexture::FontAtlasTexture(const std::string& filename)
         : viewWidth_(0),
           viewHeight_(0),
-		  filename_(filename)
+          filename_(filename)
     {
-        if(filename.empty())
+        if (filename.empty())
         {
-			texture_ = PTexture(new TextureFile(PResource(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_PNG, ANONYMOUS_PRO_REGULAR_14_PNG_SIZE))));
-            xmlResource_ = PResource(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_XML, ANONYMOUS_PRO_REGULAR_14_XML_SIZE)); 
+            PResource bitmapFont(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_PNG, ANONYMOUS_PRO_REGULAR_14_PNG_SIZE));
+            texture_ = PTexture(new TextureFile(bitmapFont, Texture::Flag::NONE));
+            xmlResource_ = PResource(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_XML, ANONYMOUS_PRO_REGULAR_14_XML_SIZE));
         }
         else
         {
-            texture_ = PTexture(new TextureFile(filename.c_str()));
+            texture_ = PTexture(new TextureFile(filename.c_str(), Texture::Flag::NONE));
             std::string::size_type idx = filename.find_last_of(".");
             if (idx != std::string::npos)
             {
@@ -61,49 +62,58 @@ namespace NSG
         return false;
     }
 
-    void FontAtlasTexture::ParseXML()
+    bool FontAtlasTexture::ParseXML()
     {
-		
-		TRACE_LOG("FontAtlasTexture::Parsing: " << (filename_.empty() ? "internal font" : filename_));
+        TRACE_LOG("FontAtlasTexture::Parsing: " << (filename_.empty() ? "internal font" : filename_));
 
-        tinyxml2::XMLDocument doc;
-        tinyxml2::XMLError xmlStatus = doc.Parse(xmlResource_->GetData(), xmlResource_->GetBytes());
-        CHECK_ASSERT(xmlStatus == tinyxml2::XML_SUCCESS, __FILE__, __LINE__);
-        const tinyxml2::XMLElement* charElement = doc.FirstChildElement("Font");
-        int height = 0;
-        charElement->QueryAttribute("height", &height);
-        charElement = charElement->FirstChildElement("Char");
-        while (charElement)
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_buffer_inplace((void*)xmlResource_->GetData(), xmlResource_->GetBytes());
+        if (!result)
         {
-            CharInfo charInfo;
-            charInfo.height = height;
-
-            charElement->QueryAttribute("width", &charInfo.width);
-            {
-                std::stringstream ss;
-                ss << charElement->Attribute("offset");
-                ss >> charInfo.offset.x;
-                ss >> charInfo.offset.y;
-            }
-
-            {
-                std::stringstream ss;
-                ss << charElement->Attribute("rect");
-                ss >> charInfo.rect.x;
-                ss >> charInfo.rect.y;
-                ss >> charInfo.rect.z;
-                ss >> charInfo.rect.w;
-            }
-
-            int code = 0;
-            const tinyxml2::XMLAttribute* att = charElement->FindAttribute("code");
-            UTF8String utf8(att->Value());
-            unsigned unicode = utf8.AtUTF8(0);
-            charsMap_[unicode] = charInfo;
-            charElement = charElement->NextSiblingElement("Char");
+            TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
+            TRACE_LOG("Error description: " << result.description());
+            TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
+            CHECK_ASSERT(false, __FILE__, __LINE__);
+            return false;
         }
+        else
+        {
+            pugi::xml_node node = doc.child("Font");
+            int height = node.attribute("height").as_int();
+            node = node.child("Char");
+            while (node)
+            {
+                CharInfo charInfo;
+                charInfo.height = height;
 
-        TRACE_LOG("FontAtlasTexture::Parsing done.");
+                charInfo.width = node.attribute("width").as_int();
+                {
+                    std::stringstream ss;
+                    ss << node.attribute("offset").value();
+                    ss >> charInfo.offset.x;
+                    ss >> charInfo.offset.y;
+                }
+
+                {
+                    std::stringstream ss;
+                    ss << node.attribute("rect").value();
+                    ss >> charInfo.rect.x;
+                    ss >> charInfo.rect.y;
+                    ss >> charInfo.rect.z;
+                    ss >> charInfo.rect.w;
+                }
+
+                const char* code = node.attribute("code").value();
+                UTF8String utf8(code);
+                unsigned unicode = utf8.AtUTF8(0);
+                charsMap_[unicode] = charInfo;
+                node = node.next_sibling("Char");
+            }
+
+            TRACE_LOG("FontAtlasTexture::Parsing done.");
+
+            return true;
+        }
     }
 
     bool FontAtlasTexture::GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight)
@@ -160,7 +170,7 @@ namespace NSG
 
                 vertex[2].position_ = Vertex3(offsetX, offsetY + h, 0);
                 vertex[2].uv_ = Vertex2(ux, uy + uh);
-                
+
                 vertex[3].position_ = Vertex3(offsetX + w, offsetY + h, 0);
                 vertex[3].uv_ = Vertex2(ux + uw, uy + uh);
             }
@@ -174,11 +184,11 @@ namespace NSG
             indexes.push_back(index + 0);
             indexes.push_back(index + 2);
             indexes.push_back(index + 1);
-            
+
             indexes.push_back(index + 1);
             indexes.push_back(index + 2);
             indexes.push_back(index + 3);
-            
+
             index += 4;
 
             x += charInfo.width * sx;

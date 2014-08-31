@@ -44,7 +44,7 @@ namespace NSG
 		virtual void OnViewChanged(int32_t width, int32_t height) override;
 
 	private:
-        void ParseXML();
+        bool ParseXML();
         PTexture texture_;
         PResource xmlResource_;
 		int32_t viewWidth_;
