@@ -43,6 +43,12 @@ misrepresented as being the original software.
 
 #define STRINGIFY(S) #S
 
+namespace pugi
+{
+    class xml_node;
+    class xml_document;
+}
+
 namespace NSG
 {
     typedef glm::highp_ivec4 Recti;
@@ -111,16 +117,6 @@ namespace NSG
     enum class Intersection
     {
         OUTSIDE, INTERSECTS, INSIDE
-    } ;
-
-    struct VertexData
-    {
-        Vertex3 position_;
-        Vertex3 normal_;
-        Vertex2 uv_;
-        Color color_;
-
-        VertexData();
     };
 
     typedef GLushort IndexType;
@@ -133,7 +129,6 @@ namespace NSG
         ATT_COLOR
     };
 
-    typedef std::vector<VertexData> VertexsData;
     typedef std::vector<IndexType> Indexes;
 
     struct UniformsUpdate;

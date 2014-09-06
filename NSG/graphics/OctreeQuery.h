@@ -36,8 +36,7 @@ namespace NSG
         OctreeQuery(std::vector<const SceneNode*>& result);
         virtual ~OctreeQuery();
         virtual Intersection TestOctant(const BoundingBox& box, bool inside) = 0;
-		virtual void TestDrawables(std::vector<const SceneNode*>::const_iterator start, std::vector<const SceneNode*>::const_iterator end, bool inside) = 0;
-
+		virtual void Test(const std::vector<SceneNode*>& objs, bool inside) = 0;
         std::vector<const SceneNode*>& result_;
     };
 
@@ -46,7 +45,7 @@ namespace NSG
     public:
         FrustumOctreeQuery(std::vector<const SceneNode*>& result, const Frustum& frustum);
         virtual Intersection TestOctant(const BoundingBox& box, bool inside) override;
-		virtual void TestDrawables(std::vector<const SceneNode*>::const_iterator start, std::vector<const SceneNode*>::const_iterator end, bool inside) override;
+		virtual void Test(const std::vector<SceneNode*>& objs, bool inside) override;
 
         Frustum frustum_;
     };

@@ -33,7 +33,6 @@ namespace NSG
 	class Camera : public SceneNode, IViewChangedListener
 	{
 	public:
-		Camera();
 		~Camera();
 		void EnableOrtho();
 		void DisableOrtho();
@@ -68,6 +67,7 @@ namespace NSG
 		float GetAspectRatio() const { return aspectRatio_; }
 		float GetOrthoSize() const { return 1; }
 	private:
+		Camera(const std::string& name, Scene* scene);
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
 		void UpdateFrustum();
@@ -90,5 +90,6 @@ namespace NSG
 		float aspectRatio_;
 		mutable PFrustum frustum_;
 		mutable bool cameraIsDirty_;
+		friend class Scene;
 	};
 }

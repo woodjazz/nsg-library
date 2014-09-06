@@ -238,11 +238,15 @@ macro (setup_executable)
 
     elseif(APPLE)
 
+        if(NOT IS_EXECUTABLE_A_TOOL)
+            set (EXECUTABLE_TYPE MACOSX_BUNDLE)
+        endif()
+
         if(EXISTS "${data_dir}")
-            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr} ${data_dir})
+            add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${data_dir})
             set_source_files_properties(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
         else()
-            add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${src} ${hdr})
+            add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr})
         endif()
 
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
@@ -306,7 +310,9 @@ endmacro (setup_executable)
 ##################################################################################
 ##################################################################################
 macro (setup_tool)
-   setup_executable()
+    set(IS_EXECUTABLE_A_TOOL 1)
+    setup_executable()
+    set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
 endmacro (setup_tool)
 
 ##################################################################################

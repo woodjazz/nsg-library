@@ -53,4 +53,13 @@ namespace NSG
 	{ 
 		return value >= 0.0f ? value : -value; 
 	}
+
+	std::istream& operator >> (std::istream& s, Vertex2& obj);
+	std::istream& operator >> (std::istream& s , Vertex3& obj);
+	std::istream& operator >> (std::istream& s , Vertex4& obj);
+	std::istream& operator >> (std::istream& s, Quaternion& obj);
+	Vertex2 GetVertex2(const std::string& buffer);
+	Vertex3 GetVertex3(const std::string& buffer);
+	Vertex4 GetVertex4(const std::string& buffer);
+	Quaternion GetQuaternion(const std::string& buffer);
 }

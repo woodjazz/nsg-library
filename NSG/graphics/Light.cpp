@@ -1,17 +1,20 @@
 #include "Light.h"
 #include "Log.h"
 #include "Check.h"
+#include "Constants.h"
 #include "Resource.h"
+#include "pugixml.hpp"
 #include <assert.h>
 #include <algorithm>
 
 namespace NSG
 {
-     Light::Light()
-        : type_(POINT),
+	Light::Light(const std::string& name, Scene* scene)
+		: SceneNode(name, scene),
+          type_(POINT),
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
-          spotCutOff_(45),
+          spotCutOff_(PI/4),
           exponent_(20)
     {
         attenuation_.constant = 1;
@@ -81,4 +84,15 @@ namespace NSG
             SetUniformsNeedUpdate();
         }
     }
+
+    void Light::Save(pugi::xml_node& node)
+    {
+
+    }
+
+    void Light::Load(const pugi::xml_node& node)
+    {
+
+    }
+
 }

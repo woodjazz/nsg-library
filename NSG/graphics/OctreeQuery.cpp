@@ -51,19 +51,14 @@ namespace NSG
             return Intersection::INSIDE;
         else
             return frustum_.IsInside(box);
-
     }
 
-	void FrustumOctreeQuery::TestDrawables(std::vector<const SceneNode*>::const_iterator start, std::vector<const SceneNode*>::const_iterator end, bool inside)
+	void FrustumOctreeQuery::Test(const std::vector<SceneNode*>& objs, bool inside)
     {
-        while (start != end)
+        for(auto& obj: objs)
         {
-            const SceneNode* drawable = *start++;
-
-            if (inside || frustum_.IsInside(drawable->GetWorldBoundingBox()) != Intersection::OUTSIDE)
-                result_.push_back(drawable);
+            if (inside || frustum_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
+                result_.push_back(obj);
         }
-
     }
-
 }

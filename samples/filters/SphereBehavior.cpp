@@ -29,7 +29,7 @@ void SphereBehavior::Start()
 {
 	mesh_ = PSphereMesh(new SphereMesh(3, 32));
 
-	material_ = PMaterial(new Material);
+	material_ = PMaterial(new Material("sphere"));
     PTexture texture(new TextureFile("data/Earth.jpg"));
 	material_->SetTexture0(texture);
 }

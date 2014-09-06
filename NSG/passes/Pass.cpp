@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Frustum.h"
 #include "Context.h"
 #include "Program.h"
+#include "pugixml.hpp"
 
 namespace NSG
 {
@@ -142,16 +143,16 @@ namespace NSG
                                             stencilRefValue_, stencilMaskValue_);
 
             Graphics::this_->SetBlendModeTest(blendMode_);
-            
+
             Graphics::this_->EnableDepthTest(enableDepthTest_);
-            if(enableDepthTest_)
+            if (enableDepthTest_)
             {
                 Graphics::this_->SetDepthMask(enableDepthBuffer_);
             }
 
             Graphics::this_->EnableCullFace(enableCullFace_);
-            if(enableCullFace_)
-            {    
+            if (enableCullFace_)
+            {
                 Graphics::this_->SetCullFace(cullFaceMode_);
                 Graphics::this_->SetFrontFace(frontFaceMode_);
             }
@@ -179,4 +180,129 @@ namespace NSG
         return pProgram_ && pProgram_->IsReady();
     }
 
+    void Pass::Save(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Pass");
+
+        if (pProgram_)
+            pProgram_->Save(child);
+
+        {
+            std::stringstream ss;
+            ss << blendMode_;
+            child.append_attribute("blendMode") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << enableDepthTest_;
+            child.append_attribute("enableDepthTest") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << enableStencilTest_;
+            child.append_attribute("enableStencilTest") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << stencilMask_;
+            child.append_attribute("stencilMask") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << sfailStencilOp_;
+            child.append_attribute("sfailStencilOp") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << dpfailStencilOp_;
+            child.append_attribute("dpfailStencilOp") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << dppassStencilOp_;
+            child.append_attribute("dppassStencilOp") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << stencilFunc_;
+            child.append_attribute("stencilFunc") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << stencilRefValue_;
+            child.append_attribute("stencilRefValue") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << stencilMaskValue_;
+            child.append_attribute("stencilMaskValue") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << enableColorBuffer_;
+            child.append_attribute("enableColorBuffer") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << enableDepthBuffer_;
+            child.append_attribute("enableDepthBuffer") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << (int)drawMode_;
+            child.append_attribute("drawMode") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << enableCullFace_;
+            child.append_attribute("enableCullFace") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << (int)cullFaceMode_;
+            child.append_attribute("cullFaceMode") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << (int)frontFaceMode_;
+            child.append_attribute("frontFaceMode") = ss.str().c_str();
+        }
+
+    }
+
+    void Pass::Load(const pugi::xml_node& node)
+    {
+        pugi::xml_node programChild = node.child("Program");
+
+        if (programChild)
+            SetProgram(Program::CreateFrom(programChild));
+
+		SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
+        EnableDepthTest(node.attribute("enableDepthTest").as_bool());
+        EnableStencilTest(node.attribute("enableStencilTest").as_bool());
+        SetStencilMask(node.attribute("stencilMask").as_int());
+        SetStencilOp(node.attribute("sfailStencilOp").as_int(), node.attribute("dpfailStencilOp").as_int(), node.attribute("dppassStencilOp").as_int());
+        SetStencilFunc(node.attribute("stencilFunc").as_int(), node.attribute("stencilRefValue").as_int(), node.attribute("stencilMaskValue").as_int());
+        EnableColorBuffer(node.attribute("enableColorBuffer").as_bool());
+        EnableDepthBuffer(node.attribute("enableDepthBuffer").as_bool());
+		SetDrawMode((DrawMode)node.attribute("drawMode").as_int());
+        EnableCullFace(node.attribute("enableCullFace").as_bool());
+		SetCullFace((CullFaceMode)node.attribute("cullFaceMode").as_int());
+		SetFrontFace((FrontFaceMode)node.attribute("frontFaceMode").as_int());
+    }
 }

@@ -36,7 +36,6 @@ namespace NSG
 		virtual ~Behavior();
 		virtual void Start() {}
 		virtual void Update() {}
-		virtual void Render() {};
 		void SetSceneNode(SceneNode* pSceneNode);
 		SceneNode* GetSceneNode() const { return pSceneNode_; }
     protected:

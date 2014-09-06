@@ -35,13 +35,14 @@ misrepresented as being the original software.
 #include "Buffer.h"
 #include "BoundingBox.h"
 #include <map>
+#include <string>
 
 namespace NSG
 {
     class Mesh : public GPUObject
     {
     public:
-        Mesh(bool dynamic = false);
+        Mesh(const std::string& name = "mesh", bool dynamic = false);
         ~Mesh();
         virtual GLenum GetWireFrameDrawMode() const = 0;
         virtual GLenum GetSolidDrawMode() const = 0;
@@ -82,6 +83,8 @@ namespace NSG
             return bufferIndexData_;
         }
         void Draw(bool solid, Program* program);
+        void Save(pugi::xml_node& node);
+        virtual void Load(const pugi::xml_node& node);
 
     protected:
         void SetBuffersAndAttributes(Program* program);
@@ -98,5 +101,6 @@ namespace NSG
         typedef std::map<Program*, PVertexArrayObj> VAOMap;
         VAOMap vaoMap_;
         bool isStatic_;
+        std::string name_;
     };
 }

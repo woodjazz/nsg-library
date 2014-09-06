@@ -39,6 +39,13 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Graphics.h"
 #include "Constants.h"
+#include "pugixml.hpp"
+#include "ProgramColorSelection.h"
+#include "ProgramPerVertex.h"
+#include "ProgramPerVertex1PointLight.h"
+#include "ProgramSimpleColor.h"
+#include "ProgramWhiteColor.h"
+#include "ProgramUnlit.h"
 #include <stdlib.h>
 #include <stdio.h>
 #if !defined(__APPLE__)
@@ -64,7 +71,7 @@ static const char s_vertexShaderHeader[] =
 
 namespace NSG
 {
-    Program::Program(PResource pRVShader, PResource pRFShader)
+    Program::Program(const std::string& name, PResource pRVShader, PResource pRFShader)
         : pRVShader_(pRVShader),
           pRFShader_(pRFShader),
           pExtraUniforms_(nullptr),
@@ -91,13 +98,14 @@ namespace NSG
           activeMaterial_(nullptr),
           neverUsed_(true),
           activeNode_(nullptr),
-          sceneColor_(-1)
+          sceneColor_(-1),
+          name_(name)
     {
         memset(&activeLights_[0], 0, sizeof(activeLights_));
         CHECK_ASSERT(pRVShader &&  pRFShader, __FILE__, __LINE__);
     }
 
-    Program::Program(const char* vShader, const char* fShader)
+    Program::Program(const std::string& name, const char* vShader, const char* fShader)
         : pRVShader_(new ResourceMemory(vShader, strlen(vShader))),
           pRFShader_(new ResourceMemory(fShader, strlen(fShader))),
           vShader_(vShader),
@@ -127,7 +135,8 @@ namespace NSG
           activeMaterial_(nullptr),
           activeNode_(nullptr),
           activeScene_(nullptr),
-          sceneColor_(-1)
+          sceneColor_(-1),
+          name_(name)
     {
         CHECK_ASSERT(vShader && fShader, __FILE__, __LINE__);
     }
@@ -248,6 +257,7 @@ namespace NSG
         activeNode_ = nullptr;
         activeScene_ = nullptr;
         sceneColor_ = Color(-1);
+		material_ = MaterialProgram();
         memset(&activeLights_[0], 0, sizeof(activeLights_));
     }
 
@@ -564,5 +574,41 @@ namespace NSG
                 activeLights_[i] = light;
             }
         }
+    }
+
+    void Program::Save(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Program");
+
+        {
+            std::stringstream ss;
+            ss << name_;
+            child.append_attribute("name") = ss.str().c_str();
+        }
+    }
+
+    PProgram Program::CreateFrom(const pugi::xml_node& node)
+    {
+        std::string name = node.attribute("name").as_string();
+
+        if(name == "ProgramColorSelection")
+            return PProgram(new ProgramColorSelection());
+        else if(name == "ProgramPerVertex")
+            return PProgram(new ProgramPerVertex());
+        else if(name == "ProgramPerVertex1PointLight")
+            return PProgram(new ProgramPerVertex1PointLight());
+        else if(name == "ProgramSimpleColor")
+            return PProgram(new ProgramSimpleColor());
+        else if(name == "ProgramWhiteColor")
+            return PProgram(new ProgramWhiteColor());
+        else if(name == "ProgramUnlit")
+            return PProgram(new ProgramUnlit());
+
+        CHECK_ASSERT(false, __FILE__, __LINE__);
+
+        return nullptr;
+
+
+
     }
 }

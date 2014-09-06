@@ -37,6 +37,7 @@ namespace NSG
 		~TextureFile();
 		virtual const unsigned char* GetImageData() override;
 		virtual void FreeImageData(const unsigned char* img) override;
+		virtual void Save(pugi::xml_node& node) override;
 	private:
 		std::string filename_;
 		bool onlyAlpha_;

@@ -38,16 +38,19 @@ namespace NSG
 		~Scene();
 		void SetAmbientColor(Color ambient);
 		const Color& GetAmbientColor() const { return ambient_; }
-		PCamera CreateCamera();
-		PSceneNode CreateSceneNode();
-		PLight CreateLight();
+		PCamera CreateCamera(const std::string& name);
+		PSceneNode CreateSceneNode(const std::string& name);
+		PSceneNode CreateSceneNodeFrom(PResource resource, const std::string& name);
+		PLight CreateLight(const std::string& name);
+		void AddLight(PLight light);
 		void Start();
 		void Update();
 		void Render();
         typedef std::vector<PLight> Lights;
 		const Lights& GetLights() { return lights_; }
-		void Update(const SceneNode* obj);
+		void NeedUpdate(SceneNode* obj);
 		void GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles);
+		POctree GetOctree() const { return octree_;}
 
 	private:
 		Color ambient_;
@@ -55,6 +58,6 @@ namespace NSG
 		std::vector<PSceneNode> nodes_;
 		Lights lights_;
 		POctree octree_;
-		std::set<const SceneNode*> needUpdate_;
+		std::set<SceneNode*> needUpdate_;
 	};
 }

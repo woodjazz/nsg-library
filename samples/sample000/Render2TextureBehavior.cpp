@@ -38,7 +38,7 @@ Render2TextureBehavior::~Render2TextureBehavior()
 
 void Render2TextureBehavior::Start()
 {
-    PMaterial material(new Material);
+    PMaterial material(new Material("render2texture"));
     PTechnique technique(new Technique);
     material->SetTechnique(technique);
     pSceneNode_->Set(material);
@@ -63,13 +63,8 @@ void Render2TextureBehavior::Add(PPass pass, Node* node, PMaterial material, PMe
     pass_->Add(pass, node, material, mesh);
 }
 
-void Render2TextureBehavior::Update()
+void Render2TextureBehavior::Show()
 {
-}
-
-void Render2TextureBehavior::Render()
-{
-    pSceneNode_->Render();
     showTexture_->Show();
 }
 

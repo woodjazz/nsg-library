@@ -1,7 +1,7 @@
 PROJECT(NSG)
 
-file(GLOB src "*.cpp" ${TINYXML2_INCLUDE_DIR}/tinyxml2.cpp)
-file(GLOB hdr "*.h" ${TINYXML2_INCLUDE_DIR}/tinyxml2.h)
+file(GLOB src "*.cpp")
+file(GLOB hdr "*.h")
 
 set (ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 

@@ -27,6 +27,8 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "SceneNode.h"
 #include "Check.h"
+#include "Pass.h"
+#include "pugixml.hpp"
 
 namespace NSG
 {
@@ -45,20 +47,6 @@ namespace NSG
 		passes_.push_back(pass);
 	}
 
-    void Technique::Add(Pass* pass)
-    {
-		struct D 
-		{ 
-		    void operator()(Pass* p) const 
-		    {
-		        //delete p; //do not delete
-		    }
-		};    	
-
-		PPass pObj(pass, D());
-		Add(pObj);
-    }
-
 	size_t Technique::GetNumPasses() const
 	{
 		return passes_.size();
@@ -71,5 +59,32 @@ namespace NSG
 		while(it != passes_.end())
 			drawn |= (*it++)->Render();
 		return drawn;
+	}
+
+	void Technique::Save(pugi::xml_node& node)
+	{
+		pugi::xml_node child = node.append_child("Technique");
+		if(passes_.size())
+		{
+			pugi::xml_node childPasses = child.append_child("Passes");
+			for(auto& obj: passes_)
+				obj->Save(childPasses);
+		}
+	}
+
+	void Technique::Load(const pugi::xml_node& node)
+	{
+		pugi::xml_node childPasses = node.child("Passes");
+		if(childPasses)
+		{
+			pugi::xml_node childPass = childPasses.child("Pass");
+			while(childPass)
+			{
+				PPass pass(new Pass);
+				Add(pass);
+				pass->Load(childPass);
+				childPass = node.next_sibling("Pass");
+			}
+		}
 	}
 }

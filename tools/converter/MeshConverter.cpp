@@ -23,15 +23,14 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "ModelMesh.h"
+#include "MeshConverter.h"
 #include "Check.h"
 #include "assimp/mesh.h"
 
 namespace NSG
 {
-	ModelMesh::ModelMesh(GLenum usage, const aiMesh* mesh) 
-	: Mesh(usage),
-    face_mode_(-1),
+	MeshConverter::MeshConverter(const aiMesh* mesh) 
+	: face_mode_(-1),
     mesh_(mesh)
 	{
 		VertexsData& data = vertexsData_;
@@ -52,6 +51,11 @@ namespace NSG
 			if(mesh_->HasTextureCoords(0))
 			{
 				vertexData.uv_ = Vertex2(mesh_->mTextureCoords[0][v].x, mesh_->mTextureCoords[0][v].y);
+			}
+
+			if (mesh_->HasVertexColors(0))
+			{
+				vertexData.color_ = Vertex4(mesh_->mColors[0][v].r, mesh_->mColors[0][v].g, mesh_->mColors[0][v].b, mesh_->mColors[0][v].a);
 			}
 
             data.push_back(vertexData);
@@ -86,21 +90,35 @@ namespace NSG
 
 					indexes_.push_back(index);
 				}	
+
+				CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
 			}		
 		}
 	}
 
-	ModelMesh::~ModelMesh()
+	MeshConverter::~MeshConverter()
 	{
 	}
 
-	GLenum ModelMesh::GetWireFrameDrawMode() const
+	GLenum MeshConverter::GetWireFrameDrawMode() const
 	{
 		return face_mode_;
 	}
 
-	GLenum ModelMesh::GetSolidDrawMode() const
+	GLenum MeshConverter::GetSolidDrawMode() const
 	{
 		return face_mode_;
 	}
+
+	size_t MeshConverter::GetNumberOfTriangles() const
+	{
+		if(face_mode_ == GL_TRIANGLES)
+			return vertexsData_.size()/3;
+		else if(face_mode_ == GL_TRIANGLE_FAN)
+			return vertexsData_.size() - 2;
+		else
+			return 0;
+	}
+
 }
+

@@ -31,42 +31,155 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
+    void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
+    {
+        Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
+
+        Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1) / scaling) * m);
+
+        q = glm::quat_cast(tmp1);
+
+        position = Vertex3(m[3]);
+
+        Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
+
+        scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
+    }
+
+    void ReplaceChar(std::string& source, char from, char to)
+    {
+        for (;;)
+        {
+            const size_t last_slash_idx = source.find_last_of(from);
+            if (std::string::npos == last_slash_idx) break;
+            source.replace(last_slash_idx, 1, 1, to);
+        }
+    }
+
+    std::string GetLowercaseFileExtension(const std::string& filename)
+    {
+        std::string extension;
+        std::string::size_type pos = filename.find_last_of(".");
+        if (pos != std::string::npos)
+        {
+            std::copy(filename.begin() + pos, filename.end(), std::back_inserter(extension));
+            for (auto& ch : extension)
+                ch = std::tolower(ch);
+        }
+
+        return extension;
+    }
+
+	std::istream& operator >> (std::istream& s, Vertex2& obj)
 	{
-	    Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
+		char ch;
+		s >> ch;
+		CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
+		s >> obj.x;
+		s >> ch;
+		CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+		s >> obj.y;
+		s >> ch;
+		CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
 
-	    Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1)/scaling) * m);
-
-	    q = glm::quat_cast(tmp1);
-
-	    position = Vertex3(m[3]);
-
-	    Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
-
-	    scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
+		return s;
 	}
 
-	void ReplaceChar(std::string& source, char from, char to)
+    std::istream& operator >> (std::istream& s , Vertex3& obj)
+    {
+    	char ch;
+        s >> ch;
+        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
+        s >> obj.x;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.y;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.z;
+        s >> ch;
+        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
+
+		return s;
+    }
+
+    std::istream& operator >> (std::istream& s , Vertex4& obj)
+    {
+        char ch;
+        s >> ch;
+        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
+        s >> obj.x;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.y;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.z;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.w;
+        s >> ch;
+        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
+
+		return s;
+    }
+
+	Vertex2 GetVertex2(const std::string& buffer)
 	{
-		for(;;)
-		{
-			const size_t last_slash_idx = source.find_last_of(from);
-			if (std::string::npos == last_slash_idx) break;
-			source.replace(last_slash_idx, 1, 1, to);
-		}
+		std::stringstream ss;
+		ss << buffer;
+		Vertex2 obj;
+		ss >> obj;
+		return obj;
 	}
 
-	std::string GetLowercaseFileExtension(const std::string& filename)
-	{
-		std::string extension;
-		std::string::size_type pos = filename.find_last_of(".");
-		if (pos != std::string::npos)
-		{
-			std::copy(filename.begin() + pos, filename.end(), std::back_inserter(extension));
-			for (auto& ch : extension)
-				ch = std::tolower(ch);
-		}
 
-		return extension;
-	}
+    Vertex3 GetVertex3(const std::string& buffer)
+    {
+    	std::stringstream ss;
+    	ss << buffer;
+    	Vertex3 obj;
+    	ss >> obj;
+    	return obj;
+    }
+
+    Vertex4 GetVertex4(const std::string& buffer)
+    {
+        std::stringstream ss;
+        ss << buffer;
+        Vertex4 obj;
+        ss >> obj;
+        return obj;
+    }
+
+    std::istream& operator >> (std::istream& s , Quaternion& obj)
+    {
+    	char ch;
+        s >> ch;
+        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
+        s >> obj.x;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.y;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.z;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.w;
+        s >> ch;
+        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
+
+		return s;
+    }
+
+    Quaternion GetQuaternion(const std::string& buffer)
+    {
+    	std::stringstream ss;
+    	ss << buffer;
+    	Quaternion obj;
+    	ss >> obj;
+    	return obj;
+    }
+
 }

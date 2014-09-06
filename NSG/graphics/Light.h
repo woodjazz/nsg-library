@@ -32,7 +32,7 @@ namespace NSG
 	class Light : public SceneNode
 	{
 	public:
-		Light();
+		Light(const std::string& name, Scene* scene);
 		~Light();
 		void SetDiffuseColor(Color diffuse);
 		const Color& GetDiffuseColor() const { return diffuse_; }
@@ -53,6 +53,8 @@ namespace NSG
 		float GetSpotExponent() const { return exponent_; }
 		enum Type {POINT, DIRECTIONAL, SPOT};
 		Type GetType() const { return type_; }
+		void Save(pugi::xml_node& node);
+		void Load(const pugi::xml_node& node);
 	private:
 		Type type_;
         Color diffuse_;

@@ -32,10 +32,8 @@ public:
 	Render2TextureBehavior();
 	~Render2TextureBehavior();
 	void Add(PPass pass, Node* node, PMaterial material, PMesh mesh);
-
 	void Start();
-	void Update();
-	void Render();
+	void Show();
 private:
 	PShowTexture showTexture_;
 	PPass2Texture pass_;

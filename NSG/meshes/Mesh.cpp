@@ -32,15 +32,18 @@ misrepresented as being the original software.
 #include "BufferManager.h"
 #include "VertexArrayObj.h"
 #include "AppStatistics.h"
+#include "Util.h"
+#include "pugixml.hpp"
 
 namespace NSG
 {
-    Mesh::Mesh(bool dynamic)
+    Mesh::Mesh(const std::string& name, bool dynamic)
         : pVBuffer_(nullptr),
           pIBuffer_(nullptr),
           bb_(Vertex3(0)),
           isStatic_(!dynamic),
-          boundingSphereRadius_(0)
+          boundingSphereRadius_(0),
+          name_(name)
     {
     }
 
@@ -99,12 +102,13 @@ namespace NSG
     void Mesh::ReleaseResources()
     {
         bb_.Define(Vertex3(0));
+		boundingSphereRadius_ = 0;
         pVBuffer_ = nullptr;
         pIBuffer_ = nullptr;
         bufferVertexData_ = nullptr;
         bufferIndexData_ = nullptr;
-        //vertexsData_.clear();
-        //indexes_.clear();
+        vertexsData_.clear();
+        indexes_.clear();
     }
 
     void Mesh::SetBuffersAndAttributes(Program* program)
@@ -173,6 +177,109 @@ namespace NSG
         }
 
         Graphics::this_->SetVertexArrayObj(nullptr);
+    }
 
+    void Mesh::Save(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Mesh");
+
+        {
+            std::stringstream ss;
+            ss << name_;
+            child.append_attribute("name") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << GetWireFrameDrawMode();
+            child.append_attribute("wireFrameDrawMode") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << GetSolidDrawMode();
+            child.append_attribute("solidDrawMode") = ss.str().c_str();
+        }
+        {
+            pugi::xml_node vertexes = child.append_child("Vertexes");
+
+            for (auto& obj : vertexsData_)
+            {
+                pugi::xml_node vertexData = vertexes.append_child("VertexData");
+
+                {
+                    std::stringstream ss;
+                    ss << obj.position_;
+                    vertexData.append_attribute("position") = ss.str().c_str();
+                }
+
+                {
+                    std::stringstream ss;
+                    ss << obj.normal_;
+                    vertexData.append_attribute("normal") = ss.str().c_str();
+                }
+
+                {
+                    std::stringstream ss;
+                    ss << obj.uv_;
+                    vertexData.append_attribute("uv") = ss.str().c_str();
+                }
+
+                {
+                    std::stringstream ss;
+                    ss << obj.color_;
+                    vertexData.append_attribute("color") = ss.str().c_str();
+                }
+            }
+
+            if (indexes_.size())
+            {
+				CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
+                pugi::xml_node indexesNode = child.append_child("Indexes");
+                std::stringstream ss;
+				for (auto& obj : indexes_)
+					ss << obj << " ";
+                indexesNode.append_child(pugi::node_pcdata).set_value(ss.str().c_str());
+            }
+        }
+    }
+
+    void Mesh::Load(const pugi::xml_node& node)
+    {
+        vertexsData_.clear();
+        indexes_.clear();
+
+        name_ = node.attribute("name").as_string();
+
+        pugi::xml_node vertexesNode = node.child("Vertexes");
+        if (vertexesNode)
+        {
+            pugi::xml_node vertexNode = vertexesNode.child("VertexData");
+            while (vertexNode)
+            {
+                VertexData obj;
+                obj.position_ = GetVertex3(vertexNode.attribute("position").as_string());
+                obj.normal_ = GetVertex3(vertexNode.attribute("normal").as_string());
+                obj.uv_ = GetVertex2(vertexNode.attribute("uv").as_string());
+                obj.color_ =  GetVertex4(vertexNode.attribute("color").as_string());
+                vertexsData_.push_back(obj);
+                vertexNode = vertexNode.next_sibling("VertexData");
+            }
+
+            pugi::xml_node indexesNode = node.child("Indexes");
+            if (indexesNode)
+            {
+				std::string data = indexesNode.child_value();
+                std::stringstream ss;
+				ss << data;
+				int index;
+				for (;;)
+                {
+					ss >> index;
+					if (ss.eof()) break;
+					indexes_.push_back(index);
+				} 
+            }
+        }
     }
 }

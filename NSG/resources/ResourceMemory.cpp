@@ -33,6 +33,7 @@ namespace NSG
 	: staticBuffer_(staticBuffer),
     bytes_(bytes)
 	{
+		IsLoaded(); // since it is just memory then for the first time force load in constructor 
 	}
 
 	ResourceMemory::~ResourceMemory()

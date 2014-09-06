@@ -45,7 +45,7 @@ void EarthBehavior::Start()
     pSceneNode_->Set(PSphereMesh(new SphereMesh(3, 32)));
 
 	PTexture pEarthTexture(new TextureFile("data/stone.jpg"));
-	PMaterial pMaterial(new Material ());
+	PMaterial pMaterial(new Material ("earth"));
 	PProgram program(new ProgramUnlit);
     PTechnique technique(new Technique);
     PPass pass(new Pass);

@@ -40,11 +40,11 @@ void CubeBehavior::Start()
 {
 	PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2));
 
-	PMaterial pMaterial(new Material);
+	PMaterial pMaterial(new Material("cube"));
 
     PResource pVResource(new ResourceFile("data/shaders/DiffuseSpecularReflection.vert"));
 	PResource pFResource(new ResourceFile("data/shaders/Simple.frag"));
-	PProgram pDiffuseProgram(new Program(pVResource, pFResource));
+	PProgram pDiffuseProgram(new Program("CubeBehaviorProgram", pVResource, pFResource));
     PPass pass(new Pass);
     pass->SetProgram(pDiffuseProgram);
 

@@ -48,7 +48,7 @@ void BoxBehavior::Start()
 	controlPoints_.push_back(Vertex3(0.0f, 0.0f, -5.0f)); 
 
 	mesh_ = PBoxMesh(new BoxMesh(1,1,1, 2,2,2));
-	material_ = PMaterial(new Material);
+	material_ = PMaterial(new Material("box"));
 	material_->SetTexture0(PTexture(new TextureFile("data/cube.png")));
 
     pSceneNode_->SetScale(Vertex3(3,3,3));

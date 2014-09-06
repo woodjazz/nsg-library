@@ -35,30 +35,41 @@ namespace NSG
 
 	static IdType s_node_id = 1;
 
-	Node::Node() 
-	: id_(s_node_id++),
+	Node::Node(const std::string& name) 
+	: pParent_(nullptr),
+	id_(s_node_id++),
 	scale_(1,1,1),
 	globalScale_(1,1,1),
 	inheritScale_(true),
-	dirty_(true)
+	dirty_(true),
+	name_(name)
 	{
+	    struct D
+	    {
+	        void operator()(Node* p) const
+	        {
+	            //delete p; //do not delete
+	        }
+	    };
+
+		self_ = PNode(this, D());
 	}
 
 	Node::~Node() 
 	{
-		if(pParent_)
-		{
+		if (self_ && pParent_)
 			RemoveFromParent();
-		}
+
+		self_ = nullptr;
 	}
 
 	void Node::RemoveFromParent() 
 	{
 		CHECK_ASSERT(pParent_ && "parent does not exist!!!", __FILE__, __LINE__);
 		
-		auto it = std::find(pParent_->children_.begin(), pParent_->children_.end(), this);
-		CHECK_ASSERT(it != pParent_->children_.end() && "Child not found!!!", __FILE__, __LINE__);
-		pParent_->children_.erase(it);
+		auto it = std::find(pParent_->children_.begin(), pParent_->children_.end(), self_);
+		if(it != pParent_->children_.end())
+			pParent_->children_.erase(it);
 	}
 
     void Node::SetParent(PNode pParent)
@@ -67,7 +78,7 @@ namespace NSG
     	{
 			if(pParent)
 			{
-				pParent->children_.push_back(this);
+				pParent->children_.push_back(self_);
 			}
 			else
 			{
@@ -80,19 +91,10 @@ namespace NSG
         }
     }
 
-    void Node::SetParent(Node* pParent)
-    {
-		struct D 
-		{ 
-		    void operator()(Node* p) const 
-		    {
-		        //delete p; //do not delete
-		    }
-		};    	
-
-		PNode pNode(pParent, D());
-		SetParent(pNode);
-    }
+	void Node::Save(pugi::xml_node& node)
+	{
+		
+	}
 
 	void Node::SetPosition(const Vertex3& position)
 	{

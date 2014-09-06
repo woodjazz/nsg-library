@@ -46,7 +46,7 @@ struct Test : public App
 		thread_.join();
 	}
 
-	void Start()
+	void Start(int argc, char* argv[]) override
 	{
 		thread_ = std::thread([this](){InternalTask();});	
 	}
@@ -57,7 +57,7 @@ struct Test : public App
 		exit_ = true;
 	}
 
-	bool ShallExit() const 
+	bool ShallExit() const override
 	{ 
 		return exit_;
 	}

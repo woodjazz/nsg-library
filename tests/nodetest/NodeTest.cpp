@@ -28,8 +28,8 @@ using namespace NSG;
 
 static void Test01()
 {
-	PNode pA(new Node());
-	PNode pB(new Node());
+	PNode pA(new Node("A"));
+	PNode pB(new Node("B"));
     pB->SetParent(pA);
 	pA->SetPosition(Vertex3(1,0,0));
 	pB->SetPosition(Vertex3(-2,0,0));

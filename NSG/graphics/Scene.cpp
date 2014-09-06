@@ -19,6 +19,10 @@ namespace NSG
 
     Scene::~Scene()
     {
+        cameras_.clear();
+        lights_.clear();
+        nodes_.clear();
+        Context::this_->SetScene(nullptr);
     }
 
     void Scene::SetAmbientColor(Color ambient)
@@ -30,64 +34,62 @@ namespace NSG
         }
     }
 
-    PCamera Scene::CreateCamera()
+    PCamera Scene::CreateCamera(const std::string& name)
     {
-        PCamera obj(new Camera);
+        PCamera obj(new Camera(name, this));
         cameras_.push_back(obj);
         nodes_.push_back(obj);
-        octree_->InsertDrawable(obj.get());
         return obj;
     }
 
-    PSceneNode Scene::CreateSceneNode()    
+    PSceneNode Scene::CreateSceneNode(const std::string& name)    
     {
-        PSceneNode obj(new SceneNode);
+        PSceneNode obj(new SceneNode(name, this));
         nodes_.push_back(obj);
-		octree_->InsertDrawable(obj.get());
         return obj;
     }
 
-    PLight Scene::CreateLight()
+    PSceneNode Scene::CreateSceneNodeFrom(PResource resource, const std::string& name)
     {
-        PLight obj(new Light);
-        lights_.push_back(obj);
+        PSceneNode obj(new SceneNode(resource, name, this));
         nodes_.push_back(obj);
-		octree_->InsertDrawable(obj.get());
         return obj;
     }
+
+    PLight Scene::CreateLight(const std::string& name)
+    {
+        PLight obj(new Light(name, this));
+		AddLight(obj);
+        return obj;
+    }
+
+	void Scene::AddLight(PLight light)
+	{
+		lights_.push_back(light);
+		nodes_.push_back(light);
+	}
 
     void Scene::Start()
     {
         for (auto& obj : nodes_)
-        {
-            Behavior* behavior = obj->GetBehavior();
-            if(behavior)
-                behavior->Start();
-        }
+            obj->Start();
     }
 
     void Scene::Update()
     {
         for (auto& obj : nodes_)
-        {
-            Behavior* behavior = obj->GetBehavior();
-            if(behavior)
-                behavior->Update();
-        }
+            obj->Update();
     }
 
     void Scene::GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles)
     {
-        auto it = needUpdate_.begin();
-        while(it != needUpdate_.end())
-        {
-            const SceneNode* node = *it;
-            octree_->Update(node);
-            it = needUpdate_.erase(it);
-        }
+		for (auto& obj : needUpdate_)
+			octree_->InsertUpdate(obj);
+
+		needUpdate_.clear();
 
         FrustumOctreeQuery query(visibles, *camera->GetFrustumPointer());
-        octree_->GetDrawables(query);
+        octree_->Execute(query);
     }
 
     void Scene::Render()
@@ -98,20 +100,13 @@ namespace NSG
         {
             std::vector<const SceneNode*> visibles;
             GetVisibleNodes(camera, visibles);
-
             AppStatistics::this_->SetNodes(nodes_.size(), visibles.size());
-
-            for (auto& obj : visibles)
-			//for (auto& obj : nodes_)
-            {
-                Behavior* behavior = obj->GetBehavior();
-                if(behavior)
-                    behavior->Render();
-            }
+			for (auto& obj : visibles)
+                ((SceneNode*)obj)->Render();
         }
     }
 
-    void Scene::Update(const SceneNode* obj)
+    void Scene::NeedUpdate(SceneNode* obj)
     {
         needUpdate_.insert(obj);
     }

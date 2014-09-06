@@ -33,6 +33,11 @@ struct FlagSet : std::bitset<N>
     {
     }
 
+	FlagSet(const std::string& bits) : std::bitset<N>(bits)
+	{
+	}
+
+
 	operator unsigned long() const
 	{
 		return std::bitset<N>::to_ulong();

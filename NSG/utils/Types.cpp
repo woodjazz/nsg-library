@@ -25,11 +25,3 @@ misrepresented as being the original software.
 */
 #include "Types.h"
 
-namespace NSG
-{
-	VertexData::VertexData()
-	: color_(1),
-	normal_(0, 0, 1) // always facing forward
-	{
-	}
-}

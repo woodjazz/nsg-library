@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Buffer.h"
+#include "VertexData.h"
 
 namespace NSG 
 {

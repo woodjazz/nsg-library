@@ -108,7 +108,7 @@ static const char* fShader = STRINGIFY(
 namespace NSG 
 {
 	ProgramPerVertex::ProgramPerVertex()
-	: Program(vShader, fShader)
+	: Program("ProgramPerVertex", vShader, fShader)
 	{
 	}
 

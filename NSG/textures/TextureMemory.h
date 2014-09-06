@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Texture.h"
+#include <string>
 
 namespace NSG
 {
@@ -34,5 +35,6 @@ namespace NSG
 		TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels); 
 		~TextureMemory();
 		virtual const unsigned char* GetImageData() override;
+		virtual void Save(pugi::xml_node& node) override;
 	};
 }

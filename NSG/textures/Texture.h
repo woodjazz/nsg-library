@@ -47,6 +47,8 @@ namespace NSG
 		virtual void ReleaseResources() override;
 		virtual const unsigned char* GetImageData() = 0;
 		virtual void FreeImageData(const unsigned char* img) {}
+		virtual void Save(pugi::xml_node& node) = 0;
+		static PTexture CreateFrom(const pugi::xml_node& node);
 	protected:
 		Flags flags_;
 		GLuint texture_;

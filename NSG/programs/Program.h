@@ -29,6 +29,12 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "GPUObject.h"
 #include "Constants.h"
+#include <string>
+
+namespace pugi
+{
+    class xml_node;
+}
 
 namespace NSG
 {
@@ -38,8 +44,8 @@ namespace NSG
     class Program : public GPUObject
     {
     public:
-        Program(PResource pRVShader, PResource pRFShader);
-        Program(const char* vShader, const char* fShader);
+        Program(const std::string& name, PResource pRVShader, PResource pRFShader);
+        Program(const std::string& name, const char* vShader, const char* fShader);
         virtual ~Program();
         bool Initialize();
         void Set(ExtraUniforms* pExtraUniforms)
@@ -72,6 +78,8 @@ namespace NSG
         {
             return id_;
         }
+        void Save(pugi::xml_node& node);
+        static PProgram CreateFrom(const pugi::xml_node& node);
     private:
         void SetSceneVariables();
         void SetVariables(Node* node);
@@ -144,6 +152,8 @@ namespace NSG
 			float shininess_;
 			MaterialProgram() : shininess_(0) {}
 		} material_; //used to avoid setting the same uniform value twice
+
+        std::string name_;
 
         friend class UseProgram;
     };

@@ -27,13 +27,14 @@ misrepresented as being the original software.
 
 #include "GLES2Includes.h"
 #include "SharedPointers.h"
+#include <string>
 
 namespace NSG
 {
 	class Filter
 	{
 	public:
-		Filter(PTexture input, int output_width, int output_height, const char* fragment);
+		Filter(const std::string& name, PTexture input, int output_width, int output_height, const char* fragment);
 		~Filter();
 		bool Render();
 		PMaterial GetMaterial() const { return pMaterial_; }
@@ -44,5 +45,6 @@ namespace NSG
         PMaterial pMaterial_; 
 		PMesh pMesh_;
 		PRender2Texture pRender2Texture_;
+		std::string name_;
 	};
 }

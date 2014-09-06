@@ -44,7 +44,7 @@ void EarthBehavior::Start()
     pSceneNode_->Set(mesh);
 
 	PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
-	PMaterial pMaterial(new Material ());
+	PMaterial pMaterial(new Material ("earth"));
 	PProgram perVertex(new ProgramPerVertex);
     PPass pass(new Pass);
 	pass->SetProgram(perVertex);

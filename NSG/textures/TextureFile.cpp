@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "Context.h"
 #include "Graphics.h"
+#include "pugixml.hpp"
 
 namespace NSG
 {
@@ -76,5 +77,21 @@ namespace NSG
 	void TextureFile::FreeImageData(const unsigned char* img)
 	{
 		stbi_image_free((void*)img);
+	}
+
+	void TextureFile::Save(pugi::xml_node& node)
+	{
+		node.append_attribute("type") = "TextureFile";
+		std::string filename;
+		if (std::string::npos == filename_.find("data/"))
+		{
+			filename = "data/" + filename_;
+		}
+		else
+		{
+			filename = filename_;
+		}
+		node.append_attribute("filename") = filename.c_str();
+		node.append_attribute("flags") = flags_.to_string().c_str();
 	}
 }

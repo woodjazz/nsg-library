@@ -33,15 +33,15 @@ static void Test01()
 	PSphereMesh sphereMesh(new SphereMesh);
 	PBoxMesh boxMesh(new BoxMesh);
 
-	PSceneNode node1s = scene.CreateSceneNode();
+	PSceneNode node1s = scene.CreateSceneNode("node 1");
 	node1s->Set(sphereMesh);
 	node1s->SetPosition(Vertex3(0,0,1));
 
-	PSceneNode node1b = scene.CreateSceneNode();
+	PSceneNode node1b = scene.CreateSceneNode("node 2");
 	node1b->Set(boxMesh);
 	node1b->SetPosition(Vertex3(0,0,1));
 
-	PCamera camera = scene.CreateCamera();
+	PCamera camera = scene.CreateCamera("camera");
 
 	std::vector<const SceneNode*> visibles;
 	scene.GetVisibleNodes(camera.get(), visibles);

@@ -23,20 +23,47 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "ModelMaterial.h"
+
+#include "MaterialConverter.h"
 #include "TextureFile.h"
 #include "Check.h"
 #include "Util.h"
+#include "Pass.h"
+#include "Technique.h"
+#include "ProgramPerVertex1PointLight.h"
+#include "ProgramUnlit.h"
 #include "assimp/material.h"
 
 
 namespace NSG
 {
-	ModelMaterial::ModelMaterial(const aiMaterial* mtl) 
+	MaterialConverter::MaterialConverter(const aiMaterial* mtl) 
+		: Material("material")
 	{
-		aiColor4D color;
-		float shininess, strength;		
+		aiString name; 
+		if (AI_SUCCESS == aiGetMaterialString(mtl, AI_MATKEY_NAME, &name))
+			SetName(name.C_Str());
 
+		PTechnique technique(new Technique);
+		SetTechnique(technique);
+		PPass pass(new Pass);
+		technique->Add(pass);
+
+		unsigned int max = 1;
+		int shadingModel = 0;
+		if (AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_SHADING_MODEL, &shadingModel, &max))
+		{
+			if (shadingModel == aiShadingMode_NoShading)
+				pass->SetProgram(PProgram(new ProgramUnlit));
+			else 
+				pass->SetProgram(PProgram(new ProgramPerVertex1PointLight));
+		}
+		else
+		{
+			pass->SetProgram(PProgram(new ProgramPerVertex1PointLight));
+		}
+
+		aiColor4D color;
 		if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &color))
 		{
 			SetDiffuseColor(Color(color.r, color.g, color.b, color.a));
@@ -54,11 +81,10 @@ namespace NSG
 
 		if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &color))
 		{
-
+			SetColor(Color(color.r, color.g, color.b, color.a));
 		}
 
-		unsigned int max = 1;
-
+		float shininess;
 		if(AI_SUCCESS == aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &shininess, &max))
 		{
 			SetShininess(shininess);
@@ -66,6 +92,7 @@ namespace NSG
 
 		max = 1;
 
+		float strength;
 		if(AI_SUCCESS == aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS_STRENGTH, &strength, &max))
 		{
 
@@ -77,12 +104,35 @@ namespace NSG
 
 		if((AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided)
 		{
-			EnableCullFace(false);
+			pass->EnableCullFace(false);
 		}
 		else
 		{
-			EnableCullFace(true);
+			pass->EnableCullFace(true);
 		}
+
+
+		max = 1;
+		int blendMode = aiBlendMode_Default;
+		if (AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_BLEND_FUNC, &blendMode, &max))
+		{
+			if (blendMode == aiBlendMode_Default)
+				pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
+		}
+
+		int wireframe = 0;
+
+		max = 1;
+
+		if ((AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_ENABLE_WIREFRAME, &wireframe, &max)) && wireframe)
+		{
+			pass->SetDrawMode(DrawMode::WIREFRAME);
+		}
+		else
+		{
+			pass->SetDrawMode(DrawMode::SOLID);
+		}
+
 
         unsigned int n = mtl->GetTextureCount(aiTextureType_DIFFUSE);
 
@@ -107,7 +157,7 @@ namespace NSG
 
 	}
 
-	ModelMaterial::~ModelMaterial()
+	MaterialConverter::~MaterialConverter()
 	{
 
 	}

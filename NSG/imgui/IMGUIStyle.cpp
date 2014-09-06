@@ -37,9 +37,9 @@ namespace NSG
             : enableActive_(true),
               enableHot_(true),
               enableFocus_(true),
-              normalMaterial_(new Material),
-              activeMaterial_(new Material),
-              hotMaterial_(new Material),
+              normalMaterial_(new Material("normal")),
+              activeMaterial_(new Material("active")),
+              hotMaterial_(new Material("hot")),
               pass_(new Pass)
         {
             Context& context = *Context::this_;
@@ -81,7 +81,7 @@ namespace NSG
         AreaStyle::AreaStyle()
             : showVScroll_(true),
               showHScroll_(true),
-              scrollMaterial_(new Material),
+              scrollMaterial_(new Material("area")),
               scrollPass_(new Pass)
         {
             hotMaterial_->SetColor(Color(0, 0, 0, 0));

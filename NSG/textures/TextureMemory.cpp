@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "ResourceMemory.h"
 #include "Context.h"
 #include "Graphics.h"
+#include "pugixml.hpp"
 #include <vector>
 
 namespace NSG
@@ -83,5 +84,31 @@ namespace NSG
         }
 
         return img;
+    }
+
+    void TextureMemory::Save(pugi::xml_node& node)
+    {
+        node.append_attribute("type") = "TextureMemory";
+        node.append_attribute("flags") = flags_.to_string().c_str();
+
+        {
+            std::stringstream ss;
+            ss << format_;
+            node.append_attribute("format") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << width_;
+			node.append_attribute("width") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << height_;
+			node.append_attribute("height") = ss.str().c_str();
+        }
+
+        CHECK_ASSERT(!pResource_->GetBytes(), __FILE__, __LINE__);
     }
 }

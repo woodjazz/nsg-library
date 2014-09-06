@@ -49,7 +49,8 @@ namespace NSG
         App();
         App(PAppConfiguration configuration);
         virtual ~App();
-        virtual void Start() {}
+        void SetCommandLineParameters(int argc, char* argv[]);
+        virtual void Start(int argc, char* argv[]) {}
         virtual void Update() {}
         virtual void RenderFrame() {};
         virtual void ViewChanged(int32_t width, int32_t height) {};
@@ -93,8 +94,10 @@ namespace NSG
         float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
         PContext context_;
         PAppConfiguration configuration_;
-        friend struct InternalApp;
         std::vector<IViewChangedListener*> viewChangedListeners_;
+        int argc_;
+        char** argv_;
+        friend struct InternalApp;
     };
 
     struct InternalApp : public Tick

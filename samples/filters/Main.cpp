@@ -42,24 +42,24 @@ struct Sample : App
 
 	Sample()
 	{
-		AppConfiguration::this_->width_ = 640;
-		AppConfiguration::this_->height_ = 480;
+		AppConfiguration::this_->width_ = 30;
+		AppConfiguration::this_->height_ = 20;
         AppConfiguration::this_->showStatistics_ = true;
 	}
 
-	void Start()
+	void Start(int argc, char* argv[]) override
 	{
         scene_ = PScene(new Scene);
         
-		camera_ = scene_->CreateCamera();
+		camera_ = scene_->CreateCamera("camera");
         camera_->SetPosition(Vertex3(0,0,10));
         camera_->Activate();
 
-		box_ = scene_->CreateSceneNode();
+		box_ = scene_->CreateSceneNode("node 1");
         boxBehavior_ = new BoxBehavior;
         box_->SetBehavior(PBehavior(boxBehavior_));
         
-		sphere_ = scene_->CreateSceneNode();
+		sphere_ = scene_->CreateSceneNode("node 2");
         sphereBehavior_ = new SphereBehavior;
         sphere_->SetBehavior(PBehavior(sphereBehavior_));
 
@@ -83,7 +83,7 @@ struct Sample : App
 			PPass2Texture pass2Texture(new Pass2Texture(1024, 1024));
 			technique_->Add(pass2Texture);
 
-			boxFilter = PFilter(new Filter(pass2Texture->GetTexture(), 1024, 1024, BoxBehavior::GetFS()));
+			boxFilter = PFilter(new Filter("BoxFilter", pass2Texture->GetTexture(), 1024, 1024, BoxBehavior::GetFS()));
             
             pass2Texture->Add(depthPass, sphereBehavior_->GetSceneNode(), nullptr, sphereBehavior_->mesh_);
 			pass2Texture->Add(normalPass, boxBehavior_->GetSceneNode(), boxBehavior_->material_, boxBehavior_->mesh_);
@@ -128,13 +128,13 @@ struct Sample : App
       
      }
 
-    void Update()
+    void Update() override
     {
         scene_->Update();
     }
 
 
-    void RenderFrame()
+    void RenderFrame() override
     {
         technique_->Render();
         showTexture_->Show();

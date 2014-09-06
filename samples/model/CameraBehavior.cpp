@@ -23,36 +23,53 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "ModelBehavior.h"
+#include "CameraBehavior.h"
 
-ModelBehavior::ModelBehavior()
+CameraBehavior::CameraBehavior()
 {
 }
 	
-ModelBehavior::~ModelBehavior()
+CameraBehavior::~CameraBehavior()
 {
-
 }
 
-void ModelBehavior::Start()
+void CameraBehavior::Start()
 {
-#if ENABLED 
-    //pSceneNode_->SetOrientation(glm::angleAxis(PI, Vertex3(1, 0, 0)));
-	pSceneNode_->SetScale(Vertex3(2, 2, 2));
-    //pSceneNode_->SetPosition(Vertex3(0,-2, 0));
-    //pSceneNode_->SetPosition(Vertex3(0,-5, 5));
+	camControlPoints_.push_back(Vertex3(-10.0f, 0.0f, 0.0f)); 
+    camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 10.0f));
+	camControlPoints_.push_back(Vertex3(10.0f, 0.0f, 0.0f));
+	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
+
+    pSceneNode_->SetPosition(Vertex3(0,0,10));
+    pSceneNode_->SetLookAt(Vertex3(0));
+
+}
+void CameraBehavior::Update()
+{
+#if 1
+    float deltaTime = App::this_->GetDeltaTime();
+
+    static float delta1 = 0;
+
+	Vertex3 position = glm::catmullRom(
+        camControlPoints_[0],
+        camControlPoints_[1],
+        camControlPoints_[2],
+        camControlPoints_[3],
+		delta1);
+
+    pSceneNode_->SetPosition(position);
+    pSceneNode_->SetLookAt(Vertex3(0));
+
+    delta1 += deltaTime * 0.1f;
+
+    if(delta1 > 1)
+    {
+    	delta1 = 0;
+        Vertex3 p = camControlPoints_.front();
+        camControlPoints_.pop_front();
+        camControlPoints_.push_back(p);
+    }
 #endif
 }
-
-void ModelBehavior::Update()
-{
-}
-
-void ModelBehavior::Render()
-{
-#if ENABLED 	
-	pSceneNode_->Render();
-#endif	
-}
-
 

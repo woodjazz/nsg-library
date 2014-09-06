@@ -24,39 +24,25 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "GPUObject.h"
-#include "assimp/IOSystem.hpp"
-#include <string>
-#include <vector>
+#include "Mesh.h"
 
-struct aiScene;
-struct aiNode;
+struct aiMesh;
 namespace NSG
 {
-	class Model : public GPUObject, public Assimp::IOSystem
+	class MeshConverter : public Mesh
 	{
 	public:
-		Model(const char* filename);
-		~Model();
-		void SetBehavior(PBehavior pBehavior);
-        bool Exists(const char* filename) const;
-		char getOsSeparator() const;
-	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb");
-		void Close(Assimp::IOStream* pFile);
-        PSceneNode GetSceneNode() const { return pRoot_; }
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
-
-	private:
-		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode pSceneNode);
-
-		PResource pResource_;
-        std::string filename_;
-		PSceneNode pRoot_;
-        PSceneNode pModelRoot_;
-		typedef std::vector<PSceneNode> Children;
-		Children children_; // just to keep a reference to children and avoid deletion
+		MeshConverter(const aiMesh* mesh);
+		~MeshConverter();
+		virtual GLenum GetWireFrameDrawMode() const override;
+		virtual GLenum GetSolidDrawMode() const override;
+		virtual size_t GetNumberOfTriangles() const override;
+    private:
+        GLenum face_mode_;
+        const aiMesh* mesh_;
 	};
+
+	class MeshConverter;
+	typedef std::shared_ptr<MeshConverter> PMeshConverter;
+
 }

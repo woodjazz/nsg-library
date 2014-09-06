@@ -76,10 +76,10 @@ struct Sample : App
     {
         AppConfiguration::this_->width_ = 320;
         AppConfiguration::this_->height_ = 200;
-        AppConfiguration::this_->showStatistics_ = true;
+		AppConfiguration::this_->showStatistics_ = true;
     }
 
-	void Start()
+	void Start(int argc, char* argv[]) override
 	{
 		if (!style_)
 		{
@@ -102,7 +102,7 @@ struct Sample : App
         }
     }
 
-    void RenderGUIWindow()
+    void RenderGUIWindow() override
     {	
         static float delta = -1;
         static Vertex3 camControlPoint0(-3, 3, 0);

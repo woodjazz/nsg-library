@@ -105,6 +105,9 @@ namespace NSG
 
     class TextureFile;
     typedef std::shared_ptr<TextureFile> PTextureFile;
+
+    class TextureMemory;
+    typedef std::shared_ptr<TextureMemory> PTextureMemory;
     
     class Material;
     typedef std::shared_ptr<Material> PMaterial;
@@ -159,12 +162,6 @@ namespace NSG
 
 	class Light;
 	typedef std::shared_ptr<Light> PLight;
-
-	class ModelMaterial;
-	typedef std::shared_ptr<ModelMaterial> PModelMaterial;
-
-	class ModelMesh;
-	typedef std::shared_ptr<ModelMesh> PModelMesh;
 
 	class PlaneMesh;
 	typedef std::shared_ptr<PlaneMesh> PPlaneMesh;

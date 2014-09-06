@@ -29,6 +29,11 @@ misrepresented as being the original software.
 #include "GPUObject.h"
 #include <vector>
 
+namespace pugi
+{
+    class xml_node;
+}
+
 namespace NSG
 {
     class Pass : public GPUObject, UniformsUpdate
@@ -52,6 +57,8 @@ namespace NSG
         PProgram GetProgram() const;
         virtual bool Render();
         virtual bool IsValid() override;
+        void Save(pugi::xml_node& node);
+        void Load(const pugi::xml_node& node);
     protected:
         PProgram pProgram_;
         BLEND_MODE blendMode_;

@@ -42,7 +42,7 @@ namespace NSG
 {
     FrameColorSelection::FrameColorSelection(UseBuffer buffer)
         : buffer_(buffer),
-          material_(new Material),
+          material_(new Material("FrameColorSelection")),
           windowWidth_(0),
           windowHeight_(0),
           pixelX_(0),

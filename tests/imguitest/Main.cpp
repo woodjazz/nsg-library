@@ -131,7 +131,7 @@ struct Test : public App
     END end_;
     PMachine machine_;
 
-	void Start()
+	void Start(int argc, char* argv[]) override
 	{
 		//IMGUI::Context::this_->pSkin_->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
 		//IMGUI::Context::this_->pSkin_->textStyle_->fontFile_ = "font/FreeSans.ttf";
@@ -141,7 +141,7 @@ struct Test : public App
 	    machine_ = PMachine(new Machine(initializing_));
 	}
 
-	void Update()
+	void Update() override
 	{
         if(IMGUI::IsReady())
         {
@@ -149,7 +149,7 @@ struct Test : public App
         }
 	}
 
-	void RenderGUIWindow()
+	void RenderGUIWindow() override
 	{
 		buttonPressed = IMGUIButton("Button", 100, 50);
 
@@ -166,7 +166,7 @@ struct Test : public App
 	    IMGUIEndArea();
 	}
 
-	bool ShallExit() const 
+	bool ShallExit() const override
 	{ 
 		return machine_ && machine_->GetState() == &end_;
 	}

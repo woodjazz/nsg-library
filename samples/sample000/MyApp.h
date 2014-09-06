@@ -27,13 +27,13 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-
+class Render2TextureBehavior;
 class MyApp : public NSG::App 
 {
 public:
 	MyApp();
 	~MyApp();
-	void Start() override;
+	void Start(int argc, char* argv[]) override;
 	void Update() override;
 	void RenderFrame() override;
 private:
@@ -43,5 +43,6 @@ private:
     PSceneNode pEarthSceneNode_;
     PSceneNode pCubeSceneNode_;
     PSceneNode render2TextureSceneNode_;
+	Render2TextureBehavior* render2TextureBehavior_;
 };
 

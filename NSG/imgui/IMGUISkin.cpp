@@ -53,7 +53,7 @@ namespace NSG
               hSliderStyle_(new SliderStyle),
               vThumbSliderStyle_(new Style),
               hThumbSliderStyle_(new Style),
-              stencilMaterial_(new Material),
+              stencilMaterial_(new Material("stencil")),
               stencilPass_(new Pass)
         {
             {

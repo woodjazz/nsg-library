@@ -151,7 +151,6 @@ namespace NSG
             has_texture_non_power_of_two_ext_ = true;
             TRACE_LOG("Using extension: GL_ARB_texture_non_power_of_two");
         }
-        
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -171,6 +170,21 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
+		glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
+
+        // Set up texture data read/write alignment
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        
+		uniformsNeedUpdate_ = true;
+		lastMesh_ = nullptr;
+		lastMaterial_ = nullptr;
+		lastProgram_ = nullptr;
+		lastNode_ = nullptr;
+		activeMesh_ = nullptr;
+		activeMaterial_ = nullptr;
+		activeNode_ = nullptr;
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         SetClearColor(Color(0, 0, 0, 1));

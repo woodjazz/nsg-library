@@ -108,10 +108,15 @@ include_directories(${EXTERNALS_DIR}/stb)
 include_directories(${EXTERNALS_DIR}/glm)
 
 ###########################
+# tclap
+###########################
+include_directories(${EXTERNALS_DIR}/tclap/include)
+
+###########################
 # nsg
 ###########################
 if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
-	include (TemplateCompiler)
+	include (TemplateCompiler) # tcl tool
 endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/NSG)
 SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/NSG)
@@ -162,12 +167,10 @@ if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	mark_as_disable_and_internal(ASSIMP_BUILD_TESTS)
 	mark_as_disable_and_internal(ASSIMP_BUILD_SAMPLES)
 	include_directories(${EXTERNALS_DIR}/assimp/include)
-	#add_subdirectory(${EXTERNALS_DIR}/assimp)
+	add_subdirectory(${EXTERNALS_DIR}/assimp)
+	list(APPEND LIBRARIES_2_LINK assimp)
 	###########################
-	###########################
-	###########################
-	
-	#add_subdirectory(tools/model_converter)
+	add_subdirectory(tools/converter)
 endif()
 
 

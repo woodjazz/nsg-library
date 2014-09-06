@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "AppListeners.h"
+#include "VertexData.h"
 #include <string>
 #include <map>
 

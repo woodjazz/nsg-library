@@ -23,21 +23,19 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Mesh.h"
+#include "VertexData.h"
 
-struct aiMesh;
 namespace NSG
 {
-	class ModelMesh : public Mesh
-	{
-	public:
-		ModelMesh(GLenum usage, const aiMesh* mesh);
-		~ModelMesh();
-		GLenum GetWireFrameDrawMode() const;
-		GLenum GetSolidDrawMode() const;
-    private:
-        GLenum face_mode_;
-        const aiMesh* mesh_;
-	};
+    VertexData::VertexData()
+        : color_(1),
+          normal_(0, 0, 1) // always facing forward
+    {
+    }
+
+    std::ostream& operator << (std::ostream& s , const VertexData& obj)
+    {
+		s << obj.position_ << obj.normal_ << obj.uv_ << obj.color_;
+    	return s;
+    }
 }

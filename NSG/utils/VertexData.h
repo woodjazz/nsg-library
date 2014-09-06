@@ -24,16 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
-#include "Material.h"
+#include "Types.h"
+#include <iostream>
 
-struct aiMaterial;
 namespace NSG
 {
-	class ModelMaterial : public Material
-	{
-	public:
-		ModelMaterial(const aiMaterial* mtl);
-		~ModelMaterial();
-	};
+    struct VertexData
+    {
+        Vertex3 position_;
+        Vertex3 normal_;
+        Vertex2 uv_;
+        Color color_;
+
+        VertexData();
+    };
+
+	std::ostream& operator << (std::ostream& s , const VertexData& obj);
+    typedef std::vector<VertexData> VertexsData;
+
 }
+
+

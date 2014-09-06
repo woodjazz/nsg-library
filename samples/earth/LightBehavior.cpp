@@ -36,7 +36,7 @@ LightBehavior::~LightBehavior()
 
 void LightBehavior::Start()
 {
-    PMaterial pMaterial(new Material);
+    PMaterial pMaterial(new Material("light"));
     pMaterial->SetColor(Color(1,0,0,1));
 	PProgram pProgram(new ProgramSimpleColor);
     PTechnique technique(new Technique);
@@ -56,8 +56,4 @@ void LightBehavior::Start()
     pSceneNode_->SetPosition(Vertex3(-10.0,  0.0,  5.0));
 }
 
-void LightBehavior::Render()
-{
-    pSceneNode_->Render();
-}
 

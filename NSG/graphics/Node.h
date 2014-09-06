@@ -28,17 +28,17 @@ misrepresented as being the original software.
 #include "UniformsUpdate.h"
 #include "NonCopyable.h"
 #include <vector>
+#include <string>
 
 namespace NSG
 {
 	class Node : NonCopyable, public UniformsUpdate
 	{
 	public:
-		Node();
+		Node(const std::string& name = "");
 		virtual ~Node();
 		IdType GetId() const { return id_;  }
-        void SetParent(PNode pParent);
-        void SetParent(Node* pParent);
+		void SetParent(PNode parent);
         PNode GetParent() const { return pParent_; }
 		virtual void OnDirty() const {};
 		void SetPosition(const Vertex3& position);
@@ -62,11 +62,15 @@ namespace NSG
 		const Vertex3& GetLookAtDirection() const;
 		void SetInheritScale(bool inherit);
 		bool IsPointInsideBB(const Vertex3& point) const;
-		Node* GetChild(size_t idx) const { return children_.at(idx); }
+		PNode GetChild(size_t idx) const { return children_.at(idx); }
 		bool IsDirty() const { return dirty_; }
+		virtual void Save(pugi::xml_node& node);
+		void SetName(const std::string& name) { name_ = name_; }
+		const std::string& GetName() const { return name_; }
     protected:
 		PNode pParent_;
-        std::vector<Node*> children_;
+        std::vector<PNode> children_;
+        PNode self_;
 	private:
 		void RemoveFromParent();
 		void MarkAsDirty();
@@ -84,5 +88,6 @@ namespace NSG
 		mutable Vertex3 lookAtDirection_;
 		bool inheritScale_;
 		mutable bool dirty_;
+		std::string name_;
 	};
 }

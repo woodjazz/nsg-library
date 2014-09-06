@@ -186,31 +186,31 @@ namespace NSG
                     area_->textOffsetX_ = 0;
             }
 
-            Node& textNode0 = *area_->controlNodes_.node0_;
-            textNode0.SetParent(node_);
+            PNode textNode0 = area_->controlNodes_.node0_;
+            textNode0->SetParent(node_);
 
             if (pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
-                textNode0.SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
+                textNode0->SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
             if (pTextMesh_->GetTextHorizontalAlignment() == RIGHT_ALIGNMENT)
-                textNode0.SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
+                textNode0->SetPosition(Vertex3(1, 0, 0)); //move text to the end of the current area
 
             if (pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
-                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
+                textNode0->SetPosition(textNode0->GetPosition() + Vertex3(0, -1, 0)); //move text to the bottom of the current area
             else if (pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
-                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
+                textNode0->SetPosition(textNode0->GetPosition() + Vertex3(0, 1, 0)); //move text to the top of the current area
             else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
-                textNode0.SetPosition(textNode0.GetPosition() + Vertex3(0, -0.25f, 0));
+                textNode0->SetPosition(textNode0->GetPosition() + Vertex3(0, -0.25f, 0));
 
-            Node& textNode1 = *area_->controlNodes_.node1_;
-            textNode1.SetParent(&textNode0);
-            textNode1.SetInheritScale(false);
-            textNode1.SetScale(Context::this_->pRootNode_->GetGlobalScale());
+            PNode textNode1 = area_->controlNodes_.node1_;
+            textNode1->SetParent(textNode0);
+            textNode1->SetInheritScale(false);
+            textNode1->SetScale(Context::this_->pRootNode_->GetGlobalScale());
 
-            Node& textNode2 = *area_->controlNodes_.node2_;
-            textNode2.SetParent(&textNode1);
-            textNode2.SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
+            PNode textNode2 = area_->controlNodes_.node2_;
+            textNode2->SetParent(textNode1);
+            textNode2->SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
 
-            Graphics::this_->Set(&textNode2);
+            Graphics::this_->Set(textNode2.get());
             Graphics::this_->Set(pTextMesh_.get());
 
             Pass pass;
@@ -221,7 +221,7 @@ namespace NSG
             pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 
-            Material textMaterial;
+            Material textMaterial("text");
             textMaterial.SetColor(textStyle_.textColor_);
 			textMaterial.SetTexture0(pTextMesh_->GetTexture());
             Graphics::this_->Set(&textMaterial);
@@ -231,11 +231,11 @@ namespace NSG
             // Render cursor if we have keyboard focus
             if (HasFocus() && layoutManager_.IsCurrentWindowActive() && (uistate_.tick_ < 15))
             {
-                Node& cursorNode = *area_->controlNodes_.node3_;
-                cursorNode.SetParent(&textNode2);
-                cursorNode.SetPosition(Vertex3(cursorPositionInText, 0, 0));
+                PNode cursorNode = area_->controlNodes_.node3_;
+                cursorNode->SetParent(textNode2);
+                cursorNode->SetPosition(Vertex3(cursorPositionInText, 0, 0));
 
-                Graphics::this_->Set(&cursorNode);
+                Graphics::this_->Set(cursorNode.get());
                 Graphics::this_->Set(pCursorMesh_.get());
                 
                 Pass pass;

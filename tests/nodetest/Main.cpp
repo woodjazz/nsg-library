@@ -39,13 +39,13 @@ struct Test : public App
 
 	}
 
-	void Start()
+	void Start(int argc, char* argv[]) override
 	{
 		NodeTest();
 		exit_ = true;
 	}
 
-	bool ShallExit() const 
+	bool ShallExit() const override 
 	{ 
 		return exit_;
 	}

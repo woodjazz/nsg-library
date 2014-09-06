@@ -28,6 +28,7 @@ using namespace NSG;
 
 static void FrustumTest()
 {
+	Scene scene;
 	{
 		Vertex3 p0(0, 0, -1);
 		Vertex3 p1(0, 1, -1);
@@ -43,11 +44,12 @@ static void FrustumTest()
 		CHECK_ASSERT(glm::dot(normal, p2) + d == 0, __FILE__, __LINE__);
 	}
 
-    Camera camera;
-	camera.SetLookAt(Vector3(0, 0, -1));
+    PCamera camera = scene.CreateCamera("camera");
+
+	camera->SetLookAt(Vector3(0, 0, -1));
 
 	{
-		PFrustum frustum = camera.GetFrustum();
+		PFrustum frustum = camera->GetFrustum();
 		const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
 		const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
 		const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
@@ -63,24 +65,24 @@ static void FrustumTest()
 		CHECK_ASSERT(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
 		{
-			Vector4 nearPlanePoint(camera.GetGlobalPosition() + Vector3(0, 0, -camera.GetZNear()), 1);
+			Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
 			float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
 			CHECK_ASSERT(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
 		}
 
 		{
-			Vector4 farPlanePoint(camera.GetGlobalPosition() + Vector3(0, 0, -camera.GetZFar()), 1);
+			Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
 			float dot = glm::dot(farPlane.normald_, farPlanePoint);
 			CHECK_ASSERT(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
 		}
 
 	}
 
-	camera.SetPosition(Vertex3(0, 0, 100));
-	camera.SetLookAt(Vector3(0, 0, -1));
+	camera->SetPosition(Vertex3(0, 0, 100));
+	camera->SetLookAt(Vector3(0, 0, -1));
 
 	{
-		PFrustum frustum = camera.GetFrustum();
+		PFrustum frustum = camera->GetFrustum();
 		const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
 		const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
 		const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
@@ -96,13 +98,13 @@ static void FrustumTest()
 		CHECK_ASSERT(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
 		{
-			Vector4 nearPlanePoint(camera.GetGlobalPosition() + Vector3(0, 0, -camera.GetZNear()), 1);
+			Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
 			float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
 			CHECK_ASSERT(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
 		}
 
 		{
-			Vector4 farPlanePoint(camera.GetGlobalPosition() + Vector3(0, 0, -camera.GetZFar()), 1);
+			Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
 			float dot = glm::dot(farPlane.normald_, farPlanePoint);
 			CHECK_ASSERT(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
 		}
@@ -110,11 +112,11 @@ static void FrustumTest()
 
 	}
 
-	camera.SetPosition(Vertex3(10, 0, 1));
-	camera.SetLookAt(Vector3(10, 0, -1));
+	camera->SetPosition(Vertex3(10, 0, 1));
+	camera->SetLookAt(Vector3(10, 0, -1));
 
 	{
-		PFrustum frustum = camera.GetFrustum();
+		PFrustum frustum = camera->GetFrustum();
 		const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
 		const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
 		const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
@@ -130,13 +132,13 @@ static void FrustumTest()
 		CHECK_ASSERT(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
 		{
-			Vector4 nearPlanePoint(camera.GetGlobalPosition() + Vector3(0, 0, -camera.GetZNear()), 1);
+			Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
 			float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
 			CHECK_ASSERT(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
 		}
 
 		{
-			Vector4 farPlanePoint(camera.GetGlobalPosition() + Vector3(0, 0, -camera.GetZFar()), 1);
+			Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
 			float dot = glm::dot(farPlane.normald_, farPlanePoint);
 			CHECK_ASSERT(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
 		}
@@ -144,11 +146,11 @@ static void FrustumTest()
 	}
 
 
-	camera.SetPosition(Vertex3(0, 0, -1));
-	camera.SetLookAt(Vector3(0,0,1));
+	camera->SetPosition(Vertex3(0, 0, -1));
+	camera->SetLookAt(Vector3(0,0,1));
 
 	{
-		PFrustum frustum = camera.GetFrustum();
+		PFrustum frustum = camera->GetFrustum();
 		const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
 		const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
 		const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
@@ -164,13 +166,13 @@ static void FrustumTest()
 		CHECK_ASSERT(glm::dot(Vector3(farPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
 		{
-			Vector4 nearPlanePoint(camera.GetGlobalPosition() + Vector3(0, 0, +camera.GetZNear()), 1);
+			Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZNear()), 1);
 			float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
 			CHECK_ASSERT(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
 		}
 
 		{
-			Vector4 farPlanePoint(camera.GetGlobalPosition() + Vector3(0, 0, +camera.GetZFar()), 1);
+			Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZFar()), 1);
 			float dot = glm::dot(farPlane.normald_, farPlanePoint);
 			CHECK_ASSERT(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
 		}
@@ -180,16 +182,17 @@ static void FrustumTest()
 
 static void Test01()
 {
+	Scene scene;
     SphereMesh sphere(1, 100);
 
     {
 
         Node node;
-        Camera camera;
-        camera.SetFov(45);
-        camera.SetNearClip(0.1f);
-        camera.SetFarClip(10);
-        PFrustum frustum = camera.GetFrustum();
+		PCamera camera = scene.CreateCamera("camera");
+        camera->SetFov(45);
+        camera->SetNearClip(0.1f);
+        camera->SetFarClip(10);
+        PFrustum frustum = camera->GetFrustum();
         CHECK_ASSERT(frustum->IsVisible(node, sphere), __FILE__, __LINE__);
         node.SetPosition(Vertex3(20));
         CHECK_ASSERT(!frustum->IsVisible(node, sphere), __FILE__, __LINE__);
@@ -200,11 +203,11 @@ static void Test01()
         node.SetPosition(Vertex3(20));
         node.SetScale(Vector3(100));
 
-        Camera camera;
-        camera.SetFov(45);
-        camera.SetNearClip(0.1f);
-        camera.SetFarClip(10);
-        PFrustum frustum = camera.GetFrustum();
+		PCamera camera = scene.CreateCamera("camera");
+        camera->SetFov(45);
+        camera->SetNearClip(0.1f);
+        camera->SetFarClip(10);
+        PFrustum frustum = camera->GetFrustum();
         CHECK_ASSERT(frustum->IsVisible(node, sphere), __FILE__, __LINE__);
         node.SetPosition(Vertex3(200));
         CHECK_ASSERT(!frustum->IsVisible(node, sphere), __FILE__, __LINE__);
@@ -212,17 +215,17 @@ static void Test01()
 
     {
         Node node;
-        Camera camera;
-        camera.SetFov(45);
-        camera.SetNearClip(0.1f);
-        camera.SetFarClip(250);
-        camera.SetPosition(Vertex3(0, 0, 10));
-        camera.SetLookAt(Vertex3(0));
-        PFrustum frustum = camera.GetFrustum();
+		PCamera camera = scene.CreateCamera("camera");
+        camera->SetFov(45);
+        camera->SetNearClip(0.1f);
+        camera->SetFarClip(250);
+        camera->SetPosition(Vertex3(0, 0, 10));
+        camera->SetLookAt(Vertex3(0));
+        PFrustum frustum = camera->GetFrustum();
         CHECK_ASSERT(frustum->IsVisible(node, sphere), __FILE__, __LINE__);
-        camera.SetPosition(Vertex3(0, 0, -1.1f));
-		camera.SetLookAt(Vertex3(0,0,-2));
-		frustum = camera.GetFrustum();
+        camera->SetPosition(Vertex3(0, 0, -1.1f));
+		camera->SetLookAt(Vertex3(0,0,-2));
+		frustum = camera->GetFrustum();
         CHECK_ASSERT(!frustum->IsVisible(node, sphere), __FILE__, __LINE__);
     }
 
@@ -231,42 +234,42 @@ static void Test01()
         Node node;
         node.SetPosition(Vertex3(0, 0, -40));
 
-        Camera camera;
-        camera.SetFov(100);
-        camera.SetNearClip(0.1f);
-        camera.SetFarClip(1000);
-        CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
-        camera.SetNearClip(41.1f);
-        CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
+		PCamera camera = scene.CreateCamera("camera");
+        camera->SetFov(100);
+        camera->SetNearClip(0.1f);
+        camera->SetFarClip(1000);
+        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        camera->SetNearClip(41.1f);
+        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
     }
 
     {
         Node node;
         node.SetPosition(Vertex3(1.1f, 0, -1.1f));
 
-        Camera camera;
-        camera.SetFov(170);
-        camera.SetNearClip(0.1f);
-        camera.SetFarClip(1000);
-        CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
-        camera.SetFov(0.0001f);
-        CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
+		PCamera camera = scene.CreateCamera("camera");
+        camera->SetFov(170);
+        camera->SetNearClip(0.1f);
+        camera->SetFarClip(1000);
+        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        camera->SetFov(0.0001f);
+        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
         node.SetPosition(Vertex3(0, 0, -40));
-        CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
-        camera.SetLookAt(Vertex3(-1, 0, 0));
-        CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
-        camera.SetLookAt(Vertex3(0, 0, 1));
-        CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
-        camera.SetPosition(Vertex3(0, 0, -4));
+        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        camera->SetLookAt(Vertex3(-1, 0, 0));
+        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        camera->SetLookAt(Vertex3(0, 0, 1));
+        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        camera->SetPosition(Vertex3(0, 0, -4));
 		node.SetPosition(Vertex3(0, 0, -1));
-        CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
-        camera.SetFarClip(1.9f);
-        CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
-        camera.SetFarClip(4);
-        CHECK_ASSERT(camera.IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        camera->SetFarClip(1.9f);
+        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        camera->SetFarClip(4);
+        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
 		node.SetPosition(Vertex3(-1, 0, -1));
         node.SetScale(Vector3(0.1f));
-        CHECK_ASSERT(!camera.IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
     }
 }
 
@@ -275,19 +278,19 @@ static void Test02()
     {
         BoxMesh box(2, 4, 2);
         Node node;
-
-        Camera camera;
-        camera.SetFov(179);
-        camera.SetNearClip(0.1f);
-        camera.SetFarClip(10);
-        camera.SetPosition(Vertex3(1, 0, 0));
-        CHECK_ASSERT(camera.IsVisible(node, box), __FILE__, __LINE__);
-        camera.SetPosition(Vertex3(0, 0, -1.1f));
-        CHECK_ASSERT(!camera.IsVisible(node, box), __FILE__, __LINE__);
+		Scene scene;
+		PCamera camera = scene.CreateCamera("camera");
+        camera->SetFov(179);
+		camera->SetNearClip(0.1f);
+		camera->SetFarClip(10);
+		camera->SetPosition(Vertex3(1, 0, 0));
+		CHECK_ASSERT(camera->IsVisible(node, box), __FILE__, __LINE__);
+		camera->SetPosition(Vertex3(0, 0, -1.1f));
+		CHECK_ASSERT(!camera->IsVisible(node, box), __FILE__, __LINE__);
         node.SetOrientation(glm::angleAxis(glm::pi<float>() / 2, Vertex3(1, 0, 0)));
-        CHECK_ASSERT(camera.IsVisible(node, box), __FILE__, __LINE__);
+		CHECK_ASSERT(camera->IsVisible(node, box), __FILE__, __LINE__);
         node.SetPosition(Vertex3(1, 0, 2));
-        CHECK_ASSERT(!camera.IsVisible(node, box), __FILE__, __LINE__);
+		CHECK_ASSERT(!camera->IsVisible(node, box), __FILE__, __LINE__);
     }
 }
 

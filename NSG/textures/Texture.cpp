@@ -28,7 +28,10 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Check.h"
 #include "Graphics.h"
+#include "TextureFile.h"
+#include "TextureMemory.h"
 #include "image_helper.h"
+#include "pugixml.hpp"
 
 namespace NSG
 {
@@ -127,5 +130,24 @@ namespace NSG
     void Texture::ReleaseResources()
     {
         glDeleteTextures(1, &texture_);
+    }
+
+    PTexture Texture::CreateFrom(const pugi::xml_node& node)
+    {
+        std::string type = node.attribute("type").as_string();
+
+        if (type == "TextureFile")
+        {
+			std::string flags = node.attribute("flags").as_string();
+            std::string filename = node.attribute("filename").as_string();
+            return PTextureFile(new TextureFile(filename.c_str(), Texture::Flags(flags)));
+        }
+        else
+        {
+            int format = node.attribute("format").as_int();
+            int width = node.attribute("width").as_int();
+            int height = node.attribute("height").as_int();
+            return PTextureMemory(new TextureMemory(format, width, height, nullptr));
+        }
     }
 }

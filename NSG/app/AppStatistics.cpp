@@ -40,7 +40,7 @@ namespace NSG
         : frames_(0),
           collect_(true),
           pass_(new Pass),
-          material_(new Material)
+          material_(new Material("AppStatistics"))
     {
         startTime_ = Clock::now();
 

@@ -28,14 +28,14 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "GPUObject.h"
 #include "UniformsUpdate.h"
-
 namespace NSG
 {
 	class Material : public GPUObject, UniformsUpdate
 	{
 	public:
-		Material();
+		Material(const std::string& name = "");
 		~Material();
+		void SetName(const std::string& name) {name_ = name;}
 		void SetTexture0(PTexture pTexture);
 		void SetTexture1(PTexture pTexture);
         PTexture GetTexture0() const { return pTexture0_; }
@@ -55,6 +55,8 @@ namespace NSG
 		virtual bool IsValid() override;
 		void SetTechnique(PTechnique technique) { technique_ = technique; }
 		PTechnique GetTechnique() const { return technique_; }
+		void Save(pugi::xml_node& node);
+		void Load(const pugi::xml_node& node);
 	private:
 		PTexture pTexture0_;
 		PTexture pTexture1_;
@@ -64,6 +66,7 @@ namespace NSG
         float shininess_;
         Color color_;
         PTechnique technique_;
+        std::string name_;
         friend class Program;
 	};
 }

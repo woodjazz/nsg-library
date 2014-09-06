@@ -79,5 +79,7 @@ misrepresented as being the original software.
 #include "Music.h"
 #include "BoundingBox.h"
 #include "Frustum.h"
+#include "ResourceFile.h"
+#include "pugixml.hpp"
 
 

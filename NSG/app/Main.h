@@ -80,7 +80,9 @@ namespace NSG
 #define NSG_MAIN(ClassName)\
 int main(int argc, char * argv[])\
 {\
-    NSG::CreateModule(new ClassName);\
+	ClassName* objApp(new ClassName);\
+	objApp->SetCommandLineParameters(argc, argv);\
+    NSG::CreateModule(objApp);\
 	return 0;\
 }
 #endif

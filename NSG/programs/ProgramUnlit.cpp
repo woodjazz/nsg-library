@@ -48,7 +48,7 @@ static const char* fShader = STRINGIFY(
 namespace NSG 
 {
 	ProgramUnlit::ProgramUnlit()
-	: Program(vShader, fShader)
+	: Program("ProgramUnlit", vShader, fShader)
 	{
 	}
 

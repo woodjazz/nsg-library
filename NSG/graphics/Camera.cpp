@@ -32,8 +32,9 @@ namespace NSG
 {
     Camera* activeCamera = nullptr;
 
-    Camera::Camera()
-        : fovy_(45),
+	Camera::Camera(const std::string& name, Scene* scene)
+        : SceneNode(name, scene),
+          fovy_(45),
           zNear_(0.1f),
           zFar_(250),
           xo_(0),
@@ -46,7 +47,7 @@ namespace NSG
           aspectRatio_(1),
           cameraIsDirty_(false)
     {
-		UpdateProjection();
+        UpdateProjection();
         App::Add(this);
     }
 
@@ -163,12 +164,12 @@ namespace NSG
 
     void Camera::UpdateViewProjection() const
     {
-		cameraIsDirty_ = false;
+        cameraIsDirty_ = false;
 
         matViewInverse_ = GetGlobalModelMatrix();
-		matView_ = glm::inverse(matViewInverse_);
-        
-		matViewProjection_ = matProjection_ * matView_;
+        matView_ = glm::inverse(matViewInverse_);
+
+        matViewProjection_ = matProjection_ * matView_;
         matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 
         frustum_ = PFrustum(new Frustum(this));
@@ -176,7 +177,7 @@ namespace NSG
 
     const PFrustum Camera::GetFrustum() const
     {
-        if(cameraIsDirty_)
+        if (cameraIsDirty_)
             UpdateProjection();
 
         return frustum_;
@@ -184,7 +185,7 @@ namespace NSG
 
     const Frustum* Camera::GetFrustumPointer() const
     {
-        if(cameraIsDirty_)
+        if (cameraIsDirty_)
             UpdateProjection();
 
         return frustum_.get();
@@ -193,7 +194,7 @@ namespace NSG
 
     const Matrix4& Camera::GetMatViewProjection() const
     {
-        if(cameraIsDirty_)
+        if (cameraIsDirty_)
             UpdateProjection();
 
         return matViewProjection_;
@@ -203,7 +204,7 @@ namespace NSG
     {
         if (activeCamera)
         {
-			return activeCamera->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
+            return activeCamera->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
         }
         else
         {
@@ -214,7 +215,7 @@ namespace NSG
 
     const Matrix4& Camera::GetMatProjection() const
     {
-        if(cameraIsDirty_)
+        if (cameraIsDirty_)
             UpdateProjection();
 
         return matProjection_;
@@ -233,7 +234,7 @@ namespace NSG
     }
     const Matrix4& Camera::GetView() const
     {
-        if(cameraIsDirty_)
+        if (cameraIsDirty_)
             UpdateProjection();
 
         return matView_;
@@ -241,7 +242,7 @@ namespace NSG
 
     const Matrix4& Camera::GetInverseViewMatrix() const
     {
-        if(cameraIsDirty_)
+        if (cameraIsDirty_)
             UpdateProjection();
 
         return matViewInverse_;
@@ -249,7 +250,7 @@ namespace NSG
 
     const Matrix4& Camera::GetViewProjectionMatrix() const
     {
-        if(cameraIsDirty_)
+        if (cameraIsDirty_)
             UpdateProjection();
 
         return matViewProjection_;
@@ -257,7 +258,7 @@ namespace NSG
 
     const Matrix4& Camera::GetViewProjectionInverseMatrix() const
     {
-        if(cameraIsDirty_)
+        if (cameraIsDirty_)
             UpdateProjection();
 
         return matViewProjectionInverse_;

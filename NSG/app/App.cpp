@@ -49,7 +49,9 @@ namespace NSG
 
     App::App()
         : width_(0),
-          height_(0)
+          height_(0),
+          argc_(0),
+          argv_(nullptr)
     {
         context_ = PContext(new Context);
         configuration_ = PAppConfiguration(new AppConfiguration);
@@ -68,6 +70,12 @@ namespace NSG
     {
         App::this_ = nullptr;
         TRACE_LOG("App Terminated");
+    }
+
+    void App::SetCommandLineParameters(int argc, char* argv[])
+    {
+        argc_ = argc;
+        argv_ = argv;
     }
 
     void App::SetViewSize(int32_t width, int32_t height)
@@ -151,7 +159,7 @@ namespace NSG
     {
         Context::this_->Initialize();
 
-        pApp_->Start();
+        pApp_->Start(pApp_->argc_, pApp_->argv_);
     }
 
     void InternalApp::BeginTicks()

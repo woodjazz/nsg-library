@@ -24,16 +24,41 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
-using namespace NSG;
-class ModelBehavior : public Behavior
-{
-public:
-	ModelBehavior();
-	~ModelBehavior();
+#include "Types.h"
+#include "Scene.h"
+#include "assimp/IOSystem.hpp"
+#include <string>
+#include <vector>
 
-	void Start();
-	void Update();
-	void Render();
-	//void Render2Select();
-};
+struct aiScene;
+struct aiNode;
+
+namespace pugi
+{
+	class xml_node;
+}
+
+namespace NSG
+{
+	class SceneConverter : public NSG::Scene, public Assimp::IOSystem
+	{
+	public:
+		SceneConverter(PResourceFile resource);
+		~SceneConverter();
+        bool Exists(const char* filename) const override;
+		char getOsSeparator() const override;
+	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb") override;
+		void Close(Assimp::IOStream* pFile) override;
+		bool Save(const std::string& filename);
+	private:
+		void SaveMeshes(pugi::xml_node& node);
+		void SaveMaterials(pugi::xml_node& node);
+		void LoadLights(const aiScene* sc);
+		void LoadMeshesAndMaterials(const aiScene* sc);
+		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode sceneNode);
+		PResourceFile pResource_;
+		PSceneNode root_;
+		std::vector<PMesh> meshes_;
+		std::vector<PMaterial> materials_;
+	};
+}

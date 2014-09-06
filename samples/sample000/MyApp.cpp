@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "MyApp.h"
-#include "ModelBehavior.h"
 #include "CameraBehavior.h"
 #include "EarthBehavior.h"
 #include "CubeBehavior.h"
@@ -39,10 +38,10 @@ misrepresented as being the original software.
 
 using namespace NSG;
 
-MyApp::MyApp() 
+MyApp::MyApp() : render2TextureBehavior_(nullptr)
 {
-	AppConfiguration::this_->width_ = 640;
-	AppConfiguration::this_->height_ = 480;
+	AppConfiguration::this_->width_ = 30;
+	AppConfiguration::this_->height_ = 20;
 	AppConfiguration::this_->showStatistics_ = true;
 }
 
@@ -50,26 +49,27 @@ MyApp::~MyApp()
 {
 }
 
-void MyApp::Start() 
+void MyApp::Start(int argc, char* argv[])
 {
 	TRACE_LOG("Start");
 
     scene_ = PScene(new Scene);
 
-	pCamera1_ = scene_->CreateCamera();
+	pCamera1_ = scene_->CreateCamera("camera");
     pCamera1_->Activate();
 	pCamera1_->SetBehavior(PBehavior(new CameraBehavior()));
 
-	render2TextureSceneNode_ = scene_->CreateSceneNode();
-    render2TextureSceneNode_->SetBehavior(PBehavior(new Render2TextureBehavior));
+	render2TextureSceneNode_ = scene_->CreateSceneNode("scene node 1");
+	render2TextureBehavior_ = new Render2TextureBehavior;
+	render2TextureSceneNode_->SetBehavior(PBehavior(render2TextureBehavior_));
 
-	pEarthSceneNode_ = scene_->CreateSceneNode();
+	pEarthSceneNode_ = scene_->CreateSceneNode("scene node 2");
     pEarthSceneNode_->SetBehavior(PBehavior(new EarthBehavior()));
 
-	pCubeSceneNode_ = scene_->CreateSceneNode();
+	pCubeSceneNode_ = scene_->CreateSceneNode("scene node 3");
     pCubeSceneNode_->SetBehavior(PBehavior(new CubeBehavior()));
 
-	pLight0_ = scene_->CreateLight();
+	pLight0_ = scene_->CreateLight("light");
     pLight0_->SetBehavior(PBehavior(new LightBehavior()));
 
     scene_->Start();
@@ -83,6 +83,7 @@ void MyApp::Update()
 
 void MyApp::RenderFrame() 
 {
-    scene_->Render();
+	render2TextureSceneNode_->Render();
+	render2TextureBehavior_->Show();
 }
 

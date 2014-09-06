@@ -26,6 +26,11 @@ misrepresented as being the original software.
 #pragma once
 #include "SharedPointers.h"
 
+namespace pugi
+{
+	class xml_node;
+}
+
 namespace NSG
 {
 	class Technique
@@ -35,12 +40,13 @@ namespace NSG
 		Technique();
 		~Technique();
 		void Add(PPass pass);
-		void Add(Pass* pass);
 		bool Render();
 		size_t GetNumPasses() const;
 		const PASSES& GetPasses() const { return passes_; }
 		void SetPass(unsigned int idx, PPass pass) { passes_.at(idx) = pass; }
 		PPass GetPass(unsigned int idx) { return passes_.at(idx); }
+		void Save(pugi::xml_node& node);
+		void Load(const pugi::xml_node& node);
 	private:
 		PASSES passes_;
 	};

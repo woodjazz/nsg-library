@@ -1,34 +1,30 @@
-/*
--------------------------------------------------------------------------------
-This file is part of nsg-library.
-http://nsg-library.googlecode.com/
-
-Copyright (c) 2014-2015 Néstor Silveira Gorski
-
--------------------------------------------------------------------------------
-This software is provided 'as-is', without any express or implied
-warranty. In no event will the authors be held liable for any damages
-arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not
-claim that you wrote the original software. If you use this software
-in a product, an acknowledgment in the product documentation would be
-appreciated but is not required.
-2. Altered source versions must be plainly marked as such, and must not be
-misrepresented as being the original software.
-3. This notice may not be removed or altered from any source distribution.
--------------------------------------------------------------------------------
-*/
+//
+// Copyright (c) 2008-2014 the Urho3D project.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+// Updated for nsg-library
 #include "Octree.h"
 #include "OctreeQuery.h"
 #include "SceneNode.h"
 namespace NSG
 {
-
     Octant::Octant(const BoundingBox& box, unsigned level, Octant* parent, Octree* root, unsigned index) :
         level_(level),
         numDrawables_(0),
@@ -119,27 +115,27 @@ namespace NSG
         }
     }
 
-    void Octant::InsertDrawable(const SceneNode* drawable)
+    void Octant::Insert(SceneNode* obj)
     {
-        const BoundingBox& box = drawable->GetWorldBoundingBox();
+        const BoundingBox& box = obj->GetWorldBoundingBox();
 
         // If root octant, insert all non-occludees here, so that octant occlusion does not hide the drawable.
         // Also if drawable is outside the root octant bounds, insert to root
         bool insertHere;
         if (this == root_)
-            insertHere = !drawable->IsOccludee() || cullingBox_.IsInside(box) != Intersection::INSIDE || CheckDrawableFit(box);
+            insertHere = !obj->IsOccludee() || cullingBox_.IsInside(box) != Intersection::INSIDE || CheckFit(box);
         else
-            insertHere = CheckDrawableFit(box);
+            insertHere = CheckFit(box);
 
         if (insertHere)
         {
-            Octant* oldOctant = drawable->GetOctant();
+            Octant* oldOctant = obj->GetOctant();
             if (oldOctant != this)
             {
                 // Add first, then remove, because drawable count going to zero deletes the octree branch in question
-                AddDrawable(drawable);
+                Add(obj);
                 if (oldOctant)
-                    oldOctant->RemoveDrawable(drawable, false);
+                    oldOctant->Remove(obj, false);
             }
         }
         else
@@ -149,11 +145,11 @@ namespace NSG
             unsigned y = boxCenter.y < center_.y ? 0 : 2;
             unsigned z = boxCenter.z < center_.z ? 0 : 4;
 
-            GetOrCreateChild(x + y + z)->InsertDrawable(drawable);
+            GetOrCreateChild(x + y + z)->Insert(obj);
         }
     }
 
-    bool Octant::CheckDrawableFit(const BoundingBox& box) const
+    bool Octant::CheckFit(const BoundingBox& box) const
     {
         Vector3 boxSize = box.Size();
 
@@ -178,21 +174,21 @@ namespace NSG
     }
 
 
-    void Octant::AddDrawable(const SceneNode* drawable)
+    void Octant::Add(SceneNode* obj)
     {
-        drawable->SetOctant(this);
-        drawables_.push_back(drawable);
+        obj->SetOctant(this);
+        drawables_.push_back(obj);
         IncDrawableCount();
     }
 
-    void Octant::RemoveDrawable(const SceneNode* drawable, bool resetOctant)
+    void Octant::Remove(SceneNode* obj, bool resetOctant)
     {
-        auto it = std::find(drawables_.begin(), drawables_.end(), drawable);
+        auto it = std::find(drawables_.begin(), drawables_.end(), obj);
         if (it != drawables_.end())
         {
             drawables_.erase(it);
             if (resetOctant)
-                drawable->SetOctant(nullptr);
+                obj->SetOctant(nullptr);
             DecDrawableCount();
         }
     }
@@ -219,7 +215,7 @@ namespace NSG
             parent->DecDrawableCount();
     }
 
-    void Octant::GetDrawablesInternal(OctreeQuery& query, bool inside) const
+    void Octant::ExecuteInternal(OctreeQuery& query, bool inside)
     {
         if (this != root_)
         {
@@ -235,13 +231,13 @@ namespace NSG
 
         if (drawables_.size())
         {
-            query.TestDrawables(drawables_.begin(), drawables_.end(), inside);
+            query.Test(drawables_, inside);
         }
 
         for (unsigned i = 0; i < NUM_OCTANTS; ++i)
         {
             if (children_[i])
-                children_[i]->GetDrawablesInternal(query, inside);
+                children_[i]->ExecuteInternal(query, inside);
         }
     }
 
@@ -253,7 +249,6 @@ namespace NSG
 
     static const float DEFAULT_OCTREE_SIZE = 1000.0f;
     static const int DEFAULT_OCTREE_LEVELS = 8;
-
     Octree::Octree() :
         Octant(BoundingBox(-DEFAULT_OCTREE_SIZE, DEFAULT_OCTREE_SIZE), 0, nullptr, this),
         numLevels_(DEFAULT_OCTREE_LEVELS)
@@ -265,35 +260,31 @@ namespace NSG
         ResetRoot();
     }
 
-    void Octree::Update(const SceneNode* drawable)
+    void Octree::InsertUpdate(SceneNode* obj)
     {
-        Octant* octant = drawable->GetOctant();
+         Octant* octant = obj->GetOctant();
 
-        // Skip if no octant or does not belong to this octree anymore
-        if (!octant || octant->GetRoot() != this)
-            return;
-
-        const BoundingBox& box = drawable->GetWorldBoundingBox();
+        const BoundingBox& box = obj->GetWorldBoundingBox();
         // Skip if still fits the current octant
-        if (drawable->IsOccludee() && octant->GetCullingBox().IsInside(box) == Intersection::INSIDE && octant->CheckDrawableFit(box))
+        if (octant && obj->IsOccludee() && octant->GetCullingBox().IsInside(box) == Intersection::INSIDE && octant->CheckFit(box))
             return;
 
-        InsertDrawable(drawable);
+        Insert(obj);
 
-#ifdef _DEBUG
         // Verify that the drawable will be culled correctly
-        octant = drawable->GetOctant();
-        if (octant != this && octant->GetCullingBox().IsInside(box) != Intersection::INSIDE)
-        {
-            TRACE_LOG("Drawable is not fully inside its octant's culling bounds: drawable box " << box <<
-                      " octant box " << octant->GetCullingBox());
-        }
-#endif
+		CHECK_ASSERT((octant = obj->GetOctant()) && (octant == this || octant->GetCullingBox().IsInside(box) == Intersection::INSIDE), __FILE__, __LINE__);
     }
 
-    void Octree::GetDrawables(OctreeQuery& query) const
+    void Octree::Remove(SceneNode* obj)
+    {
+        Octant* octant = obj->GetOctant();
+        if(octant)
+            octant->Remove(obj);
+    }
+
+    void Octree::Execute(OctreeQuery& query)
     {
         query.result_.clear();
-        GetDrawablesInternal(query, false);
+        ExecuteInternal(query, false);
     }
 }

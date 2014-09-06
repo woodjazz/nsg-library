@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Allocators.h"
 #include "GPUObject.h"
+#include "VertexData.h"
 
 namespace NSG
 {

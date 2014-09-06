@@ -80,14 +80,10 @@ namespace NSG
     void Context::InvalidateGPUResources()
     {
         TRACE_LOG("Context::InvalidateGPUResources...");
-
-        auto it = objects_.begin();
-        while (it != objects_.end())
-        {
-            (*it)->Invalidate();
-            ++it;
-        }
-
+		
+		for (auto& obj : objects_)
+			obj->Invalidate();
+			
         bufferManager_->Invalidate();
 
         Graphics::this_->ResetCachedState();

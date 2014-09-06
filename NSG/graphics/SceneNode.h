@@ -24,39 +24,61 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
+#include "Types.h"
 #include "Node.h"
 #include "BoundingBox.h"
+#include "GPUObject.h"
+#include <string>
+#include <vector>
 
 namespace NSG
 {
 	class Octant;
-	class SceneNode : public Node
+	class SceneNode : public Node, public GPUObject
 	{
 	public:
-		SceneNode();
 		~SceneNode();
 		void Set(PMaterial material);
-		void Set(Material* material);
 		void Set(PMesh mesh);
-		void Set(Mesh* mesh);
 		PMesh GetMesh() const { return mesh_; }
-		Mesh* GetMeshPointer() const { return mesh_.get(); }
-		void SetBehavior(PBehavior pBehavior);
-		Behavior* GetBehavior() const { return pBehavior_.get(); }
-		virtual void Render();
+		void SetBehavior(PBehavior behavior);
 		void SetOctant(Octant* octant) const { octant_ = octant; }
 		const BoundingBox& GetWorldBoundingBox() const;
 		bool IsOccludee() const { return occludee_; }
 		Octant* GetOctant() const { return octant_; }
 		virtual void OnDirty() const override;
+		virtual void Save(pugi::xml_node& node) override;
+		void Load(const pugi::xml_document& doc, const std::string& name);
+		void SetMeshIndex(int index) {meshIndex_ = index;}
+		void SetMaterialIndex(int index) {materialIndex_ = index;}
+		virtual bool IsValid() override;
+		virtual void AllocateResources() override;
+		void Start();
+		void Update();
+		void Render();
+	protected:
+		SceneNode(const std::string& name, Scene* scene);
+		SceneNode(PResource resource, const std::string& name, Scene* scene);
 	private:
+		PSceneNode CreateChild();
+		struct CachedData
+		{
+			std::vector<PMesh> meshes_;
+			std::vector<PMaterial> materials_;
+		};
+		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
+		void Load(const pugi::xml_node& child, const CachedData& data);
 		PMaterial material_;
 		PMesh mesh_;
-		PBehavior pBehavior_;
+		PBehavior behavior_;
 		mutable Octant* octant_;
 		mutable BoundingBox worldBB_;
 		bool occludee_;
 		mutable bool worldBBNeedsUpdate_;
+		PResource resource_;
+		int meshIndex_;
+		int materialIndex_;
+		Scene* scene_;
+		friend class Scene;
 	};
 }

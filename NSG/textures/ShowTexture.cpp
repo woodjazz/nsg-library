@@ -62,7 +62,7 @@ namespace NSG
 {
 	ShowTexture::ShowTexture()
 	: pass_(new Pass),
-    material_(new Material),
+    material_(new Material("ShowTexture")),
 	mesh_(new PlaneMesh(2, 2, 2, 2))
 	{
 		pass_->EnableDepthTest(false);
@@ -91,14 +91,14 @@ namespace NSG
 
 	void ShowTexture::SetNormal(PTexture texture)
 	{
-		PProgram pProgram(new Program(vShader, fShader));
+		PProgram pProgram(new Program("ShowTexture", vShader, fShader));
 		pass_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}
 
 	void ShowTexture::SetFont(PTexture texture)
 	{
-		PProgram pProgram(new Program(vShader, fFontShader));
+		PProgram pProgram(new Program("ShowFontTexture", vShader, fFontShader));
 		pass_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}

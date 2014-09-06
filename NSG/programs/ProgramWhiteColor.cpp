@@ -46,7 +46,7 @@ static const char* fShader = STRINGIFY(
 namespace NSG 
 {
 	ProgramWhiteColor::ProgramWhiteColor()
-	: Program(vShader, fShader)
+	: Program("ProgramWhiteColor", vShader, fShader)
 	{
 	}
 

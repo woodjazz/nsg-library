@@ -52,8 +52,8 @@ static const char* fShader = STRINGIFY(
 namespace NSG
 {
     TextMesh::TextMesh(const std::string& textureFilename, bool dynamic)
-        : Mesh(dynamic),
-          pProgram_(new Program(vShader, fShader)),
+        : Mesh("TextMesh", dynamic),
+          pProgram_(new Program("TextMesh", vShader, fShader)),
           screenWidth_(0),
           screenHeight_(0),
           textureFilename_(textureFilename),

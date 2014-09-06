@@ -34,7 +34,7 @@ struct Test : public App
     PSound soundExplo_;
     float time_;
 
-    void Start() override
+	void Start(int argc, char* argv[]) override
     {
         time_ = 0;
         music_ = PMusic(new Music("data/nice_music.ogg"));
