@@ -31,33 +31,49 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Scene : public UniformsUpdate
-	{
-	public:
-		Scene();
-		~Scene();
-		void SetAmbientColor(Color ambient);
-		const Color& GetAmbientColor() const { return ambient_; }
-		PCamera CreateCamera(const std::string& name);
-		PSceneNode CreateSceneNode(const std::string& name);
-		PSceneNode CreateSceneNodeFrom(PResource resource, const std::string& name);
-		PLight CreateLight(const std::string& name);
-		void AddLight(PLight light);
-		void Start();
-		void Update();
-		void Render();
+    class Scene : public UniformsUpdate
+    {
+    public:
+        Scene();
+        ~Scene();
+        void SetAmbientColor(Color ambient);
+        const Color& GetAmbientColor() const
+        {
+            return ambient_;
+        }
+        PCamera CreateCamera(const std::string& name);
+        PSceneNode CreateSceneNode(const std::string& name);
+        PSceneNode CreateSceneNodeFrom(PResource resource, const std::string& name);
+        PLight CreateLight(const std::string& name);
+        void AddLight(PLight light);
+        void Start();
+        void Update();
+        void Render();
         typedef std::vector<PLight> Lights;
-		const Lights& GetLights() { return lights_; }
-		void NeedUpdate(SceneNode* obj);
-		void GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles);
-		POctree GetOctree() const { return octree_;}
+        const Lights& GetLights()
+        {
+            return lights_;
+        }
+        void NeedUpdate(SceneNode* obj);
+        void GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles);
+        POctree GetOctree() const
+        {
+            return octree_;
+        }
+    private:
+    	struct Batch
+    	{
+    		PMaterial material_;
+    		PMesh mesh_;
+    		std::vector<const SceneNode*> nodes_;
+    	};
 
-	private:
-		Color ambient_;
-		std::vector<PCamera> cameras_;
-		std::vector<PSceneNode> nodes_;
-		Lights lights_;
-		POctree octree_;
-		std::set<SceneNode*> needUpdate_;
-	};
+        void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
+        Color ambient_;
+        std::vector<PCamera> cameras_;
+        std::vector<PSceneNode> nodes_;
+        Lights lights_;
+        POctree octree_;
+        std::set<SceneNode*> needUpdate_;
+    };
 }

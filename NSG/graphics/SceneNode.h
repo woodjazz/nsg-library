@@ -39,6 +39,7 @@ namespace NSG
 	public:
 		~SceneNode();
 		void Set(PMaterial material);
+		PMaterial GetMaterial() const { return material_; }
 		void Set(PMesh mesh);
 		PMesh GetMesh() const { return mesh_; }
 		void SetBehavior(PBehavior behavior);

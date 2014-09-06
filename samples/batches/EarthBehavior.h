@@ -31,8 +31,6 @@ class EarthBehavior : public Behavior
 public:
 	EarthBehavior();
 	~EarthBehavior();
-
-	void Start() override;
 	void Update() override;
 
 private:
