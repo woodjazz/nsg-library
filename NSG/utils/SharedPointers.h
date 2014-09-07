@@ -93,6 +93,9 @@ namespace NSG
 	
 	class ResourceFile;
 	typedef std::shared_ptr<ResourceFile> PResourceFile;
+
+	class ResourceMemory;
+	typedef std::shared_ptr<ResourceMemory> PResourceMemory;
 	
 	class ShowTexture;
 	typedef std::shared_ptr<ShowTexture> PShowTexture;

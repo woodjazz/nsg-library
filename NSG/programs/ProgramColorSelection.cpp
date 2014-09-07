@@ -26,6 +26,7 @@ misrepresented as being the original software.
 
 #include "ProgramColorSelection.h"
 #include "Types.h"
+#include "ResourceMemory.h"
 
 static const char* vShader = STRINGIFY(
 
@@ -52,9 +53,9 @@ static const char* fShader = STRINGIFY(
 namespace NSG 
 {
 	ProgramColorSelection::ProgramColorSelection()
-	: Program("ProgramColorSelection", vShader, fShader)
+	: Program("ProgramColorSelection", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader)))
 	{
-	}
+ 	}
 
 	ProgramColorSelection::~ProgramColorSelection()
 	{

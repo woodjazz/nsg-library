@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Render2Texture.h"
 #include "Graphics.h"
 #include "Program.h"
+#include "ResourceMemory.h"
 
 static const char* vShader = STRINGIFY(
                                  void main()
@@ -55,7 +56,9 @@ namespace NSG
         technique_->Add(pass_);
         pMaterial_->SetTexture0(input);
         pMaterial_->SetTechnique(technique_);
-        pass_->SetProgram(PProgram(new Program(name, vShader, fragment)));
+        PResourceMemory vs(new ResourceMemory(vShader));
+        PResourceMemory fs(new ResourceMemory(fragment));
+        pass_->SetProgram(PProgram(new Program(name, vs, fs)));
     }
 
     Filter::~Filter()

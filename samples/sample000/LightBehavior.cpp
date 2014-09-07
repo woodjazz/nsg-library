@@ -53,7 +53,7 @@ LightBehavior::~LightBehavior()
 void LightBehavior::Start()
 {
 	PMaterial pMaterial(new Material("light"));
-	PProgram pProgram(new Program("LightBehaviorProgram", vShader, fShader));
+	PProgram pProgram(new Program("LightBehaviorProgram", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader))));
     PPass pass(new Pass);
     pass->SetProgram(pProgram);
 

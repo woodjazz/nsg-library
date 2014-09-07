@@ -26,26 +26,18 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
-#include "Resource.h"
+#include "ResourceFile.h"
 #include "GPUObject.h"
 #include "Constants.h"
 #include <string>
 
-namespace pugi
-{
-    class xml_node;
-}
-
 namespace NSG
 {
     struct ExtraUniforms;
-    class UseProgram;
-    class Mesh;
     class Program : public GPUObject
     {
     public:
         Program(const std::string& name, PResource pRVShader, PResource pRFShader);
-        Program(const std::string& name, const char* vShader, const char* fShader);
         virtual ~Program();
         bool Initialize();
         void Set(ExtraUniforms* pExtraUniforms)
@@ -89,13 +81,15 @@ namespace NSG
             return id_;
         }
         GLuint id_;
+        PResourceFile glslPrecision_;
+        PResourceFile glslSamplers_;
+        PResourceFile glslTransform_;
+        PResourceFile glslUniforms_;
         PVertexShader pVShader_;
         PFragmentShader pFShader_;
         PResource pRVShader_;
         PResource pRFShader_;
-        const char* vShader_;
-        const char* fShader_;
-
+ 
         ExtraUniforms* pExtraUniforms_;
         GLuint color_scene_ambient_loc_;
         GLuint color_ambient_loc_;
@@ -143,18 +137,17 @@ namespace NSG
         Scene* activeScene_;
         Light* activeLights_[MAX_LIGHTS];
         Color sceneColor_;
-		struct MaterialProgram 
-		{
-			Color color_;
-			Color ambient_;
-			Color diffuse_;
-			Color specular_;
-			float shininess_;
-			MaterialProgram() : shininess_(0) {}
-		} material_; //used to avoid setting the same uniform value twice
+        struct MaterialProgram
+        {
+            Color color_;
+            Color ambient_;
+            Color diffuse_;
+            Color specular_;
+            float shininess_;
+            MaterialProgram() : shininess_(0) {}
+        } material_; //used to avoid setting the same uniform value twice
 
         std::string name_;
 
-        friend class UseProgram;
     };
 }

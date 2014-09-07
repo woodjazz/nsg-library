@@ -56,23 +56,15 @@ misrepresented as being the original software.
 #include <string>
 #include <algorithm>
 
-static const char s_fragmentShaderHeader[] =
-{
-#include "FragmentCompatibility.h"
-#include "UniformsCompatibility.h"
-};
-
-static const char s_vertexShaderHeader[] =
-{
-#include "VertexCompatibility.h"
-#include "UniformsCompatibility.h"
-#include "AttributesCompatibility.h"
-};
-
 namespace NSG
 {
     Program::Program(const std::string& name, PResource pRVShader, PResource pRFShader)
-        : pRVShader_(pRVShader),
+        : id_(0),
+          glslPrecision_(new ResourceFile("data/shaders/Precision.glsl")),
+          glslSamplers_(new ResourceFile("data/shaders/Samplers.glsl")),
+          glslTransform_(new ResourceFile("data/shaders/Transform.glsl")),
+          glslUniforms_(new ResourceFile("data/shaders/Uniforms.glsl")),
+          pRVShader_(pRVShader),
           pRFShader_(pRFShader),
           pExtraUniforms_(nullptr),
           color_scene_ambient_loc_(-1),
@@ -105,66 +97,59 @@ namespace NSG
         CHECK_ASSERT(pRVShader &&  pRFShader, __FILE__, __LINE__);
     }
 
-    Program::Program(const std::string& name, const char* vShader, const char* fShader)
-        : pRVShader_(new ResourceMemory(vShader, strlen(vShader))),
-          pRFShader_(new ResourceMemory(fShader, strlen(fShader))),
-          vShader_(vShader),
-          fShader_(fShader),
-          pExtraUniforms_(nullptr),
-          color_scene_ambient_loc_(-1),
-          color_ambient_loc_(-1),
-          color_diffuse_loc_(-1),
-          color_specular_loc_(-1),
-          shininess_loc_(-1),
-          texture0_loc_(-1),
-          texture1_loc_(-1),
-          color_loc_(-1),
-          att_texcoord_loc_(-1),
-          att_position_loc_(-1),
-          att_normal_loc_(-1),
-          att_color_loc_(-1),
-          model_inv_transp_loc_(-1),
-          v_inv_loc_(-1),
-          mvp_loc_(-1),
-          m_loc_(-1),
-          numOfLights_loc_(-1),
-          hasLights_(false),
-          nLights_(0),
-          activeCamera_(nullptr),
-          neverUsed_(true),
-          activeMaterial_(nullptr),
-          activeNode_(nullptr),
-          activeScene_(nullptr),
-          sceneColor_(-1),
-          name_(name)
-    {
-        CHECK_ASSERT(vShader && fShader, __FILE__, __LINE__);
-    }
-
     bool Program::IsValid()
     {
-        return pRVShader_->IsLoaded() && pRFShader_->IsLoaded();
+        return pRVShader_->IsLoaded() && pRFShader_->IsLoaded() && glslPrecision_->IsLoaded()
+               && glslSamplers_->IsLoaded() && glslTransform_->IsLoaded() && glslUniforms_->IsLoaded();
     }
-
+        
     void Program::AllocateResources()
     {
         lightsLoc_.resize(MAX_LIGHTS);
         memset(&lightsLoc_[0], 0, sizeof(lightsLoc_) * MAX_LIGHTS);
 
-        std::string vbuffer;
-        size_t vHeaderSize = strlen(s_vertexShaderHeader);
-        size_t fHeaderSize = strlen(s_fragmentShaderHeader);
-        vbuffer.resize(vHeaderSize + pRVShader_->GetBytes());
-        vbuffer = s_vertexShaderHeader;
-        memcpy(&vbuffer[0] + vHeaderSize, pRVShader_->GetData(), pRVShader_->GetBytes());
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-        pVShader_ = PVertexShader(new VertexShader(vbuffer.c_str()));
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-        vbuffer = s_fragmentShaderHeader;
-        vbuffer.resize(fHeaderSize + pRFShader_->GetBytes());
-        memcpy(&vbuffer[0] + fHeaderSize, pRFShader_->GetData(), pRFShader_->GetBytes());
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-        pFShader_ = PFragmentShader(new FragmentShader(vbuffer.c_str()));
+        std::string preDefines;
+
+#ifdef GL_ES_VERSION_2_0
+        preDefines = "#version 100\n#define GLES2\n";
+#else
+        preDefines = "#version 120\n";
+#endif
+        //if(Graphics::this_->HasInstancedArrays())
+        //  preDefines += "#define INSTANCED\n";
+
+        std::string buffer = preDefines + "#define COMPILEVS\n";
+        size_t bufferSize = buffer.size();
+        buffer.resize(bufferSize + glslUniforms_->GetBytes());
+        memcpy(&buffer[0] + bufferSize, glslUniforms_->GetData(), glslUniforms_->GetBytes());
+        bufferSize = buffer.size();
+        buffer.resize(bufferSize + glslTransform_->GetBytes());
+        memcpy(&buffer[0] + bufferSize, glslTransform_->GetData(), glslTransform_->GetBytes());
+        bufferSize = buffer.size();
+        buffer.resize(bufferSize + pRVShader_->GetBytes());
+        memcpy(&buffer[0] + bufferSize, pRVShader_->GetData(), pRVShader_->GetBytes());
+
+        pVShader_ = PVertexShader(new VertexShader(buffer.c_str()));
+
+        buffer = preDefines;
+        bufferSize = buffer.size();
+        buffer.resize(bufferSize + glslPrecision_->GetBytes());
+        memcpy(&buffer[0] + bufferSize, glslPrecision_->GetData(), glslPrecision_->GetBytes());
+        bufferSize = buffer.size();
+        buffer.resize(bufferSize + glslUniforms_->GetBytes());
+        memcpy(&buffer[0] + bufferSize, glslUniforms_->GetData(), glslUniforms_->GetBytes());
+        bufferSize = buffer.size();
+        buffer.resize(bufferSize + glslSamplers_->GetBytes());
+        memcpy(&buffer[0] + bufferSize, glslSamplers_->GetData(), glslSamplers_->GetBytes());
+        bufferSize = buffer.size();
+        buffer.resize(bufferSize + glslTransform_->GetBytes());
+        memcpy(&buffer[0] + bufferSize, glslTransform_->GetData(), glslTransform_->GetBytes());
+        bufferSize = buffer.size();
+        buffer.resize(bufferSize + pRFShader_->GetBytes());
+        memcpy(&buffer[0] + bufferSize, pRFShader_->GetData(), pRFShader_->GetBytes());
+
+        pFShader_ = PFragmentShader(new FragmentShader(buffer.c_str()));
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
         if (Initialize())
         {
@@ -194,7 +179,7 @@ namespace NSG
             hasLights_ = false;
 
             Scene* scene = Context::this_->scene_;
-            if(scene)
+            if (scene)
             {
                 const Scene::Lights& ligths = scene->GetLights();
                 size_t n = std::min(ligths.size(), MAX_LIGHTS);
@@ -218,7 +203,7 @@ namespace NSG
                     lightsLoc_[i].spotDirection_loc = GetUniformLocation(u_light_index.str() + "spotDirection");
                 }
 
-				if (lightsLoc_[0].position_loc != -1)
+                if (lightsLoc_[0].position_loc != -1)
                 {
                     hasLights_ = true;
                 }
@@ -257,7 +242,7 @@ namespace NSG
         activeNode_ = nullptr;
         activeScene_ = nullptr;
         sceneColor_ = Color(-1);
-		material_ = MaterialProgram();
+        material_ = MaterialProgram();
         memset(&activeLights_[0], 0, sizeof(activeLights_));
     }
 
@@ -374,33 +359,33 @@ namespace NSG
 
     void Program::SetVariables(Material* material)
     {
-		if (color_loc_ != -1 && material_.color_ != material->color_)
+        if (color_loc_ != -1 && material_.color_ != material->color_)
         {
-			material_.color_ = material->color_;
+            material_.color_ = material->color_;
             glUniform4fv(color_loc_, 1, &material->color_[0]);
         }
 
         if (color_ambient_loc_ != -1 && material_.ambient_ != material->ambient_)
         {
-			material_.ambient_ = material->ambient_;
+            material_.ambient_ = material->ambient_;
             glUniform4fv(color_ambient_loc_, 1, &material->ambient_[0]);
         }
 
         if (color_diffuse_loc_ != -1 && material_.diffuse_ != material->diffuse_)
         {
-			material_.diffuse_ = material->diffuse_;
+            material_.diffuse_ = material->diffuse_;
             glUniform4fv(color_diffuse_loc_, 1, &material->diffuse_[0]);
         }
 
         if (color_specular_loc_ != -1 && material_.specular_ != material->specular_)
         {
-			material_.specular_ = material->specular_;
+            material_.specular_ = material->specular_;
             glUniform4fv(color_specular_loc_, 1, &material->specular_[0]);
         }
 
         if (shininess_loc_ != -1 && material_.shininess_ != material->shininess_)
         {
-			material_.shininess_ = material->shininess_;
+            material_.shininess_ = material->shininess_;
             glUniform1f(shininess_loc_, material->shininess_);
         }
     }
@@ -408,7 +393,7 @@ namespace NSG
     void Program::SetVariables(Material* material, Node* node)
     {
         SetSceneVariables();
-        
+
         if (material)
         {
             if (texture0_loc_ != -1)
@@ -429,7 +414,7 @@ namespace NSG
 
         activeMaterial_ = material;
 
-		if (activeNode_ != node || (node && node->UniformsNeedUpdate()))
+        if (activeNode_ != node || (node && node->UniformsNeedUpdate()))
         {
             SetVariables(node);
         }
@@ -485,10 +470,10 @@ namespace NSG
 
             if (nLights_ != n)
             {
-				if (numOfLights_loc_ != -1)
-				{
-					glUniform1i(numOfLights_loc_, n);
-				}
+                if (numOfLights_loc_ != -1)
+                {
+                    glUniform1i(numOfLights_loc_, n);
+                }
                 nLights_ = n;
             }
 
@@ -591,17 +576,17 @@ namespace NSG
     {
         std::string name = node.attribute("name").as_string();
 
-        if(name == "ProgramColorSelection")
+        if (name == "ProgramColorSelection")
             return PProgram(new ProgramColorSelection());
-        else if(name == "ProgramPerVertex")
+        else if (name == "ProgramPerVertex")
             return PProgram(new ProgramPerVertex());
-        else if(name == "ProgramPerVertex1PointLight")
+        else if (name == "ProgramPerVertex1PointLight")
             return PProgram(new ProgramPerVertex1PointLight());
-        else if(name == "ProgramSimpleColor")
+        else if (name == "ProgramSimpleColor")
             return PProgram(new ProgramSimpleColor());
-        else if(name == "ProgramWhiteColor")
+        else if (name == "ProgramWhiteColor")
             return PProgram(new ProgramWhiteColor());
-        else if(name == "ProgramUnlit")
+        else if (name == "ProgramUnlit")
             return PProgram(new ProgramUnlit());
 
         CHECK_ASSERT(false, __FILE__, __LINE__);

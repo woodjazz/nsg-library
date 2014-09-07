@@ -29,30 +29,37 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	ResourceMemory::ResourceMemory(const char* staticBuffer, size_t bytes)
-	: staticBuffer_(staticBuffer),
-    bytes_(bytes)
-	{
-		IsLoaded(); // since it is just memory then for the first time force load in constructor 
-	}
+    ResourceMemory::ResourceMemory(const char* staticBuffer, size_t bytes)
+        : staticBuffer_(staticBuffer),
+          bytes_(bytes)
+    {
+        IsLoaded(); // since it is just memory then for the first time force load in constructor
+    }
 
-	ResourceMemory::~ResourceMemory()
-	{
-		Context::RemoveResource(this);
-	}
+    ResourceMemory::ResourceMemory(const std::string& buffer)
+        : staticBuffer_(buffer.c_str()),
+          bytes_(buffer.size())
+    {
+        IsLoaded(); // since it is just memory then for the first time force load in constructor
+    }
 
-	bool ResourceMemory::IsLoaded()
-	{
-		if(!loaded_ && staticBuffer_ != nullptr)
+    ResourceMemory::~ResourceMemory()
+    {
+        Context::RemoveResource(this);
+    }
+
+    bool ResourceMemory::IsLoaded()
+    {
+        if (!loaded_ && staticBuffer_ != nullptr)
         {
-		    CHECK_ASSERT(bytes_ > 0, __FILE__, __LINE__);
-		    buffer_.resize(bytes_);
-		    memcpy(&buffer_[0], staticBuffer_, bytes_);
+            CHECK_ASSERT(bytes_ > 0, __FILE__, __LINE__);
+            buffer_.resize(bytes_);
+            memcpy(&buffer_[0], staticBuffer_, bytes_);
         }
 
-		loaded_ = true;
-		
-		return loaded_;
-	}
+        loaded_ = true;
+
+        return loaded_;
+    }
 
 }

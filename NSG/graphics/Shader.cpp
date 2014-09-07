@@ -64,6 +64,7 @@ namespace NSG
 			// we will need to take info log length in case of a fail anyway.
 			glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &logLength);
 
+        
 			if (logLength > 0)
 			{
 				// Allocates the necessary memory to retrieve the message.

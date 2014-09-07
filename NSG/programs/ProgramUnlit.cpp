@@ -26,6 +26,7 @@ misrepresented as being the original software.
 
 #include "ProgramUnlit.h"
 #include "Types.h"
+#include "ResourceMemory.h"
 
 static const char* vShader = STRINGIFY(
 
@@ -48,7 +49,7 @@ static const char* fShader = STRINGIFY(
 namespace NSG 
 {
 	ProgramUnlit::ProgramUnlit()
-	: Program("ProgramUnlit", vShader, fShader)
+	: Program("ProgramUnlit", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader)))
 	{
 	}
 

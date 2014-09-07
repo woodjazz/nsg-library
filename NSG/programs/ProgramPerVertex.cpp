@@ -26,6 +26,7 @@ misrepresented as being the original software.
 
 #include "ProgramPerVertex.h"
 #include "Types.h"
+#include "ResourceMemory.h"
 
 static const char* vShader = STRINGIFY(
 		
@@ -108,7 +109,7 @@ static const char* fShader = STRINGIFY(
 namespace NSG 
 {
 	ProgramPerVertex::ProgramPerVertex()
-	: Program("ProgramPerVertex", vShader, fShader)
+	: Program("ProgramPerVertex", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader)))
 	{
 	}
 

@@ -5,6 +5,9 @@ file(GLOB hdr "*.h")
 
 set (ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 
+file(GLOB shaders ${ASSETS_DIR}/shaders/*.glsl)
+source_group("shaders" FILES ${shaders})
+
 if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
  	add_templates(1 GEN_OUT ${ASSETS_DIR}/fonts/anonymous_pro_regular_14_png.inl ${ASSETS_DIR}/fonts/anonymous_pro_regular_14.png)
  	list(APPEND assets ${ASSETS_DIR}/fonts/anonymous_pro_regular_14_png.inl)

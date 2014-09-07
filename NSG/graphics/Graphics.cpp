@@ -92,6 +92,7 @@ namespace NSG
           has_depth_texture_ext_(false),
           has_depth_component24_ext_(false),
           has_texture_non_power_of_two_ext_(false),
+          has_instanced_arrays_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT)
     {
@@ -151,6 +152,13 @@ namespace NSG
             has_texture_non_power_of_two_ext_ = true;
             TRACE_LOG("Using extension: GL_ARB_texture_non_power_of_two");
         }
+
+        if (CheckExtension("GL_EXT_instanced_arrays"))
+        {
+            has_instanced_arrays_ext_ = true;
+            TRACE_LOG("Using extension: GL_EXT_instanced_arrays");
+        }
+
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);

@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Graphics.h"
 #include "Program.h"
+#include "ResourceMemory.h"
 
 static const char* vShader = STRINGIFY(
 
@@ -91,14 +92,14 @@ namespace NSG
 
 	void ShowTexture::SetNormal(PTexture texture)
 	{
-		PProgram pProgram(new Program("ShowTexture", vShader, fShader));
+		PProgram pProgram(new Program("ShowTexture", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader))));
 		pass_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}
 
 	void ShowTexture::SetFont(PTexture texture)
 	{
-		PProgram pProgram(new Program("ShowFontTexture", vShader, fFontShader));
+		PProgram pProgram(new Program("ShowFontTexture", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fFontShader))));
 		pass_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}

@@ -145,6 +145,16 @@ macro (setup_executable)
     file(GLOB hdr "*.h")
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
 
+    IF(EXISTS "${data_dir}")
+        file(GLOB ShaderFiles ${NSG_ASSETS_DIR}/shaders/*.glsl)
+        add_custom_target(
+            ${PROJECT_NAME}_SHADERS ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${NSG_ASSETS_DIR}/shaders ${data_dir}/shaders
+            DEPENDS ${ShaderFiles}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Copying shaders.")
+    ENDIF()
+
     if(NACL)
         
         add_executable(${PROJECT_NAME} ${src} ${hdr})
@@ -303,6 +313,22 @@ macro (setup_executable)
 
     endif()
 
+    # IF(EXISTS "${data_dir}")
+    #     add_custom_command(
+    #         TARGET ${PROJECT_NAME} PRE_BUILD
+    #             COMMAND ${CMAKE_COMMAND} -E make_directory ${data_dir}/shaders
+    #             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    #     file(GLOB ShaderFiles ${NSG_ASSETS_DIR}/shaders/*.glsl)
+
+    #     foreach(ShaderFile ${ShaderFiles})
+    #         add_custom_command(
+    #             TARGET ${PROJECT_NAME} PRE_BUILD
+    #                 COMMAND ${CMAKE_COMMAND} -E copy ${ShaderFile} ${data_dir}/shaders
+    #                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    #     endforeach()
+
+    # ENDIF()
 
 endmacro (setup_executable)
 
@@ -319,7 +345,7 @@ endmacro (setup_tool)
 ##################################################################################
 ##################################################################################
 macro (setup_library)
-    add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${src} ${hdr} ${assets})
+    add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${src} ${hdr} ${assets} ${shaders})
     setup_common_ios_properties()
 endmacro (setup_library)
 

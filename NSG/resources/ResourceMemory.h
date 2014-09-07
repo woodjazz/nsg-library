@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Resource.h"
+#include <string>
 
 namespace NSG
 {
@@ -32,6 +33,7 @@ namespace NSG
 	{
 	public:
 		ResourceMemory(const char* buffer, size_t bytes);
+		ResourceMemory(const std::string& buffer);
 		~ResourceMemory();
 		virtual bool IsLoaded();
 	private:

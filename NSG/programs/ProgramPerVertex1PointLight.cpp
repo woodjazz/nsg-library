@@ -26,16 +26,15 @@ misrepresented as being the original software.
 
 #include "ProgramPerVertex1PointLight.h"
 #include "Types.h"
+#include "ResourceMemory.h"
 
-static const char* vShader = STRINGIFY
-                             (
-
-                                 void main()
+static const char* vShader = STRINGIFY(void main()
 {
     vec3 normalDirection = normalize(u_model_inv_transp * a_normal);
-    vec3 viewDirection = normalize(vec3(u_v_inv * vec4(0.0, 0.0, 0.0, 1.0) - u_m * a_position));
+    vec3 worldPos = GetWorldPos(u_m);
+    vec3 viewDirection = normalize(vec3(u_v_inv * vec4(0.0, 0.0, 0.0, 1.0)) - worldPos);
     vec3 ambientLighting = vec3(u_scene_ambient) * vec3(u_material.ambient);
-    vec3 vertexToLightSource = u_light0.position - vec3(u_m * a_position);
+    vec3 vertexToLightSource = u_light0.position - worldPos;
     float distance = length(vertexToLightSource);
     vec3 lightDirection = normalize(vertexToLightSource);
     float attenuation = 1.0 / (u_light0.constantAttenuation + u_light0.linearAttenuation * distance + u_light0.quadraticAttenuation
@@ -48,21 +47,17 @@ static const char* vShader = STRINGIFY
     v_color = a_color * vec4(ambientLighting + diffuseReflection + specularReflection, u_material.diffuse.w);
     gl_Position = u_mvp * a_position;
     v_texcoord = a_texcoord;
-}
-                             );
+});
 
-static const char* fShader = STRINGIFY(
-
-                                 void main()
+static const char* fShader = STRINGIFY(void main()
 {
     gl_FragColor = v_color * texture2D(u_texture0, v_texcoord);
-}
-                             );
+});
 
 namespace NSG
 {
     ProgramPerVertex1PointLight::ProgramPerVertex1PointLight()
-        : Program("ProgramPerVertex1PointLight", vShader, fShader)
+        : Program("ProgramPerVertex1PointLight", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader)))
     {
     }
 

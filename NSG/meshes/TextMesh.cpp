@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Context.h"
 #include "App.h"
+#include "ResourceMemory.h"
 #include <algorithm>
 
 static const char* vShader =
@@ -53,7 +54,6 @@ namespace NSG
 {
     TextMesh::TextMesh(const std::string& textureFilename, bool dynamic)
         : Mesh("TextMesh", dynamic),
-          pProgram_(new Program("TextMesh", vShader, fShader)),
           screenWidth_(0),
           screenHeight_(0),
           textureFilename_(textureFilename),
@@ -63,6 +63,9 @@ namespace NSG
           alignmentOffsetY_(0),
           maxLength_(0)
     {
+        PResourceMemory vs(new ResourceMemory(vShader));
+        PResourceMemory fs(new ResourceMemory(fShader));
+        pProgram_ = PProgram(new Program("TextMesh", vs, fs));
         pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
         App::Add(this);
     }
