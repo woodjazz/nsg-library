@@ -33,14 +33,6 @@ namespace NSG
     static const unsigned MAX_TEXTURE_UNITS = 8;
     static const size_t MAX_LIGHTS = 4;
 
-    enum ATTRIBUTE_LOC
-    {
-        POSITION,
-        NORMAL,
-        COORD,
-        COLOR
-    };
-
     static const IndexType MAX_INDEX_VALUE = ~IndexType(0);
 
     static const Matrix4 IDENTITY_MATRIX(1.0f);
@@ -52,4 +44,6 @@ namespace NSG
     static const Vector3 VECTOR3_RIGHT(0, 0, 1);
     static const Vector3 VECTOR3_UP(0, 1, 0);
     static const Vector3 VECTOR3_FORWARD(0, 0, -1);
+
+    static const size_t MAX_NODES_IN_BATCH = 1000;
 }

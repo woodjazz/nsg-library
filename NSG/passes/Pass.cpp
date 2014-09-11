@@ -38,7 +38,8 @@ misrepresented as being the original software.
 namespace NSG
 {
     Pass::Pass()
-        : blendMode_(BLEND_ALPHA),
+        : graphics_(*Graphics::this_),
+          blendMode_(BLEND_ALPHA),
           enableDepthTest_(true),
           enableStencilTest_(false),
           stencilMask_(~GLuint(0)),
@@ -132,37 +133,48 @@ namespace NSG
         return pProgram_;
     }
 
+    void Pass::SetupPass()
+    {
+        graphics_.SetColorMask(enableColorBuffer_);
+        graphics_.SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
+                                 dpfailStencilOp_, dppassStencilOp_, stencilFunc_,
+                                 stencilRefValue_, stencilMaskValue_);
+
+        graphics_.SetBlendModeTest(blendMode_);
+        graphics_.EnableDepthTest(enableDepthTest_);
+        if (enableDepthTest_)
+            graphics_.SetDepthMask(enableDepthBuffer_);
+
+        graphics_.EnableCullFace(enableCullFace_);
+        if (enableCullFace_)
+        {
+            graphics_.SetCullFace(cullFaceMode_);
+            graphics_.SetFrontFace(frontFaceMode_);
+        }
+
+        graphics_.SetProgram(pProgram_.get());
+
+    }
+
     bool Pass::Render()
     {
         if (IsReady())
         {
-            Graphics::this_->SetColorMask(enableColorBuffer_);
-
-            Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
-                                            dpfailStencilOp_, dppassStencilOp_, stencilFunc_,
-                                            stencilRefValue_, stencilMaskValue_);
-
-            Graphics::this_->SetBlendModeTest(blendMode_);
-
-            Graphics::this_->EnableDepthTest(enableDepthTest_);
-            if (enableDepthTest_)
-            {
-                Graphics::this_->SetDepthMask(enableDepthBuffer_);
-            }
-
-            Graphics::this_->EnableCullFace(enableCullFace_);
-            if (enableCullFace_)
-            {
-                Graphics::this_->SetCullFace(cullFaceMode_);
-                Graphics::this_->SetFrontFace(frontFaceMode_);
-            }
-
-            Graphics::this_->SetProgram(pProgram_.get());
-
-            return Graphics::this_->Draw(drawMode_ == DrawMode::SOLID);
+            SetupPass();
+            return graphics_.Draw(drawMode_ == DrawMode::SOLID);
         }
 
         return false;
+    }
+
+    bool Pass::Render(Batch& batch)
+    {
+        if (IsReady())
+        {
+            SetupPass();
+            return graphics_.Draw(drawMode_ == DrawMode::SOLID, batch);
+        }
+		return false;
     }
 
     void Pass::SetProgram(PProgram pProgram)
@@ -292,7 +304,7 @@ namespace NSG
         if (programChild)
             SetProgram(Program::CreateFrom(programChild));
 
-		SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
+        SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
         EnableDepthTest(node.attribute("enableDepthTest").as_bool());
         EnableStencilTest(node.attribute("enableStencilTest").as_bool());
         SetStencilMask(node.attribute("stencilMask").as_int());
@@ -300,9 +312,9 @@ namespace NSG
         SetStencilFunc(node.attribute("stencilFunc").as_int(), node.attribute("stencilRefValue").as_int(), node.attribute("stencilMaskValue").as_int());
         EnableColorBuffer(node.attribute("enableColorBuffer").as_bool());
         EnableDepthBuffer(node.attribute("enableDepthBuffer").as_bool());
-		SetDrawMode((DrawMode)node.attribute("drawMode").as_int());
+        SetDrawMode((DrawMode)node.attribute("drawMode").as_int());
         EnableCullFace(node.attribute("enableCullFace").as_bool());
-		SetCullFace((CullFaceMode)node.attribute("cullFaceMode").as_int());
-		SetFrontFace((FrontFaceMode)node.attribute("frontFaceMode").as_int());
+        SetCullFace((CullFaceMode)node.attribute("cullFaceMode").as_int());
+        SetFrontFace((FrontFaceMode)node.attribute("frontFaceMode").as_int());
     }
 }

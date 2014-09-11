@@ -93,7 +93,7 @@ namespace NSG
 
 		CHECK_ASSERT(bytes2Set <= obj.bytes_, __FILE__, __LINE__);
 
-		Graphics::this_->SetIndexBuffer(this);
+		Graphics::this_->SetIndexBuffer(this, true);
 
 		SetBufferSubData(obj.offset_, bytes2Set, &indexes[0]);
 

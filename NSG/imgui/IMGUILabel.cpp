@@ -67,8 +67,8 @@ namespace NSG
 		{
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	        PNode textNode0 = area_->controlNodes_.node0_;
-	        textNode0->SetParent(node_);
+	        Node& textNode0(*area_->controlNodes_.node0_);
+	        textNode0.SetParent(node_);
 
 	        Vertex3 position;
 
@@ -78,18 +78,18 @@ namespace NSG
 	            position = Vertex3(1, 0, 0); //move text to the end of the current area
 
             if(pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
-	            textNode0->SetPosition(position + Vertex3(0, -1, 0)); //move text to the bottom of the current area
+	            textNode0.SetPosition(position + Vertex3(0, -1, 0)); //move text to the bottom of the current area
             else if(pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
-	            textNode0->SetPosition(position + Vertex3(0, 1, 0)); //move text to the top of the current area
+	            textNode0.SetPosition(position + Vertex3(0, 1, 0)); //move text to the top of the current area
             else if(pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
-                textNode0->SetPosition(position + Vertex3(0, -0.25f, 0));
+                textNode0.SetPosition(position + Vertex3(0, -0.25f, 0));
 
-            PNode textNode = area_->controlNodes_.node1_;
-            textNode->SetParent(textNode0);
-            textNode->SetInheritScale(false);
-            textNode->SetScale(Context::this_->pRootNode_->GetGlobalScale());
+            Node& textNode(*area_->controlNodes_.node1_);
+            textNode.SetParent(&textNode0);
+            textNode.SetInheritScale(false);
+            textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
 
-            Graphics::this_->Set(textNode.get());
+			Graphics::this_->SetNode(&textNode);
             Graphics::this_->Set(pTextMesh_.get());
             Pass pass;
             pass.EnableDepthTest(false);
@@ -101,7 +101,6 @@ namespace NSG
             Material textMaterial("text");
             textMaterial.SetColor(labelStyle_.textColor_);
             textMaterial.SetTexture0(pTextMesh_->GetTexture());
-            
             
             Graphics::this_->Set(&textMaterial);
 

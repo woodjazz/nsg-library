@@ -68,11 +68,6 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Pass2Texture.h"
 #include "PassFilter.h"
-#include "ProgramPerVertex1PointLight.h"
-#include "ProgramPerVertex.h"
-#include "ProgramUnlit.h"
-#include "ProgramWhiteColor.h"
-#include "ProgramSimpleColor.h"
 #include "AppConfiguration.h"
 #include "AppStatistics.h"
 #include "Sound.h"
@@ -80,6 +75,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Frustum.h"
 #include "ResourceFile.h"
+#include "Program.h"
 #include "pugixml.hpp"
 
 

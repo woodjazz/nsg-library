@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "GPUObject.h"
 #include "Constants.h"
+#include "FlagSet.h"
 #include <string>
 
 namespace NSG
@@ -37,8 +38,24 @@ namespace NSG
     class Program : public GPUObject
     {
     public:
-        Program(const std::string& name, PResource pRVShader, PResource pRFShader);
+        enum Flag
+        {
+            DIFFUSE = 1 << 0,
+            SPECULAR = 1 << 1,
+            BLEND = 1 << 2,
+            BLUR = 1 << 3,
+            TEXT = 1 << 4,
+            SHOW_TEXTURE = 1 << 5,
+            STENCIL = 1 << 6
+        };
+
+        typedef FlagSet<Flag> Flags;
+
+        Program(const std::string& name = "", Flags flags = 0);
         virtual ~Program();
+        void SetVertexShader(PResource resource);
+        void SetFragmentShader(PResource resource);
+
         bool Initialize();
         void Set(ExtraUniforms* pExtraUniforms)
         {
@@ -51,21 +68,26 @@ namespace NSG
         virtual void ReleaseResources() override;
         GLuint GetAttPositionLoc() const
         {
-            return att_position_loc_;
+            return att_positionLoc_;
         }
         GLuint GetAttTextCoordLoc() const
         {
-            return att_texcoord_loc_;
+			return att_texcoordLoc_;
         }
         GLuint GetAttNormalLoc() const
         {
-            return att_normal_loc_;
+            return att_normalLoc_;
         }
         GLuint GetAttColorLoc() const
         {
-            return att_color_loc_;
+            return att_colorLoc_;
+        }
+        GLuint GetAttModelMatrixLoc() const
+        {
+            return att_modelMatrixCol0Loc_;
         }
         void SetVariables(Material* material, Node* node);
+        void SetVariables(Material* material);
         GLuint GetId() const
         {
             return id_;
@@ -73,70 +95,97 @@ namespace NSG
         void Save(pugi::xml_node& node);
         static PProgram CreateFrom(const pugi::xml_node& node);
     private:
-        void SetSceneVariables();
-        void SetVariables(Node* node);
-        void SetVariables(Material* material);
-        operator const GLuint() const
-        {
-            return id_;
-        }
+        void SetSceneVariables(Scene* scene);
+        void SetCameraVariables();
+        void SetNodeVariables(Node* node);
+        void SetMaterialVariables(Material* material);
+        void SetLightVariables(Scene* scene);
+
+        Flags flags_;
         GLuint id_;
-        PResourceFile glslPrecision_;
-        PResourceFile glslSamplers_;
-        PResourceFile glslTransform_;
-        PResourceFile glslUniforms_;
+        ExtraUniforms* pExtraUniforms_;
+
         PVertexShader pVShader_;
         PFragmentShader pFShader_;
-        PResource pRVShader_;
-        PResource pRFShader_;
- 
-        ExtraUniforms* pExtraUniforms_;
-        GLuint color_scene_ambient_loc_;
-        GLuint color_ambient_loc_;
-        GLuint color_diffuse_loc_;
-        GLuint color_specular_loc_;
-        GLuint shininess_loc_;
-        GLuint texture0_loc_;
-        GLuint texture1_loc_;
-        GLuint color_loc_;
 
-        GLuint att_texcoord_loc_;
-        GLuint att_position_loc_;
-        GLuint att_normal_loc_;
-        GLuint att_color_loc_;
+        /////////////////////////////////////
+        // attributes
+        /////////////////////////////////////
+        GLuint att_texcoordLoc_;
+        GLuint att_positionLoc_;
+        GLuint att_normalLoc_;
+        GLuint att_colorLoc_;
 
-        GLuint model_inv_transp_loc_;
-        GLuint v_inv_loc_;
-        GLuint mvp_loc_;
-        GLuint m_loc_;
-        GLuint numOfLights_loc_;
+        GLuint att_modelMatrixCol0Loc_;
+        /////////////////////////////////////
 
-        struct LightLoc
+
+        /////////////////////////////////////
+        // Uniforms
+        /////////////////////////////////////
+        GLuint mLoc_;
+        GLuint viewLoc_;
+        GLuint viewProjectionLoc_;
+        GLuint sceneColorAmbientLoc_;
+        GLuint eyeWorldPosLoc_;
+        
+        GLuint texture0Loc_;
+        GLuint texture1Loc_;
+
+        struct MaterialLoc
         {
-            GLuint type_loc;
-            GLuint position_loc;
-            GLuint diffuse_loc;
-            GLuint specular_loc;
-            GLuint constantAttenuation_loc;
-            GLuint linearAttenuation_loc;
-            GLuint quadraticAttenuation_loc;
-            GLuint spotCutoff_loc;
-            GLuint spotExponent_loc;
-            GLuint spotDirection_loc;
+            GLuint color_;
+            GLuint ambient_;
+            GLuint diffuse_;
+            GLuint specular_;
+            GLuint shininess_;
         };
 
-        typedef std::vector<LightLoc> LightsLoc;
-        LightsLoc lightsLoc_;
+        MaterialLoc materialLoc_;
+
+        struct BaseLightLoc
+        {
+            GLuint diffuse_;
+            GLuint specular_;
+        };
+
+        struct DirectionalLightLoc
+        {
+            BaseLightLoc base_;
+            GLuint direction_;
+        };
+
+        struct AttenuationLoc
+        {
+            GLuint constant_;
+            GLuint linear_;
+            GLuint quadratic_;
+        };
+
+        struct PointLightLoc
+        {
+            BaseLightLoc base_;
+            GLuint position_;
+            AttenuationLoc atten_;
+        };
+
+        GLuint numPointLightsLoc_;
+        static const int MAX_POINT_LIGHTS = 2;
+        PointLightLoc pointLighsLoc_[MAX_POINT_LIGHTS];
+        DirectionalLightLoc directionalLightLoc_;
+        /////////////////////////////////////
+
         bool hasLights_;
-        size_t nLights_;
+        size_t nPointLights_;
         Camera* activeCamera_;
         bool neverUsed_;
         Material* activeMaterial_;
         Node* activeNode_;
-        Matrix4 activeNodeGlobalModel_;
         Scene* activeScene_;
-        Light* activeLights_[MAX_LIGHTS];
         Color sceneColor_;
+
+        Light* activePointLights_[MAX_POINT_LIGHTS];
+        Matrix4 activeNodeGlobalModel_;
         struct MaterialProgram
         {
             Color color_;
@@ -148,6 +197,7 @@ namespace NSG
         } material_; //used to avoid setting the same uniform value twice
 
         std::string name_;
-
+        PResource vertexShader_;
+        PResource fragmentShader_;
     };
 }

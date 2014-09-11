@@ -23,15 +23,11 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Program.h"
+#include "InstanceData.h"
 
-namespace NSG 
+namespace NSG
 {
-	class ProgramUnlit : public Program
-	{
-	public:
-		ProgramUnlit();
-		~ProgramUnlit();
-	};
+    InstanceData::InstanceData()
+    {
+    }
 }

@@ -60,14 +60,9 @@ namespace NSG
         {
             return octree_;
         }
+        const Light* GetFirstDirectionalLight() const;
+        Lights GetPointLights(int max) const;
     private:
-    	struct Batch
-    	{
-    		PMaterial material_;
-    		PMesh mesh_;
-    		std::vector<const SceneNode*> nodes_;
-    	};
-
         void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
         Color ambient_;
         std::vector<PCamera> cameras_;

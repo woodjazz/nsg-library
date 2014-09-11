@@ -7,6 +7,8 @@
 #include "Context.h"
 #include "Octree.h"
 #include "OctreeQuery.h"
+#include "Graphics.h"
+#include "Constants.h"
 #include <algorithm>
 #include <functional>
 
@@ -148,7 +150,8 @@ namespace NSG
             PMesh usedMesh;
             for (auto& obj : material.data_)
             {
-                if (obj.mesh_ != usedMesh || !obj.mesh_)
+                bool limitReached = batches.size() && batches.back().nodes_.size() >= MAX_NODES_IN_BATCH;
+                if (obj.mesh_ != usedMesh || !obj.mesh_ || limitReached)
                 {
                     usedMesh = obj.mesh_;
                     Batch batch;
@@ -178,17 +181,36 @@ namespace NSG
             std::vector<Batch> batches;
             GenerateBatches(visibles, batches);
             for (auto& batch : batches)
-            {
-                for (auto& node : batch.nodes_)
-                {
-                    ((SceneNode*)node)->Render();
-                }
-            }
+                Graphics::this_->Render(batch);
         }
     }
 
     void Scene::NeedUpdate(SceneNode* obj)
     {
         needUpdate_.insert(obj);
+    }
+
+    const Light* Scene::GetFirstDirectionalLight() const
+    {
+        for(auto& light: lights_)
+        {
+            if(light->GetType() == Light::DIRECTIONAL)
+                return light.get();
+        }
+
+        return nullptr;
+    }
+
+    Scene::Lights Scene::GetPointLights(int max) const
+    {
+        Lights lights;
+
+        for(auto& light: lights_)
+        {
+            if(light->GetType() == Light::POINT)
+                lights.push_back(light);
+        }
+
+        return lights;
     }
 }

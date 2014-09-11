@@ -34,31 +34,24 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Program.h"
 #include "ResourceMemory.h"
-
-static const char* vShader = STRINGIFY(
-                                 void main()
-{
-    gl_Position = a_position;
-    v_texcoord = a_texcoord;
-}
-                             );
+#include "Node.h"
 
 namespace NSG
 {
-    Filter::Filter(const std::string& name, PTexture input, int output_width, int output_height, const char* fragment)
+    Filter::Filter(const std::string& name, PTexture input, int output_width, int output_height, unsigned flags)
         : technique_(new Technique),
           pass_(new Pass),
           pMaterial_(new Material("filter")),
           pMesh_(new PlaneMesh(2, 2, 2, 2)),
           pRender2Texture_(new Render2Texture(output_width, output_height)),
-          name_(name)
+          name_(name),
+          node_(new Node(name))
     {
         technique_->Add(pass_);
         pMaterial_->SetTexture0(input);
         pMaterial_->SetTechnique(technique_);
-        PResourceMemory vs(new ResourceMemory(vShader));
-        PResourceMemory fs(new ResourceMemory(fragment));
-        pass_->SetProgram(PProgram(new Program(name, vs, fs)));
+        program_ = PProgram(new Program(name, flags));
+        pass_->SetProgram(program_);
     }
 
     Filter::~Filter()
@@ -77,7 +70,7 @@ namespace NSG
 
         pRender2Texture_->Begin();
 
-        Graphics::this_->Set((Node*)nullptr);
+        Graphics::this_->SetNode(node_.get());
         Graphics::this_->Set(pMesh_.get());
         Graphics::this_->Set(pMaterial_.get());
 

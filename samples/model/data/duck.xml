@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Scene name="duck.xml">
+<Scene name="E:/cygwin64/home/Nestor/dev/nsg-library/samples/model/data/duck.xml">
 	<Meshes>
 		<Mesh name="mesh" wireFrameDrawMode="4" solidDrawMode="4">
 			<Vertexes>
@@ -2412,7 +2412,7 @@
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="ProgramPerVertex1PointLight" />
+						<Program name="" flags="00000000000000000000000000000011" />
 					</Pass>
 				</Passes>
 			</Technique>

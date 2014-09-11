@@ -23,15 +23,30 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Program.h"
-
+#include "InstanceBuffer.h"
+#include "Graphics.h"
 namespace NSG 
 {
-	class ProgramPerVertex : public Program
+	InstanceBuffer::InstanceBuffer()
 	{
-	public:
-		ProgramPerVertex();
-		~ProgramPerVertex();
-	};
+		glGenBuffers(1, &id_);
+	}
+		
+	InstanceBuffer::~InstanceBuffer()
+	{
+		glDeleteBuffers(1, &id_);
+	}
+
+	void InstanceBuffer::Bind()
+	{
+		Graphics::this_->SetVertexBuffer(nullptr);
+		glBindBuffer(GL_ARRAY_BUFFER, id_);
+	}
+
+	void InstanceBuffer::Unbind()
+	{
+        Graphics::this_->SetVertexBuffer(nullptr);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 }
+

@@ -123,10 +123,15 @@ namespace NSG
 
     enum class AttributesLoc
     {
-        ATT_POSITION,
-        ATT_NORMAL,
-        ATT_TEXTURECOORD,
-        ATT_COLOR
+        POSITION,
+        NORMAL,
+        TEXTURECOORD,
+        COLOR,
+        MODEL_MATRIX_COL0,
+        MODEL_MATRIX_COL1,
+        MODEL_MATRIX_COL2,
+        MODEL_MATRIX_COL3,
+        MAX_ATTS
     };
 
     typedef std::vector<IndexType> Indexes;
@@ -158,7 +163,22 @@ namespace NSG
     enum class UseBuffer
     {
         NONE,
-        DEPTH, 
+        DEPTH,
         DEPTH_STENCIL
     };
+
+    struct Batch
+    {
+        PMaterial material_;
+        PMesh mesh_;
+        std::vector<const Node*> nodes_;
+    };
+
+    enum TransformSpace
+    {
+        TS_LOCAL,
+        TS_PARENT,
+        TS_WORLD,
+    };
+
 }

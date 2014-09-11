@@ -44,5 +44,6 @@ namespace NSG
         PPass pass_;
         PMaterial material_; 
 		PMesh mesh_;
+		PNode node_;
 	};
 }

@@ -30,10 +30,8 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Pass.h"
 #include "Technique.h"
-#include "ProgramPerVertex1PointLight.h"
-#include "ProgramUnlit.h"
+#include "Program.h"
 #include "assimp/material.h"
-
 
 namespace NSG
 {
@@ -54,13 +52,13 @@ namespace NSG
 		if (AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_SHADING_MODEL, &shadingModel, &max))
 		{
 			if (shadingModel == aiShadingMode_NoShading)
-				pass->SetProgram(PProgram(new ProgramUnlit));
+				pass->SetProgram(PProgram(new Program));
 			else 
-				pass->SetProgram(PProgram(new ProgramPerVertex1PointLight));
+				pass->SetProgram(PProgram(new Program("", Program::DIFFUSE | Program::SPECULAR)));
 		}
 		else
 		{
-			pass->SetProgram(PProgram(new ProgramPerVertex1PointLight));
+			pass->SetProgram(PProgram(new Program));
 		}
 
 		aiColor4D color;

@@ -60,7 +60,7 @@ namespace NSG
 				{
 					Vertex3 parentGlobalScale = area_->parent_->pNode_->GetGlobalScale();
 					Vertex3 globalScale = node_->GetGlobalScale();
-					Node& node = *area_->controlNodes_.node0_;
+					Node& node(*area_->controlNodes_.node0_);
 					node.SetParent(node_);
 					node.SetInheritScale(false);
 					globalScale.y = parentGlobalScale.y; // In order to hit all the slider area: reset scale

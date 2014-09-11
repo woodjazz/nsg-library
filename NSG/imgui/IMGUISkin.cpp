@@ -32,9 +32,8 @@ misrepresented as being the original software.
 #include "CircleMesh.h"
 #include "RoundedRectangleMesh.h"
 #include "RectangleMesh.h"
-#include "ProgramSimpleColor.h"
-#include "ProgramUnlit.h"
-#include "ProgramWhiteColor.h"
+#include "Program.h"
+
 
 namespace NSG
 {
@@ -62,7 +61,7 @@ namespace NSG
                 mainWindowStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
             }
 
-            PProgram program(new ProgramWhiteColor);
+            PProgram program(new Program("", Program::STENCIL));
             stencilPass_->SetProgram(program);
             stencilPass_->EnableDepthTest(false);
             stencilPass_->EnableDepthBuffer(false);

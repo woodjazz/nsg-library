@@ -50,7 +50,9 @@ namespace NSG
         bool IsOrtho() const { return isOrtho_; }
         Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const;
         Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
+		static const Matrix4& GetViewMatrix();
 		const Matrix4& GetView() const;
+		static const Matrix4& GetMatViewProj();
 		const Matrix4& GetMatViewProjection() const;
 		const Matrix4& GetInverseViewMatrix() const;
 		const Matrix4& GetViewProjectionMatrix() const;

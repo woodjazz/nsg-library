@@ -86,6 +86,7 @@ namespace NSG
             IdType& lastwidget_;
             bool& activeitem_needs_keyboard_;
             std::pair<int32_t, int32_t> viewSize_;
+            Mesh* controlMesh_;
 
         };
     }

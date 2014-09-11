@@ -83,7 +83,7 @@ void MyApp::Update()
 
 void MyApp::RenderFrame() 
 {
-	render2TextureSceneNode_->Render();
+	render2TextureSceneNode_->GetMaterial()->GetTechnique()->Render();
 	render2TextureBehavior_->Show();
 }
 

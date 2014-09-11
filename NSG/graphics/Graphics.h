@@ -58,14 +58,16 @@ namespace NSG
         bool SetBuffers(Mesh* mesh);
         bool SetVertexArrayObj(VertexArrayObj* obj);
         VertexArrayObj* GetVertexArrayObj() const { return vertexArrayObj_; }
-        bool SetVertexBuffer(VertexBuffer* buffer);
+		bool SetVertexBuffer(VertexBuffer* buffer, bool force = false);
         VertexBuffer* GetVertexBuffer() const { return vertexBuffer_; }
-        bool SetIndexBuffer(IndexBuffer* buffer);
+        PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
+		bool SetIndexBuffer(IndexBuffer* buffer, bool force = false);
         IndexBuffer* GetIndexBuffer() const { return indexBuffer_; }
         bool SetProgram(Program* program);
         Program* GetProgram() const { return program_; }
         void SetFrameBuffer(GLuint value);
         bool Draw(bool solid);
+        bool Draw(bool solid, Batch& batch);
         void DiscardFramebuffer();
         void BeginFrame();
         void EndFrame();
@@ -77,6 +79,9 @@ namespace NSG
         bool HasNonPowerOfTwo() const { return has_texture_non_power_of_two_ext_; }
         bool HasInstancedArrays() const { return has_instanced_arrays_ext_; }
         
+        void UpdateBatchBuffer();
+        void UpdateBatchBuffer(const Batch& batch);
+        void SetInstanceAttrPointers(Program* program);
         void SetVertexAttrPointers();
         void SetAttributes(const Mesh* mesh, const Program* program);
         void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
@@ -84,7 +89,8 @@ namespace NSG
         UniformObjs& GetUniformObjs() { return uniformObjs_; }
         void Set(Mesh* mesh) { activeMesh_ = mesh; }
         void Set(Material* material) { activeMaterial_ = material; }
-        void Set(Node* node) { activeNode_ = node; }
+        void SetNode(Node* node) { activeNode_ = node; }
+        void Render(Batch& batch);
 
       private:
         Recti viewport_;
@@ -92,6 +98,7 @@ namespace NSG
       	GLuint currentFbo_;
         VertexArrayObj* vertexArrayObj_;
       	VertexBuffer* vertexBuffer_;
+        PInstanceBuffer instanceBuffer_;
       	IndexBuffer* indexBuffer_;
       	Program* program_;
       	Texture* textures_[MAX_TEXTURE_UNITS];

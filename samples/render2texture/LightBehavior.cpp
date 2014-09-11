@@ -38,7 +38,7 @@ void LightBehavior::Start()
 {
     PMaterial pMaterial(new Material("light"));
     pMaterial->SetColor(Color(1,0,0,1));
-    PProgram pProgram(new ProgramSimpleColor);
+    PProgram pProgram(new Program);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
     technique->Add(pass);

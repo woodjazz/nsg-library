@@ -31,295 +31,328 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Vertex3 Node::UP = Vertex3(0,1,0);
+    Vertex3 Node::UP = Vertex3(0, 1, 0);
 
-	static IdType s_node_id = 1;
+    static IdType s_node_id = 1;
 
-	Node::Node(const std::string& name) 
-	: pParent_(nullptr),
-	id_(s_node_id++),
-	scale_(1,1,1),
-	globalScale_(1,1,1),
-	inheritScale_(true),
-	dirty_(true),
-	name_(name)
-	{
-	    struct D
-	    {
-	        void operator()(Node* p) const
-	        {
-	            //delete p; //do not delete
-	        }
-	    };
-
-		self_ = PNode(this, D());
-	}
-
-	Node::~Node() 
-	{
-		if (self_ && pParent_)
-			RemoveFromParent();
-
-		self_ = nullptr;
-	}
-
-	void Node::RemoveFromParent() 
-	{
-		CHECK_ASSERT(pParent_ && "parent does not exist!!!", __FILE__, __LINE__);
-		
-		auto it = std::find(pParent_->children_.begin(), pParent_->children_.end(), self_);
-		if(it != pParent_->children_.end())
-			pParent_->children_.erase(it);
-	}
-
-    void Node::SetParent(PNode pParent)
+    Node::Node(const std::string& name)
+        : parent_(nullptr),
+          id_(s_node_id++),
+          scale_(1, 1, 1),
+          globalScale_(1, 1, 1),
+          inheritScale_(true),
+          dirty_(true),
+          name_(name)
     {
-    	if(pParent_ != pParent)
-    	{
-			if(pParent)
-			{
-				pParent->children_.push_back(self_);
-			}
-			else
-			{
-				RemoveFromParent();
-			}
-            
-            pParent_ = pParent;
+    }
 
-			MarkAsDirty();
+    Node::~Node()
+    {
+        ClearAllChildren();
+    }
+
+    void Node::SetParent(PNode parent)
+   	{
+   		SetParent(parent.get());
+   	}
+
+    void Node::SetParent(Node* parent)
+   	{
+   		//Do not insert child in parent (IMGUI will make memory grow for ever)
+   		parent_ = parent;
+   		MarkAsDirty();
+   	}
+
+    void Node::RemoveFromParent()
+    {
+        if (parent_)
+            parent_->RemoveChild(this);
+    }
+
+    void Node::ClearAllChildren()
+    {
+        for (unsigned i = children_.size() - 1; i < children_.size(); --i)
+        {
+            Node* childNode = children_[i].get();
+            childNode->ClearAllChildren();
+            children_.erase(children_.begin() + i);
         }
     }
 
-	void Node::Save(pugi::xml_node& node)
-	{
-		
-	}
-
-	void Node::SetPosition(const Vertex3& position)
-	{
-        if(position_ != position)
+    void Node::RemoveChild(Node* node)
+    {
+        int idx = 0;
+        for (auto& child : children_)
         {
-		    position_ = position;
-			MarkAsDirty();
+            if (child.get() == node)
+            {
+                children_.erase(children_.begin() + idx);
+                break;
+            }
+            ++idx;
         }
-	}
+    }
 
-	void Node::SetOrientation(const Quaternion& q)
-	{
-        if(q_ != q)
+    void Node::AddChild(PNode node)
+    {
+        CHECK_ASSERT(node && node.get() != this && node->parent_ != this, __FILE__, __LINE__);
+        node->RemoveFromParent();
+        children_.push_back(node);
+        node->parent_ = this;
+        node->MarkAsDirty();
+    }
+
+    void Node::Save(pugi::xml_node& node)
+    {
+
+    }
+
+    void Node::Translate(const Vector3& delta, TransformSpace space)
+    {
+        switch (space)
         {
-		    q_ = q;
-			MarkAsDirty();
-        }
-	}
+        case TS_LOCAL:
+            // Note: local space translation disregards local scale for scale-independent movement speed
+			position_ += GetOrientation() * delta;
+            break;
 
-	void Node::SetScale(const Vertex3& scale)
-	{
-        if(scale_ != scale)
+        case TS_PARENT:
+            position_ += delta;
+            break;
+
+        case TS_WORLD:
+			position_ += !parent_ ? delta : Vector3(parent_->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
+            break;
+        }
+
+        MarkAsDirty();
+    }
+
+
+    void Node::SetPosition(const Vertex3& position)
+    {
+        if (position_ != position)
         {
-		    scale_ = scale;
-			MarkAsDirty();
+            position_ = position;
+            MarkAsDirty();
         }
-	}
+    }
 
-	void Node::SetGlobalScale(const Vertex3& scale)
-	{
-		if(pParent_ == nullptr) 
-		{
-			SetScale(scale);
-		}		
+    void Node::SetOrientation(const Quaternion& q)
+    {
+        if (q_ != q)
+        {
+            q_ = q;
+            MarkAsDirty();
+        }
+    }
+
+    void Node::SetScale(const Vertex3& scale)
+    {
+        if (scale_ != scale)
+        {
+            scale_ = scale;
+            MarkAsDirty();
+        }
+    }
+
+    void Node::SetGlobalScale(const Vertex3& scale)
+    {
+        if (parent_ == nullptr)
+        {
+            SetScale(scale);
+        }
         else
         {
-			Vertex3 globalScale(pParent_->GetGlobalScale());
-			globalScale.x = 1 / globalScale.x;
-			globalScale.y = 1 / globalScale.y;
-			globalScale.z = 1 / globalScale.z;
+            Vertex3 globalScale(parent_->GetGlobalScale());
+            globalScale.x = 1 / globalScale.x;
+            globalScale.y = 1 / globalScale.y;
+            globalScale.z = 1 / globalScale.z;
 
-			SetScale(globalScale * scale);
+            SetScale(globalScale * scale);
         }
-	}
+    }
 
 
-	void Node::SetGlobalPosition(const Vertex3& position) 
-	{
-		if(pParent_ == nullptr) 
-		{
-			SetPosition(position);
-		} 
-		else 
-		{
-			SetPosition(Vertex3(pParent_->GetGlobalModelInvMatrix() * Vertex4(position, 1)));
-		}
-	}	
-
-	void Node::SetGlobalOrientation(const Quaternion& q) 
-	{
-		if(pParent_ == nullptr) 
-		{
-			SetOrientation(q);
-		} 
-		else 
-		{
-			SetOrientation(glm::normalize(Quaternion(pParent_->GetGlobalModelInvMatrix()) * q));
-		}
-	}	
-
-	const Vertex3& Node::GetGlobalPosition() const
-	{ 
-		if(dirty_)
-			Update();
-
-		return globalPosition_; 
-	}
-
-	const Quaternion& Node::GetGlobalOrientation() const
-	{ 
-		if(dirty_)
-			Update();
-
-		return globalOrientation_; 
-	}
-
-	Vertex3 Node::GetGlobalScale() const
-	{ 
-		if(dirty_)
-			Update();
-
-		return globalScale_; 
-	}
-
-
-	void Node::SetInheritScale(bool inherit) 
-	{ 
-		if(inheritScale_ != inherit)
-		{
-			inheritScale_ = inherit; 
-			MarkAsDirty();
-		}
-	}
-
-	void Node::SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up)
-	{
-		const Vertex3& position = GetGlobalPosition();
-        float length = glm::length(position - lookAtPosition);
-        
-        if(length > 0)
+    void Node::SetGlobalPosition(const Vertex3& position)
+    {
+        if (parent_ == nullptr)
         {
-        	// we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
-			Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up)); 
-			SetGlobalOrientation(glm::quat_cast(m));
-		}
-	}
+            SetPosition(position);
+        }
+        else
+        {
+            SetPosition(Vertex3(parent_->GetGlobalModelInvMatrix() * Vertex4(position, 1)));
+        }
+    }
 
-	void Node::SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up)
-	{
-		SetGlobalPosition(newPosition);
-		SetLookAt(lookAtPosition, up);
-	}
+    void Node::SetGlobalOrientation(const Quaternion& q)
+    {
+        if (parent_ == nullptr)
+        {
+            SetOrientation(q);
+        }
+        else
+        {
+            SetOrientation(glm::normalize(Quaternion(parent_->GetGlobalModelInvMatrix()) * q));
+        }
+    }
+
+    const Vertex3& Node::GetGlobalPosition() const
+    {
+        if (dirty_)
+            Update();
+
+        return globalPosition_;
+    }
+
+    const Quaternion& Node::GetGlobalOrientation() const
+    {
+        if (dirty_)
+            Update();
+
+        return globalOrientation_;
+    }
+
+    Vertex3 Node::GetGlobalScale() const
+    {
+        if (dirty_)
+            Update();
+
+        return globalScale_;
+    }
+
+
+    void Node::SetInheritScale(bool inherit)
+    {
+        if (inheritScale_ != inherit)
+        {
+            inheritScale_ = inherit;
+            MarkAsDirty();
+        }
+    }
+
+    void Node::SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up)
+    {
+        const Vertex3& position = GetGlobalPosition();
+        float length = glm::length(position - lookAtPosition);
+
+        if (length > 0)
+        {
+            // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+            Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
+            SetGlobalOrientation(glm::quat_cast(m));
+        }
+    }
+
+    void Node::SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up)
+    {
+        SetGlobalPosition(newPosition);
+        SetLookAt(lookAtPosition, up);
+    }
 
     void Node::Update(bool updateChildren) const
-	{
-		if(!dirty_)
-			return;
+    {
+        if (!dirty_)
+            return;
 
-		if(pParent_)
-		{
-			if(pParent_->dirty_)
-				pParent_->Update(false);
-
-			globalPosition_ = pParent_->globalOrientation_ * (pParent_->globalScale_ * position_);
-            globalPosition_ += pParent_->globalPosition_;
-
-			if(inheritScale_)
-			{
-				globalScale_ = pParent_->globalScale_ * scale_;
-			}
-			else
-			{
-				globalScale_ = scale_;
-			}
-
-			globalOrientation_ = pParent_->globalOrientation_ * q_;
-			
-		}
-		else
+        if (parent_)
         {
-        	globalPosition_ = position_;
-        	globalOrientation_ = q_;
-        	globalScale_ = scale_;
+            if (parent_->dirty_)
+                parent_->Update(false);
+
+            globalPosition_ = parent_->globalOrientation_ * (parent_->globalScale_ * position_);
+            globalPosition_ += parent_->globalPosition_;
+
+            if (inheritScale_)
+            {
+                globalScale_ = parent_->globalScale_ * scale_;
+            }
+            else
+            {
+                globalScale_ = scale_;
+            }
+
+            globalOrientation_ = parent_->globalOrientation_ * q_;
+
+        }
+        else
+        {
+            globalPosition_ = position_;
+            globalOrientation_ = q_;
+            globalScale_ = scale_;
         }
 
         globalModel_ = glm::translate(glm::mat4(), globalPosition_) * glm::mat4_cast(globalOrientation_) * glm::scale(glm::mat4(1.0f), globalScale_);
         globalModelInv_ = glm::inverse(globalModel_);
-		globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
-		lookAtDirection_ = globalOrientation_ * VECTOR3_FORWARD;
+        globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
+        lookAtDirection_ = globalOrientation_ * VECTOR3_FORWARD;
 
-		if (updateChildren)
-		{
-			auto it = children_.begin();
-			while (it != children_.end())
-			{
-				(*it)->dirty_ = true;
-				(*it)->SetUniformsNeedUpdate();
-				(*it)->Update();
-				++it;
-			}
-		}
+        if (updateChildren)
+        {
+            auto it = children_.begin();
+            while (it != children_.end())
+            {
+                (*it)->dirty_ = true;
+                (*it)->SetUniformsNeedUpdate();
+                (*it)->Update();
+                ++it;
+            }
+        }
 
-		dirty_ = false;
-	}
+        dirty_ = false;
+    }
 
-	const Matrix4& Node::GetGlobalModelMatrix() const
-	{ 
-		if(dirty_)
-			Update();
+    const Matrix4& Node::GetGlobalModelMatrix() const
+    {
+        if (dirty_)
+            Update();
 
         return globalModel_;
-	}
+    }
 
-	const Matrix3& Node::GetGlobalModelInvTranspMatrix() const
-	{ 
-		if(dirty_)
-			Update();
+    const Matrix3& Node::GetGlobalModelInvTranspMatrix() const
+    {
+        if (dirty_)
+            Update();
 
-		return globalModelInvTransp_; 
-	}	
+        return globalModelInvTransp_;
+    }
 
-	const Matrix4& Node::GetGlobalModelInvMatrix() const
-	{
-		if (dirty_)
-			Update();
+    const Matrix4& Node::GetGlobalModelInvMatrix() const
+    {
+        if (dirty_)
+            Update();
 
-		return globalModelInv_;
-	}
+        return globalModelInv_;
+    }
 
 
-	const Vertex3& Node::GetLookAtDirection() const
-	{ 
-		if(dirty_)
-			Update();
+    const Vertex3& Node::GetLookAtDirection() const
+    {
+        if (dirty_)
+            Update();
 
-		return lookAtDirection_; 
-	}
+        return lookAtDirection_;
+    }
 
-	bool Node::IsPointInsideBB(const Vertex3& point) const
-	{
-		if(dirty_)
-			Update();
+    bool Node::IsPointInsideBB(const Vertex3& point) const
+    {
+        if (dirty_)
+            Update();
 
-		BoundingBox box(*this);
-		return box.IsInside(point);
-	}
+        BoundingBox box(*this);
+        return box.IsInside(point);
+    }
 
-	void Node::MarkAsDirty()
-	{
-		dirty_ = true;
-		SetUniformsNeedUpdate();
-		OnDirty();
-		auto it = children_.begin();
-		while (it != children_.end())
-			(*(it++))->MarkAsDirty();
-	}
+    void Node::MarkAsDirty()
+    {
+        dirty_ = true;
+        SetUniformsNeedUpdate();
+        OnDirty();
+        auto it = children_.begin();
+        while (it != children_.end())
+            (*(it++))->MarkAsDirty();
+    }
 
 }

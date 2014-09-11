@@ -42,9 +42,7 @@ void CubeBehavior::Start()
 
 	PMaterial pMaterial(new Material("cube"));
 
-    PResource pVResource(new ResourceFile("data/shaders/DiffuseSpecularReflection.vert"));
-	PResource pFResource(new ResourceFile("data/shaders/Simple.frag"));
-	PProgram pDiffuseProgram(new Program("CubeBehaviorProgram", pVResource, pFResource));
+	PProgram pDiffuseProgram(new Program("CubeBehaviorProgram", Program::DIFFUSE | Program::SPECULAR));
     PPass pass(new Pass);
     pass->SetProgram(pDiffuseProgram);
 

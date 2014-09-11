@@ -134,7 +134,7 @@ namespace NSG
             // Draw slider
             Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
 
-            Node& node = *area_->controlNodes_.node0_;
+			Node& node(*area_->controlNodes_.node0_);
             node.SetParent(area_->pNode_);
             node.SetInheritScale(false);
 
@@ -156,7 +156,7 @@ namespace NSG
             globalPosition.x += areaGlobalScale.x - globalScale.x;
             node.SetGlobalPosition(globalPosition);
 
-            Graphics::this_->Set(&node);
+            Graphics::this_->SetNode(&node);
 
             RenderSlider();
 
@@ -198,7 +198,7 @@ namespace NSG
         {
             Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
             // Draw slider
-            Node& node = *area_->controlNodes_.node1_;
+            Node& node(*area_->controlNodes_.node0_);
             node.SetParent(area_->pNode_);
             node.SetInheritScale(false);
 
@@ -220,7 +220,7 @@ namespace NSG
             globalPosition.y -= areaGlobalScale.y - globalScale.y;
             node.SetGlobalPosition(globalPosition);
 
-            Graphics::this_->Set(&node);
+            Graphics::this_->SetNode(&node);
 
             RenderSlider();
 

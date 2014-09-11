@@ -65,7 +65,7 @@ namespace NSG
     {
         PResourceMemory vs(new ResourceMemory(vShader));
         PResourceMemory fs(new ResourceMemory(fShader));
-        pProgram_ = PProgram(new Program("TextMesh", vs, fs));
+        pProgram_ = PProgram(new Program("TextMesh", Program::TEXT));
         pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
         App::Add(this);
     }

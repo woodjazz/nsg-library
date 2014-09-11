@@ -32,39 +32,15 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Graphics.h"
 #include "Program.h"
-#include "ResourceMemory.h"
-
-static const char* vShader = STRINGIFY(
-
-	void main()
-	{
-		gl_Position = a_position;
-		v_texcoord = vec2(a_texcoord.x, 1.0 - a_texcoord.y);
-	}
-);
-
-static const char* fShader = STRINGIFY(
-
-	void main()
-	{
-		gl_FragColor = texture2D(u_texture0, v_texcoord);
-	}
-);
-
-static const char* fFontShader = STRINGIFY(
-	void main()
-	{
-        gl_FragColor = vec4(1, 1, 1, texture2D(u_texture0, v_texcoord).a);
-	}
-);
-
+#include "Node.h"
 
 namespace NSG
 {
 	ShowTexture::ShowTexture()
 	: pass_(new Pass),
     material_(new Material("ShowTexture")),
-	mesh_(new PlaneMesh(2, 2, 2, 2))
+	mesh_(new PlaneMesh(2, 2, 2, 2)),
+    node_(new Node("ShowTexture"))
 	{
 		pass_->EnableDepthTest(false);
 	}
@@ -92,14 +68,14 @@ namespace NSG
 
 	void ShowTexture::SetNormal(PTexture texture)
 	{
-		PProgram pProgram(new Program("ShowTexture", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader))));
+		PProgram pProgram(new Program("ShowTexture", Program::SHOW_TEXTURE));
 		pass_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}
 
 	void ShowTexture::SetFont(PTexture texture)
 	{
-		PProgram pProgram(new Program("ShowFontTexture", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fFontShader))));
+		PProgram pProgram(new Program("ShowFontTexture", Program::TEXT));
 		pass_->SetProgram(pProgram);
 		material_->SetTexture0(texture);
 	}
@@ -113,7 +89,7 @@ namespace NSG
 			Camera* pCurrent = Camera::Deactivate();
 
             Graphics::this_->Set(material_.get());
-            Graphics::this_->Set((Node*)nullptr);
+			Graphics::this_->SetNode(node_.get());
             Graphics::this_->Set(mesh_.get());
 			pass_->Render();
 

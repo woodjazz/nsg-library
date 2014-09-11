@@ -46,7 +46,7 @@ void EarthBehavior::Start()
 
 	PTexture pEarthTexture(new TextureFile("data/stone.jpg"));
 	PMaterial pMaterial(new Material ("earth"));
-	PProgram program(new ProgramUnlit);
+	PProgram program(new Program);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
     technique->Add(pass);
@@ -72,7 +72,7 @@ void EarthBehavior::Update()
 void EarthBehavior::Render()
 {
 	render2texture_->Begin();
-	pSceneNode_->Render();
+	pSceneNode_->GetMaterial()->GetTechnique()->Render();
 	render2texture_->End();
 	showTexture_.Show();
 }

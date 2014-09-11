@@ -26,21 +26,6 @@ misrepresented as being the original software.
 #include "LightBehavior.h"
 #include "Render2TextureBehavior.h"
 
-static const char* vShader = STRINGIFY(
-	void main()
-	{
-		gl_Position = u_mvp * a_position;
-	}
-);
-
-static const char* fShader = STRINGIFY(
-	void main()
-	{
-		gl_FragColor = vec4(1,1,0,1);
-	}
-);
-
-
 LightBehavior::LightBehavior()
 {
 }
@@ -53,7 +38,8 @@ LightBehavior::~LightBehavior()
 void LightBehavior::Start()
 {
 	PMaterial pMaterial(new Material("light"));
-	PProgram pProgram(new Program("LightBehaviorProgram", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader))));
+	pMaterial->SetColor(Color(1, 1, 0, 1));
+	PProgram pProgram(new Program("LightBehaviorProgram"));
     PPass pass(new Pass);
     pass->SetProgram(pProgram);
 

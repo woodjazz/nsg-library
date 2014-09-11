@@ -34,11 +34,12 @@ namespace NSG
 	class Filter
 	{
 	public:
-		Filter(const std::string& name, PTexture input, int output_width, int output_height, const char* fragment);
+		Filter(const std::string& name, PTexture input, int output_width, int output_height, unsigned flags = 0);
 		~Filter();
 		bool Render();
 		PMaterial GetMaterial() const { return pMaterial_; }
 		PTexture GetTexture() const;
+		PProgram GetProgram() const { return program_; }
 	protected:
 		PTechnique technique_;
 		PPass pass_;
@@ -46,5 +47,7 @@ namespace NSG
 		PMesh pMesh_;
 		PRender2Texture pRender2Texture_;
 		std::string name_;
+		PProgram program_;
+		PNode node_;
 	};
 }

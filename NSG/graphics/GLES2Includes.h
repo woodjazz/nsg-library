@@ -44,6 +44,12 @@ extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
 extern PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;
 extern PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES;
 extern PFNGLISVERTEXARRAYOESPROC glIsVertexArrayOES;
+typedef void (GL_APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC) (GLuint index, GLuint divisor);
+extern PFNGLVERTEXATTRIBDIVISORPROC glVertexAttribDivisorEXT;
+typedef void (GL_APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum, GLsizei, GLenum, const GLvoid*, GLsizei);
+extern PFNGLDRAWELEMENTSINSTANCEDPROC glDrawElementsInstancedEXT;
+typedef void (GL_APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum, GLint, GLsizei, GLsizei);
+extern PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
 #elif defined(IOS)
 #include <GLKit/GLKit.h>
 #define glClearDepth glClearDepthf
@@ -61,6 +67,12 @@ extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
 extern PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;
 extern PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES;
 extern PFNGLISVERTEXARRAYOESPROC glIsVertexArrayOES;
+typedef void (GL_APIENTRYP PFNGLVERTEXATTRIBDIVISORPROC) (GLuint index, GLuint divisor);
+extern PFNGLVERTEXATTRIBDIVISORPROC glVertexAttribDivisorEXT;
+typedef void (GL_APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum, GLsizei, GLenum, const GLvoid*, GLsizei);
+extern PFNGLDRAWELEMENTSINSTANCEDPROC glDrawElementsInstancedEXT;
+typedef void (GL_APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum, GLint, GLsizei, GLsizei);
+extern PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
 #else
 #include <GL/glew.h>
 #endif
@@ -77,5 +89,8 @@ extern PFNGLISVERTEXARRAYOESPROC glIsVertexArrayOES;
 #define GL_MAP_WRITE_BIT GL_MAP_WRITE_BIT_EXT
 #define GL_MAP_FLUSH_EXPLICIT_BIT GL_MAP_FLUSH_EXPLICIT_BIT_EXT
 #define GL_MAP_UNSYNCHRONIZED_BIT GL_MAP_UNSYNCHRONIZED_BIT_EXT
+#define glVertexAttribDivisor glVertexAttribDivisorEXT
+#define glDrawElementsInstanced glDrawElementsInstancedEXT
+#define glDrawArraysInstanced glDrawArraysInstancedEXT
 #endif
 

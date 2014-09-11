@@ -31,8 +31,11 @@ misrepresented as being the original software.
 #include "Context.h"
 #include "BufferManager.h"
 #include "VertexArrayObj.h"
+#include "InstanceBuffer.h"
 #include "AppStatistics.h"
 #include "Util.h"
+#include "Camera.h"
+#include "InstanceData.h"
 #include "pugixml.hpp"
 
 namespace NSG
@@ -43,7 +46,8 @@ namespace NSG
           bb_(Vertex3(0)),
           isStatic_(!dynamic),
           boundingSphereRadius_(0),
-          name_(name)
+          name_(name),
+          graphics_(*Graphics::this_)
     {
     }
 
@@ -102,7 +106,7 @@ namespace NSG
     void Mesh::ReleaseResources()
     {
         bb_.Define(Vertex3(0));
-		boundingSphereRadius_ = 0;
+        boundingSphereRadius_ = 0;
         pVBuffer_ = nullptr;
         pIBuffer_ = nullptr;
         bufferVertexData_ = nullptr;
@@ -131,6 +135,7 @@ namespace NSG
         {
             Graphics::this_->SetVertexBuffer(pVBuffer_.get());
             Graphics::this_->SetAttributes(this, program);
+            Graphics::this_->SetInstanceAttrPointers(program);
             Graphics::this_->SetIndexBuffer(pIBuffer_.get());
         }
     }
@@ -149,8 +154,12 @@ namespace NSG
 
     void Mesh::Draw(bool solid, Program* program)
     {
-        SetBuffersAndAttributes(program);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
+        graphics_.UpdateBatchBuffer();
+
+        SetBuffersAndAttributes(program);
+        
         GLenum mode = solid ? GetSolidDrawMode() : GetWireFrameDrawMode();
 
         if (!indexes_.empty())
@@ -177,7 +186,46 @@ namespace NSG
         }
 
         Graphics::this_->SetVertexArrayObj(nullptr);
+        
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
+
+    void Mesh::Draw(bool solid, Program* program, Batch& batch)
+    {
+        graphics_.UpdateBatchBuffer(batch);
+
+        SetBuffersAndAttributes(program);
+
+        GLenum mode = solid ? GetSolidDrawMode() : GetWireFrameDrawMode();
+
+        unsigned instances = batch.nodes_.size();
+
+        if (!indexes_.empty())
+        {
+            const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData_->offset_);
+
+            glDrawElementsInstanced(mode, indexes_.size(), GL_UNSIGNED_SHORT, offset, instances);
+
+            if (solid)
+            {
+                AppStatistics::this_->NewTriangles(GetNumberOfTriangles() * instances);
+            }
+        }
+        else
+        {
+            GLint first = bufferVertexData_->offset_ / sizeof(VertexData);
+
+            glDrawArraysInstanced(mode, first, vertexsData_.size(), instances);
+
+            if (solid)
+            {
+                AppStatistics::this_->NewTriangles(GetNumberOfTriangles() * instances);
+            }
+        }
+
+        Graphics::this_->SetVertexArrayObj(nullptr);
+    }
+
 
     void Mesh::Save(pugi::xml_node& node)
     {
@@ -234,11 +282,11 @@ namespace NSG
 
             if (indexes_.size())
             {
-				CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
+                CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
                 pugi::xml_node indexesNode = child.append_child("Indexes");
                 std::stringstream ss;
-				for (auto& obj : indexes_)
-					ss << obj << " ";
+                for (auto& obj : indexes_)
+                    ss << obj << " ";
                 indexesNode.append_child(pugi::node_pcdata).set_value(ss.str().c_str());
             }
         }
@@ -269,16 +317,16 @@ namespace NSG
             pugi::xml_node indexesNode = node.child("Indexes");
             if (indexesNode)
             {
-				std::string data = indexesNode.child_value();
+                std::string data = indexesNode.child_value();
                 std::stringstream ss;
-				ss << data;
-				int index;
-				for (;;)
+                ss << data;
+                int index;
+                for (;;)
                 {
-					ss >> index;
-					if (ss.eof()) break;
-					indexes_.push_back(index);
-				} 
+                    ss >> index;
+                    if (ss.eof()) break;
+                    indexes_.push_back(index);
+                }
             }
         }
     }

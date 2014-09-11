@@ -54,11 +54,11 @@ namespace NSG
         {
             stats_[i] = 0;
             text_[i] = PTextMesh(new TextMesh);
-            node_[i] = PNode(new Node);
+			std::stringstream ss;
+			ss << "AppStatistics::node " << i;
+            node_[i] = PNode(new Node(ss.str()));
             if (i > 0)
-            {
-                node_[i]->SetParent(node_[i - 1]);
-            }
+				node_[i - 1]->AddChild(node_[i]);
         }
 
         pass_->SetProgram(text_[0]->GetProgram());
@@ -163,7 +163,7 @@ namespace NSG
         std::stringstream ss;
         for (int i = 0; i < (int)Stats::MAX_STATS; i++)
         {
-            Graphics::this_->Set(node_[i].get());
+            Graphics::this_->SetNode(node_[i].get());
             Graphics::this_->Set(text_[i].get());
 
             if (i > 0)

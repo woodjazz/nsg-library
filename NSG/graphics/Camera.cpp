@@ -192,12 +192,25 @@ namespace NSG
 
     }
 
-    const Matrix4& Camera::GetMatViewProjection() const
-    {
-        if (cameraIsDirty_)
-            UpdateProjection();
+	const Matrix4& Camera::GetMatViewProjection() const
+	{
+		if (cameraIsDirty_)
+			UpdateProjection();
 
-        return matViewProjection_;
+		return matViewProjection_;
+	}
+
+
+    const Matrix4& Camera::GetMatViewProj()
+    {
+		if (activeCamera)
+		{
+			return activeCamera->GetMatViewProjection();
+		}
+		else
+		{
+			return IDENTITY_MATRIX;
+		}
     }
 
     Matrix4 Camera::GetModelViewProjection(const Node* pNode)
@@ -232,6 +245,20 @@ namespace NSG
             return IDENTITY_MATRIX;
         }
     }
+
+	const Matrix4& Camera::GetViewMatrix()
+	{
+		if (activeCamera)
+		{
+			return activeCamera->GetView();
+		}
+		else
+		{
+			return IDENTITY_MATRIX;
+		}
+
+	}
+
     const Matrix4& Camera::GetView() const
     {
         if (cameraIsDirty_)

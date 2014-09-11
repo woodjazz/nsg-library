@@ -23,42 +23,16 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-
-#include "ProgramColorSelection.h"
+#pragma once
 #include "Types.h"
-#include "ResourceMemory.h"
 
-static const char* vShader = STRINGIFY(
-
-	void main()
-	{
-		gl_Position = u_mvp * a_position;
-		v_texcoord = a_texcoord;
-	}
-);
-
-static const char* fShader = STRINGIFY(
-
-	void main()
-	{
-		vec4 textColor = texture2D(u_texture0, v_texcoord);
-		
-		if(length(textColor) != 0.0)
-			gl_FragColor = u_color;
-		else
-			gl_FragColor = vec4(0.0);
-	}
-);
-
-namespace NSG 
+namespace NSG
 {
-	ProgramColorSelection::ProgramColorSelection()
-	: Program("ProgramColorSelection", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader)))
-	{
- 	}
-
-	ProgramColorSelection::~ProgramColorSelection()
-	{
-		
-	}
+    struct InstanceData
+    {
+        Matrix4 modelMatrix_;
+        InstanceData();
+    };
 }
+
+

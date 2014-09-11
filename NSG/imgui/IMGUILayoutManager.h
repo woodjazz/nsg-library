@@ -55,13 +55,12 @@ namespace NSG
             float scrollFactorAreaY_;
             PTextMesh textMesh0_;
             PTextMesh cursorMesh_;
-            struct Nodes
+			struct Nodes
             {
                 PNode node0_;
                 PNode node1_;
                 PNode node2_;
                 PNode node3_;
-
             } controlNodes_;
 
             std::vector<PLayoutArea> children_;

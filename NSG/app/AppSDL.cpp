@@ -228,6 +228,7 @@ namespace NSG
         else if (!minimized)
         {
             app->RenderFrame();
+			//Sleep(5000);
         }
 #else
         if (!minimized)

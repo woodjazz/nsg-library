@@ -145,15 +145,15 @@ macro (setup_executable)
     file(GLOB hdr "*.h")
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
 
-    IF(EXISTS "${data_dir}")
-        file(GLOB ShaderFiles ${NSG_ASSETS_DIR}/shaders/*.glsl)
-        add_custom_target(
-            ${PROJECT_NAME}_SHADERS ALL
-            COMMAND ${CMAKE_COMMAND} -E copy_directory ${NSG_ASSETS_DIR}/shaders ${data_dir}/shaders
-            DEPENDS ${ShaderFiles}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            COMMENT "Copying shaders.")
-    ENDIF()
+    # IF(EXISTS "${data_dir}")
+    #     file(GLOB ShaderFiles ${NSG_ASSETS_DIR}/shaders/*.glsl)
+    #     add_custom_target(
+    #         ${PROJECT_NAME}_SHADERS ALL
+    #         COMMAND ${CMAKE_COMMAND} -E copy_directory ${NSG_ASSETS_DIR}/shaders ${data_dir}/shaders
+    #         DEPENDS ${ShaderFiles}
+    #         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    #         COMMENT "Copying shaders.")
+    # ENDIF()
 
     if(NACL)
         
@@ -400,3 +400,18 @@ MACRO(ADDSOURCESLIST result curdir)
     FILE(GLOB src "${curdir}/*.c" "${curdir}/*.h")
     SET(${result} ${${result}} ${src})
 ENDMACRO()
+
+
+###################################################################
+# Generate shader header file
+####################################################################
+MACRO(GENERATE_SHADER_HEADER_FILE input_file input_template_file output_file)
+    file(STRINGS ${input_file} shader_file_lines)
+    unset(shader_string_file)
+    set(shader_string_file \\\n)
+    foreach(shader_file_line ${shader_file_lines})
+        set(shader_string_file ${shader_string_file}"${shader_file_line}\\n"\\\n)
+    endforeach()
+    configure_file(${input_template_file} ${output_file})
+ENDMACRO()
+####################################################################

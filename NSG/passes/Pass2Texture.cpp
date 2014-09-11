@@ -62,7 +62,7 @@ namespace NSG
             {
                 Graphics::this_->Set(it->mesh_.get());
                 Graphics::this_->Set(it->material_.get());
-                Graphics::this_->Set(it->node_);
+				Graphics::this_->SetNode(it->node_);
 
                 drawn |= it->pass_->Render();
 

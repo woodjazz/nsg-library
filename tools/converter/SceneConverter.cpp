@@ -216,7 +216,7 @@ namespace NSG
             ss << sceneNode->GetName() << "_" << i;
 
             PSceneNode meshSceneNode = CreateSceneNode(ss.str());
-            meshSceneNode->SetParent(sceneNode);
+			sceneNode->AddChild(meshSceneNode);
             meshSceneNode->SetMeshIndex(nd->mMeshes[i]);
             meshSceneNode->SetMaterialIndex(mesh->mMaterialIndex);
         }
@@ -225,7 +225,7 @@ namespace NSG
         {
             const aiNode* ndChild = nd->mChildren[i];
             PSceneNode child = CreateSceneNode(ndChild->mName.C_Str());
-            child->SetParent(sceneNode);
+			sceneNode->AddChild(child);
             RecursiveLoad(sc, ndChild, child);
         }
     }

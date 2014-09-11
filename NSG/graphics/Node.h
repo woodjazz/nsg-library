@@ -38,9 +38,8 @@ namespace NSG
 		Node(const std::string& name = "");
 		virtual ~Node();
 		IdType GetId() const { return id_;  }
-		void SetParent(PNode parent);
-        PNode GetParent() const { return pParent_; }
 		virtual void OnDirty() const {};
+		void Translate(const Vector3& delta, TransformSpace space = TS_LOCAL);
 		void SetPosition(const Vertex3& position);
 		const Vertex3& GetPosition() const { return position_; }
 		void SetOrientation(const Quaternion& q);
@@ -67,11 +66,16 @@ namespace NSG
 		virtual void Save(pugi::xml_node& node);
 		void SetName(const std::string& name) { name_ = name_; }
 		const std::string& GetName() const { return name_; }
+		void SetParent(PNode parent);
+		void SetParent(Node* parent);
+		Node* GetParent() const { return parent_; }
+		void AddChild(PNode node);
+		void ClearAllChildren();
     protected:
-		PNode pParent_;
+		Node* parent_;
         std::vector<PNode> children_;
-        PNode self_;
 	private:
+		void RemoveChild(Node* node);
 		void RemoveFromParent();
 		void MarkAsDirty();
 		void Update(bool updateChildren = true) const;

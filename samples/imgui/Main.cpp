@@ -56,6 +56,7 @@ struct Window0 : IMGUI::IWindow
 				IMGUIBeginHorizontal(150, 50);
 				IMGUILabel(label.str(), 50);
 				float linePercentage = IMGUILine();
+                //IMGUILabel("sdfkjhsdfhsdkjfh", 50 - linePercentage);
 				field[i] = IMGUITextField(field[i], 50 - linePercentage);
 				IMGUIEndArea();
 			}
@@ -104,6 +105,7 @@ struct Sample : App
 
     void RenderGUIWindow() override
     {	
+#if 1
         static float delta = -1;
         static Vertex3 camControlPoint0(-3, 3, 0);
         static Vertex3 camControlPoint1(0, 2, 0);
@@ -152,8 +154,8 @@ struct Sample : App
                 IMGUIEndArea();
 				#endif
 
-				menu_choosen = IMGUIButton("Menu", 20, 20);
-				//menu_choosen = IMGUIButton("ABCDEFGabcdefghijk0123456");
+				//menu_choosen = IMGUIButton("Menu", 20, 20);
+				menu_choosen = IMGUIButton("ABCDEFGabcdefghijk0123456", 20, 20);
             }
 
             if(menu_choosen)
@@ -225,7 +227,9 @@ struct Sample : App
                 menu = exit = false;
             }
         }
+#endif
     }
+
 };
 
 NSG_MAIN(Sample);

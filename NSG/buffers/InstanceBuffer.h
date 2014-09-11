@@ -23,36 +23,23 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#pragma once
 
-#include "ProgramSimpleColor.h"
 #include "Types.h"
-#include "ResourceMemory.h"
-
-static const char* vShader = STRINGIFY(
-    
-    void main() 
-    {
-        gl_Position = u_mvp * a_position;
-    }
-);
-
-static const char* fShader = STRINGIFY(
-
-    void main()
-    {
-        gl_FragColor = u_color;
-    }
-);
 
 namespace NSG 
 {
-	ProgramSimpleColor::ProgramSimpleColor()
-	: Program("ProgramSimpleColor", PResourceMemory(new ResourceMemory(vShader)), PResourceMemory(new ResourceMemory(fShader)))
+	class InstanceBuffer
 	{
-	}
-
-	ProgramSimpleColor::~ProgramSimpleColor()
-	{
-		
-	}
+	public:
+		InstanceBuffer();
+		~InstanceBuffer();
+		void Bind();
+		static void Unbind();
+	private:
+		GLenum type_;
+		GLuint id_;
+		GLenum usage_;
+	};
 }
+

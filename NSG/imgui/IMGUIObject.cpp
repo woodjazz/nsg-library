@@ -70,7 +70,8 @@ namespace NSG
               lastwidget_(currentWindowManager_->lastwidget_),
               activeitem_needs_keyboard_(uistate_.activeitem_needs_keyboard_),
               viewSize_(App::this_->GetViewSize()),
-              style_(style)  
+              style_(style),
+              controlMesh_(Context::this_->controlMesh_.get())
         {
             if (type == LayoutType::WINDOW)
                 id_ = currentWindowManager_->id_;
@@ -91,7 +92,8 @@ namespace NSG
                 CHECK_GL_STATUS(__FILE__, __LINE__);
 
                 Graphics::this_->Set(skin_.stencilMaterial_.get());
-                Graphics::this_->Set(node_.get());
+				Graphics::this_->SetNode(node_.get());
+                Graphics::this_->Set(controlMesh_);
 
                 skin_.stencilPass_->SetStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
                 skin_.stencilPass_->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
@@ -115,8 +117,8 @@ namespace NSG
             // see material->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
             CHECK_ASSERT(level_ > 0, __FILE__, __LINE__);
             
-            Graphics::this_->Set(node_.get());
-            Graphics::this_->Set(Context::this_->controlMesh_.get());
+			Graphics::this_->SetNode(node_.get());
+            Graphics::this_->Set(controlMesh_);
 
             Graphics::this_->Set(skin_.stencilMaterial_.get());
             skin_.stencilPass_->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);

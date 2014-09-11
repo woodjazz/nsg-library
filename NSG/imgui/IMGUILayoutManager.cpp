@@ -55,7 +55,7 @@ namespace NSG
               textOffsetX_(0),
               cursor_character_position_(0),
               parent_(parent),
-              childrenRoot_(new Node),
+              childrenRoot_(new Node("IMGUI::LayoutArea::childrenRoot_")),
               isScrollable_(false),
               isXScrollable_(false),
               isYScrollable_(false),
@@ -66,7 +66,6 @@ namespace NSG
             controlNodes_.node1_ = PNode(new Node);
             controlNodes_.node2_ = PNode(new Node);
             controlNodes_.node3_ = PNode(new Node);
-            
 
 			if (percentageX < 0)
 				percentageX = 100;
@@ -76,7 +75,7 @@ namespace NSG
             float scaleX = percentageX / 100.0f;
             float scaleY = percentageY / 100.0f;
             pNode->SetScale(Vertex3(scaleX, scaleY, 1));
-            childrenRoot_->SetParent(pNode_);
+			pNode_->AddChild(childrenRoot_);
         }
 
         void LayoutArea::CalculateScrollAreaFactor()
@@ -190,7 +189,7 @@ namespace NSG
                 PLayoutArea parent = nestedAreas_.back()->GetArea();
                 CHECK_ASSERT(parent->type_ != LayoutType::CONTROL, __FILE__, __LINE__);
                 PNode pNode(new Node());
-                pNode->SetParent(parent->childrenRoot_);
+				parent->childrenRoot_->AddChild(pNode);
                 pArea = PLayoutArea(new LayoutArea(id, parent.get(), pNode, type, percentageX, percentageY));
                 parent->children_.push_back(pArea);
             }
@@ -486,7 +485,7 @@ namespace NSG
             auto it = windowManagers_.find(obj);
             if (it == windowManagers_.end())
             {
-                PNode rootNode(new Node);
+                PNode rootNode(new Node("IMGUI::LayoutManager::Window::rootNode"));
 
                 IdType id = static_cast<IdType>(IdsTypes::IMGUI_MAIN_WINDOW_ID);
 

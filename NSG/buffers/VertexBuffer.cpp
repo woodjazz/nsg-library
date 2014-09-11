@@ -92,7 +92,7 @@ namespace NSG
 
         CHECK_ASSERT(bytes2Set <= obj.bytes_, __FILE__, __LINE__);
 
-        Graphics::this_->SetVertexBuffer(this);
+        Graphics::this_->SetVertexBuffer(this, true);
 
         SetBufferSubData(obj.offset_, bytes2Set, &vertexes[0]);
 

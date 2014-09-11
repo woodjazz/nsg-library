@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "InstanceBuffer.h"
 #include "Graphics.h"
 #include "Check.h"
 
@@ -64,8 +65,7 @@ namespace NSG
         CHECK_CONDITION(Graphics::this_->SetVertexArrayObj(this), __FILE__, __LINE__);
 
         VertexBuffer* vertexBuffer = mesh_->GetVertexBuffer();
-        Graphics::this_->SetVertexBuffer(nullptr); // force binding in VAO (not sure if needed since VBO binding is NOT part of VAO)
-        Graphics::this_->SetVertexBuffer(vertexBuffer);
+        Graphics::this_->SetVertexBuffer(vertexBuffer, true);
 
         GLuint position_loc = program_->GetAttPositionLoc();
         GLuint texcoord_loc = program_->GetAttTextCoordLoc();
@@ -73,22 +73,23 @@ namespace NSG
         GLuint color_loc = program_->GetAttColorLoc();
 
         if (position_loc != -1)
-            glEnableVertexAttribArray(ATTRIBUTE_LOC::POSITION);
+			glEnableVertexAttribArray((int)AttributesLoc::POSITION);
 
         if (normal_loc != -1)
-            glEnableVertexAttribArray(ATTRIBUTE_LOC::NORMAL);
+			glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
 
         if (texcoord_loc != -1)
-            glEnableVertexAttribArray(ATTRIBUTE_LOC::COORD);
+			glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD);
 
         if (color_loc != -1)
-            glEnableVertexAttribArray(ATTRIBUTE_LOC::COLOR);
+			glEnableVertexAttribArray((int)AttributesLoc::COLOR);
 
         Graphics::this_->SetVertexAttrPointers();
 
         IndexBuffer* indexBuffer = mesh_->GetIndexBuffer();
-        Graphics::this_->SetIndexBuffer(nullptr); // forces binding in VAO (this shall be needed since IBO binding is part of VAO)
-        Graphics::this_->SetIndexBuffer(indexBuffer);
+        Graphics::this_->SetIndexBuffer(indexBuffer, true);
+        
+        Graphics::this_->SetInstanceAttrPointers(program_);
 
         Graphics::this_->SetVertexArrayObj(nullptr);
 

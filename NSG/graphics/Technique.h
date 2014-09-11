@@ -40,13 +40,14 @@ namespace NSG
 		Technique();
 		~Technique();
 		void Add(PPass pass);
-		bool Render();
 		size_t GetNumPasses() const;
-		const PASSES& GetPasses() const { return passes_; }
+		const PASSES& GetConstPasses() const { return passes_; }
+		PASSES& GetPasses() { return passes_; }
 		void SetPass(unsigned int idx, PPass pass) { passes_.at(idx) = pass; }
 		PPass GetPass(unsigned int idx) { return passes_.at(idx); }
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
+		bool Render();
 	private:
 		PASSES passes_;
 	};

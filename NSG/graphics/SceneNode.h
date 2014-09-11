@@ -56,12 +56,11 @@ namespace NSG
 		virtual void AllocateResources() override;
 		void Start();
 		void Update();
-		void Render();
+		PSceneNode CreateChild(const std::string& name);
 	protected:
 		SceneNode(const std::string& name, Scene* scene);
 		SceneNode(PResource resource, const std::string& name, Scene* scene);
 	private:
-		PSceneNode CreateChild();
 		struct CachedData
 		{
 			std::vector<PMesh> meshes_;

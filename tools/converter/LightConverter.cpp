@@ -31,10 +31,7 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Pass.h"
 #include "Technique.h"
-#include "ProgramPerVertex1PointLight.h"
-#include "ProgramUnlit.h"
 #include "assimp/light.h"
-
 
 namespace NSG
 {

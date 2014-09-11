@@ -100,11 +100,10 @@ namespace NSG
         }
     }
 
-    PSceneNode SceneNode::CreateChild()
+    PSceneNode SceneNode::CreateChild(const std::string& name)
     {
-        PSceneNode obj(new SceneNode("", scene_));
-        children_.push_back(obj);
-        obj->pParent_ = self_;
+        PSceneNode obj(new SceneNode(name, scene_));
+		AddChild(obj);
         return obj;
     }
 
@@ -156,22 +155,6 @@ namespace NSG
     void SceneNode::Update()
     {
         behavior_->Update();
-    }
-
-    void SceneNode::Render()
-    {
-        if (IsReady() && material_)
-        {
-            PTechnique technique = material_->GetTechnique();
-
-            if (technique)
-            {
-                Graphics::this_->Set(material_.get());
-                Graphics::this_->Set(mesh_.get());
-                Graphics::this_->Set(this);
-                technique->Render();
-            }
-        }
     }
 
     void SceneNode::OnDirty() const
@@ -313,7 +296,7 @@ namespace NSG
 
         for (pugi::xml_node child = node.child("SceneNode"); child; child = child.next_sibling("SceneNode"))
         {
-            PSceneNode childNode = CreateChild();
+            PSceneNode childNode = CreateChild("");
             childNode->Load(child, data);
         }
     }

@@ -30,12 +30,17 @@ misrepresented as being the original software.
 #include "VertexArrayObj.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "InstanceBuffer.h"
 #include "Program.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "AppStatistics.h"
 #include "Scene.h"
 #include "Constants.h"
+#include "Technique.h"
+#include "Pass.h"
+#include "SceneNode.h"
+#include "InstanceData.h"
 
 #if defined(ANDROID) || defined(EMSCRIPTEN)
 PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT;
@@ -43,6 +48,9 @@ PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
 PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;
 PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArraysOES;
 PFNGLISVERTEXARRAYOESPROC glIsVertexArrayOES;
+PFNGLVERTEXATTRIBDIVISORPROC glVertexAttribDivisorEXT;
+PFNGLDRAWELEMENTSINSTANCEDPROC glDrawElementsInstancedEXT;
+PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
 #endif
 
 namespace NSG
@@ -103,6 +111,9 @@ namespace NSG
         glBindVertexArrayOES = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress ( "glBindVertexArrayOES" );
         glDeleteVertexArraysOES = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress ( "glDeleteVertexArraysOES" );
         glIsVertexArrayOES = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress ( "glIsVertexArrayOES" );
+        glVertexAttribDivisorEXT = (PFNGLVERTEXATTRIBDIVISORPROC)eglGetProcAddress ( "glVertexAttribDivisorEXT" );
+        glDrawElementsInstancedEXT = (PFNGLDRAWELEMENTSINSTANCEDPROC)eglGetProcAddress ( "glDrawElementsInstancedEXT" );
+        glDrawArraysInstancedEXT = (PFNGLDRAWARRAYSINSTANCEDPROC)eglGetProcAddress ( "glDrawArraysInstancedEXT" );
 #endif
         TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
         TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
@@ -121,11 +132,11 @@ namespace NSG
             TRACE_LOG("Using extension: EXT_discard_framebuffer");
         }
 
-        if (CheckExtension("OES_vertex_array_object"))
+        if (CheckExtension("OES_vertex_array_object") || CheckExtension("ARB_vertex_array_object"))
         {
 #if !defined(NACL)
             has_vertex_array_object_ext_ = true;
-            TRACE_LOG("Using extension: OES_vertex_array_object");
+            TRACE_LOG("Using extension: vertex_array_object");
 #endif
         }
 
@@ -153,12 +164,12 @@ namespace NSG
             TRACE_LOG("Using extension: GL_ARB_texture_non_power_of_two");
         }
 
-        if (CheckExtension("GL_EXT_instanced_arrays"))
+        if (CheckExtension("GL_EXT_instanced_arrays") || CheckExtension("GL_ARB_instanced_arrays"))
         {
+            instanceBuffer_ = PInstanceBuffer(new InstanceBuffer);
             has_instanced_arrays_ext_ = true;
             TRACE_LOG("Using extension: GL_EXT_instanced_arrays");
         }
-
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -178,20 +189,20 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
-		glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
+        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        
-		uniformsNeedUpdate_ = true;
-		lastMesh_ = nullptr;
-		lastMaterial_ = nullptr;
-		lastProgram_ = nullptr;
-		lastNode_ = nullptr;
-		activeMesh_ = nullptr;
-		activeMaterial_ = nullptr;
-		activeNode_ = nullptr;
+
+        uniformsNeedUpdate_ = true;
+        lastMesh_ = nullptr;
+        lastMaterial_ = nullptr;
+        lastProgram_ = nullptr;
+        lastNode_ = nullptr;
+        activeMesh_ = nullptr;
+        activeMaterial_ = nullptr;
+        activeNode_ = nullptr;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -220,6 +231,8 @@ namespace NSG
         SetVertexArrayObj(nullptr);
         SetVertexBuffer(nullptr);
         SetIndexBuffer(nullptr);
+        if (instanceBuffer_)
+            instanceBuffer_ = PInstanceBuffer(new InstanceBuffer);
         SetProgram(nullptr);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -554,9 +567,9 @@ namespace NSG
         return false;
     }
 
-    bool Graphics::SetVertexBuffer(VertexBuffer* buffer)
+    bool Graphics::SetVertexBuffer(VertexBuffer* buffer, bool force)
     {
-        if (buffer != vertexBuffer_)
+        if (buffer != vertexBuffer_ || force)
         {
             vertexBuffer_ = buffer;
 
@@ -566,7 +579,7 @@ namespace NSG
             }
             else
             {
-                VertexBuffer::Unbind();
+                //VertexBuffer::Unbind();
             }
             return true;
         }
@@ -574,9 +587,9 @@ namespace NSG
         return false;
     }
 
-    bool Graphics::SetIndexBuffer(IndexBuffer* buffer)
+    bool Graphics::SetIndexBuffer(IndexBuffer* buffer, bool force)
     {
-        if (buffer != indexBuffer_)
+        if (buffer != indexBuffer_ || force)
         {
             indexBuffer_ = buffer;
 
@@ -631,30 +644,95 @@ namespace NSG
         uniformsNeedUpdate_ = false;
     }
 
+    void Graphics::UpdateBatchBuffer()
+    {
+        if (has_instanced_arrays_ext_)
+        {
+            CHECK_ASSERT(activeNode_, __FILE__, __LINE__);
+            Batch batch;
+            batch.nodes_.push_back(activeNode_);
+            UpdateBatchBuffer(batch);
+        }
+    }
+
+    void Graphics::UpdateBatchBuffer(const Batch& batch)
+    {
+        CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
+
+        instanceBuffer_->Bind();
+        std::vector<InstanceData> instancesData;
+        instancesData.reserve(batch.nodes_.size());
+        for (auto& node : batch.nodes_)
+        {
+            InstanceData data;
+            data.modelMatrix_ = node->GetGlobalModelMatrix();
+            instancesData.push_back(data);
+        }
+
+        glBufferData(GL_ARRAY_BUFFER, instancesData.size() * sizeof(InstanceData), &(instancesData[0]), GL_DYNAMIC_DRAW);
+    }
+
+
+    void Graphics::SetInstanceAttrPointers(Program* program)
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        if (has_instanced_arrays_ext_)
+        {
+            GLuint modelMatrixLoc_ = program->GetAttModelMatrixLoc();
+
+            if (modelMatrixLoc_ != -1)
+            {
+                instanceBuffer_->Bind();
+                
+                for (int i = 0; i < 4; i++)
+                {
+                    glEnableVertexAttribArray(modelMatrixLoc_ + i);
+                    glVertexAttribPointer(modelMatrixLoc_ + i,
+                                          4,
+                                          GL_FLOAT,
+                                          GL_FALSE,
+                                          sizeof(InstanceData),
+                                          reinterpret_cast<void*>(offsetof(InstanceData, modelMatrix_) + sizeof(float) * 4 * i));
+
+                    glVertexAttribDivisor(modelMatrixLoc_ + i, 1);
+                }
+            }
+            else
+            {
+//                for (int i = 0; i < 4; i++)
+                {
+                    //glDisableVertexAttribArray(modelMatrixLoc_ + i);
+                }
+
+            }
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+        }
+    }
+
     void Graphics::SetVertexAttrPointers()
     {
-        glVertexAttribPointer(ATTRIBUTE_LOC::POSITION,
+        glVertexAttribPointer((int)AttributesLoc::POSITION,
                               3,
                               GL_FLOAT,
                               GL_FALSE,
                               sizeof(VertexData),
                               reinterpret_cast<void*>(offsetof(VertexData, position_)));
 
-        glVertexAttribPointer(ATTRIBUTE_LOC::NORMAL,
+        glVertexAttribPointer((int)AttributesLoc::NORMAL,
                               3,
                               GL_FLOAT,
                               GL_FALSE,
                               sizeof(VertexData),
                               reinterpret_cast<void*>(offsetof(VertexData, normal_)));
 
-        glVertexAttribPointer(ATTRIBUTE_LOC::COORD,
+        glVertexAttribPointer((int)AttributesLoc::TEXTURECOORD,
                               2,
                               GL_FLOAT,
                               GL_FALSE,
                               sizeof(VertexData),
                               reinterpret_cast<void*>(offsetof(VertexData, uv_)));
 
-        glVertexAttribPointer(ATTRIBUTE_LOC::COLOR,
+        glVertexAttribPointer((int)AttributesLoc::COLOR,
                               3,
                               GL_FLOAT,
                               GL_FALSE,
@@ -766,5 +844,65 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         return true;
+    }
+
+    bool Graphics::Draw(bool solid, Batch& batch)
+    {
+        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady())
+            return false;
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        program_->SetVariables(activeMaterial_);
+
+        activeMesh_->Draw(solid, program_, batch);
+
+        lastMesh_ = activeMesh_;
+        lastMaterial_ = activeMaterial_;
+        lastNode_ = activeNode_;
+        lastProgram_ = program_;
+
+        AppStatistics::this_->NewDrawCall();
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        return true;
+    }
+
+
+    void Graphics::Render(Batch& batch)
+    {
+        bool node_resources_loaded = true;
+        for (auto& node : batch.nodes_)
+        {
+            SceneNode* sn = (SceneNode*)node;
+            node_resources_loaded &= sn->IsReady(); // forces load from xml
+        }
+
+        if (node_resources_loaded && batch.material_)
+        {
+            PTechnique technique = batch.material_->GetTechnique();
+            if (technique)
+            {
+                Set(batch.material_.get());
+                Set(batch.mesh_.get());
+                if (has_instanced_arrays_ext_ && technique->GetNumPasses() == 1)
+                {
+                    SetNode(nullptr);
+                    PPass pass = technique->GetPass(0);
+                    instanceBuffer_->Bind();
+                    pass->Render(batch);
+                }
+                else
+                {
+                    for (auto& node : batch.nodes_)
+                    {
+                        SceneNode* sn = (SceneNode*)node;
+                        SetNode(sn);
+                        technique->Render();
+                    }
+                }
+            }
+        }
     }
 }

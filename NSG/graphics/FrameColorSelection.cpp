@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "FrameColorSelection.h"
 #include "FrameBuffer.h"
-#include "ProgramColorSelection.h"
 #include "Log.h"
 #include "Check.h"
 #include "SceneNode.h"
@@ -37,6 +36,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Technique.h"
 #include "Mesh.h"
+#include "Program.h"
 
 namespace NSG
 {
@@ -62,7 +62,7 @@ namespace NSG
         frameBuffer_ = PFrameBuffer(new FrameBuffer(windowWidth_, windowHeight_, frameBufferFlags));
 
         PPass pass(new Pass);
-        Program* program = new ProgramColorSelection;
+		Program* program = new Program;
         pass->SetProgram(PProgram(program));
 
         PTechnique technique(new Technique);
@@ -149,7 +149,7 @@ namespace NSG
 
                 for (auto& obj : nodes)
                 {
-                    Graphics::this_->Set(obj);
+					Graphics::this_->SetNode(obj);
                     Graphics::this_->Set(obj->GetMesh().get());
                     material_->GetTechnique()->Render();
                 }

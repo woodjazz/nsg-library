@@ -32,7 +32,6 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Technique.h"
 #include "Pass.h"
-#include "ProgramUnlit.h"
 #include "RectangleMesh.h"
 #include "IMGUILayoutManager.h"
 #include "FrameColorSelection.h"
@@ -42,6 +41,7 @@ misrepresented as being the original software.
 #include "AppStatistics.h"
 #include "IMGUI.h"
 #include "Pass.h"
+#include "Program.h"
 
 namespace NSG
 {
@@ -50,12 +50,12 @@ namespace NSG
     namespace IMGUI
     {
         Context::Context()
-            : unlitProgram_(new ProgramUnlit),
+            : unlitProgram_(new Program),
               controlMesh_(new RectangleMesh(2, 2)),
               state_(new State),
               pSkin_(new Skin),
-              pCurrentNode_(new Node),
-              pRootNode_(new Node),
+			  pCurrentNode_(new Node("IMGUI::Context::pCurrentNode_")),
+			  pRootNode_(new Node("IMGUI::Context::pRootNode_")),
               pLayoutManager_(new LayoutManager(pRootNode_)),
               transparentAreaStyle_(new AreaStyle),
               viewport_(0),

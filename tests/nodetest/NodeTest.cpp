@@ -30,7 +30,7 @@ static void Test01()
 {
 	PNode pA(new Node("A"));
 	PNode pB(new Node("B"));
-    pB->SetParent(pA);
+	pA->AddChild(pB);
 	pA->SetPosition(Vertex3(1,0,0));
 	pB->SetPosition(Vertex3(-2,0,0));
 	
@@ -72,7 +72,7 @@ static void Test02()
 {
 	PNode pA(new Node());
 	PNode pB(new Node());
-    pB->SetParent(pA);
+	pA->AddChild(pB);
 	pA->SetPosition(Vertex3(1,0,0));
 	pB->SetGlobalPosition(Vertex3(-2,0,0));
 
@@ -212,7 +212,7 @@ static void Test05()
     pA->SetPosition(Vertex3(2,0,0));
 
     PNode pB(new Node());
-    pB->SetParent(pA);
+	pA->AddChild(pB);
     pB->SetPosition(Vertex3(1,0,0));
     pB->SetOrientation(glm::angleAxis(PI, Vertex3(0, 0, 1)));
 
@@ -235,7 +235,7 @@ static void Test06()
     pA->SetPosition(Vertex3(0,0,0));
 
     PNode pB(new Node());
-    pB->SetParent(pA);
+	pA->AddChild(pB);
     pB->SetPosition(Vertex3(-1,0,0));
     pB->SetScale(Vertex3(0.5f, 1, 1));
 
@@ -272,8 +272,18 @@ static void Test07()
     CHECK_ASSERT(scale == scale1, __FILE__, __LINE__);
 }
 
+static void Test08()
+{
+	Scene scene;
+	PSceneNode sn0 = scene.CreateSceneNode("sn0");
+	PSceneNode sn1 = sn0->CreateChild("sn1");
+	PSceneNode sn2 = sn0->CreateChild("sn2");
+}
+
 void NodeTest()
 {
+	Test08();
+#if 0
 	Test01();
     Test02();
     Test03();
@@ -281,4 +291,6 @@ void NodeTest()
     Test05();
     Test06();
     Test07();
+#endif
+	
 }

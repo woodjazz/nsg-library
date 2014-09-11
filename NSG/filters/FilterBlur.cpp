@@ -28,74 +28,10 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Program.h"
 
-static const char* fShader = STRINGIFY(
-
-	uniform vec2 u_texelSize;
-	uniform int u_orientation;
-	uniform int u_blurAmount;
-	uniform float u_blurScale;
-	uniform float u_blurStrength;
-
-
-	/// Gets the Gaussian value in the first dimension.
-	/// <param name="x">Distance from origin on the x-axis.</param>
-	/// <param name="deviation">Standard deviation.</param>
-	/// <returns>The gaussian value on the x-axis.</returns>
-	float Gaussian(float x, float deviation)
-	{
-		return (1.0 / sqrt(2.0 * 3.141592 * deviation)) * exp(-((x * x) / (2.0 * deviation)));	
-	}
-
-
-	void main()
-	{
-		float halfBlur = float(u_blurAmount) * 0.5;
-		vec4 colour = vec4(0.0);
-		vec4 texColour = vec4(0.0);
-		
-		// Gaussian deviation
-		float deviation = halfBlur * 0.35;
-		deviation *= deviation;
-		float strength = 1.0 - u_blurStrength;
-		
-		//if ( u_orientation == 0 )
-		{
-			// Horizontal blur
-			for (int i = 0; i < 100; ++i)
-			{
-				if ( i >= u_blurAmount )
-					break;
-				
-				float offset = float(i) - halfBlur;
-				texColour = texture2D(u_texture0, v_texcoord + vec2(offset * u_texelSize.x * u_blurScale, 0.0)) * Gaussian(offset * strength, deviation);
-				colour += texColour;
-			}
-		}
-		//else
-		{
-			// Vertical blur
-			for (int i = 0; i < 100; ++i)
-			{
-				if ( i >= u_blurAmount )
-					break;
-				
-				float offset = float(i) - halfBlur;
-				texColour = texture2D(u_texture0, v_texcoord + vec2(0.0, offset * u_texelSize.y * u_blurScale)) * Gaussian(offset * strength, deviation);
-				colour += texColour;
-			}
-		}
-		
-		// Apply colour
-		gl_FragColor = clamp(colour, 0.0, 1.0);
-		gl_FragColor.w = 1.0;
-	}
-
-);
-
 namespace NSG
 {
 	FilterBlur::FilterBlur(PTexture input, int output_width, int output_height)
-		: Filter("FilterBlur", input, output_width, output_height, fShader),
+		: Filter("FilterBlur", input, output_width, output_height, Program::BLUR),
 	texelSize_loc_(-1),
 	orientation_loc_(-1),
 	blurAmount_loc_(-1),

@@ -56,10 +56,13 @@ namespace NSG
         void SetProgram(PProgram pProgram);
         PProgram GetProgram() const;
         virtual bool Render();
+        bool Render(Batch& batch);
         virtual bool IsValid() override;
         void Save(pugi::xml_node& node);
         void Load(const pugi::xml_node& node);
     protected:
+        void SetupPass();
+        Graphics& graphics_;
         PProgram pProgram_;
         BLEND_MODE blendMode_;
         bool enableDepthTest_;

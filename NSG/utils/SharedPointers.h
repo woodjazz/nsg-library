@@ -172,18 +172,6 @@ namespace NSG
 	class Program;
 	typedef std::shared_ptr<Program> PProgram;
 
-	class ProgramPerVertex1PointLight;
-	typedef std::shared_ptr<ProgramPerVertex1PointLight> PProgramPerVertex1PointLight;
-
-	class ProgramPerVertex;
-	typedef std::shared_ptr<ProgramPerVertex> PProgramPerVertex;
-
-	class ProgramUnlit;
-	typedef std::shared_ptr<ProgramUnlit> PProgramUnlit;
-
-	class ProgramWhiteColor;
-	typedef std::shared_ptr<ProgramWhiteColor> PProgramWhiteColor;
-
 	class RectangleMesh;
 	typedef std::shared_ptr<RectangleMesh> PRectangleMesh;
 
@@ -204,6 +192,9 @@ namespace NSG
 
 	class VertexBuffer;
 	typedef std::shared_ptr<VertexBuffer> PVertexBuffer;
+
+	class InstanceBuffer;
+	typedef std::shared_ptr<InstanceBuffer> PInstanceBuffer;
 
 	class VertexShader;
 	typedef std::shared_ptr<VertexShader> PVertexShader;
