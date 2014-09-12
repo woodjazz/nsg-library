@@ -61,8 +61,10 @@ namespace NSG
           att_positionLoc_(-1),
           att_normalLoc_(-1),
           att_colorLoc_(-1),
-          att_modelMatrixCol0Loc_(-1),
-          mLoc_(-1),
+          att_modelMatrixRow0Loc_(-1),
+          att_normalMatrixCol0Loc_(-1),
+          modelLoc_(-1),
+          normalMatrixLoc_(-1),
           viewLoc_(-1),
           viewProjectionLoc_(-1),
           sceneColorAmbientLoc_(-1),
@@ -142,16 +144,16 @@ namespace NSG
         if (Flag::STENCIL & flags_)
             preDefines += "#define STENCIL\n";
 
-        if(vertexShader_)
+        if (vertexShader_)
             preDefines += "#define HAS_USER_VERTEX_SHADER\n";
 
-        if(fragmentShader_)
+        if (fragmentShader_)
             preDefines += "#define HAS_USER_FRAGMENT_SHADER\n";
 
 
         std::string buffer = preDefines + "#define COMPILEVS\n";
         buffer += COMMON_GLSL;
-        if(vertexShader_)
+        if (vertexShader_)
         {
             size_t bufferSize = buffer.size();
             buffer.resize(bufferSize + vertexShader_->GetBytes());
@@ -162,7 +164,7 @@ namespace NSG
 
         buffer = preDefines  + "#define COMPILEFS\n";
         buffer += COMMON_GLSL;
-        if(fragmentShader_)
+        if (fragmentShader_)
         {
             size_t bufferSize = buffer.size();
             buffer.resize(bufferSize + fragmentShader_->GetBytes());
@@ -181,22 +183,24 @@ namespace NSG
                 pExtraUniforms_->SetLocations();
 
             att_positionLoc_ = GetAttributeLocation("a_position");
-			att_normalLoc_ = GetAttributeLocation("a_normal");
-			att_texcoordLoc_ = GetAttributeLocation("a_texcoord");
-			att_colorLoc_ = GetAttributeLocation("a_color");
-            att_modelMatrixCol0Loc_ = GetAttributeLocation("a_mMatrixCol0");
+            att_normalLoc_ = GetAttributeLocation("a_normal");
+            att_texcoordLoc_ = GetAttributeLocation("a_texcoord");
+            att_colorLoc_ = GetAttributeLocation("a_color");
+            att_modelMatrixRow0Loc_ = GetAttributeLocation("a_mMatrixRow0");
+            att_normalMatrixCol0Loc_ = GetAttributeLocation("a_normalMatrixCol0");
 
 
-            mLoc_ = GetUniformLocation("u_m");
+            modelLoc_ = GetUniformLocation("u_model");
+            normalMatrixLoc_ = GetUniformLocation("u_normalMatrix");
             viewLoc_ = GetUniformLocation("u_view");
             viewProjectionLoc_ = GetUniformLocation("u_viewProjection");
-            sceneColorAmbientLoc_ = GetUniformLocation("u_scene_ambient");
+            sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
             eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
             texture0Loc_ = GetUniformLocation("u_texture0");
             texture1Loc_ = GetUniformLocation("u_texture1");
             materialLoc_.color_ = GetUniformLocation("u_material.color");
             materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
-			materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
+            materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
             materialLoc_.specular_ = GetUniformLocation("u_material.specular");
             materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
 
@@ -239,12 +243,12 @@ namespace NSG
 
             if (texture0Loc_ != -1)
             {
-				glUniform1i(texture0Loc_, 0);
+                glUniform1i(texture0Loc_, 0);
             }
 
             if (texture1Loc_ != -1)
             {
-				glUniform1i(texture1Loc_, 1);
+                glUniform1i(texture1Loc_, 1);
             }
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -276,10 +280,6 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        GLint maxVertexAtts = 0;
-        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAtts);
-        CHECK_CONDITION(maxVertexAtts >= (int)AttributesLoc::MAX_ATTS, __FILE__, __LINE__);
-
         // Creates the program name/index.
         id_ = glCreateProgram();
 
@@ -288,10 +288,12 @@ namespace NSG
         glBindAttribLocation(id_, (int)AttributesLoc::NORMAL, "a_normal");
         glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD, "a_texcoord");
         glBindAttribLocation(id_, (int)AttributesLoc::COLOR, "a_color");
-        glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_COL0, "a_mMatrixCol0");
-        glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_COL1, "a_mMatrixCol1");
-        glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_COL2, "a_mMatrixCol2");
-        glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_COL3, "a_mMatrixCol3");
+        glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW0, "a_mMatrixRow0");
+        glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW1, "a_mMatrixRow1");
+        glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW2, "a_mMatrixRow2");
+        glBindAttribLocation(id_, (int)AttributesLoc::NORMAL_MATRIX_COL0, "a_normalMatrixCol0");
+        glBindAttribLocation(id_, (int)AttributesLoc::NORMAL_MATRIX_COL1, "a_normalMatrixCol1");
+        glBindAttribLocation(id_, (int)AttributesLoc::NORMAL_MATRIX_COL2, "a_normalMatrixCol2");
 
         // Will attach the fragment and vertex shaders to the program object.
         glAttachShader(id_, pVShader_->GetId());
@@ -378,10 +380,16 @@ namespace NSG
     {
         if (activeNode_ != node || (node && node->UniformsNeedUpdate()))
         {
-            if (mLoc_ != -1)
+            if (modelLoc_ != -1)
             {
                 const Matrix4& m = node->GetGlobalModelMatrix();
-                glUniformMatrix4fv(mLoc_, 1, GL_FALSE, glm::value_ptr(m));
+                glUniformMatrix4fv(modelLoc_, 1, GL_FALSE, glm::value_ptr(m));
+            }
+
+            if (normalMatrixLoc_ != -1)
+            {
+                const Matrix3& m = node->GetGlobalModelInvTranspMatrix();
+                glUniformMatrix3fv(normalMatrixLoc_, 1, GL_FALSE, glm::value_ptr(m));
             }
         }
     }
@@ -450,22 +458,22 @@ namespace NSG
         {
             neverUsed_ = false;
 
-			if (viewProjectionLoc_ != -1)
-			{
-				const Matrix4& m = Camera::GetMatViewProj();
-				glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
-			}
-
-            if(viewLoc_ != -1)
+            if (viewProjectionLoc_ != -1)
             {
-				const Matrix4& m = Camera::GetViewMatrix();
+                const Matrix4& m = Camera::GetMatViewProj();
+                glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
+            }
+
+            if (viewLoc_ != -1)
+            {
+                const Matrix4& m = Camera::GetViewMatrix();
                 glUniformMatrix4fv(viewLoc_, 1, GL_FALSE, glm::value_ptr(m));
             }
 
             if (eyeWorldPosLoc_ != -1)
             {
                 Vertex3 position(0);
-                if(camera)
+                if (camera)
                     position = camera->GetGlobalPosition();
                 glUniform3fv(eyeWorldPosLoc_, 1, &position[0]);
             }
@@ -542,13 +550,13 @@ namespace NSG
 
                     if (pointLighsLoc_[idx].atten_.linear_  != -1)
                     {
-						const Light::Attenuation& attenuation = pointLight->GetAttenuation();
+                        const Light::Attenuation& attenuation = pointLight->GetAttenuation();
                         glUniform1f(pointLighsLoc_[idx].atten_.linear_, attenuation.linear);
                     }
 
                     if (pointLighsLoc_[idx].atten_.quadratic_ != -1)
                     {
-						const Light::Attenuation& attenuation = pointLight->GetAttenuation();
+                        const Light::Attenuation& attenuation = pointLight->GetAttenuation();
                         glUniform1f(pointLighsLoc_[idx].atten_.quadratic_, attenuation.quadratic);
                     }
 
@@ -573,10 +581,10 @@ namespace NSG
                             glUniform3fv(lightsLoc_[i].spotDirection_loc, 1, &direction[0]);
                         }
                     }
-#endif                    
+#endif
                 }
 
-				activePointLights_[idx++] = pointLight.get();
+                activePointLights_[idx++] = pointLight.get();
             }
         }
     }
@@ -616,15 +624,15 @@ namespace NSG
             child.append_attribute("name") = ss.str().c_str();
         }
 
-		child.append_attribute("flags") = flags_.to_string().c_str();
+        child.append_attribute("flags") = flags_.to_string().c_str();
 
     }
 
     PProgram Program::CreateFrom(const pugi::xml_node& node)
     {
         std::string name = node.attribute("name").as_string();
-		std::string flags = node.attribute("flags").as_string();
-		PProgram program(new Program(name, flags));
-		return program;
+        std::string flags = node.attribute("flags").as_string();
+        PProgram program(new Program(name, flags));
+        return program;
     }
 }

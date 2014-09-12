@@ -84,7 +84,11 @@ namespace NSG
         }
         GLuint GetAttModelMatrixLoc() const
         {
-            return att_modelMatrixCol0Loc_;
+            return att_modelMatrixRow0Loc_;
+        }
+        GLuint GetAttNormalMatrixLoc() const
+        {
+            return att_normalMatrixCol0Loc_;
         }
         void SetVariables(Material* material, Node* node);
         void SetVariables(Material* material);
@@ -115,15 +119,16 @@ namespace NSG
         GLuint att_positionLoc_;
         GLuint att_normalLoc_;
         GLuint att_colorLoc_;
-
-        GLuint att_modelMatrixCol0Loc_;
+        GLuint att_modelMatrixRow0Loc_;
+        GLuint att_normalMatrixCol0Loc_;
         /////////////////////////////////////
 
 
         /////////////////////////////////////
         // Uniforms
         /////////////////////////////////////
-        GLuint mLoc_;
+        GLuint modelLoc_;
+        GLuint normalMatrixLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
         GLuint sceneColorAmbientLoc_;

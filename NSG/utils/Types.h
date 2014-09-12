@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/constants.hpp"
 #include "glm/gtc/epsilon.hpp"
+#include "glm/gtc/matrix_access.hpp"
 #include "glm/gtx/spline.hpp"
 #include "glm/gtx/io.hpp"
 #include "SharedPointers.h"
@@ -127,10 +128,12 @@ namespace NSG
         NORMAL,
         TEXTURECOORD,
         COLOR,
-        MODEL_MATRIX_COL0,
-        MODEL_MATRIX_COL1,
-        MODEL_MATRIX_COL2,
-        MODEL_MATRIX_COL3,
+        MODEL_MATRIX_ROW0,
+        MODEL_MATRIX_ROW1,
+        MODEL_MATRIX_ROW2,
+        NORMAL_MATRIX_COL0,
+        NORMAL_MATRIX_COL1,
+        NORMAL_MATRIX_COL2,
         MAX_ATTS
     };
 

@@ -30,7 +30,12 @@ namespace NSG
 {
     struct InstanceData
     {
-        Matrix4 modelMatrix_;
+        Vector4 modelMatrixRow0_;
+        Vector4 modelMatrixRow1_;
+        Vector4 modelMatrixRow2_;
+        Vector3 normalMatrixCol0_;
+        Vector3 normalMatrixCol1_;
+        Vector3 normalMatrixCol2_;
         InstanceData();
     };
 }

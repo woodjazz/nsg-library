@@ -16,10 +16,6 @@ static const char* COMMON_GLSL = \
 "	#define mediump\n"\
 "	#define highp\n"\
 "#endif\n"\
-"uniform mat4 u_m; // model matrix\n"\
-"uniform mat4 u_viewProjection; \n"\
-"uniform vec4 u_scene_ambient;\n"\
-"uniform vec3 u_eyeWorldPos;\n"\
 "struct Material\n"\
 "{\n"\
 "	vec4 color;\n"\
@@ -28,7 +24,6 @@ static const char* COMMON_GLSL = \
 "	vec4 specular;\n"\
 "	float shininess;\n"\
 "};\n"\
-"uniform Material u_material;\n"\
 "struct BaseLight                                                                    \n"\
 "{                \n"\
 "	vec4 diffuse;\n"\
@@ -52,125 +47,147 @@ static const char* COMMON_GLSL = \
 "    vec3 position;                                                                          \n"\
 "    Attenuation atten;                                                                      \n"\
 "};                                                                                          \n"\
+"uniform mat4 u_model;\n"\
+"uniform mat3 u_normalMatrix;\n"\
+"uniform mat4 u_viewProjection; \n"\
+"uniform vec4 u_sceneAmbientColor;\n"\
+"uniform vec3 u_eyeWorldPos;\n"\
+"uniform Material u_material;\n"\
 "uniform int u_numPointLights;\n"\
 "uniform DirectionalLight u_directionalLight;                                                 \n"\
 "uniform PointLight u_pointLights[MAX_POINT_LIGHTS];\n"\
 "#ifdef COMPILEVS\n"\
-"/////////////////////////////////////////////////////////////////\n"\
-"/////////////////////////////////////////////////////////////////\n"\
-"// Vertex shader specific\n"\
-"/////////////////////////////////////////////////////////////////\n"\
-"/////////////////////////////////////////////////////////////////\n"\
+"	/////////////////////////////////////////////////////////////////\n"\
+"	/////////////////////////////////////////////////////////////////\n"\
+"	// Vertex shader specific\n"\
+"	/////////////////////////////////////////////////////////////////\n"\
+"	/////////////////////////////////////////////////////////////////\n"\
 "	attribute vec4 a_position;\n"\
 "	attribute vec2 a_texcoord;\n"\
 "	attribute vec3 a_normal;\n"\
 "	attribute vec4 a_color;\n"\
+"	#if defined(INSTANCED)\n"\
+"	    attribute vec4 a_mMatrixRow0;\n"\
+"	    attribute vec4 a_mMatrixRow1;\n"\
+"	    attribute vec4 a_mMatrixRow2;\n"\
+"	    attribute vec3 a_normalMatrixCol0;\n"\
+"	    attribute vec3 a_normalMatrixCol1;\n"\
+"	    attribute vec3 a_normalMatrixCol2;\n"\
+"	#endif\n"\
 "	varying vec4 v_color;\n"\
 "	varying vec3 v_normal;\n"\
 "	varying vec2 v_texcoord;\n"\
-"	#if defined(INSTANCED)\n"\
-"	    attribute vec4 a_mMatrixCol0;\n"\
-"	    attribute vec4 a_mMatrixCol1;\n"\
-"	    attribute vec4 a_mMatrixCol2;\n"\
-"	    attribute vec4 a_mMatrixCol3;\n"\
-"		mat4 GetModelMatrix()\n"\
-"		{\n"\
-"		    return mat4(a_mMatrixCol0, a_mMatrixCol1, a_mMatrixCol2, a_mMatrixCol3);\n"\
-"		}\n"\
-"	#else\n"\
-"		mat4 GetModelMatrix()\n"\
-"		{\n"\
-"		    return u_m;\n"\
-"		}\n"\
-"	#endif\n"\
+"	\n"\
+"	mat4 GetModelMatrix()\n"\
+"	{\n"\
+"		#if defined(INSTANCED)\n"\
+"			// Since we are using rows instead of cols the instancing model matrix is a transpose, \n"\
+"			// so the matrix multiply order must be swapped\n"\
+"			const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);\n"\
+"		    return mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn);\n"\
+"	    #else\n"\
+"		    return u_model;\n"\
+"	    #endif\n"\
+"	}\n"\
+"	mat3 GetNormalMatrix()\n"\
+"	{\n"\
+"		#if defined(INSTANCED)\n"\
+"			return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2);\n"\
+"		#else\n"\
+"			return u_normalMatrix;\n"\
+"		#endif\n"\
+"	}\n"\
 "	vec3 GetWorldPos()\n"\
 "	{\n"\
-"	    return (GetModelMatrix() * a_position).xyz;\n"\
+"		#if defined(INSTANCED)\n"\
+"			// Instancing model matrix is a transpose, so the matrix multiply order must be swapped\n"\
+"			return (a_position * GetModelMatrix()).xyz;\n"\
+"		#else\n"\
+"	    	return (GetModelMatrix() * a_position).xyz;\n"\
+"	    #endif\n"\
 "	}\n"\
 "	vec3 GetWorldNormal()\n"\
 "	{\n"\
-"	    return normalize((GetModelMatrix() * vec4(a_normal, 0.0)).xyz);\n"\
+"		return normalize((GetNormalMatrix() * a_normal));\n"\
 "	}\n"\
 "	vec4 GetClipPos(vec3 worldPos)\n"\
 "	{\n"\
 "	    return u_viewProjection * vec4(worldPos, 1.0);\n"\
 "	}\n"\
-"	vec4 CalcLight(BaseLight light, vec3 lightDirection, vec3 normal)                   \n"\
+"	vec4 CalcLight(vec3 worldPos, BaseLight light, vec3 lightDirection, vec3 normal)                   \n"\
 "	{                                                                                           \n"\
-"	    vec4 ambientColor = u_scene_ambient * u_material.ambient;\n"\
-"	                                                                                            \n"\
-"	    vec4 diffuseColor  = vec4(0.0);                                                  \n"\
-"	    vec4 specularColor = vec4(0.0);                                                  \n"\
-"		float diffuseFactor = dot(normal, -lightDirection);	                                                                                            \n"\
+"	    vec4 color = u_sceneAmbientColor * u_material.ambient;\n"\
+"		\n"\
+"		float diffuseFactor = dot(normal, -lightDirection);	\n"\
 "	    if (diffuseFactor > 0.0) \n"\
 "	    {                                                                \n"\
-"	        diffuseColor = light.diffuse * u_material.diffuse;    \n"\
+"	        color = max(color, light.diffuse * u_material.diffuse);    \n"\
 "	        #ifdef SPECULAR\n"\
-"		        vec3 vertexToEye = normalize(u_eyeWorldPos - GetWorldPos());                             \n"\
+"		        vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos);                             \n"\
 "		        vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
 "		        float specularFactor = dot(vertexToEye, lightReflect);\n"\
 "		        specularFactor = pow(specularFactor, u_material.shininess);\n"\
 "		        if (specularFactor > 0.0)\n"\
 "		        {\n"\
-"		            specularColor = light.specular * u_material.specular * specularFactor;\n"\
+"		            color += light.specular * u_material.specular * specularFactor;\n"\
 "		       	}\n"\
 "		    #endif\n"\
 "	    }                                                                                       \n"\
 "	                                                                                            \n"\
-"	    return ambientColor + diffuseColor + specularColor;  \n"\
+"	    return color;  \n"\
 "	}                                                                                           \n"\
-"	vec4 CalcDirectionalLight(vec3 normal)\n"\
+"	vec4 CalcDirectionalLight(vec3 worldPos, vec3 normal)\n"\
 "	{                                                                                           \n"\
-"	    return CalcLight(u_directionalLight.base, u_directionalLight.direction, normal);\n"\
+"	    return CalcLight(worldPos, u_directionalLight.base, u_directionalLight.direction, normal);\n"\
 "	}                                                      \n"\
-"	vec4 CalcPointLight(int index, vec3 normal)\n"\
+"	vec4 CalcPointLight(vec3 worldPos, int index, vec3 normal)\n"\
 "	{                                                                                           \n"\
-"	    vec3 lightDirection = GetWorldPos() - u_pointLights[index].position;                         \n"\
+"	    vec3 lightDirection = worldPos - u_pointLights[index].position;                         \n"\
 "	    float distance = length(lightDirection);                                                \n"\
 "	    lightDirection = normalize(lightDirection);                                             \n"\
 "	                                                                                            \n"\
-"	    vec4 color = CalcLight(u_pointLights[index].base, lightDirection, normal);       \n"\
+"	    vec4 color = CalcLight(worldPos, u_pointLights[index].base, lightDirection, normal);       \n"\
 "	    float attenuation =  u_pointLights[index].atten.constant +                               \n"\
 "	                         u_pointLights[index].atten.linear * distance +                      \n"\
 "	                         u_pointLights[index].atten.quadratic * distance * distance;               \n"\
 "	                                                                                            \n"\
 "	    return color / attenuation;                                                             \n"\
 "	}\n"\
-"#if !defined(HAS_USER_VERTEX_SHADER)\n"\
+"	#if !defined(HAS_USER_VERTEX_SHADER)\n"\
 "	void main()\n"\
 "	{\n"\
-"	#ifdef SHOW_TEXTURE\n"\
-"		gl_Position = a_position;\n"\
-"		v_texcoord = vec2(a_texcoord.x, 1.0 - a_texcoord.y);\n"\
-"	#elif defined(BLUR) || defined(BLEND)\n"\
-"		gl_Position = a_position;\n"\
-"		v_texcoord = a_texcoord;\n"\
-"	#elif defined(STENCIL)\n"\
-"		gl_Position = GetClipPos(GetWorldPos());	\n"\
-"	#else\n"\
-"		#ifdef DIFFUSE\n"\
-"		    vec3 normal = GetWorldNormal();\n"\
-"		    vec4 totalLight = CalcDirectionalLight(normal);\n"\
-"		    for (int i = 0 ; i < u_numPointLights ; i++) \n"\
-"		    {\n"\
-"		        totalLight += CalcPointLight(i, normal);                                            \n"\
-"		    }                                                                                       \n"\
-"		    v_color = a_color * totalLight;\n"\
+"		#ifdef SHOW_TEXTURE\n"\
+"			gl_Position = a_position;\n"\
+"			v_texcoord = vec2(a_texcoord.x, 1.0 - a_texcoord.y);\n"\
+"		#elif defined(BLUR) || defined(BLEND)\n"\
+"			gl_Position = a_position;\n"\
+"			v_texcoord = a_texcoord;\n"\
+"		#elif defined(STENCIL)\n"\
+"			gl_Position = GetClipPos(GetWorldPos());	\n"\
 "		#else\n"\
-"			v_color = u_material.color * a_color;\n"\
+"			vec3 worldPos = GetWorldPos();\n"\
+"			#ifdef DIFFUSE\n"\
+"			    vec3 normal = GetWorldNormal();\n"\
+"			    vec4 totalLight = CalcDirectionalLight(worldPos, normal);\n"\
+"			    for (int i = 0 ; i < u_numPointLights ; i++) \n"\
+"			    {\n"\
+"			        totalLight += CalcPointLight(worldPos, i, normal);                                            \n"\
+"			    }                                                                                       \n"\
+"			    v_color = a_color * totalLight;\n"\
+"			#else\n"\
+"				v_color = u_material.color * a_color;\n"\
+"			#endif\n"\
+"		    v_texcoord = a_texcoord;\n"\
+"			gl_Position = GetClipPos(worldPos);\n"\
 "		#endif\n"\
-"	    v_texcoord = a_texcoord;\n"\
-"		vec3 worldPos = GetWorldPos();\n"\
-"		gl_Position = GetClipPos(worldPos);\n"\
-"	#endif\n"\
 "	}\n"\
-"#endif	\n"\
+"	#endif	\n"\
 "#else\n"\
-"/////////////////////////////////////////////////////////////////\n"\
-"/////////////////////////////////////////////////////////////////\n"\
-"// Fragment shader specific\n"\
-"/////////////////////////////////////////////////////////////////\n"\
-"/////////////////////////////////////////////////////////////////\n"\
+"	/////////////////////////////////////////////////////////////////\n"\
+"	/////////////////////////////////////////////////////////////////\n"\
+"	// Fragment shader specific\n"\
+"	/////////////////////////////////////////////////////////////////\n"\
+"	/////////////////////////////////////////////////////////////////\n"\
 "	uniform sampler2D u_texture0;\n"\
 "	uniform sampler2D u_texture1;\n"\
 "	varying vec4 v_color;\n"\
@@ -270,24 +287,24 @@ static const char* COMMON_GLSL = \
 "			return color;\n"\
 "		}\n"\
 "	#endif\n"\
-"#if !defined(HAS_USER_FRAGMENT_SHADER)\n"\
-"	void main()\n"\
-"	{\n"\
-"	#if defined(TEXT)\n"\
-"		gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a);\n"\
-"	#elif defined(BLEND)\n"\
-"		gl_FragColor = Blend();\n"\
-"	#elif defined(BLUR)\n"\
-"		gl_FragColor = Blur();\n"\
-"	#elif defined(SHOW_TEXTURE)\n"\
-"		gl_FragColor = texture2D(u_texture0, v_texcoord);\n"\
-"	#elif defined(STENCIL)\n"\
-"		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"\
-"	#else\n"\
-"		gl_FragColor = v_color * texture2D(u_texture0, v_texcoord);\n"\
-"	#endif	    \n"\
-"	}	\n"\
-"#endif	\n"\
+"	#if !defined(HAS_USER_FRAGMENT_SHADER)\n"\
+"		void main()\n"\
+"		{\n"\
+"			#if defined(TEXT)\n"\
+"				gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a);\n"\
+"			#elif defined(BLEND)\n"\
+"				gl_FragColor = Blend();\n"\
+"			#elif defined(BLUR)\n"\
+"				gl_FragColor = Blur();\n"\
+"			#elif defined(SHOW_TEXTURE)\n"\
+"				gl_FragColor = texture2D(u_texture0, v_texcoord);\n"\
+"			#elif defined(STENCIL)\n"\
+"				gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"\
+"			#else\n"\
+"				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord);\n"\
+"			#endif	    \n"\
+"		}	\n"\
+"	#endif	\n"\
 "#endif\n"\
 ;
 }

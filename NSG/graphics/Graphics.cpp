@@ -166,9 +166,21 @@ namespace NSG
 
         if (CheckExtension("GL_EXT_instanced_arrays") || CheckExtension("GL_ARB_instanced_arrays"))
         {
-            instanceBuffer_ = PInstanceBuffer(new InstanceBuffer);
-            has_instanced_arrays_ext_ = true;
-            TRACE_LOG("Using extension: GL_EXT_instanced_arrays");
+            GLint maxVertexAtts = 0;
+            glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAtts);
+            int attributesNeeded = (int)AttributesLoc::MAX_ATTS;
+            if (maxVertexAtts >= attributesNeeded)
+            {
+                instanceBuffer_ = PInstanceBuffer(new InstanceBuffer);
+                has_instanced_arrays_ext_ = true;
+                TRACE_LOG("Using extension: instanced_arrays");
+            }
+            else
+            {
+                TRACE_LOG("Has extension: instanced_arrays");
+                TRACE_LOG("Needed " << attributesNeeded << " but graphics only supports " << maxVertexAtts << " attributes");
+                TRACE_LOG("Disabling extension: instanced_arrays");
+            }
         }
 
         // Set up texture data read/write alignment
@@ -665,7 +677,14 @@ namespace NSG
         for (auto& node : batch.nodes_)
         {
             InstanceData data;
-            data.modelMatrix_ = node->GetGlobalModelMatrix();
+            const Matrix4& m = node->GetGlobalModelMatrix();
+            data.modelMatrixRow0_ = glm::row(m, 0);
+            data.modelMatrixRow1_ = glm::row(m, 1);
+            data.modelMatrixRow2_ = glm::row(m, 2);
+            const Matrix3& normal = node->GetGlobalModelInvTranspMatrix();
+            data.normalMatrixCol0_ = glm::column(normal, 0);
+            data.normalMatrixCol1_ = glm::column(normal, 1);
+            data.normalMatrixCol2_ = glm::column(normal, 2);
             instancesData.push_back(data);
         }
 
@@ -678,35 +697,48 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
         if (has_instanced_arrays_ext_)
         {
-            GLuint modelMatrixLoc_ = program->GetAttModelMatrixLoc();
+            GLuint modelMatrixLoc = program->GetAttModelMatrixLoc();
+            CHECK_ASSERT(modelMatrixLoc != -1, __FILE__, __LINE__);
 
-            if (modelMatrixLoc_ != -1)
+            instanceBuffer_->Bind();
+
+            for (int i = 0; i < 3; i++)
             {
-                instanceBuffer_->Bind();
-                
-                for (int i = 0; i < 4; i++)
+                glEnableVertexAttribArray(modelMatrixLoc + i);
+                glVertexAttribPointer(modelMatrixLoc + i,
+                                      4,
+                                      GL_FLOAT,
+                                      GL_FALSE,
+                                      sizeof(InstanceData),
+                                      reinterpret_cast<void*>(offsetof(InstanceData, modelMatrixRow0_) + sizeof(float) * 4 * i));
+
+                glVertexAttribDivisor(modelMatrixLoc + i, 1);
+            }
+
+            GLuint normalMatrixLoc = program->GetAttNormalMatrixLoc();
+            if (normalMatrixLoc != -1)
+            {
+                for (int i = 0; i < 3; i++)
                 {
-                    glEnableVertexAttribArray(modelMatrixLoc_ + i);
-                    glVertexAttribPointer(modelMatrixLoc_ + i,
-                                          4,
+                    glEnableVertexAttribArray(normalMatrixLoc + i);
+                    glVertexAttribPointer(normalMatrixLoc + i,
+                                          3,
                                           GL_FLOAT,
                                           GL_FALSE,
                                           sizeof(InstanceData),
-                                          reinterpret_cast<void*>(offsetof(InstanceData, modelMatrix_) + sizeof(float) * 4 * i));
+                                          reinterpret_cast<void*>(offsetof(InstanceData, normalMatrixCol0_) + sizeof(float) * 3 * i));
 
-                    glVertexAttribDivisor(modelMatrixLoc_ + i, 1);
+                    glVertexAttribDivisor(normalMatrixLoc + i, 1);
                 }
             }
             else
             {
-//                for (int i = 0; i < 4; i++)
-                {
-                    //glDisableVertexAttribArray(modelMatrixLoc_ + i);
-                }
-
+                glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL0);
+                glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL1);
+                glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL2);
             }
-            CHECK_GL_STATUS(__FILE__, __LINE__);
         }
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     void Graphics::SetVertexAttrPointers()

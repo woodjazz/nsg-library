@@ -13,11 +13,6 @@
 	#define highp
 #endif
 
-uniform mat4 u_m; // model matrix
-uniform mat4 u_viewProjection; 
-uniform vec4 u_scene_ambient;
-uniform vec3 u_eyeWorldPos;
-
 struct Material
 {
 	vec4 color;
@@ -26,8 +21,6 @@ struct Material
 	vec4 specular;
 	float shininess;
 };
-
-uniform Material u_material;
 
 struct BaseLight                                                                    
 {                
@@ -55,47 +48,72 @@ struct PointLight
     Attenuation atten;                                                                      
 };                                                                                          
 
+uniform mat4 u_model;
+uniform mat3 u_normalMatrix;
+uniform mat4 u_viewProjection; 
+uniform vec4 u_sceneAmbientColor;
+uniform vec3 u_eyeWorldPos;
+uniform Material u_material;
 uniform int u_numPointLights;
 uniform DirectionalLight u_directionalLight;                                                 
 uniform PointLight u_pointLights[MAX_POINT_LIGHTS];
 
 #ifdef COMPILEVS
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-// Vertex shader specific
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	// Vertex shader specific
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
 	attribute vec4 a_position;
 	attribute vec2 a_texcoord;
 	attribute vec3 a_normal;
 	attribute vec4 a_color;
+	#if defined(INSTANCED)
+	    attribute vec4 a_mMatrixRow0;
+	    attribute vec4 a_mMatrixRow1;
+	    attribute vec4 a_mMatrixRow2;
+	    attribute vec3 a_normalMatrixCol0;
+	    attribute vec3 a_normalMatrixCol1;
+	    attribute vec3 a_normalMatrixCol2;
+	#endif
 	varying vec4 v_color;
 	varying vec3 v_normal;
 	varying vec2 v_texcoord;
-	#if defined(INSTANCED)
-	    attribute vec4 a_mMatrixCol0;
-	    attribute vec4 a_mMatrixCol1;
-	    attribute vec4 a_mMatrixCol2;
-	    attribute vec4 a_mMatrixCol3;
-		mat4 GetModelMatrix()
-		{
-		    return mat4(a_mMatrixCol0, a_mMatrixCol1, a_mMatrixCol2, a_mMatrixCol3);
-		}
-	#else
-		mat4 GetModelMatrix()
-		{
-		    return u_m;
-		}
-	#endif
+	
+	mat4 GetModelMatrix()
+	{
+		#if defined(INSTANCED)
+			// Since we are using rows instead of cols the instancing model matrix is a transpose, 
+			// so the matrix multiply order must be swapped
+			const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);
+		    return mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn);
+	    #else
+		    return u_model;
+	    #endif
+	}
+
+	mat3 GetNormalMatrix()
+	{
+		#if defined(INSTANCED)
+			return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2);
+		#else
+			return u_normalMatrix;
+		#endif
+	}
 
 	vec3 GetWorldPos()
 	{
-	    return (GetModelMatrix() * a_position).xyz;
+		#if defined(INSTANCED)
+			// Instancing model matrix is a transpose, so the matrix multiply order must be swapped
+			return (a_position * GetModelMatrix()).xyz;
+		#else
+	    	return (GetModelMatrix() * a_position).xyz;
+	    #endif
 	}
 
 	vec3 GetWorldNormal()
 	{
-	    return normalize((GetModelMatrix() * vec4(a_normal, 0.0)).xyz);
+		return normalize((GetNormalMatrix() * a_normal));
 	}
 
 	vec4 GetClipPos(vec3 worldPos)
@@ -103,44 +121,42 @@ uniform PointLight u_pointLights[MAX_POINT_LIGHTS];
 	    return u_viewProjection * vec4(worldPos, 1.0);
 	}
 
-	vec4 CalcLight(BaseLight light, vec3 lightDirection, vec3 normal)                   
+	vec4 CalcLight(vec3 worldPos, BaseLight light, vec3 lightDirection, vec3 normal)                   
 	{                                                                                           
-	    vec4 ambientColor = u_scene_ambient * u_material.ambient;
-	                                                                                            
-	    vec4 diffuseColor  = vec4(0.0);                                                  
-	    vec4 specularColor = vec4(0.0);                                                  
+	    vec4 color = u_sceneAmbientColor * u_material.ambient;
+		
+		float diffuseFactor = dot(normal, -lightDirection);	
 
-		float diffuseFactor = dot(normal, -lightDirection);	                                                                                            
 	    if (diffuseFactor > 0.0) 
 	    {                                                                
-	        diffuseColor = light.diffuse * u_material.diffuse;    
+	        color = max(color, light.diffuse * u_material.diffuse);    
 	        #ifdef SPECULAR
-		        vec3 vertexToEye = normalize(u_eyeWorldPos - GetWorldPos());                             
+		        vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos);                             
 		        vec3 lightReflect = normalize(reflect(lightDirection, normal));
 		        float specularFactor = dot(vertexToEye, lightReflect);
 		        specularFactor = pow(specularFactor, u_material.shininess);
 		        if (specularFactor > 0.0)
 		        {
-		            specularColor = light.specular * u_material.specular * specularFactor;
+		            color += light.specular * u_material.specular * specularFactor;
 		       	}
 		    #endif
 	    }                                                                                       
 	                                                                                            
-	    return ambientColor + diffuseColor + specularColor;  
+	    return color;  
 	}                                                                                           
 
-	vec4 CalcDirectionalLight(vec3 normal)
+	vec4 CalcDirectionalLight(vec3 worldPos, vec3 normal)
 	{                                                                                           
-	    return CalcLight(u_directionalLight.base, u_directionalLight.direction, normal);
+	    return CalcLight(worldPos, u_directionalLight.base, u_directionalLight.direction, normal);
 	}                                                      
 
-	vec4 CalcPointLight(int index, vec3 normal)
+	vec4 CalcPointLight(vec3 worldPos, int index, vec3 normal)
 	{                                                                                           
-	    vec3 lightDirection = GetWorldPos() - u_pointLights[index].position;                         
+	    vec3 lightDirection = worldPos - u_pointLights[index].position;                         
 	    float distance = length(lightDirection);                                                
 	    lightDirection = normalize(lightDirection);                                             
 	                                                                                            
-	    vec4 color = CalcLight(u_pointLights[index].base, lightDirection, normal);       
+	    vec4 color = CalcLight(worldPos, u_pointLights[index].base, lightDirection, normal);       
 	    float attenuation =  u_pointLights[index].atten.constant +                               
 	                         u_pointLights[index].atten.linear * distance +                      
 	                         u_pointLights[index].atten.quadratic * distance * distance;               
@@ -148,42 +164,42 @@ uniform PointLight u_pointLights[MAX_POINT_LIGHTS];
 	    return color / attenuation;                                                             
 	}
 
-#if !defined(HAS_USER_VERTEX_SHADER)
+	#if !defined(HAS_USER_VERTEX_SHADER)
 	void main()
 	{
-	#ifdef SHOW_TEXTURE
-		gl_Position = a_position;
-		v_texcoord = vec2(a_texcoord.x, 1.0 - a_texcoord.y);
-	#elif defined(BLUR) || defined(BLEND)
-		gl_Position = a_position;
-		v_texcoord = a_texcoord;
-	#elif defined(STENCIL)
-		gl_Position = GetClipPos(GetWorldPos());	
-	#else
-		#ifdef DIFFUSE
-		    vec3 normal = GetWorldNormal();
-		    vec4 totalLight = CalcDirectionalLight(normal);
-		    for (int i = 0 ; i < u_numPointLights ; i++) 
-		    {
-		        totalLight += CalcPointLight(i, normal);                                            
-		    }                                                                                       
-		    v_color = a_color * totalLight;
+		#ifdef SHOW_TEXTURE
+			gl_Position = a_position;
+			v_texcoord = vec2(a_texcoord.x, 1.0 - a_texcoord.y);
+		#elif defined(BLUR) || defined(BLEND)
+			gl_Position = a_position;
+			v_texcoord = a_texcoord;
+		#elif defined(STENCIL)
+			gl_Position = GetClipPos(GetWorldPos());	
 		#else
-			v_color = u_material.color * a_color;
+			vec3 worldPos = GetWorldPos();
+			#ifdef DIFFUSE
+			    vec3 normal = GetWorldNormal();
+			    vec4 totalLight = CalcDirectionalLight(worldPos, normal);
+			    for (int i = 0 ; i < u_numPointLights ; i++) 
+			    {
+			        totalLight += CalcPointLight(worldPos, i, normal);                                            
+			    }                                                                                       
+			    v_color = a_color * totalLight;
+			#else
+				v_color = u_material.color * a_color;
+			#endif
+		    v_texcoord = a_texcoord;
+			gl_Position = GetClipPos(worldPos);
 		#endif
-	    v_texcoord = a_texcoord;
-		vec3 worldPos = GetWorldPos();
-		gl_Position = GetClipPos(worldPos);
-	#endif
 	}
-#endif	
+	#endif	
 
 #else
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-// Fragment shader specific
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	// Fragment shader specific
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
 	uniform sampler2D u_texture0;
 	uniform sampler2D u_texture1;
 
@@ -291,26 +307,26 @@ uniform PointLight u_pointLights[MAX_POINT_LIGHTS];
 
 	#endif
 
-#if !defined(HAS_USER_FRAGMENT_SHADER)
+	#if !defined(HAS_USER_FRAGMENT_SHADER)
 
-	void main()
-	{
-	#if defined(TEXT)
-		gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a);
-	#elif defined(BLEND)
-		gl_FragColor = Blend();
-	#elif defined(BLUR)
-		gl_FragColor = Blur();
-	#elif defined(SHOW_TEXTURE)
-		gl_FragColor = texture2D(u_texture0, v_texcoord);
-	#elif defined(STENCIL)
-		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-	#else
-		gl_FragColor = v_color * texture2D(u_texture0, v_texcoord);
-	#endif	    
-	}	
+		void main()
+		{
+			#if defined(TEXT)
+				gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a);
+			#elif defined(BLEND)
+				gl_FragColor = Blend();
+			#elif defined(BLUR)
+				gl_FragColor = Blur();
+			#elif defined(SHOW_TEXTURE)
+				gl_FragColor = texture2D(u_texture0, v_texcoord);
+			#elif defined(STENCIL)
+				gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+			#else
+				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord);
+			#endif	    
+		}	
 
-#endif	
+	#endif	
 
 #endif
 
