@@ -51,10 +51,26 @@ namespace NSG
 		int shadingModel = 0;
 		if (AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_SHADING_MODEL, &shadingModel, &max))
 		{
-			if (shadingModel == aiShadingMode_NoShading)
-				pass->SetProgram(PProgram(new Program));
-			else 
-				pass->SetProgram(PProgram(new Program("", Program::DIFFUSE | Program::SPECULAR)));
+            switch(shadingModel)
+            {
+                case aiShadingMode_Flat:
+                case aiShadingMode_Gouraud:
+                    pass->SetProgram(PProgram(new Program("", Program::PER_VERTEX_LIGHTING)));
+                    break;
+                case aiShadingMode_Phong:
+                case aiShadingMode_Blinn:
+                case aiShadingMode_Toon:
+                case aiShadingMode_OrenNayar:
+                case aiShadingMode_Minnaert:
+                case aiShadingMode_CookTorrance:
+                case aiShadingMode_Fresnel:
+                    pass->SetProgram(PProgram(new Program("", Program::PER_PIXEL_LIGHTING)));
+                    break;
+                default:
+                    pass->SetProgram(PProgram(new Program("")));
+                    break;
+                    
+            }
 		}
 		else
 		{

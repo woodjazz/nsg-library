@@ -42,9 +42,9 @@ void CubeBehavior::Start()
 
 	PMaterial pMaterial(new Material("cube"));
 
-	PProgram pDiffuseProgram(new Program("CubeBehaviorProgram", Program::DIFFUSE | Program::SPECULAR));
+	PProgram program(new Program("CubeBehaviorProgram"));
     PPass pass(new Pass);
-    pass->SetProgram(pDiffuseProgram);
+    pass->SetProgram(program);
 
     PTexture pTexture(new TextureFile("data/cube_example.png"));
 	pMaterial->SetTexture0(pTexture);

@@ -46,13 +46,14 @@ void EarthBehavior::Start()
 
 	PTexture pEarthTexture(new TextureFile("data/stone.jpg"));
 	PMaterial pMaterial(new Material ("earth"));
-	PProgram program(new Program);
+	PProgram program(new Program("", Program::PER_VERTEX_LIGHTING));
     PTechnique technique(new Technique);
     PPass pass(new Pass);
     technique->Add(pass);
 	pass->SetProgram(program);
     pMaterial->SetTechnique(technique);
 	pMaterial->SetTexture0(pEarthTexture);
+	pMaterial->SetShininess(100);
     pSceneNode_->Set(pMaterial);
  
     pSceneNode_->SetPosition(Vertex3(5, 0, 0));

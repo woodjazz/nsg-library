@@ -40,8 +40,8 @@ namespace NSG
     public:
         enum Flag
         {
-            DIFFUSE = 1 << 0,
-            SPECULAR = 1 << 1,
+            PER_VERTEX_LIGHTING = 1 << 0,
+            PER_PIXEL_LIGHTING = 1 << 1,
             BLEND = 1 << 2,
             BLUR = 1 << 3,
             TEXT = 1 << 4,
@@ -204,5 +204,6 @@ namespace NSG
         std::string name_;
         PResource vertexShader_;
         PResource fragmentShader_;
+        Graphics& graphics_;
     };
 }

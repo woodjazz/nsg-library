@@ -40,8 +40,8 @@ struct Sample : App
 
     Sample()
     {
-        AppConfiguration::this_->width_ = 30;
-        AppConfiguration::this_->height_ = 20;
+        AppConfiguration::this_->width_ = 1024;
+        AppConfiguration::this_->height_ = 768;
         AppConfiguration::this_->showStatistics_ = true;
     }
 

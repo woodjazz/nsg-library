@@ -52,7 +52,7 @@ struct Sample : App
         PTexture pEarthTexture2(new TextureFile("data/jup0vss1.jpg"));
         PMaterial pMaterial1(new Material("earth1"));
         PMaterial pMaterial2(new Material("earth2"));
-		PProgram perVertex(new Program("", Program::DIFFUSE | Program::SPECULAR));
+		PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING));
         PTechnique technique(new Technique);
         PPass pass(new Pass);
         technique->Add(pass);

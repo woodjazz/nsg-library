@@ -697,22 +697,30 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
         if (has_instanced_arrays_ext_)
         {
-            GLuint modelMatrixLoc = program->GetAttModelMatrixLoc();
-            CHECK_ASSERT(modelMatrixLoc != -1, __FILE__, __LINE__);
-
             instanceBuffer_->Bind();
 
-            for (int i = 0; i < 3; i++)
-            {
-                glEnableVertexAttribArray(modelMatrixLoc + i);
-                glVertexAttribPointer(modelMatrixLoc + i,
-                                      4,
-                                      GL_FLOAT,
-                                      GL_FALSE,
-                                      sizeof(InstanceData),
-                                      reinterpret_cast<void*>(offsetof(InstanceData, modelMatrixRow0_) + sizeof(float) * 4 * i));
+            GLuint modelMatrixLoc = program->GetAttModelMatrixLoc();
 
-                glVertexAttribDivisor(modelMatrixLoc + i, 1);
+            if (modelMatrixLoc != -1)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    glEnableVertexAttribArray(modelMatrixLoc + i);
+                    glVertexAttribPointer(modelMatrixLoc + i,
+                                          4,
+                                          GL_FLOAT,
+                                          GL_FALSE,
+                                          sizeof(InstanceData),
+                                          reinterpret_cast<void*>(offsetof(InstanceData, modelMatrixRow0_) + sizeof(float) * 4 * i));
+
+                    glVertexAttribDivisor(modelMatrixLoc + i, 1);
+                }
+            }
+            else
+            {
+                glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW0);
+                glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW1);
+                glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW2);
             }
 
             GLuint normalMatrixLoc = program->GetAttNormalMatrixLoc();
