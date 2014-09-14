@@ -26,20 +26,16 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
+#include "Buffer.h"
 
 namespace NSG 
 {
-	class InstanceBuffer
+	class InstanceBuffer : public Buffer
 	{
 	public:
 		InstanceBuffer();
 		~InstanceBuffer();
-		void Bind();
 		static void Unbind();
-	private:
-		GLenum type_;
-		GLuint id_;
-		GLenum usage_;
 	};
 }
 

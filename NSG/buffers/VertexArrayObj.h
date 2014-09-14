@@ -32,14 +32,18 @@ namespace NSG
 	class VertexArrayObj
 	{
 	public:
-		VertexArrayObj(Program* program, Mesh* mesh);
+		VertexArrayObj(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer);
 		~VertexArrayObj();
-		void Redo();
+		void Use();
 		void Bind();
+		void MarkAsDirty();
 		static void Unbind();
 	private:
 		GLuint vao_; // vertex array object
 		Program* program_;
-		Mesh* mesh_;
+		VertexBuffer* vBuffer_;
+		IndexBuffer* iBuffer_;
+		Graphics& graphics_;
+		bool isDirty_;
 	};
 }

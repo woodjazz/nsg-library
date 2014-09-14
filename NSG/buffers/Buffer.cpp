@@ -35,13 +35,15 @@ namespace NSG
         : type_(type),
           usage_(usage),
           bufferSize_(bufferSize),
-          dynamic_(usage != GL_STATIC_DRAW)
+          dynamic_(usage != GL_STATIC_DRAW),
+          graphics_(*Graphics::this_)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         glGenBuffers(1, &id_);
 
-        dataCollection_.push_back(Data(0, bytesNeeded));
+        if(bytesNeeded > 0)
+            dataCollection_.push_back(Data(0, bytesNeeded));
 
         if (type_ == GL_ARRAY_BUFFER)
             AppStatistics::this_->AddVertexBuffer(dynamic_);

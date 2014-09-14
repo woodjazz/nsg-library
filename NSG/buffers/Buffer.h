@@ -67,6 +67,7 @@ namespace NSG
 		GLenum usage_;
 		GLsizeiptr bufferSize_;
 		bool dynamic_;
+		Graphics& graphics_;
 	private:
 		GLsizeiptr GetTotalBytes() const;
 		static const size_t VERTEXES_PER_TRIANGLE = 3;

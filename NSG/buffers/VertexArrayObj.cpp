@@ -34,10 +34,13 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    VertexArrayObj::VertexArrayObj(Program* program, Mesh* mesh)
+    VertexArrayObj::VertexArrayObj(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer)
         : vao_(0),
-        program_(program),
-        mesh_(mesh)
+          program_(program),
+          vBuffer_(vBuffer),
+          iBuffer_(iBuffer),
+          graphics_(*Graphics::this_),
+          isDirty_(true)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -45,55 +48,55 @@ namespace NSG
 
         CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
 
-        Redo();
-
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     VertexArrayObj::~VertexArrayObj()
     {
-        if (Graphics::this_->GetVertexArrayObj() == this)
-            Graphics::this_->SetVertexArrayObj(nullptr);
+        if (graphics_.GetVertexArrayObj() == this)
+            graphics_.SetVertexArrayObj(nullptr);
 
         glDeleteVertexArrays(1, &vao_);
     }
 
-    void VertexArrayObj::Redo()
+    void VertexArrayObj::MarkAsDirty()
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        isDirty_ = true;
+    }
 
-        CHECK_CONDITION(Graphics::this_->SetVertexArrayObj(this), __FILE__, __LINE__);
+    void VertexArrayObj::Use()
+    {
+        graphics_.SetVertexArrayObj(this);
 
-        VertexBuffer* vertexBuffer = mesh_->GetVertexBuffer();
-        Graphics::this_->SetVertexBuffer(vertexBuffer, true);
+        if (isDirty_)
+        {
+            isDirty_ = false;
 
-        GLuint position_loc = program_->GetAttPositionLoc();
-        GLuint texcoord_loc = program_->GetAttTextCoordLoc();
-        GLuint normal_loc = program_->GetAttNormalLoc();
-        GLuint color_loc = program_->GetAttColorLoc();
+            graphics_.SetVertexBuffer(vBuffer_, true);
 
-        if (position_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::POSITION);
+            GLuint position_loc = program_->GetAttPositionLoc();
+            GLuint texcoord_loc = program_->GetAttTextCoordLoc();
+            GLuint normal_loc = program_->GetAttNormalLoc();
+            GLuint color_loc = program_->GetAttColorLoc();
 
-        if (normal_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
+            if (position_loc != -1)
+                glEnableVertexAttribArray((int)AttributesLoc::POSITION);
 
-        if (texcoord_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD);
+            if (normal_loc != -1)
+                glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
 
-        if (color_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::COLOR);
+            if (texcoord_loc != -1)
+                glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD);
 
-        Graphics::this_->SetVertexAttrPointers();
+            if (color_loc != -1)
+                glEnableVertexAttribArray((int)AttributesLoc::COLOR);
 
-        IndexBuffer* indexBuffer = mesh_->GetIndexBuffer();
-        Graphics::this_->SetIndexBuffer(indexBuffer, true);
-        
-        Graphics::this_->SetInstanceAttrPointers(program_);
+            graphics_.SetVertexAttrPointers();
 
-        Graphics::this_->SetVertexArrayObj(nullptr);
+            graphics_.SetIndexBuffer(iBuffer_, true);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+            graphics_.SetInstanceAttrPointers(program_);
+        }
     }
 
     void VertexArrayObj::Bind()

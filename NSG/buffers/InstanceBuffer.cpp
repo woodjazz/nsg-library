@@ -25,28 +25,22 @@ misrepresented as being the original software.
 */
 #include "InstanceBuffer.h"
 #include "Graphics.h"
-namespace NSG 
+namespace NSG
 {
-	InstanceBuffer::InstanceBuffer()
-	{
-		glGenBuffers(1, &id_);
-	}
-		
-	InstanceBuffer::~InstanceBuffer()
-	{
-		glDeleteBuffers(1, &id_);
-	}
+    InstanceBuffer::InstanceBuffer()
+        : Buffer(0, 0, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
+    {
+    }
 
-	void InstanceBuffer::Bind()
-	{
-		Graphics::this_->SetVertexBuffer(nullptr);
-		glBindBuffer(GL_ARRAY_BUFFER, id_);
-	}
+    InstanceBuffer::~InstanceBuffer()
+    {
+        if (graphics_.GetVertexBuffer() == this)
+            graphics_.SetVertexBuffer(nullptr);
+    }
 
-	void InstanceBuffer::Unbind()
-	{
-        Graphics::this_->SetVertexBuffer(nullptr);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
+    void InstanceBuffer::Unbind()
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }
 

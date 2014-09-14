@@ -145,16 +145,6 @@ macro (setup_executable)
     file(GLOB hdr "*.h")
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
 
-    # IF(EXISTS "${data_dir}")
-    #     file(GLOB ShaderFiles ${NSG_ASSETS_DIR}/shaders/*.glsl)
-    #     add_custom_target(
-    #         ${PROJECT_NAME}_SHADERS ALL
-    #         COMMAND ${CMAKE_COMMAND} -E copy_directory ${NSG_ASSETS_DIR}/shaders ${data_dir}/shaders
-    #         DEPENDS ${ShaderFiles}
-    #         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    #         COMMENT "Copying shaders.")
-    # ENDIF()
-
     if(NACL)
         
         add_executable(${PROJECT_NAME} ${src} ${hdr})
@@ -248,13 +238,25 @@ macro (setup_executable)
 
     elseif(APPLE)
 
-        if(NOT IS_EXECUTABLE_A_TOOL)
+        if(IOS)
+            set(IS_EXECUTABLE_A_BUNDLE 1)
+        endif()
+
+        if(IS_EXECUTABLE_A_BUNDLE)
             set (EXECUTABLE_TYPE MACOSX_BUNDLE)
         endif()
 
         if(EXISTS "${data_dir}")
-            add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${data_dir})
-            set_source_files_properties(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+            if(IS_EXECUTABLE_A_BUNDLE)
+                add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${data_dir})
+                set_source_files_properties(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+            else()
+                add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr})
+                add_custom_command(
+                TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+            endif()
         else()
             add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr})
         endif()
@@ -313,30 +315,12 @@ macro (setup_executable)
 
     endif()
 
-    # IF(EXISTS "${data_dir}")
-    #     add_custom_command(
-    #         TARGET ${PROJECT_NAME} PRE_BUILD
-    #             COMMAND ${CMAKE_COMMAND} -E make_directory ${data_dir}/shaders
-    #             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-    #     file(GLOB ShaderFiles ${NSG_ASSETS_DIR}/shaders/*.glsl)
-
-    #     foreach(ShaderFile ${ShaderFiles})
-    #         add_custom_command(
-    #             TARGET ${PROJECT_NAME} PRE_BUILD
-    #                 COMMAND ${CMAKE_COMMAND} -E copy ${ShaderFile} ${data_dir}/shaders
-    #                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    #     endforeach()
-
-    # ENDIF()
-
 endmacro (setup_executable)
 
 ##################################################################################
 ##################################################################################
 ##################################################################################
 macro (setup_tool)
-    set(IS_EXECUTABLE_A_TOOL 1)
     setup_executable()
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
 endmacro (setup_tool)
@@ -353,6 +337,7 @@ endmacro (setup_library)
 ##################################################################################
 ##################################################################################
 macro (setup_sample)
+    set(IS_EXECUTABLE_A_BUNDLE 1)
     setup_executable()
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
 endmacro (setup_sample)

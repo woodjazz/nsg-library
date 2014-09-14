@@ -157,5 +157,7 @@ namespace NSG
         audio_ = PAudio(new Audio);
         
         statistics_ = PAppStatistics(new AppStatistics);
+
+        graphics_->InitializeBuffers();
     }
 }

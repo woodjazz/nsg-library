@@ -82,14 +82,10 @@ namespace NSG
         {
             return bufferIndexData_;
         }
-        void Draw(bool solid, Program* program);
-        void Draw(bool solid, Program* program, Batch& batch);
         void Save(pugi::xml_node& node);
         virtual void Load(const pugi::xml_node& node);
 
     protected:
-        void SetBuffersAndAttributes(Program* program);
-        void RedoVAO(Program* program);
         VertexsData vertexsData_;
         Indexes indexes_;
         PVertexBuffer pVBuffer_;
@@ -99,8 +95,6 @@ namespace NSG
         Buffer::Data* bufferIndexData_;
         BoundingBox bb_;
         float boundingSphereRadius_;
-        typedef std::map<Program*, PVertexArrayObj> VAOMap;
-        VAOMap vaoMap_;
         bool isStatic_;
         std::string name_;
         Graphics& graphics_;
