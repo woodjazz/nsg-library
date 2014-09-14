@@ -24,8 +24,14 @@
 			gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 
 		#elif defined(PER_PIXEL_LIGHTING)
-
-			vec3 normal = normalize(v_normal);
+			#ifdef NORMAL_MAP
+				vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord).xyz;
+			    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
+			    mat3 TBN = mat3(v_tangent, v_bitangent, v_normal);
+			    vec3 normal = normalize(TBN * bumpMapNormal);
+			#else
+				vec3 normal = normalize(v_normal);
+			#endif
     		vec3 vertexToEye = normalize(v_vertexToEye);
     		vec4 totalLight = CalcDirectionalLight(vertexToEye, normal);
 		    for (int i = 0 ; i < u_numPointLights ; i++) 

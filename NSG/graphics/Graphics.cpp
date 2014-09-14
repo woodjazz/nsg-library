@@ -817,11 +817,18 @@ namespace NSG
                               reinterpret_cast<void*>(offsetof(VertexData, uv_)));
 
         glVertexAttribPointer((int)AttributesLoc::COLOR,
-                              3,
+                              4,
                               GL_FLOAT,
                               GL_FALSE,
                               sizeof(VertexData),
                               reinterpret_cast<void*>(offsetof(VertexData, color_)));
+
+        glVertexAttribPointer((int)AttributesLoc::TANGENT,
+                              3,
+                              GL_FLOAT,
+                              GL_FALSE,
+                              sizeof(VertexData),
+                              reinterpret_cast<void*>(offsetof(VertexData, tangent_)));
 
     }
 
@@ -833,6 +840,7 @@ namespace NSG
             GLuint texcoord_loc = activeProgram_->GetAttTextCoordLoc();
             GLuint normal_loc = activeProgram_->GetAttNormalLoc();
             GLuint color_loc = activeProgram_->GetAttColorLoc();
+            GLuint tangent_loc = activeProgram_->GetAttTangentLoc();
 
             unsigned newAttributes = 0;
 
@@ -884,6 +892,19 @@ namespace NSG
                     glEnableVertexAttribArray(color_loc);
                 }
             }
+
+            if (tangent_loc != -1)
+            {
+                unsigned positionBit = 1 << tangent_loc;
+                newAttributes |= positionBit;
+
+                if ((enabledAttributes_ & positionBit) == 0)
+                {
+                    enabledAttributes_ |= positionBit;
+                    glEnableVertexAttribArray(tangent_loc);
+                }
+            }
+
 
             SetVertexAttrPointers();
 

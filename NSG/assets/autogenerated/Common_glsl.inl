@@ -19,6 +19,8 @@ static const std::string COMMON_GLSL = \
 "#endif   \n"\
 "varying vec4 v_color;\n"\
 "varying vec3 v_normal;\n"\
+"varying vec3 v_tangent;\n"\
+"varying vec3 v_bitangent;\n"\
 "varying vec2 v_texcoord; \n"\
 "varying vec3 v_vertexToEye;\n"\
 "varying vec3 v_lightDirection[MAX_POINT_LIGHTS];\n"\

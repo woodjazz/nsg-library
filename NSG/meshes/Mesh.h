@@ -84,7 +84,8 @@ namespace NSG
         }
         void Save(pugi::xml_node& node);
         virtual void Load(const pugi::xml_node& node);
-
+    private:
+        void CalculateTangents();
     protected:
         VertexsData vertexsData_;
         Indexes indexes_;
@@ -98,5 +99,6 @@ namespace NSG
         bool isStatic_;
         std::string name_;
         Graphics& graphics_;
+        bool areTangentsCalculated_;
     };
 }

@@ -24,25 +24,19 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include <iostream>
-
-namespace NSG
+#include "NSG.h"
+#include <deque>
+using namespace NSG;
+class CameraBehavior : public Behavior
 {
-    struct VertexData
-    {
-        Vertex3 position_;
-        Vertex3 normal_;
-        Vertex2 uv_;
-        Color color_;
-        Vertex3 tangent_;
+public:
+	CameraBehavior();
+	~CameraBehavior();
 
-        VertexData();
-    };
+	void Start() override;
+	void Update() override;
 
-	std::ostream& operator << (std::ostream& s , const VertexData& obj);
-    typedef std::vector<VertexData> VertexsData;
+private:
+    std::deque<Vertex3> camControlPoints_;
 
-}
-
-
+};

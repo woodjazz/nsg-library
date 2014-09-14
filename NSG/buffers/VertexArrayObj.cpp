@@ -78,6 +78,7 @@ namespace NSG
             GLuint texcoord_loc = program_->GetAttTextCoordLoc();
             GLuint normal_loc = program_->GetAttNormalLoc();
             GLuint color_loc = program_->GetAttColorLoc();
+            GLuint tangent_loc = program_->GetAttTangentLoc();
 
             if (position_loc != -1)
                 glEnableVertexAttribArray((int)AttributesLoc::POSITION);
@@ -90,6 +91,9 @@ namespace NSG
 
             if (color_loc != -1)
                 glEnableVertexAttribArray((int)AttributesLoc::COLOR);
+
+            if (tangent_loc != -1)
+                glEnableVertexAttribArray((int)AttributesLoc::TANGENT);
 
             graphics_.SetVertexAttrPointers();
 

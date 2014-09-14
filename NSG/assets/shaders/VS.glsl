@@ -34,8 +34,15 @@
 
 			#elif defined(PER_PIXEL_LIGHTING)
 
-				v_color = a_color;
 				v_normal = GetWorldNormal();
+				
+				#ifdef NORMAL_MAP					
+					v_tangent = GetWorldTangent();
+				    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);
+				    v_bitangent = cross(v_tangent, v_normal);
+				#endif
+
+				v_color = a_color;				
 				v_vertexToEye = normalize(u_eyeWorldPos - worldPos);
 				for (int i = 0 ; i < u_numPointLights ; i++) 
 				{

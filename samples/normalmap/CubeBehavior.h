@@ -24,25 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include <iostream>
-
-namespace NSG
+#include "NSG.h"
+using namespace NSG;
+class CubeBehavior : public Behavior
 {
-    struct VertexData
-    {
-        Vertex3 position_;
-        Vertex3 normal_;
-        Vertex2 uv_;
-        Color color_;
-        Vertex3 tangent_;
+public:
+	CubeBehavior();
+	~CubeBehavior();
 
-        VertexData();
-    };
+	void Start() override;
+	void Update() override;
 
-	std::ostream& operator << (std::ostream& s , const VertexData& obj);
-    typedef std::vector<VertexData> VertexsData;
-
-}
-
-
+private:
+	float x_angle_;
+	float y_angle_;
+};

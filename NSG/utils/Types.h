@@ -128,6 +128,7 @@ namespace NSG
         NORMAL,
         TEXTURECOORD,
         COLOR,
+        TANGENT,
         MODEL_MATRIX_ROW0,
         MODEL_MATRIX_ROW1,
         MODEL_MATRIX_ROW2,

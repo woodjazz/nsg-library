@@ -47,7 +47,8 @@ namespace NSG
           isStatic_(!dynamic),
           boundingSphereRadius_(0),
           name_(name),
-          graphics_(*Graphics::this_)
+          graphics_(*Graphics::this_),
+          areTangentsCalculated_(false)
     {
     }
 
@@ -66,6 +67,9 @@ namespace NSG
 
     void Mesh::AllocateResources()
     {
+        if (!areTangentsCalculated_)
+            CalculateTangents();
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         CHECK_ASSERT(pVBuffer_ == nullptr, __FILE__, __LINE__);
@@ -113,6 +117,7 @@ namespace NSG
         bufferIndexData_ = nullptr;
         vertexsData_.clear();
         indexes_.clear();
+        areTangentsCalculated_ = false;
     }
 
     void Mesh::Save(pugi::xml_node& node)
@@ -216,6 +221,46 @@ namespace NSG
                     indexes_.push_back(index);
                 }
             }
+        }
+    }
+
+    void Mesh::CalculateTangents()
+    {
+        for (unsigned int i = 0 ; i < indexes_.size() ; i += 3)
+        {
+            VertexData& v0 = vertexsData_[indexes_[i]];
+            VertexData& v1 = vertexsData_[indexes_[i + 1]];
+            VertexData& v2 = vertexsData_[indexes_[i + 2]];
+
+            Vector3 edge1 = v1.position_ - v0.position_;
+            Vector3 edge2 = v2.position_ - v0.position_;
+
+            float deltaU1 = v1.uv_.x - v0.uv_.x;
+            float deltaV1 = v1.uv_.y - v0.uv_.y;
+            float deltaU2 = v2.uv_.x - v0.uv_.x;
+            float deltaV2 = v2.uv_.y - v0.uv_.y;
+
+            float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+
+            Vector3 tangent;
+            Vector3 bitangent;
+
+            tangent.x = f * (deltaV2 * edge1.x - deltaV1 * edge2.x);
+            tangent.y = f * (deltaV2 * edge1.y - deltaV1 * edge2.y);
+            tangent.z = f * (deltaV2 * edge1.z - deltaV1 * edge2.z);
+
+            bitangent.x = f * (-deltaU2 * edge1.x - deltaU1 * edge2.x);
+            bitangent.y = f * (-deltaU2 * edge1.y - deltaU1 * edge2.y);
+            bitangent.z = f * (-deltaU2 * edge1.z - deltaU1 * edge2.z);
+
+            v0.tangent_ += tangent;
+            v1.tangent_ += tangent;
+            v2.tangent_ += tangent;
+        }
+
+        for (unsigned int i = 0 ; i < vertexsData_.size() ; i++)
+        {
+            glm::normalize(vertexsData_[i].tangent_);
         }
     }
 }

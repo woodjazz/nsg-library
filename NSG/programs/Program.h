@@ -46,7 +46,8 @@ namespace NSG
             BLUR = 1 << 3,
             TEXT = 1 << 4,
             SHOW_TEXTURE = 1 << 5,
-            STENCIL = 1 << 6
+            STENCIL = 1 << 6,
+            NORMAL_MAP = 1 << 7
         };
 
         typedef FlagSet<Flag> Flags;
@@ -81,6 +82,10 @@ namespace NSG
         GLuint GetAttColorLoc() const
         {
             return att_colorLoc_;
+        }
+        GLuint GetAttTangentLoc() const
+        {
+            return att_tangentLoc_;
         }
         GLuint GetAttModelMatrixLoc() const
         {
@@ -119,6 +124,7 @@ namespace NSG
         GLuint att_positionLoc_;
         GLuint att_normalLoc_;
         GLuint att_colorLoc_;
+        GLuint att_tangentLoc_;
         GLuint att_modelMatrixRow0Loc_;
         GLuint att_normalMatrixCol0Loc_;
         /////////////////////////////////////

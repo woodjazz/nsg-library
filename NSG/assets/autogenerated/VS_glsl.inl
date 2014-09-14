@@ -28,8 +28,14 @@ static const std::string VS_GLSL = \
 "			    }                                                                                       \n"\
 "			    v_color = a_color * totalLight;\n"\
 "			#elif defined(PER_PIXEL_LIGHTING)\n"\
-"				v_color = a_color;\n"\
 "				v_normal = GetWorldNormal();\n"\
+"				\n"\
+"				#ifdef NORMAL_MAP					\n"\
+"					v_tangent = GetWorldTangent();\n"\
+"				    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);\n"\
+"				    v_bitangent = cross(v_tangent, v_normal);\n"\
+"				#endif\n"\
+"				v_color = a_color;				\n"\
 "				v_vertexToEye = normalize(u_eyeWorldPos - worldPos);\n"\
 "				for (int i = 0 ; i < u_numPointLights ; i++) \n"\
 "				{\n"\

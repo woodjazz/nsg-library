@@ -15,6 +15,8 @@
 
 varying vec4 v_color;
 varying vec3 v_normal;
+varying vec3 v_tangent;
+varying vec3 v_bitangent;
 varying vec2 v_texcoord; 
 varying vec3 v_vertexToEye;
 varying vec3 v_lightDirection[MAX_POINT_LIGHTS];

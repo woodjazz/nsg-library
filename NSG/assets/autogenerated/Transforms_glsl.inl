@@ -10,10 +10,11 @@ static const std::string TRANSFORMS_GLSL = \
 "	// Vertex shader specific\n"\
 "	/////////////////////////////////////////////////////////////////\n"\
 "	/////////////////////////////////////////////////////////////////\n"\
-"	attribute vec4 a_position;\n"\
+"	attribute vec3 a_position;\n"\
 "	attribute vec2 a_texcoord;\n"\
 "	attribute vec3 a_normal;\n"\
 "	attribute vec4 a_color;\n"\
+"	attribute vec3 a_tangent;\n"\
 "	#if defined(INSTANCED)\n"\
 "	    attribute vec4 a_mMatrixRow0;\n"\
 "	    attribute vec4 a_mMatrixRow1;\n"\
@@ -49,14 +50,18 @@ static const std::string TRANSFORMS_GLSL = \
 "	{\n"\
 "		#if defined(INSTANCED)\n"\
 "			// Instancing model matrix is a transpose, so the matrix multiply order must be swapped\n"\
-"			return (a_position * GetModelMatrix()).xyz;\n"\
+"			return (vec4(a_position, 1.0) * GetModelMatrix()).xyz;\n"\
 "		#else\n"\
-"	    	return (GetModelMatrix() * a_position).xyz;\n"\
+"	    	return (GetModelMatrix() * vec4(a_position, 1.0)).xyz;\n"\
 "	    #endif\n"\
 "	}\n"\
 "	vec3 GetWorldNormal()\n"\
 "	{\n"\
 "		return normalize((GetNormalMatrix() * a_normal));\n"\
+"	}\n"\
+"	vec3 GetWorldTangent()\n"\
+"	{   \n"\
+"		return normalize((GetNormalMatrix() * a_tangent));\n"\
 "	}\n"\
 "	vec4 GetClipPos(vec3 worldPos)\n"\
 "	{\n"\

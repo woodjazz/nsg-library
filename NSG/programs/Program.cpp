@@ -66,6 +66,7 @@ namespace NSG
           att_positionLoc_(-1),
           att_normalLoc_(-1),
           att_colorLoc_(-1),
+          att_tangentLoc_(-1),
           att_modelMatrixRow0Loc_(-1),
           att_normalMatrixCol0Loc_(-1),
           modelLoc_(-1),
@@ -143,6 +144,9 @@ namespace NSG
             preDefines += "#define SHOW_TEXTURE\n";
         else if (Flag::STENCIL & flags_)
             preDefines += "#define STENCIL\n";
+
+        if (Flag::NORMAL_MAP & flags_)
+            preDefines += "#define NORMAL_MAP\n";
         
         if (vertexShader_)
             preDefines += "#define HAS_USER_VERTEX_SHADER\n";
@@ -186,12 +190,9 @@ namespace NSG
             att_normalLoc_ = GetAttributeLocation("a_normal");
             att_texcoordLoc_ = GetAttributeLocation("a_texcoord");
             att_colorLoc_ = GetAttributeLocation("a_color");
-            if(graphics_.HasInstancedArrays())
-            {
-                att_modelMatrixRow0Loc_ = GetAttributeLocation("a_mMatrixRow0");
-                att_normalMatrixCol0Loc_ = GetAttributeLocation("a_normalMatrixCol0");
-            }
-
+            att_tangentLoc_ = GetAttributeLocation("a_tangent");
+            att_modelMatrixRow0Loc_ = GetAttributeLocation("a_mMatrixRow0");
+            att_normalMatrixCol0Loc_ = GetAttributeLocation("a_normalMatrixCol0");
 
             modelLoc_ = GetUniformLocation("u_model");
             normalMatrixLoc_ = GetUniformLocation("u_normalMatrix");
@@ -291,6 +292,7 @@ namespace NSG
         glBindAttribLocation(id_, (int)AttributesLoc::NORMAL, "a_normal");
         glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD, "a_texcoord");
         glBindAttribLocation(id_, (int)AttributesLoc::COLOR, "a_color");
+        glBindAttribLocation(id_, (int)AttributesLoc::TANGENT, "a_tangent");
         glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW0, "a_mMatrixRow0");
         glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW1, "a_mMatrixRow1");
         glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW2, "a_mMatrixRow2");

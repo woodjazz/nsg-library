@@ -5,10 +5,11 @@
 	// Vertex shader specific
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
-	attribute vec4 a_position;
+	attribute vec3 a_position;
 	attribute vec2 a_texcoord;
 	attribute vec3 a_normal;
 	attribute vec4 a_color;
+	attribute vec3 a_tangent;
 	#if defined(INSTANCED)
 	    attribute vec4 a_mMatrixRow0;
 	    attribute vec4 a_mMatrixRow1;
@@ -47,15 +48,20 @@
 	{
 		#if defined(INSTANCED)
 			// Instancing model matrix is a transpose, so the matrix multiply order must be swapped
-			return (a_position * GetModelMatrix()).xyz;
+			return (vec4(a_position, 1.0) * GetModelMatrix()).xyz;
 		#else
-	    	return (GetModelMatrix() * a_position).xyz;
+	    	return (GetModelMatrix() * vec4(a_position, 1.0)).xyz;
 	    #endif
 	}
 
 	vec3 GetWorldNormal()
 	{
 		return normalize((GetNormalMatrix() * a_normal));
+	}
+
+	vec3 GetWorldTangent()
+	{   
+		return normalize((GetNormalMatrix() * a_tangent));
 	}
 
 	vec4 GetClipPos(vec3 worldPos)
