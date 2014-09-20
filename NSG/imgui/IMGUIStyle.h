@@ -32,6 +32,7 @@ namespace NSG
 	{
 		struct Style
 		{
+			App& app_;
 			bool enableActive_;
 			bool enableHot_;
 			bool enableFocus_;
@@ -80,7 +81,7 @@ namespace NSG
 
 		struct LabelStyle : Style
 		{
-			Color textColor_;
+			PMaterial textMaterial_;
 			std::string fontAtlasFile_;
 
 			LabelStyle();
@@ -89,7 +90,7 @@ namespace NSG
 
 		struct ButtonStyle : Style
 		{
-			Color textColor_;
+			PMaterial textMaterial_;
 			std::string fontAtlasFile_;
 
 			ButtonStyle();
@@ -106,7 +107,7 @@ namespace NSG
 
 		struct TextStyle : Style
 		{
-			Color textColor_;
+			PMaterial textMaterial_;
 			std::string fontAtlasFile_;
 			size_t textMaxLength_;
 
@@ -116,7 +117,7 @@ namespace NSG
 
 		struct TitleStyle : Style
 		{
-			Color textColor_;
+			PMaterial textMaterial_;
 			size_t pixelsHeight_;
 			std::string fontAtlasFile_;
 
@@ -128,7 +129,6 @@ namespace NSG
 		{
 			std::string fontAtlasFile_;
 			size_t sizerPixels_;
-
 
 			PTitleStyle titleStyle_;
 

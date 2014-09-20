@@ -42,9 +42,7 @@ namespace NSG
 	template<> Context* Singleton<Context>::this_ = nullptr;
 
     Context::Context()
-        : keyboard_(new Keyboard),
-        scene_(nullptr),
-        allGPUObjectAreValid_(true)
+        : keyboard_(new Keyboard)
     {
     }
 

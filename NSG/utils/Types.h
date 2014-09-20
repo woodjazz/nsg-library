@@ -185,4 +185,15 @@ namespace NSG
         TS_WORLD,
     };
 
+    struct CachedData
+    {
+        std::vector<PMesh> meshes_;
+        std::vector<PMaterial> materials_;
+    };
+
+    struct RayNodeResult
+    {
+        float distance_;
+        const SceneNode* node_;
+    };
 }

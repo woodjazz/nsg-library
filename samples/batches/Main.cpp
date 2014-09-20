@@ -39,19 +39,19 @@ struct Sample : App
 
     Sample()
     {
-        AppConfiguration::this_->width_ = 1024;
-        AppConfiguration::this_->height_ = 768;
+        //AppConfiguration::this_->width_ = 30;
+        //AppConfiguration::this_->height_ = 20;
         AppConfiguration::this_->showStatistics_ = true;
     }
 
     void Start(int argc, char* argv[]) override
     {
-        PSphereMesh pSphereMesh(new SphereMesh(3, 24));
+        PSphereMesh pSphereMesh(CreateSphereMesh(3, 24));
 
         PTexture pEarthTexture1(new TextureFile("data/Earthmap720x360_grid.jpg"));
         PTexture pEarthTexture2(new TextureFile("data/jup0vss1.jpg"));
-        PMaterial pMaterial1(new Material("earth1"));
-        PMaterial pMaterial2(new Material("earth2"));
+        PMaterial pMaterial1(CreateMaterial("earth1"));
+		PMaterial pMaterial2(CreateMaterial("earth2"));
 		PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING));
         PTechnique technique(new Technique);
         PPass pass(new Pass);
@@ -69,7 +69,7 @@ struct Sample : App
         pMaterial2->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
         pMaterial2->SetShininess(100);
 
-        scene_ = PScene(new Scene);
+		scene_ = GetCurrentScene();
 
         camera_ = scene_->CreateCamera("camera");
         camera_->Activate();
@@ -81,7 +81,7 @@ struct Sample : App
             for (int c = 0; c < COLS; c++)
             {
                 earth_[c][r] = scene_->CreateSceneNode("");
-                earth_[c][r]->SetBehavior(PBehavior(new EarthBehavior));
+				earth_[c][r]->AddBehavior(PBehavior(new EarthBehavior));
                 earth_[c][r]->SetPosition(position);
                 earth_[c][r]->Set(pSphereMesh);
                 earth_[c][r]->Set(pMaterial1);
@@ -102,19 +102,6 @@ struct Sample : App
         camera_->SetPosition(camPos);
         Vector3 lookAtPoint(Vertex2(camPos), 0);
         camera_->SetLookAt(lookAtPoint);
-        
-        scene_->Start();
-
-    }
-
-    void Update() override
-    {
-        scene_->Update();
-    }
-
-    void RenderFrame() override
-    {
-        scene_->Render();
     }
 };
 

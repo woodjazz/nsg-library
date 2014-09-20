@@ -45,6 +45,7 @@ namespace NSG
 		void SetNodes(size_t total, size_t visibles);
 		void Show();
 	private:
+		App& app_;
 		enum class Stats {FPS, DRAW_CALLS, TRIANGLES, STATIC_VBO, STATIC_IBO, DYNAMIC_VBO, DYNAMIC_IBO, VISIBLES_NODES, TOTAL_NODES, MAX_STATS};
 		static const int LINES = 7;
 		std::string label_[(int)Stats::MAX_STATS];

@@ -58,14 +58,14 @@ namespace NSG
 				void DoTick(float delta);
 				void EndTick();
 
-				bool InitGL(int32_t new_width, int32_t new_height);
+				bool InitGL(int new_width, int new_height);
 				void MainLoop(int32_t);
 
 				pp::CompletionCallbackFactory<NaCl3DInstance> callback_factory_;
 				pp::Graphics3D context_;
 				PInternalApp pApp_;
-				int32_t width_;
-				int32_t height_;
+				int width_;
+				int height_;
 		};
 
 		class Graphics3DModule : public pp::Module 

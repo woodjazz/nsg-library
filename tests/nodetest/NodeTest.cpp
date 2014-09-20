@@ -274,8 +274,8 @@ static void Test07()
 
 static void Test08()
 {
-	Scene scene;
-	PSceneNode sn0 = scene.CreateSceneNode("sn0");
+	PScene scene(App::this_->GetCurrentScene());
+	PSceneNode sn0 = scene->CreateSceneNode("sn0");
 	PSceneNode sn1 = sn0->CreateChild("sn1");
 	PSceneNode sn2 = sn0->CreateChild("sn2");
 }

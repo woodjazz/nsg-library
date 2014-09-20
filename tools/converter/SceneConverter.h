@@ -32,11 +32,14 @@ misrepresented as being the original software.
 
 struct aiScene;
 struct aiNode;
+struct aiLight;
+struct aiCamera;
 
 namespace pugi
 {
 	class xml_node;
 }
+
 
 namespace NSG
 {
@@ -51,14 +54,11 @@ namespace NSG
 		void Close(Assimp::IOStream* pFile) override;
 		bool Save(const std::string& filename);
 	private:
-		void SaveMeshes(pugi::xml_node& node);
-		void SaveMaterials(pugi::xml_node& node);
-		void LoadLights(const aiScene* sc);
+		void Load(const aiScene* sc);
+		const aiCamera* GetCamera(const aiScene* sc, const aiString& name) const;
+		const aiLight* GetLight(const aiScene* sc, const aiString& name) const;
 		void LoadMeshesAndMaterials(const aiScene* sc);
-		void RecursiveLoad(const aiScene *sc, const aiNode* nd, PSceneNode sceneNode);
+		void RecursiveLoad(const aiScene *sc, const aiNode* nd, SceneNode* sceneNode);
 		PResourceFile pResource_;
-		PSceneNode root_;
-		std::vector<PMesh> meshes_;
-		std::vector<PMaterial> materials_;
 	};
 }

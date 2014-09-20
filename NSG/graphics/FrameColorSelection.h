@@ -47,12 +47,12 @@ namespace NSG
         Color TransformSelectedId2Color(GLushort id);
         void Begin(float screenX, float screenY);
         void End();
-
+		App& app_;
         UseBuffer buffer_;
         PFrameBuffer frameBuffer_;
         PMaterial material_;
-        int32_t windowWidth_;
-        int32_t windowHeight_;
+        int windowWidth_;
+        int windowHeight_;
         GLubyte selected_[4];
         GLint pixelX_;
         GLint pixelY_;

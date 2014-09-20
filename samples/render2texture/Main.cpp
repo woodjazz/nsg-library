@@ -39,37 +39,24 @@ struct Sample : App
 
     Sample()
     {
-        AppConfiguration::this_->width_ = 1024;
-        AppConfiguration::this_->height_ = 768;
+        //AppConfiguration::this_->width_ = 30;
+        //AppConfiguration::this_->height_ = 20;
         AppConfiguration::this_->showStatistics_ = true;
     }
 
     void Start(int argc, char* argv[]) override
     {
-        scene_ = PScene(new Scene);
+		scene_ = GetCurrentScene();
 
 		camera_ = scene_->CreateCamera("camera");
-        camera_->SetBehavior(PBehavior(new CameraBehavior));
+		camera_->AddBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
 		earth_ = scene_->CreateSceneNode("scene node");
-        earth_->SetBehavior(PBehavior(new EarthBehavior));
+		earth_->AddBehavior(PBehavior(new EarthBehavior));
 
 		light_ = scene_->CreateLight("light");
-        light_->SetBehavior(PBehavior(new LightBehavior));
-
-        scene_->Start();
-    }
-
-    void Update() override
-    {
-        scene_->Update();
-    }
-
-
-    void RenderFrame() override
-    {
-        scene_->Render();
+		light_->AddBehavior(PBehavior(new LightBehavior));
     }
 };
 

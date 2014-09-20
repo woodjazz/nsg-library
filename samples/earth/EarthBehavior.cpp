@@ -39,18 +39,14 @@ EarthBehavior::~EarthBehavior()
 
 void EarthBehavior::Start()
 {
-    PSphereMesh pSphereMesh(new SphereMesh(3, 24));
-    pSceneNode_->Set(pSphereMesh);
+    PSphereMesh pSphereMesh(app_.CreateSphereMesh(3, 24));
+	sceneNode_->Set(pSphereMesh);
 
     PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
-    PMaterial pMaterial(new Material("earth"));
+    PMaterial pMaterial(app_.CreateMaterial("earth"));
 	PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING));
     PTechnique technique(new Technique);
     PPass pass(new Pass);
-    //pass->SetDrawMode(DrawMode::WIREFRAME);
-    //pass->SetCullFace(CullFaceMode::FRONT);
-    //pass->EnableCullFace(false);
-    //pass->SetFrontFace(FrontFaceMode::CW);
 
     technique->Add(pass);
     pass->SetProgram(perVertex);
@@ -60,9 +56,9 @@ void EarthBehavior::Start()
     pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
     pMaterial->SetShininess(10);
 
-    pSceneNode_->Set(pMaterial);
+	sceneNode_->Set(pMaterial);
 
-    pSceneNode_->SetPosition(Vertex3(5, 0, 0));
+	sceneNode_->SetPosition(Vertex3(5, 0, 0));
 }
 
 void EarthBehavior::Update()
@@ -72,7 +68,7 @@ void EarthBehavior::Update()
     x_angle_ += glm::pi<float>() / 10.0f * deltaTime;
     y_angle_ += glm::pi<float>() / 10.0f * deltaTime;
 
-    pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	sceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 
 }
 

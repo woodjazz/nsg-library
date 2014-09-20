@@ -42,7 +42,6 @@ namespace NSG
     class Mesh : public GPUObject
     {
     public:
-        Mesh(const std::string& name = "mesh", bool dynamic = false);
         ~Mesh();
         virtual GLenum GetWireFrameDrawMode() const = 0;
         virtual GLenum GetSolidDrawMode() const = 0;
@@ -84,7 +83,8 @@ namespace NSG
         }
         void Save(pugi::xml_node& node);
         virtual void Load(const pugi::xml_node& node);
-    private:
+    protected:
+        Mesh(const std::string& name = "mesh", bool dynamic = false);
         void CalculateTangents();
     protected:
         VertexsData vertexsData_;
@@ -100,5 +100,6 @@ namespace NSG
         std::string name_;
         Graphics& graphics_;
         bool areTangentsCalculated_;
+        friend class App;
     };
 }

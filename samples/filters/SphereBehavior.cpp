@@ -27,9 +27,9 @@ misrepresented as being the original software.
 
 void SphereBehavior::Start()
 {
-	mesh_ = PSphereMesh(new SphereMesh(3, 32));
+	mesh_ = PSphereMesh(app_.CreateSphereMesh(3, 32));
 
-	material_ = PMaterial(new Material("sphere"));
+	material_ = app_.CreateMaterial("sphere");
     PTexture texture(new TextureFile("data/Earth.jpg"));
 	material_->SetTexture0(texture);
 }
@@ -42,7 +42,7 @@ void SphereBehavior::Update()
 
     y_angle += glm::pi<float>()/10.0f * deltaTime;
 
-	pSceneNode_->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
+	sceneNode_->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
 }
 
 

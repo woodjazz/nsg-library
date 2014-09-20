@@ -37,17 +37,17 @@ LightBehavior::~LightBehavior()
 
 void LightBehavior::Start()
 {
-	PMaterial pMaterial(new Material("light"));
+	PMaterial pMaterial(app_.CreateMaterial("light"));
 	pMaterial->SetColor(Color(1, 1, 0, 1));
 	PProgram pProgram(new Program("LightBehaviorProgram"));
     PPass pass(new Pass);
     pass->SetProgram(pProgram);
 
-	PMesh pMesh(new SphereMesh(0.2f, 32));
+	PMesh pMesh(app_.CreateSphereMesh(0.2f, 32));
 
-    pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
+    sceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
 
-    Render2TextureBehavior::this_->Add(pass, pSceneNode_, pMaterial, pMesh);
+    Render2TextureBehavior::this_->Add(pass, sceneNode_, pMaterial, pMesh);
 }
 
 

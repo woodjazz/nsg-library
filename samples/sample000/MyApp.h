@@ -34,7 +34,6 @@ public:
 	MyApp();
 	~MyApp();
 	void Start(int argc, char* argv[]) override;
-	void Update() override;
 	void RenderFrame() override;
 private:
     PScene scene_;

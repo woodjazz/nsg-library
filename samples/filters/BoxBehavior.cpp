@@ -47,11 +47,11 @@ void BoxBehavior::Start()
 	controlPoints_.push_back(Vertex3(5.0f, 0.0f, 0.0f));
 	controlPoints_.push_back(Vertex3(0.0f, 0.0f, -5.0f)); 
 
-	mesh_ = PBoxMesh(new BoxMesh(1,1,1, 2,2,2));
-	material_ = PMaterial(new Material("box"));
+	mesh_ = PBoxMesh(app_.CreateBoxMesh(1,1,1, 2,2,2));
+	material_ = app_.CreateMaterial("box");
 	material_->SetTexture0(PTexture(new TextureFile("data/cube.png")));
 
-    pSceneNode_->SetScale(Vertex3(3,3,3));
+	sceneNode_->SetScale(Vertex3(3, 3, 3));
 }
 
 void BoxBehavior::Update()
@@ -68,7 +68,7 @@ void BoxBehavior::Update()
             controlPoints_[3],
 		    delta1);
 
-        pSceneNode_->SetPosition(position);
+		sceneNode_->SetPosition(position);
 
         delta1 += deltaTime * 0.3f;
 

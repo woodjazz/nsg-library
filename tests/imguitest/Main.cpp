@@ -130,9 +130,11 @@ struct Test : public App
     STATE2 state2_;
     END end_;
     PMachine machine_;
+	PScene scene_;
 
 	void Start(int argc, char* argv[]) override
 	{
+		scene_ = GetCurrentScene();
 		//IMGUI::Context::this_->pSkin_->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
 		//IMGUI::Context::this_->pSkin_->textStyle_->fontFile_ = "font/FreeSans.ttf";
 	    initializing_.AddTransition(state1_).When([&]() { return text1 == "init"; });

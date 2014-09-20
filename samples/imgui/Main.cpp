@@ -72,6 +72,7 @@ struct Sample : App
 {
     Window0 window0_;
 	IMGUI::PWindowStyle style_;
+    PScene scene_;
 
     Sample()
     {
@@ -82,6 +83,8 @@ struct Sample : App
 
 	void Start(int argc, char* argv[]) override
 	{
+		scene_ = GetCurrentScene();
+
 		if (!style_)
 		{
 			IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";

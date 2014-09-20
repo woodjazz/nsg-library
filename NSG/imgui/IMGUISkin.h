@@ -32,6 +32,7 @@ namespace NSG
     {
         struct Skin
         {
+			App& app_;
             PWindowStyle mainWindowStyle_;
             PWindowStyle windowStyle_;
             PLineStyle lineStyle_;

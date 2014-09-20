@@ -32,7 +32,6 @@ namespace NSG
 	class CircleMesh : public Mesh, public IProceduralResource
 	{
 	public:
-		CircleMesh(float radius, int res);
 		~CircleMesh();
 		void SetFilled(bool enable);
 		GLenum GetWireFrameDrawMode() const override;
@@ -40,8 +39,11 @@ namespace NSG
 		virtual size_t GetNumberOfTriangles() const override;
 		virtual void Build() override;
 		virtual const char* GetName() const override;
+	protected:
+		CircleMesh(float radius, int res);
 	private:
 		float radius_;
 		int res_;
+		friend class App;
 	};
 }

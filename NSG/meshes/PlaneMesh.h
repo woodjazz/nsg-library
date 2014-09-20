@@ -32,17 +32,19 @@ namespace NSG
 	class PlaneMesh : public Mesh, public IProceduralResource
 	{
 	public:
-		PlaneMesh(float width, float height, int columns, int rows);
 		~PlaneMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		virtual size_t GetNumberOfTriangles() const override;
 		virtual void Build() override;
 		virtual const char* GetName() const override;
+	protected:
+		PlaneMesh(float width, float height, int columns, int rows);
 	private:
 		float width_;
 		float height_;
 		int columns_;
 		int rows_;
+		friend class App;
 	};
 }

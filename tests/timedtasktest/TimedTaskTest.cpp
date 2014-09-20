@@ -24,11 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "NSG.h"
+using namespace NSG;
 using namespace NSG::Task;
 
 static void TimedTaskTest0()
 {
-    struct TaskBase : Task 
+    struct TaskBase : NSG::Task::Task
     {
         int counter_;
 
@@ -97,7 +98,7 @@ static void TimedTaskTest0()
 
 static void TimedTaskTest1()
 {
-    struct TaskBase : Task 
+    struct TaskBase : NSG::Task::Task
     {
         int counter_;
         bool overdue_;

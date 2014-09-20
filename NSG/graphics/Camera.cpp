@@ -27,6 +27,9 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Frustum.h"
 #include "Graphics.h"
+#include "Util.h"
+#include "Ray.h"
+#include "pugixml.hpp"
 
 namespace NSG
 {
@@ -34,7 +37,7 @@ namespace NSG
 
 	Camera::Camera(const std::string& name, Scene* scene)
         : SceneNode(name, scene),
-          fovy_(45),
+          fovy_(glm::radians(45.0f)),
           zNear_(0.1f),
           zFar_(250),
           xo_(0),
@@ -42,11 +45,13 @@ namespace NSG
           xf_(1),
           yf_(1),
           isOrtho_(false),
-          viewWidth_(0),
-          viewHeight_(0),
-          aspectRatio_(1),
+          orthoCoords_(-1.0f, 1.0f, -1.0f, 1.0f),
           cameraIsDirty_(false)
     {
+        viewWidth_ = app_.GetViewSize().first;
+        viewHeight_ = app_.GetViewSize().second;
+        CHECK_ASSERT(viewHeight_ > 0, __FILE__, __LINE__);
+        aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
         UpdateProjection();
         App::Add(this);
     }
@@ -76,6 +81,23 @@ namespace NSG
 
     void Camera::SetFov(float fovy)
     {
+        fovy = glm::radians(fovy);
+        if (fovy_ != fovy)
+        {
+            fovy_ = fovy;
+            UpdateProjection();
+        }
+    }
+
+    float Camera::GetVerticalFov(float hhfov) const
+    {
+        return 2*atan(tan(hhfov) * viewHeight_/viewWidth_);
+    }
+
+    void Camera::SetHalfHorizontalFov(float hhfov)
+    {
+        float fovy = GetVerticalFov(hhfov);
+
         if (fovy_ != fovy)
         {
             fovy_ = fovy;
@@ -97,6 +119,15 @@ namespace NSG
         if (zFar_ != zFar)
         {
             zFar_ = zFar;
+            UpdateProjection();
+        }
+    }
+
+    void Camera::SetOrtho(float left, float right, float bottom, float top)
+    {
+        if(orthoCoords_.x != left || orthoCoords_.y != right || orthoCoords_.z != bottom || orthoCoords_.w != top)
+        {
+            orthoCoords_ = Vector4(left, right, bottom, top);
             UpdateProjection();
         }
     }
@@ -148,7 +179,7 @@ namespace NSG
     {
         if (isOrtho_)
         {
-            matProjection_ = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f,  zNear_, zFar_);
+            matProjection_ = glm::ortho(orthoCoords_.x, orthoCoords_.y, orthoCoords_.z, orthoCoords_.w,  zNear_, zFar_);
         }
         else
         {
@@ -294,16 +325,30 @@ namespace NSG
     Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
     {
         Vertex4 worldCoord = GetViewProjectionInverseMatrix() * Vertex4(screenXYZ, 1);
-        return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
+		return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
     }
 
-    Vertex3 Camera::WorldToScreen(const Vertex3& worldXYZ) const
+    Vertex4 Camera::WorldToScreen(const Vertex3& worldXYZ) const
     {
         Vertex4 screenCoord = GetViewProjectionMatrix() * Vertex4(worldXYZ, 1);
-        return Vertex3(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w);
+		return Vertex4(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w, screenCoord.z);
     }
 
-    void Camera::OnViewChanged(int32_t width, int32_t height)
+    PRay Camera::GetScreenRay(float screenX, float screenY)
+    {
+        Vertex3 nearPoint(screenX, screenY, -1); //in normalized device coordinates (Z goes from near = -1 to far = 1)
+        Vertex3 midPoint(screenX, screenY, 0); //in normalized device coordinates
+
+		Vertex3 nearWorldCoord = ScreenToWorld(nearPoint);
+		Vertex3 midWorldCoord = ScreenToWorld(midPoint);
+
+        Vector3 direction(midWorldCoord - nearWorldCoord);
+        PRay ray(new Ray(Vertex3(nearWorldCoord), direction));
+        return ray;
+    }
+
+
+    void Camera::OnViewChanged(int width, int height)
     {
         if (viewWidth_ != width || viewHeight_ != height)
         {
@@ -326,5 +371,98 @@ namespace NSG
     void Camera::OnDirty() const
     {
         cameraIsDirty_ = true;
+    }
+
+    void Camera::Save(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Camera");
+
+        {
+            std::stringstream ss;
+            ss << GetName();
+            child.append_attribute("name") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << fovy_;
+            child.append_attribute("fovy") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << zNear_;
+            child.append_attribute("zNear") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << zFar_;
+            child.append_attribute("zFar") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << xo_;
+            child.append_attribute("xo") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << yo_;
+            child.append_attribute("yo") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << xf_;
+            child.append_attribute("xf") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << yf_;
+            child.append_attribute("yf") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << isOrtho_;
+            child.append_attribute("isOrtho") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << GetPosition();
+            child.append_attribute("position") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << GetOrientation();
+            child.append_attribute("orientation") = ss.str().c_str();
+        }
+    }
+
+    void Camera::Load(const pugi::xml_node& node)
+    {
+        SetName(node.attribute("name").as_string());
+
+        Vertex3 position = GetVertex3(node.attribute("position").as_string());
+        SetPosition(position);
+
+        fovy_ = node.attribute("fovy").as_float();
+        zNear_ = node.attribute("zNear").as_float();
+        zFar_ = node.attribute("zFar").as_float();
+        xo_ = node.attribute("xo").as_float();
+        yo_ = node.attribute("yo").as_float();
+        xf_ = node.attribute("xf").as_float();
+        yf_ = node.attribute("yf").as_float();
+        isOrtho_ = node.attribute("isOrtho").as_bool();
+
+        Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
+        SetOrientation(orientation);
+
+		Activate();
     }
 }

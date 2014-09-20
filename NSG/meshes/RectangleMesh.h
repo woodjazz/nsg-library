@@ -32,15 +32,17 @@ namespace NSG
 	class RectangleMesh : public Mesh, public IProceduralResource
 	{
 	public:
-		RectangleMesh(float width, float height);
 		~RectangleMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		virtual size_t GetNumberOfTriangles() const override;
 		virtual void Build() override;
 		virtual const char* GetName() const override;
+	protected:
+		RectangleMesh(float width, float height);
 	private:
 		float width_;
 		float height_;
+		friend class App;
 	};
 }

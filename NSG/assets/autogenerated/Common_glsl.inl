@@ -23,7 +23,8 @@ static const std::string COMMON_GLSL = \
 "varying vec3 v_bitangent;\n"\
 "varying vec2 v_texcoord; \n"\
 "varying vec3 v_vertexToEye;\n"\
-"varying vec3 v_lightDirection[MAX_POINT_LIGHTS];\n"\
+"varying vec3 v_lightDirection[NUM_POINT_LIGHTS_ARRAY];\n"\
+"varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS_ARRAY];\n"\
 "#if defined(COMPILEFS)\n"\
 "	\n"\
 "	uniform sampler2D u_texture0;\n"\

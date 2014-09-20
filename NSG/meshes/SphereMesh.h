@@ -32,15 +32,17 @@ namespace NSG
 	class SphereMesh : public Mesh, public IProceduralResource
 	{
 	public:
-		SphereMesh(float radius = 1, int res = 8);
 		~SphereMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		virtual size_t GetNumberOfTriangles() const override;
 		virtual void Build() override;
 		virtual const char* GetName() const override;
+	protected:
+		SphereMesh(float radius = 1, int res = 8);
 	private:
 		float radius_;
 		int res_;
+		friend class App;
 	};
 }

@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// Updated for nsg-library
+// Updated by Néstor Silveira Gorski for nsg-library
 
 #pragma once
 #include "Types.h"

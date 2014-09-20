@@ -53,11 +53,34 @@ namespace NSG
             return frustum_.IsInside(box);
     }
 
-	void FrustumOctreeQuery::Test(const std::vector<SceneNode*>& objs, bool inside)
+    void FrustumOctreeQuery::Test(const std::vector<SceneNode*>& objs, bool inside)
     {
-        for(auto& obj: objs)
+        for (auto& obj : objs)
         {
             if (inside || frustum_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
+                result_.push_back(obj);
+        }
+    }
+
+    RayOctreeQuery::RayOctreeQuery(std::vector<const SceneNode*>& result, const Ray& ray)
+        : OctreeQuery(result),
+          ray_(ray)
+    {
+    }
+
+    Intersection RayOctreeQuery::TestOctant(const BoundingBox& box, bool inside)
+    {
+        if (inside)
+            return Intersection::INSIDE;
+        else
+            return ray_.IsInside(box);
+    }
+
+    void RayOctreeQuery::Test(const std::vector<SceneNode*>& objs, bool inside)
+    {
+        for (auto& obj : objs)
+        {
+            if (inside || ray_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
                 result_.push_back(obj);
         }
     }

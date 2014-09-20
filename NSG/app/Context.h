@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Singleton.h"
 #include "AppStatistics.h"
 #include <set>
+#include <vector>
 
 namespace NSG
 {
@@ -45,8 +46,6 @@ namespace NSG
 		std::set<GPUObject*> objects_;
 		std::set<Resource*> resources_;
 		PKeyboard keyboard_;
-		Scene* scene_;
-		bool allGPUObjectAreValid_;
 
 		Context();
 		~Context();
@@ -58,7 +57,6 @@ namespace NSG
 		static void RemoveResource(Resource* object);
 		void ReleaseResourcesFromMemory();
 		PTexture GetWhiteTexture();
-		void SetScene(Scene* scene) { scene_ = scene; }
 
 	private:
 		void Add(GPUObject* object);

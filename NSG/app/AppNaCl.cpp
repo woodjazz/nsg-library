@@ -329,7 +329,7 @@ namespace NSG
 		}
 
 
-		bool NaCl3DInstance::InitGL(int32_t new_width, int32_t new_height) 
+		bool NaCl3DInstance::InitGL(int new_width, int new_height) 
 		{
 			if (!glInitializePPAPI(pp::Module::Get()->get_browser_interface())) 
 			{

@@ -31,14 +31,16 @@ namespace NSG
 	class ModelMesh : public Mesh
 	{
 	public:
-		ModelMesh();
 		~ModelMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		virtual size_t GetNumberOfTriangles() const override;
 		void SetFaceMode(GLenum face_mode) { face_mode_ = face_mode; }
 		virtual void Load(const pugi::xml_node& node) override;
+	protected:
+		ModelMesh();
 	private:
 		GLenum face_mode_;
+		friend class App;
 	};
 }

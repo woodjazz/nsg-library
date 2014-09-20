@@ -45,7 +45,8 @@ namespace NSG
         static const Vertex3 AREA_SCREEN_SIZE(2, 2, 1); //default area size in screen coordinates
 
         Object::Object(LayoutType type, float percentageX, float percentageY, Style& style)
-            : layoutManager_(*Context::this_->pLayoutManager_),
+            : app_(*App::this_),
+              layoutManager_(*Context::this_->pLayoutManager_),
               id_(0),
               uistate_(*Context::this_->state_),
               skin_(*Context::this_->pSkin_),
@@ -92,7 +93,7 @@ namespace NSG
                 CHECK_GL_STATUS(__FILE__, __LINE__);
 
                 Graphics::this_->Set(skin_.stencilMaterial_.get());
-				Graphics::this_->SetNode(node_.get());
+                Graphics::this_->SetNode(node_.get());
                 Graphics::this_->Set(controlMesh_);
 
                 skin_.stencilPass_->SetStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
@@ -116,8 +117,8 @@ namespace NSG
             // stencil's reference value is clamped to the range 0 2n-1 (so negative values become 0)
             // see material->SetStencilFunc(GL_EQUAL, level_-1, ~GLuint(0));
             CHECK_ASSERT(level_ > 0, __FILE__, __LINE__);
-            
-			Graphics::this_->SetNode(node_.get());
+
+            Graphics::this_->SetNode(node_.get());
             Graphics::this_->Set(controlMesh_);
 
             Graphics::this_->Set(skin_.stencilMaterial_.get());
@@ -166,7 +167,7 @@ namespace NSG
 
         void Object::FixCurrentTechnique()
         {
-            if (IsActive()) 
+            if (IsActive())
                 currentMaterial_ = style_.activeMaterial_;
             else if (IsHot())
                 currentMaterial_ = style_.hotMaterial_;

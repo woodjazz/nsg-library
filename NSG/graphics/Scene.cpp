@@ -9,24 +9,43 @@
 #include "OctreeQuery.h"
 #include "Graphics.h"
 #include "Constants.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "App.h"
+#include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
 
 namespace NSG
 {
-    Scene::Scene()
-        : ambient_(0.3f, 0.3f, 0.3f, 1),
-          octree_(new Octree)
+    static const char* SCENENODE_ROOT_NAME = "SceneRootNode";
+    Scene::Scene(PResource resource)
+        : SceneNode(resource, SCENENODE_ROOT_NAME, this),
+          ambient_(0.3f, 0.3f, 0.3f, 1),
+          octree_(new Octree),
+          resource_(resource),
+          app_(*App::this_),
+          started_(false)
     {
-        Context::this_->SetScene(this);
+		//octree_->InsertUpdate(this);
+    }
+
+    Scene::Scene()
+        : SceneNode(SCENENODE_ROOT_NAME, this),
+          ambient_(0.3f, 0.3f, 0.3f, 1),
+          octree_(new Octree),
+		  app_(*App::this_),
+          started_(false)
+    {
+		//octree_->InsertUpdate(this);
     }
 
     Scene::~Scene()
     {
         cameras_.clear();
         lights_.clear();
-        nodes_.clear();
-        Context::this_->SetScene(nullptr);
+        ClearAllChildren();
+        octree_ = nullptr;
     }
 
     void Scene::SetAmbientColor(Color ambient)
@@ -34,29 +53,38 @@ namespace NSG
         if (ambient_ != ambient)
         {
             ambient_ = ambient;
-            SetUniformsNeedUpdate();
+			SetUniformsNeedUpdate();
         }
     }
 
     PCamera Scene::CreateCamera(const std::string& name)
     {
         PCamera obj(new Camera(name, this));
+		octree_->InsertUpdate(obj.get());
         cameras_.push_back(obj);
-        nodes_.push_back(obj);
+        AddChild(obj);
         return obj;
+    }
+
+    void Scene::AddCamera(PCamera camera)
+    {
+        octree_->InsertUpdate(camera.get());
+        cameras_.push_back(camera);
+        AddChild(camera);
     }
 
     PSceneNode Scene::CreateSceneNode(const std::string& name)
     {
-        PSceneNode obj(new SceneNode(name, this));
-        nodes_.push_back(obj);
-        return obj;
+		PSceneNode obj = CreateChild(name);
+		octree_->InsertUpdate(obj.get());
+		return obj;
     }
 
     PSceneNode Scene::CreateSceneNodeFrom(PResource resource, const std::string& name)
     {
         PSceneNode obj(new SceneNode(resource, name, this));
-        nodes_.push_back(obj);
+		octree_->InsertUpdate(obj.get());
+        AddChild(obj);
         return obj;
     }
 
@@ -67,23 +95,146 @@ namespace NSG
         return obj;
     }
 
+    PLight Scene::CreatePointLight(const std::string& name)
+    {
+        PLight light = CreateLight(name);
+        light->SetType(Light::POINT);
+        return light;
+    }
+
+    PLight Scene::CreateDirectionalLight(const std::string& name)
+    {
+        PLight light = CreateLight(name);
+        light->SetType(Light::DIRECTIONAL);
+        return light;
+    }
+
+	PLight Scene::CreateSpotLight(const std::string& name)
+	{
+		PLight light = CreateLight(name);
+		light->SetType(Light::SPOT);
+		return light;
+	}
+
+
     void Scene::AddLight(PLight light)
     {
+        octree_->InsertUpdate(light.get());
         lights_.push_back(light);
-        nodes_.push_back(light);
+        AddChild(light);
     }
 
     void Scene::Start()
     {
-        for (auto& obj : nodes_)
-            obj->Start();
+        if(!started_)
+        {
+            for (auto& obj : children_)
+                obj->Start();
+
+            started_ = true;
+        }
     }
 
     void Scene::Update()
     {
-        for (auto& obj : nodes_)
+        for (auto& obj : children_)
             obj->Update();
     }
+
+    void Scene::ViewChanged(int width, int height)
+    {
+        for (auto& obj : children_)
+            obj->ViewChanged(width, height);
+    }
+
+    void Scene::OnMouseMove(float x, float y)
+    {
+        for (auto& obj : children_)
+            obj->OnMouseMove(x, y);
+    }
+
+    void Scene::OnMouseDown(float x, float y)
+    {
+        for (auto& obj : children_)
+            obj->OnMouseDown(x, y);
+    }
+
+    void Scene::OnMouseWheel(float x, float y)
+    {
+        for (auto& obj : children_)
+            obj->OnMouseWheel(x, y);
+    }
+
+    void Scene::OnMouseUp(float x, float y)
+    {
+        for (auto& obj : children_)
+            obj->OnMouseUp(x, y);
+    }
+
+    void Scene::OnKey(int key, int action, int modifier)
+    {
+        for (auto& obj : children_)
+            obj->OnKey(key, action, modifier);
+    }
+
+    void Scene::OnChar(unsigned int character)
+    {
+        for (auto& obj : children_)
+            obj->OnChar(character);
+    }
+
+    bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const
+    {
+        RayOctreeQuery query(nodes, ray);
+        octree_->Execute(query);
+        return !nodes.empty();
+    }
+
+    bool Scene::GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const
+    {
+        std::vector<const SceneNode*> tmpNodes;
+        RayOctreeQuery query(tmpNodes, ray);
+        octree_->Execute(query);
+		result.clear();
+        float maxDistance = ray.GetMaxDistance();
+        for(auto& obj: tmpNodes)
+        {
+            float distance = ray.HitDistance(obj);
+            if(distance < maxDistance)
+            {
+                RayNodeResult r {distance, obj};
+                result.push_back(r);
+            }
+        }
+        return !result.empty();
+    }
+
+    bool Scene::GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest)
+    {
+        std::vector<RayNodeResult> results;
+        if(GetPreciseRayNodesIntersection(ray, results))
+        {
+            int closestIdx = -1;
+            int idx = 0;
+            float distance = std::numeric_limits<float>::max();
+            for(auto& result: results)
+            {
+                if(result.distance_ < distance)
+                {
+                    closestIdx = idx;
+                    distance = result.distance_;
+                }
+				++idx;
+            }
+
+            closest = results[closestIdx];
+
+            return true;
+
+        }
+        return false;
+    }
+
 
     void Scene::GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles)
     {
@@ -121,7 +272,7 @@ namespace NSG
         {
             PMaterial material = node->GetMaterial();
             PMesh mesh = node->GetMesh();
-            
+
             if (usedMaterial != material || !material)
             {
                 usedMaterial = material;
@@ -171,17 +322,20 @@ namespace NSG
 
     void Scene::Render()
     {
-        Camera* camera = Camera::GetActiveCamera();
-
-        if (camera)
+        if (IsReady())
         {
-            std::vector<const SceneNode*> visibles;
-            GetVisibleNodes(camera, visibles);
-            AppStatistics::this_->SetNodes(nodes_.size(), visibles.size());
-            std::vector<Batch> batches;
-            GenerateBatches(visibles, batches);
-            for (auto& batch : batches)
-                Graphics::this_->Render(batch);
+            Camera* camera = Camera::GetActiveCamera();
+
+            if (camera)
+            {
+                std::vector<const SceneNode*> visibles;
+                GetVisibleNodes(camera, visibles);
+                AppStatistics::this_->SetNodes(children_.size(), visibles.size());
+                std::vector<Batch> batches;
+                GenerateBatches(visibles, batches);
+                for (auto& batch : batches)
+                    Graphics::this_->Render(batch);
+            }
         }
     }
 
@@ -190,27 +344,47 @@ namespace NSG
         needUpdate_.insert(obj);
     }
 
-    const Light* Scene::GetFirstDirectionalLight() const
-    {
-        for(auto& light: lights_)
-        {
-            if(light->GetType() == Light::DIRECTIONAL)
-                return light.get();
-        }
-
-        return nullptr;
-    }
-
-    Scene::Lights Scene::GetPointLights(int max) const
+    Scene::Lights Scene::GetLights(Light::Type type) const
     {
         Lights lights;
 
-        for(auto& light: lights_)
+        for (auto& light : lights_)
         {
-            if(light->GetType() == Light::POINT)
+            if (light->GetType() == type)
                 lights.push_back(light);
         }
 
         return lights;
+    }
+
+    void Scene::SaveMeshes(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Meshes");
+        for(auto& obj: meshes_)
+            obj->Save(child);
+    }
+
+    void Scene::SaveMaterials(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Materials");
+        for(auto& obj: materials_)
+            obj->Save(child);
+    }
+
+    void Scene::Save(pugi::xml_document& doc)
+    {
+        pugi::xml_node child = doc.append_child("Scene");
+        SaveMeshes(child);
+        SaveMaterials(child);
+        SceneNode::Save(child);
+    }
+
+	void Scene::Load(const pugi::xml_document& doc, const CachedData& data)
+    {
+		std::stringstream query;
+		query << "/Scene/SceneNode[@name ='" << SCENENODE_ROOT_NAME << "']";
+		pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
+		pugi::xml_node child = xpathNode.node();
+		LoadNode(child, data);
     }
 }

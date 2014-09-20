@@ -51,7 +51,7 @@ namespace NSG
     {
         Context::Context()
             : unlitProgram_(new Program),
-              controlMesh_(new RectangleMesh(2, 2)),
+			controlMesh_(App::this_->CreateRectangleMesh(2, 2)),
               state_(new State),
               pSkin_(new Skin),
 			  pCurrentNode_(new Node("IMGUI::Context::pCurrentNode_")),
@@ -119,7 +119,7 @@ namespace NSG
             return pLayoutManager_->GetValidId();
         }
 
-        void Context::OnViewChanged(int32_t width, int32_t height)
+        void Context::OnViewChanged(int width, int height)
         {
             viewport_.z = width;
             viewport_.w = height;

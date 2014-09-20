@@ -33,6 +33,8 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "ModelMesh.h"
 #include "Scene.h"
+#include "Light.h"
+#include "Camera.h"
 #include "Octree.h"
 #include "Util.h"
 #include "pugixml.hpp"
@@ -41,21 +43,20 @@ namespace NSG
 {
     SceneNode::SceneNode(const std::string& name, Scene* scene)
         : Node(name),
-          behavior_(new Behavior),
           octant_(nullptr),
           occludee_(false),
           worldBBNeedsUpdate_(true),
           meshIndex_(-1),
           materialIndex_(-1),
-          scene_(scene)
+          scene_(scene),
+          app_(*App::this_)
     {
         CHECK_ASSERT(scene, __FILE__, __LINE__);
-        scene_->GetOctree()->InsertUpdate(this);
     }
 
     SceneNode::SceneNode(PResource resource, const std::string& name, Scene* scene)
         : Node(name),
-          behavior_(new Behavior),
+          app_(*App::this_),
           octant_(nullptr),
           occludee_(false),
           worldBBNeedsUpdate_(true),
@@ -65,12 +66,12 @@ namespace NSG
           scene_(scene)
     {
         CHECK_ASSERT(scene, __FILE__, __LINE__);
-        scene_->GetOctree()->InsertUpdate(this);
     }
 
     SceneNode::~SceneNode()
     {
-        scene_->GetOctree()->Remove(this);
+        if(scene_->GetOctree())
+            scene_->GetOctree()->Remove(this);
         Context::RemoveObject(this);
     }
 
@@ -89,7 +90,11 @@ namespace NSG
             pugi::xml_document doc;
             pugi::xml_parse_result result = doc.load_buffer_inplace((void*)resource_->GetData(), resource_->GetBytes());
             if (result)
-                Load(doc, GetName().c_str());
+            {
+                CachedData data;
+                LoadMeshesAndMaterials(doc, data);
+                Load(doc, data);
+            }
             else
             {
                 TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
@@ -103,7 +108,7 @@ namespace NSG
     PSceneNode SceneNode::CreateChild(const std::string& name)
     {
         PSceneNode obj(new SceneNode(name, scene_));
-		AddChild(obj);
+        AddChild(obj);
         return obj;
     }
 
@@ -133,29 +138,95 @@ namespace NSG
         }
     }
 
-    void SceneNode::SetBehavior(PBehavior behavior)
+    void SceneNode::AddBehavior(PBehavior behavior)
     {
-        if(!behavior)
+        if (behavior)
         {
-            behavior_ = PBehavior(new Behavior);
+            behaviors_.push_back(behavior);
+            behavior->sceneNode_ = this;
         }
-        else
-        {
-            behavior_ = behavior;
-        }
-        
-        behavior_->SetSceneNode(this);
     }
 
     void SceneNode::Start()
     {
-        behavior_->Start();
+        for(auto& obj: behaviors_)
+            obj->Start();
+
+		for (auto& obj : children_)
+			obj->Start();
     }
 
     void SceneNode::Update()
     {
-        behavior_->Update();
+        for(auto& obj: behaviors_)
+            obj->Update();
+
+		for (auto& obj : children_)
+			obj->Update();
     }
+
+    void SceneNode::ViewChanged(int width, int height)
+    {
+        for (auto& obj : behaviors_)
+            obj->ViewChanged(width, height);
+
+		for (auto& obj : children_)
+			obj->ViewChanged(width, height);
+	}
+
+    void SceneNode::OnMouseMove(float x, float y)
+    {
+        for (auto& obj : behaviors_)
+            obj->OnMouseMove(x, y);
+
+		for (auto& obj : children_)
+			obj->OnMouseMove(x, y);
+    }
+
+    void SceneNode::OnMouseDown(float x, float y)
+    {
+        for (auto& obj : behaviors_)
+            obj->OnMouseDown(x, y);
+
+		for (auto& obj : children_)
+			obj->OnMouseDown(x, y);
+    }
+
+    void SceneNode::OnMouseWheel(float x, float y)
+    {
+        for (auto& obj : behaviors_)
+            obj->OnMouseWheel(x, y);
+	
+		for (auto& obj : children_)
+			obj->OnMouseWheel(x, y);
+	}
+
+    void SceneNode::OnMouseUp(float x, float y)
+    {
+        for (auto& obj : behaviors_)
+            obj->OnMouseUp(x, y);
+
+		for (auto& obj : children_)
+			obj->OnMouseUp(x, y);
+	}
+
+    void SceneNode::OnKey(int key, int action, int modifier)
+    {
+        for (auto& obj : behaviors_)
+            obj->OnKey(key, action, modifier);
+	
+		for (auto& obj : children_)
+			obj->OnKey(key, action, modifier);
+	}
+
+    void SceneNode::OnChar(unsigned int character)
+    {
+        for (auto& obj : behaviors_)
+            obj->OnChar(character);
+	
+		for (auto& obj : children_)
+			obj->OnChar(character);
+	}
 
     void SceneNode::OnDirty() const
     {
@@ -225,52 +296,17 @@ namespace NSG
             obj->Save(child);
     }
 
-    void SceneNode::LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data)
+    void SceneNode::Load(const pugi::xml_document& doc, const CachedData& data)
     {
-        {
-            std::stringstream query;
-            query << "/Scene/Meshes/Mesh";
-            pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-            pugi::xml_node child = xpathNode.node();
-            while (child)
-            {
-                PMesh mesh(new ModelMesh);
-                data.meshes_.push_back(mesh);
-                mesh->Load(child);
-                child = child.next_sibling("Mesh");
-            }
-        }
-
-        {
-            std::stringstream query;
-            query << "/Scene/Materials/Material";
-            pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-            pugi::xml_node child = xpathNode.node();
-            while (child)
-            {
-                PMaterial material(new Material);
-                data.materials_.push_back(material);
-                material->Load(child);
-                child = child.next_sibling("Material");
-            }
-        }
-    }
-
-    void SceneNode::Load(const pugi::xml_document& doc, const std::string& name)
-    {
-        CachedData data;
-        LoadMeshesAndMaterials(doc, data);
         std::stringstream query;
-        query << "/Scene/SceneNode[@name ='" << name << "']";
+        query << "/Scene/SceneNode[@name ='" << name_ << "']";
         pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
         pugi::xml_node child = xpathNode.node();
-        Load(child, data);
+        LoadNode(child, data);
     }
 
-    void SceneNode::Load(const pugi::xml_node& node, const CachedData& data)
+    void SceneNode::LoadNode(const pugi::xml_node& node, const CachedData& data)
     {
-        SetName(node.attribute("name").as_string());
-
         Vertex3 position = GetVertex3(node.attribute("position").as_string());
         SetPosition(position);
 
@@ -294,11 +330,62 @@ namespace NSG
             Set(data.meshes_.at(meshIndex_));
         }
 
+		{
+			pugi::xml_node child = node.child("Light");
+			if (child)
+			{
+				PLight obj = scene_->CreateLight(child.attribute("name").as_string());
+				obj->Load(child);
+				AddChild(obj);
+			}
+		}
+
+		{
+			pugi::xml_node child = node.child("Camera");
+			if (child)
+			{
+				PCamera obj = scene_->CreateCamera(child.attribute("name").as_string());
+				obj->Load(child);
+				AddChild(obj);
+			}
+		}
+
+
         for (pugi::xml_node child = node.child("SceneNode"); child; child = child.next_sibling("SceneNode"))
         {
-            PSceneNode childNode = CreateChild("");
-            childNode->Load(child, data);
+			PSceneNode childNode = CreateChild(child.attribute("name").as_string());
+            childNode->LoadNode(child, data);
         }
     }
 
+    void SceneNode::LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data)
+    {
+        {
+            std::stringstream query;
+            query << "/Scene/Meshes/Mesh";
+            pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
+            pugi::xml_node child = xpathNode.node();
+            while (child)
+            {
+                PMesh mesh(app_.CreateModelMesh());
+                data.meshes_.push_back(mesh);
+                mesh->Load(child);
+                child = child.next_sibling("Mesh");
+            }
+        }
+
+        {
+            std::stringstream query;
+            query << "/Scene/Materials/Material";
+            pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
+            pugi::xml_node child = xpathNode.node();
+            while (child)
+            {
+                PMaterial material(app_.CreateMaterial());
+                data.materials_.push_back(material);
+                material->Load(child);
+                child = child.next_sibling("Material");
+            }
+        }
+    }
 }

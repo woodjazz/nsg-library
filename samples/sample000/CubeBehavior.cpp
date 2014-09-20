@@ -38,9 +38,9 @@ CubeBehavior::~CubeBehavior()
 
 void CubeBehavior::Start()
 {
-	PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2));
+	PBoxMesh pMesh(app_.CreateBoxMesh(1,1,1, 2,2,2));
 
-	PMaterial pMaterial(new Material("cube"));
+	PMaterial pMaterial(app_.CreateMaterial("cube"));
 
 	PProgram program(new Program("CubeBehaviorProgram"));
     PPass pass(new Pass);
@@ -49,10 +49,10 @@ void CubeBehavior::Start()
     PTexture pTexture(new TextureFile("data/cube_example.png"));
 	pMaterial->SetTexture0(pTexture);
     
-    Render2TextureBehavior::this_->Add(pass, pSceneNode_, pMaterial, pMesh);
+    Render2TextureBehavior::this_->Add(pass, sceneNode_, pMaterial, pMesh);
 
-    pSceneNode_->SetPosition(Vertex3(-5, 0, 0));
-    pSceneNode_->SetScale(Vertex3(3,3,3));
+    sceneNode_->SetPosition(Vertex3(-5, 0, 0));
+    sceneNode_->SetScale(Vertex3(3,3,3));
 }
 
 void CubeBehavior::Update()
@@ -62,6 +62,6 @@ void CubeBehavior::Update()
 	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
 	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
 
-	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	sceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 }
 

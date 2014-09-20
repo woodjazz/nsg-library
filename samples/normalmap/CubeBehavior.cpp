@@ -39,13 +39,13 @@ CubeBehavior::~CubeBehavior()
 
 void CubeBehavior::Start()
 {
-    PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2));
-    pSceneNode_->Set(pMesh);
-    pSceneNode_->SetScale(Vector3(2,2,2));
+    PBoxMesh pMesh(app_.CreateBoxMesh(1,1,1, 2,2,2));
+	sceneNode_->Set(pMesh);
+	sceneNode_->SetScale(Vector3(2, 2, 2));
 
     PTexture wallTexture(new TextureFile("data/wall.jpg"));
     PTexture wallNormalMapTexture(new TextureFile("data/wallnormalmap.jpg"));
-    PMaterial pMaterial(new Material("wall"));
+    PMaterial pMaterial(app_.CreateMaterial("wall"));
 	PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING | Program::NORMAL_MAP));
     PTechnique technique(new Technique);
     PPass pass(new Pass);
@@ -57,9 +57,9 @@ void CubeBehavior::Start()
     pMaterial->SetTexture1(wallNormalMapTexture);
     pMaterial->SetShininess(10);
 
-    pSceneNode_->Set(pMaterial);
+	sceneNode_->Set(pMaterial);
 
-    pSceneNode_->SetPosition(Vertex3(0, 0, 0));
+	sceneNode_->SetPosition(Vertex3(0, 0, 0));
 }
 
 void CubeBehavior::Update()
@@ -69,7 +69,7 @@ void CubeBehavior::Update()
     x_angle_ += glm::pi<float>() / 10.0f * deltaTime;
     y_angle_ += glm::pi<float>() / 10.0f * deltaTime;
 
-    pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	sceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 
 }
 

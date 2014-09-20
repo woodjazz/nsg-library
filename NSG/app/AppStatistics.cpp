@@ -31,16 +31,18 @@ misrepresented as being the original software.
 #include "TextMesh.h"
 #include "Material.h"
 #include "Graphics.h"
+#include "App.h"
 
 namespace NSG
 {
     template <> AppStatistics* Singleton<AppStatistics>::this_ = nullptr;
 
     AppStatistics::AppStatistics()
-        : frames_(0),
+		: app_(*App::this_),
+		frames_(0),
           collect_(true),
           pass_(new Pass),
-          material_(new Material("AppStatistics"))
+		  material_(app_.CreateMaterial("AppStatistics"))
     {
         startTime_ = Clock::now();
 
@@ -53,7 +55,7 @@ namespace NSG
         for (int i = 0; i < (int)Stats::MAX_STATS; i++)
         {
             stats_[i] = 0;
-            text_[i] = PTextMesh(new TextMesh);
+            text_[i] = app_.CreateTextMesh();
 			std::stringstream ss;
 			ss << "AppStatistics::node " << i;
             node_[i] = PNode(new Node(ss.str()));
@@ -79,7 +81,7 @@ namespace NSG
 
     AppStatistics::~AppStatistics()
     {
-
+		AppStatistics::this_ = nullptr;
     }
 
     void AppStatistics::NewDrawCall()

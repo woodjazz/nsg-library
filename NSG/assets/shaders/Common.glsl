@@ -19,7 +19,8 @@ varying vec3 v_tangent;
 varying vec3 v_bitangent;
 varying vec2 v_texcoord; 
 varying vec3 v_vertexToEye;
-varying vec3 v_lightDirection[MAX_POINT_LIGHTS];
+varying vec3 v_lightDirection[NUM_POINT_LIGHTS_ARRAY];
+varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS_ARRAY];
 
 #if defined(COMPILEFS)
 	

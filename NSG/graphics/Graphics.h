@@ -37,6 +37,7 @@ namespace NSG
         Graphics();
         ~Graphics();
         void InitializeBuffers();
+		void ReleaseBuffers();
         bool CheckExtension(const std::string& name);
         void ResetCachedState();
         void SetClearColor(const Color& color);

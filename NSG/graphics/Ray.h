@@ -24,21 +24,27 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Types.h"
 
-namespace NSG 
+namespace NSG
 {
-	class App;
-	class SceneNode;
-	class Behavior
-	{
-	public:
-		Behavior();
-		virtual ~Behavior();
-		virtual void Start() {}
-		virtual void Update() {}
-		void SetSceneNode(SceneNode* pSceneNode);
-		SceneNode* GetSceneNode() const { return pSceneNode_; }
-    protected:
-		SceneNode* pSceneNode_;
-	};
+    class Ray
+    {
+    public:
+		Ray(const Vertex3& origin, const Vector3& direction, float maxDistance = std::numeric_limits<float>::max());
+        Ray(const Ray& ray);
+        ~Ray();
+		Ray& operator = (const Ray& rhs);
+        bool operator == (const Ray& rhs) const;
+        bool operator != (const Ray& rhs) const;
+		float HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2, Vector3* outNormal = nullptr) const;
+        float HitDistance(const BoundingBox& box) const;
+        Intersection IsInside(const BoundingBox& box) const;
+        float HitDistance(const SceneNode* node) const;
+        float GetMaxDistance() const { return maxDistance_; }
+    private:
+        Vertex3 origin_;
+        Vector3 direction_;
+        float maxDistance_;
+    };
 }

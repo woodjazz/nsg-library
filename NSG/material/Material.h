@@ -33,7 +33,6 @@ namespace NSG
 	class Material : public GPUObject, UniformsUpdate
 	{
 	public:
-		Material(const std::string& name = "");
 		~Material();
 		void SetName(const std::string& name) {name_ = name;}
 		void SetTexture0(PTexture pTexture);
@@ -57,6 +56,8 @@ namespace NSG
 		PTechnique GetTechnique() const { return technique_; }
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
+	protected:
+		Material(const std::string& name);
 	private:
 		PTexture pTexture0_;
 		PTexture pTexture1_;
@@ -68,5 +69,6 @@ namespace NSG
         PTechnique technique_;
         std::string name_;
         friend class Program;
+        friend class App;
 	};
 }

@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "MeshConverter.h"
 #include "MaterialConverter.h"
 #include "LightConverter.h"
+#include "CameraConverter.h"
 #include "assimp/IOStream.hpp"
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
@@ -143,28 +144,23 @@ namespace NSG
     {
         CHECK_ASSERT(resource->IsLoaded(), __FILE__, __LINE__);
 
-		unsigned flags =
-			aiProcess_JoinIdenticalVertices |
-			aiProcess_Triangulate |
-			aiProcess_GenSmoothNormals |
-			aiProcess_LimitBoneWeights |
-			aiProcess_ImproveCacheLocality |
-			aiProcess_RemoveRedundantMaterials |
-			aiProcess_FixInfacingNormals |
-			aiProcess_FindInvalidData |
-			aiProcess_GenUVCoords |
-			aiProcess_FindInstances |
-			aiProcess_OptimizeMeshes;
+        unsigned flags =
+            aiProcess_JoinIdenticalVertices |
+            aiProcess_Triangulate |
+            aiProcess_GenSmoothNormals |
+            aiProcess_LimitBoneWeights |
+            aiProcess_ImproveCacheLocality |
+            aiProcess_RemoveRedundantMaterials |
+            aiProcess_FixInfacingNormals |
+            aiProcess_FindInvalidData |
+            aiProcess_GenUVCoords |
+            aiProcess_FindInstances |
+            aiProcess_OptimizeMeshes;
 
         Assimp::Importer importer;
         importer.SetIOHandler(this);
-		const aiScene* pScene = importer.ReadFile(resource->GetFilename().c_str(), flags);
-
-		LoadLights(pScene);
-        LoadMeshesAndMaterials(pScene);
-        root_ = CreateSceneNode(pScene->mRootNode->mName.C_Str());
-        RecursiveLoad(pScene, pScene->mRootNode, root_);
-
+        const aiScene* scene = importer.ReadFile(resource->GetFilename().c_str(), flags);
+        Load(scene);
         importer.SetIOHandler(nullptr);
     }
 
@@ -172,41 +168,63 @@ namespace NSG
     {
     }
 
-	void SceneConverter::LoadLights(const aiScene* sc)
-	{
-		for (size_t i = 0; i < sc->mNumLights; ++i)
-		{
-			const struct aiLight* light = sc->mLights[i];
-			AddLight(PLightConverter(new LightConverter(light, this)));
-		}
-	}
+    void SceneConverter::Load(const aiScene* scene)
+    {
+        LoadMeshesAndMaterials(scene);
+        RecursiveLoad(scene, scene->mRootNode, this);
+    }
+
+    const aiLight* SceneConverter::GetLight(const aiScene* sc, const aiString& name) const
+    {
+        for (size_t i = 0; i < sc->mNumLights; ++i)
+        {
+            const aiLight* light = sc->mLights[i];
+            if(light->mName == name)
+                return light;
+        }
+
+		return nullptr;
+    }
+
+	const aiCamera* SceneConverter::GetCamera(const aiScene* sc, const aiString& name) const
+    {
+        for (size_t i = 0; i < sc->mNumCameras; ++i)
+        {
+            const aiCamera* camera = sc->mCameras[i];
+			if (camera->mName == name)
+				return camera;
+        }
+		return nullptr;
+    }
 
     void SceneConverter::LoadMeshesAndMaterials(const aiScene* sc)
     {
-		for (size_t i = 0; i < sc->mNumMeshes; ++i)
-		{
-			const struct aiMesh* mesh = sc->mMeshes[i];
-			meshes_.push_back(PMeshConverter(new MeshConverter(mesh)));
-		}
+        for (size_t i = 0; i < sc->mNumMeshes; ++i)
+        {
+            const struct aiMesh* mesh = sc->mMeshes[i];
+            meshes_.push_back(PMeshConverter(new MeshConverter(mesh)));
+        }
 
-		for (size_t i = 0; i < sc->mNumMaterials; ++i)
-		{
-			const aiMaterial* material = sc->mMaterials[i];
-			materials_.push_back(PMaterialConverter(new MaterialConverter(material)));
-		}
+        for (size_t i = 0; i < sc->mNumMaterials; ++i)
+        {
+            const aiMaterial* material = sc->mMaterials[i];
+            materials_.push_back(PMaterialConverter(new MaterialConverter(material)));
+        }
     }
 
-    void SceneConverter::RecursiveLoad(const aiScene* sc, const aiNode* nd, PSceneNode sceneNode)
+    void SceneConverter::RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode)
     {
-        Matrix4 localModel;
-        CopyMat(&nd->mTransformation, localModel);
-        Vertex3 position;
-        Quaternion q;
-        Vertex3 scale;
-        DecomposeMatrix(localModel, position, q, scale);
-        sceneNode->SetPosition(position);
-        sceneNode->SetOrientation(q);
-        sceneNode->SetScale(scale);
+		{
+			aiVector3t<float> scaling;
+			aiQuaterniont<float> rotation;
+			aiVector3t<float> position;
+
+			nd->mTransformation.Decompose(scaling, rotation, position);
+
+			sceneNode->SetPosition(Vertex3(position.x, position.y, position.z));
+			sceneNode->SetOrientation(Quaternion(rotation.w, rotation.x, rotation.y, rotation.z));
+			sceneNode->SetScale(Vertex3(scaling.x, scaling.y, scaling.z));
+		}
 
         for (size_t i = 0; i < nd->mNumMeshes; ++i)
         {
@@ -216,17 +234,35 @@ namespace NSG
             ss << sceneNode->GetName() << "_" << i;
 
             PSceneNode meshSceneNode = CreateSceneNode(ss.str());
-			sceneNode->AddChild(meshSceneNode);
+            sceneNode->AddChild(meshSceneNode);
             meshSceneNode->SetMeshIndex(nd->mMeshes[i]);
             meshSceneNode->SetMaterialIndex(mesh->mMaterialIndex);
         }
 
+        {
+            const aiLight* light = GetLight(sc, nd->mName);
+            if(light)
+            {
+                PLightConverter obj(new LightConverter(light, this));
+                sceneNode->AddChild(obj);
+            }
+        }
+
+		{
+			const aiCamera* camera = GetCamera(sc, nd->mName);
+			if (camera)
+			{
+				PCameraConverter obj(new CameraConverter(camera, this));
+				sceneNode->AddChild(obj);
+			}
+		}
+
+
         for (size_t i = 0; i < nd->mNumChildren; ++i)
         {
             const aiNode* ndChild = nd->mChildren[i];
-            PSceneNode child = CreateSceneNode(ndChild->mName.C_Str());
-			sceneNode->AddChild(child);
-            RecursiveLoad(sc, ndChild, child);
+			PSceneNode child = sceneNode->CreateChild(ndChild->mName.C_Str());
+            RecursiveLoad(sc, ndChild, child.get());
         }
     }
 
@@ -250,28 +286,10 @@ namespace NSG
         delete pFile;
     }
 
-    void SceneConverter::SaveMeshes(pugi::xml_node& node)
-    {
-        pugi::xml_node child = node.append_child("Meshes");
-        for(auto& obj: meshes_)
-            obj->Save(child);
-    }
-
-    void SceneConverter::SaveMaterials(pugi::xml_node& node)
-    {
-        pugi::xml_node child = node.append_child("Materials");
-        for(auto& obj: materials_)
-            obj->Save(child);
-    }
-
     bool SceneConverter::Save(const std::string& filename)
     {
         pugi::xml_document doc;
-        pugi::xml_node child = doc.append_child("Scene");
-        child.append_attribute("name") = filename.c_str();
-        SaveMeshes(child);
-        SaveMaterials(child);
-        root_->Save(child);
+        Scene::Save(doc);
         return doc.save_file(filename.c_str());
     }
 }

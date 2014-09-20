@@ -35,14 +35,16 @@ misrepresented as being the original software.
 #include "Program.h"
 #include "ResourceMemory.h"
 #include "Node.h"
+#include "App.h"
 
 namespace NSG
 {
     Filter::Filter(const std::string& name, PTexture input, int output_width, int output_height, unsigned flags)
-        : technique_(new Technique),
+        : app_(*App::this_),
+		technique_(new Technique),
           pass_(new Pass),
-          pMaterial_(new Material("filter")),
-          pMesh_(new PlaneMesh(2, 2, 2, 2)),
+		  pMaterial_(app_.CreateMaterial("filter")),
+          pMesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           pRender2Texture_(new Render2Texture(output_width, output_height)),
           name_(name),
           node_(new Node(name))

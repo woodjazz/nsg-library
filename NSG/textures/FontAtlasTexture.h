@@ -42,14 +42,14 @@ namespace NSG
 		unsigned int GetCharacterPositionForWidth(const char* text, float width);
 		bool IsReady();
 		PTexture GetTexture() const { return texture_; }
-		virtual void OnViewChanged(int32_t width, int32_t height) override;
+		virtual void OnViewChanged(int width, int height) override;
 
 	private:
         bool ParseXML();
         PTexture texture_;
         PResource xmlResource_;
-		int32_t viewWidth_;
-		int32_t viewHeight_;
+		int viewWidth_;
+		int viewHeight_;
 
         struct CharInfo
         {

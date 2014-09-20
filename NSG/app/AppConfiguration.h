@@ -32,8 +32,8 @@ namespace NSG
 	struct AppConfiguration : public Singleton<AppConfiguration>
 	{
 		size_t fps_;
-		int32_t width_;
-		int32_t height_;
+		int width_;
+		int height_;
 		bool vertical_sync_;
 		int swapInterval_; // See https://wiki.libsdl.org/SDL_GL_SetSwapInterval
 		bool showStatistics_;

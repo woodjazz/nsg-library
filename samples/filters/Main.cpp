@@ -42,14 +42,14 @@ struct Sample : App
 
 	Sample()
 	{
-		AppConfiguration::this_->width_ = 1024;
-		AppConfiguration::this_->height_ = 768;
+        //AppConfiguration::this_->width_ = 30;
+        //AppConfiguration::this_->height_ = 20;
         AppConfiguration::this_->showStatistics_ = true;
 	}
 
 	void Start(int argc, char* argv[]) override
 	{
-        scene_ = PScene(new Scene);
+		scene_ = GetCurrentScene();
         
 		camera_ = scene_->CreateCamera("camera");
         camera_->SetPosition(Vertex3(0,0,10));
@@ -57,11 +57,11 @@ struct Sample : App
 
 		box_ = scene_->CreateSceneNode("node 1");
         boxBehavior_ = new BoxBehavior;
-        box_->SetBehavior(PBehavior(boxBehavior_));
+		box_->AddBehavior(PBehavior(boxBehavior_));
         
 		sphere_ = scene_->CreateSceneNode("node 2");
         sphereBehavior_ = new SphereBehavior;
-        sphere_->SetBehavior(PBehavior(sphereBehavior_));
+		sphere_->AddBehavior(PBehavior(sphereBehavior_));
 
         showTexture_ = PShowTexture(new ShowTexture);
 
@@ -87,8 +87,8 @@ struct Sample : App
 			PResourceMemory resource(new ResourceMemory(BoxBehavior::GetFS()));
 			boxFilter->GetProgram()->SetFragmentShader(resource);
             
-            pass2Texture->Add(depthPass, sphereBehavior_->GetSceneNode(), nullptr, sphereBehavior_->mesh_);
-			pass2Texture->Add(normalPass, boxBehavior_->GetSceneNode(), boxBehavior_->material_, boxBehavior_->mesh_);
+			pass2Texture->Add(depthPass, sphereBehavior_->sceneNode_, nullptr, sphereBehavior_->mesh_);
+			pass2Texture->Add(normalPass, boxBehavior_->sceneNode_, boxBehavior_->material_, boxBehavior_->mesh_);
             
 			boxBehavior_->SetFilterMaterial(boxFilter->GetMaterial());
 			PPassFilter filterPass(new PassFilter(boxFilter));
@@ -102,8 +102,8 @@ struct Sample : App
     
             PPass2Texture pass2Texture(new Pass2Texture(1024, 1024));
             technique_->Add(pass2Texture);
-            pass2Texture->Add(depthPass, boxBehavior_->GetSceneNode(), nullptr, boxBehavior_->mesh_);
-            pass2Texture->Add(normalPass, sphereBehavior_->GetSceneNode(), sphereBehavior_->material_, sphereBehavior_->mesh_);
+			pass2Texture->Add(depthPass, boxBehavior_->sceneNode_, nullptr, boxBehavior_->mesh_);
+			pass2Texture->Add(normalPass, sphereBehavior_->sceneNode_, sphereBehavior_->material_, sphereBehavior_->mesh_);
 
 			PFilter blurFilter(new FilterBlur(pass2Texture->GetTexture(), 16, 16));
 			    

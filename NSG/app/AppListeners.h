@@ -28,6 +28,6 @@ namespace NSG
 {
     struct IViewChangedListener
     {
-        virtual void OnViewChanged(int32_t width, int32_t height) = 0;
+        virtual void OnViewChanged(int width, int height) = 0;
     };
 }

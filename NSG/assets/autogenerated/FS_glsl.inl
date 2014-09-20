@@ -17,23 +17,19 @@ static const std::string FS_GLSL = \
 "		#elif defined(SHOW_TEXTURE)\n"\
 "			gl_FragColor = texture2D(u_texture0, v_texcoord);\n"\
 "		#elif defined(STENCIL)\n"\
-"			gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"\
+"			gl_FragColor = vec4(1.0);\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "			#ifdef NORMAL_MAP\n"\
 "				vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord).xyz;\n"\
-"			    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);\n"\
+"			    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0);\n"\
 "			    mat3 TBN = mat3(v_tangent, v_bitangent, v_normal);\n"\
 "			    vec3 normal = normalize(TBN * bumpMapNormal);\n"\
 "			#else\n"\
 "				vec3 normal = normalize(v_normal);\n"\
 "			#endif\n"\
 "    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
-"    		vec4 totalLight = CalcDirectionalLight(vertexToEye, normal);\n"\
-"		    for (int i = 0 ; i < u_numPointLights ; i++) \n"\
-"		    {\n"\
-"		        totalLight += CalcPointLight(i, vertexToEye, normal);                                            \n"\
-"		    }                                                                                       \n"\
-"		    gl_FragColor = v_color * u_material.color * totalLight * texture2D(u_texture0, v_texcoord);\n"\
+"    		vec4 totalLight = CalcFSTotalLight(vertexToEye, normal);\n"\
+"		    gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord);\n"\
 "		#else\n"\
 "			gl_FragColor = v_color * texture2D(u_texture0, v_texcoord);\n"\
 "		#endif	    \n"\

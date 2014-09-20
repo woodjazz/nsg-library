@@ -31,7 +31,6 @@ namespace NSG
     static const float PI = glm::pi<float>();
     static const float TWO_PI = 2 * PI;
     static const unsigned MAX_TEXTURE_UNITS = 8;
-    static const size_t MAX_LIGHTS = 4;
 
     static const IndexType MAX_INDEX_VALUE = ~IndexType(0);
 

@@ -53,6 +53,7 @@ namespace NSG
             bool IsMouseInArea() const;
             bool IsMouseButtonPressedInArea() const;
         protected:
+            App& app_;
 			LayoutManager& layoutManager_;
             IdType id_;
             State& uistate_;
@@ -65,6 +66,7 @@ namespace NSG
             PMaterial currentMaterial_;
             PPass currentPass_;
             Style& style_;
+            Mesh* controlMesh_;
 
             const float& mouseDownX_;
             const float& mouseDownY_;
@@ -85,9 +87,7 @@ namespace NSG
             IdType& kbditem_;
             IdType& lastwidget_;
             bool& activeitem_needs_keyboard_;
-            std::pair<int32_t, int32_t> viewSize_;
-            Mesh* controlMesh_;
-
+            std::pair<int, int> viewSize_;
         };
     }
 }

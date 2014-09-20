@@ -33,14 +33,14 @@ namespace NSG
     class BoxMesh : public Mesh, public IProceduralResource
     {
     public:
-        BoxMesh(float width=2, float height=2, float depth=2, int resX = 2, int resY = 2, int resZ = 2);
         ~BoxMesh();
         GLenum GetWireFrameDrawMode() const override;
         GLenum GetSolidDrawMode() const override;
         virtual size_t GetNumberOfTriangles() const override;
         virtual void Build() override;
         virtual const char* GetName() const override;
-
+    protected:
+        BoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
     private:
         float width_;
         float height_;
@@ -48,5 +48,6 @@ namespace NSG
         int resX_;
         int resY_;
         int resZ_;
+        friend class App;
     };
 }

@@ -89,8 +89,14 @@ extern PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
 #define GL_MAP_WRITE_BIT GL_MAP_WRITE_BIT_EXT
 #define GL_MAP_FLUSH_EXPLICIT_BIT GL_MAP_FLUSH_EXPLICIT_BIT_EXT
 #define GL_MAP_UNSYNCHRONIZED_BIT GL_MAP_UNSYNCHRONIZED_BIT_EXT
-#define glVertexAttribDivisor glVertexAttribDivisorEXT
-#define glDrawElementsInstanced glDrawElementsInstancedEXT
-#define glDrawArraysInstanced glDrawArraysInstancedEXT
+	#if defined(NACL)
+		#define glVertexAttribDivisor glVertexAttribDivisorANGLE
+		#define glDrawElementsInstanced glDrawElementsInstancedANGLE
+		#define glDrawArraysInstanced glDrawArraysInstancedANGLE
+	#else
+		#define glVertexAttribDivisor glVertexAttribDivisorEXT
+		#define glDrawElementsInstanced glDrawElementsInstancedEXT
+		#define glDrawArraysInstanced glDrawArraysInstancedEXT
+	#endif
 #endif
 

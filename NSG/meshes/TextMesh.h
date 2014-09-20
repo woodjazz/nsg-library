@@ -41,7 +41,6 @@ namespace NSG
     class TextMesh : public Mesh, IViewChangedListener
     {
     public:
-        TextMesh(const std::string& textureFilename = "", bool dynamic = true);
         ~TextMesh();
         bool Has(const std::string& textureFilename) const;
         bool SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
@@ -69,7 +68,7 @@ namespace NSG
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
-        virtual void OnViewChanged(int32_t width, int32_t height) override;
+        virtual void OnViewChanged(int width, int height) override;
 
         HorizontalAlignment GetTextHorizontalAlignment() const
         {
@@ -79,6 +78,8 @@ namespace NSG
         {
             return vAlignment_;
         }
+    protected:
+        TextMesh(const std::string& textureFilename = "", bool dynamic = true);
     private:
         void UpdateBuffers();
         void Move(VertexsData& obj, float offsetX, float offsetY);
@@ -94,5 +95,6 @@ namespace NSG
         float alignmentOffsetX_;
         float alignmentOffsetY_;
         size_t maxLength_;
+        friend class App;
     };
 }

@@ -44,7 +44,7 @@ void ModelBehavior::Update()
     x_angle_ += glm::pi<float>() / 10.0f * deltaTime;
     y_angle_ += glm::pi<float>() / 10.0f * deltaTime;
 
-    pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	sceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 
 }
 

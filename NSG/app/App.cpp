@@ -40,6 +40,17 @@ misrepresented as being the original software.
 #include "AppStatistics.h"
 #include "IMGUIContext.h"
 #include "Graphics.h"
+#include "Scene.h"
+#include "BoxMesh.h"
+#include "CircleMesh.h"
+#include "EllipseMesh.h"
+#include "ModelMesh.h"
+#include "PlaneMesh.h"
+#include "RectangleMesh.h"
+#include "RoundedRectangleMesh.h"
+#include "SphereMesh.h"
+#include "TextMesh.h"
+#include "Material.h"
 #if NACL
 #include "ppapi/cpp/var.h"
 #endif
@@ -69,8 +80,62 @@ namespace NSG
 
     App::~App()
     {
+        currentScene_ = nullptr;
+        scenes_.clear();
+        meshes_.clear();
+        materials_.clear();
         App::this_ = nullptr;
         TRACE_LOG("App Terminated");
+    }
+
+    void App::Update()
+    {
+        currentScene_->Update();
+    }
+
+    void App::RenderFrame()
+    {
+        currentScene_->Render();
+    }
+
+    void App::ViewChanged(int width, int height)
+    {
+        currentScene_->ViewChanged(width, height);
+    }
+
+    void App::OnMouseMove(float x, float y)
+    {
+        currentScene_->OnMouseMove(x, y);
+    }
+
+    void App::OnMouseDown(float x, float y)
+    {
+        currentScene_->OnMouseDown(x, y);
+    }
+
+    void App::OnMouseWheel(float x, float y)
+    {
+        currentScene_->OnMouseWheel(x, y);
+    }
+
+    void App::OnMouseUp(float x, float y)
+    {
+        currentScene_->OnMouseUp(x, y);
+    }
+
+    void App::OnKey(int key, int action, int modifier)
+    {
+        currentScene_->OnKey(key, action, modifier);
+    }
+
+    void App::OnChar(unsigned int character)
+    {
+        currentScene_->OnChar(character);
+    }
+
+    bool App::ShallExit() const
+    {
+        return false;
     }
 
     void App::SetCommandLineParameters(int argc, char* argv[])
@@ -79,7 +144,7 @@ namespace NSG
         argv_ = argv;
     }
 
-    void App::SetViewSize(int32_t width, int32_t height)
+    void App::SetViewSize(int width, int height)
     {
         width_ = width;
         height_ = height;
@@ -88,9 +153,9 @@ namespace NSG
             listener->OnViewChanged(width, height);
     }
 
-    std::pair<int32_t, int32_t> App::GetViewSize() const
+    std::pair<int, int> App::GetViewSize() const
     {
-        return std::pair<int32_t, int32_t>(width_, height_);
+        return std::pair<int, int>(width_, height_);
     }
 
     void App::HandleMessage(const pp::Var& var_message)
@@ -138,6 +203,104 @@ namespace NSG
         }
     }
 
+	PScene App::LoadScene(PResource resource, bool setAsCurrent)
+    {
+        PScene obj(new Scene(resource));
+		if (setAsCurrent)
+			currentScene_ = obj;
+        scenes_.push_back(obj);
+        return obj;
+    }
+
+    PScene App::CreateScene(bool setAsCurrent)
+    {
+        PScene scene(new Scene);
+        if(setAsCurrent)
+            currentScene_ = scene;
+        scenes_.push_back(scene);
+        return scene;
+    }
+
+    void App::SetCurrentScene(PScene scene)
+    {
+        CHECK_ASSERT(scene, __FILE__, __LINE__);
+        currentScene_ = scene;
+    }
+
+    PScene App::GetCurrentScene() const
+    {
+        return currentScene_;
+    }
+
+    PBoxMesh App::CreateBoxMesh(float width, float height, float depth, int resX, int resY, int resZ)
+    {
+        PBoxMesh mesh(new BoxMesh(width, height, depth, resX, resY, resZ));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PCircleMesh App::CreateCircleMesh(float radius, int res)
+    {
+        PCircleMesh mesh(new CircleMesh(radius, res));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PEllipseMesh App::CreateEllipseMesh(float width, float height, int res)
+    {
+        PEllipseMesh mesh(new EllipseMesh(width, height, res));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PModelMesh App::CreateModelMesh()
+    {
+        PModelMesh mesh(new ModelMesh);
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PPlaneMesh App::CreatePlaneMesh(float width, float height, int columns, int rows)
+    {
+        PPlaneMesh mesh(new PlaneMesh(width, height, columns, rows));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PRectangleMesh App::CreateRectangleMesh(float width, float height)
+    {
+        PRectangleMesh mesh(new RectangleMesh(width, height));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PRoundedRectangleMesh App::CreateRoundedRectangleMesh(float radius, float width, float height, int res)
+    {
+        PRoundedRectangleMesh mesh(new RoundedRectangleMesh(radius, width, height, res));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PSphereMesh App::CreateSphereMesh(float radius, int res)
+    {
+        PSphereMesh mesh(new SphereMesh(radius, res));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PTextMesh App::CreateTextMesh(const std::string& textureFilename, bool dynamic)
+    {
+        PTextMesh mesh(new TextMesh(textureFilename, dynamic));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
+    PMaterial App::CreateMaterial(const std::string& name)
+    {
+        PMaterial material(new Material(name));
+        materials_.push_back(material);
+        return material;
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,7 +323,11 @@ namespace NSG
     {
         Context::this_->Initialize();
 
+        PScene scene = pApp_->CreateScene(true);
+
         pApp_->Start(pApp_->argc_, pApp_->argv_);
+
+        scene->Start();
     }
 
     void InternalApp::BeginTicks()
@@ -182,15 +349,15 @@ namespace NSG
 #endif
 
         Graphics::this_->EndFrame();
-     }
+    }
 
-    void InternalApp::SetViewSize(int32_t width, int32_t height)
+    void InternalApp::SetViewSize(int width, int height)
     {
         TRACE_LOG("SetViewSize: width=" << width << " height=" << height);
         pApp_->SetViewSize(width, height);
     }
 
-    void InternalApp::ViewChanged(int32_t width, int32_t height)
+    void InternalApp::ViewChanged(int width, int height)
     {
         //TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
         pApp_->SetViewSize(width, height);

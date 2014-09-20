@@ -25,10 +25,10 @@ misrepresented as being the original software.
 */
 #include "NSG.h"
 #include <vector>
-
+using namespace NSG;
 using namespace NSG::Task;
 
-struct BaseTask : Task 
+struct BaseTask : NSG::Task::Task
 {
     static std::vector<int> executedTasks_;
 };

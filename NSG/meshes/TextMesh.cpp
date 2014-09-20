@@ -268,7 +268,7 @@ namespace NSG
         return vertexsData_.size()/3;
     }
 
-    void TextMesh::OnViewChanged(int32_t width, int32_t height)
+    void TextMesh::OnViewChanged(int width, int height)
     {
         Invalidate();
     }

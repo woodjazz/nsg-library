@@ -36,7 +36,9 @@ namespace NSG
 		~Camera();
 		void EnableOrtho();
 		void DisableOrtho();
-		void SetFov(float fovy);
+		void SetFov(float fovy); // in degrees
+		float GetVerticalFov(float hhfov) const; // in radians
+		void SetHalfHorizontalFov(float hhfov); // in radians
 		void SetNearClip(float zNear);
 		void SetFarClip(float zFar);
 		static Camera* Deactivate();
@@ -47,9 +49,19 @@ namespace NSG
 		void Activate();
 		void SetViewportFactor(float xo, float yo, float xf, float yf);
 		Recti GetViewport() const;
+		void SetOrtho(float left, float right, float bottom, float top);
         bool IsOrtho() const { return isOrtho_; }
-        Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const;
-        Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
+
+        //XYZ are in normalized device coordinates (-1, 1)
+        Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const; 
+
+        //Returned XYZ values are in normalized device coordinates (-1, 1)
+        //Returned W value is interpreted as a distance from the camera.
+        Vertex4 WorldToScreen(const Vertex3& worldXYZ) const;
+
+		//XY are in normalized device coordinates (-1, 1)
+        PRay GetScreenRay(float screenX, float screenY);
+
 		static const Matrix4& GetViewMatrix();
 		const Matrix4& GetView() const;
 		static const Matrix4& GetMatViewProj();
@@ -58,7 +70,7 @@ namespace NSG
 		const Matrix4& GetViewProjectionMatrix() const;
 		const Matrix4& GetViewProjectionInverseMatrix() const;
 		const Matrix4& GetMatProjection() const;
-		virtual void OnViewChanged(int32_t width, int32_t height) override;
+		virtual void OnViewChanged(int width, int height) override;
 		const PFrustum GetFrustum() const;
 		const Frustum* GetFrustumPointer() const;
 		bool IsVisible(const Node& node, Mesh& mesh) const;
@@ -66,10 +78,12 @@ namespace NSG
 		float GetZNear() const { return zNear_; }
 		float GetZFar() const { return zFar_; }
 		float GetFov() const { return fovy_; }
-		float GetAspectRatio() const { return aspectRatio_; }
-		float GetOrthoSize() const { return 1; }
-	private:
+		void Save(pugi::xml_node& node);
+		void Load(const pugi::xml_node& node);
+	protected:
 		Camera(const std::string& name, Scene* scene);
+	private:
+		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
 		void UpdateFrustum();
@@ -79,7 +93,7 @@ namespace NSG
 		mutable Matrix4 matProjection_;
 		mutable Matrix4 matViewProjection_;
 		mutable Matrix4 matViewProjectionInverse_;
-		float fovy_;
+		float fovy_; // in radians
 		float zNear_;
 		float zFar_;
 		float xo_;
@@ -87,8 +101,9 @@ namespace NSG
 		float xf_;
 		float yf_;
 		bool isOrtho_;
-		int32_t viewWidth_;
-		int32_t viewHeight_;
+		Vector4 orthoCoords_;
+		int viewWidth_;
+		int viewHeight_;
 		float aspectRatio_;
 		mutable PFrustum frustum_;
 		mutable bool cameraIsDirty_;

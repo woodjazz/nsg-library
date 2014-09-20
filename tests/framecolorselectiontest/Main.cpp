@@ -42,8 +42,8 @@ struct Test : public App
 
 	void Start(int argc, char* argv[]) override
 	{
-		scene_ = PScene(new Scene);
-        PBoxMesh pMesh(new BoxMesh(1,1,1, 2,2,2));
+		scene_ = GetCurrentScene();
+        PBoxMesh pMesh(CreateBoxMesh(1,1,1, 2,2,2));
         
 		sceneNode_ = scene_->CreateSceneNode("scene node");
         sceneNode_->Set(pMesh);

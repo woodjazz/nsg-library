@@ -28,7 +28,7 @@ using namespace NSG;
 
 static void FrustumTest()
 {
-	Scene scene;
+	PScene scene(App::this_->GetCurrentScene());
 	{
 		Vertex3 p0(0, 0, -1);
 		Vertex3 p1(0, 1, -1);
@@ -44,7 +44,7 @@ static void FrustumTest()
 		CHECK_ASSERT(glm::dot(normal, p2) + d == 0, __FILE__, __LINE__);
 	}
 
-    PCamera camera = scene.CreateCamera("camera");
+    PCamera camera = scene->CreateCamera("camera");
 
 	camera->SetLookAt(Vector3(0, 0, -1));
 
@@ -182,20 +182,20 @@ static void FrustumTest()
 
 static void Test01()
 {
-	Scene scene;
-    SphereMesh sphere(1, 100);
+	PScene scene(App::this_->GetCurrentScene());
+	PSphereMesh sphere(App::this_->CreateSphereMesh(1, 100));
 
     {
 
         Node node;
-		PCamera camera = scene.CreateCamera("camera");
+		PCamera camera = scene->CreateCamera("camera");
         camera->SetFov(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
         PFrustum frustum = camera->GetFrustum();
-        CHECK_ASSERT(frustum->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
         node.SetPosition(Vertex3(20));
-        CHECK_ASSERT(!frustum->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
     }
 
     {
@@ -203,30 +203,30 @@ static void Test01()
         node.SetPosition(Vertex3(20));
         node.SetScale(Vector3(100));
 
-		PCamera camera = scene.CreateCamera("camera");
+		PCamera camera = scene->CreateCamera("camera");
         camera->SetFov(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
         PFrustum frustum = camera->GetFrustum();
-        CHECK_ASSERT(frustum->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
         node.SetPosition(Vertex3(200));
-        CHECK_ASSERT(!frustum->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
     }
 
     {
         Node node;
-		PCamera camera = scene.CreateCamera("camera");
+		PCamera camera = scene->CreateCamera("camera");
         camera->SetFov(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(250);
         camera->SetPosition(Vertex3(0, 0, 10));
         camera->SetLookAt(Vertex3(0));
         PFrustum frustum = camera->GetFrustum();
-        CHECK_ASSERT(frustum->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetPosition(Vertex3(0, 0, -1.1f));
 		camera->SetLookAt(Vertex3(0,0,-2));
 		frustum = camera->GetFrustum();
-        CHECK_ASSERT(!frustum->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
     }
 
 
@@ -234,64 +234,148 @@ static void Test01()
         Node node;
         node.SetPosition(Vertex3(0, 0, -40));
 
-		PCamera camera = scene.CreateCamera("camera");
+		PCamera camera = scene->CreateCamera("camera");
         camera->SetFov(100);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(1000);
-        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetNearClip(41.1f);
-        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
     }
 
     {
         Node node;
         node.SetPosition(Vertex3(1.1f, 0, -1.1f));
 
-		PCamera camera = scene.CreateCamera("camera");
+		PCamera camera = scene->CreateCamera("camera");
         camera->SetFov(170);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(1000);
-        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetFov(0.0001f);
-        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         node.SetPosition(Vertex3(0, 0, -40));
-        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetLookAt(Vertex3(-1, 0, 0));
-        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetLookAt(Vertex3(0, 0, 1));
-        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetPosition(Vertex3(0, 0, -4));
 		node.SetPosition(Vertex3(0, 0, -1));
-        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetFarClip(1.9f);
-        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetFarClip(4);
-        CHECK_ASSERT(camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
 		node.SetPosition(Vertex3(-1, 0, -1));
         node.SetScale(Vector3(0.1f));
-        CHECK_ASSERT(!camera->IsVisible(node, sphere), __FILE__, __LINE__);
+        CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
     }
 }
 
 static void Test02()
 {
     {
-        BoxMesh box(2, 4, 2);
+        PBoxMesh box(App::this_->CreateBoxMesh(2, 4, 2));
         Node node;
-		Scene scene;
-		PCamera camera = scene.CreateCamera("camera");
+		PScene scene(App::this_->GetCurrentScene());
+		PCamera camera = scene->CreateCamera("camera");
         camera->SetFov(179);
 		camera->SetNearClip(0.1f);
 		camera->SetFarClip(10);
 		camera->SetPosition(Vertex3(1, 0, 0));
-		CHECK_ASSERT(camera->IsVisible(node, box), __FILE__, __LINE__);
+		CHECK_ASSERT(camera->IsVisible(node, *box), __FILE__, __LINE__);
 		camera->SetPosition(Vertex3(0, 0, -1.1f));
-		CHECK_ASSERT(!camera->IsVisible(node, box), __FILE__, __LINE__);
+		CHECK_ASSERT(!camera->IsVisible(node, *box), __FILE__, __LINE__);
         node.SetOrientation(glm::angleAxis(glm::pi<float>() / 2, Vertex3(1, 0, 0)));
-		CHECK_ASSERT(camera->IsVisible(node, box), __FILE__, __LINE__);
+		CHECK_ASSERT(camera->IsVisible(node, *box), __FILE__, __LINE__);
         node.SetPosition(Vertex3(1, 0, 2));
-		CHECK_ASSERT(!camera->IsVisible(node, box), __FILE__, __LINE__);
+		CHECK_ASSERT(!camera->IsVisible(node, *box), __FILE__, __LINE__);
     }
+}
+
+static void Test03()
+{
+	{
+		PScene scene(App::this_->GetCurrentScene());
+		PCamera camera = scene->CreateCamera("camera");
+		camera->EnableOrtho();
+		float cameraDepth = camera->GetZFar() - camera->GetZNear();
+
+		{
+			Vertex3 p0(0, 0, -10);
+			Vertex4 screenPoint0 = camera->WorldToScreen(p0);
+			Vertex3 w0 = camera->ScreenToWorld(Vector3(screenPoint0));
+
+			Vertex3 p1(0, 0, -100);
+			Vertex4 screenPoint1 = camera->WorldToScreen(p1);
+
+			Vertex3 p2(0, 0, -200);
+			Vertex4 screenPoint2 = camera->WorldToScreen(p2);
+
+			Vertex3 p3(0, 0, -400);
+			Vertex4 screenPoint3 = camera->WorldToScreen(p3);
+
+
+		}
+
+
+		{
+			Vertex3 p0(-1, 0, -10);
+			Vertex4 screenPoint = camera->WorldToScreen(p0);
+			CHECK_ASSERT(glm::abs(-1 - screenPoint.x) < glm::epsilon<float>(), __FILE__, __LINE__);
+			Vertex3 worldPos = camera->ScreenToWorld(Vertex3(screenPoint));
+			CHECK_ASSERT(glm::distance(worldPos, p0) < glm::epsilon<float>(), __FILE__, __LINE__);
+		}
+
+		{
+			Vertex3 p0(-1, 1, -10);
+			Vertex4 screenPoint = camera->WorldToScreen(p0);
+			CHECK_ASSERT(glm::abs(-1 - screenPoint.x) < glm::epsilon<float>(), __FILE__, __LINE__);
+			CHECK_ASSERT(glm::abs(1 - screenPoint.y) < glm::epsilon<float>(), __FILE__, __LINE__);
+			Vertex3 worldPos = camera->ScreenToWorld(Vertex3(screenPoint));
+			CHECK_ASSERT(glm::distance(worldPos, p0) < glm::epsilon<float>(), __FILE__, __LINE__);
+		}
+
+		camera->DisableOrtho();
+
+		{
+			Vertex3 p0(-1, 0, -110.3f);
+			Vertex4 screenPoint = camera->WorldToScreen(p0);
+			CHECK_ASSERT(screenPoint.x < 0 && screenPoint.x > -0.5f, __FILE__, __LINE__);
+			Vertex3 worldPos = camera->ScreenToWorld(Vertex3(screenPoint));
+			CHECK_ASSERT(glm::distance(worldPos, p0) < 0.05f, __FILE__, __LINE__);
+		}
+
+		{
+			Vertex3 p0(-1, 1, -10);
+			Vertex4 screenPoint = camera->WorldToScreen(p0);
+			CHECK_ASSERT(screenPoint.x < 0 && screenPoint.x > -0.5f, __FILE__, __LINE__);
+			CHECK_ASSERT(screenPoint.y > 0 && screenPoint.y < 0.5f, __FILE__, __LINE__);
+			Vertex3 worldPos = camera->ScreenToWorld(Vertex3(screenPoint));
+			CHECK_ASSERT(glm::distance(worldPos, p0) < 0.05f, __FILE__, __LINE__);
+		}
+
+
+		{
+			Vertex3 p0(1, 0, -10);
+			Vertex4 screenPoint = camera->WorldToScreen(p0);
+			CHECK_ASSERT(screenPoint.x > 0 && screenPoint.x < 0.5f, __FILE__, __LINE__);
+			Vertex3 worldPos = camera->ScreenToWorld(Vertex3(screenPoint));
+			CHECK_ASSERT(glm::distance(worldPos, p0) < 0.05f, __FILE__, __LINE__);
+		}
+
+		{
+			Vertex3 p0(1, 0, 10); // behind the screen
+			Vertex4 screenPoint = camera->WorldToScreen(p0);
+			CHECK_ASSERT(screenPoint.x < 0 && screenPoint.x > -0.5f, __FILE__, __LINE__);
+			CHECK_ASSERT(screenPoint.z > 0, __FILE__, __LINE__);
+			Vertex3 worldPos = camera->ScreenToWorld(Vertex3(screenPoint));
+			CHECK_ASSERT(glm::distance(worldPos, p0) < 0.05f, __FILE__, __LINE__);
+		}
+
+
+	}
 }
 
 void CameraTest()
@@ -299,4 +383,5 @@ void CameraTest()
 	FrustumTest();
     Test01();
     Test02();
+	Test03();
 }

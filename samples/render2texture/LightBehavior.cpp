@@ -36,7 +36,7 @@ LightBehavior::~LightBehavior()
 
 void LightBehavior::Start()
 {
-    PMaterial pMaterial(new Material("light"));
+    PMaterial pMaterial(app_.CreateMaterial("light"));
     pMaterial->SetColor(Color(1,0,0,1));
     PProgram pProgram(new Program);
     PTechnique technique(new Technique);
@@ -45,12 +45,12 @@ void LightBehavior::Start()
     pass->SetProgram(pProgram);
     pMaterial->SetTechnique(technique);
 
-    pSceneNode_->Set(pMaterial);
+	sceneNode_->Set(pMaterial);
 
-    PMesh pMesh(new SphereMesh(0.2f, 16));
-    pSceneNode_->Set(pMesh);
+    PMesh pMesh(app_.CreateSphereMesh(0.2f, 16));
+	sceneNode_->Set(pMesh);
 
-    pSceneNode_->SetPosition(Vertex3(-1.0,  0.0,  5.0));
+	sceneNode_->SetPosition(Vertex3(-1.0, 0.0, 5.0));
 }
 
 void LightBehavior::Update()

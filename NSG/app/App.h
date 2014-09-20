@@ -50,23 +50,20 @@ namespace NSG
         App(PAppConfiguration configuration);
         virtual ~App();
         void SetCommandLineParameters(int argc, char* argv[]);
-        virtual void Start(int argc, char* argv[]) {}
-        virtual void Update() {}
-        virtual void RenderFrame() {};
-        virtual void ViewChanged(int32_t width, int32_t height) {};
-        virtual void OnMouseMove(float x, float y) {}
-        virtual void OnMouseDown(float x, float y) {}
-        virtual void OnMouseWheel(float x, float y) {}
-        virtual void OnMouseUp(float x, float y) {}
-        virtual void OnKey(int key, int action, int modifier) {}
-        virtual void OnChar(unsigned int character) {}
-        virtual bool ShallExit() const
-        {
-            return false;
-        }
+        virtual void Start(int argc, char* argv[]) = 0;
+        virtual void RenderFrame();
+        virtual void Update();
+        virtual void ViewChanged(int width, int height);
+        virtual void OnMouseMove(float x, float y);
+        virtual void OnMouseDown(float x, float y);
+        virtual void OnMouseWheel(float x, float y);
+        virtual void OnMouseUp(float x, float y);
+        virtual void OnKey(int key, int action, int modifier);
+        virtual void OnChar(unsigned int character);
+        virtual bool ShallExit() const;
         void DoTick(float delta);
-        void SetViewSize(int32_t width, int32_t height);
-        std::pair<int32_t, int32_t> GetViewSize() const;
+        void SetViewSize(int width, int height);
+        std::pair<int, int> GetViewSize() const;
         float GetDeltaTime() const
         {
             return deltaTime_;
@@ -80,10 +77,22 @@ namespace NSG
         {
             return pAAssetManager_;
         }
-
         static void Add(IViewChangedListener* listener);
         static void Remove(IViewChangedListener* listener);
-
+		PScene LoadScene(PResource resource, bool setAsCurrent);
+        PScene CreateScene(bool setAsCurrent);
+        void SetCurrentScene(PScene scene);
+        PScene GetCurrentScene() const;
+		PBoxMesh CreateBoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
+		PCircleMesh CreateCircleMesh(float radius, int res);
+		PEllipseMesh CreateEllipseMesh(float width, float height, int res);
+		PModelMesh CreateModelMesh();
+		PPlaneMesh CreatePlaneMesh(float width, float height, int columns, int rows);
+		PRectangleMesh CreateRectangleMesh(float width, float height);
+		PRoundedRectangleMesh CreateRoundedRectangleMesh(float radius, float width, float height, int res);
+        PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
+        PTextMesh CreateTextMesh(const std::string& textureFilename = "", bool dynamic = true);
+        PMaterial CreateMaterial(const std::string& name = "");
     private:
         void AddListener(IViewChangedListener* listener);
         void RemoveListener(IViewChangedListener* listener);
@@ -97,6 +106,10 @@ namespace NSG
         std::vector<IViewChangedListener*> viewChangedListeners_;
         int argc_;
         char** argv_;
+        std::vector<PScene> scenes_;
+        PScene currentScene_;
+        std::vector<PMesh> meshes_;
+        std::vector<PMaterial> materials_;
         friend struct InternalApp;
     };
 

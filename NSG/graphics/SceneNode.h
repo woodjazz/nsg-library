@@ -42,35 +42,38 @@ namespace NSG
 		PMaterial GetMaterial() const { return material_; }
 		void Set(PMesh mesh);
 		PMesh GetMesh() const { return mesh_; }
-		void SetBehavior(PBehavior behavior);
+		void AddBehavior(PBehavior behavior);
 		void SetOctant(Octant* octant) const { octant_ = octant; }
 		const BoundingBox& GetWorldBoundingBox() const;
 		bool IsOccludee() const { return occludee_; }
 		Octant* GetOctant() const { return octant_; }
 		virtual void OnDirty() const override;
 		virtual void Save(pugi::xml_node& node) override;
-		void Load(const pugi::xml_document& doc, const std::string& name);
 		void SetMeshIndex(int index) {meshIndex_ = index;}
 		void SetMaterialIndex(int index) {materialIndex_ = index;}
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
-		void Start();
-		void Update();
+		virtual void Start() override;
+		virtual void Update() override;
+        virtual void ViewChanged(int width, int height) override;
+        virtual void OnMouseMove(float x, float y) override;
+        virtual void OnMouseDown(float x, float y) override;
+        virtual void OnMouseWheel(float x, float y) override;
+        virtual void OnMouseUp(float x, float y) override;
+        virtual void OnKey(int key, int action, int modifier) override;
+        virtual void OnChar(unsigned int character) override;
 		PSceneNode CreateChild(const std::string& name);
 	protected:
+		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
+		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
 		SceneNode(const std::string& name, Scene* scene);
 		SceneNode(PResource resource, const std::string& name, Scene* scene);
+		App& app_;
 	private:
-		struct CachedData
-		{
-			std::vector<PMesh> meshes_;
-			std::vector<PMaterial> materials_;
-		};
-		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
-		void Load(const pugi::xml_node& child, const CachedData& data);
+		void LoadNode(const pugi::xml_node& child, const CachedData& data);
 		PMaterial material_;
 		PMesh mesh_;
-		PBehavior behavior_;
+		std::vector<PBehavior> behaviors_;
 		mutable Octant* octant_;
 		mutable BoundingBox worldBB_;
 		bool occludee_;

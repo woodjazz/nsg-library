@@ -41,6 +41,7 @@ namespace NSG
 		PTexture GetTexture() const;
 		PProgram GetProgram() const { return program_; }
 	protected:
+		App& app_;
 		PTechnique technique_;
 		PPass pass_;
         PMaterial pMaterial_; 

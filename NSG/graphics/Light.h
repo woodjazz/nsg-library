@@ -34,6 +34,8 @@ namespace NSG
 	public:
 		Light(const std::string& name, Scene* scene);
 		~Light();
+		void SetAmbientColor(Color ambient);
+		const Color& GetAmbientColor() const { return ambient_; }
 		void SetDiffuseColor(Color diffuse);
 		const Color& GetDiffuseColor() const { return diffuse_; }
 		void SetSpecularColor(Color specular);
@@ -48,19 +50,19 @@ namespace NSG
 		const Attenuation& GetAttenuation() const { return attenuation_; }
 		void SetPoint();
 		void SetDirectional();
-		void SetSpotLight(float spotCutOff, float exponent);
+		void SetSpotLight(float spotCutOff); // angle in degrees
 		float GetSpotCutOff() const { return spotCutOff_; }
-		float GetSpotExponent() const { return exponent_; }
 		enum Type {POINT, DIRECTIONAL, SPOT};
 		Type GetType() const { return type_; }
+		void SetType(Type type);
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
 	private:
 		Type type_;
+		Color ambient_;
         Color diffuse_;
         Color specular_;
         Attenuation attenuation_;
-        float spotCutOff_;
-        float exponent_;
+        float spotCutOff_; // angle in degrees
 	};
 }

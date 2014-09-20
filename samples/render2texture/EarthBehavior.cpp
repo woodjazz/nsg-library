@@ -42,10 +42,10 @@ void EarthBehavior::Start()
 	render2texture_ = PRender2Texture(new Render2Texture(512, 512));
 	showTexture_.SetNormal(render2texture_->GetTexture());
 
-    pSceneNode_->Set(PSphereMesh(new SphereMesh(3, 32)));
+	sceneNode_->Set(PSphereMesh(app_.CreateSphereMesh(3, 32)));
 
 	PTexture pEarthTexture(new TextureFile("data/stone.jpg"));
-	PMaterial pMaterial(new Material ("earth"));
+	PMaterial pMaterial(app_.CreateMaterial ("earth"));
 	PProgram program(new Program("", Program::PER_VERTEX_LIGHTING));
     PTechnique technique(new Technique);
     PPass pass(new Pass);
@@ -54,9 +54,9 @@ void EarthBehavior::Start()
     pMaterial->SetTechnique(technique);
 	pMaterial->SetTexture0(pEarthTexture);
 	pMaterial->SetShininess(100);
-    pSceneNode_->Set(pMaterial);
+	sceneNode_->Set(pMaterial);
  
-    pSceneNode_->SetPosition(Vertex3(5, 0, 0));
+	sceneNode_->SetPosition(Vertex3(5, 0, 0));
 }
 
 void EarthBehavior::Update()
@@ -66,14 +66,14 @@ void EarthBehavior::Update()
 	x_angle_ += glm::pi<float>()/10.0f * deltaTime;
 	y_angle_ += glm::pi<float>()/10.0f * deltaTime;
 
-	pSceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+	sceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
 
 }
 
 void EarthBehavior::Render()
 {
 	render2texture_->Begin();
-	pSceneNode_->GetMaterial()->GetTechnique()->Render();
+	sceneNode_->GetMaterial()->GetTechnique()->Render();
 	render2texture_->End();
 	showTexture_.Show();
 }

@@ -76,6 +76,8 @@ misrepresented as being the original software.
 #include "Frustum.h"
 #include "ResourceFile.h"
 #include "Program.h"
+#include "Ray.h"
+#include "RotateAroundPoint.h"
 #include "pugixml.hpp"
 
 

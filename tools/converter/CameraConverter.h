@@ -23,21 +23,21 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "Behavior.h"
-#include "Check.h"
+#pragma once
+#include <memory>
+#include "Camera.h"
 
-namespace NSG 
+struct aiCamera;
+namespace NSG
 {
-	Behavior::Behavior()
+	class CameraConverter : public Camera
 	{
-	}
+	public:
+		CameraConverter(const aiCamera* camera, Scene* scene);
+		~CameraConverter();
+	};
 
-	Behavior::~Behavior()
-	{
-	}
+	class CameraConverter;
+	typedef std::shared_ptr<CameraConverter> PCameraConverter;
 
-	void Behavior::SetSceneNode(SceneNode* pSceneNode) 
-	{
-		pSceneNode_ = pSceneNode; 
-	}
 }

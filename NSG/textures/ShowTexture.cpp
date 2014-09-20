@@ -33,13 +33,15 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Program.h"
 #include "Node.h"
+#include "App.h"
 
 namespace NSG
 {
 	ShowTexture::ShowTexture()
-	: pass_(new Pass),
-    material_(new Material("ShowTexture")),
-	mesh_(new PlaneMesh(2, 2, 2, 2)),
+	: app_(*App::this_),
+	pass_(new Pass),
+    material_(app_.CreateMaterial("ShowTexture")),
+	mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
     node_(new Node("ShowTexture"))
 	{
 		pass_->EnableDepthTest(false);

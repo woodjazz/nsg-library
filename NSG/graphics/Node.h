@@ -32,6 +32,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	// Right-handed coordinate system ( like OpenGL)
+	// 'look' along -z axis
 	class Node : NonCopyable, public UniformsUpdate
 	{
 	public:
@@ -64,20 +66,32 @@ namespace NSG
 		PNode GetChild(size_t idx) const { return children_.at(idx); }
 		bool IsDirty() const { return dirty_; }
 		virtual void Save(pugi::xml_node& node);
-		void SetName(const std::string& name) { name_ = name_; }
+		void SetName(const std::string& name) { name_ = name; }
 		const std::string& GetName() const { return name_; }
 		void SetParent(PNode parent);
 		void SetParent(Node* parent);
 		Node* GetParent() const { return parent_; }
 		void AddChild(PNode node);
 		void ClearAllChildren();
+		virtual void Start() {}
+		virtual void Update() {}
+        virtual void ViewChanged(int width, int height) {}
+        virtual void OnMouseMove(float x, float y) {}
+        virtual void OnMouseDown(float x, float y) {}
+        virtual void OnMouseWheel(float x, float y) {}
+        virtual void OnMouseUp(float x, float y) {}
+        virtual void OnKey(int key, int action, int modifier) {}
+        virtual void OnChar(unsigned int character) {}
+		bool IsEnabled() const { return enabled_; }
+		void SetEnabled(bool enable, bool recursive = true);
     protected:
 		Node* parent_;
         std::vector<PNode> children_;
+		std::string name_;
 	private:
 		void RemoveChild(Node* node);
 		void RemoveFromParent();
-		void MarkAsDirty();
+		void MarkAsDirty(bool recursive = true);
 		void Update(bool updateChildren = true) const;
 		IdType id_;	
         mutable Matrix4 globalModel_;	
@@ -92,6 +106,6 @@ namespace NSG
 		mutable Vertex3 lookAtDirection_;
 		bool inheritScale_;
 		mutable bool dirty_;
-		std::string name_;
+		bool enabled_;
 	};
 }

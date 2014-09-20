@@ -40,50 +40,42 @@ using namespace NSG;
 
 MyApp::MyApp() : render2TextureBehavior_(nullptr)
 {
-	AppConfiguration::this_->width_ = 1024;
-	AppConfiguration::this_->height_ = 768;
-	AppConfiguration::this_->showStatistics_ = true;
+    //AppConfiguration::this_->width_ = 30;
+    //AppConfiguration::this_->height_ = 20;
+    AppConfiguration::this_->showStatistics_ = true;
 }
 
-MyApp::~MyApp() 
+MyApp::~MyApp()
 {
 }
 
 void MyApp::Start(int argc, char* argv[])
 {
-	TRACE_LOG("Start");
+    TRACE_LOG("Start");
 
-    scene_ = PScene(new Scene);
+	scene_ = GetCurrentScene();
 
-	pCamera1_ = scene_->CreateCamera("camera");
+    pCamera1_ = scene_->CreateCamera("camera");
     pCamera1_->Activate();
-	pCamera1_->SetBehavior(PBehavior(new CameraBehavior()));
+	pCamera1_->AddBehavior(PBehavior(new CameraBehavior()));
 
-	render2TextureSceneNode_ = scene_->CreateSceneNode("scene node 1");
-	render2TextureBehavior_ = new Render2TextureBehavior;
-	render2TextureSceneNode_->SetBehavior(PBehavior(render2TextureBehavior_));
+    render2TextureSceneNode_ = scene_->CreateSceneNode("scene node 1");
+    render2TextureBehavior_ = new Render2TextureBehavior;
+	render2TextureSceneNode_->AddBehavior(PBehavior(render2TextureBehavior_));
 
-	pEarthSceneNode_ = scene_->CreateSceneNode("scene node 2");
-    pEarthSceneNode_->SetBehavior(PBehavior(new EarthBehavior()));
+    pEarthSceneNode_ = scene_->CreateSceneNode("scene node 2");
+	pEarthSceneNode_->AddBehavior(PBehavior(new EarthBehavior()));
 
-	pCubeSceneNode_ = scene_->CreateSceneNode("scene node 3");
-    pCubeSceneNode_->SetBehavior(PBehavior(new CubeBehavior()));
+    pCubeSceneNode_ = scene_->CreateSceneNode("scene node 3");
+	pCubeSceneNode_->AddBehavior(PBehavior(new CubeBehavior()));
 
-	pLight0_ = scene_->CreateLight("light");
-    pLight0_->SetBehavior(PBehavior(new LightBehavior()));
-
-    scene_->Start();
-   
+    pLight0_ = scene_->CreateLight("light");
+	pLight0_->AddBehavior(PBehavior(new LightBehavior()));
 }
 
-void MyApp::Update() 
+void MyApp::RenderFrame()
 {
-	scene_->Update();
-}
-
-void MyApp::RenderFrame() 
-{
-	render2TextureSceneNode_->GetMaterial()->GetTechnique()->Render();
-	render2TextureBehavior_->Show();
+    render2TextureSceneNode_->GetMaterial()->GetTechnique()->Render();
+    render2TextureBehavior_->Show();
 }
 

@@ -80,8 +80,8 @@ namespace NSG
 		int atlasHeight_;
 		CharsInfo charInfo_;
 		int fontSize_;
-		int32_t viewWidth_;
-		int32_t viewHeight_;
+		int viewWidth_;
+		int viewHeight_;
         CharsMesh charsMesh_;
 	};
 

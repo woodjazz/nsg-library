@@ -132,13 +132,13 @@ namespace NSG
             TRACE_LOG("Using extension: EXT_discard_framebuffer");
         }
 
+#if !defined(NACL) 
         if (CheckExtension("OES_vertex_array_object") || CheckExtension("ARB_vertex_array_object"))
         {
-#if !defined(NACL)
             has_vertex_array_object_ext_ = true;
             TRACE_LOG("Using extension: vertex_array_object");
-#endif
         }
+#endif
 
         if (CheckExtension("EXT_map_buffer_range"))
         {
@@ -164,8 +164,10 @@ namespace NSG
             TRACE_LOG("Using extension: GL_ARB_texture_non_power_of_two");
         }
 
-        if (CheckExtension("GL_EXT_instanced_arrays") || CheckExtension("GL_ARB_instanced_arrays"))
+#if !defined(EMSCRIPTEN) && !defined(NACL)
+        if (CheckExtension("GL_EXT_instanced_arrays") || CheckExtension("GL_ARB_instanced_arrays") || CheckExtension("GL_ANGLE_instanced_arrays"))
         {
+
             GLint maxVertexAtts = 0;
             glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAtts);
             int attributesNeeded = (int)AttributesLoc::MAX_ATTS;
@@ -181,7 +183,7 @@ namespace NSG
                 TRACE_LOG("Disabling extension: instanced_arrays");
             }
         }
-
+#endif        
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -189,6 +191,7 @@ namespace NSG
 
     Graphics::~Graphics()
     {
+		ReleaseBuffers();
         Graphics::this_ = nullptr;
     }
 
@@ -203,6 +206,11 @@ namespace NSG
         if (has_instanced_arrays_ext_)
             instanceBuffer_ = PInstanceBuffer(new InstanceBuffer);
     }
+
+	void Graphics::ReleaseBuffers()
+	{
+		instanceBuffer_ = nullptr;
+	}
 
     void Graphics::ResetCachedState()
     {

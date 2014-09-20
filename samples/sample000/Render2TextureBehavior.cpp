@@ -38,10 +38,10 @@ Render2TextureBehavior::~Render2TextureBehavior()
 
 void Render2TextureBehavior::Start()
 {
-    PMaterial material(new Material("render2texture"));
+    PMaterial material(app_.CreateMaterial("render2texture"));
     PTechnique technique(new Technique);
     material->SetTechnique(technique);
-    pSceneNode_->Set(material);
+    sceneNode_->Set(material);
     
     pass_ = PPass2Texture(new Pass2Texture(1024, 1024));
     technique->Add(pass_);

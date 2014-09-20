@@ -139,7 +139,7 @@ namespace NSG
             node.SetInheritScale(false);
 
             float yScale = 0.5f / area_->scrollFactorAreaY_;
-            std::pair<int32_t, int32_t> viewSize = App::this_->GetViewSize();
+            std::pair<int, int> viewSize = App::this_->GetViewSize();
             float xScale = SLIDER_WIDTH / (float)viewSize.first;
 
             Vertex3 globalScale(xScale, areaGlobalScale.y * yScale, 1);
@@ -202,7 +202,7 @@ namespace NSG
             node.SetParent(area_->pNode_);
             node.SetInheritScale(false);
 
-            std::pair<int32_t, int32_t> viewSize = App::this_->GetViewSize();
+            std::pair<int, int> viewSize = App::this_->GetViewSize();
             float yScale = SLIDER_WIDTH / (float)viewSize.second;
             float xScale = 0.5f / area_->scrollFactorAreaX_;
 

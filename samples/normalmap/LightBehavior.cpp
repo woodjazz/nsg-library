@@ -36,7 +36,7 @@ LightBehavior::~LightBehavior()
 
 void LightBehavior::Start()
 {
-    PMaterial pMaterial(new Material("light"));
+    PMaterial pMaterial(app_.CreateMaterial("light"));
     pMaterial->SetColor(Color(1,0,0,1));
 	PProgram pProgram(new Program);
     PTechnique technique(new Technique);
@@ -45,10 +45,10 @@ void LightBehavior::Start()
     pass->SetProgram(pProgram);
     pMaterial->SetTechnique(technique);
 
-    pSceneNode_->Set(pMaterial);
+	sceneNode_->Set(pMaterial);
     
-    PMesh pMesh(new SphereMesh(0.1f, 16));
-    pSceneNode_->Set(pMesh);
+    PMesh pMesh(app_.CreateSphereMesh(0.1f, 16));
+	sceneNode_->Set(pMesh);
 
     camControlPoints_.push_back(Vertex3(-4.0f, 0.0f, 5.0f)); 
     camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 5.0f));
@@ -70,7 +70,7 @@ void LightBehavior::Update()
         camControlPoints_[3],
         delta1);
 
-    pSceneNode_->SetPosition(position);
+	sceneNode_->SetPosition(position);
 
     delta1 += deltaTime * 0.1f;
 

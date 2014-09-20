@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "RoundedRectangleMesh.h"
 #include "RectangleMesh.h"
 #include "Program.h"
+#include "App.h"
 
 
 namespace NSG
@@ -40,7 +41,8 @@ namespace NSG
     namespace IMGUI
     {
         Skin::Skin()
-            : mainWindowStyle_(new WindowStyle),
+			: app_(*App::this_),
+			mainWindowStyle_(new WindowStyle),
               windowStyle_(new WindowStyle),
               lineStyle_(new LineStyle),
               areaStyle_(new AreaStyle),
@@ -52,7 +54,7 @@ namespace NSG
               hSliderStyle_(new SliderStyle),
               vThumbSliderStyle_(new Style),
               hThumbSliderStyle_(new Style),
-              stencilMaterial_(new Material("stencil")),
+			  stencilMaterial_(app_.CreateMaterial("stencil")),
               stencilPass_(new Pass)
         {
             {

@@ -36,10 +36,8 @@ misrepresented as being the original software.
 namespace NSG
 {
 	LightConverter::LightConverter(const aiLight* light, Scene* scene) 
-		: Light("light", scene)
+		: Light(light->mName.C_Str(), scene)
 	{
-		SetName(light->mName.C_Str());
-
 		switch (light->mType)
 		{
 		case aiLightSource_DIRECTIONAL:
@@ -51,17 +49,19 @@ namespace NSG
 		case aiLightSource_SPOT:
 		{
 			float spotCutOff = light->mAngleOuterCone;
-			float exponent = 20;
-			SetSpotLight(spotCutOff, exponent);
+			SetSpotLight(spotCutOff);
 			break;
 		}
 		default:
 			CHECK_ASSERT(false, __FILE__, __LINE__);
 		}
 
+		SetAmbientColor(Color(light->mColorAmbient.r, light->mColorAmbient.g, light->mColorAmbient.b, 1));
 		SetDiffuseColor(Color(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b, 1));
 		SetSpecularColor(Color(light->mColorSpecular.r, light->mColorSpecular.g, light->mColorSpecular.b, 1));
 		SetAttenuation(light->mAttenuationConstant, light->mAttenuationLinear, light->mAttenuationQuadratic);
+		SetLookAt(Vector3(light->mDirection.x, light->mDirection.y, light->mDirection.z));
+		SetPosition(Vector3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
 	}
 
 	LightConverter::~LightConverter()

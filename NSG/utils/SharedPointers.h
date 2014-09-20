@@ -29,6 +29,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Ray;
+	typedef std::shared_ptr<Ray> PRay;
+
 	class Octree;
 	typedef std::shared_ptr<Octree> POctree;
 
@@ -127,8 +130,11 @@ namespace NSG
 	struct InternalApp;
 	typedef std::unique_ptr<InternalApp> PInternalApp;
 
-	class Behavior;
+	struct Behavior;
 	typedef std::shared_ptr<Behavior> PBehavior;
+
+	struct RotateAroundPoint;
+	typedef std::shared_ptr<RotateAroundPoint> PRotateAroundPoint;
 
 	class BoxMesh;
 	typedef std::shared_ptr<BoxMesh> PBoxMesh;
@@ -183,6 +189,9 @@ namespace NSG
 
 	class SphereMesh;
 	typedef std::shared_ptr<SphereMesh> PSphereMesh;
+
+	class ModelMesh;
+	typedef std::shared_ptr<ModelMesh> PModelMesh;
 
 	class StencilMask;
 	typedef std::shared_ptr<StencilMask> PStencilMask;
@@ -264,9 +273,6 @@ namespace NSG
 		struct CheckButtonStyle;
 		typedef std::shared_ptr<CheckButtonStyle> PCheckButtonStyle;
 	}
-
-	class Model;
-	typedef std::shared_ptr<Model> PModel;
 
 	namespace NaCl 
 	{

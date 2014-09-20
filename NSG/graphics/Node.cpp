@@ -37,12 +37,13 @@ namespace NSG
 
     Node::Node(const std::string& name)
         : parent_(nullptr),
+          name_(name),
           id_(s_node_id++),
           scale_(1, 1, 1),
           globalScale_(1, 1, 1),
           inheritScale_(true),
           dirty_(true),
-          name_(name)
+          enabled_(true)
     {
     }
 
@@ -52,16 +53,16 @@ namespace NSG
     }
 
     void Node::SetParent(PNode parent)
-   	{
-   		SetParent(parent.get());
-   	}
+    {
+        SetParent(parent.get());
+    }
 
     void Node::SetParent(Node* parent)
-   	{
-   		//Do not insert child in parent (IMGUI will make memory grow for ever)
-   		parent_ = parent;
-   		MarkAsDirty();
-   	}
+    {
+        //Do not insert child in parent (IMGUI will make memory grow for ever)
+        parent_ = parent;
+        MarkAsDirty();
+    }
 
     void Node::RemoveFromParent()
     {
@@ -113,7 +114,7 @@ namespace NSG
         {
         case TS_LOCAL:
             // Note: local space translation disregards local scale for scale-independent movement speed
-			position_ += GetOrientation() * delta;
+            position_ += GetOrientation() * delta;
             break;
 
         case TS_PARENT:
@@ -121,7 +122,7 @@ namespace NSG
             break;
 
         case TS_WORLD:
-			position_ += !parent_ ? delta : Vector3(parent_->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
+            position_ += !parent_ ? delta : Vector3(parent_->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
             break;
         }
 
@@ -200,25 +201,19 @@ namespace NSG
 
     const Vertex3& Node::GetGlobalPosition() const
     {
-        if (dirty_)
-            Update();
-
+        Update();
         return globalPosition_;
     }
 
     const Quaternion& Node::GetGlobalOrientation() const
     {
-        if (dirty_)
-            Update();
-
+        Update();
         return globalOrientation_;
     }
 
     Vertex3 Node::GetGlobalScale() const
     {
-        if (dirty_)
-            Update();
-
+        Update();
         return globalScale_;
     }
 
@@ -253,7 +248,7 @@ namespace NSG
 
     void Node::Update(bool updateChildren) const
     {
-        if (!dirty_)
+        if (!dirty_ || !enabled_)
             return;
 
         if (parent_)
@@ -305,54 +300,56 @@ namespace NSG
 
     const Matrix4& Node::GetGlobalModelMatrix() const
     {
-        if (dirty_)
-            Update();
-
+        Update();
         return globalModel_;
     }
 
     const Matrix3& Node::GetGlobalModelInvTranspMatrix() const
     {
-        if (dirty_)
-            Update();
-
+        Update();
         return globalModelInvTransp_;
     }
 
     const Matrix4& Node::GetGlobalModelInvMatrix() const
     {
-        if (dirty_)
-            Update();
-
+        Update();
         return globalModelInv_;
     }
 
 
     const Vertex3& Node::GetLookAtDirection() const
     {
-        if (dirty_)
-            Update();
-
+        Update();
         return lookAtDirection_;
     }
 
     bool Node::IsPointInsideBB(const Vertex3& point) const
     {
-        if (dirty_)
-            Update();
-
+        Update();
         BoundingBox box(*this);
         return box.IsInside(point);
     }
 
-    void Node::MarkAsDirty()
+    void Node::MarkAsDirty(bool recursive)
     {
         dirty_ = true;
         SetUniformsNeedUpdate();
         OnDirty();
-        auto it = children_.begin();
-        while (it != children_.end())
-            (*(it++))->MarkAsDirty();
+        if (recursive)
+            for (auto child : children_)
+                child->MarkAsDirty(recursive);
     }
 
+    void Node::SetEnabled(bool enable, bool recursive)
+    {
+        if (enable != enabled_)
+        {
+            enabled_ = enable;
+            SetUniformsNeedUpdate();
+        }
+
+        if (recursive)
+            for (auto child : children_)
+                child->SetEnabled(enable, recursive);
+    }
 }

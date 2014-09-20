@@ -28,18 +28,20 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Material.h"
 #include "IMGUIContext.h"
+#include "App.h"
 
 namespace NSG
 {
     namespace IMGUI
     {
         Style::Style()
-            : enableActive_(true),
+            : app_(*App::this_),
+              enableActive_(true),
               enableHot_(true),
               enableFocus_(true),
-              normalMaterial_(new Material("normal")),
-              activeMaterial_(new Material("active")),
-              hotMaterial_(new Material("hot")),
+              normalMaterial_(app_.CreateMaterial("normal")),
+              activeMaterial_(app_.CreateMaterial("active")),
+              hotMaterial_(app_.CreateMaterial("hot")),
               pass_(new Pass)
         {
             Context& context = *Context::this_;
@@ -47,14 +49,15 @@ namespace NSG
             pass_->EnableDepthTest(false);
             pass_->EnableStencilTest(true);
             pass_->SetProgram(context.unlitProgram_);
-            
+
             activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
             normalMaterial_->SetColor(Color(0, 1, 0, 0.7f));
             hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
         }
 
         Style::Style(const Style& obj)
-            : enableActive_(obj.enableActive_),
+            : app_(obj.app_),
+              enableActive_(obj.enableActive_),
               enableHot_(obj.enableHot_),
               enableFocus_(obj.enableFocus_),
               normalMaterial_(obj.normalMaterial_),
@@ -81,13 +84,13 @@ namespace NSG
         AreaStyle::AreaStyle()
             : showVScroll_(true),
               showHScroll_(true),
-              scrollMaterial_(new Material("area")),
+              scrollMaterial_(app_.CreateMaterial("area")),
               scrollPass_(new Pass)
         {
             hotMaterial_->SetColor(Color(0, 0, 0, 0));
             activeMaterial_->SetColor(Color(0, 0, 0, 0));
             normalMaterial_->SetColor(Color(0, 0, 0, 0));
-            
+
             scrollMaterial_->SetColor(Color(0.3f, 0.3f, 0.3f, 0.9f));
 
             Context& context = *Context::this_;
@@ -137,7 +140,7 @@ namespace NSG
 
 
         LabelStyle::LabelStyle()
-            : textColor_(1, 1, 1, 1)
+            : textMaterial_(app_.CreateMaterial("LabelTextMaterial"))
         {
             hotMaterial_->SetColor(Color(0, 0, 0, 0));
             activeMaterial_->SetColor(Color(0, 0, 0, 0));
@@ -146,13 +149,13 @@ namespace NSG
 
         LabelStyle::LabelStyle(const LabelStyle& obj)
             : Style(obj),
-              textColor_(obj.textColor_),
+              textMaterial_(obj.textMaterial_),
               fontAtlasFile_(obj.fontAtlasFile_)
         {
         }
 
         ButtonStyle::ButtonStyle()
-            : textColor_(1, 1, 1, 1)
+            : textMaterial_(app_.CreateMaterial("ButtonTextMaterial"))
         {
             hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
             activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
@@ -161,7 +164,7 @@ namespace NSG
 
         ButtonStyle::ButtonStyle(const ButtonStyle& obj)
             : Style(obj),
-              textColor_(obj.textColor_),
+              textMaterial_(obj.textMaterial_),
               fontAtlasFile_(obj.fontAtlasFile_)
         {
         }
@@ -182,7 +185,7 @@ namespace NSG
         }
 
         TextStyle::TextStyle()
-            : textColor_(1, 1, 1, 1),
+            : textMaterial_(app_.CreateMaterial("TextMaterial")),
               textMaxLength_(std::numeric_limits<int>::max())
         {
             hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
@@ -192,14 +195,14 @@ namespace NSG
 
         TextStyle::TextStyle(const TextStyle& obj)
             : Style(obj),
-              textColor_(obj.textColor_),
+              textMaterial_(obj.textMaterial_),
               fontAtlasFile_(obj.fontAtlasFile_),
               textMaxLength_(obj.textMaxLength_)
         {
         }
 
         TitleStyle::TitleStyle()
-            : textColor_(0, 0, 0, 1),
+            : textMaterial_(app_.CreateMaterial("TitleTextMaterial")),
               pixelsHeight_(25)
         {
             hotMaterial_->SetColor(Color(0.9f, 0.7f, 0.7f, 0.7f));
@@ -209,6 +212,7 @@ namespace NSG
 
         TitleStyle::TitleStyle(const TitleStyle& obj)
             : Style(obj),
+              textMaterial_(obj.textMaterial_),
               pixelsHeight_(obj.pixelsHeight_),
               fontAtlasFile_(obj.fontAtlasFile_)
         {

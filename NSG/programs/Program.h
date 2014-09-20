@@ -108,6 +108,15 @@ namespace NSG
         void SetCameraVariables();
         void SetNodeVariables(Node* node);
         void SetMaterialVariables(Material* material);
+
+		struct BaseLightLoc
+		{
+			GLuint ambient_;
+			GLuint diffuse_;
+			GLuint specular_;
+		};
+
+        void SetBaseLightVariables(const BaseLightLoc& baseLoc, const Light* light);
         void SetLightVariables(Scene* scene);
 
         Flags flags_;
@@ -154,14 +163,9 @@ namespace NSG
 
         MaterialLoc materialLoc_;
 
-        struct BaseLightLoc
-        {
-            GLuint diffuse_;
-            GLuint specular_;
-        };
-
         struct DirectionalLightLoc
         {
+            GLuint enabled_;
             BaseLightLoc base_;
             GLuint direction_;
         };
@@ -175,19 +179,27 @@ namespace NSG
 
         struct PointLightLoc
         {
+            GLuint enabled_;
             BaseLightLoc base_;
             GLuint position_;
             AttenuationLoc atten_;
         };
 
-        GLuint numPointLightsLoc_;
-        static const int MAX_POINT_LIGHTS = 2;
-        PointLightLoc pointLighsLoc_[MAX_POINT_LIGHTS];
-        DirectionalLightLoc directionalLightLoc_;
+        struct SpotLightLoc
+        {
+            PointLightLoc point_;
+            GLuint direction_;
+			GLuint cutOff_;
+        };
+
+        std::vector<PointLightLoc> pointLightsLoc_;
+        std::vector<DirectionalLightLoc> directionalLightsLoc_;
+        std::vector<SpotLightLoc> spotLightsLoc_;
         /////////////////////////////////////
 
-        bool hasLights_;
+        size_t nDirectionalLights_;
         size_t nPointLights_;
+        size_t nSpotLights_;
         Camera* activeCamera_;
         bool neverUsed_;
         Material* activeMaterial_;
@@ -195,7 +207,10 @@ namespace NSG
         Scene* activeScene_;
         Color sceneColor_;
 
-        Light* activePointLights_[MAX_POINT_LIGHTS];
+        std::vector<Light*> activeDirectionalLights_;
+        std::vector<Light*> activePointLights_;
+        std::vector<Light*> activeSpotLights_;
+
         Matrix4 activeNodeGlobalModel_;
         struct MaterialProgram
         {

@@ -258,7 +258,7 @@ namespace NSG
         return charPos;
     }
 
-    void FontAtlasTexture::OnViewChanged(int32_t width, int32_t height)
+    void FontAtlasTexture::OnViewChanged(int width, int height)
     {
         viewWidth_ = width;
         viewHeight_ = height;

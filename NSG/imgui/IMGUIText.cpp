@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "Keys.h"
 #include "Keyboard.h"
 #include "Graphics.h"
+#include "App.h"
 
 namespace NSG
 {
@@ -52,12 +53,12 @@ namespace NSG
         {
 			if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
             {
-				pTextMesh_ = area_->textMesh0_ = PTextMesh(new TextMesh(style.fontAtlasFile_));
+				pTextMesh_ = area_->textMesh0_ = app_.CreateTextMesh(style.fontAtlasFile_);
             }
 
 			if (!pCursorMesh_ || !pCursorMesh_->Has(style.fontAtlasFile_))
             {
-				pCursorMesh_ = area_->cursorMesh_ = PTextMesh(new TextMesh(style.fontAtlasFile_));
+				pCursorMesh_ = area_->cursorMesh_ = app_.CreateTextMesh(style.fontAtlasFile_);
             }
         }
 
@@ -221,10 +222,8 @@ namespace NSG
             pass.SetStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
             pass.SetStencilFunc(GL_EQUAL, level, ~GLuint(0));
 
-            Material textMaterial("text");
-            textMaterial.SetColor(textStyle_.textColor_);
-			textMaterial.SetTexture0(pTextMesh_->GetTexture());
-            Graphics::this_->Set(&textMaterial);
+			textStyle_.textMaterial_->SetTexture0(pTextMesh_->GetTexture());
+			Graphics::this_->Set(textStyle_.textMaterial_.get());
             
             pass.Render();
 

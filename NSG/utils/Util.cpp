@@ -157,6 +157,9 @@ namespace NSG
     	char ch;
         s >> ch;
         CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
+        s >> obj.w;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
         s >> obj.x;
         s >> ch;
         CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
@@ -164,9 +167,6 @@ namespace NSG
         s >> ch;
         CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
         s >> obj.z;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.w;
         s >> ch;
         CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
 

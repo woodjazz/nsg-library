@@ -36,6 +36,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Graphics.h"
 #include "Keys.h"
+#include "App.h"
 
 namespace NSG
 {
@@ -50,7 +51,7 @@ namespace NSG
         {
             if (!pTextMesh_ || !pTextMesh_->Has(style.fontAtlasFile_))
             {
-				pTextMesh_ = area_->textMesh0_ = PTextMesh(new TextMesh(style.fontAtlasFile_));
+				pTextMesh_ = area_->textMesh0_ = app_.CreateTextMesh(style.fontAtlasFile_);
             }
 
             pTextMesh_->SetText(currentText_, hAlign, vAlign);
@@ -115,11 +116,9 @@ namespace NSG
             pass.SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
             pass.SetProgram(pTextMesh_->GetProgram());
 
-            Material textMaterial("button");
-            textMaterial.SetColor(buttonStyle_.textColor_);
-            textMaterial.SetTexture0(pTextMesh_->GetTexture());
+			buttonStyle_.textMaterial_->SetTexture0(pTextMesh_->GetTexture());
             
-            Graphics::this_->Set(&textMaterial);
+			Graphics::this_->Set(buttonStyle_.textMaterial_.get());
 
             pass.Render();
 
