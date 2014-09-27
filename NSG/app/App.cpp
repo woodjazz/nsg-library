@@ -108,9 +108,9 @@ namespace NSG
         currentScene_->OnMouseMove(x, y);
     }
 
-    void App::OnMouseDown(float x, float y)
+	void App::OnMouseDown(int button, float x, float y)
     {
-        currentScene_->OnMouseDown(x, y);
+        currentScene_->OnMouseDown(button, x, y);
     }
 
     void App::OnMouseWheel(float x, float y)
@@ -118,9 +118,9 @@ namespace NSG
         currentScene_->OnMouseWheel(x, y);
     }
 
-    void App::OnMouseUp(float x, float y)
+	void App::OnMouseUp(int button, float x, float y)
     {
-        currentScene_->OnMouseUp(x, y);
+        currentScene_->OnMouseUp(button, x, y);
     }
 
     void App::OnKey(int key, int action, int modifier)
@@ -203,15 +203,6 @@ namespace NSG
         }
     }
 
-	PScene App::LoadScene(PResource resource, bool setAsCurrent)
-    {
-        PScene obj(new Scene(resource));
-		if (setAsCurrent)
-			currentScene_ = obj;
-        scenes_.push_back(obj);
-        return obj;
-    }
-
     PScene App::CreateScene(bool setAsCurrent)
     {
         PScene scene(new Scene);
@@ -253,12 +244,20 @@ namespace NSG
         return mesh;
     }
 
+    PModelMesh App::CreateModelMesh(const VertexsData& vertexsData, const Indexes& indexes)
+    {
+        PModelMesh mesh(new ModelMesh(vertexsData, indexes));
+        meshes_.push_back(mesh);
+        return mesh;
+    }
+
     PModelMesh App::CreateModelMesh()
     {
         PModelMesh mesh(new ModelMesh);
         meshes_.push_back(mesh);
         return mesh;
     }
+
 
     PPlaneMesh App::CreatePlaneMesh(float width, float height, int columns, int rows)
     {
@@ -373,21 +372,21 @@ namespace NSG
         pApp_->OnMouseMove(x, y);
     }
 
-    void InternalApp::OnMouseDown(float x, float y)
+	void InternalApp::OnMouseDown(int button, float x, float y)
     {
         //TRACE_LOG("Mouse Down");
         screenX_ = x;
         screenY_ = y;
 
-        IMGUI::OnMouseDown(x, y);
-        pApp_->OnMouseDown(x, y);
+        IMGUI::OnMouseDown(button, x, y);
+        pApp_->OnMouseDown(button, x, y);
     }
 
-    void InternalApp::OnMouseUp(float x, float y)
+	void InternalApp::OnMouseUp(int button, float x, float y)
     {
         //TRACE_LOG("Mouse Up");
-        IMGUI::OnMouseUp(x, y);
-        pApp_->OnMouseUp(x, y);
+        IMGUI::OnMouseUp(button, x, y);
+        pApp_->OnMouseUp(button, x, y);
     }
 
     void InternalApp::OnMouseWheel(float x, float y)

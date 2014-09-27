@@ -23,24 +23,33 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Mesh.h"
 
-namespace NSG
+#include "NSG.h"
+using namespace NSG;
+
+extern void Tests();
+
+struct Test : public App 
 {
-	class ModelMesh : public Mesh
+	bool exit_;
+
+	Test()
+		:exit_(false)
 	{
-	public:
-		ModelMesh();
-		ModelMesh(const VertexsData& vertexsData, const Indexes& indexes);
-		~ModelMesh();
-		GLenum GetWireFrameDrawMode() const override;
-		GLenum GetSolidDrawMode() const override;
-		virtual size_t GetNumberOfTriangles() const override;
-		void SetFaceMode(GLenum face_mode) { face_mode_ = face_mode; }
-		virtual void Load(const pugi::xml_node& node) override;
-	private:
-		GLenum face_mode_;
-		friend class App;
-	};
-}
+
+	}
+
+	void Start(int argc, char* argv[]) override
+	{
+		Tests();
+		exit_ = true;
+	}
+
+	bool ShallExit() const override 
+	{ 
+		return exit_;
+	}
+};
+
+
+NSG_MAIN(Test);

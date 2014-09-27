@@ -22,7 +22,8 @@ namespace NSG
           specular_(1, 1, 1, 1),
           shininess_(1),
           color_(1, 1, 1, 1),
-          name_(name)
+          name_(name),
+          serializable_(true)
     {
     }
 
@@ -120,6 +121,9 @@ namespace NSG
 
     void Material::Save(pugi::xml_node& node)
     {
+        if(!serializable_)
+            return;
+        
         pugi::xml_node child = node.append_child("Material");
 
         {

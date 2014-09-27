@@ -42,6 +42,7 @@ namespace NSG
 		~BoundingBox();
 		void Define(const Vector3& point);
 	    void Merge(const Vector3& point);
+	    void Merge(const BoundingBox& box);
 	    void Transform(const Node& node);
 		Intersection IsInside(const BoundingBox& box) const;
 		bool IsInside(const Vertex3& point) const;

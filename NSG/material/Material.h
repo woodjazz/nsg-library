@@ -56,7 +56,8 @@ namespace NSG
 		PTechnique GetTechnique() const { return technique_; }
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
-	protected:
+		void SetSerializable(bool serializable) { serializable_ = serializable; }
+	private:
 		Material(const std::string& name);
 	private:
 		PTexture pTexture0_;
@@ -68,6 +69,7 @@ namespace NSG
         Color color_;
         PTechnique technique_;
         std::string name_;
+        bool serializable_;
         friend class Program;
         friend class App;
 	};

@@ -29,6 +29,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Sphere;
+	typedef std::shared_ptr<Sphere> PSphere;
+
 	class Ray;
 	typedef std::shared_ptr<Ray> PRay;
 
@@ -133,8 +136,8 @@ namespace NSG
 	struct Behavior;
 	typedef std::shared_ptr<Behavior> PBehavior;
 
-	struct RotateAroundPoint;
-	typedef std::shared_ptr<RotateAroundPoint> PRotateAroundPoint;
+	struct CameraControl;
+	typedef std::shared_ptr<CameraControl> PCameraControl;
 
 	class BoxMesh;
 	typedef std::shared_ptr<BoxMesh> PBoxMesh;

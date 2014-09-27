@@ -38,6 +38,7 @@ namespace NSG
 	{
 	public:
 		~SceneNode();
+		void SetResource(PResource resource);
 		void Set(PMaterial material);
 		PMaterial GetMaterial() const { return material_; }
 		void Set(PMesh mesh);
@@ -57,9 +58,9 @@ namespace NSG
 		virtual void Update() override;
         virtual void ViewChanged(int width, int height) override;
         virtual void OnMouseMove(float x, float y) override;
-        virtual void OnMouseDown(float x, float y) override;
+		virtual void OnMouseDown(int button, float x, float y) override;
         virtual void OnMouseWheel(float x, float y) override;
-        virtual void OnMouseUp(float x, float y) override;
+		virtual void OnMouseUp(int button, float x, float y) override;
         virtual void OnKey(int key, int action, int modifier) override;
         virtual void OnChar(unsigned int character) override;
 		PSceneNode CreateChild(const std::string& name);
@@ -67,7 +68,6 @@ namespace NSG
 		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
 		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
 		SceneNode(const std::string& name, Scene* scene);
-		SceneNode(PResource resource, const std::string& name, Scene* scene);
 		App& app_;
 	private:
 		void LoadNode(const pugi::xml_node& child, const CachedData& data);

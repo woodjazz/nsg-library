@@ -36,14 +36,14 @@ struct Test : public App
     {
     	void Begin() 
     	{
-    		IMGUI::OnMouseDown(-0.5f, -0.5f);
+    		IMGUI::OnMouseDown(0, -0.5f, -0.5f);
     	}
 
     	void Stay()
     	{
             if(text1 == "")
             {
-				IMGUI::OnMouseUp(-0.5f, -0.5f);
+				IMGUI::OnMouseUp(0, -0.5f, -0.5f);
                 IMGUI::OnChar('i');
             }
     		else if(text1 == "i")
@@ -71,14 +71,14 @@ struct Test : public App
     	void Begin() 
     	{
     		CHECK_ASSERT(text1 == "init", __FILE__, __LINE__);
-            IMGUI::OnMouseDown(0.5f, -0.5f);
+            IMGUI::OnMouseDown(0, 0.5f, -0.5f);
     	}
 
         void Stay()
         {
             if(text2 == "")
             {
-                IMGUI::OnMouseUp(0.5f, -0.5f);
+                IMGUI::OnMouseUp(0, 0.5f, -0.5f);
 
                 IMGUI::OnChar('s');
             }
@@ -102,12 +102,12 @@ struct Test : public App
     {
     	void Begin() 
     	{
-            IMGUI::OnMouseDown(0, 0.5f);
+            IMGUI::OnMouseDown(0, 0, 0.5f);
     	}
 
         void Stay()
         {
-            IMGUI::OnMouseUp(0, 0.5f);
+            IMGUI::OnMouseUp(0, 0, 0.5f);
         }
 
         void End()

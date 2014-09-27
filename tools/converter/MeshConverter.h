@@ -24,22 +24,19 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Mesh.h"
+#include "Types.h"
 
 struct aiMesh;
 namespace NSG
 {
-	class MeshConverter : public Mesh
+	class MeshConverter
 	{
 	public:
-		MeshConverter(const aiMesh* mesh);
+		MeshConverter(const aiMesh* aiMesh);
 		~MeshConverter();
-		virtual GLenum GetWireFrameDrawMode() const override;
-		virtual GLenum GetSolidDrawMode() const override;
-		virtual size_t GetNumberOfTriangles() const override;
     private:
         GLenum face_mode_;
-        const aiMesh* mesh_;
+        const aiMesh* aiMesh_;
 	};
 
 	class MeshConverter;

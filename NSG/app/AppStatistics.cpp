@@ -38,11 +38,11 @@ namespace NSG
     template <> AppStatistics* Singleton<AppStatistics>::this_ = nullptr;
 
     AppStatistics::AppStatistics()
-		: app_(*App::this_),
-		frames_(0),
+        : app_(*App::this_),
+          frames_(0),
           collect_(true),
           pass_(new Pass),
-		  material_(app_.CreateMaterial("AppStatistics"))
+          material_(app_.CreateMaterial("AppStatistics"))
     {
         startTime_ = Clock::now();
 
@@ -50,17 +50,17 @@ namespace NSG
         pass_->EnableStencilTest(false);
 
         material_->SetColor(Color(1, 1, 1, 1));
-
+        material_->SetSerializable(false);
 
         for (int i = 0; i < (int)Stats::MAX_STATS; i++)
         {
             stats_[i] = 0;
             text_[i] = app_.CreateTextMesh();
-			std::stringstream ss;
-			ss << "AppStatistics::node " << i;
+            std::stringstream ss;
+            ss << "AppStatistics::node " << i;
             node_[i] = PNode(new Node(ss.str()));
             if (i > 0)
-				node_[i - 1]->AddChild(node_[i]);
+                node_[i - 1]->AddChild(node_[i]);
         }
 
         pass_->SetProgram(text_[0]->GetProgram());
@@ -81,7 +81,7 @@ namespace NSG
 
     AppStatistics::~AppStatistics()
     {
-		AppStatistics::this_ = nullptr;
+        AppStatistics::this_ = nullptr;
     }
 
     void AppStatistics::NewDrawCall()

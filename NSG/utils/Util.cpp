@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 
 #include "Util.h"
+#include "Constants.h"
 #include <string>
 #include <algorithm>
 #include <cctype>
@@ -181,5 +182,45 @@ namespace NSG
     	ss >> obj;
     	return obj;
     }
+#if 0
+	float CalculateArcBallAnglesForPoint(const Vertex3& center, const Vertex3& currentPoint, float& theta, float& phi)
+	{
+		float radius = glm::distance(currentPoint, center);
+
+		CHECK_ASSERT(radius > 0.05f, __FILE__, __LINE__);
+
+		Vector3 rn = glm::normalize(currentPoint - center);
+
+		//calculate phi in order to be in the current position
+		float dy = rn.y;
+		phi = acos(dy); 
+
+		//calculate theta in order to be in the current position
+		float dx = rn.x;
+		float dz = rn.z;
+
+		theta = atan(dz / dx);
+
+		if (dx < 0)
+			theta += PI;
+
+		//TRACE_LOG("theta=" << glm::degrees(theta) << " phi=" << glm::degrees(phi));
+
+		return radius;
+	}
+
+    Vertex3 CalculateArcBallPoint(const Vertex3& center, float radius, Vector3& up, float theta, float phi)
+    {
+        // Apply spherical coordinates
+		Vertex3 newPoint(cos(theta) * sin(phi), cos(phi), sin(theta) * sin(phi));
+
+        // Reduce theta slightly to obtain another point on the same longitude line on the sphere.
+		const float dt = 1;
+		Vertex3 newUpPoint(cos(theta) * sin(phi - dt), cos(phi - dt), sin(theta) * sin(phi - dt));
+        up = glm::normalize(newUpPoint - newPoint);
+
+		return center + radius * newPoint;
+    }
+#endif
 
 }

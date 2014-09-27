@@ -24,24 +24,20 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Types.h"
+#include "Task.h"
 #include "NonCopyable.h"
-#include <memory>
-#include <chrono>
 #include <queue>
 #include <map>
 #include <functional>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
-#include "Task.h"
 
 namespace NSG 
 {
     namespace Task 
     {
-        typedef std::chrono::steady_clock Clock;
-        typedef Clock::time_point TimePoint;
-        
         class TimedTask : NonCopyable 
         {
         public:

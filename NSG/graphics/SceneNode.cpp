@@ -54,20 +54,6 @@ namespace NSG
         CHECK_ASSERT(scene, __FILE__, __LINE__);
     }
 
-    SceneNode::SceneNode(PResource resource, const std::string& name, Scene* scene)
-        : Node(name),
-          app_(*App::this_),
-          octant_(nullptr),
-          occludee_(false),
-          worldBBNeedsUpdate_(true),
-          resource_(resource),
-          meshIndex_(-1),
-          materialIndex_(-1),
-          scene_(scene)
-    {
-        CHECK_ASSERT(scene, __FILE__, __LINE__);
-    }
-
     SceneNode::~SceneNode()
     {
         if(scene_->GetOctree())
@@ -75,6 +61,11 @@ namespace NSG
         Context::RemoveObject(this);
     }
 
+	void SceneNode::SetResource(PResource resource)
+	{
+		resource_ = resource;
+	}
+	
     bool SceneNode::IsValid()
     {
         if (resource_)
@@ -183,13 +174,13 @@ namespace NSG
 			obj->OnMouseMove(x, y);
     }
 
-    void SceneNode::OnMouseDown(float x, float y)
+	void SceneNode::OnMouseDown(int button, float x, float y)
     {
         for (auto& obj : behaviors_)
-            obj->OnMouseDown(x, y);
+            obj->OnMouseDown(button, x, y);
 
 		for (auto& obj : children_)
-			obj->OnMouseDown(x, y);
+			obj->OnMouseDown(button, x, y);
     }
 
     void SceneNode::OnMouseWheel(float x, float y)
@@ -201,13 +192,13 @@ namespace NSG
 			obj->OnMouseWheel(x, y);
 	}
 
-    void SceneNode::OnMouseUp(float x, float y)
+	void SceneNode::OnMouseUp(int button, float x, float y)
     {
         for (auto& obj : behaviors_)
-            obj->OnMouseUp(x, y);
+            obj->OnMouseUp(button, x, y);
 
 		for (auto& obj : children_)
-			obj->OnMouseUp(x, y);
+			obj->OnMouseUp(button, x, y);
 	}
 
     void SceneNode::OnKey(int key, int action, int modifier)

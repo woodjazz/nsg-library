@@ -202,13 +202,13 @@ namespace NSG
         for (size_t i = 0; i < sc->mNumMeshes; ++i)
         {
             const struct aiMesh* mesh = sc->mMeshes[i];
-            meshes_.push_back(PMeshConverter(new MeshConverter(mesh)));
+            MeshConverter obj(mesh);
         }
 
         for (size_t i = 0; i < sc->mNumMaterials; ++i)
         {
             const aiMaterial* material = sc->mMaterials[i];
-            materials_.push_back(PMaterialConverter(new MaterialConverter(material)));
+            MaterialConverter obj(material);
         }
     }
 

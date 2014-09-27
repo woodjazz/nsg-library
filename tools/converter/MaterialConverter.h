@@ -24,17 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
-#include "Material.h"
+#include "Types.h"
 
 struct aiMaterial;
 namespace NSG
 {
-	class MaterialConverter : public Material
+	class MaterialConverter
 	{
 	public:
 		MaterialConverter(const aiMaterial* mtl);
 		~MaterialConverter();
+	private:
+		PMaterial material_;
 	};
 
 	class MaterialConverter;

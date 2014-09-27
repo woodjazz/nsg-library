@@ -111,6 +111,23 @@ namespace NSG
             max_.z = point.z;
     }
 
+    void BoundingBox::Merge(const BoundingBox& box)
+    {
+        if (box.min_.x < min_.x)
+            min_.x = box.min_.x;
+        if (box.min_.y < min_.y)
+            min_.y = box.min_.y;
+        if (box.min_.z < min_.z)
+            min_.z = box.min_.z;
+        if (box.max_.x > max_.x)
+            max_.x = box.max_.x;
+        if (box.max_.y > max_.y)
+            max_.y = box.max_.y;
+        if (box.max_.z > max_.z)
+            max_.z = box.max_.z;
+    }
+
+
     Intersection BoundingBox::IsInside(const BoundingBox& box) const
     {
         if (box.max_.x < min_.x || box.min_.x > max_.x ||

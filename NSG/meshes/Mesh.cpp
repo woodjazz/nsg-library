@@ -41,14 +41,14 @@ misrepresented as being the original software.
 namespace NSG
 {
     Mesh::Mesh(const std::string& name, bool dynamic)
-        : pVBuffer_(nullptr),
-          pIBuffer_(nullptr),
-          bb_(Vertex3(0)),
-          isStatic_(!dynamic),
+        : bufferVertexData_(nullptr),
+          bufferIndexData_(nullptr),
           boundingSphereRadius_(0),
+          isStatic_(!dynamic),
           name_(name),
           graphics_(*Graphics::this_),
-          areTangentsCalculated_(false)
+          areTangentsCalculated_(false),
+          serializable_(true)
     {
     }
 
@@ -122,6 +122,9 @@ namespace NSG
 
     void Mesh::Save(pugi::xml_node& node)
     {
+        if(!serializable_)
+            return;
+        
         pugi::xml_node child = node.append_child("Mesh");
 
         {

@@ -53,12 +53,12 @@ namespace NSG
         void Start();
         void Update();
         void Render();
-
+        void Load(PResource resource);
         void ViewChanged(int width, int height);
         void OnMouseMove(float x, float y);
-        void OnMouseDown(float x, float y);
+		void OnMouseDown(int button, float x, float y);
         void OnMouseWheel(float x, float y);
-        void OnMouseUp(float x, float y);
+		void OnMouseUp(int button, float x, float y);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
 
@@ -80,22 +80,17 @@ namespace NSG
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
         bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);
 	protected:
-		Scene(PResource resource);
 		Scene();
 		void SaveMeshes(pugi::xml_node& node);
 		void SaveMaterials(pugi::xml_node& node);
 	private:
 		void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
-	protected:
-		std::vector<PMesh> meshes_;
-		std::vector<PMaterial> materials_;
     private:
         Color ambient_;
         std::vector<PCamera> cameras_;
         Lights lights_;
         POctree octree_;
         std::set<SceneNode*> needUpdate_;
-        PResource resource_;
         App& app_;
         bool started_;
         friend class App;

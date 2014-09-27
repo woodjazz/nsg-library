@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
+#include "VertexData.h"
 #include "Tick.h"
 #include "Context.h"
 #include "Singleton.h"
@@ -55,9 +56,9 @@ namespace NSG
         virtual void Update();
         virtual void ViewChanged(int width, int height);
         virtual void OnMouseMove(float x, float y);
-        virtual void OnMouseDown(float x, float y);
+        virtual void OnMouseDown(int button, float x, float y);
         virtual void OnMouseWheel(float x, float y);
-        virtual void OnMouseUp(float x, float y);
+		virtual void OnMouseUp(int button, float x, float y);
         virtual void OnKey(int key, int action, int modifier);
         virtual void OnChar(unsigned int character);
         virtual bool ShallExit() const;
@@ -79,20 +80,22 @@ namespace NSG
         }
         static void Add(IViewChangedListener* listener);
         static void Remove(IViewChangedListener* listener);
-		PScene LoadScene(PResource resource, bool setAsCurrent);
         PScene CreateScene(bool setAsCurrent);
         void SetCurrentScene(PScene scene);
         PScene GetCurrentScene() const;
 		PBoxMesh CreateBoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
 		PCircleMesh CreateCircleMesh(float radius, int res);
 		PEllipseMesh CreateEllipseMesh(float width, float height, int res);
-		PModelMesh CreateModelMesh();
+		PModelMesh CreateModelMesh(const VertexsData& vertexsData, const Indexes& indexes);
+        PModelMesh CreateModelMesh();
 		PPlaneMesh CreatePlaneMesh(float width, float height, int columns, int rows);
 		PRectangleMesh CreateRectangleMesh(float width, float height);
 		PRoundedRectangleMesh CreateRoundedRectangleMesh(float radius, float width, float height, int res);
         PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
         PTextMesh CreateTextMesh(const std::string& textureFilename = "", bool dynamic = true);
         PMaterial CreateMaterial(const std::string& name = "");
+        const std::vector<PMesh>& GetMeshes() const { return meshes_; }
+        const std::vector<PMaterial>& GetMaterials() const { return materials_; }
     private:
         void AddListener(IViewChangedListener* listener);
         void RemoveListener(IViewChangedListener* listener);
@@ -129,8 +132,8 @@ namespace NSG
         void ViewChanged(int32_t width, int32_t height);
         void OnMouseMove(float x, float y);
         void OnMouseWheel(float x, float y);
-        void OnMouseDown(float x, float y);
-        void OnMouseUp(float x, float y);
+		void OnMouseDown(int button, float x, float y);
+		void OnMouseUp(int button, float x, float y);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void RenderFrame();

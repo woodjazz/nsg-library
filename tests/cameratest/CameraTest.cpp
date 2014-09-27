@@ -378,10 +378,64 @@ static void Test03()
 	}
 }
 
+static void Test04()
+{
+	PScene scene(App::this_->GetCurrentScene());
+	PCamera camera = scene->CreateCamera("camera");
+	Vertex3 position(0, 0, 10);
+	camera->SetPosition(position);
+
+	{
+		PRay ray = camera->GetScreenRay(0, 0);
+		CHECK_ASSERT(glm::distance(ray->GetDirection(), VECTOR3_FORWARD) < glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(ray->GetOrigin(), position) < 0.5f, __FILE__, __LINE__);
+	}
+
+	{
+		PRay ray = camera->GetScreenRay(-1, 0);
+		CHECK_ASSERT(glm::distance(ray->GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().x < -0.9f, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().y == 0, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().z < 0, __FILE__, __LINE__);
+	}
+
+	{
+		PRay ray = camera->GetScreenRay(1, 0);
+		CHECK_ASSERT(glm::distance(ray->GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().x > 0.9f, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().y == 0, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().z < 0, __FILE__, __LINE__);
+	}
+
+	{
+		PRay ray = camera->GetScreenRay(0, 1);
+		CHECK_ASSERT(glm::distance(ray->GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().x == 0, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().y > 0.3f, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().z < -0.9f, __FILE__, __LINE__);
+	}
+
+	{
+		PRay ray = camera->GetScreenRay(0, -1);
+		CHECK_ASSERT(glm::distance(ray->GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().x == 0, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().y < 0.3f, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().z < -0.9f, __FILE__, __LINE__);
+	}
+
+	{
+		camera->SetLookAt(position + Vector3(-1, 0, 0));
+		PRay ray = camera->GetScreenRay(0, 0);
+		CHECK_ASSERT(glm::distance(ray->GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(ray->GetDirection(), -VECTOR3_RIGHT) < 0.05f, __FILE__, __LINE__);
+	}
+}
+
 void CameraTest()
 {
 	FrustumTest();
     Test01();
     Test02();
 	Test03();
+	Test04();
 }

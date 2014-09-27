@@ -41,8 +41,8 @@ namespace NSG
     namespace IMGUI
     {
         Skin::Skin()
-			: app_(*App::this_),
-			mainWindowStyle_(new WindowStyle),
+            : app_(*App::this_),
+              mainWindowStyle_(new WindowStyle),
               windowStyle_(new WindowStyle),
               lineStyle_(new LineStyle),
               areaStyle_(new AreaStyle),
@@ -54,9 +54,12 @@ namespace NSG
               hSliderStyle_(new SliderStyle),
               vThumbSliderStyle_(new Style),
               hThumbSliderStyle_(new Style),
-			  stencilMaterial_(app_.CreateMaterial("stencil")),
+              stencilMaterial_(app_.CreateMaterial("stencil")),
               stencilPass_(new Pass)
         {
+
+            stencilMaterial_->SetSerializable(false);
+            
             {
                 mainWindowStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
                 mainWindowStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));

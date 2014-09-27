@@ -24,48 +24,52 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "MeshConverter.h"
+#include "Mesh.h"
 #include "Check.h"
+#include "App.h"
 #include "assimp/mesh.h"
 
 namespace NSG
 {
-	MeshConverter::MeshConverter(const aiMesh* mesh) 
+	MeshConverter::MeshConverter(const aiMesh* aiMesh) 
 	: face_mode_(-1),
-    mesh_(mesh)
+    aiMesh_(aiMesh)
 	{
-		VertexsData& data = vertexsData_;
+		VertexsData data;
 
 		CHECK_ASSERT(data.empty(), __FILE__, __LINE__);
 
-		for(size_t v=0; v<mesh_->mNumVertices; v++)
+		for(size_t v=0; v<aiMesh_->mNumVertices; v++)
 		{
 			VertexData vertexData;
 
-			vertexData.position_ = Vertex3(mesh_->mVertices[v].x, mesh_->mVertices[v].y, mesh_->mVertices[v].z);
+			vertexData.position_ = Vertex3(aiMesh_->mVertices[v].x, aiMesh_->mVertices[v].y, aiMesh_->mVertices[v].z);
 
-			if(mesh_->HasNormals())
+			if(aiMesh_->HasNormals())
 			{
-				vertexData.normal_ = Vertex3(mesh_->mNormals[v].x, mesh_->mNormals[v].y, mesh_->mNormals[v].z);
+				vertexData.normal_ = Vertex3(aiMesh_->mNormals[v].x, aiMesh_->mNormals[v].y, aiMesh_->mNormals[v].z);
 			}
 
-			if(mesh_->HasTextureCoords(0))
+			if(aiMesh_->HasTextureCoords(0))
 			{
-				vertexData.uv_ = Vertex2(mesh_->mTextureCoords[0][v].x, mesh_->mTextureCoords[0][v].y);
+				vertexData.uv_ = Vertex2(aiMesh_->mTextureCoords[0][v].x, aiMesh_->mTextureCoords[0][v].y);
 			}
 
-			if (mesh_->HasVertexColors(0))
+			if (aiMesh_->HasVertexColors(0))
 			{
-				vertexData.color_ = Vertex4(mesh_->mColors[0][v].r, mesh_->mColors[0][v].g, mesh_->mColors[0][v].b, mesh_->mColors[0][v].a);
+				vertexData.color_ = Vertex4(aiMesh_->mColors[0][v].r, aiMesh_->mColors[0][v].g, aiMesh_->mColors[0][v].b, aiMesh_->mColors[0][v].a);
 			}
 
             data.push_back(vertexData);
 		}
+
+		Indexes indexes;
 		
-		if(mesh_->HasFaces())
+		if(aiMesh_->HasFaces())
 		{
-			for (size_t j=0; j<mesh_->mNumFaces; ++j) 
+			for (size_t j=0; j<aiMesh_->mNumFaces; ++j) 
 			{
-				const struct aiFace* face = &mesh_->mFaces[j];
+				const struct aiFace* face = &aiMesh_->mFaces[j];
 
 				GLenum face_mode;
 
@@ -88,37 +92,18 @@ namespace NSG
 				{
 					int index = face->mIndices[k];
 
-					indexes_.push_back(index);
+					indexes.push_back(index);
 				}	
 
-				CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
+				CHECK_ASSERT(indexes.size() % 3 == 0, __FILE__, __LINE__);
 			}		
 		}
+
+		App::this_->CreateModelMesh(data, indexes);
 	}
 
 	MeshConverter::~MeshConverter()
 	{
 	}
-
-	GLenum MeshConverter::GetWireFrameDrawMode() const
-	{
-		return face_mode_;
-	}
-
-	GLenum MeshConverter::GetSolidDrawMode() const
-	{
-		return face_mode_;
-	}
-
-	size_t MeshConverter::GetNumberOfTriangles() const
-	{
-		if(face_mode_ == GL_TRIANGLES)
-			return vertexsData_.size()/3;
-		else if(face_mode_ == GL_TRIANGLE_FAN)
-			return vertexsData_.size() - 2;
-		else
-			return 0;
-	}
-
 }
 

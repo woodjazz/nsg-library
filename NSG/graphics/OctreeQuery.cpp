@@ -57,8 +57,11 @@ namespace NSG
     {
         for (auto& obj : objs)
         {
-            if (inside || frustum_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
-                result_.push_back(obj);
+			if (obj->GetMesh())
+			{
+				if (inside || frustum_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
+					result_.push_back(obj);
+			}
         }
     }
 
@@ -80,8 +83,11 @@ namespace NSG
     {
         for (auto& obj : objs)
         {
-            if (inside || ray_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
-                result_.push_back(obj);
+			if (obj->GetMesh())
+			{
+				if (inside || ray_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
+					result_.push_back(obj);
+			}
         }
     }
 }

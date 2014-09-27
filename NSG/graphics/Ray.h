@@ -42,6 +42,9 @@ namespace NSG
         Intersection IsInside(const BoundingBox& box) const;
         float HitDistance(const SceneNode* node) const;
         float GetMaxDistance() const { return maxDistance_; }
+        Vertex3 GetPoint(float distance) const;
+        const Vector3& GetDirection() const { return direction_; }
+        const Vertex3& GetOrigin() const { return origin_; }
     private:
         Vertex3 origin_;
         Vector3 direction_;

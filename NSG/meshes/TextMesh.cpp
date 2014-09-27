@@ -34,22 +34,6 @@ misrepresented as being the original software.
 #include "ResourceMemory.h"
 #include <algorithm>
 
-static const char* vShader =
-    STRINGIFY(
-        void main()
-{
-    gl_Position = u_mvp * a_position;
-    v_texcoord = a_texcoord;
-}
-    );
-
-static const char* fShader = STRINGIFY(
-                                 void main()
-{
-    gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord).a) * vec4(u_color.x, u_color.y, u_color.z, 1.0);
-}
-                             );
-
 namespace NSG
 {
     TextMesh::TextMesh(const std::string& textureFilename, bool dynamic)
@@ -63,8 +47,7 @@ namespace NSG
           alignmentOffsetY_(0),
           maxLength_(0)
     {
-        PResourceMemory vs(new ResourceMemory(vShader));
-        PResourceMemory fs(new ResourceMemory(fShader));
+        SetSerializable(false);
         pProgram_ = PProgram(new Program("TextMesh", Program::TEXT));
         pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
         App::Add(this);

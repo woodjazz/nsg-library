@@ -62,4 +62,7 @@ namespace NSG
 	Vertex3 GetVertex3(const std::string& buffer);
 	Vertex4 GetVertex4(const std::string& buffer);
 	Quaternion GetQuaternion(const std::string& buffer);
+
+	//float CalculateArcBallAnglesForPoint(const Vertex3& center, const Vertex3& currentPoint, float& theta, float& phi);
+	//Vertex3 CalculateArcBallPoint(const Vertex3& center, float radius, Vector3& up, float theta, float phi);
 }

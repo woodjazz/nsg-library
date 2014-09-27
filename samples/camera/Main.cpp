@@ -35,20 +35,48 @@ struct Sample : App
     {
         //AppConfiguration::this_->width_ = 30;
         //AppConfiguration::this_->height_ = 20;
-        AppConfiguration::this_->showStatistics_ = true;
+        AppConfiguration::this_->showStatistics_ = false;
     }
-
 
     void Start(int argc, char* argv[]) override
     {
 		scene_ = GetCurrentScene();
 
-        PResourceFile resource(new ResourceFile("data/duck.xml"));
-		scene_->Load(resource);
+		PTexture texture(new TextureFile("data/cube_example.png"));
 
-        Camera* camera = Camera::GetActiveCamera();
+		PCamera camera = scene_->CreateCamera("");
+		camera->Activate();
+		camera->AddBehavior(PCameraControl(new CameraControl));
 
-        camera->AddBehavior(PCameraControl(new CameraControl));
+		PMesh mesh = CreateBoxMesh();
+		PMaterial material = CreateMaterial();
+		material->SetTexture0(texture);
+
+		{
+			PSceneNode node = scene_->CreateSceneNode("node1");
+			node->SetPosition(Vertex3(5, -2, 0));
+			node->Set(mesh);
+			node->Set(material);
+		}
+
+		{
+			PSceneNode node = scene_->CreateSceneNode("node1");
+			node->SetPosition(Vertex3(-5, -2, 0));
+			node->Set(mesh);
+			node->Set(material);
+		}
+
+
+		PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING));
+		PTechnique technique(new Technique);
+		PPass pass(new Pass);
+
+		technique->Add(pass);
+		pass->SetProgram(perVertex);
+		material->SetTechnique(technique);
+
+
+		camera->SetPosition(Vertex3(0, 0, 10));
 
     }
 };

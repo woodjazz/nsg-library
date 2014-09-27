@@ -32,7 +32,7 @@ namespace NSG
     {
         bool operator > (const TimedTask::PData& left , const TimedTask::PData& right) 
         {
-            NSG::Task::Milliseconds diff = std::chrono::duration_cast<NSG::Task::Milliseconds>(left->timePoint_ - right->timePoint_);
+            Milliseconds diff = std::chrono::duration_cast<Milliseconds>(left->timePoint_ - right->timePoint_);
 	        return diff.count() > 0;
         }
 

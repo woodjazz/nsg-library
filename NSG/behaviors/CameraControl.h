@@ -23,34 +23,27 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "RotateAroundPoint.h"
-#include "Camera.h"
-#include "Ray.h"
+#pragma once
+#include "NSG.h"
+using namespace NSG;
 
 namespace NSG
 {
-    void RotateAroundPoint::Start()
-    {
-    	pointSet_ = false;
-    }
-
-	void RotateAroundPoint::Update()
-    {
-    }
-
-    void RotateAroundPoint::OnMouseDown(float x, float y)
-    {
-		Camera* camera = Camera::GetActiveCamera();
-		std::vector<RayNodeResult> result;
-		if (camera)
-		{
-			PRay ray = camera->GetScreenRay(x, y);
-			RayNodeResult closest;
-			if(scene_.GetClosestRayNodeIntersection(*ray, closest))
-			{
-				
-			}
-		}
-    }
-
+	struct CameraControl : Behavior
+	{
+		bool rotateAround_;
+		float lastX_;
+		float lastY_;
+		bool rightButtonDown_;
+		PSphere sphere_;
+		
+		void Start() override;
+		void Update() override;
+		void OnMouseDown(int button, float x, float y) override;
+		void OnMouseUp(int button, float x, float y) override;
+		void OnMouseMove(float x, float y) override;
+		void OnMouseWheel(float x, float y) override;
+		void OnKey(int key, int action, int modifier) override;
+		bool FindLookAtPoint(bool centerObj, Vertex3& point);
+	};
 }

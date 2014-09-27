@@ -24,18 +24,35 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
-using namespace NSG;
+#include "Types.h"
 
 namespace NSG
 {
-	struct RotateAroundPoint : Behavior
+	class Sphere
 	{
-		bool pointSet_;
-		Vertex3 point_;
-
-		void Start() override;
-		void Update() override;
-		void OnMouseDown(float x, float y) override;
+	public:
+		Sphere();
+		Sphere(const Vertex3& center, float radius);
+		Sphere(const Vertex3& center, const Vertex3& pointInSphere);
+		~Sphere();
+		void SetCenter(const Vertex3& center);
+		void SetPosition(const Vertex3& pointInSphere);
+		void SetCenterAndPosition(const Vertex3& center, const Vertex3& pointInSphere);
+		void IncAngles(float incTheta, float incPhi);
+		void SetAngles(float theta, float phi);
+		const Vector3& GetPosition() const { return position_; }
+		const Vector3& GetUp() const { return up_; }
+		const Vertex3& GetCenter() const { return center_; }
+	private:
+		void CalculatePosition();
+		void CalculateUpVector();
+		void CalculateAnglesAndRadius();
+	private:
+		Vertex3 center_;
+		float radius_;
+		float theta_;
+		float phi_;
+		Vertex3 position_; // point in the sphere's surface
+		Vector3 up_; //up vector for the camera
 	};
 }

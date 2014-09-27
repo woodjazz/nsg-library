@@ -15,20 +15,11 @@
 #include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
+#include <thread>
 
 namespace NSG
 {
     static const char* SCENENODE_ROOT_NAME = "SceneRootNode";
-    Scene::Scene(PResource resource)
-        : SceneNode(resource, SCENENODE_ROOT_NAME, this),
-          ambient_(0.3f, 0.3f, 0.3f, 1),
-          octree_(new Octree),
-          resource_(resource),
-          app_(*App::this_),
-          started_(false)
-    {
-		//octree_->InsertUpdate(this);
-    }
 
     Scene::Scene()
         : SceneNode(SCENENODE_ROOT_NAME, this),
@@ -46,6 +37,13 @@ namespace NSG
         lights_.clear();
         ClearAllChildren();
         octree_ = nullptr;
+    }
+
+    void Scene::Load(PResource resource)
+    {
+        SetResource(resource);
+        while(!IsReady())
+            std::this_thread::sleep_for(Milliseconds(10));
     }
 
     void Scene::SetAmbientColor(Color ambient)
@@ -82,7 +80,8 @@ namespace NSG
 
     PSceneNode Scene::CreateSceneNodeFrom(PResource resource, const std::string& name)
     {
-        PSceneNode obj(new SceneNode(resource, name, this));
+		PSceneNode obj(CreateSceneNode(name));
+		obj->SetResource(resource);
 		octree_->InsertUpdate(obj.get());
         AddChild(obj);
         return obj;
@@ -153,10 +152,10 @@ namespace NSG
             obj->OnMouseMove(x, y);
     }
 
-    void Scene::OnMouseDown(float x, float y)
+	void Scene::OnMouseDown(int button, float x, float y)
     {
         for (auto& obj : children_)
-            obj->OnMouseDown(x, y);
+            obj->OnMouseDown(button, x, y);
     }
 
     void Scene::OnMouseWheel(float x, float y)
@@ -165,10 +164,10 @@ namespace NSG
             obj->OnMouseWheel(x, y);
     }
 
-    void Scene::OnMouseUp(float x, float y)
+	void Scene::OnMouseUp(int button, float x, float y)
     {
         for (auto& obj : children_)
-            obj->OnMouseUp(x, y);
+            obj->OnMouseUp(button, x, y);
     }
 
     void Scene::OnKey(int key, int action, int modifier)
@@ -360,14 +359,16 @@ namespace NSG
     void Scene::SaveMeshes(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Meshes");
-        for(auto& obj: meshes_)
+		auto meshes = app_.GetMeshes();
+        for(auto& obj: meshes)
             obj->Save(child);
     }
 
     void Scene::SaveMaterials(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Materials");
-        for(auto& obj: materials_)
+		auto materials = app_.GetMaterials();
+        for(auto& obj: materials)
             obj->Save(child);
     }
 

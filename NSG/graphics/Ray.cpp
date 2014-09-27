@@ -121,7 +121,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = glm::round(point);
+				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.y >= box.min_.y && point.y <= box.max_.y && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -132,7 +132,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = glm::round(point);
+				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.y >= box.min_.y && point.y <= box.max_.y && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -144,7 +144,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = glm::round(point);
+				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -155,7 +155,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = glm::round(point);
+				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -167,7 +167,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = glm::round(point);
+				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.y >= box.min_.y && point.y <= box.max_.y)
                     distance = x;
             }
@@ -178,7 +178,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = glm::round(point);
+				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.y >= box.min_.y && point.y <= box.max_.y)
                     distance = x;
             }
@@ -208,5 +208,10 @@ namespace NSG
             }
         }
         return nearest;
+    }
+
+    Vertex3 Ray::GetPoint(float distance) const
+    {
+        return origin_ + direction_ * distance;
     }
 }

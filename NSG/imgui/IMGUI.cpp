@@ -163,14 +163,14 @@ namespace NSG
             Context::this_->state_->OnMouseMove(x, y);
         }
 
-        void OnMouseDown(float x, float y)
+		void OnMouseDown(int button, float x, float y)
         {
-            Context::this_->state_->OnMouseDown(x, y);
+            Context::this_->state_->OnMouseDown(button, x, y);
         }
 
-        void OnMouseUp(float x, float y)
+		void OnMouseUp(int button, float x, float y)
         {
-            Context::this_->state_->OnMouseUp(x, y);
+            Context::this_->state_->OnMouseUp(button, x, y);
         }
 
         void OnMouseWheel(float x, float y)

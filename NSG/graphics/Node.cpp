@@ -234,9 +234,18 @@ namespace NSG
 
         if (length > 0)
         {
-            // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
-            Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
-            SetGlobalOrientation(glm::quat_cast(m));
+			// we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+			Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
+
+			if (parent_)
+			{
+				Quaternion q = glm::inverse(parent_->GetGlobalOrientation());
+				SetOrientation(q*glm::quat_cast(m));
+			}
+			else
+			{
+				SetOrientation(glm::quat_cast(m));
+			}
         }
     }
 

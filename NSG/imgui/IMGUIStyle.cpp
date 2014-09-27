@@ -53,6 +53,10 @@ namespace NSG
             activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
             normalMaterial_->SetColor(Color(0, 1, 0, 0.7f));
             hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
+
+            activeMaterial_->SetSerializable(false);
+            normalMaterial_->SetSerializable(false);
+            hotMaterial_->SetSerializable(false);
         }
 
         Style::Style(const Style& obj)
@@ -92,6 +96,7 @@ namespace NSG
             normalMaterial_->SetColor(Color(0, 0, 0, 0));
 
             scrollMaterial_->SetColor(Color(0.3f, 0.3f, 0.3f, 0.9f));
+            scrollMaterial_->SetSerializable(false);
 
             Context& context = *Context::this_;
             scrollPass_->SetProgram(context.unlitProgram_);
@@ -142,6 +147,7 @@ namespace NSG
         LabelStyle::LabelStyle()
             : textMaterial_(app_.CreateMaterial("LabelTextMaterial"))
         {
+            textMaterial_->SetSerializable(false);
             hotMaterial_->SetColor(Color(0, 0, 0, 0));
             activeMaterial_->SetColor(Color(0, 0, 0, 0));
             normalMaterial_->SetColor(Color(0, 0, 0, 0));
@@ -157,6 +163,8 @@ namespace NSG
         ButtonStyle::ButtonStyle()
             : textMaterial_(app_.CreateMaterial("ButtonTextMaterial"))
         {
+            textMaterial_->SetSerializable(false);
+
             hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
             activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
             normalMaterial_->SetColor(Color(0, 1, 0, 0.7f));
@@ -188,6 +196,8 @@ namespace NSG
             : textMaterial_(app_.CreateMaterial("TextMaterial")),
               textMaxLength_(std::numeric_limits<int>::max())
         {
+            textMaterial_->SetSerializable(false);
+
             hotMaterial_->SetColor(Color(0, 0, 1, 0.7f));
             activeMaterial_->SetColor(Color(1, 0, 0, 0.7f));
             normalMaterial_->SetColor(Color(0, 1, 0, 0.7f));
@@ -205,6 +215,8 @@ namespace NSG
             : textMaterial_(app_.CreateMaterial("TitleTextMaterial")),
               pixelsHeight_(25)
         {
+            textMaterial_->SetSerializable(false);
+            
             hotMaterial_->SetColor(Color(0.9f, 0.7f, 0.7f, 0.7f));
             activeMaterial_->SetColor(Color(0.7f, 0.7f, 0.7f, 1));
             normalMaterial_->SetColor(Color(0.7f, 0.7f, 0.7f, 0.7f));

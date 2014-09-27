@@ -77,9 +77,9 @@ namespace NSG
 		virtual void Update() {}
         virtual void ViewChanged(int width, int height) {}
         virtual void OnMouseMove(float x, float y) {}
-        virtual void OnMouseDown(float x, float y) {}
+		virtual void OnMouseDown(int button, float x, float y) {}
         virtual void OnMouseWheel(float x, float y) {}
-        virtual void OnMouseUp(float x, float y) {}
+		virtual void OnMouseUp(int button, float x, float y) {}
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
 		bool IsEnabled() const { return enabled_; }

@@ -51,11 +51,11 @@ namespace NSG
     {
         Context::Context()
             : unlitProgram_(new Program),
-			controlMesh_(App::this_->CreateRectangleMesh(2, 2)),
+              controlMesh_(App::this_->CreateRectangleMesh(2, 2)),
               state_(new State),
               pSkin_(new Skin),
-			  pCurrentNode_(new Node("IMGUI::Context::pCurrentNode_")),
-			  pRootNode_(new Node("IMGUI::Context::pRootNode_")),
+              pCurrentNode_(new Node("IMGUI::Context::pCurrentNode_")),
+              pRootNode_(new Node("IMGUI::Context::pRootNode_")),
               pLayoutManager_(new LayoutManager(pRootNode_)),
               transparentAreaStyle_(new AreaStyle),
               viewport_(0),
@@ -65,6 +65,7 @@ namespace NSG
             transparentAreaStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
+            controlMesh_->SetSerializable(false);
         }
 
         Context::~Context()

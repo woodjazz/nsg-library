@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include <memory>
 #include <string>
 #include <locale>
+#include <thread>
 #ifndef __GNUC__
 #include <codecvt>
 #endif
@@ -102,7 +103,7 @@ namespace NSG
                 height = r->h;
                 app->ViewChanged(width, height);
             }
-#else            
+#else
             else if (event.type == SDL_APP_DIDENTERBACKGROUND)
             {
                 AppEnterBackground();
@@ -157,13 +158,13 @@ namespace NSG
             {
                 double x = event.button.x;
                 double y = event.button.y;
-                app->OnMouseDown((float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
+                app->OnMouseDown(event.button.button, (float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
             }
             else if (event.type == SDL_MOUSEBUTTONUP)
             {
                 double x = event.button.x;
                 double y = event.button.y;
-                app->OnMouseUp((float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
+                app->OnMouseUp(event.button.button, (float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
             }
             else if (event.type == SDL_MOUSEMOTION)
             {
@@ -190,13 +191,13 @@ namespace NSG
             {
                 double x = event.tfinger.x;
                 double y = event.tfinger.y;
-                app->OnMouseDown((float)(-1 + 2 * x), (float)(1 + -2 * y));
+                app->OnMouseDown(0, (float)(-1 + 2 * x), (float)(1 + -2 * y));
             }
             else if (event.type == SDL_FINGERUP)
             {
                 double x = event.tfinger.x;
                 double y = event.tfinger.y;
-                app->OnMouseUp((float)(-1 + 2 * x), (float)(1 + -2 * y));
+                app->OnMouseUp(0, (float)(-1 + 2 * x), (float)(1 + -2 * y));
             }
             else if (event.type == SDL_FINGERMOTION)
             {
@@ -228,7 +229,10 @@ namespace NSG
         else if (!minimized)
         {
             app->RenderFrame();
-			//Sleep(5000);
+        }
+        else
+        {
+            std::this_thread::sleep_for(Milliseconds(1000));
         }
 #else
         if (!minimized)
@@ -240,6 +244,10 @@ namespace NSG
                 SDL_Quit();
                 exit(0); //force quit on IOS
             }
+        }
+        else
+        {
+            std::this_thread::sleep_for(Milliseconds(1000));
         }
 #endif
     }
@@ -358,9 +366,9 @@ namespace NSG
             return false;
         }
 #endif
-		app->SetViewSize(width, height);
+        app->SetViewSize(width, height);
         app->Initialize();
-        
+
 
 #if IOS
         SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);

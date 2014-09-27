@@ -67,8 +67,8 @@ namespace NSG
   			void End();
 
         	void OnMouseMove(float x, float y);
-	        void OnMouseDown(float x, float y);
-	        void OnMouseUp(float x, float y);
+			void OnMouseDown(int button, float x, float y);
+			void OnMouseUp(int button, float x, float y);
 	        void OnMouseWheel(float x, float y);
 	        void OnKey(int key, int action, int modifier);
 	        void OnChar(unsigned int character);

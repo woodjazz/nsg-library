@@ -83,9 +83,10 @@ namespace NSG
         }
         void Save(pugi::xml_node& node);
         virtual void Load(const pugi::xml_node& node);
+        void SetSerializable(bool serializable) { serializable_ = serializable; }
     protected:
-        Mesh(const std::string& name = "mesh", bool dynamic = false);
         void CalculateTangents();
+        Mesh(const std::string& name = "mesh", bool dynamic = false);
     protected:
         VertexsData vertexsData_;
         Indexes indexes_;
@@ -100,6 +101,7 @@ namespace NSG
         std::string name_;
         Graphics& graphics_;
         bool areTangentsCalculated_;
+        bool serializable_;
         friend class App;
     };
 }

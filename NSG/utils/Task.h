@@ -24,16 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
-#include <chrono>
+#include "Types.h"
 
 namespace NSG 
 {
     namespace Task 
     {
-        typedef std::chrono::milliseconds Milliseconds;
-        typedef std::chrono::seconds Seconds;
-
         struct Task {
             virtual ~Task() {}
             virtual void Run() = 0;

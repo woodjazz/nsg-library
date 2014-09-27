@@ -63,7 +63,7 @@ namespace NSG
 
         }
 
-        void State::OnMouseMove(float x, float y)
+		void State::OnMouseMove(float x, float y)
         {
             mousex_ = x;
             mousey_ = y;
@@ -75,7 +75,7 @@ namespace NSG
             }
         }
 
-        void State::OnMouseDown(float x, float y)
+		void State::OnMouseDown(int button, float x, float y)
         {
             activeScrollArea_ = static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID);
             mouseRelDownX_ = mouseDownX_ = x;
@@ -87,7 +87,7 @@ namespace NSG
             Context::this_->pLayoutManager_->SetWindowFocus(x, y);
         }
 
-        void State::OnMouseUp(float x, float y)
+		void State::OnMouseUp(int button, float x, float y)
         {
             mousex_ = x;
             mousey_ = y;

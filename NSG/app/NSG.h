@@ -77,7 +77,8 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "Program.h"
 #include "Ray.h"
-#include "RotateAroundPoint.h"
+#include "CameraControl.h"
+#include "Sphere.h"
 #include "pugixml.hpp"
 
 

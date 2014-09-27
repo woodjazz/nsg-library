@@ -337,12 +337,12 @@ namespace NSG
     PRay Camera::GetScreenRay(float screenX, float screenY)
     {
         Vertex3 nearPoint(screenX, screenY, -1); //in normalized device coordinates (Z goes from near = -1 to far = 1)
-        Vertex3 midPoint(screenX, screenY, 0); //in normalized device coordinates
+        Vertex3 farPoint(screenX, screenY, 0); //in normalized device coordinates
 
-		Vertex3 nearWorldCoord = ScreenToWorld(nearPoint);
-		Vertex3 midWorldCoord = ScreenToWorld(midPoint);
+		Vertex3 nearWorldCoord = ScreenToWorld(nearPoint);// Vertex3(GetViewProjectionInverseMatrix() * Vertex4(nearPoint, 1));
+		Vertex3 farWorldCoord = ScreenToWorld(farPoint);// Vertex3(GetViewProjectionInverseMatrix() * Vertex4(farPoint, 1));
 
-        Vector3 direction(midWorldCoord - nearWorldCoord);
+        Vector3 direction(farWorldCoord - nearWorldCoord);
         PRay ray(new Ray(Vertex3(nearWorldCoord), direction));
         return ray;
     }
