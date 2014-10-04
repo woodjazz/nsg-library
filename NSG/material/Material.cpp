@@ -132,13 +132,13 @@ namespace NSG
             child.append_attribute("name") = ss.str().c_str();
         }
 
-        if(pTexture0_)
+        if(pTexture0_ && pTexture0_->IsSerializable())
         {
 			pugi::xml_node childTexture = child.append_child("Texture0");
 			pTexture0_->Save(childTexture);
         }
 
-        if(pTexture1_)
+        if(pTexture1_ && pTexture1_->IsSerializable())
         {
 			pugi::xml_node childTexture = child.append_child("Texture1");
 			pTexture1_->Save(childTexture);

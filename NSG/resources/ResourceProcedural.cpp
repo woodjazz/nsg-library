@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "IProceduralResource.h"
 #include "Check.h"
 #include "Context.h"
+#include "Mesh.h"
 
 namespace NSG
 {

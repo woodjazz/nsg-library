@@ -129,6 +129,22 @@ namespace NSG
         }
     }
 
+    void SceneNode::OnEnable()
+    {
+        if(mesh_)
+        {
+            scene_->GetOctree()->InsertUpdate(this);
+        }
+    }
+
+    void SceneNode::OnDisable()
+    {
+        if(mesh_)
+        {
+            scene_->GetOctree()->Remove(this);
+        }
+    }
+
     void SceneNode::AddBehavior(PBehavior behavior)
     {
         if (behavior)
@@ -227,18 +243,32 @@ namespace NSG
             scene_->NeedUpdate((SceneNode*)this);
     }
 
-    const BoundingBox& SceneNode::GetWorldBoundingBox() const
-    {
-        if (worldBBNeedsUpdate_)
-        {
-            if (mesh_ && mesh_->IsReady())
-            {
-                worldBB_ = mesh_->GetBB();
-                worldBB_.Transform(*this);
-                worldBBNeedsUpdate_ = false;
-            }
-        }
-        return worldBB_;
+	const BoundingBox& SceneNode::GetWorldBoundingBox() const
+	{
+		if (worldBBNeedsUpdate_)
+		{
+			if (mesh_ && mesh_->IsReady())
+			{
+				worldBB_ = mesh_->GetBB();
+				worldBB_.Transform(*this);
+				worldBBNeedsUpdate_ = false;
+			}
+		}
+
+		return worldBB_;
+	}
+
+	BoundingBox SceneNode::GetWorldBoundingBoxBut(const SceneNode* node) const
+	{
+		if (node == this)
+			return BoundingBox();
+
+		BoundingBox bb(GetWorldBoundingBox());
+
+		for (auto& obj : children_)
+			bb.Merge(obj->GetWorldBoundingBoxBut(node));
+
+        return bb;
     }
 
     void SceneNode::Save(pugi::xml_node& node)

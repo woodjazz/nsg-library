@@ -24,9 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_FAILURE_USERMSG
 #include "TextureFile.h"
 #include "stb_image.h"
+#include "jpgd.h"
 #include "Check.h"
+#include "Util.h"
 #include "ResourceFile.h"
 #include "Context.h"
 #include "Graphics.h"
@@ -56,21 +59,29 @@ namespace NSG
 	{
 		const unsigned char* img = stbi_load_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 0);
 
-        if(channels_ == 4)
-        {
-            format_ = GL_RGBA;
-        }
-        else if(channels_ == 3)
-        {
-            format_ = GL_RGB;
-        }
-        else
-        {
-            format_ = GL_RGB;
-            TRACE_LOG("Filename=" << filename_.c_str() << " unknown internalformat. Channels = " << channels_ << " Width=" << width_ << " Height=" << height_);
-            CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
-        }
+		if (!img)
+			img = jpgd::decompress_jpeg_image_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 4);
 
+		if (!img)
+			TRACE_LOG("Filename=" << filename_.c_str() << " failed with reason: " << stbi_failure_reason());
+		
+		if (img)
+		{
+			if (channels_ == 4)
+			{
+				format_ = GL_RGBA;
+			}
+			else if (channels_ == 3)
+			{
+				format_ = GL_RGB;
+			}
+			else
+			{
+				format_ = GL_RGB;
+				TRACE_LOG("Filename=" << filename_.c_str() << " unknown internalformat. Channels = " << channels_ << " Width=" << width_ << " Height=" << height_);
+				CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
+			}
+		}
 		return img;
 	}
 
@@ -82,15 +93,9 @@ namespace NSG
 	void TextureFile::Save(pugi::xml_node& node)
 	{
 		node.append_attribute("type") = "TextureFile";
-		std::string filename;
-		if (std::string::npos == filename_.find("data/"))
-		{
-			filename = "data/" + filename_;
-		}
-		else
-		{
-			filename = filename_;
-		}
+		std::string baseDir(filename_);
+		std::string filename = ExtractFileName(filename_);
+		CopyFile(filename_, filename);
 		node.append_attribute("filename") = filename.c_str();
 		node.append_attribute("flags") = flags_.to_string().c_str();
 	}

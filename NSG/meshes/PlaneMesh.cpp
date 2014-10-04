@@ -36,6 +36,7 @@ namespace NSG
           rows_(rows)
     {
         resource_ = PResource(new ResourceProcedural(this));
+		SetSerializable(false);
     }
 
     PlaneMesh::~PlaneMesh()

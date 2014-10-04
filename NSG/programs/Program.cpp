@@ -369,6 +369,11 @@ namespace NSG
         material_ = MaterialProgram();
     }
 
+	bool Program::HasLighting() const
+	{
+		return Flag::PER_VERTEX_LIGHTING & flags_ || Flag::PER_PIXEL_LIGHTING & flags_;
+	}
+
     bool Program::Initialize()
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -597,9 +602,9 @@ namespace NSG
         }
     }
 
-    void Program::SetLightVariables(Scene* scene)
+    bool Program::SetLightVariables(Scene* scene)
     {
-        if (scene)
+		if (scene && HasLighting())
         {
             const Scene::Lights& dirLights = scene->GetLights(Light::DIRECTIONAL);
 
@@ -607,7 +612,7 @@ namespace NSG
             {
                 TRACE_LOG("Invalidating program due number of directionals light has changed!!!");
                 Invalidate();
-                return;
+                return false;
             }
 
             const Scene::Lights& pointLigths = scene->GetLights(Light::POINT);
@@ -616,7 +621,7 @@ namespace NSG
             {
                 TRACE_LOG("Invalidating program due number of points light has changed!!!");
                 Invalidate();
-                return;
+                return false;
             }
 
             const Scene::Lights& spotLigths = scene->GetLights(Light::SPOT);
@@ -625,7 +630,7 @@ namespace NSG
             {
                 TRACE_LOG("Invalidating program due number of spot light has changed!!!");
                 Invalidate();
-                return;
+                return false;
             }
 
             for (unsigned idx = 0; idx < nDirectionalLights_; idx++)
@@ -751,6 +756,8 @@ namespace NSG
                 activeSpotLights_[idx] = light;
             }
         }
+
+		return true;
     }
 
     void Program::SetVariables(Material* material, Node* node)
@@ -762,8 +769,7 @@ namespace NSG
         SetNodeVariables(node);
         SetCameraVariables();
         activeNode_ = node;
-        SetLightVariables(scene.get());
-        if (pExtraUniforms_)
+		if (SetLightVariables(scene.get()) && pExtraUniforms_)
             pExtraUniforms_->AssignValues();
     }
 
@@ -773,8 +779,7 @@ namespace NSG
         SetSceneVariables(scene.get());
         SetMaterialVariables(material);
         SetCameraVariables();
-        SetLightVariables(scene.get());
-        if (pExtraUniforms_)
+		if (SetLightVariables(scene.get()) && pExtraUniforms_)
             pExtraUniforms_->AssignValues();
     }
 

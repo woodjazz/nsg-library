@@ -124,15 +124,15 @@ namespace NSG
             Graphics::this_->Set(skin_.stencilMaterial_.get());
             skin_.stencilPass_->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
             skin_.stencilPass_->SetStencilFunc(GL_EQUAL, level_ - 1, ~GLuint(0));
-            skin_.stencilPass_->Render();
 
-            Graphics::this_->Set(currentMaterial_.get());
-            style_.pass_->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
-            style_.pass_->Render();
+			if (skin_.stencilPass_->Render())
+			{
+				Graphics::this_->Set(currentMaterial_.get());
+				style_.pass_->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+				drawn_ = style_.pass_->Render();
+			}
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            drawn_ = true;
         }
 
         bool Object::HasFocus() const
@@ -282,9 +282,13 @@ namespace NSG
 
             FixCurrentTechnique();
 
+			CHECK_GL_STATUS(__FILE__, __LINE__);
             Draw();
 
+			CHECK_GL_STATUS(__FILE__, __LINE__);
             UpdateControl();
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
 
             return true;
         }

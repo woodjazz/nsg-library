@@ -64,12 +64,22 @@ if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	list(APPEND LIBRARIES_2_LINK glew) 
 endif()
 
+##################################
+# jpeg
+##################################
+include_directories(${DEPENDENCIES_DIR}/jpeg)
+add_subdirectory(${DEPENDENCIES_DIR}/jpeg)
+list(APPEND LIBRARIES_2_LINK jpeg) 
+
 ###########################
 # SDL
 ###########################
-if(NOT NACL AND NOT EMSCRIPTEN)
-	include (CheckIncludeFiles)	
+if(NOT NACL)
 	add_definitions(-DSDL)
+endif()	
+
+if(NOT NACL AND NOT EMSCRIPTEN) #NACL does not use SDL and EMSCRIPTEN supports/includes SDL 1.2
+	include (CheckIncludeFiles)	
 	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
 	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
 	add_subdirectory(${DEPENDENCIES_DIR}/SDL)
@@ -92,10 +102,6 @@ if(NOT NACL AND NOT EMSCRIPTEN)
 	list(APPEND LIBRARIES_2_LINK SDL_mixer) # this shall go before SDL to avoid undefined SDL references
 	list(APPEND LIBRARIES_2_LINK SDL)
 endif()
-
-if(EMSCRIPTEN)
-	add_definitions(-DSDL)
-endif()	
 
 ###########################
 # stb
@@ -170,7 +176,11 @@ if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	add_subdirectory(${EXTERNALS_DIR}/assimp)
 	list(APPEND LIBRARIES_2_LINK assimp)
 	###########################
+	include_directories(tools/assimpconverter)
+	add_subdirectory(tools/assimpconverter)
+	list(APPEND LIBRARIES_2_LINK assimpconverter)
 	add_subdirectory(tools/converter)
+	add_subdirectory(tools/editor)
 endif()
 
 

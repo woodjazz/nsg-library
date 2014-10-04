@@ -139,32 +139,6 @@ namespace NSG
 			pApp_->HandleMessage(message);
 		}
 
-		static uint32_t GetTranslatedKeyCode(uint32_t keyCode)
-		{
-			switch(keyCode)
-			{
-				case 0x08:
-					return NSG_KEY_BACKSPACE;
-				case 0x09:
-					return NSG_KEY_TAB;
-				case 0x0D:
-					return NSG_KEY_ENTER;
-				case 0x2E:
-					return NSG_KEY_DELETE;
-				case 0x27:
-					return NSG_KEY_RIGHT;
-				case 0x25:
-					return NSG_KEY_LEFT;
-				case 0x24:
-					return NSG_KEY_HOME;
-				case 0x23:
-					return NSG_KEY_END;
-
-				default:
-					return keyCode;
-			}
-		}
-
 		bool NaCl3DInstance::HandleInputEvent(const pp::InputEvent& event) 
 		{
 			switch (event.GetType()) 
@@ -197,7 +171,7 @@ namespace NSG
 						pp::MouseInputEvent mouse_event(event);
 						float x = -1 + 2*(float)mouse_event.GetPosition().x()/width_;
 						float y = 1 + -2*(float)mouse_event.GetPosition().y()/height_;
-						pApp_->OnMouseDown(x, y);
+						pApp_->OnMouseDown((int)mouse_event.GetButton(), x, y);
 					}
 					break;
 				}
@@ -207,7 +181,7 @@ namespace NSG
 					pp::MouseInputEvent mouse_event(event);
 					float x = -1 + 2*(float)mouse_event.GetPosition().x()/width_;
 					float y = 1 + -2*(float)mouse_event.GetPosition().y()/height_;
-					pApp_->OnMouseUp(x, y);
+					pApp_->OnMouseUp((int)mouse_event.GetButton(), x, y);
 					break;
 				}
 
@@ -256,13 +230,13 @@ namespace NSG
 				case PP_INPUTEVENT_TYPE_KEYDOWN:
 				{
 					pp::KeyboardInputEvent key_event(event);
-					pApp_->OnKey(GetTranslatedKeyCode(key_event.GetKeyCode()), NSG_KEY_PRESS, key_event.GetModifiers());
+					pApp_->OnKey(key_event.GetKeyCode(), NSG_KEY_PRESS, key_event.GetModifiers());
 					break;
 				}
 				case PP_INPUTEVENT_TYPE_KEYUP:
 				{
 					pp::KeyboardInputEvent key_event(event);
-					pApp_->OnKey(GetTranslatedKeyCode(key_event.GetKeyCode()), NSG_KEY_RELEASE, key_event.GetModifiers());
+					pApp_->OnKey(key_event.GetKeyCode(), NSG_KEY_RELEASE, key_event.GetModifiers());
 					break;
 				}
 				case PP_INPUTEVENT_TYPE_CHAR: 

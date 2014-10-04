@@ -40,6 +40,8 @@ namespace NSG
 		PMaterial GetMaterial() const { return pMaterial_; }
 		PTexture GetTexture() const;
 		PProgram GetProgram() const { return program_; }
+		void SetInputTexture(PTexture input);
+		PTexture GetInputTexture() const;
 	protected:
 		App& app_;
 		PTechnique technique_;

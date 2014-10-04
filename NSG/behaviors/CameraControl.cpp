@@ -33,17 +33,35 @@ namespace NSG
 {
     void CameraControl::Start()
     {
-		rotateAround_ = false;
-
-		Vertex3 center;
-		FindLookAtPoint(true, center);
-		sphere_ = PSphere(new Sphere(center, sceneNode_->GetGlobalPosition()));
-
+    	camera_ = dynamic_cast<Camera*>(sceneNode_);
+    	CHECK_ASSERT(camera_, __FILE__, __LINE__);
+		sphere_ = PSphere(new Sphere(Vertex3(0), sceneNode_->GetGlobalPosition()));
+		SetSphereCenter(true);
+		updateOrientation_ = true;
 		rightButtonDown_ = false;
+		altKeyDown_ = false;
 	}
 
 	void CameraControl::Update()
     {
+		if (updateOrientation_)
+		{
+			Quaternion targetOrientation = sceneNode_->GetLookAtOrientation(sphere_->GetCenter(), sphere_->GetUp());
+			Quaternion currentOrientation = sceneNode_->GetOrientation();
+			float dot = glm::dot(currentOrientation, targetOrientation);
+			bool close = 1 - dot*dot < PRECISION;
+			if (!close)
+			{
+				//animate
+				float factor = 3 * app_.GetDeltaTime();
+				sceneNode_->SetOrientation(glm::slerp(currentOrientation, targetOrientation, factor));
+			}
+			else
+			{
+				sceneNode_->SetLookAt(sphere_->GetCenter(), sphere_->GetUp());
+				updateOrientation_ = false;
+			}
+		}
     }
 
 	void CameraControl::OnMouseDown(int button, float x, float y)
@@ -51,8 +69,11 @@ namespace NSG
 		lastX_ = x;
 		lastY_ = y;
 
-		if (button == NSG_BUTTON_RIGHT)
+		if (button == NSG_BUTTON_RIGHT && !rightButtonDown_)
+		{
 			rightButtonDown_ = true;
+			SetSphereCenter(cKeyDown_);
+		}
     }
 
 	void CameraControl::OnMouseUp(int button, float x, float y)
@@ -63,11 +84,11 @@ namespace NSG
 
 	void CameraControl::OnMouseMove(float x, float y)
 	{
-		if (rightButtonDown_)
+		if (rightButtonDown_ && !updateOrientation_)
 		{
 			float relX = (x - lastX_);
 			float relY = (y - lastY_);
-			if (rotateAround_)
+			if (altKeyDown_)
 			{
 				sphere_->IncAngles(PI * relX, PI * relY);
 				sceneNode_->SetGlobalPosition(sphere_->GetPosition());
@@ -92,41 +113,57 @@ namespace NSG
 	{
 		float deltaTime = App::this_->GetDeltaTime();
 		Vertex3 position = sceneNode_->GetGlobalPosition();
-		Quaternion q = sceneNode_->GetGlobalOrientation();
-		position += q * VECTOR3_FORWARD * deltaTime * y * 100.0f;
-		sceneNode_->SetGlobalPosition(position);
+		Vertex3 lookAtPoint = sphere_->GetCenter();
+		float distance = glm::distance(lookAtPoint, position);
+		distance /= 2*y;
+		Vector3 looAtDir = sceneNode_->GetLookAtDirection();
+		position += looAtDir * distance;
+		BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
+		float dmin = glm::distance(bb.min_, position);
+		float dmax = glm::distance(bb.max_, position);
+		if(dmin < camera_->GetZFar() && dmax < camera_->GetZFar())
+		{
+			if (sphere_->SetPosition(position))
+				sceneNode_->SetGlobalPosition(position);
+		}
 	}
 
-	bool CameraControl::FindLookAtPoint(bool centerObj, Vertex3& point)
+	void CameraControl::SetSphereCenter(bool centerObj)
 	{
-		Camera* camera = Camera::GetActiveCamera();
-
-		if (!camera)
-			return false;
-
-		std::vector<RayNodeResult> result;
-		PRay ray = camera->GetScreenRay(lastX_, lastY_);
+		Vertex3 newCenter;
+		PRay ray = camera_->GetScreenRay(lastX_, lastY_);
 		RayNodeResult closest;
 		if (scene_.GetClosestRayNodeIntersection(*ray, closest))
 		{
 			if (centerObj)
-				point = closest.node_->GetGlobalPosition();
+				newCenter = closest.node_->GetGlobalPosition();
 			else
-				point = ray->GetPoint(closest.distance_);
+				newCenter = ray->GetPoint(closest.distance_);
 		}
 		else
 		{
-			std::vector<const SceneNode*> visibles;
-			scene_.GetVisibleNodes(camera, visibles);
-			BoundingBox box;
-			for (auto& obj : visibles)
-				box.Merge(obj->GetWorldBoundingBox());
-
-			float distance = glm::distance(camera->GetGlobalPosition(), box.Center());
-			point = camera->GetGlobalPosition() + camera->GetGlobalOrientation() * VECTOR3_FORWARD * distance;
+			BoundingBox bb;
+			if(!scene_.GetVisibleBoundingBox(camera_, bb))
+				bb = scene_.GetWorldBoundingBoxBut(camera_);
+			newCenter = bb.Center();
 		}
 
-		return true;
+		sphere_->SetCenter(newCenter);
+	}
+
+	void CameraControl::AutoZoom()
+	{
+		BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
+		sphere_->SetCenter(bb.Center());
+		Vertex3 position = camera_->GetGlobalPosition();
+		Vector3 lookAtDir(VECTOR3_FORWARD);
+		if (glm::distance(position, sphere_->GetCenter()) > PRECISION)
+			lookAtDir = glm::normalize(position - sphere_->GetCenter());
+		float distance = std::max(std::max(bb.Size().x, bb.Size().y), bb.Size().z);
+		position = sphere_->GetCenter() + lookAtDir * distance;
+		if (sphere_->SetPosition(position))
+			camera_->SetGlobalPosition(position);
+		//updateOrientation_ = true;
 	}
 
 	void CameraControl::OnKey(int key, int action, int modifier)
@@ -137,87 +174,49 @@ namespace NSG
 		{
 		case NSG_KEY_W:
 		{
-			Vertex3 position = sceneNode_->GetGlobalPosition();
-			Quaternion q = sceneNode_->GetGlobalOrientation();
-			position += q * VECTOR3_FORWARD * deltaTime;
-			sceneNode_->SetGlobalPosition(position);
 			break;
 		}
 
 		case NSG_KEY_S:
 		{
-			Vertex3 position = sceneNode_->GetGlobalPosition();
-			Quaternion q = sceneNode_->GetGlobalOrientation();
-			position -= q * VECTOR3_FORWARD * deltaTime;
-			sceneNode_->SetGlobalPosition(position);
 			break;
 		}
 
 		case NSG_KEY_A:
 		{
-			Vertex3 position = sceneNode_->GetGlobalPosition();
-			Quaternion q = sceneNode_->GetOrientation();
-			q = q * glm::angleAxis(deltaTime * glm::radians(10.0f), Vertex3(0, 1, 0));
-			sceneNode_->SetOrientation(q);
+			AutoZoom();
 			break;
 		}
 
 		case NSG_KEY_D:
 		{
-			Vertex3 position = sceneNode_->GetGlobalPosition();
-			Quaternion q = sceneNode_->GetOrientation();
-			q = q * glm::angleAxis(deltaTime * glm::radians(-10.0f), Vertex3(0, 1, 0));
-			sceneNode_->SetOrientation(q);
 			break;
 		}
 
 		case NSG_KEY_Q:
 		{
-			Vertex3 position = sceneNode_->GetGlobalPosition();
-			Quaternion q = sceneNode_->GetGlobalOrientation();
-			position += q * VECTOR3_UP * deltaTime;
-			sceneNode_->SetGlobalPosition(position);
 			break;
 		}
 
 		case NSG_KEY_E:
 		{
-			Vertex3 position = sceneNode_->GetGlobalPosition();
-			Quaternion q = sceneNode_->GetGlobalOrientation();
-			position -= q * VECTOR3_UP * deltaTime;
-			sceneNode_->SetGlobalPosition(position);
 			break;
 		}
 
 		case NSG_KEY_F:
 		{
-			Vertex3 center;
-			if(FindLookAtPoint(false, center))
-				sphere_->SetCenter(center);
 			break;
 		}
 
 		case NSG_KEY_C:
 		{
-			Vertex3 center;
-			if (FindLookAtPoint(true, center))
-				sphere_->SetCenter(center);
+			cKeyDown_ = action ? true : false;
 			break;
 		}
 
 		case NSG_KEY_LALT:
 		{
-			if (action && !rotateAround_)
-			{
-				rotateAround_ = true;
-				sceneNode_->SetGlobalPosition(sphere_->GetPosition());
-				sceneNode_->SetLookAt(sphere_->GetCenter(), sphere_->GetUp());
-			}
-			else if (!action)
-			{
-				rotateAround_ = false;
-			}
-
+			altKeyDown_ = action ? true : false;
 			break;
 		}
 

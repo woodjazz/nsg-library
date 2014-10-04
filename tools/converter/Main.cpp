@@ -75,8 +75,7 @@ struct Converter : NSG::App
 
         using namespace NSG;
 
-        PResourceFile resource(new ResourceFile(inputFile.c_str()));
-        SceneConverter scene(resource);
+        SceneConverter scene(inputFile);
         scene.Save(outputFile);
         exit_ = true;
     }

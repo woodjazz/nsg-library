@@ -65,7 +65,6 @@ namespace NSG
             transparentAreaStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
-            controlMesh_->SetSerializable(false);
         }
 
         Context::~Context()
@@ -81,6 +80,8 @@ namespace NSG
 
         void Context::RenderGUI()
         {
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+
             if (hasAppGUI_)
             {
                 Camera* camera = Camera::Deactivate();
@@ -113,6 +114,8 @@ namespace NSG
 
                 Camera::Activate(camera);
             }
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
         }
 
         IdType Context::GetValidId()

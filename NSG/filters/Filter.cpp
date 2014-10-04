@@ -45,7 +45,7 @@ namespace NSG
           pass_(new Pass),
 		  pMaterial_(app_.CreateMaterial("filter")),
           pMesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
-          pRender2Texture_(new Render2Texture(output_width, output_height)),
+          pRender2Texture_(new Render2Texture(output_width, output_height, UseBuffer::NONE)),
           name_(name),
           node_(new Node(name))
     {
@@ -60,6 +60,16 @@ namespace NSG
     {
 
     }
+
+    void Filter::SetInputTexture(PTexture input)
+    {
+        pMaterial_->SetTexture0(input);
+    }
+
+	PTexture Filter::GetInputTexture() const
+	{
+		return pMaterial_->GetTexture0();
+	}
 
     bool Filter::Render()
     {

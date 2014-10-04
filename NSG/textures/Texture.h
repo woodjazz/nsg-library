@@ -49,6 +49,8 @@ namespace NSG
 		virtual void FreeImageData(const unsigned char* img) {}
 		virtual void Save(pugi::xml_node& node) = 0;
 		static PTexture CreateFrom(const pugi::xml_node& node);
+		void SetSerializable(bool serializable) { serializable_ = serializable; }
+		bool IsSerializable() const { return serializable_; }
 	protected:
 		Flags flags_;
 		GLuint texture_;
@@ -58,5 +60,6 @@ namespace NSG
 		GLint format_;
 		GLenum type_;
 		int channels_;
+		bool serializable_;
 	};
 }

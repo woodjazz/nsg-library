@@ -53,7 +53,7 @@ static const std::string LIGHTING_GLSL = \
 "uniform SpotLight u_spotLights[NUM_SPOT_LIGHTS_ARRAY];\n"\
 "vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 normal)                   \n"\
 "{                                                                                           \n"\
-"    vec4 color = u_sceneAmbientColor + u_material.ambient * base.ambient;\n"\
+"    vec4 color = u_material.ambient * base.ambient;\n"\
 "	\n"\
 "	float diffuseFactor = dot(normal, -lightDirection);	\n"\
 "    if (diffuseFactor > 0.0) \n"\
@@ -101,7 +101,7 @@ static const std::string LIGHTING_GLSL = \
 "}\n"\
 "vec4 CalcFSTotalLight(vec3 vertexToEye, vec3 normal)\n"\
 "{\n"\
-"    vec4 totalLight = vec4(0.0);\n"\
+"    vec4 totalLight = u_sceneAmbientColor;\n"\
 "    for (int i = 0 ; i < NUM_DIRECTIONAL_LIGHTS ; i++) \n"\
 "    {\n"\
 "        if(u_directionalLight[i].enabled != 0)\n"\
@@ -121,7 +121,7 @@ static const std::string LIGHTING_GLSL = \
 "}\n"\
 "vec4 CalcVSTotalLight(vec3 worldPos, vec3 vertexToEye, vec3 normal)\n"\
 "{\n"\
-"    vec4 totalLight = vec4(0.0);\n"\
+"    vec4 totalLight = u_sceneAmbientColor;\n"\
 "    for (int i = 0 ; i < NUM_DIRECTIONAL_LIGHTS ; i++)\n"\
 "    {\n"\
 "        if(u_directionalLight[i].enabled != 0)\n"\

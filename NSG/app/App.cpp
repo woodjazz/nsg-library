@@ -51,6 +51,7 @@ misrepresented as being the original software.
 #include "SphereMesh.h"
 #include "TextMesh.h"
 #include "Material.h"
+#include "Music.h"
 #if NACL
 #include "ppapi/cpp/var.h"
 #endif
@@ -138,6 +139,23 @@ namespace NSG
         return false;
     }
 
+    void App::AppEnterBackground()
+    {
+		if (Music::this_ && configuration_->pauseMusicOnBackground_)
+            Music::this_->Pause();
+    }
+
+    void App::AppEnterForeground()
+    {
+		if (Music::this_ && configuration_->pauseMusicOnBackground_)
+            Music::this_->Resume();
+    }
+
+    void App::DropFile(const std::string& filename)
+    {
+        TRACE_LOG("Dropped file:" << filename);
+    }
+
     void App::SetCommandLineParameters(int argc, char* argv[])
     {
         argc_ = argc;
@@ -146,6 +164,8 @@ namespace NSG
 
     void App::SetViewSize(int width, int height)
     {
+        TRACE_LOG("SetViewSize: width=" << width << " height=" << height);
+        
         width_ = width;
         height_ = height;
 
@@ -352,13 +372,11 @@ namespace NSG
 
     void InternalApp::SetViewSize(int width, int height)
     {
-        TRACE_LOG("SetViewSize: width=" << width << " height=" << height);
         pApp_->SetViewSize(width, height);
     }
 
     void InternalApp::ViewChanged(int width, int height)
     {
-        //TRACE_LOG("ViewChanged: width=" << width << " height=" << height);
         pApp_->SetViewSize(width, height);
         pApp_->ViewChanged(width, height);
     }
@@ -374,7 +392,6 @@ namespace NSG
 
 	void InternalApp::OnMouseDown(int button, float x, float y)
     {
-        //TRACE_LOG("Mouse Down");
         screenX_ = x;
         screenY_ = y;
 
@@ -384,7 +401,6 @@ namespace NSG
 
 	void InternalApp::OnMouseUp(int button, float x, float y)
     {
-        //TRACE_LOG("Mouse Up");
         IMGUI::OnMouseUp(button, x, y);
         pApp_->OnMouseUp(button, x, y);
     }
@@ -421,6 +437,16 @@ namespace NSG
         return pApp_->ShallExit();
     }
 
+    void InternalApp::AppEnterBackground()
+    {
+        pApp_->AppEnterBackground();
+    }
+
+    void InternalApp::AppEnterForeground()
+    {
+        pApp_->AppEnterForeground();
+    }
+
     void InternalApp::ReleaseResourcesFromMemory()
     {
         Context::this_->ReleaseResourcesFromMemory();
@@ -444,6 +470,11 @@ namespace NSG
     void InternalApp::SetActivity(ANativeActivity* pActivity)
     {
         Keyboard::this_->SetActivity(pActivity);
+    }
+
+    void InternalApp::DropFile(const std::string& filename)
+    {
+        pApp_->DropFile(filename);
     }
 
 }

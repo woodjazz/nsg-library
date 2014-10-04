@@ -42,7 +42,8 @@ namespace NSG
           height_(0),
           format_(GL_RGBA),
           type_(GL_UNSIGNED_BYTE),
-          channels_(0)
+          channels_(0),
+          serializable_(true)
     {
     }
 

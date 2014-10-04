@@ -135,6 +135,8 @@ namespace NSG
 
     void Pass::SetupPass()
     {
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
         graphics_.SetColorMask(enableColorBuffer_);
         graphics_.SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
                                  dpfailStencilOp_, dppassStencilOp_, stencilFunc_,
@@ -154,6 +156,7 @@ namespace NSG
 
         graphics_.SetProgram(pProgram_.get());
 
+		CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     bool Pass::Render()

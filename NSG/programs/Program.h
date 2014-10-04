@@ -108,6 +108,7 @@ namespace NSG
         void SetCameraVariables();
         void SetNodeVariables(Node* node);
         void SetMaterialVariables(Material* material);
+		bool HasLighting() const;
 
 		struct BaseLightLoc
 		{
@@ -117,7 +118,7 @@ namespace NSG
 		};
 
         void SetBaseLightVariables(const BaseLightLoc& baseLoc, const Light* light);
-        void SetLightVariables(Scene* scene);
+        bool SetLightVariables(Scene* scene);
 
         Flags flags_;
         GLuint id_;

@@ -68,6 +68,7 @@ struct Window0 : IMGUI::IWindow
     }
 };
 
+
 struct Sample : App
 {
     Window0 window0_;
@@ -108,7 +109,6 @@ struct Sample : App
 
     void RenderGUIWindow() override
     {	
-#if 1
         static float delta = -1;
         static Vertex3 camControlPoint0(-3, 3, 0);
         static Vertex3 camControlPoint1(0, 2, 0);
@@ -230,7 +230,6 @@ struct Sample : App
                 menu = exit = false;
             }
         }
-#endif
     }
 
 };

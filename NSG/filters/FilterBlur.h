@@ -41,16 +41,14 @@ namespace NSG
 		void AssignValues();
 
 	private:
-		GLuint texelSize_loc_;
-		GLuint orientation_loc_;
-		GLuint blurAmount_loc_;
-		GLuint blurScale_loc_;
-		GLuint blurStrength_loc_;
+		GLuint blurKernelSizeLoc_;
+		GLuint blurDirLoc_;
+		GLuint blurRadiusLoc_;
+		GLuint sigmaLoc_;
 
-		Vertex2 texelSize_;
-		int orientation_;
-		int blurAmount_;
-		float blurScale_;
-		float blurStrength_;
+		int blurKernelSize_;
+		Vector2 blurDir_;
+		Vector2 blurRadius_;
+		float sigma_;
 	};
 }

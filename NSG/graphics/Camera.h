@@ -80,9 +80,15 @@ namespace NSG
 		float GetFov() const { return fovy_; }
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
+		void AddBlurFilter(int output_width, int output_height);
+		void AddBlendFilter(int output_width, int output_height);
+		PFilter AddUserFilter(PResource fragmentShader, int output_width, int output_height);
+		void BeginRender();
+		void EndRender();
 	protected:
 		Camera(const std::string& name, Scene* scene);
 	private:
+		void AddFilter(PFilter filter);
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
@@ -107,6 +113,9 @@ namespace NSG
 		float aspectRatio_;
 		mutable PFrustum frustum_;
 		mutable bool cameraIsDirty_;
+		std::vector<PFilter> filters_;
+		PRender2Texture render2Texture_;
+		PShowTexture showTexture_;
 		friend class Scene;
 	};
 }

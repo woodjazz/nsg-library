@@ -85,9 +85,9 @@ namespace NSG
         Vector3 newCenter = Vector3(transform * Vector4(Center(), 1));
         Vector3 oldEdge = Size() * 0.5f;
         Vector3 newEdge = Vector3(
-                              Abs(transform[0][0]) * oldEdge.x + Abs(transform[0][1]) * oldEdge.y + Abs(transform[0][2]) * oldEdge.z,
-                              Abs(transform[1][0]) * oldEdge.x + Abs(transform[1][1]) * oldEdge.y + Abs(transform[1][2]) * oldEdge.z,
-                              Abs(transform[2][0]) * oldEdge.x + Abs(transform[2][1]) * oldEdge.y + Abs(transform[2][2]) * oldEdge.z
+			glm::abs(transform[0][0]) * oldEdge.x + glm::abs(transform[0][1]) * oldEdge.y + glm::abs(transform[0][2]) * oldEdge.z,
+			glm::abs(transform[1][0]) * oldEdge.x + glm::abs(transform[1][1]) * oldEdge.y + glm::abs(transform[1][2]) * oldEdge.z,
+			glm::abs(transform[2][0]) * oldEdge.x + glm::abs(transform[2][1]) * oldEdge.y + glm::abs(transform[2][2]) * oldEdge.z
                           );
 
         BoundingBox obj(newCenter - newEdge, newCenter + newEdge);

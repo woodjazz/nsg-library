@@ -1,4 +1,5 @@
 //Remember to rebuild with CMake if this file changes
+
 #ifdef BLEND
 
 	uniform int u_blendMode;
@@ -41,63 +42,47 @@
 
 #elif defined(BLUR)
 
-	uniform vec2 u_texelSize;
-	uniform int u_orientation;
-	uniform int u_blurAmount;
-	uniform float u_blurScale;
-	uniform float u_blurStrength;
+	uniform int u_blurKernelSize;
+	uniform vec2 u_blurDir;
+	uniform vec2 u_blurRadius;
+	uniform float u_sigma;
 
-	/// Gets the Gaussian value in the first dimension.
-	/// <param name=x>Distance from origin on the x-axis.</param>
-	/// <param name=deviation>Standard deviation.</param>
-	/// <returns>The gaussian value on the x-axis.</returns>
-	float Gaussian(float x, float deviation)
+	// Adapted: http://callumhay.blogspot.com/2010/09/gaussian-blur-shader-glsl.html
+	vec4 GaussianBlur(int blurKernelSize, vec2 blurDir, vec2 blurRadius, float sigma, sampler2D texSampler, vec2 texCoord)
 	{
-		return (1.0 / sqrt(2.0 * 3.141592 * deviation)) * exp(-((x * x) / (2.0 * deviation)));	
+		const float PI = 3.14159265;
+
+	    int blurKernelSizeHalfSize = blurKernelSize / 2;
+
+		// Incremental Gaussian Coefficent Calculation (See GPU Gems 3 pp. 877 - 889)
+	    vec3 gaussCoeff;
+	    gaussCoeff.x = 1.0 / (sqrt(2.0 * PI) * sigma);
+	    gaussCoeff.y = exp(-0.5 / (sigma * sigma));
+	    gaussCoeff.z = gaussCoeff.y * gaussCoeff.y;
+
+	    vec2 blurVec = blurRadius * blurDir;
+	    vec4 avgValue = vec4(0.0);
+	    float gaussCoeffSum = 0.0;
+
+	    avgValue += texture2D(texSampler, texCoord) * gaussCoeff.x;
+	    gaussCoeffSum += gaussCoeff.x;
+	    gaussCoeff.xy *= gaussCoeff.yz;
+
+	    for (int i = 1; i <= blurKernelSizeHalfSize; i++)
+	    {
+	        avgValue += texture2D(texSampler, texCoord - float(i) * blurVec) * gaussCoeff.x;
+	        avgValue += texture2D(texSampler, texCoord + float(i) * blurVec) * gaussCoeff.x;
+
+	        gaussCoeffSum += 2.0 * gaussCoeff.x;
+	        gaussCoeff.xy *= gaussCoeff.yz;
+	    }
+
+	    return avgValue / gaussCoeffSum;
 	}
 
 	vec4 Blur()
 	{
-		float halfBlur = float(u_blurAmount) * 0.5;
-		vec4 colour = vec4(0.0);
-		vec4 texColour = vec4(0.0);
-		
-		// Gaussian deviation
-		float deviation = halfBlur * 0.35;
-		deviation *= deviation;
-		float strength = 1.0 - u_blurStrength;
-		
-		//if ( u_orientation == 0 )
-		{
-			// Horizontal blur
-			for (int i = 0; i < 100; ++i)
-			{
-				if ( i >= u_blurAmount )
-					break;
-				
-				float offset = float(i) - halfBlur;
-				texColour = texture2D(u_texture0, v_texcoord + vec2(offset * u_texelSize.x * u_blurScale, 0.0)) * Gaussian(offset * strength, deviation);
-				colour += texColour;
-			}
-		}
-		//else
-		{
-			// Vertical blur
-			for (int i = 0; i < 100; ++i)
-			{
-				if ( i >= u_blurAmount )
-					break;
-				
-				float offset = float(i) - halfBlur;
-				texColour = texture2D(u_texture0, v_texcoord + vec2(0.0, offset * u_texelSize.y * u_blurScale)) * Gaussian(offset * strength, deviation);
-				colour += texColour;
-			}
-		}
-		
-		// Apply colour
-		vec4 color = clamp(colour, 0.0, 1.0);
-		color.w = 1.0;
-		return color;
+		return GaussianBlur(u_blurKernelSize, u_blurDir, u_blurRadius, u_sigma, u_texture0, v_texcoord);
 	}
 
 #endif

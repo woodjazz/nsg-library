@@ -31,6 +31,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    // Keeps OpenGL's status 
     class Graphics : public Singleton<Graphics>
     {
     public:

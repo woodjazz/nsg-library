@@ -57,7 +57,7 @@ uniform SpotLight u_spotLights[NUM_SPOT_LIGHTS_ARRAY];
 
 vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 normal)                   
 {                                                                                           
-    vec4 color = u_sceneAmbientColor + u_material.ambient * base.ambient;
+    vec4 color = u_material.ambient * base.ambient;
 	
 	float diffuseFactor = dot(normal, -lightDirection);	
 
@@ -112,7 +112,7 @@ vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, Attenu
 
 vec4 CalcFSTotalLight(vec3 vertexToEye, vec3 normal)
 {
-    vec4 totalLight = vec4(0.0);
+    vec4 totalLight = u_sceneAmbientColor;
 
     for (int i = 0 ; i < NUM_DIRECTIONAL_LIGHTS ; i++) 
     {
@@ -137,7 +137,7 @@ vec4 CalcFSTotalLight(vec3 vertexToEye, vec3 normal)
 
 vec4 CalcVSTotalLight(vec3 worldPos, vec3 vertexToEye, vec3 normal)
 {
-    vec4 totalLight = vec4(0.0);
+    vec4 totalLight = u_sceneAmbientColor;
 
     for (int i = 0 ; i < NUM_DIRECTIONAL_LIGHTS ; i++)
     {

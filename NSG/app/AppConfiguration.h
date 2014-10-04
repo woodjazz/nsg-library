@@ -37,6 +37,7 @@ namespace NSG
 		bool vertical_sync_;
 		int swapInterval_; // See https://wiki.libsdl.org/SDL_GL_SetSwapInterval
 		bool showStatistics_;
+		bool pauseMusicOnBackground_;
 		AppConfiguration();
 		~AppConfiguration();
 	};

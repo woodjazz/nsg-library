@@ -33,12 +33,16 @@ namespace NSG
 	class ResourceFile : public Resource
 	{
 	public:
-		ResourceFile(const char* filename);
+		ResourceFile(const char* fileFullPath);
 		~ResourceFile();
 		virtual bool IsLoaded();
-		const std::string& GetFilename() const { return filename_; }
+		const std::string& GetFileName() const { return fileName_; }
+		const std::string& GetFileFullPath() const { return fileFullPath_; }
+		const std::string& GetFilePath() const { return filePath_; }
 	private:
-		std::string filename_;
+		std::string fileName_;
+		std::string fileFullPath_;
+		std::string filePath_;
 		NaCl::PNaClURLLoader pLoader_;
 		AAssetManager* pAAssetManager_;	
 	};

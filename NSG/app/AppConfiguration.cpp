@@ -34,7 +34,8 @@ namespace NSG
           width_(1024),
           height_(768),
           vertical_sync_(true),
-          showStatistics_(false)
+          showStatistics_(false),
+          pauseMusicOnBackground_(true)
     {
     };
 

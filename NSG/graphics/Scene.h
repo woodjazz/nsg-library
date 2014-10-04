@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "SceneNode.h"
 #include "Light.h"
+#include "BoundingBox.h"
 #include <vector>
 #include <set>
 
@@ -68,7 +69,7 @@ namespace NSG
             return lights_;
         }
         void NeedUpdate(SceneNode* obj);
-        void GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles);
+		void GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const;
         POctree GetOctree() const
         {
             return octree_;
@@ -79,6 +80,8 @@ namespace NSG
         bool GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const;
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
         bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);
+		bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
+		const std::vector<PCamera>& GetCameras() const { return cameras_; }
 	protected:
 		Scene();
 		void SaveMeshes(pugi::xml_node& node);
@@ -90,7 +93,7 @@ namespace NSG
         std::vector<PCamera> cameras_;
         Lights lights_;
         POctree octree_;
-        std::set<SceneNode*> needUpdate_;
+        mutable std::set<SceneNode*> needUpdate_;
         App& app_;
         bool started_;
         friend class App;

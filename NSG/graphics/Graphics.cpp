@@ -635,11 +635,18 @@ namespace NSG
     {
         if (program != activeProgram_)
         {
-            activeProgram_ = program;
-            if (program)
-                glUseProgram(program->GetId());
+			if (program)
+			{
+				if (program->IsReady())
+					glUseProgram(program->GetId());
+				else
+					return false;
+			}
             else
                 glUseProgram(0);
+
+			activeProgram_ = program;
+
             return true;
         }
         return false;
@@ -670,27 +677,29 @@ namespace NSG
 
     void Graphics::SetBuffers()
     {
-        if (has_vertex_array_object_ext_)
+		VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
+
+		if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
         {
-            VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
-            IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer();
-            VAOKey key {activeProgram_, vBuffer, iBuffer};
-            VertexArrayObj* vao(nullptr);
-            auto it = vaoMap_.find(key);
-            if (it != vaoMap_.end())
-            {
-                vao = it->second.get();
-            }
-            else
-            {
-                vao = new VertexArrayObj(activeProgram_, vBuffer, iBuffer);
-                CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, PVertexArrayObj(vao))).second, __FILE__, __LINE__);
-            }
-            vao->Use();
+			IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer();
+			CHECK_ASSERT(!iBuffer || !iBuffer->IsDynamic(), __FILE__, __LINE__);
+			VAOKey key{ activeProgram_, vBuffer, iBuffer };
+			VertexArrayObj* vao(nullptr);
+			auto it = vaoMap_.find(key);
+			if (it != vaoMap_.end())
+			{
+				vao = it->second.get();
+			}
+			else
+			{
+				vao = new VertexArrayObj(activeProgram_, vBuffer, iBuffer);
+				CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, PVertexArrayObj(vao))).second, __FILE__, __LINE__);
+			}
+			vao->Use();
         }
         else
         {
-            SetVertexBuffer(activeMesh_->GetVertexBuffer());
+			SetVertexBuffer(vBuffer);
             SetAttributes();
             SetInstanceAttrPointers(activeProgram_);
             SetIndexBuffer(activeMesh_->GetIndexBuffer());
@@ -938,12 +947,17 @@ namespace NSG
 
     bool Graphics::Draw(bool solid)
     {
-        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady())
+		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
             return false;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         activeProgram_->SetVariables(activeMaterial_, activeNode_);
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		if (!activeProgram_)
+			return false; // the program has been invalidated (due some shader needs to be recompiled)
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -969,16 +983,14 @@ namespace NSG
         if (solid)
             AppStatistics::this_->NewTriangles(activeMesh_->GetNumberOfTriangles());
 
-        SetVertexArrayObj(nullptr);
+		AppStatistics::this_->NewDrawCall();
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        SetVertexArrayObj(nullptr);
 
         lastMesh_ = activeMesh_;
         lastMaterial_ = activeMaterial_;
         lastNode_ = activeNode_;
         lastProgram_ = activeProgram_;
-
-        AppStatistics::this_->NewDrawCall();
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -987,17 +999,22 @@ namespace NSG
 
     bool Graphics::Draw(bool solid, Batch& batch)
     {
-        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady())
+		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
             return false;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         activeProgram_->SetVariables(activeMaterial_);
-        UpdateBatchBuffer(batch);
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+		
+		if (!activeProgram_)
+			return false; // the program has been invalidated (due some shader needs to be recompiled)
+		
+		UpdateBatchBuffer(batch);
         SetBuffers();
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         unsigned instances = batch.nodes_.size();
-        const VertexsData& vertexsData = activeMesh_->GetVertexsData();
         const Indexes& indexes = activeMesh_->GetIndexes();
         if (!indexes.empty())
         {
@@ -1007,6 +1024,7 @@ namespace NSG
         }
         else
         {
+			const VertexsData& vertexsData = activeMesh_->GetVertexsData();
             Buffer::Data* bufferVertexData = activeMesh_->GetBufferVertexData();
             GLint first = bufferVertexData->offset_ / sizeof(VertexData);
             glDrawArraysInstanced(mode, first, vertexsData.size(), instances);

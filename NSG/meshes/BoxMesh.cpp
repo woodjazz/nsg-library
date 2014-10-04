@@ -38,6 +38,7 @@ namespace NSG
           resZ_(resZ)
     {
         resource_ = PResource(new ResourceProcedural(this));
+		SetSerializable(false);
     }
 
     BoxMesh::~BoxMesh()

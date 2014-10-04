@@ -74,6 +74,8 @@ struct Sample : App
         camera_ = scene_->CreateCamera("camera");
         camera_->Activate();
 
+        camera_->AddBehavior(PCameraControl(new CameraControl));
+
         static const float STEP = 8.0f;
         Vector3 position(0, 0, -10);
         for (int r = 0; r < ROWS; r++)

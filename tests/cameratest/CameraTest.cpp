@@ -431,6 +431,27 @@ static void Test04()
 	}
 }
 
+static void Test05()
+{
+	{
+		PBoxMesh box(App::this_->CreateBoxMesh(1, 1, 1));
+		CHECK_ASSERT(box->IsReady(), __FILE__, __LINE__);
+		PScene scene(App::this_->GetCurrentScene());
+		PCamera camera = scene->CreateCamera("camera");
+		camera->SetNearClip(0.1f);
+		camera->SetFarClip(250);
+		camera->SetPosition(Vertex3(0, 0, -4));
+		camera->SetLookAt(-VECTOR3_FORWARD);
+		BoundingBox bb = box->GetBB();
+		CHECK_ASSERT(camera->GetFrustum()->IsInside(bb) == Intersection::INSIDE, __FILE__, __LINE__);
+		camera->SetPosition(Vertex3(0, 0, -250));
+		CHECK_ASSERT(camera->GetFrustum()->IsInside(bb) == Intersection::INTERSECTS, __FILE__, __LINE__);
+		camera->SetPosition(Vertex3(0, 0, -400));
+		CHECK_ASSERT(camera->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE, __FILE__, __LINE__);
+	}
+}
+
+
 void CameraTest()
 {
 	FrustumTest();
@@ -438,4 +459,5 @@ void CameraTest()
     Test02();
 	Test03();
 	Test04();
+	Test05();
 }

@@ -41,6 +41,7 @@ void EarthBehavior::Start()
 {
     PSphereMesh pSphereMesh(app_.CreateSphereMesh(3, 24));
 	sceneNode_->Set(pSphereMesh);
+	//sceneNode_->SetEnabled(false);
 
     PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
     PMaterial pMaterial(app_.CreateMaterial("earth"));

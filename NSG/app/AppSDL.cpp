@@ -60,12 +60,14 @@ namespace NSG
             minimized = true;
             app->InvalidateGPUContext();
             app->ReleaseResourcesFromMemory();
+            app->AppEnterBackground();
         }
     }
 
     static void AppEnterForeground()
     {
         minimized = false;
+        app->AppEnterForeground();
     }
 
     static void RenderFrame(void* data = nullptr)
@@ -77,25 +79,25 @@ namespace NSG
             {
                 switch (event.window.event)
                 {
-                case SDL_WINDOWEVENT_MINIMIZED:
-                    AppEnterBackground();
-                    break;
+                    case SDL_WINDOWEVENT_MINIMIZED:
+                        AppEnterBackground();
+                        break;
 
-#if !EMSCRIPTEN
-                case SDL_WINDOWEVENT_RESIZED:
-                case SDL_WINDOWEVENT_RESTORED:
-                {
-                    AppEnterForeground();
-                    SDL_GetWindowSize(win, &width, &height);
-                    app->ViewChanged(width, height);
-                    break;
-                }
-#endif
-                default:
-                    break;
+                        #if !EMSCRIPTEN
+                    case SDL_WINDOWEVENT_RESIZED:
+                    case SDL_WINDOWEVENT_RESTORED:
+                        {
+                            AppEnterForeground();
+                            SDL_GetWindowSize(win, &width, &height);
+                            app->ViewChanged(width, height);
+                            break;
+                        }
+                        #endif
+                    default:
+                        break;
                 }
             }
-#if EMSCRIPTEN
+            #if EMSCRIPTEN
             else if (event.type == SDL_VIDEORESIZE)
             {
                 SDL_ResizeEvent* r = (SDL_ResizeEvent*)&event;
@@ -103,7 +105,7 @@ namespace NSG
                 height = r->h;
                 app->ViewChanged(width, height);
             }
-#else
+            #else
             else if (event.type == SDL_APP_DIDENTERBACKGROUND)
             {
                 AppEnterBackground();
@@ -112,8 +114,12 @@ namespace NSG
             {
                 AppEnterForeground();
             }
-
-#endif
+            #endif
+            else if (event.type == SDL_DROPFILE)
+            {
+                app->DropFile(event.drop.file);
+                SDL_free(event.drop.file);
+            }
             else if (event.type == SDL_QUIT)
             {
                 quit = true;
@@ -121,6 +127,12 @@ namespace NSG
             else if (event.type == SDL_KEYDOWN)
             {
                 int key = event.key.keysym.sym;
+
+                #if ANDROID
+                if (key == SDLK_AC_BACK)
+                    quit = true;
+                #endif
+
                 //int scancode = event.key.keysym.scancode;
                 int action = NSG_KEY_PRESS;
                 int modifier = event.key.keysym.mod;
@@ -137,7 +149,7 @@ namespace NSG
 
             else if (event.type == SDL_TEXTINPUT)
             {
-#ifndef __GNUC__
+                #ifndef __GNUC__
                 std::string utf8(event.text.text);
                 std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
                 std::u16string utf16 = utf16conv.from_bytes(utf8);
@@ -145,14 +157,14 @@ namespace NSG
                 {
                     app->OnChar((unsigned int)c);
                 }
-#else
+                #else
                 UTF8String utf8(event.text.text);
                 unsigned unicode = utf8.AtUTF8(0);
                 if (unicode)
                 {
                     app->OnChar(unicode);
                 }
-#endif
+                #endif
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN)
             {
@@ -177,15 +189,7 @@ namespace NSG
             }
             else if (event.type == SDL_MOUSEWHEEL)
             {
-                if (width > 0 && height > 0)
-                {
-                    const float FACTOR = 15;
-                    float x = FACTOR * event.wheel.x;
-                    float y = FACTOR * event.wheel.y;
-                    float screenX = x / (float)width;
-                    float screenY = y / (float)height;
-                    app->OnMouseWheel(screenX, screenY);
-                }
+				app->OnMouseWheel((float)event.wheel.x, (float)event.wheel.y);
             }
             else if (event.type == SDL_FINGERDOWN)
             {
@@ -207,19 +211,17 @@ namespace NSG
             }
         }
 
-#ifndef IOS
+        #ifndef IOS
         if (quit)
         {
-#if EMSCRIPTEN
+            TRACE_LOG("App terminating...");
+            #if EMSCRIPTEN
             if (!ems_terminating)
             {
-                TRACE_LOG("App terminating...");
                 ems_terminating = true;
                 emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
             }
-#else
-            TRACE_LOG("App terminating...");
-#endif
+            #endif
         }
         else if (app->ShallExit())
         {
@@ -234,7 +236,7 @@ namespace NSG
         {
             std::this_thread::sleep_for(Milliseconds(1000));
         }
-#else
+        #else
         if (!minimized)
         {
             app->RenderFrame();
@@ -249,7 +251,7 @@ namespace NSG
         {
             std::this_thread::sleep_for(Milliseconds(1000));
         }
-#endif
+        #endif
     }
 
     bool CreateModule(App* pApp)
@@ -289,15 +291,15 @@ namespace NSG
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, ALPHA_SIZE);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, STENCIL_SIZE);
 
-#if IOS || ANDROID
+        #if IOS || ANDROID
         Uint32 flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
-#else
+        #else
         Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-#endif
+        #endif
         width = AppConfiguration::this_->width_;
         height = AppConfiguration::this_->height_;
 
-#if EMSCRIPTEN
+        #if EMSCRIPTEN
 
         SDL_Surface* screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
         if (!screen)
@@ -306,7 +308,7 @@ namespace NSG
             return false;
         }
 
-#else
+        #else
         win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
 
         if (win == nullptr)
@@ -321,7 +323,7 @@ namespace NSG
         SDL_GetWindowSize(win, &width, &height);
 
         SDL_GL_SetSwapInterval(AppConfiguration::this_->vertical_sync_ ? 1 : 0);
-#endif
+        #endif
 
         int value = 0;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
@@ -343,7 +345,7 @@ namespace NSG
         SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
         CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
 
-#ifndef GL_ES_VERSION_2_0
+        #ifndef GL_ES_VERSION_2_0
 
         glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
 
@@ -365,18 +367,18 @@ namespace NSG
             TRACE_LOG("EXT_framebuffer_object and EXT_packed_depth_stencil OpenGL extensions are required");
             return false;
         }
-#endif
+        #endif
         app->SetViewSize(width, height);
         app->Initialize();
 
 
-#if IOS
+        #if IOS
         SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);
-#elif EMSCRIPTEN
+        #elif EMSCRIPTEN
         SDL_StartTextInput();
         emscripten_set_main_loop_arg(&RenderFrame, screen, 0, 1);
         emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
-#else
+        #else
         while (!quit)
         {
             RenderFrame();
@@ -384,7 +386,7 @@ namespace NSG
         }
         app = nullptr;
         SDL_Quit();
-#endif
+        #endif
 
         return true;
     }

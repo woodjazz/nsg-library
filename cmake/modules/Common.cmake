@@ -328,6 +328,21 @@ endmacro (setup_tool)
 ##################################################################################
 ##################################################################################
 ##################################################################################
+macro (setup_editor)
+    set(IS_EXECUTABLE_A_BUNDLE 1)
+    setup_executable()
+    set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
+    if(APPLE)
+        if(NOT IOS)
+            set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_MODULE_PATH}/EditorInfo.plist")
+        endif()
+    endif(APPLE)
+
+endmacro (setup_editor)
+
+##################################################################################
+##################################################################################
+##################################################################################
 macro (setup_library)
     add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${src} ${hdr} ${assets} ${shaders})
     setup_common_ios_properties()

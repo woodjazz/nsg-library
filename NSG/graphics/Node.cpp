@@ -249,6 +249,30 @@ namespace NSG
         }
     }
 
+	Quaternion Node::GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up)
+	{
+		const Vertex3& position = GetGlobalPosition();
+		float length = glm::length(position - lookAtPosition);
+
+		if (length > 0)
+		{
+			// we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+			Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
+
+			if (parent_)
+			{
+				return glm::inverse(parent_->GetGlobalOrientation()) * glm::quat_cast(m);
+			}
+			else
+			{
+				return glm::quat_cast(m);
+			}
+		}
+
+		return GetOrientation();
+	}
+
+
     void Node::SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up)
     {
         SetGlobalPosition(newPosition);
@@ -355,10 +379,26 @@ namespace NSG
         {
             enabled_ = enable;
             SetUniformsNeedUpdate();
+            if(enable)
+                OnEnable();
+            else
+                OnDisable();
         }
 
         if (recursive)
             for (auto child : children_)
                 child->SetEnabled(enable, recursive);
     }
+
+	const BoundingBox& Node::GetWorldBoundingBox() const
+	{
+		CHECK_ASSERT(false, __FILE__, __LINE__);
+		return BoundingBox();
+	}
+
+	BoundingBox Node::GetWorldBoundingBoxBut(const SceneNode* node) const
+	{
+		CHECK_ASSERT(false, __FILE__, __LINE__);
+		return BoundingBox();
+	}
 }

@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "UniformsUpdate.h"
 #include "NonCopyable.h"
+#include "BoundingBox.h"
 #include <vector>
 #include <string>
 
@@ -59,6 +60,7 @@ namespace NSG
 		const Matrix4& GetGlobalModelInvMatrix() const;
 		static Vertex3 UP;
 		void SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up = UP);
+		Quaternion GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up);
 		void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = UP);
 		const Vertex3& GetLookAtDirection() const;
 		void SetInheritScale(bool inherit);
@@ -84,6 +86,10 @@ namespace NSG
         virtual void OnChar(unsigned int character) {}
 		bool IsEnabled() const { return enabled_; }
 		void SetEnabled(bool enable, bool recursive = true);
+		virtual void OnEnable() {}
+		virtual void OnDisable() {}
+		virtual const BoundingBox& GetWorldBoundingBox() const;
+		virtual BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const;
     protected:
 		Node* parent_;
         std::vector<PNode> children_;

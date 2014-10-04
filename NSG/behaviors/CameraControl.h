@@ -31,11 +31,14 @@ namespace NSG
 {
 	struct CameraControl : Behavior
 	{
-		bool rotateAround_;
 		float lastX_;
 		float lastY_;
 		bool rightButtonDown_;
+		bool cKeyDown_;
+		bool altKeyDown_;
 		PSphere sphere_;
+		Camera* camera_;
+		bool updateOrientation_;
 		
 		void Start() override;
 		void Update() override;
@@ -44,6 +47,7 @@ namespace NSG
 		void OnMouseMove(float x, float y) override;
 		void OnMouseWheel(float x, float y) override;
 		void OnKey(int key, int action, int modifier) override;
-		bool FindLookAtPoint(bool centerObj, Vertex3& point);
+		void SetSphereCenter(bool centerObj);
+		void AutoZoom();
 	};
 }

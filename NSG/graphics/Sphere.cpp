@@ -75,35 +75,43 @@ namespace NSG
         CalculateUpVector();
     }
 
-    void Sphere::SetCenterAndPosition(const Vertex3& center, const Vertex3& pointInSphere)
+    bool Sphere::SetCenterAndPosition(const Vertex3& center, const Vertex3& pointInSphere)
     {
-    	if (glm::distance(center, center_) > PRECISION || glm::distance(pointInSphere, position_) > PRECISION)
+		if (glm::distance(pointInSphere, center) > PRECISION)
     	{
     		center_ = center;
     		position_ = pointInSphere;
     		CalculateAnglesAndRadius();
             CalculateUpVector();
+			return true;
     	}
+
+		return false;
     }
 
-    void Sphere::SetCenter(const Vertex3& center)
+    bool Sphere::SetCenter(const Vertex3& center)
     {
-        if (glm::distance(center, center_) > PRECISION)
+		if (glm::distance(center, position_) > PRECISION)
         {
             center_ = center;
             CalculateAnglesAndRadius();
             CalculateUpVector();
+			return true;
         }
+
+		return false;
     }
 
-    void Sphere::SetPosition(const Vertex3& pointInSphere)
+    bool Sphere::SetPosition(const Vertex3& pointInSphere)
     {
-        if (glm::distance(pointInSphere, position_) > PRECISION)
+		if (glm::distance(pointInSphere, center_) > PRECISION)
         {
             position_ = pointInSphere;
             CalculateAnglesAndRadius();
             CalculateUpVector();
+			return true;
         }
+		return false;
     }
 
     void Sphere::CalculateAnglesAndRadius()

@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <fstream>
 
 namespace NSG
 {
@@ -57,13 +58,50 @@ namespace NSG
         }
     }
 
+    std::string ExtractPath(const std::string& file)
+    {
+        const size_t idx = file.find_last_of('/');
+        if (idx != std::string::npos)
+            return file.substr(0, idx);
+
+        return "";
+    }
+
+    std::string ExtractFileName(const std::string& file)
+    {
+        const size_t idx = file.find_last_of('/');
+        if (idx != std::string::npos)
+            return file.substr(idx + 1);
+        else
+            return file;
+    }
+
+    bool CopyFile(const std::string& source, const std::string& target)
+    {
+        std::ifstream is(source);
+        if(is.is_open())
+        {
+			std::ifstream isTarget(target);
+			if (!isTarget.is_open())
+			{
+				std::ofstream os(target);
+				if (os.is_open())
+				{
+					os << is.rdbuf();
+					return true;
+				}
+			}
+        }
+        return false;
+    }
+
     std::string GetLowercaseFileExtension(const std::string& filename)
     {
         std::string extension;
         std::string::size_type pos = filename.find_last_of(".");
         if (pos != std::string::npos)
         {
-            std::copy(filename.begin() + pos, filename.end(), std::back_inserter(extension));
+            std::copy(filename.begin() + pos + 1, filename.end(), std::back_inserter(extension));
             for (auto& ch : extension)
                 ch = std::tolower(ch);
         }
@@ -71,24 +109,24 @@ namespace NSG
         return extension;
     }
 
-	std::istream& operator >> (std::istream& s, Vertex2& obj)
-	{
-		char ch;
-		s >> ch;
-		CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
-		s >> obj.x;
-		s >> ch;
-		CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-		s >> obj.y;
-		s >> ch;
-		CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
+    std::istream& operator >> (std::istream& s, Vertex2& obj)
+    {
+        char ch;
+        s >> ch;
+        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
+        s >> obj.x;
+        s >> ch;
+        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
+        s >> obj.y;
+        s >> ch;
+        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
 
-		return s;
-	}
+        return s;
+    }
 
     std::istream& operator >> (std::istream& s , Vertex3& obj)
     {
-    	char ch;
+        char ch;
         s >> ch;
         CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
         s >> obj.x;
@@ -101,7 +139,7 @@ namespace NSG
         s >> ch;
         CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
 
-		return s;
+        return s;
     }
 
     std::istream& operator >> (std::istream& s , Vertex4& obj)
@@ -122,26 +160,26 @@ namespace NSG
         s >> ch;
         CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
 
-		return s;
+        return s;
     }
 
-	Vertex2 GetVertex2(const std::string& buffer)
-	{
-		std::stringstream ss;
-		ss << buffer;
-		Vertex2 obj;
-		ss >> obj;
-		return obj;
-	}
+    Vertex2 GetVertex2(const std::string& buffer)
+    {
+        std::stringstream ss;
+        ss << buffer;
+        Vertex2 obj;
+        ss >> obj;
+        return obj;
+    }
 
 
     Vertex3 GetVertex3(const std::string& buffer)
     {
-    	std::stringstream ss;
-    	ss << buffer;
-    	Vertex3 obj;
-    	ss >> obj;
-    	return obj;
+        std::stringstream ss;
+        ss << buffer;
+        Vertex3 obj;
+        ss >> obj;
+        return obj;
     }
 
     Vertex4 GetVertex4(const std::string& buffer)
@@ -155,7 +193,7 @@ namespace NSG
 
     std::istream& operator >> (std::istream& s , Quaternion& obj)
     {
-    	char ch;
+        char ch;
         s >> ch;
         CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
         s >> obj.w;
@@ -171,56 +209,15 @@ namespace NSG
         s >> ch;
         CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
 
-		return s;
+        return s;
     }
 
     Quaternion GetQuaternion(const std::string& buffer)
     {
-    	std::stringstream ss;
-    	ss << buffer;
-    	Quaternion obj;
-    	ss >> obj;
-    	return obj;
+        std::stringstream ss;
+        ss << buffer;
+        Quaternion obj;
+        ss >> obj;
+        return obj;
     }
-#if 0
-	float CalculateArcBallAnglesForPoint(const Vertex3& center, const Vertex3& currentPoint, float& theta, float& phi)
-	{
-		float radius = glm::distance(currentPoint, center);
-
-		CHECK_ASSERT(radius > 0.05f, __FILE__, __LINE__);
-
-		Vector3 rn = glm::normalize(currentPoint - center);
-
-		//calculate phi in order to be in the current position
-		float dy = rn.y;
-		phi = acos(dy); 
-
-		//calculate theta in order to be in the current position
-		float dx = rn.x;
-		float dz = rn.z;
-
-		theta = atan(dz / dx);
-
-		if (dx < 0)
-			theta += PI;
-
-		//TRACE_LOG("theta=" << glm::degrees(theta) << " phi=" << glm::degrees(phi));
-
-		return radius;
-	}
-
-    Vertex3 CalculateArcBallPoint(const Vertex3& center, float radius, Vector3& up, float theta, float phi)
-    {
-        // Apply spherical coordinates
-		Vertex3 newPoint(cos(theta) * sin(phi), cos(phi), sin(theta) * sin(phi));
-
-        // Reduce theta slightly to obtain another point on the same longitude line on the sphere.
-		const float dt = 1;
-		Vertex3 newUpPoint(cos(theta) * sin(phi - dt), cos(phi - dt), sin(theta) * sin(phi - dt));
-        up = glm::normalize(newUpPoint - newPoint);
-
-		return center + radius * newPoint;
-    }
-#endif
-
 }

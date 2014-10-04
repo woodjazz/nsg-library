@@ -46,7 +46,14 @@ struct Sample : App
         PResourceFile resource(new ResourceFile("data/duck.xml"));
 		scene_->Load(resource);
 
-        Camera* camera = Camera::GetActiveCamera();
+        PCamera camera;
+        auto& cameras = scene_->GetCameras();
+        if(cameras.size())
+            camera = cameras[0];
+        else
+            camera = scene_->CreateCamera("");
+
+        camera->Activate();
 
         camera->AddBehavior(PCameraControl(new CameraControl));
 

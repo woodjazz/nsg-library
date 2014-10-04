@@ -36,6 +36,7 @@ namespace NSG
     TextureMemory::TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels)
     : Texture(Flag::NONE)
     {
+        serializable_ = false;
         width_ = width;
         height_ = height;
         format_ = format;
@@ -88,6 +89,7 @@ namespace NSG
 
     void TextureMemory::Save(pugi::xml_node& node)
     {
+#if 0        
         node.append_attribute("type") = "TextureMemory";
         node.append_attribute("flags") = flags_.to_string().c_str();
 
@@ -110,5 +112,6 @@ namespace NSG
         }
 
         CHECK_ASSERT(!pResource_->GetBytes(), __FILE__, __LINE__);
+#endif        
     }
 }

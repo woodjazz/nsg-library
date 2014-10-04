@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Context.h"
 #include "App.h"
+#include "Util.h"
 #if NACL
 #include "AppNaCl.h"
 #include "NaClURLLoader.h"
@@ -37,11 +38,15 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	ResourceFile::ResourceFile(const char* filename)
-	: filename_(filename)
+	ResourceFile::ResourceFile(const char* fileFullPath)
+		: fileFullPath_(fileFullPath)
 	{
+		ReplaceChar(fileFullPath_, '\\', '/');
+		filePath_ = ExtractPath(fileFullPath_);
+		fileName_ = ExtractFileName(fileFullPath_);
+
 	#if NACL
-		pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filename);
+		pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filename_.c_str());
 	#elif defined(ANDROID) && !defined(SDL)
 		pAAssetManager_ = App::this_->GetAssetManager();
 	#endif
@@ -54,7 +59,7 @@ namespace NSG
 
 	bool ResourceFile::IsLoaded()
 	{
-		if(!loaded_ && !filename_.empty())
+		if (!loaded_ && !fileFullPath_.empty())
 		{
 		#if NACL
 			if(!pLoader_->IsDone()) return false;
@@ -82,19 +87,19 @@ namespace NSG
 				AAsset_close(pAsset); 
 			#endif
 		#else
-	        std::ifstream file(filename_, std::ios::binary);
+			std::ifstream file(fileFullPath_, std::ios::binary);
             
 	        #if __APPLE__
 	    	if(!file.is_open())
 	    	{
 	    		const char* base_path = SDL_GetBasePath();
                 std::string path(base_path);
-                path += filename_;
+                path += fileFullPath_;
 	    		file.open(path.c_str(), std::ios::binary);
 	    	}
 	    	#endif
 	    	if(!file.is_open())
-	    		TRACE_LOG("Cannot open filename=" << filename_);
+				TRACE_LOG("Cannot open filename=" << fileFullPath_);
 	        CHECK_ASSERT(file.is_open(), __FILE__, __LINE__);
 	        file.seekg(0,std::ios::end);
 	        std::streampos filelength = file.tellg();
@@ -102,11 +107,10 @@ namespace NSG
 	        buffer_.resize((int)filelength);
 	        file.read(&buffer_[0],filelength);
 		#endif	
-			TRACE_LOG("Resource::File=" << filename_ << " has been loaded with size=" << buffer_.size());
+			TRACE_LOG("Resource::File=" << fileFullPath_ << " has been loaded with size=" << buffer_.size());
 			loaded_ = true;
 		}
 
 		return loaded_;
 	}
-
 }

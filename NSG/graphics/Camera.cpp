@@ -29,6 +29,11 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Util.h"
 #include "Ray.h"
+#include "FilterBlur.h"
+#include "FilterBlend.h"
+#include "Program.h"
+#include "Render2Texture.h"
+#include "ShowTexture.h"
 #include "pugixml.hpp"
 
 namespace NSG
@@ -46,12 +51,15 @@ namespace NSG
           yf_(1),
           isOrtho_(false),
           orthoCoords_(-1.0f, 1.0f, -1.0f, 1.0f),
-          cameraIsDirty_(false)
+          cameraIsDirty_(false),
+          showTexture_(new ShowTexture)
     {
         viewWidth_ = app_.GetViewSize().first;
         viewHeight_ = app_.GetViewSize().second;
         CHECK_ASSERT(viewHeight_ > 0, __FILE__, __LINE__);
         aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
+        render2Texture_ = PRender2Texture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH_STENCIL));
+        showTexture_->SetNormal(render2Texture_->GetTexture());
         UpdateProjection();
         App::Add(this);
     }
@@ -359,7 +367,18 @@ namespace NSG
             else
                 aspectRatio_ = 1;
 
-            UpdateProjection();
+			UpdateProjection();
+
+			{
+				PRender2Texture newTexture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH_STENCIL));
+				for (auto& filter : filters_)
+				{
+					if (filter->GetInputTexture() == render2Texture_->GetTexture())
+						filter->SetInputTexture(newTexture->GetTexture());
+				}
+				render2Texture_ = newTexture;
+				showTexture_->SetNormal(render2Texture_->GetTexture());
+			}
         }
     }
 
@@ -462,7 +481,69 @@ namespace NSG
 
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
-
-		Activate();
     }
+
+    void Camera::AddBlurFilter(int output_width, int output_height)
+    {
+        PFilterBlur blur;
+        if(filters_.empty())
+            blur = PFilterBlur(new FilterBlur(render2Texture_->GetTexture(), output_width, output_height));
+        else
+            blur = PFilterBlur(new FilterBlur(filters_.back()->GetTexture(), output_width, output_height));
+
+        AddFilter(blur);
+    }
+
+    void Camera::AddBlendFilter(int output_width, int output_height)
+    {
+        CHECK_ASSERT(filters_.size() > 0, __FILE__, __LINE__);
+        PFilterBlend blend;
+
+        size_t n = filters_.size();
+
+        if(n > 1)
+            blend = PFilterBlend(new FilterBlend(filters_[n-2]->GetTexture(), filters_[n-1]->GetTexture(), output_width, output_height));
+        else
+            blend = PFilterBlend(new FilterBlend(render2Texture_->GetTexture(), filters_[0]->GetTexture(), output_width, output_height));
+
+        AddFilter(blend);
+    }
+
+    PFilter Camera::AddUserFilter(PResource fragmentShader, int output_width, int output_height)
+    {
+        PFilter filter;
+
+        if(filters_.empty())
+            filter = PFilter(new Filter("UserFilter", render2Texture_->GetTexture(), output_width, output_height));
+        else
+            filter = PFilter(new Filter("UserFilter", filters_.back()->GetTexture(), output_width, output_height));
+
+        filter->GetProgram()->SetFragmentShader(fragmentShader);
+
+        AddFilter(filter);
+
+        return filter;
+    }
+
+    void Camera::AddFilter(PFilter filter)
+    {
+        filters_.push_back(filter);
+        showTexture_->SetNormal(filter->GetTexture());
+    }
+
+    void Camera::BeginRender()
+    {
+        render2Texture_->Begin();
+    }
+
+    void Camera::EndRender()
+    {
+        render2Texture_->End();
+
+        for(auto& filter: filters_)
+            filter->Render();
+
+        showTexture_->Show();
+    }
+
 }

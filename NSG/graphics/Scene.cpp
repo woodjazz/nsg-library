@@ -25,10 +25,10 @@ namespace NSG
         : SceneNode(SCENENODE_ROOT_NAME, this),
           ambient_(0.3f, 0.3f, 0.3f, 1),
           octree_(new Octree),
-		  app_(*App::this_),
+          app_(*App::this_),
           started_(false)
     {
-		//octree_->InsertUpdate(this);
+        //octree_->InsertUpdate(this);
     }
 
     Scene::~Scene()
@@ -42,7 +42,7 @@ namespace NSG
     void Scene::Load(PResource resource)
     {
         SetResource(resource);
-        while(!IsReady())
+        while (!IsReady())
             std::this_thread::sleep_for(Milliseconds(10));
     }
 
@@ -51,14 +51,14 @@ namespace NSG
         if (ambient_ != ambient)
         {
             ambient_ = ambient;
-			SetUniformsNeedUpdate();
+            SetUniformsNeedUpdate();
         }
     }
 
     PCamera Scene::CreateCamera(const std::string& name)
     {
         PCamera obj(new Camera(name, this));
-		octree_->InsertUpdate(obj.get());
+        octree_->InsertUpdate(obj.get());
         cameras_.push_back(obj);
         AddChild(obj);
         return obj;
@@ -73,16 +73,16 @@ namespace NSG
 
     PSceneNode Scene::CreateSceneNode(const std::string& name)
     {
-		PSceneNode obj = CreateChild(name);
-		octree_->InsertUpdate(obj.get());
-		return obj;
+        PSceneNode obj = CreateChild(name);
+        octree_->InsertUpdate(obj.get());
+        return obj;
     }
 
     PSceneNode Scene::CreateSceneNodeFrom(PResource resource, const std::string& name)
     {
-		PSceneNode obj(CreateSceneNode(name));
-		obj->SetResource(resource);
-		octree_->InsertUpdate(obj.get());
+        PSceneNode obj(CreateSceneNode(name));
+        obj->SetResource(resource);
+        octree_->InsertUpdate(obj.get());
         AddChild(obj);
         return obj;
     }
@@ -108,12 +108,12 @@ namespace NSG
         return light;
     }
 
-	PLight Scene::CreateSpotLight(const std::string& name)
-	{
-		PLight light = CreateLight(name);
-		light->SetType(Light::SPOT);
-		return light;
-	}
+    PLight Scene::CreateSpotLight(const std::string& name)
+    {
+        PLight light = CreateLight(name);
+        light->SetType(Light::SPOT);
+        return light;
+    }
 
 
     void Scene::AddLight(PLight light)
@@ -125,7 +125,7 @@ namespace NSG
 
     void Scene::Start()
     {
-        if(!started_)
+        if (!started_)
         {
             for (auto& obj : children_)
                 obj->Start();
@@ -152,7 +152,7 @@ namespace NSG
             obj->OnMouseMove(x, y);
     }
 
-	void Scene::OnMouseDown(int button, float x, float y)
+    void Scene::OnMouseDown(int button, float x, float y)
     {
         for (auto& obj : children_)
             obj->OnMouseDown(button, x, y);
@@ -164,7 +164,7 @@ namespace NSG
             obj->OnMouseWheel(x, y);
     }
 
-	void Scene::OnMouseUp(int button, float x, float y)
+    void Scene::OnMouseUp(int button, float x, float y)
     {
         for (auto& obj : children_)
             obj->OnMouseUp(button, x, y);
@@ -194,12 +194,12 @@ namespace NSG
         std::vector<const SceneNode*> tmpNodes;
         RayOctreeQuery query(tmpNodes, ray);
         octree_->Execute(query);
-		result.clear();
+        result.clear();
         float maxDistance = ray.GetMaxDistance();
-        for(auto& obj: tmpNodes)
+        for (auto& obj : tmpNodes)
         {
             float distance = ray.HitDistance(obj);
-            if(distance < maxDistance)
+            if (distance < maxDistance)
             {
                 RayNodeResult r {distance, obj};
                 result.push_back(r);
@@ -211,19 +211,19 @@ namespace NSG
     bool Scene::GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest)
     {
         std::vector<RayNodeResult> results;
-        if(GetPreciseRayNodesIntersection(ray, results))
+        if (GetPreciseRayNodesIntersection(ray, results))
         {
             int closestIdx = -1;
             int idx = 0;
             float distance = std::numeric_limits<float>::max();
-            for(auto& result: results)
+            for (auto& result : results)
             {
-                if(result.distance_ < distance)
+                if (result.distance_ < distance)
                 {
                     closestIdx = idx;
                     distance = result.distance_;
                 }
-				++idx;
+                ++idx;
             }
 
             closest = results[closestIdx];
@@ -235,7 +235,7 @@ namespace NSG
     }
 
 
-    void Scene::GetVisibleNodes(Camera* camera, std::vector<const SceneNode*>& visibles)
+    void Scene::GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const
     {
         for (auto& obj : needUpdate_)
             octree_->InsertUpdate(obj);
@@ -327,6 +327,7 @@ namespace NSG
 
             if (camera)
             {
+                camera->BeginRender();
                 std::vector<const SceneNode*> visibles;
                 GetVisibleNodes(camera, visibles);
                 AppStatistics::this_->SetNodes(children_.size(), visibles.size());
@@ -334,6 +335,7 @@ namespace NSG
                 GenerateBatches(visibles, batches);
                 for (auto& batch : batches)
                     Graphics::this_->Render(batch);
+                camera->EndRender();
             }
         }
     }
@@ -359,16 +361,16 @@ namespace NSG
     void Scene::SaveMeshes(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Meshes");
-		auto meshes = app_.GetMeshes();
-        for(auto& obj: meshes)
+        auto meshes = app_.GetMeshes();
+        for (auto& obj : meshes)
             obj->Save(child);
     }
 
     void Scene::SaveMaterials(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Materials");
-		auto materials = app_.GetMaterials();
-        for(auto& obj: materials)
+        auto materials = app_.GetMaterials();
+        for (auto& obj : materials)
             obj->Save(child);
     }
 
@@ -380,12 +382,28 @@ namespace NSG
         SceneNode::Save(child);
     }
 
-	void Scene::Load(const pugi::xml_document& doc, const CachedData& data)
+    void Scene::Load(const pugi::xml_document& doc, const CachedData& data)
     {
-		std::stringstream query;
-		query << "/Scene/SceneNode[@name ='" << SCENENODE_ROOT_NAME << "']";
-		pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-		pugi::xml_node child = xpathNode.node();
-		LoadNode(child, data);
+        std::stringstream query;
+        query << "/Scene/SceneNode[@name ='" << SCENENODE_ROOT_NAME << "']";
+        pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
+        pugi::xml_node child = xpathNode.node();
+        LoadNode(child, data);
+    }
+
+    bool Scene::GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const
+    {
+        std::vector<const SceneNode*> visibles;
+        GetVisibleNodes(camera, visibles);
+        if (!visibles.empty())
+        {
+            bb = BoundingBox();
+            for (auto& obj : visibles)
+                bb.Merge(obj->GetWorldBoundingBox());
+
+            return true;
+        }
+
+        return false;
     }
 }

@@ -80,6 +80,9 @@ namespace NSG
 	class PassFilter;
 	typedef std::shared_ptr<PassFilter> PPassFilter;
 
+	class FilterBlend;
+	typedef std::shared_ptr<FilterBlend> PFilterBlend;
+
 	class Pass2Texture;
 	typedef std::shared_ptr<Pass2Texture> PPass2Texture;
 

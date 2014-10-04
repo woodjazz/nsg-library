@@ -32,16 +32,14 @@ namespace NSG
 {
 	FilterBlur::FilterBlur(PTexture input, int output_width, int output_height)
 		: Filter("FilterBlur", input, output_width, output_height, Program::BLUR),
-	texelSize_loc_(-1),
-	orientation_loc_(-1),
-	blurAmount_loc_(-1),
-	blurScale_loc_(-1),
-	blurStrength_loc_(-1),
-	texelSize_(1, 1),
-	orientation_(1),
-	blurAmount_(2),
-	blurScale_(4),
-	blurStrength_(0.2f)
+	blurKernelSizeLoc_(-1),
+	blurDirLoc_(-1),
+	blurRadiusLoc_(-1),
+	sigmaLoc_(-1),
+	blurKernelSize_(5),
+	blurDir_(1, 0),
+	blurRadius_(2, 2),
+	sigma_(0.1f)
 	{
         pass_->GetProgram()->Set(this);
 	}
@@ -55,38 +53,32 @@ namespace NSG
 	{
 		PProgram program = pass_->GetProgram();
 
-		texelSize_loc_ = program->GetUniformLocation("u_texelSize");
-		orientation_loc_ = program->GetUniformLocation("u_orientation");
-		blurAmount_loc_ = program->GetUniformLocation("u_blurAmount");
-		blurScale_loc_ = program->GetUniformLocation("u_blurScale");
-		blurStrength_loc_ = program->GetUniformLocation("u_blurStrength");
+		blurKernelSizeLoc_ = program->GetUniformLocation("u_blurKernelSize");
+		blurDirLoc_ = program->GetUniformLocation("u_blurDir");
+		blurRadiusLoc_ = program->GetUniformLocation("u_blurRadius");
+		sigmaLoc_ = program->GetUniformLocation("u_sigma");
 	}
 
 	void FilterBlur::AssignValues()
 	{
-		if(texelSize_loc_ != -1)
+		if(blurKernelSizeLoc_ != -1)
 		{
-			glUniform2fv(texelSize_loc_, 1, &texelSize_[0]);
+			glUniform1i(blurKernelSizeLoc_, blurKernelSize_);
 		}
 
-		if(orientation_loc_ != -1)
+		if(blurDirLoc_ != -1)
 		{
-			glUniform1i(orientation_loc_, orientation_);
+			glUniform2fv(blurDirLoc_, 1, &blurDir_[0]);
 		}
 
-		if(blurAmount_loc_ != -1)
+		if (blurRadiusLoc_ != -1)
 		{
-			glUniform1i(blurAmount_loc_, blurAmount_);
+			glUniform2fv(blurRadiusLoc_, 1, &blurRadius_[0]);
 		}
 
-		if(blurScale_loc_ != -1)
+		if(sigmaLoc_ != -1)
 		{
-			glUniform1f(blurScale_loc_, blurScale_);
-		}
-
-		if(blurStrength_loc_ != -1)
-		{
-			glUniform1f(blurStrength_loc_, blurStrength_);
+			glUniform1f(sigmaLoc_, sigma_);
 		}
 	}
 

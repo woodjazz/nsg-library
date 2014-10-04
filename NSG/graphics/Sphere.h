@@ -35,9 +35,9 @@ namespace NSG
 		Sphere(const Vertex3& center, float radius);
 		Sphere(const Vertex3& center, const Vertex3& pointInSphere);
 		~Sphere();
-		void SetCenter(const Vertex3& center);
-		void SetPosition(const Vertex3& pointInSphere);
-		void SetCenterAndPosition(const Vertex3& center, const Vertex3& pointInSphere);
+		bool SetCenter(const Vertex3& center);
+		bool SetPosition(const Vertex3& pointInSphere);
+		bool SetCenterAndPosition(const Vertex3& center, const Vertex3& pointInSphere);
 		void IncAngles(float incTheta, float incPhi);
 		void SetAngles(float theta, float phi);
 		const Vector3& GetPosition() const { return position_; }

@@ -37,6 +37,7 @@ namespace NSG
           res_(res)
     {
         resource_ = PResource(new ResourceProcedural(this));
+		SetSerializable(false);
     }
 
     CircleMesh::~CircleMesh()

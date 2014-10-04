@@ -33,25 +33,18 @@ namespace NSG
 {
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
 	void ReplaceChar(std::string& source, char from, char to);
+    std::string ExtractPath(const std::string& file);
+    std::string ExtractFileName(const std::string& file);
+    bool CopyFile(const std::string& source, const std::string& target);
+
 	std::string GetLowercaseFileExtension(const std::string& filename);
 	
-	template<typename T> 
-	T Clamp(T value, T lower, T upper)
-	{
-		return std::max(lower, std::min(value, upper));
-	}
-
 	inline unsigned NextPowerOfTwo(unsigned value)
 	{
 	    unsigned ret = 1;
 	    while (ret < value && ret < 0x80000000)
 	        ret <<= 1;
 	    return ret;
-	}
-
-	inline float Abs(float value) 
-	{ 
-		return value >= 0.0f ? value : -value; 
 	}
 
 	std::istream& operator >> (std::istream& s, Vertex2& obj);
@@ -62,7 +55,4 @@ namespace NSG
 	Vertex3 GetVertex3(const std::string& buffer);
 	Vertex4 GetVertex4(const std::string& buffer);
 	Quaternion GetQuaternion(const std::string& buffer);
-
-	//float CalculateArcBallAnglesForPoint(const Vertex3& center, const Vertex3& currentPoint, float& theta, float& phi);
-	//Vertex3 CalculateArcBallPoint(const Vertex3& center, float radius, Vector3& up, float theta, float phi);
 }

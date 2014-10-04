@@ -44,6 +44,7 @@ namespace NSG
 	mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
     node_(new Node("ShowTexture"))
 	{
+		material_->SetSerializable(false);
 		pass_->EnableDepthTest(false);
 	}
 

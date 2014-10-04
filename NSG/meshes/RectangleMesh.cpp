@@ -35,6 +35,7 @@ namespace NSG
 	height_(height)
 	{
 		resource_ = PResource(new ResourceProcedural(this));
+		SetSerializable(false);
 	}
 
 	RectangleMesh::~RectangleMesh() 

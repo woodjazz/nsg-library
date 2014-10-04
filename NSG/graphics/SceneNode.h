@@ -45,7 +45,8 @@ namespace NSG
 		PMesh GetMesh() const { return mesh_; }
 		void AddBehavior(PBehavior behavior);
 		void SetOctant(Octant* octant) const { octant_ = octant; }
-		const BoundingBox& GetWorldBoundingBox() const;
+		const BoundingBox& GetWorldBoundingBox() const override;
+		BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const override;
 		bool IsOccludee() const { return occludee_; }
 		Octant* GetOctant() const { return octant_; }
 		virtual void OnDirty() const override;
@@ -64,6 +65,8 @@ namespace NSG
         virtual void OnKey(int key, int action, int modifier) override;
         virtual void OnChar(unsigned int character) override;
 		PSceneNode CreateChild(const std::string& name);
+		virtual void OnEnable() override;
+		virtual void OnDisable() override;
 	protected:
 		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
 		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);

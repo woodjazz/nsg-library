@@ -44,6 +44,7 @@ namespace NSG
           pass_(new Pass),
           material_(app_.CreateMaterial("AppStatistics"))
     {
+		
         startTime_ = Clock::now();
 
         pass_->EnableDepthTest(false);
