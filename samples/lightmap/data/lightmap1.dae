@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.71.0 commit date:2014-06-25, commit time:18:36, hash:9337574</authoring_tool>
     </contributor>
-    <created>2014-10-05T10:50:43</created>
-    <modified>2014-10-05T10:50:43</modified>
+    <created>2014-10-05T10:51:25</created>
+    <modified>2014-10-05T10:51:25</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -98,10 +98,27 @@
       </extra>
     </light>
   </library_lights>
-  <library_images/>
+  <library_images>
+    <image id="texture" name="texture">
+      <init_from>texture.png</init_from>
+    </image>
+    <image id="lightmap" name="lightmap">
+      <init_from>lightmap.png</init_from>
+    </image>
+  </library_images>
   <library_effects>
     <effect id="Material-effect">
       <profile_COMMON>
+        <newparam sid="lightmap-surface">
+          <surface type="2D">
+            <init_from>lightmap</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="lightmap-sampler">
+          <sampler2D>
+            <source>lightmap-surface</source>
+          </sampler2D>
+        </newparam>
         <technique sid="common">
           <phong>
             <emission>
@@ -111,7 +128,7 @@
               <color sid="ambient">0 0 0 1</color>
             </ambient>
             <diffuse>
-              <color sid="diffuse">0.64 0.64 0.64 1</color>
+              <texture texture="lightmap-sampler" texcoord="UVMap1"/>
             </diffuse>
             <specular>
               <color sid="specular">0.5 0.5 0.5 1</color>
@@ -203,7 +220,10 @@
         <instance_geometry url="#Sphere-mesh">
           <bind_material>
             <technique_common>
-              <instance_material symbol="Material-material" target="#Material-material"/>
+              <instance_material symbol="Material-material" target="#Material-material">
+                <bind_vertex_input semantic="UVMap1" input_semantic="TEXCOORD" input_set="0"/>
+                <bind_vertex_input semantic="UVMap2" input_semantic="TEXCOORD" input_set="1"/>
+              </instance_material>
             </technique_common>
           </bind_material>
         </instance_geometry>
