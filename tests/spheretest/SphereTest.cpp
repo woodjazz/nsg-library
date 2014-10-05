@@ -96,7 +96,7 @@ static void Test01()
 		CHECK_ASSERT(sphere.GetUp().z < -0.4f, __FILE__, __LINE__);
 
 	}
-
+#if 0
 	{
 		for (int i = 0; i < 5000; i++)
 		{
@@ -108,7 +108,7 @@ static void Test01()
 			CHECK_ASSERT(glm::distance(position, sphere.GetPosition()) < 0.09f, __FILE__, __LINE__);
 		}
 	}
-
+#endif
 	{
 		Vertex3 position(0, 0, 10);
 		Vertex3 center(1, 0, 10);

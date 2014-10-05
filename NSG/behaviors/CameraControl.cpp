@@ -136,12 +136,19 @@ namespace NSG
 		if (scene_.GetClosestRayNodeIntersection(*ray, closest))
 		{
 			if (centerObj)
+			{
+				TRACE_LOG("***1***");
 				newCenter = closest.node_->GetGlobalPosition();
+			}
 			else
+			{
+				TRACE_LOG("***2***");
 				newCenter = ray->GetPoint(closest.distance_);
+			}
 		}
 		else
 		{
+			TRACE_LOG("***3***");
 			BoundingBox bb;
 			if(!scene_.GetVisibleBoundingBox(camera_, bb))
 				bb = scene_.GetWorldBoundingBoxBut(camera_);
@@ -163,7 +170,6 @@ namespace NSG
 		position = sphere_->GetCenter() + lookAtDir * distance;
 		if (sphere_->SetPosition(position))
 			camera_->SetGlobalPosition(position);
-		//updateOrientation_ = true;
 	}
 
 	void CameraControl::OnKey(int key, int action, int modifier)

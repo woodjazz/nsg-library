@@ -60,6 +60,7 @@ namespace NSG
         aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
         render2Texture_ = PRender2Texture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH_STENCIL));
         showTexture_->SetNormal(render2Texture_->GetTexture());
+        SetInheritScale(false);
         UpdateProjection();
         App::Add(this);
     }
@@ -351,7 +352,7 @@ namespace NSG
 		Vertex3 farWorldCoord = ScreenToWorld(farPoint);// Vertex3(GetViewProjectionInverseMatrix() * Vertex4(farPoint, 1));
 
         Vector3 direction(farWorldCoord - nearWorldCoord);
-        PRay ray(new Ray(Vertex3(nearWorldCoord), direction));
+        PRay ray(new Ray(nearWorldCoord, direction));
         return ray;
     }
 

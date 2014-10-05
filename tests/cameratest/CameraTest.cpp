@@ -394,7 +394,7 @@ static void Test04()
 	{
 		PRay ray = camera->GetScreenRay(-1, 0);
 		CHECK_ASSERT(glm::distance(ray->GetOrigin(), position) < 1, __FILE__, __LINE__);
-		CHECK_ASSERT(ray->GetDirection().x < -0.9f, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().x < 0, __FILE__, __LINE__);
 		CHECK_ASSERT(ray->GetDirection().y == 0, __FILE__, __LINE__);
 		CHECK_ASSERT(ray->GetDirection().z < 0, __FILE__, __LINE__);
 	}
@@ -402,7 +402,7 @@ static void Test04()
 	{
 		PRay ray = camera->GetScreenRay(1, 0);
 		CHECK_ASSERT(glm::distance(ray->GetOrigin(), position) < 1, __FILE__, __LINE__);
-		CHECK_ASSERT(ray->GetDirection().x > 0.9f, __FILE__, __LINE__);
+		CHECK_ASSERT(ray->GetDirection().x > 0, __FILE__, __LINE__);
 		CHECK_ASSERT(ray->GetDirection().y == 0, __FILE__, __LINE__);
 		CHECK_ASSERT(ray->GetDirection().z < 0, __FILE__, __LINE__);
 	}
