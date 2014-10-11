@@ -191,6 +191,8 @@ namespace NSG
                     {
                         TRACE_LOG("Detected diffuse map using uv1 => assuming it is a lightmap");
                         material_->SetTexture2(CreateTexture(fullPath));
+                        flags_ |= Program::LIGHTMAP;
+                        program_->SetFlags(flags_);
                     }
                     else
                     {
@@ -302,7 +304,12 @@ namespace NSG
     {
         std::string textureFilePath;
         if (path.IsPathRelative())
-			textureFilePath = resourcePath_ + "/" + path.GetPath() + "/" + path.GetFilename();
+        {
+            if(path.GetPath().empty())
+                textureFilePath = resourcePath_ + "/" + path.GetFilename();
+            else
+                textureFilePath = resourcePath_ + "/" + path.GetPath() + "/" + path.GetFilename();
+        }
         else
             textureFilePath = path.GetFilePath();
 

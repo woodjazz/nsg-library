@@ -30,9 +30,9 @@
 		#elif defined(UNLIT)
 
 			#ifdef LIGHTMAP
-				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
+				gl_FragColor = v_color * (texture2D(u_texture0, v_texcoord0) + texture2D(u_texture2, v_texcoord1));
 			#else
-				gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1);
+				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
 			#endif
 
 		#elif defined(PER_PIXEL_LIGHTING)
@@ -48,7 +48,8 @@
     		vec4 totalLight = CalcFSTotalLight(vertexToEye, normal);
 
     		#ifdef LIGHTMAP
-    			gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord0) * texture2D(u_texture2, v_texcoord1);
+    			//gl_FragColor = v_color * totalLight * (0.5 * texture2D(u_texture0, v_texcoord0) + 0.5 * texture2D(u_texture2, v_texcoord1));
+    			gl_FragColor = texture2D(u_texture2, v_texcoord1);
     		#else
 		    	gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord0);
 		    #endif

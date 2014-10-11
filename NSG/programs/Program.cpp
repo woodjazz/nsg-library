@@ -350,7 +350,7 @@ namespace NSG
 
             if (texture2Loc_ != -1)
             {
-                glUniform1i(texture2Loc_, 1);
+                glUniform1i(texture2Loc_, 2);
             }
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
