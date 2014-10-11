@@ -32,13 +32,8 @@ misrepresented as being the original software.
 namespace NSG
 {
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
-	void ReplaceChar(std::string& source, char from, char to);
-    std::string ExtractPath(const std::string& file);
-    std::string ExtractFileName(const std::string& file);
     bool CopyFile(const std::string& source, const std::string& target);
-
-	std::string GetLowercaseFileExtension(const std::string& filename);
-	
+    bool SetCurrentDir(const std::string& pathName);
 	inline unsigned NextPowerOfTwo(unsigned value)
 	{
 	    unsigned ret = 1;
@@ -46,7 +41,6 @@ namespace NSG
 	        ret <<= 1;
 	    return ret;
 	}
-
 	std::istream& operator >> (std::istream& s, Vertex2& obj);
 	std::istream& operator >> (std::istream& s , Vertex3& obj);
 	std::istream& operator >> (std::istream& s , Vertex4& obj);

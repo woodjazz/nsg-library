@@ -92,34 +92,34 @@ namespace NSG
             vertexData.position_.x = cos(angle);
             vertexData.position_.y = sin(angle);
             vertexData.position_.z = 0;
-            vertexData.uv_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
+            vertexData.uv0_ = Vertex2(vertexData.position_.x, vertexData.position_.y);
 
             vertexData.position_ *= radius1;
 
             if (angle < PI / 2 || angle > 3 * PI / 2)
             {
                 vertexData.position_.x += halfX;
-                vertexData.uv_.x = coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv_.x;
+                vertexData.uv0_.x = coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv0_.x;
             }
             else if (angle > PI / 2)
             {
                 vertexData.position_.x -= halfX;
-                vertexData.uv_.x = -coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv_.x;
+                vertexData.uv0_.x = -coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv0_.x;
             }
 
             if (angle >= 0 && angle < PI)
             {
                 vertexData.position_.y += halfY;
-                vertexData.uv_.y = coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv_.y;
+                vertexData.uv0_.y = coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv0_.y;
             }
             else if (angle >= PI)
             {
                 vertexData.position_.y -= halfY;
-                vertexData.uv_.y = -coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv_.y;
+                vertexData.uv0_.y = -coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv0_.y;
             }
 
-            vertexData.uv_.x = (vertexData.uv_.x + 1) / 2.0f;
-            vertexData.uv_.y = 1 - (vertexData.uv_.y + 1) / 2.0f;
+            vertexData.uv0_.x = (vertexData.uv0_.x + 1) / 2.0f;
+            vertexData.uv0_.y = 1 - (vertexData.uv0_.y + 1) / 2.0f;
 
             data.push_back(vertexData);
 

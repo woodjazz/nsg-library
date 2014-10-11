@@ -40,7 +40,7 @@ namespace NSG
 {
     Camera* activeCamera = nullptr;
 
-	Camera::Camera(const std::string& name, Scene* scene)
+    Camera::Camera(const std::string& name, Scene* scene)
         : SceneNode(name, scene),
           fovy_(glm::radians(45.0f)),
           zNear_(0.1f),
@@ -58,8 +58,8 @@ namespace NSG
         viewHeight_ = app_.GetViewSize().second;
         CHECK_ASSERT(viewHeight_ > 0, __FILE__, __LINE__);
         aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
-        render2Texture_ = PRender2Texture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH_STENCIL));
-        showTexture_->SetNormal(render2Texture_->GetTexture());
+        render2Texture_ = PRender2Texture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH));//_STENCIL));
+        showTexture_->SetNormal(render2Texture_->GetTexture(), false);
         SetInheritScale(false);
         UpdateProjection();
         App::Add(this);
@@ -100,7 +100,7 @@ namespace NSG
 
     float Camera::GetVerticalFov(float hhfov) const
     {
-        return 2*atan(tan(hhfov) * viewHeight_/viewWidth_);
+        return 2 * atan(tan(hhfov) * viewHeight_ / viewWidth_);
     }
 
     void Camera::SetHalfHorizontalFov(float hhfov)
@@ -134,7 +134,7 @@ namespace NSG
 
     void Camera::SetOrtho(float left, float right, float bottom, float top)
     {
-        if(orthoCoords_.x != left || orthoCoords_.y != right || orthoCoords_.z != bottom || orthoCoords_.w != top)
+        if (orthoCoords_.x != left || orthoCoords_.y != right || orthoCoords_.z != bottom || orthoCoords_.w != top)
         {
             orthoCoords_ = Vector4(left, right, bottom, top);
             UpdateProjection();
@@ -232,25 +232,25 @@ namespace NSG
 
     }
 
-	const Matrix4& Camera::GetMatViewProjection() const
-	{
-		if (cameraIsDirty_)
-			UpdateProjection();
+    const Matrix4& Camera::GetMatViewProjection() const
+    {
+        if (cameraIsDirty_)
+            UpdateProjection();
 
-		return matViewProjection_;
-	}
+        return matViewProjection_;
+    }
 
 
     const Matrix4& Camera::GetMatViewProj()
     {
-		if (activeCamera)
-		{
-			return activeCamera->GetMatViewProjection();
-		}
-		else
-		{
-			return IDENTITY_MATRIX;
-		}
+        if (activeCamera)
+        {
+            return activeCamera->GetMatViewProjection();
+        }
+        else
+        {
+            return IDENTITY_MATRIX;
+        }
     }
 
     Matrix4 Camera::GetModelViewProjection(const Node* pNode)
@@ -286,18 +286,18 @@ namespace NSG
         }
     }
 
-	const Matrix4& Camera::GetViewMatrix()
-	{
-		if (activeCamera)
-		{
-			return activeCamera->GetView();
-		}
-		else
-		{
-			return IDENTITY_MATRIX;
-		}
+    const Matrix4& Camera::GetViewMatrix()
+    {
+        if (activeCamera)
+        {
+            return activeCamera->GetView();
+        }
+        else
+        {
+            return IDENTITY_MATRIX;
+        }
 
-	}
+    }
 
     const Matrix4& Camera::GetView() const
     {
@@ -334,28 +334,116 @@ namespace NSG
     Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
     {
         Vertex4 worldCoord = GetViewProjectionInverseMatrix() * Vertex4(screenXYZ, 1);
-		return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
+        return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
     }
 
-    Vertex4 Camera::WorldToScreen(const Vertex3& worldXYZ) const
+    Vertex3 Camera::WorldToScreen(const Vertex3& worldXYZ) const
     {
         Vertex4 screenCoord = GetViewProjectionMatrix() * Vertex4(worldXYZ, 1);
-		return Vertex4(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w, screenCoord.z);
+        return Vertex3(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w);
     }
 
-    PRay Camera::GetScreenRay(float screenX, float screenY)
+    Ray Camera::GetScreenRay(float screenX, float screenY) const
     {
         Vertex3 nearPoint(screenX, screenY, -1); //in normalized device coordinates (Z goes from near = -1 to far = 1)
         Vertex3 farPoint(screenX, screenY, 0); //in normalized device coordinates
 
-		Vertex3 nearWorldCoord = ScreenToWorld(nearPoint);// Vertex3(GetViewProjectionInverseMatrix() * Vertex4(nearPoint, 1));
-		Vertex3 farWorldCoord = ScreenToWorld(farPoint);// Vertex3(GetViewProjectionInverseMatrix() * Vertex4(farPoint, 1));
+        Vertex3 nearWorldCoord = ScreenToWorld(nearPoint);// Vertex3(GetViewProjectionInverseMatrix() * Vertex4(nearPoint, 1));
+        Vertex3 farWorldCoord = ScreenToWorld(farPoint);// Vertex3(GetViewProjectionInverseMatrix() * Vertex4(farPoint, 1));
 
         Vector3 direction(farWorldCoord - nearWorldCoord);
-        PRay ray(new Ray(nearWorldCoord, direction));
-        return ray;
+
+        return Ray(nearWorldCoord, direction);
+    }
+#if 0
+    Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
+    {
+        const Matrix4& viewProjInverse = GetViewProjectionInverseMatrix();
+
+        Vector4 nearPoint(screenXYZ.x, screenXYZ.y, -1, 1);
+        Vector4 farPoint(screenXYZ.x, screenXYZ.y, 1, 1);
+
+        Vector3 origin(viewProjInverse * nearPoint);
+        Vector3 endPoint(viewProjInverse * farPoint);
+
+        Vector3 direction;
+        if (glm::distance(endPoint, origin) > PRECISION)
+            direction = glm::normalize(endPoint - origin);
+        else
+            direction = VECTOR3_FORWARD;
+
+
+        float zFactor = (screenXYZ.z + 1) / 2.0f;
+        if (isOrtho_)
+            return origin + direction * (zFactor * (zFar_ - zNear_));
+        else
+        {
+            origin.z = 0;
+            return origin + direction * (zFactor * (zFar_ - zNear_));
+        }
+
+        //Vertex4 worldCoord = GetViewProjectionInverseMatrix() * Vertex4(screenXYZ, 0);
+        //return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
+        //return Vertex3(worldCoord);
     }
 
+    Vertex3 Camera::WorldToScreen(const Vertex3& worldXYZ) const
+    {
+        Vector4 eyeSpacePos(GetViewMatrix() * Vector4(worldXYZ, 1));
+        Vector4 screenSpacePos;
+
+        //if (eyeSpacePos.z < 0.0f)
+        {
+            screenSpacePos = GetMatProjection() * eyeSpacePos;
+            if (isOrtho_)
+            {
+                screenSpacePos.x /= screenSpacePos.w;
+                screenSpacePos.y /= screenSpacePos.w;
+                screenSpacePos.z /= screenSpacePos.w;
+            }
+            else
+            {
+                float d = zFar_ - zNear_;
+                screenSpacePos.z = 2 * screenSpacePos.w / d - 1;
+            }
+        }
+        /*      else
+                {
+                    screenSpacePos.x = (-eyeSpacePos.x > 0.0f) ? -1.0f : 1.0f;
+                    screenSpacePos.y = (-eyeSpacePos.y > 0.0f) ? -1.0f : 1.0f;
+                    screenSpacePos.z = eyeSpacePos.z;
+                }*/
+        //Vertex4 screenCoord = GetViewProjectionMatrix() * Vertex4(worldXYZ, 1);
+        //screenCoord /= screenCoord.w;
+        //return Vertex2(screenCoord.x, screenCoord.y);
+        return Vector3(screenSpacePos);
+    }
+
+    Ray Camera::GetScreenRay(float screenX, float screenY) const
+    {
+        const Matrix4& viewProjInverse = GetViewProjectionInverseMatrix();
+        Vector4 o1(GetMatProjection() * Vertex4(screenX, screenY, 0, 1));
+        Vector4 o2(viewProjInverse * Vertex4(screenX, screenY, 0, 1));
+        o2 *= o2.w;
+
+        Vector3 origin(ScreenToWorld(Vertex3(screenX, screenY, -1)));
+        Vector3 endPoint(ScreenToWorld(Vertex3(screenX, screenY, 0)));
+
+        Vector3 direction;
+        if (glm::distance(endPoint, origin) > PRECISION)
+            direction = glm::normalize(endPoint - origin);
+        else
+            direction = VECTOR3_FORWARD;
+
+        //TRACE_LOG("dir=" << direction << " lookAt=" << GetLookAtDirection());
+        //TRACE_LOG("origin=" << origin << " camO=" << GetGlobalPosition());
+
+        CHECK_ASSERT(glm::dot(direction, GetLookAtDirection()) > 0, __FILE__, __LINE__);
+
+        Ray ray(origin + GetGlobalPosition(), GetGlobalOrientation() * direction);
+        return ray;
+    }
+#endif
 
     void Camera::OnViewChanged(int width, int height)
     {
@@ -368,18 +456,18 @@ namespace NSG
             else
                 aspectRatio_ = 1;
 
-			UpdateProjection();
+            UpdateProjection();
 
-			{
-				PRender2Texture newTexture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH_STENCIL));
-				for (auto& filter : filters_)
-				{
-					if (filter->GetInputTexture() == render2Texture_->GetTexture())
-						filter->SetInputTexture(newTexture->GetTexture());
-				}
-				render2Texture_ = newTexture;
-				showTexture_->SetNormal(render2Texture_->GetTexture());
-			}
+            {
+                PRender2Texture newTexture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH_STENCIL));
+                for (auto& filter : filters_)
+                {
+                    if (filter->GetInputTexture() == render2Texture_->GetTexture())
+                        filter->SetInputTexture(newTexture->GetTexture());
+                }
+                render2Texture_ = newTexture;
+                showTexture_->SetNormal(render2Texture_->GetTexture(), false);
+            }
         }
     }
 
@@ -395,6 +483,9 @@ namespace NSG
 
     void Camera::Save(pugi::xml_node& node)
     {
+        if (!IsSerializable())
+            return;
+
         pugi::xml_node child = node.append_child("Camera");
 
         {
@@ -487,7 +578,7 @@ namespace NSG
     void Camera::AddBlurFilter(int output_width, int output_height)
     {
         PFilterBlur blur;
-        if(filters_.empty())
+        if (filters_.empty())
             blur = PFilterBlur(new FilterBlur(render2Texture_->GetTexture(), output_width, output_height));
         else
             blur = PFilterBlur(new FilterBlur(filters_.back()->GetTexture(), output_width, output_height));
@@ -502,8 +593,8 @@ namespace NSG
 
         size_t n = filters_.size();
 
-        if(n > 1)
-            blend = PFilterBlend(new FilterBlend(filters_[n-2]->GetTexture(), filters_[n-1]->GetTexture(), output_width, output_height));
+        if (n > 1)
+            blend = PFilterBlend(new FilterBlend(filters_[n - 2]->GetTexture(), filters_[n - 1]->GetTexture(), output_width, output_height));
         else
             blend = PFilterBlend(new FilterBlend(render2Texture_->GetTexture(), filters_[0]->GetTexture(), output_width, output_height));
 
@@ -514,7 +605,7 @@ namespace NSG
     {
         PFilter filter;
 
-        if(filters_.empty())
+        if (filters_.empty())
             filter = PFilter(new Filter("UserFilter", render2Texture_->GetTexture(), output_width, output_height));
         else
             filter = PFilter(new Filter("UserFilter", filters_.back()->GetTexture(), output_width, output_height));
@@ -529,7 +620,7 @@ namespace NSG
     void Camera::AddFilter(PFilter filter)
     {
         filters_.push_back(filter);
-        showTexture_->SetNormal(filter->GetTexture());
+        showTexture_->SetNormal(filter->GetTexture(), false);
     }
 
     void Camera::BeginRender()
@@ -541,7 +632,7 @@ namespace NSG
     {
         render2Texture_->End();
 
-        for(auto& filter: filters_)
+        for (auto& filter : filters_)
             filter->Render();
 
         showTexture_->Show();

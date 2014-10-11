@@ -31,24 +31,35 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Util.h"
 #include "ResourceFile.h"
+#include "ResourceMemory.h"
 #include "Context.h"
 #include "Graphics.h"
+#include "Path.h"
 #include "pugixml.hpp"
 
 namespace NSG
 {
 	TextureFile::TextureFile(const char* filename, Flags flags) 
-	: Texture(flags),
-	filename_(filename)
+	: Texture(flags)
 	{
-        pResource_ = PResourceFile(new ResourceFile(filename));
+		ResourceFile* resourceFile = new ResourceFile(filename);
+		pResource_ = PResourceFile(resourceFile);
+		filename_ = resourceFile->GetPath().GetFilePath();
 	}
 
-	TextureFile::TextureFile(PResource resource, Flags flags)
+	TextureFile::TextureFile(PResourceFile resource, Flags flags)
+	: Texture(flags),
+	filename_(resource->GetPath().GetFilePath())
+	{
+		pResource_ = resource;
+	}
+
+	TextureFile::TextureFile(PResourceMemory resource, Flags flags)
 	: Texture(flags)
 	{
 		pResource_ = resource;
 	}
+
 
 	TextureFile::~TextureFile()
 	{
@@ -92,11 +103,10 @@ namespace NSG
 
 	void TextureFile::Save(pugi::xml_node& node)
 	{
+		CHECK_ASSERT(!filename_.empty(), __FILE__, __LINE__);
 		node.append_attribute("type") = "TextureFile";
-		std::string baseDir(filename_);
-		std::string filename = ExtractFileName(filename_);
-		CopyFile(filename_, filename);
-		node.append_attribute("filename") = filename.c_str();
+		//CopyFile(filename_, filename);
+		node.append_attribute("filename") = filename_.c_str();
 		node.append_attribute("flags") = flags_.to_string().c_str();
 	}
 }

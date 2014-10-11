@@ -5,8 +5,8 @@
 	uniform int u_blendMode;
 	vec4 Blend()
 	{
-		vec4 dst = texture2D(u_texture0, v_texcoord); // rendered scene
-		vec4 src = texture2D(u_texture1, v_texcoord); // for example the glow map 
+		vec4 dst = texture2D(u_texture0, v_texcoord0); // rendered scene
+		vec4 src = texture2D(u_texture1, v_texcoord0); // for example the glow map 
 
 		if ( u_blendMode == 0 )
 		{
@@ -42,17 +42,15 @@
 
 #elif defined(BLUR)
 
-	uniform int u_blurKernelSize;
+	const int BLUR_KERNEL_HALF_SIZE = 2;
 	uniform vec2 u_blurDir;
 	uniform vec2 u_blurRadius;
 	uniform float u_sigma;
 
 	// Adapted: http://callumhay.blogspot.com/2010/09/gaussian-blur-shader-glsl.html
-	vec4 GaussianBlur(int blurKernelSize, vec2 blurDir, vec2 blurRadius, float sigma, sampler2D texSampler, vec2 texCoord)
+	vec4 GaussianBlur(vec2 blurDir, vec2 blurRadius, float sigma, sampler2D texSampler, vec2 texCoord)
 	{
 		const float PI = 3.14159265;
-
-	    int blurKernelSizeHalfSize = blurKernelSize / 2;
 
 		// Incremental Gaussian Coefficent Calculation (See GPU Gems 3 pp. 877 - 889)
 	    vec3 gaussCoeff;
@@ -68,7 +66,7 @@
 	    gaussCoeffSum += gaussCoeff.x;
 	    gaussCoeff.xy *= gaussCoeff.yz;
 
-	    for (int i = 1; i <= blurKernelSizeHalfSize; i++)
+	    for (int i = 1; i <= BLUR_KERNEL_HALF_SIZE; i++)
 	    {
 	        avgValue += texture2D(texSampler, texCoord - float(i) * blurVec) * gaussCoeff.x;
 	        avgValue += texture2D(texSampler, texCoord + float(i) * blurVec) * gaussCoeff.x;
@@ -82,7 +80,7 @@
 
 	vec4 Blur()
 	{
-		return GaussianBlur(u_blurKernelSize, u_blurDir, u_blurRadius, u_sigma, u_texture0, v_texcoord);
+		return GaussianBlur(u_blurDir, u_blurRadius, u_sigma, u_texture0, v_texcoord0);
 	}
 
 #endif

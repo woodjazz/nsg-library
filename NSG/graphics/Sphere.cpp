@@ -79,11 +79,14 @@ namespace NSG
     {
 		if (glm::distance(pointInSphere, center) > PRECISION)
     	{
-    		center_ = center;
-    		position_ = pointInSphere;
-    		CalculateAnglesAndRadius();
-            CalculateUpVector();
-			return true;
+			if (glm::distance(center, center_) > PRECISION || glm::distance(pointInSphere, position_) > PRECISION)
+			{
+				center_ = center;
+				position_ = pointInSphere;
+				CalculateAnglesAndRadius();
+				CalculateUpVector();
+				return true;
+			}
     	}
 
 		return false;
@@ -93,10 +96,13 @@ namespace NSG
     {
 		if (glm::distance(center, position_) > PRECISION)
         {
-            center_ = center;
-            CalculateAnglesAndRadius();
-            CalculateUpVector();
-			return true;
+			if (glm::distance(center, center_) > PRECISION)
+			{
+				center_ = center;
+				CalculateAnglesAndRadius();
+				CalculateUpVector();
+				return true;
+			}
         }
 
 		return false;
@@ -106,10 +112,13 @@ namespace NSG
     {
 		if (glm::distance(pointInSphere, center_) > PRECISION)
         {
-            position_ = pointInSphere;
-            CalculateAnglesAndRadius();
-            CalculateUpVector();
-			return true;
+			if (glm::distance(pointInSphere, position_) > PRECISION)
+			{
+				position_ = pointInSphere;
+				CalculateAnglesAndRadius();
+				CalculateUpVector();
+				return true;
+			}
         }
 		return false;
     }
@@ -128,11 +137,22 @@ namespace NSG
         float dx = rn.x;
         float dz = rn.z;
 
-        theta_ = atan(dz / dx);
+		if (glm::abs(dx) < glm::epsilon<float>())
+		{
+			if (dz < 0)
+				theta_ = -PI/2;
+			else
+				theta_ = PI / 2;
+		}
+		else
+		{
+			theta_ = atan(dz / dx);
 
-        if (dx < 0)
-            theta_ += PI;
+			if (dx < 0)
+				theta_ += PI;
+		}
 
+		//Vector3 aaa = center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
 		CHECK_ASSERT(glm::distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), position_) < 9 * PRECISION, __FILE__, __LINE__);
     }
 
@@ -150,7 +170,7 @@ namespace NSG
 
 		CHECK_ASSERT(glm::distance(center_ + radius_ * currentPoint, position_) < 9*PRECISION, __FILE__, __LINE__);
 
-        // Reduce theta slightly to obtain another point on the same longitude line on the sphere.
+        // Reduce phi slightly to obtain another point on the same longitude line on the sphere.
         const float dt = 1;
         Vertex3 newUpPoint(cos(theta_) * sin(phi_ - dt), cos(phi_ - dt), sin(theta_) * sin(phi_ - dt));
 

@@ -165,9 +165,15 @@ namespace NSG
 
                 {
                     std::stringstream ss;
-                    ss << obj.uv_;
-                    vertexData.append_attribute("uv") = ss.str().c_str();
+                    ss << obj.uv0_;
+                    vertexData.append_attribute("uv0") = ss.str().c_str();
                 }
+
+				{
+					std::stringstream ss;
+					ss << obj.uv1_;
+					vertexData.append_attribute("uv1") = ss.str().c_str();
+				}
 
                 {
                     std::stringstream ss;
@@ -204,7 +210,8 @@ namespace NSG
                 VertexData obj;
                 obj.position_ = GetVertex3(vertexNode.attribute("position").as_string());
                 obj.normal_ = GetVertex3(vertexNode.attribute("normal").as_string());
-                obj.uv_ = GetVertex2(vertexNode.attribute("uv").as_string());
+                obj.uv0_ = GetVertex2(vertexNode.attribute("uv0").as_string());
+				obj.uv1_ = GetVertex2(vertexNode.attribute("uv1").as_string());
                 obj.color_ =  GetVertex4(vertexNode.attribute("color").as_string());
                 vertexsData_.push_back(obj);
                 vertexNode = vertexNode.next_sibling("VertexData");
@@ -238,10 +245,10 @@ namespace NSG
             Vector3 edge1 = v1.position_ - v0.position_;
             Vector3 edge2 = v2.position_ - v0.position_;
 
-            float deltaU1 = v1.uv_.x - v0.uv_.x;
-            float deltaV1 = v1.uv_.y - v0.uv_.y;
-            float deltaU2 = v2.uv_.x - v0.uv_.x;
-            float deltaV2 = v2.uv_.y - v0.uv_.y;
+            float deltaU1 = v1.uv0_.x - v0.uv0_.x;
+            float deltaV1 = v1.uv0_.y - v0.uv0_.y;
+            float deltaU2 = v2.uv0_.x - v0.uv0_.x;
+            float deltaV2 = v2.uv0_.y - v0.uv0_.y;
 
             float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
 

@@ -80,6 +80,7 @@ extern PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
 #if defined(GLES2)
 #define glDiscardFramebuffer glDiscardFramebufferEXT
 #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
+#define GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24_OES
 #define glGenVertexArrays glGenVertexArraysOES
 #define glBindVertexArray glBindVertexArrayOES
 #define glDeleteVertexArrays glDeleteVertexArraysOES

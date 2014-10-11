@@ -71,19 +71,19 @@ namespace NSG
 		vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
 		
 		vertexData.position_ = Vertex3(-halfX, -halfY, 0);
-		vertexData.uv_ = Vertex2(0, 1);
+		vertexData.uv0_ = Vertex2(0, 1);
 		data.push_back(vertexData);
 
 		vertexData.position_ = Vertex3(halfX, -halfY, 0);
-		vertexData.uv_ = Vertex2(1, 1);
+		vertexData.uv0_ = Vertex2(1, 1);
 		data.push_back(vertexData);
 
 		vertexData.position_ = Vertex3(halfX, halfY, 0);
-		vertexData.uv_ = Vertex2(1, 0);
+		vertexData.uv0_ = Vertex2(1, 0);
 		data.push_back(vertexData);
 
 		vertexData.position_ = Vertex3(-halfX, halfY, 0);
-		vertexData.uv_ = Vertex2(0, 0);
+		vertexData.uv0_ = Vertex2(0, 0);
 		data.push_back(vertexData);		
 	}
 

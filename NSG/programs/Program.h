@@ -39,20 +39,24 @@ namespace NSG
     {
     public:
         enum Flag
-        {
+        {	
+			NONE = 0,
             PER_VERTEX_LIGHTING = 1 << 0,
             PER_PIXEL_LIGHTING = 1 << 1,
             BLEND = 1 << 2,
             BLUR = 1 << 3,
             TEXT = 1 << 4,
-            SHOW_TEXTURE = 1 << 5,
-            STENCIL = 1 << 6,
-            NORMAL_MAP = 1 << 7
+            SHOW_TEXTURE0 = 1 << 5,
+            SHOW_TEXTURE0_INVERT_Y = 1 << 6,
+            STENCIL = 1 << 7,
+            NORMALMAP = 1 << 8,
+            LIGHTMAP = 1 << 9,
+            UNLIT = 1 << 10
         };
 
         typedef FlagSet<Flag> Flags;
 
-        Program(const std::string& name = "", Flags flags = 0);
+        Program(const std::string& name = "", Flags flags = NONE);
         virtual ~Program();
         void SetVertexShader(PResource resource);
         void SetFragmentShader(PResource resource);
@@ -71,10 +75,14 @@ namespace NSG
         {
             return att_positionLoc_;
         }
-        GLuint GetAttTextCoordLoc() const
+        GLuint GetAttTextCoordLoc0() const
         {
-			return att_texcoordLoc_;
+			return att_texcoordLoc0_;
         }
+		GLuint GetAttTextCoordLoc1() const
+		{
+			return att_texcoordLoc1_;
+		}
         GLuint GetAttNormalLoc() const
         {
             return att_normalLoc_;
@@ -103,6 +111,8 @@ namespace NSG
         }
         void Save(pugi::xml_node& node);
         static PProgram CreateFrom(const pugi::xml_node& node);
+        const Flags& GetFlags() const { return flags_; }
+        void SetFlags(const Flags& flags) { flags_ = flags; }
     private:
         void SetSceneVariables(Scene* scene);
         void SetCameraVariables();
@@ -130,7 +140,8 @@ namespace NSG
         /////////////////////////////////////
         // attributes
         /////////////////////////////////////
-        GLuint att_texcoordLoc_;
+        GLuint att_texcoordLoc0_;
+		GLuint att_texcoordLoc1_;
         GLuint att_positionLoc_;
         GLuint att_normalLoc_;
         GLuint att_colorLoc_;
@@ -152,6 +163,7 @@ namespace NSG
         
         GLuint texture0Loc_;
         GLuint texture1Loc_;
+        GLuint texture2Loc_;
 
         struct MaterialLoc
         {

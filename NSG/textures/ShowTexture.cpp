@@ -37,69 +37,72 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	ShowTexture::ShowTexture()
-	: app_(*App::this_),
-	pass_(new Pass),
-    material_(app_.CreateMaterial("ShowTexture")),
-	mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
-    node_(new Node("ShowTexture"))
-	{
-		material_->SetSerializable(false);
-		pass_->EnableDepthTest(false);
-	}
+    ShowTexture::ShowTexture()
+        : app_(*App::this_),
+          pass_(new Pass),
+          material_(app_.CreateMaterial("ShowTexture")),
+          mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
+          node_(new Node("ShowTexture"))
+    {
+        material_->SetSerializable(false);
+        pass_->EnableDepthTest(false);
+    }
 
-	ShowTexture::~ShowTexture()
-	{
+    ShowTexture::~ShowTexture()
+    {
         pass_ = nullptr;
-		Context::RemoveObject(this);
-	}
+        Context::RemoveObject(this);
+    }
 
-	bool ShowTexture::IsValid()
-	{
-		return material_->IsReady() && mesh_->IsReady();
-	}
+    bool ShowTexture::IsValid()
+    {
+        return material_->IsReady() && mesh_->IsReady();
+    }
 
-	void ShowTexture::AllocateResources()
-	{
+    void ShowTexture::AllocateResources()
+    {
 
-	}
+    }
 
-	void ShowTexture::ReleaseResources()
-	{
+    void ShowTexture::ReleaseResources()
+    {
 
-	}
+    }
 
-	void ShowTexture::SetNormal(PTexture texture)
-	{
-		PProgram pProgram(new Program("ShowTexture", Program::SHOW_TEXTURE));
-		pass_->SetProgram(pProgram);
-		material_->SetTexture0(texture);
-	}
+    void ShowTexture::SetNormal(PTexture texture, bool invertY)
+    {
+        if (invertY)
+            pass_->SetProgram(PProgram(new Program("ShowTexture", Program::SHOW_TEXTURE0_INVERT_Y)));
+        else
+            pass_->SetProgram(PProgram(new Program("ShowTexture", Program::SHOW_TEXTURE0)));
 
-	void ShowTexture::SetFont(PTexture texture)
-	{
-		PProgram pProgram(new Program("ShowFontTexture", Program::TEXT));
-		pass_->SetProgram(pProgram);
-		material_->SetTexture0(texture);
-	}
+        material_->SetTexture0(texture);
+    }
 
-	void ShowTexture::Show()
-	{
-		if(IsReady())
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+    void ShowTexture::SetFont(PTexture texture)
+    {
+        PProgram pProgram(new Program("ShowFontTexture", Program::TEXT));
+        pass_->SetProgram(pProgram);
+        material_->SetTexture0(texture);
+    }
 
-			Camera* pCurrent = Camera::Deactivate();
+    void ShowTexture::Show()
+    {
+        if (IsReady())
+        {
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+
+            Camera* pCurrent = Camera::Deactivate();
 
             Graphics::this_->Set(material_.get());
-			Graphics::this_->SetNode(node_.get());
+            Graphics::this_->SetNode(node_.get());
             Graphics::this_->Set(mesh_.get());
-			pass_->Render();
+            pass_->Render();
 
-			Camera::Activate(pCurrent);
+            Camera::Activate(pCurrent);
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
+            CHECK_GL_STATUS(__FILE__, __LINE__);
+        }
 
-	}
+    }
 }

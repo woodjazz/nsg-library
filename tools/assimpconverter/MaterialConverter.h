@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Program.h"
 
 struct aiMaterial;
 namespace NSG
@@ -35,8 +36,16 @@ namespace NSG
 		MaterialConverter(const aiMaterial* mtl, const std::string& resourcePath);
 		~MaterialConverter();
 		PMaterial GetMaterial() const { return material_;  }
+		PTextureFile CreateTexture(const Path& path);
+		void SetDiffuseMap();
+		void SetNormalMap();
+		void SetLightMap();
 	private:
 		PMaterial material_;
+		PProgram program_;
+		Program::Flags flags_;
+		std::string resourcePath_;
+		const aiMaterial* mtl_;
 	};
 
 	class MaterialConverter;

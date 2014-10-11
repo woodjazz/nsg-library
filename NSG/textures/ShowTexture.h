@@ -37,7 +37,7 @@ namespace NSG
 		virtual bool IsValid();
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
-		void SetNormal(PTexture texture);
+		void SetNormal(PTexture texture, bool invertY);
 		void SetFont(PTexture texture);
 		void Show();
 	private:

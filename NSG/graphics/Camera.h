@@ -56,11 +56,11 @@ namespace NSG
         Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const; 
 
         //Returned XYZ values are in normalized device coordinates (-1, 1)
-        //Returned W value is interpreted as a distance from the camera.
-        Vertex4 WorldToScreen(const Vertex3& worldXYZ) const;
+        //Returned Z value is interpreted as a distance from the camera.
+        Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
 
 		//XY are in normalized device coordinates (-1, 1)
-        PRay GetScreenRay(float screenX, float screenY);
+        Ray GetScreenRay(float screenX, float screenY) const;
 
 		static const Matrix4& GetViewMatrix();
 		const Matrix4& GetView() const;

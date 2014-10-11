@@ -151,9 +151,9 @@ namespace NSG
             Music::this_->Resume();
     }
 
-    void App::DropFile(const std::string& filename)
+	void App::DropFile(const std::string& filePath)
     {
-        TRACE_LOG("Dropped file:" << filename);
+		TRACE_LOG("Dropped file:" << filePath);
     }
 
     void App::SetCommandLineParameters(int argc, char* argv[])
@@ -472,9 +472,9 @@ namespace NSG
         Keyboard::this_->SetActivity(pActivity);
     }
 
-    void InternalApp::DropFile(const std::string& filename)
+	void InternalApp::DropFile(const std::string& filePath)
     {
-        pApp_->DropFile(filename);
+		pApp_->DropFile(filePath);
     }
 
 }

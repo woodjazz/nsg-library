@@ -121,7 +121,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.y >= box.min_.y && point.y <= box.max_.y && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -132,7 +132,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.y >= box.min_.y && point.y <= box.max_.y && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -144,7 +144,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -155,7 +155,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -167,7 +167,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.y >= box.min_.y && point.y <= box.max_.y)
                     distance = x;
             }
@@ -178,7 +178,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-				point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = glm::floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.y >= box.min_.y && point.y <= box.max_.y)
                     distance = x;
             }
@@ -193,6 +193,9 @@ namespace NSG
         PMesh mesh = node->GetMesh();
         if (mesh)
         {
+            const Matrix4& m = node->GetGlobalModelInvMatrix();
+            Ray localRay = Transformed(m);
+
             const VertexsData& vertexsData = mesh->GetVertexsData();
             const Indexes& indices = mesh->GetIndexes();
 
@@ -200,10 +203,10 @@ namespace NSG
             unsigned i = 0;
             while (i < n)
             {
-                Vector3 v0(node->GetGlobalModelMatrix() * Vector4(vertexsData[indices[i]].position_, 1));
-                Vector3 v1(node->GetGlobalModelMatrix() * Vector4(vertexsData[indices[i + 1]].position_, 1));
-                Vector3 v2(node->GetGlobalModelMatrix() * Vector4(vertexsData[indices[i + 2]].position_, 1));
-                nearest = glm::min(nearest, HitDistance(v0, v1, v2));
+                const Vector3& v0(vertexsData[indices[i]].position_);
+                const Vector3& v1(vertexsData[indices[i + 1]].position_);
+                const Vector3& v2(vertexsData[indices[i + 2]].position_);
+                nearest = glm::min(nearest, localRay.HitDistance(v0, v1, v2));
                 i += 3;
             }
         }
@@ -214,4 +217,11 @@ namespace NSG
     {
         return origin_ + direction_ * distance;
     }
+
+    Ray Ray::Transformed(const Matrix4& transform) const
+    {
+		Ray ret(Vertex3(transform * Vector4(origin_, 1)), Vertex3(transform * Vector4(direction_, 0.0f)));
+        return ret;
+    }
+
 }

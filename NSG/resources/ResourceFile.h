@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Resource.h"
 #include "SharedPointers.h"
+#include "Path.h"
 
 class AAssetManager;
 namespace NSG
@@ -33,17 +34,14 @@ namespace NSG
 	class ResourceFile : public Resource
 	{
 	public:
-		ResourceFile(const char* fileFullPath);
+		ResourceFile(const char* filename);
 		~ResourceFile();
 		virtual bool IsLoaded();
-		const std::string& GetFileName() const { return fileName_; }
-		const std::string& GetFileFullPath() const { return fileFullPath_; }
-		const std::string& GetFilePath() const { return filePath_; }
+		const Path& GetPath() const { return path_; }
 	private:
-		std::string fileName_;
-		std::string fileFullPath_;
-		std::string filePath_;
+		Path path_;
+		bool trySecondTime_;
 		NaCl::PNaClURLLoader pLoader_;
-		AAssetManager* pAAssetManager_;	
+		AAssetManager* pAAssetManager_;
 	};
 }

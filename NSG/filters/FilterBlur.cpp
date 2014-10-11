@@ -32,11 +32,9 @@ namespace NSG
 {
 	FilterBlur::FilterBlur(PTexture input, int output_width, int output_height)
 		: Filter("FilterBlur", input, output_width, output_height, Program::BLUR),
-	blurKernelSizeLoc_(-1),
 	blurDirLoc_(-1),
 	blurRadiusLoc_(-1),
 	sigmaLoc_(-1),
-	blurKernelSize_(5),
 	blurDir_(1, 0),
 	blurRadius_(2, 2),
 	sigma_(0.1f)
@@ -53,7 +51,6 @@ namespace NSG
 	{
 		PProgram program = pass_->GetProgram();
 
-		blurKernelSizeLoc_ = program->GetUniformLocation("u_blurKernelSize");
 		blurDirLoc_ = program->GetUniformLocation("u_blurDir");
 		blurRadiusLoc_ = program->GetUniformLocation("u_blurRadius");
 		sigmaLoc_ = program->GetUniformLocation("u_sigma");
@@ -61,11 +58,6 @@ namespace NSG
 
 	void FilterBlur::AssignValues()
 	{
-		if(blurKernelSizeLoc_ != -1)
-		{
-			glUniform1i(blurKernelSizeLoc_, blurKernelSize_);
-		}
-
 		if(blurDirLoc_ != -1)
 		{
 			glUniform2fv(blurDirLoc_, 1, &blurDir_[0]);

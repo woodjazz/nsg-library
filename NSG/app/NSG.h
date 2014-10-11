@@ -80,5 +80,6 @@ misrepresented as being the original software.
 #include "CameraControl.h"
 #include "Sphere.h"
 #include "pugixml.hpp"
+#include "Path.h"
 
 

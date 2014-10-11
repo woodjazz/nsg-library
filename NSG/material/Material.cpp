@@ -77,21 +77,31 @@ namespace NSG
         }
     }
 
-    void Material::SetTexture0(PTexture pTexture)
+    void Material::SetTexture0(PTexture texture)
     {
-        if (pTexture0_ != pTexture)
+        if (texture0_ != texture)
         {
-            pTexture0_ = pTexture;
+            texture0_ = texture;
             SetUniformsNeedUpdate();
             Invalidate();
         }
     }
 
-    void Material::SetTexture1(PTexture pTexture)
+    void Material::SetTexture1(PTexture texture)
     {
-        if (pTexture1_ != pTexture)
+        if (texture1_ != texture)
         {
-            pTexture1_ = pTexture;
+            texture1_ = texture;
+            SetUniformsNeedUpdate();
+            Invalidate();
+        }
+    }
+
+	void Material::SetTexture2(PTexture texture)
+    {
+        if (texture2_ != texture)
+        {
+            texture2_ = texture;
             SetUniformsNeedUpdate();
             Invalidate();
         }
@@ -101,19 +111,24 @@ namespace NSG
     {
         bool isReady = false;
 
-        if (pTexture0_)
+        if (texture0_)
         {
-            isReady = pTexture0_->IsReady();
+            isReady = texture0_->IsReady();
         }
         else
         {
-            pTexture0_ = Context::this_->GetWhiteTexture();
-            isReady = pTexture0_->IsReady();
+            texture0_ = Context::this_->GetWhiteTexture();
+            isReady = texture0_->IsReady();
         }
 
-        if (isReady && pTexture1_)
+        if (isReady && texture1_)
         {
-            isReady = pTexture1_->IsReady();
+            isReady = texture1_->IsReady();
+        }
+
+        if (isReady && texture2_)
+        {
+            isReady = texture2_->IsReady();
         }
 
         return isReady;
@@ -132,16 +147,22 @@ namespace NSG
             child.append_attribute("name") = ss.str().c_str();
         }
 
-        if(pTexture0_ && pTexture0_->IsSerializable())
+        if(texture0_ && texture0_->IsSerializable())
         {
 			pugi::xml_node childTexture = child.append_child("Texture0");
-			pTexture0_->Save(childTexture);
+			texture0_->Save(childTexture);
         }
 
-        if(pTexture1_ && pTexture1_->IsSerializable())
+        if(texture1_ && texture1_->IsSerializable())
         {
 			pugi::xml_node childTexture = child.append_child("Texture1");
-			pTexture1_->Save(childTexture);
+			texture1_->Save(childTexture);
+        }
+
+        if(texture2_ && texture2_->IsSerializable())
+        {
+            pugi::xml_node childTexture = child.append_child("Texture2");
+            texture2_->Save(childTexture);
         }
 
         {
@@ -184,11 +205,15 @@ namespace NSG
 
         pugi::xml_node childTexture0 = node.child("Texture0");
         if (childTexture0)
-            pTexture0_ = Texture::CreateFrom(childTexture0);
+            texture0_ = Texture::CreateFrom(childTexture0);
 
         pugi::xml_node childTexture1 = node.child("Texture1");
         if (childTexture1)
-			pTexture1_ = Texture::CreateFrom(childTexture1);
+			texture1_ = Texture::CreateFrom(childTexture1);
+
+        pugi::xml_node childTexture2 = node.child("Texture2");
+        if(childTexture2)
+            texture2_ = Texture::CreateFrom(childTexture2);
 
         SetAmbientColor(GetVertex4(node.attribute("ambient").as_string()));
         SetDiffuseColor(GetVertex4(node.attribute("diffuse").as_string()));

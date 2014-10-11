@@ -126,7 +126,8 @@ namespace NSG
     {
         POSITION,
         NORMAL,
-        TEXTURECOORD,
+        TEXTURECOORD0,
+		TEXTURECOORD1,
         COLOR,
         TANGENT,
         MODEL_MATRIX_ROW0,

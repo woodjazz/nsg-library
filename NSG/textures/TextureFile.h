@@ -33,7 +33,8 @@ namespace NSG
 	{
 	public:
 		TextureFile(const char* filename, Flags flags = Flag::GENERATE_MIPMAPS);
-		TextureFile(PResource resource, Flags flags = Flag::GENERATE_MIPMAPS);
+		TextureFile(PResourceFile resource, Flags flags = Flag::GENERATE_MIPMAPS);
+		TextureFile(PResourceMemory resource, Flags flags = Flag::NONE);
 		~TextureFile();
 		virtual const unsigned char* GetImageData() override;
 		virtual void FreeImageData(const unsigned char* img) override;

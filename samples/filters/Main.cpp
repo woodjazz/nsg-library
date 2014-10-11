@@ -121,7 +121,7 @@ struct Sample : App
 		technique_->Add(passBlend);
 #endif
 
-		showTexture_->SetNormal(blendFilter->GetTexture());
+		showTexture_->SetNormal(blendFilter->GetTexture(), false);
         //showTexture_->SetNormal(sphereBehavior_->blendedTexture_);
         //showTexture_->SetNormal(boxBehavior_->filteredTexture_);
         //showTexture_->SetNormal(boxBehavior_->renderedTexture_);

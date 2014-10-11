@@ -34,6 +34,7 @@ struct Editor : App
     PScene scene_;
 	PCamera camera_;
 	PCameraControl cameraControl_;
+	std::string resourcePath_;
 
 	Editor()
     {
@@ -46,24 +47,28 @@ struct Editor : App
     {
 		scene_ = GetCurrentScene();
 		camera_ = scene_->CreateCamera("EditorCamera");
+		camera_->SetSerializable(false);
 		camera_->SetInheritScale(false);
 		cameraControl_ = PCameraControl(new CameraControl);
 		camera_->AddBehavior(cameraControl_);
     }
 
-    void DropFile(const std::string& filename) override
+    void DropFile(const std::string& filePath) override
     {
-        App::DropFile(filename);
-		std::string extension = GetLowercaseFileExtension(filename);
-		if (extension == "xml")
+		Path path(filePath);
+		resourcePath_ = path.GetPath();
+		App::DropFile(path.GetFilePath());
+		SceneConverter scene(path);
+		if (!scene.Load())
 		{
-			PResourceFile resource(new ResourceFile(filename.c_str()));
-			scene_->Load(resource);
+			std::string extension = path.GetExtension();
+			if (extension == "xml")
+			{
+				PResourceFile resource(new ResourceFile(path.GetFilePath().c_str()));
+				scene_->Load(resource);
+			}
 		}
-		else
-		{
-			SceneConverter scene(filename);
-		}
+
 		camera_->Activate();
 		cameraControl_->AutoZoom();
     }
@@ -76,7 +81,7 @@ struct Editor : App
 		{
 			pugi::xml_document doc;
 			scene_->Save(doc);
-			doc.save_file("scene.xml");
+			doc.save_file((resourcePath_ + "/scene.xml").c_str());
 		}
 		if (IMGUIButton("Point Light", 20))
 		{

@@ -59,7 +59,7 @@ struct Sample : App
                 STRINGIFY
                 (void main()
             {
-                vec2 texcoord = v_texcoord;
+                vec2 texcoord = v_texcoord0;
                 texcoord.x += sin(texcoord.y * 4.0 * 2.0 * 3.14159 + u_material.shininess) / 100.0;
                 gl_FragColor = texture2D(u_texture0, texcoord);
             }
@@ -98,7 +98,7 @@ struct Sample : App
             material->SetTechnique(technique);
 
             PSceneNode node = scene_->CreateSceneNode("node1");
-            node->SetPosition(Vertex3(-3, -2, 0));
+            node->SetPosition(Vertex3(-3, 2, 0));
             node->Set(mesh);
             node->Set(material);
         }

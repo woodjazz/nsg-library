@@ -73,7 +73,7 @@ struct Sample : App
         PTexture wallTexture(new TextureFile("data/wall.jpg"));
         PTexture wallNormalMapTexture(new TextureFile("data/wallnormalmap.jpg"));
         PMaterial material(CreateMaterial("wall"));
-		PProgram program(new Program("", Program::PER_PIXEL_LIGHTING | Program::NORMAL_MAP));
+		PProgram program(new Program("", Program::PER_PIXEL_LIGHTING | Program::NORMALMAP));
         PTechnique technique(new Technique);
         PPass pass(new Pass);
         technique->Add(pass);

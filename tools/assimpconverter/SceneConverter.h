@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Path.h"
 #include "assimp/IOSystem.hpp"
 #include <string>
 #include <vector>
@@ -45,20 +46,21 @@ namespace NSG
 	class SceneConverter : public Assimp::IOSystem
 	{
 	public:
-		SceneConverter(const std::string& fullFilePath);
+		SceneConverter(const Path& path);
 		~SceneConverter();
         bool Exists(const char* filename) const override;
 		char getOsSeparator() const override;
 	    Assimp::IOStream* Open(const char* filename, const char* mode = "rb") override;
 		void Close(Assimp::IOStream* pFile) override;
 		bool Save(const std::string& filename);
+		bool Load();
 	private:
 		void Load(const aiScene* sc);
 		const aiCamera* GetCamera(const aiScene* sc, const aiString& name) const;
 		const aiLight* GetLight(const aiScene* sc, const aiString& name) const;
 		void LoadMeshesAndMaterials(const aiScene* sc, CachedData& data);
 		void RecursiveLoad(const aiScene *sc, const aiNode* nd, SceneNode* sceneNode, const CachedData& data);
-		std::string fullFilePath_;
 		PScene scene_;
+		Path path_;
 	};
 }

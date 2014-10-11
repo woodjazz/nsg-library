@@ -42,15 +42,15 @@ struct Sample : App
     void Start(int argc, char* argv[]) override
     {
 		scene_ = GetCurrentScene();
-
-        PResourceFile resource(new ResourceFile("data/duck.xml"));
+		PResourceFile resource(new ResourceFile("data/scene.xml"));
+		
 		scene_->Load(resource);
 
-        Camera* camera = Camera::GetActiveCamera();
-
+		PCamera camera = scene_->CreateCamera("");
+		camera->Activate();
         camera->AddBehavior(PCameraControl(new CameraControl));
-
     }
+
 };
 
 NSG_MAIN(Sample);

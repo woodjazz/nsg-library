@@ -17,7 +17,8 @@ varying vec4 v_color;
 varying vec3 v_normal;
 varying vec3 v_tangent;
 varying vec3 v_bitangent;
-varying vec2 v_texcoord; 
+varying vec2 v_texcoord0; 
+varying vec2 v_texcoord1;
 varying vec3 v_vertexToEye;
 varying vec3 v_lightDirection[NUM_POINT_LIGHTS_ARRAY];
 varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS_ARRAY];
@@ -26,5 +27,6 @@ varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS_ARRAY];
 	
 	uniform sampler2D u_texture0;
 	uniform sampler2D u_texture1;
+	uniform sampler2D u_texture2;
 	
 #endif

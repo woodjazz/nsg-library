@@ -81,7 +81,7 @@ namespace NSG
     PSceneNode Scene::CreateSceneNodeFrom(PResource resource, const std::string& name)
     {
         PSceneNode obj(CreateSceneNode(name));
-        obj->SetResource(resource);
+        obj->Load(resource);
         octree_->InsertUpdate(obj.get());
         AddChild(obj);
         return obj;

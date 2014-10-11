@@ -30,6 +30,10 @@ misrepresented as being the original software.
 #include <algorithm>
 #include <cctype>
 #include <fstream>
+#ifndef WIN32
+#include <unistd.h>
+#include <cerrno>
+#endif
 
 namespace NSG
 {
@@ -48,65 +52,24 @@ namespace NSG
         scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
     }
 
-    void ReplaceChar(std::string& source, char from, char to)
-    {
-        for (;;)
-        {
-            const size_t last_slash_idx = source.find_last_of(from);
-            if (std::string::npos == last_slash_idx) break;
-            source.replace(last_slash_idx, 1, 1, to);
-        }
-    }
-
-    std::string ExtractPath(const std::string& file)
-    {
-        const size_t idx = file.find_last_of('/');
-        if (idx != std::string::npos)
-            return file.substr(0, idx);
-
-        return "";
-    }
-
-    std::string ExtractFileName(const std::string& file)
-    {
-        const size_t idx = file.find_last_of('/');
-        if (idx != std::string::npos)
-            return file.substr(idx + 1);
-        else
-            return file;
-    }
 
     bool CopyFile(const std::string& source, const std::string& target)
     {
         std::ifstream is(source);
-        if(is.is_open())
+        if (is.is_open())
         {
-			std::ifstream isTarget(target);
-			if (!isTarget.is_open())
-			{
-				std::ofstream os(target);
-				if (os.is_open())
-				{
-					os << is.rdbuf();
-					return true;
-				}
-			}
+            std::ifstream isTarget(target);
+            if (!isTarget.is_open())
+            {
+                std::ofstream os(target);
+                if (os.is_open())
+                {
+                    os << is.rdbuf();
+                    return true;
+                }
+            }
         }
         return false;
-    }
-
-    std::string GetLowercaseFileExtension(const std::string& filename)
-    {
-        std::string extension;
-        std::string::size_type pos = filename.find_last_of(".");
-        if (pos != std::string::npos)
-        {
-            std::copy(filename.begin() + pos + 1, filename.end(), std::back_inserter(extension));
-            for (auto& ch : extension)
-                ch = std::tolower(ch);
-        }
-
-        return extension;
     }
 
     std::istream& operator >> (std::istream& s, Vertex2& obj)
@@ -219,5 +182,38 @@ namespace NSG
         Quaternion obj;
         ss >> obj;
         return obj;
+    }
+
+    bool SetCurrentDir(const std::string& path)
+    {
+        #ifndef NACL
+        {
+            if (!path.empty())
+            {
+                #ifdef WIN32
+                {
+                    if (SetCurrentDirectory(path.c_str()) == FALSE)
+                    {
+						TRACE_LOG("Failed to change directory to " << path << " with error = " << GetLastError());
+                        return false;
+                    }
+                }
+                #else
+                {
+                    if (chdir(path.c_str()) != 0)
+                    {
+						TRACE_LOG("Failed to change directory to " << path << " with error = " << errno);
+                        return false;
+                    }
+                }
+                #endif
+            }
+            return true;
+        }
+        #else
+        {
+            return false;
+        }
+		#endif
     }
 }

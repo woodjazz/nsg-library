@@ -11,7 +11,8 @@ static const std::string TRANSFORMS_GLSL = \
 "	/////////////////////////////////////////////////////////////////\n"\
 "	/////////////////////////////////////////////////////////////////\n"\
 "	attribute vec3 a_position;\n"\
-"	attribute vec2 a_texcoord;\n"\
+"	attribute vec2 a_texcoord0;\n"\
+"	attribute vec2 a_texcoord1;\n"\
 "	attribute vec3 a_normal;\n"\
 "	attribute vec4 a_color;\n"\
 "	attribute vec3 a_tangent;\n"\

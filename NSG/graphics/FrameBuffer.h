@@ -71,5 +71,6 @@ namespace NSG
         GLuint framebuffer_;
         GLuint colorRenderbuffer_;
         GLuint depthStencilRenderBuffer_;
+		GLuint stencilRenderBuffer_;
     };
 }

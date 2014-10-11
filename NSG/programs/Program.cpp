@@ -63,7 +63,8 @@ namespace NSG
         : flags_(flags),
           id_(0),
           pExtraUniforms_(nullptr),
-          att_texcoordLoc_(-1),
+          att_texcoordLoc0_(-1),
+		  att_texcoordLoc1_(-1),
           att_positionLoc_(-1),
           att_normalLoc_(-1),
           att_colorLoc_(-1),
@@ -78,6 +79,7 @@ namespace NSG
           eyeWorldPosLoc_(-1),
           texture0Loc_(-1),
           texture1Loc_(-1),
+          texture2Loc_(-1),
           nDirectionalLights_(0),
           nPointLights_(0),
           nSpotLights_(0),
@@ -210,13 +212,20 @@ namespace NSG
             preDefines += "#define BLUR\n";
         else if (Flag::TEXT & flags_)
             preDefines += "#define TEXT\n";
-        else if (Flag::SHOW_TEXTURE & flags_)
-            preDefines += "#define SHOW_TEXTURE\n";
+        else if (Flag::SHOW_TEXTURE0 & flags_)
+            preDefines += "#define SHOW_TEXTURE0\n";
+        else if (Flag::SHOW_TEXTURE0_INVERT_Y & flags_)
+            preDefines += "#define SHOW_TEXTURE0_INVERT_Y\n";
         else if (Flag::STENCIL & flags_)
             preDefines += "#define STENCIL\n";
+        else if (Flag::UNLIT & flags_)
+            preDefines += "#define UNLIT\n";
 
-        if (Flag::NORMAL_MAP & flags_)
-            preDefines += "#define NORMAL_MAP\n";
+        if (Flag::NORMALMAP & flags_)
+            preDefines += "#define NORMALMAP\n";
+
+        if (Flag::LIGHTMAP & flags_)
+            preDefines += "#define LIGHTMAP\n";
 
         if (vertexShader_)
             preDefines += "#define HAS_USER_VERTEX_SHADER\n";
@@ -257,7 +266,8 @@ namespace NSG
 
             att_positionLoc_ = GetAttributeLocation("a_position");
             att_normalLoc_ = GetAttributeLocation("a_normal");
-            att_texcoordLoc_ = GetAttributeLocation("a_texcoord");
+            att_texcoordLoc0_ = GetAttributeLocation("a_texcoord0");
+			att_texcoordLoc1_ = GetAttributeLocation("a_texcoord1");
             att_colorLoc_ = GetAttributeLocation("a_color");
             att_tangentLoc_ = GetAttributeLocation("a_tangent");
             att_modelMatrixRow0Loc_ = GetAttributeLocation("a_mMatrixRow0");
@@ -271,6 +281,7 @@ namespace NSG
             eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
             texture0Loc_ = GetUniformLocation("u_texture0");
             texture1Loc_ = GetUniformLocation("u_texture1");
+            texture2Loc_ = GetUniformLocation("u_texture2");
             materialLoc_.color_ = GetUniformLocation("u_material.color");
             materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
             materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
@@ -337,6 +348,11 @@ namespace NSG
                 glUniform1i(texture1Loc_, 1);
             }
 
+            if (texture2Loc_ != -1)
+            {
+                glUniform1i(texture2Loc_, 1);
+            }
+
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }
     }
@@ -384,7 +400,8 @@ namespace NSG
         // Bind vertex attribute locations to ensure they are the same in all shaders
         glBindAttribLocation(id_, (int)AttributesLoc::POSITION, "a_position");
         glBindAttribLocation(id_, (int)AttributesLoc::NORMAL, "a_normal");
-        glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD, "a_texcoord");
+        glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD0, "a_texcoord0");
+		glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD1, "a_texcoord1");
         glBindAttribLocation(id_, (int)AttributesLoc::COLOR, "a_color");
         glBindAttribLocation(id_, (int)AttributesLoc::TANGENT, "a_tangent");
         glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW0, "a_mMatrixRow0");
@@ -499,13 +516,19 @@ namespace NSG
         {
             if (texture0Loc_ != -1)
             {
-                graphics_.SetTexture(0, material->pTexture0_.get());
+                graphics_.SetTexture(0, material->texture0_.get());
             }
 
             if (texture1Loc_ != -1)
             {
-                graphics_.SetTexture(1, material->pTexture1_.get());
+                graphics_.SetTexture(1, material->texture1_.get());
             }
+
+            if (texture2Loc_ != -1)
+            {
+				graphics_.SetTexture(2, material->texture2_.get());
+            }
+
 
             if (activeMaterial_ != material || material->UniformsNeedUpdate())
             {

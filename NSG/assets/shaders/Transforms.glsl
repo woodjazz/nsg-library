@@ -6,7 +6,8 @@
 	/////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////
 	attribute vec3 a_position;
-	attribute vec2 a_texcoord;
+	attribute vec2 a_texcoord0;
+	attribute vec2 a_texcoord1;
 	attribute vec3 a_normal;
 	attribute vec4 a_color;
 	attribute vec3 a_tangent;

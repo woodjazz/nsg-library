@@ -40,7 +40,7 @@ EarthBehavior::~EarthBehavior()
 void EarthBehavior::Start()
 {
 	render2texture_ = PRender2Texture(new Render2Texture(512, 512));
-	showTexture_.SetNormal(render2texture_->GetTexture());
+	showTexture_.SetNormal(render2texture_->GetTexture(), false);
 
 	sceneNode_->Set(PSphereMesh(app_.CreateSphereMesh(3, 32)));
 

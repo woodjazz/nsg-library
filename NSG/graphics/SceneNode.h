@@ -38,8 +38,8 @@ namespace NSG
 	{
 	public:
 		~SceneNode();
-		void SetResource(PResource resource);
 		void Set(PMaterial material);
+		void Load(PResource resource);
 		PMaterial GetMaterial() const { return material_; }
 		void Set(PMesh mesh);
 		PMesh GetMesh() const { return mesh_; }
@@ -67,6 +67,9 @@ namespace NSG
 		PSceneNode CreateChild(const std::string& name);
 		virtual void OnEnable() override;
 		virtual void OnDisable() override;
+		void SetSerializable(bool serializable) { serializable_ = serializable; }
+		bool IsSerializable() const { return serializable_;  }
+		void SetResource(PResource resource);
 	protected:
 		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
 		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
@@ -85,6 +88,7 @@ namespace NSG
 		int meshIndex_;
 		int materialIndex_;
 		Scene* scene_;
+		bool serializable_;
 		friend class Scene;
 	};
 }

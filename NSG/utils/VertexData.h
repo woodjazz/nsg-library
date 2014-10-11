@@ -33,7 +33,8 @@ namespace NSG
     {
         Vertex3 position_;
         Vertex3 normal_;
-        Vertex2 uv_;
+        Vertex2 uv0_;
+		Vertex2 uv1_;
         Color color_;
         Vertex3 tangent_;
 

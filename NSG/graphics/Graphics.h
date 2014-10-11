@@ -113,6 +113,10 @@ namespace NSG
         {
             return has_instanced_arrays_ext_;
         }
+        bool HasPackedDepthStencil() const
+        {
+            return has_packed_depth_stencil_ext_;
+        }
 
         void SetBuffers();
         void RedoVAO(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer);
@@ -174,6 +178,7 @@ namespace NSG
         bool has_depth_component24_ext_;
         bool has_texture_non_power_of_two_ext_;
         bool has_instanced_arrays_ext_;
+        bool has_packed_depth_stencil_ext_;
         UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
         CullFaceMode cullFaceMode_;
         FrontFaceMode frontFaceMode_;

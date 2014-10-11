@@ -64,7 +64,7 @@ namespace NSG
         virtual bool ShallExit() const;
         virtual void AppEnterBackground();
         virtual void AppEnterForeground();
-        virtual void DropFile(const std::string& filename);
+		virtual void DropFile(const std::string& filePath);
         void DoTick(float delta);
         void SetViewSize(int width, int height);
         std::pair<int, int> GetViewSize() const;
@@ -154,7 +154,7 @@ namespace NSG
         void HandleMessage(const pp::Var& var_message);
         void SetAssetManager(AAssetManager* pAAssetManager);
         void SetActivity(ANativeActivity* pActivity);
-        void DropFile(const std::string& filename);
+		void DropFile(const std::string& filePath);
     };
 }
 

@@ -46,7 +46,7 @@ void CubeBehavior::Start()
     PTexture wallTexture(new TextureFile("data/wall.jpg"));
     PTexture wallNormalMapTexture(new TextureFile("data/wallnormalmap.jpg"));
     PMaterial pMaterial(app_.CreateMaterial("wall"));
-	PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING | Program::NORMAL_MAP));
+	PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING | Program::NORMALMAP));
     PTechnique technique(new Technique);
     PPass pass(new Pass);
 

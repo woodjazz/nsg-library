@@ -75,7 +75,8 @@ namespace NSG
             graphics_.SetVertexBuffer(vBuffer_, true);
 
             GLuint position_loc = program_->GetAttPositionLoc();
-            GLuint texcoord_loc = program_->GetAttTextCoordLoc();
+            GLuint texcoord_loc0 = program_->GetAttTextCoordLoc0();
+			GLuint texcoord_loc1 = program_->GetAttTextCoordLoc1();
             GLuint normal_loc = program_->GetAttNormalLoc();
             GLuint color_loc = program_->GetAttColorLoc();
             GLuint tangent_loc = program_->GetAttTangentLoc();
@@ -86,8 +87,11 @@ namespace NSG
             if (normal_loc != -1)
                 glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
 
-            if (texcoord_loc != -1)
-                glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD);
+            if (texcoord_loc0 != -1)
+                glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD0);
+
+			if (texcoord_loc1 != -1)
+				glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD1);
 
             if (color_loc != -1)
                 glEnableVertexAttribArray((int)AttributesLoc::COLOR);

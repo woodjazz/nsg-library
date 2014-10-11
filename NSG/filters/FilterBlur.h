@@ -41,12 +41,10 @@ namespace NSG
 		void AssignValues();
 
 	private:
-		GLuint blurKernelSizeLoc_;
 		GLuint blurDirLoc_;
 		GLuint blurRadiusLoc_;
 		GLuint sigmaLoc_;
 
-		int blurKernelSize_;
 		Vector2 blurDir_;
 		Vector2 blurRadius_;
 		float sigma_;

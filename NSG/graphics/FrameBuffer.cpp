@@ -41,15 +41,16 @@ namespace NSG
           height_(height),
           framebuffer_(0),
           colorRenderbuffer_(0),
-          depthStencilRenderBuffer_(0)
+          depthStencilRenderBuffer_(0),
+          stencilRenderBuffer_(0)
     {
-		if (Flag::STENCIL & flags_)
+        if (Flag::STENCIL & flags_)
         {
             // If we want stencil buffer then we force also the depth buffer.
             // depth and stencil buffers are shared (only one buffer)
             flags_ |= Flag::DEPTH;
         }
-#if IOS
+        #if IOS
         if (flags_ & FrameBuffer::DEPTH)
         {
             //Force use depth texture on IOS
@@ -57,14 +58,14 @@ namespace NSG
             //The alternative solution is to use a depth texture
             flags_ |= FrameBuffer::DEPTH_USE_TEXTURE;
         }
-#endif
+        #endif
 
-		if (flags_ & Flag::COLOR_USE_TEXTURE)
+        if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
             colorTexture_ = PTexture(new TextureMemory(GL_RGBA, width_, height_, nullptr));
         }
 
-		if (flags_ & Flag::DEPTH_USE_TEXTURE)
+        if (flags_ & Flag::DEPTH_USE_TEXTURE)
         {
             if (Graphics::this_->HasDepthTexture())
             {
@@ -75,11 +76,11 @@ namespace NSG
                 TRACE_LOG("Warning: We are trying to use a depth texture when graphics does not support it!!!");
                 // clean out the flag that is not supported by the driver
                 flags_ &= ~Flag::DEPTH_USE_TEXTURE;
-#if IOS
+                #if IOS
                 // in case of IOS also clean out render depth and stencil render buffers
                 // this will probably will make the app not working (but at least will not crash)
                 flags_ &= ~(Flag::DEPTH | Flag::STENCIL);
-#endif
+                #endif
             }
         }
     }
@@ -102,47 +103,89 @@ namespace NSG
 
         Graphics::this_->SetFrameBuffer(framebuffer_);
 
-		if (flags_ & Flag::COLOR)
+        if (flags_ & Flag::COLOR)
         {
-			if (flags_ & Flag::COLOR_USE_TEXTURE)
+            if (flags_ & Flag::COLOR_USE_TEXTURE)
             {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture_->GetID(), 0);
+                TRACE_LOG("---1---");
             }
             else
             {
+                TRACE_LOG("---2---");
                 glGenRenderbuffers(1, &colorRenderbuffer_);
                 glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
-#if defined(GLES2)
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width_, height_);
-#else
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width_, height_);
-#endif
+                #if defined(GLES2)
+                {
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width_, height_);
+                }
+                #else
+                {
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width_, height_);
+                }
+                #endif
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
             }
         }
 
-		if (flags_ & Flag::DEPTH)
+        if (flags_ & Flag::DEPTH)
         {
-			if (flags_ & Flag::DEPTH_USE_TEXTURE)
+            if (flags_ & Flag::DEPTH_USE_TEXTURE)
             {
+                TRACE_LOG("---3---");
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
-				if (flags_ & Flag::STENCIL)
+                if (flags_ & Flag::STENCIL)
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
             }
             else
             {
+                TRACE_LOG("---4---");
                 glGenRenderbuffers(1, &depthStencilRenderBuffer_);
                 glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
-				if (flags_ & Flag::STENCIL)
+                if (flags_ & Flag::STENCIL)
                 {
-                    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
-                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    if (Graphics::this_->HasPackedDepthStencil())
+                    {
+                        TRACE_LOG("---5---");
+                        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
+                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    }
+                    else
+                    {
+                        if (Graphics::this_->HasDepthComponent24())
+                        {
+                            TRACE_LOG("---6---");
+                            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
+                            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                        }
+                        else
+                        {
+                            TRACE_LOG("---7---");
+                            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
+                            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                        }
+
+                        glGenRenderbuffers(1, &stencilRenderBuffer_);
+                        glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderBuffer_);
+
+                        glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width_, height_);
+                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRenderBuffer_);
+                    }
                 }
                 else
                 {
-                    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
-                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    TRACE_LOG("---8---");
+                    if(Graphics::this_->HasDepthComponent24())
+                    {
+                        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
+                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    }
+                    else
+                    {
+                        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
+                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    }
                 }
             }
         }
@@ -161,9 +204,12 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
+        if (stencilRenderBuffer_)
+            glDeleteRenderbuffers(1, &stencilRenderBuffer_);
+
         if (depthStencilRenderBuffer_)
             glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
-        
+
         if (colorRenderbuffer_)
             glDeleteRenderbuffers(1, &colorRenderbuffer_);
 

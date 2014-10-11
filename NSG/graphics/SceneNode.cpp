@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "Octree.h"
 #include "Util.h"
 #include "pugixml.hpp"
+#include <thread>
 
 namespace NSG
 {
@@ -49,7 +50,8 @@ namespace NSG
           meshIndex_(-1),
           materialIndex_(-1),
           scene_(scene),
-          app_(*App::this_)
+          app_(*App::this_),
+		  serializable_(true)
     {
         CHECK_ASSERT(scene, __FILE__, __LINE__);
     }
@@ -61,9 +63,20 @@ namespace NSG
         Context::RemoveObject(this);
     }
 
+	void SceneNode::Load(PResource resource)
+	{
+		SetResource(resource);
+		while (!IsReady())
+			std::this_thread::sleep_for(Milliseconds(10));
+	}
+
 	void SceneNode::SetResource(PResource resource)
 	{
-		resource_ = resource;
+		if (resource_ != resource)
+		{
+			resource_ = resource;
+			Invalidate();
+		}
 	}
 	
     bool SceneNode::IsValid()
@@ -273,6 +286,9 @@ namespace NSG
 
     void SceneNode::Save(pugi::xml_node& node)
     {
+		if (!IsSerializable())
+			return;
+
         pugi::xml_node child = node.append_child("SceneNode");
 
         {
@@ -323,6 +339,7 @@ namespace NSG
         query << "/Scene/SceneNode[@name ='" << name_ << "']";
         pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
         pugi::xml_node child = xpathNode.node();
+		CHECK_ASSERT(child, __FILE__, __LINE__);
         LoadNode(child, data);
     }
 

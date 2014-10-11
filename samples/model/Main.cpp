@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "LightBehavior.h"
 using namespace NSG;
 
+
 struct Sample : App
 {
     PScene scene_;
@@ -53,7 +54,7 @@ struct Sample : App
         camera_->AddBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
-		earth_ = scene_->CreateSceneNodeFrom(PResourceFile(new ResourceFile("data/duck.xml")), "VisualSceneNode");
+		earth_ = scene_->CreateSceneNodeFrom(PResourceFile(new ResourceFile("data/scene.xml")), "SceneRootNode");
 		earth_->AddBehavior(PBehavior(new ModelBehavior));
 
 		light_ = scene_->CreateLight("light");

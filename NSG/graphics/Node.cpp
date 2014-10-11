@@ -31,8 +31,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Vertex3 Node::UP = Vertex3(0, 1, 0);
-
     static IdType s_node_id = 1;
 
     Node::Node(const std::string& name)
@@ -96,7 +94,7 @@ namespace NSG
 
     void Node::AddChild(PNode node)
     {
-        CHECK_ASSERT(node && node.get() != this && node->parent_ != this, __FILE__, __LINE__);
+        CHECK_ASSERT(node && node.get() != this, __FILE__, __LINE__);
         node->RemoveFromParent();
         children_.push_back(node);
         node->parent_ = this;
@@ -393,7 +391,8 @@ namespace NSG
 	const BoundingBox& Node::GetWorldBoundingBox() const
 	{
 		CHECK_ASSERT(false, __FILE__, __LINE__);
-		return BoundingBox();
+		static BoundingBox bb;
+		return bb;
 	}
 
 	BoundingBox Node::GetWorldBoundingBoxBut(const SceneNode* node) const

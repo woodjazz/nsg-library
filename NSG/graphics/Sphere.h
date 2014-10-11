@@ -43,6 +43,8 @@ namespace NSG
 		const Vector3& GetPosition() const { return position_; }
 		const Vector3& GetUp() const { return up_; }
 		const Vertex3& GetCenter() const { return center_; }
+		float GetTheta() const { return theta_; }
+		float GetPhi() const { return phi_; }
 	private:
 		void CalculatePosition();
 		void CalculateUpVector();

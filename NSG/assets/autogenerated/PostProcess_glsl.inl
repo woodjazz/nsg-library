@@ -8,8 +8,8 @@ static const std::string POSTPROCESS_GLSL = \
 "	uniform int u_blendMode;\n"\
 "	vec4 Blend()\n"\
 "	{\n"\
-"		vec4 dst = texture2D(u_texture0, v_texcoord); // rendered scene\n"\
-"		vec4 src = texture2D(u_texture1, v_texcoord); // for example the glow map \n"\
+"		vec4 dst = texture2D(u_texture0, v_texcoord0); // rendered scene\n"\
+"		vec4 src = texture2D(u_texture1, v_texcoord0); // for example the glow map \n"\
 "		if ( u_blendMode == 0 )\n"\
 "		{\n"\
 "			// Additive blending (strong result, high overexposure)\n"\
@@ -41,15 +41,14 @@ static const std::string POSTPROCESS_GLSL = \
 "		}\n"\
 "	}\n"\
 "#elif defined(BLUR)\n"\
-"	uniform int u_blurKernelSize;\n"\
+"	const int BLUR_KERNEL_HALF_SIZE = 2;\n"\
 "	uniform vec2 u_blurDir;\n"\
 "	uniform vec2 u_blurRadius;\n"\
 "	uniform float u_sigma;\n"\
 "	// Adapted: http://callumhay.blogspot.com/2010/09/gaussian-blur-shader-glsl.html\n"\
-"	vec4 GaussianBlur(int blurKernelSize, vec2 blurDir, vec2 blurRadius, float sigma, sampler2D texSampler, vec2 texCoord)\n"\
+"	vec4 GaussianBlur(vec2 blurDir, vec2 blurRadius, float sigma, sampler2D texSampler, vec2 texCoord)\n"\
 "	{\n"\
 "		const float PI = 3.14159265;\n"\
-"	    int blurKernelSizeHalfSize = blurKernelSize / 2;\n"\
 "		// Incremental Gaussian Coefficent Calculation (See GPU Gems 3 pp. 877 - 889)\n"\
 "	    vec3 gaussCoeff;\n"\
 "	    gaussCoeff.x = 1.0 / (sqrt(2.0 * PI) * sigma);\n"\
@@ -61,7 +60,7 @@ static const std::string POSTPROCESS_GLSL = \
 "	    avgValue += texture2D(texSampler, texCoord) * gaussCoeff.x;\n"\
 "	    gaussCoeffSum += gaussCoeff.x;\n"\
 "	    gaussCoeff.xy *= gaussCoeff.yz;\n"\
-"	    for (int i = 1; i <= blurKernelSizeHalfSize; i++)\n"\
+"	    for (int i = 1; i <= BLUR_KERNEL_HALF_SIZE; i++)\n"\
 "	    {\n"\
 "	        avgValue += texture2D(texSampler, texCoord - float(i) * blurVec) * gaussCoeff.x;\n"\
 "	        avgValue += texture2D(texSampler, texCoord + float(i) * blurVec) * gaussCoeff.x;\n"\
@@ -72,7 +71,7 @@ static const std::string POSTPROCESS_GLSL = \
 "	}\n"\
 "	vec4 Blur()\n"\
 "	{\n"\
-"		return GaussianBlur(u_blurKernelSize, u_blurDir, u_blurRadius, u_sigma, u_texture0, v_texcoord);\n"\
+"		return GaussianBlur(u_blurDir, u_blurRadius, u_sigma, u_texture0, v_texcoord0);\n"\
 "	}\n"\
 "#endif\n"\
 ;

@@ -37,6 +37,9 @@ namespace NSG
 		const char* const GetData() const { return buffer_.c_str(); }
 		size_t GetBytes() const { return buffer_.size(); }
         void Invalidate();
+		virtual const std::string& GetFileName() const;
+		virtual const std::string& GetFileFullPath() const;
+		virtual const std::string& GetFilePath() const;
 	protected:
 		bool loaded_;
 		std::string buffer_;

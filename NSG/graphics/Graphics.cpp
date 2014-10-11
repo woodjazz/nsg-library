@@ -101,6 +101,7 @@ namespace NSG
           has_depth_component24_ext_(false),
           has_texture_non_power_of_two_ext_(false),
           has_instanced_arrays_ext_(false),
+          has_packed_depth_stencil_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT)
     {
@@ -152,11 +153,17 @@ namespace NSG
             TRACE_LOG("Using extension: GL_OES_depth_texture");
         }
 
-        if (CheckExtension("GL_OES_depth24"))
+		if (CheckExtension("GL_OES_depth24"))
         {
             has_depth_component24_ext_ = true;
             TRACE_LOG("Using extension: GL_OES_depth24");
         }
+
+		if (CheckExtension("GL_EXT_packed_depth_stencil") || CheckExtension("GL_OES_packed_depth_stencil"))
+		{
+			has_packed_depth_stencil_ext_ = true;
+			TRACE_LOG("Using extension: packed_depth_stencil");
+		}
 
         if (CheckExtension("GL_ARB_texture_non_power_of_two"))
         {
@@ -826,12 +833,20 @@ namespace NSG
                               sizeof(VertexData),
                               reinterpret_cast<void*>(offsetof(VertexData, normal_)));
 
-        glVertexAttribPointer((int)AttributesLoc::TEXTURECOORD,
+        glVertexAttribPointer((int)AttributesLoc::TEXTURECOORD0,
                               2,
                               GL_FLOAT,
                               GL_FALSE,
                               sizeof(VertexData),
-                              reinterpret_cast<void*>(offsetof(VertexData, uv_)));
+                              reinterpret_cast<void*>(offsetof(VertexData, uv0_)));
+
+		glVertexAttribPointer((int)AttributesLoc::TEXTURECOORD1,
+			2,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(VertexData),
+			reinterpret_cast<void*>(offsetof(VertexData, uv1_)));
+
 
         glVertexAttribPointer((int)AttributesLoc::COLOR,
                               4,
@@ -854,7 +869,8 @@ namespace NSG
         if (lastMesh_ != activeMesh_ || lastProgram_ != activeProgram_)
         {
             GLuint position_loc = activeProgram_->GetAttPositionLoc();
-            GLuint texcoord_loc = activeProgram_->GetAttTextCoordLoc();
+            GLuint texcoord_loc0 = activeProgram_->GetAttTextCoordLoc0();
+			GLuint texcoord_loc1 = activeProgram_->GetAttTextCoordLoc1();
             GLuint normal_loc = activeProgram_->GetAttNormalLoc();
             GLuint color_loc = activeProgram_->GetAttColorLoc();
             GLuint tangent_loc = activeProgram_->GetAttTangentLoc();
@@ -886,17 +902,29 @@ namespace NSG
                 }
             }
 
-            if (texcoord_loc != -1)
+            if (texcoord_loc0 != -1)
             {
-                unsigned positionBit = 1 << texcoord_loc;
+                unsigned positionBit = 1 << texcoord_loc0;
                 newAttributes |= positionBit;
 
                 if ((enabledAttributes_ & positionBit) == 0)
                 {
                     enabledAttributes_ |= positionBit;
-                    glEnableVertexAttribArray(texcoord_loc);
+                    glEnableVertexAttribArray(texcoord_loc0);
                 }
             }
+
+			if (texcoord_loc1 != -1)
+			{
+				unsigned positionBit = 1 << texcoord_loc1;
+				newAttributes |= positionBit;
+
+				if ((enabledAttributes_ & positionBit) == 0)
+				{
+					enabledAttributes_ |= positionBit;
+					glEnableVertexAttribArray(texcoord_loc1);
+				}
+			}
 
             if (color_loc != -1)
             {

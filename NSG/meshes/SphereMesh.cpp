@@ -91,7 +91,7 @@ namespace NSG
                 VertexData vertexData;
                 vertexData.normal_ = Vertex3(nx, ny, nz);
                 vertexData.position_ = vertexData.normal_ * radius_;
-                vertexData.uv_ = tcoord;
+                vertexData.uv0_ = tcoord;
 
                 data.push_back(vertexData);
             }

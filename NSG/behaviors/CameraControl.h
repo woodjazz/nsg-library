@@ -34,7 +34,6 @@ namespace NSG
 		float lastX_;
 		float lastY_;
 		bool rightButtonDown_;
-		bool cKeyDown_;
 		bool altKeyDown_;
 		PSphere sphere_;
 		Camera* camera_;

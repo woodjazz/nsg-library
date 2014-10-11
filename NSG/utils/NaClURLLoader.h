@@ -23,6 +23,7 @@ namespace NSG
       static PNaClURLLoader Create(pp::Instance* instance_, const std::string& url);
       ~NaClURLLoader();
       bool IsDone() const;
+      bool HasSucceed() const;
       const std::string& GetData() const;
       const std::string& GetURL() const;
 
@@ -42,6 +43,7 @@ namespace NSG
       std::string url_response_body_;  // Contains accumulated downloaded data.
       pp::CompletionCallbackFactory<NaClURLLoader> cc_factory_;
       std::atomic<bool> isDone_;
+      std::atomic<bool> hasSucceed_;
     };
   }
 }

@@ -114,12 +114,12 @@ namespace NSG
             {
                 AppEnterForeground();
             }
-            #endif
             else if (event.type == SDL_DROPFILE)
             {
                 app->DropFile(event.drop.file);
                 SDL_free(event.drop.file);
             }
+            #endif
             else if (event.type == SDL_QUIT)
             {
                 quit = true;
@@ -129,8 +129,10 @@ namespace NSG
                 int key = event.key.keysym.sym;
 
                 #if ANDROID
-                if (key == SDLK_AC_BACK)
-                    quit = true;
+                {
+                    if (key == SDLK_AC_BACK)
+                        quit = true;
+                }
                 #endif
 
                 //int scancode = event.key.keysym.scancode;
@@ -146,23 +148,26 @@ namespace NSG
                 int modifier = event.key.keysym.mod;
                 app->OnKey(key, action, modifier);
             }
-
             else if (event.type == SDL_TEXTINPUT)
             {
                 #ifndef __GNUC__
-                std::string utf8(event.text.text);
-                std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
-                std::u16string utf16 = utf16conv.from_bytes(utf8);
-                for (char16_t c : utf16)
                 {
-                    app->OnChar((unsigned int)c);
+                    std::string utf8(event.text.text);
+                    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
+                    std::u16string utf16 = utf16conv.from_bytes(utf8);
+                    for (char16_t c : utf16)
+                    {
+                        app->OnChar((unsigned int)c);
+                    }
                 }
                 #else
-                UTF8String utf8(event.text.text);
-                unsigned unicode = utf8.AtUTF8(0);
-                if (unicode)
                 {
-                    app->OnChar(unicode);
+                    UTF8String utf8(event.text.text);
+                    unsigned unicode = utf8.AtUTF8(0);
+                    if (unicode)
+                    {
+                        app->OnChar(unicode);
+                    }
                 }
                 #endif
             }
@@ -189,7 +194,7 @@ namespace NSG
             }
             else if (event.type == SDL_MOUSEWHEEL)
             {
-				app->OnMouseWheel((float)event.wheel.x, (float)event.wheel.y);
+                app->OnMouseWheel((float)event.wheel.x, (float)event.wheel.y);
             }
             else if (event.type == SDL_FINGERDOWN)
             {
@@ -212,44 +217,50 @@ namespace NSG
         }
 
         #ifndef IOS
-        if (quit)
         {
-            TRACE_LOG("App terminating...");
-            #if EMSCRIPTEN
-            if (!ems_terminating)
+            if (quit)
             {
-                ems_terminating = true;
-                emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+                TRACE_LOG("App terminating...");
+                #if EMSCRIPTEN
+                {
+                    if (!ems_terminating)
+                    {
+                        ems_terminating = true;
+                        emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+                    }
+                }
+                #endif
             }
-            #endif
-        }
-        else if (app->ShallExit())
-        {
-            TRACE_LOG("App's logic forced exit!");
-            quit = true;
-        }
-        else if (!minimized)
-        {
-            app->RenderFrame();
-        }
-        else
-        {
-            std::this_thread::sleep_for(Milliseconds(1000));
+            else if (app->ShallExit())
+            {
+                TRACE_LOG("App's logic forced exit!");
+                quit = true;
+            }
+            else if (!minimized)
+            {
+                app->RenderFrame();
+            }
+            else
+            {
+                std::this_thread::sleep_for(Milliseconds(1000));
+            }
         }
         #else
-        if (!minimized)
         {
-            app->RenderFrame();
-            SDL_GL_SwapWindow(win);
-            if (app->ShallExit())
+            if (!minimized)
             {
-                SDL_Quit();
-                exit(0); //force quit on IOS
+                app->RenderFrame();
+                SDL_GL_SwapWindow(win);
+                if (app->ShallExit())
+                {
+                    SDL_Quit();
+                    exit(0); //force quit on IOS
+                }
             }
-        }
-        else
-        {
-            std::this_thread::sleep_for(Milliseconds(1000));
+            else
+            {
+                std::this_thread::sleep_for(Milliseconds(1000));
+            }
         }
         #endif
     }
@@ -291,38 +302,45 @@ namespace NSG
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, ALPHA_SIZE);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, STENCIL_SIZE);
 
+        Uint32 flags;
         #if IOS || ANDROID
-        Uint32 flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+        {
+            flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+        }
         #else
-        Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+        {
+            flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+        }
         #endif
         width = AppConfiguration::this_->width_;
         height = AppConfiguration::this_->height_;
 
         #if EMSCRIPTEN
-
-        SDL_Surface* screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
-        if (!screen)
         {
-            TRACE_LOG("Failed to set screen video mode \n");
-            return false;
+            SDL_Surface* screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
+            if (!screen)
+            {
+                TRACE_LOG("Failed to set screen video mode \n");
+                return false;
+            }
         }
-
         #else
-        win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
-
-        if (win == nullptr)
         {
-            TRACE_LOG("SDL_CreateWindow Error: " << SDL_GetError() << std::endl);
-            return false;
+            win = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+
+            if (win == nullptr)
+            {
+                TRACE_LOG("SDL_CreateWindow Error: " << SDL_GetError() << std::endl);
+                return false;
+            }
+
+            //SDL_GLContext maincontext =
+            SDL_GL_CreateContext(win);
+
+            SDL_GetWindowSize(win, &width, &height);
+
+            SDL_GL_SetSwapInterval(AppConfiguration::this_->vertical_sync_ ? 1 : 0);
         }
-
-        //SDL_GLContext maincontext =
-        SDL_GL_CreateContext(win);
-
-        SDL_GetWindowSize(win, &width, &height);
-
-        SDL_GL_SetSwapInterval(AppConfiguration::this_->vertical_sync_ ? 1 : 0);
         #endif
 
         int value = 0;
@@ -346,46 +364,53 @@ namespace NSG
         CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
 
         #ifndef GL_ES_VERSION_2_0
-
-        glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
-
-        GLenum err = glewInit();
-        if (err != GLEW_OK)
         {
-            TRACE_LOG("Failed to initialize GLEW with error = " << glewGetErrorString(err));
-            return false;
-        }
+            glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
 
-        if (!GLEW_VERSION_2_0)
-        {
-            TRACE_LOG("No support for OpenGL 2.0 found\n");
-            return false;
-        }
+            GLenum err = glewInit();
+            if (err != GLEW_OK)
+            {
+                TRACE_LOG("Failed to initialize GLEW with error = " << glewGetErrorString(err));
+                return false;
+            }
 
-        if (!GLEW_EXT_framebuffer_object || !GLEW_EXT_packed_depth_stencil)
-        {
-            TRACE_LOG("EXT_framebuffer_object and EXT_packed_depth_stencil OpenGL extensions are required");
-            return false;
+            if (!GLEW_VERSION_2_0)
+            {
+                TRACE_LOG("No support for OpenGL 2.0 found\n");
+                return false;
+            }
+
+            if (!GLEW_EXT_framebuffer_object || !GLEW_EXT_packed_depth_stencil)
+            {
+                TRACE_LOG("EXT_framebuffer_object and EXT_packed_depth_stencil OpenGL extensions are required");
+                return false;
+            }
         }
         #endif
+
         app->SetViewSize(width, height);
         app->Initialize();
 
-
         #if IOS
-        SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);
-        #elif EMSCRIPTEN
-        SDL_StartTextInput();
-        emscripten_set_main_loop_arg(&RenderFrame, screen, 0, 1);
-        emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
-        #else
-        while (!quit)
         {
-            RenderFrame();
-            SDL_GL_SwapWindow(win);
+            SDL_iPhoneSetAnimationCallback(win, 1, &RenderFrame, nullptr);
         }
-        app = nullptr;
-        SDL_Quit();
+        #elif EMSCRIPTEN
+        {
+            SDL_StartTextInput();
+            emscripten_set_main_loop_arg(&RenderFrame, screen, 0, 1);
+            emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+        }
+        #else
+        {
+            while (!quit)
+            {
+                RenderFrame();
+                SDL_GL_SwapWindow(win);
+            }
+            app = nullptr;
+            SDL_Quit();
+        }
         #endif
 
         return true;

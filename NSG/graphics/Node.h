@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Constants.h"
 #include "UniformsUpdate.h"
 #include "NonCopyable.h"
 #include "BoundingBox.h"
@@ -58,10 +59,9 @@ namespace NSG
 		const Matrix4& GetGlobalModelMatrix() const;
 		const Matrix3& GetGlobalModelInvTranspMatrix() const;
 		const Matrix4& GetGlobalModelInvMatrix() const;
-		static Vertex3 UP;
-		void SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up = UP);
+		void SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
 		Quaternion GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up);
-		void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = UP);
+		void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
 		const Vertex3& GetLookAtDirection() const;
 		void SetInheritScale(bool inherit);
 		bool IsPointInsideBB(const Vertex3& point) const;

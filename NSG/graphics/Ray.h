@@ -45,6 +45,7 @@ namespace NSG
         Vertex3 GetPoint(float distance) const;
         const Vector3& GetDirection() const { return direction_; }
         const Vertex3& GetOrigin() const { return origin_; }
+        Ray Transformed(const Matrix4& transform) const;
     private:
         Vertex3 origin_;
         Vector3 direction_;

@@ -52,8 +52,14 @@ namespace NSG
 
 			if(aiMesh_->HasTextureCoords(0))
 			{
-				vertexData.uv_ = Vertex2(aiMesh_->mTextureCoords[0][v].x, aiMesh_->mTextureCoords[0][v].y);
+				vertexData.uv0_ = Vertex2(aiMesh_->mTextureCoords[0][v].x, aiMesh_->mTextureCoords[0][v].y);
 			}
+
+			if (aiMesh_->HasTextureCoords(1))
+			{
+				vertexData.uv1_ = Vertex2(aiMesh_->mTextureCoords[1][v].x, aiMesh_->mTextureCoords[1][v].y);
+			}
+
 
 			if (aiMesh_->HasVertexColors(0))
 			{

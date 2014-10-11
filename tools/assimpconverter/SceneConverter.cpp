@@ -70,7 +70,7 @@ namespace NSG
             : pResource_(pResource),
               pos_(0)
         {
-			CHECK_CONDITION(pResource_->IsLoaded(), __FILE__, __LINE__);
+            CHECK_CONDITION(pResource_->IsLoaded(), __FILE__, __LINE__);
         }
 
     public:
@@ -105,21 +105,21 @@ namespace NSG
         {
             switch (pOrigin)
             {
-            case aiOrigin_SET:
-                pos_ = pOffset;
-                break;
+                case aiOrigin_SET:
+                    pos_ = pOffset;
+                    break;
 
-            case aiOrigin_CUR:
-                pos_ += pOffset;
-                break;
+                case aiOrigin_CUR:
+                    pos_ += pOffset;
+                    break;
 
-            case aiOrigin_END:
-                pos_ += pOffset;
-                break;
+                case aiOrigin_END:
+                    pos_ += pOffset;
+                    break;
 
-            default:
-                CHECK_ASSERT(false && "Incorrect pOrigin for Seek", __FILE__, __LINE__);
-                return aiReturn_FAILURE;
+                default:
+                    CHECK_ASSERT(false && "Incorrect pOrigin for Seek", __FILE__, __LINE__);
+                    return aiReturn_FAILURE;
             }
 
             return aiReturn_SUCCESS;
@@ -144,41 +144,54 @@ namespace NSG
         size_t pos_;
     };
 
-	SceneConverter::SceneConverter(const std::string& fullFilePath)
-		: fullFilePath_(fullFilePath),
-		scene_(App::this_->GetCurrentScene())
+    SceneConverter::SceneConverter(const Path& path)
+        : scene_(App::this_->GetCurrentScene()),
+          path_(path)
     {
-		ReplaceChar(fullFilePath_, '\\', '/');
-
-        unsigned flags =
-            aiProcess_JoinIdenticalVertices |
-            aiProcess_Triangulate |
-            aiProcess_GenSmoothNormals |
-            aiProcess_LimitBoneWeights |
-            aiProcess_ImproveCacheLocality |
-            aiProcess_RemoveRedundantMaterials |
-            aiProcess_FixInfacingNormals |
-            aiProcess_FindInvalidData |
-            aiProcess_GenUVCoords |
-            aiProcess_FindInstances |
-            aiProcess_OptimizeMeshes;
-
-        Assimp::Importer importer;
-        importer.SetIOHandler(this);
-		const aiScene* scene = importer.ReadFile(fullFilePath_.c_str(), flags);
-        Load(scene);
-        importer.SetIOHandler(nullptr);
     }
 
     SceneConverter::~SceneConverter()
     {
     }
 
+	bool SceneConverter::Load()
+	{
+		unsigned flags =
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_Triangulate |
+			aiProcess_GenSmoothNormals |
+			aiProcess_LimitBoneWeights |
+			aiProcess_ImproveCacheLocality |
+			aiProcess_RemoveRedundantMaterials |
+			aiProcess_FixInfacingNormals |
+			aiProcess_FindInvalidData |
+			aiProcess_GenUVCoords |
+			aiProcess_FindInstances |
+			aiProcess_ValidateDataStructure |
+			aiProcess_OptimizeMeshes;
+
+		Assimp::Importer importer;
+		importer.SetIOHandler(this);
+		const aiScene* scene = importer.ReadFile(path_.GetFilePath().c_str(), flags);
+		if (scene)
+		{
+			Load(scene);
+		}
+		else
+		{
+			TRACE_LOG("Error: Cannot recognize load file " << path_.GetFilePath() << " with error " << importer.GetErrorString());
+		}
+
+		importer.SetIOHandler(nullptr);
+
+		return scene != nullptr;
+	}
+
     void SceneConverter::Load(const aiScene* scene)
     {
-		CachedData data;
-		LoadMeshesAndMaterials(scene, data);
-		RecursiveLoad(scene, scene->mRootNode, scene_.get(), data);
+        CachedData data;
+        LoadMeshesAndMaterials(scene, data);
+        RecursiveLoad(scene, scene->mRootNode, scene_.get(), data);
     }
 
     const aiLight* SceneConverter::GetLight(const aiScene* sc, const aiString& name) const
@@ -186,54 +199,54 @@ namespace NSG
         for (size_t i = 0; i < sc->mNumLights; ++i)
         {
             const aiLight* light = sc->mLights[i];
-            if(light->mName == name)
+            if (light->mName == name)
                 return light;
         }
 
-		return nullptr;
+        return nullptr;
     }
 
-	const aiCamera* SceneConverter::GetCamera(const aiScene* sc, const aiString& name) const
+    const aiCamera* SceneConverter::GetCamera(const aiScene* sc, const aiString& name) const
     {
         for (size_t i = 0; i < sc->mNumCameras; ++i)
         {
             const aiCamera* camera = sc->mCameras[i];
-			if (camera->mName == name)
-				return camera;
+            if (camera->mName == name)
+                return camera;
         }
-		return nullptr;
+        return nullptr;
     }
 
-	void SceneConverter::LoadMeshesAndMaterials(const aiScene* sc, CachedData& data)
+    void SceneConverter::LoadMeshesAndMaterials(const aiScene* sc, CachedData& data)
     {
         for (size_t i = 0; i < sc->mNumMeshes; ++i)
         {
             const struct aiMesh* mesh = sc->mMeshes[i];
             MeshConverter obj(mesh);
-			data.meshes_.push_back(obj.GetMesh());
+            data.meshes_.push_back(obj.GetMesh());
         }
 
         for (size_t i = 0; i < sc->mNumMaterials; ++i)
         {
             const aiMaterial* material = sc->mMaterials[i];
-			MaterialConverter obj(material, ExtractPath(fullFilePath_));
-			data.materials_.push_back(obj.GetMaterial());
+            MaterialConverter obj(material, path_.GetPath());
+            data.materials_.push_back(obj.GetMaterial());
         }
     }
 
-	void SceneConverter::RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode, const CachedData& data)
+    void SceneConverter::RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode, const CachedData& data)
     {
-		{
-			aiVector3t<float> scaling;
-			aiQuaterniont<float> rotation;
-			aiVector3t<float> position;
+        {
+            aiVector3t<float> scaling;
+            aiQuaterniont<float> rotation;
+            aiVector3t<float> position;
 
-			nd->mTransformation.Decompose(scaling, rotation, position);
+            nd->mTransformation.Decompose(scaling, rotation, position);
 
-			sceneNode->SetPosition(Vertex3(position.x, position.y, position.z));
-			sceneNode->SetOrientation(Quaternion(rotation.w, rotation.x, rotation.y, rotation.z));
-			sceneNode->SetScale(Vertex3(scaling.x, scaling.y, scaling.z));
-		}
+            sceneNode->SetPosition(Vertex3(position.x, position.y, position.z));
+            sceneNode->SetOrientation(Quaternion(rotation.w, rotation.x, rotation.y, rotation.z));
+            sceneNode->SetScale(Vertex3(scaling.x, scaling.y, scaling.z));
+        }
 
         for (size_t i = 0; i < nd->mNumMeshes; ++i)
         {
@@ -244,45 +257,45 @@ namespace NSG
 
             PSceneNode meshSceneNode = scene_->CreateSceneNode(ss.str());
             sceneNode->AddChild(meshSceneNode);
-			unsigned int meshIndex = nd->mMeshes[i];
-			meshSceneNode->SetMeshIndex(meshIndex);
-			meshSceneNode->Set(data.meshes_.at(meshIndex));
-			unsigned int materialIndex = mesh->mMaterialIndex;
-			meshSceneNode->SetMaterialIndex(materialIndex);
-			meshSceneNode->Set(data.materials_.at(materialIndex));
+            unsigned int meshIndex = nd->mMeshes[i];
+            meshSceneNode->SetMeshIndex(meshIndex);
+            meshSceneNode->Set(data.meshes_.at(meshIndex));
+            unsigned int materialIndex = mesh->mMaterialIndex;
+            meshSceneNode->SetMaterialIndex(materialIndex);
+            meshSceneNode->Set(data.materials_.at(materialIndex));
         }
 
         {
             const aiLight* light = GetLight(sc, nd->mName);
-            if(light)
+            if (light)
             {
-				PLightConverter obj(new LightConverter(light, scene_.get()));
+                PLightConverter obj(new LightConverter(light, scene_.get()));
                 sceneNode->AddChild(obj->GetLight());
             }
         }
 
-		{
-			const aiCamera* camera = GetCamera(sc, nd->mName);
-			if (camera)
-			{
-				PCameraConverter obj(new CameraConverter(camera, scene_.get()));
-				sceneNode->AddChild(obj->GetCamera());
-			}
-		}
+        {
+            const aiCamera* camera = GetCamera(sc, nd->mName);
+            if (camera)
+            {
+                PCameraConverter obj(new CameraConverter(camera, scene_.get()));
+                sceneNode->AddChild(obj->GetCamera());
+            }
+        }
 
 
         for (size_t i = 0; i < nd->mNumChildren; ++i)
         {
             const aiNode* ndChild = nd->mChildren[i];
-			PSceneNode child = sceneNode->CreateChild(ndChild->mName.C_Str());
+            PSceneNode child = sceneNode->CreateChild(ndChild->mName.C_Str());
             RecursiveLoad(sc, ndChild, child.get(), data);
         }
     }
 
     bool SceneConverter::Exists(const char* filename) const
     {
-		std::ifstream obj(filename);
-		return obj.is_open();
+        std::ifstream obj(filename);
+        return obj.is_open();
     }
 
     char SceneConverter::getOsSeparator() const
@@ -292,9 +305,8 @@ namespace NSG
 
     Assimp::IOStream* SceneConverter::Open(const char* filename, const char* mode)
     {
-		std::string fullPathFile = ExtractPath(fullFilePath_) + "/" + ExtractFileName(filename);
-		PResourceFile resource(new ResourceFile(fullPathFile.c_str()));
-		return new MyIOStream(resource);
+        PResourceFile resource(new ResourceFile(filename));
+        return new MyIOStream(resource);
     }
 
     void SceneConverter::Close(Assimp::IOStream* pFile)
@@ -305,7 +317,7 @@ namespace NSG
     bool SceneConverter::Save(const std::string& filename)
     {
         pugi::xml_document doc;
-		scene_->Save(doc);
+        scene_->Save(doc);
         return doc.save_file(filename.c_str());
     }
 }

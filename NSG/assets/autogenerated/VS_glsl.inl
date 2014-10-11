@@ -7,12 +7,15 @@ static const std::string VS_GLSL = \
 "#if defined(COMPILEVS) && !defined(HAS_USER_VERTEX_SHADER)\n"\
 "	void main()\n"\
 "	{\n"\
-"		#ifdef SHOW_TEXTURE\n"\
+"		#ifdef SHOW_TEXTURE0_INVERT_Y\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
-"			v_texcoord = vec2(a_texcoord.x, 1.0 - a_texcoord.y);\n"\
+"			v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"		#elif defined(SHOW_TEXTURE0)\n"\
+"			gl_Position = vec4(a_position, 1.0);\n"\
+"			v_texcoord0 = vec2(a_texcoord0.x, a_texcoord0.y);\n"\
 "		#elif defined(BLUR) || defined(BLEND)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
-"			v_texcoord = a_texcoord;\n"\
+"			v_texcoord0 = a_texcoord0;\n"\
 "		#elif defined(STENCIL)\n"\
 "			gl_Position = GetClipPos(GetWorldPos());	\n"\
 "		#else\n"\
@@ -25,10 +28,13 @@ static const std::string VS_GLSL = \
 "			#elif defined(PER_PIXEL_LIGHTING)\n"\
 "				v_normal = GetWorldNormal();\n"\
 "				\n"\
-"				#ifdef NORMAL_MAP					\n"\
+"				#ifdef NORMALMAP					\n"\
 "					v_tangent = GetWorldTangent();\n"\
 "				    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);\n"\
 "				    v_bitangent = cross(v_tangent, v_normal);\n"\
+"				#endif\n"\
+"				#ifdef LIGHTMAP\n"\
+"					v_texcoord1 = a_texcoord1;\n"\
 "				#endif\n"\
 "				v_color = a_color;				\n"\
 "				v_vertexToEye = normalize(u_eyeWorldPos - worldPos);\n"\
@@ -39,7 +45,7 @@ static const std::string VS_GLSL = \
 "			#else\n"\
 "				v_color = u_material.color * a_color;\n"\
 "			#endif\n"\
-"		    v_texcoord = a_texcoord;\n"\
+"		    v_texcoord0 = a_texcoord0;\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
 "		#endif\n"\
 "	}\n"\

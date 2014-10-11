@@ -87,7 +87,7 @@ namespace NSG
                 VertexData vertexData;
                 vertexData.normal_ = normal;
                 vertexData.position_ = vert;
-                vertexData.uv_ = texcoord;
+                vertexData.uv0_ = texcoord;
 
                 data.push_back(vertexData);
             }

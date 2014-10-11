@@ -35,10 +35,13 @@ namespace NSG
 	public:
 		~Material();
 		void SetName(const std::string& name) {name_ = name;}
-		void SetTexture0(PTexture pTexture);
-		void SetTexture1(PTexture pTexture);
-        PTexture GetTexture0() const { return pTexture0_; }
-        PTexture GetTexture1() const { return pTexture1_; }
+		const std::string& GetName() const { return name_;  }
+		void SetTexture0(PTexture texture); //normaly contains the texture
+		void SetTexture1(PTexture texture); //normaly contains the normalmap
+		void SetTexture2(PTexture texture); //normaly contains the lightmap
+        PTexture GetTexture0() const { return texture0_; }
+        PTexture GetTexture1() const { return texture1_; }
+        PTexture GetTexture2() const { return texture2_; }
         void SetColor(Color color);
         Color GetColor() const { return color_; }
 		void SetDiffuseColor(Color diffuse);
@@ -60,8 +63,9 @@ namespace NSG
 	private:
 		Material(const std::string& name);
 	private:
-		PTexture pTexture0_;
-		PTexture pTexture1_;
+		PTexture texture0_;
+		PTexture texture1_;
+		PTexture texture2_;
         Color ambient_;
         Color diffuse_;
         Color specular_;
