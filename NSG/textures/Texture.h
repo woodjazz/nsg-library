@@ -30,36 +30,64 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Texture : public GPUObject
-	{
-	public:
-		enum Flag {NONE=0, GENERATE_MIPMAPS = 1};
-		typedef FlagSet<Flag> Flags;
-		Texture(Flags flags); 
-		virtual ~Texture();
-		GLuint GetID() const { return texture_; }
-		GLsizei GetWidth() const { return width_; }
-		GLsizei GetHeight() const { return height_; }
-		GLint GetFormat() const { return format_; }
-		int GetChannels() const { return channels_; }
-		virtual bool IsValid() override;
-		virtual void AllocateResources() override;
-		virtual void ReleaseResources() override;
-		virtual const unsigned char* GetImageData() = 0;
-		virtual void FreeImageData(const unsigned char* img) {}
-		virtual void Save(pugi::xml_node& node) = 0;
-		static PTexture CreateFrom(const pugi::xml_node& node);
-		void SetSerializable(bool serializable) { serializable_ = serializable; }
-		bool IsSerializable() const { return serializable_; }
-	protected:
-		Flags flags_;
-		GLuint texture_;
-		PResource pResource_;
-		GLsizei width_;
-		GLsizei height_;
-		GLint format_;
-		GLenum type_;
-		int channels_;
-		bool serializable_;
-	};
+    class Texture : public GPUObject
+    {
+    public:
+        enum Flag
+        {
+            NONE = 0,
+            GENERATE_MIPMAPS = 1 << 0,
+            INVERT_Y = 1 << 1
+        };
+
+        typedef FlagSet<Flag> Flags;
+        
+        Texture(Flags flags);
+        virtual ~Texture();
+        GLuint GetID() const
+        {
+            return texture_;
+        }
+        GLsizei GetWidth() const
+        {
+            return width_;
+        }
+        GLsizei GetHeight() const
+        {
+            return height_;
+        }
+        GLint GetFormat() const
+        {
+            return format_;
+        }
+        int GetChannels() const
+        {
+            return channels_;
+        }
+        virtual bool IsValid() override;
+        virtual void AllocateResources() override;
+        virtual void ReleaseResources() override;
+        virtual const unsigned char* GetImageData() = 0;
+        virtual void FreeImageData(const unsigned char* img) {}
+        virtual void Save(pugi::xml_node& node) = 0;
+        static PTexture CreateFrom(const pugi::xml_node& node);
+        void SetSerializable(bool serializable)
+        {
+            serializable_ = serializable;
+        }
+        bool IsSerializable() const
+        {
+            return serializable_;
+        }
+    protected:
+        Flags flags_;
+        GLuint texture_;
+        PResource pResource_;
+        GLsizei width_;
+        GLsizei height_;
+        GLint format_;
+        GLenum type_;
+        int channels_;
+        bool serializable_;
+    };
 }

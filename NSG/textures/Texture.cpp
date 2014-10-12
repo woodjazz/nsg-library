@@ -66,6 +66,29 @@ namespace NSG
 
         const unsigned char* img = GetImageData();
 
+        if (flags_ & Flag::INVERT_Y)
+        {
+            unsigned char* inverted = (unsigned char*)malloc(channels_ * width_ * height_);
+            memcpy(inverted, img, channels_ * width_ * height_);
+            int i, j;
+            for ( j = 0; j * 2 < height_; ++j )
+            {
+                int index1 = j * width_ * channels_;
+                int index2 = (height_ - 1 - j) * width_ * channels_;
+                for ( i = width_ * channels_; i > 0; --i )
+                {
+                    unsigned char temp = inverted[index1];
+                    inverted[index1] = inverted[index2];
+                    inverted[index2] = temp;
+                    ++index1;
+                    ++index2;
+                }
+            }
+
+            free((void*)img); // same as stbi_image_free
+            img = inverted;
+        }
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -139,7 +162,7 @@ namespace NSG
 
         if (type == "TextureFile")
         {
-			std::string flags = node.attribute("flags").as_string();
+            std::string flags = node.attribute("flags").as_string();
             std::string filename = node.attribute("filename").as_string();
             return PTextureFile(new TextureFile(filename.c_str(), Texture::Flags(flags)));
         }

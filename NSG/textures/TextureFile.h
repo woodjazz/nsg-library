@@ -32,8 +32,8 @@ namespace NSG
 	class TextureFile : public Texture
 	{
 	public:
-		TextureFile(const char* filename, Flags flags = Flag::GENERATE_MIPMAPS);
-		TextureFile(PResourceFile resource, Flags flags = Flag::GENERATE_MIPMAPS);
+		TextureFile(const char* filename, Flags flags = Flag::GENERATE_MIPMAPS | Flag::INVERT_Y);
+		TextureFile(PResourceFile resource, Flags flags = Flag::GENERATE_MIPMAPS | Flag::INVERT_Y);
 		TextureFile(PResourceMemory resource, Flags flags = Flag::NONE);
 		~TextureFile();
 		virtual const unsigned char* GetImageData() override;
