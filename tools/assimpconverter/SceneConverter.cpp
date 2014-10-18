@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #include "SceneConverter.h"
 #include "SceneNode.h"
-#include "ResourceFile.h"
+#include "ResourceFileManager.h"
 #include "Check.h"
 #include "Util.h"
 #include "Context.h"
@@ -305,7 +305,7 @@ namespace NSG
 
     Assimp::IOStream* SceneConverter::Open(const char* filename, const char* mode)
     {
-        PResourceFile resource(new ResourceFile(filename));
+		PResourceFile resource(ResourceFileManager::this_->GetOrCreate(filename));
         return new MyIOStream(resource);
     }
 

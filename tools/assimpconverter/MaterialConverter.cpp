@@ -26,21 +26,22 @@ misrepresented as being the original software.
 
 #include "MaterialConverter.h"
 #include "Material.h"
-#include "TextureFile.h"
+#include "Texture.h"
 #include "Check.h"
 #include "Util.h"
 #include "Pass.h"
 #include "Technique.h"
 #include "App.h"
 #include "Path.h"
+#include "TextureFileManager.h"
 #include "assimp/material.h"
 
 namespace NSG
 {
     MaterialConverter::MaterialConverter(const aiMaterial* mtl, const std::string& resourcePath)
         : material_(App::this_->CreateMaterial("material")),
-          program_(new Program),
-          flags_(Program::NONE),
+		program_(App::this_->CreateProgram()),
+		  flags_((int)ProgramFlag::NONE),
           resourcePath_(resourcePath),
           mtl_(mtl)
     {
@@ -62,7 +63,7 @@ namespace NSG
             {
                 case aiShadingMode_Flat:
                 case aiShadingMode_Gouraud:
-                    flags_ |= Program::PER_VERTEX_LIGHTING;
+					flags_ |= (int)ProgramFlag::PER_VERTEX_LIGHTING;
                     program_->SetFlags(flags_);
                     break;
                 case aiShadingMode_Phong:
@@ -72,7 +73,7 @@ namespace NSG
                 case aiShadingMode_Minnaert:
                 case aiShadingMode_CookTorrance:
                 case aiShadingMode_Fresnel:
-                    flags_ |= Program::PER_PIXEL_LIGHTING;
+					flags_ |= (int)ProgramFlag::PER_PIXEL_LIGHTING;
                     program_->SetFlags(flags_);
                     break;
                 default:
@@ -81,7 +82,7 @@ namespace NSG
         }
 		else
 		{
-			program_->SetFlags(Program::PER_PIXEL_LIGHTING);
+			program_->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
 		}
 
 
@@ -185,14 +186,12 @@ namespace NSG
                 {
                     if (uvindex == 0)
                     {
-                        material_->SetTexture0(CreateTexture(fullPath));
+                        material_->SetDiffuseMap(CreateTexture(fullPath));
                     }
                     else if (uvindex == 1)
                     {
                         TRACE_LOG("Detected diffuse map using uv1 => assuming it is a lightmap");
-                        material_->SetTexture2(CreateTexture(fullPath));
-                        flags_ |= Program::LIGHTMAP;
-                        program_->SetFlags(flags_);
+                        material_->SetLightMap(CreateTexture(fullPath));
                     }
                     else
                     {
@@ -232,9 +231,7 @@ namespace NSG
                 {
                     if (uvindex == 0)
                     {
-                        material_->SetTexture1(CreateTexture(path));
-                        flags_ |= Program::NORMALMAP;
-                        program_->SetFlags(flags_);
+                        material_->SetNormalMap(CreateTexture(path));
                     }
                     else if (uvindex == 1)
                     {
@@ -278,9 +275,7 @@ namespace NSG
                 {
                     if (uvindex == 1)
                     {
-                        material_->SetTexture2(CreateTexture(path));
-                        flags_ |= Program::LIGHTMAP;
-                        program_->SetFlags(flags_);
+                        material_->SetLightMap(CreateTexture(path));
                     }
                     else if (uvindex == 0)
                     {
@@ -300,7 +295,7 @@ namespace NSG
     }
 
 
-    PTextureFile MaterialConverter::CreateTexture(const Path& path)
+    PTexture MaterialConverter::CreateTexture(const Path& path)
     {
         std::string textureFilePath;
         if (path.IsPathRelative())
@@ -313,7 +308,7 @@ namespace NSG
         else
             textureFilePath = path.GetFilePath();
 
-        return PTextureFile(new TextureFile(textureFilePath.c_str()));
+		return TextureFileManager::this_->GetOrCreate(textureFilePath);
     }
 
     MaterialConverter::~MaterialConverter()

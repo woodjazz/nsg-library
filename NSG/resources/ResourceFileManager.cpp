@@ -23,18 +23,36 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Texture.h"
-#include <string>
+#include "ResourceFileManager.h"
+#include "ResourceFile.h"
+#include "Path.h"
 
 namespace NSG
 {
-	class TextureMemory : public Texture
-	{
-	public:
-		TextureMemory(GLint format, GLsizei width, GLsizei height, const char* pixels); 
-		~TextureMemory();
-		virtual const unsigned char* GetImageData() override;
-		virtual void Save(pugi::xml_node& node) override;
-	};
+    template<> ResourceFileManager* Singleton<ResourceFileManager>::this_ = nullptr;
+
+    ResourceFileManager::ResourceFileManager()
+    {
+
+    }
+
+    ResourceFileManager::~ResourceFileManager()
+    {
+        ResourceFileManager::this_ = nullptr;
+    }
+
+    PResourceFile ResourceFileManager::GetOrCreate(const Path& path)
+    {
+        auto it = map_.find(path);
+        if (it == map_.end())
+        {
+        	PResourceFile resource(new ResourceFile(path));
+            map_.insert(ResourceMap::value_type(path, resource));
+            return resource;
+        }
+        else
+        {
+        	return it->second;
+        }
+    }
 }

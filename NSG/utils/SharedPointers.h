@@ -29,6 +29,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class TextureFileManager;
+	typedef std::shared_ptr<TextureFileManager> PTextureFileManager;
+
+	class ResourceFileManager;
+	typedef std::shared_ptr<ResourceFileManager> PResourceFileManager;
+
 	class Sphere;
 	typedef std::shared_ptr<Sphere> PSphere;
 
@@ -115,12 +121,6 @@ namespace NSG
     class Texture;
     typedef std::shared_ptr<Texture> PTexture;
 
-    class TextureFile;
-    typedef std::shared_ptr<TextureFile> PTextureFile;
-
-    class TextureMemory;
-    typedef std::shared_ptr<TextureMemory> PTextureMemory;
-    
     class Material;
     typedef std::shared_ptr<Material> PMaterial;
 

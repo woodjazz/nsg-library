@@ -49,7 +49,7 @@ void BoxBehavior::Start()
 
 	mesh_ = PBoxMesh(app_.CreateBoxMesh(1,1,1, 2,2,2));
 	material_ = app_.CreateMaterial("box");
-	material_->SetTexture0(PTexture(new TextureFile("data/cube.png")));
+	material_->SetTexture0(app_.GetOrCreateTextureFile("data/cube.png"));
 
 	sceneNode_->SetScale(Vertex3(3, 3, 3));
 }

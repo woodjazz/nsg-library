@@ -15,10 +15,6 @@
 
 			gl_FragColor = Blur();
 
-		#elif defined(SHOW_TEXTURE0_INVERT_Y)
-
-			gl_FragColor = texture2D(u_texture0, v_texcoord0);
-
 		#elif defined(SHOW_TEXTURE0)
 
 			gl_FragColor = texture2D(u_texture0, v_texcoord0);
@@ -29,13 +25,18 @@
 
 		#elif defined(UNLIT)
 
-			#ifdef LIGHTMAP
-				gl_FragColor = v_color * (texture2D(u_texture0, v_texcoord0) + texture2D(u_texture2, v_texcoord1));
-			#else
-				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
-			#endif
+			gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
+
+		#elif defined(LIGHTMAP)
+			
+			gl_FragColor = texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, v_texcoord0);
+
+		#elif defined(PER_VERTEX_LIGHTING)
+
+			gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
 
 		#elif defined(PER_PIXEL_LIGHTING)
+
 			#ifdef NORMALMAP
 				vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord0).xyz;
 			    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0);
@@ -44,23 +45,14 @@
 			#else
 				vec3 normal = normalize(v_normal);
 			#endif
+
     		vec3 vertexToEye = normalize(v_vertexToEye);
     		vec4 totalLight = CalcFSTotalLight(vertexToEye, normal);
+		    gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord0);
 
-    		#ifdef LIGHTMAP
-    			//gl_FragColor = v_color * totalLight * (0.5 * texture2D(u_texture0, v_texcoord0) + 0.5 * texture2D(u_texture2, v_texcoord1));
-    			gl_FragColor = texture2D(u_texture2, v_texcoord1);
-    		#else
-		    	gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord0);
-		    #endif
+		#else // Vertex color by default
 
-		#else
-
-			#ifdef LIGHTMAP
-				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0) * texture2D(u_texture2, v_texcoord1);
-			#else
-				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
-			#endif
+			gl_FragColor = v_color;
 
 		#endif	    
 	}	

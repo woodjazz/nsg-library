@@ -8,6 +8,7 @@
 #include "Graphics.h"
 #include "Technique.h"
 #include "Pass.h"
+#include "Program.h"
 #include "Util.h"
 #include "pugixml.hpp"
 #include <sstream>
@@ -77,33 +78,80 @@ namespace NSG
         }
     }
 
-    void Material::SetTexture0(PTexture texture)
+    bool Material::SetTexture0(PTexture texture)
     {
         if (texture0_ != texture)
         {
             texture0_ = texture;
             SetUniformsNeedUpdate();
             Invalidate();
+            return true;
         }
+        return false;
     }
 
-    void Material::SetTexture1(PTexture texture)
+    bool Material::SetTexture1(PTexture texture)
     {
         if (texture1_ != texture)
         {
             texture1_ = texture;
             SetUniformsNeedUpdate();
             Invalidate();
+            return true;
         }
+        return false;
     }
 
-    void Material::SetTexture2(PTexture texture)
+    bool Material::SetTexture2(PTexture texture)
     {
         if (texture2_ != texture)
         {
             texture2_ = texture;
             SetUniformsNeedUpdate();
             Invalidate();
+            return true;
+        }
+        return false;
+    }
+
+	void Material::SetDiffuseMap(PTexture texture)
+    {
+        SetTexture0(texture);
+    }
+
+	void Material::SetNormalMap(PTexture texture)
+    {
+        if(SetTexture1(texture))
+        {
+            if(technique_)
+            {
+                if(texture)
+					technique_->EnableProgramFlags((int)ProgramFlag::NORMALMAP);
+                else
+					technique_->DisableProgramFlags((int)ProgramFlag::NORMALMAP);
+            }
+            else
+            {
+                TRACE_LOG("Warning setting normalmap without technique!!!");
+            }
+        }
+    }
+
+	void Material::SetLightMap(PTexture texture)
+    {
+        if(SetTexture2(texture))
+        {
+            if(technique_)
+            {
+                if(texture)
+					technique_->EnableProgramFlags((int)ProgramFlag::LIGHTMAP);
+                else
+					technique_->DisableProgramFlags((int)ProgramFlag::LIGHTMAP);
+            }
+            else
+            {
+                TRACE_LOG("Warning setting lightmap without technique!!!");
+            }
         }
     }
 
@@ -116,11 +164,11 @@ namespace NSG
 
         isReady = texture0_->IsReady();
 
-        if (isReady && texture1_)
-            isReady = texture1_->IsReady();
+        if (texture1_)
+            isReady = isReady && texture1_->IsReady();
 
-        if (isReady && texture2_)
-            isReady = texture2_->IsReady();
+        if (texture2_)
+            isReady = isReady && texture2_->IsReady();
 
         return isReady;
     }

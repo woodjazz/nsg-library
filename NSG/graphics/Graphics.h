@@ -85,10 +85,6 @@ namespace NSG
         void DiscardFramebuffer();
         void BeginFrame();
         void EndFrame();
-        void SetUniformsNeedUpdate()
-        {
-            uniformsNeedUpdate_ = true;
-        }
         bool HasVertexArrayObject() const
         {
             return has_vertex_array_object_ext_;
@@ -163,7 +159,6 @@ namespace NSG
         Texture* textures_[MAX_TEXTURE_UNITS];
         unsigned activeTexture_;
         unsigned enabledAttributes_; //positions' bits for enabled attributes
-        bool uniformsNeedUpdate_;
         Mesh* lastMesh_; // last mesh drawn
         Material* lastMaterial_; // last used material
         Program* lastProgram_; // kast used program

@@ -37,13 +37,14 @@ namespace NSG
 		virtual bool IsValid();
 		virtual void AllocateResources();
 		virtual void ReleaseResources();
-		void SetNormal(PTexture texture, bool invertY);
+		void SetNormal(PTexture texture);
 		void SetFont(PTexture texture);
 		void Show();
 	private:
 		App& app_;
         PPass pass_;
-        PMaterial material_; 
+        PMaterial material_;
+        PProgram program_;
 		PMesh mesh_;
 		PNode node_;
 	};

@@ -28,13 +28,15 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Path;
 	struct IProceduralResource;
 	class ResourceProcedural : public Resource
 	{
 	public:
 		ResourceProcedural(IProceduralResource* obj);
 		~ResourceProcedural();
-		virtual bool IsLoaded();
+		bool IsLoaded() override;
+		const Path& GetPath() const override;
 	private:
 		IProceduralResource* proceduralObj_;
 	};

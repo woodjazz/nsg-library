@@ -230,6 +230,28 @@ static void Test04()
     }
 }
 
+static void Test05()
+{
+	PScene scene(App::this_->CreateScene(true));
+
+	{
+		const float RADIUS = 0.5f;
+		PSphereMesh sphereMesh(App::this_->CreateSphereMesh(RADIUS, 64));
+		PSceneNode node = scene->CreateSceneNode("0");
+		node->SetPosition(Vertex3(0, 0, 0));
+		const float SCALE = 0.1f;
+		node->SetScale(Vertex3(SCALE));
+		node->Set(sphereMesh);
+
+		Vertex3 origin(0, 0, 1);
+		Vector3 direction1s(Vector3(0, 0, -1));
+		Ray ray(origin, direction1s);
+		RayNodeResult closest;
+		CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+		CHECK_ASSERT(closest.node_->GetName() == "0", __FILE__, __LINE__);
+		CHECK_ASSERT(glm::abs(closest.distance_ - (1 - RADIUS * SCALE)) < 0.01f, __FILE__, __LINE__);
+	}
+}
 
 void OctreeTest()
 {
@@ -237,4 +259,5 @@ void OctreeTest()
     Test02();
     Test03();
     Test04();
+	Test05();
 }

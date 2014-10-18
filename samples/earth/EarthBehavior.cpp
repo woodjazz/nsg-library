@@ -43,14 +43,15 @@ void EarthBehavior::Start()
 	sceneNode_->Set(pSphereMesh);
 	//sceneNode_->SetEnabled(false);
 
-    PTexture pEarthTexture(new TextureFile("data/Earthmap720x360_grid.jpg"));
+	PTexture pEarthTexture(app_.GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
     PMaterial pMaterial(app_.CreateMaterial("earth"));
-	PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING));
+	PProgram program(app_.CreateProgram());
+	program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
 
     technique->Add(pass);
-    pass->SetProgram(perVertex);
+	pass->SetProgram(program);
     pMaterial->SetTechnique(technique);
     pMaterial->SetTexture0(pEarthTexture);
     pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));

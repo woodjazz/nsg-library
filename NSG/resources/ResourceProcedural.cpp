@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Context.h"
 #include "Mesh.h"
+#include "Path.h"
 
 namespace NSG
 {
@@ -51,6 +52,12 @@ namespace NSG
 		}
 
 		return loaded_;
+	}
+
+	const Path& ResourceProcedural::GetPath() const
+	{
+		CHECK_ASSERT(false, __FILE__, __LINE__);
+		return Path::GetEmpty();
 	}
 
 }

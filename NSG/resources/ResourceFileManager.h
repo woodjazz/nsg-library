@@ -24,23 +24,20 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Texture.h"
-#include <string>
+#include "Types.h"
+#include "Singleton.h"
+#include <map>
 
 namespace NSG
 {
-	class TextureFile : public Texture
-	{
-	public:
-		TextureFile(const char* filename, Flags flags = Flag::GENERATE_MIPMAPS | Flag::INVERT_Y);
-		TextureFile(PResourceFile resource, Flags flags = Flag::GENERATE_MIPMAPS | Flag::INVERT_Y);
-		TextureFile(PResourceMemory resource, Flags flags = Flag::NONE);
-		~TextureFile();
-		virtual const unsigned char* GetImageData() override;
-		virtual void FreeImageData(const unsigned char* img) override;
-		virtual void Save(pugi::xml_node& node) override;
-	private:
-		std::string filename_;
-		bool onlyAlpha_;
-	};
+	class ResourceFileManager : public Singleton<ResourceFileManager>
+    {
+    public:
+    	ResourceFileManager();
+    	~ResourceFileManager();
+    	PResourceFile GetOrCreate(const Path& path);
+    private:
+    	typedef std::map<Path, PResourceFile> ResourceMap;
+    	ResourceMap map_;
+    };
 }

@@ -25,16 +25,14 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include "GLES2Includes.h"
-#include "SharedPointers.h"
-#include <string>
+#include "Types.h"
 
 namespace NSG
 {
 	class Filter
 	{
 	public:
-		Filter(const std::string& name, PTexture input, int output_width, int output_height, unsigned flags = 0);
+		Filter(const std::string& name, PTexture input, int output_width, int output_height, ProgramFlags flags = (int)ProgramFlag::UNLIT);
 		~Filter();
 		bool Render();
 		PMaterial GetMaterial() const { return pMaterial_; }

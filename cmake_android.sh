@@ -39,23 +39,16 @@ if [ ! -n "$1" ]; then
 	exit 0
 fi
 
-if [ ! -n "$2" ]; then
-	BUILD_PROJECT="all"
-else 
-	BUILD_PROJECT=$2
-fi
-
-
 cd ..
 cmake -E make_directory $1
 cd $1
 
 echo "*** CONFIGURING PROJECTS ***"
-#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="$BUILD_PROJECT" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/CMake/Toolchains/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
-cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="$BUILD_PROJECT" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
+#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/CMake/Toolchains/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
+cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.4" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
 
 echo "*** BUILDING $2 ***"
-make
+make $2
 
 echo "*** CLEARING LOGCAT ****"
 $ANDROID_SDK/platform-tools/adb logcat -c

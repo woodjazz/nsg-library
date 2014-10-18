@@ -37,9 +37,10 @@ struct Test : public App
 	void Start(int argc, char* argv[]) override
     {
         time_ = 0;
-        music_ = PMusic(new Music("data/nice_music.ogg"));
-        sound_ = PSound(new Sound("data/PlayerFist.wav"));
-        soundExplo_ = PSound(new Sound("data/BigExplosion.wav"));
+		;
+		music_ = PMusic(new Music(GetOrCreateResourceFile("data/nice_music.ogg")));
+		sound_ = PSound(new Sound(GetOrCreateResourceFile("data/PlayerFist.wav")));
+		soundExplo_ = PSound(new Sound(GetOrCreateResourceFile("data/BigExplosion.wav")));
     }
 
     void Update() override

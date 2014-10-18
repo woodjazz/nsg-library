@@ -27,7 +27,6 @@ misrepresented as being the original software.
 
 #include "Types.h"
 #include "GPUObject.h"
-#include "FlagSet.h"
 
 namespace NSG
 {

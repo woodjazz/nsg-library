@@ -70,11 +70,15 @@ struct Sample : App
         technique_ = PTechnique(new Technique);
         
         PPass normalPass(new Pass);
-        normalPass->SetProgram(PProgram(new Program));
+		PProgram normalProgram(CreateProgram());
+		normalProgram->SetFlags((int)ProgramFlag::UNLIT);
+		normalPass->SetProgram(normalProgram);
 
         PPass depthPass(new Pass);
         depthPass->EnableColorBuffer(false);
-        depthPass->SetProgram(PProgram(new Program));
+		PProgram depthProgram(CreateProgram());
+		depthProgram->SetFlags((int)ProgramFlag::STENCIL);
+		depthPass->SetProgram(depthProgram);
         
 		PFilter boxFilter;
         
@@ -121,7 +125,7 @@ struct Sample : App
 		technique_->Add(passBlend);
 #endif
 
-		showTexture_->SetNormal(blendFilter->GetTexture(), false);
+		showTexture_->SetNormal(blendFilter->GetTexture());
         //showTexture_->SetNormal(sphereBehavior_->blendedTexture_);
         //showTexture_->SetNormal(boxBehavior_->filteredTexture_);
         //showTexture_->SetNormal(boxBehavior_->renderedTexture_);

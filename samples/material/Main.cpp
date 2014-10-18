@@ -25,18 +25,23 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-#include "SceneConverter.h"
 using namespace NSG;
 
-
-struct Editor : App
+struct Sample : App
 {
     PScene scene_;
-	PCamera camera_;
-	PCameraControl cameraControl_;
-	std::string resourcePath_;
+    PLight pointLight_;
+    PLight dirLight_;
+    PLight spotLight_;
+    PMesh sphereMesh_;
+    PMesh cubeMesh_;
+    PTexture diffuseMap_;
+    PTexture normalMap_;
+    PMaterial material_;
+    PProgram program_;
+	PMesh mesh_;
 
-	Editor()
+    Sample()
     {
         //AppConfiguration::this_->width_ = 30;
         //AppConfiguration::this_->height_ = 20;
@@ -46,50 +51,49 @@ struct Editor : App
     void Start(int argc, char* argv[]) override
     {
 		scene_ = GetCurrentScene();
-		camera_ = scene_->CreateCamera("EditorCamera");
-		camera_->SetSerializable(false);
-		camera_->SetInheritScale(false);
-		cameraControl_ = PCameraControl(new CameraControl);
-		camera_->AddBehavior(cameraControl_);
-    }
+        scene_->SetAmbientColor(Color(0));
 
-    void DropFile(const std::string& filePath) override
-    {
-		Path path(filePath);
-		resourcePath_ = path.GetPath();
-		App::DropFile(path.GetFilePath());
-		SceneConverter scene(path);
-		if (!scene.Load())
-		{
-			std::string extension = path.GetExtension();
-			if (extension == "xml")
-			{
-				PResourceFile resource(new ResourceFile(path.GetFilePath().c_str()));
-				scene_->Load(resource);
-			}
-		}
+		PCamera camera = scene_->CreateCamera("camera");
+        camera->AddBehavior(PCameraControl(new CameraControl));
+		camera->Activate();
 
-		camera_->Activate();
-		cameraControl_->AutoZoom();
+		pointLight_ = scene_->CreatePointLight("pointlight");
+		pointLight_->SetPosition(Vertex3(-15, 0, 0));
+
+		dirLight_ = scene_->CreateDirectionalLight("dirlight");
+		dirLight_->SetLookAt(Vertex3(0, -1, 0));
+
+		spotLight_ = scene_->CreateSpotLight("spotlight");
+		spotLight_->SetPosition(Vertex3(0, 0, 15));
+		spotLight_->SetLookAt(Vertex3(-1, 0, 0));
+		spotLight_->SetSpotLight(25);
+
+        mesh_ = sphereMesh_ = CreateSphereMesh();
+        cubeMesh_ = CreateBoxMesh();
+
+		diffuseMap_ = GetOrCreateTextureFile("data/wall.jpg");
+		normalMap_ = GetOrCreateTextureFile("data/wallnormalmap.jpg");
+        material_ = CreateMaterial();
+		program_ = CreateProgram();
+        PTechnique technique(new Technique);
+        PPass pass(new Pass);
+        technique->Add(pass);
+		pass->SetProgram(program_);
+        material_->SetTechnique(technique);
+
+        PSceneNode node = scene_->CreateSceneNode("node");
+		node->SetPosition(Vertex3(0, 0, 0));
+        node->Set(material_);
+        node->Set(mesh_);
     }
 
     void RenderGUIWindow() override
-	{
+    {
         using namespace IMGUI;
-		IMGUIBeginHorizontal(100, Pixels2PercentageY(25));
-		if (IMGUIButton("Save", 20))
-		{
-			pugi::xml_document doc;
-			scene_->Save(doc);
-			doc.save_file((resourcePath_ + "/scene.xml").c_str());
-		}
-		if (IMGUIButton("Point Light", 20))
-		{
-			PLight light = scene_->CreatePointLight("");
-			light->SetPosition(Vertex3(100, 100, 100));
-		}
-        IMGUIEndArea();
+
+		const float Y_PERCENTAGE = 20;
     }
+
 };
 
-NSG_MAIN(Editor);
+NSG_MAIN(Sample);

@@ -43,7 +43,7 @@ cd %1
 
 ::cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/cmake/toolchains/PNaCl.Windows.cmake"
 cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/cmake/toolchains/PNaCl.Windows.cmake"
-%NACL_SDK_ROOT%/tools/make.exe 
+%NACL_SDK_ROOT%/tools/make.exe %2
 
 @echo "Starting HTTP Server"
 ::python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/tests/generic_test
@@ -51,4 +51,4 @@ cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/
 ::python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/samples/filters
 ::python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/samples/imgui
 ::python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/samples/earth
-python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/samples/batches
+::python %NACL_SDK_ROOT%/tools/httpd.py --no_dir_check -C %CD%/samples/batches

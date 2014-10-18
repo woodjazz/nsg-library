@@ -189,7 +189,8 @@ namespace NSG
 
     float Ray::HitDistance(const SceneNode* node) const
     {
-        float nearest = std::numeric_limits<float>::max();
+		const float MAX_DISTANCE = std::numeric_limits<float>::max();
+		float nearest = MAX_DISTANCE;
         PMesh mesh = node->GetMesh();
         if (mesh)
         {
@@ -209,6 +210,15 @@ namespace NSG
                 nearest = glm::min(nearest, localRay.HitDistance(v0, v1, v2));
                 i += 3;
             }
+
+			if (nearest < MAX_DISTANCE)
+			{
+				// multiply per scale to have correct distance
+				Vector3 scale = node->GetGlobalScale();
+				CHECK_ASSERT(glm::abs(scale.x) > glm::epsilon<float>(), __FILE__, __LINE__);
+				CHECK_ASSERT(scale.x == scale.y && scale.x == scale.z, __FILE__, __LINE__);
+				nearest *= scale.x;
+			}
         }
         return nearest;
     }

@@ -60,8 +60,9 @@ struct Sample : App
                 (void main()
             {
                 vec2 texcoord = v_texcoord0;
-                texcoord.x += sin(texcoord.y * 4.0 * 2.0 * 3.14159 + u_material.shininess) / 100.0;
-                gl_FragColor = texture2D(u_texture0, texcoord);
+				const float FACTOR = 8.0 * 3.14159;
+				texcoord.x += sin(texcoord.y * FACTOR + u_material.shininess) / 100.0;
+				gl_FragColor = texture2D(u_texture0, texcoord);
             }
                 );
             userFilter_ = camera->AddUserFilter(PResourceMemory(new ResourceMemory(fShader)), 1024, 1024);
@@ -71,10 +72,11 @@ struct Sample : App
         camera->AddBehavior(PCameraControl(new CameraControl));
         camera->SetPosition(Vertex3(0, 0, 10));
 
-        PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING));
+		PProgram program(CreateProgram());
+		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
         PTechnique technique(new Technique);
         PPass pass(new Pass);
-        pass->SetProgram(perVertex);
+		pass->SetProgram(program);
         technique->Add(pass);
 
         scene_->CreateLight("");
@@ -82,7 +84,7 @@ struct Sample : App
         {
             PMesh mesh = CreateBoxMesh();
             PMaterial material = CreateMaterial();
-            material->SetTexture0(PTexture(new TextureFile("data/wall.jpg")));
+			material->SetTexture0(GetOrCreateTextureFile("data/wall.jpg"));
             material->SetTechnique(technique);
 
             node1_ = scene_->CreateSceneNode("node1");
@@ -94,7 +96,7 @@ struct Sample : App
         {
             PMesh mesh = CreateSphereMesh();
             PMaterial material = CreateMaterial();
-            material->SetTexture0(PTexture(new TextureFile("data/stone.jpg")));
+			material->SetTexture0(GetOrCreateTextureFile("data/stone.jpg"));
             material->SetTechnique(technique);
 
             PSceneNode node = scene_->CreateSceneNode("node1");

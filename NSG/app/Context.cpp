@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "GPUObject.h"
 #include "FontAtlasTextureManager.h"
-#include "TextureMemory.h"
+#include "Texture.h"
 #include "Keyboard.h"
 #include "Resource.h"
 #include "IMGUIContext.h"
@@ -36,6 +36,8 @@ misrepresented as being the original software.
 #include "Audio.h"
 #include "Graphics.h"
 #include "Scene.h"
+#include "ResourceFileManager.h"
+#include "TextureFileManager.h"
 
 namespace NSG
 {
@@ -135,7 +137,7 @@ namespace NSG
             // Creates 1x1 white texture
             static unsigned char img[WIDTH * HEIGHT * 3];
             memset(&img[0], 0xFF, sizeof(img));
-            whiteTexture_ = PTexture(new TextureMemory(GL_RGB, WIDTH, HEIGHT, (char*)&img[0]));
+            whiteTexture_ = PTexture(new Texture(GL_RGB, WIDTH, HEIGHT, (char*)&img[0]));
             TRACE_LOG("White texture has been generated.")
         }
 
@@ -144,6 +146,10 @@ namespace NSG
 
     void Context::Initialize()
     {
+        resourceFileManager_ = PResourceFileManager(new ResourceFileManager);
+
+        textureFileManager_ = PTextureFileManager(new TextureFileManager);
+        
         graphics_ = PGraphics(new Graphics);
 
 		bufferManager_ = PBufferManager(new BufferManager);

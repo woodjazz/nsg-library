@@ -93,7 +93,7 @@ struct Sample : App
 			IMGUISkin()->textStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
 			style_ = IMGUI::PWindowStyle(new IMGUI::WindowStyle);
 
-			PTexture texture(new TextureFile("data/metal.png"));
+			PTexture texture(GetOrCreateTextureFile("data/metal.png"));
 			PMaterial material = style_->activeMaterial_;
             material->SetTexture0(texture);
 

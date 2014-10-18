@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include <vector>
 #include <string>
+#include <map>
 
 namespace NSG
 {
@@ -66,6 +67,8 @@ namespace NSG
 		void SetInheritScale(bool inherit);
 		bool IsPointInsideBB(const Vertex3& point) const;
 		PNode GetChild(size_t idx) const { return children_.at(idx); }
+		std::vector<PNode> GetChildren(const std::string& name) const;
+		std::vector<PNode> GetChildren() const { return children_; }
 		bool IsDirty() const { return dirty_; }
 		virtual void Save(pugi::xml_node& node);
 		void SetName(const std::string& name) { name_ = name; }
@@ -90,11 +93,19 @@ namespace NSG
 		virtual void OnDisable() {}
 		virtual const BoundingBox& GetWorldBoundingBox() const;
 		virtual BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const;
+		virtual PMaterial GetMaterial() const { return nullptr; }
+		void GetMaterials(std::vector<PMaterial>& materials) const;
+		virtual void SetDiffuseMap(PTexture texture, bool recursive) {}
+		virtual void SetNormalMap(PTexture texture, bool recursive) {}
+		virtual void SetLightMap(PTexture texture, bool recursive) {}
     protected:
 		Node* parent_;
         std::vector<PNode> children_;
+		typedef std::multimap<std::string, PNode> ChildrenMap;
+        ChildrenMap childrenMap_;
 		std::string name_;
 	private:
+		void RemoveFromChildrenMap(Node* node);
 		void RemoveChild(Node* node);
 		void RemoveFromParent();
 		void MarkAsDirty(bool recursive = true);

@@ -43,9 +43,8 @@ namespace NSG
     }
 #endif
 
-    Music::Music(const std::string& filename)
-        : filename_(filename),
-          resource_(new ResourceFile(filename.c_str())),
+	Music::Music(PResource resource)
+		: resource_(resource),
           isReady_(false),
           isPlaying_(false)
     {
@@ -82,7 +81,7 @@ namespace NSG
 
             if (!music_)
             {
-                TRACE_LOG("Unable to read " << filename_ << " !!!");
+				TRACE_LOG("Unable to read " << resource_->GetPath().GetFilePath() << " !!!");
             }
 
             isReady_ = music_ != nullptr;

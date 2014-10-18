@@ -48,7 +48,8 @@ namespace NSG
           maxLength_(0)
     {
         SetSerializable(false);
-        pProgram_ = PProgram(new Program("TextMesh", Program::TEXT));
+		pProgram_ = App::this_->CreateProgram("TextMesh");
+		pProgram_->SetFlags((int)ProgramFlag::TEXT);
         pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
         App::Add(this);
     }

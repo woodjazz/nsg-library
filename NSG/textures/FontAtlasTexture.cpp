@@ -1,9 +1,11 @@
 #include "FontAtlasTexture.h"
 #include "Check.h"
 #include "Context.h"
-#include "TextureFile.h"
+#include "TextureFileManager.h"
+#include "Texture.h"
 #include "ResourceFile.h"
 #include "ResourceMemory.h"
+#include "ResourceFileManager.h"
 #include "Mesh.h"
 #include "App.h"
 #include "UTF8String.h"
@@ -18,27 +20,23 @@
 
 namespace NSG
 {
-    FontAtlasTexture::FontAtlasTexture(const std::string& filename)
+	FontAtlasTexture::FontAtlasTexture(const Path& path)
         : viewWidth_(0),
           viewHeight_(0),
-          filename_(filename)
+		  path_(path)
     {
-        if (filename.empty())
+		if (path_.IsEmpty())
         {
 			PResourceMemory bitmapFont(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_PNG, ANONYMOUS_PRO_REGULAR_14_PNG_SIZE));
-            texture_ = PTexture(new TextureFile(bitmapFont, Texture::Flag::NONE));
+            texture_ = PTexture(new Texture(bitmapFont));
             xmlResource_ = PResource(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_XML, ANONYMOUS_PRO_REGULAR_14_XML_SIZE));
         }
         else
         {
-            texture_ = PTexture(new TextureFile(filename.c_str(), Texture::Flag::NONE));
-            std::string::size_type idx = filename.find_last_of(".");
-            if (idx != std::string::npos)
-            {
-                std::string xmlFilename = filename;
-                xmlFilename.replace(xmlFilename.begin() + idx, xmlFilename.end(), ".xml"); //divo compatible (generated with font builder)
-                xmlResource_ = PResourceFile(new ResourceFile(xmlFilename.c_str()));
-            }
+			texture_ = TextureFileManager::this_->GetOrCreate(path_);
+			texture_->SetFlags((int)TextureFlag::NONE);
+			Path xmlFilename(path_.GetPathAndName() + ".xml"); //divo compatible (generated with font builder)
+			xmlResource_ = ResourceFileManager::this_->GetOrCreate(xmlFilename);
         }
 
         App::Add(this);
@@ -64,7 +62,7 @@ namespace NSG
 
     bool FontAtlasTexture::ParseXML()
     {
-        TRACE_LOG("FontAtlasTexture::Parsing: " << (filename_.empty() ? "internal font" : filename_));
+		TRACE_LOG("FontAtlasTexture::Parsing: " << (path_.IsEmpty() ? "internal font" : xmlResource_->GetPath().GetFilePath()));
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer_inplace((void*)xmlResource_->GetData(), xmlResource_->GetBytes());

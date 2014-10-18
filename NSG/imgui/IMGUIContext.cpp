@@ -50,7 +50,7 @@ namespace NSG
     namespace IMGUI
     {
         Context::Context()
-            : unlitProgram_(new Program),
+			: unlitProgram_(App::this_->CreateProgram()),
               controlMesh_(App::this_->CreateRectangleMesh(2, 2)),
               state_(new State),
               pSkin_(new Skin),
@@ -61,6 +61,7 @@ namespace NSG
               viewport_(0),
               hasAppGUI_(true)
         {
+			unlitProgram_->SetFlags((int)ProgramFlag::UNLIT);
             App::Add(this);
             transparentAreaStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));

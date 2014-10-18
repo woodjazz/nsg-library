@@ -38,8 +38,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    ResourceFile::ResourceFile(const char* filename)
-        : path_(filename),
+    ResourceFile::ResourceFile(const Path& path)
+        : path_(path),
           trySecondTime_(true)
     {
         #if NACL
@@ -142,7 +142,7 @@ namespace NSG
             }
             #else
             {
-                SetCurrentDir(path_.GetPath());
+                SetCurrentDir(path_.GetAbsolutePath());
 
                 std::ifstream file(path_.GetFilename(), std::ios::binary);
 
@@ -156,7 +156,7 @@ namespace NSG
                     }
                 }
 
-                #if __APPLE__
+                #if defined(__APPLE__) && defined(SDL)
                 {
                     if (!file.is_open())
                     {

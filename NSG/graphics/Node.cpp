@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Constants.h"
 #include <algorithm>
+#include <iterator>
 
 namespace NSG
 {
@@ -76,6 +77,22 @@ namespace NSG
             childNode->ClearAllChildren();
             children_.erase(children_.begin() + i);
         }
+        childrenMap_.clear();
+    }
+
+    void Node::RemoveFromChildrenMap(Node* node)
+    {
+        auto itRange = childrenMap_.equal_range(node->name_);
+        auto it = itRange.first;
+        while (it != itRange.second)
+        {
+            if(it->second->name_ == node->name_)
+            {
+                childrenMap_.erase(it); 
+                break;  
+            }
+            it++;
+        }
     }
 
     void Node::RemoveChild(Node* node)
@@ -85,6 +102,7 @@ namespace NSG
         {
             if (child.get() == node)
             {
+                RemoveFromChildrenMap(node);
                 children_.erase(children_.begin() + idx);
                 break;
             }
@@ -96,9 +114,20 @@ namespace NSG
     {
         CHECK_ASSERT(node && node.get() != this, __FILE__, __LINE__);
         node->RemoveFromParent();
+        childrenMap_.insert(ChildrenMap::value_type(node->name_, node));
         children_.push_back(node);
         node->parent_ = this;
         node->MarkAsDirty();
+    }
+
+    std::vector<PNode> Node::GetChildren(const std::string& name) const
+    {
+        std::vector<PNode> result;
+		auto itRange = childrenMap_.equal_range(name);
+		auto it = itRange.first;
+		while (it != itRange.second)
+			result.push_back((it++)->second);
+        return result;
     }
 
     void Node::Save(pugi::xml_node& node)
@@ -110,18 +139,18 @@ namespace NSG
     {
         switch (space)
         {
-        case TS_LOCAL:
-            // Note: local space translation disregards local scale for scale-independent movement speed
-            position_ += GetOrientation() * delta;
-            break;
+            case TS_LOCAL:
+                // Note: local space translation disregards local scale for scale-independent movement speed
+                position_ += GetOrientation() * delta;
+                break;
 
-        case TS_PARENT:
-            position_ += delta;
-            break;
+            case TS_PARENT:
+                position_ += delta;
+                break;
 
-        case TS_WORLD:
-            position_ += !parent_ ? delta : Vector3(parent_->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
-            break;
+            case TS_WORLD:
+                position_ += !parent_ ? delta : Vector3(parent_->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
+                break;
         }
 
         MarkAsDirty();
@@ -232,43 +261,43 @@ namespace NSG
 
         if (length > 0)
         {
-			// we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
-			Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
+            // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+            Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
 
-			if (parent_)
-			{
-				Quaternion q = glm::inverse(parent_->GetGlobalOrientation());
-				SetOrientation(q*glm::quat_cast(m));
-			}
-			else
-			{
-				SetOrientation(glm::quat_cast(m));
-			}
+            if (parent_)
+            {
+                Quaternion q = glm::inverse(parent_->GetGlobalOrientation());
+                SetOrientation(q * glm::quat_cast(m));
+            }
+            else
+            {
+                SetOrientation(glm::quat_cast(m));
+            }
         }
     }
 
-	Quaternion Node::GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up)
-	{
-		const Vertex3& position = GetGlobalPosition();
-		float length = glm::length(position - lookAtPosition);
+    Quaternion Node::GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up)
+    {
+        const Vertex3& position = GetGlobalPosition();
+        float length = glm::length(position - lookAtPosition);
 
-		if (length > 0)
-		{
-			// we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
-			Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
+        if (length > 0)
+        {
+            // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+            Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
 
-			if (parent_)
-			{
-				return glm::inverse(parent_->GetGlobalOrientation()) * glm::quat_cast(m);
-			}
-			else
-			{
-				return glm::quat_cast(m);
-			}
-		}
+            if (parent_)
+            {
+                return glm::inverse(parent_->GetGlobalOrientation()) * glm::quat_cast(m);
+            }
+            else
+            {
+                return glm::quat_cast(m);
+            }
+        }
 
-		return GetOrientation();
-	}
+        return GetOrientation();
+    }
 
 
     void Node::SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up)
@@ -377,7 +406,7 @@ namespace NSG
         {
             enabled_ = enable;
             SetUniformsNeedUpdate();
-            if(enable)
+            if (enable)
                 OnEnable();
             else
                 OnDisable();
@@ -388,16 +417,24 @@ namespace NSG
                 child->SetEnabled(enable, recursive);
     }
 
-	const BoundingBox& Node::GetWorldBoundingBox() const
-	{
-		CHECK_ASSERT(false, __FILE__, __LINE__);
-		static BoundingBox bb;
-		return bb;
-	}
+    const BoundingBox& Node::GetWorldBoundingBox() const
+    {
+        CHECK_ASSERT(false, __FILE__, __LINE__);
+        static BoundingBox bb;
+        return bb;
+    }
 
-	BoundingBox Node::GetWorldBoundingBoxBut(const SceneNode* node) const
-	{
-		CHECK_ASSERT(false, __FILE__, __LINE__);
-		return BoundingBox();
-	}
+    BoundingBox Node::GetWorldBoundingBoxBut(const SceneNode* node) const
+    {
+        CHECK_ASSERT(false, __FILE__, __LINE__);
+        return BoundingBox();
+    }
+
+    void Node::GetMaterials(std::vector<PMaterial>& materials) const
+    {
+        materials.push_back(GetMaterial());
+        for (auto obj : children_)
+            obj->GetMaterials(materials);
+    }
+
 }

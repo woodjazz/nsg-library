@@ -59,14 +59,15 @@ namespace NSG
         {
 
             stencilMaterial_->SetSerializable(false);
-            
+
             {
                 mainWindowStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
                 mainWindowStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
                 mainWindowStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
             }
 
-            PProgram program(new Program("", Program::STENCIL));
+            PProgram program = app_.CreateProgram();
+            program->SetFlags((int)ProgramFlag::STENCIL);
             stencilPass_->SetProgram(program);
             stencilPass_->EnableDepthTest(false);
             stencilPass_->EnableDepthBuffer(false);

@@ -39,6 +39,8 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "Allocators.h"
 #include "PODVector.h"
+#include "FlagSet.h"
+#include <string>
 #include <chrono>
 #include <set>
 
@@ -52,6 +54,8 @@ namespace pugi
 
 namespace NSG
 {
+	class Path;
+
     typedef glm::highp_ivec4 Recti;
     typedef glm::vec4 Rect;
     typedef glm::vec4 Vertex4;
@@ -197,4 +201,33 @@ namespace NSG
         float distance_;
         const SceneNode* node_;
     };
+
+    enum class ProgramFlag
+    {   
+        NONE = 0,
+        PER_VERTEX_LIGHTING = 1 << 0,
+        PER_PIXEL_LIGHTING = 1 << 1,
+        BLEND = 1 << 2,
+        BLUR = 1 << 3,
+        TEXT = 1 << 4,
+        SHOW_TEXTURE0 = 1 << 5,
+        STENCIL = 1 << 6,
+        NORMALMAP = 1 << 7,
+        LIGHTMAP = 1 << 8,
+        UNLIT = 1 << 9
+    };
+
+    typedef FlagSet<ProgramFlag> ProgramFlags;
+
+
+    enum class TextureFlag
+    {
+        NONE = 0,
+        GENERATE_MIPMAPS = 1 << 0,
+        INVERT_Y = 1 << 1
+    };
+
+    typedef FlagSet<TextureFlag> TextureFlags;
+
+
 }

@@ -41,9 +41,11 @@ namespace NSG
         : app_(*App::this_),
           pass_(new Pass),
           material_(app_.CreateMaterial("ShowTexture")),
+          program_(app_.CreateProgram("ShowTexture")),
           mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           node_(new Node("ShowTexture"))
     {
+        pass_->SetProgram(program_);
         material_->SetSerializable(false);
         pass_->EnableDepthTest(false);
     }
@@ -69,20 +71,15 @@ namespace NSG
 
     }
 
-    void ShowTexture::SetNormal(PTexture texture, bool invertY)
+    void ShowTexture::SetNormal(PTexture texture)
     {
-        if (invertY)
-            pass_->SetProgram(PProgram(new Program("ShowTexture", Program::SHOW_TEXTURE0_INVERT_Y)));
-        else
-            pass_->SetProgram(PProgram(new Program("ShowTexture", Program::SHOW_TEXTURE0)));
-
+        program_->SetFlags((int)ProgramFlag::SHOW_TEXTURE0);
         material_->SetTexture0(texture);
     }
 
     void ShowTexture::SetFont(PTexture texture)
     {
-        PProgram pProgram(new Program("ShowFontTexture", Program::TEXT));
-        pass_->SetProgram(pProgram);
+        program_->SetFlags((int)ProgramFlag::TEXT);
         material_->SetTexture0(texture);
     }
 

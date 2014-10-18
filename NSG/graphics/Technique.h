@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
+#include "Types.h"
 
 namespace pugi
 {
@@ -48,6 +48,8 @@ namespace NSG
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
 		bool Render();
+		void EnableProgramFlags(const ProgramFlags& flags);
+		void DisableProgramFlags(const ProgramFlags& flags);
 	private:
 		PASSES passes_;
 	};

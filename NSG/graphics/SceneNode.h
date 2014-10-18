@@ -40,7 +40,7 @@ namespace NSG
 		~SceneNode();
 		void Set(PMaterial material);
 		void Load(PResource resource);
-		PMaterial GetMaterial() const { return material_; }
+		PMaterial GetMaterial() const override { return material_; }
 		void Set(PMesh mesh);
 		PMesh GetMesh() const { return mesh_; }
 		void AddBehavior(PBehavior behavior);
@@ -70,6 +70,9 @@ namespace NSG
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_;  }
 		void SetResource(PResource resource);
+		void SetDiffuseMap(PTexture texture, bool recursive) override;
+		void SetNormalMap(PTexture texture, bool recursive) override;
+		void SetLightMap(PTexture texture, bool recursive) override;
 	protected:
 		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
 		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);

@@ -29,10 +29,11 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Path;
 	class Music : public Singleton<Music>
     {
     public:
-        Music(const std::string& filename);
+		Music(PResource resource);
         ~Music();
         bool Play(bool loop = true);
 		void Stop();
@@ -42,7 +43,6 @@ namespace NSG
         bool IsReady();
         bool IsPaused() const;
     private:
-        std::string filename_;
         PResource resource_;
         bool isReady_;
         bool isPlaying_;

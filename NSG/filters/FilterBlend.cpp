@@ -32,7 +32,7 @@ misrepresented as being the original software.
 namespace NSG
 {
 	FilterBlend::FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height)
-	: Filter("FilterBlend", input0, output_width, output_height, Program::BLEND),
+		: Filter("FilterBlend", input0, output_width, output_height, (int)ProgramFlag::BLEND),
 	blendMode_loc_(-1),
 	blendMode_(0)
 	{

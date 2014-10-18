@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "FontAtlasTextureManager.h"
 #include "FontAtlasTexture.h"
 #include "Check.h"
+#include "Path.h"
 
 namespace NSG
 {
@@ -40,9 +41,9 @@ namespace NSG
 		FontAtlasTextureManager::this_ = nullptr;
 	}
 
-	PFontAtlasTexture FontAtlasTextureManager::GetAtlas(const std::string& textureFilename)
+	PFontAtlasTexture FontAtlasTextureManager::GetAtlas(const Path& path)
 	{
-    	auto it = fontAtlas_.find(textureFilename);
+		auto it = fontAtlas_.find(path.GetFullAbsoluteFilePath());
     	
     	if(it != fontAtlas_.end())
     	{
@@ -50,8 +51,8 @@ namespace NSG
     	}
     	else
     	{
-			PFontAtlasTexture pAtlas = PFontAtlasTexture(new FontAtlasTexture(textureFilename));
-			fontAtlas_.insert(Atlas::value_type(textureFilename, pAtlas));
+			PFontAtlasTexture pAtlas = PFontAtlasTexture(new FontAtlasTexture(path));
+			fontAtlas_.insert(Atlas::value_type(path.GetFullAbsoluteFilePath(), pAtlas));
 			return pAtlas;
     	}
     }

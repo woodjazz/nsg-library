@@ -24,21 +24,20 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Resource.h"
+#include "Types.h"
+#include "Singleton.h"
+#include <map>
 
 namespace NSG
 {
-	class Path;
-	class ResourceMemory : public Resource
-	{
-	public:
-		ResourceMemory(const char* buffer, size_t bytes);
-		ResourceMemory(const std::string& buffer);
-		~ResourceMemory();
-		bool IsLoaded() override;
-		const Path& GetPath() const override;
-	private:
-		const char* staticBuffer_;
-        size_t bytes_;
-	};
+	class TextureFileManager : public Singleton<TextureFileManager>
+    {
+    public:
+    	TextureFileManager();
+    	~TextureFileManager();
+    	PTexture GetOrCreate(const Path& path);
+    private:
+    	typedef std::map<Path, PTexture> Map;
+    	Map map_;
+    };
 }

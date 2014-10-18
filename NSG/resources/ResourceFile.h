@@ -34,14 +34,15 @@ namespace NSG
 	class ResourceFile : public Resource
 	{
 	public:
-		ResourceFile(const char* filename);
 		~ResourceFile();
-		virtual bool IsLoaded();
-		const Path& GetPath() const { return path_; }
+		bool IsLoaded() override;
+		const Path& GetPath() const override { return path_; }
 	private:
+		ResourceFile(const Path& path);
 		Path path_;
 		bool trySecondTime_;
 		NaCl::PNaClURLLoader pLoader_;
 		AAssetManager* pAAssetManager_;
+		friend class ResourceFileManager;
 	};
 }

@@ -26,61 +26,35 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "GPUObject.h"
-#include "FlagSet.h"
 
 namespace NSG
 {
     class Texture : public GPUObject
     {
     public:
-        enum Flag
-        {
-            NONE = 0,
-            GENERATE_MIPMAPS = 1 << 0,
-            INVERT_Y = 1 << 1
-        };
-
-        typedef FlagSet<Flag> Flags;
-        
-        Texture(Flags flags);
+        Texture(GLint format, GLsizei width, GLsizei height, const char* pixels);
+        Texture(PResourceMemory resource);
         virtual ~Texture();
-        GLuint GetID() const
-        {
-            return texture_;
-        }
-        GLsizei GetWidth() const
-        {
-            return width_;
-        }
-        GLsizei GetHeight() const
-        {
-            return height_;
-        }
-        GLint GetFormat() const
-        {
-            return format_;
-        }
-        int GetChannels() const
-        {
-            return channels_;
-        }
+		GLuint GetID() const;
+		GLsizei GetWidth() const;
+		GLsizei GetHeight() const;
+		GLint GetFormat() const;
+		int GetChannels() const;
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
-        virtual const unsigned char* GetImageData() = 0;
-        virtual void FreeImageData(const unsigned char* img) {}
-        virtual void Save(pugi::xml_node& node) = 0;
+        void Save(pugi::xml_node& node);
         static PTexture CreateFrom(const pugi::xml_node& node);
-        void SetSerializable(bool serializable)
-        {
-            serializable_ = serializable;
-        }
-        bool IsSerializable() const
-        {
-            return serializable_;
-        }
+        void SetSerializable(bool serializable);
+        bool IsSerializable() const;
+        void SetFlags(const TextureFlags& flags);
+    private:
+		Texture(const Path& path);
+		Texture(PResourceFile resource);
+        const unsigned char* GetImageData();
     protected:
-        Flags flags_;
+        bool fromKnownImgFormat_; // true if it is a known file format (png, bmp, jpeg,...)
+		TextureFlags flags_;
         GLuint texture_;
         PResource pResource_;
         GLsizei width_;
@@ -89,5 +63,6 @@ namespace NSG
         GLenum type_;
         int channels_;
         bool serializable_;
+		friend class TextureFileManager;
     };
 }

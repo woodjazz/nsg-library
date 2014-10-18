@@ -59,12 +59,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Program::Program(const std::string& name, Flags flags)
-        : flags_(flags),
+    Program::Program(const std::string& name)
+        : flags_((int)ProgramFlag::NONE),
           id_(0),
           pExtraUniforms_(nullptr),
           att_texcoordLoc0_(-1),
-		  att_texcoordLoc1_(-1),
+          att_texcoordLoc1_(-1),
           att_positionLoc_(-1),
           att_normalLoc_(-1),
           att_colorLoc_(-1),
@@ -114,11 +114,11 @@ namespace NSG
     {
         std::string preDefines;
 
-#ifdef GL_ES_VERSION_2_0
+        #ifdef GL_ES_VERSION_2_0
         preDefines = "#version 100\n#define GLES2\n";
-#else
+        #else
         preDefines = "#version 120\n";
-#endif
+        #endif
 
         if (graphics_.HasInstancedArrays())
         {
@@ -202,29 +202,27 @@ namespace NSG
         ///////////////////////////////////////////////////
 
 
-        if (Flag::PER_VERTEX_LIGHTING & flags_ && hasLights)
+        if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_ && hasLights)
             preDefines += "#define PER_VERTEX_LIGHTING\n";
-        else if (Flag::PER_PIXEL_LIGHTING & flags_ && hasLights)
+        else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_ && hasLights)
             preDefines += "#define PER_PIXEL_LIGHTING\n";
-        else if (Flag::BLEND & flags_)
+        else if ((int)ProgramFlag::BLEND & flags_)
             preDefines += "#define BLEND\n";
-        else if (Flag::BLUR & flags_)
+        else if ((int)ProgramFlag::BLUR & flags_)
             preDefines += "#define BLUR\n";
-        else if (Flag::TEXT & flags_)
+        else if ((int)ProgramFlag::TEXT & flags_)
             preDefines += "#define TEXT\n";
-        else if (Flag::SHOW_TEXTURE0 & flags_)
+        else if ((int)ProgramFlag::SHOW_TEXTURE0 & flags_)
             preDefines += "#define SHOW_TEXTURE0\n";
-        else if (Flag::SHOW_TEXTURE0_INVERT_Y & flags_)
-            preDefines += "#define SHOW_TEXTURE0_INVERT_Y\n";
-        else if (Flag::STENCIL & flags_)
+        else if ((int)ProgramFlag::STENCIL & flags_)
             preDefines += "#define STENCIL\n";
-        else if (Flag::UNLIT & flags_)
+        else if ((int)ProgramFlag::UNLIT & flags_)
             preDefines += "#define UNLIT\n";
 
-        if (Flag::NORMALMAP & flags_)
+        if ((int)ProgramFlag::NORMALMAP & flags_)
             preDefines += "#define NORMALMAP\n";
 
-        if (Flag::LIGHTMAP & flags_)
+        if ((int)ProgramFlag::LIGHTMAP & flags_)
             preDefines += "#define LIGHTMAP\n";
 
         if (vertexShader_)
@@ -267,7 +265,7 @@ namespace NSG
             att_positionLoc_ = GetAttributeLocation("a_position");
             att_normalLoc_ = GetAttributeLocation("a_normal");
             att_texcoordLoc0_ = GetAttributeLocation("a_texcoord0");
-			att_texcoordLoc1_ = GetAttributeLocation("a_texcoord1");
+            att_texcoordLoc1_ = GetAttributeLocation("a_texcoord1");
             att_colorLoc_ = GetAttributeLocation("a_color");
             att_tangentLoc_ = GetAttributeLocation("a_tangent");
             att_modelMatrixRow0Loc_ = GetAttributeLocation("a_mMatrixRow0");
@@ -385,10 +383,10 @@ namespace NSG
         material_ = MaterialProgram();
     }
 
-	bool Program::HasLighting() const
-	{
-		return Flag::PER_VERTEX_LIGHTING & flags_ || Flag::PER_PIXEL_LIGHTING & flags_;
-	}
+    bool Program::HasLighting() const
+    {
+        return (int)ProgramFlag::PER_VERTEX_LIGHTING & flags_ || (int)ProgramFlag::PER_PIXEL_LIGHTING & flags_;
+    }
 
     bool Program::Initialize()
     {
@@ -401,7 +399,7 @@ namespace NSG
         glBindAttribLocation(id_, (int)AttributesLoc::POSITION, "a_position");
         glBindAttribLocation(id_, (int)AttributesLoc::NORMAL, "a_normal");
         glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD0, "a_texcoord0");
-		glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD1, "a_texcoord1");
+        glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD1, "a_texcoord1");
         glBindAttribLocation(id_, (int)AttributesLoc::COLOR, "a_color");
         glBindAttribLocation(id_, (int)AttributesLoc::TANGENT, "a_tangent");
         glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW0, "a_mMatrixRow0");
@@ -526,7 +524,7 @@ namespace NSG
 
             if (texture2Loc_ != -1)
             {
-				graphics_.SetTexture(2, material->texture2_.get());
+                graphics_.SetTexture(2, material->texture2_.get());
             }
 
 
@@ -627,7 +625,7 @@ namespace NSG
 
     bool Program::SetLightVariables(Scene* scene)
     {
-		if (scene && HasLighting())
+        if (scene && HasLighting())
         {
             const Scene::Lights& dirLights = scene->GetLights(Light::DIRECTIONAL);
 
@@ -780,29 +778,29 @@ namespace NSG
             }
         }
 
-		return true;
+        return true;
     }
 
     void Program::SetVariables(Material* material, Node* node)
     {
-		PScene scene = App::this_->GetCurrentScene();
+        PScene scene = App::this_->GetCurrentScene();
 
         SetSceneVariables(scene.get());
         SetMaterialVariables(material);
         SetNodeVariables(node);
         SetCameraVariables();
         activeNode_ = node;
-		if (SetLightVariables(scene.get()) && pExtraUniforms_)
+        if (SetLightVariables(scene.get()) && pExtraUniforms_)
             pExtraUniforms_->AssignValues();
     }
 
     void Program::SetVariables(Material* material)
     {
-		PScene scene = App::this_->GetCurrentScene();
+        PScene scene = App::this_->GetCurrentScene();
         SetSceneVariables(scene.get());
         SetMaterialVariables(material);
         SetCameraVariables();
-		if (SetLightVariables(scene.get()) && pExtraUniforms_)
+        if (SetLightVariables(scene.get()) && pExtraUniforms_)
             pExtraUniforms_->AssignValues();
     }
 
@@ -824,7 +822,17 @@ namespace NSG
     {
         std::string name = node.attribute("name").as_string();
         std::string flags = node.attribute("flags").as_string();
-        PProgram program(new Program(name, flags));
+		PProgram program = App::this_->CreateProgram(name);
+		program->SetFlags(flags);
         return program;
+    }
+
+    void Program::SetFlags(const ProgramFlags& flags)
+    {
+        if(flags_ != flags)
+        {
+            flags_ = flags;
+            Invalidate();
+        }
     }
 }

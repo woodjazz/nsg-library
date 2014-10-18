@@ -86,7 +86,6 @@ namespace NSG
           activeProgram_(nullptr),
           activeTexture_(0),
           enabledAttributes_(0),
-          uniformsNeedUpdate_(true),
           lastMesh_(nullptr),
           lastMaterial_(nullptr),
           lastProgram_(nullptr),
@@ -227,7 +226,6 @@ namespace NSG
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-        uniformsNeedUpdate_ = true;
         lastMesh_ = nullptr;
         lastMaterial_ = nullptr;
         lastProgram_ = nullptr;
@@ -542,7 +540,7 @@ namespace NSG
         }
     }
 
-
+#if 0
     void Graphics::SetTexture(unsigned index, Texture* texture)
     {
         if (index >= MAX_TEXTURE_UNITS)
@@ -568,6 +566,41 @@ namespace NSG
             textures_[index] = texture;
         }
     }
+#else
+    void Graphics::SetTexture(unsigned index, Texture* texture)
+    {
+        if (index >= MAX_TEXTURE_UNITS)
+            return;
+
+        if(texture)
+        {
+            if (activeTexture_ != index)
+            {
+                glActiveTexture(GL_TEXTURE0 + index);
+                activeTexture_ = index;
+            }
+
+            if (textures_[index] != texture)
+            {
+                textures_[index] = texture;
+                glBindTexture(GL_TEXTURE_2D, texture->GetID());
+            }
+        }
+        else
+        {
+            if (activeTexture_ == index && index > 0)
+            {
+                glActiveTexture(GL_TEXTURE0); //default
+                activeTexture_ = 0;
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+
+            if (textures_[index] != texture)
+                textures_[index] = texture;
+        }
+    }
+
+#endif    
 
     void Graphics::SetViewport(const Recti& viewport)
     {
@@ -676,10 +709,6 @@ namespace NSG
 
     void Graphics::EndFrame()
     {
-        if (!uniformsNeedUpdate_)
-            UniformsUpdate::ClearAllUpdates();
-
-        uniformsNeedUpdate_ = false;
     }
 
     void Graphics::SetBuffers()

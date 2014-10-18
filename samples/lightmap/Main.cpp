@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
+
 struct Sample : App
 {
     PScene scene_;
@@ -38,19 +39,28 @@ struct Sample : App
         AppConfiguration::this_->showStatistics_ = true;
     }
 
-
-    void Start(int argc, char* argv[]) override
+	void Start(int argc, char* argv[]) override
     {
 		scene_ = GetCurrentScene();
-		PResourceFile resource(new ResourceFile("data/scene.xml"));
+		PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
+		PTexture lightmapTexture(GetOrCreateTextureFile("data/lightmap.png"));
+		PTexture diffuseTexture(GetOrCreateTextureFile("data/texture.png"));
 		
 		scene_->Load(resource);
+		
+		std::vector<PNode> objs = scene_->GetChildren("static_objects");
+		for(auto& obj: objs)
+		{
+			obj->SetDiffuseMap(diffuseTexture, true);
+			obj->SetLightMap(lightmapTexture, true);
+		}
 
-		PCamera camera = scene_->CreateCamera("");
+		std::vector<PNode> cameras = scene_->GetChildren("Camera");
+		CHECK_ASSERT(cameras.size() > 0, __FILE__, __LINE__);
+		Camera* camera = dynamic_cast<Camera*>(cameras.at(0).get());
 		camera->Activate();
         camera->AddBehavior(PCameraControl(new CameraControl));
     }
-
 };
 
 NSG_MAIN(Sample);

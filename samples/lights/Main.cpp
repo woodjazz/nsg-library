@@ -30,12 +30,17 @@ using namespace NSG;
 struct Sample : App
 {
     PScene scene_;
+    PLight pointLight0_;
+    PLight pointLight1_;
+    PLight dirLight0_;
+    PLight dirLight1_;
+    PLight spotLight0_;
 
     Sample()
     {
         //AppConfiguration::this_->width_ = 30;
         //AppConfiguration::this_->height_ = 20;
-        AppConfiguration::this_->showStatistics_ = true;
+        AppConfiguration::this_->showStatistics_ = false;
     }
 
     void Start(int argc, char* argv[]) override
@@ -46,34 +51,35 @@ struct Sample : App
 		PCamera camera = scene_->CreateCamera("camera");
 		camera->Activate();
 
-		PLight pointLight0 = scene_->CreatePointLight("pointlight0");
-		pointLight0->SetPosition(Vertex3(-5, 15, 0));
-        pointLight0->SetEnabled(false);
+		pointLight0_ = scene_->CreatePointLight("pointlight0");
+		pointLight0_->SetPosition(Vertex3(-5, 15, 0));
+        pointLight0_->SetEnabled(false);
 
-		PLight pointLight1 = scene_->CreatePointLight("pointlight1");
-        pointLight1->SetEnabled(false);
-		pointLight1->SetPosition(Vertex3(5, -15, 0));
+		pointLight1_ = scene_->CreatePointLight("pointlight1");
+        pointLight1_->SetEnabled(false);
+		pointLight1_->SetPosition(Vertex3(5, -15, 0));
 
-		PLight dirLight0 = scene_->CreateDirectionalLight("dirlight0");
-        dirLight0->SetEnabled(false);
-		dirLight0->SetLookAt(Vertex3(-10, 0, 0));
+		dirLight0_ = scene_->CreateDirectionalLight("dirlight0");
+        dirLight0_->SetEnabled(false);
+		dirLight0_->SetLookAt(Vertex3(-1, -1, 0));
 
-		PLight dirLight1 = scene_->CreateDirectionalLight("dirlight1");
-        dirLight1->SetEnabled(false);
-		dirLight1->SetLookAt(Vertex3(1, 0, 0));
+		dirLight1_ = scene_->CreateDirectionalLight("dirlight1");
+        dirLight1_->SetEnabled(false);
+		dirLight1_->SetLookAt(Vertex3(1, 1, 0));
 
-		PLight spotLight0 = scene_->CreateSpotLight("spotlight0");
-		spotLight0->SetPosition(Vertex3(0, 0, 5));
-		spotLight0->SetLookAt(Vertex3(-1, 0, -1));
-		spotLight0->SetSpotLight(15);
-		spotLight0->SetEnabled(true);
+		spotLight0_ = scene_->CreateSpotLight("spotlight0");
+		spotLight0_->SetPosition(Vertex3(0, 0, 5));
+		spotLight0_->SetLookAt(Vertex3(0, 0, -1));
+		spotLight0_->SetSpotLight(10);
+		spotLight0_->SetEnabled(false);
 
         PMesh mesh(CreateSphereMesh(3, 24));
 
-        PTexture wallTexture(new TextureFile("data/wall.jpg"));
-        PTexture wallNormalMapTexture(new TextureFile("data/wallnormalmap.jpg"));
+		PTexture wallTexture(GetOrCreateTextureFile("data/wall.jpg"));
+		PTexture wallNormalMapTexture(GetOrCreateTextureFile("data/wallnormalmap.jpg"));
         PMaterial material(CreateMaterial("wall"));
-		PProgram program(new Program("", Program::PER_PIXEL_LIGHTING | Program::NORMALMAP));
+		PProgram program(CreateProgram());
+		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::NORMALMAP);
         PTechnique technique(new Technique);
         PPass pass(new Pass);
         technique->Add(pass);
@@ -89,6 +95,26 @@ struct Sample : App
         node->Set(material);
         node->Set(mesh);
     }
+
+    void RenderGUIWindow() override
+    {
+        using namespace IMGUI;
+
+		const float Y_PERCENTAGE = 20;
+		pointLight0_->SetEnabled(IMGUICheckButton(pointLight0_->IsEnabled(), pointLight0_->IsEnabled() ? "Disable P0" : "Enable P0", 25, Y_PERCENTAGE));
+		pointLight1_->SetEnabled(IMGUICheckButton(pointLight1_->IsEnabled(), pointLight1_->IsEnabled() ? "Disable P1" : "Enable P1", 25, Y_PERCENTAGE));
+		dirLight0_->SetEnabled(IMGUICheckButton(dirLight0_->IsEnabled(), dirLight0_->IsEnabled() ? "Disable D0" : "Enable D0", 25, Y_PERCENTAGE));
+		dirLight1_->SetEnabled(IMGUICheckButton(dirLight1_->IsEnabled(), dirLight1_->IsEnabled() ? "Disable D1" : "Enable D1", 25, Y_PERCENTAGE));
+		IMGUIBeginHorizontal(100, Y_PERCENTAGE);
+		{
+			spotLight0_->SetEnabled(IMGUICheckButton(spotLight0_->IsEnabled(), spotLight0_->IsEnabled() ? "Disable S0" : "Enable S0", 25, 100));
+			float cutOff = spotLight0_->GetSpotCutOff() / 100;
+			cutOff = IMGUIHSlider(cutOff, 75, 100);
+			spotLight0_->SetSpotLight(cutOff * 100);
+		}
+		IMGUIEndArea();
+    }
+
 };
 
 NSG_MAIN(Sample);

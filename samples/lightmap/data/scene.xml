@@ -833,11 +833,11 @@
 	</Meshes>
 	<Materials>
 		<Material name="Material-material" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    0.600,    0.600,    0.600,    1.000]" specular="[    0.500,    0.500,    0.500,    1.000]" shininess="50" color="[    0.000,    0.000,    0.000,    1.000]">
-			<Texture2 type="TextureFile" filename="/Users/nestor/dev/nsg-library/samples/lightmap/data/lightmap.png" flags="00000000000000000000000000000011" />
+			<Texture2 filename="E:/cygwin64/home/Nestor/dev/nsg-library/samples/lightmap/data/lightmap.png" flags="00000000000000000000000000000011" />
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="" flags="00000000000000000000001000000010" />
+						<Program name="" flags="00000000000000000000000100000010" />
 					</Pass>
 				</Passes>
 			</Technique>
@@ -845,7 +845,7 @@
 	</Materials>
 	<SceneNode name="SceneRootNode" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,   -0.707,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]">
 		<SceneNode name="Camera" position="[  -10.199,   -8.492,    8.455]" orientation="[    0.782,    0.489,   -0.222,   -0.317]" scale="[    1.000,    1.000,    1.000]">
-			<Camera name="Camera" fovy="1.61703" zNear="0.1" zFar="100" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,    0.707,    0.000,    0.000]" />
+			<Camera name="Camera" fovy="0.472541" zNear="0.1" zFar="100" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,    0.707,    0.000,    0.000]" />
 		</SceneNode>
 		<SceneNode name="Lamp" position="[    0.154,   -4.640,    7.710]" orientation="[    0.750,    0.395,   -0.200,    0.492]" scale="[    1.000,    1.000,    1.000]">
 			<Light name="Lamp" type="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,    0.707,    0.000,    0.000]">

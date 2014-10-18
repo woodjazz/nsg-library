@@ -48,15 +48,16 @@ struct Sample : App
     {
         PSphereMesh pSphereMesh(CreateSphereMesh(3, 24));
 
-        PTexture pEarthTexture1(new TextureFile("data/Earthmap720x360_grid.jpg"));
-        PTexture pEarthTexture2(new TextureFile("data/jup0vss1.jpg"));
+		PTexture pEarthTexture1(GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
+		PTexture pEarthTexture2(GetOrCreateTextureFile("data/jup0vss1.jpg"));
         PMaterial pMaterial1(CreateMaterial("earth1"));
 		PMaterial pMaterial2(CreateMaterial("earth2"));
-		PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING));
+		PProgram program(CreateProgram());
+		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
         PTechnique technique(new Technique);
         PPass pass(new Pass);
         technique->Add(pass);
-        pass->SetProgram(perVertex);
+        pass->SetProgram(program);
         pMaterial1->SetTechnique(technique);
         pMaterial1->SetTexture0(pEarthTexture1);
         pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));

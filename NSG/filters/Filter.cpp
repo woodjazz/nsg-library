@@ -39,7 +39,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Filter::Filter(const std::string& name, PTexture input, int output_width, int output_height, unsigned flags)
+	Filter::Filter(const std::string& name, PTexture input, int output_width, int output_height, ProgramFlags flags)
         : app_(*App::this_),
 		technique_(new Technique),
           pass_(new Pass),
@@ -52,7 +52,8 @@ namespace NSG
         technique_->Add(pass_);
         pMaterial_->SetTexture0(input);
         pMaterial_->SetTechnique(technique_);
-        program_ = PProgram(new Program(name, flags));
+		program_ = app_.CreateProgram(name);
+		program_->SetFlags(flags);
         pass_->SetProgram(program_);
     }
 

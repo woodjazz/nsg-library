@@ -180,7 +180,7 @@ if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	add_subdirectory(tools/assimpconverter)
 	list(APPEND LIBRARIES_2_LINK assimpconverter)
 	add_subdirectory(tools/converter)
-	add_subdirectory(tools/editor)
+	add_subdirectory(tools/gconverter)
 endif()
 
 

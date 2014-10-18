@@ -68,19 +68,10 @@ namespace NSG
         void DoTick(float delta);
         void SetViewSize(int width, int height);
         std::pair<int, int> GetViewSize() const;
-        float GetDeltaTime() const
-        {
-            return deltaTime_;
-        }
+        float GetDeltaTime() const;
         virtual void HandleMessage(const pp::Var& var_message);
-        void SetAssetManager(AAssetManager* pAAssetManager)
-        {
-            pAAssetManager_ = pAAssetManager;
-        }
-        AAssetManager* GetAssetManager()
-        {
-            return pAAssetManager_;
-        }
+        void SetAssetManager(AAssetManager* pAAssetManager);
+        AAssetManager* GetAssetManager();
         static void Add(IViewChangedListener* listener);
         static void Remove(IViewChangedListener* listener);
         PScene CreateScene(bool setAsCurrent);
@@ -97,14 +88,11 @@ namespace NSG
         PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
         PTextMesh CreateTextMesh(const std::string& textureFilename = "", bool dynamic = true);
         PMaterial CreateMaterial(const std::string& name = "");
-        const std::vector<PMesh>& GetMeshes() const
-        {
-            return meshes_;
-        }
-        const std::vector<PMaterial>& GetMaterials() const
-        {
-            return materials_;
-        }
+        PResourceFile GetOrCreateResourceFile(const Path& path);
+        PTexture GetOrCreateTextureFile(const Path& path, TextureFlags flags = (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+        PProgram CreateProgram(const std::string& name = "");
+        const std::vector<PMesh>& GetMeshes() const;
+        const std::vector<PMaterial>& GetMaterials() const;
     private:
         void AddListener(IViewChangedListener* listener);
         void RemoveListener(IViewChangedListener* listener);

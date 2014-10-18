@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Context.h"
 #include "Texture.h"
-#include "TextureMemory.h"
 #include "Graphics.h"
 #include <algorithm>
 
@@ -62,14 +61,14 @@ namespace NSG
 
         if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
-            colorTexture_ = PTexture(new TextureMemory(GL_RGBA, width_, height_, nullptr));
+            colorTexture_ = PTexture(new Texture(GL_RGBA, width_, height_, nullptr));
         }
 
         if (flags_ & Flag::DEPTH_USE_TEXTURE)
         {
             if (Graphics::this_->HasDepthTexture())
             {
-                depthTexture_ = PTexture(new TextureMemory(GL_DEPTH_COMPONENT, width_, height_, nullptr));
+                depthTexture_ = PTexture(new Texture(GL_DEPTH_COMPONENT, width_, height_, nullptr));
             }
             else
             {

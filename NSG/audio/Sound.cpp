@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "Sound.h"
 #include "ResourceFile.h"
 #include "Util.h"
+#include "Path.h"
 #include "Check.h"
 #ifdef SDL
 #include "SDL_mixer.h"
@@ -33,9 +34,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Sound::Sound(const std::string& filename)
-        : filename_(filename),
-          resource_(new ResourceFile(filename.c_str())),
+	Sound::Sound(PResource resource)
+        : resource_(resource),
           isReady_(false),
           sound_(nullptr),
           channel_(-1)
@@ -70,7 +70,7 @@ namespace NSG
 
             if (!sound_)
             {
-                TRACE_LOG("Unable to read " << filename_ << " !!!");
+				TRACE_LOG("Unable to read " << resource_->GetPath().GetFilePath() << " !!!");
             }
 
             isReady_ = sound_ != nullptr;

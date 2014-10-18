@@ -51,34 +51,34 @@ namespace NSG
           materialIndex_(-1),
           scene_(scene),
           app_(*App::this_),
-		  serializable_(true)
+          serializable_(true)
     {
         CHECK_ASSERT(scene, __FILE__, __LINE__);
     }
 
     SceneNode::~SceneNode()
     {
-        if(scene_->GetOctree())
+        if (scene_->GetOctree())
             scene_->GetOctree()->Remove(this);
         Context::RemoveObject(this);
     }
 
-	void SceneNode::Load(PResource resource)
-	{
-		SetResource(resource);
-		while (!IsReady())
-			std::this_thread::sleep_for(Milliseconds(10));
-	}
+    void SceneNode::Load(PResource resource)
+    {
+        SetResource(resource);
+        while (!IsReady())
+            std::this_thread::sleep_for(Milliseconds(10));
+    }
 
-	void SceneNode::SetResource(PResource resource)
-	{
-		if (resource_ != resource)
-		{
-			resource_ = resource;
-			Invalidate();
-		}
-	}
-	
+    void SceneNode::SetResource(PResource resource)
+    {
+        if (resource_ != resource)
+        {
+            resource_ = resource;
+            Invalidate();
+        }
+    }
+
     bool SceneNode::IsValid()
     {
         if (resource_)
@@ -144,7 +144,7 @@ namespace NSG
 
     void SceneNode::OnEnable()
     {
-        if(mesh_)
+        if (mesh_)
         {
             scene_->GetOctree()->InsertUpdate(this);
         }
@@ -152,7 +152,7 @@ namespace NSG
 
     void SceneNode::OnDisable()
     {
-        if(mesh_)
+        if (mesh_)
         {
             scene_->GetOctree()->Remove(this);
         }
@@ -169,20 +169,20 @@ namespace NSG
 
     void SceneNode::Start()
     {
-        for(auto& obj: behaviors_)
+        for (auto& obj : behaviors_)
             obj->Start();
 
-		for (auto& obj : children_)
-			obj->Start();
+        for (auto& obj : children_)
+            obj->Start();
     }
 
     void SceneNode::Update()
     {
-        for(auto& obj: behaviors_)
+        for (auto& obj : behaviors_)
             obj->Update();
 
-		for (auto& obj : children_)
-			obj->Update();
+        for (auto& obj : children_)
+            obj->Update();
     }
 
     void SceneNode::ViewChanged(int width, int height)
@@ -190,63 +190,63 @@ namespace NSG
         for (auto& obj : behaviors_)
             obj->ViewChanged(width, height);
 
-		for (auto& obj : children_)
-			obj->ViewChanged(width, height);
-	}
+        for (auto& obj : children_)
+            obj->ViewChanged(width, height);
+    }
 
     void SceneNode::OnMouseMove(float x, float y)
     {
         for (auto& obj : behaviors_)
             obj->OnMouseMove(x, y);
 
-		for (auto& obj : children_)
-			obj->OnMouseMove(x, y);
+        for (auto& obj : children_)
+            obj->OnMouseMove(x, y);
     }
 
-	void SceneNode::OnMouseDown(int button, float x, float y)
+    void SceneNode::OnMouseDown(int button, float x, float y)
     {
         for (auto& obj : behaviors_)
             obj->OnMouseDown(button, x, y);
 
-		for (auto& obj : children_)
-			obj->OnMouseDown(button, x, y);
+        for (auto& obj : children_)
+            obj->OnMouseDown(button, x, y);
     }
 
     void SceneNode::OnMouseWheel(float x, float y)
     {
         for (auto& obj : behaviors_)
             obj->OnMouseWheel(x, y);
-	
-		for (auto& obj : children_)
-			obj->OnMouseWheel(x, y);
-	}
 
-	void SceneNode::OnMouseUp(int button, float x, float y)
+        for (auto& obj : children_)
+            obj->OnMouseWheel(x, y);
+    }
+
+    void SceneNode::OnMouseUp(int button, float x, float y)
     {
         for (auto& obj : behaviors_)
             obj->OnMouseUp(button, x, y);
 
-		for (auto& obj : children_)
-			obj->OnMouseUp(button, x, y);
-	}
+        for (auto& obj : children_)
+            obj->OnMouseUp(button, x, y);
+    }
 
     void SceneNode::OnKey(int key, int action, int modifier)
     {
         for (auto& obj : behaviors_)
             obj->OnKey(key, action, modifier);
-	
-		for (auto& obj : children_)
-			obj->OnKey(key, action, modifier);
-	}
+
+        for (auto& obj : children_)
+            obj->OnKey(key, action, modifier);
+    }
 
     void SceneNode::OnChar(unsigned int character)
     {
         for (auto& obj : behaviors_)
             obj->OnChar(character);
-	
-		for (auto& obj : children_)
-			obj->OnChar(character);
-	}
+
+        for (auto& obj : children_)
+            obj->OnChar(character);
+    }
 
     void SceneNode::OnDirty() const
     {
@@ -256,38 +256,38 @@ namespace NSG
             scene_->NeedUpdate((SceneNode*)this);
     }
 
-	const BoundingBox& SceneNode::GetWorldBoundingBox() const
-	{
-		if (worldBBNeedsUpdate_)
-		{
-			if (mesh_ && mesh_->IsReady())
-			{
-				worldBB_ = mesh_->GetBB();
-				worldBB_.Transform(*this);
-				worldBBNeedsUpdate_ = false;
-			}
-		}
+    const BoundingBox& SceneNode::GetWorldBoundingBox() const
+    {
+        if (worldBBNeedsUpdate_)
+        {
+            if (mesh_ && mesh_->IsReady())
+            {
+                worldBB_ = mesh_->GetBB();
+                worldBB_.Transform(*this);
+                worldBBNeedsUpdate_ = false;
+            }
+        }
 
-		return worldBB_;
-	}
+        return worldBB_;
+    }
 
-	BoundingBox SceneNode::GetWorldBoundingBoxBut(const SceneNode* node) const
-	{
-		if (node == this)
-			return BoundingBox();
+    BoundingBox SceneNode::GetWorldBoundingBoxBut(const SceneNode* node) const
+    {
+        if (node == this)
+            return BoundingBox();
 
-		BoundingBox bb(GetWorldBoundingBox());
+        BoundingBox bb(GetWorldBoundingBox());
 
-		for (auto& obj : children_)
-			bb.Merge(obj->GetWorldBoundingBoxBut(node));
+        for (auto& obj : children_)
+            bb.Merge(obj->GetWorldBoundingBoxBut(node));
 
         return bb;
     }
 
     void SceneNode::Save(pugi::xml_node& node)
     {
-		if (!IsSerializable())
-			return;
+        if (!IsSerializable())
+            return;
 
         pugi::xml_node child = node.append_child("SceneNode");
 
@@ -339,7 +339,7 @@ namespace NSG
         query << "/Scene/SceneNode[@name ='" << name_ << "']";
         pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
         pugi::xml_node child = xpathNode.node();
-		CHECK_ASSERT(child, __FILE__, __LINE__);
+        CHECK_ASSERT(child, __FILE__, __LINE__);
         LoadNode(child, data);
     }
 
@@ -368,30 +368,30 @@ namespace NSG
             Set(data.meshes_.at(meshIndex_));
         }
 
-		{
-			pugi::xml_node child = node.child("Light");
-			if (child)
-			{
-				PLight obj = scene_->CreateLight(child.attribute("name").as_string());
-				obj->Load(child);
-				AddChild(obj);
-			}
-		}
+        {
+            pugi::xml_node child = node.child("Light");
+            if (child)
+            {
+                PLight obj = scene_->CreateLight(child.attribute("name").as_string());
+                obj->Load(child);
+                AddChild(obj);
+            }
+        }
 
-		{
-			pugi::xml_node child = node.child("Camera");
-			if (child)
-			{
-				PCamera obj = scene_->CreateCamera(child.attribute("name").as_string());
-				obj->Load(child);
-				AddChild(obj);
-			}
-		}
+        {
+            pugi::xml_node child = node.child("Camera");
+            if (child)
+            {
+                PCamera obj = scene_->CreateCamera(child.attribute("name").as_string());
+                obj->Load(child);
+                AddChild(obj);
+            }
+        }
 
 
         for (pugi::xml_node child = node.child("SceneNode"); child; child = child.next_sibling("SceneNode"))
         {
-			PSceneNode childNode = CreateChild(child.attribute("name").as_string());
+            PSceneNode childNode = CreateChild(child.attribute("name").as_string());
             childNode->LoadNode(child, data);
         }
     }
@@ -426,4 +426,53 @@ namespace NSG
             }
         }
     }
+
+    void SceneNode::SetDiffuseMap(PTexture texture, bool recursive)
+    {
+        if(recursive)
+        {
+            std::vector<PMaterial> materials;
+            GetMaterials(materials);
+			for (auto& material : materials)
+				if (material)
+					material->SetDiffuseMap(texture);
+        }
+		else if(material_)
+        {
+			material_->SetDiffuseMap(texture);
+        }
+    }
+
+    void SceneNode::SetNormalMap(PTexture texture, bool recursive)
+    {
+        if(recursive)
+        {
+            std::vector<PMaterial> materials;
+            GetMaterials(materials);
+            for(auto& material: materials)
+				if (material)
+					material->SetNormalMap(texture);
+        }
+		else if(material_)
+        {
+            material_->SetNormalMap(texture);
+        }
+    }
+
+    void SceneNode::SetLightMap(PTexture texture, bool recursive)
+    {
+        if(recursive)
+        {
+            std::vector<PMaterial> materials;
+            GetMaterials(materials);
+            for(auto& material: materials)
+				if (material)
+					material->SetLightMap(texture);
+        }
+		else if(material_)
+        {
+            material_->SetLightMap(texture);
+        }
+    }
+
 }

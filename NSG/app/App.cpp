@@ -52,6 +52,9 @@ misrepresented as being the original software.
 #include "TextMesh.h"
 #include "Material.h"
 #include "Music.h"
+#include "Program.h"
+#include "ResourceFileManager.h"
+#include "TextureFileManager.h"
 #if NACL
 #include "ppapi/cpp/var.h"
 #endif
@@ -109,7 +112,7 @@ namespace NSG
         currentScene_->OnMouseMove(x, y);
     }
 
-	void App::OnMouseDown(int button, float x, float y)
+    void App::OnMouseDown(int button, float x, float y)
     {
         currentScene_->OnMouseDown(button, x, y);
     }
@@ -119,7 +122,7 @@ namespace NSG
         currentScene_->OnMouseWheel(x, y);
     }
 
-	void App::OnMouseUp(int button, float x, float y)
+    void App::OnMouseUp(int button, float x, float y)
     {
         currentScene_->OnMouseUp(button, x, y);
     }
@@ -141,19 +144,19 @@ namespace NSG
 
     void App::AppEnterBackground()
     {
-		if (Music::this_ && configuration_->pauseMusicOnBackground_)
+        if (Music::this_ && configuration_->pauseMusicOnBackground_)
             Music::this_->Pause();
     }
 
     void App::AppEnterForeground()
     {
-		if (Music::this_ && configuration_->pauseMusicOnBackground_)
+        if (Music::this_ && configuration_->pauseMusicOnBackground_)
             Music::this_->Resume();
     }
 
-	void App::DropFile(const std::string& filePath)
+    void App::DropFile(const std::string& filePath)
     {
-		TRACE_LOG("Dropped file:" << filePath);
+        TRACE_LOG("Dropped file:" << filePath);
     }
 
     void App::SetCommandLineParameters(int argc, char* argv[])
@@ -165,7 +168,7 @@ namespace NSG
     void App::SetViewSize(int width, int height)
     {
         TRACE_LOG("SetViewSize: width=" << width << " height=" << height);
-        
+
         width_ = width;
         height_ = height;
 
@@ -178,16 +181,31 @@ namespace NSG
         return std::pair<int, int>(width_, height_);
     }
 
+    float App::GetDeltaTime() const
+    {
+        return deltaTime_;
+    }
+
+    void App::SetAssetManager(AAssetManager* pAAssetManager)
+    {
+        pAAssetManager_ = pAAssetManager;
+    }
+    
+    AAssetManager* App::GetAssetManager()
+    {
+        return pAAssetManager_;
+    }
+
     void App::HandleMessage(const pp::Var& var_message)
     {
-#if NACL
+        #if NACL
         TRACE_LOG("App::HandleMessage");
 
         if (var_message.is_string())
         {
             std::string message = var_message.AsString();
         }
-#endif
+        #endif
     }
     void App::DoTick(float delta)
     {
@@ -226,7 +244,7 @@ namespace NSG
     PScene App::CreateScene(bool setAsCurrent)
     {
         PScene scene(new Scene);
-        if(setAsCurrent)
+        if (setAsCurrent)
             currentScene_ = scene;
         scenes_.push_back(scene);
         return scene;
@@ -321,6 +339,32 @@ namespace NSG
         return material;
     }
 
+    PResourceFile App::GetOrCreateResourceFile(const Path& path)
+    {
+        return ResourceFileManager::this_->GetOrCreate(path);
+    }
+
+    PTexture App::GetOrCreateTextureFile(const Path& path, TextureFlags flags)
+    {
+        return TextureFileManager::this_->GetOrCreate(path);
+    }
+
+    PProgram App::CreateProgram(const std::string& name)
+    {
+        return PProgram(new Program(name));
+    }
+
+    const std::vector<PMesh>& App::GetMeshes() const
+    {
+        return meshes_;
+    }
+
+    const std::vector<PMaterial>& App::GetMaterials() const
+    {
+        return materials_;
+    }
+
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -363,10 +407,8 @@ namespace NSG
     {
         Graphics::this_->ClearAllBuffers();
         pApp_->RenderFrame();
-#if 1
+        UniformsUpdate::ClearAllUpdates();
         IMGUI::Context::this_->RenderGUI();
-#endif
-
         Graphics::this_->EndFrame();
     }
 
@@ -390,7 +432,7 @@ namespace NSG
         pApp_->OnMouseMove(x, y);
     }
 
-	void InternalApp::OnMouseDown(int button, float x, float y)
+    void InternalApp::OnMouseDown(int button, float x, float y)
     {
         screenX_ = x;
         screenY_ = y;
@@ -399,7 +441,7 @@ namespace NSG
         pApp_->OnMouseDown(button, x, y);
     }
 
-	void InternalApp::OnMouseUp(int button, float x, float y)
+    void InternalApp::OnMouseUp(int button, float x, float y)
     {
         IMGUI::OnMouseUp(button, x, y);
         pApp_->OnMouseUp(button, x, y);
@@ -472,9 +514,9 @@ namespace NSG
         Keyboard::this_->SetActivity(pActivity);
     }
 
-	void InternalApp::DropFile(const std::string& filePath)
+    void InternalApp::DropFile(const std::string& filePath)
     {
-		pApp_->DropFile(filePath);
+        pApp_->DropFile(filePath);
     }
 
 }

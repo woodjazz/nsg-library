@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "AppListeners.h"
 #include "VertexData.h"
+#include "Path.h"
 #include <string>
 #include <map>
 
@@ -35,7 +36,7 @@ namespace NSG
 	class FontAtlasTexture : public IViewChangedListener
 	{
 	public:
-		FontAtlasTexture(const std::string& filename);
+		FontAtlasTexture(const Path& path);
 		~FontAtlasTexture();
 		bool GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
 		GLfloat GetWidthForCharacterPosition(const char* text, unsigned int charPos);
@@ -48,6 +49,7 @@ namespace NSG
         bool ParseXML();
         PTexture texture_;
         PResource xmlResource_;
+		Path path_;
 		int viewWidth_;
 		int viewHeight_;
 
@@ -61,7 +63,6 @@ namespace NSG
 		
 		typedef std::map<int, CharInfo> CharsMap;
         CharsMap charsMap_;
-		std::string filename_;
 	};
 
 }

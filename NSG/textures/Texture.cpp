@@ -28,32 +28,191 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Check.h"
 #include "Graphics.h"
-#include "TextureFile.h"
-#include "TextureMemory.h"
+#include "TextureFileManager.h"
+#include "ResourceFileManager.h"
+#include "ResourceMemory.h"
+#include "ResourceFile.h"
+#include "Texture.h"
+#include "Path.h"
 #include "image_helper.h"
 #include "pugixml.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_FAILURE_USERMSG
+#include "stb_image.h"
+#include "jpgd.h"
 
 namespace NSG
 {
-    Texture::Texture(Flags flags)
-        : flags_(flags),
+    Texture::Texture(GLint format, GLsizei width, GLsizei height, const char* pixels)
+        : flags_((int)TextureFlag::NONE),
           texture_(0),
+          width_(width),
+          height_(height),
+          format_(format),
+          type_(GL_UNSIGNED_BYTE),
+          channels_(0),
+          serializable_(false),
+          fromKnownImgFormat_(false)
+
+    {
+        switch (format_)
+        {
+            case GL_ALPHA:
+            case GL_LUMINANCE:
+                channels_ = 1;
+                break;
+            case GL_LUMINANCE_ALPHA:
+                channels_ = 2;
+                break;
+            case GL_RGB:
+                channels_ = 3;
+                break;
+            case GL_RGBA:
+                channels_ = 4;
+                break;
+            case GL_DEPTH_COMPONENT:
+                channels_ = 0;
+                type_ = GL_UNSIGNED_INT;
+                break;
+            default:
+                CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
+                break;
+        }
+
+        pResource_ = PResource(new ResourceMemory(pixels, width * height * channels_));
+    }
+
+    Texture::Texture(PResourceMemory resource)
+		: flags_((int)TextureFlag::NONE),
+          texture_(0),
+          pResource_(resource),
           width_(0),
           height_(0),
           format_(GL_RGBA),
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
-          serializable_(true)
+          serializable_(false),
+          fromKnownImgFormat_(true)
+    {
+    }
+
+    Texture::Texture(const Path& path)
+		: flags_((int)TextureFlag::NONE),
+          texture_(0),
+          pResource_(ResourceFileManager::this_->GetOrCreate(path)),
+          width_(0),
+          height_(0),
+          format_(GL_RGBA),
+          type_(GL_UNSIGNED_BYTE),
+          channels_(0),
+          serializable_(true),
+          fromKnownImgFormat_(true)
+
+    {
+    }
+
+    Texture::Texture(PResourceFile resource)
+		: flags_((int)TextureFlag::NONE),
+          texture_(0),
+          pResource_(resource),
+          width_(0),
+          height_(0),
+          format_(GL_RGBA),
+          type_(GL_UNSIGNED_BYTE),
+          channels_(0),
+          serializable_(true),
+          fromKnownImgFormat_(true)
+
     {
     }
 
     Texture::~Texture()
     {
+        Context::RemoveObject(this);
+    }
+
+    GLuint Texture::GetID() const
+    {
+        return texture_;
+    }
+
+    GLsizei Texture::GetWidth() const
+    {
+        return width_;
+    }
+
+    GLsizei Texture::GetHeight() const
+    {
+        return height_;
+    }
+
+    GLint Texture::GetFormat() const
+    {
+        return format_;
+    }
+
+    int Texture::GetChannels() const
+    {
+        return channels_;
+    }
+
+    void Texture::SetSerializable(bool serializable)
+    {
+        serializable_ = serializable;
+    }
+
+    bool Texture::IsSerializable() const
+    {
+        return serializable_;
     }
 
     bool Texture::IsValid()
     {
         return pResource_->IsLoaded();
+    }
+
+    const unsigned char* Texture::GetImageData()
+    {
+        if (fromKnownImgFormat_)
+        {
+            const unsigned char* img = stbi_load_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 0);
+
+            if (!img)
+                img = jpgd::decompress_jpeg_image_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 4);
+
+            if (!img)
+                TRACE_LOG("Filename=" << pResource_->GetPath().GetFilePath() << " failed with reason: " << stbi_failure_reason());
+
+            if (img)
+            {
+                if (channels_ == 4)
+                {
+                    format_ = GL_RGBA;
+                }
+                else if (channels_ == 3)
+                {
+                    format_ = GL_RGB;
+                }
+                else
+                {
+                    format_ = GL_RGB;
+                    TRACE_LOG("Filename=" << pResource_->GetPath().GetFilePath() << " unknown internalformat. Channels = " << channels_ << " Width=" << width_ << " Height=" << height_);
+                    CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
+                }
+            }
+            return img;
+        }
+        else
+        {
+            const unsigned char* img = nullptr;
+
+            if (pResource_->GetBytes())
+            {
+                CHECK_ASSERT(width_ * height_ * channels_ == pResource_->GetBytes(), __FILE__, __LINE__);
+                img = (const unsigned char*)pResource_->GetData();
+            }
+            return img;
+        }
     }
 
     void Texture::AllocateResources()
@@ -66,7 +225,7 @@ namespace NSG
 
         const unsigned char* img = GetImageData();
 
-        if (flags_ & Flag::INVERT_Y)
+        if (flags_ & (int)TextureFlag::INVERT_Y)
         {
             unsigned char* inverted = (unsigned char*)malloc(channels_ * width_ * height_);
             memcpy(inverted, img, channels_ * width_ * height_);
@@ -132,9 +291,10 @@ namespace NSG
                      type_,
                      img);
 
-        FreeImageData(img);
+        if (fromKnownImgFormat_)
+            stbi_image_free((void*)img);
 
-        if (flags_ & Flag::GENERATE_MIPMAPS)
+        if (flags_ & (int)TextureFlag::GENERATE_MIPMAPS)
         {
             glGenerateMipmap(GL_TEXTURE_2D);
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -146,8 +306,6 @@ namespace NSG
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
 
-        Graphics::this_->SetTexture(0, nullptr);
-
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
@@ -158,20 +316,27 @@ namespace NSG
 
     PTexture Texture::CreateFrom(const pugi::xml_node& node)
     {
-        std::string type = node.attribute("type").as_string();
+        std::string flags = node.attribute("flags").as_string();
+        std::string filename = node.attribute("filename").as_string();
+        PTexture texture = TextureFileManager::this_->GetOrCreate(filename);
+		texture->SetFlags(flags);
+		return texture;
+    }
 
-        if (type == "TextureFile")
+    void Texture::Save(pugi::xml_node& node)
+    {
+        CHECK_ASSERT(!pResource_->GetPath().GetFilePath().empty(), __FILE__, __LINE__);
+        node.append_attribute("filename") = pResource_->GetPath().GetFilePath().c_str();
+        node.append_attribute("flags") = flags_.to_string().c_str();
+    }
+
+    void Texture::SetFlags(const TextureFlags& flags)
+    {
+        if(flags != flags_)
         {
-            std::string flags = node.attribute("flags").as_string();
-            std::string filename = node.attribute("filename").as_string();
-            return PTextureFile(new TextureFile(filename.c_str(), Texture::Flags(flags)));
-        }
-        else
-        {
-            int format = node.attribute("format").as_int();
-            int width = node.attribute("width").as_int();
-            int height = node.attribute("height").as_int();
-            return PTextureMemory(new TextureMemory(format, width, height, nullptr));
+            flags_ = flags;
+            Invalidate();
         }
     }
+
 }

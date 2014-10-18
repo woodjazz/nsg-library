@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "ResourceMemory.h"
 #include "Check.h"
 #include "Context.h"
+#include "Path.h"
 
 namespace NSG
 {
@@ -61,5 +62,12 @@ namespace NSG
 
         return loaded_;
     }
+
+    const Path& ResourceMemory::GetPath() const
+    {
+        CHECK_ASSERT(false, __FILE__, __LINE__);
+        return Path::GetEmpty();
+    }
+   
 
 }

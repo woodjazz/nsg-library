@@ -23,22 +23,37 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Resource.h"
+#include "TextureFileManager.h"
+#include "Texture.h"
+#include "Path.h"
 
 namespace NSG
 {
-	class Path;
-	class ResourceMemory : public Resource
-	{
-	public:
-		ResourceMemory(const char* buffer, size_t bytes);
-		ResourceMemory(const std::string& buffer);
-		~ResourceMemory();
-		bool IsLoaded() override;
-		const Path& GetPath() const override;
-	private:
-		const char* staticBuffer_;
-        size_t bytes_;
-	};
+    template<> TextureFileManager* Singleton<TextureFileManager>::this_ = nullptr;
+
+    TextureFileManager::TextureFileManager()
+    {
+
+    }
+
+    TextureFileManager::~TextureFileManager()
+    {
+        TextureFileManager::this_ = nullptr;
+    }
+
+    PTexture TextureFileManager::GetOrCreate(const Path& path)
+    {
+        auto it = map_.find(path);
+        if (it == map_.end())
+        {
+        	PTexture texture(new Texture(path));
+            texture->SetFlags((int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+            map_.insert(Map::value_type(path, texture));
+            return texture;
+        }
+        else
+        {
+        	return it->second;
+        }
+    }
 }

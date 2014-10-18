@@ -24,10 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <string>
+#include "Types.h"
 
 namespace NSG
 {
+	class Path;
 	class Resource
 	{
 	public:
@@ -37,9 +38,7 @@ namespace NSG
 		const char* const GetData() const { return buffer_.c_str(); }
 		size_t GetBytes() const { return buffer_.size(); }
         void Invalidate();
-		virtual const std::string& GetFileName() const;
-		virtual const std::string& GetFileFullPath() const;
-		virtual const std::string& GetFilePath() const;
+        virtual const Path& GetPath() const = 0;
 	protected:
 		bool loaded_;
 		std::string buffer_;

@@ -43,15 +43,16 @@ void CubeBehavior::Start()
 	sceneNode_->Set(pMesh);
 	sceneNode_->SetScale(Vector3(2, 2, 2));
 
-    PTexture wallTexture(new TextureFile("data/wall.jpg"));
-    PTexture wallNormalMapTexture(new TextureFile("data/wallnormalmap.jpg"));
+	PTexture wallTexture(app_.GetOrCreateTextureFile("data/wall.jpg"));
+	PTexture wallNormalMapTexture(app_.GetOrCreateTextureFile("data/wallnormalmap.jpg"));
     PMaterial pMaterial(app_.CreateMaterial("wall"));
-	PProgram perVertex(new Program("", Program::PER_PIXEL_LIGHTING | Program::NORMALMAP));
+	PProgram program(app_.CreateProgram());
+	program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::NORMALMAP);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
 
     technique->Add(pass);
-    pass->SetProgram(perVertex);
+	pass->SetProgram(program);
     pMaterial->SetTechnique(technique);
     pMaterial->SetTexture0(wallTexture);
     pMaterial->SetTexture1(wallNormalMapTexture);

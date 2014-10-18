@@ -40,13 +40,14 @@ EarthBehavior::~EarthBehavior()
 void EarthBehavior::Start()
 {
 	render2texture_ = PRender2Texture(new Render2Texture(512, 512));
-	showTexture_.SetNormal(render2texture_->GetTexture(), false);
+	showTexture_.SetNormal(render2texture_->GetTexture());
 
 	sceneNode_->Set(PSphereMesh(app_.CreateSphereMesh(3, 32)));
 
-	PTexture pEarthTexture(new TextureFile("data/stone.jpg"));
+	PTexture pEarthTexture(app_.GetOrCreateTextureFile("data/stone.jpg"));
 	PMaterial pMaterial(app_.CreateMaterial ("earth"));
-	PProgram program(new Program("", Program::PER_VERTEX_LIGHTING));
+	PProgram program(app_.CreateProgram());
+	program->SetFlags((int)ProgramFlag::PER_VERTEX_LIGHTING);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
     technique->Add(pass);

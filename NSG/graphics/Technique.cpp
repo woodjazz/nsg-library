@@ -28,63 +28,87 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Check.h"
 #include "Pass.h"
+#include "Program.h"
 #include "pugixml.hpp"
 
 namespace NSG
 {
-	Technique::Technique()
-	{
-	}
+    Technique::Technique()
+    {
+    }
 
-	Technique::~Technique()
-	{
+    Technique::~Technique()
+    {
 
-	}
+    }
 
-	void Technique::Add(PPass pass)
-	{
-		CHECK_ASSERT(passes_.size() < Technique::MAX_PASSES, __FILE__, __LINE__);
-		passes_.push_back(pass);
-	}
+    void Technique::Add(PPass pass)
+    {
+        CHECK_ASSERT(passes_.size() < Technique::MAX_PASSES, __FILE__, __LINE__);
+        passes_.push_back(pass);
+    }
 
-	size_t Technique::GetNumPasses() const
-	{
-		return passes_.size();
-	}
+    size_t Technique::GetNumPasses() const
+    {
+        return passes_.size();
+    }
 
-	bool Technique::Render()
-	{
-		bool drawn = false;
-		auto it = passes_.begin();
-		while(it != passes_.end())
-			drawn |= (*it++)->Render();
-		return drawn;
-	}
+    bool Technique::Render()
+    {
+        bool drawn = false;
+        auto it = passes_.begin();
+        while (it != passes_.end())
+            drawn |= (*it++)->Render();
+        return drawn;
+    }
 
-	void Technique::Save(pugi::xml_node& node)
-	{
-		pugi::xml_node child = node.append_child("Technique");
-		if(passes_.size())
-		{
-			pugi::xml_node childPasses = child.append_child("Passes");
-			for(auto& obj: passes_)
-				obj->Save(childPasses);
-		}
-	}
+    void Technique::Save(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Technique");
+        if (passes_.size())
+        {
+            pugi::xml_node childPasses = child.append_child("Passes");
+            for (auto& obj : passes_)
+                obj->Save(childPasses);
+        }
+    }
 
-	void Technique::Load(const pugi::xml_node& node)
-	{
-		pugi::xml_node childPasses = node.child("Passes");
-		if(childPasses)
-		{
-			pugi::xml_node childPass = childPasses.child("Pass");
-			while(childPass)
-			{
-				PPass pass(new Pass);
-				Add(pass);
-				pass->Load(childPass);
-				childPass = node.next_sibling("Pass");
-			}
-		}
-	}
+    void Technique::Load(const pugi::xml_node& node)
+    {
+        pugi::xml_node childPasses = node.child("Passes");
+        if (childPasses)
+        {
+            pugi::xml_node childPass = childPasses.child("Pass");
+            while (childPass)
+            {
+                PPass pass(new Pass);
+                Add(pass);
+                pass->Load(childPass);
+                childPass = node.next_sibling("Pass");
+            }
+        }
+    }
+
+	void Technique::EnableProgramFlags(const ProgramFlags& flags)
+    {
+        for (auto& pass : passes_)
+        {
+            PProgram program = pass->GetProgram();
+			ProgramFlags currentFlags = program->GetFlags();
+            currentFlags |= flags;
+            program->SetFlags(currentFlags);
+        }
+    }
+
+	void Technique::DisableProgramFlags(const ProgramFlags& flags)
+    {
+        for (auto& pass : passes_)
+        {
+            PProgram program = pass->GetProgram();
+			ProgramFlags currentFlags = program->GetFlags();
+            currentFlags &= ~flags;
+            program->SetFlags(currentFlags);
+        }
+    }
+
 }

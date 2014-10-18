@@ -36,13 +36,15 @@ namespace NSG
 	class Resource;
 	struct Context : public Singleton<Context>
 	{
+		PResourceFileManager resourceFileManager_;
+		PTextureFileManager textureFileManager_;
 		PGraphics graphics_;
 		PAppStatistics statistics_;
 		PBufferManager bufferManager_;
 		PFontAtlasTextureManager atlasManager_;
 		IMGUI::PContext imgui_;
 		PAudio audio_;
-		
+
 		std::set<GPUObject*> objects_;
 		std::set<Resource*> resources_;
 		PKeyboard keyboard_;

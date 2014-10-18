@@ -64,8 +64,7 @@ namespace NSG
         frameBuffer_ = PFrameBuffer(new FrameBuffer(windowWidth_, windowHeight_, frameBufferFlags));
 
         PPass pass(new Pass);
-		Program* program = new Program;
-        pass->SetProgram(PProgram(program));
+		pass->SetProgram(app_.CreateProgram());
 
         PTechnique technique(new Technique);
         technique->Add(pass);

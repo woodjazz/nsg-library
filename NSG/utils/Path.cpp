@@ -24,18 +24,45 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Path.h"
+#include "Check.h"
+#if WIN32
+#include <Windows.h>
+#elif defined(EMSCRIPTEN)
+#include <emscripten.h>
+#include <unistd.h>
+#elif defined(__APPLE__) && defined(SDL)
+#include "SDL.h"
+#else
+#include <stdio.h>
+#include <unistd.h>
+#include <cerrno>
+#endif
+
 #include <regex>
 #include <cctype>
 
 namespace NSG
 {
+    Path::Path()
+        : isAbsolutePath_(false)
+    {
+    }
+
+    Path::Path(const char* filePath)
+        : Path(std::string(filePath))
+    {
+    }
+
     Path::Path(const std::string& filePath)
         : filePath_(filePath)
     {
-        ReplaceChar(filePath_, '\\', '/');
-        path_ = ExtractPath(filePath_);
-        filename_ = ExtractFilename(filePath_);
-        ext_ = GetLowercaseFileExtension(filePath_);
+        Path::ReplaceChar(filePath_, '\\', '/');
+        path_ = Path::ExtractPath(filePath_);
+        filename_ = Path::ExtractFilename(filePath_, true);
+        name_ = Path::ExtractFilename(filePath_, false);
+        if (!path_.empty() || !name_.empty())
+            pathName_ = path_ + "/" + name_;
+        ext_ = Path::GetLowercaseFileExtension(filePath_);
 
         isAbsolutePath_ = filePath_.size() && (filePath_[0] == '/');
 
@@ -45,11 +72,29 @@ namespace NSG
                 isAbsolutePath_ = std::isalpha(filePath_[0]) && filePath_[1] == ':' && filePath_[2] == '/';
         }
         #endif
+
+        if (isAbsolutePath_)
+        {
+            absolutePath_ = path_;
+        }
+        else
+        {
+			static std::string current_path = Path::GetCurrentDir(); //capture current dir
+			absolutePath_ = current_path;
+			if (!path_.empty())
+				absolutePath_ += path_;
+        }
+
+        fullFilePath_ = absolutePath_ + "/" + filename_;
     }
 
     Path::Path(const Path& obj)
         : filePath_(obj.filePath_),
+          fullFilePath_(obj.fullFilePath_),
+          pathName_(obj.pathName_),
           path_(obj.path_),
+          absolutePath_(obj.absolutePath_),
+          name_(obj.name_),
           filename_(obj.filename_),
           ext_(obj.ext_),
           isAbsolutePath_(obj.isAbsolutePath_)
@@ -81,13 +126,23 @@ namespace NSG
         return "";
     }
 
-    std::string Path::ExtractFilename(const std::string& filePath)
+    std::string Path::ExtractFilename(const std::string& filePath, bool extension)
     {
+        std::string filename;
         const size_t idx = filePath.find_last_of('/');
         if (idx != std::string::npos)
-            return filePath.substr(idx + 1);
+            filename = filePath.substr(idx + 1);
         else
-            return filePath;
+            filename = filePath;
+
+        if (!extension)
+        {
+            std::string::size_type pos = filename.find_last_of(".");
+            if (pos != std::string::npos)
+                return filename.substr(0, pos);
+        }
+
+        return filename;
     }
 
     std::string Path::GetLowercaseFileExtension(const std::string& filePath)
@@ -103,4 +158,83 @@ namespace NSG
 
         return extension;
     }
+
+	std::vector<std::string> Path::GetDirs(const std::string& path)
+	{
+		std::vector<std::string> dirs;
+		std::string tmp(path);
+		std::string::size_type pos = tmp.find("/");
+		while (pos != std::string::npos)
+		{
+			dirs.push_back(tmp.substr(0, pos));
+			tmp = tmp.substr(pos+1);
+			pos = tmp.find("/");
+		}
+
+		if (!tmp.empty())
+			dirs.push_back(tmp);
+
+		return dirs;
+	}
+
+    const Path& Path::GetEmpty()
+    {
+        static Path path;
+        return path;
+    }
+
+    std::string Path::GetCurrentDir()
+    {
+        #if WIN32
+        {
+            char buffer[MAX_PATH_SIZE];
+            DWORD n = ::GetCurrentDirectoryA(sizeof(buffer), buffer);
+            CHECK_CONDITION(n > 0 && n < sizeof(buffer), __FILE__, __LINE__);
+            std::string result(buffer, n);
+            if (result[n - 1] != '\\')
+                result.append("/");
+
+            Path::ReplaceChar(result, '\\', '/');
+            return result;
+        }
+        #elif defined(__APPLE__) && defined(SDL)
+        {
+            char* base_path = SDL_GetBasePath();
+            CHECK_CONDITION(base_path, __FILE__, __LINE__);
+            std::string path(base_path);
+            SDL_free(base_path);
+            return path;
+        }
+        #else
+        {
+            std::string path;
+            char cwd[MAX_PATH_SIZE];
+            getcwd(cwd, sizeof(cwd));
+            CHECK_CONDITION(getcwd(cwd, sizeof(cwd)), __FILE__, __LINE__);
+            path = cwd;
+            std::string::size_type n = path.size();
+            if (n > 0 && path[n - 1] != '/') path.append("/");
+            return path;
+        }
+        #endif
+    }
+
+    bool Path::operator < (const Path& obj) const
+    {
+        return fullFilePath_ < obj.fullFilePath_;
+    };
+
+    std::ostream& operator << (std::ostream& s , const Path& obj)
+    {
+        s << "IsRelativePath=" << std::boolalpha << obj.IsPathRelative() << "\n";
+        s << "FilePath=" << obj.GetFilePath() << "\n";
+        s << "FullAbsoluteFilePath=" << obj.GetFullAbsoluteFilePath() << "\n";
+        s << "Path=" << obj.GetPath() << "\n";
+        s << "AbsolutePath=" << obj.GetAbsolutePath() << "\n";
+        s << "PathAndName=" << obj.GetPathAndName() << "\n";
+        s << "Filename=" << obj.GetFilename() << "\n";
+        s << "Extension=" << obj.GetExtension() << "\n";
+        return s;
+    }
+
 }

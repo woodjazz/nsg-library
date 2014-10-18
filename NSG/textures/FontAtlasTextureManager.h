@@ -30,12 +30,13 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Path;
 	class FontAtlasTextureManager : public Singleton<FontAtlasTextureManager>
 	{
 	public:
 		FontAtlasTextureManager();
 		~FontAtlasTextureManager();
-		PFontAtlasTexture GetAtlas(const std::string& textureFilename);
+		PFontAtlasTexture GetAtlas(const Path& path);
 		void Invalidate();
 	private:
 		

@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-
 struct Sample : App
 {
     PScene scene_;
@@ -45,7 +44,7 @@ struct Sample : App
 		scene_ = GetCurrentScene();
 
 
-        PResourceFile resource(new ResourceFile("data/scene.xml"));
+		PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
 		scene_->Load(resource);
 
         PCamera camera;

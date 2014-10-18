@@ -29,8 +29,6 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "GPUObject.h"
 #include "Constants.h"
-#include "FlagSet.h"
-#include <string>
 
 namespace NSG
 {
@@ -38,29 +36,9 @@ namespace NSG
     class Program : public GPUObject
     {
     public:
-        enum Flag
-        {	
-			NONE = 0,
-            PER_VERTEX_LIGHTING = 1 << 0,
-            PER_PIXEL_LIGHTING = 1 << 1,
-            BLEND = 1 << 2,
-            BLUR = 1 << 3,
-            TEXT = 1 << 4,
-            SHOW_TEXTURE0 = 1 << 5,
-            SHOW_TEXTURE0_INVERT_Y = 1 << 6,
-            STENCIL = 1 << 7,
-            NORMALMAP = 1 << 8,
-            LIGHTMAP = 1 << 9,
-            UNLIT = 1 << 10
-        };
-
-        typedef FlagSet<Flag> Flags;
-
-        Program(const std::string& name = "", Flags flags = NONE);
         virtual ~Program();
         void SetVertexShader(PResource resource);
         void SetFragmentShader(PResource resource);
-
         bool Initialize();
         void Set(ExtraUniforms* pExtraUniforms)
         {
@@ -111,9 +89,10 @@ namespace NSG
         }
         void Save(pugi::xml_node& node);
         static PProgram CreateFrom(const pugi::xml_node& node);
-        const Flags& GetFlags() const { return flags_; }
-        void SetFlags(const Flags& flags) { flags_ = flags; }
+        const ProgramFlags& GetFlags() const { return flags_; }
+		void SetFlags(const ProgramFlags& flags);
     private:
+        Program(const std::string& name);
         void SetSceneVariables(Scene* scene);
         void SetCameraVariables();
         void SetNodeVariables(Node* node);
@@ -130,7 +109,7 @@ namespace NSG
         void SetBaseLightVariables(const BaseLightLoc& baseLoc, const Light* light);
         bool SetLightVariables(Scene* scene);
 
-        Flags flags_;
+        ProgramFlags flags_;
         GLuint id_;
         ExtraUniforms* pExtraUniforms_;
 
@@ -239,5 +218,7 @@ namespace NSG
         PResource vertexShader_;
         PResource fragmentShader_;
         Graphics& graphics_;
+
+        friend class App;
     };
 }

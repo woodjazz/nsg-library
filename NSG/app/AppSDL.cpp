@@ -316,13 +316,11 @@ namespace NSG
         height = AppConfiguration::this_->height_;
 
         #if EMSCRIPTEN
+        SDL_Surface* screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
+        if (!screen)
         {
-            SDL_Surface* screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
-            if (!screen)
-            {
-                TRACE_LOG("Failed to set screen video mode \n");
-                return false;
-            }
+            TRACE_LOG("Failed to set screen video mode \n");
+            return false;
         }
         #else
         {

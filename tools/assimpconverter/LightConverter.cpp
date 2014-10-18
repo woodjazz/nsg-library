@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 
 #include "LightConverter.h"
-#include "TextureFile.h"
+#include "Texture.h"
 #include "Check.h"
 #include "Util.h"
 #include "Constants.h"

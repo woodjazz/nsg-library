@@ -25,40 +25,71 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-#include "ModelBehavior.h"
-#include "CameraBehavior.h"
-#include "LightBehavior.h"
+#include "SceneConverter.h"
 using namespace NSG;
 
-struct Sample : App
+
+struct MyApp : App
 {
     PScene scene_;
-    PCamera camera_;
-    PSceneNode earth_;
-    PLight light_;
+	PCamera camera_;
+	PCameraControl cameraControl_;
+	std::string resourcePath_;
 
-    Sample()
+	MyApp()
     {
         //AppConfiguration::this_->width_ = 30;
         //AppConfiguration::this_->height_ = 20;
-        AppConfiguration::this_->showStatistics_ = true;
+        AppConfiguration::this_->showStatistics_ = false;
     }
 
     void Start(int argc, char* argv[]) override
     {
 		scene_ = GetCurrentScene();
-        scene_->SetAmbientColor(Color(0.7f, 0.7f, 0.7f, 1));
+		camera_ = scene_->CreateCamera("EditorCamera");
+		camera_->SetSerializable(false);
+		camera_->SetInheritScale(false);
+		cameraControl_ = PCameraControl(new CameraControl);
+		camera_->AddBehavior(cameraControl_);
+    }
 
-		camera_ = scene_->CreateCamera("camera");
-        camera_->AddBehavior(PBehavior(new CameraBehavior));
-        camera_->Activate();
+    void DropFile(const std::string& filePath) override
+    {
+		Path path(filePath);
+		resourcePath_ = path.GetPath();
+		App::DropFile(path.GetFilePath());
+		SceneConverter scene(path);
+		if (!scene.Load())
+		{
+			std::string extension = path.GetExtension();
+			if (extension == "xml")
+			{
+				PResourceFile resource(GetOrCreateResourceFile(path));
+				scene_->Load(resource);
+			}
+		}
 
-		earth_ = scene_->CreateSceneNodeFrom(GetOrCreateResourceFile("data/scene.xml"), "SceneRootNode");
-		earth_->AddBehavior(PBehavior(new ModelBehavior));
+		camera_->Activate();
+		cameraControl_->AutoZoom();
+    }
 
-		light_ = scene_->CreateLight("light");
-		light_->AddBehavior(PBehavior(new LightBehavior));
+    void RenderGUIWindow() override
+	{
+        using namespace IMGUI;
+		IMGUIBeginHorizontal(100, Pixels2PercentageY(25));
+		if (IMGUIButton("Save", 20))
+		{
+			pugi::xml_document doc;
+			scene_->Save(doc);
+			doc.save_file((resourcePath_ + "/scene.xml").c_str());
+		}
+		if (IMGUIButton("Point Light", 20))
+		{
+			PLight light = scene_->CreatePointLight("");
+			light->SetPosition(Vertex3(100, 100, 100));
+		}
+        IMGUIEndArea();
     }
 };
 
-NSG_MAIN(Sample);
+NSG_MAIN(MyApp);

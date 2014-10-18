@@ -30,10 +30,11 @@ struct Mix_Chunk;
 
 namespace NSG
 {
+	class Path;
     class Sound
     {
     public:
-        Sound(const std::string& filename);
+		Sound(PResource resource);
         ~Sound();
         bool Play(bool loop = false);
 		void Stop();
@@ -42,7 +43,6 @@ namespace NSG
         bool IsPlaying() const;
         bool IsReady();
     private:
-        std::string filename_;
         PResource resource_;
         bool isReady_;
         Mix_Chunk* sound_;

@@ -60,7 +60,8 @@ struct Sample : App
 		light_ = scene_->CreateLight("light");
 		light_->AddBehavior(PBehavior(new LightBehavior));
 
-        music_ = PMusic(new Music("data/nice_music.ogg"));
+		PResourceFile resource(ResourceFileManager::this_->GetOrCreate("data/nice_music.ogg"));
+		music_ = PMusic(new Music(resource));
         music_->Play();
     }
 };

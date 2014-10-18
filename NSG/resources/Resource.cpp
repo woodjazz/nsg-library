@@ -46,24 +46,4 @@ namespace NSG
 		buffer_.clear();
 		loaded_ = false;
 	}
-
-	static std::string emptyStr;
-	const std::string& Resource::GetFileName() const
-	{
-		CHECK_ASSERT(false, __FILE__, __LINE__);
-		return emptyStr;
-	}
-
-	const std::string& Resource::GetFileFullPath() const
-	{
-		CHECK_ASSERT(false, __FILE__, __LINE__);
-		return emptyStr;
-	}
-
-	const std::string& Resource::GetFilePath() const
-	{
-		CHECK_ASSERT(false, __FILE__, __LINE__);
-		return emptyStr;
-	}
-
 }
