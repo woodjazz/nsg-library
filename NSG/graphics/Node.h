@@ -69,6 +69,7 @@ namespace NSG
         PNode GetChild(size_t idx) const { return children_.at(idx); }
         static void GetChildrenRecursive(PNode node, const std::string& name, std::vector<PNode>& result);
 		static void GetChildrenRecursive(PNode node, std::vector<PNode>& result);
+        static PNode GetUniqueNodeFrom(PNode node, const std::string& name);
         template <typename T> static std::vector<T*> GetChildrenRecursiveOfType(PNode node)
         {
             std::vector<T*> results;
@@ -104,7 +105,7 @@ namespace NSG
             }
             return nullptr;
         }
-        std::vector<PNode> GetChildren() const { return children_; }
+        const std::vector<PNode>& GetChildren() const { return children_; }
         bool IsDirty() const { return dirty_; }
         virtual void Save(pugi::xml_node& node);
         void SetName(const std::string& name) { name_ = name; }

@@ -97,21 +97,21 @@ namespace NSG
         {
             switch (pOrigin)
             {
-                case aiOrigin_SET:
-                    pos_ = pOffset;
-                    break;
+            case aiOrigin_SET:
+                pos_ = pOffset;
+                break;
 
-                case aiOrigin_CUR:
-                    pos_ += pOffset;
-                    break;
+            case aiOrigin_CUR:
+                pos_ += pOffset;
+                break;
 
-                case aiOrigin_END:
-                    pos_ += pOffset;
-                    break;
+            case aiOrigin_END:
+                pos_ += pOffset;
+                break;
 
-                default:
-                    CHECK_ASSERT(false && "Incorrect pOrigin for Seek", __FILE__, __LINE__);
-                    return aiReturn_FAILURE;
+            default:
+                CHECK_ASSERT(false && "Incorrect pOrigin for Seek", __FILE__, __LINE__);
+                return aiReturn_FAILURE;
             }
 
             return aiReturn_SUCCESS;
@@ -183,11 +183,11 @@ namespace NSG
     {
         CachedData data;
         LoadMeshesAndMaterials(scene, data);
-		PSceneNode root = scene_->CreateSceneNode("RootNode");
-		RecursiveLoad(scene, scene->mRootNode, root.get(), data);
+        PSceneNode root = scene_->CreateSceneNode("RootNode");
+        RecursiveLoad(scene, scene->mRootNode, root.get(), data);
         LoadAnimations(scene);
         LoadBones(scene, data);
-		MarkProgramAsSkinableNodes();
+        MarkProgramAsSkinableNodes();
     }
 
     void SceneConverter::LoadAnimations(const aiScene* sc)
@@ -275,12 +275,78 @@ namespace NSG
         return nullptr;
     }
 
+    const aiNode* SceneConverter::GetMeshNode(const aiScene* sc, const aiNode* node, const aiMesh* aiMesh)
+    {
+        for (size_t i = 0; i < node->mNumMeshes; ++i)
+        {
+            unsigned meshIndex = node->mMeshes[i];
+            if (aiMesh == sc->mMeshes[meshIndex])
+                return node;
+        }
+
+        for (size_t i = 0; i < node->mNumChildren; ++i)
+        {
+            const aiNode* child = node->mChildren[i];
+            const aiNode* result = GetMeshNode(sc, child, aiMesh);
+            if (result) return result;
+        }
+
+        return nullptr;
+
+    }
+
+    aiMatrix4x4 SceneConverter::GetDerivedTransform(const aiNode* node, const aiNode* rootNode, bool rootInclusive)
+    {
+        return GetDerivedTransform(node->mTransformation, node, rootNode, rootInclusive);
+    }
+
+    aiMatrix4x4 SceneConverter::GetDerivedTransform(aiMatrix4x4 transform, const aiNode* node, const aiNode* rootNode, bool rootInclusive)
+    {
+        // If basenode is defined, go only up to it in the parent chain
+        while (node && node != rootNode)
+        {
+            node = node->mParent;
+            if (!rootInclusive && node == rootNode)
+                break;
+            if (node)
+                transform = node->mTransformation * transform;
+        }
+        return transform;
+    }
+
+    aiMatrix4x4 SceneConverter::GetMeshBakingTransform(const aiNode* meshNode, const aiNode* modelRootNode)
+    {
+        if (meshNode == modelRootNode)
+            return aiMatrix4x4();
+        else
+            return GetDerivedTransform(meshNode, modelRootNode);
+    }
+
+    Matrix4 SceneConverter::GetOffsetMatrix(const aiMesh* mesh, const aiNode* rootNode, const aiNode* node, const std::string& boneName)
+    {
+        for (unsigned j = 0; j < mesh->mNumBones; ++j)
+        {
+            aiBone* bone = mesh->mBones[j];
+            if (boneName == bone->mName.C_Str())
+            {
+                aiMatrix4x4 offset = bone->mOffsetMatrix;
+                aiMatrix4x4 nodeDerivedInverse = GetMeshBakingTransform(node, rootNode);
+                nodeDerivedInverse.Inverse();
+                offset *= nodeDerivedInverse;
+                return ToMatrix(offset);
+            }
+        }
+        return IDENTITY_MATRIX;
+    }
     void SceneConverter::LoadBones(const aiScene* sc, const aiMesh* aiMesh, PMesh mesh)
     {
         std::set<aiNode*> necessary;
         std::set<aiNode*> rootNodes;
 
         aiNode* rootNode = nullptr;
+        const aiNode* meshNode = GetMeshNode(sc, sc->mRootNode, aiMesh);
+        CHECK_ASSERT(meshNode, __FILE__, __LINE__);
+        const aiNode* meshParentNode = meshNode->mParent;
 
         for (unsigned i = 0; i < aiMesh->mNumBones; ++i)
         {
@@ -294,21 +360,13 @@ namespace NSG
                 return;
             }
 
-			{
-				std::vector<PNode> nodes;
-				Node::GetChildrenRecursive(scene_, boneName, nodes);
-				CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
-				nodes[0]->SetBoneOffsetMatrix(ToMatrix(bone->mOffsetMatrix));
-			}
-
-
             necessary.insert(boneNode);
             rootNode = boneNode;
 
             for (;;)
             {
                 boneNode = boneNode->mParent;
-                if (!boneNode)
+                if (!boneNode || boneNode == meshNode || boneNode == meshParentNode)
                     break;
                 rootNode = boneNode;
                 necessary.insert(boneNode);
@@ -341,55 +399,62 @@ namespace NSG
         if (rootNodes.empty())
             return;
 
-        MakeSkeleton(mesh, *rootNodes.begin(), necessary);
+        aiNode* rootBone = *rootNodes.begin();
+        std::vector<aiNode*> bones;
+        GetFinal(bones, necessary, rootBone);
+        MakeSkeleton(aiMesh, mesh, rootBone, bones);
     }
 
-    void SceneConverter::MakeSkeleton(PMesh mesh, const aiNode* rootBone, const std::set<aiNode*>& bones)
+    void SceneConverter::GetFinal(std::vector<aiNode*>& dest, const std::set<aiNode*>& necessary, aiNode* node)
+    {
+        if (necessary.find(node) != necessary.end())
+            dest.push_back(node);
+
+        for (unsigned i = 0; i < node->mNumChildren; ++i)
+            GetFinal(dest, necessary, node->mChildren[i]);
+    }
+
+    void SceneConverter::MakeSkeleton(const aiMesh* aiMesh, PMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones)
     {
         PSkeleton skeleton(new Skeleton(mesh));
-        std::vector<PNode> nodes;
-        Node::GetChildrenRecursive(scene_, rootBone->mName.C_Str(), nodes);
-        CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
-        PNode root = nodes[0];
+        PNode root = Node::GetUniqueNodeFrom(scene_, rootBone->mName.C_Str());
         std::vector<PNode> nodeBones;
-        for (auto obj : bones)
+        for (auto bone : bones)
         {
-            std::string name = obj->mName.C_Str();
-            nodes.clear();
-            Node::GetChildrenRecursive(scene_, name, nodes);
-            CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
-            nodeBones.push_back(nodes[0]);
+            PNode node = Node::GetUniqueNodeFrom(scene_, bone->mName.C_Str());
+            node->SetBoneOffsetMatrix(GetOffsetMatrix(aiMesh, rootBone, bone, node->GetName()));
+            nodeBones.push_back(node);
         }
         skeleton->SetRoot(root);
         skeleton->SetBones(nodeBones);
         mesh->SetSkeleton(skeleton);
     }
 
-	void SceneConverter::MarkProgramAsSkinableNodes()
+    void SceneConverter::MarkProgramAsSkinableNodes()
     {
-		std::vector<SceneNode*> nodes = Node::GetChildrenRecursiveOfType<SceneNode>(scene_);
-		for (auto obj : nodes)
-		{
-			PMaterial material = obj->GetMaterial();
-			if (material)
-			{
-				PTechnique technique = material->GetTechnique();
-				technique->EnableProgramFlags((int)ProgramFlag::SKINNED);
-			}
-		}
+        std::vector<SceneNode*> nodes = Node::GetChildrenRecursiveOfType<SceneNode>(scene_);
+        for (auto obj : nodes)
+        {
+            PMaterial material = obj->GetMaterial();
+            if (material)
+            {
+                PTechnique technique = material->GetTechnique();
+                technique->EnableProgramFlags((int)ProgramFlag::SKINNED);
+            }
+        }
     }
 
     void SceneConverter::GetBlendData(PMesh mesh, const aiMesh* aiMesh) const
     {
         PSkeleton skeleton = mesh->GetSkeleton();
-        if(!skeleton) return;
+        if (!skeleton) return;
         std::vector<std::vector<unsigned>> blendIndices;
         std::vector<std::vector<float>> blendWeights;
 
         blendIndices.resize(aiMesh->mNumVertices);
         blendWeights.resize(aiMesh->mNumVertices);
 
-		CHECK_CONDITION(mesh->GetVertexsData().size() == aiMesh->mNumVertices, __FILE__, __LINE__);
+        CHECK_CONDITION(mesh->GetVertexsData().size() == aiMesh->mNumVertices, __FILE__, __LINE__);
 
         for (unsigned i = 0; i < aiMesh->mNumBones; ++i)
         {
@@ -414,8 +479,8 @@ namespace NSG
             }
         }
 
-		CHECK_CONDITION(mesh->GetVertexsData().size() == blendIndices.size(), __FILE__, __LINE__);
-		CHECK_CONDITION(mesh->GetVertexsData().size() == blendWeights.size(), __FILE__, __LINE__);
+        CHECK_CONDITION(mesh->GetVertexsData().size() == blendIndices.size(), __FILE__, __LINE__);
+        CHECK_CONDITION(mesh->GetVertexsData().size() == blendWeights.size(), __FILE__, __LINE__);
 
         skeleton->SetBlendData(blendIndices, blendWeights);
     }

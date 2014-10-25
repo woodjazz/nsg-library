@@ -109,6 +109,15 @@ namespace NSG
 		for (auto& child : node->children_)
 			child->GetChildrenRecursive(child, name, result);
 	}
+    
+	PNode Node::GetUniqueNodeFrom(PNode node, const std::string& name)
+	{
+        std::vector<PNode> result;
+        GetChildrenRecursive(node, name, result);
+        CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+        return result[0];
+	}
+
 
 	void Node::GetChildrenRecursive(PNode node, std::vector<PNode>& result)
 	{

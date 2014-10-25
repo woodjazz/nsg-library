@@ -32,10 +32,12 @@ struct Sample : App
     PScene scene_;
     PLight light_;
 
+
     Sample()
     {
         AppConfiguration::this_->showStatistics_ = false;
     }
+
 
     void Start(int argc, char* argv[]) override
     {
