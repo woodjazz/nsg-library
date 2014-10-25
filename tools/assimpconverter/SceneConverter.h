@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include <vector>
 
 struct aiScene;
+struct aiMesh;
 struct aiNode;
 struct aiLight;
 struct aiCamera;
@@ -55,7 +56,14 @@ namespace NSG
 		bool Save(const std::string& filename);
 		bool Load();
 	private:
+		void MarkProgramAsSkinableNodes();
+		void GetBlendData(PMesh mesh, const aiMesh* aiMesh) const;
+		void MakeSkeleton(PMesh mesh, const aiNode* rootBone, const std::set<aiNode*>& bones);
+		aiNode* GetNode(const std::string& name, aiNode* rootNode);
+		void LoadBones(const aiScene* sc, CachedData& data);
+		void LoadBones(const aiScene* sc, const aiMesh* aiMesh, PMesh mesh);
 		void Load(const aiScene* sc);
+		void LoadAnimations(const aiScene* sc);
 		const aiCamera* GetCamera(const aiScene* sc, const aiString& name) const;
 		const aiLight* GetLight(const aiScene* sc, const aiString& name) const;
 		void LoadMeshesAndMaterials(const aiScene* sc, CachedData& data);

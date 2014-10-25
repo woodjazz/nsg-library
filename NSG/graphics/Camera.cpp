@@ -40,8 +40,8 @@ namespace NSG
 {
     Camera* activeCamera = nullptr;
 
-    Camera::Camera(const std::string& name, Scene* scene)
-        : SceneNode(name, scene),
+    Camera::Camera(const std::string& name)
+        : SceneNode(name),
           fovy_(glm::radians(45.0f)),
           zNear_(0.1f),
           zFar_(250),

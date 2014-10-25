@@ -33,6 +33,8 @@ namespace NSG
         : Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage),
           vao_(0)
     {
+		CHECK_ASSERT(bufferSize >= bytesNeeded, __FILE__, __LINE__);
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         CHECK_CONDITION(graphics_.SetVertexBuffer(this), __FILE__, __LINE__);

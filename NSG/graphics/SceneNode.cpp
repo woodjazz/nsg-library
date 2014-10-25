@@ -42,24 +42,21 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    SceneNode::SceneNode(const std::string& name, Scene* scene)
+    SceneNode::SceneNode(const std::string& name)
         : Node(name),
+		app_(*App::this_),
           octant_(nullptr),
           occludee_(false),
           worldBBNeedsUpdate_(true),
-          meshIndex_(-1),
-          materialIndex_(-1),
-          scene_(scene),
-          app_(*App::this_),
           serializable_(true)
     {
-        CHECK_ASSERT(scene, __FILE__, __LINE__);
     }
 
     SceneNode::~SceneNode()
     {
-        if (scene_->GetOctree())
-            scene_->GetOctree()->Remove(this);
+		PScene scene = app_.GetCurrentScene();
+		if (scene && scene->GetOctree())
+			GetScene()->GetOctree()->Remove(this);
         Context::RemoveObject(this);
     }
 
@@ -111,7 +108,7 @@ namespace NSG
 
     PSceneNode SceneNode::CreateChild(const std::string& name)
     {
-        PSceneNode obj(new SceneNode(name, scene_));
+        PSceneNode obj(new SceneNode(name));
         AddChild(obj);
         return obj;
     }
@@ -131,13 +128,13 @@ namespace NSG
             if (!mesh)
             {
                 occludee_ = false;
-                scene_->GetOctree()->Remove(this);
+				GetScene()->GetOctree()->Remove(this);
             }
             else
             {
                 occludee_ = true;
                 worldBBNeedsUpdate_ = true;
-                scene_->GetOctree()->InsertUpdate(this);
+				GetScene()->GetOctree()->InsertUpdate(this);
             }
         }
     }
@@ -146,7 +143,7 @@ namespace NSG
     {
         if (mesh_)
         {
-            scene_->GetOctree()->InsertUpdate(this);
+			GetScene()->GetOctree()->InsertUpdate(this);
         }
     }
 
@@ -154,7 +151,7 @@ namespace NSG
     {
         if (mesh_)
         {
-            scene_->GetOctree()->Remove(this);
+			GetScene()->GetOctree()->Remove(this);
         }
     }
 
@@ -252,8 +249,10 @@ namespace NSG
     {
         worldBBNeedsUpdate_ = true;
 
-        if (octant_)
-            scene_->NeedUpdate((SceneNode*)this);
+		if (octant_)
+		{
+			GetScene()->NeedUpdate((SceneNode*)this);
+		}
     }
 
     const BoundingBox& SceneNode::GetWorldBoundingBox() const
@@ -279,10 +278,17 @@ namespace NSG
         BoundingBox bb(GetWorldBoundingBox());
 
         for (auto& obj : children_)
-            bb.Merge(obj->GetWorldBoundingBoxBut(node));
+            bb.Merge(dynamic_cast<SceneNode*>(obj.get())->GetWorldBoundingBoxBut(node));
 
         return bb;
     }
+
+	void SceneNode::GetMaterials(std::vector<PMaterial>& materials) const
+	{
+		materials.push_back(material_);
+		for (auto& obj : children_)
+			dynamic_cast<SceneNode*>(obj.get())->GetMaterials(materials);
+	}
 
     void SceneNode::Save(pugi::xml_node& node)
     {
@@ -315,18 +321,26 @@ namespace NSG
             child.append_attribute("scale") = ss.str().c_str();
         }
 
-        if (materialIndex_ != -1)
+        if (material_)
         {
-            std::stringstream ss;
-            ss << materialIndex_;
-            child.append_attribute("materialIndex") = ss.str().c_str();
+            int materialIndex = App::this_->GetMaterialSerializableIndex(material_);
+            if(materialIndex != -1)
+            {
+                std::stringstream ss;
+                ss << materialIndex;
+                child.append_attribute("materialIndex") = ss.str().c_str();
+            }
         }
 
-        if (meshIndex_ != -1)
+        if (mesh_)
         {
-            std::stringstream ss;
-            ss << meshIndex_;
-            child.append_attribute("meshIndex") = ss.str().c_str();
+            int meshIndex = App::this_->GetMeshSerializableIndex(mesh_);
+            if(meshIndex != -1)
+            {
+                std::stringstream ss;
+                ss << meshIndex;
+                child.append_attribute("meshIndex") = ss.str().c_str();
+            }
         }
 
         for (auto& obj : children_)
@@ -357,22 +371,22 @@ namespace NSG
         pugi::xml_attribute attribute = node.attribute("materialIndex");
         if (attribute)
         {
-            materialIndex_ = attribute.as_int();
-            Set(data.materials_.at(materialIndex_));
+            int materialIndex_ = attribute.as_int();
+			Set(data.materials_.at(materialIndex_));
         }
 
         attribute = node.attribute("meshIndex");
         if (attribute)
         {
-            meshIndex_ = attribute.as_int();
-            Set(data.meshes_.at(meshIndex_));
+            int meshIndex = attribute.as_int();
+            Set(data.meshes_.at(meshIndex));
         }
 
         {
             pugi::xml_node child = node.child("Light");
             if (child)
             {
-                PLight obj = scene_->CreateLight(child.attribute("name").as_string());
+				PLight obj = GetScene()->CreateLight(child.attribute("name").as_string());
                 obj->Load(child);
                 AddChild(obj);
             }
@@ -382,7 +396,7 @@ namespace NSG
             pugi::xml_node child = node.child("Camera");
             if (child)
             {
-                PCamera obj = scene_->CreateCamera(child.attribute("name").as_string());
+				PCamera obj = GetScene()->CreateCamera(child.attribute("name").as_string());
                 obj->Load(child);
                 AddChild(obj);
             }
@@ -474,5 +488,12 @@ namespace NSG
             material_->SetLightMap(texture);
         }
     }
+
+	PScene SceneNode::GetScene() const
+	{
+		PScene scene = app_.GetCurrentScene();
+		CHECK_ASSERT(scene, __FILE__, __LINE__);
+		return scene;
+	}
 
 }

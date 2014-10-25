@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "Mesh.h"
 #include "Scene.h"
+#include "Skeleton.h"
 #include "ResourceMemory.h"
 #include "Material.h"
 #include "Graphics.h"
@@ -69,6 +70,8 @@ namespace NSG
           att_normalLoc_(-1),
           att_colorLoc_(-1),
           att_tangentLoc_(-1),
+          att_bonesIDLoc_(-1),
+          att_bonesWeightLoc_(-1),
           att_modelMatrixRow0Loc_(-1),
           att_normalMatrixCol0Loc_(-1),
           modelLoc_(-1),
@@ -80,12 +83,14 @@ namespace NSG
           texture0Loc_(-1),
           texture1Loc_(-1),
           texture2Loc_(-1),
+		  nBones_(0),
           nDirectionalLights_(0),
           nPointLights_(0),
           nSpotLights_(0),
           activeCamera_(nullptr),
           neverUsed_(true),
           activeMaterial_(nullptr),
+		  activeSkeleton_(nullptr),
           activeNode_(nullptr),
           activeScene_(nullptr),
           sceneColor_(-1),
@@ -130,6 +135,15 @@ namespace NSG
         PScene scene = App::this_->GetCurrentScene();
 
         CHECK_ASSERT(scene, __FILE__, __LINE__);
+
+		if (nBones_)
+		{
+			std::stringstream ss;
+			ss << "const int NUM_BONES = " << nBones_ << ";\n";
+			preDefines += ss.str();
+			flags_ |= (int)ProgramFlag::SKINNED;
+			preDefines += "#define SKINNED\n";
+		}
 
         const Scene::Lights& directionalLigths = scene->GetLights(Light::DIRECTIONAL);
         nDirectionalLights_ = directionalLigths.size();
@@ -268,6 +282,9 @@ namespace NSG
             att_texcoordLoc1_ = GetAttributeLocation("a_texcoord1");
             att_colorLoc_ = GetAttributeLocation("a_color");
             att_tangentLoc_ = GetAttributeLocation("a_tangent");
+            att_bonesIDLoc_ = GetAttributeLocation("a_boneIDs");
+            att_bonesWeightLoc_ = GetAttributeLocation("a_weights");
+
             att_modelMatrixRow0Loc_ = GetAttributeLocation("a_mMatrixRow0");
             att_normalMatrixCol0Loc_ = GetAttributeLocation("a_normalMatrixCol0");
 
@@ -285,6 +302,15 @@ namespace NSG
             materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
             materialLoc_.specular_ = GetUniformLocation("u_material.specular");
             materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
+
+			for (unsigned idx = 0; idx < nBones_; idx++)
+			{
+				std::stringstream boneIndex;
+				boneIndex << "u_bones[" << idx << "]";
+
+				GLuint boneLoc = GetUniformLocation(boneIndex.str());
+				bonesLoc_.push_back(boneLoc);
+			}
 
             for (unsigned idx = 0; idx < nDirectionalLights_; idx++)
             {
@@ -366,6 +392,7 @@ namespace NSG
         if (graphics_.GetProgram() == this)
             graphics_.SetProgram(nullptr);
 
+		nBones_ = 0;
         nDirectionalLights_ = 0;
         nPointLights_ = 0;
         nSpotLights_ = 0;
@@ -377,10 +404,18 @@ namespace NSG
         activeCamera_ = nullptr;
         neverUsed_ = true;
         activeMaterial_ = nullptr;
+		activeSkeleton_ = nullptr;
         activeNode_ = nullptr;
         activeScene_ = nullptr;
         sceneColor_ = Color(-1);
         material_ = MaterialProgram();
+
+		bonesLoc_.clear();
+		pointLightsLoc_.clear();
+		directionalLightsLoc_.clear();
+		spotLightsLoc_.clear();
+
+		graphics_.InvalidateVAOFor(this);
     }
 
     bool Program::HasLighting() const
@@ -402,6 +437,8 @@ namespace NSG
         glBindAttribLocation(id_, (int)AttributesLoc::TEXTURECOORD1, "a_texcoord1");
         glBindAttribLocation(id_, (int)AttributesLoc::COLOR, "a_color");
         glBindAttribLocation(id_, (int)AttributesLoc::TANGENT, "a_tangent");
+        glBindAttribLocation(id_, (int)AttributesLoc::BONES_ID, "a_boneIDs");
+        glBindAttribLocation(id_, (int)AttributesLoc::BONES_WEIGHT, "a_weights");
         glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW0, "a_mMatrixRow0");
         glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW1, "a_mMatrixRow1");
         glBindAttribLocation(id_, (int)AttributesLoc::MODEL_MATRIX_ROW2, "a_mMatrixRow2");
@@ -565,6 +602,45 @@ namespace NSG
         activeMaterial_ = material;
     }
 
+	bool Program::SetMeshVariables(Mesh* mesh)
+	{
+		Skeleton* skeleton = mesh->GetSkeleton().get();
+		if (skeleton)
+		{
+			const std::vector<PNode>& bones = skeleton->GetBones();
+			unsigned nBones = bones.size();
+			if (nBones != nBones_)
+			{
+				CHECK_ASSERT(nBones > 0, __FILE__, __LINE__);
+				Invalidate();
+				nBones_ = nBones;
+				return false;
+			}
+
+            PNode rootNode = skeleton->GetRoot();
+			Matrix4 globalInverseModelMatrix(1);
+            Node* parent = rootNode->GetParent();
+            if(parent)
+                globalInverseModelMatrix = parent->GetGlobalModelInvMatrix();
+
+			for (unsigned idx = 0; idx < nBones_; idx++)
+			{
+				const GLuint& boneLoc = bonesLoc_[idx];
+                Node* bone = bones[idx].get();
+				if (activeSkeleton_ != skeleton || bone->UniformsNeedUpdate())
+				{
+					const Matrix4& m = bone->GetGlobalModelMatrix();
+					const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
+					Matrix4 skinMatrix(globalInverseModelMatrix * m * offsetMatrix);
+					glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(skinMatrix));
+				}
+			}
+		}
+		activeSkeleton_ = skeleton;
+
+		return true;
+	}
+
     void Program::SetCameraVariables()
     {
         Camera* camera = Camera::GetActiveCamera();
@@ -700,21 +776,20 @@ namespace NSG
                         glUniform3fv(loc.position_, 1, &position[0]);
                     }
 
+					const Light::Attenuation& attenuation = light->GetAttenuation();
+
                     if (loc.atten_.constant_ != -1)
                     {
-                        const Light::Attenuation& attenuation = light->GetAttenuation();
                         glUniform1f(loc.atten_.constant_, attenuation.constant);
                     }
 
                     if (loc.atten_.linear_  != -1)
                     {
-                        const Light::Attenuation& attenuation = light->GetAttenuation();
                         glUniform1f(loc.atten_.linear_, attenuation.linear);
                     }
 
                     if (loc.atten_.quadratic_ != -1)
                     {
-                        const Light::Attenuation& attenuation = light->GetAttenuation();
                         glUniform1f(loc.atten_.quadratic_, attenuation.quadratic);
                     }
                 }
@@ -781,27 +856,32 @@ namespace NSG
         return true;
     }
 
-    void Program::SetVariables(Material* material, Node* node)
+    void Program::SetVariables(Material* material, Mesh* mesh, Node* node)
     {
-        PScene scene = App::this_->GetCurrentScene();
-
-        SetSceneVariables(scene.get());
-        SetMaterialVariables(material);
-        SetNodeVariables(node);
-        SetCameraVariables();
-        activeNode_ = node;
-        if (SetLightVariables(scene.get()) && pExtraUniforms_)
-            pExtraUniforms_->AssignValues();
+		if (SetMeshVariables(mesh))
+		{
+			PScene scene = App::this_->GetCurrentScene();
+			SetSceneVariables(scene.get());
+			SetMaterialVariables(material);
+			SetNodeVariables(node);
+			SetCameraVariables();
+			activeNode_ = node;
+			if (SetLightVariables(scene.get()) && pExtraUniforms_)
+				pExtraUniforms_->AssignValues();
+		}
     }
 
-    void Program::SetVariables(Material* material)
+	void Program::SetVariables(Material* material, Mesh* mesh)
     {
-        PScene scene = App::this_->GetCurrentScene();
-        SetSceneVariables(scene.get());
-        SetMaterialVariables(material);
-        SetCameraVariables();
-        if (SetLightVariables(scene.get()) && pExtraUniforms_)
-            pExtraUniforms_->AssignValues();
+		if (SetMeshVariables(mesh))
+		{
+			PScene scene = App::this_->GetCurrentScene();
+			SetSceneVariables(scene.get());
+			SetMaterialVariables(material);
+			SetCameraVariables();
+			if (SetLightVariables(scene.get()) && pExtraUniforms_)
+				pExtraUniforms_->AssignValues();
+		}
     }
 
     void Program::Save(pugi::xml_node& node)

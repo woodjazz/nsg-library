@@ -24,92 +24,99 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "MeshConverter.h"
-#include "Mesh.h"
+#include "ModelMesh.h"
 #include "Check.h"
 #include "App.h"
 #include "assimp/mesh.h"
 
 namespace NSG
 {
-	MeshConverter::MeshConverter(const aiMesh* aiMesh) 
-	: face_mode_(-1),
-    aiMesh_(aiMesh)
-	{
-		VertexsData data;
+    MeshConverter::MeshConverter(const aiMesh* aiMesh)
+        : face_mode_(-1),
+          aiMesh_(aiMesh)
+    {
+    	std::string name = aiMesh->mName.C_Str();
 
-		CHECK_ASSERT(data.empty(), __FILE__, __LINE__);
+        VertexsData data;
 
-		for(size_t v=0; v<aiMesh_->mNumVertices; v++)
-		{
-			VertexData vertexData;
+        CHECK_ASSERT(data.empty(), __FILE__, __LINE__);
 
-			vertexData.position_ = Vertex3(aiMesh_->mVertices[v].x, aiMesh_->mVertices[v].y, aiMesh_->mVertices[v].z);
+        for (size_t v = 0; v < aiMesh_->mNumVertices; v++)
+        {
+            VertexData vertexData;
 
-			if(aiMesh_->HasNormals())
-			{
-				vertexData.normal_ = Vertex3(aiMesh_->mNormals[v].x, aiMesh_->mNormals[v].y, aiMesh_->mNormals[v].z);
-			}
+            vertexData.position_ = Vertex3(aiMesh_->mVertices[v].x, aiMesh_->mVertices[v].y, aiMesh_->mVertices[v].z);
 
-			if(aiMesh_->HasTextureCoords(0))
-			{
-				vertexData.uv0_ = Vertex2(aiMesh_->mTextureCoords[0][v].x, aiMesh_->mTextureCoords[0][v].y);
-			}
+            if (aiMesh_->HasNormals())
+            {
+                vertexData.normal_ = Vertex3(aiMesh_->mNormals[v].x, aiMesh_->mNormals[v].y, aiMesh_->mNormals[v].z);
+            }
 
-			if (aiMesh_->HasTextureCoords(1))
-			{
-				vertexData.uv1_ = Vertex2(aiMesh_->mTextureCoords[1][v].x, aiMesh_->mTextureCoords[1][v].y);
-			}
+            if (aiMesh_->HasTextureCoords(0))
+            {
+                vertexData.uv0_ = Vertex2(aiMesh_->mTextureCoords[0][v].x, aiMesh_->mTextureCoords[0][v].y);
+            }
 
+            if (aiMesh_->HasTextureCoords(1))
+            {
+                vertexData.uv1_ = Vertex2(aiMesh_->mTextureCoords[1][v].x, aiMesh_->mTextureCoords[1][v].y);
+            }
 
-			if (aiMesh_->HasVertexColors(0))
-			{
-				vertexData.color_ = Vertex4(aiMesh_->mColors[0][v].r, aiMesh_->mColors[0][v].g, aiMesh_->mColors[0][v].b, aiMesh_->mColors[0][v].a);
-			}
+            if (aiMesh_->HasVertexColors(0))
+            {
+                vertexData.color_ = Vertex4(aiMesh_->mColors[0][v].r, aiMesh_->mColors[0][v].g, aiMesh_->mColors[0][v].b, aiMesh_->mColors[0][v].a);
+            }
+
+			// do not read tangents since they are calculated
+			//if (aiMesh_->HasTangentsAndBitangents())
+			//	vertexData.tangent_ = Vertex3(aiMesh_->mTangents[v].x, aiMesh_->mTangents[v].y, aiMesh_->mTangents[v].z);
 
             data.push_back(vertexData);
-		}
+        }
 
-		Indexes indexes;
-		
-		if(aiMesh_->HasFaces())
-		{
-			for (size_t j=0; j<aiMesh_->mNumFaces; ++j) 
-			{
-				const struct aiFace* face = &aiMesh_->mFaces[j];
+        Indexes indexes;
 
-				GLenum face_mode;
+        if (aiMesh_->HasFaces())
+        {
+            for (size_t j = 0; j < aiMesh_->mNumFaces; ++j)
+            {
+                const struct aiFace* face = &aiMesh_->mFaces[j];
 
-				switch(face->mNumIndices) 
-				{
-					case 1: face_mode = GL_POINTS; break;
-					case 2: face_mode = GL_LINES; break;
-					case 3: face_mode = GL_TRIANGLES; break;
-					default: face_mode = GL_TRIANGLE_FAN; break; //GL_POLYGON; break;
-				}			
+                GLenum face_mode;
 
-                if(face_mode_ == -1)
+                switch (face->mNumIndices)
+                {
+                    case 1: face_mode = GL_POINTS; break;
+                    case 2: face_mode = GL_LINES; break;
+                    case 3: face_mode = GL_TRIANGLES; break;
+                    default: face_mode = GL_TRIANGLE_FAN; break; //GL_POLYGON; break;
+                }
+
+                if (face_mode_ == -1)
                 {
                     face_mode_ = face_mode;
                 }
-                
-				CHECK_ASSERT(face_mode_ == face_mode, __FILE__, __LINE__);
 
-				for(size_t k=0; k<face->mNumIndices; k++) 
-				{
-					int index = face->mIndices[k];
+                CHECK_ASSERT(face_mode_ == face_mode, __FILE__, __LINE__);
 
-					indexes.push_back(index);
-				}	
+                for (size_t k = 0; k < face->mNumIndices; k++)
+                {
+                    int index = face->mIndices[k];
 
-				CHECK_ASSERT(indexes.size() % 3 == 0, __FILE__, __LINE__);
-			}		
-		}
+                    indexes.push_back(index);
+                }
 
-		mesh_ = App::this_->CreateModelMesh(data, indexes);
-	}
+                CHECK_ASSERT(indexes.size() % 3 == 0, __FILE__, __LINE__);
+            }
+        }
 
-	MeshConverter::~MeshConverter()
-	{
-	}
+        mesh_ = App::this_->CreateModelMesh(data, indexes);
+		if (!name.empty())
+			mesh_->SetName(name);
+    }
+
+    MeshConverter::~MeshConverter()
+    {
+    }
 }
 

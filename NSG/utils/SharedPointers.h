@@ -29,6 +29,15 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Skeleton;
+	typedef std::shared_ptr<Skeleton> PSkeleton;
+	
+	class AnimationState;
+	typedef std::shared_ptr<AnimationState> PAnimationState;
+
+	class Animation;
+	typedef std::shared_ptr<Animation> PAnimation;
+	
 	class TextureFileManager;
 	typedef std::shared_ptr<TextureFileManager> PTextureFileManager;
 

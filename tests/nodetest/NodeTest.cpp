@@ -183,6 +183,72 @@ static void Test03()
 		CHECK_ASSERT(glm::distance(vz, expectedVz) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
 
+	{
+		Node node;
+		node.SetGlobalPosition(Vector3(0, 5, 5));
+		node.SetLookAt(VECTOR3_ZERO);
+		Vector3 dir = node.GetLookAtDirection();
+		Vector3 expectedDir(glm::normalize(Vector3(0, -1, -1)));
+		CHECK_ASSERT(glm::distance(dir, expectedDir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+	}
+
+	{
+		Node node;
+		node.SetGlobalPosition(Vector3(5, 5, 0));
+		node.SetLookAt(VECTOR3_ZERO);
+		Vector3 dir = node.GetLookAtDirection();
+		Vector3 expectedDir(glm::normalize(Vector3(-1, -1, 0)));
+		CHECK_ASSERT(glm::distance(dir, expectedDir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+	}
+
+	{
+		Node parent;
+		parent.SetScale(Vector3(0.010f));
+		Node node0;
+		node0.SetParent(&parent);
+		node0.SetGlobalPosition(Vector3(0, 5, 5));
+		node0.SetLookAt(VECTOR3_ZERO);
+		Vector3 dir0 = node0.GetLookAtDirection();
+		Quaternion q0 = node0.GetOrientation();
+
+		Node node1;
+		node1.SetParent(&parent);
+		node1.SetGlobalPosition(Vector3(5, 5, 0));
+		node1.SetLookAt(VECTOR3_ZERO);
+		Vector3 dir1 = node1.GetLookAtDirection();
+		Quaternion q1 = node1.GetOrientation();
+
+		{
+			Quaternion q = glm::slerp(q0, q1, 0.0f);
+			Node node;
+			node.SetGlobalPosition(node1.GetGlobalPosition());
+			node.SetOrientation(q);
+			Vector3 dir = node.GetLookAtDirection();
+			CHECK_ASSERT(glm::distance(dir0, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		}
+
+		{
+			Quaternion q = glm::slerp(q0, q1, 0.5f);
+			Node node;
+			node.SetGlobalPosition(node1.GetGlobalPosition());
+			node.SetOrientation(q);
+			Vector3 dir = node.GetLookAtDirection();
+			Vector3 expectedDir(-0.5f, dir0.y, -0.5f);
+			CHECK_ASSERT(glm::distance(expectedDir, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		}
+
+
+		{
+			Quaternion q = glm::slerp(q0, q1, 1.0f);
+			Node node;
+			node.SetGlobalPosition(node1.GetGlobalPosition());
+			node.SetOrientation(q);
+			Vector3 dir = node.GetLookAtDirection();
+			CHECK_ASSERT(glm::distance(dir1, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		}
+
+	}
+
 	
 }
 
@@ -283,7 +349,7 @@ static void Test08()
 void NodeTest()
 {
 	Test08();
-#if 0
+
 	Test01();
     Test02();
     Test03();
@@ -291,6 +357,6 @@ void NodeTest()
     Test05();
     Test06();
     Test07();
-#endif
+
 	
 }

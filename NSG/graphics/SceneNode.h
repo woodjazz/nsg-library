@@ -38,21 +38,19 @@ namespace NSG
 	{
 	public:
 		~SceneNode();
-		void Set(PMaterial material);
 		void Load(PResource resource);
-		PMaterial GetMaterial() const override { return material_; }
+		PMaterial GetMaterial() const { return material_; }
+		void Set(PMaterial material);
 		void Set(PMesh mesh);
 		PMesh GetMesh() const { return mesh_; }
 		void AddBehavior(PBehavior behavior);
 		void SetOctant(Octant* octant) const { octant_ = octant; }
-		const BoundingBox& GetWorldBoundingBox() const override;
-		BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const override;
+		const BoundingBox& GetWorldBoundingBox() const;
+		BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const;
 		bool IsOccludee() const { return occludee_; }
 		Octant* GetOctant() const { return octant_; }
 		virtual void OnDirty() const override;
 		virtual void Save(pugi::xml_node& node) override;
-		void SetMeshIndex(int index) {meshIndex_ = index;}
-		void SetMaterialIndex(int index) {materialIndex_ = index;}
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void Start() override;
@@ -70,16 +68,18 @@ namespace NSG
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_;  }
 		void SetResource(PResource resource);
-		void SetDiffuseMap(PTexture texture, bool recursive) override;
-		void SetNormalMap(PTexture texture, bool recursive) override;
-		void SetLightMap(PTexture texture, bool recursive) override;
+		void SetDiffuseMap(PTexture texture, bool recursive);
+		void SetNormalMap(PTexture texture, bool recursive);
+		void SetLightMap(PTexture texture, bool recursive);
+		void GetMaterials(std::vector<PMaterial>& materials) const;
 	protected:
 		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
 		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
-		SceneNode(const std::string& name, Scene* scene);
+		SceneNode(const std::string& name);
 		App& app_;
 	private:
 		void LoadNode(const pugi::xml_node& child, const CachedData& data);
+		PScene GetScene() const;
 		PMaterial material_;
 		PMesh mesh_;
 		std::vector<PBehavior> behaviors_;
@@ -88,9 +88,7 @@ namespace NSG
 		bool occludee_;
 		mutable bool worldBBNeedsUpdate_;
 		PResource resource_;
-		int meshIndex_;
-		int materialIndex_;
-		Scene* scene_;
+		PScene scene_;
 		bool serializable_;
 		friend class Scene;
 	};

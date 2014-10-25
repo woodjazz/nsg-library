@@ -30,18 +30,16 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include <vector>
 #include <set>
+#include <map>
 
 namespace NSG
 {
-	class Scene : public SceneNode
+    class Scene : public SceneNode
     {
     public:
         ~Scene();
         void SetAmbientColor(Color ambient);
-        const Color& GetAmbientColor() const
-        {
-            return ambient_;
-        }
+        const Color& GetAmbientColor() const { return ambient_; }
         PCamera CreateCamera(const std::string& name);
         void AddCamera(PCamera camera);
         PSceneNode CreateSceneNode(const std::string& name);
@@ -49,7 +47,7 @@ namespace NSG
         PLight CreateLight(const std::string& name);
         PLight CreatePointLight(const std::string& name);
         PLight CreateDirectionalLight(const std::string& name);
-		PLight CreateSpotLight(const std::string& name);
+        PLight CreateSpotLight(const std::string& name);
         void AddLight(PLight light);
         void Start();
         void Update();
@@ -57,37 +55,40 @@ namespace NSG
         void Load(PResource resource);
         void ViewChanged(int width, int height);
         void OnMouseMove(float x, float y);
-		void OnMouseDown(int button, float x, float y);
+        void OnMouseDown(int button, float x, float y);
         void OnMouseWheel(float x, float y);
-		void OnMouseUp(int button, float x, float y);
+        void OnMouseUp(int button, float x, float y);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
-
         typedef std::vector<PLight> Lights;
-        const Lights& GetLights()
-        {
-            return lights_;
-        }
+        const Lights& GetLights() { return lights_; }
         void NeedUpdate(SceneNode* obj);
-		void GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const;
-        POctree GetOctree() const
-        {
-            return octree_;
-        }
+        void GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const;
+        POctree GetOctree() const { return octree_; }
         Lights GetLights(Light::Type type) const;
         void Save(pugi::xml_document& doc);
-		virtual void Load(const pugi::xml_document& doc, const CachedData& data) override;
+        virtual void Load(const pugi::xml_document& doc, const CachedData& data) override;
         bool GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const;
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
         bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);
-		bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
-		const std::vector<PCamera>& GetCameras() const { return cameras_; }
-	protected:
-		Scene();
-		void SaveMeshes(pugi::xml_node& node);
-		void SaveMaterials(pugi::xml_node& node);
-	private:
-		void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
+        bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
+        const std::vector<PCamera>& GetCameras() const { return cameras_; }
+        PAnimation CreateAnimation(const std::string& name);
+        bool HasAnimation(const std::string& name) const;
+        bool PlayAnimation(const std::string& name, bool looped);
+        bool PlayAnimation(const PAnimation& animation, bool looped);
+        bool SetAnimationSpeed(const std::string& name, float speed);
+    protected:
+        Scene();
+        void SaveMeshes(pugi::xml_node& node);
+        void SaveMaterials(pugi::xml_node& node);
+        void SaveAnimations(pugi::xml_node& node);
+		void LoadAnimations(const pugi::xml_node& node);
+        void SaveSkeletons(pugi::xml_node& node);
+        void LoadSkeletons(const pugi::xml_node& node);
+    private:
+        void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
+        void UpdateAnimations();
     private:
         Color ambient_;
         std::vector<PCamera> cameras_;
@@ -96,6 +97,10 @@ namespace NSG
         mutable std::set<SceneNode*> needUpdate_;
         App& app_;
         bool started_;
+        typedef std::map<std::string, PAnimation> AnimationMap;
+        AnimationMap animationMap_;
+        typedef std::map<std::string, PAnimationState> AnimationStateMap;
+        AnimationStateMap animationStateMap_;
         friend class App;
     };
 }

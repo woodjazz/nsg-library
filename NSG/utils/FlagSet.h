@@ -29,6 +29,11 @@ misrepresented as being the original software.
 template <class T, std::size_t N = 32 >
 struct FlagSet : std::bitset<N>
 {
+	FlagSet() : std::bitset<N>(0)
+	{
+
+	}
+
 	FlagSet(int bits) : std::bitset<N>(bits)
     {
     }

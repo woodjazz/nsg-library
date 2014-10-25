@@ -190,7 +190,7 @@ namespace NSG
     {
         pAAssetManager_ = pAAssetManager;
     }
-    
+
     AAssetManager* App::GetAssetManager()
     {
         return pAAssetManager_;
@@ -364,6 +364,37 @@ namespace NSG
         return materials_;
     }
 
+    int App::GetMaterialSerializableIndex(const PMaterial& material) const
+    {
+        int idx = -1;
+        for (auto obj : materials_)
+        {
+            if (obj->IsSerializable())
+            {
+                ++idx;
+                if (obj == material)
+                    break;
+            }
+        }
+
+        return idx;
+    }
+
+    int App::GetMeshSerializableIndex(const PMesh& mesh) const
+    {
+        int idx = -1;
+        for (auto obj : meshes_)
+        {
+            if (obj->IsSerializable())
+            {
+                ++idx;
+                if (obj == mesh)
+                    break;
+            }
+        }
+
+        return idx;
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////

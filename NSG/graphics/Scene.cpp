@@ -12,6 +12,9 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "App.h"
+#include "Skeleton.h"
+#include "Animation.h"
+#include "AnimationState.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
@@ -22,7 +25,7 @@ namespace NSG
     static const char* SCENENODE_ROOT_NAME = "SceneRootNode";
 
     Scene::Scene()
-        : SceneNode(SCENENODE_ROOT_NAME, this),
+        : SceneNode(SCENENODE_ROOT_NAME),
           ambient_(0.3f, 0.3f, 0.3f, 1),
           octree_(new Octree),
           app_(*App::this_),
@@ -33,10 +36,11 @@ namespace NSG
 
     Scene::~Scene()
     {
+        octree_ = nullptr;
         cameras_.clear();
         lights_.clear();
         ClearAllChildren();
-        octree_ = nullptr;
+
     }
 
     void Scene::Load(PResource resource)
@@ -57,7 +61,7 @@ namespace NSG
 
     PCamera Scene::CreateCamera(const std::string& name)
     {
-        PCamera obj(new Camera(name, this));
+        PCamera obj(new Camera(name));
         octree_->InsertUpdate(obj.get());
         cameras_.push_back(obj);
         AddChild(obj);
@@ -89,7 +93,7 @@ namespace NSG
 
     PLight Scene::CreateLight(const std::string& name)
     {
-        PLight obj(new Light(name, this));
+        PLight obj(new Light(name));
         AddLight(obj);
         return obj;
     }
@@ -138,6 +142,8 @@ namespace NSG
     {
         for (auto& obj : children_)
             obj->Update();
+
+        UpdateAnimations();
     }
 
     void Scene::ViewChanged(int width, int height)
@@ -380,15 +386,91 @@ namespace NSG
         SaveMeshes(child);
         SaveMaterials(child);
         SceneNode::Save(child);
+        SaveAnimations(child);
+        SaveSkeletons(child);
+    }
+
+    void Scene::SaveAnimations(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Animations");
+        for (auto& obj : animationMap_)
+            obj.second->Save(child);
+    }
+
+    void Scene::LoadAnimations(const pugi::xml_node& node)
+    {
+        pugi::xml_node childAnimations = node.child("Animations");
+        if (childAnimations)
+        {
+            pugi::xml_node child = childAnimations.child("Animation");
+            while (child)
+            {
+                std::string name = child.attribute("name").as_string();
+                PAnimation animation = CreateAnimation(name);
+                animation->Load(child);
+                child = child.next_sibling("Animation");
+            }
+        }
+    }
+
+    void Scene::SaveSkeletons(pugi::xml_node& node)
+    {
+        const std::vector<PMesh>& meshes = app_.GetMeshes();
+        if (meshes.size())
+        {
+            pugi::xml_node child = node.append_child("Skeletons");
+            for (auto& obj : meshes)
+            {
+                PSkeleton skeleton = obj->GetSkeleton();
+                if (skeleton)
+                    skeleton->Save(child);
+            }
+        }
+    }
+
+    void Scene::LoadSkeletons(const pugi::xml_node& node)
+    {
+        pugi::xml_node childSkeletons = node.child("Skeletons");
+        if (childSkeletons)
+        {
+            const std::vector<PMesh>& meshes = app_.GetMeshes();
+            pugi::xml_node child = childSkeletons.child("Skeleton");
+            while (child)
+            {
+                std::string meshName = child.attribute("meshName").as_string();
+                PMesh mesh;
+                for (auto& obj : meshes)
+                {
+                    if (obj->GetName() == meshName)
+                    {
+                        mesh = obj;
+                        break;
+                    }
+                }
+                CHECK_CONDITION(mesh, __FILE__, __LINE__);
+                PSkeleton skeleton(new Skeleton(mesh));
+                skeleton->Load(child);
+                mesh->SetSkeleton(skeleton);
+                child = child.next_sibling("Skeleton");
+            }
+        }
     }
 
     void Scene::Load(const pugi::xml_document& doc, const CachedData& data)
     {
-        std::stringstream query;
-        query << "/Scene/SceneNode[@name ='" << SCENENODE_ROOT_NAME << "']";
-        pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-        pugi::xml_node child = xpathNode.node();
-        LoadNode(child, data);
+        //std::stringstream query;
+        //query << "/Scene/SceneNode[@name ='" << SCENENODE_ROOT_NAME << "']";
+        //pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
+        pugi::xml_node sceneChild = doc.child("Scene");
+        if (sceneChild)
+        {
+            pugi::xml_node sceneNodeChild = sceneChild.child("SceneNode");
+            SetName(sceneNodeChild.attribute("name").as_string());
+            if (sceneNodeChild)
+                LoadNode(sceneNodeChild, data);
+            LoadAnimations(sceneChild);
+            LoadSkeletons(sceneChild);
+        }
     }
 
     bool Scene::GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const
@@ -406,4 +488,68 @@ namespace NSG
 
         return false;
     }
+
+    PAnimation Scene::CreateAnimation(const std::string& name)
+    {
+        CHECK_ASSERT(!name.empty(), __FILE__, __LINE__);
+        PAnimation animation(new Animation);
+        CHECK_CONDITION(animationMap_.insert(AnimationMap::value_type(name, animation)).second, __FILE__, __LINE__);
+        animation->SetName(name);
+        return animation;
+    }
+
+    bool Scene::HasAnimation(const std::string& name) const
+    {
+        return animationMap_.find(name) != animationMap_.end();
+    }
+
+    bool Scene::PlayAnimation(const std::string& name, bool looped)
+    {
+        auto it = animationMap_.find(name);
+        if (it == animationMap_.end())
+            return false;
+        PAnimation animation = it->second;
+        return PlayAnimation(animation, looped);
+    }
+
+    bool Scene::PlayAnimation(const PAnimation& animation, bool looped)
+    {
+        std::string name = animation->GetName();
+
+        PAnimationState animationState;
+        auto it = animationStateMap_.find(name);
+        if (it != animationStateMap_.end())
+            animationState = it->second;
+        else
+        {
+            animationState = PAnimationState(new AnimationState(animation));
+            animationStateMap_.insert(AnimationStateMap::value_type(name, animationState));
+        }
+        animationState->SetLooped(looped);
+        return true;
+    }
+
+    void Scene::UpdateAnimations()
+    {
+        float deltaTime = app_.GetDeltaTime();
+        for (auto& obj : animationStateMap_)
+        {
+            obj.second->AddTime(deltaTime);
+            obj.second->Update();
+        }
+    }
+
+    bool Scene::SetAnimationSpeed(const std::string& name, float speed)
+    {
+        PAnimationState animationState;
+        auto it = animationStateMap_.find(name);
+        if (it != animationStateMap_.end())
+            animationState = it->second;
+        else
+            return false;
+
+        animationState->SetSpeed(speed);
+        return true;
+    }
+
 }

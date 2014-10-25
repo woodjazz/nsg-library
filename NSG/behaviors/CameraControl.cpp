@@ -179,7 +179,7 @@ namespace NSG
 		if (distance < camera_->GetZNear())
 			distance = 1 + camera_->GetZNear();
 
-		position = center + lookAtDir * distance;
+		position = center - lookAtDir * distance;
 
 		if(sphere_->SetCenterAndPosition(center, position))
             camera_->SetGlobalPosition(position);

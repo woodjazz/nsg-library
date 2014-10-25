@@ -10,8 +10,8 @@
 
 namespace NSG
 {
-    Light::Light(const std::string& name, Scene* scene)
-        : SceneNode(name, scene),
+    Light::Light(const std::string& name)
+        : SceneNode(name),
           type_(POINT),
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),

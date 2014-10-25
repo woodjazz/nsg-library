@@ -40,6 +40,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	static int meshCounter = 0;
     Mesh::Mesh(const std::string& name, bool dynamic)
         : bufferVertexData_(nullptr),
           bufferIndexData_(nullptr),
@@ -50,6 +51,12 @@ namespace NSG
           areTangentsCalculated_(false),
           serializable_(true)
     {
+		if (name_.empty())
+		{
+			std::stringstream ss;
+			ss << "Mesh" << meshCounter++;
+			name_ = ss.str();
+		}
     }
 
     Mesh::~Mesh()
@@ -180,6 +187,31 @@ namespace NSG
                     ss << obj.color_;
                     vertexData.append_attribute("color") = ss.str().c_str();
                 }
+
+				/*
+				// Do not export tangents since they are calculated
+                {
+                    std::stringstream ss;
+                    ss << obj.tangent_;
+                    vertexData.append_attribute("tangent") = ss.str().c_str();
+                }
+				*/
+
+                /*
+                // Do not export since is already in the skeleton
+                {
+                    std::stringstream ss;
+                    ss << obj.bonesID_;
+                    vertexData.append_attribute("bonesID") = ss.str().c_str();
+                }
+
+                {
+                    std::stringstream ss;
+                    ss << obj.bonesWeight_;
+                    vertexData.append_attribute("bonesWeight") = ss.str().c_str();
+                }
+                */
+
             }
 
             if (indexes_.size())
@@ -213,6 +245,11 @@ namespace NSG
                 obj.uv0_ = GetVertex2(vertexNode.attribute("uv0").as_string());
 				obj.uv1_ = GetVertex2(vertexNode.attribute("uv1").as_string());
                 obj.color_ =  GetVertex4(vertexNode.attribute("color").as_string());
+				// Do not import tangents since they are calculated
+                //obj.tangent_ =  GetVertex3(vertexNode.attribute("tangent").as_string());
+                // Do not import since is set with the skeleton
+                //obj.bonesID_ =  GetVertex4(vertexNode.attribute("bonesID").as_string());
+                //obj.bonesWeight_ =  GetVertex4(vertexNode.attribute("bonesWeight").as_string());
                 vertexsData_.push_back(obj);
                 vertexNode = vertexNode.next_sibling("VertexData");
             }
@@ -273,4 +310,40 @@ namespace NSG
             glm::normalize(vertexsData_[i].tangent_);
         }
     }
+
+	void Mesh::SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights)
+	{
+		VertexsData vertexCopy;
+		Indexes indexesCopy;
+
+		std::swap(vertexsData_, vertexCopy);
+		std::swap(indexes_, indexesCopy);
+		Invalidate();
+		std::swap(vertexsData_, vertexCopy);
+		std::swap(indexes_, indexesCopy);
+
+		CHECK_ASSERT(blendIndices.size() == blendWeights.size(), __FILE__, __LINE__);
+		CHECK_ASSERT(vertexsData_.size() == blendWeights.size(), __FILE__, __LINE__);
+		unsigned n = vertexsData_.size();
+		for (unsigned i = 0; i < n; i++)
+		{
+			{
+				Vector4 bonesID;
+				unsigned nBones = blendIndices[i].size();
+				CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
+				for (unsigned j = 0; j < nBones; j++)
+					bonesID[j] = float(blendIndices[i][j]);
+				vertexsData_[i].bonesID_ = bonesID;
+			}
+
+			{
+				Vector4 bonesWeight;
+				unsigned nBones = blendWeights[i].size();
+				CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
+				for (unsigned j = 0; j < nBones; j++)
+					bonesWeight[j] = blendWeights[i][j];
+				vertexsData_[i].bonesWeight_ = bonesWeight;
+			}
+		}
+	}
 }

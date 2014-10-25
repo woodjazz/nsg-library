@@ -24,45 +24,49 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SceneNode.h"
-#include <vector>
+#include "Types.h"
 
 namespace NSG
-{	
-	class Light : public SceneNode
-	{
-	public:
-		Light(const std::string& name);
-		~Light();
-		void SetAmbientColor(Color ambient);
-		const Color& GetAmbientColor() const { return ambient_; }
-		void SetDiffuseColor(Color diffuse);
-		const Color& GetDiffuseColor() const { return diffuse_; }
-		void SetSpecularColor(Color specular);
-		const Color& GetSpecularColor() const { return specular_; }
-		void SetAttenuation(float constant, float linear, float quadratic);
-		struct Attenuation
-		{
-		    float constant;
-		    float linear;
-		    float quadratic;
-		};
-		const Attenuation& GetAttenuation() const { return attenuation_; }
-		void SetPoint();
-		void SetDirectional();
-		void SetSpotLight(float spotCutOff); // angle in degrees
-		float GetSpotCutOff() const { return spotCutOff_; }
-		enum Type {POINT, DIRECTIONAL, SPOT};
-		Type GetType() const { return type_; }
-		void SetType(Type type);
+{
+    struct AnimationKeyFrame
+    {
+        float time_;
+        Vector3 position_;
+        Quaternion rotation_;
+        Vector3 scale_;
+		AnimationKeyFrame();
+		AnimationKeyFrame(float time, Node* node);
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
-	private:
-		Type type_;
-		Color ambient_;
-        Color diffuse_;
-        Color specular_;
-        Attenuation attenuation_;
-        float spotCutOff_; // angle in degrees
-	};
+    };
+
+    struct AnimationTrack
+    {
+        PNode node_;
+        AnimationChannelMask channelMask_;
+        std::vector<AnimationKeyFrame> keyFrames_;
+        void GetKeyFrameIndex(float time, unsigned& index) const;
+        void Save(pugi::xml_node& node);
+		void Load(const pugi::xml_node& node);
+    };
+
+    class Animation
+    {
+    public:
+        Animation();
+        ~Animation();
+        void SetName(const std::string& name);
+		const std::string& GetName() const { return name_; }
+        void SetLength(float length);
+		float GetLength() const { return length_; }
+        void SetTracks(const std::vector<AnimationTrack>& tracks);
+        const std::vector<AnimationTrack>& GetTracks() const { return tracks_; }
+        void Save(pugi::xml_node& node);
+		void Load(const pugi::xml_node& node);
+		void AddTrack(const AnimationTrack& track);
+    private:
+        std::string name_;
+        float length_;
+        std::vector<AnimationTrack> tracks_;
+    };
 }

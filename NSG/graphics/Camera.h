@@ -86,7 +86,7 @@ namespace NSG
 		void BeginRender();
 		void EndRender();
 	protected:
-		Camera(const std::string& name, Scene* scene);
+		Camera(const std::string& name);
 	private:
 		void AddFilter(PFilter filter);
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)

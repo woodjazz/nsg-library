@@ -26,17 +26,20 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
+#include "GPUObject.h"
 
 namespace NSG 
 {
-	class VertexArrayObj
+	class VertexArrayObj : public GPUObject
 	{
 	public:
 		VertexArrayObj(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer);
 		~VertexArrayObj();
 		void Use();
 		void Bind();
-		void MarkAsDirty();
+		bool IsValid() override;
+		void AllocateResources() override;
+		void ReleaseResources()	override;
 		static void Unbind();
 	private:
 		GLuint vao_; // vertex array object
@@ -44,6 +47,5 @@ namespace NSG
 		VertexBuffer* vBuffer_;
 		IndexBuffer* iBuffer_;
 		Graphics& graphics_;
-		bool isDirty_;
 	};
 }

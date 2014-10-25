@@ -58,6 +58,7 @@ namespace NSG
         void SetFrontFace(FrontFaceMode mode);
         void SetTexture(unsigned index, Texture* texture);
         void SetViewport(const Recti& viewport);
+		void InvalidateVAOFor(const Program* program);
         bool SetBuffers(Mesh* mesh);
         bool SetVertexArrayObj(VertexArrayObj* obj);
         VertexArrayObj* GetVertexArrayObj() const
@@ -115,7 +116,6 @@ namespace NSG
         }
 
         void SetBuffers();
-        void RedoVAO(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer);
         void UpdateBatchBuffer();
         void UpdateBatchBuffer(const Batch& batch);
         void SetInstanceAttrPointers(Program* program);

@@ -77,22 +77,6 @@ namespace NSG
             childNode->ClearAllChildren();
             children_.erase(children_.begin() + i);
         }
-        childrenMap_.clear();
-    }
-
-    void Node::RemoveFromChildrenMap(Node* node)
-    {
-        auto itRange = childrenMap_.equal_range(node->name_);
-        auto it = itRange.first;
-        while (it != itRange.second)
-        {
-            if(it->second->name_ == node->name_)
-            {
-                childrenMap_.erase(it); 
-                break;  
-            }
-            it++;
-        }
     }
 
     void Node::RemoveChild(Node* node)
@@ -102,7 +86,6 @@ namespace NSG
         {
             if (child.get() == node)
             {
-                RemoveFromChildrenMap(node);
                 children_.erase(children_.begin() + idx);
                 break;
             }
@@ -114,21 +97,25 @@ namespace NSG
     {
         CHECK_ASSERT(node && node.get() != this, __FILE__, __LINE__);
         node->RemoveFromParent();
-        childrenMap_.insert(ChildrenMap::value_type(node->name_, node));
         children_.push_back(node);
         node->parent_ = this;
         node->MarkAsDirty();
     }
 
-    std::vector<PNode> Node::GetChildren(const std::string& name) const
-    {
-        std::vector<PNode> result;
-		auto itRange = childrenMap_.equal_range(name);
-		auto it = itRange.first;
-		while (it != itRange.second)
-			result.push_back((it++)->second);
-        return result;
-    }
+	void Node::GetChildrenRecursive(PNode node, const std::string& name, std::vector<PNode>& result) 
+	{
+		if (node->GetName() == name)
+			result.push_back(node);
+		for (auto& child : node->children_)
+			child->GetChildrenRecursive(child, name, result);
+	}
+
+	void Node::GetChildrenRecursive(PNode node, std::vector<PNode>& result)
+	{
+		result.push_back(node);
+		for (auto& child : node->children_)
+			child->GetChildrenRecursive(child, result);
+	}
 
     void Node::Save(pugi::xml_node& node)
     {
@@ -156,6 +143,11 @@ namespace NSG
         MarkAsDirty();
     }
 
+    void Node::SetBoneOffsetMatrix(const Matrix4& m)
+    {
+        boneOffsetMatrix_ = m;
+        MarkAsDirty();
+    }
 
     void Node::SetPosition(const Vertex3& position)
     {
@@ -416,25 +408,4 @@ namespace NSG
             for (auto child : children_)
                 child->SetEnabled(enable, recursive);
     }
-
-    const BoundingBox& Node::GetWorldBoundingBox() const
-    {
-        CHECK_ASSERT(false, __FILE__, __LINE__);
-        static BoundingBox bb;
-        return bb;
-    }
-
-    BoundingBox Node::GetWorldBoundingBoxBut(const SceneNode* node) const
-    {
-        CHECK_ASSERT(false, __FILE__, __LINE__);
-        return BoundingBox();
-    }
-
-    void Node::GetMaterials(std::vector<PMaterial>& materials) const
-    {
-        materials.push_back(GetMaterial());
-        for (auto obj : children_)
-            obj->GetMaterials(materials);
-    }
-
 }

@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "InstanceBuffer.h"
 #include "Graphics.h"
 #include "Check.h"
+#include "Context.h"
 
 namespace NSG
 {
@@ -39,72 +40,86 @@ namespace NSG
           program_(program),
           vBuffer_(vBuffer),
           iBuffer_(iBuffer),
-          graphics_(*Graphics::this_),
-          isDirty_(true)
+          graphics_(*Graphics::this_)
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        glGenVertexArrays(1, &vao_);
-
-        CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     VertexArrayObj::~VertexArrayObj()
     {
-        if (graphics_.GetVertexArrayObj() == this)
-            graphics_.SetVertexArrayObj(nullptr);
-
-        glDeleteVertexArrays(1, &vao_);
+		Context::RemoveObject(this);
     }
 
-    void VertexArrayObj::MarkAsDirty()
-    {
-        isDirty_ = true;
-    }
+	bool VertexArrayObj::IsValid()
+	{
+		return program_->IsReady();
+	}
+
+	void VertexArrayObj::AllocateResources()
+	{
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		glGenVertexArrays(1, &vao_);
+
+		CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
+
+		graphics_.SetVertexArrayObj(this);
+
+		graphics_.SetVertexBuffer(vBuffer_, true);
+
+		GLuint position_loc = program_->GetAttPositionLoc();
+		GLuint texcoord_loc0 = program_->GetAttTextCoordLoc0();
+		GLuint texcoord_loc1 = program_->GetAttTextCoordLoc1();
+		GLuint normal_loc = program_->GetAttNormalLoc();
+		GLuint color_loc = program_->GetAttColorLoc();
+		GLuint tangent_loc = program_->GetAttTangentLoc();
+		GLuint bones_id_loc = program_->GetAttBonesIDLoc();
+		GLuint bones_weight = program_->GetAttBonesWeightLoc();
+
+		if (position_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::POSITION);
+
+		if (normal_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
+
+		if (texcoord_loc0 != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD0);
+
+		if (texcoord_loc1 != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD1);
+
+		if (color_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::COLOR);
+
+		if (tangent_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::TANGENT);
+
+		if (bones_id_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::BONES_ID);
+
+		if (bones_weight != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
+	
+		graphics_.SetVertexAttrPointers();
+
+		graphics_.SetIndexBuffer(iBuffer_, true);
+
+		graphics_.SetInstanceAttrPointers(program_);
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+	}
+
+	void VertexArrayObj::ReleaseResources()
+	{
+		if (graphics_.GetVertexArrayObj() == this)
+			graphics_.SetVertexArrayObj(nullptr);
+
+		glDeleteVertexArrays(1, &vao_);
+	}
 
     void VertexArrayObj::Use()
     {
-        graphics_.SetVertexArrayObj(this);
-
-        if (isDirty_)
-        {
-            isDirty_ = false;
-
-            graphics_.SetVertexBuffer(vBuffer_, true);
-
-            GLuint position_loc = program_->GetAttPositionLoc();
-            GLuint texcoord_loc0 = program_->GetAttTextCoordLoc0();
-			GLuint texcoord_loc1 = program_->GetAttTextCoordLoc1();
-            GLuint normal_loc = program_->GetAttNormalLoc();
-            GLuint color_loc = program_->GetAttColorLoc();
-            GLuint tangent_loc = program_->GetAttTangentLoc();
-
-            if (position_loc != -1)
-                glEnableVertexAttribArray((int)AttributesLoc::POSITION);
-
-            if (normal_loc != -1)
-                glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
-
-            if (texcoord_loc0 != -1)
-                glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD0);
-
-			if (texcoord_loc1 != -1)
-				glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD1);
-
-            if (color_loc != -1)
-                glEnableVertexAttribArray((int)AttributesLoc::COLOR);
-
-            if (tangent_loc != -1)
-                glEnableVertexAttribArray((int)AttributesLoc::TANGENT);
-
-            graphics_.SetVertexAttrPointers();
-
-            graphics_.SetIndexBuffer(iBuffer_, true);
-
-            graphics_.SetInstanceAttrPointers(program_);
-        }
+		if(IsReady())
+			graphics_.SetVertexArrayObj(this);
     }
 
     void VertexArrayObj::Bind()

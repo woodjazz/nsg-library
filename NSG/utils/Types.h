@@ -57,6 +57,7 @@ namespace NSG
 	class Path;
 
     typedef glm::highp_ivec4 Recti;
+    typedef glm::highp_ivec4 Vector4i;
     typedef glm::vec4 Rect;
     typedef glm::vec4 Vertex4;
     typedef glm::vec4 Vector4;
@@ -134,6 +135,8 @@ namespace NSG
 		TEXTURECOORD1,
         COLOR,
         TANGENT,
+        BONES_ID,
+        BONES_WEIGHT,
         MODEL_MATRIX_ROW0,
         MODEL_MATRIX_ROW1,
         MODEL_MATRIX_ROW2,
@@ -214,11 +217,11 @@ namespace NSG
         STENCIL = 1 << 6,
         NORMALMAP = 1 << 7,
         LIGHTMAP = 1 << 8,
-        UNLIT = 1 << 9
+        UNLIT = 1 << 9,
+        SKINNED = 1 << 10
     };
 
     typedef FlagSet<ProgramFlag> ProgramFlags;
-
 
     enum class TextureFlag
     {
@@ -229,5 +232,14 @@ namespace NSG
 
     typedef FlagSet<TextureFlag> TextureFlags;
 
+	enum class AnimationChannel
+    {
+        NONE = 0,
+        POSITION = 1 << 0,
+        ROTATION = 1 << 1,
+        SCALE = 1 << 2
+    };
+
+	typedef FlagSet<AnimationChannel> AnimationChannelMask;
 
 }

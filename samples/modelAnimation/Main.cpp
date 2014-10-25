@@ -30,14 +30,12 @@ using namespace NSG;
 struct Sample : App
 {
     PScene scene_;
+    PLight light_;
 
     Sample()
     {
-        //AppConfiguration::this_->width_ = 30;
-        //AppConfiguration::this_->height_ = 20;
-        AppConfiguration::this_->showStatistics_ = true;
+        AppConfiguration::this_->showStatistics_ = false;
     }
-
 
     void Start(int argc, char* argv[]) override
     {
@@ -54,52 +52,21 @@ struct Sample : App
             camera = scene_->CreateCamera("");
 
         camera->Activate();
-		camera->SetGlobalPosition(Vector3(0, 5, 5));
-		camera->SetLookAt(VECTOR3_ZERO);
+		camera->AddBehavior(PCameraControl(new CameraControl));
+		light_ = scene_->CreateLight("");
+		//light->SetPosition(Vertex3(3, 3, 3));
+        camera->AddChild(light_);
 
-        PAnimation animation = scene_->CreateAnimation("anim0");
-		AnimationTrack track;
-		track.node_ = camera;
-		track.channelMask_ = (int)AnimationChannel::POSITION | (int)AnimationChannel::ROTATION;
-
-		{
-			AnimationKeyFrame key(0, camera.get());
-			track.keyFrames_.push_back(key);
-		}
-		
-		{
-			Node node;
-			node.SetParent(camera->GetParent());
-			node.SetGlobalPosition(Vector3(5, 5, 0));
-			node.SetLookAt(VECTOR3_ZERO);
-			AnimationKeyFrame key(2, &node);
-			track.keyFrames_.push_back(key);
-		}
-
-		{
-			Node node;
-			node.SetParent(camera->GetParent());
-			node.SetGlobalPosition(Vector3(0, 5, -5));
-			node.SetLookAt(VECTOR3_ZERO);
-			AnimationKeyFrame key(4, &node);
-			track.keyFrames_.push_back(key);
-		}
-
-		{
-			Node node;
-			node.SetParent(camera->GetParent());
-			node.SetGlobalPosition(Vector3(-5, 5, 0));
-			node.SetLookAt(VECTOR3_ZERO);
-			AnimationKeyFrame key(6, &node);
-			track.keyFrames_.push_back(key);
-		}
-
-		animation->AddTrack(track);
-		animation->SetLength(8);
-
-		scene_->PlayAnimation(animation, false);
+		scene_->PlayAnimation("AnimationSet0", true);
+		scene_->SetAnimationSpeed("AnimationSet0", 0.001f);
+    }
+#if 1
+    void Update() override
+    {
+        App::Update();
 
     }
+#endif
 };
 
 NSG_MAIN(Sample);

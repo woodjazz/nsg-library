@@ -37,6 +37,8 @@ namespace NSG
 		Vertex2 uv1_;
         Color color_;
         Vertex3 tangent_;
+        Vector4 bonesID_;
+        Vector4 bonesWeight_;
 
         VertexData();
     };

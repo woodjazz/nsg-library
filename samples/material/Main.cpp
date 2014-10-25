@@ -30,68 +30,170 @@ using namespace NSG;
 struct Sample : App
 {
     PScene scene_;
-    PLight pointLight_;
-    PLight dirLight_;
-    PLight spotLight_;
+    PLight light_;
     PMesh sphereMesh_;
     PMesh cubeMesh_;
     PTexture diffuseMap_;
     PTexture normalMap_;
+    PTexture lightMap_;
     PMaterial material_;
     PProgram program_;
-	PMesh mesh_;
+    PSceneNode node_;
 
     Sample()
     {
-        //AppConfiguration::this_->width_ = 30;
-        //AppConfiguration::this_->height_ = 20;
         AppConfiguration::this_->showStatistics_ = false;
     }
 
     void Start(int argc, char* argv[]) override
     {
-		scene_ = GetCurrentScene();
+        scene_ = GetCurrentScene();
         scene_->SetAmbientColor(Color(0));
 
-		PCamera camera = scene_->CreateCamera("camera");
+        PCamera camera = scene_->CreateCamera("camera");
+        camera->SetPosition(Vertex3(0, 0, 10));
         camera->AddBehavior(PCameraControl(new CameraControl));
-		camera->Activate();
+        camera->Activate();
 
-		pointLight_ = scene_->CreatePointLight("pointlight");
-		pointLight_->SetPosition(Vertex3(-15, 0, 0));
+        light_ = scene_->CreatePointLight("pointlight");
+        camera->AddChild(light_);
 
-		dirLight_ = scene_->CreateDirectionalLight("dirlight");
-		dirLight_->SetLookAt(Vertex3(0, -1, 0));
-
-		spotLight_ = scene_->CreateSpotLight("spotlight");
-		spotLight_->SetPosition(Vertex3(0, 0, 15));
-		spotLight_->SetLookAt(Vertex3(-1, 0, 0));
-		spotLight_->SetSpotLight(25);
-
-        mesh_ = sphereMesh_ = CreateSphereMesh();
+        sphereMesh_ = CreateSphereMesh();
         cubeMesh_ = CreateBoxMesh();
 
-		diffuseMap_ = GetOrCreateTextureFile("data/wall.jpg");
-		normalMap_ = GetOrCreateTextureFile("data/wallnormalmap.jpg");
+        diffuseMap_ = GetOrCreateTextureFile("data/wall.jpg");
+        normalMap_ = GetOrCreateTextureFile("data/wallnormalmap.jpg");
+        lightMap_ = GetOrCreateTextureFile("data/lightmap.png");
         material_ = CreateMaterial();
-		program_ = CreateProgram();
+        material_->SetTexture0(diffuseMap_);
+        material_->SetTexture1(normalMap_);
+        material_->SetTexture2(lightMap_);
+        program_ = CreateProgram();
         PTechnique technique(new Technique);
         PPass pass(new Pass);
         technique->Add(pass);
-		pass->SetProgram(program_);
+        pass->SetProgram(program_);
         material_->SetTechnique(technique);
 
-        PSceneNode node = scene_->CreateSceneNode("node");
-		node->SetPosition(Vertex3(0, 0, 0));
-        node->Set(material_);
-        node->Set(mesh_);
+        node_ = scene_->CreateSceneNode("node");
+        node_->SetPosition(Vertex3(0, 0, 0));
+        node_->Set(material_);
+        node_->Set(sphereMesh_);
     }
 
     void RenderGUIWindow() override
     {
         using namespace IMGUI;
 
-		const float Y_PERCENTAGE = 20;
+        IMGUIBeginHorizontal();
+        {
+            IMGUIBeginVertical(25, 100);
+            {
+                const float Y_PERCENTAGE = 10;
+
+                ProgramFlags flags = program_->GetFlags();
+
+                {
+                    bool flag = flags & (int)ProgramFlag::PER_VERTEX_LIGHTING ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable PVL" : "Enable PVL", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::PER_VERTEX_LIGHTING;
+                    else
+                        flags &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::PER_PIXEL_LIGHTING ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable PPL" : "Enable PPL", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::PER_PIXEL_LIGHTING;
+                    else
+                        flags &= ~(int)ProgramFlag::PER_PIXEL_LIGHTING;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::BLEND ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable Blend" : "Enable Blend", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::BLEND;
+                    else
+                        flags &= ~(int)ProgramFlag::BLEND;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::BLUR ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable Blur" : "Enable Blur", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::BLUR;
+                    else
+                        flags &= ~(int)ProgramFlag::BLUR;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::TEXT ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable TEXT" : "Enable TEXT", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::TEXT;
+                    else
+                        flags &= ~(int)ProgramFlag::TEXT;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::SHOW_TEXTURE0 ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable SHOW_TEXTURE0" : "Enable SHOW_TEXTURE0", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::SHOW_TEXTURE0;
+                    else
+                        flags &= ~(int)ProgramFlag::SHOW_TEXTURE0;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::STENCIL ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable STENCIL" : "Enable STENCIL", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::STENCIL;
+                    else
+                        flags &= ~(int)ProgramFlag::STENCIL;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::NORMALMAP ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable NORMALMAP" : "Enable NORMALMAP", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::NORMALMAP;
+                    else
+                        flags &= ~(int)ProgramFlag::NORMALMAP;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::LIGHTMAP ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable LIGHTMAP" : "Enable LIGHTMAP", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::LIGHTMAP;
+                    else
+                        flags &= ~(int)ProgramFlag::LIGHTMAP;
+                }
+
+                {
+                    bool flag = flags & (int)ProgramFlag::UNLIT ? true : false;
+                    if (IMGUICheckButton(flag, flag ? "Disable UNLIT" : "Enable UNLIT", 100, Y_PERCENTAGE))
+                        flags |= (int)ProgramFlag::UNLIT;
+                    else
+                        flags &= ~(int)ProgramFlag::UNLIT;
+                }
+
+                program_->SetFlags(flags);
+            }
+            IMGUIEndArea();
+
+            IMGUISpacer(50, 100);
+
+            IMGUIBeginVertical(25, 100);
+            {
+                bool isSphere = node_->GetMesh() == sphereMesh_;
+                
+                isSphere = IMGUICheckButton(isSphere, isSphere ? "Cube" : "Sphere", 100, 25);
+
+                if(isSphere)
+                    node_->Set(sphereMesh_);
+                else
+                    node_->Set(cubeMesh_);
+
+            }
+            IMGUIEndArea();
+        }
+        IMGUIEndArea();
     }
 
 };

@@ -711,6 +711,17 @@ namespace NSG
     {
     }
 
+	void Graphics::InvalidateVAOFor(const Program* program)
+	{
+		auto it = vaoMap_.begin();
+		while (it != vaoMap_.end())
+		{
+			if (it->first.program_ == program)
+				it->second->Invalidate();
+			++it;
+		}
+	}
+
     void Graphics::SetBuffers()
     {
 		VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
@@ -739,17 +750,6 @@ namespace NSG
             SetAttributes();
             SetInstanceAttrPointers(activeProgram_);
             SetIndexBuffer(activeMesh_->GetIndexBuffer());
-        }
-    }
-
-    void Graphics::RedoVAO(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer)
-    {
-        if (has_vertex_array_object_ext_)
-        {
-            VAOKey key {activeProgram_, vBuffer, iBuffer};
-            auto it = vaoMap_.find(key);
-            if (it != vaoMap_.end())
-                it->second->MarkAsDirty();
         }
     }
 
@@ -891,6 +891,19 @@ namespace NSG
                               sizeof(VertexData),
                               reinterpret_cast<void*>(offsetof(VertexData, tangent_)));
 
+        glVertexAttribPointer((int)AttributesLoc::BONES_ID,
+                              4,
+                              GL_FLOAT,
+                              GL_FALSE,
+                              sizeof(VertexData),
+                              reinterpret_cast<void*>(offsetof(VertexData, bonesID_)));
+
+        glVertexAttribPointer((int)AttributesLoc::BONES_WEIGHT,
+                              4,
+                              GL_FLOAT,
+                              GL_FALSE,
+                              sizeof(VertexData),
+                              reinterpret_cast<void*>(offsetof(VertexData, bonesWeight_)));
     }
 
     void Graphics::SetAttributes()
@@ -903,6 +916,9 @@ namespace NSG
             GLuint normal_loc = activeProgram_->GetAttNormalLoc();
             GLuint color_loc = activeProgram_->GetAttColorLoc();
             GLuint tangent_loc = activeProgram_->GetAttTangentLoc();
+			GLuint bones_id_loc = activeProgram_->GetAttBonesIDLoc();
+			GLuint bones_weight = activeProgram_->GetAttBonesWeightLoc();
+
 
             unsigned newAttributes = 0;
 
@@ -979,6 +995,29 @@ namespace NSG
                 }
             }
 
+			if (bones_id_loc != -1)
+			{
+				unsigned positionBit = 1 << bones_id_loc;
+				newAttributes |= positionBit;
+
+				if ((enabledAttributes_ & positionBit) == 0)
+				{
+					enabledAttributes_ |= positionBit;
+					glEnableVertexAttribArray(bones_id_loc);
+				}
+			}
+
+			if (bones_weight != -1)
+			{
+				unsigned positionBit = 1 << bones_weight;
+				newAttributes |= positionBit;
+
+				if ((enabledAttributes_ & positionBit) == 0)
+				{
+					enabledAttributes_ |= positionBit;
+					glEnableVertexAttribArray(bones_weight);
+				}
+			}
 
             SetVertexAttrPointers();
 
@@ -1009,7 +1048,7 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        activeProgram_->SetVariables(activeMaterial_, activeNode_);
+		activeProgram_->SetVariables(activeMaterial_, activeMesh_, activeNode_);
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -1061,7 +1100,7 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        activeProgram_->SetVariables(activeMaterial_);
+		activeProgram_->SetVariables(activeMaterial_, activeMesh_);
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 		

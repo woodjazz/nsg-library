@@ -35,7 +35,7 @@ namespace NSG
 
     std::ostream& operator << (std::ostream& s , const VertexData& obj)
     {
-		s << obj.position_ << obj.normal_ << obj.uv0_ << obj.uv1_ << obj.color_;
+		s << obj.position_ << obj.normal_ << obj.uv0_ << obj.uv1_ << obj.color_ << obj.tangent_ << obj.bonesID_ << obj.bonesWeight_;
     	return s;
     }
 }

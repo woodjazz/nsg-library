@@ -40,71 +40,44 @@ namespace NSG
         void SetVertexShader(PResource resource);
         void SetFragmentShader(PResource resource);
         bool Initialize();
-        void Set(ExtraUniforms* pExtraUniforms)
-        {
-            pExtraUniforms_ = pExtraUniforms;
-        }
+        void Set(ExtraUniforms* pExtraUniforms) { pExtraUniforms_ = pExtraUniforms; }
         GLuint GetAttributeLocation(const std::string& name);
         GLuint GetUniformLocation(const std::string& name);
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
-        GLuint GetAttPositionLoc() const
-        {
-            return att_positionLoc_;
-        }
-        GLuint GetAttTextCoordLoc0() const
-        {
-			return att_texcoordLoc0_;
-        }
-		GLuint GetAttTextCoordLoc1() const
-		{
-			return att_texcoordLoc1_;
-		}
-        GLuint GetAttNormalLoc() const
-        {
-            return att_normalLoc_;
-        }
-        GLuint GetAttColorLoc() const
-        {
-            return att_colorLoc_;
-        }
-        GLuint GetAttTangentLoc() const
-        {
-            return att_tangentLoc_;
-        }
-        GLuint GetAttModelMatrixLoc() const
-        {
-            return att_modelMatrixRow0Loc_;
-        }
-        GLuint GetAttNormalMatrixLoc() const
-        {
-            return att_normalMatrixCol0Loc_;
-        }
-        void SetVariables(Material* material, Node* node);
-        void SetVariables(Material* material);
-        GLuint GetId() const
-        {
-            return id_;
-        }
+        GLuint GetAttPositionLoc() const { return att_positionLoc_; }
+        GLuint GetAttTextCoordLoc0() const { return att_texcoordLoc0_; }
+        GLuint GetAttTextCoordLoc1() const { return att_texcoordLoc1_; }
+        GLuint GetAttNormalLoc() const { return att_normalLoc_; }
+        GLuint GetAttColorLoc() const { return att_colorLoc_; }
+        GLuint GetAttTangentLoc() const { return att_tangentLoc_; }
+        GLuint GetAttBonesIDLoc() const { return att_bonesIDLoc_; }
+        GLuint GetAttBonesWeightLoc() const { return att_bonesWeightLoc_; }
+        GLuint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
+        GLuint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
+        void SetVariables(Material* material, Mesh* mesh, Node* node);
+		void SetVariables(Material* material, Mesh* mesh);
+        GLuint GetId() const { return id_; }
         void Save(pugi::xml_node& node);
         static PProgram CreateFrom(const pugi::xml_node& node);
         const ProgramFlags& GetFlags() const { return flags_; }
-		void SetFlags(const ProgramFlags& flags);
+        void SetFlags(const ProgramFlags& flags);
     private:
         Program(const std::string& name);
         void SetSceneVariables(Scene* scene);
         void SetCameraVariables();
         void SetNodeVariables(Node* node);
         void SetMaterialVariables(Material* material);
-		bool HasLighting() const;
+		bool SetMeshVariables(Mesh* mesh);
+        bool HasLighting() const;
 
-		struct BaseLightLoc
-		{
-			GLuint ambient_;
-			GLuint diffuse_;
-			GLuint specular_;
-		};
+        struct BaseLightLoc
+        {
+            GLuint ambient_;
+            GLuint diffuse_;
+            GLuint specular_;
+        };
 
         void SetBaseLightVariables(const BaseLightLoc& baseLoc, const Light* light);
         bool SetLightVariables(Scene* scene);
@@ -120,11 +93,13 @@ namespace NSG
         // attributes
         /////////////////////////////////////
         GLuint att_texcoordLoc0_;
-		GLuint att_texcoordLoc1_;
+        GLuint att_texcoordLoc1_;
         GLuint att_positionLoc_;
         GLuint att_normalLoc_;
         GLuint att_colorLoc_;
         GLuint att_tangentLoc_;
+        GLuint att_bonesIDLoc_;
+        GLuint att_bonesWeightLoc_;
         GLuint att_modelMatrixRow0Loc_;
         GLuint att_normalMatrixCol0Loc_;
         /////////////////////////////////////
@@ -133,13 +108,14 @@ namespace NSG
         /////////////////////////////////////
         // Uniforms
         /////////////////////////////////////
+		std::vector<GLuint> bonesLoc_;
         GLuint modelLoc_;
         GLuint normalMatrixLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
         GLuint sceneColorAmbientLoc_;
         GLuint eyeWorldPosLoc_;
-        
+
         GLuint texture0Loc_;
         GLuint texture1Loc_;
         GLuint texture2Loc_;
@@ -181,7 +157,7 @@ namespace NSG
         {
             PointLightLoc point_;
             GLuint direction_;
-			GLuint cutOff_;
+            GLuint cutOff_;
         };
 
         std::vector<PointLightLoc> pointLightsLoc_;
@@ -189,12 +165,14 @@ namespace NSG
         std::vector<SpotLightLoc> spotLightsLoc_;
         /////////////////////////////////////
 
+		size_t nBones_;
         size_t nDirectionalLights_;
         size_t nPointLights_;
         size_t nSpotLights_;
         Camera* activeCamera_;
         bool neverUsed_;
         Material* activeMaterial_;
+		Skeleton* activeSkeleton_;
         Node* activeNode_;
         Scene* activeScene_;
         Color sceneColor_;
@@ -203,7 +181,6 @@ namespace NSG
         std::vector<Light*> activePointLights_;
         std::vector<Light*> activeSpotLights_;
 
-        Matrix4 activeNodeGlobalModel_;
         struct MaterialProgram
         {
             Color color_;

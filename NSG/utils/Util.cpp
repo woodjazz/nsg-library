@@ -37,6 +37,11 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    Vector3 Lerp(const Vector3& lhs, const Vector3& rhs, float t)
+    {
+        return lhs * (1.0f - t) + rhs * t;
+    }
+
     void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
     {
         Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
@@ -51,7 +56,6 @@ namespace NSG
 
         scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
     }
-
 
     bool CopyFile(const std::string& source, const std::string& target)
     {
@@ -154,6 +158,50 @@ namespace NSG
         return obj;
     }
 
+	Matrix4 GetMatrix4(const std::string& buffer)
+	{
+		std::stringstream ss;
+		ss << buffer;
+		Matrix4 obj;
+		ss >> obj;
+		return obj;
+	}
+
+	std::string ToString(const Matrix4& m)
+	{
+		std::stringstream ss;
+		ss << '[';
+		ss << glm::column(m, 0);
+		ss << glm::column(m, 1);
+		ss << glm::column(m, 2);
+		ss << glm::column(m, 3);
+		ss << ']';
+
+		return ss.str();
+	}
+
+	std::istream& operator >> (std::istream& s, Matrix4& obj)
+	{
+		char ch;
+		s >> ch;
+		CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
+		Vector4 col0;
+		s >> col0;
+		Vector4 col1;
+		s >> col1;
+		Vector4 col2;
+		s >> col2;
+		Vector4 col3;
+		s >> col3;
+		s >> ch;
+		CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
+
+		obj = Matrix4(col0, col1, col2, col3);
+
+		return s;
+	}
+
+
     std::istream& operator >> (std::istream& s , Quaternion& obj)
     {
         char ch;
@@ -194,7 +242,7 @@ namespace NSG
                 {
                     if (SetCurrentDirectory(path.c_str()) == FALSE)
                     {
-						TRACE_LOG("Failed to change directory to " << path << " with error = " << GetLastError());
+                        TRACE_LOG("Failed to change directory to " << path << " with error = " << GetLastError());
                         return false;
                     }
                 }
@@ -202,7 +250,7 @@ namespace NSG
                 {
                     if (chdir(path.c_str()) != 0)
                     {
-						TRACE_LOG("Failed to change directory to " << path << " with error = " << errno);
+                        TRACE_LOG("Failed to change directory to " << path << " with error = " << errno);
                         return false;
                     }
                 }
@@ -214,6 +262,6 @@ namespace NSG
         {
             return false;
         }
-		#endif
+        #endif
     }
 }

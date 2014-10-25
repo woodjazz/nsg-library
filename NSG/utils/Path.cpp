@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Path.h"
 #include "Check.h"
+#include "Context.h"
 #if WIN32
 #include <Windows.h>
 #elif defined(EMSCRIPTEN)
@@ -74,16 +75,9 @@ namespace NSG
         #endif
 
         if (isAbsolutePath_)
-        {
             absolutePath_ = path_;
-        }
         else
-        {
-			static std::string current_path = Path::GetCurrentDir(); //capture current dir
-			absolutePath_ = current_path;
-			if (!path_.empty())
-				absolutePath_ += path_;
-        }
+			absolutePath_ = Context::this_->basePath_ + path_;
 
         fullFilePath_ = absolutePath_ + "/" + filename_;
     }

@@ -31,6 +31,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	Vector3 Lerp(const Vector3& lhs, const Vector3& rhs, float t);
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
     bool CopyFile(const std::string& source, const std::string& target);
     bool SetCurrentDir(const std::string& pathName);
@@ -44,9 +45,12 @@ namespace NSG
 	std::istream& operator >> (std::istream& s, Vertex2& obj);
 	std::istream& operator >> (std::istream& s , Vertex3& obj);
 	std::istream& operator >> (std::istream& s , Vertex4& obj);
+	std::istream& operator >> (std::istream& s, Matrix4& obj);
 	std::istream& operator >> (std::istream& s, Quaternion& obj);
 	Vertex2 GetVertex2(const std::string& buffer);
 	Vertex3 GetVertex3(const std::string& buffer);
 	Vertex4 GetVertex4(const std::string& buffer);
+	Matrix4 GetMatrix4(const std::string& buffer);
+	std::string ToString(const Matrix4& m);
 	Quaternion GetQuaternion(const std::string& buffer);
 }

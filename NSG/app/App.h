@@ -93,6 +93,8 @@ namespace NSG
         PProgram CreateProgram(const std::string& name = "");
         const std::vector<PMesh>& GetMeshes() const;
         const std::vector<PMaterial>& GetMaterials() const;
+        int GetMaterialSerializableIndex(const PMaterial& material) const;
+        int GetMeshSerializableIndex(const PMesh& mesh) const;
     private:
         void AddListener(IViewChangedListener* listener);
         void RemoveListener(IViewChangedListener* listener);

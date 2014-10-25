@@ -36,6 +36,7 @@ namespace NSG
 	class Resource;
 	struct Context : public Singleton<Context>
 	{
+		std::string basePath_;
 		PResourceFileManager resourceFileManager_;
 		PTextureFileManager textureFileManager_;
 		PGraphics graphics_;

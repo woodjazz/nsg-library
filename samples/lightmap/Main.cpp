@@ -48,16 +48,15 @@ struct Sample : App
 		
 		scene_->Load(resource);
 		
-		std::vector<PNode> objs = scene_->GetChildren("static_objects");
+		std::vector<SceneNode*> objs = Node::GetChildrenRecursiveOfType<SceneNode>(scene_, "static_objects");
 		for(auto& obj: objs)
 		{
 			obj->SetDiffuseMap(diffuseTexture, true);
 			obj->SetLightMap(lightmapTexture, true);
 		}
 
-		std::vector<PNode> cameras = scene_->GetChildren("Camera");
-		CHECK_ASSERT(cameras.size() > 0, __FILE__, __LINE__);
-		Camera* camera = dynamic_cast<Camera*>(cameras.at(0).get());
+		Camera* camera = Node::GetFirstChildOfType<Camera>(scene_, "Camera");
+		CHECK_ASSERT(camera, __FILE__, __LINE__);
 		camera->Activate();
         camera->AddBehavior(PCameraControl(new CameraControl));
     }

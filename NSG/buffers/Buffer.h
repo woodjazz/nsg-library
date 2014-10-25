@@ -35,7 +35,7 @@ namespace NSG
 	{
 	public:
 
-		static const size_t MAX_BUFFER_SIZE = 2 * 1000 * 1000;
+		static const size_t MAX_BUFFER_SIZE = 3 * 1000 * 1000;
 
 		struct Data
 		{

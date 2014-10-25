@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "ResourceFileManager.h"
 #include "TextureFileManager.h"
+#include "Path.h"
 
 namespace NSG
 {
@@ -146,6 +147,8 @@ namespace NSG
 
     void Context::Initialize()
     {
+        basePath_ = Path::GetCurrentDir();
+
         resourceFileManager_ = PResourceFileManager(new ResourceFileManager);
 
         textureFileManager_ = PTextureFileManager(new TextureFileManager);

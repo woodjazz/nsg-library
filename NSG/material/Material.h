@@ -66,6 +66,7 @@ namespace NSG
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
+		bool IsSerializable() const { return serializable_; }
 	private:
 		Material(const std::string& name);
 	private:

@@ -236,7 +236,7 @@
         "remove-brackets": false,
 
         // Don't break one-line blocks.
-        "keep-one-line-blocks": false,
+        "keep-one-line-blocks": true,
 
         // Don't break complex statements and multiple statements residing on a single line.
         "keep-one-line-statements": true,

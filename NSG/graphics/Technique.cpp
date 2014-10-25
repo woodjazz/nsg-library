@@ -84,7 +84,7 @@ namespace NSG
                 PPass pass(new Pass);
                 Add(pass);
                 pass->Load(childPass);
-                childPass = node.next_sibling("Pass");
+                childPass = childPass.next_sibling("Pass");
             }
         }
     }

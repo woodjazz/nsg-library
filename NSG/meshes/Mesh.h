@@ -39,7 +39,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    class Mesh : public GPUObject
+	class Mesh : public GPUObject
     {
     public:
         ~Mesh();
@@ -49,44 +49,26 @@ namespace NSG
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
-        const BoundingBox& GetBB() const
-        {
-            return bb_;
-        }
-        float GetBoundingSphereRadius() const
-        {
-            return boundingSphereRadius_;
-        }
-        VertexBuffer* GetVertexBuffer() const
-        {
-            return pVBuffer_.get();
-        }
-        IndexBuffer* GetIndexBuffer() const
-        {
-            return pIBuffer_.get();
-        }
-        const VertexsData& GetVertexsData() const
-        {
-            return vertexsData_;
-        }
-        const Indexes& GetIndexes() const
-        {
-            return indexes_;
-        }
-        Buffer::Data* GetBufferVertexData() const
-        {
-            return bufferVertexData_;
-        }
-        Buffer::Data* GetBufferIndexData() const
-        {
-            return bufferIndexData_;
-        }
+        const BoundingBox& GetBB() const { return bb_; }
+        float GetBoundingSphereRadius() const { return boundingSphereRadius_; }
+        VertexBuffer* GetVertexBuffer() const { return pVBuffer_.get(); }
+        IndexBuffer* GetIndexBuffer() const { return pIBuffer_.get(); }
+        const VertexsData& GetVertexsData() const { return vertexsData_; }
+        const Indexes& GetIndexes() const { return indexes_; }
+        Buffer::Data* GetBufferVertexData() const { return bufferVertexData_; }
+        Buffer::Data* GetBufferIndexData() const { return bufferIndexData_; }
         void Save(pugi::xml_node& node);
         virtual void Load(const pugi::xml_node& node);
         void SetSerializable(bool serializable) { serializable_ = serializable; }
+        bool IsSerializable() const { return serializable_; }
+        PSkeleton GetSkeleton() const { return skeleton_; }
+        void SetSkeleton(PSkeleton skeleton) { skeleton_ = skeleton; }
+        const std::string& GetName() const { return name_; }
+        void SetName(const std::string& name) { name_ = name; }
+		void SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights);
     protected:
         void CalculateTangents();
-        Mesh(const std::string& name = "mesh", bool dynamic = false);
+        Mesh(const std::string& name = "", bool dynamic = false);
     protected:
         VertexsData vertexsData_;
         Indexes indexes_;
@@ -102,6 +84,7 @@ namespace NSG
         Graphics& graphics_;
         bool areTangentsCalculated_;
         bool serializable_;
+        PSkeleton skeleton_;
         friend class App;
     };
 }

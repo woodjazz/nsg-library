@@ -249,8 +249,8 @@ namespace NSG
 
         vertOffset = data.size();
 
-        // Top Face
-        normal = Vertex3(0, 1, 0);
+        // Bottom Face
+        normal = Vertex3(0, -1, 0);
         for (int iy = 0; iy < resZ_; iy++)
         {
             for (int ix = 0; ix < resX_; ix++)
@@ -291,8 +291,8 @@ namespace NSG
 
         vertOffset = data.size();
 
-        // Bottom Face
-        normal = Vertex3(0, -1, 0);
+        // Top Face
+        normal = Vertex3(0, 1, 0);
         for (int iy = 0; iy < resZ_; iy++)
         {
             for (int ix = 0; ix < resX_; ix++)
