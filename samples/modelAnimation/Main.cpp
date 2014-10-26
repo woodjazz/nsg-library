@@ -31,44 +31,78 @@ struct Sample : App
 {
     PScene scene_;
     PLight light_;
-
+    PNode node_;
 
     Sample()
     {
-        AppConfiguration::this_->showStatistics_ = false;
+        AppConfiguration::this_->showStatistics_ = true;
     }
-
 
     void Start(int argc, char* argv[]) override
     {
-		scene_ = GetCurrentScene();
+        scene_ = GetCurrentScene();
 
-		PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
-		scene_->Load(resource);
+        PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
+        scene_->Load(resource);
 
         PCamera camera;
         auto& cameras = scene_->GetCameras();
-        if(cameras.size())
+        if (cameras.size())
             camera = cameras[0];
         else
             camera = scene_->CreateCamera("");
 
+        camera->SetPosition(Vector3(0, 70, 100));
+
         camera->Activate();
-		camera->AddBehavior(PCameraControl(new CameraControl));
-		light_ = scene_->CreateLight("");
-		//light->SetPosition(Vertex3(3, 3, 3));
-        camera->AddChild(light_);
+        camera->AddBehavior(PCameraControl(new CameraControl));
+        light_ = scene_->CreateLight("");
+        light_->SetType(Light::DIRECTIONAL);
+        //light_->SetPosition(Vertex3(100, 0, 0));
+        light_->SetLookAt(Vector3(1, 0, 0));
+        light_->SetDiffuseColor(Color(1, 0, 0, 1));
+        //camera->AddChild(light_);
 
-		scene_->PlayAnimation("AnimationSet0", true);
-		scene_->SetAnimationSpeed("AnimationSet0", 0.001f);
+        scene_->PlayAnimation("AnimationSet0", true);
+        scene_->SetAnimationSpeed("AnimationSet0", 0.001f);
+
+        node_ = Node::GetUniqueNodeFrom(scene_, "Body");
     }
-#if 1
-    void Update() override
+
+    void OnKey(int key, int action, int modifier) override
     {
-        App::Update();
+        App::OnKey(key, action, modifier);
+        
+        switch (key)
+        {
+        case NSG_KEY_W:
+        {
+            node_->Translate(Vector3(0, 0, 1));
+            break;
+        }
 
+        case NSG_KEY_S:
+        {
+            node_->Translate(Vector3(0, 0, -1));
+            break;
+        }
+
+        case NSG_KEY_LEFT:
+        {
+            node_->Translate(Vector3(-1, 0, 0));
+            break;
+        }
+
+        case NSG_KEY_RIGHT:
+        {
+            node_->Translate(Vector3(1, 0, 0));
+            break;
+        }
+
+        }
     }
-#endif
+
+
 };
 
 NSG_MAIN(Sample);

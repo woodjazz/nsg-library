@@ -83,14 +83,14 @@ namespace NSG
           texture0Loc_(-1),
           texture1Loc_(-1),
           texture2Loc_(-1),
-		  nBones_(0),
+          nBones_(0),
           nDirectionalLights_(0),
           nPointLights_(0),
           nSpotLights_(0),
           activeCamera_(nullptr),
           neverUsed_(true),
           activeMaterial_(nullptr),
-		  activeSkeleton_(nullptr),
+          activeSkeleton_(nullptr),
           activeNode_(nullptr),
           activeScene_(nullptr),
           sceneColor_(-1),
@@ -119,11 +119,11 @@ namespace NSG
     {
         std::string preDefines;
 
-        #ifdef GL_ES_VERSION_2_0
+#ifdef GL_ES_VERSION_2_0
         preDefines = "#version 100\n#define GLES2\n";
-        #else
+#else
         preDefines = "#version 120\n";
-        #endif
+#endif
 
         if (graphics_.HasInstancedArrays())
         {
@@ -136,14 +136,14 @@ namespace NSG
 
         CHECK_ASSERT(scene, __FILE__, __LINE__);
 
-		if (nBones_)
-		{
-			std::stringstream ss;
-			ss << "const int NUM_BONES = " << nBones_ << ";\n";
-			preDefines += ss.str();
-			flags_ |= (int)ProgramFlag::SKINNED;
-			preDefines += "#define SKINNED\n";
-		}
+        if (nBones_)
+        {
+            std::stringstream ss;
+            ss << "const int NUM_BONES = " << nBones_ << ";\n";
+            preDefines += ss.str();
+            flags_ |= (int)ProgramFlag::SKINNED;
+            preDefines += "#define SKINNED\n";
+        }
 
         const Scene::Lights& directionalLigths = scene->GetLights(Light::DIRECTIONAL);
         nDirectionalLights_ = directionalLigths.size();
@@ -303,14 +303,14 @@ namespace NSG
             materialLoc_.specular_ = GetUniformLocation("u_material.specular");
             materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
 
-			for (unsigned idx = 0; idx < nBones_; idx++)
-			{
-				std::stringstream boneIndex;
-				boneIndex << "u_bones[" << idx << "]";
+            for (unsigned idx = 0; idx < nBones_; idx++)
+            {
+                std::stringstream boneIndex;
+                boneIndex << "u_bones[" << idx << "]";
 
-				GLuint boneLoc = GetUniformLocation(boneIndex.str());
-				bonesLoc_.push_back(boneLoc);
-			}
+                GLuint boneLoc = GetUniformLocation(boneIndex.str());
+                bonesLoc_.push_back(boneLoc);
+            }
 
             for (unsigned idx = 0; idx < nDirectionalLights_; idx++)
             {
@@ -392,7 +392,7 @@ namespace NSG
         if (graphics_.GetProgram() == this)
             graphics_.SetProgram(nullptr);
 
-		nBones_ = 0;
+        nBones_ = 0;
         nDirectionalLights_ = 0;
         nPointLights_ = 0;
         nSpotLights_ = 0;
@@ -404,18 +404,18 @@ namespace NSG
         activeCamera_ = nullptr;
         neverUsed_ = true;
         activeMaterial_ = nullptr;
-		activeSkeleton_ = nullptr;
+        activeSkeleton_ = nullptr;
         activeNode_ = nullptr;
         activeScene_ = nullptr;
         sceneColor_ = Color(-1);
         material_ = MaterialProgram();
 
-		bonesLoc_.clear();
-		pointLightsLoc_.clear();
-		directionalLightsLoc_.clear();
-		spotLightsLoc_.clear();
+        bonesLoc_.clear();
+        pointLightsLoc_.clear();
+        directionalLightsLoc_.clear();
+        spotLightsLoc_.clear();
 
-		graphics_.InvalidateVAOFor(this);
+        graphics_.InvalidateVAOFor(this);
     }
 
     bool Program::HasLighting() const
@@ -602,44 +602,56 @@ namespace NSG
         activeMaterial_ = material;
     }
 
-	bool Program::SetMeshVariables(Mesh* mesh)
-	{
-		Skeleton* skeleton = mesh->GetSkeleton().get();
-		if (skeleton)
-		{
-			const std::vector<PNode>& bones = skeleton->GetBones();
-			unsigned nBones = bones.size();
-			if (nBones != nBones_)
-			{
-				CHECK_ASSERT(nBones > 0, __FILE__, __LINE__);
-				Invalidate();
-				nBones_ = nBones;
-				return false;
-			}
+    bool Program::SetMeshVariables(Mesh* mesh)
+    {
+        Skeleton* skeleton = mesh->GetSkeleton().get();
+        if (skeleton)
+        {
+            const std::vector<PNode>& bones = skeleton->GetBones();
+            unsigned nBones = bones.size();
+            if (nBones != nBones_)
+            {
+                CHECK_ASSERT(nBones > 0, __FILE__, __LINE__);
+                Invalidate();
+                nBones_ = nBones;
+                return false;
+            }
 
             PNode rootNode = skeleton->GetRoot();
-			Matrix4 globalInverseModelMatrix(1);
+            Matrix4 globalInverseModelMatrix(1);
             Node* parent = rootNode->GetParent();
-            if(parent)
+            if (parent)
                 globalInverseModelMatrix = parent->GetGlobalModelInvMatrix();
 
-			for (unsigned idx = 0; idx < nBones_; idx++)
-			{
-				const GLuint& boneLoc = bonesLoc_[idx];
-                Node* bone = bones[idx].get();
-				if (activeSkeleton_ != skeleton || bone->UniformsNeedUpdate())
-				{
-					const Matrix4& m = bone->GetGlobalModelMatrix();
-					const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
-					Matrix4 skinMatrix(globalInverseModelMatrix * m * offsetMatrix);
-					glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(skinMatrix));
-				}
-			}
-		}
-		activeSkeleton_ = skeleton;
+            for (unsigned idx = 0; idx < nBones_; idx++)
+            {
+                const GLuint& boneLoc = bonesLoc_[idx];
+                if (boneLoc != -1)
+                {
+                    Node* bone = bones[idx].get();
+                    if (activeSkeleton_ != skeleton || bone->UniformsNeedUpdate())
+                    {
+                        const Matrix4& m = bone->GetGlobalModelMatrix();
+                        const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
+                        if(graphics_.HasInstancedArrays())
+                        {
+                            // we need to transpose the matrix since the model matrix is transposed (uses rows instead of cols)
+                            Matrix4 skinMatrix(glm::transpose(globalInverseModelMatrix * m * offsetMatrix));
+                            glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(skinMatrix));
+                        }
+                        else
+                        {
+                            Matrix4 skinMatrix(globalInverseModelMatrix * m * offsetMatrix);
+                            glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(skinMatrix));
+                        }
+                    }
+                }
+            }
+        }
+        activeSkeleton_ = skeleton;
 
-		return true;
-	}
+        return true;
+    }
 
     void Program::SetCameraVariables()
     {
@@ -776,7 +788,7 @@ namespace NSG
                         glUniform3fv(loc.position_, 1, &position[0]);
                     }
 
-					const Light::Attenuation& attenuation = light->GetAttenuation();
+                    const Light::Attenuation& attenuation = light->GetAttenuation();
 
                     if (loc.atten_.constant_ != -1)
                     {
@@ -858,30 +870,30 @@ namespace NSG
 
     void Program::SetVariables(Material* material, Mesh* mesh, Node* node)
     {
-		if (SetMeshVariables(mesh))
-		{
-			PScene scene = App::this_->GetCurrentScene();
-			SetSceneVariables(scene.get());
-			SetMaterialVariables(material);
-			SetNodeVariables(node);
-			SetCameraVariables();
-			activeNode_ = node;
-			if (SetLightVariables(scene.get()) && pExtraUniforms_)
-				pExtraUniforms_->AssignValues();
-		}
+        if (SetMeshVariables(mesh))
+        {
+            PScene scene = App::this_->GetCurrentScene();
+            SetSceneVariables(scene.get());
+            SetMaterialVariables(material);
+            SetNodeVariables(node);
+            SetCameraVariables();
+            activeNode_ = node;
+            if (SetLightVariables(scene.get()) && pExtraUniforms_)
+                pExtraUniforms_->AssignValues();
+        }
     }
 
-	void Program::SetVariables(Material* material, Mesh* mesh)
+    void Program::SetVariables(Material* material, Mesh* mesh)
     {
-		if (SetMeshVariables(mesh))
-		{
-			PScene scene = App::this_->GetCurrentScene();
-			SetSceneVariables(scene.get());
-			SetMaterialVariables(material);
-			SetCameraVariables();
-			if (SetLightVariables(scene.get()) && pExtraUniforms_)
-				pExtraUniforms_->AssignValues();
-		}
+        if (SetMeshVariables(mesh))
+        {
+            PScene scene = App::this_->GetCurrentScene();
+            SetSceneVariables(scene.get());
+            SetMaterialVariables(material);
+            SetCameraVariables();
+            if (SetLightVariables(scene.get()) && pExtraUniforms_)
+                pExtraUniforms_->AssignValues();
+        }
     }
 
     void Program::Save(pugi::xml_node& node)
@@ -902,14 +914,14 @@ namespace NSG
     {
         std::string name = node.attribute("name").as_string();
         std::string flags = node.attribute("flags").as_string();
-		PProgram program = App::this_->CreateProgram(name);
-		program->SetFlags(flags);
+        PProgram program = App::this_->CreateProgram(name);
+        program->SetFlags(flags);
         return program;
     }
 
     void Program::SetFlags(const ProgramFlags& flags)
     {
-        if(flags_ != flags)
+        if (flags_ != flags)
         {
             flags_ = flags;
             Invalidate();

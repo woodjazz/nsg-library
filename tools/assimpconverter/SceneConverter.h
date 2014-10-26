@@ -57,9 +57,6 @@ namespace NSG
         bool Save(const std::string& filename);
         bool Load();
     private:
-        aiMatrix4x4 GetDerivedTransform(const aiNode* node, const aiNode* rootNode, bool rootInclusive = true);
-        aiMatrix4x4 GetDerivedTransform(aiMatrix4x4 transform, const aiNode* node, const aiNode* rootNode, bool rootInclusive = true);
-        aiMatrix4x4 GetMeshBakingTransform(const aiNode* meshNode, const aiNode* modelRootNode);
         Matrix4 GetOffsetMatrix(const aiMesh* mesh, const aiNode* rootNode, const aiNode* node, const std::string& boneName);
         void GetFinal(std::vector<aiNode*>& dest, const std::set<aiNode*>& necessary, aiNode* node);
         const aiNode* GetMeshNode(const aiScene* sc, const aiNode* node, const aiMesh* aiMesh);

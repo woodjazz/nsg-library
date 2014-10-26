@@ -295,33 +295,6 @@ namespace NSG
 
     }
 
-    aiMatrix4x4 SceneConverter::GetDerivedTransform(const aiNode* node, const aiNode* rootNode, bool rootInclusive)
-    {
-        return GetDerivedTransform(node->mTransformation, node, rootNode, rootInclusive);
-    }
-
-    aiMatrix4x4 SceneConverter::GetDerivedTransform(aiMatrix4x4 transform, const aiNode* node, const aiNode* rootNode, bool rootInclusive)
-    {
-        // If basenode is defined, go only up to it in the parent chain
-        while (node && node != rootNode)
-        {
-            node = node->mParent;
-            if (!rootInclusive && node == rootNode)
-                break;
-            if (node)
-                transform = node->mTransformation * transform;
-        }
-        return transform;
-    }
-
-    aiMatrix4x4 SceneConverter::GetMeshBakingTransform(const aiNode* meshNode, const aiNode* modelRootNode)
-    {
-        if (meshNode == modelRootNode)
-            return aiMatrix4x4();
-        else
-            return GetDerivedTransform(meshNode, modelRootNode);
-    }
-
     Matrix4 SceneConverter::GetOffsetMatrix(const aiMesh* mesh, const aiNode* rootNode, const aiNode* node, const std::string& boneName)
     {
         for (unsigned j = 0; j < mesh->mNumBones; ++j)
@@ -330,9 +303,6 @@ namespace NSG
             if (boneName == bone->mName.C_Str())
             {
                 aiMatrix4x4 offset = bone->mOffsetMatrix;
-                aiMatrix4x4 nodeDerivedInverse = GetMeshBakingTransform(node, rootNode);
-                nodeDerivedInverse.Inverse();
-                offset *= nodeDerivedInverse;
                 return ToMatrix(offset);
             }
         }

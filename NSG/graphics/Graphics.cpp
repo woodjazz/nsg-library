@@ -132,7 +132,7 @@ namespace NSG
             TRACE_LOG("Using extension: EXT_discard_framebuffer");
         }
 
-#if !defined(NACL) 
+#if !defined(NACL)
         if (CheckExtension("OES_vertex_array_object") || CheckExtension("ARB_vertex_array_object"))
         {
             has_vertex_array_object_ext_ = true;
@@ -152,17 +152,17 @@ namespace NSG
             TRACE_LOG("Using extension: GL_OES_depth_texture");
         }
 
-		if (CheckExtension("GL_OES_depth24"))
+        if (CheckExtension("GL_OES_depth24"))
         {
             has_depth_component24_ext_ = true;
             TRACE_LOG("Using extension: GL_OES_depth24");
         }
 
-		if (CheckExtension("GL_EXT_packed_depth_stencil") || CheckExtension("GL_OES_packed_depth_stencil"))
-		{
-			has_packed_depth_stencil_ext_ = true;
-			TRACE_LOG("Using extension: packed_depth_stencil");
-		}
+        if (CheckExtension("GL_EXT_packed_depth_stencil") || CheckExtension("GL_OES_packed_depth_stencil"))
+        {
+            has_packed_depth_stencil_ext_ = true;
+            TRACE_LOG("Using extension: packed_depth_stencil");
+        }
 
         if (CheckExtension("GL_ARB_texture_non_power_of_two"))
         {
@@ -189,7 +189,7 @@ namespace NSG
                 TRACE_LOG("Disabling extension: instanced_arrays");
             }
         }
-#endif        
+#endif
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -197,7 +197,7 @@ namespace NSG
 
     Graphics::~Graphics()
     {
-		ReleaseBuffers();
+        ReleaseBuffers();
         Graphics::this_ = nullptr;
     }
 
@@ -213,10 +213,10 @@ namespace NSG
             instanceBuffer_ = PInstanceBuffer(new InstanceBuffer);
     }
 
-	void Graphics::ReleaseBuffers()
-	{
-		instanceBuffer_ = nullptr;
-	}
+    void Graphics::ReleaseBuffers()
+    {
+        instanceBuffer_ = nullptr;
+    }
 
     void Graphics::ResetCachedState()
     {
@@ -572,7 +572,7 @@ namespace NSG
         if (index >= MAX_TEXTURE_UNITS)
             return;
 
-        if(texture)
+        if (texture)
         {
             if (activeTexture_ != index)
             {
@@ -600,7 +600,7 @@ namespace NSG
         }
     }
 
-#endif    
+#endif
 
     void Graphics::SetViewport(const Recti& viewport)
     {
@@ -675,17 +675,17 @@ namespace NSG
     {
         if (program != activeProgram_)
         {
-			if (program)
-			{
-				if (program->IsReady())
-					glUseProgram(program->GetId());
-				else
-					return false;
-			}
+            if (program)
+            {
+                if (program->IsReady())
+                    glUseProgram(program->GetId());
+                else
+                    return false;
+            }
             else
                 glUseProgram(0);
 
-			activeProgram_ = program;
+            activeProgram_ = program;
 
             return true;
         }
@@ -711,42 +711,42 @@ namespace NSG
     {
     }
 
-	void Graphics::InvalidateVAOFor(const Program* program)
-	{
-		auto it = vaoMap_.begin();
-		while (it != vaoMap_.end())
-		{
-			if (it->first.program_ == program)
-				it->second->Invalidate();
-			++it;
-		}
-	}
+    void Graphics::InvalidateVAOFor(const Program* program)
+    {
+        auto it = vaoMap_.begin();
+        while (it != vaoMap_.end())
+        {
+            if (it->first.program_ == program)
+                it->second->Invalidate();
+            ++it;
+        }
+    }
 
     void Graphics::SetBuffers()
     {
-		VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
+        VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
 
-		if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
+        if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
         {
-			IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer();
-			CHECK_ASSERT(!iBuffer || !iBuffer->IsDynamic(), __FILE__, __LINE__);
-			VAOKey key{ activeProgram_, vBuffer, iBuffer };
-			VertexArrayObj* vao(nullptr);
-			auto it = vaoMap_.find(key);
-			if (it != vaoMap_.end())
-			{
-				vao = it->second.get();
-			}
-			else
-			{
-				vao = new VertexArrayObj(activeProgram_, vBuffer, iBuffer);
-				CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, PVertexArrayObj(vao))).second, __FILE__, __LINE__);
-			}
-			vao->Use();
+            IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer();
+            CHECK_ASSERT(!iBuffer || !iBuffer->IsDynamic(), __FILE__, __LINE__);
+            VAOKey key { activeProgram_, vBuffer, iBuffer };
+            VertexArrayObj* vao(nullptr);
+            auto it = vaoMap_.find(key);
+            if (it != vaoMap_.end())
+            {
+                vao = it->second.get();
+            }
+            else
+            {
+                vao = new VertexArrayObj(activeProgram_, vBuffer, iBuffer);
+                CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, PVertexArrayObj(vao))).second, __FILE__, __LINE__);
+            }
+            vao->Use();
         }
         else
         {
-			SetVertexBuffer(vBuffer);
+            SetVertexBuffer(vBuffer);
             SetAttributes();
             SetInstanceAttrPointers(activeProgram_);
             SetIndexBuffer(activeMesh_->GetIndexBuffer());
@@ -869,12 +869,12 @@ namespace NSG
                               sizeof(VertexData),
                               reinterpret_cast<void*>(offsetof(VertexData, uv0_)));
 
-		glVertexAttribPointer((int)AttributesLoc::TEXTURECOORD1,
-			2,
-			GL_FLOAT,
-			GL_FALSE,
-			sizeof(VertexData),
-			reinterpret_cast<void*>(offsetof(VertexData, uv1_)));
+        glVertexAttribPointer((int)AttributesLoc::TEXTURECOORD1,
+                              2,
+                              GL_FLOAT,
+                              GL_FALSE,
+                              sizeof(VertexData),
+                              reinterpret_cast<void*>(offsetof(VertexData, uv1_)));
 
 
         glVertexAttribPointer((int)AttributesLoc::COLOR,
@@ -912,12 +912,12 @@ namespace NSG
         {
             GLuint position_loc = activeProgram_->GetAttPositionLoc();
             GLuint texcoord_loc0 = activeProgram_->GetAttTextCoordLoc0();
-			GLuint texcoord_loc1 = activeProgram_->GetAttTextCoordLoc1();
+            GLuint texcoord_loc1 = activeProgram_->GetAttTextCoordLoc1();
             GLuint normal_loc = activeProgram_->GetAttNormalLoc();
             GLuint color_loc = activeProgram_->GetAttColorLoc();
             GLuint tangent_loc = activeProgram_->GetAttTangentLoc();
-			GLuint bones_id_loc = activeProgram_->GetAttBonesIDLoc();
-			GLuint bones_weight = activeProgram_->GetAttBonesWeightLoc();
+            GLuint bones_id_loc = activeProgram_->GetAttBonesIDLoc();
+            GLuint bones_weight = activeProgram_->GetAttBonesWeightLoc();
 
 
             unsigned newAttributes = 0;
@@ -959,17 +959,17 @@ namespace NSG
                 }
             }
 
-			if (texcoord_loc1 != -1)
-			{
-				unsigned positionBit = 1 << texcoord_loc1;
-				newAttributes |= positionBit;
+            if (texcoord_loc1 != -1)
+            {
+                unsigned positionBit = 1 << texcoord_loc1;
+                newAttributes |= positionBit;
 
-				if ((enabledAttributes_ & positionBit) == 0)
-				{
-					enabledAttributes_ |= positionBit;
-					glEnableVertexAttribArray(texcoord_loc1);
-				}
-			}
+                if ((enabledAttributes_ & positionBit) == 0)
+                {
+                    enabledAttributes_ |= positionBit;
+                    glEnableVertexAttribArray(texcoord_loc1);
+                }
+            }
 
             if (color_loc != -1)
             {
@@ -995,29 +995,29 @@ namespace NSG
                 }
             }
 
-			if (bones_id_loc != -1)
-			{
-				unsigned positionBit = 1 << bones_id_loc;
-				newAttributes |= positionBit;
+            if (bones_id_loc != -1)
+            {
+                unsigned positionBit = 1 << bones_id_loc;
+                newAttributes |= positionBit;
 
-				if ((enabledAttributes_ & positionBit) == 0)
-				{
-					enabledAttributes_ |= positionBit;
-					glEnableVertexAttribArray(bones_id_loc);
-				}
-			}
+                if ((enabledAttributes_ & positionBit) == 0)
+                {
+                    enabledAttributes_ |= positionBit;
+                    glEnableVertexAttribArray(bones_id_loc);
+                }
+            }
 
-			if (bones_weight != -1)
-			{
-				unsigned positionBit = 1 << bones_weight;
-				newAttributes |= positionBit;
+            if (bones_weight != -1)
+            {
+                unsigned positionBit = 1 << bones_weight;
+                newAttributes |= positionBit;
 
-				if ((enabledAttributes_ & positionBit) == 0)
-				{
-					enabledAttributes_ |= positionBit;
-					glEnableVertexAttribArray(bones_weight);
-				}
-			}
+                if ((enabledAttributes_ & positionBit) == 0)
+                {
+                    enabledAttributes_ |= positionBit;
+                    glEnableVertexAttribArray(bones_weight);
+                }
+            }
 
             SetVertexAttrPointers();
 
@@ -1043,17 +1043,17 @@ namespace NSG
 
     bool Graphics::Draw(bool solid)
     {
-		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
+        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
             return false;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		activeProgram_->SetVariables(activeMaterial_, activeMesh_, activeNode_);
+        activeProgram_->SetVariables(activeMaterial_, activeMesh_, activeNode_);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		if (!activeProgram_)
-			return false; // the program has been invalidated (due some shader needs to be recompiled)
+        if (!activeProgram_)
+            return false; // the program has been invalidated (due some shader needs to be recompiled)
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -1079,7 +1079,7 @@ namespace NSG
         if (solid)
             AppStatistics::this_->NewTriangles(activeMesh_->GetNumberOfTriangles());
 
-		AppStatistics::this_->NewDrawCall();
+        AppStatistics::this_->NewDrawCall();
 
         SetVertexArrayObj(nullptr);
 
@@ -1095,19 +1095,19 @@ namespace NSG
 
     bool Graphics::Draw(bool solid, Batch& batch)
     {
-		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
+        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
             return false;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		activeProgram_->SetVariables(activeMaterial_, activeMesh_);
+        activeProgram_->SetVariables(activeMaterial_, activeMesh_);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-		
-		if (!activeProgram_)
-			return false; // the program has been invalidated (due some shader needs to be recompiled)
-		
-		UpdateBatchBuffer(batch);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        if (!activeProgram_)
+            return false; // the program has been invalidated (due some shader needs to be recompiled)
+
+        UpdateBatchBuffer(batch);
         SetBuffers();
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         unsigned instances = batch.nodes_.size();
@@ -1120,7 +1120,7 @@ namespace NSG
         }
         else
         {
-			const VertexsData& vertexsData = activeMesh_->GetVertexsData();
+            const VertexsData& vertexsData = activeMesh_->GetVertexsData();
             Buffer::Data* bufferVertexData = activeMesh_->GetBufferVertexData();
             GLint first = bufferVertexData->offset_ / sizeof(VertexData);
             glDrawArraysInstanced(mode, first, vertexsData.size(), instances);

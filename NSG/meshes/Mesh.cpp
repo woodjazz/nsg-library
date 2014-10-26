@@ -197,8 +197,6 @@ namespace NSG
                 }
 				*/
 
-                /*
-                // Do not export since is already in the skeleton
                 {
                     std::stringstream ss;
                     ss << obj.bonesID_;
@@ -210,7 +208,7 @@ namespace NSG
                     ss << obj.bonesWeight_;
                     vertexData.append_attribute("bonesWeight") = ss.str().c_str();
                 }
-                */
+                
 
             }
 
@@ -247,9 +245,8 @@ namespace NSG
                 obj.color_ =  GetVertex4(vertexNode.attribute("color").as_string());
 				// Do not import tangents since they are calculated
                 //obj.tangent_ =  GetVertex3(vertexNode.attribute("tangent").as_string());
-                // Do not import since is set with the skeleton
-                //obj.bonesID_ =  GetVertex4(vertexNode.attribute("bonesID").as_string());
-                //obj.bonesWeight_ =  GetVertex4(vertexNode.attribute("bonesWeight").as_string());
+                obj.bonesID_ =  GetVertex4(vertexNode.attribute("bonesID").as_string());
+                obj.bonesWeight_ =  GetVertex4(vertexNode.attribute("bonesWeight").as_string());
                 vertexsData_.push_back(obj);
                 vertexNode = vertexNode.next_sibling("VertexData");
             }
@@ -313,15 +310,6 @@ namespace NSG
 
 	void Mesh::SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights)
 	{
-		VertexsData vertexCopy;
-		Indexes indexesCopy;
-
-		std::swap(vertexsData_, vertexCopy);
-		std::swap(indexes_, indexesCopy);
-		Invalidate();
-		std::swap(vertexsData_, vertexCopy);
-		std::swap(indexes_, indexesCopy);
-
 		CHECK_ASSERT(blendIndices.size() == blendWeights.size(), __FILE__, __LINE__);
 		CHECK_ASSERT(vertexsData_.size() == blendWeights.size(), __FILE__, __LINE__);
 		unsigned n = vertexsData_.size();

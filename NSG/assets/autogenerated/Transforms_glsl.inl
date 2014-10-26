@@ -46,12 +46,11 @@ static const std::string TRANSFORMS_GLSL = \
 "	mat4 GetModelMatrix()\n"\
 "	{\n"\
 "		#if defined(SKINNED)\n"\
-"			\n"\
 "			#if defined(INSTANCED)\n"\
 "				// Since we are using rows instead of cols the instancing model matrix is a transpose, \n"\
 "				// so the matrix multiply order must be swapped\n"\
 "				const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);\n"\
-"			    return mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn) * GetSkinnedMatrix();\n"\
+"			    return GetSkinnedMatrix() * mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn);\n"\
 "		    #else\n"\
 "				return u_model * GetSkinnedMatrix();\n"\
 "			#endif\n"\
@@ -66,14 +65,7 @@ static const std::string TRANSFORMS_GLSL = \
 "	}\n"\
 "	mat3 GetNormalMatrix()\n"\
 "	{\n"\
-"		#if defined(SKINNED)\n"\
-"		\n"\
-"			#if defined(INSTANCED)\n"\
-"				return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2) * mat3(GetSkinnedMatrix());\n"\
-"			#else\n"\
-"				return u_normalMatrix * mat3(GetSkinnedMatrix());\n"\
-"			#endif\n"\
-"		#elif defined(INSTANCED)\n"\
+"		#if defined(INSTANCED)\n"\
 "			return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2);\n"\
 "		#else\n"\
 "			return u_normalMatrix;\n"\
@@ -81,7 +73,7 @@ static const std::string TRANSFORMS_GLSL = \
 "	}\n"\
 "	vec3 GetWorldPos()\n"\
 "	{\n"\
-"		#if defined(INSTANCED)\n"\
+"		#if defined(INSTANCED)// && !defined(SKINNED)\n"\
 "			// Instancing model matrix is a transpose, so the matrix multiply order must be swapped\n"\
 "			return (vec4(a_position, 1.0) * GetModelMatrix()).xyz;\n"\
 "		#else\n"\
@@ -90,7 +82,12 @@ static const std::string TRANSFORMS_GLSL = \
 "	}\n"\
 "	vec3 GetWorldNormal()\n"\
 "	{\n"\
-"		return normalize(GetNormalMatrix() * a_normal);\n"\
+"		#if defined(SKINNED)\n"\
+"			return normalize(mat3(GetSkinnedMatrix()) * a_normal); \n"\
+"			//normalize(GetNormalMatrix() * mat3(GetSkinnedMatrix()) * a_normal);\n"\
+"		#else\n"\
+"			return normalize(GetNormalMatrix() * a_normal);\n"\
+"		#endif\n"\
 "	}\n"\
 "	vec3 GetWorldTangent()\n"\
 "	{   \n"\

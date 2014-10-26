@@ -92,7 +92,7 @@ namespace NSG
 
             }
         }
-
+#if 0
 		CHECK_CONDITION(blendIndices_.size() == blendWeights_.size(), __FILE__, __LINE__);
 
         unsigned nVertexes = blendIndices_.size();
@@ -118,6 +118,7 @@ namespace NSG
                 }
             }
         }
+#endif
     }
 
     void Skeleton::Load(const pugi::xml_node& node)
@@ -156,6 +157,7 @@ namespace NSG
                 child = child.next_sibling("Bone");
             }
         }
+#if 0
         blendIndices_.clear();
         blendWeights_.clear();
         pugi::xml_node childVertexes = node.child("Vertexes");
@@ -205,8 +207,9 @@ namespace NSG
 
         mesh_.lock()->SetBlendData(blendIndices_, blendWeights_);
 
-		CHECK_CONDITION(blendIndices_.size() == blendWeights_.size(), __FILE__, __LINE__);
-		CHECK_CONDITION(mesh_.lock()->GetVertexsData().size() == blendWeights_.size(), __FILE__, __LINE__);
+		//CHECK_CONDITION(blendIndices_.size() == blendWeights_.size(), __FILE__, __LINE__);
+		//CHECK_CONDITION(mesh_.lock()->GetVertexsData().size() == blendWeights_.size(), __FILE__, __LINE__);
+#endif
     }
 
 }

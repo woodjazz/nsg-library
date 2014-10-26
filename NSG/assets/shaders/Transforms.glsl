@@ -46,18 +46,17 @@
 	mat4 GetModelMatrix()
 	{
 		#if defined(SKINNED)
-			
+
 			#if defined(INSTANCED)
 
 				// Since we are using rows instead of cols the instancing model matrix is a transpose, 
 				// so the matrix multiply order must be swapped
 				const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);
-			    return mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn) * GetSkinnedMatrix();
+			    return GetSkinnedMatrix() * mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn);
 
 		    #else
 				return u_model * GetSkinnedMatrix();
 			#endif
-
 
 		#elif defined(INSTANCED)
 
@@ -73,15 +72,7 @@
 
 	mat3 GetNormalMatrix()
 	{
-		#if defined(SKINNED)
-		
-			#if defined(INSTANCED)
-				return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2) * mat3(GetSkinnedMatrix());
-			#else
-				return u_normalMatrix * mat3(GetSkinnedMatrix());
-			#endif
-
-		#elif defined(INSTANCED)
+		#if defined(INSTANCED)
 			return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2);
 		#else
 			return u_normalMatrix;
@@ -90,7 +81,7 @@
 
 	vec3 GetWorldPos()
 	{
-		#if defined(INSTANCED)
+		#if defined(INSTANCED)// && !defined(SKINNED)
 			// Instancing model matrix is a transpose, so the matrix multiply order must be swapped
 			return (vec4(a_position, 1.0) * GetModelMatrix()).xyz;
 		#else
@@ -100,7 +91,12 @@
 
 	vec3 GetWorldNormal()
 	{
-		return normalize(GetNormalMatrix() * a_normal);
+		#if defined(SKINNED)
+			return normalize(mat3(GetSkinnedMatrix()) * a_normal); 
+			//normalize(GetNormalMatrix() * mat3(GetSkinnedMatrix()) * a_normal);
+		#else
+			return normalize(GetNormalMatrix() * a_normal);
+		#endif
 	}
 
 	vec3 GetWorldTangent()
