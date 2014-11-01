@@ -34,7 +34,7 @@ struct Sample : App
 {
     PScene scene_;
     PCamera camera_;
-    PSceneNode earth_;
+    SceneNode* earth_;
     PLight light_;
 
     Sample()
@@ -53,12 +53,18 @@ struct Sample : App
         camera_->AddBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
-		earth_ = scene_->CreateSceneNodeFrom(GetOrCreateResourceFile("data/scene.xml"), "SceneRootNode");
+		scene_->Load(GetOrCreateResourceFile("data/scene.xml"));
+    }
+
+	void OnSceneLoaded() override
+	{
+		earth_ = Node::GetUniqueNodeOfTypeFrom<SceneNode>(scene_, "SceneRootNode");
 		earth_->AddBehavior(PBehavior(new ModelBehavior));
 
 		light_ = scene_->CreateLight("light");
 		light_->AddBehavior(PBehavior(new LightBehavior));
-    }
+
+	}
 };
 
 NSG_MAIN(Sample);

@@ -80,9 +80,10 @@ misrepresented as being the original software.
 #include "CameraControl.h"
 #include "Animation.h"
 #include "AnimationState.h"
-#include "Sphere.h"
+#include "PointOnSphere.h"
 #include "pugixml.hpp"
 #include "Path.h"
 #include "Skeleton.h"
+#include "RigidBody.h"
 
 

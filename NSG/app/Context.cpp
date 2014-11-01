@@ -149,6 +149,8 @@ namespace NSG
     {
         basePath_ = Path::GetCurrentDir();
 
+        TRACE_LOG("Base path is: " << basePath_);
+
         resourceFileManager_ = PResourceFileManager(new ResourceFileManager);
 
         textureFileManager_ = PTextureFileManager(new TextureFileManager);

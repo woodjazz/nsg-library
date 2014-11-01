@@ -51,17 +51,13 @@ namespace NSG
 		Recti GetViewport() const;
 		void SetOrtho(float left, float right, float bottom, float top);
         bool IsOrtho() const { return isOrtho_; }
-
         //XYZ are in normalized device coordinates (-1, 1)
         Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const; 
-
         //Returned XYZ values are in normalized device coordinates (-1, 1)
         //Returned Z value is interpreted as a distance from the camera.
         Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
-
 		//XY are in normalized device coordinates (-1, 1)
         Ray GetScreenRay(float screenX, float screenY) const;
-
 		static const Matrix4& GetViewMatrix();
 		const Matrix4& GetView() const;
 		static const Matrix4& GetMatViewProj();

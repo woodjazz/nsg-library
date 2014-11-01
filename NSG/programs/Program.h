@@ -69,7 +69,7 @@ namespace NSG
         void SetCameraVariables();
         void SetNodeVariables(Node* node);
         void SetMaterialVariables(Material* material);
-		bool SetMeshVariables(Mesh* mesh);
+		bool SetSkeletonVariables(Skeleton* skeleton);
         bool HasLighting() const;
 
         struct BaseLightLoc

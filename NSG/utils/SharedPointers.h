@@ -29,6 +29,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class RigidBody;
+	typedef std::shared_ptr<RigidBody> PRigidBody;
+
+	class PhysicsWorld;
+	typedef std::shared_ptr<PhysicsWorld> PPhysicsWorld;
+	
 	class Skeleton;
 	typedef std::shared_ptr<Skeleton> PSkeleton;
 	
@@ -44,8 +50,8 @@ namespace NSG
 	class ResourceFileManager;
 	typedef std::shared_ptr<ResourceFileManager> PResourceFileManager;
 
-	class Sphere;
-	typedef std::shared_ptr<Sphere> PSphere;
+	class PointOnSphere;
+	typedef std::shared_ptr<PointOnSphere> PPointOnSphere;
 
 	class Ray;
 	typedef std::shared_ptr<Ray> PRay;

@@ -40,7 +40,6 @@ namespace NSG
 		BoundingBox(const BoundingBox& obj);
 		BoundingBox(float min, float max);
 		~BoundingBox();
-		void Define(const Vector3& point);
 	    void Merge(const Vector3& point);
 	    void Merge(const BoundingBox& box);
 	    void Transform(const Node& node);

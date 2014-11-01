@@ -59,12 +59,14 @@ namespace NSG
         virtual void OnMouseDown(int button, float x, float y);
         virtual void OnMouseWheel(float x, float y);
         virtual void OnMouseUp(int button, float x, float y);
+        virtual void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         virtual void OnKey(int key, int action, int modifier);
         virtual void OnChar(unsigned int character);
         virtual bool ShallExit() const;
         virtual void AppEnterBackground();
         virtual void AppEnterForeground();
 		virtual void DropFile(const std::string& filePath);
+        virtual void OnSceneLoaded() {}
         void DoTick(float delta);
         void SetViewSize(int width, int height);
         std::pair<int, int> GetViewSize() const;
@@ -91,6 +93,7 @@ namespace NSG
         PResourceFile GetOrCreateResourceFile(const Path& path);
         PTexture GetOrCreateTextureFile(const Path& path, TextureFlags flags = (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         PProgram CreateProgram(const std::string& name = "");
+        PRigidBody CreateRigidBody();
         const std::vector<PMesh>& GetMeshes() const;
         const std::vector<PMaterial>& GetMaterials() const;
         int GetMaterialSerializableIndex(const PMaterial& material) const;
@@ -98,6 +101,7 @@ namespace NSG
     private:
         void AddListener(IViewChangedListener* listener);
         void RemoveListener(IViewChangedListener* listener);
+        bool IsSceneReady();
 
         AAssetManager* pAAssetManager_;
         int32_t width_;
@@ -112,6 +116,7 @@ namespace NSG
         PScene currentScene_;
         std::vector<PMesh> meshes_;
         std::vector<PMaterial> materials_;
+        bool isSceneReady_;
         friend struct InternalApp;
     };
 
@@ -133,6 +138,7 @@ namespace NSG
         void OnMouseWheel(float x, float y);
         void OnMouseDown(int button, float x, float y);
         void OnMouseUp(int button, float x, float y);
+		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void RenderFrame();

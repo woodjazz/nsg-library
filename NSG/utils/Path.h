@@ -57,8 +57,11 @@ namespace NSG
         static std::string ExtractFilename(const std::string& filePath, bool extension);
         static std::string GetLowercaseFileExtension(const std::string& filePath);
 		static std::vector<std::string> GetDirs(const std::string& path);
+        static bool ContainsDir(const std::string& path, const std::string& dirName);
         bool operator < (const Path& obj) const;
+        bool AppendDirIfDoesNotExist(const std::string& dirName);
     private:
+        void ReDoState();
         std::string filePath_; // path + filename (could be absolute or relative)
 		std::string fullFilePath_; // absolute path + filename
 		std::string pathName_; // path + name (without extension)

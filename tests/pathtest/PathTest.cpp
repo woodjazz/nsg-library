@@ -61,6 +61,14 @@ static void Test01()
 		CHECK_ASSERT(path.GetPath() == "sjhdjshd/sdhsdjhsd", __FILE__, __LINE__);
 		CHECK_ASSERT(path.GetExtension() == "txt", __FILE__, __LINE__);
 	}
+
+	{
+		Path path("sjhdjshd/data/kskd.TXT");
+		CHECK_ASSERT(!path.AppendDirIfDoesNotExist("data"), __FILE__, __LINE__);
+		CHECK_ASSERT(path.GetPath() == "sjhdjshd/data", __FILE__, __LINE__);
+		CHECK_ASSERT(path.AppendDirIfDoesNotExist("Data"), __FILE__, __LINE__);
+		CHECK_ASSERT(path.GetPath() == "sjhdjshd/data/Data", __FILE__, __LINE__);
+	}
 }
 
 void Tests()

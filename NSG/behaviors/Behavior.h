@@ -30,6 +30,7 @@ namespace NSG
 	class App;
 	class SceneNode;
 	class Scene;
+	struct ContactPoint;
 	struct Behavior
 	{
 		App& app_;
@@ -44,8 +45,10 @@ namespace NSG
 		virtual void OnMouseDown(int button, float x, float y) {}
         virtual void OnMouseWheel(float x, float y) {}
 		virtual void OnMouseUp(int button, float x, float y) {}
+		virtual void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers) {}
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
+        virtual void OnCollision(const ContactPoint& contactInfo) {}
 
 	protected:
 		Behavior();

@@ -26,17 +26,17 @@ misrepresented as being the original software.
 #include "CameraControl.h"
 #include "Camera.h"
 #include "Ray.h"
-#include "Sphere.h"
+#include "PointOnSphere.h"
 #include "Keys.h"
 
 namespace NSG
 {
     void CameraControl::Start()
     {
-		lastX_ = lastY_ = 0;
+        lastX_ = lastY_ = 0;
         camera_ = dynamic_cast<Camera*>(sceneNode_);
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
-        sphere_ = PSphere(new Sphere(Vertex3(0), sceneNode_->GetGlobalPosition()));
+        pointOnSphere_ = PPointOnSphere(new PointOnSphere(Vertex3(0), sceneNode_->GetGlobalPosition()));
         updateOrientation_ = false;
         rightButtonDown_ = false;
         altKeyDown_ = false;
@@ -47,13 +47,13 @@ namespace NSG
     {
         if (updateOrientation_)
         {
-            Quaternion targetOrientation = sceneNode_->GetLookAtOrientation(sphere_->GetCenter(), sphere_->GetUp());
+            Quaternion targetOrientation = sceneNode_->GetLookAtOrientation(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
             Quaternion currentOrientation = sceneNode_->GetOrientation();
             float dot = glm::dot(currentOrientation, targetOrientation);
             bool close = 1 - dot * dot < PRECISION;
             if (!close)
             {
-				//animate
+                //animate
                 float factor = 3 * app_.GetDeltaTime();
                 sceneNode_->SetOrientation(glm::slerp(currentOrientation, targetOrientation, factor));
             }
@@ -83,50 +83,81 @@ namespace NSG
             rightButtonDown_ = false;
     }
 
+    void CameraControl::Move(float x, float y)
+    {
+        float relX = (x - lastX_);
+        float relY = (y - lastY_);
+        if (altKeyDown_)
+        {
+            pointOnSphere_->IncAngles(PI * relX, PI * relY);
+            sceneNode_->SetGlobalPosition(pointOnSphere_->GetPoint());
+            sceneNode_->SetLookAt(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
+        }
+        else
+        {
+            float deltaTime = App::this_->GetDeltaTime();
+            Vertex3 position = sceneNode_->GetGlobalPosition();
+            Quaternion q = sceneNode_->GetOrientation();
+            q = q * glm::angleAxis(deltaTime * relX * 100, Vertex3(0, 1, 0));
+            q = q * glm::angleAxis(deltaTime * relY * 100, Vertex3(1, 0, 0));
+            sceneNode_->SetOrientation(q);
+        }
+    }
+
+
     void CameraControl::OnMouseMove(float x, float y)
     {
         if (rightButtonDown_ && !updateOrientation_)
         {
-            float relX = (x - lastX_);
-            float relY = (y - lastY_);
-            if (altKeyDown_)
-            {
-                sphere_->IncAngles(PI * relX, PI * relY);
-                sceneNode_->SetGlobalPosition(sphere_->GetPosition());
-                sceneNode_->SetLookAt(sphere_->GetCenter(), sphere_->GetUp());
-            }
-            else
-            {
-                float deltaTime = App::this_->GetDeltaTime();
-                Vertex3 position = sceneNode_->GetGlobalPosition();
-                Quaternion q = sceneNode_->GetOrientation();
-                q = q * glm::angleAxis(deltaTime * relX * 100, Vertex3(0, 1, 0));
-                q = q * glm::angleAxis(deltaTime * relY * 100, Vertex3(1, 0, 0));
-                sceneNode_->SetOrientation(q);
-            }
+            Move(x, y);
         }
 
         lastX_ = x;
         lastY_ = y;
     }
 
+    void CameraControl::SetPosition(const Vertex3& position)
+    {
+        Vertex3 oldPos = sceneNode_->GetGlobalPosition();
+        sceneNode_->SetGlobalPosition(position);
+        BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
+        if (camera_->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE)
+            sceneNode_->SetGlobalPosition(oldPos);
+    }
+
     void CameraControl::OnMouseWheel(float x, float y)
     {
-        float deltaTime = App::this_->GetDeltaTime();
+        Vertex3 lookAtPoint = pointOnSphere_->GetCenter();
         Vertex3 position = sceneNode_->GetGlobalPosition();
-        Vertex3 lookAtPoint = sphere_->GetCenter();
-        float distance = glm::distance(lookAtPoint, position);
-        distance /= 2 * y;
         Vector3 looAtDir = sceneNode_->GetLookAtDirection();
+        float distance = glm::distance(lookAtPoint, position);
+        if (distance < 1)
+            distance = 1;
+        float factor = y > 0 ? 2.0f : -2.0f;
+        distance /= factor;
         position += looAtDir * distance;
-        BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
-        float dmin = glm::distance(bb.min_, position);
-        float dmax = glm::distance(bb.max_, position);
-        if (dmin < camera_->GetZFar() && dmax < camera_->GetZFar())
+        SetPosition(position);
+    }
+
+    void CameraControl::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    {
+        //TRACE_LOG("x=" << x << " y=" << y << " dTheta=" << dTheta << " dDist=" << dDist << " num=" << numFingers);
+        if (numFingers == 2)
         {
-            if (sphere_->SetPosition(position))
-                sceneNode_->SetGlobalPosition(position);
+            float factor = dDist * timestamp / 10.0f;
+            Vertex3 position = sceneNode_->GetGlobalPosition();
+            Vector3 looAtDir = sceneNode_->GetLookAtDirection();
+            position += looAtDir * factor;
+            SetPosition(position);
         }
+#if 0        
+        else if (numFingers == 3)
+        {
+            Move(x, y);
+            lastX_ = x;
+            lastY_ = y;
+        }
+#endif        
     }
 
     void CameraControl::SetSphereCenter(bool centerObj)
@@ -138,50 +169,40 @@ namespace NSG
         {
             if (centerObj)
             {
-                TRACE_LOG("***1***");
                 newCenter = closest.node_->GetGlobalPosition();
             }
             else
             {
-                TRACE_LOG("***2***");
                 newCenter = ray.GetPoint(closest.distance_);
             }
         }
         else
         {
-            TRACE_LOG("***3***");
             BoundingBox bb;
             if (!scene_.GetVisibleBoundingBox(camera_, bb))
                 bb = scene_.GetWorldBoundingBoxBut(camera_);
             newCenter = bb.Center();
         }
 
-		//TRACE_LOG("1--->Up=" << sphere_->GetUp());
-		//TRACE_LOG("1--->Theta=" << sphere_->GetTheta());
-		//TRACE_LOG("1--->Phi=" << sphere_->GetPhi());
-        if (sphere_->SetCenter(newCenter))
+        if (pointOnSphere_->SetCenter(newCenter))
             updateOrientation_ = true;
-
-		//TRACE_LOG("2--->Up=" << sphere_->GetUp());
-		//TRACE_LOG("2--->Theta=" << sphere_->GetTheta());
-		//TRACE_LOG("2--->Phi=" << sphere_->GetPhi());
     }
 
     void CameraControl::AutoZoom()
     {
         BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
-		Vertex3 center = bb.Center();
+        Vertex3 center = bb.Center();
         Vertex3 position = camera_->GetGlobalPosition();
-		Vector3 lookAtDir(WORLD_Z_COORD);
-		if (glm::distance(position, center) > PRECISION)
-			lookAtDir = glm::normalize(position - center);
+        Vector3 lookAtDir(WORLD_Z_COORD);
+        if (glm::distance(position, center) > PRECISION)
+            lookAtDir = glm::normalize(position - center);
         float distance = std::max(std::max(bb.Size().x, bb.Size().y), bb.Size().z);
-		if (distance < camera_->GetZNear())
-			distance = 1 + camera_->GetZNear();
+        if (distance < camera_->GetZNear())
+            distance = 1 + camera_->GetZNear();
 
-		position = center - lookAtDir * distance;
+        position = center - lookAtDir * distance;
 
-		if(sphere_->SetCenterAndPosition(center, position))
+        if (pointOnSphere_->SetCenterAndPoint(center, position))
             camera_->SetGlobalPosition(position);
     }
 

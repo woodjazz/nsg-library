@@ -53,6 +53,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Music.h"
 #include "Program.h"
+#include "RigidBody.h"
 #include "ResourceFileManager.h"
 #include "TextureFileManager.h"
 #if NACL
@@ -67,7 +68,8 @@ namespace NSG
         : width_(0),
           height_(0),
           argc_(0),
-          argv_(nullptr)
+          argv_(nullptr),
+          isSceneReady_(false)
     {
         context_ = PContext(new Context);
         configuration_ = PAppConfiguration(new AppConfiguration);
@@ -125,6 +127,11 @@ namespace NSG
     void App::OnMouseUp(int button, float x, float y)
     {
         currentScene_->OnMouseUp(button, x, y);
+    }
+
+	void App::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    {
+		currentScene_->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
     }
 
     void App::OnKey(int key, int action, int modifier)
@@ -245,15 +252,22 @@ namespace NSG
     {
         PScene scene(new Scene);
         if (setAsCurrent)
+        {
+            isSceneReady_ = false;
             currentScene_ = scene;
+        }
         scenes_.push_back(scene);
         return scene;
     }
 
     void App::SetCurrentScene(PScene scene)
     {
-        CHECK_ASSERT(scene, __FILE__, __LINE__);
-        currentScene_ = scene;
+        if(currentScene_ != scene)
+        {
+            CHECK_ASSERT(scene, __FILE__, __LINE__);
+            isSceneReady_ = false;
+            currentScene_ = scene;
+        }
     }
 
     PScene App::GetCurrentScene() const
@@ -354,6 +368,11 @@ namespace NSG
         return PProgram(new Program(name));
     }
 
+    PRigidBody App::CreateRigidBody()
+    {
+        return PRigidBody(new RigidBody);
+    }
+
     const std::vector<PMesh>& App::GetMeshes() const
     {
         return meshes_;
@@ -396,6 +415,19 @@ namespace NSG
         return idx;
     }
 
+    bool App::IsSceneReady()
+    {
+        if(isSceneReady_)
+            return true;
+        isSceneReady_ = currentScene_->IsReady();
+        if(isSceneReady_)
+        {
+            OnSceneLoaded();
+			currentScene_->Start();
+        }
+        return isSceneReady_;
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,8 +452,6 @@ namespace NSG
         PScene scene = pApp_->CreateScene(true);
 
         pApp_->Start(pApp_->argc_, pApp_->argv_);
-
-        scene->Start();
     }
 
     void InternalApp::BeginTicks()
@@ -431,7 +461,10 @@ namespace NSG
 
     void InternalApp::DoTick(float delta)
     {
-        pApp_->DoTick(delta);
+        if(pApp_->IsSceneReady())
+        {
+            pApp_->DoTick(delta);
+        }
     }
 
     void InternalApp::EndTicks()
@@ -476,6 +509,11 @@ namespace NSG
     {
         IMGUI::OnMouseUp(button, x, y);
         pApp_->OnMouseUp(button, x, y);
+    }
+
+    void InternalApp::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    {
+        pApp_->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
     }
 
     void InternalApp::OnMouseWheel(float x, float y)

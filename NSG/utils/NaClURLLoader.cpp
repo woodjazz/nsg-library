@@ -46,7 +46,9 @@ namespace NSG
               isDone_(false),
               hasSucceed_(false)
         {
-            url_request_.SetURL(url);
+            if(!url_request_.SetURL(url))
+                TRACE_LOG("NaClURLLoader: incorrect url:" << url);
+
             url_request_.SetMethod("GET");
             url_request_.SetRecordDownloadProgress(true);
         }
@@ -76,7 +78,9 @@ namespace NSG
         {
             pp::CompletionCallback cc = cc_factory_.NewCallback(&NaClURLLoader::OnOpen);
 
-            url_loader_.Open(url_request_, cc);
+            int32_t result = url_loader_.Open(url_request_, cc);
+            if(PP_OK_COMPLETIONPENDING != result && PP_OK != result)
+                ReportResult(url_, "pp::URLLoader::Open() failed", false);
         }
 
         void NaClURLLoader::OnOpen(int32_t result)

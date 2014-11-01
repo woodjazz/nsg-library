@@ -44,7 +44,10 @@ struct Sample : App
 
         PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
         scene_->Load(resource);
+    }
 
+    void OnSceneLoaded() override
+    {
         PCamera camera;
         auto& cameras = scene_->GetCameras();
         if (cameras.size())

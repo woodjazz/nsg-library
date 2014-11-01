@@ -71,6 +71,23 @@ include_directories(${DEPENDENCIES_DIR}/jpeg)
 add_subdirectory(${DEPENDENCIES_DIR}/jpeg)
 list(APPEND LIBRARIES_2_LINK jpeg) 
 
+##################################
+# StanHull
+##################################
+include_directories(${DEPENDENCIES_DIR}/StanHull)
+add_subdirectory(${DEPENDENCIES_DIR}/StanHull)
+list(APPEND LIBRARIES_2_LINK StanHull) 
+
+##################################
+# bullet
+##################################
+include_directories(${DEPENDENCIES_DIR}/bullet/src)
+add_subdirectory(${DEPENDENCIES_DIR}/bullet)
+list(APPEND LIBRARIES_2_LINK bulletCollision)
+list(APPEND LIBRARIES_2_LINK bulletDynamics)
+list(APPEND LIBRARIES_2_LINK bulletSoftBody)
+list(APPEND LIBRARIES_2_LINK bulletLinearMath)
+
 ###########################
 # SDL
 ###########################

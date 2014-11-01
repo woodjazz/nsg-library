@@ -38,6 +38,7 @@ struct Sample : App
     PTexture lightMap_;
     PMaterial material_;
     PProgram program_;
+	PPass pass_;
     PSceneNode node_;
 
     Sample()
@@ -70,9 +71,9 @@ struct Sample : App
         material_->SetTexture2(lightMap_);
         program_ = CreateProgram();
         PTechnique technique(new Technique);
-        PPass pass(new Pass);
-        technique->Add(pass);
-        pass->SetProgram(program_);
+		pass_ = PPass(new Pass);
+        technique->Add(pass_);
+        pass_->SetProgram(program_);
         material_->SetTechnique(technique);
 
         node_ = scene_->CreateSceneNode("node");
@@ -181,14 +182,24 @@ struct Sample : App
 
             IMGUIBeginVertical(25, 100);
             {
-                bool isSphere = node_->GetMesh() == sphereMesh_;
-                
-                isSphere = IMGUICheckButton(isSphere, isSphere ? "Cube" : "Sphere", 100, 25);
+				{
+					bool isSphere = node_->GetMesh() == sphereMesh_;
+					isSphere = IMGUICheckButton(isSphere, isSphere ? "Cube" : "Sphere", 100, 25);
+					if (isSphere)
+						node_->Set(sphereMesh_);
+					else
+						node_->Set(cubeMesh_);
+				}
 
-                if(isSphere)
-                    node_->Set(sphereMesh_);
-                else
-                    node_->Set(cubeMesh_);
+				{
+					DrawMode drawMode = pass_->GetDrawMode();
+					bool solid = drawMode == DrawMode::SOLID;
+					solid = IMGUICheckButton(solid, solid ? "Wireframe" : "Solid", 100, 25);
+					if (solid)
+						pass_->SetDrawMode(DrawMode::SOLID);
+					else
+						pass_->SetDrawMode(DrawMode::WIREFRAME);
+				}
 
             }
             IMGUIEndArea();

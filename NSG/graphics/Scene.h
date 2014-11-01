@@ -43,7 +43,6 @@ namespace NSG
         PCamera CreateCamera(const std::string& name);
         void AddCamera(PCamera camera);
         PSceneNode CreateSceneNode(const std::string& name);
-        PSceneNode CreateSceneNodeFrom(PResource resource, const std::string& name);
         PLight CreateLight(const std::string& name);
         PLight CreatePointLight(const std::string& name);
         PLight CreateDirectionalLight(const std::string& name);
@@ -58,6 +57,7 @@ namespace NSG
         void OnMouseDown(int button, float x, float y);
         void OnMouseWheel(float x, float y);
         void OnMouseUp(int button, float x, float y);
+		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         typedef std::vector<PLight> Lights;
@@ -78,6 +78,7 @@ namespace NSG
         bool PlayAnimation(const std::string& name, bool looped);
         bool PlayAnimation(const PAnimation& animation, bool looped);
         bool SetAnimationSpeed(const std::string& name, float speed);
+        PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
     protected:
         Scene();
         void SaveMeshes(pugi::xml_node& node);
@@ -101,6 +102,7 @@ namespace NSG
         AnimationMap animationMap_;
         typedef std::map<std::string, PAnimationState> AnimationStateMap;
         AnimationStateMap animationStateMap_;
+        PPhysicsWorld physicsWorld_;
         friend class App;
     };
 }

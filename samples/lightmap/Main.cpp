@@ -43,13 +43,17 @@ struct Sample : App
     {
 		scene_ = GetCurrentScene();
 		PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
-		PTexture lightmapTexture(GetOrCreateTextureFile("data/lightmap.png"));
-		PTexture diffuseTexture(GetOrCreateTextureFile("data/texture.png"));
 		
 		scene_->Load(resource);
-		
+    }
+
+	void OnSceneLoaded() override
+	{
+		PTexture lightmapTexture(GetOrCreateTextureFile("data/lightmap.png"));
+		PTexture diffuseTexture(GetOrCreateTextureFile("data/texture.png"));
+
 		std::vector<SceneNode*> objs = Node::GetChildrenRecursiveOfType<SceneNode>(scene_, "static_objects");
-		for(auto& obj: objs)
+		for (auto& obj : objs)
 		{
 			obj->SetDiffuseMap(diffuseTexture, true);
 			obj->SetLightMap(lightmapTexture, true);
@@ -58,8 +62,9 @@ struct Sample : App
 		Camera* camera = Node::GetFirstChildOfType<Camera>(scene_, "Camera");
 		CHECK_ASSERT(camera, __FILE__, __LINE__);
 		camera->Activate();
-        camera->AddBehavior(PCameraControl(new CameraControl));
-    }
+		camera->AddBehavior(PCameraControl(new CameraControl));
+
+	}
 };
 
 NSG_MAIN(Sample);

@@ -15,6 +15,7 @@
 #include "Skeleton.h"
 #include "Animation.h"
 #include "AnimationState.h"
+#include "PhysicsWorld.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
@@ -29,7 +30,8 @@ namespace NSG
           ambient_(0.3f, 0.3f, 0.3f, 1),
           octree_(new Octree),
           app_(*App::this_),
-          started_(false)
+          started_(false),
+          physicsWorld_(new PhysicsWorld)
     {
         //octree_->InsertUpdate(this);
     }
@@ -46,8 +48,6 @@ namespace NSG
     void Scene::Load(PResource resource)
     {
         SetResource(resource);
-        while (!IsReady())
-            std::this_thread::sleep_for(Milliseconds(10));
     }
 
     void Scene::SetAmbientColor(Color ambient)
@@ -79,15 +79,6 @@ namespace NSG
     {
         PSceneNode obj = CreateChild(name);
         octree_->InsertUpdate(obj.get());
-        return obj;
-    }
-
-    PSceneNode Scene::CreateSceneNodeFrom(PResource resource, const std::string& name)
-    {
-        PSceneNode obj(CreateSceneNode(name));
-        obj->Load(resource);
-        octree_->InsertUpdate(obj.get());
-        AddChild(obj);
         return obj;
     }
 
@@ -140,6 +131,10 @@ namespace NSG
 
     void Scene::Update()
     {
+		float dt = app_.GetDeltaTime();
+        
+        physicsWorld_->StepSimulation(dt);
+
         for (auto& obj : children_)
             obj->Update();
 
@@ -174,6 +169,12 @@ namespace NSG
     {
         for (auto& obj : children_)
             obj->OnMouseUp(button, x, y);
+    }
+
+	void Scene::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    {
+        for (auto& obj : children_)
+			obj->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
     }
 
     void Scene::OnKey(int key, int action, int modifier)

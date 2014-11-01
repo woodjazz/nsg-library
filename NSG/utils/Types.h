@@ -242,4 +242,30 @@ namespace NSG
 
 	typedef FlagSet<AnimationChannel> AnimationChannelMask;
 
+    enum PhysicsShape
+    {
+        SH_UNKNOWN,
+        SH_BOX,
+        SH_CONE,
+        SH_CYLINDER,
+        SH_SPHERE,
+        SH_CONVEX_TRIMESH,
+		SH_TRIMESH
+    };
+
+    struct ContactPoint
+    {
+        SceneNode* collider_;
+		float appliedImpulse_;
+		float appliedImpulseLateral1_;
+		float appliedImpulseLateral2_;
+		float contactMotion1_;
+		float contactMotion2_;
+		float contactCFM1_;
+		float contactCFM2_;
+		Vector3 lateralFrictionDir1_;
+		Vector3	lateralFrictionDir2_;
+    };
+
+
 }

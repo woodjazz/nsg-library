@@ -173,23 +173,23 @@ namespace NSG
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN)
             {
-                double x = event.button.x;
-                double y = event.button.y;
-                app->OnMouseDown(event.button.button, (float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
+                float x = (float)event.button.x;
+                float y = (float)event.button.y;
+                app->OnMouseDown(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
             }
             else if (event.type == SDL_MOUSEBUTTONUP)
             {
-                double x = event.button.x;
-                double y = event.button.y;
-                app->OnMouseUp(event.button.button, (float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
+                float x = (float)event.button.x;
+                float y = (float)event.button.y;
+                app->OnMouseUp(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
             }
             else if (event.type == SDL_MOUSEMOTION)
             {
                 if (width > 0 && height > 0)
                 {
-                    double x = event.motion.x;
-                    double y = event.motion.y;
-                    app->OnMouseMove((float)(-1 + 2 * x / width), (float)(1 + -2 * y / height));
+                    float x = (float)event.motion.x;
+                    float y = (float)event.motion.y;
+                    app->OnMouseMove(-1 + 2 * x / width, 1 + -2 * y / height);
                 }
             }
             else if (event.type == SDL_MOUSEWHEEL)
@@ -198,22 +198,31 @@ namespace NSG
             }
             else if (event.type == SDL_FINGERDOWN)
             {
-                double x = event.tfinger.x;
-                double y = event.tfinger.y;
-                app->OnMouseDown(0, (float)(-1 + 2 * x), (float)(1 + -2 * y));
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                app->OnMouseDown(0, -1 + 2 * x, 1 + -2 * y);
             }
             else if (event.type == SDL_FINGERUP)
             {
-                double x = event.tfinger.x;
-                double y = event.tfinger.y;
-                app->OnMouseUp(0, (float)(-1 + 2 * x), (float)(1 + -2 * y));
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                app->OnMouseUp(0, -1 + 2 * x, 1 + -2 * y);
             }
             else if (event.type == SDL_FINGERMOTION)
             {
-                double x = event.tfinger.x;
-                double y = event.tfinger.y;
-                app->OnMouseMove((float)(-1 + 2 * x), (float)(1 + -2 * y));
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                app->OnMouseMove(-1 + 2 * x, 1 + -2 * y);
             }
+            #if !defined(EMSCRIPTEN)
+            else if (event.type == SDL_MULTIGESTURE)
+            {
+                float x = event.mgesture.x;
+                float y = event.mgesture.y;
+
+                app->OnMultiGesture(event.mgesture.timestamp, -1 + 2 * x, 1 + -2 * y, event.mgesture.dTheta, event.mgesture.dDist, (int)event.mgesture.numFingers);
+            }
+            #endif
         }
 
         #ifndef IOS

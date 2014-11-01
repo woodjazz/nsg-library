@@ -49,6 +49,7 @@
 
 			#if defined(INSTANCED)
 
+				// See Graphics::UpdateBatchBuffer
 				// Since we are using rows instead of cols the instancing model matrix is a transpose, 
 				// so the matrix multiply order must be swapped
 				const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);
@@ -60,6 +61,7 @@
 
 		#elif defined(INSTANCED)
 
+			// See Graphics::UpdateBatchBuffer
 			// Since we are using rows instead of cols the instancing model matrix is a transpose, 
 			// so the matrix multiply order must be swapped
 			const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);
@@ -72,6 +74,7 @@
 
 	mat3 GetNormalMatrix()
 	{
+		//The normal matrix is used to allow non-uniform scales (sx != sy != sz) in the active node
 		#if defined(INSTANCED)
 			return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2);
 		#else
@@ -81,7 +84,7 @@
 
 	vec3 GetWorldPos()
 	{
-		#if defined(INSTANCED)// && !defined(SKINNED)
+		#if defined(INSTANCED)
 			// Instancing model matrix is a transpose, so the matrix multiply order must be swapped
 			return (vec4(a_position, 1.0) * GetModelMatrix()).xyz;
 		#else
@@ -92,8 +95,9 @@
 	vec3 GetWorldNormal()
 	{
 		#if defined(SKINNED)
-			return normalize(mat3(GetSkinnedMatrix()) * a_normal); 
-			//normalize(GetNormalMatrix() * mat3(GetSkinnedMatrix()) * a_normal);
+			//return normalize(mat3(GetSkinnedMatrix()) * a_normal); 
+			// Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
+			return normalize(GetNormalMatrix() * mat3(GetSkinnedMatrix()) * a_normal);
 		#else
 			return normalize(GetNormalMatrix() * a_normal);
 		#endif

@@ -42,7 +42,8 @@ namespace NSG
           globalScale_(1, 1, 1),
           inheritScale_(true),
           dirty_(true),
-          enabled_(true)
+          enabled_(true),
+          isScaleUniform_(true)
     {
     }
 
@@ -181,7 +182,7 @@ namespace NSG
         if (scale_ != scale)
         {
             scale_ = scale;
-            MarkAsDirty();
+            MarkAsDirty(true, true);
         }
     }
 
@@ -339,6 +340,7 @@ namespace NSG
             globalScale_ = scale_;
         }
 
+		isScaleUniform_ = globalScale_.x == globalScale_.y && globalScale_.x == globalScale_.z;
         globalModel_ = glm::translate(glm::mat4(), globalPosition_) * glm::mat4_cast(globalOrientation_) * glm::scale(glm::mat4(1.0f), globalScale_);
         globalModelInv_ = glm::inverse(globalModel_);
         globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
@@ -391,14 +393,18 @@ namespace NSG
         return box.IsInside(point);
     }
 
-    void Node::MarkAsDirty(bool recursive)
+    void Node::MarkAsDirty(bool recursive, bool scaleChange)
     {
         dirty_ = true;
         SetUniformsNeedUpdate();
         OnDirty();
+        
+        if(scaleChange)
+            OnScaleChange();
+
         if (recursive)
             for (auto child : children_)
-                child->MarkAsDirty(recursive);
+                child->MarkAsDirty(recursive, scaleChange);
     }
 
     void Node::SetEnabled(bool enable, bool recursive)
@@ -416,5 +422,11 @@ namespace NSG
         if (recursive)
             for (auto child : children_)
                 child->SetEnabled(enable, recursive);
+    }
+
+    bool Node::IsScaleUniform() const
+    {
+        Update();
+        return isScaleUniform_;
     }
 }

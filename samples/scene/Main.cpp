@@ -46,18 +46,22 @@ struct Sample : App
 		PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
 		scene_->Load(resource);
 
-        PCamera camera;
-        auto& cameras = scene_->GetCameras();
-        if(cameras.size())
-            camera = cameras[0];
-        else
-            camera = scene_->CreateCamera("");
+    }
 
-        camera->Activate();
+	void OnSceneLoaded() override
+	{
+		PCamera camera;
+		auto& cameras = scene_->GetCameras();
+		if (cameras.size())
+			camera = cameras[0];
+		else
+			camera = scene_->CreateCamera("");
+
+		camera->Activate();
 		camera->SetGlobalPosition(Vector3(0, 5, 5));
 		camera->SetLookAt(VECTOR3_ZERO);
 
-        PAnimation animation = scene_->CreateAnimation("anim0");
+		PAnimation animation = scene_->CreateAnimation("anim0");
 		AnimationTrack track;
 		track.node_ = camera;
 		track.channelMask_ = (int)AnimationChannel::POSITION | (int)AnimationChannel::ROTATION;
@@ -66,7 +70,7 @@ struct Sample : App
 			AnimationKeyFrame key(0, camera.get());
 			track.keyFrames_.push_back(key);
 		}
-		
+
 		{
 			Node node;
 			node.SetParent(camera->GetParent());
@@ -98,8 +102,7 @@ struct Sample : App
 		animation->SetLength(8);
 
 		scene_->PlayAnimation(animation, false);
-
-    }
+	}
 };
 
 NSG_MAIN(Sample);

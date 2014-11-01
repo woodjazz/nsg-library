@@ -73,31 +73,17 @@ namespace NSG
     {
     }
 
-    void BoundingBox::Define(const Vector3& point)
-    {
-        min_ = point;
-        max_ = point;
-    }
-
     void BoundingBox::Transform(const Node& node)
     {
         const Matrix4& transform = node.GetGlobalModelMatrix();
         Vector3 newCenter = Vector3(transform * Vector4(Center(), 1));
 		Vector3 oldEdge = Size() * 0.5f;
-#if 0
-        Vector3 newEdge = Vector3(
-			glm::abs(transform[0][0]) * oldEdge.x + glm::abs(transform[0][1]) * oldEdge.y + glm::abs(transform[0][2]) * oldEdge.z,
-			glm::abs(transform[1][0]) * oldEdge.x + glm::abs(transform[1][1]) * oldEdge.y + glm::abs(transform[1][2]) * oldEdge.z,
-			glm::abs(transform[2][0]) * oldEdge.x + glm::abs(transform[2][1]) * oldEdge.y + glm::abs(transform[2][2]) * oldEdge.z
-                          );
-#else
 
 		Vector3 newEdge = Vector3(
 			glm::abs(transform[0][0]) * oldEdge.x + glm::abs(transform[1][0]) * oldEdge.y + glm::abs(transform[2][0]) * oldEdge.z,
 			glm::abs(transform[0][1]) * oldEdge.x + glm::abs(transform[1][1]) * oldEdge.y + glm::abs(transform[2][1]) * oldEdge.z,
 			glm::abs(transform[0][2]) * oldEdge.x + glm::abs(transform[1][2]) * oldEdge.y + glm::abs(transform[2][2]) * oldEdge.z
 			);
-#endif
 
 		BoundingBox obj(newCenter - newEdge, newCenter + newEdge);
         min_ = obj.min_;

@@ -57,6 +57,30 @@ namespace NSG
     Path::Path(const std::string& filePath)
         : filePath_(filePath)
     {
+        ReDoState();
+    }
+
+    Path::Path(const Path& obj)
+        : filePath_(obj.filePath_),
+          fullFilePath_(obj.fullFilePath_),
+          pathName_(obj.pathName_),
+          path_(obj.path_),
+          absolutePath_(obj.absolutePath_),
+          name_(obj.name_),
+          filename_(obj.filename_),
+          ext_(obj.ext_),
+          isAbsolutePath_(obj.isAbsolutePath_)
+    {
+
+    }
+
+    Path::~Path()
+    {
+
+    }
+
+	void Path::ReDoState()
+    {
         Path::ReplaceChar(filePath_, '\\', '/');
         path_ = Path::ExtractPath(filePath_);
         filename_ = Path::ExtractFilename(filePath_, true);
@@ -77,28 +101,9 @@ namespace NSG
         if (isAbsolutePath_)
             absolutePath_ = path_;
         else
-			absolutePath_ = Context::this_->basePath_ + path_;
+            absolutePath_ = Context::this_->basePath_ + path_;
 
         fullFilePath_ = absolutePath_ + "/" + filename_;
-    }
-
-    Path::Path(const Path& obj)
-        : filePath_(obj.filePath_),
-          fullFilePath_(obj.fullFilePath_),
-          pathName_(obj.pathName_),
-          path_(obj.path_),
-          absolutePath_(obj.absolutePath_),
-          name_(obj.name_),
-          filename_(obj.filename_),
-          ext_(obj.ext_),
-          isAbsolutePath_(obj.isAbsolutePath_)
-    {
-
-    }
-
-    Path::~Path()
-    {
-
     }
 
     void Path::ReplaceChar(std::string& filePath, char from, char to)
@@ -153,23 +158,23 @@ namespace NSG
         return extension;
     }
 
-	std::vector<std::string> Path::GetDirs(const std::string& path)
-	{
-		std::vector<std::string> dirs;
-		std::string tmp(path);
-		std::string::size_type pos = tmp.find("/");
-		while (pos != std::string::npos)
-		{
-			dirs.push_back(tmp.substr(0, pos));
-			tmp = tmp.substr(pos+1);
-			pos = tmp.find("/");
-		}
+    std::vector<std::string> Path::GetDirs(const std::string& path)
+    {
+        std::vector<std::string> dirs;
+        std::string tmp(path);
+        std::string::size_type pos = tmp.find("/");
+        while (pos != std::string::npos)
+        {
+            dirs.push_back(tmp.substr(0, pos));
+            tmp = tmp.substr(pos + 1);
+            pos = tmp.find("/");
+        }
 
-		if (!tmp.empty())
-			dirs.push_back(tmp);
+        if (!tmp.empty())
+            dirs.push_back(tmp);
 
-		return dirs;
-	}
+        return dirs;
+    }
 
     const Path& Path::GetEmpty()
     {
@@ -191,14 +196,23 @@ namespace NSG
             Path::ReplaceChar(result, '\\', '/');
             return result;
         }
-        #elif defined(__APPLE__) && defined(SDL)
+        #elif (defined(ANDROID) || defined(__APPLE__)) && defined(SDL)
         {
+            std::string path;
             char* base_path = SDL_GetBasePath();
-            CHECK_CONDITION(base_path, __FILE__, __LINE__);
-            std::string path(base_path);
-            SDL_free(base_path);
+            if (base_path)
+            {
+                path = base_path;
+                SDL_free(base_path);
+            }
+            else
+            {
+                path = "./";
+            }
             return path;
         }
+        #elif defined(NACL)
+        return "./";
         #else
         {
             std::string path;
@@ -231,4 +245,36 @@ namespace NSG
         return s;
     }
 
+    bool Path::ContainsDir(const std::string& path, const std::string& dirName)
+    {
+        std::vector<std::string> dirs = Path::GetDirs(path);
+        for (auto& dir : dirs)
+            if (dir == dirName)
+                return true;
+        return false;
+    }
+
+    bool Path::AppendDirIfDoesNotExist(const std::string& dirName)
+    {
+        std::vector<std::string> dirs = Path::GetDirs(absolutePath_);
+        if(dirs.empty())
+        {
+            filePath_ = dirName + "/" + filename_;
+            ReDoState();
+            return true;
+        }
+        else
+        {
+            if(dirs.back() != dirName)
+            {
+				if (path_.empty())
+					filePath_ = dirName + "/" + filename_;
+				else
+					filePath_ = path_ + "/" + dirName + "/" + filename_;
+                ReDoState();
+                return true;
+            }
+        }
+        return false;
+    }
 }

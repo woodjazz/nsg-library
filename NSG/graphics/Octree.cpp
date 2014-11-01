@@ -173,7 +173,6 @@ namespace NSG
         return false;
     }
 
-
     void Octant::Add(SceneNode* obj)
     {
         obj->SetOctant(this);
@@ -220,9 +219,9 @@ namespace NSG
         if (this != root_)
         {
             Intersection res = query.TestOctant(cullingBox_, inside);
-			if (res == Intersection::INSIDE)
+            if (res == Intersection::INSIDE)
                 inside = true;
-			else if (res == Intersection::OUTSIDE)
+            else if (res == Intersection::OUTSIDE)
             {
                 // Fully outside, so cull this octant, its children & drawables
                 return;
@@ -262,7 +261,7 @@ namespace NSG
 
     void Octree::InsertUpdate(SceneNode* obj)
     {
-         Octant* octant = obj->GetOctant();
+        Octant* octant = obj->GetOctant();
 
         const BoundingBox& box = obj->GetWorldBoundingBox();
         // Skip if still fits the current octant
@@ -271,14 +270,14 @@ namespace NSG
 
         Insert(obj);
 
-        // Verify that the drawable will be culled correctly
-		CHECK_ASSERT((octant = obj->GetOctant()) && (octant == this || octant->GetCullingBox().IsInside(box) == Intersection::INSIDE), __FILE__, __LINE__);
+        // Verify that the obj will be culled correctly
+        CHECK_ASSERT((octant = obj->GetOctant()) && (octant == this || octant->GetCullingBox().IsInside(box) == Intersection::INSIDE), __FILE__, __LINE__);
     }
 
     void Octree::Remove(SceneNode* obj)
     {
         Octant* octant = obj->GetOctant();
-        if(octant)
+        if (octant)
             octant->Remove(obj);
     }
 

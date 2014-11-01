@@ -44,6 +44,8 @@ namespace NSG
     {
         #if NACL
         {
+            CHECK_ASSERT(path_.IsPathRelative(), __FILE__, __LINE__);
+            path_.AppendDirIfDoesNotExist("data");
             pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), path_.GetFilePath().c_str());
         }
         #elif defined(ANDROID) && !defined(SDL)
@@ -51,7 +53,6 @@ namespace NSG
             pAAssetManager_ = App::this_->GetAssetManager();
         }
         #endif
-
     }
 
     ResourceFile::~ResourceFile()
@@ -74,16 +75,6 @@ namespace NSG
                         pLoader_ = nullptr;
                         loaded_ = true;
                     }
-                    else
-                    {
-                        if (path_.IsPathRelative() && trySecondTime_)
-                        {
-                            trySecondTime_ = false;
-                            std::string filePath = path_.GetFilePath();
-                            filePath = "data/" + filePath;
-                            pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), filePath.c_str());
-                        }
-                    }
                 }
             }
             #elif ANDROID
@@ -94,12 +85,11 @@ namespace NSG
 
                     if (!assetHandle)
                     {
-                        if (path_.IsPathRelative() && trySecondTime_)
+                        if (trySecondTime_)
                         {
                             trySecondTime_ = false;
-                            std::string filePath = path_.GetFilePath();
-                            filePath = "data/" + filePath;
-                            assetHandle = SDL_RWFromFile(filePath.c_str(), "rb");
+                            if(path_.AppendDirIfDoesNotExist("data"))
+                                assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
                         }
                     }
 
@@ -120,12 +110,11 @@ namespace NSG
 
                     if (!pAsset)
                     {
-                        if (path_.IsPathRelative() && trySecondTime_)
+                        if (trySecondTime_)
                         {
                             trySecondTime_ = false;
-                            std::string filePath = path_.GetFilePath();
-                            filePath = "data/" + filePath;
-                            pAsset = AAssetManager_open(pAAssetManager_, filePath.c_str(), AASSET_MODE_BUFFER);
+                            if(path_.AppendDirIfDoesNotExist("data"))
+                                pAsset = AAssetManager_open(pAAssetManager_, path_.GetFilePath().c_str(), AASSET_MODE_BUFFER);
                         }
                     }
 
@@ -148,12 +137,8 @@ namespace NSG
 
                 if (!file.is_open())
                 {
-                    if (path_.IsPathRelative())
-                    {
-                        std::string filePath = path_.GetFilePath();
-                        filePath = "data/" + filePath;
-                        file.open(filePath.c_str(), std::ios::binary);
-                    }
+                    if(path_.AppendDirIfDoesNotExist("data"))
+                        file.open(path_.GetFilePath().c_str(), std::ios::binary);
                 }
 
                 #if defined(__APPLE__) && defined(SDL)
@@ -176,7 +161,6 @@ namespace NSG
 
                 if (file.is_open())
                 {
-                    CHECK_ASSERT(file.is_open(), __FILE__, __LINE__);
                     file.seekg(0, std::ios::end);
                     std::streampos filelength = file.tellg();
                     file.seekg(0, std::ios::beg);
@@ -199,12 +183,12 @@ namespace NSG
                 {
                     if (pLoader_->IsDone())
                     {
-                        TRACE_LOG("Resource::Cannot load file " << path_.GetFilePath());
+                        TRACE_LOG("Resource::Cannot load file " << path_);
                     }
                 }
                 #else
                 {
-                    TRACE_LOG("Resource::Cannot load file " << path_.GetFilePath());
+                    TRACE_LOG("Resource::Cannot load file " << path_);
                 }
                 #endif
             }

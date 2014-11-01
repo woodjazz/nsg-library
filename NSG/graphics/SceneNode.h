@@ -38,10 +38,10 @@ namespace NSG
 	{
 	public:
 		~SceneNode();
-		void Load(PResource resource);
 		PMaterial GetMaterial() const { return material_; }
 		void Set(PMaterial material);
 		void Set(PMesh mesh);
+		void Set(PRigidBody rigidBody);
 		PMesh GetMesh() const { return mesh_; }
 		void AddBehavior(PBehavior behavior);
 		void SetOctant(Octant* octant) const { octant_ = octant; }
@@ -50,6 +50,7 @@ namespace NSG
 		bool IsOccludee() const { return occludee_; }
 		Octant* GetOctant() const { return octant_; }
 		virtual void OnDirty() const override;
+		void OnScaleChange() override;
 		virtual void Save(pugi::xml_node& node) override;
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
@@ -60,8 +61,10 @@ namespace NSG
 		virtual void OnMouseDown(int button, float x, float y) override;
         virtual void OnMouseWheel(float x, float y) override;
 		virtual void OnMouseUp(int button, float x, float y) override;
+		virtual void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers) override;
         virtual void OnKey(int key, int action, int modifier) override;
         virtual void OnChar(unsigned int character) override;
+        virtual void OnCollision(const ContactPoint& contactInfo) override;
 		PSceneNode CreateChild(const std::string& name);
 		virtual void OnEnable() override;
 		virtual void OnDisable() override;
@@ -82,6 +85,7 @@ namespace NSG
 		PScene GetScene() const;
 		PMaterial material_;
 		PMesh mesh_;
+		PRigidBody rigidBody_;
 		std::vector<PBehavior> behaviors_;
 		mutable Octant* octant_;
 		mutable BoundingBox worldBB_;

@@ -172,35 +172,35 @@ namespace NSG
                 TRACE_LOG("File constains more than one diffuse map per material. Material name = " << material_->GetName() << " #diffuse maps = " << n);
             }
 
-            aiString path;
+            aiString aPath;
             aiTextureMapping mapping(aiTextureMapping_UV);
             unsigned int uvindex(0);
             float blend(1);
             aiTextureOp op(aiTextureOp_Add);
             aiTextureMapMode mapmode[3];
 
-            if (AI_SUCCESS == mtl_->GetTexture(aiTextureType_DIFFUSE, 0, &path, &mapping, &uvindex, &blend, &op, mapmode))
+			if (AI_SUCCESS == mtl_->GetTexture(aiTextureType_DIFFUSE, 0, &aPath, &mapping, &uvindex, &blend, &op, mapmode))
             {
-                std::string fullPath = path.C_Str();
+                Path path(aPath.C_Str());
                 if (mapping == aiTextureMapping_UV)
                 {
                     if (uvindex == 0)
                     {
-                        material_->SetDiffuseMap(CreateTexture(fullPath));
+                        material_->SetDiffuseMap(CreateTexture(path));
                     }
                     else if (uvindex == 1)
                     {
                         TRACE_LOG("Detected diffuse map using uv1 => assuming it is a lightmap");
-                        material_->SetLightMap(CreateTexture(fullPath));
+                        material_->SetLightMap(CreateTexture(path));
                     }
                     else
                     {
-                        TRACE_LOG("Material name = " << material_->GetName() << " with texture " << fullPath << " uses uv index greater than 1. Only uv0 and uv1 are supported!!!");
+                        TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path.GetFilePath() << " uses uv index greater than 1. Only uv0 and uv1 are supported!!!");
                     }
                 }
                 else
                 {
-                    TRACE_LOG("Material name = " << material_->GetName() << " with texture " << fullPath << " does not use UV mapping!!!");
+                    TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path.GetFilePath() << " does not use UV mapping!!!");
                 }
             }
         }
@@ -297,6 +297,9 @@ namespace NSG
 
     PTexture MaterialConverter::CreateTexture(const Path& path)
     {
+#if 1        
+        std::string textureFilePath = path.GetFilename();
+#else
         std::string textureFilePath;
         if (path.IsPathRelative())
         {
@@ -307,6 +310,7 @@ namespace NSG
         }
         else
             textureFilePath = path.GetFilePath();
+#endif            
 
 		return TextureFileManager::this_->GetOrCreate(textureFilePath);
     }

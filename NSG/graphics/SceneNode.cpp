@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "Octree.h"
 #include "Util.h"
+#include "RigidBody.h"
 #include "pugixml.hpp"
 #include <thread>
 
@@ -54,17 +55,13 @@ namespace NSG
 
     SceneNode::~SceneNode()
     {
+        if(rigidBody_)
+            rigidBody_->SetSceneNode(nullptr);
+
 		PScene scene = app_.GetCurrentScene();
 		if (scene && scene->GetOctree())
 			GetScene()->GetOctree()->Remove(this);
         Context::RemoveObject(this);
-    }
-
-    void SceneNode::Load(PResource resource)
-    {
-        SetResource(resource);
-        while (!IsReady())
-            std::this_thread::sleep_for(Milliseconds(10));
     }
 
     void SceneNode::SetResource(PResource resource)
@@ -78,10 +75,9 @@ namespace NSG
 
     bool SceneNode::IsValid()
     {
-        if (resource_)
-            return resource_->IsLoaded();
-        else
-            return true;
+        bool valid = !resource_ || resource_->IsLoaded();
+        valid &= !mesh_ || mesh_->IsReady();
+        return valid;
     }
 
     void SceneNode::AllocateResources()
@@ -139,6 +135,18 @@ namespace NSG
         }
     }
 
+    void SceneNode::Set(PRigidBody rigidBody)
+    {
+        rigidBody_ = rigidBody;
+        rigidBody_->SetSceneNode(this);
+    }
+
+    void SceneNode::OnScaleChange()
+    {
+        if(rigidBody_)
+            rigidBody_->ReScale();
+    }
+
     void SceneNode::OnEnable()
     {
         if (mesh_)
@@ -175,6 +183,9 @@ namespace NSG
 
     void SceneNode::Update()
     {
+        if(rigidBody_)
+            rigidBody_->IsReady(); // forces the rigidbody to allocate the resources when becomes valid
+
         for (auto& obj : behaviors_)
             obj->Update();
 
@@ -225,6 +236,15 @@ namespace NSG
 
         for (auto& obj : children_)
             obj->OnMouseUp(button, x, y);
+    }
+
+    void SceneNode::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    {
+        for (auto& obj : behaviors_)
+            obj->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
+
+        for (auto& obj : children_)
+            obj->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
     }
 
     void SceneNode::OnKey(int key, int action, int modifier)
@@ -496,4 +516,12 @@ namespace NSG
 		return scene;
 	}
 
+    void SceneNode::OnCollision(const ContactPoint& contactInfo)
+    {
+        for (auto& obj : behaviors_)
+            obj->OnCollision(contactInfo);
+
+        for (auto& obj : children_)
+            obj->OnCollision(contactInfo);
+    }
 }

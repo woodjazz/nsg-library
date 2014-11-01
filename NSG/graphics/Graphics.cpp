@@ -774,10 +774,14 @@ namespace NSG
         {
             InstanceData data;
             const Matrix4& m = node->GetGlobalModelMatrix();
-            data.modelMatrixRow0_ = glm::row(m, 0);
+            // for the model matrix be careful in the shader as we are using rows instead of columns
+            // in order to save space (for the attributes) we just pass the first 3 rows of the matrix as the fourth row is always (0,0,0,1) and can be set in the shader
+            data.modelMatrixRow0_ = glm::row(m, 0); 
             data.modelMatrixRow1_ = glm::row(m, 1);
             data.modelMatrixRow2_ = glm::row(m, 2);
+
             const Matrix3& normal = node->GetGlobalModelInvTranspMatrix();
+            // for the normal matrix we are OK since we pass columns (we do not need to save space as the matrix is 3x3)
             data.normalMatrixCol0_ = glm::column(normal, 0);
             data.normalMatrixCol1_ = glm::column(normal, 1);
             data.normalMatrixCol2_ = glm::column(normal, 2);

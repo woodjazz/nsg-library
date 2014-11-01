@@ -35,7 +35,7 @@ namespace NSG
 		float lastY_;
 		bool rightButtonDown_;
 		bool altKeyDown_;
-		PSphere sphere_;
+		PPointOnSphere pointOnSphere_;
 		Camera* camera_;
 		bool updateOrientation_;
 		
@@ -45,8 +45,12 @@ namespace NSG
 		void OnMouseUp(int button, float x, float y) override;
 		void OnMouseMove(float x, float y) override;
 		void OnMouseWheel(float x, float y) override;
+		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers) override;
 		void OnKey(int key, int action, int modifier) override;
-		void SetSphereCenter(bool centerObj);
 		void AutoZoom();
+	private:
+		void SetPosition(const Vertex3& position);
+		void SetSphereCenter(bool centerObj);
+		void Move(float x, float y);
 	};
 }

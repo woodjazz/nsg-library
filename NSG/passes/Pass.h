@@ -50,6 +50,7 @@ namespace NSG
         void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
         void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
         void SetDrawMode(DrawMode mode);
+        DrawMode GetDrawMode() const { return drawMode_; }
         void EnableCullFace(bool enable);
         void SetCullFace(CullFaceMode mode);
         void SetFrontFace(FrontFaceMode mode);

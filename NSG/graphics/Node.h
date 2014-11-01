@@ -70,6 +70,12 @@ namespace NSG
         static void GetChildrenRecursive(PNode node, const std::string& name, std::vector<PNode>& result);
 		static void GetChildrenRecursive(PNode node, std::vector<PNode>& result);
         static PNode GetUniqueNodeFrom(PNode node, const std::string& name);
+		template <typename T> static T* GetUniqueNodeOfTypeFrom(PNode node, const std::string& name)
+		{
+			PNode obj = Node::GetUniqueNodeFrom(node, name);
+			T* ptr = dynamic_cast<T*>(obj.get());
+			return ptr;
+		}
         template <typename T> static std::vector<T*> GetChildrenRecursiveOfType(PNode node)
         {
             std::vector<T*> results;
@@ -122,15 +128,19 @@ namespace NSG
         virtual void OnMouseDown(int button, float x, float y) {}
         virtual void OnMouseWheel(float x, float y) {}
         virtual void OnMouseUp(int button, float x, float y) {}
+        virtual void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers) {}
         virtual void OnKey(int key, int action, int modifier) {}
         virtual void OnChar(unsigned int character) {}
+        virtual void OnCollision(const ContactPoint& contactInfo) {}
         bool IsEnabled() const { return enabled_; }
         void SetEnabled(bool enable, bool recursive = true);
         virtual void OnEnable() {}
         virtual void OnDisable() {}
+        virtual void OnScaleChange() {}
         void SetBoneOffsetMatrix(const Matrix4& m);
         const Matrix4& GetBoneOffsetMatrix() { return boneOffsetMatrix_; }
         void Update(bool updateChildren = false) const;
+        bool IsScaleUniform() const;
     protected:
         Node* parent_;
         std::vector<PNode> children_;
@@ -138,7 +148,7 @@ namespace NSG
     private:
         void RemoveChild(Node* node);
         void RemoveFromParent();
-        void MarkAsDirty(bool recursive = true);
+        void MarkAsDirty(bool recursive = true, bool scaleChange = false);
         IdType id_;
         mutable Matrix4 globalModel_;
         mutable Matrix4 globalModelInv_;
@@ -154,5 +164,6 @@ namespace NSG
         bool inheritScale_;
         mutable bool dirty_;
         bool enabled_;
+        mutable bool isScaleUniform_;
     };
 }

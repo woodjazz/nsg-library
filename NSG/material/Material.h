@@ -72,7 +72,7 @@ namespace NSG
 	private:
 		PTexture texture0_; //difusse map
 		PTexture texture1_; //normal map
-		PTexture texture2_; //ligh map
+		PTexture texture2_; //light map
         Color ambient_;
         Color diffuse_;
         Color specular_;

@@ -602,9 +602,8 @@ namespace NSG
         activeMaterial_ = material;
     }
 
-    bool Program::SetMeshVariables(Mesh* mesh)
+    bool Program::SetSkeletonVariables(Skeleton* skeleton)
     {
-        Skeleton* skeleton = mesh->GetSkeleton().get();
         if (skeleton)
         {
             const std::vector<PNode>& bones = skeleton->GetBones();
@@ -612,6 +611,7 @@ namespace NSG
             if (nBones != nBones_)
             {
                 CHECK_ASSERT(nBones > 0, __FILE__, __LINE__);
+                TRACE_LOG("Invalidating shader since number of bones (in the shader) has changed. Before nBones = " << nBones_ << ", now is " << nBones << ".")
                 Invalidate();
                 nBones_ = nBones;
                 return false;
@@ -621,7 +621,12 @@ namespace NSG
             Matrix4 globalInverseModelMatrix(1);
             Node* parent = rootNode->GetParent();
             if (parent)
+            {
+                // In order to make all the bones relatives to the root's parent.
+                // The model matrix and normal matrix for the active node is premultiplied in the shader (see Program::SetNodeVariables)
+                // See in Transform.glsl: GetModelMatrix() and GetWorldNormal()
                 globalInverseModelMatrix = parent->GetGlobalModelInvMatrix();
+            }
 
             for (unsigned idx = 0; idx < nBones_; idx++)
             {
@@ -631,11 +636,15 @@ namespace NSG
                     Node* bone = bones[idx].get();
                     if (activeSkeleton_ != skeleton || bone->UniformsNeedUpdate())
                     {
+                        // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
+                        CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
+
                         const Matrix4& m = bone->GetGlobalModelMatrix();
                         const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
                         if(graphics_.HasInstancedArrays())
                         {
-                            // we need to transpose the matrix since the model matrix is transposed (uses rows instead of cols)
+                            // Using instancing: (See Graphics::UpdateBatchBuffer)
+                            // we need to transpose the skin matrix since the model matrix is already transposed (uses rows instead of cols)
                             Matrix4 skinMatrix(glm::transpose(globalInverseModelMatrix * m * offsetMatrix));
                             glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(skinMatrix));
                         }
@@ -870,7 +879,7 @@ namespace NSG
 
     void Program::SetVariables(Material* material, Mesh* mesh, Node* node)
     {
-        if (SetMeshVariables(mesh))
+        if (SetSkeletonVariables(mesh->GetSkeleton().get()))
         {
             PScene scene = App::this_->GetCurrentScene();
             SetSceneVariables(scene.get());
@@ -885,7 +894,7 @@ namespace NSG
 
     void Program::SetVariables(Material* material, Mesh* mesh)
     {
-        if (SetMeshVariables(mesh))
+        if (SetSkeletonVariables(mesh->GetSkeleton().get()))
         {
             PScene scene = App::this_->GetCurrentScene();
             SetSceneVariables(scene.get());
