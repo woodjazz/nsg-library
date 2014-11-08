@@ -54,7 +54,7 @@ namespace pugi
 
 namespace NSG
 {
-	class Path;
+    class Path;
 
     typedef glm::highp_ivec4 Recti;
     typedef glm::highp_ivec4 Vector4i;
@@ -69,6 +69,8 @@ namespace NSG
     typedef glm::mat4 Matrix4;
     typedef glm::mat3 Matrix3;
     typedef glm::vec4 Color;
+
+    enum class LightType {POINT, DIRECTIONAL, SPOT};
 
     typedef enum {BLEND_NONE, BLEND_ALPHA} BLEND_MODE ;
 
@@ -132,7 +134,7 @@ namespace NSG
         POSITION,
         NORMAL,
         TEXTURECOORD0,
-		TEXTURECOORD1,
+        TEXTURECOORD1,
         COLOR,
         TANGENT,
         BONES_ID,
@@ -195,7 +197,7 @@ namespace NSG
 
     struct CachedData
     {
-        std::vector<PMesh> meshes_;
+        std::vector<PModelMesh> meshes_;
         std::vector<PMaterial> materials_;
     };
 
@@ -206,7 +208,7 @@ namespace NSG
     };
 
     enum class ProgramFlag
-    {   
+    {
         NONE = 0,
         PER_VERTEX_LIGHTING = 1 << 0,
         PER_PIXEL_LIGHTING = 1 << 1,
@@ -218,7 +220,10 @@ namespace NSG
         NORMALMAP = 1 << 7,
         LIGHTMAP = 1 << 8,
         UNLIT = 1 << 9,
-        SKINNED = 1 << 10
+        SKINNED = 1 << 10,
+        SPECULARMAP = 1 << 11,
+        AOMAP = 1 << 12,
+        DISPLACEMENTMAP = 1 << 13
     };
 
     typedef FlagSet<ProgramFlag> ProgramFlags;
@@ -232,7 +237,21 @@ namespace NSG
 
     typedef FlagSet<TextureFlag> TextureFlags;
 
-	enum class AnimationChannel
+    enum class TextureWrapMode
+    {
+        CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE,
+        MIRRORED_REPEAT = GL_MIRRORED_REPEAT,
+        REPEAT = GL_REPEAT
+    };
+
+    enum class TextureFilterMode
+    {
+        NEAREST,
+        BILINEAR,
+        TRILINEAR
+    };
+
+    enum class AnimationChannel
     {
         NONE = 0,
         POSITION = 1 << 0,
@@ -240,7 +259,7 @@ namespace NSG
         SCALE = 1 << 2
     };
 
-	typedef FlagSet<AnimationChannel> AnimationChannelMask;
+    typedef FlagSet<AnimationChannel> AnimationChannelMask;
 
     enum PhysicsShape
     {
@@ -250,21 +269,21 @@ namespace NSG
         SH_CYLINDER,
         SH_SPHERE,
         SH_CONVEX_TRIMESH,
-		SH_TRIMESH
+        SH_TRIMESH
     };
 
     struct ContactPoint
     {
         SceneNode* collider_;
-		float appliedImpulse_;
-		float appliedImpulseLateral1_;
-		float appliedImpulseLateral2_;
-		float contactMotion1_;
-		float contactMotion2_;
-		float contactCFM1_;
-		float contactCFM2_;
-		Vector3 lateralFrictionDir1_;
-		Vector3	lateralFrictionDir2_;
+        float appliedImpulse_;
+        float appliedImpulseLateral1_;
+        float appliedImpulseLateral2_;
+        float contactMotion1_;
+        float contactMotion2_;
+        float contactCFM1_;
+        float contactCFM2_;
+        Vector3 lateralFrictionDir1_;
+        Vector3 lateralFrictionDir2_;
     };
 
 

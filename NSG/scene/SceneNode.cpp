@@ -45,7 +45,7 @@ namespace NSG
 {
     SceneNode::SceneNode(const std::string& name)
         : Node(name),
-		app_(*App::this_),
+          app_(*App::this_),
           octant_(nullptr),
           occludee_(false),
           worldBBNeedsUpdate_(true),
@@ -55,12 +55,12 @@ namespace NSG
 
     SceneNode::~SceneNode()
     {
-        if(rigidBody_)
+        if (rigidBody_)
             rigidBody_->SetSceneNode(nullptr);
 
-		PScene scene = app_.GetCurrentScene();
-		if (scene && scene->GetOctree())
-			GetScene()->GetOctree()->Remove(this);
+        PScene scene = app_.GetCurrentScene();
+        if (scene && scene->GetOctree())
+            scene_.lock()->GetOctree()->Remove(this);
         Context::RemoveObject(this);
     }
 
@@ -102,13 +102,6 @@ namespace NSG
         }
     }
 
-    PSceneNode SceneNode::CreateChild(const std::string& name)
-    {
-        PSceneNode obj(new SceneNode(name));
-        AddChild(obj);
-        return obj;
-    }
-
     void SceneNode::Set(PMaterial material)
     {
         material_ = material;
@@ -118,19 +111,23 @@ namespace NSG
     {
         if (mesh != mesh_)
         {
+            if (mesh_)
+                mesh_->RemoveSceneNode(this);
+
             mesh_ = mesh;
             worldBB_ = BoundingBox();
 
             if (!mesh)
             {
                 occludee_ = false;
-				GetScene()->GetOctree()->Remove(this);
+                scene_.lock()->GetOctree()->Remove(this);
             }
             else
             {
+                mesh->AddSceneNode(this);
                 occludee_ = true;
                 worldBBNeedsUpdate_ = true;
-				GetScene()->GetOctree()->InsertUpdate(this);
+                scene_.lock()->GetOctree()->InsertUpdate(this);
             }
         }
     }
@@ -143,15 +140,34 @@ namespace NSG
 
     void SceneNode::OnScaleChange()
     {
-        if(rigidBody_)
+        if (rigidBody_)
             rigidBody_->ReScale();
+    }
+
+    void SceneNode::SetScene()
+    {
+        PSceneNode parent(std::dynamic_pointer_cast<SceneNode>(GetParent()));
+
+        if (!parent->scene_.use_count())
+        {
+            parent->scene_ = std::dynamic_pointer_cast<Scene>(parent);
+            CHECK_ASSERT(parent->scene_.lock(), __FILE__, __LINE__);
+        }
+
+        scene_ = parent->scene_;
+    }
+
+    void SceneNode::OnChildCreated()
+    {
+        SetScene();
+        scene_.lock()->AddSceneNode(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
     }
 
     void SceneNode::OnEnable()
     {
         if (mesh_)
         {
-			GetScene()->GetOctree()->InsertUpdate(this);
+            scene_.lock()->GetOctree()->InsertUpdate(this);
         }
     }
 
@@ -159,7 +175,7 @@ namespace NSG
     {
         if (mesh_)
         {
-			GetScene()->GetOctree()->Remove(this);
+            scene_.lock()->GetOctree()->Remove(this);
         }
     }
 
@@ -183,7 +199,7 @@ namespace NSG
 
     void SceneNode::Update()
     {
-        if(rigidBody_)
+        if (rigidBody_)
             rigidBody_->IsReady(); // forces the rigidbody to allocate the resources when becomes valid
 
         for (auto& obj : behaviors_)
@@ -269,10 +285,10 @@ namespace NSG
     {
         worldBBNeedsUpdate_ = true;
 
-		if (octant_)
-		{
-			GetScene()->NeedUpdate((SceneNode*)this);
-		}
+        if (octant_)
+        {
+            scene_.lock()->NeedUpdate((SceneNode*)this);
+        }
     }
 
     const BoundingBox& SceneNode::GetWorldBoundingBox() const
@@ -303,12 +319,12 @@ namespace NSG
         return bb;
     }
 
-	void SceneNode::GetMaterials(std::vector<PMaterial>& materials) const
-	{
-		materials.push_back(material_);
-		for (auto& obj : children_)
-			dynamic_cast<SceneNode*>(obj.get())->GetMaterials(materials);
-	}
+    void SceneNode::GetMaterials(std::vector<PMaterial>& materials) const
+    {
+        materials.push_back(material_);
+        for (auto& obj : children_)
+            dynamic_cast<SceneNode*>(obj.get())->GetMaterials(materials);
+    }
 
     void SceneNode::Save(pugi::xml_node& node)
     {
@@ -344,7 +360,7 @@ namespace NSG
         if (material_)
         {
             int materialIndex = App::this_->GetMaterialSerializableIndex(material_);
-            if(materialIndex != -1)
+            if (materialIndex != -1)
             {
                 std::stringstream ss;
                 ss << materialIndex;
@@ -355,7 +371,7 @@ namespace NSG
         if (mesh_)
         {
             int meshIndex = App::this_->GetMeshSerializableIndex(mesh_);
-            if(meshIndex != -1)
+            if (meshIndex != -1)
             {
                 std::stringstream ss;
                 ss << meshIndex;
@@ -392,7 +408,7 @@ namespace NSG
         if (attribute)
         {
             int materialIndex_ = attribute.as_int();
-			Set(data.materials_.at(materialIndex_));
+            Set(data.materials_.at(materialIndex_));
         }
 
         attribute = node.attribute("meshIndex");
@@ -406,9 +422,8 @@ namespace NSG
             pugi::xml_node child = node.child("Light");
             if (child)
             {
-				PLight obj = GetScene()->CreateLight(child.attribute("name").as_string());
+                PLight obj = GetOrCreateChild<Light>(child.attribute("name").as_string());
                 obj->Load(child);
-                AddChild(obj);
             }
         }
 
@@ -416,16 +431,17 @@ namespace NSG
             pugi::xml_node child = node.child("Camera");
             if (child)
             {
-				PCamera obj = GetScene()->CreateCamera(child.attribute("name").as_string());
+                PCamera obj = GetOrCreateChild<Camera>(child.attribute("name").as_string());
                 obj->Load(child);
-                AddChild(obj);
             }
         }
 
 
         for (pugi::xml_node child = node.child("SceneNode"); child; child = child.next_sibling("SceneNode"))
         {
-            PSceneNode childNode = CreateChild(child.attribute("name").as_string());
+            std::string childName = child.attribute("name").as_string();
+            CHECK_ASSERT(!childName.empty(), __FILE__, __LINE__);
+            PSceneNode childNode = Node::GetOrCreateChild<SceneNode>(childName);
             childNode->LoadNode(child, data);
         }
     }
@@ -439,7 +455,7 @@ namespace NSG
             pugi::xml_node child = xpathNode.node();
             while (child)
             {
-                PMesh mesh(app_.CreateModelMesh());
+                PModelMesh mesh(app_.GetOrCreateModelMesh(child.attribute("name").as_string()));
                 data.meshes_.push_back(mesh);
                 mesh->Load(child);
                 child = child.next_sibling("Mesh");
@@ -453,7 +469,7 @@ namespace NSG
             pugi::xml_node child = xpathNode.node();
             while (child)
             {
-                PMaterial material(app_.CreateMaterial());
+                PMaterial material(app_.GetOrCreateMaterial(child.attribute("name").as_string()));
                 data.materials_.push_back(material);
                 material->Load(child);
                 child = child.next_sibling("Material");
@@ -463,58 +479,99 @@ namespace NSG
 
     void SceneNode::SetDiffuseMap(PTexture texture, bool recursive)
     {
-        if(recursive)
+        if (recursive)
         {
             std::vector<PMaterial> materials;
             GetMaterials(materials);
-			for (auto& material : materials)
-				if (material)
-					material->SetDiffuseMap(texture);
+            for (auto& material : materials)
+                if (material)
+                    material->SetDiffuseMap(texture);
         }
-		else if(material_)
+        else if (material_)
         {
-			material_->SetDiffuseMap(texture);
+            material_->SetDiffuseMap(texture);
         }
     }
 
     void SceneNode::SetNormalMap(PTexture texture, bool recursive)
     {
-        if(recursive)
+        if (recursive)
         {
             std::vector<PMaterial> materials;
             GetMaterials(materials);
-            for(auto& material: materials)
-				if (material)
-					material->SetNormalMap(texture);
+            for (auto& material : materials)
+                if (material)
+                    material->SetNormalMap(texture);
         }
-		else if(material_)
+        else if (material_)
         {
             material_->SetNormalMap(texture);
         }
     }
 
-    void SceneNode::SetLightMap(PTexture texture, bool recursive)
+    void SceneNode::SetSpecularMap(PTexture texture, bool recursive)
     {
-        if(recursive)
+        if (recursive)
         {
             std::vector<PMaterial> materials;
             GetMaterials(materials);
-            for(auto& material: materials)
-				if (material)
-					material->SetLightMap(texture);
+            for (auto& material : materials)
+                if (material)
+                    material->SetSpecularMap(texture);
         }
-		else if(material_)
+        else if (material_)
+        {
+            material_->SetSpecularMap(texture);
+        }
+    }
+
+    void SceneNode::SetAOMap(PTexture texture, bool recursive)
+    {
+        if (recursive)
+        {
+            std::vector<PMaterial> materials;
+            GetMaterials(materials);
+            for (auto& material : materials)
+                if (material)
+                    material->SetAOMap(texture);
+        }
+        else if (material_)
+        {
+            material_->SetAOMap(texture);
+        }
+    }
+
+    void SceneNode::SetDisplacementMap(PTexture texture, bool recursive)
+    {
+        if (recursive)
+        {
+            std::vector<PMaterial> materials;
+            GetMaterials(materials);
+            for (auto& material : materials)
+                if (material)
+                    material->SetDisplacementMap(texture);
+        }
+        else if (material_)
+        {
+            material_->SetDisplacementMap(texture);
+        }
+    }
+
+    void SceneNode::SetLightMap(PTexture texture, bool recursive)
+    {
+        if (recursive)
+        {
+            std::vector<PMaterial> materials;
+            GetMaterials(materials);
+            for (auto& material : materials)
+                if (material)
+                    material->SetLightMap(texture);
+        }
+        else if (material_)
         {
             material_->SetLightMap(texture);
         }
     }
-
-	PScene SceneNode::GetScene() const
-	{
-		PScene scene = app_.GetCurrentScene();
-		CHECK_ASSERT(scene, __FILE__, __LINE__);
-		return scene;
-	}
 
     void SceneNode::OnCollision(const ContactPoint& contactInfo)
     {

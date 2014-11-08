@@ -33,6 +33,7 @@ namespace NSG
 	class Camera : public SceneNode, IViewChangedListener
 	{
 	public:
+		Camera(const std::string& name);
 		~Camera();
 		void EnableOrtho();
 		void DisableOrtho();
@@ -70,7 +71,8 @@ namespace NSG
 		const PFrustum GetFrustum() const;
 		const Frustum* GetFrustumPointer() const;
 		bool IsVisible(const Node& node, Mesh& mesh) const;
-		virtual void OnDirty() const override;
+		void OnChildCreated() override;
+		void OnDirty() const override;
 		float GetZNear() const { return zNear_; }
 		float GetZFar() const { return zFar_; }
 		float GetFov() const { return fovy_; }
@@ -81,8 +83,6 @@ namespace NSG
 		PFilter AddUserFilter(PResource fragmentShader, int output_width, int output_height);
 		void BeginRender();
 		void EndRender();
-	protected:
-		Camera(const std::string& name);
 	private:
 		void AddFilter(PFilter filter);
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
@@ -112,6 +112,5 @@ namespace NSG
 		std::vector<PFilter> filters_;
 		PRender2Texture render2Texture_;
 		PShowTexture showTexture_;
-		friend class Scene;
 	};
 }

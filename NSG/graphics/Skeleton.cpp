@@ -27,14 +27,14 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Check.h"
 #include "App.h"
-#include "Mesh.h"
+#include "ModelMesh.h"
 #include "Scene.h"
 #include "Util.h"
 #include "pugixml.hpp"
 
 namespace NSG
 {
-    Skeleton::Skeleton(PMesh mesh)
+    Skeleton::Skeleton(PModelMesh mesh)
         : mesh_(mesh)
     {
 
@@ -125,22 +125,12 @@ namespace NSG
     {
         std::string meshName = node.attribute("meshName").as_string();
         const std::vector<PMesh>& meshes = App::this_->GetMeshes();
-        mesh_.reset();
-        for (auto& obj : meshes)
-        {
-            if (obj->GetName() == meshName)
-            {
-                mesh_ = obj;
-                break;
-            }
-        }
+		mesh_ = App::this_->GetModelMesh(meshName);
 		CHECK_CONDITION(mesh_.lock(), __FILE__, __LINE__);
         std::string rootName = node.attribute("rootName").as_string();
         PScene scene = App::this_->GetCurrentScene();
-        std::vector<PNode> resultNodes;
-        Node::GetChildrenRecursive(scene, rootName, resultNodes);
-        CHECK_CONDITION(resultNodes.size() == 1, __FILE__, __LINE__);
-        root_ = resultNodes[0];
+        root_ = scene->GetChild<Node>(rootName, true);
+        CHECK_ASSERT(root_, __FILE__, __LINE__);
         bones_.clear();
         pugi::xml_node childBones = node.child("Bones");
         if (childBones)
@@ -149,11 +139,10 @@ namespace NSG
             while (child)
             {
                 std::string boneName = child.attribute("boneName").as_string();
-                resultNodes.clear();
-                Node::GetChildrenRecursive(scene, boneName, resultNodes);
-                CHECK_CONDITION(resultNodes.size() == 1, __FILE__, __LINE__);
-				resultNodes[0]->SetBoneOffsetMatrix(GetMatrix4(child.attribute("offsetMatrix").as_string()));
-                bones_.push_back(resultNodes[0]);
+                PNode bone = scene->GetChild<Node>(boneName, true);
+                CHECK_ASSERT(bone, __FILE__, __LINE__);
+				bone->SetBoneOffsetMatrix(GetMatrix4(child.attribute("offsetMatrix").as_string()));
+                bones_.push_back(bone);
                 child = child.next_sibling("Bone");
             }
         }

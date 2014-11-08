@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "BoundingBox.h"
 #include "Constants.h"
+#include "Util.h"
 #include <algorithm>
 #include <iterator>
 
@@ -35,8 +36,7 @@ namespace NSG
     static IdType s_node_id = 1;
 
     Node::Node(const std::string& name)
-        : parent_(nullptr),
-          name_(name),
+        : name_(name),
           id_(s_node_id++),
           scale_(1, 1, 1),
           globalScale_(1, 1, 1),
@@ -45,6 +45,8 @@ namespace NSG
           enabled_(true),
           isScaleUniform_(true)
     {
+		if (name_.empty())
+			name_ = GetUniqueName();
     }
 
     Node::~Node()
@@ -54,20 +56,21 @@ namespace NSG
 
     void Node::SetParent(PNode parent)
     {
-        SetParent(parent.get());
-    }
-
-    void Node::SetParent(Node* parent)
-    {
         //Do not insert child in parent (IMGUI will make memory grow for ever)
         parent_ = parent;
         MarkAsDirty();
     }
 
+	PNode Node::GetParent() const 
+	{
+		return parent_.lock();
+	}
+
     void Node::RemoveFromParent()
     {
-        if (parent_)
-            parent_->RemoveChild(this);
+		PNode parent = parent_.lock();
+		if (parent)
+			CHECK_CONDITION(parent->RemoveChild(this), __FILE__, __LINE__);
     }
 
     void Node::ClearAllChildren()
@@ -80,7 +83,7 @@ namespace NSG
         }
     }
 
-    void Node::RemoveChild(Node* node)
+    bool Node::RemoveChild(Node* node)
     {
         int idx = 0;
         for (auto& child : children_)
@@ -88,10 +91,11 @@ namespace NSG
             if (child.get() == node)
             {
                 children_.erase(children_.begin() + idx);
-                break;
+                return true;
             }
             ++idx;
         }
+        return false;
     }
 
     void Node::AddChild(PNode node)
@@ -99,33 +103,9 @@ namespace NSG
         CHECK_ASSERT(node && node.get() != this, __FILE__, __LINE__);
         node->RemoveFromParent();
         children_.push_back(node);
-        node->parent_ = this;
+        node->parent_ = shared_from_this();
         node->MarkAsDirty();
     }
-
-	void Node::GetChildrenRecursive(PNode node, const std::string& name, std::vector<PNode>& result) 
-	{
-		if (node->GetName() == name)
-			result.push_back(node);
-		for (auto& child : node->children_)
-			child->GetChildrenRecursive(child, name, result);
-	}
-    
-	PNode Node::GetUniqueNodeFrom(PNode node, const std::string& name)
-	{
-        std::vector<PNode> result;
-        GetChildrenRecursive(node, name, result);
-        CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-        return result[0];
-	}
-
-
-	void Node::GetChildrenRecursive(PNode node, std::vector<PNode>& result)
-	{
-		result.push_back(node);
-		for (auto& child : node->children_)
-			child->GetChildrenRecursive(child, result);
-	}
 
     void Node::Save(pugi::xml_node& node)
     {
@@ -145,9 +125,12 @@ namespace NSG
                 position_ += delta;
                 break;
 
-            case TS_WORLD:
-                position_ += !parent_ ? delta : Vector3(parent_->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
-                break;
+			case TS_WORLD:
+			{
+				PNode parent = parent_.lock();
+				position_ += !parent ? delta : Vector3(parent->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
+				break;
+			}
         }
 
         MarkAsDirty();
@@ -188,13 +171,15 @@ namespace NSG
 
     void Node::SetGlobalScale(const Vertex3& scale)
     {
-        if (parent_ == nullptr)
+		PNode parent = parent_.lock();
+
+        if (parent == nullptr)
         {
             SetScale(scale);
         }
         else
         {
-            Vertex3 globalScale(parent_->GetGlobalScale());
+            Vertex3 globalScale(parent->GetGlobalScale());
             globalScale.x = 1 / globalScale.x;
             globalScale.y = 1 / globalScale.y;
             globalScale.z = 1 / globalScale.z;
@@ -206,25 +191,29 @@ namespace NSG
 
     void Node::SetGlobalPosition(const Vertex3& position)
     {
-        if (parent_ == nullptr)
+		PNode parent = parent_.lock();
+
+        if (parent == nullptr)
         {
             SetPosition(position);
         }
         else
         {
-            SetPosition(Vertex3(parent_->GetGlobalModelInvMatrix() * Vertex4(position, 1)));
+            SetPosition(Vertex3(parent->GetGlobalModelInvMatrix() * Vertex4(position, 1)));
         }
     }
 
     void Node::SetGlobalOrientation(const Quaternion& q)
     {
-        if (parent_ == nullptr)
+		PNode parent = parent_.lock();
+
+        if (parent == nullptr)
         {
             SetOrientation(q);
         }
         else
         {
-            SetOrientation(glm::normalize(Quaternion(parent_->GetGlobalModelInvMatrix()) * q));
+            SetOrientation(glm::normalize(Quaternion(parent->GetGlobalModelInvMatrix()) * q));
         }
     }
 
@@ -266,9 +255,11 @@ namespace NSG
             // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
             Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
 
-            if (parent_)
+			PNode parent = parent_.lock();
+
+            if (parent)
             {
-                Quaternion q = glm::inverse(parent_->GetGlobalOrientation());
+                Quaternion q = glm::inverse(parent->GetGlobalOrientation());
                 SetOrientation(q * glm::quat_cast(m));
             }
             else
@@ -288,9 +279,10 @@ namespace NSG
             // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
             Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
 
-            if (parent_)
+			PNode parent(parent_.lock());
+            if (parent)
             {
-                return glm::inverse(parent_->GetGlobalOrientation()) * glm::quat_cast(m);
+                return glm::inverse(parent->GetGlobalOrientation()) * glm::quat_cast(m);
             }
             else
             {
@@ -313,24 +305,26 @@ namespace NSG
         if (!dirty_ || !enabled_)
             return;
 
-        if (parent_)
-        {
-            if (parent_->dirty_)
-                parent_->Update(false);
+		PNode parent = parent_.lock();
 
-            globalPosition_ = parent_->globalOrientation_ * (parent_->globalScale_ * position_);
-            globalPosition_ += parent_->globalPosition_;
+        if (parent)
+        {
+            if (parent->dirty_)
+                parent->Update(false);
+
+            globalPosition_ = parent->globalOrientation_ * (parent->globalScale_ * position_);
+            globalPosition_ += parent->globalPosition_;
 
             if (inheritScale_)
             {
-                globalScale_ = parent_->globalScale_ * scale_;
+                globalScale_ = parent->globalScale_ * scale_;
             }
             else
             {
                 globalScale_ = scale_;
             }
 
-            globalOrientation_ = parent_->globalOrientation_ * q_;
+            globalOrientation_ = parent->globalOrientation_ * q_;
 
         }
         else

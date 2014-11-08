@@ -50,14 +50,14 @@ struct Sample : App
 		scene_ = GetCurrentScene();
         scene_->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
 
-		camera_ = scene_->CreateCamera("camera");
+		camera_ = scene_->GetOrCreateChild<Camera>("camera");
 		camera_->AddBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
-		earth_ = scene_->CreateSceneNode("node 1");
+		earth_ = scene_->GetOrCreateChild<SceneNode>("node 1");
 		earth_->AddBehavior(PBehavior(new EarthBehavior));
 
-		light_ = scene_->CreateLight("light");
+		light_ = scene_->GetOrCreateChild<Light>("light");
 		light_->AddBehavior(PBehavior(new LightBehavior));
 
 		PResourceFile resource(ResourceFileManager::this_->GetOrCreate("data/nice_music.ogg"));

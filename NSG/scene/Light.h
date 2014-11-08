@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SceneNode.h"
-#include <vector>
 
 namespace NSG
 {	
@@ -48,17 +47,15 @@ namespace NSG
 		    float quadratic;
 		};
 		const Attenuation& GetAttenuation() const { return attenuation_; }
-		void SetPoint();
-		void SetDirectional();
-		void SetSpotLight(float spotCutOff); // angle in degrees
+		void SetSpotCutOff(float spotCutOff); // angle in degrees
 		float GetSpotCutOff() const { return spotCutOff_; }
-		enum Type {POINT, DIRECTIONAL, SPOT};
-		Type GetType() const { return type_; }
-		void SetType(Type type);
+		LightType GetType() const { return type_; }
+		void SetType(LightType type);
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
+		void OnChildCreated() override;
 	private:
-		Type type_;
+		LightType type_;
 		Color ambient_;
         Color diffuse_;
         Color specular_;

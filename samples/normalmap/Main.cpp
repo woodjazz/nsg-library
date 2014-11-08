@@ -36,12 +36,14 @@ struct Sample : App
     PCamera camera_;
     PSceneNode cube_;
     PLight light_;
+	typedef std::shared_ptr<CubeBehavior> PCubeBehavior;
+	PCubeBehavior cubeBehavior_;
 
     Sample()
     {
         //AppConfiguration::this_->width_ = 30;
         //AppConfiguration::this_->height_ = 20;
-        AppConfiguration::this_->showStatistics_ = true;
+        //AppConfiguration::this_->showStatistics_ = true;
     }
 
     void Start(int argc, char* argv[]) override
@@ -49,16 +51,23 @@ struct Sample : App
 		scene_ = GetCurrentScene();
         scene_->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
 
-		camera_ = scene_->CreateCamera("camera");
-		camera_->AddBehavior(PBehavior(new CameraBehavior));
+		camera_ = scene_->GetOrCreateChild<Camera>("camera");
+		camera_->SetPosition(Vertex3(0, 0, 10));
+		camera_->AddBehavior(PBehavior(new CameraControl));
         camera_->Activate();
 
-		cube_ = scene_->CreateSceneNode("node 1");
-		cube_->AddBehavior(PBehavior(new CubeBehavior));
+		cube_ = scene_->GetOrCreateChild<SceneNode>("node 1");
+		cubeBehavior_ = PCubeBehavior(new CubeBehavior);
+		cube_->AddBehavior(cubeBehavior_);
 
-		light_ = scene_->CreateLight("light");
+		light_ = scene_->GetOrCreateChild<Light>("light");
 		light_->AddBehavior(PBehavior(new LightBehavior));
     }
+
+	void RenderGUIWindow() override
+	{
+		cubeBehavior_->IMGUI();
+	}
 };
 
 NSG_MAIN(Sample);

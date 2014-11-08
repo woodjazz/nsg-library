@@ -39,6 +39,7 @@ misrepresented as being the original software.
 #include "Context.h"
 #include "Keys.h"
 #include "Node.h"
+#include "Util.h"
 #include <algorithm>
 #include <limits>
 
@@ -55,7 +56,7 @@ namespace NSG
               textOffsetX_(0),
               cursor_character_position_(0),
               parent_(parent),
-              childrenRoot_(new Node("IMGUI::LayoutArea::childrenRoot_")),
+			  childrenRoot_(pNode_->GetOrCreateChild<Node>(GetUniqueName("IMGUI::LayoutArea::childrenRoot"))),
               isScrollable_(false),
               isXScrollable_(false),
               isYScrollable_(false),
@@ -75,7 +76,6 @@ namespace NSG
             float scaleX = percentageX / 100.0f;
             float scaleY = percentageY / 100.0f;
             pNode->SetScale(Vertex3(scaleX, scaleY, 1));
-			pNode_->AddChild(childrenRoot_);
         }
 
         void LayoutArea::CalculateScrollAreaFactor()
@@ -188,8 +188,7 @@ namespace NSG
             {
                 PLayoutArea parent = nestedAreas_.back()->GetArea();
                 CHECK_ASSERT(parent->type_ != LayoutType::CONTROL, __FILE__, __LINE__);
-                PNode pNode(new Node());
-				parent->childrenRoot_->AddChild(pNode);
+                PNode pNode = parent->childrenRoot_->GetOrCreateChild<Node>(GetUniqueName());
                 pArea = PLayoutArea(new LayoutArea(id, parent.get(), pNode, type, percentageX, percentageY));
                 parent->children_.push_back(pArea);
             }

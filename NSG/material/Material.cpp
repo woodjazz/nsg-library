@@ -22,6 +22,7 @@ namespace NSG
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
           shininess_(1),
+          parallaxScale_(0.05f),
           color_(1, 1, 1, 1),
           name_(name),
           serializable_(true)
@@ -78,6 +79,15 @@ namespace NSG
         }
     }
 
+    void Material::SetParallaxScale(float parallaxScale)
+    {
+        if (parallaxScale_ != parallaxScale)
+        {
+            parallaxScale_ = parallaxScale;
+            SetUniformsNeedUpdate();
+        }
+    }
+
     bool Material::SetTexture0(PTexture texture)
     {
         if (texture0_ != texture)
@@ -114,6 +124,42 @@ namespace NSG
         return false;
     }
 
+    bool Material::SetTexture3(PTexture texture)
+    {
+        if (texture3_ != texture)
+        {
+            texture3_ = texture;
+            SetUniformsNeedUpdate();
+            Invalidate();
+            return true;
+        }
+        return false;
+    }
+
+    bool Material::SetTexture4(PTexture texture)
+    {
+        if (texture4_ != texture)
+        {
+            texture4_ = texture;
+            SetUniformsNeedUpdate();
+            Invalidate();
+            return true;
+        }
+        return false;
+    }
+
+    bool Material::SetTexture5(PTexture texture)
+    {
+        if (texture5_ != texture)
+        {
+            texture5_ = texture;
+            SetUniformsNeedUpdate();
+            Invalidate();
+            return true;
+        }
+        return false;
+    }
+
 	void Material::SetDiffuseMap(PTexture texture)
     {
         SetTexture0(texture);
@@ -126,7 +172,7 @@ namespace NSG
             if(technique_)
             {
                 if(texture)
-					technique_->EnableProgramFlags((int)ProgramFlag::NORMALMAP);
+					technique_->EnableProgramFlags((int)ProgramFlag::NORMALMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
                 else
 					technique_->DisableProgramFlags((int)ProgramFlag::NORMALMAP);
             }
@@ -155,6 +201,67 @@ namespace NSG
         }
     }
 
+    void Material::SetSpecularMap(PTexture texture)
+    {
+        if(SetTexture3(texture))
+        {
+            if(technique_)
+            {
+                if(texture)
+                    technique_->EnableProgramFlags((int)ProgramFlag::SPECULARMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+                else
+                    technique_->DisableProgramFlags((int)ProgramFlag::SPECULARMAP);
+            }
+            else
+            {
+                TRACE_LOG("Warning setting specular map without technique!!!");
+            }
+        }
+    }
+
+    void Material::SetAOMap(PTexture texture)
+    {
+        if(SetTexture4(texture))
+        {
+            if(technique_)
+            {
+                if(texture)
+                    technique_->EnableProgramFlags((int)ProgramFlag::AOMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+                else
+                    technique_->DisableProgramFlags((int)ProgramFlag::AOMAP);
+            }
+            else
+            {
+                TRACE_LOG("Warning setting ambient occlusion map without technique!!!");
+            }
+        }
+    }
+
+    void Material::SetDisplacementMap(PTexture texture)
+    {
+        if(SetTexture5(texture))
+        {
+            if(technique_)
+            {
+                if(texture)
+                {
+                    technique_->EnableProgramFlags((int)ProgramFlag::DISPLACEMENTMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+                    // Do not generate mipmaps for displacement map
+					TextureFlags flags = texture->GetFlags();
+					flags &= ~(int)TextureFlag::GENERATE_MIPMAPS;
+                    texture->SetFlags(flags);
+                    texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
+                }
+                else
+                    technique_->DisableProgramFlags((int)ProgramFlag::DISPLACEMENTMAP);
+            }
+            else
+            {
+                TRACE_LOG("Warning setting displacement map without technique!!!");
+            }
+        }
+    }
+
     bool Material::IsValid()
     {
         bool isReady = false;
@@ -169,6 +276,15 @@ namespace NSG
 
         if (texture2_)
             isReady = isReady && texture2_->IsReady();
+
+        if (texture3_)
+            isReady = isReady && texture3_->IsReady();
+
+        if (texture4_)
+            isReady = isReady && texture4_->IsReady();
+
+        if (texture5_)
+            isReady = isReady && texture5_->IsReady();
 
         return isReady;
     }
@@ -202,6 +318,24 @@ namespace NSG
         {
             pugi::xml_node childTexture = child.append_child("Texture2");
             texture2_->Save(childTexture);
+        }
+
+        if (texture3_ && texture3_->IsSerializable())
+        {
+            pugi::xml_node childTexture = child.append_child("Texture3");
+            texture3_->Save(childTexture);
+        }
+
+        if (texture4_ && texture4_->IsSerializable())
+        {
+            pugi::xml_node childTexture = child.append_child("Texture4");
+            texture4_->Save(childTexture);
+        }
+
+        if (texture5_ && texture5_->IsSerializable())
+        {
+            pugi::xml_node childTexture = child.append_child("Texture5");
+            texture5_->Save(childTexture);
         }
 
         {
@@ -253,6 +387,18 @@ namespace NSG
         pugi::xml_node childTexture2 = node.child("Texture2");
         if (childTexture2)
             texture2_ = Texture::CreateFrom(childTexture2);
+
+        pugi::xml_node childTexture3 = node.child("Texture3");
+        if (childTexture3)
+            texture3_ = Texture::CreateFrom(childTexture3);
+
+        pugi::xml_node childTexture4 = node.child("Texture4");
+        if (childTexture4)
+            texture4_ = Texture::CreateFrom(childTexture4);
+
+        pugi::xml_node childTexture5 = node.child("Texture5");
+        if (childTexture5)
+            texture5_ = Texture::CreateFrom(childTexture5);
 
         SetAmbientColor(GetVertex4(node.attribute("ambient").as_string()));
         SetDiffuseColor(GetVertex4(node.attribute("diffuse").as_string()));

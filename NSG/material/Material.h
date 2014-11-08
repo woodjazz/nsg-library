@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "GPUObject.h"
 #include "UniformsUpdate.h"
+#include "MapAndVector.h"
 namespace NSG
 {
 	class Material : public GPUObject, UniformsUpdate
@@ -38,16 +39,27 @@ namespace NSG
 		const std::string& GetName() const { return name_;  }
 		bool SetTexture0(PTexture texture); 
 		bool SetTexture1(PTexture texture); 
-		bool SetTexture2(PTexture texture); 
-		void SetDiffuseMap(PTexture texture); // Same as SetTexture0
-		void SetNormalMap(PTexture texture); // Same as SetTexture1
-		void SetLightMap(PTexture texture);  // // Same as SetTexture2
+		bool SetTexture2(PTexture texture);
+		bool SetTexture3(PTexture texture);
+		bool SetTexture4(PTexture texture);
+		bool SetTexture5(PTexture texture);
+		void SetDiffuseMap(PTexture texture);
+		void SetNormalMap(PTexture texture);
+		void SetLightMap(PTexture texture);
+		void SetSpecularMap(PTexture texture);
+		void SetAOMap(PTexture texture);
+		void SetDisplacementMap(PTexture texture);
         PTexture GetTexture0() const { return texture0_; }
         PTexture GetTexture1() const { return texture1_; }
         PTexture GetTexture2() const { return texture2_; }
+        PTexture GetTexture3() const { return texture3_; }
+        PTexture GetTexture4() const { return texture4_; }
         PTexture GetDiffuseMap() const { return texture0_; }
         PTexture GetNormalMap() const { return texture1_; }
         PTexture GetLightMap() const { return texture2_; }
+        PTexture GetSpecularMap() const { return texture3_; }
+        PTexture GetAOMap() const { return texture4_; }
+		PTexture GetDisplacementMap() const { return texture5_; }
         void SetColor(Color color);
         Color GetColor() const { return color_; }
 		void SetDiffuseColor(Color diffuse);
@@ -58,6 +70,8 @@ namespace NSG
 		Color GetAmbientColor() const { return ambient_; }
 		void SetShininess(float shininess);
 		float GetShininess() const { return shininess_; }
+		void SetParallaxScale(float parallaxScale);
+		float GetParallaxScale() const { return parallaxScale_; }
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
 		virtual bool IsValid() override;
@@ -73,15 +87,19 @@ namespace NSG
 		PTexture texture0_; //difusse map
 		PTexture texture1_; //normal map
 		PTexture texture2_; //light map
+		PTexture texture3_; //specular map
+		PTexture texture4_; //AO map
+		PTexture texture5_; //Displacement map
         Color ambient_;
         Color diffuse_;
         Color specular_;
         float shininess_;
+        float parallaxScale_; //used with displacement map
         Color color_;
         PTechnique technique_;
         std::string name_;
         bool serializable_;
         friend class Program;
-        friend class App;
+        friend class MapAndVector<std::string, Material>;
 	};
 }

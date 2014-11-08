@@ -30,7 +30,8 @@ misrepresented as being the original software.
 namespace NSG
 {
     BoxMesh::BoxMesh(float width, float height, float depth, int resX, int resY, int resZ)
-        : width_(width),
+        : Mesh("BoxMesh"),
+          width_(width),
           height_(height),
           depth_(depth),
           resX_(resX),
@@ -38,7 +39,7 @@ namespace NSG
           resZ_(resZ)
     {
         resource_ = PResource(new ResourceProcedural(this));
-		SetSerializable(false);
+        SetSerializable(false);
     }
 
     BoxMesh::~BoxMesh()
@@ -57,7 +58,7 @@ namespace NSG
 
     size_t BoxMesh::GetNumberOfTriangles() const
     {
-        return vertexsData_.size()/3;
+        return vertexsData_.size() / 3;
     }
 
     void BoxMesh::Build()
@@ -77,7 +78,7 @@ namespace NSG
 
         VertexsData& data = vertexsData_;
 
-        // TRIANGLES 
+        // TRIANGLES
         // Front Face
         normal = Vertex3(0, 0, 1);
 
@@ -109,12 +110,12 @@ namespace NSG
             for (int x = 0; x < resX_ - 1; x++)
             {
                 // first triangle
-                indexes_.push_back(y*resX_ + x + vertOffset);
-                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resX_ + x + vertOffset);
+                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
 
                 // second triangle
-                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }
@@ -151,12 +152,12 @@ namespace NSG
             for (int x = 0; x < resZ_ - 1; x++)
             {
                 // first triangle
-                indexes_.push_back(y*resZ_ + x + vertOffset);
-                indexes_.push_back(y*resZ_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resZ_ + x + vertOffset);
+                indexes_.push_back(y * resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
 
                 // second triangle
-                indexes_.push_back(y*resZ_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
             }
@@ -193,12 +194,12 @@ namespace NSG
             for (int x = 0; x < resZ_ - 1; x++)
             {
                 // first triangle
-                indexes_.push_back(y*resZ_ + x + vertOffset);
-                indexes_.push_back(y*resZ_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resZ_ + x + vertOffset);
+                indexes_.push_back(y * resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
 
                 // second triangle
-                indexes_.push_back(y*resZ_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
             }
@@ -207,7 +208,7 @@ namespace NSG
         vertOffset = data.size();
 
 
-        // Back Face 
+        // Back Face
         normal = Vertex3(0, 0, -1);
         for (int iy = 0; iy < resY_; iy++)
         {
@@ -236,12 +237,12 @@ namespace NSG
             for (int x = 0; x < resX_ - 1; x++)
             {
                 // first triangle
-                indexes_.push_back(y*resX_ + x + vertOffset);
-                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resX_ + x + vertOffset);
+                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
 
                 // second triangle
-                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }
@@ -278,12 +279,12 @@ namespace NSG
             for (int x = 0; x < resX_ - 1; x++)
             {
                 // first triangle
-                indexes_.push_back(y*resX_ + x + vertOffset);
-                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resX_ + x + vertOffset);
+                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
 
                 // second triangle
-                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }
@@ -319,12 +320,12 @@ namespace NSG
             for (int x = 0; x < resX_ - 1; x++)
             {
                 // first triangle
-                indexes_.push_back(y*resX_ + x + vertOffset);
-                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resX_ + x + vertOffset);
+                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
 
                 // second triangle
-                indexes_.push_back(y*resX_ + x + 1 + vertOffset);
+                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }

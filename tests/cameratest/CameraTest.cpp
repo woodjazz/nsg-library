@@ -44,7 +44,7 @@ static void FrustumTest()
 		CHECK_ASSERT(glm::dot(normal, p2) + d == 0, __FILE__, __LINE__);
 	}
 
-    PCamera camera = scene->CreateCamera("camera");
+	PCamera camera = scene->GetOrCreateChild<Camera>("camera");
 
 	camera->SetLookAt(Vector3(0, 0, -1));
 
@@ -188,7 +188,7 @@ static void Test01()
     {
 
         Node node;
-		PCamera camera = scene->CreateCamera("camera");
+		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFov(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
@@ -203,7 +203,7 @@ static void Test01()
         node.SetPosition(Vertex3(20));
         node.SetScale(Vector3(100));
 
-		PCamera camera = scene->CreateCamera("camera");
+		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFov(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
@@ -215,7 +215,7 @@ static void Test01()
 
     {
         Node node;
-		PCamera camera = scene->CreateCamera("camera");
+		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFov(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(250);
@@ -234,7 +234,7 @@ static void Test01()
         Node node;
         node.SetPosition(Vertex3(0, 0, -40));
 
-		PCamera camera = scene->CreateCamera("camera");
+		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFov(100);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(1000);
@@ -247,7 +247,7 @@ static void Test01()
         Node node;
         node.SetPosition(Vertex3(1.1f, 0, -1.1f));
 
-		PCamera camera = scene->CreateCamera("camera");
+		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFov(170);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(1000);
@@ -279,7 +279,7 @@ static void Test02()
         PBoxMesh box(App::this_->CreateBoxMesh(2, 4, 2));
         Node node;
 		PScene scene(App::this_->GetCurrentScene());
-		PCamera camera = scene->CreateCamera("camera");
+		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
         camera->SetFov(179);
 		camera->SetNearClip(0.1f);
 		camera->SetFarClip(10);
@@ -298,7 +298,7 @@ static void Test03()
 {
 	{
 		PScene scene(App::this_->GetCurrentScene());
-		PCamera camera = scene->CreateCamera("camera");
+		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
 		camera->EnableOrtho();
 		float cameraDepth = camera->GetZFar() - camera->GetZNear();
 
@@ -396,7 +396,7 @@ static void Test04()
 {
 #if 1
 	PScene scene(App::this_->GetCurrentScene());
-	PCamera camera = scene->CreateCamera("camera");
+	PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
 	Vertex3 position(0, 0, 0);
 	camera->SetPosition(position);
 
@@ -453,7 +453,7 @@ static void Test05()
 		PBoxMesh box(App::this_->CreateBoxMesh(1, 1, 1));
 		CHECK_ASSERT(box->IsReady(), __FILE__, __LINE__);
 		PScene scene(App::this_->GetCurrentScene());
-		PCamera camera = scene->CreateCamera("camera");
+		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
 		camera->SetNearClip(0.1f);
 		camera->SetFarClip(250);
 		camera->SetPosition(Vertex3(0, 0, -4));

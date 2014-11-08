@@ -137,8 +137,8 @@ namespace NSG
     };
 
     SceneConverter::SceneConverter(const Path& path)
-        : scene_(App::this_->GetCurrentScene()),
-          path_(path)
+        : path_(path),
+		scene_(App::this_->GetCurrentScene())
     {
     }
 
@@ -183,11 +183,10 @@ namespace NSG
     {
         CachedData data;
         LoadMeshesAndMaterials(scene, data);
-        PSceneNode root = scene_->CreateSceneNode("RootNode");
-        RecursiveLoad(scene, scene->mRootNode, root.get(), data);
+		scene_ = App::this_->CreateScene(scene->mRootNode->mName.C_Str(), true);
+		RecursiveLoad(scene, scene->mRootNode, scene_.get(), data);
         LoadAnimations(scene);
         LoadBones(scene, data);
-        MarkProgramAsSkinableNodes();
     }
 
     void SceneConverter::LoadAnimations(const aiScene* sc)
@@ -196,15 +195,8 @@ namespace NSG
         {
             const aiAnimation* anim = sc->mAnimations[i];
             std::string animName = anim->mName.C_Str();
-            if (!scene_->HasAnimation(animName))
-            {
-                PAnimation outAnim = scene_->CreateAnimation(animName);
-                AnimationConverter obj(scene_, anim, outAnim);
-            }
-            else
-            {
-                TRACE_LOG("Animation " << animName << " already exists!!!");
-            }
+            PAnimation outAnim = scene_->GetOrCreateAnimation(animName);
+            AnimationConverter obj(scene_, anim, outAnim);
         }
     }
 
@@ -253,9 +245,11 @@ namespace NSG
         for (size_t i = 0; i < sc->mNumMeshes; ++i)
         {
             const struct aiMesh* aiMesh = sc->mMeshes[i];
-            PMesh mesh = data.meshes_.at(i);
+            PModelMesh mesh = data.meshes_.at(i);
             LoadBones(sc, aiMesh, mesh);
             GetBlendData(mesh, aiMesh);
+			if (mesh->GetSkeleton())
+				MarkProgramAsSkinableNodes(mesh.get());
         }
     }
 
@@ -308,7 +302,7 @@ namespace NSG
         }
         return IDENTITY_MATRIX;
     }
-    void SceneConverter::LoadBones(const aiScene* sc, const aiMesh* aiMesh, PMesh mesh)
+    void SceneConverter::LoadBones(const aiScene* sc, const aiMesh* aiMesh, PModelMesh mesh)
     {
         std::set<aiNode*> necessary;
         std::set<aiNode*> rootNodes;
@@ -384,14 +378,14 @@ namespace NSG
             GetFinal(dest, necessary, node->mChildren[i]);
     }
 
-    void SceneConverter::MakeSkeleton(const aiMesh* aiMesh, PMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones)
+    void SceneConverter::MakeSkeleton(const aiMesh* aiMesh, PModelMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones)
     {
         PSkeleton skeleton(new Skeleton(mesh));
-        PNode root = Node::GetUniqueNodeFrom(scene_, rootBone->mName.C_Str());
+        PNode root = scene_->GetChild<Node>(rootBone->mName.C_Str(), true);
         std::vector<PNode> nodeBones;
         for (auto bone : bones)
         {
-            PNode node = Node::GetUniqueNodeFrom(scene_, bone->mName.C_Str());
+            PNode node = scene_->GetChild<Node>(bone->mName.C_Str(), true);
             node->SetBoneOffsetMatrix(GetOffsetMatrix(aiMesh, rootBone, bone, node->GetName()));
             nodeBones.push_back(node);
         }
@@ -400,18 +394,19 @@ namespace NSG
         mesh->SetSkeleton(skeleton);
     }
 
-    void SceneConverter::MarkProgramAsSkinableNodes()
+	void SceneConverter::MarkProgramAsSkinableNodes(const Mesh* mesh)
     {
-        std::vector<SceneNode*> nodes = Node::GetChildrenRecursiveOfType<SceneNode>(scene_);
-        for (auto obj : nodes)
-        {
-            PMaterial material = obj->GetMaterial();
-            if (material)
-            {
-                PTechnique technique = material->GetTechnique();
-                technique->EnableProgramFlags((int)ProgramFlag::SKINNED);
-            }
-        }
+		auto& nodes = mesh->GetConstSceneNodes();
+
+		for (auto obj : nodes)
+		{
+			PMaterial material = obj->GetMaterial();
+			if (material)
+			{
+				PTechnique technique = material->GetTechnique();
+				technique->EnableProgramFlags((int)ProgramFlag::SKINNED);
+			}
+		}
     }
 
     void SceneConverter::GetBlendData(PMesh mesh, const aiMesh* aiMesh) const
@@ -457,7 +452,7 @@ namespace NSG
 
     void SceneConverter::RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode, const CachedData& data)
     {
-        sceneNode->SetName(nd->mName.C_Str());
+        //sceneNode->SetName(nd->mName.C_Str());
 
         {
             aiVector3t<float> scaling;
@@ -474,12 +469,7 @@ namespace NSG
         for (size_t i = 0; i < nd->mNumMeshes; ++i)
         {
             const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[i]];
-
-            std::stringstream ss;
-            ss << sceneNode->GetName() << "_" << i;
-
-            PSceneNode meshSceneNode = scene_->CreateSceneNode(ss.str());
-            sceneNode->AddChild(meshSceneNode);
+			PSceneNode meshSceneNode = sceneNode->GetOrCreateChild<SceneNode>(GetUniqueName(sceneNode->GetName()));
             unsigned int meshIndex = nd->mMeshes[i];
             meshSceneNode->Set(data.meshes_.at(meshIndex));
             unsigned int materialIndex = mesh->mMaterialIndex;
@@ -490,26 +480,20 @@ namespace NSG
             // Lights
             const aiLight* light = GetLight(sc, nd->mName);
             if (light)
-            {
-                PLightConverter obj(new LightConverter(light, scene_.get()));
-                sceneNode->AddChild(obj->GetLight());
-            }
+				PLightConverter obj(new LightConverter(light, sceneNode));
         }
 
         {
             // Cameras
             const aiCamera* camera = GetCamera(sc, nd->mName);
             if (camera)
-            {
-                PCameraConverter obj(new CameraConverter(camera, scene_.get()));
-                sceneNode->AddChild(obj->GetCamera());
-            }
+				PCameraConverter obj(new CameraConverter(camera, sceneNode));
         }
 
         for (size_t i = 0; i < nd->mNumChildren; ++i)
         {
             const aiNode* ndChild = nd->mChildren[i];
-            PSceneNode child = sceneNode->CreateChild(ndChild->mName.C_Str());
+            PSceneNode child = sceneNode->GetOrCreateChild<SceneNode>(ndChild->mName.C_Str());
             RecursiveLoad(sc, ndChild, child.get(), data);
         }
     }

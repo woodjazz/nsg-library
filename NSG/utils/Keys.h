@@ -56,6 +56,7 @@ misrepresented as being the original software.
 #define     NSG_KEY_S         0x53
 #define     NSG_KEY_Q         0x51
 #define     NSG_KEY_LALT      0x12
+#define     NSG_KEY_LSHIFT    0xA0
 
 
 #define     NSG_BUTTON_LEFT     PP_INPUTEVENT_MOUSEBUTTON_LEFT
@@ -89,6 +90,7 @@ misrepresented as being the original software.
 #define     NSG_KEY_S         SDLK_s
 #define     NSG_KEY_Q         SDLK_q
 #define     NSG_KEY_LALT      SDLK_LALT
+#define     NSG_KEY_LSHIFT    SDLK_LSHIFT
 
 
 #define     NSG_BUTTON_LEFT     SDL_BUTTON_LEFT

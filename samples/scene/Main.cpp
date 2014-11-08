@@ -55,13 +55,13 @@ struct Sample : App
 		if (cameras.size())
 			camera = cameras[0];
 		else
-			camera = scene_->CreateCamera("");
+			camera = scene_->GetOrCreateChild<Camera>("camera");
 
 		camera->Activate();
 		camera->SetGlobalPosition(Vector3(0, 5, 5));
 		camera->SetLookAt(VECTOR3_ZERO);
 
-		PAnimation animation = scene_->CreateAnimation("anim0");
+		PAnimation animation = scene_->GetOrCreateAnimation("anim0");
 		AnimationTrack track;
 		track.node_ = camera;
 		track.channelMask_ = (int)AnimationChannel::POSITION | (int)AnimationChannel::ROTATION;

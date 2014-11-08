@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Graphics.h"
 #include "App.h"
+#include "Util.h"
 
 namespace NSG
 {
@@ -42,7 +43,7 @@ namespace NSG
           frames_(0),
           collect_(true),
           pass_(new Pass),
-          material_(app_.CreateMaterial("AppStatistics"))
+          material_(app_.GetOrCreateMaterial("NSGAppStatistics"))
     {
 		
         startTime_ = Clock::now();
@@ -57,11 +58,11 @@ namespace NSG
         {
             stats_[i] = 0;
             text_[i] = app_.CreateTextMesh();
-            std::stringstream ss;
-            ss << "AppStatistics::node " << i;
-            node_[i] = PNode(new Node(ss.str()));
+			std::string name = GetUniqueName("AppStatistics::node");
             if (i > 0)
-                node_[i - 1]->AddChild(node_[i]);
+				node_[i] = node_[i - 1]->GetOrCreateChild<Node>(name);
+			else
+				node_[i] = PNode(new Node(name));
         }
 
         pass_->SetProgram(text_[0]->GetProgram());

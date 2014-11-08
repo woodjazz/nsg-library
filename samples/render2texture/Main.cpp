@@ -48,14 +48,14 @@ struct Sample : App
     {
 		scene_ = GetCurrentScene();
 
-		camera_ = scene_->CreateCamera("camera");
+		camera_ = scene_->GetOrCreateChild<Camera>("camera");
 		camera_->AddBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
-		earth_ = scene_->CreateSceneNode("scene node");
+		earth_ = scene_->GetOrCreateChild<SceneNode>("scene node");
 		earth_->AddBehavior(PBehavior(new EarthBehavior));
 
-		light_ = scene_->CreateLight("light");
+		light_ = scene_->GetOrCreateChild<Light>("light");
 		light_->AddBehavior(PBehavior(new LightBehavior));
     }
 };

@@ -34,7 +34,6 @@ struct Sample : App
 {
     PScene scene_;
     PCamera camera_;
-    SceneNode* earth_;
     PLight light_;
 
     Sample()
@@ -49,7 +48,7 @@ struct Sample : App
 		scene_ = GetCurrentScene();
         scene_->SetAmbientColor(Color(0.7f, 0.7f, 0.7f, 1));
 
-		camera_ = scene_->CreateCamera("camera");
+		camera_ = scene_->GetOrCreateChild<Camera>("camera");
         camera_->AddBehavior(PBehavior(new CameraBehavior));
         camera_->Activate();
 
@@ -58,12 +57,9 @@ struct Sample : App
 
 	void OnSceneLoaded() override
 	{
-		earth_ = Node::GetUniqueNodeOfTypeFrom<SceneNode>(scene_, "SceneRootNode");
-		earth_->AddBehavior(PBehavior(new ModelBehavior));
-
-		light_ = scene_->CreateLight("light");
+		scene_->AddBehavior(PBehavior(new ModelBehavior));
+		light_ = scene_->GetOrCreateChild<Light>("light");
 		light_->AddBehavior(PBehavior(new LightBehavior));
-
 	}
 };
 

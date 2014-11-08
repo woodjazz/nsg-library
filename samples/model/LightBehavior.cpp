@@ -36,7 +36,7 @@ LightBehavior::~LightBehavior()
 
 void LightBehavior::Start()
 {
-    PMaterial pMaterial(app_.CreateMaterial("light"));
+    PMaterial pMaterial(app_.GetOrCreateMaterial("light"));
     pMaterial->SetColor(Color(1,0,0,1));
     PTechnique technique(new Technique);
     PPass pass(new Pass);

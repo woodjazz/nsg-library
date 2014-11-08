@@ -32,7 +32,7 @@ namespace NSG
 	class Skeleton
 	{
 	public:
-		Skeleton(PMesh mesh);
+		Skeleton(PModelMesh mesh);
 		virtual ~Skeleton();
 		void SetRoot(PNode root) { root_ = root; }
 		void SetBones(const std::vector<PNode>& bones) { bones_ = bones; }
@@ -43,7 +43,7 @@ namespace NSG
 		const std::vector<PNode>& GetBones() const { return bones_; }
 		const PNode& GetRoot() const { return root_; }
 	private:
-		std::weak_ptr<Mesh> mesh_;
+		std::weak_ptr<ModelMesh> mesh_;
 		PNode root_;
 		std::vector<PNode> bones_;
 		std::vector<std::vector<unsigned>> blendIndices_; // per vertex indices

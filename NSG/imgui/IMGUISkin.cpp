@@ -54,7 +54,7 @@ namespace NSG
               hSliderStyle_(new SliderStyle),
               vThumbSliderStyle_(new Style),
               hThumbSliderStyle_(new Style),
-              stencilMaterial_(app_.CreateMaterial("stencil")),
+              stencilMaterial_(app_.GetOrCreateMaterial("NSGStencil")),
               stencilPass_(new Pass)
         {
 

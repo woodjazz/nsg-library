@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "ModelMesh.h"
 #include "Check.h"
 #include "App.h"
+#include "Util.h"
 #include "assimp/mesh.h"
 
 namespace NSG
@@ -36,6 +37,9 @@ namespace NSG
           aiMesh_(aiMesh)
     {
     	std::string name = aiMesh->mName.C_Str();
+
+		if (name.empty())
+			name = GetUniqueName();
 
         VertexsData data;
 
@@ -110,9 +114,8 @@ namespace NSG
             }
         }
 
-        mesh_ = App::this_->CreateModelMesh(data, indexes);
-		if (!name.empty())
-			mesh_->SetName(name);
+		mesh_ = App::this_->GetOrCreateModelMesh(name);
+		mesh_->SetData(data, indexes);
     }
 
     MeshConverter::~MeshConverter()

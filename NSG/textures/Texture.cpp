@@ -40,6 +40,7 @@ misrepresented as being the original software.
 #define STBI_FAILURE_USERMSG
 #include "stb_image.h"
 #include "jpgd.h"
+#include <algorithm>
 
 namespace NSG
 {
@@ -52,7 +53,10 @@ namespace NSG
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
           serializable_(false),
-          fromKnownImgFormat_(false)
+          fromKnownImgFormat_(false),
+          wrapMode_(TextureWrapMode::REPEAT),
+		  mipmapLevels_(0),
+          filterMode_(TextureFilterMode::BILINEAR)
 
     {
         switch (format_)
@@ -83,7 +87,7 @@ namespace NSG
     }
 
     Texture::Texture(PResourceMemory resource)
-		: flags_((int)TextureFlag::NONE),
+        : flags_((int)TextureFlag::NONE),
           texture_(0),
           pResource_(resource),
           width_(0),
@@ -92,12 +96,15 @@ namespace NSG
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
           serializable_(false),
-          fromKnownImgFormat_(true)
+          fromKnownImgFormat_(true),
+		  wrapMode_(TextureWrapMode::REPEAT),
+		  mipmapLevels_(0),
+		  filterMode_(TextureFilterMode::BILINEAR)
     {
     }
 
     Texture::Texture(const Path& path)
-		: flags_((int)TextureFlag::NONE),
+        : flags_((int)TextureFlag::NONE),
           texture_(0),
           pResource_(ResourceFileManager::this_->GetOrCreate(path)),
           width_(0),
@@ -106,13 +113,15 @@ namespace NSG
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
           serializable_(true),
-          fromKnownImgFormat_(true)
-
+          fromKnownImgFormat_(true),
+		  wrapMode_(TextureWrapMode::REPEAT),
+		  mipmapLevels_(0),
+		  filterMode_(TextureFilterMode::BILINEAR)
     {
     }
 
     Texture::Texture(PResourceFile resource)
-		: flags_((int)TextureFlag::NONE),
+        : flags_((int)TextureFlag::NONE),
           texture_(0),
           pResource_(resource),
           width_(0),
@@ -121,8 +130,10 @@ namespace NSG
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
           serializable_(true),
-          fromKnownImgFormat_(true)
-
+          fromKnownImgFormat_(true),
+		  wrapMode_(TextureWrapMode::REPEAT),
+		  mipmapLevels_(0),
+		  filterMode_(TextureFilterMode::BILINEAR)
     {
     }
 
@@ -248,13 +259,8 @@ namespace NSG
             img = inverted;
         }
 
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)wrapMode_);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)wrapMode_);
 
         if (img != nullptr)
         {
@@ -299,16 +305,51 @@ namespace NSG
         if (fromKnownImgFormat_)
             stbi_image_free((void*)img);
 
+		mipmapLevels_ = 0;
         if (flags_ & (int)TextureFlag::GENERATE_MIPMAPS)
         {
+            {
+                // calculate mipmap levels based on texture size
+                unsigned maxSize = std::max(width_, height_);
+                while (maxSize)
+                {
+                    maxSize >>= 1;
+                    ++mipmapLevels_;
+                }
+            }
+
             glGenerateMipmap(GL_TEXTURE_2D);
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
         }
-        else
+
+        switch(filterMode_)
         {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        case TextureFilterMode::NEAREST:
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                break;
+            }
+        case TextureFilterMode::BILINEAR:
+            {
+                if (mipmapLevels_ < 2)
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                else
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                break;
+            }
+        case TextureFilterMode::TRILINEAR:
+            {
+                if (mipmapLevels_ < 2)
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                else
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                break;
+            }
+        default:
+            CHECK_ASSERT(false, __FILE__, __LINE__);
+            break;
         }
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -324,8 +365,8 @@ namespace NSG
         std::string flags = node.attribute("flags").as_string();
         std::string filename = node.attribute("filename").as_string();
         PTexture texture = TextureFileManager::this_->GetOrCreate(filename);
-		texture->SetFlags(flags);
-		return texture;
+        texture->SetFlags(flags);
+        return texture;
     }
 
     void Texture::Save(pugi::xml_node& node)
@@ -337,9 +378,27 @@ namespace NSG
 
     void Texture::SetFlags(const TextureFlags& flags)
     {
-        if(flags != flags_)
+        if (flags != flags_)
         {
             flags_ = flags;
+            Invalidate();
+        }
+    }
+
+    void Texture::SetWrapMode(TextureWrapMode mode)
+    {
+        if (wrapMode_ != mode)
+        {
+            wrapMode_ = mode;
+            Invalidate();
+        }
+    }
+
+    void Texture::SetFilterMode(TextureFilterMode mode)
+    {
+        if (filterMode_ != mode)
+        {
+            filterMode_ = mode;
             Invalidate();
         }
     }

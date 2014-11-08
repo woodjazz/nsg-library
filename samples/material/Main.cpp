@@ -51,13 +51,12 @@ struct Sample : App
         scene_ = GetCurrentScene();
         scene_->SetAmbientColor(Color(0));
 
-        PCamera camera = scene_->CreateCamera("camera");
+        PCamera camera = scene_->GetOrCreateChild<Camera>("camera");
         camera->SetPosition(Vertex3(0, 0, 10));
         camera->AddBehavior(PCameraControl(new CameraControl));
         camera->Activate();
 
-        light_ = scene_->CreatePointLight("pointlight");
-        camera->AddChild(light_);
+		light_ = camera->GetOrCreateChild<Light>("pointlight");
 
         sphereMesh_ = CreateSphereMesh();
         cubeMesh_ = CreateBoxMesh();
@@ -65,7 +64,7 @@ struct Sample : App
         diffuseMap_ = GetOrCreateTextureFile("data/wall.jpg");
         normalMap_ = GetOrCreateTextureFile("data/wallnormalmap.jpg");
         lightMap_ = GetOrCreateTextureFile("data/lightmap.png");
-        material_ = CreateMaterial();
+        material_ = GetOrCreateMaterial("material");
         material_->SetTexture0(diffuseMap_);
         material_->SetTexture1(normalMap_);
         material_->SetTexture2(lightMap_);
@@ -76,7 +75,7 @@ struct Sample : App
         pass_->SetProgram(program_);
         material_->SetTechnique(technique);
 
-        node_ = scene_->CreateSceneNode("node");
+		node_ = scene_->GetOrCreateChild<SceneNode>("node");
         node_->SetPosition(Vertex3(0, 0, 0));
         node_->Set(material_);
         node_->Set(sphereMesh_);

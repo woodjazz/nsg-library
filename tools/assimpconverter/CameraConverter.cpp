@@ -38,9 +38,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	CameraConverter::CameraConverter(const aiCamera* camera, Scene* scene) 
+	CameraConverter::CameraConverter(const aiCamera* camera, SceneNode* parent)
 	{
-		camera_ = scene->CreateCamera(camera->mName.C_Str());
+		camera_ = parent->GetOrCreateChild<Camera>(GetUniqueName(camera->mName.C_Str()));
 		Vector3 lookAt(camera->mLookAt.x, camera->mLookAt.y, camera->mLookAt.z);
 		Vector3 up(camera->mUp.x, camera->mUp.y, camera->mUp.z);
 		camera_->SetLookAt(lookAt, up);

@@ -75,8 +75,8 @@ namespace NSG
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            Node& textNode0(*area_->controlNodes_.node0_);
-            textNode0.SetParent(node_);
+            PNode textNode0(area_->controlNodes_.node0_);
+            textNode0->SetParent(node_);
 
             Vertex3 position;
 
@@ -91,19 +91,19 @@ namespace NSG
 
             if (pTextMesh_->GetTextVerticalAlignment() == BOTTOM_ALIGNMENT)
             {
-                textNode0.SetPosition(position + Vertex3(0, -1, 0)); //move text to the bottom of the current area
+                textNode0->SetPosition(position + Vertex3(0, -1, 0)); //move text to the bottom of the current area
             }
             else if (pTextMesh_->GetTextVerticalAlignment() == TOP_ALIGNMENT)
             {
-                textNode0.SetPosition(position + Vertex3(0, 1, 0)); //move text to the top of the current area
+                textNode0->SetPosition(position + Vertex3(0, 1, 0)); //move text to the top of the current area
             }
             else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
             {
-                textNode0.SetPosition(position + Vertex3(0, -0.25f, 0));
+                textNode0->SetPosition(position + Vertex3(0, -0.25f, 0));
             }
 
             Node& textNode(*area_->controlNodes_.node1_);
-            textNode.SetParent(&textNode0);
+            textNode.SetParent(textNode0);
             textNode.SetInheritScale(false);
             textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
 

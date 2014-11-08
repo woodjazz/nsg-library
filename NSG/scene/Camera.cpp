@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "FilterBlur.h"
 #include "FilterBlend.h"
 #include "Program.h"
+#include "Scene.h"
 #include "Render2Texture.h"
 #include "ShowTexture.h"
 #include "pugixml.hpp"
@@ -392,10 +393,17 @@ namespace NSG
         return GetFrustum()->IsVisible(node, mesh);
     }
 
-    void Camera::OnDirty() const
+    void Camera::OnChildCreated()
     {
-        cameraIsDirty_ = true;
+        SetScene();
+		PScene scene = scene_.lock();
+		scene->AddCamera(std::dynamic_pointer_cast<Camera>(shared_from_this()));
     }
+
+	void Camera::OnDirty() const
+	{
+		cameraIsDirty_ = true;
+	}
 
     void Camera::Save(pugi::xml_node& node)
     {
@@ -473,7 +481,7 @@ namespace NSG
 
     void Camera::Load(const pugi::xml_node& node)
     {
-        SetName(node.attribute("name").as_string());
+        //SetName(node.attribute("name").as_string());
 
         Vertex3 position = GetVertex3(node.attribute("position").as_string());
         SetPosition(position);

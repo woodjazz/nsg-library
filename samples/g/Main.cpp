@@ -33,14 +33,14 @@ struct Sample : App
 
     Sample()
     {
-        AppConfiguration::this_->showStatistics_ = true;
+        //AppConfiguration::this_->showStatistics_ = true;
     }
 
 
     void Start(int argc, char* argv[]) override
     {
 		scene_ = GetCurrentScene();
-        scene_->SetAmbientColor(Color(0, 0, 0.7f, 1));
+        //scene_->SetAmbientColor(Color(0, 0, 0.7f, 1));
 
 		PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
 		scene_->Load(resource);
@@ -59,11 +59,20 @@ struct Sample : App
 		camera->SetLookAt(VECTOR3_ZERO);
 
 		PTexture lightmapTexture(GetOrCreateTextureFile("data/lightmap.png"));
-		PTexture diffuseTexture(GetOrCreateTextureFile("data/MetalFloorsBare.jpg"));
+		PTexture diffuseTexture(GetOrCreateTextureFile("data/MetalFloorsBare_COLOR.png"));
+		PTexture normalTexture(GetOrCreateTextureFile("data/MetalFloorsBare_NRM.png"));
+		PTexture specularTexture(GetOrCreateTextureFile("data/MetalFloorsBare_SPEC.png"));
+		PTexture occTexture(GetOrCreateTextureFile("data/MetalFloorsBare_OCC.png"));
+		PTexture dispTexture(GetOrCreateTextureFile("data/MetalFloorsBare_DISP.png"));
 
-		SceneNode* obj = Node::GetUniqueNodeOfTypeFrom<SceneNode>(scene_, "Cube");
+		PSceneNode obj = scene_->GetChild<SceneNode>("Cube", true);
         obj->SetDiffuseMap(diffuseTexture, true);
         obj->SetLightMap(lightmapTexture, true);
+		obj->SetNormalMap(normalTexture, true);
+		obj->SetSpecularMap(specularTexture, true);
+		obj->SetAOMap(occTexture, true);
+		obj->SetDisplacementMap(dispTexture, true);
+
 	}
 };
 

@@ -264,4 +264,14 @@ namespace NSG
         }
         #endif
     }
+
+    std::string GetUniqueName(const std::string& name)
+    {
+        static int counter = 0;
+        std::stringstream ss;
+		if (name.empty())
+			ss << "GeneratedName";
+        ss << counter++;
+        return name + ss.str();
+    }
 }

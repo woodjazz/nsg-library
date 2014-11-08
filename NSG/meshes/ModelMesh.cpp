@@ -30,20 +30,20 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    ModelMesh::ModelMesh()
-        : face_mode_(GL_TRIANGLES)
+    ModelMesh::ModelMesh(const std::string& name)
+        : Mesh(name),
+          face_mode_(GL_TRIANGLES)
     {
-    }
-
-    ModelMesh::ModelMesh(const VertexsData& vertexsData, const Indexes& indexes)
-        : face_mode_(GL_TRIANGLES)
-    {
-        vertexsData_ = vertexsData;
-        indexes_ = indexes;
     }
 
     ModelMesh::~ModelMesh()
     {
+    }
+
+    void ModelMesh::SetData(const VertexsData& vertexsData, const Indexes& indexes)
+    {
+        vertexsData_ = vertexsData;
+        indexes_ = indexes;
     }
 
     GLenum ModelMesh::GetWireFrameDrawMode() const

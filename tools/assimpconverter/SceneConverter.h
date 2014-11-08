@@ -56,16 +56,17 @@ namespace NSG
         void Close(Assimp::IOStream* pFile) override;
         bool Save(const std::string& filename);
         bool Load();
+		PScene GetScene() { return scene_; }
     private:
         Matrix4 GetOffsetMatrix(const aiMesh* mesh, const aiNode* rootNode, const aiNode* node, const std::string& boneName);
         void GetFinal(std::vector<aiNode*>& dest, const std::set<aiNode*>& necessary, aiNode* node);
         const aiNode* GetMeshNode(const aiScene* sc, const aiNode* node, const aiMesh* aiMesh);
-        void MarkProgramAsSkinableNodes();
+        void MarkProgramAsSkinableNodes(const Mesh* mesh);
         void GetBlendData(PMesh mesh, const aiMesh* aiMesh) const;
-        void MakeSkeleton(const aiMesh* aiMesh, PMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones);
+        void MakeSkeleton(const aiMesh* aiMesh, PModelMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones);
         aiNode* GetNode(const std::string& name, aiNode* rootNode);
         void LoadBones(const aiScene* sc, CachedData& data);
-        void LoadBones(const aiScene* sc, const aiMesh* aiMesh, PMesh mesh);
+        void LoadBones(const aiScene* sc, const aiMesh* aiMesh, PModelMesh mesh);
         void Load(const aiScene* sc);
         void LoadAnimations(const aiScene* sc);
         const aiCamera* GetCamera(const aiScene* sc, const aiString& name) const;

@@ -33,11 +33,12 @@ misrepresented as being the original software.
 namespace NSG
 {
     SphereMesh::SphereMesh(float radius, int res)
-        : radius_(radius),
+        : Mesh("SphereMesh"),
+          radius_(radius),
           res_(res)
     {
         resource_ = PResource(new ResourceProcedural(this));
-		SetSerializable(false);
+        SetSerializable(false);
     }
 
     SphereMesh::~SphereMesh()
@@ -56,7 +57,7 @@ namespace NSG
 
     size_t SphereMesh::GetNumberOfTriangles() const
     {
-        return vertexsData_.size()/3;
+        return vertexsData_.size() / 3;
     }
 
     void SphereMesh::Build()

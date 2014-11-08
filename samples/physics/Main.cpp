@@ -47,19 +47,18 @@ struct Sample : App
         scene_ = GetCurrentScene();
         scene_->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
 
-        camera_ = scene_->CreateCamera("camera");
+		camera_ = scene_->GetOrCreateChild<Camera>("camera");
         camera_->Activate();
         camera_->SetPosition(Vertex3(0, 2, 35));
         camera_->AddBehavior(PCameraControl(new CameraControl));
 
-        light_ = scene_->CreateLight("light");
-        camera_->AddChild(light_);
+		light_ = camera_->GetOrCreateChild<Light>("light");
 
-        earth_ = scene_->CreateSceneNode("earth");
+		earth_ = scene_->GetOrCreateChild<SceneNode>("earth");
         earth_->AddBehavior(PBehavior(new EarthBehavior));
 
         {
-            floor_ = scene_->CreateSceneNode("floor");
+			floor_ = scene_->GetOrCreateChild<SceneNode>("floor");
             PMesh mesh = CreateBoxMesh(20, 1, 20);
             floor_->Set(mesh);
             PRigidBody rb = CreateRigidBody();
@@ -67,7 +66,7 @@ struct Sample : App
             rb->SetShape(SH_BOX, true);
             floor_->Set(rb);
             PTexture texture(GetOrCreateTextureFile("data/wall.jpg"));
-            PMaterial material(CreateMaterial("floor"));
+            PMaterial material(GetOrCreateMaterial("floor"));
             material->SetDiffuseMap(texture);
             PProgram program(CreateProgram());
             program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);

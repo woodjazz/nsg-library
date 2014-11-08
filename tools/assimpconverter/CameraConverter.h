@@ -33,7 +33,7 @@ namespace NSG
 	class CameraConverter
 	{
 	public:
-		CameraConverter(const aiCamera* camera, Scene* scene);
+		CameraConverter(const aiCamera* camera, SceneNode* parent);
 		~CameraConverter();
 		PCamera GetCamera() const { return camera_; }
 	private:

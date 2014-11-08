@@ -34,13 +34,14 @@ misrepresented as being the original software.
 #include "Program.h"
 #include "Node.h"
 #include "App.h"
+#include "Util.h"
 
 namespace NSG
 {
     ShowTexture::ShowTexture()
         : app_(*App::this_),
           pass_(new Pass),
-          material_(app_.CreateMaterial("ShowTexture")),
+		  material_(app_.CreateMaterial(GetUniqueName("NSGShowTexture"))),
           program_(app_.CreateProgram("ShowTexture")),
           mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           node_(new Node("ShowTexture"))

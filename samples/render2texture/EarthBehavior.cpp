@@ -45,7 +45,7 @@ void EarthBehavior::Start()
 	sceneNode_->Set(PSphereMesh(app_.CreateSphereMesh(3, 32)));
 
 	PTexture pEarthTexture(app_.GetOrCreateTextureFile("data/stone.jpg"));
-	PMaterial pMaterial(app_.CreateMaterial ("earth"));
+	PMaterial pMaterial(app_.GetOrCreateMaterial ("earth"));
 	PProgram program(app_.CreateProgram());
 	program->SetFlags((int)ProgramFlag::PER_VERTEX_LIGHTING);
     PTechnique technique(new Technique);

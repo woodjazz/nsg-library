@@ -38,7 +38,7 @@ struct Sample : App
     {
         //AppConfiguration::this_->width_ = 30;
         //AppConfiguration::this_->height_ = 20;
-        AppConfiguration::this_->showStatistics_ = false;
+        AppConfiguration::this_->showStatistics_ = true;
     }
 
     void Start(int argc, char* argv[]) override
@@ -47,7 +47,7 @@ struct Sample : App
 
         scene_ = GetCurrentScene();
 
-        PCamera camera = scene_->CreateCamera("");
+        PCamera camera = scene_->GetOrCreateChild<Camera>("camera");
         camera->Activate();
 
         #if 0
@@ -79,15 +79,15 @@ struct Sample : App
 		pass->SetProgram(program);
         technique->Add(pass);
 
-        scene_->CreateLight("");
+		scene_->GetOrCreateChild<Light>("light");
 
         {
             PMesh mesh = CreateBoxMesh();
-            PMaterial material = CreateMaterial();
+            PMaterial material = GetOrCreateMaterial("material");
 			material->SetTexture0(GetOrCreateTextureFile("data/wall.jpg"));
             material->SetTechnique(technique);
 
-            node1_ = scene_->CreateSceneNode("node1");
+            node1_ = scene_->GetOrCreateChild<SceneNode>("node1");
             node1_->SetPosition(Vertex3(3, -2, 0));
             node1_->Set(mesh);
             node1_->Set(material);
@@ -95,15 +95,16 @@ struct Sample : App
 
         {
             PMesh mesh = CreateSphereMesh();
-            PMaterial material = CreateMaterial();
+            PMaterial material = GetOrCreateMaterial("material");
 			material->SetTexture0(GetOrCreateTextureFile("data/stone.jpg"));
             material->SetTechnique(technique);
 
-            PSceneNode node = scene_->CreateSceneNode("node1");
+			PSceneNode node = scene_->GetOrCreateChild<SceneNode>("node2");
             node->SetPosition(Vertex3(-3, 2, 0));
             node->Set(mesh);
             node->Set(material);
         }
+
     }
 
     void Update() override

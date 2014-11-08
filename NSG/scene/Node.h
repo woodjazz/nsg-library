@@ -37,7 +37,7 @@ namespace NSG
 {
     // Right-handed coordinate system ( like OpenGL)
     // 'look' along -z axis
-    class Node : NonCopyable, public UniformsUpdate
+	class Node : NonCopyable, public std::enable_shared_from_this<Node>, public UniformsUpdate
     {
     public:
         Node(const std::string& name = "");
@@ -67,59 +67,39 @@ namespace NSG
         void SetInheritScale(bool inherit);
         bool IsPointInsideBB(const Vertex3& point) const;
         PNode GetChild(size_t idx) const { return children_.at(idx); }
-        static void GetChildrenRecursive(PNode node, const std::string& name, std::vector<PNode>& result);
-		static void GetChildrenRecursive(PNode node, std::vector<PNode>& result);
-        static PNode GetUniqueNodeFrom(PNode node, const std::string& name);
-		template <typename T> static T* GetUniqueNodeOfTypeFrom(PNode node, const std::string& name)
-		{
-			PNode obj = Node::GetUniqueNodeFrom(node, name);
-			T* ptr = dynamic_cast<T*>(obj.get());
-			return ptr;
-		}
-        template <typename T> static std::vector<T*> GetChildrenRecursiveOfType(PNode node)
+        template <typename T> std::shared_ptr<T> GetChild(const std::string& name, bool recursive)
         {
-            std::vector<T*> results;
-            std::vector<PNode> nodes;
-            GetChildrenRecursive(node, nodes);
-            for (auto& obj : nodes)
+            CHECK_ASSERT(!name.empty(), __FILE__, __LINE__);
+            for (auto& child : children_)
             {
-                T* ptr = dynamic_cast<T*>(obj.get());
-                if (ptr) results.push_back(ptr);
-            }
-            return results;
-        }
-		template <typename T> static std::vector<T*> GetChildrenRecursiveOfType(PNode node, const std::string& name)
-		{
-			std::vector<T*> results;
-			std::vector<PNode> nodes;
-			GetChildrenRecursive(node, name, nodes);
-			for (auto& obj : nodes)
-			{
-				T* ptr = dynamic_cast<T*>(obj.get());
-				if (ptr) results.push_back(ptr);
-			}
-			return results;
-		}
-        template <typename T> static T* GetFirstChildOfType(PNode node, const std::string& name)
-        {
-            std::vector<PNode> result;
-            GetChildrenRecursive(node, name, result);
-            for (auto& obj : result)
-            {
-                T* ptr = dynamic_cast<T*>(obj.get());
-                if (ptr) return ptr;
+                if (child->name_ == name)
+                {
+                    auto p = std::dynamic_pointer_cast<T>(child);
+                    if(p) return p;
+                }
+				else if (recursive)
+				{
+					auto p = child->GetChild<T>(name, recursive);
+					if (p) return p;
+				}
             }
             return nullptr;
+        }
+        template <typename T> std::shared_ptr<T> GetOrCreateChild(const std::string& name)
+        {
+            auto p = GetChild<T>(name, false);
+            if(p) return p;
+            auto obj = std::make_shared<T>(name);
+            AddChild(obj);
+			obj->OnChildCreated();
+            return obj;
         }
         const std::vector<PNode>& GetChildren() const { return children_; }
         bool IsDirty() const { return dirty_; }
         virtual void Save(pugi::xml_node& node);
-        void SetName(const std::string& name) { name_ = name; }
         const std::string& GetName() const { return name_; }
         void SetParent(PNode parent);
-        void SetParent(Node* parent);
-        Node* GetParent() const { return parent_; }
-        void AddChild(PNode node);
+		PNode GetParent() const;
         void ClearAllChildren();
         virtual void Start() {}
         virtual void Update() {}
@@ -134,6 +114,7 @@ namespace NSG
         virtual void OnCollision(const ContactPoint& contactInfo) {}
         bool IsEnabled() const { return enabled_; }
         void SetEnabled(bool enable, bool recursive = true);
+		virtual void OnChildCreated() {};
         virtual void OnEnable() {}
         virtual void OnDisable() {}
         virtual void OnScaleChange() {}
@@ -142,11 +123,12 @@ namespace NSG
         void Update(bool updateChildren = false) const;
         bool IsScaleUniform() const;
     protected:
-        Node* parent_;
+        std::weak_ptr<Node> parent_;
         std::vector<PNode> children_;
         std::string name_;
     private:
-        void RemoveChild(Node* node);
+		void AddChild(PNode node);
+        bool RemoveChild(Node* node);
         void RemoveFromParent();
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);
         IdType id_;

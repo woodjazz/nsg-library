@@ -43,7 +43,7 @@ namespace NSG
         : app_(*App::this_),
 		technique_(new Technique),
           pass_(new Pass),
-		  pMaterial_(app_.CreateMaterial("filter")),
+		  pMaterial_(app_.GetOrCreateMaterial(name)),
           pMesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           pRender2Texture_(new Render2Texture(output_width, output_height, UseBuffer::NONE)),
           name_(name),

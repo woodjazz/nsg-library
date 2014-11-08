@@ -37,22 +37,23 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    LightConverter::LightConverter(const aiLight* light, Scene* scene)
+	LightConverter::LightConverter(const aiLight* light, SceneNode* parent)
     {
-        light_ = scene->CreateLight(light->mName.C_Str());
+		light_ = parent->GetOrCreateChild<Light>(GetUniqueName(light->mName.C_Str()));
 
         switch (light->mType)
         {
             case aiLightSource_DIRECTIONAL:
-                light_->SetDirectional();
+                light_->SetType(LightType::DIRECTIONAL);
                 break;
             case aiLightSource_POINT:
-                light_->SetPoint();
+				light_->SetType(LightType::POINT);
                 break;
             case aiLightSource_SPOT:
                 {
                     float spotCutOff = light->mAngleOuterCone;
-                    light_->SetSpotLight(spotCutOff);
+					light_->SetSpotCutOff(spotCutOff);
+					light_->SetType(LightType::SPOT);
                     break;
                 }
             default:

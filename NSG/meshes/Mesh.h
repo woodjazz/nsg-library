@@ -34,8 +34,8 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Buffer.h"
 #include "BoundingBox.h"
-#include <map>
 #include <string>
+#include <set>
 
 namespace NSG
 {
@@ -66,9 +66,13 @@ namespace NSG
         const std::string& GetName() const { return name_; }
         void SetName(const std::string& name) { name_ = name; }
 		void SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights);
+        void AddSceneNode(SceneNode* node);
+        void RemoveSceneNode(SceneNode* node);
+        std::set<SceneNode*>& GetSceneNodes() { return sceneNodes_; }
+		const std::set<SceneNode*>& GetConstSceneNodes() const { return sceneNodes_; }
     protected:
         void CalculateTangents();
-        Mesh(const std::string& name = "", bool dynamic = false);
+        Mesh(const std::string& name, bool dynamic = false);
     protected:
         VertexsData vertexsData_;
         Indexes indexes_;
@@ -85,6 +89,6 @@ namespace NSG
         bool areTangentsCalculated_;
         bool serializable_;
         PSkeleton skeleton_;
-        friend class App;
+        std::set<SceneNode*> sceneNodes_;
     };
 }

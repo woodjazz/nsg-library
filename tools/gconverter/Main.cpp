@@ -31,10 +31,10 @@ using namespace NSG;
 
 struct MyApp : App
 {
-    PScene scene_;
 	PCamera camera_;
 	PCameraControl cameraControl_;
 	std::string resourcePath_;
+	std::shared_ptr<SceneConverter> sceneConverter_;
 
 	MyApp()
     {
@@ -45,12 +45,6 @@ struct MyApp : App
 
     void Start(int argc, char* argv[]) override
     {
-		scene_ = GetCurrentScene();
-		camera_ = scene_->CreateCamera("EditorCamera");
-		camera_->SetSerializable(false);
-		camera_->SetInheritScale(false);
-		cameraControl_ = PCameraControl(new CameraControl);
-		camera_->AddBehavior(cameraControl_);
     }
 
     void DropFile(const std::string& filePath) override
@@ -58,16 +52,24 @@ struct MyApp : App
 		Path path(filePath);
 		resourcePath_ = path.GetPath();
 		App::DropFile(path.GetFilePath());
-		SceneConverter scene(path);
-		if (!scene.Load())
+		sceneConverter_ = std::make_shared<SceneConverter>(path);
+		if (!sceneConverter_->Load())
 		{
 			std::string extension = path.GetExtension();
 			if (extension == "xml")
 			{
 				PResourceFile resource(GetOrCreateResourceFile(path));
-				scene_->Load(resource);
+				sceneConverter_->GetScene()->Load(resource);
 			}
 		}
+
+		PScene scene = sceneConverter_->GetScene();
+		camera_ = scene->GetOrCreateChild<Camera>("EditorCamera");
+		camera_->SetSerializable(false);
+		camera_->SetInheritScale(false);
+		cameraControl_ = PCameraControl(new CameraControl);
+		camera_->AddBehavior(cameraControl_);
+		cameraControl_->Start();
 
 		camera_->Activate();
 		cameraControl_->AutoZoom();
@@ -79,13 +81,11 @@ struct MyApp : App
 		IMGUIBeginHorizontal(100, Pixels2PercentageY(25));
 		if (IMGUIButton("Save", 20))
 		{
-			pugi::xml_document doc;
-			scene_->Save(doc);
-			doc.save_file((resourcePath_ + "/scene.xml").c_str());
+			sceneConverter_->Save((resourcePath_ + "/scene.xml").c_str());
 		}
 		if (IMGUIButton("Point Light", 20))
 		{
-			PLight light = scene_->CreatePointLight("");
+			PLight light = sceneConverter_->GetScene()->GetOrCreateChild<Light>("PointLight");
 			light->SetPosition(Vertex3(100, 100, 100));
 		}
         IMGUIEndArea();

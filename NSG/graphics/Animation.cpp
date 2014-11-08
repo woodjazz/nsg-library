@@ -119,10 +119,11 @@ namespace NSG
 	{
 		std::string nodeName = node.attribute("nodeName").as_string();
 		PScene scene = App::this_->GetCurrentScene();
-		std::vector<PNode> resultNodes;
-		Node::GetChildrenRecursive(scene, nodeName, resultNodes);
-		CHECK_CONDITION(resultNodes.size() == 1, __FILE__, __LINE__);
-		node_ = resultNodes[0];
+		if (scene->GetName() == nodeName)
+			node_ = scene;
+		else
+			node_ = scene->GetChild<Node>(nodeName, true);
+        CHECK_ASSERT(node_, __FILE__, __LINE__);
 		std::string mask = node.attribute("channelMask").as_string();
 		channelMask_ = AnimationChannelMask(mask);
 
@@ -141,8 +142,9 @@ namespace NSG
 
 	}
 
-    Animation::Animation()
-        : length_(0)
+	Animation::Animation(const std::string& name)
+        : name_(name),
+		length_(0)
     {
 
     }
@@ -150,11 +152,6 @@ namespace NSG
     Animation::~Animation()
     {
 
-    }
-
-    void Animation::SetName(const std::string& name)
-    {
-        name_ = name;
     }
 
     void Animation::SetLength(float length)

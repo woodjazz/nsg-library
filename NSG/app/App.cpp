@@ -89,7 +89,8 @@ namespace NSG
         currentScene_ = nullptr;
         scenes_.clear();
         meshes_.clear();
-        materials_.clear();
+		models_.Clear();
+        materials_.Clear();
         App::this_ = nullptr;
         TRACE_LOG("App Terminated");
     }
@@ -248,9 +249,9 @@ namespace NSG
         }
     }
 
-    PScene App::CreateScene(bool setAsCurrent)
+	PScene App::CreateScene(const std::string& name, bool setAsCurrent)
     {
-        PScene scene(new Scene);
+        PScene scene(new Scene(name));
         if (setAsCurrent)
         {
             isSceneReady_ = false;
@@ -296,20 +297,15 @@ namespace NSG
         return mesh;
     }
 
-    PModelMesh App::CreateModelMesh(const VertexsData& vertexsData, const Indexes& indexes)
+    PModelMesh App::GetOrCreateModelMesh(const std::string& name)
     {
-        PModelMesh mesh(new ModelMesh(vertexsData, indexes));
-        meshes_.push_back(mesh);
-        return mesh;
-    }
+		if (models_.Has(name))
+			return models_.GetOrCreate(name);
 
-    PModelMesh App::CreateModelMesh()
-    {
-        PModelMesh mesh(new ModelMesh);
-        meshes_.push_back(mesh);
-        return mesh;
+		PModelMesh mesh = models_.GetOrCreate(name);
+		meshes_.push_back(mesh);
+		return mesh;
     }
-
 
     PPlaneMesh App::CreatePlaneMesh(float width, float height, int columns, int rows)
     {
@@ -348,9 +344,12 @@ namespace NSG
 
     PMaterial App::CreateMaterial(const std::string& name)
     {
-        PMaterial material(new Material(name));
-        materials_.push_back(material);
-        return material;
+        return materials_.Create(name);
+    }
+
+	PMaterial App::GetOrCreateMaterial(const std::string& name)
+    {
+        return materials_.GetOrCreate(name);
     }
 
     PResourceFile App::GetOrCreateResourceFile(const Path& path)
@@ -380,13 +379,14 @@ namespace NSG
 
     const std::vector<PMaterial>& App::GetMaterials() const
     {
-        return materials_;
+        return materials_.GetConstObjs();
     }
 
     int App::GetMaterialSerializableIndex(const PMaterial& material) const
     {
         int idx = -1;
-        for (auto obj : materials_)
+        const std::vector<PMaterial>& materials = materials_.GetConstObjs();
+        for (auto obj : materials)
         {
             if (obj->IsSerializable())
             {
@@ -449,7 +449,7 @@ namespace NSG
     {
         Context::this_->Initialize();
 
-        PScene scene = pApp_->CreateScene(true);
+        PScene scene = pApp_->CreateScene("DefaultScene", true);
 
         pApp_->Start(pApp_->argc_, pApp_->argv_);
     }

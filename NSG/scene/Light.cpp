@@ -4,6 +4,7 @@
 #include "Constants.h"
 #include "Resource.h"
 #include "Util.h"
+#include "Scene.h"
 #include "pugixml.hpp"
 #include <assert.h>
 #include <algorithm>
@@ -12,7 +13,7 @@ namespace NSG
 {
     Light::Light(const std::string& name)
         : SceneNode(name),
-          type_(POINT),
+          type_(LightType::POINT),
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
           spotCutOff_(45)
@@ -65,42 +66,23 @@ namespace NSG
         }
     }
 
-    void Light::SetPoint()
+    void Light::SetSpotCutOff(float spotCutOff)
     {
-        if (type_ != POINT)
+        if (spotCutOff_ != spotCutOff)
         {
-            type_ = POINT;
-            SetUniformsNeedUpdate();
-        }
-    }
-
-    void Light::SetDirectional()
-    {
-        if (type_ != DIRECTIONAL)
-        {
-            type_ = DIRECTIONAL;
-            SetUniformsNeedUpdate();
-        }
-    }
-
-    void Light::SetSpotLight(float spotCutOff)
-    {
-        if ( type_ != SPOT || spotCutOff_ != spotCutOff)
-        {
-            type_ = SPOT;
             spotCutOff_ = spotCutOff;
             SetUniformsNeedUpdate();
         }
     }
 
-	void Light::SetType(Type type)
-	{
-		if (type_ != type)
-		{
-			type_ = type;
-			SetUniformsNeedUpdate();
-		}
-	}
+    void Light::SetType(LightType type)
+    {
+        if (type_ != type)
+        {
+            type_ = type;
+            SetUniformsNeedUpdate();
+        }
+    }
 
     void Light::Save(pugi::xml_node& node)
     {
@@ -114,7 +96,7 @@ namespace NSG
 
         {
             std::stringstream ss;
-            ss << type_;
+            ss << (int)type_;
             child.append_attribute("type") = ss.str().c_str();
         }
 
@@ -180,27 +162,27 @@ namespace NSG
 
     void Light::Load(const pugi::xml_node& node)
     {
-        SetName(node.attribute("name").as_string());
+        //SetName(node.attribute("name").as_string());
 
-        int type = node.attribute("type").as_int();
+		LightType type = (LightType)node.attribute("type").as_int();
 
-        switch(type)
+        switch (type)
         {
-            case DIRECTIONAL:
-                SetDirectional();
+            case LightType::DIRECTIONAL:
+                SetType(LightType::DIRECTIONAL);
                 break;
-            case SPOT:
-            {
-                float cutOff = node.attribute("spotCutOff").as_float();
-                SetSpotLight(cutOff);
-                break;
-            }
-            case POINT:
-                SetPoint();
+            case LightType::SPOT:
+                {
+                    float cutOff = node.attribute("spotCutOff").as_float();
+                    SetSpotCutOff(cutOff);
+					SetType(LightType::SPOT);
+                    break;
+                }
+            case LightType::POINT:
+				SetType(LightType::POINT);
                 break;
             default:
                 CHECK_ASSERT(false && "Missing light type!", __FILE__, __LINE__);
-                SetPoint();
                 break;
         }
 
@@ -222,5 +204,13 @@ namespace NSG
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
     }
+
+	void Light::OnChildCreated()
+	{
+        SetScene();
+		PScene scene = scene_.lock();
+		scene->AddLight(std::dynamic_pointer_cast<Light>(shared_from_this()));
+	}
+
 
 }

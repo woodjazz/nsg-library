@@ -119,6 +119,9 @@ namespace NSG
         GLuint texture0Loc_;
         GLuint texture1Loc_;
         GLuint texture2Loc_;
+        GLuint texture3Loc_;
+        GLuint texture4Loc_;
+        GLuint texture5Loc_;
 
         struct MaterialLoc
         {
@@ -127,6 +130,7 @@ namespace NSG
             GLuint diffuse_;
             GLuint specular_;
             GLuint shininess_;
+            GLuint parallaxScale_;
         };
 
         MaterialLoc materialLoc_;
@@ -188,7 +192,8 @@ namespace NSG
             Color diffuse_;
             Color specular_;
             float shininess_;
-            MaterialProgram() : shininess_(0) {}
+            float parallaxScale_;
+            MaterialProgram() : shininess_(0), parallaxScale_(0) {}
         } material_; //used to avoid setting the same uniform value twice
 
         std::string name_;

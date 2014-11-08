@@ -39,15 +39,29 @@ misrepresented as being the original software.
 namespace NSG
 {
     MaterialConverter::MaterialConverter(const aiMaterial* mtl, const std::string& resourcePath)
-        : material_(App::this_->CreateMaterial("material")),
-		program_(App::this_->CreateProgram()),
+        : program_(App::this_->CreateProgram()),
 		  flags_((int)ProgramFlag::NONE),
           resourcePath_(resourcePath),
           mtl_(mtl)
     {
-        aiString name;
-        if (AI_SUCCESS == aiGetMaterialString(mtl, AI_MATKEY_NAME, &name))
-            material_->SetName(name.C_Str());
+		std::string materialName;
+		{
+			aiString name;
+			if (AI_SUCCESS == aiGetMaterialString(mtl, AI_MATKEY_NAME, &name))
+			{
+				materialName = name.C_Str();
+			}
+			else
+			{
+				materialName  = "NSGMaterialConverter";
+				static int counter = 0;
+				std::stringstream ss;
+				ss << counter++;
+				materialName += ss.str();
+			}
+		}
+
+		material_ = App::this_->GetOrCreateMaterial(materialName);
 
         PTechnique technique(new Technique);
         material_->SetTechnique(technique);

@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "IMGUIContext.h"
 #include "App.h"
+#include "Util.h"
 
 namespace NSG
 {
@@ -39,9 +40,9 @@ namespace NSG
               enableActive_(true),
               enableHot_(true),
               enableFocus_(true),
-              normalMaterial_(app_.CreateMaterial("normal")),
-              activeMaterial_(app_.CreateMaterial("active")),
-              hotMaterial_(app_.CreateMaterial("hot")),
+              normalMaterial_(app_.CreateMaterial(GetUniqueName("NSGIMGUINormal"))),
+			  activeMaterial_(app_.CreateMaterial(GetUniqueName("NSGIMGUIActive"))),
+			  hotMaterial_(app_.CreateMaterial(GetUniqueName("NSGIMGUIHot"))),
               pass_(new Pass)
         {
             Context& context = *Context::this_;
@@ -88,7 +89,7 @@ namespace NSG
         AreaStyle::AreaStyle()
             : showVScroll_(true),
               showHScroll_(true),
-              scrollMaterial_(app_.CreateMaterial("area")),
+			  scrollMaterial_(app_.CreateMaterial(GetUniqueName("NSGIMGUIAreaStyle"))),
               scrollPass_(new Pass)
         {
             hotMaterial_->SetColor(Color(0, 0, 0, 0));
@@ -145,7 +146,7 @@ namespace NSG
 
 
         LabelStyle::LabelStyle()
-            : textMaterial_(app_.CreateMaterial("LabelTextMaterial"))
+			: textMaterial_(app_.CreateMaterial(GetUniqueName("NSGIMGUILabelStyle")))
         {
             textMaterial_->SetSerializable(false);
             hotMaterial_->SetColor(Color(0, 0, 0, 0));
@@ -161,7 +162,7 @@ namespace NSG
         }
 
         ButtonStyle::ButtonStyle()
-            : textMaterial_(app_.CreateMaterial("ButtonTextMaterial"))
+			: textMaterial_(app_.CreateMaterial(GetUniqueName("NSGIMGUIButtonStyle")))
         {
             textMaterial_->SetSerializable(false);
 
@@ -193,7 +194,7 @@ namespace NSG
         }
 
         TextStyle::TextStyle()
-            : textMaterial_(app_.CreateMaterial("TextMaterial")),
+			: textMaterial_(app_.CreateMaterial(GetUniqueName("NSGIMGUITextStyle"))),
               textMaxLength_(std::numeric_limits<int>::max())
         {
             textMaterial_->SetSerializable(false);
@@ -212,7 +213,7 @@ namespace NSG
         }
 
         TitleStyle::TitleStyle()
-            : textMaterial_(app_.CreateMaterial("TitleTextMaterial")),
+			: textMaterial_(app_.CreateMaterial(GetUniqueName("NSGIMGUITitleStyle"))),
               pixelsHeight_(25)
         {
             textMaterial_->SetSerializable(false);

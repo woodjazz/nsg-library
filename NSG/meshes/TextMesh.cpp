@@ -37,7 +37,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     TextMesh::TextMesh(const std::string& textureFilename, bool dynamic)
-        : Mesh("TextMesh", dynamic),
+        : Mesh(textureFilename, dynamic),
           screenWidth_(0),
           screenHeight_(0),
           textureFilename_(textureFilename),

@@ -51,15 +51,15 @@ struct Sample : App
 	{
 		scene_ = GetCurrentScene();
         
-		camera_ = scene_->CreateCamera("camera");
+		camera_ = scene_->GetOrCreateChild<Camera>("camera");
         camera_->SetPosition(Vertex3(0,0,10));
         camera_->Activate();
 
-		box_ = scene_->CreateSceneNode("node 1");
+		box_ = scene_->GetOrCreateChild<SceneNode>("node 1");
         boxBehavior_ = new BoxBehavior;
 		box_->AddBehavior(PBehavior(boxBehavior_));
         
-		sphere_ = scene_->CreateSceneNode("node 2");
+		sphere_ = scene_->GetOrCreateChild<SceneNode>("node 2");
         sphereBehavior_ = new SphereBehavior;
 		sphere_->AddBehavior(PBehavior(sphereBehavior_));
 
@@ -114,10 +114,13 @@ struct Sample : App
 			PPassFilter filterPass(new PassFilter(blurFilter));
             technique_->Add(filterPass);
 
+
 			sphereBlendFilter = PFilter(new FilterBlend(blurFilter->GetTexture(), pass2Texture->GetTexture(), 1024, 1024));
 
 			PPassFilter passBlend(new PassFilter(sphereBlendFilter));
             technique_->Add(passBlend);
+
+			//showTexture_->SetNormal(sphereBlendFilter->GetTexture());
         }
 
 		PFilter blendFilter(new FilterBlend(sphereBlendFilter->GetTexture(), boxFilter->GetTexture(), 1024, 1024));
@@ -126,7 +129,7 @@ struct Sample : App
 #endif
 
 		showTexture_->SetNormal(blendFilter->GetTexture());
-        //showTexture_->SetNormal(sphereBehavior_->blendedTexture_);
+		//showTexture_->SetNormal(sphereBlendFilter->GetTexture());
         //showTexture_->SetNormal(boxBehavior_->filteredTexture_);
         //showTexture_->SetNormal(boxBehavior_->renderedTexture_);
         //showTexture_->SetNormal(sphereBehavior_->renderedTexture_);

@@ -33,12 +33,13 @@ misrepresented as being the original software.
 namespace NSG
 {
     EllipseMesh::EllipseMesh(float width, float height, int res)
-        : width_(width),
+        : Mesh("EllipseMesh"),
+          width_(width),
           height_(height),
           res_(res)
     {
         resource_ = PResource(new ResourceProcedural(this));
-		SetSerializable(false);
+        SetSerializable(false);
     }
 
     EllipseMesh::~EllipseMesh()

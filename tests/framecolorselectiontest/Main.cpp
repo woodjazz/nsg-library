@@ -45,7 +45,7 @@ struct Test : public App
 		scene_ = GetCurrentScene();
         PBoxMesh pMesh(CreateBoxMesh(1,1,1, 2,2,2));
         
-		sceneNode_ = scene_->CreateSceneNode("scene node");
+		sceneNode_ = scene_->GetOrCreateChild<SceneNode>("scene node");
         sceneNode_->Set(pMesh);
 
         colorSelection_ = PFrameColorSelection(new FrameColorSelection);

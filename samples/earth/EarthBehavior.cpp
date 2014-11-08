@@ -44,7 +44,7 @@ void EarthBehavior::Start()
 	//sceneNode_->SetEnabled(false);
 
 	PTexture pEarthTexture(app_.GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
-    PMaterial pMaterial(app_.CreateMaterial("earth"));
+    PMaterial pMaterial(app_.GetOrCreateMaterial("earth"));
 	PProgram program(app_.CreateProgram());
 	program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
     PTechnique technique(new Technique);

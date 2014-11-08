@@ -48,36 +48,39 @@ struct Sample : App
 		scene_ = GetCurrentScene();
         scene_->SetAmbientColor(Color(0));
 
-		PCamera camera = scene_->CreateCamera("camera");
+		PCamera camera = scene_->GetOrCreateChild<Camera>("camera");
 		camera->Activate();
 
-		pointLight0_ = scene_->CreatePointLight("pointlight0");
+		pointLight0_ = scene_->GetOrCreateChild<Light>("pointlight0");
 		pointLight0_->SetPosition(Vertex3(-5, 15, 0));
         pointLight0_->SetEnabled(false);
 
-		pointLight1_ = scene_->CreatePointLight("pointlight1");
+		pointLight1_ = scene_->GetOrCreateChild<Light>("pointlight1");
         pointLight1_->SetEnabled(false);
 		pointLight1_->SetPosition(Vertex3(5, -15, 0));
 
-		dirLight0_ = scene_->CreateDirectionalLight("dirlight0");
+		dirLight0_ = scene_->GetOrCreateChild<Light>("dirlight0");
+		dirLight0_->SetType(LightType::DIRECTIONAL);
         dirLight0_->SetEnabled(false);
 		dirLight0_->SetLookAt(Vertex3(-1, -1, 0));
 
-		dirLight1_ = scene_->CreateDirectionalLight("dirlight1");
+		dirLight1_ = scene_->GetOrCreateChild<Light>("dirlight1");
+		dirLight1_->SetType(LightType::DIRECTIONAL);
         dirLight1_->SetEnabled(false);
 		dirLight1_->SetLookAt(Vertex3(1, 1, 0));
 
-		spotLight0_ = scene_->CreateSpotLight("spotlight0");
+		spotLight0_ = scene_->GetOrCreateChild<Light>("spotlight0");
+		spotLight0_->SetType(LightType::SPOT);
 		spotLight0_->SetPosition(Vertex3(0, 0, 5));
 		spotLight0_->SetLookAt(Vertex3(0, 0, -1));
-		spotLight0_->SetSpotLight(10);
+		spotLight0_->SetSpotCutOff(10);
 		spotLight0_->SetEnabled(false);
 
         PMesh mesh(CreateSphereMesh(3, 24));
 
 		PTexture wallTexture(GetOrCreateTextureFile("data/wall.jpg"));
 		PTexture wallNormalMapTexture(GetOrCreateTextureFile("data/wallnormalmap.jpg"));
-        PMaterial material(CreateMaterial("wall"));
+        PMaterial material(GetOrCreateMaterial("wall"));
 		PProgram program(CreateProgram());
 		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::NORMALMAP);
         PTechnique technique(new Technique);
@@ -90,7 +93,7 @@ struct Sample : App
         material->SetAmbientColor(Color(0));
         material->SetShininess(10);
 
-        PSceneNode node = scene_->CreateSceneNode("node");
+		PSceneNode node = scene_->GetOrCreateChild<SceneNode>("node");
 		node->SetPosition(Vertex3(0, 0, -10));
         node->Set(material);
         node->Set(mesh);
@@ -110,7 +113,7 @@ struct Sample : App
 			spotLight0_->SetEnabled(IMGUICheckButton(spotLight0_->IsEnabled(), spotLight0_->IsEnabled() ? "Disable S0" : "Enable S0", 25, 100));
 			float cutOff = spotLight0_->GetSpotCutOff() / 100;
 			cutOff = IMGUIHSlider(cutOff, 75, 100);
-			spotLight0_->SetSpotLight(cutOff * 100);
+			spotLight0_->SetSpotCutOff(cutOff * 100);
 		}
 		IMGUIEndArea();
     }

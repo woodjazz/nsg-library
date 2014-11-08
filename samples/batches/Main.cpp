@@ -50,8 +50,8 @@ struct Sample : App
 
 		PTexture pEarthTexture1(GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
 		PTexture pEarthTexture2(GetOrCreateTextureFile("data/jup0vss1.jpg"));
-        PMaterial pMaterial1(CreateMaterial("earth1"));
-		PMaterial pMaterial2(CreateMaterial("earth2"));
+        PMaterial pMaterial1(GetOrCreateMaterial("earth1"));
+		PMaterial pMaterial2(GetOrCreateMaterial("earth2"));
 		PProgram program(CreateProgram());
 		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
         PTechnique technique(new Technique);
@@ -72,7 +72,7 @@ struct Sample : App
 
 		scene_ = GetCurrentScene();
 
-        camera_ = scene_->CreateCamera("camera");
+		camera_ = scene_->GetOrCreateChild<Camera>("camera");
         camera_->Activate();
 
         camera_->AddBehavior(PCameraControl(new CameraControl));
@@ -83,7 +83,7 @@ struct Sample : App
         {
             for (int c = 0; c < COLS; c++)
             {
-                earth_[c][r] = scene_->CreateSceneNode("");
+				earth_[c][r] = scene_->GetOrCreateChild<SceneNode>(GetUniqueName());
 				earth_[c][r]->AddBehavior(PBehavior(new EarthBehavior));
                 earth_[c][r]->SetPosition(position);
                 earth_[c][r]->Set(pSphereMesh);
@@ -99,7 +99,7 @@ struct Sample : App
         Vertex3 camPos(COLS/2*STEP, -(ROWS)/2*STEP, 75);
         Vertex3 lighPos(Vertex2(camPos), -5);
         
-        light_ = scene_->CreateLight("light");
+		light_ = scene_->GetOrCreateChild<Light>("light");
         light_->SetPosition(lighPos);
         
         camera_->SetPosition(camPos);

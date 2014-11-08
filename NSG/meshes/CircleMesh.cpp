@@ -33,11 +33,12 @@ misrepresented as being the original software.
 namespace NSG
 {
     CircleMesh::CircleMesh(float radius, int res)
-        : radius_(radius),
+        : Mesh("CircleMesh"),
+          radius_(radius),
           res_(res)
     {
         resource_ = PResource(new ResourceProcedural(this));
-		SetSerializable(false);
+        SetSerializable(false);
     }
 
     CircleMesh::~CircleMesh()

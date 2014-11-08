@@ -27,11 +27,12 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Pass.h"
 #include "Program.h"
+#include "Util.h"
 
 namespace NSG
 {
 	FilterBlur::FilterBlur(PTexture input, int output_width, int output_height)
-		: Filter("FilterBlur", input, output_width, output_height, (int)ProgramFlag::BLUR),
+		: Filter(GetUniqueName("FilterBlur"), input, output_width, output_height, (int)ProgramFlag::BLUR),
 	blurDirLoc_(-1),
 	blurRadiusLoc_(-1),
 	sigmaLoc_(-1),

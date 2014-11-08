@@ -30,13 +30,14 @@ misrepresented as being the original software.
 namespace NSG
 {
     PlaneMesh::PlaneMesh(float width, float height, int columns, int rows)
-        : width_(width),
+        : Mesh("PlaneMesh"),
+          width_(width),
           height_(height),
           columns_(columns),
           rows_(rows)
     {
         resource_ = PResource(new ResourceProcedural(this));
-		SetSerializable(false);
+        SetSerializable(false);
     }
 
     PlaneMesh::~PlaneMesh()
@@ -99,11 +100,11 @@ namespace NSG
         {
             for (int x = 0; x < columns_ - 1; x++)
             {
-                IndexType i0 = y*columns_ + x;
-                IndexType i1 = y*columns_ + x + 1;
-                IndexType i2 = (y + 1)*columns_ + x;
-                IndexType i3 = (y + 1)*columns_ + x + 1;
-                
+                IndexType i0 = y * columns_ + x;
+                IndexType i1 = y * columns_ + x + 1;
+                IndexType i2 = (y + 1) * columns_ + x;
+                IndexType i3 = (y + 1) * columns_ + x + 1;
+
                 // first triangle
                 indexes_.push_back(i0);
                 indexes_.push_back(i1);

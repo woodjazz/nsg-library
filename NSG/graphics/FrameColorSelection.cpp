@@ -44,7 +44,7 @@ namespace NSG
     FrameColorSelection::FrameColorSelection(UseBuffer buffer)
         : app_(*App::this_),
 		buffer_(buffer),
-		material_(app_.CreateMaterial("FrameColorSelection")),
+		material_(app_.GetOrCreateMaterial("NSGFrameColorSelection")),
           windowWidth_(0),
           windowHeight_(0),
           pixelX_(0),

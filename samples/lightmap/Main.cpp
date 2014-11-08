@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-
 struct Sample : App
 {
     PScene scene_;
@@ -52,17 +51,14 @@ struct Sample : App
 		PTexture lightmapTexture(GetOrCreateTextureFile("data/lightmap.png"));
 		PTexture diffuseTexture(GetOrCreateTextureFile("data/texture.png"));
 
-		std::vector<SceneNode*> objs = Node::GetChildrenRecursiveOfType<SceneNode>(scene_, "static_objects");
-		for (auto& obj : objs)
-		{
-			obj->SetDiffuseMap(diffuseTexture, true);
-			obj->SetLightMap(lightmapTexture, true);
-		}
+		PSceneNode node = scene_->GetChild<SceneNode>("static_objects149", true);
+		node->GetMaterial()->SetDiffuseMap(diffuseTexture);
+		node->GetMaterial()->SetLightMap(lightmapTexture);
 
-		Camera* camera = Node::GetFirstChildOfType<Camera>(scene_, "Camera");
-		CHECK_ASSERT(camera, __FILE__, __LINE__);
-		camera->Activate();
-		camera->AddBehavior(PCameraControl(new CameraControl));
+		auto& cameras = scene_->GetCameras();
+		CHECK_ASSERT(cameras.size(), __FILE__, __LINE__);
+		cameras[0]->Activate();
+		cameras[0]->AddBehavior(PCameraControl(new CameraControl));
 
 	}
 };

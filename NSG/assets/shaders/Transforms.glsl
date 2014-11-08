@@ -74,7 +74,10 @@
 
 	mat3 GetNormalMatrix()
 	{
-		//The normal matrix is used to allow non-uniform scales (sx != sy != sz) in the active node
+		//The normal matrix is used to allow non-uniform scales (sx != sy != sz) in the active node.
+		//The normal matrix is used to transforms the normal vector from object local space to world space.
+		//The normal matrix is the transpose of the inverse of the Model matrix.
+		//For better explanation see http://www.lighthouse3d.com/tutorials/glsl-tutorial/the-normal-matrix/
 		#if defined(INSTANCED)
 			return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2);
 		#else
@@ -96,7 +99,7 @@
 	{
 		#if defined(SKINNED)
 			//return normalize(mat3(GetSkinnedMatrix()) * a_normal); 
-			// Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
+			//Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
 			return normalize(GetNormalMatrix() * mat3(GetSkinnedMatrix()) * a_normal);
 		#else
 			return normalize(GetNormalMatrix() * a_normal);

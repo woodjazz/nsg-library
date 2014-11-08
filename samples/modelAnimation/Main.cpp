@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
+
 struct Sample : App
 {
     PScene scene_;
@@ -53,14 +54,14 @@ struct Sample : App
         if (cameras.size())
             camera = cameras[0];
         else
-            camera = scene_->CreateCamera("");
+			camera = scene_->GetOrCreateChild<Camera>("camera");
 
         camera->SetPosition(Vector3(0, 70, 100));
 
         camera->Activate();
         camera->AddBehavior(PCameraControl(new CameraControl));
-        light_ = scene_->CreateLight("");
-        light_->SetType(Light::DIRECTIONAL);
+		light_ = scene_->GetOrCreateChild<Light>("light");
+        light_->SetType(LightType::DIRECTIONAL);
         //light_->SetPosition(Vertex3(100, 0, 0));
         light_->SetLookAt(Vector3(1, 0, 0));
         light_->SetDiffuseColor(Color(1, 0, 0, 1));
@@ -69,7 +70,8 @@ struct Sample : App
         scene_->PlayAnimation("AnimationSet0", true);
         scene_->SetAnimationSpeed("AnimationSet0", 0.001f);
 
-        node_ = Node::GetUniqueNodeFrom(scene_, "Body");
+        node_ = scene_->GetChild<Node>("Body", false);
+		CHECK_ASSERT(node_, __FILE__, __LINE__);
     }
 
     void OnKey(int key, int action, int modifier) override

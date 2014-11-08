@@ -6,6 +6,7 @@ struct Material
 	vec4 diffuse;
 	vec4 specular;
 	float shininess;
+    float parallaxScale;
 };
 
 uniform Material u_material;
@@ -56,8 +57,12 @@ uniform PointLight u_pointLights[NUM_POINT_LIGHTS_ARRAY];
 uniform SpotLight u_spotLights[NUM_SPOT_LIGHTS_ARRAY];
 
 vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 normal)                   
-{                                                                                           
-    vec4 color = u_material.ambient * base.ambient;
+{                               
+    #ifdef AOMAP
+        vec4 color = u_material.ambient * base.ambient * texture2D(u_texture4, v_texcoord0);
+    #else                                                            
+        vec4 color = u_material.ambient * base.ambient;
+    #endif
 	
 	float diffuseFactor = dot(normal, -lightDirection);	
 
@@ -69,7 +74,12 @@ vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 norma
         if (specularFactor > 0.0)
        	{
         	specularFactor = pow(specularFactor, u_material.shininess);
-            color += specularFactor * base.specular * u_material.specular;
+
+            #ifdef SPECULARMAP
+                color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);
+            #else
+                color += specularFactor * base.specular * u_material.specular;
+            #endif
         }
     }                                                                                       
                                                                             
@@ -108,7 +118,6 @@ vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, Attenu
         return vec4(0.0);
     }
 }
-
 
 vec4 CalcFSTotalLight(vec3 vertexToEye, vec3 normal)
 {

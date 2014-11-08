@@ -34,8 +34,11 @@ public:
 
 	void Start() override;
 	void Update() override;
+	void IMGUI();
 
 private:
 	float x_angle_;
 	float y_angle_;
+	PMaterial pMaterial_;
+	PTexture dispTexture_;
 };

@@ -33,8 +33,9 @@ namespace NSG
 	{
 		float lastX_;
 		float lastY_;
-		bool rightButtonDown_;
+		bool leftButtonDown_;
 		bool altKeyDown_;
+		bool shiftKeyDown_;
 		PPointOnSphere pointOnSphere_;
 		Camera* camera_;
 		bool updateOrientation_;

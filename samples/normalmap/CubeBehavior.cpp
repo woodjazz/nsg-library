@@ -43,22 +43,37 @@ void CubeBehavior::Start()
 	sceneNode_->Set(pMesh);
 	sceneNode_->SetScale(Vector3(2, 2, 2));
 
-	PTexture wallTexture(app_.GetOrCreateTextureFile("data/wall.jpg"));
-	PTexture wallNormalMapTexture(app_.GetOrCreateTextureFile("data/wallnormalmap.jpg"));
-    PMaterial pMaterial(app_.CreateMaterial("wall"));
+	//PTexture wallTexture(app_.GetOrCreateTextureFile("data/wall.jpg"));
+	//PTexture wallNormalMapTexture(app_.GetOrCreateTextureFile("data/wallnormalmap.jpg"));
+	pMaterial_ = PMaterial(app_.GetOrCreateMaterial("wall"));
 	PProgram program(app_.CreateProgram());
-	program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::NORMALMAP);
+	//program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::NORMALMAP);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
 
     technique->Add(pass);
 	pass->SetProgram(program);
-    pMaterial->SetTechnique(technique);
-    pMaterial->SetTexture0(wallTexture);
-    pMaterial->SetTexture1(wallNormalMapTexture);
-    pMaterial->SetShininess(10);
+    pMaterial_->SetTechnique(technique);
 
-	sceneNode_->Set(pMaterial);
+
+	PTexture diffuseTexture(app_.GetOrCreateTextureFile("data/wall_COLOR.png"));
+	PTexture normalTexture(app_.GetOrCreateTextureFile("data/wall_NRM.png"));
+	PTexture specularTexture(app_.GetOrCreateTextureFile("data/wall_SPEC.png"));
+	PTexture occTexture(app_.GetOrCreateTextureFile("data/wall_OCC.png"));
+	dispTexture_ = PTexture(app_.GetOrCreateTextureFile("data/wall_DISP.png"));
+
+	pMaterial_->SetDiffuseMap(diffuseTexture);
+	pMaterial_->SetNormalMap(normalTexture);
+	pMaterial_->SetSpecularMap(specularTexture);
+	pMaterial_->SetAOMap(occTexture);
+	pMaterial_->SetDisplacementMap(dispTexture_);
+
+
+//    pMaterial->SetTexture0(wallTexture);
+//    pMaterial->SetTexture1(wallNormalMapTexture);
+    pMaterial_->SetShininess(10);
+
+	sceneNode_->Set(pMaterial_);
 
 	sceneNode_->SetPosition(Vertex3(0, 0, 0));
 }
@@ -71,7 +86,25 @@ void CubeBehavior::Update()
     y_angle_ += glm::pi<float>() / 10.0f * deltaTime;
 
 	sceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
+}
 
+void CubeBehavior::IMGUI()
+{
+	IMGUIBeginHorizontal(100, 20);
+	{
+		bool on = pMaterial_->GetDisplacementMap() != nullptr;
+		if (IMGUICheckButton(on, on ? "Off Parallax" : "On Parallax", 25, 100))
+			pMaterial_->SetDisplacementMap(dispTexture_);
+		else
+			pMaterial_->SetDisplacementMap(nullptr);
+	}
+
+	{
+		float parallaxScale = pMaterial_->GetParallaxScale();
+		parallaxScale = IMGUIHSlider(parallaxScale, 75, 100, 10);
+		pMaterial_->SetParallaxScale(parallaxScale);
+	}
+	IMGUIEndArea();
 }
 
 

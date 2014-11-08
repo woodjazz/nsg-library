@@ -67,7 +67,10 @@ static const std::string TRANSFORMS_GLSL = \
 "	}\n"\
 "	mat3 GetNormalMatrix()\n"\
 "	{\n"\
-"		//The normal matrix is used to allow non-uniform scales (sx != sy != sz) in the active node\n"\
+"		//The normal matrix is used to allow non-uniform scales (sx != sy != sz) in the active node.\n"\
+"		//The normal matrix is used to transforms the normal vector from object local space to world space.\n"\
+"		//The normal matrix is the transpose of the inverse of the Model matrix.\n"\
+"		//For better explanation see http://www.lighthouse3d.com/tutorials/glsl-tutorial/the-normal-matrix/\n"\
 "		#if defined(INSTANCED)\n"\
 "			return mat3(a_normalMatrixCol0, a_normalMatrixCol1, a_normalMatrixCol2);\n"\
 "		#else\n"\
@@ -87,7 +90,7 @@ static const std::string TRANSFORMS_GLSL = \
 "	{\n"\
 "		#if defined(SKINNED)\n"\
 "			//return normalize(mat3(GetSkinnedMatrix()) * a_normal); \n"\
-"			// Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)\n"\
+"			//Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)\n"\
 "			return normalize(GetNormalMatrix() * mat3(GetSkinnedMatrix()) * a_normal);\n"\
 "		#else\n"\
 "			return normalize(GetNormalMatrix() * a_normal);\n"\

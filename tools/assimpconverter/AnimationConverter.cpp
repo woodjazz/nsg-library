@@ -70,21 +70,16 @@ namespace NSG
 		{
 			aiNodeAnim* channel = anim->mChannels[j];
 			std::string channelName = channel->mNodeName.C_Str();
-			std::vector<PNode> nodes;
-			Node::GetChildrenRecursive(scene_, channelName, nodes);
-			if (nodes.empty())
+			AnimationTrack track;
+			if (scene_->GetName() == channelName)
+				track.node_ = scene_;
+			else
+				track.node_ = scene_->GetChild<Node>(channelName, true);
+			if (!track.node_)
 			{
 				TRACE_LOG("Warning: skipping animation track " << channelName << " whose scene node was not found");
 				return;
 			}
-			else if (nodes.size() > 1)
-			{
-				TRACE_LOG("Warning: Found multiple nodes for animation track " << channelName);
-				return;
-			}
-
-			AnimationTrack track;
-			track.node_ = nodes[0];
 
 			// Check which channels are used
 			track.channelMask_ = 0;

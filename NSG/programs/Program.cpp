@@ -83,6 +83,9 @@ namespace NSG
           texture0Loc_(-1),
           texture1Loc_(-1),
           texture2Loc_(-1),
+          texture3Loc_(-1),
+          texture4Loc_(-1),
+          texture5Loc_(-1),
           nBones_(0),
           nDirectionalLights_(0),
           nPointLights_(0),
@@ -145,17 +148,17 @@ namespace NSG
             preDefines += "#define SKINNED\n";
         }
 
-        const Scene::Lights& directionalLigths = scene->GetLights(Light::DIRECTIONAL);
+        const Scene::Lights& directionalLigths = scene->GetLights(LightType::DIRECTIONAL);
         nDirectionalLights_ = directionalLigths.size();
 
         activeDirectionalLights_ = std::vector<Light*>(nDirectionalLights_, nullptr);
 
-        const Scene::Lights& pointLigths = scene->GetLights(Light::POINT);
+		const Scene::Lights& pointLigths = scene->GetLights(LightType::POINT);
         nPointLights_ = pointLigths.size();
 
         activePointLights_ = std::vector<Light*>(nPointLights_, nullptr);
 
-        const Scene::Lights& spotLigths = scene->GetLights(Light::SPOT);
+		const Scene::Lights& spotLigths = scene->GetLights(LightType::SPOT);
         nSpotLights_ = spotLigths.size();
 
         activeSpotLights_ = std::vector<Light*>(nSpotLights_, nullptr);
@@ -239,6 +242,9 @@ namespace NSG
         if ((int)ProgramFlag::LIGHTMAP & flags_)
             preDefines += "#define LIGHTMAP\n";
 
+        if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
+            preDefines += "#define DISPLACEMENTMAP\n";
+
         if (vertexShader_)
             preDefines += "#define HAS_USER_VERTEX_SHADER\n";
 
@@ -255,6 +261,12 @@ namespace NSG
         }
 
         pVShader_ = PVertexShader(new VertexShader(buffer.c_str()));
+
+        if ((int)ProgramFlag::SPECULARMAP & flags_)
+            preDefines += "#define SPECULARMAP\n";
+
+        if ((int)ProgramFlag::AOMAP & flags_)
+            preDefines += "#define AOMAP\n";
 
         buffer = preDefines  + "#define COMPILEFS\n";
         buffer += COMMON_GLSL + TRANSFORMS_GLSL + LIGHTING_GLSL + POSTPROCESS_GLSL + FS_GLSL;
@@ -297,11 +309,15 @@ namespace NSG
             texture0Loc_ = GetUniformLocation("u_texture0");
             texture1Loc_ = GetUniformLocation("u_texture1");
             texture2Loc_ = GetUniformLocation("u_texture2");
+            texture3Loc_ = GetUniformLocation("u_texture3");
+            texture4Loc_ = GetUniformLocation("u_texture4");
+            texture5Loc_ = GetUniformLocation("u_texture5");
             materialLoc_.color_ = GetUniformLocation("u_material.color");
             materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
             materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
             materialLoc_.specular_ = GetUniformLocation("u_material.specular");
             materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
+            materialLoc_.parallaxScale_ = GetUniformLocation("u_material.parallaxScale");
 
             for (unsigned idx = 0; idx < nBones_; idx++)
             {
@@ -375,6 +391,21 @@ namespace NSG
             if (texture2Loc_ != -1)
             {
                 glUniform1i(texture2Loc_, 2);
+            }
+
+            if (texture3Loc_ != -1)
+            {
+                glUniform1i(texture3Loc_, 3);
+            }
+
+            if (texture4Loc_ != -1)
+            {
+                glUniform1i(texture4Loc_, 4);
+            }
+
+            if (texture5Loc_ != -1)
+            {
+                glUniform1i(texture5Loc_, 5);
             }
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -564,6 +595,20 @@ namespace NSG
                 graphics_.SetTexture(2, material->texture2_.get());
             }
 
+            if (texture3Loc_ != -1)
+            {
+                graphics_.SetTexture(3, material->texture3_.get());
+            }
+            
+            if (texture4Loc_ != -1)
+            {
+                graphics_.SetTexture(4, material->texture4_.get());
+            }
+
+            if (texture5Loc_ != -1)
+            {
+                graphics_.SetTexture(5, material->texture5_.get());
+            }
 
             if (activeMaterial_ != material || material->UniformsNeedUpdate())
             {
@@ -596,6 +641,13 @@ namespace NSG
                     material_.shininess_ = material->shininess_;
                     glUniform1f(materialLoc_.shininess_, material->shininess_);
                 }
+
+                if (materialLoc_.parallaxScale_ != -1 && material_.parallaxScale_ != material->parallaxScale_)
+                {
+                    material_.parallaxScale_ = material->parallaxScale_;
+                    glUniform1f(materialLoc_.parallaxScale_, material->parallaxScale_);
+                }
+
             }
         }
 
@@ -619,7 +671,7 @@ namespace NSG
 
             PNode rootNode = skeleton->GetRoot();
             Matrix4 globalInverseModelMatrix(1);
-            Node* parent = rootNode->GetParent();
+            PNode parent = rootNode->GetParent();
             if (parent)
             {
                 // In order to make all the bones relatives to the root's parent.
@@ -724,7 +776,7 @@ namespace NSG
     {
         if (scene && HasLighting())
         {
-            const Scene::Lights& dirLights = scene->GetLights(Light::DIRECTIONAL);
+			const Scene::Lights& dirLights = scene->GetLights(LightType::DIRECTIONAL);
 
             if (nDirectionalLights_ != dirLights.size())
             {
@@ -733,7 +785,7 @@ namespace NSG
                 return false;
             }
 
-            const Scene::Lights& pointLigths = scene->GetLights(Light::POINT);
+			const Scene::Lights& pointLigths = scene->GetLights(LightType::POINT);
 
             if (nPointLights_ != pointLigths.size())
             {
@@ -742,7 +794,7 @@ namespace NSG
                 return false;
             }
 
-            const Scene::Lights& spotLigths = scene->GetLights(Light::SPOT);
+			const Scene::Lights& spotLigths = scene->GetLights(LightType::SPOT);
 
             if (nSpotLights_ != spotLigths.size())
             {

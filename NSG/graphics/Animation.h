@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "MapAndVector.h"
 
 namespace NSG
 {
@@ -53,9 +54,7 @@ namespace NSG
     class Animation
     {
     public:
-        Animation();
         ~Animation();
-        void SetName(const std::string& name);
 		const std::string& GetName() const { return name_; }
         void SetLength(float length);
 		float GetLength() const { return length_; }
@@ -65,8 +64,10 @@ namespace NSG
 		void Load(const pugi::xml_node& node);
 		void AddTrack(const AnimationTrack& track);
     private:
+		Animation(const std::string& name);
         std::string name_;
         float length_;
         std::vector<AnimationTrack> tracks_;
+		friend class MapAndVector < std::string, Animation > ;
     };
 }

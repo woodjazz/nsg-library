@@ -28,20 +28,20 @@ using namespace NSG;
 
 static void Test01()
 {
-    PScene scene(App::this_->CreateScene(true));
+    PScene scene(App::this_->CreateScene("scene", true));
 
     PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
     PBoxMesh boxMesh(App::this_->CreateBoxMesh());
 
-    PSceneNode node1s = scene->CreateSceneNode("node 1");
+	PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
     node1s->Set(sphereMesh);
     node1s->SetPosition(Vertex3(0, 0, 1));
 
-    PSceneNode node1b = scene->CreateSceneNode("node 2");
+	PSceneNode node1b = scene->GetOrCreateChild<SceneNode>("node 2");
     node1b->Set(boxMesh);
     node1b->SetPosition(Vertex3(0, 0, 1));
 
-    PCamera camera = scene->CreateCamera("camera");
+	PCamera camera = scene->GetOrCreateChild<Camera>("camera");
 
     std::vector<const SceneNode*> visibles;
     scene->GetVisibleNodes(camera.get(), visibles);
@@ -81,16 +81,16 @@ static void Test01()
 
 static void Test02()
 {
-    PScene scene(App::this_->CreateScene(true));
+    PScene scene(App::this_->CreateScene("scene", true));
 
     PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
     PBoxMesh boxMesh(App::this_->CreateBoxMesh());
 
-    PSceneNode node1s = scene->CreateSceneNode("node 1");
+	PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
     node1s->Set(sphereMesh);
     node1s->SetPosition(Vertex3(100, 0, -100));
 
-    PSceneNode node1b = scene->CreateSceneNode("node 2");
+	PSceneNode node1b = scene->GetOrCreateChild<SceneNode>("node 2");
     node1b->Set(boxMesh);
     node1b->SetPosition(Vertex3(-100, 0, -100));
 
@@ -130,11 +130,11 @@ static void Test02()
 
 static void Test03()
 {
-    PScene scene(App::this_->CreateScene(true));
+    PScene scene(App::this_->CreateScene("scene", true));
 
     {
         PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
-        PSceneNode node1s = scene->CreateSceneNode("node 1");
+		PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
         node1s->Set(sphereMesh);
 
         Vertex3 origin(0, 0, 100);
@@ -158,7 +158,7 @@ static void Test03()
 
 static void Test04()
 {
-    PScene scene(App::this_->CreateScene(true));
+    PScene scene(App::this_->CreateScene("scene", true));
 
     {
         const float RADIUS = 0.5f;
@@ -168,8 +168,7 @@ static void Test04()
         {
             std::stringstream ss;
             ss << i;
-            PSceneNode node = scene->CreateSceneNode("");
-            node->SetName(ss.str());
+			PSceneNode node = scene->GetOrCreateChild<SceneNode>(ss.str());
             nodes.push_back(node);
             node->SetPosition(Vertex3(0, 0, -i));
             node->Set(sphereMesh);
@@ -232,12 +231,12 @@ static void Test04()
 
 static void Test05()
 {
-	PScene scene(App::this_->CreateScene(true));
+	PScene scene(App::this_->CreateScene("scene", true));
 
 	{
 		const float RADIUS = 0.5f;
 		PSphereMesh sphereMesh(App::this_->CreateSphereMesh(RADIUS, 64));
-		PSceneNode node = scene->CreateSceneNode("0");
+		PSceneNode node = scene->GetOrCreateChild<SceneNode>("0");
 		node->SetPosition(Vertex3(0, 0, 0));
 		const float SCALE = 0.1f;
 		node->SetScale(Vertex3(SCALE));

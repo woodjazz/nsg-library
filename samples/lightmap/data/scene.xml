@@ -837,25 +837,23 @@
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="" flags="00000000000000000000010100000010" />
+						<Program name="" flags="00000000000000000000000100000010" />
 					</Pass>
 				</Passes>
 			</Technique>
 		</Material>
 	</Materials>
-	<SceneNode name="SceneRootNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]">
-		<SceneNode name="Scene" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,   -0.707,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]">
-			<SceneNode name="Camera" position="[  -10.199,   -8.492,    8.455]" orientation="[    0.782,    0.489,   -0.222,   -0.317]" scale="[    1.000,    1.000,    1.000]">
-				<Camera name="Camera" fovy="0.472541" zNear="0.1" zFar="100" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" />
-			</SceneNode>
-			<SceneNode name="Lamp" position="[    0.154,   -4.640,    7.710]" orientation="[    0.750,    0.395,   -0.200,    0.492]" scale="[    1.000,    1.000,    1.000]">
-				<Light name="Lamp" type="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]">
-					<attenuation constant="1" linear="0" quadratic="0.00111109" />
-				</Light>
-			</SceneNode>
-			<SceneNode name="static_objects" position="[    0.049,   -2.083,    3.133]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]">
-				<SceneNode name="static_objects_0" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="0" />
-			</SceneNode>
+	<SceneNode name="Scene" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,   -0.707,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]">
+		<SceneNode name="Camera" position="[  -10.199,   -8.492,    8.455]" orientation="[    0.782,    0.489,   -0.222,   -0.317]" scale="[    1.000,    1.000,    1.000]">
+			<Camera name="Camera146" fovy="1.61703" zNear="0.1" zFar="100" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[    0.000,    0.000,    0.000]" orientation="[    0.998,   -0.054,   -0.003,   -0.023]" />
+		</SceneNode>
+		<SceneNode name="Lamp" position="[    0.154,   -4.640,    7.710]" orientation="[    0.750,    0.395,   -0.200,    0.492]" scale="[    1.000,    1.000,    1.000]">
+			<Light name="Lamp148" type="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    0.000,    0.000,    0.000]" orientation="[    0.841,   -0.137,    0.045,   -0.522]">
+				<attenuation constant="1" linear="0" quadratic="0.00111109" />
+			</Light>
+		</SceneNode>
+		<SceneNode name="static_objects" position="[    0.049,   -2.083,    3.133]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]">
+			<SceneNode name="static_objects149" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="0" />
 		</SceneNode>
 	</SceneNode>
 	<Animations />

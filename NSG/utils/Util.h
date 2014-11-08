@@ -53,4 +53,5 @@ namespace NSG
 	Matrix4 GetMatrix4(const std::string& buffer);
 	std::string ToString(const Matrix4& m);
 	Quaternion GetQuaternion(const std::string& buffer);
+	std::string GetUniqueName(const std::string& name = "");
 }

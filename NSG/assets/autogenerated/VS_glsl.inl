@@ -23,10 +23,6 @@ static const std::string VS_GLSL = \
 "			v_color = u_material.color * a_color;\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
 "			gl_Position = GetClipPos(GetWorldPos());\n"\
-"		#elif defined(LIGHTMAP)\n"\
-"		    v_texcoord0 = a_texcoord0;\n"\
-"			v_texcoord1 = a_texcoord1;\n"\
-"			gl_Position = GetClipPos(GetWorldPos());\n"\
 "		#elif defined(PER_VERTEX_LIGHTING)\n"\
 "			vec3 worldPos = GetWorldPos();\n"\
 "		    vec3 normal = GetWorldNormal();\n"\
@@ -34,24 +30,44 @@ static const std::string VS_GLSL = \
 "		    vec4 totalLight = CalcVSTotalLight(worldPos, vertexToEye, normal);\n"\
 "		    v_color = a_color * totalLight;\n"\
 "		    v_texcoord0 = a_texcoord0;\n"\
+"		    #if defined(LIGHTMAP)\n"\
+"		    	v_texcoord1 = a_texcoord1;\n"\
+"		    #endif\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
+"			//Lighting is calculated in world space\n"\
 "			vec3 worldPos = GetWorldPos();\n"\
+"			v_vertexToEye = normalize(u_eyeWorldPos - worldPos);\n"\
 "			v_normal = GetWorldNormal();\n"\
 "			\n"\
-"			#ifdef NORMALMAP					\n"\
-"				v_tangent = GetWorldTangent();\n"\
+"			#if defined(NORMALMAP) || defined(DISPLACEMENTMAP)\n"\
+"				v_tangent = GetWorldTangent(); // Transform the tangent vector to world space (and pass it to the fragment shader).\n"\
 "			    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);\n"\
 "			    v_bitangent = cross(v_tangent, v_normal);\n"\
+"			    // v_normal, v_tangent and v_bitangent are in world coordinates\n"\
+"			    #if defined(DISPLACEMENTMAP)\n"\
+"					// transform direction to the camera to tangent space\n"\
+"					v_vertexToEyeInTangentSpace = vec3(\n"\
+"					     dot(v_vertexToEye, v_tangent),\n"\
+"					     dot(v_vertexToEye, v_bitangent),\n"\
+"					     dot(v_vertexToEye, v_normal)\n"\
+"					  );\n"\
+"				#endif\n"\
 "			#endif\n"\
-"			v_vertexToEye = normalize(u_eyeWorldPos - worldPos);\n"\
 "			for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) \n"\
 "				v_lightDirection[i] = worldPos - u_pointLights[i].position;\n"\
 "			for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) \n"\
 "				v_light2Pixel[i] = worldPos - u_spotLights[i].point.position;\n"\
 "			v_color = a_color;\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
+"		    #ifdef LIGHTMAP\n"\
+"		    	v_texcoord1 = a_texcoord1;\n"\
+"		    #endif\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
+"		#elif defined(LIGHTMAP) // lightmap without lighting\n"\
+"		    v_texcoord0 = a_texcoord0;\n"\
+"			v_texcoord1 = a_texcoord1;\n"\
+"			gl_Position = GetClipPos(GetWorldPos());\n"\
 "		#else // Vertex color by default\n"\
 "			v_color = u_material.color * a_color;\n"\
 "			gl_Position = GetClipPos(GetWorldPos());\n"\

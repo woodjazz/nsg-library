@@ -334,4 +334,15 @@ namespace NSG
 			}
 		}
 	}
+
+    void Mesh::AddSceneNode(SceneNode* node)
+    {
+        sceneNodes_.insert(node);
+    }
+
+    void Mesh::RemoveSceneNode(SceneNode* node)
+    {
+        sceneNodes_.erase(node);
+    }
+
 }

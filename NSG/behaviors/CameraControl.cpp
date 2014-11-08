@@ -38,8 +38,9 @@ namespace NSG
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
         pointOnSphere_ = PPointOnSphere(new PointOnSphere(Vertex3(0), sceneNode_->GetGlobalPosition()));
         updateOrientation_ = false;
-        rightButtonDown_ = false;
+        leftButtonDown_ = false;
         altKeyDown_ = false;
+        shiftKeyDown_ = false;
         SetSphereCenter(true);
     }
 
@@ -71,16 +72,14 @@ namespace NSG
         lastX_ = x;
         lastY_ = y;
 
-        if (button == NSG_BUTTON_RIGHT && !rightButtonDown_)
-        {
-            rightButtonDown_ = true;
-        }
+        if (button == NSG_BUTTON_LEFT)
+            leftButtonDown_ = true;
     }
 
     void CameraControl::OnMouseUp(int button, float x, float y)
     {
-        if (button == NSG_BUTTON_RIGHT)
-            rightButtonDown_ = false;
+        if (button == NSG_BUTTON_LEFT)
+            leftButtonDown_ = false;
     }
 
     void CameraControl::Move(float x, float y)
@@ -93,7 +92,7 @@ namespace NSG
             sceneNode_->SetGlobalPosition(pointOnSphere_->GetPoint());
             sceneNode_->SetLookAt(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
         }
-        else
+        else if (shiftKeyDown_)
         {
             float deltaTime = App::this_->GetDeltaTime();
             Vertex3 position = sceneNode_->GetGlobalPosition();
@@ -101,13 +100,14 @@ namespace NSG
             q = q * glm::angleAxis(deltaTime * relX * 100, Vertex3(0, 1, 0));
             q = q * glm::angleAxis(deltaTime * relY * 100, Vertex3(1, 0, 0));
             sceneNode_->SetOrientation(q);
+            SetSphereCenter(false);
         }
     }
 
 
     void CameraControl::OnMouseMove(float x, float y)
     {
-        if (rightButtonDown_ && !updateOrientation_)
+        if (leftButtonDown_ && !updateOrientation_)
         {
             Move(x, y);
         }
@@ -118,11 +118,17 @@ namespace NSG
 
     void CameraControl::SetPosition(const Vertex3& position)
     {
-        Vertex3 oldPos = sceneNode_->GetGlobalPosition();
-        sceneNode_->SetGlobalPosition(position);
-        BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
-        if (camera_->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE)
-            sceneNode_->SetGlobalPosition(oldPos);
+        if(pointOnSphere_->SetPoint(position))
+        {
+            Vertex3 oldPos = sceneNode_->GetGlobalPosition();
+            sceneNode_->SetGlobalPosition(position);
+            BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
+            if (camera_->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE)
+            {
+                pointOnSphere_->SetPoint(oldPos);
+                sceneNode_->SetGlobalPosition(oldPos);
+            }
+        }
     }
 
     void CameraControl::OnMouseWheel(float x, float y)
@@ -181,7 +187,8 @@ namespace NSG
             BoundingBox bb;
             if (!scene_.GetVisibleBoundingBox(camera_, bb))
                 bb = scene_.GetWorldBoundingBoxBut(camera_);
-            newCenter = bb.Center();
+            newCenter = ray.GetPoint(glm::distance(bb.Center(), camera_->GetGlobalPosition()));
+            //newCenter = bb.Center();
         }
 
         if (pointOnSphere_->SetCenter(newCenter))
@@ -260,6 +267,12 @@ namespace NSG
             case NSG_KEY_LALT:
                 {
                     altKeyDown_ = action ? true : false;
+                    break;
+                }
+
+            case NSG_KEY_LSHIFT:
+                {
+                    shiftKeyDown_ = action ? true : false;
                     break;
                 }
 

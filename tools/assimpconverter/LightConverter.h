@@ -33,7 +33,7 @@ namespace NSG
 	class LightConverter
 	{
 	public:
-		LightConverter(const aiLight* light, Scene* scene);
+		LightConverter(const aiLight* light, SceneNode* parent);
 		~LightConverter();
 		PLight GetLight() const { return light_; }
 	private:

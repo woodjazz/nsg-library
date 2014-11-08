@@ -33,13 +33,14 @@ misrepresented as being the original software.
 namespace NSG
 {
     RoundedRectangleMesh::RoundedRectangleMesh(float radius, float width, float height, int res)
-        : radius_(radius),
+        : Mesh("RoundedRectangleMesh"),
+          radius_(radius),
           width_(width),
           height_(height),
           res_(res)
     {
         resource_ = PResource(new ResourceProcedural(this));
-		SetSerializable(false);
+        SetSerializable(false);
     }
 
     RoundedRectangleMesh::~RoundedRectangleMesh()

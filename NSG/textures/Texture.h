@@ -48,6 +48,9 @@ namespace NSG
         void SetSerializable(bool serializable);
         bool IsSerializable() const;
         void SetFlags(const TextureFlags& flags);
+        TextureFlags GetFlags() const { return flags_; }
+        void SetWrapMode(TextureWrapMode mode);
+        void SetFilterMode(TextureFilterMode mode);
     private:
 		Texture(const Path& path);
 		Texture(PResourceFile resource);
@@ -63,6 +66,9 @@ namespace NSG
         GLenum type_;
         int channels_;
         bool serializable_;
+        TextureWrapMode wrapMode_;
+        int mipmapLevels_;
+        TextureFilterMode filterMode_;
 		friend class TextureFileManager;
     };
 }

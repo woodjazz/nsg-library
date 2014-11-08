@@ -32,7 +32,7 @@ misrepresented as being the original software.
 #include "Singleton.h"
 #include "IMGUI.h"
 #include "AppListeners.h"
-#include <vector>
+#include "MapAndVector.h"
 
 class AAssetManager;
 class ANativeActivity;
@@ -76,25 +76,27 @@ namespace NSG
         AAssetManager* GetAssetManager();
         static void Add(IViewChangedListener* listener);
         static void Remove(IViewChangedListener* listener);
-        PScene CreateScene(bool setAsCurrent);
+        PScene CreateScene(const std::string& name, bool setAsCurrent);
         void SetCurrentScene(PScene scene);
         PScene GetCurrentScene() const;
         PBoxMesh CreateBoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
         PCircleMesh CreateCircleMesh(float radius, int res);
         PEllipseMesh CreateEllipseMesh(float width, float height, int res);
-        PModelMesh CreateModelMesh(const VertexsData& vertexsData, const Indexes& indexes);
-        PModelMesh CreateModelMesh();
+        PModelMesh GetOrCreateModelMesh(const std::string& name);
         PPlaneMesh CreatePlaneMesh(float width, float height, int columns, int rows);
         PRectangleMesh CreateRectangleMesh(float width, float height);
         PRoundedRectangleMesh CreateRoundedRectangleMesh(float radius, float width, float height, int res);
         PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
         PTextMesh CreateTextMesh(const std::string& textureFilename = "", bool dynamic = true);
-        PMaterial CreateMaterial(const std::string& name = "");
+        PMaterial CreateMaterial(const std::string& name);
+        PMaterial GetOrCreateMaterial(const std::string& name);
         PResourceFile GetOrCreateResourceFile(const Path& path);
         PTexture GetOrCreateTextureFile(const Path& path, TextureFlags flags = (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         PProgram CreateProgram(const std::string& name = "");
         PRigidBody CreateRigidBody();
         const std::vector<PMesh>& GetMeshes() const;
+        const std::vector<PModelMesh>& GetModels() const { return models_.GetConstObjs(); }
+        PModelMesh GetModelMesh(const std::string& name) { return models_.Get(name); }
         const std::vector<PMaterial>& GetMaterials() const;
         int GetMaterialSerializableIndex(const PMaterial& material) const;
         int GetMeshSerializableIndex(const PMesh& mesh) const;
@@ -115,7 +117,8 @@ namespace NSG
         std::vector<PScene> scenes_;
         PScene currentScene_;
         std::vector<PMesh> meshes_;
-        std::vector<PMaterial> materials_;
+        MapAndVector<std::string, Material> materials_;
+        MapAndVector<std::string, ModelMesh> models_;
         bool isSceneReady_;
         friend struct InternalApp;
     };
