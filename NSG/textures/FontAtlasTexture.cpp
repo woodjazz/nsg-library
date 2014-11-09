@@ -21,9 +21,10 @@
 namespace NSG
 {
 	FontAtlasTexture::FontAtlasTexture(const Path& path)
-        : viewWidth_(0),
-          viewHeight_(0),
-		  path_(path)
+        : path_(path),
+    viewWidth_(0),
+    viewHeight_(0)
+
     {
 		if (path_.IsEmpty())
         {
@@ -133,7 +134,7 @@ namespace NSG
         GLsizei textureHeight = texture_->GetHeight();
 
         float x = 0;
-        float y = 0;
+        //float y = 0;
 
         int index = 0;
 

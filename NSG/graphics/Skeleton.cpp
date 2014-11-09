@@ -124,7 +124,6 @@ namespace NSG
     void Skeleton::Load(const pugi::xml_node& node)
     {
         std::string meshName = node.attribute("meshName").as_string();
-        const std::vector<PMesh>& meshes = App::this_->GetMeshes();
 		mesh_ = App::this_->GetModelMesh(meshName);
 		CHECK_CONDITION(mesh_.lock(), __FILE__, __LINE__);
         std::string rootName = node.attribute("rootName").as_string();

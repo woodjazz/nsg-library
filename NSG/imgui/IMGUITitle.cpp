@@ -43,7 +43,6 @@ namespace NSG
     {
         Title::Title(const std::string& text, TitleStyle& style)
             : Object(LayoutType::CONTROL, 100, Pixels2PercentageY(style.pixelsHeight_), style),
-              currentText_(text),
               titleStyle_(style),
               pTextMesh_(area_->textMesh0_)
         {

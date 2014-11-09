@@ -45,7 +45,8 @@ misrepresented as being the original software.
 namespace NSG
 {
     Texture::Texture(GLint format, GLsizei width, GLsizei height, const char* pixels)
-        : flags_((int)TextureFlag::NONE),
+        : fromKnownImgFormat_(false),
+          flags_((int)TextureFlag::NONE),
           texture_(0),
           width_(width),
           height_(height),
@@ -53,41 +54,41 @@ namespace NSG
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
           serializable_(false),
-          fromKnownImgFormat_(false),
           wrapMode_(TextureWrapMode::REPEAT),
-		  mipmapLevels_(0),
+          mipmapLevels_(0),
           filterMode_(TextureFilterMode::BILINEAR)
 
     {
         switch (format_)
         {
-            case GL_ALPHA:
-            case GL_LUMINANCE:
-                channels_ = 1;
-                break;
-            case GL_LUMINANCE_ALPHA:
-                channels_ = 2;
-                break;
-            case GL_RGB:
-                channels_ = 3;
-                break;
-            case GL_RGBA:
-                channels_ = 4;
-                break;
-            case GL_DEPTH_COMPONENT:
-                channels_ = 0;
-                type_ = GL_UNSIGNED_INT;
-                break;
-            default:
-                CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
-                break;
+        case GL_ALPHA:
+        case GL_LUMINANCE:
+            channels_ = 1;
+            break;
+        case GL_LUMINANCE_ALPHA:
+            channels_ = 2;
+            break;
+        case GL_RGB:
+            channels_ = 3;
+            break;
+        case GL_RGBA:
+            channels_ = 4;
+            break;
+        case GL_DEPTH_COMPONENT:
+            channels_ = 0;
+            type_ = GL_UNSIGNED_INT;
+            break;
+        default:
+            CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
+            break;
         }
 
         pResource_ = PResource(new ResourceMemory(pixels, width * height * channels_));
     }
 
     Texture::Texture(PResourceMemory resource)
-        : flags_((int)TextureFlag::NONE),
+        : fromKnownImgFormat_(true),
+          flags_((int)TextureFlag::NONE),
           texture_(0),
           pResource_(resource),
           width_(0),
@@ -96,15 +97,15 @@ namespace NSG
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
           serializable_(false),
-          fromKnownImgFormat_(true),
-		  wrapMode_(TextureWrapMode::REPEAT),
-		  mipmapLevels_(0),
-		  filterMode_(TextureFilterMode::BILINEAR)
+          wrapMode_(TextureWrapMode::REPEAT),
+          mipmapLevels_(0),
+          filterMode_(TextureFilterMode::BILINEAR)
     {
     }
 
     Texture::Texture(const Path& path)
-        : flags_((int)TextureFlag::NONE),
+        : fromKnownImgFormat_(true),
+          flags_((int)TextureFlag::NONE),
           texture_(0),
           pResource_(ResourceFileManager::this_->GetOrCreate(path)),
           width_(0),
@@ -113,15 +114,15 @@ namespace NSG
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
           serializable_(true),
-          fromKnownImgFormat_(true),
-		  wrapMode_(TextureWrapMode::REPEAT),
-		  mipmapLevels_(0),
-		  filterMode_(TextureFilterMode::BILINEAR)
+          wrapMode_(TextureWrapMode::REPEAT),
+          mipmapLevels_(0),
+          filterMode_(TextureFilterMode::BILINEAR)
     {
     }
 
     Texture::Texture(PResourceFile resource)
-        : flags_((int)TextureFlag::NONE),
+        : fromKnownImgFormat_(true),
+          flags_((int)TextureFlag::NONE),
           texture_(0),
           pResource_(resource),
           width_(0),
@@ -130,10 +131,9 @@ namespace NSG
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
           serializable_(true),
-          fromKnownImgFormat_(true),
-		  wrapMode_(TextureWrapMode::REPEAT),
-		  mipmapLevels_(0),
-		  filterMode_(TextureFilterMode::BILINEAR)
+          wrapMode_(TextureWrapMode::REPEAT),
+          mipmapLevels_(0),
+          filterMode_(TextureFilterMode::BILINEAR)
     {
     }
 
@@ -305,7 +305,7 @@ namespace NSG
         if (fromKnownImgFormat_)
             stbi_image_free((void*)img);
 
-		mipmapLevels_ = 0;
+        mipmapLevels_ = 0;
         if (flags_ & (int)TextureFlag::GENERATE_MIPMAPS)
         {
             {
@@ -321,32 +321,32 @@ namespace NSG
             glGenerateMipmap(GL_TEXTURE_2D);
         }
 
-        switch(filterMode_)
+        switch (filterMode_)
         {
         case TextureFilterMode::NEAREST:
-            {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                break;
-            }
+        {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            break;
+        }
         case TextureFilterMode::BILINEAR:
-            {
-                if (mipmapLevels_ < 2)
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                else
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                break;
-            }
+        {
+            if (mipmapLevels_ < 2)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            else
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
+        }
         case TextureFilterMode::TRILINEAR:
-            {
-                if (mipmapLevels_ < 2)
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                else
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                break;
-            }
+        {
+            if (mipmapLevels_ < 2)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            else
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
+        }
         default:
             CHECK_ASSERT(false, __FILE__, __LINE__);
             break;

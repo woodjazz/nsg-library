@@ -42,7 +42,6 @@ namespace NSG
 	{
 		Label::Label(const std::string& text, float percentageX, float percentageY, LabelStyle& style)
 			: Object(LayoutType::CONTROL, percentageX, percentageY, style),
-			currentText_(text),
 			labelStyle_(style),
 			pTextMesh_(area_->textMesh0_)
 		{

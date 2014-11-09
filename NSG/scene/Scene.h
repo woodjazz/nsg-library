@@ -61,7 +61,7 @@ namespace NSG
         POctree GetOctree() const { return octree_; }
         Lights GetLights(LightType type) const;
         void Save(pugi::xml_document& doc);
-        virtual void Load(const pugi::xml_document& doc, const CachedData& data) override;
+        void Load(const pugi::xml_document& doc, const CachedData& data) override;
         bool GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const;
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
         bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);

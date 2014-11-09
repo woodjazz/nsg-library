@@ -78,7 +78,7 @@ namespace NSG
 
     std::istream& operator >> (std::istream& s, Vertex2& obj)
     {
-        char ch;
+        char ch(0);
         s >> ch;
         CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
         s >> obj.x;
@@ -93,7 +93,7 @@ namespace NSG
 
     std::istream& operator >> (std::istream& s , Vertex3& obj)
     {
-        char ch;
+        char ch(0);
         s >> ch;
         CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
         s >> obj.x;
@@ -111,7 +111,7 @@ namespace NSG
 
     std::istream& operator >> (std::istream& s , Vertex4& obj)
     {
-        char ch;
+        char ch(0);
         s >> ch;
         CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
         s >> obj.x;
@@ -182,7 +182,7 @@ namespace NSG
 
 	std::istream& operator >> (std::istream& s, Matrix4& obj)
 	{
-		char ch;
+		char ch(0);
 		s >> ch;
 		CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
 		Vector4 col0;
@@ -204,7 +204,7 @@ namespace NSG
 
     std::istream& operator >> (std::istream& s , Quaternion& obj)
     {
-        char ch;
+        char ch(0);
         s >> ch;
         CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
         s >> obj.w;

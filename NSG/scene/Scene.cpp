@@ -393,7 +393,6 @@ namespace NSG
         pugi::xml_node childSkeletons = node.child("Skeletons");
         if (childSkeletons)
         {
-            const std::vector<PMesh>& meshes = app_.GetMeshes();
             pugi::xml_node child = childSkeletons.child("Skeleton");
             while (child)
             {

@@ -45,11 +45,12 @@ namespace NSG
               mouseup_(false),
               mouseRelX_(0),
               mouseRelY_(0),
+        activeitem_needs_keyboard_(false),
+
               keyentered_(0),
               keymod_(0),
               keyaction_(0),
               character_(0),
-              activeitem_needs_keyboard_(false),
               lastHit_(static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID)),
               activeScrollArea_(static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID)),
               tick_(0),

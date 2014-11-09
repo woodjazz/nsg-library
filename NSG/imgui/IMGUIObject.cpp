@@ -67,12 +67,14 @@ namespace NSG
               drawn_(false),
               hotitem_(currentWindowManager_->hotitem_),
               activeitem_(currentWindowManager_->activeitem_),
-              kbditem_(currentWindowManager_->kbditem_),
-              lastwidget_(currentWindowManager_->lastwidget_),
-              activeitem_needs_keyboard_(uistate_.activeitem_needs_keyboard_),
-              viewSize_(App::this_->GetViewSize()),
               style_(style),
-              controlMesh_(Context::this_->controlMesh_.get())
+        kbditem_(currentWindowManager_->kbditem_),
+        lastwidget_(currentWindowManager_->lastwidget_),
+
+              controlMesh_(Context::this_->controlMesh_.get()),
+        activeitem_needs_keyboard_(uistate_.activeitem_needs_keyboard_),
+        viewSize_(App::this_->GetViewSize())
+
         {
             if (type == LayoutType::WINDOW)
                 id_ = currentWindowManager_->id_;
@@ -125,12 +127,12 @@ namespace NSG
             skin_.stencilPass_->SetStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
             skin_.stencilPass_->SetStencilFunc(GL_EQUAL, level_ - 1, ~GLuint(0));
 
-			if (skin_.stencilPass_->Render())
-			{
-				Graphics::this_->Set(currentMaterial_.get());
-				style_.pass_->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
-				drawn_ = style_.pass_->Render();
-			}
+            if (skin_.stencilPass_->Render())
+            {
+                Graphics::this_->Set(currentMaterial_.get());
+                style_.pass_->SetStencilFunc(GL_EQUAL, level_, ~GLuint(0));
+                drawn_ = style_.pass_->Render();
+            }
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }
@@ -282,13 +284,13 @@ namespace NSG
 
             FixCurrentTechnique();
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
             Draw();
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
             UpdateControl();
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
             return true;
         }

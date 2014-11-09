@@ -28,14 +28,15 @@ misrepresented as being the original software.
 namespace NSG
 {
     VertexData::VertexData()
-        : color_(1),
-          normal_(0, 0, 1) // always facing forward
+        : normal_(0, 0, 1),  // always facing forward,
+        color_(1)
+
     {
     }
 
     std::ostream& operator << (std::ostream& s , const VertexData& obj)
     {
-		s << obj.position_ << obj.normal_ << obj.uv0_ << obj.uv1_ << obj.color_ << obj.tangent_ << obj.bonesID_ << obj.bonesWeight_;
-    	return s;
+        s << obj.position_ << obj.normal_ << obj.uv0_ << obj.uv1_ << obj.color_ << obj.tangent_ << obj.bonesID_ << obj.bonesWeight_;
+        return s;
     }
 }

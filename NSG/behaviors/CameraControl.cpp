@@ -215,7 +215,7 @@ namespace NSG
 
     void CameraControl::OnKey(int key, int action, int modifier)
     {
-        float deltaTime = App::this_->GetDeltaTime();
+//        float deltaTime = App::this_->GetDeltaTime();
 
         switch (key)
         {
