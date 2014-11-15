@@ -42,7 +42,8 @@ namespace NSG
 	class Mesh : public GPUObject
     {
     public:
-        ~Mesh();
+        virtual ~Mesh();
+		void SetDynamic(bool dynamic);
         virtual GLenum GetWireFrameDrawMode() const = 0;
         virtual GLenum GetSolidDrawMode() const = 0;
         virtual size_t GetNumberOfTriangles() const = 0;

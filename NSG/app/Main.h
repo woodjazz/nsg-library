@@ -24,67 +24,51 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
-#ifdef NACL
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
+#include "App.h"
 #include "NSG/app/AppNaCl.h"
+#include "MemoryTest.h"
+#ifdef NACL
 #define NSG_MAIN(ClassName)\
-namespace pp\
-{\
-	Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(new ClassName); }\
-}
+    namespace pp\
+    {\
+        Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(new ClassName); }\
+    }
 #elif defined(ANDROID) && !defined(SDL)
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-#include "App.h"
-struct android_app;
-namespace NSG
-{
-	extern void CreateModule(struct android_app* state, App* pApp);
-}
 #define NSG_MAIN(ClassName)\
-extern "C" void android_main(struct android_app* state)\
-{\
-	NSG::CreateModule(state, new ClassName);\
-}
+    struct android_app;\
+    namespace NSG\
+    {\
+        extern void CreateModule(struct android_app* state, App* pApp);\
+    }\
+    extern "C" void android_main(struct android_app* state)\
+    {\
+        NSG::CreateModule(state, new ClassName);\
+    }
 #elif IOS || ANDROID
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-#include "App.h"
-#include "MemoryTest.h"
-namespace NSG
-{
-	extern bool CreateModule(App* pApp);
-}
 #define NSG_MAIN(ClassName)\
-extern "C" int SDL_main(int argc, char** argv); \
-int SDL_main(int argc, char** argv) \
-{\
-    NSG::CreateModule(new ClassName);\
-	return 0;\
-}
+    namespace NSG\
+    {\
+        extern bool CreateModule(App* pApp);\
+    }\
+    extern "C" int SDL_main(int argc, char** argv); \
+    int SDL_main(int argc, char** argv) \
+    {\
+        NSG::CreateModule(new ClassName);\
+        return 0;\
+    }
 #else
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-#include "App.h"
-#include "MemoryTest.h"
-namespace NSG
-{
-	extern bool CreateModule(App* pApp);
-}
 #define NSG_MAIN(ClassName)\
-int main(int argc, char * argv[])\
-{\
-	ClassName* objApp(new ClassName);\
-	objApp->SetCommandLineParameters(argc, argv);\
-    NSG::CreateModule(objApp);\
-	return 0;\
-}
+    namespace NSG\
+    {\
+        extern bool CreateModule(App* pApp);\
+    }\
+    int main(int argc, char * argv[])\
+    {\
+        ClassName* objApp(new ClassName);\
+        objApp->SetCommandLineParameters(argc, argv);\
+        NSG::CreateModule(objApp);\
+        return 0;\
+    }
 #endif
 
 

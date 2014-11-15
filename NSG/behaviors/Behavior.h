@@ -35,7 +35,6 @@ namespace NSG
 	{
 		App& app_;
 		SceneNode* sceneNode_;
-		Scene& scene_;
 
 		virtual ~Behavior();
 		virtual void Start() {}

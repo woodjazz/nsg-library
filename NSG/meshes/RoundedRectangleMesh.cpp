@@ -32,19 +32,28 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    RoundedRectangleMesh::RoundedRectangleMesh(float radius, float width, float height, int res)
-        : Mesh("RoundedRectangleMesh"),
-          radius_(radius),
-          width_(width),
-          height_(height),
-          res_(res)
+    RoundedRectangleMesh::RoundedRectangleMesh(const std::string& name)
+        : Mesh(name)
     {
+        Set();
         resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
     RoundedRectangleMesh::~RoundedRectangleMesh()
     {
+    }
+
+    void RoundedRectangleMesh::Set(float radius, float width, float height, int res)
+    {
+        if (radius_ != radius || width_ != width || height_ != height || res_ != res)
+        {
+            radius_ = radius;
+            width_ = width;
+            height_ = height;
+            res_ = res;
+            Invalidate();
+        }
     }
 
     GLenum RoundedRectangleMesh::GetWireFrameDrawMode() const

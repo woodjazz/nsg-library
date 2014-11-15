@@ -38,7 +38,7 @@ namespace NSG
 	{
 	public:
 		SceneNode(const std::string& name);
-		~SceneNode();
+		virtual ~SceneNode();
 		PMaterial GetMaterial() const { return material_; }
 		void Set(PMaterial material);
 		void Set(PMesh mesh);
@@ -52,7 +52,6 @@ namespace NSG
 		Octant* GetOctant() const { return octant_; }
 		virtual void OnDirty() const override;
 		void OnScaleChange() override;
-		virtual void Save(pugi::xml_node& node) override;
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
 		virtual void Start() override;
@@ -66,26 +65,20 @@ namespace NSG
         virtual void OnKey(int key, int action, int modifier) override;
         virtual void OnChar(unsigned int character) override;
         virtual void OnCollision(const ContactPoint& contactInfo) override;
-		void OnChildCreated() override;
 		void OnEnable() override;
 		void OnDisable() override;
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_;  }
 		void SetResource(PResource resource);
-		void SetDiffuseMap(PTexture texture, bool recursive);
-		void SetNormalMap(PTexture texture, bool recursive);
-		void SetSpecularMap(PTexture texture, bool recursive);
-		void SetAOMap(PTexture texture, bool recursive);
-		void SetDisplacementMap(PTexture texture, bool recursive);
-		void SetLightMap(PTexture texture, bool recursive);
 		void GetMaterials(std::vector<PMaterial>& materials) const;
-		void LoadNode(const pugi::xml_node& child, const CachedData& data);
+		void Save(pugi::xml_node& node) override;
+		void SaveChildren(pugi::xml_node& node);
+		virtual void Load(const pugi::xml_node& child, const CachedData& data);
+		void LoadChildren(const pugi::xml_node& node, const CachedData& data);
 	protected:
-		void SetScene();
 		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
 		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
 		App& app_;
-		std::weak_ptr<Scene> scene_;
 	private:
 		PMaterial material_;
 		PMesh mesh_;

@@ -37,35 +37,35 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	LightConverter::LightConverter(const aiLight* light, SceneNode* parent)
+	LightConverter::LightConverter(const aiLight* light, Light* lightNode)
     {
-		light_ = parent->GetOrCreateChild<Light>(GetUniqueName(light->mName.C_Str()));
-
         switch (light->mType)
         {
             case aiLightSource_DIRECTIONAL:
-                light_->SetType(LightType::DIRECTIONAL);
+				lightNode->SetType(LightType::DIRECTIONAL);
                 break;
             case aiLightSource_POINT:
-				light_->SetType(LightType::POINT);
+				lightNode->SetType(LightType::POINT);
                 break;
             case aiLightSource_SPOT:
                 {
                     float spotCutOff = light->mAngleOuterCone;
-					light_->SetSpotCutOff(spotCutOff);
-					light_->SetType(LightType::SPOT);
+					lightNode->SetSpotCutOff(spotCutOff);
+					lightNode->SetType(LightType::SPOT);
                     break;
                 }
             default:
                 CHECK_ASSERT(false, __FILE__, __LINE__);
         }
 
-        light_->SetAmbientColor(Color(light->mColorAmbient.r, light->mColorAmbient.g, light->mColorAmbient.b, 1));
-        light_->SetDiffuseColor(Color(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b, 1));
-        light_->SetSpecularColor(Color(light->mColorSpecular.r, light->mColorSpecular.g, light->mColorSpecular.b, 1));
-        light_->SetAttenuation(light->mAttenuationConstant, light->mAttenuationLinear, light->mAttenuationQuadratic);
-        light_->SetLookAt(Vector3(light->mDirection.x, light->mDirection.y, light->mDirection.z));
-        light_->SetPosition(Vector3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
+		lightNode->SetAmbientColor(Color(light->mColorAmbient.r, light->mColorAmbient.g, light->mColorAmbient.b, 1));
+		lightNode->SetDiffuseColor(Color(light->mColorDiffuse.r, light->mColorDiffuse.g, light->mColorDiffuse.b, 1));
+		lightNode->SetSpecularColor(Color(light->mColorSpecular.r, light->mColorSpecular.g, light->mColorSpecular.b, 1));
+		lightNode->SetAttenuation(light->mAttenuationConstant, light->mAttenuationLinear, light->mAttenuationQuadratic);
+		Node node;
+		node.SetLocalLookAt(Vector3(light->mDirection.x, light->mDirection.y, light->mDirection.z));
+		lightNode->Rotate(node.GetOrientation());
+		lightNode->Translate(Vector3(light->mPosition.x, light->mPosition.y, light->mPosition.z));
     }
 
     LightConverter::~LightConverter()

@@ -51,7 +51,8 @@ namespace NSG
         unsigned idx = 0;
         for (auto& obj : bones_)
         {
-            if (obj->GetName() == name)
+			PNode bone = obj.lock();
+            if (bone->GetName() == name)
             {
                 result = idx;
                 break;
@@ -73,17 +74,18 @@ namespace NSG
     {
         pugi::xml_node child = node.append_child("Skeleton");
         child.append_attribute("meshName") = mesh_.lock()->GetName().c_str();
-        child.append_attribute("rootName") = root_->GetName().c_str();
+        child.append_attribute("rootName") = root_.lock()->GetName().c_str();
 
         {
             pugi::xml_node childBones = child.append_child("Bones");
             for (auto& obj : bones_)
             {
+				PNode bone = obj.lock();
                 pugi::xml_node childBone = childBones.append_child("Bone");
-                childBone.append_attribute("boneName") = obj->GetName().c_str();
+				childBone.append_attribute("boneName") = bone->GetName().c_str();
 
 				{
-					const Matrix4& offset = obj->GetBoneOffsetMatrix();
+					const Matrix4& offset = bone->GetBoneOffsetMatrix();
 
 					std::stringstream ss;
 					ss << ToString(offset);
@@ -124,12 +126,12 @@ namespace NSG
     void Skeleton::Load(const pugi::xml_node& node)
     {
         std::string meshName = node.attribute("meshName").as_string();
-		mesh_ = App::this_->GetModelMesh(meshName);
+		mesh_ = std::dynamic_pointer_cast<ModelMesh>(App::this_->GetMesh(meshName));
 		CHECK_CONDITION(mesh_.lock(), __FILE__, __LINE__);
         std::string rootName = node.attribute("rootName").as_string();
-        PScene scene = App::this_->GetCurrentScene();
+        PScene scene = scene_.lock();
         root_ = scene->GetChild<Node>(rootName, true);
-        CHECK_ASSERT(root_, __FILE__, __LINE__);
+        CHECK_ASSERT(root_.lock(), __FILE__, __LINE__);
         bones_.clear();
         pugi::xml_node childBones = node.child("Bones");
         if (childBones)

@@ -24,15 +24,13 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
+#ifdef NACL
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/utility/completion_callback_factory.h"
-
 #include "App.h"
-
 #ifdef WIN32
 #undef PostMessage
 // Allow 'this' in initializer list
@@ -79,3 +77,4 @@ namespace NSG
 		};
 	}
 }
+#endif

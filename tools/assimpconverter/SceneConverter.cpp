@@ -183,7 +183,7 @@ namespace NSG
     {
         CachedData data;
         LoadMeshesAndMaterials(scene, data);
-		scene_ = App::this_->CreateScene(scene->mRootNode->mName.C_Str(), true);
+		scene_ = App::this_->GetOrCreateScene(scene->mRootNode->mName.C_Str(), true);
 		RecursiveLoad(scene, scene->mRootNode, scene_.get(), data);
         LoadAnimations(scene);
         LoadBones(scene, data);
@@ -382,7 +382,7 @@ namespace NSG
     {
         PSkeleton skeleton(new Skeleton(mesh));
         PNode root = scene_->GetChild<Node>(rootBone->mName.C_Str(), true);
-        std::vector<PNode> nodeBones;
+        std::vector<PWeakNode> nodeBones;
         for (auto bone : bones)
         {
             PNode node = scene_->GetChild<Node>(bone->mName.C_Str(), true);
@@ -466,35 +466,54 @@ namespace NSG
             sceneNode->SetScale(Vertex3(scaling.x, scaling.y, scaling.z));
         }
 
+		if (dynamic_cast<Light*>(sceneNode))
+		{
+			// Lights
+			const aiLight* light = GetLight(sc, nd->mName);
+			CHECK_ASSERT(light, __FILE__, __LINE__);
+			LightConverter obj(light, dynamic_cast<Light*>(sceneNode));
+		}
+		else if (dynamic_cast<Camera*>(sceneNode))
+		{
+			// Cameras
+			const aiCamera* camera = GetCamera(sc, nd->mName);
+			CHECK_ASSERT(camera, __FILE__, __LINE__);
+			CameraConverter obj(camera, dynamic_cast<Camera*>(sceneNode));
+		}
+
+        SceneNode* meshSceneNode = sceneNode;
         for (size_t i = 0; i < nd->mNumMeshes; ++i)
         {
             const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[i]];
-			PSceneNode meshSceneNode = sceneNode->GetOrCreateChild<SceneNode>(GetUniqueName(sceneNode->GetName()));
             unsigned int meshIndex = nd->mMeshes[i];
             meshSceneNode->Set(data.meshes_.at(meshIndex));
             unsigned int materialIndex = mesh->mMaterialIndex;
             meshSceneNode->Set(data.materials_.at(materialIndex));
-        }
-
-        {
-            // Lights
-            const aiLight* light = GetLight(sc, nd->mName);
-            if (light)
-				PLightConverter obj(new LightConverter(light, sceneNode));
-        }
-
-        {
-            // Cameras
-            const aiCamera* camera = GetCamera(sc, nd->mName);
-            if (camera)
-				PCameraConverter obj(new CameraConverter(camera, sceneNode));
+			if (i + 1 < nd->mNumMeshes)
+				meshSceneNode = meshSceneNode->GetOrCreateChild<SceneNode>(GetUniqueName(meshSceneNode->GetName())).get();
         }
 
         for (size_t i = 0; i < nd->mNumChildren; ++i)
         {
             const aiNode* ndChild = nd->mChildren[i];
-            PSceneNode child = sceneNode->GetOrCreateChild<SceneNode>(ndChild->mName.C_Str());
-            RecursiveLoad(sc, ndChild, child.get(), data);
+			SceneNode* child = nullptr;
+			const aiLight* light = GetLight(sc, ndChild->mName);
+			const aiCamera* camera = GetCamera(sc, ndChild->mName);
+			if (light)
+			{
+				CHECK_ASSERT(!camera, __FILE__, __LINE__);
+				child = sceneNode->GetOrCreateChild<Light>(ndChild->mName.C_Str()).get();
+			}
+			else if (camera)
+			{
+				child = sceneNode->GetOrCreateChild<Camera>(ndChild->mName.C_Str()).get();
+			}
+			else
+			{
+				child = sceneNode->GetOrCreateChild<SceneNode>(ndChild->mName.C_Str()).get();
+			}
+            
+			RecursiveLoad(sc, ndChild, child, data);
         }
     }
 

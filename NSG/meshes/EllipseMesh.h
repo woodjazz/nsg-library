@@ -32,19 +32,18 @@ namespace NSG
 	class EllipseMesh : public Mesh, public IProceduralResource
 	{
 	public:
+		EllipseMesh(const std::string& name);
+		void Set(float width = 2, float height = 1, int res = 8);
 		~EllipseMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		virtual size_t GetNumberOfTriangles() const override;
 		virtual void Build() override;
 		virtual const char* GetName() const;
-	protected:
-		EllipseMesh(float width, float height, int res);
 	private:
 		float width_;
 		float height_;
 		int res_;
-		friend class App;
 	};
 
 }

@@ -46,7 +46,7 @@ static void FrustumTest()
 
 	PCamera camera = scene->GetOrCreateChild<Camera>("camera");
 
-	camera->SetLookAt(Vector3(0, 0, -1));
+	camera->SetGlobalLookAt(Vector3(0, 0, -1));
 
 	{
 		PFrustum frustum = camera->GetFrustum();
@@ -79,7 +79,7 @@ static void FrustumTest()
 	}
 
 	camera->SetPosition(Vertex3(0, 0, 100));
-	camera->SetLookAt(Vector3(0, 0, -1));
+	camera->SetGlobalLookAt(Vector3(0, 0, -1));
 
 	{
 		PFrustum frustum = camera->GetFrustum();
@@ -113,7 +113,7 @@ static void FrustumTest()
 	}
 
 	camera->SetPosition(Vertex3(10, 0, 1));
-	camera->SetLookAt(Vector3(10, 0, -1));
+	camera->SetGlobalLookAt(Vector3(10, 0, -1));
 
 	{
 		PFrustum frustum = camera->GetFrustum();
@@ -147,7 +147,7 @@ static void FrustumTest()
 
 
 	camera->SetPosition(Vertex3(0, 0, -1));
-	camera->SetLookAt(Vector3(0,0,1));
+	camera->SetGlobalLookAt(Vector3(0, 0, 1));
 
 	{
 		PFrustum frustum = camera->GetFrustum();
@@ -220,11 +220,11 @@ static void Test01()
         camera->SetNearClip(0.1f);
         camera->SetFarClip(250);
         camera->SetPosition(Vertex3(0, 0, 10));
-        camera->SetLookAt(Vertex3(0));
+		camera->SetGlobalLookAt(Vertex3(0));
         PFrustum frustum = camera->GetFrustum();
         CHECK_ASSERT(frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetPosition(Vertex3(0, 0, -1.1f));
-		camera->SetLookAt(Vertex3(0,0,-2));
+		camera->SetGlobalLookAt(Vertex3(0, 0, -2));
 		frustum = camera->GetFrustum();
         CHECK_ASSERT(!frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
     }
@@ -256,9 +256,9 @@ static void Test01()
         CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         node.SetPosition(Vertex3(0, 0, -40));
         CHECK_ASSERT(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
-        camera->SetLookAt(Vertex3(-1, 0, 0));
+		camera->SetGlobalLookAt(Vertex3(-1, 0, 0));
         CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
-        camera->SetLookAt(Vertex3(0, 0, 1));
+		camera->SetGlobalLookAt(Vertex3(0, 0, 1));
         CHECK_ASSERT(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetPosition(Vertex3(0, 0, -4));
 		node.SetPosition(Vertex3(0, 0, -1));
@@ -439,7 +439,7 @@ static void Test04()
 	}
 
 	{
-		camera->SetLookAt(position + Vector3(-1, 0, 0));
+		camera->SetGlobalLookAt(position + Vector3(-1, 0, 0));
 		Ray ray = camera->GetScreenRay(0, 0);
 		CHECK_ASSERT(glm::distance(ray.GetOrigin(), position) < 1, __FILE__, __LINE__);
 		CHECK_ASSERT(glm::distance(ray.GetDirection(), -VECTOR3_RIGHT) < 0.05f, __FILE__, __LINE__);
@@ -457,7 +457,7 @@ static void Test05()
 		camera->SetNearClip(0.1f);
 		camera->SetFarClip(250);
 		camera->SetPosition(Vertex3(0, 0, -4));
-		camera->SetLookAt(-VECTOR3_FORWARD);
+		camera->SetGlobalLookAt(-VECTOR3_FORWARD);
 		BoundingBox bb = box->GetBB();
 		CHECK_ASSERT(camera->GetFrustum()->IsInside(bb) == Intersection::INSIDE, __FILE__, __LINE__);
 		camera->SetPosition(Vertex3(0, 0, -250));

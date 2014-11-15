@@ -45,7 +45,6 @@ namespace NSG
           pass_(new Pass),
           material_(app_.GetOrCreateMaterial("NSGAppStatistics"))
     {
-		
         startTime_ = Clock::now();
 
         pass_->EnableDepthTest(false);
@@ -57,7 +56,7 @@ namespace NSG
         for (int i = 0; i < (int)Stats::MAX_STATS; i++)
         {
             stats_[i] = 0;
-            text_[i] = app_.CreateTextMesh();
+            text_[i] = app_.CreateTextMesh("");
 			std::string name = GetUniqueName("AppStatistics::node");
             if (i > 0)
 				node_[i] = node_[i - 1]->GetOrCreateChild<Node>(name);

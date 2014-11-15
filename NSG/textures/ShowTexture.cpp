@@ -42,7 +42,7 @@ namespace NSG
         : app_(*App::this_),
           pass_(new Pass),
 		  material_(app_.CreateMaterial(GetUniqueName("NSGShowTexture"))),
-          program_(app_.CreateProgram("ShowTexture")),
+          program_(app_.GetOrCreateProgram("NSGShowTexture")),
           mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           node_(new Node("ShowTexture"))
     {

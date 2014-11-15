@@ -38,10 +38,6 @@ namespace NSG
     Scene::~Scene()
     {
         octree_ = nullptr;
-        cameras_.Clear();
-        lights_.Clear();
-        ClearAllChildren();
-
     }
 
     void Scene::Load(PResource resource)
@@ -56,23 +52,6 @@ namespace NSG
             ambient_ = ambient;
             SetUniformsNeedUpdate();
         }
-    }
-
-	void Scene::AddCamera(PCamera camera)
-    {
-		cameras_.Add(camera->GetName(), camera);
-		octree_->InsertUpdate(camera.get());
-    }
-
-	void Scene::AddSceneNode(PSceneNode node)
-    {
-		octree_->InsertUpdate(node.get());
-    }
-
-	void Scene::AddLight(PLight light)
-    {
-		lights_.Add(light->GetName(), light);
-        octree_->InsertUpdate(light.get());
     }
 
     void Scene::Start()
@@ -309,18 +288,6 @@ namespace NSG
         needUpdate_.insert(obj);
     }
 
-    Scene::Lights Scene::GetLights(LightType type) const
-    {
-        Lights lightsResult;
-        for (auto& light : lights_.GetConstObjs())
-        {
-            if (light->GetType() == type)
-				lightsResult.push_back(light);
-        }
-
-		return lightsResult;
-    }
-
     void Scene::SaveMeshes(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Meshes");
@@ -339,12 +306,14 @@ namespace NSG
 
     void Scene::Save(pugi::xml_document& doc)
     {
-        pugi::xml_node child = doc.append_child("Scene");
-        SaveMeshes(child);
-        SaveMaterials(child);
-        SceneNode::Save(child);
-        SaveAnimations(child);
-        SaveSkeletons(child);
+		pugi::xml_node scene = doc.append_child("Scene");
+        pugi::xml_node sceneNode = scene.append_child("SceneNode");
+		SceneNode::Save(sceneNode);
+		SaveMeshes(scene);
+		SaveMaterials(scene);
+		SaveAnimations(scene);
+		SaveSkeletons(scene);
+		
     }
 
     void Scene::SaveAnimations(pugi::xml_node& node)
@@ -366,6 +335,7 @@ namespace NSG
 				if (!HasAnimation(name))
 				{
 					PAnimation animation = GetOrCreateAnimation(name);
+					animation->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
 					animation->Load(child);
 				}
                 child = child.next_sibling("Animation");
@@ -397,11 +367,12 @@ namespace NSG
             while (child)
             {
                 std::string meshName = child.attribute("meshName").as_string();
-				PModelMesh mesh = app_.GetModelMesh(meshName);
+				PModelMesh mesh = std::dynamic_pointer_cast<ModelMesh>(app_.GetMesh(meshName));
                 CHECK_CONDITION(mesh, __FILE__, __LINE__);
 				if (!mesh->GetSkeleton())
 				{
 					PSkeleton skeleton(new Skeleton(mesh));
+					skeleton->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
 					skeleton->Load(child);
 					mesh->SetSkeleton(skeleton);
 				}
@@ -415,16 +386,12 @@ namespace NSG
         //std::stringstream query;
         //query << "/Scene/SceneNode[@name ='" << SCENENODE_ROOT_NAME << "']";
         //pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-        pugi::xml_node sceneChild = doc.child("Scene");
-        if (sceneChild)
+        pugi::xml_node scene = doc.child("Scene");
+        if (scene)
         {
-            pugi::xml_node sceneNodeChild = sceneChild.child("SceneNode");
-			name_ = sceneNodeChild.attribute("name").as_string();
-			CHECK_ASSERT(!name_.empty(), __FILE__, __LINE__);
-            if (sceneNodeChild)
-                LoadNode(sceneNodeChild, data);
-            LoadAnimations(sceneChild);
-            LoadSkeletons(sceneChild);
+			SceneNode::Load(scene.child("SceneNode"), data);
+			LoadAnimations(scene);
+			LoadSkeletons(scene);
         }
     }
 
@@ -501,5 +468,26 @@ namespace NSG
         animationState->SetSpeed(speed);
         return true;
     }
+
+	void Scene::AddLight(PLight light)
+	{
+		lights_[light->GetType()].push_back(light);
+	}
+
+	const std::vector<PWeakLight>& Scene::GetLights(LightType type) const
+	{
+		return lights_[type];
+	}
+
+    void Scene::AddCamera(PCamera camera)
+    {
+        cameras_.push_back(camera);
+    }
+
+    const std::vector<PWeakCamera>& Scene::GetCameras() const
+    {
+        return cameras_;
+    }
+
 
 }

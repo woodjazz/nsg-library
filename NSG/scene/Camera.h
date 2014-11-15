@@ -71,13 +71,12 @@ namespace NSG
 		const PFrustum GetFrustum() const;
 		const Frustum* GetFrustumPointer() const;
 		bool IsVisible(const Node& node, Mesh& mesh) const;
-		void OnChildCreated() override;
 		void OnDirty() const override;
 		float GetZNear() const { return zNear_; }
 		float GetZFar() const { return zFar_; }
 		float GetFov() const { return fovy_; }
-		void Save(pugi::xml_node& node);
-		void Load(const pugi::xml_node& node);
+		void Save(pugi::xml_node& node) override;
+		void Load(const pugi::xml_node& node, const CachedData& data) override;
 		void AddBlurFilter(int output_width, int output_height);
 		void AddBlendFilter(int output_width, int output_height);
 		PFilter AddUserFilter(PResource fragmentShader, int output_width, int output_height);

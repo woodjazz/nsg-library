@@ -38,9 +38,7 @@ struct Sample : App
 
     Sample()
     {
-        //AppConfiguration::this_->width_ = 30;
-        //AppConfiguration::this_->height_ = 20;
-        AppConfiguration::this_->showStatistics_ = false;
+        //AppConfiguration::this_->showStatistics_ = true;
     }
 
     void Start(int argc, char* argv[]) override
@@ -62,17 +60,17 @@ struct Sample : App
 		dirLight0_ = scene_->GetOrCreateChild<Light>("dirlight0");
 		dirLight0_->SetType(LightType::DIRECTIONAL);
         dirLight0_->SetEnabled(false);
-		dirLight0_->SetLookAt(Vertex3(-1, -1, 0));
+		dirLight0_->SetGlobalLookAt(Vertex3(-1, -1, 0));
 
 		dirLight1_ = scene_->GetOrCreateChild<Light>("dirlight1");
 		dirLight1_->SetType(LightType::DIRECTIONAL);
         dirLight1_->SetEnabled(false);
-		dirLight1_->SetLookAt(Vertex3(1, 1, 0));
+		dirLight1_->SetGlobalLookAt(Vertex3(1, 1, 0));
 
 		spotLight0_ = scene_->GetOrCreateChild<Light>("spotlight0");
 		spotLight0_->SetType(LightType::SPOT);
 		spotLight0_->SetPosition(Vertex3(0, 0, 5));
-		spotLight0_->SetLookAt(Vertex3(0, 0, -1));
+		spotLight0_->SetGlobalLookAt(Vertex3(0, 0, -1));
 		spotLight0_->SetSpotCutOff(10);
 		spotLight0_->SetEnabled(false);
 
@@ -81,15 +79,15 @@ struct Sample : App
 		PTexture wallTexture(GetOrCreateTextureFile("data/wall.jpg"));
 		PTexture wallNormalMapTexture(GetOrCreateTextureFile("data/wallnormalmap.jpg"));
         PMaterial material(GetOrCreateMaterial("wall"));
-		PProgram program(CreateProgram());
+		PProgram program(GetOrCreateProgram("wall"));
 		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::NORMALMAP);
         PTechnique technique(new Technique);
         PPass pass(new Pass);
         technique->Add(pass);
         pass->SetProgram(program);
         material->SetTechnique(technique);
-        material->SetTexture0(wallTexture);
-        material->SetTexture1(wallNormalMapTexture);
+		material->SetDiffuseMap(wallTexture);
+        material->SetNormalMap(wallNormalMapTexture);
         material->SetAmbientColor(Color(0));
         material->SetShininess(10);
 

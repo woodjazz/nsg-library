@@ -52,20 +52,20 @@ struct Sample : App
 		PTexture pEarthTexture2(GetOrCreateTextureFile("data/jup0vss1.jpg"));
         PMaterial pMaterial1(GetOrCreateMaterial("earth1"));
 		PMaterial pMaterial2(GetOrCreateMaterial("earth2"));
-		PProgram program(CreateProgram());
+		PProgram program(GetOrCreateProgram("program0"));
 		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
         PTechnique technique(new Technique);
         PPass pass(new Pass);
         technique->Add(pass);
         pass->SetProgram(program);
         pMaterial1->SetTechnique(technique);
-        pMaterial1->SetTexture0(pEarthTexture1);
+		pMaterial1->SetDiffuseMap(pEarthTexture1);
         pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
         pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
         pMaterial1->SetShininess(10);
 
         pMaterial2->SetTechnique(technique);
-        pMaterial2->SetTexture0(pEarthTexture2);
+		pMaterial2->SetDiffuseMap(pEarthTexture2);
         pMaterial2->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
         pMaterial2->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
         pMaterial2->SetShininess(100);
@@ -104,7 +104,7 @@ struct Sample : App
         
         camera_->SetPosition(camPos);
         Vector3 lookAtPoint(Vertex2(camPos), 0);
-        camera_->SetLookAt(lookAtPoint);
+		camera_->SetGlobalLookAt(lookAtPoint);
     }
 };
 

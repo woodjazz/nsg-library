@@ -30,18 +30,21 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "MapAndVector.h"
 #include <set>
+#include <map>
 
 namespace NSG
 {
     class Scene : public SceneNode
     {
     public:
+        Scene(const std::string& name);
         ~Scene();
         void SetAmbientColor(Color ambient);
         const Color& GetAmbientColor() const { return ambient_; }
-		void AddCamera(PCamera camera);
-		void AddSceneNode(PSceneNode node);
 		void AddLight(PLight light);
+		const std::vector<PWeakLight>& GetLights(LightType type) const;
+        void AddCamera(PCamera camera);
+        const std::vector<PWeakCamera>& GetCameras() const;
         void Start();
         void Update();
         void Render();
@@ -54,20 +57,15 @@ namespace NSG
 		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
-        typedef std::vector<PLight> Lights;
-        const Lights& GetLights() { return lights_.GetConstObjs(); }
         void NeedUpdate(SceneNode* obj);
         void GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const;
         POctree GetOctree() const { return octree_; }
-        Lights GetLights(LightType type) const;
         void Save(pugi::xml_document& doc);
         void Load(const pugi::xml_document& doc, const CachedData& data) override;
         bool GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const;
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
         bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);
         bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
-        const std::vector<PCamera>& GetConstCameras() const { return cameras_.GetConstObjs(); }
-        std::vector<PCamera>& GetCameras() { return cameras_.GetObjs(); }
         PAnimation GetOrCreateAnimation(const std::string& name);
         bool HasAnimation(const std::string& name) const;
         bool PlayAnimation(const std::string& name, bool looped);
@@ -75,7 +73,6 @@ namespace NSG
         bool SetAnimationSpeed(const std::string& name, float speed);
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
     protected:
-        Scene(const std::string& name);
         void SaveMeshes(pugi::xml_node& node);
         void SaveMaterials(pugi::xml_node& node);
         void SaveAnimations(pugi::xml_node& node);
@@ -86,9 +83,9 @@ namespace NSG
         void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
         void UpdateAnimations();
     private:
+		mutable std::map<LightType, std::vector<PWeakLight>> lights_;
+        std::vector<PWeakCamera> cameras_;
         Color ambient_;
-        MapAndVector<std::string, Camera> cameras_;
-        MapAndVector<std::string, Light> lights_;
         POctree octree_;
         mutable std::set<SceneNode*> needUpdate_;
         App& app_;
@@ -97,6 +94,5 @@ namespace NSG
         typedef std::map<std::string, PAnimationState> AnimationStateMap;
         AnimationStateMap animationStateMap_;
         PPhysicsWorld physicsWorld_;
-        friend class App;
     };
 }

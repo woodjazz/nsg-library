@@ -39,8 +39,8 @@ namespace NSG
             void SetScroll(float scroll);
             float GetScroll() const;
             virtual void UpdateControl() override;
+			void UpdateScrolling();
         protected:
-            void UpdateScrolling();
         private:
             void RenderSlider();
             bool HandleVerticalSlider(float maxPosY, float& yPosition);

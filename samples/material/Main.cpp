@@ -65,10 +65,10 @@ struct Sample : App
         normalMap_ = GetOrCreateTextureFile("data/wallnormalmap.jpg");
         lightMap_ = GetOrCreateTextureFile("data/lightmap.png");
         material_ = GetOrCreateMaterial("material");
-        material_->SetTexture0(diffuseMap_);
-        material_->SetTexture1(normalMap_);
-        material_->SetTexture2(lightMap_);
-        program_ = CreateProgram();
+		material_->SetDiffuseMap(diffuseMap_);
+        material_->SetNormalMap(normalMap_);
+        material_->SetLightMap(lightMap_);
+        program_ = GetOrCreateProgram("program0");
         PTechnique technique(new Technique);
 		pass_ = PPass(new Pass);
         technique->Add(pass_);

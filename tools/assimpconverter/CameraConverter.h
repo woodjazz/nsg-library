@@ -33,14 +33,7 @@ namespace NSG
 	class CameraConverter
 	{
 	public:
-		CameraConverter(const aiCamera* camera, SceneNode* parent);
+		CameraConverter(const aiCamera* camera, Camera* cameraNode);
 		~CameraConverter();
-		PCamera GetCamera() const { return camera_; }
-	private:
-		PCamera camera_;
 	};
-
-	class CameraConverter;
-	typedef std::shared_ptr<CameraConverter> PCameraConverter;
-
 }

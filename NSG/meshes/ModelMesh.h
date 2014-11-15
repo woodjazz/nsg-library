@@ -41,6 +41,5 @@ namespace NSG
 		virtual void Load(const pugi::xml_node& node) override;
 	private:
 		GLenum face_mode_;
-		friend class App;
 	};
 }

@@ -24,117 +24,157 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Arena.h"
 #include <algorithm>
 #include <cassert>
 
 namespace NSG
 {
-	template <typename T, size_t NODES_PER_CHUNK > 
-	class Pool
-	{
-	public:
-		Pool();
-		~Pool();
-		Pool(const Pool&) = delete;
-    	Pool& operator = (const Pool&) = delete;
-		void AllocMemory();
-		T* Alloc();
-		void Free(void* p);
-	private:
-		struct NodeList
+    struct IPool
+    {
+        virtual void* Allocate(std::size_t count) = 0;
+        virtual void Release(void* ptr) = 0;
+		virtual bool IsPointerFromPool(void* p) const = 0;
+        virtual ~IPool() {};
+    };
+
+    template <typename T, size_t NODES_PER_CHUNK >
+    class Pool : public IPool
+    {
+    public:
+		Pool(IArena& arena);
+        ~Pool();
+        Pool(const Pool&) = delete;
+        Pool& operator = (const Pool&) = delete;
+        void AllocMemory();
+        T* Alloc();
+        void Free(void* p);
+        void* Allocate(std::size_t count) override
+        {
+        	assert(count <= sizeof(T));
+        	return (void*)Alloc();
+        }
+        void Release(void* ptr) override
+        {
+        	Free(ptr);
+        }
+		bool IsPointerFromPool(void* p) const
 		{
-			NodeList* nextNode_;
+			Header* header = (Header*)((char*)p - sizeof(Header));
+			return header->thisPool0_ == this && header->thisPool1_ == this && header->thisPool2_ == this;
+		}
+    private:
+		struct Header
+		{
+			void* thisPool0_;
+			void* thisPool1_;
+			void* thisPool2_;
 		};
+        struct NodeList
+        {
+			Header header_;
+			union
+			{
+				NodeList* nextNode_;
+				char memBlock_[sizeof(T)];
+			};
+        };
 
-		typedef NodeList* PNodeList;
-		PNodeList pFreeList_;
+        typedef NodeList* PNodeList;
+        PNodeList freeList_;
 
-		struct ChunkList
-		{
-			ChunkList* nextChunk_;
-		};
+        struct ChunkList
+        {
+            ChunkList* nextChunk_;
+        };
 
-		typedef ChunkList* PChunkList;
-		PChunkList pChunkList_;
+        typedef ChunkList* PChunkList;
+        PChunkList chunkList_;
 
-		size_t chunkSize_;
-		size_t nodeSize_;
-	};
+        size_t nodeSize_;
+        size_t chunkSize_;
+		IArena& arena_;
+    };
 
-	template< typename T, size_t NODES_PER_CHUNK> 
-	Pool<T, NODES_PER_CHUNK>::Pool()
-	: pChunkList_(0),
-	pFreeList_(0),
-	chunkSize_(0),
-	nodeSize_(std::max(sizeof(NodeList), sizeof(T)))
-	{
-		chunkSize_ = sizeof(ChunkList) + nodeSize_ * NODES_PER_CHUNK;
-		AllocMemory();
-	}
+    template< typename T, size_t NODES_PER_CHUNK>
+    Pool<T, NODES_PER_CHUNK>::Pool(IArena& arena)
+        : chunkList_(nullptr),
+          freeList_(nullptr),
+		  nodeSize_(sizeof(NodeList)),
+          chunkSize_(sizeof(ChunkList) + nodeSize_ * NODES_PER_CHUNK),
+          arena_(arena)
+    {
+        AllocMemory();
+    }
 
-	template< typename T, size_t NODES_PER_CHUNK> 
-	Pool<T, NODES_PER_CHUNK>::~Pool()
-	{
-		PChunkList pNext = pChunkList_->nextChunk_;
+    template< typename T, size_t NODES_PER_CHUNK>
+    Pool<T, NODES_PER_CHUNK>::~Pool()
+    {
+        PChunkList pNext = chunkList_->nextChunk_;
+        while (chunkList_)
+        {
+            arena_.Deallocate((char*)chunkList_, chunkSize_);
+            chunkList_ = pNext;
+            if (chunkList_)
+                pNext = chunkList_->nextChunk_;
+        }
+    }
 
-		while(pChunkList_)
-		{
-			::free(pChunkList_);
-			pChunkList_ = pNext;
-			if(pChunkList_)
-				pNext = pChunkList_->nextChunk_;
-		}
-	}
+    template< typename T, size_t NODES_PER_CHUNK>
+    void Pool<T, NODES_PER_CHUNK>::AllocMemory()
+    {
+        char* p = arena_.Allocate(chunkSize_);
+        if (!chunkList_)
+        {
+            chunkList_ = (PChunkList)p;
+            chunkList_->nextChunk_ = nullptr;
+        }
+        else
+        {
+            ((PChunkList)p)->nextChunk_ = chunkList_;
+            chunkList_ = (PChunkList)p;
+        }
 
-	template< typename T, size_t NODES_PER_CHUNK> 
-	void Pool<T, NODES_PER_CHUNK>::AllocMemory()
-	{
-		char* p = (char*)::malloc(chunkSize_);
+        p += sizeof(ChunkList);
+        freeList_ = (PNodeList)p;
 
-		if(!pChunkList_)
-		{
-			pChunkList_ = (PChunkList)p;
-			pChunkList_->nextChunk_ = nullptr;
-		}
-		else
-		{
-			((PChunkList)p)->nextChunk_ = pChunkList_;
-			pChunkList_ = (PChunkList)p;
-		}
+        // Constructs the empty list.
+        PNodeList old = freeList_;
+		old->header_.thisPool0_ = this;
+		old->header_.thisPool1_ = this;
+		old->header_.thisPool2_ = this;
 
-		p += sizeof(ChunkList);
-		pFreeList_ = (PNodeList)p;
+        for (size_t i = 0; i < NODES_PER_CHUNK; i++)
+        {
+            old = (PNodeList)p;
+            p += nodeSize_;
+            old->nextNode_ = (PNodeList)p;
+			old->nextNode_->header_.thisPool0_ = this;
+			old->nextNode_->header_.thisPool1_ = this;
+			old->nextNode_->header_.thisPool2_ = this;
+        }
+        old->nextNode_ = nullptr;
+    }
 
-		// Constructs the empty list.
-		PNodeList pOld = pFreeList_;
+    template< typename T, size_t NODES_PER_CHUNK>
+    T* Pool<T, NODES_PER_CHUNK>::Alloc()
+    {
+		if (!freeList_)
+			return nullptr;
 
-		for (size_t i=0; i<NODES_PER_CHUNK; i++) 
-		{
-			pOld = (PNodeList)p;
-			p += nodeSize_;
-			pOld->nextNode_ = (PNodeList)p;
-		}
+        PNodeList p = freeList_;
+        freeList_ = freeList_->nextNode_;
+		assert(IsPointerFromPool(p->memBlock_));
+		return (T*)(p->memBlock_);
+    }
 
-		pOld->nextNode_ = nullptr;
-	}
-
-	template< typename T, size_t NODES_PER_CHUNK> 
-	T* Pool<T, NODES_PER_CHUNK>::Alloc()
-	{
-		if(!pFreeList_) 
-			AllocMemory();
-
-		PNodeList p = pFreeList_;
-		pFreeList_ = pFreeList_->nextNode_;
-		return (T*)p;
-	}
-
-	template< typename T, size_t NODES_PER_CHUNK> 
-	void Pool<T, NODES_PER_CHUNK>::Free(void* obj)
-	{	   
-		assert(obj != nullptr);
-		PNodeList p = static_cast< PNodeList >(obj);
-		p->nextNode_ = pFreeList_;
-		pFreeList_ = p;
-	}
+    template< typename T, size_t NODES_PER_CHUNK>
+    void Pool<T, NODES_PER_CHUNK>::Free(void* obj)
+    {
+		assert(IsPointerFromPool(obj));
+		obj = (char*)obj - sizeof(Header);
+	    PNodeList p = static_cast<PNodeList>(obj);
+	    p->nextNode_ = freeList_;
+	    freeList_ = p;
+    }
 }

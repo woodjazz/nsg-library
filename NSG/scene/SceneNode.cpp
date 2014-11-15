@@ -58,9 +58,6 @@ namespace NSG
         if (rigidBody_)
             rigidBody_->SetSceneNode(nullptr);
 
-        PScene scene = app_.GetCurrentScene();
-        if (scene && scene->GetOctree())
-            scene_.lock()->GetOctree()->Remove(this);
         Context::RemoveObject(this);
     }
 
@@ -142,25 +139,6 @@ namespace NSG
     {
         if (rigidBody_)
             rigidBody_->ReScale();
-    }
-
-    void SceneNode::SetScene()
-    {
-        PSceneNode parent(std::dynamic_pointer_cast<SceneNode>(GetParent()));
-
-        if (!parent->scene_.use_count())
-        {
-            parent->scene_ = std::dynamic_pointer_cast<Scene>(parent);
-            CHECK_ASSERT(parent->scene_.lock(), __FILE__, __LINE__);
-        }
-
-        scene_ = parent->scene_;
-    }
-
-    void SceneNode::OnChildCreated()
-    {
-        SetScene();
-        scene_.lock()->AddSceneNode(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
     }
 
     void SceneNode::OnEnable()
@@ -326,61 +304,69 @@ namespace NSG
             dynamic_cast<SceneNode*>(obj.get())->GetMaterials(materials);
     }
 
-    void SceneNode::Save(pugi::xml_node& node)
-    {
-        if (!IsSerializable())
-            return;
+	void SceneNode::Save(pugi::xml_node& node)
+	{
+		if (!IsSerializable())
+			return;
 
-        pugi::xml_node child = node.append_child("SceneNode");
+		{
+			std::stringstream ss;
+			ss << GetName();
+			node.append_attribute("name") = ss.str().c_str();
+		}
 
-        {
-            std::stringstream ss;
-            ss << GetName();
-            child.append_attribute("name") = ss.str().c_str();
-        }
+		node.append_attribute("nodeType") = "SceneNode";
 
-        {
-            std::stringstream ss;
-            ss << GetPosition();
-            child.append_attribute("position") = ss.str().c_str();
-        }
+		{
+			std::stringstream ss;
+			ss << GetPosition();
+			node.append_attribute("position") = ss.str().c_str();
+		}
 
-        {
-            std::stringstream ss;
-            ss << GetOrientation();
-            child.append_attribute("orientation") = ss.str().c_str();
-        }
+		{
+			std::stringstream ss;
+			ss << GetOrientation();
+			node.append_attribute("orientation") = ss.str().c_str();
+		}
 
-        {
-            std::stringstream ss;
-            ss << GetScale();
-            child.append_attribute("scale") = ss.str().c_str();
-        }
+		{
+			std::stringstream ss;
+			ss << GetScale();
+			node.append_attribute("scale") = ss.str().c_str();
+		}
 
-        if (material_)
-        {
-            int materialIndex = App::this_->GetMaterialSerializableIndex(material_);
-            if (materialIndex != -1)
-            {
-                std::stringstream ss;
-                ss << materialIndex;
-                child.append_attribute("materialIndex") = ss.str().c_str();
-            }
-        }
+		if (material_)
+		{
+			int materialIndex = App::this_->GetMaterialSerializableIndex(material_);
+			if (materialIndex != -1)
+			{
+				std::stringstream ss;
+				ss << materialIndex;
+				node.append_attribute("materialIndex") = ss.str().c_str();
+			}
+		}
 
-        if (mesh_)
-        {
-            int meshIndex = App::this_->GetMeshSerializableIndex(mesh_);
-            if (meshIndex != -1)
-            {
-                std::stringstream ss;
-                ss << meshIndex;
-                child.append_attribute("meshIndex") = ss.str().c_str();
-            }
-        }
+		if (mesh_)
+		{
+			int meshIndex = App::this_->GetMeshSerializableIndex(mesh_);
+			if (meshIndex != -1)
+			{
+				std::stringstream ss;
+				ss << meshIndex;
+				node.append_attribute("meshIndex") = ss.str().c_str();
+			}
+		}
 
-        for (auto& obj : children_)
-            obj->Save(child);
+		SaveChildren(node);
+	}
+
+	void SceneNode::SaveChildren(pugi::xml_node& node)
+	{
+		for (auto& obj : children_)
+		{
+			pugi::xml_node child = node.append_child("SceneNode");
+			obj->Save(child);
+		}
     }
 
     void SceneNode::Load(const pugi::xml_document& doc, const CachedData& data)
@@ -390,59 +376,67 @@ namespace NSG
         pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
         pugi::xml_node child = xpathNode.node();
         CHECK_ASSERT(child, __FILE__, __LINE__);
-        LoadNode(child, data);
+        Load(child, data);
     }
 
-    void SceneNode::LoadNode(const pugi::xml_node& node, const CachedData& data)
-    {
-        Vertex3 position = GetVertex3(node.attribute("position").as_string());
-        SetPosition(position);
+	void SceneNode::Load(const pugi::xml_node& node, const CachedData& data)
+	{
+		name_ = node.attribute("name").as_string();
 
-        Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
-        SetOrientation(orientation);
+		Vertex3 position = GetVertex3(node.attribute("position").as_string());
+		SetPosition(position);
 
-        Vertex3 scale = GetVertex3(node.attribute("scale").as_string());
-        SetScale(scale);
+		Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
+		SetOrientation(orientation);
 
-        pugi::xml_attribute attribute = node.attribute("materialIndex");
-        if (attribute)
-        {
-            int materialIndex_ = attribute.as_int();
-            Set(data.materials_.at(materialIndex_));
-        }
+		Vertex3 scale = GetVertex3(node.attribute("scale").as_string());
+		SetScale(scale);
 
-        attribute = node.attribute("meshIndex");
-        if (attribute)
-        {
-            int meshIndex = attribute.as_int();
-            Set(data.meshes_.at(meshIndex));
-        }
+		pugi::xml_attribute attribute = node.attribute("materialIndex");
+		if (attribute)
+		{
+			int materialIndex_ = attribute.as_int();
+			Set(data.materials_.at(materialIndex_));
+		}
 
-        {
-            pugi::xml_node child = node.child("Light");
-            if (child)
-            {
-                PLight obj = GetOrCreateChild<Light>(child.attribute("name").as_string());
-                obj->Load(child);
-            }
-        }
+		attribute = node.attribute("meshIndex");
+		if (attribute)
+		{
+			int meshIndex = attribute.as_int();
+			Set(data.meshes_.at(meshIndex));
+		}
 
-        {
-            pugi::xml_node child = node.child("Camera");
-            if (child)
-            {
-                PCamera obj = GetOrCreateChild<Camera>(child.attribute("name").as_string());
-                obj->Load(child);
-            }
-        }
+		LoadChildren(node, data);
+	}
 
-
-        for (pugi::xml_node child = node.child("SceneNode"); child; child = child.next_sibling("SceneNode"))
+	void SceneNode::LoadChildren(const pugi::xml_node& node, const CachedData& data)
+	{
+		pugi::xml_node child = node.child("SceneNode");
+		while (child)
         {
             std::string childName = child.attribute("name").as_string();
-            CHECK_ASSERT(!childName.empty(), __FILE__, __LINE__);
-            PSceneNode childNode = Node::GetOrCreateChild<SceneNode>(childName);
-            childNode->LoadNode(child, data);
+			if (childName.empty())
+				break;
+			std::string nodeType = child.attribute("nodeType").as_string();
+			CHECK_ASSERT(!nodeType.empty(), __FILE__, __LINE__);
+			if (nodeType == "Light")
+			{
+				PLight childNode = Node::GetOrCreateChild<Light>(childName);
+				childNode->Load(child, data);
+			}
+			else if (nodeType == "Camera")
+			{
+				PCamera childNode = Node::GetOrCreateChild<Camera>(childName);
+				childNode->Load(child, data);
+			}
+			else
+			{
+				CHECK_ASSERT(nodeType == "SceneNode", __FILE__, __LINE__);
+				PSceneNode childNode = Node::GetOrCreateChild<SceneNode>(childName);
+				childNode->Load(child, data);
+			}
+
+			child = child.next_sibling("SceneNode");
         }
     }
 
@@ -476,103 +470,7 @@ namespace NSG
             }
         }
     }
-
-    void SceneNode::SetDiffuseMap(PTexture texture, bool recursive)
-    {
-        if (recursive)
-        {
-            std::vector<PMaterial> materials;
-            GetMaterials(materials);
-            for (auto& material : materials)
-                if (material)
-                    material->SetDiffuseMap(texture);
-        }
-        else if (material_)
-        {
-            material_->SetDiffuseMap(texture);
-        }
-    }
-
-    void SceneNode::SetNormalMap(PTexture texture, bool recursive)
-    {
-        if (recursive)
-        {
-            std::vector<PMaterial> materials;
-            GetMaterials(materials);
-            for (auto& material : materials)
-                if (material)
-                    material->SetNormalMap(texture);
-        }
-        else if (material_)
-        {
-            material_->SetNormalMap(texture);
-        }
-    }
-
-    void SceneNode::SetSpecularMap(PTexture texture, bool recursive)
-    {
-        if (recursive)
-        {
-            std::vector<PMaterial> materials;
-            GetMaterials(materials);
-            for (auto& material : materials)
-                if (material)
-                    material->SetSpecularMap(texture);
-        }
-        else if (material_)
-        {
-            material_->SetSpecularMap(texture);
-        }
-    }
-
-    void SceneNode::SetAOMap(PTexture texture, bool recursive)
-    {
-        if (recursive)
-        {
-            std::vector<PMaterial> materials;
-            GetMaterials(materials);
-            for (auto& material : materials)
-                if (material)
-                    material->SetAOMap(texture);
-        }
-        else if (material_)
-        {
-            material_->SetAOMap(texture);
-        }
-    }
-
-    void SceneNode::SetDisplacementMap(PTexture texture, bool recursive)
-    {
-        if (recursive)
-        {
-            std::vector<PMaterial> materials;
-            GetMaterials(materials);
-            for (auto& material : materials)
-                if (material)
-                    material->SetDisplacementMap(texture);
-        }
-        else if (material_)
-        {
-            material_->SetDisplacementMap(texture);
-        }
-    }
-
-    void SceneNode::SetLightMap(PTexture texture, bool recursive)
-    {
-        if (recursive)
-        {
-            std::vector<PMaterial> materials;
-            GetMaterials(materials);
-            for (auto& material : materials)
-                if (material)
-                    material->SetLightMap(texture);
-        }
-        else if (material_)
-        {
-            material_->SetLightMap(texture);
-        }
-    }
-
+    
     void SceneNode::OnCollision(const ContactPoint& contactInfo)
     {
         for (auto& obj : behaviors_)

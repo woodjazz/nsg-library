@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "IMGUI.h"
 #include "AppListeners.h"
 #include "MapAndVector.h"
+#include <map>
 
 class AAssetManager;
 class ANativeActivity;
@@ -76,30 +77,32 @@ namespace NSG
         AAssetManager* GetAssetManager();
         static void Add(IViewChangedListener* listener);
         static void Remove(IViewChangedListener* listener);
-        PScene CreateScene(const std::string& name, bool setAsCurrent);
+        PScene GetOrCreateScene(const std::string& name, bool setAsCurrent);
         void SetCurrentScene(PScene scene);
-        PScene GetCurrentScene() const;
+		PScene GetCurrentScene() const { return currentScene_; }
         PBoxMesh CreateBoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
-        PCircleMesh CreateCircleMesh(float radius, int res);
-        PEllipseMesh CreateEllipseMesh(float width, float height, int res);
+        PCircleMesh CreateCircleMesh(float radius = 1, int res = 8);
+        PEllipseMesh CreateEllipseMesh(float width = 2, float height = 1, int res = 8);
         PModelMesh GetOrCreateModelMesh(const std::string& name);
-        PPlaneMesh CreatePlaneMesh(float width, float height, int columns, int rows);
-        PRectangleMesh CreateRectangleMesh(float width, float height);
-        PRoundedRectangleMesh CreateRoundedRectangleMesh(float radius, float width, float height, int res);
+        PPlaneMesh CreatePlaneMesh(float width = 2, float height = 2, int columns = 2, int rows = 2);
+        PRectangleMesh CreateRectangleMesh(float width = 2, float height = 1);
+        PRoundedRectangleMesh CreateRoundedRectangleMesh(float radius = 1, float width = 2, float height = 2, int res = 8);
         PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
-        PTextMesh CreateTextMesh(const std::string& textureFilename = "", bool dynamic = true);
+        PTextMesh CreateTextMesh(const std::string& textureFilename, bool dynamic = true);
         PMaterial CreateMaterial(const std::string& name);
         PMaterial GetOrCreateMaterial(const std::string& name);
         PResourceFile GetOrCreateResourceFile(const Path& path);
         PTexture GetOrCreateTextureFile(const Path& path, TextureFlags flags = (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
-        PProgram CreateProgram(const std::string& name = "");
+        PProgram GetOrCreateProgram(const std::string& name);
         PRigidBody CreateRigidBody();
         const std::vector<PMesh>& GetMeshes() const;
-        const std::vector<PModelMesh>& GetModels() const { return models_.GetConstObjs(); }
-        PModelMesh GetModelMesh(const std::string& name) { return models_.Get(name); }
+		PMesh GetMesh(const std::string& name) const;
         const std::vector<PMaterial>& GetMaterials() const;
         int GetMaterialSerializableIndex(const PMaterial& material) const;
         int GetMeshSerializableIndex(const PMesh& mesh) const;
+        void ClearAll();
+		void* Allocate(std::size_t count);
+		void Release(void* ptr, std::size_t count);
     private:
         void AddListener(IViewChangedListener* listener);
         void RemoveListener(IViewChangedListener* listener);
@@ -114,11 +117,11 @@ namespace NSG
         std::vector<IViewChangedListener*> viewChangedListeners_;
         int argc_;
         char** argv_;
-        std::vector<PScene> scenes_;
-        PScene currentScene_;
-        std::vector<PMesh> meshes_;
+        MapAndVector<std::string, Scene> scenes_;
+        MapAndVector<std::string, Mesh> meshes_;
         MapAndVector<std::string, Material> materials_;
-        MapAndVector<std::string, ModelMesh> models_;
+        MapAndVector<std::string, Program> programs_;
+        PScene currentScene_;
         bool isSceneReady_;
         friend struct InternalApp;
     };

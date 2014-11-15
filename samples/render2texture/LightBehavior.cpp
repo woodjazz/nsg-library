@@ -41,7 +41,7 @@ void LightBehavior::Start()
     PTechnique technique(new Technique);
     PPass pass(new Pass);
     technique->Add(pass);
-    pass->SetProgram(app_.CreateProgram());
+    pass->SetProgram(app_.GetOrCreateProgram("LightBehavior"));
     pMaterial->SetTechnique(technique);
 
 	sceneNode_->Set(pMaterial);

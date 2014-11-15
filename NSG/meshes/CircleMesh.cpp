@@ -32,11 +32,10 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    CircleMesh::CircleMesh(float radius, int res)
-        : Mesh("CircleMesh"),
-          radius_(radius),
-          res_(res)
+    CircleMesh::CircleMesh(const std::string& name)
+        : Mesh(name)
     {
+        Set();
         resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
@@ -45,6 +44,15 @@ namespace NSG
     {
     }
 
+    void CircleMesh::Set(float radius, int res)
+    {
+        if (radius_ != radius || res_ != res)
+        {
+            radius_ = radius;
+            res_ = res;
+            Invalidate();
+        }
+    }
 
     GLenum CircleMesh::GetWireFrameDrawMode() const
     {

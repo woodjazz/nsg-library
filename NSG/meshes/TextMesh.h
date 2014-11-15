@@ -37,10 +37,10 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    class App;
     class TextMesh : public Mesh, IViewChangedListener
     {
     public:
+		TextMesh(const std::string& textureFilename);
         ~TextMesh();
         bool Has(const std::string& textureFilename) const;
         bool SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
@@ -78,8 +78,6 @@ namespace NSG
         {
             return vAlignment_;
         }
-    protected:
-        TextMesh(const std::string& textureFilename = "", bool dynamic = true);
     private:
         void UpdateBuffers();
         void Move(VertexsData& obj, float offsetX, float offsetY);
@@ -95,6 +93,5 @@ namespace NSG
         float alignmentOffsetX_;
         float alignmentOffsetY_;
         size_t maxLength_;
-        friend class App;
     };
 }

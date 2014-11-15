@@ -58,31 +58,21 @@ namespace NSG
             {
 				if (mousedown_)
 				{
-					Vertex3 parentGlobalScale = area_->parent_->pNode_->GetGlobalScale();
-					Vertex3 globalScale = node_->GetGlobalScale();
-					Node& node(*area_->controlNodes_.node0_);
-					node.SetParent(node_);
-					node.SetInheritScale(false);
-					globalScale.x = parentGlobalScale.x; // In order to hit all the slider area: reset scale
-					node.SetScale(globalScale);
-
-					if ((!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == id_)
+					if ((!lastHit_ && area_->parent_->pNode_->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == id_)
 					{
 						lastHit_ = id_;
-						Vertex3 globalPos = area_->parent_->pNode_->GetGlobalPosition();
-						Vertex3 globalScale = area_->parent_->pNode_->GetGlobalScale();
 
-	                    float xLeft = globalPos.x - globalScale.x;
-	                    float xRight = globalPos.x + globalScale.x;
+						Vertex3 thumbGlobalPos = node_->GetGlobalPosition();
+						Vertex3 thumbGlobalScale = node_->GetGlobalScale();
+						float xThumbLeft = thumbGlobalPos.x - thumbGlobalScale.x;
+						float xThumbRight = thumbGlobalPos.x + thumbGlobalScale.x;
+						float xThumbCenter = xThumbLeft + (xThumbRight - xThumbLeft) / 2;
 
-	                    float x1 = mousex_;
-	                    if (x1 >= xLeft && x1 <= xRight)
-	                    {
-	                        float a2 = 1 / (xRight - xLeft);
-	                        float x2 = a2 * x1 - a2 * xLeft;
-	                        CHECK_ASSERT(x2 >= 0 && x2 <= 1, __FILE__, __LINE__);
-	                        value_ = x2;
-	                    }
+						float centerOffset = xThumbCenter - mousex_;
+						if (mouseRelX_ * centerOffset < 0)
+							value_ = glm::clamp<float>(value_ - centerOffset, 0, 1);
+						else if (!mouseRelX_ && (mousex_ > xThumbRight || mousex_ < xThumbLeft))
+							value_ = glm::clamp<float>(value_ - centerOffset, 0, 1);
 					}
 				}
 				else if (HasFocus() && mouseRelX_ != 0)

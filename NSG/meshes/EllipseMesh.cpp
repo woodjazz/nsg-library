@@ -32,18 +32,27 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    EllipseMesh::EllipseMesh(float width, float height, int res)
-        : Mesh("EllipseMesh"),
-          width_(width),
-          height_(height),
-          res_(res)
+    EllipseMesh::EllipseMesh(const std::string& name)
+        : Mesh(name)
     {
+        Set();
         resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
     EllipseMesh::~EllipseMesh()
     {
+    }
+
+    void EllipseMesh::Set(float width, float height, int res)
+    {
+        if (width_ != width || height_ != height || res_ != res)
+        {
+            width_ = width;
+            height_ = height;
+            res_ = res;
+            Invalidate();
+        }
     }
 
     GLenum EllipseMesh::GetWireFrameDrawMode() const

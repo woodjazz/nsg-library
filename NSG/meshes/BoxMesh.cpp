@@ -29,21 +29,30 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    BoxMesh::BoxMesh(float width, float height, float depth, int resX, int resY, int resZ)
-        : Mesh("BoxMesh"),
-          width_(width),
-          height_(height),
-          depth_(depth),
-          resX_(resX),
-          resY_(resY),
-          resZ_(resZ)
+    BoxMesh::BoxMesh(const std::string& name)
+        : Mesh(name)
     {
+        Set();
         resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
     BoxMesh::~BoxMesh()
     {
+    }
+
+    void BoxMesh::Set(float width, float height, float depth, int resX, int resY, int resZ)
+    {
+        if (width_ != width || height_ != height || depth_ != depth || resX_ != resX || resY_ != resY || resZ_ != resZ)
+        {
+            width_ = width;
+            height_ = height;
+            depth_ = depth;
+            resX_ = resX;
+            resY_ = resY;
+            resZ_ = resZ;
+            Invalidate();
+        }
     }
 
     GLenum BoxMesh::GetWireFrameDrawMode() const

@@ -51,9 +51,8 @@ namespace NSG
 		float GetSpotCutOff() const { return spotCutOff_; }
 		LightType GetType() const { return type_; }
 		void SetType(LightType type);
-		void Save(pugi::xml_node& node);
-		void Load(const pugi::xml_node& node);
-		void OnChildCreated() override;
+		void Save(pugi::xml_node& node) override;
+		void Load(const pugi::xml_node& node, const CachedData& data) override;
 	private:
 		LightType type_;
 		Color ambient_;

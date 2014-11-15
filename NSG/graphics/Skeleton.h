@@ -34,18 +34,20 @@ namespace NSG
 	public:
 		Skeleton(PModelMesh mesh);
 		virtual ~Skeleton();
-		void SetRoot(PNode root) { root_ = root; }
-		void SetBones(const std::vector<PNode>& bones) { bones_ = bones; }
+		void SetScene(PWeakScene scene) { scene_ = scene; }
+		void SetRoot(PWeakNode root) { root_ = root; }
+		void SetBones(const std::vector<PWeakNode>& bones) { bones_ = bones; }
 		unsigned GetBoneIndex(const std::string& name) const;
 		void SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights);
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
-		const std::vector<PNode>& GetBones() const { return bones_; }
-		const PNode& GetRoot() const { return root_; }
+		const std::vector<PWeakNode>& GetBones() const { return bones_; }
+		const PWeakNode& GetRoot() const { return root_; }
 	private:
+		PWeakScene scene_;
 		std::weak_ptr<ModelMesh> mesh_;
-		PNode root_;
-		std::vector<PNode> bones_;
+		PWeakNode root_;
+		std::vector<PWeakNode> bones_;
 		std::vector<std::vector<unsigned>> blendIndices_; // per vertex indices
         std::vector<std::vector<float>> blendWeights_; // per vertex weights
 	};

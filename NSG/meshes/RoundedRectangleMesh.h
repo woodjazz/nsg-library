@@ -32,19 +32,18 @@ namespace NSG
 	class RoundedRectangleMesh : public Mesh, public IProceduralResource
 	{
 	public:
+		RoundedRectangleMesh(const std::string& name);
+		void Set(float radius = 1, float width = 2, float height = 2, int res = 8);
 		~RoundedRectangleMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		virtual size_t GetNumberOfTriangles() const override;
 		virtual void Build() override;
 		virtual const char* GetName() const override;
-	protected:
-		RoundedRectangleMesh(float radius, float width, float height, int res);
 	private:
 		float radius_;
 		float width_;
 		float height_;
 		int res_;
-		friend class App;
 	};
 }

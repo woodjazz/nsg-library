@@ -28,72 +28,74 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	template <std::size_t N>
-	class Arena
+	struct IArena
 	{
-	public:
-		Arena() : ptr_(buffer_) {}
-		~Arena() 
-		{ 
-			ptr_ = nullptr; 
-		}
-
-	    Arena(const Arena&) = delete;
-	    Arena& operator=(const Arena&) = delete;
-
-	    char* Allocate(std::size_t n)
-		{
-		    assert(pointer_in_buffer(ptr_) && "pointer is not in buffer");
-
-			if ((size_t)(buffer_ + N - ptr_) >= n)
-		    {
-		        char* r = ptr_;
-		        ptr_ += n;
-		        return r;
-		    }
-		    return static_cast<char*>(::operator new(n));
-		}
-
-	    void Deallocate(char* p, std::size_t n)
-		{
-		    assert(pointer_in_buffer(ptr_) && "pointer is not in buffer");
-
-
-		    if(pointer_in_buffer(p))
-		    {
-		        if (p + n == ptr_)
-		            ptr_ = p;
-		    }
-		    else
-		        ::operator delete(p);
-		}
-
-	    static std::size_t Size() 
-	    {
-	    	return N;
-	    }
-
-	    std::size_t Used() const 
-	    {
-			return static_cast<std::size_t>(ptr_ - buffer_);
-	    }
-
-	    void Reset() 
-	    {
-			ptr_ = buffer_;
-	    }
-
-	private:
-		bool pointer_in_buffer(char* p) 
-		{
-			return buffer_ <= p && p <= buffer_ + N;
-		}
-
-#if _MSC_VER
-		char buffer_[N];
-#else	
-		alignas(16) char buffer_[N];
-#endif	
-	    char* ptr_;
+		virtual char* Allocate(std::size_t n) = 0;
+		virtual void Deallocate(char* p, std::size_t n) = 0;
+		virtual std::size_t Used() const = 0;
+		virtual bool pointer_in_buffer(char* p) = 0;
 	};
+
+    template <std::size_t N>
+    class Arena : public IArena
+    {
+    public:
+        Arena() : ptr_(buffer_) {}
+        ~Arena() { ptr_ = nullptr;}
+        Arena(const Arena&) = delete;
+        Arena& operator=(const Arena&) = delete;
+        char* Allocate(std::size_t n)
+        {
+            assert(pointer_in_buffer(ptr_) && "pointer is not in buffer");
+
+            if ((size_t)(buffer_ + N - ptr_) >= n)
+            {
+                char* r = ptr_;
+                ptr_ += n;
+                return r;
+            }
+            return static_cast<char*>(std::malloc(n));
+        }
+
+        void Deallocate(char* p, std::size_t n)
+        {
+            assert(pointer_in_buffer(ptr_) && "pointer is not in buffer");
+
+            if (pointer_in_buffer(p))
+            {
+                if (p + n == ptr_)
+                    ptr_ = p;
+            }
+            else
+                std::free(p);
+        }
+
+        static std::size_t Size()
+        {
+            return N;
+        }
+
+        std::size_t Used() const
+        {
+            return static_cast<std::size_t>(ptr_ - buffer_);
+        }
+
+        void Reset()
+        {
+            ptr_ = buffer_;
+        }
+
+        bool pointer_in_buffer(char* p)
+        {
+            return buffer_ <= p && p <= buffer_ + N;
+        }
+
+    private:
+        #if _MSC_VER
+        char buffer_[N];
+        #else
+        alignas(16) char buffer_[N];
+        #endif
+        char* ptr_;
+    };
 }

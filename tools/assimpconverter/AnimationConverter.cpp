@@ -75,7 +75,7 @@ namespace NSG
 				track.node_ = scene_;
 			else
 				track.node_ = scene_->GetChild<Node>(channelName, true);
-			if (!track.node_)
+			if (!track.node_.lock())
 			{
 				TRACE_LOG("Warning: skipping animation track " << channelName << " whose scene node was not found");
 				return;
@@ -149,9 +149,10 @@ namespace NSG
 				kf.time_ = std::max<float>(kf.time_, 0.0f);
 
 				// Start with the bone's base transform
-				Vector3 pos = track.node_->GetPosition();
-				Vector3 scale = track.node_->GetScale();
-				Quaternion rot = track.node_->GetOrientation();
+				PNode node = track.node_.lock();
+				Vector3 pos = node->GetPosition();
+				Vector3 scale = node->GetScale();
+				Quaternion rot = node->GetOrientation();
 				// Then apply the active channels
 				if (track.channelMask_ & (int)AnimationChannel::POSITION && k < channel->mNumPositionKeys)
 					pos = ToVector3(channel->mPositionKeys[k].mValue);

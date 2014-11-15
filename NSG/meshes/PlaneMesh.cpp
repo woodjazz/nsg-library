@@ -29,19 +29,28 @@ misrepresented as being the original software.
 #include "ResourceProcedural.h"
 namespace NSG
 {
-    PlaneMesh::PlaneMesh(float width, float height, int columns, int rows)
-        : Mesh("PlaneMesh"),
-          width_(width),
-          height_(height),
-          columns_(columns),
-          rows_(rows)
+    PlaneMesh::PlaneMesh(const std::string& name)
+        : Mesh(name)
     {
+        Set();
         resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
     PlaneMesh::~PlaneMesh()
     {
+    }
+
+    void PlaneMesh::Set(float width, float height, int columns, int rows)
+    {
+        if (width_ != width || height_ != height || columns_ != columns || rows_ != rows)
+        {
+            width_ = width;
+            height_ = height;
+            columns_ = columns;
+            rows_ = rows;
+            Invalidate();
+        }
     }
 
     GLenum PlaneMesh::GetWireFrameDrawMode() const

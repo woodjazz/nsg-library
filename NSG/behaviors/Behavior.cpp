@@ -30,8 +30,7 @@ misrepresented as being the original software.
 namespace NSG 
 {
 	Behavior::Behavior()
-		: app_(*App::this_),
-		scene_(*app_.GetCurrentScene().get())
+		: app_(*App::this_)
 	{
 	}
 

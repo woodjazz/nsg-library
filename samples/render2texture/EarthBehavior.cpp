@@ -46,14 +46,14 @@ void EarthBehavior::Start()
 
 	PTexture pEarthTexture(app_.GetOrCreateTextureFile("data/stone.jpg"));
 	PMaterial pMaterial(app_.GetOrCreateMaterial ("earth"));
-	PProgram program(app_.CreateProgram());
+	PProgram program(app_.GetOrCreateProgram("EarthBehavior"));
 	program->SetFlags((int)ProgramFlag::PER_VERTEX_LIGHTING);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
     technique->Add(pass);
 	pass->SetProgram(program);
     pMaterial->SetTechnique(technique);
-	pMaterial->SetTexture0(pEarthTexture);
+	pMaterial->SetDiffuseMap(pEarthTexture);
 	pMaterial->SetShininess(100);
 	sceneNode_->Set(pMaterial);
  

@@ -32,7 +32,6 @@ using namespace NSG;
 struct MyApp : App
 {
 	PCamera camera_;
-	PCameraControl cameraControl_;
 	std::string resourcePath_;
 	std::shared_ptr<SceneConverter> sceneConverter_;
 
@@ -49,6 +48,9 @@ struct MyApp : App
 
     void DropFile(const std::string& filePath) override
     {
+		camera_ = nullptr;
+		sceneConverter_ = nullptr;
+		ClearAll();
 		Path path(filePath);
 		resourcePath_ = path.GetPath();
 		App::DropFile(path.GetFilePath());
@@ -67,12 +69,11 @@ struct MyApp : App
 		camera_ = scene->GetOrCreateChild<Camera>("EditorCamera");
 		camera_->SetSerializable(false);
 		camera_->SetInheritScale(false);
-		cameraControl_ = PCameraControl(new CameraControl);
-		camera_->AddBehavior(cameraControl_);
-		cameraControl_->Start();
-
+		PCameraControl cameraControl = std::make_shared<CameraControl>();
+		camera_->AddBehavior(cameraControl);
+		cameraControl->Start();
 		camera_->Activate();
-		cameraControl_->AutoZoom();
+		cameraControl->AutoZoom();
     }
 
     void RenderGUIWindow() override
@@ -86,7 +87,8 @@ struct MyApp : App
 		if (IMGUIButton("Point Light", 20))
 		{
 			PLight light = sceneConverter_->GetScene()->GetOrCreateChild<Light>("PointLight");
-			light->SetPosition(Vertex3(100, 100, 100));
+			light->SetSerializable(false);
+			light->SetParent(camera_);
 		}
         IMGUIEndArea();
     }

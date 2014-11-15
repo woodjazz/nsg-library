@@ -24,10 +24,15 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Node.h"
+#include "Scene.h"
+#include "Light.h"
+#include "Camera.h"
+#include "Octree.h"
 #include "Log.h"
 #include "BoundingBox.h"
 #include "Constants.h"
 #include "Util.h"
+#include "App.h"
 #include <algorithm>
 #include <iterator>
 
@@ -45,36 +50,40 @@ namespace NSG
           enabled_(true),
           isScaleUniform_(true)
     {
-		if (name_.empty())
-			name_ = GetUniqueName();
+        if (name_.empty())
+            name_ = GetUniqueName();
     }
 
     Node::~Node()
     {
+        PScene scene = scene_.lock();
+        if (scene && scene->GetOctree())
+            scene->GetOctree()->Remove(dynamic_cast<SceneNode*>(this));
+
         ClearAllChildren();
     }
 
     void Node::SetParent(PNode parent)
     {
-        //Do not insert child in parent (IMGUI will make memory grow for ever)
-        parent_ = parent;
+        RemoveFromParent();
+        parent->AddChild(shared_from_this());
         MarkAsDirty();
     }
 
-	PNode Node::GetParent() const 
-	{
-		return parent_.lock();
-	}
+    PNode Node::GetParent() const
+    {
+        return parent_.lock();
+    }
 
     void Node::RemoveFromParent()
     {
-		PNode parent = parent_.lock();
-		if (parent)
-			CHECK_CONDITION(parent->RemoveChild(this), __FILE__, __LINE__);
+        PNode parent = parent_.lock();
+        CHECK_CONDITION(!parent || parent->RemoveChild(this), __FILE__, __LINE__);
     }
 
     void Node::ClearAllChildren()
     {
+        childrenHash_.clear();
         for (unsigned i = children_.size() - 1; i < children_.size(); --i)
         {
             Node* childNode = children_[i].get();
@@ -101,9 +110,26 @@ namespace NSG
     void Node::AddChild(PNode node)
     {
         CHECK_ASSERT(node && node.get() != this, __FILE__, __LINE__);
-        node->RemoveFromParent();
         children_.push_back(node);
-        node->parent_ = shared_from_this();
+        childrenHash_.insert(std::make_pair(node->name_, node));
+        PNode thisNode = shared_from_this();
+        node->parent_ = thisNode;
+        PScene scene = scene_.lock();
+        if (!scene) scene = std::dynamic_pointer_cast<Scene>(thisNode);
+        node->scene_ = scene;
+        if (scene)
+        {
+            PSceneNode sceneNode = std::dynamic_pointer_cast<SceneNode>(node);
+            if (sceneNode) scene->GetOctree()->InsertUpdate(sceneNode.get());
+            PLight light = std::dynamic_pointer_cast<Light>(node);
+            if (light)
+                scene->AddLight(light);
+            else
+            {
+                PCamera camera = std::dynamic_pointer_cast<Camera>(node);
+                if (camera) scene->AddCamera(camera);
+            }
+        }
         node->MarkAsDirty();
     }
 
@@ -125,16 +151,46 @@ namespace NSG
                 position_ += delta;
                 break;
 
-			case TS_WORLD:
-			{
-				PNode parent = parent_.lock();
-				position_ += !parent ? delta : Vector3(parent->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
-				break;
-			}
+            case TS_WORLD:
+                {
+                    PNode parent = parent_.lock();
+                    position_ += (parent == scene_.lock() || !parent) ? delta : Vector3(parent->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
+                    break;
+                }
         }
 
         MarkAsDirty();
     }
+
+    void Node::Rotate(const Quaternion& delta, TransformSpace space)
+    {
+        switch (space)
+        {
+            case TS_LOCAL:
+                q_ = glm::normalize(q_ * delta);
+                break;
+
+            case TS_PARENT:
+                q_ = glm::normalize(delta * q_);
+                break;
+
+            case TS_WORLD:
+                {
+                    PNode parent = parent_.lock();
+                    if (parent == scene_.lock() || !parent)
+                        q_ = glm::normalize(delta * q_);
+                    else
+                    {
+                        Quaternion worldRotation = GetGlobalOrientation();
+                        q_ = q_ * glm::inverse(worldRotation) * delta * worldRotation;
+                    }
+                    break;
+                }
+        }
+
+        MarkAsDirty();
+    }
+
 
     void Node::SetBoneOffsetMatrix(const Matrix4& m)
     {
@@ -171,7 +227,7 @@ namespace NSG
 
     void Node::SetGlobalScale(const Vertex3& scale)
     {
-		PNode parent = parent_.lock();
+        PNode parent = parent_.lock();
 
         if (parent == nullptr)
         {
@@ -191,7 +247,7 @@ namespace NSG
 
     void Node::SetGlobalPosition(const Vertex3& position)
     {
-		PNode parent = parent_.lock();
+        PNode parent = parent_.lock();
 
         if (parent == nullptr)
         {
@@ -205,7 +261,7 @@ namespace NSG
 
     void Node::SetGlobalOrientation(const Quaternion& q)
     {
-		PNode parent = parent_.lock();
+        PNode parent = parent_.lock();
 
         if (parent == nullptr)
         {
@@ -245,7 +301,7 @@ namespace NSG
         }
     }
 
-    void Node::SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up)
+    void Node::SetGlobalLookAt(const Vertex3& lookAtPosition, const Vertex3& up)
     {
         const Vertex3& position = GetGlobalPosition();
         float length = glm::length(position - lookAtPosition);
@@ -255,7 +311,7 @@ namespace NSG
             // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
             Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
 
-			PNode parent = parent_.lock();
+            PNode parent = parent_.lock();
 
             if (parent)
             {
@@ -269,6 +325,18 @@ namespace NSG
         }
     }
 
+    void Node::SetLocalLookAt(const Vertex3& lookAtPosition, const Vertex3& up)
+    {
+        float length = glm::length(position_ - lookAtPosition);
+
+        if (length > 0)
+        {
+            // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+            Matrix4 m = glm::inverse(glm::lookAt(position_, lookAtPosition, up));
+            SetOrientation(glm::quat_cast(m));
+        }
+    }
+
     Quaternion Node::GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up)
     {
         const Vertex3& position = GetGlobalPosition();
@@ -279,7 +347,7 @@ namespace NSG
             // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
             Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
 
-			PNode parent(parent_.lock());
+            PNode parent(parent_.lock());
             if (parent)
             {
                 return glm::inverse(parent->GetGlobalOrientation()) * glm::quat_cast(m);
@@ -297,7 +365,7 @@ namespace NSG
     void Node::SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up)
     {
         SetGlobalPosition(newPosition);
-        SetLookAt(lookAtPosition, up);
+        SetGlobalLookAt(lookAtPosition, up);
     }
 
     void Node::Update(bool updateChildren) const
@@ -305,7 +373,7 @@ namespace NSG
         if (!dirty_ || !enabled_)
             return;
 
-		PNode parent = parent_.lock();
+        PNode parent = parent_.lock();
 
         if (parent)
         {
@@ -334,7 +402,7 @@ namespace NSG
             globalScale_ = scale_;
         }
 
-		isScaleUniform_ = globalScale_.x == globalScale_.y && globalScale_.x == globalScale_.z;
+        isScaleUniform_ = glm::abs(globalScale_.x - globalScale_.y) < PRECISION && glm::abs(globalScale_.x - globalScale_.z) < PRECISION;
         globalModel_ = glm::translate(glm::mat4(), globalPosition_) * glm::mat4_cast(globalOrientation_) * glm::scale(glm::mat4(1.0f), globalScale_);
         globalModelInv_ = glm::inverse(globalModel_);
         globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
@@ -392,8 +460,8 @@ namespace NSG
         dirty_ = true;
         SetUniformsNeedUpdate();
         OnDirty();
-        
-        if(scaleChange)
+
+        if (scaleChange)
             OnScaleChange();
 
         if (recursive)

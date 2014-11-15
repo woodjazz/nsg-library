@@ -41,7 +41,7 @@ void CameraBehavior::Start()
 	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
 
 	sceneNode_->SetPosition(Vertex3(0, 0, 10));
-	sceneNode_->SetLookAt(Vertex3(0));
+	sceneNode_->SetGlobalLookAt(Vertex3(0));
 
 }
 
@@ -60,7 +60,7 @@ void CameraBehavior::Update()
 		delta1);
 
 	sceneNode_->SetPosition(position);
-	sceneNode_->SetLookAt(Vertex3(0));
+	sceneNode_->SetGlobalLookAt(Vertex3(0));
 
     delta1 += deltaTime * 0.1f;
 

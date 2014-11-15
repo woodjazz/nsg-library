@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "types.h"
 #include <memory>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 namespace NSG
 {
@@ -38,8 +38,27 @@ namespace NSG
     public:
         MapAndVector() 
         {
-
         }
+
+		template<typename U>
+		std::shared_ptr<U> CreateClass(const K& key)
+		{
+			auto it = objsMap_.find(key);
+			std::shared_ptr<U> obj = std::make_shared<U>(key);
+			objs_.push_back(obj);
+			objsMap_[key] = obj;
+			return obj;
+		}
+
+		template<typename U>
+		std::shared_ptr<U> GetOrCreateClass(const K& key)
+		{
+			auto it = objsMap_.find(key);
+			if (it == objsMap_.end())
+				return CreateClass<U>(key);
+			else
+				return std::dynamic_pointer_cast<U>(it->second);
+		}
 
 		PT Get(const K& key) const
 		{
@@ -51,7 +70,6 @@ namespace NSG
 
         void Add(const K& key, PT obj)
         {
-            CHECK_ASSERT(!key.empty(), __FILE__, __LINE__);
             CHECK_ASSERT(obj, __FILE__, __LINE__);
             objs_.push_back(obj);
             objsMap_[key] = obj;
@@ -59,23 +77,12 @@ namespace NSG
 
         PT Create(const K& key)
         {
-            CHECK_ASSERT(!key.empty(), __FILE__, __LINE__);
-            auto it = objsMap_.find(key);
-            CHECK_ASSERT(it == objsMap_.end(), __FILE__, __LINE__);
-            PT obj(new T(key));
-            objs_.push_back(obj);
-            objsMap_[key] = obj;
-            return obj;
+			return CreateClass<T>(key);
         }
 
         PT GetOrCreate(const K& key)
         {
-            CHECK_ASSERT(!key.empty(), __FILE__, __LINE__);
-            auto it = objsMap_.find(key);
-            if (it == objsMap_.end())
-                return Create(key);
-            else
-                return it->second;
+			return GetOrCreateClass<T>(key);
         }
 
         const std::vector<PT>& GetConstObjs() const
@@ -98,9 +105,8 @@ namespace NSG
         	objs_.clear();
         	objsMap_.clear();
         }
-
     private:
         std::vector<PT> objs_;
-        std::map<K, PT> objsMap_;
+		std::unordered_map<K, PT> objsMap_;
     };
 }

@@ -106,7 +106,7 @@ namespace NSG
 
     void Camera::SetHalfHorizontalFov(float hhfov)
     {
-        float fovy = GetVerticalFov(hhfov);
+        float fovy = glm::degrees(GetVerticalFov(hhfov));
 
         if (fovy_ != fovy)
         {
@@ -393,13 +393,6 @@ namespace NSG
         return GetFrustum()->IsVisible(node, mesh);
     }
 
-    void Camera::OnChildCreated()
-    {
-        SetScene();
-		PScene scene = scene_.lock();
-		scene->AddCamera(std::dynamic_pointer_cast<Camera>(shared_from_this()));
-    }
-
 	void Camera::OnDirty() const
 	{
 		cameraIsDirty_ = true;
@@ -410,78 +403,80 @@ namespace NSG
         if (!IsSerializable())
             return;
 
-        pugi::xml_node child = node.append_child("Camera");
-
         {
             std::stringstream ss;
             ss << GetName();
-            child.append_attribute("name") = ss.str().c_str();
+			node.append_attribute("name") = ss.str().c_str();
         }
+
+		node.append_attribute("nodeType") = "Camera";
 
         {
             std::stringstream ss;
             ss << fovy_;
-            child.append_attribute("fovy") = ss.str().c_str();
+			node.append_attribute("fovy") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << zNear_;
-            child.append_attribute("zNear") = ss.str().c_str();
+			node.append_attribute("zNear") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << zFar_;
-            child.append_attribute("zFar") = ss.str().c_str();
+			node.append_attribute("zFar") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << xo_;
-            child.append_attribute("xo") = ss.str().c_str();
+			node.append_attribute("xo") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << yo_;
-            child.append_attribute("yo") = ss.str().c_str();
+			node.append_attribute("yo") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << xf_;
-            child.append_attribute("xf") = ss.str().c_str();
+			node.append_attribute("xf") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << yf_;
-            child.append_attribute("yf") = ss.str().c_str();
+			node.append_attribute("yf") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << isOrtho_;
-            child.append_attribute("isOrtho") = ss.str().c_str();
+			node.append_attribute("isOrtho") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << GetPosition();
-            child.append_attribute("position") = ss.str().c_str();
+			node.append_attribute("position") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << GetOrientation();
-            child.append_attribute("orientation") = ss.str().c_str();
+			node.append_attribute("orientation") = ss.str().c_str();
         }
+
+		SaveChildren(node);
     }
 
-    void Camera::Load(const pugi::xml_node& node)
+	void Camera::Load(const pugi::xml_node& node, const CachedData& data)
     {
-        //SetName(node.attribute("name").as_string());
+		name_ = node.attribute("name").as_string();
 
         Vertex3 position = GetVertex3(node.attribute("position").as_string());
         SetPosition(position);
@@ -497,6 +492,7 @@ namespace NSG
 
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
+		LoadChildren(node, data);
     }
 
     void Camera::AddBlurFilter(int output_width, int output_height)

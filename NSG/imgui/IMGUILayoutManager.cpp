@@ -63,11 +63,6 @@ namespace NSG
               scrollFactorAreaX_(0),
               scrollFactorAreaY_(0)
         {
-            controlNodes_.node0_ = PNode(new Node);
-            controlNodes_.node1_ = PNode(new Node);
-            controlNodes_.node2_ = PNode(new Node);
-            controlNodes_.node3_ = PNode(new Node);
-
 			if (percentageX < 0)
 				percentageX = 100;
 			if (percentageY < 0)

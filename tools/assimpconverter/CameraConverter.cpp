@@ -38,16 +38,17 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	CameraConverter::CameraConverter(const aiCamera* camera, SceneNode* parent)
+	CameraConverter::CameraConverter(const aiCamera* camera, Camera* cameraNode)
 	{
-		camera_ = parent->GetOrCreateChild<Camera>(GetUniqueName(camera->mName.C_Str()));
 		Vector3 lookAt(camera->mLookAt.x, camera->mLookAt.y, camera->mLookAt.z);
 		Vector3 up(camera->mUp.x, camera->mUp.y, camera->mUp.z);
-		camera_->SetLookAt(lookAt, up);
-		camera_->SetPosition(Vector3(camera->mPosition.x, camera->mPosition.y, camera->mPosition.z));
-		camera_->SetNearClip(camera->mClipPlaneNear);
-		camera_->SetFarClip(camera->mClipPlaneFar);
-		camera_->SetHalfHorizontalFov(camera->mHorizontalFOV);
+		Node node;
+		node.SetLocalLookAt(lookAt, up);
+		cameraNode->Rotate(node.GetOrientation());
+		cameraNode->Translate(Vector3(camera->mPosition.x, camera->mPosition.y, camera->mPosition.z));
+		cameraNode->SetNearClip(camera->mClipPlaneNear);
+		cameraNode->SetFarClip(camera->mClipPlaneFar);
+		cameraNode->SetHalfHorizontalFov(camera->mHorizontalFOV);
 	}
 
 	CameraConverter::~CameraConverter()

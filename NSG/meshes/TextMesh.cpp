@@ -36,8 +36,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    TextMesh::TextMesh(const std::string& textureFilename, bool dynamic)
-        : Mesh(textureFilename, dynamic),
+    TextMesh::TextMesh(const std::string& textureFilename)
+        : Mesh(textureFilename, true),
           screenWidth_(0),
           screenHeight_(0),
           textureFilename_(textureFilename),
@@ -48,7 +48,10 @@ namespace NSG
           maxLength_(0)
     {
         SetSerializable(false);
-		pProgram_ = App::this_->CreateProgram("TextMesh");
+		if (textureFilename.empty())
+			pProgram_ = App::this_->GetOrCreateProgram("NSGInternalTextProgram");
+		else
+			pProgram_ = App::this_->GetOrCreateProgram(textureFilename);
 		pProgram_->SetFlags((int)ProgramFlag::TEXT);
         pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
         App::Add(this);

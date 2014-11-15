@@ -75,7 +75,7 @@ namespace NSG
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            PNode textNode0(area_->controlNodes_.node0_);
+			PNode textNode0(new Node);
             textNode0->SetParent(node_);
 
             Vertex3 position;
@@ -102,12 +102,12 @@ namespace NSG
                 textNode0->SetPosition(position + Vertex3(0, -0.25f, 0));
             }
 
-            Node& textNode(*area_->controlNodes_.node1_);
-            textNode.SetParent(textNode0);
-            textNode.SetInheritScale(false);
-            textNode.SetScale(Context::this_->pRootNode_->GetGlobalScale());
+			PNode textNode = std::make_shared<Node>();
+            textNode->SetParent(textNode0);
+            textNode->SetInheritScale(false);
+            textNode->SetScale(Context::this_->pRootNode_->GetGlobalScale());
 
-			Graphics::this_->SetNode(&textNode);
+			Graphics::this_->SetNode(textNode.get());
             Graphics::this_->Set(pTextMesh_.get());
             Pass pass;
             pass.EnableDepthTest(false);

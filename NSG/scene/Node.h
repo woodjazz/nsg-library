@@ -31,13 +31,13 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include <vector>
 #include <string>
-#include <map>
+#include <unordered_map>
 
 namespace NSG
 {
     // Right-handed coordinate system ( like OpenGL)
     // 'look' along -z axis
-	class Node : NonCopyable, public std::enable_shared_from_this<Node>, public UniformsUpdate
+    class Node : NonCopyable, public std::enable_shared_from_this<Node>, public UniformsUpdate
     {
     public:
         Node(const std::string& name = "");
@@ -45,6 +45,7 @@ namespace NSG
         IdType GetId() const { return id_;  }
         virtual void OnDirty() const {};
         void Translate(const Vector3& delta, TransformSpace space = TS_LOCAL);
+        void Rotate(const Quaternion& delta, TransformSpace space = TS_LOCAL);
         void SetPosition(const Vertex3& position);
         const Vertex3& GetPosition() const { return position_; }
         void SetOrientation(const Quaternion& q);
@@ -60,7 +61,8 @@ namespace NSG
         const Matrix4& GetGlobalModelMatrix() const;
         const Matrix3& GetGlobalModelInvTranspMatrix() const;
         const Matrix4& GetGlobalModelInvMatrix() const;
-        void SetLookAt(const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
+        void SetGlobalLookAt(const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
+        void SetLocalLookAt(const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
         Quaternion GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up);
         void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
         const Vertex3& GetLookAtDirection() const;
@@ -69,29 +71,32 @@ namespace NSG
         PNode GetChild(size_t idx) const { return children_.at(idx); }
         template <typename T> std::shared_ptr<T> GetChild(const std::string& name, bool recursive)
         {
-            CHECK_ASSERT(!name.empty(), __FILE__, __LINE__);
-            for (auto& child : children_)
+            auto range = childrenHash_.equal_range(name);
+            for (auto it = range.first; it != range.second; it++)
             {
-                if (child->name_ == name)
+                if (!it->second.expired())
                 {
+                    PNode child = it->second.lock();
                     auto p = std::dynamic_pointer_cast<T>(child);
-                    if(p) return p;
+                    if (p) return p;
                 }
-				else if (recursive)
-				{
-					auto p = child->GetChild<T>(name, recursive);
-					if (p) return p;
-				}
+            }
+            if (recursive)
+            {
+                for (auto& child : children_)
+                {
+                    auto p = child->GetChild<T>(name, recursive);
+                    if (p) return p;
+                }
             }
             return nullptr;
         }
         template <typename T> std::shared_ptr<T> GetOrCreateChild(const std::string& name)
         {
             auto p = GetChild<T>(name, false);
-            if(p) return p;
+            if (p) return p;
             auto obj = std::make_shared<T>(name);
             AddChild(obj);
-			obj->OnChildCreated();
             return obj;
         }
         const std::vector<PNode>& GetChildren() const { return children_; }
@@ -99,7 +104,7 @@ namespace NSG
         virtual void Save(pugi::xml_node& node);
         const std::string& GetName() const { return name_; }
         void SetParent(PNode parent);
-		PNode GetParent() const;
+        PNode GetParent() const;
         void ClearAllChildren();
         virtual void Start() {}
         virtual void Update() {}
@@ -114,7 +119,6 @@ namespace NSG
         virtual void OnCollision(const ContactPoint& contactInfo) {}
         bool IsEnabled() const { return enabled_; }
         void SetEnabled(bool enable, bool recursive = true);
-		virtual void OnChildCreated() {};
         virtual void OnEnable() {}
         virtual void OnDisable() {}
         virtual void OnScaleChange() {}
@@ -122,15 +126,18 @@ namespace NSG
         const Matrix4& GetBoneOffsetMatrix() { return boneOffsetMatrix_; }
         void Update(bool updateChildren = false) const;
         bool IsScaleUniform() const;
+        PScene GetScene() const { return scene_.lock(); }
     protected:
-        std::weak_ptr<Node> parent_;
-        std::vector<PNode> children_;
         std::string name_;
+        std::vector<PNode> children_;
+        std::unordered_map<std::string, PWeakNode> childrenHash_;
+        PWeakScene scene_;
     private:
-		void AddChild(PNode node);
+        void AddChild(PNode node);
         bool RemoveChild(Node* node);
         void RemoveFromParent();
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);
+        std::weak_ptr<Node> parent_;
         IdType id_;
         mutable Matrix4 globalModel_;
         mutable Matrix4 globalModelInv_;

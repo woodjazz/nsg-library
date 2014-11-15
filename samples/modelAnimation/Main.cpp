@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-
 struct Sample : App
 {
     PScene scene_;
@@ -52,7 +51,7 @@ struct Sample : App
         PCamera camera;
         auto& cameras = scene_->GetCameras();
         if (cameras.size())
-            camera = cameras[0];
+            camera = cameras[0].lock();
         else
 			camera = scene_->GetOrCreateChild<Camera>("camera");
 
@@ -63,7 +62,7 @@ struct Sample : App
 		light_ = scene_->GetOrCreateChild<Light>("light");
         light_->SetType(LightType::DIRECTIONAL);
         //light_->SetPosition(Vertex3(100, 0, 0));
-        light_->SetLookAt(Vector3(1, 0, 0));
+		light_->SetGlobalLookAt(Vector3(1, 0, 0));
         light_->SetDiffuseColor(Color(1, 0, 0, 1));
         //camera->AddChild(light_);
 
@@ -106,8 +105,6 @@ struct Sample : App
 
         }
     }
-
-
 };
 
 NSG_MAIN(Sample);

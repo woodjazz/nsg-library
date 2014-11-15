@@ -72,7 +72,7 @@ struct Sample : App
         camera->AddBehavior(PCameraControl(new CameraControl));
         camera->SetPosition(Vertex3(0, 0, 10));
 
-		PProgram program(CreateProgram());
+		PProgram program(GetOrCreateProgram("program0"));
 		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
         PTechnique technique(new Technique);
         PPass pass(new Pass);
@@ -84,7 +84,7 @@ struct Sample : App
         {
             PMesh mesh = CreateBoxMesh();
             PMaterial material = GetOrCreateMaterial("material");
-			material->SetTexture0(GetOrCreateTextureFile("data/wall.jpg"));
+			material->SetDiffuseMap(GetOrCreateTextureFile("data/wall.jpg"));
             material->SetTechnique(technique);
 
             node1_ = scene_->GetOrCreateChild<SceneNode>("node1");
@@ -96,7 +96,7 @@ struct Sample : App
         {
             PMesh mesh = CreateSphereMesh();
             PMaterial material = GetOrCreateMaterial("material");
-			material->SetTexture0(GetOrCreateTextureFile("data/stone.jpg"));
+			material->SetDiffuseMap(GetOrCreateTextureFile("data/stone.jpg"));
             material->SetTechnique(technique);
 
 			PSceneNode node = scene_->GetOrCreateChild<SceneNode>("node2");

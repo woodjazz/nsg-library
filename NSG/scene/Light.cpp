@@ -86,83 +86,80 @@ namespace NSG
 
     void Light::Save(pugi::xml_node& node)
     {
-        pugi::xml_node child = node.append_child("Light");
-
         {
             std::stringstream ss;
             ss << GetName();
-            child.append_attribute("name") = ss.str().c_str();
+			node.append_attribute("name") = ss.str().c_str();
         }
+
+		node.append_attribute("nodeType") = "Light";
 
         {
             std::stringstream ss;
             ss << (int)type_;
-            child.append_attribute("type") = ss.str().c_str();
+			node.append_attribute("type") = ss.str().c_str();
         }
 
         {
-            pugi::xml_node attenuationChild = child.append_child("attenuation");
+            std::stringstream ss;
+            ss << attenuation_.constant;
+			node.append_attribute("attenuationConstant") = ss.str().c_str();
+        }
 
-            {
-                std::stringstream ss;
-                ss << attenuation_.constant;
-                attenuationChild.append_attribute("constant") = ss.str().c_str();
-            }
+        {
+            std::stringstream ss;
+            ss << attenuation_.linear;
+			node.append_attribute("attenuationLinear") = ss.str().c_str();
+        }
 
-            {
-                std::stringstream ss;
-                ss << attenuation_.linear;
-                attenuationChild.append_attribute("linear") = ss.str().c_str();
-            }
-
-            {
-                std::stringstream ss;
-                ss << attenuation_.quadratic;
-                attenuationChild.append_attribute("quadratic") = ss.str().c_str();
-            }
+        {
+            std::stringstream ss;
+            ss << attenuation_.quadratic;
+			node.append_attribute("attenuationQuadratic") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << spotCutOff_;
-            child.append_attribute("spotCutOff") = ss.str().c_str();
+			node.append_attribute("spotCutOff") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << ambient_;
-            child.append_attribute("ambient") = ss.str().c_str();
+			node.append_attribute("ambient") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << diffuse_;
-            child.append_attribute("diffuse") = ss.str().c_str();
+			node.append_attribute("diffuse") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << specular_;
-            child.append_attribute("specular") = ss.str().c_str();
+			node.append_attribute("specular") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << GetPosition();
-            child.append_attribute("position") = ss.str().c_str();
+			node.append_attribute("position") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << GetOrientation();
-            child.append_attribute("orientation") = ss.str().c_str();
+			node.append_attribute("orientation") = ss.str().c_str();
         }
 
+		SaveChildren(node);
     }
 
-    void Light::Load(const pugi::xml_node& node)
+	void Light::Load(const pugi::xml_node& node, const CachedData& data)
     {
-        //SetName(node.attribute("name").as_string());
+		name_ = node.attribute("name").as_string();
 
 		LightType type = (LightType)node.attribute("type").as_int();
 
@@ -187,10 +184,9 @@ namespace NSG
         }
 
         {
-            pugi::xml_node attenuationChild = node.child("attenuation");
-            float constant = attenuationChild.attribute("constant").as_float();
-            float linear = attenuationChild.attribute("linear").as_float();
-            float quadratic = attenuationChild.attribute("quadratic").as_float();
+			float constant = node.attribute("attenuationConstant").as_float();
+			float linear = node.attribute("attenuationLinear").as_float();
+			float quadratic = node.attribute("attenuationQuadratic").as_float();
             SetAttenuation(constant, linear, quadratic);
         }
 
@@ -203,14 +199,7 @@ namespace NSG
 
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
+
+		LoadChildren(node, data);
     }
-
-	void Light::OnChildCreated()
-	{
-        SetScene();
-		PScene scene = scene_.lock();
-		scene->AddLight(std::dynamic_pointer_cast<Light>(shared_from_this()));
-	}
-
-
 }

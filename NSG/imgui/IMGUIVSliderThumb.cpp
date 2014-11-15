@@ -58,31 +58,21 @@ namespace NSG
             {
 				if (mousedown_)
 				{
-					Vertex3 parentGlobalScale = area_->parent_->pNode_->GetGlobalScale();
-					Vertex3 globalScale = node_->GetGlobalScale();
-					Node& node(*area_->controlNodes_.node0_);
-					node.SetParent(node_);
-					node.SetInheritScale(false);
-					globalScale.y = parentGlobalScale.y; // In order to hit all the slider area: reset scale
-					node.SetScale(globalScale);
-
-					if ((!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == id_)
+					if ((!lastHit_ && area_->parent_->pNode_->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == id_)
 					{
 						lastHit_ = id_;
-						Vertex3 globalPos = area_->parent_->pNode_->GetGlobalPosition();
-						Vertex3 globalScale = area_->parent_->pNode_->GetGlobalScale();
-						float yTop = globalPos.y + globalScale.y;
-						float yBottom = globalPos.y - globalScale.y;
 
-						float y1 = mousey_;
+						Vertex3 thumbGlobalPos = node_->GetGlobalPosition();
+						Vertex3 thumbGlobalScale = node_->GetGlobalScale();
+						float yThumbTop = thumbGlobalPos.y + thumbGlobalScale.y;
+						float yThumbBottom = thumbGlobalPos.y - thumbGlobalScale.y;
+						float yThumbCenter = yThumbBottom + (yThumbTop - yThumbBottom) / 2;
 
-						if (y1 <= yTop && y1 >= yBottom)
-						{
-							float a2 = 1 / (yBottom - yTop);
-							float y2 = a2 * y1 - a2 * yTop;
-							CHECK_ASSERT(y2 >= 0 && y2 <= 1, __FILE__, __LINE__);
-							value_ = y2;
-						}
+						float centerOffset = yThumbCenter - mousey_;
+						if (mouseRelY_ * centerOffset < 0)
+							value_ = glm::clamp<float>(value_ + centerOffset, 0, 1);
+						else if(!mouseRelY_ && (mousey_ > yThumbTop || mousey_ < yThumbBottom))
+							value_ = glm::clamp<float>(value_ + centerOffset, 0, 1);
 					}
 				}
 				else if (HasFocus() && mouseRelY_ != 0)

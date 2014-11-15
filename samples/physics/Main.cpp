@@ -68,7 +68,7 @@ struct Sample : App
             PTexture texture(GetOrCreateTextureFile("data/wall.jpg"));
             PMaterial material(GetOrCreateMaterial("floor"));
             material->SetDiffuseMap(texture);
-            PProgram program(CreateProgram());
+            PProgram program(GetOrCreateProgram("program1"));
             program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
             PTechnique technique(new Technique);
             PPass pass(new Pass);

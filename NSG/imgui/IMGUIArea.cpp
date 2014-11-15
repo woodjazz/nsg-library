@@ -115,7 +115,7 @@ namespace NSG
 
         void Area::Render()
         {
-            Update();
+			Update();
         }
 
         void Area::RenderSlider()
@@ -134,43 +134,43 @@ namespace NSG
             // Draw slider
             Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
 
-			Node& node(*area_->controlNodes_.node0_);
-            node.SetParent(area_->pNode_);
-            node.SetInheritScale(false);
+			PNode node = std::make_shared<Node>();
+            node->SetParent(area_->pNode_);
+            node->SetInheritScale(false);
 
             float yScale = 0.5f / area_->scrollFactorAreaY_;
             std::pair<int, int> viewSize = App::this_->GetViewSize();
             float xScale = SLIDER_WIDTH / (float)viewSize.first;
 
             Vertex3 globalScale(xScale, areaGlobalScale.y * yScale, 1);
-            node.SetScale(globalScale);
+            node->SetScale(globalScale);
 
             float offset = yPosition / maxPosY; //0..1
             float blind_area = (area_->isXScrollable_ && areaStyle_.showHScroll_) ? 2 * SLIDER_WIDTH / (float)viewSize.second : 0;
             const float TOP_POS = 1;
             float ypos = TOP_POS - yScale - 2 * (1 - yScale - blind_area) * offset;
 
-            node.SetPosition(Vertex3(0, ypos, 0));
+            node->SetPosition(Vertex3(0, ypos, 0));
 
-            Vertex3 globalPosition = node.GetGlobalPosition();
+            Vertex3 globalPosition = node->GetGlobalPosition();
             globalPosition.x += areaGlobalScale.x - globalScale.x;
-            node.SetGlobalPosition(globalPosition);
+            node->SetGlobalPosition(globalPosition);
 
-            Graphics::this_->SetNode(&node);
+            Graphics::this_->SetNode(node.get());
 
             RenderSlider();
 
             if (mousedown_)
             {
-                Vertex3 position = node.GetPosition();
-                Vertex3 scale = node.GetScale();
+                Vertex3 position = node->GetPosition();
+                Vertex3 scale = node->GetScale();
                 position.y = 0;
                 scale.y = 1;
                 // In order to hit all the slider area: reset position and scale
-                node.SetPosition(position);
-                node.SetScale(scale);
+                node->SetPosition(position);
+                node->SetScale(scale);
 
-                if ((!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == static_cast<IdType>(IdsTypes::IMGUI_VERTICAL_SLIDER_ID))
+                if ((!lastHit_ && node->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == static_cast<IdType>(IdsTypes::IMGUI_VERTICAL_SLIDER_ID))
                 {
                     lastHit_ = static_cast<IdType>(IdsTypes::IMGUI_VERTICAL_SLIDER_ID);
 
@@ -187,7 +187,7 @@ namespace NSG
                         CHECK_ASSERT(y2 >= 0 && y2 <= 1, __FILE__, __LINE__);
                         yPosition = y2 * maxPosY;
                     }
-                    return true;
+					return true;
                 }
             }
 
@@ -198,43 +198,43 @@ namespace NSG
         {
             Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
             // Draw slider
-            Node& node(*area_->controlNodes_.node0_);
-            node.SetParent(area_->pNode_);
-            node.SetInheritScale(false);
+			PNode node = std::make_shared<Node>();
+            node->SetParent(area_->pNode_);
+            node->SetInheritScale(false);
 
             std::pair<int, int> viewSize = App::this_->GetViewSize();
             float yScale = SLIDER_WIDTH / (float)viewSize.second;
             float xScale = 0.5f / area_->scrollFactorAreaX_;
 
             Vertex3 globalScale(areaGlobalScale.x * xScale, yScale, 1);
-            node.SetScale(globalScale);
+            node->SetScale(globalScale);
 
             float offset = -xPosition / maxPosX; //0..1
             float blind_area = (area_->isYScrollable_ && areaStyle_.showVScroll_) ? 2 * SLIDER_WIDTH / (float)viewSize.first : 0;
             const float LEFT_POS = -1;
             float xpos = LEFT_POS + xScale + 2 * (1 - xScale - blind_area) * offset;
 
-            node.SetPosition(Vertex3(xpos, 0, 0));
+            node->SetPosition(Vertex3(xpos, 0, 0));
 
-            Vertex3 globalPosition = node.GetGlobalPosition();
+            Vertex3 globalPosition = node->GetGlobalPosition();
             globalPosition.y -= areaGlobalScale.y - globalScale.y;
-            node.SetGlobalPosition(globalPosition);
+            node->SetGlobalPosition(globalPosition);
 
-            Graphics::this_->SetNode(&node);
+            Graphics::this_->SetNode(node.get());
 
             RenderSlider();
 
             if (mousedown_)
             {
-                Vertex3 position = node.GetPosition();
-                Vertex3 scale = node.GetScale();
+                Vertex3 position = node->GetPosition();
+                Vertex3 scale = node->GetScale();
                 position.x = 0;
                 scale.x = 1;
                 // In order to hit all the slider area: reset position and scale
-                node.SetPosition(position);
-                node.SetScale(scale);
+                node->SetPosition(position);
+                node->SetScale(scale);
 
-                if ((!lastHit_ && node.IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == static_cast<IdType>(IdsTypes::IMGUI_HORIZONTAL_SLIDER_ID))
+                if ((!lastHit_ && node->IsPointInsideBB(Vertex3(mouseDownX_, mouseDownY_, 0))) || lastHit_ == static_cast<IdType>(IdsTypes::IMGUI_HORIZONTAL_SLIDER_ID))
                 {
                     lastHit_ = static_cast<IdType>(IdsTypes::IMGUI_HORIZONTAL_SLIDER_ID);
 

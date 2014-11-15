@@ -82,12 +82,24 @@ static const std::string FS_GLSL = \
 "		#elif defined(STENCIL)\n"\
 "			gl_FragColor = vec4(1.0);\n"\
 "		#elif defined(UNLIT)\n"\
-"			gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
+"			#ifdef DIFFUSEMAP\n"\
+"				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
+"			#else\n"\
+"				gl_FragColor = v_color;\n"\
+"			#endif\n"\
 "		#elif defined(PER_VERTEX_LIGHTING)\n"\
 "			#ifdef LIGHTMAP\n"\
-"				gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, v_texcoord0);\n"\
+"				#ifdef DIFFUSEMAP\n"\
+"					gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, v_texcoord0);\n"\
+"				#else\n"\
+"					gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1);\n"\
+"				#endif\n"\
 "			#else\n"\
-"				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
+"				#ifdef DIFFUSEMAP\n"\
+"					gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
+"				#else\n"\
+"					gl_FragColor = v_color;\n"\
+"				#endif\n"\
 "			#endif\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "			//Lighting is calculated in world space\n"\
@@ -111,13 +123,25 @@ static const std::string FS_GLSL = \
 "    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
 "    		vec4 totalLight = CalcFSTotalLight(vertexToEye, normal);\n"\
 "    		#ifdef LIGHTMAP\n"\
-"    			gl_FragColor = v_color * totalLight * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, texcoord0);\n"\
+"    			#ifdef DIFFUSEMAP\n"\
+"    				gl_FragColor = v_color * totalLight * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, texcoord0);\n"\
+"    			#else\n"\
+"    				gl_FragColor = v_color * totalLight * texture2D(u_texture2, v_texcoord1);\n"\
+"    			#endif\n"\
 "    		#else\n"\
-"		    	gl_FragColor = v_color * totalLight * texture2D(u_texture0, texcoord0);\n"\
+"    			#ifdef DIFFUSEMAP\n"\
+"		    		gl_FragColor = v_color * totalLight * texture2D(u_texture0, texcoord0);\n"\
+"		    	#else\n"\
+"		    		gl_FragColor = v_color * totalLight;\n"\
+"		    	#endif\n"\
 "		    #endif\n"\
 "		#elif defined(LIGHTMAP) // lightmap without lighting\n"\
 "			\n"\
-"			gl_FragColor = texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, v_texcoord0);\n"\
+"			#ifdef DIFFUSEMAP\n"\
+"				gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, v_texcoord0);\n"\
+"			#else\n"\
+"				gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1);\n"\
+"			#endif\n"\
 "		#else // Vertex color by default\n"\
 "			gl_FragColor = v_color;\n"\
 "		#endif	    \n"\

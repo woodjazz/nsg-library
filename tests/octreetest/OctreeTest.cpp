@@ -28,7 +28,7 @@ using namespace NSG;
 
 static void Test01()
 {
-    PScene scene(App::this_->CreateScene("scene", true));
+    PScene scene(App::this_->GetOrCreateScene("scene1", true));
 
     PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
     PBoxMesh boxMesh(App::this_->CreateBoxMesh());
@@ -64,7 +64,7 @@ static void Test01()
     scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_ASSERT(visibles.size() == 2, __FILE__, __LINE__);
 
-    camera->SetLookAt(Vector3(0, 0, 1));
+	camera->SetGlobalLookAt(Vector3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_ASSERT(visibles.size() == 1, __FILE__, __LINE__);
 
@@ -81,7 +81,7 @@ static void Test01()
 
 static void Test02()
 {
-    PScene scene(App::this_->CreateScene("scene", true));
+	PScene scene(App::this_->GetOrCreateScene("scene2", true));
 
     PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
     PBoxMesh boxMesh(App::this_->CreateBoxMesh());
@@ -130,7 +130,7 @@ static void Test02()
 
 static void Test03()
 {
-    PScene scene(App::this_->CreateScene("scene", true));
+	PScene scene(App::this_->GetOrCreateScene("scene3", true));
 
     {
         PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
@@ -158,7 +158,7 @@ static void Test03()
 
 static void Test04()
 {
-    PScene scene(App::this_->CreateScene("scene", true));
+	PScene scene(App::this_->GetOrCreateScene("scene4", true));
 
     {
         const float RADIUS = 0.5f;
@@ -231,7 +231,7 @@ static void Test04()
 
 static void Test05()
 {
-	PScene scene(App::this_->CreateScene("scene", true));
+	PScene scene(App::this_->GetOrCreateScene("scene5", true));
 
 	{
 		const float RADIUS = 0.5f;

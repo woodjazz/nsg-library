@@ -90,7 +90,7 @@ namespace NSG
         {
             pointOnSphere_->IncAngles(PI * relX, PI * relY);
             sceneNode_->SetGlobalPosition(pointOnSphere_->GetPoint());
-            sceneNode_->SetLookAt(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
+            sceneNode_->SetGlobalLookAt(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
         }
         else if (shiftKeyDown_)
         {
@@ -122,7 +122,7 @@ namespace NSG
         {
             Vertex3 oldPos = sceneNode_->GetGlobalPosition();
             sceneNode_->SetGlobalPosition(position);
-            BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
+            BoundingBox bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_);
             if (camera_->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE)
             {
                 pointOnSphere_->SetPoint(oldPos);
@@ -171,7 +171,7 @@ namespace NSG
         Vertex3 newCenter;
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
-        if (scene_.GetClosestRayNodeIntersection(ray, closest))
+        if (camera_->GetScene()->GetClosestRayNodeIntersection(ray, closest))
         {
             if (centerObj)
             {
@@ -185,8 +185,8 @@ namespace NSG
         else
         {
             BoundingBox bb;
-            if (!scene_.GetVisibleBoundingBox(camera_, bb))
-                bb = scene_.GetWorldBoundingBoxBut(camera_);
+			if (!camera_->GetScene()->GetVisibleBoundingBox(camera_, bb))
+				bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_);
             newCenter = ray.GetPoint(glm::distance(bb.Center(), camera_->GetGlobalPosition()));
             //newCenter = bb.Center();
         }
@@ -197,7 +197,7 @@ namespace NSG
 
     void CameraControl::AutoZoom()
     {
-        BoundingBox bb = scene_.GetWorldBoundingBoxBut(camera_);
+		BoundingBox bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_);
         Vertex3 center = bb.Center();
         Vertex3 position = camera_->GetGlobalPosition();
         Vector3 lookAtDir(WORLD_Z_COORD);

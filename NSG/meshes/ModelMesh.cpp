@@ -42,8 +42,12 @@ namespace NSG
 
     void ModelMesh::SetData(const VertexsData& vertexsData, const Indexes& indexes)
     {
-        vertexsData_ = vertexsData;
-        indexes_ = indexes;
+        if(vertexsData_ != vertexsData || indexes_ != indexes)
+        {
+            vertexsData_ = vertexsData;
+            indexes_ = indexes;
+            Invalidate();
+        }
     }
 
     GLenum ModelMesh::GetWireFrameDrawMode() const

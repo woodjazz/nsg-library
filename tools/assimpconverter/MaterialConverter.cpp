@@ -33,13 +33,14 @@ misrepresented as being the original software.
 #include "Technique.h"
 #include "App.h"
 #include "Path.h"
+#include "Util.h"
 #include "TextureFileManager.h"
 #include "assimp/material.h"
 
 namespace NSG
 {
     MaterialConverter::MaterialConverter(const aiMaterial* mtl, const std::string& resourcePath)
-        : program_(App::this_->CreateProgram()),
+		: program_(App::this_->GetOrCreateProgram(GetUniqueName())),
 		  flags_((int)ProgramFlag::NONE),
           resourcePath_(resourcePath),
           mtl_(mtl)
@@ -311,9 +312,6 @@ namespace NSG
 
     PTexture MaterialConverter::CreateTexture(const Path& path)
     {
-#if 1        
-        std::string textureFilePath = path.GetFilename();
-#else
         std::string textureFilePath;
         if (path.IsPathRelative())
         {
@@ -324,7 +322,6 @@ namespace NSG
         }
         else
             textureFilePath = path.GetFilePath();
-#endif            
 
 		return TextureFileManager::this_->GetOrCreate(textureFilePath);
     }

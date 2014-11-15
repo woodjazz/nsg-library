@@ -45,7 +45,7 @@ void EarthBehavior::Start()
 
 	PTexture pEarthTexture(app_.GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
     PMaterial pMaterial(app_.GetOrCreateMaterial("earth"));
-	PProgram program(app_.CreateProgram());
+	PProgram program(app_.GetOrCreateProgram("program"));
 	program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
     PTechnique technique(new Technique);
     PPass pass(new Pass);
@@ -53,7 +53,7 @@ void EarthBehavior::Start()
     technique->Add(pass);
 	pass->SetProgram(program);
     pMaterial->SetTechnique(technique);
-    pMaterial->SetTexture0(pEarthTexture);
+	pMaterial->SetDiffuseMap(pEarthTexture);
     pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
     pMaterial->SetShininess(10);

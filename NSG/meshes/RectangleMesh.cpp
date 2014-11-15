@@ -30,17 +30,26 @@ misrepresented as being the original software.
 #include "ResourceProcedural.h"
 namespace NSG
 {
-    RectangleMesh::RectangleMesh(float width, float height)
-        : Mesh("RectangleMesh"),
-          width_(width),
-          height_(height)
+    RectangleMesh::RectangleMesh(const std::string& name)
+        : Mesh(name)
     {
+        Set();
         resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
     RectangleMesh::~RectangleMesh()
     {
+    }
+
+    void RectangleMesh::Set(float width, float height)
+    {
+        if (width_ != width || height_ != height)
+        {
+            width_ = width;
+            height_ = height;
+            Invalidate();
+        }
     }
 
     GLenum RectangleMesh::GetWireFrameDrawMode() const

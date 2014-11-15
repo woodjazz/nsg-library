@@ -95,13 +95,13 @@ struct Sample : App
 
 			PTexture texture(GetOrCreateTextureFile("data/metal.png"));
 			PMaterial material = style_->activeMaterial_;
-            material->SetTexture0(texture);
+			material->SetDiffuseMap(texture);
 
 			material = style_->normalMaterial_;
-            material->SetTexture0(texture);        
+			material->SetDiffuseMap(texture);
 
 			material = style_->hotMaterial_;
-            material->SetTexture0(texture);   
+			material->SetDiffuseMap(texture);
 
 			IMGUISkin()->windowStyle_ = style_;
         }

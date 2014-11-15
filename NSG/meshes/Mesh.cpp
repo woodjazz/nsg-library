@@ -40,7 +40,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	static int meshCounter = 0;
     Mesh::Mesh(const std::string& name, bool dynamic)
         : bufferVertexData_(nullptr),
           bufferIndexData_(nullptr),
@@ -52,17 +51,19 @@ namespace NSG
           serializable_(true)
     {
 		if (name_.empty())
-		{
-			std::stringstream ss;
-			ss << "Mesh" << meshCounter++;
-			name_ = ss.str();
-		}
+			name_ = GetUniqueName("Mesh");
     }
 
     Mesh::~Mesh()
     {
         Context::RemoveObject(this);
     }
+
+	void Mesh::SetDynamic(bool dynamic)
+	{
+		isStatic_ = !dynamic;
+		Invalidate();
+	}
 
     bool Mesh::IsValid()
     {

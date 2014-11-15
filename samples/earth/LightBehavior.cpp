@@ -38,7 +38,7 @@ void LightBehavior::Start()
 {
     PMaterial pMaterial(app_.GetOrCreateMaterial("light"));
     pMaterial->SetColor(Color(1,0,0,1));
-	PProgram pProgram = app_.CreateProgram();
+	PProgram pProgram = app_.GetOrCreateProgram("program");
     PTechnique technique(new Technique);
     PPass pass(new Pass);
     technique->Add(pass);

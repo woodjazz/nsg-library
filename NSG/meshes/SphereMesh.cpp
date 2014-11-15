@@ -32,17 +32,26 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    SphereMesh::SphereMesh(float radius, int res)
-        : Mesh("SphereMesh"),
-          radius_(radius),
-          res_(res)
+    SphereMesh::SphereMesh(const std::string& name)
+        : Mesh(name)
     {
+        Set();
         resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
     SphereMesh::~SphereMesh()
     {
+    }
+
+    void SphereMesh::Set(float radius, int res)
+    {
+        if (radius_ != radius || res_ != res)
+        {
+            radius_ = radius;
+            res_ = res;
+            Invalidate();
+        }
     }
 
     GLenum SphereMesh::GetWireFrameDrawMode() const

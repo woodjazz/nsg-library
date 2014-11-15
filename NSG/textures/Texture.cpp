@@ -371,8 +371,12 @@ namespace NSG
 
     void Texture::Save(pugi::xml_node& node)
     {
-        CHECK_ASSERT(!pResource_->GetPath().GetFilePath().empty(), __FILE__, __LINE__);
-        node.append_attribute("filename") = pResource_->GetPath().GetFilePath().c_str();
+		Path path(pResource_->GetPath());
+		CHECK_ASSERT(!path.GetFilePath().empty(), __FILE__, __LINE__);
+		if (path.IsPathRelative())
+			node.append_attribute("filename") = path.GetFilePath().c_str();
+		else
+			node.append_attribute("filename") = path.GetFilename().c_str();
         node.append_attribute("flags") = flags_.to_string().c_str();
     }
 

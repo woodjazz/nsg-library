@@ -50,7 +50,7 @@ namespace NSG
     namespace IMGUI
     {
         Context::Context()
-			: unlitProgram_(App::this_->CreateProgram()),
+			: unlitProgram_(App::this_->GetOrCreateProgram("NSGUnlitProgram")),
               controlMesh_(App::this_->CreateRectangleMesh(2, 2)),
               state_(new State),
               pSkin_(new Skin),

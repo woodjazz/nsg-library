@@ -187,7 +187,7 @@ namespace NSG
                     area_->textOffsetX_ = 0;
             }
 
-            PNode textNode0(area_->controlNodes_.node0_);
+			PNode textNode0(new Node);
             textNode0->SetParent(node_);
 
             if (pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
@@ -202,12 +202,12 @@ namespace NSG
             else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
                 textNode0->SetPosition(textNode0->GetPosition() + Vertex3(0, -0.25f, 0));
 
-            PNode textNode1(area_->controlNodes_.node1_);
+			PNode textNode1(new Node);
             textNode1->SetParent(textNode0);
             textNode1->SetInheritScale(false);
             textNode1->SetScale(Context::this_->pRootNode_->GetGlobalScale());
 
-            PNode textNode2(area_->controlNodes_.node2_);
+			PNode textNode2(new Node);
             textNode2->SetParent(textNode1);
             textNode2->SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
 
@@ -230,11 +230,11 @@ namespace NSG
             // Render cursor if we have keyboard focus
             if (HasFocus() && layoutManager_.IsCurrentWindowActive() && (uistate_.tick_ < 15))
             {
-                Node& cursorNode(*area_->controlNodes_.node3_);
-                cursorNode.SetParent(textNode2);
-                cursorNode.SetPosition(Vertex3(cursorPositionInText, 0, 0));
+				PNode cursorNode = std::make_shared<Node>();
+                cursorNode->SetParent(textNode2);
+                cursorNode->SetPosition(Vertex3(cursorPositionInText, 0, 0));
 
-				Graphics::this_->SetNode(&cursorNode);
+				Graphics::this_->SetNode(cursorNode.get());
                 Graphics::this_->Set(pCursorMesh_.get());
                 
                 Pass pass;

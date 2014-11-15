@@ -577,10 +577,11 @@ namespace NSG
             if (activeTexture_ != index)
             {
                 glActiveTexture(GL_TEXTURE0 + index);
+				textures_[index] = texture;
+				glBindTexture(GL_TEXTURE_2D, texture->GetID());
                 activeTexture_ = index;
             }
-
-            if (textures_[index] != texture)
+            else if (textures_[index] != texture)
             {
                 textures_[index] = texture;
                 glBindTexture(GL_TEXTURE_2D, texture->GetID());

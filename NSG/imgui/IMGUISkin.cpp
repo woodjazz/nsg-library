@@ -66,7 +66,7 @@ namespace NSG
                 mainWindowStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
             }
 
-            PProgram program = app_.CreateProgram();
+            PProgram program = app_.GetOrCreateProgram("NSGIMGUISkin");
             program->SetFlags((int)ProgramFlag::STENCIL);
             stencilPass_->SetProgram(program);
             stencilPass_->EnableDepthTest(false);

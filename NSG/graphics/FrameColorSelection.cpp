@@ -64,7 +64,7 @@ namespace NSG
         frameBuffer_ = PFrameBuffer(new FrameBuffer(windowWidth_, windowHeight_, frameBufferFlags));
 
         PPass pass(new Pass);
-		pass->SetProgram(app_.CreateProgram());
+		pass->SetProgram(app_.GetOrCreateProgram("NSGFrameColorSelection"));
 
         PTechnique technique(new Technique);
         technique->Add(pass);

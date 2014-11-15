@@ -34,12 +34,12 @@ namespace NSG
 	class Allocator : public std::allocator<T> 
 	{
 	public:
-		template<class U> struct rebind { typedef Allocator<U, N> other; };
-		template<class U> Allocator(const Allocator<U, N>& other) : pool_(other.pool_) {}
+		//template<class U> struct rebind { typedef Allocator<U, N> other; };
+		//template<class U> Allocator(const Allocator<U, N>& other) : pool_(other.pool_) {}
 
-		Allocator(Arena<N>& pool) : pool_(pool) {}
+		Allocator() {}
 		Allocator(const Allocator& obj) = default;
-		Allocator& operator = (const Allocator&) = delete;
+		Allocator& operator = (const Allocator& obj) { pool_ = obj.pool_; }
 
 		typedef typename std::allocator<T>::pointer pointer;
 		typedef typename std::allocator<T>::size_type size_type;
@@ -58,7 +58,7 @@ namespace NSG
 		template <class U, std::size_t M> friend class Allocator;
 
 	private:
-		Arena<N>& pool_;
+		Arena<N> pool_;
 	};
 
 	template <class T, std::size_t N, class U, std::size_t M>

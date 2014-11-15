@@ -229,6 +229,7 @@ namespace NSG
         {
             if (quit)
             {
+                AppEnterBackground();
                 TRACE_LOG("App terminating...");
                 #if EMSCRIPTEN
                 {

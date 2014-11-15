@@ -52,7 +52,7 @@ namespace NSG
         technique_->Add(pass_);
         pMaterial_->SetTexture0(input);
         pMaterial_->SetTechnique(technique_);
-		program_ = app_.CreateProgram(name);
+		program_ = app_.GetOrCreateProgram(name);
 		program_->SetFlags(flags);
         pass_->SetProgram(program_);
     }

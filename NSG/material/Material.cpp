@@ -162,7 +162,20 @@ namespace NSG
 
 	void Material::SetDiffuseMap(PTexture texture)
     {
-        SetTexture0(texture);
+        if(SetTexture0(texture))
+        {
+            if(technique_)
+            {
+                if(texture)
+                    technique_->EnableProgramFlags((int)ProgramFlag::DIFFUSEMAP);
+                else
+                    technique_->DisableProgramFlags((int)ProgramFlag::DIFFUSEMAP);
+            }
+            else
+            {
+                TRACE_LOG("Warning setting diffuse map without technique!!!");
+            }
+        }
     }
 
 	void Material::SetNormalMap(PTexture texture)
@@ -264,12 +277,10 @@ namespace NSG
 
     bool Material::IsValid()
     {
-        bool isReady = false;
+        bool isReady = true;
 
-        if (!texture0_)
-            texture0_ = Context::this_->GetWhiteTexture();
-
-        isReady = texture0_->IsReady();
+        if (texture0_)
+            isReady = texture0_->IsReady();
 
         if (texture1_)
             isReady = isReady && texture1_->IsReady();

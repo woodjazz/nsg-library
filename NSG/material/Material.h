@@ -28,12 +28,12 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "GPUObject.h"
 #include "UniformsUpdate.h"
-#include "MapAndVector.h"
 namespace NSG
 {
 	class Material : public GPUObject, UniformsUpdate
 	{
 	public:
+		Material(const std::string& name);
 		~Material();
 		void SetName(const std::string& name) {name_ = name;}
 		const std::string& GetName() const { return name_;  }
@@ -82,8 +82,6 @@ namespace NSG
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_; }
 	private:
-		Material(const std::string& name);
-	private:
 		PTexture texture0_; //difusse map
 		PTexture texture1_; //normal map
 		PTexture texture2_; //light map
@@ -100,6 +98,5 @@ namespace NSG
         std::string name_;
         bool serializable_;
         friend class Program;
-        friend class MapAndVector<std::string, Material>;
 	};
 }

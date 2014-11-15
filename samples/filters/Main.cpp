@@ -70,13 +70,13 @@ struct Sample : App
         technique_ = PTechnique(new Technique);
         
         PPass normalPass(new Pass);
-		PProgram normalProgram(CreateProgram());
+		PProgram normalProgram(GetOrCreateProgram("program1"));
 		normalProgram->SetFlags((int)ProgramFlag::UNLIT);
 		normalPass->SetProgram(normalProgram);
 
         PPass depthPass(new Pass);
         depthPass->EnableColorBuffer(false);
-		PProgram depthProgram(CreateProgram());
+		PProgram depthProgram(GetOrCreateProgram("program2"));
 		depthProgram->SetFlags((int)ProgramFlag::STENCIL);
 		depthPass->SetProgram(depthProgram);
         

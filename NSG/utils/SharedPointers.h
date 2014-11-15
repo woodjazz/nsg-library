@@ -64,6 +64,7 @@ namespace NSG
 
 	class Scene;
 	typedef std::shared_ptr<Scene> PScene;
+	typedef std::weak_ptr<Scene> PWeakScene;
 
 	class Graphics;
 	typedef std::unique_ptr<Graphics> PGraphics;
@@ -162,6 +163,7 @@ namespace NSG
 
 	class Camera;
 	typedef std::shared_ptr<Camera> PCamera;
+	typedef std::weak_ptr<Camera> PWeakCamera;
 
 	class CircleMesh;
 	typedef std::shared_ptr<CircleMesh> PCircleMesh;
@@ -192,7 +194,8 @@ namespace NSG
 
 	class Light;
 	typedef std::shared_ptr<Light> PLight;
-
+	typedef std::weak_ptr<Light> PWeakLight;
+	
 	class PlaneMesh;
 	typedef std::shared_ptr<PlaneMesh> PPlaneMesh;
 
@@ -303,12 +306,14 @@ namespace NSG
 
 	class Node;
 	typedef std::shared_ptr<Node> PNode;
+	typedef std::weak_ptr<Node> PWeakNode;
 
 	class Resource;
 	typedef std::shared_ptr<Resource> PResource;
 
 	class SceneNode;
 	typedef std::shared_ptr<SceneNode> PSceneNode;
+	typedef std::weak_ptr<SceneNode> PWeakSceneNode;
 
 	class Keyboard;
 	typedef std::unique_ptr<Keyboard> PKeyboard;

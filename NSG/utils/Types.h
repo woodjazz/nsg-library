@@ -223,7 +223,8 @@ namespace NSG
         SKINNED = 1 << 10,
         SPECULARMAP = 1 << 11,
         AOMAP = 1 << 12,
-        DISPLACEMENTMAP = 1 << 13
+        DISPLACEMENTMAP = 1 << 13,
+        DIFFUSEMAP = 1 << 14
     };
 
     typedef FlagSet<ProgramFlag> ProgramFlags;

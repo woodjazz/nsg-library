@@ -56,8 +56,110 @@ misrepresented as being the original software.
 #include "RigidBody.h"
 #include "ResourceFileManager.h"
 #include "TextureFileManager.h"
+#include "Pool.h"
+#include "Allocators.h"
 #if NACL
 #include "ppapi/cpp/var.h"
+#endif
+//#define USE_POOLS
+
+#ifdef USE_POOLS
+
+static const size_t MaxNodes = 100;
+static NSG::Arena<sizeof(NSG::Node) * MaxNodes> nodeArena_;
+static const size_t MaxSceneNodes = 600;
+static NSG::Arena<sizeof(NSG::SceneNode) * MaxSceneNodes> sceneNodeArena_;
+static const size_t MaxScenes = 50;
+static NSG::Arena<sizeof(NSG::Scene) * MaxScenes> sceneArena_;
+
+typedef std::shared_ptr<NSG::IPool> PPool;
+static std::map<size_t, PPool, std::less<size_t>, NSG::Allocator<std::pair<size_t, PPool>, 10 > > pools;
+
+static bool poolsCreated = false;
+struct CreatePools
+{
+	CreatePools()
+	{
+		using namespace NSG;
+		pools[sizeof(Node)] = PPool(new Pool<Node, MaxNodes>(nodeArena_));
+		pools[sizeof(SceneNode)] = PPool(new Pool<SceneNode, MaxSceneNodes>(sceneNodeArena_));
+		pools[sizeof(Scene)] = PPool(new Pool<Scene, MaxScenes>(sceneArena_));
+		poolsCreated = true;
+	}
+};
+
+static void* AllocateFromPool(std::size_t count)
+{
+	auto it = pools.find(count);
+	if (it != pools.end())
+		return it->second->Allocate(count);
+	else
+	{
+		it = pools.upper_bound(count);
+		if (it != pools.end())
+			return it->second->Allocate(count);
+		else
+			return std::malloc(count);
+	}
+}
+
+static void ReleaseFromPool(void* ptr, std::size_t count)
+{
+	if (count == 0)
+	{
+		for (auto pool : pools)
+		{
+			if (pool.second->IsPointerFromPool(ptr))
+			{
+				pool.second->Release(ptr);
+				return;
+			}
+		}
+		std::free(ptr);
+	}
+	else
+	{
+		auto it = pools.find(count);
+		if (it != pools.end())
+		{
+			if (it->second->IsPointerFromPool(ptr))
+				it->second->Release(ptr);
+			else
+				std::free(ptr);
+		}
+		else
+		{
+			it = pools.upper_bound(count);
+			CHECK_ASSERT(it != pools.end(), __FILE__, __LINE__);
+			if (it->second->IsPointerFromPool(ptr))
+				it->second->Release(ptr);
+			else
+				std::free(ptr);
+		}
+	}
+}
+
+void* operator new(std::size_t count)
+{
+	static CreatePools createPools;
+	if (poolsCreated)
+	{
+		void* p = AllocateFromPool(count);
+		if (p) return p;
+	}
+    return std::malloc(count);
+}
+
+void operator delete(void* ptr)
+{
+	ReleaseFromPool(ptr, 0);
+}
+
+void operator delete(void* ptr, std::size_t count)
+{
+	ReleaseFromPool(ptr, count);
+}
+
 #endif
 
 namespace NSG
@@ -73,7 +175,6 @@ namespace NSG
     {
         context_ = PContext(new Context);
         configuration_ = PAppConfiguration(new AppConfiguration);
-
     }
 
     App::App(PAppConfiguration configuration)
@@ -86,11 +187,6 @@ namespace NSG
 
     App::~App()
     {
-        currentScene_ = nullptr;
-        scenes_.clear();
-        meshes_.clear();
-		models_.Clear();
-        materials_.Clear();
         App::this_ = nullptr;
         TRACE_LOG("App Terminated");
     }
@@ -130,9 +226,9 @@ namespace NSG
         currentScene_->OnMouseUp(button, x, y);
     }
 
-	void App::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    void App::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
     {
-		currentScene_->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
+        currentScene_->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
     }
 
     void App::OnKey(int key, int action, int modifier)
@@ -249,21 +345,17 @@ namespace NSG
         }
     }
 
-	PScene App::CreateScene(const std::string& name, bool setAsCurrent)
+    PScene App::GetOrCreateScene(const std::string& name, bool setAsCurrent)
     {
-        PScene scene(new Scene(name));
+        PScene scene = scenes_.GetOrCreate(name);
         if (setAsCurrent)
-        {
-            isSceneReady_ = false;
-            currentScene_ = scene;
-        }
-        scenes_.push_back(scene);
+            SetCurrentScene(scene);
         return scene;
     }
 
     void App::SetCurrentScene(PScene scene)
     {
-        if(currentScene_ != scene)
+        if (currentScene_ != scene)
         {
             CHECK_ASSERT(scene, __FILE__, __LINE__);
             isSceneReady_ = false;
@@ -271,74 +363,78 @@ namespace NSG
         }
     }
 
-    PScene App::GetCurrentScene() const
-    {
-        return currentScene_;
-    }
-
     PBoxMesh App::CreateBoxMesh(float width, float height, float depth, int resX, int resY, int resZ)
     {
-        PBoxMesh mesh(new BoxMesh(width, height, depth, resX, resY, resZ));
-        meshes_.push_back(mesh);
+        std::stringstream ss;
+        ss << "BoxMesh" << width << height << depth << resX << resY << resZ;
+        PBoxMesh mesh = meshes_.GetOrCreateClass<BoxMesh>(ss.str());
+        mesh->Set(width, height, depth, resX, resY, resZ);
         return mesh;
     }
 
     PCircleMesh App::CreateCircleMesh(float radius, int res)
     {
-        PCircleMesh mesh(new CircleMesh(radius, res));
-        meshes_.push_back(mesh);
+        std::stringstream ss;
+        ss << "CircleMesh" << radius << res;
+        PCircleMesh mesh = meshes_.GetOrCreateClass<CircleMesh>(ss.str());
+        mesh->Set(radius, res);
         return mesh;
     }
 
     PEllipseMesh App::CreateEllipseMesh(float width, float height, int res)
     {
-        PEllipseMesh mesh(new EllipseMesh(width, height, res));
-        meshes_.push_back(mesh);
+        std::stringstream ss;
+        ss << "EllipseMesh" << width << height << res;
+        PEllipseMesh mesh = meshes_.GetOrCreateClass<EllipseMesh>(ss.str());
+        mesh->Set(width, height, res);
         return mesh;
     }
 
     PModelMesh App::GetOrCreateModelMesh(const std::string& name)
     {
-		if (models_.Has(name))
-			return models_.GetOrCreate(name);
-
-		PModelMesh mesh = models_.GetOrCreate(name);
-		meshes_.push_back(mesh);
-		return mesh;
+        return meshes_.GetOrCreateClass<ModelMesh>(name);
     }
 
     PPlaneMesh App::CreatePlaneMesh(float width, float height, int columns, int rows)
     {
-        PPlaneMesh mesh(new PlaneMesh(width, height, columns, rows));
-        meshes_.push_back(mesh);
+        std::stringstream ss;
+        ss << "PlaneMesh" << width << height << columns << rows;
+        PPlaneMesh mesh = meshes_.GetOrCreateClass<PlaneMesh>(ss.str());
+        mesh->Set(width, height, columns, rows);
         return mesh;
     }
 
     PRectangleMesh App::CreateRectangleMesh(float width, float height)
     {
-        PRectangleMesh mesh(new RectangleMesh(width, height));
-        meshes_.push_back(mesh);
+        std::stringstream ss;
+        ss << "RectangleMesh" << width << height;
+        PRectangleMesh mesh = meshes_.GetOrCreateClass<RectangleMesh>(ss.str());
+        mesh->Set(width, height);
         return mesh;
     }
 
     PRoundedRectangleMesh App::CreateRoundedRectangleMesh(float radius, float width, float height, int res)
     {
-        PRoundedRectangleMesh mesh(new RoundedRectangleMesh(radius, width, height, res));
-        meshes_.push_back(mesh);
+        std::stringstream ss;
+        ss << "RoundedRectangleMesh" << radius << width << height << res;
+        PRoundedRectangleMesh mesh = meshes_.GetOrCreateClass<RoundedRectangleMesh>(ss.str());
+        mesh->Set(radius, width, height, res);
         return mesh;
     }
 
     PSphereMesh App::CreateSphereMesh(float radius, int res)
     {
-        PSphereMesh mesh(new SphereMesh(radius, res));
-        meshes_.push_back(mesh);
+        std::stringstream ss;
+        ss << "SphereMesh" << radius << res;
+        PSphereMesh mesh = meshes_.GetOrCreateClass<SphereMesh>(ss.str());
+        mesh->Set(radius, res);
         return mesh;
     }
 
     PTextMesh App::CreateTextMesh(const std::string& textureFilename, bool dynamic)
     {
-        PTextMesh mesh(new TextMesh(textureFilename, dynamic));
-        meshes_.push_back(mesh);
+        PTextMesh mesh = meshes_.CreateClass<TextMesh>(textureFilename);
+        mesh->SetDynamic(dynamic);
         return mesh;
     }
 
@@ -347,7 +443,7 @@ namespace NSG
         return materials_.Create(name);
     }
 
-	PMaterial App::GetOrCreateMaterial(const std::string& name)
+    PMaterial App::GetOrCreateMaterial(const std::string& name)
     {
         return materials_.GetOrCreate(name);
     }
@@ -362,9 +458,9 @@ namespace NSG
         return TextureFileManager::this_->GetOrCreate(path);
     }
 
-    PProgram App::CreateProgram(const std::string& name)
+    PProgram App::GetOrCreateProgram(const std::string& name)
     {
-        return PProgram(new Program(name));
+        return programs_.GetOrCreate(name);
     }
 
     PRigidBody App::CreateRigidBody()
@@ -374,7 +470,12 @@ namespace NSG
 
     const std::vector<PMesh>& App::GetMeshes() const
     {
-        return meshes_;
+        return meshes_.GetConstObjs();
+    }
+
+    PMesh App::GetMesh(const std::string& name) const
+    {
+        return meshes_.Get(name);
     }
 
     const std::vector<PMaterial>& App::GetMaterials() const
@@ -402,7 +503,7 @@ namespace NSG
     int App::GetMeshSerializableIndex(const PMesh& mesh) const
     {
         int idx = -1;
-        for (auto obj : meshes_)
+        for (auto obj : meshes_.GetConstObjs())
         {
             if (obj->IsSerializable())
             {
@@ -417,15 +518,24 @@ namespace NSG
 
     bool App::IsSceneReady()
     {
-        if(isSceneReady_)
+        if (isSceneReady_)
             return true;
         isSceneReady_ = currentScene_->IsReady();
-        if(isSceneReady_)
+        if (isSceneReady_)
         {
             OnSceneLoaded();
-			currentScene_->Start();
+            currentScene_->Start();
         }
         return isSceneReady_;
+    }
+
+    void App::ClearAll()
+    {
+        currentScene_ = nullptr;
+        scenes_.Clear();
+        meshes_.Clear();
+        materials_.Clear();
+        programs_.Clear();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -449,7 +559,7 @@ namespace NSG
     {
         Context::this_->Initialize();
 
-        PScene scene = pApp_->CreateScene("DefaultScene", true);
+        pApp_->GetOrCreateScene("DefaultScene", true);
 
         pApp_->Start(pApp_->argc_, pApp_->argv_);
     }
@@ -461,7 +571,7 @@ namespace NSG
 
     void InternalApp::DoTick(float delta)
     {
-        if(pApp_->IsSceneReady())
+        if (pApp_->IsSceneReady())
         {
             pApp_->DoTick(delta);
         }
