@@ -66,7 +66,7 @@ struct Sample : App
 		}
 
 		{
-			PNode node = std::make_shared<Node>();
+			PNode node = std::make_shared<Node>("node0");
 			node->SetParent(camera->GetParent());
 			node->SetGlobalPosition(Vector3(objBB.max_.x, objBB.max_.y, 0));
 			node->SetGlobalLookAt(objPos);
@@ -75,7 +75,7 @@ struct Sample : App
 		}
 
 		{
-			PNode node = std::make_shared<Node>();
+			PNode node = std::make_shared<Node>("node1");
 			node->SetParent(camera->GetParent());
 			node->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.min_.z));
 			node->SetGlobalLookAt(objPos);
@@ -84,7 +84,7 @@ struct Sample : App
 		}
 
 		{
-			PNode node = std::make_shared<Node>();
+			PNode node = std::make_shared<Node>("node2");
 			node->SetParent(camera->GetParent());
 			node->SetGlobalPosition(Vector3(objBB.min_.x, objBB.max_.y, 0));
 			node->SetGlobalLookAt(objPos);

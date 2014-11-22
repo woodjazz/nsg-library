@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
 namespace NSG
 {
-static const std::string TRANSFORMS_GLSL = \
+static const char* TRANSFORMS_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#ifdef COMPILEVS\n"\
 "	/////////////////////////////////////////////////////////////////\n"\

@@ -25,6 +25,7 @@
 #include "BoundingBox.h"
 #include "Mesh.h"
 #include "SceneNode.h"
+#include "Check.h"
 
 namespace NSG
 {

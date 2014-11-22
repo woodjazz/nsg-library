@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "IMGUIState.h"
 #include "IMGUISkin.h"
 #include "IMGUIStyle.h"
+#include "IMGUINode.h"
 #include "IMGUILayoutManager.h"
 #include "TextMesh.h"
 #include "SceneNode.h"
@@ -187,8 +188,8 @@ namespace NSG
                     area_->textOffsetX_ = 0;
             }
 
-			PNode textNode0(new Node);
-            textNode0->SetParent(node_);
+			AutoNode textNode0("testNode0");
+			textNode0->SetParent(node_);
 
             if (pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
                 textNode0->SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
@@ -202,12 +203,12 @@ namespace NSG
             else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
                 textNode0->SetPosition(textNode0->GetPosition() + Vertex3(0, -0.25f, 0));
 
-			PNode textNode1(new Node);
-            textNode1->SetParent(textNode0);
+			PNode textNode1 = std::make_shared<Node>("textNode1");
+            textNode1->SetParent(textNode0.Get());
             textNode1->SetInheritScale(false);
             textNode1->SetScale(Context::this_->pRootNode_->GetGlobalScale());
 
-			PNode textNode2(new Node);
+			PNode textNode2 = std::make_shared<Node>("textNode2");
             textNode2->SetParent(textNode1);
             textNode2->SetPosition(Vertex3(-area_->textOffsetX_, 0, 0));
 
@@ -230,7 +231,7 @@ namespace NSG
             // Render cursor if we have keyboard focus
             if (HasFocus() && layoutManager_.IsCurrentWindowActive() && (uistate_.tick_ < 15))
             {
-				PNode cursorNode = std::make_shared<Node>();
+				PNode cursorNode = std::make_shared<Node>("cursorNode");
                 cursorNode->SetParent(textNode2);
                 cursorNode->SetPosition(Vertex3(cursorPositionInText, 0, 0));
 

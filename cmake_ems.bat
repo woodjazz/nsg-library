@@ -43,8 +43,8 @@ cmake -E make_directory %1
 cd %1
 
 @echo "*** CONFIGURING PROJECTS ***"
-cmake %SOURCE_FOLDER% -G "MinGW Makefiles" -DBUILD_PROJECT="all" -DEMS_DEBUG_LEVEL=4 -DALLOW_MEMORY_GROWTH=1 -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="%EMSCRIPTEN%/cmake/Platform/Emscripten.cmake"
-::cmake %SOURCE_FOLDER% -G "MinGW Makefiles" -DBUILD_PROJECT="all" -DALLOW_MEMORY_GROWTH=1 -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="%EMSCRIPTEN%/cmake/Platform/Emscripten.cmake"
+::cmake %SOURCE_FOLDER% -G "MinGW Makefiles" -DBUILD_PROJECT="all" -DEMS_DEBUG_LEVEL=4 -DALLOW_MEMORY_GROWTH=1 -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="%EMSCRIPTEN%/cmake/Platform/Emscripten.cmake"
+cmake %SOURCE_FOLDER% -G "MinGW Makefiles" -DBUILD_PROJECT="all" -DALLOW_MEMORY_GROWTH=1 -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="%EMSCRIPTEN%/cmake/Platform/Emscripten.cmake"
 
 @echo "*** BUILDING %2 ***"
 ::%MINGW_ROOT%/bin/mingw32-make

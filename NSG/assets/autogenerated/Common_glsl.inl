@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
 namespace NSG
 {
-static const std::string COMMON_GLSL = \
+static const char* COMMON_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#ifdef GLES2\n"\
 "	#ifdef GL_FRAGMENT_PRECISION_HIGH\n"\

@@ -42,9 +42,6 @@ namespace NSG
 
         glGenBuffers(1, &id_);
 
-        if(bytesNeeded > 0)
-            dataCollection_.push_back(Data(0, bytesNeeded));
-
         if (type_ == GL_ARRAY_BUFFER)
             AppStatistics::this_->AddVertexBuffer(dynamic_);
         else
@@ -53,8 +50,6 @@ namespace NSG
 
     Buffer::~Buffer()
     {
-		dataCollection_.clear();
-
 		if (AppStatistics::this_)
 		{
 			if (type_ == GL_ARRAY_BUFFER)
@@ -69,39 +64,6 @@ namespace NSG
     void Buffer::Bind()
     {
         glBindBuffer(type_, id_);
-    }
-
-    bool Buffer::AllocateSpaceFor(GLsizeiptr bytesNeeded)
-    {
-        GLsizeiptr totalBytes = GetTotalBytes();
-
-        if (totalBytes + bytesNeeded >= bufferSize_)
-            return false;
-
-        dataCollection_.push_back(Data {totalBytes, bytesNeeded});
-
-        return true;
-    }
-
-    Buffer::Data* Buffer::GetLastAllocation()
-    {
-        CHECK_ASSERT(dataCollection_.size() < MAX_OBJECTS_PER_BUFFER, __FILE__, __LINE__);
-
-        Data& obj = dataCollection_[dataCollection_.size() - 1];
-        return &obj;
-    }
-
-    GLsizeiptr Buffer::GetTotalBytes() const
-    {
-        GLsizeiptr totalBytes = 0;
-        auto it = dataCollection_.begin();
-        while (it != dataCollection_.end())
-        {
-            const Data& obj = *(it++);
-            totalBytes += obj.bytes_;
-        }
-
-        return totalBytes;
     }
 
     void Buffer::SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data)

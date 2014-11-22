@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "GLES2Includes.h"
 #include <stdlib.h>
+#include <sstream>
 
 #if defined(SDL) && !defined(EMSCRIPTEN)
 #include "SDL.h"

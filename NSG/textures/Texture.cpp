@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "Texture.h"
 #include "Path.h"
+#include "Util.h"
 #include "image_helper.h"
 #include "pugixml.hpp"
 #define STB_IMAGE_IMPLEMENTATION
@@ -264,31 +265,18 @@ namespace NSG
 
         if (img != nullptr)
         {
-            int max_supported_size = 0;
-
-            glGetIntegerv( GL_MAX_TEXTURE_SIZE, &max_supported_size );
-
-            if (width_ > max_supported_size || height_ > max_supported_size || !Graphics::this_->HasNonPowerOfTwo())
+            if (!Graphics::this_->IsTextureSizeCorrect(width_, height_))
             {
-                int new_width = 1;
-                int new_height = 1;
-
-                while (new_width < width_)
-                    new_width *= 2;
-
-                while (new_height < height_)
-                    new_height *= 2;
-
-
-                if (new_width != width_ || new_height != height_)
-                {
-                    unsigned char* resampled = (unsigned char*)malloc(channels_ * new_width * new_height);
-                    up_scale_image(img, width_, height_, channels_, resampled, new_width, new_height);
-                    free((void*)img); // same as stbi_image_free
-                    img = resampled;
-                    width_ = new_width;
-                    height_ = new_height;
-                }
+                unsigned new_width = width_;
+                unsigned new_height = height_;
+                GetPowerOfTwoValues(new_width, new_height);
+                CHECK_ASSERT(new_width != width_ || new_height != height_, __FILE__, __LINE__);
+                unsigned char* resampled = (unsigned char*)malloc(channels_ * new_width * new_height);
+                up_scale_image(img, width_, height_, channels_, resampled, new_width, new_height);
+                free((void*)img); // same as stbi_image_free
+                img = resampled;
+                width_ = new_width;
+                height_ = new_height;
             }
         }
 

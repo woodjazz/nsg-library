@@ -41,7 +41,6 @@ namespace NSG
 		PTextureFileManager textureFileManager_;
 		PGraphics graphics_;
 		PAppStatistics statistics_;
-		PBufferManager bufferManager_;
 		PFontAtlasTextureManager atlasManager_;
 		IMGUI::PContext imgui_;
 		PAudio audio_;

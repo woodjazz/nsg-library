@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
 namespace NSG
 {
-static const std::string LIGHTING_GLSL = \
+static const char* LIGHTING_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "struct Material\n"\
 "{\n"\

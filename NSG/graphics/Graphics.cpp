@@ -39,6 +39,7 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Technique.h"
 #include "Pass.h"
+#include "Util.h"
 #include "SceneNode.h"
 #include "InstanceData.h"
 
@@ -1070,15 +1071,17 @@ namespace NSG
 
         if (!indexes.empty())
         {
-            Buffer::Data* bufferIndexData = activeMesh_->GetBufferIndexData();
-            const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
-            glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, offset);
+            //Buffer::Data* bufferIndexData = activeMesh_->GetBufferIndexData();
+            //const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
+            //glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, offset);
+            glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, 0);
         }
         else
         {
-            Buffer::Data* bufferVertexData = activeMesh_->GetBufferVertexData();
-            GLint first = bufferVertexData->offset_ / sizeof(VertexData);
-            glDrawArrays(mode, first, vertexsData.size());
+            //Buffer::Data* bufferVertexData = activeMesh_->GetBufferVertexData();
+            //GLint first = bufferVertexData->offset_ / sizeof(VertexData);
+            //glDrawArrays(mode, first, vertexsData.size());
+            glDrawArrays(mode, 0, vertexsData.size());
         }
 
         if (solid)
@@ -1119,16 +1122,18 @@ namespace NSG
         const Indexes& indexes = activeMesh_->GetIndexes();
         if (!indexes.empty())
         {
-            Buffer::Data* bufferIndexData = activeMesh_->GetBufferIndexData();
-            const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
-            glDrawElementsInstanced(mode, indexes.size(), GL_UNSIGNED_SHORT, offset, instances);
+            //Buffer::Data* bufferIndexData = activeMesh_->GetBufferIndexData();
+            //const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
+            //glDrawElementsInstanced(mode, indexes.size(), GL_UNSIGNED_SHORT, offset, instances);
+            glDrawElementsInstanced(mode, indexes.size(), GL_UNSIGNED_SHORT, 0, instances);
         }
         else
         {
             const VertexsData& vertexsData = activeMesh_->GetVertexsData();
-            Buffer::Data* bufferVertexData = activeMesh_->GetBufferVertexData();
-            GLint first = bufferVertexData->offset_ / sizeof(VertexData);
-            glDrawArraysInstanced(mode, first, vertexsData.size(), instances);
+            //Buffer::Data* bufferVertexData = activeMesh_->GetBufferVertexData();
+            //GLint first = bufferVertexData->offset_ / sizeof(VertexData);
+            //glDrawArraysInstanced(mode, first, vertexsData.size(), instances);
+            glDrawArraysInstanced(mode, 0, vertexsData.size(), instances);
         }
 
         if (solid)
@@ -1183,4 +1188,15 @@ namespace NSG
             }
         }
     }
+
+    bool Graphics::IsTextureSizeCorrect(unsigned width, unsigned height)
+    {
+        int max_supported_size = 0;
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_supported_size );
+        CHECK_ASSERT(max_supported_size >= 64, __FILE__, __LINE__);
+		if (width > (unsigned)max_supported_size || height > (unsigned)max_supported_size)
+            return false;
+        return HasNonPowerOfTwo() || (IsPowerOfTwo(width) && IsPowerOfTwo(height));
+    }
+
 }

@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
 namespace NSG
 {
-static const std::string FS_GLSL = \
+static const char* FS_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#if defined(COMPILEFS) && !defined(HAS_USER_FRAGMENT_SHADER)\n"\
 "	#ifdef DISPLACEMENTMAP\n"\

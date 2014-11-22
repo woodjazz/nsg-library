@@ -81,7 +81,7 @@ static void QueuedTaskTest0()
 {
     {
         QueuedTask tasks;
-
+		
         Task0* p0(new Task0);
         Task1* p1(new Task1);
         Task2* p2(new Task2);

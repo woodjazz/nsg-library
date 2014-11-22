@@ -23,6 +23,8 @@
 #include "Octree.h"
 #include "OctreeQuery.h"
 #include "SceneNode.h"
+#include "Check.h"
+
 namespace NSG
 {
     Octant::Octant(const BoundingBox& box, unsigned level, Octant* parent, Octree* root, unsigned index) :

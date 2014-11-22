@@ -24,15 +24,22 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
-using namespace NSG;
-class LightBehavior : public Behavior
-{
-public:
-	LightBehavior();
-	~LightBehavior();
+#include "Types.h"
+#include <string>
 
-	void Start();
-	void Update();
-	void Render();
-};
+namespace NSG
+{
+    namespace IMGUI
+    {
+        class AutoNode
+        {
+        public:
+            AutoNode(const std::string& name);
+            ~AutoNode();
+            PNode operator->() const { return node_; }
+            PNode Get() const { return node_; }
+        private:
+            PNode node_;
+        };
+    }
+}

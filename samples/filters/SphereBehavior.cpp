@@ -29,9 +29,9 @@ void SphereBehavior::Start()
 {
 	mesh_ = PSphereMesh(app_.CreateSphereMesh(3, 32));
 
-	material_ = app_.GetOrCreateMaterial("sphere");
+	material_ = app_.GetOrCreateMaterial(GetUniqueName());
 	PTexture texture(app_.GetOrCreateTextureFile("data/Earth.jpg"));
-	material_->SetDiffuseMap(texture);
+	material_->SetTexture0(texture);
 }
 
 void SphereBehavior::Update()

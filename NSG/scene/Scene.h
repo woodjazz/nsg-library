@@ -72,6 +72,7 @@ namespace NSG
         bool PlayAnimation(const PAnimation& animation, bool looped);
         bool SetAnimationSpeed(const std::string& name, float speed);
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
+		void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
     protected:
         void SaveMeshes(pugi::xml_node& node);
         void SaveMaterials(pugi::xml_node& node);
@@ -80,7 +81,7 @@ namespace NSG
         void SaveSkeletons(pugi::xml_node& node);
         void LoadSkeletons(const pugi::xml_node& node);
     private:
-        void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
+        
         void UpdateAnimations();
     private:
 		mutable std::map<LightType, std::vector<PWeakLight>> lights_;

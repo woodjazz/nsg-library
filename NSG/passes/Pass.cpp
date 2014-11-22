@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "Context.h"
 #include "Program.h"
 #include "pugixml.hpp"
+#include <sstream>
 
 namespace NSG
 {

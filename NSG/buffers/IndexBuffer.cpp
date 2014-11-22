@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include <vector>
 #include <algorithm>
+#include <sstream>
 
 namespace NSG 
 {
@@ -64,38 +65,15 @@ namespace NSG
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
-	bool IndexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const Indexes& indexes)
-	{
-		if (Buffer::AllocateSpaceFor(maxSize))
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-
-			const Data* obj = GetLastAllocation();
-
-			GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
-
-			graphics_.SetIndexBuffer(this);
-
-			SetBufferSubData(obj->offset_, bytes2Set, &indexes[0]);
-
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-			
-			return true;
-		}
-		return false;
-	}
-
-	void IndexBuffer::UpdateData(Buffer::Data& obj, const Indexes& indexes)
+	void IndexBuffer::UpdateData(const Indexes& indexes)
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
 
-		CHECK_ASSERT(bytes2Set <= obj.bytes_, __FILE__, __LINE__);
-
 		graphics_.SetIndexBuffer(this, true);
 
-		SetBufferSubData(obj.offset_, bytes2Set, &indexes[0]);
+		SetBufferSubData(0, bytes2Set, &indexes[0]);
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 		

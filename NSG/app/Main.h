@@ -31,7 +31,10 @@ misrepresented as being the original software.
 #define NSG_MAIN(ClassName)\
     namespace pp\
     {\
-        Module* CreateModule() { return new NSG::NaCl::Graphics3DModule(new ClassName); }\
+        Module* CreateModule()\
+        {\
+            return new NSG::NaCl::Graphics3DModule(new ClassName);\
+        }\
     }
 #elif defined(ANDROID) && !defined(SDL)
 #define NSG_MAIN(ClassName)\

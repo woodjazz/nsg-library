@@ -41,8 +41,8 @@ cd ..
 cmake -E make_directory %1
 cd %1
 
-cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/cmake/toolchains/PNaCl.Windows.cmake"
-::cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/cmake/toolchains/PNaCl.Windows.cmake"
+::cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/cmake/toolchains/PNaCl.Windows.cmake"
+cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DCMAKE_MAKE_PROGRAM="%NACL_SDK_ROOT%/tools/make.exe" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="%SOURCE_FOLDER%/cmake/toolchains/PNaCl.Windows.cmake"
 %NACL_SDK_ROOT%/tools/make.exe %2
 
 @echo "Starting HTTP Server"

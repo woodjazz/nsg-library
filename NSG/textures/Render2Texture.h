@@ -33,7 +33,7 @@ namespace NSG
     class Render2Texture : public GPUObject
     {
     public:
-        explicit Render2Texture(int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
+        Render2Texture(int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
         ~Render2Texture();
         bool Begin();
         void End();

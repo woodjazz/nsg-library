@@ -200,16 +200,16 @@ static void Test03()
 	}
 
 	{
-		PNode parent(new Node);
+		PNode parent = std::make_shared<Node>("parent");
 		parent->SetScale(Vector3(0.010f));
-		PNode node0 = std::make_shared<Node>();
+		PNode node0 = std::make_shared<Node>("node0");
 		node0->SetParent(parent);
 		node0->SetGlobalPosition(Vector3(0, 5, 5));
 		node0->SetGlobalLookAt(VECTOR3_ZERO);
 		Vector3 dir0 = node0->GetLookAtDirection();
 		Quaternion q0 = node0->GetOrientation();
 
-		PNode node1 = std::make_shared<Node>();
+		PNode node1 = std::make_shared<Node>("node1");
 		node1->SetParent(parent);
 		node1->SetGlobalPosition(Vector3(5, 5, 0));
 		node1->SetGlobalLookAt(VECTOR3_ZERO);

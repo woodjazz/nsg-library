@@ -40,13 +40,13 @@ namespace NSG
           height_(height),
           enabled_(false)
     {
-		FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE)); // always use texture for color buffer
+		FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR) | FrameBuffer::COLOR_USE_TEXTURE); // always use texture for color buffer
 		if (buffer_ == UseBuffer::DEPTH)
             frameBufferFlags |= FrameBuffer::DEPTH;
         else if (buffer_ == UseBuffer::DEPTH_STENCIL)
             frameBufferFlags |= FrameBuffer::STENCIL;
 
-        frameBuffer_ = PFrameBuffer(new FrameBuffer(width, height, frameBufferFlags));
+		frameBuffer_ = PFrameBuffer(new FrameBuffer(width, height, frameBufferFlags));
     }
 
     Render2Texture::~Render2Texture()

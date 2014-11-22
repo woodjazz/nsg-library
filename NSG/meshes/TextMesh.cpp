@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "FontAtlasTextureManager.h"
 #include "Program.h"
 #include "FontAtlasTexture.h"
-#include "BufferManager.h"
 #include "Graphics.h"
 #include "Context.h"
 #include "App.h"
@@ -81,28 +80,13 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        CHECK_ASSERT(pVBuffer_ && bufferVertexData_, __FILE__, __LINE__);
-        CHECK_ASSERT(pIBuffer_ && bufferIndexData_, __FILE__, __LINE__);
         CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
         CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
 
         VertexsData tmpVertexData(vertexsData_);
         Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
-
-        pVBuffer_->UpdateData(*bufferVertexData_, tmpVertexData);
-
-        Indexes tmpIndexes(indexes_);
-
-        GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
-
-        if (indexBase)
-            std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType & x)
-        {
-            x += indexBase;
-            CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__);
-        });
-
-        pIBuffer_->UpdateData(*bufferIndexData_, tmpIndexes);
+        pVBuffer_->UpdateData(tmpVertexData);
+        pIBuffer_->UpdateData(indexes_);
 
         //graphics_.RedoVAO(pProgram_.get(), pVBuffer_.get(), pIBuffer_.get());
 
@@ -122,39 +106,25 @@ namespace NSG
 
         VertexsData tmpVertexData(vertexsData_);
         Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
-        Indexes tmpIndexes(indexes_);
 
         const size_t VERTEX_PER_CHAR = 6;
         const GLsizeiptr MAX_BYTES_VERTEX_BUFFER = VERTEX_PER_CHAR * maxLength_ * sizeof(VertexData);
         GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
         CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
         if (isStatic_)
-            pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
+            pVBuffer_ = PVertexBuffer(new VertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData, GL_STATIC_DRAW));
         else
-            pVBuffer_ = Context::this_->bufferManager_->GetDynamicVertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData);
-
-        bufferVertexData_ = pVBuffer_->GetLastAllocation();
+            pVBuffer_ = PVertexBuffer(new VertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData, GL_DYNAMIC_DRAW));
 
         const size_t INDEXES_PER_CHAR = 6;
         const GLsizeiptr MAX_BYTES_INDEX_BUFFER = INDEXES_PER_CHAR * maxLength_ * sizeof(IndexType);
         bytesNeeded = sizeof(IndexType) * indexes_.size();
         CHECK_ASSERT(bytesNeeded <= MAX_BYTES_INDEX_BUFFER, __FILE__, __LINE__);
-        if (bufferVertexData_)
-        {
-            GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
-            if (indexBase)
-                std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType & x)
-            {
-                x += indexBase;
-                CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__);
-            });
-        }
-        if (isStatic_)
-            pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
-        else
-            pIBuffer_ = Context::this_->bufferManager_->GetDynamicIndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, tmpIndexes);
 
-        bufferIndexData_ = pIBuffer_->GetLastAllocation();
+        if (isStatic_)
+            pIBuffer_ = PIndexBuffer(new IndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, indexes_, GL_STATIC_DRAW));
+        else
+            pIBuffer_ = PIndexBuffer(new IndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, indexes_, GL_DYNAMIC_DRAW));
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }

@@ -8,6 +8,7 @@
 #include "pugixml.hpp"
 #include <assert.h>
 #include <algorithm>
+#include <sstream>
 
 namespace NSG
 {

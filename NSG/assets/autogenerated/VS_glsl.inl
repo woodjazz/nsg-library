@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
 namespace NSG
 {
-static const std::string VS_GLSL = \
+static const char* VS_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#if defined(COMPILEVS) && !defined(HAS_USER_VERTEX_SHADER)\n"\
 "	void main()\n"\

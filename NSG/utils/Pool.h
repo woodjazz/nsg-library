@@ -24,157 +24,133 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Arena.h"
+#include "Log.h"
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
+#include <atomic>
+#include <new>
 
 namespace NSG
 {
     struct IPool
     {
         virtual void* Allocate(std::size_t count) = 0;
-        virtual void Release(void* ptr) = 0;
-		virtual bool IsPointerFromPool(void* p) const = 0;
+        virtual void DeAllocate(void* ptr) = 0;
         virtual ~IPool() {};
+        virtual size_t GetObjSize() const = 0;
+        virtual unsigned GetAllocatedObjects() const = 0;
+		virtual bool PointerInPool(void* p) const = 0;
     };
 
-    template <typename T, size_t NODES_PER_CHUNK >
+    struct MemHeader
+    {
+        void* poolPointer_;
+    };
+
+    template <size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK >
     class Pool : public IPool
     {
     public:
-		Pool(IArena& arena);
+        struct MemObj
+        {
+            MemHeader header_;
+            union
+            {
+                MemObj* nextMemObj_;
+                char memBlock_[OBJECT_SIZE];
+            };
+        };
+
+        static const size_t ChunkSize = sizeof(MemObj)* OBJECTS_PER_CHUNK;
+
+        Pool();
         ~Pool();
         Pool(const Pool&) = delete;
         Pool& operator = (const Pool&) = delete;
-        void AllocMemory();
-        T* Alloc();
-        void Free(void* p);
-        void* Allocate(std::size_t count) override
-        {
-        	assert(count <= sizeof(T));
-        	return (void*)Alloc();
-        }
-        void Release(void* ptr) override
-        {
-        	Free(ptr);
-        }
-		bool IsPointerFromPool(void* p) const
-		{
-			Header* header = (Header*)((char*)p - sizeof(Header));
-			return header->thisPool0_ == this && header->thisPool1_ == this && header->thisPool2_ == this;
-		}
+        void* Allocate(std::size_t count) override;
+        void DeAllocate(void* ptr) override;
+        unsigned GetAllocatedObjects() const override { return allocatedObjs_; }
+        size_t GetObjSize() const override { return OBJECT_SIZE; }
+		bool PointerInPool(void* p) const override { return p >= begin_ && p < end_; }
+        void LogStatus();
     private:
-		struct Header
-		{
-			void* thisPool0_;
-			void* thisPool1_;
-			void* thisPool2_;
-		};
-        struct NodeList
-        {
-			Header header_;
-			union
-			{
-				NodeList* nextNode_;
-				char memBlock_[sizeof(T)];
-			};
-        };
-
-        typedef NodeList* PNodeList;
-        PNodeList freeList_;
-
-        struct ChunkList
-        {
-            ChunkList* nextChunk_;
-        };
-
-        typedef ChunkList* PChunkList;
-        PChunkList chunkList_;
-
-        size_t nodeSize_;
-        size_t chunkSize_;
-		IArena& arena_;
+        typedef MemObj* PMemObj;
+        std::atomic<PMemObj> freeList_;
+        void* begin_;
+        void* end_;
+        std::atomic<unsigned> allocatedObjs_;
     };
 
-    template< typename T, size_t NODES_PER_CHUNK>
-    Pool<T, NODES_PER_CHUNK>::Pool(IArena& arena)
-        : chunkList_(nullptr),
-          freeList_(nullptr),
-		  nodeSize_(sizeof(NodeList)),
-          chunkSize_(sizeof(ChunkList) + nodeSize_ * NODES_PER_CHUNK),
-          arena_(arena)
+    template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>
+    Pool<OBJECT_SIZE, OBJECTS_PER_CHUNK>::Pool()
+        : freeList_(nullptr),
+          allocatedObjs_(0)
     {
-        AllocMemory();
-    }
-
-    template< typename T, size_t NODES_PER_CHUNK>
-    Pool<T, NODES_PER_CHUNK>::~Pool()
-    {
-        PChunkList pNext = chunkList_->nextChunk_;
-        while (chunkList_)
-        {
-            arena_.Deallocate((char*)chunkList_, chunkSize_);
-            chunkList_ = pNext;
-            if (chunkList_)
-                pNext = chunkList_->nextChunk_;
-        }
-    }
-
-    template< typename T, size_t NODES_PER_CHUNK>
-    void Pool<T, NODES_PER_CHUNK>::AllocMemory()
-    {
-        char* p = arena_.Allocate(chunkSize_);
-        if (!chunkList_)
-        {
-            chunkList_ = (PChunkList)p;
-            chunkList_->nextChunk_ = nullptr;
-        }
-        else
-        {
-            ((PChunkList)p)->nextChunk_ = chunkList_;
-            chunkList_ = (PChunkList)p;
-        }
-
-        p += sizeof(ChunkList);
-        freeList_ = (PNodeList)p;
+        TRACE_PRINTF("Creating pool: object size=%d objs/chunk=%d\n", OBJECT_SIZE, OBJECTS_PER_CHUNK);
+		void* p = std::malloc(ChunkSize);
+        if (!p)
+            throw std::bad_alloc();
+		freeList_ = (PMemObj)p;
+        begin_ = p;
+        end_ = (char*)begin_ + ChunkSize;
 
         // Constructs the empty list.
-        PNodeList old = freeList_;
-		old->header_.thisPool0_ = this;
-		old->header_.thisPool1_ = this;
-		old->header_.thisPool2_ = this;
-
-        for (size_t i = 0; i < NODES_PER_CHUNK; i++)
+        PMemObj next = freeList_;
+        PMemObj previous;
+        for (size_t i = 0; i < OBJECTS_PER_CHUNK; i++)
         {
-            old = (PNodeList)p;
-            p += nodeSize_;
-            old->nextNode_ = (PNodeList)p;
-			old->nextNode_->header_.thisPool0_ = this;
-			old->nextNode_->header_.thisPool1_ = this;
-			old->nextNode_->header_.thisPool2_ = this;
+            previous = next;
+			next = (PMemObj)((char*)next + sizeof(MemObj));
+            previous->header_.poolPointer_ = this;
+            previous->nextMemObj_ = next;
         }
-        old->nextNode_ = nullptr;
+        previous->nextMemObj_ = nullptr;
     }
 
-    template< typename T, size_t NODES_PER_CHUNK>
-    T* Pool<T, NODES_PER_CHUNK>::Alloc()
+    template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>
+    Pool<OBJECT_SIZE, OBJECTS_PER_CHUNK>::~Pool()
     {
-		if (!freeList_)
-			return nullptr;
-
-        PNodeList p = freeList_;
-        freeList_ = freeList_->nextNode_;
-		assert(IsPointerFromPool(p->memBlock_));
-		return (T*)(p->memBlock_);
+        TRACE_PRINTF("Destroying pool: object size=%d objs/chunk=%d\n", OBJECT_SIZE, OBJECTS_PER_CHUNK);
+        std::free(begin_);
     }
 
-    template< typename T, size_t NODES_PER_CHUNK>
-    void Pool<T, NODES_PER_CHUNK>::Free(void* obj)
+    template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>
+    void Pool<OBJECT_SIZE, OBJECTS_PER_CHUNK>::LogStatus()
     {
-		assert(IsPointerFromPool(obj));
-		obj = (char*)obj - sizeof(Header);
-	    PNodeList p = static_cast<PNodeList>(obj);
-	    p->nextNode_ = freeList_;
-	    freeList_ = p;
+        TRACE_PRINTF("Pool Status: object size=%d  objs/chunk=%d still allocated objs=%d\n", OBJECT_SIZE, OBJECTS_PER_CHUNK, allocatedObjs_);
+    }
+
+    template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>
+    void* Pool<OBJECT_SIZE, OBJECTS_PER_CHUNK>::Allocate(std::size_t count)
+    {
+        assert(count <= OBJECT_SIZE);
+        PMemObj p = freeList_;
+        if (!p)
+            return nullptr;
+		while (!std::atomic_compare_exchange_weak(&freeList_, &p, p->nextMemObj_))
+        {
+            p = freeList_;
+            if (!p)
+                return nullptr;
+        }
+        ++allocatedObjs_;
+        return (void*)(p->memBlock_);
+    }
+
+    template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>
+    void Pool<OBJECT_SIZE, OBJECTS_PER_CHUNK>::DeAllocate(void* obj)
+    {
+        if (obj && obj >= begin_ && obj < end_)
+        {
+            obj = (char*)obj - sizeof(MemHeader);
+            PMemObj p = (PMemObj)obj;
+            p->nextMemObj_ = freeList_;
+			while (!std::atomic_compare_exchange_weak(&freeList_, &(p->nextMemObj_), p))
+            {
+                p->nextMemObj_ = freeList_;
+            }
+            --allocatedObjs_;
+        }
     }
 }

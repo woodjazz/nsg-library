@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "App.h"
 #include "Util.h"
+#include <sstream>
 
 namespace NSG
 {

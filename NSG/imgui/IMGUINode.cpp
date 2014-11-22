@@ -23,22 +23,21 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "NSG.h"
-using namespace NSG;
-class EarthBehavior : public Behavior
+#include "IMGUINode.h"
+#include "Node.h"
+
+namespace NSG
 {
-public:
-	EarthBehavior();
-	~EarthBehavior();
+	namespace IMGUI
+	{
+		AutoNode::AutoNode(const std::string& name)
+		: node_(std::make_shared<Node>(name))
+		{
+		}
 
-	void Start();
-	void Update();
-	void Render();
-
-private:
-	float x_angle_;
-	float y_angle_;
-	PRender2Texture render2texture_;
-	ShowTexture showTexture_;
-};
+		AutoNode::~AutoNode()
+		{
+			node_->SetParent(nullptr);
+		}
+	}
+}

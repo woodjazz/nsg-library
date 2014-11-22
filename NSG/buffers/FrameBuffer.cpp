@@ -30,11 +30,12 @@ misrepresented as being the original software.
 #include "Context.h"
 #include "Texture.h"
 #include "Graphics.h"
+#include "Util.h"
 #include <algorithm>
 
 namespace NSG
 {
-    FrameBuffer::FrameBuffer(int width, int height, Flags flags)
+	FrameBuffer::FrameBuffer(unsigned width, unsigned height, Flags flags)
         : flags_(flags),
           width_(width),
           height_(height),
@@ -43,6 +44,9 @@ namespace NSG
           depthStencilRenderBuffer_(0),
           stencilRenderBuffer_(0)
     {
+        if (!Graphics::this_->IsTextureSizeCorrect(width_, height_))
+            GetPowerOfTwoValues(width_, height_);
+
         if (Flag::STENCIL & flags_)
         {
             // If we want stencil buffer then we force also the depth buffer.
@@ -177,11 +181,13 @@ namespace NSG
                     TRACE_LOG("---8---");
                     if(Graphics::this_->HasDepthComponent24())
                     {
+                        TRACE_LOG("---9---");
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                     }
                     else
                     {
+                        TRACE_LOG("---10---");
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                     }

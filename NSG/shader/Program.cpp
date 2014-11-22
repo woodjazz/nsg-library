@@ -57,6 +57,7 @@ misrepresented as being the original software.
 #include <cstring>
 #include <string>
 #include <algorithm>
+#include <sstream>
 
 namespace NSG
 {
@@ -252,7 +253,10 @@ namespace NSG
             preDefines += "#define HAS_USER_FRAGMENT_SHADER\n";
 
         std::string buffer = preDefines + "#define COMPILEVS\n";
-        buffer += COMMON_GLSL + TRANSFORMS_GLSL + LIGHTING_GLSL + VS_GLSL;
+		buffer += COMMON_GLSL;
+		buffer += TRANSFORMS_GLSL;
+		buffer += LIGHTING_GLSL;
+		buffer += VS_GLSL;
         if (vertexShader_)
         {
             size_t bufferSize = buffer.size();
@@ -272,7 +276,11 @@ namespace NSG
             preDefines += "#define AOMAP\n";
 
         buffer = preDefines  + "#define COMPILEFS\n";
-        buffer += COMMON_GLSL + TRANSFORMS_GLSL + LIGHTING_GLSL + POSTPROCESS_GLSL + FS_GLSL;
+		buffer += COMMON_GLSL;
+		buffer += TRANSFORMS_GLSL;
+		buffer += LIGHTING_GLSL;
+		buffer += POSTPROCESS_GLSL;
+		buffer += FS_GLSL;
         if (fragmentShader_)
         {
             size_t bufferSize = buffer.size();
@@ -666,7 +674,7 @@ namespace NSG
             if (nBones != nBones_)
             {
                 CHECK_ASSERT(nBones > 0, __FILE__, __LINE__);
-                TRACE_LOG("Invalidating shader since number of bones (in the shader) has changed. Before nBones = " << nBones_ << ", now is " << nBones << ".")
+				TRACE_LOG("Invalidating shader since number of bones (in the shader) has changed. Before nBones = " << nBones_ << ", now is " << nBones << ".");
                 Invalidate();
                 nBones_ = nBones;
                 return false;

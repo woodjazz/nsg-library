@@ -37,8 +37,6 @@ misrepresented as being the original software.
 #include "glm/gtx/io.hpp"
 #include "SharedPointers.h"
 #include "GLES2Includes.h"
-#include "Allocators.h"
-#include "PODVector.h"
 #include "FlagSet.h"
 #include <string>
 #include <chrono>

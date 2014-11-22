@@ -40,6 +40,7 @@ misrepresented as being the original software.
 #include "RigidBody.h"
 #include "pugixml.hpp"
 #include <thread>
+#include <sstream>
 
 namespace NSG
 {

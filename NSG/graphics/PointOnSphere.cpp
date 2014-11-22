@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "PointOnSphere.h"
 #include "Constants.h"
+#include "Check.h"
 
 namespace NSG
 {

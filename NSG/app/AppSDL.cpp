@@ -257,6 +257,7 @@ namespace NSG
         }
         #else
         {
+            // IOS specific
             if (!minimized)
             {
                 app->RenderFrame();

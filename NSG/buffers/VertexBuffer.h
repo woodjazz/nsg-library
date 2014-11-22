@@ -36,8 +36,7 @@ namespace NSG
 	public:
 		VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage);
 		~VertexBuffer();
-		bool AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes);
-		void UpdateData(Buffer::Data& obj, const VertexsData& vertexes);
+		void UpdateData(const VertexsData& vertexes);
 		static void Unbind();
 		bool HasVAO() const { return vao_ != 0;}
 	private:

@@ -51,15 +51,15 @@ struct Sample : App
 	{
 		scene_ = GetCurrentScene();
         
-		camera_ = scene_->GetOrCreateChild<Camera>("camera");
+		camera_ = scene_->GetOrCreateChild<Camera>(GetUniqueName());
         camera_->SetPosition(Vertex3(0,0,10));
         camera_->Activate();
 
-		box_ = scene_->GetOrCreateChild<SceneNode>("node 1");
+		box_ = scene_->GetOrCreateChild<SceneNode>(GetUniqueName());
         boxBehavior_ = new BoxBehavior;
 		box_->AddBehavior(PBehavior(boxBehavior_));
         
-		sphere_ = scene_->GetOrCreateChild<SceneNode>("node 2");
+		sphere_ = scene_->GetOrCreateChild<SceneNode>(GetUniqueName());
         sphereBehavior_ = new SphereBehavior;
 		sphere_->AddBehavior(PBehavior(sphereBehavior_));
 
@@ -70,13 +70,13 @@ struct Sample : App
         technique_ = PTechnique(new Technique);
         
         PPass normalPass(new Pass);
-		PProgram normalProgram(GetOrCreateProgram("program1"));
-		normalProgram->SetFlags((int)ProgramFlag::UNLIT);
+		PProgram normalProgram(GetOrCreateProgram(GetUniqueName()));
+		normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
 		normalPass->SetProgram(normalProgram);
 
         PPass depthPass(new Pass);
         depthPass->EnableColorBuffer(false);
-		PProgram depthProgram(GetOrCreateProgram("program2"));
+		PProgram depthProgram(GetOrCreateProgram(GetUniqueName()));
 		depthProgram->SetFlags((int)ProgramFlag::STENCIL);
 		depthPass->SetProgram(depthProgram);
         
@@ -87,7 +87,7 @@ struct Sample : App
             PPass2Texture pass2Texture(new Pass2Texture(1024, 1024));	
 			technique_->Add(pass2Texture);
 
-			boxFilter = PFilter(new Filter("BoxFilter", pass2Texture->GetTexture(), 1024, 1024));
+			boxFilter = PFilter(new Filter(GetUniqueName(), pass2Texture->GetTexture(), 1024, 1024));
 			PResourceMemory resource(new ResourceMemory(BoxBehavior::GetFS()));
 			boxFilter->GetProgram()->SetFragmentShader(resource);
             
@@ -120,7 +120,7 @@ struct Sample : App
 			PPassFilter passBlend(new PassFilter(sphereBlendFilter));
             technique_->Add(passBlend);
 
-			//showTexture_->SetNormal(sphereBlendFilter->GetTexture());
+			//showTexture_->SetNormal(pass2Texture->GetTexture());
         }
 
 		PFilter blendFilter(new FilterBlend(sphereBlendFilter->GetTexture(), boxFilter->GetTexture(), 1024, 1024));
@@ -142,7 +142,6 @@ struct Sample : App
     {
         scene_->Update();
     }
-
 
     void RenderFrame() override
     {

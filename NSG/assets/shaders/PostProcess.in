@@ -1,6 +1,5 @@
 #pragma once
-#include <string>
 namespace NSG
 {
-static const std::string POSTPROCESS_GLSL = ${shader_string_file};
+static const char* POSTPROCESS_GLSL = ${shader_string_file};
 }

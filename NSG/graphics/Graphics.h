@@ -31,14 +31,14 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    // Keeps OpenGL's status 
+    // Keeps OpenGL's status
     class Graphics : public Singleton<Graphics>
     {
     public:
         Graphics();
         ~Graphics();
         void InitializeBuffers();
-		void ReleaseBuffers();
+        void ReleaseBuffers();
         bool CheckExtension(const std::string& name);
         void ResetCachedState();
         void SetClearColor(const Color& color);
@@ -58,95 +58,43 @@ namespace NSG
         void SetFrontFace(FrontFaceMode mode);
         void SetTexture(unsigned index, Texture* texture);
         void SetViewport(const Recti& viewport);
-		void InvalidateVAOFor(const Program* program);
+        void InvalidateVAOFor(const Program* program);
         bool SetBuffers(Mesh* mesh);
         bool SetVertexArrayObj(VertexArrayObj* obj);
-        VertexArrayObj* GetVertexArrayObj() const
-        {
-            return vertexArrayObj_;
-        }
+        VertexArrayObj* GetVertexArrayObj() const { return vertexArrayObj_; }
         bool SetVertexBuffer(Buffer* buffer, bool force = false);
-        Buffer* GetVertexBuffer() const
-        {
-            return vertexBuffer_;
-        }
+        Buffer* GetVertexBuffer() const { return vertexBuffer_; }
         bool SetIndexBuffer(Buffer* buffer, bool force = false);
-        Buffer* GetIndexBuffer() const
-        {
-            return indexBuffer_;
-        }
+        Buffer* GetIndexBuffer() const { return indexBuffer_; }
         bool SetProgram(Program* program);
-        Program* GetProgram() const
-        {
-            return activeProgram_;
-        }
+        Program* GetProgram() const { return activeProgram_; }
         void SetFrameBuffer(GLuint value);
         bool Draw(bool solid);
         bool Draw(bool solid, Batch& batch);
         void DiscardFramebuffer();
         void BeginFrame();
         void EndFrame();
-        bool HasVertexArrayObject() const
-        {
-            return has_vertex_array_object_ext_;
-        }
-        bool HasMapBufferRange() const
-        {
-            return has_map_buffer_range_ext_;
-        }
-        bool HasDepthTexture() const
-        {
-            return has_depth_texture_ext_;
-        }
-        bool HasDepthComponent24() const
-        {
-            return has_depth_component24_ext_;
-        }
-        bool HasNonPowerOfTwo() const
-        {
-            return has_texture_non_power_of_two_ext_;
-        }
-        bool HasInstancedArrays() const
-        {
-            return has_instanced_arrays_ext_;
-        }
-        bool HasPackedDepthStencil() const
-        {
-            return has_packed_depth_stencil_ext_;
-        }
-
+        bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
+        bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
+        bool HasDepthTexture() const { return has_depth_texture_ext_; }
+        bool HasDepthComponent24() const { return has_depth_component24_ext_; }
+        bool HasNonPowerOfTwo() const { return has_texture_non_power_of_two_ext_; }
+        bool HasInstancedArrays() const { return has_instanced_arrays_ext_; }
+        bool HasPackedDepthStencil() const { return has_packed_depth_stencil_ext_; }
         void SetBuffers();
         void UpdateBatchBuffer();
         void UpdateBatchBuffer(const Batch& batch);
         void SetInstanceAttrPointers(Program* program);
         void SetVertexAttrPointers();
         void SetAttributes();
-        void InsertUniformObj(UniformsUpdate* obj)
-        {
-            uniformObjs_.insert(obj);
-        }
-        void RemoveUniformObj(UniformsUpdate* obj)
-        {
-            uniformObjs_.erase(obj);
-        }
-        UniformObjs& GetUniformObjs()
-        {
-            return uniformObjs_;
-        }
-        void Set(Mesh* mesh)
-        {
-            activeMesh_ = mesh;
-        }
-        void Set(Material* material)
-        {
-            activeMaterial_ = material;
-        }
-        void SetNode(Node* node)
-        {
-            activeNode_ = node;
-        }
+        void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
+        void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
+        UniformObjs& GetUniformObjs() { return uniformObjs_; }
+        void Set(Mesh* mesh) { activeMesh_ = mesh; }
+        void Set(Material* material) { activeMaterial_ = material; }
+        void SetNode(Node* node) { activeNode_ = node; }
         void Render(Batch& batch);
-
+        bool IsTextureSizeCorrect(unsigned width, unsigned height);
     private:
         Recti viewport_;
         GLint systemFbo_;

@@ -56,111 +56,10 @@ misrepresented as being the original software.
 #include "RigidBody.h"
 #include "ResourceFileManager.h"
 #include "TextureFileManager.h"
-#include "Pool.h"
-#include "Allocators.h"
 #if NACL
 #include "ppapi/cpp/var.h"
 #endif
-//#define USE_POOLS
-
-#ifdef USE_POOLS
-
-static const size_t MaxNodes = 100;
-static NSG::Arena<sizeof(NSG::Node) * MaxNodes> nodeArena_;
-static const size_t MaxSceneNodes = 600;
-static NSG::Arena<sizeof(NSG::SceneNode) * MaxSceneNodes> sceneNodeArena_;
-static const size_t MaxScenes = 50;
-static NSG::Arena<sizeof(NSG::Scene) * MaxScenes> sceneArena_;
-
-typedef std::shared_ptr<NSG::IPool> PPool;
-static std::map<size_t, PPool, std::less<size_t>, NSG::Allocator<std::pair<size_t, PPool>, 10 > > pools;
-
-static bool poolsCreated = false;
-struct CreatePools
-{
-	CreatePools()
-	{
-		using namespace NSG;
-		pools[sizeof(Node)] = PPool(new Pool<Node, MaxNodes>(nodeArena_));
-		pools[sizeof(SceneNode)] = PPool(new Pool<SceneNode, MaxSceneNodes>(sceneNodeArena_));
-		pools[sizeof(Scene)] = PPool(new Pool<Scene, MaxScenes>(sceneArena_));
-		poolsCreated = true;
-	}
-};
-
-static void* AllocateFromPool(std::size_t count)
-{
-	auto it = pools.find(count);
-	if (it != pools.end())
-		return it->second->Allocate(count);
-	else
-	{
-		it = pools.upper_bound(count);
-		if (it != pools.end())
-			return it->second->Allocate(count);
-		else
-			return std::malloc(count);
-	}
-}
-
-static void ReleaseFromPool(void* ptr, std::size_t count)
-{
-	if (count == 0)
-	{
-		for (auto pool : pools)
-		{
-			if (pool.second->IsPointerFromPool(ptr))
-			{
-				pool.second->Release(ptr);
-				return;
-			}
-		}
-		std::free(ptr);
-	}
-	else
-	{
-		auto it = pools.find(count);
-		if (it != pools.end())
-		{
-			if (it->second->IsPointerFromPool(ptr))
-				it->second->Release(ptr);
-			else
-				std::free(ptr);
-		}
-		else
-		{
-			it = pools.upper_bound(count);
-			CHECK_ASSERT(it != pools.end(), __FILE__, __LINE__);
-			if (it->second->IsPointerFromPool(ptr))
-				it->second->Release(ptr);
-			else
-				std::free(ptr);
-		}
-	}
-}
-
-void* operator new(std::size_t count)
-{
-	static CreatePools createPools;
-	if (poolsCreated)
-	{
-		void* p = AllocateFromPool(count);
-		if (p) return p;
-	}
-    return std::malloc(count);
-}
-
-void operator delete(void* ptr)
-{
-	ReleaseFromPool(ptr, 0);
-}
-
-void operator delete(void* ptr, std::size_t count)
-{
-	ReleaseFromPool(ptr, count);
-}
-
-#endif
+#include <sstream>
 
 namespace NSG
 {
@@ -561,7 +460,11 @@ namespace NSG
 
         pApp_->GetOrCreateScene("DefaultScene", true);
 
+        TRACE_PRINTF("--- Begin Start ---\n");
+
         pApp_->Start(pApp_->argc_, pApp_->argv_);
+
+        TRACE_PRINTF("--- End Start ---\n");
     }
 
     void InternalApp::BeginTicks()

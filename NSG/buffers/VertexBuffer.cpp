@@ -64,39 +64,13 @@ namespace NSG
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    bool VertexBuffer::AllocateSpaceFor(GLsizeiptr maxSize, const VertexsData& vertexes)
-    {
-        if (Buffer::AllocateSpaceFor(maxSize))
-        {
-            const Data* obj = GetLastAllocation();
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            graphics_.SetVertexBuffer(this);
-
-            GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
-
-            SetBufferSubData(obj->offset_, bytes2Set, &vertexes[0]);
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    void VertexBuffer::UpdateData(Buffer::Data& obj, const VertexsData& vertexes)
+    void VertexBuffer::UpdateData(const VertexsData& vertexes)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
-
-        CHECK_ASSERT(bytes2Set <= obj.bytes_, __FILE__, __LINE__);
-
         graphics_.SetVertexBuffer(this, true);
-
-        SetBufferSubData(obj.offset_, bytes2Set, &vertexes[0]);
+        SetBufferSubData(0, bytes2Set, &vertexes[0]);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }

@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "pugixml.hpp"
 #include <algorithm>
+#include <sstream>
 
 namespace NSG
 {

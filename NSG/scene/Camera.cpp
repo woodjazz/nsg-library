@@ -33,9 +33,10 @@ misrepresented as being the original software.
 #include "FilterBlend.h"
 #include "Program.h"
 #include "Scene.h"
-#include "Render2Texture.h"
 #include "ShowTexture.h"
+#include "Render2Texture.h"
 #include "pugixml.hpp"
+#include <sstream>
 
 namespace NSG
 {
@@ -53,14 +54,12 @@ namespace NSG
           isOrtho_(false),
           orthoCoords_(-1.0f, 1.0f, -1.0f, 1.0f),
           cameraIsDirty_(false),
-          showTexture_(new ShowTexture)
+          graphics_(Graphics::this_)
     {
         viewWidth_ = app_.GetViewSize().first;
         viewHeight_ = app_.GetViewSize().second;
         CHECK_ASSERT(viewHeight_ > 0, __FILE__, __LINE__);
         aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
-        render2Texture_ = PRender2Texture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH));//_STENCIL));
-        showTexture_->SetNormal(render2Texture_->GetTexture());
         SetInheritScale(false);
         UpdateProjection();
         App::Add(this);
@@ -370,20 +369,13 @@ namespace NSG
 
             UpdateProjection();
 
+            if(render2Texture_)
             {
-                PRender2Texture newTexture(new Render2Texture(viewWidth_, viewHeight_, UseBuffer::DEPTH));//_STENCIL));
+				PRender2Texture newRender2Texture = std::make_shared<Render2Texture>(viewWidth_, viewHeight_);
                 for (auto& filter : filters_)
-                {
                     if (filter->GetInputTexture() == render2Texture_->GetTexture())
-                        filter->SetInputTexture(newTexture->GetTexture());
-                }
-
-				render2Texture_ = newTexture;
-
-				if (filters_.empty())
-					showTexture_->SetNormal(render2Texture_->GetTexture());
-				else
-					showTexture_->SetNormal(filters_.back()->GetTexture());
+                        filter->SetInputTexture(newRender2Texture->GetTexture());
+                SetRender2Texture(newRender2Texture);
             }
         }
     }
@@ -393,10 +385,10 @@ namespace NSG
         return GetFrustum()->IsVisible(node, mesh);
     }
 
-	void Camera::OnDirty() const
-	{
-		cameraIsDirty_ = true;
-	}
+    void Camera::OnDirty() const
+    {
+        cameraIsDirty_ = true;
+    }
 
     void Camera::Save(pugi::xml_node& node)
     {
@@ -406,77 +398,77 @@ namespace NSG
         {
             std::stringstream ss;
             ss << GetName();
-			node.append_attribute("name") = ss.str().c_str();
+            node.append_attribute("name") = ss.str().c_str();
         }
 
-		node.append_attribute("nodeType") = "Camera";
+        node.append_attribute("nodeType") = "Camera";
 
         {
             std::stringstream ss;
             ss << fovy_;
-			node.append_attribute("fovy") = ss.str().c_str();
+            node.append_attribute("fovy") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << zNear_;
-			node.append_attribute("zNear") = ss.str().c_str();
+            node.append_attribute("zNear") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << zFar_;
-			node.append_attribute("zFar") = ss.str().c_str();
+            node.append_attribute("zFar") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << xo_;
-			node.append_attribute("xo") = ss.str().c_str();
+            node.append_attribute("xo") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << yo_;
-			node.append_attribute("yo") = ss.str().c_str();
+            node.append_attribute("yo") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << xf_;
-			node.append_attribute("xf") = ss.str().c_str();
+            node.append_attribute("xf") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << yf_;
-			node.append_attribute("yf") = ss.str().c_str();
+            node.append_attribute("yf") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << isOrtho_;
-			node.append_attribute("isOrtho") = ss.str().c_str();
+            node.append_attribute("isOrtho") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << GetPosition();
-			node.append_attribute("position") = ss.str().c_str();
+            node.append_attribute("position") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << GetOrientation();
-			node.append_attribute("orientation") = ss.str().c_str();
+            node.append_attribute("orientation") = ss.str().c_str();
         }
 
-		SaveChildren(node);
+        SaveChildren(node);
     }
 
-	void Camera::Load(const pugi::xml_node& node, const CachedData& data)
+    void Camera::Load(const pugi::xml_node& node, const CachedData& data)
     {
-		name_ = node.attribute("name").as_string();
+        name_ = node.attribute("name").as_string();
 
         Vertex3 position = GetVertex3(node.attribute("position").as_string());
         SetPosition(position);
@@ -492,11 +484,14 @@ namespace NSG
 
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
-		LoadChildren(node, data);
+        LoadChildren(node, data);
     }
 
     void Camera::AddBlurFilter(int output_width, int output_height)
     {
+        if(!render2Texture_)
+            SetRender2Texture(std::make_shared<Render2Texture>(viewWidth_, viewHeight_));
+
         PFilterBlur blur;
         if (filters_.empty())
             blur = PFilterBlur(new FilterBlur(render2Texture_->GetTexture(), output_width, output_height));
@@ -508,6 +503,9 @@ namespace NSG
 
     void Camera::AddBlendFilter(int output_width, int output_height)
     {
+		if (!render2Texture_)
+			SetRender2Texture(std::make_shared<Render2Texture>(viewWidth_, viewHeight_, UseBuffer::DEPTH));
+
         CHECK_ASSERT(filters_.size() > 0, __FILE__, __LINE__);
         PFilterBlend blend;
 
@@ -523,6 +521,9 @@ namespace NSG
 
     PFilter Camera::AddUserFilter(PResource fragmentShader, int output_width, int output_height)
     {
+		if (!render2Texture_)
+			SetRender2Texture(std::make_shared<Render2Texture>(viewWidth_, viewHeight_));
+        
         PFilter filter;
 
         if (filters_.empty())
@@ -543,19 +544,58 @@ namespace NSG
         showTexture_->SetNormal(filter->GetTexture());
     }
 
-    void Camera::BeginRender()
+    void Camera::Render()
     {
-        render2Texture_->Begin();
+        if (render2Texture_)
+        {
+            Render(render2Texture_);
+            showTexture_->Show();
+        }
+        else
+        {
+            PScene scene = GetScene();
+            std::vector<const SceneNode*> visibles;
+            scene->GetVisibleNodes(this, visibles);
+            AppStatistics::this_->SetNodes(scene->GetChildren().size(), visibles.size());
+            std::vector<Batch> batches;
+            scene->GenerateBatches(visibles, batches);
+            for (auto& batch : batches)
+                graphics_->Render(batch);
+        }
     }
 
-    void Camera::EndRender()
+    void Camera::Render(PRender2Texture render2Texture)
     {
-        render2Texture_->End();
-
+        render2Texture->Begin();
+        PScene scene = GetScene();
+        std::vector<const SceneNode*> visibles;
+        scene->GetVisibleNodes(this, visibles);
+        AppStatistics::this_->SetNodes(scene->GetChildren().size(), visibles.size());
+        std::vector<Batch> batches;
+        scene->GenerateBatches(visibles, batches);
+        for (auto& batch : batches)
+            graphics_->Render(batch);
+        render2Texture->End();
         for (auto& filter : filters_)
             filter->Render();
-
-        showTexture_->Show();
     }
+
+    void Camera::SetRender2Texture(PRender2Texture render2Texture)
+    {
+        if(render2Texture)
+        {
+            render2Texture_ = render2Texture;
+            showTexture_ = PShowTexture(new ShowTexture);
+            if (filters_.empty())
+                showTexture_->SetNormal(render2Texture_->GetTexture());
+            else
+                showTexture_->SetNormal(filters_.back()->GetTexture());
+        }
+        else
+        {
+            showTexture_ = nullptr;
+        }
+    }
+
 
 }

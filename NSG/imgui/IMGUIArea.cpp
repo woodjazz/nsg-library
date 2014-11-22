@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "IMGUISkin.h"
 #include "IMGUIStyle.h"
 #include "IMGUI.h"
+#include "IMGUINode.h"
 #include "IMGUILayoutManager.h"
 #include "FrameColorSelection.h"
 #include "TextMesh.h"
@@ -134,8 +135,8 @@ namespace NSG
             // Draw slider
             Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
 
-			PNode node = std::make_shared<Node>();
-            node->SetParent(area_->pNode_);
+			AutoNode node("HandleVerticalSlider");
+			node->SetParent(area_->pNode_);
             node->SetInheritScale(false);
 
             float yScale = 0.5f / area_->scrollFactorAreaY_;
@@ -156,7 +157,7 @@ namespace NSG
             globalPosition.x += areaGlobalScale.x - globalScale.x;
             node->SetGlobalPosition(globalPosition);
 
-            Graphics::this_->SetNode(node.get());
+            Graphics::this_->SetNode(node.Get().get());
 
             RenderSlider();
 
@@ -198,8 +199,8 @@ namespace NSG
         {
             Vertex3 areaGlobalScale = area_->pNode_->GetGlobalScale();
             // Draw slider
-			PNode node = std::make_shared<Node>();
-            node->SetParent(area_->pNode_);
+			AutoNode node("HandleHorizontalSlider");
+			node->SetParent(area_->pNode_);
             node->SetInheritScale(false);
 
             std::pair<int, int> viewSize = App::this_->GetViewSize();
@@ -220,7 +221,7 @@ namespace NSG
             globalPosition.y -= areaGlobalScale.y - globalScale.y;
             node->SetGlobalPosition(globalPosition);
 
-            Graphics::this_->SetNode(node.get());
+            Graphics::this_->SetNode(node.Get().get());
 
             RenderSlider();
 

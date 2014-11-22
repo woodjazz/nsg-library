@@ -48,8 +48,8 @@ void BoxBehavior::Start()
 	controlPoints_.push_back(Vertex3(0.0f, 0.0f, -5.0f)); 
 
 	mesh_ = PBoxMesh(app_.CreateBoxMesh(1,1,1, 2,2,2));
-	material_ = app_.GetOrCreateMaterial("box");
-	material_->SetDiffuseMap(app_.GetOrCreateTextureFile("data/cube.png"));
+	material_ = app_.GetOrCreateMaterial(GetUniqueName());
+	material_->SetTexture0(app_.GetOrCreateTextureFile("data/cube.png"));
 
 	sceneNode_->SetScale(Vertex3(3, 3, 3));
 }

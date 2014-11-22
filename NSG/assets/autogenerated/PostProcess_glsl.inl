@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
 namespace NSG
 {
-static const std::string POSTPROCESS_GLSL = \
+static const char* POSTPROCESS_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#ifdef BLEND\n"\
 "	uniform int u_blendMode;\n"\

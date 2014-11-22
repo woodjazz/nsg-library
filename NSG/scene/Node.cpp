@@ -66,7 +66,8 @@ namespace NSG
     void Node::SetParent(PNode parent)
     {
         RemoveFromParent();
-        parent->AddChild(shared_from_this());
+		if (parent)
+			parent->AddChild(shared_from_this());
         MarkAsDirty();
     }
 
@@ -78,7 +79,8 @@ namespace NSG
     void Node::RemoveFromParent()
     {
         PNode parent = parent_.lock();
-        CHECK_CONDITION(!parent || parent->RemoveChild(this), __FILE__, __LINE__);
+        if(parent)
+            parent->RemoveChild(this);
     }
 
     void Node::ClearAllChildren()
@@ -92,7 +94,7 @@ namespace NSG
         }
     }
 
-    bool Node::RemoveChild(Node* node)
+    void Node::RemoveChild(Node* node)
     {
         int idx = 0;
         for (auto& child : children_)
@@ -100,11 +102,22 @@ namespace NSG
             if (child.get() == node)
             {
                 children_.erase(children_.begin() + idx);
-                return true;
+				auto range = childrenHash_.equal_range(node->name_);
+				auto it = range.first;
+				while(it != range.second)
+				{
+                    PNode child = it->second.lock();
+					if (!child)
+						it = childrenHash_.erase(it);
+					else if (child.get() == node)
+						it = childrenHash_.erase(it);
+                    else
+                        ++it;
+				}
+                break;
             }
             ++idx;
         }
-        return false;
     }
 
     void Node::AddChild(PNode node)

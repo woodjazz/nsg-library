@@ -182,9 +182,7 @@ namespace NSG
     {
         for (auto& obj : needUpdate_)
             octree_->InsertUpdate(obj);
-
         needUpdate_.clear();
-
         FrustumOctreeQuery query(visibles, *camera->GetFrustumPointer());
         octree_->Execute(query);
     }
@@ -267,19 +265,8 @@ namespace NSG
         if (IsReady())
         {
             Camera* camera = Camera::GetActiveCamera();
-
             if (camera)
-            {
-                camera->BeginRender();
-                std::vector<const SceneNode*> visibles;
-                GetVisibleNodes(camera, visibles);
-                AppStatistics::this_->SetNodes(children_.size(), visibles.size());
-                std::vector<Batch> batches;
-                GenerateBatches(visibles, batches);
-                for (auto& batch : batches)
-                    Graphics::this_->Render(batch);
-                camera->EndRender();
-            }
+                camera->Render();
         }
     }
 

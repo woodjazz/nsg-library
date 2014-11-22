@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "IMGUIContext.h"
 #include "IMGUISkin.h"
 #include "IMGUIStyle.h"
+#include "IMGUINode.h"
 #include "TextMesh.h"
 #include "Technique.h"
 #include "Pass.h"
@@ -70,8 +71,8 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			PNode textNode0(new Node);
-            textNode0->SetParent(node_);
+			AutoNode textNode0("textNode0");
+			textNode0->SetParent(node_);
 
             if (pTextMesh_->GetTextHorizontalAlignment() == LEFT_ALIGNMENT)
                 textNode0->SetPosition(Vertex3(-1, 0, 0)); //move text to the beginning of the current area
@@ -85,8 +86,8 @@ namespace NSG
             else if (pTextMesh_->GetTextVerticalAlignment() == MIDDLE_ALIGNMENT)
                 textNode0->SetPosition(textNode0->GetPosition() + Vertex3(0, -0.25f, 0));
 
-			PNode textNode = std::make_shared<Node>();
-            textNode->SetParent(textNode0);
+			PNode textNode = std::make_shared<Node>("textNode");
+            textNode->SetParent(textNode0.Get());
             textNode->SetInheritScale(false);
             textNode->SetScale(Context::this_->pRootNode_->GetGlobalScale());
 

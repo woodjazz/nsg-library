@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Util.h"
 #include "pugixml.hpp"
+#include <sstream>
 
 namespace NSG
 {

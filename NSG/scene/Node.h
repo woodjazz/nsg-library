@@ -133,9 +133,9 @@ namespace NSG
         std::unordered_map<std::string, PWeakNode> childrenHash_;
         PWeakScene scene_;
     private:
-        void AddChild(PNode node);
-        bool RemoveChild(Node* node);
-        void RemoveFromParent();
+		void RemoveFromParent();
+		void AddChild(PNode node);
+        void RemoveChild(Node* node);
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);
         std::weak_ptr<Node> parent_;
         IdType id_;

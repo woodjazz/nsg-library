@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "UtilConverter.h"
 #include "Animation.h"
 #include "Scene.h"
+#include "Log.h"
 #include "assimp/anim.h"
 #include "assimp/scene.h"
 #include <vector>

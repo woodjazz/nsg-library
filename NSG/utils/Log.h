@@ -24,6 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+
+#if 1//(defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+
 #include "Types.h"
 #include <stdio.h>
 #include <sstream>
@@ -31,68 +34,82 @@ misrepresented as being the original software.
 
 #ifdef NACL
 
-	extern int PPPrintMessage(const char* format, ...);
-	#define printf PPPrintMessage
-	
+extern int PPPrintMessage(const char* format, ...);
+#define printf PPPrintMessage
+
 #endif
 
 #ifdef ANDROID
-	
-	#include <android/log.h>
-	#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
-	#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
-	#define TRACE_LOG(msg) {\
-		std::stringstream stream; \
-		stream << msg; \
-		std::string cmsg = stream.str(); \
-		__android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
-	}
-	extern int AndroidPrintMessage(const char* format, ...);
-	#define printf AndroidPrintMessage
+
+#include <android/log.h>
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", __VA_ARGS__))
+#define TRACE_LOG(msg) {\
+        std::stringstream stream; \
+        stream << msg; \
+        std::string cmsg = stream.str(); \
+        __android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
+    }
+
+#define TRACE_PRINTF(format, ...) {\
+        __android_log_print(ANDROID_LOG_INFO, "nsg-library", format, ##__VA_ARGS__);\
+    }
+
+extern int AndroidPrintMessage(const char* format, ...);
+#define printf AndroidPrintMessage
 
 #elif _MSC_VER
 
-    #include "windows.h"
+#include "windows.h"
 
-	#define TRACE_LOG(msg) {\
-		std::stringstream stream; \
-		stream << msg; \
-		std::string cmsg = stream.str(); \
-		printf("%s\n",cmsg.c_str());\
-		fflush(stdout);\
-	    OutputDebugString(cmsg.c_str());\
-	    OutputDebugString("\n");\
-	}
+#define TRACE_LOG(msg) {\
+        std::stringstream stream; \
+        stream << msg; \
+        std::string cmsg = stream.str(); \
+        printf("%s\n",cmsg.c_str());\
+        fflush(stdout);\
+        OutputDebugString(cmsg.c_str());\
+        OutputDebugString("\n");\
+    }
+
+#define TRACE_PRINTF(format, ...) {\
+        printf(format, __VA_ARGS__);\
+        fflush(stdout);\
+    }
+
 #elif __APPLE__
 
-    #include <Foundation/NSString.h>
-	#define TRACE_LOG(msg) {\
-		std::stringstream stream;\
-		stream << msg;\
-		std::string cmsg = stream.str();\
-		NSLog(@"%@", [NSString stringWithUTF8String: cmsg.c_str()]);\
-	}
+#include <Foundation/NSString.h>
+#define TRACE_LOG(msg) {\
+        std::stringstream stream;\
+        stream << msg;\
+        std::string cmsg = stream.str();\
+        NSLog(@"%@", [NSString stringWithUTF8String: cmsg.c_str()]);\
+    }
+
+#define TRACE_PRINTF(format, ...) {\
+        printf(format, ##__VA_ARGS__);\
+        fflush(stdout);\
+    }
 
 #else
 
-	#define TRACE_LOG(msg) {\
-		std::stringstream stream; \
-		stream << msg; \
-		std::string cmsg = stream.str(); \
-		printf("%s\n",cmsg.c_str());\
-		fflush(stdout);\
-	}
+#define TRACE_LOG(msg) {\
+        std::stringstream stream; \
+        stream << msg; \
+        std::string cmsg = stream.str(); \
+        printf("%s\n",cmsg.c_str());\
+        fflush(stdout);\
+    }
 
-
+#define TRACE_PRINTF(format, ...) {\
+        printf(format, ##__VA_ARGS__);\
+        fflush(stdout);\
+    }
 
 #endif
-
-namespace NSG
-{
-	struct ScopedLog
-	{
-		ScopedLog(const std::string& msg);
-		~ScopedLog();
-	};
-}
+#else
+#define TRACE_LOG(msg) ((void)0);
+#define TRACE_PRINTF(format, ...) ((void)0);
+#endif
 

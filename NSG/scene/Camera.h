@@ -80,9 +80,10 @@ namespace NSG
 		void AddBlurFilter(int output_width, int output_height);
 		void AddBlendFilter(int output_width, int output_height);
 		PFilter AddUserFilter(PResource fragmentShader, int output_width, int output_height);
-		void BeginRender();
-		void EndRender();
+		void Render();
+		void SetRender2Texture(PRender2Texture render2Texture);
 	private:
+		void Render(PRender2Texture render2Texture);
 		void AddFilter(PFilter filter);
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;
@@ -111,5 +112,6 @@ namespace NSG
 		std::vector<PFilter> filters_;
 		PRender2Texture render2Texture_;
 		PShowTexture showTexture_;
+		Graphics* graphics_;
 	};
 }

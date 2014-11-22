@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Graphics.h"
 #include "Context.h"
-#include "BufferManager.h"
 #include "VertexArrayObj.h"
 #include "InstanceBuffer.h"
 #include "AppStatistics.h"
@@ -37,13 +36,12 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "InstanceData.h"
 #include "pugixml.hpp"
+#include <sstream>
 
 namespace NSG
 {
     Mesh::Mesh(const std::string& name, bool dynamic)
-        : bufferVertexData_(nullptr),
-          bufferIndexData_(nullptr),
-          boundingSphereRadius_(0),
+        : boundingSphereRadius_(0),
           isStatic_(!dynamic),
           name_(name),
           graphics_(*Graphics::this_),
@@ -87,23 +85,19 @@ namespace NSG
         CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
 
         GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
-        pVBuffer_ = Context::this_->bufferManager_->GetStaticVertexBuffer(Buffer::MAX_BUFFER_SIZE, bytesNeeded, vertexsData_);
-        bufferVertexData_ = pVBuffer_->GetLastAllocation();
+
+        if (isStatic_)
+            pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_STATIC_DRAW));
+        else
+            pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW));
 
         if (!indexes_.empty())
         {
-            GLintptr indexBase = bufferVertexData_->offset_ / sizeof(VertexData);
-            Indexes tmpIndexes(indexes_);
-            if (indexBase)
-                std::for_each(tmpIndexes.begin(), tmpIndexes.end(), [&](IndexType & x)
-            {
-                x += indexBase;
-                CHECK_ASSERT(x < MAX_INDEX_VALUE, __FILE__, __LINE__);
-            });
-
-            GLsizeiptr bytesNeeded = sizeof(IndexType) * tmpIndexes.size();
-            pIBuffer_ = Context::this_->bufferManager_->GetStaticIndexBuffer(Buffer::MAX_BUFFER_SIZE, bytesNeeded, tmpIndexes);
-            bufferIndexData_ = pIBuffer_->GetLastAllocation();
+            GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
+            if (isStatic_)
+                pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_STATIC_DRAW));
+            else
+                pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW));
         }
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -121,8 +115,6 @@ namespace NSG
         boundingSphereRadius_ = 0;
         pVBuffer_ = nullptr;
         pIBuffer_ = nullptr;
-        bufferVertexData_ = nullptr;
-        bufferIndexData_ = nullptr;
         vertexsData_.clear();
         indexes_.clear();
         areTangentsCalculated_ = false;

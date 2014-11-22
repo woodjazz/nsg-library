@@ -73,6 +73,7 @@ public class SDLActivity extends Activity {
         mIsPaused = false;
         mIsSurfaceReady = false;
         mHasFocus = true;
+        mIsSharedLibraryLoaded = false;
     }
 
     // Setup

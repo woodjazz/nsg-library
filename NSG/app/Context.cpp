@@ -32,13 +32,13 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "IMGUIContext.h"
 #include "Graphics.h"
-#include "BufferManager.h"
 #include "Audio.h"
 #include "Graphics.h"
 #include "Scene.h"
 #include "ResourceFileManager.h"
 #include "TextureFileManager.h"
 #include "Path.h"
+#include <sstream>
 
 namespace NSG
 {
@@ -85,8 +85,6 @@ namespace NSG
 		for (auto& obj : objects_)
 			obj->Invalidate();
 			
-        bufferManager_->Invalidate();
-
         Graphics::this_->ResetCachedState();
 
         TRACE_LOG("Context::InvalidateGPUResources done");
@@ -139,7 +137,7 @@ namespace NSG
             static unsigned char img[WIDTH * HEIGHT * 3];
             memset(&img[0], 0xFF, sizeof(img));
             whiteTexture_ = PTexture(new Texture(GL_RGB, WIDTH, HEIGHT, (char*)&img[0]));
-            TRACE_LOG("White texture has been generated.")
+			TRACE_LOG("White texture has been generated.");
         }
 
         return whiteTexture_;
@@ -156,8 +154,6 @@ namespace NSG
         textureFileManager_ = PTextureFileManager(new TextureFileManager);
         
         graphics_ = PGraphics(new Graphics);
-
-		bufferManager_ = PBufferManager(new BufferManager);
 
 		atlasManager_ = PFontAtlasTextureManager(new FontAtlasTextureManager);
 		

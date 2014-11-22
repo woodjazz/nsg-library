@@ -26,53 +26,25 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
-#include "Allocators.h"
-#include "PODVector.h"
+#include <vector>
 
 namespace NSG 
 {
 	class Buffer
 	{
 	public:
-
-		static const size_t MAX_BUFFER_SIZE = 3 * 1000 * 1000;
-
-		struct Data
-		{
-			GLintptr offset_;
-			GLsizeiptr bytes_;
-
-			Data()
-			{
-				memset(this, 0, sizeof(*this));
-			}
-
-			Data(GLintptr offset, GLsizeiptr bytes)
-				: offset_(offset), bytes_(bytes)
-			{
-			}
-		};
-
 		~Buffer();
-		Data* GetLastAllocation();
 		void Bind();
 		bool IsDynamic() const { return dynamic_; }
 	protected:
-		bool AllocateSpaceFor(GLsizeiptr bytesNeeded);
 		Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage = GL_STATIC_DRAW);
 		void SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data);
-		
 		GLenum type_;
 		GLuint id_;
 		GLenum usage_;
 		GLsizeiptr bufferSize_;
 		bool dynamic_;
 		Graphics& graphics_;
-	private:
-		GLsizeiptr GetTotalBytes() const;
-		static const size_t VERTEXES_PER_TRIANGLE = 3;
-		static const size_t MAX_OBJECTS_PER_BUFFER = MAX_BUFFER_SIZE / VERTEXES_PER_TRIANGLE;
-		PODVector<Data, MAX_OBJECTS_PER_BUFFER> dataCollection_;
 	};
 }
 

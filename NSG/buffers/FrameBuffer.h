@@ -41,30 +41,19 @@ namespace NSG
             COLOR_USE_TEXTURE = 1 << 3,
             DEPTH_USE_TEXTURE = 1 << 4
         };
-
         typedef FlagSet<Flag> Flags;
-
-        FrameBuffer(int width, int height, Flags flags);
+		FrameBuffer(unsigned width, unsigned height, Flags flags);
         ~FrameBuffer();
-        PTexture GetColorTexture() const
-        {
-            return colorTexture_;
-        }
-        PTexture GetDepthTexture() const
-        {
-            return depthTexture_;
-        }
-        GLuint GetId() const
-        {
-            return framebuffer_;
-        }
+        PTexture GetColorTexture() const { return colorTexture_; }
+        PTexture GetDepthTexture() const { return depthTexture_; }
+        GLuint GetId() const { return framebuffer_; }
     private:
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
         Flags flags_;
-        int width_;
-        int height_;
+        unsigned width_;
+		unsigned height_;
         PTexture colorTexture_;
         PTexture depthTexture_;
         GLuint framebuffer_;
