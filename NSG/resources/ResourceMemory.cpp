@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "ResourceMemory.h"
 #include "Check.h"
-#include "Context.h"
 #include "Path.h"
 
 namespace NSG

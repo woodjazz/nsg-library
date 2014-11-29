@@ -29,8 +29,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    template<> ResourceFileManager* Singleton<ResourceFileManager>::this_ = nullptr;
-
     ResourceFileManager::ResourceFileManager()
     {
 
@@ -38,7 +36,14 @@ namespace NSG
 
     ResourceFileManager::~ResourceFileManager()
     {
-        ResourceFileManager::this_ = nullptr;
+    }
+
+    bool ResourceFileManager::IsValid()
+    {
+        for(auto& obj: map_)
+            if(!obj.second->IsReady())
+                return false;
+        return true;
     }
 
     PResourceFile ResourceFileManager::GetOrCreate(const Path& path)
@@ -48,6 +53,7 @@ namespace NSG
         {
         	PResourceFile resource(new ResourceFile(path));
             map_.insert(ResourceMap::value_type(path, resource));
+            Invalidate();
             return resource;
         }
         else

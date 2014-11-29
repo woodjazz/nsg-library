@@ -79,7 +79,8 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        Camera* pCurrent = Camera::Deactivate();
+		Camera* pCurrent = Graphics::this_->GetCamera();
+		Graphics::this_->SetCamera(nullptr);
 
         pRender2Texture_->Begin();
 
@@ -91,7 +92,7 @@ namespace NSG
 
         pRender2Texture_->End();
 
-        Camera::Activate(pCurrent);
+		Graphics::this_->SetCamera(pCurrent);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 

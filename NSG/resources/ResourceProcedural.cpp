@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "ResourceProcedural.h"
 #include "IProceduralResource.h"
 #include "Check.h"
-#include "Context.h"
 #include "Mesh.h"
 #include "Path.h"
 

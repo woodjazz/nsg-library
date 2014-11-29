@@ -23,10 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if !defined(NACL)
 #define USE_POOLS
-#endif
-
 #ifdef USE_POOLS
 
 #include "Pool.h"
@@ -224,5 +221,4 @@ void operator delete[](void* ptr) noexcept
 {
     ReleaseMemory(ptr, 0);
 }
-
 #endif

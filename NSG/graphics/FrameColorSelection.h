@@ -34,7 +34,7 @@ namespace NSG
     class FrameColorSelection : public Object
     {
     public:
-        FrameColorSelection(UseBuffer buffer = UseBuffer::DEPTH);
+        FrameColorSelection(PWindow window, UseBuffer buffer = UseBuffer::DEPTH);
         ~FrameColorSelection();
         GLushort GetSelected() const;
         void SetLocations();

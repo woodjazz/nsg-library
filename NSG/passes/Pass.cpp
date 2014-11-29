@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "BoundingBox.h"
 #include "Frustum.h"
-#include "Context.h"
 #include "Program.h"
 #include "pugixml.hpp"
 #include <sstream>

@@ -25,15 +25,8 @@ misrepresented as being the original software.
 */
 #include "ResourceFile.h"
 #include "Check.h"
-#include "Context.h"
 #include "App.h"
 #include "Util.h"
-#if NACL
-#include "AppNaCl.h"
-#include "NaClURLLoader.h"
-#elif ANDROID
-#include <android/asset_manager.h>
-#endif
 #include <fstream>
 
 namespace NSG
@@ -42,17 +35,6 @@ namespace NSG
         : path_(path),
           trySecondTime_(true)
     {
-        #if NACL
-        {
-            CHECK_ASSERT(path_.IsPathRelative(), __FILE__, __LINE__);
-            path_.AppendDirIfDoesNotExist("data");
-            pLoader_ = NaCl::NaClURLLoader::Create(NaCl::NaCl3DInstance::GetInstance(), path_.GetFilePath().c_str());
-        }
-        #elif defined(ANDROID) && !defined(SDL)
-        {
-            pAAssetManager_ = App::this_->GetAssetManager();
-        }
-        #endif
     }
 
     ResourceFile::~ResourceFile()
@@ -61,79 +43,35 @@ namespace NSG
 
     bool ResourceFile::IsValid()
     {
-        #if NACL
-        {
-            return pLoader_->IsDone() && pLoader_->HasSucceed();
-        }
-        #else
-        {
-            return path_.HasName();
-        }
-        #endif
+        return path_.HasName();
     }
 
     void ResourceFile::AllocateResources()
     {
         bool loaded = false;
 
-        #if NACL
+        #if ANDROID
         {
-            buffer_.resize(pLoader_->GetData().size());
-            memcpy(&buffer_[0], pLoader_->GetData().c_str(), pLoader_->GetData().size());
-            pLoader_ = nullptr;
-            loaded = true;
-        }
-        #elif ANDROID
-        {
-            #if SDL
+            SDL_RWops* assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
+
+            if (!assetHandle)
             {
-                SDL_RWops* assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
-
-                if (!assetHandle)
+                if (trySecondTime_)
                 {
-                    if (trySecondTime_)
-                    {
-                        trySecondTime_ = false;
-                        if (path_.AppendDirIfDoesNotExist("data"))
-                            assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
-                    }
-                }
-
-                if (assetHandle)
-                {
-                    off_t filelength = assetHandle->hidden.androidio.size;
-                    buffer_.resize((int)filelength);
-                    SDL_RWread(assetHandle, &buffer_[0], filelength, 1);
-                    SDL_RWclose(assetHandle);
-                    loaded = true;
+                    trySecondTime_ = false;
+                    if (path_.AppendDirIfDoesNotExist("data"))
+                        assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
                 }
             }
-            #else
+
+            if (assetHandle)
             {
-                assert(pAAssetManager_ != nullptr);
-
-                AAsset* pAsset = AAssetManager_open(pAAssetManager_, path_.GetFilePath().c_str(), AASSET_MODE_BUFFER);
-
-                if (!pAsset)
-                {
-                    if (trySecondTime_)
-                    {
-                        trySecondTime_ = false;
-                        if (path_.AppendDirIfDoesNotExist("data"))
-                            pAsset = AAssetManager_open(pAAssetManager_, path_.GetFilePath().c_str(), AASSET_MODE_BUFFER);
-                    }
-                }
-
-                if (pAsset)
-                {
-                    off_t filelength = AAsset_getLength(pAsset);
-                    buffer_.resize((int)filelength);
-                    AAsset_read(pAsset, &buffer_[0], filelength);
-                    AAsset_close(pAsset);
-                    loaded = true;
-                }
+                off_t filelength = assetHandle->hidden.androidio.size;
+                buffer_.resize((int)filelength);
+                SDL_RWread(assetHandle, &buffer_[0], filelength, 1);
+                SDL_RWclose(assetHandle);
+                loaded = true;
             }
-            #endif
         }
         #else
         {
@@ -182,6 +120,7 @@ namespace NSG
         if (loaded)
         {
             TRACE_LOG("Resource::File " << path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
+            signalLoaded_->Run();
         }
         else
         {

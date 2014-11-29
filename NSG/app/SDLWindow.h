@@ -24,39 +24,31 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SharedPointers.h"
-#include "Singleton.h"
-#include "AppStatistics.h"
-#include <set>
-#include <vector>
-
+#include "Types.h"
+#include "Window.h"
+#include <string>
+struct SDL_Surface;
+struct SDL_Window;
 namespace NSG
 {
-	class Object;
-	class Resource;
-	struct Context : public Singleton<Context>
-	{
-		std::string basePath_;
-		PResourceFileManager resourceFileManager_;
-		PTextureFileManager textureFileManager_;
-		PGraphics graphics_;
-		PAppStatistics statistics_;
-		PFontAtlasTextureManager atlasManager_;
-		IMGUI::PContext imgui_;
-		PAudio audio_;
-		std::set<Object*> objects_;
-		PKeyboard keyboard_;
+    class SDLWindow : public Window
+    {
+    public:
+        SDLWindow(const std::string& name, int x, int y, int width, int height);
+        ~SDLWindow();
+        #if !defined(EMSCRIPTEN)
+        SDL_Window* GetSDLWindow() const override { return win_; }
+        SDL_GLContext GetSDLContext() const override { return context_; }
+        #endif
+        void RenderFrame() override;
+        void Destroy() override;
+    private:
+        #if EMSCRIPTEN
+        SDL_Surface* screen_;
+        #else
+        SDL_Window* win_;
+        SDL_GLContext context_;
+        #endif
+    };
 
-		Context();
-		~Context();
-		void Initialize();
-		static void AddObject(Object* object);
-		static void RemoveObject(Object* object);
-		void InvalidateObjects();
-		PTexture GetWhiteTexture();
-	private:
-		void Add(Object* object);
-		void Remove(Object* object);
-		PTexture whiteTexture_;
-	};
 }

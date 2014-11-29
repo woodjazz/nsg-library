@@ -26,8 +26,6 @@ misrepresented as being the original software.
 #pragma once
 #include "Singleton.h"
 
-class ANativeActivity;
-
 namespace NSG
 {
 	class Keyboard : public Singleton<Keyboard>
@@ -37,9 +35,5 @@ namespace NSG
 		~Keyboard();
 		bool Enable();
 		bool Disable();
-		void SetActivity(ANativeActivity* activity) { activity_ = activity; }
-	private:
-		ANativeActivity* activity_;
 	};
-
 }

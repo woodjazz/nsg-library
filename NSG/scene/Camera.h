@@ -41,12 +41,9 @@ namespace NSG
 		void SetHalfHorizontalFov(float hhfov); // in radians
 		void SetNearClip(float zNear);
 		void SetFarClip(float zFar);
-		static Camera* Deactivate();
-		static Camera* Activate(Camera* pCamera);
-		static Camera* GetActiveCamera();
+		void SetAspectRatio(int width, int height);
 		static Matrix4 GetModelViewProjection(const Node* pNode);
 		static Matrix4 GetInverseView();
-		void Activate();
 		void SetViewportFactor(float xo, float yo, float xf, float yf);
 		Recti GetViewport() const;
 		void SetOrtho(float left, float right, float bottom, float top);

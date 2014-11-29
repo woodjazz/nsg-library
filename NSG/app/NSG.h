@@ -33,7 +33,6 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Util.h"
 #include "Constants.h"
-#include "Context.h"
 #include "Scene.h"
 #include "Keys.h"
 #include "Check.h"
@@ -48,11 +47,14 @@ misrepresented as being the original software.
 #include "TextMesh.h"
 #include "Texture.h"
 #include "Light.h"
+#include "Graphics.h"
+#if 0
 #include "IMGUI.h"
 #include "IMGUISkin.h"
 #include "IMGUIStyle.h"
 #include "IMGUIContext.h"
 #include "IMGUITitle.h"
+#endif
 #include "Render2Texture.h"
 #include "Filter.h"
 #include "FilterBlur.h"
@@ -84,5 +86,7 @@ misrepresented as being the original software.
 #include "Path.h"
 #include "Skeleton.h"
 #include "RigidBody.h"
+#include "Window.h"
+#include "MemoryTest.h"
 
 

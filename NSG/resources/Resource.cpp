@@ -27,12 +27,12 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "App.h"
 #include "Check.h"
-#include "Context.h"
 #include "Path.h"
 
 namespace NSG
 {
     Resource::Resource()
+        : signalLoaded_(new SignalResourceLoaded)
     {
     }
 
@@ -42,7 +42,7 @@ namespace NSG
 
     bool Resource::IsValid()
     {
-    	return true;
+        return true;
     }
 
     void Resource::ReleaseResources()

@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #include "Path.h"
 #include "Check.h"
-#include "Context.h"
+#include "App.h"
 #if WIN32
 #include <Windows.h>
 #elif defined(EMSCRIPTEN)
@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include <unistd.h>
 #elif defined(__APPLE__) && defined(SDL)
 #include "SDL.h"
+#undef main
 #else
 #include <stdio.h>
 #include <unistd.h>
@@ -101,7 +102,7 @@ namespace NSG
         if (isAbsolutePath_)
             absolutePath_ = path_;
         else
-            absolutePath_ = Context::this_->basePath_ + path_;
+            absolutePath_ = App::this_->GetBasePath() + path_;
 
         fullFilePath_ = absolutePath_ + "/" + filename_;
     }
@@ -211,8 +212,6 @@ namespace NSG
             }
             return path;
         }
-        #elif defined(NACL)
-        return "./";
         #else
         {
             std::string path;

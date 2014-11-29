@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Texture.h"
-#include "Context.h"
+#include "App.h"
 #include "Resource.h"
 #include "Check.h"
 #include "Graphics.h"
@@ -108,7 +108,7 @@ namespace NSG
         : fromKnownImgFormat_(true),
           flags_((int)TextureFlag::NONE),
           texture_(0),
-          pResource_(ResourceFileManager::this_->GetOrCreate(path)),
+		  pResource_(App::this_->GetOrCreateResourceFile(path)),
           width_(0),
           height_(0),
           format_(GL_RGBA),

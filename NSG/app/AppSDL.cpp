@@ -1,3 +1,4 @@
+#if 0
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
@@ -25,7 +26,6 @@ misrepresented as being the original software.
 */
 #if SDL || EMSCRIPTEN
 #include "SDL.h"
-#undef main
 #include "App.h"
 #include "Tick.h"
 #include "Keys.h"
@@ -424,4 +424,5 @@ namespace NSG
         return true;
     }
 }
+#endif
 #endif

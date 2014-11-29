@@ -50,8 +50,7 @@ namespace NSG
 		occludee_(false),
 		worldBBNeedsUpdate_(true),
 		serializable_(true),
-        signalCollision_(new Signal<const ContactPoint&>()),
-        signalXMLLoaded_(new Signal<>())
+        signalCollision_(new Signal<const ContactPoint&>())
 	{
 	}
 
@@ -59,19 +58,29 @@ namespace NSG
     {
     }
 
-    void SceneNode::SetResource(PResource resource)
+    void SceneNode::Load(PResource resource)
     {
-        if (resource_ != resource)
-        {
-            resource_ = resource;
-            Invalidate();
-        }
-    }
+		CHECK_ASSERT(resource->IsReady(), __FILE__, __LINE__);
+		pugi::xml_document doc;
+		pugi::xml_parse_result result = doc.load_buffer_inplace((void*)resource->GetData(), resource->GetBytes());
+		if (result)
+		{
+			CachedData data;
+			LoadMeshesAndMaterials(doc, data);
+			Load(doc, data);
+		}
+		else
+		{
+			TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
+			TRACE_LOG("Error description: " << result.description());
+			TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
+			CHECK_ASSERT(false, __FILE__, __LINE__);
+		}
+	}
 
     bool SceneNode::IsValid()
     {
-        bool valid = !resource_ || resource_->IsReady();
-        valid &= !mesh_ || mesh_->IsReady();
+        bool valid = !mesh_ || mesh_->IsReady();
         valid &= !material_|| material_->IsReady();
 		valid &= !rigidBody_ || rigidBody_->IsReady();
         return valid;
@@ -79,25 +88,6 @@ namespace NSG
 
     void SceneNode::AllocateResources()
     {
-        if (resource_)
-        {
-            pugi::xml_document doc;
-            pugi::xml_parse_result result = doc.load_buffer_inplace((void*)resource_->GetData(), resource_->GetBytes());
-            if (result)
-            {
-                CachedData data;
-                LoadMeshesAndMaterials(doc, data);
-                Load(doc, data);
-                signalXMLLoaded_->Run();
-            }
-            else
-            {
-                TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
-                TRACE_LOG("Error description: " << result.description());
-                TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
-                CHECK_ASSERT(false, __FILE__, __LINE__);
-            }
-        }
     }
 
     void SceneNode::Set(PMaterial material)

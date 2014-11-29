@@ -46,8 +46,7 @@ namespace NSG
         void AddCamera(PCamera camera);
         const std::vector<PWeakCamera>& GetCameras() const;
         void Update(float deltaTime);
-        void Render();
-        void Load(PResource resource);
+		void Render(Camera* camera);
         void NeedUpdate(SceneNode* obj);
         void GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const;
         POctree GetOctree() const { return octree_; }
@@ -71,8 +70,7 @@ namespace NSG
         void SaveSkeletons(pugi::xml_node& node);
         void LoadSkeletons(const pugi::xml_node& node);
     private:
-        
-        void UpdateAnimations();
+        void UpdateAnimations(float deltaTime);
     private:
 		mutable std::map<LightType, std::vector<PWeakLight>> lights_;
         std::vector<PWeakCamera> cameras_;

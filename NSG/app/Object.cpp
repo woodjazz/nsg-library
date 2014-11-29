@@ -33,12 +33,12 @@ namespace NSG
 	: isValid_(false),
 	resourcesAllocated_(false)
 	{
-		Context::AddObject(this);
+		App::this_->AddObject(this);
 	}
 		
 	Object::~Object()
 	{
-		Context::RemoveObject(this);
+		App::this_->RemoveObject(this);
 	}
 
 	void Object::Invalidate()

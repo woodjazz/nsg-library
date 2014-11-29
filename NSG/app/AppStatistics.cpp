@@ -53,7 +53,7 @@ namespace NSG
 
         material_->SetColor(Color(1, 1, 1, 1));
         material_->SetSerializable(false);
-
+#if 0
         for (int i = 0; i < (int)Stats::MAX_STATS; i++)
         {
             stats_[i] = 0;
@@ -79,6 +79,7 @@ namespace NSG
         label_[(int)Stats::DYNAMIC_IBO] = "Dynamic IBO:";
         label_[(int)Stats::VISIBLES_NODES] = "Visibles nodes:";
         label_[(int)Stats::TOTAL_NODES] = "Total nodes::";
+#endif
     }
 
     AppStatistics::~AppStatistics()

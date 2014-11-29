@@ -27,23 +27,26 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "VertexData.h"
 #include "Path.h"
+#include "Object.h"
 #include <string>
 #include <map>
 
 namespace NSG
 {
-	class FontAtlasTexture
+	class FontAtlasTexture : public Object
 	{
 	public:
-		FontAtlasTexture(const Path& path);
+		FontAtlasTexture(const Path& path, int viewWidth, int viewHeight);
 		~FontAtlasTexture();
-		bool GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
+		void GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
 		GLfloat GetWidthForCharacterPosition(const char* text, unsigned int charPos);
 		unsigned int GetCharacterPositionForWidth(const char* text, float width);
-		bool IsReady();
 		PTexture GetTexture() const { return texture_; }
-
+		void SetViewSize(int width, int height);
 	private:
+		bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
         bool ParseXML();
         PTexture texture_;
         PResource xmlResource_;

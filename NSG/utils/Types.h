@@ -294,9 +294,11 @@ namespace NSG
     typedef Signal<int, int, int> SignalKey;
     typedef Signal<unsigned int> SignalChar;
     typedef Signal<int, float, float, float, float, int> SignalMultiGesture;
-    typedef Signal<int, char**> SignalStart;
     typedef Signal<float> SignalUpdate;
-    typedef Signal<> SignalXMLLoaded;
+    typedef Signal<> SignalRender;
+    typedef Signal<> SignalResourceLoaded;
     typedef Signal<const ContactPoint&> SignalCollision;
+    typedef Signal<const std::string&> SignalDropFile;
+    
     
 }

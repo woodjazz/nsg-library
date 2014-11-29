@@ -25,17 +25,18 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Singleton.h"
+#include "Object.h"
 #include <map>
 
 namespace NSG
 {
-	class ResourceFileManager : public Singleton<ResourceFileManager>
+	class ResourceFileManager : public Object
     {
     public:
     	ResourceFileManager();
     	~ResourceFileManager();
     	PResourceFile GetOrCreate(const Path& path);
+        bool IsValid() override;
     private:
     	typedef std::map<Path, PResourceFile> ResourceMap;
     	ResourceMap map_;

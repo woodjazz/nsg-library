@@ -37,7 +37,7 @@ struct Test : public App
 	Test()
 		:exit_(false)
 	{
-		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		slotStart_ = signalStart_->Connect([&]()
 		{
 			CameraTest();
 			exit_ = true;

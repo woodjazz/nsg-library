@@ -1,9 +1,3 @@
--------------------------
-NACL
--------------------------
-Install SDK: https://developers.google.com/native-client/dev/sdk/download
-Set the environment variable NACL_SDK_ROOT
-
 ---------------------------
 ANDROID
 ---------------------------

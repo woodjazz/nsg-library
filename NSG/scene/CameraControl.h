@@ -55,5 +55,6 @@ namespace NSG
 		SignalMultiGesture::PSlot slotMultiGesture_;
 		SignalKey::PSlot slotKey_;
 		SignalUpdate::PSlot slotUpdate_;
+		PWeakWindow window_;
 	};
 }

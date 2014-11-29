@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
-#include "Context.h"
 #include "Texture.h"
 #include "Graphics.h"
 #include "Util.h"

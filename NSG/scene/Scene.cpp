@@ -3,7 +3,6 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Light.h"
-#include "Context.h"
 #include "Octree.h"
 #include "OctreeQuery.h"
 #include "Graphics.h"
@@ -38,11 +37,6 @@ namespace NSG
         octree_ = nullptr;
     }
 
-    void Scene::Load(PResource resource)
-    {
-        SetResource(resource);
-    }
-
     void Scene::SetAmbientColor(Color ambient)
     {
         if (ambient_ != ambient)
@@ -56,7 +50,7 @@ namespace NSG
     {
 		physicsWorld_->StepSimulation(deltaTime);
 
-        UpdateAnimations();
+		UpdateAnimations(deltaTime);
     }
 
     bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const
@@ -120,13 +114,13 @@ namespace NSG
         octree_->Execute(query);
     }
 
-    void Scene::Render()
+    void Scene::Render(Camera* camera)
     {
-        if (IsReady())
+        if (IsReady() && camera)
         {
-            Camera* camera = Camera::GetActiveCamera();
-            if (camera)
-                camera->Render();
+            Graphics::this_->SetScene(this);
+            Graphics::this_->SetCamera(camera);
+			camera->Render();
         }
     }
 
@@ -293,9 +287,8 @@ namespace NSG
         return true;
     }
 
-    void Scene::UpdateAnimations()
+	void Scene::UpdateAnimations(float deltaTime)
     {
-        float deltaTime = app_.GetDeltaTime();
         for (auto& obj : animationStateMap_)
         {
             obj.second->AddTime(deltaTime);

@@ -57,7 +57,7 @@ namespace NSG
 		void OnDisable() override;
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_;  }
-		void SetResource(PResource resource);
+		void Load(PResource resource);
 		void GetMaterials(std::vector<PMaterial>& materials) const;
 		void Save(pugi::xml_node& node) override;
 		void SaveChildren(pugi::xml_node& node);
@@ -65,7 +65,6 @@ namespace NSG
 		void LoadChildren(const pugi::xml_node& node, const CachedData& data);
 	public:
 		SignalCollision::PSignal signalCollision_;
-		SignalXMLLoaded::PSignal signalXMLLoaded_;
 	protected:
 		virtual bool IsValid() override;
 		virtual void AllocateResources() override;
@@ -80,7 +79,6 @@ namespace NSG
 		mutable BoundingBox worldBB_;
 		bool occludee_;
 		mutable bool worldBBNeedsUpdate_;
-		PResource resource_;
 		bool serializable_;
 	};
 }

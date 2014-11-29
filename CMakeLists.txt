@@ -91,11 +91,8 @@ list(APPEND LIBRARIES_2_LINK bulletLinearMath)
 ###########################
 # SDL
 ###########################
-if(NOT NACL)
-	add_definitions(-DSDL)
-endif()	
-
-if(NOT NACL AND NOT EMSCRIPTEN) #NACL does not use SDL and EMSCRIPTEN supports/includes SDL 1.2
+add_definitions(-DSDL)
+if(NOT EMSCRIPTEN) #EMSCRIPTEN supports/includes SDL 1.2
 	include (CheckIncludeFiles)	
 	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
 	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})

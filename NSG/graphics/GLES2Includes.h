@@ -25,13 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#if defined(NACL)
-#define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#define glClearDepth glClearDepthf
-#define GL_CLAMP GL_CLAMP_TO_EDGE
-#elif defined(ANDROID)
+#if defined(ANDROID)
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <EGL/eglplatform.h>
@@ -90,14 +84,8 @@ extern PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
 #define GL_MAP_WRITE_BIT GL_MAP_WRITE_BIT_EXT
 #define GL_MAP_FLUSH_EXPLICIT_BIT GL_MAP_FLUSH_EXPLICIT_BIT_EXT
 #define GL_MAP_UNSYNCHRONIZED_BIT GL_MAP_UNSYNCHRONIZED_BIT_EXT
-	#if defined(NACL)
-		#define glVertexAttribDivisor glVertexAttribDivisorANGLE
-		#define glDrawElementsInstanced glDrawElementsInstancedANGLE
-		#define glDrawArraysInstanced glDrawArraysInstancedANGLE
-	#else
-		#define glVertexAttribDivisor glVertexAttribDivisorEXT
-		#define glDrawElementsInstanced glDrawElementsInstancedEXT
-		#define glDrawArraysInstanced glDrawArraysInstancedEXT
-	#endif
+#define glVertexAttribDivisor glVertexAttribDivisorEXT
+#define glDrawElementsInstanced glDrawElementsInstancedEXT
+#define glDrawArraysInstanced glDrawArraysInstancedEXT
 #endif
 

@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Ray.h"
 #include "PointOnSphere.h"
 #include "Keys.h"
+#include "Window.h"
 
 namespace NSG
 {
@@ -43,8 +44,11 @@ namespace NSG
         altKeyDown_ = false;
         shiftKeyDown_ = false;
         SetSphereCenter(true);
+#if 0
+		PWindow window = camera->GetWindow();
+		window_ = window;
 
-		slotMouseMoved_ = app_.signalMouseMoved_->Connect([&](float x, float y)
+		slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
         {
             if (leftButtonDown_ && !updateOrientation_)
                 Move(x, y);
@@ -53,7 +57,7 @@ namespace NSG
         });
 
 
-		slotMouseDown_ = app_.signalMouseDown_->Connect([&](int button, float x, float y)
+		slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
         {
             lastX_ = x;
             lastY_ = y;
@@ -62,13 +66,13 @@ namespace NSG
                 leftButtonDown_ = true;
         });
 
-		slotMouseUp_ = app_.signalMouseUp_->Connect([&](int button, float x, float y)
+		slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
         {
             if (button == NSG_BUTTON_LEFT)
                 leftButtonDown_ = false;
         });
 
-		slotMouseWheel_ = app_.signalMouseWheel_->Connect([&](float x, float y)
+		slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
         {
             Vertex3 lookAtPoint = pointOnSphere_->GetCenter();
 			Vertex3 position = camera_->GetGlobalPosition();
@@ -82,7 +86,7 @@ namespace NSG
             SetPosition(position);
         });
 
-		slotMultiGesture_ = app_.signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+		slotMultiGesture_ = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
         {
             //TRACE_LOG("x=" << x << " y=" << y << " dTheta=" << dTheta << " dDist=" << dDist << " num=" << numFingers);
             if (numFingers == 2)
@@ -103,7 +107,7 @@ namespace NSG
             #endif
         });
 
-		slotKey_ = app_.signalKey_->Connect([&](int key, int action, int modifier)
+		slotKey_ = window->signalKey_->Connect([&](int key, int action, int modifier)
         {
             //        float deltaTime = App::this_->GetDeltaTime();
 
@@ -169,7 +173,7 @@ namespace NSG
             }
         });
 
-		slotUpdate_ = app_.signalUpdate_->Connect([&](float deltaTime)
+		slotUpdate_ = window->signalUpdate_->Connect([&](float deltaTime)
         {
             if (updateOrientation_)
             {
@@ -180,7 +184,7 @@ namespace NSG
                 if (!close)
                 {
                     //animate
-                    float factor = 3 * app_.GetDeltaTime();
+                    float factor = 3 * window->GetDeltaTime();
 					camera_->SetOrientation(glm::slerp(currentOrientation, targetOrientation, factor));
                 }
                 else
@@ -191,6 +195,7 @@ namespace NSG
 
             }
         });
+#endif
     }
 
 	CameraControl::~CameraControl()
@@ -210,7 +215,7 @@ namespace NSG
         }
         else if (shiftKeyDown_)
         {
-            float deltaTime = App::this_->GetDeltaTime();
+            float deltaTime = window_.lock()->GetDeltaTime();
 			Vertex3 position = camera_->GetGlobalPosition();
 			Quaternion q = camera_->GetOrientation();
             q = q * glm::angleAxis(deltaTime * relX * 100, Vertex3(0, 1, 0));

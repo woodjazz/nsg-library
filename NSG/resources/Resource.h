@@ -39,6 +39,7 @@ namespace NSG
 		size_t GetBytes() const { return buffer_.size(); }
         virtual const Path& GetPath() const;
         void ReleaseResources() override;
+        SignalResourceLoaded::PSignal signalLoaded_;
 	protected:
 		virtual bool IsValid() override;
 		std::string buffer_;

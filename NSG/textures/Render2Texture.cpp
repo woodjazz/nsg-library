@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Check.h"
 #include "App.h"
-#include "Context.h"
 #include "Graphics.h"
 #include <algorithm>
 

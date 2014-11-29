@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "InstanceBuffer.h"
 #include "Graphics.h"
 #include "Check.h"
-#include "Context.h"
 
 namespace NSG
 {

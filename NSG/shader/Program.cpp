@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "FragmentShader.h"
 #include "Texture.h"
 #include "Check.h"
-#include "Context.h"
 #include "ExtraUniforms.h"
 #include "Light.h"
 #include "Camera.h"
@@ -120,7 +119,7 @@ namespace NSG
 
     bool Program::IsValid()
     {
-        return App::this_->GetCurrentScene() && (!vertexShader_ || vertexShader_->IsReady()) && (!fragmentShader_ || fragmentShader_->IsReady());
+        return graphics_.GetScene() && (!vertexShader_ || vertexShader_->IsReady()) && (!fragmentShader_ || fragmentShader_->IsReady());
     }
 
     void Program::AllocateResources()
@@ -138,9 +137,7 @@ namespace NSG
 
         bool hasLights = false;
 
-        PScene scene = App::this_->GetCurrentScene();
-
-        CHECK_ASSERT(scene, __FILE__, __LINE__);
+        Scene* scene = graphics_.GetScene();
 
         if (nBones_)
         {
@@ -777,7 +774,7 @@ namespace NSG
 
     void Program::SetCameraVariables()
     {
-        Camera* camera = Camera::GetActiveCamera();
+        Camera* camera = Graphics::this_->GetCamera();
 
         bool update_camera = (viewLoc_ != -1 || viewProjectionLoc_ != -1 || eyeWorldPosLoc_ != -1);
 
@@ -1003,13 +1000,13 @@ namespace NSG
     {
         if (SetSkeletonVariables(mesh->GetSkeleton().get()))
         {
-            PScene scene = App::this_->GetCurrentScene();
-            SetSceneVariables(scene.get());
+			Scene* scene = graphics_.GetScene();
+            SetSceneVariables(scene);
             SetMaterialVariables(material);
             SetNodeVariables(node);
             SetCameraVariables();
             activeNode_ = node;
-            if (SetLightVariables(scene.get()) && pExtraUniforms_)
+            if (SetLightVariables(scene) && pExtraUniforms_)
                 pExtraUniforms_->AssignValues();
         }
     }
@@ -1018,11 +1015,11 @@ namespace NSG
     {
         if (SetSkeletonVariables(mesh->GetSkeleton().get()))
         {
-            PScene scene = App::this_->GetCurrentScene();
-            SetSceneVariables(scene.get());
+			Scene* scene = graphics_.GetScene();
+            SetSceneVariables(scene);
             SetMaterialVariables(material);
             SetCameraVariables();
-            if (SetLightVariables(scene.get()) && pExtraUniforms_)
+            if (SetLightVariables(scene) && pExtraUniforms_)
                 pExtraUniforms_->AssignValues();
         }
     }

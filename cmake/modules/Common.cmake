@@ -16,12 +16,12 @@ macro (setup_common)
         add_definitions(-DIS_TARGET_MOBILE)
     endif()
 
-    if(EMSCRIPTEN OR NACL)
+    if(EMSCRIPTEN)
         set(IS_TARGET_WEB 1)
         add_definitions(-DIS_TARGET_WEB)
     endif()
 
-    if(NACL OR ANDROID OR IOS OR EMSCRIPTEN)
+    if(ANDROID OR IOS OR EMSCRIPTEN)
         set(GLES2 1)
         add_definitions(-DGLES2)
     endif()
@@ -101,22 +101,6 @@ macro (setup_common)
         endif()
     endif()
 
-    if(NACL)
-
-        set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_NDEBUG")
-        set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -D_NDEBUG")
-        set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
-        set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
-
-        if(WIN32)
-            #NaCl libraries on Windows have ".a" extension not ".lib"
-            set(CMAKE_LINK_LIBRARY_SUFFIX "")
-        endif() 
-
-        set(CMAKE_EXECUTABLE_SUFFIX ".pexe")
-
-    endif()
-
 endmacro (setup_common)
 
 macro (setup_common_ios_properties)
@@ -145,33 +129,7 @@ macro (setup_executable)
     file(GLOB hdr "*.h")
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
 
-    if(NACL)
-        
-        add_executable(${PROJECT_NAME} ${src} ${hdr})
-        target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
-        target_link_libraries(${PROJECT_NAME} ppapi_cpp ppapi ppapi_gles2 pthread nacl_io)
-
-        set(nacl_host_dir ${CMAKE_SOURCE_DIR}/host/nacl)
-
-        if(EXISTS "${nacl_host_dir}")
-            add_custom_command(
-                TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${nacl_host_dir} ${CMAKE_CURRENT_BINARY_DIR}
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-            configure_file(${nacl_host_dir}/app_nmf.in ${CMAKE_CURRENT_BINARY_DIR}/app.nmf)
-        endif()
-
-        if(EXISTS "${data_dir}")
-            add_custom_command(
-                TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-        endif()
-
-        pnacl_finalise(${PROJECT_NAME})
-
-    elseif(ANDROID)
+    if(ANDROID)
         
         add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})

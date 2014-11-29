@@ -29,42 +29,7 @@ misrepresented as being the original software.
 #define     NSG_KEY_PRESS       1
 #define     NSG_KEY_REPEAT      2
 
-#if defined(NACL)
-
-#include "ppapi/c/ppb_input_event.h"
-#define     NSG_KEY_MOD_SHIFT       PP_INPUTEVENT_MODIFIER_SHIFTKEY
-#define     NSG_KEY_MOD_CONTROL     PP_INPUTEVENT_MODIFIER_CONTROLKEY
-#define     NSG_KEY_MOD_ALT         PP_INPUTEVENT_MODIFIER_ALTKEY
-
-// Same as Windows (Virtual-key Codes)
-// http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
-#define     NSG_KEY_TAB         0x09
-#define     NSG_KEY_BACKSPACE   0x08
-#define     NSG_KEY_ENTER       0x0D
-#define     NSG_KEY_DELETE      0x2E
-#define     NSG_KEY_RIGHT       0x27
-#define     NSG_KEY_LEFT        0x25
-#define     NSG_KEY_HOME        0x24
-#define     NSG_KEY_END         0x23
-
-#define     NSG_KEY_A         0x41
-#define     NSG_KEY_C         0x43
-#define     NSG_KEY_D         0x44
-#define     NSG_KEY_E         0x45
-#define     NSG_KEY_F         0x46
-#define     NSG_KEY_W         0x57
-#define     NSG_KEY_S         0x53
-#define     NSG_KEY_Q         0x51
-#define     NSG_KEY_LALT      0x12
-#define     NSG_KEY_LSHIFT    0xA0
-
-
-#define     NSG_BUTTON_LEFT     PP_INPUTEVENT_MOUSEBUTTON_LEFT
-#define     NSG_BUTTON_MIDDLE   PP_INPUTEVENT_MOUSEBUTTON_MIDDLE
-#define     NSG_BUTTON_RIGHT    PP_INPUTEVENT_MOUSEBUTTON_RIGHT
-
-
-#elif defined(SDL)
+#if defined(SDL)
 #include "SDL_keycode.h"
 #include "SDL_mouse.h"
 

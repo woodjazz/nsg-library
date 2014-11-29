@@ -23,22 +23,11 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-
 #include "App.h"
-#include "AppConfiguration.h"
-#include "AppStatistics.h"
+#include "SDLWindow.h"
 #include "Log.h"
-#include "IMGUI.h"
-#include "IMGUIContext.h"
-#include "IMGUISkin.h"
-#include "TextMesh.h"
-#include "Check.h"
-#include "Context.h"
-#include "Keyboard.h"
-#include "Graphics.h"
-#include "FrameColorSelection.h"
-#include "AppStatistics.h"
-#include "IMGUIContext.h"
+#include "Keys.h"
+#include "AppConfiguration.h"
 #include "Graphics.h"
 #include "Scene.h"
 #include "BoxMesh.h"
@@ -56,150 +45,144 @@ misrepresented as being the original software.
 #include "RigidBody.h"
 #include "ResourceFileManager.h"
 #include "TextureFileManager.h"
-#if NACL
-#include "ppapi/cpp/var.h"
-#endif
+#include "Object.h"
+#include "Keyboard.h"
+#include "Audio.h"
+#include "AppStatistics.h"
+#include "Check.h"
+#include "Texture.h"
+#include "UTF8String.h"
+#include "SDL.h"
+#undef main
+
+#include <algorithm>
 #include <sstream>
+#include <thread>
+#ifndef __GNUC__
+#include <codecvt>
+#endif
+
+#if EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 namespace NSG
 {
     template <> App* Singleton<App>::this_ = nullptr;
 
     App::App()
-        : width_(0),
-          height_(0),
-          argc_(0),
-          argv_(nullptr),
-          signalViewChanged_(new Signal<int, int>()),
-          signalMouseMoved_(new Signal<float, float>()),
-          signalMouseDown_(new Signal<int, float, float>()),
-          signalMouseUp_(new Signal<int, float, float>()),
-          signalMouseWheel_(new Signal<float, float>()),
-          signalKey_(new Signal<int, int, int>()),
-          signalChar_(new Signal<unsigned int>()),
-          signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
-          signalStart_(new Signal<int, char**>()),
-          signalUpdate_(new Signal<float>())
+        : configuration_(new AppConfiguration),
+          keyboard_(new Keyboard),
+          nWindows2Remove_(0),
+          mainWindow_(nullptr)
     {
-        context_ = PContext(new Context);
-        configuration_ = PAppConfiguration(new AppConfiguration);
-    }
+        CHECK_ASSERT(SDL_WasInit(SDL_INIT_VIDEO) == 0, __FILE__, __LINE__);
 
-    App::App(PAppConfiguration configuration)
-        : width_(0),
-          height_(0)
-    {
-        context_ = PContext(new Context);
-        configuration_ = configuration;
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE))
+            TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
+
+        SDL_GL_SetSwapInterval(configuration_->vertical_sync_ ? 1 : 0);
+
+        basePath_ = Path::GetCurrentDir();
+
+        TRACE_LOG("Base path is: " << basePath_);
+
+        resourceFileManager_ = PResourceFileManager(new ResourceFileManager);
+
+        textureFileManager_ = PTextureFileManager(new TextureFileManager);
+
+        audio_ = PAudio(new Audio);
     }
 
     App::~App()
     {
-        App::this_ = nullptr;
-        TRACE_LOG("App Terminated");
+        ClearAll();
+        Singleton<App>::this_ = nullptr;
     }
 
-    void App::ViewChanged(int width, int height)
+    void App::InitializeGraphics()
     {
-        if (width_ != width || height_ != height)
+        if (!graphics_)
         {
-            width_ = width;
-            height_ = height;
-
-            signalViewChanged_->Run(width, height);
+            graphics_ = PGraphics(new Graphics);
+            statistics_ = PAppStatistics(new AppStatistics);
+            graphics_->InitializeBuffers();
         }
     }
 
-    bool App::ShallExit() const
+    void App::ClearAll()
     {
-        return false;
+        resourceFileManager_ = nullptr;
+        textureFileManager_ = nullptr;
+        scenes_.Clear();
+        meshes_.Clear();
+        materials_.Clear();
+        programs_.Clear();
+        whiteTexture_ = nullptr;
+        statistics_ = nullptr;
+        graphics_ = nullptr;
     }
 
-    void App::AppEnterBackground()
+
+    void App::AddObject(Object* object)
     {
-        if (Music::this_ && configuration_->pauseMusicOnBackground_)
-            Music::this_->Pause();
+        CHECK_CONDITION(objects_.insert(object).second, __FILE__, __LINE__);
     }
 
-    void App::AppEnterForeground()
+    void App::RemoveObject(Object* object)
     {
-        if (Music::this_ && configuration_->pauseMusicOnBackground_)
-            Music::this_->Resume();
+        CHECK_CONDITION(objects_.erase(object), __FILE__, __LINE__);
     }
 
-    void App::Start(int argc, char* argv[])
+    void App::InvalidateObjects()
     {
-		signalStart_->Run(argc, argv);
+        TRACE_LOG("App::InvalidateObjects...");
+
+        for (auto& obj : objects_)
+            obj->Invalidate();
+
+        graphics_->ResetCachedState();
+
+        TRACE_LOG("App::InvalidateObjects done");
     }
 
-    void App::RenderFrame()
+    PTexture App::GetWhiteTexture()
     {
-		if (currentScene_)
-			currentScene_->Render();
-    }
-
-    void App::Update()
-    {
-		signalUpdate_->Run(deltaTime_);
-		if (currentScene_)
-			currentScene_->Update(deltaTime_);
-    }
-
-    void App::DropFile(const std::string& filePath)
-    {
-        TRACE_LOG("Dropped file:" << filePath);
-    }
-
-    void App::SetCommandLineParameters(int argc, char* argv[])
-    {
-        argc_ = argc;
-        argv_ = argv;
-    }
-
-    std::pair<int, int> App::GetViewSize() const
-    {
-        return std::pair<int, int>(width_, height_);
-    }
-
-    float App::GetDeltaTime() const
-    {
-        return deltaTime_;
-    }
-
-    void App::SetAssetManager(AAssetManager* pAAssetManager)
-    {
-        pAAssetManager_ = pAAssetManager;
-    }
-
-    AAssetManager* App::GetAssetManager()
-    {
-        return pAAssetManager_;
-    }
-
-    void App::HandleMessage(const pp::Var& var_message)
-    {
-        #if NACL
-        TRACE_LOG("App::HandleMessage");
-
-        if (var_message.is_string())
+        if (!whiteTexture_)
         {
-            std::string message = var_message.AsString();
+            const int WIDTH = 1;
+            const int HEIGHT = 1;
+            // Creates 1x1 white texture
+            static unsigned char img[WIDTH * HEIGHT * 3];
+            memset(&img[0], 0xFF, sizeof(img));
+            whiteTexture_ = PTexture(new Texture(GL_RGB, WIDTH, HEIGHT, (char*)&img[0]));
+            TRACE_LOG("White texture has been generated.");
+        }
+
+        return whiteTexture_;
+    }
+
+
+    PWindow App::GetOrCreateWindow(const std::string& name, int x, int y, int width, int height)
+    {
+        #if defined(IS_TARGET_MOBILE) || defined(IS_TARGET_WEB)
+        {
+            if (windows_.size())
+            {
+                TRACE_LOG("Only one window is allowed for this platform!!!");
+                return nullptr;
+            }
         }
         #endif
-    }
-    void App::DoTick(float delta)
-    {
-        deltaTime_ = delta;
-        IMGUI::DoTick();
-        Update();
+
+        auto window = PWindow(new SDLWindow(name, x, y, width, height));
+        windows_.push_back(window);
+        return window;
     }
 
     PScene App::GetOrCreateScene(const std::string& name)
     {
-        PScene scene = scenes_.GetOrCreate(name);
-        if(!currentScene_)
-            currentScene_ = scene;
-        return scene;
+        return scenes_.GetOrCreate(name);
     }
 
     PBoxMesh App::CreateBoxMesh(float width, float height, float depth, int resX, int resY, int resZ)
@@ -270,13 +253,6 @@ namespace NSG
         return mesh;
     }
 
-    PTextMesh App::CreateTextMesh(const std::string& textureFilename, bool dynamic)
-    {
-        PTextMesh mesh = meshes_.CreateClass<TextMesh>(textureFilename);
-        mesh->SetDynamic(dynamic);
-        return mesh;
-    }
-
     PMaterial App::CreateMaterial(const std::string& name)
     {
         return materials_.Create(name);
@@ -289,7 +265,7 @@ namespace NSG
 
     PResourceFile App::GetOrCreateResourceFile(const Path& path)
     {
-        return ResourceFileManager::this_->GetOrCreate(path);
+        return resourceFileManager_->GetOrCreate(path);
     }
 
     PTexture App::GetOrCreateTextureFile(const Path& path, TextureFlags flags)
@@ -300,6 +276,14 @@ namespace NSG
     PProgram App::GetOrCreateProgram(const std::string& name)
     {
         return programs_.GetOrCreate(name);
+    }
+
+	PTextMesh App::CreateTextMesh(const std::string& name, PFontAtlasTexture atlas, bool dynamic)
+    {
+        PTextMesh mesh = meshes_.CreateClass<TextMesh>(name);
+		mesh->SetAtlas(atlas);
+        mesh->SetDynamic(dynamic);
+        return mesh;
     }
 
     const std::vector<PMesh>& App::GetMeshes() const
@@ -350,145 +334,260 @@ namespace NSG
         return idx;
     }
 
-    void App::ClearAll()
+    void App::SetMainWindow(Window* window)
     {
-        currentScene_ = nullptr;
-        scenes_.Clear();
-        meshes_.Clear();
-        materials_.Clear();
-        programs_.Clear();
+        if (!mainWindow_)
+            mainWindow_ = window;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    InternalApp::InternalApp(App* pApp)
-        : Tick(pApp->configuration_->fps_),
-          pApp_(pApp)
+    void App::RenderFrame(void* data)
     {
+        App* pThis = (App*)data;
+
+        #if IOS
+        if (pThis->mainWindow_->IsClosed())
+        {
+            SDL_Quit();
+            exit(0); //force quit on IOS
+        }
+        #endif
+
+        if (!pThis->mainWindow_->IsMinimized())
+        {
+            pThis->resourceFileManager_->IsReady();
+            #if defined(EMSCRIPTEN) || defined(IOS)
+            pThis->HandleEvents();
+            #endif
+            for (auto& obj : pThis->windows_)
+            {
+                PWindow window(obj.lock());
+                if (!window || window->IsClosed())
+                    break;
+                window->RenderFrame();
+            }
+        }
+        else
+        {
+            std::this_thread::sleep_for(Milliseconds(1000));
+        }
     }
 
-    InternalApp::~InternalApp()
+    int App::Run()
     {
-        pApp_ = nullptr;
+        if (windows_.empty())
+            return 0;
+
+        #if IOS
+        {
+            SDL_iPhoneSetAnimationCallback(mainWindow_->GetSDLWindow(), 1, &RenderFrame, this);
+        }
+        #elif EMSCRIPTEN
+        {
+            SDL_StartTextInput();
+            emscripten_set_main_loop_arg(&RenderFrame, this, 0, 1);
+            emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+        }
+        #else
+        {
+            while (windows_.size())
+            {
+                SDL_GL_MakeCurrent(mainWindow_->GetSDLWindow(), mainWindow_->GetSDLContext());
+                HandleEvents();
+                App::RenderFrame(this);
+                while (nWindows2Remove_)
+                {
+                    windows_.erase(std::remove_if(windows_.begin(), windows_.end(), [&](PWeakWindow window)
+                    {
+                        if (!window.lock() || window.lock()->IsClosed())
+                        {
+                            --nWindows2Remove_;
+                            return true;
+                        }
+                        return false;
+                    }), windows_.end());
+                }
+            }
+        }
+        #endif
+
+        return 0;
     }
 
-    void InternalApp::InitializeTicks()
+    void App::HandleEvents()
     {
-        Context::this_->Initialize();
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            #if !defined(EMSCRIPTEN)
+            auto it = std::find_if(windows_.begin(), windows_.end(), [&](PWeakWindow window) { return window.lock() && SDL_GetWindowID(window.lock()->GetSDLWindow()) == event.window.windowID; });
+            if (it == windows_.end())
+                continue;
+            PWindow window(it->lock());
+            if (!window)
+                continue;
+            int width;
+            int height;
+            SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+            #else
+            Window* window = mainWindow_;
+            int width = window->GetWidth();
+            int height = window->GetHeight();
+            #endif
 
-        TRACE_PRINTF("--- Begin Start ---\n");
+            if (event.type == SDL_WINDOWEVENT)
+            {
+                switch (event.window.event)
+                {
+                    case SDL_WINDOWEVENT_CLOSE:
+                        window->Close();
+                        break;
+                    case SDL_WINDOWEVENT_MINIMIZED:
+                        window->EnterBackground();
+                        break;
+                    case SDL_WINDOWEVENT_MAXIMIZED:
+                        window->EnterForeground();
+                        break;
 
-        pApp_->Start(pApp_->argc_, pApp_->argv_);
+                        #if !EMSCRIPTEN
+                    case SDL_WINDOWEVENT_RESIZED:
+                    case SDL_WINDOWEVENT_RESTORED:
+                        {
+                            window->EnterForeground();
+                            window->ViewChanged(width, height);
+                            break;
+                        }
+                        #endif
+                    default:
+                        break;
+                }
+            }
+            #if EMSCRIPTEN
+            else if (event.type == SDL_VIDEORESIZE)
+            {
+                SDL_ResizeEvent* r = (SDL_ResizeEvent*)&event;
+                int width = r->w;
+                int height = r->h;
+                window->ViewChanged(width, height);
+            }
+            #else
+            else if (event.type == SDL_APP_DIDENTERBACKGROUND)
+            {
+                window->EnterBackground();
+            }
+            else if (event.type == SDL_APP_DIDENTERFOREGROUND)
+            {
+                window->EnterForeground();
+            }
+            else if (event.type == SDL_DROPFILE)
+            {
+                window->DropFile(event.drop.file);
+                SDL_free(event.drop.file);
+            }
+            #endif
+            else if (event.type == SDL_QUIT)
+            {
+                window->Close();
+            }
+            else if (event.type == SDL_KEYDOWN)
+            {
+                int key = event.key.keysym.sym;
 
-        TRACE_PRINTF("--- End Start ---\n");
+                #if ANDROID
+                {
+                    if (key == SDLK_AC_BACK)
+                        window->Close();
+                }
+                #endif
+
+                //int scancode = event.key.keysym.scancode;
+                int action = NSG_KEY_PRESS;
+                int modifier = event.key.keysym.mod;
+                window->OnKey(key, action, modifier);
+            }
+            else if (event.type == SDL_KEYUP)
+            {
+                int key = event.key.keysym.sym;
+                //int scancode = event.key.keysym.scancode;
+                int action = NSG_KEY_RELEASE;
+                int modifier = event.key.keysym.mod;
+                window->OnKey(key, action, modifier);
+            }
+            else if (event.type == SDL_TEXTINPUT)
+            {
+                #ifndef __GNUC__
+                {
+                    std::string utf8(event.text.text);
+                    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
+                    std::u16string utf16 = utf16conv.from_bytes(utf8);
+                    for (char16_t c : utf16)
+                    {
+                        window->OnChar((unsigned int)c);
+                    }
+                }
+                #else
+                {
+                    UTF8String utf8(event.text.text);
+                    unsigned unicode = utf8.AtUTF8(0);
+                    if (unicode)
+                    {
+                        window->OnChar(unicode);
+                    }
+                }
+                #endif
+            }
+            else if (event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                float x = (float)event.button.x;
+                float y = (float)event.button.y;
+                window->OnMouseDown(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
+            }
+            else if (event.type == SDL_MOUSEBUTTONUP)
+            {
+                float x = (float)event.button.x;
+                float y = (float)event.button.y;
+                window->OnMouseUp(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
+            }
+            else if (event.type == SDL_MOUSEMOTION)
+            {
+                if (width > 0 && height > 0)
+                {
+                    float x = (float)event.motion.x;
+                    float y = (float)event.motion.y;
+                    window->OnMouseMove(-1 + 2 * x / width, 1 + -2 * y / height);
+                }
+            }
+            else if (event.type == SDL_MOUSEWHEEL)
+            {
+                window->OnMouseWheel((float)event.wheel.x, (float)event.wheel.y);
+            }
+            else if (event.type == SDL_FINGERDOWN)
+            {
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                window->OnMouseDown(0, -1 + 2 * x, 1 + -2 * y);
+            }
+            else if (event.type == SDL_FINGERUP)
+            {
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                window->OnMouseUp(0, -1 + 2 * x, 1 + -2 * y);
+            }
+            else if (event.type == SDL_FINGERMOTION)
+            {
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                window->OnMouseMove(-1 + 2 * x, 1 + -2 * y);
+            }
+            #if !defined(EMSCRIPTEN)
+            else if (event.type == SDL_MULTIGESTURE)
+            {
+                float x = event.mgesture.x;
+                float y = event.mgesture.y;
+
+                window->OnMultiGesture(event.mgesture.timestamp, -1 + 2 * x, 1 + -2 * y, event.mgesture.dTheta, event.mgesture.dDist, (int)event.mgesture.numFingers);
+            }
+            #endif
+        }
     }
-
-    void InternalApp::BeginTicks()
-    {
-        Graphics::this_->BeginFrame();
-    }
-
-    void InternalApp::DoTick(float delta)
-    {
-        pApp_->DoTick(delta);
-    }
-
-    void InternalApp::EndTicks()
-    {
-        Graphics::this_->ClearAllBuffers();
-        pApp_->RenderFrame();
-        UniformsUpdate::ClearAllUpdates();
-        IMGUI::Context::this_->RenderGUI();
-        Graphics::this_->EndFrame();
-    }
-
-    void InternalApp::ViewChanged(int width, int height)
-    {
-        pApp_->ViewChanged(width, height);
-    }
-
-    void InternalApp::OnMouseMove(float x, float y)
-    {
-        pApp_->signalMouseMoved_->Run(x, y);
-    }
-
-    void InternalApp::OnMouseDown(int button, float x, float y)
-    {
-        pApp_->signalMouseDown_->Run(button, x, y);
-    }
-
-    void InternalApp::OnMouseUp(int button, float x, float y)
-    {
-        pApp_->signalMouseUp_->Run(button, x, y);
-    }
-
-    void InternalApp::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-    {
-        pApp_->signalMultiGesture_->Run(timestamp, x, y, dTheta, dDist, numFingers);
-    }
-
-    void InternalApp::OnMouseWheel(float x, float y)
-    {
-        pApp_->signalMouseWheel_->Run(x, y);
-    }
-
-    void InternalApp::OnKey(int key, int action, int modifier)
-    {
-        pApp_->signalKey_->Run(key, action, modifier);
-    }
-
-    void InternalApp::OnChar(unsigned int character)
-    {
-        pApp_->signalChar_->Run(character);
-    }
-
-    void InternalApp::RenderFrame()
-    {
-        PerformTicks();
-
-        AppStatistics::this_->NewFrame();
-    }
-
-    bool InternalApp::ShallExit() const
-    {
-        return pApp_->ShallExit();
-    }
-
-    void InternalApp::AppEnterBackground()
-    {
-        pApp_->AppEnterBackground();
-    }
-
-    void InternalApp::AppEnterForeground()
-    {
-        pApp_->AppEnterForeground();
-    }
-
-    void InternalApp::InvalidateContext()
-    {
-        Context::this_->InvalidateObjects();
-    }
-
-    void InternalApp::HandleMessage(const pp::Var& var_message)
-    {
-        pApp_->HandleMessage(var_message);
-    }
-
-    void InternalApp::SetAssetManager(AAssetManager* pAAssetManager)
-    {
-        pApp_->SetAssetManager(pAAssetManager);
-    }
-
-    void InternalApp::SetActivity(ANativeActivity* pActivity)
-    {
-        Keyboard::this_->SetActivity(pActivity);
-    }
-
-    void InternalApp::DropFile(const std::string& filePath)
-    {
-        pApp_->DropFile(filePath);
-    }
-
 }
+

@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Check.h"
 #include <functional>
+#include <algorithm>
 #include <memory>
 #include <vector>
 

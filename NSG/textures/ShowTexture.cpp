@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Material.h"
 #include "PlaneMesh.h"
-#include "Context.h"
 #include "Camera.h"
 #include "Pass.h"
 #include "Graphics.h"
@@ -79,14 +78,15 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            Camera* pCurrent = Camera::Deactivate();
+			Camera* pCurrent = Graphics::this_->GetCamera();
+			Graphics::this_->SetCamera(nullptr);
 
             Graphics::this_->Set(material_.get());
             Graphics::this_->SetNode(node_.get());
             Graphics::this_->Set(mesh_.get());
             pass_->Render();
 
-            Camera::Activate(pCurrent);
+			Graphics::this_->SetCamera(pCurrent);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }

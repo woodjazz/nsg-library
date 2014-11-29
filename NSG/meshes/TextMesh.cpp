@@ -24,22 +24,22 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "TextMesh.h"
-#include "FontAtlasTextureManager.h"
 #include "Program.h"
 #include "FontAtlasTexture.h"
 #include "Graphics.h"
-#include "Context.h"
 #include "App.h"
 #include "ResourceMemory.h"
+#include "Window.h"
+#include "SignalSlots.h"
 #include <algorithm>
 
 namespace NSG
 {
-    TextMesh::TextMesh(const std::string& textureFilename)
-        : Mesh(textureFilename, true),
+    TextMesh::TextMesh(const std::string& name)
+        : Mesh(name, true),
           screenWidth_(0),
           screenHeight_(0),
-          textureFilename_(textureFilename),
+		  textureFilename_(name),
           hAlignment_(LEFT_ALIGNMENT),
           vAlignment_(BOTTOM_ALIGNMENT),
           alignmentOffsetX_(0),
@@ -47,22 +47,22 @@ namespace NSG
           maxLength_(0)
     {
         SetSerializable(false);
-		if (textureFilename.empty())
-			pProgram_ = App::this_->GetOrCreateProgram("NSGInternalTextProgram");
-		else
-			pProgram_ = App::this_->GetOrCreateProgram(textureFilename);
-		pProgram_->SetFlags((int)ProgramFlag::TEXT);
-        pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
-
-		slotViewChanged_ = App::this_->signalViewChanged_->Connect([&](int width, int height)
-		{
-			Invalidate();
-		});
+        pProgram_ = App::this_->GetOrCreateProgram("NSGInternalTextProgram");
+        pProgram_->SetFlags((int)ProgramFlag::TEXT);
     }
 
     TextMesh::~TextMesh()
     {
     }
+
+	void TextMesh::SetAtlas(PFontAtlasTexture atlas)
+	{
+		if (pAtlas_ != atlas)
+		{
+			pAtlas_ = atlas;
+			Invalidate();
+		}
+	}
 
     bool TextMesh::Has(const std::string& textureFilename) const
     {
@@ -71,7 +71,7 @@ namespace NSG
 
     bool TextMesh::IsValid()
     {
-        return pProgram_->IsReady() && pAtlas_->IsReady() && !vertexsData_.empty();
+		return pAtlas_ && pAtlas_->IsReady() && pProgram_->IsReady();
     }
 
     void TextMesh::UpdateBuffers()
@@ -99,6 +99,8 @@ namespace NSG
 
     void TextMesh::AllocateResources()
     {
+		pAtlas_->GenerateMesh(text_, vertexsData_, indexes_, screenWidth_, screenHeight_);
+
         CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
         CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
 
@@ -163,23 +165,19 @@ namespace NSG
 
     bool TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
     {
+		bool changed = false;
+
         if (text.size() > maxLength_)
         {
             maxLength_ = text.size();
-            Invalidate();
-            return false;;
+			changed = true;
         }
 
-        bool changed = false;
-
-        if (text_ != text)
+		if (text_ != text)
         {
-            if (pAtlas_->GenerateMesh(text, vertexsData_, indexes_, screenWidth_, screenHeight_))
-            {
-                text_ = text;
+            text_ = text;
 
-                changed = true;
-            }
+            changed = true;
         }
 
         if (changed || hAlign != hAlignment_ || vAlign != vAlignment_)
@@ -204,13 +202,10 @@ namespace NSG
             changed = true;
         }
 
-        if (changed && IsReady())
-        {
-            UpdateBuffers();
-            return true;
-        }
+		if (changed)
+			Invalidate();
 
-        return false;
+		return changed;
     }
 
     GLenum TextMesh::GetWireFrameDrawMode() const
@@ -225,7 +220,7 @@ namespace NSG
 
     size_t TextMesh::GetNumberOfTriangles() const
     {
-        return vertexsData_.size()/3;
+        return vertexsData_.size() / 3;
     }
 
 }

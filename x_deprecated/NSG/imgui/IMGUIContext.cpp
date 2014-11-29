@@ -66,6 +66,7 @@ namespace NSG
             transparentAreaStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
 
+			/*
 			auto size = App::this_->GetViewSize();
 			viewport_.z = size.first;
 			viewport_.w = size.second;
@@ -75,6 +76,7 @@ namespace NSG
                 viewport_.z = width;
                 viewport_.w = height;
             });
+			*/
         }
 
         Context::~Context()

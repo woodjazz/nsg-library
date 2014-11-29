@@ -42,8 +42,6 @@ namespace NSG
 		ResourceFile(const Path& path);
 		Path path_;
 		bool trySecondTime_;
-		NaCl::PNaClURLLoader pLoader_;
-		AAssetManager* pAAssetManager_;
 		friend class ResourceFileManager;
 	};
 }

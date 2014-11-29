@@ -24,23 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
-#include <vector>
-#include <string>
-#include <map>
 #include "GLES2Includes.h"
 #include "SharedPointers.h"
 #include "Mesh.h"
 #include "FontAtlasTexture.h"
 #include "Types.h"
+#include <memory>
+#include <vector>
+#include <string>
+#include <map>
 
 namespace NSG
 {
     class TextMesh : public Mesh
     {
     public:
-		TextMesh(const std::string& textureFilename);
+		TextMesh(const std::string& name);
         ~TextMesh();
+		void SetAtlas(PFontAtlasTexture atlas);
         bool Has(const std::string& textureFilename) const;
         bool SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
         GLfloat GetWidth() const { return screenWidth_; }

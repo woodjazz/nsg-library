@@ -2,7 +2,6 @@
 #include "Mesh.h"
 #include "Check.h"
 #include "Camera.h"
-#include "Context.h"
 #include "Texture.h"
 #include "Scene.h"
 #include "Graphics.h"

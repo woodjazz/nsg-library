@@ -32,16 +32,16 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Graphics.h"
 #include "Pass.h"
-#include "Context.h"
 #include "Material.h"
 #include "Technique.h"
 #include "Mesh.h"
 #include "Program.h"
+#include "Window.h"
 #include "App.h"
 
 namespace NSG
 {
-    FrameColorSelection::FrameColorSelection(UseBuffer buffer)
+	FrameColorSelection::FrameColorSelection(PWindow window, UseBuffer buffer)
         : app_(*App::this_),
 		buffer_(buffer),
 		material_(app_.GetOrCreateMaterial("NSGFrameColorSelection")),
@@ -51,9 +51,8 @@ namespace NSG
           pixelY_(0)
     {
 
-        std::pair<int, int> windowSize = App::this_->GetViewSize();
-        windowWidth_ = windowSize.first;
-        windowHeight_ = windowSize.second;
+		windowWidth_ = window->GetWidth();
+		windowHeight_ = window->GetHeight();
 
         unsigned int frameBufferFlags = FrameBuffer::COLOR;
         if (buffer_ == UseBuffer::DEPTH)

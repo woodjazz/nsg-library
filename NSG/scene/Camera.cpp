@@ -35,13 +35,13 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "ShowTexture.h"
 #include "Render2Texture.h"
+#include "Window.h"
+#include "SignalSlots.h"
 #include "pugixml.hpp"
 #include <sstream>
 
 namespace NSG
 {
-    Camera* activeCamera = nullptr;
-
     Camera::Camera(const std::string& name)
         : SceneNode(name),
           fovy_(glm::radians(45.0f)),
@@ -54,42 +54,44 @@ namespace NSG
           isOrtho_(false),
           orthoCoords_(-1.0f, 1.0f, -1.0f, 1.0f),
           cameraIsDirty_(false),
-          graphics_(Graphics::this_)
+          graphics_(Graphics::this_),
+          viewWidth_(0),
+          viewHeight_(0),
+          aspectRatio_(1)
     {
-        viewWidth_ = app_.GetViewSize().first;
-        viewHeight_ = app_.GetViewSize().second;
-        CHECK_ASSERT(viewHeight_ > 0, __FILE__, __LINE__);
-        aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
         SetInheritScale(false);
         UpdateProjection();
-
-		slotViewChanged_ = App::this_->signalViewChanged_->Connect([&](int width, int height)
-		{
-			if (viewWidth_ != width || viewHeight_ != height)
-			{
-				viewWidth_ = width;
-				viewHeight_ = height;
-				if (viewHeight_ > 0)
-					aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
-				else
-					aspectRatio_ = 1;
-
-				UpdateProjection();
-
-				if (render2Texture_)
-				{
-					PRender2Texture newRender2Texture = std::make_shared<Render2Texture>(viewWidth_, viewHeight_);
-					for (auto& filter : filters_)
-						if (filter->GetInputTexture() == render2Texture_->GetTexture())
-							filter->SetInputTexture(newRender2Texture->GetTexture());
-					SetRender2Texture(newRender2Texture);
-				}
-			}
-		});
     }
 
     Camera::~Camera()
     {
+    }
+
+    void Camera::SetAspectRatio(int width, int height)
+    {
+        if(viewWidth_ != width || viewHeight_ != height)
+        {
+            viewWidth_ = width;
+            viewHeight_ = height;
+            if(height > 0)
+                aspectRatio_ = static_cast<float>(width) / height;
+            else
+                aspectRatio_ = 1;
+
+            UpdateProjection();
+
+            if (render2Texture_)
+            {
+                PRender2Texture newRender2Texture = std::make_shared<Render2Texture>(viewWidth_, viewHeight_);
+                for (auto& filter : filters_)
+                    if (filter->GetInputTexture() == render2Texture_->GetTexture())
+                        filter->SetInputTexture(newRender2Texture->GetTexture());
+                SetRender2Texture(newRender2Texture);
+            }
+
+            if(graphics_->GetCamera() == this)
+                graphics_->SetViewport(GetViewport());
+        }
     }
 
     void Camera::EnableOrtho()
@@ -122,7 +124,7 @@ namespace NSG
 
     float Camera::GetVerticalFov(float hhfov) const
     {
-        return 2 * atan(tan(hhfov) * viewHeight_ / viewWidth_);
+        return 2 * atan(tan(hhfov) * aspectRatio_);
     }
 
     void Camera::SetHalfHorizontalFov(float hhfov)
@@ -163,29 +165,6 @@ namespace NSG
         }
     }
 
-    Camera* Camera::Deactivate()
-    {
-        Camera* pCurrent = activeCamera;
-        activeCamera = nullptr;
-        return pCurrent;
-    }
-
-    Camera* Camera::Activate(Camera* pCamera)
-    {
-        Camera* pCurrent = Camera::Deactivate();
-
-        if (pCamera)
-            pCamera->Activate();
-
-        return pCurrent;
-
-    }
-
-    Camera* Camera::GetActiveCamera()
-    {
-        return activeCamera;
-    }
-
     void Camera::SetViewportFactor(float xo, float yo, float xf, float yf)
     {
         xo_ = xo;
@@ -197,13 +176,6 @@ namespace NSG
     Recti Camera::GetViewport() const
     {
         return Recti((GLsizei)(viewWidth_ * xo_), (GLsizei)(viewHeight_ * yo_), (GLsizei)(viewWidth_ * xf_), (GLsizei)(viewHeight_ * yf_));
-    }
-
-    void Camera::Activate()
-    {
-        activeCamera = this;
-
-        Graphics::this_->SetViewport(GetViewport());
     }
 
     void Camera::UpdateProjection() const
@@ -265,9 +237,9 @@ namespace NSG
 
     const Matrix4& Camera::GetMatViewProj()
     {
-        if (activeCamera)
+        if (Graphics::this_->GetCamera())
         {
-            return activeCamera->GetMatViewProjection();
+            return Graphics::this_->GetCamera()->GetMatViewProjection();
         }
         else
         {
@@ -277,9 +249,9 @@ namespace NSG
 
     Matrix4 Camera::GetModelViewProjection(const Node* pNode)
     {
-        if (activeCamera)
+        if (Graphics::this_->GetCamera())
         {
-            return activeCamera->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
+            return Graphics::this_->GetCamera()->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
         }
         else
         {
@@ -298,9 +270,9 @@ namespace NSG
 
     Matrix4 Camera::GetInverseView()
     {
-        if (activeCamera)
+        if (Graphics::this_->GetCamera())
         {
-            return activeCamera->GetInverseViewMatrix();
+            return Graphics::this_->GetCamera()->GetInverseViewMatrix();
         }
         else
         {
@@ -310,9 +282,9 @@ namespace NSG
 
     const Matrix4& Camera::GetViewMatrix()
     {
-        if (activeCamera)
+        if (Graphics::this_->GetCamera())
         {
-            return activeCamera->GetView();
+            return Graphics::this_->GetCamera()->GetView();
         }
         else
         {
@@ -487,7 +459,7 @@ namespace NSG
 
     void Camera::AddBlurFilter(int output_width, int output_height)
     {
-        if(!render2Texture_)
+        if (!render2Texture_)
             SetRender2Texture(std::make_shared<Render2Texture>(viewWidth_, viewHeight_));
 
         PFilterBlur blur;
@@ -501,8 +473,8 @@ namespace NSG
 
     void Camera::AddBlendFilter(int output_width, int output_height)
     {
-		if (!render2Texture_)
-			SetRender2Texture(std::make_shared<Render2Texture>(viewWidth_, viewHeight_, UseBuffer::DEPTH));
+        if (!render2Texture_)
+            SetRender2Texture(std::make_shared<Render2Texture>(viewWidth_, viewHeight_, UseBuffer::DEPTH));
 
         CHECK_ASSERT(filters_.size() > 0, __FILE__, __LINE__);
         PFilterBlend blend;
@@ -519,9 +491,9 @@ namespace NSG
 
     PFilter Camera::AddUserFilter(PResource fragmentShader, int output_width, int output_height)
     {
-		if (!render2Texture_)
-			SetRender2Texture(std::make_shared<Render2Texture>(viewWidth_, viewHeight_));
-        
+        if (!render2Texture_)
+            SetRender2Texture(std::make_shared<Render2Texture>(viewWidth_, viewHeight_));
+
         PFilter filter;
 
         if (filters_.empty())
@@ -551,14 +523,14 @@ namespace NSG
         }
         else
         {
-			graphics_->Render(this);
+            graphics_->Render();
         }
     }
 
     void Camera::Render(PRender2Texture render2Texture)
     {
         render2Texture->Begin();
-		graphics_->Render(this);
+        graphics_->Render();
         render2Texture->End();
         for (auto& filter : filters_)
             filter->Render();
@@ -566,7 +538,7 @@ namespace NSG
 
     void Camera::SetRender2Texture(PRender2Texture render2Texture)
     {
-        if(render2Texture)
+        if (render2Texture)
         {
             render2Texture_ = render2Texture;
             showTexture_ = PShowTexture(new ShowTexture);

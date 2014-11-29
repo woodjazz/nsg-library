@@ -68,12 +68,14 @@ namespace NSG
         Buffer* GetIndexBuffer() const { return indexBuffer_; }
         bool SetProgram(Program* program);
         Program* GetProgram() const { return activeProgram_; }
+        void SetScene(Scene* scene) { activeScene_ = scene; }
+        Scene* GetScene() const { return activeScene_; }
+        void SetCamera(Camera* camera);
+        Camera* GetCamera() const { return activeCamera_; }
         void SetFrameBuffer(GLuint value);
         bool Draw(bool solid);
         bool Draw(bool solid, Batch& batch);
         void DiscardFramebuffer();
-        void BeginFrame();
-        void EndFrame();
         bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
         bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
         bool HasDepthTexture() const { return has_depth_texture_ext_; }
@@ -94,7 +96,7 @@ namespace NSG
         void Set(Material* material) { activeMaterial_ = material; }
         void SetNode(Node* node) { activeNode_ = node; }
         void Render(Batch& batch);
-		void Render(Camera* camera);
+		void Render();
         bool IsTextureSizeCorrect(unsigned width, unsigned height);
         void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
         GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
@@ -117,6 +119,8 @@ namespace NSG
         Mesh* activeMesh_; // mesh that is going to be drawn
         Material* activeMaterial_; //material that is going to be used to draw
         Node* activeNode_; //node that is going to be used to draw
+        Scene* activeScene_;
+        Camera* activeCamera_;
         bool has_discard_framebuffer_ext_;
         bool has_vertex_array_object_ext_;
         bool has_map_buffer_range_ext_;

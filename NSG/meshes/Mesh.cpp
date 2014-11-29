@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "App.h"
 #include "Graphics.h"
-#include "Context.h"
 #include "VertexArrayObj.h"
 #include "InstanceBuffer.h"
 #include "AppStatistics.h"

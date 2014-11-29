@@ -95,6 +95,8 @@ namespace NSG
           activeMesh_(nullptr),
           activeMaterial_(nullptr),
           activeNode_(nullptr),
+          activeScene_(nullptr),
+          activeCamera_(nullptr),
           has_discard_framebuffer_ext_(false),
           has_vertex_array_object_ext_(false),
           has_map_buffer_range_ext_(false),
@@ -105,7 +107,7 @@ namespace NSG
           has_packed_depth_stencil_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT),
-          maxVaryingVectors_(0)
+          maxVaryingVectors_(-1)
     {
 
         #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -124,7 +126,8 @@ namespace NSG
         TRACE_LOG("GL_SHADING_LANGUAGE_VERSION = " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
         TRACE_LOG("GL_EXTENSIONS = " << (const char*)glGetString(GL_EXTENSIONS));
 
-        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
+		viewport_ = Recti(0);
+
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
         memset(&textures_[0], 0, sizeof(textures_));
@@ -135,13 +138,11 @@ namespace NSG
             TRACE_LOG("Using extension: EXT_discard_framebuffer");
         }
 
-        #if !defined(NACL)
         if (CheckExtension("OES_vertex_array_object") || CheckExtension("ARB_vertex_array_object"))
         {
             has_vertex_array_object_ext_ = true;
             TRACE_LOG("Using extension: vertex_array_object");
         }
-        #endif
 
         if (CheckExtension("EXT_map_buffer_range"))
         {
@@ -173,7 +174,7 @@ namespace NSG
             TRACE_LOG("Using extension: GL_ARB_texture_non_power_of_two");
         }
 
-        #if !defined(EMSCRIPTEN) && !defined(NACL)
+        #if !defined(EMSCRIPTEN)
         if (CheckExtension("GL_EXT_instanced_arrays") || CheckExtension("GL_ARB_instanced_arrays") || CheckExtension("GL_ANGLE_instanced_arrays"))
         {
 
@@ -194,9 +195,21 @@ namespace NSG
         }
         #endif
 
+
         {
             glGetIntegerv(GL_MAX_VARYING_VECTORS, &maxVaryingVectors_);
-            TRACE_LOG("Maximum number four-element floating-point vectors available for interpolating varying variables is " << maxVaryingVectors_);
+            GLenum status = glGetError();
+            if(status == GL_NO_ERROR)
+            {
+                CHECK_ASSERT(maxVaryingVectors_ >= 8, __FILE__, __LINE__);
+                TRACE_LOG("GL_MAX_VARYING_VECTORS = " << maxVaryingVectors_);
+            }
+            else
+            {
+                maxVaryingVectors_ = 15;
+                TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
+                
+            }
         }
 
         // Set up texture data read/write alignment
@@ -229,12 +242,13 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
-        glGetIntegerv(GL_VIEWPORT, &viewport_[0]);
+        viewport_ = Recti(0);
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+		vaoMap_.clear();
         lastMesh_ = nullptr;
         lastMaterial_ = nullptr;
         lastProgram_ = nullptr;
@@ -242,6 +256,8 @@ namespace NSG
         activeMesh_ = nullptr;
         activeMaterial_ = nullptr;
         activeNode_ = nullptr;
+        activeScene_ = nullptr;
+        activeCamera_ = nullptr;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -702,23 +718,25 @@ namespace NSG
         return false;
     }
 
+    void Graphics::SetCamera(Camera* camera)
+    {
+        if(activeCamera_ != camera)
+        {
+            activeCamera_ = camera;
+            if(camera != nullptr)
+                SetViewport(camera->GetViewport());
+        }
+    }
+
     void Graphics::DiscardFramebuffer()
     {
-        #if defined(GLES2) && !defined(NACL)
+        #if defined(GLES2)
         if (has_discard_framebuffer_ext_)
         {
             const GLenum attachments[] = { GL_DEPTH_ATTACHMENT , GL_STENCIL_ATTACHMENT };
             glDiscardFramebuffer( GL_FRAMEBUFFER , sizeof(attachments) / sizeof(GLenum), attachments);
         }
         #endif
-    }
-
-    void Graphics::BeginFrame()
-    {
-    }
-
-    void Graphics::EndFrame()
-    {
     }
 
     void Graphics::InvalidateVAOFor(const Program* program)
@@ -1164,14 +1182,7 @@ namespace NSG
 
     void Graphics::Render(Batch& batch)
     {
-        bool node_resources_loaded = true;
-        for (auto& node : batch.nodes_)
-        {
-            SceneNode* sn = (SceneNode*)node;
-            node_resources_loaded &= sn->IsReady(); // forces load from xml
-        }
-
-        if (node_resources_loaded && batch.material_)
+        if (batch.material_)
         {
             PTechnique technique = batch.material_->GetTechnique();
             if (technique)
@@ -1197,12 +1208,11 @@ namespace NSG
         }
     }
 
-    void Graphics::Render(Camera* camera)
+    void Graphics::Render()
     {
-        PScene scene = camera->GetScene();
         std::vector<const SceneNode*> visibles;
-        scene->GetVisibleNodes(camera, visibles);
-        AppStatistics::this_->SetNodes(scene->GetChildren().size(), visibles.size());
+        activeScene_->GetVisibleNodes(activeCamera_, visibles);
+        AppStatistics::this_->SetNodes(activeScene_->GetChildren().size(), visibles.size());
         std::vector<Batch> batches;
         GenerateBatches(visibles, batches);
         for (auto& batch : batches)
@@ -1291,6 +1301,4 @@ namespace NSG
             }
         }
     }
-
-
 }

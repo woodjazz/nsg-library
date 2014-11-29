@@ -68,7 +68,7 @@ namespace NSG
 
     void Buffer::SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data)
     {
-#if !defined(ANDROID) && !defined(EMSCRIPTEN) && !defined(NACL)
+#if !defined(ANDROID) && !defined(EMSCRIPTEN)
         if (Graphics::this_->HasMapBufferRange())
         {
             void* old_data = glMapBufferRange(type_, offset, size,
