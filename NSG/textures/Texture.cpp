@@ -140,7 +140,7 @@ namespace NSG
 
     Texture::~Texture()
     {
-        Context::RemoveObject(this);
+		ReleaseResources();
     }
 
     GLuint Texture::GetID() const
@@ -180,7 +180,7 @@ namespace NSG
 
     bool Texture::IsValid()
     {
-        return pResource_->IsLoaded();
+        return pResource_->IsReady();
     }
 
     const unsigned char* Texture::GetImageData()
@@ -346,6 +346,7 @@ namespace NSG
     void Texture::ReleaseResources()
     {
         glDeleteTextures(1, &texture_);
+        //pResource_->Invalidate(); //Maybe the user has released the resource: force the reload (next time) from the resource
     }
 
     PTexture Texture::CreateFrom(const pugi::xml_node& node)

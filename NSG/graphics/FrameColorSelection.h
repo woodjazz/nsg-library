@@ -26,24 +26,23 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Constants.h"
-#include "GPUObject.h"
-#include "AppListeners.h"
+#include "Object.h"
 
 namespace NSG
 {
     class SceneNode;
-    class FrameColorSelection : public GPUObject
+    class FrameColorSelection : public Object
     {
     public:
         FrameColorSelection(UseBuffer buffer = UseBuffer::DEPTH);
         ~FrameColorSelection();
         GLushort GetSelected() const;
-        virtual bool IsValid() override;
         void SetLocations();
         void AssignValues();
         bool Render(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
         bool Hit(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
     private:
+        bool IsValid() override;
         Color TransformSelectedId2Color(GLushort id);
         void Begin(float screenX, float screenY);
         void End();

@@ -28,7 +28,8 @@ using namespace NSG;
 
 static void Test01()
 {
-    PScene scene(App::this_->GetOrCreateScene("scene1", true));
+    PScene scene(App::this_->GetOrCreateScene("scene1"));
+	App::this_->SetCurrentScene(scene);
 
     PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
     PBoxMesh boxMesh(App::this_->CreateBoxMesh());
@@ -81,7 +82,8 @@ static void Test01()
 
 static void Test02()
 {
-	PScene scene(App::this_->GetOrCreateScene("scene2", true));
+	PScene scene(App::this_->GetOrCreateScene("scene2"));
+	App::this_->SetCurrentScene(scene);
 
     PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
     PBoxMesh boxMesh(App::this_->CreateBoxMesh());
@@ -130,7 +132,8 @@ static void Test02()
 
 static void Test03()
 {
-	PScene scene(App::this_->GetOrCreateScene("scene3", true));
+	PScene scene(App::this_->GetOrCreateScene("scene3"));
+	App::this_->SetCurrentScene(scene);
 
     {
         PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
@@ -158,7 +161,8 @@ static void Test03()
 
 static void Test04()
 {
-	PScene scene(App::this_->GetOrCreateScene("scene4", true));
+	PScene scene(App::this_->GetOrCreateScene("scene4"));
+	App::this_->SetCurrentScene(scene);
 
     {
         const float RADIUS = 0.5f;
@@ -231,7 +235,8 @@ static void Test04()
 
 static void Test05()
 {
-	PScene scene(App::this_->GetOrCreateScene("scene5", true));
+	PScene scene(App::this_->GetOrCreateScene("scene5"));
+	App::this_->SetCurrentScene(scene);
 
 	{
 		const float RADIUS = 0.5f;

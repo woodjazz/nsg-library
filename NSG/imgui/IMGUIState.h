@@ -66,12 +66,6 @@ namespace NSG
   			void Begin();
   			void End();
 
-        	void OnMouseMove(float x, float y);
-			void OnMouseDown(int button, float x, float y);
-			void OnMouseUp(int button, float x, float y);
-	        void OnMouseWheel(float x, float y);
-	        void OnKey(int key, int action, int modifier);
-	        void OnChar(unsigned int character);
 	        void DoTick();
 
 	        MouseRelPosition GetMouseRelPosition() const;
@@ -79,8 +73,12 @@ namespace NSG
         private:
             float mouseRelDownX_;
 			float mouseRelDownY_;
-
-
+			SignalMouseMoved::PSlot slotMouseMoved_;
+			SignalMouseDown::PSlot slotMouseDown_;
+			SignalMouseUp::PSlot slotMouseUp_;
+			SignalMouseWheel::PSlot slotMouseWheel_;
+			SignalKey::PSlot slotKey_;
+			SignalChar::PSlot slotChar_;
 		};
 	}
 }

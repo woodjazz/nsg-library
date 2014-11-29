@@ -58,8 +58,7 @@ namespace NSG
         if (!minimized)
         {
             minimized = true;
-            app->InvalidateGPUContext();
-            app->ReleaseResourcesFromMemory();
+            app->InvalidateContext();
             app->AppEnterBackground();
         }
     }
@@ -397,7 +396,7 @@ namespace NSG
         }
         #endif
 
-        app->SetViewSize(width, height);
+        app->ViewChanged(width, height);
         app->Initialize();
 
         #if IOS

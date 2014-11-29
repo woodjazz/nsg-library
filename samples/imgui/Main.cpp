@@ -74,37 +74,39 @@ struct Sample : App
     Window0 window0_;
 	IMGUI::PWindowStyle style_;
     PScene scene_;
+    SignalStart::PSlot slotStart_;
 
     Sample()
     {
         AppConfiguration::this_->width_ = 320;
         AppConfiguration::this_->height_ = 200;
 		AppConfiguration::this_->showStatistics_ = true;
-    }
 
-	void Start(int argc, char* argv[]) override
-	{
-		scene_ = GetCurrentScene();
-
-		if (!style_)
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
 		{
-			IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
-			IMGUISkin()->buttonStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
-			IMGUISkin()->textStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
-			style_ = IMGUI::PWindowStyle(new IMGUI::WindowStyle);
+			scene_ = GetOrCreateScene("scene000");
+			SetCurrentScene(scene_);
 
-			PTexture texture(GetOrCreateTextureFile("data/metal.png"));
-			PMaterial material = style_->activeMaterial_;
-			material->SetDiffuseMap(texture);
+			if (!style_)
+			{
+				IMGUISkin()->labelStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
+				IMGUISkin()->buttonStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
+				IMGUISkin()->textStyle_->fontAtlasFile_ = "data/font/andalus_regular_20.png";
+				style_ = IMGUI::PWindowStyle(new IMGUI::WindowStyle);
 
-			material = style_->normalMaterial_;
-			material->SetDiffuseMap(texture);
+				PTexture texture(GetOrCreateTextureFile("data/metal.png"));
+				PMaterial material = style_->activeMaterial_;
+				material->SetDiffuseMap(texture);
 
-			material = style_->hotMaterial_;
-			material->SetDiffuseMap(texture);
+				material = style_->normalMaterial_;
+				material->SetDiffuseMap(texture);
 
-			IMGUISkin()->windowStyle_ = style_;
-        }
+				material = style_->hotMaterial_;
+				material->SetDiffuseMap(texture);
+
+				IMGUISkin()->windowStyle_ = style_;
+			}
+		});
     }
 
     void RenderGUIWindow() override

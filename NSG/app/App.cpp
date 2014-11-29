@@ -70,7 +70,16 @@ namespace NSG
           height_(0),
           argc_(0),
           argv_(nullptr),
-          isSceneReady_(false)
+          signalViewChanged_(new Signal<int, int>()),
+          signalMouseMoved_(new Signal<float, float>()),
+          signalMouseDown_(new Signal<int, float, float>()),
+          signalMouseUp_(new Signal<int, float, float>()),
+          signalMouseWheel_(new Signal<float, float>()),
+          signalKey_(new Signal<int, int, int>()),
+          signalChar_(new Signal<unsigned int>()),
+          signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
+          signalStart_(new Signal<int, char**>()),
+          signalUpdate_(new Signal<float>())
     {
         context_ = PContext(new Context);
         configuration_ = PAppConfiguration(new AppConfiguration);
@@ -90,54 +99,15 @@ namespace NSG
         TRACE_LOG("App Terminated");
     }
 
-    void App::Update()
-    {
-        currentScene_->Update();
-    }
-
-    void App::RenderFrame()
-    {
-        currentScene_->Render();
-    }
-
     void App::ViewChanged(int width, int height)
     {
-        currentScene_->ViewChanged(width, height);
-    }
+        if (width_ != width || height_ != height)
+        {
+            width_ = width;
+            height_ = height;
 
-    void App::OnMouseMove(float x, float y)
-    {
-        currentScene_->OnMouseMove(x, y);
-    }
-
-    void App::OnMouseDown(int button, float x, float y)
-    {
-        currentScene_->OnMouseDown(button, x, y);
-    }
-
-    void App::OnMouseWheel(float x, float y)
-    {
-        currentScene_->OnMouseWheel(x, y);
-    }
-
-    void App::OnMouseUp(int button, float x, float y)
-    {
-        currentScene_->OnMouseUp(button, x, y);
-    }
-
-    void App::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-    {
-        currentScene_->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-    }
-
-    void App::OnKey(int key, int action, int modifier)
-    {
-        currentScene_->OnKey(key, action, modifier);
-    }
-
-    void App::OnChar(unsigned int character)
-    {
-        currentScene_->OnChar(character);
+            signalViewChanged_->Run(width, height);
+        }
     }
 
     bool App::ShallExit() const
@@ -157,6 +127,24 @@ namespace NSG
             Music::this_->Resume();
     }
 
+    void App::Start(int argc, char* argv[])
+    {
+		signalStart_->Run(argc, argv);
+    }
+
+    void App::RenderFrame()
+    {
+		if (currentScene_)
+			currentScene_->Render();
+    }
+
+    void App::Update()
+    {
+		signalUpdate_->Run(deltaTime_);
+		if (currentScene_)
+			currentScene_->Update(deltaTime_);
+    }
+
     void App::DropFile(const std::string& filePath)
     {
         TRACE_LOG("Dropped file:" << filePath);
@@ -166,17 +154,6 @@ namespace NSG
     {
         argc_ = argc;
         argv_ = argv;
-    }
-
-    void App::SetViewSize(int width, int height)
-    {
-        TRACE_LOG("SetViewSize: width=" << width << " height=" << height);
-
-        width_ = width;
-        height_ = height;
-
-        for (auto& listener : viewChangedListeners_)
-            listener->OnViewChanged(width, height);
     }
 
     std::pair<int, int> App::GetViewSize() const
@@ -217,49 +194,12 @@ namespace NSG
         Update();
     }
 
-    void App::AddListener(IViewChangedListener* listener)
-    {
-        viewChangedListeners_.push_back(listener);
-        listener->OnViewChanged(width_, height_); //notify inmediately to have correct view size
-    }
-
-    void App::RemoveListener(IViewChangedListener* listener)
-    {
-        viewChangedListeners_.erase(std::find(viewChangedListeners_.begin(), viewChangedListeners_.end(), listener));
-    }
-
-    void App::Add(IViewChangedListener* listener)
-    {
-        if (App::this_)
-        {
-            App::this_->AddListener(listener);
-        }
-    }
-
-    void App::Remove(IViewChangedListener* listener)
-    {
-        if (App::this_)
-        {
-            App::this_->RemoveListener(listener);
-        }
-    }
-
-    PScene App::GetOrCreateScene(const std::string& name, bool setAsCurrent)
+    PScene App::GetOrCreateScene(const std::string& name)
     {
         PScene scene = scenes_.GetOrCreate(name);
-        if (setAsCurrent)
-            SetCurrentScene(scene);
-        return scene;
-    }
-
-    void App::SetCurrentScene(PScene scene)
-    {
-        if (currentScene_ != scene)
-        {
-            CHECK_ASSERT(scene, __FILE__, __LINE__);
-            isSceneReady_ = false;
+        if(!currentScene_)
             currentScene_ = scene;
-        }
+        return scene;
     }
 
     PBoxMesh App::CreateBoxMesh(float width, float height, float depth, int resX, int resY, int resZ)
@@ -362,11 +302,6 @@ namespace NSG
         return programs_.GetOrCreate(name);
     }
 
-    PRigidBody App::CreateRigidBody()
-    {
-        return PRigidBody(new RigidBody);
-    }
-
     const std::vector<PMesh>& App::GetMeshes() const
     {
         return meshes_.GetConstObjs();
@@ -415,19 +350,6 @@ namespace NSG
         return idx;
     }
 
-    bool App::IsSceneReady()
-    {
-        if (isSceneReady_)
-            return true;
-        isSceneReady_ = currentScene_->IsReady();
-        if (isSceneReady_)
-        {
-            OnSceneLoaded();
-            currentScene_->Start();
-        }
-        return isSceneReady_;
-    }
-
     void App::ClearAll()
     {
         currentScene_ = nullptr;
@@ -443,9 +365,7 @@ namespace NSG
 
     InternalApp::InternalApp(App* pApp)
         : Tick(pApp->configuration_->fps_),
-          pApp_(pApp),
-          screenX_(0),
-          screenY_(0)
+          pApp_(pApp)
     {
     }
 
@@ -457,8 +377,6 @@ namespace NSG
     void InternalApp::InitializeTicks()
     {
         Context::this_->Initialize();
-
-        pApp_->GetOrCreateScene("DefaultScene", true);
 
         TRACE_PRINTF("--- Begin Start ---\n");
 
@@ -474,10 +392,7 @@ namespace NSG
 
     void InternalApp::DoTick(float delta)
     {
-        if (pApp_->IsSceneReady())
-        {
-            pApp_->DoTick(delta);
-        }
+        pApp_->DoTick(delta);
     }
 
     void InternalApp::EndTicks()
@@ -489,64 +404,44 @@ namespace NSG
         Graphics::this_->EndFrame();
     }
 
-    void InternalApp::SetViewSize(int width, int height)
-    {
-        pApp_->SetViewSize(width, height);
-    }
-
     void InternalApp::ViewChanged(int width, int height)
     {
-        pApp_->SetViewSize(width, height);
         pApp_->ViewChanged(width, height);
     }
 
     void InternalApp::OnMouseMove(float x, float y)
     {
-        screenX_ = x;
-        screenY_ = y;
-
-        IMGUI::OnMouseMove(x, y);
-        pApp_->OnMouseMove(x, y);
+        pApp_->signalMouseMoved_->Run(x, y);
     }
 
     void InternalApp::OnMouseDown(int button, float x, float y)
     {
-        screenX_ = x;
-        screenY_ = y;
-
-        IMGUI::OnMouseDown(button, x, y);
-        pApp_->OnMouseDown(button, x, y);
+        pApp_->signalMouseDown_->Run(button, x, y);
     }
 
     void InternalApp::OnMouseUp(int button, float x, float y)
     {
-        IMGUI::OnMouseUp(button, x, y);
-        pApp_->OnMouseUp(button, x, y);
+        pApp_->signalMouseUp_->Run(button, x, y);
     }
 
     void InternalApp::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
     {
-        pApp_->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
+        pApp_->signalMultiGesture_->Run(timestamp, x, y, dTheta, dDist, numFingers);
     }
 
     void InternalApp::OnMouseWheel(float x, float y)
     {
-        IMGUI::OnMouseWheel(x, y);
-        pApp_->OnMouseWheel(x, y);
+        pApp_->signalMouseWheel_->Run(x, y);
     }
 
     void InternalApp::OnKey(int key, int action, int modifier)
     {
-        //TRACE_LOG("key=" << key << " action=" << action << " modifier=" << modifier);
-        IMGUI::OnKey(key, action, modifier);
-        pApp_->OnKey(key, action, modifier);
+        pApp_->signalKey_->Run(key, action, modifier);
     }
 
     void InternalApp::OnChar(unsigned int character)
     {
-        //TRACE_LOG("character=" << character);
-        IMGUI::OnChar(character);
-        pApp_->OnChar(character);
+        pApp_->signalChar_->Run(character);
     }
 
     void InternalApp::RenderFrame()
@@ -571,14 +466,9 @@ namespace NSG
         pApp_->AppEnterForeground();
     }
 
-    void InternalApp::ReleaseResourcesFromMemory()
+    void InternalApp::InvalidateContext()
     {
-        Context::this_->ReleaseResourcesFromMemory();
-    }
-
-    void InternalApp::InvalidateGPUContext()
-    {
-        Context::this_->InvalidateGPUResources();
+        Context::this_->InvalidateObjects();
     }
 
     void InternalApp::HandleMessage(const pp::Var& var_message)

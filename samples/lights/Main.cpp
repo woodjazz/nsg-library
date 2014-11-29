@@ -35,66 +35,67 @@ struct Sample : App
     PLight dirLight0_;
     PLight dirLight1_;
     PLight spotLight0_;
+    SignalStart::PSlot slotStart_;
 
     Sample()
     {
         //AppConfiguration::this_->showStatistics_ = true;
-    }
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			scene_ = GetOrCreateScene("scene000");
+			SetCurrentScene(scene_);
+			scene_->SetAmbientColor(Color(0));
 
-    void Start(int argc, char* argv[]) override
-    {
-		scene_ = GetCurrentScene();
-        scene_->SetAmbientColor(Color(0));
+			PCamera camera = scene_->GetOrCreateChild<Camera>("camera");
+			camera->Activate();
 
-		PCamera camera = scene_->GetOrCreateChild<Camera>("camera");
-		camera->Activate();
+			pointLight0_ = scene_->GetOrCreateChild<Light>("pointlight0");
+			pointLight0_->SetPosition(Vertex3(-5, 15, 0));
+			pointLight0_->SetEnabled(false);
 
-		pointLight0_ = scene_->GetOrCreateChild<Light>("pointlight0");
-		pointLight0_->SetPosition(Vertex3(-5, 15, 0));
-        pointLight0_->SetEnabled(false);
+			pointLight1_ = scene_->GetOrCreateChild<Light>("pointlight1");
+			pointLight1_->SetEnabled(false);
+			pointLight1_->SetPosition(Vertex3(5, -15, 0));
 
-		pointLight1_ = scene_->GetOrCreateChild<Light>("pointlight1");
-        pointLight1_->SetEnabled(false);
-		pointLight1_->SetPosition(Vertex3(5, -15, 0));
+			dirLight0_ = scene_->GetOrCreateChild<Light>("dirlight0");
+			dirLight0_->SetType(LightType::DIRECTIONAL);
+			dirLight0_->SetEnabled(false);
+			dirLight0_->SetGlobalLookAt(Vertex3(-1, -1, 0));
 
-		dirLight0_ = scene_->GetOrCreateChild<Light>("dirlight0");
-		dirLight0_->SetType(LightType::DIRECTIONAL);
-        dirLight0_->SetEnabled(false);
-		dirLight0_->SetGlobalLookAt(Vertex3(-1, -1, 0));
+			dirLight1_ = scene_->GetOrCreateChild<Light>("dirlight1");
+			dirLight1_->SetType(LightType::DIRECTIONAL);
+			dirLight1_->SetEnabled(false);
+			dirLight1_->SetGlobalLookAt(Vertex3(1, 1, 0));
 
-		dirLight1_ = scene_->GetOrCreateChild<Light>("dirlight1");
-		dirLight1_->SetType(LightType::DIRECTIONAL);
-        dirLight1_->SetEnabled(false);
-		dirLight1_->SetGlobalLookAt(Vertex3(1, 1, 0));
+			spotLight0_ = scene_->GetOrCreateChild<Light>("spotlight0");
+			spotLight0_->SetType(LightType::SPOT);
+			spotLight0_->SetPosition(Vertex3(0, 0, 5));
+			spotLight0_->SetGlobalLookAt(Vertex3(0, 0, -1));
+			spotLight0_->SetSpotCutOff(10);
+			spotLight0_->SetEnabled(false);
 
-		spotLight0_ = scene_->GetOrCreateChild<Light>("spotlight0");
-		spotLight0_->SetType(LightType::SPOT);
-		spotLight0_->SetPosition(Vertex3(0, 0, 5));
-		spotLight0_->SetGlobalLookAt(Vertex3(0, 0, -1));
-		spotLight0_->SetSpotCutOff(10);
-		spotLight0_->SetEnabled(false);
+			PMesh mesh(CreateSphereMesh(3, 24));
 
-        PMesh mesh(CreateSphereMesh(3, 24));
+			PTexture wallTexture(GetOrCreateTextureFile("data/wall.jpg"));
+			PTexture wallNormalMapTexture(GetOrCreateTextureFile("data/wallnormalmap.jpg"));
+			PMaterial material(GetOrCreateMaterial("wall"));
+			PProgram program(GetOrCreateProgram("wall"));
+			program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::NORMALMAP);
+			PTechnique technique(new Technique);
+			PPass pass(new Pass);
+			technique->Add(pass);
+			pass->SetProgram(program);
+			material->SetTechnique(technique);
+			material->SetDiffuseMap(wallTexture);
+			material->SetNormalMap(wallNormalMapTexture);
+			material->SetAmbientColor(Color(0));
+			material->SetShininess(10);
 
-		PTexture wallTexture(GetOrCreateTextureFile("data/wall.jpg"));
-		PTexture wallNormalMapTexture(GetOrCreateTextureFile("data/wallnormalmap.jpg"));
-        PMaterial material(GetOrCreateMaterial("wall"));
-		PProgram program(GetOrCreateProgram("wall"));
-		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::NORMALMAP);
-        PTechnique technique(new Technique);
-        PPass pass(new Pass);
-        technique->Add(pass);
-        pass->SetProgram(program);
-        material->SetTechnique(technique);
-		material->SetDiffuseMap(wallTexture);
-        material->SetNormalMap(wallNormalMapTexture);
-        material->SetAmbientColor(Color(0));
-        material->SetShininess(10);
-
-		PSceneNode node = scene_->GetOrCreateChild<SceneNode>("node");
-		node->SetPosition(Vertex3(0, 0, -10));
-        node->Set(material);
-        node->Set(mesh);
+			PSceneNode node = scene_->GetOrCreateChild<SceneNode>("node");
+			node->SetPosition(Vertex3(0, 0, -10));
+			node->Set(material);
+			node->Set(mesh);
+		});
     }
 
     void RenderGUIWindow() override

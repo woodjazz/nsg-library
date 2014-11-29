@@ -26,22 +26,22 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
-#include "GPUObject.h"
+#include "Object.h"
 
 namespace NSG 
 {
-	class VertexArrayObj : public GPUObject
+	class VertexArrayObj : public Object
 	{
 	public:
 		VertexArrayObj(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer);
 		~VertexArrayObj();
 		void Use();
 		void Bind();
+		static void Unbind();
+	private:
 		bool IsValid() override;
 		void AllocateResources() override;
 		void ReleaseResources()	override;
-		static void Unbind();
-	private:
 		GLuint vao_; // vertex array object
 		Program* program_;
 		VertexBuffer* vBuffer_;

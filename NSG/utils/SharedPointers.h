@@ -152,7 +152,7 @@ namespace NSG
 	struct Behavior;
 	typedef std::shared_ptr<Behavior> PBehavior;
 
-	struct CameraControl;
+	class CameraControl;
 	typedef std::shared_ptr<CameraControl> PCameraControl;
 
 	class BoxMesh;

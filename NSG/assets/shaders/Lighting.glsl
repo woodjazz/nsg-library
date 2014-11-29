@@ -1,15 +1,17 @@
 //Remember to rebuild with CMake if this file changes
 struct Material
 {
-	vec4 color;
-	vec4 ambient;
-	vec4 diffuse;
-	vec4 specular;
-	float shininess;
+    vec4 color;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    float shininess;
     float parallaxScale;
 };
 
 uniform Material u_material;
+
+#ifdef HAS_LIGHTS
 
 struct BaseLight
 {
@@ -52,9 +54,17 @@ struct SpotLight
 uniform vec4 u_sceneAmbientColor;
 uniform vec3 u_eyeWorldPos;
 
-uniform DirectionalLight u_directionalLight[NUM_DIRECTIONAL_LIGHTS_ARRAY];
-uniform PointLight u_pointLights[NUM_POINT_LIGHTS_ARRAY];
-uniform SpotLight u_spotLights[NUM_SPOT_LIGHTS_ARRAY];
+#ifdef HAS_DIRECTIONAL_LIGHTS
+    uniform DirectionalLight u_directionalLight[NUM_DIRECTIONAL_LIGHTS];
+#endif
+
+#ifdef HAS_POINT_LIGHTS    
+    uniform PointLight u_pointLights[NUM_POINT_LIGHTS];
+#endif
+
+#ifdef HAS_SPOT_LIGHTS    
+    uniform SpotLight u_spotLights[NUM_SPOT_LIGHTS];
+#endif    
 
 vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 normal)                   
 {                               
@@ -123,23 +133,35 @@ vec4 CalcFSTotalLight(vec3 vertexToEye, vec3 normal)
 {
     vec4 totalLight = u_sceneAmbientColor;
 
-    for (int i = 0 ; i < NUM_DIRECTIONAL_LIGHTS ; i++) 
-    {
-        if(u_directionalLight[i].enabled != 0)
-            totalLight += CalcDirectionalLight(u_directionalLight[i].base, u_directionalLight[i].direction, vertexToEye, normal);
-    }
+    #ifdef HAS_DIRECTIONAL_LIGHTS
 
-    for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) 
-    {
-        if(u_pointLights[i].enabled != 0)
-            totalLight += CalcPointLight(u_pointLights[i].base, v_lightDirection[i], u_pointLights[i].atten, vertexToEye, normal);                                            
-    }
+        for (int i = 0 ; i < NUM_DIRECTIONAL_LIGHTS ; i++) 
+        {
+            if(u_directionalLight[i].enabled != 0)
+                totalLight += CalcDirectionalLight(u_directionalLight[i].base, u_directionalLight[i].direction, vertexToEye, normal);
+        }
 
-    for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
-    {
-        if(u_spotLights[i].point.enabled != 0)
-            totalLight += CalcSpotLight(u_spotLights[i].point.base, v_light2Pixel[i], u_spotLights[i].direction, u_spotLights[i].point.atten, vertexToEye, normal, u_spotLights[i].cutOff); 
-    }
+    #endif
+
+    #ifdef HAS_POINT_LIGHTS
+
+        for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) 
+        {
+            if(u_pointLights[i].enabled != 0)
+                totalLight += CalcPointLight(u_pointLights[i].base, v_lightDirection[i], u_pointLights[i].atten, vertexToEye, normal);                                            
+        }
+
+    #endif
+
+    #ifdef HAS_SPOT_LIGHTS
+
+        for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
+        {
+            if(u_spotLights[i].point.enabled != 0)
+                totalLight += CalcSpotLight(u_spotLights[i].point.base, v_light2Pixel[i], u_spotLights[i].direction, u_spotLights[i].point.atten, vertexToEye, normal, u_spotLights[i].cutOff); 
+        }
+
+    #endif
 
     return totalLight;
 }
@@ -148,24 +170,36 @@ vec4 CalcVSTotalLight(vec3 worldPos, vec3 vertexToEye, vec3 normal)
 {
     vec4 totalLight = u_sceneAmbientColor;
 
-    for (int i = 0 ; i < NUM_DIRECTIONAL_LIGHTS ; i++)
-    {
-        if(u_directionalLight[i].enabled != 0)
-            totalLight += CalcDirectionalLight(u_directionalLight[i].base, u_directionalLight[i].direction, vertexToEye, normal);
-    }
+    #ifdef HAS_DIRECTIONAL_LIGHTS
 
-    for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) 
-    {
-        if(u_pointLights[i].enabled != 0)
-            totalLight += CalcPointLight(u_pointLights[i].base, worldPos - u_pointLights[i].position, u_pointLights[i].atten, vertexToEye, normal);
-    }
+        for (int i = 0 ; i < NUM_DIRECTIONAL_LIGHTS ; i++)
+        {
+            if(u_directionalLight[i].enabled != 0)
+                totalLight += CalcDirectionalLight(u_directionalLight[i].base, u_directionalLight[i].direction, vertexToEye, normal);
+        }
 
-    for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
-    {
-        if(u_spotLights[i].point.enabled != 0)
-            totalLight += CalcSpotLight(u_spotLights[i].point.base, worldPos - u_spotLights[i].point.position, u_spotLights[i].direction, u_spotLights[i].point.atten, vertexToEye, normal, u_spotLights[i].cutOff); 
-    }
+    #endif
+
+    #ifdef HAS_POINT_LIGHTS
+
+        for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) 
+        {
+            if(u_pointLights[i].enabled != 0)
+                totalLight += CalcPointLight(u_pointLights[i].base, worldPos - u_pointLights[i].position, u_pointLights[i].atten, vertexToEye, normal);
+        }
+
+    #endif
+
+    #ifdef HAS_SPOT_LIGHTS
+
+        for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
+        {
+            if(u_spotLights[i].point.enabled != 0)
+                totalLight += CalcSpotLight(u_spotLights[i].point.base, worldPos - u_spotLights[i].point.position, u_spotLights[i].direction, u_spotLights[i].point.atten, vertexToEye, normal, u_spotLights[i].cutOff); 
+        }
+
+    #endif
 
     return totalLight;
 }
-
+#endif

@@ -41,6 +41,7 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Util.h"
 #include "SceneNode.h"
+#include "Camera.h"
 #include "InstanceData.h"
 
 #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -103,10 +104,11 @@ namespace NSG
           has_instanced_arrays_ext_(false),
           has_packed_depth_stencil_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
-          frontFaceMode_(FrontFaceMode::DEFAULT)
+          frontFaceMode_(FrontFaceMode::DEFAULT),
+          maxVaryingVectors_(0)
     {
 
-#if defined(ANDROID) || defined(EMSCRIPTEN)
+        #if defined(ANDROID) || defined(EMSCRIPTEN)
         glDiscardFramebufferEXT = (PFNGLDISCARDFRAMEBUFFEREXTPROC)eglGetProcAddress ( "glDiscardFramebufferEXT" );
         glGenVertexArraysOES = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress ( "glGenVertexArraysOES" );
         glBindVertexArrayOES = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress ( "glBindVertexArrayOES" );
@@ -115,7 +117,7 @@ namespace NSG
         glVertexAttribDivisorEXT = (PFNGLVERTEXATTRIBDIVISORPROC)eglGetProcAddress ( "glVertexAttribDivisorEXT" );
         glDrawElementsInstancedEXT = (PFNGLDRAWELEMENTSINSTANCEDPROC)eglGetProcAddress ( "glDrawElementsInstancedEXT" );
         glDrawArraysInstancedEXT = (PFNGLDRAWARRAYSINSTANCEDPROC)eglGetProcAddress ( "glDrawArraysInstancedEXT" );
-#endif
+        #endif
         TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
         TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
         TRACE_LOG("GL_VERSION = " << (const char*)glGetString(GL_VERSION));
@@ -133,13 +135,13 @@ namespace NSG
             TRACE_LOG("Using extension: EXT_discard_framebuffer");
         }
 
-#if !defined(NACL)
+        #if !defined(NACL)
         if (CheckExtension("OES_vertex_array_object") || CheckExtension("ARB_vertex_array_object"))
         {
             has_vertex_array_object_ext_ = true;
             TRACE_LOG("Using extension: vertex_array_object");
         }
-#endif
+        #endif
 
         if (CheckExtension("EXT_map_buffer_range"))
         {
@@ -171,7 +173,7 @@ namespace NSG
             TRACE_LOG("Using extension: GL_ARB_texture_non_power_of_two");
         }
 
-#if !defined(EMSCRIPTEN) && !defined(NACL)
+        #if !defined(EMSCRIPTEN) && !defined(NACL)
         if (CheckExtension("GL_EXT_instanced_arrays") || CheckExtension("GL_ARB_instanced_arrays") || CheckExtension("GL_ANGLE_instanced_arrays"))
         {
 
@@ -190,7 +192,13 @@ namespace NSG
                 TRACE_LOG("Disabling extension: instanced_arrays");
             }
         }
-#endif
+        #endif
+
+        {
+            glGetIntegerv(GL_MAX_VARYING_VECTORS, &maxVaryingVectors_);
+            TRACE_LOG("Maximum number four-element floating-point vectors available for interpolating varying variables is " << maxVaryingVectors_);
+        }
+
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -459,30 +467,30 @@ namespace NSG
         {
             switch (blendMode)
             {
-            case BLEND_NONE:
-                glDisable(GL_BLEND);
-                if (blendSFactor_ != GL_ONE || blendDFactor_ != GL_ZERO)
-                {
-                    glBlendFunc(GL_ONE, GL_ZERO);
-                    blendSFactor_ = GL_ONE;
-                    blendDFactor_ = GL_ZERO;
-                }
+                case BLEND_NONE:
+                    glDisable(GL_BLEND);
+                    if (blendSFactor_ != GL_ONE || blendDFactor_ != GL_ZERO)
+                    {
+                        glBlendFunc(GL_ONE, GL_ZERO);
+                        blendSFactor_ = GL_ONE;
+                        blendDFactor_ = GL_ZERO;
+                    }
 
-                break;
+                    break;
 
-            case BLEND_ALPHA:
-                glEnable(GL_BLEND);
-                if (blendSFactor_ != GL_SRC_ALPHA || blendDFactor_ != GL_ONE_MINUS_SRC_ALPHA)
-                {
-                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    blendSFactor_ = GL_SRC_ALPHA;
-                    blendDFactor_ = GL_ONE_MINUS_SRC_ALPHA;
-                }
-                break;
+                case BLEND_ALPHA:
+                    glEnable(GL_BLEND);
+                    if (blendSFactor_ != GL_SRC_ALPHA || blendDFactor_ != GL_ONE_MINUS_SRC_ALPHA)
+                    {
+                        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                        blendSFactor_ = GL_SRC_ALPHA;
+                        blendDFactor_ = GL_ONE_MINUS_SRC_ALPHA;
+                    }
+                    break;
 
-            default:
-                CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
-                break;
+                default:
+                    CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
+                    break;
             }
 
             blendMode_ = blendMode;
@@ -541,7 +549,7 @@ namespace NSG
         }
     }
 
-#if 0
+    #if 0
     void Graphics::SetTexture(unsigned index, Texture* texture)
     {
         if (index >= MAX_TEXTURE_UNITS)
@@ -567,7 +575,7 @@ namespace NSG
             textures_[index] = texture;
         }
     }
-#else
+    #else
     void Graphics::SetTexture(unsigned index, Texture* texture)
     {
         if (index >= MAX_TEXTURE_UNITS)
@@ -578,8 +586,8 @@ namespace NSG
             if (activeTexture_ != index)
             {
                 glActiveTexture(GL_TEXTURE0 + index);
-				textures_[index] = texture;
-				glBindTexture(GL_TEXTURE_2D, texture->GetID());
+                textures_[index] = texture;
+                glBindTexture(GL_TEXTURE_2D, texture->GetID());
                 activeTexture_ = index;
             }
             else if (textures_[index] != texture)
@@ -602,7 +610,7 @@ namespace NSG
         }
     }
 
-#endif
+    #endif
 
     void Graphics::SetViewport(const Recti& viewport)
     {
@@ -696,13 +704,13 @@ namespace NSG
 
     void Graphics::DiscardFramebuffer()
     {
-#if defined(GLES2) && !defined(NACL)
+        #if defined(GLES2) && !defined(NACL)
         if (has_discard_framebuffer_ext_)
         {
             const GLenum attachments[] = { GL_DEPTH_ATTACHMENT , GL_STENCIL_ATTACHMENT };
             glDiscardFramebuffer( GL_FRAMEBUFFER , sizeof(attachments) / sizeof(GLenum), attachments);
         }
-#endif
+        #endif
     }
 
     void Graphics::BeginFrame()
@@ -778,7 +786,7 @@ namespace NSG
             const Matrix4& m = node->GetGlobalModelMatrix();
             // for the model matrix be careful in the shader as we are using rows instead of columns
             // in order to save space (for the attributes) we just pass the first 3 rows of the matrix as the fourth row is always (0,0,0,1) and can be set in the shader
-            data.modelMatrixRow0_ = glm::row(m, 0); 
+            data.modelMatrixRow0_ = glm::row(m, 0);
             data.modelMatrixRow1_ = glm::row(m, 1);
             data.modelMatrixRow2_ = glm::row(m, 2);
 
@@ -1189,14 +1197,100 @@ namespace NSG
         }
     }
 
+    void Graphics::Render(Camera* camera)
+    {
+        PScene scene = camera->GetScene();
+        std::vector<const SceneNode*> visibles;
+        scene->GetVisibleNodes(camera, visibles);
+        AppStatistics::this_->SetNodes(scene->GetChildren().size(), visibles.size());
+        std::vector<Batch> batches;
+        GenerateBatches(visibles, batches);
+        for (auto& batch : batches)
+            Render(batch);
+    }
+
     bool Graphics::IsTextureSizeCorrect(unsigned width, unsigned height)
     {
         int max_supported_size = 0;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_supported_size );
         CHECK_ASSERT(max_supported_size >= 64, __FILE__, __LINE__);
-		if (width > (unsigned)max_supported_size || height > (unsigned)max_supported_size)
+        if (width > (unsigned)max_supported_size || height > (unsigned)max_supported_size)
             return false;
         return HasNonPowerOfTwo() || (IsPowerOfTwo(width) && IsPowerOfTwo(height));
     }
+
+    void Graphics::GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches)
+    {
+        struct MeshNode
+        {
+            PMesh mesh_;
+            const SceneNode* node_;
+        };
+
+        struct MaterialData
+        {
+            PMaterial material_;
+            std::vector<MeshNode> data_;
+        };
+
+        std::sort(visibles.begin(), visibles.end(), [](const SceneNode * a, const SceneNode * b) -> bool
+        {
+            return a->GetMaterial().get() < b->GetMaterial().get();
+        });
+
+        std::vector<MaterialData> materials;
+        PMaterial usedMaterial;
+        for (auto& node : visibles)
+        {
+            PMaterial material = node->GetMaterial();
+            PMesh mesh = node->GetMesh();
+
+            if (usedMaterial != material || !material)
+            {
+                usedMaterial = material;
+                MaterialData materialData;
+                materialData.material_ = material;
+                materialData.data_.push_back({mesh, node});
+                if (!materials.empty())
+                {
+                    MaterialData& lastMaterialData = materials.back();
+                    std::sort(lastMaterialData.data_.begin(), lastMaterialData.data_.end(), [](const MeshNode & a, const MeshNode & b) -> bool
+                    {
+                        return a.mesh_.get() < b.mesh_.get();
+                    });
+                }
+                materials.push_back(materialData);
+            }
+            else
+            {
+                MaterialData& lastMaterial = materials.back();
+                lastMaterial.data_.push_back({mesh, node});
+            }
+        }
+
+        for (auto& material : materials)
+        {
+            PMesh usedMesh;
+            for (auto& obj : material.data_)
+            {
+                bool limitReached = batches.size() && batches.back().nodes_.size() >= MAX_NODES_IN_BATCH;
+                if (obj.mesh_ != usedMesh || !obj.mesh_ || limitReached)
+                {
+                    usedMesh = obj.mesh_;
+                    Batch batch;
+                    batch.material_ = material.material_;
+                    batch.mesh_ = usedMesh;
+                    batch.nodes_.push_back(obj.node_);
+                    batches.push_back(batch);
+                }
+                else
+                {
+                    Batch& lastBatch = batches.back();
+                    lastBatch.nodes_.push_back(obj.node_);
+                }
+            }
+        }
+    }
+
 
 }

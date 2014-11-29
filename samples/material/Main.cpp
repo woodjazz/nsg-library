@@ -40,46 +40,50 @@ struct Sample : App
     PProgram program_;
 	PPass pass_;
     PSceneNode node_;
+	PCameraControl control_;
+    SignalStart::PSlot slotStart_;
 
     Sample()
     {
         AppConfiguration::this_->showStatistics_ = false;
+
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			scene_ = GetOrCreateScene("scene000");
+			SetCurrentScene(scene_);
+			scene_->SetAmbientColor(Color(0));
+
+			PCamera camera = scene_->GetOrCreateChild<Camera>("camera");
+			camera->SetPosition(Vertex3(0, 0, 10));
+			control_ = PCameraControl(new CameraControl(camera));
+			camera->Activate();
+
+			light_ = camera->GetOrCreateChild<Light>("pointlight");
+
+			sphereMesh_ = CreateSphereMesh();
+			cubeMesh_ = CreateBoxMesh();
+
+			diffuseMap_ = GetOrCreateTextureFile("data/wall.jpg");
+			normalMap_ = GetOrCreateTextureFile("data/wallnormalmap.jpg");
+			lightMap_ = GetOrCreateTextureFile("data/lightmap.png");
+			material_ = GetOrCreateMaterial("material");
+			material_->SetDiffuseMap(diffuseMap_);
+			material_->SetNormalMap(normalMap_);
+			material_->SetLightMap(lightMap_);
+			program_ = GetOrCreateProgram("program0");
+			PTechnique technique(new Technique);
+			pass_ = PPass(new Pass);
+			technique->Add(pass_);
+			pass_->SetProgram(program_);
+			material_->SetTechnique(technique);
+
+			node_ = scene_->GetOrCreateChild<SceneNode>("node");
+			node_->SetPosition(Vertex3(0, 0, 0));
+			node_->Set(material_);
+			node_->Set(sphereMesh_);
+		});
     }
 
-    void Start(int argc, char* argv[]) override
-    {
-        scene_ = GetCurrentScene();
-        scene_->SetAmbientColor(Color(0));
-
-        PCamera camera = scene_->GetOrCreateChild<Camera>("camera");
-        camera->SetPosition(Vertex3(0, 0, 10));
-        camera->AddBehavior(PCameraControl(new CameraControl));
-        camera->Activate();
-
-		light_ = camera->GetOrCreateChild<Light>("pointlight");
-
-        sphereMesh_ = CreateSphereMesh();
-        cubeMesh_ = CreateBoxMesh();
-
-        diffuseMap_ = GetOrCreateTextureFile("data/wall.jpg");
-        normalMap_ = GetOrCreateTextureFile("data/wallnormalmap.jpg");
-        lightMap_ = GetOrCreateTextureFile("data/lightmap.png");
-        material_ = GetOrCreateMaterial("material");
-		material_->SetDiffuseMap(diffuseMap_);
-        material_->SetNormalMap(normalMap_);
-        material_->SetLightMap(lightMap_);
-        program_ = GetOrCreateProgram("program0");
-        PTechnique technique(new Technique);
-		pass_ = PPass(new Pass);
-        technique->Add(pass_);
-        pass_->SetProgram(program_);
-        material_->SetTechnique(technique);
-
-		node_ = scene_->GetOrCreateChild<SceneNode>("node");
-        node_->SetPosition(Vertex3(0, 0, 0));
-        node_->Set(material_);
-        node_->Set(sphereMesh_);
-    }
 
     void RenderGUIWindow() override
     {

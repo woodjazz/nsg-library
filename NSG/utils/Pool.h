@@ -40,7 +40,7 @@ namespace NSG
         virtual ~IPool() {};
         virtual size_t GetObjSize() const = 0;
         virtual unsigned GetAllocatedObjects() const = 0;
-		virtual bool PointerInPool(void* p) const = 0;
+        virtual bool PointerInPool(void* p) const = 0;
     };
 
     struct MemHeader
@@ -48,6 +48,7 @@ namespace NSG
         void* poolPointer_;
     };
 
+    /// A lock-free thread safe pool that does not suffer the ABA problem
     template <size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK >
     class Pool : public IPool
     {
@@ -72,7 +73,7 @@ namespace NSG
         void DeAllocate(void* ptr) override;
         unsigned GetAllocatedObjects() const override { return allocatedObjs_; }
         size_t GetObjSize() const override { return OBJECT_SIZE; }
-		bool PointerInPool(void* p) const override { return p >= begin_ && p < end_; }
+        bool PointerInPool(void* p) const override { return p >= begin_ && p < end_; }
         void LogStatus();
     private:
         typedef MemObj* PMemObj;
@@ -88,10 +89,10 @@ namespace NSG
           allocatedObjs_(0)
     {
         TRACE_PRINTF("Creating pool: object size=%d objs/chunk=%d\n", OBJECT_SIZE, OBJECTS_PER_CHUNK);
-		void* p = std::malloc(ChunkSize);
+        void* p = std::malloc(ChunkSize);
         if (!p)
             throw std::bad_alloc();
-		freeList_ = (PMemObj)p;
+        freeList_ = (PMemObj)p;
         begin_ = p;
         end_ = (char*)begin_ + ChunkSize;
 
@@ -101,7 +102,7 @@ namespace NSG
         for (size_t i = 0; i < OBJECTS_PER_CHUNK; i++)
         {
             previous = next;
-			next = (PMemObj)((char*)next + sizeof(MemObj));
+            next = (PMemObj)((char*)next + sizeof(MemObj));
             previous->header_.poolPointer_ = this;
             previous->nextMemObj_ = next;
         }
@@ -125,15 +126,13 @@ namespace NSG
     void* Pool<OBJECT_SIZE, OBJECTS_PER_CHUNK>::Allocate(std::size_t count)
     {
         assert(count <= OBJECT_SIZE);
-        PMemObj p = freeList_;
-        if (!p)
-            return nullptr;
-		while (!std::atomic_compare_exchange_weak(&freeList_, &p, p->nextMemObj_))
+        PMemObj p;
+        do
         {
             p = freeList_;
-            if (!p)
-                return nullptr;
+            if (!p) return nullptr;
         }
+        while (!std::atomic_compare_exchange_weak(&freeList_, &p, p->nextMemObj_)); 
         ++allocatedObjs_;
         return (void*)(p->memBlock_);
     }
@@ -144,12 +143,12 @@ namespace NSG
         if (obj && obj >= begin_ && obj < end_)
         {
             obj = (char*)obj - sizeof(MemHeader);
-            PMemObj p = (PMemObj)obj;
-            p->nextMemObj_ = freeList_;
-			while (!std::atomic_compare_exchange_weak(&freeList_, &(p->nextMemObj_), p))
+            PMemObj p((PMemObj)obj);
+            do
             {
                 p->nextMemObj_ = freeList_;
             }
+            while (!std::atomic_compare_exchange_weak(&freeList_, &(p->nextMemObj_), p));
             --allocatedObjs_;
         }
     }

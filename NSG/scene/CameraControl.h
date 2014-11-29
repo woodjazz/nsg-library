@@ -23,31 +23,37 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "EarthBehavior.h"
+#pragma once
+#include "NSG.h"
+using namespace NSG;
 
-EarthBehavior::EarthBehavior()
-    : x_angle_(0),
-      y_angle_(0)
+namespace NSG
 {
-
+	class CameraControl
+	{
+	public:
+		CameraControl(PCamera camera);
+		~CameraControl();
+		void AutoZoom();
+	private:
+		void SetPosition(const Vertex3& position);
+		void SetSphereCenter(bool centerObj);
+		void Move(float x, float y);
+		float lastX_;
+		float lastY_;
+		bool leftButtonDown_;
+		bool altKeyDown_;
+		bool shiftKeyDown_;
+		PPointOnSphere pointOnSphere_;
+		PCamera camera_;
+		bool updateOrientation_;
+		App& app_;
+		SignalMouseMoved::PSlot slotMouseMoved_;
+		SignalMouseDown::PSlot slotMouseDown_;
+		SignalMouseUp::PSlot slotMouseUp_;
+		SignalMouseWheel::PSlot slotMouseWheel_;
+		SignalMultiGesture::PSlot slotMultiGesture_;
+		SignalKey::PSlot slotKey_;
+		SignalUpdate::PSlot slotUpdate_;
+	};
 }
-
-EarthBehavior::~EarthBehavior()
-{
-
-}
-
-
-void EarthBehavior::Update()
-{
-    float deltaTime = App::this_->GetDeltaTime();
-
-    x_angle_ += glm::pi<float>() / 10.0f * deltaTime;
-    y_angle_ += glm::pi<float>() / 10.0f * deltaTime;
-
-	sceneNode_->SetOrientation(glm::angleAxis(y_angle_, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle_, Vertex3(0, 1, 0)));
-
-}
-
-
-

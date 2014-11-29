@@ -50,7 +50,7 @@ namespace NSG
     namespace IMGUI
     {
         Context::Context()
-			: unlitProgram_(App::this_->GetOrCreateProgram("NSGUnlitProgram")),
+            : unlitProgram_(App::this_->GetOrCreateProgram("NSGUnlitProgram")),
               controlMesh_(App::this_->CreateRectangleMesh(2, 2)),
               state_(new State),
               pSkin_(new Skin),
@@ -61,16 +61,24 @@ namespace NSG
               viewport_(0),
               hasAppGUI_(true)
         {
-			unlitProgram_->SetFlags((int)ProgramFlag::UNLIT);
-            App::Add(this);
+            unlitProgram_->SetFlags((int)ProgramFlag::UNLIT);
             transparentAreaStyle_->hotMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->activeMaterial_->SetColor(Color(0, 0, 0, 0));
             transparentAreaStyle_->normalMaterial_->SetColor(Color(0, 0, 0, 0));
+
+			auto size = App::this_->GetViewSize();
+			viewport_.z = size.first;
+			viewport_.w = size.second;
+			
+			viewChangedSlot_ = App::this_->signalViewChanged_->Connect([&](int width, int height)
+            {
+                viewport_.z = width;
+                viewport_.w = height;
+            });
         }
 
         Context::~Context()
         {
-            App::Remove(this);
             Context::this_ = nullptr;
         }
 
@@ -81,7 +89,7 @@ namespace NSG
 
         void Context::RenderGUI()
         {
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
             if (hasAppGUI_)
             {
@@ -116,7 +124,7 @@ namespace NSG
                 Camera::Activate(camera);
             }
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
         }
 
         IdType Context::GetValidId()
@@ -124,12 +132,6 @@ namespace NSG
             return pLayoutManager_->GetValidId();
         }
 
-        void Context::OnViewChanged(int width, int height)
-        {
-            viewport_.z = width;
-            viewport_.w = height;
-
-        }
     }
 
 }

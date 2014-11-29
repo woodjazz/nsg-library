@@ -37,109 +37,111 @@ struct Sample : App
     PTexture specularTexture_;
     PTexture occTexture_;
     PTexture dispTexture_;
+    PCameraControl control_;
+    SignalStart::PSlot slotStart_;
+	SignalXMLLoaded::PSlot slotXmlLoaded_;
 
     Sample()
     {
         //AppConfiguration::this_->showStatistics_ = true;
-    }
+        slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+        {
+			scene_ = GetOrCreateScene("scene000");
+			SetCurrentScene(scene_);
+            scene_->SetAmbientColor(Color(0.3f, 0.3f, 0.3f, 1));
 
-    void Start(int argc, char* argv[]) override
-    {
-        scene_ = GetCurrentScene();
-		scene_->SetAmbientColor(Color(0.3f, 0.3f, 0.3f, 1));
+            PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
+            scene_->Load(resource);
+			slotXmlLoaded_ = scene_->signalXMLLoaded_->Connect([&]()
+            {
+                auto& cameras = scene_->GetCameras();
+                PCamera camera = cameras[0].lock();
+                camera->SetFov(60);
+                control_ = PCameraControl(new CameraControl(camera));
 
-        PResourceFile resource(GetOrCreateResourceFile("data/scene.xml"));
-        scene_->Load(resource);
-    }
+                PLight light = scene_->GetChild<Light>("Lamp", true);
+                light->SetParent(camera);
 
-    void OnSceneLoaded() override
-    {
-        auto& cameras = scene_->GetCameras();
-        PCamera camera = cameras[0].lock();
-        camera->SetFov(60);
-        camera->AddBehavior(PCameraControl(new CameraControl));
+                camera->Activate();
+                camera->SetGlobalPosition(Vector3(0, 5, 5));
+                camera->SetGlobalLookAt(VECTOR3_ZERO);
 
-        PLight light = scene_->GetChild<Light>("Lamp", true);
-        light->SetParent(camera);
+                lightmapTexture_ = GetOrCreateTextureFile("data/lightmap.png");
+                diffuseTexture_ = GetOrCreateTextureFile("data/wall_COLOR.png");
+                normalTexture_ = GetOrCreateTextureFile("data/wall_NRM.png");
+                specularTexture_ = GetOrCreateTextureFile("data/wall_SPEC.png");
+                occTexture_ = GetOrCreateTextureFile("data/wall_OCC.png");
+                dispTexture_ = GetOrCreateTextureFile("data/wall_DISP.png");
 
-        camera->Activate();
-        camera->SetGlobalPosition(Vector3(0, 5, 5));
-        camera->SetGlobalLookAt(VECTOR3_ZERO);
-
-        lightmapTexture_ = GetOrCreateTextureFile("data/lightmap.png");
-        diffuseTexture_ = GetOrCreateTextureFile("data/wall_COLOR.png");
-        normalTexture_ = GetOrCreateTextureFile("data/wall_NRM.png");
-        specularTexture_ = GetOrCreateTextureFile("data/wall_SPEC.png");
-        occTexture_ = GetOrCreateTextureFile("data/wall_OCC.png");
-        dispTexture_ = GetOrCreateTextureFile("data/wall_DISP.png");
-
-        material_ = scene_->GetChild<SceneNode>("Cube", false)->GetMaterial();
-        material_->SetDiffuseMap(diffuseTexture_);
-        material_->SetLightMap(lightmapTexture_);
-        material_->SetNormalMap(normalTexture_);
-        material_->SetSpecularMap(specularTexture_);
-        material_->SetAOMap(occTexture_);
-        material_->SetDisplacementMap(dispTexture_);
+                material_ = scene_->GetChild<SceneNode>("Cube", false)->GetMaterial();
+                material_->SetDiffuseMap(diffuseTexture_);
+                material_->SetLightMap(lightmapTexture_);
+                material_->SetNormalMap(normalTexture_);
+                material_->SetSpecularMap(specularTexture_);
+                material_->SetAOMap(occTexture_);
+                material_->SetDisplacementMap(dispTexture_);
+            });
+        });
     }
 
     void RenderGUIWindow() override
     {
         IMGUIBeginHorizontal(100, 10);
         {
-			bool on = material_->GetDisplacementMap() != nullptr;
+            bool on = material_->GetDisplacementMap() != nullptr;
             if (IMGUICheckButton(on, on ? "Disable Parallax" : "Enable Parallax", 25, 100))
-				material_->SetDisplacementMap(dispTexture_);
+                material_->SetDisplacementMap(dispTexture_);
             else
-				material_->SetDisplacementMap(nullptr);
+                material_->SetDisplacementMap(nullptr);
         }
 
         {
-			float parallaxScale = material_->GetParallaxScale();
+            float parallaxScale = material_->GetParallaxScale();
             parallaxScale = IMGUIHSlider(parallaxScale, 75, 100, 10);
-			material_->SetParallaxScale(parallaxScale);
+            material_->SetParallaxScale(parallaxScale);
         }
         IMGUIEndArea();
 
-		{
-			bool on = material_->GetNormalMap() != nullptr;
-			if (IMGUICheckButton(on, on ? "Disable normal map" : "Enable normal map", 25, 10))
-				material_->SetNormalMap(normalTexture_);
-			else
-				material_->SetNormalMap(nullptr);
-		}
+        {
+            bool on = material_->GetNormalMap() != nullptr;
+            if (IMGUICheckButton(on, on ? "Disable normal map" : "Enable normal map", 25, 10))
+                material_->SetNormalMap(normalTexture_);
+            else
+                material_->SetNormalMap(nullptr);
+        }
 
 
-		{
-			bool on = material_->GetLightMap() != nullptr;
-			if (IMGUICheckButton(on, on ? "Disable Lightmap" : "Enable Lightmap", 25, 10))
-				material_->SetLightMap(lightmapTexture_);
-			else
-				material_->SetLightMap(nullptr);
-		}
+        {
+            bool on = material_->GetLightMap() != nullptr;
+            if (IMGUICheckButton(on, on ? "Disable Lightmap" : "Enable Lightmap", 25, 10))
+                material_->SetLightMap(lightmapTexture_);
+            else
+                material_->SetLightMap(nullptr);
+        }
 
-		{
-			bool on = material_->GetSpecularMap() != nullptr;
-			if (IMGUICheckButton(on, on ? "Disable Specular map" : "Enable Specular map", 25, 10))
-				material_->SetSpecularMap(specularTexture_);
-			else
-				material_->SetSpecularMap(nullptr);
-		}
+        {
+            bool on = material_->GetSpecularMap() != nullptr;
+            if (IMGUICheckButton(on, on ? "Disable Specular map" : "Enable Specular map", 25, 10))
+                material_->SetSpecularMap(specularTexture_);
+            else
+                material_->SetSpecularMap(nullptr);
+        }
 
-		{
-			bool on = material_->GetAOMap() != nullptr;
-			if (IMGUICheckButton(on, on ? "Disable AO map" : "Enable AO map", 25, 10))
-				material_->SetAOMap(occTexture_);
-			else
-				material_->SetAOMap(nullptr);
-		}
+        {
+            bool on = material_->GetAOMap() != nullptr;
+            if (IMGUICheckButton(on, on ? "Disable AO map" : "Enable AO map", 25, 10))
+                material_->SetAOMap(occTexture_);
+            else
+                material_->SetAOMap(nullptr);
+        }
 
-		{
-			bool on = material_->GetDiffuseMap() != nullptr;
-			if (IMGUICheckButton(on, on ? "Disable diffuse map" : "Enable diffuse map", 25, 10))
-				material_->SetDiffuseMap(diffuseTexture_);
-			else
-				material_->SetDiffuseMap(nullptr);
-		}
+        {
+            bool on = material_->GetDiffuseMap() != nullptr;
+            if (IMGUICheckButton(on, on ? "Disable diffuse map" : "Enable diffuse map", 25, 10))
+                material_->SetDiffuseMap(diffuseTexture_);
+            else
+                material_->SetDiffuseMap(nullptr);
+        }
 
     }
 

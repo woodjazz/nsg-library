@@ -27,13 +27,13 @@ misrepresented as being the original software.
 
 #include "Types.h"
 #include "ResourceFile.h"
-#include "GPUObject.h"
+#include "Object.h"
 #include "Constants.h"
 
 namespace NSG
 {
     struct ExtraUniforms;
-    class Program : public GPUObject
+    class Program : public Object
     {
     public:
 		Program(const std::string& name);
@@ -44,9 +44,6 @@ namespace NSG
         void Set(ExtraUniforms* pExtraUniforms) { pExtraUniforms_ = pExtraUniforms; }
         GLuint GetAttributeLocation(const std::string& name);
         GLuint GetUniformLocation(const std::string& name);
-        virtual bool IsValid() override;
-        virtual void AllocateResources() override;
-        virtual void ReleaseResources() override;
         GLuint GetAttPositionLoc() const { return att_positionLoc_; }
         GLuint GetAttTextCoordLoc0() const { return att_texcoordLoc0_; }
         GLuint GetAttTextCoordLoc1() const { return att_texcoordLoc1_; }
@@ -65,6 +62,9 @@ namespace NSG
         const ProgramFlags& GetFlags() const { return flags_; }
         void SetFlags(const ProgramFlags& flags);
     private:
+        bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
         void SetSceneVariables(Scene* scene);
         void SetCameraVariables();
         void SetNodeVariables(Node* node);
@@ -200,5 +200,8 @@ namespace NSG
         PResource vertexShader_;
         PResource fragmentShader_;
         Graphics& graphics_;
+        bool spotLightsReduced_;
+        bool directionalLightsReduced_;
+        bool pointLightsReduced_;
     };
 }

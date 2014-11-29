@@ -113,7 +113,7 @@ namespace NSG
 					TRACE_LOG("InitGL has failed!")
 					return; // failed.
 				}
-				pApp_->SetViewSize(width_, height_);
+				pApp_->ViewChanged(width_, height_);
 				pApp_->Initialize();
 				MainLoop(0);
 			} 
@@ -321,7 +321,7 @@ namespace NSG
 			};
 			
 			context_ = pp::Graphics3D(this, attrib_list);
-			
+
 			if (!BindGraphics(context_)) 
 			{
 				fprintf(stderr, "Unable to bind 3d context!\n");

@@ -62,7 +62,7 @@ namespace NSG
             : pResource_(pResource),
               pos_(0)
         {
-            CHECK_CONDITION(pResource_->IsLoaded(), __FILE__, __LINE__);
+			CHECK_CONDITION(pResource_->IsReady(), __FILE__, __LINE__);
         }
 
     public:
@@ -138,8 +138,9 @@ namespace NSG
 
     SceneConverter::SceneConverter(const Path& path)
         : path_(path),
-		scene_(App::this_->GetCurrentScene())
+		scene_(App::this_->GetOrCreateScene("scene000"))
     {
+		App::this_->SetCurrentScene(scene_);
     }
 
     SceneConverter::~SceneConverter()
@@ -183,7 +184,8 @@ namespace NSG
     {
         CachedData data;
         LoadMeshesAndMaterials(scene, data);
-		scene_ = App::this_->GetOrCreateScene(scene->mRootNode->mName.C_Str(), true);
+		scene_ = App::this_->GetOrCreateScene(scene->mRootNode->mName.C_Str());
+		App::this_->SetCurrentScene(scene_);
 		RecursiveLoad(scene, scene->mRootNode, scene_.get(), data);
         LoadAnimations(scene);
         LoadBones(scene, data);

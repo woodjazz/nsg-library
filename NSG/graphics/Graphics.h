@@ -94,7 +94,10 @@ namespace NSG
         void Set(Material* material) { activeMaterial_ = material; }
         void SetNode(Node* node) { activeNode_ = node; }
         void Render(Batch& batch);
+		void Render(Camera* camera);
         bool IsTextureSizeCorrect(unsigned width, unsigned height);
+        void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
+        GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
     private:
         Recti viewport_;
         GLint systemFbo_;
@@ -140,5 +143,6 @@ namespace NSG
         };
         typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
         VAOMap vaoMap_;
+        GLint maxVaryingVectors_;
     };
 }

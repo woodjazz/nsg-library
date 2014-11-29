@@ -33,17 +33,16 @@ extern void FSMTest();
 struct Test : public App 
 {
 	bool exit_;
+	SignalStart::PSlot slotStart_;
 	Test()
 		:exit_(false)
 	{
-
-	}
-
-	void Start(int argc, char* argv[]) override
-	{
-		FSMExamples();
-		FSMTest();
-		exit_ = true;
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			FSMExamples();
+			FSMTest();
+			exit_ = true;
+		});
 	}
 
 	bool ShallExit() const override

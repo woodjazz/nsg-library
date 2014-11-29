@@ -26,14 +26,13 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Singleton.h"
-#include "AppListeners.h"
 #include <set>
 
 namespace NSG
 {
 	namespace IMGUI
 	{
-		struct Context : public IViewChangedListener, Singleton<Context>
+		struct Context : public Singleton<Context>
 		{
 	        PProgram unlitProgram_;
 	        PMesh controlMesh_;
@@ -51,7 +50,8 @@ namespace NSG
 			void RenderGUI();
 			bool IsReady() const;
 			IdType GetValidId();
-			virtual void OnViewChanged(int32_t width, int32_t height) override;
+		private:
+			SignalViewChanged::PSlot viewChangedSlot_;
 		};
 	}
 }

@@ -20,37 +20,44 @@
 
 namespace NSG
 {
-	FontAtlasTexture::FontAtlasTexture(const Path& path)
+    FontAtlasTexture::FontAtlasTexture(const Path& path)
         : path_(path),
-    viewWidth_(0),
-    viewHeight_(0)
+          viewWidth_(0),
+          viewHeight_(0)
 
     {
-		if (path_.IsEmpty())
+		auto size = App::this_->GetViewSize();
+		viewWidth_ = size.first;
+		viewHeight_ = size.second;
+
+        if (path_.IsEmpty())
         {
-			PResourceMemory bitmapFont(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_PNG, ANONYMOUS_PRO_REGULAR_14_PNG_SIZE));
+            PResourceMemory bitmapFont(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_PNG, ANONYMOUS_PRO_REGULAR_14_PNG_SIZE));
             texture_ = PTexture(new Texture(bitmapFont));
             xmlResource_ = PResource(new ResourceMemory((const char*)ANONYMOUS_PRO_REGULAR_14_XML, ANONYMOUS_PRO_REGULAR_14_XML_SIZE));
         }
         else
         {
-			texture_ = TextureFileManager::this_->GetOrCreate(path_);
-			texture_->SetFlags((int)TextureFlag::NONE);
-			Path xmlFilename(path_.GetPathAndName() + ".xml"); //divo compatible (generated with font builder)
-			xmlResource_ = ResourceFileManager::this_->GetOrCreate(xmlFilename);
+            texture_ = TextureFileManager::this_->GetOrCreate(path_);
+            texture_->SetFlags((int)TextureFlag::NONE);
+            Path xmlFilename(path_.GetPathAndName() + ".xml"); //divo compatible (generated with font builder)
+            xmlResource_ = ResourceFileManager::this_->GetOrCreate(xmlFilename);
         }
 
-        App::Add(this);
+		slotViewChanged_ = App::this_->signalViewChanged_->Connect([&](int width, int height)
+        {
+            viewWidth_ = width; 
+            viewHeight_ = height;
+		});
     }
 
     FontAtlasTexture::~FontAtlasTexture()
     {
-        App::Remove(this);
     }
 
     bool FontAtlasTexture::IsReady()
     {
-        if (xmlResource_ && xmlResource_->IsLoaded() && texture_->IsReady())
+        if (xmlResource_ && xmlResource_->IsReady() && texture_->IsReady())
         {
             if (charsMap_.empty())
                 ParseXML();
@@ -63,7 +70,7 @@ namespace NSG
 
     bool FontAtlasTexture::ParseXML()
     {
-		TRACE_LOG("FontAtlasTexture::Parsing: " << (path_.IsEmpty() ? "internal font" : xmlResource_->GetPath().GetFilePath()));
+        TRACE_LOG("FontAtlasTexture::Parsing: " << (path_.IsEmpty() ? "internal font" : xmlResource_->GetPath().GetFilePath()));
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer_inplace((void*)xmlResource_->GetData(), xmlResource_->GetBytes());
@@ -257,9 +264,4 @@ namespace NSG
         return charPos;
     }
 
-    void FontAtlasTexture::OnViewChanged(int width, int height)
-    {
-        viewWidth_ = width;
-        viewHeight_ = height;
-    }
 }

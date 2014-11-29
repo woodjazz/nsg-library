@@ -32,17 +32,16 @@ extern void NodeTest();
 struct Test : public App 
 {
 	bool exit_;
+	SignalStart::PSlot slotStart_;
 
 	Test()
 		:exit_(false)
 	{
-
-	}
-
-	void Start(int argc, char* argv[]) override
-	{
-		NodeTest();
-		exit_ = true;
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			NodeTest();
+			exit_ = true;
+		});
 	}
 
 	bool ShallExit() const override 

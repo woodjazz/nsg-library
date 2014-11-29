@@ -61,7 +61,7 @@ namespace NSG
 
     bool Sound::IsReady()
     {
-        if (resource_->IsLoaded() && !isReady_)
+        if (resource_->IsReady() && !isReady_)
         {
 #ifdef SDL
             SDL_RWops* assetHandle = SDL_RWFromConstMem(resource_->GetData(), resource_->GetBytes());

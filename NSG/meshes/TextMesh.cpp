@@ -53,12 +53,15 @@ namespace NSG
 			pProgram_ = App::this_->GetOrCreateProgram(textureFilename);
 		pProgram_->SetFlags((int)ProgramFlag::TEXT);
         pAtlas_ = FontAtlasTextureManager::this_->GetAtlas(textureFilename);
-        App::Add(this);
+
+		slotViewChanged_ = App::this_->signalViewChanged_->Connect([&](int width, int height)
+		{
+			Invalidate();
+		});
     }
 
     TextMesh::~TextMesh()
     {
-        App::Remove(this);
     }
 
     bool TextMesh::Has(const std::string& textureFilename) const
@@ -223,11 +226,6 @@ namespace NSG
     size_t TextMesh::GetNumberOfTriangles() const
     {
         return vertexsData_.size()/3;
-    }
-
-    void TextMesh::OnViewChanged(int width, int height)
-    {
-        Invalidate();
     }
 
 }

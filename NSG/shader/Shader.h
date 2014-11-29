@@ -33,10 +33,12 @@ namespace NSG
 	{
 	public:
 		GLuint GetId() const { return id_; }
+		const char* GetSource() const { return source_; }
 	protected:
 		Shader(GLenum type, const char* source);
 		~Shader();
 	private:
 		GLuint id_;
+		const char* source_;
 	};
 }

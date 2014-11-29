@@ -23,54 +23,23 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "CameraBehavior.h"
+#pragma once
 
-CameraBehavior::CameraBehavior()
+namespace NSG 
 {
+    class App;
+	class Object
+	{
+	public:
+		Object();
+		virtual ~Object();
+		void Invalidate();
+		bool IsReady();
+	private:
+		virtual bool IsValid() = 0;
+		virtual void AllocateResources() {}
+		virtual void ReleaseResources()	{}
+		bool isValid_;
+		bool resourcesAllocated_;
+	};
 }
-	
-CameraBehavior::~CameraBehavior()
-{
-}
-
-void CameraBehavior::Start()
-{
-	camControlPoints_.push_back(Vertex3(-10.0f, 0.0f, 0.0f)); 
-    camControlPoints_.push_back(Vertex3(0.0f, 0.0f, 10.0f));
-	camControlPoints_.push_back(Vertex3(10.0f, 0.0f, 0.0f));
-	camControlPoints_.push_back(Vertex3(0.0f, 0.0f, -10.0f)); 
-
-	sceneNode_->SetPosition(Vertex3(0, 0, 10));
-	sceneNode_->SetGlobalLookAt(Vertex3(0));
-
-}
-
-void CameraBehavior::Update()
-{
-#if 1
-    float deltaTime = App::this_->GetDeltaTime();
-
-    static float delta1 = 0;
-
-	Vertex3 position = glm::catmullRom(
-        camControlPoints_[0],
-        camControlPoints_[1],
-        camControlPoints_[2],
-        camControlPoints_[3],
-		delta1);
-
-	sceneNode_->SetPosition(position);
-	sceneNode_->SetGlobalLookAt(Vertex3(0));
-
-    delta1 += deltaTime * 0.1f;
-
-    if(delta1 > 1)
-    {
-    	delta1 = 0;
-        Vertex3 p = camControlPoints_.front();
-        camControlPoints_.pop_front();
-        camControlPoints_.push_back(p);
-    }
-#endif
-}
-

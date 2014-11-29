@@ -23,16 +23,54 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "NSG.h"
-using namespace NSG;
-class EarthBehavior : public Behavior
+#include "Object.h"
+#include "Check.h"
+#include "App.h"
+
+namespace NSG 
 {
-public:
-	EarthBehavior();
-	~EarthBehavior();
-	void Start() override;
-	void OnCollision(const ContactPoint& contactInfo) override;
-private:
-	PRigidBody rb_;
-};
+	Object::Object()
+	: isValid_(false),
+	resourcesAllocated_(false)
+	{
+		Context::AddObject(this);
+	}
+		
+	Object::~Object()
+	{
+		Context::RemoveObject(this);
+	}
+
+	void Object::Invalidate()
+	{
+		isValid_ = false;
+		if(resourcesAllocated_)
+		{
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+			ReleaseResources();
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+			resourcesAllocated_ = false;
+		}
+	}
+
+	bool Object::IsReady()
+	{
+		if(!isValid_)
+		{
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+
+			isValid_ = IsValid();
+
+			if(isValid_)
+			{
+				CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
+				AllocateResources();
+				resourcesAllocated_ = true;
+			}
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+		}
+
+		return isValid_;
+	}
+}

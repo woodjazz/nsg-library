@@ -54,22 +54,11 @@ namespace NSG
     ShowTexture::~ShowTexture()
     {
         pass_ = nullptr;
-        Context::RemoveObject(this);
     }
 
     bool ShowTexture::IsValid()
     {
         return material_->IsReady() && mesh_->IsReady();
-    }
-
-    void ShowTexture::AllocateResources()
-    {
-
-    }
-
-    void ShowTexture::ReleaseResources()
-    {
-
     }
 
     void ShowTexture::SetNormal(PTexture texture)

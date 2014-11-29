@@ -54,7 +54,7 @@ namespace NSG
 
     Mesh::~Mesh()
     {
-        Context::RemoveObject(this);
+		ReleaseResources();
     }
 
 	void Mesh::SetDynamic(bool dynamic)
@@ -66,7 +66,7 @@ namespace NSG
     bool Mesh::IsValid()
     {
         if (resource_)
-            return resource_->IsLoaded();
+            return resource_->IsReady();
         else
             return !vertexsData_.empty();
     }

@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "IMGUIContext.h"
 #include "IMGUILayoutManager.h"
 #include "IMGUI.h"
+#include "App.h"
 #include <cstring>
 
 namespace NSG
@@ -45,7 +46,7 @@ namespace NSG
               mouseup_(false),
               mouseRelX_(0),
               mouseRelY_(0),
-        activeitem_needs_keyboard_(false),
+              activeitem_needs_keyboard_(false),
 
               keyentered_(0),
               keymod_(0),
@@ -57,6 +58,62 @@ namespace NSG
               mouseRelDownX_(0),
               mouseRelDownY_(0)
         {
+			slotMouseMoved_ = App::this_->signalMouseMoved_->Connect([&](float x, float y)
+            {
+                mousex_ = x;
+                mousey_ = y;
+
+                if (mousedown_)
+                {
+                    mouseRelX_ = mousex_ - mouseRelDownX_;
+                    mouseRelY_ = mousey_ - mouseRelDownY_;
+                }
+            });
+
+
+			slotMouseDown_ = App::this_->signalMouseDown_->Connect([&](int button, float x, float y)
+			{
+				activeScrollArea_ = static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID);
+				mouseRelDownX_ = mouseDownX_ = x;
+				mouseRelDownY_ = mouseDownY_ = y;
+				mousex_ = x;
+				mousey_ = y;
+				mousedown_ = true;
+				mouseup_ = false;
+				Context::this_->pLayoutManager_->SetWindowFocus(x, y);
+			});
+
+			slotMouseUp_ = App::this_->signalMouseUp_->Connect([&](int button, float x, float y)
+			{
+				mousex_ = x;
+				mousey_ = y;
+
+				mousedown_ = false;
+				mouseup_ = true;
+
+				lastHit_ = static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID);
+			});
+
+			slotMouseWheel_ = App::this_->signalMouseWheel_->Connect([&](float x, float y)
+			{
+				mouseRelX_ = -x;
+				mouseRelY_ = -y;
+			});
+
+			slotKey_ = App::this_->signalKey_->Connect([&](int key, int action, int modifier)
+			{
+				if (action == NSG_KEY_PRESS)
+				{
+					keyentered_ = key;
+					keyaction_ = action;
+					keymod_ = modifier;
+				}
+			});
+
+			slotChar_ = App::this_->signalChar_->Connect([&](unsigned int character)
+			{
+				character_ = character;
+			});
         }
 
         State::~State()
@@ -64,67 +121,11 @@ namespace NSG
 
         }
 
-		void State::OnMouseMove(float x, float y)
-        {
-            mousex_ = x;
-            mousey_ = y;
-
-            if (mousedown_)
-            {
-                mouseRelX_ = mousex_ - mouseRelDownX_;
-                mouseRelY_ = mousey_ - mouseRelDownY_;
-            }
-        }
-
-		void State::OnMouseDown(int button, float x, float y)
-        {
-            activeScrollArea_ = static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID);
-            mouseRelDownX_ = mouseDownX_ = x;
-            mouseRelDownY_ = mouseDownY_ = y;
-            mousex_ = x;
-            mousey_ = y;
-            mousedown_ = true;
-            mouseup_ = false;
-            Context::this_->pLayoutManager_->SetWindowFocus(x, y);
-        }
-
-		void State::OnMouseUp(int button, float x, float y)
-        {
-            mousex_ = x;
-            mousey_ = y;
-
-            mousedown_ = false;
-            mouseup_ = true;
-
-            lastHit_ = static_cast<IdType>(IdsTypes::IMGUI_UNKNOWN_ID);
-
-        }
-
-        void State::OnMouseWheel(float x, float y)
-        {
-            mouseRelX_ = -x;
-            mouseRelY_ = -y;
-        }
 
         MouseRelPosition State::GetMouseRelPosition() const
         {
             MouseRelPosition relPos = {mouseRelX_, mouseRelY_};
             return relPos;
-        }
-
-        void State::OnKey(int key, int action, int modifier)
-        {
-            if (action == NSG_KEY_PRESS)
-            {
-                keyentered_ = key;
-                keyaction_ = action;
-                keymod_ = modifier;
-            }
-        }
-
-        void State::OnChar(unsigned int character)
-        {
-            character_ = character;
         }
 
         void State::DoTick()

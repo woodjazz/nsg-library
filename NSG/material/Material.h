@@ -26,11 +26,11 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
-#include "GPUObject.h"
+#include "Object.h"
 #include "UniformsUpdate.h"
 namespace NSG
 {
-	class Material : public GPUObject, UniformsUpdate
+	class Material : public Object, UniformsUpdate
 	{
 	public:
 		Material(const std::string& name);
@@ -74,7 +74,6 @@ namespace NSG
 		float GetParallaxScale() const { return parallaxScale_; }
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
-		virtual bool IsValid() override;
 		void SetTechnique(PTechnique technique) { technique_ = technique; }
 		PTechnique GetTechnique() const { return technique_; }
 		void Save(pugi::xml_node& node);
@@ -82,6 +81,7 @@ namespace NSG
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_; }
 	private:
+		bool IsValid() override;
 		PTexture texture0_; //difusse map
 		PTexture texture1_; //normal map
 		PTexture texture2_; //light map

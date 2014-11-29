@@ -14,15 +14,22 @@
 #endif   
 
 varying vec4 v_color;
-varying vec3 v_normal;
-varying vec3 v_tangent;
-varying vec3 v_bitangent;
 varying vec2 v_texcoord0; 
-varying vec2 v_texcoord1;
-varying vec3 v_vertexToEye;
-varying vec3 v_vertexToEyeInTangentSpace;
-varying vec3 v_lightDirection[NUM_POINT_LIGHTS_ARRAY];
-varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS_ARRAY];
+
+#ifdef HAS_LIGHTS
+	varying vec3 v_normal;
+	varying vec3 v_tangent;
+	varying vec3 v_bitangent;
+	varying vec2 v_texcoord1;
+	varying vec3 v_vertexToEye;
+	varying vec3 v_vertexToEyeInTangentSpace;
+	#ifdef HAS_POINT_LIGHTS
+		varying vec3 v_lightDirection[NUM_POINT_LIGHTS];
+	#endif
+	#ifdef HAS_SPOT_LIGHTS
+		varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS];
+	#endif
+#endif
 
 #if defined(COMPILEFS)
 	

@@ -31,8 +31,8 @@ namespace NSG
 
     AppConfiguration::AppConfiguration()
         : fps_(60),
-          width_(1024),
-          height_(768),
+          width_(30),
+          height_(20),
           vertical_sync_(true),
           showStatistics_(false),
           pauseMusicOnBackground_(true)

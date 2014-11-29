@@ -25,22 +25,22 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Object.h"
 
 namespace NSG
 {
 	class Path;
-	class Resource
+	class Resource : public Object
 	{
 	public:
 		Resource();
 		virtual ~Resource();
-		virtual bool IsLoaded() = 0;
 		const char* const GetData() const { return buffer_.c_str(); }
 		size_t GetBytes() const { return buffer_.size(); }
-        void Invalidate();
-        virtual const Path& GetPath() const = 0;
+        virtual const Path& GetPath() const;
+        void ReleaseResources() override;
 	protected:
-		bool loaded_;
+		virtual bool IsValid() override;
 		std::string buffer_;
 	};
 }

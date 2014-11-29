@@ -23,7 +23,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#if !defined(NACL)
 #define USE_POOLS
+#endif
+
 #ifdef USE_POOLS
 
 #include "Pool.h"
@@ -125,10 +128,17 @@ namespace NSG
         inline IPool* GetBestPool(std::size_t count)
         {
 			assert(count > 0);
+            #if 0
 			size_t slot = (size_t)std::ceil(std::log2(count));
 			if (slot < nPools_)
 				return pools_[slot].pool_;
             return nullptr;
+            #else
+			for (size_t i = 0; i < nPools_; i++)
+				if (pools_[i].objSize_ > count)
+					return pools_[i].pool_;
+            return nullptr;
+            #endif
         }
 
         inline bool IsPool(void* p)

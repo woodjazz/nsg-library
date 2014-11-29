@@ -106,17 +106,6 @@ namespace NSG
         void SetParent(PNode parent);
         PNode GetParent() const;
         void ClearAllChildren();
-        virtual void Start() {}
-        virtual void Update() {}
-        virtual void ViewChanged(int width, int height) {}
-        virtual void OnMouseMove(float x, float y) {}
-        virtual void OnMouseDown(int button, float x, float y) {}
-        virtual void OnMouseWheel(float x, float y) {}
-        virtual void OnMouseUp(int button, float x, float y) {}
-        virtual void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers) {}
-        virtual void OnKey(int key, int action, int modifier) {}
-        virtual void OnChar(unsigned int character) {}
-        virtual void OnCollision(const ContactPoint& contactInfo) {}
         bool IsEnabled() const { return enabled_; }
         void SetEnabled(bool enable, bool recursive = true);
         virtual void OnEnable() {}

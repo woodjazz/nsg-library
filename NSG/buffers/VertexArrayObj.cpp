@@ -46,7 +46,7 @@ namespace NSG
 
     VertexArrayObj::~VertexArrayObj()
     {
-		Context::RemoveObject(this);
+		ReleaseResources();
     }
 
 	bool VertexArrayObj::IsValid()

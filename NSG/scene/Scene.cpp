@@ -2,7 +2,6 @@
 #include "SceneNode.h"
 #include "Camera.h"
 #include "Light.h"
-#include "Behavior.h"
 #include "Light.h"
 #include "Context.h"
 #include "Octree.h"
@@ -24,12 +23,11 @@
 
 namespace NSG
 {
-	Scene::Scene(const std::string& name)
+    Scene::Scene(const std::string& name)
         : SceneNode(name),
           ambient_(0.3f, 0.3f, 0.3f, 1),
           octree_(new Octree),
           app_(*App::this_),
-          started_(false),
           physicsWorld_(new PhysicsWorld)
     {
         //octree_->InsertUpdate(this);
@@ -54,75 +52,11 @@ namespace NSG
         }
     }
 
-    void Scene::Start()
+	void Scene::Update(float deltaTime)
     {
-        if (!started_)
-        {
-            for (auto& obj : children_)
-                obj->Start();
-
-            started_ = true;
-        }
-    }
-
-    void Scene::Update()
-    {
-		float dt = app_.GetDeltaTime();
-        
-        physicsWorld_->StepSimulation(dt);
-
-        for (auto& obj : children_)
-            obj->Update();
+		physicsWorld_->StepSimulation(deltaTime);
 
         UpdateAnimations();
-    }
-
-    void Scene::ViewChanged(int width, int height)
-    {
-        for (auto& obj : children_)
-            obj->ViewChanged(width, height);
-    }
-
-    void Scene::OnMouseMove(float x, float y)
-    {
-        for (auto& obj : children_)
-            obj->OnMouseMove(x, y);
-    }
-
-    void Scene::OnMouseDown(int button, float x, float y)
-    {
-        for (auto& obj : children_)
-            obj->OnMouseDown(button, x, y);
-    }
-
-    void Scene::OnMouseWheel(float x, float y)
-    {
-        for (auto& obj : children_)
-            obj->OnMouseWheel(x, y);
-    }
-
-    void Scene::OnMouseUp(int button, float x, float y)
-    {
-        for (auto& obj : children_)
-            obj->OnMouseUp(button, x, y);
-    }
-
-	void Scene::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-    {
-        for (auto& obj : children_)
-			obj->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-    }
-
-    void Scene::OnKey(int key, int action, int modifier)
-    {
-        for (auto& obj : children_)
-            obj->OnKey(key, action, modifier);
-    }
-
-    void Scene::OnChar(unsigned int character)
-    {
-        for (auto& obj : children_)
-            obj->OnChar(character);
     }
 
     bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const
@@ -177,7 +111,6 @@ namespace NSG
         return false;
     }
 
-
     void Scene::GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const
     {
         for (auto& obj : needUpdate_)
@@ -185,79 +118,6 @@ namespace NSG
         needUpdate_.clear();
         FrustumOctreeQuery query(visibles, *camera->GetFrustumPointer());
         octree_->Execute(query);
-    }
-
-    void Scene::GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches)
-    {
-        struct MeshNode
-        {
-            PMesh mesh_;
-            const SceneNode* node_;
-        };
-
-        struct MaterialData
-        {
-            PMaterial material_;
-            std::vector<MeshNode> data_;
-        };
-
-        std::sort(visibles.begin(), visibles.end(), [](const SceneNode * a, const SceneNode * b) -> bool
-        {
-            return a->GetMaterial().get() < b->GetMaterial().get();
-        });
-
-        std::vector<MaterialData> materials;
-        PMaterial usedMaterial;
-        for (auto& node : visibles)
-        {
-            PMaterial material = node->GetMaterial();
-            PMesh mesh = node->GetMesh();
-
-            if (usedMaterial != material || !material)
-            {
-                usedMaterial = material;
-                MaterialData materialData;
-                materialData.material_ = material;
-                materialData.data_.push_back({mesh, node});
-                if (!materials.empty())
-                {
-                    MaterialData& lastMaterialData = materials.back();
-                    std::sort(lastMaterialData.data_.begin(), lastMaterialData.data_.end(), [](const MeshNode & a, const MeshNode & b) -> bool
-                    {
-                        return a.mesh_.get() < b.mesh_.get();
-                    });
-                }
-                materials.push_back(materialData);
-            }
-            else
-            {
-                MaterialData& lastMaterial = materials.back();
-                lastMaterial.data_.push_back({mesh, node});
-            }
-        }
-
-        for (auto& material : materials)
-        {
-            PMesh usedMesh;
-            for (auto& obj : material.data_)
-            {
-                bool limitReached = batches.size() && batches.back().nodes_.size() >= MAX_NODES_IN_BATCH;
-                if (obj.mesh_ != usedMesh || !obj.mesh_ || limitReached)
-                {
-                    usedMesh = obj.mesh_;
-                    Batch batch;
-                    batch.material_ = material.material_;
-                    batch.mesh_ = usedMesh;
-                    batch.nodes_.push_back(obj.node_);
-                    batches.push_back(batch);
-                }
-                else
-                {
-                    Batch& lastBatch = batches.back();
-                    lastBatch.nodes_.push_back(obj.node_);
-                }
-            }
-        }
     }
 
     void Scene::Render()
@@ -293,14 +153,14 @@ namespace NSG
 
     void Scene::Save(pugi::xml_document& doc)
     {
-		pugi::xml_node scene = doc.append_child("Scene");
+        pugi::xml_node scene = doc.append_child("Scene");
         pugi::xml_node sceneNode = scene.append_child("SceneNode");
-		SceneNode::Save(sceneNode);
-		SaveMeshes(scene);
-		SaveMaterials(scene);
-		SaveAnimations(scene);
-		SaveSkeletons(scene);
-		
+        SceneNode::Save(sceneNode);
+        SaveMeshes(scene);
+        SaveMaterials(scene);
+        SaveAnimations(scene);
+        SaveSkeletons(scene);
+
     }
 
     void Scene::SaveAnimations(pugi::xml_node& node)
@@ -319,12 +179,12 @@ namespace NSG
             while (child)
             {
                 std::string name = child.attribute("name").as_string();
-				if (!HasAnimation(name))
-				{
-					PAnimation animation = GetOrCreateAnimation(name);
-					animation->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
-					animation->Load(child);
-				}
+                if (!HasAnimation(name))
+                {
+                    PAnimation animation = GetOrCreateAnimation(name);
+                    animation->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
+                    animation->Load(child);
+                }
                 child = child.next_sibling("Animation");
             }
         }
@@ -354,15 +214,15 @@ namespace NSG
             while (child)
             {
                 std::string meshName = child.attribute("meshName").as_string();
-				PModelMesh mesh = std::dynamic_pointer_cast<ModelMesh>(app_.GetMesh(meshName));
+                PModelMesh mesh = std::dynamic_pointer_cast<ModelMesh>(app_.GetMesh(meshName));
                 CHECK_CONDITION(mesh, __FILE__, __LINE__);
-				if (!mesh->GetSkeleton())
-				{
-					PSkeleton skeleton(new Skeleton(mesh));
-					skeleton->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
-					skeleton->Load(child);
-					mesh->SetSkeleton(skeleton);
-				}
+                if (!mesh->GetSkeleton())
+                {
+                    PSkeleton skeleton(new Skeleton(mesh));
+                    skeleton->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
+                    skeleton->Load(child);
+                    mesh->SetSkeleton(skeleton);
+                }
                 child = child.next_sibling("Skeleton");
             }
         }
@@ -376,9 +236,9 @@ namespace NSG
         pugi::xml_node scene = doc.child("Scene");
         if (scene)
         {
-			SceneNode::Load(scene.child("SceneNode"), data);
-			LoadAnimations(scene);
-			LoadSkeletons(scene);
+            SceneNode::Load(scene.child("SceneNode"), data);
+            LoadAnimations(scene);
+            LoadSkeletons(scene);
         }
     }
 
@@ -411,9 +271,9 @@ namespace NSG
     bool Scene::PlayAnimation(const std::string& name, bool looped)
     {
         PAnimation animation = animations_.Get(name);
-		if (animation)
-			return PlayAnimation(animation, looped);
-		return false;
+        if (animation)
+            return PlayAnimation(animation, looped);
+        return false;
     }
 
     bool Scene::PlayAnimation(const PAnimation& animation, bool looped)
@@ -456,15 +316,15 @@ namespace NSG
         return true;
     }
 
-	void Scene::AddLight(PLight light)
-	{
-		lights_[light->GetType()].push_back(light);
-	}
+    void Scene::AddLight(PLight light)
+    {
+        lights_[light->GetType()].push_back(light);
+    }
 
-	const std::vector<PWeakLight>& Scene::GetLights(LightType type) const
-	{
-		return lights_[type];
-	}
+    const std::vector<PWeakLight>& Scene::GetLights(LightType type) const
+    {
+        return lights_[type];
+    }
 
     void Scene::AddCamera(PCamera camera)
     {
@@ -475,6 +335,4 @@ namespace NSG
     {
         return cameras_;
     }
-
-
 }

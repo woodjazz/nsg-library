@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "FrameColorSelection.h"
 #include "App.h"
 #include "Check.h"
-#include "Behavior.h"
 #include "Technique.h"
 #include "Graphics.h"
 #include "Material.h"
@@ -44,22 +43,20 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    SceneNode::SceneNode(const std::string& name)
-        : Node(name),
-          app_(*App::this_),
-          octant_(nullptr),
-          occludee_(false),
-          worldBBNeedsUpdate_(true),
-          serializable_(true)
-    {
-    }
+	SceneNode::SceneNode(const std::string& name)
+		: Node(name),
+		app_(*App::this_),
+		octant_(nullptr),
+		occludee_(false),
+		worldBBNeedsUpdate_(true),
+		serializable_(true),
+        signalCollision_(new Signal<const ContactPoint&>()),
+        signalXMLLoaded_(new Signal<>())
+	{
+	}
 
     SceneNode::~SceneNode()
     {
-        if (rigidBody_)
-            rigidBody_->SetSceneNode(nullptr);
-
-        Context::RemoveObject(this);
     }
 
     void SceneNode::SetResource(PResource resource)
@@ -73,8 +70,10 @@ namespace NSG
 
     bool SceneNode::IsValid()
     {
-        bool valid = !resource_ || resource_->IsLoaded();
+        bool valid = !resource_ || resource_->IsReady();
         valid &= !mesh_ || mesh_->IsReady();
+        valid &= !material_|| material_->IsReady();
+		valid &= !rigidBody_ || rigidBody_->IsReady();
         return valid;
     }
 
@@ -89,6 +88,7 @@ namespace NSG
                 CachedData data;
                 LoadMeshesAndMaterials(doc, data);
                 Load(doc, data);
+                signalXMLLoaded_->Run();
             }
             else
             {
@@ -102,7 +102,11 @@ namespace NSG
 
     void SceneNode::Set(PMaterial material)
     {
-        material_ = material;
+        if(material_ != material)
+        {
+            material_ = material;
+            Invalidate();
+        }
     }
 
     void SceneNode::Set(PMesh mesh)
@@ -127,13 +131,18 @@ namespace NSG
                 worldBBNeedsUpdate_ = true;
                 scene_.lock()->GetOctree()->InsertUpdate(this);
             }
+            Invalidate();
         }
     }
 
-    void SceneNode::Set(PRigidBody rigidBody)
+    PRigidBody SceneNode::GetOrCreateRigidBody()
     {
-        rigidBody_ = rigidBody;
-        rigidBody_->SetSceneNode(this);
+        if(!rigidBody_)
+        {
+            rigidBody_ = std::make_shared<RigidBody>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
+            Invalidate();
+        }
+        return rigidBody_;
     }
 
     void SceneNode::OnScaleChange()
@@ -156,108 +165,6 @@ namespace NSG
         {
             scene_.lock()->GetOctree()->Remove(this);
         }
-    }
-
-    void SceneNode::AddBehavior(PBehavior behavior)
-    {
-        if (behavior)
-        {
-            behaviors_.push_back(behavior);
-            behavior->sceneNode_ = this;
-        }
-    }
-
-    void SceneNode::Start()
-    {
-        for (auto& obj : behaviors_)
-            obj->Start();
-
-        for (auto& obj : children_)
-            obj->Start();
-    }
-
-    void SceneNode::Update()
-    {
-        if (rigidBody_)
-            rigidBody_->IsReady(); // forces the rigidbody to allocate the resources when becomes valid
-
-        for (auto& obj : behaviors_)
-            obj->Update();
-
-        for (auto& obj : children_)
-            obj->Update();
-    }
-
-    void SceneNode::ViewChanged(int width, int height)
-    {
-        for (auto& obj : behaviors_)
-            obj->ViewChanged(width, height);
-
-        for (auto& obj : children_)
-            obj->ViewChanged(width, height);
-    }
-
-    void SceneNode::OnMouseMove(float x, float y)
-    {
-        for (auto& obj : behaviors_)
-            obj->OnMouseMove(x, y);
-
-        for (auto& obj : children_)
-            obj->OnMouseMove(x, y);
-    }
-
-    void SceneNode::OnMouseDown(int button, float x, float y)
-    {
-        for (auto& obj : behaviors_)
-            obj->OnMouseDown(button, x, y);
-
-        for (auto& obj : children_)
-            obj->OnMouseDown(button, x, y);
-    }
-
-    void SceneNode::OnMouseWheel(float x, float y)
-    {
-        for (auto& obj : behaviors_)
-            obj->OnMouseWheel(x, y);
-
-        for (auto& obj : children_)
-            obj->OnMouseWheel(x, y);
-    }
-
-    void SceneNode::OnMouseUp(int button, float x, float y)
-    {
-        for (auto& obj : behaviors_)
-            obj->OnMouseUp(button, x, y);
-
-        for (auto& obj : children_)
-            obj->OnMouseUp(button, x, y);
-    }
-
-    void SceneNode::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-    {
-        for (auto& obj : behaviors_)
-            obj->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-
-        for (auto& obj : children_)
-            obj->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-    }
-
-    void SceneNode::OnKey(int key, int action, int modifier)
-    {
-        for (auto& obj : behaviors_)
-            obj->OnKey(key, action, modifier);
-
-        for (auto& obj : children_)
-            obj->OnKey(key, action, modifier);
-    }
-
-    void SceneNode::OnChar(unsigned int character)
-    {
-        for (auto& obj : behaviors_)
-            obj->OnChar(character);
-
-        for (auto& obj : children_)
-            obj->OnChar(character);
     }
 
     void SceneNode::OnDirty() const
@@ -474,10 +381,6 @@ namespace NSG
     
     void SceneNode::OnCollision(const ContactPoint& contactInfo)
     {
-        for (auto& obj : behaviors_)
-            obj->OnCollision(contactInfo);
-
-        for (auto& obj : children_)
-            obj->OnCollision(contactInfo);
+        signalCollision_->Run(contactInfo);
     }
 }

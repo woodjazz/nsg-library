@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-#include "EarthBehavior.h"
 using namespace NSG;
 
 struct Sample : App
@@ -36,75 +35,88 @@ struct Sample : App
     static const int ROWS = 11;
     PSceneNode earth_[COLS][ROWS];
     PLight light_;
+	PCameraControl control_;
 
     Sample()
     {
-        //AppConfiguration::this_->width_ = 30;
-        //AppConfiguration::this_->height_ = 20;
         AppConfiguration::this_->showStatistics_ = true;
-    }
 
-    void Start(int argc, char* argv[]) override
-    {
-        PSphereMesh pSphereMesh(CreateSphereMesh(3, 24));
+		static auto slot = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			scene_ = GetOrCreateScene("scene000");
+			SetCurrentScene(scene_);
 
-		PTexture pEarthTexture1(GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
-		PTexture pEarthTexture2(GetOrCreateTextureFile("data/jup0vss1.jpg"));
-        PMaterial pMaterial1(GetOrCreateMaterial("earth1"));
-		PMaterial pMaterial2(GetOrCreateMaterial("earth2"));
-		PProgram program(GetOrCreateProgram("program0"));
-		program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-        PTechnique technique(new Technique);
-        PPass pass(new Pass);
-        technique->Add(pass);
-        pass->SetProgram(program);
-        pMaterial1->SetTechnique(technique);
-		pMaterial1->SetDiffuseMap(pEarthTexture1);
-        pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
-        pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
-        pMaterial1->SetShininess(10);
+			PSphereMesh pSphereMesh(CreateSphereMesh(3, 24));
 
-        pMaterial2->SetTechnique(technique);
-		pMaterial2->SetDiffuseMap(pEarthTexture2);
-        pMaterial2->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
-        pMaterial2->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
-        pMaterial2->SetShininess(100);
+			PTexture pEarthTexture1(GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
+			PTexture pEarthTexture2(GetOrCreateTextureFile("data/jup0vss1.jpg"));
+			PMaterial pMaterial1(GetOrCreateMaterial("earth1"));
+			PMaterial pMaterial2(GetOrCreateMaterial("earth2"));
+			PProgram program(GetOrCreateProgram("program0"));
+			program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
+			PTechnique technique(new Technique);
+			PPass pass(new Pass);
+			technique->Add(pass);
+			pass->SetProgram(program);
+			pMaterial1->SetTechnique(technique);
+			pMaterial1->SetDiffuseMap(pEarthTexture1);
+			pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
+			pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
+			pMaterial1->SetShininess(10);
 
-		scene_ = GetCurrentScene();
+			pMaterial2->SetTechnique(technique);
+			pMaterial2->SetDiffuseMap(pEarthTexture2);
+			pMaterial2->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
+			pMaterial2->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
+			pMaterial2->SetShininess(100);
 
-		camera_ = scene_->GetOrCreateChild<Camera>("camera");
-        camera_->Activate();
+			camera_ = scene_->GetOrCreateChild<Camera>("camera");
+			camera_->Activate();
 
-        camera_->AddBehavior(PCameraControl(new CameraControl));
+			control_ = PCameraControl(new CameraControl(camera_));
+			
+			static const float STEP = 8.0f;
+			Vector3 position(0, 0, -10);
+			for (int r = 0; r < ROWS; r++)
+			{
+				for (int c = 0; c < COLS; c++)
+				{
+					earth_[c][r] = scene_->GetOrCreateChild<SceneNode>(GetUniqueName());
+					earth_[c][r]->SetPosition(position);
+					earth_[c][r]->Set(pSphereMesh);
+					earth_[c][r]->Set(pMaterial1);
+					std::swap(pMaterial1, pMaterial2);
 
-        static const float STEP = 8.0f;
-        Vector3 position(0, 0, -10);
-        for (int r = 0; r < ROWS; r++)
-        {
-            for (int c = 0; c < COLS; c++)
-            {
-				earth_[c][r] = scene_->GetOrCreateChild<SceneNode>(GetUniqueName());
-				earth_[c][r]->AddBehavior(PBehavior(new EarthBehavior));
-                earth_[c][r]->SetPosition(position);
-                earth_[c][r]->Set(pSphereMesh);
-                earth_[c][r]->Set(pMaterial1);
-                std::swap(pMaterial1, pMaterial2);
+					position.x += STEP;
+				}
+				position.x = 0;
+				position.y -= STEP;
+			}
 
-                position.x += STEP;
-            }
-            position.x = 0;
-            position.y -= STEP;
-        }
+			Vertex3 camPos(COLS / 2 * STEP, -(ROWS) / 2 * STEP, 75);
+			Vertex3 lighPos(Vertex2(camPos), -5);
 
-        Vertex3 camPos(COLS/2*STEP, -(ROWS)/2*STEP, 75);
-        Vertex3 lighPos(Vertex2(camPos), -5);
-        
-		light_ = scene_->GetOrCreateChild<Light>("light");
-        light_->SetPosition(lighPos);
-        
-        camera_->SetPosition(camPos);
-        Vector3 lookAtPoint(Vertex2(camPos), 0);
-		camera_->SetGlobalLookAt(lookAtPoint);
+			light_ = scene_->GetOrCreateChild<Light>("light");
+			light_->SetPosition(lighPos);
+
+			camera_->SetPosition(camPos);
+			Vector3 lookAtPoint(Vertex2(camPos), 0);
+			camera_->SetGlobalLookAt(lookAtPoint);
+		});
+
+		static auto updateSlot = signalUpdate_->Connect([&](float deltaTime)
+		{
+			static float x_angle(0);
+			static float y_angle(0);
+
+			for (int r = 0; r < ROWS; r++)
+				for (int c = 0; c < COLS; c++)
+					earth_[c][r]->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
+
+
+			x_angle += glm::pi<float>() / 10.0f * deltaTime;
+			y_angle += glm::pi<float>() / 10.0f * deltaTime;
+		});
     }
 };
 

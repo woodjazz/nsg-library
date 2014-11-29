@@ -31,7 +31,6 @@ namespace NSG
 
     Material::~Material()
     {
-        Context::RemoveObject(this);
     }
 
     void Material::SetColor(Color color)

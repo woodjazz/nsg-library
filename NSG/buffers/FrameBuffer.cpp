@@ -90,7 +90,7 @@ namespace NSG
 
     FrameBuffer::~FrameBuffer()
     {
-        Context::RemoveObject(this);
+		ReleaseResources();
     }
 
     bool FrameBuffer::IsValid()

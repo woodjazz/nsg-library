@@ -62,7 +62,6 @@ namespace NSG
 
     Pass::~Pass()
     {
-        Context::RemoveObject(this);
     }
 
     void Pass::SetBlendMode(BLEND_MODE mode)

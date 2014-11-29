@@ -24,23 +24,21 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GPUObject.h"
+#include "Object.h"
 #include "SharedPointers.h"
 
 namespace NSG
 {
-	class ShowTexture : public GPUObject
+	class ShowTexture : public Object
 	{
 	public:
 		ShowTexture();
 		~ShowTexture();
-		virtual bool IsValid();
-		virtual void AllocateResources();
-		virtual void ReleaseResources();
 		void SetNormal(PTexture texture);
 		void SetFont(PTexture texture);
 		void Show();
 	private:
+		bool IsValid() override;
 		App& app_;
         PPass pass_;
         PMaterial material_;

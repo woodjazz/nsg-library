@@ -38,6 +38,7 @@ namespace NSG
 {
 
 	Shader::Shader(GLenum type, const char* source)
+	: source_(source)
 	{
         CHECK_GL_STATUS(__FILE__, __LINE__);
 

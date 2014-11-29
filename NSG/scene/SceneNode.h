@@ -27,14 +27,15 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Node.h"
 #include "BoundingBox.h"
-#include "GPUObject.h"
+#include "Object.h"
+#include "SignalSlots.h"
 #include <string>
 #include <vector>
 
 namespace NSG
 {
 	class Octant;
-	class SceneNode : public Node, public GPUObject
+	class SceneNode : public Node, public Object
 	{
 	public:
 		SceneNode(const std::string& name);
@@ -42,9 +43,8 @@ namespace NSG
 		PMaterial GetMaterial() const { return material_; }
 		void Set(PMaterial material);
 		void Set(PMesh mesh);
-		void Set(PRigidBody rigidBody);
+		PRigidBody GetOrCreateRigidBody();
 		PMesh GetMesh() const { return mesh_; }
-		void AddBehavior(PBehavior behavior);
 		void SetOctant(Octant* octant) const { octant_ = octant; }
 		const BoundingBox& GetWorldBoundingBox() const;
 		BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const;
@@ -52,19 +52,7 @@ namespace NSG
 		Octant* GetOctant() const { return octant_; }
 		virtual void OnDirty() const override;
 		void OnScaleChange() override;
-		virtual bool IsValid() override;
-		virtual void AllocateResources() override;
-		virtual void Start() override;
-		virtual void Update() override;
-        virtual void ViewChanged(int width, int height) override;
-        virtual void OnMouseMove(float x, float y) override;
-		virtual void OnMouseDown(int button, float x, float y) override;
-        virtual void OnMouseWheel(float x, float y) override;
-		virtual void OnMouseUp(int button, float x, float y) override;
-		virtual void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers) override;
-        virtual void OnKey(int key, int action, int modifier) override;
-        virtual void OnChar(unsigned int character) override;
-        virtual void OnCollision(const ContactPoint& contactInfo) override;
+        virtual void OnCollision(const ContactPoint& contactInfo);
 		void OnEnable() override;
 		void OnDisable() override;
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
@@ -75,7 +63,12 @@ namespace NSG
 		void SaveChildren(pugi::xml_node& node);
 		virtual void Load(const pugi::xml_node& child, const CachedData& data);
 		void LoadChildren(const pugi::xml_node& node, const CachedData& data);
+	public:
+		SignalCollision::PSignal signalCollision_;
+		SignalXMLLoaded::PSignal signalXMLLoaded_;
 	protected:
+		virtual bool IsValid() override;
+		virtual void AllocateResources() override;
 		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
 		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
 		App& app_;
@@ -83,7 +76,6 @@ namespace NSG
 		PMaterial material_;
 		PMesh mesh_;
 		PRigidBody rigidBody_;
-		std::vector<PBehavior> behaviors_;
 		mutable Octant* octant_;
 		mutable BoundingBox worldBB_;
 		bool occludee_;

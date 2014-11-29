@@ -26,11 +26,11 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Constants.h"
-#include "GPUObject.h"
+#include "Object.h"
 
 namespace NSG
 {
-    class Render2Texture : public GPUObject
+    class Render2Texture : public Object
     {
     public:
         Render2Texture(int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
@@ -39,7 +39,7 @@ namespace NSG
         void End();
         PTexture GetTexture() const;
     private:
-        virtual bool IsValid() override;
+        bool IsValid() override;
         PFrameBuffer frameBuffer_;
         UseBuffer buffer_;
         int width_;

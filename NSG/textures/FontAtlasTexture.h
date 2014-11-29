@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "AppListeners.h"
 #include "VertexData.h"
 #include "Path.h"
 #include <string>
@@ -33,7 +32,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class FontAtlasTexture : public IViewChangedListener
+	class FontAtlasTexture
 	{
 	public:
 		FontAtlasTexture(const Path& path);
@@ -43,7 +42,6 @@ namespace NSG
 		unsigned int GetCharacterPositionForWidth(const char* text, float width);
 		bool IsReady();
 		PTexture GetTexture() const { return texture_; }
-		virtual void OnViewChanged(int width, int height) override;
 
 	private:
         bool ParseXML();
@@ -63,6 +61,7 @@ namespace NSG
 		
 		typedef std::map<int, CharInfo> CharsMap;
         CharsMap charsMap_;
+		SignalViewChanged::PSlot slotViewChanged_;
 	};
 
 }

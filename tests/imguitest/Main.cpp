@@ -36,27 +36,27 @@ struct Test : public App
     {
     	void Begin() 
     	{
-    		IMGUI::OnMouseDown(0, -0.5f, -0.5f);
+    		App::this_->signalMouseDown_->Run(0, -0.5f, -0.5f);
     	}
 
     	void Stay()
     	{
             if(text1 == "")
             {
-				IMGUI::OnMouseUp(0, -0.5f, -0.5f);
-                IMGUI::OnChar('i');
+				App::this_->signalMouseUp_->Run(0, -0.5f, -0.5f);
+				App::this_->signalChar_->Run('i');
             }
     		else if(text1 == "i")
     		{
-    			IMGUI::OnChar('n');
+				App::this_->signalChar_->Run('n');
     		}
     		else if(text1 == "in")
     		{
-    			IMGUI::OnChar('i');
+				App::this_->signalChar_->Run('i');
     		}
     		else if(text1 == "ini")
     		{
-    			IMGUI::OnChar('t');
+				App::this_->signalChar_->Run('t');
     		}
     	}
 
@@ -71,24 +71,24 @@ struct Test : public App
     	void Begin() 
     	{
     		CHECK_ASSERT(text1 == "init", __FILE__, __LINE__);
-            IMGUI::OnMouseDown(0, 0.5f, -0.5f);
+			App::this_->signalMouseDown_->Run(0, 0.5f, -0.5f);
     	}
 
         void Stay()
         {
             if(text2 == "")
             {
-                IMGUI::OnMouseUp(0, 0.5f, -0.5f);
+				App::this_->signalMouseUp_->Run(0, 0.5f, -0.5f);
 
-                IMGUI::OnChar('s');
+				App::this_->signalChar_->Run('s');
             }
             else if(text2 == "s")
             {
-                IMGUI::OnChar('t');
+				App::this_->signalChar_->Run('t');
             }
             else if(text2 == "st")
             {
-                IMGUI::OnChar('1');
+				App::this_->signalChar_->Run('1');
             }
         }
 
@@ -102,12 +102,12 @@ struct Test : public App
     {
     	void Begin() 
     	{
-            IMGUI::OnMouseDown(0, 0, 0.5f);
+			App::this_->signalMouseDown_->Run(0, 0, 0.5f);
     	}
 
         void Stay()
         {
-            IMGUI::OnMouseUp(0, 0, 0.5f);
+			App::this_->signalMouseUp_->Run(0, 0, 0.5f);
         }
 
         void End()
@@ -131,24 +131,30 @@ struct Test : public App
     END end_;
     PMachine machine_;
 	PScene scene_;
+	SignalStart::PSlot slotStart_;
+	SignalUpdate::PSlot slotUpdate_;
 
-	void Start(int argc, char* argv[]) override
+	Test()
 	{
-		scene_ = GetCurrentScene();
-		//IMGUI::Context::this_->pSkin_->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
-		//IMGUI::Context::this_->pSkin_->textStyle_->fontFile_ = "font/FreeSans.ttf";
-	    initializing_.AddTransition(state1_).When([&]() { return text1 == "init"; });
-	    state1_.AddTransition(state2_).When([&]() { return text2 == "st1"; });
-	    state2_.AddTransition(end_).When([&]() { return text1 == "State2"; });
-	    machine_ = PMachine(new Machine(initializing_));
-	}
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			scene_ = GetOrCreateScene("scene000");
+			SetCurrentScene(scene_);
+			//IMGUI::Context::this_->pSkin_->buttonStyle_->fontFile_ = "font/FreeSans.ttf";
+			//IMGUI::Context::this_->pSkin_->textStyle_->fontFile_ = "font/FreeSans.ttf";
+			initializing_.AddTransition(state1_).When([&]() { return text1 == "init"; });
+			state1_.AddTransition(state2_).When([&]() { return text2 == "st1"; });
+			state2_.AddTransition(end_).When([&]() { return text1 == "State2"; });
+			machine_ = PMachine(new Machine(initializing_));
+		});
 
-	void Update() override
-	{
-        if(IMGUI::IsReady())
-        {
-		    machine_->Update();
-        }
+		slotUpdate_ = signalUpdate_->Connect([&](float deltaTime)
+		{
+			if (IMGUI::IsReady())
+			{
+				machine_->Update();
+			}
+		});
 	}
 
 	void RenderGUIWindow() override

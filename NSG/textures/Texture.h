@@ -25,11 +25,11 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "GPUObject.h"
+#include "Object.h"
 
 namespace NSG
 {
-    class Texture : public GPUObject
+    class Texture : public Object
     {
     public:
         Texture(GLint format, GLsizei width, GLsizei height, const char* pixels);
@@ -40,9 +40,6 @@ namespace NSG
 		GLsizei GetHeight() const;
 		GLint GetFormat() const;
 		int GetChannels() const;
-        virtual bool IsValid() override;
-        virtual void AllocateResources() override;
-        virtual void ReleaseResources() override;
         void Save(pugi::xml_node& node);
         static PTexture CreateFrom(const pugi::xml_node& node);
         void SetSerializable(bool serializable);
@@ -52,6 +49,9 @@ namespace NSG
         void SetWrapMode(TextureWrapMode mode);
         void SetFilterMode(TextureFilterMode mode);
     private:
+        virtual bool IsValid() override;
+        virtual void AllocateResources() override;
+        virtual void ReleaseResources() override;
 		Texture(const Path& path);
 		Texture(PResourceFile resource);
         const unsigned char* GetImageData();

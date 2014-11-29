@@ -41,7 +41,6 @@ misrepresented as being the original software.
 #include "SharedPointers.h"
 #include "FrameColorSelection.h"
 #include "Camera.h"
-#include "Behavior.h"
 #include "BoxMesh.h"
 #include "SphereMesh.h"
 #include "PlaneMesh.h"

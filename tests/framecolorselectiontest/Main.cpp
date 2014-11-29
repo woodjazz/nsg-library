@@ -33,23 +33,22 @@ struct Test : public App
     PSceneNode sceneNode_;
     PFrameColorSelection colorSelection_;
 	bool exit_;
+	SignalStart::PSlot slotStart_;
 
 	Test()
 		:exit_(false)
 	{
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			scene_ = GetOrCreateScene("scene000");
+			SetCurrentScene(scene_);
+			PBoxMesh pMesh(CreateBoxMesh(1, 1, 1, 2, 2, 2));
 
-	}
+			sceneNode_ = scene_->GetOrCreateChild<SceneNode>("scene node");
+			sceneNode_->Set(pMesh);
 
-	void Start(int argc, char* argv[]) override
-	{
-		scene_ = GetCurrentScene();
-        PBoxMesh pMesh(CreateBoxMesh(1,1,1, 2,2,2));
-        
-		sceneNode_ = scene_->GetOrCreateChild<SceneNode>("scene node");
-        sceneNode_->Set(pMesh);
-
-        colorSelection_ = PFrameColorSelection(new FrameColorSelection);
-       
+			colorSelection_ = PFrameColorSelection(new FrameColorSelection);
+		});
 	}
 
 	void RenderFrame() override

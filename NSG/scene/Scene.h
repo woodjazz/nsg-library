@@ -45,18 +45,9 @@ namespace NSG
 		const std::vector<PWeakLight>& GetLights(LightType type) const;
         void AddCamera(PCamera camera);
         const std::vector<PWeakCamera>& GetCameras() const;
-        void Start();
-        void Update();
+        void Update(float deltaTime);
         void Render();
         void Load(PResource resource);
-        void ViewChanged(int width, int height);
-        void OnMouseMove(float x, float y);
-        void OnMouseDown(int button, float x, float y);
-        void OnMouseWheel(float x, float y);
-        void OnMouseUp(int button, float x, float y);
-		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
-        void OnKey(int key, int action, int modifier);
-        void OnChar(unsigned int character);
         void NeedUpdate(SceneNode* obj);
         void GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const;
         POctree GetOctree() const { return octree_; }
@@ -72,7 +63,6 @@ namespace NSG
         bool PlayAnimation(const PAnimation& animation, bool looped);
         bool SetAnimationSpeed(const std::string& name, float speed);
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
-		void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
     protected:
         void SaveMeshes(pugi::xml_node& node);
         void SaveMaterials(pugi::xml_node& node);
@@ -90,7 +80,6 @@ namespace NSG
         POctree octree_;
         mutable std::set<SceneNode*> needUpdate_;
         App& app_;
-        bool started_;
 		MapAndVector<std::string, Animation> animations_;
         typedef std::map<std::string, PAnimationState> AnimationStateMap;
         AnimationStateMap animationStateMap_;

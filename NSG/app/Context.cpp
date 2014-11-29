@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #include "Context.h"
 #include "Check.h"
-#include "GPUObject.h"
+#include "Object.h"
 #include "FontAtlasTextureManager.h"
 #include "Texture.h"
 #include "Keyboard.h"
@@ -54,77 +54,38 @@ namespace NSG
 		Context::this_ = nullptr;
     }
 
-	void Context::AddObject(GPUObject* object)
+	void Context::AddObject(Object* object)
     {
 		if (Context::this_)
 			Context::this_->Add(object);
     }
 
-	void Context::RemoveObject(GPUObject* object)
+	void Context::RemoveObject(Object* object)
     {
-		object->Release();
-
 		if (Context::this_)
 			Context::this_->Remove(object);
 	}
 	
-	void Context::Add(GPUObject* object)
+	void Context::Add(Object* object)
 	{
 		CHECK_CONDITION(objects_.insert(object).second, __FILE__, __LINE__);
 	}
 
-	void Context::Remove(GPUObject* object)
+	void Context::Remove(Object* object)
 	{
 		CHECK_CONDITION(objects_.erase(object), __FILE__, __LINE__);
 	}
 
-    void Context::InvalidateGPUResources()
+    void Context::InvalidateObjects()
     {
-        TRACE_LOG("Context::InvalidateGPUResources...");
+        TRACE_LOG("Context::InvalidateObjects...");
 		
 		for (auto& obj : objects_)
 			obj->Invalidate();
 			
         Graphics::this_->ResetCachedState();
 
-        TRACE_LOG("Context::InvalidateGPUResources done");
-    }
-
-	void Context::AddResource(Resource* object)
-	{
-		if (Context::this_)
-			Context::this_->Add(object);
-	}
-
-	void Context::RemoveResource(Resource* object)
-	{
-		if (Context::this_)
-			Context::this_->Remove(object);
-	}
-
-
-    void Context::Add(Resource* object)
-    {
-        CHECK_CONDITION(resources_.insert(object).second, __FILE__, __LINE__);
-    }
-
-    void Context::Remove(Resource* object)
-    {
-        CHECK_CONDITION(resources_.erase(object), __FILE__, __LINE__);
-    }
-
-    void Context::ReleaseResourcesFromMemory()
-    {
-        TRACE_LOG("Context::ReleaseResourcesFromMemory...");
-
-        auto it = resources_.begin();
-        while (it != resources_.end())
-        {
-            (*it)->Invalidate();
-            ++it;
-        }
-
-        TRACE_LOG("Context::ReleaseResourcesFromMemory done");
+        TRACE_LOG("Context::InvalidateObjects done");
     }
 
     PTexture Context::GetWhiteTexture()

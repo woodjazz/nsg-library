@@ -53,10 +53,15 @@ static const char* VS_GLSL = \
 "					  );\n"\
 "				#endif\n"\
 "			#endif\n"\
-"			for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) \n"\
-"				v_lightDirection[i] = worldPos - u_pointLights[i].position;\n"\
-"			for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) \n"\
-"				v_light2Pixel[i] = worldPos - u_spotLights[i].point.position;\n"\
+"			#ifdef HAS_POINT_LIGHTS\n"\
+"				for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) \n"\
+"					v_lightDirection[i] = worldPos - u_pointLights[i].position;\n"\
+"			#endif\n"\
+"			#ifdef HAS_SPOT_LIGHTS\n"\
+"				for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) \n"\
+"					v_light2Pixel[i] = worldPos - u_spotLights[i].point.position;\n"\
+"					\n"\
+"			#endif\n"\
 "			v_color = a_color;\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
 "		    #ifdef LIGHTMAP\n"\

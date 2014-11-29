@@ -57,143 +57,135 @@ namespace NSG
 
     ResourceFile::~ResourceFile()
     {
-        Context::RemoveResource(this);
     }
 
-    bool ResourceFile::IsLoaded()
+    bool ResourceFile::IsValid()
     {
-        if (!loaded_ && path_.HasName())
+        #if NACL
         {
-            #if NACL
+            return pLoader_->IsDone() && pLoader_->HasSucceed();
+        }
+        #else
+        {
+            return path_.HasName();
+        }
+        #endif
+    }
+
+    void ResourceFile::AllocateResources()
+    {
+        bool loaded = false;
+
+        #if NACL
+        {
+            buffer_.resize(pLoader_->GetData().size());
+            memcpy(&buffer_[0], pLoader_->GetData().c_str(), pLoader_->GetData().size());
+            pLoader_ = nullptr;
+            loaded = true;
+        }
+        #elif ANDROID
+        {
+            #if SDL
             {
-                if (pLoader_->IsDone())
+                SDL_RWops* assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
+
+                if (!assetHandle)
                 {
-                    if (pLoader_->HasSucceed())
+                    if (trySecondTime_)
                     {
-                        buffer_.resize(pLoader_->GetData().size());
-                        memcpy(&buffer_[0], pLoader_->GetData().c_str(), pLoader_->GetData().size());
-                        pLoader_ = nullptr;
-                        loaded_ = true;
+                        trySecondTime_ = false;
+                        if (path_.AppendDirIfDoesNotExist("data"))
+                            assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
                     }
                 }
-            }
-            #elif ANDROID
-            {
-                #if SDL
+
+                if (assetHandle)
                 {
-                    SDL_RWops* assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
-
-                    if (!assetHandle)
-                    {
-                        if (trySecondTime_)
-                        {
-                            trySecondTime_ = false;
-                            if(path_.AppendDirIfDoesNotExist("data"))
-                                assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
-                        }
-                    }
-
-                    if (assetHandle)
-                    {
-                        off_t filelength = assetHandle->hidden.androidio.size;
-                        buffer_.resize((int)filelength);
-                        SDL_RWread(assetHandle, &buffer_[0], filelength, 1);
-                        SDL_RWclose(assetHandle);
-                        loaded_ = true;
-                    }
+                    off_t filelength = assetHandle->hidden.androidio.size;
+                    buffer_.resize((int)filelength);
+                    SDL_RWread(assetHandle, &buffer_[0], filelength, 1);
+                    SDL_RWclose(assetHandle);
+                    loaded = true;
                 }
-                #else
-                {
-                    assert(pAAssetManager_ != nullptr);
-
-                    AAsset* pAsset = AAssetManager_open(pAAssetManager_, path_.GetFilePath().c_str(), AASSET_MODE_BUFFER);
-
-                    if (!pAsset)
-                    {
-                        if (trySecondTime_)
-                        {
-                            trySecondTime_ = false;
-                            if(path_.AppendDirIfDoesNotExist("data"))
-                                pAsset = AAssetManager_open(pAAssetManager_, path_.GetFilePath().c_str(), AASSET_MODE_BUFFER);
-                        }
-                    }
-
-                    if (pAsset)
-                    {
-                        off_t filelength = AAsset_getLength(pAsset);
-                        buffer_.resize((int)filelength);
-                        AAsset_read(pAsset, &buffer_[0], filelength);
-                        AAsset_close(pAsset);
-                        loaded_ = true;
-                    }
-                }
-                #endif
             }
             #else
             {
-                SetCurrentDir(path_.GetAbsolutePath());
+                assert(pAAssetManager_ != nullptr);
 
-                std::ifstream file(path_.GetFilename(), std::ios::binary);
+                AAsset* pAsset = AAssetManager_open(pAAssetManager_, path_.GetFilePath().c_str(), AASSET_MODE_BUFFER);
 
-                if (!file.is_open())
+                if (!pAsset)
                 {
-                    if(path_.AppendDirIfDoesNotExist("data"))
-                        file.open(path_.GetFilePath().c_str(), std::ios::binary);
-                }
-
-                #if defined(__APPLE__) && defined(SDL)
-                {
-                    if (!file.is_open())
+                    if (trySecondTime_)
                     {
-                        char* base_path = SDL_GetBasePath();
-                        CHECK_CONDITION(base_path, __FILE__, __LINE__);
-                        std::string path(base_path);
-                        SDL_free(base_path);
-                        if (path_.IsPathRelative())
-                        {
-                            path += "data/";
-                        }
-                        path += path_.GetFilename();
-                        file.open(path.c_str(), std::ios::binary);
+                        trySecondTime_ = false;
+                        if (path_.AppendDirIfDoesNotExist("data"))
+                            pAsset = AAssetManager_open(pAAssetManager_, path_.GetFilePath().c_str(), AASSET_MODE_BUFFER);
                     }
                 }
-                #endif
 
-                if (file.is_open())
+                if (pAsset)
                 {
-                    file.seekg(0, std::ios::end);
-                    std::streampos filelength = file.tellg();
-                    file.seekg(0, std::ios::beg);
+                    off_t filelength = AAsset_getLength(pAsset);
                     buffer_.resize((int)filelength);
-                    file.read(&buffer_[0], filelength);
-                    CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
-                    file.close();
-                    loaded_ = true;
+                    AAsset_read(pAsset, &buffer_[0], filelength);
+                    AAsset_close(pAsset);
+                    loaded = true;
+                }
+            }
+            #endif
+        }
+        #else
+        {
+            SetCurrentDir(path_.GetAbsolutePath());
+
+            std::ifstream file(path_.GetFilename(), std::ios::binary);
+
+            if (!file.is_open())
+            {
+                if (path_.AppendDirIfDoesNotExist("data"))
+                    file.open(path_.GetFilePath().c_str(), std::ios::binary);
+            }
+
+            #if defined(__APPLE__) && defined(SDL)
+            {
+                if (!file.is_open())
+                {
+                    char* base_path = SDL_GetBasePath();
+                    CHECK_CONDITION(base_path, __FILE__, __LINE__);
+                    std::string path(base_path);
+                    SDL_free(base_path);
+                    if (path_.IsPathRelative())
+                    {
+                        path += "data/";
+                    }
+                    path += path_.GetFilename();
+                    file.open(path.c_str(), std::ios::binary);
                 }
             }
             #endif
 
-            if (loaded_)
+            if (file.is_open())
             {
-                TRACE_LOG("Resource::File " << path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
-            }
-            else
-            {
-                #if NACL
-                {
-                    if (pLoader_->IsDone())
-                    {
-                        TRACE_LOG("Resource::Cannot load file " << path_);
-                    }
-                }
-                #else
-                {
-                    TRACE_LOG("Resource::Cannot load file " << path_);
-                }
-                #endif
+                file.seekg(0, std::ios::end);
+                std::streampos filelength = file.tellg();
+                file.seekg(0, std::ios::beg);
+                buffer_.resize((int)filelength);
+                file.read(&buffer_[0], filelength);
+                CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
+                file.close();
+                loaded = true;
             }
         }
+        #endif
 
-        return loaded_;
+        if (loaded)
+        {
+            TRACE_LOG("Resource::File " << path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
+        }
+        else
+        {
+            TRACE_LOG("Resource::Cannot load file " << path_);
+        }
     }
 }

@@ -26,11 +26,11 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
-#include "GPUObject.h"
+#include "Object.h"
 
 namespace NSG
 {
-    class FrameBuffer : public GPUObject
+    class FrameBuffer : public Object
     {
     public:
         enum Flag
@@ -48,9 +48,9 @@ namespace NSG
         PTexture GetDepthTexture() const { return depthTexture_; }
         GLuint GetId() const { return framebuffer_; }
     private:
-        virtual bool IsValid() override;
-        virtual void AllocateResources() override;
-        virtual void ReleaseResources() override;
+        bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
         Flags flags_;
         unsigned width_;
 		unsigned height_;

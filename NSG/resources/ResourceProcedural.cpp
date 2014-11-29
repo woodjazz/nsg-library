@@ -39,25 +39,14 @@ namespace NSG
 
 	ResourceProcedural::~ResourceProcedural()
 	{
-		Context::RemoveResource(this);
 	}
 
-	bool ResourceProcedural::IsLoaded()
+	void ResourceProcedural::AllocateResources()
 	{
-		if(!loaded_ && proceduralObj_)
+		if(proceduralObj_)
 		{
 			proceduralObj_->Build();
 			TRACE_LOG("Resource::Procedural=" << proceduralObj_->GetName() << " has been built.");
-			loaded_ = true;
 		}
-
-		return loaded_;
 	}
-
-	const Path& ResourceProcedural::GetPath() const
-	{
-		CHECK_ASSERT(false, __FILE__, __LINE__);
-		return Path::GetEmpty();
-	}
-
 }

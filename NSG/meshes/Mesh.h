@@ -30,7 +30,7 @@ misrepresented as being the original software.
 #include "IndexBuffer.h"
 #include "Types.h"
 #include "Node.h"
-#include "GPUObject.h"
+#include "Object.h"
 #include "Resource.h"
 #include "Buffer.h"
 #include "BoundingBox.h"
@@ -39,7 +39,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Mesh : public GPUObject
+	class Mesh : public Object
     {
     public:
         virtual ~Mesh();
@@ -47,9 +47,6 @@ namespace NSG
         virtual GLenum GetWireFrameDrawMode() const = 0;
         virtual GLenum GetSolidDrawMode() const = 0;
         virtual size_t GetNumberOfTriangles() const = 0;
-        virtual bool IsValid() override;
-        virtual void AllocateResources() override;
-        virtual void ReleaseResources() override;
         const BoundingBox& GetBB() const { return bb_; }
         float GetBoundingSphereRadius() const { return boundingSphereRadius_; }
         VertexBuffer* GetVertexBuffer() const { return pVBuffer_.get(); }
@@ -72,6 +69,9 @@ namespace NSG
         std::set<SceneNode*>& GetSceneNodes() { return sceneNodes_; }
 		const std::set<SceneNode*>& GetConstSceneNodes() const { return sceneNodes_; }
     protected:
+        virtual bool IsValid() override;
+        virtual void AllocateResources() override;
+        virtual void ReleaseResources() override;
         void CalculateTangents();
         Mesh(const std::string& name, bool dynamic = false);
     protected:

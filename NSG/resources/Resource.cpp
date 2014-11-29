@@ -28,22 +28,32 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Check.h"
 #include "Context.h"
+#include "Path.h"
 
 namespace NSG
 {
-	Resource::Resource()
-	: loaded_(false)
-	{
-		Context::AddResource(this);
-	}
+    Resource::Resource()
+    {
+    }
 
-	Resource::~Resource()
-	{
-	}
+    Resource::~Resource()
+    {
+    }
 
-	void Resource::Invalidate()
-	{
-		buffer_.clear();
-		loaded_ = false;
-	}
+    bool Resource::IsValid()
+    {
+    	return true;
+    }
+
+    void Resource::ReleaseResources()
+    {
+        buffer_.clear();
+    }
+
+    const Path& Resource::GetPath() const
+    {
+        CHECK_ASSERT(false, __FILE__, __LINE__);
+        return Path::GetEmpty();
+    }
+
 }

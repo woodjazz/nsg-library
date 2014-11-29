@@ -23,9 +23,12 @@ static const char* FS_GLSL = \
 "			vec2 currentTextureCoords = T;\n"\
 "			// depth from heightmap\n"\
 "			float heightFromTexture = 1.0 - texture2D(u_texture5, currentTextureCoords).r;\n"\
+"			const int MAX_LAYERS = 10;\n"\
 "			// while point is above surface\n"\
-"			while(heightFromTexture > currentLayerHeight) \n"\
+"			for(int i=0; i<MAX_LAYERS; i++)\n"\
 "			{\n"\
+"				if(heightFromTexture <= currentLayerHeight) \n"\
+"					break;\n"\
 "				// go to the next layer\n"\
 "				currentLayerHeight += layerHeight; \n"\
 "				// shift texture coordinates along V\n"\

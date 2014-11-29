@@ -26,11 +26,10 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "SceneNode.h"
-#include "AppListeners.h"
 
 namespace NSG
 {
-	class Camera : public SceneNode, IViewChangedListener
+	class Camera : public SceneNode
 	{
 	public:
 		Camera(const std::string& name);
@@ -67,7 +66,6 @@ namespace NSG
 		const Matrix4& GetViewProjectionMatrix() const;
 		const Matrix4& GetViewProjectionInverseMatrix() const;
 		const Matrix4& GetMatProjection() const;
-		virtual void OnViewChanged(int width, int height) override;
 		const PFrustum GetFrustum() const;
 		const Frustum* GetFrustumPointer() const;
 		bool IsVisible(const Node& node, Mesh& mesh) const;
@@ -113,5 +111,6 @@ namespace NSG
 		PRender2Texture render2Texture_;
 		PShowTexture showTexture_;
 		Graphics* graphics_;
+		SignalViewChanged::PSlot slotViewChanged_;
 	};
 }

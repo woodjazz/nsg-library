@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "GPUObject.h"
+#include "Object.h"
 #include "btBulletDynamicsCommon.h"
 #include <vector>
 using namespace std;
@@ -37,12 +37,11 @@ class btCollisionShape;
 
 namespace NSG
 {
-    class RigidBody : public btMotionState, public GPUObject
+    class RigidBody : public btMotionState, public Object
     {
     public:
-        RigidBody();
+        RigidBody(PSceneNode sceneNode);
         ~RigidBody();
-        void SetSceneNode(SceneNode* sceneNode);
         void SetMass(float mass);
         void SetShape(PhysicsShape phyShape, bool isStatic);
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
@@ -50,10 +49,10 @@ namespace NSG
         Vector3 GetLinearVelocity() const;
         void HandleManifold(btPersistentManifold* manifold, RigidBody* collider) const;
         void ReScale();
+    private:
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-    private:
         btTriangleMesh* GetTriangleMesh() const;
 		btConvexHullShape* GetConvexHullTriangleMesh() const;
         void CreateShape();
@@ -61,7 +60,7 @@ namespace NSG
         void setWorldTransform(const btTransform& worldTrans) override;
 
         btRigidBody* body_;
-        SceneNode* sceneNode_;
+		PWeakSceneNode sceneNode_;
         btDynamicsWorld* owner_;
         btCollisionShape* shape_;
         float mass_;

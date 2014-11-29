@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "UniformsUpdate.h"
-#include "GPUObject.h"
+#include "Object.h"
 #include <vector>
 
 namespace pugi
@@ -36,7 +36,7 @@ namespace pugi
 
 namespace NSG
 {
-    class Pass : public GPUObject, UniformsUpdate
+    class Pass : public Object, UniformsUpdate
     {
     public:
         Pass();
@@ -58,10 +58,10 @@ namespace NSG
         PProgram GetProgram() const;
         virtual bool Render();
         bool Render(Batch& batch);
-        virtual bool IsValid() override;
         void Save(pugi::xml_node& node);
         void Load(const pugi::xml_node& node);
     protected:
+        virtual bool IsValid() override;
         void SetupPass();
         Graphics& graphics_;
         PProgram pProgram_;

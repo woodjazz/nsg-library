@@ -158,36 +158,6 @@ namespace NSG
             return Context::this_->IsReady();
         }
 
-        void OnMouseMove(float x, float y)
-        {
-            Context::this_->state_->OnMouseMove(x, y);
-        }
-
-		void OnMouseDown(int button, float x, float y)
-        {
-            Context::this_->state_->OnMouseDown(button, x, y);
-        }
-
-		void OnMouseUp(int button, float x, float y)
-        {
-            Context::this_->state_->OnMouseUp(button, x, y);
-        }
-
-        void OnMouseWheel(float x, float y)
-        {
-            Context::this_->state_->OnMouseWheel(x, y);
-        }
-
-        void OnKey(int key, int action, int modifier)
-        {
-            Context::this_->state_->OnKey(key, action, modifier);
-        }
-
-        void OnChar(unsigned int character)
-        {
-            Context::this_->state_->OnChar(character);
-        }
-
         void DoTick()
         {
             Context::this_->state_->DoTick();

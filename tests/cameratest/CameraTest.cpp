@@ -28,7 +28,8 @@ using namespace NSG;
 
 static void FrustumTest()
 {
-	PScene scene(App::this_->GetCurrentScene());
+	PScene scene(App::this_->GetOrCreateScene("scene000"));
+	App::this_->SetCurrentScene(scene);
 	{
 		Vertex3 p0(0, 0, -1);
 		Vertex3 p1(0, 1, -1);
@@ -182,7 +183,8 @@ static void FrustumTest()
 
 static void Test01()
 {
-	PScene scene(App::this_->GetCurrentScene());
+	PScene scene(App::this_->GetOrCreateScene("scene000"));
+	App::this_->SetCurrentScene(scene);
 	PSphereMesh sphere(App::this_->CreateSphereMesh(1, 100));
 
     {
@@ -278,7 +280,8 @@ static void Test02()
     {
         PBoxMesh box(App::this_->CreateBoxMesh(2, 4, 2));
         Node node;
-		PScene scene(App::this_->GetCurrentScene());
+		PScene scene(App::this_->GetOrCreateScene("scene000"));
+		App::this_->SetCurrentScene(scene);
 		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
         camera->SetFov(179);
 		camera->SetNearClip(0.1f);
@@ -297,7 +300,8 @@ static void Test02()
 static void Test03()
 {
 	{
-		PScene scene(App::this_->GetCurrentScene());
+		PScene scene(App::this_->GetOrCreateScene("scene000"));
+		App::this_->SetCurrentScene(scene);
 		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
 		camera->EnableOrtho();
 		float cameraDepth = camera->GetZFar() - camera->GetZNear();
@@ -395,7 +399,8 @@ static void Test03()
 static void Test04()
 {
 #if 1
-	PScene scene(App::this_->GetCurrentScene());
+	PScene scene(App::this_->GetOrCreateScene("scene000"));
+	App::this_->SetCurrentScene(scene);
 	PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
 	Vertex3 position(0, 0, 0);
 	camera->SetPosition(position);
@@ -452,7 +457,8 @@ static void Test05()
 	{
 		PBoxMesh box(App::this_->CreateBoxMesh(1, 1, 1));
 		CHECK_ASSERT(box->IsReady(), __FILE__, __LINE__);
-		PScene scene(App::this_->GetCurrentScene());
+		PScene scene(App::this_->GetOrCreateScene("scene000"));
+		App::this_->SetCurrentScene(scene);
 		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
 		camera->SetNearClip(0.1f);
 		camera->SetFarClip(250);

@@ -99,7 +99,11 @@ namespace NSG
           activeScene_(nullptr),
           sceneColor_(-1),
           name_(name),
-          graphics_(*Graphics::this_)
+          graphics_(*Graphics::this_),
+          spotLightsReduced_(false),
+          directionalLightsReduced_(false),
+          pointLightsReduced_(false)
+
     {
         memset(&materialLoc_, -1, sizeof(materialLoc_));
     }
@@ -116,23 +120,21 @@ namespace NSG
 
     bool Program::IsValid()
     {
-        return (!vertexShader_ || vertexShader_->IsLoaded()) && (!fragmentShader_ || fragmentShader_->IsLoaded());
+        return App::this_->GetCurrentScene() && (!vertexShader_ || vertexShader_->IsReady()) && (!fragmentShader_ || fragmentShader_->IsReady());
     }
 
     void Program::AllocateResources()
     {
         std::string preDefines;
 
-#ifdef GL_ES_VERSION_2_0
+        #ifdef GL_ES_VERSION_2_0
         preDefines = "#version 100\n#define GLES2\n";
-#else
+        #else
         preDefines = "#version 120\n";
-#endif
+        #endif
 
         if (graphics_.HasInstancedArrays())
-        {
             preDefines += "#define INSTANCED\n";
-        }
 
         bool hasLights = false;
 
@@ -154,67 +156,110 @@ namespace NSG
 
         activeDirectionalLights_ = std::vector<const Light*>(nDirectionalLights_, nullptr);
 
-		auto& pointLigths = scene->GetLights(LightType::POINT);
+        auto& pointLigths = scene->GetLights(LightType::POINT);
         nPointLights_ = pointLigths.size();
 
-		activePointLights_ = std::vector<const Light*>(nPointLights_, nullptr);
+        activePointLights_ = std::vector<const Light*>(nPointLights_, nullptr);
 
-		auto& spotLigths = scene->GetLights(LightType::SPOT);
+        auto& spotLigths = scene->GetLights(LightType::SPOT);
         nSpotLights_ = spotLigths.size();
 
-		activeSpotLights_ = std::vector<const Light*>(nSpotLights_, nullptr);
-
+        activeSpotLights_ = std::vector<const Light*>(nSpotLights_, nullptr);
 
         if (nDirectionalLights_ || nPointLights_ || nSpotLights_)
-            hasLights = true;
-
         {
-            std::stringstream ss;
-            ss << "const int NUM_DIRECTIONAL_LIGHTS = " << nDirectionalLights_ << ";\n";
-            preDefines += ss.str();
+            size_t maxVarying = graphics_.GetMaxVaryingVectors();
+
+            const size_t DEFAULT_NUM_VARYING_VECTORS = 8; // default needed by the Common.glsl shader
+
+            if (maxVarying < DEFAULT_NUM_VARYING_VECTORS)
+            {
+                TRACE_LOG("Cannot use shaders because max varying vectors is " << maxVarying << " and the default shader needs at least " << DEFAULT_NUM_VARYING_VECTORS << "!!!");
+                return;
+            }
+
+            size_t remainingVaryingVectors = maxVarying - DEFAULT_NUM_VARYING_VECTORS;
+
+            spotLightsReduced_ = false;
+            if (remainingVaryingVectors <  nPointLights_ + nDirectionalLights_ + nSpotLights_)
+            {
+                if (nSpotLights_)
+                {
+                    TRACE_LOG("Not enough varying vectors => disabling spot lights!!!");
+                    nSpotLights_ = 0;
+                    spotLightsReduced_ = true;
+                }
+            }
+
+            directionalLightsReduced_ = false;
+            if (remainingVaryingVectors <  nPointLights_ + nDirectionalLights_)
+            {
+                if (nDirectionalLights_)
+                {
+                    TRACE_LOG("Not enough varying vectors => disabling directional lights!!!");
+                    nDirectionalLights_ = 0;
+                    directionalLightsReduced_ = true;
+                }
+            }
+
+            pointLightsReduced_ = false;
+            if (remainingVaryingVectors < nPointLights_)
+            {
+                CHECK_ASSERT(nPointLights_, __FILE__, __LINE__);
+                TRACE_LOG("Not enough varying vectors => setting maximum number of point lights to " << remainingVaryingVectors << " before was " << nPointLights_);
+                nPointLights_ = remainingVaryingVectors;
+                pointLightsReduced_ = true;
+            }
+
+            if (nDirectionalLights_ || nPointLights_ || nSpotLights_)
+            {
+                hasLights = true;
+
+                preDefines += "#define HAS_LIGHTS\n";
+
+                if (nPointLights_)
+                    preDefines += "#define HAS_POINT_LIGHTS\n";
+
+                if (nDirectionalLights_)
+                    preDefines += "#define HAS_DIRECTIONAL_LIGHTS\n";
+
+                if (nSpotLights_)
+                    preDefines += "#define HAS_SPOT_LIGHTS\n";
+
+                {
+                    std::stringstream ss;
+                    ss << "const int NUM_DIRECTIONAL_LIGHTS = " << nDirectionalLights_ << ";\n";
+                    preDefines += ss.str();
+                }
+
+                {
+                    std::stringstream ss;
+                    ss << "const int NUM_POINT_LIGHTS = " << nPointLights_ << ";\n";
+                    preDefines += ss.str();
+                }
+
+                {
+                    std::stringstream ss;
+                    ss << "const int NUM_SPOT_LIGHTS = " << nSpotLights_ << ";\n";
+                    preDefines += ss.str();
+                }
+            }
         }
 
+        if (!hasLights)
         {
-            std::stringstream ss;
-            ss << "const int NUM_POINT_LIGHTS = " << nPointLights_ << ";\n";
-            preDefines += ss.str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << "const int NUM_SPOT_LIGHTS = " << nSpotLights_ << ";\n";
-            preDefines += ss.str();
-        }
-
-
-        {
-            std::stringstream ss;
-            ss << "const int NUM_DIRECTIONAL_LIGHTS_ARRAY = ";
-            if (nDirectionalLights_)
-                ss << nDirectionalLights_ << ";\n";
-            else
-                ss << "1;\n";
-            preDefines += ss.str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << "const int NUM_POINT_LIGHTS_ARRAY = ";
-            if (nPointLights_)
-                ss << nPointLights_ << ";\n";
-            else
-                ss << "1;\n";
-            preDefines += ss.str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << "const int NUM_SPOT_LIGHTS_ARRAY = ";
-            if (nSpotLights_)
-                ss << nSpotLights_ << ";\n";
-            else
-                ss << "1;\n";
-            preDefines += ss.str();
+            if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
+            {
+                flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
+                flags_ |= (int)ProgramFlag::UNLIT;
+                TRACE_LOG("Not lighting => Disabling vertex lighting and enabling unlit!!!");
+            }
+            else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
+            {
+                flags_ &= ~(int)ProgramFlag::PER_PIXEL_LIGHTING;
+                flags_ |= (int)ProgramFlag::UNLIT;
+                TRACE_LOG("Not lighting => Disabling per pixel lighting and enabling unlit!!!");
+            }
         }
 
         ///////////////////////////////////////////////////
@@ -223,7 +268,15 @@ namespace NSG
         if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_ && hasLights)
             preDefines += "#define PER_VERTEX_LIGHTING\n";
         else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_ && hasLights)
+        {
             preDefines += "#define PER_PIXEL_LIGHTING\n";
+
+            if ((int)ProgramFlag::NORMALMAP & flags_)
+                preDefines += "#define NORMALMAP\n";
+
+            if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
+                preDefines += "#define DISPLACEMENTMAP\n";
+        }
         else if ((int)ProgramFlag::BLEND & flags_)
             preDefines += "#define BLEND\n";
         else if ((int)ProgramFlag::BLUR & flags_)
@@ -237,14 +290,8 @@ namespace NSG
         else if ((int)ProgramFlag::UNLIT & flags_)
             preDefines += "#define UNLIT\n";
 
-        if ((int)ProgramFlag::NORMALMAP & flags_)
-            preDefines += "#define NORMALMAP\n";
-
         if ((int)ProgramFlag::LIGHTMAP & flags_)
             preDefines += "#define LIGHTMAP\n";
-
-        if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
-            preDefines += "#define DISPLACEMENTMAP\n";
 
         if (vertexShader_)
             preDefines += "#define HAS_USER_VERTEX_SHADER\n";
@@ -252,19 +299,19 @@ namespace NSG
         if (fragmentShader_)
             preDefines += "#define HAS_USER_FRAGMENT_SHADER\n";
 
-        std::string buffer = preDefines + "#define COMPILEVS\n";
-		buffer += COMMON_GLSL;
-		buffer += TRANSFORMS_GLSL;
-		buffer += LIGHTING_GLSL;
-		buffer += VS_GLSL;
+        std::string vBuffer = preDefines + "#define COMPILEVS\n";
+        vBuffer += COMMON_GLSL;
+        vBuffer += TRANSFORMS_GLSL;
+        vBuffer += LIGHTING_GLSL;
+        vBuffer += VS_GLSL;
         if (vertexShader_)
         {
-            size_t bufferSize = buffer.size();
-            buffer.resize(bufferSize + vertexShader_->GetBytes());
-            memcpy(&buffer[0] + bufferSize, vertexShader_->GetData(), vertexShader_->GetBytes());
+            size_t bufferSize = vBuffer.size();
+            vBuffer.resize(bufferSize + vertexShader_->GetBytes());
+            memcpy(&vBuffer[0] + bufferSize, vertexShader_->GetData(), vertexShader_->GetBytes());
         }
 
-        pVShader_ = PVertexShader(new VertexShader(buffer.c_str()));
+        pVShader_ = PVertexShader(new VertexShader(vBuffer.c_str()));
 
         if ((int)ProgramFlag::DIFFUSEMAP & flags_)
             preDefines += "#define DIFFUSEMAP\n";
@@ -275,20 +322,20 @@ namespace NSG
         if ((int)ProgramFlag::AOMAP & flags_)
             preDefines += "#define AOMAP\n";
 
-        buffer = preDefines  + "#define COMPILEFS\n";
-		buffer += COMMON_GLSL;
-		buffer += TRANSFORMS_GLSL;
-		buffer += LIGHTING_GLSL;
-		buffer += POSTPROCESS_GLSL;
-		buffer += FS_GLSL;
+        std::string fBuffer = preDefines  + "#define COMPILEFS\n";
+        fBuffer += COMMON_GLSL;
+        fBuffer += TRANSFORMS_GLSL;
+        fBuffer += LIGHTING_GLSL;
+        fBuffer += POSTPROCESS_GLSL;
+        fBuffer += FS_GLSL;
         if (fragmentShader_)
         {
-            size_t bufferSize = buffer.size();
-            buffer.resize(bufferSize + fragmentShader_->GetBytes());
-            memcpy(&buffer[0] + bufferSize, fragmentShader_->GetData(), fragmentShader_->GetBytes());
+            size_t bufferSize = fBuffer.size();
+            fBuffer.resize(bufferSize + fragmentShader_->GetBytes());
+            memcpy(&fBuffer[0] + bufferSize, fragmentShader_->GetData(), fragmentShader_->GetBytes());
         }
 
-        pFShader_ = PFragmentShader(new FragmentShader(buffer.c_str()));
+        pFShader_ = PFragmentShader(new FragmentShader(fBuffer.c_str()));
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -425,8 +472,10 @@ namespace NSG
 
     void Program::ReleaseResources()
     {
-        glDetachShader(id_, pVShader_->GetId());
-        glDetachShader(id_, pFShader_->GetId());
+        if (pVShader_)
+            glDetachShader(id_, pVShader_->GetId());
+        if (pFShader_)
+            glDetachShader(id_, pFShader_->GetId());
         pVShader_ = nullptr;
         pFShader_ = nullptr;
         glDeleteProgram(id_);
@@ -519,10 +568,11 @@ namespace NSG
 
                 TRACE_LOG("Error in Program Creation: " << log);
 
+                TRACE_LOG("VS: " << pVShader_->GetSource());
+                TRACE_LOG("FS: " << pFShader_->GetSource());
+
                 // Frees the allocated memory.
                 free(log);
-
-                CHECK_ASSERT(false && "Error in program(shader) creation", __FILE__, __LINE__);
             }
 
             return false;
@@ -535,7 +585,7 @@ namespace NSG
 
     Program::~Program()
     {
-        Context::RemoveObject(this);
+        ReleaseResources();
     }
 
     GLuint Program::GetAttributeLocation(const std::string& name)
@@ -610,7 +660,7 @@ namespace NSG
             {
                 graphics_.SetTexture(3, material->texture3_.get());
             }
-            
+
             if (texture4Loc_ != -1)
             {
                 graphics_.SetTexture(4, material->texture4_.get());
@@ -674,7 +724,7 @@ namespace NSG
             if (nBones != nBones_)
             {
                 CHECK_ASSERT(nBones > 0, __FILE__, __LINE__);
-				TRACE_LOG("Invalidating shader since number of bones (in the shader) has changed. Before nBones = " << nBones_ << ", now is " << nBones << ".");
+                TRACE_LOG("Invalidating shader since number of bones (in the shader) has changed. Before nBones = " << nBones_ << ", now is " << nBones << ".");
                 Invalidate();
                 nBones_ = nBones;
                 return false;
@@ -704,7 +754,7 @@ namespace NSG
 
                         const Matrix4& m = bone->GetGlobalModelMatrix();
                         const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
-                        if(graphics_.HasInstancedArrays())
+                        if (graphics_.HasInstancedArrays())
                         {
                             // Using instancing: (See Graphics::UpdateBatchBuffer)
                             // we need to transpose the skin matrix since the model matrix is already transposed (uses rows instead of cols)
@@ -787,38 +837,47 @@ namespace NSG
     {
         if (scene && HasLighting())
         {
-			auto& dirLights = scene->GetLights(LightType::DIRECTIONAL);
+            auto& dirLights = scene->GetLights(LightType::DIRECTIONAL);
 
             if (nDirectionalLights_ != dirLights.size())
             {
-                TRACE_LOG("Invalidating program due number of directionals light has changed!!!");
-                Invalidate();
-                return false;
+                if (nDirectionalLights_ > dirLights.size() || !directionalLightsReduced_)
+                {
+                    TRACE_LOG("Invalidating program due number of directionals light has changed!!!");
+                    Invalidate();
+                    return false;
+                }
             }
 
-			auto& pointLigths = scene->GetLights(LightType::POINT);
+            auto& pointLigths = scene->GetLights(LightType::POINT);
 
             if (nPointLights_ != pointLigths.size())
             {
-                TRACE_LOG("Invalidating program due number of points light has changed!!!");
-                Invalidate();
-                return false;
+                if (nPointLights_ > pointLigths.size() || !pointLightsReduced_)
+                {
+                    TRACE_LOG("Invalidating program due number of points light has changed!!!");
+                    Invalidate();
+                    return false;
+                }
             }
 
-			auto& spotLigths = scene->GetLights(LightType::SPOT);
+            auto& spotLigths = scene->GetLights(LightType::SPOT);
 
             if (nSpotLights_ != spotLigths.size())
             {
-                TRACE_LOG("Invalidating program due number of spot light has changed!!!");
-                Invalidate();
-                return false;
+                if (nSpotLights_ > spotLigths.size() || !spotLightsReduced_)
+                {
+                    TRACE_LOG("Invalidating program due number of spot light has changed!!!");
+                    Invalidate();
+                    return false;
+                }
             }
 
             for (unsigned idx = 0; idx < nDirectionalLights_; idx++)
             {
                 const Light* light = dirLights[idx].lock().get();
 
-				if (light && (activeDirectionalLights_[idx] != light || light->UniformsNeedUpdate()))
+                if (light && (activeDirectionalLights_[idx] != light || light->UniformsNeedUpdate()))
                 {
                     const DirectionalLightLoc& loc = directionalLightsLoc_[idx];
 
@@ -843,7 +902,7 @@ namespace NSG
             {
                 const Light* light = pointLigths[idx].lock().get();
 
-				if (light && (activePointLights_[idx] != light || light->UniformsNeedUpdate()))
+                if (light && (activePointLights_[idx] != light || light->UniformsNeedUpdate()))
                 {
                     const PointLightLoc& loc = pointLightsLoc_[idx];
 

@@ -51,26 +51,27 @@ namespace NSG
         return btVector3(obj.x, obj.y, obj.z);
     }
 
-    RigidBody::RigidBody()
+	RigidBody::RigidBody(PSceneNode sceneNode)
         : body_(nullptr),
-          sceneNode_(nullptr),
+		sceneNode_(sceneNode),
+		owner_(sceneNode->GetScene()->GetPhysicsWorld()->GetWorld()),
           shape_(nullptr),
           mass_(-1),
           phyShape_(SH_UNKNOWN),
           isStatic_(false),
           handleCollision_(false)
     {
-        owner_ = App::this_->GetCurrentScene()->GetPhysicsWorld()->GetWorld();
+		CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
     }
 
     RigidBody::~RigidBody()
     {
-        Context::RemoveObject(this);
+        ReleaseResources();
     }
 
     bool RigidBody::IsValid()
     {
-        return mass_ != -1 && phyShape_ != SH_UNKNOWN && sceneNode_ && sceneNode_->IsReady();
+        return mass_ != -1 && phyShape_ != SH_UNKNOWN;
     }
 
     void RigidBody::AllocateResources()
@@ -89,28 +90,24 @@ namespace NSG
             body_->setDamping(0.f, 0.f);
             body_->setAngularFactor(0.f);
         }
-
+		PSceneNode sceneNode(sceneNode_.lock());
         body_->setUserPointer(this);
-        body_->setWorldTransform(ToTransform(sceneNode_->GetGlobalPosition(), sceneNode_->GetGlobalOrientation()));
+		body_->setWorldTransform(ToTransform(sceneNode->GetGlobalPosition(), sceneNode->GetGlobalOrientation()));
         owner_->addRigidBody(body_);
     }
 
     void RigidBody::ReleaseResources()
     {
-        body_->setUserPointer(nullptr);
-        body_->setMotionState(nullptr);
-        owner_->removeRigidBody(body_);
-        delete shape_;
-        delete body_;
-    }
-
-    void RigidBody::SetSceneNode(SceneNode* sceneNode)
-    {
-        if (sceneNode_ != sceneNode)
-        {
-            sceneNode_ = sceneNode;
-            Invalidate();
-        }
+		if (body_)
+		{
+			body_->setUserPointer(nullptr);
+			body_->setMotionState(nullptr);
+			owner_->removeRigidBody(body_);
+			delete shape_;
+			delete body_;
+			shape_ = nullptr;
+			body_ = nullptr;
+		}
     }
 
     void RigidBody::SetMass(float mass)
@@ -134,7 +131,8 @@ namespace NSG
 
     btTriangleMesh* RigidBody::GetTriangleMesh() const
     {
-        PMesh pMesh = sceneNode_->GetMesh();
+		PSceneNode sceneNode(sceneNode_.lock());
+		PMesh pMesh = sceneNode->GetMesh();
         const VertexsData& vertexData = pMesh->GetVertexsData();
         const Indexes& indices = pMesh->GetIndexes();
         btTriangleMesh* triMesh = new btTriangleMesh();
@@ -157,46 +155,48 @@ namespace NSG
         return triMesh;
     }
 
-	btConvexHullShape* RigidBody::GetConvexHullTriangleMesh() const
+    btConvexHullShape* RigidBody::GetConvexHullTriangleMesh() const
     {
-        PMesh pMesh = sceneNode_->GetMesh();
+		PSceneNode sceneNode(sceneNode_.lock());
+        PMesh pMesh = sceneNode->GetMesh();
         const VertexsData& vertexData = pMesh->GetVertexsData();
 
-		btConvexHullShape* shape = nullptr;
+        btConvexHullShape* shape = nullptr;
 
-		if (vertexData.size())
+        if (vertexData.size())
         {
             // Build the convex hull from the raw geometry
             StanHull::HullDesc desc;
-			desc.SetHullFlag(StanHull::QF_TRIANGLES);
-			//desc.SetHullFlag(StanHull::QF_REVERSE_ORDER);
+            desc.SetHullFlag(StanHull::QF_TRIANGLES);
+            //desc.SetHullFlag(StanHull::QF_REVERSE_ORDER);
             desc.mVcount = vertexData.size();
             desc.mVertices = &(vertexData[0].position_[0]);
-			desc.mVertexStride = sizeof(VertexData);
+            desc.mVertexStride = sizeof(VertexData);
             desc.mSkinWidth = 0.0f;
 
             StanHull::HullLibrary lib;
             StanHull::HullResult result;
             lib.CreateConvexHull(desc, result);
 
-			CHECK_ASSERT(result.mNumIndices % 3 == 0, __FILE__, __LINE__);
+            CHECK_ASSERT(result.mNumIndices % 3 == 0, __FILE__, __LINE__);
 
-			unsigned vertexCount = result.mNumOutputVertices;
-			Vector3* vertexData = new Vector3[vertexCount];
-			memcpy(vertexData, result.mOutputVertices, vertexCount * sizeof(Vector3));
-			shape = new btConvexHullShape((btScalar*)vertexData, vertexCount, sizeof(Vector3));
-			delete[] vertexData;
-			lib.ReleaseResult(result);
+            unsigned vertexCount = result.mNumOutputVertices;
+            Vector3* vertexData = new Vector3[vertexCount];
+            memcpy(vertexData, result.mOutputVertices, vertexCount * sizeof(Vector3));
+            shape = new btConvexHullShape((btScalar*)vertexData, vertexCount, sizeof(Vector3));
+            delete[] vertexData;
+            lib.ReleaseResult(result);
         }
 
-		return shape;
+        return shape;
     }
 
 
     void RigidBody::CreateShape()
     {
-        Vector3 globalScale = sceneNode_->GetGlobalScale();
-        const BoundingBox& meshBB = sceneNode_->GetMesh()->GetBB();
+		PSceneNode sceneNode(sceneNode_.lock());
+        Vector3 globalScale = sceneNode->GetGlobalScale();
+        const BoundingBox& meshBB = sceneNode->GetMesh()->GetBB();
         Vector3 halfSize(meshBB.Size() / 2.0f);
 
         switch (phyShape_)
@@ -223,13 +223,13 @@ namespace NSG
 
             case SH_CONVEX_TRIMESH:
                 shape_ = GetConvexHullTriangleMesh();
-				shape_->setLocalScaling(ToBtVector3(globalScale));// *halfSize * 2.f));
+                shape_->setLocalScaling(ToBtVector3(globalScale));// *halfSize * 2.f));
                 break;
 
             case SH_TRIMESH:
                 CHECK_ASSERT(isStatic_, __FILE__, __LINE__);
                 shape_ = new btBvhTriangleMeshShape(GetTriangleMesh(), true);
-				shape_->setLocalScaling(ToBtVector3(globalScale));// *halfSize * 2.f));
+                shape_->setLocalScaling(ToBtVector3(globalScale));// *halfSize * 2.f));
                 break;
 
             case SH_UNKNOWN:
@@ -245,21 +245,23 @@ namespace NSG
 
     void RigidBody::getWorldTransform(btTransform& worldTrans) const
     {
+		PSceneNode sceneNode(sceneNode_.lock());
         worldTrans.setIdentity();
-        const Quaternion& rot = sceneNode_->GetGlobalOrientation();
-        const Vector3& loc = sceneNode_->GetGlobalPosition();
+        const Quaternion& rot = sceneNode->GetGlobalOrientation();
+        const Vector3& loc = sceneNode->GetGlobalPosition();
         worldTrans.setRotation(btQuaternion(rot.x, rot.y, rot.z, rot.w));
         worldTrans.setOrigin(btVector3(loc.x, loc.y, loc.z));
     }
 
     void RigidBody::setWorldTransform(const btTransform& worldTrans)
     {
+		PSceneNode sceneNode(sceneNode_.lock());
         btQuaternion r = worldTrans.getRotation();
         Quaternion rot(r.w(), r.x(), r.y(), r.z());
         const btVector3& pos = worldTrans.getOrigin();
         Vector3 loc(pos.getX(), pos.getY(), pos.getZ());
-        sceneNode_->SetGlobalOrientation(rot);
-        sceneNode_->SetGlobalPosition(loc);
+        sceneNode->SetGlobalOrientation(rot);
+        sceneNode->SetGlobalPosition(loc);
     }
 
     void RigidBody::SetLinearVelocity(const Vector3& lv, TransformSpace tspace)
@@ -308,7 +310,8 @@ namespace NSG
                 ContactPoint cinf;
                 btManifoldPoint& pt = manifold->getContactPoint(j);
 
-                cinf.collider_ = collider->sceneNode_;
+				PSceneNode sceneNode(sceneNode_.lock());
+				cinf.collider_ = collider->sceneNode_.lock().get();
                 cinf.appliedImpulse_ = pt.m_appliedImpulse;
                 cinf.appliedImpulseLateral1_ = pt.m_appliedImpulseLateral1;
                 cinf.appliedImpulseLateral2_ = pt.m_appliedImpulseLateral2;
@@ -318,7 +321,7 @@ namespace NSG
                 cinf.contactCFM2_ = pt.m_contactCFM2;
                 cinf.lateralFrictionDir1_ = Vector3(pt.m_lateralFrictionDir1.getX(), pt.m_lateralFrictionDir1.getY(), pt.m_lateralFrictionDir1.getZ());
                 cinf.lateralFrictionDir2_ = Vector3(pt.m_lateralFrictionDir2.getX(), pt.m_lateralFrictionDir2.getY(), pt.m_lateralFrictionDir2.getZ());
-                sceneNode_->OnCollision(cinf);
+				sceneNode->OnCollision(cinf);
             }
         }
     }

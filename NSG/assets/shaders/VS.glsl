@@ -70,11 +70,19 @@
 
 			#endif
 
-			for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) 
-				v_lightDirection[i] = worldPos - u_pointLights[i].position;
+			#ifdef HAS_POINT_LIGHTS
 
-			for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
-				v_light2Pixel[i] = worldPos - u_spotLights[i].point.position;
+				for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) 
+					v_lightDirection[i] = worldPos - u_pointLights[i].position;
+
+			#endif
+
+			#ifdef HAS_SPOT_LIGHTS
+
+				for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
+					v_light2Pixel[i] = worldPos - u_spotLights[i].point.position;
+					
+			#endif
 
 			v_color = a_color;
 			v_texcoord0 = a_texcoord0;

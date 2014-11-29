@@ -17,15 +17,21 @@ static const char* COMMON_GLSL = \
 "	#define highp\n"\
 "#endif   \n"\
 "varying vec4 v_color;\n"\
-"varying vec3 v_normal;\n"\
-"varying vec3 v_tangent;\n"\
-"varying vec3 v_bitangent;\n"\
 "varying vec2 v_texcoord0; \n"\
-"varying vec2 v_texcoord1;\n"\
-"varying vec3 v_vertexToEye;\n"\
-"varying vec3 v_vertexToEyeInTangentSpace;\n"\
-"varying vec3 v_lightDirection[NUM_POINT_LIGHTS_ARRAY];\n"\
-"varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS_ARRAY];\n"\
+"#ifdef HAS_LIGHTS\n"\
+"	varying vec3 v_normal;\n"\
+"	varying vec3 v_tangent;\n"\
+"	varying vec3 v_bitangent;\n"\
+"	varying vec2 v_texcoord1;\n"\
+"	varying vec3 v_vertexToEye;\n"\
+"	varying vec3 v_vertexToEyeInTangentSpace;\n"\
+"	#ifdef HAS_POINT_LIGHTS\n"\
+"		varying vec3 v_lightDirection[NUM_POINT_LIGHTS];\n"\
+"	#endif\n"\
+"	#ifdef HAS_SPOT_LIGHTS\n"\
+"		varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS];\n"\
+"	#endif\n"\
+"#endif\n"\
 "#if defined(COMPILEFS)\n"\
 "	\n"\
 "	uniform sampler2D u_texture0;\n"\

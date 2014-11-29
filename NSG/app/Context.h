@@ -32,7 +32,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class GPUObject;
+	class Object;
 	class Resource;
 	struct Context : public Singleton<Context>
 	{
@@ -44,28 +44,19 @@ namespace NSG
 		PFontAtlasTextureManager atlasManager_;
 		IMGUI::PContext imgui_;
 		PAudio audio_;
-
-		std::set<GPUObject*> objects_;
-		std::set<Resource*> resources_;
+		std::set<Object*> objects_;
 		PKeyboard keyboard_;
 
 		Context();
 		~Context();
 		void Initialize();
-		static void AddObject(GPUObject* object);
-		static void RemoveObject(GPUObject* object);
-		void InvalidateGPUResources();
-		static void AddResource(Resource* object);
-		static void RemoveResource(Resource* object);
-		void ReleaseResourcesFromMemory();
+		static void AddObject(Object* object);
+		static void RemoveObject(Object* object);
+		void InvalidateObjects();
 		PTexture GetWhiteTexture();
-
 	private:
-		void Add(GPUObject* object);
-		void Remove(GPUObject* object);
-		void Add(Resource* object);
-		void Remove(Resource* object);
-
+		void Add(Object* object);
+		void Remove(Object* object);
 		PTexture whiteTexture_;
 	};
 }

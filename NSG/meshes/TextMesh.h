@@ -33,52 +33,31 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include "FontAtlasTexture.h"
 #include "Types.h"
-#include "AppListeners.h"
 
 namespace NSG
 {
-    class TextMesh : public Mesh, IViewChangedListener
+    class TextMesh : public Mesh
     {
     public:
 		TextMesh(const std::string& textureFilename);
         ~TextMesh();
         bool Has(const std::string& textureFilename) const;
         bool SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
-        GLfloat GetWidth() const
-        {
-            return screenWidth_;
-        }
-        GLfloat GetHeight() const
-        {
-            return screenHeight_;
-        }
+        GLfloat GetWidth() const { return screenWidth_; }
+        GLfloat GetHeight() const { return screenHeight_; }
         GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
         unsigned int GetCharacterPositionForWidth(float width) const;
-        PTexture GetTexture() const
-        {
-            return pAtlas_->GetTexture();
-        }
-        PProgram GetProgram() const
-        {
-            return pProgram_;
-        }
+        PTexture GetTexture() const { return pAtlas_->GetTexture(); }
+        PProgram GetProgram() const { return pProgram_; }
         GLenum GetWireFrameDrawMode() const override;
         GLenum GetSolidDrawMode() const override;
         virtual size_t GetNumberOfTriangles() const override;
-        virtual bool IsValid() override;
-        virtual void AllocateResources() override;
-        virtual void ReleaseResources() override;
-        virtual void OnViewChanged(int width, int height) override;
-
-        HorizontalAlignment GetTextHorizontalAlignment() const
-        {
-            return hAlignment_;
-        }
-        VerticalAlignment GetTextVerticalAlignment() const
-        {
-            return vAlignment_;
-        }
+        HorizontalAlignment GetTextHorizontalAlignment() const { return hAlignment_; }
+        VerticalAlignment GetTextVerticalAlignment() const { return vAlignment_; }
     private:
+        bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
         void UpdateBuffers();
         void Move(VertexsData& obj, float offsetX, float offsetY);
         PFontAtlasTexture pAtlas_;
@@ -93,5 +72,6 @@ namespace NSG
         float alignmentOffsetX_;
         float alignmentOffsetY_;
         size_t maxLength_;
+		SignalViewChanged::PSlot slotViewChanged_;
     };
 }

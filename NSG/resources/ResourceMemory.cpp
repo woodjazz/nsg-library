@@ -34,40 +34,27 @@ namespace NSG
         : staticBuffer_(staticBuffer),
           bytes_(bytes)
     {
-        IsLoaded(); // since it is just memory then for the first time force load in constructor
+        IsReady(); // since it is just memory then for the first time force load in constructor
     }
 
     ResourceMemory::ResourceMemory(const std::string& buffer)
         : staticBuffer_(buffer.c_str()),
           bytes_(buffer.size())
     {
-        IsLoaded(); // since it is just memory then for the first time force load in constructor
+        IsReady(); // since it is just memory then for the first time force load in constructor
     }
 
     ResourceMemory::~ResourceMemory()
     {
-        Context::RemoveResource(this);
     }
 
-    bool ResourceMemory::IsLoaded()
+    void ResourceMemory::AllocateResources()
     {
-        if (!loaded_ && staticBuffer_ != nullptr)
+        if (staticBuffer_ != nullptr)
         {
             CHECK_ASSERT(bytes_ > 0, __FILE__, __LINE__);
             buffer_.resize(bytes_);
             memcpy(&buffer_[0], staticBuffer_, bytes_);
         }
-
-        loaded_ = true;
-
-        return loaded_;
     }
-
-    const Path& ResourceMemory::GetPath() const
-    {
-        CHECK_ASSERT(false, __FILE__, __LINE__);
-        return Path::GetEmpty();
-    }
-   
-
 }

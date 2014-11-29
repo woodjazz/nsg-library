@@ -35,8 +35,7 @@ namespace NSG
 		ResourceMemory(const char* buffer, size_t bytes);
 		ResourceMemory(const std::string& buffer);
 		~ResourceMemory();
-		bool IsLoaded() override;
-		const Path& GetPath() const override;
+		void AllocateResources() override;
 	private:
 		const char* staticBuffer_;
         size_t bytes_;

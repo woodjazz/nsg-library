@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "SharedPointers.h"
 #include "GLES2Includes.h"
 #include "FlagSet.h"
+#include "SignalSlots.h"
 #include <string>
 #include <chrono>
 #include <set>
@@ -285,5 +286,17 @@ namespace NSG
         Vector3 lateralFrictionDir2_;
     };
 
-
+    typedef Signal<int, int> SignalViewChanged;
+    typedef Signal<float, float> SignalMouseMoved;
+    typedef Signal<int, float, float> SignalMouseDown;
+    typedef Signal<int, float, float> SignalMouseUp;
+    typedef Signal<float, float> SignalMouseWheel;
+    typedef Signal<int, int, int> SignalKey;
+    typedef Signal<unsigned int> SignalChar;
+    typedef Signal<int, float, float, float, float, int> SignalMultiGesture;
+    typedef Signal<int, char**> SignalStart;
+    typedef Signal<float> SignalUpdate;
+    typedef Signal<> SignalXMLLoaded;
+    typedef Signal<const ContactPoint&> SignalCollision;
+    
 }

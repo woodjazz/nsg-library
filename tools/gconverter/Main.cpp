@@ -34,16 +34,13 @@ struct MyApp : App
 	PCamera camera_;
 	std::string resourcePath_;
 	std::shared_ptr<SceneConverter> sceneConverter_;
+	PCameraControl control_;
 
 	MyApp()
     {
         //AppConfiguration::this_->width_ = 30;
         //AppConfiguration::this_->height_ = 20;
         AppConfiguration::this_->showStatistics_ = false;
-    }
-
-    void Start(int argc, char* argv[]) override
-    {
     }
 
     void DropFile(const std::string& filePath) override
@@ -69,11 +66,9 @@ struct MyApp : App
 		camera_ = scene->GetOrCreateChild<Camera>("EditorCamera");
 		camera_->SetSerializable(false);
 		camera_->SetInheritScale(false);
-		PCameraControl cameraControl = std::make_shared<CameraControl>();
-		camera_->AddBehavior(cameraControl);
-		cameraControl->Start();
+		control_ = PCameraControl(new CameraControl(camera_));
 		camera_->Activate();
-		cameraControl->AutoZoom();
+		control_->AutoZoom();
     }
 
     void RenderGUIWindow() override

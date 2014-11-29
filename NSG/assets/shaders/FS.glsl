@@ -25,9 +25,12 @@
 			// depth from heightmap
 			float heightFromTexture = 1.0 - texture2D(u_texture5, currentTextureCoords).r;
 
+			const int MAX_LAYERS = 10;
 			// while point is above surface
-			while(heightFromTexture > currentLayerHeight) 
+			for(int i=0; i<MAX_LAYERS; i++)
 			{
+				if(heightFromTexture <= currentLayerHeight) 
+					break;
 				// go to the next layer
 				currentLayerHeight += layerHeight; 
 				// shift texture coordinates along V

@@ -74,7 +74,6 @@ namespace NSG
 
     FrameColorSelection::~FrameColorSelection()
     {
-        Context::RemoveObject(this);
     }
 
     bool FrameColorSelection::IsValid()

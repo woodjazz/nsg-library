@@ -34,21 +34,20 @@ struct Test : public App
 {
 	std::thread thread_;
 	bool exit_;
+	SignalStart::PSlot slotStart_;
 
 	Test()
 		:exit_(false)
 	{
-
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			thread_ = std::thread([this](){InternalTask(); });
+		});
 	}
 
 	~Test()
 	{
 		thread_.join();
-	}
-
-	void Start(int argc, char* argv[]) override
-	{
-		thread_ = std::thread([this](){InternalTask();});	
 	}
 
 	void InternalTask() 

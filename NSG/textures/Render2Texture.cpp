@@ -51,7 +51,6 @@ namespace NSG
 
     Render2Texture::~Render2Texture()
     {
-        Context::RemoveObject(this);
     }
 
     PTexture Render2Texture::GetTexture() const

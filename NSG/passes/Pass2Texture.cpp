@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "Pass2Texture.h"
 #include "Render2Texture.h"
 #include "Graphics.h"
+#include "Check.h"
 
 namespace NSG
 {
@@ -47,6 +48,7 @@ namespace NSG
 
     void Pass2Texture::Add(PPass pass, Node* node, PMaterial material, PMesh mesh)
     {
+		CHECK_ASSERT(mesh, __FILE__, __LINE__);
         passes_.push_back(PassData {pass, node, material, mesh});
     }
 

@@ -62,12 +62,34 @@ namespace NSG
         aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
         SetInheritScale(false);
         UpdateProjection();
-        App::Add(this);
+
+		slotViewChanged_ = App::this_->signalViewChanged_->Connect([&](int width, int height)
+		{
+			if (viewWidth_ != width || viewHeight_ != height)
+			{
+				viewWidth_ = width;
+				viewHeight_ = height;
+				if (viewHeight_ > 0)
+					aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
+				else
+					aspectRatio_ = 1;
+
+				UpdateProjection();
+
+				if (render2Texture_)
+				{
+					PRender2Texture newRender2Texture = std::make_shared<Render2Texture>(viewWidth_, viewHeight_);
+					for (auto& filter : filters_)
+						if (filter->GetInputTexture() == render2Texture_->GetTexture())
+							filter->SetInputTexture(newRender2Texture->GetTexture());
+					SetRender2Texture(newRender2Texture);
+				}
+			}
+		});
     }
 
     Camera::~Camera()
     {
-        App::Remove(this);
     }
 
     void Camera::EnableOrtho()
@@ -356,30 +378,6 @@ namespace NSG
         return Ray(nearWorldCoord, direction);
     }
 
-    void Camera::OnViewChanged(int width, int height)
-    {
-        if (viewWidth_ != width || viewHeight_ != height)
-        {
-            viewWidth_ = width;
-            viewHeight_ = height;
-            if (viewHeight_ > 0)
-                aspectRatio_ = static_cast<float>(viewWidth_) / viewHeight_;
-            else
-                aspectRatio_ = 1;
-
-            UpdateProjection();
-
-            if(render2Texture_)
-            {
-				PRender2Texture newRender2Texture = std::make_shared<Render2Texture>(viewWidth_, viewHeight_);
-                for (auto& filter : filters_)
-                    if (filter->GetInputTexture() == render2Texture_->GetTexture())
-                        filter->SetInputTexture(newRender2Texture->GetTexture());
-                SetRender2Texture(newRender2Texture);
-            }
-        }
-    }
-
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
     {
         return GetFrustum()->IsVisible(node, mesh);
@@ -553,28 +551,14 @@ namespace NSG
         }
         else
         {
-            PScene scene = GetScene();
-            std::vector<const SceneNode*> visibles;
-            scene->GetVisibleNodes(this, visibles);
-            AppStatistics::this_->SetNodes(scene->GetChildren().size(), visibles.size());
-            std::vector<Batch> batches;
-            scene->GenerateBatches(visibles, batches);
-            for (auto& batch : batches)
-                graphics_->Render(batch);
+			graphics_->Render(this);
         }
     }
 
     void Camera::Render(PRender2Texture render2Texture)
     {
         render2Texture->Begin();
-        PScene scene = GetScene();
-        std::vector<const SceneNode*> visibles;
-        scene->GetVisibleNodes(this, visibles);
-        AppStatistics::this_->SetNodes(scene->GetChildren().size(), visibles.size());
-        std::vector<Batch> batches;
-        scene->GenerateBatches(visibles, batches);
-        for (auto& batch : batches)
-            graphics_->Render(batch);
+		graphics_->Render(this);
         render2Texture->End();
         for (auto& filter : filters_)
             filter->Render();

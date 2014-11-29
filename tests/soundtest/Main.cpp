@@ -33,50 +33,55 @@ struct Test : public App
     PSound sound_;
     PSound soundExplo_;
     float time_;
+	SignalStart::PSlot slotStart_;
+	SignalUpdate::PSlot slotUpdate_;
 
-	void Start(int argc, char* argv[]) override
-    {
-        time_ = 0;
-        #if defined(__APPLE__)
-            music_ = PMusic(new Music(GetOrCreateResourceFile("../data/nice_music.ogg")));
-            sound_ = PSound(new Sound(GetOrCreateResourceFile("../data/PlayerFist.wav")));
-            soundExplo_ = PSound(new Sound(GetOrCreateResourceFile("../data/BigExplosion.wav")));
-        #else
-    		music_ = PMusic(new Music(GetOrCreateResourceFile("data/nice_music.ogg")));
-    		sound_ = PSound(new Sound(GetOrCreateResourceFile("data/PlayerFist.wav")));
-    		soundExplo_ = PSound(new Sound(GetOrCreateResourceFile("data/BigExplosion.wav")));
-        #endif
-    }
+	Test()
+	{
+		slotStart_ = signalStart_->Connect([&](int argc, char* argv[])
+		{
+			time_ = 0;
+#if defined(__APPLE__)
+			music_ = PMusic(new Music(GetOrCreateResourceFile("../data/nice_music.ogg")));
+			sound_ = PSound(new Sound(GetOrCreateResourceFile("../data/PlayerFist.wav")));
+			soundExplo_ = PSound(new Sound(GetOrCreateResourceFile("../data/BigExplosion.wav")));
+#else
+			music_ = PMusic(new Music(GetOrCreateResourceFile("data/nice_music.ogg")));
+			sound_ = PSound(new Sound(GetOrCreateResourceFile("data/PlayerFist.wav")));
+			soundExplo_ = PSound(new Sound(GetOrCreateResourceFile("data/BigExplosion.wav")));
+#endif
+		});
 
-    void Update() override
-    {
-        if (sound_->IsReady() && music_->IsReady() && soundExplo_->IsReady())
-        {
-            if (time_ == 0)
-            {
-                CHECK_ASSERT(!music_->IsPlaying(), __FILE__, __LINE__);
-                music_->Play(false);
-                CHECK_ASSERT(music_->IsPlaying(), __FILE__, __LINE__);
-            }
-            else if (time_ > 8)
-            {
-                music_->Resume();
-                CHECK_ASSERT(!music_->IsPaused(), __FILE__, __LINE__);
-            }
-            else if (time_ > 5)
-            {
-                music_->Pause();
-                CHECK_ASSERT(music_->IsPaused(), __FILE__, __LINE__);
-                if(!sound_->IsPlaying())
-				    sound_->Play();
-            }
+		slotUpdate_ = signalUpdate_->Connect([&](float deltaTime)
+		{
+			if (sound_->IsReady() && music_->IsReady() && soundExplo_->IsReady())
+			{
+				if (time_ == 0)
+				{
+					CHECK_ASSERT(!music_->IsPlaying(), __FILE__, __LINE__);
+					music_->Play(false);
+					CHECK_ASSERT(music_->IsPlaying(), __FILE__, __LINE__);
+				}
+				else if (time_ > 8)
+				{
+					music_->Resume();
+					CHECK_ASSERT(!music_->IsPaused(), __FILE__, __LINE__);
+				}
+				else if (time_ > 5)
+				{
+					music_->Pause();
+					CHECK_ASSERT(music_->IsPaused(), __FILE__, __LINE__);
+					if (!sound_->IsPlaying())
+						sound_->Play();
+				}
 
-            time_ += GetDeltaTime();
+				time_ += GetDeltaTime();
 
-            if(!soundExplo_->IsPlaying())
-           	    soundExplo_->Play();
-        }
-    }
+				if (!soundExplo_->IsPlaying())
+					soundExplo_->Play();
+			}
+		});
+	}
 
     bool ShallExit() const override
     {
