@@ -200,6 +200,7 @@ namespace NSG
 
 
         {
+#ifndef IOS
             glGetIntegerv(GL_MAX_VARYING_VECTORS, &maxVaryingVectors_);
             GLenum status = glGetError();
             if(status == GL_NO_ERROR)
@@ -213,6 +214,9 @@ namespace NSG
                 TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
                 
             }
+#else
+            maxVaryingVectors_ = 15;
+#endif
         }
 
         // Set up texture data read/write alignment

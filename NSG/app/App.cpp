@@ -389,7 +389,8 @@ namespace NSG
     void App::RenderFrame(void* data)
     {
         App* pThis = (App*)data;
-        #if !defined(IOS) && !defined(EMSCRIPTEN)
+        //#if !defined(IOS) && !defined(EMSCRIPTEN)
+        #if !defined(EMSCRIPTEN)
         {
             while (pThis->RenderFrame());
         }
@@ -403,9 +404,10 @@ namespace NSG
 
     int App::Run()
     {
-        #if IOS
+        #if 0//IOS
         {
             SDL_iPhoneSetAnimationCallback(mainWindow_->GetSDLWindow(), 1, &RenderFrame, this);
+
         }
         #elif EMSCRIPTEN
         {
@@ -427,7 +429,7 @@ namespace NSG
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            #if !defined(EMSCRIPTEN)
+            #if !defined(EMSCRIPTEN) && !defined(IOS)
             auto it = std::find_if(windows_.begin(), windows_.end(), [&](PWeakWindow window) { return window.lock() && SDL_GetWindowID(window.lock()->GetSDLWindow()) == event.window.windowID; });
             if (it == windows_.end())
                 continue;
