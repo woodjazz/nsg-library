@@ -48,11 +48,11 @@ namespace NSG
         void Update(float deltaTime);
 		void Render(Camera* camera);
         void NeedUpdate(SceneNode* obj);
-        void GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const;
+        void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
         POctree GetOctree() const { return octree_; }
         void Save(pugi::xml_document& doc);
         void Load(const pugi::xml_document& doc, const CachedData& data) override;
-        bool GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const;
+        bool GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const;
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
         bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);
         bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;

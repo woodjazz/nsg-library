@@ -42,6 +42,8 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "SceneNode.h"
 #include "Camera.h"
+#include "Window.h"
+#include "Batch.h"
 #include "InstanceData.h"
 
 #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -97,6 +99,7 @@ namespace NSG
           activeNode_(nullptr),
           activeScene_(nullptr),
           activeCamera_(nullptr),
+          activeWindow_(nullptr),
           has_discard_framebuffer_ext_(false),
           has_vertex_array_object_ext_(false),
           has_map_buffer_range_ext_(false),
@@ -258,6 +261,7 @@ namespace NSG
         activeNode_ = nullptr;
         activeScene_ = nullptr;
         activeCamera_ = nullptr;
+        activeWindow_ = nullptr;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -628,9 +632,9 @@ namespace NSG
 
     #endif
 
-    void Graphics::SetViewport(const Recti& viewport)
+	void Graphics::SetViewport(const Recti& viewport, bool force)
     {
-        if (viewport_ != viewport)
+        if (force || viewport_ != viewport)
         {
             glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
             viewport_ = viewport;
@@ -724,7 +728,17 @@ namespace NSG
         {
             activeCamera_ = camera;
             if(camera != nullptr)
-                SetViewport(camera->GetViewport());
+                SetViewport(camera->GetViewport(), false);
+        }
+    }
+
+    void Graphics::SetWindow(Window* window)
+    {
+        if(activeWindow_ != window)
+        {
+            activeWindow_ = window;
+            if(window)
+                SetViewport(window->GetViewport(), true);
         }
     }
 
@@ -794,6 +808,8 @@ namespace NSG
 
     void Graphics::UpdateBatchBuffer(const Batch& batch)
     {
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
         CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
 
         std::vector<InstanceData> instancesData;
@@ -817,7 +833,10 @@ namespace NSG
         }
 
         SetVertexBuffer(instanceBuffer_.get());
-        glBufferData(GL_ARRAY_BUFFER, instancesData.size() * sizeof(InstanceData), &(instancesData[0]), GL_DYNAMIC_DRAW);
+
+		glBufferData(GL_ARRAY_BUFFER, instancesData.size() * sizeof(InstanceData), &(instancesData[0]), GL_DYNAMIC_DRAW);
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
 
@@ -1073,10 +1092,10 @@ namespace NSG
         }
     }
 
-    bool Graphics::Draw(bool solid)
+    void Graphics::Draw(bool solid)
     {
-        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
-            return false;
+		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
+            return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -1085,7 +1104,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         if (!activeProgram_)
-            return false; // the program has been invalidated (due some shader needs to be recompiled)
+            return; // the program has been invalidated (due some shader needs to be recompiled)
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -1123,14 +1142,12 @@ namespace NSG
         lastProgram_ = activeProgram_;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        return true;
     }
 
-    bool Graphics::Draw(bool solid, Batch& batch)
+    void Graphics::Draw(bool solid, Batch& batch)
     {
-        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
-            return false;
+		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
+            return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -1139,7 +1156,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         if (!activeProgram_)
-            return false; // the program has been invalidated (due some shader needs to be recompiled)
+            return; // the program has been invalidated (due some shader needs to be recompiled)
 
         UpdateBatchBuffer(batch);
         SetBuffers();
@@ -1175,8 +1192,6 @@ namespace NSG
         AppStatistics::this_->NewDrawCall();
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        return true;
     }
 
 
@@ -1210,13 +1225,13 @@ namespace NSG
 
     void Graphics::Render()
     {
-        std::vector<const SceneNode*> visibles;
+        std::vector<SceneNode*> visibles;
         activeScene_->GetVisibleNodes(activeCamera_, visibles);
         AppStatistics::this_->SetNodes(activeScene_->GetChildren().size(), visibles.size());
-        std::vector<Batch> batches;
+        std::vector<PBatch> batches;
         GenerateBatches(visibles, batches);
         for (auto& batch : batches)
-            Render(batch);
+            Render(*batch);
     }
 
     bool Graphics::IsTextureSizeCorrect(unsigned width, unsigned height)
@@ -1229,12 +1244,12 @@ namespace NSG
         return HasNonPowerOfTwo() || (IsPowerOfTwo(width) && IsPowerOfTwo(height));
     }
 
-    void Graphics::GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches)
+    void Graphics::GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches)
     {
         struct MeshNode
         {
             PMesh mesh_;
-            const SceneNode* node_;
+            SceneNode* node_;
         };
 
         struct MaterialData
@@ -1283,20 +1298,20 @@ namespace NSG
             PMesh usedMesh;
             for (auto& obj : material.data_)
             {
-                bool limitReached = batches.size() && batches.back().nodes_.size() >= MAX_NODES_IN_BATCH;
+                bool limitReached = batches.size() && batches.back()->nodes_.size() >= MAX_NODES_IN_BATCH;
                 if (obj.mesh_ != usedMesh || !obj.mesh_ || limitReached)
                 {
                     usedMesh = obj.mesh_;
-                    Batch batch;
-                    batch.material_ = material.material_;
-                    batch.mesh_ = usedMesh;
-                    batch.nodes_.push_back(obj.node_);
+					auto batch(std::make_shared<Batch>());
+                    batch->material_ = material.material_;
+                    batch->mesh_ = usedMesh;
+                    batch->nodes_.push_back(obj.node_);
                     batches.push_back(batch);
                 }
                 else
                 {
-                    Batch& lastBatch = batches.back();
-                    lastBatch.nodes_.push_back(obj.node_);
+                    auto& lastBatch = batches.back();
+                    lastBatch->nodes_.push_back(obj.node_);
                 }
             }
         }

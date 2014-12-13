@@ -57,7 +57,7 @@ namespace NSG
         void SetCullFace(CullFaceMode mode);
         void SetFrontFace(FrontFaceMode mode);
         void SetTexture(unsigned index, Texture* texture);
-        void SetViewport(const Recti& viewport);
+        void SetViewport(const Recti& viewport, bool force);
         void InvalidateVAOFor(const Program* program);
         bool SetBuffers(Mesh* mesh);
         bool SetVertexArrayObj(VertexArrayObj* obj);
@@ -72,9 +72,11 @@ namespace NSG
         Scene* GetScene() const { return activeScene_; }
         void SetCamera(Camera* camera);
         Camera* GetCamera() const { return activeCamera_; }
+        void SetWindow(Window* window);
+        Window* GetWindow() const { return activeWindow_; }
         void SetFrameBuffer(GLuint value);
-        bool Draw(bool solid);
-        bool Draw(bool solid, Batch& batch);
+        void Draw(bool solid);
+        void Draw(bool solid, Batch& batch);
         void DiscardFramebuffer();
         bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
         bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
@@ -94,11 +96,11 @@ namespace NSG
         UniformObjs& GetUniformObjs() { return uniformObjs_; }
         void Set(Mesh* mesh) { activeMesh_ = mesh; }
         void Set(Material* material) { activeMaterial_ = material; }
-        void SetNode(Node* node) { activeNode_ = node; }
+		void SetNode(SceneNode* node) { activeNode_ = node; }
         void Render(Batch& batch);
 		void Render();
         bool IsTextureSizeCorrect(unsigned width, unsigned height);
-        void GenerateBatches(std::vector<const SceneNode*>& visibles, std::vector<Batch>& batches);
+        void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
         GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
     private:
         Recti viewport_;
@@ -114,13 +116,14 @@ namespace NSG
         unsigned enabledAttributes_; //positions' bits for enabled attributes
         Mesh* lastMesh_; // last mesh drawn
         Material* lastMaterial_; // last used material
-        Program* lastProgram_; // kast used program
-        Node* lastNode_; // last used node
+        Program* lastProgram_; // last used program
+		SceneNode* lastNode_; // last used node
         Mesh* activeMesh_; // mesh that is going to be drawn
         Material* activeMaterial_; //material that is going to be used to draw
-        Node* activeNode_; //node that is going to be used to draw
+        SceneNode* activeNode_; //node that is going to be used to draw
         Scene* activeScene_;
         Camera* activeCamera_;
+        Window* activeWindow_;
         bool has_discard_framebuffer_ext_;
         bool has_vertex_array_object_ext_;
         bool has_map_buffer_range_ext_;

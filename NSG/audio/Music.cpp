@@ -23,11 +23,13 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#include "Audio.h"
 #include "Music.h"
 #include "ResourceFile.h"
 #include "Util.h"
 #include "Check.h"
 #ifdef SDL
+#include "SDL.h"
 #include "SDL_mixer.h"
 #endif
 
@@ -48,6 +50,7 @@ namespace NSG
           isReady_(false),
           isPlaying_(false)
     {
+        OpenAudio();
     }
 
     Music::~Music()
@@ -56,6 +59,7 @@ namespace NSG
 #ifdef SDL
         Mix_FreeMusic(music_);
 #endif
+        CloseAudio();
     }
 
     bool Music::IsPlaying() const

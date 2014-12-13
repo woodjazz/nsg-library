@@ -39,11 +39,12 @@ namespace NSG
 
     ResourceFile::~ResourceFile()
     {
+		Invalidate();
     }
 
     bool ResourceFile::IsValid()
     {
-        return path_.HasName();
+		return path_.HasName();
     }
 
     void ResourceFile::AllocateResources()

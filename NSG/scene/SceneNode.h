@@ -63,6 +63,7 @@ namespace NSG
 		void SaveChildren(pugi::xml_node& node);
 		virtual void Load(const pugi::xml_node& child, const CachedData& data);
 		void LoadChildren(const pugi::xml_node& node, const CachedData& data);
+		void Render();
 	public:
 		SignalCollision::PSignal signalCollision_;
 	protected:

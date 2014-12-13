@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Frustum.h"
 #include "Program.h"
 #include "pugixml.hpp"
+#include "Batch.h"
 #include <sstream>
 
 namespace NSG
@@ -61,6 +62,7 @@ namespace NSG
 
     Pass::~Pass()
     {
+		Invalidate();
     }
 
     void Pass::SetBlendMode(BLEND_MODE mode)
@@ -158,25 +160,22 @@ namespace NSG
 		CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-    bool Pass::Render()
+    void Pass::Render()
     {
         if (IsReady())
         {
             SetupPass();
-            return graphics_.Draw(drawMode_ == DrawMode::SOLID);
+            graphics_.Draw(drawMode_ == DrawMode::SOLID);
         }
-
-        return false;
     }
 
-    bool Pass::Render(Batch& batch)
+    void Pass::Render(Batch& batch)
     {
-        if (IsReady())
+		if (IsReady() && batch.IsReady())
         {
             SetupPass();
-            return graphics_.Draw(drawMode_ == DrawMode::SOLID, batch);
+            graphics_.Draw(drawMode_ == DrawMode::SOLID, batch);
         }
-		return false;
     }
 
     void Pass::SetProgram(PProgram pProgram)

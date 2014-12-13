@@ -70,51 +70,71 @@ namespace NSG
 {
     template <> App* Singleton<App>::this_ = nullptr;
 
+    #if defined(IOS) || defined(ANDROID)
+
+    extern void AtExit();
+    int ExitEventFilter(void* userdata, SDL_Event* event)
+    {
+        if (event->type == SDL_APP_TERMINATING)
+        {
+            AtExit();
+            SDL_Quit();
+            std::exit(0);
+            return 0;
+        }
+        return 1;
+    }
+
+    #endif
+
     App::App()
         : configuration_(new AppConfiguration),
           keyboard_(new Keyboard),
           nWindows2Remove_(0),
           mainWindow_(nullptr)
     {
-        CHECK_ASSERT(SDL_WasInit(SDL_INIT_VIDEO) == 0, __FILE__, __LINE__);
-
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE))
+        #if EMSCRIPTEN
+        if (SDL_Init(0))
             TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
+        #else
+        if (SDL_Init(SDL_INIT_EVENTS))
+            TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
+        #endif
 
-        SDL_GL_SetSwapInterval(configuration_->vertical_sync_ ? 1 : 0);
+        TRACE_LOG("Base path is: " << Path::GetBasePath());
 
-        basePath_ = Path::GetCurrentDir();
-
-        TRACE_LOG("Base path is: " << basePath_);
+        #if defined(IOS) || defined(ANDROID)
+        {
+            SDL_AddEventWatch(ExitEventFilter, nullptr);
+        }
+        #endif
 
         resourceFileManager_ = PResourceFileManager(new ResourceFileManager);
-
         textureFileManager_ = PTextureFileManager(new TextureFileManager);
-
-        audio_ = PAudio(new Audio);
     }
 
     App::~App()
     {
+        TRACE_PRINTF("Closing App...");
         ClearAll();
         Singleton<App>::this_ = nullptr;
     }
 
     void App::InitializeGraphics()
     {
-        if (!graphics_)
+        std::call_once(onceFlag_, [&]()
         {
+            CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
             graphics_ = PGraphics(new Graphics);
             statistics_ = PAppStatistics(new AppStatistics);
             graphics_->InitializeBuffers();
-        }
+        });
     }
 
     void App::ClearAll()
     {
         resourceFileManager_ = nullptr;
         textureFileManager_ = nullptr;
-        scenes_.Clear();
         meshes_.Clear();
         materials_.Clear();
         programs_.Clear();
@@ -126,12 +146,14 @@ namespace NSG
 
     void App::AddObject(Object* object)
     {
-        CHECK_CONDITION(objects_.insert(object).second, __FILE__, __LINE__);
+        if (App::this_)
+            CHECK_CONDITION(objects_.insert(object).second, __FILE__, __LINE__);
     }
 
     void App::RemoveObject(Object* object)
     {
-        CHECK_CONDITION(objects_.erase(object), __FILE__, __LINE__);
+        if (App::this_)
+            CHECK_CONDITION(objects_.erase(object), __FILE__, __LINE__);
     }
 
     void App::InvalidateObjects()
@@ -139,7 +161,7 @@ namespace NSG
         TRACE_LOG("App::InvalidateObjects...");
 
         for (auto& obj : objects_)
-            obj->Invalidate();
+            obj->Invalidate(false);
 
         graphics_->ResetCachedState();
 
@@ -178,11 +200,6 @@ namespace NSG
         auto window = PWindow(new SDLWindow(name, x, y, width, height));
         windows_.push_back(window);
         return window;
-    }
-
-    PScene App::GetOrCreateScene(const std::string& name)
-    {
-        return scenes_.GetOrCreate(name);
     }
 
     PBoxMesh App::CreateBoxMesh(float width, float height, float depth, int resX, int resY, int resZ)
@@ -278,14 +295,6 @@ namespace NSG
         return programs_.GetOrCreate(name);
     }
 
-	PTextMesh App::CreateTextMesh(const std::string& name, PFontAtlasTexture atlas, bool dynamic)
-    {
-        PTextMesh mesh = meshes_.CreateClass<TextMesh>(name);
-		mesh->SetAtlas(atlas);
-        mesh->SetDynamic(dynamic);
-        return mesh;
-    }
-
     const std::vector<PMesh>& App::GetMeshes() const
     {
         return meshes_.GetConstObjs();
@@ -338,45 +347,62 @@ namespace NSG
     {
         if (!mainWindow_)
             mainWindow_ = window;
+        else if (!window)
+            mainWindow_ = nullptr;
+    }
+
+    bool App::RenderFrame()
+    {
+        HandleEvents();
+        resourceFileManager_->IsReady(); //forces load of resources to trigger Resource::signalLoaded_
+        for (auto& obj : windows_)
+        {
+            PWindow window(obj.lock());
+            if (!window || window->IsClosed())
+                break;
+            if (!window->IsMinimized())
+                window->RenderFrame();
+        }
+
+        while (nWindows2Remove_)
+        {
+            windows_.erase(std::remove_if(windows_.begin(), windows_.end(), [&](PWeakWindow window)
+            {
+                if (!window.lock() || window.lock()->IsClosed())
+                {
+                    --nWindows2Remove_;
+                    return true;
+                }
+                return false;
+            }), windows_.end());
+        }
+
+        if (!mainWindow_)
+            return false;
+        else if (mainWindow_->IsMinimized())
+        {
+            std::this_thread::sleep_for(Milliseconds(100));
+        }
+        return true;
     }
 
     void App::RenderFrame(void* data)
     {
         App* pThis = (App*)data;
-
-        #if IOS
-        if (pThis->mainWindow_->IsClosed())
+        #if !defined(IOS) && !defined(EMSCRIPTEN)
         {
-            SDL_Quit();
-            exit(0); //force quit on IOS
+            while (pThis->RenderFrame());
+        }
+        #else
+        {
+            pThis->RenderFrame();
         }
         #endif
 
-        if (!pThis->mainWindow_->IsMinimized())
-        {
-            pThis->resourceFileManager_->IsReady();
-            #if defined(EMSCRIPTEN) || defined(IOS)
-            pThis->HandleEvents();
-            #endif
-            for (auto& obj : pThis->windows_)
-            {
-                PWindow window(obj.lock());
-                if (!window || window->IsClosed())
-                    break;
-                window->RenderFrame();
-            }
-        }
-        else
-        {
-            std::this_thread::sleep_for(Milliseconds(1000));
-        }
     }
 
     int App::Run()
     {
-        if (windows_.empty())
-            return 0;
-
         #if IOS
         {
             SDL_iPhoneSetAnimationCallback(mainWindow_->GetSDLWindow(), 1, &RenderFrame, this);
@@ -389,24 +415,7 @@ namespace NSG
         }
         #else
         {
-            while (windows_.size())
-            {
-                SDL_GL_MakeCurrent(mainWindow_->GetSDLWindow(), mainWindow_->GetSDLContext());
-                HandleEvents();
-                App::RenderFrame(this);
-                while (nWindows2Remove_)
-                {
-                    windows_.erase(std::remove_if(windows_.begin(), windows_.end(), [&](PWeakWindow window)
-                    {
-                        if (!window.lock() || window.lock()->IsClosed())
-                        {
-                            --nWindows2Remove_;
-                            return true;
-                        }
-                        return false;
-                    }), windows_.end());
-                }
-            }
+            App::RenderFrame(this);
         }
         #endif
 
@@ -467,6 +476,8 @@ namespace NSG
                 SDL_ResizeEvent* r = (SDL_ResizeEvent*)&event;
                 int width = r->w;
                 int height = r->h;
+                TRACE_LOG("Resizing " << width << "," << height);
+                SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE);
                 window->ViewChanged(width, height);
             }
             #else

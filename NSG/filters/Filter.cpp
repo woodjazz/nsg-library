@@ -47,7 +47,7 @@ namespace NSG
           pMesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           pRender2Texture_(new Render2Texture(output_width, output_height, UseBuffer::NONE)),
           name_(name),
-          node_(new Node(name))
+          node_(std::make_shared<SceneNode>(name))
     {
         technique_->Add(pass_);
         pMaterial_->SetTexture0(input);
@@ -72,15 +72,14 @@ namespace NSG
 		return pMaterial_->GetTexture0();
 	}
 
-    bool Filter::Render()
+    void Filter::Render()
     {
         if (!pMesh_->IsReady() || !pMaterial_->IsReady() || !pRender2Texture_->IsReady())
-            return false;
+            return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		Camera* pCurrent = Graphics::this_->GetCamera();
-		Graphics::this_->SetCamera(nullptr);
 
         pRender2Texture_->Begin();
 
@@ -88,16 +87,13 @@ namespace NSG
         Graphics::this_->Set(pMesh_.get());
         Graphics::this_->Set(pMaterial_.get());
 
-        bool drawn = technique_->Render();
+        technique_->Render(nullptr);
 
         pRender2Texture_->End();
 
 		Graphics::this_->SetCamera(pCurrent);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        return drawn;
-
     }
 
     PTexture Filter::GetTexture() const

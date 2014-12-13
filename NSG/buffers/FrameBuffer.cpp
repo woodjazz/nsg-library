@@ -89,7 +89,7 @@ namespace NSG
 
     FrameBuffer::~FrameBuffer()
     {
-		ReleaseResources();
+		Invalidate();
     }
 
     bool FrameBuffer::IsValid()
@@ -206,21 +206,37 @@ namespace NSG
 
     void FrameBuffer::ReleaseResources()
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+		if (App::this_->GetMainWindow())
+		{
+			CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        if (stencilRenderBuffer_)
-            glDeleteRenderbuffers(1, &stencilRenderBuffer_);
+			if (stencilRenderBuffer_)
+			{
+				glDeleteRenderbuffers(1, &stencilRenderBuffer_);
+				stencilRenderBuffer_ = 0;
+			}
 
-        if (depthStencilRenderBuffer_)
-            glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
+			if (depthStencilRenderBuffer_)
+			{
+				glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
+				depthStencilRenderBuffer_ = 0;
+			}
 
-        if (colorRenderbuffer_)
-            glDeleteRenderbuffers(1, &colorRenderbuffer_);
+			if (colorRenderbuffer_)
+			{
+				glDeleteRenderbuffers(1, &colorRenderbuffer_);
+				colorRenderbuffer_ = 0;
+			}
 
-        glDeleteFramebuffers(1, &framebuffer_);
+			CHECK_ASSERT(framebuffer_, __FILE__, __LINE__);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+			glDeleteFramebuffers(1, &framebuffer_);
 
-        Graphics::this_->SetFrameBuffer(0);
+			framebuffer_ = 0;
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+
+			Graphics::this_->SetFrameBuffer(0);
+		}
     }
 }

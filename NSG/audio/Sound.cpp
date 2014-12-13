@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Sound.h"
+#include "Audio.h"
 #include "ResourceFile.h"
 #include "Util.h"
 #include "Path.h"
@@ -40,6 +41,7 @@ namespace NSG
           sound_(nullptr),
           channel_(-1)
     {
+        OpenAudio();
     }
 
     Sound::~Sound()
@@ -48,6 +50,7 @@ namespace NSG
 #ifdef SDL        
         Mix_FreeChunk(sound_);
 #endif        
+        CloseAudio();
     }
 
     bool Sound::IsPlaying() const

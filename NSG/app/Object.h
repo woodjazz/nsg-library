@@ -33,13 +33,15 @@ namespace NSG
 	public:
 		Object();
 		virtual ~Object();
-		void Invalidate();
+		void Invalidate(bool force = true);
 		bool IsReady();
+		void AllowInvalidate(bool allow);
 	private:
 		virtual bool IsValid() = 0;
 		virtual void AllocateResources() {}
 		virtual void ReleaseResources()	{}
 		bool isValid_;
 		bool resourcesAllocated_;
+		bool allowInvalidate_;
 	};
 }

@@ -56,6 +56,7 @@ namespace NSG
 
     SceneNode::~SceneNode()
     {
+		Invalidate();
     }
 
     void SceneNode::Load(PResource resource)
@@ -372,5 +373,16 @@ namespace NSG
     void SceneNode::OnCollision(const ContactPoint& contactInfo)
     {
         signalCollision_->Run(contactInfo);
+    }
+
+    void SceneNode::Render()
+    {
+        Graphics::this_->SetScene(GetScene().get());
+        Graphics::this_->Set(material_.get());
+        Graphics::this_->SetNode(this);
+        Graphics::this_->Set(mesh_.get());
+		auto technique = material_->GetTechnique();
+        if(technique)
+            technique->Render(nullptr);
     }
 }

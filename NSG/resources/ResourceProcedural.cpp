@@ -38,6 +38,12 @@ namespace NSG
 
 	ResourceProcedural::~ResourceProcedural()
 	{
+		Invalidate();
+	}
+
+	bool ResourceProcedural::IsValid()
+	{
+		return true;
 	}
 
 	void ResourceProcedural::AllocateResources()

@@ -39,8 +39,8 @@ namespace NSG
 
 	}
 
-	bool PassFilter::Render()
+	void PassFilter::Render()
 	{
-		return filter_->Render();
+		filter_->Render();
 	}
 }

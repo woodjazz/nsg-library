@@ -33,10 +33,10 @@ namespace NSG
 	{
 	public:
 		ResourceMemory(const char* buffer, size_t bytes);
-		ResourceMemory(const std::string& buffer);
 		~ResourceMemory();
-		void AllocateResources() override;
 	private:
+		bool IsValid() override;
+		void AllocateResources() override;
 		const char* staticBuffer_;
         size_t bytes_;
 	};

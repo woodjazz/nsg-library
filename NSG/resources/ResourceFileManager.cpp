@@ -36,6 +36,7 @@ namespace NSG
 
     ResourceFileManager::~ResourceFileManager()
     {
+		Invalidate();
     }
 
     bool ResourceFileManager::IsValid()

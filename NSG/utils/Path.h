@@ -52,6 +52,7 @@ namespace NSG
         static const Path& GetEmpty();
         bool IsEmpty() const { return filePath_.empty(); }
         static std::string GetCurrentDir();
+		static const std::string& GetBasePath();
         static void ReplaceChar(std::string& filePath, char from, char to);
         static std::string ExtractPath(const std::string& filePath);
         static std::string ExtractFilename(const std::string& filePath, bool extension);
@@ -71,6 +72,7 @@ namespace NSG
         std::string filename_; // name + extension (without path)
         std::string ext_; // extension in lowercase
         bool isAbsolutePath_;
+		static std::string basePath_;
     };
 
     std::ostream& operator << (std::ostream& s , const Path& obj);

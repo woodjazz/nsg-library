@@ -40,10 +40,13 @@ setup_common() #has to be called before anything
 set(USE_SDL ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(DEPENDENCIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies)
-set(DEPENDENCIES_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/dependencies)
-set(EXTERNALS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/externals)
-set(EXTERNALS_BYNARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/externals)
+set(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(DEPENDENCIES_DIR ${ROOT_SOURCE_DIR}/dependencies)
+set(EXTERNALS_DIR ${ROOT_SOURCE_DIR}/externals)
+
+set(ROOT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(DEPENDENCIES_BINARY_DIR ${ROOT_BINARY_DIR}/dependencies)
+set(EXTERNALS_BYNARY_DIR ${ROOT_BINARY_DIR}/externals)
 
 ###########################
 # pugixml
@@ -138,10 +141,10 @@ include_directories(${EXTERNALS_DIR}/tclap/include)
 if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	include (TemplateCompiler) # tcl tool
 endif()
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/NSG)
-SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/NSG)
+include_directories(${ROOT_SOURCE_DIR}/NSG)
+SUBDIRLIST(SUBDIRS ${ROOT_SOURCE_DIR}/NSG)
 FOREACH(subdir ${SUBDIRS})
-   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/NSG/${subdir})
+   include_directories(${ROOT_SOURCE_DIR}/NSG/${subdir})
 ENDFOREACH()
 add_subdirectory(NSG)
 set(LIBRARIES_2_LINK NSG) #reset libraries to links since NSG will have all the dependencies already set 
@@ -149,7 +152,8 @@ set(LIBRARIES_2_LINK NSG) #reset libraries to links since NSG will have all the 
 ###########################
 # samples
 ###########################
-set(SAMPLES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/samples)
+include (ConvertTool) # convert tool
+set(SAMPLES_DIR ${ROOT_SOURCE_DIR}/samples)
 SUBDIRLIST(SUBDIRS ${SAMPLES_DIR})
 FOREACH(subdir ${SUBDIRS})
 	IF(${BUILD_PROJECT} STREQUAL "all"  OR ${BUILD_PROJECT} STREQUAL "samples/${subdir}")
@@ -163,7 +167,7 @@ ENDFOREACH()
 #if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	enable_testing()
 	#include( CTest )
-	set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+	set(TEST_DIR ${ROOT_SOURCE_DIR}/tests)
 	SUBDIRLIST(SUBDIRS ${TEST_DIR})
 	FOREACH(subdir ${SUBDIRS})
 		IF(${BUILD_PROJECT} STREQUAL "all"  OR ${BUILD_PROJECT} STREQUAL "tests/${subdir}")
@@ -171,32 +175,4 @@ ENDFOREACH()
 	   	ENDIF()
 	ENDFOREACH()
 #endif()
-
-###########################
-# tools
-###########################
-if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
-
-	###########################
-	# assimp
-	###########################
-	mark_as_disable_and_internal(BUILD_SHARED_LIB)
-	mark_as_enable(ASSIMP_ENABLE_BOOST_WORKAROUND)
-	mark_as_disable_and_internal(BUILD_SHARED_LIBS)
-	mark_as_disable_and_internal(ASSIMP_BUILD_ASSIMP_TOOLS)
-	mark_as_disable_and_internal(ASSIMP_BUILD_TESTS)
-	mark_as_disable_and_internal(ASSIMP_BUILD_SAMPLES)
-	include_directories(${EXTERNALS_DIR}/assimp/include)
-	add_subdirectory(${EXTERNALS_DIR}/assimp)
-	list(APPEND LIBRARIES_2_LINK assimp)
-	###########################
-	include_directories(tools/assimpconverter)
-	add_subdirectory(tools/assimpconverter)
-	list(APPEND LIBRARIES_2_LINK assimpconverter)
-	add_subdirectory(tools/converter)
-	add_subdirectory(tools/gconverter)
-endif()
-
-
-
 

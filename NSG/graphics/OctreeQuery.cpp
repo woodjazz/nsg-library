@@ -29,7 +29,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    OctreeQuery::OctreeQuery(std::vector<const SceneNode*>& result)
+    OctreeQuery::OctreeQuery(std::vector<SceneNode*>& result)
         : result_(result)
     {
     }
@@ -39,7 +39,7 @@ namespace NSG
     }
 
 
-    FrustumOctreeQuery::FrustumOctreeQuery(std::vector<const SceneNode*>& result, const Frustum& frustum)
+    FrustumOctreeQuery::FrustumOctreeQuery(std::vector<SceneNode*>& result, const Frustum& frustum)
         : OctreeQuery(result),
           frustum_(frustum)
     {
@@ -65,7 +65,7 @@ namespace NSG
         }
     }
 
-    RayOctreeQuery::RayOctreeQuery(std::vector<const SceneNode*>& result, const Ray& ray)
+    RayOctreeQuery::RayOctreeQuery(std::vector<SceneNode*>& result, const Ray& ray)
         : OctreeQuery(result),
           ray_(ray)
     {

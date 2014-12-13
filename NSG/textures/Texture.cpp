@@ -140,7 +140,7 @@ namespace NSG
 
     Texture::~Texture()
     {
-		ReleaseResources();
+		Invalidate();
     }
 
     GLuint Texture::GetID() const

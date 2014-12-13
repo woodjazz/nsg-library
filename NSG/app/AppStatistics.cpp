@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "AppStatistics.h"
 #include "AppConfiguration.h"
 #include "App.h"
-#include "Node.h"
+#include "SceneNode.h"
 #include "Pass.h"
 #include "TextMesh.h"
 #include "Material.h"

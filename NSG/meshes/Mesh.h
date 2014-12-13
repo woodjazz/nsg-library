@@ -53,8 +53,6 @@ namespace NSG
         IndexBuffer* GetIndexBuffer() const { return pIBuffer_.get(); }
         const VertexsData& GetVertexsData() const { return vertexsData_; }
         const Indexes& GetIndexes() const { return indexes_; }
-        //Buffer::Data* GetBufferVertexData() const { return bufferVertexData_; }
-        //Buffer::Data* GetBufferIndexData() const { return bufferIndexData_; }
         void Save(pugi::xml_node& node);
         virtual void Load(const pugi::xml_node& node);
         void SetSerializable(bool serializable) { serializable_ = serializable; }

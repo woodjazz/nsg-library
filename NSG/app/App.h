@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include <string>
 #include <vector>
 #include <set>
+#include <mutex>
 
 namespace NSG
 {
@@ -47,7 +48,6 @@ namespace NSG
         void InvalidateObjects();
         PTexture GetWhiteTexture();
         PWindow GetOrCreateWindow(const std::string& name, int x, int y, int width, int height);
-        PScene GetOrCreateScene(const std::string& name);
         PBoxMesh CreateBoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
         PCircleMesh CreateCircleMesh(float radius = 1, int res = 8);
         PEllipseMesh CreateEllipseMesh(float width = 2, float height = 1, int res = 8);
@@ -61,39 +61,35 @@ namespace NSG
         PResourceFile GetOrCreateResourceFile(const Path& path);
         PTexture GetOrCreateTextureFile(const Path& path, TextureFlags flags = (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         PProgram GetOrCreateProgram(const std::string& name);
-		PTextMesh CreateTextMesh(const std::string& name, PFontAtlasTexture atlas, bool dynamic = true);
         const std::vector<PMesh>& GetMeshes() const;
         PMesh GetMesh(const std::string& name) const;
         const std::vector<PMaterial>& GetMaterials() const;
         int GetMaterialSerializableIndex(const PMaterial& material) const;
         int GetMeshSerializableIndex(const PMesh& mesh) const;
         int Run();
-		const std::string& GetBasePath() const { return basePath_; }
         void SetMainWindow(Window* window);
-		void* GetMainWindow() const { return mainWindow_; }
+		Window* GetMainWindow() const { return mainWindow_; }
 		std::vector<PWeakWindow>& GetWindows() { return windows_; }
 		void NotifyOneWindow2Remove() { ++nWindows2Remove_;  }
     private:
 		static void RenderFrame(void* data);
+        bool RenderFrame();
 		void ClearAll();
         void HandleEvents();
-        void RenderFrame(Window* window);
         std::vector<PWeakWindow> windows_;
         PAppConfiguration configuration_;
-        MapAndVector<std::string, Scene> scenes_;
         MapAndVector<std::string, Mesh> meshes_;
         MapAndVector<std::string, Material> materials_;
         MapAndVector<std::string, Program> programs_;
-        std::string basePath_;
         PResourceFileManager resourceFileManager_;
         PTextureFileManager textureFileManager_;
         PGraphics graphics_;
         PAppStatistics statistics_;
-        PAudio audio_;
         PKeyboard keyboard_;
 		std::set<Object*> objects_;
 		PTexture whiteTexture_;
         int nWindows2Remove_;
 		Window* mainWindow_;
+		std::once_flag onceFlag_;
 	};
 }

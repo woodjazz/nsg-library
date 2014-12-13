@@ -34,7 +34,7 @@ namespace NSG
     class FrameColorSelection : public Object
     {
     public:
-        FrameColorSelection(PWindow window, UseBuffer buffer = UseBuffer::DEPTH);
+        FrameColorSelection(UseBuffer buffer = UseBuffer::DEPTH);
         ~FrameColorSelection();
         GLushort GetSelected() const;
         void SetLocations();
@@ -43,6 +43,8 @@ namespace NSG
         bool Hit(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
     private:
         bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
         Color TransformSelectedId2Color(GLushort id);
         void Begin(float screenX, float screenY);
         void End();
@@ -55,6 +57,7 @@ namespace NSG
         GLubyte selected_[4];
         GLint pixelX_;
         GLint pixelY_;
+		unsigned int frameBufferFlags_;
     };
 }
 

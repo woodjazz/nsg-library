@@ -61,12 +61,15 @@ namespace NSG
           isStatic_(false),
           handleCollision_(false)
     {
+        //Since a non-visible scenenode will neither be rendered nor be validated then
+        //better not to invalidate a Rigidbody (Rigidbody has to be alive because can make (in any moment) an object visible again)
+        AllowInvalidate(false); //this will force not to invalidate the rigidbody(for example when the application is minimized)
 		CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
     }
 
     RigidBody::~RigidBody()
     {
-        ReleaseResources();
+		Invalidate();
     }
 
     bool RigidBody::IsValid()
@@ -93,7 +96,9 @@ namespace NSG
 		PSceneNode sceneNode(sceneNode_.lock());
         body_->setUserPointer(this);
 		body_->setWorldTransform(ToTransform(sceneNode->GetGlobalPosition(), sceneNode->GetGlobalOrientation()));
-        owner_->addRigidBody(body_);
+		auto world = owner_.lock();
+		CHECK_ASSERT(world, __FILE__, __LINE__);
+		world->addRigidBody(body_);
     }
 
     void RigidBody::ReleaseResources()
@@ -102,7 +107,9 @@ namespace NSG
 		{
 			body_->setUserPointer(nullptr);
 			body_->setMotionState(nullptr);
-			owner_->removeRigidBody(body_);
+			auto world = owner_.lock();
+			if(world)
+				world->removeRigidBody(body_);
 			delete shape_;
 			delete body_;
 			shape_ = nullptr;

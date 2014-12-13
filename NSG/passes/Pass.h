@@ -56,8 +56,8 @@ namespace NSG
         void SetFrontFace(FrontFaceMode mode);
         void SetProgram(PProgram pProgram);
         PProgram GetProgram() const;
-        virtual bool Render();
-        bool Render(Batch& batch);
+        virtual void Render();
+        void Render(Batch& batch);
         void Save(pugi::xml_node& node);
         void Load(const pugi::xml_node& node);
     protected:

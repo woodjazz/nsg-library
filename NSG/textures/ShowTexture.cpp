@@ -43,7 +43,7 @@ namespace NSG
 		  material_(app_.CreateMaterial(GetUniqueName("NSGShowTexture"))),
           program_(app_.GetOrCreateProgram("NSGShowTexture")),
           mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
-          node_(new Node("ShowTexture"))
+          node_(std::make_shared<SceneNode>("NSGShowTexture"))
     {
         pass_->SetProgram(program_);
         material_->SetSerializable(false);
@@ -52,7 +52,9 @@ namespace NSG
 
     ShowTexture::~ShowTexture()
     {
+        Invalidate();
         pass_ = nullptr;
+        
     }
 
     bool ShowTexture::IsValid()

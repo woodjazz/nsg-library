@@ -180,13 +180,6 @@ namespace NSG
         DEPTH_STENCIL
     };
 
-    struct Batch
-    {
-        PMaterial material_;
-        PMesh mesh_;
-        std::vector<const Node*> nodes_;
-    };
-
     enum TransformSpace
     {
         TS_LOCAL,

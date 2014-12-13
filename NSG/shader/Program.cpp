@@ -582,7 +582,7 @@ namespace NSG
 
     Program::~Program()
     {
-        ReleaseResources();
+		Invalidate();
     }
 
     GLuint Program::GetAttributeLocation(const std::string& name)

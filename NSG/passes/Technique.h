@@ -47,7 +47,8 @@ namespace NSG
 		PPass GetPass(unsigned int idx) { return passes_.at(idx); }
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
-		bool Render();
+		void Render(Camera* camera);
+		void Render();
 		void EnableProgramFlags(const ProgramFlags& flags);
 		void DisableProgramFlags(const ProgramFlags& flags);
 	private:

@@ -32,55 +32,8 @@ int NSG_MAIN(int argc, char* argv[])
     App app;
 
     auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
-    auto window1 = app.GetOrCreateWindow("window1", 200, 100, 50, 30);
-
-
-	auto atlas = std::make_shared<FontAtlasTexture>("", window1->GetWidth(), window1->GetHeight());
-	auto text = app.CreateTextMesh("text1", atlas);
-	auto scene1 = app.GetOrCreateScene("scene1");
-	auto node = scene1->GetOrCreateChild<SceneNode>("node1");
-	node->SetPosition(Vertex3(0, 0, 0));
-	auto material = app.GetOrCreateMaterial("material1");
-	material->SetColor(Color(1, 1, 1, 1));
-	material->SetTexture0(text->GetTexture());
-	auto pass = PPass(new Pass);
-	pass->EnableDepthTest(false);
-	pass->EnableStencilTest(false);
-	pass->SetProgram(text->GetProgram());
-	node->Set(material);
-	node->Set(text);
-
-	ShowTexture show;
-	show.SetNormal(text->GetTexture());
-	//show.SetNormal(app.GetWhiteTexture());
-
-	SignalViewChanged::PSlot resizeSlot1;
-	SignalRender::PSlot renderSlot1;
-
-	if (window1)
-	{
-		resizeSlot1 = window1->signalViewChanged_->Connect([&](int width, int height)
-		{
-			atlas->SetViewSize(width, height);
-		});
-
-		renderSlot1 = window1->signalRender_->Connect([&]()
-		{
-#if 0
-			Graphics::this_->SetCamera(nullptr);
-			Graphics::this_->SetScene(scene1.get());
-			Graphics::this_->Set(material.get());
-			Graphics::this_->SetNode(node.get());
-			Graphics::this_->Set(text.get());
-			text->SetText("Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT);
-			pass->Render();
-#endif
-			show.Show();
-		});
-	}
-
-    auto scene = app.GetOrCreateScene("scene000");
-    auto resource(app.GetOrCreateResourceFile("data/scene.xml"));
+	auto scene = std::make_shared<Scene>("scene000");
+    auto resource(app.GetOrCreateResourceFile("data/duck.xml"));
 
     PCamera camera;
     SignalViewChanged::PSlot resizeSlot;
@@ -96,10 +49,10 @@ int NSG_MAIN(int argc, char* argv[])
         objBB.max_ *= 1.75f;
         objBB.min_ *= 1.75f;
         camera = scene->GetOrCreateChild<Camera>("camera1");
-        camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
         camera->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.max_.z));
         camera->SetGlobalLookAt(objPos);
 
+        camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
         resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
         {
             camera->SetAspectRatio(width, height);

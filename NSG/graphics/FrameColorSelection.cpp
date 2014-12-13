@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "FrameBuffer.h"
 #include "Log.h"
 #include "Check.h"
+#include "Graphics.h"
 #include "SceneNode.h"
 #include "Camera.h"
 #include "App.h"
@@ -41,43 +42,54 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	FrameColorSelection::FrameColorSelection(PWindow window, UseBuffer buffer)
+	FrameColorSelection::FrameColorSelection(UseBuffer buffer)
         : app_(*App::this_),
 		buffer_(buffer),
-		material_(app_.GetOrCreateMaterial("NSGFrameColorSelection")),
           windowWidth_(0),
           windowHeight_(0),
           pixelX_(0),
-          pixelY_(0)
+          pixelY_(0),
+		  frameBufferFlags_(FrameBuffer::COLOR)
     {
-
-		windowWidth_ = window->GetWidth();
-		windowHeight_ = window->GetHeight();
-
-        unsigned int frameBufferFlags = FrameBuffer::COLOR;
         if (buffer_ == UseBuffer::DEPTH)
-            frameBufferFlags |= FrameBuffer::DEPTH;
+			frameBufferFlags_ |= FrameBuffer::DEPTH;
         else if (buffer_ == UseBuffer::DEPTH_STENCIL)
-            frameBufferFlags |= FrameBuffer::STENCIL;
+			frameBufferFlags_ |= FrameBuffer::STENCIL;
+    }
 
-        frameBuffer_ = PFrameBuffer(new FrameBuffer(windowWidth_, windowHeight_, frameBufferFlags));
+    FrameColorSelection::~FrameColorSelection()
+    {
+		Invalidate();
+    }
+
+    bool FrameColorSelection::IsValid()
+    {
+		return Graphics::this_->GetWindow() ? true : false;
+    }
+
+    void FrameColorSelection::AllocateResources()
+    {
+        material_ = app_.GetOrCreateMaterial("NSGFrameColorSelection");
+        auto window = Graphics::this_->GetWindow();
+        windowWidth_ = window->GetWidth();
+        windowHeight_ = window->GetHeight();
+
+		frameBuffer_ = PFrameBuffer(new FrameBuffer(windowWidth_, windowHeight_, frameBufferFlags_));
 
         PPass pass(new Pass);
-		pass->SetProgram(app_.GetOrCreateProgram("NSGFrameColorSelection"));
+        pass->SetProgram(app_.GetOrCreateProgram("NSGFrameColorSelection"));
 
         PTechnique technique(new Technique);
         technique->Add(pass);
         material_->SetTechnique(technique);
         pass->SetBlendMode(BLEND_NONE);
+
     }
 
-    FrameColorSelection::~FrameColorSelection()
+    void FrameColorSelection::ReleaseResources()
     {
-    }
-
-    bool FrameColorSelection::IsValid()
-    {
-        return material_->IsReady() && frameBuffer_->IsReady();
+        frameBuffer_ = nullptr;
+        material_ = nullptr;
     }
 
     void FrameColorSelection::Begin(float screenX, float screenY)
@@ -148,9 +160,10 @@ namespace NSG
 
                 for (auto& obj : nodes)
                 {
+					Graphics::this_->SetScene(obj->GetScene().get());
 					Graphics::this_->SetNode(obj);
                     Graphics::this_->Set(obj->GetMesh().get());
-                    material_->GetTechnique()->Render();
+                    material_->GetTechnique()->Render(nullptr);
                 }
             }
             End();

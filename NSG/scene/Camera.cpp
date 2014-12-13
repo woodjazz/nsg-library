@@ -90,7 +90,7 @@ namespace NSG
             }
 
             if(graphics_->GetCamera() == this)
-                graphics_->SetViewport(GetViewport());
+                graphics_->SetViewport(GetViewport(), false);
         }
     }
 

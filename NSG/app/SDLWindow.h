@@ -43,9 +43,7 @@ namespace NSG
         void RenderFrame() override;
         void Destroy() override;
     private:
-        #if EMSCRIPTEN
-        SDL_Surface* screen_;
-        #else
+        #if !defined(EMSCRIPTEN)
         SDL_Window* win_;
         SDL_GLContext context_;
         #endif

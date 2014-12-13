@@ -26,7 +26,7 @@ endmacro(TMPL_ABSOLUTE_SRC)
 macro(ADD_TEMPLATES BINARY OUT GENERATED)
 		
     get_filename_component(OUTFILE ${GENERATED} ABSOLUTE)
-    tmpl_absolute_src(TEMPLATES ${ARGN})
+    TMPL_ABSOLUTE_SRC(TEMPLATES ${ARGN})
     get_filename_component(ONAME ${OUTFILE} NAME)
 	
 	if (${BINARY})

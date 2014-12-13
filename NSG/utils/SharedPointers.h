@@ -122,6 +122,9 @@ namespace NSG
 		class Machine;
 		typedef std::shared_ptr<Machine> PMachine;
 	}
+
+	class Batch;
+	typedef std::shared_ptr<Batch> PBatch;
 	
 	class ResourceFile;
 	typedef std::shared_ptr<ResourceFile> PResourceFile;
@@ -141,8 +144,8 @@ namespace NSG
     class Material;
     typedef std::shared_ptr<Material> PMaterial;
 
-    class FontAtlasTexture;
-    typedef std::shared_ptr<FontAtlasTexture> PFontAtlasTexture;
+    class FontAtlas;
+    typedef std::shared_ptr<FontAtlas> PFontAtlas;
 
     class FontAtlasTextureManager;
     typedef std::unique_ptr<FontAtlasTextureManager> PFontAtlasTextureManager;

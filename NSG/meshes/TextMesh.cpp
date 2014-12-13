@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #include "TextMesh.h"
 #include "Program.h"
-#include "FontAtlasTexture.h"
+#include "FontAtlas.h"
 #include "Graphics.h"
 #include "App.h"
 #include "ResourceMemory.h"
@@ -39,173 +39,69 @@ namespace NSG
         : Mesh(name, true),
           screenWidth_(0),
           screenHeight_(0),
-		  textureFilename_(name),
           hAlignment_(LEFT_ALIGNMENT),
-          vAlignment_(BOTTOM_ALIGNMENT),
-          alignmentOffsetX_(0),
-          alignmentOffsetY_(0),
-          maxLength_(0)
+          vAlignment_(BOTTOM_ALIGNMENT)
     {
         SetSerializable(false);
-        pProgram_ = App::this_->GetOrCreateProgram("NSGInternalTextProgram");
-        pProgram_->SetFlags((int)ProgramFlag::TEXT);
     }
 
     TextMesh::~TextMesh()
     {
     }
 
-	void TextMesh::SetAtlas(PFontAtlasTexture atlas)
-	{
-		if (pAtlas_ != atlas)
-		{
-			pAtlas_ = atlas;
-			Invalidate();
-		}
-	}
-
-    bool TextMesh::Has(const std::string& textureFilename) const
+    void TextMesh::SetAtlas(PFontAtlas atlas)
     {
-        return textureFilename_ == textureFilename;
+        if (pAtlas_ != atlas)
+        {
+            pAtlas_ = atlas;
+            Invalidate();
+        }
     }
 
     bool TextMesh::IsValid()
     {
-		return pAtlas_ && pAtlas_->IsReady() && pProgram_->IsReady();
+		return !text_.empty() && pAtlas_ && pAtlas_->IsReady();
     }
-
-    void TextMesh::UpdateBuffers()
-    {
-        CHECK_ASSERT(!isStatic_ && "Trying to update an static buffer", __FILE__, __LINE__);
-
-        if (vertexsData_.empty())
-            return;
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
-        CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
-
-        VertexsData tmpVertexData(vertexsData_);
-        Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
-        pVBuffer_->UpdateData(tmpVertexData);
-        pIBuffer_->UpdateData(indexes_);
-
-        //graphics_.RedoVAO(pProgram_.get(), pVBuffer_.get(), pIBuffer_.get());
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-    }
-
 
     void TextMesh::AllocateResources()
     {
-		pAtlas_->GenerateMesh(text_, vertexsData_, indexes_, screenWidth_, screenHeight_);
+        pAtlas_->GenerateMesh(text_, vertexsData_, indexes_, screenWidth_, screenHeight_);
 
-        CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
-        CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
+        float alignmentOffsetX;
+        float alignmentOffsetY;
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-        CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
-        CHECK_ASSERT(!pVBuffer_, __FILE__, __LINE__);
-        CHECK_ASSERT(!pIBuffer_, __FILE__, __LINE__);
-
-        VertexsData tmpVertexData(vertexsData_);
-        Move(tmpVertexData, alignmentOffsetX_, alignmentOffsetY_);
-
-        const size_t VERTEX_PER_CHAR = 6;
-        const GLsizeiptr MAX_BYTES_VERTEX_BUFFER = VERTEX_PER_CHAR * maxLength_ * sizeof(VertexData);
-        GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
-        CHECK_ASSERT(bytesNeeded <= MAX_BYTES_VERTEX_BUFFER, __FILE__, __LINE__);
-        if (isStatic_)
-            pVBuffer_ = PVertexBuffer(new VertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData, GL_STATIC_DRAW));
+		if (hAlignment_ == CENTER_ALIGNMENT)
+            alignmentOffsetX = -screenWidth_ / 2;
+		else if (hAlignment_ == RIGHT_ALIGNMENT)
+            alignmentOffsetX = 1-screenWidth_;
         else
-            pVBuffer_ = PVertexBuffer(new VertexBuffer(MAX_BYTES_VERTEX_BUFFER, MAX_BYTES_VERTEX_BUFFER, tmpVertexData, GL_DYNAMIC_DRAW));
+            alignmentOffsetX = -1;
 
-        const size_t INDEXES_PER_CHAR = 6;
-        const GLsizeiptr MAX_BYTES_INDEX_BUFFER = INDEXES_PER_CHAR * maxLength_ * sizeof(IndexType);
-        bytesNeeded = sizeof(IndexType) * indexes_.size();
-        CHECK_ASSERT(bytesNeeded <= MAX_BYTES_INDEX_BUFFER, __FILE__, __LINE__);
-
-        if (isStatic_)
-            pIBuffer_ = PIndexBuffer(new IndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, indexes_, GL_STATIC_DRAW));
+		if (vAlignment_ == MIDDLE_ALIGNMENT)
+            alignmentOffsetY = screenHeight_ / 2;
+		else if (vAlignment_ == TOP_ALIGNMENT)
+            alignmentOffsetY = 1;
         else
-            pIBuffer_ = PIndexBuffer(new IndexBuffer(MAX_BYTES_INDEX_BUFFER, MAX_BYTES_INDEX_BUFFER, indexes_, GL_DYNAMIC_DRAW));
+			alignmentOffsetY = -1 + screenHeight_;
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-    }
-
-    void TextMesh::ReleaseResources()
-    {
-        Mesh::ReleaseResources();
-
-        text_.clear(); // Force SetText (when window's resizes)
-    }
-
-    GLfloat TextMesh::GetWidthForCharacterPosition(unsigned int charPos) const
-    {
-        return pAtlas_->GetWidthForCharacterPosition(text_.c_str(), charPos);
-    }
-
-    unsigned int TextMesh::GetCharacterPositionForWidth(float width) const
-    {
-        return pAtlas_->GetCharacterPositionForWidth(text_.c_str(), width);
-    }
-
-    void TextMesh::Move(VertexsData& obj, float offsetX, float offsetY)
-    {
-        auto it = obj.begin();
-        while (it != obj.end())
+        for (auto& obj : vertexsData_)
         {
-            VertexData& data = *it;
-            data.position_.x += offsetX;
-            data.position_.y += offsetY;
-            ++it;
-        }
-    }
-
-    bool TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
-    {
-		bool changed = false;
-
-        if (text.size() > maxLength_)
-        {
-            maxLength_ = text.size();
-			changed = true;
+            obj.position_.x += alignmentOffsetX;
+            obj.position_.y += alignmentOffsetY;
         }
 
-		if (text_ != text)
+		Mesh::AllocateResources();
+    }
+
+    void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
+    {
+        if(text_ != text || hAlignment_ != hAlign || vAlignment_ != vAlign)
         {
             text_ = text;
-
-            changed = true;
-        }
-
-        if (changed || hAlign != hAlignment_ || vAlign != vAlignment_)
-        {
-            if (hAlign == CENTER_ALIGNMENT)
-                alignmentOffsetX_ = -screenWidth_ / 2;
-            else if (hAlign == RIGHT_ALIGNMENT)
-                alignmentOffsetX_ = -screenWidth_;
-            else
-                alignmentOffsetX_ = 0;
-
-            if (vAlign == MIDDLE_ALIGNMENT)
-                alignmentOffsetY_ = screenHeight_ / 2;
-            else if (vAlign == TOP_ALIGNMENT)
-                alignmentOffsetY_ = -screenHeight_;
-            else
-                alignmentOffsetY_ = screenHeight_;
-
             hAlignment_ = hAlign;
             vAlignment_ = vAlign;
-
-            changed = true;
+            Invalidate();
         }
-
-		if (changed)
-			Invalidate();
-
-		return changed;
     }
 
     GLenum TextMesh::GetWireFrameDrawMode() const

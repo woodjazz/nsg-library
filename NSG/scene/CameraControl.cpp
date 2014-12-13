@@ -33,175 +33,169 @@ misrepresented as being the original software.
 namespace NSG
 {
     CameraControl::CameraControl(PCamera camera)
-    : camera_(camera),
-	app_(*App::this_)
+        : camera_(camera),
+          app_(*App::this_)
     {
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
         lastX_ = lastY_ = 0;
-		pointOnSphere_ = PPointOnSphere(new PointOnSphere(Vertex3(0), camera_->GetGlobalPosition()));
+        pointOnSphere_ = PPointOnSphere(new PointOnSphere(Vertex3(0), camera_->GetGlobalPosition()));
         updateOrientation_ = false;
         leftButtonDown_ = false;
         altKeyDown_ = false;
         shiftKeyDown_ = false;
         SetSphereCenter(true);
-#if 0
-		PWindow window = camera->GetWindow();
-		window_ = window;
-
-		slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
-        {
-            if (leftButtonDown_ && !updateOrientation_)
-                Move(x, y);
-            lastX_ = x;
-            lastY_ = y;
-        });
-
-
-		slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
-        {
-            lastX_ = x;
-            lastY_ = y;
-
-            if (button == NSG_BUTTON_LEFT)
-                leftButtonDown_ = true;
-        });
-
-		slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
-        {
-            if (button == NSG_BUTTON_LEFT)
-                leftButtonDown_ = false;
-        });
-
-		slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
-        {
-            Vertex3 lookAtPoint = pointOnSphere_->GetCenter();
-			Vertex3 position = camera_->GetGlobalPosition();
-			Vector3 looAtDir = camera_->GetLookAtDirection();
-            float distance = glm::distance(lookAtPoint, position);
-            if (distance < 1)
-                distance = 1;
-            float factor = y > 0 ? 2.0f : -2.0f;
-            distance /= factor;
-            position += looAtDir * distance;
-            SetPosition(position);
-        });
-
-		slotMultiGesture_ = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-        {
-            //TRACE_LOG("x=" << x << " y=" << y << " dTheta=" << dTheta << " dDist=" << dDist << " num=" << numFingers);
-            if (numFingers == 2)
-            {
-                float factor = dDist * timestamp / 10.0f;
-				Vertex3 position = camera_->GetGlobalPosition();
-				Vector3 looAtDir = camera_->GetLookAtDirection();
-                position += looAtDir * factor;
-                SetPosition(position);
-            }
-            #if 0
-            else if (numFingers == 3)
-            {
-                Move(x, y);
-                lastX_ = x;
-                lastY_ = y;
-            }
-            #endif
-        });
-
-		slotKey_ = window->signalKey_->Connect([&](int key, int action, int modifier)
-        {
-            //        float deltaTime = App::this_->GetDeltaTime();
-
-            switch (key)
-            {
-                case NSG_KEY_W:
-                    {
-                        break;
-                    }
-
-                case NSG_KEY_S:
-                    {
-                        break;
-                    }
-
-                case NSG_KEY_A:
-                    {
-                        AutoZoom();
-                        break;
-                    }
-
-                case NSG_KEY_D:
-                    {
-                        break;
-                    }
-
-                case NSG_KEY_Q:
-                    {
-                        break;
-                    }
-
-                case NSG_KEY_E:
-                    {
-                        break;
-                    }
-
-                case NSG_KEY_F:
-                    {
-                        if (action)
-                            SetSphereCenter(false);
-                        break;
-                    }
-
-                case NSG_KEY_C:
-                    {
-                        if (action)
-                            SetSphereCenter(true);
-                        break;
-                    }
-
-                case NSG_KEY_LALT:
-                    {
-                        altKeyDown_ = action ? true : false;
-                        break;
-                    }
-
-                case NSG_KEY_LSHIFT:
-                    {
-                        shiftKeyDown_ = action ? true : false;
-                        break;
-                    }
-
-            }
-        });
-
-		slotUpdate_ = window->signalUpdate_->Connect([&](float deltaTime)
-        {
-            if (updateOrientation_)
-            {
-				Quaternion targetOrientation = camera_->GetLookAtOrientation(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
-				Quaternion currentOrientation = camera_->GetOrientation();
-                float dot = glm::dot(currentOrientation, targetOrientation);
-                bool close = 1 - dot * dot < PRECISION;
-                if (!close)
-                {
-                    //animate
-                    float factor = 3 * window->GetDeltaTime();
-					camera_->SetOrientation(glm::slerp(currentOrientation, targetOrientation, factor));
-                }
-                else
-                {
-					camera_->SetOrientation(targetOrientation);
-                    updateOrientation_ = false;
-                }
-
-            }
-        });
-#endif
     }
 
-	CameraControl::~CameraControl()
-	{
+    CameraControl::~CameraControl()
+    {
 
-	}
+    }
+
+    void CameraControl::OnMousemoved(float x, float y)
+    {
+        if (leftButtonDown_ && !updateOrientation_)
+            Move(x, y);
+        lastX_ = x;
+        lastY_ = y;
+    }
+
+    void CameraControl::OnMouseDown(int button, float x, float y)
+    {
+        lastX_ = x;
+        lastY_ = y;
+
+        if (button == NSG_BUTTON_LEFT)
+            leftButtonDown_ = true;
+    }
+
+    void CameraControl::OnMouseUp(int button, float x, float y)
+    {
+        if (button == NSG_BUTTON_LEFT)
+            leftButtonDown_ = false;
+    }
+
+    void CameraControl::OnMousewheel(float x, float y)
+    {
+        Vertex3 lookAtPoint = pointOnSphere_->GetCenter();
+        Vertex3 position = camera_->GetGlobalPosition();
+        Vector3 looAtDir = camera_->GetLookAtDirection();
+        float distance = glm::distance(lookAtPoint, position);
+        if (distance < 1)
+            distance = 1;
+        float factor = y > 0 ? 2.0f : -2.0f;
+        distance /= factor;
+        position += looAtDir * distance;
+        SetPosition(position);
+    }
+
+    void CameraControl::OnUpdate(float deltaTime)
+    {
+        if (updateOrientation_)
+        {
+            Quaternion targetOrientation = camera_->GetLookAtOrientation(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
+            Quaternion currentOrientation = camera_->GetOrientation();
+            float dot = glm::dot(currentOrientation, targetOrientation);
+            bool close = 1 - dot * dot < PRECISION;
+            if (!close)
+            {
+                //animate
+				float factor = 3 * deltaTime;
+                camera_->SetOrientation(glm::slerp(currentOrientation, targetOrientation, factor));
+            }
+            else
+            {
+                camera_->SetOrientation(targetOrientation);
+                updateOrientation_ = false;
+            }
+        }
+    }
+
+    void CameraControl::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    {
+        //TRACE_LOG("x=" << x << " y=" << y << " dTheta=" << dTheta << " dDist=" << dDist << " num=" << numFingers);
+        if (numFingers == 2)
+        {
+            float factor = dDist * timestamp / 10.0f;
+            Vertex3 position = camera_->GetGlobalPosition();
+            Vector3 looAtDir = camera_->GetLookAtDirection();
+            position += looAtDir * factor;
+            SetPosition(position);
+        }
+        #if 0
+        else if (numFingers == 3)
+        {
+            Move(x, y);
+            lastX_ = x;
+            lastY_ = y;
+        }
+        #endif
+
+    }
+
+    void CameraControl::OnKey(int key, int action, int modifier)
+    {
+        switch (key)
+        {
+            case NSG_KEY_W:
+                {
+                    break;
+                }
+
+            case NSG_KEY_S:
+                {
+                    break;
+                }
+
+            case NSG_KEY_A:
+                {
+                    AutoZoom();
+                    break;
+                }
+
+            case NSG_KEY_D:
+                {
+                    break;
+                }
+
+            case NSG_KEY_Q:
+                {
+                    break;
+                }
+
+            case NSG_KEY_E:
+                {
+                    break;
+                }
+
+            case NSG_KEY_F:
+                {
+                    if (action)
+                        SetSphereCenter(false);
+                    break;
+                }
+
+            case NSG_KEY_C:
+                {
+                    if (action)
+                        SetSphereCenter(true);
+                    break;
+                }
+
+            case NSG_KEY_LALT:
+                {
+                    altKeyDown_ = action ? true : false;
+                    break;
+                }
+
+            case NSG_KEY_LSHIFT:
+                {
+                    shiftKeyDown_ = action ? true : false;
+                    break;
+                }
+
+        }
+
+    }
 
     void CameraControl::Move(float x, float y)
     {
@@ -210,17 +204,17 @@ namespace NSG
         if (altKeyDown_)
         {
             pointOnSphere_->IncAngles(PI * relX, PI * relY);
-			camera_->SetGlobalPosition(pointOnSphere_->GetPoint());
-			camera_->SetGlobalLookAt(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
+            camera_->SetGlobalPosition(pointOnSphere_->GetPoint());
+            camera_->SetGlobalLookAt(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
         }
         else if (shiftKeyDown_)
         {
             float deltaTime = window_.lock()->GetDeltaTime();
-			Vertex3 position = camera_->GetGlobalPosition();
-			Quaternion q = camera_->GetOrientation();
+            Vertex3 position = camera_->GetGlobalPosition();
+            Quaternion q = camera_->GetOrientation();
             q = q * glm::angleAxis(deltaTime * relX * 100, Vertex3(0, 1, 0));
             q = q * glm::angleAxis(deltaTime * relY * 100, Vertex3(1, 0, 0));
-			camera_->SetOrientation(q);
+            camera_->SetOrientation(q);
             SetSphereCenter(false);
         }
     }
@@ -230,13 +224,13 @@ namespace NSG
     {
         if (pointOnSphere_->SetPoint(position))
         {
-			Vertex3 oldPos = camera_->GetGlobalPosition();
-			camera_->SetGlobalPosition(position);
+            Vertex3 oldPos = camera_->GetGlobalPosition();
+            camera_->SetGlobalPosition(position);
             BoundingBox bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_.get());
             if (camera_->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE)
             {
                 pointOnSphere_->SetPoint(oldPos);
-				camera_->SetGlobalPosition(oldPos);
+                camera_->SetGlobalPosition(oldPos);
             }
         }
     }
@@ -283,7 +277,7 @@ namespace NSG
         if (distance < camera_->GetZNear())
             distance = 1 + camera_->GetZNear();
 
-        position = center - lookAtDir * distance;
+        position = center + lookAtDir * distance;
 
         if (pointOnSphere_->SetCenterAndPoint(center, position))
             camera_->SetGlobalPosition(position);

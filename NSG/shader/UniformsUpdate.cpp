@@ -32,12 +32,14 @@ namespace NSG
     {
         needUpdate_ = true;
 
-		Graphics::this_->InsertUniformObj(this);
+		if (Graphics::this_)
+			Graphics::this_->InsertUniformObj(this);
     }
 
     UniformsUpdate::~UniformsUpdate()
     {
-		Graphics::this_->RemoveUniformObj(this);
+		if(Graphics::this_)
+			Graphics::this_->RemoveUniformObj(this);
     }
 
     void UniformsUpdate::ClearAllUpdates()

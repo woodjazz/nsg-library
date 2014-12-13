@@ -35,6 +35,13 @@ namespace NSG
 		CameraControl(PCamera camera);
 		~CameraControl();
 		void AutoZoom();
+		void OnUpdate(float deltaTime);
+		void OnKey(int key, int action, int modifier);
+		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
+		void OnMousewheel(float x, float y);
+		void OnMouseUp(int button, float x, float y);
+		void OnMouseDown(int button, float x, float y);
+		void OnMousemoved(float x, float y);
 	private:
 		void SetPosition(const Vertex3& position);
 		void SetSphereCenter(bool centerObj);

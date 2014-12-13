@@ -44,6 +44,6 @@ namespace NSG
         PMaterial material_;
         PProgram program_;
 		PMesh mesh_;
-		PNode node_;
+		PSceneNode node_;
 	};
 }

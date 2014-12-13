@@ -33,7 +33,7 @@ namespace NSG
     class Window : public Tick, public std::enable_shared_from_this<Window>
     {
     public:
-        Window();
+        Window(const std::string& name);
         virtual ~Window();
         float GetDeltaTime() const;
         void InitializeTicks() override;
@@ -48,7 +48,7 @@ namespace NSG
         void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
-        virtual void RenderFrame() = 0;
+		virtual void RenderFrame() = 0;
         void EnterBackground();
         void EnterForeground();
         void InvalidateContext();
@@ -63,6 +63,7 @@ namespace NSG
 		bool IsClosed() const { return isClosed_; }
 		bool IsMinimized() const { return minimized_; }
         virtual void Destroy() = 0;
+        Recti GetViewport() const;
 
         SignalViewChanged::PSignal signalViewChanged_;
         SignalMouseMoved::PSignal signalMouseMoved_;
@@ -77,10 +78,12 @@ namespace NSG
         SignalDropFile::PSignal signalDropFile_;
     protected:
         void SetSize(int width, int height);
+        std::string name_;
         float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
         App* app_;
         bool isClosed_;
         bool minimized_;
+		bool isMainWindow_;
     private:
         int width_;
         int height_;

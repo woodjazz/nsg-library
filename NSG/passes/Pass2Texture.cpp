@@ -46,34 +46,25 @@ namespace NSG
         return render2Texture_->GetTexture();
     }
 
-    void Pass2Texture::Add(PPass pass, Node* node, PMaterial material, PMesh mesh)
+    void Pass2Texture::Add(PPass pass, SceneNode* node, PMaterial material, PMesh mesh)
     {
 		CHECK_ASSERT(mesh, __FILE__, __LINE__);
         passes_.push_back(PassData {pass, node, material, mesh});
     }
 
-    bool Pass2Texture::Render()
+    void Pass2Texture::Render()
     {
-        bool drawn = false;
-
         if (render2Texture_->Begin())
         {
-            auto it = passes_.begin();
-
-            while (it != passes_.end())
+            for(auto& pass: passes_)
             {
-                Graphics::this_->Set(it->mesh_.get());
-                Graphics::this_->Set(it->material_.get());
-				Graphics::this_->SetNode(it->node_);
-
-                drawn |= it->pass_->Render();
-
-                ++it;
+                Graphics::this_->Set(pass.mesh_.get());
+                Graphics::this_->Set(pass.material_.get());
+				Graphics::this_->SetNode(pass.node_);
+                pass.pass_->Render();
             }
 
             render2Texture_->End();
         }
-
-        return drawn;
     }
 }

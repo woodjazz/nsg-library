@@ -53,7 +53,7 @@ namespace NSG
 
     Mesh::~Mesh()
     {
-		ReleaseResources();
+		Invalidate();
     }
 
 	void Mesh::SetDynamic(bool dynamic)

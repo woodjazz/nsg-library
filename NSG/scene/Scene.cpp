@@ -30,6 +30,7 @@ namespace NSG
           physicsWorld_(new PhysicsWorld)
     {
         //octree_->InsertUpdate(this);
+		Graphics::this_->SetScene(this);
     }
 
     Scene::~Scene()
@@ -53,7 +54,7 @@ namespace NSG
 		UpdateAnimations(deltaTime);
     }
 
-    bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<const SceneNode*>& nodes) const
+    bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const
     {
         RayOctreeQuery query(nodes, ray);
         octree_->Execute(query);
@@ -62,7 +63,7 @@ namespace NSG
 
     bool Scene::GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const
     {
-        std::vector<const SceneNode*> tmpNodes;
+        std::vector<SceneNode*> tmpNodes;
         RayOctreeQuery query(tmpNodes, ray);
         octree_->Execute(query);
         result.clear();
@@ -105,7 +106,7 @@ namespace NSG
         return false;
     }
 
-    void Scene::GetVisibleNodes(const Camera* camera, std::vector<const SceneNode*>& visibles) const
+    void Scene::GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const
     {
         for (auto& obj : needUpdate_)
             octree_->InsertUpdate(obj);
@@ -238,7 +239,7 @@ namespace NSG
 
     bool Scene::GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const
     {
-        std::vector<const SceneNode*> visibles;
+        std::vector<SceneNode*> visibles;
         GetVisibleNodes(camera, visibles);
         if (!visibles.empty())
         {

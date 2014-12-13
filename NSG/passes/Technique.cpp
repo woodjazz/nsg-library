@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Pass.h"
 #include "Program.h"
+#include "Graphics.h"
 #include "pugixml.hpp"
 
 namespace NSG
@@ -39,7 +40,6 @@ namespace NSG
 
     Technique::~Technique()
     {
-
     }
 
     void Technique::Add(PPass pass)
@@ -53,13 +53,16 @@ namespace NSG
         return passes_.size();
     }
 
-    bool Technique::Render()
+    void Technique::Render(Camera* camera)
     {
-        bool drawn = false;
-        auto it = passes_.begin();
-        while (it != passes_.end())
-            drawn |= (*it++)->Render();
-        return drawn;
+        Graphics::this_->SetCamera(camera);
+        Render();
+    }
+
+    void Technique::Render()
+    {
+        for(auto& pass: passes_)
+            pass->Render();
     }
 
     void Technique::Save(pugi::xml_node& node)

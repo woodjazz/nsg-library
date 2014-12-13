@@ -45,7 +45,7 @@ namespace NSG
 
     VertexArrayObj::~VertexArrayObj()
     {
-		ReleaseResources();
+		Invalidate();
     }
 
 	bool VertexArrayObj::IsValid()
@@ -113,6 +113,7 @@ namespace NSG
 			graphics_.SetVertexArrayObj(nullptr);
 
 		glDeleteVertexArrays(1, &vao_);
+		vao_ = 0;
 	}
 
     void VertexArrayObj::Use()

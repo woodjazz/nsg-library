@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "GLES2Includes.h"
 #include "SharedPointers.h"
 #include "Mesh.h"
-#include "FontAtlasTexture.h"
+#include "FontAtlas.h"
 #include "Types.h"
 #include <memory>
 #include <vector>
@@ -41,38 +41,23 @@ namespace NSG
     public:
 		TextMesh(const std::string& name);
         ~TextMesh();
-		void SetAtlas(PFontAtlasTexture atlas);
-        bool Has(const std::string& textureFilename) const;
-        bool SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
+		void SetAtlas(PFontAtlas atlas);
+        void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
         GLfloat GetWidth() const { return screenWidth_; }
         GLfloat GetHeight() const { return screenHeight_; }
-        GLfloat GetWidthForCharacterPosition(unsigned int charPos) const;
-        unsigned int GetCharacterPositionForWidth(float width) const;
-        PTexture GetTexture() const { return pAtlas_->GetTexture(); }
-        PProgram GetProgram() const { return pProgram_; }
         GLenum GetWireFrameDrawMode() const override;
         GLenum GetSolidDrawMode() const override;
         virtual size_t GetNumberOfTriangles() const override;
         HorizontalAlignment GetTextHorizontalAlignment() const { return hAlignment_; }
         VerticalAlignment GetTextVerticalAlignment() const { return vAlignment_; }
     private:
-        bool IsValid() override;
         void AllocateResources() override;
-        void ReleaseResources() override;
-        void UpdateBuffers();
-        void Move(VertexsData& obj, float offsetX, float offsetY);
-        PFontAtlasTexture pAtlas_;
-        PProgram pProgram_;
-
+        bool IsValid() override;
+        PFontAtlas pAtlas_;
         std::string text_;
         GLfloat screenWidth_;
         GLfloat screenHeight_;
-        std::string textureFilename_;
         HorizontalAlignment hAlignment_;
         VerticalAlignment vAlignment_;
-        float alignmentOffsetX_;
-        float alignmentOffsetY_;
-        size_t maxLength_;
-		SignalViewChanged::PSlot slotViewChanged_;
     };
 }

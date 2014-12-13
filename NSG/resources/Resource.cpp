@@ -40,11 +40,6 @@ namespace NSG
     {
     }
 
-    bool Resource::IsValid()
-    {
-        return true;
-    }
-
     void Resource::ReleaseResources()
     {
         buffer_.clear();

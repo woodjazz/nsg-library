@@ -48,49 +48,34 @@ public:
     }
 };
 
-struct Converter : NSG::App
+int NSG_MAIN(int argc, char* argv[])
 {
-    bool exit_;
-	SignalStart::PSlot slotStart_;
+    using namespace NSG;
 
-	Converter() : exit_(false)
-	{
-		slotStart_ = signalStart_->Connect([&](int argc, char** argv)
-		{
-			static const char* VERSION = "1.0";
+    static const char* VERSION = "1.0";
 
-			TCLAP::CmdLine cmd("NSG Converter", ' ', VERSION);
+    TCLAP::CmdLine cmd("NSG Converter", ' ', VERSION);
 
-			IFileConstraint iConstraintFile;
-			TCLAP::ValueArg<std::string> iArg("i", "input", "Input file to be converted", false, "", &iConstraintFile);
+    IFileConstraint iConstraintFile;
+    TCLAP::ValueArg<std::string> iArg("i", "input", "Input file to be converted", false, "", &iConstraintFile);
 
-			OFileConstraint oConstraintFile;
-			TCLAP::ValueArg<std::string> oArg("o", "output", "Output file", false, "", &oConstraintFile);
+    OFileConstraint oConstraintFile;
+    TCLAP::ValueArg<std::string> oArg("o", "output", "Output file", false, "", &oConstraintFile);
 
-			cmd.add(iArg);
-			cmd.add(oArg);
+    cmd.add(iArg);
+    cmd.add(oArg);
 
-			cmd.parse(argc, argv);
+    cmd.parse(argc, argv);
 
-			std::string inputFile = iArg.getValue();
-			std::string outputFile = oArg.getValue();
+    std::string inputFile = iArg.getValue();
+    std::string outputFile = oArg.getValue();
 
-			using namespace NSG;
+    using namespace NSG;
 
-			SceneConverter scene(inputFile);
-			if (scene.Load())
-				scene.Save(outputFile);
+	App app;
+	auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
 
-			exit_ = true;
-		});
-	}
-
-	bool ShallExit() const override
-	{
-		return exit_;
-	}
-
-};
-
-NSG_MAIN(Converter);
-
+    SceneConverter scene(inputFile);
+    if (scene.Load())
+        scene.Save(outputFile);
+}

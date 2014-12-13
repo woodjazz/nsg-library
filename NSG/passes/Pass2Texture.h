@@ -36,15 +36,15 @@ namespace NSG
 	public:
 		Pass2Texture(int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
 		~Pass2Texture();
-		void Add(PPass pass, Node* node, PMaterial material, PMesh mesh);
-		virtual bool Render() override;
+		void Add(PPass pass, SceneNode* node, PMaterial material, PMesh mesh);
+		void Render() override;
 		PTexture GetTexture() const;
 	private:
 		PRender2Texture render2Texture_;
 		struct PassData
 		{
 			PPass pass_;
-			Node* node_;
+			SceneNode* node_;
 			PMaterial material_;
 			PMesh mesh_;
 		};

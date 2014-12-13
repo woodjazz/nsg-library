@@ -47,14 +47,18 @@ misrepresented as being the original software.
 namespace NSG
 {
     SDLWindow::SDLWindow(const std::string& name, int x, int y, int width, int height)
+        : Window(name)
     {
+        if (SDL_InitSubSystem(SDL_INIT_VIDEO))
+            TRACE_LOG("SDL_INIT_VIDEO Error: " << SDL_GetError() << std::endl);
+
         SetSize(width, height);
 
-        #if EMSCRIPTEN
-        screen_ = nullptr;
-        #else
-        win_ = nullptr;
-        context_ = nullptr;
+        #if !defined(EMSCRIPTEN)
+        {
+            win_ = nullptr;
+            context_ = nullptr;
+        }
         #endif
 
         const int DOUBLE_BUFFER = 1;
@@ -78,26 +82,29 @@ namespace NSG
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, ALPHA_SIZE);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, STENCIL_SIZE);
 
-        Uint32 flags;
-        #if IOS || ANDROID
-        {
-            flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
-        }
-        #else
-        {
-            flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-        }
-        #endif
-
         #if EMSCRIPTEN
-        screen_ = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
-        if (!screen_)
         {
-            TRACE_LOG("Failed to set screen video mode \n");
-            return;
+            if (!SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE))
+            {
+                TRACE_LOG("Failed to set screen video mode \n");
+                return;
+            }
+            isMainWindow_ = true;
+            app_->SetMainWindow(this);
         }
         #else
         {
+            Uint32 flags;
+            #if IOS || ANDROID
+            {
+                flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+            }
+            #else
+            {
+                flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+            }
+            #endif
+
             win_ = SDL_CreateWindow(name.c_str(), x, y, width, height, flags);
 
             if (win_ == nullptr)
@@ -106,12 +113,24 @@ namespace NSG
                 return;
             }
 
-            context_ = SDL_GL_CreateContext(win_);
-            app_->SetMainWindow(this);
+            if (app_->GetMainWindow())
+            {
+                isMainWindow_ = false;
+                // Do not create a new context. Instead, share the main window's context.
+                context_ = app_->GetMainWindow()->GetSDLContext();
+                SDL_GL_MakeCurrent(win_, context_);
+            }
+            else
+            {
+                context_ = SDL_GL_CreateContext(win_);
+                app_->SetMainWindow(this);
+            }
+            SDL_GL_SetSwapInterval(1);
             SDL_GetWindowSize(win_, &width, &height);
-            SetSize(width, height);
         }
         #endif
+
+        SetSize(width, height);
 
         int value = 0;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
@@ -158,23 +177,28 @@ namespace NSG
         }
         #endif
 
-        Initialize();
+        Tick::Initialize();
     }
 
     SDLWindow::~SDLWindow()
     {
         Destroy();
+        SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
 
     void SDLWindow::Destroy()
     {
         #if !defined(EMSCRIPTEN)
-        if (context_)
+        if (!isClosed_)
         {
             isClosed_ = true;
             app_->NotifyOneWindow2Remove();
-            Graphics::this_->ResetCachedState();
-            SDL_GL_DeleteContext(context_);
+            if (isMainWindow_)
+            {
+                app_->SetMainWindow(nullptr);
+                Graphics::this_->ResetCachedState();
+                SDL_GL_DeleteContext(context_);
+            }
             context_ = nullptr;
             CHECK_ASSERT(win_, __FILE__, __LINE__);
             SDL_DestroyWindow(win_);
@@ -183,27 +207,21 @@ namespace NSG
         #endif
     }
 
+
     void SDLWindow::RenderFrame()
     {
-        #ifndef IOS
+        #ifndef EMSCRIPTEN
         {
-            #ifdef EMSCRIPTEN
-            PerformTicks();
-            #else
             SDL_GL_MakeCurrent(win_, context_);
-            PerformTicks();
-            SDL_GL_SwapWindow(win_);
-            #endif
         }
-        #else
+        #endif
+        Graphics::this_->SetWindow(this);
+        PerformTicks();
+        #ifndef EMSCRIPTEN
         {
-            // IOS specific
-            SDL_GL_MakeCurrent(win_, context_);
-            PerformTicks();
             SDL_GL_SwapWindow(win_);
         }
         #endif
     }
-
 }
 #endif

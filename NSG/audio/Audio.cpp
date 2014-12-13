@@ -26,40 +26,41 @@ misrepresented as being the original software.
 #include "Audio.h"
 #include "Check.h"
 #include "Util.h"
+#if EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 #ifdef SDL
+#include "SDL.h"
 #include "SDL_mixer.h"
 #endif
 
 namespace NSG
 {
-	template<> Audio* Singleton<Audio>::this_ = nullptr;
-
-    Audio::Audio()
+    void OpenAudio()
     {
-#ifdef SDL
-        int audio_rate = MIX_DEFAULT_FREQUENCY;
-        Uint16 audio_format = MIX_DEFAULT_FORMAT;
-        int audio_channels = 2;
+        #ifdef SDL
+        {
+            if (SDL_InitSubSystem(SDL_INIT_AUDIO))
+                TRACE_LOG("SDL_INIT_AUDIO Error: " << SDL_GetError() << std::endl);
 
-        if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, 4096))
-        {
-            TRACE_LOG("Unable to open audio!");
+            int audio_rate = MIX_DEFAULT_FREQUENCY;
+            Uint16 audio_format = MIX_DEFAULT_FORMAT;
+            int audio_channels = 2;
+
+            if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, 4096))
+                TRACE_LOG("Unable to open audio!");
         }
-        else
-        {
-            TRACE_LOG("Audio started.");
-        }
-#endif
+        #endif
     }
 
-    Audio::~Audio()
+    void CloseAudio()
     {
-		Audio::this_ = nullptr;
-
-#ifdef SDL        
-        Mix_CloseAudio();
-        TRACE_LOG("Audio terminated.");
-#endif        
+        #ifdef SDL
+        {
+            Mix_CloseAudio();
+            SDL_QuitSubSystem(SDL_INIT_AUDIO);
+        }
+        #endif
     }
-
 }

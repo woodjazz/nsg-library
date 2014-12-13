@@ -36,16 +36,15 @@ namespace NSG
         IsReady(); // since it is just memory then for the first time force load in constructor
     }
 
-    ResourceMemory::ResourceMemory(const std::string& buffer)
-        : staticBuffer_(buffer.c_str()),
-          bytes_(buffer.size())
-    {
-        IsReady(); // since it is just memory then for the first time force load in constructor
-    }
-
     ResourceMemory::~ResourceMemory()
     {
+        Invalidate();
     }
+
+	bool ResourceMemory::IsValid()
+	{
+		return true;
+	}
 
     void ResourceMemory::AllocateResources()
     {

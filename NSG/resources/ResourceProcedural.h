@@ -35,8 +35,9 @@ namespace NSG
 	public:
 		ResourceProcedural(IProceduralResource* obj);
 		~ResourceProcedural();
-		void AllocateResources() override;
 	private:
+		bool IsValid() override;
+		void AllocateResources() override;
 		IProceduralResource* proceduralObj_;
 	};
 }

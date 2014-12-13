@@ -34,7 +34,7 @@ namespace NSG
 	public:
 		Filter(const std::string& name, PTexture input, int output_width, int output_height, ProgramFlags flags = (int)ProgramFlag::UNLIT);
 		~Filter();
-		bool Render();
+		void Render();
 		PMaterial GetMaterial() const { return pMaterial_; }
 		PTexture GetTexture() const;
 		PProgram GetProgram() const { return program_; }
@@ -49,6 +49,6 @@ namespace NSG
 		PRender2Texture pRender2Texture_;
 		std::string name_;
 		PProgram program_;
-		PNode node_;
+		PSceneNode node_;
 	};
 }

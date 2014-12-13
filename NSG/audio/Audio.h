@@ -24,16 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Singleton.h"
 
 namespace NSG
 {
-	class Audio : public Singleton<Audio>
-	{
-	public:
-		Audio();
-		~Audio();
-	private:
-	};
+	void OpenAudio();
+	void CloseAudio();
 }

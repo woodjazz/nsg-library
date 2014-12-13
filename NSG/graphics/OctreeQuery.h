@@ -32,17 +32,17 @@ namespace NSG
     class OctreeQuery
     {
     public:
-        OctreeQuery(std::vector<const SceneNode*>& result);
+        OctreeQuery(std::vector<SceneNode*>& result);
         virtual ~OctreeQuery();
         virtual Intersection TestOctant(const BoundingBox& box, bool inside) = 0;
         virtual void Test(const std::vector<SceneNode*>& objs, bool inside) = 0;
-        std::vector<const SceneNode*>& result_;
+        std::vector<SceneNode*>& result_;
     };
 
     class FrustumOctreeQuery : public OctreeQuery
     {
     public:
-        FrustumOctreeQuery(std::vector<const SceneNode*>& result, const Frustum& frustum);
+        FrustumOctreeQuery(std::vector<SceneNode*>& result, const Frustum& frustum);
         virtual Intersection TestOctant(const BoundingBox& box, bool inside) override;
         virtual void Test(const std::vector<SceneNode*>& objs, bool inside) override;
 
@@ -52,7 +52,7 @@ namespace NSG
     class  RayOctreeQuery  : public OctreeQuery
     {
     public:
-        RayOctreeQuery(std::vector<const SceneNode*>& result, const Ray& ray);
+        RayOctreeQuery(std::vector<SceneNode*>& result, const Ray& ray);
         virtual Intersection TestOctant(const BoundingBox& box, bool inside) override;
         virtual void Test(const std::vector<SceneNode*>& objs, bool inside) override;
 

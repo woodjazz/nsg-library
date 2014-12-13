@@ -56,6 +56,6 @@ namespace NSG
         PPass pass_;
         PMaterial material_;
         PTextMesh text_[(int)Stats::MAX_STATS];
-        PNode node_[(int)Stats::MAX_STATS];
+        PSceneNode node_[(int)Stats::MAX_STATS];
  	};
 }

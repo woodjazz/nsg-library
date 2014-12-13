@@ -27,50 +27,54 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "App.h"
 
-namespace NSG 
+namespace NSG
 {
-	Object::Object()
-	: isValid_(false),
-	resourcesAllocated_(false)
-	{
-		App::this_->AddObject(this);
-	}
-		
-	Object::~Object()
-	{
-		App::this_->RemoveObject(this);
-	}
+    Object::Object()
+        : isValid_(false),
+          resourcesAllocated_(false),
+          allowInvalidate_(true)
+    {
+        App::this_->AddObject(this);
+    }
 
-	void Object::Invalidate()
-	{
-		isValid_ = false;
-		if(resourcesAllocated_)
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-			ReleaseResources();
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-			resourcesAllocated_ = false;
-		}
-	}
+    Object::~Object()
+    {
+        CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
+        App::this_->RemoveObject(this);
+    }
 
-	bool Object::IsReady()
-	{
-		if(!isValid_)
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+	void Object::AllowInvalidate(bool allow)
+    {
+    	allowInvalidate_ = allow;
+    }
 
-			isValid_ = IsValid();
+	void Object::Invalidate(bool force)
+    {
+        if (force || allowInvalidate_)
+        {
+            isValid_ = false;
+            if (resourcesAllocated_)
+            {
+                ReleaseResources();
+                resourcesAllocated_ = false;
+            }
+        }
+    }
 
-			if(isValid_)
-			{
-				CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
-				AllocateResources();
-				resourcesAllocated_ = true;
-			}
+    bool Object::IsReady()
+    {
+        if (!isValid_)
+        {
+            isValid_ = IsValid();
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
-		}
+            if (isValid_)
+            {
+                CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
+                AllocateResources();
+                resourcesAllocated_ = true;
+            }
+        }
 
-		return isValid_;
-	}
+        return isValid_;
+    }
 }

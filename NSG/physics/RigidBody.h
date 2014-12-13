@@ -61,7 +61,7 @@ namespace NSG
 
         btRigidBody* body_;
 		PWeakSceneNode sceneNode_;
-        btDynamicsWorld* owner_;
+        std::weak_ptr<btDynamicsWorld> owner_;
         btCollisionShape* shape_;
         float mass_;
         PhysicsShape phyShape_;

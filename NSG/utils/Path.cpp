@@ -41,10 +41,13 @@ misrepresented as being the original software.
 #endif
 
 #include <regex>
+#include <mutex>
 #include <cctype>
 
 namespace NSG
 {
+	std::string Path::basePath_;
+
     Path::Path()
         : isAbsolutePath_(false)
     {
@@ -102,7 +105,7 @@ namespace NSG
         if (isAbsolutePath_)
             absolutePath_ = path_;
         else
-            absolutePath_ = App::this_->GetBasePath() + path_;
+			absolutePath_ = Path::GetBasePath() + path_;
 
         fullFilePath_ = absolutePath_ + "/" + filename_;
     }
@@ -182,6 +185,16 @@ namespace NSG
         static Path path;
         return path;
     }
+
+	const std::string& Path::GetBasePath()
+	{
+        static std::once_flag flag;
+        std::call_once(flag, [&]()
+        {
+    		basePath_ = Path::GetCurrentDir();
+		});
+        return basePath_;
+	}
 
     std::string Path::GetCurrentDir()
     {

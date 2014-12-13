@@ -72,7 +72,7 @@ macro (setup_common)
             set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
             set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -stdlib=libc++")
         endif()
     elseif(CMAKE_COMPILER_IS_GNUCXX)
         message("detected GNU compiler")
@@ -212,7 +212,7 @@ macro (setup_executable)
                 add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr})
                 add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/data
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
             endif()
         else()

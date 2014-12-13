@@ -50,6 +50,7 @@ namespace NSG
 
     Render2Texture::~Render2Texture()
     {
+        Invalidate();
     }
 
     PTexture Render2Texture::GetTexture() const
@@ -72,7 +73,7 @@ namespace NSG
 
             Graphics::this_->SetFrameBuffer(frameBuffer_->GetId());
 
-            Graphics::this_->SetViewport(Recti {0, 0, width_, height_});
+            Graphics::this_->SetViewport(Recti {0, 0, width_, height_}, false);
 
             if (buffer_ == UseBuffer::DEPTH_STENCIL)
                 Graphics::this_->ClearAllBuffers();
@@ -100,7 +101,7 @@ namespace NSG
 
             Graphics::this_->SetFrameBuffer(0);
 
-            Graphics::this_->SetViewport(viewport_);
+            Graphics::this_->SetViewport(viewport_, false);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
 

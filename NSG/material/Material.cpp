@@ -30,6 +30,7 @@ namespace NSG
 
     Material::~Material()
     {
+		Invalidate();
     }
 
     void Material::SetColor(Color color)
@@ -418,7 +419,7 @@ namespace NSG
         pugi::xml_node childTechnique = node.child("Technique");
         if (childTechnique)
         {
-            PTechnique technique(new Technique);
+            PTechnique technique = std::make_shared<Technique>();
             SetTechnique(technique);
             technique->Load(childTechnique);
         }

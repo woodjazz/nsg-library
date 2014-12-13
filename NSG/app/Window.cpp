@@ -38,7 +38,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Window::Window()
+    Window::Window(const std::string& name)
         : Tick(AppConfiguration::this_->fps_),
           signalViewChanged_(new Signal<int, int>()),
           signalMouseMoved_(new Signal<float, float>()),
@@ -51,20 +51,23 @@ namespace NSG
           signalUpdate_(new Signal<float>()),
           signalRender_(new Signal<>()),
           signalDropFile_(new Signal<const std::string&>()),
+          name_(name),
           app_(App::this_),
           isClosed_(false),
-          minimized_(false)
+          minimized_(false),
+		  isMainWindow_(true)
     {
+        TRACE_PRINTF("Window %s created\n", name_.c_str());
     }
 
     Window::~Window()
     {
-        TRACE_LOG("Window Terminated");
+        TRACE_PRINTF("Window %s terminated\n", name_.c_str());
     }
 
     void Window::Close()
     {
-        TRACE_LOG("Closing window...");
+        TRACE_PRINTF("Closing %s window...", name_.c_str());
 
 		if (app_->GetMainWindow() == this) 
 		{
@@ -122,6 +125,8 @@ namespace NSG
     void Window::ViewChanged(int width, int height)
     {
         SetSize(width, height);
+		if (Graphics::this_->GetWindow() == this)
+			Graphics::this_->SetViewport(GetViewport(), true);
         signalViewChanged_->Run(width, height);
     }
 
@@ -186,5 +191,10 @@ namespace NSG
     void Window::DropFile(const std::string& filePath)
     {
         signalDropFile_->Run(filePath);
+    }
+
+    Recti Window::GetViewport() const
+    {
+        return Recti(0, 0, width_, height_);
     }
 }

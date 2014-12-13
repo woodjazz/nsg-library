@@ -38,7 +38,7 @@ namespace NSG
         pairCache_->getOverlappingPairCache()->setInternalGhostPairCallback(ghostPairCallback_);
         dispatcher_ = new btCollisionDispatcher(collisionConfiguration_);
         constraintSolver_ = new btSequentialImpulseConstraintSolver();
-        dynamicsWorld_ = new btDiscreteDynamicsWorld(dispatcher_, pairCache_, constraintSolver_, collisionConfiguration_);
+        dynamicsWorld_ = std::make_shared<btDiscreteDynamicsWorld>(dispatcher_, pairCache_, constraintSolver_, collisionConfiguration_);
         dynamicsWorld_->setGravity(btVector3(0, 20 * -9.81f, 0));
         dynamicsWorld_->setWorldUserInfo(this);
         dynamicsWorld_->setInternalTickCallback(SubstepCallback, static_cast<void*>(this));
@@ -49,7 +49,7 @@ namespace NSG
         for (int i = dynamicsWorld_->getNumConstraints() - 1; i >= 0; i--)
             dynamicsWorld_->removeConstraint(dynamicsWorld_->getConstraint(i));
 
-        delete dynamicsWorld_;
+		dynamicsWorld_ = nullptr;
         delete constraintSolver_;
         delete dispatcher_;
         delete ghostPairCallback_;

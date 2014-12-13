@@ -35,10 +35,8 @@ namespace NSG
 	public:
 		FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height);
 		~FilterBlend();
-
 		void SetLocations();
 		void AssignValues();
-
 	private:
 		GLuint blendMode_loc_;
 		int blendMode_;
