@@ -233,6 +233,7 @@ macro (setup_executable)
 
         set(CMAKE_EXECUTABLE_SUFFIX ".bc")
         add_executable(${PROJECT_NAME} ${src} ${hdr} )
+        set_target_properties(${PROJECT_NAME} PROPERTIES ENABLE_EXPORTS "1")
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
         if(EXISTS "${data_dir}")

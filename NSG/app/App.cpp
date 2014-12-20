@@ -94,12 +94,13 @@ namespace NSG
           mainWindow_(nullptr)
     {
         #if EMSCRIPTEN
-        if (SDL_Init(0))
-            TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
+            int flags = 0;
         #else
-        if (SDL_Init(SDL_INIT_EVENTS))
+            int flags = SDL_INIT_EVENTS;
+        #endif            
+
+        if (SDL_Init(flags))
             TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
-        #endif
 
         TRACE_LOG("Base path is: " << Path::GetBasePath());
 
@@ -426,24 +427,34 @@ namespace NSG
 
     void App::HandleEvents()
     {
+        Window* window;
+        int width;
+        int height;
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            #if !defined(EMSCRIPTEN) && !defined(IOS)
-            auto it = std::find_if(windows_.begin(), windows_.end(), [&](PWeakWindow window) { return window.lock() && SDL_GetWindowID(window.lock()->GetSDLWindow()) == event.window.windowID; });
-            if (it == windows_.end())
-                continue;
-            PWindow window(it->lock());
-            if (!window)
-                continue;
-            int width;
-            int height;
-            SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+            #if !defined(EMSCRIPTEN)
+            {
+                auto it = std::find_if(windows_.begin(), windows_.end(), [&](PWeakWindow window) { return window.lock() && SDL_GetWindowID(window.lock()->GetSDLWindow()) == event.window.windowID; });
+                if (it == windows_.end())
+                    continue;
+
+                PWindow pWindow(it->lock());
+                if (!pWindow)
+                    continue;
+
+                window = pWindow.get();
+                SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+            }
             #else
-            Window* window = mainWindow_;
-            int width = window->GetWidth();
-            int height = window->GetHeight();
+            {
+                window = mainWindow_;
+                int isFullscreen;
+                emscripten_get_canvas_size(&width, &height, &isFullscreen);
+            }
             #endif
+
+            window->ViewChanged(width, height);
 
             if (event.type == SDL_WINDOWEVENT)
             {
@@ -458,30 +469,28 @@ namespace NSG
                     case SDL_WINDOWEVENT_MAXIMIZED:
                         window->EnterForeground();
                         break;
-
-                        #if !EMSCRIPTEN
                     case SDL_WINDOWEVENT_RESIZED:
+                        //window->ViewChanged(width, height);
+                        break;
                     case SDL_WINDOWEVENT_RESTORED:
-                        {
-                            window->EnterForeground();
-                            window->ViewChanged(width, height);
-                            break;
-                        }
-                        #endif
+                        window->EnterForeground();
+                        //window->ViewChanged(width, height);
+                        break;
                     default:
                         break;
                 }
             }
+
             #if EMSCRIPTEN
+            /*
             else if (event.type == SDL_VIDEORESIZE)
             {
                 SDL_ResizeEvent* r = (SDL_ResizeEvent*)&event;
                 int width = r->w;
                 int height = r->h;
-                TRACE_LOG("Resizing " << width << "," << height);
-                SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE);
                 window->ViewChanged(width, height);
             }
+            */
             #else
             else if (event.type == SDL_APP_DIDENTERBACKGROUND)
             {

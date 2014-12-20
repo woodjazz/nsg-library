@@ -122,6 +122,22 @@ namespace NSG
         return graphics_.GetScene() && (!vertexShader_ || vertexShader_->IsReady()) && (!fragmentShader_ || fragmentShader_->IsReady());
     }
 
+    size_t Program::GetNeededVarying() const
+    {
+        size_t defaultNumVaryingVectors = 8; // default needed by the Common.glsl shader
+
+        if (0 == ((int)ProgramFlag::LIGHTMAP & flags_))
+            defaultNumVaryingVectors -= 1; // v_texcoord1 not needed
+
+        if (0 == ((int)ProgramFlag::NORMALMAP & flags_))
+            defaultNumVaryingVectors -= 2; // v_tangent + v_bitangent not needed
+
+        if (0 == ((int)ProgramFlag::DISPLACEMENTMAP & flags_))
+            defaultNumVaryingVectors -= 1; // v_vertexToEyeInTangentSpace not needed
+
+        return defaultNumVaryingVectors;
+    }
+
     void Program::AllocateResources()
     {
         std::string preDefines;
@@ -167,15 +183,15 @@ namespace NSG
         {
             size_t maxVarying = graphics_.GetMaxVaryingVectors();
 
-            const size_t DEFAULT_NUM_VARYING_VECTORS = 8; // default needed by the Common.glsl shader
+            size_t defaultNumVaryingVectors = GetNeededVarying();
 
-            if (maxVarying < DEFAULT_NUM_VARYING_VECTORS)
+            if (maxVarying < defaultNumVaryingVectors)
             {
-                TRACE_LOG("Cannot use shaders because max varying vectors is " << maxVarying << " and the default shader needs at least " << DEFAULT_NUM_VARYING_VECTORS << "!!!");
+				TRACE_LOG("Cannot use shaders because max varying vectors is " << maxVarying << " and the default shader needs at least " << defaultNumVaryingVectors << "!!!");
                 return;
             }
 
-            size_t remainingVaryingVectors = maxVarying - DEFAULT_NUM_VARYING_VECTORS;
+            size_t remainingVaryingVectors = maxVarying - defaultNumVaryingVectors;
 
             spotLightsReduced_ = false;
             if (remainingVaryingVectors <  nPointLights_ + nDirectionalLights_ + nSpotLights_)
@@ -582,7 +598,7 @@ namespace NSG
 
     Program::~Program()
     {
-		Invalidate();
+        Invalidate();
     }
 
     GLuint Program::GetAttributeLocation(const std::string& name)
@@ -1000,7 +1016,7 @@ namespace NSG
     {
         if (SetSkeletonVariables(mesh->GetSkeleton().get()))
         {
-			Scene* scene = graphics_.GetScene();
+            Scene* scene = graphics_.GetScene();
             SetSceneVariables(scene);
             SetMaterialVariables(material);
             SetNodeVariables(node);
@@ -1015,7 +1031,7 @@ namespace NSG
     {
         if (SetSkeletonVariables(mesh->GetSkeleton().get()))
         {
-			Scene* scene = graphics_.GetScene();
+            Scene* scene = graphics_.GetScene();
             SetSceneVariables(scene);
             SetMaterialVariables(material);
             SetCameraVariables();

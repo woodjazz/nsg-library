@@ -26,29 +26,30 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Task.h"
+#include "Worker.h"
 #include "NonCopyable.h"
 #include <queue>
 #include <map>
 #include <functional>
 #include <mutex>
 #include <condition_variable>
-#include <thread>
+#include <string>
 
 namespace NSG 
 {
     namespace Task 
     {
-        class TimedTask : NonCopyable 
+        class TimedTask : Worker, NonCopyable 
         {
         public:
-	        TimedTask(Milliseconds precision);
+	        TimedTask(const std::string& name, Milliseconds precision);
 	        ~TimedTask();
             int AddTask(PTask pTask, TimePoint timePoint);
             int AddLoopTask(PTask pTask, TimePoint timePoint, Milliseconds repeat);
             int AddRepeatTask(PTask pTask, TimePoint timePoint, Milliseconds repeat, size_t times);
             bool CancelTask(int id);
-
         private:
+            void RunWorker() override;
             bool IsEmpty() const;
             void InternalTask();
             struct Data {
@@ -77,7 +78,6 @@ namespace NSG
             QUEUE queue_;
             MAP_ID_DATA keyDataMap_;
             Condition condition_;
-            Thread thread_;
             Milliseconds precision_;
             friend bool operator > (const NSG::Task::TimedTask::PData& a , const NSG::Task::TimedTask::PData& b);
         };

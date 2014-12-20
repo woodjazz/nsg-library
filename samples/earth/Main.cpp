@@ -58,7 +58,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto earth = scene->GetOrCreateChild<SceneNode>("node 1");
     {
         auto pSphereMesh(app.CreateSphereMesh(3, 24));
-        earth->Set(pSphereMesh);
+        earth->SetMesh(pSphereMesh);
         //earth->SetEnabled(false);
 
         auto pEarthTexture(app.GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
@@ -76,7 +76,7 @@ int NSG_MAIN(int argc, char* argv[])
         pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
         pMaterial->SetShininess(10);
 
-        earth->Set(pMaterial);
+        earth->SetMaterial(pMaterial);
 
         earth->SetPosition(Vertex3(5, 0, 0));
     }
@@ -92,10 +92,10 @@ int NSG_MAIN(int argc, char* argv[])
         pass->SetProgram(pProgram);
         pMaterial->SetTechnique(technique);
 
-        light->Set(pMaterial);
+        light->SetMaterial(pMaterial);
 
 		auto pMesh(app.CreateSphereMesh(0.2f, 16));
-        light->Set(pMesh);
+        light->SetMesh(pMesh);
 
         light->SetPosition(Vertex3(-10.0, 0.0, 5.0));
     }

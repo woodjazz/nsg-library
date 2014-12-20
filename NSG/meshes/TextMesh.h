@@ -43,6 +43,8 @@ namespace NSG
         ~TextMesh();
 		void SetAtlas(PFontAtlas atlas);
         void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
+        void SetAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign);
+        void GetAlignment(HorizontalAlignment& hAlign, VerticalAlignment& vAlign);
         GLfloat GetWidth() const { return screenWidth_; }
         GLfloat GetHeight() const { return screenHeight_; }
         GLenum GetWireFrameDrawMode() const override;

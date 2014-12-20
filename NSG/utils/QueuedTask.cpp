@@ -35,16 +35,23 @@ namespace NSG
         {
         }
 
-        QueuedTask::QueuedTask() : taskAlive_(true) 
+        QueuedTask::QueuedTask(const std::string& name) 
+        : Worker(name),
+        taskAlive_(true) 
         {
-            thread_ = Thread([this](){InternalTask();});
+            Worker::Start(this);
         }
 
         QueuedTask::~QueuedTask() 
         {
 		    taskAlive_ = false;
             condition_.notify_one();
-            thread_.join();
+            Join();
+        }
+
+        void QueuedTask::RunWorker()
+        {
+            InternalTask();
         }
 
         QueuedTask::PData QueuedTask::Pop() 

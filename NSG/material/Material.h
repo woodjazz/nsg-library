@@ -35,6 +35,7 @@ namespace NSG
 	public:
 		Material(const std::string& name);
 		~Material();
+		PMaterial Clone(const std::string& name) const;
 		void SetName(const std::string& name) {name_ = name;}
 		const std::string& GetName() const { return name_;  }
 		bool SetTexture0(PTexture texture); 

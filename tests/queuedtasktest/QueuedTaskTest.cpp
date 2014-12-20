@@ -80,7 +80,7 @@ struct Task4 : BaseTask
 static void QueuedTaskTest0()
 {
     {
-        QueuedTask tasks;
+        QueuedTask tasks("tasks");
 		
         Task0* p0(new Task0);
         Task1* p1(new Task1);
@@ -110,7 +110,7 @@ static void QueuedTaskTest0()
 static void QueuedTaskTest1()
 {
     {
-        QueuedTask tasks;
+        QueuedTask tasks("tasks");
 
         Task0* p0(new Task0);
         Task1* p1(new Task1);
@@ -146,7 +146,7 @@ static void QueuedTaskTest1()
 static void QueuedTaskTest2()
 {
     {
-        QueuedTask tasks;
+		QueuedTask tasks("tasks");
 
         Task0* p0(new Task0);
         Task1* p1(new Task1);

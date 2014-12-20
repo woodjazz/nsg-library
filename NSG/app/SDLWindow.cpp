@@ -195,9 +195,8 @@ namespace NSG
             app_->NotifyOneWindow2Remove();
             if (isMainWindow_)
             {
-                app_->SetMainWindow(nullptr);
-                Graphics::this_->ResetCachedState();
                 SDL_GL_DeleteContext(context_);
+                app_->SetMainWindow(nullptr);
             }
             context_ = nullptr;
             CHECK_ASSERT(win_, __FILE__, __LINE__);
@@ -207,12 +206,11 @@ namespace NSG
         #endif
     }
 
-
     void SDLWindow::RenderFrame()
     {
         #ifndef EMSCRIPTEN
         {
-            SDL_GL_MakeCurrent(win_, context_);
+            //SDL_GL_MakeCurrent(win_, context_);
         }
         #endif
         Graphics::this_->SetWindow(this);
@@ -222,6 +220,18 @@ namespace NSG
             SDL_GL_SwapWindow(win_);
         }
         #endif
+    }
+
+    void SDLWindow::ViewChanged(int width, int height)
+    {
+        if (width_ != width || height_ != height)
+        {
+            TRACE_LOG("ViewChanged: " << width << "," << height);
+            #if EMSCRIPTEN
+            SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE);
+            #endif
+            Window::ViewChanged(width, height);
+        }
     }
 }
 #endif

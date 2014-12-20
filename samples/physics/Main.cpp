@@ -48,7 +48,7 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto earth = scene->GetOrCreateChild<SceneNode>("earth");
         auto pSphereMesh(app.CreateSphereMesh(3, 24));
-        earth->Set(pSphereMesh);
+		earth->SetMesh(pSphereMesh);
 
         auto pEarthTexture(app.GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
         auto pMaterial(app.GetOrCreateMaterial("earth"));
@@ -63,7 +63,7 @@ int NSG_MAIN(int argc, char* argv[])
         pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
         pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
         pMaterial->SetShininess(10);
-        earth->Set(pMaterial);
+        earth->SetMaterial(pMaterial);
         earth->SetPosition(Vertex3(0, 10, 0));
         static auto rb = earth->GetOrCreateRigidBody();
         rb->SetMass(1);
@@ -78,7 +78,7 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto floor = scene->GetOrCreateChild<SceneNode>("floor");
         auto mesh = app.CreateBoxMesh(20, 1, 20);
-        floor->Set(mesh);
+		floor->SetMesh(mesh);
         auto rb = floor->GetOrCreateRigidBody();
         rb->SetMass(0);
         rb->SetShape(SH_BOX, true);
@@ -92,7 +92,7 @@ int NSG_MAIN(int argc, char* argv[])
         technique->Add(pass);
         pass->SetProgram(program);
         material->SetTechnique(technique);
-        floor->Set(material);
+        floor->SetMaterial(material);
     }
 
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)

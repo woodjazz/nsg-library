@@ -484,9 +484,9 @@ namespace NSG
         {
             const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[i]];
             unsigned int meshIndex = nd->mMeshes[i];
-            meshSceneNode->Set(data.meshes_.at(meshIndex));
+            meshSceneNode->SetMesh(data.meshes_.at(meshIndex));
             unsigned int materialIndex = mesh->mMaterialIndex;
-            meshSceneNode->Set(data.materials_.at(materialIndex));
+            meshSceneNode->SetMaterial(data.materials_.at(materialIndex));
 			if (i + 1 < nd->mNumMeshes)
 				meshSceneNode = meshSceneNode->GetOrCreateChild<SceneNode>(GetUniqueName(meshSceneNode->GetName())).get();
         }

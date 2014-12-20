@@ -41,8 +41,8 @@ namespace NSG
 		SceneNode(const std::string& name);
 		virtual ~SceneNode();
 		PMaterial GetMaterial() const { return material_; }
-		void Set(PMaterial material);
-		void Set(PMesh mesh);
+		void SetMaterial(PMaterial material);
+		void SetMesh(PMesh mesh);
 		PRigidBody GetOrCreateRigidBody();
 		PMesh GetMesh() const { return mesh_; }
 		void SetOctant(Octant* octant) const { octant_ = octant; }
@@ -68,7 +68,6 @@ namespace NSG
 		SignalCollision::PSignal signalCollision_;
 	protected:
 		virtual bool IsValid() override;
-		virtual void AllocateResources() override;
 		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
 		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
 		App& app_;

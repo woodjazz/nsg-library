@@ -34,11 +34,11 @@ static void Test01()
     PBoxMesh boxMesh(App::this_->CreateBoxMesh());
 
 	PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
-    node1s->Set(sphereMesh);
+    node1s->SetMesh(sphereMesh);
     node1s->SetPosition(Vertex3(0, 0, 1));
 
 	PSceneNode node1b = scene->GetOrCreateChild<SceneNode>("node 2");
-    node1b->Set(boxMesh);
+    node1b->SetMesh(boxMesh);
     node1b->SetPosition(Vertex3(0, 0, 1));
 
 	PCamera camera = scene->GetOrCreateChild<Camera>("camera");
@@ -87,11 +87,11 @@ static void Test02()
     PBoxMesh boxMesh(App::this_->CreateBoxMesh());
 
 	PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
-    node1s->Set(sphereMesh);
+    node1s->SetMesh(sphereMesh);
     node1s->SetPosition(Vertex3(100, 0, -100));
 
 	PSceneNode node1b = scene->GetOrCreateChild<SceneNode>("node 2");
-    node1b->Set(boxMesh);
+	node1b->SetMesh(boxMesh);
     node1b->SetPosition(Vertex3(-100, 0, -100));
 
     std::vector<SceneNode*> nodes;
@@ -135,7 +135,7 @@ static void Test03()
     {
         PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
 		PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
-        node1s->Set(sphereMesh);
+		node1s->SetMesh(sphereMesh);
 
         Vertex3 origin(0, 0, 100);
         Vector3 direction1s(node1s->GetGlobalPosition() - origin);
@@ -171,7 +171,7 @@ static void Test04()
 			PSceneNode node = scene->GetOrCreateChild<SceneNode>(ss.str());
             nodes.push_back(node);
             node->SetPosition(Vertex3(0, 0, -i));
-            node->Set(sphereMesh);
+			node->SetMesh(sphereMesh);
         }
 
         Vertex3 origin(0, 0, 100);
@@ -240,7 +240,7 @@ static void Test05()
 		node->SetPosition(Vertex3(0, 0, 0));
 		const float SCALE = 0.1f;
 		node->SetScale(Vertex3(SCALE));
-		node->Set(sphereMesh);
+		node->SetMesh(sphereMesh);
 
 		Vertex3 origin(0, 0, 1);
 		Vector3 direction1s(Vector3(0, 0, -1));

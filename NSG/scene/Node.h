@@ -116,6 +116,7 @@ namespace NSG
         void Update(bool updateChildren = false) const;
         bool IsScaleUniform() const;
         PScene GetScene() const { return scene_.lock(); }
+        void MarkAsDirty(bool recursive = true, bool scaleChange = false);
     protected:
         std::string name_;
         std::vector<PNode> children_;
@@ -125,7 +126,6 @@ namespace NSG
 		void RemoveFromParent();
 		void AddChild(PNode node);
         void RemoveChild(Node* node);
-        void MarkAsDirty(bool recursive = true, bool scaleChange = false);
         std::weak_ptr<Node> parent_;
         IdType id_;
         mutable Matrix4 globalModel_;

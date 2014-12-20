@@ -95,8 +95,8 @@ int NSG_MAIN(int argc, char* argv[])
 
         node1 = scene->GetOrCreateChild<SceneNode>("node1");
         node1->SetPosition(Vertex3(3, -2, 0));
-        node1->Set(mesh);
-        node1->Set(material);
+        node1->SetMesh(mesh);
+        node1->SetMaterial(material);
     }
 
     {
@@ -107,8 +107,8 @@ int NSG_MAIN(int argc, char* argv[])
 
         auto node = scene->GetOrCreateChild<SceneNode>("node2");
         node->SetPosition(Vertex3(-3, 2, 0));
-        node->Set(mesh);
-        node->Set(material);
+        node->SetMesh(mesh);
+        node->SetMaterial(material);
     }
 
     auto renderSlot = window->signalRender_->Connect([&]()

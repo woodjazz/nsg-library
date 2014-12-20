@@ -29,6 +29,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class Worker;
+	typedef std::shared_ptr<Worker> PWorker;
+
 	class Window;
 	typedef std::shared_ptr<Window> PWindow;
 	typedef std::weak_ptr<Window> PWeakWindow;

@@ -24,30 +24,33 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Window.h"
 #include <string>
-struct SDL_Surface;
-struct SDL_Window;
+#include <thread>
+
 namespace NSG
 {
-    class SDLWindow : public Window
+    class Worker
     {
     public:
-        SDLWindow(const std::string& name, int x, int y, int width, int height);
-        ~SDLWindow();
-        #if !defined(EMSCRIPTEN)
-        SDL_Window* GetSDLWindow() const override { return win_; }
-        SDL_GLContext GetSDLContext() const override { return context_; }
+        Worker(const std::string& name);
+        ~Worker();
+        void Start(Worker* worker);
+        void Join();
+        virtual void RunWorker() = 0;
+        #if defined(EMSCRIPTEN)
+        void SetAsFinished() { finish_ = true; }
+        Worker* Get() { return worker_; }
+        #else
+        void WorkerEntryPoint();
         #endif
-        void RenderFrame() override;
-        void Destroy() override;
-        void ViewChanged(int width, int height) override;
     private:
-        #if !defined(EMSCRIPTEN)
-        SDL_Window* win_;
-        SDL_GLContext context_;
+        #if defined(EMSCRIPTEN)
+        int handle_;
+        bool finish_;
+        #else
+        std::thread thread_;
         #endif
+        Worker* worker_;
     };
-
 }
+

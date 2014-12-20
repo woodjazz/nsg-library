@@ -62,6 +62,7 @@ namespace NSG
         const ProgramFlags& GetFlags() const { return flags_; }
         void SetFlags(const ProgramFlags& flags);
     private:
+        size_t GetNeededVarying() const;
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;

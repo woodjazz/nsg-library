@@ -23,31 +23,36 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Types.h"
-#include "Window.h"
-#include <string>
-struct SDL_Surface;
-struct SDL_Window;
-namespace NSG
-{
-    class SDLWindow : public Window
-    {
-    public:
-        SDLWindow(const std::string& name, int x, int y, int width, int height);
-        ~SDLWindow();
-        #if !defined(EMSCRIPTEN)
-        SDL_Window* GetSDLWindow() const override { return win_; }
-        SDL_GLContext GetSDLContext() const override { return context_; }
-        #endif
-        void RenderFrame() override;
-        void Destroy() override;
-        void ViewChanged(int width, int height) override;
-    private:
-        #if !defined(EMSCRIPTEN)
-        SDL_Window* win_;
-        SDL_GLContext context_;
-        #endif
-    };
+#if defined(EMSCRIPTEN)
+#include <cassert>
+#include <chrono>
+#include "emscripten.h"
+//#include "Worker.h"
 
+
+typedef std::chrono::milliseconds Milliseconds;
+extern "C"
+{
+    void EMSCRIPTEN_KEEPALIVE NSGWorkerEntryPoint(char* data, int size)
+    {
+#if 0        
+        NSG::Worker* obj = (NSG::Worker*)data;
+        try
+        {
+            obj->Get()->RunWorker();
+        }
+        catch (...)
+        {
+        }
+        obj->SetAsFinished();
+#endif        
+    }
 }
+
+int NSG_MAIN(int argc, char* argv[])
+{
+    return 0;
+};
+
+#endif
+

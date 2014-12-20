@@ -33,6 +33,26 @@ namespace NSG
 		Invalidate();
     }
 
+    PMaterial Material::Clone(const std::string& name) const
+    {
+        auto clone = std::make_shared<Material>(name);
+        clone->texture0_ = texture0_;
+        clone->texture1_ = texture1_;
+        clone->texture2_ = texture2_;
+        clone->texture3_ = texture3_;
+        clone->texture4_ = texture4_;
+        clone->texture5_ = texture5_;
+        clone->ambient_ = ambient_;
+        clone->diffuse_ = diffuse_;
+        clone->specular_ = specular_;
+        clone->shininess_ = shininess_;
+        clone->parallaxScale_ = parallaxScale_;
+        clone->color_ = color_;
+        clone->technique_ = technique_;
+        clone->serializable_ = serializable_;
+		return clone;
+    }
+
     void Material::SetColor(Color color)
     {
         if (color != color_)

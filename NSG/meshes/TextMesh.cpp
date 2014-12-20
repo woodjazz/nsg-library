@@ -60,7 +60,7 @@ namespace NSG
 
     bool TextMesh::IsValid()
     {
-		return !text_.empty() && pAtlas_ && pAtlas_->IsReady();
+        return !text_.empty() && pAtlas_ && pAtlas_->IsReady();
     }
 
     void TextMesh::AllocateResources()
@@ -70,19 +70,19 @@ namespace NSG
         float alignmentOffsetX;
         float alignmentOffsetY;
 
-		if (hAlignment_ == CENTER_ALIGNMENT)
+        if (hAlignment_ == CENTER_ALIGNMENT)
             alignmentOffsetX = -screenWidth_ / 2;
-		else if (hAlignment_ == RIGHT_ALIGNMENT)
-            alignmentOffsetX = 1-screenWidth_;
+        else if (hAlignment_ == RIGHT_ALIGNMENT)
+            alignmentOffsetX = 1 - screenWidth_;
         else
             alignmentOffsetX = -1;
 
-		if (vAlignment_ == MIDDLE_ALIGNMENT)
+        if (vAlignment_ == MIDDLE_ALIGNMENT)
             alignmentOffsetY = screenHeight_ / 2;
-		else if (vAlignment_ == TOP_ALIGNMENT)
+        else if (vAlignment_ == TOP_ALIGNMENT)
             alignmentOffsetY = 1;
         else
-			alignmentOffsetY = -1 + screenHeight_;
+            alignmentOffsetY = -1 + screenHeight_;
 
         for (auto& obj : vertexsData_)
         {
@@ -90,18 +90,33 @@ namespace NSG
             obj.position_.y += alignmentOffsetY;
         }
 
-		Mesh::AllocateResources();
+        Mesh::AllocateResources();
     }
 
     void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
     {
-        if(text_ != text || hAlignment_ != hAlign || vAlignment_ != vAlign)
+        if (text_ != text)
         {
             text_ = text;
+            SetAlignment(hAlign, vAlign);
+            Invalidate();
+        }
+    }
+
+    void TextMesh::SetAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign)
+    {
+        if (hAlignment_ != hAlign || vAlignment_ != vAlign)
+        {
             hAlignment_ = hAlign;
             vAlignment_ = vAlign;
             Invalidate();
         }
+    }
+
+    void TextMesh::GetAlignment(HorizontalAlignment& hAlign, VerticalAlignment& vAlign)
+    {
+        hAlign = hAlignment_;
+        vAlign = vAlignment_;
     }
 
     GLenum TextMesh::GetWireFrameDrawMode() const
@@ -118,5 +133,4 @@ namespace NSG
     {
         return vertexsData_.size() / 3;
     }
-
 }

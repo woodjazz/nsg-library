@@ -40,7 +40,7 @@ namespace NSG
         void BeginTicks() override;
         void DoTick(float delta) override;
         void EndTicks() override;
-        void ViewChanged(int width, int height);
+        virtual void ViewChanged(int width, int height);
         void OnMouseMove(float x, float y);
         void OnMouseWheel(float x, float y);
         void OnMouseDown(int button, float x, float y);
@@ -84,7 +84,6 @@ namespace NSG
         bool isClosed_;
         bool minimized_;
 		bool isMainWindow_;
-    private:
         int width_;
         int height_;
     };

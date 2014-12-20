@@ -25,28 +25,30 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "NonCopyable.h"
+#include "Worker.h"
+#include "Task.h"
 #include <memory>
 #include <deque>
 #include <map>
 #include <functional>
 #include <mutex>
 #include <condition_variable>
-#include <thread>
-#include "Task.h"
+#include <string>
 
 namespace NSG 
 {
     namespace Task 
     {
-        class QueuedTask : NonCopyable 
+        class QueuedTask : Worker, NonCopyable 
         {
         public:
-	        QueuedTask();
+	        QueuedTask(const std::string& name);
 	        ~QueuedTask();
             int AddTask(PTask pTask);
             bool CancelTask(int id);
             void CancelAllTasks();
         private:
+            void RunWorker() override;
             bool IsEmpty() const;
             void InternalTask();
             struct Data 

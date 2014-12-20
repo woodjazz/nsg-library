@@ -53,7 +53,7 @@ static void TimedTaskTest0()
 
     struct Task4 : TaskBase {};
 
-    TimedTask tasks(Milliseconds(10));
+    TimedTask tasks("tasks", Milliseconds(10));
 
     Task0* p0(new Task0);
     Task1* p1(new Task1);
@@ -153,7 +153,7 @@ static void TimedTaskTest1()
         }
     };
 
-    TimedTask tasks(Milliseconds(10));
+    TimedTask tasks("tasks", Milliseconds(10));
 
     Task0* p0(new Task0);
     Task1* p1(new Task1);

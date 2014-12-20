@@ -37,7 +37,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto pMesh = app.CreateBoxMesh(1, 1, 1, 2, 2, 2);
 
 	auto sceneNode = scene->GetOrCreateChild<SceneNode>("scene node");
-	sceneNode->Set(pMesh);
+	sceneNode->SetMesh(pMesh);
 
 	auto slotRender = window->signalRender_->Connect([&]()
 	{

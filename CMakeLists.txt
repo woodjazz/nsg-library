@@ -136,7 +136,7 @@ include_directories(${EXTERNALS_DIR}/glm)
 include_directories(${EXTERNALS_DIR}/tclap/include)
 
 ###########################
-# nsg
+# NSG
 ###########################
 if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	include (TemplateCompiler) # tcl tool
@@ -148,6 +148,14 @@ FOREACH(subdir ${SUBDIRS})
 ENDFOREACH()
 add_subdirectory(NSG)
 set(LIBRARIES_2_LINK NSG) #reset libraries to links since NSG will have all the dependencies already set 
+
+##################################
+# NSGWorker
+##################################
+if(EMSCRIPTEN)
+	include_directories(${ROOT_SOURCE_DIR}/NSGWorker)
+	add_subdirectory(${ROOT_SOURCE_DIR}/NSGWorker)
+endif()
 
 ###########################
 # samples

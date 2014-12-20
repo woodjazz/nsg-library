@@ -129,7 +129,7 @@ namespace NSG
         TRACE_LOG("GL_SHADING_LANGUAGE_VERSION = " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
         TRACE_LOG("GL_EXTENSIONS = " << (const char*)glGetString(GL_EXTENSIONS));
 
-		viewport_ = Recti(0);
+        viewport_ = Recti(0);
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
@@ -200,10 +200,9 @@ namespace NSG
 
 
         {
-#ifndef IOS
             glGetIntegerv(GL_MAX_VARYING_VECTORS, &maxVaryingVectors_);
             GLenum status = glGetError();
-            if(status == GL_NO_ERROR)
+            if (status == GL_NO_ERROR)
             {
                 CHECK_ASSERT(maxVaryingVectors_ >= 8, __FILE__, __LINE__);
                 TRACE_LOG("GL_MAX_VARYING_VECTORS = " << maxVaryingVectors_);
@@ -212,11 +211,8 @@ namespace NSG
             {
                 maxVaryingVectors_ = 15;
                 TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
-                
+
             }
-#else
-            maxVaryingVectors_ = 15;
-#endif
         }
 
         // Set up texture data read/write alignment
@@ -255,7 +251,7 @@ namespace NSG
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-		vaoMap_.clear();
+        vaoMap_.clear();
         lastMesh_ = nullptr;
         lastMaterial_ = nullptr;
         lastProgram_ = nullptr;
@@ -636,7 +632,7 @@ namespace NSG
 
     #endif
 
-	void Graphics::SetViewport(const Recti& viewport, bool force)
+    void Graphics::SetViewport(const Recti& viewport, bool force)
     {
         if (force || viewport_ != viewport)
         {
@@ -728,20 +724,20 @@ namespace NSG
 
     void Graphics::SetCamera(Camera* camera)
     {
-        if(activeCamera_ != camera)
+        if (activeCamera_ != camera)
         {
             activeCamera_ = camera;
-            if(camera != nullptr)
+            if (camera != nullptr)
                 SetViewport(camera->GetViewport(), false);
         }
     }
 
     void Graphics::SetWindow(Window* window)
     {
-        if(activeWindow_ != window)
+        if (activeWindow_ != window)
         {
             activeWindow_ = window;
-            if(window)
+            if (window)
                 SetViewport(window->GetViewport(), true);
         }
     }
@@ -812,7 +808,7 @@ namespace NSG
 
     void Graphics::UpdateBatchBuffer(const Batch& batch)
     {
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
 
@@ -838,9 +834,9 @@ namespace NSG
 
         SetVertexBuffer(instanceBuffer_.get());
 
-		glBufferData(GL_ARRAY_BUFFER, instancesData.size() * sizeof(InstanceData), &(instancesData[0]), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, instancesData.size() * sizeof(InstanceData), &(instancesData[0]), GL_DYNAMIC_DRAW);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
 
@@ -1098,7 +1094,7 @@ namespace NSG
 
     void Graphics::Draw(bool solid)
     {
-		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
+		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_ || !activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -1150,7 +1146,7 @@ namespace NSG
 
     void Graphics::Draw(bool solid, Batch& batch)
     {
-		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
+        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -1306,7 +1302,7 @@ namespace NSG
                 if (obj.mesh_ != usedMesh || !obj.mesh_ || limitReached)
                 {
                     usedMesh = obj.mesh_;
-					auto batch(std::make_shared<Batch>());
+                    auto batch(std::make_shared<Batch>());
                     batch->material_ = material.material_;
                     batch->mesh_ = usedMesh;
                     batch->nodes_.push_back(obj.node_);

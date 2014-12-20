@@ -81,8 +81,8 @@ int NSG_MAIN(int argc, char* argv[])
         {
             earth[c][r] = scene->GetOrCreateChild<SceneNode>(GetUniqueName());
             earth[c][r]->SetPosition(position);
-            earth[c][r]->Set(sphereMesh);
-            earth[c][r]->Set(pMaterial1);
+			earth[c][r]->SetMesh(sphereMesh);
+            earth[c][r]->SetMaterial(pMaterial1);
             std::swap(pMaterial1, pMaterial2);
             position.x += STEP;
         }

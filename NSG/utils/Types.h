@@ -196,7 +196,7 @@ namespace NSG
     struct RayNodeResult
     {
         float distance_;
-        const SceneNode* node_;
+        SceneNode* node_;
     };
 
     enum class ProgramFlag
