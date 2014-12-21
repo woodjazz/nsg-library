@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "assimp/vector3.h"
 #include "assimp/quaternion.h"
-#include "assimp/Matrix4x4.h"
+#include "assimp/matrix4x4.h"
 
 namespace NSG
 {
