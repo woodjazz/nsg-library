@@ -11,6 +11,11 @@ macro (setup_common)
         set (CMAKE_BUILD_TYPE Release)
     endif ()
 
+    if(UNIX AND NOT APPLE)
+        message("detected LINUX platform")
+        add_definitions(-DIS_LINUX)
+    endif()
+
     if(ANDROID OR IOS)
         set(IS_TARGET_MOBILE 1)
         add_definitions(-DIS_TARGET_MOBILE)

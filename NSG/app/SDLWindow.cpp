@@ -208,11 +208,6 @@ namespace NSG
 
     void SDLWindow::RenderFrame()
     {
-        #ifndef EMSCRIPTEN
-        {
-            //SDL_GL_MakeCurrent(win_, context_);
-        }
-        #endif
         Graphics::this_->SetWindow(this);
         PerformTicks();
         #ifndef EMSCRIPTEN

@@ -76,6 +76,8 @@ namespace NSG
         bool RenderFrame();
 		void ClearAll();
         void HandleEvents();
+        bool GetWindow(unsigned windowID, Window*& window, int& width, int& height);
+        bool GetWindow(unsigned windowID, Window*& window);
         std::vector<PWeakWindow> windows_;
         PAppConfiguration configuration_;
         MapAndVector<std::string, Mesh> meshes_;

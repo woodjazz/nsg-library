@@ -94,10 +94,10 @@ namespace NSG
           mainWindow_(nullptr)
     {
         #if EMSCRIPTEN
-            int flags = 0;
+        int flags = 0;
         #else
-            int flags = SDL_INIT_EVENTS;
-        #endif            
+        int flags = SDL_INIT_EVENTS;
+        #endif
 
         if (SDL_Init(flags))
             TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
@@ -425,6 +425,56 @@ namespace NSG
         return 0;
     }
 
+    bool App::GetWindow(unsigned windowID, Window*& window, int& width, int& height)
+    {
+        window = nullptr;
+        #if defined(IS_TARGET_MOBILE) || defined(IS_TARGET_WEB)
+        {
+            int isFullscreen;
+            emscripten_get_canvas_size(&width, &height, &isFullscreen);
+            window = mainWindow_;
+        }
+        #else
+        {
+            auto it = std::find_if(windows_.begin(), windows_.end(), [&](PWeakWindow win)
+            {
+                auto w = win.lock();
+                return w && SDL_GetWindowID(w->GetSDLWindow()) == windowID;
+            });
+
+            if (it != windows_.end())
+            {
+                window = it->lock().get();
+                SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
+            }
+        }
+        #endif
+        return window != nullptr;
+    }
+
+    bool App::GetWindow(unsigned windowID, Window*& window)
+    {
+        window = nullptr;
+        #if defined(IS_TARGET_MOBILE) || defined(IS_TARGET_WEB)
+        {
+            window = mainWindow_;
+        }
+        #else
+        {
+            auto it = std::find_if(windows_.begin(), windows_.end(), [&](PWeakWindow win)
+            {
+                auto w = win.lock();
+                return w && SDL_GetWindowID(w->GetSDLWindow()) == windowID;
+            });
+
+            if (it != windows_.end())
+                window = it->lock().get();
+        }
+        #endif
+
+        return window != nullptr;
+    }
+
     void App::HandleEvents()
     {
         Window* window;
@@ -433,31 +483,12 @@ namespace NSG
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            #if !defined(EMSCRIPTEN)
-            {
-                auto it = std::find_if(windows_.begin(), windows_.end(), [&](PWeakWindow window) { return window.lock() && SDL_GetWindowID(window.lock()->GetSDLWindow()) == event.window.windowID; });
-                if (it == windows_.end())
-                    continue;
-
-                PWindow pWindow(it->lock());
-                if (!pWindow)
-                    continue;
-
-                window = pWindow.get();
-                SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
-            }
-            #else
-            {
-                window = mainWindow_;
-                int isFullscreen;
-                emscripten_get_canvas_size(&width, &height, &isFullscreen);
-            }
-            #endif
-
-            window->ViewChanged(width, height);
-
             if (event.type == SDL_WINDOWEVENT)
             {
+                if (!GetWindow(event.window.windowID, window, width, height))
+                    continue;
+
+                window->ViewChanged(width, height);
                 switch (event.window.event)
                 {
                     case SDL_WINDOWEVENT_CLOSE:
@@ -480,18 +511,7 @@ namespace NSG
                         break;
                 }
             }
-
-            #if EMSCRIPTEN
-            /*
-            else if (event.type == SDL_VIDEORESIZE)
-            {
-                SDL_ResizeEvent* r = (SDL_ResizeEvent*)&event;
-                int width = r->w;
-                int height = r->h;
-                window->ViewChanged(width, height);
-            }
-            */
-            #else
+            #if 0
             else if (event.type == SDL_APP_DIDENTERBACKGROUND)
             {
                 window->EnterBackground();
@@ -500,20 +520,21 @@ namespace NSG
             {
                 window->EnterForeground();
             }
+            else if (event.type == SDL_QUIT)
+            {
+                window->Close();
+            }
             else if (event.type == SDL_DROPFILE)
             {
                 window->DropFile(event.drop.file);
                 SDL_free(event.drop.file);
             }
             #endif
-            else if (event.type == SDL_QUIT)
-            {
-                window->Close();
-            }
             else if (event.type == SDL_KEYDOWN)
             {
+                if (!GetWindow(event.key.windowID, window))
+                    continue;
                 int key = event.key.keysym.sym;
-
                 #if ANDROID
                 {
                     if (key == SDLK_AC_BACK)
@@ -528,6 +549,8 @@ namespace NSG
             }
             else if (event.type == SDL_KEYUP)
             {
+                if (!GetWindow(event.key.windowID, window))
+                    continue;
                 int key = event.key.keysym.sym;
                 //int scancode = event.key.keysym.scancode;
                 int action = NSG_KEY_RELEASE;
@@ -536,6 +559,8 @@ namespace NSG
             }
             else if (event.type == SDL_TEXTINPUT)
             {
+                if (!GetWindow(event.key.windowID, window))
+                    continue;
                 #ifndef __GNUC__
                 {
                     std::string utf8(event.text.text);
@@ -559,18 +584,24 @@ namespace NSG
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN)
             {
+                if (!GetWindow(event.key.windowID, window, width, height))
+                    continue;
                 float x = (float)event.button.x;
                 float y = (float)event.button.y;
                 window->OnMouseDown(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
             }
             else if (event.type == SDL_MOUSEBUTTONUP)
             {
+                if (!GetWindow(event.key.windowID, window, width, height))
+                    continue;
                 float x = (float)event.button.x;
                 float y = (float)event.button.y;
                 window->OnMouseUp(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
             }
             else if (event.type == SDL_MOUSEMOTION)
             {
+                if (!GetWindow(event.key.windowID, window, width, height))
+                    continue;
                 if (width > 0 && height > 0)
                 {
                     float x = (float)event.motion.x;
@@ -580,22 +611,30 @@ namespace NSG
             }
             else if (event.type == SDL_MOUSEWHEEL)
             {
+                if (!GetWindow(event.key.windowID, window))
+                    continue;
                 window->OnMouseWheel((float)event.wheel.x, (float)event.wheel.y);
             }
             else if (event.type == SDL_FINGERDOWN)
             {
+                if (!GetWindow(0, window))
+                    continue;
                 float x = event.tfinger.x;
                 float y = event.tfinger.y;
                 window->OnMouseDown(0, -1 + 2 * x, 1 + -2 * y);
             }
             else if (event.type == SDL_FINGERUP)
             {
+                if (!GetWindow(0, window))
+                    continue;
                 float x = event.tfinger.x;
                 float y = event.tfinger.y;
                 window->OnMouseUp(0, -1 + 2 * x, 1 + -2 * y);
             }
             else if (event.type == SDL_FINGERMOTION)
             {
+                if (!GetWindow(0, window))
+                    continue;
                 float x = event.tfinger.x;
                 float y = event.tfinger.y;
                 window->OnMouseMove(-1 + 2 * x, 1 + -2 * y);
@@ -603,6 +642,8 @@ namespace NSG
             #if !defined(EMSCRIPTEN)
             else if (event.type == SDL_MULTIGESTURE)
             {
+                if (!GetWindow(0, window))
+                    continue;
                 float x = event.mgesture.x;
                 float y = event.mgesture.y;
 

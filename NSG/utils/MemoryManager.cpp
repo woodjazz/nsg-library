@@ -116,7 +116,7 @@ namespace NSG
             nPools_ = MaxPools;
             std::sort(&pools_[0], &pools_[MaxPools], [](const PoolData & a, const PoolData & b) { return a.objSize_ < b.objSize_; });
             poolsObj = this;
-			#if !defined(IOS) && !defined(ANDROID)
+			#if !defined(IOS) && !defined(ANDROID) && !defined(IS_LINUX)
             std::atexit(AtExit);
             #endif
         }
