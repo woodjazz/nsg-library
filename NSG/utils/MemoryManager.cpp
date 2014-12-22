@@ -86,10 +86,10 @@ namespace NSG
         Pool < MinPoolSize << 3, 50000 > pool8_;
         Pool < MinPoolSize << 4, 50000 > pool16_;
         Pool < MinPoolSize << 5, 50000 > pool32_;
-        Pool < MinPoolSize << 6, 50000 > pool64_;
-        Pool < MinPoolSize << 7, 50000 > pool128_;
-        Pool < MinPoolSize << 8, 10000 > pool256_;
-        Pool < MinPoolSize << 9, 10000 > pool512_;
+        Pool < MinPoolSize << 6, 90000 > pool64_;
+        Pool < MinPoolSize << 7, 90000 > pool128_;
+        Pool < MinPoolSize << 8, 20000 > pool256_;
+        Pool < MinPoolSize << 9, 20000 > pool512_;
         Pool < MinPoolSize << 10, 1000 > pool1024_;
         Pool < MinPoolSize << 11, 1000 > pool2048_;
         Pool < MinPoolSize << 12, 100 > pool4096_;

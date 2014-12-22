@@ -428,11 +428,16 @@ namespace NSG
     bool App::GetWindow(unsigned windowID, Window*& window, int& width, int& height)
     {
         window = nullptr;
-        #if defined(IS_TARGET_MOBILE) || defined(IS_TARGET_WEB)
+        #if defined(EMSCRIPTEN)
         {
             int isFullscreen;
             emscripten_get_canvas_size(&width, &height, &isFullscreen);
             window = mainWindow_;
+        }
+        #elif defined(IS_TARGET_MOBILE)
+        {
+            window = mainWindow_;
+            SDL_GetWindowSize(window->GetSDLWindow(), &width, &height);
         }
         #else
         {
