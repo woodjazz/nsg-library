@@ -46,6 +46,7 @@ typedef void (GL_APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum, GLint, GLsizei
 extern PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
 #elif defined(IOS)
 #include <GLKit/GLKit.h>
+#include <OpenGLES/ES2/glext.h>
 #define glClearDepth glClearDepthf
 #define GL_CLAMP GL_CLAMP_TO_EDGE
 #elif defined(EMSCRIPTEN)
