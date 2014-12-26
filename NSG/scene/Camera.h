@@ -37,11 +37,11 @@ namespace NSG
 		void EnableOrtho();
 		void DisableOrtho();
 		void SetFov(float fovy); // in degrees
-		float GetVerticalFov(float hhfov) const; // in radians
 		void SetHalfHorizontalFov(float hhfov); // in radians
 		void SetNearClip(float zNear);
 		void SetFarClip(float zFar);
 		void SetAspectRatio(int width, int height);
+		void SetAspectRatio(float aspect);
 		static Matrix4 GetModelViewProjection(const Node* pNode);
 		static Matrix4 GetInverseView();
 		void SetViewportFactor(float xo, float yo, float xf, float yf);

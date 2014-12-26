@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<Scene>
+	<SceneNode name="Scene" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,   -0.707,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]">
+		<SceneNode name="Lamp" nodeType="Light" type="0" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.00111109" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    4.076,    1.005,    5.904]" orientation="[    0.571,    0.169,    0.272,    0.756]" />
+		<SceneNode name="Camera" nodeType="Camera" fovy="0.654499" zNear="0.1" zFar="100" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[   -0.741,    2.247,    6.231]" orientation="[   -0.156,   -0.029,    0.178,    0.971]" />
+		<SceneNode name="Cube" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="0" />
+		<SceneNode name="Plane" nodeType="SceneNode" position="[    0.000,    0.000,   -0.928]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    7.326,    7.326,    7.326]" materialIndex="0" meshIndex="1" />
+	</SceneNode>
+	<Meshes>
+		<Mesh name="Cube" wireFrameDrawMode="4" solidDrawMode="4">
+			<Vertexes>
+				<VertexData position="[    1.000,    1.000,   -1.000]" normal="[    0.000,    0.000,   -1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,   -1.000,   -1.000]" normal="[    0.000,    0.000,   -1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,   -1.000,   -1.000]" normal="[    0.000,    0.000,   -1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    1.000,    1.000]" normal="[    0.000,    0.000,    1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,   -1.000,    1.000]" normal="[    0.000,    0.000,    1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,   -1.000,    1.000]" normal="[    0.000,    0.000,    1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,    1.000,    1.000]" normal="[    1.000,   -0.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,   -1.000,    1.000]" normal="[    1.000,   -0.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,   -1.000,   -1.000]" normal="[    1.000,   -0.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,   -1.000,    1.000]" normal="[   -0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,   -1.000,    1.000]" normal="[   -0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,   -1.000,   -1.000]" normal="[   -0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,   -1.000,   -1.000]" normal="[   -1.000,    0.000,   -0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,   -1.000,    1.000]" normal="[   -1.000,    0.000,   -0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    1.000,    1.000]" normal="[   -1.000,    0.000,   -0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,    1.000,   -1.000]" normal="[    0.000,    1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    1.000,   -1.000]" normal="[    0.000,    1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    1.000,    1.000]" normal="[    0.000,    1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    1.000,   -1.000]" normal="[    0.000,    0.000,   -1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,    1.000,    1.000]" normal="[    0.000,    0.000,    1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,    1.000,   -1.000]" normal="[    1.000,    0.000,   -0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,   -1.000,   -1.000]" normal="[    0.000,   -1.000,   -0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    1.000,   -1.000]" normal="[   -1.000,    0.000,   -0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,    1.000,    1.000]" normal="[    0.000,    1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+			</Vertexes>
+			<Indexes>0 1 2 18 0 2 3 4 5 19 3 5 6 7 8 20 6 8 9 10 11 21 9 11 12 13 14 22 12 14 15 16 17 23 15 17 </Indexes>
+		</Mesh>
+		<Mesh name="Plane" wireFrameDrawMode="4" solidDrawMode="4">
+			<Vertexes>
+				<VertexData position="[    1.000,   -1.000,    0.000]" normal="[    0.000,    0.000,    1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,    1.000,    0.000]" normal="[    0.000,    0.000,    1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    1.000,    0.000]" normal="[    0.000,    0.000,    1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,   -1.000,    0.000]" normal="[    0.000,    0.000,    1.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+			</Vertexes>
+			<Indexes>0 1 2 3 0 2 </Indexes>
+		</Mesh>
+	</Meshes>
+	<Materials>
+		<Material name="Material-material" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    0.640,    0.640,    0.640,    1.000]" specular="[    0.500,    0.500,    0.500,    1.000]" shininess="50" color="[    0.000,    0.000,    0.000,    1.000]">
+			<Technique>
+				<Passes>
+					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
+						<Program name="GeneratedName0" flags="00000000000000000000000000000010" />
+					</Pass>
+				</Passes>
+			</Technique>
+		</Material>
+	</Materials>
+	<Animations>
+		<Animation name="" length="2.08333">
+			<Tracks>
+				<Track nodeName="Camera" channelMask="00000000000000000000000000000001">
+					<KeyFrames>
+						<KeyFrame time="0" position="[    0.839,   -8.510,    1.925]" rotation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" />
+						<KeyFrame time="0.375" position="[   -4.410,   -7.124,    2.518]" rotation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" />
+						<KeyFrame time="0.791667" position="[   -5.880,   -0.993,    4.837]" rotation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" />
+						<KeyFrame time="1.20833" position="[   -0.092,    2.280,    6.246]" rotation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" />
+						<KeyFrame time="1.625" position="[    6.197,   -1.913,    4.798]" rotation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" />
+						<KeyFrame time="2.08333" position="[    0.839,   -8.510,    1.925]" rotation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" />
+					</KeyFrames>
+				</Track>
+			</Tracks>
+		</Animation>
+	</Animations>
+	<Skeletons />
+</Scene>

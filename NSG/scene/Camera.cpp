@@ -94,6 +94,13 @@ namespace NSG
         }
     }
 
+    void Camera::SetAspectRatio(float aspect)
+    {
+        CHECK_ASSERT(aspect != 0, __FILE__, __LINE__);
+        aspectRatio_ = aspect;
+        UpdateProjection();
+    }
+
     void Camera::EnableOrtho()
     {
         if (!isOrtho_)
@@ -122,14 +129,11 @@ namespace NSG
         }
     }
 
-    float Camera::GetVerticalFov(float hhfov) const
-    {
-        return 2 * atan(tan(hhfov) * aspectRatio_);
-    }
-
     void Camera::SetHalfHorizontalFov(float hhfov)
     {
-        float fovy = glm::degrees(GetVerticalFov(hhfov));
+        CHECK_ASSERT(hhfov != 0, __FILE__, __LINE__);
+        
+        float fovy = hhfov / aspectRatio_;
 
         if (fovy_ != fovy)
         {

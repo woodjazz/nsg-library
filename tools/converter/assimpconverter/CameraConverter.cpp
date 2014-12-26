@@ -48,6 +48,8 @@ namespace NSG
 		cameraNode->Translate(Vector3(camera->mPosition.x, camera->mPosition.y, camera->mPosition.z));
 		cameraNode->SetNearClip(camera->mClipPlaneNear);
 		cameraNode->SetFarClip(camera->mClipPlaneFar);
+        if(camera->mAspect)
+            cameraNode->SetAspectRatio(camera->mAspect);
 		cameraNode->SetHalfHorizontalFov(camera->mHorizontalFOV);
 	}
 
