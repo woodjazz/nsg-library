@@ -57,9 +57,10 @@ namespace NSG
         bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);
         bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
         PAnimation GetOrCreateAnimation(const std::string& name);
+        std::vector<PAnimation> GetAnimationsFor(PNode node) const;
         bool HasAnimation(const std::string& name) const;
         bool PlayAnimation(const std::string& name, bool looped);
-        bool PlayAnimation(const PAnimation& animation, bool looped);
+        void PlayAnimation(const PAnimation& animation, bool looped);
         bool SetAnimationSpeed(const std::string& name, float speed);
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
     protected:

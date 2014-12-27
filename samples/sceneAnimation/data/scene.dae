@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.73.0 commit date:2014-12-23, commit time:15:42, hash:273fa0a</authoring_tool>
     </contributor>
-    <created>2014-12-27T19:58:16</created>
-    <modified>2014-12-27T19:58:16</modified>
+    <created>2014-12-27T21:05:02</created>
+    <modified>2014-12-27T21:05:02</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -685,11 +685,11 @@
         <instance_light url="#Lamp-light"/>
       </node>
       <node id="Camera" name="Camera" type="NODE">
-        <translate sid="location">-4.908824 -5.044171 3.304419</translate>
-        <rotate sid="rotationZ">0 0 1 -40.4187</rotate>
-        <rotate sid="rotationY">0 1 0 0.6197679</rotate>
-        <rotate sid="rotationX">1 0 0 63.5593</rotate>
-        <scale sid="scale">0.9999999 0.9999999 1</scale>
+        <translate sid="location">-5.796433 -0.9929938 4.836922</translate>
+        <rotate sid="rotationZ">0 0 1 -80.2299</rotate>
+        <rotate sid="rotationY">0 1 0 0.6320567</rotate>
+        <rotate sid="rotationX">1 0 0 62.59062</rotate>
+        <scale sid="scale">1 1 1</scale>
         <instance_camera url="#Camera-camera"/>
       </node>
       <node id="Cube" name="Cube" type="NODE">

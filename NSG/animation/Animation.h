@@ -51,7 +51,7 @@ namespace NSG
 		void Load(const pugi::xml_node& node);
     };
 
-    class Animation
+    class Animation : public std::enable_shared_from_this<Animation>
     {
     public:
 		Animation(const std::string& name);
@@ -65,6 +65,7 @@ namespace NSG
 		void Load(const pugi::xml_node& node);
 		void AddTrack(const AnimationTrack& track);
 		void SetScene(PWeakScene scene);
+        void Play(bool lopped);
     private:
         std::string name_;
         float length_;

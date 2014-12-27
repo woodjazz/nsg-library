@@ -212,4 +212,10 @@ namespace NSG
 	{
 		scene_ = scene;
 	}
+
+    void Animation::Play(bool lopped)
+    {
+        auto scene = scene_.lock();
+        scene->PlayAnimation(shared_from_this(), lopped);
+    }
 }
