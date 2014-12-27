@@ -34,8 +34,7 @@ int NSG_MAIN(int argc, char *argv[])
     auto window = app.GetOrCreateWindow("window", 50, 50, 1024, 768);
     auto scene = std::make_shared<Scene>("scene");
     auto camera = scene->GetOrCreateChild<Camera>("Camera");
- 
-    
+    auto control = std::make_shared<CameraControl>(camera);
     auto resource(app.GetOrCreateResourceFile("data/scene.xml"));
     auto loadSlot = resource->signalLoaded_->Connect([&]()
     {
@@ -47,15 +46,18 @@ int NSG_MAIN(int argc, char *argv[])
             camera->SetAspectRatio(width, height);
         });
 
-        auto animation = scene->GetOrCreateAnimation("");
+        //control->AutoZoom();
+
+        auto animation = scene->GetOrCreateAnimation("Animation3");
 
         scene->PlayAnimation(animation, true);
     });
 
+    
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
         scene->Update(deltaTime);
-        camera->SetGlobalLookAt(Vertex3(0));
+        control->OnUpdate(deltaTime);
     });
 
     auto renderSlot = window->signalRender_->Connect([&]()
@@ -63,5 +65,35 @@ int NSG_MAIN(int argc, char *argv[])
         scene->Render(camera.get());
     });
 
+    auto slotMouseMoved = window->signalMouseMoved_->Connect([&](float x, float y)
+    {
+        control->OnMousemoved(x, y);
+    });
+
+    auto slotMouseDown = window->signalMouseDown_->Connect([&](int button, float x, float y)
+    {
+        control->OnMouseDown(button, x, y);
+    });
+
+    auto slotMouseUp = window->signalMouseUp_->Connect([&](int button, float x, float y)
+    {
+        control->OnMouseUp(button, x, y);
+    });
+
+    auto slotMouseWheel = window->signalMouseWheel_->Connect([&](float x, float y)
+    {
+        control->OnMousewheel(x, y);
+    });
+
+    auto slotMultiGesture = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    {
+        control->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
+    });
+
+    auto slotKey = window->signalKey_->Connect([&](int key, int action, int modifier)
+    {
+        control->OnKey(key, action, modifier);
+    });
+    
     return app.Run();
 }

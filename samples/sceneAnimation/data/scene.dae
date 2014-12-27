@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.73.0 commit date:2014-12-23, commit time:15:42, hash:273fa0a</authoring_tool>
     </contributor>
-    <created>2014-12-26T22:13:24</created>
-    <modified>2014-12-26T22:13:24</modified>
+    <created>2014-12-27T19:58:16</created>
+    <modified>2014-12-27T19:58:16</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -169,34 +169,34 @@
         </polylist>
       </mesh>
     </geometry>
-    <geometry id="Plane-mesh" name="Plane">
+    <geometry id="Plane_001-mesh" name="Plane.001">
       <mesh>
-        <source id="Plane-mesh-positions">
-          <float_array id="Plane-mesh-positions-array" count="12">-1 -1 0 1 -1 0 -1 1 0 1 1 0</float_array>
+        <source id="Plane_001-mesh-positions">
+          <float_array id="Plane_001-mesh-positions-array" count="12">-11.08123 -11.08123 0 11.08123 -11.08123 0 -11.08123 11.08123 0 11.08123 11.08123 0</float_array>
           <technique_common>
-            <accessor source="#Plane-mesh-positions-array" count="4" stride="3">
+            <accessor source="#Plane_001-mesh-positions-array" count="4" stride="3">
               <param name="X" type="float"/>
               <param name="Y" type="float"/>
               <param name="Z" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <source id="Plane-mesh-normals">
-          <float_array id="Plane-mesh-normals-array" count="6">0 0 1 0 0 1</float_array>
+        <source id="Plane_001-mesh-normals">
+          <float_array id="Plane_001-mesh-normals-array" count="6">0 0 1 0 0 1</float_array>
           <technique_common>
-            <accessor source="#Plane-mesh-normals-array" count="2" stride="3">
+            <accessor source="#Plane_001-mesh-normals-array" count="2" stride="3">
               <param name="X" type="float"/>
               <param name="Y" type="float"/>
               <param name="Z" type="float"/>
             </accessor>
           </technique_common>
         </source>
-        <vertices id="Plane-mesh-vertices">
-          <input semantic="POSITION" source="#Plane-mesh-positions"/>
+        <vertices id="Plane_001-mesh-vertices">
+          <input semantic="POSITION" source="#Plane_001-mesh-positions"/>
         </vertices>
         <polylist count="2">
-          <input semantic="VERTEX" source="#Plane-mesh-vertices" offset="0"/>
-          <input semantic="NORMAL" source="#Plane-mesh-normals" offset="1"/>
+          <input semantic="VERTEX" source="#Plane_001-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Plane_001-mesh-normals" offset="1"/>
           <vcount>3 3 </vcount>
           <p>1 0 3 0 2 0 0 1 1 1 2 1</p>
         </polylist>
@@ -214,7 +214,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_X-output">
-        <float_array id="Camera_location_X-output-array" count="6">0.8393152 -4.410332 -5.879677 -0.09162664 6.196977 0.8393152</float_array>
+        <float_array id="Camera_location_X-output-array" count="6">-4.410332 -4.410332 -5.879677 0.1586506 6.196977 0.8393152</float_array>
         <technique_common>
           <accessor source="#Camera_location_X-output-array" count="6" stride="1">
             <param name="X" type="float"/>
@@ -230,7 +230,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_X-intangent">
-        <float_array id="Camera_location_X-intangent-array" count="12">-0.1047376 0.8393152 0.2702624 -3.127428 0.6706619 -5.879677 1.087329 -2.449059 1.503995 6.196977 1.946061 0.8393152</float_array>
+        <float_array id="Camera_location_X-intangent-array" count="12">-0.1047376 -4.410332 0.2702624 -4.410332 0.6706619 -5.879677 1.087329 -2.198781 1.503995 6.196977 1.946061 0.8393152</float_array>
         <technique_common>
           <accessor source="#Camera_location_X-intangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -239,7 +239,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_X-outtangent">
-        <float_array id="Camera_location_X-outtangent-array" count="12">0.188071 0.8393152 0.5793381 -5.83578 0.9960048 -5.879677 1.412671 2.265806 1.845605 6.196977 2.303939 0.8393152</float_array>
+        <float_array id="Camera_location_X-outtangent-array" count="12">0.188071 -4.410332 0.5793381 -4.410332 0.9960048 -5.879677 1.412671 2.516083 1.845605 6.196977 2.303939 0.8393152</float_array>
         <technique_common>
           <accessor source="#Camera_location_X-outtangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -266,7 +266,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_Y-output">
-        <float_array id="Camera_location_Y-output-array" count="6">-8.510387 -7.124323 -0.9929137 2.279829 -1.912906 -8.510387</float_array>
+        <float_array id="Camera_location_Y-output-array" count="6">-7.124323 -7.124323 -0.9929137 -1.107913 -1.912906 -8.510387</float_array>
         <technique_common>
           <accessor source="#Camera_location_Y-output-array" count="6" stride="1">
             <param name="Y" type="float"/>
@@ -282,7 +282,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_Y-intangent">
-        <float_array id="Camera_location_Y-intangent-array" count="12">-0.1047376 -8.510387 0.2702624 -8.472088 0.6706619 -2.828658 1.087329 2.279829 1.503995 0.07632684 1.946061 -8.510387</float_array>
+        <float_array id="Camera_location_Y-intangent-array" count="12">-0.1047376 -7.124323 0.2702624 -7.124323 0.6706619 -0.9929137 1.087329 -0.9929137 1.503995 -1.107913 1.946061 -8.510387</float_array>
         <technique_common>
           <accessor source="#Camera_location_Y-intangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -291,7 +291,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_Y-outtangent">
-        <float_array id="Camera_location_Y-outtangent-array" count="12">0.188071 -8.510387 0.5793381 -5.626806 0.9960048 0.8428308 1.412671 2.279829 1.845605 -4.101063 2.303939 -8.510387</float_array>
+        <float_array id="Camera_location_Y-outtangent-array" count="12">0.188071 -7.124323 0.5793381 -7.124323 0.9960048 -0.9929137 1.412671 -1.222912 1.845605 -2.798399 2.303939 -8.510387</float_array>
         <technique_common>
           <accessor source="#Camera_location_Y-outtangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -318,7 +318,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_Z-output">
-        <float_array id="Camera_location_Z-output-array" count="6">1.925092 2.51754 4.836925 6.246262 4.797974 1.925092</float_array>
+        <float_array id="Camera_location_Z-output-array" count="6">2.51754 2.51754 4.836925 4.832056 4.797974 1.925092</float_array>
         <technique_common>
           <accessor source="#Camera_location_Z-output-array" count="6" stride="1">
             <param name="Z" type="float"/>
@@ -334,7 +334,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_Z-intangent">
-        <float_array id="Camera_location_Z-intangent-array" count="12">-0.1047376 1.925092 0.2702624 1.994409 0.6706619 4.109057 1.087329 6.246262 1.503995 5.590509 1.946061 1.925092</float_array>
+        <float_array id="Camera_location_Z-intangent-array" count="12">-0.1047376 2.51754 0.2702624 2.51754 0.6706619 4.836925 1.087329 4.836925 1.503995 4.832056 1.946061 1.925092</float_array>
         <technique_common>
           <accessor source="#Camera_location_Z-intangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -343,7 +343,7 @@
         </technique_common>
       </source>
       <source id="Camera_location_Z-outtangent">
-        <float_array id="Camera_location_Z-outtangent-array" count="12">0.188071 1.925092 0.5793381 3.098796 0.9960048 5.564794 1.412671 6.246262 1.845605 3.926186 2.303939 1.925092</float_array>
+        <float_array id="Camera_location_Z-outtangent-array" count="12">0.188071 2.51754 0.5793381 2.51754 0.9960048 4.836925 1.412671 4.827188 1.845605 4.760483 2.303939 1.925092</float_array>
         <technique_common>
           <accessor source="#Camera_location_Z-outtangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -370,7 +370,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_X-output">
-        <float_array id="Camera_rotation_euler_X-output-array" count="6">63.55929 63.55929 63.55929 63.55929 63.55929 63.55929</float_array>
+        <float_array id="Camera_rotation_euler_X-output-array" count="6">63.55929 63.55929 63.55929 19.86429 63.55929 63.55929</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_X-output-array" count="6" stride="1">
             <param name="ANGLE" type="float"/>
@@ -386,7 +386,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_X-intangent">
-        <float_array id="Camera_rotation_euler_X-intangent-array" count="12">-0.1047376 63.55929 0.2702624 63.55929 0.6706619 63.55929 1.087329 63.55929 1.503995 63.55929 1.946061 63.55929</float_array>
+        <float_array id="Camera_rotation_euler_X-intangent-array" count="12">-0.1047376 63.55929 0.2702624 63.55929 0.6706619 63.55929 1.087329 19.86429 1.503995 63.55929 1.946061 63.55929</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_X-intangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -395,7 +395,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_X-outtangent">
-        <float_array id="Camera_rotation_euler_X-outtangent-array" count="12">0.188071 63.55929 0.5793381 63.55929 0.9960048 63.55929 1.412671 63.55929 1.845605 63.55929 2.303939 63.55929</float_array>
+        <float_array id="Camera_rotation_euler_X-outtangent-array" count="12">0.188071 63.55929 0.5793381 63.55929 0.9960048 63.55929 1.412671 19.86429 1.845605 63.55929 2.303939 63.55929</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_X-outtangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -422,7 +422,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_Y-output">
-        <float_array id="Camera_rotation_euler_Y-output-array" count="6">0.619768 0.619768 0.619768 0.619768 0.619768 0.619768</float_array>
+        <float_array id="Camera_rotation_euler_Y-output-array" count="6">0.6197679 0.6197679 0.619768 1.174085 0.619768 0.619768</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_Y-output-array" count="6" stride="1">
             <param name="ANGLE" type="float"/>
@@ -438,7 +438,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_Y-intangent">
-        <float_array id="Camera_rotation_euler_Y-intangent-array" count="12">-0.1047376 0.619768 0.2702624 0.619768 0.6706619 0.619768 1.087329 0.619768 1.503995 0.619768 1.946061 0.619768</float_array>
+        <float_array id="Camera_rotation_euler_Y-intangent-array" count="12">-0.1047376 0.6197679 0.2702624 0.6197679 0.6706619 0.6197679 1.087329 1.174085 1.503995 0.619768 1.946061 0.619768</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_Y-intangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -447,7 +447,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_Y-outtangent">
-        <float_array id="Camera_rotation_euler_Y-outtangent-array" count="12">0.188071 0.619768 0.5793381 0.619768 0.9960048 0.619768 1.412671 0.619768 1.845605 0.619768 2.303939 0.619768</float_array>
+        <float_array id="Camera_rotation_euler_Y-outtangent-array" count="12">0.188071 0.6197679 0.5793381 0.6197679 0.9960048 0.619768 1.412671 1.174085 1.845605 0.619768 2.303939 0.619768</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_Y-outtangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -474,7 +474,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_Z-output">
-        <float_array id="Camera_rotation_euler_Z-output-array" count="6">0.6740188 0.6740188 0.6740188 0.6740188 0.6740188 0.6740188</float_array>
+        <float_array id="Camera_rotation_euler_Z-output-array" count="6">-33.49377 -19.04336 -82.04885 0.3317391 0.6740188 0.6740188</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_Z-output-array" count="6" stride="1">
             <param name="ANGLE" type="float"/>
@@ -490,7 +490,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_Z-intangent">
-        <float_array id="Camera_rotation_euler_Z-intangent-array" count="12">-0.1047376 0.6740188 0.2702624 0.6740188 0.6706619 0.6740188 1.087329 0.6740188 1.503995 0.6740188 1.946061 0.6740188</float_array>
+        <float_array id="Camera_rotation_euler_Z-intangent-array" count="12">-0.1047376 -33.49377 0.2702624 -19.04336 0.6706619 -82.04885 1.087329 -0.01054066 1.503995 0.6740188 1.946061 0.6740188</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_Z-intangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -499,7 +499,7 @@
         </technique_common>
       </source>
       <source id="Camera_rotation_euler_Z-outtangent">
-        <float_array id="Camera_rotation_euler_Z-outtangent-array" count="12">0.188071 0.6740188 0.5793381 0.6740188 0.9960048 0.6740188 1.412671 0.6740188 1.845605 0.6740188 2.303939 0.6740188</float_array>
+        <float_array id="Camera_rotation_euler_Z-outtangent-array" count="12">0.188071 -33.49377 0.5793381 -19.04336 0.9960048 -82.04885 1.412671 0.6740188 1.845605 0.6740188 2.303939 0.6740188</float_array>
         <technique_common>
           <accessor source="#Camera_rotation_euler_Z-outtangent-array" count="6" stride="2">
             <param name="X" type="float"/>
@@ -516,6 +516,162 @@
       </sampler>
       <channel source="#Camera_rotation_euler_Z-sampler" target="Camera/rotationZ.ANGLE"/>
     </animation>
+    <animation id="Camera_scale_X">
+      <source id="Camera_scale_X-input">
+        <float_array id="Camera_scale_X-input-array" count="4">0.04166662 0.4166666 0.8333333 1.25</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_X-output">
+        <float_array id="Camera_scale_X-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-output-array" count="4" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_X-interpolation">
+        <Name_array id="Camera_scale_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_X-intangent">
+        <float_array id="Camera_scale_X-intangent-array" count="8">-0.1047376 1 0.2702624 1 0.6706619 1 1.087329 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_X-outtangent">
+        <float_array id="Camera_scale_X-outtangent-array" count="8">0.188071 1 0.5793381 1 0.9960048 1 1.412671 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_scale_X-sampler">
+        <input semantic="INPUT" source="#Camera_scale_X-input"/>
+        <input semantic="OUTPUT" source="#Camera_scale_X-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_scale_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_scale_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_scale_X-outtangent"/>
+      </sampler>
+      <channel source="#Camera_scale_X-sampler" target="Camera/scale.X"/>
+    </animation>
+    <animation id="Camera_scale_Y">
+      <source id="Camera_scale_Y-input">
+        <float_array id="Camera_scale_Y-input-array" count="4">0.04166662 0.4166666 0.8333333 1.25</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Y-output">
+        <float_array id="Camera_scale_Y-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-output-array" count="4" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Y-interpolation">
+        <Name_array id="Camera_scale_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Y-intangent">
+        <float_array id="Camera_scale_Y-intangent-array" count="8">-0.1047376 1 0.2702624 1 0.6706619 1 1.087329 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Y-outtangent">
+        <float_array id="Camera_scale_Y-outtangent-array" count="8">0.188071 1 0.5793381 1 0.9960048 1 1.412671 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_scale_Y-sampler">
+        <input semantic="INPUT" source="#Camera_scale_Y-input"/>
+        <input semantic="OUTPUT" source="#Camera_scale_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_scale_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_scale_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_scale_Y-outtangent"/>
+      </sampler>
+      <channel source="#Camera_scale_Y-sampler" target="Camera/scale.Y"/>
+    </animation>
+    <animation id="Camera_scale_Z">
+      <source id="Camera_scale_Z-input">
+        <float_array id="Camera_scale_Z-input-array" count="4">0.04166662 0.4166666 0.8333333 1.25</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Z-output">
+        <float_array id="Camera_scale_Z-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-output-array" count="4" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Z-interpolation">
+        <Name_array id="Camera_scale_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Z-intangent">
+        <float_array id="Camera_scale_Z-intangent-array" count="8">-0.1047376 1 0.2702624 1 0.6706619 1 1.087329 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Z-outtangent">
+        <float_array id="Camera_scale_Z-outtangent-array" count="8">0.188071 1 0.5793381 1 0.9960048 1 1.412671 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_scale_Z-sampler">
+        <input semantic="INPUT" source="#Camera_scale_Z-input"/>
+        <input semantic="OUTPUT" source="#Camera_scale_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_scale_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_scale_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_scale_Z-outtangent"/>
+      </sampler>
+      <channel source="#Camera_scale_Z-sampler" target="Camera/scale.Z"/>
+    </animation>
   </library_animations>
   <library_controllers/>
   <library_visual_scenes>
@@ -529,27 +685,12 @@
         <instance_light url="#Lamp-light"/>
       </node>
       <node id="Camera" name="Camera" type="NODE">
-        <translate sid="location">-0.7405322 2.246694 6.230648</translate>
-        <rotate sid="rotationZ">0 0 1 -161.7573</rotate>
-        <rotate sid="rotationY">0 1 0 8.53774e-7</rotate>
-        <rotate sid="rotationX">1 0 0 20.79028</rotate>
-        <scale sid="scale">1 0.9999999 1</scale>
+        <translate sid="location">-4.908824 -5.044171 3.304419</translate>
+        <rotate sid="rotationZ">0 0 1 -40.4187</rotate>
+        <rotate sid="rotationY">0 1 0 0.6197679</rotate>
+        <rotate sid="rotationX">1 0 0 63.5593</rotate>
+        <scale sid="scale">0.9999999 0.9999999 1</scale>
         <instance_camera url="#Camera-camera"/>
-        <extra>
-          <technique profile="blender">
-            <AutoTrack_constraint>
-              <enforce>1</enforce>
-              <flag>17</flag>
-              <headtail>0</headtail>
-              <lin_error>0</lin_error>
-              <own_space>0</own_space>
-              <rot_error>0</rot_error>
-              <tar_space>0</tar_space>
-              <target_id>Cube</target_id>
-              <type>2</type>
-            </AutoTrack_constraint>
-          </technique>
-        </extra>
       </node>
       <node id="Cube" name="Cube" type="NODE">
         <translate sid="location">0 0 0</translate>
@@ -566,12 +707,12 @@
         </instance_geometry>
       </node>
       <node id="Plane" name="Plane" type="NODE">
-        <translate sid="location">0 0 -0.9284531</translate>
+        <translate sid="location">0 0 0</translate>
         <rotate sid="rotationZ">0 0 1 0</rotate>
         <rotate sid="rotationY">0 1 0 0</rotate>
         <rotate sid="rotationX">1 0 0 0</rotate>
-        <scale sid="scale">7.326001 7.326001 7.326001</scale>
-        <instance_geometry url="#Plane-mesh"/>
+        <scale sid="scale">1 1 1</scale>
+        <instance_geometry url="#Plane_001-mesh"/>
       </node>
     </visual_scene>
   </library_visual_scenes>

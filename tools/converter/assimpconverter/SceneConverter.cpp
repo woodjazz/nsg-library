@@ -193,6 +193,8 @@ namespace NSG
         {
             const aiAnimation* anim = sc->mAnimations[i];
             std::string animName = anim->mName.C_Str();
+            if(animName.empty())
+                animName = GetUniqueName("Animation");
             PAnimation outAnim = scene_->GetOrCreateAnimation(animName);
             AnimationConverter obj(scene_, anim, outAnim);
         }
