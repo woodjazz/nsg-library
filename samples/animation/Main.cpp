@@ -31,85 +31,79 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
+    auto resourceManager = std::make_shared<ResourceFileManager>();
+
     auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
-	auto scene = std::make_shared<Scene>("scene000");
-    auto resource(app.GetOrCreateResourceFile("data/duck.xml"));
+    auto scene = std::make_shared<Scene>("scene000");
+    auto resource(resourceManager->GetOrCreate("data/duck.xml"));
+    scene->SceneNode::Load(resource);
+    auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");
+    auto objPos = objNode->GetGlobalPosition();
+    auto objBB = objNode->GetWorldBoundingBox();
+    objBB.max_ *= 1.75f;
+    objBB.min_ *= 1.75f;
+    auto camera = scene->GetOrCreateChild<Camera>("camera1");
+    camera->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.max_.z));
+    camera->SetGlobalLookAt(objPos);
 
-    PCamera camera;
-    SignalViewChanged::PSlot resizeSlot;
-    SignalUpdate::PSlot updateSlot;
-    SignalRender::PSlot renderSlot;
-
-    auto loadSlot = resource->signalLoaded_->Connect([&]()
+    camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
+    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
     {
-        scene->SceneNode::Load(resource);
-        auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");
-        auto objPos = objNode->GetGlobalPosition();
-        auto objBB = objNode->GetWorldBoundingBox();
-        objBB.max_ *= 1.75f;
-        objBB.min_ *= 1.75f;
-        camera = scene->GetOrCreateChild<Camera>("camera1");
-        camera->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.max_.z));
-        camera->SetGlobalLookAt(objPos);
-
-        camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-        resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-        {
-            camera->SetAspectRatio(width, height);
-        });
-
-        auto animation = scene->GetOrCreateAnimation("anim0");
-        AnimationTrack track;
-        track.node_ = camera;
-        track.channelMask_ = (int)AnimationChannel::POSITION | (int)AnimationChannel::ROTATION;
-
-        {
-            AnimationKeyFrame key(0, camera.get());
-            track.keyFrames_.push_back(key);
-        }
-
-        {
-            auto node = std::make_shared<Node>("node0");
-            node->SetParent(camera->GetParent());
-            node->SetGlobalPosition(Vector3(objBB.max_.x, objBB.max_.y, 0));
-            node->SetGlobalLookAt(objPos);
-            AnimationKeyFrame key(2, node.get());
-            track.keyFrames_.push_back(key);
-        }
-
-        {
-            auto node = std::make_shared<Node>("node1");
-            node->SetParent(camera->GetParent());
-            node->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.min_.z));
-            node->SetGlobalLookAt(objPos);
-            AnimationKeyFrame key(4, node.get());
-            track.keyFrames_.push_back(key);
-        }
-
-        {
-            auto node = std::make_shared<Node>("node2");
-            node->SetParent(camera->GetParent());
-            node->SetGlobalPosition(Vector3(objBB.min_.x, objBB.max_.y, 0));
-            node->SetGlobalLookAt(objPos);
-            AnimationKeyFrame key(6, node.get());
-            track.keyFrames_.push_back(key);
-        }
-
-        animation->AddTrack(track);
-        animation->SetLength(8);
-
-        scene->PlayAnimation(animation, false);
-
-        updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
-        {
-            scene->Update(deltaTime);
-        });
-
-        renderSlot = window->signalRender_->Connect([&]()
-        {
-            scene->Render(camera.get());
-        });
+        camera->SetAspectRatio(width, height);
     });
+
+    auto animation = scene->GetOrCreateAnimation("anim0");
+    AnimationTrack track;
+    track.node_ = camera;
+    track.channelMask_ = (int)AnimationChannel::POSITION | (int)AnimationChannel::ROTATION;
+
+    {
+        AnimationKeyFrame key(0, camera.get());
+        track.keyFrames_.push_back(key);
+    }
+
+    {
+        auto node = std::make_shared<Node>("node0");
+        node->SetParent(camera->GetParent());
+        node->SetGlobalPosition(Vector3(objBB.max_.x, objBB.max_.y, 0));
+        node->SetGlobalLookAt(objPos);
+        AnimationKeyFrame key(2, node.get());
+        track.keyFrames_.push_back(key);
+    }
+
+    {
+        auto node = std::make_shared<Node>("node1");
+        node->SetParent(camera->GetParent());
+        node->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.min_.z));
+        node->SetGlobalLookAt(objPos);
+        AnimationKeyFrame key(4, node.get());
+        track.keyFrames_.push_back(key);
+    }
+
+    {
+        auto node = std::make_shared<Node>("node2");
+        node->SetParent(camera->GetParent());
+        node->SetGlobalPosition(Vector3(objBB.min_.x, objBB.max_.y, 0));
+        node->SetGlobalLookAt(objPos);
+        AnimationKeyFrame key(6, node.get());
+        track.keyFrames_.push_back(key);
+    }
+
+    animation->AddTrack(track);
+    animation->SetLength(8);
+
+    scene->PlayAnimation(animation, false);
+
+    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
+    {
+        scene->Update(deltaTime);
+    });
+
+    auto renderSlot = window->signalRender_->Connect([&]()
+    {
+        scene->Render(camera.get());
+    });
+
 
     return app.Run();
 }

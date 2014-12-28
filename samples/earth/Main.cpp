@@ -100,7 +100,7 @@ int NSG_MAIN(int argc, char* argv[])
         light->SetPosition(Vertex3(-10.0, 0.0, 5.0));
     }
 
-    auto resource(app.GetOrCreateResourceFile("data/nice_music.ogg"));
+    auto resource = std::make_shared<ResourceFile>("data/nice_music.ogg");
     auto music = std::make_shared<Music>(resource);
     music->Play();
 

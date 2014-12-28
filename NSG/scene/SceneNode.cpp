@@ -61,7 +61,7 @@ namespace NSG
 
     void SceneNode::Load(PResource resource)
     {
-        CHECK_ASSERT(resource->IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer_inplace((void*)resource->GetData(), resource->GetBytes());
         if (result)

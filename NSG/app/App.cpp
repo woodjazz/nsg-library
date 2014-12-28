@@ -110,7 +110,6 @@ namespace NSG
         }
         #endif
 
-        resourceFileManager_ = PResourceFileManager(new ResourceFileManager);
         textureFileManager_ = PTextureFileManager(new TextureFileManager);
     }
 
@@ -134,7 +133,6 @@ namespace NSG
 
     void App::ClearAll()
     {
-        resourceFileManager_ = nullptr;
         textureFileManager_ = nullptr;
         meshes_.Clear();
         materials_.Clear();
@@ -155,18 +153,6 @@ namespace NSG
     {
         if (App::this_)
             CHECK_CONDITION(objects_.erase(object), __FILE__, __LINE__);
-    }
-
-    void App::InvalidateObjects()
-    {
-        TRACE_LOG("App::InvalidateObjects...");
-
-        for (auto& obj : objects_)
-            obj->Invalidate(false);
-
-        graphics_->ResetCachedState();
-
-        TRACE_LOG("App::InvalidateObjects done");
     }
 
     PTexture App::GetWhiteTexture()
@@ -281,11 +267,6 @@ namespace NSG
         return materials_.GetOrCreate(name);
     }
 
-    PResourceFile App::GetOrCreateResourceFile(const Path& path)
-    {
-        return resourceFileManager_->GetOrCreate(path);
-    }
-
     PTexture App::GetOrCreateTextureFile(const Path& path, TextureFlags flags)
     {
         return TextureFileManager::this_->GetOrCreate(path);
@@ -355,7 +336,6 @@ namespace NSG
     bool App::RenderFrame()
     {
         HandleEvents();
-        resourceFileManager_->IsReady(); //forces load of resources to trigger Resource::signalLoaded_
         for (auto& obj : windows_)
         {
             PWindow window(obj.lock());

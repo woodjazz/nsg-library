@@ -39,7 +39,7 @@ namespace NSG
         texture_ = TextureFileManager::this_->GetOrCreate(path_);
         texture_->SetFlags((int)TextureFlag::NONE);
         Path xmlFilename(path_.GetPathAndName() + ".xml"); //divo compatible (generated with font builder)
-        xmlResource_ = App::this_->GetOrCreateResourceFile(xmlFilename);
+        xmlResource_ = std::make_shared<ResourceFile>(xmlFilename);
     }
 
     FontAtlas::~FontAtlas()

@@ -25,32 +25,28 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-int NSG_MAIN(int argc, char *argv[])
+int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
     App app;
-    SignalViewChanged::PSlot resizeSlot;
+
     auto window = app.GetOrCreateWindow("window", 50, 50, 1024, 768);
     auto scene = std::make_shared<Scene>("scene");
     auto camera = scene->GetOrCreateChild<Camera>("Camera");
-    auto resource(app.GetOrCreateResourceFile("data/scene.xml"));
-    auto loadSlot = resource->signalLoaded_->Connect([&]()
+    auto resource= std::make_shared<ResourceFile>("data/scene.xml");
+    scene->SceneNode::Load(resource);
+    camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
+    
+    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
     {
-        scene->SceneNode::Load(resource);
-
-        camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-        resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-        {
-            camera->SetAspectRatio(width, height);
-        });
-
-        auto animations = scene->GetAnimationsFor(camera); 
-        auto animation = animations[0];
-        animation->Play(true);
+        camera->SetAspectRatio(width, height);
     });
 
-    
+    auto animations = scene->GetAnimationsFor(camera);
+    auto animation = animations[0];
+    animation->Play(true);
+
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
         scene->Update(deltaTime);

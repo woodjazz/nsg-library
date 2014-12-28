@@ -45,7 +45,6 @@ namespace NSG
         void InitializeGraphics();
         void AddObject(Object* object);
         void RemoveObject(Object* object);
-        void InvalidateObjects();
         PTexture GetWhiteTexture();
         PWindow GetOrCreateWindow(const std::string& name, int x, int y, int width, int height);
         PBoxMesh CreateBoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
@@ -58,7 +57,6 @@ namespace NSG
         PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
         PMaterial CreateMaterial(const std::string& name);
         PMaterial GetOrCreateMaterial(const std::string& name);
-        PResourceFile GetOrCreateResourceFile(const Path& path);
         PTexture GetOrCreateTextureFile(const Path& path, TextureFlags flags = (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         PProgram GetOrCreateProgram(const std::string& name);
         const std::vector<PMesh>& GetMeshes() const;
@@ -83,7 +81,6 @@ namespace NSG
         MapAndVector<std::string, Mesh> meshes_;
         MapAndVector<std::string, Material> materials_;
         MapAndVector<std::string, Program> programs_;
-        PResourceFileManager resourceFileManager_;
         PTextureFileManager textureFileManager_;
         PGraphics graphics_;
         PAppStatistics statistics_;

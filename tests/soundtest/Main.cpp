@@ -30,11 +30,9 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    App app;
-
-    auto music = std::make_shared<Music>(app.GetOrCreateResourceFile("data/nice_music.ogg"));
-	auto sound = std::make_shared<Sound>(app.GetOrCreateResourceFile("data/PlayerFist.wav"));
-	auto soundExplo = std::make_shared<Sound>(app.GetOrCreateResourceFile("data/BigExplosion.wav"));
+    auto music = std::make_shared<Music>(std::make_shared<ResourceFile>("data/nice_music.ogg"));
+	auto sound = std::make_shared<Sound>(std::make_shared<ResourceFile>("data/PlayerFist.wav"));
+	auto soundExplo = std::make_shared<Sound>(std::make_shared<ResourceFile>("data/BigExplosion.wav"));
 
     CHECK_ASSERT(!music->IsPlaying(), __FILE__, __LINE__);
     music->Play(false);

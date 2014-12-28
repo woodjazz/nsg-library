@@ -32,6 +32,7 @@ namespace NSG
     class Texture : public Object
     {
     public:
+        Texture(PResourceFile resource);
         Texture(GLint format, GLsizei width, GLsizei height, const char* pixels);
         Texture(PResourceMemory resource);
         virtual ~Texture();
@@ -52,8 +53,6 @@ namespace NSG
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
-		Texture(const Path& path);
-		Texture(PResourceFile resource);
         const unsigned char* GetImageData();
     protected:
         bool fromKnownImgFormat_; // true if it is a known file format (png, bmp, jpeg,...)

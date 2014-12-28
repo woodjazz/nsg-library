@@ -43,34 +43,31 @@ int NSG_MAIN(int argc, char* argv[])
     light->SetGlobalLookAt(Vector3(1, 0, 0));
     light->SetDiffuseColor(Color(1, 0, 0, 1));
 
-    auto resource(app.GetOrCreateResourceFile("data/dwarf.xml"));
-    auto loadSlot = resource->signalLoaded_->Connect([&]()
+    auto resource = std::make_shared<ResourceFile>("data/dwarf.xml");
+    scene->SceneNode::Load(resource);
+
+    camera->SetPosition(Vector3(0, 70, 100));
+    camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
+    resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
     {
-        scene->SceneNode::Load(resource);
-
-        camera->SetPosition(Vector3(0, 70, 100));
-        camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-        resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-        {
-            camera->SetAspectRatio(width, height);
-        });
-
-        control->AutoZoom();
-        //light->SetPosition(Vertex3(100, 0, 0));
-        //camera->AddChild(light);
-
-        scene->PlayAnimation("AnimationSet0", true);
-        scene->SetAnimationSpeed("AnimationSet0", 0.001f);
-
-        node = scene->GetChild<Node>("Body", false);
-        CHECK_ASSERT(node, __FILE__, __LINE__);
-
+        camera->SetAspectRatio(width, height);
     });
+
+    control->AutoZoom();
+    //light->SetPosition(Vertex3(100, 0, 0));
+    //camera->AddChild(light);
+
+    scene->PlayAnimation("AnimationSet0", true);
+    scene->SetAnimationSpeed("AnimationSet0", 0.001f);
+
+    node = scene->GetChild<Node>("Body", false);
+    CHECK_ASSERT(node, __FILE__, __LINE__);
+
 
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
         scene->Update(deltaTime);
-		control->OnUpdate(deltaTime);
+        control->OnUpdate(deltaTime);
     });
 
     auto renderSlot = window->signalRender_->Connect([&]()

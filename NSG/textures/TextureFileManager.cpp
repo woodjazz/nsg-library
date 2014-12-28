@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "TextureFileManager.h"
+#include "ResourceFile.h"
 #include "Texture.h"
 #include "Path.h"
 
@@ -46,7 +47,8 @@ namespace NSG
         auto it = map_.find(path);
         if (it == map_.end())
         {
-        	PTexture texture(new Texture(path));
+            auto resource = std::make_shared<ResourceFile>(path);
+        	auto texture = std::make_shared<Texture>(resource);
             texture->SetFlags((int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
             map_.insert(Map::value_type(path, texture));
             return texture;

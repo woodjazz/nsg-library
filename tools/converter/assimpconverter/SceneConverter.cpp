@@ -530,7 +530,7 @@ namespace NSG
 
     Assimp::IOStream* SceneConverter::Open(const char* filename, const char* mode)
     {
-		PResourceFile resource(App::this_->GetOrCreateResourceFile(filename));
+		auto resource = std::make_shared<ResourceFile>(filename);
         return new MyIOStream(resource);
     }
 

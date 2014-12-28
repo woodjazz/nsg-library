@@ -34,12 +34,12 @@ namespace NSG
 	class ResourceFile : public Resource
 	{
 	public:
+		ResourceFile(const Path& path);
 		~ResourceFile();
 		bool IsValid() override;
         void AllocateResources() override;
 		const Path& GetPath() const override { return path_; }
-	private:
-		ResourceFile(const Path& path);
+	private:	
 		Path path_;
 		bool trySecondTime_;
 		friend class ResourceFileManager;

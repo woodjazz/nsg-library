@@ -121,7 +121,6 @@ namespace NSG
         if (loaded)
         {
             TRACE_LOG("Resource::File " << path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
-            signalLoaded_->Run();
         }
         else
         {

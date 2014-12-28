@@ -171,7 +171,8 @@ namespace NSG
 
 		if (app_->GetMainWindow() == this)
         {
-			app_->InvalidateObjects();
+            Graphics::this_->ResetCachedState();
+
             if (Music::this_ && AppConfiguration::this_->pauseMusicOnBackground_)
                 Music::this_->Pause();
         }

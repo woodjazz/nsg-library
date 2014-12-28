@@ -2,7 +2,7 @@
 <Scene>
 	<SceneNode name="VisualSceneNode" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    0.010,    0.010,    0.010]">
 		<SceneNode name="LOD3sp" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="0" />
-		<SceneNode name="camera1" nodeType="Camera" fovy="108.864" zNear="1" zFar="10000" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[  400.113,  463.264, -431.078]" orientation="[    0.348,   -0.121,    0.878,    0.306]" />
+		<SceneNode name="camera1" nodeType="Camera" fovy="0.633346" zNear="1" zFar="10000" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[  400.113,  463.264, -431.078]" orientation="[    0.348,   -0.121,    0.878,    0.306]" />
 		<SceneNode name="directionalLight1" nodeType="Light" type="1" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[  148.654,  183.672, -292.179]" orientation="[    0.136,    0.064,    0.916,    0.373]" />
 	</SceneNode>
 	<Meshes>

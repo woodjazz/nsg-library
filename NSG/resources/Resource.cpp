@@ -32,7 +32,6 @@ misrepresented as being the original software.
 namespace NSG
 {
     Resource::Resource()
-        : signalLoaded_(new SignalResourceLoaded)
     {
     }
 

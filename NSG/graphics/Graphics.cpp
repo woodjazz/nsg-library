@@ -114,15 +114,18 @@ namespace NSG
     {
 
         #if defined(ANDROID) || defined(EMSCRIPTEN)
-        glDiscardFramebufferEXT = (PFNGLDISCARDFRAMEBUFFEREXTPROC)eglGetProcAddress ( "glDiscardFramebufferEXT" );
-        glGenVertexArraysOES = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress ( "glGenVertexArraysOES" );
-        glBindVertexArrayOES = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress ( "glBindVertexArrayOES" );
-        glDeleteVertexArraysOES = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress ( "glDeleteVertexArraysOES" );
-        glIsVertexArrayOES = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress ( "glIsVertexArrayOES" );
-        glVertexAttribDivisorEXT = (PFNGLVERTEXATTRIBDIVISORPROC)eglGetProcAddress ( "glVertexAttribDivisorEXT" );
-        glDrawElementsInstancedEXT = (PFNGLDRAWELEMENTSINSTANCEDPROC)eglGetProcAddress ( "glDrawElementsInstancedEXT" );
-        glDrawArraysInstancedEXT = (PFNGLDRAWARRAYSINSTANCEDPROC)eglGetProcAddress ( "glDrawArraysInstancedEXT" );
+        {
+            glDiscardFramebufferEXT = (PFNGLDISCARDFRAMEBUFFEREXTPROC)eglGetProcAddress ( "glDiscardFramebufferEXT" );
+            glGenVertexArraysOES = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress ( "glGenVertexArraysOES" );
+            glBindVertexArrayOES = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress ( "glBindVertexArrayOES" );
+            glDeleteVertexArraysOES = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress ( "glDeleteVertexArraysOES" );
+            glIsVertexArrayOES = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress ( "glIsVertexArrayOES" );
+            glVertexAttribDivisorEXT = (PFNGLVERTEXATTRIBDIVISORPROC)eglGetProcAddress ( "glVertexAttribDivisorEXT" );
+            glDrawElementsInstancedEXT = (PFNGLDRAWELEMENTSINSTANCEDPROC)eglGetProcAddress ( "glDrawElementsInstancedEXT" );
+            glDrawArraysInstancedEXT = (PFNGLDRAWARRAYSINSTANCEDPROC)eglGetProcAddress ( "glDrawArraysInstancedEXT" );
+        }
         #endif
+        
         TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
         TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
         TRACE_LOG("GL_VERSION = " << (const char*)glGetString(GL_VERSION));
@@ -178,22 +181,24 @@ namespace NSG
         }
 
         #if !defined(EMSCRIPTEN)
-        if (CheckExtension("GL_EXT_instanced_arrays") || CheckExtension("GL_ARB_instanced_arrays") || CheckExtension("GL_ANGLE_instanced_arrays"))
         {
+            if (CheckExtension("GL_EXT_instanced_arrays") || CheckExtension("GL_ARB_instanced_arrays") || CheckExtension("GL_ANGLE_instanced_arrays"))
+            {
 
-            GLint maxVertexAtts = 0;
-            glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAtts);
-            int attributesNeeded = (int)AttributesLoc::MAX_ATTS;
-            if (maxVertexAtts >= attributesNeeded)
-            {
-                has_instanced_arrays_ext_ = true;
-                TRACE_LOG("Using extension: instanced_arrays");
-            }
-            else
-            {
-                TRACE_LOG("Has extension: instanced_arrays");
-                TRACE_LOG("Needed " << attributesNeeded << " but graphics only supports " << maxVertexAtts << " attributes");
-                TRACE_LOG("Disabling extension: instanced_arrays");
+                GLint maxVertexAtts = 0;
+                glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAtts);
+                int attributesNeeded = (int)AttributesLoc::MAX_ATTS;
+                if (maxVertexAtts >= attributesNeeded)
+                {
+                    has_instanced_arrays_ext_ = true;
+                    TRACE_LOG("Using extension: instanced_arrays");
+                }
+                else
+                {
+                    TRACE_LOG("Has extension: instanced_arrays");
+                    TRACE_LOG("Needed " << attributesNeeded << " but graphics only supports " << maxVertexAtts << " attributes");
+                    TRACE_LOG("Disabling extension: instanced_arrays");
+                }
             }
         }
         #endif
@@ -209,9 +214,29 @@ namespace NSG
             }
             else
             {
-                maxVaryingVectors_ = 15;
-                TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
+                #ifdef IS_OSX
+                {
+                    glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &maxVaryingVectors_);
+                    status = glGetError();
+                    if (status == GL_NO_ERROR)
+                    {
+                        maxVaryingVectors_ /= 4;
+                        CHECK_ASSERT(maxVaryingVectors_ >= 8, __FILE__, __LINE__);
+                        TRACE_LOG("GL_MAX_VARYING_VECTORS = " << maxVaryingVectors_);
+                    }
+                    else
+                    {
+                        maxVaryingVectors_ = 15;
+                        TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
 
+                    }
+                }
+                #else
+                {
+                    maxVaryingVectors_ = 15;
+                    TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
+                }
+                #endif
             }
         }
 
@@ -1094,7 +1119,7 @@ namespace NSG
 
     void Graphics::Draw(bool solid)
     {
-		if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_ || !activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
+        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_ || !activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);

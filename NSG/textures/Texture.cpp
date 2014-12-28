@@ -104,23 +104,6 @@ namespace NSG
     {
     }
 
-    Texture::Texture(const Path& path)
-        : fromKnownImgFormat_(true),
-          flags_((int)TextureFlag::NONE),
-          texture_(0),
-		  pResource_(App::this_->GetOrCreateResourceFile(path)),
-          width_(0),
-          height_(0),
-          format_(GL_RGBA),
-          type_(GL_UNSIGNED_BYTE),
-          channels_(0),
-          serializable_(true),
-          wrapMode_(TextureWrapMode::REPEAT),
-          mipmapLevels_(0),
-          filterMode_(TextureFilterMode::BILINEAR)
-    {
-    }
-
     Texture::Texture(PResourceFile resource)
         : fromKnownImgFormat_(true),
           flags_((int)TextureFlag::NONE),

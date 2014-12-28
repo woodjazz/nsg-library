@@ -152,7 +152,7 @@ namespace NSG
         SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
         CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
 
-        #ifndef GL_ES_VERSION_2_0
+        #if defined(IS_WINDOWS) || defined(IS_LINUX)
         {
             glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
 
