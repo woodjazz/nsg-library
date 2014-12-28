@@ -323,6 +323,8 @@ namespace NSG
             break;
         }
 
+        pResource_->Invalidate();
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 

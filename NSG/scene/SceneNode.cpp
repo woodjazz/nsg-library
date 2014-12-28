@@ -77,6 +77,7 @@ namespace NSG
             TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
             CHECK_ASSERT(false, __FILE__, __LINE__);
         }
+        resource->Invalidate();
     }
 
     bool SceneNode::IsValid()

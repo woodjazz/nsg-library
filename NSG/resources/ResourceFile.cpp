@@ -127,4 +127,10 @@ namespace NSG
             TRACE_LOG("Resource::Cannot load file " << path_);
         }
     }
+
+    void ResourceFile::ReleaseResources()
+    {
+        TRACE_PRINTF("Releasing resource:: File: %s\n", path_.GetFilePath().c_str());
+        Resource::ReleaseResources();
+    }
 }

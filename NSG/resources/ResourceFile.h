@@ -38,6 +38,7 @@ namespace NSG
 		~ResourceFile();
 		bool IsValid() override;
         void AllocateResources() override;
+        void ReleaseResources() override;
 		const Path& GetPath() const override { return path_; }
 	private:	
 		Path path_;
