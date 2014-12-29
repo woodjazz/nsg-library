@@ -1000,7 +1000,7 @@ namespace NSG
 
                     if (loc.cutOff_ != -1)
                     {
-                        float cutOff = light->GetSpotCutOff();
+                        float cutOff = light->GetSpotCutOff() * 0.5f;
                         glUniform1f(loc.cutOff_, glm::cos(glm::radians(cutOff)));
                     }
                 }

@@ -5,6 +5,7 @@
 		<SceneNode name="Camera" nodeType="Camera" fovy="0.654499" zNear="0.1" zFar="100" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[    0.839,   -8.510,    1.925]" orientation="[    0.850,    0.527,    0.008,    0.002]" />
 		<SceneNode name="Cube" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="0" />
 		<SceneNode name="Plane" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="1" />
+		<SceneNode name="Spot" nodeType="Light" type="2" attenuationConstant="1" attenuationLinear="0.04" attenuationQuadratic="0" spotCutOff="49" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[   -3.323,   -1.575,   10.019]" orientation="[    1.000,    0.000,    0.000,    0.000]" />
 	</SceneNode>
 	<Meshes>
 		<Mesh name="Cube" wireFrameDrawMode="4" solidDrawMode="4">
@@ -58,7 +59,7 @@
 		</Material>
 	</Materials>
 	<Animations>
-		<Animation name="Animation3" length="2.08333">
+		<Animation name="Animation4" length="2.08333">
 			<Tracks>
 				<Track nodeName="Camera" channelMask="00000000000000000000000000000011">
 					<KeyFrames>

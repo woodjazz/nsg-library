@@ -314,8 +314,7 @@ namespace NSG
             CHECK_ASSERT(!nodeType.empty(), __FILE__, __LINE__);
             if (nodeType == "Light")
             {
-                PLight childNode = Node::GetOrCreateChild<Light>(childName);
-                childNode->Load(child, data);
+                Node::CreateChild<Light>(childName, child, data);
             }
             else if (nodeType == "Camera")
             {

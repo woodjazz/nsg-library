@@ -47,7 +47,7 @@ struct SpotLight
     int enabled;                                                                          
     PointLight point;                                                                         
     vec3 direction;                                                                          
-    float cutOff; // cosine(cutOff angle in c++)
+    float cutOff; // 0.5f * cosine(cutOff)
 };
 
 

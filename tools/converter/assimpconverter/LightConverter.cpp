@@ -49,7 +49,7 @@ namespace NSG
                 break;
             case aiLightSource_SPOT:
                 {
-                    float spotCutOff = light->mAngleOuterCone;
+                    float spotCutOff = glm::degrees(light->mAngleInnerCone);
 					lightNode->SetSpotCutOff(spotCutOff);
 					lightNode->SetType(LightType::SPOT);
                     break;
