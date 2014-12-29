@@ -53,12 +53,17 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto boxMesh = app.CreateBoxMesh(1, 1, 1, 2, 2, 2);
     auto boxMaterial = app.GetOrCreateMaterial(GetUniqueName());
-    boxMaterial->SetTexture0(app.GetOrCreateTextureFile("data/cube.png"));
+    auto cubeResource = std::make_shared<ResourceFile>("data/cube.png");
+    auto cubeTexture = std::make_shared<Texture>(cubeResource);
+    cubeTexture->SetFlags((int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+    boxMaterial->SetTexture0(cubeTexture);
 
     auto sphere = scene->GetOrCreateChild<SceneNode>(GetUniqueName());
     auto sphereMesh = app.CreateSphereMesh(3, 32);
     auto sphereMaterial = app.GetOrCreateMaterial(GetUniqueName());
-    auto texture(app.GetOrCreateTextureFile("data/Earth.jpg"));
+    auto sphereResource = std::make_shared<ResourceFile>("data/Earth.jpg");
+    auto texture(std::make_shared<Texture>(sphereResource));
+    texture->SetFlags((int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     sphereMaterial->SetTexture0(texture);
 
     auto showTexture = std::make_shared<ShowTexture>();
@@ -76,7 +81,7 @@ int NSG_MAIN(int argc, char* argv[])
     depthProgram->SetFlags((int)ProgramFlag::STENCIL);
     depthPass->SetProgram(depthProgram);
 
-	PTexture tx000;
+    PTexture tx000;
     PFilter boxFilter;
 
     {
@@ -84,7 +89,7 @@ int NSG_MAIN(int argc, char* argv[])
         PPass2Texture pass2Texture(new Pass2Texture(1024, 1024));
         technique->Add(pass2Texture);
 
-		tx000 = pass2Texture->GetTexture();
+        tx000 = pass2Texture->GetTexture();
         boxFilter = PFilter(new Filter(GetUniqueName(), pass2Texture->GetTexture(), 1024, 1024));
 
         static const char*
@@ -135,7 +140,7 @@ int NSG_MAIN(int argc, char* argv[])
     #endif
 
     showTexture->SetNormal(blendFilter->GetTexture());
-	//showTexture->SetNormal(app.GetWhiteTexture());
+    //showTexture->SetNormal(app.GetWhiteTexture());
     //showTexture->SetNormal(sphereBlendFilter->GetTexture());
     //showTexture->SetNormal(tx000);
     //showTexture->SetNormal(boxFilter->GetTexture());
@@ -174,7 +179,7 @@ int NSG_MAIN(int argc, char* argv[])
             y_angle += glm::pi<float>() / 10.0f * deltaTime;
             sphere->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
         }
-	});
+    });
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {
@@ -182,5 +187,5 @@ int NSG_MAIN(int argc, char* argv[])
         showTexture->Show();
     });
 
-	return app.Run();
+    return app.Run();
 }

@@ -64,10 +64,7 @@ namespace NSG
 
     bool Mesh::IsValid()
     {
-        if (resource_)
-            return resource_->IsReady();
-        else
-            return !vertexsData_.empty();
+        return !vertexsData_.empty();
     }
 
     void Mesh::AllocateResources()

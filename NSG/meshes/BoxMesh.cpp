@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "BoxMesh.h"
 #include "Check.h"
-#include "ResourceProcedural.h"
 
 namespace NSG
 {
@@ -33,7 +32,6 @@ namespace NSG
         : Mesh(name)
     {
         Set();
-        resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
@@ -70,7 +68,12 @@ namespace NSG
         return vertexsData_.size() / 3;
     }
 
-    void BoxMesh::Build()
+    bool BoxMesh::IsValid()
+    {
+        return true;
+    }
+
+    void BoxMesh::AllocateResources()
     {
         // halves
         float halfW = width_ * .5f;
@@ -339,10 +342,8 @@ namespace NSG
                 indexes_.push_back((y + 1)*resX_ + x + vertOffset);
             }
         }
+
+        Mesh::AllocateResources();
     }
 
-    const char* BoxMesh::GetName() const
-    {
-        return "BoxMesh";
-    }
 }

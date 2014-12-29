@@ -27,14 +27,13 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Constants.h"
 #include "Check.h"
-#include "ResourceProcedural.h"
+
 namespace NSG
 {
     RectangleMesh::RectangleMesh(const std::string& name)
         : Mesh(name)
     {
         Set();
-        resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
@@ -67,7 +66,12 @@ namespace NSG
         return vertexsData_.size() - 2;
     }
 
-    void RectangleMesh::Build()
+    bool RectangleMesh::IsValid()
+    {
+        return true;
+    }
+
+    void RectangleMesh::AllocateResources()
     {
         vertexsData_.clear();
         indexes_.clear();
@@ -95,13 +99,8 @@ namespace NSG
         vertexData.position_ = Vertex3(-halfX, halfY, 0);
         vertexData.uv0_ = Vertex2(0, 0);
         data.push_back(vertexData);
+
+        Mesh::AllocateResources();
     }
-
-    const char* RectangleMesh::GetName() const
-    {
-        return "RectangleMesh";
-    }
-
-
 }
 

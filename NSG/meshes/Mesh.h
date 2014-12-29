@@ -67,9 +67,9 @@ namespace NSG
         std::set<SceneNode*>& GetSceneNodes() { return sceneNodes_; }
 		const std::set<SceneNode*>& GetConstSceneNodes() const { return sceneNodes_; }
     protected:
-        virtual bool IsValid() override;
-        virtual void AllocateResources() override;
-        virtual void ReleaseResources() override;
+        bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
         void CalculateTangents();
         Mesh(const std::string& name, bool dynamic = false);
     protected:
@@ -77,7 +77,6 @@ namespace NSG
         Indexes indexes_;
         PVertexBuffer pVBuffer_;
         PIndexBuffer pIBuffer_;
-        PResource resource_;
         BoundingBox bb_;
         float boundingSphereRadius_;
         bool isStatic_;

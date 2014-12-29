@@ -34,7 +34,6 @@ misrepresented as being the original software.
 #include "App.h"
 #include "Path.h"
 #include "Util.h"
-#include "TextureFileManager.h"
 #include "assimp/material.h"
 
 namespace NSG
@@ -323,7 +322,8 @@ namespace NSG
         else
             textureFilePath = path.GetFilePath();
 
-		return TextureFileManager::this_->GetOrCreate(textureFilePath);
+        auto resource = std::make_shared<ResourceFile>(textureFilePath);
+		return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     }
 
     MaterialConverter::~MaterialConverter()

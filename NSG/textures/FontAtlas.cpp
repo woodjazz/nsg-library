@@ -1,11 +1,9 @@
 #include "FontAtlas.h"
 #include "Check.h"
-#include "TextureFileManager.h"
 #include "Texture.h"
 #include "TextMesh.h"
 #include "ResourceFile.h"
 #include "ResourceMemory.h"
-#include "ResourceFileManager.h"
 #include "Mesh.h"
 #include "App.h"
 #include "Window.h"
@@ -36,7 +34,8 @@ namespace NSG
           viewHeight_(viewHeight)
     {
         CHECK_ASSERT(!path_.IsEmpty(), __FILE__, __LINE__);
-        texture_ = TextureFileManager::this_->GetOrCreate(path_);
+        auto resource = std::make_shared<ResourceFile>(path_);
+        texture_ = std::make_shared<Texture>(resource);
         texture_->SetFlags((int)TextureFlag::NONE);
         Path xmlFilename(path_.GetPathAndName() + ".xml"); //divo compatible (generated with font builder)
         xmlResource_ = std::make_shared<ResourceFile>(xmlFilename);

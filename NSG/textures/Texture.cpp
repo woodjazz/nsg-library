@@ -28,8 +28,6 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Check.h"
 #include "Graphics.h"
-#include "TextureFileManager.h"
-#include "ResourceFileManager.h"
 #include "ResourceMemory.h"
 #include "ResourceFile.h"
 #include "Texture.h"
@@ -63,11 +61,7 @@ namespace NSG
         switch (format_)
         {
         case GL_ALPHA:
-        case GL_LUMINANCE:
             channels_ = 1;
-            break;
-        case GL_LUMINANCE_ALPHA:
-            channels_ = 2;
             break;
         case GL_RGB:
             channels_ = 3;
@@ -104,9 +98,9 @@ namespace NSG
     {
     }
 
-    Texture::Texture(PResourceFile resource)
+    Texture::Texture(PResourceFile resource, const TextureFlags& flags)
         : fromKnownImgFormat_(true),
-          flags_((int)TextureFlag::NONE),
+          flags_(flags),
           texture_(0),
           pResource_(resource),
           width_(0),
@@ -338,7 +332,8 @@ namespace NSG
     {
         std::string flags = node.attribute("flags").as_string();
         std::string filename = node.attribute("filename").as_string();
-        PTexture texture = TextureFileManager::this_->GetOrCreate(filename);
+        auto resource = std::make_shared<ResourceFile>(filename);
+        auto texture = std::make_shared<Texture>(resource);
         texture->SetFlags(flags);
         return texture;
     }

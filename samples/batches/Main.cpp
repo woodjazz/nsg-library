@@ -41,8 +41,8 @@ int NSG_MAIN(int argc, char* argv[])
     auto scene = std::make_shared<Scene>("scene000");
     auto sphereMesh(app.CreateSphereMesh(3, 24));
 
-    auto pEarthTexture1(app.GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
-    auto pEarthTexture2(app.GetOrCreateTextureFile("data/jup0vss1.jpg"));
+    auto pEarthTexture1(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg")));
+    auto pEarthTexture2(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/jup0vss1.jpg")));
     auto pMaterial1(app.GetOrCreateMaterial("earth1"));
     auto pMaterial2(app.GetOrCreateMaterial("earth2"));
     auto program(app.GetOrCreateProgram("program0"));

@@ -43,6 +43,5 @@ namespace NSG
 	private:	
 		Path path_;
 		bool trySecondTime_;
-		friend class ResourceFileManager;
 	};
 }

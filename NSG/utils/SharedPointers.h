@@ -51,12 +51,6 @@ namespace NSG
 	class Animation;
 	typedef std::shared_ptr<Animation> PAnimation;
 	
-	class TextureFileManager;
-	typedef std::shared_ptr<TextureFileManager> PTextureFileManager;
-
-	class ResourceFileManager;
-	typedef std::shared_ptr<ResourceFileManager> PResourceFileManager;
-
 	class PointOnSphere;
 	typedef std::shared_ptr<PointOnSphere> PPointOnSphere;
 

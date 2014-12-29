@@ -25,11 +25,10 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Mesh.h"
-#include "IProceduralResource.h"
 
 namespace NSG
 {
-	class RectangleMesh : public Mesh, public IProceduralResource
+	class RectangleMesh : public Mesh
 	{
 	public:
 		RectangleMesh(const std::string& name);
@@ -37,9 +36,9 @@ namespace NSG
 		~RectangleMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
-		virtual size_t GetNumberOfTriangles() const override;
-		virtual void Build() override;
-		virtual const char* GetName() const override;
+		size_t GetNumberOfTriangles() const override;
+        bool IsValid() override;
+        void AllocateResources() override;
 	private:
 		float width_;
 		float height_;

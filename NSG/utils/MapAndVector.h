@@ -43,7 +43,6 @@ namespace NSG
 		template<typename U>
 		std::shared_ptr<U> CreateClass(const K& key)
 		{
-			auto it = objsMap_.find(key);
 			std::shared_ptr<U> obj = std::make_shared<U>(key);
 			objs_.push_back(obj);
 			objsMap_[key] = obj;

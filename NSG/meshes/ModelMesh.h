@@ -36,9 +36,9 @@ namespace NSG
 		void SetData(const VertexsData& vertexsData, const Indexes& indexes);
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
-		virtual size_t GetNumberOfTriangles() const override;
+		size_t GetNumberOfTriangles() const override;
 		void SetFaceMode(GLenum face_mode) { face_mode_ = face_mode; }
-		virtual void Load(const pugi::xml_node& node) override;
+		void Load(const pugi::xml_node& node) override;
 	private:
 		GLenum face_mode_;
 	};

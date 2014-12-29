@@ -61,7 +61,8 @@ int NSG_MAIN(int argc, char* argv[])
         earth->SetMesh(pSphereMesh);
         //earth->SetEnabled(false);
 
-        auto pEarthTexture(app.GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
+        auto earthResource = std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg");
+        auto pEarthTexture = std::make_shared<Texture>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         auto pMaterial(app.GetOrCreateMaterial("earth"));
         auto program(app.GetOrCreateProgram("program"));
         program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);

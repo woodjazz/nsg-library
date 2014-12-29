@@ -31,11 +31,9 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto resourceManager = std::make_shared<ResourceFileManager>();
-
     auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
     auto scene = std::make_shared<Scene>("scene000");
-    auto resource(resourceManager->GetOrCreate("data/duck.xml"));
+    auto resource = std::make_shared<ResourceFile>("data/duck.xml");
     scene->SceneNode::Load(resource);
     auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");
     auto objPos = objNode->GetGlobalPosition();

@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Check.h"
 #include "Log.h"
-#include "ResourceProcedural.h"
 
 namespace NSG
 {
@@ -36,7 +35,6 @@ namespace NSG
         : Mesh(name)
     {
         Set();
-        resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
@@ -69,7 +67,12 @@ namespace NSG
         return vertexsData_.size() / 3;
     }
 
-    void SphereMesh::Build()
+    bool SphereMesh::IsValid()
+    {
+        return true;
+    }
+
+    void SphereMesh::AllocateResources()
     {
         vertexsData_.clear();
         indexes_.clear();
@@ -142,12 +145,7 @@ namespace NSG
                 }
             }
         }
+
+        Mesh::AllocateResources();
     }
-
-    const char* SphereMesh::GetName() const
-    {
-        return "SphereMesh";
-    }
-
-
 }

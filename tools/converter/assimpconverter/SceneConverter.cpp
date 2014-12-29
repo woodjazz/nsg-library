@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "SceneConverter.h"
 #include "SceneNode.h"
-#include "ResourceFileManager.h"
 #include "Check.h"
 #include "Util.h"
 #include "Material.h"

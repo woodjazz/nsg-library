@@ -57,7 +57,6 @@ namespace NSG
         PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
         PMaterial CreateMaterial(const std::string& name);
         PMaterial GetOrCreateMaterial(const std::string& name);
-        PTexture GetOrCreateTextureFile(const Path& path, TextureFlags flags = (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         PProgram GetOrCreateProgram(const std::string& name);
         const std::vector<PMesh>& GetMeshes() const;
         PMesh GetMesh(const std::string& name) const;
@@ -81,7 +80,6 @@ namespace NSG
         MapAndVector<std::string, Mesh> meshes_;
         MapAndVector<std::string, Material> materials_;
         MapAndVector<std::string, Program> programs_;
-        PTextureFileManager textureFileManager_;
         PGraphics graphics_;
         PAppStatistics statistics_;
         PKeyboard keyboard_;

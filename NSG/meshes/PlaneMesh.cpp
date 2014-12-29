@@ -26,14 +26,13 @@ misrepresented as being the original software.
 #include "PlaneMesh.h"
 #include "Types.h"
 #include "Check.h"
-#include "ResourceProcedural.h"
+
 namespace NSG
 {
     PlaneMesh::PlaneMesh(const std::string& name)
         : Mesh(name)
     {
         Set();
-        resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
@@ -68,7 +67,12 @@ namespace NSG
         return vertexsData_.size() / 3;
     }
 
-    void PlaneMesh::Build()
+    bool PlaneMesh::IsValid()
+    {
+        return true;
+    }
+
+    void PlaneMesh::AllocateResources()
     {
         vertexsData_.clear();
         indexes_.clear();
@@ -125,12 +129,7 @@ namespace NSG
                 indexes_.push_back(i2);
             }
         }
+
+        Mesh::AllocateResources();
     }
-
-    const char* PlaneMesh::GetName() const
-    {
-        return "PlaneMesh";
-    }
-
-
 }

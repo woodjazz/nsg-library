@@ -2413,7 +2413,7 @@
 	</Meshes>
 	<Materials>
 		<Material name="blinn3" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    0.600,    0.600,    0.600,    1.000]" specular="[    0.000,    0.000,    0.000,    1.000]" shininess="0.3" color="[    0.000,    0.000,    0.000,    1.000]">
-			<Texture0 filename="duckCM.tga" flags="00000000000000000000000000000011" />
+			<Texture0 filename="duckCM.tga" flags="00000000000000000000000000000000" />
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">

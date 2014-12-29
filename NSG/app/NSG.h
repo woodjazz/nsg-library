@@ -48,6 +48,7 @@ misrepresented as being the original software.
 #include "Texture.h"
 #include "Light.h"
 #include "Graphics.h"
+#include "Material.h"
 #if 0
 #include "IMGUI.h"
 #include "IMGUISkin.h"
@@ -74,8 +75,6 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Frustum.h"
 #include "ResourceFile.h"
-#include "ResourceFileManager.h"
-#include "TextureFileManager.h"
 #include "Program.h"
 #include "Ray.h"
 #include "CameraControl.h"

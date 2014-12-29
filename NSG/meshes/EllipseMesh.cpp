@@ -27,8 +27,6 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Constants.h"
 #include "Check.h"
-#include "Resource.h"
-#include "ResourceProcedural.h"
 
 namespace NSG
 {
@@ -36,7 +34,6 @@ namespace NSG
         : Mesh(name)
     {
         Set();
-        resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
@@ -70,7 +67,12 @@ namespace NSG
         return vertexsData_.size() - 2;
     }
 
-    void EllipseMesh::Build()
+    bool EllipseMesh::IsValid()
+    {
+        return true;
+    }
+
+    void EllipseMesh::AllocateResources()
     {
         vertexsData_.clear();
         indexes_.clear();
@@ -103,11 +105,8 @@ namespace NSG
             angle += angleAdder;
         }
 
-    }
+        Mesh::AllocateResources();
 
-    const char* EllipseMesh::GetName() const
-    {
-        return "EllipseMesh";
     }
 
 }

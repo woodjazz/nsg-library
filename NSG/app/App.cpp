@@ -43,8 +43,6 @@ misrepresented as being the original software.
 #include "Music.h"
 #include "Program.h"
 #include "RigidBody.h"
-#include "ResourceFileManager.h"
-#include "TextureFileManager.h"
 #include "Object.h"
 #include "Keyboard.h"
 #include "Audio.h"
@@ -109,8 +107,6 @@ namespace NSG
             SDL_AddEventWatch(ExitEventFilter, nullptr);
         }
         #endif
-
-        textureFileManager_ = PTextureFileManager(new TextureFileManager);
     }
 
     App::~App()
@@ -133,7 +129,6 @@ namespace NSG
 
     void App::ClearAll()
     {
-        textureFileManager_ = nullptr;
         meshes_.Clear();
         materials_.Clear();
         programs_.Clear();
@@ -265,11 +260,6 @@ namespace NSG
     PMaterial App::GetOrCreateMaterial(const std::string& name)
     {
         return materials_.GetOrCreate(name);
-    }
-
-    PTexture App::GetOrCreateTextureFile(const Path& path, TextureFlags flags)
-    {
-        return TextureFileManager::this_->GetOrCreate(path);
     }
 
     PProgram App::GetOrCreateProgram(const std::string& name)

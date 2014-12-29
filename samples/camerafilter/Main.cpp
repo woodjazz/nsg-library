@@ -90,7 +90,7 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto mesh = app.CreateBoxMesh();
         auto material = app.GetOrCreateMaterial("material");
-        material->SetDiffuseMap(app.GetOrCreateTextureFile("data/wall.jpg"));
+        material->SetDiffuseMap(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/wall.jpg")));
         material->SetTechnique(technique);
 
         node1 = scene->GetOrCreateChild<SceneNode>("node1");
@@ -102,7 +102,7 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto mesh = app.CreateSphereMesh();
         auto material = app.GetOrCreateMaterial("material");
-        material->SetDiffuseMap(app.GetOrCreateTextureFile("data/stone.jpg"));
+        material->SetDiffuseMap(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/stone.jpg")));
         material->SetTechnique(technique);
 
         auto node = scene->GetOrCreateChild<SceneNode>("node2");

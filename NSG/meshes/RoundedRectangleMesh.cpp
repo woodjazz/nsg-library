@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Constants.h"
 #include "Check.h"
-#include "ResourceProcedural.h"
 #include <algorithm>
 
 namespace NSG
@@ -36,7 +35,6 @@ namespace NSG
         : Mesh(name)
     {
         Set();
-        resource_ = PResource(new ResourceProcedural(this));
         SetSerializable(false);
     }
 
@@ -71,7 +69,12 @@ namespace NSG
         return vertexsData_.size() - 2;
     }
 
-    void RoundedRectangleMesh::Build()
+    bool RoundedRectangleMesh::IsValid()
+    {
+        return true;
+    }
+
+    void RoundedRectangleMesh::AllocateResources()
     {
         vertexsData_.clear();
         indexes_.clear();
@@ -135,14 +138,9 @@ namespace NSG
 
             angle += angleAdder;
         }
+
+        Mesh::AllocateResources();
     }
-
-    const char* RoundedRectangleMesh::GetName() const
-    {
-        return "RoundedRectangleMesh";
-    }
-
-
 }
 
 

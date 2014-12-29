@@ -48,9 +48,9 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto earth = scene->GetOrCreateChild<SceneNode>("earth");
         auto pSphereMesh(app.CreateSphereMesh(3, 24));
-		earth->SetMesh(pSphereMesh);
+        earth->SetMesh(pSphereMesh);
 
-        auto pEarthTexture(app.GetOrCreateTextureFile("data/Earthmap720x360_grid.jpg"));
+        auto pEarthTexture(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
         auto pMaterial(app.GetOrCreateMaterial("earth"));
         auto program(app.GetOrCreateProgram("EarthBehavior"));
         program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
@@ -78,11 +78,11 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto floor = scene->GetOrCreateChild<SceneNode>("floor");
         auto mesh = app.CreateBoxMesh(20, 1, 20);
-		floor->SetMesh(mesh);
+        floor->SetMesh(mesh);
         auto rb = floor->GetOrCreateRigidBody();
         rb->SetMass(0);
         rb->SetShape(SH_BOX, true);
-        auto texture(app.GetOrCreateTextureFile("data/wall.jpg"));
+        auto texture(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/wall.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
         auto material(app.GetOrCreateMaterial("floor"));
         material->SetDiffuseMap(texture);
         auto program(app.GetOrCreateProgram("program1"));

@@ -32,7 +32,7 @@ namespace NSG
     class Texture : public Object
     {
     public:
-        Texture(PResourceFile resource);
+        Texture(PResourceFile resource, const TextureFlags& flags = (int)TextureFlag::NONE);
         Texture(GLint format, GLsizei width, GLsizei height, const char* pixels);
         Texture(PResourceMemory resource);
         virtual ~Texture();
