@@ -207,16 +207,6 @@ namespace NSG
             camera_->SetGlobalPosition(pointOnSphere_->GetPoint());
             camera_->SetGlobalLookAt(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
         }
-        else if (shiftKeyDown_)
-        {
-            float deltaTime = window_.lock()->GetDeltaTime();
-            Vertex3 position = camera_->GetGlobalPosition();
-            Quaternion q = camera_->GetOrientation();
-            q = q * glm::angleAxis(deltaTime * relX * 100, Vertex3(0, 1, 0));
-            q = q * glm::angleAxis(deltaTime * relY * 100, Vertex3(1, 0, 0));
-            camera_->SetOrientation(q);
-            SetSphereCenter(false);
-        }
     }
 
 

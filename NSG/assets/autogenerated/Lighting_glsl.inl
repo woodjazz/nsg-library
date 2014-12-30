@@ -45,7 +45,7 @@ static const char* LIGHTING_GLSL = \
 "    int enabled;                                                                          \n"\
 "    PointLight point;                                                                         \n"\
 "    vec3 direction;                                                                          \n"\
-"    float cutOff; // cosine(cutOff angle in c++)\n"\
+"    float cutOff; // 0.5f * cosine(cutOff)\n"\
 "};\n"\
 "uniform vec4 u_sceneAmbientColor;\n"\
 "uniform vec3 u_eyeWorldPos;\n"\

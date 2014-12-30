@@ -33,28 +33,69 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto window = app.GetOrCreateWindow("window", 50, 50, 1024, 768);
     auto scene = std::make_shared<Scene>("scene");
-    auto camera = scene->GetOrCreateChild<Camera>("Camera");
-    auto resource= std::make_shared<ResourceFile>("data/scene.xml");
+    auto resource = std::make_shared<ResourceFile>("data/scene.xml");
     scene->SceneNode::Load(resource);
+    auto object = scene->GetChild<SceneNode>("Object", true);
+    //auto camera = scene->GetChild<Camera>("Camera", false);
+    auto camera = scene->GetOrCreateChild<Camera>("Camera");
+    auto control = std::make_shared<CameraControl>(camera);
+    control->AutoZoom();
+    //auto spot = scene->GetChild<Light>("Spot", false);
+    auto spot = scene->GetOrCreateChild<Light>("Light");
+    spot->SetPosition(Vertex3(0, 0.9f, 0));
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-    
+
     auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
     {
         camera->SetAspectRatio(width, height);
     });
 
-    auto animations = scene->GetAnimationsFor(camera);
-    auto animation = animations[0];
-    animation->Play(true);
+    {
+        //auto animations = scene->GetAnimationsFor(spot);
+        auto animations = scene->GetAnimationsFor(object);
+        auto animation = animations[0];
+        animation->Play(true);
+    }
 
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
         scene->Update(deltaTime);
+        control->OnUpdate(deltaTime);
     });
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {
         scene->Render(camera.get());
+    });
+
+    auto slotMouseMoved = window->signalMouseMoved_->Connect([&](float x, float y)
+    {
+        control->OnMousemoved(x, y);
+    });
+
+    auto slotMouseDown = window->signalMouseDown_->Connect([&](int button, float x, float y)
+    {
+        control->OnMouseDown(button, x, y);
+    });
+
+    auto slotMouseUp = window->signalMouseUp_->Connect([&](int button, float x, float y)
+    {
+        control->OnMouseUp(button, x, y);
+    });
+
+    auto slotMouseWheel = window->signalMouseWheel_->Connect([&](float x, float y)
+    {
+        control->OnMousewheel(x, y);
+    });
+
+    auto slotMultiGesture = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+    {
+        control->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
+    });
+
+    auto slotKey = window->signalKey_->Connect([&](int key, int action, int modifier)
+    {
+        control->OnKey(key, action, modifier);
     });
 
     return app.Run();

@@ -22,3 +22,8 @@ Install SDK: https://github.com/kripken/emscripten/wiki/Emscripten-SDK
 Windows
 -------------------------
 Install Visual Studio 2013
+
+--------------------------
+BLender
+--------------------------
+To export from blender with the DirectX plugin you shall set coordinate as Left-Handed and Up-Axis as Y.

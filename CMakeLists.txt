@@ -160,7 +160,8 @@ endif()
 ###########################
 # samples
 ###########################
-include (ConvertTool) # convert tool
+include (ConvertTool) 
+include (CopyTool)
 set(SAMPLES_DIR ${ROOT_SOURCE_DIR}/samples)
 SUBDIRLIST(SUBDIRS ${SAMPLES_DIR})
 FOREACH(subdir ${SUBDIRS})
