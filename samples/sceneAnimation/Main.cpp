@@ -35,14 +35,15 @@ int NSG_MAIN(int argc, char* argv[])
     auto scene = std::make_shared<Scene>("scene");
     auto resource = std::make_shared<ResourceFile>("data/scene.xml");
     scene->SceneNode::Load(resource);
-    auto object = scene->GetChild<SceneNode>("Object", true);
-    //auto camera = scene->GetChild<Camera>("Camera", false);
-    auto camera = scene->GetOrCreateChild<Camera>("Camera");
+    auto object = scene->GetChild<SceneNode>("Bone", true);
+    auto plane = scene->GetChild<SceneNode>("Cube_001", false);
+    auto camera = scene->GetChild<Camera>("Camera", false);
+    //auto camera = scene->GetOrCreateChild<Camera>("Camera");
     auto control = std::make_shared<CameraControl>(camera);
-    control->AutoZoom();
-    //auto spot = scene->GetChild<Light>("Spot", false);
-    auto spot = scene->GetOrCreateChild<Light>("Light");
-    spot->SetPosition(Vertex3(0, 0.9f, 0));
+    //control->AutoZoom();
+    auto lamp = scene->GetChild<Light>("Lamp", false);
+    //auto spot = scene->GetOrCreateChild<Light>("Light");
+    //lamp->Translate(Vertex3(0, 10, 0));
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
 
     auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
@@ -51,7 +52,6 @@ int NSG_MAIN(int argc, char* argv[])
     });
 
     {
-        //auto animations = scene->GetAnimationsFor(spot);
         auto animations = scene->GetAnimationsFor(object);
         auto animation = animations[0];
         animation->Play(true);

@@ -98,17 +98,42 @@
 	vec3 GetWorldNormal()
 	{
 		#if defined(SKINNED)
-			//return normalize(mat3(GetSkinnedMatrix()) * a_normal); 
 			//Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
-			return normalize(GetNormalMatrix() * mat3(GetSkinnedMatrix()) * a_normal);
+			//return normalize((GetSkinnedMatrix() * vec4(normalize(GetNormalMatrix() * a_normal), 0.0)).xyz);
+			//vec3 normal = normalize((GetSkinnedMatrix() * vec4(a_normal, 0.0)).xyz);
+			//return normalize(GetNormalMatrix() * normal);
+			#if defined(INSTANCED)
+				return (vec4(a_normal, 0.0) * GetModelMatrix()).xyz;
+			#else
+				return (GetModelMatrix() * vec4(a_normal, 0.0)).xyz;
+			#endif
 		#else
-			return normalize(GetNormalMatrix() * a_normal);
+			#if defined(INSTANCED)
+			//return normalize(GetNormalMatrix() * a_normal);
+				return (vec4(a_normal, 0.0) * GetModelMatrix()).xyz;
+			#else
+				return (GetModelMatrix() * vec4(a_normal, 0.0)).xyz;
+			#endif
 		#endif
 	}
 
 	vec3 GetWorldTangent()
 	{   
-		return normalize((GetNormalMatrix() * a_tangent));
+		//return normalize((GetNormalMatrix() * a_tangent));
+
+		#if defined(SKINNED)
+			#if defined(INSTANCED)
+				return (vec4(a_tangent, 0.0) * GetModelMatrix()).xyz;
+			#else
+				return (GetModelMatrix() * vec4(a_tangent, 0.0)).xyz;
+			#endif
+		#else
+			#if defined(INSTANCED)
+				return (vec4(a_tangent, 0.0) * GetModelMatrix()).xyz;
+			#else
+				return (GetModelMatrix() * vec4(a_tangent, 0.0)).xyz;
+			#endif
+		#endif
 	}
 
 	vec4 GetClipPos(vec3 worldPos)
