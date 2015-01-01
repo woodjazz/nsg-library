@@ -187,7 +187,7 @@ namespace NSG
 
             if (maxVarying < defaultNumVaryingVectors)
             {
-				TRACE_LOG("Cannot use shaders because max varying vectors is " << maxVarying << " and the default shader needs at least " << defaultNumVaryingVectors << "!!!");
+                TRACE_LOG("Cannot use shaders because max varying vectors is " << maxVarying << " and the default shader needs at least " << defaultNumVaryingVectors << "!!!");
                 return;
             }
 
@@ -730,6 +730,8 @@ namespace NSG
 
     bool Program::SetSkeletonVariables(Skeleton* skeleton)
     {
+        CHECK_CONDITION((skeleton || nBones_ == 0) && "Invalid shader. This shader has been used for skin animation and cannot be reused by an object without skeleton.", __FILE__, __LINE__);
+
         if (skeleton)
         {
             const std::vector<PWeakNode>& bones = skeleton->GetBones();
@@ -783,6 +785,7 @@ namespace NSG
                 }
             }
         }
+
         activeSkeleton_ = skeleton;
 
         return true;

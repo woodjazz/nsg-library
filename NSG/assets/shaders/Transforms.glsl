@@ -99,40 +99,27 @@
 	{
 		#if defined(SKINNED)
 			//Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
-			//return normalize((GetSkinnedMatrix() * vec4(normalize(GetNormalMatrix() * a_normal), 0.0)).xyz);
-			//vec3 normal = normalize((GetSkinnedMatrix() * vec4(a_normal, 0.0)).xyz);
-			//return normalize(GetNormalMatrix() * normal);
 			#if defined(INSTANCED)
 				return (vec4(a_normal, 0.0) * GetModelMatrix()).xyz;
 			#else
 				return (GetModelMatrix() * vec4(a_normal, 0.0)).xyz;
 			#endif
 		#else
-			#if defined(INSTANCED)
-			//return normalize(GetNormalMatrix() * a_normal);
-				return (vec4(a_normal, 0.0) * GetModelMatrix()).xyz;
-			#else
-				return (GetModelMatrix() * vec4(a_normal, 0.0)).xyz;
-			#endif
+			return normalize((GetNormalMatrix() * a_normal));
 		#endif
 	}
 
 	vec3 GetWorldTangent()
 	{   
-		//return normalize((GetNormalMatrix() * a_tangent));
-
 		#if defined(SKINNED)
+			//Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
 			#if defined(INSTANCED)
 				return (vec4(a_tangent, 0.0) * GetModelMatrix()).xyz;
 			#else
 				return (GetModelMatrix() * vec4(a_tangent, 0.0)).xyz;
 			#endif
 		#else
-			#if defined(INSTANCED)
-				return (vec4(a_tangent, 0.0) * GetModelMatrix()).xyz;
-			#else
-				return (GetModelMatrix() * vec4(a_tangent, 0.0)).xyz;
-			#endif
+			return normalize((GetNormalMatrix() * a_tangent));
 		#endif
 	}
 

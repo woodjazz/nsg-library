@@ -1,6 +1,6 @@
 setup_sample()
-CONVERT_TOOL(art/scene.dae data/scene.xml)
-COPY_TOOL(art/CubeTexture.png data/CubeTexture.png)
+CONVERT_TOOL(art/scene.dae)
+COPY_TOOL(art/CubeTexture.png)
 
 
 

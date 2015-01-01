@@ -1,5 +1,5 @@
 setup_sample()
-CONVERT_TOOL(art/duck.dae data/duck.xml)	
+CONVERT_TOOL(art/duck.dae)	
 
 
 

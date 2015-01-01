@@ -7,7 +7,7 @@ macro(COPY_TOOL input_file)
 
 	    add_custom_command(
 	        TARGET ${PROJECT_NAME} POST_BUILD
-	            COMMAND ${CMAKE_COMMAND} -E copy ${INPUTFILE} ${CMAKE_CURRENT_SOURCE_DIR}/data/${INPUTNAME}
+	            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${INPUTFILE} ${CMAKE_CURRENT_SOURCE_DIR}/data/${INPUTNAME}
 	            DEPENDS ${INPUTFILE}
 	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 

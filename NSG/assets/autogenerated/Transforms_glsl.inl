@@ -89,38 +89,26 @@ static const char* TRANSFORMS_GLSL = \
 "	{\n"\
 "		#if defined(SKINNED)\n"\
 "			//Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)\n"\
-"			//return normalize((GetSkinnedMatrix() * vec4(normalize(GetNormalMatrix() * a_normal), 0.0)).xyz);\n"\
-"			//vec3 normal = normalize((GetSkinnedMatrix() * vec4(a_normal, 0.0)).xyz);\n"\
-"			//return normalize(GetNormalMatrix() * normal);\n"\
 "			#if defined(INSTANCED)\n"\
 "				return (vec4(a_normal, 0.0) * GetModelMatrix()).xyz;\n"\
 "			#else\n"\
 "				return (GetModelMatrix() * vec4(a_normal, 0.0)).xyz;\n"\
 "			#endif\n"\
 "		#else\n"\
-"			#if defined(INSTANCED)\n"\
-"			//return normalize(GetNormalMatrix() * a_normal);\n"\
-"				return (vec4(a_normal, 0.0) * GetModelMatrix()).xyz;\n"\
-"			#else\n"\
-"				return (GetModelMatrix() * vec4(a_normal, 0.0)).xyz;\n"\
-"			#endif\n"\
+"			return normalize((GetNormalMatrix() * a_normal));\n"\
 "		#endif\n"\
 "	}\n"\
 "	vec3 GetWorldTangent()\n"\
 "	{   \n"\
-"		//return normalize((GetNormalMatrix() * a_tangent));\n"\
 "		#if defined(SKINNED)\n"\
+"			//Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)\n"\
 "			#if defined(INSTANCED)\n"\
 "				return (vec4(a_tangent, 0.0) * GetModelMatrix()).xyz;\n"\
 "			#else\n"\
 "				return (GetModelMatrix() * vec4(a_tangent, 0.0)).xyz;\n"\
 "			#endif\n"\
 "		#else\n"\
-"			#if defined(INSTANCED)\n"\
-"				return (vec4(a_tangent, 0.0) * GetModelMatrix()).xyz;\n"\
-"			#else\n"\
-"				return (GetModelMatrix() * vec4(a_tangent, 0.0)).xyz;\n"\
-"			#endif\n"\
+"			return normalize((GetNormalMatrix() * a_tangent));\n"\
 "		#endif\n"\
 "	}\n"\
 "	vec4 GetClipPos(vec3 worldPos)\n"\

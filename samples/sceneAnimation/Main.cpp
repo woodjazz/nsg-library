@@ -36,15 +36,30 @@ int NSG_MAIN(int argc, char* argv[])
     auto resource = std::make_shared<ResourceFile>("data/scene.xml");
     scene->SceneNode::Load(resource);
     auto object = scene->GetChild<SceneNode>("Bone", true);
-    auto plane = scene->GetChild<SceneNode>("Cube_001", false);
+    auto plane = scene->GetChild<SceneNode>("Plane", false);
     auto camera = scene->GetChild<Camera>("Camera", false);
-    //auto camera = scene->GetOrCreateChild<Camera>("Camera");
-    auto control = std::make_shared<CameraControl>(camera);
-    //control->AutoZoom();
-    auto lamp = scene->GetChild<Light>("Lamp", false);
-    //auto spot = scene->GetOrCreateChild<Light>("Light");
-    //lamp->Translate(Vertex3(0, 10, 0));
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
+    auto control = std::make_shared<CameraControl>(camera);
+    auto lamp = scene->GetChild<Light>("Lamp", false);
+    auto ball = scene->GetChild<SceneNode>("Ball", false);
+    auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);
+    auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
+
+    auto planeRigidBody = plane->GetOrCreateRigidBody();
+    planeRigidBody->SetMass(0);
+    planeRigidBody->SetShape(SH_BOX, true);
+
+    auto ramp1RigidBody = ramp1->GetOrCreateRigidBody();
+    ramp1RigidBody->SetMass(0);
+    ramp1RigidBody->SetShape(SH_CONVEX_TRIMESH, true);
+
+    auto ramp2RigidBody = ramp2->GetOrCreateRigidBody();
+    ramp2RigidBody->SetMass(0);
+    ramp2RigidBody->SetShape(SH_CONVEX_TRIMESH, true);
+
+    auto ballRigidBody = ball->GetOrCreateRigidBody();
+    ballRigidBody->SetMass(1);
+    ballRigidBody->SetShape(SH_SPHERE, false);
 
     auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
     {
