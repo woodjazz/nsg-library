@@ -43,12 +43,14 @@ namespace NSG
         RigidBody(PSceneNode sceneNode);
         ~RigidBody();
         void SetMass(float mass);
-        void SetShape(PhysicsShape phyShape, bool isStatic);
+        void SetShape(PhysicsShape phyShape);
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
         void SetLinearVelocity(const Vector3& lv, TransformSpace tspace = TS_PARENT);
         Vector3 GetLinearVelocity() const;
         void HandleManifold(btPersistentManifold* manifold, RigidBody* collider) const;
         void ReScale();
+        bool IsStatic() const;
+        void SyncWithNode();
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -65,7 +67,6 @@ namespace NSG
         btCollisionShape* shape_;
         float mass_;
         PhysicsShape phyShape_;
-        bool isStatic_;
         bool handleCollision_;
     };
 }

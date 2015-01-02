@@ -27,8 +27,9 @@ macro(CONVERT_TOOL input_file)
 	    get_filename_component(INPUTFILE ${input_file} ABSOLUTE)
 	    get_filename_component(INPUTNAME ${input_file} NAME)
 	    string(REGEX REPLACE "[.][^.]+$" ".xml" OUTPUTNAME ${INPUTNAME}) # replace extension by xml
-	    #message("${INPUTNAME}")
-	    #message("${OUTPUTNAME}")  
+	    # message("${INPUTFILE}")
+	    # message("${INPUTNAME}")
+	    # message("${OUTPUTNAME}")  
 	    set(OUTPUTFILE ${CMAKE_CURRENT_SOURCE_DIR}/data/${OUTPUTNAME})
 	    
 	    set(CONVERT_CMD ${CONVERT_EXECUTABLE} -i ${INPUTFILE} -o ${OUTPUTFILE})

@@ -46,20 +46,17 @@ int NSG_MAIN(int argc, char* argv[])
     auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
 
     auto planeRigidBody = plane->GetOrCreateRigidBody();
-    planeRigidBody->SetMass(0);
-    planeRigidBody->SetShape(SH_BOX, true);
+    planeRigidBody->SetShape(SH_BOX);
 
     auto ramp1RigidBody = ramp1->GetOrCreateRigidBody();
-    ramp1RigidBody->SetMass(0);
-    ramp1RigidBody->SetShape(SH_CONVEX_TRIMESH, true);
+    ramp1RigidBody->SetShape(SH_CONVEX_TRIMESH);
 
     auto ramp2RigidBody = ramp2->GetOrCreateRigidBody();
-    ramp2RigidBody->SetMass(0);
-    ramp2RigidBody->SetShape(SH_CONVEX_TRIMESH, true);
+    ramp2RigidBody->SetShape(SH_CONVEX_TRIMESH);
 
     auto ballRigidBody = ball->GetOrCreateRigidBody();
     ballRigidBody->SetMass(1);
-    ballRigidBody->SetShape(SH_SPHERE, false);
+    ballRigidBody->SetShape(SH_SPHERE);
 
     auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
     {
@@ -90,7 +87,24 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto slotMouseDown = window->signalMouseDown_->Connect([&](int button, float x, float y)
     {
-        control->OnMouseDown(button, x, y);
+        if (button == NSG_BUTTON_LEFT)
+        {
+            control->OnMouseDown(button, x, y);
+        }
+        else
+        {
+            Ray ray = camera->GetScreenRay(x, y);
+            RayNodeResult closest;
+            if (scene->GetClosestRayNodeIntersection(ray, closest))
+            {
+                Vertex3 pos = ray.GetPoint(closest.distance_);
+                pos.y = 7;
+                ball->SetGlobalPosition(pos);
+                ballRigidBody->SetLinearVelocity(Vector3(0));
+                ballRigidBody->SyncWithNode();
+            }
+        }
+
     });
 
     auto slotMouseUp = window->signalMouseUp_->Connect([&](int button, float x, float y)
