@@ -41,12 +41,12 @@ int NSG_MAIN(int argc, char* argv[])
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
     auto control = std::make_shared<CameraControl>(camera);
     auto lamp = scene->GetChild<Light>("Lamp", false);
-    auto ball = scene->GetChild<SceneNode>("Ball", false);
+    auto ball = scene->GetChild<SceneNode>("Earth", false);
     auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);
     auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
 
     auto planeRigidBody = plane->GetOrCreateRigidBody();
-    planeRigidBody->SetShape(SH_BOX);
+    planeRigidBody->SetShape(SH_TRIMESH);
 
     auto ramp1RigidBody = ramp1->GetOrCreateRigidBody();
     ramp1RigidBody->SetShape(SH_CONVEX_TRIMESH);
