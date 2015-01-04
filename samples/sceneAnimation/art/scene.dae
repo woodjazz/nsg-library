@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.73.0 commit date:2014-12-23, commit time:15:42, hash:273fa0a</authoring_tool>
     </contributor>
-    <created>2015-01-03T21:25:37</created>
-    <modified>2015-01-03T21:25:37</modified>
+    <created>2015-01-04T18:35:28</created>
+    <modified>2015-01-04T18:35:28</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -245,6 +245,9 @@
     </image>
     <image id="wall_NRM_png" name="wall_NRM_png">
       <init_from>wall_NRM.png</init_from>
+    </image>
+    <image id="wall_DISP_png" name="wall_DISP_png">
+      <init_from>wall_DISP.png</init_from>
     </image>
   </library_images>
   <library_effects>
