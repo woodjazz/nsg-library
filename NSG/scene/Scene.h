@@ -42,6 +42,7 @@ namespace NSG
         void SetAmbientColor(Color ambient);
         const Color& GetAmbientColor() const { return ambient_; }
 		void AddLight(PLight light);
+        void ChangeLightType(PLight light, LightType fromType);
 		const std::vector<PWeakLight>& GetLights(LightType type) const;
         void AddCamera(PCamera camera);
         const std::vector<PWeakCamera>& GetCameras() const;

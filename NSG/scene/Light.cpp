@@ -80,7 +80,11 @@ namespace NSG
     {
         if (type_ != type)
         {
+            LightType oldType = type_;
             type_ = type;
+            auto scene = GetScene();
+            if (scene)
+                scene->ChangeLightType(std::dynamic_pointer_cast<Light>(shared_from_this()), oldType);
             SetUniformsNeedUpdate();
         }
     }
@@ -90,79 +94,79 @@ namespace NSG
         {
             std::stringstream ss;
             ss << GetName();
-			node.append_attribute("name") = ss.str().c_str();
+            node.append_attribute("name") = ss.str().c_str();
         }
 
-		node.append_attribute("nodeType") = "Light";
+        node.append_attribute("nodeType") = "Light";
 
         {
             std::stringstream ss;
             ss << (int)type_;
-			node.append_attribute("type") = ss.str().c_str();
+            node.append_attribute("type") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << attenuation_.constant;
-			node.append_attribute("attenuationConstant") = ss.str().c_str();
+            node.append_attribute("attenuationConstant") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << attenuation_.linear;
-			node.append_attribute("attenuationLinear") = ss.str().c_str();
+            node.append_attribute("attenuationLinear") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << attenuation_.quadratic;
-			node.append_attribute("attenuationQuadratic") = ss.str().c_str();
+            node.append_attribute("attenuationQuadratic") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << spotCutOff_;
-			node.append_attribute("spotCutOff") = ss.str().c_str();
+            node.append_attribute("spotCutOff") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << ambient_;
-			node.append_attribute("ambient") = ss.str().c_str();
+            node.append_attribute("ambient") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << diffuse_;
-			node.append_attribute("diffuse") = ss.str().c_str();
+            node.append_attribute("diffuse") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << specular_;
-			node.append_attribute("specular") = ss.str().c_str();
+            node.append_attribute("specular") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << GetPosition();
-			node.append_attribute("position") = ss.str().c_str();
+            node.append_attribute("position") = ss.str().c_str();
         }
 
         {
             std::stringstream ss;
             ss << GetOrientation();
-			node.append_attribute("orientation") = ss.str().c_str();
+            node.append_attribute("orientation") = ss.str().c_str();
         }
 
-		SaveChildren(node);
+        SaveChildren(node);
     }
 
-	void Light::Load(const pugi::xml_node& node, const CachedData& data)
+    void Light::Load(const pugi::xml_node& node, const CachedData& data)
     {
-		name_ = node.attribute("name").as_string();
+        name_ = node.attribute("name").as_string();
 
-		LightType type = (LightType)node.attribute("type").as_int();
+        LightType type = (LightType)node.attribute("type").as_int();
 
         switch (type)
         {
@@ -173,11 +177,11 @@ namespace NSG
                 {
                     float cutOff = node.attribute("spotCutOff").as_float();
                     SetSpotCutOff(cutOff);
-					SetType(LightType::SPOT);
+                    SetType(LightType::SPOT);
                     break;
                 }
             case LightType::POINT:
-				SetType(LightType::POINT);
+                SetType(LightType::POINT);
                 break;
             default:
                 CHECK_ASSERT(false && "Missing light type!", __FILE__, __LINE__);
@@ -185,9 +189,9 @@ namespace NSG
         }
 
         {
-			float constant = node.attribute("attenuationConstant").as_float();
-			float linear = node.attribute("attenuationLinear").as_float();
-			float quadratic = node.attribute("attenuationQuadratic").as_float();
+            float constant = node.attribute("attenuationConstant").as_float();
+            float linear = node.attribute("attenuationLinear").as_float();
+            float quadratic = node.attribute("attenuationQuadratic").as_float();
             SetAttenuation(constant, linear, quadratic);
         }
 
@@ -201,6 +205,6 @@ namespace NSG
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
 
-		LoadChildren(node, data);
+        LoadChildren(node, data);
     }
 }

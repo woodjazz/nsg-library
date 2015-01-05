@@ -56,7 +56,7 @@ struct Sample : App
             {
                 auto& cameras = scene_->GetCameras();
                 PCamera camera = cameras[0].lock();
-                camera->SetFov(60);
+                camera->SetFOV(60);
                 control_ = PCameraControl(new CameraControl(camera));
 
                 PLight light = scene_->GetChild<Light>("Lamp", true);

@@ -57,6 +57,7 @@ namespace NSG
         PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
         PMaterial CreateMaterial(const std::string& name);
         PMaterial GetOrCreateMaterial(const std::string& name);
+        PMaterial GetMaterial(const std::string& name);
         PProgram GetOrCreateProgram(const std::string& name);
         const std::vector<PMesh>& GetMeshes() const;
         PMesh GetMesh(const std::string& name) const;

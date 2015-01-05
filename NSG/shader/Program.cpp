@@ -259,6 +259,15 @@ namespace NSG
             }
         }
 
+        if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
+        {
+            if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
+            {
+                TRACE_LOG("Program name: " << name_ << " has per vertex and per pixel flags ON. Disabling per vertex!!!");
+                flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
+            }
+        }
+
         if (!hasLights)
         {
             if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
@@ -1004,7 +1013,8 @@ namespace NSG
                     if (loc.cutOff_ != -1)
                     {
                         float cutOff = light->GetSpotCutOff() * 0.5f;
-                        glUniform1f(loc.cutOff_, glm::cos(glm::radians(cutOff)));
+                        float value = glm::cos(glm::radians(cutOff));
+                        glUniform1f(loc.cutOff_, value);
                     }
                 }
 

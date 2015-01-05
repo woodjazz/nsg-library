@@ -110,7 +110,8 @@ namespace NSG
           has_packed_depth_stencil_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT),
-          maxVaryingVectors_(-1)
+          maxVaryingVectors_(-1),
+          maxTexturesCombined_(0)
     {
 
         #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -136,7 +137,10 @@ namespace NSG
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
-        memset(&textures_[0], 0, sizeof(textures_));
+        glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTexturesCombined_);
+        TRACE_LOG("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = " << maxTexturesCombined_);
+        CHECK_CONDITION(maxTexturesCombined_ >= 8, __FILE__, __LINE__);
+        textures_ = std::vector<Texture*>(maxTexturesCombined_, nullptr);
 
         if (CheckExtension("EXT_discard_framebuffer"))
         {
@@ -309,9 +313,8 @@ namespace NSG
         SetFrontFace(FrontFaceMode::DEFAULT);
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        for (unsigned idx = 0; idx < MAX_TEXTURE_UNITS; idx++)
-            SetTexture(idx, nullptr);
-
+        textures_ = std::vector<Texture*>(maxTexturesCombined_, nullptr);
+        
         SetVertexArrayObj(nullptr);
         SetVertexBuffer(nullptr);
         SetIndexBuffer(nullptr);
@@ -594,37 +597,9 @@ namespace NSG
         }
     }
 
-    #if 0
     void Graphics::SetTexture(unsigned index, Texture* texture)
     {
-        if (index >= MAX_TEXTURE_UNITS)
-            return;
-
-        if (textures_[index] != texture)
-        {
-            if (activeTexture_ != index)
-            {
-                glActiveTexture(GL_TEXTURE0 + index);
-                activeTexture_ = index;
-            }
-
-            if (texture)
-            {
-                glBindTexture(GL_TEXTURE_2D, texture->GetID());
-            }
-            else
-            {
-                glBindTexture(GL_TEXTURE_2D, 0);
-            }
-
-            textures_[index] = texture;
-        }
-    }
-    #else
-    void Graphics::SetTexture(unsigned index, Texture* texture)
-    {
-        if (index >= MAX_TEXTURE_UNITS)
-            return;
+        CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
 
         if (texture)
         {
@@ -650,12 +625,9 @@ namespace NSG
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
 
-            if (textures_[index] != texture)
-                textures_[index] = texture;
+            textures_[index] = nullptr;
         }
     }
-
-    #endif
 
     void Graphics::SetViewport(const Recti& viewport, bool force)
     {

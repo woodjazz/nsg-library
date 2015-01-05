@@ -67,7 +67,7 @@ int NSG_MAIN(int argc, char* argv[])
         earth->SetPosition(Vertex3(0, 10, 0));
         static auto rb = earth->GetOrCreateRigidBody();
         rb->SetMass(1);
-        rb->SetShape(SH_SPHERE, false);
+        rb->SetShape(SH_SPHERE);
         rb->HandleCollisions(true);
         auto static slotCollision = earth->signalCollision_->Connect([&](const ContactPoint & contactInfo)
         {
@@ -80,8 +80,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto mesh = app.CreateBoxMesh(20, 1, 20);
         floor->SetMesh(mesh);
         auto rb = floor->GetOrCreateRigidBody();
-        rb->SetMass(0);
-        rb->SetShape(SH_BOX, true);
+        rb->SetShape(SH_BOX);
         auto texture(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/wall.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
         auto material(app.GetOrCreateMaterial("floor"));
         material->SetDiffuseMap(texture);

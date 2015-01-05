@@ -119,7 +119,7 @@ namespace NSG
         }
     }
 
-    void Camera::SetFov(float fovy)
+    void Camera::SetFOV(float fovy)
     {
         fovy = glm::radians(fovy);
         if (fovy_ != fovy)

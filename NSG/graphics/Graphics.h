@@ -102,6 +102,7 @@ namespace NSG
         bool IsTextureSizeCorrect(unsigned width, unsigned height);
         void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
         GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
+        GLint GetMaxTexturesCombined() const { return maxTexturesCombined_; }
     private:
         Recti viewport_;
         GLint systemFbo_;
@@ -111,7 +112,7 @@ namespace NSG
         PInstanceBuffer instanceBuffer_;
         Buffer* indexBuffer_;
         Program* activeProgram_;
-        Texture* textures_[MAX_TEXTURE_UNITS];
+        std::vector<Texture*> textures_;
         unsigned activeTexture_;
         unsigned enabledAttributes_; //positions' bits for enabled attributes
         Mesh* lastMesh_; // last mesh drawn
@@ -151,5 +152,6 @@ namespace NSG
         typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
         VAOMap vaoMap_;
         GLint maxVaryingVectors_;
+        GLint maxTexturesCombined_;
     };
 }

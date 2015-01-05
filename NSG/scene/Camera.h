@@ -36,7 +36,7 @@ namespace NSG
 		~Camera();
 		void EnableOrtho();
 		void DisableOrtho();
-		void SetFov(float fovy); // in degrees
+		void SetFOV(float fovy); // in degrees
 		void SetHalfHorizontalFov(float hhfov); // in radians
 		void SetNearClip(float zNear);
 		void SetFarClip(float zFar);

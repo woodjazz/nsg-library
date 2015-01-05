@@ -262,6 +262,11 @@ namespace NSG
         return materials_.GetOrCreate(name);
     }
 
+    PMaterial App::GetMaterial(const std::string& name)
+    {
+        return materials_.Get(name);
+    }   
+
     PProgram App::GetOrCreateProgram(const std::string& name)
     {
         return programs_.GetOrCreate(name);

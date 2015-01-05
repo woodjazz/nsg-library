@@ -31,24 +31,30 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    PNode node;
-    SignalViewChanged::PSlot resizeSlot;
-
-    auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 1024, 768);
     auto scene = std::make_shared<Scene>("scene000");
     auto camera = scene->GetOrCreateChild<Camera>("camera");
+    const float FOV = 30.0f;
+    camera->SetFOV(FOV);
     auto control = std::make_shared<CameraControl>(camera);
+    
     auto light = scene->GetOrCreateChild<Light>("light");
-    light->SetType(LightType::DIRECTIONAL);
-    light->SetGlobalLookAt(Vector3(1, 0, 0));
-    light->SetDiffuseColor(Color(1, 0, 0, 1));
+    light->SetType(LightType::SPOT);
+    light->SetParent(camera);
+    light->SetSpotCutOff(FOV);
+    //light->SetDiffuseColor(Color(1, 0, 0, 1));
 
     auto resource = std::make_shared<ResourceFile>("data/dwarf.xml");
     scene->SceneNode::Load(resource);
+    scene->SetAmbientColor(Color(0));
+    auto material0 = app.GetMaterial("Material0");
+    auto material1 = app.GetMaterial("Material1");
+    material0->GetTechnique()->EnableProgramFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
+    material1->GetTechnique()->EnableProgramFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
 
     camera->SetPosition(Vector3(0, 70, 100));
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-    resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
+    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
     {
         camera->SetAspectRatio(width, height);
     });
@@ -60,7 +66,7 @@ int NSG_MAIN(int argc, char* argv[])
     scene->PlayAnimation("AnimationSet0", true);
     scene->SetAnimationSpeed("AnimationSet0", 0.001f);
 
-    node = scene->GetChild<Node>("Body", false);
+    auto node = scene->GetChild<Node>("Body", false);
     CHECK_ASSERT(node, __FILE__, __LINE__);
 
 

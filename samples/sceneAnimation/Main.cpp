@@ -37,11 +37,11 @@ int NSG_MAIN(int argc, char* argv[])
     scene->SceneNode::Load(resource);
     auto object = scene->GetChild<SceneNode>("Bone", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
-#if 0
+#if 1
     auto dispMap = std::make_shared<ResourceFile>("data/wall_DISP.png");
     auto dispTex = std::make_shared<Texture>(dispMap, (int)TextureFlag::INVERT_Y);
     plane->GetMaterial()->SetDisplacementMap(dispTex);
-    plane->GetMaterial()->SetParallaxScale(0.1f);
+    plane->GetMaterial()->SetParallaxScale(0.9f);
 #endif
     auto camera = scene->GetChild<Camera>("Camera", false);
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
