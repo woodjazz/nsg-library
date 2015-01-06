@@ -58,7 +58,6 @@ namespace NSG
         PMaterial CreateMaterial(const std::string& name);
         PMaterial GetOrCreateMaterial(const std::string& name);
         PMaterial GetMaterial(const std::string& name);
-        PProgram GetOrCreateProgram(const std::string& name);
         const std::vector<PMesh>& GetMeshes() const;
         PMesh GetMesh(const std::string& name) const;
         const std::vector<PMaterial>& GetMaterials() const;
@@ -80,7 +79,6 @@ namespace NSG
         PAppConfiguration configuration_;
         MapAndVector<std::string, Mesh> meshes_;
         MapAndVector<std::string, Material> materials_;
-        MapAndVector<std::string, Program> programs_;
         PGraphics graphics_;
         PAppStatistics statistics_;
         PKeyboard keyboard_;

@@ -61,7 +61,7 @@ static const char* LIGHTING_GLSL = \
 "vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 normal)                   \n"\
 "{                               \n"\
 "    #ifdef AOMAP\n"\
-"        vec4 color = u_material.ambient * base.ambient * texture2D(u_texture4, v_texcoord0);\n"\
+"        vec4 color = texture2D(u_texture4, v_texcoord0);\n"\
 "    #else                                                            \n"\
 "        vec4 color = u_material.ambient * base.ambient;\n"\
 "    #endif\n"\

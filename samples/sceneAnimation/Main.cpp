@@ -33,15 +33,23 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto window = app.GetOrCreateWindow("window", 50, 50, 1024, 768);
     auto scene = std::make_shared<Scene>("scene");
+    scene->SetAmbientColor(Color(0.0f));
     auto resource = std::make_shared<ResourceFile>("data/scene.xml");
     scene->SceneNode::Load(resource);
     auto object = scene->GetChild<SceneNode>("Bone", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
-#if 1
+    plane->GetMaterial()->SetShininess(10);
+#if 0
     auto dispMap = std::make_shared<ResourceFile>("data/wall_DISP.png");
     auto dispTex = std::make_shared<Texture>(dispMap, (int)TextureFlag::INVERT_Y);
     plane->GetMaterial()->SetDisplacementMap(dispTex);
-    plane->GetMaterial()->SetParallaxScale(0.9f);
+    //plane->GetMaterial()->SetParallaxScale(0.09f);
+#endif
+
+#if 1
+    auto occMap = std::make_shared<ResourceFile>("data/wall_OCC.png");
+    auto occTex = std::make_shared<Texture>(occMap, (int)TextureFlag::INVERT_Y);
+    //plane->GetMaterial()->SetAOMap(occTex);
 #endif
     auto camera = scene->GetChild<Camera>("Camera", false);
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
@@ -130,6 +138,11 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto slotKey = window->signalKey_->Connect([&](int key, int action, int modifier)
     {
+        if(key == NSG_KEY_Q)
+            plane->GetMaterial()->SetAOMap(occTex);
+        else if(key == NSG_KEY_W)
+            plane->GetMaterial()->SetAOMap(nullptr);
+
         control->OnKey(key, action, modifier);
     });
 

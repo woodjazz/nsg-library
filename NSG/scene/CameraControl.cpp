@@ -33,8 +33,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     CameraControl::CameraControl(PCamera camera)
-        : camera_(camera),
-          app_(*App::this_)
+        : camera_(camera)
     {
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
         lastX_ = lastY_ = 0;

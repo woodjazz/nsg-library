@@ -91,11 +91,9 @@ namespace NSG
           activeTexture_(0),
           enabledAttributes_(0),
           lastMesh_(nullptr),
-          lastMaterial_(nullptr),
           lastProgram_(nullptr),
           lastNode_(nullptr),
           activeMesh_(nullptr),
-          activeMaterial_(nullptr),
           activeNode_(nullptr),
           activeScene_(nullptr),
           activeCamera_(nullptr),
@@ -282,11 +280,9 @@ namespace NSG
 
         vaoMap_.clear();
         lastMesh_ = nullptr;
-        lastMaterial_ = nullptr;
         lastProgram_ = nullptr;
         lastNode_ = nullptr;
         activeMesh_ = nullptr;
-        activeMaterial_ = nullptr;
         activeNode_ = nullptr;
         activeScene_ = nullptr;
         activeCamera_ = nullptr;
@@ -1091,12 +1087,12 @@ namespace NSG
 
     void Graphics::Draw(bool solid)
     {
-        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_ || !activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
+        if (!activeMesh_ || !activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        activeProgram_->SetVariables(activeMaterial_, activeMesh_, activeNode_);
+        activeProgram_->SetVariables(activeMesh_, activeNode_);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -1134,7 +1130,6 @@ namespace NSG
         SetVertexArrayObj(nullptr);
 
         lastMesh_ = activeMesh_;
-        lastMaterial_ = activeMaterial_;
         lastNode_ = activeNode_;
         lastProgram_ = activeProgram_;
 
@@ -1143,12 +1138,12 @@ namespace NSG
 
     void Graphics::Draw(bool solid, Batch& batch)
     {
-        if ((activeMaterial_ && !activeMaterial_->IsReady()) || !activeMesh_->IsReady() || !activeProgram_->IsReady())
+        if (!activeMesh_->IsReady() || !activeProgram_->IsReady())
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        activeProgram_->SetVariables(activeMaterial_, activeMesh_);
+        activeProgram_->SetVariables(activeMesh_, nullptr);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -1182,7 +1177,6 @@ namespace NSG
         SetVertexArrayObj(nullptr);
 
         lastMesh_ = activeMesh_;
-        lastMaterial_ = activeMaterial_;
         lastNode_ = activeNode_;
         lastProgram_ = activeProgram_;
 
@@ -1199,7 +1193,6 @@ namespace NSG
             PTechnique technique = batch.material_->GetTechnique();
             if (technique)
             {
-                Set(batch.material_.get());
                 Set(batch.mesh_.get());
                 if (has_instanced_arrays_ext_ && technique->GetNumPasses() == 1)
                 {

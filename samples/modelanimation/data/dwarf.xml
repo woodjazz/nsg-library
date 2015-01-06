@@ -78,7 +78,7 @@
 			</SceneNode>
 		</SceneNode>
 		<SceneNode name="Body" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="0">
-			<SceneNode name="Body4" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="1" meshIndex="1" />
+			<SceneNode name="Body2" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="1" meshIndex="1" />
 		</SceneNode>
 	</SceneNode>
 	<Meshes>
@@ -1578,7 +1578,7 @@
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="GeneratedName2" flags="00000000000000000100010000000001" />
+						<Program flags="00000000000000000100010000000001" />
 					</Pass>
 				</Passes>
 			</Technique>
@@ -1588,7 +1588,7 @@
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="GeneratedName3" flags="00000000000000000100010000000001" />
+						<Program flags="00000000000000000100010000000001" />
 					</Pass>
 				</Passes>
 			</Technique>

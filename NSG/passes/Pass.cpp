@@ -298,12 +298,12 @@ namespace NSG
 
     }
 
-    void Pass::Load(const pugi::xml_node& node)
+    void Pass::Load(const pugi::xml_node& node, PMaterial material)
     {
         pugi::xml_node programChild = node.child("Program");
 
         if (programChild)
-            SetProgram(Program::CreateFrom(programChild));
+            SetProgram(Program::CreateFrom(programChild, material));
 
         SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
         EnableDepthTest(node.attribute("enableDepthTest").as_bool());

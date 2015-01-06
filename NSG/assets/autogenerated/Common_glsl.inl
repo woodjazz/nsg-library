@@ -32,14 +32,5 @@ static const char* COMMON_GLSL = \
 "		varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS];\n"\
 "	#endif\n"\
 "#endif\n"\
-"#if defined(COMPILEFS)\n"\
-"	\n"\
-"	uniform sampler2D u_texture0;\n"\
-"	uniform sampler2D u_texture1;\n"\
-"	uniform sampler2D u_texture2;\n"\
-"	uniform sampler2D u_texture3;\n"\
-"	uniform sampler2D u_texture4;\n"\
-"	uniform sampler2D u_texture5;\n"\
-"#endif\n"\
 ;
 }

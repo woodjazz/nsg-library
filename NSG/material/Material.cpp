@@ -26,6 +26,7 @@ namespace NSG
           name_(name),
           serializable_(true)
     {
+        technique_ = std::make_shared<Technique>(nullptr);
     }
 
     Material::~Material()
@@ -438,10 +439,6 @@ namespace NSG
 
         pugi::xml_node childTechnique = node.child("Technique");
         if (childTechnique)
-        {
-            PTechnique technique = std::make_shared<Technique>();
-            SetTechnique(technique);
-            technique->Load(childTechnique);
-        }
+            technique_->Load(childTechnique);
     }
 }

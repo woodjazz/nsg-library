@@ -39,32 +39,31 @@ misrepresented as being the original software.
 namespace NSG
 {
     MaterialConverter::MaterialConverter(const aiMaterial* mtl, const std::string& resourcePath)
-		: program_(App::this_->GetOrCreateProgram(GetUniqueName())),
-		  flags_((int)ProgramFlag::NONE),
+        : flags_((int)ProgramFlag::NONE),
           resourcePath_(resourcePath),
           mtl_(mtl)
     {
-		std::string materialName;
-		{
-			aiString name;
-			if (AI_SUCCESS == aiGetMaterialString(mtl, AI_MATKEY_NAME, &name))
-			{
-				materialName = name.C_Str();
-			}
-			else
-			{
-				materialName  = "NSGMaterialConverter";
-				static int counter = 0;
-				std::stringstream ss;
-				ss << counter++;
-				materialName += ss.str();
-			}
-		}
+        std::string materialName;
+        {
+            aiString name;
+            if (AI_SUCCESS == aiGetMaterialString(mtl, AI_MATKEY_NAME, &name))
+            {
+                materialName = name.C_Str();
+            }
+            else
+            {
+                materialName  = "NSGMaterialConverter";
+                static int counter = 0;
+                std::stringstream ss;
+                ss << counter++;
+                materialName += ss.str();
+            }
+        }
 
-		material_ = App::this_->GetOrCreateMaterial(materialName);
+        material_ = App::this_->GetOrCreateMaterial(materialName);
+        program_ = std::make_shared<Program>(material_);
 
-        PTechnique technique(new Technique);
-        material_->SetTechnique(technique);
+        auto technique = material_->GetTechnique();
         PPass pass(new Pass);
         technique->Add(pass);
         pass->SetProgram(program_);
@@ -77,7 +76,7 @@ namespace NSG
             {
                 case aiShadingMode_Flat:
                 case aiShadingMode_Gouraud:
-					flags_ |= (int)ProgramFlag::PER_VERTEX_LIGHTING;
+                    flags_ |= (int)ProgramFlag::PER_VERTEX_LIGHTING;
                     program_->SetFlags(flags_);
                     break;
                 case aiShadingMode_Phong:
@@ -87,17 +86,17 @@ namespace NSG
                 case aiShadingMode_Minnaert:
                 case aiShadingMode_CookTorrance:
                 case aiShadingMode_Fresnel:
-					flags_ |= (int)ProgramFlag::PER_PIXEL_LIGHTING;
+                    flags_ |= (int)ProgramFlag::PER_PIXEL_LIGHTING;
                     program_->SetFlags(flags_);
                     break;
                 default:
                     break;
             }
         }
-		else
-		{
-			program_->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-		}
+        else
+        {
+            program_->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
+        }
 
 
         aiColor4D color;
@@ -193,7 +192,7 @@ namespace NSG
             aiTextureOp op(aiTextureOp_Add);
             aiTextureMapMode mapmode[3];
 
-			if (AI_SUCCESS == mtl_->GetTexture(aiTextureType_DIFFUSE, 0, &aPath, &mapping, &uvindex, &blend, &op, mapmode))
+            if (AI_SUCCESS == mtl_->GetTexture(aiTextureType_DIFFUSE, 0, &aPath, &mapping, &uvindex, &blend, &op, mapmode))
             {
                 Path path(aPath.C_Str());
                 if (mapping == aiTextureMapping_UV)
@@ -314,7 +313,7 @@ namespace NSG
         std::string textureFilePath;
         if (path.IsPathRelative())
         {
-            if(path.GetPath().empty())
+            if (path.GetPath().empty())
                 textureFilePath = resourcePath_ + "/" + path.GetFilename();
             else
                 textureFilePath = resourcePath_ + "/" + path.GetPath() + "/" + path.GetFilename();
@@ -323,7 +322,7 @@ namespace NSG
             textureFilePath = path.GetFilePath();
 
         auto resource = std::make_shared<ResourceFile>(textureFilePath);
-		return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+        return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     }
 
     MaterialConverter::~MaterialConverter()

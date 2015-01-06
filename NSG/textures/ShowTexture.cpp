@@ -41,7 +41,7 @@ namespace NSG
         : app_(*App::this_),
           pass_(new Pass),
 		  material_(app_.CreateMaterial(GetUniqueName("NSGShowTexture"))),
-          program_(app_.GetOrCreateProgram("NSGShowTexture")),
+          program_(std::make_shared<Program>(material_)),
           mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           node_(std::make_shared<SceneNode>("NSGShowTexture"))
     {
@@ -83,7 +83,6 @@ namespace NSG
 			Camera* pCurrent = Graphics::this_->GetCamera();
 			Graphics::this_->SetCamera(nullptr);
 
-            Graphics::this_->Set(material_.get());
             Graphics::this_->SetNode(node_.get());
             Graphics::this_->Set(mesh_.get());
             pass_->Render();

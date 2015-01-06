@@ -64,14 +64,13 @@ int NSG_MAIN(int argc, char* argv[])
         auto earthResource = std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg");
         auto pEarthTexture = std::make_shared<Texture>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         auto pMaterial(app.GetOrCreateMaterial("earth"));
-        auto program(app.GetOrCreateProgram("program"));
+        auto program(std::make_shared<Program>(pMaterial));
         program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-        PTechnique technique(new Technique);
+        auto technique = pMaterial->GetTechnique();
         PPass pass(new Pass);
 
         technique->Add(pass);
         pass->SetProgram(program);
-        pMaterial->SetTechnique(technique);
         pMaterial->SetDiffuseMap(pEarthTexture);
         pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
         pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
@@ -86,13 +85,11 @@ int NSG_MAIN(int argc, char* argv[])
     {
 		auto pMaterial(app.GetOrCreateMaterial("light"));
         pMaterial->SetColor(Color(1, 0, 0, 1));
-        auto pProgram = app.GetOrCreateProgram("program");
-        PTechnique technique(new Technique);
+        auto pProgram = std::make_shared<Program>(pMaterial);
+        auto technique = pMaterial->GetTechnique();
         PPass pass(new Pass);
         technique->Add(pass);
         pass->SetProgram(pProgram);
-        pMaterial->SetTechnique(technique);
-
         light->SetMaterial(pMaterial);
 
 		auto pMesh(app.CreateSphereMesh(0.2f, 16));

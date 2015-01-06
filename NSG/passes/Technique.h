@@ -37,8 +37,9 @@ namespace NSG
 	{
 	public:
 		static const size_t MAX_PASSES = 10;
-		Technique();
+		Technique(PMaterial material);
 		~Technique();
+		void SetMaterial(PMaterial material) { material_ = material; }
 		void Add(PPass pass);
 		size_t GetNumPasses() const;
 		const PASSES& GetConstPasses() const { return passes_; }
@@ -51,7 +52,9 @@ namespace NSG
 		void Render();
 		void EnableProgramFlags(const ProgramFlags& flags);
 		void DisableProgramFlags(const ProgramFlags& flags);
+		PMaterial GetMaterial() { return material_.lock(); }
 	private:
+		PWeakMaterial material_;
 		PASSES passes_;
 	};
 }

@@ -41,7 +41,6 @@ namespace NSG
 {
 	Filter::Filter(const std::string& name, PTexture input, int output_width, int output_height, ProgramFlags flags)
         : app_(*App::this_),
-		technique_(new Technique),
           pass_(new Pass),
 		  pMaterial_(app_.GetOrCreateMaterial(name)),
           pMesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
@@ -49,10 +48,10 @@ namespace NSG
           name_(name),
           node_(std::make_shared<SceneNode>(name))
     {
+        technique_ = pMaterial_->GetTechnique();
         technique_->Add(pass_);
         pMaterial_->SetTexture0(input);
-        pMaterial_->SetTechnique(technique_);
-		program_ = app_.GetOrCreateProgram(name);
+		program_ = std::make_shared<Program>(pMaterial_);
 		program_->SetFlags(flags);
         pass_->SetProgram(program_);
     }
@@ -85,7 +84,6 @@ namespace NSG
 
         Graphics::this_->SetNode(node_.get());
         Graphics::this_->Set(pMesh_.get());
-        Graphics::this_->Set(pMaterial_.get());
 
         technique_->Render(nullptr);
 

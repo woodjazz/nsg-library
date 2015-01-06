@@ -68,16 +68,16 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto showTexture = std::make_shared<ShowTexture>();
 
-    auto technique = std::make_shared<Technique>();
+    auto technique = std::make_shared<Technique>(nullptr);
 
     PPass normalPass(new Pass);
-    auto normalProgram(app.GetOrCreateProgram(GetUniqueName()));
+    auto normalProgram(std::make_shared<Program>(nullptr));
     normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
     normalPass->SetProgram(normalProgram);
 
     PPass depthPass(new Pass);
     depthPass->EnableColorBuffer(false);
-    auto depthProgram(app.GetOrCreateProgram(GetUniqueName()));
+    auto depthProgram(std::make_shared<Program>(nullptr));
     depthProgram->SetFlags((int)ProgramFlag::STENCIL);
     depthPass->SetProgram(depthProgram);
 

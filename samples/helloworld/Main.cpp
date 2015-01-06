@@ -50,13 +50,12 @@ int NSG_MAIN(int argc, char* argv[])
     auto material = app.GetOrCreateMaterial("material");
     material->SetColor(Color(1, 1, 1, 1));
     material->SetTexture0(atlas->GetTexture());
-    auto technique = std::make_shared<Technique>();
+    auto technique = material->GetTechnique();
     auto pass = std::make_shared<Pass>();
     technique->Add(pass);
-    material->SetTechnique(technique);
     pass->EnableDepthTest(false);
     pass->EnableStencilTest(false);
-    auto program = app.GetOrCreateProgram("text");
+    auto program = std::make_shared<Program>(material);
     program->SetFlags((int)ProgramFlag::TEXT);
     pass->SetProgram(program);
 

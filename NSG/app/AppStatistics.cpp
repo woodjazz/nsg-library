@@ -163,8 +163,6 @@ namespace NSG
 
         collect_ = false;
 
-        Graphics::this_->Set(material_.get());
-
         std::stringstream ss;
         for (int i = 0; i < (int)Stats::MAX_STATS; i++)
         {

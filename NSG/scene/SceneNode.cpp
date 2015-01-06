@@ -373,7 +373,6 @@ namespace NSG
         if(IsReady())
         {
             Graphics::this_->SetScene(GetScene().get());
-            Graphics::this_->Set(material_.get());
             Graphics::this_->SetNode(this);
             Graphics::this_->Set(mesh_.get());
             if (material_)

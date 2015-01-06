@@ -53,11 +53,11 @@ namespace NSG
           yf_(1),
           isOrtho_(false),
           orthoCoords_(-1.0f, 1.0f, -1.0f, 1.0f),
-          cameraIsDirty_(false),
           graphics_(Graphics::this_),
           viewWidth_(0),
           viewHeight_(0),
-          aspectRatio_(1)
+          aspectRatio_(1),
+        cameraIsDirty_(false)
     {
         SetInheritScale(false);
         UpdateProjection();

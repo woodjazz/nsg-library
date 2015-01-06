@@ -697,18 +697,18 @@
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="GeneratedName0" flags="00000000000000000100000000000010" />
+						<Program flags="00000000000000000100000000000010" />
 					</Pass>
 				</Passes>
 			</Technique>
 		</Material>
-		<Material name="Floor-material" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    0.600,    0.600,    0.600,    1.000]" specular="[    0.500,    0.500,    0.500,    1.000]" shininess="50" color="[    0.000,    0.000,    0.000,    1.000]">
+		<Material name="Floor-material" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    0.600,    0.600,    0.600,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" shininess="50" color="[    0.000,    0.000,    0.000,    1.000]">
 			<Texture0 filename="wall_COLOR.png" flags="00000000000000000000000000000011" />
 			<Texture1 filename="wall_NRM.png" flags="00000000000000000000000000000011" />
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="GeneratedName1" flags="00000000000000000100000010000010" />
+						<Program flags="00000000000000000100000010000010" />
 					</Pass>
 				</Passes>
 			</Technique>
@@ -717,7 +717,7 @@
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="GeneratedName2" flags="00000000000000000000010000000010" />
+						<Program flags="00000000000000000000010000000010" />
 					</Pass>
 				</Passes>
 			</Technique>
@@ -726,14 +726,14 @@
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
-						<Program name="GeneratedName3" flags="00000000000000000000000000000010" />
+						<Program flags="00000000000000000000000000000010" />
 					</Pass>
 				</Passes>
 			</Technique>
 		</Material>
 	</Materials>
 	<Animations>
-		<Animation name="Animation8" length="10.375">
+		<Animation name="Animation4" length="10.375">
 			<Tracks>
 				<Track nodeName="Bone" channelMask="00000000000000000000000000000000">
 					<KeyFrames>

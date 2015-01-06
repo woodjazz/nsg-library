@@ -95,7 +95,6 @@ namespace NSG
         void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
         UniformObjs& GetUniformObjs() { return uniformObjs_; }
         void Set(Mesh* mesh) { activeMesh_ = mesh; }
-        void Set(Material* material) { activeMaterial_ = material; }
 		void SetNode(SceneNode* node) { activeNode_ = node; }
         void Render(Batch& batch);
 		void Render();
@@ -116,11 +115,9 @@ namespace NSG
         unsigned activeTexture_;
         unsigned enabledAttributes_; //positions' bits for enabled attributes
         Mesh* lastMesh_; // last mesh drawn
-        Material* lastMaterial_; // last used material
         Program* lastProgram_; // last used program
 		SceneNode* lastNode_; // last used node
         Mesh* activeMesh_; // mesh that is going to be drawn
-        Material* activeMaterial_; //material that is going to be used to draw
         SceneNode* activeNode_; //node that is going to be used to draw
         Scene* activeScene_;
         Camera* activeCamera_;

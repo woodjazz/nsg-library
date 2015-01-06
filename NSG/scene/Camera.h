@@ -99,6 +99,7 @@ namespace NSG
 		float yf_;
 		bool isOrtho_;
 		Vector4 orthoCoords_;
+        Graphics* graphics_;
 		int viewWidth_;
 		int viewHeight_;
 		float aspectRatio_;
@@ -107,7 +108,6 @@ namespace NSG
 		std::vector<PFilter> filters_;
 		PRender2Texture render2Texture_;
 		PShowTexture showTexture_;
-		Graphics* graphics_;
 		SignalViewChanged::PSlot slotViewChanged_;
 	};
 }

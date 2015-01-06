@@ -30,7 +30,7 @@ misrepresented as being the original software.
 #include "UniformsUpdate.h"
 namespace NSG
 {
-	class Material : public Object, UniformsUpdate
+	class Material : public std::enable_shared_from_this<Material>, public Object, UniformsUpdate
 	{
 	public:
 		Material(const std::string& name);
@@ -55,6 +55,7 @@ namespace NSG
         PTexture GetTexture2() const { return texture2_; }
         PTexture GetTexture3() const { return texture3_; }
         PTexture GetTexture4() const { return texture4_; }
+        PTexture GetTexture5() const { return texture5_; }
         PTexture GetDiffuseMap() const { return texture0_; }
         PTexture GetNormalMap() const { return texture1_; }
         PTexture GetLightMap() const { return texture2_; }
@@ -75,7 +76,6 @@ namespace NSG
 		float GetParallaxScale() const { return parallaxScale_; }
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
-		void SetTechnique(PTechnique technique) { technique_ = technique; }
 		PTechnique GetTechnique() const { return technique_; }
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
@@ -99,5 +99,5 @@ namespace NSG
         std::string name_;
         bool serializable_;
         friend class Program;
-	};
+ 	};
 }

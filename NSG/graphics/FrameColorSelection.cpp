@@ -77,11 +77,10 @@ namespace NSG
 		frameBuffer_ = PFrameBuffer(new FrameBuffer(windowWidth_, windowHeight_, frameBufferFlags_));
 
         PPass pass(new Pass);
-        pass->SetProgram(app_.GetOrCreateProgram("NSGFrameColorSelection"));
+        pass->SetProgram(std::make_shared<Program>(material_));
 
-        PTechnique technique(new Technique);
+        auto technique = material_->GetTechnique();
         technique->Add(pass);
-        material_->SetTechnique(technique);
         pass->SetBlendMode(BLEND_NONE);
 
     }
@@ -155,8 +154,6 @@ namespace NSG
             Begin(screenX, screenY);
             {
                 material_->SetColor(TransformSelectedId2Color(id));
-
-                Graphics::this_->Set(material_.get());
 
                 for (auto& obj : nodes)
                 {

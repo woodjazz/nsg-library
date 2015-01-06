@@ -34,7 +34,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Technique::Technique()
+    Technique::Technique(PMaterial material)
+    : material_(material)
     {
     }
 
@@ -86,7 +87,7 @@ namespace NSG
             {
                 PPass pass(new Pass);
                 Add(pass);
-                pass->Load(childPass);
+                pass->Load(childPass, GetMaterial());
                 childPass = childPass.next_sibling("Pass");
             }
         }

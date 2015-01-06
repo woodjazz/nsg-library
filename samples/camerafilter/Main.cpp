@@ -78,20 +78,19 @@ int NSG_MAIN(int argc, char* argv[])
     });
     camera->SetPosition(Vertex3(0, 0, 10));
 
-    auto program(app.GetOrCreateProgram("program0"));
-    program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-    PTechnique technique(new Technique);
-    PPass pass(new Pass);
-    pass->SetProgram(program);
-    technique->Add(pass);
-
     scene->GetOrCreateChild<Light>("light");
 
     {
         auto mesh = app.CreateBoxMesh();
         auto material = app.GetOrCreateMaterial("material");
         material->SetDiffuseMap(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/wall.jpg")));
-        material->SetTechnique(technique);
+
+        auto program(std::make_shared<Program>(material));
+        program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
+        auto technique = material->GetTechnique();
+        PPass pass(new Pass);
+        pass->SetProgram(program);
+        technique->Add(pass);
 
         node1 = scene->GetOrCreateChild<SceneNode>("node1");
         node1->SetPosition(Vertex3(3, -2, 0));
@@ -103,7 +102,12 @@ int NSG_MAIN(int argc, char* argv[])
         auto mesh = app.CreateSphereMesh();
         auto material = app.GetOrCreateMaterial("material");
         material->SetDiffuseMap(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/stone.jpg")));
-        material->SetTechnique(technique);
+        auto program(std::make_shared<Program>(material));
+        program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
+        auto technique = material->GetTechnique();
+        PPass pass(new Pass);
+        pass->SetProgram(program);
+        technique->Add(pass);
 
         auto node = scene->GetOrCreateChild<SceneNode>("node2");
         node->SetPosition(Vertex3(-3, 2, 0));
@@ -116,5 +120,5 @@ int NSG_MAIN(int argc, char* argv[])
         scene->Render(camera.get());
     });
 
-	return app.Run();
+    return app.Run();
 };

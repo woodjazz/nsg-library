@@ -140,6 +140,7 @@ namespace NSG
 
     class Material;
     typedef std::shared_ptr<Material> PMaterial;
+    typedef std::weak_ptr<Material> PWeakMaterial;
 
     class FontAtlas;
     typedef std::shared_ptr<FontAtlas> PFontAtlas;

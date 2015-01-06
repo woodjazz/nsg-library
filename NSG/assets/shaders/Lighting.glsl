@@ -69,7 +69,7 @@ uniform vec3 u_eyeWorldPos;
 vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 normal)                   
 {                               
     #ifdef AOMAP
-        vec4 color = u_material.ambient * base.ambient * texture2D(u_texture4, v_texcoord0);
+        vec4 color = texture2D(u_texture4, v_texcoord0);
     #else                                                            
         vec4 color = u_material.ambient * base.ambient;
     #endif

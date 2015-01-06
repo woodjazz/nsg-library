@@ -30,14 +30,3 @@ varying vec2 v_texcoord0;
 		varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS];
 	#endif
 #endif
-
-#if defined(COMPILEFS)
-	
-	uniform sampler2D u_texture0;
-	uniform sampler2D u_texture1;
-	uniform sampler2D u_texture2;
-	uniform sampler2D u_texture3;
-	uniform sampler2D u_texture4;
-	uniform sampler2D u_texture5;
-
-#endif

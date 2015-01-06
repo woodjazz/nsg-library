@@ -59,7 +59,7 @@ namespace NSG
         virtual void Render();
         void Render(Batch& batch);
         void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node);
+        void Load(const pugi::xml_node& node, PMaterial material);
     protected:
         virtual bool IsValid() override;
         void SetupPass();

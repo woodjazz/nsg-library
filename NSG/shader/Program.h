@@ -36,7 +36,7 @@ namespace NSG
     class Program : public Object
     {
     public:
-		Program(const std::string& name);
+		Program(PMaterial material);
         virtual ~Program();
         void SetVertexShader(PResource resource);
         void SetFragmentShader(PResource resource);
@@ -54,11 +54,10 @@ namespace NSG
         GLuint GetAttBonesWeightLoc() const { return att_bonesWeightLoc_; }
         GLuint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
         GLuint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
-        void SetVariables(Material* material, Mesh* mesh, Node* node);
-		void SetVariables(Material* material, Mesh* mesh);
+        void SetVariables(Mesh* mesh, Node* node);
         GLuint GetId() const { return id_; }
         void Save(pugi::xml_node& node);
-        static PProgram CreateFrom(const pugi::xml_node& node);
+        static PProgram CreateFrom(const pugi::xml_node& node, PMaterial material);
         const ProgramFlags& GetFlags() const { return flags_; }
         void SetFlags(const ProgramFlags& flags);
     private:
@@ -69,7 +68,7 @@ namespace NSG
         void SetSceneVariables(Scene* scene);
         void SetCameraVariables();
         void SetNodeVariables(Node* node);
-        void SetMaterialVariables(Material* material);
+        void SetMaterialVariables();
 		bool SetSkeletonVariables(Skeleton* skeleton);
         bool HasLighting() const;
 
@@ -83,6 +82,7 @@ namespace NSG
         void SetBaseLightVariables(const BaseLightLoc& baseLoc, const Light* light);
         bool SetLightVariables(Scene* scene);
 
+        PWeakMaterial material_;
         ProgramFlags flags_;
         GLuint id_;
         ExtraUniforms* pExtraUniforms_;
@@ -175,8 +175,8 @@ namespace NSG
         size_t nPointLights_;
         size_t nSpotLights_;
         Camera* activeCamera_;
-        bool neverUsed_;
-        Material* activeMaterial_;
+        bool viewVariablesNeverSet_;
+        bool materialVariablesNeverSet_;
 		Skeleton* activeSkeleton_;
         Node* activeNode_;
         Scene* activeScene_;
@@ -185,17 +185,6 @@ namespace NSG
         std::vector<const Light*> activeDirectionalLights_;
 		std::vector<const Light*> activePointLights_;
 		std::vector<const Light*> activeSpotLights_;
-
-        struct MaterialProgram
-        {
-            Color color_;
-            Color ambient_;
-            Color diffuse_;
-            Color specular_;
-            float shininess_;
-            float parallaxScale_;
-            MaterialProgram() : shininess_(0), parallaxScale_(0) {}
-        } material_; //used to avoid setting the same uniform value twice
 
         std::string name_;
         PResource vertexShader_;

@@ -40,6 +40,7 @@ misrepresented as being the original software.
 #include "SphereMesh.h"
 #include "TextMesh.h"
 #include "Material.h"
+#include "Technique.h"
 #include "Music.h"
 #include "Program.h"
 #include "RigidBody.h"
@@ -131,7 +132,6 @@ namespace NSG
     {
         meshes_.Clear();
         materials_.Clear();
-        programs_.Clear();
         whiteTexture_ = nullptr;
         statistics_ = nullptr;
         graphics_ = nullptr;
@@ -259,18 +259,15 @@ namespace NSG
 
     PMaterial App::GetOrCreateMaterial(const std::string& name)
     {
-        return materials_.GetOrCreate(name);
+        auto material = materials_.GetOrCreate(name);
+        material->GetTechnique()->SetMaterial(material);
+        return material;
     }
 
     PMaterial App::GetMaterial(const std::string& name)
     {
         return materials_.Get(name);
     }   
-
-    PProgram App::GetOrCreateProgram(const std::string& name)
-    {
-        return programs_.GetOrCreate(name);
-    }
 
     const std::vector<PMesh>& App::GetMeshes() const
     {

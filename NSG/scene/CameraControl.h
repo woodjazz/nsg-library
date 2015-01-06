@@ -54,7 +54,6 @@ namespace NSG
 		PPointOnSphere pointOnSphere_;
 		PCamera camera_;
 		bool updateOrientation_;
-		App& app_;
 		SignalMouseMoved::PSlot slotMouseMoved_;
 		SignalMouseDown::PSlot slotMouseDown_;
 		SignalMouseUp::PSlot slotMouseUp_;
