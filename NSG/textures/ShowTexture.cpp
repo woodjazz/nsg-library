@@ -34,27 +34,26 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "App.h"
 #include "Util.h"
+#include "Technique.h"
 
 namespace NSG
 {
     ShowTexture::ShowTexture()
         : app_(*App::this_),
-          pass_(new Pass),
 		  material_(app_.CreateMaterial(GetUniqueName("NSGShowTexture"))),
           program_(std::make_shared<Program>(material_)),
           mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           node_(std::make_shared<SceneNode>("NSGShowTexture"))
     {
-        pass_->SetProgram(program_);
+        auto pass = material_->GetTechnique()->GetPass(0);
+        pass->SetProgram(program_);
         material_->SetSerializable(false);
-        pass_->EnableDepthTest(false);
+        pass->EnableDepthTest(false);
     }
 
     ShowTexture::~ShowTexture()
     {
         Invalidate();
-        pass_ = nullptr;
-        
     }
 
     bool ShowTexture::IsValid()
@@ -85,7 +84,7 @@ namespace NSG
 
             Graphics::this_->SetNode(node_.get());
             Graphics::this_->Set(mesh_.get());
-            pass_->Render();
+            material_->GetTechnique()->Render();
 
 			Graphics::this_->SetCamera(pCurrent);
 

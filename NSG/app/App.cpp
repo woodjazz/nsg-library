@@ -259,9 +259,7 @@ namespace NSG
 
     PMaterial App::GetOrCreateMaterial(const std::string& name)
     {
-        auto material = materials_.GetOrCreate(name);
-        material->GetTechnique()->SetMaterial(material);
-        return material;
+        return materials_.GetOrCreate(name);
     }
 
     PMaterial App::GetMaterial(const std::string& name)

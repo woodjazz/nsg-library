@@ -39,7 +39,7 @@ namespace NSG
     class Pass : public Object, UniformsUpdate
     {
     public:
-        Pass();
+        Pass(Technique* technique);
         virtual ~Pass();
         void SetBlendMode(BLEND_MODE mode);
         void EnableColorBuffer(bool enable);
@@ -60,9 +60,12 @@ namespace NSG
         void Render(Batch& batch);
         void Save(pugi::xml_node& node);
         void Load(const pugi::xml_node& node, PMaterial material);
+        PPass Clone(PMaterial material) const;
     protected:
         virtual bool IsValid() override;
         void SetupPass();
+    private:
+        Technique* technique_;
         Graphics& graphics_;
         PProgram pProgram_;
         BLEND_MODE blendMode_;

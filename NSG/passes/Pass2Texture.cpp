@@ -30,8 +30,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Pass2Texture::Pass2Texture(int width, int height, UseBuffer buffer)
-        : render2Texture_(new Render2Texture(width, height, buffer))
+    Pass2Texture::Pass2Texture(Technique* technique, int width, int height, UseBuffer buffer)
+        : Pass(technique),
+          render2Texture_(new Render2Texture(width, height, buffer))
     {
 
     }
@@ -46,20 +47,20 @@ namespace NSG
         return render2Texture_->GetTexture();
     }
 
-    void Pass2Texture::Add(PPass pass, SceneNode* node, PMaterial material, PMesh mesh)
+    void Pass2Texture::Add(PPass pass, SceneNode* node, PMesh mesh)
     {
-		CHECK_ASSERT(mesh, __FILE__, __LINE__);
-        passes_.push_back(PassData {pass, node, material, mesh});
+        CHECK_ASSERT(mesh, __FILE__, __LINE__);
+        passes_.push_back(PassData {pass, node, mesh});
     }
 
     void Pass2Texture::Render()
     {
         if (render2Texture_->Begin())
         {
-            for(auto& pass: passes_)
+            for (auto& pass : passes_)
             {
                 Graphics::this_->Set(pass.mesh_.get());
-				Graphics::this_->SetNode(pass.node_);
+                Graphics::this_->SetNode(pass.node_);
                 pass.pass_->Render();
             }
 

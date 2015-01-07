@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.73.0 commit date:2014-12-23, commit time:15:42, hash:273fa0a</authoring_tool>
     </contributor>
-    <created>2015-01-06T21:48:37</created>
-    <modified>2015-01-06T21:48:37</modified>
+    <created>2015-01-07T18:57:22</created>
+    <modified>2015-01-07T18:57:22</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -207,7 +207,7 @@
           <green>1</green>
           <halo_intensity sid="blnder_halo_intensity">1</halo_intensity>
           <horizon_brightness>1</horizon_brightness>
-          <mode>1</mode>
+          <mode>8192</mode>
           <ray_samp>1</ray_samp>
           <ray_samp_method>1</ray_samp_method>
           <ray_samp_type>0</ray_samp_type>
@@ -373,7 +373,7 @@
               <texture texture="wall_COLOR_png-sampler" texcoord="UVMap"/>
             </diffuse>
             <specular>
-              <color sid="specular">1 1 1 1</color>
+              <color sid="specular">0.5971223 0.5971223 0.5971223 1</color>
             </specular>
             <shininess>
               <float sid="shininess">50</float>
@@ -787,7 +787,7 @@
         </instance_controller>
       </node>
       <node id="Spot" name="Spot" type="NODE">
-        <translate sid="location">4.529298 1.118239 5.777256</translate>
+        <translate sid="location">1.05408 0.480208 8.547157</translate>
         <rotate sid="rotationZ">0 0 1 0</rotate>
         <rotate sid="rotationY">0 1 0 0</rotate>
         <rotate sid="rotationX">1 0 0 0</rotate>
@@ -795,7 +795,7 @@
         <instance_light url="#Spot-light"/>
       </node>
       <node id="Sun" name="Sun" type="NODE">
-        <translate sid="location">-4.672418 1.118239 6.912714</translate>
+        <translate sid="location">-11.82716 1.162737 1.971714</translate>
         <rotate sid="rotationZ">0 0 1 0</rotate>
         <rotate sid="rotationY">0 1 0 -89.91709</rotate>
         <rotate sid="rotationX">1 0 0 0</rotate>

@@ -32,7 +32,7 @@ namespace NSG
 	class PassFilter : public Pass
 	{
 	public:
-		PassFilter(PFilter filter);
+		PassFilter(Technique* technique, PFilter filter);
 		~PassFilter();
 		void Render() override;
 	private:

@@ -96,6 +96,7 @@ namespace NSG
 
 	class Technique;
 	typedef std::shared_ptr<Technique> PTechnique;
+	typedef std::weak_ptr<Technique> PWeakTechnique;
 
 	class PassFilter;
 	typedef std::shared_ptr<PassFilter> PPassFilter;

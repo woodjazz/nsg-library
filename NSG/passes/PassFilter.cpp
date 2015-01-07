@@ -28,19 +28,20 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	PassFilter::PassFilter(PFilter filter) 
-	: filter_(filter)
-	{
+    PassFilter::PassFilter(Technique* technique, PFilter filter)
+        : Pass(technique),
+          filter_(filter)
+    {
 
-	}
+    }
 
-	PassFilter::~PassFilter()
-	{
+    PassFilter::~PassFilter()
+    {
 
-	}
+    }
 
-	void PassFilter::Render()
-	{
-		filter_->Render();
-	}
+    void PassFilter::Render()
+    {
+        filter_->Render();
+    }
 }

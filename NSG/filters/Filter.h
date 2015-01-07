@@ -43,7 +43,6 @@ namespace NSG
 	protected:
 		App& app_;
 		PTechnique technique_;
-		PPass pass_;
         PMaterial pMaterial_; 
 		PMesh pMesh_;
 		PRender2Texture pRender2Texture_;

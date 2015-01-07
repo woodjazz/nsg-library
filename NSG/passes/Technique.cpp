@@ -43,10 +43,19 @@ namespace NSG
     {
     }
 
-    void Technique::Add(PPass pass)
+    void Technique::AddPass(PPass pass)
     {
         CHECK_ASSERT(passes_.size() < Technique::MAX_PASSES, __FILE__, __LINE__);
+        //CHECK_ASSERT(std::find(passes_.begin(), passes_.end(), pass) == passes_.end(), __FILE__, __LINE__);
         passes_.push_back(pass);
+    }
+
+    PPass Technique::GetPass(unsigned int idx) 
+    { 
+        if(passes_.size() <= idx)
+            passes_.push_back(std::make_shared<Pass>(this));
+
+        return passes_.at(idx); 
     }
 
     size_t Technique::GetNumPasses() const
@@ -85,8 +94,8 @@ namespace NSG
             pugi::xml_node childPass = childPasses.child("Pass");
             while (childPass)
             {
-                PPass pass(new Pass);
-                Add(pass);
+                auto pass = std::make_shared<Pass>(this);
+                AddPass(pass);
                 pass->Load(childPass, GetMaterial());
                 childPass = childPass.next_sibling("Pass");
             }
@@ -115,4 +124,10 @@ namespace NSG
         }
     }
 
+    void Technique::CopyPasses(const PASSES& passes)
+    {
+        passes_.clear();
+        for (auto& pass : passes)
+            passes_.push_back(pass->Clone(material_.lock()));
+    }
 }

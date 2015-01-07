@@ -77,8 +77,8 @@
 				</SceneNode>
 			</SceneNode>
 		</SceneNode>
-		<SceneNode name="Body" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="0">
-			<SceneNode name="Body2" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="1" meshIndex="1" />
+		<SceneNode name="Body" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="1" meshIndex="0">
+			<SceneNode name="Body2" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="2" meshIndex="1" />
 		</SceneNode>
 	</SceneNode>
 	<Meshes>
@@ -1573,6 +1573,9 @@
 		</Mesh>
 	</Meshes>
 	<Materials>
+		<Material name="NSGAppStatistics" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" shininess="1" color="[    1.000,    1.000,    1.000,    1.000]">
+			<Technique />
+		</Material>
 		<Material name="Material0" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    0.800,    0.800,    0.800,    1.000]" specular="[    0.000,    0.000,    0.000,    1.000]" shininess="0" color="[    0.365,    0.365,    0.365,    1.000]">
 			<Texture0 filename="axe.bmp" flags="00000000000000000000000000000011" />
 			<Technique>

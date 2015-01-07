@@ -43,9 +43,10 @@ namespace NSG
         : app_(*App::this_),
           frames_(0),
           collect_(true),
-          pass_(new Pass),
+          //pass_(Pass:new Pass),
           material_(app_.GetOrCreateMaterial("NSGAppStatistics"))
     {
+#if 0
         startTime_ = Clock::now();
 
         pass_->EnableDepthTest(false);
@@ -53,7 +54,7 @@ namespace NSG
 
         material_->SetColor(Color(1, 1, 1, 1));
         material_->SetSerializable(false);
-#if 0
+
         for (int i = 0; i < (int)Stats::MAX_STATS; i++)
         {
             stats_[i] = 0;

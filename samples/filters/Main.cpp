@@ -70,24 +70,37 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto technique = std::make_shared<Technique>(nullptr);
 
-    PPass normalPass(new Pass);
-    auto normalProgram(std::make_shared<Program>(nullptr));
-    normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
-    normalPass->SetProgram(normalProgram);
+    auto normalBoxPass = std::make_shared<Pass>(technique.get());
+    {
+        auto normalProgram(std::make_shared<Program>(boxMaterial));
+        normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
+        normalBoxPass->SetProgram(normalProgram);
+    }
 
-    PPass depthPass(new Pass);
-    depthPass->EnableColorBuffer(false);
-    auto depthProgram(std::make_shared<Program>(nullptr));
-    depthProgram->SetFlags((int)ProgramFlag::STENCIL);
-    depthPass->SetProgram(depthProgram);
+    auto normalSpherePass = std::make_shared<Pass>(technique.get());
+    {
+        auto normalProgram(std::make_shared<Program>(sphereMaterial));
+        normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
+        normalSpherePass->SetProgram(normalProgram);
+    }
+
+    auto depthPass = std::make_shared<Pass>(technique.get());
+    {
+        depthPass->EnableColorBuffer(false);
+        auto depthProgram(std::make_shared<Program>(nullptr));
+        depthProgram->SetFlags((int)ProgramFlag::STENCIL);
+        depthPass->SetProgram(depthProgram);
+    }
 
     PTexture tx000;
     PFilter boxFilter;
 
     {
         //box passes
-        PPass2Texture pass2Texture(new Pass2Texture(1024, 1024));
-        technique->Add(pass2Texture);
+        PPass2Texture pass2Texture(new Pass2Texture(technique.get(), 1024, 1024));
+        technique->AddPass(pass2Texture);
+        pass2Texture->Add(depthPass, sphere.get(), sphereMesh);
+        pass2Texture->Add(normalBoxPass, box.get(), boxMesh);
 
         tx000 = pass2Texture->GetTexture();
         boxFilter = PFilter(new Filter(GetUniqueName(), pass2Texture->GetTexture(), 1024, 1024));
@@ -103,11 +116,8 @@ int NSG_MAIN(int argc, char* argv[])
         PResourceMemory resource(new ResourceMemory(fShader, strlen(fShader)));
         boxFilter->GetProgram()->SetFragmentShader(resource);
 
-        pass2Texture->Add(depthPass, sphere.get(), nullptr, sphereMesh);
-        pass2Texture->Add(normalPass, box.get(), boxMaterial, boxMesh);
-
-        PPassFilter filterPass(new PassFilter(boxFilter));
-        technique->Add(filterPass);
+        PPassFilter filterPass(new PassFilter(technique.get(), boxFilter));
+        technique->AddPass(filterPass);
     }
 
     #if 1
@@ -115,28 +125,28 @@ int NSG_MAIN(int argc, char* argv[])
     {
         //sphere passes
 
-        PPass2Texture pass2Texture(new Pass2Texture(1024, 1024));
-        technique->Add(pass2Texture);
-        pass2Texture->Add(depthPass, box.get(), nullptr, boxMesh);
-        pass2Texture->Add(normalPass, sphere.get(), sphereMaterial, sphereMesh);
+        PPass2Texture pass2Texture(new Pass2Texture(technique.get(), 1024, 1024));
+        technique->AddPass(pass2Texture);
+        pass2Texture->Add(depthPass, box.get(), boxMesh);
+        pass2Texture->Add(normalSpherePass, sphere.get(), sphereMesh);
 
         PFilter blurFilter(new FilterBlur(pass2Texture->GetTexture(), 16, 16));
 
-        PPassFilter filterPass(new PassFilter(blurFilter));
-        technique->Add(filterPass);
+        PPassFilter filterPass(new PassFilter(technique.get(), blurFilter));
+        technique->AddPass(filterPass);
 
 
         sphereBlendFilter = PFilter(new FilterBlend(blurFilter->GetTexture(), pass2Texture->GetTexture(), 1024, 1024));
 
-        PPassFilter passBlend(new PassFilter(sphereBlendFilter));
-        technique->Add(passBlend);
+        PPassFilter passBlend(new PassFilter(technique.get(), sphereBlendFilter));
+        technique->AddPass(passBlend);
 
         //showTexture_->SetNormal(pass2Texture->GetTexture());
     }
 
     PFilter blendFilter(new FilterBlend(sphereBlendFilter->GetTexture(), boxFilter->GetTexture(), 1024, 1024));
-    PPassFilter passBlend(new PassFilter(blendFilter));
-    technique->Add(passBlend);
+    PPassFilter passBlend(new PassFilter(technique.get(), blendFilter));
+    technique->AddPass(passBlend);
     #endif
 
     showTexture->SetNormal(blendFilter->GetTexture());

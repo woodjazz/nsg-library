@@ -39,13 +39,12 @@ namespace NSG
 		static const size_t MAX_PASSES = 10;
 		Technique(PMaterial material);
 		~Technique();
-		void SetMaterial(PMaterial material) { material_ = material; }
-		void Add(PPass pass);
+		void AddPass(PPass pass);
 		size_t GetNumPasses() const;
 		const PASSES& GetConstPasses() const { return passes_; }
-		PASSES& GetPasses() { return passes_; }
-		void SetPass(unsigned int idx, PPass pass) { passes_.at(idx) = pass; }
-		PPass GetPass(unsigned int idx) { return passes_.at(idx); }
+		//PASSES& GetPasses() { return passes_; }
+		//void SetPass(unsigned int idx, PPass pass) { passes_.at(idx) = pass; }
+		PPass GetPass(unsigned int idx);
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
 		void Render(Camera* camera);
@@ -53,6 +52,7 @@ namespace NSG
 		void EnableProgramFlags(const ProgramFlags& flags);
 		void DisableProgramFlags(const ProgramFlags& flags);
 		PMaterial GetMaterial() { return material_.lock(); }
+		void CopyPasses(const PASSES& passes);
 	private:
 		PWeakMaterial material_;
 		PASSES passes_;

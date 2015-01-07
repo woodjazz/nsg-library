@@ -60,6 +60,8 @@ namespace NSG
         static PProgram CreateFrom(const pugi::xml_node& node, PMaterial material);
         const ProgramFlags& GetFlags() const { return flags_; }
         void SetFlags(const ProgramFlags& flags);
+        PProgram Clone(PMaterial material) const;
+        PMaterial GetMaterial() const { return material_.lock(); }
     private:
         size_t GetNeededVarying() const;
         bool IsValid() override;

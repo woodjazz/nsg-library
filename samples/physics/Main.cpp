@@ -55,8 +55,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto program(std::make_shared<Program>(pMaterial));
         program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
         auto technique = pMaterial->GetTechnique();
-        PPass pass(new Pass);
-        technique->Add(pass);
+        auto pass = technique->GetPass(0);
         pass->SetProgram(program);
         pMaterial->SetDiffuseMap(pEarthTexture);
         pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
@@ -86,8 +85,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto program(std::make_shared<Program>(material));
         program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
         auto technique = material->GetTechnique();
-        PPass pass(new Pass);
-        technique->Add(pass);
+        auto pass = technique->GetPass(0);
         pass->SetProgram(program);
         floor->SetMaterial(material);
     }

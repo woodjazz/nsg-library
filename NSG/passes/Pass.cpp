@@ -34,12 +34,14 @@ misrepresented as being the original software.
 #include "Program.h"
 #include "pugixml.hpp"
 #include "Batch.h"
+#include "Technique.h"
 #include <sstream>
 
 namespace NSG
 {
-    Pass::Pass()
-        : graphics_(*Graphics::this_),
+    Pass::Pass(Technique* technique)
+        : technique_(technique),
+          graphics_(*Graphics::this_),
           blendMode_(BLEND_ALPHA),
           enableDepthTest_(true),
           enableStencilTest_(false),
@@ -57,12 +59,34 @@ namespace NSG
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT)
     {
-
     }
 
     Pass::~Pass()
     {
-		Invalidate();
+        Invalidate();
+    }
+
+    PPass Pass::Clone(PMaterial material) const
+    {
+        auto pass = std::make_shared<Pass>(technique_);
+        pass->pProgram_ = pProgram_->Clone(material);
+        pass->blendMode_ = blendMode_;
+        pass->enableDepthTest_ = enableDepthTest_;
+        pass->enableStencilTest_ = enableStencilTest_;
+        pass->stencilMask_ = stencilMask_;
+        pass->sfailStencilOp_ = sfailStencilOp_;
+        pass->dpfailStencilOp_ = dpfailStencilOp_;
+        pass->dppassStencilOp_ = dppassStencilOp_;
+        pass->stencilFunc_ = stencilFunc_;
+        pass->stencilRefValue_ = stencilRefValue_;
+        pass->stencilMaskValue_ = stencilMaskValue_;
+        pass->enableColorBuffer_ = enableColorBuffer_;
+        pass->enableDepthBuffer_ = enableDepthBuffer_;
+        pass->drawMode_ = drawMode_;
+        pass->enableCullFace_ = enableCullFace_;
+        pass->cullFaceMode_ = cullFaceMode_;
+        pass->frontFaceMode_ = frontFaceMode_;
+        return pass;
     }
 
     void Pass::SetBlendMode(BLEND_MODE mode)
@@ -136,7 +160,7 @@ namespace NSG
 
     void Pass::SetupPass()
     {
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         graphics_.SetColorMask(enableColorBuffer_);
         graphics_.SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
@@ -157,7 +181,7 @@ namespace NSG
 
         graphics_.SetProgram(pProgram_.get());
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     void Pass::Render()
@@ -171,7 +195,7 @@ namespace NSG
 
     void Pass::Render(Batch& batch)
     {
-		if (IsReady() && batch.IsReady())
+        if (IsReady() && batch.IsReady())
         {
             SetupPass();
             graphics_.Draw(drawMode_ == DrawMode::SOLID, batch);
@@ -180,6 +204,8 @@ namespace NSG
 
     void Pass::SetProgram(PProgram pProgram)
     {
+        CHECK_CONDITION(pProgram, __FILE__, __LINE__);
+ //       CHECK_CONDITION(pProgram->GetMaterial() == technique_->GetMaterial(), __FILE__, __LINE__);
         if (pProgram_ != pProgram)
         {
             pProgram_ = pProgram;

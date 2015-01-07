@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
+#include "Technique.h"
 
 namespace NSG
 {
@@ -40,7 +41,7 @@ namespace NSG
 	blurRadius_(2, 2),
 	sigma_(0.1f)
 	{
-        pass_->GetProgram()->Set(this);
+        technique_->GetPass(0)->GetProgram()->Set(this);
 	}
 
 	FilterBlur::~FilterBlur()
@@ -50,7 +51,7 @@ namespace NSG
 
 	void FilterBlur::SetLocations()
 	{
-		PProgram program = pass_->GetProgram();
+		PProgram program = technique_->GetPass(0)->GetProgram();
 
 		blurDirLoc_ = program->GetUniformLocation("u_blurDir");
 		blurRadiusLoc_ = program->GetUniformLocation("u_blurRadius");

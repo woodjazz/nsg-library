@@ -109,6 +109,18 @@ namespace NSG
         memset(&materialLoc_, -1, sizeof(materialLoc_));
     }
 
+    Program::~Program()
+    {
+        Invalidate();
+    }
+
+    PProgram Program::Clone(PMaterial material) const
+    {
+        auto program = std::make_shared<Program>(material);
+        program->flags_ = flags_;
+        return program;
+    }
+
     void Program::SetVertexShader(PResource resource)
     {
         vertexShader_ = resource;
@@ -353,18 +365,26 @@ namespace NSG
         fBuffer += COMMON_GLSL;
         {
             auto material = material_.lock();
-            if (material->GetTexture0())
+            if (material)
+            {
+                if (material->GetTexture0())
+                    fBuffer += "uniform sampler2D u_texture0;\n";
+                if (material->GetTexture1())
+                    fBuffer += "uniform sampler2D u_texture1;\n";
+                if (material->GetTexture2())
+                    fBuffer += "uniform sampler2D u_texture2;\n";
+                if (material->GetTexture3())
+                    fBuffer += "uniform sampler2D u_texture3;\n";
+                if (material->GetTexture4())
+                    fBuffer += "uniform sampler2D u_texture4;\n";
+                if (material->GetTexture5())
+                    fBuffer += "uniform sampler2D u_texture5;\n";
+            }
+            else
+            {
                 fBuffer += "uniform sampler2D u_texture0;\n";
-            if (material->GetTexture1())
                 fBuffer += "uniform sampler2D u_texture1;\n";
-            if (material->GetTexture2())
-                fBuffer += "uniform sampler2D u_texture2;\n";
-            if (material->GetTexture3())
-                fBuffer += "uniform sampler2D u_texture3;\n";
-            if (material->GetTexture4())
-                fBuffer += "uniform sampler2D u_texture4;\n";
-            if (material->GetTexture5())
-                fBuffer += "uniform sampler2D u_texture5;\n";
+            }
         }
         fBuffer += TRANSFORMS_GLSL;
         fBuffer += LIGHTING_GLSL;
@@ -550,7 +570,7 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        TRACE_LOG("Creating program for material " << material_.lock()->GetName());
+        TRACE_LOG("Creating program for material " << name_);
 
         // Creates the program name/index.
         id_ = glCreateProgram();
@@ -615,11 +635,6 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         return true;
-    }
-
-    Program::~Program()
-    {
-        Invalidate();
     }
 
     GLuint Program::GetAttributeLocation(const std::string& name)

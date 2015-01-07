@@ -64,8 +64,7 @@ namespace NSG
         program_ = std::make_shared<Program>(material_);
 
         auto technique = material_->GetTechnique();
-        PPass pass(new Pass);
-        technique->Add(pass);
+        auto pass = technique->GetPass(0);
         pass->SetProgram(program_);
 
         unsigned int max = 1;

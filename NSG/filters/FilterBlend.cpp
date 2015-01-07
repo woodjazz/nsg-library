@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
+#include "Technique.h"
 namespace NSG
 {
 	FilterBlend::FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height)
@@ -38,7 +39,7 @@ namespace NSG
 	blendMode_(0)
 	{
 		pMaterial_->SetTexture1(input1);
-        pass_->GetProgram()->Set(this);
+        technique_->GetPass(0)->GetProgram()->Set(this);
 	}
 
 	FilterBlend::~FilterBlend()
@@ -48,7 +49,7 @@ namespace NSG
 
 	void FilterBlend::SetLocations()
 	{
-		PProgram program = pass_->GetProgram();
+		PProgram program = technique_->GetPass(0)->GetProgram();
 
 		blendMode_loc_ = program->GetUniformLocation("u_blendMode");
 	}

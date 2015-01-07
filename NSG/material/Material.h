@@ -35,7 +35,7 @@ namespace NSG
 	public:
 		Material(const std::string& name);
 		~Material();
-		PMaterial Clone(const std::string& name) const;
+		PMaterial Clone(const std::string& name);
 		void SetName(const std::string& name) {name_ = name;}
 		const std::string& GetName() const { return name_;  }
 		bool SetTexture0(PTexture texture); 
@@ -76,13 +76,14 @@ namespace NSG
 		float GetParallaxScale() const { return parallaxScale_; }
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
-		PTechnique GetTechnique() const { return technique_; }
+		PTechnique GetTechnique();
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_; }
 	private:
 		bool IsValid() override;
+		void AllocateResources() override;
 		PTexture texture0_; //difusse map
 		PTexture texture1_; //normal map
 		PTexture texture2_; //light map

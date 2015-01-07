@@ -42,6 +42,5 @@ namespace NSG
 		const Path& GetPath() const override { return path_; }
 	private:	
 		Path path_;
-		bool trySecondTime_;
 	};
 }

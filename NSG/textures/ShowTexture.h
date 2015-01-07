@@ -40,7 +40,6 @@ namespace NSG
 	private:
 		bool IsValid() override;
 		App& app_;
-        PPass pass_;
         PMaterial material_;
         PProgram program_;
 		PMesh mesh_;

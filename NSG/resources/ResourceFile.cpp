@@ -32,77 +32,56 @@ misrepresented as being the original software.
 namespace NSG
 {
     ResourceFile::ResourceFile(const Path& path)
-        : path_(path),
-          trySecondTime_(true)
+        : path_(path)
     {
     }
 
     ResourceFile::~ResourceFile()
     {
-		Invalidate();
+        Invalidate();
     }
 
     bool ResourceFile::IsValid()
     {
-		return path_.HasName();
+        return path_.HasName();
     }
 
     void ResourceFile::AllocateResources()
     {
-        bool loaded = false;
-
-        #if ANDROID
+        #if SDL
         {
-            SDL_RWops* assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
+            SDL_RWops* context = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
 
-            if (!assetHandle)
+            if (!context)
             {
-                if (trySecondTime_)
-                {
-                    trySecondTime_ = false;
-                    if (path_.AppendDirIfDoesNotExist("data"))
-                        assetHandle = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
-                }
+                if (path_.AppendDirIfDoesNotExist("data"))
+                    context = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
             }
 
-            if (assetHandle)
+            if (context)
             {
-                off_t filelength = assetHandle->hidden.androidio.size;
+                SDL_RWseek(context, 0, RW_SEEK_END);
+                Sint64 filelength = SDL_RWtell(context);
+                SDL_RWseek(context, 0, RW_SEEK_SET);
                 buffer_.resize((int)filelength);
-                SDL_RWread(assetHandle, &buffer_[0], filelength, 1);
-                SDL_RWclose(assetHandle);
-                loaded = true;
+                SDL_RWread(context, &buffer_[0], filelength, 1);
+                SDL_RWclose(context);
+                TRACE_LOG(path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
+            }
+            else
+            {
+                TRACE_LOG("Cannot load " << path_.GetFilePath() << " with error " << SDL_GetError());
             }
         }
         #else
         {
-            SetCurrentDir(path_.GetAbsolutePath());
-
-            std::ifstream file(path_.GetFilename(), std::ios::binary);
+            std::ifstream file(path_.GetFilePath().c_str(), std::ios::binary);
 
             if (!file.is_open())
             {
                 if (path_.AppendDirIfDoesNotExist("data"))
                     file.open(path_.GetFilePath().c_str(), std::ios::binary);
             }
-
-            #if defined(__APPLE__) && defined(SDL)
-            {
-                if (!file.is_open())
-                {
-                    char* base_path = SDL_GetBasePath();
-                    CHECK_CONDITION(base_path, __FILE__, __LINE__);
-                    std::string path(base_path);
-                    SDL_free(base_path);
-                    if (path_.IsPathRelative())
-                    {
-                        path += "data/";
-                    }
-                    path += path_.GetFilename();
-                    file.open(path.c_str(), std::ios::binary);
-                }
-            }
-            #endif
 
             if (file.is_open())
             {
@@ -113,24 +92,19 @@ namespace NSG
                 file.read(&buffer_[0], filelength);
                 CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
                 file.close();
-                loaded = true;
+                TRACE_LOG(path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
+            }
+            else
+            {
+                TRACE_LOG("Cannot load " << path_.GetFilePath() << " with error " << SDL_GetError());
             }
         }
         #endif
-
-        if (loaded)
-        {
-            TRACE_LOG("Resource::File " << path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
-        }
-        else
-        {
-            TRACE_LOG("Resource::Cannot load file " << path_);
-        }
     }
 
     void ResourceFile::ReleaseResources()
     {
-        TRACE_PRINTF("Releasing resource:: File: %s\n", path_.GetFilePath().c_str());
+        TRACE_PRINTF("Releasing memory for file: %s\n", path_.GetFilePath().c_str());
         Resource::ReleaseResources();
     }
 }

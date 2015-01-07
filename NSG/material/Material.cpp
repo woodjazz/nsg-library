@@ -26,32 +26,31 @@ namespace NSG
           name_(name),
           serializable_(true)
     {
-        technique_ = std::make_shared<Technique>(nullptr);
     }
 
     Material::~Material()
     {
-		Invalidate();
+        Invalidate();
     }
 
-    PMaterial Material::Clone(const std::string& name) const
+    PMaterial Material::Clone(const std::string& name)
     {
-        auto clone = std::make_shared<Material>(name);
-        clone->texture0_ = texture0_;
-        clone->texture1_ = texture1_;
-        clone->texture2_ = texture2_;
-        clone->texture3_ = texture3_;
-        clone->texture4_ = texture4_;
-        clone->texture5_ = texture5_;
-        clone->ambient_ = ambient_;
-        clone->diffuse_ = diffuse_;
-        clone->specular_ = specular_;
-        clone->shininess_ = shininess_;
-        clone->parallaxScale_ = parallaxScale_;
-        clone->color_ = color_;
-        clone->technique_ = technique_;
-        clone->serializable_ = serializable_;
-		return clone;
+        auto material = std::make_shared<Material>(name);
+        material->texture0_ = texture0_;
+        material->texture1_ = texture1_;
+        material->texture2_ = texture2_;
+        material->texture3_ = texture3_;
+        material->texture4_ = texture4_;
+        material->texture5_ = texture5_;
+        material->ambient_ = ambient_;
+        material->diffuse_ = diffuse_;
+        material->specular_ = specular_;
+        material->shininess_ = shininess_;
+        material->parallaxScale_ = parallaxScale_;
+        material->color_ = color_;
+        material->GetTechnique()->CopyPasses(GetTechnique()->GetConstPasses());
+        material->serializable_ = serializable_;
+        return material;
     }
 
     void Material::SetColor(Color color)
@@ -180,118 +179,76 @@ namespace NSG
         return false;
     }
 
-	void Material::SetDiffuseMap(PTexture texture)
+    void Material::SetDiffuseMap(PTexture texture)
     {
-        if(SetTexture0(texture))
+        if (SetTexture0(texture))
         {
-            if(technique_)
-            {
-                if(texture)
-                    technique_->EnableProgramFlags((int)ProgramFlag::DIFFUSEMAP);
-                else
-                    technique_->DisableProgramFlags((int)ProgramFlag::DIFFUSEMAP);
-            }
+            if (texture)
+                GetTechnique()->EnableProgramFlags((int)ProgramFlag::DIFFUSEMAP);
             else
-            {
-                TRACE_LOG("Warning setting diffuse map without technique!!!");
-            }
+                GetTechnique()->DisableProgramFlags((int)ProgramFlag::DIFFUSEMAP);
         }
     }
 
-	void Material::SetNormalMap(PTexture texture)
+    void Material::SetNormalMap(PTexture texture)
     {
-        if(SetTexture1(texture))
+        if (SetTexture1(texture))
         {
-            if(technique_)
-            {
-                if(texture)
-					technique_->EnableProgramFlags((int)ProgramFlag::NORMALMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
-                else
-					technique_->DisableProgramFlags((int)ProgramFlag::NORMALMAP);
-            }
+            if (texture)
+                GetTechnique()->EnableProgramFlags((int)ProgramFlag::NORMALMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
             else
-            {
-                TRACE_LOG("Warning setting normalmap without technique!!!");
-            }
+                GetTechnique()->DisableProgramFlags((int)ProgramFlag::NORMALMAP);
         }
     }
 
-	void Material::SetLightMap(PTexture texture)
+    void Material::SetLightMap(PTexture texture)
     {
-        if(SetTexture2(texture))
+        if (SetTexture2(texture))
         {
-            if(technique_)
-            {
-                if(texture)
-					technique_->EnableProgramFlags((int)ProgramFlag::LIGHTMAP);
-                else
-					technique_->DisableProgramFlags((int)ProgramFlag::LIGHTMAP);
-            }
+            if (texture)
+                GetTechnique()->EnableProgramFlags((int)ProgramFlag::LIGHTMAP);
             else
-            {
-                TRACE_LOG("Warning setting lightmap without technique!!!");
-            }
+                GetTechnique()->DisableProgramFlags((int)ProgramFlag::LIGHTMAP);
         }
     }
 
     void Material::SetSpecularMap(PTexture texture)
     {
-        if(SetTexture3(texture))
+        if (SetTexture3(texture))
         {
-            if(technique_)
-            {
-                if(texture)
-                    technique_->EnableProgramFlags((int)ProgramFlag::SPECULARMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
-                else
-                    technique_->DisableProgramFlags((int)ProgramFlag::SPECULARMAP);
-            }
+            if (texture)
+                GetTechnique()->EnableProgramFlags((int)ProgramFlag::SPECULARMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
             else
-            {
-                TRACE_LOG("Warning setting specular map without technique!!!");
-            }
+                GetTechnique()->DisableProgramFlags((int)ProgramFlag::SPECULARMAP);
         }
     }
 
     void Material::SetAOMap(PTexture texture)
     {
-        if(SetTexture4(texture))
+        if (SetTexture4(texture))
         {
-            if(technique_)
-            {
-                if(texture)
-                    technique_->EnableProgramFlags((int)ProgramFlag::AOMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
-                else
-                    technique_->DisableProgramFlags((int)ProgramFlag::AOMAP);
-            }
+            if (texture)
+                GetTechnique()->EnableProgramFlags((int)ProgramFlag::AOMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
             else
-            {
-                TRACE_LOG("Warning setting ambient occlusion map without technique!!!");
-            }
+                GetTechnique()->DisableProgramFlags((int)ProgramFlag::AOMAP);
         }
     }
 
     void Material::SetDisplacementMap(PTexture texture)
     {
-        if(SetTexture5(texture))
+        if (SetTexture5(texture))
         {
-            if(technique_)
+            if (texture)
             {
-                if(texture)
-                {
-                    technique_->EnableProgramFlags((int)ProgramFlag::DISPLACEMENTMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
-                    // Do not generate mipmaps for displacement map
-					TextureFlags flags = texture->GetFlags();
-					flags &= ~(int)TextureFlag::GENERATE_MIPMAPS;
-                    texture->SetFlags(flags);
-                    texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
-                }
-                else
-                    technique_->DisableProgramFlags((int)ProgramFlag::DISPLACEMENTMAP);
+                GetTechnique()->EnableProgramFlags((int)ProgramFlag::DISPLACEMENTMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+                // Do not generate mipmaps for displacement map
+                TextureFlags flags = texture->GetFlags();
+                flags &= ~(int)TextureFlag::GENERATE_MIPMAPS;
+                texture->SetFlags(flags);
+                texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
             }
             else
-            {
-                TRACE_LOG("Warning setting displacement map without technique!!!");
-            }
+                GetTechnique()->DisableProgramFlags((int)ProgramFlag::DISPLACEMENTMAP);
         }
     }
 
@@ -318,6 +275,19 @@ namespace NSG
             isReady = isReady && texture5_->IsReady();
 
         return isReady;
+    }
+
+    void Material::AllocateResources()
+    {
+        GetTechnique();
+    }
+
+    PTechnique Material::GetTechnique()
+    {
+        if (!technique_)
+            technique_ = std::make_shared<Technique>(shared_from_this());
+
+        return technique_;
     }
 
     void Material::Save(pugi::xml_node& node)
@@ -399,8 +369,7 @@ namespace NSG
             child.append_attribute("color") = ss.str().c_str();
         }
 
-        if (technique_)
-            technique_->Save(child);
+        GetTechnique()->Save(child);
     }
 
     void Material::Load(const pugi::xml_node& node)
@@ -439,6 +408,6 @@ namespace NSG
 
         pugi::xml_node childTechnique = node.child("Technique");
         if (childTechnique)
-            technique_->Load(childTechnique);
+            GetTechnique()->Load(childTechnique);
     }
 }

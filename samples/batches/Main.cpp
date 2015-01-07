@@ -51,10 +51,8 @@ int NSG_MAIN(int argc, char* argv[])
     program2->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
     PTechnique technique1 = pMaterial1->GetTechnique();
     PTechnique technique2 = pMaterial2->GetTechnique();;
-    PPass pass1 = std::make_shared<Pass>();
-    PPass pass2 = std::make_shared<Pass>();
-    technique1->Add(pass1);
-    technique2->Add(pass2);
+    auto pass1 = technique1->GetPass(0);
+    auto pass2 = technique2->GetPass(0);
     pass1->SetProgram(program1);
     pass2->SetProgram(program2);
     pMaterial1->SetDiffuseMap(pEarthTexture1);
