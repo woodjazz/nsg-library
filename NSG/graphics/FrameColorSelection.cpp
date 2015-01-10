@@ -76,10 +76,8 @@ namespace NSG
 
 		frameBuffer_ = PFrameBuffer(new FrameBuffer(windowWidth_, windowHeight_, frameBufferFlags_));
 
-
-        auto technique = material_->GetTechnique();
+		auto technique = material_->GetTechnique();
         auto pass = technique->GetPass(0);
-        pass->SetProgram(std::make_shared<Program>(material_));
         pass->SetBlendMode(BLEND_NONE);
 
     }

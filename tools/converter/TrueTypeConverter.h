@@ -25,22 +25,25 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Object.h"
-
+#include "Path.h"
+#include "stb_truetype.h"
+#include <vector>
 namespace NSG
 {
-	class Path;
-	class Resource : public Object
+	class TrueTypeConverter
 	{
 	public:
-		Resource();
-		virtual ~Resource();
-		virtual const char* const GetData() const { return buffer_.c_str(); }
-		virtual size_t GetBytes() const { return buffer_.size(); }
-        virtual const Path& GetPath() const;
-        void ReleaseResources() override;
-		const std::string& GetBuffer() const { return buffer_; }
-	protected:
-		std::string buffer_;
+		TrueTypeConverter(const Path& path, int sChar, int eChar, int fontPixelsHeight, int bitmapWidth, int bitmapHeight);
+		bool Load();
+		bool Save(const Path& outputFile) const;
+	private:
+		Path path_;
+		int sChar_;
+		int eChar_;
+		int fontPixelsHeight_;
+		int bitmapWidth_;
+		int bitmapHeight_;
+		PResourceMemory texture_;
+		std::vector<stbtt_bakedchar> cdata_;
 	};
 }

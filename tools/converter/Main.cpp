@@ -1,8 +1,34 @@
-#include <fstream>
+/*
+-------------------------------------------------------------------------------
+This file is part of nsg-library.
+http://nsg-library.googlecode.com/
+
+Copyright (c) 2014-2015 Néstor Silveira Gorski
+
+-------------------------------------------------------------------------------
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+claim that you wrote the original software. If you use this software
+in a product, an acknowledgment in the product documentation would be
+appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be
+misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+-------------------------------------------------------------------------------
+*/
+
 #include "tclap/CmdLine.h"
 #include "NSG.h"
 #include "SceneConverter.h"
-
+#include "TrueTypeConverter.h"
+#include <fstream>
 
 class IFileConstraint : public TCLAP::Constraint<std::string>
 {
@@ -48,34 +74,158 @@ public:
     }
 };
 
+class BitmapPixelsConstraint : public TCLAP::Constraint<int>
+{
+public:
+    BitmapPixelsConstraint() {};
+
+    std::string description() const
+    {
+        stringstream ss;
+
+        ss << "Must be equal or greater than 32";
+
+        return ss.str();
+    }
+
+    std::string shortID() const { return "Bitmap pixels (width or height)"; }
+
+    bool check(const int& pixels) const
+    {
+        return pixels >= 32;
+    }
+};
+
+class FontPixelsConstraint : public TCLAP::Constraint<int>
+{
+public:
+    FontPixelsConstraint() {};
+
+    std::string description() const
+    {
+        stringstream ss;
+
+        ss << "Must be equal or greater than 8";
+
+        return ss.str();
+    }
+
+    std::string shortID() const { return "Font pixels height"; }
+
+    bool check(const int& pixels) const
+    {
+        return pixels >= 8;
+    }
+};
+
+class CharacterConstraint : public TCLAP::Constraint<int>
+{
+public:
+    CharacterConstraint() {};
+
+    std::string description() const
+    {
+        stringstream ss;
+
+        ss << "Must be greater than 31";
+
+        return ss.str();
+    }
+
+    std::string shortID() const { return "Character"; }
+
+    bool check(const int& ch) const
+    {
+        return ch > 31;
+    }
+};
+
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    static const char* VERSION = "1.0";
+    try
+    {
+        static const char* VERSION = "1.0";
 
-    TCLAP::CmdLine cmd("NSG Converter", ' ', VERSION);
+        TCLAP::CmdLine cmd("NSG Converter", ' ', VERSION);
 
-    IFileConstraint iConstraintFile;
-    TCLAP::ValueArg<std::string> iArg("i", "input", "Input file to be converted", false, "", &iConstraintFile);
+        IFileConstraint iConstraintFile;
+        TCLAP::ValueArg<std::string> iArg("i", "input", "Input file to be converted", false, "", &iConstraintFile);
 
-    OFileConstraint oConstraintFile;
-    TCLAP::ValueArg<std::string> oArg("o", "output", "Output file", false, "", &oConstraintFile);
+        OFileConstraint oConstraintFile;
+        TCLAP::ValueArg<std::string> oArg("o", "output", "Output file", false, "", &oConstraintFile);
 
-    cmd.add(iArg);
-    cmd.add(oArg);
+        BitmapPixelsConstraint pixelsConstraint;
+        TCLAP::ValueArg<int> wArg("x", "width", "Bitmap width. By default is 512.", false, 512, &pixelsConstraint);
 
-    cmd.parse(argc, argv);
+        TCLAP::ValueArg<int> hArg("y", "height", "Bitmap height. By default is 512.", false, 512, &pixelsConstraint);
 
-    std::string inputFile = iArg.getValue();
-    std::string outputFile = oArg.getValue();
+        FontPixelsConstraint fontPixelsConstraint;
+        TCLAP::ValueArg<int> fArg("f", "fheight", "Font height in pixels. By default is 32.", false, 32, &fontPixelsConstraint);
 
-    using namespace NSG;
+        CharacterConstraint charConstraint;
+        TCLAP::ValueArg<int> sArg("s", "sChar", "Starting character to bake. By default is 32.", false, 32, &charConstraint);
+        TCLAP::ValueArg<int> eArg("e", "eChar", "Final character to bake. By default is 127.", false, 127, &charConstraint);
 
-	App app;
-	auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
+        cmd.add(iArg);
+        cmd.add(oArg);
+        cmd.add(wArg);
+        cmd.add(hArg);
+        cmd.add(fArg);
+        cmd.add(sArg);
+        cmd.add(eArg);
 
-    SceneConverter scene(inputFile);
-    if (scene.Load())
-        scene.Save(outputFile);
+        cmd.parse(argc, argv);
+
+        using namespace NSG;
+
+        Path inputFile(iArg.getValue());
+        Path outputFile(oArg.getValue());
+
+        int fontPixelsHeight = fArg.getValue();
+        int bitmapWidth = wArg.getValue();
+        int bitmapHeight = hArg.getValue();
+        int sChar = sArg.getValue();
+        int eChar = eArg.getValue();
+
+        if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
+        {
+            std::string outName = outputFile.GetName();
+            outName += std::to_string(fontPixelsHeight);
+            outputFile.SetName(outName);
+
+            TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
+            if (obj.Load() && obj.Save(outputFile))
+                return 0;
+        }
+        else
+        {
+            App app;
+            auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
+            SceneConverter scene(inputFile);
+            if (scene.Load() && scene.Save(outputFile.GetFilePath()))
+                return 0;
+        }
+    }
+    catch (TCLAP::ArgException& e)
+    {
+        std::cerr << endl << "error: " << e.error() << " for arg " << e.argId() << std::endl;
+    }
+    catch (std::exception& e)
+    {
+        const char* pWhat = "*** UNKNOWN EXCEPTION (1) ***";
+
+        if (!string(e.what()).empty())
+            pWhat = e.what();
+
+        std::cerr << endl << "error: " << pWhat << std::endl;
+    }
+    catch (...)
+    {
+        std::cerr << endl << "*** UNKNOWN EXCEPTION (2) *** " << endl;
+    }
+
+    return -1;
+
 }

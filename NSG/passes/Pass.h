@@ -55,12 +55,12 @@ namespace NSG
         void SetCullFace(CullFaceMode mode);
         void SetFrontFace(FrontFaceMode mode);
         void SetProgram(PProgram pProgram);
-        PProgram GetProgram() const;
+        PProgram GetProgram();
         virtual void Render();
         void Render(Batch& batch);
         void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node, PMaterial material);
-        PPass Clone(PMaterial material) const;
+        void Load(const pugi::xml_node& node, Material* material);
+        PPass Clone(Material* material) const;
     protected:
         virtual bool IsValid() override;
         void SetupPass();

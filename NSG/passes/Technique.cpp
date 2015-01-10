@@ -34,7 +34,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Technique::Technique(PMaterial material)
+    Technique::Technique(Material* material)
     : material_(material)
     {
     }
@@ -46,11 +46,10 @@ namespace NSG
     void Technique::AddPass(PPass pass)
     {
         CHECK_ASSERT(passes_.size() < Technique::MAX_PASSES, __FILE__, __LINE__);
-        //CHECK_ASSERT(std::find(passes_.begin(), passes_.end(), pass) == passes_.end(), __FILE__, __LINE__);
         passes_.push_back(pass);
     }
 
-    PPass Technique::GetPass(unsigned int idx) 
+    PPass Technique::GetPass(unsigned idx) 
     { 
         if(passes_.size() <= idx)
             passes_.push_back(std::make_shared<Pass>(this));
@@ -102,32 +101,10 @@ namespace NSG
         }
     }
 
-	void Technique::EnableProgramFlags(const ProgramFlags& flags)
-    {
-        for (auto& pass : passes_)
-        {
-            PProgram program = pass->GetProgram();
-			ProgramFlags currentFlags = program->GetFlags();
-            currentFlags |= flags;
-            program->SetFlags(currentFlags);
-        }
-    }
-
-	void Technique::DisableProgramFlags(const ProgramFlags& flags)
-    {
-        for (auto& pass : passes_)
-        {
-            PProgram program = pass->GetProgram();
-			ProgramFlags currentFlags = program->GetFlags();
-            currentFlags &= ~flags;
-            program->SetFlags(currentFlags);
-        }
-    }
-
     void Technique::CopyPasses(const PASSES& passes)
     {
         passes_.clear();
         for (auto& pass : passes)
-            passes_.push_back(pass->Clone(material_.lock()));
+            passes_.push_back(pass->Clone(material_));
     }
 }

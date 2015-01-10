@@ -54,7 +54,7 @@ namespace NSG
         char getOsSeparator() const override;
         Assimp::IOStream* Open(const char* filename, const char* mode = "rb") override;
         void Close(Assimp::IOStream* pFile) override;
-        bool Save(const std::string& filename);
+        bool Save(const std::string& filename) const;
         bool Load();
 		PScene GetScene() { return scene_; }
     private:

@@ -37,12 +37,9 @@ namespace NSG
 	class FontAtlas : public std::enable_shared_from_this<FontAtlas>, public Object
 	{
 	public:
-		FontAtlas(int viewWidth, int viewHeight);
-		FontAtlas(const Path& path, int viewWidth, int viewHeight);
+		FontAtlas(PResourceFile xmlResource, int viewWidth, int viewHeight);
 		~FontAtlas();
 		void GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
-		GLfloat GetWidthForCharacterPosition(const char* text, unsigned int charPos);
-		unsigned int GetCharacterPositionForWidth(const char* text, float width);
 		PTexture GetTexture() const { return texture_; }
 		void SetViewSize(int width, int height);
 		PTextMesh GetOrCreateMesh(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
@@ -50,17 +47,15 @@ namespace NSG
 		bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-        bool ParseXML();
-        PTexture texture_;
-        PResource xmlResource_;
-		Path path_;
+        void ParseXML();
+		PResourceFile xmlResource_;
 		int viewWidth_;
 		int viewHeight_;
-
+        PTexture texture_;
+        int height_;
         struct CharInfo
         {
         	int width;
-        	int height;
         	Vertex2 offset;
         	Rect rect;
         };

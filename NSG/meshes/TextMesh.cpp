@@ -80,9 +80,9 @@ namespace NSG
         if (vAlignment_ == MIDDLE_ALIGNMENT)
             alignmentOffsetY = screenHeight_ / 2;
         else if (vAlignment_ == TOP_ALIGNMENT)
-            alignmentOffsetY = 1;
+            alignmentOffsetY = 1 - screenHeight_;
         else
-            alignmentOffsetY = -1 + screenHeight_;
+            alignmentOffsetY = -1;// + screenHeight_;
 
         for (auto& obj : vertexsData_)
         {

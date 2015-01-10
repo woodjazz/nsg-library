@@ -86,7 +86,7 @@
 	{
 		#if defined(TEXT)
 
-			gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).a);
+			gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).r);
 
 		#elif defined(BLEND)
 

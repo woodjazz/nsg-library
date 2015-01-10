@@ -402,8 +402,8 @@ namespace NSG
 			PMaterial material = obj->GetMaterial();
 			if (material)
 			{
-				PTechnique technique = material->GetTechnique();
-				technique->EnableProgramFlags((int)ProgramFlag::SKINNED);
+				Technique* technique = material->GetTechnique();
+				technique->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SKINNED);
 			}
 		}
     }
@@ -538,7 +538,7 @@ namespace NSG
         delete pFile;
     }
 
-    bool SceneConverter::Save(const std::string& filename)
+    bool SceneConverter::Save(const std::string& filename) const
     {
         pugi::xml_document doc;
         scene_->Save(doc);

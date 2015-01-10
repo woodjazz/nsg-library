@@ -61,7 +61,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Program::Program(PMaterial material)
+    Program::Program(Material* material)
         : material_(material),
           flags_((int)ProgramFlag::NONE),
           id_(0),
@@ -114,7 +114,7 @@ namespace NSG
         Invalidate();
     }
 
-    PProgram Program::Clone(PMaterial material) const
+    PProgram Program::Clone(Material* material) const
     {
         auto program = std::make_shared<Program>(material);
         program->flags_ = flags_;
@@ -133,8 +133,7 @@ namespace NSG
 
     bool Program::IsValid()
     {
-        auto material = material_.lock();
-        return (!material || material->IsReady()) &&
+        return (!material_ || material_->IsReady()) &&
                graphics_.GetScene() &&
                (!vertexShader_ || vertexShader_->IsReady()) && (!fragmentShader_ || fragmentShader_->IsReady());
     }
@@ -364,20 +363,19 @@ namespace NSG
         std::string fBuffer = preDefines  + "#define COMPILEFS\n";
         fBuffer += COMMON_GLSL;
         {
-            auto material = material_.lock();
-            if (material)
+            if (material_)
             {
-                if (material->GetTexture0())
+                if (material_->GetTexture0())
                     fBuffer += "uniform sampler2D u_texture0;\n";
-                if (material->GetTexture1())
+                if (material_->GetTexture1())
                     fBuffer += "uniform sampler2D u_texture1;\n";
-                if (material->GetTexture2())
+                if (material_->GetTexture2())
                     fBuffer += "uniform sampler2D u_texture2;\n";
-                if (material->GetTexture3())
+                if (material_->GetTexture3())
                     fBuffer += "uniform sampler2D u_texture3;\n";
-                if (material->GetTexture4())
+                if (material_->GetTexture4())
                     fBuffer += "uniform sampler2D u_texture4;\n";
-                if (material->GetTexture5())
+                if (material_->GetTexture5())
                     fBuffer += "uniform sampler2D u_texture5;\n";
             }
             else
@@ -690,49 +688,48 @@ namespace NSG
 
     void Program::SetMaterialVariables()
     {
-        auto material = material_.lock();
-        if (material)
+        if (material_)
         {
             unsigned textureUnit = 0;
             if (texture0Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material->texture0_.get());
+                graphics_.SetTexture(textureUnit++, material_->texture0_.get());
 
             if (texture1Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material->texture1_.get());
+                graphics_.SetTexture(textureUnit++, material_->texture1_.get());
 
             if (texture2Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material->texture2_.get());
+                graphics_.SetTexture(textureUnit++, material_->texture2_.get());
 
             if (texture3Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material->texture3_.get());
+                graphics_.SetTexture(textureUnit++, material_->texture3_.get());
 
             if (texture4Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material->texture4_.get());
+                graphics_.SetTexture(textureUnit++, material_->texture4_.get());
 
             if (texture5Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material->texture5_.get());
+                graphics_.SetTexture(textureUnit++, material_->texture5_.get());
 
-            if (materialVariablesNeverSet_ || material->UniformsNeedUpdate())
+            if (materialVariablesNeverSet_ || material_->UniformsNeedUpdate())
             {
                 materialVariablesNeverSet_ = false;
 
                 if (materialLoc_.color_ != -1)
-                    glUniform4fv(materialLoc_.color_, 1, &material->color_[0]);
+                    glUniform4fv(materialLoc_.color_, 1, &material_->color_[0]);
 
                 if (materialLoc_.ambient_ != -1)
-                    glUniform4fv(materialLoc_.ambient_, 1, &material->ambient_[0]);
+                    glUniform4fv(materialLoc_.ambient_, 1, &material_->ambient_[0]);
 
                 if (materialLoc_.diffuse_ != -1)
-                    glUniform4fv(materialLoc_.diffuse_, 1, &material->diffuse_[0]);
+                    glUniform4fv(materialLoc_.diffuse_, 1, &material_->diffuse_[0]);
 
                 if (materialLoc_.specular_ != -1)
-                    glUniform4fv(materialLoc_.specular_, 1, &material->specular_[0]);
+                    glUniform4fv(materialLoc_.specular_, 1, &material_->specular_[0]);
 
                 if (materialLoc_.shininess_ != -1)
-                    glUniform1f(materialLoc_.shininess_, material->shininess_);
+                    glUniform1f(materialLoc_.shininess_, material_->shininess_);
 
                 if (materialLoc_.parallaxScale_ != -1)
-                    glUniform1f(materialLoc_.parallaxScale_, material->parallaxScale_);
+                    glUniform1f(materialLoc_.parallaxScale_, material_->parallaxScale_);
             }
         }
     }
@@ -1044,7 +1041,7 @@ namespace NSG
         child.append_attribute("flags") = flags_.to_string().c_str();
     }
 
-    PProgram Program::CreateFrom(const pugi::xml_node& node, PMaterial material)
+    PProgram Program::CreateFrom(const pugi::xml_node& node, Material* material)
     {
         std::string flags = node.attribute("flags").as_string();
         PProgram program = std::make_shared<Program>(material);
@@ -1060,4 +1057,15 @@ namespace NSG
             Invalidate();
         }
     }
+
+    void Program::EnableFlags(const ProgramFlags& flags)
+    {
+		SetFlags(flags_ | (int)flags);
+    }
+
+    void Program::DisableFlags(const ProgramFlags& flags)
+    {
+        SetFlags(flags_ & ~(int)flags);
+    }
+
 }

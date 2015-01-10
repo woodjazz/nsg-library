@@ -182,6 +182,10 @@ namespace NSG
                 {
                     format_ = GL_RGB;
                 }
+				else if (channels_ == 1)
+				{
+					format_ = GL_RED;
+				}
                 else
                 {
                     format_ = GL_RGB;

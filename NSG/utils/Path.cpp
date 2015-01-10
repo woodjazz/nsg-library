@@ -83,6 +83,18 @@ namespace NSG
 
     }
 
+    void Path::SetName(const std::string& name)
+    {
+		filePath_ = path_ + "/" + name + "." + ext_;
+        ReDoState();
+    }
+
+    void Path::SetExtension(const std::string& ext)
+    {
+        filePath_ = pathName_ + "." + ext;
+        ReDoState();
+    }
+
 	void Path::ReDoState()
     {
         Path::ReplaceChar(filePath_, '\\', '/');

@@ -45,8 +45,8 @@ namespace NSG
         void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
         void SetAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign);
         void GetAlignment(HorizontalAlignment& hAlign, VerticalAlignment& vAlign);
-        GLfloat GetWidth() const { return screenWidth_; }
-        GLfloat GetHeight() const { return screenHeight_; }
+        float GetWidth() const { return screenWidth_; }
+        float GetHeight() const { return screenHeight_; }
         GLenum GetWireFrameDrawMode() const override;
         GLenum GetSolidDrawMode() const override;
         virtual size_t GetNumberOfTriangles() const override;
@@ -57,8 +57,8 @@ namespace NSG
         bool IsValid() override;
         PFontAtlas pAtlas_;
         std::string text_;
-        GLfloat screenWidth_;
-        GLfloat screenHeight_;
+        float screenWidth_;
+        float screenHeight_;
         HorizontalAlignment hAlignment_;
         VerticalAlignment vAlignment_;
     };

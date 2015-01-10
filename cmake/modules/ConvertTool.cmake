@@ -32,7 +32,9 @@ macro(CONVERT_TOOL input_file)
 	    # message("${OUTPUTNAME}")  
 	    set(OUTPUTFILE ${CMAKE_CURRENT_SOURCE_DIR}/data/${OUTPUTNAME})
 	    
-	    set(CONVERT_CMD ${CONVERT_EXECUTABLE} -i ${INPUTFILE} -o ${OUTPUTFILE})
+	    set(CONVERT_CMD ${CONVERT_EXECUTABLE} -i ${INPUTFILE} -o ${OUTPUTFILE} ${ARGN})
+
+	    #message("${CONVERT_CMD}")
 
 	    add_dependencies(${PROJECT_NAME} converter)
 
@@ -42,11 +44,12 @@ macro(CONVERT_TOOL input_file)
 	            DEPENDS ${CONVERT_EXECUTABLE} ${INPUTFILE}
 	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-	    add_custom_command(
-	        TARGET ${PROJECT_NAME} POST_BUILD
-	            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${OUTPUTFILE} ${CMAKE_CURRENT_BINARY_DIR}/data/${OUTPUTNAME}
-	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+	    # add_custom_command(
+	    #     TARGET ${PROJECT_NAME} POST_BUILD
+	    #         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${OUTPUTFILE} ${CMAKE_CURRENT_BINARY_DIR}/data/${OUTPUTNAME}
+	    #         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 	endif()
 
 endmacro(CONVERT_TOOL)
+

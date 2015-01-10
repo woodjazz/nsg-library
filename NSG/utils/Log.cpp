@@ -25,8 +25,9 @@ misrepresented as being the original software.
 */
 #include "Log.h"
 
+#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 #ifdef ANDROID
-
+#include <cstdio>
 #include <jni.h>
 #include <errno.h>
 
@@ -44,3 +45,4 @@ misrepresented as being the original software.
 	    return ret_status;  
 	}
 #endif
+#endif	

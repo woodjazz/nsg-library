@@ -66,7 +66,7 @@ namespace NSG
         Invalidate();
     }
 
-    PPass Pass::Clone(PMaterial material) const
+    PPass Pass::Clone(Material* material) const
     {
         auto pass = std::make_shared<Pass>(technique_);
         pass->pProgram_ = pProgram_->Clone(material);
@@ -153,8 +153,11 @@ namespace NSG
         frontFaceMode_ = mode;
     }
 
-    PProgram Pass::GetProgram() const
+    PProgram Pass::GetProgram()
     {
+		if (!pProgram_)
+			pProgram_ = std::make_shared<Program>(technique_->GetMaterial());
+
         return pProgram_;
     }
 
@@ -205,7 +208,6 @@ namespace NSG
     void Pass::SetProgram(PProgram pProgram)
     {
         CHECK_CONDITION(pProgram, __FILE__, __LINE__);
- //       CHECK_CONDITION(pProgram->GetMaterial() == technique_->GetMaterial(), __FILE__, __LINE__);
         if (pProgram_ != pProgram)
         {
             pProgram_ = pProgram;
@@ -216,7 +218,8 @@ namespace NSG
 
     bool Pass::IsValid()
     {
-        return pProgram_ && pProgram_->IsReady();
+        auto program = GetProgram();
+        return program->IsReady();
     }
 
     void Pass::Save(pugi::xml_node& node)
@@ -324,12 +327,12 @@ namespace NSG
 
     }
 
-    void Pass::Load(const pugi::xml_node& node, PMaterial material)
+    void Pass::Load(const pugi::xml_node& node, Material* material)
     {
         pugi::xml_node programChild = node.child("Program");
 
         if (programChild)
-            SetProgram(Program::CreateFrom(programChild, material));
+			pProgram_ = Program::CreateFrom(programChild, material);
 
         SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
         EnableDepthTest(node.attribute("enableDepthTest").as_bool());

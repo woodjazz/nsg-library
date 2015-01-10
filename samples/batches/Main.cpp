@@ -43,18 +43,8 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto pEarthTexture1(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg")));
     auto pEarthTexture2(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/jup0vss1.jpg")));
-    auto pMaterial1(app.GetOrCreateMaterial("earth1"));
-    auto pMaterial2(app.GetOrCreateMaterial("earth2"));
-    auto program1(std::make_shared<Program>(pMaterial1));
-    auto program2(std::make_shared<Program>(pMaterial2));
-    program1->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-    program2->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-    PTechnique technique1 = pMaterial1->GetTechnique();
-    PTechnique technique2 = pMaterial2->GetTechnique();;
-    auto pass1 = technique1->GetPass(0);
-    auto pass2 = technique2->GetPass(0);
-    pass1->SetProgram(program1);
-    pass2->SetProgram(program2);
+	auto pMaterial1(app.GetOrCreateMaterial("earth1", (int)ProgramFlag::PER_PIXEL_LIGHTING));
+	auto pMaterial2(app.GetOrCreateMaterial("earth2", (int)ProgramFlag::PER_PIXEL_LIGHTING));
     pMaterial1->SetDiffuseMap(pEarthTexture1);
     pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));

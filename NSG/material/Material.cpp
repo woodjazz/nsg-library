@@ -26,11 +26,19 @@ namespace NSG
           name_(name),
           serializable_(true)
     {
+        technique_ = std::make_shared<Technique>(this);
     }
 
     Material::~Material()
     {
         Invalidate();
+    }
+
+    void Material::SetProgramFlags(unsigned passIndex, const ProgramFlags& flags)
+    {
+		auto pass = technique_->GetPass(passIndex);
+        auto program = pass->GetProgram();
+        program->SetFlags(flags);
     }
 
     PMaterial Material::Clone(const std::string& name)
@@ -48,7 +56,7 @@ namespace NSG
         material->shininess_ = shininess_;
         material->parallaxScale_ = parallaxScale_;
         material->color_ = color_;
-        material->GetTechnique()->CopyPasses(GetTechnique()->GetConstPasses());
+        material->technique_->CopyPasses(technique_->GetConstPasses());
         material->serializable_ = serializable_;
         return material;
     }
@@ -184,9 +192,9 @@ namespace NSG
         if (SetTexture0(texture))
         {
             if (texture)
-                GetTechnique()->EnableProgramFlags((int)ProgramFlag::DIFFUSEMAP);
+                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::DIFFUSEMAP);
             else
-                GetTechnique()->DisableProgramFlags((int)ProgramFlag::DIFFUSEMAP);
+                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::DIFFUSEMAP);
         }
     }
 
@@ -195,9 +203,9 @@ namespace NSG
         if (SetTexture1(texture))
         {
             if (texture)
-                GetTechnique()->EnableProgramFlags((int)ProgramFlag::NORMALMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::NORMALMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
             else
-                GetTechnique()->DisableProgramFlags((int)ProgramFlag::NORMALMAP);
+                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::NORMALMAP);
         }
     }
 
@@ -206,9 +214,9 @@ namespace NSG
         if (SetTexture2(texture))
         {
             if (texture)
-                GetTechnique()->EnableProgramFlags((int)ProgramFlag::LIGHTMAP);
+                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::LIGHTMAP);
             else
-                GetTechnique()->DisableProgramFlags((int)ProgramFlag::LIGHTMAP);
+                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::LIGHTMAP);
         }
     }
 
@@ -217,9 +225,9 @@ namespace NSG
         if (SetTexture3(texture))
         {
             if (texture)
-                GetTechnique()->EnableProgramFlags((int)ProgramFlag::SPECULARMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+				technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SPECULARMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
             else
-                GetTechnique()->DisableProgramFlags((int)ProgramFlag::SPECULARMAP);
+                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::SPECULARMAP);
         }
     }
 
@@ -228,9 +236,9 @@ namespace NSG
         if (SetTexture4(texture))
         {
             if (texture)
-                GetTechnique()->EnableProgramFlags((int)ProgramFlag::AOMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::AOMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
             else
-                GetTechnique()->DisableProgramFlags((int)ProgramFlag::AOMAP);
+                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::AOMAP);
         }
     }
 
@@ -240,7 +248,7 @@ namespace NSG
         {
             if (texture)
             {
-                GetTechnique()->EnableProgramFlags((int)ProgramFlag::DISPLACEMENTMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::DISPLACEMENTMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
                 // Do not generate mipmaps for displacement map
                 TextureFlags flags = texture->GetFlags();
                 flags &= ~(int)TextureFlag::GENERATE_MIPMAPS;
@@ -248,7 +256,7 @@ namespace NSG
                 texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
             }
             else
-                GetTechnique()->DisableProgramFlags((int)ProgramFlag::DISPLACEMENTMAP);
+                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::DISPLACEMENTMAP);
         }
     }
 
@@ -275,19 +283,6 @@ namespace NSG
             isReady = isReady && texture5_->IsReady();
 
         return isReady;
-    }
-
-    void Material::AllocateResources()
-    {
-        GetTechnique();
-    }
-
-    PTechnique Material::GetTechnique()
-    {
-        if (!technique_)
-            technique_ = std::make_shared<Technique>(shared_from_this());
-
-        return technique_;
     }
 
     void Material::Save(pugi::xml_node& node)
@@ -369,7 +364,7 @@ namespace NSG
             child.append_attribute("color") = ss.str().c_str();
         }
 
-        GetTechnique()->Save(child);
+        technique_->Save(child);
     }
 
     void Material::Load(const pugi::xml_node& node)
@@ -408,6 +403,6 @@ namespace NSG
 
         pugi::xml_node childTechnique = node.child("Technique");
         if (childTechnique)
-            GetTechnique()->Load(childTechnique);
+            technique_->Load(childTechnique);
     }
 }

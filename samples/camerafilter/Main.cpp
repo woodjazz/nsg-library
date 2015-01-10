@@ -82,12 +82,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     {
         auto mesh = app.CreateBoxMesh();
-        auto material = app.GetOrCreateMaterial("material");
- 
-        auto program(std::make_shared<Program>(material));
-        program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-        auto technique = material->GetTechnique();
-        technique->GetPass(0)->SetProgram(program);
+        auto material = app.GetOrCreateMaterial("material1", (int)ProgramFlag::PER_PIXEL_LIGHTING);
         material->SetDiffuseMap(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/wall.jpg")));
 
         node1 = scene->GetOrCreateChild<SceneNode>("node1");
@@ -98,11 +93,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     {
         auto mesh = app.CreateSphereMesh();
-        auto material = app.GetOrCreateMaterial("material");
-        auto program(std::make_shared<Program>(material));
-        program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-        auto technique = material->GetTechnique();
-        technique->GetPass(0)->SetProgram(program);
+        auto material = app.GetOrCreateMaterial("material2", (int)ProgramFlag::PER_PIXEL_LIGHTING);
         material->SetDiffuseMap(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/stone.jpg")));
 
         auto node = scene->GetOrCreateChild<SceneNode>("node2");

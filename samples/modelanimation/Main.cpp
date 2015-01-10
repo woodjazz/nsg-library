@@ -49,8 +49,8 @@ int NSG_MAIN(int argc, char* argv[])
     scene->SetAmbientColor(Color(0));
     auto material0 = app.GetMaterial("Material0");
     auto material1 = app.GetMaterial("Material1");
-    material0->GetTechnique()->EnableProgramFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-    material1->GetTechnique()->EnableProgramFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
+    material0->GetTechnique()->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
+    material1->GetTechnique()->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
 
     camera->SetPosition(Vector3(0, 70, 100));
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());

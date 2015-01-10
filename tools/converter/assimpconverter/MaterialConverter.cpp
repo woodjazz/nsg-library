@@ -61,11 +61,11 @@ namespace NSG
         }
 
         material_ = App::this_->GetOrCreateMaterial(materialName);
-        program_ = std::make_shared<Program>(material_);
+        
 
         auto technique = material_->GetTechnique();
         auto pass = technique->GetPass(0);
-        pass->SetProgram(program_);
+		program_ = pass->GetProgram();
 
         unsigned int max = 1;
         int shadingModel = 0;

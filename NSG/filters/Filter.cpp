@@ -49,9 +49,7 @@ namespace NSG
     {
         technique_ = pMaterial_->GetTechnique();
         pMaterial_->SetTexture0(input);
-		program_ = std::make_shared<Program>(pMaterial_);
-		program_->SetFlags(flags);
-        technique_->GetPass(0)->SetProgram(program_);
+		technique_->GetPass(0)->GetProgram()->SetFlags(flags);
     }
 
     Filter::~Filter()

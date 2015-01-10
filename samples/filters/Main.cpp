@@ -72,14 +72,14 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto normalBoxPass = std::make_shared<Pass>(technique.get());
     {
-        auto normalProgram(std::make_shared<Program>(boxMaterial));
+        auto normalProgram(std::make_shared<Program>(boxMaterial.get()));
         normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
         normalBoxPass->SetProgram(normalProgram);
     }
 
     auto normalSpherePass = std::make_shared<Pass>(technique.get());
     {
-        auto normalProgram(std::make_shared<Program>(sphereMaterial));
+        auto normalProgram(std::make_shared<Program>(sphereMaterial.get()));
         normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
         normalSpherePass->SetProgram(normalProgram);
     }

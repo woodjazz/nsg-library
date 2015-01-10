@@ -64,7 +64,7 @@ namespace NSG
                 Sint64 filelength = SDL_RWtell(context);
                 SDL_RWseek(context, 0, RW_SEEK_SET);
                 buffer_.resize((int)filelength);
-                SDL_RWread(context, &buffer_[0], filelength, 1);
+				SDL_RWread(context, &buffer_[0], buffer_.size(), 1);
                 SDL_RWclose(context);
                 TRACE_LOG(path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
             }

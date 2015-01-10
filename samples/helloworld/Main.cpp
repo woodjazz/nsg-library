@@ -31,9 +31,10 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 150, 30);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 1024, 768);
 
-    auto atlas = std::make_shared<FontAtlas>(window->GetWidth(), window->GetHeight());
+    auto xml = std::make_shared<ResourceFile>("AnonymousPro32.xml");
+    auto atlas = std::make_shared<FontAtlas>(xml, window->GetWidth(), window->GetHeight());
     auto textCenter = atlas->GetOrCreateMesh("C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
     auto textLeftTop = atlas->GetOrCreateMesh("LT Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT);
     auto textRightTop = atlas->GetOrCreateMesh("RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT);
@@ -47,16 +48,13 @@ int NSG_MAIN(int argc, char* argv[])
     auto nodeLeftBottom = scene->GetOrCreateChild<SceneNode>("nodeLeftBottom");
     auto nodeRightBottom = scene->GetOrCreateChild<SceneNode>("nodeRightBottom");
 
-    auto material = app.GetOrCreateMaterial("material");
+	auto material = app.GetOrCreateMaterial("material", (int)ProgramFlag::TEXT);
     material->SetColor(Color(1, 1, 1, 1));
     material->SetTexture0(atlas->GetTexture());
     auto technique = material->GetTechnique();
     auto pass = technique->GetPass(0);
     pass->EnableDepthTest(false);
     pass->EnableStencilTest(false);
-    auto program = std::make_shared<Program>(material);
-    program->SetFlags((int)ProgramFlag::TEXT);
-    pass->SetProgram(program);
 
     nodeCenter->SetMaterial(material);
     nodeLeftTop->SetMaterial(material);
@@ -94,12 +92,7 @@ int NSG_MAIN(int argc, char* argv[])
 			auto mesh = std::dynamic_pointer_cast<TextMesh>(selectedNode->GetMesh());
 			auto center = selectedNode->GetWorldBoundingBox().Center();
 			auto size = selectedNode->GetWorldBoundingBox().Size();
-			float y = center.y;
-			if (y < 0)
-				y -= size.y / 2.0f;
-			else 
-				y += size.y / 2.0f;
-			selectedNode->SetPosition(Vector3(center.x, y, 0));
+			//selectedNode->SetPosition(Vector3(center.x, y, 0));
             mesh->GetAlignment(hAlign, vAlign);
 			mesh->SetAlignment(CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
         }

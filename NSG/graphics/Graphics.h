@@ -56,7 +56,7 @@ namespace NSG
         void EnableCullFace(bool enable);
         void SetCullFace(CullFaceMode mode);
         void SetFrontFace(FrontFaceMode mode);
-        void SetTexture(unsigned index, Texture* texture);
+        void SetTexture(int index, Texture* texture);
         void SetViewport(const Recti& viewport, bool force);
         void InvalidateVAOFor(const Program* program);
         bool SetBuffers(Mesh* mesh);

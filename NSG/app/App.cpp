@@ -252,14 +252,20 @@ namespace NSG
         return mesh;
     }
 
-    PMaterial App::CreateMaterial(const std::string& name)
+    PMaterial App::CreateMaterial(const std::string& name, const ProgramFlags& flags)
     {
-        return materials_.Create(name);
+        auto material = materials_.Create(name);
+		if ((int)ProgramFlag::NONE != flags)
+            material->SetProgramFlags(0, flags);
+        return material;
     }
 
-    PMaterial App::GetOrCreateMaterial(const std::string& name)
+    PMaterial App::GetOrCreateMaterial(const std::string& name, const ProgramFlags& flags)
     {
-        return materials_.GetOrCreate(name);
+        auto material = materials_.GetOrCreate(name);
+		if ((int)ProgramFlag::NONE != flags)
+            material->SetProgramFlags(0, flags);
+        return material;
     }
 
     PMaterial App::GetMaterial(const std::string& name)

@@ -36,7 +36,7 @@ namespace NSG
     class Program : public Object
     {
     public:
-		Program(PMaterial material);
+		Program(Material* material);
         virtual ~Program();
         void SetVertexShader(PResource resource);
         void SetFragmentShader(PResource resource);
@@ -57,11 +57,13 @@ namespace NSG
         void SetVariables(Mesh* mesh, Node* node);
         GLuint GetId() const { return id_; }
         void Save(pugi::xml_node& node);
-        static PProgram CreateFrom(const pugi::xml_node& node, PMaterial material);
+        static PProgram CreateFrom(const pugi::xml_node& node, Material* material);
         const ProgramFlags& GetFlags() const { return flags_; }
         void SetFlags(const ProgramFlags& flags);
-        PProgram Clone(PMaterial material) const;
-        PMaterial GetMaterial() const { return material_.lock(); }
+        void EnableFlags(const ProgramFlags& flags);
+        void DisableFlags(const ProgramFlags& flags);
+        PProgram Clone(Material* material) const;
+        Material* GetMaterial() const { return material_; }
     private:
         size_t GetNeededVarying() const;
         bool IsValid() override;
@@ -84,7 +86,7 @@ namespace NSG
         void SetBaseLightVariables(const BaseLightLoc& baseLoc, const Light* light);
         bool SetLightVariables(Scene* scene);
 
-        PWeakMaterial material_;
+        Material* material_;
         ProgramFlags flags_;
         GLuint id_;
         ExtraUniforms* pExtraUniforms_;

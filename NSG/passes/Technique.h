@@ -37,24 +37,20 @@ namespace NSG
 	{
 	public:
 		static const size_t MAX_PASSES = 10;
-		Technique(PMaterial material);
+		Technique(Material* material);
 		~Technique();
 		void AddPass(PPass pass);
 		size_t GetNumPasses() const;
 		const PASSES& GetConstPasses() const { return passes_; }
-		//PASSES& GetPasses() { return passes_; }
-		//void SetPass(unsigned int idx, PPass pass) { passes_.at(idx) = pass; }
-		PPass GetPass(unsigned int idx);
+		PPass GetPass(unsigned idx);
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
 		void Render(Camera* camera);
 		void Render();
-		void EnableProgramFlags(const ProgramFlags& flags);
-		void DisableProgramFlags(const ProgramFlags& flags);
-		PMaterial GetMaterial() { return material_.lock(); }
+		Material* GetMaterial() { return material_; }
 		void CopyPasses(const PASSES& passes);
 	private:
-		PWeakMaterial material_;
+		Material* material_;
 		PASSES passes_;
 	};
 }

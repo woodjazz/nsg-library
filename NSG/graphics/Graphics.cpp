@@ -593,9 +593,9 @@ namespace NSG
         }
     }
 
-    void Graphics::SetTexture(unsigned index, Texture* texture)
+    void Graphics::SetTexture(int index, Texture* texture)
     {
-        CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
+		CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
 
         if (texture)
         {
@@ -1190,24 +1190,21 @@ namespace NSG
     {
         if (batch.material_)
         {
-            PTechnique technique = batch.material_->GetTechnique();
-            if (technique)
+            Technique* technique = batch.material_->GetTechnique();
+            Set(batch.mesh_.get());
+            if (has_instanced_arrays_ext_ && technique->GetNumPasses() == 1)
             {
-                Set(batch.mesh_.get());
-                if (has_instanced_arrays_ext_ && technique->GetNumPasses() == 1)
+                SetNode(nullptr);
+                PPass pass = technique->GetPass(0);
+                pass->Render(batch);
+            }
+            else
+            {
+                for (auto& node : batch.nodes_)
                 {
-                    SetNode(nullptr);
-                    PPass pass = technique->GetPass(0);
-                    pass->Render(batch);
-                }
-                else
-                {
-                    for (auto& node : batch.nodes_)
-                    {
-                        SceneNode* sn = (SceneNode*)node;
-                        SetNode(sn);
-                        technique->Render();
-                    }
+                    SceneNode* sn = (SceneNode*)node;
+                    SetNode(sn);
+                    technique->Render();
                 }
             }
         }

@@ -41,12 +41,11 @@ namespace NSG
     ShowTexture::ShowTexture()
         : app_(*App::this_),
 		  material_(app_.CreateMaterial(GetUniqueName("NSGShowTexture"))),
-          program_(std::make_shared<Program>(material_)),
           mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
           node_(std::make_shared<SceneNode>("NSGShowTexture"))
     {
         auto pass = material_->GetTechnique()->GetPass(0);
-        pass->SetProgram(program_);
+		program_ = pass->GetProgram();
         material_->SetSerializable(false);
         pass->EnableDepthTest(false);
     }

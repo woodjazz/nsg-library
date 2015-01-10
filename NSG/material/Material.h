@@ -30,11 +30,12 @@ misrepresented as being the original software.
 #include "UniformsUpdate.h"
 namespace NSG
 {
-	class Material : public std::enable_shared_from_this<Material>, public Object, UniformsUpdate
+	class Material : public Object, UniformsUpdate
 	{
 	public:
 		Material(const std::string& name);
 		~Material();
+		void SetProgramFlags(unsigned passIndex, const ProgramFlags& flags);
 		PMaterial Clone(const std::string& name);
 		void SetName(const std::string& name) {name_ = name;}
 		const std::string& GetName() const { return name_;  }
@@ -76,14 +77,13 @@ namespace NSG
 		float GetParallaxScale() const { return parallaxScale_; }
 		void SetUniformValue(const char* name, int value);
 		int GetUniformValue(const char* name) const;
-		PTechnique GetTechnique();
+		Technique* GetTechnique() { return technique_.get(); }
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_; }
 	private:
 		bool IsValid() override;
-		void AllocateResources() override;
 		PTexture texture0_; //difusse map
 		PTexture texture1_; //normal map
 		PTexture texture2_; //light map

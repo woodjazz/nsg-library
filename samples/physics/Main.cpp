@@ -51,12 +51,7 @@ int NSG_MAIN(int argc, char* argv[])
         earth->SetMesh(pSphereMesh);
 
         auto pEarthTexture(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
-        auto pMaterial(app.GetOrCreateMaterial("earth"));
-        auto program(std::make_shared<Program>(pMaterial));
-        program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-        auto technique = pMaterial->GetTechnique();
-        auto pass = technique->GetPass(0);
-        pass->SetProgram(program);
+		auto pMaterial(app.GetOrCreateMaterial("earth", (int)ProgramFlag::PER_PIXEL_LIGHTING));
         pMaterial->SetDiffuseMap(pEarthTexture);
         pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
         pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
@@ -80,13 +75,8 @@ int NSG_MAIN(int argc, char* argv[])
         auto rb = floor->GetOrCreateRigidBody();
         rb->SetShape(SH_BOX);
         auto texture(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/wall.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
-        auto material(app.GetOrCreateMaterial("floor"));
+		auto material(app.GetOrCreateMaterial("floor", (int)ProgramFlag::PER_PIXEL_LIGHTING));
         material->SetDiffuseMap(texture);
-        auto program(std::make_shared<Program>(material));
-        program->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-        auto technique = material->GetTechnique();
-        auto pass = technique->GetPass(0);
-        pass->SetProgram(program);
         floor->SetMaterial(material);
     }
 
