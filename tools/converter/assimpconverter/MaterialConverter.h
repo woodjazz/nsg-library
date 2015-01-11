@@ -33,10 +33,10 @@ namespace NSG
 	class MaterialConverter
 	{
 	public:
-		MaterialConverter(const aiMaterial* mtl, const std::string& resourcePath);
+		MaterialConverter(const aiMaterial* mtl, const Path& inputPath, const Path& outputDir);
 		~MaterialConverter();
 		PMaterial GetMaterial() const { return material_;  }
-		PTexture CreateTexture(const Path& path);
+		PTexture CreateTexture(const std::string& fileName);
 		void SetDiffuseMap();
 		void SetNormalMap();
 		void SetLightMap();
@@ -44,7 +44,8 @@ namespace NSG
 		PMaterial material_;
 		PProgram program_;
 		ProgramFlags flags_;
-		std::string resourcePath_;
+		Path inputPath_;
+		Path outputDir_;
 		const aiMaterial* mtl_;
 	};
 

@@ -47,9 +47,12 @@ namespace NSG
         const std::string& GetFilename() const { return filename_; }
         const std::string& GetName() const { return name_; }
 		const std::string& GetExtension() const { return ext_;  }
+        void SetPath(const std::string& path);
         void SetName(const std::string& name);
         void SetExtension(const std::string& ext);
+        void SetFileName(const std::string& fileName);
         bool HasName() const { return !filename_.empty(); }
+        bool HasExtension() const { return !ext_.empty(); }
         bool HasPath() const { return !path_.empty(); }
         bool IsPathRelative() const { return !isAbsolutePath_; }
         static const Path& GetEmpty();

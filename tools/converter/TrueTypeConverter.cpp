@@ -56,26 +56,32 @@ namespace NSG
         std::string tempBitmap;
         tempBitmap.resize(bitmapWidth_ * bitmapHeight_);
         int numChars = eChar_ - sChar_ + 1; // characters to bake
-        cdata_.resize(numChars); 
-		stbtt_BakeFontBitmap(data, 0, (float)fontPixelsHeight_, (unsigned char*)&tempBitmap[0], bitmapWidth_, bitmapHeight_, sChar_, numChars, &cdata_[0]);
+        cdata_.resize(numChars);
+        stbtt_BakeFontBitmap(data, 0, (float)fontPixelsHeight_, (unsigned char*)&tempBitmap[0], bitmapWidth_, bitmapHeight_, sChar_, numChars, &cdata_[0]);
         texture_ = std::make_shared<ResourceMemory>(tempBitmap.c_str(), tempBitmap.size());
         CHECK_CONDITION(texture_->IsReady(), __FILE__, __LINE__);
         return true;
     }
 
-    bool TrueTypeConverter::Save(const Path& outputFile) const
+    bool TrueTypeConverter::Save(const Path& outputDir) const
     {
+        std::string outName = path_.GetName();
+        outName += std::to_string(fontPixelsHeight_);
+        Path outputFile(outputDir);
+        outputFile.SetName(outName);
+        outputFile.SetExtension("xml");
+
         Path texturePath(outputFile);
+        texturePath.SetExtension("png");
         {
             const char* p = texture_->GetData();
             const size_t Channels = 1;
             size_t n = texture_->GetBytes() * Channels;
-            texturePath.SetExtension("png");
             std::vector<char> image(n, 0);
             size_t idx = 0;
-            while(idx<n)
+            while (idx < n)
             {
-                image[idx+Channels-1] = *p++;
+                image[idx + Channels - 1] = *p++;
                 idx += Channels;
             }
             const unsigned char* img = (const unsigned char*)&image[0];
@@ -84,7 +90,7 @@ namespace NSG
 
         {
             pugi::xml_document doc;
-			pugi::xml_node fontNode = doc.append_child("Font");
+            pugi::xml_node fontNode = doc.append_child("Font");
             fontNode.append_attribute("bitmap").set_value(texturePath.GetFilename().c_str());
             fontNode.append_attribute("height").set_value(fontPixelsHeight_);
             int code = sChar_;
@@ -101,7 +107,7 @@ namespace NSG
                 }
                 {
                     std::stringstream ss;
-					ss << obj.x0 << " " << obj.y0 << " " << obj.x1 - obj.x0 << " " << obj.y1 - obj.y0;
+                    ss << obj.x0 << " " << obj.y0 << " " << obj.x1 - obj.x0 << " " << obj.y1 - obj.y0;
                     charNode.append_attribute("rect") = ss.str().c_str();
                 }
                 {
@@ -112,7 +118,7 @@ namespace NSG
 
             doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
         }
-        
+
         return true;
     }
 }

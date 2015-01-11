@@ -59,18 +59,20 @@ public:
 
     std::string description() const
     {
-        return "Has to be a valid file name";
+        return "Has to be a valid directory";
     }
 
     std::string shortID() const
     {
-        return "Output file";
+        return "Output directory";
     }
 
     bool check(const std::string& filename) const
     {
-        std::ofstream file(filename);
-        return file.is_open();
+        Path path(filename);
+        bool hasExtension = path.HasExtension();
+        std::ofstream file(path.GetFullAbsoluteFilePath());
+        return !hasExtension && !file.is_open();
     }
 };
 
@@ -154,7 +156,7 @@ int NSG_MAIN(int argc, char* argv[])
         TCLAP::ValueArg<std::string> iArg("i", "input", "Input file to be converted", false, "", &iConstraintFile);
 
         OFileConstraint oConstraintFile;
-        TCLAP::ValueArg<std::string> oArg("o", "output", "Output file", false, "", &oConstraintFile);
+        TCLAP::ValueArg<std::string> oArg("o", "output", "Output directory", false, "", &oConstraintFile);
 
         BitmapPixelsConstraint pixelsConstraint;
         TCLAP::ValueArg<int> wArg("x", "width", "Bitmap width. By default is 512.", false, 512, &pixelsConstraint);
@@ -181,7 +183,7 @@ int NSG_MAIN(int argc, char* argv[])
         using namespace NSG;
 
         Path inputFile(iArg.getValue());
-        Path outputFile(oArg.getValue());
+        Path outputDir(oArg.getValue());
 
         int fontPixelsHeight = fArg.getValue();
         int bitmapWidth = wArg.getValue();
@@ -191,20 +193,16 @@ int NSG_MAIN(int argc, char* argv[])
 
         if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
         {
-            std::string outName = outputFile.GetName();
-            outName += std::to_string(fontPixelsHeight);
-            outputFile.SetName(outName);
-
             TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
-            if (obj.Load() && obj.Save(outputFile))
+            if (obj.Load() && obj.Save(outputDir))
                 return 0;
         }
         else
         {
             App app;
             auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
-            SceneConverter scene(inputFile);
-            if (scene.Load() && scene.Save(outputFile.GetFilePath()))
+            SceneConverter scene(inputFile, outputDir);
+            if (scene.Load() && scene.Save())
                 return 0;
         }
     }

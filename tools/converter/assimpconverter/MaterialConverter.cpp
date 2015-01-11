@@ -38,9 +38,10 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    MaterialConverter::MaterialConverter(const aiMaterial* mtl, const std::string& resourcePath)
+    MaterialConverter::MaterialConverter(const aiMaterial* mtl, const Path& inputPath, const Path& outputDir)
         : flags_((int)ProgramFlag::NONE),
-          resourcePath_(resourcePath),
+          inputPath_(inputPath),
+          outputDir_(outputDir),
           mtl_(mtl)
     {
         std::string materialName;
@@ -61,11 +62,11 @@ namespace NSG
         }
 
         material_ = App::this_->GetOrCreateMaterial(materialName);
-        
+
 
         auto technique = material_->GetTechnique();
         auto pass = technique->GetPass(0);
-		program_ = pass->GetProgram();
+        program_ = pass->GetProgram();
 
         unsigned int max = 1;
         int shadingModel = 0;
@@ -193,7 +194,7 @@ namespace NSG
 
             if (AI_SUCCESS == mtl_->GetTexture(aiTextureType_DIFFUSE, 0, &aPath, &mapping, &uvindex, &blend, &op, mapmode))
             {
-                Path path(aPath.C_Str());
+                std::string path(aPath.C_Str());
                 if (mapping == aiTextureMapping_UV)
                 {
                     if (uvindex == 0)
@@ -207,12 +208,12 @@ namespace NSG
                     }
                     else
                     {
-                        TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path.GetFilePath() << " uses uv index greater than 1. Only uv0 and uv1 are supported!!!");
+                        TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path << " uses uv index greater than 1. Only uv0 and uv1 are supported!!!");
                     }
                 }
                 else
                 {
-                    TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path.GetFilePath() << " does not use UV mapping!!!");
+                    TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path << " does not use UV mapping!!!");
                 }
             }
         }
@@ -238,7 +239,7 @@ namespace NSG
 
             if (AI_SUCCESS == mtl_->GetTexture(aiTextureType_NORMALS, 0, &aPath, &mapping, &uvindex, &blend, &op, mapmode))
             {
-                Path path(aPath.C_Str());
+                std::string path(aPath.C_Str());
                 if (mapping == aiTextureMapping_UV)
                 {
                     if (uvindex == 0)
@@ -251,12 +252,12 @@ namespace NSG
                     }
                     else
                     {
-                        TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path.GetFilePath() << " uses uv index greater than 1. Only uv0 and uv1 are supported!!!");
+                        TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path << " uses uv index greater than 1. Only uv0 and uv1 are supported!!!");
                     }
                 }
                 else
                 {
-                    TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path.GetFilePath() << " does not use UV mapping!!!");
+                    TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path << " does not use UV mapping!!!");
                 }
             }
         }
@@ -282,7 +283,7 @@ namespace NSG
 
             if (AI_SUCCESS == mtl_->GetTexture(aiTextureType_LIGHTMAP, 0, &aPath, &mapping, &uvindex, &blend, &op, mapmode))
             {
-                Path path(aPath.C_Str());
+                std::string path(aPath.C_Str());
                 if (mapping == aiTextureMapping_UV)
                 {
                     if (uvindex == 1)
@@ -295,20 +296,21 @@ namespace NSG
                     }
                     else
                     {
-                        TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path.GetFilePath() << " uses uv index greater than 1. Only uv0 and uv1 are supported!!!");
+                        TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path << " uses uv index greater than 1. Only uv0 and uv1 are supported!!!");
                     }
                 }
                 else
                 {
-                    TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path.GetFilePath() << " does not use UV mapping!!!");
+                    TRACE_LOG("Material name = " << material_->GetName() << " with texture " << path << " does not use UV mapping!!!");
                 }
             }
         }
     }
 
 
-    PTexture MaterialConverter::CreateTexture(const Path& path)
+    PTexture MaterialConverter::CreateTexture(const std::string& fileName)
     {
+        #if 0
         std::string textureFilePath;
         if (path.IsPathRelative())
         {
@@ -319,9 +321,21 @@ namespace NSG
         }
         else
             textureFilePath = path.GetFilePath();
+        #endif
+        auto resource = std::make_shared<ResourceFile>(fileName);
+        auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 
-        auto resource = std::make_shared<ResourceFile>(textureFilePath);
-        return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+        {
+            Path outputPath;
+            outputPath.SetPath(outputDir_.GetPath());
+            outputPath.SetFileName(fileName);
+            Path inputPath;
+            inputPath.SetPath(inputPath_.GetPath());
+            inputPath.SetFileName(fileName);
+            CHECK_CONDITION(CopyFile(inputPath, outputPath), __FILE__, __LINE__);
+
+        }
+        return texture;
     }
 
     MaterialConverter::~MaterialConverter()

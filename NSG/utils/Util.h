@@ -33,7 +33,7 @@ namespace NSG
 {
 	Vector3 Lerp(const Vector3& lhs, const Vector3& rhs, float t);
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
-    bool CopyFile(const std::string& source, const std::string& target);
+    bool CopyFile(const Path& source, const Path& target);
     bool SetCurrentDir(const std::string& pathName);
 	inline unsigned NextPowerOfTwo(unsigned value)
 	{

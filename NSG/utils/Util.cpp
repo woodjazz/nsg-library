@@ -26,6 +26,7 @@ misrepresented as being the original software.
 
 #include "Util.h"
 #include "Constants.h"
+#include "Path.h"
 #include <string>
 #include <algorithm>
 #include <cctype>
@@ -60,20 +61,16 @@ namespace NSG
         scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
     }
 
-    bool CopyFile(const std::string& source, const std::string& target)
+    bool CopyFile(const Path& source, const Path& target)
     {
-        std::ifstream is(source);
+        std::ifstream is(source.GetFullAbsoluteFilePath());
         if (is.is_open())
         {
-            std::ifstream isTarget(target);
-            if (!isTarget.is_open())
+            std::ofstream os(target.GetFullAbsoluteFilePath());
+            if (os.is_open())
             {
-                std::ofstream os(target);
-                if (os.is_open())
-                {
-                    os << is.rdbuf();
-                    return true;
-                }
+                os << is.rdbuf();
+                return true;
             }
         }
         return false;

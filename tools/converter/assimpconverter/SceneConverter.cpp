@@ -60,7 +60,7 @@ namespace NSG
             : pResource_(pResource),
               pos_(0)
         {
-			CHECK_CONDITION(pResource_->IsReady(), __FILE__, __LINE__);
+            CHECK_CONDITION(pResource_->IsReady(), __FILE__, __LINE__);
         }
 
     public:
@@ -95,21 +95,21 @@ namespace NSG
         {
             switch (pOrigin)
             {
-            case aiOrigin_SET:
-                pos_ = pOffset;
-                break;
+                case aiOrigin_SET:
+                    pos_ = pOffset;
+                    break;
 
-            case aiOrigin_CUR:
-                pos_ += pOffset;
-                break;
+                case aiOrigin_CUR:
+                    pos_ += pOffset;
+                    break;
 
-            case aiOrigin_END:
-                pos_ += pOffset;
-                break;
+                case aiOrigin_END:
+                    pos_ += pOffset;
+                    break;
 
-            default:
-                CHECK_ASSERT(false && "Incorrect pOrigin for Seek", __FILE__, __LINE__);
-                return aiReturn_FAILURE;
+                default:
+                    CHECK_ASSERT(false && "Incorrect pOrigin for Seek", __FILE__, __LINE__);
+                    return aiReturn_FAILURE;
             }
 
             return aiReturn_SUCCESS;
@@ -134,8 +134,9 @@ namespace NSG
         size_t pos_;
     };
 
-    SceneConverter::SceneConverter(const Path& path)
-        : path_(path)
+    SceneConverter::SceneConverter(const Path& path, const Path& outputDir)
+        : path_(path),
+          outputDir_(outputDir)
     {
     }
 
@@ -180,8 +181,8 @@ namespace NSG
     {
         CachedData data;
         LoadMeshesAndMaterials(scene, data);
-		scene_ = std::make_shared<Scene>(scene->mRootNode->mName.C_Str());
-		RecursiveLoad(scene, scene->mRootNode, scene_.get(), data);
+        scene_ = std::make_shared<Scene>(scene->mRootNode->mName.C_Str());
+        RecursiveLoad(scene, scene->mRootNode, scene_.get(), data);
         LoadAnimations(scene);
         LoadBones(scene, data);
     }
@@ -192,7 +193,7 @@ namespace NSG
         {
             const aiAnimation* anim = sc->mAnimations[i];
             std::string animName = anim->mName.C_Str();
-            if(animName.empty())
+            if (animName.empty())
                 animName = GetUniqueName("Animation");
             PAnimation outAnim = scene_->GetOrCreateAnimation(animName);
             AnimationConverter obj(scene_, anim, outAnim);
@@ -234,7 +235,7 @@ namespace NSG
         for (size_t i = 0; i < sc->mNumMaterials; ++i)
         {
             const aiMaterial* material = sc->mMaterials[i];
-            MaterialConverter obj(material, path_.GetPath());
+            MaterialConverter obj(material, path_, outputDir_);
             data.materials_.push_back(obj.GetMaterial());
         }
     }
@@ -247,8 +248,8 @@ namespace NSG
             PModelMesh mesh = data.meshes_.at(i);
             LoadBones(sc, aiMesh, mesh);
             GetBlendData(mesh, aiMesh);
-			if (mesh->GetSkeleton())
-				MarkProgramAsSkinableNodes(mesh.get());
+            if (mesh->GetSkeleton())
+                MarkProgramAsSkinableNodes(mesh.get());
         }
     }
 
@@ -393,19 +394,19 @@ namespace NSG
         mesh->SetSkeleton(skeleton);
     }
 
-	void SceneConverter::MarkProgramAsSkinableNodes(const Mesh* mesh)
+    void SceneConverter::MarkProgramAsSkinableNodes(const Mesh* mesh)
     {
-		auto& nodes = mesh->GetConstSceneNodes();
+        auto& nodes = mesh->GetConstSceneNodes();
 
-		for (auto obj : nodes)
-		{
-			PMaterial material = obj->GetMaterial();
-			if (material)
-			{
-				Technique* technique = material->GetTechnique();
-				technique->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SKINNED);
-			}
-		}
+        for (auto obj : nodes)
+        {
+            PMaterial material = obj->GetMaterial();
+            if (material)
+            {
+                Technique* technique = material->GetTechnique();
+                technique->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SKINNED);
+            }
+        }
     }
 
     void SceneConverter::GetBlendData(PMesh mesh, const aiMesh* aiMesh) const
@@ -465,20 +466,20 @@ namespace NSG
             sceneNode->SetScale(Vertex3(scaling.x, scaling.y, scaling.z));
         }
 
-		if (dynamic_cast<Light*>(sceneNode))
-		{
-			// Lights
-			const aiLight* light = GetLight(sc, nd->mName);
-			CHECK_ASSERT(light, __FILE__, __LINE__);
-			LightConverter obj(light, dynamic_cast<Light*>(sceneNode));
-		}
-		else if (dynamic_cast<Camera*>(sceneNode))
-		{
-			// Cameras
-			const aiCamera* camera = GetCamera(sc, nd->mName);
-			CHECK_ASSERT(camera, __FILE__, __LINE__);
-			CameraConverter obj(camera, dynamic_cast<Camera*>(sceneNode));
-		}
+        if (dynamic_cast<Light*>(sceneNode))
+        {
+            // Lights
+            const aiLight* light = GetLight(sc, nd->mName);
+            CHECK_ASSERT(light, __FILE__, __LINE__);
+            LightConverter obj(light, dynamic_cast<Light*>(sceneNode));
+        }
+        else if (dynamic_cast<Camera*>(sceneNode))
+        {
+            // Cameras
+            const aiCamera* camera = GetCamera(sc, nd->mName);
+            CHECK_ASSERT(camera, __FILE__, __LINE__);
+            CameraConverter obj(camera, dynamic_cast<Camera*>(sceneNode));
+        }
 
         SceneNode* meshSceneNode = sceneNode;
         for (size_t i = 0; i < nd->mNumMeshes; ++i)
@@ -488,31 +489,31 @@ namespace NSG
             meshSceneNode->SetMesh(data.meshes_.at(meshIndex));
             unsigned int materialIndex = mesh->mMaterialIndex;
             meshSceneNode->SetMaterial(data.materials_.at(materialIndex));
-			if (i + 1 < nd->mNumMeshes)
-				meshSceneNode = meshSceneNode->GetOrCreateChild<SceneNode>(GetUniqueName(meshSceneNode->GetName())).get();
+            if (i + 1 < nd->mNumMeshes)
+                meshSceneNode = meshSceneNode->GetOrCreateChild<SceneNode>(GetUniqueName(meshSceneNode->GetName())).get();
         }
 
         for (size_t i = 0; i < nd->mNumChildren; ++i)
         {
             const aiNode* ndChild = nd->mChildren[i];
-			SceneNode* child = nullptr;
-			const aiLight* light = GetLight(sc, ndChild->mName);
-			const aiCamera* camera = GetCamera(sc, ndChild->mName);
-			if (light)
-			{
-				CHECK_ASSERT(!camera, __FILE__, __LINE__);
-				child = sceneNode->GetOrCreateChild<Light>(ndChild->mName.C_Str()).get();
-			}
-			else if (camera)
-			{
-				child = sceneNode->GetOrCreateChild<Camera>(ndChild->mName.C_Str()).get();
-			}
-			else
-			{
-				child = sceneNode->GetOrCreateChild<SceneNode>(ndChild->mName.C_Str()).get();
-			}
-            
-			RecursiveLoad(sc, ndChild, child, data);
+            SceneNode* child = nullptr;
+            const aiLight* light = GetLight(sc, ndChild->mName);
+            const aiCamera* camera = GetCamera(sc, ndChild->mName);
+            if (light)
+            {
+                CHECK_ASSERT(!camera, __FILE__, __LINE__);
+                child = sceneNode->GetOrCreateChild<Light>(ndChild->mName.C_Str()).get();
+            }
+            else if (camera)
+            {
+                child = sceneNode->GetOrCreateChild<Camera>(ndChild->mName.C_Str()).get();
+            }
+            else
+            {
+                child = sceneNode->GetOrCreateChild<SceneNode>(ndChild->mName.C_Str()).get();
+            }
+
+            RecursiveLoad(sc, ndChild, child, data);
         }
     }
 
@@ -529,7 +530,7 @@ namespace NSG
 
     Assimp::IOStream* SceneConverter::Open(const char* filename, const char* mode)
     {
-		auto resource = std::make_shared<ResourceFile>(filename);
+        auto resource = std::make_shared<ResourceFile>(filename);
         return new MyIOStream(resource);
     }
 
@@ -538,10 +539,14 @@ namespace NSG
         delete pFile;
     }
 
-    bool SceneConverter::Save(const std::string& filename) const
+    bool SceneConverter::Save() const
     {
+        Path outputFile(outputDir_);
+        outputFile.SetName(path_.GetName());
+        outputFile.SetExtension("xml");
+
         pugi::xml_document doc;
         scene_->Save(doc);
-        return doc.save_file(filename.c_str());
+        return doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
     }
 }

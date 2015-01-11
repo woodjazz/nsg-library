@@ -46,7 +46,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	std::string Path::basePath_;
+    std::string Path::basePath_;
 
     Path::Path()
         : isAbsolutePath_(false)
@@ -83,9 +83,22 @@ namespace NSG
 
     }
 
+    void Path::SetPath(const std::string& path)
+    {
+        filePath_ = path + "/";
+        if(HasName())
+        {
+            filePath_ += name_;
+            if(HasExtension())
+                filePath_ += "." + ext_;
+        }
+        ReDoState();
+ 
+    }
+
     void Path::SetName(const std::string& name)
     {
-		filePath_ = path_ + "/" + name + "." + ext_;
+        filePath_ = path_ + "/" + name + "." + ext_;
         ReDoState();
     }
 
@@ -95,7 +108,13 @@ namespace NSG
         ReDoState();
     }
 
-	void Path::ReDoState()
+    void Path::SetFileName(const std::string& fileName)
+    {
+        filePath_ = path_ + "/" + Path::ExtractFilename(fileName, true);
+        ReDoState();
+    }
+
+    void Path::ReDoState()
     {
         Path::ReplaceChar(filePath_, '\\', '/');
         path_ = Path::ExtractPath(filePath_);
@@ -117,7 +136,7 @@ namespace NSG
         if (isAbsolutePath_)
             absolutePath_ = path_;
         else
-			absolutePath_ = Path::GetBasePath() + path_;
+            absolutePath_ = Path::GetBasePath() + path_;
 
         fullFilePath_ = absolutePath_ + "/" + filename_;
     }
@@ -198,15 +217,15 @@ namespace NSG
         return path;
     }
 
-	const std::string& Path::GetBasePath()
-	{
+    const std::string& Path::GetBasePath()
+    {
         static std::once_flag flag;
         std::call_once(flag, [&]()
         {
-    		basePath_ = Path::GetCurrentDir();
-		});
+            basePath_ = Path::GetCurrentDir();
+        });
         return basePath_;
-	}
+    }
 
     std::string Path::GetCurrentDir()
     {
@@ -281,7 +300,7 @@ namespace NSG
     bool Path::AppendDirIfDoesNotExist(const std::string& dirName)
     {
         std::vector<std::string> dirs = Path::GetDirs(absolutePath_);
-        if(dirs.empty())
+        if (dirs.empty())
         {
             filePath_ = dirName + "/" + filename_;
             ReDoState();
@@ -289,12 +308,12 @@ namespace NSG
         }
         else
         {
-            if(dirs.back() != dirName)
+            if (dirs.back() != dirName)
             {
-				if (path_.empty())
-					filePath_ = dirName + "/" + filename_;
-				else
-					filePath_ = path_ + "/" + dirName + "/" + filename_;
+                if (path_.empty())
+                    filePath_ = dirName + "/" + filename_;
+                else
+                    filePath_ = path_ + "/" + dirName + "/" + filename_;
                 ReDoState();
                 return true;
             }

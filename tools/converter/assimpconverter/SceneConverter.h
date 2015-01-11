@@ -48,13 +48,13 @@ namespace NSG
     class SceneConverter : public Assimp::IOSystem
     {
     public:
-        SceneConverter(const Path& path);
+        SceneConverter(const Path& path, const Path& outputDir);
         ~SceneConverter();
         bool Exists(const char* filename) const override;
         char getOsSeparator() const override;
         Assimp::IOStream* Open(const char* filename, const char* mode = "rb") override;
         void Close(Assimp::IOStream* pFile) override;
-        bool Save(const std::string& filename) const;
+        bool Save() const;
         bool Load();
 		PScene GetScene() { return scene_; }
     private:
@@ -75,5 +75,6 @@ namespace NSG
         void RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode, const CachedData& data);
         PScene scene_;
         Path path_;
+        Path outputDir_;
     };
 }

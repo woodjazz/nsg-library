@@ -35,7 +35,7 @@ namespace NSG
 	public:
 		TrueTypeConverter(const Path& path, int sChar, int eChar, int fontPixelsHeight, int bitmapWidth, int bitmapHeight);
 		bool Load();
-		bool Save(const Path& outputFile) const;
+		bool Save(const Path& outputDir) const;
 	private:
 		Path path_;
 		int sChar_;

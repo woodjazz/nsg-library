@@ -26,23 +26,23 @@ macro(CONVERT_TOOL input_file)
 
 	    get_filename_component(INPUTFILE ${input_file} ABSOLUTE)
 	    get_filename_component(INPUTNAME ${input_file} NAME)
-	    string(REGEX REPLACE "[.][^.]+$" ".xml" OUTPUTNAME ${INPUTNAME}) # replace extension by xml
+	    #string(REGEX REPLACE "[.][^.]+$" ".xml" OUTPUTNAME ${INPUTNAME}) # replace extension by xml
 	    # message("${INPUTFILE}")
 	    # message("${INPUTNAME}")
 	    # message("${OUTPUTNAME}")  
-	    set(OUTPUTFILE ${CMAKE_CURRENT_SOURCE_DIR}/data/${OUTPUTNAME})
+	    set(OUTPUTDIR ${CMAKE_CURRENT_SOURCE_DIR}/data/)
 	    
-	    set(CONVERT_CMD ${CONVERT_EXECUTABLE} -i ${INPUTFILE} -o ${OUTPUTFILE} ${ARGN})
+	    set(CONVERT_CMD ${CONVERT_EXECUTABLE} -i ${INPUTFILE} -o ${OUTPUTDIR} ${ARGN})
 
 	    #message("${CONVERT_CMD}")
 
-	    add_dependencies(${PROJECT_NAME} converter)
-
-	    add_custom_command(
-	        TARGET ${PROJECT_NAME} POST_BUILD
+	    add_custom_target(${INPUTNAME} ALL
 	            COMMAND ${CONVERT_CMD}
 	            DEPENDS ${CONVERT_EXECUTABLE} ${INPUTFILE}
 	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+		add_dependencies(${INPUTNAME} converter)
+	    add_dependencies(${PROJECT_NAME} ${INPUTNAME})
 
 	    # add_custom_command(
 	    #     TARGET ${PROJECT_NAME} POST_BUILD
