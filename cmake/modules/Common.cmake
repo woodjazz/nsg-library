@@ -10,8 +10,11 @@ macro (setup_common)
        set (XCODE TRUE)
     endif ()
 
-    if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    if (NOT CMAKE_BUILD_TYPE)
+        message("Building Release version")
         set (CMAKE_BUILD_TYPE Release)
+    else()
+        message("Building ${CMAKE_BUILD_TYPE} version")
     endif ()
 
     if(ANDROID)

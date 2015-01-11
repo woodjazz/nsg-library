@@ -184,7 +184,7 @@ namespace NSG
                 }
 				else if (channels_ == 1)
 				{
-					format_ = GL_RED;
+					format_ = GL_ALPHA;
 				}
                 else
                 {

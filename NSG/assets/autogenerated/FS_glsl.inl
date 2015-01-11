@@ -74,7 +74,7 @@ static const char* FS_GLSL = \
 "	void main()\n"\
 "	{\n"\
 "		#if defined(TEXT)\n"\
-"			gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).r);\n"\
+"			gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).a);\n"\
 "		#elif defined(BLEND)\n"\
 "			gl_FragColor = Blend();\n"\
 "		#elif defined(BLUR)\n"\

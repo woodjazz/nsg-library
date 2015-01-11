@@ -228,14 +228,14 @@ namespace NSG
                     }
                     else
                     {
-                        maxVaryingVectors_ = 15;
+                        maxVaryingVectors_ = 8;
                         TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
 
                     }
                 }
                 #else
                 {
-                    maxVaryingVectors_ = 15;
+                    maxVaryingVectors_ = 8;
                     TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
                 }
                 #endif
