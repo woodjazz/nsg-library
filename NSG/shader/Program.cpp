@@ -445,6 +445,7 @@ namespace NSG
                 boneIndex << "u_bones[" << idx << "]";
 
                 GLuint boneLoc = GetUniformLocation(boneIndex.str());
+                CHECK_CONDITION(boneLoc != -1, __FILE__, __LINE__);
                 bonesLoc_.push_back(boneLoc);
             }
 

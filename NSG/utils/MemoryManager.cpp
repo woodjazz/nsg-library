@@ -52,7 +52,7 @@ namespace NSG
     void* AllocateMemoryFromHeap(std::size_t count)
     {
         size_t newSize = sizeof(MemHeader) + count;
-        TRACE_PRINTF("Allocating %lu from heap.\n", newSize);
+        TRACE_PRINTF("Allocating %u from heap.\n", newSize);
         void* p = std::malloc(newSize);
         if (p)
         {
@@ -61,7 +61,7 @@ namespace NSG
             void* memBlock = (char*)p + sizeof(MemHeader);
             return memBlock;
         }
-        TRACE_PRINTF("Allocation of %lu from heap has FAILED.(bad_alloc)\n", newSize);
+        TRACE_PRINTF("Allocation of %u from heap has FAILED.(bad_alloc)\n", newSize);
         throw std::bad_alloc();
     }
 

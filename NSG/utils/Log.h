@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+#if (defined(IS_DEBUG) || defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 
 #include "Types.h"
 #include <stdio.h>

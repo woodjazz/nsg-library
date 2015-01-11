@@ -17,6 +17,10 @@ macro (setup_common)
         message("Building ${CMAKE_BUILD_TYPE} version")
     endif ()
 
+    if (CMAKE_BUILD_TYPE STREQUAL Debug)
+       add_definitions(-DIS_DEBUG)
+    endif ()
+
     if(ANDROID)
         message("detected ANDROID")
         set(IS_TARGET_MOBILE 1)

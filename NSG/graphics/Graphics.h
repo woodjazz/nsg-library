@@ -102,6 +102,7 @@ namespace NSG
         void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
         GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
         GLint GetMaxTexturesCombined() const { return maxTexturesCombined_; }
+        GLint GetMaxVertexUniformVectors() const { return maxVertexUniformVectors_; }
     private:
         Recti viewport_;
         GLint systemFbo_;
@@ -150,5 +151,6 @@ namespace NSG
         VAOMap vaoMap_;
         GLint maxVaryingVectors_;
         GLint maxTexturesCombined_;
+        GLint maxVertexUniformVectors_;
     };
 }

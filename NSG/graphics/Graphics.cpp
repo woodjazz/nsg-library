@@ -109,6 +109,7 @@ namespace NSG
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT),
           maxVaryingVectors_(-1),
+          maxVertexUniformVectors_(-1),
           maxTexturesCombined_(0)
     {
 
@@ -124,7 +125,7 @@ namespace NSG
             glDrawArraysInstancedEXT = (PFNGLDRAWARRAYSINSTANCEDPROC)eglGetProcAddress ( "glDrawArraysInstancedEXT" );
         }
         #endif
-        
+
         TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
         TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
         TRACE_LOG("GL_VERSION = " << (const char*)glGetString(GL_VERSION));
@@ -242,6 +243,41 @@ namespace NSG
             }
         }
 
+        {
+            glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &maxVertexUniformVectors_);
+            GLenum status = glGetError();
+            if (status == GL_NO_ERROR)
+            {
+                CHECK_ASSERT(maxVertexUniformVectors_ >= 128, __FILE__, __LINE__);
+                TRACE_LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = " << maxVertexUniformVectors_);
+            }
+            else
+            {
+                #ifdef IS_OSX
+                {
+                    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &maxVertexUniformVectors_);
+                    status = glGetError();
+                    if (status == GL_NO_ERROR)
+                    {
+                        CHECK_ASSERT(maxVertexUniformVectors_ >= 128, __FILE__, __LINE__);
+                        TRACE_LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = " << maxVertexUniformVectors_);
+                    }
+                    else
+                    {
+                        maxVaryingVectors_ = 128;
+                        TRACE_LOG("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to " << maxVertexUniformVectors_);
+
+                    }
+                }
+                #else
+                {
+                    maxVertexUniformVectors_ = 128;
+                    TRACE_LOG("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to " << maxVertexUniformVectors_);
+                }
+                #endif
+            }
+        }
+
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -310,7 +346,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         textures_ = std::vector<Texture*>(maxTexturesCombined_, nullptr);
-        
+
         SetVertexArrayObj(nullptr);
         SetVertexBuffer(nullptr);
         SetIndexBuffer(nullptr);
@@ -595,7 +631,7 @@ namespace NSG
 
     void Graphics::SetTexture(int index, Texture* texture)
     {
-		CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
+        CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
 
         if (texture)
         {
