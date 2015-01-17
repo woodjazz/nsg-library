@@ -73,6 +73,7 @@ namespace NSG
         void LoadSkeletons(const pugi::xml_node& node);
     private:
         void UpdateAnimations(float deltaTime);
+		bool HasLight(PLight light) const;
     private:
 		mutable std::map<LightType, std::vector<PWeakLight>> lights_;
         std::vector<PWeakCamera> cameras_;

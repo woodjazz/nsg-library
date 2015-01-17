@@ -116,6 +116,7 @@ namespace NSG
 
     void Path::ReDoState()
     {
+        Path::RemoveCurrentDirSymbol(filePath_);
         Path::ReplaceChar(filePath_, '\\', '/');
         path_ = Path::ExtractPath(filePath_);
         filename_ = Path::ExtractFilename(filePath_, true);
@@ -153,11 +154,22 @@ namespace NSG
 
     std::string Path::ExtractPath(const std::string& filePath)
     {
+        std::string path;
         const size_t idx = filePath.find_last_of('/');
         if (idx != std::string::npos)
-            return filePath.substr(0, idx);
+        {
+            path = filePath.substr(0, idx);
+            Path::RemoveCurrentDirSymbol(path);
+        }
 
-        return "";
+        return path;
+    }
+
+    void Path::RemoveCurrentDirSymbol(std::string& path)
+    {
+        std::string::size_type pos = path.find("./");
+        if(pos != std::string::npos)
+            Path::RemoveCurrentDirSymbol(path.erase(pos, pos+2));
     }
 
     std::string Path::ExtractFilename(const std::string& filePath, bool extension)
@@ -205,7 +217,7 @@ namespace NSG
             pos = tmp.find("/");
         }
 
-        if (!tmp.empty())
+        if (!tmp.empty() && tmp != ".")
             dirs.push_back(tmp);
 
         return dirs;

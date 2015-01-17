@@ -47,27 +47,27 @@ int NSG_MAIN(int argc, char* argv[])
         
 		colorSelection->Render(sceneNode->GetId(), 0, 0, nodes);
         GLushort id = colorSelection->GetSelected();
-		CHECK_ASSERT(id == sceneNode->GetId(), __FILE__, __LINE__);
+		CHECK_CONDITION(id == sceneNode->GetId(), __FILE__, __LINE__);
 		
 		sceneNode->SetPosition(Vertex3(-1, 0, 0));
 		colorSelection->Render(sceneNode->GetId(), 0, 0, nodes);
         id = colorSelection->GetSelected();
-		CHECK_ASSERT(id != sceneNode->GetId(), __FILE__, __LINE__);
+		CHECK_CONDITION(id != sceneNode->GetId(), __FILE__, __LINE__);
 
 		sceneNode->SetPosition(Vertex3(-1, 0, 0));
 		colorSelection->Render(sceneNode->GetId(), -0.7f, 0, nodes);
         id = colorSelection->GetSelected();
-		CHECK_ASSERT(id == sceneNode->GetId(), __FILE__, __LINE__);
+		CHECK_CONDITION(id == sceneNode->GetId(), __FILE__, __LINE__);
 
 		sceneNode->SetPosition(Vertex3(1, 1, 0));
 		colorSelection->Render(sceneNode->GetId(), -0.7f, 0, nodes);
         id = colorSelection->GetSelected();
-		CHECK_ASSERT(id != sceneNode->GetId(), __FILE__, __LINE__);
+		CHECK_CONDITION(id != sceneNode->GetId(), __FILE__, __LINE__);
 
 		sceneNode->SetPosition(Vertex3(1, 1, 0));
 		colorSelection->Render(sceneNode->GetId(), 0.75f, 0.75f, nodes);
 		id = colorSelection->GetSelected();
-		CHECK_ASSERT(id == sceneNode->GetId(), __FILE__, __LINE__);
+		CHECK_CONDITION(id == sceneNode->GetId(), __FILE__, __LINE__);
 
 		colorSelection = nullptr;
 		window = nullptr;

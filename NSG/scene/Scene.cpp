@@ -332,9 +332,28 @@ namespace NSG
         return true;
     }
 
+	bool Scene::HasLight(PLight light) const
+	{
+		auto itType = lights_.find(light->GetType());
+		if (itType != lights_.end())
+		{
+			auto& lights = itType->second;
+			auto it = std::find_if(lights.begin(), lights.end(), [&](PWeakLight obj)
+			{
+				auto p = obj.lock();
+				return p == light;
+			});
+
+			return it != lights.end();
+		}
+
+		return false;
+	}
+
     void Scene::AddLight(PLight light)
     {
-        lights_[light->GetType()].push_back(light);
+		if (!HasLight(light))
+	        lights_[light->GetType()].push_back(light);
     }
 
     const std::vector<PWeakLight>& Scene::GetLights(LightType type) const

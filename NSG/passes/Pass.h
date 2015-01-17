@@ -36,7 +36,7 @@ namespace pugi
 
 namespace NSG
 {
-    class Pass : public Object, UniformsUpdate
+    class Pass : UniformsUpdate
     {
     public:
         Pass(Technique* technique);
@@ -54,15 +54,13 @@ namespace NSG
         void EnableCullFace(bool enable);
         void SetCullFace(CullFaceMode mode);
         void SetFrontFace(FrontFaceMode mode);
-        void SetProgram(PProgram pProgram);
-        PProgram GetProgram();
+		PProgram GetProgram() const { return pProgram_; }
         virtual void Render();
         void Render(Batch& batch);
         void Save(pugi::xml_node& node);
         void Load(const pugi::xml_node& node, Material* material);
         PPass Clone(Material* material) const;
     protected:
-        virtual bool IsValid() override;
         void SetupPass();
     private:
         Technique* technique_;

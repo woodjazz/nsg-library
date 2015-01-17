@@ -37,8 +37,8 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < PRECISION, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < PRECISION, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 	}
 
 	{
@@ -47,18 +47,18 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < PRECISION, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < PRECISION, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 
 		sphere.IncAngles(PI, 0);
 
-		CHECK_ASSERT(glm::distance(Vertex3(0, 0, 8), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(Vertex3(0, 0, 8), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 
 		sphere.IncAngles(PI, 0);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 	}
 
 	{
@@ -67,33 +67,33 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().z < -0.4f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().z < -0.4f, __FILE__, __LINE__);
 
 		sphere.IncAngles(0, PI / 2);
 
-		CHECK_ASSERT(glm::distance(Vertex3(0, -1, 9), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.4f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().z > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(Vertex3(0, -1, 9), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.4f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().z > 0.8f, __FILE__, __LINE__);
 
 		sphere.IncAngles(0, PI / 2);
 
-		CHECK_ASSERT(glm::distance(Vertex3(0, 0, 8), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y < -0.8f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().z > 0.4f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(Vertex3(0, 0, 8), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y < -0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().z > 0.4f, __FILE__, __LINE__);
 
 		sphere.IncAngles(0, PI / 2);
 
-		CHECK_ASSERT(glm::distance(Vertex3(0, 1, 9), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y < -0.4f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().z < -0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(Vertex3(0, 1, 9), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y < -0.4f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().z < -0.8f, __FILE__, __LINE__);
 
 		sphere.IncAngles(0, PI / 2);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().z < -0.4f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().z < -0.4f, __FILE__, __LINE__);
 
 	}
 #if 0
@@ -105,7 +105,7 @@ static void Test01()
 
 			sphere.SetCenterAndPoint(center, position);
 
-			CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.09f, __FILE__, __LINE__);
+			CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.09f, __FILE__, __LINE__);
 		}
 	}
 #endif
@@ -115,18 +115,18 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 
 		sphere.IncAngles(PI, 0);
 
-		CHECK_ASSERT(glm::distance(Vertex3(2, 0, 10), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(Vertex3(2, 0, 10), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 
 		sphere.IncAngles(PI, 0);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 
 	}
 
@@ -137,18 +137,18 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 
 		sphere.IncAngles(PI/2, 0);
 
-		CHECK_ASSERT(glm::distance(Vertex3(-1, 0, 9), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(Vertex3(-1, 0, 9), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 
 		sphere.IncAngles(PI / 2, 0);
 
-		CHECK_ASSERT(glm::distance(Vertex3(0, 0, 8), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(Vertex3(0, 0, 8), sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 	}
 
 
@@ -159,8 +159,8 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 	}
 
 
@@ -170,8 +170,8 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 	}
 
 	{
@@ -180,8 +180,8 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 	}
 
 	{
@@ -190,8 +190,8 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 	}
 
 	{
@@ -200,8 +200,8 @@ static void Test01()
 
 		sphere.SetCenterAndPoint(center, position);
 
-		CHECK_ASSERT(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
-		CHECK_ASSERT(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(position, sphere.GetPoint()) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(sphere.GetUp().y > 0.8f, __FILE__, __LINE__);
 	}
 
 

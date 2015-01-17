@@ -31,7 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 50, 50, 1024, 768);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
     auto scene = std::make_shared<Scene>("scene");
     scene->SetAmbientColor(Color(0.0f));
     auto resource = std::make_shared<ResourceFile>("data/scene.xml");

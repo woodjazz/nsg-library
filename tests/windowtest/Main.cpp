@@ -34,7 +34,7 @@ static void Test0()
 	auto window2 = app.GetOrCreateWindow("1", 200, 200, 150, 50);
 	auto window3 = app.GetOrCreateWindow("2", 300, 300, 150, 50);
 	window1 = nullptr;
-	CHECK_ASSERT(app.Run() == 0, __FILE__, __LINE__);
+	CHECK_CONDITION(app.Run() == 0, __FILE__, __LINE__);
 }
 
 static void Test1()
@@ -54,7 +54,7 @@ static void Test1()
     		window1 = nullptr;
     });
 
-	CHECK_ASSERT(app.Run() == 0, __FILE__, __LINE__);
+	CHECK_CONDITION(app.Run() == 0, __FILE__, __LINE__);
 }
 
 int NSG_MAIN(int argc, char* argv[])

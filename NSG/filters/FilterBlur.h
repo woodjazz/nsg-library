@@ -26,24 +26,14 @@ misrepresented as being the original software.
 #pragma once
 #include "SharedPointers.h"
 #include "Filter.h"
-#include "ExtraUniforms.h"
 #include "Types.h"
 
 namespace NSG
 {
-	class FilterBlur : public Filter, public ExtraUniforms
+	class FilterBlur : public Filter
 	{
 	public:
 		FilterBlur(PTexture input, int output_width, int output_height);
 		~FilterBlur();
-		void SetLocations();
-		void AssignValues();
-	private:
-		GLuint blurDirLoc_;
-		GLuint blurRadiusLoc_;
-		GLuint sigmaLoc_;
-		Vector2 blurDir_;
-		Vector2 blurRadius_;
-		float sigma_;
 	};
 }

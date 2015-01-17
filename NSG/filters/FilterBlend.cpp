@@ -34,32 +34,12 @@ misrepresented as being the original software.
 namespace NSG
 {
 	FilterBlend::FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height)
-		: Filter(GetUniqueName("FilterBlend"), input0, output_width, output_height, (int)ProgramFlag::BLEND),
-	blendMode_loc_(-1),
-	blendMode_(0)
+		: Filter(GetUniqueName("FilterBlend"), input0, output_width, output_height, (int)ProgramFlag::BLEND)
 	{
 		pMaterial_->SetTexture1(input1);
-        technique_->GetPass(0)->GetProgram()->Set(this);
 	}
 
 	FilterBlend::~FilterBlend()
 	{
-
 	}
-
-	void FilterBlend::SetLocations()
-	{
-		PProgram program = technique_->GetPass(0)->GetProgram();
-
-		blendMode_loc_ = program->GetUniformLocation("u_blendMode");
-	}
-
-	void FilterBlend::AssignValues()
-	{
-		if(blendMode_loc_ != -1)
-		{
-			glUniform1i(blendMode_loc_, blendMode_);
-		}
-	}
-
 }

@@ -23,13 +23,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+// Updated by Néstor Silveira Gorski for nsg-library (http://nsg-library.googlecode.com/)
 #pragma once
 
-namespace NSG 
+namespace Blender
 {
-	struct ExtraUniforms
-	{
-		virtual void SetLocations() = 0;
-		virtual void AssignValues() = 0;
-	};
+	extern int GenerateDNA(const Path& filePath, const Path& outputDir);
 }

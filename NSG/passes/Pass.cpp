@@ -42,6 +42,7 @@ namespace NSG
     Pass::Pass(Technique* technique)
         : technique_(technique),
           graphics_(*Graphics::this_),
+		  pProgram_(std::make_shared<Program>(technique->GetMaterial())),
           blendMode_(BLEND_ALPHA),
           enableDepthTest_(true),
           enableStencilTest_(false),
@@ -63,7 +64,6 @@ namespace NSG
 
     Pass::~Pass()
     {
-        Invalidate();
     }
 
     PPass Pass::Clone(Material* material) const
@@ -153,14 +153,6 @@ namespace NSG
         frontFaceMode_ = mode;
     }
 
-    PProgram Pass::GetProgram()
-    {
-		if (!pProgram_)
-			pProgram_ = std::make_shared<Program>(technique_->GetMaterial());
-
-        return pProgram_;
-    }
-
     void Pass::SetupPass()
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -189,37 +181,17 @@ namespace NSG
 
     void Pass::Render()
     {
-        if (IsReady())
-        {
-            SetupPass();
-            graphics_.Draw(drawMode_ == DrawMode::SOLID);
-        }
+        SetupPass();
+        graphics_.DrawActiveMesh(drawMode_ == DrawMode::SOLID);
     }
 
     void Pass::Render(Batch& batch)
     {
-        if (IsReady() && batch.IsReady())
+        if (batch.IsReady())
         {
             SetupPass();
-            graphics_.Draw(drawMode_ == DrawMode::SOLID, batch);
+			graphics_.DrawActiveMesh(drawMode_ == DrawMode::SOLID, batch);
         }
-    }
-
-    void Pass::SetProgram(PProgram pProgram)
-    {
-        CHECK_CONDITION(pProgram, __FILE__, __LINE__);
-        if (pProgram_ != pProgram)
-        {
-            pProgram_ = pProgram;
-            SetUniformsNeedUpdate();
-            Invalidate();
-        }
-    }
-
-    bool Pass::IsValid()
-    {
-        auto program = GetProgram();
-        return program->IsReady();
     }
 
     void Pass::Save(pugi::xml_node& node)
@@ -330,9 +302,8 @@ namespace NSG
     void Pass::Load(const pugi::xml_node& node, Material* material)
     {
         pugi::xml_node programChild = node.child("Program");
-
-        if (programChild)
-			pProgram_ = Program::CreateFrom(programChild, material);
+		std::string flags = programChild.attribute("flags").as_string();
+		pProgram_->SetFlags(flags);
 
         SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
         EnableDepthTest(node.attribute("enableDepthTest").as_bool());

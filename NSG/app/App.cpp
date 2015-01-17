@@ -47,7 +47,6 @@ misrepresented as being the original software.
 #include "Object.h"
 #include "Keyboard.h"
 #include "Audio.h"
-#include "AppStatistics.h"
 #include "Check.h"
 #include "Texture.h"
 #include "UTF8String.h"
@@ -101,8 +100,6 @@ namespace NSG
         if (SDL_Init(flags))
             TRACE_LOG("SDL_Init Error: " << SDL_GetError() << std::endl);
 
-        TRACE_LOG("Base path is: " << Path::GetBasePath());
-
         #if defined(IOS) || defined(ANDROID)
         {
             SDL_AddEventWatch(ExitEventFilter, nullptr);
@@ -123,7 +120,6 @@ namespace NSG
         {
             CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
             graphics_ = PGraphics(new Graphics);
-            statistics_ = PAppStatistics(new AppStatistics);
             graphics_->InitializeBuffers();
         });
     }
@@ -133,7 +129,6 @@ namespace NSG
         meshes_.Clear();
         materials_.Clear();
         whiteTexture_ = nullptr;
-        statistics_ = nullptr;
         graphics_ = nullptr;
     }
 

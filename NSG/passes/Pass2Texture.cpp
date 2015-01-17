@@ -59,7 +59,7 @@ namespace NSG
         {
             for (auto& pass : passes_)
             {
-                Graphics::this_->Set(pass.mesh_.get());
+                Graphics::this_->SetMesh(pass.mesh_.get());
                 Graphics::this_->SetNode(pass.node_);
                 pass.pass_->Render();
             }

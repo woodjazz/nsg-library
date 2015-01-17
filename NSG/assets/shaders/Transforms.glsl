@@ -11,6 +11,8 @@
 	attribute vec3 a_normal;
 	attribute vec4 a_color;
 	attribute vec3 a_tangent;
+	attribute vec4 a_boneIDs;
+	attribute vec4 a_weights;
 	
 	#if defined(INSTANCED)
 	    attribute vec4 a_mMatrixRow0;
@@ -23,17 +25,14 @@
 
 	#if defined(SKINNED)
 
-		attribute vec4 a_boneIDs;
-		attribute vec4 a_weights;
 		uniform mat4 u_bones[NUM_BONES];
 
 		mat4 GetSkinnedMatrix()
 		{
-			ivec4 idx = ivec4(a_boneIDs);
-			mat4 boneTransform = u_bones[idx[0]] * a_weights[0];
-		    boneTransform += u_bones[idx[1]] * a_weights[1];
-		    boneTransform += u_bones[idx[2]] * a_weights[2];
-		    boneTransform += u_bones[idx[3]] * a_weights[3];
+			mat4 boneTransform = u_bones[int(a_boneIDs[0])] * a_weights[0];
+		    boneTransform += u_bones[int(a_boneIDs[1])] * a_weights[1];
+		    boneTransform += u_bones[int(a_boneIDs[2])] * a_weights[2];
+		    boneTransform += u_bones[int(a_boneIDs[3])] * a_weights[3];
 			return boneTransform;
 		}
 

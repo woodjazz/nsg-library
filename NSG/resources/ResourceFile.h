@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include "SharedPointers.h"
 #include "Path.h"
 
-class AAssetManager;
 namespace NSG
 {
 	class ResourceFile : public Resource

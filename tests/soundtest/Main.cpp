@@ -34,16 +34,16 @@ int NSG_MAIN(int argc, char* argv[])
 	auto sound = std::make_shared<Sound>(std::make_shared<ResourceFile>("data/PlayerFist.wav"));
 	auto soundExplo = std::make_shared<Sound>(std::make_shared<ResourceFile>("data/BigExplosion.wav"));
 
-    CHECK_ASSERT(!music->IsPlaying(), __FILE__, __LINE__);
+    CHECK_CONDITION(!music->IsPlaying(), __FILE__, __LINE__);
     music->Play(false);
-    CHECK_ASSERT(music->IsPlaying(), __FILE__, __LINE__);
+    CHECK_CONDITION(music->IsPlaying(), __FILE__, __LINE__);
     std::this_thread::sleep_for(Seconds(1));
     music->Pause();
     sound->Play();
-    CHECK_ASSERT(music->IsPaused(), __FILE__, __LINE__);
+    CHECK_CONDITION(music->IsPaused(), __FILE__, __LINE__);
     std::this_thread::sleep_for(Seconds(1));
     music->Resume();
-    CHECK_ASSERT(!music->IsPaused(), __FILE__, __LINE__);
+    CHECK_CONDITION(!music->IsPaused(), __FILE__, __LINE__);
     soundExplo->Play();
     std::this_thread::sleep_for(Seconds(3));
 

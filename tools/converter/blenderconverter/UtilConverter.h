@@ -25,37 +25,10 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Singleton.h"
+#include "../Blender.h"
 #include <string>
 
-namespace NSG 
+#define B_IDNAME(x) ((x) && (x)->id.name[0] != '0' ? (x)->id.name + 2 : "")
+namespace BlenderConverter
 {
-	class AppStatistics : public Singleton<AppStatistics>
-	{
-	public:
-		AppStatistics();
-		~AppStatistics();
-		void NewFrame();
-		void AddVertexBuffer(bool dynamic);
-		void AddIndexBuffer(bool dynamic);
-		void RemoveVertexBuffer(bool dynamic);
-		void RemoveIndexBuffer(bool dynamic);
-		void NewDrawCall();
-		void NewTriangles(size_t n);
-		void SetNodes(size_t total, size_t visibles);
-		void Show();
-	private:
-		App& app_;
-		enum class Stats {FPS, DRAW_CALLS, TRIANGLES, STATIC_VBO, STATIC_IBO, DYNAMIC_VBO, DYNAMIC_IBO, VISIBLES_NODES, TOTAL_NODES, MAX_STATS};
-		static const int LINES = 7;
-		std::string label_[(int)Stats::MAX_STATS];
-		size_t stats_[(int)Stats::MAX_STATS];
-		size_t frames_;
-        bool collect_;
-        TimePoint startTime_;
-        PPass pass_;
-        PMaterial material_;
-        PTextMesh text_[(int)Stats::MAX_STATS];
-        PSceneNode node_[(int)Stats::MAX_STATS];
- 	};
 }

@@ -25,3 +25,17 @@ misrepresented as being the original software.
 */
 #include "Types.h"
 
+namespace NSG
+{
+    BlurFilter::BlurFilter()
+        : blurDir_(1, 0),
+          blurRadius_(2, 2),
+          sigma_(0.1f)
+    {
+    }
+
+    bool BlurFilter::operator != (const BlurFilter& obj) const
+    {
+    	return blurDir_ != obj.blurDir_ || blurRadius_ != obj.blurRadius_ || sigma_ != obj.sigma_;
+    }
+}

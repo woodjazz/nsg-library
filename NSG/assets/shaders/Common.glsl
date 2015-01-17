@@ -30,3 +30,16 @@ varying vec2 v_texcoord0;
 		varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS];
 	#endif
 #endif
+
+struct Material
+{
+	vec4 color;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    float shininess;
+    float parallaxScale;
+};
+
+uniform Material u_material;
+

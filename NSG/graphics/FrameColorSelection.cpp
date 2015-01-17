@@ -156,7 +156,7 @@ namespace NSG
                 {
 					Graphics::this_->SetScene(obj->GetScene().get());
 					Graphics::this_->SetNode(obj);
-                    Graphics::this_->Set(obj->GetMesh().get());
+                    Graphics::this_->SetMesh(obj->GetMesh().get());
                     material_->GetTechnique()->Render(nullptr);
                 }
             }

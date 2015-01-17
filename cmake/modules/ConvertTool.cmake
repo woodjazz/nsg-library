@@ -20,34 +20,31 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 
 endif()
 
-macro(CONVERT_TOOL input_file)
+macro(CONVERT_TOOL input_file output_dir)
 
 	if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 
 	    get_filename_component(INPUTFILE ${input_file} ABSOLUTE)
 	    get_filename_component(INPUTNAME ${input_file} NAME)
+	    get_filename_component(OUTPUTDIR ${output_dir} ABSOLUTE)
 	    #string(REGEX REPLACE "[.][^.]+$" ".xml" OUTPUTNAME ${INPUTNAME}) # replace extension by xml
 	    # message("${INPUTFILE}")
 	    # message("${INPUTNAME}")
 	    # message("${OUTPUTNAME}")  
-	    set(OUTPUTDIR ${CMAKE_CURRENT_SOURCE_DIR}/data/)
-	    
+    
 	    set(CONVERT_CMD ${CONVERT_EXECUTABLE} -i ${INPUTFILE} -o ${OUTPUTDIR} ${ARGN})
 
 	    #message("${CONVERT_CMD}")
 
-	    add_custom_target(${INPUTNAME} ALL
+	    add_custom_target(${INPUTNAME} 
 	            COMMAND ${CONVERT_CMD}
 	            DEPENDS ${CONVERT_EXECUTABLE} ${INPUTFILE}
 	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+		
+		add_dependencies(converter blenderdna)
 		add_dependencies(${INPUTNAME} converter)
 	    add_dependencies(${PROJECT_NAME} ${INPUTNAME})
-
-	    # add_custom_command(
-	    #     TARGET ${PROJECT_NAME} POST_BUILD
-	    #         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${OUTPUTFILE} ${CMAKE_CURRENT_BINARY_DIR}/data/${OUTPUTNAME}
-	    #         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 	endif()
 

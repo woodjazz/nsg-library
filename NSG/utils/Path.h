@@ -37,16 +37,16 @@ namespace NSG
         Path();
         Path(const char* filePath);
         Path(const std::string& filePath);
-		Path(const Path& obj);
+        Path(const Path& obj);
         ~Path();
         const std::string& GetFilePath() const { return filePath_; }
-		const std::string& GetFullAbsoluteFilePath() const { return fullFilePath_; }
-		const std::string& GetPath() const { return path_; }
+        const std::string& GetFullAbsoluteFilePath() const { return fullFilePath_; }
+        const std::string& GetPath() const { return path_; }
         const std::string& GetAbsolutePath() const { return absolutePath_; }
         const std::string& GetPathAndName() const { return pathName_; }
         const std::string& GetFilename() const { return filename_; }
         const std::string& GetName() const { return name_; }
-		const std::string& GetExtension() const { return ext_;  }
+        const std::string& GetExtension() const { return ext_;  }
         void SetPath(const std::string& path);
         void SetName(const std::string& name);
         void SetExtension(const std::string& ext);
@@ -58,27 +58,28 @@ namespace NSG
         static const Path& GetEmpty();
         bool IsEmpty() const { return filePath_.empty(); }
         static std::string GetCurrentDir();
-		static const std::string& GetBasePath();
+        static const std::string& GetBasePath();
         static void ReplaceChar(std::string& filePath, char from, char to);
         static std::string ExtractPath(const std::string& filePath);
         static std::string ExtractFilename(const std::string& filePath, bool extension);
         static std::string GetLowercaseFileExtension(const std::string& filePath);
-		static std::vector<std::string> GetDirs(const std::string& path);
+        static void RemoveCurrentDirSymbol(std::string& path);
+        static std::vector<std::string> GetDirs(const std::string& path);
         static bool ContainsDir(const std::string& path, const std::string& dirName);
         bool operator < (const Path& obj) const;
         bool AppendDirIfDoesNotExist(const std::string& dirName);
     private:
         void ReDoState();
         std::string filePath_; // path + filename (could be absolute or relative)
-		std::string fullFilePath_; // absolute path + filename
-		std::string pathName_; // path + name (without extension)
+        std::string fullFilePath_; // absolute path + filename
+        std::string pathName_; // path + name (without extension)
         std::string path_; // only path (without filename)
         std::string absolutePath_; // only absolute path (without filename)
         std::string name_; // name (name only without extension)
         std::string filename_; // name + extension (without path)
         std::string ext_; // extension in lowercase
         bool isAbsolutePath_;
-		static std::string basePath_;
+        static std::string basePath_;
     };
 
     std::ostream& operator << (std::ostream& s , const Path& obj);

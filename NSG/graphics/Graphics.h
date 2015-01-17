@@ -75,8 +75,8 @@ namespace NSG
         void SetWindow(Window* window);
         Window* GetWindow() const { return activeWindow_; }
         void SetFrameBuffer(GLuint value);
-        void Draw(bool solid);
-        void Draw(bool solid, Batch& batch);
+        void DrawActiveMesh(bool solid);
+		void DrawActiveMesh(bool solid, Batch& batch);
         void DiscardFramebuffer();
         bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
         bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
@@ -94,7 +94,7 @@ namespace NSG
         void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
         void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
         UniformObjs& GetUniformObjs() { return uniformObjs_; }
-        void Set(Mesh* mesh) { activeMesh_ = mesh; }
+        void SetMesh(Mesh* mesh) { activeMesh_ = mesh; }
 		void SetNode(SceneNode* node) { activeNode_ = node; }
         void Render(Batch& batch);
 		void Render();
@@ -103,6 +103,9 @@ namespace NSG
         GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
         GLint GetMaxTexturesCombined() const { return maxTexturesCombined_; }
         GLint GetMaxVertexUniformVectors() const { return maxVertexUniformVectors_; }
+        GLint GetMaxFragmentUniformVectors() const { return maxFragmentUniformVectors_; }
+        GLint GetMaxVertexAttribs() const { return maxVertexAttribs_; }
+        
     private:
         Recti viewport_;
         GLint systemFbo_;
@@ -152,5 +155,7 @@ namespace NSG
         GLint maxVaryingVectors_;
         GLint maxTexturesCombined_;
         GLint maxVertexUniformVectors_;
+        GLint maxFragmentUniformVectors_;
+        GLint maxVertexAttribs_;
     };
 }

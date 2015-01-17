@@ -24,7 +24,8 @@ namespace NSG
           parallaxScale_(0.05f),
           color_(1, 1, 1, 1),
           name_(name),
-          serializable_(true)
+          serializable_(true),
+          blendFilterMode_(BlendFilterMode::ADDITIVE)
     {
         technique_ = std::make_shared<Technique>(this);
     }
@@ -36,7 +37,7 @@ namespace NSG
 
     void Material::SetProgramFlags(unsigned passIndex, const ProgramFlags& flags)
     {
-		auto pass = technique_->GetPass(passIndex);
+        auto pass = technique_->GetPass(passIndex);
         auto program = pass->GetProgram();
         program->SetFlags(flags);
     }
@@ -225,7 +226,7 @@ namespace NSG
         if (SetTexture3(texture))
         {
             if (texture)
-				technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SPECULARMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
+                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SPECULARMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
             else
                 technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::SPECULARMAP);
         }
@@ -404,5 +405,25 @@ namespace NSG
         pugi::xml_node childTechnique = node.child("Technique");
         if (childTechnique)
             technique_->Load(childTechnique);
+    }
+
+    void Material::SetFilterBlendMode(BlendFilterMode mode)
+    {
+        if (blendFilterMode_ != mode)
+        {
+            blendFilterMode_ = mode;
+            SetUniformsNeedUpdate();
+            Invalidate();
+        }
+    }
+
+    void Material::SetFilterBlur(const BlurFilter& data)
+    {
+        if (blurFilter_ != data)
+        {
+            blurFilter_ = data;
+            SetUniformsNeedUpdate();
+            Invalidate();
+        }
     }
 }

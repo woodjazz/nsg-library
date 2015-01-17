@@ -279,6 +279,23 @@ namespace NSG
         Vector3 lateralFrictionDir2_;
     };
 
+    enum class BlendFilterMode
+    {
+        ADDITIVE,   // strong result, high overexposure
+        SCREEN,     //mild result, medium overexposure
+        SOFTLIGHT   //light result, no overexposure
+    };
+
+    struct BlurFilter
+    {
+        Vector2 blurDir_;
+        Vector2 blurRadius_;
+        float sigma_;
+        BlurFilter();
+        bool operator != (const BlurFilter& uid) const;
+    };
+
+
     typedef Signal<int, int> SignalViewChanged;
     typedef Signal<float, float> SignalMouseMoved;
     typedef Signal<int, float, float> SignalMouseDown;
@@ -292,6 +309,6 @@ namespace NSG
     typedef Signal<> SignalResourceLoaded;
     typedef Signal<const ContactPoint&> SignalCollision;
     typedef Signal<const std::string&> SignalDropFile;
-    
-    
+
+
 }

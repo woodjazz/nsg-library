@@ -23,6 +23,8 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
+#if !defined(EMSCRIPTEN)
+
 #define USE_POOLS
 #ifdef USE_POOLS
 
@@ -236,3 +238,4 @@ void operator delete[](void* ptr) noexcept
 }
 #endif
 
+#endif

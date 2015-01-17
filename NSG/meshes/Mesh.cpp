@@ -30,7 +30,6 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "VertexArrayObj.h"
 #include "InstanceBuffer.h"
-#include "AppStatistics.h"
 #include "Util.h"
 #include "Camera.h"
 #include "InstanceData.h"

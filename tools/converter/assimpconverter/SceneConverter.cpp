@@ -403,7 +403,7 @@ namespace NSG
             PMaterial material = obj->GetMaterial();
             if (material)
             {
-                Technique* technique = material->GetTechnique();
+                Technique* technique = material->GetTechnique().get();
                 technique->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SKINNED);
             }
         }
@@ -547,6 +547,7 @@ namespace NSG
 
         pugi::xml_document doc;
         scene_->Save(doc);
+        TRACE_LOG("Saving file: " << outputFile.GetFullAbsoluteFilePath());
         return doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
     }
 }

@@ -37,7 +37,7 @@ cd ..
 cmake -E make_directory %1
 cd %1
 
-cmake %SOURCE_FOLDER% -G "Visual Studio 12"
+cmake %SOURCE_FOLDER% -G "Visual Studio 12 Win64"
 
 msbuild nsg-library.sln
 msbuild RUN_TESTS.vcxproj

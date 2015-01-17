@@ -41,7 +41,6 @@ namespace NSG
         void SetVertexShader(PResource resource);
         void SetFragmentShader(PResource resource);
         bool Initialize();
-        void Set(ExtraUniforms* pExtraUniforms) { pExtraUniforms_ = pExtraUniforms; }
         GLuint GetAttributeLocation(const std::string& name);
         GLuint GetUniformLocation(const std::string& name);
         GLuint GetAttPositionLoc() const { return att_positionLoc_; }
@@ -57,7 +56,6 @@ namespace NSG
         void SetVariables(Mesh* mesh, Node* node);
         GLuint GetId() const { return id_; }
         void Save(pugi::xml_node& node);
-        static PProgram CreateFrom(const pugi::xml_node& node, Material* material);
         const ProgramFlags& GetFlags() const { return flags_; }
         void SetFlags(const ProgramFlags& flags);
         void EnableFlags(const ProgramFlags& flags);
@@ -89,7 +87,6 @@ namespace NSG
         Material* material_;
         ProgramFlags flags_;
         GLuint id_;
-        ExtraUniforms* pExtraUniforms_;
 
         PVertexShader pVShader_;
         PFragmentShader pFShader_;
@@ -164,7 +161,10 @@ namespace NSG
 
         struct SpotLightLoc
         {
-            PointLightLoc point_;
+			GLuint enabled_;
+            BaseLightLoc base_;
+            GLuint position_;
+            AttenuationLoc atten_;
             GLuint direction_;
             GLuint cutOff_;
         };
@@ -172,6 +172,16 @@ namespace NSG
         std::vector<PointLightLoc> pointLightsLoc_;
         std::vector<DirectionalLightLoc> directionalLightsLoc_;
         std::vector<SpotLightLoc> spotLightsLoc_;
+
+        GLuint blendMode_loc_;
+        struct BlurFilterLoc
+        {
+            GLuint blurDir_;
+            GLuint blurRadius_;
+            GLuint sigma_;
+        };
+        BlurFilterLoc blurFilterLoc_;
+
         /////////////////////////////////////
 
 		size_t nBones_;

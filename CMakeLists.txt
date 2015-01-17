@@ -43,6 +43,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DEPENDENCIES_DIR ${ROOT_SOURCE_DIR}/dependencies)
 set(EXTERNALS_DIR ${ROOT_SOURCE_DIR}/externals)
+set(TOOLS_SOURCE_DIR ${ROOT_SOURCE_DIR}/tools)
+set(CONVERTER_TOOL_SOURCE_DIR ${TOOLS_SOURCE_DIR}/converter)
 
 set(ROOT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(DEPENDENCIES_BINARY_DIR ${ROOT_BINARY_DIR}/dependencies)
@@ -149,19 +151,12 @@ ENDFOREACH()
 add_subdirectory(NSG)
 set(LIBRARIES_2_LINK NSG) #reset libraries to links since NSG will have all the dependencies already set 
 
-##################################
-# NSGWorker
-##################################
-if(EMSCRIPTEN)
-	include_directories(${ROOT_SOURCE_DIR}/NSGWorker)
-	add_subdirectory(${ROOT_SOURCE_DIR}/NSGWorker)
-endif()
-
 ###########################
 # samples
 ###########################
 include (ConvertTool) 
 include (CopyTool)
+include (BlenderDNATool) 
 set(SAMPLES_DIR ${ROOT_SOURCE_DIR}/samples)
 SUBDIRLIST(SUBDIRS ${SAMPLES_DIR})
 FOREACH(subdir ${SUBDIRS})

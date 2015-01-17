@@ -37,7 +37,7 @@ namespace NSG
 		void Render();
 		PMaterial GetMaterial() const { return pMaterial_; }
 		PTexture GetTexture() const;
-		PProgram GetProgram() const { return program_; }
+		PProgram GetProgram() const;
 		void SetInputTexture(PTexture input);
 		PTexture GetInputTexture() const;
 	protected:

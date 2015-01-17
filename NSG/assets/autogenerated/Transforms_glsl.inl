@@ -15,6 +15,8 @@ static const char* TRANSFORMS_GLSL = \
 "	attribute vec3 a_normal;\n"\
 "	attribute vec4 a_color;\n"\
 "	attribute vec3 a_tangent;\n"\
+"	attribute vec4 a_boneIDs;\n"\
+"	attribute vec4 a_weights;\n"\
 "	\n"\
 "	#if defined(INSTANCED)\n"\
 "	    attribute vec4 a_mMatrixRow0;\n"\
@@ -25,16 +27,13 @@ static const char* TRANSFORMS_GLSL = \
 "	    attribute vec3 a_normalMatrixCol2;\n"\
 "	#endif\n"\
 "	#if defined(SKINNED)\n"\
-"		attribute vec4 a_boneIDs;\n"\
-"		attribute vec4 a_weights;\n"\
 "		uniform mat4 u_bones[NUM_BONES];\n"\
 "		mat4 GetSkinnedMatrix()\n"\
 "		{\n"\
-"			ivec4 idx = ivec4(a_boneIDs);\n"\
-"			mat4 boneTransform = u_bones[idx[0]] * a_weights[0];\n"\
-"		    boneTransform += u_bones[idx[1]] * a_weights[1];\n"\
-"		    boneTransform += u_bones[idx[2]] * a_weights[2];\n"\
-"		    boneTransform += u_bones[idx[3]] * a_weights[3];\n"\
+"			mat4 boneTransform = u_bones[int(a_boneIDs[0])] * a_weights[0];\n"\
+"		    boneTransform += u_bones[int(a_boneIDs[1])] * a_weights[1];\n"\
+"		    boneTransform += u_bones[int(a_boneIDs[2])] * a_weights[2];\n"\
+"		    boneTransform += u_bones[int(a_boneIDs[3])] * a_weights[3];\n"\
 "			return boneTransform;\n"\
 "		}\n"\
 "	#endif\n"\

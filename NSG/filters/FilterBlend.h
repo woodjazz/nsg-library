@@ -26,19 +26,13 @@ misrepresented as being the original software.
 #pragma once
 #include "SharedPointers.h"
 #include "Filter.h"
-#include "ExtraUniforms.h"
 
 namespace NSG
 {
-	class FilterBlend : public Filter, public ExtraUniforms
+	class FilterBlend : public Filter
 	{
 	public:
 		FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height);
 		~FilterBlend();
-		void SetLocations();
-		void AssignValues();
-	private:
-		GLuint blendMode_loc_;
-		int blendMode_;
 	};
 }

@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "FragmentShader.h"
 #include "Texture.h"
 #include "Check.h"
-#include "ExtraUniforms.h"
 #include "Light.h"
 #include "Camera.h"
 #include "Mesh.h"
@@ -65,7 +64,6 @@ namespace NSG
         : material_(material),
           flags_((int)ProgramFlag::NONE),
           id_(0),
-          pExtraUniforms_(nullptr),
           att_texcoordLoc0_(-1),
           att_texcoordLoc1_(-1),
           att_positionLoc_(-1),
@@ -88,6 +86,7 @@ namespace NSG
           texture3Loc_(-1),
           texture4Loc_(-1),
           texture5Loc_(-1),
+          blendMode_loc_(-1),
           nBones_(0),
           nDirectionalLights_(0),
           nPointLights_(0),
@@ -107,6 +106,8 @@ namespace NSG
 
     {
         memset(&materialLoc_, -1, sizeof(materialLoc_));
+        memset(&blurFilterLoc_, -1, sizeof(blurFilterLoc_));
+
     }
 
     Program::~Program()
@@ -337,10 +338,13 @@ namespace NSG
         if (fragmentShader_)
             preDefines += "#define HAS_USER_FRAGMENT_SHADER\n";
 
+		bool hasLighting = hasLights && ((int)ProgramFlag::PER_VERTEX_LIGHTING | (int)ProgramFlag::PER_PIXEL_LIGHTING) & flags_;
+
         std::string vBuffer = preDefines + "#define COMPILEVS\n";
         vBuffer += COMMON_GLSL;
         vBuffer += TRANSFORMS_GLSL;
-        vBuffer += LIGHTING_GLSL;
+		if (hasLighting)
+            vBuffer += LIGHTING_GLSL;
         vBuffer += VS_GLSL;
         if (vertexShader_)
         {
@@ -384,9 +388,12 @@ namespace NSG
                 fBuffer += "uniform sampler2D u_texture1;\n";
             }
         }
-        fBuffer += TRANSFORMS_GLSL;
-        fBuffer += LIGHTING_GLSL;
-        fBuffer += POSTPROCESS_GLSL;
+		bool hasPostProcess = ((int)ProgramFlag::BLEND & flags_) || ((int)ProgramFlag::BLUR & flags_);
+
+		if (hasLighting)
+            fBuffer += LIGHTING_GLSL;
+		if (hasPostProcess)
+            fBuffer += POSTPROCESS_GLSL;
         fBuffer += FS_GLSL;
         if (fragmentShader_)
         {
@@ -404,9 +411,6 @@ namespace NSG
         if (Initialize())
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            if (pExtraUniforms_)
-                pExtraUniforms_->SetLocations();
 
             att_positionLoc_ = GetAttributeLocation("a_position");
             att_normalLoc_ = GetAttributeLocation("a_normal");
@@ -484,18 +488,23 @@ namespace NSG
                 std::stringstream lightIndex;
                 lightIndex << "u_spotLights[" << idx << "]";
                 SpotLightLoc spotLightLoc;
-                spotLightLoc.point_.enabled_ = GetUniformLocation(lightIndex.str() + ".point.enabled");
-                spotLightLoc.point_.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".point.base.ambient");
-                spotLightLoc.point_.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".point.base.diffuse");
-                spotLightLoc.point_.base_.specular_ = GetUniformLocation(lightIndex.str() + ".point.base.specular");
-                spotLightLoc.point_.position_ = GetUniformLocation(lightIndex.str() + ".point.position");
-                spotLightLoc.point_.atten_.constant_ = GetUniformLocation(lightIndex.str() + ".point.atten.constant");
-                spotLightLoc.point_.atten_.linear_ = GetUniformLocation(lightIndex.str() + ".point.atten.linear");
-                spotLightLoc.point_.atten_.quadratic_ = GetUniformLocation(lightIndex.str() + ".point.atten.quadratic");
+                spotLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
+                spotLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
+                spotLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
+                spotLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
+                spotLightLoc.position_ = GetUniformLocation(lightIndex.str() + ".position");
+                spotLightLoc.atten_.constant_ = GetUniformLocation(lightIndex.str() + ".atten.constant");
+                spotLightLoc.atten_.linear_ = GetUniformLocation(lightIndex.str() + ".atten.linear");
+                spotLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex.str() + ".atten.quadratic");
                 spotLightLoc.direction_ = GetUniformLocation(lightIndex.str() + ".direction");
                 spotLightLoc.cutOff_ = GetUniformLocation(lightIndex.str() + ".cutOff");
                 spotLightsLoc_.push_back(spotLightLoc);
             }
+
+            blendMode_loc_ = GetUniformLocation("u_blendMode");
+            blurFilterLoc_.blurDir_ = GetUniformLocation("u_blurDir");
+            blurFilterLoc_.blurRadius_ = GetUniformLocation("u_blurRadius");
+            blurFilterLoc_.sigma_ = GetUniformLocation("u_sigma");
 
             graphics_.SetProgram(this);
 
@@ -731,6 +740,18 @@ namespace NSG
 
                 if (materialLoc_.parallaxScale_ != -1)
                     glUniform1f(materialLoc_.parallaxScale_, material_->parallaxScale_);
+
+                if(blendMode_loc_ != -1)
+                    glUniform1i(blendMode_loc_, (int)material_->GetFilterBlendMode());
+        
+                if (blurFilterLoc_.blurDir_ != -1)
+                    glUniform2fv(blurFilterLoc_.blurDir_, 1, &material_->blurFilter_.blurDir_[0]);
+
+                if (blurFilterLoc_.blurRadius_ != -1)
+                    glUniform2fv(blurFilterLoc_.blurRadius_, 1, &material_->blurFilter_.blurRadius_[0]);
+
+                if (blurFilterLoc_.sigma_ != -1)
+                    glUniform1f(blurFilterLoc_.sigma_, material_->blurFilter_.sigma_);
             }
         }
     }
@@ -743,10 +764,9 @@ namespace NSG
         {
             const std::vector<PWeakNode>& bones = skeleton->GetBones();
             unsigned nBones = bones.size();
-            if (nBones != nBones_)
+            if (nBones > nBones_)
             {
-                CHECK_ASSERT(nBones > 0, __FILE__, __LINE__);
-                TRACE_LOG("Invalidating shader since number of bones (in the shader) has changed. Before nBones = " << nBones_ << ", now is " << nBones << ".");
+                TRACE_LOG("Invalidating shader since number of bones (in the shader) has increased. Before nBones = " << nBones_ << ", now is " << nBones << ".");
                 Invalidate();
                 nBones_ = nBones;
                 return false;
@@ -763,7 +783,7 @@ namespace NSG
                 globalInverseModelMatrix = parent->GetGlobalModelInvMatrix();
             }
 
-            for (unsigned idx = 0; idx < nBones_; idx++)
+            for (unsigned idx = 0; idx < nBones; idx++)
             {
                 const GLuint& boneLoc = bonesLoc_[idx];
                 if (boneLoc != -1)
@@ -970,35 +990,35 @@ namespace NSG
                 {
                     const SpotLightLoc& loc = spotLightsLoc_[idx];
 
-                    SetBaseLightVariables(loc.point_.base_, light);
+                    SetBaseLightVariables(loc.base_, light);
 
-                    if (loc.point_.enabled_ != -1)
+                    if (loc.enabled_ != -1)
                     {
-                        glUniform1i(loc.point_.enabled_, light->IsEnabled() ? 1 : 0);
+                        glUniform1i(loc.enabled_, light->IsEnabled() ? 1 : 0);
                     }
 
-                    if (loc.point_.position_ != -1)
+                    if (loc.position_ != -1)
                     {
                         const Vertex3& position = light->GetGlobalPosition();
-                        glUniform3fv(loc.point_.position_, 1, &position[0]);
+                        glUniform3fv(loc.position_, 1, &position[0]);
                     }
 
-                    if (loc.point_.atten_.constant_ != -1)
+                    if (loc.atten_.constant_ != -1)
                     {
                         const Light::Attenuation& attenuation = light->GetAttenuation();
-                        glUniform1f(loc.point_.atten_.constant_, attenuation.constant);
+                        glUniform1f(loc.atten_.constant_, attenuation.constant);
                     }
 
-                    if (loc.point_.atten_.linear_  != -1)
+                    if (loc.atten_.linear_  != -1)
                     {
                         const Light::Attenuation& attenuation = light->GetAttenuation();
-                        glUniform1f(loc.point_.atten_.linear_, attenuation.linear);
+                        glUniform1f(loc.atten_.linear_, attenuation.linear);
                     }
 
-                    if (loc.point_.atten_.quadratic_ != -1)
+                    if (loc.atten_.quadratic_ != -1)
                     {
                         const Light::Attenuation& attenuation = light->GetAttenuation();
-                        glUniform1f(loc.point_.atten_.quadratic_, attenuation.quadratic);
+                        glUniform1f(loc.atten_.quadratic_, attenuation.quadratic);
                     }
 
                     if (loc.direction_ != -1)
@@ -1031,8 +1051,7 @@ namespace NSG
             SetMaterialVariables();
             SetNodeVariables(node);
             SetCameraVariables();
-            if (SetLightVariables(scene) && pExtraUniforms_)
-                pExtraUniforms_->AssignValues();
+			SetLightVariables(scene);
         }
     }
 
@@ -1042,26 +1061,22 @@ namespace NSG
         child.append_attribute("flags") = flags_.to_string().c_str();
     }
 
-    PProgram Program::CreateFrom(const pugi::xml_node& node, Material* material)
-    {
-        std::string flags = node.attribute("flags").as_string();
-        PProgram program = std::make_shared<Program>(material);
-        program->SetFlags(flags);
-        return program;
-    }
-
     void Program::SetFlags(const ProgramFlags& flags)
     {
         if (flags_ != flags)
         {
             flags_ = flags;
+            int needsMaterial = flags & ((int)ProgramFlag::BLEND | (int)ProgramFlag::BLUR | (int)ProgramFlag::TEXT | (int)ProgramFlag::SHOW_TEXTURE0 |
+                                         (int)ProgramFlag::NORMALMAP | (int)ProgramFlag::LIGHTMAP | (int)ProgramFlag::UNLIT | (int)ProgramFlag::SPECULARMAP |
+                                         (int)ProgramFlag::AOMAP | (int)ProgramFlag::DISPLACEMENTMAP | (int)ProgramFlag::DIFFUSEMAP);
+            CHECK_CONDITION((!needsMaterial || material_) && "Program needs material but it does not have one!!!", __FILE__, __LINE__);
             Invalidate();
         }
     }
 
     void Program::EnableFlags(const ProgramFlags& flags)
     {
-		SetFlags(flags_ | (int)flags);
+        SetFlags(flags_ | (int)flags);
     }
 
     void Program::DisableFlags(const ProgramFlags& flags)

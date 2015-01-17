@@ -31,43 +31,43 @@ static void Test01()
 	{
 		Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
 		TRACE_LOG(path);
-		CHECK_ASSERT(!path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(!path.IsPathRelative(), __FILE__, __LINE__);
 	}
 #if WIN32
 	{
 		Path path("c:/sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_ASSERT(!path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(!path.IsPathRelative(), __FILE__, __LINE__);
 	}
 
 	{
 		Path path("a:\\sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_ASSERT(!path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(!path.IsPathRelative(), __FILE__, __LINE__);
 	}
 #endif
 	{
 		Path path("a:sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_ASSERT(path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(path.IsPathRelative(), __FILE__, __LINE__);
 	}
 
 	{
 		Path path("sjhdjshd/sdhsdjhsd/kskd.txt");
 		TRACE_LOG(path);
-		CHECK_ASSERT(path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(path.IsPathRelative(), __FILE__, __LINE__);
 	}
 
 	{
 		Path path("sjhdjshd/sdhsdjhsd/kskd.TXT");
-		CHECK_ASSERT(path.GetFilename() == "kskd.TXT", __FILE__, __LINE__);
-		CHECK_ASSERT(path.GetPath() == "sjhdjshd/sdhsdjhsd", __FILE__, __LINE__);
-		CHECK_ASSERT(path.GetExtension() == "txt", __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetFilename() == "kskd.TXT", __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetPath() == "sjhdjshd/sdhsdjhsd", __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetExtension() == "txt", __FILE__, __LINE__);
 	}
 
 	{
 		Path path("sjhdjshd/data/kskd.TXT");
-		CHECK_ASSERT(!path.AppendDirIfDoesNotExist("data"), __FILE__, __LINE__);
-		CHECK_ASSERT(path.GetPath() == "sjhdjshd/data", __FILE__, __LINE__);
-		CHECK_ASSERT(path.AppendDirIfDoesNotExist("Data"), __FILE__, __LINE__);
-		CHECK_ASSERT(path.GetPath() == "sjhdjshd/data/Data", __FILE__, __LINE__);
+		CHECK_CONDITION(!path.AppendDirIfDoesNotExist("data"), __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data", __FILE__, __LINE__);
+		CHECK_CONDITION(path.AppendDirIfDoesNotExist("Data"), __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data/Data", __FILE__, __LINE__);
 	}
 }
 

@@ -91,9 +91,6 @@ namespace NSG
 	struct AppConfiguration;
 	typedef std::shared_ptr<AppConfiguration> PAppConfiguration;
 	
-	class AppStatistics;
-	typedef std::unique_ptr<AppStatistics> PAppStatistics;
-
 	class Technique;
 	typedef std::shared_ptr<Technique> PTechnique;
 	typedef std::weak_ptr<Technique> PWeakTechnique;

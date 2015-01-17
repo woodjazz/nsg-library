@@ -33,7 +33,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto window = app.GetOrCreateWindow("window", 100, 100, 1024, 768);
 
-    auto xml = std::make_shared<ResourceFile>("AnonymousPro32.xml");
+    auto xml = std::make_shared<ResourceFile>("data/AnonymousPro32.xml");
     auto atlas = std::make_shared<FontAtlas>(xml, window->GetWidth(), window->GetHeight());
     auto textCenter = atlas->GetOrCreateMesh("C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
     auto textLeftTop = atlas->GetOrCreateMesh("LT Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT);

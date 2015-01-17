@@ -45,37 +45,37 @@ static void Test01()
 
     std::vector<SceneNode*> visibles;
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_ASSERT(visibles.size() == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 0, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, -10));
 
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_ASSERT(visibles.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1b->SetPosition(Vertex3(0, 0, -100));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_ASSERT(visibles.size() == 2, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_ASSERT(visibles.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, 0.8f));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_ASSERT(visibles.size() == 2, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
 
 	camera->SetGlobalLookAt(Vector3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_ASSERT(visibles.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, -0.8f));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_ASSERT(visibles.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     camera->SetPosition(Vertex3(0, 0, 1));
 
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_ASSERT(visibles.size() == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 0, __FILE__, __LINE__);
 
 }
 
@@ -98,34 +98,34 @@ static void Test02()
     Vertex3 origin(0);
     Vector3 direction1s(node1s->GetGlobalPosition() - origin);
     Ray ray(origin, direction1s);
-    CHECK_ASSERT(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
-    CHECK_ASSERT(nodes.size() == 1, __FILE__, __LINE__);
-    CHECK_ASSERT(nodes[0] == node1s.get(), __FILE__, __LINE__);
+    CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+    CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(nodes[0] == node1s.get(), __FILE__, __LINE__);
 
     {
         Ray ray(origin, direction1s, 140);
-        CHECK_ASSERT(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+        CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
     }
 
     {
         Ray ray(origin, direction1s, 141);
-        CHECK_ASSERT(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
-        CHECK_ASSERT(nodes.size() == 1, __FILE__, __LINE__);
-        CHECK_ASSERT(nodes[0] == node1s.get(), __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+        CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(nodes[0] == node1s.get(), __FILE__, __LINE__);
     }
 
 
     ray = Ray(origin, -direction1s);
-    CHECK_ASSERT(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+    CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
 
     Vector3 direction1b(node1b->GetGlobalPosition() - origin);
     ray = Ray(origin, direction1b);
-    CHECK_ASSERT(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
-    CHECK_ASSERT(nodes.size() == 1, __FILE__, __LINE__);
-    CHECK_ASSERT(nodes[0] == node1b.get(), __FILE__, __LINE__);
+    CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+    CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(nodes[0] == node1b.get(), __FILE__, __LINE__);
 
     ray = Ray(origin, -direction1b);
-    CHECK_ASSERT(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+    CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
 }
 
 static void Test03()
@@ -141,18 +141,18 @@ static void Test03()
         Vector3 direction1s(node1s->GetGlobalPosition() - origin);
         Ray ray(origin, direction1s);
         std::vector<RayNodeResult> result;
-        CHECK_ASSERT(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-        CHECK_ASSERT(result.size() == 1, __FILE__, __LINE__);
-        CHECK_ASSERT(result[0].node_ == node1s.get(), __FILE__, __LINE__);
-        CHECK_ASSERT(glm::abs(result[0].distance_ - 99) < 0.1f, __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+        CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(result[0].node_ == node1s.get(), __FILE__, __LINE__);
+        CHECK_CONDITION(glm::abs(result[0].distance_ - 99) < 0.1f, __FILE__, __LINE__);
 
         direction1s = node1s->GetGlobalPosition() - Vector3(0.45f, 0, 0) - origin;
         ray = Ray(origin, direction1s);
 
-        CHECK_ASSERT(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-        CHECK_ASSERT(result.size() == 1, __FILE__, __LINE__);
-        CHECK_ASSERT(result[0].node_ == node1s.get(), __FILE__, __LINE__);
-        CHECK_ASSERT(result[0].distance_ > 99, __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+        CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(result[0].node_ == node1s.get(), __FILE__, __LINE__);
+        CHECK_CONDITION(result[0].distance_ > 99, __FILE__, __LINE__);
     }
 }
 
@@ -178,54 +178,54 @@ static void Test04()
         Vector3 direction1s(Vector3(0, 0, -1));
         Ray ray(origin, direction1s);
         RayNodeResult closest;
-        CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_ASSERT(closest.node_->GetName() == "0", __FILE__, __LINE__);
-        CHECK_ASSERT(glm::abs(closest.distance_ - (99 + RADIUS)) < 0.01f, __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+        CHECK_CONDITION(closest.node_->GetName() == "0", __FILE__, __LINE__);
+        CHECK_CONDITION(glm::abs(closest.distance_ - (99 + RADIUS)) < 0.01f, __FILE__, __LINE__);
 
         ray = Ray(Vertex3(0, 0, -101), -direction1s);
-        CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_ASSERT(closest.node_->GetName() == "99", __FILE__, __LINE__);
-        CHECK_ASSERT(glm::abs(closest.distance_ - (1 + RADIUS)) < 0.01f, __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+        CHECK_CONDITION(closest.node_->GetName() == "99", __FILE__, __LINE__);
+        CHECK_CONDITION(glm::abs(closest.distance_ - (1 + RADIUS)) < 0.01f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, 100);
         direction1s = Vertex3(0, 0, -50) - origin;
         ray = Ray(origin, direction1s);
-        CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_ASSERT(closest.node_->GetName() == "50", __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+        CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
         float d = glm::length(direction1s) - RADIUS;
-        CHECK_ASSERT(glm::abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50) - origin;
         ray = Ray(origin, direction1s);
-        CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_ASSERT(closest.node_->GetName() == "50", __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+        CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
         d = glm::length(direction1s) - RADIUS;
-        CHECK_ASSERT(glm::abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50.49f) - origin;
         ray = Ray(origin, direction1s);
-        CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_ASSERT(closest.node_->GetName() == "50", __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+        CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
         d = glm::length(direction1s) - 0.01f;
-        CHECK_ASSERT(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50.51f) - origin;
         ray = Ray(origin, direction1s);
-        CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_ASSERT(closest.node_->GetName() == "51", __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+        CHECK_CONDITION(closest.node_->GetName() == "51", __FILE__, __LINE__);
         d = glm::length(direction1s) - 0.01f;
-        CHECK_ASSERT(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -49.51f) - origin;
         ray = Ray(origin, direction1s);
-        CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_ASSERT(closest.node_->GetName() == "50", __FILE__, __LINE__);
+        CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+        CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
         d = glm::length(direction1s) - 0.01f;
-        CHECK_ASSERT(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
     }
 }
 
@@ -246,9 +246,9 @@ static void Test05()
 		Vector3 direction1s(Vector3(0, 0, -1));
 		Ray ray(origin, direction1s);
 		RayNodeResult closest;
-		CHECK_ASSERT(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-		CHECK_ASSERT(closest.node_->GetName() == "0", __FILE__, __LINE__);
-		CHECK_ASSERT(glm::abs(closest.distance_ - (1 - RADIUS * SCALE)) < 0.01f, __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(closest.node_->GetName() == "0", __FILE__, __LINE__);
+		CHECK_CONDITION(glm::abs(closest.distance_ - (1 - RADIUS * SCALE)) < 0.01f, __FILE__, __LINE__);
 	}
 }
 

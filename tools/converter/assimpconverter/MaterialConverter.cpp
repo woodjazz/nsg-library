@@ -310,32 +310,22 @@ namespace NSG
 
     PTexture MaterialConverter::CreateTexture(const std::string& fileName)
     {
-        #if 0
-        std::string textureFilePath;
-        if (path.IsPathRelative())
-        {
-            if (path.GetPath().empty())
-                textureFilePath = resourcePath_ + "/" + path.GetFilename();
-            else
-                textureFilePath = resourcePath_ + "/" + path.GetPath() + "/" + path.GetFilename();
-        }
-        else
-            textureFilePath = path.GetFilePath();
-        #endif
-        auto resource = std::make_shared<ResourceFile>(fileName);
-        auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+        Path outputPath;
+        outputPath.SetPath(outputDir_.GetPath());
+        outputPath.SetFileName(fileName);
+        Path inputPath;
+        inputPath.SetPath(inputPath_.GetPath());
+        inputPath.SetFileName(fileName);
+        CHECK_CONDITION(NSGCopyFile(inputPath, outputPath), __FILE__, __LINE__);
 
-        {
-            Path outputPath;
-            outputPath.SetPath(outputDir_.GetPath());
-            outputPath.SetFileName(fileName);
-            Path inputPath;
-            inputPath.SetPath(inputPath_.GetPath());
-            inputPath.SetFileName(fileName);
-            CHECK_CONDITION(CopyFile(inputPath, outputPath), __FILE__, __LINE__);
+        std::vector<std::string> dirs = Path::GetDirs(outputPath.GetPath());
+        Path relativePath;
+        if(!dirs.empty())
+            relativePath.SetPath(dirs.back());
+        relativePath.SetFileName(fileName);
 
-        }
-        return texture;
+        auto resource = std::make_shared<ResourceFile>(relativePath);
+        return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     }
 
     MaterialConverter::~MaterialConverter()

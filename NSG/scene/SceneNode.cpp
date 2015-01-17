@@ -374,7 +374,7 @@ namespace NSG
         {
             Graphics::this_->SetScene(GetScene().get());
             Graphics::this_->SetNode(this);
-            Graphics::this_->Set(mesh_.get());
+            Graphics::this_->SetMesh(mesh_.get());
             if (material_)
             {
                 auto technique = material_->GetTechnique();

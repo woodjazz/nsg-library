@@ -59,7 +59,7 @@ static const char* VS_GLSL = \
 "			#endif\n"\
 "			#ifdef HAS_SPOT_LIGHTS\n"\
 "				for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) \n"\
-"					v_light2Pixel[i] = worldPos - u_spotLights[i].point.position;\n"\
+"					v_light2Pixel[i] = worldPos - u_spotLights[i].position;\n"\
 "					\n"\
 "			#endif\n"\
 "			v_color = a_color;\n"\

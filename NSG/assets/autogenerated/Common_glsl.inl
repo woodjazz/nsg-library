@@ -32,5 +32,15 @@ static const char* COMMON_GLSL = \
 "		varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS];\n"\
 "	#endif\n"\
 "#endif\n"\
+"struct Material\n"\
+"{\n"\
+"	vec4 color;\n"\
+"    vec4 ambient;\n"\
+"    vec4 diffuse;\n"\
+"    vec4 specular;\n"\
+"    float shininess;\n"\
+"    float parallaxScale;\n"\
+"};\n"\
+"uniform Material u_material;\n"\
 ;
 }

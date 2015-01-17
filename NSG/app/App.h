@@ -80,7 +80,6 @@ namespace NSG
         MapAndVector<std::string, Mesh> meshes_;
         MapAndVector<std::string, Material> materials_;
         PGraphics graphics_;
-        PAppStatistics statistics_;
         PKeyboard keyboard_;
 		std::set<Object*> objects_;
 		PTexture whiteTexture_;

@@ -99,7 +99,12 @@ namespace NSG
             AddChild(obj);
             return obj;
         }
-
+		template <typename T> std::shared_ptr<T> CreateChild(const std::string& name)
+		{
+			auto obj = std::make_shared<T>(name);
+			AddChild(obj);
+			return obj;
+		}
         template <typename T> std::shared_ptr<T> CreateChild(const std::string& name, const pugi::xml_node& node, const CachedData& data)
         {
             auto obj = std::make_shared<T>(name);

@@ -33,47 +33,12 @@ misrepresented as being the original software.
 namespace NSG
 {
 	FilterBlur::FilterBlur(PTexture input, int output_width, int output_height)
-		: Filter(GetUniqueName("FilterBlur"), input, output_width, output_height, (int)ProgramFlag::BLUR),
-	blurDirLoc_(-1),
-	blurRadiusLoc_(-1),
-	sigmaLoc_(-1),
-	blurDir_(1, 0),
-	blurRadius_(2, 2),
-	sigma_(0.1f)
+		: Filter(GetUniqueName("FilterBlur"), input, output_width, output_height, (int)ProgramFlag::BLUR)
 	{
-        technique_->GetPass(0)->GetProgram()->Set(this);
 	}
 
 	FilterBlur::~FilterBlur()
 	{
 
 	}
-
-	void FilterBlur::SetLocations()
-	{
-		PProgram program = technique_->GetPass(0)->GetProgram();
-
-		blurDirLoc_ = program->GetUniformLocation("u_blurDir");
-		blurRadiusLoc_ = program->GetUniformLocation("u_blurRadius");
-		sigmaLoc_ = program->GetUniformLocation("u_sigma");
-	}
-
-	void FilterBlur::AssignValues()
-	{
-		if(blurDirLoc_ != -1)
-		{
-			glUniform2fv(blurDirLoc_, 1, &blurDir_[0]);
-		}
-
-		if (blurRadiusLoc_ != -1)
-		{
-			glUniform2fv(blurRadiusLoc_, 1, &blurRadius_[0]);
-		}
-
-		if(sigmaLoc_ != -1)
-		{
-			glUniform1f(sigmaLoc_, sigma_);
-		}
-	}
-
 }

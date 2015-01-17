@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "Buffer.h"
 #include "Check.h"
 #include "Graphics.h"
-#include "AppStatistics.h"
 #include <assert.h>
 
 namespace NSG
@@ -41,23 +40,10 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         glGenBuffers(1, &id_);
-
-        if (type_ == GL_ARRAY_BUFFER)
-            AppStatistics::this_->AddVertexBuffer(dynamic_);
-        else
-            AppStatistics::this_->AddIndexBuffer(dynamic_);
     }
 
     Buffer::~Buffer()
     {
-		if (AppStatistics::this_)
-		{
-			if (type_ == GL_ARRAY_BUFFER)
-				AppStatistics::this_->RemoveVertexBuffer(dynamic_);
-			else
-				AppStatistics::this_->RemoveIndexBuffer(dynamic_);
-		}
-
         glDeleteBuffers(1, &id_);
     }
 

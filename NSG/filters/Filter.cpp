@@ -47,7 +47,7 @@ namespace NSG
           name_(name),
           node_(std::make_shared<SceneNode>(name))
     {
-        technique_ = pMaterial_->GetTechnique();
+        technique_ = pMaterial_->GetTechnique().get();
         pMaterial_->SetTexture0(input);
 		technique_->GetPass(0)->GetProgram()->SetFlags(flags);
     }
@@ -56,6 +56,11 @@ namespace NSG
     {
 
     }
+
+	PProgram Filter::GetProgram() const
+	{
+		return technique_->GetPass(0)->GetProgram();
+	}
 
     void Filter::SetInputTexture(PTexture input)
     {
@@ -79,7 +84,7 @@ namespace NSG
         pRender2Texture_->Begin();
 
         Graphics::this_->SetNode(node_.get());
-        Graphics::this_->Set(pMesh_.get());
+        Graphics::this_->SetMesh(pMesh_.get());
 
         technique_->Render(nullptr);
 

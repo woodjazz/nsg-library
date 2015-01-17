@@ -3,9 +3,8 @@
 ##################################################################################
 ##################################################################################
 macro (setup_common)
-    message("${CMAKE_SYSTEM_NAME}")
-    message("${CMAKE_SYSTEM_VERSION}")
-     
+    message("SYSTEM_NAME = ${CMAKE_SYSTEM_NAME} SYSTEM_VERSION = ${CMAKE_SYSTEM_VERSION}")
+         
     if (CMAKE_GENERATOR STREQUAL Xcode)
        set (XCODE TRUE)
     endif ()
@@ -15,10 +14,6 @@ macro (setup_common)
         set (CMAKE_BUILD_TYPE Release)
     else()
         message("Building ${CMAKE_BUILD_TYPE} version")
-    endif ()
-
-    if (CMAKE_BUILD_TYPE STREQUAL Debug)
-       add_definitions(-DIS_DEBUG)
     endif ()
 
     if(ANDROID)
@@ -46,7 +41,7 @@ macro (setup_common)
         add_definitions(-DIS_LINUX)
     endif()
 
-    if(IS_TARGET_MOBILE OR DIS_TARGET_WEB)
+    if(IS_TARGET_MOBILE OR IS_TARGET_WEB)
         set(GLES2 1)
         add_definitions(-DGLES2)
     endif()

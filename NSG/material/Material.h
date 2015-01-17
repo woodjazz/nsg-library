@@ -30,27 +30,27 @@ misrepresented as being the original software.
 #include "UniformsUpdate.h"
 namespace NSG
 {
-	class Material : public Object, UniformsUpdate
-	{
-	public:
-		Material(const std::string& name);
-		~Material();
-		void SetProgramFlags(unsigned passIndex, const ProgramFlags& flags);
-		PMaterial Clone(const std::string& name);
-		void SetName(const std::string& name) {name_ = name;}
-		const std::string& GetName() const { return name_;  }
-		bool SetTexture0(PTexture texture); 
-		bool SetTexture1(PTexture texture); 
-		bool SetTexture2(PTexture texture);
-		bool SetTexture3(PTexture texture);
-		bool SetTexture4(PTexture texture);
-		bool SetTexture5(PTexture texture);
-		void SetDiffuseMap(PTexture texture);
-		void SetNormalMap(PTexture texture);
-		void SetLightMap(PTexture texture);
-		void SetSpecularMap(PTexture texture);
-		void SetAOMap(PTexture texture);
-		void SetDisplacementMap(PTexture texture);
+    class Material : public Object, UniformsUpdate
+    {
+    public:
+        Material(const std::string& name);
+        ~Material();
+        void SetProgramFlags(unsigned passIndex, const ProgramFlags& flags);
+        PMaterial Clone(const std::string& name);
+        void SetName(const std::string& name) {name_ = name;}
+        const std::string& GetName() const { return name_;  }
+        bool SetTexture0(PTexture texture);
+        bool SetTexture1(PTexture texture);
+        bool SetTexture2(PTexture texture);
+        bool SetTexture3(PTexture texture);
+        bool SetTexture4(PTexture texture);
+        bool SetTexture5(PTexture texture);
+        void SetDiffuseMap(PTexture texture);
+        void SetNormalMap(PTexture texture);
+        void SetLightMap(PTexture texture);
+        void SetSpecularMap(PTexture texture);
+        void SetAOMap(PTexture texture);
+        void SetDisplacementMap(PTexture texture);
         PTexture GetTexture0() const { return texture0_; }
         PTexture GetTexture1() const { return texture1_; }
         PTexture GetTexture2() const { return texture2_; }
@@ -62,34 +62,38 @@ namespace NSG
         PTexture GetLightMap() const { return texture2_; }
         PTexture GetSpecularMap() const { return texture3_; }
         PTexture GetAOMap() const { return texture4_; }
-		PTexture GetDisplacementMap() const { return texture5_; }
+        PTexture GetDisplacementMap() const { return texture5_; }
         void SetColor(Color color);
         Color GetColor() const { return color_; }
-		void SetDiffuseColor(Color diffuse);
-		Color GetDiffuseColor() const { return diffuse_; }
-		void SetSpecularColor(Color specular);
-		Color GetSpecularColor() const { return specular_; }
-		void SetAmbientColor(Color ambient);
-		Color GetAmbientColor() const { return ambient_; }
-		void SetShininess(float shininess);
-		float GetShininess() const { return shininess_; }
-		void SetParallaxScale(float parallaxScale);
-		float GetParallaxScale() const { return parallaxScale_; }
-		void SetUniformValue(const char* name, int value);
-		int GetUniformValue(const char* name) const;
-		Technique* GetTechnique() { return technique_.get(); }
-		void Save(pugi::xml_node& node);
-		void Load(const pugi::xml_node& node);
-		void SetSerializable(bool serializable) { serializable_ = serializable; }
-		bool IsSerializable() const { return serializable_; }
-	private:
-		bool IsValid() override;
-		PTexture texture0_; //difusse map
-		PTexture texture1_; //normal map
-		PTexture texture2_; //light map
-		PTexture texture3_; //specular map
-		PTexture texture4_; //AO map
-		PTexture texture5_; //Displacement map
+        void SetDiffuseColor(Color diffuse);
+        Color GetDiffuseColor() const { return diffuse_; }
+        void SetSpecularColor(Color specular);
+        Color GetSpecularColor() const { return specular_; }
+        void SetAmbientColor(Color ambient);
+        Color GetAmbientColor() const { return ambient_; }
+        void SetShininess(float shininess);
+        float GetShininess() const { return shininess_; }
+        void SetParallaxScale(float parallaxScale);
+        float GetParallaxScale() const { return parallaxScale_; }
+        void SetUniformValue(const char* name, int value);
+        int GetUniformValue(const char* name) const;
+        PTechnique GetTechnique() { return technique_; }
+        void Save(pugi::xml_node& node);
+        void Load(const pugi::xml_node& node);
+        void SetSerializable(bool serializable) { serializable_ = serializable; }
+        bool IsSerializable() const { return serializable_; }
+        void SetFilterBlendMode(BlendFilterMode mode);
+        BlendFilterMode GetFilterBlendMode() const { return blendFilterMode_; }
+        void SetFilterBlur(const BlurFilter& data);
+        const BlurFilter& GetFilterBlur() const { return blurFilter_; };
+    private:
+        bool IsValid() override;
+        PTexture texture0_; //difusse map
+        PTexture texture1_; //normal map
+        PTexture texture2_; //light map
+        PTexture texture3_; //specular map
+        PTexture texture4_; //AO map
+        PTexture texture5_; //Displacement map
         Color ambient_;
         Color diffuse_;
         Color specular_;
@@ -99,6 +103,8 @@ namespace NSG
         PTechnique technique_;
         std::string name_;
         bool serializable_;
+        BlendFilterMode blendFilterMode_;
+        BlurFilter blurFilter_;
         friend class Program;
- 	};
+    };
 }

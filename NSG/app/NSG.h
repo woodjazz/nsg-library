@@ -69,7 +69,6 @@ misrepresented as being the original software.
 #include "Pass2Texture.h"
 #include "PassFilter.h"
 #include "AppConfiguration.h"
-#include "AppStatistics.h"
 #include "Sound.h"
 #include "Music.h"
 #include "BoundingBox.h"

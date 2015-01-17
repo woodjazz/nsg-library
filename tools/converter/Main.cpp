@@ -23,12 +23,16 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-
 #include "tclap/CmdLine.h"
 #include "NSG.h"
 #include "SceneConverter.h"
 #include "TrueTypeConverter.h"
+#include "BScene.h"
+#include "bBlenderFile.h"
+#include "bMain.h"
 #include <fstream>
+#include <cstdint>
+#include "Blender.h"
 
 class IFileConstraint : public TCLAP::Constraint<std::string>
 {
@@ -183,16 +187,33 @@ int NSG_MAIN(int argc, char* argv[])
         using namespace NSG;
 
         Path inputFile(iArg.getValue());
-        Path outputDir(oArg.getValue());
+        Path outputDir;
+        outputDir.SetPath(oArg.getValue());
 
-        int fontPixelsHeight = fArg.getValue();
-        int bitmapWidth = wArg.getValue();
-        int bitmapHeight = hArg.getValue();
-        int sChar = sArg.getValue();
-        int eChar = eArg.getValue();
-
-        if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
+        if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
         {
+			App app;
+			auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
+
+			bParse::bBlenderFile obj(inputFile.GetFullAbsoluteFilePath().c_str());
+            obj.parse(false);
+			bParse::bMain* data = obj.getMain();
+			bParse::bListBasePtr* it = data->getScene();
+			if (it->size())
+			{
+                using namespace BlenderConverter;
+				auto scene = (Blender::Scene*)it->at(0);
+                BScene bScene(scene);
+			}
+        }
+        else if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
+        {
+            int fontPixelsHeight = fArg.getValue();
+            int bitmapWidth = wArg.getValue();
+            int bitmapHeight = hArg.getValue();
+            int sChar = sArg.getValue();
+            int eChar = eArg.getValue();
+
             TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
             if (obj.Load() && obj.Save(outputDir))
                 return 0;
@@ -225,5 +246,4 @@ int NSG_MAIN(int argc, char* argv[])
     }
 
     return -1;
-
 }

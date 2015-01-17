@@ -125,55 +125,55 @@ namespace FSMExample0
     void Run() 
     {
         Entity obj;
-        CHECK_ASSERT(obj.GetState() == &obj.idle_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.idle_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(1.9, false);
-        CHECK_ASSERT(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(2.5, false);
-        CHECK_ASSERT(obj.GetState() == &obj.run_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.run_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(3.5, false);
-        CHECK_ASSERT(obj.GetState() == &obj.run_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.run_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(5.0, false);
-        CHECK_ASSERT(obj.GetState() == &obj.run_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.run_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(1.9, false);
-        CHECK_ASSERT(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(1.9, true);
-        CHECK_ASSERT(obj.GetState() == &obj.jump_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.jump_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(1.9, false);
-        CHECK_ASSERT(obj.GetState() == &obj.land_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.land_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(1.9, false);
-        CHECK_ASSERT(obj.GetState() == &obj.idle_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.idle_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(1.9, false);
-        CHECK_ASSERT(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(0.9, false);
-        CHECK_ASSERT(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(0.3, false);
-        CHECK_ASSERT(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.walk_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(0.0, false);
-        CHECK_ASSERT(obj.GetState() == &obj.idle_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.idle_, __FILE__, __LINE__);
         printf("\n");
     }
 }
@@ -333,84 +333,84 @@ namespace FSMExample1
     void Run() 
     {
         Entity obj;
-        CHECK_ASSERT(obj.GetState() == &obj.a_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.a_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(false, false, false);
-        CHECK_ASSERT(obj.GetState() == &obj.a_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.a_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, false, false);
-        CHECK_ASSERT(obj.GetState() == &obj.b_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState()->GetState() == &obj.b11_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.b_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState()->GetState() == &obj.b11_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, false, false);
-        CHECK_ASSERT(obj.GetState() == &obj.b_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState()->GetState() == &obj.b12_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.b_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState()->GetState() == &obj.b12_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, false, false);
-        CHECK_ASSERT(obj.GetState() == &obj.b_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState()->GetState() == &obj.b11_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.b_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState()->GetState() == &obj.b11_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, false, false);
-        CHECK_ASSERT(obj.GetState() == &obj.b_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState()->GetState() == &obj.b12_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.b_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState()->GetState() == &obj.b12_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(false, false, false);
-        CHECK_ASSERT(obj.GetState() == &obj.a_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.a_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, true, false);
-        CHECK_ASSERT(obj.GetState() == &obj.b_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState()->GetState() == &obj.b11_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.b_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.b1_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState()->GetState() == &obj.b11_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, true, false);
-        CHECK_ASSERT(obj.GetState() == &obj.c_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.c1_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.c_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.c1_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, true, false);
-        CHECK_ASSERT(obj.GetState() == &obj.c_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.c2_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.c_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.c2_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, true, false);
-        CHECK_ASSERT(obj.GetState() == &obj.c_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.c2_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.c_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.c2_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, true, true);
-        CHECK_ASSERT(obj.GetState() == &obj.c_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.c3_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.c_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.c3_, __FILE__, __LINE__);
         printf("\n");
         
         obj.Update(true, true, true);
-        CHECK_ASSERT(obj.GetState() == &obj.c_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.c1_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.c_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.c1_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, true, true);
-        CHECK_ASSERT(obj.GetState() == &obj.c_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.c2_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.c_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.c2_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, true, true);
-        CHECK_ASSERT(obj.GetState() == &obj.c_, __FILE__, __LINE__);
-        CHECK_ASSERT(obj.GetState()->GetState() == &obj.c3_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.c_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState()->GetState() == &obj.c3_, __FILE__, __LINE__);
         printf("\n");
 
         obj.Update(true, false, true);
-        CHECK_ASSERT(obj.GetState() == &obj.a_, __FILE__, __LINE__);
+        CHECK_CONDITION(obj.GetState() == &obj.a_, __FILE__, __LINE__);
         printf("\n");
     }
 }

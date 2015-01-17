@@ -31,7 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 1024, 768);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
     auto scene = std::make_shared<Scene>("scene000");
     auto camera = scene->GetOrCreateChild<Camera>("camera");
     const float FOV = 30.0f;
@@ -48,9 +48,15 @@ int NSG_MAIN(int argc, char* argv[])
     scene->SceneNode::Load(resource);
     scene->SetAmbientColor(Color(0));
     auto material0 = app.GetMaterial("Material0");
-    auto material1 = app.GetMaterial("Material1");
-    material0->GetTechnique()->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
-    material1->GetTechnique()->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
+	auto material1 = app.GetMaterial("Material1");
+	material0->SetColor(Color(1, 1, 1, 1));
+	material0->SetDiffuseColor(Color(1, 1, 1, 1));
+	material1->SetColor(Color(1, 1, 1, 1));
+	material1->SetDiffuseColor(Color(1, 1, 1, 1));
+  
+	//material0->GetTechnique()->GetPass(0)->GetProgram()->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
+    material0->GetTechnique()->GetPass(0)->GetProgram()->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::DIFFUSEMAP);
+	material1->GetTechnique()->GetPass(0)->GetProgram()->SetFlags((int)ProgramFlag::PER_PIXEL_LIGHTING | (int)ProgramFlag::DIFFUSEMAP);
 
     camera->SetPosition(Vector3(0, 70, 100));
     camera->SetAspectRatio(window->GetWidth(), window->GetHeight());

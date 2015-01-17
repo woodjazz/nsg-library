@@ -140,7 +140,7 @@ namespace NSG
         SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
         CHECK_ASSERT(value == DOUBLE_BUFFER, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-        CHECK_ASSERT(value == DEPTH_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value >= DEPTH_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
         CHECK_ASSERT(value == RED_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
@@ -155,25 +155,8 @@ namespace NSG
         #if defined(IS_WINDOWS) || defined(IS_LINUX)
         {
             glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
-
-            GLenum err = glewInit();
-            if (err != GLEW_OK)
-            {
-                TRACE_LOG("Failed to initialize GLEW with error = " << glewGetErrorString(err));
-                return;
-            }
-
-            if (!GLEW_VERSION_2_0)
-            {
-                TRACE_LOG("No support for OpenGL 2.0 found\n");
-                return;
-            }
-
-            if (!GLEW_EXT_framebuffer_object || !GLEW_EXT_packed_depth_stencil)
-            {
-                TRACE_LOG("EXT_framebuffer_object and EXT_packed_depth_stencil OpenGL extensions are required");
-                return;
-            }
+			CHECK_CONDITION(GLEW_OK == glewInit(), __FILE__, __LINE__);
+			CHECK_CONDITION(GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil, __FILE__, __LINE__)
         }
         #endif
 

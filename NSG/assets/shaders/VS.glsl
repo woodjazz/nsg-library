@@ -80,7 +80,7 @@
 			#ifdef HAS_SPOT_LIGHTS
 
 				for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
-					v_light2Pixel[i] = worldPos - u_spotLights[i].point.position;
+					v_light2Pixel[i] = worldPos - u_spotLights[i].position;
 					
 			#endif
 

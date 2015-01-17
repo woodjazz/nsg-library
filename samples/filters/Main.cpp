@@ -52,7 +52,7 @@ int NSG_MAIN(int argc, char* argv[])
     boxControlPoints.push_back(Vertex3(0.0f, 0.0f, -5.0f));
 
     auto boxMesh = app.CreateBoxMesh(1, 1, 1, 2, 2, 2);
-    auto boxMaterial = app.GetOrCreateMaterial(GetUniqueName());
+	auto boxMaterial = app.GetOrCreateMaterial(GetUniqueName(), (int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
     auto cubeResource = std::make_shared<ResourceFile>("data/cube.png");
     auto cubeTexture = std::make_shared<Texture>(cubeResource);
     cubeTexture->SetFlags((int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
@@ -60,7 +60,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto sphere = scene->GetOrCreateChild<SceneNode>(GetUniqueName());
     auto sphereMesh = app.CreateSphereMesh(3, 32);
-    auto sphereMaterial = app.GetOrCreateMaterial(GetUniqueName());
+	auto sphereMaterial = app.GetOrCreateMaterial(GetUniqueName(), (int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
     auto sphereResource = std::make_shared<ResourceFile>("data/Earth.jpg");
     auto texture(std::make_shared<Texture>(sphereResource));
     texture->SetFlags((int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
@@ -69,40 +69,23 @@ int NSG_MAIN(int argc, char* argv[])
     auto showTexture = std::make_shared<ShowTexture>();
 
     auto technique = std::make_shared<Technique>(nullptr);
-
-    auto normalBoxPass = std::make_shared<Pass>(technique.get());
-    {
-        auto normalProgram(std::make_shared<Program>(boxMaterial.get()));
-        normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
-        normalBoxPass->SetProgram(normalProgram);
-    }
-
-    auto normalSpherePass = std::make_shared<Pass>(technique.get());
-    {
-        auto normalProgram(std::make_shared<Program>(sphereMaterial.get()));
-        normalProgram->SetFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::DIFFUSEMAP);
-        normalSpherePass->SetProgram(normalProgram);
-    }
-
+	auto normalBoxPass = boxMaterial->GetTechnique()->GetPass(0);
+	auto normalSpherePass = sphereMaterial->GetTechnique()->GetPass(0);
     auto depthPass = std::make_shared<Pass>(technique.get());
-    {
-        depthPass->EnableColorBuffer(false);
-        auto depthProgram(std::make_shared<Program>(nullptr));
-        depthProgram->SetFlags((int)ProgramFlag::STENCIL);
-        depthPass->SetProgram(depthProgram);
-    }
+    depthPass->EnableColorBuffer(false);
+	depthPass->GetProgram()->SetFlags((int)ProgramFlag::STENCIL);
 
     PTexture tx000;
     PFilter boxFilter;
 
     {
         //box passes
-        PPass2Texture pass2Texture(new Pass2Texture(technique.get(), 1024, 1024));
+		auto pass2Texture = std::make_shared<Pass2Texture>(technique.get(), 1024, 1024);
         technique->AddPass(pass2Texture);
         pass2Texture->Add(depthPass, sphere.get(), sphereMesh);
         pass2Texture->Add(normalBoxPass, box.get(), boxMesh);
 
-        tx000 = pass2Texture->GetTexture();
+		tx000 = pass2Texture->GetTexture();
         boxFilter = PFilter(new Filter(GetUniqueName(), pass2Texture->GetTexture(), 1024, 1024));
 
         static const char*
@@ -113,10 +96,10 @@ int NSG_MAIN(int argc, char* argv[])
             gl_FragColor = texture2D(u_texture0, texcoord);
         });
 
-        PResourceMemory resource(new ResourceMemory(fShader, strlen(fShader)));
+		auto resource = std::make_shared<ResourceMemory>(fShader, strlen(fShader));
         boxFilter->GetProgram()->SetFragmentShader(resource);
 
-        PPassFilter filterPass(new PassFilter(technique.get(), boxFilter));
+		auto filterPass = std::make_shared<PassFilter>(technique.get(), boxFilter);
         technique->AddPass(filterPass);
     }
 

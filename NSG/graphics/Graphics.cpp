@@ -34,7 +34,6 @@ misrepresented as being the original software.
 #include "Program.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "AppStatistics.h"
 #include "Scene.h"
 #include "Constants.h"
 #include "Technique.h"
@@ -108,9 +107,11 @@ namespace NSG
           has_packed_depth_stencil_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT),
-          maxVaryingVectors_(-1),
-          maxVertexUniformVectors_(-1),
-          maxTexturesCombined_(0)
+          maxVaryingVectors_(0),
+          maxTexturesCombined_(0),
+          maxVertexUniformVectors_(0),
+          maxFragmentUniformVectors_(0),
+          maxVertexAttribs_(0)
     {
 
         #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -212,34 +213,25 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-                CHECK_ASSERT(maxVaryingVectors_ >= 8, __FILE__, __LINE__);
                 TRACE_LOG("GL_MAX_VARYING_VECTORS = " << maxVaryingVectors_);
             }
             else
             {
-                #ifdef IS_OSX
+                #ifdef GL_MAX_VARYING_COMPONENTS
+                glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &maxVaryingVectors_);
+                status = glGetError();
+                if (status == GL_NO_ERROR)
                 {
-                    glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &maxVaryingVectors_);
-                    status = glGetError();
-                    if (status == GL_NO_ERROR)
-                    {
-                        maxVaryingVectors_ /= 4;
-                        CHECK_ASSERT(maxVaryingVectors_ >= 8, __FILE__, __LINE__);
-                        TRACE_LOG("GL_MAX_VARYING_VECTORS = " << maxVaryingVectors_);
-                    }
-                    else
-                    {
-                        maxVaryingVectors_ = 8;
-                        TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
-
-                    }
+                    maxVaryingVectors_ /= 4;
+                    TRACE_LOG("GL_MAX_VARYING_VECTORS = " << maxVaryingVectors_);
                 }
-                #else
+                else
+                #endif
                 {
                     maxVaryingVectors_ = 8;
                     TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
+
                 }
-                #endif
             }
         }
 
@@ -248,34 +240,55 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-                CHECK_ASSERT(maxVertexUniformVectors_ >= 128, __FILE__, __LINE__);
                 TRACE_LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = " << maxVertexUniformVectors_);
             }
             else
             {
-                #ifdef IS_OSX
+                #ifdef GL_MAX_VERTEX_UNIFORM_COMPONENTS
+                glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &maxVertexUniformVectors_);
+                status = glGetError();
+                if (status == GL_NO_ERROR)
                 {
-                    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &maxVertexUniformVectors_);
-                    status = glGetError();
-                    if (status == GL_NO_ERROR)
-                    {
-                        CHECK_ASSERT(maxVertexUniformVectors_ >= 128, __FILE__, __LINE__);
-                        TRACE_LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = " << maxVertexUniformVectors_);
-                    }
-                    else
-                    {
-                        maxVaryingVectors_ = 128;
-                        TRACE_LOG("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to " << maxVertexUniformVectors_);
-
-                    }
+                    TRACE_LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = " << maxVertexUniformVectors_);
                 }
-                #else
+                else
+                #endif
                 {
-                    maxVertexUniformVectors_ = 128;
+                    maxVaryingVectors_ = 128;
                     TRACE_LOG("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to " << maxVertexUniformVectors_);
                 }
-                #endif
             }
+        }
+
+        {
+            glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &maxFragmentUniformVectors_);
+            GLenum status = glGetError();
+            if (status == GL_NO_ERROR)
+            {
+                TRACE_LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = " << maxFragmentUniformVectors_);
+            }
+            else
+            {
+                #ifdef GL_MAX_FRAGMENT_UNIFORM_COMPONENTS
+                glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &maxFragmentUniformVectors_);
+                status = glGetError();
+                if (status == GL_NO_ERROR)
+                {
+                    TRACE_LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = " << maxFragmentUniformVectors_);
+                }
+                else
+                #endif
+                {
+                    maxVaryingVectors_ = 128;
+                    TRACE_LOG("*** Unknown GL_MAX_FRAGMENT_UNIFORM_VECTORS ***. Setting value to " << maxFragmentUniformVectors_);
+                }
+            }
+        }
+
+
+        {
+            glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs_);
+            TRACE_LOG("GL_MAX_VERTEX_ATTRIBS = " << maxVertexAttribs_);
         }
 
         // Set up texture data read/write alignment
@@ -1121,9 +1134,9 @@ namespace NSG
         }
     }
 
-    void Graphics::Draw(bool solid)
+	void Graphics::DrawActiveMesh(bool solid)
     {
-        if (!activeMesh_ || !activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
+        if (!activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -1144,24 +1157,9 @@ namespace NSG
         const Indexes& indexes = activeMesh_->GetIndexes();
 
         if (!indexes.empty())
-        {
-            //Buffer::Data* bufferIndexData = activeMesh_->GetBufferIndexData();
-            //const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
-            //glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, offset);
             glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, 0);
-        }
         else
-        {
-            //Buffer::Data* bufferVertexData = activeMesh_->GetBufferVertexData();
-            //GLint first = bufferVertexData->offset_ / sizeof(VertexData);
-            //glDrawArrays(mode, first, vertexsData.size());
             glDrawArrays(mode, 0, vertexsData.size());
-        }
-
-        if (solid)
-            AppStatistics::this_->NewTriangles(activeMesh_->GetNumberOfTriangles());
-
-        AppStatistics::this_->NewDrawCall();
 
         SetVertexArrayObj(nullptr);
 
@@ -1172,7 +1170,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-    void Graphics::Draw(bool solid, Batch& batch)
+	void Graphics::DrawActiveMesh(bool solid, Batch& batch)
     {
         if (!activeMesh_->IsReady() || !activeProgram_->IsReady())
             return;
@@ -1192,31 +1190,18 @@ namespace NSG
         unsigned instances = batch.nodes_.size();
         const Indexes& indexes = activeMesh_->GetIndexes();
         if (!indexes.empty())
-        {
-            //Buffer::Data* bufferIndexData = activeMesh_->GetBufferIndexData();
-            //const GLvoid* offset = reinterpret_cast<const GLvoid*>(bufferIndexData->offset_);
-            //glDrawElementsInstanced(mode, indexes.size(), GL_UNSIGNED_SHORT, offset, instances);
             glDrawElementsInstanced(mode, indexes.size(), GL_UNSIGNED_SHORT, 0, instances);
-        }
         else
         {
             const VertexsData& vertexsData = activeMesh_->GetVertexsData();
-            //Buffer::Data* bufferVertexData = activeMesh_->GetBufferVertexData();
-            //GLint first = bufferVertexData->offset_ / sizeof(VertexData);
-            //glDrawArraysInstanced(mode, first, vertexsData.size(), instances);
             glDrawArraysInstanced(mode, 0, vertexsData.size(), instances);
         }
-
-        if (solid)
-            AppStatistics::this_->NewTriangles(activeMesh_->GetNumberOfTriangles() * instances);
 
         SetVertexArrayObj(nullptr);
 
         lastMesh_ = activeMesh_;
         lastNode_ = activeNode_;
         lastProgram_ = activeProgram_;
-
-        AppStatistics::this_->NewDrawCall();
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
@@ -1226,8 +1211,8 @@ namespace NSG
     {
         if (batch.material_)
         {
-            Technique* technique = batch.material_->GetTechnique();
-            Set(batch.mesh_.get());
+            Technique* technique = batch.material_->GetTechnique().get();
+            SetMesh(batch.mesh_.get());
             if (has_instanced_arrays_ext_ && technique->GetNumPasses() == 1)
             {
                 SetNode(nullptr);
@@ -1250,7 +1235,6 @@ namespace NSG
     {
         std::vector<SceneNode*> visibles;
         activeScene_->GetVisibleNodes(activeCamera_, visibles);
-        AppStatistics::this_->SetNodes(activeScene_->GetChildren().size(), visibles.size());
         std::vector<PBatch> batches;
         GenerateBatches(visibles, batches);
         for (auto& batch : batches)

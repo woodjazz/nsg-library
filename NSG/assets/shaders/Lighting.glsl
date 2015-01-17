@@ -1,16 +1,4 @@
 //Remember to rebuild with CMake if this file changes
-struct Material
-{
-    vec4 color;
-    vec4 ambient;
-    vec4 diffuse;
-    vec4 specular;
-    float shininess;
-    float parallaxScale;
-};
-
-uniform Material u_material;
-
 #ifdef HAS_LIGHTS
 
 struct BaseLight
@@ -45,11 +33,12 @@ struct PointLight
 struct SpotLight                                                                      
 {
     int enabled;                                                                          
-    PointLight point;                                                                         
-    vec3 direction;                                                                          
+    BaseLight base;
+    vec3 position;
+    vec3 direction;
+    Attenuation atten;
     float cutOff; // 0.5f * cosine(cutOff)
 };
-
 
 uniform vec4 u_sceneAmbientColor;
 uniform vec3 u_eyeWorldPos;
@@ -112,15 +101,13 @@ vec4 CalcPointLight(BaseLight base, vec3 lightDirection, Attenuation attenuation
 
 vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, Attenuation attenuation, vec3 vertexToEye, vec3 normal, float cutOff)
 {
-    float distance = length(lightDirection);
     lightDirection = normalize(lightDirection);
-    
     light2Pixel = normalize(light2Pixel);
     float spotFactor = dot(light2Pixel, lightDirection);
 
     if(spotFactor > cutOff)
     {
-        vec4 color = CalcPointLight(base, lightDirection, attenuation, vertexToEye, normal);
+        vec4 color = CalcPointLight(base, light2Pixel, attenuation, vertexToEye, normal);
         return color * (1.0 - (1.0 - spotFactor) * 1.0/(1.0 - cutOff));
     }
     else
@@ -157,8 +144,8 @@ vec4 CalcFSTotalLight(vec3 vertexToEye, vec3 normal)
 
         for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
         {
-            if(u_spotLights[i].point.enabled != 0)
-                totalLight += CalcSpotLight(u_spotLights[i].point.base, v_light2Pixel[i], u_spotLights[i].direction, u_spotLights[i].point.atten, vertexToEye, normal, u_spotLights[i].cutOff); 
+            if(u_spotLights[i].enabled != 0)
+                totalLight += CalcSpotLight(u_spotLights[i].base, v_light2Pixel[i], u_spotLights[i].direction, u_spotLights[i].atten, vertexToEye, normal, u_spotLights[i].cutOff); 
         }
 
     #endif
@@ -194,8 +181,8 @@ vec4 CalcVSTotalLight(vec3 worldPos, vec3 vertexToEye, vec3 normal)
 
         for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
         {
-            if(u_spotLights[i].point.enabled != 0)
-                totalLight += CalcSpotLight(u_spotLights[i].point.base, worldPos - u_spotLights[i].point.position, u_spotLights[i].direction, u_spotLights[i].point.atten, vertexToEye, normal, u_spotLights[i].cutOff); 
+            if(u_spotLights[i].enabled != 0)
+                totalLight += CalcSpotLight(u_spotLights[i].base, worldPos - u_spotLights[i].position, u_spotLights[i].direction, u_spotLights[i].atten, vertexToEye, normal, u_spotLights[i].cutOff); 
         }
 
     #endif

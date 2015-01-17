@@ -3,16 +3,6 @@ namespace NSG
 {
 static const char* LIGHTING_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
-"struct Material\n"\
-"{\n"\
-"    vec4 color;\n"\
-"    vec4 ambient;\n"\
-"    vec4 diffuse;\n"\
-"    vec4 specular;\n"\
-"    float shininess;\n"\
-"    float parallaxScale;\n"\
-"};\n"\
-"uniform Material u_material;\n"\
 "#ifdef HAS_LIGHTS\n"\
 "struct BaseLight\n"\
 "{\n"\
@@ -43,8 +33,10 @@ static const char* LIGHTING_GLSL = \
 "struct SpotLight                                                                      \n"\
 "{\n"\
 "    int enabled;                                                                          \n"\
-"    PointLight point;                                                                         \n"\
-"    vec3 direction;                                                                          \n"\
+"    BaseLight base;\n"\
+"    vec3 position;\n"\
+"    vec3 direction;\n"\
+"    Attenuation atten;\n"\
 "    float cutOff; // 0.5f * cosine(cutOff)\n"\
 "};\n"\
 "uniform vec4 u_sceneAmbientColor;\n"\
@@ -99,14 +91,12 @@ static const char* LIGHTING_GLSL = \
 "}\n"\
 "vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, Attenuation attenuation, vec3 vertexToEye, vec3 normal, float cutOff)\n"\
 "{\n"\
-"    float distance = length(lightDirection);\n"\
 "    lightDirection = normalize(lightDirection);\n"\
-"    \n"\
 "    light2Pixel = normalize(light2Pixel);\n"\
 "    float spotFactor = dot(light2Pixel, lightDirection);\n"\
 "    if(spotFactor > cutOff)\n"\
 "    {\n"\
-"        vec4 color = CalcPointLight(base, lightDirection, attenuation, vertexToEye, normal);\n"\
+"        vec4 color = CalcPointLight(base, light2Pixel, attenuation, vertexToEye, normal);\n"\
 "        return color * (1.0 - (1.0 - spotFactor) * 1.0/(1.0 - cutOff));\n"\
 "    }\n"\
 "    else\n"\
@@ -134,8 +124,8 @@ static const char* LIGHTING_GLSL = \
 "    #ifdef HAS_SPOT_LIGHTS\n"\
 "        for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) \n"\
 "        {\n"\
-"            if(u_spotLights[i].point.enabled != 0)\n"\
-"                totalLight += CalcSpotLight(u_spotLights[i].point.base, v_light2Pixel[i], u_spotLights[i].direction, u_spotLights[i].point.atten, vertexToEye, normal, u_spotLights[i].cutOff); \n"\
+"            if(u_spotLights[i].enabled != 0)\n"\
+"                totalLight += CalcSpotLight(u_spotLights[i].base, v_light2Pixel[i], u_spotLights[i].direction, u_spotLights[i].atten, vertexToEye, normal, u_spotLights[i].cutOff); \n"\
 "        }\n"\
 "    #endif\n"\
 "    return totalLight;\n"\
@@ -160,8 +150,8 @@ static const char* LIGHTING_GLSL = \
 "    #ifdef HAS_SPOT_LIGHTS\n"\
 "        for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) \n"\
 "        {\n"\
-"            if(u_spotLights[i].point.enabled != 0)\n"\
-"                totalLight += CalcSpotLight(u_spotLights[i].point.base, worldPos - u_spotLights[i].point.position, u_spotLights[i].direction, u_spotLights[i].point.atten, vertexToEye, normal, u_spotLights[i].cutOff); \n"\
+"            if(u_spotLights[i].enabled != 0)\n"\
+"                totalLight += CalcSpotLight(u_spotLights[i].base, worldPos - u_spotLights[i].position, u_spotLights[i].direction, u_spotLights[i].atten, vertexToEye, normal, u_spotLights[i].cutOff); \n"\
 "        }\n"\
 "    #endif\n"\
 "    return totalLight;\n"\

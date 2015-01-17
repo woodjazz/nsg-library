@@ -61,12 +61,12 @@ namespace NSG
         scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
     }
 
-    bool CopyFile(const Path& source, const Path& target)
+    bool NSGCopyFile(const Path& source, const Path& target)
     {
-        std::ifstream is(source.GetFullAbsoluteFilePath());
+        std::ifstream is(source.GetFullAbsoluteFilePath(), std::ios::binary);
         if (is.is_open())
         {
-            std::ofstream os(target.GetFullAbsoluteFilePath());
+            std::ofstream os(target.GetFullAbsoluteFilePath(), std::ios::binary);
             if (os.is_open())
             {
                 os << is.rdbuf();

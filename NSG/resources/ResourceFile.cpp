@@ -48,15 +48,9 @@ namespace NSG
 
     void ResourceFile::AllocateResources()
     {
-        #if SDL
+        #if !defined(EMSCRIPTEN)
         {
             SDL_RWops* context = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
-
-            if (!context)
-            {
-                if (path_.AppendDirIfDoesNotExist("data"))
-                    context = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
-            }
 
             if (context)
             {
@@ -77,12 +71,6 @@ namespace NSG
         {
             std::ifstream file(path_.GetFilePath().c_str(), std::ios::binary);
 
-            if (!file.is_open())
-            {
-                if (path_.AppendDirIfDoesNotExist("data"))
-                    file.open(path_.GetFilePath().c_str(), std::ios::binary);
-            }
-
             if (file.is_open())
             {
                 file.seekg(0, std::ios::end);
@@ -96,7 +84,7 @@ namespace NSG
             }
             else
             {
-                TRACE_LOG("Cannot load " << path_.GetFilePath() << " with error " << SDL_GetError());
+                TRACE_LOG("Cannot load " << path_.GetFilePath());
             }
         }
         #endif

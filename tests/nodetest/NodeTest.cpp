@@ -33,38 +33,38 @@ static void Test01()
 	pA->SetPosition(Vertex3(1,0,0));
 	pB->SetPosition(Vertex3(-2,0,0));
 	
-	CHECK_ASSERT(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
 
     pA->SetPosition(Vertex3(2,0,0));
 
-	CHECK_ASSERT(pA->GetPosition() == Vertex3(2,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(2,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(0,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetPosition() == Vertex3(2,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetGlobalPosition() == Vertex3(2,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetGlobalPosition() == Vertex3(0,0,0), __FILE__, __LINE__);
 
     pA->SetPosition(Vertex3(1,0,0));
 
-	CHECK_ASSERT(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
 	
 	pB->SetScale(Vertex3(2,2,2));
 
-   	CHECK_ASSERT(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
+   	CHECK_CONDITION(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetGlobalPosition() == Vertex3(-1,0,0), __FILE__, __LINE__);
 
     pA->SetScale(Vertex3(2,2,2));
 
-	CHECK_ASSERT(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
-	CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-3,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pA->GetGlobalPosition() == Vertex3(1,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+	CHECK_CONDITION(pB->GetGlobalPosition() == Vertex3(-3,0,0), __FILE__, __LINE__);
 }
 
 static void Test02()
@@ -74,8 +74,8 @@ static void Test02()
 	pA->SetPosition(Vertex3(1,0,0));
 	pB->SetGlobalPosition(Vertex3(-2,0,0));
 
-    CHECK_ASSERT(pB->GetPosition() == Vertex3(-3,0,0), __FILE__, __LINE__);
-    CHECK_ASSERT(pB->GetGlobalPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
+    CHECK_CONDITION(pB->GetPosition() == Vertex3(-3,0,0), __FILE__, __LINE__);
+    CHECK_CONDITION(pB->GetGlobalPosition() == Vertex3(-2,0,0), __FILE__, __LINE__);
 }
 
 
@@ -84,81 +84,81 @@ static void Test03()
 
 	{
 		Node node;
-		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
 
 		Vector3 lookAt = -WORLD_X_COORD;
 		node.SetGlobalLookAt(lookAt);
 
-		CHECK_ASSERT(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
 		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
 		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
 		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
 
-		CHECK_ASSERT(glm::distance(vx, -WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vz, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vx, -WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vz, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
 
 	{
 		Node node;
-		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
 
 		Vector3 lookAt = -WORLD_Z_COORD;
 		node.SetGlobalLookAt(lookAt);
 
-		CHECK_ASSERT(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
 		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
 		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
 		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
 
-		CHECK_ASSERT(glm::distance(vx, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vz, WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vx, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vz, WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
 
 	{
 		Node node;
-		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
 
 		Vector3 lookAt = -WORLD_Z_COORD;
 		node.SetPosition(WORLD_Z_COORD);
 		node.SetGlobalLookAt(lookAt);
 
-		CHECK_ASSERT(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
 		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
 		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
 		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
 
-		CHECK_ASSERT(glm::distance(vx, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vz, WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vx, WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vz, WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
 
 	{
 		Node node;
-		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
 
 		Vector3 lookAt = WORLD_Z_COORD;
 		node.SetPosition(-WORLD_Z_COORD);
 		node.SetGlobalLookAt(lookAt);
 
-		CHECK_ASSERT(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
 		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
 		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
 		Vector3 vz = node.GetGlobalOrientation() * WORLD_Z_COORD;
 
-		CHECK_ASSERT(glm::distance(vx, -WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vz, -WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vx, -WORLD_X_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vy, WORLD_Y_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vz, -WORLD_Z_COORD) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
 
 	{
 		Node node;
-		CHECK_ASSERT(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
 
 		Vector3 lookAt = WORLD_Z_COORD;
 		node.SetPosition(WORLD_X_COORD + WORLD_Y_COORD + WORLD_Z_COORD);
@@ -166,7 +166,7 @@ static void Test03()
 
 		Vector3 expectedLookAt = Vector3(-0.7071068f, -0.7071068f, 0);
 		Vector3 currentLookAt = node.GetLookAtDirection();
-		CHECK_ASSERT(glm::distance(currentLookAt, expectedLookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(currentLookAt, expectedLookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
 		Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
 		Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
@@ -176,9 +176,9 @@ static void Test03()
 		Vector3 expectedVz = -expectedLookAt;
 		Vector3 expectedVx = glm::cross(expectedVy, expectedVz);
 
-		CHECK_ASSERT(glm::distance(vx, expectedVx) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vy, expectedVy) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_ASSERT(glm::distance(vz, expectedVz) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vx, expectedVx) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vy, expectedVy) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vz, expectedVz) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
 
 	{
@@ -187,7 +187,7 @@ static void Test03()
 		node.SetGlobalLookAt(VECTOR3_ZERO);
 		Vector3 dir = node.GetLookAtDirection();
 		Vector3 expectedDir(glm::normalize(Vector3(0, -1, -1)));
-		CHECK_ASSERT(glm::distance(dir, expectedDir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(dir, expectedDir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
 
 	{
@@ -196,7 +196,7 @@ static void Test03()
 		node.SetGlobalLookAt(VECTOR3_ZERO);
 		Vector3 dir = node.GetLookAtDirection();
 		Vector3 expectedDir(glm::normalize(Vector3(-1, -1, 0)));
-		CHECK_ASSERT(glm::distance(dir, expectedDir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(dir, expectedDir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
 
 	{
@@ -222,7 +222,7 @@ static void Test03()
 			node.SetGlobalPosition(node1->GetGlobalPosition());
 			node.SetOrientation(q);
 			Vector3 dir = node.GetLookAtDirection();
-			CHECK_ASSERT(glm::distance(dir0, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+			CHECK_CONDITION(glm::distance(dir0, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 		}
 
 		{
@@ -232,7 +232,7 @@ static void Test03()
 			node.SetOrientation(q);
 			Vector3 dir = node.GetLookAtDirection();
 			Vector3 expectedDir(-0.5f, dir0.y, -0.5f);
-			CHECK_ASSERT(glm::distance(expectedDir, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+			CHECK_CONDITION(glm::distance(expectedDir, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 		}
 
 
@@ -242,7 +242,7 @@ static void Test03()
 			node.SetGlobalPosition(node1->GetGlobalPosition());
 			node.SetOrientation(q);
 			Vector3 dir = node.GetLookAtDirection();
-			CHECK_ASSERT(glm::distance(dir1, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+			CHECK_CONDITION(glm::distance(dir1, dir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 		}
 
 	}
@@ -259,13 +259,13 @@ static void Test04()
     pA->SetOrientation(glm::angleAxis(PI, Vertex3(0, 0, 1)));
     Vertex3 v2(pA->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    CHECK_ASSERT(glm::distance(v2, Vertex3(1,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(v2, Vertex3(1,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
     
     pA->SetScale(Vertex3(2,2,2));
 
     v2 = Vertex3(pA->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    CHECK_ASSERT(glm::distance(v2, Vertex3(0,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(v2, Vertex3(0,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 }
 
 static void Test05()
@@ -281,13 +281,13 @@ static void Test05()
 
     Vertex3 v2(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    CHECK_ASSERT(glm::distance(v2, Vertex3(3,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(v2, Vertex3(3,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
     
     pA->SetScale(Vertex3(2,2,2));
 
     v2 = Vertex3(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    CHECK_ASSERT(glm::distance(v2, Vertex3(4,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(v2, Vertex3(4,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 }
 
 static void Test06()
@@ -303,7 +303,7 @@ static void Test06()
 
     Vertex3 v2(pB->GetGlobalModelMatrix() * Vertex4(v1,1));
 
-    CHECK_ASSERT(glm::distance(v2, Vertex3(-1,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(v2, Vertex3(-1,0,0)) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 }
 
 static void Test07()
@@ -327,11 +327,11 @@ static void Test07()
     Vertex3 a1 = glm::eulerAngles(q1);
     Vertex3 a2 = glm::eulerAngles(q);
 
-    CHECK_ASSERT(glm::distance(a1, a2) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(a1, a2) < 2*glm::epsilon<float>(), __FILE__, __LINE__);
 
-    CHECK_ASSERT(position == position1, __FILE__, __LINE__);
+    CHECK_CONDITION(position == position1, __FILE__, __LINE__);
 
-    CHECK_ASSERT(scale == scale1, __FILE__, __LINE__);
+    CHECK_CONDITION(scale == scale1, __FILE__, __LINE__);
 }
 
 void NodeTest()
