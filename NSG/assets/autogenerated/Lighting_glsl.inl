@@ -64,15 +64,12 @@ static const char* LIGHTING_GLSL = \
 "        color = max(color, diffuseFactor * base.diffuse * u_material.diffuse);                                \n"\
 "        vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
 "        float specularFactor = dot(vertexToEye, lightReflect);\n"\
-"        if (specularFactor > 0.0)\n"\
-"       	{\n"\
-"        	specularFactor = pow(specularFactor, u_material.shininess);\n"\
-"            #ifdef SPECULARMAP\n"\
-"                color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);\n"\
-"            #else\n"\
-"                color += specularFactor * base.specular * u_material.specular;\n"\
-"            #endif\n"\
-"        }\n"\
+"    	specularFactor = pow(specularFactor, u_material.shininess);\n"\
+"        #ifdef SPECULARMAP\n"\
+"            color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);\n"\
+"        #else\n"\
+"            color += specularFactor * base.specular * u_material.specular;\n"\
+"        #endif\n"\
 "    }                                                                                       \n"\
 "                                                                            \n"\
 "    return color;  \n"\

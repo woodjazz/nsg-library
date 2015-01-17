@@ -70,16 +70,12 @@ vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 norma
         color = max(color, diffuseFactor * base.diffuse * u_material.diffuse);                                
         vec3 lightReflect = normalize(reflect(lightDirection, normal));
         float specularFactor = dot(vertexToEye, lightReflect);
-        if (specularFactor > 0.0)
-       	{
-        	specularFactor = pow(specularFactor, u_material.shininess);
-
-            #ifdef SPECULARMAP
-                color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);
-            #else
-                color += specularFactor * base.specular * u_material.specular;
-            #endif
-        }
+    	specularFactor = pow(specularFactor, u_material.shininess);
+        #ifdef SPECULARMAP
+            color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);
+        #else
+            color += specularFactor * base.specular * u_material.specular;
+        #endif
     }                                                                                       
                                                                             
     return color;  
