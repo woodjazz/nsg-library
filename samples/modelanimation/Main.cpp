@@ -31,7 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 1024, 768);
     auto scene = std::make_shared<Scene>("scene000");
     auto camera = scene->GetOrCreateChild<Camera>("camera");
     const float FOV = 30.0f;

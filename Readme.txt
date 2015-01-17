@@ -6,7 +6,7 @@ Install SDK,NDK,Java(JDK)
 For the SDK you will need Android 4.4.2 (API 19)
 Install ant (http://ant.apache.org/bindownload.cgi)
 Linux also needed: sudo apt-get install openjdk-7-jdk
-Set the environment variables ANDROID_SDK, ANDROID_NDK, ANT_HOME and JAVA_HOME 
+Set the environment variables: ANDROID_SDK, ANDROID_NDK, ANT_HOME and JAVA_HOME 
 IMPORTANT NOTE FOR WINDOWS' USERS: use UNIX syntax for paths when setting the environment variables. (Do not use \ use / instead)
 
 -------------------------
@@ -20,7 +20,7 @@ apt-get install libasound2-dev
 Emscripten
 -------------------------
 Install SDK: http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html
-
+Set the environment variables: EMSCRIPTEN
 -------------------------
 Windows
 -------------------------
