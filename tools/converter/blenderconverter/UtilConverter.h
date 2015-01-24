@@ -25,10 +25,29 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "../Blender.h"
+#include "Blender.h"
 #include <string>
 
 #define B_IDNAME(x) ((x) && (x)->id.name[0] != '0' ? (x)->id.name + 2 : "")
 namespace BlenderConverter
 {
+	NSG::Matrix4 ToMatrix(const float m[][4]);
+	NSG::Matrix3 ToMatrix(const float m[][3]);
+
+	enum SPLINE_CHANNEL_CODE
+	{
+		SC_ROT_QUAT_W,
+		SC_ROT_QUAT_X,
+		SC_ROT_QUAT_Y,
+		SC_ROT_QUAT_Z,
+		SC_ROT_EULER_X,
+		SC_ROT_EULER_Y,
+		SC_ROT_EULER_Z,
+		SC_LOC_X,
+		SC_LOC_Y,
+		SC_LOC_Z,
+		SC_SCL_X,
+		SC_SCL_Y,
+		SC_SCL_Z
+	};
 }

@@ -29,10 +29,8 @@ misrepresented as being the original software.
 #include "TrueTypeConverter.h"
 #include "BScene.h"
 #include "bBlenderFile.h"
-#include "bMain.h"
 #include <fstream>
 #include <cstdint>
-#include "Blender.h"
 
 class IFileConstraint : public TCLAP::Constraint<std::string>
 {
@@ -194,17 +192,10 @@ int NSG_MAIN(int argc, char* argv[])
         {
 			App app;
 			auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
-
-			bParse::bBlenderFile obj(inputFile.GetFullAbsoluteFilePath().c_str());
-            obj.parse(false);
-			bParse::bMain* data = obj.getMain();
-			bParse::bListBasePtr* it = data->getScene();
-			if (it->size())
-			{
-                using namespace BlenderConverter;
-				auto scene = (Blender::Scene*)it->at(0);
-                BScene bScene(scene);
-			}
+			using namespace BlenderConverter;
+			BScene scene(inputFile, outputDir);
+			if (scene.Load() && scene.Save())
+				return 0;
         }
         else if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
         {

@@ -38,8 +38,8 @@ namespace NSG
     {
         return position_ == obj.position_ &&
                normal_ == obj.normal_ &&
-               uv0_ == obj.uv0_ &&
-               uv1_ == obj.uv1_ &&
+			   uv_[0] == obj.uv_[0] &&
+			   uv_[1] == obj.uv_[1] &&
                color_ == obj.color_ &&
                tangent_ == obj.tangent_ &&
                bonesID_ == obj.bonesID_ &&
@@ -48,7 +48,7 @@ namespace NSG
 
     std::ostream& operator << (std::ostream& s , const VertexData& obj)
     {
-        s << obj.position_ << obj.normal_ << obj.uv0_ << obj.uv1_ << obj.color_ << obj.tangent_ << obj.bonesID_ << obj.bonesWeight_;
+        s << obj.position_ << obj.normal_ << obj.uv_[0] << obj.uv_[1] << obj.color_ << obj.tangent_ << obj.bonesID_ << obj.bonesWeight_;
         return s;
     }
 }

@@ -40,6 +40,7 @@ misrepresented as being the original software.
 #include "SharedPointers.h"
 #include "FrameColorSelection.h"
 #include "Camera.h"
+#include "ModelMesh.h"
 #include "BoxMesh.h"
 #include "SphereMesh.h"
 #include "PlaneMesh.h"

@@ -211,6 +211,11 @@ namespace NSG
         return meshes_.GetOrCreateClass<ModelMesh>(name);
     }
 
+	PModelMesh App::GetModelMesh(const std::string& name) const
+	{
+		return meshes_.GetClass<ModelMesh>(name);
+	}
+
     PPlaneMesh App::CreatePlaneMesh(float width, float height, int columns, int rows)
     {
         std::stringstream ss;

@@ -160,13 +160,13 @@ namespace NSG
 
                 {
                     std::stringstream ss;
-                    ss << obj.uv0_;
+					ss << obj.uv_[0];
                     vertexData.append_attribute("uv0") = ss.str().c_str();
                 }
 
 				{
 					std::stringstream ss;
-					ss << obj.uv1_;
+					ss << obj.uv_[1];
 					vertexData.append_attribute("uv1") = ss.str().c_str();
 				}
 
@@ -228,8 +228,8 @@ namespace NSG
                 VertexData obj;
                 obj.position_ = GetVertex3(vertexNode.attribute("position").as_string());
                 obj.normal_ = GetVertex3(vertexNode.attribute("normal").as_string());
-                obj.uv0_ = GetVertex2(vertexNode.attribute("uv0").as_string());
-				obj.uv1_ = GetVertex2(vertexNode.attribute("uv1").as_string());
+				obj.uv_[0] = GetVertex2(vertexNode.attribute("uv0").as_string());
+				obj.uv_[1] = GetVertex2(vertexNode.attribute("uv1").as_string());
                 obj.color_ =  GetVertex4(vertexNode.attribute("color").as_string());
 				// Do not import tangents since they are calculated
                 //obj.tangent_ =  GetVertex3(vertexNode.attribute("tangent").as_string());
@@ -267,10 +267,10 @@ namespace NSG
             Vector3 edge1 = v1.position_ - v0.position_;
             Vector3 edge2 = v2.position_ - v0.position_;
 
-            float deltaU1 = v1.uv0_.x - v0.uv0_.x;
-            float deltaV1 = v1.uv0_.y - v0.uv0_.y;
-            float deltaU2 = v2.uv0_.x - v0.uv0_.x;
-            float deltaV2 = v2.uv0_.y - v0.uv0_.y;
+			float deltaU1 = v1.uv_[0].x - v0.uv_[0].x;
+			float deltaV1 = v1.uv_[0].y - v0.uv_[0].y;
+			float deltaU2 = v2.uv_[0].x - v0.uv_[0].x;
+			float deltaV2 = v2.uv_[0].y - v0.uv_[0].y;
 
             float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
 
@@ -321,6 +321,14 @@ namespace NSG
 				vertexsData_[i].bonesWeight_ = bonesWeight;
 			}
 		}
+	}
+
+	void Mesh::SetBlendData(unsigned vertex, const Vector4& bonesID, Vector4& bonesWeight)
+	{
+		CHECK_ASSERT(vertexsData_.size() > vertex, __FILE__, __LINE__);
+		vertexsData_[vertex].bonesID_ = bonesID;
+		vertexsData_[vertex].bonesWeight_ = bonesWeight;
+
 	}
 
     void Mesh::AddSceneNode(SceneNode* node)

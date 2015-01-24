@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "glm/gtc/matrix_access.hpp"
 #include "glm/gtx/spline.hpp"
 #include "glm/gtx/io.hpp"
+#include "glm/gtx/norm.hpp"
 #include "SharedPointers.h"
 #include "GLES2Includes.h"
 #include "FlagSet.h"

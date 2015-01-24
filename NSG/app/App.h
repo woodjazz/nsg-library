@@ -51,6 +51,7 @@ namespace NSG
         PCircleMesh CreateCircleMesh(float radius = 1, int res = 8);
         PEllipseMesh CreateEllipseMesh(float width = 2, float height = 1, int res = 8);
         PModelMesh GetOrCreateModelMesh(const std::string& name);
+		PModelMesh GetModelMesh(const std::string& name) const;
         PPlaneMesh CreatePlaneMesh(float width = 2, float height = 2, int columns = 2, int rows = 2);
         PRectangleMesh CreateRectangleMesh(float width = 2, float height = 1);
         PRoundedRectangleMesh CreateRoundedRectangleMesh(float radius = 1, float width = 2, float height = 2, int res = 8);

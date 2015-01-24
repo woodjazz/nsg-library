@@ -165,16 +165,16 @@ namespace NSG
 
 
                 vertex[0].position_ = Vertex3(offsetX, offsetY, 0);
-                vertex[0].uv0_ = Vertex2(ux, uy);
+				vertex[0].uv_[0] = Vertex2(ux, uy);
 
                 vertex[1].position_ = Vertex3(offsetX + w, offsetY, 0);
-                vertex[1].uv0_ = Vertex2(ux + uw, uy);
+				vertex[1].uv_[0] = Vertex2(ux + uw, uy);
 
                 vertex[2].position_ = Vertex3(offsetX, offsetY + h, 0);
-                vertex[2].uv0_ = Vertex2(ux, uy + uh);
+				vertex[2].uv_[0] = Vertex2(ux, uy + uh);
 
                 vertex[3].position_ = Vertex3(offsetX + w, offsetY + h, 0);
-                vertex[3].uv0_ = Vertex2(ux + uw, uy + uh);
+				vertex[3].uv_[0] = Vertex2(ux + uw, uy + uh);
             }
 
             for (int i = 0; i < 4; i++)

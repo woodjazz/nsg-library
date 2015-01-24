@@ -194,14 +194,6 @@ macro (setup_executable)
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Removing generated library from libs (just to not have a copy of it in the next project)" VERBATIM)
 
-
-            if(EXISTS "${data_dir}")
-                add_custom_command(
-                    TARGET ${PROJECT_NAME} POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/assets/data
-                        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-            endif()
-
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
                     COMMAND $ENV{ANT_HOME}/bin/ant debug
@@ -232,10 +224,6 @@ macro (setup_executable)
                 set_source_files_properties(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
             else()
                 add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr})
-                add_custom_command(
-                TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/data
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
             endif()
         else()
             add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr})
@@ -258,25 +246,11 @@ macro (setup_executable)
         set_target_properties(${PROJECT_NAME} PROPERTIES ENABLE_EXPORTS "1")
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
-        if(EXISTS "${data_dir}")
-            add_custom_command(
-                TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-        endif()
-
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -o ${PROJECT_NAME}.html -g${EMS_DEBUG_LEVEL} -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --embed-file data 
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMENT "Generating HTML with Emscripten" VERBATIM)
-
-        # add_custom_command(
-        #     TARGET ${PROJECT_NAME} POST_BUILD
-        #         COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -o ${PROJECT_NAME}.html -g${EMS_DEBUG_LEVEL} -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --preload-file data
-        #         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        #         COMMENT "Generating HTML with Emscripten" VERBATIM)
-
 
     else()
 
@@ -287,11 +261,32 @@ macro (setup_executable)
             target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB})
         endif()
 
-        if(EXISTS "${data_dir}")
-            add_custom_command(
-                TARGET ${PROJECT_NAME} POST_BUILD
+    endif()
+
+    if(EXISTS "${data_dir}")
+        
+        set(DATA_TARGET ${PROJECT_NAME}dataDir)
+
+        if(ANDROID AND EXISTS "${android_host_dir}")
+
+            add_custom_target(${DATA_TARGET} 
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/assets/data
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    COMMENT "Copying data directory" VERBATIM)
+
+        elseif(APPLE AND IS_EXECUTABLE_A_BUNDLE)
+
+            add_custom_target(${DATA_TARGET} 
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/data
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    COMMENT "Copying data directory" VERBATIM)
+        else()                                    
+
+            add_custom_target(${DATA_TARGET} 
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    COMMENT "Copying data directory" VERBATIM)
+
         endif()
 
     endif()

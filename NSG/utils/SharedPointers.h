@@ -29,6 +29,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	struct AnimationTrack;
+	typedef std::shared_ptr<AnimationTrack> PAnimationTrack;
+
 	class Worker;
 	typedef std::shared_ptr<Worker> PWorker;
 

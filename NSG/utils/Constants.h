@@ -47,6 +47,10 @@ namespace NSG
     static const Vector3 VECTOR3_ONE(1);
     static const Quaternion QUATERNION_IDENTITY;
 
+    static const Color COLOR_BLACK(0, 0, 0, 1);
+
     static const size_t MAX_NODES_IN_BATCH = 1000;
     static const float PRECISION = 0.01f;
+
+	static const size_t MAX_BONES_PER_VERTEX = 4;
 }

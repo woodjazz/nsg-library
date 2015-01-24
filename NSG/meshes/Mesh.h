@@ -51,8 +51,10 @@ namespace NSG
         float GetBoundingSphereRadius() const { return boundingSphereRadius_; }
         VertexBuffer* GetVertexBuffer() const { return pVBuffer_.get(); }
         IndexBuffer* GetIndexBuffer() const { return pIBuffer_.get(); }
-        const VertexsData& GetVertexsData() const { return vertexsData_; }
-        const Indexes& GetIndexes() const { return indexes_; }
+        const VertexsData& GetConstVertexsData() const { return vertexsData_; }
+        const Indexes& GetConstIndexes() const { return indexes_; }
+		VertexsData& GetVertexsData() { return vertexsData_; }
+		Indexes& GetIndexes() { return indexes_; }
         void Save(pugi::xml_node& node);
         virtual void Load(const pugi::xml_node& node);
         void SetSerializable(bool serializable) { serializable_ = serializable; }
@@ -62,6 +64,7 @@ namespace NSG
         const std::string& GetName() const { return name_; }
         void SetName(const std::string& name) { name_ = name; }
 		void SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights);
+		void SetBlendData(unsigned vertex, const Vector4& bonesID, Vector4& bonesWeight);
         void AddSceneNode(SceneNode* node);
         void RemoveSceneNode(SceneNode* node);
         std::set<SceneNode*>& GetSceneNodes() { return sceneNodes_; }

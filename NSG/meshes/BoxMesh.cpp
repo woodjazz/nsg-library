@@ -110,7 +110,7 @@ namespace NSG
                 VertexData vertexData;
                 vertexData.normal_ = normal;
                 vertexData.position_ = vert;
-                vertexData.uv0_ = texcoord;
+				vertexData.uv_[0] = texcoord;
 
                 data.push_back(vertexData);
             }
@@ -153,7 +153,7 @@ namespace NSG
                 VertexData vertexData;
                 vertexData.normal_ = normal;
                 vertexData.position_ = vert;
-                vertexData.uv0_ = texcoord;
+				vertexData.uv_[0] = texcoord;
 
                 data.push_back(vertexData);
             }
@@ -195,7 +195,7 @@ namespace NSG
                 VertexData vertexData;
                 vertexData.normal_ = normal;
                 vertexData.position_ = vert;
-                vertexData.uv0_ = texcoord;
+				vertexData.uv_[0] = texcoord;
 
                 data.push_back(vertexData);
             }
@@ -238,7 +238,7 @@ namespace NSG
                 VertexData vertexData;
                 vertexData.normal_ = normal;
                 vertexData.position_ = vert;
-                vertexData.uv0_ = texcoord;
+				vertexData.uv_[0] = texcoord;
 
                 data.push_back(vertexData);
             }
@@ -280,7 +280,7 @@ namespace NSG
                 VertexData vertexData;
                 vertexData.normal_ = normal;
                 vertexData.position_ = vert;
-                vertexData.uv0_ = texcoord;
+				vertexData.uv_[0] = texcoord;
 
                 data.push_back(vertexData);
             }
@@ -321,7 +321,7 @@ namespace NSG
                 VertexData vertexData;
                 vertexData.normal_ = normal;
                 vertexData.position_ = vert;
-                vertexData.uv0_ = texcoord;
+				vertexData.uv_[0] = texcoord;
 
                 data.push_back(vertexData);
             }

@@ -59,6 +59,15 @@ namespace NSG
 				return std::dynamic_pointer_cast<U>(it->second);
 		}
 
+		template<typename U>
+		std::shared_ptr<U> GetClass(const K& key) const
+		{
+			auto it = objsMap_.find(key);
+			if (it != objsMap_.end())
+				return std::dynamic_pointer_cast<U>(it->second);
+			return nullptr;
+		}
+
 		PT Get(const K& key) const
 		{
 			auto it = objsMap_.find(key);

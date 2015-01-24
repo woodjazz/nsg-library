@@ -25,13 +25,15 @@ macro(BLENDERDNA_TOOL input_file output_dir)
 
 	    #message("${BLENDERDNA_CMD}")
 
-	    add_custom_target(${INPUTNAME} 
+	    set(TARGET_NAME DNA${INPUTNAME})
+
+	    add_custom_target(${TARGET_NAME} 
 	            COMMAND ${BLENDERDNA_CMD}
 	            DEPENDS ${BLENDERDNA_EXECUTABLE} ${INPUTFILE}
 	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-		add_dependencies(${INPUTNAME} ${DNA_GEN_TOOL})
-	    add_dependencies(${PROJECT_NAME} ${INPUTNAME})
+		add_dependencies(${TARGET_NAME} ${DNA_GEN_TOOL})
+	    add_dependencies(${PROJECT_NAME} ${TARGET_NAME})
 
 	endif()
 

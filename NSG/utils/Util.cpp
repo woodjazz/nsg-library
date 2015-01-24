@@ -59,6 +59,10 @@ namespace NSG
         Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
 
         scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
+
+        // prevent zero scale
+        if(IsZeroLength(scale))
+            scale = Vector3(1);
     }
 
     bool NSGCopyFile(const Path& source, const Path& target)
@@ -285,5 +289,11 @@ namespace NSG
     bool IsPowerOfTwo(unsigned value)
     {
         return (!(value & (value - 1)) && value);
+    }
+
+    bool IsZeroLength(const Vector3& obj)
+    {
+        auto length = glm::length(obj);
+        return length <= glm::epsilon<float>();
     }
 }

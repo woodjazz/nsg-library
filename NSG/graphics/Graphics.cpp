@@ -960,14 +960,14 @@ namespace NSG
                               GL_FLOAT,
                               GL_FALSE,
                               sizeof(VertexData),
-                              reinterpret_cast<void*>(offsetof(VertexData, uv0_)));
+                              reinterpret_cast<void*>(offsetof(VertexData, uv_[0])));
 
         glVertexAttribPointer((int)AttributesLoc::TEXTURECOORD1,
                               2,
                               GL_FLOAT,
                               GL_FALSE,
                               sizeof(VertexData),
-                              reinterpret_cast<void*>(offsetof(VertexData, uv1_)));
+                              reinterpret_cast<void*>(offsetof(VertexData, uv_[1])));
 
 
         glVertexAttribPointer((int)AttributesLoc::COLOR,

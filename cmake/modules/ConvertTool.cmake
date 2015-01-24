@@ -36,15 +36,16 @@ macro(CONVERT_TOOL input_file output_dir)
 
 	    #message("${CONVERT_CMD}")
 
-	    add_custom_target(${INPUTNAME} 
+	    set(TARGET_NAME ${INPUTNAME})
+
+	    add_custom_target(${TARGET_NAME} 
 	            COMMAND ${CONVERT_CMD}
 	            DEPENDS ${CONVERT_EXECUTABLE} ${INPUTFILE}
 	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-		
-		add_dependencies(converter blenderdna)
-		add_dependencies(${INPUTNAME} converter)
-	    add_dependencies(${PROJECT_NAME} ${INPUTNAME})
+		add_dependencies(${TARGET_NAME} converter)
+        add_dependencies(${DATA_TARGET} ${TARGET_NAME})
+        add_dependencies(${PROJECT_NAME} ${DATA_TARGET})
 
 	endif()
 

@@ -25,22 +25,57 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "../Blender.h"
+#include "Path.h"
+#include "Blender.h"
+#include "BSpline.h"
+#include <vector>
+#include <map>
+
+namespace bParse 
+{
+	class bMain;
+}
 
 namespace BlenderConverter
 {
     class BScene
     {
     public:
-        BScene(const Blender::Scene* sc);
+        BScene(const NSG::Path& path, const NSG::Path& outputDir);
         ~BScene();
-		NSG::PScene GetScene() { return scene_; }
-	private:
-		void ConvertObject(const Blender::Object* obj);
-		void ConvertSceneNode(const Blender::Object* obj, NSG::PSceneNode sceneNode);
-		void ConvertCamera(const Blender::Object* obj, NSG::PCamera camera);
+        bool Load();
+        bool Save();
     private:
-		const Blender::Scene* sc_;
+        void ExtractGeneral(const Blender::Object* obj, NSG::PSceneNode sceneNode);
+		void ConvertObject(const Blender::Object* obj, NSG::PSceneNode sceneNode);
+		NSG::PSceneNode CreateSceneNode(const Blender::Object* obj, NSG::PSceneNode parent);
+		void CreateSkeleton(const Blender::Object* obj, NSG::PSceneNode parent);
+		void BuildBoneTree(const Blender::Bone* cur, const Blender::Bone* prev, NSG::PSceneNode parent);
+        void CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent);
+        void CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
+        void CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
+        void ConvertMesh(Blender::Mesh* me, NSG::PModelMesh mesh);
+		//void CalcNormal(TempFace* tri);
+		void GetLayersBMmesh(Blender::Mesh* me, Blender::MTexPoly** eightLayerArray, Blender::MLoopUV** uvEightLayerArray, Blender::MLoopCol** oneMCol, int& validLayers);
+		void LoadBones(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
+		void LoadSkeleton(const Blender::Object* obj);
+		void MakeBonesList(const Blender::Bone* bone, std::vector<NSG::PWeakNode>& nodeBones);
+		void LoadMaterials(const Blender::Object* obj);
+		const Blender::Material* GetMaterial(const Blender::Object* ob, int index) const;
+		void LoadMaterials(bParse::bMain* data);
+		void LoadMaterial(const Blender::Material* mt);
+		NSG::PTexture CreateTexture(const std::string& fileName);
+		void SetMaterial(const Blender::Object* obj, NSG::PSceneNode sceneNode);
+		void LoadAnimData(NSG::PSceneNode sceneNode, const Blender::AnimData* adt, float animfps);
+		float ConvertAction(const Blender::bAction* action, float animfps);
+		void GetActionStartEnd(const Blender::bAction* action, float& start, float& end);
+		void GetSplineStartEnd(const Blender::BezTriple* bez, int totvert, float& start, float& end);
+		PBSpline ConvertSpline(const Blender::BezTriple* bez, int access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor);
+    private:
+        const Blender::Scene* sc_;
+        NSG::Path path_;
+        NSG::Path outputDir_;
         NSG::PScene scene_;
+		std::vector<const Blender::Object*> armatureLinker_;
     };
 }

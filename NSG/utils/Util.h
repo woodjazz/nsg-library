@@ -56,4 +56,5 @@ namespace NSG
 	std::string GetUniqueName(const std::string& name = "");
 	void GetPowerOfTwoValues(unsigned& width, unsigned& height);
 	bool IsPowerOfTwo(unsigned value);
+	bool IsZeroLength(const Vector3& obj);
 }
