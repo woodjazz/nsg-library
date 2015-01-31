@@ -28,9 +28,8 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-
     App app;
-    auto window = app.GetOrCreateWindow("window", 100, 100, 1024, 768);
+    auto window = app.GetOrCreateWindow("window", 0, 100, 1024, 768);
     auto scene = std::make_shared<Scene>("scene");
     scene->SetAmbientColor(Color(0.0f));
     auto resource = std::make_shared<ResourceFile>("data/bscene.xml");
@@ -79,8 +78,8 @@ int NSG_MAIN(int argc, char* argv[])
 
     {
         auto animations = scene->GetAnimationsFor(object);
-        //auto animation = animations[0];
-        //animation->Play(true);
+        auto animation = animations[0];
+        animation->Play(true);
     }
 
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)

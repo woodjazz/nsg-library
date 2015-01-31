@@ -85,6 +85,7 @@ misrepresented as being the original software.
 #include "Path.h"
 #include "Skeleton.h"
 #include "RigidBody.h"
+#include "PhysicsWorld.h"
 #include "Window.h"
 #include "MemoryTest.h"
 

@@ -261,6 +261,7 @@ namespace NSG
         SH_BOX,
         SH_CONE,
         SH_CYLINDER,
+		SH_CAPSULE,
         SH_SPHERE,
         SH_CONVEX_TRIMESH,
         SH_TRIMESH

@@ -65,6 +65,8 @@ namespace NSG
         bool SetAnimationSpeed(const std::string& name, float speed);
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
     protected:
+		void LoadPhysics(const pugi::xml_node& node);
+		void SavePhysics(pugi::xml_node& node);
         void SaveMeshes(pugi::xml_node& node);
         void SaveMaterials(pugi::xml_node& node);
         void SaveAnimations(pugi::xml_node& node);

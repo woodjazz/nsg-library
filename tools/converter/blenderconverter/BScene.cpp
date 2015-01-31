@@ -58,6 +58,7 @@ namespace BlenderConverter
             scene_ = std::make_shared<Scene>(B_IDNAME(sc_));
             scene_->SetOrientation(glm::angleAxis<float>(-PI / 2.f, Vertex3(1, 0, 0)));
             const Blender::World* world = sc_->world;
+			scene_->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
             Color ambient(world->ambr, world->ambg, world->ambb, 1);
             scene_->SetAmbientColor(ambient);
             const Blender::Base* base = (const Blender::Base*)sc_->base.first;
@@ -86,24 +87,36 @@ namespace BlenderConverter
         }
     }
 
-    PTexture BScene::CreateTexture(const std::string& fileName)
+	PTexture BScene::CreateTexture(const Blender::Image* ima)
     {
-        Path outputPath;
-        outputPath.SetPath(outputDir_.GetPath());
-        outputPath.SetFileName(fileName);
-        Path inputPath;
-        inputPath.SetPath(path_.GetPath());
-        inputPath.SetFileName(fileName);
-        CHECK_CONDITION(NSGCopyFile(inputPath, outputPath), __FILE__, __LINE__);
+		std::string imageName = B_IDNAME(ima);
+		if (!ima->packedfile)
+		{
+			Path outputPath;
+			outputPath.SetPath(outputDir_.GetPath());
+			outputPath.SetFileName(imageName);
+			Path inputPath;
+			inputPath.SetPath(path_.GetPath());
+			inputPath.SetFileName(imageName);
+			if (!NSGCopyFile(inputPath, outputPath))
+			{
+				TRACE_LOG("Failed to copy file: " << imageName);
+			}
 
-        std::vector<std::string> dirs = Path::GetDirs(outputPath.GetPath());
-        Path relativePath;
-        if (!dirs.empty())
-            relativePath.SetPath(dirs.back());
-        relativePath.SetFileName(fileName);
+			std::vector<std::string> dirs = Path::GetDirs(outputPath.GetPath());
+			Path relativePath;
+			if (!dirs.empty())
+				relativePath.SetPath(dirs.back());
+			relativePath.SetFileName(imageName);
 
-        auto resource = std::make_shared<ResourceFile>(relativePath);
-        return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+			auto resource = std::make_shared<ResourceFile>(relativePath);
+			return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+		}
+		else
+		{
+			auto resource = std::make_shared<ResourceMemory>((const char*)ima->packedfile->data, ima->packedfile->size);
+			return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS);
+		}
     }
 
 
@@ -114,7 +127,7 @@ namespace BlenderConverter
         auto technique = material->GetTechnique();
         auto pass = technique->GetPass(0);
         auto program = pass->GetProgram();
-        ProgramFlags flags = (int)ProgramFlag::PER_VERTEX_LIGHTING;
+        ProgramFlags flags = (int)ProgramFlag::PER_PIXEL_LIGHTING;
         program->SetFlags(flags);
         material->SetDiffuseColor(Color(mt->r, mt->g, mt->b, mt->alpha));
         material->SetSpecularColor(Color(mt->specr, mt->specg, mt->specb, mt->alpha));
@@ -141,11 +154,10 @@ namespace BlenderConverter
 
                 if (mt->mtex[i]->tex->type == TEX_IMAGE)
                 {
-                    Blender::MTex* mtex = mt->mtex[i];
-                    Blender::Image* ima = mtex->tex->ima;
+                    const Blender::MTex* mtex = mt->mtex[i];
+                    const Blender::Image* ima = mtex->tex->ima;
                     if (!ima) continue;
-                    std::string imageName = B_IDNAME(ima);
-                    auto texture = CreateTexture(imageName);
+                    auto texture = CreateTexture(ima);
                     if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
                         material->SetDiffuseMap(texture);
                     if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
@@ -193,43 +205,166 @@ namespace BlenderConverter
 
             if (obj->adt)
             {
-                float animfps = sc_->r.frs_sec / sc_->r.frs_sec_base;
+				float animfps = sc_->r.frs_sec / sc_->r.frs_sec_base;
                 LoadAnimData(sceneNode, obj->adt, animfps);
             }
         }
     }
 
-    struct TrackData
-    {
-        PAnimationTrack track;
-        std::vector<PBSpline> keyframes;
-    };
-    typedef std::shared_ptr<TrackData> PTrackData;
-    std::map<std::string, PTrackData> tracks;
-
     void BScene::LoadAnimData(PSceneNode sceneNode, const Blender::AnimData* adt, float animfps)
     {
-        tracks.clear();
         std::string name(B_IDNAME(adt->action));
-        if (scene_->HasAnimation(name))
+		if (!scene_->HasAnimation(name) && adt->action)
         {
             auto anim = scene_->GetOrCreateAnimation(name);
-            //gkAnimationPlayer* play = anim->Ad->addAnimation(act, GKB_IDNAME(adt->action));
-            //play->setWeight(adt->act_influence);
-        }
-        else
-        {
-            auto anim = scene_->GetOrCreateAnimation(name);
-            auto length = ConvertAction(adt->action, animfps);
+            BTracks tracks;
+            float start;
+            float end;
+            auto length = GetTracks(adt->action, animfps, tracks, start, end);
+            ConvertTracks(anim, tracks, length);
             anim->SetLength(length);
         }
     }
 
-    float BScene::ConvertAction(const Blender::bAction* action, float animfps)
+    void BScene::ConvertTracks(PAnimation anim, BTracks& tracks, float length)
+    {
+        for (auto& btrack : tracks)
+        {
+            std::string channelName = btrack.first;
+            AnimationTrack track;
+            if (scene_->GetName() == channelName)
+                track.node_ = scene_;
+            else
+                track.node_ = scene_->GetChild<Node>(channelName, true);
+
+            if (!track.node_.lock())
+            {
+                TRACE_LOG("Warning: skipping animation track " << channelName << " whose scene node was not found");
+                continue;
+            }
+
+            track.channelMask_ = ConvertChannel(btrack.second, track, length);
+            anim->AddTrack(track);
+        }
+    }
+
+    AnimationChannelMask BScene::ConvertChannel(PTrackData trackData, AnimationTrack& track, float length)
+    {
+        AnimationChannelMask mask = 0;
+        float inc = length;
+
+        if (trackData->keyframes.size())
+            inc = length / trackData->keyframes[0]->getNumVerts();
+
+		bool needsRotation = false;
+
+        for (float t = 0; t <= length; t += inc)
+        {
+            float delta = t / length;
+            AnimationKeyFrame keyframe;
+            keyframe.time_ = t;
+            Vector3 pos;
+            Quaternion q;
+            Vector3 scale(1);
+            Vector3 eulerAngles;
+
+            for (auto& spline : trackData->keyframes)
+            {
+                SPLINE_CHANNEL_CODE code = spline->GetCode();
+
+                switch (code)
+                {
+                    case SC_ROT_QUAT_W:
+                        q.w = spline->interpolate(delta, t);
+                        break;
+                    case SC_ROT_QUAT_X:
+                        q.x = spline->interpolate(delta, t);
+                        break;
+                    case SC_ROT_QUAT_Y:
+                        q.y = spline->interpolate(delta, t);
+                        break;
+                    case SC_ROT_QUAT_Z:
+                        q.z = spline->interpolate(delta, t);
+                        break;
+                    case SC_ROT_EULER_X:
+                        eulerAngles.x = spline->interpolate(delta, t);
+                        break;
+                    case SC_ROT_EULER_Y:
+                        eulerAngles.y = spline->interpolate(delta, t);
+                        break;
+                    case SC_ROT_EULER_Z:
+                        eulerAngles.z = spline->interpolate(delta, t);
+                        break;
+                    case SC_LOC_X:
+                        pos.x = spline->interpolate(delta, t);
+                        break;
+                    case SC_LOC_Y:
+                        pos.y = spline->interpolate(delta, t);
+                        break;
+                    case SC_LOC_Z:
+                        pos.z = spline->interpolate(delta, t);
+                        break;
+                    case SC_SCL_X:
+                        scale.x = spline->interpolate(delta, t);
+                        break;
+                    case SC_SCL_Y:
+                        scale.y = spline->interpolate(delta, t);
+                        break;
+                    case SC_SCL_Z:
+                        scale.z = spline->interpolate(delta, t);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (glm::length2(eulerAngles))
+            {
+                CHECK_ASSERT(q == QUATERNION_IDENTITY, __FILE__, __LINE__);
+                q = Quaternion(eulerAngles);
+            }
+			Vector3 angles = glm::eulerAngles(q);
+			if (angles.x < -0.001f)
+				needsRotation = true;
+
+			//std::swap(angles.y, angles.z);
+			keyframe.rotation_ = q;
+			//std::swap(pos.y, pos.z);
+            keyframe.position_ = pos;
+			//std::swap(scale.y, scale.z);
+            keyframe.scale_ = scale;
+            track.keyFrames_.push_back(keyframe);
+        }
+
+		if (needsRotation)
+		{
+			static Quaternion Q(glm::angleAxis<float>(-PI / 2.f, Vertex3(0, 0, 1)));
+			for (auto& kf : track.keyFrames_)
+			{
+				kf.rotation_ = Q * kf.rotation_;
+			}
+		}
+
+		for (auto& kf : track.keyFrames_)
+		{
+			if (glm::epsilonNotEqual(kf.position_, VECTOR3_ZERO, Vector3(0.0001f)) != glm::bvec3(false))
+				mask |= (int)AnimationChannel::POSITION;
+
+			if (glm::epsilonNotEqual(kf.scale_, VECTOR3_ONE, Vector3(0.0001f)) != glm::bvec3(false))
+				mask |= (int)AnimationChannel::POSITION;
+
+			Vector3 angles = glm::eulerAngles(kf.rotation_);
+			if (glm::epsilonNotEqual(angles, VECTOR3_ZERO, Vector3(0.001f)) != glm::bvec3(false))
+				mask |= (int)AnimationChannel::ROTATION;
+		}
+
+        return mask;
+    }
+
+    float BScene::GetTracks(const Blender::bAction* action, float animfps, BTracks& tracks, float& start, float& end)
     {
         std::string name(B_IDNAME(action));
 
-        float start, end;
         GetActionStartEnd(action, start, end);
         float trackLength = (end - start) / animfps;
 
@@ -263,7 +398,7 @@ namespace BlenderConverter
 
             if (bfc->bezt)
             {
-                int code = -1;
+                SPLINE_CHANNEL_CODE code = SPLINE_CHANNEL_CODE::NONE;
                 if (transform_name == "rotation_quaternion")
                 {
                     if (bfc->array_index == 0) code = SC_ROT_QUAT_W;
@@ -299,7 +434,7 @@ namespace BlenderConverter
             }
 
             if (bfc->next == 0 || bfc->next->prev != bfc)
-                break; //FIX: Momo_WalkBack fcurve is broken in uncompressed 256a.
+                break;
 
             bfc = bfc->next;
         }
@@ -307,7 +442,7 @@ namespace BlenderConverter
         return trackLength;
     }
 
-    PBSpline BScene::ConvertSpline(const Blender::BezTriple* bez, int access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor)
+    PBSpline BScene::ConvertSpline(const Blender::BezTriple* bez, SPLINE_CHANNEL_CODE access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor)
     {
         auto spline = std::make_shared<BSpline>(access);
 
@@ -375,8 +510,10 @@ namespace BlenderConverter
         const Blender::BezTriple* bezt = bez;
         for (int c = 0; c < totvert; c++, bezt++)
         {
-            if (start > bezt->vec[1][0]) start = bezt->vec[1][0];
-            if (end < bezt->vec[1][0]) end = bezt->vec[1][0];
+            if (start > bezt->vec[1][0])
+                start = bezt->vec[1][0];
+            if (end < bezt->vec[1][0])
+                end = bezt->vec[1][0];
         }
     }
 
@@ -391,7 +528,95 @@ namespace BlenderConverter
         sceneNode->SetPosition(pos);
         sceneNode->SetOrientation(q);
         sceneNode->SetScale(scale);
+        LoadPhysics(obj, sceneNode);
     }
+
+    void BScene::LoadPhysics(const Blender::Object* obj, PSceneNode sceneNode)
+    {
+        PhysicsShape shapeType = PhysicsShape::SH_UNKNOWN;
+		int boundtype = obj->collision_boundtype;
+
+        if (obj->type != OB_MESH)
+        {
+            if (!(obj->gameflag & OB_ACTOR))
+				boundtype = 0;
+        }
+        
+        if (!(obj->gameflag & OB_BOUNDS))
+        {
+            if (obj->body_type == OB_BODY_TYPE_STATIC)
+            {
+                boundtype = OB_BOUND_TRIANGLE_MESH;
+            }
+            else
+                boundtype = OB_BOUND_CONVEX_HULL;
+        }
+
+        Blender::Object* parent = obj->parent;
+        while (parent && parent->parent)
+            parent = parent->parent;
+
+		if (parent && (obj->gameflag & OB_CHILD) == 0)
+			boundtype = 0;
+			
+		if (!boundtype)
+			return;
+
+		auto rigBody = sceneNode->GetOrCreateRigidBody();
+		rigBody->SetLinearDamp(obj->damping);
+		rigBody->SetAngularDamp(obj->rdamping);
+		rigBody->SetMargin(obj->margin);
+
+		if (obj->type == OB_MESH)
+		{
+			const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
+			if (me)
+			{
+				const Blender::Material* ma = GetMaterial(obj, 0);
+				if (ma)
+				{
+					rigBody->SetRestitution(ma->reflect);
+					rigBody->SetFriction(ma->friction);
+				}
+			}
+		}
+
+		if (obj->body_type == OB_BODY_TYPE_STATIC || boundtype == OB_BOUND_TRIANGLE_MESH)
+			rigBody->SetMass(0);
+		else
+			rigBody->SetMass(obj->mass);
+
+		switch (boundtype)
+		{
+		case OB_BOUND_BOX:
+			shapeType = PhysicsShape::SH_BOX;
+			break;
+		case OB_BOUND_SPHERE:
+			shapeType = PhysicsShape::SH_SPHERE;
+			break;
+		case OB_BOUND_CONE:
+			shapeType = PhysicsShape::SH_CONE;
+			break;
+		case OB_BOUND_CYLINDER:
+			shapeType = PhysicsShape::SH_CYLINDER;
+			break;
+		case OB_BOUND_CONVEX_HULL:
+			shapeType = PhysicsShape::SH_CONVEX_TRIMESH;
+			break;
+		case OB_BOUND_TRIANGLE_MESH:
+			if (obj->type == OB_MESH)
+				shapeType = PhysicsShape::SH_TRIMESH;
+			else
+				shapeType = PhysicsShape::SH_SPHERE;
+			break;
+		case OB_BOUND_CAPSULE:
+			shapeType = PhysicsShape::SH_CAPSULE;
+			break;
+		}
+
+		rigBody->SetShape(shapeType);
+    }
+
 
     PSceneNode BScene::CreateSceneNode(const Blender::Object* obj, PSceneNode parent)
     {
@@ -408,18 +633,19 @@ namespace BlenderConverter
         const Blender::Bone* bone = static_cast<const Blender::Bone*>(ar->bonebase.first);
         while (bone)
         {
-            if (!bone->parent)
-                BuildBoneTree(bone, nullptr, sceneNode);
+			if (!bone->parent)
+				BuildBoneTree(bone, sceneNode);
             bone = bone->next;
         }
     }
 
-    void BScene::BuildBoneTree(const Blender::Bone* cur, const Blender::Bone* prev, PSceneNode parent)
+    void BScene::BuildBoneTree(const Blender::Bone* cur, PSceneNode parent)
     {
         Matrix4 parBind = IDENTITY_MATRIX;
-        if (prev != 0 && parent != 0)
-            parBind = glm::inverse(ToMatrix(prev->arm_mat));
+		if (cur->parent)
+			parBind = glm::inverse(ToMatrix(cur->parent->arm_mat));
 
+		CHECK_ASSERT(!parent->GetChild<SceneNode>(cur->name, false), __FILE__, __LINE__);
         PSceneNode bone = parent->CreateChild<SceneNode>(cur->name);
 
         Matrix4 bind = parBind * ToMatrix(cur->arm_mat);
@@ -428,14 +654,13 @@ namespace BlenderConverter
         DecomposeMatrix(bind, loc, rot, scl);
 
         bone->SetPosition(loc);
-        bone->SetOrientation(rot);
+		bone->SetOrientation(rot);
         bone->SetScale(scl);
 
         Blender::Bone* chi = static_cast<Blender::Bone*>(cur->childbase.first);
         while (chi)
         {
-            // recurse
-            BuildBoneTree(chi, cur, bone);
+            BuildBoneTree(chi, bone);
             chi = chi->next;
         }
     }
@@ -494,25 +719,22 @@ namespace BlenderConverter
 
         auto sceneNode = parent->CreateChild<SceneNode>(B_IDNAME(obj));
         ExtractGeneral(obj, sceneNode);
-        Blender::Mesh* me = (Blender::Mesh*)obj->data;
+        const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
         std::string meshName = B_IDNAME(me);
         auto mesh = App::this_->GetModelMesh(B_IDNAME(me));
         if (!mesh)
         {
             mesh = App::this_->GetOrCreateModelMesh(B_IDNAME(me));
-            ConvertMesh(me, mesh);
-            LoadBones(obj, me, mesh);
+            ConvertMesh(obj, me, mesh);
         }
         sceneNode->SetMesh(mesh);
         SetMaterial(obj, sceneNode);
     }
 
-    void BScene::LoadBones(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
+    void BScene::LoadBones(const Blender::Object* obj, const Blender::Mesh* me, VertexsData& vertexes)
     {
         if (me->dvert && obj->parent && obj->parent->type == OB_ARMATURE)
         {
-            VertexsData& vertexes = mesh->GetVertexsData();
-            CHECK_ASSERT(me->totvert == vertexes.size(), __FILE__, __LINE__);
             int dgi = 0;
             const Blender::bDeformGroup* dg = (const Blender::bDeformGroup*)obj->defbase.first;
             while (dg)
@@ -546,48 +768,76 @@ namespace BlenderConverter
         const Blender::bArmature* ar = static_cast<const Blender::bArmature*>(obAr->data);
 
         auto skeleton(std::make_shared<Skeleton>(mesh));
-        std::vector<PWeakNode> nodeBones;
 
-        PNode rootNode = scene_->GetChild<Node>(B_IDNAME(obAr), true);
-        nodeBones.push_back(rootNode);
+		nodeBoneList_.clear();
+		PSceneNode rootNode = scene_->GetChild<SceneNode>(B_IDNAME(obAr), true);
+		nodeBoneList_.push_back(rootNode);
 
         const Blender::Bone* bone = static_cast<const Blender::Bone*>(ar->bonebase.first);
         while (bone)
         {
-            if (!bone->parent)
-                MakeBonesList(bone, nodeBones);
+			if (!bone->parent)
+				MakeBonesOffsetMatrix(bone, rootNode);
             bone = bone->next;
         }
         skeleton->SetRoot(rootNode);
         mesh->SetSkeleton(skeleton);
-        skeleton->SetBones(nodeBones);
+		skeleton->SetBones(nodeBoneList_);
+        MarkProgramAsSkinableNodes(mesh.get());
     }
 
-    void BScene::MakeBonesList(const Blender::Bone* bone, std::vector<PWeakNode>& nodeBones)
+    void BScene::MarkProgramAsSkinableNodes(const Mesh* mesh)
     {
-        PNode node = scene_->GetChild<Node>(bone->name, true);
-        node->SetBoneOffsetMatrix(Matrix4(ToMatrix(bone->bone_mat)));
-        nodeBones.push_back(node);
+        auto& nodes = mesh->GetConstSceneNodes();
 
-        Blender::Bone* chi = static_cast<Blender::Bone*>(bone->childbase.first);
-        while (chi)
+        for (auto obj : nodes)
         {
-            MakeBonesList(chi, nodeBones);
-            chi = chi->next;
+            PMaterial material = obj->GetMaterial();
+            if (material)
+            {
+                Technique* technique = material->GetTechnique().get();
+                technique->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SKINNED);
+            }
         }
     }
 
-    void BScene::ConvertMesh(Blender::Mesh* me, PModelMesh mesh)
+	void BScene::MakeBonesOffsetMatrix(const Blender::Bone* cur, PSceneNode parent)
+	{
+		Matrix4 parentRefPoseMtx(IDENTITY_MATRIX);
+		Matrix4 parentPoseMtx(IDENTITY_MATRIX);
+		Matrix4 boneRefPoseMtx(ToMatrix(cur->arm_mat));
+		//Matrix4 bonePoseMtx(ToMatrix(cur->bone_mat));
+
+		if (cur->parent)
+		{
+			parentRefPoseMtx = ToMatrix(cur->parent->arm_mat);
+			parentPoseMtx = Matrix4(ToMatrix(cur->parent->bone_mat));
+		}
+
+		Matrix4 bind(glm::inverse(glm::inverse(parentRefPoseMtx) * boneRefPoseMtx) * glm::inverse(parentPoseMtx));
+
+		PSceneNode bone = parent->GetChild<SceneNode>(cur->name, false);
+		CHECK_ASSERT(bone, __FILE__, __LINE__);
+		bone->SetBoneOffsetMatrix(bind);
+		nodeBoneList_.push_back(bone);
+
+		Blender::Bone* chi = static_cast<Blender::Bone*>(cur->childbase.first);
+		while (chi)
+		{
+			MakeBonesOffsetMatrix(chi, bone);
+			chi = chi->next;
+		}
+	}
+
+
+    void BScene::ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
     {
         CHECK_ASSERT(!me->mface && "Legacy conversion is not allowed", __FILE__, __LINE__);
         CHECK_ASSERT(me->mvert && me->mpoly, __FILE__, __LINE__);
 
         // UV-Layer-Data
-        Blender::MTexPoly* mtpoly[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
         Blender::MLoopUV* muvs[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        int totlayer = 0;
-
-        GetLayersBMmesh(me, mtpoly, muvs, &me->mloopcol, totlayer);
+        int totlayer = GetUVLayersBMmesh(me, muvs);
 
         int nVertexes = me->totvert;
         int nuvs = glm::clamp(totlayer, 0, 2);
@@ -599,8 +849,9 @@ namespace BlenderConverter
             vertexData[i].normal_ = glm::normalize(Vertex3(me->mvert[i].no[0], me->mvert[i].no[1], me->mvert[i].no[2]));
         }
 
+        LoadBones(obj, me, vertexData);
+
         bool hasColorVertex = me->mloopcol && me->totcol;
-        Indexes indexes;
         for (int fi = 0; fi < me->totpoly; fi++)
         {
             const Blender::MPoly& curpoly = me->mpoly[fi];
@@ -614,124 +865,58 @@ namespace BlenderConverter
                 continue;
             }
 
-            int index[4] = { me->mloop[indexBase].v, me->mloop[indexBase + 1].v, me->mloop[indexBase + 2].v, 0};
-
-            if (hasColorVertex)
-            {
-                Color color(me->mloopcol[indexBase].r, me->mloopcol[indexBase].g, me->mloopcol[indexBase].b, me->mloopcol[indexBase].a);
-                vertexData[index[indexBase]].color_ = color;
-            }
-
-            bool isQuad = curpoly.totloop == 4;
-
-            if (isQuad)
-            {
-                index[3] = me->mloop[indexBase + 3].v;
-
-                indexes.push_back(index[0]);
-                indexes.push_back(index[1]);
-                indexes.push_back(index[2]);
-
-                indexes.push_back(index[0]);
-                indexes.push_back(index[2]);
-                indexes.push_back(index[3]);
-            }
-            else
-            {
-                indexes.push_back(index[0]);
-                indexes.push_back(index[1]);
-                indexes.push_back(index[2]);
-            }
-
             for (int i = 0; i < nloops; i++)
             {
                 int li = indexBase + i;
                 int vi = me->mloop[li].v;
-                if (nuvs > 0)
-                    vertexData[vi].uv_[0] = Vertex2(muvs[0][li].uv[0], muvs[0][li].uv[1]);
-                if (nuvs > 1)
-                    vertexData[vi].uv_[1] = Vertex2(muvs[1][li].uv[0], muvs[1][li].uv[1]);
+                for (int j = 0; j < nuvs; j++)
+                    vertexData[vi].uv_[j] = Vertex2(muvs[j][li].uv[0], muvs[j][li].uv[1]);
             }
+
+            if (hasColorVertex)
+            {
+                for (int i = 0; i < nloops; i++)
+                {
+                    int li = indexBase + i;
+                    int vi = me->mloop[li].v;
+                    Color color(me->mloopcol[li].r, me->mloopcol[li].g, me->mloopcol[li].b, me->mloopcol[li].a);
+                    vertexData[vi].color_ = color;
+                }
+            }
+
+            int index[4];
+            for (int i = 0; i < nloops; i++)
+                index[i] = me->mloop[indexBase + i].v;
+
+            bool isQuad = curpoly.totloop == 4;
+            bool calcFaceNormal = !(curpoly.flag & ME_SMOOTH);
+
+            if (isQuad)
+                mesh->AddQuad(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], vertexData[index[3]], calcFaceNormal);
+            else
+                mesh->AddTriangle(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], calcFaceNormal);
         }
-        mesh->SetData(vertexData, indexes);
     }
-    #if 0
-    void BScene::CalcNormal(TempFace* tri)
-    {
-        Vector3 v1 = tri->v1.position_ - tri->v2.position_;
-        Vector3 v2 = tri->v2.position_ - tri->v0.position_;
-        Vector3 n = glm::cross(v1, v2);
-        if (glm::length2(n) > 0)
-            n = glm::normalize(n);
-        else if (glm::length2(v1) > 0)
-            n = glm::normalize(v1);
-        else
-        {
-            CHECK_ASSERT(glm::length2(v2) > 0, __FILE__, __LINE__);
-            n = glm::normalize(v2);
-        }
-        tri->v0.normal_ = tri->v1.normal_ = tri->v2.normal_ = n;
-    }
-    #endif
-    void BScene::GetLayersBMmesh(Blender::Mesh* mesh, Blender::MTexPoly** eightLayerArray, Blender::MLoopUV** uvEightLayerArray, Blender::MLoopCol** oneMCol, int& validLayers)
+
+    int BScene::GetUVLayersBMmesh(const Blender::Mesh* mesh, Blender::MLoopUV** uvEightLayerArray)
     {
         CHECK_ASSERT(mesh, __FILE__, __LINE__);
 
-        validLayers = 0;
-
-        // Poly-Data: Textures,...
-        Blender::CustomDataLayer* layers = (Blender::CustomDataLayer*)mesh->pdata.layers;
+        int validLayers = 0;
+        Blender::CustomDataLayer* layers = (Blender::CustomDataLayer*)mesh->ldata.layers;
         if (layers)
         {
-            // push valid layers
-            for (int i = 0; i < mesh->pdata.totlayer && validLayers < 8; i++)
-            {
-                if (layers[i].type == CD_MTEXPOLY && eightLayerArray)
-                {
-                    Blender::MTexPoly* mtf = (Blender::MTexPoly*)layers[i].data;
-                    if (mtf)
-                        eightLayerArray[validLayers++] = mtf;
-                }
-            }
-        }
-        else
-        {
-            // TODO: Check this
-            if (eightLayerArray && mesh->mtpoly)
-                eightLayerArray[validLayers++] = mesh->mtpoly;
-            // TODO: Check this
-            if (oneMCol && mesh->mloopcol)
-                *oneMCol = mesh->mloopcol;
-        }
-
-        // this have to be equal to validLayers afterwards,right?
-        int uvValidLayers = 0;
-        // Loop-Data: UV-Data,..
-        layers = (Blender::CustomDataLayer*)mesh->ldata.layers;
-        if (layers)
-        {
-            // push valid layers
-            for (int i = 0; i < mesh->ldata.totlayer && uvValidLayers < 8; i++)
+            for (int i = 0; i < mesh->ldata.totlayer && validLayers < 8; i++)
             {
                 if (layers[i].type == CD_MLOOPUV && uvEightLayerArray)
                 {
                     Blender::MLoopUV* mtf = (Blender::MLoopUV*)layers[i].data;
                     if (mtf)
-                        uvEightLayerArray[uvValidLayers++] = mtf;
+                        uvEightLayerArray[validLayers++] = mtf;
                 }
             }
         }
-        else
-        {
-            // TODO: Check this
-            if (oneMCol && mesh->mloopcol)
-                *oneMCol = mesh->mloopcol;
-        }
-
-        if (uvValidLayers != validLayers)
-        {
-            TRACE_LOG("Warning! gkMeshConverter gkLoaderUtilsGetLayers: validLayers!=validUvLayers!");
-        }
+        return validLayers;
     }
 
     const Blender::Material* BScene::GetMaterial(const Blender::Object* ob, int index) const

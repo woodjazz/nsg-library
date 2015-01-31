@@ -35,6 +35,8 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "image_helper.h"
 #include "pugixml.hpp"
+#include "b64/encode.h"
+#include "b64/decode.h"
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_FAILURE_USERMSG
 #include "stb_image.h"
@@ -60,30 +62,30 @@ namespace NSG
     {
         switch (format_)
         {
-        case GL_ALPHA:
-            channels_ = 1;
-            break;
-        case GL_RGB:
-            channels_ = 3;
-            break;
-        case GL_RGBA:
-            channels_ = 4;
-            break;
-        case GL_DEPTH_COMPONENT:
-            channels_ = 0;
-            type_ = GL_UNSIGNED_INT;
-            break;
-        default:
-            CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
-            break;
+            case GL_ALPHA:
+                channels_ = 1;
+                break;
+            case GL_RGB:
+                channels_ = 3;
+                break;
+            case GL_RGBA:
+                channels_ = 4;
+                break;
+            case GL_DEPTH_COMPONENT:
+                channels_ = 0;
+                type_ = GL_UNSIGNED_INT;
+                break;
+            default:
+                CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
+                break;
         }
 
         pResource_ = PResource(new ResourceMemory(pixels, width * height * channels_));
     }
 
-    Texture::Texture(PResourceMemory resource)
+    Texture::Texture(PResourceMemory resource, const TextureFlags& flags)
         : fromKnownImgFormat_(true),
-          flags_((int)TextureFlag::NONE),
+          flags_(flags),
           texture_(0),
           pResource_(resource),
           width_(0),
@@ -91,11 +93,12 @@ namespace NSG
           format_(GL_RGBA),
           type_(GL_UNSIGNED_BYTE),
           channels_(0),
-          serializable_(false),
+          serializable_(true),
           wrapMode_(TextureWrapMode::REPEAT),
           mipmapLevels_(0),
           filterMode_(TextureFilterMode::BILINEAR)
     {
+		pResource_->AllowInvalidate(false);
     }
 
     Texture::Texture(PResourceFile resource, const TextureFlags& flags)
@@ -117,7 +120,7 @@ namespace NSG
 
     Texture::~Texture()
     {
-		Invalidate();
+        Invalidate();
     }
 
     GLuint Texture::GetID() const
@@ -182,10 +185,10 @@ namespace NSG
                 {
                     format_ = GL_RGB;
                 }
-				else if (channels_ == 1)
-				{
-					format_ = GL_ALPHA;
-				}
+                else if (channels_ == 1)
+                {
+                    format_ = GL_ALPHA;
+                }
                 else
                 {
                     format_ = GL_RGB;
@@ -292,36 +295,36 @@ namespace NSG
 
         switch (filterMode_)
         {
-        case TextureFilterMode::NEAREST:
-        {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            break;
-        }
-        case TextureFilterMode::BILINEAR:
-        {
-            if (mipmapLevels_ < 2)
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            else
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            break;
-        }
-        case TextureFilterMode::TRILINEAR:
-        {
-            if (mipmapLevels_ < 2)
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            else
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            break;
-        }
-        default:
-            CHECK_ASSERT(false, __FILE__, __LINE__);
-            break;
+            case TextureFilterMode::NEAREST:
+                {
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                    break;
+                }
+            case TextureFilterMode::BILINEAR:
+                {
+                    if (mipmapLevels_ < 2)
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                    else
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    break;
+                }
+            case TextureFilterMode::TRILINEAR:
+                {
+                    if (mipmapLevels_ < 2)
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                    else
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    break;
+                }
+            default:
+                CHECK_ASSERT(false, __FILE__, __LINE__);
+                break;
         }
 
-        pResource_->Invalidate();
+        pResource_->Invalidate(false);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
@@ -335,21 +338,69 @@ namespace NSG
     PTexture Texture::CreateFrom(const pugi::xml_node& node)
     {
         std::string flags = node.attribute("flags").as_string();
-        std::string filename = node.attribute("filename").as_string();
-        auto resource = std::make_shared<ResourceFile>(filename);
-        auto texture = std::make_shared<Texture>(resource);
+		pugi::xml_attribute fileAtt = node.attribute("filename");
+		PTexture texture;
+		if (fileAtt)
+		{
+			std::string filename = node.attribute("filename").as_string();
+			auto resource = std::make_shared<ResourceFile>(filename);
+			texture = std::make_shared<Texture>(resource);
+		}
+		else
+		{
+			pugi::xml_node dataNode = node.child("data");
+			size_t nBytes = dataNode.attribute("dataSize").as_uint();
+			std::string value;
+			if (nBytes)
+			{
+				const pugi::char_t* data = dataNode.child_value();
+				value.resize(nBytes);
+				memcpy(&value[0], data, nBytes);
+			}
+
+			std::string decoded_binary;
+			decoded_binary.resize(nBytes);
+			base64::base64_decodestate state;
+			base64::base64_init_decodestate(&state);
+			int decoded_length = base64::base64_decode_block(value.c_str(), nBytes, &decoded_binary[0], &state);
+			decoded_binary.resize(decoded_length);
+			auto resource = std::make_shared<ResourceMemory>(decoded_binary.c_str(), decoded_binary.size());
+			texture = std::make_shared<Texture>(resource);
+		}
+        
         texture->SetFlags(flags);
         return texture;
     }
 
     void Texture::Save(pugi::xml_node& node)
     {
-		Path path(pResource_->GetPath());
-		CHECK_ASSERT(!path.GetFilePath().empty(), __FILE__, __LINE__);
-		if (path.IsPathRelative())
-			node.append_attribute("filename") = path.GetFilePath().c_str();
+        Path path(pResource_->GetPath());
+		if (path.IsEmpty())
+		{
+			const char* const data = pResource_->GetData();
+			size_t nBytes = pResource_->GetBytes();
+
+			base64::base64_encodestate state;
+			base64::base64_init_encodestate(&state);
+
+			std::string encoded_data;
+			encoded_data.resize(2 * nBytes);
+
+			int numchars = base64::base64_encode_block(data, nBytes, &encoded_data[0], &state);
+			numchars += base64::base64_encode_blockend(&encoded_data[0] + numchars, &state);
+			encoded_data.resize(numchars);
+
+			pugi::xml_node dataNode = node.append_child("data");
+			dataNode.append_attribute("dataSize").set_value((unsigned)encoded_data.size());
+			dataNode.append_child(pugi::node_pcdata).set_value(encoded_data.c_str());
+		}
 		else
-			node.append_attribute("filename") = path.GetFilename().c_str();
+		{
+			if (path.IsPathRelative())
+				node.append_attribute("filename") = path.GetFilePath().c_str();
+			else
+				node.append_attribute("filename") = path.GetFilename().c_str();
+		}
         node.append_attribute("flags") = flags_.to_string().c_str();
     }
 

@@ -54,7 +54,7 @@ namespace NSG
     void* AllocateMemoryFromHeap(std::size_t count)
     {
         size_t newSize = sizeof(MemHeader) + count;
-        TRACE_PRINTF("Allocating %u from heap.\n", newSize);
+        //TRACE_PRINTF("Allocating %u from heap.\n", newSize);
         void* p = std::malloc(newSize);
         if (p)
         {
@@ -73,7 +73,7 @@ namespace NSG
         MemHeader* header = (MemHeader*)memObj;
         if (header->poolPointer_ == &globalHeapId)
         {
-            TRACE_PRINTF("Releasing memory to heap\n");
+            //TRACE_PRINTF("Releasing memory to heap\n");
             std::free(memObj);
         }
     }

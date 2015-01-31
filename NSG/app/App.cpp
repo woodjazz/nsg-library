@@ -542,26 +542,10 @@ namespace NSG
             {
                 if (!GetWindow(event.key.windowID, window))
                     continue;
-                #ifndef __GNUC__
-                {
-                    std::string utf8(event.text.text);
-                    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> utf16conv;
-                    std::u16string utf16 = utf16conv.from_bytes(utf8);
-                    for (char16_t c : utf16)
-                    {
-                        window->OnChar((unsigned int)c);
-                    }
-                }
-                #else
-                {
-                    UTF8String utf8(event.text.text);
-                    unsigned unicode = utf8.AtUTF8(0);
-                    if (unicode)
-                    {
-                        window->OnChar(unicode);
-                    }
-                }
-                #endif
+                UTF8String utf8(event.text.text);
+                unsigned unicode = utf8.AtUTF8(0);
+                if (unicode)
+                    window->OnChar(unicode);
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN)
             {

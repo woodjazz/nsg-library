@@ -40,6 +40,7 @@ misrepresented as being the original software.
 #include "pugixml.hpp"
 #include <thread>
 #include <sstream>
+#include <string>
 
 namespace NSG
 {
@@ -233,9 +234,11 @@ namespace NSG
             int materialIndex = App::this_->GetMaterialSerializableIndex(material_);
             if (materialIndex != -1)
             {
-                std::stringstream ss;
-                ss << materialIndex;
-                node.append_attribute("materialIndex") = ss.str().c_str();
+				std::stringstream ss;
+				ss << materialIndex;
+
+				node.append_attribute("materialIndex") = ss.str().c_str();
+				node.append_attribute("materialName") = material_->GetName().c_str();
             }
         }
 
@@ -244,11 +247,16 @@ namespace NSG
             int meshIndex = App::this_->GetMeshSerializableIndex(mesh_);
             if (meshIndex != -1)
             {
-                std::stringstream ss;
-                ss << meshIndex;
-                node.append_attribute("meshIndex") = ss.str().c_str();
+				std::stringstream ss;
+				ss << meshIndex;
+
+				node.append_attribute("meshIndex") = ss.str().c_str();
+				node.append_attribute("meshName") = mesh_->GetName().c_str();
             }
         }
+
+        if(rigidBody_)
+            rigidBody_->Save(node);
 
         SaveChildren(node);
     }
@@ -297,6 +305,13 @@ namespace NSG
         {
             int meshIndex = attribute.as_int();
             SetMesh(data.meshes_.at(meshIndex));
+        }
+
+        pugi::xml_node childRigidBody = node.child("RigidBody");
+        if (childRigidBody)
+        {
+			auto obj = GetOrCreateRigidBody();
+            obj->Load(childRigidBody);
         }
 
         LoadChildren(node, data);

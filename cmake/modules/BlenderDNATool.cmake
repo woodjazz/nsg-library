@@ -9,33 +9,40 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 
 endif()
 
-macro(BLENDERDNA_TOOL input_file output_dir)
+function(BLENDERDNA_TOOL input_file output_dir)
 
 	if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 
-	    get_filename_component(INPUTFILE ${input_file} ABSOLUTE)
-	    get_filename_component(INPUTNAME ${input_file} NAME)
-	    get_filename_component(OUTPUTDIR ${output_dir} ABSOLUTE)
-	    #string(REGEX REPLACE "[.][^.]+$" ".xml" OUTPUTNAME ${INPUTNAME}) # replace extension by xml
-	    # message("${INPUTFILE}")
-	    # message("${INPUTNAME}")
-	    # message("${OUTPUTNAME}")  
-    
-	    set(BLENDERDNA_CMD ${BLENDERDNA_EXECUTABLE} -i ${INPUTFILE} -o ${OUTPUTDIR} ${ARGN})
+	    get_filename_component(INPUTEXTENSION ${input_file} EXT)
 
-	    #message("${BLENDERDNA_CMD}")
+	    if(${INPUTEXTENSION} MATCHES ".blend")
 
-	    set(TARGET_NAME DNA${INPUTNAME})
+		    get_filename_component(INPUTFILE ${input_file} ABSOLUTE)
+		    get_filename_component(INPUTNAME ${input_file} NAME)
+		    get_filename_component(OUTPUTDIR ${output_dir} ABSOLUTE)
 
-	    add_custom_target(${TARGET_NAME} 
-	            COMMAND ${BLENDERDNA_CMD}
-	            DEPENDS ${BLENDERDNA_EXECUTABLE} ${INPUTFILE}
-	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+		    #string(REGEX REPLACE "[.][^.]+$" ".xml" OUTPUTNAME ${INPUTNAME}) # replace extension by xml
+		    # message("${INPUTFILE}")
+		    # message("${INPUTNAME}")
+		    # message("${OUTPUTNAME}")  
+	    
+		    set(BLENDERDNA_CMD ${BLENDERDNA_EXECUTABLE} -i ${INPUTFILE} -o ${OUTPUTDIR} ${ARGN})
 
-		add_dependencies(${TARGET_NAME} ${DNA_GEN_TOOL})
-	    add_dependencies(${PROJECT_NAME} ${TARGET_NAME})
+		    #message("${BLENDERDNA_CMD}")
+
+		    set(TARGET_NAME DNA${INPUTNAME})
+
+		    add_custom_target(${TARGET_NAME} 
+		            COMMAND ${BLENDERDNA_CMD}
+		            DEPENDS ${BLENDERDNA_EXECUTABLE} ${INPUTFILE}
+		            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+			add_dependencies(${TARGET_NAME} ${DNA_GEN_TOOL})
+			add_dependencies(converter ${TARGET_NAME})
+
+		endif()
 
 	endif()
 
-endmacro(BLENDERDNA_TOOL)
+endfunction(BLENDERDNA_TOOL)
 

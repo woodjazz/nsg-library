@@ -293,11 +293,7 @@ namespace NSG
 
         pugi::xml_node child = node.append_child("Material");
 
-        {
-            std::stringstream ss;
-            ss << name_;
-            child.append_attribute("name") = ss.str().c_str();
-        }
+        child.append_attribute("name").set_value(name_.c_str());
 
         if (texture0_ && texture0_->IsSerializable())
         {

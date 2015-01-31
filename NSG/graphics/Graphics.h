@@ -95,6 +95,7 @@ namespace NSG
         void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
         UniformObjs& GetUniformObjs() { return uniformObjs_; }
         void SetMesh(Mesh* mesh) { activeMesh_ = mesh; }
+        Mesh* GetMesh() const { return activeMesh_; }
 		void SetNode(SceneNode* node) { activeNode_ = node; }
         void Render(Batch& batch);
 		void Render();

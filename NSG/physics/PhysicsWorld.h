@@ -44,6 +44,8 @@ namespace NSG
         void StepSimulation(float timeStep);
 		void Substep(float tick);
         std::shared_ptr<btDiscreteDynamicsWorld> GetWorld() const { return dynamicsWorld_; }
+		void SetGravity(const Vector3& gravity);
+		const Vector3& GetGravity() const { return gravity_; }
     private:
         static void SubstepCallback(btDynamicsWorld* dyn, float tick);
         btDefaultCollisionConfiguration* collisionConfiguration_;
@@ -52,5 +54,6 @@ namespace NSG
         btCollisionDispatcher* dispatcher_;
         btSequentialImpulseConstraintSolver* constraintSolver_;
 		std::shared_ptr<btDiscreteDynamicsWorld> dynamicsWorld_;
+		Vector3 gravity_;
     };
 }

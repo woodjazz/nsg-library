@@ -36,6 +36,7 @@ namespace BlenderConverter
 
 	enum SPLINE_CHANNEL_CODE
 	{
+		NONE,
 		SC_ROT_QUAT_W,
 		SC_ROT_QUAT_X,
 		SC_ROT_QUAT_Y,

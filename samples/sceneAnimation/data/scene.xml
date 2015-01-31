@@ -10,13 +10,13 @@
 			<SceneNode name="Bone.003" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,    0.000,    0.000,   -0.707]" scale="[    1.000,    1.000,    1.000]" />
 			<SceneNode name="Bone.004" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" />
 		</SceneNode>
-		<SceneNode name="Cube" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="2" meshIndex="1" />
+		<SceneNode name="Cube" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="2" materialName="Green-material" meshIndex="1" meshName="Cube" />
 		<SceneNode name="Spot" nodeType="Light" type="2" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.00159997" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    1.054,    0.480,    8.547]" orientation="[    1.000,    0.000,    0.000,    0.000]" />
 		<SceneNode name="Sun" nodeType="Light" type="1" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[  -11.827,    1.163,    1.972]" orientation="[    0.708,    0.000,   -0.707,    0.000]" />
-		<SceneNode name="Ramp1" nodeType="SceneNode" position="[   -4.126,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="3" meshIndex="0" />
-		<SceneNode name="Ramp2" nodeType="SceneNode" position="[   -4.126,    5.276,    0.000]" orientation="[   -0.000,    0.000,    0.000,    1.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="3" meshIndex="0" />
-		<SceneNode name="Earth" nodeType="SceneNode" position="[   -4.126,   -0.084,    6.636]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="2" />
-		<SceneNode name="Plane" nodeType="SceneNode" position="[    0.000,    0.000,   -1.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    8.089,    8.089,    8.089]" materialIndex="1" meshIndex="3" />
+		<SceneNode name="Ramp1" nodeType="SceneNode" position="[   -4.126,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="3" materialName="Red-material" meshIndex="0" meshName="Ramp" />
+		<SceneNode name="Ramp2" nodeType="SceneNode" position="[   -4.126,    5.276,    0.000]" orientation="[   -0.000,    0.000,    0.000,    1.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="3" materialName="Red-material" meshIndex="0" meshName="Ramp" />
+		<SceneNode name="Earth" nodeType="SceneNode" position="[   -4.126,   -0.084,    6.636]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" materialName="Earth-material" meshIndex="2" meshName="Earth" />
+		<SceneNode name="Plane" nodeType="SceneNode" position="[    0.000,    0.000,   -1.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    8.089,    8.089,    8.089]" materialIndex="1" materialName="Floor-material" meshIndex="3" meshName="Plane.001" />
 	</SceneNode>
 	<Meshes>
 		<Mesh name="Ramp" wireFrameDrawMode="4" solidDrawMode="4">
@@ -784,4 +784,5 @@
 			</Bones>
 		</Skeleton>
 	</Skeletons>
+	<Physics gravity="[    0.000,   -9.810,    0.000]" />
 </Scene>

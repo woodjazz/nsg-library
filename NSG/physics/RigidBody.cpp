@@ -31,8 +31,9 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Check.h"
 #include "PhysicsWorld.h"
+#include "pugixml.hpp"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
-#include <hull.h>
+#include "hull.h"
 #include <algorithm>
 
 namespace NSG
@@ -56,9 +57,15 @@ namespace NSG
           sceneNode_(sceneNode),
           owner_(sceneNode->GetScene()->GetPhysicsWorld()->GetWorld()),
           shape_(nullptr),
+		  triMesh_(nullptr),
           mass_(0), //static by default
           phyShape_(SH_UNKNOWN),
-          handleCollision_(false)
+          handleCollision_(false),
+          restitution_(0),
+          friction_(0.5f),
+          linearDamp_(0),
+          angularDamp_(0),
+          margin_(.06f)
     {
         //Since a non-visible scenenode will neither be rendered nor be validated then
         //better not to invalidate a Rigidbody (Rigidbody has to be alive because can make (in any moment) an object visible again)
@@ -68,12 +75,13 @@ namespace NSG
 
     RigidBody::~RigidBody()
     {
-        Invalidate();
+        Invalidate(true);
     }
 
     bool RigidBody::IsValid()
     {
-        return phyShape_ != SH_UNKNOWN;
+		auto sceneNode = sceneNode_.lock();
+		return phyShape_ != SH_UNKNOWN && sceneNode && sceneNode->GetMesh();
     }
 
     void RigidBody::AllocateResources()
@@ -81,18 +89,14 @@ namespace NSG
         CreateShape();
 
         btVector3 inertia(0, 0, 0);
-
-        if (IsStatic())
-        {
-            body_ = new btRigidBody(0.f, nullptr, shape_, btVector3(0, 0, 0));
-            body_->setDamping(0.f, 0.f);
-            body_->setAngularFactor(0.f);
-        }
-        else
-        {
-            shape_->calculateLocalInertia(mass_, inertia);
-            body_ = new btRigidBody(mass_, this, shape_, inertia);
-        }
+		if (mass_ > 0)
+			shape_->calculateLocalInertia(mass_, inertia);
+        btRigidBody::btRigidBodyConstructionInfo info(mass_, (IsStatic() ? nullptr : this), shape_, inertia);
+        info.m_restitution = restitution_;
+        info.m_friction = friction_;
+        info.m_linearDamping = linearDamp_;
+        info.m_angularDamping = angularDamp_;
+        body_ = new btRigidBody(info);
 
         PSceneNode sceneNode(sceneNode_.lock());
         body_->setUserPointer(this);
@@ -111,6 +115,7 @@ namespace NSG
             auto world = owner_.lock();
             if (world)
                 world->removeRigidBody(body_);
+            delete triMesh_;
             delete shape_;
             delete body_;
             shape_ = nullptr;
@@ -121,7 +126,7 @@ namespace NSG
     void RigidBody::SyncWithNode()
     {
         PSceneNode sceneNode(sceneNode_.lock());
-        body_->setWorldTransform(ToTransform(sceneNode->GetGlobalPosition(), sceneNode->GetGlobalOrientation()));  
+        body_->setWorldTransform(ToTransform(sceneNode->GetGlobalPosition(), sceneNode->GetGlobalOrientation()));
     }
 
     void RigidBody::SetMass(float mass)
@@ -129,7 +134,7 @@ namespace NSG
         if (mass_ != mass)
         {
             mass_ = mass;
-            Invalidate();
+			Invalidate(true);
             IsReady(); //rigidbody needs to be active even when it is not visible
         }
     }
@@ -139,19 +144,71 @@ namespace NSG
         if (phyShape_ != phyShape)
         {
             phyShape_ = phyShape;
-            Invalidate();
+			Invalidate(true);
             IsReady(); //rigidbody needs to be active even when it is not visible
         }
     }
 
-    btTriangleMesh* RigidBody::GetTriangleMesh() const
+    void RigidBody::SetRestitution(float restitution)
     {
+        if (restitution != restitution_)
+        {
+            restitution_ = restitution;
+			Invalidate(true);
+            IsReady(); //rigidbody needs to be active even when it is not visible
+        }
+    }
+
+    void RigidBody::SetFriction(float friction)
+    {
+        if (friction != friction_)
+        {
+            friction_ = friction;
+			Invalidate(true);
+            IsReady(); //rigidbody needs to be active even when it is not visible
+        }
+    }
+
+    void RigidBody::SetLinearDamp(float linearDamp)
+    {
+        if (linearDamp != linearDamp_)
+        {
+            linearDamp_ = linearDamp;
+			Invalidate(true);
+            IsReady(); //rigidbody needs to be active even when it is not visible
+        }
+    }
+
+    void RigidBody::SetAngularDamp(float angularDamp)
+    {
+        if (angularDamp != angularDamp_)
+        {
+            angularDamp_ = angularDamp;
+			Invalidate(true);
+            IsReady(); //rigidbody needs to be active even when it is not visible
+        }
+    }
+
+    void RigidBody::SetMargin(float margin)
+    {
+        if (margin != margin_)
+        {
+            margin_ = margin;
+			Invalidate(true);
+            IsReady(); //rigidbody needs to be active even when it is not visible
+        }
+
+    }
+
+    void RigidBody::CreateTriangleMesh()
+    {
+		CHECK_ASSERT(triMesh_ == nullptr, __FILE__, __LINE__);
         PSceneNode sceneNode(sceneNode_.lock());
         PMesh pMesh = sceneNode->GetMesh();
         const VertexsData& vertexData = pMesh->GetVertexsData();
         const Indexes& indices = pMesh->GetIndexes();
-        btTriangleMesh* triMesh = new btTriangleMesh();
-        unsigned index_count = indices.size();
+		triMesh_ = new btTriangleMesh();
+        size_t index_count = indices.size();
         CHECK_ASSERT(index_count % 3 == 0, __FILE__, __LINE__);
         for (size_t i = 0; i < index_count; i += 3)
         {
@@ -159,15 +216,13 @@ namespace NSG
             int i1 = indices[i + 1];
             int i2 = indices[i + 2];
 
-            triMesh->addTriangle(
+			triMesh_->addTriangle(
                 btVector3(vertexData[i0].position_.x, vertexData[i0].position_.y, vertexData[i0].position_.z),
                 btVector3(vertexData[i1].position_.x, vertexData[i1].position_.y, vertexData[i1].position_.z),
                 btVector3(vertexData[i2].position_.x, vertexData[i2].position_.y, vertexData[i2].position_.z));
         }
 
-        CHECK_ASSERT(triMesh->getNumTriangles() > 0, __FILE__, __LINE__);
-
-        return triMesh;
+		CHECK_ASSERT(triMesh_->getNumTriangles() > 0, __FILE__, __LINE__);
     }
 
     btConvexHullShape* RigidBody::GetConvexHullTriangleMesh() const
@@ -184,7 +239,7 @@ namespace NSG
             StanHull::HullDesc desc;
             desc.SetHullFlag(StanHull::QF_TRIANGLES);
             //desc.SetHullFlag(StanHull::QF_REVERSE_ORDER);
-            desc.mVcount = vertexData.size();
+            desc.mVcount = (unsigned int)vertexData.size();
             desc.mVertices = &(vertexData[0].position_[0]);
             desc.mVertexStride = sizeof(VertexData);
             desc.mSkinWidth = 0.0f;
@@ -218,34 +273,38 @@ namespace NSG
         {
             case SH_SPHERE:
                 shape_ = new btSphereShape(std::max(halfSize.x, std::max(halfSize.y, halfSize.z)));
-                shape_->setLocalScaling(ToBtVector3(globalScale));
                 break;
 
             case SH_BOX:
                 shape_ = new btBoxShape(btVector3(halfSize.x, halfSize.y, halfSize.z));
-                shape_->setLocalScaling(ToBtVector3(globalScale));
                 break;
 
             case SH_CONE:
                 shape_ = new btConeShapeZ(std::max(halfSize.x, halfSize.y), 2.f * halfSize.z);
-                shape_->setLocalScaling(ToBtVector3(globalScale));
                 break;
 
             case SH_CYLINDER:
                 shape_ = new btCylinderShapeZ(btVector3(halfSize.x, halfSize.y, halfSize.z));
-                shape_->setLocalScaling(ToBtVector3(globalScale));
                 break;
+
+            case SH_CAPSULE:
+                {
+                    float c_radius = std::max(halfSize.x, halfSize.y);
+                    shape_ = new btCapsuleShapeZ(c_radius - 0.05, (halfSize.z - c_radius - 0.05) * 2);
+                    break;
+                }
 
             case SH_CONVEX_TRIMESH:
                 shape_ = GetConvexHullTriangleMesh();
-                shape_->setLocalScaling(ToBtVector3(globalScale));// *halfSize * 2.f));
                 break;
 
-            case SH_TRIMESH:
-                CHECK_ASSERT(IsStatic(), __FILE__, __LINE__);
-                shape_ = new btBvhTriangleMeshShape(GetTriangleMesh(), true);
-                shape_->setLocalScaling(ToBtVector3(globalScale));// *halfSize * 2.f));
-                break;
+			case SH_TRIMESH:
+			{
+				CHECK_ASSERT(IsStatic(), __FILE__, __LINE__);
+				CreateTriangleMesh();
+				shape_ = new btBvhTriangleMeshShape(triMesh_, true);
+				break;
+			}
 
             case SH_UNKNOWN:
             default:
@@ -254,8 +313,8 @@ namespace NSG
         }
 
         CHECK_ASSERT(shape_, __FILE__, __LINE__);
-        //const float MARGIN = 0.1f;
-        //shape_->setMargin(MARGIN);
+        shape_->setLocalScaling(ToBtVector3(globalScale));
+        shape_->setMargin(margin_);
     }
 
     void RigidBody::getWorldTransform(btTransform& worldTrans) const
@@ -357,4 +416,34 @@ namespace NSG
         body_->updateInertiaTensor();
         body_->setCollisionShape(shape_);
     }
+
+    void RigidBody::Load(const pugi::xml_node& node)
+    {
+		mass_ = node.attribute("mass").as_float();
+		phyShape_ = (PhysicsShape)node.attribute("phyShape").as_int();
+		handleCollision_ = node.attribute("handleCollision").as_bool();
+		restitution_ = node.attribute("restitution").as_float();
+		friction_ = node.attribute("friction").as_float();
+		linearDamp_ = node.attribute("linearDamp").as_float();
+		angularDamp_ = node.attribute("angularDamp").as_float();
+		margin_ = node.attribute("margin").as_float();
+		Invalidate(true);
+		IsReady(); //rigidbody needs to be active even when it is not visible
+    }
+    
+    void RigidBody::Save(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("RigidBody");
+
+		child.append_attribute("mass").set_value(mass_);
+		child.append_attribute("phyShape").set_value((int)phyShape_);
+		child.append_attribute("handleCollision").set_value(handleCollision_);
+		child.append_attribute("restitution").set_value(restitution_);
+		child.append_attribute("friction").set_value(friction_);
+		child.append_attribute("linearDamp").set_value(linearDamp_);
+		child.append_attribute("angularDamp").set_value(angularDamp_);
+		child.append_attribute("margin").set_value(margin_);
+    }
+
 }
+

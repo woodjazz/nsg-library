@@ -77,6 +77,14 @@ add_subdirectory(${DEPENDENCIES_DIR}/jpeg)
 list(APPEND LIBRARIES_2_LINK jpeg) 
 
 ##################################
+# libb64
+##################################
+include_directories(${DEPENDENCIES_DIR}/libb64/include/)
+add_subdirectory(${DEPENDENCIES_DIR}/libb64)
+list(APPEND LIBRARIES_2_LINK libb64) 
+
+
+##################################
 # StanHull
 ##################################
 include_directories(${DEPENDENCIES_DIR}/StanHull)

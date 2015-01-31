@@ -77,8 +77,8 @@
 				</SceneNode>
 			</SceneNode>
 		</SceneNode>
-		<SceneNode name="Body" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" meshIndex="0">
-			<SceneNode name="Body2" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="1" meshIndex="1" />
+		<SceneNode name="Body" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" materialName="Material0" meshIndex="0" meshName="GeneratedName0">
+			<SceneNode name="Body2" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="1" materialName="Material1" meshIndex="1" meshName="GeneratedName1" />
 		</SceneNode>
 	</SceneNode>
 	<Meshes>
@@ -4037,4 +4037,5 @@
 			</Bones>
 		</Skeleton>
 	</Skeletons>
+	<Physics gravity="[    0.000,   -9.810,    0.000]" />
 </Scene>

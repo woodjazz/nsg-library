@@ -31,6 +31,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     PhysicsWorld::PhysicsWorld()
+		:gravity_(0, -9.81f, 0)
     {
         collisionConfiguration_ = new btDefaultCollisionConfiguration();
         pairCache_ = new btDbvtBroadphase();
@@ -39,7 +40,7 @@ namespace NSG
         dispatcher_ = new btCollisionDispatcher(collisionConfiguration_);
         constraintSolver_ = new btSequentialImpulseConstraintSolver();
         dynamicsWorld_ = std::make_shared<btDiscreteDynamicsWorld>(dispatcher_, pairCache_, constraintSolver_, collisionConfiguration_);
-        dynamicsWorld_->setGravity(btVector3(0, 20 * -9.81f, 0));
+		SetGravity(gravity_);
         dynamicsWorld_->setWorldUserInfo(this);
         dynamicsWorld_->setInternalTickCallback(SubstepCallback, static_cast<void*>(this));
     }
@@ -56,6 +57,15 @@ namespace NSG
         delete pairCache_;
         delete collisionConfiguration_;
     }
+
+	void PhysicsWorld::SetGravity(const Vector3& gravity)
+	{
+		if (gravity_ != gravity)
+		{
+			gravity_ = gravity;
+			dynamicsWorld_->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
+		}
+	}
 
     void PhysicsWorld::StepSimulation(float timeStep)
     {

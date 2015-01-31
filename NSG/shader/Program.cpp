@@ -132,11 +132,27 @@ namespace NSG
         fragmentShader_ = resource;
     }
 
+    bool Program::IsSkinned() const
+    {
+        return (flags_ & (int)ProgramFlag::SKINNED) ? true : false;
+    }
+
     bool Program::IsValid()
     {
-        return (!material_ || material_->IsReady()) &&
-               graphics_.GetScene() &&
-               (!vertexShader_ || vertexShader_->IsReady()) && (!fragmentShader_ || fragmentShader_->IsReady());
+        if (material_ && material_->IsReady() && graphics_.GetScene())
+        {
+			if (!nBones_ && IsSkinned())
+            {
+                auto mesh = graphics_.GetMesh();
+                auto skeleton = mesh->GetSkeleton();
+                nBones_ = skeleton->GetBones().size();
+            }
+
+            return (!vertexShader_ || vertexShader_->IsReady())
+                   &&  (!fragmentShader_ || fragmentShader_->IsReady());
+        }
+
+        return false;
     }
 
     size_t Program::GetNeededVarying() const
@@ -164,6 +180,10 @@ namespace NSG
         #else
         preDefines = "#version 120\n";
         #endif
+
+		preDefines += "/* Program for material ";
+		preDefines += material_->GetName();
+		preDefines += " */\n";
 
         if (graphics_.HasInstancedArrays())
             preDefines += "#define INSTANCED\n";
@@ -338,12 +358,12 @@ namespace NSG
         if (fragmentShader_)
             preDefines += "#define HAS_USER_FRAGMENT_SHADER\n";
 
-		bool hasLighting = hasLights && ((int)ProgramFlag::PER_VERTEX_LIGHTING | (int)ProgramFlag::PER_PIXEL_LIGHTING) & flags_;
+        bool hasLighting = hasLights && ((int)ProgramFlag::PER_VERTEX_LIGHTING | (int)ProgramFlag::PER_PIXEL_LIGHTING) & flags_;
 
         std::string vBuffer = preDefines + "#define COMPILEVS\n";
         vBuffer += COMMON_GLSL;
         vBuffer += TRANSFORMS_GLSL;
-		if (hasLighting)
+        if (hasLighting)
             vBuffer += LIGHTING_GLSL;
         vBuffer += VS_GLSL;
         if (vertexShader_)
@@ -388,11 +408,11 @@ namespace NSG
                 fBuffer += "uniform sampler2D u_texture1;\n";
             }
         }
-		bool hasPostProcess = ((int)ProgramFlag::BLEND & flags_) || ((int)ProgramFlag::BLUR & flags_);
+        bool hasPostProcess = ((int)ProgramFlag::BLEND & flags_) || ((int)ProgramFlag::BLUR & flags_);
 
-		if (hasLighting)
+        if (hasLighting)
             fBuffer += LIGHTING_GLSL;
-		if (hasPostProcess)
+        if (hasPostProcess)
             fBuffer += POSTPROCESS_GLSL;
         fBuffer += FS_GLSL;
         if (fragmentShader_)
@@ -637,8 +657,12 @@ namespace NSG
                 free(log);
             }
 
+			TRACE_LOG("Creating program for material " << name_ << " HAS FAILED!!!");
+
             return false;
         }
+
+		TRACE_LOG("Program for material " << name_ << " OK.");
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -741,9 +765,9 @@ namespace NSG
                 if (materialLoc_.parallaxScale_ != -1)
                     glUniform1f(materialLoc_.parallaxScale_, material_->parallaxScale_);
 
-                if(blendMode_loc_ != -1)
+                if (blendMode_loc_ != -1)
                     glUniform1i(blendMode_loc_, (int)material_->GetFilterBlendMode());
-        
+
                 if (blurFilterLoc_.blurDir_ != -1)
                     glUniform2fv(blurFilterLoc_.blurDir_, 1, &material_->blurFilter_.blurDir_[0]);
 
@@ -763,10 +787,10 @@ namespace NSG
         if (skeleton)
         {
             const std::vector<PWeakNode>& bones = skeleton->GetBones();
-            unsigned nBones = bones.size();
+            size_t nBones = bones.size();
             if (nBones > nBones_)
             {
-                TRACE_LOG("Invalidating shader since number of bones (in the shader) has increased. Before nBones = " << nBones_ << ", now is " << nBones << ".");
+                TRACE_LOG("Invalidating shader for material " << material_->GetName() << " since number of bones (in the shader) has increased. Before nBones = " << nBones_ << ", now is " << nBones << ".");
                 Invalidate();
                 nBones_ = nBones;
                 return false;
@@ -1051,7 +1075,7 @@ namespace NSG
             SetMaterialVariables();
             SetNodeVariables(node);
             SetCameraVariables();
-			SetLightVariables(scene);
+            SetLightVariables(scene);
         }
     }
 

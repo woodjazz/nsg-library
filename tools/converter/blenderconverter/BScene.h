@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Path.h"
+#include "VertexData.h"
 #include "Blender.h"
 #include "BSpline.h"
 #include <vector>
@@ -50,32 +51,43 @@ namespace BlenderConverter
 		void ConvertObject(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		NSG::PSceneNode CreateSceneNode(const Blender::Object* obj, NSG::PSceneNode parent);
 		void CreateSkeleton(const Blender::Object* obj, NSG::PSceneNode parent);
-		void BuildBoneTree(const Blender::Bone* cur, const Blender::Bone* prev, NSG::PSceneNode parent);
+		void BuildBoneTree(const Blender::Bone* cur, NSG::PSceneNode parent);
         void CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent);
         void CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
         void CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
-        void ConvertMesh(Blender::Mesh* me, NSG::PModelMesh mesh);
-		//void CalcNormal(TempFace* tri);
-		void GetLayersBMmesh(Blender::Mesh* me, Blender::MTexPoly** eightLayerArray, Blender::MLoopUV** uvEightLayerArray, Blender::MLoopCol** oneMCol, int& validLayers);
-		void LoadBones(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
+		void ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
+		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray);
+		void LoadBones(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
 		void LoadSkeleton(const Blender::Object* obj);
-		void MakeBonesList(const Blender::Bone* bone, std::vector<NSG::PWeakNode>& nodeBones);
+		void MakeBonesOffsetMatrix(const Blender::Bone* cur, NSG::PSceneNode parent);
 		void LoadMaterials(const Blender::Object* obj);
 		const Blender::Material* GetMaterial(const Blender::Object* ob, int index) const;
 		void LoadMaterials(bParse::bMain* data);
 		void LoadMaterial(const Blender::Material* mt);
-		NSG::PTexture CreateTexture(const std::string& fileName);
+		NSG::PTexture CreateTexture(const Blender::Image* ima);
 		void SetMaterial(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		void LoadAnimData(NSG::PSceneNode sceneNode, const Blender::AnimData* adt, float animfps);
-		float ConvertAction(const Blender::bAction* action, float animfps);
+		struct TrackData
+		{
+			NSG::PAnimationTrack track;
+			std::vector<PBSpline> keyframes;
+		};
+		typedef std::shared_ptr<TrackData> PTrackData;
+		typedef std::map<std::string, PTrackData> BTracks;
+		float GetTracks(const Blender::bAction* action, float animfps, BTracks& tracks, float& start, float& end);
+		void ConvertTracks(NSG::PAnimation anim, BTracks& tracks, float length);
 		void GetActionStartEnd(const Blender::bAction* action, float& start, float& end);
 		void GetSplineStartEnd(const Blender::BezTriple* bez, int totvert, float& start, float& end);
-		PBSpline ConvertSpline(const Blender::BezTriple* bez, int access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor);
+		PBSpline ConvertSpline(const Blender::BezTriple* bez, SPLINE_CHANNEL_CODE access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor);
+		NSG::AnimationChannelMask ConvertChannel(PTrackData trackData, NSG::AnimationTrack& track, float length);
+		void LoadPhysics(const Blender::Object* obj, NSG::PSceneNode sceneNode);
+		void MarkProgramAsSkinableNodes(const NSG::Mesh* mesh);
     private:
         const Blender::Scene* sc_;
         NSG::Path path_;
         NSG::Path outputDir_;
         NSG::PScene scene_;
 		std::vector<const Blender::Object*> armatureLinker_;
+		std::vector<NSG::PWeakNode> nodeBoneList_;
     };
 }

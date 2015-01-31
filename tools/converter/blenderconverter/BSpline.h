@@ -31,6 +31,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include "UtilConverter.h"
 
 namespace BlenderConverter
 {
@@ -53,7 +54,7 @@ namespace BlenderConverter
 
     protected:
         std::vector<BezierVertex>         m_verts;
-        int                             m_code;
+		SPLINE_CHANNEL_CODE code_;
         BezierInterpolation             m_interpMethod;
 
         int solveRoots(const double& x,
@@ -74,7 +75,7 @@ namespace BlenderConverter
 
 
     public:
-        BSpline(int code) : m_code(code), m_interpMethod(BEZ_LINEAR) {}
+		BSpline(SPLINE_CHANNEL_CODE code) : code_(code), m_interpMethod(BEZ_LINEAR) {}
         ~BSpline() {}
 
         // interpolate across this spline
@@ -93,8 +94,8 @@ namespace BlenderConverter
 
         ///Gets the code bound to this spline.
         ///ie; where to apply results, loc, rot, ...
-        int getCode(void) const
-        { return m_code ;}
+		SPLINE_CHANNEL_CODE GetCode(void) const
+        { return code_ ;}
 
         void setInterpolationMethod(const BezierInterpolation& meth)
         { m_interpMethod = meth; }

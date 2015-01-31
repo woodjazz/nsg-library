@@ -34,7 +34,7 @@ namespace NSG
     public:
         Texture(PResourceFile resource, const TextureFlags& flags = (int)TextureFlag::NONE);
         Texture(GLint format, GLsizei width, GLsizei height, const char* pixels);
-        Texture(PResourceMemory resource);
+		Texture(PResourceMemory resource, const TextureFlags& flags = (int)TextureFlag::NONE);
         virtual ~Texture();
 		GLuint GetID() const;
 		GLsizei GetWidth() const;

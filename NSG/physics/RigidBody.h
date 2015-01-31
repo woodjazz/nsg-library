@@ -34,6 +34,7 @@ class btDynamicsWorld;
 class btRigidBody;
 class btTriangleMesh;
 class btCollisionShape;
+class btTriangleMesh;
 
 namespace NSG
 {
@@ -51,11 +52,18 @@ namespace NSG
         void ReScale();
         bool IsStatic() const;
         void SyncWithNode();
+		void SetRestitution(float restitution);
+		void SetFriction(float friction);
+		void SetLinearDamp(float linearDamp);
+		void SetAngularDamp(float angularDamp);
+		void SetMargin(float margin);
+        void Load(const pugi::xml_node& node);
+        void Save(pugi::xml_node& node);
     private:
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-        btTriangleMesh* GetTriangleMesh() const;
+        void CreateTriangleMesh();
 		btConvexHullShape* GetConvexHullTriangleMesh() const;
         void CreateShape();
         void getWorldTransform(btTransform& worldTrans) const override;
@@ -65,9 +73,15 @@ namespace NSG
 		PWeakSceneNode sceneNode_;
         std::weak_ptr<btDynamicsWorld> owner_;
         btCollisionShape* shape_;
+		btTriangleMesh* triMesh_;
         float mass_;
         PhysicsShape phyShape_;
         bool handleCollision_;
+		float restitution_;
+		float friction_;
+		float linearDamp_;
+		float angularDamp_;
+		float margin_;
     };
 }
 

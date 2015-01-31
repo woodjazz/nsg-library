@@ -10,6 +10,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "App.h"
+#include "Util.h"
 #include "Skeleton.h"
 #include "ModelMesh.h"
 #include "Animation.h"
@@ -155,8 +156,25 @@ namespace NSG
         SaveMaterials(scene);
         SaveAnimations(scene);
         SaveSkeletons(scene);
-
+		SavePhysics(scene);
     }
+
+	void Scene::SavePhysics(pugi::xml_node& node)
+	{
+		pugi::xml_node child = node.append_child("Physics");
+		{
+			std::stringstream ss;
+			ss << physicsWorld_->GetGravity();
+			child.append_attribute("gravity") = ss.str().c_str();
+		}
+	}
+
+	void Scene::LoadPhysics(const pugi::xml_node& node)
+	{
+		pugi::xml_node child = node.child("Physics");
+		Vertex3 gravity = GetVertex3(child.attribute("gravity").as_string());
+		physicsWorld_->SetGravity(gravity);
+	}
 
     void Scene::SaveAnimations(pugi::xml_node& node)
     {
@@ -234,6 +252,7 @@ namespace NSG
             SceneNode::Load(scene.child("SceneNode"), data);
             LoadAnimations(scene);
             LoadSkeletons(scene);
+			LoadPhysics(scene);
         }
     }
 

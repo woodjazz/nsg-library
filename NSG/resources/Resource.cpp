@@ -46,7 +46,6 @@ namespace NSG
 
     const Path& Resource::GetPath() const
     {
-        CHECK_ASSERT(false, __FILE__, __LINE__);
         return Path::GetEmpty();
     }
 

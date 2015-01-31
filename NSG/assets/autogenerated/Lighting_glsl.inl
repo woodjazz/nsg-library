@@ -58,20 +58,17 @@ static const char* LIGHTING_GLSL = \
 "        vec4 color = u_material.ambient * base.ambient;\n"\
 "    #endif\n"\
 "	\n"\
-"	float diffuseFactor = dot(normal, -lightDirection);	\n"\
-"    if (diffuseFactor > 0.0) \n"\
-"    {                                                                \n"\
-"        color = max(color, diffuseFactor * base.diffuse * u_material.diffuse);                                \n"\
-"        vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
-"        float specularFactor = dot(vertexToEye, lightReflect);\n"\
-"    	specularFactor = pow(specularFactor, u_material.shininess);\n"\
-"        #ifdef SPECULARMAP\n"\
-"            color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);\n"\
-"        #else\n"\
-"            color += specularFactor * base.specular * u_material.specular;\n"\
-"        #endif\n"\
-"    }                                                                                       \n"\
-"                                                                            \n"\
+"	float diffuseFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);\n"\
+"    color = max(color, diffuseFactor * base.diffuse * u_material.diffuse);                                \n"\
+"    vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
+"    float specularFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);\n"\
+"	specularFactor = pow(specularFactor, u_material.shininess);\n"\
+"    #ifdef SPECULARMAP\n"\
+"        color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);\n"\
+"    #else\n"\
+"        color += specularFactor * base.specular * u_material.specular;\n"\
+"    #endif\n"\
+"                                                                           \n"\
 "    return color;  \n"\
 "}\n"\
 "vec4 CalcDirectionalLight(BaseLight base, vec3 lightDirection, vec3 vertexToEye, vec3 normal)\n"\

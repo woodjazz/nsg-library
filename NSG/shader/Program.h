@@ -62,6 +62,7 @@ namespace NSG
         void DisableFlags(const ProgramFlags& flags);
         PProgram Clone(Material* material) const;
         Material* GetMaterial() const { return material_; }
+        bool IsSkinned() const;
     private:
         size_t GetNeededVarying() const;
         bool IsValid() override;

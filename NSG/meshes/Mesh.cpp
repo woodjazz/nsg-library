@@ -110,8 +110,6 @@ namespace NSG
         boundingSphereRadius_ = 0;
         pVBuffer_ = nullptr;
         pIBuffer_ = nullptr;
-        vertexsData_.clear();
-        indexes_.clear();
         areTangentsCalculated_ = false;
     }
 
@@ -328,7 +326,6 @@ namespace NSG
 		CHECK_ASSERT(vertexsData_.size() > vertex, __FILE__, __LINE__);
 		vertexsData_[vertex].bonesID_ = bonesID;
 		vertexsData_[vertex].bonesWeight_ = bonesWeight;
-
 	}
 
     void Mesh::AddSceneNode(SceneNode* node)
@@ -341,4 +338,52 @@ namespace NSG
         sceneNodes_.erase(node);
     }
 
+    void Mesh::AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal)
+    {
+		int vidx = vertexsData_.size();
+        vertexsData_.push_back(v0);
+        vertexsData_.push_back(v1);
+        vertexsData_.push_back(v2);
+		vertexsData_.push_back(v3);
+
+		indexes_.push_back(vidx);
+		indexes_.push_back(vidx + 1);
+		indexes_.push_back(vidx + 2);
+		indexes_.push_back(vidx);
+		indexes_.push_back(vidx + 2);
+		indexes_.push_back(vidx + 3);
+
+        if(calcFaceNormal)
+			AverageNormals(vidx, true);
+        Invalidate();
+    }
+
+    void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal)
+    {
+		int vidx = vertexsData_.size();
+        vertexsData_.push_back(v0);
+        vertexsData_.push_back(v1);
+        vertexsData_.push_back(v2);
+		indexes_.push_back(vidx);
+		indexes_.push_back(vidx + 1);
+		indexes_.push_back(vidx + 2);
+
+        if(calcFaceNormal)
+			AverageNormals(vidx, false);
+
+        Invalidate();
+    }
+
+    void Mesh::AverageNormals(int vIndexBase, bool isQuad)
+    {
+		int n = isQuad ? 4 : 3;
+		Vector3 normal(0);
+
+		for (int i = 0; i<n; i++)
+			normal += vertexsData_[vIndexBase + i].normal_;
+		normal /= n;
+
+        for(int i=0; i<n; i++)
+			vertexsData_[vIndexBase + i].normal_ = normal;
+    }
 }

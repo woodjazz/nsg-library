@@ -289,6 +289,8 @@ macro (setup_executable)
 
         endif()
 
+        add_dependencies(${PROJECT_NAME} ${DATA_TARGET})
+
     endif()
 
 endmacro (setup_executable)
