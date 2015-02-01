@@ -28,8 +28,9 @@ function(CONVERT_TOOL input_file output_dir)
 
 	    get_filename_component(INPUTFILE ${input_file} ABSOLUTE)
 	    get_filename_component(INPUTNAME ${input_file} NAME)
+	    get_filename_component(INPUTEXTENSION ${input_file} EXT)
 	    get_filename_component(OUTPUTDIR ${output_dir} ABSOLUTE)
-	    #string(REGEX REPLACE "[.][^.]+$" ".xml" OUTPUTNAME ${INPUTNAME}) # replace extension by xml
+	    string(REGEX REPLACE "[.][^.]+$" ".xml" OUTPUTNAME ${INPUTNAME}) # replace extension by xml
 	    # message("${INPUTFILE}")
 	    # message("${INPUTNAME}")
 	    # message("${OUTPUTNAME}")  
@@ -39,12 +40,23 @@ function(CONVERT_TOOL input_file output_dir)
 
 	    #message("${CONVERT_CMD}")
 
-	    set(TARGET_NAME ${INPUTNAME})
+	    if(${INPUTEXTENSION} MATCHES ".blend")
+	    	set(OUTPUT_FILE ${OUTPUTDIR}/b${OUTPUTNAME})
+	    else()
+	    	set(OUTPUT_FILE ${OUTPUTDIR}/${OUTPUTNAME})
+	    endif()
 
-	    add_custom_target(${TARGET_NAME} 
-	            COMMAND ${CONVERT_CMD}
-	            DEPENDS ${CONVERT_EXECUTABLE} ${INPUTFILE}
-	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    	add_custom_command(OUTPUT ${OUTPUT_FILE}
+			COMMAND ${CONVERT_CMD}
+			DEPENDS ${INPUTFILE}
+			COMMENT "Generating ${OUTPUT_FILE}"
+		)
+
+	    set(TARGET_NAME CONVERT_${INPUTNAME})
+
+		add_custom_target(${TARGET_NAME} ALL
+   			DEPENDS ${OUTPUT_FILE}
+		)
 
 		add_dependencies(${TARGET_NAME} converter)
         add_dependencies(${DATA_TARGET} ${TARGET_NAME})

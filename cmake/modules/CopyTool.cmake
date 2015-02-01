@@ -1,4 +1,4 @@
-macro(COPY_TOOL input_file output_dir)
+function(COPY_TOOL input_file output_dir)
 
 	if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 
@@ -6,13 +6,19 @@ macro(COPY_TOOL input_file output_dir)
 		get_filename_component(INPUTNAME ${input_file} NAME)
 		get_filename_component(OUTPUTDIR ${output_dir} ABSOLUTE)
 
-	    add_custom_target(${INPUTNAME} 
-	            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${INPUTFILE} ${OUTPUTDIR}/${INPUTNAME}
-	            DEPENDS ${INPUTFILE}
-	            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+	    add_custom_command(OUTPUT ${OUTPUTDIR}/${INPUTNAME}
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different ${INPUTFILE} ${OUTPUTDIR}/${INPUTNAME}
+			DEPENDS ${INPUTFILE}
+		)
 
-	    add_dependencies(${PROJECT_NAME} ${INPUTNAME})
+		set(TARGET_NAME COPY_FILE_${INPUTNAME})
+
+		add_custom_target(${TARGET_NAME} ALL
+			DEPENDS ${OUTPUTDIR}/${INPUTNAME}
+		)
+
+	    add_dependencies(${PROJECT_NAME} ${TARGET_NAME})
 
 	endif()
 
-endmacro(COPY_TOOL)
+endfunction(COPY_TOOL)

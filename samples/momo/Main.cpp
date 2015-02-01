@@ -32,12 +32,19 @@ int NSG_MAIN(int argc, char* argv[])
     App app;
     auto window = app.GetOrCreateWindow("window", 0, 700, 1024, 768);
     auto scene = std::make_shared<Scene>("scene");
-    auto resource = std::make_shared<ResourceFile>("data/bmomo.xml");
+    auto resource = std::make_shared<ResourceFile>("data/momo.xml");
     scene->SceneNode::Load(resource);
 
-	auto camera = scene->GetChild<Camera>("View", true);
+	auto camera = scene->GetChild<Camera>("Camera", true);
 	camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
 	auto control = std::make_shared<CameraControl>(camera);
+    
+    {
+        auto object = scene->GetChild<SceneNode>("Bone.main", true);
+        auto animations = scene->GetAnimationsFor(object);
+        auto animation = animations[0];
+        animation->Play(true);
+    }
 
     auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
     {

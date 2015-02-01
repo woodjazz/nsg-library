@@ -30,12 +30,16 @@ function(BLENDERDNA_TOOL input_file output_dir)
 
 		    #message("${BLENDERDNA_CMD}")
 
-		    set(TARGET_NAME DNA${INPUTNAME})
+		    set(TARGET_NAME GENERATE_DNA_FOR_${INPUTNAME})
 
-		    add_custom_target(${TARGET_NAME} 
-		            COMMAND ${BLENDERDNA_CMD}
-		            DEPENDS ${BLENDERDNA_EXECUTABLE} ${INPUTFILE}
-		            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+		    add_custom_command(OUTPUT ${OUTPUTDIR}/Blender.h
+  				COMMAND ${BLENDERDNA_CMD}
+  				DEPENDS ${INPUTFILE}
+			)
+
+			add_custom_target(${TARGET_NAME} ALL
+   				DEPENDS ${OUTPUTDIR}/Blender.h
+			)
 
 			add_dependencies(${TARGET_NAME} ${DNA_GEN_TOOL})
 			add_dependencies(converter ${TARGET_NAME})

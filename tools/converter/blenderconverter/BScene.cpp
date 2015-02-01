@@ -807,7 +807,7 @@ namespace BlenderConverter
 		Matrix4 parentPoseMtx(IDENTITY_MATRIX);
 		Matrix4 boneRefPoseMtx(ToMatrix(cur->arm_mat));
 		//Matrix4 bonePoseMtx(ToMatrix(cur->bone_mat));
-
+        
 		if (cur->parent)
 		{
 			parentRefPoseMtx = ToMatrix(cur->parent->arm_mat);
