@@ -32,9 +32,8 @@ namespace NSG
     class Texture : public Object
     {
     public:
-        Texture(PResourceFile resource, const TextureFlags& flags = (int)TextureFlag::NONE);
-        Texture(GLint format, GLsizei width, GLsizei height, const char* pixels);
-		Texture(PResourceMemory resource, const TextureFlags& flags = (int)TextureFlag::NONE);
+        Texture(PResource resource, const TextureFlags& flags = (int)TextureFlag::NONE);
+		Texture(const std::string& name, GLint format, GLsizei width, GLsizei height, const char* pixels);
         virtual ~Texture();
 		GLuint GetID() const;
 		GLsizei GetWidth() const;
@@ -49,11 +48,13 @@ namespace NSG
         TextureFlags GetFlags() const { return flags_; }
         void SetWrapMode(TextureWrapMode mode);
         void SetFilterMode(TextureFilterMode mode);
+        PResource GetResource() const { return pResource_;}
+		static int SaveAsPNG(PResource resource, const Path& outputDir);
     private:
         virtual bool IsValid() override;
         virtual void AllocateResources() override;
         virtual void ReleaseResources() override;
-        const unsigned char* GetImageData();
+		static const unsigned char* GetImageData(bool fromKnownImgFormat, PResource resource, bool& allocated, GLint& format, GLsizei& width, GLsizei& height, int& channels);
     protected:
         bool fromKnownImgFormat_; // true if it is a known file format (png, bmp, jpeg,...)
 		TextureFlags flags_;
@@ -68,6 +69,5 @@ namespace NSG
         TextureWrapMode wrapMode_;
         int mipmapLevels_;
         TextureFilterMode filterMode_;
-		friend class TextureFileManager;
     };
 }

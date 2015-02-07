@@ -45,12 +45,8 @@ namespace NSG
     PMaterial Material::Clone(const std::string& name)
     {
         auto material = std::make_shared<Material>(name);
-        material->texture0_ = texture0_;
-        material->texture1_ = texture1_;
-        material->texture2_ = texture2_;
-        material->texture3_ = texture3_;
-        material->texture4_ = texture4_;
-        material->texture5_ = texture5_;
+		for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+			material->texture_[index] = texture_[index];
         material->ambient_ = ambient_;
         material->diffuse_ = diffuse_;
         material->specular_ = specular_;
@@ -116,11 +112,12 @@ namespace NSG
         }
     }
 
-    bool Material::SetTexture0(PTexture texture)
+    bool Material::SetTexture(size_t index, PTexture texture)
     {
-        if (texture0_ != texture)
+		CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__);
+        if (texture_[index] != texture)
         {
-            texture0_ = texture;
+			texture_[index] = texture;
             SetUniformsNeedUpdate();
             Invalidate();
             return true;
@@ -128,69 +125,10 @@ namespace NSG
         return false;
     }
 
-    bool Material::SetTexture1(PTexture texture)
-    {
-        if (texture1_ != texture)
-        {
-            texture1_ = texture;
-            SetUniformsNeedUpdate();
-            Invalidate();
-            return true;
-        }
-        return false;
-    }
-
-    bool Material::SetTexture2(PTexture texture)
-    {
-        if (texture2_ != texture)
-        {
-            texture2_ = texture;
-            SetUniformsNeedUpdate();
-            Invalidate();
-            return true;
-        }
-        return false;
-    }
-
-    bool Material::SetTexture3(PTexture texture)
-    {
-        if (texture3_ != texture)
-        {
-            texture3_ = texture;
-            SetUniformsNeedUpdate();
-            Invalidate();
-            return true;
-        }
-        return false;
-    }
-
-    bool Material::SetTexture4(PTexture texture)
-    {
-        if (texture4_ != texture)
-        {
-            texture4_ = texture;
-            SetUniformsNeedUpdate();
-            Invalidate();
-            return true;
-        }
-        return false;
-    }
-
-    bool Material::SetTexture5(PTexture texture)
-    {
-        if (texture5_ != texture)
-        {
-            texture5_ = texture;
-            SetUniformsNeedUpdate();
-            Invalidate();
-            return true;
-        }
-        return false;
-    }
 
     void Material::SetDiffuseMap(PTexture texture)
     {
-        if (SetTexture0(texture))
+		if (SetTexture(MaterialTexture::DIFFUSE_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::DIFFUSEMAP);
@@ -201,7 +139,7 @@ namespace NSG
 
     void Material::SetNormalMap(PTexture texture)
     {
-        if (SetTexture1(texture))
+		if (SetTexture(MaterialTexture::NORMAL_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::NORMALMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
@@ -212,7 +150,7 @@ namespace NSG
 
     void Material::SetLightMap(PTexture texture)
     {
-        if (SetTexture2(texture))
+		if (SetTexture(MaterialTexture::LIGHT_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::LIGHTMAP);
@@ -223,7 +161,7 @@ namespace NSG
 
     void Material::SetSpecularMap(PTexture texture)
     {
-        if (SetTexture3(texture))
+		if (SetTexture(MaterialTexture::SPECULAR_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SPECULARMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
@@ -234,7 +172,7 @@ namespace NSG
 
     void Material::SetAOMap(PTexture texture)
     {
-        if (SetTexture4(texture))
+		if (SetTexture(MaterialTexture::AO_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::AOMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
@@ -245,7 +183,7 @@ namespace NSG
 
     void Material::SetDisplacementMap(PTexture texture)
     {
-        if (SetTexture5(texture))
+		if (SetTexture(MaterialTexture::DISPLACEMENT_MAP, texture))
         {
             if (texture)
             {
@@ -264,25 +202,9 @@ namespace NSG
     bool Material::IsValid()
     {
         bool isReady = true;
-
-        if (texture0_)
-            isReady = texture0_->IsReady();
-
-        if (texture1_)
-            isReady = isReady && texture1_->IsReady();
-
-        if (texture2_)
-            isReady = isReady && texture2_->IsReady();
-
-        if (texture3_)
-            isReady = isReady && texture3_->IsReady();
-
-        if (texture4_)
-            isReady = isReady && texture4_->IsReady();
-
-        if (texture5_)
-            isReady = isReady && texture5_->IsReady();
-
+		for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+			if (texture_[index])
+				isReady = isReady && texture_[index]->IsReady();
         return isReady;
     }
 
@@ -295,41 +217,16 @@ namespace NSG
 
         child.append_attribute("name").set_value(name_.c_str());
 
-        if (texture0_ && texture0_->IsSerializable())
-        {
-            pugi::xml_node childTexture = child.append_child("Texture0");
-            texture0_->Save(childTexture);
-        }
-
-        if (texture1_ && texture1_->IsSerializable())
-        {
-            pugi::xml_node childTexture = child.append_child("Texture1");
-            texture1_->Save(childTexture);
-        }
-
-        if (texture2_ && texture2_->IsSerializable())
-        {
-            pugi::xml_node childTexture = child.append_child("Texture2");
-            texture2_->Save(childTexture);
-        }
-
-        if (texture3_ && texture3_->IsSerializable())
-        {
-            pugi::xml_node childTexture = child.append_child("Texture3");
-            texture3_->Save(childTexture);
-        }
-
-        if (texture4_ && texture4_->IsSerializable())
-        {
-            pugi::xml_node childTexture = child.append_child("Texture4");
-            texture4_->Save(childTexture);
-        }
-
-        if (texture5_ && texture5_->IsSerializable())
-        {
-            pugi::xml_node childTexture = child.append_child("Texture5");
-            texture5_->Save(childTexture);
-        }
+		for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+		{
+			if (texture_[index] && texture_[index]->IsSerializable())
+			{
+				std::stringstream ss;
+				ss << "Texture" << index;
+				pugi::xml_node childTexture = child.append_child(ss.str().c_str());
+				texture_[index]->Save(childTexture);
+			}
+		}
 
         {
             std::stringstream ss;
@@ -368,29 +265,14 @@ namespace NSG
     {
         name_ = node.attribute("name").as_string();
 
-        pugi::xml_node childTexture0 = node.child("Texture0");
-        if (childTexture0)
-            texture0_ = Texture::CreateFrom(childTexture0);
-
-        pugi::xml_node childTexture1 = node.child("Texture1");
-        if (childTexture1)
-            texture1_ = Texture::CreateFrom(childTexture1);
-
-        pugi::xml_node childTexture2 = node.child("Texture2");
-        if (childTexture2)
-            texture2_ = Texture::CreateFrom(childTexture2);
-
-        pugi::xml_node childTexture3 = node.child("Texture3");
-        if (childTexture3)
-            texture3_ = Texture::CreateFrom(childTexture3);
-
-        pugi::xml_node childTexture4 = node.child("Texture4");
-        if (childTexture4)
-            texture4_ = Texture::CreateFrom(childTexture4);
-
-        pugi::xml_node childTexture5 = node.child("Texture5");
-        if (childTexture5)
-            texture5_ = Texture::CreateFrom(childTexture5);
+		for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+		{
+			std::stringstream ss;
+			ss << "Texture" << index;
+			pugi::xml_node childTexture = node.child(ss.str().c_str());
+			if (childTexture)
+				texture_[index] = Texture::CreateFrom(childTexture);
+		}
 
         SetAmbientColor(GetVertex4(node.attribute("ambient").as_string()));
         SetDiffuseColor(GetVertex4(node.attribute("diffuse").as_string()));
@@ -421,5 +303,15 @@ namespace NSG
             SetUniformsNeedUpdate();
             Invalidate();
         }
+    }
+
+    PTexture Material::GetTextureWithResource(PResource resource)
+    {
+        for(size_t i=0; i<MaterialTexture::MAX_TEXTURES_MAPS; i++)        
+        {
+			if (texture_[i] && resource == texture_[i]->GetResource())
+                return texture_[i];
+        }
+        return nullptr;
     }
 }

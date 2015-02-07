@@ -80,12 +80,6 @@ namespace NSG
           viewProjectionLoc_(-1),
           sceneColorAmbientLoc_(-1),
           eyeWorldPosLoc_(-1),
-          texture0Loc_(-1),
-          texture1Loc_(-1),
-          texture2Loc_(-1),
-          texture3Loc_(-1),
-          texture4Loc_(-1),
-          texture5Loc_(-1),
           blendMode_loc_(-1),
           nBones_(0),
           nDirectionalLights_(0),
@@ -105,9 +99,9 @@ namespace NSG
           pointLightsReduced_(false)
 
     {
+		memset(&textureLoc_, -1, sizeof(textureLoc_));
         memset(&materialLoc_, -1, sizeof(materialLoc_));
         memset(&blurFilterLoc_, -1, sizeof(blurFilterLoc_));
-
     }
 
     Program::~Program()
@@ -389,18 +383,15 @@ namespace NSG
         {
             if (material_)
             {
-                if (material_->GetTexture0())
-                    fBuffer += "uniform sampler2D u_texture0;\n";
-                if (material_->GetTexture1())
-                    fBuffer += "uniform sampler2D u_texture1;\n";
-                if (material_->GetTexture2())
-                    fBuffer += "uniform sampler2D u_texture2;\n";
-                if (material_->GetTexture3())
-                    fBuffer += "uniform sampler2D u_texture3;\n";
-                if (material_->GetTexture4())
-                    fBuffer += "uniform sampler2D u_texture4;\n";
-                if (material_->GetTexture5())
-                    fBuffer += "uniform sampler2D u_texture5;\n";
+				for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+				{
+					if (material_->GetTexture(index))
+					{
+						std::stringstream ss;
+						ss << "uniform sampler2D u_texture" << index << ";\n";
+						fBuffer += ss.str();
+					}
+				}
             }
             else
             {
@@ -450,12 +441,12 @@ namespace NSG
             viewProjectionLoc_ = GetUniformLocation("u_viewProjection");
             sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
             eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
-            texture0Loc_ = GetUniformLocation("u_texture0");
-            texture1Loc_ = GetUniformLocation("u_texture1");
-            texture2Loc_ = GetUniformLocation("u_texture2");
-            texture3Loc_ = GetUniformLocation("u_texture3");
-            texture4Loc_ = GetUniformLocation("u_texture4");
-            texture5Loc_ = GetUniformLocation("u_texture5");
+			for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+			{
+				std::stringstream ss;
+				ss << "u_texture" << index;
+				textureLoc_[index] = GetUniformLocation(ss.str().c_str());
+			}
             materialLoc_.color_ = GetUniformLocation("u_material.color");
             materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
             materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
@@ -528,24 +519,11 @@ namespace NSG
 
             graphics_.SetProgram(this);
 
-            unsigned textureUnit = 0;
-            if (texture0Loc_ != -1)
-                glUniform1i(texture0Loc_, textureUnit++);
-
-            if (texture1Loc_ != -1)
-                glUniform1i(texture1Loc_, textureUnit++);
-
-            if (texture2Loc_ != -1)
-                glUniform1i(texture2Loc_, textureUnit++);
-
-            if (texture3Loc_ != -1)
-                glUniform1i(texture3Loc_, textureUnit++);
-
-            if (texture4Loc_ != -1)
-                glUniform1i(texture4Loc_, textureUnit++);
-
-            if (texture5Loc_ != -1)
-                glUniform1i(texture5Loc_, textureUnit++);
+			for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+			{
+				if (textureLoc_[index] != -1)
+					glUniform1i(textureLoc_[index], index);
+			}
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }
@@ -725,23 +703,11 @@ namespace NSG
         if (material_)
         {
             unsigned textureUnit = 0;
-            if (texture0Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material_->texture0_.get());
-
-            if (texture1Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material_->texture1_.get());
-
-            if (texture2Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material_->texture2_.get());
-
-            if (texture3Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material_->texture3_.get());
-
-            if (texture4Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material_->texture4_.get());
-
-            if (texture5Loc_ != -1)
-                graphics_.SetTexture(textureUnit++, material_->texture5_.get());
+			for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+			{
+				if (textureLoc_[index] != -1)
+					graphics_.SetTexture(textureUnit++, material_->GetTexture(index).get());
+			}
 
             if (materialVariablesNeverSet_ || material_->UniformsNeedUpdate())
             {

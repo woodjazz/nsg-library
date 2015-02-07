@@ -35,17 +35,17 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "image_helper.h"
 #include "pugixml.hpp"
-#include "b64/encode.h"
-#include "b64/decode.h"
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_FAILURE_USERMSG
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 #include "jpgd.h"
 #include <algorithm>
 
 namespace NSG
 {
-    Texture::Texture(GLint format, GLsizei width, GLsizei height, const char* pixels)
+    Texture::Texture(const std::string& name, GLint format, GLsizei width, GLsizei height, const char* pixels)
         : fromKnownImgFormat_(false),
           flags_((int)TextureFlag::NONE),
           texture_(0),
@@ -80,28 +80,12 @@ namespace NSG
                 break;
         }
 
-        pResource_ = PResource(new ResourceMemory(pixels, width * height * channels_));
+        auto resource = App::this_->GetOrCreateResourceMemory(name);
+		resource->SetData(pixels, width * height * channels_);
+		pResource_ = resource;
     }
 
-    Texture::Texture(PResourceMemory resource, const TextureFlags& flags)
-        : fromKnownImgFormat_(true),
-          flags_(flags),
-          texture_(0),
-          pResource_(resource),
-          width_(0),
-          height_(0),
-          format_(GL_RGBA),
-          type_(GL_UNSIGNED_BYTE),
-          channels_(0),
-          serializable_(true),
-          wrapMode_(TextureWrapMode::REPEAT),
-          mipmapLevels_(0),
-          filterMode_(TextureFilterMode::BILINEAR)
-    {
-		pResource_->AllowInvalidate(false);
-    }
-
-    Texture::Texture(PResourceFile resource, const TextureFlags& flags)
+    Texture::Texture(PResource resource, const TextureFlags& flags)
         : fromKnownImgFormat_(true),
           flags_(flags),
           texture_(0),
@@ -163,36 +147,38 @@ namespace NSG
         return pResource_->IsReady();
     }
 
-    const unsigned char* Texture::GetImageData()
+	const unsigned char* Texture::GetImageData(bool fromKnownImgFormat, PResource resource, bool& allocated, GLint& format, GLsizei& width, GLsizei& height, int& channels)
     {
-        if (fromKnownImgFormat_)
+		CHECK_ASSERT(resource->IsReady(), __FILE__, __LINE__);
+        if (fromKnownImgFormat)
         {
-            const unsigned char* img = stbi_load_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 0);
+			allocated = true;
+			const unsigned char* img = stbi_load_from_memory((const unsigned char*)resource->GetData(), resource->GetBytes(), &width, &height, &channels, 0);
 
             if (!img)
-                img = jpgd::decompress_jpeg_image_from_memory((const unsigned char*)pResource_->GetData(), pResource_->GetBytes(), &width_, &height_, &channels_, 4);
+				img = jpgd::decompress_jpeg_image_from_memory((const unsigned char*)resource->GetData(), resource->GetBytes(), &width, &height, &channels, 4);
 
             if (!img)
-                TRACE_LOG("Filename=" << pResource_->GetPath().GetFilePath() << " failed with reason: " << stbi_failure_reason());
+				TRACE_LOG("Resource=" << resource->GetName() << " failed with reason: " << stbi_failure_reason());
 
             if (img)
             {
-                if (channels_ == 4)
+                if (channels == 4)
                 {
-                    format_ = GL_RGBA;
+                    format = GL_RGBA;
                 }
-                else if (channels_ == 3)
+                else if (channels == 3)
                 {
-                    format_ = GL_RGB;
+                    format = GL_RGB;
                 }
-                else if (channels_ == 1)
+                else if (channels == 1)
                 {
-                    format_ = GL_ALPHA;
+                    format = GL_ALPHA;
                 }
                 else
                 {
-                    format_ = GL_RGB;
-                    TRACE_LOG("Filename=" << pResource_->GetPath().GetFilePath() << " unknown internalformat. Channels = " << channels_ << " Width=" << width_ << " Height=" << height_);
+                    format = GL_RGB;
+					TRACE_LOG("Resource=" << resource->GetName() << " unknown internalformat. Channels = " << channels << " Width=" << width << " Height=" << height);
                     CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
                 }
             }
@@ -200,12 +186,13 @@ namespace NSG
         }
         else
         {
+			allocated = false;
             const unsigned char* img = nullptr;
 
-            if (pResource_->GetBytes())
+			if (resource->GetBytes())
             {
-                CHECK_ASSERT(width_ * height_ * channels_ == pResource_->GetBytes(), __FILE__, __LINE__);
-                img = (const unsigned char*)pResource_->GetData();
+				CHECK_ASSERT(width * height * channels == resource->GetBytes(), __FILE__, __LINE__);
+				img = (const unsigned char*)resource->GetData();
             }
             return img;
         }
@@ -219,7 +206,8 @@ namespace NSG
 
         Graphics::this_->SetTexture(0, this);
 
-        const unsigned char* img = GetImageData();
+		bool allocated = false;
+		const unsigned char* img = Texture::GetImageData(fromKnownImgFormat_, pResource_, allocated, format_, width_, height_, channels_);
 
         if (flags_ & (int)TextureFlag::INVERT_Y)
         {
@@ -240,7 +228,9 @@ namespace NSG
                 }
             }
 
-            free((void*)img); // same as stbi_image_free
+			if (allocated)
+				free((void*)img); // same as stbi_image_free
+
             img = inverted;
         }
 
@@ -338,70 +328,18 @@ namespace NSG
     PTexture Texture::CreateFrom(const pugi::xml_node& node)
     {
         std::string flags = node.attribute("flags").as_string();
-		pugi::xml_attribute fileAtt = node.attribute("filename");
-		PTexture texture;
-		if (fileAtt)
-		{
-			std::string filename = node.attribute("filename").as_string();
-			auto resource = std::make_shared<ResourceFile>(filename);
-			texture = std::make_shared<Texture>(resource);
-		}
-		else
-		{
-			pugi::xml_node dataNode = node.child("data");
-			size_t nBytes = dataNode.attribute("dataSize").as_uint();
-			std::string value;
-			if (nBytes)
-			{
-				const pugi::char_t* data = dataNode.child_value();
-				value.resize(nBytes);
-				memcpy(&value[0], data, nBytes);
-			}
-
-			std::string decoded_binary;
-			decoded_binary.resize(nBytes);
-			base64::base64_decodestate state;
-			base64::base64_init_decodestate(&state);
-			int decoded_length = base64::base64_decode_block(value.c_str(), nBytes, &decoded_binary[0], &state);
-			decoded_binary.resize(decoded_length);
-			auto resource = std::make_shared<ResourceMemory>(decoded_binary.c_str(), decoded_binary.size());
-			texture = std::make_shared<Texture>(resource);
-		}
-        
+		std::string resourceName = node.attribute("resource").as_string();
+		auto resource = App::this_->GetResource(resourceName);
+		CHECK_ASSERT(resource, __FILE__, __LINE__);
+        auto texture = std::make_shared<Texture>(resource);
         texture->SetFlags(flags);
         return texture;
     }
 
     void Texture::Save(pugi::xml_node& node)
     {
-        Path path(pResource_->GetPath());
-		if (path.IsEmpty())
-		{
-			const char* const data = pResource_->GetData();
-			size_t nBytes = pResource_->GetBytes();
-
-			base64::base64_encodestate state;
-			base64::base64_init_encodestate(&state);
-
-			std::string encoded_data;
-			encoded_data.resize(2 * nBytes);
-
-			int numchars = base64::base64_encode_block(data, nBytes, &encoded_data[0], &state);
-			numchars += base64::base64_encode_blockend(&encoded_data[0] + numchars, &state);
-			encoded_data.resize(numchars);
-
-			pugi::xml_node dataNode = node.append_child("data");
-			dataNode.append_attribute("dataSize").set_value((unsigned)encoded_data.size());
-			dataNode.append_child(pugi::node_pcdata).set_value(encoded_data.c_str());
-		}
-		else
-		{
-			if (path.IsPathRelative())
-				node.append_attribute("filename") = path.GetFilePath().c_str();
-			else
-				node.append_attribute("filename") = path.GetFilename().c_str();
-		}
         node.append_attribute("flags") = flags_.to_string().c_str();
+		node.append_attribute("resource") = pResource_->GetName().c_str();
     }
 
     void Texture::SetFlags(const TextureFlags& flags)
@@ -431,4 +369,18 @@ namespace NSG
         }
     }
 
+	int Texture::SaveAsPNG(PResource resource, const Path& outputDir)
+    {
+		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		bool allocated = false;
+		int format, width, height, channels;
+		const unsigned char* img = Texture::GetImageData(true, resource, allocated, format, width, height, channels);
+		Path oPath;
+		oPath.SetPath(outputDir.GetPath());
+		oPath.SetName(Path(resource->GetName()).GetName());
+		oPath.SetExtension("png");
+		int result = stbi_write_png(oPath.GetFullAbsoluteFilePath().c_str(), width, height, channels, img, 0);
+		if (allocated) free((void*)img);
+		return result;
+    }
 }

@@ -33,7 +33,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Render2Texture::Render2Texture(int width, int height, UseBuffer buffer)
+    Render2Texture::Render2Texture(const std::string& name, int width, int height, UseBuffer buffer)
         : buffer_(buffer),
           width_(width),
           height_(height),
@@ -45,7 +45,7 @@ namespace NSG
         else if (buffer_ == UseBuffer::DEPTH_STENCIL)
             frameBufferFlags |= FrameBuffer::STENCIL;
 
-		frameBuffer_ = PFrameBuffer(new FrameBuffer(width, height, frameBufferFlags));
+		frameBuffer_ = std::make_shared<FrameBuffer>(name, width, height, frameBufferFlags);
     }
 
     Render2Texture::~Render2Texture()

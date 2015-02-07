@@ -2962,9 +2962,173 @@
 #define GEMAT_SHADOW            2048
 #define GEMAT_TEX               4096
 
-
-
 #define G_FILE_SHOW_DEBUG_PROPS  (1 << 4)                /* deprecated */
 #define G_FILE_GAME_MAT             (1 << 12)                /* deprecated */
 #define G_FILE_SHOW_PHYSICS         (1 << 14)                /* deprecated */
 
+typedef enum eArmature_Flag {
+	ARM_RESTPOS = (1 << 0),
+	ARM_DRAWXRAY = (1 << 1),   /* XRAY is here only for backwards converting */
+	ARM_DRAWAXES = (1 << 2),
+	ARM_DRAWNAMES = (1 << 3),
+	ARM_POSEMODE = (1 << 4),
+	ARM_EDITMODE = (1 << 5),
+	ARM_DELAYDEFORM = (1 << 6),
+	ARM_DONT_USE = (1 << 7),
+	ARM_MIRROR_EDIT = (1 << 8),
+	ARM_AUTO_IK = (1 << 9),
+	ARM_NO_CUSTOM = (1 << 10),  /* made option negative, for backwards compat */
+	ARM_COL_CUSTOM = (1 << 11),  /* draw custom colors  */
+	ARM_GHOST_ONLYSEL = (1 << 12),  /* when ghosting, only show selected bones (this should belong to ghostflag instead) */ /* XXX deprecated */
+	ARM_DS_EXPAND = (1 << 13),  /* dopesheet channel is expanded */
+	ARM_HAS_VIZ_DEPS = (1 << 14),  /* other objects are used for visualizing various states (hack for efficient updates) */
+} eArmature_Flag;
+
+typedef enum eBone_Flag {
+	BONE_SELECTED = (1 << 0),
+	BONE_ROOTSEL = (1 << 1),
+	BONE_TIPSEL = (1 << 2),
+	BONE_TRANSFORM = (1 << 3),   /* Used instead of BONE_SELECTED during transform */
+	BONE_CONNECTED = (1 << 4),   /* when bone has a parent, connect head of bone to parent's tail*/
+	/* 32 used to be quatrot, was always set in files, do not reuse unless you clear it always */
+	BONE_HIDDEN_P = (1 << 6),   /* hidden Bones when drawing PoseChannels */
+	BONE_DONE = (1 << 7),   /* For detecting cyclic dependencies */
+	BONE_DRAW_ACTIVE = (1 << 8),   /* active is on mouse clicks only - deprecated, ONLY USE FOR DRAWING */
+	BONE_HINGE = (1 << 9),   /* No parent rotation or scale */
+	BONE_HIDDEN_A = (1 << 10),  /* hidden Bones when drawing Armature Editmode */
+	BONE_MULT_VG_ENV = (1 << 11),  /* multiplies vgroup with envelope */
+	BONE_NO_DEFORM = (1 << 12),  /* bone doesn't deform geometry */
+	BONE_UNKEYED = (1 << 13),  /* set to prevent destruction of its unkeyframed pose (after transform) */
+	BONE_HINGE_CHILD_TRANSFORM = (1 << 14),  /* set to prevent hinge child bones from influencing the transform center */
+	BONE_NO_SCALE = (1 << 15),  /* No parent scale */
+	BONE_HIDDEN_PG = (1 << 16),  /* hidden bone when drawing PoseChannels (for ghost drawing) */
+	BONE_DRAWWIRE = (1 << 17),  /* bone should be drawn as OB_WIRE, regardless of draw-types of view+armature */
+	BONE_NO_CYCLICOFFSET = (1 << 18),  /* when no parent, bone will not get cyclic offset */
+	BONE_EDITMODE_LOCKED = (1 << 19),  /* bone transforms are locked in EditMode */
+	BONE_TRANSFORM_CHILD = (1 << 20),  /* Indicates that a parent is also being transformed */
+	BONE_UNSELECTABLE = (1 << 21),  /* bone cannot be selected */
+	BONE_NO_LOCAL_LOCATION = (1 << 22),  /* bone location is in armature space */
+	BONE_RELATIVE_PARENTING = (1 << 23)   /* object child will use relative transform (like deform) */
+
+} eBone_Flag;
+
+
+typedef enum ModifierType {
+	eModifierType_None = 0,
+	eModifierType_Subsurf = 1,
+	eModifierType_Lattice = 2,
+	eModifierType_Curve = 3,
+	eModifierType_Build = 4,
+	eModifierType_Mirror = 5,
+	eModifierType_Decimate = 6,
+	eModifierType_Wave = 7,
+	eModifierType_Armature = 8,
+	eModifierType_Hook = 9,
+	eModifierType_Softbody = 10,
+	eModifierType_Boolean = 11,
+	eModifierType_Array = 12,
+	eModifierType_EdgeSplit = 13,
+	eModifierType_Displace = 14,
+	eModifierType_UVProject = 15,
+	eModifierType_Smooth = 16,
+	eModifierType_Cast = 17,
+	eModifierType_MeshDeform = 18,
+	eModifierType_ParticleSystem = 19,
+	eModifierType_ParticleInstance = 20,
+	eModifierType_Explode = 21,
+	eModifierType_Cloth = 22,
+	eModifierType_Collision = 23,
+	eModifierType_Bevel = 24,
+	eModifierType_Shrinkwrap = 25,
+	eModifierType_Fluidsim = 26,
+	eModifierType_Mask = 27,
+	eModifierType_SimpleDeform = 28,
+	eModifierType_Multires = 29,
+	eModifierType_Surface = 30,
+	eModifierType_Smoke = 31,
+	eModifierType_ShapeKey = 32,
+	eModifierType_Solidify = 33,
+	eModifierType_Screw = 34,
+	eModifierType_Warp = 35,
+	eModifierType_WeightVGEdit = 36,
+	eModifierType_WeightVGMix = 37,
+	eModifierType_WeightVGProximity = 38,
+	eModifierType_Ocean = 39,
+	eModifierType_DynamicPaint = 40,
+	eModifierType_Remesh = 41,
+	eModifierType_Skin = 42,
+	eModifierType_LaplacianSmooth = 43,
+	eModifierType_Triangulate = 44,
+	eModifierType_UVWarp = 45,
+	eModifierType_MeshCache = 46,
+	eModifierType_LaplacianDeform = 47,
+	eModifierType_Wireframe = 48,
+	eModifierType_DataTransfer = 49,
+	NUM_MODIFIER_TYPES
+} ModifierType;
+
+typedef enum eFCurve_Flags {
+	/* curve/keyframes are visible in editor */
+	FCURVE_VISIBLE = (1 << 0),
+	/* curve is selected for editing  */
+	FCURVE_SELECTED = (1 << 1),
+	/* curve is active one */
+	FCURVE_ACTIVE = (1 << 2),
+	/* keyframes (beztriples) cannot be edited */
+	FCURVE_PROTECTED = (1 << 3),
+	/* fcurve will not be evaluated for the next round */
+	FCURVE_MUTED = (1 << 4),
+
+	/* fcurve uses 'auto-handles', which stay horizontal... */
+	// DEPRECATED
+	FCURVE_AUTO_HANDLES = (1 << 5),
+
+	/* skip evaluation, as RNA-path cannot be resolved (similar to muting, but cannot be set by user) */
+	FCURVE_DISABLED = (1 << 10),
+	/* curve can only have whole-number values (integer types) */
+	FCURVE_INT_VALUES = (1 << 11),
+	/* curve can only have certain discrete-number values (no interpolation at all, for enums/booleans) */
+	FCURVE_DISCRETE_VALUES = (1 << 12),
+
+	/* temporary tag for editing */
+	FCURVE_TAGGED = (1 << 15)
+} eFCurve_Flags;
+
+typedef enum ePchan_Flag {
+	/* has transforms */
+	POSE_LOC = (1 << 0),
+	POSE_ROT = (1 << 1),
+	POSE_SIZE = (1 << 2),
+	/* old IK/cache stuff... */
+	/* IK/Pose solving*/
+	POSE_CHAIN = (1 << 9),
+	POSE_DONE = (1 << 10),
+	/* visualization */
+	POSE_KEY = (1 << 11),
+	POSE_STRIDE = (1 << 12),
+	/* standard IK solving */
+	POSE_IKTREE = (1 << 13),
+	/* spline IK solving */
+	POSE_IKSPLINE = (1 << 15)
+} ePchan_Flag;
+
+typedef enum eRotationModes {
+	/* quaternion rotations (default, and for older Blender versions) */
+	ROT_MODE_QUAT = 0,
+	/* euler rotations - keep in sync with enum in BLI_math.h */
+	ROT_MODE_EUL = 1,       /* Blender 'default' (classic) - must be as 1 to sync with BLI_math_rotation.h defines */
+	ROT_MODE_XYZ = 1,
+	ROT_MODE_XZY = 2,
+	ROT_MODE_YXZ = 3,
+	ROT_MODE_YZX = 4,
+	ROT_MODE_ZXY = 5,
+	ROT_MODE_ZYX = 6,
+	/* NOTE: space is reserved here for 18 other possible
+	* euler rotation orders not implemented
+	*/
+	/* axis angle rotations */
+	ROT_MODE_AXISANGLE = -1,
+
+	ROT_MODE_MIN = ROT_MODE_AXISANGLE,  /* sentinel for Py API */
+	ROT_MODE_MAX = ROT_MODE_ZYX
+} eRotationModes;

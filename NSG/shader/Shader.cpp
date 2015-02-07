@@ -74,7 +74,7 @@ namespace NSG
 				// Get the info log message.
 				glGetShaderInfoLog(id_, logLength, &logLength, log);
 
-				TRACE_PRINTF(source);
+				TRACE_LOG(source);
 				
 				// Shows the message in console.
 				TRACE_LOG("Error in Shader Creation: " << log);

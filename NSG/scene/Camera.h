@@ -34,6 +34,7 @@ namespace NSG
 	public:
 		Camera(const std::string& name);
 		~Camera();
+		void SetWindow(PWindow window);
 		void EnableOrtho();
 		void DisableOrtho();
 		void SetFOV(float fovy); // in degrees
@@ -70,8 +71,8 @@ namespace NSG
 		float GetZNear() const { return zNear_; }
 		float GetZFar() const { return zFar_; }
 		float GetFov() const { return fovy_; }
-		void Save(pugi::xml_node& node) override;
-		void Load(const pugi::xml_node& node, const CachedData& data) override;
+		void Save(pugi::xml_node& node) const override;
+		void Load(const pugi::xml_node& node) override;
 		void AddBlurFilter(int output_width, int output_height);
 		void AddBlendFilter(int output_width, int output_height);
 		PFilter AddUserFilter(PResource fragmentShader, int output_width, int output_height);

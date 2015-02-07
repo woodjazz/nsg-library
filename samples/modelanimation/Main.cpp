@@ -32,21 +32,26 @@ int NSG_MAIN(int argc, char* argv[])
     App app;
 
     auto window = app.GetOrCreateWindow("window", 100, 100, 10, 10);
-    auto scene = std::make_shared<Scene>("scene000");
-    auto camera = scene->GetOrCreateChild<Camera>("camera");
-    const float FOV = 30.0f;
-    camera->SetFOV(FOV);
-    auto control = std::make_shared<CameraControl>(camera);
-    
-    auto light = scene->GetOrCreateChild<Light>("light");
-    light->SetType(LightType::SPOT);
-    light->SetParent(camera);
-    light->SetSpotCutOff(FOV);
-    //light->SetDiffuseColor(Color(1, 0, 0, 1));
-
-    auto resource = std::make_shared<ResourceFile>("data/dwarf.xml");
-    scene->SceneNode::Load(resource);
+    auto resource = app.GetOrCreateResourceFile("data/dwarf.xml");
+	auto scenes = app.Load(resource);
+	auto scene = scenes.at(0);
     scene->SetAmbientColor(Color(0));
+
+	auto camera = scene->GetOrCreateChild<Camera>("camera");
+	const float FOV = 30.0f;
+	camera->SetFOV(FOV);
+    camera->SetWindow(window);
+    camera->SetPosition(Vector3(0, 70, 100));
+
+	auto control = std::make_shared<CameraControl>(camera);
+	control->SetWindow(window);
+
+	auto light = scene->GetOrCreateChild<Light>("light");
+	light->SetType(LightType::SPOT);
+	light->SetParent(camera);
+	light->SetSpotCutOff(FOV);
+	//light->SetDiffuseColor(Color(1, 0, 0, 1));
+
     auto material0 = app.GetMaterial("Material0");
 	auto material1 = app.GetMaterial("Material1");
 	material0->SetColor(Color(1, 1, 1, 1));
@@ -58,13 +63,6 @@ int NSG_MAIN(int argc, char* argv[])
     material0->GetTechnique()->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
 	material1->GetTechnique()->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::PER_PIXEL_LIGHTING);
 
-    camera->SetPosition(Vector3(0, 70, 100));
-    camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-    {
-        camera->SetAspectRatio(width, height);
-    });
-
     control->AutoZoom();
     //light->SetPosition(Vertex3(100, 0, 0));
     //camera->AddChild(light);
@@ -75,48 +73,15 @@ int NSG_MAIN(int argc, char* argv[])
     auto node = scene->GetChild<Node>("Body", false);
     CHECK_ASSERT(node, __FILE__, __LINE__);
 
-
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
         scene->Update(deltaTime);
-        control->OnUpdate(deltaTime);
     });
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {
         scene->Render(camera.get());
     });
-
-    auto slotMouseMoved = window->signalMouseMoved_->Connect([&](float x, float y)
-    {
-        control->OnMousemoved(x, y);
-    });
-
-    auto slotMouseDown = window->signalMouseDown_->Connect([&](int button, float x, float y)
-    {
-        control->OnMouseDown(button, x, y);
-    });
-
-    auto slotMouseUp = window->signalMouseUp_->Connect([&](int button, float x, float y)
-    {
-        control->OnMouseUp(button, x, y);
-    });
-
-    auto slotMouseWheel = window->signalMouseWheel_->Connect([&](float x, float y)
-    {
-        control->OnMousewheel(x, y);
-    });
-
-    auto slotMultiGesture = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-    {
-        control->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-    });
-
-    auto slotKey = window->signalKey_->Connect([&](int key, int action, int modifier)
-    {
-        control->OnKey(key, action, modifier);
-    });
-
 
     return app.Run();
 }

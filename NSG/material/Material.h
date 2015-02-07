@@ -39,30 +39,24 @@ namespace NSG
         PMaterial Clone(const std::string& name);
         void SetName(const std::string& name) {name_ = name;}
         const std::string& GetName() const { return name_;  }
-        bool SetTexture0(PTexture texture);
-        bool SetTexture1(PTexture texture);
-        bool SetTexture2(PTexture texture);
-        bool SetTexture3(PTexture texture);
-        bool SetTexture4(PTexture texture);
-        bool SetTexture5(PTexture texture);
+		bool SetTexture(size_t index, PTexture texture);
         void SetDiffuseMap(PTexture texture);
         void SetNormalMap(PTexture texture);
         void SetLightMap(PTexture texture);
         void SetSpecularMap(PTexture texture);
         void SetAOMap(PTexture texture);
         void SetDisplacementMap(PTexture texture);
-        PTexture GetTexture0() const { return texture0_; }
-        PTexture GetTexture1() const { return texture1_; }
-        PTexture GetTexture2() const { return texture2_; }
-        PTexture GetTexture3() const { return texture3_; }
-        PTexture GetTexture4() const { return texture4_; }
-        PTexture GetTexture5() const { return texture5_; }
-        PTexture GetDiffuseMap() const { return texture0_; }
-        PTexture GetNormalMap() const { return texture1_; }
-        PTexture GetLightMap() const { return texture2_; }
-        PTexture GetSpecularMap() const { return texture3_; }
-        PTexture GetAOMap() const { return texture4_; }
-        PTexture GetDisplacementMap() const { return texture5_; }
+		PTexture GetTexture(size_t index) const 
+		{ 
+			CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__); 
+			return texture_[index]; 
+		}
+		PTexture GetDiffuseMap() const { return texture_[MaterialTexture::DIFFUSE_MAP]; }
+		PTexture GetNormalMap() const { return texture_[MaterialTexture::NORMAL_MAP]; }
+		PTexture GetLightMap() const { return texture_[MaterialTexture::LIGHT_MAP]; }
+		PTexture GetSpecularMap() const { return texture_[MaterialTexture::SPECULAR_MAP]; }
+		PTexture GetAOMap() const { return texture_[MaterialTexture::AO_MAP]; }
+		PTexture GetDisplacementMap() const { return texture_[MaterialTexture::DISPLACEMENT_MAP]; }
         void SetColor(Color color);
         Color GetColor() const { return color_; }
         void SetDiffuseColor(Color diffuse);
@@ -86,14 +80,10 @@ namespace NSG
         BlendFilterMode GetFilterBlendMode() const { return blendFilterMode_; }
         void SetFilterBlur(const BlurFilter& data);
         const BlurFilter& GetFilterBlur() const { return blurFilter_; };
+        PTexture GetTextureWithResource(PResource resource);
     private:
         bool IsValid() override;
-        PTexture texture0_; //difusse map
-        PTexture texture1_; //normal map
-        PTexture texture2_; //light map
-        PTexture texture3_; //specular map
-        PTexture texture4_; //AO map
-        PTexture texture5_; //Displacement map
+        PTexture texture_[MaterialTexture::MAX_TEXTURES_MAPS];
         Color ambient_;
         Color diffuse_;
         Color specular_;

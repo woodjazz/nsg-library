@@ -30,34 +30,28 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
     App app;
     auto window = app.GetOrCreateWindow("window", 0, 100, 1024, 768);
-    auto scene = std::make_shared<Scene>("scene");
-    scene->SetAmbientColor(Color(0.0f));
-    auto resource = std::make_shared<ResourceFile>("data/bscene.xml");
-    scene->SceneNode::Load(resource);
+    auto resource = app.GetOrCreateResourceFile("data/bscene.xml");
+	auto scenes = app.Load(resource);
+	auto scene = scenes.at(0);
+	scene->SetAmbientColor(Color(0.0f));
+
     auto object = scene->GetChild<SceneNode>("Bone", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
     plane->GetMaterial()->SetShininess(10);
-	plane->GetMaterial()->SetDisplacementMap(nullptr);
-#if 0
-    auto dispMap = std::make_shared<ResourceFile>("data/wall_DISP.png");
-    auto dispTex = std::make_shared<Texture>(dispMap, (int)TextureFlag::INVERT_Y);
-    plane->GetMaterial()->SetDisplacementMap(dispTex);
-    //plane->GetMaterial()->SetParallaxScale(0.09f);
-#endif
+	//plane->GetMaterial()->SetDisplacementMap(nullptr);
 
-#if 1
-    auto occMap = std::make_shared<ResourceFile>("data/wall_OCC.png");
-    auto occTex = std::make_shared<Texture>(occMap, (int)TextureFlag::INVERT_Y);
-    //plane->GetMaterial()->SetAOMap(occTex);
-#endif
     auto camera = scene->GetChild<Camera>("Camera", false);
-    camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
+    camera->SetWindow(window);
     auto control = std::make_shared<CameraControl>(camera);
+	control->SetWindow(window);
     auto lamp = scene->GetChild<Light>("Lamp", false);
     auto ball = scene->GetChild<SceneNode>("Earth", false);
     auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);
     auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
 
+    auto ballRigidBody = ball->GetOrCreateRigidBody();
+    
+#if 0
     auto planeRigidBody = plane->GetOrCreateRigidBody();
     planeRigidBody->SetShape(SH_TRIMESH);
 
@@ -66,15 +60,10 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto ramp2RigidBody = ramp2->GetOrCreateRigidBody();
     ramp2RigidBody->SetShape(SH_CONVEX_TRIMESH);
-
-    auto ballRigidBody = ball->GetOrCreateRigidBody();
+    
     ballRigidBody->SetMass(1);
     ballRigidBody->SetShape(SH_SPHERE);
-
-    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-    {
-        camera->SetAspectRatio(width, height);
-    });
+#endif
 
     {
         auto animations = scene->GetAnimationsFor(object);
@@ -85,7 +74,6 @@ int NSG_MAIN(int argc, char* argv[])
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
         scene->Update(deltaTime);
-        control->OnUpdate(deltaTime);
     });
 
     auto renderSlot = window->signalRender_->Connect([&]()
@@ -93,12 +81,7 @@ int NSG_MAIN(int argc, char* argv[])
         scene->Render(camera.get());
     });
 
-    auto slotMouseMoved = window->signalMouseMoved_->Connect([&](float x, float y)
-    {
-        control->OnMousemoved(x, y);
-    });
-
-    auto slotMouseDown = window->signalMouseDown_->Connect([&](int button, float x, float y)
+    control->slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
     {
         if (button == NSG_BUTTON_LEFT)
         {
@@ -118,31 +101,6 @@ int NSG_MAIN(int argc, char* argv[])
             }
         }
 
-    });
-
-    auto slotMouseUp = window->signalMouseUp_->Connect([&](int button, float x, float y)
-    {
-        control->OnMouseUp(button, x, y);
-    });
-
-    auto slotMouseWheel = window->signalMouseWheel_->Connect([&](float x, float y)
-    {
-        control->OnMousewheel(x, y);
-    });
-
-    auto slotMultiGesture = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-    {
-        control->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-    });
-
-    auto slotKey = window->signalKey_->Connect([&](int key, int action, int modifier)
-    {
-        if(key == NSG_KEY_Q)
-            plane->GetMaterial()->SetAOMap(occTex);
-        else if(key == NSG_KEY_W)
-            plane->GetMaterial()->SetAOMap(nullptr);
-
-        control->OnKey(key, action, modifier);
     });
 
     return app.Run();

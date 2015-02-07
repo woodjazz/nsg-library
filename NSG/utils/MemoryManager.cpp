@@ -63,7 +63,7 @@ namespace NSG
             void* memBlock = (char*)p + sizeof(MemHeader);
             return memBlock;
         }
-        TRACE_PRINTF("Allocation of %u from heap has FAILED.(bad_alloc)\n", newSize);
+        TRACE_PRINTF("Allocation of %lu from heap has FAILED.(bad_alloc)\n", newSize);
         throw std::bad_alloc();
     }
 

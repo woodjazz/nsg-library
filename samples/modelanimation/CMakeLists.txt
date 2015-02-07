@@ -1,5 +1,5 @@
 setup_sample()
-CONVERT_TOOL(art/dwarf.x data)	
+CONVERT_TOOL(art/dwarf.x data -b)	
 
 
 

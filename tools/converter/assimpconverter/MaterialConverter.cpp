@@ -310,21 +310,26 @@ namespace NSG
 
     PTexture MaterialConverter::CreateTexture(const std::string& fileName)
     {
+
         Path outputPath;
         outputPath.SetPath(outputDir_.GetPath());
         outputPath.SetFileName(fileName);
-        Path inputPath;
-        inputPath.SetPath(inputPath_.GetPath());
-        inputPath.SetFileName(fileName);
-        CHECK_CONDITION(NSGCopyFile(inputPath, outputPath), __FILE__, __LINE__);
-
+#if 0
+		if (!embedResources_)
+		{
+			Path inputPath;
+			inputPath.SetPath(inputPath_.GetPath());
+			inputPath.SetFileName(fileName);
+			CHECK_CONDITION(NSGCopyFile(inputPath, outputPath), __FILE__, __LINE__);
+		}
+#endif
         std::vector<std::string> dirs = Path::GetDirs(outputPath.GetPath());
         Path relativePath;
         if(!dirs.empty())
             relativePath.SetPath(dirs.back());
         relativePath.SetFileName(fileName);
 
-        auto resource = std::make_shared<ResourceFile>(relativePath);
+		auto resource = App::this_->GetOrCreateResourceFile(relativePath.GetFilePath());
         return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     }
 

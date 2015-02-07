@@ -73,7 +73,7 @@ namespace NSG
 
             if (!sound_)
             {
-				TRACE_LOG("Unable to read " << resource_->GetPath().GetFilePath() << " !!!");
+				TRACE_LOG("Unable to read " << resource_->GetName() << " !!!");
             }
 
             isReady_ = sound_ != nullptr;

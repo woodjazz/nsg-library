@@ -63,13 +63,13 @@ namespace NSG
     void ShowTexture::SetNormal(PTexture texture)
     {
         program_->SetFlags((int)ProgramFlag::SHOW_TEXTURE0);
-        material_->SetTexture0(texture);
+        material_->SetTexture(0, texture);
     }
 
     void ShowTexture::SetFont(PTexture texture)
     {
         program_->SetFlags((int)ProgramFlag::TEXT);
-        material_->SetTexture0(texture);
+        material_->SetTexture(0, texture);
     }
 
     void ShowTexture::Show()

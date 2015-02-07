@@ -51,8 +51,8 @@ namespace NSG
         void NeedUpdate(SceneNode* obj);
         void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
         POctree GetOctree() const { return octree_; }
-        void Save(pugi::xml_document& doc);
-        void Load(const pugi::xml_document& doc, const CachedData& data) override;
+		void Save(pugi::xml_node& node) const override;
+        void Load(const pugi::xml_node& node) override;
         bool GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const;
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
         bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);
@@ -66,13 +66,11 @@ namespace NSG
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
     protected:
 		void LoadPhysics(const pugi::xml_node& node);
-		void SavePhysics(pugi::xml_node& node);
-        void SaveMeshes(pugi::xml_node& node);
-        void SaveMaterials(pugi::xml_node& node);
-        void SaveAnimations(pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
-        void SaveSkeletons(pugi::xml_node& node);
-        void LoadSkeletons(const pugi::xml_node& node);
+		void LoadSkeletons(const pugi::xml_node& node);
+		void SaveAnimations(pugi::xml_node& node) const;
+		void SavePhysics(pugi::xml_node& node) const;
+		void SaveSkeletons(pugi::xml_node& node) const;
     private:
         void UpdateAnimations(float deltaTime);
 		bool HasLight(PLight light) const;

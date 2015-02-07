@@ -49,8 +49,11 @@ misrepresented as being the original software.
 #include "Audio.h"
 #include "Check.h"
 #include "Texture.h"
+#include "ResourceFile.h"
+#include "ResourceMemory.h"
 #include "UTF8String.h"
 #include "SDL.h"
+#include "pugixml.hpp"
 #undef main
 
 #include <algorithm>
@@ -128,6 +131,7 @@ namespace NSG
     {
         meshes_.Clear();
         materials_.Clear();
+        resources_.Clear();
         whiteTexture_ = nullptr;
         graphics_ = nullptr;
     }
@@ -154,7 +158,7 @@ namespace NSG
             // Creates 1x1 white texture
             static unsigned char img[WIDTH * HEIGHT * 3];
             memset(&img[0], 0xFF, sizeof(img));
-            whiteTexture_ = PTexture(new Texture(GL_RGB, WIDTH, HEIGHT, (char*)&img[0]));
+            whiteTexture_ = std::make_shared<Texture>("WhiteTexture", GL_RGB, WIDTH, HEIGHT, (char*)&img[0]);
             TRACE_LOG("White texture has been generated.");
         }
 
@@ -273,10 +277,30 @@ namespace NSG
         return materials_.Get(name);
     }   
 
-    const std::vector<PMesh>& App::GetMeshes() const
+    PResourceFile App::GetOrCreateResourceFile(const std::string& name)
     {
-        return meshes_.GetConstObjs();
+		return resources_.GetOrCreateClass<ResourceFile>(name);
     }
+
+    PResourceMemory App::GetOrCreateResourceMemory(const std::string& name)
+    {
+		return resources_.GetOrCreateClass<ResourceMemory>(name);
+    }
+
+	PResource App::GetResource(const std::string& name)
+	{
+		return resources_.Get(name);
+	}
+
+    std::vector<PMesh>& App::GetMeshes()
+    {
+        return meshes_.GetObjs();
+    }
+
+	const std::vector<PMesh>& App::GetConstMeshes() const
+	{
+		return meshes_.GetConstObjs();
+	}
 
     PMesh App::GetMesh(const std::string& name) const
     {
@@ -288,37 +312,9 @@ namespace NSG
         return materials_.GetConstObjs();
     }
 
-    int App::GetMaterialSerializableIndex(const PMaterial& material) const
+    const std::vector<PResource>& App::GetResources() const
     {
-        int idx = -1;
-        const std::vector<PMaterial>& materials = materials_.GetConstObjs();
-        for (auto obj : materials)
-        {
-            if (obj->IsSerializable())
-            {
-                ++idx;
-                if (obj == material)
-                    break;
-            }
-        }
-
-        return idx;
-    }
-
-    int App::GetMeshSerializableIndex(const PMesh& mesh) const
-    {
-        int idx = -1;
-        for (auto obj : meshes_.GetConstObjs())
-        {
-            if (obj->IsSerializable())
-            {
-                ++idx;
-                if (obj == mesh)
-                    break;
-            }
-        }
-
-        return idx;
+        return resources_.GetConstObjs();
     }
 
     void App::SetMainWindow(Window* window)
@@ -617,5 +613,156 @@ namespace NSG
             #endif
         }
     }
-}
 
+    void App::LoadResources(const pugi::xml_node& node)
+    {
+        pugi::xml_node resources = node.child("Resources");
+        if (resources)
+        {
+            pugi::xml_node child = resources.child("Resource");
+            while (child)
+            {
+				auto resource = Resource::CreateFrom(child);
+                resource->Load(child);
+                child = child.next_sibling("Resource");
+            }
+        }
+    }
+
+    void App::LoadMeshes(const pugi::xml_node& node)
+    {
+        pugi::xml_node meshes = node.child("Meshes");
+        if (meshes)
+        {
+            pugi::xml_node child = meshes.child("Mesh");
+            while (child)
+            {
+                PModelMesh mesh(GetOrCreateModelMesh(child.attribute("name").as_string()));
+                mesh->Load(child);
+                child = child.next_sibling("Mesh");
+            }
+        }
+    }
+
+    void App::LoadMaterials(const pugi::xml_node& node)
+    {
+        pugi::xml_node objs = node.child("Materials");
+		if (objs)
+        {
+			pugi::xml_node child = objs.child("Material");
+            while (child)
+            {
+                PMaterial material(GetOrCreateMaterial(child.attribute("name").as_string()));
+                material->Load(child);
+                child = child.next_sibling("Material");
+            }
+        }
+    }
+
+    std::vector<PScene> App::Load(const pugi::xml_node& node)
+    {
+        LoadResources(node);
+        LoadMeshes(node);
+        LoadMaterials(node);
+        std::vector<PScene> scenes;
+        pugi::xml_node child = node.child("Scene");
+        while (child)
+        {
+            auto scene = std::make_shared<Scene>("scene");
+			scene->Load(child);
+            scenes.push_back(scene);
+            child = child.next_sibling("Scene");
+        }
+        return scenes;
+    }
+
+    std::vector<PScene> App::Load(PResource resource)
+    {
+        CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+        std::vector<PScene> scenes;
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_buffer_inplace((void*)resource->GetData(), resource->GetBytes());
+        if (result)
+        {
+            pugi::xml_node app = doc.child("App");
+            if(app)
+                scenes = Load(app);
+        }
+        else
+        {
+            TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
+            TRACE_LOG("Error description: " << result.description());
+            TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
+            CHECK_ASSERT(false, __FILE__, __LINE__);
+        }
+
+        resource->Invalidate();
+        return scenes;
+    }
+
+	pugi::xml_node App::SaveWithExternalResources(pugi::xml_document& doc, const Path& path, const Path& outputDir)
+    {
+        pugi::xml_node app = doc.append_child("App");
+		SaveResourcesExternally(app, path, outputDir);
+        SaveMeshes(app);
+        SaveMaterials(app);
+		return app;
+    }
+
+	pugi::xml_node App::Save(pugi::xml_document& doc)
+	{
+		pugi::xml_node app = doc.append_child("App");
+		SaveResources(app);
+		SaveMeshes(app);
+		SaveMaterials(app);
+		return app;
+	}
+
+
+	void App::SaveMeshes(pugi::xml_node& node) const
+    {
+        pugi::xml_node child = node.append_child("Meshes");
+        auto meshes = GetConstMeshes();
+        for (auto& obj : meshes)
+            obj->Save(child);
+    }
+
+	void App::SaveMaterials(pugi::xml_node& node) const
+    {
+        pugi::xml_node child = node.append_child("Materials");
+        auto materials = GetMaterials();
+        for (auto& obj : materials)
+            obj->Save(child);
+    }
+
+	void App::SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir)
+    {
+        pugi::xml_node child = node.append_child("Resources");
+        auto resources = GetResources();
+        for (auto& obj : resources)
+			obj->SaveExternal(child, path, outputDir);
+    }
+
+	void App::SaveResources(pugi::xml_node& node)
+	{
+		pugi::xml_node child = node.append_child("Resources");
+		auto resources = GetResources();
+		for (auto& obj : resources)
+			obj->Save(child);
+	}
+
+
+    PTexture App::GetTextureWithResource(PResource resource) const
+    {
+		auto& materials = materials_.GetConstObjs();
+		for (auto& material : materials)
+        {
+            auto texture = material->GetTextureWithResource(resource);
+            if(texture)
+                return texture;
+        }
+
+        return nullptr;
+    }
+
+}

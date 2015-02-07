@@ -131,35 +131,7 @@ namespace NSG
         needUpdate_.insert(obj);
     }
 
-    void Scene::SaveMeshes(pugi::xml_node& node)
-    {
-        pugi::xml_node child = node.append_child("Meshes");
-        auto meshes = app_.GetMeshes();
-        for (auto& obj : meshes)
-            obj->Save(child);
-    }
-
-    void Scene::SaveMaterials(pugi::xml_node& node)
-    {
-        pugi::xml_node child = node.append_child("Materials");
-        auto materials = app_.GetMaterials();
-        for (auto& obj : materials)
-            obj->Save(child);
-    }
-
-    void Scene::Save(pugi::xml_document& doc)
-    {
-        pugi::xml_node scene = doc.append_child("Scene");
-        pugi::xml_node sceneNode = scene.append_child("SceneNode");
-        SceneNode::Save(sceneNode);
-        SaveMeshes(scene);
-        SaveMaterials(scene);
-        SaveAnimations(scene);
-        SaveSkeletons(scene);
-		SavePhysics(scene);
-    }
-
-	void Scene::SavePhysics(pugi::xml_node& node)
+	void Scene::SavePhysics(pugi::xml_node& node) const
 	{
 		pugi::xml_node child = node.append_child("Physics");
 		{
@@ -176,10 +148,10 @@ namespace NSG
 		physicsWorld_->SetGravity(gravity);
 	}
 
-    void Scene::SaveAnimations(pugi::xml_node& node)
+    void Scene::SaveAnimations(pugi::xml_node& node) const 
     {
         pugi::xml_node child = node.append_child("Animations");
-        for (auto& obj : animations_.GetObjs())
+        for (auto& obj : animations_.GetConstObjs())
             obj->Save(child);
     }
 
@@ -203,7 +175,7 @@ namespace NSG
         }
     }
 
-    void Scene::SaveSkeletons(pugi::xml_node& node)
+    void Scene::SaveSkeletons(pugi::xml_node& node) const
     {
         const std::vector<PMesh>& meshes = app_.GetMeshes();
         if (meshes.size())
@@ -241,19 +213,24 @@ namespace NSG
         }
     }
 
-    void Scene::Load(const pugi::xml_document& doc, const CachedData& data)
+    void Scene::Load(const pugi::xml_node& node)
     {
-        //std::stringstream query;
-        //query << "/Scene/SceneNode[@name ='" << SCENENODE_ROOT_NAME << "']";
-        //pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-        pugi::xml_node scene = doc.child("Scene");
-        if (scene)
-        {
-            SceneNode::Load(scene.child("SceneNode"), data);
-            LoadAnimations(scene);
-            LoadSkeletons(scene);
-			LoadPhysics(scene);
-        }
+        pugi::xml_node sceneNode = node.child("SceneNode");
+		CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
+		SceneNode::Load(sceneNode);
+		LoadAnimations(node);
+		LoadSkeletons(node);
+		LoadPhysics(node);
+    }
+
+    void Scene::Save(pugi::xml_node& node) const
+    {
+        pugi::xml_node scene = node.append_child("Scene");
+        pugi::xml_node sceneNode = scene.append_child("SceneNode");
+        SceneNode::Save(sceneNode);
+        SaveAnimations(scene);
+        SaveSkeletons(scene);
+        SavePhysics(scene);
     }
 
     bool Scene::GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const

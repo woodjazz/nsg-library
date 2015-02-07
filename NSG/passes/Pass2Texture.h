@@ -34,7 +34,7 @@ namespace NSG
 	class Pass2Texture : public Pass
 	{
 	public:
-		Pass2Texture(Technique* technique, int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
+		Pass2Texture(const std::string& name, Technique* technique, int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
 		~Pass2Texture();
 		void Add(PPass pass, SceneNode* node, PMesh mesh);
 		void Render() override;

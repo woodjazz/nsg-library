@@ -86,7 +86,7 @@ namespace NSG
     void Node::ClearAllChildren()
     {
         childrenHash_.clear();
-        for (unsigned i = children_.size() - 1; i < children_.size(); --i)
+		for (size_t i = children_.size() - 1; i < children_.size(); --i)
         {
             Node* childNode = children_[i].get();
             childNode->ClearAllChildren();
@@ -144,11 +144,6 @@ namespace NSG
             }
         }
         node->MarkAsDirty();
-    }
-
-    void Node::Save(pugi::xml_node& node)
-    {
-
     }
 
     void Node::Translate(const Vector3& delta, TransformSpace space)
@@ -435,6 +430,12 @@ namespace NSG
 
         dirty_ = false;
     }
+
+	Matrix4 Node::GetTransform() const
+	{
+		Update();
+		return glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_) * glm::scale(glm::mat4(1.0f), scale_);
+	}
 
     const Matrix4& Node::GetGlobalModelMatrix() const
     {

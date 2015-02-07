@@ -25,13 +25,13 @@ misrepresented as being the original software.
 */
 #include "TrueTypeConverter.h"
 #include "ResourceFile.h"
+#include "App.h"
 #include "ResourceMemory.h"
 #include "Check.h"
 #include "pugixml.hpp"
 #include "stb_image.h"
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
 namespace NSG
@@ -48,7 +48,7 @@ namespace NSG
 
     bool TrueTypeConverter::Load()
     {
-        auto resource = std::make_shared<ResourceFile>(path_);
+        auto resource = App::this_->GetOrCreateResourceFile(path_.GetFilePath());
         CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
         const unsigned char* data = (const unsigned char*)resource->GetData();
         //size_t totalBytes = resource->GetBytes();
@@ -58,7 +58,8 @@ namespace NSG
         int numChars = eChar_ - sChar_ + 1; // characters to bake
         cdata_.resize(numChars);
         stbtt_BakeFontBitmap(data, 0, (float)fontPixelsHeight_, (unsigned char*)&tempBitmap[0], bitmapWidth_, bitmapHeight_, sChar_, numChars, &cdata_[0]);
-        texture_ = std::make_shared<ResourceMemory>(tempBitmap.c_str(), tempBitmap.size());
+		texture_ = App::this_->GetOrCreateResourceMemory(path_.GetFilePath() + std::to_string(fontPixelsHeight_));
+		texture_->SetData(tempBitmap.c_str(), tempBitmap.size());
         CHECK_CONDITION(texture_->IsReady(), __FILE__, __LINE__);
         return true;
     }
@@ -75,17 +76,17 @@ namespace NSG
         texturePath.SetExtension("png");
         {
             const char* p = texture_->GetData();
-            const size_t Channels = 1;
-            size_t n = texture_->GetBytes() * Channels;
+            const size_t channels = 1;
+            size_t n = texture_->GetBytes() * channels;
             std::vector<char> image(n, 0);
             size_t idx = 0;
             while (idx < n)
             {
-                image[idx + Channels - 1] = *p++;
-                idx += Channels;
+                image[idx + channels - 1] = *p++;
+                idx += channels;
             }
             const unsigned char* img = (const unsigned char*)&image[0];
-            stbi_write_png(texturePath.GetFullAbsoluteFilePath().c_str(), bitmapWidth_, bitmapHeight_, Channels, img, 0);
+            stbi_write_png(texturePath.GetFullAbsoluteFilePath().c_str(), bitmapWidth_, bitmapHeight_, channels, img, 0);
         }
 
         {

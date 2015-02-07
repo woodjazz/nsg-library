@@ -59,16 +59,31 @@ namespace NSG
         PMaterial CreateMaterial(const std::string& name, const ProgramFlags& flags = (int)ProgramFlag::NONE);
         PMaterial GetOrCreateMaterial(const std::string& name, const ProgramFlags& flags = (int)ProgramFlag::NONE);
         PMaterial GetMaterial(const std::string& name);
-        const std::vector<PMesh>& GetMeshes() const;
+        const std::vector<PMesh>& GetConstMeshes() const;
+		std::vector<PMesh>& GetMeshes();
         PMesh GetMesh(const std::string& name) const;
         const std::vector<PMaterial>& GetMaterials() const;
-        int GetMaterialSerializableIndex(const PMaterial& material) const;
-        int GetMeshSerializableIndex(const PMesh& mesh) const;
         int Run();
         void SetMainWindow(Window* window);
 		Window* GetMainWindow() const { return mainWindow_; }
 		std::vector<PWeakWindow>& GetWindows() { return windows_; }
 		void NotifyOneWindow2Remove() { ++nWindows2Remove_;  }
+        PResourceFile GetOrCreateResourceFile(const std::string& name);
+        PResourceMemory GetOrCreateResourceMemory(const std::string& name);
+		PResource GetResource(const std::string& name);
+        const std::vector<PResource>& GetResources() const;
+		std::vector<PScene> Load(PResource resource);
+        std::vector<PScene> Load(const pugi::xml_node& node);
+        void LoadMeshes(const pugi::xml_node& node);
+        void LoadMaterials(const pugi::xml_node& node);
+        void LoadResources(const pugi::xml_node& node);
+		pugi::xml_node SaveWithExternalResources(pugi::xml_document& doc, const Path& path, const Path& outputDir);
+		pugi::xml_node Save(pugi::xml_document& doc);
+		void SaveMeshes(pugi::xml_node& node) const;
+		void SaveMaterials(pugi::xml_node& node) const;
+		void SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir);
+		void SaveResources(pugi::xml_node& node);
+        PTexture GetTextureWithResource(PResource resource) const;
     private:
 		static void RenderFrame(void* data);
         bool RenderFrame();
@@ -80,6 +95,7 @@ namespace NSG
         PAppConfiguration configuration_;
         MapAndVector<std::string, Mesh> meshes_;
         MapAndVector<std::string, Material> materials_;
+        MapAndVector<std::string, Resource> resources_;
         PGraphics graphics_;
         PKeyboard keyboard_;
 		std::set<Object*> objects_;

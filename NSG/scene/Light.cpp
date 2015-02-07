@@ -89,7 +89,7 @@ namespace NSG
         }
     }
 
-    void Light::Save(pugi::xml_node& node)
+    void Light::Save(pugi::xml_node& node) const
     {
         {
             std::stringstream ss;
@@ -162,7 +162,7 @@ namespace NSG
         SaveChildren(node);
     }
 
-    void Light::Load(const pugi::xml_node& node, const CachedData& data)
+    void Light::Load(const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
 
@@ -205,6 +205,6 @@ namespace NSG
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
 
-        LoadChildren(node, data);
+        LoadChildren(node);
     }
 }

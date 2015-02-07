@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
-<Scene>
-	<SceneNode name="VisualSceneNode" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    0.010,    0.010,    0.010]">
-		<SceneNode name="LOD3sp" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialIndex="0" materialName="blinn3" meshIndex="0" meshName="LOD3spShape" />
-		<SceneNode name="camera1" nodeType="Camera" fovy="0.633346" zNear="1" zFar="10000" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[  400.113,  463.264, -431.078]" orientation="[    0.348,   -0.121,    0.878,    0.306]" />
-		<SceneNode name="directionalLight1" nodeType="Light" type="1" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[  148.654,  183.672, -292.179]" orientation="[    0.136,    0.064,    0.916,    0.373]" />
-	</SceneNode>
+<App>
+	<Resources>
+		<Resource name="D:/tmp/dev/nsg-library/samples/animation/art/duck.dae" filename="D:/tmp/dev/nsg-library/samples/animation/art/duck.dae" />
+		<Resource name="data/duckCM.tga" filename="data/duckCM.tga" />
+	</Resources>
 	<Meshes>
 		<Mesh name="LOD3spShape" wireFrameDrawMode="4" solidDrawMode="4">
 			<Vertexes>
@@ -689,13 +688,13 @@
 				<VertexData position="[   18.851,   36.275,  -60.564]" normal="[    0.020,   -0.231,   -0.973]" uv0="[    0.600,    0.642]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   11.390,   35.744,  -60.278]" normal="[   -0.031,   -0.215,   -0.976]" uv0="[    0.519,    0.636]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   10.861,   39.790,  -60.900]" normal="[   -0.046,   -0.098,   -0.994]" uv0="[    0.513,    0.678]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
-				<VertexData position="[   18.448,   40.062,  -61.235]" normal="[    0.003,   -0.096,   -0.995]" uv0="[    0.596,    0.680]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   18.448,   40.063,  -61.235]" normal="[    0.003,   -0.096,   -0.995]" uv0="[    0.596,    0.680]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   10.450,   43.910,  -61.086]" normal="[   -0.052,    0.011,   -0.999]" uv0="[    0.509,    0.720]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   18.388,   44.322,  -61.328]" normal="[    0.002,    0.018,   -1.000]" uv0="[    0.595,    0.724]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   18.388,   44.322,  -61.328]" normal="[    0.002,    0.018,   -1.000]" uv0="[    0.905,    0.429]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   26.592,   44.647,  -61.007]" normal="[    0.121,    0.015,   -0.993]" uv0="[    0.913,    0.429]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   25.571,   40.151,  -60.925]" normal="[    0.113,   -0.111,   -0.987]" uv0="[    0.912,    0.425]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
-				<VertexData position="[   18.448,   40.062,  -61.235]" normal="[    0.003,   -0.096,   -0.995]" uv0="[    0.905,    0.425]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   18.448,   40.063,  -61.235]" normal="[    0.003,   -0.096,   -0.995]" uv0="[    0.905,    0.425]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   24.246,   37.063,  -60.552]" normal="[    0.097,   -0.223,   -0.970]" uv0="[    0.911,    0.422]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   18.851,   36.275,  -60.564]" normal="[    0.020,   -0.231,   -0.973]" uv0="[    0.906,    0.422]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[    9.985,   48.042,  -60.780]" normal="[   -0.055,    0.120,   -0.991]" uv0="[    0.504,    0.762]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
@@ -2413,7 +2412,9 @@
 	</Meshes>
 	<Materials>
 		<Material name="blinn3" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    0.600,    0.600,    0.600,    1.000]" specular="[    0.000,    0.000,    0.000,    1.000]" shininess="0.3" color="[    0.000,    0.000,    0.000,    1.000]">
-			<Texture0 filename="data/duckCM.tga" flags="00000000000000000000000000000011" />
+			<Texture0 flags="00000000000000000000000000000011">
+				<Resource name="data/duckCM.tga" filename="data/duckCM.tga" />
+			</Texture0>
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
@@ -2423,7 +2424,14 @@
 			</Technique>
 		</Material>
 	</Materials>
-	<Animations />
-	<Skeletons />
-	<Physics gravity="[    0.000,   -9.810,    0.000]" />
-</Scene>
+	<Scene>
+		<SceneNode name="VisualSceneNode" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    0.010,    0.010,    0.010]">
+			<SceneNode name="LOD3sp" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="blinn3" meshName="LOD3spShape" />
+			<SceneNode name="camera1" nodeType="Camera" fovy="0.633346" zNear="1" zFar="10000" xo="0" yo="0" xf="1" yf="1" isOrtho="0" position="[  400.113,  463.264, -431.078]" orientation="[    0.348,   -0.121,    0.878,    0.306]" />
+			<SceneNode name="directionalLight1" nodeType="Light" type="1" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[  148.654,  183.672, -292.179]" orientation="[    0.136,    0.064,    0.916,    0.373]" />
+		</SceneNode>
+		<Animations />
+		<Skeletons />
+		<Physics gravity="[    0.000,   -9.810,    0.000]" />
+	</Scene>
+</App>

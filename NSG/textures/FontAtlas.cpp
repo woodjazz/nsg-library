@@ -22,9 +22,9 @@ namespace NSG
           viewWidth_(viewWidth),
           viewHeight_(viewHeight)
     {
-        Path path(xmlResource->GetPath());
+        Path path(xmlResource->GetName());
         path.SetExtension("png");
-        auto textureResource = std::make_shared<ResourceFile>(path);
+        auto textureResource = App::this_->GetOrCreateResourceFile(path.GetFilePath());
         texture_ = std::make_shared<Texture>(textureResource);
     }
 
@@ -72,7 +72,7 @@ namespace NSG
 
     void FontAtlas::ParseXML()
     {
-        TRACE_LOG("FontAtlas::Parsing: " << xmlResource_->GetPath().GetFilePath());
+        TRACE_LOG("FontAtlas::Parsing: " << xmlResource_->GetName());
 
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer_inplace((void*)xmlResource_->GetData(), xmlResource_->GetBytes());

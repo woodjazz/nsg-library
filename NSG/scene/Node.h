@@ -105,17 +105,16 @@ namespace NSG
 			AddChild(obj);
 			return obj;
 		}
-        template <typename T> std::shared_ptr<T> CreateChild(const std::string& name, const pugi::xml_node& node, const CachedData& data)
+        template <typename T> std::shared_ptr<T> CreateChild(const std::string& name, const pugi::xml_node& node)
         {
             auto obj = std::make_shared<T>(name);
-            obj->T::Load(node, data);
+            obj->T::Load(node);
             AddChild(obj);
             return obj;
         }
         
         const std::vector<PNode>& GetChildren() const { return children_; }
         bool IsDirty() const { return dirty_; }
-        virtual void Save(pugi::xml_node& node);
         const std::string& GetName() const { return name_; }
         void SetParent(PNode parent);
         PNode GetParent() const;
@@ -132,6 +131,7 @@ namespace NSG
         bool IsScaleUniform() const;
         PScene GetScene() const { return scene_.lock(); }
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);
+		Matrix4 GetTransform() const;
     protected:
         std::string name_;
         std::vector<PNode> children_;

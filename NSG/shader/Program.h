@@ -119,12 +119,7 @@ namespace NSG
         GLuint sceneColorAmbientLoc_;
         GLuint eyeWorldPosLoc_;
 
-        GLuint texture0Loc_;
-        GLuint texture1Loc_;
-        GLuint texture2Loc_;
-        GLuint texture3Loc_;
-        GLuint texture4Loc_;
-        GLuint texture5Loc_;
+		GLuint textureLoc_[MaterialTexture::MAX_TEXTURES_MAPS];
 
         struct MaterialLoc
         {

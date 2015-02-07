@@ -26,21 +26,31 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
+#include <string>
 
 namespace NSG
 {
 	class Path;
-	class Resource : public Object
+	class Resource : public std::enable_shared_from_this<Resource>, public Object
 	{
 	public:
-		Resource();
+		static PResource CreateFrom(const pugi::xml_node& node);
 		virtual ~Resource();
-		virtual const char* const GetData() const { return buffer_.c_str(); }
-		virtual size_t GetBytes() const { return buffer_.size(); }
-        virtual const Path& GetPath() const;
+		const char* const GetData() const { return buffer_.c_str(); }
+		size_t GetBytes() const { return buffer_.size(); }
         void ReleaseResources() override;
 		const std::string& GetBuffer() const { return buffer_; }
+		virtual void Load(const pugi::xml_node& node) {}
+		void SaveExternal(pugi::xml_node& node, const Path& path, const Path& outputDir);
+		void Save(pugi::xml_node& node);
+		const std::string& GetName() const { return name_; }
+		void SetSerializable(bool serializable);
+		bool IsSerializable() const;
+		void SetName(const std::string& name);
 	protected:
+		Resource(const std::string& name);
 		std::string buffer_;
+		std::string name_;
+		bool serializable_;
 	};
 }

@@ -32,12 +32,12 @@ namespace NSG
 	class ResourceMemory : public Resource
 	{
 	public:
-		ResourceMemory(const char* buffer, size_t bytes);
+		ResourceMemory(const std::string& name);
 		~ResourceMemory();
+		void SetData(const char* buffer, size_t bytes);
+		void Load(const pugi::xml_node& node) override;
 	private:
 		bool IsValid() override;
-		void AllocateResources() override;
-		const char* staticBuffer_;
-        size_t bytes_;
+        friend class App;
 	};
 }

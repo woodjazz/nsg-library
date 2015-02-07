@@ -188,12 +188,6 @@ namespace NSG
         TS_WORLD,
     };
 
-    struct CachedData
-    {
-        std::vector<PModelMesh> meshes_;
-        std::vector<PMaterial> materials_;
-    };
-
     struct RayNodeResult
     {
         float distance_;
@@ -297,6 +291,11 @@ namespace NSG
         bool operator != (const BlurFilter& uid) const;
     };
 
+    enum class ResourceType
+    {
+        File,
+        Memory
+    };
 
     typedef Signal<int, int> SignalViewChanged;
     typedef Signal<float, float> SignalMouseMoved;
@@ -312,5 +311,14 @@ namespace NSG
     typedef Signal<const ContactPoint&> SignalCollision;
     typedef Signal<const std::string&> SignalDropFile;
 
-
+    enum MaterialTexture
+    {
+        DIFFUSE_MAP,
+        NORMAL_MAP,
+        LIGHT_MAP,
+        SPECULAR_MAP,
+        AO_MAP,
+        DISPLACEMENT_MAP,
+        MAX_TEXTURES_MAPS
+    };
 }

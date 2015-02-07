@@ -115,9 +115,12 @@ namespace NSG
             auto world = owner_.lock();
             if (world)
                 world->removeRigidBody(body_);
-            delete triMesh_;
+			
             delete shape_;
-            delete body_;
+			delete triMesh_;
+			delete body_;
+            
+			triMesh_ = nullptr;
             shape_ = nullptr;
             body_ = nullptr;
         }
@@ -290,7 +293,7 @@ namespace NSG
             case SH_CAPSULE:
                 {
                     float c_radius = std::max(halfSize.x, halfSize.y);
-                    shape_ = new btCapsuleShapeZ(c_radius - 0.05, (halfSize.z - c_radius - 0.05) * 2);
+                    shape_ = new btCapsuleShapeZ(c_radius - 0.05f, (halfSize.z - c_radius - 0.05f) * 2);
                     break;
                 }
 

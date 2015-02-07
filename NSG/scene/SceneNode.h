@@ -57,19 +57,16 @@ namespace NSG
 		void OnDisable() override;
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_;  }
-		void Load(PResource resource);
 		void GetMaterials(std::vector<PMaterial>& materials) const;
-		void Save(pugi::xml_node& node) override;
-		void SaveChildren(pugi::xml_node& node);
-		virtual void Load(const pugi::xml_node& child, const CachedData& data);
-		void LoadChildren(const pugi::xml_node& node, const CachedData& data);
+		virtual void Load(const pugi::xml_node& node);
+		virtual void Save(pugi::xml_node& node) const;
+		void SaveChildren(pugi::xml_node& node) const;
+		void LoadChildren(const pugi::xml_node& node);
 		void Render();
 	public:
 		SignalCollision::PSignal signalCollision_;
 	protected:
-		virtual bool IsValid() override;
-		virtual void Load(const pugi::xml_document& doc, const CachedData& data);
-		void LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data);
+		bool IsValid() override;
 		App& app_;
 	private:
 		PMaterial material_;

@@ -298,23 +298,23 @@ namespace NSG
 	{
 		CHECK_ASSERT(blendIndices.size() == blendWeights.size(), __FILE__, __LINE__);
 		CHECK_ASSERT(vertexsData_.size() == blendWeights.size(), __FILE__, __LINE__);
-		unsigned n = vertexsData_.size();
-		for (unsigned i = 0; i < n; i++)
+		size_t n = vertexsData_.size();
+		for (size_t i = 0; i < n; i++)
 		{
 			{
 				Vector4 bonesID;
-				unsigned nBones = blendIndices[i].size();
+				size_t nBones = blendIndices[i].size();
 				CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
-				for (unsigned j = 0; j < nBones; j++)
+				for (size_t j = 0; j < nBones; j++)
 					bonesID[j] = float(blendIndices[i][j]);
 				vertexsData_[i].bonesID_ = bonesID;
 			}
 
 			{
 				Vector4 bonesWeight;
-				unsigned nBones = blendWeights[i].size();
+				size_t nBones = blendWeights[i].size();
 				CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
-				for (unsigned j = 0; j < nBones; j++)
+				for (size_t j = 0; j < nBones; j++)
 					bonesWeight[j] = blendWeights[i][j];
 				vertexsData_[i].bonesWeight_ = bonesWeight;
 			}
@@ -340,7 +340,7 @@ namespace NSG
 
     void Mesh::AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal)
     {
-		int vidx = vertexsData_.size();
+		size_t vidx = vertexsData_.size();
         vertexsData_.push_back(v0);
         vertexsData_.push_back(v1);
         vertexsData_.push_back(v2);
@@ -360,7 +360,7 @@ namespace NSG
 
     void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal)
     {
-		int vidx = vertexsData_.size();
+		size_t vidx = vertexsData_.size();
         vertexsData_.push_back(v0);
         vertexsData_.push_back(v1);
         vertexsData_.push_back(v2);

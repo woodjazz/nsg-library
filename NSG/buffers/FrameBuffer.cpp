@@ -34,7 +34,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	FrameBuffer::FrameBuffer(unsigned width, unsigned height, Flags flags)
+	FrameBuffer::FrameBuffer(const std::string& name, unsigned width, unsigned height, Flags flags)
         : flags_(flags),
           width_(width),
           height_(height),
@@ -64,14 +64,14 @@ namespace NSG
 
         if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
-            colorTexture_ = PTexture(new Texture(GL_RGBA, width_, height_, nullptr));
+            colorTexture_ = std::make_shared<Texture>(name, GL_RGBA, width_, height_, nullptr);
         }
 
         if (flags_ & Flag::DEPTH_USE_TEXTURE)
         {
             if (Graphics::this_->HasDepthTexture())
             {
-                depthTexture_ = PTexture(new Texture(GL_DEPTH_COMPONENT, width_, height_, nullptr));
+				depthTexture_ = std::make_shared<Texture>(name, GL_DEPTH_COMPONENT, width_, height_, nullptr);
             }
             else
             {

@@ -30,9 +30,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Pass2Texture::Pass2Texture(Technique* technique, int width, int height, UseBuffer buffer)
+    Pass2Texture::Pass2Texture(const std::string& name, Technique* technique, int width, int height, UseBuffer buffer)
         : Pass(technique),
-          render2Texture_(new Render2Texture(width, height, buffer))
+          render2Texture_(std::make_shared<Render2Texture>(name, width, height, buffer))
     {
 
     }

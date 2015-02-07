@@ -48,14 +48,14 @@ function(CONVERT_TOOL input_file output_dir)
 
     	add_custom_command(OUTPUT ${OUTPUT_FILE}
 			COMMAND ${CONVERT_CMD}
-			DEPENDS ${INPUTFILE}
+			DEPENDS ${INPUTFILE} 
 			COMMENT "Generating ${OUTPUT_FILE}"
 		)
 
 	    set(TARGET_NAME CONVERT_${INPUTNAME})
 
 		add_custom_target(${TARGET_NAME} ALL
-   			DEPENDS ${OUTPUT_FILE}
+   			DEPENDS ${OUTPUT_FILE} 
 		)
 
 		add_dependencies(${TARGET_NAME} converter)

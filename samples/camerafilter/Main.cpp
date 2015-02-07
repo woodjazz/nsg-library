@@ -37,6 +37,8 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto scene = std::make_shared<Scene>("scene000");
     auto camera = scene->GetOrCreateChild<Camera>("camera");
+	camera->SetWindow(window);
+	camera->SetPosition(Vertex3(0, 0, 10));
 
     #if 0
     camera->AddBlurFilter(16, 16);
@@ -56,7 +58,8 @@ int NSG_MAIN(int argc, char* argv[])
         gl_FragColor = texture2D(u_texture0, texcoord);
     });
 
-    auto resourceMem = std::make_shared<ResourceMemory>(fShader, strlen(fShader));
+	auto resourceMem = app.GetOrCreateResourceMemory("ResourceMemory");
+	resourceMem->SetData(fShader, strlen(fShader));
     auto userFilter = camera->AddUserFilter(resourceMem, 1024, 1024);
     auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
     {
@@ -71,19 +74,14 @@ int NSG_MAIN(int argc, char* argv[])
     #endif
 
     auto control = std::make_shared<CameraControl>(camera);
-    camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-    {
-        camera->SetAspectRatio(width, height);
-    });
-    camera->SetPosition(Vertex3(0, 0, 10));
+	control->SetWindow(window);
 
     scene->GetOrCreateChild<Light>("light");
 
     {
         auto mesh = app.CreateBoxMesh();
         auto material = app.GetOrCreateMaterial("material1", (int)ProgramFlag::PER_PIXEL_LIGHTING);
-        material->SetDiffuseMap(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/wall.jpg")));
+        material->SetDiffuseMap(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/wall.jpg")));
 
         node1 = scene->GetOrCreateChild<SceneNode>("node1");
         node1->SetPosition(Vertex3(3, -2, 0));
@@ -94,7 +92,7 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto mesh = app.CreateSphereMesh();
         auto material = app.GetOrCreateMaterial("material2", (int)ProgramFlag::PER_PIXEL_LIGHTING);
-        material->SetDiffuseMap(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/stone.jpg")));
+        material->SetDiffuseMap(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/stone.jpg")));
 
         auto node = scene->GetOrCreateChild<SceneNode>("node2");
         node->SetPosition(Vertex3(-3, 2, 0));

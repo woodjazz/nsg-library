@@ -172,6 +172,8 @@ int NSG_MAIN(int argc, char* argv[])
         TCLAP::ValueArg<int> sArg("s", "sChar", "Starting character to bake. By default is 32.", false, 32, &charConstraint);
         TCLAP::ValueArg<int> eArg("e", "eChar", "Final character to bake. By default is 127.", false, 127, &charConstraint);
 
+		TCLAP::SwitchArg bArg("b", "embed", "Embed resources in xml. If not set then the resources are written to an external file.", false);
+
         cmd.add(iArg);
         cmd.add(oArg);
         cmd.add(wArg);
@@ -179,6 +181,7 @@ int NSG_MAIN(int argc, char* argv[])
         cmd.add(fArg);
         cmd.add(sArg);
         cmd.add(eArg);
+		cmd.add(bArg);
 
         cmd.parse(argc, argv);
 
@@ -193,7 +196,7 @@ int NSG_MAIN(int argc, char* argv[])
 			App app;
 			auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
 			using namespace BlenderConverter;
-			BScene scene(inputFile, outputDir);
+			BScene scene(inputFile, outputDir, bArg.getValue());
 			if (scene.Load() && scene.Save())
 				return 0;
         }
@@ -205,6 +208,7 @@ int NSG_MAIN(int argc, char* argv[])
             int sChar = sArg.getValue();
             int eChar = eArg.getValue();
 
+			App app;
             TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
             if (obj.Load() && obj.Save(outputDir))
                 return 0;
@@ -213,8 +217,8 @@ int NSG_MAIN(int argc, char* argv[])
         {
             App app;
             auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
-            SceneConverter scene(inputFile, outputDir);
-            if (scene.Load() && scene.Save())
+			SceneConverter scene(inputFile, outputDir, bArg.getValue());
+			if (scene.Load() && scene.Save())
                 return 0;
         }
     }

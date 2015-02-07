@@ -32,7 +32,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    CameraControl::CameraControl(PCamera camera)
+	CameraControl::CameraControl(PCamera camera)
         : camera_(camera)
     {
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
@@ -49,6 +49,57 @@ namespace NSG
     {
 
     }
+
+	void CameraControl::SetWindow(PWindow window)
+	{
+		if (window)
+		{
+			slotUpdate_ = window->signalUpdate_->Connect([&](float deltaTime)
+			{
+				OnUpdate(deltaTime);
+			});
+
+			slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
+			{
+				OnMousemoved(x, y);
+			});
+
+			slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
+			{
+				OnMouseDown(button, x, y);
+			});
+
+			slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
+			{
+				OnMouseUp(button, x, y);
+			});
+
+			slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
+			{
+				OnMousewheel(x, y);
+			});
+
+			slotMultiGesture_ = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+			{
+				OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
+			});
+
+			slotKey_ = window->signalKey_->Connect([&](int key, int action, int modifier)
+			{
+				OnKey(key, action, modifier);
+			});
+		}
+		else
+		{
+			slotMouseMoved_ = nullptr;
+			slotMouseDown_ = nullptr;
+			slotMouseUp_ = nullptr;
+			slotMouseWheel_ = nullptr;
+			slotMultiGesture_ = nullptr;
+			slotKey_ = nullptr;
+			slotUpdate_ = nullptr;
+		}
+	}
 
     void CameraControl::OnMousemoved(float x, float y)
     {
@@ -224,7 +275,6 @@ namespace NSG
         }
     }
 
-
     void CameraControl::SetSphereCenter(bool centerObj)
     {
         Vertex3 newCenter;
@@ -271,6 +321,4 @@ namespace NSG
         if (pointOnSphere_->SetCenterAndPoint(center, position))
             camera_->SetGlobalPosition(position);
     }
-
-
 }

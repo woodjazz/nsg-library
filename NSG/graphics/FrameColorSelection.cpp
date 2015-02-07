@@ -42,8 +42,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	FrameColorSelection::FrameColorSelection(UseBuffer buffer)
-        : app_(*App::this_),
+	FrameColorSelection::FrameColorSelection(const std::string& name, UseBuffer buffer)
+        : name_(name),
+		app_(*App::this_),
 		buffer_(buffer),
           windowWidth_(0),
           windowHeight_(0),
@@ -74,7 +75,7 @@ namespace NSG
         windowWidth_ = window->GetWidth();
         windowHeight_ = window->GetHeight();
 
-		frameBuffer_ = PFrameBuffer(new FrameBuffer(windowWidth_, windowHeight_, frameBufferFlags_));
+		frameBuffer_ = std::make_shared<FrameBuffer>(name_, windowWidth_, windowHeight_, frameBufferFlags_);
 
 		auto technique = material_->GetTechnique();
         auto pass = technique->GetPass(0);

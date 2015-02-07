@@ -36,7 +36,7 @@ namespace NSG
 	FilterBlend::FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height)
 		: Filter(GetUniqueName("FilterBlend"), input0, output_width, output_height, (int)ProgramFlag::BLEND)
 	{
-		pMaterial_->SetTexture1(input1);
+		pMaterial_->SetTexture(1, input1);
 	}
 
 	FilterBlend::~FilterBlend()

@@ -50,35 +50,14 @@ namespace NSG
           octant_(nullptr),
           occludee_(false),
           worldBBNeedsUpdate_(true),
-          serializable_(true),
-          signalCollision_(new Signal<const ContactPoint&>())
+          signalCollision_(new Signal<const ContactPoint&>()),
+          serializable_(true)
     {
     }
 
     SceneNode::~SceneNode()
     {
         Invalidate();
-    }
-
-    void SceneNode::Load(PResource resource)
-    {
-        CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
-        pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_buffer_inplace((void*)resource->GetData(), resource->GetBytes());
-        if (result)
-        {
-            CachedData data;
-            LoadMeshesAndMaterials(doc, data);
-            Load(doc, data);
-        }
-        else
-        {
-            TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
-            TRACE_LOG("Error description: " << result.description());
-            TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
-            CHECK_ASSERT(false, __FILE__, __LINE__);
-        }
-        resource->Invalidate();
     }
 
     bool SceneNode::IsValid()
@@ -198,7 +177,7 @@ namespace NSG
             dynamic_cast<SceneNode*>(obj.get())->GetMaterials(materials);
     }
 
-    void SceneNode::Save(pugi::xml_node& node)
+    void SceneNode::Save(pugi::xml_node& node) const
     {
         if (!IsSerializable())
             return;
@@ -230,57 +209,28 @@ namespace NSG
         }
 
         if (material_)
-        {
-            int materialIndex = App::this_->GetMaterialSerializableIndex(material_);
-            if (materialIndex != -1)
-            {
-				std::stringstream ss;
-				ss << materialIndex;
-
-				node.append_attribute("materialIndex") = ss.str().c_str();
-				node.append_attribute("materialName") = material_->GetName().c_str();
-            }
-        }
+            node.append_attribute("materialName") = material_->GetName().c_str();
 
         if (mesh_)
-        {
-            int meshIndex = App::this_->GetMeshSerializableIndex(mesh_);
-            if (meshIndex != -1)
-            {
-				std::stringstream ss;
-				ss << meshIndex;
+            node.append_attribute("meshName") = mesh_->GetName().c_str();
 
-				node.append_attribute("meshIndex") = ss.str().c_str();
-				node.append_attribute("meshName") = mesh_->GetName().c_str();
-            }
-        }
-
-        if(rigidBody_)
+        if (rigidBody_)
             rigidBody_->Save(node);
 
         SaveChildren(node);
     }
 
-    void SceneNode::SaveChildren(pugi::xml_node& node)
+    void SceneNode::SaveChildren(pugi::xml_node& node) const
     {
         for (auto& obj : children_)
         {
             pugi::xml_node child = node.append_child("SceneNode");
-            obj->Save(child);
+            auto sceneNode = std::dynamic_pointer_cast<SceneNode>(obj);
+            sceneNode->Save(child);
         }
     }
 
-    void SceneNode::Load(const pugi::xml_document& doc, const CachedData& data)
-    {
-        std::stringstream query;
-        query << "/Scene/SceneNode[@name ='" << name_ << "']";
-        pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-        pugi::xml_node child = xpathNode.node();
-        CHECK_ASSERT(child, __FILE__, __LINE__);
-        Load(child, data);
-    }
-
-    void SceneNode::Load(const pugi::xml_node& node, const CachedData& data)
+    void SceneNode::Load(const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
 
@@ -293,31 +243,31 @@ namespace NSG
         Vertex3 scale = GetVertex3(node.attribute("scale").as_string());
         SetScale(scale);
 
-        pugi::xml_attribute attribute = node.attribute("materialIndex");
+        pugi::xml_attribute attribute = node.attribute("materialName");
         if (attribute)
         {
-            int materialIndex_ = attribute.as_int();
-            SetMaterial(data.materials_.at(materialIndex_));
+            std::string name = attribute.as_string();
+            SetMaterial(app_.GetMaterial(name));
         }
 
-        attribute = node.attribute("meshIndex");
+        attribute = node.attribute("meshName");
         if (attribute)
         {
-            int meshIndex = attribute.as_int();
-            SetMesh(data.meshes_.at(meshIndex));
+            std::string name = attribute.as_string();
+            SetMesh(app_.GetMesh(name));
         }
 
         pugi::xml_node childRigidBody = node.child("RigidBody");
         if (childRigidBody)
         {
-			auto obj = GetOrCreateRigidBody();
+            auto obj = GetOrCreateRigidBody();
             obj->Load(childRigidBody);
         }
 
-        LoadChildren(node, data);
+        LoadChildren(node);
     }
 
-    void SceneNode::LoadChildren(const pugi::xml_node& node, const CachedData& data)
+    void SceneNode::LoadChildren(const pugi::xml_node& node)
     {
         pugi::xml_node child = node.child("SceneNode");
         while (child)
@@ -329,52 +279,21 @@ namespace NSG
             CHECK_ASSERT(!nodeType.empty(), __FILE__, __LINE__);
             if (nodeType == "Light")
             {
-                Node::CreateChild<Light>(childName, child, data);
+                Node::CreateChild<Light>(childName, child);
             }
             else if (nodeType == "Camera")
             {
                 PCamera childNode = Node::GetOrCreateChild<Camera>(childName);
-                childNode->Load(child, data);
+                childNode->Load(child);
             }
             else
             {
                 CHECK_ASSERT(nodeType == "SceneNode", __FILE__, __LINE__);
                 PSceneNode childNode = Node::GetOrCreateChild<SceneNode>(childName);
-                childNode->Load(child, data);
+                childNode->Load(child);
             }
 
             child = child.next_sibling("SceneNode");
-        }
-    }
-
-    void SceneNode::LoadMeshesAndMaterials(const pugi::xml_document& doc, CachedData& data)
-    {
-        {
-            std::stringstream query;
-            query << "/Scene/Meshes/Mesh";
-            pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-            pugi::xml_node child = xpathNode.node();
-            while (child)
-            {
-                PModelMesh mesh(app_.GetOrCreateModelMesh(child.attribute("name").as_string()));
-                data.meshes_.push_back(mesh);
-                mesh->Load(child);
-                child = child.next_sibling("Mesh");
-            }
-        }
-
-        {
-            std::stringstream query;
-            query << "/Scene/Materials/Material";
-            pugi::xpath_node xpathNode = doc.select_single_node(query.str().c_str());
-            pugi::xml_node child = xpathNode.node();
-            while (child)
-            {
-                PMaterial material(app_.GetOrCreateMaterial(child.attribute("name").as_string()));
-                data.materials_.push_back(material);
-                material->Load(child);
-                child = child.next_sibling("Material");
-            }
         }
     }
 
@@ -385,7 +304,7 @@ namespace NSG
 
     void SceneNode::Render()
     {
-        if(IsReady())
+        if (IsReady())
         {
             Graphics::this_->SetScene(GetScene().get());
             Graphics::this_->SetNode(this);

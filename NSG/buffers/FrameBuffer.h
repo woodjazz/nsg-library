@@ -42,7 +42,7 @@ namespace NSG
             DEPTH_USE_TEXTURE = 1 << 4
         };
         typedef FlagSet<Flag> Flags;
-		FrameBuffer(unsigned width, unsigned height, Flags flags);
+		FrameBuffer(const std::string& name, unsigned width, unsigned height, Flags flags);
         ~FrameBuffer();
         PTexture GetColorTexture() const { return colorTexture_; }
         PTexture GetDepthTexture() const { return depthTexture_; }

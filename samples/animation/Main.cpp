@@ -31,10 +31,10 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
-    auto scene = std::make_shared<Scene>("scene000");
-    auto resource = std::make_shared<ResourceFile>("data/duck.xml");
-    scene->SceneNode::Load(resource);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 15, 15);
+    auto resource = app.GetOrCreateResourceFile("data/duck.xml");
+	auto scenes = app.Load(resource);
+	auto scene = scenes.at(0);
     auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");
     auto objPos = objNode->GetGlobalPosition();
     auto objBB = objNode->GetWorldBoundingBox();
@@ -44,12 +44,7 @@ int NSG_MAIN(int argc, char* argv[])
     camera->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.max_.z));
     camera->SetGlobalLookAt(objPos);
 
-    camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-    {
-        camera->SetAspectRatio(width, height);
-    });
-
+    camera->SetWindow(window);
     auto animation = scene->GetOrCreateAnimation("anim0");
     AnimationTrack track;
     track.node_ = camera;

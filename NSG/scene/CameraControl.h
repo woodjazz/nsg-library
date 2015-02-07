@@ -34,6 +34,7 @@ namespace NSG
 	public:
 		CameraControl(PCamera camera);
 		~CameraControl();
+		void SetWindow(PWindow window);
 		void AutoZoom();
 		void OnUpdate(float deltaTime);
 		void OnKey(int key, int action, int modifier);
@@ -42,6 +43,13 @@ namespace NSG
 		void OnMouseUp(int button, float x, float y);
 		void OnMouseDown(int button, float x, float y);
 		void OnMousemoved(float x, float y);
+		SignalMouseMoved::PSlot slotMouseMoved_;
+		SignalMouseDown::PSlot slotMouseDown_;
+		SignalMouseUp::PSlot slotMouseUp_;
+		SignalMouseWheel::PSlot slotMouseWheel_;
+		SignalMultiGesture::PSlot slotMultiGesture_;
+		SignalKey::PSlot slotKey_;
+		SignalUpdate::PSlot slotUpdate_;
 	private:
 		void SetPosition(const Vertex3& position);
 		void SetSphereCenter(bool centerObj);
@@ -54,13 +62,5 @@ namespace NSG
 		PPointOnSphere pointOnSphere_;
 		PCamera camera_;
 		bool updateOrientation_;
-		SignalMouseMoved::PSlot slotMouseMoved_;
-		SignalMouseDown::PSlot slotMouseDown_;
-		SignalMouseUp::PSlot slotMouseUp_;
-		SignalMouseWheel::PSlot slotMouseWheel_;
-		SignalMultiGesture::PSlot slotMultiGesture_;
-		SignalKey::PSlot slotKey_;
-		SignalUpdate::PSlot slotUpdate_;
-		PWeakWindow window_;
 	};
 }

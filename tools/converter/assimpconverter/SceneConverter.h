@@ -48,13 +48,13 @@ namespace NSG
     class SceneConverter : public Assimp::IOSystem
     {
     public:
-        SceneConverter(const Path& path, const Path& outputDir);
-        ~SceneConverter();
+		SceneConverter(const Path& path, const Path& outputDir, bool embedResources);
+		~SceneConverter();
         bool Exists(const char* filename) const override;
         char getOsSeparator() const override;
         Assimp::IOStream* Open(const char* filename, const char* mode = "rb") override;
         void Close(Assimp::IOStream* pFile) override;
-        bool Save() const;
+		bool Save() const;
         bool Load();
 		PScene GetScene() { return scene_; }
     private:
@@ -63,18 +63,19 @@ namespace NSG
         const aiNode* GetMeshNode(const aiScene* sc, const aiNode* node, const aiMesh* aiMesh);
         void MarkProgramAsSkinableNodes(const Mesh* mesh);
         void GetBlendData(PMesh mesh, const aiMesh* aiMesh) const;
-        void MakeSkeleton(const aiMesh* aiMesh, PModelMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones);
+        void MakeSkeleton(const aiMesh* aiMesh, PMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones);
         aiNode* GetNode(const std::string& name, aiNode* rootNode);
-        void LoadBones(const aiScene* sc, CachedData& data);
-        void LoadBones(const aiScene* sc, const aiMesh* aiMesh, PModelMesh mesh);
+        void LoadBones(const aiScene* sc);
+        void LoadBones(const aiScene* sc, const aiMesh* aiMesh, PMesh mesh);
         void Load(const aiScene* sc);
         void LoadAnimations(const aiScene* sc);
         const aiCamera* GetCamera(const aiScene* sc, const aiString& name) const;
         const aiLight* GetLight(const aiScene* sc, const aiString& name) const;
-        void LoadMeshesAndMaterials(const aiScene* sc, CachedData& data);
-        void RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode, const CachedData& data);
+        void LoadMeshesAndMaterials(const aiScene* sc);
+        void RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode);
         PScene scene_;
         Path path_;
         Path outputDir_;
+		bool embedResources_;
     };
 }

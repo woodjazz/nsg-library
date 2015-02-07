@@ -39,11 +39,7 @@ int NSG_MAIN(int argc, char* argv[])
     scene->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
 
     auto camera = scene->GetOrCreateChild<Camera>("camera");
-	camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-	auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-	{
-		camera->SetAspectRatio(width, height);
-	});
+	camera->SetWindow(window);
 
 	{
         camControlPoints.push_back(Vertex3(-10.0f, 0.0f, 0.0f));
@@ -61,7 +57,7 @@ int NSG_MAIN(int argc, char* argv[])
         earth->SetMesh(pSphereMesh);
         //earth->SetEnabled(false);
 
-        auto earthResource = std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg");
+        auto earthResource = app.GetOrCreateResourceFile("data/Earthmap720x360_grid.jpg");
         auto pEarthTexture = std::make_shared<Texture>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         auto pMaterial(app.GetOrCreateMaterial("earth", (int)ProgramFlag::PER_PIXEL_LIGHTING));
         pMaterial->SetDiffuseMap(pEarthTexture);
@@ -86,7 +82,7 @@ int NSG_MAIN(int argc, char* argv[])
         light->SetPosition(Vertex3(-10.0, 0.0, 5.0));
     }
 
-    auto resource = std::make_shared<ResourceFile>("data/nice_music.ogg");
+    auto resource = app.GetOrCreateResourceFile("data/nice_music.ogg");
     auto music = std::make_shared<Music>(resource);
     music->Play();
 

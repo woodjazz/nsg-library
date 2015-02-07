@@ -37,20 +37,17 @@ int NSG_MAIN(int argc, char* argv[])
     scene->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
     auto camera = scene->GetOrCreateChild<Camera>("camera");
     camera->SetPosition(Vertex3(0, 2, 35));
-    camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-    {
-        camera->SetAspectRatio(width, height);
-    });
+    camera->SetWindow(window);
 
     auto control = std::make_shared<CameraControl>(camera);
+	control->SetWindow(window);
     auto light = camera->GetOrCreateChild<Light>("light");
     {
         auto earth = scene->GetOrCreateChild<SceneNode>("earth");
         auto pSphereMesh(app.CreateSphereMesh(3, 24));
         earth->SetMesh(pSphereMesh);
 
-        auto pEarthTexture(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
+		auto pEarthTexture(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/Earthmap720x360_grid.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
 		auto pMaterial(app.GetOrCreateMaterial("earth", (int)ProgramFlag::PER_PIXEL_LIGHTING));
         pMaterial->SetDiffuseMap(pEarthTexture);
         pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
@@ -74,7 +71,7 @@ int NSG_MAIN(int argc, char* argv[])
         floor->SetMesh(mesh);
         auto rb = floor->GetOrCreateRigidBody();
         rb->SetShape(SH_BOX);
-        auto texture(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/wall.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
+        auto texture(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/wall.jpg"), (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y));
 		auto material(app.GetOrCreateMaterial("floor", (int)ProgramFlag::PER_PIXEL_LIGHTING));
         material->SetDiffuseMap(texture);
         floor->SetMaterial(material);

@@ -27,12 +27,13 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "App.h"
 #include "Util.h"
+#include "pugixml.hpp"
 #include <fstream>
 
 namespace NSG
 {
     ResourceFile::ResourceFile(const Path& path)
-        : path_(path)
+		: Resource(path.GetFilePath())
     {
     }
 
@@ -43,14 +44,14 @@ namespace NSG
 
     bool ResourceFile::IsValid()
     {
-        return path_.HasName();
+        return Path(name_).HasName();
     }
 
     void ResourceFile::AllocateResources()
     {
         #if !defined(EMSCRIPTEN)
         {
-            SDL_RWops* context = SDL_RWFromFile(path_.GetFilePath().c_str(), "rb");
+            SDL_RWops* context = SDL_RWFromFile(name_.c_str(), "rb");
 
             if (context)
             {
@@ -60,16 +61,16 @@ namespace NSG
                 buffer_.resize((int)filelength);
 				SDL_RWread(context, &buffer_[0], buffer_.size(), 1);
                 SDL_RWclose(context);
-                TRACE_LOG(path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
+                TRACE_LOG(name_ << " has been loaded with size=" << buffer_.size());
             }
             else
             {
-                TRACE_LOG("Cannot load " << path_.GetFilePath() << " with error " << SDL_GetError());
+                TRACE_LOG("Cannot load " << name_ << " with error " << SDL_GetError());
             }
         }
         #else
         {
-            std::ifstream file(path_.GetFilePath().c_str(), std::ios::binary);
+            std::ifstream file(name_.c_str(), std::ios::binary);
 
             if (file.is_open())
             {
@@ -80,11 +81,11 @@ namespace NSG
                 file.read(&buffer_[0], filelength);
                 CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
                 file.close();
-                TRACE_LOG(path_.GetFilePath() << " has been loaded with size=" << buffer_.size());
+                TRACE_LOG(name_ << " has been loaded with size=" << buffer_.size());
             }
             else
             {
-                TRACE_LOG("Cannot load " << path_.GetFilePath());
+                TRACE_LOG("Cannot load " << name_);
             }
         }
         #endif
@@ -92,7 +93,7 @@ namespace NSG
 
     void ResourceFile::ReleaseResources()
     {
-        TRACE_PRINTF("Releasing memory for file: %s\n", path_.GetFilePath().c_str());
+        TRACE_PRINTF("Releasing memory for file: %s\n", name_.c_str());
         Resource::ReleaseResources();
     }
 }

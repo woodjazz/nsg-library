@@ -35,7 +35,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Skeleton::Skeleton(PModelMesh mesh)
+    Skeleton::Skeleton(PMesh mesh)
         : mesh_(mesh)
     {
 

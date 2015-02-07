@@ -33,7 +33,7 @@ namespace NSG
     class Render2Texture : public Object
     {
     public:
-        Render2Texture(int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
+		Render2Texture(const std::string& name, int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
         ~Render2Texture();
         bool Begin();
         void End();

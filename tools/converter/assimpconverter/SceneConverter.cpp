@@ -134,9 +134,10 @@ namespace NSG
         size_t pos_;
     };
 
-    SceneConverter::SceneConverter(const Path& path, const Path& outputDir)
+	SceneConverter::SceneConverter(const Path& path, const Path& outputDir, bool embedResources)
         : path_(path),
-          outputDir_(outputDir)
+          outputDir_(outputDir),
+		  embedResources_(embedResources)
     {
     }
 
@@ -179,12 +180,11 @@ namespace NSG
 
     void SceneConverter::Load(const aiScene* scene)
     {
-        CachedData data;
-        LoadMeshesAndMaterials(scene, data);
+        LoadMeshesAndMaterials(scene);
         scene_ = std::make_shared<Scene>(scene->mRootNode->mName.C_Str());
-        RecursiveLoad(scene, scene->mRootNode, scene_.get(), data);
+        RecursiveLoad(scene, scene->mRootNode, scene_.get());
         LoadAnimations(scene);
-        LoadBones(scene, data);
+        LoadBones(scene);
     }
 
     void SceneConverter::LoadAnimations(const aiScene* sc)
@@ -223,29 +223,28 @@ namespace NSG
         return nullptr;
     }
 
-    void SceneConverter::LoadMeshesAndMaterials(const aiScene* sc, CachedData& data)
+    void SceneConverter::LoadMeshesAndMaterials(const aiScene* sc)
     {
         for (size_t i = 0; i < sc->mNumMeshes; ++i)
         {
             const struct aiMesh* mesh = sc->mMeshes[i];
             MeshConverter obj(mesh);
-            data.meshes_.push_back(obj.GetMesh());
         }
 
         for (size_t i = 0; i < sc->mNumMaterials; ++i)
         {
             const aiMaterial* material = sc->mMaterials[i];
-            MaterialConverter obj(material, path_, outputDir_);
-            data.materials_.push_back(obj.GetMaterial());
+			MaterialConverter obj(material, path_, outputDir_);
         }
     }
 
-    void SceneConverter::LoadBones(const aiScene* sc, CachedData& data)
+    void SceneConverter::LoadBones(const aiScene* sc)
     {
         for (size_t i = 0; i < sc->mNumMeshes; ++i)
         {
             const struct aiMesh* aiMesh = sc->mMeshes[i];
-            PModelMesh mesh = data.meshes_.at(i);
+			auto meshes = App::this_->GetMeshes();
+			auto mesh = meshes.at(i);
             LoadBones(sc, aiMesh, mesh);
             GetBlendData(mesh, aiMesh);
             if (mesh->GetSkeleton())
@@ -302,7 +301,7 @@ namespace NSG
         }
         return IDENTITY_MATRIX;
     }
-    void SceneConverter::LoadBones(const aiScene* sc, const aiMesh* aiMesh, PModelMesh mesh)
+    void SceneConverter::LoadBones(const aiScene* sc, const aiMesh* aiMesh, PMesh mesh)
     {
         std::set<aiNode*> necessary;
         std::set<aiNode*> rootNodes;
@@ -378,7 +377,7 @@ namespace NSG
             GetFinal(dest, necessary, node->mChildren[i]);
     }
 
-    void SceneConverter::MakeSkeleton(const aiMesh* aiMesh, PModelMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones)
+    void SceneConverter::MakeSkeleton(const aiMesh* aiMesh, PMesh mesh, const aiNode* rootBone, const std::vector<aiNode*>& bones)
     {
         PSkeleton skeleton(new Skeleton(mesh));
         PNode root = scene_->GetChild<Node>(rootBone->mName.C_Str(), true);
@@ -450,7 +449,7 @@ namespace NSG
         skeleton->SetBlendData(blendIndices, blendWeights);
     }
 
-    void SceneConverter::RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode, const CachedData& data)
+    void SceneConverter::RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode)
     {
         //sceneNode->SetName(nd->mName.C_Str());
 
@@ -485,10 +484,18 @@ namespace NSG
         for (size_t i = 0; i < nd->mNumMeshes; ++i)
         {
             const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[i]];
-            unsigned int meshIndex = nd->mMeshes[i];
-            meshSceneNode->SetMesh(data.meshes_.at(meshIndex));
+			auto meshes = App::this_->GetMeshes();
+			meshSceneNode->SetMesh(meshes.at(i));
             unsigned int materialIndex = mesh->mMaterialIndex;
-            meshSceneNode->SetMaterial(data.materials_.at(materialIndex));
+			const struct aiMaterial* mtl = sc->mMaterials[materialIndex];
+			aiString materialName;
+			if (AI_SUCCESS == aiGetMaterialString(mtl, AI_MATKEY_NAME, &materialName))
+				meshSceneNode->SetMaterial(App::this_->GetMaterial(materialName.C_Str()));
+			else
+			{
+				TRACE_LOG("Material name not found!!!!!");
+			}
+
             if (i + 1 < nd->mNumMeshes)
                 meshSceneNode = meshSceneNode->GetOrCreateChild<SceneNode>(GetUniqueName(meshSceneNode->GetName())).get();
         }
@@ -513,7 +520,7 @@ namespace NSG
                 child = sceneNode->GetOrCreateChild<SceneNode>(ndChild->mName.C_Str()).get();
             }
 
-            RecursiveLoad(sc, ndChild, child, data);
+            RecursiveLoad(sc, ndChild, child);
         }
     }
 
@@ -530,7 +537,8 @@ namespace NSG
 
     Assimp::IOStream* SceneConverter::Open(const char* filename, const char* mode)
     {
-        auto resource = std::make_shared<ResourceFile>(filename);
+        auto resource = App::this_->GetOrCreateResourceFile(filename);
+		resource->SetSerializable(false);
         return new MyIOStream(resource);
     }
 
@@ -539,15 +547,24 @@ namespace NSG
         delete pFile;
     }
 
-    bool SceneConverter::Save() const
+	bool SceneConverter::Save() const
     {
-        Path outputFile(outputDir_);
-        outputFile.SetName(path_.GetName());
-        outputFile.SetExtension("xml");
+		Path outputFile(outputDir_);
+		outputFile.SetName(path_.GetName());
+		outputFile.SetExtension("xml");
 
-        pugi::xml_document doc;
-        scene_->Save(doc);
+		pugi::xml_document doc;
+		if(embedResources_)
+		{
+			auto appNode = App::this_->Save(doc);
+			scene_->Save(appNode);
+		}
+		else
+		{
+			auto appNode = App::this_->SaveWithExternalResources(doc, path_, outputDir_);
+			scene_->Save(appNode);
+		}
         TRACE_LOG("Saving file: " << outputFile.GetFullAbsoluteFilePath());
-        return doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
+		return doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
     }
 }

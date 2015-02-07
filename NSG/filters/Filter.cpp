@@ -43,12 +43,12 @@ namespace NSG
         : app_(*App::this_),
 		  pMaterial_(app_.GetOrCreateMaterial(name)),
           pMesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
-          pRender2Texture_(new Render2Texture(output_width, output_height, UseBuffer::NONE)),
+          pRender2Texture_(std::make_shared<Render2Texture>(name, output_width, output_height, UseBuffer::NONE)),
           name_(name),
           node_(std::make_shared<SceneNode>(name))
     {
         technique_ = pMaterial_->GetTechnique().get();
-        pMaterial_->SetTexture0(input);
+        pMaterial_->SetTexture(0, input);
 		technique_->GetPass(0)->GetProgram()->SetFlags(flags);
     }
 
@@ -64,12 +64,12 @@ namespace NSG
 
     void Filter::SetInputTexture(PTexture input)
     {
-        pMaterial_->SetTexture0(input);
+        pMaterial_->SetTexture(0, input);
     }
 
 	PTexture Filter::GetInputTexture() const
 	{
-		return pMaterial_->GetTexture0();
+		return pMaterial_->GetTexture(0);
 	}
 
     void Filter::Render()

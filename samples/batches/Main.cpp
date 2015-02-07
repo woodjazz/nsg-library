@@ -41,8 +41,8 @@ int NSG_MAIN(int argc, char* argv[])
     auto scene = std::make_shared<Scene>("scene000");
     auto sphereMesh(app.CreateSphereMesh(3, 24));
 
-    auto pEarthTexture1(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/Earthmap720x360_grid.jpg")));
-    auto pEarthTexture2(std::make_shared<Texture>(std::make_shared<ResourceFile>("data/jup0vss1.jpg")));
+    auto pEarthTexture1(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/Earthmap720x360_grid.jpg")));
+	auto pEarthTexture2(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/jup0vss1.jpg")));
 	auto pMaterial1(app.GetOrCreateMaterial("earth1", (int)ProgramFlag::PER_PIXEL_LIGHTING));
 	auto pMaterial2(app.GetOrCreateMaterial("earth2", (int)ProgramFlag::PER_PIXEL_LIGHTING));
     pMaterial1->SetDiffuseMap(pEarthTexture1);
@@ -56,14 +56,9 @@ int NSG_MAIN(int argc, char* argv[])
     pMaterial2->SetShininess(100);
 
     auto camera = scene->GetOrCreateChild<Camera>("camera");
-	camera->SetAspectRatio(window->GetWidth(), window->GetHeight());
-
-    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-    {
-        camera->SetAspectRatio(width, height);
-    });
-
+	camera->SetWindow(window);
     auto control = std::make_shared<CameraControl>(camera);
+	control->SetWindow(window);
 
     const float STEP = 8.0f;
     Vector3 position(0, 0, -10);
@@ -105,44 +100,12 @@ int NSG_MAIN(int argc, char* argv[])
 
         x_angle += glm::pi<float>() / 10.0f * deltaTime;
         y_angle += glm::pi<float>() / 10.0f * deltaTime;
-
-        control->OnUpdate(deltaTime);
     });
 
 	auto renderSlot = window->signalRender_->Connect([&]()
 	{
 		scene->Render(camera.get());
 	});
-
-    auto slotMouseMoved = window->signalMouseMoved_->Connect([&](float x, float y)
-    {
-        control->OnMousemoved(x, y);
-    });
-
-    auto slotMouseDown = window->signalMouseDown_->Connect([&](int button, float x, float y)
-    {
-        control->OnMouseDown(button, x, y);
-    });
-
-    auto slotMouseUp = window->signalMouseUp_->Connect([&](int button, float x, float y)
-    {
-        control->OnMouseUp(button, x, y);
-    });
-
-    auto slotMouseWheel = window->signalMouseWheel_->Connect([&](float x, float y)
-    {
-        control->OnMousewheel(x, y);
-    });
-
-    auto slotMultiGesture = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-    {
-        control->OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-    });
-
-    auto slotKey = window->signalKey_->Connect([&](int key, int action, int modifier)
-    {
-        control->OnKey(key, action, modifier);
-    });
 
     return app.Run();
 };
