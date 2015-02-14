@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Singleton.h"
 #include "MapAndVector.h"
 #include "SignalSlots.h"
+#include "Util.h"
 #include <string>
 #include <vector>
 #include <set>
@@ -57,7 +58,7 @@ namespace NSG
         PRoundedRectangleMesh CreateRoundedRectangleMesh(float radius = 1, float width = 2, float height = 2, int res = 8);
         PSphereMesh CreateSphereMesh(float radius = 1, int res = 8);
         PMaterial CreateMaterial(const std::string& name, const ProgramFlags& flags = (int)ProgramFlag::NONE);
-        PMaterial GetOrCreateMaterial(const std::string& name, const ProgramFlags& flags = (int)ProgramFlag::NONE);
+        PMaterial GetOrCreateMaterial(const std::string& name = GetUniqueName("Material"), const ProgramFlags& flags = (int)ProgramFlag::NONE);
         PMaterial GetMaterial(const std::string& name);
         const std::vector<PMesh>& GetConstMeshes() const;
 		std::vector<PMesh>& GetMeshes();

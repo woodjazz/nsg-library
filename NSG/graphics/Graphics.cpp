@@ -298,7 +298,6 @@ namespace NSG
 
     Graphics::~Graphics()
     {
-        ReleaseBuffers();
         Graphics::this_ = nullptr;
     }
 
@@ -306,17 +305,6 @@ namespace NSG
     {
         std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
         return extensions.find(name) != std::string::npos;
-    }
-
-    void Graphics::InitializeBuffers()
-    {
-        if (has_instanced_arrays_ext_)
-            instanceBuffer_ = PInstanceBuffer(new InstanceBuffer);
-    }
-
-    void Graphics::ReleaseBuffers()
-    {
-        instanceBuffer_ = nullptr;
     }
 
     void Graphics::ResetCachedState()
@@ -363,7 +351,6 @@ namespace NSG
         SetVertexArrayObj(nullptr);
         SetVertexBuffer(nullptr);
         SetIndexBuffer(nullptr);
-        InitializeBuffers();
         SetProgram(nullptr);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -844,50 +831,16 @@ namespace NSG
             CHECK_ASSERT(activeNode_, __FILE__, __LINE__);
             Batch batch;
             batch.nodes_.push_back(activeNode_);
-            UpdateBatchBuffer(batch);
+			activeProgram_->GetMaterial()->GetInstanceBuffer()->UpdateBatchBuffer(batch);
         }
     }
-
-    void Graphics::UpdateBatchBuffer(const Batch& batch)
-    {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
-
-        std::vector<InstanceData> instancesData;
-        instancesData.reserve(batch.nodes_.size());
-        for (auto& node : batch.nodes_)
-        {
-            InstanceData data;
-            const Matrix4& m = node->GetGlobalModelMatrix();
-            // for the model matrix be careful in the shader as we are using rows instead of columns
-            // in order to save space (for the attributes) we just pass the first 3 rows of the matrix as the fourth row is always (0,0,0,1) and can be set in the shader
-            data.modelMatrixRow0_ = glm::row(m, 0);
-            data.modelMatrixRow1_ = glm::row(m, 1);
-            data.modelMatrixRow2_ = glm::row(m, 2);
-
-            const Matrix3& normal = node->GetGlobalModelInvTranspMatrix();
-            // for the normal matrix we are OK since we pass columns (we do not need to save space as the matrix is 3x3)
-            data.normalMatrixCol0_ = glm::column(normal, 0);
-            data.normalMatrixCol1_ = glm::column(normal, 1);
-            data.normalMatrixCol2_ = glm::column(normal, 2);
-            instancesData.push_back(data);
-        }
-
-        SetVertexBuffer(instanceBuffer_.get());
-
-        glBufferData(GL_ARRAY_BUFFER, instancesData.size() * sizeof(InstanceData), &(instancesData[0]), GL_DYNAMIC_DRAW);
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-    }
-
 
     void Graphics::SetInstanceAttrPointers(Program* program)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
         if (has_instanced_arrays_ext_)
         {
-            SetVertexBuffer(instanceBuffer_.get());
+			SetVertexBuffer(program->GetMaterial()->GetInstanceBuffer().get());
 
             GLuint modelMatrixLoc = program->GetAttModelMatrixLoc();
 
@@ -1136,7 +1089,7 @@ namespace NSG
 
 	void Graphics::DrawActiveMesh(bool solid)
     {
-        if (!activeMesh_->IsReady() || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
+		if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -1150,16 +1103,16 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        UpdateBatchBuffer();
+		UpdateBatchBuffer();
         SetBuffers();
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         const VertexsData& vertexsData = activeMesh_->GetVertexsData();
         const Indexes& indexes = activeMesh_->GetIndexes();
 
         if (!indexes.empty())
-            glDrawElements(mode, indexes.size(), GL_UNSIGNED_SHORT, 0);
+            glDrawElements(mode, GLsizei(indexes.size()), GL_UNSIGNED_SHORT, 0);
         else
-            glDrawArrays(mode, 0, vertexsData.size());
+			glDrawArrays(mode, 0, GLsizei(vertexsData.size()));
 
         SetVertexArrayObj(nullptr);
 
@@ -1172,7 +1125,7 @@ namespace NSG
 
 	void Graphics::DrawActiveMesh(bool solid, Batch& batch)
     {
-        if (!activeMesh_->IsReady() || !activeProgram_->IsReady())
+		if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady())
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -1184,17 +1137,18 @@ namespace NSG
         if (!activeProgram_)
             return; // the program has been invalidated (due some shader needs to be recompiled)
 
-        UpdateBatchBuffer(batch);
+		if (has_instanced_arrays_ext_)
+			activeProgram_->GetMaterial()->GetInstanceBuffer()->UpdateBatchBuffer(batch);
         SetBuffers();
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
-        unsigned instances = batch.nodes_.size();
+		GLsizei instances = (GLsizei)batch.nodes_.size();
         const Indexes& indexes = activeMesh_->GetIndexes();
         if (!indexes.empty())
-            glDrawElementsInstanced(mode, indexes.size(), GL_UNSIGNED_SHORT, 0, instances);
+			glDrawElementsInstanced(mode, (GLsizei)indexes.size(), GL_UNSIGNED_SHORT, 0, instances);
         else
         {
             const VertexsData& vertexsData = activeMesh_->GetVertexsData();
-            glDrawArraysInstanced(mode, 0, vertexsData.size(), instances);
+			glDrawArraysInstanced(mode, 0, (GLsizei)vertexsData.size(), instances);
         }
 
         SetVertexArrayObj(nullptr);

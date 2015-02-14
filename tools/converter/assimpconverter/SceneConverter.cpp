@@ -446,7 +446,7 @@ namespace NSG
         CHECK_CONDITION(mesh->GetVertexsData().size() == blendIndices.size(), __FILE__, __LINE__);
         CHECK_CONDITION(mesh->GetVertexsData().size() == blendWeights.size(), __FILE__, __LINE__);
 
-        skeleton->SetBlendData(blendIndices, blendWeights);
+        mesh->SetBlendData(blendIndices, blendWeights);
     }
 
     void SceneConverter::RecursiveLoad(const aiScene* sc, const aiNode* nd, SceneNode* sceneNode)

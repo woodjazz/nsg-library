@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Light.h"
 #include "Camera.h"
+#include "ParticleSystem.h"
 #include "Octree.h"
 #include "Log.h"
 #include "BoundingBox.h"
@@ -37,7 +38,7 @@ misrepresented as being the original software.
 #include <iterator>
 
 namespace NSG
-{
+{	
     static IdType s_node_id = 1;
 
     Node::Node(const std::string& name)
@@ -56,10 +57,6 @@ namespace NSG
 
     Node::~Node()
     {
-        PScene scene = scene_.lock();
-        if (scene && scene->GetOctree())
-            scene->GetOctree()->Remove(dynamic_cast<SceneNode*>(this));
-
         ClearAllChildren();
     }
 
@@ -132,8 +129,6 @@ namespace NSG
         node->scene_ = scene;
         if (scene)
         {
-            PSceneNode sceneNode = std::dynamic_pointer_cast<SceneNode>(node);
-            if (sceneNode) scene->GetOctree()->InsertUpdate(sceneNode.get());
             PLight light = std::dynamic_pointer_cast<Light>(node);
             if (light)
                 scene->AddLight(light);
@@ -141,6 +136,11 @@ namespace NSG
             {
                 PCamera camera = std::dynamic_pointer_cast<Camera>(node);
                 if (camera) scene->AddCamera(camera);
+				else
+				{
+					auto ps = std::dynamic_pointer_cast<ParticleSystem>(node);
+					if (ps) scene->AddParticleSystem(ps);
+				}
             }
         }
         node->MarkAsDirty();

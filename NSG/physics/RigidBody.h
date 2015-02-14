@@ -46,8 +46,9 @@ namespace NSG
         void SetMass(float mass);
         void SetShape(PhysicsShape phyShape);
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
-        void SetLinearVelocity(const Vector3& lv, TransformSpace tspace = TS_PARENT);
+        void SetLinearVelocity(const Vector3& lv);
         Vector3 GetLinearVelocity() const;
+        void SetAngularVelocity(const Vector3& av);
         void HandleManifold(btPersistentManifold* manifold, RigidBody* collider) const;
         void ReScale();
         bool IsStatic() const;
@@ -59,6 +60,12 @@ namespace NSG
 		void SetMargin(float margin);
         void Load(const pugi::xml_node& node);
         void Save(pugi::xml_node& node);
+		void SetCollisionMask(int group, int mask);
+        void Activate();
+        void ResetForces();
+		void Reset();
+		void AddToWorld();
+		void RemoveFromWorld();
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -82,6 +89,9 @@ namespace NSG
 		float linearDamp_;
 		float angularDamp_;
 		float margin_;
+		int collisionGroup_;
+		int collisionMask_;
+		bool inWorld_;
     };
 }
 

@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <App>
 	<Resources>
-		<Resource name="D:/tmp/dev/nsg-library/samples/animation/art/duck.dae" filename="D:/tmp/dev/nsg-library/samples/animation/art/duck.dae" />
-		<Resource name="data/duckCM.tga" filename="data/duckCM.tga" />
+		<Resource name="data/duckCM.png" />
 	</Resources>
 	<Meshes>
 		<Mesh name="LOD3spShape" wireFrameDrawMode="4" solidDrawMode="4">
@@ -2412,9 +2411,7 @@
 	</Meshes>
 	<Materials>
 		<Material name="blinn3" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    0.600,    0.600,    0.600,    1.000]" specular="[    0.000,    0.000,    0.000,    1.000]" shininess="0.3" color="[    0.000,    0.000,    0.000,    1.000]">
-			<Texture0 flags="00000000000000000000000000000011">
-				<Resource name="data/duckCM.tga" filename="data/duckCM.tga" />
-			</Texture0>
+			<Texture0 flags="00000000000000000000000000000011" resource="data/duckCM.png" />
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">

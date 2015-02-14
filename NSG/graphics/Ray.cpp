@@ -201,7 +201,7 @@ namespace NSG
             const VertexsData& vertexsData = mesh->GetVertexsData();
             const Indexes& indices = mesh->GetIndexes();
 
-            unsigned n = indices.size();
+            size_t n = indices.size();
             unsigned i = 0;
             while (i < n)
             {

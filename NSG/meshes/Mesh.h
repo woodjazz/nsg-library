@@ -71,7 +71,7 @@ namespace NSG
 		const std::set<SceneNode*>& GetConstSceneNodes() const { return sceneNodes_; }
         void AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal);
         void AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal);
-		void AverageNormals(int indexBase, bool isQuad);
+		void AverageNormals(size_t indexBase, bool isQuad);
     protected:
         bool IsValid() override;
         void AllocateResources() override;

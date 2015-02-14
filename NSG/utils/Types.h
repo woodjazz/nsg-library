@@ -196,7 +196,7 @@ namespace NSG
 
     enum class ProgramFlag
     {
-        NONE = 0,
+        NONE = 0, // vertex color by default
         PER_VERTEX_LIGHTING = 1 << 0,
         PER_PIXEL_LIGHTING = 1 << 1,
         BLEND = 1 << 2,
@@ -261,6 +261,13 @@ namespace NSG
         SH_TRIMESH
     };
 
+	enum class CollisionMask
+	{
+		NONE = 0,
+		PARTICLE = 1 << 0,
+		ALL = -1
+	};
+
     struct ContactPoint
     {
         SceneNode* collider_;
@@ -321,4 +328,16 @@ namespace NSG
         DISPLACEMENT_MAP,
         MAX_TEXTURES_MAPS
     };
+
+    enum ParticleSystemEmitFrom
+    {
+        PS_EF_VERTS,
+        PS_EF_ORIGIN
+    };
+
+	enum ParticleSystemDistribution
+	{
+		LINEARY,
+		RANDOM
+	};
 }

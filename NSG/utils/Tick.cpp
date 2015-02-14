@@ -75,8 +75,7 @@ namespace NSG
 			current_ = next_ = Clock::now(); // sync tick back
 		}
 
-		if(loop)
-			EndTicks();
+		EndTicks();
 
 	}
 }

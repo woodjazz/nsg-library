@@ -83,7 +83,7 @@ namespace NSG
         Vertex3 vert;
         Vertex2 texcoord;
         Vertex3 normal;
-        int vertOffset = 0;
+        size_t vertOffset = 0;
 
         vertexsData_.clear();
         indexes_.clear();

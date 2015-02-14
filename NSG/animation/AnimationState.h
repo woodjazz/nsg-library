@@ -31,7 +31,7 @@ namespace NSG
 {
 	struct AnimationStateTrack : AnimationTrack
 	{
-		unsigned currentKeyFrame_;
+		size_t currentKeyFrame_;
 
 		AnimationStateTrack(const AnimationTrack& base);
 	};

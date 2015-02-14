@@ -41,51 +41,24 @@ namespace NSG
 	: source_(source)
 	{
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
-		// Creates a Shader Object and returns its name/id.
 		id_ = glCreateShader(type);
-
-		// Uploads the source to the Shader Object.
 		glShaderSource(id_, 1, &source, NULL);
-
-		// Compiles the Shader Object.
 		glCompileShader(id_);
-
 		GLint compile_status = GL_FALSE;
-
 		glGetShaderiv(id_, GL_COMPILE_STATUS, &compile_status);
-
 		if(compile_status != GL_TRUE)
 		{
 			GLint logLength = 0;
-
-			// Instead use GL_INFO_LOG_LENGTH we could use COMPILE_STATUS.
-			// I prefer to take the info log length, because it'll be 0 if the
-			// shader was successful compiled. If we use COMPILE_STATUS
-			// we will need to take info log length in case of a fail anyway.
 			glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &logLength);
-
-        
 			if (logLength > 0)
 			{
-				// Allocates the necessary memory to retrieve the message.
-				GLchar* log = (GLchar*)malloc(logLength);
-
-				// Get the info log message.
-				glGetShaderInfoLog(id_, logLength, &logLength, log);
-
-				TRACE_LOG(source);
-				
-				// Shows the message in console.
-				TRACE_LOG("Error in Shader Creation: " << log);
-
-                assert(false);
-
-				// Frees the allocated memory.
-				free(log);
+				std::string log;
+				log.resize(logLength);
+				glGetShaderInfoLog(id_, logLength, &logLength, &log[0]);
+				TRACE_LOG("!!!Error in Shader Creation: " << log);
+				//TRACE_LOG(source);
 			}
 		}
-
         CHECK_GL_STATUS(__FILE__, __LINE__);
 	}
 

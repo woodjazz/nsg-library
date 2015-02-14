@@ -46,7 +46,7 @@ namespace NSG
         PWeakNode node_;
         AnimationChannelMask channelMask_;
         std::vector<AnimationKeyFrame> keyFrames_;
-        void GetKeyFrameIndex(float time, unsigned& index) const;
+        void GetKeyFrameIndex(float time, size_t& index) const;
         void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
     };

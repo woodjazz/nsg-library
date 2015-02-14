@@ -1,5 +1,6 @@
 //Remember to rebuild with CMake if this file changes
 #if defined(COMPILEVS) && !defined(HAS_USER_VERTEX_SHADER)
+
 	void main()
 	{
 		#if defined(TEXT)
@@ -36,11 +37,6 @@
 		    vec4 totalLight = CalcVSTotalLight(worldPos, vertexToEye, normal);
 		    v_color = a_color * totalLight;
 		    v_texcoord0 = a_texcoord0;
-
-		    #if defined(LIGHTMAP)
-		    	v_texcoord1 = a_texcoord1;
-		    #endif
-
 			gl_Position = GetClipPos(worldPos);
 
 		#elif defined(PER_PIXEL_LIGHTING)
@@ -86,15 +82,11 @@
 
 			v_color = a_color;
 			v_texcoord0 = a_texcoord0;
-
-		    #ifdef LIGHTMAP
-		    	v_texcoord1 = a_texcoord1;
-		    #endif
-
 			gl_Position = GetClipPos(worldPos);
 
 		#elif defined(LIGHTMAP) // lightmap without lighting
 
+			v_color = u_material.color * a_color;
 		    v_texcoord0 = a_texcoord0;
 			v_texcoord1 = a_texcoord1;
 			gl_Position = GetClipPos(GetWorldPos());

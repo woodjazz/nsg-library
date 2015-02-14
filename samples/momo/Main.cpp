@@ -35,7 +35,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto scenes = app.Load(resource);
 	auto scene = scenes.at(0);
 
-	auto camera = scene->GetChild<Camera>("Camera", true);
+	auto camera = scene->GetOrCreateChild<Camera>("Camera");
 	camera->SetWindow(window);
 	auto control = std::make_shared<CameraControl>(camera);
 	control->SetWindow(window);

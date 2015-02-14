@@ -46,11 +46,11 @@ namespace NSG
 		const std::vector<PWeakLight>& GetLights(LightType type) const;
         void AddCamera(PCamera camera);
         const std::vector<PWeakCamera>& GetCameras() const;
+		void AddParticleSystem(PParticleSystem ps);
         void Update(float deltaTime);
 		void Render(Camera* camera);
         void NeedUpdate(SceneNode* obj);
         void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
-        POctree GetOctree() const { return octree_; }
 		void Save(pugi::xml_node& node) const override;
         void Load(const pugi::xml_node& node) override;
         bool GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const;
@@ -64,6 +64,8 @@ namespace NSG
         void PlayAnimation(const PAnimation& animation, bool looped);
         bool SetAnimationSpeed(const std::string& name, float speed);
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
+        void UpdateOctree(SceneNode* node);
+        void RemoveFromOctree(SceneNode* node);
     protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
@@ -73,10 +75,12 @@ namespace NSG
 		void SaveSkeletons(pugi::xml_node& node) const;
     private:
         void UpdateAnimations(float deltaTime);
+        void UpdateParticleSystems(float deltaTime);
 		bool HasLight(PLight light) const;
     private:
 		mutable std::map<LightType, std::vector<PWeakLight>> lights_;
         std::vector<PWeakCamera> cameras_;
+		std::vector<PWeakParticleSystem> particleSystems_;
         Color ambient_;
         POctree octree_;
         mutable std::set<SceneNode*> needUpdate_;

@@ -87,6 +87,7 @@ misrepresented as being the original software.
 #include "RigidBody.h"
 #include "PhysicsWorld.h"
 #include "Window.h"
+#include "ParticleSystem.h"
 #include "MemoryTest.h"
 
 

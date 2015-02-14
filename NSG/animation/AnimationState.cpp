@@ -88,10 +88,10 @@ namespace NSG
     {
         for (auto& track : tracks_)
         {
-            unsigned& frame = track.currentKeyFrame_;
+            size_t& frame = track.currentKeyFrame_;
             track.GetKeyFrameIndex(timePosition_, frame);
 
-            unsigned nextFrame = frame + 1;
+            size_t nextFrame = frame + 1;
             bool interpolate = true;
             if (nextFrame >= track.keyFrames_.size())
             {

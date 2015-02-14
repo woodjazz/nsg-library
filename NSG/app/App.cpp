@@ -123,7 +123,6 @@ namespace NSG
         {
             CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
             graphics_ = PGraphics(new Graphics);
-            graphics_->InitializeBuffers();
         });
     }
 

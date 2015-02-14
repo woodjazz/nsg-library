@@ -96,10 +96,11 @@ namespace NSG
           graphics_(*Graphics::this_),
           spotLightsReduced_(false),
           directionalLightsReduced_(false),
-          pointLightsReduced_(false)
+          pointLightsReduced_(false),
+          lightingEnabled_(false)
 
     {
-		memset(&textureLoc_, -1, sizeof(textureLoc_));
+        memset(&textureLoc_, -1, sizeof(textureLoc_));
         memset(&materialLoc_, -1, sizeof(materialLoc_));
         memset(&blurFilterLoc_, -1, sizeof(blurFilterLoc_));
     }
@@ -135,15 +136,33 @@ namespace NSG
     {
         if (material_ && material_->IsReady() && graphics_.GetScene())
         {
-			if (!nBones_ && IsSkinned())
+            if (!nBones_ && IsSkinned())
             {
                 auto mesh = graphics_.GetMesh();
                 auto skeleton = mesh->GetSkeleton();
                 nBones_ = skeleton->GetBones().size();
             }
 
-            return (!vertexShader_ || vertexShader_->IsReady())
-                   &&  (!fragmentShader_ || fragmentShader_->IsReady());
+            bool isValid = (!vertexShader_ || vertexShader_->IsReady())
+                           &&  (!fragmentShader_ || fragmentShader_->IsReady());
+
+            if (isValid)
+            {
+                std::string vShader;
+                std::string fShader;
+                ConfigureShaders(vShader, fShader);
+                if (!ShaderCompiles(GL_VERTEX_SHADER, vShader))
+                {
+                    ReduceShaderComplexity(GL_VERTEX_SHADER);
+                    return false;
+                }
+                else if (!ShaderCompiles(GL_FRAGMENT_SHADER, fShader))
+                {
+                    ReduceShaderComplexity(GL_FRAGMENT_SHADER);
+                    return false;
+                }
+                return true;
+            }
         }
 
         return false;
@@ -165,7 +184,159 @@ namespace NSG
         return defaultNumVaryingVectors;
     }
 
-    void Program::AllocateResources()
+    void Program::SetupLighting(std::string& preDefines)
+    {
+        Scene* scene = graphics_.GetScene();
+
+        lightingEnabled_ = ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_) ||
+                           ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_);
+
+        if (lightingEnabled_)
+        {
+            if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
+            {
+                preDefines += "#define PER_PIXEL_LIGHTING\n";
+                if ((int)ProgramFlag::NORMALMAP & flags_)
+                    preDefines += "#define NORMALMAP\n";
+                if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
+                    preDefines += "#define DISPLACEMENTMAP\n";
+                if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
+                {
+                    TRACE_LOG("Program name: " << name_ << " has per vertex and per pixel flags ON. Disabling per vertex!!!");
+                    flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
+                }
+            }
+            else
+                preDefines += "#define PER_VERTEX_LIGHTING\n";
+
+            auto& directionalLigths = scene->GetLights(LightType::DIRECTIONAL);
+            nDirectionalLights_ = directionalLigths.size();
+
+            activeDirectionalLights_ = std::vector<const Light*>(nDirectionalLights_, nullptr);
+
+            auto& pointLigths = scene->GetLights(LightType::POINT);
+            nPointLights_ = pointLigths.size();
+
+            activePointLights_ = std::vector<const Light*>(nPointLights_, nullptr);
+
+            auto& spotLigths = scene->GetLights(LightType::SPOT);
+            nSpotLights_ = spotLigths.size();
+
+            activeSpotLights_ = std::vector<const Light*>(nSpotLights_, nullptr);
+
+            if (nDirectionalLights_ || nPointLights_ || nSpotLights_)
+            {
+                size_t maxVarying = graphics_.GetMaxVaryingVectors();
+
+                size_t defaultNumVaryingVectors = GetNeededVarying();
+
+                if (maxVarying < defaultNumVaryingVectors)
+                {
+                    TRACE_LOG("Cannot use lighting because max varying vectors is " << maxVarying << " and the default shader needs at least " << defaultNumVaryingVectors << "!!!");
+                    lightingEnabled_ = false;
+                }
+
+                size_t remainingVaryingVectors = maxVarying - defaultNumVaryingVectors;
+
+                spotLightsReduced_ = false;
+                if (remainingVaryingVectors < nPointLights_ + nDirectionalLights_ + nSpotLights_)
+                {
+                    if (nSpotLights_)
+                    {
+                        TRACE_LOG("Not enough varying vectors => disabling spot lights!!!");
+                        nSpotLights_ = 0;
+                        spotLightsReduced_ = true;
+                    }
+                }
+
+                directionalLightsReduced_ = false;
+                if (remainingVaryingVectors < nPointLights_ + nDirectionalLights_)
+                {
+                    if (nDirectionalLights_)
+                    {
+                        TRACE_LOG("Not enough varying vectors => disabling directional lights!!!");
+                        nDirectionalLights_ = 0;
+                        directionalLightsReduced_ = true;
+                    }
+                }
+
+                pointLightsReduced_ = false;
+                if (remainingVaryingVectors < nPointLights_)
+                {
+                    CHECK_ASSERT(nPointLights_, __FILE__, __LINE__);
+                    TRACE_LOG("Not enough varying vectors => setting maximum number of point lights to " << remainingVaryingVectors << " before was " << nPointLights_);
+                    nPointLights_ = remainingVaryingVectors;
+                    pointLightsReduced_ = true;
+                }
+
+                if (nDirectionalLights_ || nPointLights_ || nSpotLights_)
+                {
+                    lightingEnabled_ = true;
+
+                    preDefines += "#define HAS_LIGHTS\n";
+
+                    if (nPointLights_)
+                        preDefines += "#define HAS_POINT_LIGHTS\n";
+
+                    if (nDirectionalLights_)
+                        preDefines += "#define HAS_DIRECTIONAL_LIGHTS\n";
+
+                    if (nSpotLights_)
+                        preDefines += "#define HAS_SPOT_LIGHTS\n";
+
+                    {
+                        std::stringstream ss;
+                        ss << "const int NUM_DIRECTIONAL_LIGHTS = " << nDirectionalLights_ << ";\n";
+                        preDefines += ss.str();
+                    }
+
+                    {
+                        std::stringstream ss;
+                        ss << "const int NUM_POINT_LIGHTS = " << nPointLights_ << ";\n";
+                        preDefines += ss.str();
+                    }
+
+                    {
+                        std::stringstream ss;
+                        ss << "const int NUM_SPOT_LIGHTS = " << nSpotLights_ << ";\n";
+                        preDefines += ss.str();
+                    }
+                }
+            }
+            else
+            {
+                lightingEnabled_ = false;
+                TRACE_LOG("No lights found => Disabling lighting!!!")
+            }
+        }
+        else
+        {
+            TRACE_LOG("Nor PER_PIXEL_LIGHTING neither PER_VERTEX_LIGHTING have been found => Lighting is disabled!!!");
+        }
+    }
+
+    void Program::DefineSamplers(std::string& fBuffer)
+    {
+        if (material_)
+        {
+            for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+            {
+                if (material_->GetTexture(index))
+                {
+                    std::stringstream ss;
+                    ss << "uniform sampler2D u_texture" << index << ";\n";
+                    fBuffer += ss.str();
+                }
+            }
+        }
+        else
+        {
+            fBuffer += "uniform sampler2D u_texture0;\n";
+            fBuffer += "uniform sampler2D u_texture1;\n";
+        }
+    }
+
+    void Program::ConfigureShaders(std::string& vertexShader, std::string& fragmentShader)
     {
         std::string preDefines;
 
@@ -175,16 +346,12 @@ namespace NSG
         preDefines = "#version 120\n";
         #endif
 
-		preDefines += "/* Program for material ";
-		preDefines += material_->GetName();
-		preDefines += " */\n";
+        preDefines += "/* Program for material ";
+        preDefines += material_->GetName();
+        preDefines += " */\n";
 
         if (graphics_.HasInstancedArrays())
             preDefines += "#define INSTANCED\n";
-
-        bool hasLights = false;
-
-        Scene* scene = graphics_.GetScene();
 
         if (nBones_)
         {
@@ -195,142 +362,9 @@ namespace NSG
             preDefines += "#define SKINNED\n";
         }
 
-        auto& directionalLigths = scene->GetLights(LightType::DIRECTIONAL);
-        nDirectionalLights_ = directionalLigths.size();
+        lightingEnabled_ = false;
 
-        activeDirectionalLights_ = std::vector<const Light*>(nDirectionalLights_, nullptr);
-
-        auto& pointLigths = scene->GetLights(LightType::POINT);
-        nPointLights_ = pointLigths.size();
-
-        activePointLights_ = std::vector<const Light*>(nPointLights_, nullptr);
-
-        auto& spotLigths = scene->GetLights(LightType::SPOT);
-        nSpotLights_ = spotLigths.size();
-
-        activeSpotLights_ = std::vector<const Light*>(nSpotLights_, nullptr);
-
-        if (nDirectionalLights_ || nPointLights_ || nSpotLights_)
-        {
-            size_t maxVarying = graphics_.GetMaxVaryingVectors();
-
-            size_t defaultNumVaryingVectors = GetNeededVarying();
-
-            if (maxVarying < defaultNumVaryingVectors)
-            {
-                TRACE_LOG("Cannot use shaders because max varying vectors is " << maxVarying << " and the default shader needs at least " << defaultNumVaryingVectors << "!!!");
-                return;
-            }
-
-            size_t remainingVaryingVectors = maxVarying - defaultNumVaryingVectors;
-
-            spotLightsReduced_ = false;
-            if (remainingVaryingVectors <  nPointLights_ + nDirectionalLights_ + nSpotLights_)
-            {
-                if (nSpotLights_)
-                {
-                    TRACE_LOG("Not enough varying vectors => disabling spot lights!!!");
-                    nSpotLights_ = 0;
-                    spotLightsReduced_ = true;
-                }
-            }
-
-            directionalLightsReduced_ = false;
-            if (remainingVaryingVectors <  nPointLights_ + nDirectionalLights_)
-            {
-                if (nDirectionalLights_)
-                {
-                    TRACE_LOG("Not enough varying vectors => disabling directional lights!!!");
-                    nDirectionalLights_ = 0;
-                    directionalLightsReduced_ = true;
-                }
-            }
-
-            pointLightsReduced_ = false;
-            if (remainingVaryingVectors < nPointLights_)
-            {
-                CHECK_ASSERT(nPointLights_, __FILE__, __LINE__);
-                TRACE_LOG("Not enough varying vectors => setting maximum number of point lights to " << remainingVaryingVectors << " before was " << nPointLights_);
-                nPointLights_ = remainingVaryingVectors;
-                pointLightsReduced_ = true;
-            }
-
-            if (nDirectionalLights_ || nPointLights_ || nSpotLights_)
-            {
-                hasLights = true;
-
-                preDefines += "#define HAS_LIGHTS\n";
-
-                if (nPointLights_)
-                    preDefines += "#define HAS_POINT_LIGHTS\n";
-
-                if (nDirectionalLights_)
-                    preDefines += "#define HAS_DIRECTIONAL_LIGHTS\n";
-
-                if (nSpotLights_)
-                    preDefines += "#define HAS_SPOT_LIGHTS\n";
-
-                {
-                    std::stringstream ss;
-                    ss << "const int NUM_DIRECTIONAL_LIGHTS = " << nDirectionalLights_ << ";\n";
-                    preDefines += ss.str();
-                }
-
-                {
-                    std::stringstream ss;
-                    ss << "const int NUM_POINT_LIGHTS = " << nPointLights_ << ";\n";
-                    preDefines += ss.str();
-                }
-
-                {
-                    std::stringstream ss;
-                    ss << "const int NUM_SPOT_LIGHTS = " << nSpotLights_ << ";\n";
-                    preDefines += ss.str();
-                }
-            }
-        }
-
-        if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
-        {
-            if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
-            {
-                TRACE_LOG("Program name: " << name_ << " has per vertex and per pixel flags ON. Disabling per vertex!!!");
-                flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
-            }
-        }
-
-        if (!hasLights)
-        {
-            if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
-            {
-                flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
-                flags_ |= (int)ProgramFlag::UNLIT;
-                TRACE_LOG("Not lighting => Disabling vertex lighting and enabling unlit!!!");
-            }
-            else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
-            {
-                flags_ &= ~(int)ProgramFlag::PER_PIXEL_LIGHTING;
-                flags_ |= (int)ProgramFlag::UNLIT;
-                TRACE_LOG("Not lighting => Disabling per pixel lighting and enabling unlit!!!");
-            }
-        }
-
-        ///////////////////////////////////////////////////
-
-
-        if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_ && hasLights)
-            preDefines += "#define PER_VERTEX_LIGHTING\n";
-        else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_ && hasLights)
-        {
-            preDefines += "#define PER_PIXEL_LIGHTING\n";
-
-            if ((int)ProgramFlag::NORMALMAP & flags_)
-                preDefines += "#define NORMALMAP\n";
-
-            if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
-                preDefines += "#define DISPLACEMENTMAP\n";
-        }
-        else if ((int)ProgramFlag::BLEND & flags_)
+        if ((int)ProgramFlag::BLEND & flags_)
             preDefines += "#define BLEND\n";
         else if ((int)ProgramFlag::BLUR & flags_)
             preDefines += "#define BLUR\n";
@@ -342,9 +376,10 @@ namespace NSG
             preDefines += "#define STENCIL\n";
         else if ((int)ProgramFlag::UNLIT & flags_)
             preDefines += "#define UNLIT\n";
-
-        if ((int)ProgramFlag::LIGHTMAP & flags_)
+        else if ((int)ProgramFlag::LIGHTMAP & flags_)
             preDefines += "#define LIGHTMAP\n";
+        else
+            SetupLighting(preDefines);
 
         if (vertexShader_)
             preDefines += "#define HAS_USER_VERTEX_SHADER\n";
@@ -352,12 +387,10 @@ namespace NSG
         if (fragmentShader_)
             preDefines += "#define HAS_USER_FRAGMENT_SHADER\n";
 
-        bool hasLighting = hasLights && ((int)ProgramFlag::PER_VERTEX_LIGHTING | (int)ProgramFlag::PER_PIXEL_LIGHTING) & flags_;
-
         std::string vBuffer = preDefines + "#define COMPILEVS\n";
         vBuffer += COMMON_GLSL;
         vBuffer += TRANSFORMS_GLSL;
-        if (hasLighting)
+        if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
             vBuffer += LIGHTING_GLSL;
         vBuffer += VS_GLSL;
         if (vertexShader_)
@@ -367,7 +400,7 @@ namespace NSG
             memcpy(&vBuffer[0] + bufferSize, vertexShader_->GetData(), vertexShader_->GetBytes());
         }
 
-        pVShader_ = PVertexShader(new VertexShader(vBuffer.c_str()));
+        vertexShader = vBuffer;
 
         if ((int)ProgramFlag::DIFFUSEMAP & flags_)
             preDefines += "#define DIFFUSEMAP\n";
@@ -378,34 +411,18 @@ namespace NSG
         if ((int)ProgramFlag::AOMAP & flags_)
             preDefines += "#define AOMAP\n";
 
-        std::string fBuffer = preDefines  + "#define COMPILEFS\n";
+        std::string fBuffer = preDefines + "#define COMPILEFS\n";
         fBuffer += COMMON_GLSL;
-        {
-            if (material_)
-            {
-				for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-				{
-					if (material_->GetTexture(index))
-					{
-						std::stringstream ss;
-						ss << "uniform sampler2D u_texture" << index << ";\n";
-						fBuffer += ss.str();
-					}
-				}
-            }
-            else
-            {
-                fBuffer += "uniform sampler2D u_texture0;\n";
-                fBuffer += "uniform sampler2D u_texture1;\n";
-            }
-        }
+        DefineSamplers(fBuffer);
+
         bool hasPostProcess = ((int)ProgramFlag::BLEND & flags_) || ((int)ProgramFlag::BLUR & flags_);
 
-        if (hasLighting)
+        if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
             fBuffer += LIGHTING_GLSL;
         if (hasPostProcess)
             fBuffer += POSTPROCESS_GLSL;
         fBuffer += FS_GLSL;
+
         if (fragmentShader_)
         {
             size_t bufferSize = fBuffer.size();
@@ -413,119 +430,20 @@ namespace NSG
             memcpy(&fBuffer[0] + bufferSize, fragmentShader_->GetData(), fragmentShader_->GetBytes());
         }
 
-        //TRACE_LOG(fBuffer);
+        fragmentShader = fBuffer;
+    }
 
-        pFShader_ = PFragmentShader(new FragmentShader(fBuffer.c_str()));
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
+    void Program::AllocateResources()
+    {
+        std::string vShader;
+        std::string fShader;
+        ConfigureShaders(vShader, fShader);
+        pVShader_ = PVertexShader(new VertexShader(vShader.c_str()));
+        pFShader_ = PFragmentShader(new FragmentShader(fShader.c_str()));
         if (Initialize())
         {
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            att_positionLoc_ = GetAttributeLocation("a_position");
-            att_normalLoc_ = GetAttributeLocation("a_normal");
-            att_texcoordLoc0_ = GetAttributeLocation("a_texcoord0");
-            att_texcoordLoc1_ = GetAttributeLocation("a_texcoord1");
-            att_colorLoc_ = GetAttributeLocation("a_color");
-            att_tangentLoc_ = GetAttributeLocation("a_tangent");
-            att_bonesIDLoc_ = GetAttributeLocation("a_boneIDs");
-            att_bonesWeightLoc_ = GetAttributeLocation("a_weights");
-
-            att_modelMatrixRow0Loc_ = GetAttributeLocation("a_mMatrixRow0");
-            att_normalMatrixCol0Loc_ = GetAttributeLocation("a_normalMatrixCol0");
-
-            modelLoc_ = GetUniformLocation("u_model");
-            normalMatrixLoc_ = GetUniformLocation("u_normalMatrix");
-            viewLoc_ = GetUniformLocation("u_view");
-            viewProjectionLoc_ = GetUniformLocation("u_viewProjection");
-            sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
-            eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
-			for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-			{
-				std::stringstream ss;
-				ss << "u_texture" << index;
-				textureLoc_[index] = GetUniformLocation(ss.str().c_str());
-			}
-            materialLoc_.color_ = GetUniformLocation("u_material.color");
-            materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
-            materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
-            materialLoc_.specular_ = GetUniformLocation("u_material.specular");
-            materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
-            materialLoc_.parallaxScale_ = GetUniformLocation("u_material.parallaxScale");
-
-            for (unsigned idx = 0; idx < nBones_; idx++)
-            {
-                std::stringstream boneIndex;
-                boneIndex << "u_bones[" << idx << "]";
-
-                GLuint boneLoc = GetUniformLocation(boneIndex.str());
-                CHECK_CONDITION(boneLoc != -1, __FILE__, __LINE__);
-                bonesLoc_.push_back(boneLoc);
-            }
-
-            for (unsigned idx = 0; idx < nDirectionalLights_; idx++)
-            {
-                std::stringstream lightIndex;
-                lightIndex << "u_directionalLight[" << idx << "]";
-
-                DirectionalLightLoc directionalLightLoc;
-                directionalLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
-                directionalLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
-                directionalLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
-                directionalLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
-                directionalLightLoc.direction_ = GetUniformLocation(lightIndex.str() + ".direction");
-                directionalLightsLoc_.push_back(directionalLightLoc);
-            }
-
-            for (unsigned idx = 0; idx < nPointLights_; idx++)
-            {
-                std::stringstream lightIndex;
-                lightIndex << "u_pointLights[" << idx << "]";
-                PointLightLoc pointLightLoc;
-                pointLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
-                pointLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
-                pointLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
-                pointLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
-                pointLightLoc.position_ = GetUniformLocation(lightIndex.str() + ".position");
-                pointLightLoc.atten_.constant_ = GetUniformLocation(lightIndex.str() + ".atten.constant");
-                pointLightLoc.atten_.linear_ = GetUniformLocation(lightIndex.str() + ".atten.linear");
-                pointLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex.str() + ".atten.quadratic");
-                pointLightsLoc_.push_back(pointLightLoc);
-            }
-
-            for (unsigned idx = 0; idx < nSpotLights_; idx++)
-            {
-                std::stringstream lightIndex;
-                lightIndex << "u_spotLights[" << idx << "]";
-                SpotLightLoc spotLightLoc;
-                spotLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
-                spotLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
-                spotLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
-                spotLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
-                spotLightLoc.position_ = GetUniformLocation(lightIndex.str() + ".position");
-                spotLightLoc.atten_.constant_ = GetUniformLocation(lightIndex.str() + ".atten.constant");
-                spotLightLoc.atten_.linear_ = GetUniformLocation(lightIndex.str() + ".atten.linear");
-                spotLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex.str() + ".atten.quadratic");
-                spotLightLoc.direction_ = GetUniformLocation(lightIndex.str() + ".direction");
-                spotLightLoc.cutOff_ = GetUniformLocation(lightIndex.str() + ".cutOff");
-                spotLightsLoc_.push_back(spotLightLoc);
-            }
-
-            blendMode_loc_ = GetUniformLocation("u_blendMode");
-            blurFilterLoc_.blurDir_ = GetUniformLocation("u_blurDir");
-            blurFilterLoc_.blurRadius_ = GetUniformLocation("u_blurRadius");
-            blurFilterLoc_.sigma_ = GetUniformLocation("u_sigma");
-
             graphics_.SetProgram(this);
-
-			for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-			{
-				if (textureLoc_[index] != -1)
-					glUniform1i(textureLoc_[index], index);
-			}
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+            SetUniformLocations();
         }
     }
 
@@ -535,6 +453,7 @@ namespace NSG
             glDetachShader(id_, pVShader_->GetId());
         if (pFShader_)
             glDetachShader(id_, pFShader_->GetId());
+
         pVShader_ = nullptr;
         pFShader_ = nullptr;
         glDeleteProgram(id_);
@@ -559,7 +478,7 @@ namespace NSG
         activeScene_ = nullptr;
         sceneColor_ = Color(-1);
 
-        bonesLoc_.clear();
+        bonesBaseLoc_.clear();
         pointLightsLoc_.clear();
         directionalLightsLoc_.clear();
         spotLightsLoc_.clear();
@@ -567,20 +486,190 @@ namespace NSG
         graphics_.InvalidateVAOFor(this);
     }
 
-    bool Program::HasLighting() const
+    bool Program::ShaderCompiles(GLenum type, const std::string& buffer) const
     {
-        return (int)ProgramFlag::PER_VERTEX_LIGHTING & flags_ || (int)ProgramFlag::PER_PIXEL_LIGHTING & flags_;
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        GLuint id = glCreateShader(type);
+        const char* source = buffer.c_str();
+        glShaderSource(id, 1, &source, nullptr);
+        glCompileShader(id);
+        GLint compile_status = GL_FALSE;
+        glGetShaderiv(id, GL_COMPILE_STATUS, &compile_status);
+        if (compile_status != GL_TRUE)
+        {
+            GLint logLength = 0;
+            glGetShaderiv(id, GL_INFO_LOG_LENGTH, &logLength);
+            if (logLength > 0)
+            {
+                std::string log;
+                log.resize(logLength);
+                glGetShaderInfoLog(id, logLength, &logLength, &log[0]);
+                TRACE_LOG(log);
+            }
+        }
+        glDeleteShader(id);
+        return compile_status == GL_TRUE;
+    }
+
+    void Program::ReduceShaderComplexity(GLenum type)
+    {
+        TRACE_LOG("!!!Shader does not compile. Type=" << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment"));
+
+        if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing DISPLACEMENTMAP");
+            flags_ &= ~(int)ProgramFlag::DISPLACEMENTMAP;
+            return;
+        }
+        else if ((int)ProgramFlag::SPECULARMAP & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing SPECULARMAP");
+            flags_ &= ~(int)ProgramFlag::SPECULARMAP;
+            return;
+        }
+        else if ((int)ProgramFlag::AOMAP & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing SPECULARMAP");
+            flags_ &= ~(int)ProgramFlag::AOMAP;
+            return;
+        }
+        else if ((int)ProgramFlag::NORMALMAP & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing NORMALMAP");
+            flags_ &= ~(int)ProgramFlag::NORMALMAP;
+            return;
+        }
+        else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing PER_PIXEL_LIGHTING, adding PER_VERTEX_LIGHTING");
+            flags_ &= ~(int)ProgramFlag::PER_PIXEL_LIGHTING;
+            flags_ |= (int)ProgramFlag::PER_VERTEX_LIGHTING;
+            return;
+        }
+        else if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing PER_VERTEX_LIGHTING, adding UNLIT");
+            flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
+            flags_ |= (int)ProgramFlag::UNLIT;
+            return;
+        }
+        else
+        {
+            TRACE_LOG("!!! Cannot reduce complexity");
+        }
+    }
+
+    void Program::SetUniformLocations()
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        att_positionLoc_ = GetAttributeLocation("a_position");
+        att_normalLoc_ = GetAttributeLocation("a_normal");
+        att_texcoordLoc0_ = GetAttributeLocation("a_texcoord0");
+        att_texcoordLoc1_ = GetAttributeLocation("a_texcoord1");
+        att_colorLoc_ = GetAttributeLocation("a_color");
+        att_tangentLoc_ = GetAttributeLocation("a_tangent");
+        att_bonesIDLoc_ = GetAttributeLocation("a_boneIDs");
+        att_bonesWeightLoc_ = GetAttributeLocation("a_weights");
+
+        att_modelMatrixRow0Loc_ = GetAttributeLocation("a_mMatrixRow0");
+        att_normalMatrixCol0Loc_ = GetAttributeLocation("a_normalMatrixCol0");
+
+        modelLoc_ = GetUniformLocation("u_model");
+        normalMatrixLoc_ = GetUniformLocation("u_normalMatrix");
+        viewLoc_ = GetUniformLocation("u_view");
+        viewProjectionLoc_ = GetUniformLocation("u_viewProjection");
+        sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
+        eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
+        for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+        {
+            std::stringstream ss;
+            ss << "u_texture" << index;
+            textureLoc_[index] = GetUniformLocation(ss.str().c_str());
+        }
+        materialLoc_.color_ = GetUniformLocation("u_material.color");
+        materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
+        materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
+        materialLoc_.specular_ = GetUniformLocation("u_material.specular");
+        materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
+        materialLoc_.parallaxScale_ = GetUniformLocation("u_material.parallaxScale");
+
+        for (size_t i = 0; i < nBones_; i++)
+        {
+            std::stringstream ss;
+            ss << "u_bones[" << i << "]";
+            GLuint boneLoc = GetUniformLocation(ss.str().c_str());
+            CHECK_ASSERT(boneLoc != -1, __FILE__, __LINE__);
+            bonesBaseLoc_.push_back(boneLoc);
+        }
+
+        for (unsigned idx = 0; idx < nDirectionalLights_; idx++)
+        {
+            std::stringstream lightIndex;
+            lightIndex << "u_directionalLight[" << idx << "]";
+
+            DirectionalLightLoc directionalLightLoc;
+            directionalLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
+            directionalLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
+            directionalLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
+            directionalLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
+            directionalLightLoc.direction_ = GetUniformLocation(lightIndex.str() + ".direction");
+            directionalLightsLoc_.push_back(directionalLightLoc);
+        }
+
+        for (unsigned idx = 0; idx < nPointLights_; idx++)
+        {
+            std::stringstream lightIndex;
+            lightIndex << "u_pointLights[" << idx << "]";
+            PointLightLoc pointLightLoc;
+            pointLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
+            pointLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
+            pointLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
+            pointLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
+            pointLightLoc.position_ = GetUniformLocation(lightIndex.str() + ".position");
+            pointLightLoc.atten_.constant_ = GetUniformLocation(lightIndex.str() + ".atten.constant");
+            pointLightLoc.atten_.linear_ = GetUniformLocation(lightIndex.str() + ".atten.linear");
+            pointLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex.str() + ".atten.quadratic");
+            pointLightsLoc_.push_back(pointLightLoc);
+        }
+
+        for (unsigned idx = 0; idx < nSpotLights_; idx++)
+        {
+            std::stringstream lightIndex;
+            lightIndex << "u_spotLights[" << idx << "]";
+            SpotLightLoc spotLightLoc;
+            spotLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
+            spotLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
+            spotLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
+            spotLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
+            spotLightLoc.position_ = GetUniformLocation(lightIndex.str() + ".position");
+            spotLightLoc.atten_.constant_ = GetUniformLocation(lightIndex.str() + ".atten.constant");
+            spotLightLoc.atten_.linear_ = GetUniformLocation(lightIndex.str() + ".atten.linear");
+            spotLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex.str() + ".atten.quadratic");
+            spotLightLoc.direction_ = GetUniformLocation(lightIndex.str() + ".direction");
+            spotLightLoc.cutOff_ = GetUniformLocation(lightIndex.str() + ".cutOff");
+            spotLightsLoc_.push_back(spotLightLoc);
+        }
+
+        blendMode_loc_ = GetUniformLocation("u_blendMode");
+        blurFilterLoc_.blurDir_ = GetUniformLocation("u_blurDir");
+        blurFilterLoc_.blurRadius_ = GetUniformLocation("u_blurRadius");
+        blurFilterLoc_.sigma_ = GetUniformLocation("u_sigma");
+
+        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+        {
+            if (textureLoc_[index] != -1)
+                glUniform1i(textureLoc_[index], index); //set fixed locations for samplers
+        }
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     bool Program::Initialize()
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
         TRACE_LOG("Creating program for material " << name_);
-
-        // Creates the program name/index.
         id_ = glCreateProgram();
-
         // Bind vertex attribute locations to ensure they are the same in all shaders
         glBindAttribLocation(id_, (int)AttributesLoc::POSITION, "a_position");
         glBindAttribLocation(id_, (int)AttributesLoc::NORMAL, "a_normal");
@@ -596,54 +685,29 @@ namespace NSG
         glBindAttribLocation(id_, (int)AttributesLoc::NORMAL_MATRIX_COL0, "a_normalMatrixCol0");
         glBindAttribLocation(id_, (int)AttributesLoc::NORMAL_MATRIX_COL1, "a_normalMatrixCol1");
         glBindAttribLocation(id_, (int)AttributesLoc::NORMAL_MATRIX_COL2, "a_normalMatrixCol2");
-
-        // Will attach the fragment and vertex shaders to the program object.
         glAttachShader(id_, pVShader_->GetId());
         glAttachShader(id_, pFShader_->GetId());
-
-        // Will link the program into OpenGL core.
         glLinkProgram(id_);
-
         GLint link_status = GL_FALSE;
-
         glGetProgramiv(id_, GL_LINK_STATUS, &link_status);
-
         if (link_status != GL_TRUE)
         {
             GLint logLength = 0;
-
-            // Instead use GL_INFO_LOG_LENGTH we could use COMPILE_STATUS.
-            // I prefer to take the info log length, because it'll be 0 if the
-            // shader was successful compiled. If we use COMPILE_STATUS
-            // we will need to take info log length in case of a fail anyway.
             glGetProgramiv(id_, GL_INFO_LOG_LENGTH, &logLength);
-
             if (logLength > 0)
             {
-                // Allocates the necessary memory to retrieve the message.
-                GLchar* log = (GLchar*)malloc(logLength);
-
-                // Get the info log message.
-                glGetProgramInfoLog(id_, logLength, &logLength, log);
-
+                std::string log;
+                log.resize(logLength);
+                glGetProgramInfoLog(id_, logLength, &logLength, &log[0]);
                 TRACE_LOG("Error in Program Creation: " << log);
-
-                TRACE_LOG("VS: " << pVShader_->GetSource());
-                TRACE_LOG("FS: " << pFShader_->GetSource());
-
-                // Frees the allocated memory.
-                free(log);
+                //TRACE_LOG("VS: " << pVShader_->GetSource());
+                //TRACE_LOG("FS: " << pFShader_->GetSource());
             }
-
-			TRACE_LOG("Creating program for material " << name_ << " HAS FAILED!!!");
-
+            TRACE_LOG("Creating program for material " << name_ << " HAS FAILED!!!");
             return false;
         }
-
-		TRACE_LOG("Program for material " << name_ << " OK.");
-
+        TRACE_LOG("Program for material " << name_ << " OK.");
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
         return true;
     }
 
@@ -664,9 +728,7 @@ namespace NSG
             if (scene)
             {
                 if (activeScene_ != scene || scene->UniformsNeedUpdate())
-                {
                     glUniform4fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
-                }
             }
             else if (activeScene_ != scene || sceneColor_ == Color(-1))
             {
@@ -702,12 +764,9 @@ namespace NSG
     {
         if (material_)
         {
-            unsigned textureUnit = 0;
-			for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-			{
-				if (textureLoc_[index] != -1)
-					graphics_.SetTexture(textureUnit++, material_->GetTexture(index).get());
-			}
+            for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+                if (textureLoc_[index] != -1)
+                    graphics_.SetTexture(index, material_->GetTexture(index).get());
 
             if (materialVariablesNeverSet_ || material_->UniformsNeedUpdate())
             {
@@ -750,6 +809,8 @@ namespace NSG
     {
         CHECK_CONDITION((skeleton || nBones_ == 0) && "Invalid shader. This shader has been used for skin animation and cannot be reused by an object without skeleton.", __FILE__, __LINE__);
 
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
         if (skeleton)
         {
             const std::vector<PWeakNode>& bones = skeleton->GetBones();
@@ -775,35 +836,36 @@ namespace NSG
 
             for (unsigned idx = 0; idx < nBones; idx++)
             {
-                const GLuint& boneLoc = bonesLoc_[idx];
-                if (boneLoc != -1)
-                {
-                    Node* bone = bones[idx].lock().get();
-                    if (activeSkeleton_ != skeleton || bone->UniformsNeedUpdate())
-                    {
-                        // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
-                        CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
+                GLuint boneLoc = bonesBaseLoc_[idx];
 
-                        const Matrix4& m = bone->GetGlobalModelMatrix();
-                        const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
-                        if (graphics_.HasInstancedArrays())
-                        {
-                            // Using instancing: (See Graphics::UpdateBatchBuffer)
-                            // we need to transpose the skin matrix since the model matrix is already transposed (uses rows instead of cols)
-                            Matrix4 skinMatrix(glm::transpose(globalInverseModelMatrix * m * offsetMatrix));
-                            glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(skinMatrix));
-                        }
-                        else
-                        {
-                            Matrix4 skinMatrix(globalInverseModelMatrix * m * offsetMatrix);
-                            glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(skinMatrix));
-                        }
+                Node* bone = bones[idx].lock().get();
+                if (activeSkeleton_ != skeleton || bone->UniformsNeedUpdate())
+                {
+                    // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
+                    CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
+
+                    const Matrix4& m = bone->GetGlobalModelMatrix();
+                    const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
+                    if (graphics_.HasInstancedArrays())
+                    {
+                        // Using instancing: (See Graphics::UpdateBatchBuffer)
+                        // we need to transpose the skin matrix since the model matrix is already transposed (uses rows instead of cols)
+                        Matrix4 boneMatrix(glm::transpose(globalInverseModelMatrix * m * offsetMatrix));
+                        glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(boneMatrix));
+                    }
+                    else
+                    {
+                        Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
+                        glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(boneMatrix));
                     }
                 }
+
             }
         }
 
         activeSkeleton_ = skeleton;
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         return true;
     }
@@ -867,7 +929,7 @@ namespace NSG
 
     bool Program::SetLightVariables(Scene* scene)
     {
-        if (scene && HasLighting())
+        if (lightingEnabled_ && scene)
         {
             auto& dirLights = scene->GetLights(LightType::DIRECTIONAL);
 

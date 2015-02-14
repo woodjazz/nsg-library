@@ -9,6 +9,7 @@
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
+#include "InstanceBuffer.h"
 #include "pugixml.hpp"
 #include <sstream>
 #include <algorithm>
@@ -28,6 +29,12 @@ namespace NSG
           blendFilterMode_(BlendFilterMode::ADDITIVE)
     {
         technique_ = std::make_shared<Technique>(this);
+		SetProgramFlags(0, (int)ProgramFlag::NONE); // in order to force program creation
+
+		if (Graphics::this_->HasInstancedArrays())
+		{
+			instanceBuffer_ = std::make_shared<InstanceBuffer>();
+		}
     }
 
     Material::~Material()
@@ -267,6 +274,7 @@ namespace NSG
 
 		for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
 		{
+			texture_[index] = nullptr;
 			std::stringstream ss;
 			ss << "Texture" << index;
 			pugi::xml_node childTexture = node.child(ss.str().c_str());

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <App>
 	<Resources>
-		<Resource name="data/axe.bmp">
+		<Resource name="axe.bmp3">
 			<data dataSize="1063213">Qk02AAwAAAAAADYAAAAoAAAAAAIAAAACAAABABgAAAAAAAAADAASCwAAEgsAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -14569,7 +14569,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 </data>
 		</Resource>
-		<Resource name="data/dwarf.bmp">
+		<Resource name="dwarf.bmp4">
 			<data dataSize="1063213">Qk02AAwAAAAAADYAAAAoAAAAAAIAAAACAAABABgAAAAAAAAADAASCwAAEgsAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -30631,7 +30631,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	</Meshes>
 	<Materials>
 		<Material name="Material0" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    0.800,    0.800,    0.800,    1.000]" specular="[    0.000,    0.000,    0.000,    1.000]" shininess="0" color="[    0.365,    0.365,    0.365,    1.000]">
-			<Texture0 flags="00000000000000000000000000000011" resource="data/axe.bmp" />
+			<Texture0 flags="00000000000000000000000000000011" resource="axe.bmp3" />
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
@@ -30641,7 +30641,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 			</Technique>
 		</Material>
 		<Material name="Material1" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    0.800,    0.800,    0.800,    1.000]" specular="[    0.000,    0.000,    0.000,    1.000]" shininess="0" color="[    0.306,    0.306,    0.306,    1.000]">
-			<Texture0 flags="00000000000000000000000000000011" resource="data/dwarf.bmp" />
+			<Texture0 flags="00000000000000000000000000000011" resource="dwarf.bmp4" />
 			<Technique>
 				<Passes>
 					<Pass blendMode="1" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">

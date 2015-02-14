@@ -37,8 +37,6 @@ namespace NSG
     public:
         Graphics();
         ~Graphics();
-        void InitializeBuffers();
-        void ReleaseBuffers();
         bool CheckExtension(const std::string& name);
         void ResetCachedState();
         void SetClearColor(const Color& color);
@@ -113,7 +111,6 @@ namespace NSG
         GLuint currentFbo_;
         VertexArrayObj* vertexArrayObj_;
         Buffer* vertexBuffer_;
-        PInstanceBuffer instanceBuffer_;
         Buffer* indexBuffer_;
         Program* activeProgram_;
         std::vector<Texture*> textures_;

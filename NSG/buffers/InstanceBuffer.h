@@ -27,6 +27,7 @@ misrepresented as being the original software.
 
 #include "Types.h"
 #include "Buffer.h"
+#include "InstanceData.h"
 
 namespace NSG 
 {
@@ -36,6 +37,10 @@ namespace NSG
 		InstanceBuffer();
 		~InstanceBuffer();
 		static void Unbind();
+		void UpdateBatchBuffer(const Batch& batch);
+	private:
+		void UpdateData(const std::vector<InstanceData>& data);
+		size_t maxInstances_;
 	};
 }
 

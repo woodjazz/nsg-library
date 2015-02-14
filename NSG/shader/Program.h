@@ -73,7 +73,12 @@ namespace NSG
         void SetNodeVariables(Node* node);
         void SetMaterialVariables();
 		bool SetSkeletonVariables(Skeleton* skeleton);
-        bool HasLighting() const;
+		void DefineSamplers(std::string& fBuffer);
+		void SetupLighting(std::string& preDefines);
+		void SetUniformLocations();
+		bool ShaderCompiles(GLenum type, const std::string& buffer) const;
+		void ReduceShaderComplexity(GLenum type);
+		void ConfigureShaders(std::string& vertexShader, std::string& fragmentShader);
 
         struct BaseLightLoc
         {
@@ -111,7 +116,7 @@ namespace NSG
         /////////////////////////////////////
         // Uniforms
         /////////////////////////////////////
-		std::vector<GLuint> bonesLoc_;
+        std::vector<GLuint> bonesBaseLoc_;
         GLuint modelLoc_;
         GLuint normalMatrixLoc_;
         GLuint viewLoc_;
@@ -203,5 +208,6 @@ namespace NSG
         bool spotLightsReduced_;
         bool directionalLightsReduced_;
         bool pointLightsReduced_;
+		bool lightingEnabled_;
     };
 }

@@ -332,4 +332,10 @@ namespace NSG
         }
         return false;
     }
+
+	bool Path::Exists() const
+	{
+		std::ifstream is(GetFullAbsoluteFilePath(), std::ios::binary);
+		return is.is_open();
+	}
 }

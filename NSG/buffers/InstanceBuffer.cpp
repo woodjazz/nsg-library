@@ -25,10 +25,14 @@ misrepresented as being the original software.
 */
 #include "InstanceBuffer.h"
 #include "Graphics.h"
+#include "Batch.h"
+#include "SceneNode.h"
+
 namespace NSG
 {
     InstanceBuffer::InstanceBuffer()
-        : Buffer(0, 0, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
+        : Buffer(0, 0, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
+		maxInstances_(0)
     {
     }
 
@@ -42,5 +46,53 @@ namespace NSG
     {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+
+	void InstanceBuffer::UpdateData(const std::vector<InstanceData>& data)
+	{
+		graphics_.SetVertexBuffer(this);
+
+		if (maxInstances_ >= data.size())
+		{
+			SetBufferSubData(0, data.size() * sizeof(InstanceData), &(data[0]));
+		}
+		else
+		{
+			maxInstances_ = data.size();
+			bufferSize_ = maxInstances_ * sizeof(InstanceData);
+			glBufferData(type_, bufferSize_, &(data[0]), usage_);
+		}
+	}
+
+	void InstanceBuffer::UpdateBatchBuffer(const Batch& batch)
+	{
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		CHECK_ASSERT(graphics_.HasInstancedArrays(), __FILE__, __LINE__);
+
+		std::vector<InstanceData> instancesData;
+		instancesData.reserve(batch.nodes_.size());
+		for (auto& node : batch.nodes_)
+		{
+			InstanceData data;
+			const Matrix4& m = node->GetGlobalModelMatrix();
+			// for the model matrix be careful in the shader as we are using rows instead of columns
+			// in order to save space (for the attributes) we just pass the first 3 rows of the matrix as the fourth row is always (0,0,0,1) and can be set in the shader
+			data.modelMatrixRow0_ = glm::row(m, 0);
+			data.modelMatrixRow1_ = glm::row(m, 1);
+			data.modelMatrixRow2_ = glm::row(m, 2);
+
+			const Matrix3& normal = node->GetGlobalModelInvTranspMatrix();
+			// for the normal matrix we are OK since we pass columns (we do not need to save space as the matrix is 3x3)
+			data.normalMatrixCol0_ = glm::column(normal, 0);
+			data.normalMatrixCol1_ = glm::column(normal, 1);
+			data.normalMatrixCol2_ = glm::column(normal, 2);
+			instancesData.push_back(data);
+		}
+
+		UpdateData(instancesData);
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+	}
+
 }
 

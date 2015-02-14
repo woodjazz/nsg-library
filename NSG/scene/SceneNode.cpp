@@ -53,10 +53,17 @@ namespace NSG
           signalCollision_(new Signal<const ContactPoint&>()),
           serializable_(true)
     {
+		auto scene = GetScene();
+		if (scene)
+            scene->UpdateOctree(this);
     }
 
     SceneNode::~SceneNode()
     {
+		auto scene = GetScene();
+		if (scene)
+            scene->RemoveFromOctree(this);
+
         Invalidate();
     }
 
@@ -90,14 +97,18 @@ namespace NSG
             if (!mesh)
             {
                 occludee_ = false;
-                scene_.lock()->GetOctree()->Remove(this);
+                auto scene = GetScene();
+                if(scene)
+                    scene->RemoveFromOctree(this);
             }
             else
             {
                 mesh->AddSceneNode(this);
                 occludee_ = true;
                 worldBBNeedsUpdate_ = true;
-                scene_.lock()->GetOctree()->InsertUpdate(this);
+                auto scene = GetScene();
+                if(scene)
+                    scene->UpdateOctree(this);
             }
             Invalidate();
         }
@@ -123,23 +134,25 @@ namespace NSG
     {
         if (mesh_)
         {
-            scene_.lock()->GetOctree()->InsertUpdate(this);
+            auto scene = GetScene();
+            if(scene)
+                scene->UpdateOctree(this);
         }
     }
 
     void SceneNode::OnDisable()
     {
-        if (mesh_)
-        {
-            scene_.lock()->GetOctree()->Remove(this);
-        }
+        auto scene = GetScene();
+        if(scene)
+            scene->RemoveFromOctree(this);
     }
 
     void SceneNode::OnDirty() const
     {
         worldBBNeedsUpdate_ = true;
-        if (octant_)
-            scene_.lock()->NeedUpdate((SceneNode*)this);
+        auto scene = GetScene();
+        if(scene)
+            scene->NeedUpdate((SceneNode*)this);
     }
 
     const BoundingBox& SceneNode::GetWorldBoundingBox() const

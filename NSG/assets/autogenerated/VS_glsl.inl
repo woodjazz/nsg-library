@@ -29,9 +29,6 @@ static const char* VS_GLSL = \
 "		    vec4 totalLight = CalcVSTotalLight(worldPos, vertexToEye, normal);\n"\
 "		    v_color = a_color * totalLight;\n"\
 "		    v_texcoord0 = a_texcoord0;\n"\
-"		    #if defined(LIGHTMAP)\n"\
-"		    	v_texcoord1 = a_texcoord1;\n"\
-"		    #endif\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "			//Lighting is calculated in world space\n"\
@@ -64,11 +61,9 @@ static const char* VS_GLSL = \
 "			#endif\n"\
 "			v_color = a_color;\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
-"		    #ifdef LIGHTMAP\n"\
-"		    	v_texcoord1 = a_texcoord1;\n"\
-"		    #endif\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
 "		#elif defined(LIGHTMAP) // lightmap without lighting\n"\
+"			v_color = u_material.color * a_color;\n"\
 "		    v_texcoord0 = a_texcoord0;\n"\
 "			v_texcoord1 = a_texcoord1;\n"\
 "			gl_Position = GetClipPos(GetWorldPos());\n"\

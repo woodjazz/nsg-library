@@ -320,4 +320,11 @@ namespace NSG
 
 	class Keyboard;
 	typedef std::unique_ptr<Keyboard> PKeyboard;
+
+	class ParticleSystem;
+	typedef std::shared_ptr<ParticleSystem> PParticleSystem;
+	typedef std::weak_ptr<ParticleSystem> PWeakParticleSystem;
+
+	class Particle;
+	typedef std::shared_ptr<Particle> PParticle;
 }

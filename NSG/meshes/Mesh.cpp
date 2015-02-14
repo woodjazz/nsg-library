@@ -325,6 +325,7 @@ namespace NSG
 	{
 		CHECK_ASSERT(vertexsData_.size() > vertex, __FILE__, __LINE__);
 		vertexsData_[vertex].bonesID_ = bonesID;
+		vertexsData_[vertex].bonesID_ *= 3;
 		vertexsData_[vertex].bonesWeight_ = bonesWeight;
 	}
 
@@ -374,16 +375,16 @@ namespace NSG
         Invalidate();
     }
 
-    void Mesh::AverageNormals(int vIndexBase, bool isQuad)
+    void Mesh::AverageNormals(size_t vIndexBase, bool isQuad)
     {
-		int n = isQuad ? 4 : 3;
+		size_t n = isQuad ? 4 : 3;
 		Vector3 normal(0);
 
-		for (int i = 0; i<n; i++)
+		for (size_t i = 0; i<n; i++)
 			normal += vertexsData_[vIndexBase + i].normal_;
 		normal /= n;
 
-        for(int i=0; i<n; i++)
+		for (size_t i = 0; i<n; i++)
 			vertexsData_[vIndexBase + i].normal_ = normal;
     }
 }

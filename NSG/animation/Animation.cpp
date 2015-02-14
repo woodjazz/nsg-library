@@ -86,7 +86,7 @@ namespace NSG
 		scale_ = GetVertex3(node.attribute("scale").as_string());
 	}
 
-    void AnimationTrack::GetKeyFrameIndex(float time, unsigned& index) const
+    void AnimationTrack::GetKeyFrameIndex(float time, size_t& index) const
     {
         if (time < 0)
             time = 0;
@@ -186,6 +186,7 @@ namespace NSG
 
 	void Animation::Load(const pugi::xml_node& node)
 	{
+		tracks_.clear();
 		length_ = node.attribute("length").as_float();
 
 		pugi::xml_node childTracks = node.child("Tracks");

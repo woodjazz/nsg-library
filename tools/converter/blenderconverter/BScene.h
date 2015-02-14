@@ -50,7 +50,7 @@ namespace BlenderConverter
         void ExtractGeneral(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		void ConvertObject(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		NSG::PSceneNode CreateSceneNode(const Blender::Object* obj, NSG::PSceneNode parent);
-		void CreateSkeleton(const Blender::Object* obj, NSG::PSceneNode parent);
+		void CreateSkeletonBones(const Blender::Object* obj, NSG::PSceneNode parent);
 		void BuildBoneTree(const std::string& armatureName, const Blender::Bone* cur, NSG::PSceneNode parent);
         void CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent);
         void CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
@@ -58,7 +58,7 @@ namespace BlenderConverter
 		void ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
 		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray);
 		void AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
-		void CreateSkeleton(const Blender::Object* obj);
+		void CreateSkeleton(NSG::PScene scene, const Blender::Object* obj);
 		void LoadMaterials(const Blender::Object* obj);
 		const Blender::Material* GetMaterial(const Blender::Object* ob, int index) const;
 		void LoadMaterials(bParse::bMain* data);
@@ -66,7 +66,8 @@ namespace BlenderConverter
 		NSG::PTexture CreateTexture(const Blender::Image* ima);
 		void SetMaterial(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		void LoadAnimData(NSG::PSceneNode sceneNode, const Blender::AnimData* adt, float animfps);
-		void CreateAnimation(const Blender::Object* ob);
+		void CreateAnimations(bParse::bMain* data);
+		void CreateAnimation(const Blender::bAction* action, const Blender::Scene* bscene, NSG::PScene scene);
 		struct TrackData
 		{
 			NSG::PAnimationTrack track;
@@ -74,29 +75,31 @@ namespace BlenderConverter
 		};
 		typedef std::shared_ptr<TrackData> PTrackData;
 		typedef std::map<std::string, PTrackData> BTracks;
-		float GetTracks(const Blender::Object* obj, float animfps, BTracks& tracks);
-		void ConvertTracks(const Blender::Object* obj, NSG::PAnimation anim, BTracks& tracks, float length);
+		float GetTracks(const Blender::bAction* action, float animfps, BTracks& tracks);
+		void ConvertTracks(NSG::PScene scene, const Blender::bAction* action, NSG::PAnimation anim, BTracks& tracks, float length);
 		void GetActionStartEnd(const Blender::bAction* action, float& start, float& end);
 		void GetSplineStartEnd(const Blender::BezTriple* bez, int totvert, float& start, float& end);
 		PBSpline ConvertSpline(const Blender::BezTriple* bez, SPLINE_CHANNEL_CODE access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor);
-		NSG::AnimationChannelMask ConvertChannel(const Blender::Object* obj, PTrackData trackData, NSG::AnimationTrack& track, float timeFrameLength);
+		NSG::AnimationChannelMask ConvertChannel(const Blender::bAction* action, PTrackData trackData, NSG::AnimationTrack& track, float timeFrameLength);
 		void LoadPhysics(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		void MarkProgramAsSkinableNodes(const NSG::Mesh* mesh);
 		const void* FindByString(const Blender::ListBase* listbase, const char* id, int offset) const;
 		const Blender::bPoseChannel* GetPoseChannelByName(const Blender::bPose* pose, const char* name) const;
 		const Blender::Bone* GetBoneFromDefGroup(const Blender::Object* obj, const Blender::bDeformGroup* def) const;
 		bool IsBoneDefGroup(const Blender::Object* obj, const Blender::bDeformGroup* def) const;
-		void CreateOffsetMatrices(const Blender::Object* obj);
+		void CreateOffsetMatrices(const Blender::Object* obj, NSG::PSceneNode armatureNode);
 		const Blender::Object* GetAssignedArmature(const Blender::Object *obj) const;
 		void GetBoneIndexByDeformGroupIndex(const Blender::Object* obj, const Blender::Object* obAr, std::vector<std::pair<int, std::string>>& list);
-		void GetFrames(const Blender::Object* ob, std::vector<float> &fra);
+		void GetFrames(const Blender::bAction* action, std::vector<float> &fra);
+		NSG::PScene CreateScene(const Blender::Scene* bscene);
+		void CreateScenes(bParse::bMain* data);
     private:
-        mutable Blender::Scene* sc_;
         NSG::Path path_;
         NSG::Path outputDir_;
-        NSG::PScene scene_;
 		std::vector<const Blender::Object*> armatureLinker_;
 		std::map<std::string, std::vector<NSG::PWeakNode>> armatureBones_;
 		bool embedResources_;
+		std::vector<NSG::PScene> scenes_;
+		std::vector<const Blender::Scene*> bscenes_;
     };
 }

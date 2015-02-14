@@ -63,6 +63,7 @@ namespace NSG
 		void SaveChildren(pugi::xml_node& node) const;
 		void LoadChildren(const pugi::xml_node& node);
 		void Render();
+		PRigidBody GetRigidBody() const { return rigidBody_; }
 	public:
 		SignalCollision::PSignal signalCollision_;
 	protected:

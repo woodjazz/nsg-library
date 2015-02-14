@@ -56,40 +56,45 @@ namespace BlenderConverter
         bParse::bBlenderFile obj(path_.GetFullAbsoluteFilePath().c_str());
         obj.parse(false);
         bParse::bMain* data = obj.getMain();
-        bParse::bListBasePtr* it = data->getScene();
-        if (it->size())
-        {
-            LoadMaterials(data);
-            sc_ = (Blender::Scene*)it->at(0);
-            scene_ = std::make_shared<Scene>(B_IDNAME(sc_));
-            scene_->SetOrientation(glm::angleAxis<float>(-PI / 2.f, Vertex3(1, 0, 0)));
-            const Blender::World* world = sc_->world;
-            scene_->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
-            Color ambient(world->ambr, world->ambg, world->ambb, 1);
-            scene_->SetAmbientColor(ambient);
-            const Blender::Base* base = (const Blender::Base*)sc_->base.first;
-            while (base)
-            {
-                const Blender::Object* obj = base->object;
-                ConvertObject(obj, scene_);
-                base = base->next;
-            }
+		LoadMaterials(data);
+		CreateScenes(data);
+		CreateAnimations(data);
+        return true;
+    }
 
-            for (auto& objArmature : armatureLinker_)
-                CreateSkeleton(objArmature);
-
-			base = (const Blender::Base*)sc_->base.first;
+	void BScene::CreateScenes(bParse::bMain* data)
+	{
+		bParse::bListBasePtr* it = data->getScene();
+		auto n = it->size();
+		for (int i = 0; i < n; i++)
+		{
+			armatureLinker_.clear();
+			const Blender::Scene* bscene = (const Blender::Scene*)it->at(i);
+			auto scene = CreateScene(bscene);
+			scenes_.push_back(scene);
+			bscenes_.push_back(bscene);
+			const Blender::Base* base = (const Blender::Base*)bscene->base.first;
 			while (base)
 			{
 				const Blender::Object* obj = base->object;
-				CreateAnimation(obj);
+				ConvertObject(obj, scene);
 				base = base->next;
 			}
+			for (auto& objArmature : armatureLinker_)
+				CreateSkeleton(scene, objArmature);
+		}
+	}
 
-            return true;
-        }
-        return false;
-    }
+	PScene BScene::CreateScene(const Blender::Scene* bscene)
+	{
+		auto scene = std::make_shared<Scene>(B_IDNAME(bscene));
+		scene->SetOrientation(glm::angleAxis<float>(-PI / 2.f, Vertex3(1, 0, 0)));
+		const Blender::World* world = bscene->world;
+		scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
+		Color ambient(world->ambr, world->ambg, world->ambb, 1);
+		scene->SetAmbientColor(ambient);
+		return scene;
+	}
 
     void BScene::LoadMaterials(bParse::bMain* data)
     {
@@ -107,25 +112,10 @@ namespace BlenderConverter
         std::string imageName = B_IDNAME(ima);
         if (!ima->packedfile)
         {
-            Path outputPath;
-            outputPath.SetPath(outputDir_.GetPath());
-            outputPath.SetFileName(imageName);
-#if 0
-            Path inputPath;
-            inputPath.SetPath(path_.GetPath());
-            inputPath.SetFileName(imageName);
-            if (!NSGCopyFile(inputPath, outputPath))
-            {
-                TRACE_LOG("Failed to copy file: " << imageName);
-            }
-#endif
-            std::vector<std::string> dirs = Path::GetDirs(outputPath.GetPath());
-            Path relativePath;
-            if (!dirs.empty())
-                relativePath.SetPath(dirs.back());
-            relativePath.SetFileName(imageName);
-
-            auto resource = App::this_->GetOrCreateResourceFile(relativePath.GetFilePath());
+            Path path;
+			path.SetPath(path_.GetPath());
+			path.SetFileName(imageName);
+			auto resource = App::this_->GetOrCreateResourceFile(path.GetFilePath());
             return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
         else
@@ -174,16 +164,18 @@ namespace BlenderConverter
                     const Blender::Image* ima = mtex->tex->ima;
                     if (!ima) continue;
                     auto texture = CreateTexture(ima);
-                    if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
+					if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_COL))
+						material->SetLightMap(texture);
+					else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
+						material->SetNormalMap(texture);
+					else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
+						material->SetSpecularMap(texture);
+					else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
+						material->SetAOMap(texture);
+					else if ((mtex->mapto & MAP_DISPLACE) || (mtex->maptoneg & MAP_DISPLACE))
+						material->SetDisplacementMap(texture);
+                    else if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
                         material->SetDiffuseMap(texture);
-                    if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
-                        material->SetNormalMap(texture);
-                    if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
-                        material->SetSpecularMap(texture);
-                    if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
-                        material->SetAOMap(texture);
-                    if ((mtex->mapto & MAP_DISPLACE) || (mtex->maptoneg & MAP_DISPLACE))
-                        material->SetDisplacementMap(texture);
                 }
             }
         }
@@ -211,7 +203,7 @@ namespace BlenderConverter
                     CreateMesh(obj, sceneNode);
                     break;
                 case OB_ARMATURE:   // SceneNode + Skeleton
-                    CreateSkeleton(obj, sceneNode);
+                    CreateSkeletonBones(obj, sceneNode);
                     break;
                 case OB_CURVE:
                     break;
@@ -221,34 +213,29 @@ namespace BlenderConverter
         }
     }
 
-	void BScene::GetFrames(const Blender::Object* ob, std::vector<float> &fra)
+	void BScene::GetFrames(const Blender::bAction* action, std::vector<float> &fra)
 	{
-		if (ob->adt && ob->adt->action) 
+		const Blender::FCurve* fcu = (const Blender::FCurve*)action->curves.first;
+		for (; fcu; fcu = fcu->next) 
 		{
-			const Blender::FCurve* fcu = (const Blender::FCurve*)ob->adt->action->curves.first;
-			for (; fcu; fcu = fcu->next) 
+			for (int i = 0; i < fcu->totvert; i++) 
 			{
-				for (int i = 0; i < fcu->totvert; i++) 
-				{
-					float f = fcu->bezt[i].vec[1][0];
-					if (std::find(fra.begin(), fra.end(), f) == fra.end())
-						fra.push_back(f);
-				}
+				float f = fcu->bezt[i].vec[1][0];
+				if (std::find(fra.begin(), fra.end(), f) == fra.end())
+					fra.push_back(f);
 			}
-			std::sort(fra.begin(), fra.end()); // keep the keys in ascending order
 		}
+		std::sort(fra.begin(), fra.end()); // keep the keys in ascending order
 	}
 
-	float BScene::GetTracks(const Blender::Object *obj, float animfps, BTracks& tracks)
+	float BScene::GetTracks(const Blender::bAction* action, float animfps, BTracks& tracks)
 	{
-		CHECK_ASSERT(obj->adt && obj->adt->action, __FILE__, __LINE__);
-
-		std::string name(B_IDNAME(obj->adt->action));
+		std::string name(B_IDNAME(action));
 		float start, end;
-		GetActionStartEnd(obj->adt->action, start, end);
+		GetActionStartEnd(action, start, end);
 		float trackLength = (end - start) / animfps;
 
-		const Blender::FCurve* bfc = (const Blender::FCurve*)obj->adt->action->curves.first;
+		const Blender::FCurve* bfc = (const Blender::FCurve*)action->curves.first;
 
 		while (bfc)
 		{
@@ -286,7 +273,7 @@ namespace BlenderConverter
 					else if (bfc->array_index == 2) code = SC_ROT_QUAT_Y;
 					else if (bfc->array_index == 3) code = SC_ROT_QUAT_Z;
 				}
-				else if (transform_name == "rotation_euler" && obj->rotmode == ROT_MODE_EUL)
+				else if (transform_name == "rotation_euler")// && obj->rotmode == ROT_MODE_EUL)
 				{
 					if (bfc->array_index == 0) code = SC_ROT_EULER_X;
 					else if (bfc->array_index == 1) code = SC_ROT_EULER_Y;
@@ -322,34 +309,46 @@ namespace BlenderConverter
 		return trackLength;
 	}
 
+	void BScene::CreateAnimations(bParse::bMain* data)
+	{
+		CHECK_ASSERT(scenes_.size(), __FILE__, __LINE__);
+		CHECK_ASSERT(scenes_.size() == bscenes_.size(), __FILE__, __LINE__);
+		const Blender::Scene* firstBScene(bscenes_.at(0));
+		PScene firstScene(scenes_.at(0));
+		float animfps = firstBScene->r.frs_sec / firstBScene->r.frs_sec_base;
+		bParse::bListBasePtr* it = data->getAction();
+		auto n = it->size();
+		for (int i = 0; i<n; i++)
+		{
+			const Blender::bAction* action = (const Blender::bAction*)it->at(i);
+			CreateAnimation(action, firstBScene, firstScene);
+		}
+	}
 
-	void BScene::CreateAnimation(const Blender::Object* obj)
+	void BScene::CreateAnimation(const Blender::bAction* action, const Blender::Scene* bscene, PScene scene)
     {
-		if (obj->adt && obj->adt->action)
-        {
-			std::string name(B_IDNAME(obj->adt->action));
-			if (!scene_->HasAnimation(name))
-			{
-				float animfps = sc_->r.frs_sec / sc_->r.frs_sec_base;
-				auto anim = scene_->GetOrCreateAnimation(name);
-				BTracks tracks;
-				auto length = GetTracks(obj, animfps, tracks);
-				ConvertTracks(obj, anim, tracks, length);
-				anim->SetLength(length);
-			}
-        }
+		float animfps = bscene->r.frs_sec / bscene->r.frs_sec_base;
+		std::string name(B_IDNAME(action));
+		if (!scene->HasAnimation(name))
+		{
+			auto anim = scene->GetOrCreateAnimation(name);
+			BTracks tracks;
+			auto length = GetTracks(action, animfps, tracks);
+			ConvertTracks(scene, action, anim, tracks, length);
+			anim->SetLength(length);
+		}
     }
 
-	void BScene::ConvertTracks(const Blender::Object* obj, PAnimation anim, BTracks& tracks, float length)
+	void BScene::ConvertTracks(PScene scene, const Blender::bAction* action, PAnimation anim, BTracks& tracks, float length)
     {
         for (auto& btrack : tracks)
         {
             std::string channelName = btrack.first;
             AnimationTrack track;
-            if (scene_->GetName() == channelName)
-                track.node_ = scene_;
+            if (scene->GetName() == channelName)
+                track.node_ = scene;
             else
-                track.node_ = scene_->GetChild<Node>(channelName, true);
+                track.node_ = scene->GetChild<Node>(channelName, true);
 
             if (!track.node_.lock())
             {
@@ -357,12 +356,12 @@ namespace BlenderConverter
                 continue;
             }
 
-            track.channelMask_ = ConvertChannel(obj, btrack.second, track, length);
+            track.channelMask_ = ConvertChannel(action, btrack.second, track, length);
             anim->AddTrack(track);
         }
     }
 
-	AnimationChannelMask BScene::ConvertChannel(const Blender::Object* obj, PTrackData trackData, AnimationTrack& track, float timeFrameLength)
+	AnimationChannelMask BScene::ConvertChannel(const Blender::bAction* action, PTrackData trackData, AnimationTrack& track, float timeFrameLength)
     {
         AnimationChannelMask mask = 0;
 		float inc = timeFrameLength;
@@ -371,11 +370,11 @@ namespace BlenderConverter
 			inc = timeFrameLength / trackData->keyframes[0]->getNumVerts();
 
 		float start, end;
-		GetActionStartEnd(obj->adt->action, start, end);
+		GetActionStartEnd(action, start, end);
 		float totalFramesLength = end - start;
 
 		std::vector<float> frames;
-		GetFrames(obj, frames);
+		GetFrames(action, frames);
 		std::vector<float> framesTime;
 		for (auto&f : frames)
 		{
@@ -656,11 +655,11 @@ namespace BlenderConverter
         return sceneNode;
     }
 
-    void BScene::CreateSkeleton(const Blender::Object* obj, PSceneNode parent)
+    void BScene::CreateSkeletonBones(const Blender::Object* obj, PSceneNode parent)
     {
         auto sceneNode = CreateSceneNode(obj, parent);
         const Blender::bArmature* ar = static_cast<const Blender::bArmature*>(obj->data);
-		CHECK_ASSERT(ar->flag & ARM_RESTPOS && "Armature has to be in rest position. Go to blender and change it.", __FILE__, __LINE__);
+		//CHECK_ASSERT(ar->flag & ARM_RESTPOS && "Armature has to be in rest position. Go to blender and change it.", __FILE__, __LINE__);
 		std::string armatureName = B_IDNAME(ar);
 		armatureBones_.clear();
         // create bone lists && transforms
@@ -722,7 +721,6 @@ namespace BlenderConverter
 
         camera->SetNearClip(bcamera->clipsta);
         camera->SetFarClip(bcamera->clipend);
-        //camera->SetAspectRatio((int)bcamera->sensor_x, (int)bcamera->sensor_y);
         camera->SetHalfHorizontalFov(glm::radians(bcamera->lens));
         //isMainCamera = sc_->camera == obj;
     }
@@ -853,7 +851,8 @@ namespace BlenderConverter
 							int idx = 0;
 							for (auto& bw : boneWeightPerVertex)
 							{
-								vertexes[n].bonesID_[idx] = float(bw.first);
+								float boneIndex(bw.first);
+								vertexes[n].bonesID_[idx] = boneIndex;
 								vertexes[n].bonesWeight_[idx] = bw.second * invsumw;
 								++idx;
 								if (idx > MAX_BONES_PER_VERTEX)
@@ -900,7 +899,7 @@ namespace BlenderConverter
         return GetBoneFromDefGroup(obj, def) != nullptr;
     }
 
-	void BScene::CreateSkeleton(const Blender::Object* obj)
+	void BScene::CreateSkeleton(PScene scene, const Blender::Object* obj)
 	{
 		const Blender::Object* obAr = GetAssignedArmature(obj);
 		CHECK_ASSERT(obAr, __FILE__, __LINE__);
@@ -910,11 +909,15 @@ namespace BlenderConverter
 		CHECK_ASSERT(mesh, __FILE__, __LINE__);
 		
 		const Blender::bArmature* arm = static_cast<const Blender::bArmature*>(obAr->data);
-		CHECK_ASSERT(arm->flag & ARM_RESTPOS && "Armature has to be in rest position. Go to blender and change it.", __FILE__, __LINE__);
 		std::string armatureName = B_IDNAME(arm);
+		if (!(arm->flag & ARM_RESTPOS))
+		{
+			TRACE_LOG("!!! Cannot create skeleton: " << armatureName << ". Armature has to be in rest position. Go to blender and change it.");
+			return;
+		}
 
 		auto skeleton(std::make_shared<Skeleton>(mesh));
-		PSceneNode armatureNode = scene_->GetChild<SceneNode>(B_IDNAME(obAr), true);
+		PSceneNode armatureNode = scene->GetChild<SceneNode>(B_IDNAME(obAr), true);
 
 		std::vector<NSG::PWeakNode> boneList;
 		std::vector<std::pair<int, std::string>> jointList;
@@ -931,16 +934,14 @@ namespace BlenderConverter
 		mesh->SetSkeleton(skeleton);
 		skeleton->SetBones(boneList);
 		MarkProgramAsSkinableNodes(mesh.get());
-		CreateOffsetMatrices(obj);
+		CreateOffsetMatrices(obj, armatureNode);
 	}
 
-	void BScene::CreateOffsetMatrices(const Blender::Object* obj)
+	void BScene::CreateOffsetMatrices(const Blender::Object* obj, PSceneNode armatureNode)
 	{
 		const Blender::Object* obAr = GetAssignedArmature(obj);
 		CHECK_ASSERT(obAr, __FILE__, __LINE__);
 		const Blender::bPose* pose = obAr->pose;
-		PSceneNode armatureNode = scene_->GetChild<SceneNode>(B_IDNAME(obAr), true);
-
         const Blender::bDeformGroup* def = (const Blender::bDeformGroup*)obj->defbase.first;
         while (def)
         {
@@ -1100,17 +1101,19 @@ namespace BlenderConverter
         outputFile.SetExtension("xml");
 
         pugi::xml_document doc;
-
+		pugi::xml_node appNode;
 		if (embedResources_)
 		{
-			auto appNode = App::this_->Save(doc);
-			scene_->Save(appNode);
+			appNode = App::this_->Save(doc);
 		}
 		else
 		{
-			auto appNode = App::this_->SaveWithExternalResources(doc, path_, outputDir_);
-			scene_->Save(appNode);
+			appNode = App::this_->SaveWithExternalResources(doc, path_, outputDir_);
 		}
+		
+		for (auto& scene: scenes_)
+			scene->Save(appNode);
+
         TRACE_LOG("Saving file: " << outputFile.GetFullAbsoluteFilePath());
         return doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
     }

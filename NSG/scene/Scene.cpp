@@ -16,6 +16,7 @@
 #include "Animation.h"
 #include "AnimationState.h"
 #include "PhysicsWorld.h"
+#include "ParticleSystem.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
@@ -51,8 +52,8 @@ namespace NSG
     void Scene::Update(float deltaTime)
     {
         physicsWorld_->StepSimulation(deltaTime);
-
         UpdateAnimations(deltaTime);
+        UpdateParticleSystems(deltaTime);
     }
 
     bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const
@@ -315,6 +316,16 @@ namespace NSG
         }
     }
 
+    void Scene::UpdateParticleSystems(float deltaTime)
+    {
+		for (auto& obj : particleSystems_)
+		{
+			auto ps = obj.lock();
+			if (ps)
+				ps->Update(deltaTime);
+		}
+    }
+
     bool Scene::SetAnimationSpeed(const std::string& name, float speed)
     {
         PAnimationState animationState;
@@ -384,4 +395,21 @@ namespace NSG
     {
         return cameras_;
     }
+
+	void Scene::AddParticleSystem(PParticleSystem ps)
+	{
+		particleSystems_.push_back(ps);
+	}
+
+	void Scene::UpdateOctree(SceneNode* node)
+    {
+        octree_->InsertUpdate(node);
+    }
+    
+	void Scene::RemoveFromOctree(SceneNode* node)
+    {
+        needUpdate_.erase(node);
+        octree_->Remove(node);
+    }
+
 }

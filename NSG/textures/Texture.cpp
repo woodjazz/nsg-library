@@ -371,16 +371,24 @@ namespace NSG
 
 	int Texture::SaveAsPNG(PResource resource, const Path& outputDir)
     {
-		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
-		bool allocated = false;
-		int format, width, height, channels;
-		const unsigned char* img = Texture::GetImageData(true, resource, allocated, format, width, height, channels);
 		Path oPath;
 		oPath.SetPath(outputDir.GetPath());
 		oPath.SetName(Path(resource->GetName()).GetName());
 		oPath.SetExtension("png");
-		int result = stbi_write_png(oPath.GetFullAbsoluteFilePath().c_str(), width, height, channels, img, 0);
-		if (allocated) free((void*)img);
+
+		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		bool allocated = false;
+		int format, width, height, channels;
+		const unsigned char* img = Texture::GetImageData(true, resource, allocated, format, width, height, channels);
+		int result = 0;
+		if (img)
+		{
+			result = stbi_write_png(oPath.GetFullAbsoluteFilePath().c_str(), width, height, channels, img, 0);
+			if (!result)
+				TRACE_LOG("Error " << std::strerror(errno) << " writting file " << oPath.GetFilePath());
+			if (allocated) 
+				free((void*)img);
+		}
 		return result;
     }
 }

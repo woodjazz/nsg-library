@@ -142,6 +142,7 @@ namespace NSG
 		dataNode.append_attribute("dataSize").set_value((unsigned)encoded_data.size());
 		dataNode.append_child(pugi::node_pcdata).set_value(encoded_data.c_str());
 
+		SetName(GetUniqueName(Path(name_).GetFilename()));
 		child.append_attribute("name").set_value(name_.c_str());
 	}
 

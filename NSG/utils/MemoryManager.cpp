@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #if !defined(EMSCRIPTEN)
 
-#define USE_POOLS
+//#define USE_POOLS
 #ifdef USE_POOLS
 
 #include "Pool.h"

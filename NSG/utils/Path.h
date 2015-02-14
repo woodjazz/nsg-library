@@ -68,6 +68,7 @@ namespace NSG
         static bool ContainsDir(const std::string& path, const std::string& dirName);
         bool operator < (const Path& obj) const;
         bool AppendDirIfDoesNotExist(const std::string& dirName);
+		bool Exists() const;
     private:
         void ReDoState();
         std::string filePath_; // path + filename (could be absolute or relative)

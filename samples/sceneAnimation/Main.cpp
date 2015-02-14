@@ -25,33 +25,38 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
+//#define DAE_FILE
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     App app;
-    auto window = app.GetOrCreateWindow("window", 0, 100, 1024, 768);
+    auto window = app.GetOrCreateWindow("window", 0, 100, 10, 10);
+    #ifdef DAE_FILE
+    auto resource = app.GetOrCreateResourceFile("data/scene.xml");
+    #else
     auto resource = app.GetOrCreateResourceFile("data/bscene.xml");
-	auto scenes = app.Load(resource);
-	auto scene = scenes.at(0);
-	scene->SetAmbientColor(Color(0.0f));
+    #endif
+    auto scenes = app.Load(resource);
+    auto scene = scenes.at(0);
+    scene->SetAmbientColor(Color(0.0f));
 
     auto object = scene->GetChild<SceneNode>("Bone", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
     plane->GetMaterial()->SetShininess(10);
-	//plane->GetMaterial()->SetDisplacementMap(nullptr);
+    //plane->GetMaterial()->SetDisplacementMap(nullptr);
 
     auto camera = scene->GetChild<Camera>("Camera", false);
     camera->SetWindow(window);
     auto control = std::make_shared<CameraControl>(camera);
-	control->SetWindow(window);
+    control->SetWindow(window);
     auto lamp = scene->GetChild<Light>("Lamp", false);
     auto ball = scene->GetChild<SceneNode>("Earth", false);
     auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);
     auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
 
     auto ballRigidBody = ball->GetOrCreateRigidBody();
-    
-#if 0
+
+    #ifdef DAE_FILE
     auto planeRigidBody = plane->GetOrCreateRigidBody();
     planeRigidBody->SetShape(SH_TRIMESH);
 
@@ -60,10 +65,10 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto ramp2RigidBody = ramp2->GetOrCreateRigidBody();
     ramp2RigidBody->SetShape(SH_CONVEX_TRIMESH);
-    
+
     ballRigidBody->SetMass(1);
     ballRigidBody->SetShape(SH_SPHERE);
-#endif
+    #endif
 
     {
         auto animations = scene->GetAnimationsFor(object);

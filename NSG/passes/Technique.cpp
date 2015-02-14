@@ -87,6 +87,7 @@ namespace NSG
 
     void Technique::Load(const pugi::xml_node& node)
     {
+		passes_.clear();
         pugi::xml_node childPasses = node.child("Passes");
         if (childPasses)
         {

@@ -81,6 +81,7 @@ namespace NSG
         void SetFilterBlur(const BlurFilter& data);
         const BlurFilter& GetFilterBlur() const { return blurFilter_; };
         PTexture GetTextureWithResource(PResource resource);
+		PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
     private:
         bool IsValid() override;
         PTexture texture_[MaterialTexture::MAX_TEXTURES_MAPS];
@@ -95,6 +96,7 @@ namespace NSG
         bool serializable_;
         BlendFilterMode blendFilterMode_;
         BlurFilter blurFilter_;
+		PInstanceBuffer instanceBuffer_;
         friend class Program;
     };
 }

@@ -90,18 +90,10 @@ static const char* FS_GLSL = \
 "				gl_FragColor = v_color;\n"\
 "			#endif\n"\
 "		#elif defined(PER_VERTEX_LIGHTING)\n"\
-"			#ifdef LIGHTMAP\n"\
-"				#ifdef DIFFUSEMAP\n"\
-"					gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, v_texcoord0);\n"\
-"				#else\n"\
-"					gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1);\n"\
-"				#endif\n"\
+"			#ifdef DIFFUSEMAP\n"\
+"				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
 "			#else\n"\
-"				#ifdef DIFFUSEMAP\n"\
-"					gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
-"				#else\n"\
-"					gl_FragColor = v_color;\n"\
-"				#endif\n"\
+"				gl_FragColor = v_color;\n"\
 "			#endif\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "			//Lighting is calculated in world space\n"\
@@ -124,19 +116,11 @@ static const char* FS_GLSL = \
 "			#endif\n"\
 "    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
 "    		vec4 totalLight = CalcFSTotalLight(vertexToEye, normal);\n"\
-"    		#ifdef LIGHTMAP\n"\
-"    			#ifdef DIFFUSEMAP\n"\
-"    				gl_FragColor = v_color * totalLight * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, texcoord0);\n"\
-"    			#else\n"\
-"    				gl_FragColor = v_color * totalLight * texture2D(u_texture2, v_texcoord1);\n"\
-"    			#endif\n"\
-"    		#else\n"\
-"    			#ifdef DIFFUSEMAP\n"\
-"		    		gl_FragColor = v_color * totalLight * texture2D(u_texture0, texcoord0);\n"\
-"		    	#else\n"\
-"		    		gl_FragColor = v_color * totalLight;\n"\
-"		    	#endif\n"\
-"		    #endif\n"\
+"			#ifdef DIFFUSEMAP\n"\
+"	    		gl_FragColor = v_color * totalLight * texture2D(u_texture0, texcoord0);\n"\
+"	    	#else\n"\
+"	    		gl_FragColor = v_color * totalLight;\n"\
+"	    	#endif\n"\
 "		#elif defined(LIGHTMAP) // lightmap without lighting\n"\
 "			\n"\
 "			#ifdef DIFFUSEMAP\n"\

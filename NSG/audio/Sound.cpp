@@ -67,7 +67,7 @@ namespace NSG
         if (resource_->IsReady() && !isReady_)
         {
 #ifdef SDL
-            SDL_RWops* assetHandle = SDL_RWFromConstMem(resource_->GetData(), resource_->GetBytes());
+            SDL_RWops* assetHandle = SDL_RWFromConstMem(resource_->GetData(), int(resource_->GetBytes()));
 
             sound_ = Mix_LoadWAV_RW(assetHandle, 1);
 
