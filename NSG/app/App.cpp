@@ -73,12 +73,12 @@ namespace NSG
 
     #if defined(IOS) || defined(ANDROID)
 
-    extern void AtExit();
+    //extern void AtExit();
     int ExitEventFilter(void* userdata, SDL_Event* event)
     {
         if (event->type == SDL_APP_TERMINATING)
         {
-            AtExit();
+            //AtExit();
             SDL_Quit();
             std::exit(0);
             return 0;
@@ -119,11 +119,11 @@ namespace NSG
 
     void App::InitializeGraphics()
     {
-        std::call_once(onceFlag_, [&]()
-        {
-            CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
-            graphics_ = PGraphics(new Graphics);
-        });
+		std::call_once(onceFlag_, [&]()
+		{
+			CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
+			graphics_ = PGraphics(new Graphics);
+		});
     }
 
     void App::ClearAll()
@@ -250,7 +250,7 @@ namespace NSG
     {
         std::stringstream ss;
         ss << "SphereMesh" << radius << res;
-        PSphereMesh mesh = meshes_.GetOrCreateClass<SphereMesh>(ss.str());
+		PSphereMesh mesh = meshes_.GetOrCreateClass<SphereMesh>(ss.str());
         mesh->Set(radius, res);
         return mesh;
     }

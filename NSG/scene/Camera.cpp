@@ -205,7 +205,7 @@ namespace NSG
     {
         if (isOrtho_)
         {
-            matProjection_ = glm::ortho(orthoCoords_.x, orthoCoords_.y, orthoCoords_.z, orthoCoords_.w,  zNear_, zFar_);
+			matProjection_ = glm::ortho(orthoCoords_.x, orthoCoords_.y, orthoCoords_.z, orthoCoords_.w, zNear_, zFar_);
         }
         else
         {
@@ -315,6 +315,18 @@ namespace NSG
         }
 
     }
+
+	const Matrix4& Camera::GetProjectionMatrix()
+	{
+		if (Graphics::this_->GetCamera())
+		{
+			return Graphics::this_->GetCamera()->GetMatProjection();
+		}
+		else
+		{
+			return IDENTITY_MATRIX;
+		}
+	}
 
     const Matrix4& Camera::GetView() const
     {
@@ -546,17 +558,17 @@ namespace NSG
         }
         else
         {
-            graphics_->Render();
+			graphics_->RenderVisibleSceneNodes();
         }
     }
 
     void Camera::Render(PRender2Texture render2Texture)
     {
         render2Texture->Begin();
-        graphics_->Render();
+		graphics_->RenderVisibleSceneNodes();
         render2Texture->End();
         for (auto& filter : filters_)
-            filter->Render();
+            filter->Draw();
     }
 
     void Camera::SetRender2Texture(PRender2Texture render2Texture)

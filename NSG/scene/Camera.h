@@ -59,6 +59,7 @@ namespace NSG
 		static const Matrix4& GetViewMatrix();
 		const Matrix4& GetView() const;
 		static const Matrix4& GetMatViewProj();
+		static const Matrix4& GetProjectionMatrix();
 		const Matrix4& GetMatViewProjection() const;
 		const Matrix4& GetInverseViewMatrix() const;
 		const Matrix4& GetViewProjectionMatrix() const;

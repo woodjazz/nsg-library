@@ -43,6 +43,7 @@ namespace NSG
     public:
         RigidBody(PSceneNode sceneNode);
         ~RigidBody();
+		void SetGravity(const Vector3& gravity);
         void SetMass(float mass);
         void SetShape(PhysicsShape phyShape);
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
@@ -92,6 +93,7 @@ namespace NSG
 		int collisionGroup_;
 		int collisionMask_;
 		bool inWorld_;
+		Vector3 gravity_;
     };
 }
 

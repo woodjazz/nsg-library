@@ -31,6 +31,9 @@ extern void CameraTest();
 int NSG_MAIN(int argc, char* argv[])
 {
 	using namespace NSG;
+
+	MemoryManager memObj;
 	CameraTest();
+	
 	return 0;
 }			

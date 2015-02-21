@@ -80,9 +80,12 @@ namespace NSG
                 break;
         }
 
-        auto resource = App::this_->GetOrCreateResourceMemory(name);
-		resource->SetData(pixels, width * height * channels_);
-		pResource_ = resource;
+		if (pixels)
+		{
+			auto resource = App::this_->GetOrCreateResourceMemory(name);
+			resource->SetData(pixels, width * height * channels_);
+			pResource_ = resource;
+		}
     }
 
     Texture::Texture(PResource resource, const TextureFlags& flags)
@@ -144,7 +147,7 @@ namespace NSG
 
     bool Texture::IsValid()
     {
-        return pResource_->IsReady();
+		return !pResource_ || pResource_->IsReady();
     }
 
 	const unsigned char* Texture::GetImageData(bool fromKnownImgFormat, PResource resource, bool& allocated, GLint& format, GLsizei& width, GLsizei& height, int& channels)
@@ -207,9 +210,11 @@ namespace NSG
         Graphics::this_->SetTexture(0, this);
 
 		bool allocated = false;
-		const unsigned char* img = Texture::GetImageData(fromKnownImgFormat_, pResource_, allocated, format_, width_, height_, channels_);
+		const unsigned char* img = nullptr;
+		if (pResource_)
+			img = Texture::GetImageData(fromKnownImgFormat_, pResource_, allocated, format_, width_, height_, channels_);
 
-        if (flags_ & (int)TextureFlag::INVERT_Y)
+		if (img && flags_ & (int)TextureFlag::INVERT_Y)
         {
             unsigned char* inverted = (unsigned char*)malloc(channels_ * width_ * height_);
             memcpy(inverted, img, channels_ * width_ * height_);
@@ -314,7 +319,8 @@ namespace NSG
                 break;
         }
 
-        pResource_->Invalidate(false);
+		if (pResource_)
+			pResource_->Invalidate(false);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }

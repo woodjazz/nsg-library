@@ -78,13 +78,11 @@ static const char* COMMON_GLSL = \
 "struct Material\n"\
 "{\n"\
 "	vec4 color;\n"\
-"#ifdef HAS_LIGHTS	\n"\
 "    vec4 ambient;\n"\
 "    vec4 diffuse;\n"\
 "    vec4 specular;\n"\
 "    float shininess;\n"\
 "    float parallaxScale;\n"\
-"#endif    \n"\
 "};\n"\
 "uniform Material u_material;\n"\
 ;

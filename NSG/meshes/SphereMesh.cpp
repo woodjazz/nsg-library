@@ -54,7 +54,7 @@ namespace NSG
 
     GLenum SphereMesh::GetWireFrameDrawMode() const
     {
-        return GL_LINE_LOOP;
+        return GL_LINES;
     }
 
     GLenum SphereMesh::GetSolidDrawMode() const
@@ -76,6 +76,7 @@ namespace NSG
     {
         vertexsData_.clear();
         indexes_.clear();
+		indexesWireframe_.clear();
 
         VertexsData& data = vertexsData_;
 
@@ -130,6 +131,11 @@ namespace NSG
                     indexes_.push_back(index1);
                     indexes_.push_back(index2);
                     indexes_.push_back(index3);
+
+					indexesWireframe_.push_back(index1);
+					indexesWireframe_.push_back(index2);
+					indexesWireframe_.push_back(index1);
+					indexesWireframe_.push_back(index3);
                 }
 
                 if (iy < res_ - 1 )
@@ -142,6 +148,13 @@ namespace NSG
                     indexes_.push_back(index1);
                     indexes_.push_back(index2);
                     indexes_.push_back(index3);
+
+					/*
+					indexesWireframe_.push_back(index3);
+					indexesWireframe_.push_back(index2);
+					indexesWireframe_.push_back(index2);
+					indexesWireframe_.push_back(index1);
+					*/
                 }
             }
         }

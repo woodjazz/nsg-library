@@ -28,8 +28,10 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Check.h"
 #include "Pass.h"
+#include "Batch.h"
 #include "Program.h"
 #include "Graphics.h"
+#include "Material.h"
 #include "pugixml.hpp"
 
 namespace NSG
@@ -47,12 +49,14 @@ namespace NSG
     {
         CHECK_ASSERT(passes_.size() < Technique::MAX_PASSES, __FILE__, __LINE__);
         passes_.push_back(pass);
+		if (material_)
+			material_->Invalidate();
     }
 
     PPass Technique::GetPass(unsigned idx) 
     { 
         if(passes_.size() <= idx)
-            passes_.push_back(std::make_shared<Pass>(this));
+			AddPass(std::make_shared<Pass>(this));
 
         return passes_.at(idx); 
     }
@@ -62,17 +66,39 @@ namespace NSG
         return passes_.size();
     }
 
-    void Technique::Render(Camera* camera)
+    void Technique::Draw(Camera* camera)
     {
         Graphics::this_->SetCamera(camera);
-        Render();
+        Draw();
     }
 
-    void Technique::Render()
+    void Technique::Draw()
     {
         for(auto& pass: passes_)
-            pass->Render();
+            pass->Draw();
     }
+
+	void Technique::Draw(const Batch& batch)
+	{
+		auto graphics = Graphics::this_;
+		graphics->SetMesh(batch.GetMesh());
+		if (batch.AllowInstancing())
+		{
+			graphics->SetNode(nullptr);
+			graphics->DrawInstancedActiveMesh(GetPass(0).get(), batch);
+		}
+		else
+		{
+			auto& nodes = batch.GetNodes();
+			for (auto& node : nodes)
+			{
+				SceneNode* sn = (SceneNode*)node;
+				graphics->SetNode(sn);
+				for (auto& pass : passes_)
+					graphics->DrawActiveMesh(pass.get());
+			}
+		}
+	}
 
     void Technique::Save(pugi::xml_node& node)
     {
@@ -106,6 +132,23 @@ namespace NSG
     {
         passes_.clear();
         for (auto& pass : passes)
-            passes_.push_back(pass->Clone(material_));
+			AddPass(pass->Clone(material_));
     }
+
+	bool Technique::IsTransparent() const
+	{
+		for (auto& pass : passes_)
+			if (pass->IsTransparent())
+				return true;
+		return false;
+	}
+
+	bool Technique::IsText() const
+	{
+		for (auto& pass : passes_)
+			if (pass->IsText())
+				return true;
+		return false;
+	}
+
 }

@@ -199,7 +199,7 @@ namespace NSG
             Ray localRay = Transformed(m);
 
             const VertexsData& vertexsData = mesh->GetVertexsData();
-            const Indexes& indices = mesh->GetIndexes();
+            const Indexes& indices = mesh->GetIndexes(true);
 
             size_t n = indices.size();
             unsigned i = 0;

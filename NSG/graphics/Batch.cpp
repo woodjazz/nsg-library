@@ -25,19 +25,33 @@ misrepresented as being the original software.
 */
 #include "Batch.h"
 #include "Material.h"
+#include "Technique.h"
 #include "Mesh.h"
 #include "SceneNode.h"
+#include "Graphics.h"
+#include "Pass.h"
 
 namespace NSG
 {
 	Batch::Batch()
 	{
+	}
 
+	Batch::Batch(Material* material, Mesh* mesh)
+		: material_(material),
+		mesh_(mesh)
+	{
+		CHECK_ASSERT(material_ && mesh_, __FILE__, __LINE__);
 	}
 
 	Batch::~Batch()
 	{
 		Invalidate();
+	}
+
+	bool Batch::operator == (const Batch& obj) const
+	{
+		return material_ == obj.material_ && mesh_ == obj.mesh_ && nodes_ == obj.nodes_;
 	}
 
     bool Batch::IsValid()
@@ -50,4 +64,28 @@ namespace NSG
                 return false;
         return true;
     }
+
+	void Batch::Draw()
+	{
+		if (IsReady())
+			material_->GetTechnique()->Draw(*this);
+	}
+
+	void Batch::Add(SceneNode* node)
+	{
+		nodes_.push_back(node);
+	}
+
+	bool Batch::AllowInstancing() const 
+	{ 
+		return material_->IsBatched(); 
+	}
+
+	void Batch::Clear()
+	{
+		material_ = nullptr;
+		mesh_ = nullptr;
+		nodes_.clear();
+	}
+
 }

@@ -17,10 +17,10 @@
 
 namespace NSG
 {
-    FontAtlas::FontAtlas(PResourceFile xmlResource, int viewWidth, int viewHeight)
+    FontAtlas::FontAtlas(PResourceFile xmlResource)
         : xmlResource_(xmlResource),
-          viewWidth_(viewWidth),
-          viewHeight_(viewHeight)
+          viewWidth_(0),
+          viewHeight_(0)
     {
         Path path(xmlResource->GetName());
         path.SetExtension("png");
@@ -33,6 +33,24 @@ namespace NSG
         Invalidate();
     }
 
+    void FontAtlas::SetWindow(PWindow window)
+    {
+        if(window)
+        {
+            SetViewSize(window->GetWidth(), window->GetHeight());
+
+            slotViewChanged_ = window->signalViewChanged_->Connect([&](int width, int height)
+            {
+                SetViewSize(width, height);
+            });
+        }
+        else
+        {
+            slotViewChanged_ = nullptr;
+            SetViewSize(0, 0);
+        }
+    }
+
     PTextMesh FontAtlas::GetOrCreateMesh(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
     {
         auto mesh = meshes_.GetOrCreateClass<TextMesh>(text);
@@ -43,7 +61,7 @@ namespace NSG
 
     bool FontAtlas::IsValid()
     {
-        return xmlResource_ && xmlResource_->IsReady() && texture_->IsReady();
+        return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_ && xmlResource_->IsReady() && texture_->IsReady();
     }
 
     void FontAtlas::AllocateResources()

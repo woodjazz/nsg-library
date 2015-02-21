@@ -55,7 +55,7 @@ namespace NSG
 
     GLenum BoxMesh::GetWireFrameDrawMode() const
     {
-        return GL_LINE_LOOP;
+        return GL_LINES;
     }
 
     GLenum BoxMesh::GetSolidDrawMode() const
@@ -87,6 +87,7 @@ namespace NSG
 
         vertexsData_.clear();
         indexes_.clear();
+        indexesWireframe_.clear();
 
         VertexsData& data = vertexsData_;
 
@@ -121,15 +122,28 @@ namespace NSG
         {
             for (int x = 0; x < resX_ - 1; x++)
             {
+				IndexType i0 = (IndexType)(y * resX_ + x + vertOffset);
+				IndexType i1 = (IndexType)(y * resX_ + x + 1 + vertOffset);
+				IndexType i2 = (IndexType)((y + 1)*resX_ + x + vertOffset);
+				IndexType i3 = (IndexType)((y + 1)*resX_ + x + 1 + vertOffset);
                 // first triangle
-                indexes_.push_back(y * resX_ + x + vertOffset);
-                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + vertOffset);
+                indexes_.push_back(i0);
+                indexes_.push_back(i1);
+                indexes_.push_back(i2);
 
                 // second triangle
-                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + vertOffset);
+                indexes_.push_back(i1);
+                indexes_.push_back(i3);
+                indexes_.push_back(i2);
+
+                indexesWireframe_.push_back(i0);
+                indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i1);
+                indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i3);
+                indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i0);
             }
         }
 
@@ -163,16 +177,30 @@ namespace NSG
         {
             for (int x = 0; x < resZ_ - 1; x++)
             {
+				IndexType i0 = (IndexType)(y * resZ_ + x + vertOffset);
+				IndexType i1 = (IndexType)(y * resZ_ + x + 1 + vertOffset);
+				IndexType i2 = (IndexType)((y + 1)*resZ_ + x + vertOffset);
+				IndexType i3 = (IndexType)((y + 1)*resZ_ + x + 1 + vertOffset);
+
                 // first triangle
-                indexes_.push_back(y * resZ_ + x + vertOffset);
-                indexes_.push_back(y * resZ_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
+                indexes_.push_back(i0);
+                indexes_.push_back(i1);
+                indexes_.push_back(i2);
 
                 // second triangle
-                indexes_.push_back(y * resZ_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resZ_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
-            }
+                indexes_.push_back(i1);
+                indexes_.push_back(i3);
+                indexes_.push_back(i2);
+
+				indexesWireframe_.push_back(i0);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i0);
+			}
         }
 
         vertOffset = data.size();
@@ -205,16 +233,30 @@ namespace NSG
         {
             for (int x = 0; x < resZ_ - 1; x++)
             {
-                // first triangle
-                indexes_.push_back(y * resZ_ + x + vertOffset);
-                indexes_.push_back(y * resZ_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
+				IndexType i0 = (IndexType)(y * resZ_ + x + vertOffset);
+				IndexType i1 = (IndexType)(y * resZ_ + x + 1 + vertOffset);
+				IndexType i2 = (IndexType)((y + 1)*resZ_ + x + vertOffset);
+				IndexType i3 = (IndexType)((y + 1)*resZ_ + x + 1 + vertOffset);
 
-                // second triangle
-                indexes_.push_back(y * resZ_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resZ_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resZ_ + x + vertOffset);
-            }
+				// first triangle
+				indexes_.push_back(i0);
+				indexes_.push_back(i1);
+				indexes_.push_back(i2);
+
+				// second triangle
+				indexes_.push_back(i1);
+				indexes_.push_back(i3);
+				indexes_.push_back(i2);
+
+				indexesWireframe_.push_back(i0);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i0);
+			}
         }
 
         vertOffset = data.size();
@@ -248,15 +290,28 @@ namespace NSG
         {
             for (int x = 0; x < resX_ - 1; x++)
             {
-                // first triangle
-                indexes_.push_back(y * resX_ + x + vertOffset);
-                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + vertOffset);
+				IndexType i0 = (IndexType)(y * resX_ + x + vertOffset);
+				IndexType i1 = (IndexType)(y * resX_ + x + 1 + vertOffset);
+				IndexType i2 = (IndexType)((y + 1)*resX_ + x + vertOffset);
+				IndexType i3 = (IndexType)((y + 1)*resX_ + x + 1 + vertOffset);
+				// first triangle
+				indexes_.push_back(i0);
+				indexes_.push_back(i1);
+				indexes_.push_back(i2);
 
-                // second triangle
-                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + vertOffset);
+				// second triangle
+				indexes_.push_back(i1);
+				indexes_.push_back(i3);
+				indexes_.push_back(i2);
+
+				indexesWireframe_.push_back(i0);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i0);
             }
         }
 
@@ -290,15 +345,29 @@ namespace NSG
         {
             for (int x = 0; x < resX_ - 1; x++)
             {
-                // first triangle
-                indexes_.push_back(y * resX_ + x + vertOffset);
-                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + vertOffset);
+				IndexType i0 = (IndexType)(y * resX_ + x + vertOffset);
+				IndexType i1 = (IndexType)(y * resX_ + x + 1 + vertOffset);
+				IndexType i2 = (IndexType)((y + 1)*resX_ + x + vertOffset);
+				IndexType i3 = (IndexType)((y + 1)*resX_ + x + 1 + vertOffset);
 
-                // second triangle
-                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + vertOffset);
+				// first triangle
+				indexes_.push_back(i0);
+				indexes_.push_back(i1);
+				indexes_.push_back(i2);
+
+				// second triangle
+				indexes_.push_back(i1);
+				indexes_.push_back(i3);
+				indexes_.push_back(i2);
+
+				indexesWireframe_.push_back(i0);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i0);
             }
         }
 
@@ -331,15 +400,29 @@ namespace NSG
         {
             for (int x = 0; x < resX_ - 1; x++)
             {
-                // first triangle
-                indexes_.push_back(y * resX_ + x + vertOffset);
-                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + vertOffset);
+				IndexType i0 = (IndexType)(y * resX_ + x + vertOffset);
+				IndexType i1 = (IndexType)(y * resX_ + x + 1 + vertOffset);
+				IndexType i2 = (IndexType)((y + 1)*resX_ + x + vertOffset);
+				IndexType i3 = (IndexType)((y + 1)*resX_ + x + 1 + vertOffset);
 
-                // second triangle
-                indexes_.push_back(y * resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + 1 + vertOffset);
-                indexes_.push_back((y + 1)*resX_ + x + vertOffset);
+				// first triangle
+				indexes_.push_back(i0);
+				indexes_.push_back(i1);
+				indexes_.push_back(i2);
+
+				// second triangle
+				indexes_.push_back(i1);
+				indexes_.push_back(i3);
+				indexes_.push_back(i2);
+
+				indexesWireframe_.push_back(i0);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i0);
             }
         }
 

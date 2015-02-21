@@ -50,11 +50,11 @@ namespace NSG
         const BoundingBox& GetBB() const { return bb_; }
         float GetBoundingSphereRadius() const { return boundingSphereRadius_; }
         VertexBuffer* GetVertexBuffer() const { return pVBuffer_.get(); }
-        IndexBuffer* GetIndexBuffer() const { return pIBuffer_.get(); }
+		IndexBuffer* GetIndexBuffer(bool solid) const { return solid ? pIBuffer_.get() : pIWirefameBuffer_.get(); }
         const VertexsData& GetConstVertexsData() const { return vertexsData_; }
         const Indexes& GetConstIndexes() const { return indexes_; }
-		VertexsData& GetVertexsData() { return vertexsData_; }
-		Indexes& GetIndexes() { return indexes_; }
+		const VertexsData& GetVertexsData() const { return vertexsData_; }
+		const Indexes& GetIndexes(bool solid) const { return solid ? indexes_ : indexesWireframe_; }
         void Save(pugi::xml_node& node);
         virtual void Load(const pugi::xml_node& node);
         void SetSerializable(bool serializable) { serializable_ = serializable; }
@@ -80,9 +80,11 @@ namespace NSG
         Mesh(const std::string& name, bool dynamic = false);
     protected:
         VertexsData vertexsData_;
-        Indexes indexes_;
+        Indexes indexes_; //for solid object
+        Indexes indexesWireframe_; //for wireframe
         PVertexBuffer pVBuffer_;
-        PIndexBuffer pIBuffer_;
+        PIndexBuffer pIBuffer_; // for solid objects
+		PIndexBuffer pIWirefameBuffer_; // for wireframe
         BoundingBox bb_;
         float boundingSphereRadius_;
         bool isStatic_;

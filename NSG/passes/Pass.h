@@ -55,13 +55,13 @@ namespace NSG
         void SetCullFace(CullFaceMode mode);
         void SetFrontFace(FrontFaceMode mode);
 		PProgram GetProgram() const { return pProgram_; }
-        virtual void Render();
-        void Render(Batch& batch);
+        virtual void Draw();
         void Save(pugi::xml_node& node);
         void Load(const pugi::xml_node& node, Material* material);
         PPass Clone(Material* material) const;
-    protected:
-        void SetupPass();
+		bool IsTransparent() const;
+		bool IsText() const;
+		void SetupPass();
     private:
         Technique* technique_;
         Graphics& graphics_;

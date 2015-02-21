@@ -73,8 +73,8 @@ namespace NSG
         void SetWindow(Window* window);
         Window* GetWindow() const { return activeWindow_; }
         void SetFrameBuffer(GLuint value);
-        void DrawActiveMesh(bool solid);
-		void DrawActiveMesh(bool solid, Batch& batch);
+		void DrawActiveMesh(Pass* pass);
+		void DrawInstancedActiveMesh(Pass* pass, const Batch& batch);
         void DiscardFramebuffer();
         bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
         bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
@@ -83,8 +83,7 @@ namespace NSG
         bool HasNonPowerOfTwo() const { return has_texture_non_power_of_two_ext_; }
         bool HasInstancedArrays() const { return has_instanced_arrays_ext_; }
         bool HasPackedDepthStencil() const { return has_packed_depth_stencil_ext_; }
-        void SetBuffers();
-        void UpdateBatchBuffer();
+		void SetBuffers(bool solid);
         void UpdateBatchBuffer(const Batch& batch);
         void SetInstanceAttrPointers(Program* program);
         void SetVertexAttrPointers();
@@ -93,10 +92,11 @@ namespace NSG
         void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
         UniformObjs& GetUniformObjs() { return uniformObjs_; }
         void SetMesh(Mesh* mesh) { activeMesh_ = mesh; }
-        Mesh* GetMesh() const { return activeMesh_; }
+        const Mesh* GetMesh() const { return activeMesh_; }
 		void SetNode(SceneNode* node) { activeNode_ = node; }
-        void Render(Batch& batch);
-		void Render();
+		void ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const;
+		void SortBackToFront(std::vector<SceneNode*>& nodes) const;
+		void RenderVisibleSceneNodes();
         bool IsTextureSizeCorrect(unsigned width, unsigned height);
         void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
         GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
@@ -116,7 +116,7 @@ namespace NSG
         std::vector<Texture*> textures_;
         unsigned activeTexture_;
         unsigned enabledAttributes_; //positions' bits for enabled attributes
-        Mesh* lastMesh_; // last mesh drawn
+        const Mesh* lastMesh_; // last mesh drawn
         Program* lastProgram_; // last used program
 		SceneNode* lastNode_; // last used node
         Mesh* activeMesh_; // mesh that is going to be drawn

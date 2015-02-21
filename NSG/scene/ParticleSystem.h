@@ -41,6 +41,8 @@ namespace NSG
         void AllocateResources() override;
         void ReleaseResources() override;
         float GetLifeTime() const;
+		void SetParticleMaterial(PMaterial material);
+		PMaterial GetParticleMaterial() { return particleMaterial_; }
     private:
         void Initialize(PParticle particle);
         float GetParticlesPerFrame(float deltaTime);
@@ -56,6 +58,7 @@ namespace NSG
         size_t amount_;
         float start_; //secs
         float end_; //secs
+		float animationEndTime_;
         float lifetime_; //secs
         float lifetimeRandom_;
         float currentTime_;
@@ -90,5 +93,6 @@ namespace NSG
         float triggerParticles_;
         std::set<PParticle> disabled_;
         ParticleSystemDistribution distribution_;
+		Vector3 gravity_;
     };
 }

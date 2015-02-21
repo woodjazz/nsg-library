@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include <cstdio>
 #include <atomic>
 #include <new>
+#include <mutex>
 
 namespace NSG
 {
@@ -88,25 +89,26 @@ namespace NSG
         : freeList_(nullptr),
           allocatedObjs_(0)
     {
-        TRACE_PRINTF("Creating pool: object size=%lu objs/chunk=%lu\n", OBJECT_SIZE, OBJECTS_PER_CHUNK);
-        void* p = std::malloc(ChunkSize);
-        if (!p)
-            throw std::bad_alloc();
-        freeList_ = (PMemObj)p;
-        begin_ = p;
-        end_ = (char*)begin_ + ChunkSize;
+		TRACE_PRINTF("Creating pool: object size=%lu objs/chunk=%lu\n", OBJECT_SIZE, OBJECTS_PER_CHUNK);
+		void* p = std::malloc(ChunkSize);
+		if (!p)
+			throw std::bad_alloc();
+		begin_ = p;
+		end_ = (char*)p + ChunkSize;
 
-        // Constructs the empty list.
-        PMemObj next = freeList_;
-        PMemObj previous;
-        for (size_t i = 0; i < OBJECTS_PER_CHUNK; i++)
-        {
-            previous = next;
-            next = (PMemObj)((char*)next + sizeof(MemObj));
-            previous->header_.poolPointer_ = this;
-            previous->nextMemObj_ = next;
-        }
-        previous->nextMemObj_ = nullptr;
+		// Constructs the empty list.
+		PMemObj next = (PMemObj)p;
+		PMemObj previous;
+		for (size_t i = 0; i < OBJECTS_PER_CHUNK; i++)
+		{
+			previous = next;
+			next = (PMemObj)((char*)next + sizeof(MemObj));
+			previous->header_.poolPointer_ = this;
+			previous->nextMemObj_ = next;
+		}
+		previous->nextMemObj_ = nullptr;
+
+		freeList_.store((PMemObj)p);
     }
 
     template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>

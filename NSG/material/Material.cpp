@@ -26,15 +26,11 @@ namespace NSG
           color_(1, 1, 1, 1),
           name_(name),
           serializable_(true),
-          blendFilterMode_(BlendFilterMode::ADDITIVE)
+          blendFilterMode_(BlendFilterMode::ADDITIVE),
+		  isBatched_(false)
     {
         technique_ = std::make_shared<Technique>(this);
 		SetProgramFlags(0, (int)ProgramFlag::NONE); // in order to force program creation
-
-		if (Graphics::this_->HasInstancedArrays())
-		{
-			instanceBuffer_ = std::make_shared<InstanceBuffer>();
-		}
     }
 
     Material::~Material()
@@ -206,6 +202,27 @@ namespace NSG
         }
     }
 
+	void Material::SetTextMap(PTexture texture)
+	{
+		if (SetTexture(MaterialTexture::DIFFUSE_MAP, texture))
+		{
+			if (texture)
+			{
+				auto pass = technique_->GetPass(0);
+				pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
+				technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::TEXT);
+				texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
+			}
+			else
+			{
+				auto pass = technique_->GetPass(0);
+				pass->SetBlendMode(BLEND_MODE::BLEND_NONE);
+				technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::TEXT);
+			}
+		}
+
+	}
+
     bool Material::IsValid()
     {
         bool isReady = true;
@@ -214,6 +231,19 @@ namespace NSG
 				isReady = isReady && texture_[index]->IsReady();
         return isReady;
     }
+
+	void Material::AllocateResources()
+	{
+		isBatched_ = Graphics::this_->HasInstancedArrays() && technique_->GetNumPasses() == 1 && !IsTransparent();
+		if (isBatched_)
+			instanceBuffer_ = std::make_shared<InstanceBuffer>();
+	}
+
+	void Material::ReleaseResources()
+	{
+		instanceBuffer_ = nullptr;
+		lastBatch_.Clear();
+	}
 
     void Material::Save(pugi::xml_node& node)
     {
@@ -322,4 +352,41 @@ namespace NSG
         }
         return nullptr;
     }
+
+	bool Material::IsTransparent() const
+	{
+		return technique_->IsTransparent();
+	}
+
+	bool Material::IsText() const
+	{
+		return technique_->IsText();
+	}
+
+	void Material::SetSolid(bool solid)
+	{
+		technique_->GetPass(0)->SetDrawMode(solid ? DrawMode::SOLID : DrawMode::WIREFRAME);
+	}
+
+	bool Material::IsBatched()
+	{
+		if (IsReady())
+			return isBatched_;
+		return false;
+	}
+
+	void Material::BachedNodeHasChanged()
+	{
+		lastBatch_.Clear();
+	}
+
+	void Material::UpdateBatchBuffer(const Batch& batch)
+	{
+		if (!(lastBatch_ == batch))
+		{
+			instanceBuffer_->UpdateBatchBuffer(batch);
+			lastBatch_ = batch;
+		}
+	}
+
 }

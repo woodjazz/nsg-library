@@ -23,13 +23,10 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if !defined(EMSCRIPTEN)
-
-//#define USE_POOLS
-#ifdef USE_POOLS
-
-#include "Pool.h"
+#include "MemoryManager.h"
 #include "Log.h"
+#ifdef USE_POOLS
+#include "Pool.h"
 #include "Check.h"
 #include <thread>
 #include <cstdlib>
@@ -49,7 +46,6 @@ namespace NSG
     };
     struct Pools;
     static Pools* poolsObj = nullptr;
-    static char globalHeapId = 0;
 
     void* AllocateMemoryFromHeap(std::size_t count)
     {
@@ -59,7 +55,7 @@ namespace NSG
         if (p)
         {
             MemHeader* header = (MemHeader*)p;
-            header->poolPointer_ = &globalHeapId;
+			header->poolPointer_ = &AllocateMemoryFromHeap;
             void* memBlock = (char*)p + sizeof(MemHeader);
             return memBlock;
         }
@@ -71,7 +67,7 @@ namespace NSG
     {
         void* memObj = (char*)ptr - sizeof(MemHeader);
         MemHeader* header = (MemHeader*)memObj;
-        if (header->poolPointer_ == &globalHeapId)
+		if (header->poolPointer_ == &AllocateMemoryFromHeap)
         {
             //TRACE_PRINTF("Releasing memory to heap\n");
             std::free(memObj);
@@ -98,6 +94,7 @@ namespace NSG
         Pool < MinPoolSize << 13, 100 > pool8192_;
         Pool < MinPoolSize << 14, 50 > pool16384_;
         Pool < MinPoolSize << 15, 2 > pool32768_;
+		static const size_t MaxPoolSize = MinPoolSize << 15;
         static const size_t MaxPools = 16;
         PoolData* pools_;
         size_t nPools_;
@@ -111,21 +108,25 @@ namespace NSG
             PoolData pools[] = { pool1_, pool2_, pool4_, pool8_, pool16_, pool32_, pool64_, pool128_, pool256_, pool512_, pool1024_, pool2048_, pool4096_, pool8192_, pool16384_, pool32768_ };
             static_assert(MaxPools == sizeof(pools) / sizeof(PoolData), "Number of pools is incorrect");
             static char memPoolData[sizeof(PoolData) * MaxPools] = { 0 };
-            pools_ = new(memPoolData)PoolData[MaxPools];
+			pools_ = new(memPoolData)PoolData;
             int i = 0;
             for (auto& obj : pools)
                 pools_[i++] = std::move(obj);
             nPools_ = MaxPools;
             std::sort(&pools_[0], &pools_[MaxPools], [](const PoolData & a, const PoolData & b) { return a.objSize_ < b.objSize_; });
             poolsObj = this;
-			#if !defined(IOS) && !defined(ANDROID) && !defined(IS_LINUX)
-            std::atexit(AtExit);
-            #endif
+            //#if !defined(IOS) && !defined(ANDROID) && !defined(IS_LINUX)
+            //std::atexit(AtExit);
+            //#endif
         }
 
-        ~Pools();
+        ~Pools()
+		{
+			poolsObj = nullptr;
+			delete[] pools_;
+		}
 
-        inline IPool* GetBestPool(std::size_t count)
+        IPool* GetBestPool(std::size_t count)
         {
             assert(count >= 0);
             #if 0
@@ -134,9 +135,10 @@ namespace NSG
                 return pools_[slot].pool_;
             return nullptr;
             #else
-            for (size_t i = 0; i < nPools_; i++)
-                if (pools_[i].objSize_ > count)
-                    return pools_[i].pool_;
+			if (count <= Pools::MaxPoolSize)
+				for (size_t i = 0; i < nPools_; i++)
+					if (pools_[i].objSize_ > count)
+						return pools_[i].pool_;
             return nullptr;
             #endif
         }
@@ -147,26 +149,32 @@ namespace NSG
         }
     };
 
-    Pools::~Pools()
-    {
-        poolsObj = nullptr;
-        delete[] pools_;
-    }
-
     static void* AllocateMemory(std::size_t count)
     {
-        if (!poolsObj)
-        {
-            static char memPools[sizeof(Pools)] = { 0 };
-            new(memPools)Pools;
-        }
-
-        IPool* pool = poolsObj->GetBestPool(count);
-        if (pool)
-        {
-            void* p = pool->Allocate(count);
-            if (p) return p;
-        }
+#if 0
+		static struct Initializer
+		{
+			char memPools_[sizeof(Pools)];
+			Pools* p_;
+			Initializer()
+			{
+				p_ = new(&memPools_[0])Pools;
+			}
+			~Initializer()
+			{
+				p_->~Pools();
+			}
+		} initializer;
+#endif
+		if (poolsObj)
+		{
+			IPool* pool = poolsObj->GetBestPool(count);
+			if (pool)
+			{
+				void* p = pool->Allocate(count);
+				if (p) return p;
+			}
+		}
         return AllocateMemoryFromHeap(count);
     }
 
@@ -174,38 +182,42 @@ namespace NSG
     {
         if (ptr)
         {
-            if (poolsObj)
+			if (poolsObj)
             {
                 void* memObj = (char*)ptr - sizeof(MemHeader);
                 MemHeader* header = (MemHeader*)memObj;
-                if (header->poolPointer_ != &globalHeapId)
+				if (header->poolPointer_ != &AllocateMemoryFromHeap)
                 {
                     IPool* pool = (IPool*)header->poolPointer_;
-                    if (poolsObj->IsPool((void*)pool))
-                        pool->DeAllocate(ptr);
+					if (poolsObj->IsPool((void*)pool))
+					{
+						pool->DeAllocate(ptr);
+						return;
+					}
                 }
-                else
-                    ReleaseMemoryFromHeap(ptr);
             }
+			ReleaseMemoryFromHeap(ptr);
         }
     }
 
-    void AtExit()
-    {
-        TRACE_PRINTF("*** AtExit called ***\n")
-        if (poolsObj)
-            poolsObj->~Pools();
-    }
+	static Pools* memoryPools = nullptr;
+	void InitilizeMemoryManager()
+	{
+		static char memPools[sizeof(Pools)];
+		memoryPools = new(&memPools[0])Pools;
+	}
+
+	void DestroyMemoryManager()
+	{
+#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+		memoryPools->~Pools();
+#endif
+	}
 }
 
 using namespace NSG;
 
 void* operator new(std::size_t count)
-{
-    return AllocateMemory(count);
-}
-
-void* operator new[](size_t count)
 {
     return AllocateMemory(count);
 }
@@ -228,6 +240,11 @@ void operator delete(void* ptr, std::size_t count) noexcept
     ReleaseMemory(ptr, count);
 }
 
+void* operator new[](size_t count)
+{
+	return AllocateMemory(count);
+}
+
 #if _MSC_VER
 void operator delete[](void* ptr)
 #else
@@ -236,6 +253,20 @@ void operator delete[](void* ptr) noexcept
 {
     ReleaseMemory(ptr, 0);
 }
-#endif
+#else
+//void AtExit()
+//{
+//	TRACE_PRINTF("*** AtExit called ***\n");
+//}
 
+namespace NSG
+{
+	void InitilizeMemoryManager()
+	{
+	}
+
+	void DestroyMemoryManager()
+	{
+	}
+}
 #endif

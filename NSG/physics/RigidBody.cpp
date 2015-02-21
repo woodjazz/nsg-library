@@ -83,7 +83,8 @@ namespace NSG
           margin_(.06f),
           collisionGroup_((int)CollisionMask::ALL),
           collisionMask_((int)CollisionMask::ALL),
-          inWorld_(false)
+          inWorld_(false),
+		  gravity_(sceneNode->GetScene()->GetPhysicsWorld()->GetGravity())
     {
         //Since a non-visible scenenode will neither be rendered nor be validated then
         //better not to invalidate a Rigidbody (Rigidbody has to be alive because can make (in any moment) an object visible again)
@@ -120,6 +121,8 @@ namespace NSG
         body_->setUserPointer(this);
         body_->setWorldTransform(ToTransform(sceneNode->GetGlobalPosition(), sceneNode->GetGlobalOrientation()));
         AddToWorld();
+		body_->setFlags(BT_DISABLE_WORLD_GRAVITY);
+		body_->setGravity(ToBtVector3(gravity_));
     }
 
     void RigidBody::ReleaseResources()
@@ -157,6 +160,16 @@ namespace NSG
             body_->updateInertiaTensor();
         }
     }
+
+	void RigidBody::SetGravity(const Vector3& gravity)
+	{
+		if (gravity != gravity_)
+		{
+			gravity_ = gravity;
+			if (IsReady())
+				body_->setGravity(ToBtVector3(gravity_));
+		}
+	}
 
     void RigidBody::SetMass(float mass)
     {
@@ -235,7 +248,7 @@ namespace NSG
         PSceneNode sceneNode(sceneNode_.lock());
         PMesh pMesh = sceneNode->GetMesh();
         const VertexsData& vertexData = pMesh->GetVertexsData();
-        const Indexes& indices = pMesh->GetIndexes();
+        const Indexes& indices = pMesh->GetIndexes(true);
         triMesh_ = new btTriangleMesh();
         size_t index_count = indices.size();
         CHECK_ASSERT(index_count % 3 == 0, __FILE__, __LINE__);

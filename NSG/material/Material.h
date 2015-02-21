@@ -27,6 +27,7 @@ misrepresented as being the original software.
 
 #include "Types.h"
 #include "Object.h"
+#include "Batch.h"
 #include "UniformsUpdate.h"
 namespace NSG
 {
@@ -46,6 +47,7 @@ namespace NSG
         void SetSpecularMap(PTexture texture);
         void SetAOMap(PTexture texture);
         void SetDisplacementMap(PTexture texture);
+		void SetTextMap(PTexture texture);
 		PTexture GetTexture(size_t index) const 
 		{ 
 			CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__); 
@@ -82,8 +84,16 @@ namespace NSG
         const BlurFilter& GetFilterBlur() const { return blurFilter_; };
         PTexture GetTextureWithResource(PResource resource);
 		PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
+		bool IsTransparent() const;
+		void SetSolid(bool solid);
+		bool IsBatched();
+		void UpdateBatchBuffer(const Batch& batch);
+		void BachedNodeHasChanged();
+		bool IsText() const;
     private:
         bool IsValid() override;
+		void AllocateResources() override;
+		void ReleaseResources() override;
         PTexture texture_[MaterialTexture::MAX_TEXTURES_MAPS];
         Color ambient_;
         Color diffuse_;
@@ -97,6 +107,8 @@ namespace NSG
         BlendFilterMode blendFilterMode_;
         BlurFilter blurFilter_;
 		PInstanceBuffer instanceBuffer_;
+		Batch lastBatch_;
+		bool isBatched_;
         friend class Program;
     };
 }

@@ -72,7 +72,13 @@ namespace NSG
 
     enum class LightType {POINT, DIRECTIONAL, SPOT};
 
-    typedef enum {BLEND_NONE, BLEND_ALPHA} BLEND_MODE ;
+    typedef enum 
+    {
+        BLEND_NONE, 
+        BLEND_ALPHA,
+        BLEND_MULTIPLICATIVE,
+        BLEND_ADDITIVE
+    } BLEND_MODE ;
 
     typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
     typedef enum {TOP_ALIGNMENT, MIDDLE_ALIGNMENT, BOTTOM_ALIGNMENT} VerticalAlignment;
@@ -211,7 +217,9 @@ namespace NSG
         SPECULARMAP = 1 << 11,
         AOMAP = 1 << 12,
         DISPLACEMENTMAP = 1 << 13,
-        DIFFUSEMAP = 1 << 14
+        DIFFUSEMAP = 1 << 14,
+        SPHERICAL_BILLBOARD = 1 << 15,
+        CYLINDRICAL_BILLBOARD = 1 << 16
     };
 
     typedef FlagSet<ProgramFlag> ProgramFlags;

@@ -25,32 +25,37 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-#include <deque>
+
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
+
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 1024, 768);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 10, 10);
 
     auto scene = std::make_shared<Scene>("scene");
 
-    auto camera = scene->GetOrCreateChild<Camera>("camera");
+    auto camera = scene->CreateChild<Camera>();
 	camera->SetWindow(window);
 	camera->SetPosition(Vertex3(0, 8, 15));
 
     auto control = std::make_shared<CameraControl>(camera);
     control->SetWindow(window);
 
+	auto resource = app.GetOrCreateResourceFile("data/spark.png");
+	auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+
 	auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
+	ps->GetParticleMaterial()->SetDiffuseMap(texture);
     auto meshEmitter(app.CreateBoxMesh());
     ps->SetMesh(meshEmitter);
     ps->SetPosition(Vertex3(0, 10, 0));
 	ps->SetMaterial(app.GetOrCreateMaterial());
-	ps->GetMaterial()->GetTechnique()->GetPass(0)->SetDrawMode(DrawMode::WIREFRAME);
+	ps->GetMaterial()->SetSolid(false);
 
 	auto planeMesh = app.CreateBoxMesh(20, 0.1f, 20);
-    auto floorObj = scene->GetOrCreateChild<SceneNode>("floor");
+    auto floorObj = scene->CreateChild<SceneNode>();
 	floorObj->SetMesh(planeMesh);
 	floorObj->SetMaterial(app.GetOrCreateMaterial());
 	floorObj->GetMaterial()->SetColor(Color(1, 0, 0, 1));

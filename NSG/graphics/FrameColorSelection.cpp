@@ -152,14 +152,13 @@ namespace NSG
             Begin(screenX, screenY);
             {
                 material_->SetColor(TransformSelectedId2Color(id));
-
-                for (auto& obj : nodes)
-                {
-					Graphics::this_->SetScene(obj->GetScene().get());
-					Graphics::this_->SetNode(obj);
-                    Graphics::this_->SetMesh(obj->GetMesh().get());
-                    material_->GetTechnique()->Render(nullptr);
-                }
+				std::vector<PBatch> allBatches;
+				auto visibles = nodes;
+				for (auto& node : nodes)
+					node->SetMaterial(material_);
+				Graphics::this_->GenerateBatches(visibles, allBatches);
+				for (auto& batch : allBatches)
+					batch->Draw();
             }
             End();
             return true;

@@ -555,7 +555,26 @@ namespace NSG
                         blendSFactor_ = GL_ONE;
                         blendDFactor_ = GL_ZERO;
                     }
+                    break;
+                
+                case BLEND_MULTIPLICATIVE:
+                    glEnable(GL_BLEND);
+                    if (blendSFactor_ != GL_ZERO || blendDFactor_ != GL_SRC_COLOR)
+                    {
+                        glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+                        blendSFactor_ = GL_ZERO;
+                        blendDFactor_ = GL_SRC_COLOR;
+                    }
+                    break;
 
+                case BLEND_ADDITIVE:
+                    glEnable(GL_BLEND);
+                    if (blendSFactor_ != GL_ONE || blendDFactor_ != GL_ONE)
+                    {
+                        glBlendFunc(GL_ONE, GL_ONE);
+                        blendSFactor_ = GL_ONE;
+                        blendDFactor_ = GL_ONE;
+                    }
                     break;
 
                 case BLEND_ALPHA:
@@ -793,13 +812,13 @@ namespace NSG
         }
     }
 
-    void Graphics::SetBuffers()
+    void Graphics::SetBuffers(bool solid)
     {
         VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
 
         if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
         {
-            IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer();
+			IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer(solid);
             CHECK_ASSERT(!iBuffer || !iBuffer->IsDynamic(), __FILE__, __LINE__);
             VAOKey key { activeProgram_, vBuffer, iBuffer };
             VertexArrayObj* vao(nullptr);
@@ -819,77 +838,68 @@ namespace NSG
         {
             SetVertexBuffer(vBuffer);
             SetAttributes();
-            SetInstanceAttrPointers(activeProgram_);
-            SetIndexBuffer(activeMesh_->GetIndexBuffer());
-        }
-    }
-
-    void Graphics::UpdateBatchBuffer()
-    {
-        if (has_instanced_arrays_ext_)
-        {
-            CHECK_ASSERT(activeNode_, __FILE__, __LINE__);
-            Batch batch;
-            batch.nodes_.push_back(activeNode_);
-			activeProgram_->GetMaterial()->GetInstanceBuffer()->UpdateBatchBuffer(batch);
+			if (activeProgram_->GetMaterial()->IsBatched())
+				SetInstanceAttrPointers(activeProgram_);
+			SetIndexBuffer(activeMesh_->GetIndexBuffer(solid));
         }
     }
 
     void Graphics::SetInstanceAttrPointers(Program* program)
     {
+		CHECK_ASSERT(program->GetMaterial()->IsBatched(), __FILE__, __LINE__);
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        if (has_instanced_arrays_ext_)
+
+		SetVertexBuffer(program->GetMaterial()->GetInstanceBuffer().get());
+
+        GLuint modelMatrixLoc = program->GetAttModelMatrixLoc();
+
+        if (modelMatrixLoc != -1)
         {
-			SetVertexBuffer(program->GetMaterial()->GetInstanceBuffer().get());
-
-            GLuint modelMatrixLoc = program->GetAttModelMatrixLoc();
-
-            if (modelMatrixLoc != -1)
+            for (int i = 0; i < 3; i++)
             {
-                for (int i = 0; i < 3; i++)
-                {
-                    glEnableVertexAttribArray(modelMatrixLoc + i);
-                    glVertexAttribPointer(modelMatrixLoc + i,
-                                          4,
-                                          GL_FLOAT,
-                                          GL_FALSE,
-                                          sizeof(InstanceData),
-                                          reinterpret_cast<void*>(offsetof(InstanceData, modelMatrixRow0_) + sizeof(float) * 4 * i));
+                glEnableVertexAttribArray(modelMatrixLoc + i);
+                glVertexAttribPointer(modelMatrixLoc + i,
+                                        4,
+                                        GL_FLOAT,
+                                        GL_FALSE,
+                                        sizeof(InstanceData),
+                                        reinterpret_cast<void*>(offsetof(InstanceData, modelMatrixRow0_) + sizeof(float) * 4 * i));
 
-                    glVertexAttribDivisor(modelMatrixLoc + i, 1);
-                }
-            }
-            else
-            {
-                glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW0);
-                glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW1);
-                glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW2);
-            }
-
-            GLuint normalMatrixLoc = program->GetAttNormalMatrixLoc();
-            if (normalMatrixLoc != -1)
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    glEnableVertexAttribArray(normalMatrixLoc + i);
-                    glVertexAttribPointer(normalMatrixLoc + i,
-                                          3,
-                                          GL_FLOAT,
-                                          GL_FALSE,
-                                          sizeof(InstanceData),
-                                          reinterpret_cast<void*>(offsetof(InstanceData, normalMatrixCol0_) + sizeof(float) * 3 * i));
-
-                    glVertexAttribDivisor(normalMatrixLoc + i, 1);
-                }
-            }
-            else
-            {
-                glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL0);
-                glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL1);
-                glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL2);
+                glVertexAttribDivisor(modelMatrixLoc + i, 1);
             }
         }
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        else
+        {
+            glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW0);
+            glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW1);
+            glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW2);
+        }
+
+        GLuint normalMatrixLoc = program->GetAttNormalMatrixLoc();
+        if (normalMatrixLoc != -1)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                glEnableVertexAttribArray(normalMatrixLoc + i);
+                glVertexAttribPointer(normalMatrixLoc + i,
+                                        3,
+                                        GL_FLOAT,
+                                        GL_FALSE,
+                                        sizeof(InstanceData),
+                                        reinterpret_cast<void*>(offsetof(InstanceData, normalMatrixCol0_) + sizeof(float) * 3 * i));
+
+                glVertexAttribDivisor(normalMatrixLoc + i, 1);
+            }
+        }
+        else
+        {
+            glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL0);
+            glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL1);
+            glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL2);
+        }
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     void Graphics::SetVertexAttrPointers()
@@ -1087,8 +1097,11 @@ namespace NSG
         }
     }
 
-	void Graphics::DrawActiveMesh(bool solid)
+	void Graphics::DrawActiveMesh(Pass* pass)
     {
+		CHECK_ASSERT(pass, __FILE__, __LINE__);
+		pass->SetupPass();
+
 		if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
             return;
 
@@ -1096,24 +1109,24 @@ namespace NSG
 
         activeProgram_->SetVariables(activeMesh_, activeNode_);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 
         if (!activeProgram_)
             return; // the program has been invalidated (due some shader needs to be recompiled)
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-		UpdateBatchBuffer();
-        SetBuffers();
+		bool solid = pass->GetDrawMode() == DrawMode::SOLID;
+        SetBuffers(solid);
+		CHECK_GL_STATUS(__FILE__, __LINE__);
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         const VertexsData& vertexsData = activeMesh_->GetVertexsData();
-        const Indexes& indexes = activeMesh_->GetIndexes();
+        const Indexes& indexes = activeMesh_->GetIndexes(solid);
 
         if (!indexes.empty())
-            glDrawElements(mode, GLsizei(indexes.size()), GL_UNSIGNED_SHORT, 0);
+			glDrawElements(mode, GLsizei(indexes.size()), GL_UNSIGNED_SHORT, 0);
         else
 			glDrawArrays(mode, 0, GLsizei(vertexsData.size()));
 
+		CHECK_GL_STATUS(__FILE__, __LINE__);
         SetVertexArrayObj(nullptr);
 
         lastMesh_ = activeMesh_;
@@ -1123,8 +1136,13 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-	void Graphics::DrawActiveMesh(bool solid, Batch& batch)
+	void Graphics::DrawInstancedActiveMesh(Pass* pass, const Batch& batch)
     {
+		CHECK_ASSERT(pass, __FILE__, __LINE__);
+		pass->SetupPass();
+
+        CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
+
 		if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady())
             return;
 
@@ -1132,17 +1150,15 @@ namespace NSG
 
         activeProgram_->SetVariables(activeMesh_, nullptr);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
         if (!activeProgram_)
             return; // the program has been invalidated (due some shader needs to be recompiled)
 
-		if (has_instanced_arrays_ext_)
-			activeProgram_->GetMaterial()->GetInstanceBuffer()->UpdateBatchBuffer(batch);
-        SetBuffers();
+		bool solid = pass->GetDrawMode() == DrawMode::SOLID;
+		activeProgram_->GetMaterial()->UpdateBatchBuffer(batch);
+		SetBuffers(solid);
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
-		GLsizei instances = (GLsizei)batch.nodes_.size();
-        const Indexes& indexes = activeMesh_->GetIndexes();
+		GLsizei instances = (GLsizei)batch.GetNodes().size();
+        const Indexes& indexes = activeMesh_->GetIndexes(solid);
         if (!indexes.empty())
 			glDrawElementsInstanced(mode, (GLsizei)indexes.size(), GL_UNSIGNED_SHORT, 0, instances);
         else
@@ -1160,50 +1176,60 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-
-    void Graphics::Render(Batch& batch)
-    {
-        if (batch.material_)
-        {
-            Technique* technique = batch.material_->GetTechnique().get();
-            SetMesh(batch.mesh_.get());
-            if (has_instanced_arrays_ext_ && technique->GetNumPasses() == 1)
-            {
-                SetNode(nullptr);
-                PPass pass = technique->GetPass(0);
-                pass->Render(batch);
-            }
-            else
-            {
-                for (auto& node : batch.nodes_)
-                {
-                    SceneNode* sn = (SceneNode*)node;
-                    SetNode(sn);
-                    technique->Render();
-                }
-            }
-        }
-    }
-
-    void Graphics::Render()
+    void Graphics::RenderVisibleSceneNodes()
     {
         std::vector<SceneNode*> visibles;
-        activeScene_->GetVisibleNodes(activeCamera_, visibles);
-        std::vector<PBatch> batches;
-        GenerateBatches(visibles, batches);
-        for (auto& batch : batches)
-            Render(*batch);
+		activeScene_->GetVisibleNodes(activeCamera_, visibles);
+		if (!visibles.empty())
+		{
+			std::vector<SceneNode*> transparent;
+			ExtractTransparent(visibles, transparent);
+
+			if (!visibles.empty())
+			{
+				// First draw non-transparent nodes
+				std::vector<PBatch> allBatches;
+				GenerateBatches(visibles, allBatches);
+				for (auto& batch : allBatches)
+					batch->Draw();
+			}
+
+			if (!transparent.empty())
+			{
+				// Transparent nodes cannot be batched
+				SortBackToFront(transparent);
+				for (auto& node : transparent)
+					node->Draw();
+			}
+		}
     }
 
-    bool Graphics::IsTextureSizeCorrect(unsigned width, unsigned height)
-    {
-        int max_supported_size = 0;
-        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_supported_size );
-        CHECK_ASSERT(max_supported_size >= 64, __FILE__, __LINE__);
-        if (width > (unsigned)max_supported_size || height > (unsigned)max_supported_size)
-            return false;
-        return HasNonPowerOfTwo() || (IsPowerOfTwo(width) && IsPowerOfTwo(height));
-    }
+	void Graphics::ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const
+	{
+		CHECK_ASSERT(transparent.empty(), __FILE__, __LINE__);
+
+		for (auto& node : nodes)
+			if (node->GetMaterial()->IsTransparent())
+				transparent.push_back(node);
+
+        // remove tranparent from nodes 
+		nodes.erase(std::remove_if(nodes.begin(), nodes.end(),
+			[&](SceneNode* node) {return transparent.end() != std::find(transparent.begin(), transparent.end(), node); }),
+			nodes.end());
+	}
+
+	void Graphics::SortBackToFront(std::vector<SceneNode*>& nodes) const
+	{
+		Vector3 cameraPos;
+		if (activeCamera_)
+			cameraPos = activeCamera_->GetGlobalPosition();
+		std::sort(nodes.begin(), nodes.end(), [&](const SceneNode* a, const SceneNode* b) -> bool
+		{
+			auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
+			auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
+			return db < da;
+		});
+	}
 
     void Graphics::GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches)
     {
@@ -1259,22 +1285,30 @@ namespace NSG
             PMesh usedMesh;
             for (auto& obj : material.data_)
             {
-                bool limitReached = batches.size() && batches.back()->nodes_.size() >= MAX_NODES_IN_BATCH;
+				bool limitReached = batches.size() && batches.back()->GetNodes().size() >= MAX_NODES_IN_BATCH;
                 if (obj.mesh_ != usedMesh || !obj.mesh_ || limitReached)
                 {
                     usedMesh = obj.mesh_;
-                    auto batch(std::make_shared<Batch>());
-                    batch->material_ = material.material_;
-                    batch->mesh_ = usedMesh;
-                    batch->nodes_.push_back(obj.node_);
+					auto batch(std::make_shared<Batch>(material.material_.get(), usedMesh.get()));
+                    batch->Add(obj.node_);
                     batches.push_back(batch);
                 }
                 else
                 {
                     auto& lastBatch = batches.back();
-                    lastBatch->nodes_.push_back(obj.node_);
+                    lastBatch->Add(obj.node_);
                 }
             }
         }
     }
+
+	bool Graphics::IsTextureSizeCorrect(unsigned width, unsigned height)
+	{
+		int max_supported_size = 0;
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_supported_size);
+		CHECK_ASSERT(max_supported_size >= 64, __FILE__, __LINE__);
+		if (width > (unsigned)max_supported_size || height > (unsigned)max_supported_size)
+			return false;
+		return HasNonPowerOfTwo() || (IsPowerOfTwo(width) && IsPowerOfTwo(height));
+	}
 }

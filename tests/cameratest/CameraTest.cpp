@@ -186,7 +186,6 @@ static void Test01()
 	PScene scene = std::make_shared<Scene>("scene000");
 
 	PSphereMesh sphere(App::this_->CreateSphereMesh(1, 100));
-
     {
 
         Node node;
@@ -479,8 +478,8 @@ void CameraTest()
 	App app;
 	auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
 	FrustumTest();
-    Test01();
-    Test02();
+	Test01();
+	Test02();
 	Test03();
 	Test04();
 	Test05();

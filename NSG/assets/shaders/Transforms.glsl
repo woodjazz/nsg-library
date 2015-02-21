@@ -21,7 +21,49 @@ attribute vec4 a_weights;
 	attribute vec3 a_normalMatrixCol0;
 	attribute vec3 a_normalMatrixCol1;
 	attribute vec3 a_normalMatrixCol2;
+
+	mat4 Transpose(mat4 m) 
+	{
+		vec4 i0 = m[0];
+		vec4 i1 = m[1];
+		vec4 i2 = m[2];
+		vec4 i3 = m[3];
+		return mat4(
+			vec4(i0.x, i1.x, i2.x, i3.x),
+	        vec4(i0.y, i1.y, i2.y, i3.y),
+	        vec4(i0.z, i1.z, i2.z, i3.z),
+	        vec4(i0.w, i1.w, i2.w, i3.w)
+	    );
+	}	
+
+	mat4 GetInstancedMatrix()
+	{
+	    // See Graphics::UpdateBatchBuffer
+	    // Since we are using rows instead of cols the instancing model matrix is a transpose
+
+	    const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);
+	    return Transpose(mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn));
+	}
 #endif
+
+#if defined(SPHERICAL_BILLBOARD)
+	mat4 GetSphericalBillboardMatrix(mat4 m)
+	{
+		m[0] = vec4(1.0, 0.0, 0.0, m[0][3]);
+		m[1] = vec4(0.0, 1.0, 0.0, m[1][3]);
+		m[2] = vec4(0.0, 0.0, 1.0, m[2][3]);
+		return m;
+	}
+#endif
+
+#if defined(CYLINDRICAL_BILLBOARD)
+	mat4 GetCylindricalBillboardMatrix(mat4 m)
+	{
+		m[0] = vec4(1.0, 0.0, 0.0, m[0][3]);
+		m[2] = vec4(0.0, 0.0, 1.0, m[2][3]);
+		return m;
+	}
+#endif	
 
 #if defined(SKINNED)
 	uniform mat4 u_bones[NUM_BONES];
@@ -38,39 +80,33 @@ attribute vec4 a_weights;
 uniform mat4 u_model;
 uniform mat3 u_normalMatrix;
 uniform mat4 u_viewProjection;
+uniform mat4 u_view;
+uniform mat4 u_projection;
 
 mat4 GetModelMatrix()
 {
-    #if defined(SKINNED)
-	    #if defined(INSTANCED)
-		    // See Graphics::UpdateBatchBuffer
-		    // Since we are using rows instead of cols the instancing model matrix is a transpose,
-		    // so the matrix multiply order must be swapped
-		    const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);
-		    return GetSkinnedMatrix() * mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn);
-	    #else
-		    return u_model * GetSkinnedMatrix();
-	    #endif
+    #if defined(SKINNED) && defined(INSTANCED)
+	    return GetInstancedMatrix() * GetSkinnedMatrix();
+	#elif defined(SKINNED)
+		return u_model * GetSkinnedMatrix();
     #elif defined(INSTANCED)
-	    // See Graphics::UpdateBatchBuffer
-	    // Since we are using rows instead of cols the instancing model matrix is a transpose,
-	    // so the matrix multiply order must be swapped
-	    const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);
-	    return mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn);
+	    return GetInstancedMatrix();
     #else
     	return u_model;
     #endif
 }
 
-vec3 GetWorldPos()
+mat4 GetViewWorldMatrix()
 {
-    #if defined(INSTANCED)
-    	// Instancing model matrix is a transpose, so the matrix multiply order must be swapped
-    	return (vec4(a_position, 1.0) * GetModelMatrix()).xyz;
-    #else
-    	return (GetModelMatrix() * vec4(a_position, 1.0)).xyz;
-    #endif
+	#if defined(SPHERICAL_BILLBOARD)
+	    return GetSphericalBillboardMatrix(u_view * GetModelMatrix());
+	#elif defined(CYLINDRICAL_BILLBOARD)
+	    return GetCylindricalBillboardMatrix(u_view * GetModelMatrix());
+	#else
+	    return u_view * GetModelMatrix();
+	#endif
 }
+
 
 #ifdef HAS_LIGHTS
 	mat3 GetNormalMatrix()
@@ -90,11 +126,7 @@ vec3 GetWorldPos()
 	{
 	    #if defined(SKINNED)
 		    //Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
-		    #if defined(INSTANCED)
-		    	return (vec4(a_normal, 0.0) * GetModelMatrix()).xyz;
-		    #else
-		    	return (GetModelMatrix() * vec4(a_normal, 0.0)).xyz;
-		    #endif
+	    	return (GetModelMatrix() * vec4(a_normal, 0.0)).xyz;
 	    #else
 	    	return normalize((GetNormalMatrix() * a_normal));
 	    #endif
@@ -105,11 +137,7 @@ vec3 GetWorldPos()
 		{
 		    #if defined(SKINNED)
 			    //Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
-			    #if defined(INSTANCED)
-				    return (vec4(a_tangent, 0.0) * GetModelMatrix()).xyz;
-			    #else
-			    	return (GetModelMatrix() * vec4(a_tangent, 0.0)).xyz;
-		    	#endif
+		    	return (GetModelMatrix() * vec4(a_tangent, 0.0)).xyz;
 		    #else
 		    	return normalize((GetNormalMatrix() * a_tangent));
 		    #endif
@@ -117,9 +145,14 @@ vec3 GetWorldPos()
 	#endif
 #endif
 
-vec4 GetClipPos(vec3 worldPos)
+vec4 GetWorldPos()
 {
-    return u_viewProjection * vec4(worldPos, 1.0);
+	return GetModelMatrix() * vec4(a_position, 1.0);
+}
+
+vec4 GetClipPos()
+{
+	return u_projection * GetViewWorldMatrix() * vec4(a_position, 1.0);
 }
 
 #endif

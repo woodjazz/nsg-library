@@ -75,6 +75,7 @@ namespace NSG
 
         CHECK_ASSERT(pVBuffer_ == nullptr, __FILE__, __LINE__);
         CHECK_ASSERT(pIBuffer_ == nullptr, __FILE__, __LINE__);
+		CHECK_ASSERT(pIWirefameBuffer_ == nullptr, __FILE__, __LINE__);
 
         CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
         CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
@@ -90,10 +91,19 @@ namespace NSG
         {
             GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
             if (isStatic_)
-                pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_STATIC_DRAW));
+                pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_STATIC_DRAW);
             else
-                pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW));
+				pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW);
         }
+
+		if (!indexesWireframe_.empty())
+		{
+			GLsizeiptr bytesNeeded = sizeof(IndexType) * indexesWireframe_.size();
+			if (isStatic_)
+				pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_STATIC_DRAW);
+			else
+				pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW);
+		}
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -110,6 +120,7 @@ namespace NSG
         boundingSphereRadius_ = 0;
         pVBuffer_ = nullptr;
         pIBuffer_ = nullptr;
+		pIWirefameBuffer_ = nullptr;
         areTangentsCalculated_ = false;
     }
 

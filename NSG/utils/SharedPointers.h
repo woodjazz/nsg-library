@@ -123,6 +123,7 @@ namespace NSG
 
 	class Batch;
 	typedef std::shared_ptr<Batch> PBatch;
+	typedef std::weak_ptr<Batch> PWeakBatch;
 	
 	class ResourceFile;
 	typedef std::shared_ptr<ResourceFile> PResourceFile;

@@ -50,8 +50,10 @@ static void Test1()
     	static float totalTime = 0;
     	totalTime += deltaTime;
 
-    	if(totalTime > 1)
-    		window1 = nullptr;
+		if (totalTime > 1)
+		{
+			window1 = nullptr;
+		}
     });
 
 	CHECK_CONDITION(app.Run() == 0, __FILE__, __LINE__);

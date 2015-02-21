@@ -45,10 +45,13 @@ namespace NSG
 		PPass GetPass(unsigned idx);
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
-		void Render(Camera* camera);
-		void Render();
+		void Draw(Camera* camera);
+		void Draw();
+		void Draw(const Batch& batch);
 		Material* GetMaterial() { return material_; }
 		void CopyPasses(const PASSES& passes);
+		bool IsTransparent() const;
+		bool IsText() const;
 	private:
 		Material* material_;
 		PASSES passes_;

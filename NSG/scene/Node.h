@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Constants.h"
+#include "Util.h"
 #include "UniformsUpdate.h"
 #include "NonCopyable.h"
 #include "BoundingBox.h"
@@ -99,7 +100,7 @@ namespace NSG
             AddChild(obj);
             return obj;
         }
-		template <typename T> std::shared_ptr<T> CreateChild(const std::string& name)
+		template <typename T> std::shared_ptr<T> CreateChild(const std::string& name = GetUniqueName())
 		{
 			auto obj = std::make_shared<T>(name);
 			AddChild(obj);

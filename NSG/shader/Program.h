@@ -121,6 +121,7 @@ namespace NSG
         GLuint normalMatrixLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
+        GLuint projectionLoc_;
         GLuint sceneColorAmbientLoc_;
         GLuint eyeWorldPosLoc_;
 

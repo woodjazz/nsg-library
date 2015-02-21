@@ -43,7 +43,7 @@ namespace NSG
         : technique_(technique),
           graphics_(*Graphics::this_),
 		  pProgram_(std::make_shared<Program>(technique->GetMaterial())),
-          blendMode_(BLEND_ALPHA),
+          blendMode_(BLEND_NONE),
           enableDepthTest_(true),
           enableStencilTest_(false),
           stencilMask_(~GLuint(0)),
@@ -153,6 +153,17 @@ namespace NSG
         frontFaceMode_ = mode;
     }
 
+	bool Pass::IsTransparent() const
+	{
+		return blendMode_ == BLEND_MODE::BLEND_ALPHA;
+	}
+
+	bool Pass::IsText() const
+	{
+		return pProgram_->GetFlags() & (int)ProgramFlag::TEXT;
+	}
+
+
     void Pass::SetupPass()
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -179,19 +190,9 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-    void Pass::Render()
+    void Pass::Draw()
     {
-        SetupPass();
-        graphics_.DrawActiveMesh(drawMode_ == DrawMode::SOLID);
-    }
-
-    void Pass::Render(Batch& batch)
-    {
-        if (batch.IsReady())
-        {
-            SetupPass();
-			graphics_.DrawActiveMesh(drawMode_ == DrawMode::SOLID, batch);
-        }
+        graphics_.DrawActiveMesh(this);
     }
 
     void Pass::Save(pugi::xml_node& node)

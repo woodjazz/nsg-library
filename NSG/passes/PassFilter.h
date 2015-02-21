@@ -34,7 +34,7 @@ namespace NSG
 	public:
 		PassFilter(Technique* technique, PFilter filter);
 		~PassFilter();
-		void Render() override;
+		void Draw() override;
 	private:
 		PFilter filter_;
 	};

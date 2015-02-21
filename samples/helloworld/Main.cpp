@@ -31,10 +31,11 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 1024, 768);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 10, 10);
 
     auto xml = app.GetOrCreateResourceFile("data/AnonymousPro32.xml");
-    auto atlas = std::make_shared<FontAtlas>(xml, window->GetWidth(), window->GetHeight());
+    auto atlas = std::make_shared<FontAtlas>(xml);
+    atlas->SetWindow(window);
     auto textCenter = atlas->GetOrCreateMesh("C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
     auto textLeftTop = atlas->GetOrCreateMesh("LT Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT);
     auto textRightTop = atlas->GetOrCreateMesh("RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT);
@@ -42,19 +43,19 @@ int NSG_MAIN(int argc, char* argv[])
     auto textRightBottom = atlas->GetOrCreateMesh("RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT);
 
     auto scene = std::make_shared<Scene>("scene");
+	// auto camera = scene->CreateChild<Camera>();
+	// camera->EnableOrtho();
+	// auto control = std::make_shared<CameraControl>(camera);
+	// control->SetWindow(window);
+
     auto nodeCenter = scene->GetOrCreateChild<SceneNode>("nodeCenter");
     auto nodeLeftTop = scene->GetOrCreateChild<SceneNode>("nodeLeftTop");
     auto nodeRightTop = scene->GetOrCreateChild<SceneNode>("nodeRightTop");
     auto nodeLeftBottom = scene->GetOrCreateChild<SceneNode>("nodeLeftBottom");
     auto nodeRightBottom = scene->GetOrCreateChild<SceneNode>("nodeRightBottom");
 
-	auto material = app.GetOrCreateMaterial("material", (int)ProgramFlag::TEXT);
-    material->SetColor(Color(1, 1, 1, 1));
-    material->SetTexture(0, atlas->GetTexture());
-    auto technique = material->GetTechnique();
-    auto pass = technique->GetPass(0);
-    pass->EnableDepthTest(false);
-    pass->EnableStencilTest(false);
+	auto material = app.CreateMaterial();
+	material->SetTextMap(atlas->GetTexture());
 
     nodeCenter->SetMaterial(material);
     nodeLeftTop->SetMaterial(material);
@@ -68,17 +69,14 @@ int NSG_MAIN(int argc, char* argv[])
     nodeLeftBottom->SetMesh(textLeftBottom);
     nodeRightBottom->SetMesh(textRightBottom);
 
-    auto resizeSlot = window->signalViewChanged_->Connect([&](int width, int height)
-    {
-        atlas->SetViewSize(width, height);
-        scene->SceneNode::MarkAsDirty();
-    });
+	//control->AutoZoom();
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {
-		scene->SceneNode::Render();
+		//scene->Render(camera.get());
+        scene->SceneNode::DrawWithChildren();
     });
-
+#if 1
 	SceneNode* selectedNode = nullptr;
     HorizontalAlignment hAlign;
     VerticalAlignment vAlign;
@@ -138,6 +136,8 @@ int NSG_MAIN(int argc, char* argv[])
 			selectedNode->SetOrientation(q * ROTATION);
     	}
     });
+
+#endif
 
     return app.Run();
 }

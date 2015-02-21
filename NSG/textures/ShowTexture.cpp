@@ -83,7 +83,7 @@ namespace NSG
 
             Graphics::this_->SetNode(node_.get());
             Graphics::this_->SetMesh(mesh_.get());
-            material_->GetTechnique()->Render();
+            material_->GetTechnique()->Draw();
 
 			Graphics::this_->SetCamera(pCurrent);
 

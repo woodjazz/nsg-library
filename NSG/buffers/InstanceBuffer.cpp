@@ -70,8 +70,9 @@ namespace NSG
 		CHECK_ASSERT(graphics_.HasInstancedArrays(), __FILE__, __LINE__);
 
 		std::vector<InstanceData> instancesData;
-		instancesData.reserve(batch.nodes_.size());
-		for (auto& node : batch.nodes_)
+		auto& nodes = batch.GetNodes();
+		instancesData.reserve(nodes.size());
+		for (auto& node : nodes)
 		{
 			InstanceData data;
 			const Matrix4& m = node->GetGlobalModelMatrix();

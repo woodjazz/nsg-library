@@ -78,6 +78,7 @@ namespace NSG
           normalMatrixLoc_(-1),
           viewLoc_(-1),
           viewProjectionLoc_(-1),
+          projectionLoc_(-1),
           sceneColorAmbientLoc_(-1),
           eyeWorldPosLoc_(-1),
           blendMode_loc_(-1),
@@ -350,7 +351,7 @@ namespace NSG
         preDefines += material_->GetName();
         preDefines += " */\n";
 
-        if (graphics_.HasInstancedArrays())
+        if (material_->IsBatched())
             preDefines += "#define INSTANCED\n";
 
         if (nBones_)
@@ -361,6 +362,11 @@ namespace NSG
             flags_ |= (int)ProgramFlag::SKINNED;
             preDefines += "#define SKINNED\n";
         }
+
+        if ((int)ProgramFlag::SPHERICAL_BILLBOARD & flags_)
+            preDefines += "#define SPHERICAL_BILLBOARD\n";
+        else if ((int)ProgramFlag::CYLINDRICAL_BILLBOARD & flags_)
+            preDefines += "#define CYLINDRICAL_BILLBOARD\n";
 
         lightingEnabled_ = false;
 
@@ -579,6 +585,7 @@ namespace NSG
         normalMatrixLoc_ = GetUniformLocation("u_normalMatrix");
         viewLoc_ = GetUniformLocation("u_view");
         viewProjectionLoc_ = GetUniformLocation("u_viewProjection");
+        projectionLoc_  = GetUniformLocation("u_projection");
         sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
         eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
         for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
@@ -843,23 +850,11 @@ namespace NSG
                 {
                     // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
                     CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
-
                     const Matrix4& m = bone->GetGlobalModelMatrix();
                     const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
-                    if (graphics_.HasInstancedArrays())
-                    {
-                        // Using instancing: (See Graphics::UpdateBatchBuffer)
-                        // we need to transpose the skin matrix since the model matrix is already transposed (uses rows instead of cols)
-                        Matrix4 boneMatrix(glm::transpose(globalInverseModelMatrix * m * offsetMatrix));
-                        glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(boneMatrix));
-                    }
-                    else
-                    {
-                        Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
-                        glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(boneMatrix));
-                    }
+					Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
+                    glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(boneMatrix));
                 }
-
             }
         }
 
@@ -872,7 +867,7 @@ namespace NSG
 
     void Program::SetCameraVariables()
     {
-        if (viewLoc_ != -1 || viewProjectionLoc_ != -1 || eyeWorldPosLoc_ != -1)
+        if (viewLoc_ != -1 || viewProjectionLoc_ != -1 || projectionLoc_ != -1 || eyeWorldPosLoc_ != -1)
         {
             Camera* camera = Graphics::this_->GetCamera();
             bool update_camera = viewVariablesNeverSet_ || (activeCamera_ != camera || (camera && camera->UniformsNeedUpdate()));
@@ -892,6 +887,13 @@ namespace NSG
                     const Matrix4& m = Camera::GetViewMatrix();
                     glUniformMatrix4fv(viewLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
+
+                if (projectionLoc_ != -1)
+                {
+                    const Matrix4& m = Camera::GetProjectionMatrix();
+                    glUniformMatrix4fv(projectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
+                }
+
 
                 if (eyeWorldPosLoc_ != -1)
                 {

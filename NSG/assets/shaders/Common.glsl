@@ -84,13 +84,11 @@ varying vec2 v_texcoord0;
 struct Material
 {
 	vec4 color;
-#ifdef HAS_LIGHTS	
     vec4 ambient;
     vec4 diffuse;
     vec4 specular;
     float shininess;
     float parallaxScale;
-#endif    
 };
 
 uniform Material u_material;

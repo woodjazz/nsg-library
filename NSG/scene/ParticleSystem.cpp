@@ -25,11 +25,17 @@ misrepresented as being the original software.
 */
 #include "ParticleSystem.h"
 #include "Particle.h"
+#include "Scene.h"
 #include "Util.h"
 #include "App.h"
 #include "SphereMesh.h"
+#include "RectangleMesh.h"
 #include "Material.h"
+#include "Technique.h"
+#include "Pass.h"
+#include "Program.h"
 #include "RigidBody.h"
+#include "PhysicsWorld.h"
 #include "AppConfiguration.h"
 
 namespace NSG
@@ -53,9 +59,10 @@ namespace NSG
         : SceneNode(name),
           emitFrom_(PS_EF_VERTS),
           fps_((float)AppConfiguration::this_->fps_),
-          amount_(50),
+          amount_(1500),
           start_(0),
-          end_(1),
+          end_(2),
+		  animationEndTime_(5),
           lifetime_(3),
           lifetimeRandom_(0.0f),
           currentTime_(0),
@@ -66,17 +73,32 @@ namespace NSG
           collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PARTICLE),
           currentVertex_(0),
           triggerParticles_(0),
-          distribution_(ParticleSystemDistribution::RANDOM)
+          distribution_(ParticleSystemDistribution::RANDOM),
+		  gravity_(0, -9.81f, 0)
     {
-        particleMesh_ = App::this_->CreateSphereMesh(0.5f, 4);
+        particleMesh_ = App::this_->CreateRectangleMesh(1, 1);
         particleMaterial_ = std::make_shared<Material>(GetUniqueName(name + "Particle"));
         particleMaterial_->SetColor(Color(0, 1, 0, 1));
+		auto pass = particleMaterial_->GetTechnique()->GetPass(0);
+		pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
+		pass->EnableDepthBuffer(false);
+		auto program = pass->GetProgram();
+		program->EnableFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::SPHERICAL_BILLBOARD);
     }
 
     ParticleSystem::~ParticleSystem()
     {
         Invalidate();
     }
+
+	void ParticleSystem::SetParticleMaterial(PMaterial material)
+	{
+		if (particleMaterial_ != material)
+		{
+			particleMaterial_ = material;
+			Invalidate();
+		}
+	}
 
     float ParticleSystem::GetParticlesPerFrame(float deltaTime)
     {
@@ -117,6 +139,7 @@ namespace NSG
             particle->SetMaterial(particleMaterial_);
             particle->SetMesh(particleMesh_);
             auto rb = particle->GetOrCreateRigidBody();
+			rb->SetGravity(gravity_);
             rb->SetCollisionMask(collisionGroup_, collisionMask_);
             rb->SetMass(physicsParams_.mass_);
             rb->SetShape(physicsParams_.shape_);
@@ -143,6 +166,7 @@ namespace NSG
     {
         particles_.clear();
         ClearAllChildren();
+		ReStartLoop();
     }
 
     float ParticleSystem::GetLifeTime() const
@@ -186,7 +210,7 @@ namespace NSG
 
         currentTime_ += deltaTime;
 
-        if (loop_ && currentTime_ > end_)
+		if (loop_ && currentTime_ > animationEndTime_)
             ReStartLoop();
     }
 

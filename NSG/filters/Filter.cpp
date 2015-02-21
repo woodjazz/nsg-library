@@ -72,7 +72,7 @@ namespace NSG
 		return pMaterial_->GetTexture(0);
 	}
 
-    void Filter::Render()
+    void Filter::Draw()
     {
         if (!pMesh_->IsReady() || !pMaterial_->IsReady() || !pRender2Texture_->IsReady())
             return;
@@ -83,10 +83,10 @@ namespace NSG
 
         pRender2Texture_->Begin();
 
-        Graphics::this_->SetNode(node_.get());
-        Graphics::this_->SetMesh(pMesh_.get());
-
-        technique_->Render(nullptr);
+		Graphics::this_->SetCamera(nullptr);
+		Batch batch(technique_->GetMaterial(), pMesh_.get());
+		batch.Add(node_.get());
+		batch.Draw();
 
         pRender2Texture_->End();
 

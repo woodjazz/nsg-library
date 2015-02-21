@@ -54,7 +54,7 @@ namespace NSG
 
     GLenum PlaneMesh::GetWireFrameDrawMode() const
     {
-        return GL_LINE_LOOP;
+		return GL_LINES;
     }
 
     GLenum PlaneMesh::GetSolidDrawMode() const
@@ -76,6 +76,7 @@ namespace NSG
     {
         vertexsData_.clear();
         indexes_.clear();
+		indexesWireframe_.clear();
 
         VertexsData& data = vertexsData_;
 
@@ -127,6 +128,16 @@ namespace NSG
                 indexes_.push_back(i1);
                 indexes_.push_back(i3);
                 indexes_.push_back(i2);
+
+				indexesWireframe_.push_back(i0);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i1);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i3);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i2);
+				indexesWireframe_.push_back(i0);
+
             }
         }
 

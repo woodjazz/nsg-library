@@ -26,6 +26,11 @@ misrepresented as being the original software.
 #include "Pass2Texture.h"
 #include "Render2Texture.h"
 #include "Graphics.h"
+#include "Program.h"
+#include "Technique.h"
+#include "Material.h"
+#include "Batch.h"
+#include "Mesh.h"
 #include "Check.h"
 
 namespace NSG
@@ -53,15 +58,26 @@ namespace NSG
         passes_.push_back(PassData {pass, node, mesh});
     }
 
-    void Pass2Texture::Render()
+    void Pass2Texture::Draw()
     {
         if (render2Texture_->Begin())
         {
             for (auto& pass : passes_)
             {
-                Graphics::this_->SetMesh(pass.mesh_.get());
-                Graphics::this_->SetNode(pass.node_);
-                pass.pass_->Render();
+				auto material = pass.pass_->GetProgram()->GetMaterial();
+				if (material)
+				{
+					Batch batch(material, pass.mesh_.get());
+					batch.Add(pass.node_);
+					batch.Draw();
+				}
+				else
+				{
+					auto graphics = Graphics::this_;
+					graphics->SetNode(pass.node_);
+					graphics->SetMesh(pass.mesh_.get());
+					pass.pass_->Draw();
+				}
             }
 
             render2Texture_->End();

@@ -33,12 +33,21 @@ namespace NSG
     {
 	public:
 		Batch();
+		Batch(Material* material, Mesh* mesh);
     	~Batch();
+		bool operator == (const Batch& obj) const;
 		Batch(const Batch&) = delete;
-		Batch& operator = (const Batch&) = delete;
+		//Batch& operator = (const Batch&) = delete;
     	bool IsValid() override;
-        PMaterial material_;
-        PMesh mesh_;
+		void Draw();
+		void Add(SceneNode* node);
+		Mesh* GetMesh() const { return mesh_; }
+		const std::vector<SceneNode*>& GetNodes() const { return nodes_; }
+		bool AllowInstancing() const;
+		void Clear();
+	private:
+        Material* material_;
+        Mesh* mesh_;
         std::vector<SceneNode*> nodes_;
     };
 }

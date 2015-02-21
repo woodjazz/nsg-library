@@ -40,8 +40,8 @@ namespace NSG
 
     }
 
-    void PassFilter::Render()
+    void PassFilter::Draw()
     {
-        filter_->Render();
+        filter_->Draw();
     }
 }

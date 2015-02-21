@@ -191,13 +191,13 @@ namespace NSG
 
     void SDLWindow::RenderFrame()
     {
-        Graphics::this_->SetWindow(this);
-        PerformTicks();
-        #ifndef EMSCRIPTEN
-        {
-            SDL_GL_SwapWindow(win_);
-        }
-        #endif
+		Graphics::this_->SetWindow(this);
+		PerformTicks();
+		#ifndef EMSCRIPTEN
+		{
+			SDL_GL_SwapWindow(win_);
+		}
+		#endif
     }
 
     void SDLWindow::ViewChanged(int width, int height)

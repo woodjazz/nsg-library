@@ -149,7 +149,10 @@ namespace NSG
 
     void SceneNode::OnDirty() const
     {
-        worldBBNeedsUpdate_ = true;
+		if (material_)
+			material_->BachedNodeHasChanged();
+
+		worldBBNeedsUpdate_ = true;
         auto scene = GetScene();
         if(scene)
             scene->NeedUpdate((SceneNode*)this);
@@ -315,22 +318,28 @@ namespace NSG
         signalCollision_->Run(contactInfo);
     }
 
-    void SceneNode::Render()
-    {
-        if (IsReady())
-        {
-            Graphics::this_->SetScene(GetScene().get());
-            Graphics::this_->SetNode(this);
-            Graphics::this_->SetMesh(mesh_.get());
-            if (material_)
-            {
-                auto technique = material_->GetTechnique();
-                if (technique)
-                    technique->Render(nullptr);
-            }
+	void SceneNode::Draw()
+	{
+		auto material = material_.get();
+		if (material)
+		{
+			Batch batch(material, mesh_.get());
+			batch.Add(this);
+			batch.Draw();
+		}
+	}
 
-            for (auto& obj : children_)
-                std::dynamic_pointer_cast<SceneNode>(obj)->Render();
+    void SceneNode::DrawWithChildren()
+    {
+        auto material = material_.get();
+        if (material)
+        {
+            Batch batch(material, mesh_.get());
+            batch.Add(this);
+            batch.Draw();
         }
+
+        for (auto& obj : children_)
+            dynamic_cast<SceneNode*>(obj.get())->DrawWithChildren();
     }
 }

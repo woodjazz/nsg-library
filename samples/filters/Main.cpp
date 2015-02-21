@@ -173,11 +173,14 @@ int NSG_MAIN(int argc, char* argv[])
             y_angle += glm::pi<float>() / 10.0f * deltaTime;
             sphere->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
         }
+
+		boxMaterial->BachedNodeHasChanged();
+		sphereMaterial->BachedNodeHasChanged();
     });
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {
-        technique->Render(camera.get());
+        technique->Draw(camera.get());
         showTexture->Show();
     });
 

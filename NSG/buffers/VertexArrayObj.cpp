@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "VertexArrayObj.h"
 #include "Program.h"
+#include "Material.h"
 #include "Mesh.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
@@ -102,7 +103,8 @@ namespace NSG
 
 		graphics_.SetIndexBuffer(iBuffer_, true);
 
-		graphics_.SetInstanceAttrPointers(program_);
+		if (program_->GetMaterial()->IsBatched())
+			graphics_.SetInstanceAttrPointers(program_);
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 	}

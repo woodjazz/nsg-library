@@ -7,7 +7,7 @@
 
 			v_texcoord0 = a_texcoord0;
 			v_color = u_material.color * a_color;
-			gl_Position = GetClipPos(GetWorldPos());
+			gl_Position = GetClipPos();
 
 		#elif defined(BLUR) || defined(BLEND)
 
@@ -21,30 +21,30 @@
 
 		#elif defined(STENCIL)
 
-			gl_Position = GetClipPos(GetWorldPos());
+			gl_Position = GetClipPos();
 
 		#elif defined(UNLIT)
 
 			v_color = u_material.color * a_color;
 			v_texcoord0 = a_texcoord0;
-			gl_Position = GetClipPos(GetWorldPos());
+			gl_Position = GetClipPos();
 
 		#elif defined(PER_VERTEX_LIGHTING)
 
-			vec3 worldPos = GetWorldPos();
+			vec4 worldPos = GetWorldPos();
 		    vec3 normal = GetWorldNormal();
-		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos);
-		    vec4 totalLight = CalcVSTotalLight(worldPos, vertexToEye, normal);
+		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
+		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);
 		    v_color = a_color * totalLight;
 		    v_texcoord0 = a_texcoord0;
-			gl_Position = GetClipPos(worldPos);
+			gl_Position = GetClipPos();
 
 		#elif defined(PER_PIXEL_LIGHTING)
 
 			//Lighting is calculated in world space
 
-			vec3 worldPos = GetWorldPos();
-			v_vertexToEye = normalize(u_eyeWorldPos - worldPos);
+			vec4 worldPos = GetWorldPos();
+			v_vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
 			v_normal = GetWorldNormal();
 			
 			#if defined(NORMALMAP) || defined(DISPLACEMENTMAP)
@@ -69,31 +69,31 @@
 			#ifdef HAS_POINT_LIGHTS
 
 				for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) 
-					v_lightDirection[i] = worldPos - u_pointLights[i].position;
+					v_lightDirection[i] = worldPos.xyz - u_pointLights[i].position;
 
 			#endif
 
 			#ifdef HAS_SPOT_LIGHTS
 
 				for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) 
-					v_light2Pixel[i] = worldPos - u_spotLights[i].position;
+					v_light2Pixel[i] = worldPos.xyz - u_spotLights[i].position;
 					
 			#endif
 
 			v_color = a_color;
 			v_texcoord0 = a_texcoord0;
-			gl_Position = GetClipPos(worldPos);
+			gl_Position = GetClipPos();
 
 		#elif defined(LIGHTMAP) // lightmap without lighting
 
 			v_color = u_material.color * a_color;
 		    v_texcoord0 = a_texcoord0;
 			v_texcoord1 = a_texcoord1;
-			gl_Position = GetClipPos(GetWorldPos());
+			gl_Position = GetClipPos();
 
 		#else // Vertex color by default
 			v_color = u_material.color * a_color;
-			gl_Position = GetClipPos(GetWorldPos());
+			gl_Position = GetClipPos();
 			
 		#endif
 	}

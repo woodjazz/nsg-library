@@ -47,6 +47,7 @@ namespace NSG
 
     TextMesh::~TextMesh()
     {
+		Invalidate();
     }
 
     void TextMesh::SetAtlas(PFontAtlas atlas)

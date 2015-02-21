@@ -9,7 +9,7 @@ static const char* VS_GLSL = \
 "		#if defined(TEXT)\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
 "			v_color = u_material.color * a_color;\n"\
-"			gl_Position = GetClipPos(GetWorldPos());\n"\
+"			gl_Position = GetClipPos();\n"\
 "		#elif defined(BLUR) || defined(BLEND)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
@@ -17,23 +17,23 @@ static const char* VS_GLSL = \
 "			gl_Position = vec4(a_position, 1.0);\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
 "		#elif defined(STENCIL)\n"\
-"			gl_Position = GetClipPos(GetWorldPos());\n"\
+"			gl_Position = GetClipPos();\n"\
 "		#elif defined(UNLIT)\n"\
 "			v_color = u_material.color * a_color;\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
-"			gl_Position = GetClipPos(GetWorldPos());\n"\
+"			gl_Position = GetClipPos();\n"\
 "		#elif defined(PER_VERTEX_LIGHTING)\n"\
-"			vec3 worldPos = GetWorldPos();\n"\
+"			vec4 worldPos = GetWorldPos();\n"\
 "		    vec3 normal = GetWorldNormal();\n"\
-"		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos);\n"\
-"		    vec4 totalLight = CalcVSTotalLight(worldPos, vertexToEye, normal);\n"\
+"		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);\n"\
+"		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);\n"\
 "		    v_color = a_color * totalLight;\n"\
 "		    v_texcoord0 = a_texcoord0;\n"\
-"			gl_Position = GetClipPos(worldPos);\n"\
+"			gl_Position = GetClipPos();\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "			//Lighting is calculated in world space\n"\
-"			vec3 worldPos = GetWorldPos();\n"\
-"			v_vertexToEye = normalize(u_eyeWorldPos - worldPos);\n"\
+"			vec4 worldPos = GetWorldPos();\n"\
+"			v_vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);\n"\
 "			v_normal = GetWorldNormal();\n"\
 "			\n"\
 "			#if defined(NORMALMAP) || defined(DISPLACEMENTMAP)\n"\
@@ -52,24 +52,24 @@ static const char* VS_GLSL = \
 "			#endif\n"\
 "			#ifdef HAS_POINT_LIGHTS\n"\
 "				for (int i = 0 ; i < NUM_POINT_LIGHTS ; i++) \n"\
-"					v_lightDirection[i] = worldPos - u_pointLights[i].position;\n"\
+"					v_lightDirection[i] = worldPos.xyz - u_pointLights[i].position;\n"\
 "			#endif\n"\
 "			#ifdef HAS_SPOT_LIGHTS\n"\
 "				for (int i = 0 ; i < NUM_SPOT_LIGHTS ; i++) \n"\
-"					v_light2Pixel[i] = worldPos - u_spotLights[i].position;\n"\
+"					v_light2Pixel[i] = worldPos.xyz - u_spotLights[i].position;\n"\
 "					\n"\
 "			#endif\n"\
 "			v_color = a_color;\n"\
 "			v_texcoord0 = a_texcoord0;\n"\
-"			gl_Position = GetClipPos(worldPos);\n"\
+"			gl_Position = GetClipPos();\n"\
 "		#elif defined(LIGHTMAP) // lightmap without lighting\n"\
 "			v_color = u_material.color * a_color;\n"\
 "		    v_texcoord0 = a_texcoord0;\n"\
 "			v_texcoord1 = a_texcoord1;\n"\
-"			gl_Position = GetClipPos(GetWorldPos());\n"\
+"			gl_Position = GetClipPos();\n"\
 "		#else // Vertex color by default\n"\
 "			v_color = u_material.color * a_color;\n"\
-"			gl_Position = GetClipPos(GetWorldPos());\n"\
+"			gl_Position = GetClipPos();\n"\
 "			\n"\
 "		#endif\n"\
 "	}\n"\
