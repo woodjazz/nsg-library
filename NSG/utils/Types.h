@@ -72,9 +72,9 @@ namespace NSG
 
     enum class LightType {POINT, DIRECTIONAL, SPOT};
 
-    typedef enum 
+    typedef enum
     {
-        BLEND_NONE, 
+        BLEND_NONE,
         BLEND_ALPHA,
         BLEND_MULTIPLICATIVE,
         BLEND_ADDITIVE
@@ -263,18 +263,18 @@ namespace NSG
         SH_BOX,
         SH_CONE,
         SH_CYLINDER,
-		SH_CAPSULE,
+        SH_CAPSULE,
         SH_SPHERE,
         SH_CONVEX_TRIMESH,
         SH_TRIMESH
     };
 
-	enum class CollisionMask
-	{
-		NONE = 0,
-		PARTICLE = 1 << 0,
-		ALL = -1
-	};
+    enum class CollisionMask
+    {
+        NONE = 0,
+        PARTICLE = 1 << 0,
+        ALL = -1
+    };
 
     struct ContactPoint
     {
@@ -322,10 +322,16 @@ namespace NSG
     typedef Signal<int, float, float, float, float, int> SignalMultiGesture;
     typedef Signal<float> SignalUpdate;
     typedef Signal<> SignalRender;
-    typedef Signal<> SignalResourceLoaded;
     typedef Signal<const ContactPoint&> SignalCollision;
     typedef Signal<const std::string&> SignalDropFile;
-
+    typedef Signal<SceneNode*, float, float> SignalNodeMouseMoved;
+    typedef Signal<SceneNode*, int, float, float> SignalNodeMouseDown;
+    typedef Signal<SceneNode*, int, float, float> SignalNodeMouseUp;
+    typedef Signal<SceneNode*, float, float> SignalNodeMouseWheel;
+    typedef Signal<SceneNode*, int, int, int> SignalNodeKey;
+    typedef Signal<SceneNode*, unsigned int> SignalNodeChar;
+    typedef Signal<int> SignalButtonMouse;
+    
     enum MaterialTexture
     {
         DIFFUSE_MAP,
@@ -343,9 +349,9 @@ namespace NSG
         PS_EF_ORIGIN
     };
 
-	enum ParticleSystemDistribution
-	{
-		LINEARY,
-		RANDOM
-	};
+    enum ParticleSystemDistribution
+    {
+        LINEARY,
+        RANDOM
+    };
 }

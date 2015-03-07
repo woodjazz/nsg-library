@@ -60,7 +60,7 @@ namespace NSG
         void SetSerializable(bool serializable) { serializable_ = serializable; }
         bool IsSerializable() const { return serializable_; }
         PSkeleton GetSkeleton() const { return skeleton_; }
-        void SetSkeleton(PSkeleton skeleton) { skeleton_ = skeleton; }
+		void SetSkeleton(PSkeleton skeleton);
         const std::string& GetName() const { return name_; }
         void SetName(const std::string& name) { name_ = name; }
 		void SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights);
@@ -72,6 +72,7 @@ namespace NSG
         void AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal);
         void AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal);
 		void AverageNormals(size_t indexBase, bool isQuad);
+        const VertexData& GetTriangleVertex(size_t triangleIdx, size_t vertexIndex) const;
     protected:
         bool IsValid() override;
         void AllocateResources() override;

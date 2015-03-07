@@ -40,11 +40,9 @@ int NSG_MAIN(int argc, char* argv[])
 	auto camera = scene->GetOrCreateChild<Camera>("camera");
 	const float FOV = 30.0f;
 	camera->SetFOV(FOV);
-    camera->SetWindow(window);
     camera->SetPosition(Vector3(0, 70, 100));
 
 	auto control = std::make_shared<CameraControl>(camera);
-	control->SetWindow(window);
 
 	auto light = scene->GetOrCreateChild<Light>("light");
 	light->SetType(LightType::SPOT);

@@ -199,17 +199,13 @@ namespace NSG
             Ray localRay = Transformed(m);
 
             const VertexsData& vertexsData = mesh->GetVertexsData();
-            const Indexes& indices = mesh->GetIndexes(true);
-
-            size_t n = indices.size();
-            unsigned i = 0;
-            while (i < n)
+			size_t n = mesh->GetNumberOfTriangles();
+            for(size_t i = 0; i<n; i++)
             {
-                const Vector3& v0(vertexsData[indices[i]].position_);
-                const Vector3& v1(vertexsData[indices[i + 1]].position_);
-                const Vector3& v2(vertexsData[indices[i + 2]].position_);
-                nearest = glm::min(nearest, localRay.HitDistance(v0, v1, v2));
-                i += 3;
+				const Vector3& v0 = mesh->GetTriangleVertex(i, 0).position_;
+				const Vector3& v1 = mesh->GetTriangleVertex(i, 1).position_;
+				const Vector3& v2 = mesh->GetTriangleVertex(i, 2).position_;
+				nearest = glm::min(nearest, localRay.HitDistance(v0, v1, v2));
             }
 
 			if (nearest < MAX_DISTANCE)

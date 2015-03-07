@@ -36,7 +36,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     TextMesh::TextMesh(const std::string& name)
-        : Mesh(name, true),
+        : Mesh(name),
           screenWidth_(0),
           screenHeight_(0),
           hAlignment_(LEFT_ALIGNMENT),
@@ -52,7 +52,7 @@ namespace NSG
 
     void TextMesh::SetAtlas(PFontAtlas atlas)
     {
-        if (pAtlas_ != atlas)
+        if (pAtlas_.lock() != atlas)
         {
             pAtlas_ = atlas;
             Invalidate();
@@ -61,12 +61,12 @@ namespace NSG
 
     bool TextMesh::IsValid()
     {
-        return !text_.empty() && pAtlas_ && pAtlas_->IsReady();
+        return !text_.empty() && pAtlas_.lock() && pAtlas_.lock()->IsReady();
     }
 
     void TextMesh::AllocateResources()
     {
-        pAtlas_->GenerateMesh(text_, vertexsData_, indexes_, screenWidth_, screenHeight_);
+        pAtlas_.lock()->GenerateMeshData(text_, vertexsData_, indexes_, screenWidth_, screenHeight_);
 
         float alignmentOffsetX;
         float alignmentOffsetY;
@@ -79,7 +79,7 @@ namespace NSG
             alignmentOffsetX = -1;
 
         if (vAlignment_ == MIDDLE_ALIGNMENT)
-            alignmentOffsetY = screenHeight_ / 2;
+            alignmentOffsetY = -screenHeight_ / 2;
         else if (vAlignment_ == TOP_ALIGNMENT)
             alignmentOffsetY = 1 - screenHeight_;
         else
@@ -132,6 +132,6 @@ namespace NSG
 
     size_t TextMesh::GetNumberOfTriangles() const
     {
-        return vertexsData_.size() / 3;
+        return indexes_.size() / 3;
     }
 }

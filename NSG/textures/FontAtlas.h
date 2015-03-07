@@ -39,8 +39,8 @@ namespace NSG
 	public:
 		FontAtlas(PResourceFile xmlResource);
 		~FontAtlas();
-		void SetWindow(PWindow window);
-		void GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
+		void SetWindow(Window* window);
+		void GenerateMeshData(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
 		PTexture GetTexture() const { return texture_; }
 		void SetViewSize(int width, int height);
 		PTextMesh GetOrCreateMesh(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);

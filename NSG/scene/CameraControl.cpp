@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "CameraControl.h"
 #include "Camera.h"
+#include "Graphics.h"
 #include "Ray.h"
 #include "PointOnSphere.h"
 #include "Keys.h"
@@ -43,6 +44,11 @@ namespace NSG
         altKeyDown_ = false;
         shiftKeyDown_ = false;
         SetSphereCenter(true);
+
+        auto window = Graphics::this_->GetWindow();
+        if(window)
+            SetWindow(window);
+
     }
 
     CameraControl::~CameraControl()
@@ -50,7 +56,7 @@ namespace NSG
 
     }
 
-	void CameraControl::SetWindow(PWindow window)
+	void CameraControl::SetWindow(Window* window)
 	{
 		if (window)
 		{

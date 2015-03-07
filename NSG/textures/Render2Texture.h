@@ -33,17 +33,18 @@ namespace NSG
     class Render2Texture : public Object
     {
     public:
-		Render2Texture(const std::string& name, int width, int height, UseBuffer buffer = UseBuffer::DEPTH);
+		Render2Texture(const std::string& name, unsigned width, unsigned height, UseBuffer buffer = UseBuffer::DEPTH);
         ~Render2Texture();
         bool Begin();
         void End();
         PTexture GetTexture() const;
+        void SetSize(unsigned width, unsigned height);
     private:
         bool IsValid() override;
         PFrameBuffer frameBuffer_;
         UseBuffer buffer_;
-        int width_;
-        int height_;
+        unsigned width_;
+        unsigned height_;
         Recti viewport_;
         bool enabled_;
     };

@@ -41,6 +41,7 @@ namespace NSG
         void AssignValues();
         bool Render(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
         bool Hit(GLushort id, float screenX, float screenY, const std::vector<SceneNode*>& nodes);
+		void SetWindow(PWindow window);
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -59,6 +60,7 @@ namespace NSG
         GLint pixelX_;
         GLint pixelY_;
 		unsigned int frameBufferFlags_;
+        PWindow window_;
     };
 }
 

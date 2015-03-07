@@ -47,7 +47,7 @@ namespace NSG
     {
         age_ += deltaTime;
 
-        if (IsReady())
+        //if (IsReady())
         {
 
         }

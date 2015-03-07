@@ -152,16 +152,17 @@ namespace NSG
                 std::string vShader;
                 std::string fShader;
                 ConfigureShaders(vShader, fShader);
-                if (!ShaderCompiles(GL_VERTEX_SHADER, vShader))
+                while (!ShaderCompiles(GL_VERTEX_SHADER, vShader))
                 {
                     ReduceShaderComplexity(GL_VERTEX_SHADER);
-                    return false;
+                    ConfigureShaders(vShader, fShader);
                 }
-                else if (!ShaderCompiles(GL_FRAGMENT_SHADER, fShader))
+                while (!ShaderCompiles(GL_FRAGMENT_SHADER, fShader))
                 {
                     ReduceShaderComplexity(GL_FRAGMENT_SHADER);
-                    return false;
+                    ConfigureShaders(vShader, fShader);
                 }
+                TRACE_LOG("Shader for material " << name_ << " is valid.");
                 return true;
             }
         }
@@ -312,15 +313,18 @@ namespace NSG
         }
         else
         {
-            TRACE_LOG("Nor PER_PIXEL_LIGHTING neither PER_VERTEX_LIGHTING have been found => Lighting is disabled!!!");
+            TRACE_LOG("Neither PER_PIXEL_LIGHTING nor PER_VERTEX_LIGHTING have been found => Lighting is disabled!!!");
         }
     }
 
     void Program::DefineSamplers(std::string& fBuffer)
     {
+		fBuffer += "uniform sampler2D u_texture0;\n";
+		fBuffer += "uniform sampler2D u_texture1;\n";
+
         if (material_)
         {
-            for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+            for (size_t index = 2; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
             {
                 if (material_->GetTexture(index))
                 {
@@ -329,11 +333,6 @@ namespace NSG
                     fBuffer += ss.str();
                 }
             }
-        }
-        else
-        {
-            fBuffer += "uniform sampler2D u_texture0;\n";
-            fBuffer += "uniform sampler2D u_texture1;\n";
         }
     }
 
@@ -492,6 +491,63 @@ namespace NSG
         graphics_.InvalidateVAOFor(this);
     }
 
+    std::string Program::TranslateFlags() const
+    {
+        std::string ss;
+
+        if (material_->IsBatched())
+            ss += " INSTANCED";
+
+        if (!flags_)
+        {
+            ss += " VERTEX_COLOR";
+        }
+        else
+        {
+            if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
+                ss += " PER_VERTEX_LIGHTING";
+            if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
+                ss += " PER_PIXEL_LIGHTING";
+            if ((int)ProgramFlag::BLEND & flags_)
+                ss += " BLEND";
+            if ((int)ProgramFlag::BLUR & flags_)
+                ss += " BLUR";
+            if ((int)ProgramFlag::TEXT & flags_)
+                ss += " TEXT";
+            if ((int)ProgramFlag::SHOW_TEXTURE0 & flags_)
+                ss += " SHOW_TEXTURE0";
+            if ((int)ProgramFlag::STENCIL & flags_)
+                ss += " STENCIL";
+            if ((int)ProgramFlag::NORMALMAP & flags_)
+                ss += " NORMALMAP";
+            if ((int)ProgramFlag::LIGHTMAP & flags_)
+                ss += " LIGHTMAP";
+            if ((int)ProgramFlag::UNLIT & flags_)
+                ss += " UNLIT";
+            if ((int)ProgramFlag::SKINNED & flags_)
+            {
+                ss += " SKINNED";
+                std::stringstream s;
+                s << nBones_;
+                ss += " NUM_BONES=" + s.str();
+            }
+            if ((int)ProgramFlag::SPECULARMAP & flags_)
+                ss += " SPECULARMAP";
+            if ((int)ProgramFlag::AOMAP & flags_)
+                ss += " AOMAP";
+            if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
+                ss += " DISPLACEMENTMAP";
+            if ((int)ProgramFlag::DIFFUSEMAP & flags_)
+                ss += " DIFFUSEMAP";
+            if ((int)ProgramFlag::SPHERICAL_BILLBOARD & flags_)
+                ss += " SPHERICAL_BILLBOARD";
+            if ((int)ProgramFlag::CYLINDRICAL_BILLBOARD & flags_)
+                ss += " CYLINDRICAL_BILLBOARD";
+        }
+
+        return ss;
+    }
+
     bool Program::ShaderCompiles(GLenum type, const std::string& buffer) const
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -514,54 +570,74 @@ namespace NSG
             }
         }
         glDeleteShader(id);
+        //glReleaseShaderCompiler(); // fails on osx
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        TRACE_LOG("Checking " << (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << " shader for material " << name_ << " with flags =" << TranslateFlags() << ":" << (compile_status == GL_TRUE ? "IS OK" : "HAS FAILED"));
+
         return compile_status == GL_TRUE;
     }
 
     void Program::ReduceShaderComplexity(GLenum type)
     {
-        TRACE_LOG("!!!Shader does not compile. Type=" << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment"));
+        //TRACE_LOG("!!!Shader does not compile. Type=" << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment"));
 
         if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
         {
             TRACE_LOG("Reducing complexity: removing DISPLACEMENTMAP");
             flags_ &= ~(int)ProgramFlag::DISPLACEMENTMAP;
-            return;
         }
         else if ((int)ProgramFlag::SPECULARMAP & flags_)
         {
             TRACE_LOG("Reducing complexity: removing SPECULARMAP");
             flags_ &= ~(int)ProgramFlag::SPECULARMAP;
-            return;
         }
         else if ((int)ProgramFlag::AOMAP & flags_)
         {
             TRACE_LOG("Reducing complexity: removing SPECULARMAP");
             flags_ &= ~(int)ProgramFlag::AOMAP;
-            return;
         }
         else if ((int)ProgramFlag::NORMALMAP & flags_)
         {
             TRACE_LOG("Reducing complexity: removing NORMALMAP");
             flags_ &= ~(int)ProgramFlag::NORMALMAP;
-            return;
         }
-        else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
+        else if (GL_FRAGMENT_SHADER == type && (int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
         {
             TRACE_LOG("Reducing complexity: removing PER_PIXEL_LIGHTING, adding PER_VERTEX_LIGHTING");
             flags_ &= ~(int)ProgramFlag::PER_PIXEL_LIGHTING;
             flags_ |= (int)ProgramFlag::PER_VERTEX_LIGHTING;
-            return;
         }
-        else if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
+        else if (GL_VERTEX_SHADER == type && material_->GetDiffuseMap() != nullptr && (int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
         {
             TRACE_LOG("Reducing complexity: removing PER_VERTEX_LIGHTING, adding UNLIT");
             flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
             flags_ |= (int)ProgramFlag::UNLIT;
-            return;
+        }
+        else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing PER_PIXEL_LIGHTING, changing to VERTEX_COLOR");
+            flags_ = (int)ProgramFlag::NONE;
+        }
+        else if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing PER_VERTEX_LIGHTING, changing to VERTEX_COLOR");
+            flags_ = (int)ProgramFlag::NONE;
+        }
+        else if ((int)ProgramFlag::UNLIT & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing UNLIT, changing to VERTEX_COLOR");
+            flags_ = (int)ProgramFlag::NONE;
+        }
+        else if ((int)ProgramFlag::SKINNED & flags_)
+        {
+            TRACE_LOG("Reducing complexity: removing SKINNED");
+            flags_ &= ~(int)ProgramFlag::SKINNED;
+            nBones_ = 0;
         }
         else
         {
             TRACE_LOG("!!! Cannot reduce complexity");
+            throw std::runtime_error("!!! Cannot reduce complexity");
         }
     }
 
@@ -710,7 +786,7 @@ namespace NSG
                 //TRACE_LOG("VS: " << pVShader_->GetSource());
                 //TRACE_LOG("FS: " << pFShader_->GetSource());
             }
-            TRACE_LOG("Creating program for material " << name_ << " HAS FAILED!!!");
+            TRACE_LOG("Linking program for material " << name_ << " HAS FAILED!!!");
             return false;
         }
         TRACE_LOG("Program for material " << name_ << " OK.");
@@ -818,13 +894,13 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        if (skeleton)
+        if (skeleton && IsSkinned())
         {
             const std::vector<PWeakNode>& bones = skeleton->GetBones();
             size_t nBones = bones.size();
             if (nBones > nBones_)
             {
-                TRACE_LOG("Invalidating shader for material " << material_->GetName() << " since number of bones (in the shader) has increased. Before nBones = " << nBones_ << ", now is " << nBones << ".");
+                TRACE_LOG("Invalidating program " << name_ << " for material " << material_->GetName() << " since number of bones (in the shader) has increased. Before nBones = " << nBones_ << ", now is " << nBones << ".");
                 Invalidate();
                 nBones_ = nBones;
                 return false;
@@ -852,7 +928,7 @@ namespace NSG
                     CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
                     const Matrix4& m = bone->GetGlobalModelMatrix();
                     const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
-					Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
+                    Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
                     glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(boneMatrix));
                 }
             }

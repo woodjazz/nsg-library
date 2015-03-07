@@ -63,4 +63,5 @@ int NSG_MAIN(int argc, char* argv[])
 {
 	Test0();
 	Test1();
+	return 0;
 }			

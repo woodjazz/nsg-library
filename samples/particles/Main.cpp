@@ -37,11 +37,9 @@ int NSG_MAIN(int argc, char* argv[])
     auto scene = std::make_shared<Scene>("scene");
 
     auto camera = scene->CreateChild<Camera>();
-	camera->SetWindow(window);
 	camera->SetPosition(Vertex3(0, 8, 15));
 
     auto control = std::make_shared<CameraControl>(camera);
-    control->SetWindow(window);
 
 	auto resource = app.GetOrCreateResourceFile("data/spark.png");
 	auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);

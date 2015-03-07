@@ -63,19 +63,28 @@ namespace NSG
 		Invalidate();
     }
 
+    void FrameColorSelection::SetWindow(PWindow window)
+    {
+        if(window_ != window)
+        {
+            window_ = window;
+            Invalidate();
+        }
+    }
+
     bool FrameColorSelection::IsValid()
     {
-		return Graphics::this_->GetWindow() ? true : false;
+		return window_ ? true : false;
     }
 
     void FrameColorSelection::AllocateResources()
     {
         material_ = app_.GetOrCreateMaterial("NSGFrameColorSelection");
-        auto window = Graphics::this_->GetWindow();
-        windowWidth_ = window->GetWidth();
-        windowHeight_ = window->GetHeight();
+        windowWidth_ = window_->GetWidth();
+        windowHeight_ = window_->GetHeight();
 
-		frameBuffer_ = std::make_shared<FrameBuffer>(name_, windowWidth_, windowHeight_, frameBufferFlags_);
+		frameBuffer_ = std::make_shared<FrameBuffer>(name_, frameBufferFlags_);
+        frameBuffer_->SetSize(windowWidth_, windowHeight_); 
 
 		auto technique = material_->GetTechnique();
         auto pass = technique->GetPass(0);

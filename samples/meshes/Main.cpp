@@ -60,9 +60,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto light = scene->CreateChild<Light>();
     light->SetType(LightType::DIRECTIONAL);
     auto camera = scene->CreateChild<Camera>();
-	camera->SetWindow(window);
     auto control = std::make_shared<CameraControl>(camera);
-    control->SetWindow(window);
 
 	CreateObject(app->CreatePlaneMesh(), Color(1, 0, 0, 1), Vector3(-20, 0, 0));
 	CreateObject(app->CreateCircleMesh(), Color(0, 1, 0, 1), Vector3(-10, 0, 0));

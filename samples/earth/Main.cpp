@@ -39,7 +39,6 @@ int NSG_MAIN(int argc, char* argv[])
     scene->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
 
     auto camera = scene->GetOrCreateChild<Camera>("camera");
-	camera->SetWindow(window);
 
 	{
         camControlPoints.push_back(Vertex3(-10.0f, 0.0f, 0.0f));

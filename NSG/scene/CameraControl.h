@@ -34,7 +34,7 @@ namespace NSG
 	public:
 		CameraControl(PCamera camera);
 		~CameraControl();
-		void SetWindow(PWindow window);
+		void SetWindow(Window* window);
 		void AutoZoom();
 		void OnUpdate(float deltaTime);
 		void OnKey(int key, int action, int modifier);

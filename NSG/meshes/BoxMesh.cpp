@@ -65,7 +65,7 @@ namespace NSG
 
     size_t BoxMesh::GetNumberOfTriangles() const
     {
-        return vertexsData_.size() / 3;
+        return indexes_.size() / 3;
     }
 
     bool BoxMesh::IsValid()

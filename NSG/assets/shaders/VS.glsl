@@ -37,7 +37,7 @@
 		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);
 		    v_color = a_color * totalLight;
 		    v_texcoord0 = a_texcoord0;
-			gl_Position = GetClipPos();
+			gl_Position = GetClipPos(worldPos);
 
 		#elif defined(PER_PIXEL_LIGHTING)
 
@@ -82,7 +82,7 @@
 
 			v_color = a_color;
 			v_texcoord0 = a_texcoord0;
-			gl_Position = GetClipPos();
+			gl_Position = GetClipPos(worldPos);
 
 		#elif defined(LIGHTMAP) // lightmap without lighting
 

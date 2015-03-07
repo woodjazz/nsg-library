@@ -48,6 +48,8 @@ namespace NSG
         {
         }
 
+        bool HasSlots() const { return !slots_.empty() || runSlots_.empty(); }
+
         PSlot Connect(CallbackFunction callback)
         {
             auto slot = std::make_shared<Slot>(Signal<PARAMS...>::shared_from_this(), callback);
@@ -92,7 +94,7 @@ namespace NSG
 
         bool running_;
 		std::vector<PWeakSlot> slots_;
-		std::vector<PWeakSlot> runSlots_; // slots connect while running
+		std::vector<PWeakSlot> runSlots_; // slots connected while running
     public:
         class Slot
         {

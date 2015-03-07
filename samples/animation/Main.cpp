@@ -44,7 +44,6 @@ int NSG_MAIN(int argc, char* argv[])
     camera->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.max_.z));
     camera->SetGlobalLookAt(objPos);
 
-    camera->SetWindow(window);
     auto animation = scene->GetOrCreateAnimation("anim0");
     AnimationTrack track;
     track.node_ = camera;

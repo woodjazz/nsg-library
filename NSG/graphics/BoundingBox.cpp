@@ -30,19 +30,22 @@ namespace NSG
 {
     BoundingBox::BoundingBox() :
         min_(0),
-        max_(0)
+        max_(0),
+        defined_(false)
     {
     }
 
     BoundingBox::BoundingBox(const Vertex3& min, const Vertex3& max)
         : min_(min),
-          max_(max)
+          max_(max),
+          defined_(true)
     {
     }
 
     BoundingBox::BoundingBox(const Vector3& point)
         : min_(point),
-          max_(point)
+          max_(point),
+          defined_(true)
     {
     }
 
@@ -53,18 +56,21 @@ namespace NSG
         Vertex3 scale = q * node.GetGlobalScale();
         min_ = pos - scale;
         max_ = pos + scale;
+        defined_ = true;
     }
 
     BoundingBox::BoundingBox(const BoundingBox& obj)
         : min_(obj.min_),
-          max_(obj.max_)
+          max_(obj.max_),
+          defined_(obj.defined_)
     {
 
     }
 
     BoundingBox::BoundingBox(float min, float max)
         : min_(Vector3(min, min, min)),
-          max_(Vector3(max, max, max))
+          max_(Vector3(max, max, max)),
+          defined_(true)
     {
     }
 
@@ -92,6 +98,13 @@ namespace NSG
 
     void BoundingBox::Merge(const Vector3& point)
     {
+        if (!defined_)
+        {
+            min_ = max_ = point;
+            defined_ = true;
+            return;
+        }
+
         if (point.x < min_.x)
             min_.x = point.x;
         if (point.y < min_.y)
@@ -108,6 +121,14 @@ namespace NSG
 
     void BoundingBox::Merge(const BoundingBox& box)
     {
+        if (!defined_)
+        {
+            min_ = box.min_;
+            max_ = box.max_;
+            defined_ = box.defined_;
+            return;
+        }
+
         if (box.min_.x < min_.x)
             min_.x = box.min_.x;
         if (box.min_.y < min_.y)

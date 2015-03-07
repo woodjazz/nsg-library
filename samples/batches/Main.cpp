@@ -56,9 +56,7 @@ int NSG_MAIN(int argc, char* argv[])
     pMaterial2->SetShininess(100);
 
     auto camera = scene->GetOrCreateChild<Camera>("camera");
-	camera->SetWindow(window);
     auto control = std::make_shared<CameraControl>(camera);
-	control->SetWindow(window);
 
     const float STEP = 8.0f;
     Vector3 position(0, 0, -10);

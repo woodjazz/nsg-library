@@ -146,6 +146,7 @@ namespace NSG
 
     class FontAtlas;
     typedef std::shared_ptr<FontAtlas> PFontAtlas;
+	typedef std::weak_ptr<FontAtlas> PWeakFontAtlas;
 
     class FontAtlasTextureManager;
     typedef std::unique_ptr<FontAtlasTextureManager> PFontAtlasTextureManager;
@@ -328,4 +329,8 @@ namespace NSG
 
 	class Particle;
 	typedef std::shared_ptr<Particle> PParticle;
+
+	class QuadMesh;
+	typedef std::shared_ptr<QuadMesh> PQuadMesh;
+
 }

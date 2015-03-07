@@ -63,7 +63,7 @@ namespace NSG
 
     size_t RectangleMesh::GetNumberOfTriangles() const
     {
-        return vertexsData_.size() - 2;
+        return 2;
     }
 
     bool RectangleMesh::IsValid()

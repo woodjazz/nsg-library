@@ -17,6 +17,7 @@
 #include "AnimationState.h"
 #include "PhysicsWorld.h"
 #include "ParticleSystem.h"
+#include "Window.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
@@ -26,6 +27,10 @@ namespace NSG
 {
     Scene::Scene(const std::string& name)
         : SceneNode(name),
+          signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
+          signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
+          signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
+          signalNodeMouseWheel_(new Signal<SceneNode *, float, float>()),
           ambient_(0.3f, 0.3f, 0.3f, 1),
           octree_(new Octree),
           app_(*App::this_),
@@ -33,12 +38,70 @@ namespace NSG
     {
         //octree_->InsertUpdate(this);
         Graphics::this_->SetScene(this);
+        auto window = Graphics::this_->GetWindow();
+        if(window)
+            SetWindow(window);
     }
 
     Scene::~Scene()
     {
         octree_ = nullptr;
     }
+
+    void Scene::SetWindow(Window* window)
+    {
+        if (window)
+        {
+			slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
+            {
+                if (signalNodeMouseMoved_->HasSlots())
+                {
+                    SceneNode* node = GetClosestNode(x, y);
+                    if (node)
+                        signalNodeMouseMoved_->Run(node, x, y);
+                }
+            });
+
+			slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
+            {
+                if (signalNodeMouseDown_->HasSlots())
+                {
+                    SceneNode* node = GetClosestNode(x, y);
+                    if (node)
+                        signalNodeMouseDown_->Run(node, button, x, y);
+                }
+            });
+
+			slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
+            {
+                if (signalNodeMouseUp_->HasSlots())
+                {
+                    SceneNode* node = GetClosestNode(x, y);
+                    if (node)
+                        signalNodeMouseUp_->Run(node, button, x, y);
+                }
+            });
+
+			slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
+            {
+                if (signalNodeMouseWheel_->HasSlots())
+                {
+                    SceneNode* node = GetClosestNode(x, y);
+                    if (node)
+                        signalNodeMouseWheel_->Run(node, x, y);
+                }
+            });
+
+        }
+        else
+        {
+			slotMouseMoved_ = nullptr;
+			slotMouseDown_ = nullptr;
+			slotMouseUp_ = nullptr;
+			slotMouseWheel_ = nullptr;
+        }
+    }
+
 
     void Scene::SetAmbientColor(Color ambient)
     {
@@ -82,7 +145,7 @@ namespace NSG
         return !result.empty();
     }
 
-    bool Scene::GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest)
+    bool Scene::GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const
     {
         std::vector<RayNodeResult> results;
         if (GetPreciseRayNodesIntersection(ray, results))
@@ -119,7 +182,8 @@ namespace NSG
 
     void Scene::Render(Camera* camera)
     {
-        if (IsReady() && camera)
+        //if (IsReady() && camera)
+		if (camera)
         {
             Graphics::this_->SetScene(this);
             Graphics::this_->SetCamera(camera);
@@ -132,24 +196,24 @@ namespace NSG
         needUpdate_.insert(obj);
     }
 
-	void Scene::SavePhysics(pugi::xml_node& node) const
-	{
-		pugi::xml_node child = node.append_child("Physics");
-		{
-			std::stringstream ss;
-			ss << physicsWorld_->GetGravity();
-			child.append_attribute("gravity") = ss.str().c_str();
-		}
-	}
+    void Scene::SavePhysics(pugi::xml_node& node) const
+    {
+        pugi::xml_node child = node.append_child("Physics");
+        {
+            std::stringstream ss;
+            ss << physicsWorld_->GetGravity();
+            child.append_attribute("gravity") = ss.str().c_str();
+        }
+    }
 
-	void Scene::LoadPhysics(const pugi::xml_node& node)
-	{
-		pugi::xml_node child = node.child("Physics");
-		Vertex3 gravity = GetVertex3(child.attribute("gravity").as_string());
-		physicsWorld_->SetGravity(gravity);
-	}
+    void Scene::LoadPhysics(const pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.child("Physics");
+        Vertex3 gravity = GetVertex3(child.attribute("gravity").as_string());
+        physicsWorld_->SetGravity(gravity);
+    }
 
-    void Scene::SaveAnimations(pugi::xml_node& node) const 
+    void Scene::SaveAnimations(pugi::xml_node& node) const
     {
         pugi::xml_node child = node.append_child("Animations");
         for (auto& obj : animations_.GetConstObjs())
@@ -217,11 +281,11 @@ namespace NSG
     void Scene::Load(const pugi::xml_node& node)
     {
         pugi::xml_node sceneNode = node.child("SceneNode");
-		CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
-		SceneNode::Load(sceneNode);
-		LoadAnimations(node);
-		LoadSkeletons(node);
-		LoadPhysics(node);
+        CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
+        SceneNode::Load(sceneNode);
+        LoadAnimations(node);
+        LoadSkeletons(node);
+        LoadPhysics(node);
     }
 
     void Scene::Save(pugi::xml_node& node) const
@@ -318,12 +382,12 @@ namespace NSG
 
     void Scene::UpdateParticleSystems(float deltaTime)
     {
-		for (auto& obj : particleSystems_)
-		{
-			auto ps = obj.lock();
-			if (ps)
-				ps->Update(deltaTime);
-		}
+        for (auto& obj : particleSystems_)
+        {
+            auto ps = obj.lock();
+            if (ps)
+                ps->Update(deltaTime);
+        }
     }
 
     bool Scene::SetAnimationSpeed(const std::string& name, float speed)
@@ -339,28 +403,28 @@ namespace NSG
         return true;
     }
 
-	bool Scene::HasLight(PLight light) const
-	{
-		auto itType = lights_.find(light->GetType());
-		if (itType != lights_.end())
-		{
-			auto& lights = itType->second;
-			auto it = std::find_if(lights.begin(), lights.end(), [&](PWeakLight obj)
-			{
-				auto p = obj.lock();
-				return p == light;
-			});
+    bool Scene::HasLight(PLight light) const
+    {
+        auto itType = lights_.find(light->GetType());
+        if (itType != lights_.end())
+        {
+            auto& lights = itType->second;
+            auto it = std::find_if(lights.begin(), lights.end(), [&](PWeakLight obj)
+            {
+                auto p = obj.lock();
+                return p == light;
+            });
 
-			return it != lights.end();
-		}
+            return it != lights.end();
+        }
 
-		return false;
-	}
+        return false;
+    }
 
     void Scene::AddLight(PLight light)
     {
-		if (!HasLight(light))
-	        lights_[light->GetType()].push_back(light);
+        if (!HasLight(light))
+            lights_[light->GetType()].push_back(light);
     }
 
     const std::vector<PWeakLight>& Scene::GetLights(LightType type) const
@@ -396,20 +460,27 @@ namespace NSG
         return cameras_;
     }
 
-	void Scene::AddParticleSystem(PParticleSystem ps)
-	{
-		particleSystems_.push_back(ps);
-	}
+    void Scene::AddParticleSystem(PParticleSystem ps)
+    {
+        particleSystems_.push_back(ps);
+    }
 
-	void Scene::UpdateOctree(SceneNode* node)
+    void Scene::UpdateOctree(SceneNode* node)
     {
         octree_->InsertUpdate(node);
     }
-    
-	void Scene::RemoveFromOctree(SceneNode* node)
+
+    void Scene::RemoveFromOctree(SceneNode* node)
     {
         needUpdate_.erase(node);
         octree_->Remove(node);
     }
 
+    SceneNode* Scene::GetClosestNode(float screenX, float screenY) const
+    {
+        Ray ray = Camera::GetRay(screenX, screenY);
+        RayNodeResult closest{ 0, nullptr };
+        GetClosestRayNodeIntersection(ray, closest);
+        return closest.node_;
+    }
 }

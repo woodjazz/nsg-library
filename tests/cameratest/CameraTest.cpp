@@ -412,7 +412,7 @@ static void Test04()
 
 	{
 		Ray ray = camera->GetScreenRay(-0.9f, 0);
-		CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_CONDITION(ray.GetOrigin().x < 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().x < 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().y == 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().z < 0, __FILE__, __LINE__);
@@ -420,7 +420,7 @@ static void Test04()
 
 	{
 		Ray ray = camera->GetScreenRay(1, 0);
-		CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_CONDITION(ray.GetOrigin().x > 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().x > 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().y == 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().z < 0, __FILE__, __LINE__);
@@ -428,7 +428,8 @@ static void Test04()
 
 	{
 		Ray ray = camera->GetScreenRay(0, 1);
-		CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_CONDITION(ray.GetOrigin().x == 0, __FILE__, __LINE__);
+		CHECK_CONDITION(ray.GetOrigin().y > 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().x == 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().y > 0.3f, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().z < -0.9f, __FILE__, __LINE__);
@@ -436,7 +437,7 @@ static void Test04()
 
 	{
 		Ray ray = camera->GetScreenRay(0, -1);
-		CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 1, __FILE__, __LINE__);
+		CHECK_CONDITION(ray.GetOrigin().y < 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().x == 0, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().y < 0.3f, __FILE__, __LINE__);
 		CHECK_CONDITION(ray.GetDirection().z < -0.9f, __FILE__, __LINE__);

@@ -88,6 +88,42 @@ namespace NSG
 		}
     }
 
+    Texture::Texture(const std::string& name, GLint format)
+        : fromKnownImgFormat_(false),
+          flags_((int)TextureFlag::NONE),
+          texture_(0),
+          width_(0),
+          height_(0),
+          format_(format),
+          type_(GL_UNSIGNED_BYTE),
+          channels_(0),
+          serializable_(false),
+          wrapMode_(TextureWrapMode::REPEAT),
+          mipmapLevels_(0),
+          filterMode_(TextureFilterMode::BILINEAR)
+
+    {
+        switch (format_)
+        {
+            case GL_ALPHA:
+                channels_ = 1;
+                break;
+            case GL_RGB:
+                channels_ = 3;
+                break;
+            case GL_RGBA:
+                channels_ = 4;
+                break;
+            case GL_DEPTH_COMPONENT:
+                channels_ = 0;
+                type_ = GL_UNSIGNED_INT;
+                break;
+            default:
+                CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
+                break;
+        }
+    }
+
     Texture::Texture(PResource resource, const TextureFlags& flags)
         : fromKnownImgFormat_(true),
           flags_(flags),
@@ -147,7 +183,10 @@ namespace NSG
 
     bool Texture::IsValid()
     {
-		return !pResource_ || pResource_->IsReady();
+        if(pResource_)
+            return pResource_->IsReady();
+        else
+		  return width_ > 0 && height_ > 0;
     }
 
 	const unsigned char* Texture::GetImageData(bool fromKnownImgFormat, PResource resource, bool& allocated, GLint& format, GLsizei& width, GLsizei& height, int& channels)
@@ -346,6 +385,17 @@ namespace NSG
     {
         node.append_attribute("flags") = flags_.to_string().c_str();
 		node.append_attribute("resource") = pResource_->GetName().c_str();
+    }
+
+    void Texture::SetSize(GLsizei width, GLsizei height)
+    {
+        CHECK_ASSERT(width >=0 && height >=0, __FILE__, __LINE__);
+        if(width_ != width || height_ != height)
+        {
+            width_ = width;
+            height_ = height;
+            Invalidate();
+        }
     }
 
     void Texture::SetFlags(const TextureFlags& flags)

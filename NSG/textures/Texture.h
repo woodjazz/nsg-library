@@ -34,6 +34,7 @@ namespace NSG
     public:
         Texture(PResource resource, const TextureFlags& flags = (int)TextureFlag::NONE);
 		Texture(const std::string& name, GLint format, GLsizei width, GLsizei height, const char* pixels);
+        Texture(const std::string& name, GLint format);
         virtual ~Texture();
 		GLuint GetID() const;
 		GLsizei GetWidth() const;
@@ -50,6 +51,7 @@ namespace NSG
         void SetFilterMode(TextureFilterMode mode);
         PResource GetResource() const { return pResource_;}
 		static int SaveAsPNG(PResource resource, const Path& outputDir);
+        void SetSize(GLsizei width, GLsizei height);
     private:
         virtual bool IsValid() override;
         virtual void AllocateResources() override;

@@ -66,11 +66,10 @@ static const char* TRANSFORMS_GLSL = \
 "	uniform mat4 u_bones[NUM_BONES];\n"\
 "	mat4 GetSkinnedMatrix()\n"\
 "	{\n"\
-"	    mat4 boneTransform = u_bones[int(a_boneIDs[0])] * a_weights[0];\n"\
-"	    boneTransform += u_bones[int(a_boneIDs[1])] * a_weights[1];\n"\
-"	    boneTransform += u_bones[int(a_boneIDs[2])] * a_weights[2];\n"\
-"	    boneTransform += u_bones[int(a_boneIDs[3])] * a_weights[3];\n"\
-"	    return boneTransform;\n"\
+"	    return u_bones[int(a_boneIDs[0])] * a_weights[0] +\n"\
+"	    u_bones[int(a_boneIDs[1])] * a_weights[1] +\n"\
+"	    u_bones[int(a_boneIDs[2])] * a_weights[2] +\n"\
+"	    u_bones[int(a_boneIDs[3])] * a_weights[3];\n"\
 "	}\n"\
 "#endif\n"\
 "uniform mat4 u_model;\n"\
@@ -140,7 +139,23 @@ static const char* TRANSFORMS_GLSL = \
 "}\n"\
 "vec4 GetClipPos()\n"\
 "{\n"\
-"	return u_projection * GetViewWorldMatrix() * vec4(a_position, 1.0);\n"\
+"	#if defined(SPHERICAL_BILLBOARD)\n"\
+"	    return u_projection * GetSphericalBillboardMatrix(u_view * GetModelMatrix()) * vec4(a_position, 1.0);\n"\
+"	#elif defined(CYLINDRICAL_BILLBOARD)\n"\
+"	    return u_projection * GetCylindricalBillboardMatrix(u_view * GetModelMatrix()) * vec4(a_position, 1.0);\n"\
+"	#else\n"\
+"	    return u_viewProjection * GetModelMatrix() * vec4(a_position, 1.0);\n"\
+"	#endif\n"\
+"}\n"\
+"vec4 GetClipPos(vec4 worldPos)\n"\
+"{\n"\
+"	#if defined(SPHERICAL_BILLBOARD)\n"\
+"	    return u_projection * GetSphericalBillboardMatrix(u_view * GetModelMatrix()) * vec4(a_position, 1.0);\n"\
+"	#elif defined(CYLINDRICAL_BILLBOARD)\n"\
+"	    return u_projection * GetCylindricalBillboardMatrix(u_view * GetModelMatrix()) * vec4(a_position, 1.0);\n"\
+"	#else\n"\
+"	    return u_viewProjection * worldPos;\n"\
+"	#endif\n"\
 "}\n"\
 "#endif\n"\
 ;

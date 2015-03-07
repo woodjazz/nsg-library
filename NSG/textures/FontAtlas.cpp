@@ -5,6 +5,7 @@
 #include "ResourceFile.h"
 #include "ResourceMemory.h"
 #include "Mesh.h"
+#include "Graphics.h"
 #include "App.h"
 #include "Window.h"
 #include "UTF8String.h"
@@ -26,6 +27,9 @@ namespace NSG
         path.SetExtension("png");
         auto textureResource = App::this_->GetOrCreateResourceFile(path.GetFilePath());
         texture_ = std::make_shared<Texture>(textureResource);
+        auto window = Graphics::this_->GetWindow();
+        if(window)
+            SetWindow(window);
     }
 
     FontAtlas::~FontAtlas()
@@ -33,7 +37,7 @@ namespace NSG
         Invalidate();
     }
 
-    void FontAtlas::SetWindow(PWindow window)
+    void FontAtlas::SetWindow(Window* window)
     {
         if(window)
         {
@@ -81,7 +85,7 @@ namespace NSG
         {
             viewWidth_ = width;
             viewHeight_ = height;
-            Invalidate();
+            //Invalidate();
             auto objs = meshes_.GetObjs();
             for (auto& obj : objs)
                 obj->Invalidate();
@@ -138,11 +142,9 @@ namespace NSG
         }
     }
 
-    void FontAtlas::GenerateMesh(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight)
+    void FontAtlas::GenerateMeshData(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight)
     {
-        vertexsData.clear();
-        indexes.clear();
-
+		CHECK_ASSERT(vertexsData.empty() && indexes.empty(), __FILE__, __LINE__);
         screenWidth = screenHeight = 0;
 
         CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0, __FILE__, __LINE__);

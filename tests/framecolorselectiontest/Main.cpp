@@ -32,6 +32,7 @@ int NSG_MAIN(int argc, char* argv[])
 	App app;
 	auto window = app.GetOrCreateWindow("window", 0, 0, 10, 10);
 	auto colorSelection = std::make_shared<FrameColorSelection>("FrameColorSelection");
+	colorSelection->SetWindow(window);
 
 	auto scene = std::make_shared<Scene>("scene000");
 	auto pMesh = app.CreateBoxMesh(1, 1, 1, 2, 2, 2);

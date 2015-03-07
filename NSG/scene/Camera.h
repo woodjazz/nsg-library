@@ -34,14 +34,14 @@ namespace NSG
 	public:
 		Camera(const std::string& name);
 		~Camera();
-		void SetWindow(PWindow window);
+		void SetWindow(Window* window);
 		void EnableOrtho();
 		void DisableOrtho();
 		void SetFOV(float fovy); // in degrees
 		void SetHalfHorizontalFov(float hhfov); // in radians
 		void SetNearClip(float zNear);
 		void SetFarClip(float zFar);
-		void SetAspectRatio(int width, int height);
+		void SetAspectRatio(unsigned width, unsigned height);
 		void SetAspectRatio(float aspect);
 		static Matrix4 GetModelViewProjection(const Node* pNode);
 		static Matrix4 GetInverseView();
@@ -56,6 +56,8 @@ namespace NSG
         Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
 		//XY are in normalized device coordinates (-1, 1)
         Ray GetScreenRay(float screenX, float screenY) const;
+		static Ray GetRay(float screenX, float screenY);
+		static void Render(PScene scene);
 		static const Matrix4& GetViewMatrix();
 		const Matrix4& GetView() const;
 		static const Matrix4& GetMatViewProj();
@@ -102,8 +104,8 @@ namespace NSG
 		bool isOrtho_;
 		Vector4 orthoCoords_;
         Graphics* graphics_;
-		int viewWidth_;
-		int viewHeight_;
+		unsigned viewWidth_;
+		unsigned viewHeight_;
 		float aspectRatio_;
 		mutable PFrustum frustum_;
 		mutable bool cameraIsDirty_;

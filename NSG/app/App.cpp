@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "AppConfiguration.h"
 #include "Graphics.h"
 #include "Scene.h"
+#include "QuadMesh.h"
 #include "BoxMesh.h"
 #include "CircleMesh.h"
 #include "EllipseMesh.h"
@@ -180,6 +181,15 @@ namespace NSG
         auto window = PWindow(new SDLWindow(name, x, y, width, height));
         windows_.push_back(window);
         return window;
+    }
+
+    PQuadMesh App::CreateQuadMesh(float size)
+    {
+        std::stringstream ss;
+        ss << "QuadMesh" << size;
+        auto mesh = meshes_.GetOrCreateClass<QuadMesh>(ss.str());
+        mesh->Set(size);
+        return mesh;
     }
 
     PBoxMesh App::CreateBoxMesh(float width, float height, float depth, int resX, int resY, int resZ)

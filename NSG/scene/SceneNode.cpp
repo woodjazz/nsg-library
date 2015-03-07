@@ -60,19 +60,12 @@ namespace NSG
 
     SceneNode::~SceneNode()
     {
+		if (mesh_)
+			mesh_->RemoveSceneNode(this);
+
 		auto scene = GetScene();
 		if (scene)
             scene->RemoveFromOctree(this);
-
-        Invalidate();
-    }
-
-    bool SceneNode::IsValid()
-    {
-        bool valid = !mesh_ || mesh_->IsReady();
-        valid &= !material_ || material_->IsReady();
-        valid &= !rigidBody_ || rigidBody_->IsReady();
-        return valid;
     }
 
     void SceneNode::SetMaterial(PMaterial material)
@@ -80,7 +73,6 @@ namespace NSG
         if (material_ != material)
         {
             material_ = material;
-            Invalidate();
         }
     }
 
@@ -110,7 +102,6 @@ namespace NSG
                 if(scene)
                     scene->UpdateOctree(this);
             }
-            Invalidate();
         }
     }
 
@@ -119,7 +110,6 @@ namespace NSG
         if (!rigidBody_)
         {
             rigidBody_ = std::make_shared<RigidBody>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
-            Invalidate();
         }
         return rigidBody_;
     }
@@ -160,16 +150,15 @@ namespace NSG
 
     const BoundingBox& SceneNode::GetWorldBoundingBox() const
     {
-        if (worldBBNeedsUpdate_)
-        {
-            if (mesh_ && mesh_->IsReady())
-            {
-                worldBB_ = mesh_->GetBB();
-                worldBB_.Transform(*this);
-                worldBBNeedsUpdate_ = false;
-            }
-        }
-
+		if (worldBBNeedsUpdate_)
+		{
+			if (mesh_ && mesh_->IsReady())
+			{
+				worldBB_ = mesh_->GetBB();
+				worldBB_.Transform(*this);
+				worldBBNeedsUpdate_ = false;
+			}
+		}
         return worldBB_;
     }
 

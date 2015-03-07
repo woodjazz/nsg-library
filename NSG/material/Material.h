@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Object.h"
 #include "Batch.h"
+#include "Util.h"
 #include "UniformsUpdate.h"
 namespace NSG
 {
@@ -37,7 +38,7 @@ namespace NSG
         Material(const std::string& name);
         ~Material();
         void SetProgramFlags(unsigned passIndex, const ProgramFlags& flags);
-        PMaterial Clone(const std::string& name);
+        PMaterial Clone(const std::string& name = GetUniqueName("Clone"));
         void SetName(const std::string& name) {name_ = name;}
         const std::string& GetName() const { return name_;  }
 		bool SetTexture(size_t index, PTexture texture);

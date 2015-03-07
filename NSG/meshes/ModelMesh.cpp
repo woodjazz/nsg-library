@@ -63,7 +63,7 @@ namespace NSG
     size_t ModelMesh::GetNumberOfTriangles() const
     {
         if (face_mode_ == GL_TRIANGLES)
-            return vertexsData_.size() / 3;
+            return indexes_.size() / 3;
         else if (face_mode_ == GL_TRIANGLE_FAN)
             return vertexsData_.size() - 2;
         else

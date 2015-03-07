@@ -35,18 +35,12 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto xml = app.GetOrCreateResourceFile("data/AnonymousPro32.xml");
     auto atlas = std::make_shared<FontAtlas>(xml);
-    atlas->SetWindow(window);
-    auto textCenter = atlas->GetOrCreateMesh("C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
-    auto textLeftTop = atlas->GetOrCreateMesh("LT Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT);
-    auto textRightTop = atlas->GetOrCreateMesh("RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT);
-    auto textLeftBottom = atlas->GetOrCreateMesh("LB Hello World!!!", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT);
-    auto textRightBottom = atlas->GetOrCreateMesh("RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT);
 
     auto scene = std::make_shared<Scene>("scene");
-	// auto camera = scene->CreateChild<Camera>();
-	// camera->EnableOrtho();
-	// auto control = std::make_shared<CameraControl>(camera);
-	// control->SetWindow(window);
+    auto camera = scene->CreateChild<Camera>();
+    camera->SetPosition(Vector3(0, 0, 2));
+    camera->EnableOrtho();
+    auto control = std::make_shared<CameraControl>(camera);
 
     auto nodeCenter = scene->GetOrCreateChild<SceneNode>("nodeCenter");
     auto nodeLeftTop = scene->GetOrCreateChild<SceneNode>("nodeLeftTop");
@@ -54,8 +48,20 @@ int NSG_MAIN(int argc, char* argv[])
     auto nodeLeftBottom = scene->GetOrCreateChild<SceneNode>("nodeLeftBottom");
     auto nodeRightBottom = scene->GetOrCreateChild<SceneNode>("nodeRightBottom");
 
-	auto material = app.CreateMaterial();
-	material->SetTextMap(atlas->GetTexture());
+    nodeCenter->SetMesh(atlas->GetOrCreateMesh("C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
+    nodeLeftTop->SetMesh(atlas->GetOrCreateMesh("LT Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT));
+    nodeRightTop->SetMesh(atlas->GetOrCreateMesh("RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT));
+    nodeLeftBottom->SetMesh(atlas->GetOrCreateMesh("LB Hello World!!!", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT));
+    nodeRightBottom->SetMesh(atlas->GetOrCreateMesh("RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT));
+
+    auto material = app.CreateMaterial();
+    material->SetTextMap(atlas->GetTexture());
+
+    auto focusMaterial = material->Clone();
+    focusMaterial->SetColor(Color(0, 0, 1, 1));
+
+    auto activeMaterial = material->Clone();
+    activeMaterial->SetColor(Color(1, 0, 0, 1));
 
     nodeCenter->SetMaterial(material);
     nodeLeftTop->SetMaterial(material);
@@ -63,81 +69,28 @@ int NSG_MAIN(int argc, char* argv[])
     nodeLeftBottom->SetMaterial(material);
     nodeRightBottom->SetMaterial(material);
 
-    nodeCenter->SetMesh(textCenter);
-    nodeLeftTop->SetMesh(textLeftTop);
-    nodeRightTop->SetMesh(textRightTop);
-    nodeLeftBottom->SetMesh(textLeftBottom);
-    nodeRightBottom->SetMesh(textRightBottom);
-
-	//control->AutoZoom();
+    //control->AutoZoom();
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {
-		//scene->Render(camera.get());
-        scene->SceneNode::DrawWithChildren();
+        Camera::Render(scene);
     });
-#if 1
-	SceneNode* selectedNode = nullptr;
-    HorizontalAlignment hAlign;
-    VerticalAlignment vAlign;
-    auto slotMouseDown = window->signalMouseDown_->Connect([&](int button, float x, float y)
+
+    SceneNode* lastNode = nullptr;
+    auto slotMouseDown = scene->signalNodeMouseDown_->Connect([&](SceneNode * node, int button, float x, float y)
     {
-        Ray ray(Vector3(x, y, 0), VECTOR3_FORWARD);
-        RayNodeResult closest;
-        if (scene->GetClosestRayNodeIntersection(ray, closest))
-        {
-			selectedNode = closest.node_;
-			auto mesh = std::dynamic_pointer_cast<TextMesh>(selectedNode->GetMesh());
-			auto center = selectedNode->GetWorldBoundingBox().Center();
-			auto size = selectedNode->GetWorldBoundingBox().Size();
-			//selectedNode->SetPosition(Vector3(center.x, y, 0));
-            mesh->GetAlignment(hAlign, vAlign);
-			mesh->SetAlignment(CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
-        }
+        lastNode = node;
+        node->SetMaterial(activeMaterial);
     });
 
     auto slotMouseUp = window->signalMouseUp_->Connect([&](int button, float x, float y)
     {
-		if (selectedNode)
+		if (lastNode)
 		{
-			selectedNode->SetPosition(Vertex3(0));
-            selectedNode->SetOrientation(QUATERNION_IDENTITY);
-            auto mesh = std::dynamic_pointer_cast<TextMesh>(selectedNode->GetMesh());
-            mesh->SetAlignment(hAlign, vAlign);
-			selectedNode = nullptr;
+			lastNode->SetMaterial(material);
+			lastNode = nullptr;
 		}
     });
-
-    SceneNode* colorNode = nullptr;
-    auto slotMouseMoved = window->signalMouseMoved_->Connect([&](float x, float y)
-    {
-		if (colorNode)
-			colorNode->SetMaterial(material);
-
-        Ray ray(Vector3(x, y, 0), VECTOR3_FORWARD);
-        RayNodeResult closest;
-        if (scene->GetClosestRayNodeIntersection(ray, closest))
-        {
-            colorNode = closest.node_;
-            auto material = colorNode->GetMaterial();
-            auto clone = material->Clone("cloneMaterial");
-            clone->SetColor(Color(1, 0, 0, 1));
-            colorNode->SetMaterial(clone);
-        }        
-    });
-
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
-    {
-    	if(selectedNode)
-    	{
-            const float ANGLE = glm::pi<float>() / 500.0f;
-			const Quaternion ROTATION = glm::angleAxis(ANGLE, Vertex3(0, 0, 1));
-			Quaternion q = selectedNode->GetOrientation();
-			selectedNode->SetOrientation(q * ROTATION);
-    	}
-    });
-
-#endif
 
     return app.Run();
 }

@@ -1102,7 +1102,7 @@ namespace NSG
 		CHECK_ASSERT(pass, __FILE__, __LINE__);
 		pass->SetupPass();
 
-		if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady() || (!activeNode_ || !activeNode_->IsReady()))
+		if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady())// || (!activeNode_ || !activeNode_->IsReady()))
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -1120,13 +1120,12 @@ namespace NSG
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         const VertexsData& vertexsData = activeMesh_->GetVertexsData();
         const Indexes& indexes = activeMesh_->GetIndexes(solid);
-
-        if (!indexes.empty())
+		
+		if (!indexes.empty())
 			glDrawElements(mode, GLsizei(indexes.size()), GL_UNSIGNED_SHORT, 0);
         else
 			glDrawArrays(mode, 0, GLsizei(vertexsData.size()));
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
         SetVertexArrayObj(nullptr);
 
         lastMesh_ = activeMesh_;
@@ -1209,8 +1208,11 @@ namespace NSG
 		CHECK_ASSERT(transparent.empty(), __FILE__, __LINE__);
 
 		for (auto& node : nodes)
-			if (node->GetMaterial()->IsTransparent())
+		{
+			auto material = node->GetMaterial();
+			if (material && material->IsTransparent())
 				transparent.push_back(node);
+		}
 
         // remove tranparent from nodes 
 		nodes.erase(std::remove_if(nodes.begin(), nodes.end(),
@@ -1255,9 +1257,12 @@ namespace NSG
         for (auto& node : visibles)
         {
             PMaterial material = node->GetMaterial();
+
+			if (!material) continue;
+
             PMesh mesh = node->GetMesh();
 
-            if (usedMaterial != material || !material)
+            if (usedMaterial != material)
             {
                 usedMaterial = material;
                 MaterialData materialData;

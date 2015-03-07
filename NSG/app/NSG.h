@@ -47,6 +47,7 @@ misrepresented as being the original software.
 #include "SphereMesh.h"
 #include "PlaneMesh.h"
 #include "RoundedRectangleMesh.h"
+#include "QuadMesh.h"
 #include "Camera.h"
 #include "TextMesh.h"
 #include "Texture.h"
@@ -93,5 +94,6 @@ misrepresented as being the original software.
 #include "ParticleSystem.h"
 #include "MemoryTest.h"
 #include "MemoryManager.h"
+#include "Button.h"
 
 

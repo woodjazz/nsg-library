@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Node.h"
 #include "BoundingBox.h"
-#include "Object.h"
 #include "SignalSlots.h"
 #include <string>
 #include <vector>
@@ -35,7 +34,7 @@ misrepresented as being the original software.
 namespace NSG
 {
 	class Octant;
-	class SceneNode : public Node, public Object
+	class SceneNode : public Node
 	{
 	public:
 		SceneNode(const std::string& name);
@@ -65,13 +64,11 @@ namespace NSG
 		void Draw();
 		void DrawWithChildren();
 		PRigidBody GetRigidBody() const { return rigidBody_; }
-	public:
 		SignalCollision::PSignal signalCollision_;
 	protected:
-		bool IsValid() override;
 		App& app_;
-	private:
 		PMaterial material_;
+	private:
 		PMesh mesh_;
 		PRigidBody rigidBody_;
 		mutable Octant* octant_;

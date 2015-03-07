@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Light.h"
 #include "BoundingBox.h"
 #include "MapAndVector.h"
+#include "Util.h"
 #include <set>
 #include <map>
 
@@ -37,8 +38,9 @@ namespace NSG
     class Scene : public SceneNode
     {
     public:
-        Scene(const std::string& name);
+		Scene(const std::string& name = GetUniqueName("scene"));
         ~Scene();
+        void SetWindow(Window* window);
         void SetAmbientColor(Color ambient);
         const Color& GetAmbientColor() const { return ambient_; }
 		void AddLight(PLight light);
@@ -55,7 +57,7 @@ namespace NSG
         void Load(const pugi::xml_node& node) override;
         bool GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const;
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
-        bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest);
+        bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const;
         bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
         PAnimation GetOrCreateAnimation(const std::string& name);
         std::vector<PAnimation> GetAnimationsFor(PNode node) const;
@@ -66,6 +68,11 @@ namespace NSG
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
         void UpdateOctree(SceneNode* node);
         void RemoveFromOctree(SceneNode* node);
+        SceneNode* GetClosestNode(float screenX, float screenY) const;
+        SignalNodeMouseMoved::PSignal signalNodeMouseMoved_;
+        SignalNodeMouseDown::PSignal signalNodeMouseDown_;
+        SignalNodeMouseUp::PSignal signalNodeMouseUp_;
+        SignalNodeMouseWheel::PSignal signalNodeMouseWheel_;
     protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
@@ -89,5 +96,9 @@ namespace NSG
         typedef std::map<std::string, PAnimationState> AnimationStateMap;
         AnimationStateMap animationStateMap_;
         PPhysicsWorld physicsWorld_;
+		SignalMouseMoved::PSlot slotMouseMoved_;
+		SignalMouseDown::PSlot slotMouseDown_;
+		SignalMouseUp::PSlot slotMouseUp_;
+		SignalMouseWheel::PSlot slotMouseWheel_;
     };
 }

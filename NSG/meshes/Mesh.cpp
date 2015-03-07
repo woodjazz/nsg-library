@@ -46,20 +46,21 @@ namespace NSG
           areTangentsCalculated_(false),
           serializable_(true)
     {
-		if (name_.empty())
-			name_ = GetUniqueName("Mesh");
+		CHECK_ASSERT(!dynamic && "dynamic buffers fail (I do not why!!!!)", __FILE__, __LINE__);
+        if (name_.empty())
+            name_ = GetUniqueName("Mesh");
     }
 
     Mesh::~Mesh()
     {
-		Invalidate();
+        Invalidate();
     }
 
-	void Mesh::SetDynamic(bool dynamic)
-	{
-		isStatic_ = !dynamic;
-		Invalidate();
-	}
+    void Mesh::SetDynamic(bool dynamic)
+    {
+        isStatic_ = !dynamic;
+        Invalidate();
+    }
 
     bool Mesh::IsValid()
     {
@@ -75,7 +76,7 @@ namespace NSG
 
         CHECK_ASSERT(pVBuffer_ == nullptr, __FILE__, __LINE__);
         CHECK_ASSERT(pIBuffer_ == nullptr, __FILE__, __LINE__);
-		CHECK_ASSERT(pIWirefameBuffer_ == nullptr, __FILE__, __LINE__);
+        CHECK_ASSERT(pIWirefameBuffer_ == nullptr, __FILE__, __LINE__);
 
         CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
         CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
@@ -93,17 +94,17 @@ namespace NSG
             if (isStatic_)
                 pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_STATIC_DRAW);
             else
-				pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW);
+                pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW);
         }
 
-		if (!indexesWireframe_.empty())
-		{
-			GLsizeiptr bytesNeeded = sizeof(IndexType) * indexesWireframe_.size();
-			if (isStatic_)
-				pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_STATIC_DRAW);
-			else
-				pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW);
-		}
+        if (!indexesWireframe_.empty())
+        {
+            GLsizeiptr bytesNeeded = sizeof(IndexType) * indexesWireframe_.size();
+            if (isStatic_)
+                pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_STATIC_DRAW);
+            else
+                pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW);
+        }
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -116,19 +117,26 @@ namespace NSG
 
     void Mesh::ReleaseResources()
     {
-		bb_ = BoundingBox();
+        bb_ = BoundingBox();
         boundingSphereRadius_ = 0;
-        pVBuffer_ = nullptr;
+
+		vertexsData_.clear();
+		indexes_.clear();
+
+		pVBuffer_ = nullptr;
         pIBuffer_ = nullptr;
-		pIWirefameBuffer_ = nullptr;
+        pIWirefameBuffer_ = nullptr;
         areTangentsCalculated_ = false;
+
+		for (auto& node : sceneNodes_)
+			node->OnDirty(); // due text meshes can change with window resize
     }
 
     void Mesh::Save(pugi::xml_node& node)
     {
-        if(!serializable_)
+        if (!serializable_)
             return;
-        
+
         pugi::xml_node child = node.append_child("Mesh");
 
         {
@@ -169,15 +177,15 @@ namespace NSG
 
                 {
                     std::stringstream ss;
-					ss << obj.uv_[0];
+                    ss << obj.uv_[0];
                     vertexData.append_attribute("uv0") = ss.str().c_str();
                 }
 
-				{
-					std::stringstream ss;
-					ss << obj.uv_[1];
-					vertexData.append_attribute("uv1") = ss.str().c_str();
-				}
+                {
+                    std::stringstream ss;
+                    ss << obj.uv_[1];
+                    vertexData.append_attribute("uv1") = ss.str().c_str();
+                }
 
                 {
                     std::stringstream ss;
@@ -185,14 +193,14 @@ namespace NSG
                     vertexData.append_attribute("color") = ss.str().c_str();
                 }
 
-				/*
-				// Do not export tangents since they are calculated
+                /*
+                // Do not export tangents since they are calculated
                 {
                     std::stringstream ss;
                     ss << obj.tangent_;
                     vertexData.append_attribute("tangent") = ss.str().c_str();
                 }
-				*/
+                */
 
                 {
                     std::stringstream ss;
@@ -205,7 +213,7 @@ namespace NSG
                     ss << obj.bonesWeight_;
                     vertexData.append_attribute("bonesWeight") = ss.str().c_str();
                 }
-                
+
 
             }
 
@@ -237,10 +245,10 @@ namespace NSG
                 VertexData obj;
                 obj.position_ = GetVertex3(vertexNode.attribute("position").as_string());
                 obj.normal_ = GetVertex3(vertexNode.attribute("normal").as_string());
-				obj.uv_[0] = GetVertex2(vertexNode.attribute("uv0").as_string());
-				obj.uv_[1] = GetVertex2(vertexNode.attribute("uv1").as_string());
+                obj.uv_[0] = GetVertex2(vertexNode.attribute("uv0").as_string());
+                obj.uv_[1] = GetVertex2(vertexNode.attribute("uv1").as_string());
                 obj.color_ =  GetVertex4(vertexNode.attribute("color").as_string());
-				// Do not import tangents since they are calculated
+                // Do not import tangents since they are calculated
                 //obj.tangent_ =  GetVertex3(vertexNode.attribute("tangent").as_string());
                 obj.bonesID_ =  GetVertex4(vertexNode.attribute("bonesID").as_string());
                 obj.bonesWeight_ =  GetVertex4(vertexNode.attribute("bonesWeight").as_string());
@@ -276,10 +284,10 @@ namespace NSG
             Vector3 edge1 = v1.position_ - v0.position_;
             Vector3 edge2 = v2.position_ - v0.position_;
 
-			float deltaU1 = v1.uv_[0].x - v0.uv_[0].x;
-			float deltaV1 = v1.uv_[0].y - v0.uv_[0].y;
-			float deltaU2 = v2.uv_[0].x - v0.uv_[0].x;
-			float deltaV2 = v2.uv_[0].y - v0.uv_[0].y;
+            float deltaU1 = v1.uv_[0].x - v0.uv_[0].x;
+            float deltaV1 = v1.uv_[0].y - v0.uv_[0].y;
+            float deltaU2 = v2.uv_[0].x - v0.uv_[0].x;
+            float deltaV2 = v2.uv_[0].y - v0.uv_[0].y;
 
             float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
 
@@ -305,40 +313,40 @@ namespace NSG
         }
     }
 
-	void Mesh::SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights)
-	{
-		CHECK_ASSERT(blendIndices.size() == blendWeights.size(), __FILE__, __LINE__);
-		CHECK_ASSERT(vertexsData_.size() == blendWeights.size(), __FILE__, __LINE__);
-		size_t n = vertexsData_.size();
-		for (size_t i = 0; i < n; i++)
-		{
-			{
-				Vector4 bonesID;
-				size_t nBones = blendIndices[i].size();
-				CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
-				for (size_t j = 0; j < nBones; j++)
-					bonesID[j] = float(blendIndices[i][j]);
-				vertexsData_[i].bonesID_ = bonesID;
-			}
+    void Mesh::SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights)
+    {
+        CHECK_ASSERT(blendIndices.size() == blendWeights.size(), __FILE__, __LINE__);
+        CHECK_ASSERT(vertexsData_.size() == blendWeights.size(), __FILE__, __LINE__);
+        size_t n = vertexsData_.size();
+        for (size_t i = 0; i < n; i++)
+        {
+            {
+                Vector4 bonesID;
+                size_t nBones = blendIndices[i].size();
+                CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
+                for (size_t j = 0; j < nBones; j++)
+                    bonesID[j] = float(blendIndices[i][j]);
+                vertexsData_[i].bonesID_ = bonesID;
+            }
 
-			{
-				Vector4 bonesWeight;
-				size_t nBones = blendWeights[i].size();
-				CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
-				for (size_t j = 0; j < nBones; j++)
-					bonesWeight[j] = blendWeights[i][j];
-				vertexsData_[i].bonesWeight_ = bonesWeight;
-			}
-		}
-	}
+            {
+                Vector4 bonesWeight;
+                size_t nBones = blendWeights[i].size();
+                CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
+                for (size_t j = 0; j < nBones; j++)
+                    bonesWeight[j] = blendWeights[i][j];
+                vertexsData_[i].bonesWeight_ = bonesWeight;
+            }
+        }
+    }
 
-	void Mesh::SetBlendData(unsigned vertex, const Vector4& bonesID, Vector4& bonesWeight)
-	{
-		CHECK_ASSERT(vertexsData_.size() > vertex, __FILE__, __LINE__);
-		vertexsData_[vertex].bonesID_ = bonesID;
-		vertexsData_[vertex].bonesID_ *= 3;
-		vertexsData_[vertex].bonesWeight_ = bonesWeight;
-	}
+    void Mesh::SetBlendData(unsigned vertex, const Vector4& bonesID, Vector4& bonesWeight)
+    {
+        CHECK_ASSERT(vertexsData_.size() > vertex, __FILE__, __LINE__);
+        vertexsData_[vertex].bonesID_ = bonesID;
+        vertexsData_[vertex].bonesID_ *= 3;
+        vertexsData_[vertex].bonesWeight_ = bonesWeight;
+    }
 
     void Mesh::AddSceneNode(SceneNode* node)
     {
@@ -352,50 +360,80 @@ namespace NSG
 
     void Mesh::AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal)
     {
-		size_t vidx = vertexsData_.size();
         vertexsData_.push_back(v0);
         vertexsData_.push_back(v1);
         vertexsData_.push_back(v2);
-		vertexsData_.push_back(v3);
+        vertexsData_.push_back(v3);
 
-		indexes_.push_back(vidx);
-		indexes_.push_back(vidx + 1);
-		indexes_.push_back(vidx + 2);
-		indexes_.push_back(vidx);
-		indexes_.push_back(vidx + 2);
-		indexes_.push_back(vidx + 3);
+		CHECK_ASSERT(vertexsData_.size() <= std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
+		IndexType vidx = (IndexType)vertexsData_.size();
+        indexes_.push_back(vidx);
+        indexes_.push_back(vidx + 1);
+        indexes_.push_back(vidx + 2);
+        indexes_.push_back(vidx);
+        indexes_.push_back(vidx + 2);
+        indexes_.push_back(vidx + 3);
 
-        if(calcFaceNormal)
-			AverageNormals(vidx, true);
+        if (calcFaceNormal)
+            AverageNormals(vidx, true);
         Invalidate();
     }
 
     void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal)
     {
-		size_t vidx = vertexsData_.size();
+        size_t vidx = vertexsData_.size();
         vertexsData_.push_back(v0);
         vertexsData_.push_back(v1);
         vertexsData_.push_back(v2);
-		indexes_.push_back(vidx);
-		indexes_.push_back(vidx + 1);
-		indexes_.push_back(vidx + 2);
+        indexes_.push_back(vidx);
+        indexes_.push_back(vidx + 1);
+        indexes_.push_back(vidx + 2);
 
-        if(calcFaceNormal)
-			AverageNormals(vidx, false);
+        if (calcFaceNormal)
+            AverageNormals(vidx, false);
 
         Invalidate();
     }
 
     void Mesh::AverageNormals(size_t vIndexBase, bool isQuad)
     {
-		size_t n = isQuad ? 4 : 3;
-		Vector3 normal(0);
+        size_t n = isQuad ? 4 : 3;
+        Vector3 normal(0);
 
-		for (size_t i = 0; i<n; i++)
-			normal += vertexsData_[vIndexBase + i].normal_;
-		normal /= n;
+        for (size_t i = 0; i < n; i++)
+            normal += vertexsData_[vIndexBase + i].normal_;
+        normal /= n;
 
-		for (size_t i = 0; i<n; i++)
-			vertexsData_[vIndexBase + i].normal_ = normal;
+        for (size_t i = 0; i < n; i++)
+            vertexsData_[vIndexBase + i].normal_ = normal;
     }
+
+    const VertexData& Mesh::GetTriangleVertex(size_t triangleIdx, size_t vertexIndex) const
+    {
+        CHECK_ASSERT(vertexIndex < 3, __FILE__, __LINE__);
+		if (GetSolidDrawMode() == GL_TRIANGLES)
+		{
+			CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
+			CHECK_ASSERT(triangleIdx < indexes_.size() / 3, __FILE__, __LINE__);
+			return vertexsData_.at(indexes_.at(triangleIdx * 3 + vertexIndex));
+		}
+        else
+        {
+			CHECK_ASSERT(indexes_.empty(), __FILE__, __LINE__);
+            CHECK_ASSERT(GetSolidDrawMode() == GL_TRIANGLE_FAN, __FILE__, __LINE__);
+            if (vertexIndex == 0)
+                return vertexsData_.at(0);
+            return vertexsData_.at(triangleIdx + vertexIndex);
+        }
+    }
+
+	void Mesh::SetSkeleton(PSkeleton skeleton) 
+	{ 
+		if (skeleton)
+		{
+			TRACE_LOG("Setting skeleton for mesh " << name_);
+		}
+
+		skeleton_ = skeleton; 
+	}
 }

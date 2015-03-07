@@ -37,9 +37,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto material = app.GetMaterial("Material");
 
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");
-	camera->SetWindow(window);
 	auto control = std::make_shared<CameraControl>(camera);
-	control->SetWindow(window);
     
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {

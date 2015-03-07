@@ -48,6 +48,9 @@ namespace NSG
 	    Vector3 Center() const { return (max_ + min_) * 0.5f; }
 	    Vector3 Size() const { return max_ - min_; }
 	    void GetVertices(Vertex3 vertices[8]) const;
+
+	private:
+		bool defined_;
 	};
 
 	std::ostream& operator << (std::ostream& s , const BoundingBox& obj);

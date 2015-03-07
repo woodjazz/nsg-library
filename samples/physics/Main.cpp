@@ -37,10 +37,9 @@ int NSG_MAIN(int argc, char* argv[])
     scene->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
     auto camera = scene->GetOrCreateChild<Camera>("camera");
     camera->SetPosition(Vertex3(0, 2, 35));
-    camera->SetWindow(window);
 
     auto control = std::make_shared<CameraControl>(camera);
-	control->SetWindow(window);
+
     auto light = camera->GetOrCreateChild<Light>("light");
     {
         auto earth = scene->GetOrCreateChild<SceneNode>("earth");
@@ -61,7 +60,7 @@ int NSG_MAIN(int argc, char* argv[])
         rb->HandleCollisions(true);
         auto static slotCollision = earth->signalCollision_->Connect([&](const ContactPoint & contactInfo)
         {
-            rb->SetLinearVelocity(Vertex3(0, 100, 0));
+            rb->SetLinearVelocity(Vertex3(0, 60, 0));
         });
     }
 

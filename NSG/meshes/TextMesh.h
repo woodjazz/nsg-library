@@ -55,7 +55,7 @@ namespace NSG
     private:
         void AllocateResources() override;
         bool IsValid() override;
-        PFontAtlas pAtlas_;
+		PWeakFontAtlas pAtlas_;
         std::string text_;
         float screenWidth_;
         float screenHeight_;

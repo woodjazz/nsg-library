@@ -48,6 +48,7 @@ namespace NSG
         void RemoveObject(Object* object);
         PTexture GetWhiteTexture();
         PWindow GetOrCreateWindow(const std::string& name, int x, int y, int width, int height);
+        PQuadMesh CreateQuadMesh(float size = 2);
         PBoxMesh CreateBoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
         PCircleMesh CreateCircleMesh(float radius = 1, int res = 8);
         PEllipseMesh CreateEllipseMesh(float width = 2, float height = 1, int res = 8);

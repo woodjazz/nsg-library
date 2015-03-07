@@ -64,6 +64,7 @@ namespace NSG
         Material* GetMaterial() const { return material_; }
         bool IsSkinned() const;
     private:
+        std::string TranslateFlags() const;
         size_t GetNeededVarying() const;
         bool IsValid() override;
         void AllocateResources() override;

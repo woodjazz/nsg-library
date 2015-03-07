@@ -64,7 +64,7 @@ namespace NSG
 
     size_t PlaneMesh::GetNumberOfTriangles() const
     {
-        return vertexsData_.size() / 3;
+        return indexes_.size() / 3;
     }
 
     bool PlaneMesh::IsValid()

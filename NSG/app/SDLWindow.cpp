@@ -43,9 +43,19 @@ misrepresented as being the original software.
 #endif
 #if EMSCRIPTEN
 #include <emscripten.h>
+#include <html5.h>
+static EM_BOOL EmscriptenResizeCallback(int eventType, const EmscriptenUiEvent *keyEvent, void *userData)
+{
+    using namespace NSG;
+    Window* window = App::this_->GetMainWindow();
+    if(window)
+        window->ViewChanged(keyEvent->windowInnerWidth, keyEvent->windowInnerHeight);
+    return false;
+}
 #endif
 namespace NSG
 {
+
     SDLWindow::SDLWindow(const std::string& name, int x, int y, int width, int height)
         : Window(name)
     {
@@ -91,6 +101,7 @@ namespace NSG
             }
             isMainWindow_ = true;
             app_->SetMainWindow(this);
+            emscripten_set_resize_callback(nullptr, nullptr, false, EmscriptenResizeCallback);
         }
         #else
         {
@@ -161,10 +172,14 @@ namespace NSG
         #endif
 
         Tick::Initialize();
+
+        Graphics::this_->SetWindow(this);
     }
 
     SDLWindow::~SDLWindow()
     {
+		if (this == Graphics::this_->GetWindow())
+			Graphics::this_->SetWindow(nullptr);
         Destroy();
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
@@ -207,6 +222,7 @@ namespace NSG
             TRACE_LOG("ViewChanged: " << width << "," << height);
             #if EMSCRIPTEN
             SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE);
+            //emscripten_set_canvas_size(width, height);
             #endif
             Window::ViewChanged(width, height);
         }

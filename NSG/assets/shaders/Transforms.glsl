@@ -69,11 +69,10 @@ attribute vec4 a_weights;
 	uniform mat4 u_bones[NUM_BONES];
 	mat4 GetSkinnedMatrix()
 	{
-	    mat4 boneTransform = u_bones[int(a_boneIDs[0])] * a_weights[0];
-	    boneTransform += u_bones[int(a_boneIDs[1])] * a_weights[1];
-	    boneTransform += u_bones[int(a_boneIDs[2])] * a_weights[2];
-	    boneTransform += u_bones[int(a_boneIDs[3])] * a_weights[3];
-	    return boneTransform;
+	    return u_bones[int(a_boneIDs[0])] * a_weights[0] +
+	    u_bones[int(a_boneIDs[1])] * a_weights[1] +
+	    u_bones[int(a_boneIDs[2])] * a_weights[2] +
+	    u_bones[int(a_boneIDs[3])] * a_weights[3];
 	}
 #endif
 
@@ -106,7 +105,6 @@ mat4 GetViewWorldMatrix()
 	    return u_view * GetModelMatrix();
 	#endif
 }
-
 
 #ifdef HAS_LIGHTS
 	mat3 GetNormalMatrix()
@@ -152,7 +150,24 @@ vec4 GetWorldPos()
 
 vec4 GetClipPos()
 {
-	return u_projection * GetViewWorldMatrix() * vec4(a_position, 1.0);
+	#if defined(SPHERICAL_BILLBOARD)
+	    return u_projection * GetSphericalBillboardMatrix(u_view * GetModelMatrix()) * vec4(a_position, 1.0);
+	#elif defined(CYLINDRICAL_BILLBOARD)
+	    return u_projection * GetCylindricalBillboardMatrix(u_view * GetModelMatrix()) * vec4(a_position, 1.0);
+	#else
+	    return u_viewProjection * GetModelMatrix() * vec4(a_position, 1.0);
+	#endif
+}
+
+vec4 GetClipPos(vec4 worldPos)
+{
+	#if defined(SPHERICAL_BILLBOARD)
+	    return u_projection * GetSphericalBillboardMatrix(u_view * GetModelMatrix()) * vec4(a_position, 1.0);
+	#elif defined(CYLINDRICAL_BILLBOARD)
+	    return u_projection * GetCylindricalBillboardMatrix(u_view * GetModelMatrix()) * vec4(a_position, 1.0);
+	#else
+	    return u_viewProjection * worldPos;
+	#endif
 }
 
 #endif

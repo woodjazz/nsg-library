@@ -22,7 +22,7 @@
         // Can be either "allman", "ansi", "bsd", "break", "java", "attach", "kr", "k&r",
         // "k/r" "stroustrup", "whitesmith", "banner", "gnu", "linux", "horstmann",
         // "1tbs", "otbs ", "google", "pico", "lisp", "python", or ""
-        "style": "ansi",
+        "style": "allman",
 
         // Tab options
         // Can be either "spaces", "tab" "force-tab" or "force-tab-x"

@@ -27,6 +27,7 @@ misrepresented as being the original software.
 
 #include "Types.h"
 #include "Object.h"
+#include <string>
 
 namespace NSG
 {
@@ -42,23 +43,27 @@ namespace NSG
             DEPTH_USE_TEXTURE = 1 << 4
         };
         typedef FlagSet<Flag> Flags;
-		FrameBuffer(const std::string& name, unsigned width, unsigned height, Flags flags);
+		FrameBuffer(const std::string& name, Flags flags);
         ~FrameBuffer();
         PTexture GetColorTexture() const { return colorTexture_; }
         PTexture GetDepthTexture() const { return depthTexture_; }
         GLuint GetId() const { return framebuffer_; }
+        void SetSize(unsigned width, unsigned height);
+        void SetWindow(PWindow window);
     private:
-        bool IsValid() override;
+		bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-        Flags flags_;
+		std::string name_;
         unsigned width_;
 		unsigned height_;
+		Flags flags_;
         PTexture colorTexture_;
         PTexture depthTexture_;
         GLuint framebuffer_;
         GLuint colorRenderbuffer_;
         GLuint depthStencilRenderBuffer_;
 		GLuint stencilRenderBuffer_;
+        SignalViewChanged::PSlot slotViewChanged_;
     };
 }

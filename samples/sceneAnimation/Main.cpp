@@ -46,9 +46,7 @@ int NSG_MAIN(int argc, char* argv[])
     //plane->GetMaterial()->SetDisplacementMap(nullptr);
 
     auto camera = scene->GetChild<Camera>("Camera", false);
-    camera->SetWindow(window);
     auto control = std::make_shared<CameraControl>(camera);
-    control->SetWindow(window);
     auto lamp = scene->GetChild<Light>("Lamp", false);
     auto ball = scene->GetChild<SceneNode>("Earth", false);
     auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);

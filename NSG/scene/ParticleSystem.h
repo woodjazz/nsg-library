@@ -26,13 +26,14 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "SceneNode.h"
+#include "Object.h"
 #include <vector>
 #include <set>
 #include <random>
 
 namespace NSG
 {
-    class ParticleSystem : public SceneNode
+    class ParticleSystem : public SceneNode, Object
     {
     public:
         ParticleSystem(const std::string& name);

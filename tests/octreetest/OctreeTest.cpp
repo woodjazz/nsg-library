@@ -28,20 +28,20 @@ using namespace NSG;
 
 static void Test01()
 {
-	PScene scene = std::make_shared<Scene>("scene1");
+	auto scene = std::make_shared<Scene>("scene1");
 
-    PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
-    PBoxMesh boxMesh(App::this_->CreateBoxMesh());
+    auto sphereMesh(App::this_->CreateSphereMesh());
+    auto boxMesh(App::this_->CreateBoxMesh());
 
-	PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
+	auto node1s = scene->GetOrCreateChild<SceneNode>("node 1");
     node1s->SetMesh(sphereMesh);
     node1s->SetPosition(Vertex3(0, 0, 1));
 
-	PSceneNode node1b = scene->GetOrCreateChild<SceneNode>("node 2");
+	auto node1b = scene->GetOrCreateChild<SceneNode>("node 2");
     node1b->SetMesh(boxMesh);
     node1b->SetPosition(Vertex3(0, 0, 1));
 
-	PCamera camera = scene->GetOrCreateChild<Camera>("camera");
+	auto camera = scene->GetOrCreateChild<Camera>("camera");
 
     std::vector<SceneNode*> visibles;
     scene->GetVisibleNodes(camera.get(), visibles);
@@ -81,16 +81,16 @@ static void Test01()
 
 static void Test02()
 {
-	PScene scene = std::make_shared<Scene>("scene2");
+	auto scene = std::make_shared<Scene>("scene2");
 
-    PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
-    PBoxMesh boxMesh(App::this_->CreateBoxMesh());
+    auto sphereMesh(App::this_->CreateSphereMesh());
+    auto boxMesh(App::this_->CreateBoxMesh());
 
-	PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
+	auto node1s = scene->GetOrCreateChild<SceneNode>("node 1");
     node1s->SetMesh(sphereMesh);
     node1s->SetPosition(Vertex3(100, 0, -100));
 
-	PSceneNode node1b = scene->GetOrCreateChild<SceneNode>("node 2");
+	auto node1b = scene->GetOrCreateChild<SceneNode>("node 2");
 	node1b->SetMesh(boxMesh);
     node1b->SetPosition(Vertex3(-100, 0, -100));
 
@@ -130,11 +130,11 @@ static void Test02()
 
 static void Test03()
 {
-	PScene scene = std::make_shared<Scene>("scene3");
+	auto scene = std::make_shared<Scene>("scene3");
 
     {
-        PSphereMesh sphereMesh(App::this_->CreateSphereMesh());
-		PSceneNode node1s = scene->GetOrCreateChild<SceneNode>("node 1");
+        auto sphereMesh(App::this_->CreateSphereMesh());
+		auto node1s = scene->GetOrCreateChild<SceneNode>("node 1");
 		node1s->SetMesh(sphereMesh);
 
         Vertex3 origin(0, 0, 100);
@@ -158,17 +158,17 @@ static void Test03()
 
 static void Test04()
 {
-	PScene scene = std::make_shared<Scene>("scene4");
+	auto scene = std::make_shared<Scene>("scene4");
 
     {
         const float RADIUS = 0.5f;
-        PSphereMesh sphereMesh(App::this_->CreateSphereMesh(RADIUS, 64));
+        auto sphereMesh(App::this_->CreateSphereMesh(RADIUS, 64));
         std::vector<PSceneNode> nodes;
         for (int i = 0; i < 100; i++)
         {
             std::stringstream ss;
             ss << i;
-			PSceneNode node = scene->GetOrCreateChild<SceneNode>(ss.str());
+			auto node = scene->GetOrCreateChild<SceneNode>(ss.str());
             nodes.push_back(node);
             node->SetPosition(Vertex3(0, 0, -i));
 			node->SetMesh(sphereMesh);
@@ -231,12 +231,12 @@ static void Test04()
 
 static void Test05()
 {
-	PScene scene = std::make_shared<Scene>("scene5");
+	auto scene = std::make_shared<Scene>("scene5");
 
 	{
 		const float RADIUS = 0.5f;
-		PSphereMesh sphereMesh(App::this_->CreateSphereMesh(RADIUS, 64));
-		PSceneNode node = scene->GetOrCreateChild<SceneNode>("0");
+		auto sphereMesh(App::this_->CreateSphereMesh(RADIUS, 64));
+		auto node = scene->GetOrCreateChild<SceneNode>("0");
 		node->SetPosition(Vertex3(0, 0, 0));
 		const float SCALE = 0.1f;
 		node->SetScale(Vertex3(SCALE));
@@ -252,6 +252,222 @@ static void Test05()
 	}
 }
 
+static void Test06()
+{
+    auto scene = std::make_shared<Scene>();
+	auto quad = App::this_->CreateQuadMesh(0.5f);
+	auto nodeLU = scene->CreateChild<SceneNode>();
+	nodeLU->SetMesh(quad);
+	nodeLU->SetPosition(Vector3(-0.5f, 0.5f, 0));
+	auto nodeRU = scene->CreateChild<SceneNode>();
+	nodeRU->SetMesh(quad);
+	nodeRU->SetPosition(Vector3(0.5f, 0.5f, 0));
+	auto nodeLB = scene->CreateChild<SceneNode>();
+	nodeLB->SetMesh(quad);
+	nodeLB->SetPosition(Vector3(-0.5f, -0.5f, 0));
+	auto nodeRB = scene->CreateChild<SceneNode>();
+	nodeRB->SetMesh(quad);
+	nodeRB->SetPosition(Vector3(0.5f, -0.5f, 0));
+
+	{
+		Ray ray = Camera::GetRay(0, 0);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(!scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(-0.5f, 0.5f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeLU.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(0.5f, 0.5f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeRU.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(-0.5f, -0.5f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeLB.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(0.5f, -0.5f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeRB.get(), __FILE__, __LINE__);
+	}
+
+}
+
+static void Test07()
+{
+    auto xml = App::this_->GetOrCreateResourceFile("data/AnonymousPro132.xml");
+    auto atlas = std::make_shared<FontAtlas>(xml);
+    
+    auto textCenter = atlas->GetOrCreateMesh("A", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
+    auto textLeftTop = atlas->GetOrCreateMesh("B", LEFT_ALIGNMENT, TOP_ALIGNMENT);
+    auto textRightTop = atlas->GetOrCreateMesh("C", RIGHT_ALIGNMENT, TOP_ALIGNMENT);
+    auto textLeftBottom = atlas->GetOrCreateMesh("D", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT);
+    auto textRightBottom = atlas->GetOrCreateMesh("E", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT);
+   
+	auto scene = std::make_shared<Scene>("scene");
+
+    auto nodeCenter = scene->GetOrCreateChild<SceneNode>("nodeCenter");
+    auto nodeLeftTop = scene->GetOrCreateChild<SceneNode>("nodeLeftTop");
+    auto nodeRightTop = scene->GetOrCreateChild<SceneNode>("nodeRightTop");
+    auto nodeLeftBottom = scene->GetOrCreateChild<SceneNode>("nodeLeftBottom");
+    auto nodeRightBottom = scene->GetOrCreateChild<SceneNode>("nodeRightBottom");
+	
+	nodeCenter->SetMesh(textCenter);
+	nodeLeftTop->SetMesh(textLeftTop);
+	nodeRightTop->SetMesh(textRightTop);
+	nodeLeftBottom->SetMesh(textLeftBottom);
+	nodeRightBottom->SetMesh(textRightBottom);
+	
+	auto material = App::this_->CreateMaterial();
+	material->SetTextMap(atlas->GetTexture());
+
+	nodeCenter->SetMaterial(material);
+	nodeLeftTop->SetMaterial(material);
+	nodeRightTop->SetMaterial(material);
+	nodeLeftBottom->SetMaterial(material);
+	nodeRightBottom->SetMaterial(material);
+
+	atlas->SetViewSize(256, 256);
+
+    {
+        Ray ray = Camera::GetRay(0, 0.f);
+        std::vector<RayNodeResult> result;
+        CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+        CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(result[0].node_ == nodeCenter.get(), __FILE__, __LINE__);
+    }
+
+	{
+		Ray ray = Camera::GetRay(-0.9f, 0.9f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeLeftTop.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(0.9f, 0.9f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeRightTop.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(-0.9f, -0.9f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeLeftBottom.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(0.9f, -0.9f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeRightBottom.get(), __FILE__, __LINE__);
+	}
+
+}
+
+static void Test08()
+{
+	auto xml = App::this_->GetOrCreateResourceFile("data/AnonymousPro132.xml");
+	auto atlas = std::make_shared<FontAtlas>(xml);
+
+	auto textCenter = atlas->GetOrCreateMesh("A", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
+	auto textLeftTop = atlas->GetOrCreateMesh("B", LEFT_ALIGNMENT, TOP_ALIGNMENT);
+	auto textRightTop = atlas->GetOrCreateMesh("C", RIGHT_ALIGNMENT, TOP_ALIGNMENT);
+	auto textLeftBottom = atlas->GetOrCreateMesh("D", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT);
+	auto textRightBottom = atlas->GetOrCreateMesh("E", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT);
+
+	auto scene = std::make_shared<Scene>("scene");
+	auto camera = scene->CreateChild<Camera>();
+	camera->EnableOrtho();
+
+	auto nodeCenter = scene->GetOrCreateChild<SceneNode>("nodeCenter");
+	auto nodeLeftTop = scene->GetOrCreateChild<SceneNode>("nodeLeftTop");
+	auto nodeRightTop = scene->GetOrCreateChild<SceneNode>("nodeRightTop");
+	auto nodeLeftBottom = scene->GetOrCreateChild<SceneNode>("nodeLeftBottom");
+	auto nodeRightBottom = scene->GetOrCreateChild<SceneNode>("nodeRightBottom");
+
+	nodeCenter->SetMesh(textCenter);
+	nodeLeftTop->SetMesh(textLeftTop);
+	nodeRightTop->SetMesh(textRightTop);
+	nodeLeftBottom->SetMesh(textLeftBottom);
+	nodeRightBottom->SetMesh(textRightBottom);
+
+	auto material = App::this_->CreateMaterial();
+	material->SetTextMap(atlas->GetTexture());
+
+	nodeCenter->SetMaterial(material);
+	nodeLeftTop->SetMaterial(material);
+	nodeRightTop->SetMaterial(material);
+	nodeLeftBottom->SetMaterial(material);
+	nodeRightBottom->SetMaterial(material);
+
+	atlas->SetViewSize(256, 256);
+	camera->SetAspectRatio(256, 256);
+
+	{
+		Ray ray = Camera::GetRay(0, 0.f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeCenter.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(-0.9f, 0.9f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeLeftTop.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(0.9f, 0.9f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeRightTop.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(-0.9f, -0.9f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeLeftBottom.get(), __FILE__, __LINE__);
+	}
+
+	{
+		Ray ray = Camera::GetRay(0.9f, -0.9f);
+		std::vector<RayNodeResult> result;
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(result[0].node_ == nodeRightBottom.get(), __FILE__, __LINE__);
+	}
+
+}
+
 void OctreeTest()
 {
 	App app;
@@ -261,4 +477,7 @@ void OctreeTest()
     Test03();
     Test04();
 	Test05();
+	Test06();
+    Test07();
+	Test08();
 }

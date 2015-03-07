@@ -31,13 +31,12 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 10, 10);
 
     PSceneNode node1;
 
     auto scene = std::make_shared<Scene>("scene000");
     auto camera = scene->GetOrCreateChild<Camera>("camera");
-	camera->SetWindow(window);
 	camera->SetPosition(Vertex3(0, 0, 10));
 
     #if 0
@@ -74,7 +73,6 @@ int NSG_MAIN(int argc, char* argv[])
     #endif
 
     auto control = std::make_shared<CameraControl>(camera);
-	control->SetWindow(window);
 
     scene->GetOrCreateChild<Light>("light");
 

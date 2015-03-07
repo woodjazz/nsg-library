@@ -59,9 +59,9 @@ namespace NSG
         bool valid = material_->IsReady() && mesh_->IsReady();
         if (!valid)
         	return false;
-        for (auto& node : nodes_)
+/*        for (auto& node : nodes_)
             if (!node->IsReady())
-                return false;
+                return false;*/
         return true;
     }
 

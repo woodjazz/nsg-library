@@ -30,19 +30,35 @@ misrepresented as being the original software.
 #include "Texture.h"
 #include "Graphics.h"
 #include "Util.h"
+#include "Window.h"
 #include <algorithm>
 
 namespace NSG
 {
-	FrameBuffer::FrameBuffer(const std::string& name, unsigned width, unsigned height, Flags flags)
-        : flags_(flags),
-          width_(width),
-          height_(height),
+    FrameBuffer::FrameBuffer(const std::string& name, Flags flags)
+        : name_(name),
+          width_(0),
+          height_(0),
+          flags_(flags),
+          colorTexture_(std::make_shared<Texture>(name + "ColorBuffer", GL_RGBA)),
+          depthTexture_(std::make_shared<Texture>(name + "DepthBuffer", GL_DEPTH_COMPONENT)),
           framebuffer_(0),
           colorRenderbuffer_(0),
           depthStencilRenderBuffer_(0),
           stencilRenderBuffer_(0)
     {
+    }
+
+    FrameBuffer::~FrameBuffer()
+    {
+        Invalidate();
+    }
+
+    bool FrameBuffer::IsValid()
+    {
+        if(width_ == 0 || height_ == 0)
+            return false;
+
         if (!Graphics::this_->IsTextureSizeCorrect(width_, height_))
             GetPowerOfTwoValues(width_, height_);
 
@@ -63,18 +79,19 @@ namespace NSG
         #endif
 
         if (flags_ & Flag::COLOR_USE_TEXTURE)
-        {
-            colorTexture_ = std::make_shared<Texture>(name, GL_RGBA, width_, height_, nullptr);
-        }
+            colorTexture_->SetSize(width_, height_);
+        else
+            colorTexture_->SetSize(0, 0);
 
         if (flags_ & Flag::DEPTH_USE_TEXTURE)
         {
             if (Graphics::this_->HasDepthTexture())
             {
-				depthTexture_ = std::make_shared<Texture>(name, GL_DEPTH_COMPONENT, width_, height_, nullptr);
+                depthTexture_->SetSize(width_, height_);
             }
             else
             {
+                depthTexture_->SetSize(0, 0);
                 TRACE_LOG("Warning: We are trying to use a depth texture when graphics does not support it!!!");
                 // clean out the flag that is not supported by the driver
                 flags_ &= ~Flag::DEPTH_USE_TEXTURE;
@@ -85,16 +102,8 @@ namespace NSG
                 #endif
             }
         }
-    }
 
-    FrameBuffer::~FrameBuffer()
-    {
-		Invalidate();
-    }
-
-    bool FrameBuffer::IsValid()
-    {
-        return (!colorTexture_ || colorTexture_->IsReady()) && (!depthTexture_ || depthTexture_->IsReady());
+		return (!(flags_ & Flag::COLOR_USE_TEXTURE) || colorTexture_->IsReady()) && (!(flags_ & Flag::DEPTH_USE_TEXTURE) || depthTexture_->IsReady());
     }
 
     void FrameBuffer::AllocateResources()
@@ -110,11 +119,9 @@ namespace NSG
             if (flags_ & Flag::COLOR_USE_TEXTURE)
             {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture_->GetID(), 0);
-                TRACE_LOG("---1---");
             }
             else
             {
-                TRACE_LOG("---2---");
                 glGenRenderbuffers(1, &colorRenderbuffer_);
                 glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
                 #if defined(GLES2)
@@ -134,21 +141,18 @@ namespace NSG
         {
             if (flags_ & Flag::DEPTH_USE_TEXTURE)
             {
-                TRACE_LOG("---3---");
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
                 if (flags_ & Flag::STENCIL)
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
             }
             else
             {
-                TRACE_LOG("---4---");
                 glGenRenderbuffers(1, &depthStencilRenderBuffer_);
                 glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
                 if (flags_ & Flag::STENCIL)
                 {
                     if (Graphics::this_->HasPackedDepthStencil())
                     {
-                        TRACE_LOG("---5---");
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
@@ -157,13 +161,11 @@ namespace NSG
                     {
                         if (Graphics::this_->HasDepthComponent24())
                         {
-                            TRACE_LOG("---6---");
                             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
                             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                         }
                         else
                         {
-                            TRACE_LOG("---7---");
                             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
                             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                         }
@@ -177,16 +179,13 @@ namespace NSG
                 }
                 else
                 {
-                    TRACE_LOG("---8---");
-                    if(Graphics::this_->HasDepthComponent24())
+                    if (Graphics::this_->HasDepthComponent24())
                     {
-                        TRACE_LOG("---9---");
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                     }
                     else
                     {
-                        TRACE_LOG("---10---");
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                     }
@@ -206,37 +205,66 @@ namespace NSG
 
     void FrameBuffer::ReleaseResources()
     {
-		if (App::this_->GetMainWindow())
-		{
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+        if (App::this_->GetMainWindow())
+        {
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			if (stencilRenderBuffer_)
-			{
-				glDeleteRenderbuffers(1, &stencilRenderBuffer_);
-				stencilRenderBuffer_ = 0;
-			}
+            if (stencilRenderBuffer_)
+            {
+                glDeleteRenderbuffers(1, &stencilRenderBuffer_);
+                stencilRenderBuffer_ = 0;
+            }
 
-			if (depthStencilRenderBuffer_)
-			{
-				glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
-				depthStencilRenderBuffer_ = 0;
-			}
+            if (depthStencilRenderBuffer_)
+            {
+                glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
+                depthStencilRenderBuffer_ = 0;
+            }
 
-			if (colorRenderbuffer_)
-			{
-				glDeleteRenderbuffers(1, &colorRenderbuffer_);
-				colorRenderbuffer_ = 0;
-			}
+            if (colorRenderbuffer_)
+            {
+                glDeleteRenderbuffers(1, &colorRenderbuffer_);
+                colorRenderbuffer_ = 0;
+            }
 
-			CHECK_ASSERT(framebuffer_, __FILE__, __LINE__);
+            CHECK_ASSERT(framebuffer_, __FILE__, __LINE__);
 
-			glDeleteFramebuffers(1, &framebuffer_);
+            glDeleteFramebuffers(1, &framebuffer_);
 
-			framebuffer_ = 0;
+            framebuffer_ = 0;
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			Graphics::this_->SetFrameBuffer(0);
-		}
+            Graphics::this_->SetFrameBuffer(0);
+        }
     }
+
+    void FrameBuffer::SetSize(unsigned width, unsigned height)
+    {
+        CHECK_ASSERT(width >=0 && height >=0, __FILE__, __LINE__);
+        if(width_ != width || height_ != height)
+        {
+            width_ = width;
+            height_ = height;
+            Invalidate();
+        }
+    }
+
+    void FrameBuffer::SetWindow(PWindow window)
+    {
+        if(window)
+        {
+            SetSize(window->GetWidth(), window->GetHeight());
+
+            slotViewChanged_ = window->signalViewChanged_->Connect([&](int width, int height)
+            {
+                SetSize(width, height);
+            });
+        }
+        else
+        {
+            slotViewChanged_ = nullptr;
+        }
+    }
+
 }
