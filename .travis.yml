@@ -5,4 +5,9 @@ compiler:
 before_install:
   - sudo apt-get install libasound2-dev
 # Change this to your needs
-script: ./cmake_linux.sh linuxbuild
+script:
+  - ./cmake_linux.sh linuxbuild
+  - cd ..
+  - cd linuxbuild
+  - make
+  - make test
