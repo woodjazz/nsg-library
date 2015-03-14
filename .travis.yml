@@ -2,8 +2,9 @@ language: cpp
 compiler:
   - gcc
   - clang
+git:
+  submodules: false
 before_install:
-  - cd nsg-library
   - git submodule update --init --recursive
   - sudo apt-get install libasound2-dev
 # Change this to your needs
