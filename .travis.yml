@@ -16,6 +16,7 @@ install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
 
 script:
+  - uname -a
   - $CXX --version
   - ./cmake_linux.sh linuxbuild
   - cd ..
