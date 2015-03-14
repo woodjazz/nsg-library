@@ -58,7 +58,8 @@ namespace NSG
           drawMode_(DrawMode::SOLID),
           enableCullFace_(true),
           cullFaceMode_(CullFaceMode::DEFAULT),
-          frontFaceMode_(FrontFaceMode::DEFAULT)
+          frontFaceMode_(FrontFaceMode::DEFAULT),
+          depthFunc_(DepthFunc::LESS)
     {
     }
 
@@ -114,6 +115,11 @@ namespace NSG
         enableStencilTest_ = enable;
     }
 
+    void Pass::SetDepthFunc(DepthFunc depthFunc)
+    {
+        depthFunc_ = depthFunc;
+    }
+
     void Pass::SetStencilMask(GLuint mask)
     {
         stencilMask_ = mask;
@@ -160,7 +166,7 @@ namespace NSG
 
 	bool Pass::IsText() const
 	{
-		return pProgram_->GetFlags() & (int)ProgramFlag::TEXT;
+		return pProgram_->GetFlags() & (int)ProgramFlag::TEXT ? true: false;
 	}
 
 
@@ -175,8 +181,8 @@ namespace NSG
 
         graphics_.SetBlendModeTest(blendMode_);
         graphics_.EnableDepthTest(enableDepthTest_);
-        if (enableDepthTest_)
-            graphics_.SetDepthMask(enableDepthBuffer_);
+        graphics_.SetDepthMask(enableDepthBuffer_);
+        graphics_.SetDepthFunc(depthFunc_);
 
         graphics_.EnableCullFace(enableCullFace_);
         if (enableCullFace_)
@@ -298,6 +304,13 @@ namespace NSG
             child.append_attribute("frontFaceMode") = ss.str().c_str();
         }
 
+        {
+            std::stringstream ss;
+            ss << (int)depthFunc_;
+            child.append_attribute("depthFunc") = ss.str().c_str();
+        }
+
+
     }
 
     void Pass::Load(const pugi::xml_node& node, Material* material)
@@ -318,5 +331,6 @@ namespace NSG
         EnableCullFace(node.attribute("enableCullFace").as_bool());
         SetCullFace((CullFaceMode)node.attribute("cullFaceMode").as_int());
         SetFrontFace((FrontFaceMode)node.attribute("frontFaceMode").as_int());
+        SetDepthFunc((DepthFunc)node.attribute("depthFunc").as_int());
     }
 }

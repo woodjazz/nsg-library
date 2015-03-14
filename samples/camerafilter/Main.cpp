@@ -31,7 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 10, 10);
+    auto window = app.GetOrCreateWindow("window", 100, 400, 10, 10);
 
     PSceneNode node1;
 
@@ -39,9 +39,9 @@ int NSG_MAIN(int argc, char* argv[])
     auto camera = scene->GetOrCreateChild<Camera>("camera");
 	camera->SetPosition(Vertex3(0, 0, 10));
 
-    #if 0
-    camera->AddBlurFilter(16, 16);
-    camera->AddBlendFilter(1024, 1024);
+    #if 1
+    camera->AddBlurFilter();
+    //camera->AddBlendFilter();
     auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
     {
         static float y_angle = 0;
@@ -59,7 +59,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto resourceMem = app.GetOrCreateResourceMemory("ResourceMemory");
 	resourceMem->SetData(fShader, strlen(fShader));
-    auto userFilter = camera->AddUserFilter(resourceMem, 1024, 1024);
+    auto userFilter = camera->AddUserFilter(resourceMem);
     auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
     {
         static float y_angle = 0;
@@ -100,7 +100,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {
-        scene->Render(camera.get());
+        scene->Render();
     });
 
     return app.Run();

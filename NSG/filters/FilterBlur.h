@@ -33,7 +33,7 @@ namespace NSG
 	class FilterBlur : public Filter
 	{
 	public:
-		FilterBlur(PTexture input, int output_width, int output_height);
+		FilterBlur(PTexture input);
 		~FilterBlur();
 	};
 }

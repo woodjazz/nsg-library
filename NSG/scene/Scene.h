@@ -47,17 +47,16 @@ namespace NSG
         void ChangeLightType(PLight light, LightType fromType);
 		const std::vector<PWeakLight>& GetLights(LightType type) const;
         void AddCamera(PCamera camera);
-        const std::vector<PWeakCamera>& GetCameras() const;
 		void AddParticleSystem(PParticleSystem ps);
         void Update(float deltaTime);
-		void Render(Camera* camera);
+		void Render();
         void NeedUpdate(SceneNode* obj);
         void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
 		void Save(pugi::xml_node& node) const override;
         void Load(const pugi::xml_node& node) override;
-        bool GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const;
-        bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
-        bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const;
+        bool GetFastRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<SceneNode*>& nodes) const;
+        bool GetPreciseRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<RayNodeResult>& result) const;
+		bool GetClosestRayNodeIntersection(RenderLayer layer, const Ray& ray, RayNodeResult& closest) const;
         bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
         PAnimation GetOrCreateAnimation(const std::string& name);
         std::vector<PAnimation> GetAnimationsFor(PNode node) const;
@@ -84,12 +83,14 @@ namespace NSG
         void UpdateAnimations(float deltaTime);
         void UpdateParticleSystems(float deltaTime);
 		bool HasLight(PLight light) const;
+		std::vector<Camera*> GetCameras(RenderLayer layer) const;
     private:
 		mutable std::map<LightType, std::vector<PWeakLight>> lights_;
-        std::vector<PWeakCamera> cameras_;
 		std::vector<PWeakParticleSystem> particleSystems_;
         Color ambient_;
-        POctree octree_;
+        PCamera orthoCamera_;
+		mutable std::vector<PWeakCamera> cameras_;
+		POctree octree_[(int)RenderLayer::MAX_LAYERS];
         mutable std::set<SceneNode*> needUpdate_;
         App& app_;
 		MapAndVector<std::string, Animation> animations_;

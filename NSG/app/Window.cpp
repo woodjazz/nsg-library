@@ -111,9 +111,10 @@ namespace NSG
 
     void Window::EndTicks()
     {
-        Graphics::this_->ClearAllBuffers();
+        Graphics::this_->BeginFrameRender();
         signalRender_->Run();
         UniformsUpdate::ClearAllUpdates();
+        Graphics::this_->EndFrameRender();
     }
 
     void Window::SetSize(int width, int height)

@@ -39,6 +39,8 @@ namespace NSG
 	public:
 		SceneNode(const std::string& name);
 		virtual ~SceneNode();
+		virtual void SetLayer(RenderLayer layer);
+		RenderLayer GetLayer() const { return layer_; }
 		PMaterial GetMaterial() const { return material_; }
 		void SetMaterial(PMaterial material);
 		void SetMesh(PMesh mesh);
@@ -65,16 +67,23 @@ namespace NSG
 		void DrawWithChildren();
 		PRigidBody GetRigidBody() const { return rigidBody_; }
 		SignalCollision::PSignal signalCollision_;
+		const SceneNodeFlags& GetFlags() const { return flags_; }
+        void SetFlags(const SceneNodeFlags& flags);
+        void EnableFlags(const SceneNodeFlags& flags);
+        void DisableFlags(const SceneNodeFlags& flags);
+		bool AllowRayQuery() const { return flags_ & (int)SceneNodeFlag::ALLOW_RAY_QUERY; }
 	protected:
 		App& app_;
 		PMaterial material_;
-	private:
 		PMesh mesh_;
+		RenderLayer layer_;
+	private:
 		PRigidBody rigidBody_;
 		mutable Octant* octant_;
 		mutable BoundingBox worldBB_;
 		bool occludee_;
 		mutable bool worldBBNeedsUpdate_;
 		bool serializable_;
+		SceneNodeFlags flags_;
 	};
 }

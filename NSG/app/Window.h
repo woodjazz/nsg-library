@@ -64,6 +64,7 @@ namespace NSG
 		bool IsMinimized() const { return minimized_; }
         virtual void Destroy() = 0;
         Recti GetViewport() const;
+        const std::string& GetName() const { return name_; }
 
         SignalViewChanged::PSignal signalViewChanged_;
         SignalMouseMoved::PSignal signalMouseMoved_;

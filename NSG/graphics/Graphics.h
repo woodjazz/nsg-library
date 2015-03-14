@@ -48,6 +48,7 @@ namespace NSG
         void SetStencilTest(bool enable, GLuint writeMask, GLenum sfail, GLenum dpfail, GLenum dppass, GLenum func, GLint ref, GLuint compareMask);
         void SetColorMask(bool enable);
         void SetDepthMask(bool enable);
+        void SetDepthFunc(DepthFunc depthFunc);
         void SetStencilMask(GLuint mask);
         void SetBlendModeTest(BLEND_MODE blendMode);
         void EnableDepthTest(bool enable);
@@ -104,7 +105,11 @@ namespace NSG
         GLint GetMaxVertexUniformVectors() const { return maxVertexUniformVectors_; }
         GLint GetMaxFragmentUniformVectors() const { return maxFragmentUniformVectors_; }
         GLint GetMaxVertexAttribs() const { return maxVertexAttribs_; }
-        
+		PFrameBuffer GetMainFrameBuffer() const { return frameBuffer_; }
+        bool BeginFrameRender();
+		void Render(Camera* camera);
+        void EndFrameRender();
+		void UnboundTextures();
     private:
         Recti viewport_;
         GLint systemFbo_;
@@ -155,5 +160,8 @@ namespace NSG
         GLint maxVertexUniformVectors_;
         GLint maxFragmentUniformVectors_;
         GLint maxVertexAttribs_;
+        DepthFunc depthFunc_;
+        PFrameBuffer frameBuffer_; // main frame buffer (substitute for default 0 frame buffer)
+        PShowTexture showFrameBuffer_;
     };
 }

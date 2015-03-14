@@ -32,27 +32,30 @@ namespace NSG
           signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
           signalNodeMouseWheel_(new Signal<SceneNode *, float, float>()),
           ambient_(0.3f, 0.3f, 0.3f, 1),
-          octree_(new Octree),
+          orthoCamera_(std::make_shared<Camera>("SceneOrthoCamera")),
           app_(*App::this_),
           physicsWorld_(new PhysicsWorld)
     {
-        //octree_->InsertUpdate(this);
+        orthoCamera_->EnableOrtho();
+
+        for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)
+            octree_[i] = std::make_shared<Octree>();
+
         Graphics::this_->SetScene(this);
         auto window = Graphics::this_->GetWindow();
-        if(window)
+        if (window)
             SetWindow(window);
     }
 
     Scene::~Scene()
     {
-        octree_ = nullptr;
     }
 
     void Scene::SetWindow(Window* window)
     {
         if (window)
         {
-			slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
+            slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
             {
                 if (signalNodeMouseMoved_->HasSlots())
                 {
@@ -62,7 +65,7 @@ namespace NSG
                 }
             });
 
-			slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
+            slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
             {
                 if (signalNodeMouseDown_->HasSlots())
                 {
@@ -72,7 +75,7 @@ namespace NSG
                 }
             });
 
-			slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
+            slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
             {
                 if (signalNodeMouseUp_->HasSlots())
                 {
@@ -82,7 +85,7 @@ namespace NSG
                 }
             });
 
-			slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
+            slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
             {
                 if (signalNodeMouseWheel_->HasSlots())
                 {
@@ -95,13 +98,12 @@ namespace NSG
         }
         else
         {
-			slotMouseMoved_ = nullptr;
-			slotMouseDown_ = nullptr;
-			slotMouseUp_ = nullptr;
-			slotMouseWheel_ = nullptr;
+            slotMouseMoved_ = nullptr;
+            slotMouseDown_ = nullptr;
+            slotMouseUp_ = nullptr;
+            slotMouseWheel_ = nullptr;
         }
     }
-
 
     void Scene::SetAmbientColor(Color ambient)
     {
@@ -119,18 +121,18 @@ namespace NSG
         UpdateParticleSystems(deltaTime);
     }
 
-    bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const
+    bool Scene::GetFastRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<SceneNode*>& nodes) const
     {
         RayOctreeQuery query(nodes, ray);
-        octree_->Execute(query);
+        octree_[(int)layer]->Execute(query);
         return !nodes.empty();
     }
 
-    bool Scene::GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const
+    bool Scene::GetPreciseRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<RayNodeResult>& result) const
     {
         std::vector<SceneNode*> tmpNodes;
         RayOctreeQuery query(tmpNodes, ray);
-        octree_->Execute(query);
+        octree_[(int)layer]->Execute(query);
         result.clear();
         float maxDistance = ray.GetMaxDistance();
         for (auto& obj : tmpNodes)
@@ -145,10 +147,10 @@ namespace NSG
         return !result.empty();
     }
 
-    bool Scene::GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const
+    bool Scene::GetClosestRayNodeIntersection(RenderLayer layer, const Ray& ray, RayNodeResult& closest) const
     {
         std::vector<RayNodeResult> results;
-        if (GetPreciseRayNodesIntersection(ray, results))
+        if (GetPreciseRayNodesIntersection(layer, ray, results))
         {
             int closestIdx = -1;
             int idx = 0;
@@ -174,20 +176,62 @@ namespace NSG
     void Scene::GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const
     {
         for (auto& obj : needUpdate_)
-            octree_->InsertUpdate(obj);
+            octree_[(int)obj->GetLayer()]->InsertUpdate(obj);
         needUpdate_.clear();
-        FrustumOctreeQuery query(visibles, *camera->GetFrustumPointer());
-        octree_->Execute(query);
+        FrustumOctreeQuery query(visibles, camera);
+        octree_[(int)camera->GetLayer()]->Execute(query);
     }
 
-    void Scene::Render(Camera* camera)
+	std::vector<Camera*> Scene::GetCameras(RenderLayer layer) const
+	{
+		std::vector<Camera*> result;
+
+		auto it = cameras_.begin();
+		while (it != cameras_.end())
+		{
+			auto camera = (*it).lock();
+			if (!camera)
+			{
+				it = cameras_.erase(it); //remove unused camera from list
+				continue;
+			}
+			else if (camera->GetLayer() == layer)
+			{
+				result.push_back(camera.get());
+			}
+			++it;
+		}
+
+		return result;
+	}
+
+    void Scene::Render()
     {
-        //if (IsReady() && camera)
-		if (camera)
+        Graphics::this_->SetScene(this);
+        Camera* lastCameraUsed = orthoCamera_.get(); // default camera is ortho
+        for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)
         {
-            Graphics::this_->SetScene(this);
-            Graphics::this_->SetCamera(camera);
-            camera->Render();
+            if (octree_[i]->GetDrawables()) //Check if there is something to draw in the current layer
+            {
+				auto cameras = GetCameras((RenderLayer)i);
+				if (cameras.empty())
+				{
+                    if(i >= (int)RenderLayer::GUI_LAYER0)
+                        lastCameraUsed = orthoCamera_.get(); // if there is not camera for GUI make sure ortho is the default
+
+					//if there is not camera for the layer then use the last one
+					lastCameraUsed->SetLayer((RenderLayer)i);
+					Graphics::this_->Render(lastCameraUsed);
+				}
+				else
+				{
+					for (auto& camera : cameras)
+					{
+                        lastCameraUsed = camera;
+						Graphics::this_->Render(camera);
+					}
+				}
+            }
         }
     }
 
@@ -307,10 +351,8 @@ namespace NSG
             bb = BoundingBox();
             for (auto& obj : visibles)
                 bb.Merge(obj->GetWorldBoundingBox());
-
             return true;
         }
-
         return false;
     }
 
@@ -455,11 +497,6 @@ namespace NSG
         cameras_.push_back(camera);
     }
 
-    const std::vector<PWeakCamera>& Scene::GetCameras() const
-    {
-        return cameras_;
-    }
-
     void Scene::AddParticleSystem(PParticleSystem ps)
     {
         particleSystems_.push_back(ps);
@@ -467,20 +504,26 @@ namespace NSG
 
     void Scene::UpdateOctree(SceneNode* node)
     {
-        octree_->InsertUpdate(node);
+        octree_[(int)node->GetLayer()]->InsertUpdate(node);
     }
 
     void Scene::RemoveFromOctree(SceneNode* node)
     {
         needUpdate_.erase(node);
-        octree_->Remove(node);
+        octree_[(int)node->GetLayer()]->Remove(node);
     }
 
     SceneNode* Scene::GetClosestNode(float screenX, float screenY) const
     {
         Ray ray = Camera::GetRay(screenX, screenY);
         RayNodeResult closest{ 0, nullptr };
-        GetClosestRayNodeIntersection(ray, closest);
-        return closest.node_;
+        for (int i = (int)RenderLayer::MAX_LAYERS - 1; i >= 0; i--)
+        {
+            GetClosestRayNodeIntersection((RenderLayer)i, ray, closest);
+            if (closest.node_)
+                return closest.node_;
+        }
+
+        return nullptr;
     }
 }

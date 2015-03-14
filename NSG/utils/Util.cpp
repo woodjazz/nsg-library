@@ -296,4 +296,24 @@ namespace NSG
         auto length = glm::length(obj);
         return length <= glm::epsilon<float>();
     }
+
+    GLushort Transform(GLubyte selected[4])
+    {
+        GLushort b3 = (GLushort)selected[3] / 0x10;
+        GLushort b2 = (GLushort)selected[2] / 0x10;
+        GLushort b1 = (GLushort)selected[1] / 0x10;
+        GLushort b0 = (GLushort)selected[0] / 0x10;
+        GLushort index = b3 << 12 | b2 << 8 | b1 << 4 | b0;
+        return index;
+    }
+
+    Color Transform(GLushort id)
+    {
+        Color color;
+        color[0] = (id & 0x000F) / 15.0f;
+        color[1] = ((id & 0x00F0) >> 4) / 15.0f;
+        color[2] = ((id & 0x0F00) >> 8) / 15.0f;
+        color[3] = ((id & 0xF000) >> 12) / 15.0f;
+        return color;
+    }
 }

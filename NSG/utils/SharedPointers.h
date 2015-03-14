@@ -98,9 +98,6 @@ namespace NSG
 	typedef std::shared_ptr<Technique> PTechnique;
 	typedef std::weak_ptr<Technique> PWeakTechnique;
 
-	class PassFilter;
-	typedef std::shared_ptr<PassFilter> PPassFilter;
-
 	class FilterBlend;
 	typedef std::shared_ptr<FilterBlend> PFilterBlend;
 
@@ -185,9 +182,6 @@ namespace NSG
 	class FrameBuffer;
     typedef std::shared_ptr<FrameBuffer> PFrameBuffer;
 
-	class FrameColorSelection;
-    typedef std::shared_ptr<FrameColorSelection> PFrameColorSelection;
-
     class FragmentShader;
 	typedef std::shared_ptr<FragmentShader> PFragmentShader;
 
@@ -209,9 +203,6 @@ namespace NSG
 
 	class RectangleMesh;
 	typedef std::shared_ptr<RectangleMesh> PRectangleMesh;
-
-	class Render2Texture;
-	typedef std::shared_ptr<Render2Texture> PRender2Texture;
 
 	class RoundedRectangleMesh;
 	typedef std::shared_ptr<RoundedRectangleMesh> PRoundedRectangleMesh;

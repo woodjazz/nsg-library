@@ -25,26 +25,29 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "SceneNode.h"
-#include "Object.h"
+#include "Control.h"
 
 namespace NSG
 {
-	class Button : public SceneNode, Object
+	class Button : public Control
 	{
 	public:
 		Button(const std::string& name);
 		~Button();
-		void SetWindow(Window* window);
-		void SetText(PFontAtlas atlas, const std::string& text, HorizontalAlignment hAlign = CENTER_ALIGNMENT, VerticalAlignment vAlign = MIDDLE_ALIGNMENT);
-		SignalButtonMouse::PSignal signalButtonMouseDown_;
-		SignalButtonMouse::PSignal signalButtonMouseUp_;
+		void SetTextAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign);
+		void SetText(const std::string& text);
+		void SetAtlas(PFontAtlas atlas);
+		void ScaleText(bool enable);
+		PMaterial GetTextMaterial() const { return textMaterial_;}
+		PSceneNode GetTextNode() const { return textNode_; }
 	private:
-        void AllocateResources() override;
+		void SetLayer();
+		void SetResources();
         PSceneNode textNode_;
 		PMaterial textMaterial_;
-		bool pushed_;
-		SignalNodeMouseDown::PSlot slotNodeMouseDown_;
-		SignalMouseUp::PSlot slotMouseUp_;
+		std::string text_;
+		HorizontalAlignment hAlign_;
+		VerticalAlignment vAlign_;
+		PFontAtlas atlas_;
 	};
 }

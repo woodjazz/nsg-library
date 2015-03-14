@@ -45,7 +45,8 @@ namespace NSG
           framebuffer_(0),
           colorRenderbuffer_(0),
           depthStencilRenderBuffer_(0),
-          stencilRenderBuffer_(0)
+          stencilRenderBuffer_(0),
+          window_(nullptr)
     {
     }
 
@@ -114,12 +115,12 @@ namespace NSG
 
         Graphics::this_->SetFrameBuffer(framebuffer_);
 
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
         if (flags_ & Flag::COLOR)
         {
             if (flags_ & Flag::COLOR_USE_TEXTURE)
-            {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture_->GetID(), 0);
-            }
             else
             {
                 glGenRenderbuffers(1, &colorRenderbuffer_);
@@ -207,7 +208,9 @@ namespace NSG
     {
         if (App::this_->GetMainWindow())
         {
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+			CHECK_GL_STATUS(__FILE__, __LINE__);
+
+			Graphics::this_->UnboundTextures();
 
             if (stencilRenderBuffer_)
             {
@@ -233,9 +236,9 @@ namespace NSG
 
             framebuffer_ = 0;
 
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
             Graphics::this_->SetFrameBuffer(0);
+
+			CHECK_GL_STATUS(__FILE__, __LINE__);
         }
     }
 
@@ -250,21 +253,41 @@ namespace NSG
         }
     }
 
-    void FrameBuffer::SetWindow(PWindow window)
+    void FrameBuffer::SetWindow(Window* window)
     {
-        if(window)
+        if(window_ != window)
         {
-            SetSize(window->GetWidth(), window->GetHeight());
-
-            slotViewChanged_ = window->signalViewChanged_->Connect([&](int width, int height)
+            window_ = window;
+            if(window)
             {
-                SetSize(width, height);
-            });
-        }
-        else
-        {
-            slotViewChanged_ = nullptr;
+                SetSize(window->GetWidth(), window->GetHeight());
+                slotViewChanged_ = window->signalViewChanged_->Connect([&](int width, int height)
+                {
+                    SetSize(width, height);
+                });
+            }
+            else
+            {
+                slotViewChanged_ = nullptr;
+            }
         }
     }
 
+    void FrameBuffer::SetColorTexture(PTexture texture)
+    {
+        if(colorTexture_ != texture)
+        {
+            colorTexture_ = texture;
+            Invalidate();    
+        }
+    }
+
+    void FrameBuffer::SetDepthTexture(PTexture texture)
+    {
+        if(depthTexture_ != texture)
+        {
+            depthTexture_ = texture;
+            Invalidate();
+        }
+    }
 }

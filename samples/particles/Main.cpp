@@ -69,7 +69,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto renderSlot = window->signalRender_->Connect([&]()
 	{
-		scene->Render(camera.get());
+		scene->Render();
 	});
 
     return app.Run();

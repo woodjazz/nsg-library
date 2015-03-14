@@ -7,28 +7,48 @@ static const char* VS_GLSL = \
 "	void main()\n"\
 "	{\n"\
 "		#if defined(TEXT)\n"\
-"			v_texcoord0 = a_texcoord0;\n"\
 "			v_color = u_material.color * a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
+"			#if defined(FLIP_Y)\n"\
+"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"			#else\n"\
+"				v_texcoord0 = a_texcoord0;\n"\
+"			#endif\n"\
 "		#elif defined(BLUR) || defined(BLEND)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
-"			v_texcoord0 = a_texcoord0;\n"\
+"			#if defined(FLIP_Y)\n"\
+"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"			#else\n"\
+"				v_texcoord0 = a_texcoord0;\n"\
+"			#endif\n"\
 "		#elif defined(SHOW_TEXTURE0)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
-"			v_texcoord0 = a_texcoord0;\n"\
+"			#if defined(FLIP_Y)\n"\
+"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"			#else\n"\
+"				v_texcoord0 = a_texcoord0;\n"\
+"			#endif\n"\
 "		#elif defined(STENCIL)\n"\
 "			gl_Position = GetClipPos();\n"\
 "		#elif defined(UNLIT)\n"\
 "			v_color = u_material.color * a_color;\n"\
-"			v_texcoord0 = a_texcoord0;\n"\
 "			gl_Position = GetClipPos();\n"\
+"			#if defined(FLIP_Y)\n"\
+"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"			#else\n"\
+"				v_texcoord0 = a_texcoord0;\n"\
+"			#endif\n"\
 "		#elif defined(PER_VERTEX_LIGHTING)\n"\
 "			vec4 worldPos = GetWorldPos();\n"\
 "		    vec3 normal = GetWorldNormal();\n"\
 "		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);\n"\
 "		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);\n"\
 "		    v_color = a_color * totalLight;\n"\
-"		    v_texcoord0 = a_texcoord0;\n"\
+"			#if defined(FLIP_Y)\n"\
+"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"			#else\n"\
+"				v_texcoord0 = a_texcoord0;\n"\
+"			#endif\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "			//Lighting is calculated in world space\n"\
@@ -60,12 +80,22 @@ static const char* VS_GLSL = \
 "					\n"\
 "			#endif\n"\
 "			v_color = a_color;\n"\
-"			v_texcoord0 = a_texcoord0;\n"\
+"			#if defined(FLIP_Y)\n"\
+"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"			#else\n"\
+"				v_texcoord0 = a_texcoord0;\n"\
+"			#endif\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
 "		#elif defined(LIGHTMAP) // lightmap without lighting\n"\
 "			v_color = u_material.color * a_color;\n"\
-"		    v_texcoord0 = a_texcoord0;\n"\
-"			v_texcoord1 = a_texcoord1;\n"\
+"			#if defined(FLIP_Y)\n"\
+"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"				v_texcoord1 = vec2(a_texcoord1.x, 1.0 - a_texcoord1.y);\n"\
+"			#else\n"\
+"				v_texcoord0 = a_texcoord0;\n"\
+"				v_texcoord1 = a_texcoord1;\n"\
+"			#endif\n"\
+"			\n"\
 "			gl_Position = GetClipPos();\n"\
 "		#else // Vertex color by default\n"\
 "			v_color = u_material.color * a_color;\n"\

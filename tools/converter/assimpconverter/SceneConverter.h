@@ -77,5 +77,7 @@ namespace NSG
         Path path_;
         Path outputDir_;
 		bool embedResources_;
+		std::vector<PMesh> meshes_;
+		std::vector<PMaterial> materials_;
     };
 }

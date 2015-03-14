@@ -32,7 +32,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
+    auto window = app.GetOrCreateWindow("window", 100, 400, 10, 10);
 
     const int COLS = 11;
     const int ROWS = 11;
@@ -102,7 +102,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto renderSlot = window->signalRender_->Connect([&]()
 	{
-		scene->Render(camera.get());
+		scene->Render();
 	});
 
     return app.Run();

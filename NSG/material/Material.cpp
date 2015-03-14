@@ -220,7 +220,6 @@ namespace NSG
 				technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::TEXT);
 			}
 		}
-
 	}
 
     bool Material::IsValid()
@@ -229,6 +228,12 @@ namespace NSG
 		for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
 			if (texture_[index])
 				isReady = isReady && texture_[index]->IsReady();
+        if(isReady && texture_[0])
+        {
+            // Only needed for Blur post-processing
+			blurFilter_.blurRadius_.x = 1.f / (float)texture_[0]->GetWidth();
+			blurFilter_.blurRadius_.y = 1.f / (float)texture_[0]->GetHeight();
+        }
         return isReady;
     }
 

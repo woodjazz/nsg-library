@@ -24,21 +24,20 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Object.h"
 #include "SharedPointers.h"
 
 namespace NSG
 {
-	class ShowTexture : public Object
+	class ShowTexture
 	{
 	public:
 		ShowTexture();
 		~ShowTexture();
+		void SetColortexture(PTexture texture);
 		void SetNormal(PTexture texture);
 		void SetFont(PTexture texture);
 		void Show();
 	private:
-		bool IsValid() override;
 		App& app_;
         PMaterial material_;
         PProgram program_;

@@ -71,7 +71,7 @@ int NSG_MAIN(int argc, char* argv[])
 	CreateObject(app->CreateSphereMesh(), Color(0, 1, 1, 1), Vector3(40, 0, 0));
 	
 	control->AutoZoom();
-	auto renderSlot = window->signalRender_->Connect([&]() { scene->Render(camera.get());});
+	auto renderSlot = window->signalRender_->Connect([&]() { scene->Render();});
     return app->Run();
 }
 

@@ -369,6 +369,9 @@ namespace NSG
 
         lightingEnabled_ = false;
 
+        if ((int)ProgramFlag::FLIP_Y & flags_)
+            preDefines += "#define FLIP_Y\n";
+
         if ((int)ProgramFlag::BLEND & flags_)
             preDefines += "#define BLEND\n";
         else if ((int)ProgramFlag::BLUR & flags_)
@@ -516,6 +519,8 @@ namespace NSG
                 ss += " TEXT";
             if ((int)ProgramFlag::SHOW_TEXTURE0 & flags_)
                 ss += " SHOW_TEXTURE0";
+            if ((int)ProgramFlag::FLIP_Y & flags_)
+                ss += " FLIP_Y";
             if ((int)ProgramFlag::STENCIL & flags_)
                 ss += " STENCIL";
             if ((int)ProgramFlag::NORMALMAP & flags_)

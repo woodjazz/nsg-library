@@ -87,6 +87,7 @@ namespace NSG
         void InsertUpdate(SceneNode* obj);
         void Remove(SceneNode* obj);
         void Execute(OctreeQuery& query);
+        unsigned GetDrawables() const { return numDrawables_; }
     private:
         // Subdivision level.
         unsigned numLevels_;

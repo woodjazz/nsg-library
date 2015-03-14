@@ -57,4 +57,6 @@ namespace NSG
 	void GetPowerOfTwoValues(unsigned& width, unsigned& height);
 	bool IsPowerOfTwo(unsigned value);
 	bool IsZeroLength(const Vector3& obj);
+	GLushort Transform(GLubyte selected[4]);
+	Color Transform(GLushort id);
 }

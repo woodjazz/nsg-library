@@ -219,7 +219,8 @@ namespace NSG
         DISPLACEMENTMAP = 1 << 13,
         DIFFUSEMAP = 1 << 14,
         SPHERICAL_BILLBOARD = 1 << 15,
-        CYLINDRICAL_BILLBOARD = 1 << 16
+        CYLINDRICAL_BILLBOARD = 1 << 16,
+        FLIP_Y = 1 << 17
     };
 
     typedef FlagSet<ProgramFlag> ProgramFlags;
@@ -300,7 +301,9 @@ namespace NSG
     struct BlurFilter
     {
         Vector2 blurDir_;
-        Vector2 blurRadius_;
+        /// This should usually be equal to 1.0f / texture_pixel_width for a horizontal blur, and
+        /// 1.0f / texture_pixel_height for a vertical blur.
+        Vector2 blurRadius_; //calculated in Material::IsValid()
         float sigma_;
         BlurFilter();
         bool operator != (const BlurFilter& uid) const;
@@ -331,6 +334,7 @@ namespace NSG
     typedef Signal<SceneNode*, int, int, int> SignalNodeKey;
     typedef Signal<SceneNode*, unsigned int> SignalNodeChar;
     typedef Signal<int> SignalButtonMouse;
+    typedef Signal<> SignalEmpty;
     
     enum MaterialTexture
     {
@@ -353,5 +357,37 @@ namespace NSG
     {
         LINEARY,
         RANDOM
+    };
+
+    enum class RenderLayer
+    {
+        DEFAULT_LAYER,
+        PARTICLES_LAYER,
+        GUI_LAYER0,
+        GUI_LAYER1,
+        GUI_EFFECT_LAYER0, // used for post-processing
+        GUI_EFFECT_LAYER1,
+        GUI_EFFECT_LAYER2,
+        MAX_LAYERS
+    };
+
+    enum class SceneNodeFlag
+    {
+        NONE = 0,
+        ALLOW_RAY_QUERY = 1 << 0,
+    };
+
+    typedef FlagSet<SceneNodeFlag> SceneNodeFlags;
+
+    enum class DepthFunc
+    {
+        NEVER, 
+        LESS, 
+        EQUAL, 
+        LEQUAL, 
+        GREATER, 
+        NOTEQUAL, 
+        GEQUAL, 
+        ALWAYS        
     };
 }

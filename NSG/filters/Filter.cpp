@@ -24,38 +24,46 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Filter.h"
-#include "PlaneMesh.h"
+#include "QuadMesh.h"
 #include "Material.h"
 #include "Camera.h"
 #include "Check.h"
 #include "Technique.h"
 #include "Pass.h"
-#include "Render2Texture.h"
 #include "Graphics.h"
 #include "Program.h"
+#include "FrameBuffer.h"
 #include "ResourceMemory.h"
 #include "Node.h"
 #include "App.h"
 
 namespace NSG
 {
-	Filter::Filter(const std::string& name, PTexture input, int output_width, int output_height, ProgramFlags flags)
+	Filter::Filter(const std::string& name, PTexture input, ProgramFlags flags)
         : app_(*App::this_),
 		  pMaterial_(app_.GetOrCreateMaterial(name)),
-          pMesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
-          pRender2Texture_(std::make_shared<Render2Texture>(name, output_width, output_height, UseBuffer::NONE)),
+          pMesh_(app_.CreateQuadMesh()),
+		  frameBuffer_(std::make_shared<FrameBuffer>(name, FrameBuffer::Flag::COLOR | FrameBuffer::Flag::COLOR_USE_TEXTURE)),
           name_(name),
           node_(std::make_shared<SceneNode>(name))
     {
+		//frameBuffer_->SetColorTexture(input);
+    	pMaterial_->SetTexture(0, input);
         technique_ = pMaterial_->GetTechnique().get();
-        pMaterial_->SetTexture(0, input);
 		technique_->GetPass(0)->GetProgram()->SetFlags(flags);
+		auto window = Graphics::this_->GetWindow();
+		if (window)
+			SetWindow(window);
     }
 
     Filter::~Filter()
     {
-
     }
+
+	void Filter::SetWindow(Window* window)
+	{
+		frameBuffer_->SetWindow(window);
+	}
 
 	PProgram Filter::GetProgram() const
 	{
@@ -74,22 +82,17 @@ namespace NSG
 
     void Filter::Draw()
     {
-        if (!pMesh_->IsReady() || !pMaterial_->IsReady() || !pRender2Texture_->IsReady())
+        if (!frameBuffer_->IsReady() || !pMesh_->IsReady() || !pMaterial_->IsReady())
             return;
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 
+		Graphics::this_->SetFrameBuffer(frameBuffer_->GetId());
 		Camera* pCurrent = Graphics::this_->GetCamera();
-
-        pRender2Texture_->Begin();
-
 		Graphics::this_->SetCamera(nullptr);
 		Batch batch(technique_->GetMaterial(), pMesh_.get());
 		batch.Add(node_.get());
 		batch.Draw();
-
-        pRender2Texture_->End();
-
 		Graphics::this_->SetCamera(pCurrent);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -97,6 +100,6 @@ namespace NSG
 
     PTexture Filter::GetTexture() const
     {
-        return pRender2Texture_->GetTexture();
+        return frameBuffer_->GetColorTexture();
     }
 }

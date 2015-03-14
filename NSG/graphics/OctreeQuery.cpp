@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "OctreeQuery.h"
 #include "SceneNode.h"
+#include "Camera.h"
 #include "Frustum.h"
 
 namespace NSG
@@ -39,9 +40,10 @@ namespace NSG
     }
 
 
-    FrustumOctreeQuery::FrustumOctreeQuery(std::vector<SceneNode*>& result, const Frustum& frustum)
+    FrustumOctreeQuery::FrustumOctreeQuery(std::vector<SceneNode*>& result, const Camera* camera)
         : OctreeQuery(result),
-          frustum_(frustum)
+          camera_(camera),
+          frustum_(*camera->GetFrustumPointer())
     {
     }
 
@@ -57,11 +59,14 @@ namespace NSG
     {
         for (auto& obj : objs)
         {
-			if (obj->GetMesh())
-			{
-				if (inside || frustum_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
-					result_.push_back(obj);
-			}
+            if(camera_->GetLayer() != obj->GetLayer())
+                continue;
+
+            if (obj->GetMesh())
+            {
+                if (inside || frustum_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
+                    result_.push_back(obj);
+            }
         }
     }
 
@@ -83,11 +88,14 @@ namespace NSG
     {
         for (auto& obj : objs)
         {
-			if (obj->GetMesh())
-			{
-				if (inside || ray_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
-					result_.push_back(obj);
-			}
+            if(!obj->AllowRayQuery())
+                continue;
+            
+            if (obj->GetMesh())
+            {
+                if (inside || ray_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
+                    result_.push_back(obj);
+            }
         }
     }
 }

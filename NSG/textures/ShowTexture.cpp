@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "ShowTexture.h"
 #include "Types.h"
 #include "Material.h"
-#include "PlaneMesh.h"
+#include "QuadMesh.h"
 #include "Camera.h"
 #include "Pass.h"
 #include "Graphics.h"
@@ -40,8 +40,8 @@ namespace NSG
 {
     ShowTexture::ShowTexture()
         : app_(*App::this_),
-		  material_(app_.CreateMaterial(GetUniqueName("NSGShowTexture"))),
-          mesh_(app_.CreatePlaneMesh(2, 2, 2, 2)),
+		  material_(std::make_shared<Material>(GetUniqueName("NSGShowTexture"))),
+		  mesh_(std::make_shared<QuadMesh>(GetUniqueName("NSGShowTexture"))),
           node_(std::make_shared<SceneNode>("NSGShowTexture"))
     {
         auto pass = material_->GetTechnique()->GetPass(0);
@@ -52,12 +52,12 @@ namespace NSG
 
     ShowTexture::~ShowTexture()
     {
-        Invalidate();
     }
 
-    bool ShowTexture::IsValid()
+    void ShowTexture::SetColortexture(PTexture texture)
     {
-        return material_->IsReady() && mesh_->IsReady();
+        program_->SetFlags((int)ProgramFlag::SHOW_TEXTURE0 | (int)ProgramFlag::FLIP_Y);
+        material_->SetTexture(0, texture);
     }
 
     void ShowTexture::SetNormal(PTexture texture)
@@ -74,7 +74,7 @@ namespace NSG
 
     void ShowTexture::Show()
     {
-        if (IsReady())
+		if (material_->IsReady() && mesh_->IsReady())
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 

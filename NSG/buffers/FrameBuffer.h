@@ -49,7 +49,11 @@ namespace NSG
         PTexture GetDepthTexture() const { return depthTexture_; }
         GLuint GetId() const { return framebuffer_; }
         void SetSize(unsigned width, unsigned height);
-        void SetWindow(PWindow window);
+        void SetWindow(Window* window);
+		unsigned GetWidth() const { return width_; }
+		unsigned GetHeight() const { return height_; }
+        void SetColorTexture(PTexture texture);
+        void SetDepthTexture(PTexture texture);
     private:
 		bool IsValid() override;
         void AllocateResources() override;
@@ -65,5 +69,6 @@ namespace NSG
         GLuint depthStencilRenderBuffer_;
 		GLuint stencilRenderBuffer_;
         SignalViewChanged::PSlot slotViewChanged_;
+        Window* window_;
     };
 }

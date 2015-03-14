@@ -33,73 +33,89 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Check.h"
 #include "App.h"
+#include "Technique.h"
+#include "Pass.h"
 #include "RectangleMesh.h"
 
 namespace NSG
 {
     Button::Button(const std::string& name)
-        : SceneNode(name),
-          signalButtonMouseDown_(new Signal<int>()),
-          signalButtonMouseUp_(new Signal<int>()),
-          pushed_(false)
+        : Control(name),
+          textMaterial_(App::this_->CreateMaterial()),
+          hAlign_(CENTER_ALIGNMENT),
+          vAlign_(MIDDLE_ALIGNMENT)
     {
-		textMaterial_ = App::this_->GetOrCreateMaterial(name_ + "text");
-		SetMaterial(App::this_->GetOrCreateMaterial(name_));
-		material_->SetSolid(false);
+        SetMesh(App::this_->CreateRectangleMesh());
+        SetMaterial(App::this_->GetOrCreateMaterial(name_));
+        auto pass = material_->GetTechnique()->GetPass(0);
+        pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
+        SetLayer();
+        auto textPass = textMaterial_->GetTechnique()->GetPass(0);
+        textPass->SetDepthFunc(DepthFunc::LEQUAL);
+        textMaterial_->SetColor(COLOR_BLACK);
     }
 
     Button::~Button()
     {
-		Invalidate();
     }
 
-    void Button::AllocateResources()
+    void Button::SetResources()
     {
-		SetMesh(App::this_->CreateRectangleMesh());
-		textNode_ = CreateChild<SceneNode>(textMaterial_->GetName());
-		textNode_->SetMaterial(textMaterial_);
-
-        auto window = Graphics::this_->GetWindow();
-        if(window)
-            SetWindow(window);
-
-        auto scene = GetScene();
-
-		slotNodeMouseDown_ = scene->signalNodeMouseDown_->Connect([&](SceneNode * node, int button, float x, float y)
+        if (atlas_)
         {
-            if(node == this || node == textNode_.get())
+            if (text_.empty())
+                textNode_ = nullptr;
+            else
             {
-                pushed_ = true;
-                signalButtonMouseDown_->Run(button);
+                if (!textNode_)
+                {
+                    textNode_ = CreateChild<SceneNode>(name_);
+                    textNode_->SetInheritScale(false);
+                    textNode_->DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
+                    textNode_->SetMaterial(textMaterial_);
+                }
+                textNode_->SetMesh(atlas_->GetOrCreateMesh(text_, hAlign_, vAlign_));
             }
-        });
-    }
-
-    void Button::SetWindow(Window* window)
-    {
-        if (window)
-        {
-            slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
-            {
-				if (pushed_)
-				{
-					pushed_ = false;
-					signalButtonMouseUp_->Run(button);
-				}
-            });
+            textMaterial_->SetTextMap(atlas_->GetTexture());
         }
         else
+            textNode_  = nullptr;
+
+        SetLayer();
+    }
+
+    void Button::SetTextAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign)
+    {
+        if (hAlign_ != hAlign || vAlign_ != vAlign)
         {
-            slotMouseUp_ = nullptr;
+            hAlign_ = hAlign;
+            vAlign_ = vAlign;
+            SetResources();
         }
     }
 
-
-    void Button::SetText(PFontAtlas atlas, const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
+    void Button::SetText(const std::string& text)
     {
-		CHECK_CONDITION(IsReady(), __FILE__, __LINE__);
-		textMaterial_->SetTextMap(atlas->GetTexture());
-        auto mesh = atlas->GetOrCreateMesh(text, hAlign, vAlign);
-        textNode_->SetMesh(mesh);
+        if (text_ != text)
+        {
+            text_ = text;
+            SetResources();
+        }
+    }
+
+    void Button::SetAtlas(PFontAtlas atlas)
+    {
+        if (atlas_ != atlas)
+        {
+            atlas_ = atlas;
+            SetResources();
+        }
+    }
+
+    void Button::SetLayer()
+    {
+        SceneNode::SetLayer(RenderLayer::GUI_LAYER0);
+        if (textNode_)
+            textNode_->SetLayer(RenderLayer::GUI_LAYER1);
     }
 }

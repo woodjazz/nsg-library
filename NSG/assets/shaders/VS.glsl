@@ -5,19 +5,31 @@
 	{
 		#if defined(TEXT)
 
-			v_texcoord0 = a_texcoord0;
 			v_color = u_material.color * a_color;
 			gl_Position = GetClipPos();
+			#if defined(FLIP_Y)
+				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);
+			#else
+				v_texcoord0 = a_texcoord0;
+			#endif
 
 		#elif defined(BLUR) || defined(BLEND)
 
 			gl_Position = vec4(a_position, 1.0);
-			v_texcoord0 = a_texcoord0;
+			#if defined(FLIP_Y)
+				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);
+			#else
+				v_texcoord0 = a_texcoord0;
+			#endif
 
 		#elif defined(SHOW_TEXTURE0)
 
 			gl_Position = vec4(a_position, 1.0);
-			v_texcoord0 = a_texcoord0;
+			#if defined(FLIP_Y)
+				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);
+			#else
+				v_texcoord0 = a_texcoord0;
+			#endif
 
 		#elif defined(STENCIL)
 
@@ -26,8 +38,12 @@
 		#elif defined(UNLIT)
 
 			v_color = u_material.color * a_color;
-			v_texcoord0 = a_texcoord0;
 			gl_Position = GetClipPos();
+			#if defined(FLIP_Y)
+				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);
+			#else
+				v_texcoord0 = a_texcoord0;
+			#endif
 
 		#elif defined(PER_VERTEX_LIGHTING)
 
@@ -36,7 +52,11 @@
 		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
 		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);
 		    v_color = a_color * totalLight;
-		    v_texcoord0 = a_texcoord0;
+			#if defined(FLIP_Y)
+				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);
+			#else
+				v_texcoord0 = a_texcoord0;
+			#endif
 			gl_Position = GetClipPos(worldPos);
 
 		#elif defined(PER_PIXEL_LIGHTING)
@@ -81,14 +101,24 @@
 			#endif
 
 			v_color = a_color;
-			v_texcoord0 = a_texcoord0;
+			#if defined(FLIP_Y)
+				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);
+			#else
+				v_texcoord0 = a_texcoord0;
+			#endif
 			gl_Position = GetClipPos(worldPos);
 
 		#elif defined(LIGHTMAP) // lightmap without lighting
 
 			v_color = u_material.color * a_color;
-		    v_texcoord0 = a_texcoord0;
-			v_texcoord1 = a_texcoord1;
+			#if defined(FLIP_Y)
+				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);
+				v_texcoord1 = vec2(a_texcoord1.x, 1.0 - a_texcoord1.y);
+			#else
+				v_texcoord0 = a_texcoord0;
+				v_texcoord1 = a_texcoord1;
+			#endif
+			
 			gl_Position = GetClipPos();
 
 		#else // Vertex color by default

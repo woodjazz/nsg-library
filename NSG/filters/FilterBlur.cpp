@@ -32,8 +32,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	FilterBlur::FilterBlur(PTexture input, int output_width, int output_height)
-		: Filter(GetUniqueName("FilterBlur"), input, output_width, output_height, (int)ProgramFlag::BLUR)
+	FilterBlur::FilterBlur(PTexture input)
+		: Filter(GetUniqueName("FilterBlur"), input, (int)ProgramFlag::BLUR | (int)ProgramFlag::FLIP_Y)
 	{
 	}
 

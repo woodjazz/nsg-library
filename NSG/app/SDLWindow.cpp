@@ -180,7 +180,7 @@ namespace NSG
     {
 		if (this == Graphics::this_->GetWindow())
 			Graphics::this_->SetWindow(nullptr);
-        Destroy();
+		Close();
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
 

@@ -33,8 +33,8 @@ misrepresented as being the original software.
 #include "Technique.h"
 namespace NSG
 {
-	FilterBlend::FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height)
-		: Filter(GetUniqueName("FilterBlend"), input0, output_width, output_height, (int)ProgramFlag::BLEND)
+	FilterBlend::FilterBlend(PTexture input0, PTexture input1)
+		: Filter(GetUniqueName("FilterBlend"), input0, (int)ProgramFlag::BLEND)
 	{
 		pMaterial_->SetTexture(1, input1);
 	}

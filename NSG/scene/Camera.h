@@ -34,6 +34,7 @@ namespace NSG
 	public:
 		Camera(const std::string& name);
 		~Camera();
+		void SetLayer(RenderLayer layer);
 		void SetWindow(Window* window);
 		void EnableOrtho();
 		void DisableOrtho();
@@ -57,7 +58,6 @@ namespace NSG
 		//XY are in normalized device coordinates (-1, 1)
         Ray GetScreenRay(float screenX, float screenY) const;
 		static Ray GetRay(float screenX, float screenY);
-		static void Render(PScene scene);
 		static const Matrix4& GetViewMatrix();
 		const Matrix4& GetView() const;
 		static const Matrix4& GetMatViewProj();
@@ -76,13 +76,11 @@ namespace NSG
 		float GetFov() const { return fovy_; }
 		void Save(pugi::xml_node& node) const override;
 		void Load(const pugi::xml_node& node) override;
-		void AddBlurFilter(int output_width, int output_height);
-		void AddBlendFilter(int output_width, int output_height);
-		PFilter AddUserFilter(PResource fragmentShader, int output_width, int output_height);
-		void Render();
-		void SetRender2Texture(PRender2Texture render2Texture);
+		void AddBlurFilter();
+		void AddBlendFilter();
+		PFilter AddUserFilter(PResource fragmentShader);
+		const std::vector<PFilter>& GetFilters() const { return filters_; }
 	private:
-		void Render(PRender2Texture render2Texture);
 		void AddFilter(PFilter filter);
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;
@@ -110,8 +108,7 @@ namespace NSG
 		mutable PFrustum frustum_;
 		mutable bool cameraIsDirty_;
 		std::vector<PFilter> filters_;
-		PRender2Texture render2Texture_;
-		PShowTexture showTexture_;
 		SignalViewChanged::PSlot slotViewChanged_;
+		Window* window_;
 	};
 }

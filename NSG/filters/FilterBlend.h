@@ -32,7 +32,7 @@ namespace NSG
 	class FilterBlend : public Filter
 	{
 	public:
-		FilterBlend(PTexture input0, PTexture input1, int output_width, int output_height);
+		FilterBlend(PTexture input0, PTexture input1);
 		~FilterBlend();
 	};
 }

@@ -367,6 +367,7 @@ namespace NSG
     void Texture::ReleaseResources()
     {
         glDeleteTextures(1, &texture_);
+		texture_ = 0;
         //pResource_->Invalidate(); //Maybe the user has released the resource: force the reload (next time) from the resource
     }
 

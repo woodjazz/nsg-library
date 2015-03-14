@@ -46,6 +46,7 @@ namespace NSG
         void EnableDepthBuffer(bool enable);
         void EnableDepthTest(bool enable);
         void EnableStencilTest(bool enable);
+        void SetDepthFunc(DepthFunc depthFunc);
         void SetStencilMask(GLuint mask);
         void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
         void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
@@ -82,5 +83,6 @@ namespace NSG
         bool enableCullFace_;
         CullFaceMode cullFaceMode_;
         FrontFaceMode frontFaceMode_;
+        DepthFunc depthFunc_;
     };
 }

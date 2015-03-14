@@ -286,7 +286,7 @@ namespace NSG
         Vertex3 newCenter;
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
-        if (camera_->GetScene()->GetClosestRayNodeIntersection(ray, closest))
+		if (camera_->GetScene()->GetClosestRayNodeIntersection(camera_->GetLayer(), ray, closest))
         {
             if (centerObj)
             {

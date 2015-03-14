@@ -64,7 +64,6 @@ namespace NSG
         const std::string& GetName() const { return name_; }
         void SetName(const std::string& name) { name_ = name; }
 		void SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights);
-		void SetBlendData(unsigned vertex, const Vector4& bonesID, Vector4& bonesWeight);
         void AddSceneNode(SceneNode* node);
         void RemoveSceneNode(SceneNode* node);
         std::set<SceneNode*>& GetSceneNodes() { return sceneNodes_; }

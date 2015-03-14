@@ -84,6 +84,8 @@ namespace NSG
 		pass->EnableDepthBuffer(false);
 		auto program = pass->GetProgram();
 		program->EnableFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::SPHERICAL_BILLBOARD);
+        SetLayer(RenderLayer::PARTICLES_LAYER);
+        DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
     }
 
     ParticleSystem::~ParticleSystem()

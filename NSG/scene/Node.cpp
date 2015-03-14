@@ -142,6 +142,7 @@ namespace NSG
 					if (ps) scene->AddParticleSystem(ps);
 				}
             }
+            node->OnSceneSet();
         }
         node->MarkAsDirty();
     }
@@ -231,6 +232,11 @@ namespace NSG
             scale_ = scale;
             MarkAsDirty(true, true);
         }
+    }
+
+    void Node::SetScale(float scale)
+    {
+        SetScale(Vertex3(scale));
     }
 
     void Node::SetGlobalScale(const Vertex3& scale)

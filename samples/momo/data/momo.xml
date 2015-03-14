@@ -2198,7 +2198,7 @@
 			<Texture1 flags="00000000000000000000000000000011" resource="data/char_momo_nor.png" />
 			<Technique>
 				<Passes>
-					<Pass blendMode="0" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305">
+					<Pass blendMode="0" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305" depthFunc="1">
 						<Program flags="00000000000000000100010010000010" />
 					</Pass>
 				</Passes>
@@ -2276,7 +2276,7 @@
 			<SceneNode name="Sun" nodeType="Light" type="1" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    1.035,   -0.346,    2.359]" orientation="[    0.834,    0.552,    0.000,    0.000]" />
 		</SceneNode>
 		<Animations>
-			<Animation name="Animation2" length="1.32">
+			<Animation name="Animation5" length="1.32">
 				<Tracks>
 					<Track nodeName="Bone.main" channelMask="00000000000000000000000000000000">
 						<KeyFrames>

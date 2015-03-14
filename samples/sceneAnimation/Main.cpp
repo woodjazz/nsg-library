@@ -46,6 +46,7 @@ int NSG_MAIN(int argc, char* argv[])
     //plane->GetMaterial()->SetDisplacementMap(nullptr);
 
     auto camera = scene->GetChild<Camera>("Camera", false);
+	camera->SetFarClip(2000);
     auto control = std::make_shared<CameraControl>(camera);
     auto lamp = scene->GetChild<Light>("Lamp", false);
     auto ball = scene->GetChild<SceneNode>("Earth", false);
@@ -81,7 +82,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {
-        scene->Render(camera.get());
+        scene->Render();
     });
 
     control->slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
@@ -94,7 +95,7 @@ int NSG_MAIN(int argc, char* argv[])
         {
             Ray ray = camera->GetScreenRay(x, y);
             RayNodeResult closest;
-            if (scene->GetClosestRayNodeIntersection(ray, closest))
+			if (scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest))
             {
                 Vertex3 pos = ray.GetPoint(closest.distance_);
                 pos.y = 7;

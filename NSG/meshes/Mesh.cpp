@@ -340,14 +340,6 @@ namespace NSG
         }
     }
 
-    void Mesh::SetBlendData(unsigned vertex, const Vector4& bonesID, Vector4& bonesWeight)
-    {
-        CHECK_ASSERT(vertexsData_.size() > vertex, __FILE__, __LINE__);
-        vertexsData_[vertex].bonesID_ = bonesID;
-        vertexsData_[vertex].bonesID_ *= 3;
-        vertexsData_[vertex].bonesWeight_ = bonesWeight;
-    }
-
     void Mesh::AddSceneNode(SceneNode* node)
     {
         sceneNodes_.insert(node);
@@ -360,13 +352,15 @@ namespace NSG
 
     void Mesh::AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal)
     {
+		IndexType vidx = (IndexType)vertexsData_.size();
+
         vertexsData_.push_back(v0);
         vertexsData_.push_back(v1);
         vertexsData_.push_back(v2);
         vertexsData_.push_back(v3);
 
 		CHECK_ASSERT(vertexsData_.size() <= std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
-		IndexType vidx = (IndexType)vertexsData_.size();
+		
         indexes_.push_back(vidx);
         indexes_.push_back(vidx + 1);
         indexes_.push_back(vidx + 2);

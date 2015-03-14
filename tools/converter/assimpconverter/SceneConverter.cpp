@@ -229,12 +229,14 @@ namespace NSG
         {
             const struct aiMesh* mesh = sc->mMeshes[i];
             MeshConverter obj(mesh);
+			meshes_.push_back(obj.GetMesh());
         }
 
         for (size_t i = 0; i < sc->mNumMaterials; ++i)
         {
             const aiMaterial* material = sc->mMaterials[i];
 			MaterialConverter obj(material, path_, outputDir_);
+			materials_.push_back(obj.GetMaterial());
         }
     }
 
@@ -243,8 +245,8 @@ namespace NSG
         for (size_t i = 0; i < sc->mNumMeshes; ++i)
         {
             const struct aiMesh* aiMesh = sc->mMeshes[i];
-			auto meshes = App::this_->GetMeshes();
-			auto mesh = meshes.at(i);
+			auto mesh = meshes_.at(i);
+			CHECK_ASSERT(mesh, __FILE__, __LINE__);
             LoadBones(sc, aiMesh, mesh);
             GetBlendData(mesh, aiMesh);
             if (mesh->GetSkeleton())
@@ -484,20 +486,14 @@ namespace NSG
         for (size_t i = 0; i < nd->mNumMeshes; ++i)
         {
             const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[i]];
-			auto meshes = App::this_->GetMeshes();
-			meshSceneNode->SetMesh(meshes.at(i));
+			meshSceneNode->SetMesh(meshes_.at(i));
             unsigned int materialIndex = mesh->mMaterialIndex;
 			const struct aiMaterial* mtl = sc->mMaterials[materialIndex];
-			aiString materialName;
-			if (AI_SUCCESS == aiGetMaterialString(mtl, AI_MATKEY_NAME, &materialName))
-				meshSceneNode->SetMaterial(App::this_->GetMaterial(materialName.C_Str()));
-			else
-			{
-				TRACE_LOG("Material name not found!!!!!");
-			}
-
+			auto material = materials_.at(materialIndex);
+			CHECK_ASSERT(material, __FILE__, __LINE__);
+			meshSceneNode->SetMaterial(material);
             if (i + 1 < nd->mNumMeshes)
-                meshSceneNode = meshSceneNode->GetOrCreateChild<SceneNode>(GetUniqueName(meshSceneNode->GetName())).get();
+                meshSceneNode = meshSceneNode->CreateChild<SceneNode>().get();
         }
 
         for (size_t i = 0; i < nd->mNumChildren; ++i)

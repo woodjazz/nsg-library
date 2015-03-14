@@ -32,7 +32,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 100, 50, 30);
+    auto window = app.GetOrCreateWindow("window", 100, 100, 10, 10);
     std::deque<Vertex3> camControlPoints;
 
     auto scene = std::make_shared<Scene>("scene000");
@@ -123,7 +123,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto renderSlot = window->signalRender_->Connect([&]()
 	{
-		scene->Render(camera.get());
+		scene->Render();
 	});
 
     return app.Run();

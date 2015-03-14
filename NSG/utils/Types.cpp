@@ -29,8 +29,7 @@ namespace NSG
 {
     BlurFilter::BlurFilter()
         : blurDir_(1, 0),
-          blurRadius_(2, 2),
-          sigma_(0.1f)
+          sigma_(3.5f)
     {
     }
 

@@ -44,7 +44,6 @@ namespace NSG
         Node(const std::string& name = "");
         virtual ~Node();
         IdType GetId() const { return id_;  }
-        virtual void OnDirty() const {};
         void Translate(const Vector3& delta, TransformSpace space = TS_LOCAL);
         void Rotate(const Quaternion& delta, TransformSpace space = TS_LOCAL);
         void SetPosition(const Vertex3& position);
@@ -52,6 +51,7 @@ namespace NSG
         void SetOrientation(const Quaternion& q);
         const Quaternion& GetOrientation() const { return q_; };
         void SetScale(const Vertex3& scale);
+        void SetScale(float scale);
         const Vertex3& GetScale() const { return scale_; }
         void SetGlobalPosition(const Vertex3& position);
         void SetGlobalOrientation(const Quaternion& q);
@@ -122,9 +122,11 @@ namespace NSG
         void ClearAllChildren();
         bool IsEnabled() const { return enabled_; }
         void SetEnabled(bool enable, bool recursive = true);
+        virtual void OnDirty() const {};
         virtual void OnEnable() {}
         virtual void OnDisable() {}
         virtual void OnScaleChange() {}
+        virtual void OnSceneSet() {}
         // Offset matrix that converts from vertex space to bone space
         void SetBoneOffsetMatrix(const Matrix4& m);
         const Matrix4& GetBoneOffsetMatrix() { return boneOffsetMatrix_; }

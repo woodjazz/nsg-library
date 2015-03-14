@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "SceneNode.h"
-#include "FrameColorSelection.h"
 #include "App.h"
 #include "Check.h"
 #include "Technique.h"
@@ -51,11 +50,16 @@ namespace NSG
           occludee_(false),
           worldBBNeedsUpdate_(true),
           signalCollision_(new Signal<const ContactPoint&>()),
-          serializable_(true)
+          serializable_(true),
+          layer_(RenderLayer::DEFAULT_LAYER)
     {
+#if 0
 		auto scene = GetScene();
 		if (scene)
             scene->UpdateOctree(this);
+#endif
+
+        flags_ = (int)SceneNodeFlag::ALLOW_RAY_QUERY;
     }
 
     SceneNode::~SceneNode()
@@ -331,4 +335,38 @@ namespace NSG
         for (auto& obj : children_)
             dynamic_cast<SceneNode*>(obj.get())->DrawWithChildren();
     }
+
+    void SceneNode::SetLayer(RenderLayer layer)
+    {
+        if(layer_ != layer)
+        {
+			layer_ = layer;
+            auto scene = GetScene();
+            if(scene)
+            {
+                scene->RemoveFromOctree(this);
+				if (mesh_)
+					scene->UpdateOctree(this);
+            }
+        }
+    }
+
+    void SceneNode::SetFlags(const SceneNodeFlags& flags)
+    {
+        if (flags_ != flags)
+        {
+            flags_ = flags;
+        }
+    }
+
+    void SceneNode::EnableFlags(const SceneNodeFlags& flags)
+    {
+        SetFlags(flags_ | (int)flags);
+    }
+
+    void SceneNode::DisableFlags(const SceneNodeFlags& flags)
+    {
+        SetFlags(flags_ & ~(int)flags);
+    }
+
 }

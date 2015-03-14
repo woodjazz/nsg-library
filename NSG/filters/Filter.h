@@ -32,7 +32,7 @@ namespace NSG
 	class Filter
 	{
 	public:
-		Filter(const std::string& name, PTexture input, int output_width, int output_height, ProgramFlags flags = (int)ProgramFlag::UNLIT);
+		Filter(const std::string& name, PTexture input, ProgramFlags flags = (int)ProgramFlag::UNLIT | (int)ProgramFlag::FLIP_Y);
 		~Filter();
 		void Draw();
 		PMaterial GetMaterial() const { return pMaterial_; }
@@ -40,12 +40,13 @@ namespace NSG
 		PProgram GetProgram() const;
 		void SetInputTexture(PTexture input);
 		PTexture GetInputTexture() const;
+		void SetWindow(Window* window);
 	protected:
 		App& app_;
 		Technique* technique_;
         PMaterial pMaterial_; 
 		PMesh pMesh_;
-		PRender2Texture pRender2Texture_;
+		PFrameBuffer frameBuffer_;
 		std::string name_;
 		PProgram program_;
 		PSceneNode node_;
