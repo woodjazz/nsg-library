@@ -15,6 +15,7 @@ git:
   submodules: false
   
 before_install:
+  - echo "$TRAVIS_OS_NAME"
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get update && sudo apt-get install -y llvm-3.4 llvm-3.4-dev; fi
