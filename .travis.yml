@@ -21,10 +21,10 @@ before_install:
   - if [ $OSX ]; then brew update && brew install llvm && brew link --force llvm; fi
 
 install:
-  - sudo apt-get install -qq gcc-4.8 g++-4.8
+  - if [ $LINUX ]; then sudo apt-get install -qq gcc-4.8 g++-4.8; fi
   # We want to compile with g++ 4.8 when rather than the default g++
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-  - sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -y libasound2-dev
+  - if [ $LINUX ]; thensudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
+  - if [ $LINUX ]; then sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -y libasound2-dev; fi
 
 before_script:
   # Get externals
