@@ -20,6 +20,10 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 install:
+  - sudo apt-get update
+  - sudo apt-get install build-essential
+  - sudo apt-get install cmake
+  - cmake --version
   # INSTALLING EMSCRIPTEN
   - SOURCE_FOLDER="$PWD"
   - cd ..
