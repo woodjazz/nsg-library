@@ -258,8 +258,7 @@ macro (setup_executable)
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
         if(UNIX)
-            target_link_libraries(${PROJECT_NAME} rt)
-            target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB})
+            target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB} rt)
         endif()
 
     endif()
