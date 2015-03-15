@@ -15,21 +15,23 @@ git:
   
 before_install:
   - echo $TRAVIS_OS_NAME
+  # SIMULATE GUI (DISPLAY)
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 
 install:
-  # We need this line to have g++4.8 available in apt
+  # INSTALL gcc 4.8.1 AND g++ 4.8.1
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get update -qq; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get install -qq gcc-4.8 g++-4.8; fi
-  # We want to compile with g++ 4.8 when rather than the default g++
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
+  # GET LINUX BUILD DEPENDENCIES
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -q -y --no-install-recommends libasound2-dev; fi
 
 before_script:
-  # Get externals
+  # GET EXTERNALS (SUBMOUDLES)
   - git submodule update --init --recursive
+  # INSTALLING EMSCRIPTEN
   - SOURCE_FOLDER="$PWD"
   - cd ..
   - travis_retry wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
@@ -38,13 +40,13 @@ before_script:
   - ./emsdk update
   - ./emsdk install latest
   - ./emsdk activate latest
-  - printenv
-  - ls -l
+  - export EMSCRIPTEN="$PWD"/emscripten/1.27.0
   - cd $SOURCE_FOLDER
   
 script:
-  - uname -a
-  - $CXX --version
+  # EMSCRIPTEN BUILD AND TEST
   - ./cmake_ems.sh emsbuild && cd ../emsbuild && make && make test
+  # LINUX BUILD AND TEST
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./cmake_linux.sh linuxbuild && cd ../linuxbuild && make && make test; fi
+  # OSX BUILD AND TEST
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild -target ALL_BUILD && xcodebuild -target RUN_TESTS; fi
