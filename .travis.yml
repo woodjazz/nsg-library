@@ -32,8 +32,14 @@ before_script:
   - git submodule update --init --recursive
   - SOURCE_FOLDER="$PWD"
   - cd ..
-  - git clone https://github.com/kripken/emscripten.git
-  - export EMSCRIPTEN="$PWD"/emscripten
+  - wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
+  - tar -xvz emsdk-portable.tar.gz
+  - ls -l
+  - cd emsdk-portable
+  - ./emsdk update
+  - ./emsdk install latest
+  - ./emsdk activate latest
+  - ls -l
   - cd $SOURCE_FOLDER
   
 script:
