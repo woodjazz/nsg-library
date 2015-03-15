@@ -39,10 +39,8 @@ before_script:
   - cd emsdk_portable && ./emsdk update && ./emsdk install latest && ./emsdk activate latest
   - export EMSCRIPTEN="$PWD"/emscripten/1.29.0
   - ls -l
-  - wait 10
   - ls emscripten
-  - wait 10
-  
+  - ls emscripten/1*
   - cd $SOURCE_FOLDER
   
 script:
