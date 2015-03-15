@@ -30,10 +30,15 @@ install:
 before_script:
   # Get externals
   - git submodule update --init --recursive
-  - git clone https://github.com/kripken/emscripten.git --recursive
+  - SOURCE_FOLDER="$PWD"
+  - cd ..
+  - git clone https://github.com/kripken/emscripten.git
+  - export EMSCRIPTEN="$PWD"/emscripten
+  - cd $SOURCE_FOLDER
   
 script:
   - uname -a
   - $CXX --version
+  - ./cmake_ems.sh emsbuild && cd ../emsbuild && make && make test
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./cmake_linux.sh linuxbuild && cd ../linuxbuild && make && make test; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild -target ALL_BUILD && xcodebuild -target RUN_TESTS; fi
