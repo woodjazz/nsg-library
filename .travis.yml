@@ -5,6 +5,8 @@ os:
   - linux
   - osx
 
+osx_image: xcode61
+
 compiler:
   - gcc
   - clang
