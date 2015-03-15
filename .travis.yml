@@ -20,13 +20,13 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 install:
+  - SOURCE_FOLDER="$PWD"
+  - cd ..
   - sudo apt-get update
   - sudo apt-get install build-essential
   - sudo apt-get install cmake
   - cmake --version
-  # INSTALLING EMSCRIPTEN
-  - SOURCE_FOLDER="$PWD"
-  - cd ..
+  #INSTALLING CMAKE 2.8.8
   - travis_retry wget http://www.cmake.org/files/v2.8/cmake-2.8.8.tar.gz
   - tar -xvzf cmake-2.8.8.tar.gz
   - cd cmake-2.8.8
@@ -36,7 +36,9 @@ install:
   - make
   - sudo make install
   - sudo ldconfig
-  - cd "$PWD"/..
+  - cd "$SOURCE_FOLDER"/..
+  - cmake --version
+  # INSTALLING EMSCRIPTEN
   - travis_retry wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
   - tar -xvzf emsdk-portable.tar.gz
   - travis_retry sudo apt-get install -y llvm-3.4 llvm-3.4-dev
