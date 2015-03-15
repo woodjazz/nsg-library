@@ -9,17 +9,17 @@ git:
   submodules: false
   
 before_install:
-  - if [ $TRAVIS_OS_NAME == linux ]; then travis_retry sudo apt-get update && sudo apt-get install -y llvm-3.4 llvm-3.4-dev; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then travis_retry sudo apt-get update && sudo apt-get install -y llvm-3.4 llvm-3.4-dev; fi
   # We need this line to have g++4.8 available in apt
-  - if [ $TRAVIS_OS_NAME == linux ]; then travis_retry sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
-  - if [ $TRAVIS_OS_NAME == linux ]; then travis_retry sudo apt-get update -qq; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then travis_retry brew update && brew install llvm && brew link --force llvm; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then travis_retry sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then travis_retry sudo apt-get update -qq; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then travis_retry brew update && brew install llvm && brew link --force llvm; fi
 
 install:
-  - if [ $TRAVIS_OS_NAME == linux ]; then travis_retry sudo apt-get install -qq gcc-4.8 g++-4.8; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then travis_retry sudo apt-get install -qq gcc-4.8 g++-4.8; fi
   # We want to compile with g++ 4.8 when rather than the default g++
-  - if [ $TRAVIS_OS_NAME == linux ]; then travis_retry sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
-  - if [ $TRAVIS_OS_NAME == linux ]; then travis_retry sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -y libasound2-dev; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then travis_retry sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then travis_retry sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -y libasound2-dev; fi
 
 before_script:
   # Get externals
@@ -28,9 +28,9 @@ before_script:
 script:
   - uname -a
   - $CXX --version
-  - if [ $TRAVIS_OS_NAME == linux ]; ./cmake_linux.sh linuxbuild; fi
-  - if [ $TRAVIS_OS_NAME == linux ]; cd ../linuxbuild; fi
-  - if [ $TRAVIS_OS_NAME == linux ]; cd make && make test; fi
-  - if [ $OSX ]; ./cmake_osx.sh osxbuild; fi
-  - if [ $OSX ]; cd ../osxbuild; fi
-  - if [ $OSX ]; xcodebuild; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; ./cmake_linux.sh linuxbuild; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; cd ../linuxbuild; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; cd make && make test; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; ./cmake_osx.sh osxbuild; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; cd ../osxbuild; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; xcodebuild; fi
