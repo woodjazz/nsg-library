@@ -13,7 +13,6 @@ git:
   submodules: false
   
 before_install:
-  - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq libstdc++-4.8-dev; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get update && sudo apt-get install -y llvm-3.4 llvm-3.4-dev; fi
   # We need this line to have g++4.8 available in apt
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
@@ -33,9 +32,5 @@ before_script:
 script:
   - uname -a
   - $CXX --version
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./cmake_linux.sh linuxbuild; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd ../linuxbuild; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then make && make test; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./cmake_osx.sh osxbuild; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then cd ../osxbuild; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then xcodebuild; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./cmake_linux.sh linuxbuild && cd ../linuxbuild && make && make test; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild; fi
