@@ -27,5 +27,5 @@ before_script:
 script:
   - uname -a
   - $CXX --version
-  - if [ $TRAVIS_OS_NAME == linux ]; ./cmake_linux.sh linuxbuild && cd .. && cd linuxbuild && make && make test; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; ./cmake_osx.sh osxbuild && cd .. && cd osxbuild && xcodebuild; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; ./cmake_linux.sh linuxbuild && cd .. && cd linuxbuild && make && make test; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; ./cmake_osx.sh osxbuild && cd .. && cd osxbuild && xcodebuild; fi
