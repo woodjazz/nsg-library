@@ -40,7 +40,7 @@ before_script:
   - ./emsdk update
   - ./emsdk install latest
   - ./emsdk activate latest
-  - export EMSCRIPTEN="$PWD"/emscripten/1.27.0
+  - export EMSCRIPTEN="$PWD"/emscripten/1.29.0
   - cd $SOURCE_FOLDER
   
 script:
