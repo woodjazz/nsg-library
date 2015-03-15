@@ -30,7 +30,7 @@ script:
   - $CXX --version
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./cmake_linux.sh linuxbuild; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd ../linuxbuild; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; tehn cd make && make test; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then cd make && make test; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./cmake_osx.sh osxbuild; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then cd ../osxbuild; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then xcodebuild; fi
