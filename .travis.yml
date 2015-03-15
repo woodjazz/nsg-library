@@ -18,17 +18,17 @@ matrix:
       
   
 before_install:
-  - if [ $LINUX ]; then sudo apt-get update && sudo apt-get install -y llvm-3.4 llvm-3.4-dev; fi
+  - if [ $LINUX ]; then travis_retry sudo apt-get update && sudo apt-get install -y llvm-3.4 llvm-3.4-dev; fi
   # We need this line to have g++4.8 available in apt
-  - if [ $LINUX ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
-  - if [ $LINUX ]; then sudo apt-get update -qq; fi
-  - if [ $OSX ]; then brew update && brew install llvm && brew link --force llvm; fi
+  - if [ $LINUX ]; then travis_retry sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - if [ $LINUX ]; then travis_retry sudo apt-get update -qq; fi
+  - if [ $OSX ]; then travis_retry brew update && brew install llvm && brew link --force llvm; fi
 
 install:
-  - if [ $LINUX ]; then sudo apt-get install -qq gcc-4.8 g++-4.8; fi
+  - if [ $LINUX ]; then travis_retry sudo apt-get install -qq gcc-4.8 g++-4.8; fi
   # We want to compile with g++ 4.8 when rather than the default g++
-  - if [ $LINUX ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
-  - if [ $LINUX ]; then sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -y libasound2-dev; fi
+  - if [ $LINUX ]; then travis_retry sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
+  - if [ $LINUX ]; then travis_retry sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -y libasound2-dev; fi
 
 before_script:
   # Get externals
