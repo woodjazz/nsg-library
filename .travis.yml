@@ -20,43 +20,16 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 install:
-  - SOURCE_FOLDER="$PWD"
-  - cd ..
-  # - sudo apt-get update
-  # - sudo apt-get install build-essential
-  # - sudo apt-get install cmake
   # INSTALL gcc 4.8.1 AND g++ 4.8.1
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get update -qq; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get install -qq gcc-4.8 g++-4.8; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
-  - cmake --version
-  #INSTALLING CMAKE 2.8.8
-  # - travis_retry wget http://www.cmake.org/files/v2.8/cmake-2.8.8.tar.gz
-  # - tar -xvzf cmake-2.8.8.tar.gz
-  # - cd cmake-2.8.8
-  # - mkdir build
-  # - cd build
-  # - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
-  # - make
-  # - sudo make install
-  # - sudo ldconfig
-  # - cd "$SOURCE_FOLDER"/..
-  # - cmake --version
-  # INSTALLING EMSCRIPTEN
-  # - travis_retry wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
-  # - tar -xvzf emsdk-portable.tar.gz
-  # - travis_retry sudo apt-get install -y llvm-3.4 llvm-3.4-dev
-  # - cd emsdk_portable && ./emsdk update && ./emsdk install latest && ./emsdk activate latest
-  # - export EMSCRIPTEN="$PWD"/emscripten/1.29.0
-  # - ls -l
-  # - cd $SOURCE_FOLDER
   # GET LINUX BUILD DEPENDENCIES
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -q -y --no-install-recommends libasound2-dev; fi
 before_script:
   # GET externals
   - git submodule update --init --recursive
-  
   
 script:
   # EMSCRIPTEN BUILD AND TEST
