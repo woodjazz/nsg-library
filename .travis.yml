@@ -29,18 +29,20 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then travis_retry sudo apt-get install -y libglu1-mesa-dev && sudo apt-get install -q -y --no-install-recommends libasound2-dev; fi
 
 before_script:
-  # GET EXTERNALS (SUBMOUDLES)
+  # GET externals
   - git submodule update --init --recursive
   # INSTALLING EMSCRIPTEN
   - SOURCE_FOLDER="$PWD"
   - cd ..
   - travis_retry wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
   - tar -xvzf emsdk-portable.tar.gz
-  - cd emsdk_portable
-  - ./emsdk update
-  - ./emsdk install latest
-  - ./emsdk activate latest
+  - cd emsdk_portable && ./emsdk update && ./emsdk install latest && ./emsdk activate latest
   - export EMSCRIPTEN="$PWD"/emscripten/1.29.0
+  - ls -l
+  - wait 10
+  - ls emscripten
+  - wait 10
+  
   - cd $SOURCE_FOLDER
   
 script:
