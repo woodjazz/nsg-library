@@ -23,10 +23,10 @@ install:
   - if [ $TRAVIS_OS_NAME == linux ]; sudo apt-get install -qq gcc-4.8 g++-4.8; fi
   # We want to compile with g++ 4.8 when rather than the default g++
   - if [ $TRAVIS_OS_NAME == linux ]; sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
-  - if [ $TRAVIS_OS_NAME == linux ]; sudo apt-get install libglu1-mesa-dev; && sudo apt-get install libasound2-dev; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; sudo apt-get install libglu1-mesa-dev && sudo apt-get install libasound2-dev; fi
 
 script:
   - uname -a
   - $CXX --version
-  - if [ $TRAVIS_OS_NAME == linux ]; ./cmake_linux.sh linuxbuild; && cd .. && cd linuxbuild && make && make test; fi
+  - if [ $TRAVIS_OS_NAME == linux ]; ./cmake_linux.sh linuxbuild && cd .. && cd linuxbuild && make && make test; fi
   
