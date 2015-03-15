@@ -1,6 +1,5 @@
 language: 
   - cpp
-  - objective-c
 
 compiler:
   - gcc
@@ -10,8 +9,13 @@ git:
   submodules: false
   
 matrix:
-  - LINUX=1
-  - OSX=1
+  fast_finish: true
+  include:
+    - compiler: clang
+      env: OSX=1
+    - compiler: gcc
+      env: LINUX=1
+      
   
 before_install:
   - if [ $LINUX ]; then sudo apt-get update && sudo apt-get install -y llvm-3.4 llvm-3.4-dev; fi
