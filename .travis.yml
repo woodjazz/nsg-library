@@ -33,4 +33,4 @@ script:
   - uname -a
   - $CXX --version
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./cmake_linux.sh linuxbuild && cd ../linuxbuild && make && make test; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild -target ALL_BUILD && xcodebuild -target RUN_TESTS; fi
