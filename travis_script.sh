@@ -13,7 +13,6 @@ case "${TRAVIS_OS_NAME}" in
     ;;
 esac
 # Run tests
-pushd .
 cd tests
 for fullfile in *; do
     if [ -d $fullfile ]; then
@@ -24,4 +23,3 @@ for fullfile in *; do
         cd ..
     fi
 done
-popd
