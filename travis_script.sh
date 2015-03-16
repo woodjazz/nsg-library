@@ -13,9 +13,11 @@ case "${TRAVIS_OS_NAME}" in
     ;;
 esac
 
+ls -l
+ls -l tests/*
 # Run tests
 for fullfile in tests/*; do
-    if [[ -d $fullfile ]]; then
+    if [ -d $fullfile ]; then
         filename="${fullfile##*/}"
         ./$fullfile/$filename
     fi
