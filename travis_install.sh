@@ -2,7 +2,6 @@
 set -e
 case "${TRAVIS_OS_NAME}" in
   linux)
-    amixer
     ls -l /dev/dsp 
     ls -l /dev/snd/*
     # INSTALL gcc 4.8.1 AND g++ 4.8.1
