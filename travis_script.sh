@@ -16,7 +16,9 @@ esac
 for fullfile in tests/*; do
     if [ -d $fullfile ]; then
         filename="${fullfile##*/}"
-        echo Running ./$fullfile/$filename
-        ./$fullfile/$filename
+        echo && echo RUNNING ./$fullfile/$filename
+        cd $fullfile
+        ./$filename
+        cd ..
     fi
 done
