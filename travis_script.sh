@@ -13,7 +13,9 @@ case "${TRAVIS_OS_NAME}" in
     ;;
 esac
 # Run tests
-for fullfile in tests/*; do
+pushd .
+cd tests
+for fullfile in *; do
     if [ -d $fullfile ]; then
         filename="${fullfile##*/}"
         echo && echo RUNNING ./$fullfile/$filename
@@ -22,3 +24,4 @@ for fullfile in tests/*; do
         cd ..
     fi
 done
+popd
