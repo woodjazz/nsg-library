@@ -84,7 +84,9 @@ static void Test01()
 		Node node;
 		node.SetOrientation(glm::angleAxis(glm::pi<float>()/2, Vertex3(0, 1, 0)));
 		bb.Transform(node);
-		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(0, 1, 2)) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		TRACE_LOG("glm::distance(bb.Size(), Vertex3(0, 1, 2) = " << glm::distance(bb.Size(), Vertex3(0, 1, 2)));
+		TRACE_LOG("glm::epsilon<float>()=" << glm::epsilon<float>());
+		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(0, 1, 2)) < 3 * glm::epsilon<float>(), __FILE__, __LINE__);
 		bb.Transform(node);
 		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(2, 1, 0)) < 3 * glm::epsilon<float>(), __FILE__, __LINE__);
 	}
