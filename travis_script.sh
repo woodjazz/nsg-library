@@ -4,7 +4,7 @@ set -e
   # - ./cmake_ems.sh emsbuild && cd ../emsbuild && make && make test
 case "${TRAVIS_OS_NAME}" in
   linux)
-    ./cmake_linux.sh linuxbuild && cd ../linuxbuild && make && make test
+  	./cmake_linux.sh linuxbuild && cd ../linuxbuild && make && make test
     ;;
   osx)
 	./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild -target ALL_BUILD && xcodebuild -target RUN_TESTS
