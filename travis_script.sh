@@ -14,12 +14,11 @@ case "${TRAVIS_OS_NAME}" in
 esac
 # Run tests
 cd tests
-for fullfile in *; do
-    if [ -d $fullfile ]; then
-        filename="${fullfile##*/}"
-        echo && echo RUNNING ./$fullfile/$filename
-        cd $fullfile
-        ./$filename
+for testdir in *; do
+    if [ -d $testdir ]; then
+        echo && echo RUNNING $testdir
+        cd $testdir
+        ./$testdir
         cd ..
     fi
 done
