@@ -18,11 +18,11 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 install:
-  - ./travis_install.sh
+  - sudo ./travis_install.sh
 
 before_script:
   # GET externals
   - git submodule update --init --recursive
 
 script:
-  - ./travis_script.sh
+  - sudo ./travis_script.sh
