@@ -16,9 +16,6 @@ esac
 cd tests
 for testdir in *; do
     if [ -d $testdir ]; then
-        echo && echo RUNNING $testdir
-        cd $testdir
-        ./$testdir
-        cd ..
+        echo && echo RUNNING $testdir && echo && cd $testdir && ./$testdir && cd ..
     fi
 done
