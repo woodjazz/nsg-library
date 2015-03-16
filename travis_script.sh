@@ -12,13 +12,11 @@ case "${TRAVIS_OS_NAME}" in
 	#xcodebuild -target RUN_TESTS
     ;;
 esac
-
-ls -l
-ls -l tests/*
 # Run tests
 for fullfile in tests/*; do
     if [ -d $fullfile ]; then
         filename="${fullfile##*/}"
+        echo Running ./$fullfile/$filename
         ./$fullfile/$filename
     fi
 done
