@@ -2,9 +2,6 @@
 set -e
 case "${TRAVIS_OS_NAME}" in
   linux)
-    ls -l /dev/dsp 
-    ls -l /dev/snd/*
-    sudo addgroup $USER audio
     # INSTALL gcc 4.8.1 AND g++ 4.8.1
     sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
     sudo apt-get update -qq
