@@ -21,7 +21,9 @@ apt-get install libasound2-dev
 Emscripten
 -------------------------
 Install SDK: http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html
-Set the environment variables: EMSCRIPTEN
+
+Set environment variable: EMSCRIPTEN
+
 -------------------------
 Windows
 -------------------------
