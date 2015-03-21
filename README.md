@@ -3,6 +3,7 @@
 ANDROID
 ---------------------------
 (cmake toolchain from: https://github.com/taka-no-me/android-cmake   [replace 4.6 for 4.8])
+
 Install SDK,NDK,Java(JDK)
 For the SDK you will need Android 4.4.2 (API 19)
 Install ant (http://ant.apache.org/bindownload.cgi)
