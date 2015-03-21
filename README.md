@@ -37,6 +37,6 @@ Windows
 Install Visual Studio 2013
 
 -------------------------
-OSX
+OSX/IOS
 -------------------------
 Install XCode
