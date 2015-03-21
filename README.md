@@ -2,7 +2,6 @@
 ---------------------------
 ANDROID
 ---------------------------
-(cmake toolchain from: https://github.com/taka-no-me/android-cmake   [replace 4.6 for 4.8])
 
 Install SDK,NDK,Java(JDK)
 
