@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 
     App app;
-    auto window = app.GetOrCreateWindow("window", 0, 700, 10, 10);
+	auto window = Window::Create();
     auto resource = app.GetOrCreateResourceFile("data/bmomo.xml");
 	auto scenes = app.Load(resource);
 	auto scene = scenes.at(0);

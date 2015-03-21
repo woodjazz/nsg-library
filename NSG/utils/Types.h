@@ -220,7 +220,8 @@ namespace NSG
         DIFFUSEMAP = 1 << 14,
         SPHERICAL_BILLBOARD = 1 << 15,
         CYLINDRICAL_BILLBOARD = 1 << 16,
-        FLIP_Y = 1 << 17
+        FLIP_Y = 1 << 17,
+        WAVE = 1 << 18
     };
 
     typedef FlagSet<ProgramFlag> ProgramFlags;
@@ -280,6 +281,7 @@ namespace NSG
     struct ContactPoint
     {
         SceneNode* collider_;
+		Vector3 normalB_;
         float appliedImpulse_;
         float appliedImpulseLateral1_;
         float appliedImpulseLateral2_;
@@ -307,6 +309,14 @@ namespace NSG
         float sigma_;
         BlurFilter();
         bool operator != (const BlurFilter& uid) const;
+    };
+
+    struct WaveFilter
+    {
+        float factor_;
+        float offset_;
+        WaveFilter();
+        bool operator != (const WaveFilter& uid) const;
     };
 
     enum class ResourceType
@@ -365,9 +375,6 @@ namespace NSG
         PARTICLES_LAYER,
         GUI_LAYER0,
         GUI_LAYER1,
-        GUI_EFFECT_LAYER0, // used for post-processing
-        GUI_EFFECT_LAYER1,
-        GUI_EFFECT_LAYER2,
         MAX_LAYERS
     };
 

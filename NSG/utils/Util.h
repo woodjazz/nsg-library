@@ -59,4 +59,6 @@ namespace NSG
 	bool IsZeroLength(const Vector3& obj);
 	GLushort Transform(GLubyte selected[4]);
 	Color Transform(GLushort id);
+	bool SaveDocument(const std::string& filename, const pugi::xml_document& doc, bool compress);
+	std::string DecompressBuffer(const std::string& buffer);
 }

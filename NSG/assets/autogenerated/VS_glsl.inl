@@ -14,7 +14,7 @@ static const char* VS_GLSL = \
 "			#else\n"\
 "				v_texcoord0 = a_texcoord0;\n"\
 "			#endif\n"\
-"		#elif defined(BLUR) || defined(BLEND)\n"\
+"		#elif defined(BLUR) || defined(BLEND) || defined(WAVE)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
 "			#if defined(FLIP_Y)\n"\
 "				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\

@@ -89,6 +89,8 @@ namespace NSG
             }
         }
         #endif
+
+		//buffer_ = DecompressBuffer(buffer_);
     }
 
     void ResourceFile::ReleaseResources()

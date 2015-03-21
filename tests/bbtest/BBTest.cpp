@@ -84,9 +84,9 @@ static void Test01()
 		Node node;
 		node.SetOrientation(glm::angleAxis(glm::pi<float>()/2, Vertex3(0, 1, 0)));
 		bb.Transform(node);
-		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(0, 1, 2)) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(0, 1, 2)) < 0.1f, __FILE__, __LINE__);
 		bb.Transform(node);
-		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(2, 1, 0)) < 3 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(2, 1, 0)) < 0.1f, __FILE__, __LINE__);
 	}
 
 	{
@@ -98,9 +98,9 @@ static void Test01()
 		Node node;
 		node.SetScale(Vertex3(2));
 		bb.Transform(node);
-		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(4, 2, 0)) < 3 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(4, 2, 0)) <0.1f, __FILE__, __LINE__);
 		bb.Transform(node);
-		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(8, 4, 0)) < 3 * glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(8, 4, 0)) < 0.1f, __FILE__, __LINE__);
 		node.SetOrientation(glm::angleAxis(glm::pi<float>() / 2, Vertex3(0, 1, 0)));
 		bb.Transform(node);
 		CHECK_CONDITION(glm::distance(bb.Size(), Vertex3(0, 8, 16)) < 0.1f, __FILE__, __LINE__);

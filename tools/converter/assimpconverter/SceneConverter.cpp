@@ -488,7 +488,6 @@ namespace NSG
             const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[i]];
 			meshSceneNode->SetMesh(meshes_.at(i));
             unsigned int materialIndex = mesh->mMaterialIndex;
-			const struct aiMaterial* mtl = sc->mMaterials[materialIndex];
 			auto material = materials_.at(materialIndex);
 			CHECK_ASSERT(material, __FILE__, __LINE__);
 			meshSceneNode->SetMaterial(material);
@@ -543,7 +542,7 @@ namespace NSG
         delete pFile;
     }
 
-	bool SceneConverter::Save() const
+	bool SceneConverter::Save(bool compress) const
     {
 		Path outputFile(outputDir_);
 		outputFile.SetName(path_.GetName());
@@ -560,7 +559,6 @@ namespace NSG
 			auto appNode = App::this_->SaveWithExternalResources(doc, path_, outputDir_);
 			scene_->Save(appNode);
 		}
-        TRACE_LOG("Saving file: " << outputFile.GetFullAbsoluteFilePath());
-		return doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
+		return SaveDocument(outputFile.GetFullAbsoluteFilePath().c_str(), doc, compress);
     }
 }

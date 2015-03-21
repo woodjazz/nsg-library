@@ -59,6 +59,8 @@ namespace NSG
         void AllocateResources() override;
         void ReleaseResources() override;
 		std::string name_;
+        unsigned originalWidth_;
+        unsigned originalHeight_;
         unsigned width_;
 		unsigned height_;
 		Flags flags_;

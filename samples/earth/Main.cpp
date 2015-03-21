@@ -31,26 +31,23 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 
     App app;
-
-    auto window = app.GetOrCreateWindow("window", 100, 100, 10, 10);
+	auto window = Window::Create();
     std::deque<Vertex3> camControlPoints;
-
-    auto scene = std::make_shared<Scene>("scene000");
+    auto scene = std::make_shared<Scene>();
     scene->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
 
-    auto camera = scene->GetOrCreateChild<Camera>("camera");
+    auto camera = scene->CreateChild<Camera>();
 
 	{
         camControlPoints.push_back(Vertex3(-10.0f, 0.0f, 0.0f));
         camControlPoints.push_back(Vertex3(0.0f, 0.0f, 10.0f));
         camControlPoints.push_back(Vertex3(10.0f, 0.0f, 0.0f));
         camControlPoints.push_back(Vertex3(0.0f, 0.0f, -10.0f));
-
         camera->SetPosition(Vertex3(0, 0, 10));
         camera->SetGlobalLookAt(Vertex3(0));
     }
 
-    auto earth = scene->GetOrCreateChild<SceneNode>("node 1");
+    auto earth = scene->CreateChild<SceneNode>();
     {
         auto pSphereMesh(app.CreateSphereMesh(3, 24));
         earth->SetMesh(pSphereMesh);
@@ -63,21 +60,17 @@ int NSG_MAIN(int argc, char* argv[])
         pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
         pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
         pMaterial->SetShininess(10);
-
         earth->SetMaterial(pMaterial);
-
         earth->SetPosition(Vertex3(5, 0, 0));
     }
 
-    auto light = scene->GetOrCreateChild<Light>("light");
+    auto light = scene->CreateChild<Light>();
     {
 		auto pMaterial(app.GetOrCreateMaterial("light", (int)ProgramFlag::PER_VERTEX_LIGHTING));
         pMaterial->SetColor(Color(1, 0, 0, 1));
         light->SetMaterial(pMaterial);
-
 		auto pMesh(app.CreateSphereMesh(0.2f, 16));
         light->SetMesh(pMesh);
-
         light->SetPosition(Vertex3(-10.0, 0.0, 5.0));
     }
 
@@ -89,7 +82,6 @@ int NSG_MAIN(int argc, char* argv[])
     {
         {
             static float delta1 = 0;
-
             Vertex3 position = glm::catmullRom(
                                    camControlPoints[0],
                                    camControlPoints[1],
@@ -99,9 +91,7 @@ int NSG_MAIN(int argc, char* argv[])
 
             camera->SetPosition(position);
             camera->SetGlobalLookAt(Vertex3(0));
-
             delta1 += deltaTime * 0.1f;
-
             if (delta1 > 1)
             {
                 delta1 = 0;
@@ -116,7 +106,6 @@ int NSG_MAIN(int argc, char* argv[])
             static float y_angle = 0;
             x_angle += glm::pi<float>() / 10.0f * deltaTime;
             y_angle += glm::pi<float>() / 10.0f * deltaTime;
-
             earth->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
         }
     });

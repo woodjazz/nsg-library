@@ -31,7 +31,7 @@ misrepresented as being the original software.
 #include "bBlenderFile.h"
 #include <fstream>
 #include <cstdint>
-
+using namespace NSG;
 class IFileConstraint : public TCLAP::Constraint<std::string>
 {
 public:
@@ -173,6 +173,7 @@ int NSG_MAIN(int argc, char* argv[])
         TCLAP::ValueArg<int> eArg("e", "eChar", "Final character to bake. By default is 127.", false, 127, &charConstraint);
 
 		TCLAP::SwitchArg bArg("b", "embed", "Embed resources in xml. If not set then the resources are written to an external file.", false);
+        TCLAP::SwitchArg zArg("z", "compress", "Compress the file.", false);
 
         cmd.add(iArg);
         cmd.add(oArg);
@@ -182,6 +183,7 @@ int NSG_MAIN(int argc, char* argv[])
         cmd.add(sArg);
         cmd.add(eArg);
 		cmd.add(bArg);
+        cmd.add(zArg);
 
         cmd.parse(argc, argv);
 
@@ -194,10 +196,10 @@ int NSG_MAIN(int argc, char* argv[])
         if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
         {
 			App app;
-			auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
+			auto window = Window::Create("window", 0, 0, 1, 1);
 			using namespace BlenderConverter;
 			BScene scene(inputFile, outputDir, bArg.getValue());
-			if (scene.Load() && scene.Save())
+			if (scene.Load() && scene.Save(zArg.getValue()))
 				return 0;
         }
         else if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
@@ -210,15 +212,15 @@ int NSG_MAIN(int argc, char* argv[])
 
 			App app;
             TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
-            if (obj.Load() && obj.Save(outputDir))
+            if (obj.Load() && obj.Save(outputDir, zArg.getValue()))
                 return 0;
         }
         else
         {
             App app;
-            auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
+			auto window = Window::Create("window", 0, 0, 1, 1);
 			SceneConverter scene(inputFile, outputDir, bArg.getValue());
-			if (scene.Load() && scene.Save())
+			if (scene.Load() && scene.Save(zArg.getValue()))
                 return 0;
         }
     }

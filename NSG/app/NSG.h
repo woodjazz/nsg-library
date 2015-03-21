@@ -61,8 +61,6 @@ misrepresented as being the original software.
 #include "IMGUITitle.h"
 #endif
 #include "Filter.h"
-#include "FilterBlur.h"
-#include "FilterBlend.h"
 #include "RectangleMesh.h"
 #include "ShowTexture.h"
 #include "ResourceFile.h"
@@ -91,5 +89,6 @@ misrepresented as being the original software.
 #include "MemoryTest.h"
 #include "MemoryManager.h"
 #include "Button.h"
+#include "FrameBuffer.h"
 
 

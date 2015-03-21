@@ -116,7 +116,8 @@ namespace NSG
           maxVertexUniformVectors_(0),
           maxFragmentUniformVectors_(0),
           maxVertexAttribs_(0),
-          depthFunc_(DepthFunc::LESS)
+          depthFunc_(DepthFunc::LESS),
+          viewportFactor_(0, 0, 1, 1)
     {
 
         #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -290,7 +291,6 @@ namespace NSG
             }
         }
 
-
         {
             glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs_);
             TRACE_LOG("GL_MAX_VERTEX_ATTRIBS = " << maxVertexAttribs_);
@@ -335,7 +335,7 @@ namespace NSG
         SetClearColor(Color(0, 0, 0, 1));
         SetClearDepth(1);
         SetClearStencil(0);
-        SetFrameBuffer(0);
+        SetFrameBuffer(nullptr);
         SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL,
                        DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
 
@@ -352,7 +352,7 @@ namespace NSG
         SetFrontFace(FrontFaceMode::DEFAULT);
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		UnboundTextures();
+        UnboundTextures();
         SetVertexArrayObj(nullptr);
         SetVertexBuffer(nullptr);
         SetIndexBuffer(nullptr);
@@ -361,33 +361,31 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-	void Graphics::UnboundTextures()
-	{
-		for (int i = 0; i < maxTexturesCombined_; i++)
-			SetTexture(i, nullptr);
-	}
-
-    void Graphics::SetFrameBuffer(GLuint value)
+    void Graphics::UnboundTextures()
     {
-        if (value != currentFbo_)
+        for (int i = 0; i < maxTexturesCombined_; i++)
+            SetTexture(i, nullptr);
+    }
+
+    void Graphics::SetFrameBuffer(FrameBuffer* buffer)
+    {
+        if (buffer != currentFbo_)
         {
-            if (value == 0)
+            if (buffer == nullptr)
                 glBindFramebuffer(GL_FRAMEBUFFER, systemFbo_);
             else
-                glBindFramebuffer(GL_FRAMEBUFFER, value);
-
-            currentFbo_ = value;
+                glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
+            currentFbo_ = buffer;
+            SetUpViewport();
         }
     }
 
     void Graphics::SetClearColor(const Color& color)
     {
         static Color color_(0, 0, 0, 0);
-
         if (color_ != color)
         {
             glClearColor(color.r, color.g, color.b, color.a);
-
             color_ = color;
         }
     }
@@ -395,11 +393,9 @@ namespace NSG
     void Graphics::SetClearDepth(GLclampf depth)
     {
         static GLclampf depth_ = 1;
-
         if (depth_ != depth)
         {
             glClearDepth(depth);
-
             depth_ = depth;
         }
     }
@@ -407,11 +403,9 @@ namespace NSG
     void Graphics::SetClearStencil(GLint clear)
     {
         static GLint clear_ = 0;
-
         if (clear_ != clear)
         {
             glClearStencil(clear);
-
             clear_ = clear;
         }
     }
@@ -424,7 +418,6 @@ namespace NSG
         SetDepthMask(true);
         SetClearStencil(0);
         SetStencilMask(~GLuint(0));
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
@@ -549,22 +542,22 @@ namespace NSG
                     glDepthFunc(GL_LESS);
                     break;
                 case DepthFunc::EQUAL:
-					glDepthFunc(GL_EQUAL);
+                    glDepthFunc(GL_EQUAL);
                     break;
                 case DepthFunc::LEQUAL:
-					glDepthFunc(GL_LEQUAL);
+                    glDepthFunc(GL_LEQUAL);
                     break;
                 case DepthFunc::GREATER:
-					glDepthFunc(GL_GREATER);
+                    glDepthFunc(GL_GREATER);
                     break;
                 case DepthFunc::NOTEQUAL:
-					glDepthFunc(GL_NOTEQUAL);
+                    glDepthFunc(GL_NOTEQUAL);
                     break;
                 case DepthFunc::GEQUAL:
-					glDepthFunc(GL_GEQUAL);
+                    glDepthFunc(GL_GEQUAL);
                     break;
                 case DepthFunc::ALWAYS:
-					glDepthFunc(GL_ALWAYS);
+                    glDepthFunc(GL_ALWAYS);
                     break;
                 default:
                     CHECK_ASSERT(false && "Invalid depth function", __FILE__, __LINE__);
@@ -732,6 +725,7 @@ namespace NSG
     {
         if (force || viewport_ != viewport)
         {
+            //TRACE_LOG("viewport=" << viewport);
             glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
             viewport_ = viewport;
         }
@@ -818,13 +812,22 @@ namespace NSG
         return false;
     }
 
+    void Graphics::SetViewportFactor(const Vector4& viewportFactor)
+    {
+        viewportFactor_ = viewportFactor;
+        SetUpViewport();
+    }
+
     void Graphics::SetCamera(Camera* camera)
     {
         if (activeCamera_ != camera)
         {
             activeCamera_ = camera;
             if (camera != nullptr)
-                SetViewport(camera->GetViewport(), false);
+                viewportFactor_ = camera->GetViewportFactor();
+            else
+                viewportFactor_ = Vector4(0, 0, 1, 1);
+            SetUpViewport();
         }
     }
 
@@ -834,23 +837,27 @@ namespace NSG
         {
             activeWindow_ = window;
             if (window)
-            {
-                SetViewport(window->GetViewport(), true);
-				if (!frameBuffer_)
-                {
-                    FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR) | FrameBuffer::COLOR_USE_TEXTURE);
-                    frameBufferFlags |= FrameBuffer::DEPTH;
-                    frameBufferFlags |= FrameBuffer::STENCIL;
-                    frameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName(window->GetName()), frameBufferFlags);
-                    frameBuffer_->SetWindow(window);
-                    if(!showFrameBuffer_)
-                    {
-                        showFrameBuffer_ = std::make_shared<ShowTexture>();
-                        showFrameBuffer_->SetNormal(frameBuffer_->GetColorTexture());
-                    }
-                }
-            }
+                SetUpViewport();
         }
+    }
+
+    void Graphics::SetUpViewport()
+    {
+        unsigned width = 0;
+        unsigned height = 0;
+
+        if (currentFbo_)
+        {
+            width = currentFbo_->GetWidth();
+            height = currentFbo_->GetHeight();
+        }
+        else if(activeWindow_)
+        {
+            width = activeWindow_->GetWidth();
+            height = activeWindow_->GetHeight();
+        }
+
+        SetViewport(Recti(width * viewportFactor_.x, height * viewportFactor_.y, width * viewportFactor_.z, height * viewportFactor_.w), false);
     }
 
     void Graphics::DiscardFramebuffer()
@@ -1268,8 +1275,24 @@ namespace NSG
         });
     }
 
+    void Graphics::SortFrontToBack(std::vector<SceneNode*>& nodes) const
+    {
+        Vector3 cameraPos;
+        if (activeCamera_)
+            cameraPos = activeCamera_->GetGlobalPosition();
+        std::sort(nodes.begin(), nodes.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+        {
+            auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
+            auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
+            return da < db;
+        });
+    }
+
+
     void Graphics::GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches)
     {
+		batches.clear();
+
         struct MeshNode
         {
             PMesh mesh_;
@@ -1292,11 +1315,8 @@ namespace NSG
         for (auto& node : visibles)
         {
             PMaterial material = node->GetMaterial();
-
             if (!material) continue;
-
-            PMesh mesh = node->GetMesh();
-
+            auto mesh = node->GetMesh();
             if (usedMaterial != material)
             {
                 usedMaterial = material;
@@ -1360,16 +1380,15 @@ namespace NSG
         {
             std::vector<SceneNode*> transparent;
             ExtractTransparent(visibles, transparent);
-
             if (!visibles.empty())
             {
                 // First draw non-transparent nodes
+                SortFrontToBack(visibles);
                 std::vector<PBatch> allBatches;
                 GenerateBatches(visibles, allBatches);
                 for (auto& batch : allBatches)
                     batch->Draw();
             }
-
             if (!transparent.empty())
             {
                 // Transparent nodes cannot be batched
@@ -1380,48 +1399,24 @@ namespace NSG
         }
     }
 
-    void Graphics::Render(Camera* camera)
-    {
-		if (frameBuffer_->IsReady())
-		{
-			SetCamera(camera);
-			RenderVisibleSceneNodes();
-			auto& filters = camera->GetFilters();
-			for (auto& filter : filters)
-				filter->Draw();
-		}
-    }
-
     bool Graphics::BeginFrameRender()
     {
-		if (frameBuffer_->IsReady())
-		{
-			SetFrameBuffer(frameBuffer_->GetId());
-			ClearAllBuffers();
-			return true;
-		}
-		return false;
+        if(activeWindow_->BeginFrameRender())
+        {
+            ClearAllBuffers();
+            return true;
+        }
+        return false;
+    }
+
+    void Graphics::Render(Camera* camera)
+    {
+        SetCamera(camera);
+        RenderVisibleSceneNodes();
     }
 
     void Graphics::EndFrameRender()
     {
-		if (frameBuffer_->IsReady())
-		{
-			if (activeCamera_)
-			{
-				auto& filters = activeCamera_->GetFilters();
-				if (filters.empty())
-					showFrameBuffer_->SetColortexture(frameBuffer_->GetColorTexture());
-				else
-					showFrameBuffer_->SetColortexture(filters.back()->GetTexture());
-			}
-			else
-				showFrameBuffer_->SetColortexture(frameBuffer_->GetColorTexture());
-
-			SetFrameBuffer(0); //use system framebuffer to show the texture
-			ClearBuffers(false, true, false);
-			showFrameBuffer_->Show();
-		}
+        activeWindow_->EndFrameRender();
     }
-
 }

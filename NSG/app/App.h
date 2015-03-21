@@ -47,7 +47,7 @@ namespace NSG
         void AddObject(Object* object);
         void RemoveObject(Object* object);
         PTexture GetWhiteTexture();
-        PWindow GetOrCreateWindow(const std::string& name, int x, int y, int width, int height);
+        void AddWindow(PWindow window);
         PQuadMesh CreateQuadMesh(float size = 2);
         PBoxMesh CreateBoxMesh(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
         PCircleMesh CreateCircleMesh(float radius = 1, int res = 8);
@@ -86,6 +86,7 @@ namespace NSG
 		void SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir);
 		void SaveResources(pugi::xml_node& node);
         PTexture GetTextureWithResource(PResource resource) const;
+        bool AllowWindowCreation() const;
     private:
 		static void RenderFrame(void* data);
         bool RenderFrame();

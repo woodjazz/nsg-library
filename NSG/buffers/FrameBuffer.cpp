@@ -37,6 +37,8 @@ namespace NSG
 {
     FrameBuffer::FrameBuffer(const std::string& name, Flags flags)
         : name_(name),
+          originalWidth_(0),
+          originalHeight_(0),
           width_(0),
           height_(0),
           flags_(flags),
@@ -57,11 +59,8 @@ namespace NSG
 
     bool FrameBuffer::IsValid()
     {
-        if(width_ == 0 || height_ == 0)
+        if (width_ == 0 || height_ == 0)
             return false;
-
-        if (!Graphics::this_->IsTextureSizeCorrect(width_, height_))
-            GetPowerOfTwoValues(width_, height_);
 
         if (Flag::STENCIL & flags_)
         {
@@ -104,18 +103,19 @@ namespace NSG
             }
         }
 
-		return (!(flags_ & Flag::COLOR_USE_TEXTURE) || colorTexture_->IsReady()) && (!(flags_ & Flag::DEPTH_USE_TEXTURE) || depthTexture_->IsReady());
+        return (!(flags_ & Flag::COLOR_USE_TEXTURE) || colorTexture_->IsReady()) && (!(flags_ & Flag::DEPTH_USE_TEXTURE) || depthTexture_->IsReady());
     }
 
     void FrameBuffer::AllocateResources()
     {
+        TRACE_LOG("Framebuffer width=" << width_ << " height=" << height_);
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
 
-        Graphics::this_->SetFrameBuffer(framebuffer_);
+        Graphics::this_->SetFrameBuffer(this);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         if (flags_ & Flag::COLOR)
         {
@@ -208,9 +208,9 @@ namespace NSG
     {
         if (App::this_->GetMainWindow())
         {
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			Graphics::this_->UnboundTextures();
+            Graphics::this_->UnboundTextures();
 
             if (stencilRenderBuffer_)
             {
@@ -238,15 +238,22 @@ namespace NSG
 
             Graphics::this_->SetFrameBuffer(0);
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS(__FILE__, __LINE__);
         }
     }
 
     void FrameBuffer::SetSize(unsigned width, unsigned height)
     {
-        CHECK_ASSERT(width >=0 && height >=0, __FILE__, __LINE__);
-        if(width_ != width || height_ != height)
+        CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
+
+        if (originalWidth_ != width || originalHeight_ != height)
         {
+            originalWidth_ = width;
+            originalHeight_ = height;
+            
+            if (!Graphics::this_->IsTextureSizeCorrect(width, height))
+                GetPowerOfTwoValues(width, height);
+
             width_ = width;
             height_ = height;
             Invalidate();
@@ -255,10 +262,10 @@ namespace NSG
 
     void FrameBuffer::SetWindow(Window* window)
     {
-        if(window_ != window)
+        if (window_ != window)
         {
             window_ = window;
-            if(window)
+            if (window)
             {
                 SetSize(window->GetWidth(), window->GetHeight());
                 slotViewChanged_ = window->signalViewChanged_->Connect([&](int width, int height)
@@ -275,16 +282,16 @@ namespace NSG
 
     void FrameBuffer::SetColorTexture(PTexture texture)
     {
-        if(colorTexture_ != texture)
+        if (colorTexture_ != texture)
         {
             colorTexture_ = texture;
-            Invalidate();    
+            Invalidate();
         }
     }
 
     void FrameBuffer::SetDepthTexture(PTexture texture)
     {
-        if(depthTexture_ != texture)
+        if (depthTexture_ != texture)
         {
             depthTexture_ = texture;
             Invalidate();

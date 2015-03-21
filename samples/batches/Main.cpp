@@ -32,7 +32,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 400, 10, 10);
+	auto window = Window::Create();
 
     const int COLS = 11;
     const int ROWS = 11;

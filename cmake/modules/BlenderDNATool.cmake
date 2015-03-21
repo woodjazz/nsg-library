@@ -41,6 +41,8 @@ function(BLENDERDNA_TOOL input_file output_dir)
    				DEPENDS ${OUTPUTDIR}/Blender.h
 			)
 
+			set_property(TARGET ${TARGET_NAME} PROPERTY FOLDER "BLENDER_DNA")
+
 			add_dependencies(${TARGET_NAME} ${DNA_GEN_TOOL})
 			add_dependencies(converter ${TARGET_NAME})
 

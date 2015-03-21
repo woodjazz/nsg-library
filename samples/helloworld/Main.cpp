@@ -31,7 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 400, 10, 10);
+	auto window = Window::Create();
 
     auto xml = app.GetOrCreateResourceFile("data/AnonymousPro32.xml");
     auto atlas = std::make_shared<FontAtlas>(xml);

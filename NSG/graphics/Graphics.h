@@ -73,7 +73,7 @@ namespace NSG
         Camera* GetCamera() const { return activeCamera_; }
         void SetWindow(Window* window);
         Window* GetWindow() const { return activeWindow_; }
-        void SetFrameBuffer(GLuint value);
+        void SetFrameBuffer(FrameBuffer* buffer);
 		void DrawActiveMesh(Pass* pass);
 		void DrawInstancedActiveMesh(Pass* pass, const Batch& batch);
         void DiscardFramebuffer();
@@ -97,6 +97,7 @@ namespace NSG
 		void SetNode(SceneNode* node) { activeNode_ = node; }
 		void ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const;
 		void SortBackToFront(std::vector<SceneNode*>& nodes) const;
+        void SortFrontToBack(std::vector<SceneNode*>& nodes) const;
 		void RenderVisibleSceneNodes();
         bool IsTextureSizeCorrect(unsigned width, unsigned height);
         void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
@@ -105,15 +106,16 @@ namespace NSG
         GLint GetMaxVertexUniformVectors() const { return maxVertexUniformVectors_; }
         GLint GetMaxFragmentUniformVectors() const { return maxFragmentUniformVectors_; }
         GLint GetMaxVertexAttribs() const { return maxVertexAttribs_; }
-		PFrameBuffer GetMainFrameBuffer() const { return frameBuffer_; }
         bool BeginFrameRender();
 		void Render(Camera* camera);
         void EndFrameRender();
 		void UnboundTextures();
+        void SetViewportFactor(const Vector4& viewportFactor);
     private:
+        void SetUpViewport();
         Recti viewport_;
         GLint systemFbo_;
-        GLuint currentFbo_;
+        FrameBuffer* currentFbo_;
         VertexArrayObj* vertexArrayObj_;
         Buffer* vertexBuffer_;
         Buffer* indexBuffer_;
@@ -161,7 +163,6 @@ namespace NSG
         GLint maxFragmentUniformVectors_;
         GLint maxVertexAttribs_;
         DepthFunc depthFunc_;
-        PFrameBuffer frameBuffer_; // main frame buffer (substitute for default 0 frame buffer)
-        PShowTexture showFrameBuffer_;
+        Vector4 viewportFactor_;
     };
 }

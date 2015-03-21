@@ -17,6 +17,8 @@ function(COPY_TOOL input_file output_dir)
 			DEPENDS ${OUTPUTDIR}/${INPUTNAME}
 		)
 
+		set_property(TARGET ${TARGET_NAME} PROPERTY FOLDER "COPIES")
+
 	    add_dependencies(${PROJECT_NAME} ${TARGET_NAME})
 
 	endif()

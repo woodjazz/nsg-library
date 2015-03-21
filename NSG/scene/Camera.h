@@ -34,7 +34,7 @@ namespace NSG
 	public:
 		Camera(const std::string& name);
 		~Camera();
-		void SetLayer(RenderLayer layer);
+		RenderLayer SetLayer(RenderLayer layer);
 		void SetWindow(Window* window);
 		void EnableOrtho();
 		void DisableOrtho();
@@ -46,8 +46,8 @@ namespace NSG
 		void SetAspectRatio(float aspect);
 		static Matrix4 GetModelViewProjection(const Node* pNode);
 		static Matrix4 GetInverseView();
-		void SetViewportFactor(float xo, float yo, float xf, float yf);
-		Recti GetViewport() const;
+		void SetViewportFactor(const Vector4& viewportFactor);
+		const Vector4& GetViewportFactor() const { return viewportFactor_; }
 		void SetOrtho(float left, float right, float bottom, float top);
         bool IsOrtho() const { return isOrtho_; }
         //XYZ are in normalized device coordinates (-1, 1)
@@ -76,17 +76,11 @@ namespace NSG
 		float GetFov() const { return fovy_; }
 		void Save(pugi::xml_node& node) const override;
 		void Load(const pugi::xml_node& node) override;
-		void AddBlurFilter();
-		void AddBlendFilter();
-		PFilter AddUserFilter(PResource fragmentShader);
-		const std::vector<PFilter>& GetFilters() const { return filters_; }
 	private:
-		void AddFilter(PFilter filter);
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
 		void UpdateFrustum();
-
 		mutable Matrix4 matView_;
 		mutable Matrix4 matViewInverse_;
 		mutable Matrix4 matProjection_;
@@ -95,10 +89,7 @@ namespace NSG
 		float fovy_; // in radians
 		float zNear_;
 		float zFar_;
-		float xo_;
-		float yo_;
-		float xf_;
-		float yf_;
+		Vector4 viewportFactor_;
 		bool isOrtho_;
 		Vector4 orthoCoords_;
         Graphics* graphics_;
@@ -107,7 +98,6 @@ namespace NSG
 		float aspectRatio_;
 		mutable PFrustum frustum_;
 		mutable bool cameraIsDirty_;
-		std::vector<PFilter> filters_;
 		SignalViewChanged::PSlot slotViewChanged_;
 		Window* window_;
 	};

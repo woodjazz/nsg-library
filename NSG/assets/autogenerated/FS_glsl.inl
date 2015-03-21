@@ -79,6 +79,8 @@ static const char* FS_GLSL = \
 "			gl_FragColor = Blend();\n"\
 "		#elif defined(BLUR)\n"\
 "			gl_FragColor = Blur();\n"\
+"		#elif defined(WAVE)\n"\
+"			gl_FragColor = Wave();\n"\
 "		#elif defined(SHOW_TEXTURE0)\n"\
 "			gl_FragColor = texture2D(u_texture0, v_texcoord0);\n"\
 "		#elif defined(STENCIL)\n"\

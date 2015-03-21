@@ -44,23 +44,50 @@ misrepresented as being the original software.
 #if EMSCRIPTEN
 #include <emscripten.h>
 #include <html5.h>
-static EM_BOOL EmscriptenResizeCallback(int eventType, const EmscriptenUiEvent *keyEvent, void *userData)
+static EM_BOOL EmscriptenResizeCallback(int eventType, const EmscriptenUiEvent* keyEvent, void* userData)
 {
     using namespace NSG;
     Window* window = App::this_->GetMainWindow();
-    if(window)
+    if (window)
         window->ViewChanged(keyEvent->windowInnerWidth, keyEvent->windowInnerHeight);
     return false;
 }
 #endif
 namespace NSG
 {
+    SDLWindow::SDLWindow(const std::string& name)
+        : Window(name)
+    {
+        const AppConfiguration& conf = *AppConfiguration::this_;
+        if(!Initialize(conf.x_, conf.y_, conf.width_, conf.height_))
+            throw std::runtime_error("Cannot create Window");
+    }
 
     SDLWindow::SDLWindow(const std::string& name, int x, int y, int width, int height)
         : Window(name)
     {
+        if(!Initialize(x, y, width, height))
+            throw std::runtime_error("Cannot create Window");
+    }
+
+    SDLWindow::~SDLWindow()
+    {
+        if (this == Graphics::this_->GetWindow())
+            Graphics::this_->SetWindow(nullptr);
+        Close();
+        SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    }
+
+    bool SDLWindow::Initialize(int x, int y, int width, int height)
+    {
+        if(!App::this_->AllowWindowCreation())
+            return false;
+        
         if (SDL_InitSubSystem(SDL_INIT_VIDEO))
+        {
             TRACE_LOG("SDL_INIT_VIDEO Error: " << SDL_GetError() << std::endl);
+            return false;
+        }
 
         SetSize(width, height);
 
@@ -97,7 +124,7 @@ namespace NSG
             if (!SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE))
             {
                 TRACE_LOG("Failed to set screen video mode \n");
-                return;
+                return false;
             }
             isMainWindow_ = true;
             app_->SetMainWindow(this);
@@ -116,12 +143,12 @@ namespace NSG
             }
             #endif
 
-            win_ = SDL_CreateWindow(name.c_str(), x, y, width, height, flags);
+            win_ = SDL_CreateWindow(name_.c_str(), x, y, width, height, flags);
 
             if (win_ == nullptr)
             {
                 TRACE_LOG("SDL_CreateWindow Error: " << SDL_GetError() << std::endl);
-                return;
+                return false;
             }
 
             if (app_->GetMainWindow())
@@ -166,22 +193,16 @@ namespace NSG
         #if defined(IS_WINDOWS) || defined(IS_LINUX)
         {
             glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
-			CHECK_CONDITION(GLEW_OK == glewInit(), __FILE__, __LINE__);
-			CHECK_CONDITION(GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil, __FILE__, __LINE__)
+            CHECK_CONDITION(GLEW_OK == glewInit(), __FILE__, __LINE__);
+            CHECK_CONDITION(GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil, __FILE__, __LINE__)
         }
         #endif
 
         Tick::Initialize();
 
         Graphics::this_->SetWindow(this);
-    }
 
-    SDLWindow::~SDLWindow()
-    {
-		if (this == Graphics::this_->GetWindow())
-			Graphics::this_->SetWindow(nullptr);
-		Close();
-        SDL_QuitSubSystem(SDL_INIT_VIDEO);
+        return true;
     }
 
     void SDLWindow::Destroy()
@@ -206,13 +227,13 @@ namespace NSG
 
     void SDLWindow::RenderFrame()
     {
-		Graphics::this_->SetWindow(this);
-		PerformTicks();
-		#ifndef EMSCRIPTEN
-		{
-			SDL_GL_SwapWindow(win_);
-		}
-		#endif
+        Graphics::this_->SetWindow(this);
+        PerformTicks();
+        #ifndef EMSCRIPTEN
+        {
+            SDL_GL_SwapWindow(win_);
+        }
+        #endif
     }
 
     void SDLWindow::ViewChanged(int width, int height)

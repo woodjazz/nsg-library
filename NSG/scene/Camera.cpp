@@ -29,8 +29,6 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Util.h"
 #include "Ray.h"
-#include "FilterBlur.h"
-#include "FilterBlend.h"
 #include "Program.h"
 #include "Scene.h"
 #include "FrameBuffer.h"
@@ -47,10 +45,7 @@ namespace NSG
           fovy_(glm::radians(45.0f)),
           zNear_(0.1f),
           zFar_(250),
-          xo_(0),
-          yo_(0),
-          xf_(1),
-          yf_(1),
+		  viewportFactor_(0, 0, 1, 1),
           isOrtho_(false),
           orthoCoords_(-1.0f, 1.0f, -1.0f, 1.0f),
           graphics_(Graphics::this_),
@@ -62,10 +57,10 @@ namespace NSG
     {
         SetInheritScale(false);
         UpdateProjection();
-        graphics_->SetCamera(this);
         auto window = graphics_->GetWindow();
         if (window)
             SetWindow(window);
+		graphics_->SetCamera(this);
     }
 
     Camera::~Camera()
@@ -74,12 +69,10 @@ namespace NSG
             graphics_->SetCamera(nullptr);
     }
 
-	void Camera::SetLayer(RenderLayer layer)
+	RenderLayer Camera::SetLayer(RenderLayer layer)
 	{
-		if (layer_ != layer)
-		{
-			layer_ = layer;
-		}
+		std::swap(layer, layer_);
+		return layer;
 	}
 
     void Camera::SetWindow(Window* window)
@@ -89,8 +82,6 @@ namespace NSG
             window_ = window;
             if (window)
             {
-                for(auto& filter: filters_)
-                    filter->SetWindow(window);
                 SetAspectRatio(window->GetWidth(), window->GetHeight());
                 slotViewChanged_ = window->signalViewChanged_->Connect([&](int width, int height)
                 {
@@ -125,8 +116,6 @@ namespace NSG
         {
             aspectRatio_ = aspect;
             UpdateProjection();
-            if (graphics_->GetCamera() == this)
-                graphics_->SetViewport(GetViewport(), false);
         }
     }
 
@@ -198,17 +187,14 @@ namespace NSG
         }
     }
 
-    void Camera::SetViewportFactor(float xo, float yo, float xf, float yf)
+    void Camera::SetViewportFactor(const Vector4& viewportFactor)
     {
-        xo_ = xo;
-        yo_ = yo;
-        xf_ = xf;
-        yf_ = yf;
-    }
-
-    Recti Camera::GetViewport() const
-    {
-        return Recti((GLsizei)(viewWidth_ * xo_), (GLsizei)(viewHeight_ * yo_), (GLsizei)(viewWidth_ * xf_), (GLsizei)(viewHeight_ * yf_));
+        if(viewportFactor_ != viewportFactor)
+        {
+            viewportFactor_ = viewportFactor;
+			if (Graphics::this_->GetCamera() == this)
+				Graphics::this_->SetViewportFactor(viewportFactor);
+        }
     }
 
     void Camera::UpdateProjection() const
@@ -446,26 +432,8 @@ namespace NSG
 
         {
             std::stringstream ss;
-            ss << xo_;
-            node.append_attribute("xo") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << yo_;
-            node.append_attribute("yo") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << xf_;
-            node.append_attribute("xf") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << yf_;
-            node.append_attribute("yf") = ss.str().c_str();
+			ss << viewportFactor_;
+            node.append_attribute("viewportFactor") = ss.str().c_str();
         }
 
         {
@@ -499,62 +467,11 @@ namespace NSG
         fovy_ = node.attribute("fovy").as_float();
         zNear_ = node.attribute("zNear").as_float();
         zFar_ = node.attribute("zFar").as_float();
-        xo_ = node.attribute("xo").as_float();
-        yo_ = node.attribute("yo").as_float();
-        xf_ = node.attribute("xf").as_float();
-        yf_ = node.attribute("yf").as_float();
+		viewportFactor_ = GetVertex4(node.attribute("viewportFactor").as_string());
         isOrtho_ = node.attribute("isOrtho").as_bool();
 
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
         LoadChildren(node);
-    }
-
-    void Camera::AddBlurFilter()
-    {
-        PFilterBlur blur;
-        if (filters_.empty())
-            blur = std::make_shared<FilterBlur>(graphics_->GetMainFrameBuffer()->GetColorTexture());
-        else
-            blur = std::make_shared<FilterBlur>(filters_.back()->GetTexture());
-
-        AddFilter(blur);
-    }
-
-    void Camera::AddBlendFilter()
-    {
-        CHECK_ASSERT(filters_.size() > 0, __FILE__, __LINE__);
-        PFilterBlend blend;
-
-        size_t n = filters_.size();
-
-        if (n > 1)
-            blend = std::make_shared<FilterBlend>(filters_[n - 2]->GetTexture(), filters_[n - 1]->GetTexture());
-        else
-            blend = std::make_shared<FilterBlend>(graphics_->GetMainFrameBuffer()->GetColorTexture(), filters_[0]->GetTexture());
-
-        AddFilter(blend);
-    }
-
-    PFilter Camera::AddUserFilter(PResource fragmentShader)
-    {
-        PFilter filter;
-
-        if (filters_.empty())
-            filter = std::make_shared<Filter>("UserFilter", graphics_->GetMainFrameBuffer()->GetColorTexture());
-        else
-            filter = std::make_shared<Filter>("UserFilter", filters_.back()->GetTexture());
-
-        filter->GetProgram()->SetFragmentShader(fragmentShader);
-
-        AddFilter(filter);
-
-        return filter;
-    }
-
-    void Camera::AddFilter(PFilter filter)
-    {
-        filter->SetWindow(window_);
-        filters_.push_back(filter);
     }
 }

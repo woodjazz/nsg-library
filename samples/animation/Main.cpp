@@ -31,7 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     App app;
 
-    auto window = app.GetOrCreateWindow("window", 100, 400, 10, 10);
+	auto window = Window::Create();
     auto resource = app.GetOrCreateResourceFile("data/duck.xml");
 	auto scenes = app.Load(resource);
 	auto scene = scenes.at(0);

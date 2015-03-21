@@ -25,8 +25,9 @@ misrepresented as being the original software.
 */
 // Updated by Néstor Silveira Gorski for nsg-library (http://nsg-library.googlecode.com/)
 #pragma once
-
+#include "NSG.h"
 namespace Blender
 {
+	using namespace NSG;
 	extern int GenerateDNA(const Path& filePath, const Path& outputDir);
 }

@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Tick.h"
 #include "MapAndVector.h"
+#include "Util.h"
 #include <string>
 struct SDL_Window;
 namespace NSG
@@ -33,7 +34,8 @@ namespace NSG
     class Window : public Tick, public std::enable_shared_from_this<Window>
     {
     public:
-        Window(const std::string& name);
+		static PWindow Create(const std::string& name = GetUniqueName("Window"));
+        static PWindow Create(const std::string& name, int x, int y, int width, int height);
         virtual ~Window();
         float GetDeltaTime() const;
         void InitializeTicks() override;
@@ -65,6 +67,16 @@ namespace NSG
         virtual void Destroy() = 0;
         Recti GetViewport() const;
         const std::string& GetName() const { return name_; }
+        PFilter AddBlurFilter();
+        PFilter AddBlendFilter();
+        PFilter AddWaveFilter();
+        PFilter AddUserFilter(PResource fragmentShader);
+        const std::vector<PFilter>& GetFilters() const { return filters_; }
+        bool HasFilters() const { return !filters_.empty() && filtersEnabled_; }
+        void EnableFilters(bool enable);
+        bool BeginFrameRender();
+        void EndFrameRender();
+        PFrameBuffer GetFrameBuffer() const { return frameBuffer_; }
 
         SignalViewChanged::PSignal signalViewChanged_;
         SignalMouseMoved::PSignal signalMouseMoved_;
@@ -78,14 +90,22 @@ namespace NSG
         SignalRender::PSignal signalRender_;
         SignalDropFile::PSignal signalDropFile_;
     protected:
+        Window(const std::string& name);
         void SetSize(int width, int height);
         std::string name_;
         float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
         App* app_;
         bool isClosed_;
         bool minimized_;
-		bool isMainWindow_;
+        bool isMainWindow_;
         int width_;
         int height_;
+        bool filtersEnabled_;
+    private:
+        void AddFilter(PFilter filter);
+        void CreateFrameBuffer();
+        std::vector<PFilter> filters_;
+        PFrameBuffer frameBuffer_;
+        PShowTexture showFrameBuffer_;
     };
 }

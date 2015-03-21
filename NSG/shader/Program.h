@@ -177,13 +177,20 @@ namespace NSG
         std::vector<SpotLightLoc> spotLightsLoc_;
 
         GLuint blendMode_loc_;
+        
         struct BlurFilterLoc
         {
             GLuint blurDir_;
             GLuint blurRadius_;
             GLuint sigma_;
-        };
-        BlurFilterLoc blurFilterLoc_;
+        } blurFilterLoc_;
+        
+        struct WavesFilterLoc
+        {
+            GLuint factor_;
+            GLuint offset_;
+        } wavesFilterLoc_;
+
 
         /////////////////////////////////////
 

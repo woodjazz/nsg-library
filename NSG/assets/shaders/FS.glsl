@@ -96,6 +96,10 @@
 
 			gl_FragColor = Blur();
 
+		#elif defined(WAVE)
+
+			gl_FragColor = Wave();
+
 		#elif defined(SHOW_TEXTURE0)
 
 			gl_FragColor = texture2D(u_texture0, v_texcoord0);

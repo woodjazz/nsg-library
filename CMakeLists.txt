@@ -1,29 +1,8 @@
-# /*
-# -------------------------------------------------------------------------------
-# This file is part of nsg-library.
-# http://nsg-library.googlecode.com/
+cmake_minimum_required(VERSION 2.8)
 
-# Copyright (c) 2014-2015 Néstor Silveira Gorski
-
-# -------------------------------------------------------------------------------
-# This software is provided 'as-is', without any express or implied
-# warranty. In no event will the authors be held liable for any damages
-# arising from the use of this software.
-
-# Permission is granted to anyone to use this software for any purpose,
-# including commercial applications, and to alter it and redistribute it
-# freely, subject to the following restrictions:
-
-# 1. The origin of this software must not be misrepresented; you must not
-# claim that you wrote the original software. If you use this software
-# in a product, an acknowledgment in the product documentation would be
-# appreciated but is not required.
-# 2. Altered source versions must be plainly marked as such, and must not be
-# misrepresented as being the original software.
-# 3. This notice may not be removed or altered from any source distribution.
-# -------------------------------------------------------------------------------
-# */
-cmake_minimum_required(VERSION 2.8.4)
+if(COMMAND cmake_policy)
+	cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
 
 PROJECT(nsg-library)
 
@@ -49,6 +28,24 @@ set(CONVERTER_TOOL_SOURCE_DIR ${TOOLS_SOURCE_DIR}/converter/blenderserialize)
 set(ROOT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(DEPENDENCIES_BINARY_DIR ${ROOT_BINARY_DIR}/dependencies)
 set(EXTERNALS_BYNARY_DIR ${ROOT_BINARY_DIR}/externals)
+set(LIBRARIES_FOLDER_NAME "LIBRARIES")
+###########################
+# CLEAN_DATA_FILES
+###########################
+
+add_custom_target(CLEAN_DATA_FILES
+   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/CleanDataFiles.cmake
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+   COMMENT "Deleting all data files"
+)
+
+##################################
+# LZ4
+##################################
+include_directories(${DEPENDENCIES_DIR}/LZ4)
+add_subdirectory(${DEPENDENCIES_DIR}/LZ4)
+list(APPEND LIBRARIES_2_LINK LZ4)
+set_property(TARGET LZ4 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ###########################
 # pugixml
@@ -57,6 +54,7 @@ set(PUGIXML_INCLUDE_DIR ${EXTERNALS_DIR}/pugixml/src)
 include_directories(${PUGIXML_INCLUDE_DIR})
 add_subdirectory(${EXTERNALS_DIR})
 list(APPEND LIBRARIES_2_LINK pugixml)
+set_property(TARGET pugixml PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ##################################
 # glew
@@ -67,6 +65,7 @@ if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	include_directories(${DEPENDENCIES_DIR}/glew/include)
 	add_subdirectory(${DEPENDENCIES_DIR}/glew)
 	list(APPEND LIBRARIES_2_LINK glew) 
+	set_property(TARGET glew PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 endif()
 
 ##################################
@@ -74,14 +73,16 @@ endif()
 ##################################
 include_directories(${DEPENDENCIES_DIR}/jpeg)
 add_subdirectory(${DEPENDENCIES_DIR}/jpeg)
-list(APPEND LIBRARIES_2_LINK jpeg) 
+list(APPEND LIBRARIES_2_LINK jpeg)
+set_property(TARGET jpeg PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ##################################
 # libb64
 ##################################
 include_directories(${DEPENDENCIES_DIR}/libb64/include/)
 add_subdirectory(${DEPENDENCIES_DIR}/libb64)
-list(APPEND LIBRARIES_2_LINK libb64) 
+list(APPEND LIBRARIES_2_LINK libb64)
+set_property(TARGET libb64 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 
 ##################################
@@ -90,6 +91,7 @@ list(APPEND LIBRARIES_2_LINK libb64)
 include_directories(${DEPENDENCIES_DIR}/StanHull)
 add_subdirectory(${DEPENDENCIES_DIR}/StanHull)
 list(APPEND LIBRARIES_2_LINK StanHull) 
+set_property(TARGET StanHull PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ##################################
 # bullet
@@ -100,6 +102,10 @@ list(APPEND LIBRARIES_2_LINK bulletCollision)
 list(APPEND LIBRARIES_2_LINK bulletDynamics)
 list(APPEND LIBRARIES_2_LINK bulletSoftBody)
 list(APPEND LIBRARIES_2_LINK bulletLinearMath)
+set_property(TARGET bulletCollision PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+set_property(TARGET bulletDynamics PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+set_property(TARGET bulletSoftBody PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+set_property(TARGET bulletLinearMath PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ###########################
 # SDL
@@ -128,6 +134,8 @@ if(NOT EMSCRIPTEN) #EMSCRIPTEN supports/includes SDL 1.2
 	include_directories(${DEPENDENCIES_DIR}/SDL_mixer)
 	list(APPEND LIBRARIES_2_LINK SDL_mixer) # this shall go before SDL to avoid undefined SDL references
 	list(APPEND LIBRARIES_2_LINK SDL)
+	set_property(TARGET SDL_mixer PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+	set_property(TARGET SDL PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 endif()
 
 ###########################
@@ -158,6 +166,35 @@ FOREACH(subdir ${SUBDIRS})
 ENDFOREACH()
 add_subdirectory(NSG)
 set(LIBRARIES_2_LINK NSG) #reset libraries to links since NSG will have all the dependencies already set 
+
+###########################
+# Converter
+###########################
+
+if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
+
+	###########################
+	# assimp
+	###########################
+	mark_as_disable_and_internal(BUILD_SHARED_LIB)
+	mark_as_enable(ASSIMP_ENABLE_BOOST_WORKAROUND)
+	mark_as_disable_and_internal(BUILD_SHARED_LIBS)
+	mark_as_disable_and_internal(ASSIMP_BUILD_ASSIMP_TOOLS)
+	mark_as_disable_and_internal(ASSIMP_BUILD_TESTS)
+	mark_as_disable_and_internal(ASSIMP_BUILD_SAMPLES)
+	include_directories(${EXTERNALS_DIR}/assimp/include)
+	add_subdirectory(${EXTERNALS_DIR}/assimp)
+	set_property(TARGET assimp PROPERTY FOLDER "tools")
+	#set_property(TARGET zlibstatic PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+	
+	###########################
+	# converter
+	###########################
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools/converter)
+	set(CONVERT_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/tools/converter/${CMAKE_CFG_INTDIR}/converter)
+
+endif()
+
 
 ###########################
 # samples

@@ -72,6 +72,15 @@ static const char* POSTPROCESS_GLSL = \
 "	{\n"\
 "		return GaussianBlur(u_blurDir, u_blurRadius, u_sigma, u_texture0, v_texcoord0);\n"\
 "	}\n"\
+"#elif defined(WAVE)\n"\
+"	uniform float u_waveFactor;\n"\
+"	uniform float u_waveOffset;\n"\
+"	vec4 Wave()\n"\
+"	{\n"\
+"    	vec2 texcoord = v_texcoord0;\n"\
+"    	texcoord.x += sin(texcoord.y * u_waveFactor + u_waveOffset) / 100.0;\n"\
+"    	return texture2D(u_texture0, texcoord);\n"\
+"    }\n"\
 "#endif\n"\
 ;
 }

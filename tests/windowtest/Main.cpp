@@ -30,9 +30,9 @@ using namespace NSG;
 static void Test0()
 {
 	App app;
-	auto window1 = app.GetOrCreateWindow("0", 100, 100, 150, 50);
-	auto window2 = app.GetOrCreateWindow("1", 200, 200, 150, 50);
-	auto window3 = app.GetOrCreateWindow("2", 300, 300, 150, 50);
+	auto window1 = Window::Create("0", 100, 100, 150, 50);
+	auto window2 = Window::Create("1", 200, 200, 150, 50);
+	auto window3 = Window::Create("2", 300, 300, 150, 50);
 	window1 = nullptr;
 	CHECK_CONDITION(app.Run() == 0, __FILE__, __LINE__);
 }
@@ -40,9 +40,9 @@ static void Test0()
 static void Test1()
 {
 	App app;
-	auto window1 = app.GetOrCreateWindow("0", 100, 100, 150, 50);
-	auto window2 = app.GetOrCreateWindow("1", 200, 200, 150, 50);
-	auto window3 = app.GetOrCreateWindow("2", 300, 300, 150, 50);
+	auto window1 = Window::Create("0", 100, 100, 150, 50);
+	auto window2 = Window::Create("1", 200, 200, 150, 50);
+	auto window3 = Window::Create("2", 300, 300, 150, 50);
 	window2 = nullptr;
 
     auto updateSlot = window1->signalUpdate_->Connect([&](float deltaTime)

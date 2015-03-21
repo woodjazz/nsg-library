@@ -17,6 +17,7 @@ subject to the following restrictions:
 // Added: CalcDependencyLevel
 //////////////////////////////////////////////////////////////////////////////////////////
 
+#include "BlenderDNA.h"
 #include <assert.h>
 #include <iostream>
 #include <vector>
@@ -33,6 +34,7 @@ subject to the following restrictions:
 
 namespace Blender
 {
+
     typedef std::string hgString;
 
     // ----------------------------------------------------------------------------

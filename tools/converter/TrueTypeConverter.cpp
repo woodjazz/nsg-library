@@ -58,13 +58,13 @@ namespace NSG
         int numChars = eChar_ - sChar_ + 1; // characters to bake
         cdata_.resize(numChars);
         stbtt_BakeFontBitmap(data, 0, (float)fontPixelsHeight_, (unsigned char*)&tempBitmap[0], bitmapWidth_, bitmapHeight_, sChar_, numChars, &cdata_[0]);
-		texture_ = App::this_->GetOrCreateResourceMemory(path_.GetFilePath() + std::to_string(fontPixelsHeight_));
-		texture_->SetData(tempBitmap.c_str(), tempBitmap.size());
+        texture_ = App::this_->GetOrCreateResourceMemory(path_.GetFilePath() + std::to_string(fontPixelsHeight_));
+        texture_->SetData(tempBitmap.c_str(), tempBitmap.size());
         CHECK_CONDITION(texture_->IsReady(), __FILE__, __LINE__);
         return true;
     }
 
-    bool TrueTypeConverter::Save(const Path& outputDir) const
+    bool TrueTypeConverter::Save(const Path& outputDir, bool compress) const
     {
         std::string outName = path_.GetName();
         outName += std::to_string(fontPixelsHeight_);
@@ -117,9 +117,8 @@ namespace NSG
                 }
             }
 
-            doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
+			return SaveDocument(outputFile.GetFullAbsoluteFilePath().c_str(), doc, compress);
         }
 
-        return true;
     }
 }

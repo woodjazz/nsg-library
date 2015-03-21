@@ -220,8 +220,9 @@ namespace NSG
                         lastCameraUsed = orthoCamera_.get(); // if there is not camera for GUI make sure ortho is the default
 
 					//if there is not camera for the layer then use the last one
-					lastCameraUsed->SetLayer((RenderLayer)i);
+					auto oldLayer = lastCameraUsed->SetLayer((RenderLayer)i);
 					Graphics::this_->Render(lastCameraUsed);
+					lastCameraUsed->SetLayer(oldLayer);
 				}
 				else
 				{

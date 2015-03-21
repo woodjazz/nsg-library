@@ -27,11 +27,14 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Constants.h"
 #include "Path.h"
+#include "pugixml.hpp"
+#include "lz4.h"
 #include <string>
 #include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <sstream>
+#include <string>
 #ifndef WIN32
 #include <unistd.h>
 #include <cerrno>
@@ -315,5 +318,118 @@ namespace NSG
         color[2] = ((id & 0x0F00) >> 8) / 15.0f;
         color[3] = ((id & 0xF000) >> 12) / 15.0f;
         return color;
+    }
+
+	struct LZ4Header
+	{
+		char tag_[4];
+		std::string::size_type bytes_;
+		LZ4Header()
+		{
+			tag_[0] = 'L';
+			tag_[1] = 'Z';
+			tag_[2] = '4';
+			tag_[3] = '*';
+			bytes_ = 0;
+		}
+		LZ4Header(const std::string& buffer)
+		{
+			tag_[0] = 'L';
+			tag_[1] = 'Z';
+			tag_[2] = '4';
+			tag_[3] = '*';
+			bytes_ = buffer.size();
+		}
+		
+		static bool HasHeader(const std::string& buffer, std::string::size_type& bytes)
+		{
+			if (buffer.size() >= sizeof(LZ4Header))
+			{
+				if (buffer[0] == 'L' && buffer[1] == 'Z' && buffer[2] == '4' && buffer[3] == '*')
+				{
+					LZ4Header header;
+					memcpy(&header, &buffer[0], sizeof(header));
+					//int offset = offsetof(LZ4Header, bytes_);
+					bytes = header.bytes_;
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+
+	struct Writer : pugi::xml_writer
+	{
+		std::string buffer_;
+		std::string compressBuffer_;
+		Writer()
+		{
+			LZ4Header header;
+			buffer_.insert(buffer_.begin(), (char*)&header, (char*)&header + sizeof(header));
+		}
+
+		void write(const void* data, size_t size) override
+		{
+			const char* m = (const char*)data;
+			buffer_.insert(buffer_.end(), &m[0], &m[size]);
+		}
+
+		bool Compress()
+		{
+			compressBuffer_.resize(LZ4_compressBound(buffer_.size()));
+			auto bytes = LZ4_compress(buffer_.c_str(), &compressBuffer_[0], buffer_.size());
+			if (bytes >= 0)
+			{
+/*				LZ4Header header(buffer_);
+				header.bytes_ = bytes;
+				memcpy(&buffer_[0], &header, sizeof(header));*/
+				bytes = LZ4_compress(buffer_.c_str(), &compressBuffer_[0], buffer_.size());
+				CHECK_CONDITION(bytes > 0, __FILE__, __LINE__);
+				compressBuffer_.resize(bytes);
+				return true;
+			}
+			compressBuffer_.clear();
+			return false;
+		}
+
+		bool Save(const std::string& filename)
+		{
+			std::ofstream os(filename, std::ios::binary);
+			if (os.is_open())
+			{
+				os.write(&compressBuffer_[0], compressBuffer_.size());
+				return true;
+			}
+			return false;
+		}
+	};
+
+	std::string DecompressBuffer(const std::string& buffer)
+	{
+		std::string::size_type bytes = 0;
+		if(LZ4Header::HasHeader(buffer, bytes))
+		{
+			std::string outputBuffer;
+			outputBuffer.resize(bytes);
+			int totalBytes = LZ4_decompress_safe(&buffer[0], &outputBuffer[0], buffer.size(), bytes);
+			CHECK_CONDITION(totalBytes == bytes, __FILE__, __LINE__);
+			return outputBuffer;
+		}
+		else
+			return buffer;
+	}
+
+
+    bool SaveDocument(const std::string& filename, const pugi::xml_document& doc, bool compress)
+    {
+        TRACE_LOG("Saving file: " << filename);
+		if (false)//compress)
+		{
+			Writer writer;
+			doc.save(writer);
+			return writer.Compress() && writer.Save(filename);
+		}
+		else
+	        return doc.save_file(filename.c_str());
     }
 }

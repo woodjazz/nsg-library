@@ -122,6 +122,10 @@ set (INCLUDE_DIRS_ONLY include)
 
 setup_library()
 if(UNIX)
-    target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
+    if(IS_LINUX)
+        target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} rt)
+    else()
+        target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})
+    endif()
 endif()
 

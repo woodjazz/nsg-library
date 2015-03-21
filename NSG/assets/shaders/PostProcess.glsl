@@ -83,4 +83,15 @@
 		return GaussianBlur(u_blurDir, u_blurRadius, u_sigma, u_texture0, v_texcoord0);
 	}
 
+#elif defined(WAVE)
+
+	uniform float u_waveFactor;
+	uniform float u_waveOffset;
+	vec4 Wave()
+	{
+    	vec2 texcoord = v_texcoord0;
+    	texcoord.x += sin(texcoord.y * u_waveFactor + u_waveOffset) / 100.0;
+    	return texture2D(u_texture0, texcoord);
+    }
+
 #endif

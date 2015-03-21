@@ -336,11 +336,11 @@ namespace NSG
             dynamic_cast<SceneNode*>(obj.get())->DrawWithChildren();
     }
 
-    void SceneNode::SetLayer(RenderLayer layer)
+	RenderLayer SceneNode::SetLayer(RenderLayer layer)
     {
         if(layer_ != layer)
         {
-			layer_ = layer;
+			std::swap(layer, layer_);
             auto scene = GetScene();
             if(scene)
             {
@@ -349,6 +349,7 @@ namespace NSG
 					scene->UpdateOctree(this);
             }
         }
+		return layer;
     }
 
     void SceneNode::SetFlags(const SceneNodeFlags& flags)

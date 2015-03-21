@@ -417,6 +417,7 @@ namespace NSG
 
                 PSceneNode sceneNode(sceneNode_.lock());
                 cinf.collider_ = collider->sceneNode_.lock().get();
+				cinf.normalB_ = ToVector3(pt.m_normalWorldOnB);
                 cinf.appliedImpulse_ = pt.m_appliedImpulse;
                 cinf.appliedImpulseLateral1_ = pt.m_appliedImpulseLateral1;
                 cinf.appliedImpulseLateral2_ = pt.m_appliedImpulseLateral2;

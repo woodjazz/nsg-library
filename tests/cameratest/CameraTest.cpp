@@ -303,24 +303,6 @@ static void Test03()
 
 		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
 		camera->EnableOrtho();
-		float cameraDepth = camera->GetZFar() - camera->GetZNear();
-
-		{
-			Vertex3 p0(0, 0, -10);
-			Vertex3 screenPoint0 = camera->WorldToScreen(p0);
-			//Vertex3 w0 = camera->ScreenToWorld(Vector3(screenPoint0));
-
-			Vertex3 p1(0, 0, -100);
-			Vertex3 screenPoint1 = camera->WorldToScreen(p1);
-
-			Vertex3 p2(0, 0, -200);
-			Vertex3 screenPoint2 = camera->WorldToScreen(p2);
-
-			Vertex3 p3(0, 0, -400);
-			Vertex3 screenPoint3 = camera->WorldToScreen(p3);
-
-
-		}
 
 		{
 			Vertex3 p0(0, 0, -1);
@@ -477,7 +459,7 @@ static void Test05()
 void CameraTest()
 {
 	App app;
-	auto window = app.GetOrCreateWindow("window", 0, 0, 1, 1);
+	auto window = Window::Create("window", 0, 0, 1, 1);
 	FrustumTest();
 	Test01();
 	Test02();

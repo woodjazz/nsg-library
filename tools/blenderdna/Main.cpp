@@ -68,6 +68,7 @@ public:
 
     bool check(const std::string& filename) const
     {
+		using namespace NSG;
         Path path(filename);
         bool hasExtension = path.HasExtension();
         std::ofstream file(path.GetFullAbsoluteFilePath());

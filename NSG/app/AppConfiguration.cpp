@@ -27,20 +27,34 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	template<> AppConfiguration* Singleton<AppConfiguration>::this_ = nullptr;
+    template<> AppConfiguration* Singleton<AppConfiguration>::this_ = nullptr;
+
+    #if EMSCRIPTEN
+      static const int WindowPosX = 0;
+      static const int WindowPosY = 0;
+      static const int WindowWidth = 640;
+      static const int WindowHeight = 480;
+    #else
+      static const int WindowPosX = SDL_WINDOWPOS_CENTERED;
+      static const int WindowPosY = SDL_WINDOWPOS_CENTERED;
+      static const int WindowWidth = 1024;
+      static const int WindowHeight = 768;
+    #endif
 
     AppConfiguration::AppConfiguration()
         : fps_(60),
-          width_(1024),
-          height_(768),
+          x_(WindowPosX),
+          y_(WindowPosY),
+          width_(WindowWidth),
+          height_(WindowHeight),
           vertical_sync_(true),
           showStatistics_(false),
           pauseMusicOnBackground_(true)
     {
     };
 
-	AppConfiguration::~AppConfiguration()
-	{
-		AppConfiguration::this_ = nullptr;
-	}
+    AppConfiguration::~AppConfiguration()
+    {
+        AppConfiguration::this_ = nullptr;
+    }
 }

@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-
+using namespace NSG;
 PApp app;
 PScene scene;
 
@@ -55,7 +55,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 	app = PApp(new App);
-    auto window = app->GetOrCreateWindow("window", 100, 100, 10, 10);
+	auto window = Window::Create();
     scene = std::make_shared<Scene>("scene");
     auto light = scene->CreateChild<Light>();
     light->SetType(LightType::DIRECTIONAL);

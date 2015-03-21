@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <App>
 	<Resources>
-		<Resource name="axe.bmp6">
+		<Resource name="axe.bmp5">
 			<data dataSize="1063213">Qk02AAwAAAAAADYAAAAoAAAAAAIAAAACAAABABgAAAAAAAAADAASCwAAEgsAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -14569,7 +14569,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 </data>
 		</Resource>
-		<Resource name="dwarf.bmp7">
+		<Resource name="dwarf.bmp6">
 			<data dataSize="1063213">Qk02AAwAAAAAADYAAAAoAAAAAAIAAAACAAABABgAAAAAAAAADAASCwAAEgsAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -29139,7 +29139,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 		</Resource>
 	</Resources>
 	<Meshes>
-		<Mesh name="GeneratedName3" wireFrameDrawMode="4" solidDrawMode="4">
+		<Mesh name="GeneratedName2" wireFrameDrawMode="4" solidDrawMode="4">
 			<Vertexes>
 				<VertexData position="[   32.573,   20.999,   13.993]" normal="[   -0.158,    0.272,   -0.949]" uv0="[    0.226,    0.093]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    8.000,    0.000,    0.000,    0.000]" bonesWeight="[    1.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   31.347,   21.511,   18.896]" normal="[   -0.827,    0.301,   -0.475]" uv0="[    0.257,    0.230]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    8.000,    0.000,    0.000,    0.000]" bonesWeight="[    1.000,    0.000,    0.000,    0.000]" />
@@ -29372,7 +29372,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 			</Vertexes>
 			<Indexes>2 1 0 2 0 3 0 24 23 0 23 3 1 2 22 19 22 21 22 2 21 18 16 19 18 19 21 18 17 16 18 21 20 12 14 20 10 12 20 10 20 21 12 10 11 12 11 13 14 12 13 14 13 15 11 29 13 13 29 30 13 30 15 10 9 11 9 28 11 11 28 29 10 8 9 8 10 21 8 7 9 7 27 9 9 27 28 36 29 28 36 28 35 35 28 27 36 30 29 36 35 31 33 32 31 33 31 34 35 34 31 35 37 34 35 23 37 37 23 24 3 23 25 35 25 23 4 2 3 4 3 5 3 25 5 5 25 26 35 26 25 6 4 5 6 5 7 5 26 7 2 4 21 4 6 21 8 6 7 6 8 21 7 26 27 35 27 26 40 39 38 39 55 38 39 54 55 54 51 55 54 50 51 50 47 51 50 46 47 46 44 47 46 45 44 45 48 44 45 49 48 49 52 48 49 53 52 53 41 52 53 43 41 43 42 41 58 57 56 58 56 66 58 86 57 58 82 86 58 78 82 58 74 78 58 66 70 58 70 74 61 60 59 61 59 62 62 59 67 90 60 61 90 87 60 89 87 90 89 88 87 62 67 68 68 67 71 68 71 72 72 71 75 72 75 76 76 75 79 76 79 80 80 79 83 80 83 84 65 64 63 63 64 69 91 64 65 85 64 91 81 64 85 69 64 73 73 64 77 77 64 81 94 93 92 94 92 95 95 92 96 109 93 94 109 106 93 108 106 109 108 107 106 95 96 97 97 96 98 97 98 99 99 98 100 99 100 101 101 100 102 101 102 103 103 102 104 103 104 105 112 111 110 112 110 113 113 110 114 127 111 112 127 124 111 126 124 127 126 125 124 113 114 115 115 114 116 115 116 117 117 116 118 117 118 119 119 118 120 119 120 121 121 120 122 121 122 123 130 129 128 130 128 131 131 128 132 145 129 130 145 142 129 144 142 145 144 143 142 131 132 133 133 132 134 133 134 135 135 134 136 135 136 137 137 136 138 137 138 139 139 138 140 139 140 141 148 147 146 148 146 149 149 146 150 163 147 148 163 160 147 162 160 163 162 161 160 149 150 151 151 150 152 151 152 153 153 152 154 153 154 155 155 154 156 155 156 157 157 156 158 157 158 159 166 165 164 166 164 167 165 172 164 193 166 167 193 167 192 189 193 192 189 192 188 185 189 188 185 188 184 181 185 184 181 184 180 177 181 180 177 180 176 173 177 176 173 176 172 165 173 172 170 169 168 170 168 171 169 195 168 174 170 171 174 171 175 178 174 175 178 175 179 182 178 179 182 179 183 186 182 183 186 183 187 190 186 187 190 187 191 194 190 191 194 191 195 169 194 195 198 197 196 198 196 199 197 204 196 225 198 199 225 199 224 221 225 224 221 224 220 217 221 220 217 220 216 213 217 216 213 216 212 209 213 212 209 212 208 205 209 208 205 208 204 197 205 204 202 201 200 202 200 203 201 227 200 206 202 203 206 203 207 210 206 207 210 207 211 214 210 211 214 211 215 218 214 215 218 215 219 222 218 219 222 219 223 226 222 223 226 223 227 201 226 227 </Indexes>
 		</Mesh>
-		<Mesh name="GeneratedName4" wireFrameDrawMode="4" solidDrawMode="4">
+		<Mesh name="GeneratedName3" wireFrameDrawMode="4" solidDrawMode="4">
 			<Vertexes>
 				<VertexData position="[    9.163,   52.592,   -5.311]" normal="[   -0.130,   -0.853,    0.506]" uv0="[    0.281,    0.442]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[   23.000,    0.000,    0.000,    0.000]" bonesWeight="[    1.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[    9.238,   48.718,   -7.829]" normal="[    0.037,   -0.992,    0.122]" uv0="[    0.352,    0.445]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[   23.000,    0.000,    0.000,    0.000]" bonesWeight="[    1.000,    0.000,    0.000,    0.000]" />
@@ -30631,7 +30631,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	</Meshes>
 	<Materials>
 		<Material name="Material0" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    0.800,    0.800,    0.800,    1.000]" specular="[    0.000,    0.000,    0.000,    1.000]" shininess="0" color="[    0.365,    0.365,    0.365,    1.000]">
-			<Texture0 flags="00000000000000000000000000000011" resource="axe.bmp6" />
+			<Texture0 flags="00000000000000000000000000000011" resource="axe.bmp5" />
 			<Technique>
 				<Passes>
 					<Pass blendMode="0" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305" depthFunc="1">
@@ -30641,7 +30641,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 			</Technique>
 		</Material>
 		<Material name="Material1" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    0.800,    0.800,    0.800,    1.000]" specular="[    0.000,    0.000,    0.000,    1.000]" shininess="0" color="[    0.306,    0.306,    0.306,    1.000]">
-			<Texture0 flags="00000000000000000000000000000011" resource="dwarf.bmp7" />
+			<Texture0 flags="00000000000000000000000000000011" resource="dwarf.bmp6" />
 			<Technique>
 				<Passes>
 					<Pass blendMode="0" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305" depthFunc="1">
@@ -30729,8 +30729,8 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 					</SceneNode>
 				</SceneNode>
 			</SceneNode>
-			<SceneNode name="Body" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Material0" meshName="GeneratedName3">
-				<SceneNode name="GeneratedName5" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Material1" meshName="GeneratedName4" />
+			<SceneNode name="Body" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Material0" meshName="GeneratedName2">
+				<SceneNode name="GeneratedName4" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Material1" meshName="GeneratedName3" />
 			</SceneNode>
 		</SceneNode>
 		<Animations>
@@ -33118,7 +33118,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 			</Animation>
 		</Animations>
 		<Skeletons>
-			<Skeleton meshName="GeneratedName3" rootName="middle">
+			<Skeleton meshName="GeneratedName2" rootName="middle">
 				<Bones>
 					<Bone boneName="middle" offsetMatrix="[[    1.000,    0.000,   -0.000,    0.000][    0.000,    1.000,   -0.000,    0.000][   -0.000,   -0.000,    1.000,   -0.000][   -0.185,  -30.207,   -0.000,    1.000]]" />
 					<Bone boneName="spine2" offsetMatrix="[[    1.000,    0.000,   -0.000,    0.000][    0.000,    1.000,   -0.000,    0.000][   -0.000,   -0.000,    1.000,   -0.000][   -0.176,  -34.278,   -0.000,    1.000]]" />
@@ -33131,7 +33131,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 					<Bone boneName="weapon" offsetMatrix="[[    1.000,    0.000,   -0.000,    0.000][    0.000,    1.000,   -0.000,    0.000][   -0.000,   -0.000,    1.000,   -0.000][  -26.942,  -30.461,    4.236,    1.000]]" />
 				</Bones>
 			</Skeleton>
-			<Skeleton meshName="GeneratedName4" rootName="middle">
+			<Skeleton meshName="GeneratedName3" rootName="middle">
 				<Bones>
 					<Bone boneName="middle" offsetMatrix="[[    1.000,    0.000,   -0.000,    0.000][    0.000,    1.000,   -0.000,    0.000][   -0.000,   -0.000,    1.000,   -0.000][   -0.185,  -30.207,   -0.000,    1.000]]" />
 					<Bone boneName="lhip" offsetMatrix="[[    1.000,    0.000,   -0.000,    0.000][    0.000,    1.000,   -0.000,    0.000][   -0.000,   -0.000,    1.000,   -0.000][    5.006,  -26.737,   -0.000,    1.000]]" />

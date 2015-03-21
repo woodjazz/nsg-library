@@ -42,6 +42,7 @@ namespace NSG
 		void Draw();
 		void Add(SceneNode* node);
 		Mesh* GetMesh() const { return mesh_; }
+		Material* GetMaterial() const { return material_; }
 		const std::vector<SceneNode*>& GetNodes() const { return nodes_; }
 		bool AllowInstancing() const;
 		void Clear();

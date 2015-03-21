@@ -13,7 +13,7 @@
 				v_texcoord0 = a_texcoord0;
 			#endif
 
-		#elif defined(BLUR) || defined(BLEND)
+		#elif defined(BLUR) || defined(BLEND) || defined(WAVE)
 
 			gl_Position = vec4(a_position, 1.0);
 			#if defined(FLIP_Y)

@@ -721,7 +721,7 @@ namespace BlenderConverter
 
         camera->SetNearClip(bcamera->clipsta);
         camera->SetFarClip(bcamera->clipend);
-        camera->SetHalfHorizontalFov(glm::radians(bcamera->lens));
+		camera->SetFOV(bcamera->lens);
         //isMainCamera = sc_->camera == obj;
     }
 
@@ -1094,7 +1094,7 @@ namespace BlenderConverter
         sceneNode->SetMaterial(material);
     }
 
-    bool BScene::Save()
+    bool BScene::Save(bool compress)
     {
         Path outputFile(outputDir_);
         outputFile.SetName("b" + path_.GetName());
@@ -1114,8 +1114,7 @@ namespace BlenderConverter
 		for (auto& scene: scenes_)
 			scene->Save(appNode);
 
-        TRACE_LOG("Saving file: " << outputFile.GetFullAbsoluteFilePath());
-        return doc.save_file(outputFile.GetFullAbsoluteFilePath().c_str());
+		return SaveDocument(outputFile.GetFullAbsoluteFilePath().c_str(), doc, compress);
     }
 
 }

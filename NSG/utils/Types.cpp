@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Types.h"
+#include "Constants.h"
 
 namespace NSG
 {
@@ -37,4 +38,16 @@ namespace NSG
     {
     	return blurDir_ != obj.blurDir_ || blurRadius_ != obj.blurRadius_ || sigma_ != obj.sigma_;
     }
+
+    WaveFilter::WaveFilter()
+        : factor_(PI * 8),
+          offset_(0)
+    {
+    }
+
+    bool WaveFilter::operator != (const WaveFilter& obj) const
+    {
+    	return factor_ != obj.factor_ || offset_ != obj.offset_;
+    }
+
 }

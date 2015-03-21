@@ -120,11 +120,11 @@ namespace NSG
 
     void App::InitializeGraphics()
     {
-		std::call_once(onceFlag_, [&]()
-		{
-			CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
-			graphics_ = PGraphics(new Graphics);
-		});
+        std::call_once(onceFlag_, [&]()
+        {
+            CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
+            graphics_ = PGraphics(new Graphics);
+        });
     }
 
     void App::ClearAll()
@@ -165,22 +165,24 @@ namespace NSG
         return whiteTexture_;
     }
 
-
-    PWindow App::GetOrCreateWindow(const std::string& name, int x, int y, int width, int height)
+    bool App::AllowWindowCreation() const
     {
         #if defined(IS_TARGET_MOBILE) || defined(IS_TARGET_WEB)
         {
             if (windows_.size())
             {
                 TRACE_LOG("Only one window is allowed for this platform!!!");
-                return nullptr;
+                return false;
             }
         }
         #endif
+        return true;
+    }
 
-        auto window = PWindow(new SDLWindow(name, x, y, width, height));
+    void App::AddWindow(PWindow window)
+    {
+        CHECK_ASSERT(AllowWindowCreation(), __FILE__, __LINE__);   
         windows_.push_back(window);
-        return window;
     }
 
     PQuadMesh App::CreateQuadMesh(float size)
@@ -224,10 +226,10 @@ namespace NSG
         return meshes_.GetOrCreateClass<ModelMesh>(name);
     }
 
-	PModelMesh App::GetModelMesh(const std::string& name) const
-	{
-		return meshes_.GetClass<ModelMesh>(name);
-	}
+    PModelMesh App::GetModelMesh(const std::string& name) const
+    {
+        return meshes_.GetClass<ModelMesh>(name);
+    }
 
     PPlaneMesh App::CreatePlaneMesh(float width, float height, int columns, int rows)
     {
@@ -260,7 +262,7 @@ namespace NSG
     {
         std::stringstream ss;
         ss << "SphereMesh" << radius << res;
-		PSphereMesh mesh = meshes_.GetOrCreateClass<SphereMesh>(ss.str());
+        PSphereMesh mesh = meshes_.GetOrCreateClass<SphereMesh>(ss.str());
         mesh->Set(radius, res);
         return mesh;
     }
@@ -268,7 +270,7 @@ namespace NSG
     PMaterial App::CreateMaterial(const std::string& name, const ProgramFlags& flags)
     {
         auto material = materials_.Create(name);
-		if ((int)ProgramFlag::NONE != flags)
+        if ((int)ProgramFlag::NONE != flags)
             material->SetProgramFlags(0, flags);
         return material;
     }
@@ -276,7 +278,7 @@ namespace NSG
     PMaterial App::GetOrCreateMaterial(const std::string& name, const ProgramFlags& flags)
     {
         auto material = materials_.GetOrCreate(name);
-		if ((int)ProgramFlag::NONE != flags)
+        if ((int)ProgramFlag::NONE != flags)
             material->SetProgramFlags(0, flags);
         return material;
     }
@@ -284,32 +286,32 @@ namespace NSG
     PMaterial App::GetMaterial(const std::string& name)
     {
         return materials_.Get(name);
-    }   
+    }
 
     PResourceFile App::GetOrCreateResourceFile(const std::string& name)
     {
-		return resources_.GetOrCreateClass<ResourceFile>(name);
+        return resources_.GetOrCreateClass<ResourceFile>(name);
     }
 
     PResourceMemory App::GetOrCreateResourceMemory(const std::string& name)
     {
-		return resources_.GetOrCreateClass<ResourceMemory>(name);
+        return resources_.GetOrCreateClass<ResourceMemory>(name);
     }
 
-	PResource App::GetResource(const std::string& name)
-	{
-		return resources_.Get(name);
-	}
+    PResource App::GetResource(const std::string& name)
+    {
+        return resources_.Get(name);
+    }
 
     std::vector<PMesh>& App::GetMeshes()
     {
         return meshes_.GetObjs();
     }
 
-	const std::vector<PMesh>& App::GetConstMeshes() const
-	{
-		return meshes_.GetConstObjs();
-	}
+    const std::vector<PMesh>& App::GetConstMeshes() const
+    {
+        return meshes_.GetConstObjs();
+    }
 
     PMesh App::GetMesh(const std::string& name) const
     {
@@ -631,7 +633,7 @@ namespace NSG
             pugi::xml_node child = resources.child("Resource");
             while (child)
             {
-				auto resource = Resource::CreateFrom(child);
+                auto resource = Resource::CreateFrom(child);
                 resource->Load(child);
                 child = child.next_sibling("Resource");
             }
@@ -656,9 +658,9 @@ namespace NSG
     void App::LoadMaterials(const pugi::xml_node& node)
     {
         pugi::xml_node objs = node.child("Materials");
-		if (objs)
+        if (objs)
         {
-			pugi::xml_node child = objs.child("Material");
+            pugi::xml_node child = objs.child("Material");
             while (child)
             {
                 PMaterial material(GetOrCreateMaterial(child.attribute("name").as_string()));
@@ -678,7 +680,7 @@ namespace NSG
         while (child)
         {
             auto scene = std::make_shared<Scene>("scene");
-			scene->Load(child);
+            scene->Load(child);
             scenes.push_back(scene);
             child = child.next_sibling("Scene");
         }
@@ -694,7 +696,7 @@ namespace NSG
         if (result)
         {
             pugi::xml_node app = doc.child("App");
-            if(app)
+            if (app)
                 scenes = Load(app);
         }
         else
@@ -709,26 +711,26 @@ namespace NSG
         return scenes;
     }
 
-	pugi::xml_node App::SaveWithExternalResources(pugi::xml_document& doc, const Path& path, const Path& outputDir)
+    pugi::xml_node App::SaveWithExternalResources(pugi::xml_document& doc, const Path& path, const Path& outputDir)
     {
         pugi::xml_node app = doc.append_child("App");
-		SaveResourcesExternally(app, path, outputDir);
+        SaveResourcesExternally(app, path, outputDir);
         SaveMeshes(app);
         SaveMaterials(app);
-		return app;
+        return app;
     }
 
-	pugi::xml_node App::Save(pugi::xml_document& doc)
-	{
-		pugi::xml_node app = doc.append_child("App");
-		SaveResources(app);
-		SaveMeshes(app);
-		SaveMaterials(app);
-		return app;
-	}
+    pugi::xml_node App::Save(pugi::xml_document& doc)
+    {
+        pugi::xml_node app = doc.append_child("App");
+        SaveResources(app);
+        SaveMeshes(app);
+        SaveMaterials(app);
+        return app;
+    }
 
 
-	void App::SaveMeshes(pugi::xml_node& node) const
+    void App::SaveMeshes(pugi::xml_node& node) const
     {
         pugi::xml_node child = node.append_child("Meshes");
         auto meshes = GetConstMeshes();
@@ -736,7 +738,7 @@ namespace NSG
             obj->Save(child);
     }
 
-	void App::SaveMaterials(pugi::xml_node& node) const
+    void App::SaveMaterials(pugi::xml_node& node) const
     {
         pugi::xml_node child = node.append_child("Materials");
         auto materials = GetMaterials();
@@ -744,30 +746,30 @@ namespace NSG
             obj->Save(child);
     }
 
-	void App::SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir)
+    void App::SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir)
     {
         pugi::xml_node child = node.append_child("Resources");
         auto resources = GetResources();
         for (auto& obj : resources)
-			obj->SaveExternal(child, path, outputDir);
+            obj->SaveExternal(child, path, outputDir);
     }
 
-	void App::SaveResources(pugi::xml_node& node)
-	{
-		pugi::xml_node child = node.append_child("Resources");
-		auto resources = GetResources();
-		for (auto& obj : resources)
-			obj->Save(child);
-	}
+    void App::SaveResources(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Resources");
+        auto resources = GetResources();
+        for (auto& obj : resources)
+            obj->Save(child);
+    }
 
 
     PTexture App::GetTextureWithResource(PResource resource) const
     {
-		auto& materials = materials_.GetConstObjs();
-		for (auto& material : materials)
+        auto& materials = materials_.GetConstObjs();
+        for (auto& material : materials)
         {
             auto texture = material->GetTextureWithResource(resource);
-            if(texture)
+            if (texture)
                 return texture;
         }
 

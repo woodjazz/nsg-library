@@ -45,7 +45,7 @@ namespace BlenderConverter
 		BScene(const NSG::Path& path, const NSG::Path& outputDir, bool embedResources);
         ~BScene();
         bool Load();
-		bool Save();
+		bool Save(bool compress);
     private:
         void ExtractGeneral(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		void ConvertObject(const Blender::Object* obj, NSG::PSceneNode sceneNode);

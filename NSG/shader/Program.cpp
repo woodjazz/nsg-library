@@ -104,6 +104,7 @@ namespace NSG
         memset(&textureLoc_, -1, sizeof(textureLoc_));
         memset(&materialLoc_, -1, sizeof(materialLoc_));
         memset(&blurFilterLoc_, -1, sizeof(blurFilterLoc_));
+        memset(&wavesFilterLoc_, -1, sizeof(wavesFilterLoc_));
     }
 
     Program::~Program()
@@ -376,6 +377,8 @@ namespace NSG
             preDefines += "#define BLEND\n";
         else if ((int)ProgramFlag::BLUR & flags_)
             preDefines += "#define BLUR\n";
+        else if ((int)ProgramFlag::WAVE & flags_)
+            preDefines += "#define WAVE\n";
         else if ((int)ProgramFlag::TEXT & flags_)
             preDefines += "#define TEXT\n";
         else if ((int)ProgramFlag::SHOW_TEXTURE0 & flags_)
@@ -423,7 +426,7 @@ namespace NSG
         fBuffer += COMMON_GLSL;
         DefineSamplers(fBuffer);
 
-        bool hasPostProcess = ((int)ProgramFlag::BLEND & flags_) || ((int)ProgramFlag::BLUR & flags_);
+        bool hasPostProcess = ((int)ProgramFlag::BLEND & flags_) || ((int)ProgramFlag::BLUR & flags_ || ((int)ProgramFlag::WAVE & flags_));
 
         if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
             fBuffer += LIGHTING_GLSL;
@@ -515,6 +518,8 @@ namespace NSG
                 ss += " BLEND";
             if ((int)ProgramFlag::BLUR & flags_)
                 ss += " BLUR";
+            if ((int)ProgramFlag::WAVE & flags_)
+                ss += " WAVE";
             if ((int)ProgramFlag::TEXT & flags_)
                 ss += " TEXT";
             if ((int)ProgramFlag::SHOW_TEXTURE0 & flags_)
@@ -743,6 +748,8 @@ namespace NSG
         blurFilterLoc_.blurDir_ = GetUniformLocation("u_blurDir");
         blurFilterLoc_.blurRadius_ = GetUniformLocation("u_blurRadius");
         blurFilterLoc_.sigma_ = GetUniformLocation("u_sigma");
+        wavesFilterLoc_.factor_ = GetUniformLocation("u_waveFactor");
+        wavesFilterLoc_.offset_ = GetUniformLocation("u_waveOffset");
 
         for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
         {
@@ -889,6 +896,13 @@ namespace NSG
 
                 if (blurFilterLoc_.sigma_ != -1)
                     glUniform1f(blurFilterLoc_.sigma_, material_->blurFilter_.sigma_);
+
+                if (wavesFilterLoc_.factor_ != -1)
+                    glUniform1f(wavesFilterLoc_.factor_, material_->waveFilter_.factor_);
+
+                if (wavesFilterLoc_.offset_ != -1)
+                    glUniform1f(wavesFilterLoc_.offset_, material_->waveFilter_.offset_);
+               
             }
         }
     }
@@ -1201,7 +1215,7 @@ namespace NSG
         if (flags_ != flags)
         {
             flags_ = flags;
-            int needsMaterial = flags & ((int)ProgramFlag::BLEND | (int)ProgramFlag::BLUR | (int)ProgramFlag::TEXT | (int)ProgramFlag::SHOW_TEXTURE0 |
+            int needsMaterial = flags & ((int)ProgramFlag::BLEND | (int)ProgramFlag::BLUR | (int)ProgramFlag::WAVE |(int)ProgramFlag::TEXT | (int)ProgramFlag::SHOW_TEXTURE0 |
                                          (int)ProgramFlag::NORMALMAP | (int)ProgramFlag::LIGHTMAP | (int)ProgramFlag::UNLIT | (int)ProgramFlag::SPECULARMAP |
                                          (int)ProgramFlag::AOMAP | (int)ProgramFlag::DISPLACEMENTMAP | (int)ProgramFlag::DIFFUSEMAP);
             CHECK_CONDITION((!needsMaterial || material_) && "Program needs material but it does not have one!!!", __FILE__, __LINE__);

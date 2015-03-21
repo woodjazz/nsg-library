@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     App app;
-    auto window = app.GetOrCreateWindow("window", 0, 100, 10, 10);
+	auto window = Window::Create();
     #ifdef DAE_FILE
     auto resource = app.GetOrCreateResourceFile("data/scene.xml");
     #else
@@ -43,10 +43,9 @@ int NSG_MAIN(int argc, char* argv[])
     auto object = scene->GetChild<SceneNode>("Bone", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
     plane->GetMaterial()->SetShininess(10);
-    //plane->GetMaterial()->SetDisplacementMap(nullptr);
+    plane->GetMaterial()->SetDisplacementMap(nullptr);
 
     auto camera = scene->GetChild<Camera>("Camera", false);
-	camera->SetFarClip(2000);
     auto control = std::make_shared<CameraControl>(camera);
     auto lamp = scene->GetChild<Light>("Lamp", false);
     auto ball = scene->GetChild<SceneNode>("Earth", false);
@@ -74,6 +73,12 @@ int NSG_MAIN(int argc, char* argv[])
         auto animation = animations[0];
         animation->Play(true);
     }
+
+	ballRigidBody->HandleCollisions(true);
+	auto static slotCollision = ball->signalCollision_->Connect([&](const ContactPoint & contactInfo)
+	{
+		ballRigidBody->SetLinearVelocity(4.f * contactInfo.normalB_);
+	});
 
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {

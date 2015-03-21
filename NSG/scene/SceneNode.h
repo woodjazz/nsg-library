@@ -39,7 +39,7 @@ namespace NSG
 	public:
 		SceneNode(const std::string& name);
 		virtual ~SceneNode();
-		virtual void SetLayer(RenderLayer layer);
+		virtual RenderLayer SetLayer(RenderLayer layer);
 		RenderLayer GetLayer() const { return layer_; }
 		PMaterial GetMaterial() const { return material_; }
 		void SetMaterial(PMaterial material);
