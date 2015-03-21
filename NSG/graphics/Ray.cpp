@@ -197,8 +197,6 @@ namespace NSG
         {
             const Matrix4& m = node->GetGlobalModelInvMatrix();
             Ray localRay = Transformed(m);
-
-            const VertexsData& vertexsData = mesh->GetVertexsData();
 			size_t n = mesh->GetNumberOfTriangles();
             for(size_t i = 0; i<n; i++)
             {

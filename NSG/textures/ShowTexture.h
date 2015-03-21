@@ -38,7 +38,6 @@ namespace NSG
 		void SetFont(PTexture texture);
 		void Show();
 	private:
-		App& app_;
         PMaterial material_;
         PProgram program_;
 		PMesh mesh_;

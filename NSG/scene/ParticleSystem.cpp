@@ -58,7 +58,6 @@ namespace NSG
     ParticleSystem::ParticleSystem(const std::string& name)
         : SceneNode(name),
           emitFrom_(PS_EF_VERTS),
-          fps_((float)AppConfiguration::this_->fps_),
           amount_(1500),
           start_(0),
           end_(2),

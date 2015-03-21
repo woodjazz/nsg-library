@@ -45,30 +45,30 @@ namespace NSG
 {
     SceneNode::SceneNode(const std::string& name)
         : Node(name),
+          signalCollision_(new Signal<const ContactPoint & >()),
           app_(*App::this_),
+          layer_(RenderLayer::DEFAULT_LAYER),
           octant_(nullptr),
           occludee_(false),
           worldBBNeedsUpdate_(true),
-          signalCollision_(new Signal<const ContactPoint&>()),
-          serializable_(true),
-          layer_(RenderLayer::DEFAULT_LAYER)
+          serializable_(true)
     {
-#if 0
-		auto scene = GetScene();
-		if (scene)
+        #if 0
+        auto scene = GetScene();
+        if (scene)
             scene->UpdateOctree(this);
-#endif
+        #endif
 
         flags_ = (int)SceneNodeFlag::ALLOW_RAY_QUERY;
     }
 
     SceneNode::~SceneNode()
     {
-		if (mesh_)
-			mesh_->RemoveSceneNode(this);
+        if (mesh_)
+            mesh_->RemoveSceneNode(this);
 
-		auto scene = GetScene();
-		if (scene)
+        auto scene = GetScene();
+        if (scene)
             scene->RemoveFromOctree(this);
     }
 
@@ -94,7 +94,7 @@ namespace NSG
             {
                 occludee_ = false;
                 auto scene = GetScene();
-                if(scene)
+                if (scene)
                     scene->RemoveFromOctree(this);
             }
             else
@@ -103,7 +103,7 @@ namespace NSG
                 occludee_ = true;
                 worldBBNeedsUpdate_ = true;
                 auto scene = GetScene();
-                if(scene)
+                if (scene)
                     scene->UpdateOctree(this);
             }
         }
@@ -129,7 +129,7 @@ namespace NSG
         if (mesh_)
         {
             auto scene = GetScene();
-            if(scene)
+            if (scene)
                 scene->UpdateOctree(this);
         }
     }
@@ -137,32 +137,32 @@ namespace NSG
     void SceneNode::OnDisable()
     {
         auto scene = GetScene();
-        if(scene)
+        if (scene)
             scene->RemoveFromOctree(this);
     }
 
     void SceneNode::OnDirty() const
     {
-		if (material_)
-			material_->BachedNodeHasChanged();
+        if (material_)
+            material_->BachedNodeHasChanged();
 
-		worldBBNeedsUpdate_ = true;
+        worldBBNeedsUpdate_ = true;
         auto scene = GetScene();
-        if(scene)
+        if (scene)
             scene->NeedUpdate((SceneNode*)this);
     }
 
     const BoundingBox& SceneNode::GetWorldBoundingBox() const
     {
-		if (worldBBNeedsUpdate_)
-		{
-			if (mesh_ && mesh_->IsReady())
-			{
-				worldBB_ = mesh_->GetBB();
-				worldBB_.Transform(*this);
-				worldBBNeedsUpdate_ = false;
-			}
-		}
+        if (worldBBNeedsUpdate_)
+        {
+            if (mesh_ && mesh_->IsReady())
+            {
+                worldBB_ = mesh_->GetBB();
+                worldBB_.Transform(*this);
+                worldBBNeedsUpdate_ = false;
+            }
+        }
         return worldBB_;
     }
 
@@ -311,16 +311,16 @@ namespace NSG
         signalCollision_->Run(contactInfo);
     }
 
-	void SceneNode::Draw()
-	{
-		auto material = material_.get();
-		if (material)
-		{
-			Batch batch(material, mesh_.get());
-			batch.Add(this);
-			batch.Draw();
-		}
-	}
+    void SceneNode::Draw()
+    {
+        auto material = material_.get();
+        if (material)
+        {
+            Batch batch(material, mesh_.get());
+            batch.Add(this);
+            batch.Draw();
+        }
+    }
 
     void SceneNode::DrawWithChildren()
     {
@@ -336,20 +336,20 @@ namespace NSG
             dynamic_cast<SceneNode*>(obj.get())->DrawWithChildren();
     }
 
-	RenderLayer SceneNode::SetLayer(RenderLayer layer)
+    RenderLayer SceneNode::SetLayer(RenderLayer layer)
     {
-        if(layer_ != layer)
+        if (layer_ != layer)
         {
-			std::swap(layer, layer_);
+            std::swap(layer, layer_);
             auto scene = GetScene();
-            if(scene)
+            if (scene)
             {
                 scene->RemoveFromOctree(this);
-				if (mesh_)
-					scene->UpdateOctree(this);
+                if (mesh_)
+                    scene->UpdateOctree(this);
             }
         }
-		return layer;
+        return layer;
     }
 
     void SceneNode::SetFlags(const SceneNodeFlags& flags)

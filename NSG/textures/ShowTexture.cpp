@@ -39,13 +39,12 @@ misrepresented as being the original software.
 namespace NSG
 {
     ShowTexture::ShowTexture()
-        : app_(*App::this_),
-		  material_(std::make_shared<Material>(GetUniqueName("NSGShowTexture"))),
-		  mesh_(std::make_shared<QuadMesh>(GetUniqueName("NSGShowTexture"))),
+        : material_(std::make_shared<Material>(GetUniqueName("NSGShowTexture"))),
+          mesh_(std::make_shared<QuadMesh>(GetUniqueName("NSGShowTexture"))),
           node_(std::make_shared<SceneNode>("NSGShowTexture"))
     {
         auto pass = material_->GetTechnique()->GetPass(0);
-		program_ = pass->GetProgram();
+        program_ = pass->GetProgram();
         material_->SetSerializable(false);
         pass->EnableDepthTest(false);
     }
@@ -74,18 +73,18 @@ namespace NSG
 
     void ShowTexture::Show()
     {
-		if (material_->IsReady() && mesh_->IsReady())
+        if (material_->IsReady() && mesh_->IsReady())
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-			Camera* pCurrent = Graphics::this_->GetCamera();
-			Graphics::this_->SetCamera(nullptr);
+            Camera* pCurrent = Graphics::this_->GetCamera();
+            Graphics::this_->SetCamera(nullptr);
 
             Graphics::this_->SetNode(node_.get());
             Graphics::this_->SetMesh(mesh_.get());
             material_->GetTechnique()->Draw();
 
-			Graphics::this_->SetCamera(pCurrent);
+            Graphics::this_->SetCamera(pCurrent);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }

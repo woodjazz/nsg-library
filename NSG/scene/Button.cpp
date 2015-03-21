@@ -49,7 +49,7 @@ namespace NSG
         SetMaterial(App::this_->GetOrCreateMaterial(name_));
         auto pass = material_->GetTechnique()->GetPass(0);
         pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
-        SetLayer();
+        SetupLayer();
         auto textPass = textMaterial_->GetTechnique()->GetPass(0);
         textPass->SetDepthFunc(DepthFunc::LEQUAL);
         textMaterial_->SetColor(COLOR_BLACK);
@@ -81,7 +81,7 @@ namespace NSG
         else
             textNode_  = nullptr;
 
-        SetLayer();
+        SetupLayer();
     }
 
     void Button::SetTextAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign)
@@ -112,7 +112,7 @@ namespace NSG
         }
     }
 
-    void Button::SetLayer()
+    void Button::SetupLayer()
     {
         SceneNode::SetLayer(RenderLayer::GUI_LAYER0);
         if (textNode_)

@@ -55,7 +55,6 @@ namespace NSG
         PMesh particleMesh_;
         PMaterial particleMaterial_;
         ParticleSystemEmitFrom emitFrom_;
-        float fps_;
         size_t amount_;
         float start_; //secs
         float end_; //secs
