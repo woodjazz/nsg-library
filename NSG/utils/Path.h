@@ -50,6 +50,7 @@ namespace NSG
         void SetPath(const std::string& path);
         void SetName(const std::string& name);
         void SetExtension(const std::string& ext);
+		void AddExtension(const std::string& ext);
         void SetFileName(const std::string& fileName);
         bool HasName() const { return !filename_.empty(); }
         bool HasExtension() const { return !ext_.empty(); }

@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Graphics.h"
 #include "Pass.h"
+#include "RigidBody.h"
 
 namespace NSG
 {
@@ -46,7 +47,6 @@ namespace NSG
 
 	Batch::~Batch()
 	{
-		Invalidate();
 	}
 
 	bool Batch::operator == (const Batch& obj) const
@@ -54,15 +54,9 @@ namespace NSG
 		return material_ == obj.material_ && mesh_ == obj.mesh_ && nodes_ == obj.nodes_;
 	}
 
-    bool Batch::IsValid()
+    bool Batch::IsReady()
     {
-        bool valid = material_->IsReady() && mesh_->IsReady();
-        if (!valid)
-        	return false;
-/*        for (auto& node : nodes_)
-            if (!node->IsReady())
-                return false;*/
-        return true;
+		return material_->IsReady() && mesh_->IsReady();
     }
 
 	void Batch::Draw()

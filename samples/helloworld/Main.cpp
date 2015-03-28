@@ -29,11 +29,9 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    App app;
-
 	auto window = Window::Create();
 
-    auto xml = app.GetOrCreateResourceFile("data/AnonymousPro32.xml");
+    auto xml = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.xml");
     auto atlas = std::make_shared<FontAtlas>(xml);
 
     auto scene = std::make_shared<Scene>("scene");
@@ -54,7 +52,7 @@ int NSG_MAIN(int argc, char* argv[])
     nodeLeftBottom->SetMesh(atlas->GetOrCreateMesh("LB Hello World!!!", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT));
     nodeRightBottom->SetMesh(atlas->GetOrCreateMesh("RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT));
 
-    auto material = app.CreateMaterial();
+	auto material = Material::Create();
     material->SetTextMap(atlas->GetTexture());
 
     auto focusMaterial = material->Clone();
@@ -92,6 +90,6 @@ int NSG_MAIN(int argc, char* argv[])
 		}
     });
 
-    return app.Run();
+    return Window::RunApp();
 }
 

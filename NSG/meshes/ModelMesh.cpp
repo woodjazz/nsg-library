@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "ModelMesh.h"
 #include "Types.h"
 #include "Check.h"
+#include "Graphics.h"
 #include "pugixml.hpp"
 
 namespace NSG
@@ -38,16 +39,6 @@ namespace NSG
 
     ModelMesh::~ModelMesh()
     {
-    }
-
-    void ModelMesh::SetData(const VertexsData& vertexsData, const Indexes& indexes)
-    {
-        if(vertexsData_ != vertexsData || indexes_ != indexes)
-        {
-            vertexsData_ = vertexsData;
-            indexes_ = indexes;
-            Invalidate();
-        }
     }
 
     GLenum ModelMesh::GetWireFrameDrawMode() const
@@ -70,10 +61,31 @@ namespace NSG
             return 0;
     }
 
-    void ModelMesh::Load(const pugi::xml_node& node)
+	void ModelMesh::Set(PResource resource)
     {
-        //SetFaceMode(node.attribute("wireFrameDrawMode").as_int()); // redundant
-        SetFaceMode(node.attribute("solidDrawMode").as_int());
-        Mesh::Load(node);
+		if (resource != resource_)
+		{
+			resource_ = resource;
+			Invalidate();
+		}
     }
+
+    bool ModelMesh::IsValid()
+    {
+		return resource_ && resource_->IsReady() && Graphics::this_ && !vertexsData_.empty();
+    }
+
+	void ModelMesh::ReleaseResources()
+	{
+		if (resource_)
+			resource_->Invalidate();
+		Mesh::ReleaseResources();
+	}
+
+	void ModelMesh::Load(PResource resource, const pugi::xml_node& node)
+	{
+		//SetFaceMode(node.attribute("wireFrameDrawMode").as_int()); // redundant
+		SetFaceMode(node.attribute("solidDrawMode").as_int());
+		Mesh::Load(node);
+	}
 }

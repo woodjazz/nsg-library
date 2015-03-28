@@ -58,7 +58,6 @@ namespace NSG
 		bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-		std::string name_;
         unsigned originalWidth_;
         unsigned originalHeight_;
         unsigned width_;

@@ -69,6 +69,16 @@ static void Test01()
 		CHECK_CONDITION(path.AppendDirIfDoesNotExist("Data"), __FILE__, __LINE__);
 		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data/Data", __FILE__, __LINE__);
 	}
+
+	{
+		Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
+		CHECK_CONDITION(path.GetExtension() == "txt", __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetFilename() == "kskd.txt", __FILE__, __LINE__);
+		path.AddExtension("zip");
+		CHECK_CONDITION(path.GetExtension() == "zip", __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetFilename() == "kskd.txt.zip", __FILE__, __LINE__);
+	}
+
 }
 
 void Tests()

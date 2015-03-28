@@ -111,6 +111,7 @@ namespace NSG
         void EndFrameRender();
 		void UnboundTextures();
         void SetViewportFactor(const Vector4& viewportFactor);
+        SignalEmpty::PSignal signalBeginFrame_;
     private:
         void SetUpViewport();
         Recti viewport_;

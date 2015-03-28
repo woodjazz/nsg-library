@@ -72,8 +72,8 @@ namespace NSG
         void EnableFlags(const SceneNodeFlags& flags);
         void DisableFlags(const SceneNodeFlags& flags);
 		bool AllowRayQuery() const { return flags_ & (int)SceneNodeFlag::ALLOW_RAY_QUERY; }
+		SignalEmpty::PSignal signalMeshSet_;
 	protected:
-		App& app_;
 		PMaterial material_;
 		PMesh mesh_;
 		RenderLayer layer_;

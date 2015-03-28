@@ -26,7 +26,6 @@ misrepresented as being the original software.
 
 #include "NSG.h"
 using namespace NSG;
-PApp app;
 PScene scene;
 
 void CreateObject(PMesh mesh, Color color, const Vector3& pos)
@@ -34,7 +33,7 @@ void CreateObject(PMesh mesh, Color color, const Vector3& pos)
 	{
 		auto obj = scene->CreateChild<SceneNode>();
 		obj->SetPosition(pos);
-		auto material = app->GetOrCreateMaterial();
+		auto material = Material::GetOrCreate();
 		material->SetColor(color);
 		obj->SetMesh(mesh);
 		obj->SetMaterial(material);
@@ -43,7 +42,7 @@ void CreateObject(PMesh mesh, Color color, const Vector3& pos)
 	{
 		auto obj = scene->CreateChild<SceneNode>();
 		obj->SetPosition(pos + Vector3(5, 0, 0));
-		auto material = app->GetOrCreateMaterial();
+		auto material = Material::GetOrCreate();
 		material->SetColor(color);
 		material->SetSolid(false);
 		obj->SetMesh(mesh);
@@ -54,7 +53,6 @@ void CreateObject(PMesh mesh, Color color, const Vector3& pos)
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-	app = PApp(new App);
 	auto window = Window::Create();
     scene = std::make_shared<Scene>("scene");
     auto light = scene->CreateChild<Light>();
@@ -62,16 +60,16 @@ int NSG_MAIN(int argc, char* argv[])
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
 
-	CreateObject(app->CreatePlaneMesh(), Color(1, 0, 0, 1), Vector3(-20, 0, 0));
-	CreateObject(app->CreateCircleMesh(), Color(0, 1, 0, 1), Vector3(-10, 0, 0));
-	CreateObject(app->CreateBoxMesh(), Color(0, 0, 1, 1), Vector3(0, 0, 0));
-	CreateObject(app->CreateEllipseMesh(), Color(1, 1, 0, 1), Vector3(10, 0, 0));
-	CreateObject(app->CreateRectangleMesh(), Color(1, 0, 1, 1), Vector3(20, 0, 0));
-	CreateObject(app->CreateRoundedRectangleMesh(), Color(1, 1, 1, 1), Vector3(30, 0, 0));
-	CreateObject(app->CreateSphereMesh(), Color(0, 1, 1, 1), Vector3(40, 0, 0));
+	CreateObject(Mesh::Create<PlaneMesh>(), Color(1, 0, 0, 1), Vector3(-20, 0, 0));
+	CreateObject(Mesh::Create<CircleMesh>(), Color(0, 1, 0, 1), Vector3(-10, 0, 0));
+	CreateObject(Mesh::Create<BoxMesh>(), Color(0, 0, 1, 1), Vector3(0, 0, 0));
+	CreateObject(Mesh::Create<EllipseMesh>(), Color(1, 1, 0, 1), Vector3(10, 0, 0));
+	CreateObject(Mesh::Create<RectangleMesh>(), Color(1, 0, 1, 1), Vector3(20, 0, 0));
+	CreateObject(Mesh::Create<RoundedRectangleMesh>(), Color(1, 1, 1, 1), Vector3(30, 0, 0));
+	CreateObject(Mesh::Create<SphereMesh>(), Color(0, 1, 1, 1), Vector3(40, 0, 0));
 	
 	control->AutoZoom();
 	auto renderSlot = window->signalRender_->Connect([&]() { scene->Render();});
-    return app->Run();
+    return Window::RunApp();
 }
 

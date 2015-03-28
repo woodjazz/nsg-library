@@ -64,5 +64,7 @@ namespace NSG
 		float rightMargin_;
 		float topMargin_;
 		float bottomMargin_;
+		Window* window_;
+		SignalWindow::PSlot slotWindowCreated_;
 	};
 }

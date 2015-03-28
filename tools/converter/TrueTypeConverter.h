@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include <vector>
 namespace NSG
 {
+	class ResourceConverter;
 	class TrueTypeConverter
 	{
 	public:
@@ -43,7 +44,7 @@ namespace NSG
 		int fontPixelsHeight_;
 		int bitmapWidth_;
 		int bitmapHeight_;
-		PResourceMemory texture_;
+		std::shared_ptr<ResourceConverter> texture_;
 		std::vector<stbtt_bakedchar> cdata_;
 	};
 }

@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "bMain.h"
 #include "Blender.h"
 #include "bBlenderFile.h"
+#include "ResourceConverter.h"
 #include "NSG.h"
 #include <cstdio>
 
@@ -56,7 +57,7 @@ namespace BlenderConverter
         bParse::bBlenderFile obj(path_.GetFullAbsoluteFilePath().c_str());
         obj.parse(false);
         bParse::bMain* data = obj.getMain();
-		LoadMaterials(data);
+		auto materials = LoadMaterials(data);
 		CreateScenes(data);
 		CreateAnimations(data);
         return true;
@@ -96,15 +97,17 @@ namespace BlenderConverter
 		return scene;
 	}
 
-    void BScene::LoadMaterials(bParse::bMain* data)
+	std::vector<NSG::PMaterial> BScene::LoadMaterials(bParse::bMain* data)
     {
+		std::vector<PMaterial> result;
         bParse::bListBasePtr* it = data->getMat();
         int n = it->size();
         for (int i = 0; i < n; i++)
         {
             auto material = (Blender::Material*)it->at(i);
-            LoadMaterial(material);
+			result.push_back(LoadMaterial(material));
         }
+		return result;
     }
 
     PTexture BScene::CreateTexture(const Blender::Image* ima)
@@ -115,21 +118,21 @@ namespace BlenderConverter
             Path path;
 			path.SetPath(path_.GetPath());
 			path.SetFileName(imageName);
-			auto resource = App::this_->GetOrCreateResourceFile(path.GetFilePath());
+			auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
             return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
         else
         {
-			auto resource = App::this_->GetOrCreateResourceMemory(imageName);
+			auto resource = Resource::GetOrCreate<ResourceConverter>(imageName);
 			resource->SetData((const char*)ima->packedfile->data, ima->packedfile->size);
 			return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
     }
 
-    void BScene::LoadMaterial(const Blender::Material* mt)
+    PMaterial BScene::LoadMaterial(const Blender::Material* mt)
     {
         std::string name = B_IDNAME(mt);
-        auto material = App::this_->GetOrCreateMaterial(name);
+		auto material = Material::GetOrCreate(name);
         auto technique = material->GetTechnique();
         auto pass = technique->GetPass(0);
         auto program = pass->GetProgram();
@@ -179,6 +182,8 @@ namespace BlenderConverter
                 }
             }
         }
+
+		return material;
     }
 
     void BScene::ConvertObject(const Blender::Object* obj, PSceneNode sceneNode)
@@ -558,7 +563,6 @@ namespace BlenderConverter
         sceneNode->SetPosition(pos);
         sceneNode->SetOrientation(q);
         sceneNode->SetScale(scale);
-        LoadPhysics(obj, sceneNode);
     }
 
     void BScene::LoadPhysics(const Blender::Object* obj, PSceneNode sceneNode)
@@ -592,10 +596,13 @@ namespace BlenderConverter
         if (!boundtype)
             return;
 
+        auto shape = sceneNode->GetMesh()->GetShape();
         auto rigBody = sceneNode->GetOrCreateRigidBody();
+        rigBody->SetShape(shape);
         rigBody->SetLinearDamp(obj->damping);
         rigBody->SetAngularDamp(obj->rdamping);
-        rigBody->SetMargin(obj->margin);
+        shape->SetMargin(obj->margin);
+        shape->SetScale(sceneNode->GetGlobalScale());
 
         if (obj->type == OB_MESH)
         {
@@ -644,7 +651,7 @@ namespace BlenderConverter
                 break;
         }
 
-        rigBody->SetShape(shapeType);
+        shape->SetType(shapeType);
     }
 
 
@@ -763,14 +770,15 @@ namespace BlenderConverter
         ExtractGeneral(obj, sceneNode);
         const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
         std::string meshName = B_IDNAME(me);
-        auto mesh = App::this_->GetModelMesh(B_IDNAME(me));
+        auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
         if (!mesh)
         {
-            mesh = App::this_->GetOrCreateModelMesh(B_IDNAME(me));
+            mesh = Mesh::GetOrCreate<ModelMesh>(B_IDNAME(me));
             ConvertMesh(obj, me, mesh);
         }
         sceneNode->SetMesh(mesh);
         SetMaterial(obj, sceneNode);
+        LoadPhysics(obj, sceneNode);
     }
 
 	const Blender::Object* BScene::GetAssignedArmature(const Blender::Object *obj) const
@@ -905,7 +913,7 @@ namespace BlenderConverter
 		CHECK_ASSERT(obAr, __FILE__, __LINE__);
 		CHECK_ASSERT(obj->type == OB_MESH, __FILE__, __LINE__);
 		const Blender::Mesh* me = (Blender::Mesh*)obj->data;
-		auto mesh = App::this_->GetModelMesh(B_IDNAME(me));
+		auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
 		CHECK_ASSERT(mesh, __FILE__, __LINE__);
 		
 		const Blender::bArmature* arm = static_cast<const Blender::bArmature*>(obAr->data);
@@ -1090,7 +1098,7 @@ namespace BlenderConverter
     {
         const Blender::Material* mt = GetMaterial(obj, 0);
         std::string name = B_IDNAME(mt);
-        auto material = App::this_->GetMaterial(name);
+        auto material = Material::Get(name);
         sceneNode->SetMaterial(material);
     }
 
@@ -1099,22 +1107,17 @@ namespace BlenderConverter
         Path outputFile(outputDir_);
         outputFile.SetName("b" + path_.GetName());
         outputFile.SetExtension("xml");
-
         pugi::xml_document doc;
-		pugi::xml_node appNode;
+		pugi::xml_node appNode = doc.append_child("App");
 		if (embedResources_)
-		{
-			appNode = App::this_->Save(doc);
-		}
+            Resource::SaveResources(appNode);
 		else
-		{
-			appNode = App::this_->SaveWithExternalResources(doc, path_, outputDir_);
-		}
-		
+            Resource::SaveResourcesExternally(appNode, path_, outputDir_);
+        Mesh::SaveMeshes(appNode);
+        Material::SaveMaterials(appNode);
 		for (auto& scene: scenes_)
 			scene->Save(appNode);
-
-		return SaveDocument(outputFile.GetFullAbsoluteFilePath().c_str(), doc, compress);
+		return SaveDocument(outputFile, doc, compress);
     }
 
 }

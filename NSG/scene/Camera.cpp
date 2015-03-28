@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Camera.h"
-#include "App.h"
 #include "Frustum.h"
 #include "Graphics.h"
 #include "Util.h"
@@ -35,6 +34,7 @@ misrepresented as being the original software.
 #include "Window.h"
 #include "SignalSlots.h"
 #include "Log.h"
+#include "Window.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -48,7 +48,6 @@ namespace NSG
 		  viewportFactor_(0, 0, 1, 1),
           isOrtho_(false),
           orthoCoords_(-1.0f, 1.0f, -1.0f, 1.0f),
-          graphics_(Graphics::this_),
           viewWidth_(0),
           viewHeight_(0),
           aspectRatio_(1),
@@ -57,16 +56,25 @@ namespace NSG
     {
         SetInheritScale(false);
         UpdateProjection();
-        auto window = graphics_->GetWindow();
-        if (window)
-            SetWindow(window);
-		graphics_->SetCamera(this);
+		if (Graphics::this_)
+		{
+			auto window = Graphics::this_->GetWindow();
+			if (window)
+				SetWindow(window);
+			Graphics::this_->SetCamera(this);
+		}
+
+        slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window* window)
+        {
+			if (!window_)
+				SetWindow(window);
+        });
     }
 
     Camera::~Camera()
     {
-        if (graphics_->GetCamera() == this)
-            graphics_->SetCamera(nullptr);
+		if (Graphics::this_ && Graphics::this_->GetCamera() == this)
+			Graphics::this_->SetCamera(nullptr);
     }
 
 	RenderLayer Camera::SetLayer(RenderLayer layer)
@@ -83,7 +91,7 @@ namespace NSG
             if (window)
             {
                 SetAspectRatio(window->GetWidth(), window->GetHeight());
-                slotViewChanged_ = window->signalViewChanged_->Connect([&](int width, int height)
+                slotViewChanged_ = window->signalViewChanged_->Connect([this](int width, int height)
                 {
                     SetAspectRatio(width, height);
                 });

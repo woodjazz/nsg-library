@@ -44,6 +44,35 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    btTransform ToTransform(const Vector3& pos, const Quaternion& rot)
+    {
+        btTransform trans;
+        trans.setIdentity();
+        trans.setOrigin(btVector3(pos.x, pos.y, pos.z));
+        trans.setRotation(btQuaternion(rot.x, rot.y, rot.z, rot.w));
+        return trans;
+    }
+
+    btVector3 ToBtVector3(const Vector3& obj)
+    {
+        return btVector3(obj.x, obj.y, obj.z);
+    }
+
+    Vector3 ToVector3(const btVector3& obj)
+    {
+        return Vector3(obj.x(), obj.y(), obj.z());
+    }
+
+    btQuaternion ToBtQuaternion(const Quaternion& q)
+    {
+        return btQuaternion(q.x, q.y, q.z, q.w);
+    }
+
+    Quaternion ToQuaternion(const btQuaternion& q)
+    {
+        return Quaternion(q.w(), q.x(), q.y(), q.z());
+    }
+
     Vector3 Lerp(const Vector3& lhs, const Vector3& rhs, float t)
     {
         return lhs * (1.0f - t) + rhs * t;
@@ -64,7 +93,7 @@ namespace NSG
         scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
 
         // prevent zero scale
-        if(IsZeroLength(scale))
+        if (IsZeroLength(scale))
             scale = Vector3(1);
     }
 
@@ -320,116 +349,73 @@ namespace NSG
         return color;
     }
 
-	struct LZ4Header
-	{
-		char tag_[4];
-		std::string::size_type bytes_;
-		LZ4Header()
-		{
-			tag_[0] = 'L';
-			tag_[1] = 'Z';
-			tag_[2] = '4';
-			tag_[3] = '*';
-			bytes_ = 0;
-		}
-		LZ4Header(const std::string& buffer)
-		{
-			tag_[0] = 'L';
-			tag_[1] = 'Z';
-			tag_[2] = '4';
-			tag_[3] = '*';
-			bytes_ = buffer.size();
-		}
-		
-		static bool HasHeader(const std::string& buffer, std::string::size_type& bytes)
-		{
-			if (buffer.size() >= sizeof(LZ4Header))
-			{
-				if (buffer[0] == 'L' && buffer[1] == 'Z' && buffer[2] == '4' && buffer[3] == '*')
-				{
-					LZ4Header header;
-					memcpy(&header, &buffer[0], sizeof(header));
-					//int offset = offsetof(LZ4Header, bytes_);
-					bytes = header.bytes_;
-					return true;
-				}
-			}
-			return false;
-		}
-	};
-
-	struct Writer : pugi::xml_writer
-	{
-		std::string buffer_;
-		std::string compressBuffer_;
-		Writer()
-		{
-			LZ4Header header;
-			buffer_.insert(buffer_.begin(), (char*)&header, (char*)&header + sizeof(header));
-		}
-
-		void write(const void* data, size_t size) override
-		{
-			const char* m = (const char*)data;
-			buffer_.insert(buffer_.end(), &m[0], &m[size]);
-		}
-
-		bool Compress()
-		{
-			compressBuffer_.resize(LZ4_compressBound(buffer_.size()));
-			auto bytes = LZ4_compress(buffer_.c_str(), &compressBuffer_[0], buffer_.size());
-			if (bytes >= 0)
-			{
-/*				LZ4Header header(buffer_);
-				header.bytes_ = bytes;
-				memcpy(&buffer_[0], &header, sizeof(header));*/
-				bytes = LZ4_compress(buffer_.c_str(), &compressBuffer_[0], buffer_.size());
-				CHECK_CONDITION(bytes > 0, __FILE__, __LINE__);
-				compressBuffer_.resize(bytes);
-				return true;
-			}
-			compressBuffer_.clear();
-			return false;
-		}
-
-		bool Save(const std::string& filename)
-		{
-			std::ofstream os(filename, std::ios::binary);
-			if (os.is_open())
-			{
-				os.write(&compressBuffer_[0], compressBuffer_.size());
-				return true;
-			}
-			return false;
-		}
-	};
-
-	std::string DecompressBuffer(const std::string& buffer)
-	{
-		std::string::size_type bytes = 0;
-		if(LZ4Header::HasHeader(buffer, bytes))
-		{
-			std::string outputBuffer;
-			outputBuffer.resize(bytes);
-			int totalBytes = LZ4_decompress_safe(&buffer[0], &outputBuffer[0], buffer.size(), bytes);
-			CHECK_CONDITION(totalBytes == bytes, __FILE__, __LINE__);
-			return outputBuffer;
-		}
-		else
-			return buffer;
-	}
-
-
-    bool SaveDocument(const std::string& filename, const pugi::xml_document& doc, bool compress)
+	static size_t HeaderSize = 128;
+    std::string CompressBuffer(const std::string& buf)
     {
-        TRACE_LOG("Saving file: " << filename);
-		if (false)//compress)
+		std::string buffer;
 		{
-			Writer writer;
-			doc.save(writer);
-			return writer.Compress() && writer.Save(filename);
+			std::stringstream ss;
+			ss << buf.size() << " ";
+			buffer = ss.str();
 		}
-		else
-	        return doc.save_file(filename.c_str());
+		buffer.resize(HeaderSize);
+		buffer += buf;
+        std::string compressBuffer;
+        compressBuffer.resize(LZ4_compressBound(buffer.size()));
+        auto bufferSize = LZ4_compress(buffer.c_str(), &compressBuffer[0], buffer.size());
+		CHECK_ASSERT(bufferSize >= 0, __FILE__, __LINE__);
+		compressBuffer.resize(bufferSize);
+        return compressBuffer;
+    }
+
+
+    std::string DecompressBuffer(const std::string& buffer)
+    {
+        std::string::size_type bytes = 0;
+		std::string smallBuffer;
+		smallBuffer.resize(HeaderSize);
+		auto decodedBytes = LZ4_decompress_safe_partial(&buffer[0], &smallBuffer[0], buffer.size(), smallBuffer.size(), smallBuffer.size());
+		{
+			std::stringstream ss(smallBuffer);
+			ss >> bytes;
+		}
+		bytes += smallBuffer.size();
+        std::string outputBuffer;
+        outputBuffer.resize(bytes);
+		int totalBytes = LZ4_decompress_safe(&buffer[0], &outputBuffer[0], buffer.size(), bytes);
+        CHECK_ASSERT(totalBytes == bytes, __FILE__, __LINE__);
+		outputBuffer.erase(outputBuffer.begin(), outputBuffer.begin() + smallBuffer.size());
+        return outputBuffer;
+    }
+
+
+    bool SaveDocument(const Path& path, const pugi::xml_document& doc, bool compress)
+    {
+        if (compress)
+        {
+			Path filename(path);
+			filename.AddExtension("lz4");
+			TRACE_LOG("Saving file: " << filename.GetFullAbsoluteFilePath());
+			struct XMLWriter : pugi::xml_writer
+			{
+				std::string buffer_;
+				void write(const void* data, size_t size) override
+				{
+					const char* m = (const char*)data;
+					buffer_.insert(buffer_.end(), &m[0], &m[size]);
+				}
+			} writer;
+            doc.save(writer);
+            auto compressedBuffer = CompressBuffer(writer.buffer_);
+			std::ofstream os(filename.GetFullAbsoluteFilePath(), std::ios::binary);
+            if (os.is_open())
+            {
+                os.write(&compressedBuffer[0], compressedBuffer.size());
+                return true;
+            }
+            return false;
+        }
+        else
+			return doc.save_file(path.GetFullAbsoluteFilePath().c_str());
     }
 }

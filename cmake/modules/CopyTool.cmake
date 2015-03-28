@@ -11,7 +11,7 @@ function(COPY_TOOL input_file output_dir)
 			DEPENDS ${INPUTFILE}
 		)
 
-		set(TARGET_NAME COPY_FILE_${INPUTNAME})
+		set(TARGET_NAME COPY_FILE_${PROJECT_NAME}${INPUTNAME})
 
 		add_custom_target(${TARGET_NAME} ALL
 			DEPENDS ${OUTPUTDIR}/${INPUTNAME}

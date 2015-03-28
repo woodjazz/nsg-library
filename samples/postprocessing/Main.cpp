@@ -28,7 +28,6 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    App app;
 	auto window = Window::Create();
     auto frameBuffer = window->GetFrameBuffer();
     const unsigned FrameBufferWidth = 50;
@@ -55,18 +54,18 @@ int NSG_MAIN(int argc, char* argv[])
     auto control = std::make_shared<CameraControl>(camera);
 	scene->CreateChild<Light>();
 
-    auto materialBox = app.GetOrCreateMaterial("material1", (int)ProgramFlag::PER_PIXEL_LIGHTING);
-    materialBox->SetDiffuseMap(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/wall.jpg")));
+    auto materialBox = Material::GetOrCreate("material1", (int)ProgramFlag::PER_PIXEL_LIGHTING);
+	materialBox->SetDiffuseMap(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/wall.jpg")));
 	auto boxNode = scene->CreateChild<SceneNode>();
     boxNode->SetPosition(Vertex3(3, -2, 0));
-    boxNode->SetMesh(app.CreateBoxMesh());
+	boxNode->SetMesh(Mesh::Create<BoxMesh>());
     boxNode->SetMaterial(materialBox);
 
-    auto materialSphere = app.GetOrCreateMaterial("material2", (int)ProgramFlag::PER_PIXEL_LIGHTING);
-    materialSphere->SetDiffuseMap(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/stone.jpg")));
+	auto materialSphere = Material::GetOrCreate("material2", (int)ProgramFlag::PER_PIXEL_LIGHTING);
+	materialSphere->SetDiffuseMap(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/stone.jpg")));
     auto sphereNode = scene->CreateChild<SceneNode>();
     sphereNode->SetPosition(Vertex3(-3, 2, 0));
-    sphereNode->SetMesh(app.CreateSphereMesh());
+	sphereNode->SetMesh(Mesh::Create<SphereMesh>());
     sphereNode->SetMaterial(materialSphere);
 
 	auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
@@ -90,5 +89,5 @@ int NSG_MAIN(int argc, char* argv[])
         scene->Render();
     });
 
-    return app.Run();
+    return Window::RunApp();
 };

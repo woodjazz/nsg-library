@@ -29,14 +29,12 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    App app;
-	auto window = Window::Create();
     #ifdef DAE_FILE
-    auto resource = app.GetOrCreateResourceFile("data/scene.xml");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
     #else
-    auto resource = app.GetOrCreateResourceFile("data/bscene.xml");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml.lz4");
     #endif
-    auto scenes = app.Load(resource);
+	auto scenes = resource->Load();
     auto scene = scenes.at(0);
     scene->SetAmbientColor(Color(0.0f));
 
@@ -80,6 +78,8 @@ int NSG_MAIN(int argc, char* argv[])
 		ballRigidBody->SetLinearVelocity(4.f * contactInfo.normalB_);
 	});
 
+    auto window = Window::Create();
+    
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
         scene->Update(deltaTime);
@@ -112,5 +112,5 @@ int NSG_MAIN(int argc, char* argv[])
 
     });
 
-    return app.Run();
+    return Window::RunApp();
 }

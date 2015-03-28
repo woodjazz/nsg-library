@@ -61,5 +61,7 @@ namespace NSG
 		PPointOnSphere pointOnSphere_;
 		PCamera camera_;
 		bool updateOrientation_;
+		Window* window_;
+		SignalWindow::PSlot slotWindowCreated_;
 	};
 }

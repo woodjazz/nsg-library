@@ -23,51 +23,101 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if SDL || EMSCRIPTEN
+#if SDL
 #include "SDLWindow.h"
 #include "SDL.h"
 #undef main
-#include "App.h"
 #include "Graphics.h"
 #include "Tick.h"
 #include "Keys.h"
 #include "Log.h"
 #include "UTF8String.h"
 #include "AppConfiguration.h"
+#include "Object.h"
+#include "Graphics.h"
+#include "Scene.h"
 #include <memory>
 #include <string>
 #include <locale>
 #include <thread>
+#include <mutex>
 #ifndef __GNUC__
 #include <codecvt>
 #endif
+
 #if EMSCRIPTEN
 #include <emscripten.h>
 #include <html5.h>
-static EM_BOOL EmscriptenResizeCallback(int eventType, const EmscriptenUiEvent* keyEvent, void* userData)
-{
-    using namespace NSG;
-    Window* window = App::this_->GetMainWindow();
-    if (window)
-        window->ViewChanged(keyEvent->windowInnerWidth, keyEvent->windowInnerHeight);
-    return false;
-}
 #endif
+
 namespace NSG
 {
+    #if EMSCRIPTEN
+    static EM_BOOL EmscriptenResizeCallback(int eventType, const EmscriptenUiEvent* keyEvent, void* userData)
+    {
+        using namespace NSG;
+        Window* window = Window::GetMainWindow();
+        if (window)
+            window->ViewChanged(keyEvent->windowInnerWidth, keyEvent->windowInnerHeight);
+        return false;
+    }
+    #else
+    static int EventWatch(void* userdata, SDL_Event* event)
+    {
+        SDLWindow* window = static_cast<SDLWindow*>(userdata);
+        switch (event->type)
+        {
+            case SDL_APP_TERMINATING:
+                {
+                    TRACE_PRINTF("SDL_APP_TERMINATING");
+                    SDL_Quit();
+                    std::exit(0);
+                    return 0;
+                }
+            case SDL_APP_LOWMEMORY:
+                {
+                    TRACE_PRINTF("SDL_APP_LOWMEMORY\n");
+                    return 0;
+                }
+            case SDL_APP_WILLENTERBACKGROUND:
+                {
+                    TRACE_PRINTF("SDL_APP_WILLENTERBACKGROUND\n");
+                    return 0;
+                }
+            case SDL_APP_DIDENTERBACKGROUND:
+                {
+                    TRACE_PRINTF("SDL_APP_DIDENTERBACKGROUND\n");
+                    window->EnterBackground();
+                    return 0;
+                }
+            case SDL_APP_WILLENTERFOREGROUND:
+                {
+                    TRACE_PRINTF("SDL_APP_WILLENTERFOREGROUND\n");
+                    return 0;
+                }
+            case SDL_APP_DIDENTERFOREGROUND:
+                {
+                    TRACE_PRINTF("SDL_APP_DIDENTERFOREGROUND\n");
+                    window->EnterForeground();
+                    return 0;
+                }
+        }
+        return 1;
+    }
+    #endif
+    const char* InternalPointer = "InternalPointer";
+
     SDLWindow::SDLWindow(const std::string& name)
         : Window(name)
     {
-        const AppConfiguration& conf = *AppConfiguration::this_;
-        if(!Initialize(conf.x_, conf.y_, conf.width_, conf.height_))
-            throw std::runtime_error("Cannot create Window");
+        const AppConfiguration& conf = Window::GetAppConfiguration();
+        Initialize(conf.x_, conf.y_, conf.width_, conf.height_);
     }
 
     SDLWindow::SDLWindow(const std::string& name, int x, int y, int width, int height)
         : Window(name)
     {
-        if(!Initialize(x, y, width, height))
-            throw std::runtime_error("Cannot create Window");
+        Initialize(x, y, width, height);
     }
 
     SDLWindow::~SDLWindow()
@@ -78,25 +128,27 @@ namespace NSG
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
 
-    bool SDLWindow::Initialize(int x, int y, int width, int height)
+    void SDLWindow::Initialize(int x, int y, int width, int height)
     {
-        if(!App::this_->AllowWindowCreation())
-            return false;
-        
-        if (SDL_InitSubSystem(SDL_INIT_VIDEO))
+        static std::once_flag onceFlag_;
+        std::call_once(onceFlag_, [&]()
         {
-            TRACE_LOG("SDL_INIT_VIDEO Error: " << SDL_GetError() << std::endl);
-            return false;
-        }
+            #if EMSCRIPTEN
+            int flags = 0;
+            #else
+            int flags = SDL_INIT_EVENTS;
+            #endif
+
+            CHECK_CONDITION(0 == SDL_Init(flags), __FILE__, __LINE__);
+
+            #if defined(IS_TARGET_MOBILE)
+            SDL_SetEventFilter(EventWatch, this);
+            #endif
+        });
+
+        CHECK_CONDITION(0 == SDL_InitSubSystem(SDL_INIT_VIDEO), __FILE__, __LINE__);
 
         SetSize(width, height);
-
-        #if !defined(EMSCRIPTEN)
-        {
-            win_ = nullptr;
-            context_ = nullptr;
-        }
-        #endif
 
         const int DOUBLE_BUFFER = 1;
         const int DEPTH_SIZE = 24;
@@ -121,13 +173,9 @@ namespace NSG
 
         #if EMSCRIPTEN
         {
-            if (!SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE))
-            {
-                TRACE_LOG("Failed to set screen video mode \n");
-                return false;
-            }
+            CHECK_CONDITION( 0 == SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE), __FILE__, __LINE__);
             isMainWindow_ = true;
-            app_->SetMainWindow(this);
+            Window::SetMainWindow(this);
             emscripten_set_resize_callback(nullptr, nullptr, false, EmscriptenResizeCallback);
         }
         #else
@@ -143,28 +191,24 @@ namespace NSG
             }
             #endif
 
-            win_ = SDL_CreateWindow(name_.c_str(), x, y, width, height, flags);
+            auto win = SDL_CreateWindow(name_.c_str(), x, y, width, height, flags);
+            CHECK_CONDITION(win, __FILE__, __LINE__);
+            windowID_ = SDL_GetWindowID(win);
 
-            if (win_ == nullptr)
-            {
-                TRACE_LOG("SDL_CreateWindow Error: " << SDL_GetError() << std::endl);
-                return false;
-            }
-
-            if (app_->GetMainWindow())
+            if (Window::mainWindow_)
             {
                 isMainWindow_ = false;
                 // Do not create a new context. Instead, share the main window's context.
-                context_ = app_->GetMainWindow()->GetSDLContext();
-                SDL_GL_MakeCurrent(win_, context_);
+                auto context = SDL_GL_GetCurrentContext();
+                SDL_GL_MakeCurrent(win, context);
             }
             else
             {
-                context_ = SDL_GL_CreateContext(win_);
-                app_->SetMainWindow(this);
+                SDL_GL_CreateContext(win);
+                Window::SetMainWindow(this);
             }
             SDL_GL_SetSwapInterval(1);
-            SDL_GetWindowSize(win_, &width, &height);
+            SDL_GetWindowSize(win, &width, &height);
         }
         #endif
 
@@ -199,10 +243,20 @@ namespace NSG
         #endif
 
         Tick::Initialize();
-
         Graphics::this_->SetWindow(this);
 
-        return true;
+        #if !defined(EMSCRIPTEN)
+        SDL_SetWindowData(SDL_GetWindowFromID(windowID_), InternalPointer, this);
+        #endif
+       
+    }
+
+    void SDLWindow::Close()
+    {
+        Window::Close();
+        #if EMSCRIPTEN
+        emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+        #endif
     }
 
     void SDLWindow::Destroy()
@@ -211,27 +265,13 @@ namespace NSG
         if (!isClosed_)
         {
             isClosed_ = true;
-            app_->NotifyOneWindow2Remove();
+            Window::NotifyOneWindow2Remove();
             if (isMainWindow_)
             {
-                SDL_GL_DeleteContext(context_);
-                app_->SetMainWindow(nullptr);
+                SDL_GL_DeleteContext(SDL_GL_GetCurrentContext());
+                Window::SetMainWindow(nullptr);
             }
-            context_ = nullptr;
-            CHECK_ASSERT(win_, __FILE__, __LINE__);
-            SDL_DestroyWindow(win_);
-            win_ = nullptr;
-        }
-        #endif
-    }
-
-    void SDLWindow::RenderFrame()
-    {
-        Graphics::this_->SetWindow(this);
-        PerformTicks();
-        #ifndef EMSCRIPTEN
-        {
-            SDL_GL_SwapWindow(win_);
+            SDL_DestroyWindow(SDL_GetWindowFromID(windowID_));
         }
         #endif
     }
@@ -240,13 +280,232 @@ namespace NSG
     {
         if (width_ != width || height_ != height)
         {
-            TRACE_LOG("ViewChanged: " << width << "," << height);
             #if EMSCRIPTEN
             SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE);
             //emscripten_set_canvas_size(width, height);
             #endif
             Window::ViewChanged(width, height);
         }
+    }
+
+
+    void SDLWindow::RenderFrame()
+    {
+        Graphics::this_->SetWindow(this);
+        PerformTicks();
+        #if !defined(EMSCRIPTEN)
+        SDL_GL_SwapWindow(SDL_GetWindowFromID(windowID_));
+        #endif
+    }
+
+    void SDLWindow::EnterBackground()
+    {
+        Window::EnterBackground();
+        Object::InvalidateAll();
+    }
+
+    void SDLWindow::RestoreContext()
+    {
+        #if !defined(EMSCRIPTEN)
+        if (!SDL_GL_GetCurrentContext())
+        {
+            // On Android the context may be lost behind the scenes as the application is minimized
+            TRACE_LOG("OpenGL context has been lost. Restoring!!!");
+            auto win = SDL_GetWindowFromID(windowID_);
+            auto context = SDL_GL_CreateContext(win);
+            SDL_GL_MakeCurrent(win, context);
+            Graphics::this_->ResetCachedState();
+        }
+        #endif
+    }
+
+    void SDLWindow::EnterForeground()
+    {
+        Window::EnterForeground();
+    }
+
+    SDLWindow* SDLWindow::GetWindowFromID(uint32_t windowID) const
+    {
+        #if EMSCRIPTEN
+        return static_cast<SDLWindow*>(mainWindow_);
+        #else
+        return static_cast<SDLWindow*>(SDL_GetWindowData(SDL_GetWindowFromID(windowID), InternalPointer));
+        #endif
+    }
+
+    SDLWindow* SDLWindow::GetCurrentWindow() const
+    {
+        #if EMSCRIPTEN
+        return static_cast<SDLWindow*>(mainWindow_);
+        #else
+        return static_cast<SDLWindow*>(SDL_GetWindowData(SDL_GL_GetCurrentWindow(), InternalPointer));
+        #endif
+    }
+
+    void SDLWindow::HandleEvents()
+    {
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_WINDOWEVENT)
+            {
+                SDLWindow* window = GetWindowFromID(event.window.windowID);
+                if (!window) continue;
+                switch (event.window.event)
+                {
+                    case SDL_WINDOWEVENT_CLOSE:
+                        TRACE_PRINTF("SDL_WINDOWEVENT_CLOSE\n");
+                        window->Close();
+                        break;
+                    case SDL_WINDOWEVENT_MINIMIZED:
+                        TRACE_PRINTF("SDL_WINDOWEVENT_MINIMIZED\n");
+                        window->EnterBackground();
+                        break;
+                    case SDL_WINDOWEVENT_MAXIMIZED:
+                        TRACE_PRINTF("SDL_WINDOWEVENT_MAXIMIZED\n");
+                        window->EnterForeground();
+                        break;
+                    case SDL_WINDOWEVENT_SIZE_CHANGED:
+                        TRACE_PRINTF("SDL_WINDOWEVENT_SIZE_CHANGED\n");
+                        window->ViewChanged(event.window.data1, event.window.data2);
+                        break;
+                    case SDL_WINDOWEVENT_RESTORED:
+                        TRACE_PRINTF("SDL_WINDOWEVENT_RESTORED\n");
+                        window->RestoreContext();
+                        window->EnterForeground();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            #if !defined(EMSCRIPTEN)
+            else if (event.type == SDL_DROPFILE)
+            {
+                SDLWindow* window = GetCurrentWindow();
+                if (!window) continue;
+                window->DropFile(event.drop.file);
+                SDL_free(event.drop.file);
+            }
+            #endif
+            else if (event.type == SDL_KEYDOWN)
+            {
+                SDLWindow* window = GetWindowFromID(event.key.windowID);
+                if (!window) continue;
+                int key = event.key.keysym.sym;
+                #if ANDROID
+                {
+                    if (key == SDLK_AC_BACK)
+                        window->Close();
+                }
+                #endif
+
+                //int scancode = event.key.keysym.scancode;
+                int action = NSG_KEY_PRESS;
+                int modifier = event.key.keysym.mod;
+                window->OnKey(key, action, modifier);
+            }
+            else if (event.type == SDL_KEYUP)
+            {
+                SDLWindow* window = GetWindowFromID(event.key.windowID);
+                if (!window) continue;
+                int key = event.key.keysym.sym;
+                //int scancode = event.key.keysym.scancode;
+                int action = NSG_KEY_RELEASE;
+                int modifier = event.key.keysym.mod;
+                window->OnKey(key, action, modifier);
+            }
+            else if (event.type == SDL_TEXTINPUT)
+            {
+                SDLWindow* window = GetWindowFromID(event.text.windowID);
+                if (!window) continue;
+                UTF8String utf8(event.text.text);
+                unsigned unicode = utf8.AtUTF8(0);
+                if (unicode)
+                    window->OnChar(unicode);
+            }
+            else if (event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                SDLWindow* window = GetWindowFromID(event.button.windowID);
+                if (!window) continue;
+                float x = (float)event.button.x;
+                float y = (float)event.button.y;
+                auto width = window->GetWidth();
+                auto height = window->GetHeight();
+                window->OnMouseDown(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
+            }
+            else if (event.type == SDL_MOUSEBUTTONUP)
+            {
+                SDLWindow* window = GetWindowFromID(event.button.windowID);
+                if (!window) continue;
+                float x = (float)event.button.x;
+                float y = (float)event.button.y;
+                auto width = window->GetWidth();
+                auto height = window->GetHeight();
+                window->OnMouseUp(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
+            }
+            else if (event.type == SDL_MOUSEMOTION)
+            {
+                SDLWindow* window = GetWindowFromID(event.button.windowID);
+                if (!window) continue;
+                float x = (float)event.motion.x;
+                float y = (float)event.motion.y;
+                auto width = window->GetWidth();
+                auto height = window->GetHeight();
+                window->OnMouseMove(-1 + 2 * x / width, 1 + -2 * y / height);
+            }
+            else if (event.type == SDL_MOUSEWHEEL)
+            {
+                SDLWindow* window = GetWindowFromID(event.wheel.windowID);
+                if (!window) continue;
+                window->OnMouseWheel((float)event.wheel.x, (float)event.wheel.y);
+            }
+            else if (event.type == SDL_FINGERDOWN)
+            {
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                window->OnMouseDown(0, -1 + 2 * x, 1 + -2 * y);
+            }
+            else if (event.type == SDL_FINGERUP)
+            {
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                window->OnMouseUp(0, -1 + 2 * x, 1 + -2 * y);
+            }
+            else if (event.type == SDL_FINGERMOTION)
+            {
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                float x = event.tfinger.x;
+                float y = event.tfinger.y;
+                window->OnMouseMove(-1 + 2 * x, 1 + -2 * y);
+            }
+            #if defined(IS_TARGET_MOBILE)
+            else if (event.type == SDL_MULTIGESTURE)
+            {
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                float x = event.mgesture.x;
+                float y = event.mgesture.y;
+                window->OnMultiGesture(event.mgesture.timestamp, -1 + 2 * x, 1 + -2 * y, event.mgesture.dTheta, event.mgesture.dDist, (int)event.mgesture.numFingers);
+            }
+            #endif
+        }
+    }
+
+    int SDLWindow::Run()
+    {
+        #if EMSCRIPTEN
+        SDL_StartTextInput();
+        emscripten_set_main_loop_arg([](void* data) {Window::RenderWindows();}, nullptr, 0, 1);
+        emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+        #else
+        while (Window::RenderWindows());
+        #endif
+        return 0;
     }
 }
 #endif

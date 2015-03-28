@@ -32,7 +32,6 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Program.h"
 #include "Node.h"
-#include "App.h"
 #include "Util.h"
 #include "Technique.h"
 

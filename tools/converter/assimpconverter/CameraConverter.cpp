@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Pass.h"
 #include "Technique.h"
-#include "App.h"
 #include "Scene.h"
 #include "Camera.h"
 #include "assimp/camera.h"

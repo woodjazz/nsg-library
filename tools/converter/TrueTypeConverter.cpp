@@ -25,8 +25,8 @@ misrepresented as being the original software.
 */
 #include "TrueTypeConverter.h"
 #include "ResourceFile.h"
-#include "App.h"
-#include "ResourceMemory.h"
+#include "Util.h"
+#include "ResourceConverter.h"
 #include "Check.h"
 #include "pugixml.hpp"
 #include "stb_image.h"
@@ -48,7 +48,7 @@ namespace NSG
 
     bool TrueTypeConverter::Load()
     {
-        auto resource = App::this_->GetOrCreateResourceFile(path_.GetFilePath());
+		auto resource = Resource::GetOrCreate<ResourceFile>(path_.GetFilePath());
         CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
         const unsigned char* data = (const unsigned char*)resource->GetData();
         //size_t totalBytes = resource->GetBytes();
@@ -58,7 +58,7 @@ namespace NSG
         int numChars = eChar_ - sChar_ + 1; // characters to bake
         cdata_.resize(numChars);
         stbtt_BakeFontBitmap(data, 0, (float)fontPixelsHeight_, (unsigned char*)&tempBitmap[0], bitmapWidth_, bitmapHeight_, sChar_, numChars, &cdata_[0]);
-        texture_ = App::this_->GetOrCreateResourceMemory(path_.GetFilePath() + std::to_string(fontPixelsHeight_));
+		texture_ = Resource::GetOrCreate<ResourceConverter>(path_.GetFilePath() + std::to_string(fontPixelsHeight_));
         texture_->SetData(tempBitmap.c_str(), tempBitmap.size());
         CHECK_CONDITION(texture_->IsReady(), __FILE__, __LINE__);
         return true;
@@ -117,7 +117,7 @@ namespace NSG
                 }
             }
 
-			return SaveDocument(outputFile.GetFullAbsoluteFilePath().c_str(), doc, compress);
+			return SaveDocument(outputFile, doc, compress);
         }
 
     }

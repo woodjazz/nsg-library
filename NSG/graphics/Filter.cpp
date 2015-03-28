@@ -33,16 +33,13 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Program.h"
 #include "FrameBuffer.h"
-#include "ResourceMemory.h"
 #include "Node.h"
-#include "App.h"
 
 namespace NSG
 {
 	Filter::Filter(const std::string& name, PTexture input, ProgramFlags flags)
-        : app_(*App::this_),
-		  pMaterial_(app_.GetOrCreateMaterial(name)),
-          pMesh_(app_.CreateQuadMesh()),
+        : pMaterial_(Material::GetOrCreate(name)),
+          pMesh_(Mesh::Create<QuadMesh>()),
 		  frameBuffer_(std::make_shared<FrameBuffer>(name, FrameBuffer::Flag::COLOR | FrameBuffer::Flag::COLOR_USE_TEXTURE)),
           name_(name),
           node_(std::make_shared<SceneNode>(name))

@@ -9,6 +9,7 @@
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
+#include "ResourceXMLNode.h"
 #include "InstanceBuffer.h"
 #include "pugixml.hpp"
 #include <sstream>
@@ -17,25 +18,26 @@
 
 namespace NSG
 {
+    MapAndVector<std::string, Material> Material::materials_;
+
     Material::Material(const std::string& name)
-        : ambient_(1, 1, 1, 1),
+        : Object(name),
+          ambient_(1, 1, 1, 1),
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
           shininess_(1),
           parallaxScale_(0.05f),
           color_(1, 1, 1, 1),
-          name_(name),
           serializable_(true),
           blendFilterMode_(BlendFilterMode::ADDITIVE),
-		  isBatched_(false)
+          isBatched_(false)
     {
         technique_ = std::make_shared<Technique>(this);
-		SetProgramFlags(0, (int)ProgramFlag::NONE); // in order to force program creation
+        SetProgramFlags(0, (int)ProgramFlag::NONE); // in order to force program creation
     }
 
     Material::~Material()
     {
-        Invalidate();
     }
 
     void Material::SetProgramFlags(unsigned passIndex, const ProgramFlags& flags)
@@ -48,8 +50,8 @@ namespace NSG
     PMaterial Material::Clone(const std::string& name)
     {
         auto material = std::make_shared<Material>(name);
-		for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-			material->texture_[index] = texture_[index];
+        for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+            material->texture_[index] = texture_[index];
         material->ambient_ = ambient_;
         material->diffuse_ = diffuse_;
         material->specular_ = specular_;
@@ -120,10 +122,10 @@ namespace NSG
 
     bool Material::SetTexture(size_t index, PTexture texture)
     {
-		CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__);
+        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__);
         if (texture_[index] != texture)
         {
-			texture_[index] = texture;
+            texture_[index] = texture;
             SetUniformsNeedUpdate();
             Invalidate();
             return true;
@@ -134,7 +136,7 @@ namespace NSG
 
     void Material::SetDiffuseMap(PTexture texture)
     {
-		if (SetTexture(MaterialTexture::DIFFUSE_MAP, texture))
+        if (SetTexture(MaterialTexture::DIFFUSE_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::DIFFUSEMAP);
@@ -145,7 +147,7 @@ namespace NSG
 
     void Material::SetNormalMap(PTexture texture)
     {
-		if (SetTexture(MaterialTexture::NORMAL_MAP, texture))
+        if (SetTexture(MaterialTexture::NORMAL_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::NORMALMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
@@ -156,7 +158,7 @@ namespace NSG
 
     void Material::SetLightMap(PTexture texture)
     {
-		if (SetTexture(MaterialTexture::LIGHT_MAP, texture))
+        if (SetTexture(MaterialTexture::LIGHT_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::LIGHTMAP);
@@ -167,7 +169,7 @@ namespace NSG
 
     void Material::SetSpecularMap(PTexture texture)
     {
-		if (SetTexture(MaterialTexture::SPECULAR_MAP, texture))
+        if (SetTexture(MaterialTexture::SPECULAR_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SPECULARMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
@@ -178,7 +180,7 @@ namespace NSG
 
     void Material::SetAOMap(PTexture texture)
     {
-		if (SetTexture(MaterialTexture::AO_MAP, texture))
+        if (SetTexture(MaterialTexture::AO_MAP, texture))
         {
             if (texture)
                 technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::AOMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
@@ -189,7 +191,7 @@ namespace NSG
 
     void Material::SetDisplacementMap(PTexture texture)
     {
-		if (SetTexture(MaterialTexture::DISPLACEMENT_MAP, texture))
+        if (SetTexture(MaterialTexture::DISPLACEMENT_MAP, texture))
         {
             if (texture)
             {
@@ -205,58 +207,65 @@ namespace NSG
         }
     }
 
-	void Material::SetTextMap(PTexture texture)
-	{
-		if (SetTexture(MaterialTexture::DIFFUSE_MAP, texture))
-		{
-			if (texture)
-			{
-				auto pass = technique_->GetPass(0);
-				pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
-				technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::TEXT);
-				texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
-			}
-			else
-			{
-				auto pass = technique_->GetPass(0);
-				pass->SetBlendMode(BLEND_MODE::BLEND_NONE);
-				technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::TEXT);
-			}
-		}
-	}
+    void Material::SetTextMap(PTexture texture)
+    {
+        if (SetTexture(MaterialTexture::DIFFUSE_MAP, texture))
+        {
+            if (texture)
+            {
+                auto pass = technique_->GetPass(0);
+                pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
+                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::TEXT);
+                texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
+            }
+            else
+            {
+                auto pass = technique_->GetPass(0);
+                pass->SetBlendMode(BLEND_MODE::BLEND_NONE);
+                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::TEXT);
+            }
+        }
+    }
 
-	void Material::SetupBlur()
-	{
-		auto texture = texture_[0];
-		if (texture && texture->IsReady())
-		{
-			blurFilter_.blurRadius_.x = 1.f / (float)texture_[0]->GetWidth();
-			blurFilter_.blurRadius_.y = 1.f / (float)texture_[0]->GetHeight();
-		}
-	}
+    void Material::SetupBlur()
+    {
+        auto texture = texture_[0];
+        if (texture && texture->IsReady())
+        {
+            blurFilter_.blurRadius_.x = 1.f / (float)texture_[0]->GetWidth();
+            blurFilter_.blurRadius_.y = 1.f / (float)texture_[0]->GetHeight();
+        }
+    }
 
     bool Material::IsValid()
     {
         bool isReady = true;
-		for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-			if (texture_[index])
-				isReady = isReady && texture_[index]->IsReady();
-		SetupBlur();
+        if (xmlResource_)
+            isReady = xmlResource_->IsReady();
+        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+            if (texture_[index])
+                isReady = isReady && texture_[index]->IsReady();
+        if (isReady)
+            SetupBlur();
         return isReady;
     }
 
-	void Material::AllocateResources()
-	{
-		isBatched_ = Graphics::this_->HasInstancedArrays() && technique_->GetNumPasses() == 1 && !IsTransparent();
-		if (isBatched_)
-			instanceBuffer_ = std::make_shared<InstanceBuffer>();
-	}
+    void Material::AllocateResources()
+    {
+        isBatched_ = Graphics::this_->HasInstancedArrays() && technique_->GetNumPasses() == 1 && !IsTransparent();
+        if (isBatched_)
+            instanceBuffer_ = std::make_shared<InstanceBuffer>();
+    }
 
-	void Material::ReleaseResources()
-	{
-		instanceBuffer_ = nullptr;
-		lastBatch_.Clear();
-	}
+    void Material::ReleaseResources()
+    {
+        instanceBuffer_ = nullptr;
+        lastBatch_.Clear();
+
+        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+            if (texture_[index])
+                texture_[index]->Invalidate();
+    }
 
     void Material::Save(pugi::xml_node& node)
     {
@@ -267,16 +276,16 @@ namespace NSG
 
         child.append_attribute("name").set_value(name_.c_str());
 
-		for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-		{
-			if (texture_[index] && texture_[index]->IsSerializable())
-			{
-				std::stringstream ss;
-				ss << "Texture" << index;
-				pugi::xml_node childTexture = child.append_child(ss.str().c_str());
-				texture_[index]->Save(childTexture);
-			}
-		}
+        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+        {
+            if (texture_[index] && texture_[index]->IsSerializable())
+            {
+                std::stringstream ss;
+                ss << "Texture" << index;
+                pugi::xml_node childTexture = child.append_child(ss.str().c_str());
+                texture_[index]->Save(childTexture);
+            }
+        }
 
         {
             std::stringstream ss;
@@ -311,19 +320,19 @@ namespace NSG
         technique_->Save(child);
     }
 
-    void Material::Load(const pugi::xml_node& node)
+    void Material::Load(PResource resource, const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
 
-		for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-		{
-			texture_[index] = nullptr;
-			std::stringstream ss;
-			ss << "Texture" << index;
-			pugi::xml_node childTexture = node.child(ss.str().c_str());
-			if (childTexture)
-				texture_[index] = Texture::CreateFrom(childTexture);
-		}
+        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+        {
+            texture_[index] = nullptr;
+            std::stringstream ss;
+            ss << "Texture" << index;
+            pugi::xml_node childTexture = node.child(ss.str().c_str());
+            if (childTexture)
+                texture_[index] = Texture::CreateFrom(resource, childTexture);
+        }
 
         SetAmbientColor(GetVertex4(node.attribute("ambient").as_string()));
         SetDiffuseColor(GetVertex4(node.attribute("diffuse").as_string()));
@@ -351,7 +360,7 @@ namespace NSG
         {
             blurFilter_ = data;
             SetUniformsNeedUpdate();
-			SetupBlur();
+            SetupBlur();
         }
     }
 
@@ -364,50 +373,129 @@ namespace NSG
         }
     }
 
-    PTexture Material::GetTextureWithResource(PResource resource)
+    PTexture Material::GetTextureWith(PResource resource) const
     {
-        for(size_t i=0; i<MaterialTexture::MAX_TEXTURES_MAPS; i++)        
+        for (size_t i = 0; i < MaterialTexture::MAX_TEXTURES_MAPS; i++)
         {
-			if (texture_[i] && resource == texture_[i]->GetResource())
+            if (texture_[i] && resource == texture_[i]->GetResource())
                 return texture_[i];
         }
         return nullptr;
     }
 
-	bool Material::IsTransparent() const
-	{
-		return technique_->IsTransparent();
-	}
+    bool Material::IsTransparent() const
+    {
+        return technique_->IsTransparent();
+    }
 
-	bool Material::IsText() const
-	{
-		return technique_->IsText();
-	}
+    bool Material::IsText() const
+    {
+        return technique_->IsText();
+    }
 
-	void Material::SetSolid(bool solid)
-	{
-		technique_->GetPass(0)->SetDrawMode(solid ? DrawMode::SOLID : DrawMode::WIREFRAME);
-	}
+    void Material::SetSolid(bool solid)
+    {
+        technique_->GetPass(0)->SetDrawMode(solid ? DrawMode::SOLID : DrawMode::WIREFRAME);
+    }
 
-	bool Material::IsBatched()
-	{
-		if (IsReady())
-			return isBatched_;
-		return false;
-	}
+    bool Material::IsBatched()
+    {
+        if (IsReady())
+            return isBatched_;
+        return false;
+    }
 
-	void Material::BachedNodeHasChanged()
-	{
-		lastBatch_.Clear();
-	}
+    void Material::BachedNodeHasChanged()
+    {
+        lastBatch_.Clear();
+    }
 
-	void Material::UpdateBatchBuffer(const Batch& batch)
-	{
-		if (!(lastBatch_ == batch))
-		{
-			instanceBuffer_->UpdateBatchBuffer(batch);
-			lastBatch_ = batch;
-		}
-	}
+    void Material::UpdateBatchBuffer(const Batch& batch)
+    {
+        if (!(lastBatch_ == batch))
+        {
+            instanceBuffer_->UpdateBatchBuffer(batch);
+            lastBatch_ = batch;
+        }
+    }
+
+    PMaterial Material::Create(const std::string& name, const ProgramFlags& flags)
+    {
+        auto material = materials_.Create(name);
+        if ((int)ProgramFlag::NONE != flags)
+            material->SetProgramFlags(0, flags);
+        return material;
+    }
+
+    PMaterial Material::GetOrCreate(const std::string& name, const ProgramFlags& flags)
+    {
+        auto material = materials_.GetOrCreate(name);
+        if ((int)ProgramFlag::NONE != flags)
+            material->SetProgramFlags(0, flags);
+        return material;
+    }
+
+    PMaterial Material::Get(const std::string& name)
+    {
+        return materials_.Get(name);
+    }
+
+    std::vector<PMaterial> Material::GetMaterials()
+    {
+        return materials_.GetObjs();
+    }
+
+    PTexture Material::GetTextureWithResource(PResource resource)
+    {
+        auto materials = materials_.GetObjs();
+        for (auto& material : materials)
+        {
+            auto texture = material->GetTextureWith(resource);
+            if (texture)
+                return texture;
+        }
+
+        return nullptr;
+    }
+
+    std::vector<PMaterial> Material::LoadMaterials(PResource resource, const pugi::xml_node& node)
+    {
+        std::vector<PMaterial> result;
+        pugi::xml_node objs = node.child("Materials");
+        if (objs)
+        {
+            pugi::xml_node child = objs.child("Material");
+            while (child)
+            {
+                std::string name = child.attribute("name").as_string();
+                auto material(Material::GetOrCreate(name));
+				auto xmlResource = Resource::Create<ResourceXMLNode>(name);
+                xmlResource->Set(resource, material, "Materials", name);
+                xmlResource->IsReady(); //force load resources for textures
+                material->Set(xmlResource);
+                result.push_back(material);
+                child = child.next_sibling("Material");
+            }
+        }
+        return result;
+    }
+
+    void Material::SaveMaterials(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Materials");
+        auto materials = Material::GetMaterials();
+        for (auto& obj : materials)
+            obj->Save(child);
+    }
+
+    void Material::Set(PResourceXMLNode xmlResource)
+    {
+        if (xmlResource != xmlResource_)
+        {
+            xmlResource_ = xmlResource;
+            Invalidate();
+        }
+    }
+
 
 }

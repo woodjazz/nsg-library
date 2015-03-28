@@ -46,6 +46,5 @@ namespace NSG
 		Program* program_;
 		VertexBuffer* vBuffer_;
 		IndexBuffer* iBuffer_;
-		Graphics& graphics_;
 	};
 }

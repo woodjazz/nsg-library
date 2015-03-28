@@ -24,21 +24,27 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "AppConfiguration.h"
+#if SDL
+#include "SDL.h"
+#endif
 
 namespace NSG
 {
-    template<> AppConfiguration* Singleton<AppConfiguration>::this_ = nullptr;
-
     #if EMSCRIPTEN
       static const int WindowPosX = 0;
       static const int WindowPosY = 0;
       static const int WindowWidth = 640;
       static const int WindowHeight = 480;
     #else
+      #if SDL
       static const int WindowPosX = SDL_WINDOWPOS_CENTERED;
       static const int WindowPosY = SDL_WINDOWPOS_CENTERED;
-      static const int WindowWidth = 1024;
-      static const int WindowHeight = 768;
+      #else
+      static const int WindowPosX = 0;
+      static const int WindowPosY = 0;
+      #endif
+	  static const int WindowWidth = 1024;
+	  static const int WindowHeight = 768;
     #endif
 
     AppConfiguration::AppConfiguration()
@@ -52,9 +58,4 @@ namespace NSG
           pauseMusicOnBackground_(true)
     {
     };
-
-    AppConfiguration::~AppConfiguration()
-    {
-        AppConfiguration::this_ = nullptr;
-    }
 }

@@ -30,7 +30,7 @@ function(BLENDERDNA_TOOL input_file output_dir)
 
 		    #message("${BLENDERDNA_CMD}")
 
-		    set(TARGET_NAME GENERATE_DNA_FOR_${INPUTNAME})
+		    set(TARGET_NAME GENERATE_DNA_FOR_${PROJECT_NAME}_${INPUTNAME})
 
 		    add_custom_command(OUTPUT ${OUTPUTDIR}/Blender.h
   				COMMAND ${BLENDERDNA_CMD}

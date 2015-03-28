@@ -42,6 +42,9 @@ namespace NSG
 	class RigidBody;
 	typedef std::shared_ptr<RigidBody> PRigidBody;
 
+	class Shape;
+	typedef std::shared_ptr<Shape> PShape;
+
 	class PhysicsWorld;
 	typedef std::shared_ptr<PhysicsWorld> PPhysicsWorld;
 	
@@ -125,14 +128,15 @@ namespace NSG
 	class ResourceFile;
 	typedef std::shared_ptr<ResourceFile> PResourceFile;
 
-	class ResourceMemory;
-	typedef std::shared_ptr<ResourceMemory> PResourceMemory;
+	class ResourceXMLNode;
+	typedef std::shared_ptr<ResourceXMLNode> PResourceXMLNode;
 	
 	class ShowTexture;
 	typedef std::shared_ptr<ShowTexture> PShowTexture;
 
     class Mesh;
     typedef std::shared_ptr<Mesh> PMesh;
+    typedef std::weak_ptr<Mesh> PWeakMesh;
 
     class Texture;
     typedef std::shared_ptr<Texture> PTexture;
@@ -212,6 +216,9 @@ namespace NSG
 
 	class ModelMesh;
 	typedef std::shared_ptr<ModelMesh> PModelMesh;
+
+	class ConverterMesh;
+	typedef std::shared_ptr<ConverterMesh> PConverterMesh;
 
 	class StencilMask;
 	typedef std::shared_ptr<StencilMask> PStencilMask;
@@ -324,4 +331,7 @@ namespace NSG
 	class QuadMesh;
 	typedef std::shared_ptr<QuadMesh> PQuadMesh;
 
+	class Object;
+	typedef std::shared_ptr<Object> PObject;
+	typedef std::weak_ptr<Object> PWeakObject;
 }

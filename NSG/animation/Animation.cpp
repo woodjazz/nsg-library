@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Scene.h"
 #include "Constants.h"
-#include "App.h"
 #include "Util.h"
 #include "pugixml.hpp"
 #include <algorithm>

@@ -30,7 +30,6 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    App app;
 	auto window = Window::Create();
     std::deque<Vertex3> camControlPoints;
     auto scene = std::make_shared<Scene>();
@@ -49,13 +48,14 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto earth = scene->CreateChild<SceneNode>();
     {
-        auto pSphereMesh(app.CreateSphereMesh(3, 24));
+		auto pSphereMesh(Mesh::Create<SphereMesh>());
+		pSphereMesh->Set(3, 24);
         earth->SetMesh(pSphereMesh);
         //earth->SetEnabled(false);
 
-        auto earthResource = app.GetOrCreateResourceFile("data/Earthmap720x360_grid.jpg");
+		auto earthResource = Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg");
         auto pEarthTexture = std::make_shared<Texture>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
-        auto pMaterial(app.GetOrCreateMaterial("earth", (int)ProgramFlag::PER_PIXEL_LIGHTING));
+		auto pMaterial(Material::GetOrCreate("earth", (int)ProgramFlag::PER_PIXEL_LIGHTING));
         pMaterial->SetDiffuseMap(pEarthTexture);
         pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
         pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
@@ -66,15 +66,16 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto light = scene->CreateChild<Light>();
     {
-		auto pMaterial(app.GetOrCreateMaterial("light", (int)ProgramFlag::PER_VERTEX_LIGHTING));
+		auto pMaterial(Material::GetOrCreate("light", (int)ProgramFlag::PER_VERTEX_LIGHTING));
         pMaterial->SetColor(Color(1, 0, 0, 1));
         light->SetMaterial(pMaterial);
-		auto pMesh(app.CreateSphereMesh(0.2f, 16));
+		auto pMesh(Mesh::Create<SphereMesh>());
+		pMesh->Set(0.2f, 16);
         light->SetMesh(pMesh);
         light->SetPosition(Vertex3(-10.0, 0.0, 5.0));
     }
 
-    auto resource = app.GetOrCreateResourceFile("data/nice_music.ogg");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/nice_music.ogg");
     auto music = std::make_shared<Music>(resource);
     music->Play();
 
@@ -115,6 +116,6 @@ int NSG_MAIN(int argc, char* argv[])
 		scene->Render();
 	});
 
-    return app.Run();
+    return Window::RunApp();
 }
 

@@ -32,10 +32,6 @@ using namespace std;
 
 class btDynamicsWorld;
 class btRigidBody;
-class btTriangleMesh;
-class btCollisionShape;
-class btTriangleMesh;
-
 namespace NSG
 {
     class RigidBody : public btMotionState, public Object
@@ -45,7 +41,8 @@ namespace NSG
         ~RigidBody();
 		void SetGravity(const Vector3& gravity);
         void SetMass(float mass);
-        void SetShape(PhysicsShape phyShape);
+        void SetShape(PShape shape);
+        PShape GetShape() const { return shape_; }
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
         void SetLinearVelocity(const Vector3& lv);
         Vector3 GetLinearVelocity() const;
@@ -58,7 +55,6 @@ namespace NSG
 		void SetFriction(float friction);
 		void SetLinearDamp(float linearDamp);
 		void SetAngularDamp(float angularDamp);
-		void SetMargin(float margin);
         void Load(const pugi::xml_node& node);
         void Save(pugi::xml_node& node);
 		void SetCollisionMask(int group, int mask);
@@ -71,29 +67,29 @@ namespace NSG
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-        void CreateTriangleMesh();
-		btConvexHullShape* GetConvexHullTriangleMesh() const;
-        void CreateShape();
         void getWorldTransform(btTransform& worldTrans) const override;
         void setWorldTransform(const btTransform& worldTrans) override;
 
-        btRigidBody* body_;
+        std::shared_ptr<btRigidBody> body_;
 		PWeakSceneNode sceneNode_;
         std::weak_ptr<btDynamicsWorld> owner_;
-        btCollisionShape* shape_;
-		btTriangleMesh* triMesh_;
         float mass_;
-        PhysicsShape phyShape_;
+        PShape shape_;
         bool handleCollision_;
 		float restitution_;
 		float friction_;
 		float linearDamp_;
 		float angularDamp_;
-		float margin_;
 		int collisionGroup_;
 		int collisionMask_;
 		bool inWorld_;
 		Vector3 gravity_;
+        Vector3 linearVelocity_;
+        Vector3 angularVelocity_;
+        SignalEmpty::PSlot slotReleased_;
+        SignalEmpty::PSlot slotMeshSet_;
+        SignalWindow::PSlot slotWindowCreated_;
+        SignalEmpty::PSlot slotBeginFrame_;
     };
 }
 

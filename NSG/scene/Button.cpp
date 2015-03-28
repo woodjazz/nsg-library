@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Button.h"
-#include "App.h"
 #include "FontAtlas.h"
 #include "Material.h"
 #include "TextMesh.h"
@@ -32,7 +31,6 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Graphics.h"
 #include "Check.h"
-#include "App.h"
 #include "Technique.h"
 #include "Pass.h"
 #include "RectangleMesh.h"
@@ -41,12 +39,12 @@ namespace NSG
 {
     Button::Button(const std::string& name)
         : Control(name),
-          textMaterial_(App::this_->CreateMaterial()),
+		textMaterial_(Material::Create()),
           hAlign_(CENTER_ALIGNMENT),
           vAlign_(MIDDLE_ALIGNMENT)
     {
-        SetMesh(App::this_->CreateRectangleMesh());
-        SetMaterial(App::this_->GetOrCreateMaterial(name_));
+        SetMesh(Mesh::Create<RectangleMesh>());
+		SetMaterial(Material::GetOrCreate(name_));
         auto pass = material_->GetTechnique()->GetPass(0);
         pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
         SetupLayer();

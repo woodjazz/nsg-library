@@ -36,7 +36,8 @@ misrepresented as being the original software.
 namespace NSG
 {
 	CameraControl::CameraControl(PCamera camera)
-        : camera_(camera)
+        : camera_(camera),
+		window_(nullptr)
     {
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
         lastX_ = lastY_ = 0;
@@ -47,10 +48,18 @@ namespace NSG
         shiftKeyDown_ = false;
         SetSphereCenter(true);
 
-        auto window = Graphics::this_->GetWindow();
-        if(window)
-            SetWindow(window);
+		if (Graphics::this_)
+		{
+			auto window = Graphics::this_->GetWindow();
+			if (window)
+				SetWindow(window);
+		}
 
+		slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window* window)
+		{
+			if (!window_)
+				SetWindow(window);
+		});
     }
 
     CameraControl::~CameraControl()
@@ -60,52 +69,55 @@ namespace NSG
 
 	void CameraControl::SetWindow(Window* window)
 	{
-		if (window)
+		if (window_ != window)
 		{
-			slotUpdate_ = window->signalUpdate_->Connect([&](float deltaTime)
+			if (window)
 			{
-				OnUpdate(deltaTime);
-			});
+				slotUpdate_ = window->signalUpdate_->Connect([&](float deltaTime)
+				{
+					OnUpdate(deltaTime);
+				});
 
-			slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
-			{
-				OnMousemoved(x, y);
-			});
+				slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
+				{
+					OnMousemoved(x, y);
+				});
 
-			slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
-			{
-				OnMouseDown(button, x, y);
-			});
+				slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
+				{
+					OnMouseDown(button, x, y);
+				});
 
-			slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
-			{
-				OnMouseUp(button, x, y);
-			});
+				slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
+				{
+					OnMouseUp(button, x, y);
+				});
 
-			slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
-			{
-				OnMousewheel(x, y);
-			});
+				slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
+				{
+					OnMousewheel(x, y);
+				});
 
-			slotMultiGesture_ = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-			{
-				OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-			});
+				slotMultiGesture_ = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+				{
+					OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
+				});
 
-			slotKey_ = window->signalKey_->Connect([&](int key, int action, int modifier)
+				slotKey_ = window->signalKey_->Connect([&](int key, int action, int modifier)
+				{
+					OnKey(key, action, modifier);
+				});
+			}
+			else
 			{
-				OnKey(key, action, modifier);
-			});
-		}
-		else
-		{
-			slotMouseMoved_ = nullptr;
-			slotMouseDown_ = nullptr;
-			slotMouseUp_ = nullptr;
-			slotMouseWheel_ = nullptr;
-			slotMultiGesture_ = nullptr;
-			slotKey_ = nullptr;
-			slotUpdate_ = nullptr;
+				slotMouseMoved_ = nullptr;
+				slotMouseDown_ = nullptr;
+				slotMouseUp_ = nullptr;
+				slotMouseWheel_ = nullptr;
+				slotMultiGesture_ = nullptr;
+				slotKey_ = nullptr;
+				slotUpdate_ = nullptr;
+			}
 		}
 	}
 

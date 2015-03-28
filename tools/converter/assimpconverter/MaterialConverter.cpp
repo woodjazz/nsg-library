@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Pass.h"
 #include "Technique.h"
-#include "App.h"
 #include "Path.h"
 #include "Util.h"
 #include "assimp/material.h"
@@ -61,7 +60,7 @@ namespace NSG
             }
         }
 
-        material_ = App::this_->GetOrCreateMaterial(materialName);
+		material_ = Material::GetOrCreate(materialName);
 
 
         auto technique = material_->GetTechnique();
@@ -338,7 +337,7 @@ namespace NSG
             relativePath.SetPath(dirs.back());
         relativePath.SetFileName(fileName);
 #endif
-		auto resource = App::this_->GetOrCreateResourceFile(path.GetFilePath());
+		auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
         return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     }
 

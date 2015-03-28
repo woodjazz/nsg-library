@@ -31,13 +31,12 @@ misrepresented as being the original software.
 #include "Technique.h"
 #include "Pass.h"
 #include "MeshConverter.h"
-#include "ModelMesh.h"
+#include "ConverterMesh.h"
 #include "MaterialConverter.h"
 #include "LightConverter.h"
 #include "CameraConverter.h"
 #include "AnimationConverter.h"
 #include "UtilConverter.h"
-#include "App.h"
 #include "Scene.h"
 #include "Skeleton.h"
 #include "assimp/IOStream.hpp"
@@ -532,7 +531,7 @@ namespace NSG
 
     Assimp::IOStream* SceneConverter::Open(const char* filename, const char* mode)
     {
-        auto resource = App::this_->GetOrCreateResourceFile(filename);
+		auto resource = Resource::GetOrCreate<ResourceFile>(filename);
 		resource->SetSerializable(false);
         return new MyIOStream(resource);
     }
@@ -547,18 +546,15 @@ namespace NSG
 		Path outputFile(outputDir_);
 		outputFile.SetName(path_.GetName());
 		outputFile.SetExtension("xml");
-
 		pugi::xml_document doc;
+        pugi::xml_node appNode = doc.append_child("App");
 		if(embedResources_)
-		{
-			auto appNode = App::this_->Save(doc);
-			scene_->Save(appNode);
-		}
+            Resource::SaveResources(appNode);
 		else
-		{
-			auto appNode = App::this_->SaveWithExternalResources(doc, path_, outputDir_);
-			scene_->Save(appNode);
-		}
-		return SaveDocument(outputFile.GetFullAbsoluteFilePath().c_str(), doc, compress);
+            Resource::SaveResourcesExternally(appNode, path_, outputDir_);
+        Mesh::SaveMeshes(appNode);
+        Material::SaveMaterials(appNode);
+        scene_->Save(appNode);
+		return SaveDocument(outputFile, doc, compress);
     }
 }

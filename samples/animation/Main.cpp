@@ -29,11 +29,9 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    App app;
-
 	auto window = Window::Create();
-    auto resource = app.GetOrCreateResourceFile("data/duck.xml");
-	auto scenes = app.Load(resource);
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/duck.xml");
+	auto scenes = resource->Load();
 	auto scene = scenes.at(0);
     auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");
     auto objPos = objNode->GetGlobalPosition();
@@ -97,6 +95,6 @@ int NSG_MAIN(int argc, char* argv[])
     });
 
 
-    return app.Run();
+    return Window::RunApp();
 }
 

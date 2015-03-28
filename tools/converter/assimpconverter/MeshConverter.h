@@ -34,11 +34,11 @@ namespace NSG
 	public:
 		MeshConverter(const aiMesh* aiMesh);
 		~MeshConverter();
-		PModelMesh GetMesh() const { return mesh_; }
+		PConverterMesh GetMesh() const { return mesh_; }
     private:
         GLenum face_mode_;
         const aiMesh* aiMesh_;
-		PModelMesh mesh_;
+		PConverterMesh mesh_;
 	};
 
 	class MeshConverter;

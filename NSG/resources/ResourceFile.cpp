@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "ResourceFile.h"
 #include "Check.h"
-#include "App.h"
 #include "Util.h"
 #include "pugixml.hpp"
 #include <fstream>
@@ -33,18 +32,13 @@ misrepresented as being the original software.
 namespace NSG
 {
     ResourceFile::ResourceFile(const Path& path)
-		: Resource(path.GetFilePath())
+		: Resource(path.GetFilePath()),
+		path_(path)
     {
     }
 
     ResourceFile::~ResourceFile()
     {
-        Invalidate();
-    }
-
-    bool ResourceFile::IsValid()
-    {
-        return Path(name_).HasName();
     }
 
     void ResourceFile::AllocateResources()
@@ -90,7 +84,8 @@ namespace NSG
         }
         #endif
 
-		//buffer_ = DecompressBuffer(buffer_);
+		if (path_.GetExtension() == "lz4")
+			buffer_ = DecompressBuffer(buffer_);
     }
 
     void ResourceFile::ReleaseResources()

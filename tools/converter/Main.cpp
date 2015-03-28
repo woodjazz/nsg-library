@@ -195,7 +195,6 @@ int NSG_MAIN(int argc, char* argv[])
 
         if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
         {
-			App app;
 			auto window = Window::Create("window", 0, 0, 1, 1);
 			using namespace BlenderConverter;
 			BScene scene(inputFile, outputDir, bArg.getValue());
@@ -210,14 +209,12 @@ int NSG_MAIN(int argc, char* argv[])
             int sChar = sArg.getValue();
             int eChar = eArg.getValue();
 
-			App app;
             TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
             if (obj.Load() && obj.Save(outputDir, zArg.getValue()))
                 return 0;
         }
         else
         {
-            App app;
 			auto window = Window::Create("window", 0, 0, 1, 1);
 			SceneConverter scene(inputFile, outputDir, bArg.getValue());
 			if (scene.Load() && scene.Save(zArg.getValue()))

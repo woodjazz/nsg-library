@@ -43,7 +43,6 @@ namespace NSG
 		void SetWindow(Window* window);
 		PFrameBuffer GetFrameBuffer() const { return frameBuffer_; }
 	protected:
-		App& app_;
 		Technique* technique_;
         PMaterial pMaterial_; 
 		PMesh pMesh_;

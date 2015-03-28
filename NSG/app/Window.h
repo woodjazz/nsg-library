@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "MapAndVector.h"
 #include "Util.h"
 #include <string>
+#include <mutex>
 struct SDL_Window;
 namespace NSG
 {
@@ -51,20 +52,17 @@ namespace NSG
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
 		virtual void RenderFrame() = 0;
-        void EnterBackground();
-        void EnterForeground();
+        virtual int Run() = 0;
+        virtual void EnterBackground();
+        virtual void EnterForeground();
         void InvalidateContext();
         void DropFile(const std::string& filePath);
-        #if !defined(EMSCRIPTEN)
-        virtual SDL_Window* GetSDLWindow() const { return nullptr; }
-		virtual SDL_GLContext GetSDLContext() const { return nullptr;  }
-        #endif
         int GetWidth() const { return width_; }
         int GetHeight() const { return height_; }
-        void Close();
+        virtual void Close();
 		bool IsClosed() const { return isClosed_; }
 		bool IsMinimized() const { return minimized_; }
-        virtual void Destroy() = 0;
+        virtual void Destroy() {}
         Recti GetViewport() const;
         const std::string& GetName() const { return name_; }
         PFilter AddBlurFilter();
@@ -77,7 +75,17 @@ namespace NSG
         bool BeginFrameRender();
         void EndFrameRender();
         PFrameBuffer GetFrameBuffer() const { return frameBuffer_; }
+        static bool AllowWindowCreation();
+        static void NotifyOneWindow2Remove() { ++nWindows2Remove_;  }
+        static std::vector<PWeakWindow>& GetWindows() { return windows_; }
+        static void SetMainWindow(Window* window);
+        static void AddWindow(PWindow window);
+		static bool RenderWindows();
+        static const AppConfiguration& GetAppConfiguration() { return conf_; }
+        static int RunApp();
+        static Window* GetMainWindow() { return mainWindow_; }
 
+        static SignalWindow::PSignal signalWindowCreated_;
         SignalViewChanged::PSignal signalViewChanged_;
         SignalMouseMoved::PSignal signalMouseMoved_;
         SignalMouseDown::PSignal signalMouseDown_;
@@ -94,18 +102,24 @@ namespace NSG
         void SetSize(int width, int height);
         std::string name_;
         float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
-        App* app_;
         bool isClosed_;
         bool minimized_;
         bool isMainWindow_;
         int width_;
         int height_;
         bool filtersEnabled_;
+		static std::vector<PWeakWindow> windows_;
+        static Window* mainWindow_;
     private:
+        virtual void HandleEvents() {}
         void AddFilter(PFilter filter);
         void CreateFrameBuffer();
         std::vector<PFilter> filters_;
         PFrameBuffer frameBuffer_;
         PShowTexture showFrameBuffer_;
+        static int nWindows2Remove_;
+        static PGraphics graphics_;
+        static std::once_flag onceFlag_;
+        static AppConfiguration conf_;
     };
 }

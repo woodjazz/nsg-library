@@ -30,8 +30,6 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    App app;
-
 	auto window = Window::Create();
 
     const int COLS = 11;
@@ -39,12 +37,13 @@ int NSG_MAIN(int argc, char* argv[])
     PSceneNode earth[COLS][ROWS];
 
     auto scene = std::make_shared<Scene>("scene000");
-    auto sphereMesh(app.CreateSphereMesh(3, 24));
+	auto sphereMesh(Mesh::Create<SphereMesh>());
+	sphereMesh->Set(3, 24);
 
-    auto pEarthTexture1(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/Earthmap720x360_grid.jpg")));
-	auto pEarthTexture2(std::make_shared<Texture>(app.GetOrCreateResourceFile("data/jup0vss1.jpg")));
-	auto pMaterial1(app.GetOrCreateMaterial("earth1", (int)ProgramFlag::PER_PIXEL_LIGHTING));
-	auto pMaterial2(app.GetOrCreateMaterial("earth2", (int)ProgramFlag::PER_PIXEL_LIGHTING));
+    auto pEarthTexture1(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg")));
+	auto pEarthTexture2(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/jup0vss1.jpg")));
+	auto pMaterial1(Material::GetOrCreate("earth1", (int)ProgramFlag::PER_PIXEL_LIGHTING));
+	auto pMaterial2(Material::GetOrCreate("earth2", (int)ProgramFlag::PER_PIXEL_LIGHTING));
     pMaterial1->SetDiffuseMap(pEarthTexture1);
     pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
@@ -105,5 +104,5 @@ int NSG_MAIN(int argc, char* argv[])
 		scene->Render();
 	});
 
-    return app.Run();
+    return Window::RunApp();
 };

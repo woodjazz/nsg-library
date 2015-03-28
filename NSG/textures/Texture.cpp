@@ -24,12 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Texture.h"
-#include "App.h"
 #include "Resource.h"
 #include "Check.h"
 #include "Graphics.h"
-#include "ResourceMemory.h"
 #include "ResourceFile.h"
+#include "ResourceXMLNode.h"
 #include "Texture.h"
 #include "Path.h"
 #include "Util.h"
@@ -42,54 +41,13 @@ misrepresented as being the original software.
 #include "stb_image_write.h"
 #include "jpgd.h"
 #include <algorithm>
+#include <cerrno>
 
 namespace NSG
 {
-    Texture::Texture(const std::string& name, GLint format, GLsizei width, GLsizei height, const char* pixels)
-        : fromKnownImgFormat_(false),
-          flags_((int)TextureFlag::NONE),
-          texture_(0),
-          width_(width),
-          height_(height),
-          format_(format),
-          type_(GL_UNSIGNED_BYTE),
-          channels_(0),
-          serializable_(false),
-          wrapMode_(TextureWrapMode::REPEAT),
-          mipmapLevels_(0),
-          filterMode_(TextureFilterMode::BILINEAR)
-
-    {
-        switch (format_)
-        {
-            case GL_ALPHA:
-                channels_ = 1;
-                break;
-            case GL_RGB:
-                channels_ = 3;
-                break;
-            case GL_RGBA:
-                channels_ = 4;
-                break;
-            case GL_DEPTH_COMPONENT:
-                channels_ = 0;
-                type_ = GL_UNSIGNED_INT;
-                break;
-            default:
-                CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
-                break;
-        }
-
-		if (pixels)
-		{
-			auto resource = App::this_->GetOrCreateResourceMemory(name);
-			resource->SetData(pixels, width * height * channels_);
-			pResource_ = resource;
-		}
-    }
-
     Texture::Texture(const std::string& name, GLint format)
-        : fromKnownImgFormat_(false),
+        : Object(name),
+          fromKnownImgFormat_(false),
           flags_((int)TextureFlag::NONE),
           texture_(0),
           width_(0),
@@ -125,7 +83,8 @@ namespace NSG
     }
 
     Texture::Texture(PResource resource, const TextureFlags& flags)
-        : fromKnownImgFormat_(true),
+        : Object(resource->GetName() + "Texture"),
+          fromKnownImgFormat_(true),
           flags_(flags),
           texture_(0),
           pResource_(resource),
@@ -143,7 +102,6 @@ namespace NSG
 
     Texture::~Texture()
     {
-        Invalidate();
     }
 
     GLuint Texture::GetID() const
@@ -183,25 +141,25 @@ namespace NSG
 
     bool Texture::IsValid()
     {
-        if(pResource_)
+        if (pResource_)
             return pResource_->IsReady();
         else
-		  return width_ > 0 && height_ > 0;
+            return width_ > 0 && height_ > 0;
     }
 
-	const unsigned char* Texture::GetImageData(bool fromKnownImgFormat, PResource resource, bool& allocated, GLint& format, GLsizei& width, GLsizei& height, int& channels)
+    const unsigned char* Texture::GetImageData(bool fromKnownImgFormat, PResource resource, bool& allocated, GLint& format, GLsizei& width, GLsizei& height, int& channels)
     {
-		CHECK_ASSERT(resource->IsReady(), __FILE__, __LINE__);
+        CHECK_ASSERT(resource->IsReady() && "Resource shall be ready at this point!!!", __FILE__, __LINE__);
         if (fromKnownImgFormat)
         {
-			allocated = true;
-			const unsigned char* img = stbi_load_from_memory((const unsigned char*)resource->GetData(), resource->GetBytes(), &width, &height, &channels, 0);
+            allocated = true;
+            const unsigned char* img = stbi_load_from_memory((const unsigned char*)resource->GetData(), resource->GetBytes(), &width, &height, &channels, 0);
 
             if (!img)
-				img = jpgd::decompress_jpeg_image_from_memory((const unsigned char*)resource->GetData(), resource->GetBytes(), &width, &height, &channels, 4);
+                img = jpgd::decompress_jpeg_image_from_memory((const unsigned char*)resource->GetData(), resource->GetBytes(), &width, &height, &channels, 4);
 
             if (!img)
-				TRACE_LOG("Resource=" << resource->GetName() << " failed with reason: " << stbi_failure_reason());
+                TRACE_LOG("Resource=" << resource->GetName() << " failed with reason: " << stbi_failure_reason());
 
             if (img)
             {
@@ -220,7 +178,7 @@ namespace NSG
                 else
                 {
                     format = GL_RGB;
-					TRACE_LOG("Resource=" << resource->GetName() << " unknown internalformat. Channels = " << channels << " Width=" << width << " Height=" << height);
+                    TRACE_LOG("Resource=" << resource->GetName() << " unknown internalformat. Channels = " << channels << " Width=" << width << " Height=" << height);
                     CHECK_ASSERT(false && "Unknown internalformat", __FILE__, __LINE__);
                 }
             }
@@ -228,13 +186,13 @@ namespace NSG
         }
         else
         {
-			allocated = false;
+            allocated = false;
             const unsigned char* img = nullptr;
 
-			if (resource->GetBytes())
+            if (resource->GetBytes())
             {
-				CHECK_ASSERT(width * height * channels == resource->GetBytes(), __FILE__, __LINE__);
-				img = (const unsigned char*)resource->GetData();
+                CHECK_ASSERT(width * height * channels == resource->GetBytes(), __FILE__, __LINE__);
+                img = (const unsigned char*)resource->GetData();
             }
             return img;
         }
@@ -248,12 +206,12 @@ namespace NSG
 
         Graphics::this_->SetTexture(0, this);
 
-		bool allocated = false;
-		const unsigned char* img = nullptr;
-		if (pResource_)
-			img = Texture::GetImageData(fromKnownImgFormat_, pResource_, allocated, format_, width_, height_, channels_);
+        bool allocated = false;
+        const unsigned char* img = nullptr;
+        if (pResource_)
+            img = Texture::GetImageData(fromKnownImgFormat_, pResource_, allocated, format_, width_, height_, channels_);
 
-		if (img && flags_ & (int)TextureFlag::INVERT_Y)
+        if (img && flags_ & (int)TextureFlag::INVERT_Y)
         {
             unsigned char* inverted = (unsigned char*)malloc(channels_ * width_ * height_);
             memcpy(inverted, img, channels_ * width_ * height_);
@@ -272,8 +230,8 @@ namespace NSG
                 }
             }
 
-			if (allocated)
-				free((void*)img); // same as stbi_image_free
+            if (allocated)
+                free((void*)img); // same as stbi_image_free
 
             img = inverted;
         }
@@ -358,26 +316,33 @@ namespace NSG
                 break;
         }
 
-		if (pResource_)
-			pResource_->Invalidate(false);
-
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     void Texture::ReleaseResources()
     {
         glDeleteTextures(1, &texture_);
-		texture_ = 0;
-        //pResource_->Invalidate(); //Maybe the user has released the resource: force the reload (next time) from the resource
+        texture_ = 0;
+        if (pResource_)
+            return pResource_->Invalidate();
+
     }
 
-    PTexture Texture::CreateFrom(const pugi::xml_node& node)
+    PTexture Texture::CreateFrom(PResource resource, const pugi::xml_node& node)
     {
         std::string flags = node.attribute("flags").as_string();
-		std::string resourceName = node.attribute("resource").as_string();
-		auto resource = App::this_->GetResource(resourceName);
-		CHECK_ASSERT(resource, __FILE__, __LINE__);
-        auto texture = std::make_shared<Texture>(resource);
+        std::string resourceName = node.attribute("resource").as_string();
+        auto res = Resource::Get(resourceName);
+        PTexture texture;
+        if (!res)
+        {
+			auto newRes = Resource::Create<ResourceXMLNode>(resourceName);
+            texture = std::make_shared<Texture>(newRes);
+			newRes->Set(resource, nullptr, "Resources", resourceName);
+        }
+        else
+            texture = std::make_shared<Texture>(res);
+        texture->SetName(resourceName);
         texture->SetFlags(flags);
         return texture;
     }
@@ -385,13 +350,13 @@ namespace NSG
     void Texture::Save(pugi::xml_node& node)
     {
         node.append_attribute("flags") = flags_.to_string().c_str();
-		node.append_attribute("resource") = pResource_->GetName().c_str();
+        node.append_attribute("resource") = pResource_->GetName().c_str();
     }
 
     void Texture::SetSize(GLsizei width, GLsizei height)
     {
-        CHECK_ASSERT(width >=0 && height >=0, __FILE__, __LINE__);
-        if(width_ != width || height_ != height)
+        CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
+        if (width_ != width || height_ != height)
         {
             width_ = width;
             height_ = height;
@@ -426,26 +391,26 @@ namespace NSG
         }
     }
 
-	int Texture::SaveAsPNG(PResource resource, const Path& outputDir)
+    int Texture::SaveAsPNG(PResource resource, const Path& outputDir)
     {
-		Path oPath;
-		oPath.SetPath(outputDir.GetPath());
-		oPath.SetName(Path(resource->GetName()).GetName());
-		oPath.SetExtension("png");
+        Path oPath;
+        oPath.SetPath(outputDir.GetPath());
+        oPath.SetName(Path(resource->GetName()).GetName());
+        oPath.SetExtension("png");
 
-		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
-		bool allocated = false;
-		int format, width, height, channels;
-		const unsigned char* img = Texture::GetImageData(true, resource, allocated, format, width, height, channels);
-		int result = 0;
-		if (img)
-		{
-			result = stbi_write_png(oPath.GetFullAbsoluteFilePath().c_str(), width, height, channels, img, 0);
-			if (!result)
-				TRACE_LOG("Error " << std::strerror(errno) << " writting file " << oPath.GetFilePath());
-			if (allocated) 
-				free((void*)img);
-		}
-		return result;
+        CHECK_CONDITION(resource->IsReady() && "Resource must be ready at this point!!!", __FILE__, __LINE__);
+        bool allocated = false;
+        int format, width, height, channels;
+        const unsigned char* img = Texture::GetImageData(true, resource, allocated, format, width, height, channels);
+        int result = 0;
+        if (img)
+        {
+            result = stbi_write_png(oPath.GetFullAbsoluteFilePath().c_str(), width, height, channels, img, 0);
+            if (!result)
+                TRACE_LOG("Error " << std::strerror(errno) << " writting file " << oPath.GetFilePath());
+            if (allocated)
+                free((void*)img);
+        }
+        return result;
     }
 }

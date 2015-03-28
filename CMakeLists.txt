@@ -29,10 +29,10 @@ set(ROOT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(DEPENDENCIES_BINARY_DIR ${ROOT_BINARY_DIR}/dependencies)
 set(EXTERNALS_BYNARY_DIR ${ROOT_BINARY_DIR}/externals)
 set(LIBRARIES_FOLDER_NAME "LIBRARIES")
+
 ###########################
 # CLEAN_DATA_FILES
 ###########################
-
 add_custom_target(CLEAN_DATA_FILES
    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/CleanDataFiles.cmake
    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -117,13 +117,6 @@ if(NOT EMSCRIPTEN) #EMSCRIPTEN supports/includes SDL 1.2
 	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
 	add_subdirectory(${DEPENDENCIES_DIR}/SDL)
     if (WIN32)
-		if (MSVC)
-		    find_package (Direct3D)
-		    if (DIRECT3D_FOUND)
-		        include_directories (${DIRECT3D_INCLUDE_DIRS})
-		        list (APPEND LIBRARIES_2_LINK ${DIRECT3D_LIBRARIES} ${DIRECT3D_COMPILER_LIBRARIES})
-		    endif ()
-		endif ()
         list (APPEND LIBRARIES_2_LINK user32 gdi32 winmm imm32 ole32 oleaut32 version uuid )
     endif()
 

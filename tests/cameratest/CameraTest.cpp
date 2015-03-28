@@ -185,7 +185,8 @@ static void Test01()
 {
 	PScene scene = std::make_shared<Scene>("scene000");
 
-	PSphereMesh sphere(App::this_->CreateSphereMesh(1, 100));
+	PSphereMesh sphere(Mesh::Create<SphereMesh>());
+	sphere->Set(1, 100);
     {
 
         Node node;
@@ -277,7 +278,8 @@ static void Test01()
 static void Test02()
 {
     {
-        PBoxMesh box(App::this_->CreateBoxMesh(2, 4, 2));
+		PBoxMesh box(Mesh::Create<BoxMesh>());
+		box->Set(2, 4, 2);
         Node node;
 		PScene scene = std::make_shared<Scene>("scene000");
 
@@ -437,7 +439,8 @@ static void Test04()
 static void Test05()
 {
 	{
-		PBoxMesh box(App::this_->CreateBoxMesh(1, 1, 1));
+		PBoxMesh box(Mesh::Create<BoxMesh>());
+		box->Set(1, 1, 1);
 		CHECK_CONDITION(box->IsReady(), __FILE__, __LINE__);
 		PScene scene = std::make_shared<Scene>("scene000");
 
@@ -458,7 +461,6 @@ static void Test05()
 
 void CameraTest()
 {
-	App app;
 	auto window = Window::Create("window", 0, 0, 1, 1);
 	FrustumTest();
 	Test01();

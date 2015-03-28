@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Object.h"
 #include "Batch.h"
 #include "Util.h"
+#include "MapAndVector.h"
 #include "UniformsUpdate.h"
 namespace NSG
 {
@@ -76,7 +77,6 @@ namespace NSG
         int GetUniformValue(const char* name) const;
         PTechnique GetTechnique() { return technique_; }
         void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node);
         void SetSerializable(bool serializable) { serializable_ = serializable; }
         bool IsSerializable() const { return serializable_; }
         void SetFilterBlendMode(BlendFilterMode mode);
@@ -85,7 +85,7 @@ namespace NSG
         void SetFilterWave(const WaveFilter& data);
         const BlurFilter& GetFilterBlur() const { return blurFilter_; }
         const WaveFilter& GetWaveFilter() const { return waveFilter_; }
-        PTexture GetTextureWithResource(PResource resource);
+        PTexture GetTextureWith(PResource resource) const;
 		PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
 		bool IsTransparent() const;
 		void SetSolid(bool solid);
@@ -93,7 +93,16 @@ namespace NSG
 		void UpdateBatchBuffer(const Batch& batch);
 		void BachedNodeHasChanged();
 		bool IsText() const;
+		static PMaterial Create(const std::string& name = GetUniqueName("Material"), const ProgramFlags& flags = (int)ProgramFlag::NONE);
+		static PMaterial GetOrCreate(const std::string& name = GetUniqueName("Material"), const ProgramFlags& flags = (int)ProgramFlag::NONE);
+		static PMaterial Get(const std::string& name);
+		static std::vector<PMaterial> GetMaterials();
+		static PTexture GetTextureWithResource(PResource resource);
+		static std::vector<PMaterial> LoadMaterials(PResource resource, const pugi::xml_node& node);
+		static void SaveMaterials(pugi::xml_node& node);
+        void Set(PResourceXMLNode xmlResource);
     private:
+		void Load(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();
         bool IsValid() override;
 		void AllocateResources() override;
@@ -106,7 +115,6 @@ namespace NSG
         float parallaxScale_; //used with displacement map
         Color color_;
         PTechnique technique_;
-        std::string name_;
         bool serializable_;
         BlendFilterMode blendFilterMode_;
         BlurFilter blurFilter_;
@@ -114,6 +122,8 @@ namespace NSG
 		PInstanceBuffer instanceBuffer_;
 		Batch lastBatch_;
 		bool isBatched_;
+        PResourceXMLNode xmlResource_;
+		static MapAndVector<std::string, Material> materials_;
         friend class Program;
     };
 }

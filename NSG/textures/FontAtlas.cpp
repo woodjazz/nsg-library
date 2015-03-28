@@ -3,10 +3,8 @@
 #include "Texture.h"
 #include "TextMesh.h"
 #include "ResourceFile.h"
-#include "ResourceMemory.h"
 #include "Mesh.h"
 #include "Graphics.h"
-#include "App.h"
 #include "Window.h"
 #include "UTF8String.h"
 #include "pugixml.hpp"
@@ -19,27 +17,27 @@
 namespace NSG
 {
     FontAtlas::FontAtlas(PResourceFile xmlResource)
-        : xmlResource_(xmlResource),
+        : Object(xmlResource->GetName() + "FontAtlas"),
+          xmlResource_(xmlResource),
           viewWidth_(0),
           viewHeight_(0)
     {
         Path path(xmlResource->GetName());
         path.SetExtension("png");
-        auto textureResource = App::this_->GetOrCreateResourceFile(path.GetFilePath());
+        auto textureResource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
         texture_ = std::make_shared<Texture>(textureResource);
         auto window = Graphics::this_->GetWindow();
-        if(window)
+        if (window)
             SetWindow(window);
     }
 
     FontAtlas::~FontAtlas()
     {
-        Invalidate();
     }
 
     void FontAtlas::SetWindow(Window* window)
     {
-        if(window)
+        if (window)
         {
             SetViewSize(window->GetWidth(), window->GetHeight());
 
@@ -65,7 +63,7 @@ namespace NSG
 
     bool FontAtlas::IsValid()
     {
-        return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_ && xmlResource_->IsReady() && texture_->IsReady();
+        return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_->IsReady() && texture_->IsReady();
     }
 
     void FontAtlas::AllocateResources()
@@ -76,7 +74,6 @@ namespace NSG
     void FontAtlas::ReleaseResources()
     {
         charsMap_.clear();
-        xmlResource_->Invalidate();
     }
 
     void FontAtlas::SetViewSize(int width, int height)
@@ -85,7 +82,6 @@ namespace NSG
         {
             viewWidth_ = width;
             viewHeight_ = height;
-            //Invalidate();
             auto objs = meshes_.GetObjs();
             for (auto& obj : objs)
                 obj->Invalidate();
@@ -97,7 +93,7 @@ namespace NSG
         TRACE_LOG("FontAtlas::Parsing: " << xmlResource_->GetName());
 
         pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_buffer_inplace((void*)xmlResource_->GetData(), xmlResource_->GetBytes());
+        pugi::xml_parse_result result = doc.load_buffer((void*)xmlResource_->GetData(), xmlResource_->GetBytes());
         if (!result)
         {
             TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
@@ -144,7 +140,8 @@ namespace NSG
 
     void FontAtlas::GenerateMeshData(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight)
     {
-		CHECK_ASSERT(vertexsData.empty() && indexes.empty(), __FILE__, __LINE__);
+        vertexsData.clear();
+        indexes.clear();
         screenWidth = screenHeight = 0;
 
         CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0, __FILE__, __LINE__);
@@ -185,16 +182,16 @@ namespace NSG
 
 
                 vertex[0].position_ = Vertex3(offsetX, offsetY, 0);
-				vertex[0].uv_[0] = Vertex2(ux, uy);
+                vertex[0].uv_[0] = Vertex2(ux, uy);
 
                 vertex[1].position_ = Vertex3(offsetX + w, offsetY, 0);
-				vertex[1].uv_[0] = Vertex2(ux + uw, uy);
+                vertex[1].uv_[0] = Vertex2(ux + uw, uy);
 
                 vertex[2].position_ = Vertex3(offsetX, offsetY + h, 0);
-				vertex[2].uv_[0] = Vertex2(ux, uy + uh);
+                vertex[2].uv_[0] = Vertex2(ux, uy + uh);
 
                 vertex[3].position_ = Vertex3(offsetX + w, offsetY + h, 0);
-				vertex[3].uv_[0] = Vertex2(ux + uw, uy + uh);
+                vertex[3].uv_[0] = Vertex2(ux + uw, uy + uh);
             }
 
             for (int i = 0; i < 4; i++)

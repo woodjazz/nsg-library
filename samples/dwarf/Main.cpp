@@ -29,11 +29,9 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    App app;
-
 	auto window = Window::Create();
-    auto resource = app.GetOrCreateResourceFile("data/dwarf.xml");
-	auto scenes = app.Load(resource);
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/dwarf.xml");
+	auto scenes = resource->Load();
 	auto scene = scenes.at(0);
     scene->SetAmbientColor(Color(0));
 
@@ -50,8 +48,8 @@ int NSG_MAIN(int argc, char* argv[])
 	light->SetSpotCutOff(FOV);
 	//light->SetDiffuseColor(Color(1, 0, 0, 1));
 
-    auto material0 = app.GetMaterial("Material0");
-	auto material1 = app.GetMaterial("Material1");
+	auto material0 = Material::Get("Material0");
+	auto material1 = Material::Get("Material1");
 	material0->SetColor(Color(1, 1, 1, 1));
 	material0->SetDiffuseColor(Color(1, 1, 1, 1));
 	material1->SetColor(Color(1, 1, 1, 1));
@@ -81,5 +79,5 @@ int NSG_MAIN(int argc, char* argv[])
         scene->Render();
     });
 
-    return app.Run();
+    return Window::RunApp();
 }

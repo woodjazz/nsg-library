@@ -27,7 +27,6 @@
 include(${CMAKE_SOURCE_DIR}/cmake/modules/Common.cmake)
 
 SUBDIRLIST(SUBDIRS ${CMAKE_SOURCE_DIR}/samples)
-
 FOREACH(subdir ${SUBDIRS})
   get_filename_component(INPUTDIR "samples/${subdir}" ABSOLUTE)
   set(ARTDATA "${INPUTDIR}/art")
@@ -39,5 +38,16 @@ FOREACH(subdir ${SUBDIRS})
   endif()
 ENDFOREACH()
 
+SUBDIRLIST(SUBDIRS ${CMAKE_SOURCE_DIR}/tests)
+FOREACH(subdir ${SUBDIRS})
+  get_filename_component(INPUTDIR "tests/${subdir}" ABSOLUTE)
+  set(ARTDATA "${INPUTDIR}/art")
+  #message("${ARTDATA}")
+  if(EXISTS ${ARTDATA})
+    set(FILEDATA "${INPUTDIR}/data")
+    file(REMOVE_RECURSE ${FILEDATA})
+    file(MAKE_DIRECTORY ${FILEDATA})
+  endif()
+ENDFOREACH()
 
 

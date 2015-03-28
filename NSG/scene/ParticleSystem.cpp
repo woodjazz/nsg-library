@@ -27,14 +27,14 @@ misrepresented as being the original software.
 #include "Particle.h"
 #include "Scene.h"
 #include "Util.h"
-#include "App.h"
 #include "SphereMesh.h"
-#include "RectangleMesh.h"
+#include "QuadMesh.h"
 #include "Material.h"
 #include "Technique.h"
 #include "Pass.h"
 #include "Program.h"
 #include "RigidBody.h"
+#include "Shape.h"
 #include "PhysicsWorld.h"
 #include "AppConfiguration.h"
 
@@ -75,7 +75,8 @@ namespace NSG
           distribution_(ParticleSystemDistribution::RANDOM),
 		  gravity_(0, -9.81f, 0)
     {
-        particleMesh_ = App::this_->CreateRectangleMesh(1, 1);
+		particleMesh_ = Mesh::Create<QuadMesh>();
+		particleMesh_->Set(1.f);
         particleMaterial_ = std::make_shared<Material>(GetUniqueName(name + "Particle"));
         particleMaterial_->SetColor(Color(0, 1, 0, 1));
 		auto pass = particleMaterial_->GetTechnique()->GetPass(0);
@@ -85,11 +86,11 @@ namespace NSG
 		program->EnableFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::SPHERICAL_BILLBOARD);
         SetLayer(RenderLayer::PARTICLES_LAYER);
         DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
+		particles_.reserve(amount_);
     }
 
     ParticleSystem::~ParticleSystem()
     {
-        Invalidate();
     }
 
 	void ParticleSystem::SetParticleMaterial(PMaterial material)
@@ -143,7 +144,9 @@ namespace NSG
 			rb->SetGravity(gravity_);
             rb->SetCollisionMask(collisionGroup_, collisionMask_);
             rb->SetMass(physicsParams_.mass_);
-            rb->SetShape(physicsParams_.shape_);
+            auto shape = particleMesh_->GetShape();
+            shape->SetType(physicsParams_.shape_);
+            rb->SetShape(shape);
             particle->SetEnabled(false);
             particles_.push_back(particle);
         }
@@ -158,12 +161,7 @@ namespace NSG
         disabled_.insert(particle);
     }
 
-    void ParticleSystem::AllocateResources()
-    {
-        particles_.reserve(amount_);
-    }
-
-    void ParticleSystem::ReleaseResources()
+    void ParticleSystem::Invalidate()
     {
         particles_.clear();
         ClearAllChildren();
@@ -192,27 +190,27 @@ namespace NSG
 
     void ParticleSystem::Update(float deltaTime)
     {
-        if (IsReady())
-        {
-            Try2GenerateParticles(deltaTime);
-            for (auto& particle : particles_)
-            {
-                if (particle->IsEnabled())
-                {
-                    auto lifeTime = GetLifeTime();
-                    auto age = particle->GetAge();
-                    if (age < lifeTime)
-                        particle->Update(deltaTime);
-                    else
-                        RemoveParticle(particle);
-                }
-            }
-        }
+		if (mesh_ && mesh_->IsReady())
+		{
+			Try2GenerateParticles(deltaTime);
+			for (auto& particle : particles_)
+			{
+				if (particle->IsEnabled())
+				{
+					auto lifeTime = GetLifeTime();
+					auto age = particle->GetAge();
+					if (age < lifeTime)
+						particle->Update(deltaTime);
+					else
+						RemoveParticle(particle);
+				}
+			}
 
-        currentTime_ += deltaTime;
+			currentTime_ += deltaTime;
 
-		if (loop_ && currentTime_ > animationEndTime_)
-            ReStartLoop();
+			if (loop_ && currentTime_ > animationEndTime_)
+				ReStartLoop();
+		}
     }
 
     void ParticleSystem::Initialize(PParticle particle)

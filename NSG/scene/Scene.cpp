@@ -9,7 +9,6 @@
 #include "Constants.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "App.h"
 #include "Util.h"
 #include "Skeleton.h"
 #include "ModelMesh.h"
@@ -33,18 +32,27 @@ namespace NSG
           signalNodeMouseWheel_(new Signal<SceneNode *, float, float>()),
           ambient_(0.3f, 0.3f, 0.3f, 1),
           orthoCamera_(std::make_shared<Camera>("SceneOrthoCamera")),
-          app_(*App::this_),
-          physicsWorld_(new PhysicsWorld)
+          physicsWorld_(new PhysicsWorld),
+		  window_(nullptr)
     {
         orthoCamera_->EnableOrtho();
 
         for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)
             octree_[i] = std::make_shared<Octree>();
 
-        Graphics::this_->SetScene(this);
-        auto window = Graphics::this_->GetWindow();
-        if (window)
-            SetWindow(window);
+		if (Graphics::this_)
+		{
+			Graphics::this_->SetScene(this);
+			auto window = Graphics::this_->GetWindow();
+			if (window)
+				SetWindow(window);
+		}
+
+		slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window* window)
+		{
+			if (!window_)
+				SetWindow(window);
+		});
     }
 
     Scene::~Scene()
@@ -53,56 +61,59 @@ namespace NSG
 
     void Scene::SetWindow(Window* window)
     {
-        if (window)
-        {
-            slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
-            {
-                if (signalNodeMouseMoved_->HasSlots())
-                {
-                    SceneNode* node = GetClosestNode(x, y);
-                    if (node)
-                        signalNodeMouseMoved_->Run(node, x, y);
-                }
-            });
+		if (window_ != window)
+		{
+			if (window)
+			{
+				slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
+				{
+					if (signalNodeMouseMoved_->HasSlots())
+					{
+						SceneNode* node = GetClosestNode(x, y);
+						if (node)
+							signalNodeMouseMoved_->Run(node, x, y);
+					}
+				});
 
-            slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
-            {
-                if (signalNodeMouseDown_->HasSlots())
-                {
-                    SceneNode* node = GetClosestNode(x, y);
-                    if (node)
-                        signalNodeMouseDown_->Run(node, button, x, y);
-                }
-            });
+				slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
+				{
+					if (signalNodeMouseDown_->HasSlots())
+					{
+						SceneNode* node = GetClosestNode(x, y);
+						if (node)
+							signalNodeMouseDown_->Run(node, button, x, y);
+					}
+				});
 
-            slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
-            {
-                if (signalNodeMouseUp_->HasSlots())
-                {
-                    SceneNode* node = GetClosestNode(x, y);
-                    if (node)
-                        signalNodeMouseUp_->Run(node, button, x, y);
-                }
-            });
+				slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
+				{
+					if (signalNodeMouseUp_->HasSlots())
+					{
+						SceneNode* node = GetClosestNode(x, y);
+						if (node)
+							signalNodeMouseUp_->Run(node, button, x, y);
+					}
+				});
 
-            slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
-            {
-                if (signalNodeMouseWheel_->HasSlots())
-                {
-                    SceneNode* node = GetClosestNode(x, y);
-                    if (node)
-                        signalNodeMouseWheel_->Run(node, x, y);
-                }
-            });
+				slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
+				{
+					if (signalNodeMouseWheel_->HasSlots())
+					{
+						SceneNode* node = GetClosestNode(x, y);
+						if (node)
+							signalNodeMouseWheel_->Run(node, x, y);
+					}
+				});
 
-        }
-        else
-        {
-            slotMouseMoved_ = nullptr;
-            slotMouseDown_ = nullptr;
-            slotMouseUp_ = nullptr;
-            slotMouseWheel_ = nullptr;
-        }
+			}
+			else
+			{
+				slotMouseMoved_ = nullptr;
+				slotMouseDown_ = nullptr;
+				slotMouseUp_ = nullptr;
+				slotMouseWheel_ = nullptr;
+			}
+		}
     }
 
     void Scene::SetAmbientColor(Color ambient)
@@ -261,8 +272,8 @@ namespace NSG
     void Scene::SaveAnimations(pugi::xml_node& node) const
     {
         pugi::xml_node child = node.append_child("Animations");
-        for (auto& obj : animations_.GetConstObjs())
-            obj->Save(child);
+        for (auto& obj : animations_)
+            obj.second->Save(child);
     }
 
     void Scene::LoadAnimations(const pugi::xml_node& node)
@@ -287,7 +298,7 @@ namespace NSG
 
     void Scene::SaveSkeletons(pugi::xml_node& node) const
     {
-        const std::vector<PMesh>& meshes = app_.GetMeshes();
+        const std::vector<PMesh>& meshes = Mesh::GetMeshes();
         if (meshes.size())
         {
             pugi::xml_node child = node.append_child("Skeletons");
@@ -309,7 +320,7 @@ namespace NSG
             while (child)
             {
                 std::string meshName = child.attribute("meshName").as_string();
-                PModelMesh mesh = std::dynamic_pointer_cast<ModelMesh>(app_.GetMesh(meshName));
+                auto mesh = Mesh::Get<ModelMesh>(meshName);
                 CHECK_CONDITION(mesh, __FILE__, __LINE__);
                 if (!mesh->GetSkeleton())
                 {
@@ -359,22 +370,28 @@ namespace NSG
 
     PAnimation Scene::GetOrCreateAnimation(const std::string& name)
     {
-        return animations_.GetOrCreate(name);
+		auto it = animations_.find(name);
+		if (it == animations_.end())
+		{
+			auto animation = std::make_shared<Animation>(name);
+			animations_[name] = animation;
+			return animation;
+		}
+		return it->second;
     }
 
     std::vector<PAnimation> Scene::GetAnimationsFor(PNode node) const
     {
-        auto& animations = animations_.GetConstObjs();
         std::vector<PAnimation> result;
-        for (auto& animation : animations)
+		for (auto& animation : animations_)
         {
-            auto& tracks = animation->GetTracks();
+            auto& tracks = animation.second->GetTracks();
             for (auto& track : tracks)
             {
                 auto trackNode = track.node_.lock();
                 if (trackNode == node)
                 {
-                    result.push_back(animation);
+                    result.push_back(animation.second);
                     break;
                 }
             }
@@ -384,12 +401,12 @@ namespace NSG
 
     bool Scene::HasAnimation(const std::string& name) const
     {
-        return animations_.Has(name);
+		return animations_.find(name) != animations_.end();
     }
 
     bool Scene::PlayAnimation(const std::string& name, bool looped)
     {
-        PAnimation animation = animations_.Get(name);
+		PAnimation animation = animations_.find(name)->second;
         if (animation)
         {
             PlayAnimation(animation, looped);

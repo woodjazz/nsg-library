@@ -25,22 +25,26 @@ misrepresented as being the original software.
 */
 #include "Resource.h"
 #include "ResourceFile.h"
-#include "ResourceMemory.h"
+#include "ResourceXMLNode.h"
 #include "Texture.h"
-#include "App.h"
 #include "Log.h"
 #include "Check.h"
 #include "Util.h"
+#include "Scene.h"
 #include "Path.h"
+#include "Material.h"
+#include "Mesh.h"
 #include "pugixml.hpp"
 #include "b64/encode.h"
 #include "b64/decode.h"
 
 namespace NSG
 {
-	Resource::Resource(const std::string& name)
-		: name_(name),
-		serializable_(true)
+    MapAndVector<std::string, Resource> Resource::resources_;
+
+    Resource::Resource(const std::string& name)
+        : Object(name),
+          serializable_(true)
     {
     }
 
@@ -48,15 +52,19 @@ namespace NSG
     {
     }
 
-    PResource Resource::CreateFrom(const pugi::xml_node& node)
+    PResource Resource::CreateFrom(PResource resource, const pugi::xml_node& node)
     {
-		std::string name = node.attribute("name").as_string();
+        std::string name = node.attribute("name").as_string();
         pugi::xml_node dataNode = node.child("data");
-		
+
         if (!dataNode)
-            return App::this_->GetOrCreateResourceFile(name);
+            return Resource::GetOrCreate<ResourceFile>(name);
         else
-            return App::this_->GetOrCreateResourceMemory(name);
+        {
+			auto obj = Resource::Create<ResourceXMLNode>(name);
+			obj->Set(resource, nullptr, "Resources", name);
+            return obj;
+        }
     }
 
     void Resource::ReleaseResources()
@@ -64,94 +72,168 @@ namespace NSG
         buffer_.clear();
     }
 
-	void Resource::SetSerializable(bool serializable)
-	{
-		serializable_ = serializable;
-	}
+    void Resource::SetSerializable(bool serializable)
+    {
+        serializable_ = serializable;
+    }
 
-	bool Resource::IsSerializable() const
-	{
-		return serializable_;
-	}
+    bool Resource::IsSerializable() const
+    {
+        return serializable_;
+    }
 
-	void Resource::SaveExternal(pugi::xml_node& node, const Path& path, const Path& outputDir)
+    void Resource::SaveExternal(pugi::xml_node& node, const Path& path, const Path& outputDir)
     {
         if (!serializable_)
             return;
 
         pugi::xml_node child = node.append_child("Resource");
 
-		Path newPath;
-		newPath.SetPath(path.GetPath());
-		newPath.SetFileName(Path(name_).GetFilename());
-		SetName(newPath.GetFilePath());
+        Path newPath;
+        newPath.SetPath(path.GetPath());
+        newPath.SetFileName(Path(name_).GetFilename());
+        SetName(newPath.GetFilePath());
 
-        auto texture = App::this_->GetTextureWithResource(shared_from_this());
-        if(texture)
+        auto texture = Material::GetTextureWithResource(shared_from_this());
+        if (texture)
         {
-			if (!Texture::SaveAsPNG(shared_from_this(), outputDir))
-			{
-				TRACE_LOG("!!! Cannot save file: " << name_ << " in " << outputDir.GetPath());
-			}
-			else
-			{
-				newPath.SetExtension("png");
-			}
+            if (!Texture::SaveAsPNG(shared_from_this(), outputDir))
+            {
+                TRACE_LOG("!!! Cannot save file: " << name_ << " in " << outputDir.GetPath());
+            }
+            else
+            {
+                newPath.SetExtension("png");
+            }
         }
         else
         {
-			std::ofstream os(newPath.GetFullAbsoluteFilePath(), std::ios::binary);
-			if (os.is_open())
-				os.write(&buffer_[0], buffer_.size());
+            std::ofstream os(newPath.GetFullAbsoluteFilePath(), std::ios::binary);
+            if (os.is_open())
+                os.write(&buffer_[0], buffer_.size());
             else
-				TRACE_LOG("!!! Cannot save file: " << newPath.GetFilePath());
+                TRACE_LOG("!!! Cannot save file: " << newPath.GetFilePath());
         }
 
-		{
-			std::vector<std::string> dirs = Path::GetDirs(outputDir.GetPath());
-			Path relativePath;
-			if (!dirs.empty())
-				relativePath.SetPath(dirs.back());
-			relativePath.SetFileName(newPath.GetFilename());
-			SetName(relativePath.GetFilePath());
-		}
+        {
+            std::vector<std::string> dirs = Path::GetDirs(outputDir.GetPath());
+            Path relativePath;
+            if (!dirs.empty())
+                relativePath.SetPath(dirs.back());
+            relativePath.SetFileName(newPath.GetFilename());
+            SetName(relativePath.GetFilePath());
+        }
 
         child.append_attribute("name").set_value(name_.c_str());
     }
 
-	void Resource::Save(pugi::xml_node& node)
-	{
-		if (!serializable_)
-			return;
+    void Resource::Save(pugi::xml_node& node)
+    {
+        if (!serializable_)
+            return;
 
-		CHECK_CONDITION(IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(IsReady(), __FILE__, __LINE__);
 
-		pugi::xml_node child = node.append_child("Resource");
+        pugi::xml_node child = node.append_child("Resource");
 
-		base64::base64_encodestate state;
-		base64::base64_init_encodestate(&state);
+        base64::base64_encodestate state;
+        base64::base64_init_encodestate(&state);
 
-		std::string encoded_data;
-		encoded_data.resize(2 * buffer_.size());
+        std::string encoded_data;
+        encoded_data.resize(2 * buffer_.size());
 
-		int numchars = base64::base64_encode_block(&buffer_[0], buffer_.size(), &encoded_data[0], &state);
-		numchars += base64::base64_encode_blockend(&encoded_data[0] + numchars, &state);
-		encoded_data.resize(numchars);
+        int numchars = base64::base64_encode_block(&buffer_[0], buffer_.size(), &encoded_data[0], &state);
+        numchars += base64::base64_encode_blockend(&encoded_data[0] + numchars, &state);
+        encoded_data.resize(numchars);
 
-		pugi::xml_node dataNode = child.append_child("data");
-		dataNode.append_attribute("dataSize").set_value((unsigned)encoded_data.size());
-		dataNode.append_child(pugi::node_pcdata).set_value(encoded_data.c_str());
+        pugi::xml_node dataNode = child.append_child("data");
+        dataNode.append_attribute("dataSize").set_value((unsigned)encoded_data.size());
+        dataNode.append_child(pugi::node_pcdata).set_value(encoded_data.c_str());
 
-		SetName(GetUniqueName(Path(name_).GetFilename()));
-		child.append_attribute("name").set_value(name_.c_str());
-	}
+        SetName(GetUniqueName(Path(name_).GetFilename()));
+        child.append_attribute("name").set_value(name_.c_str());
+    }
 
-	void Resource::SetName(const std::string& name)
-	{
-		if (name != name_)
-		{
-			name_ = name;
-			Invalidate(); //name_ has changed = > force reload
-		}
-	}
+    void Resource::SetName(const std::string& name)
+    {
+        if (name != name_)
+        {
+            name_ = name;
+            Invalidate(); //name_ has changed = > force reload
+        }
+    }
+
+    PResource Resource::Get(const std::string& name)
+    {
+        return resources_.Get(name);
+    }
+
+    std::vector<PResource> Resource::GetResources()
+    {
+        return resources_.GetObjs();
+    }
+
+    std::vector<PResource> Resource::LoadResources(PResource resource, const pugi::xml_node& node)
+    {
+        std::vector<PResource> result;
+        pugi::xml_node resources = node.child("Resources");
+        if (resources)
+        {
+            pugi::xml_node child = resources.child("Resource");
+            while (child)
+            {
+                auto obj = Resource::CreateFrom(resource, child);
+                result.push_back(obj);
+                child = child.next_sibling("Resource");
+            }
+        }
+        return result;
+    }
+
+    void Resource::SaveResources(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Resources");
+        auto resources = GetResources();
+        for (auto& obj : resources)
+            obj->Save(child);
+    }
+
+    void Resource::SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir)
+    {
+        pugi::xml_node child = node.append_child("Resources");
+        auto resources = GetResources();
+        for (auto& obj : resources)
+            obj->SaveExternal(child, path, outputDir);
+    }
+
+    std::vector<PScene> Resource::Load()
+    {
+        CHECK_CONDITION(IsReady(), __FILE__, __LINE__);
+        std::vector<PScene> scenes;
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_buffer((void*)GetData(), GetBytes());
+        if (result)
+        {
+            pugi::xml_node appNode = doc.child("App");
+            auto resources = Resource::LoadResources(shared_from_this(), appNode);
+            auto meshes = Mesh::LoadMeshes(shared_from_this(), appNode);
+            auto materials = Material::LoadMaterials(shared_from_this(), appNode);
+            pugi::xml_node child = appNode.child("Scene");
+            while (child)
+            {
+                auto scene = std::make_shared<Scene>("scene");
+                scene->Load(child);
+                scenes.push_back(scene);
+                child = child.next_sibling("Scene");
+            }
+        }
+        else
+        {
+            TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
+            TRACE_LOG("Error description: " << result.description());
+            TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
+            CHECK_ASSERT(false, __FILE__, __LINE__);
+        }
+        return scenes;
+    }
 }

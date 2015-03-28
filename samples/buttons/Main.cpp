@@ -28,9 +28,8 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    App app;
 	auto window = Window::Create();
-    auto xml = app.GetOrCreateResourceFile("data/GuiAnonymousPro32.xml");
+	auto xml = Resource::GetOrCreate<ResourceFile>("data/GuiAnonymousPro32.xml");
     auto atlas = std::make_shared<FontAtlas>(xml);
     auto scene = std::make_shared<Scene>();
 
@@ -39,8 +38,8 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto box = scene->CreateChild<SceneNode>();
 	box->SetPosition(Vertex3(0, 0, -5));
-	box->SetMesh(app.CreateBoxMesh());
-	box->SetMaterial(app.GetOrCreateMaterial());
+	box->SetMesh(Mesh::Create<BoxMesh>());
+	box->SetMaterial(Material::GetOrCreate());
 	box->GetMaterial()->SetSolid(false);
 	box->GetMaterial()->SetColor(Color(1, 0, 1, 1));
 
@@ -84,6 +83,6 @@ int NSG_MAIN(int argc, char* argv[])
 		scene->Render();
     });
 
-    return app.Run();
+    return Window::RunApp();
 }
 

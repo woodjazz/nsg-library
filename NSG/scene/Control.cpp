@@ -24,13 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Control.h"
-#include "App.h"
 #include "Material.h"
 #include "Window.h"
 #include "Scene.h"
 #include "Graphics.h"
 #include "Check.h"
-#include "App.h"
 #include "Technique.h"
 #include "Pass.h"
 #include "RectangleMesh.h"
@@ -51,11 +49,22 @@ namespace NSG
           leftMargin_(0),
           rightMargin_(0),
           topMargin_(0),
-          bottomMargin_(0)
+          bottomMargin_(0),
+		  window_(nullptr)
     {
-        auto window = Graphics::this_->GetWindow();
-        if (window)
-            SetWindow(window);
+		if (Graphics::this_)
+		{
+			auto window = Graphics::this_->GetWindow();
+			if (window)
+				SetWindow(window);
+		}
+
+		slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window* window)
+		{
+			if (!window_)
+				SetWindow(window);
+		});
+
     }
 
     Control::~Control()
@@ -149,52 +158,55 @@ namespace NSG
 
     void Control::SetWindow(Window* window)
     {
-        if (window)
-        {
-            slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
-            {
-                if (signalMouseEnter_->HasSlots() || signalMouseLeave_->HasSlots())
-                {
-                    auto scene = GetScene();
-                    SceneNode* node = scene->GetClosestNode(x, y);
-                    if (node == this)
-                    {
-                        if (!mouseEntered_)
-                        {
-                            mouseEntered_ = true;
-                            signalMouseEnter_->Run();
-                        }
-                    }
-                    else
-                    {
-                        if (mouseEntered_)
-                        {
-                            mouseEntered_ = false;
-                            signalMouseLeave_->Run();
-                        }
-                    }
-                }
-            });
+		if (window_ != window)
+		{
+			if (window)
+			{
+				slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
+				{
+					if (signalMouseEnter_->HasSlots() || signalMouseLeave_->HasSlots())
+					{
+						auto scene = GetScene();
+						SceneNode* node = scene->GetClosestNode(x, y);
+						if (node == this)
+						{
+							if (!mouseEntered_)
+							{
+								mouseEntered_ = true;
+								signalMouseEnter_->Run();
+							}
+						}
+						else
+						{
+							if (mouseEntered_)
+							{
+								mouseEntered_ = false;
+								signalMouseLeave_->Run();
+							}
+						}
+					}
+				});
 
-            slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
-            {
-                if (pushed_)
-                {
-                    pushed_ = false;
-                    signalPop_->Run(button);
-                    if (signalClicked_->HasSlots())
-                    {
-                        auto scene = GetScene();
-                        SceneNode* node = scene->GetClosestNode(x, y);
-                        if (node == this)
-                            signalClicked_->Run(button);
-                    }
-                }
-            });
-        }
-        else
-        {
-            slotMouseUp_ = nullptr;
-        }
+				slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
+				{
+					if (pushed_)
+					{
+						pushed_ = false;
+						signalPop_->Run(button);
+						if (signalClicked_->HasSlots())
+						{
+							auto scene = GetScene();
+							SceneNode* node = scene->GetClosestNode(x, y);
+							if (node == this)
+								signalClicked_->Run(button);
+						}
+					}
+				});
+			}
+			else
+			{
+				slotMouseUp_ = nullptr;
+			}
+		}
     }
 }

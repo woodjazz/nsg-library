@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "Skeleton.h"
 #include "Node.h"
 #include "Check.h"
-#include "App.h"
 #include "ModelMesh.h"
 #include "Scene.h"
 #include "Util.h"
@@ -92,7 +91,7 @@ namespace NSG
     void Skeleton::Load(const pugi::xml_node& node)
     {
         std::string meshName = node.attribute("meshName").as_string();
-		mesh_ = std::dynamic_pointer_cast<ModelMesh>(App::this_->GetMesh(meshName));
+		mesh_ = Mesh::Get<ModelMesh>(meshName);
 		CHECK_CONDITION(mesh_.lock(), __FILE__, __LINE__);
         std::string rootName = node.attribute("rootName").as_string();
         PScene scene = scene_.lock();

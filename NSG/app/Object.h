@@ -24,24 +24,33 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
+#include "Types.h"
+#include <string>
 namespace NSG 
 {
     class App;
 	class Object
 	{
 	public:
-		Object();
+		Object(const std::string& name);
 		virtual ~Object();
-		void Invalidate(bool force = true);
+		void Invalidate();
 		bool IsReady();
-		void AllowInvalidate(bool allow);
+		virtual void Load(PResource resource, const pugi::xml_node& node) {}
+		static void InvalidateAll();
+		SignalEmpty::PSignal signalAllocated_;
+		SignalEmpty::PSignal signalReleased_;
+	protected:
+		std::string name_;
 	private:
+		static SignalEmpty::PSignal signalInvalidateAll_;
 		virtual bool IsValid() { return true; }
 		virtual void AllocateResources() {}
 		virtual void ReleaseResources()	{}
+		std::string GetType() const;
+		std::string GetNameType() const;
 		bool isValid_;
 		bool resourcesAllocated_;
-		bool allowInvalidate_;
+		SignalEmpty::PSlot slotInvalidateAll_;
 	};
 }

@@ -86,7 +86,8 @@ namespace NSG
     static const bool DEFAULT_CULL_FACE_ENABLE = false;
 
     Graphics::Graphics()
-        : currentFbo_(0),  //the default framebuffer (except for IOS)
+        : signalBeginFrame_(new SignalEmpty()),
+          currentFbo_(0),  //the default framebuffer (except for IOS)
           vertexArrayObj_(nullptr),
           vertexBuffer_(nullptr),
           indexBuffer_(nullptr),
@@ -315,6 +316,8 @@ namespace NSG
     void Graphics::ResetCachedState()
     {
         viewport_ = Recti(0);
+
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -851,7 +854,7 @@ namespace NSG
             width = currentFbo_->GetWidth();
             height = currentFbo_->GetHeight();
         }
-        else if(activeWindow_)
+        else if (activeWindow_)
         {
             width = activeWindow_->GetWidth();
             height = activeWindow_->GetHeight();
@@ -1291,7 +1294,7 @@ namespace NSG
 
     void Graphics::GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches)
     {
-		batches.clear();
+        batches.clear();
 
         struct MeshNode
         {
@@ -1401,7 +1404,8 @@ namespace NSG
 
     bool Graphics::BeginFrameRender()
     {
-        if(activeWindow_->BeginFrameRender())
+        signalBeginFrame_->Run();
+        if (activeWindow_->BeginFrameRender())
         {
             ClearAllBuffers();
             return true;

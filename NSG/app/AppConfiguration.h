@@ -25,13 +25,11 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include "Singleton.h"
-
 namespace NSG 
 {
-	struct AppConfiguration : public Singleton<AppConfiguration>
+	struct AppConfiguration
 	{
-		size_t fps_;
+		unsigned fps_;
 		int x_; ///the x position of the window
 		int y_; ///the y position of the window
 		int width_; ///the width of the window
@@ -41,6 +39,5 @@ namespace NSG
 		bool showStatistics_;
 		bool pauseMusicOnBackground_;
 		AppConfiguration();
-		~AppConfiguration();
 	};
 }

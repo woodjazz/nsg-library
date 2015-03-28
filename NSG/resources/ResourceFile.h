@@ -1,4 +1,4 @@
-/*
+	/*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://nsg-library.googlecode.com/
@@ -36,8 +36,9 @@ namespace NSG
 	public:
 		ResourceFile(const Path& path);
 		~ResourceFile();
-		bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
+	private:
+		Path path_;
 	};
 }

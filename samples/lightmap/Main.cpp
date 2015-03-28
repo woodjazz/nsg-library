@@ -29,12 +29,11 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    App app;
 	auto window = Window::Create();
-    auto resource = app.GetOrCreateResourceFile("data/blightmap.xml");
-	auto scenes = app.Load(resource);
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/blightmap.xml");
+	auto scenes = resource->Load();
 	auto scene = scenes.at(0);
-	auto material = app.GetMaterial("Material");
+	auto material = Material::Get("Material");
 
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");
 	auto control = std::make_shared<CameraControl>(camera);
@@ -49,5 +48,5 @@ int NSG_MAIN(int argc, char* argv[])
         scene->Render();
     });
 
-    return app.Run();
+    return Window::RunApp();
 }

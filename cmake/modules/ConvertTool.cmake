@@ -35,7 +35,7 @@ function(CONVERT_TOOL input_file output_dir)
 			COMMENT "Generating ${OUTPUT_FILE}"
 		)
 
-	    set(TARGET_NAME CONVERT_${INPUTNAME})
+	    set(TARGET_NAME CONVERT_${PROJECT_NAME}_${INPUTNAME})
 
 		add_custom_target(${TARGET_NAME} ALL
    			DEPENDS ${OUTPUT_FILE} 

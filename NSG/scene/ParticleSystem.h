@@ -26,25 +26,23 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "SceneNode.h"
-#include "Object.h"
 #include <vector>
 #include <set>
 #include <random>
 
 namespace NSG
 {
-    class ParticleSystem : public SceneNode, Object
+    class ParticleSystem : public SceneNode
     {
     public:
         ParticleSystem(const std::string& name);
         ~ParticleSystem();
         void Update(float deltaTime);
-        void AllocateResources() override;
-        void ReleaseResources() override;
         float GetLifeTime() const;
 		void SetParticleMaterial(PMaterial material);
 		PMaterial GetParticleMaterial() { return particleMaterial_; }
     private:
+		void Invalidate();
         void Initialize(PParticle particle);
         float GetParticlesPerFrame(float deltaTime);
         PParticle GenerateParticle();
@@ -52,7 +50,7 @@ namespace NSG
         void RemoveParticle(PParticle particle);
         void SetInitialVelocity(PParticle particle);
         void ReStartLoop();
-        PMesh particleMesh_;
+        PQuadMesh particleMesh_;
         PMaterial particleMaterial_;
         ParticleSystemEmitFrom emitFrom_;
         size_t amount_;

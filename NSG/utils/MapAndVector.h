@@ -34,7 +34,8 @@ namespace NSG
     template<typename K, typename T>
     class MapAndVector
     {
-    	typedef std::shared_ptr<T> PT;
+		typedef std::shared_ptr<T> PT;
+		typedef std::weak_ptr<T> PWT;
     public:
         MapAndVector() 
         {
@@ -53,26 +54,26 @@ namespace NSG
 		std::shared_ptr<U> GetOrCreateClass(const K& key)
 		{
 			auto it = objsMap_.find(key);
-			if (it == objsMap_.end())
+			if (it == objsMap_.end() || !it->second.lock())
 				return CreateClass<U>(key);
 			else
-				return std::dynamic_pointer_cast<U>(it->second);
+				return std::dynamic_pointer_cast<U>(it->second.lock());
 		}
 
 		template<typename U>
 		std::shared_ptr<U> GetClass(const K& key) const
 		{
 			auto it = objsMap_.find(key);
-			if (it != objsMap_.end())
-				return std::dynamic_pointer_cast<U>(it->second);
+			if (it != objsMap_.end() && it->second.lock())
+				return std::dynamic_pointer_cast<U>(it->second.lock());
 			return nullptr;
 		}
 
 		PT Get(const K& key) const
 		{
 			auto it = objsMap_.find(key);
-			if (it != objsMap_.end())
-				return it->second;
+			if (it != objsMap_.end() && it->second.lock())
+				return it->second.lock();
 			return nullptr;
 		}
 
@@ -93,14 +94,15 @@ namespace NSG
 			return GetOrCreateClass<T>(key);
         }
 
-        const std::vector<PT>& GetConstObjs() const
+        std::vector<PT> GetObjs() const
         {
-        	return objs_;
-        }
-
-        std::vector<PT>& GetObjs()
-        {
-            return objs_;
+			std::vector<PT> objs;
+			for (auto& obj : objs_)
+			{
+				auto p = obj.lock();
+				if (p) objs.push_back(p);
+			}
+			return objs;
         }
 
 		bool Has(const K& key) const
@@ -114,7 +116,7 @@ namespace NSG
         	objsMap_.clear();
         }
     private:
-        std::vector<PT> objs_;
-		std::unordered_map<K, PT> objsMap_;
+        std::vector<PWT> objs_;
+		std::unordered_map<K, PWT> objsMap_;
     };
 }

@@ -63,6 +63,7 @@ namespace NSG
         PProgram Clone(Material* material) const;
         Material* GetMaterial() const { return material_; }
         bool IsSkinned() const;
+        const std::string& GetName() const { return name_; }
     private:
         std::string TranslateFlags() const;
         size_t GetNeededVarying() const;
@@ -210,7 +211,6 @@ namespace NSG
 		std::vector<const Light*> activePointLights_;
 		std::vector<const Light*> activeSpotLights_;
 
-        std::string name_;
         PResource vertexShader_;
         PResource fragmentShader_;
         Graphics& graphics_;

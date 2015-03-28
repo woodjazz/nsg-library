@@ -25,41 +25,54 @@ misrepresented as being the original software.
 */
 #include "Object.h"
 #include "Check.h"
-#include "App.h"
+#include "Util.h"
+#include "SignalSlots.h"
 
 namespace NSG
 {
-    Object::Object()
-        : isValid_(false),
-          resourcesAllocated_(false),
-          allowInvalidate_(true)
+    SignalEmpty::PSignal Object::signalInvalidateAll_(new Signal<>());
+
+    Object::Object(const std::string& name)
+        : signalAllocated_(new Signal<>()),
+          signalReleased_(new Signal<>()),
+          name_(name),
+          isValid_(false),
+          resourcesAllocated_(false)
     {
-        App::this_->AddObject(this);
+        if (name_.empty())
+            name_ = GetUniqueName("Object");
+
+        slotInvalidateAll_ = Object::signalInvalidateAll_->Connect([this]()
+        {
+            Invalidate();
+        });
     }
 
     Object::~Object()
     {
-        CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
-        App::this_->RemoveObject(this);
     }
 
-	void Object::AllowInvalidate(bool allow)
+    void Object::Invalidate()
     {
-    	allowInvalidate_ = allow;
-    }
-
-	void Object::Invalidate(bool force)
-    {
-        if (force || allowInvalidate_)
+        isValid_ = false;
+        if (resourcesAllocated_)
         {
-            isValid_ = false;
-            if (resourcesAllocated_)
-            {
-                ReleaseResources();
-                resourcesAllocated_ = false;
-            }
+            ReleaseResources();
+            resourcesAllocated_ = false;
+			TRACE_PRINTF("--->Released resources for %s\n", GetNameType().c_str());
+            signalReleased_->Run();
         }
     }
+
+	std::string Object::GetType() const 
+	{ 
+		return typeid(*this).name(); 
+	}
+	
+	std::string Object::GetNameType() const 
+	{ 
+		return name_ + "->" + GetType(); 
+	}
 
     bool Object::IsReady()
     {
@@ -72,9 +85,15 @@ namespace NSG
                 CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
                 AllocateResources();
                 resourcesAllocated_ = true;
+				TRACE_PRINTF("--->Allocated resources for %s\n", GetNameType().c_str());
+                signalAllocated_->Run();
             }
         }
-
         return isValid_;
+    }
+
+    void Object::InvalidateAll()
+    {
+        Object::signalInvalidateAll_->Run();
     }
 }

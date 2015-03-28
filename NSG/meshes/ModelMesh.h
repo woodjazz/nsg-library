@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Mesh.h"
+#include <string>
 
 namespace NSG
 {
@@ -33,13 +34,17 @@ namespace NSG
 	public:
 		ModelMesh(const std::string& name);
 		~ModelMesh();
-		void SetData(const VertexsData& vertexsData, const Indexes& indexes);
+		void SetMeshData(const VertexsData& vertexsData, const Indexes& indexes);
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		size_t GetNumberOfTriangles() const override;
 		void SetFaceMode(GLenum face_mode) { face_mode_ = face_mode; }
-		void Load(const pugi::xml_node& node) override;
+		void Set(PResource resource);
 	private:
+		void Load(PResource resource, const pugi::xml_node& node) override;
+        bool IsValid() override;
+		void ReleaseResources() override;
+		PResource resource_;
 		GLenum face_mode_;
 	};
 }

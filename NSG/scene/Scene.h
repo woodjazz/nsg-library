@@ -58,6 +58,7 @@ namespace NSG
         bool GetPreciseRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<RayNodeResult>& result) const;
 		bool GetClosestRayNodeIntersection(RenderLayer layer, const Ray& ray, RayNodeResult& closest) const;
         bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
+		const std::map<std::string, PAnimation>& GetAnimations() const { return animations_; }
         PAnimation GetOrCreateAnimation(const std::string& name);
         std::vector<PAnimation> GetAnimationsFor(PNode node) const;
         bool HasAnimation(const std::string& name) const;
@@ -92,8 +93,7 @@ namespace NSG
 		mutable std::vector<PWeakCamera> cameras_;
 		POctree octree_[(int)RenderLayer::MAX_LAYERS];
         mutable std::set<SceneNode*> needUpdate_;
-        App& app_;
-		MapAndVector<std::string, Animation> animations_;
+		std::map<std::string, PAnimation> animations_;
         typedef std::map<std::string, PAnimationState> AnimationStateMap;
         AnimationStateMap animationStateMap_;
         PPhysicsWorld physicsWorld_;
@@ -101,5 +101,7 @@ namespace NSG
 		SignalMouseDown::PSlot slotMouseDown_;
 		SignalMouseUp::PSlot slotMouseUp_;
 		SignalMouseWheel::PSlot slotMouseWheel_;
+		Window* window_;
+		SignalWindow::PSlot slotWindowCreated_;
     };
 }

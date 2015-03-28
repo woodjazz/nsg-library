@@ -59,10 +59,9 @@ namespace BlenderConverter
 		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray);
 		void AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
 		void CreateSkeleton(NSG::PScene scene, const Blender::Object* obj);
-		void LoadMaterials(const Blender::Object* obj);
 		const Blender::Material* GetMaterial(const Blender::Object* ob, int index) const;
-		void LoadMaterials(bParse::bMain* data);
-		void LoadMaterial(const Blender::Material* mt);
+		std::vector<NSG::PMaterial> LoadMaterials(bParse::bMain* data);
+		NSG::PMaterial LoadMaterial(const Blender::Material* mt);
 		NSG::PTexture CreateTexture(const Blender::Image* ima);
 		void SetMaterial(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		void LoadAnimData(NSG::PSceneNode sceneNode, const Blender::AnimData* adt, float animfps);

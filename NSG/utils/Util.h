@@ -28,9 +28,18 @@ misrepresented as being the original software.
 #include <algorithm>
 #include "Types.h"
 #include "Check.h"
+#include "LinearMath/btTransform.h"
+#include "LinearMath/btVector3.h"
+#include "LinearMath/btQuaternion.h"
 
 namespace NSG
 {
+    btTransform ToTransform(const Vector3& pos, const Quaternion& rot);
+    btVector3 ToBtVector3(const Vector3& obj);
+    Vector3 ToVector3(const btVector3& obj);
+    btQuaternion ToBtQuaternion(const Quaternion& q);
+    Quaternion ToQuaternion(const btQuaternion& q);
+
 	Vector3 Lerp(const Vector3& lhs, const Vector3& rhs, float t);
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
 	bool NSGCopyFile(const Path& source, const Path& target);
@@ -59,6 +68,7 @@ namespace NSG
 	bool IsZeroLength(const Vector3& obj);
 	GLushort Transform(GLubyte selected[4]);
 	Color Transform(GLushort id);
-	bool SaveDocument(const std::string& filename, const pugi::xml_document& doc, bool compress);
+	bool SaveDocument(const Path& path, const pugi::xml_document& doc, bool compress);
+	std::string CompressBuffer(const std::string& buf);
 	std::string DecompressBuffer(const std::string& buffer);
 }

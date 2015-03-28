@@ -29,11 +29,10 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    class Texture : public Object
+	class Texture : public Object
     {
     public:
         Texture(PResource resource, const TextureFlags& flags = (int)TextureFlag::NONE);
-		Texture(const std::string& name, GLint format, GLsizei width, GLsizei height, const char* pixels);
         Texture(const std::string& name, GLint format);
         virtual ~Texture();
 		GLuint GetID() const;
@@ -42,7 +41,7 @@ namespace NSG
 		GLint GetFormat() const;
 		int GetChannels() const;
         void Save(pugi::xml_node& node);
-        static PTexture CreateFrom(const pugi::xml_node& node);
+		static PTexture CreateFrom(PResource resource, const pugi::xml_node& node);
         void SetSerializable(bool serializable);
         bool IsSerializable() const;
         void SetFlags(const TextureFlags& flags);
@@ -52,6 +51,7 @@ namespace NSG
         PResource GetResource() const { return pResource_;}
 		static int SaveAsPNG(PResource resource, const Path& outputDir);
         void SetSize(GLsizei width, GLsizei height);
+		void SetName(const std::string& name) { name_ = name; }
     private:
         virtual bool IsValid() override;
         virtual void AllocateResources() override;

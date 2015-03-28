@@ -29,10 +29,9 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    App app;
 	auto window = Window::Create();
-    auto resource = app.GetOrCreateResourceFile("data/bmomo.xml");
-	auto scenes = app.Load(resource);
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo.xml.lz4");
+	auto scenes = resource->Load();
 	auto scene = scenes.at(0);
 
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");
@@ -55,5 +54,5 @@ int NSG_MAIN(int argc, char* argv[])
         scene->Render();
     });
 
-    return app.Run();
+    return Window::RunApp();
 }

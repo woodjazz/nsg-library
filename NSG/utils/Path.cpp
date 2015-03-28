@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "Path.h"
 #include "Check.h"
-#include "App.h"
 #if WIN32
 #include <Windows.h>
 #elif defined(EMSCRIPTEN)
@@ -107,6 +106,13 @@ namespace NSG
         filePath_ = pathName_ + "." + ext;
         ReDoState();
     }
+
+	void Path::AddExtension(const std::string& ext)
+	{
+		filePath_ += "." + ext;
+		ReDoState();
+	}
+
 
     void Path::SetFileName(const std::string& fileName)
     {

@@ -29,7 +29,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Batch : public Object
+	class Batch
     {
 	public:
 		Batch();
@@ -38,7 +38,7 @@ namespace NSG
 		bool operator == (const Batch& obj) const;
 		Batch(const Batch&) = delete;
 		//Batch& operator = (const Batch&) = delete;
-    	bool IsValid() override;
+    	bool IsReady();
 		void Draw();
 		void Add(SceneNode* node);
 		Mesh* GetMesh() const { return mesh_; }

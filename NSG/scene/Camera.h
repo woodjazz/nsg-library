@@ -92,7 +92,6 @@ namespace NSG
 		Vector4 viewportFactor_;
 		bool isOrtho_;
 		Vector4 orthoCoords_;
-        Graphics* graphics_;
 		unsigned viewWidth_;
 		unsigned viewHeight_;
 		float aspectRatio_;
@@ -100,5 +99,6 @@ namespace NSG
 		mutable bool cameraIsDirty_;
 		SignalViewChanged::PSlot slotViewChanged_;
 		Window* window_;
+		SignalWindow::PSlot slotWindowCreated_;
 	};
 }

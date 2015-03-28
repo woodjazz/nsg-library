@@ -29,17 +29,15 @@ using namespace NSG;
 
 static void Test0()
 {
-	App app;
 	auto window1 = Window::Create("0", 100, 100, 150, 50);
 	auto window2 = Window::Create("1", 200, 200, 150, 50);
 	auto window3 = Window::Create("2", 300, 300, 150, 50);
 	window1 = nullptr;
-	CHECK_CONDITION(app.Run() == 0, __FILE__, __LINE__);
+	CHECK_CONDITION(Window::RunApp() == 0, __FILE__, __LINE__);
 }
 
 static void Test1()
 {
-	App app;
 	auto window1 = Window::Create("0", 100, 100, 150, 50);
 	auto window2 = Window::Create("1", 200, 200, 150, 50);
 	auto window3 = Window::Create("2", 300, 300, 150, 50);
@@ -56,7 +54,7 @@ static void Test1()
 		}
     });
 
-	CHECK_CONDITION(app.Run() == 0, __FILE__, __LINE__);
+	CHECK_CONDITION(Window::RunApp() == 0, __FILE__, __LINE__);
 }
 
 int NSG_MAIN(int argc, char* argv[])

@@ -24,9 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "MeshConverter.h"
-#include "ModelMesh.h"
+#include "ConverterMesh.h"
 #include "Check.h"
-#include "App.h"
 #include "Util.h"
 #include "assimp/mesh.h"
 
@@ -114,8 +113,8 @@ namespace NSG
             }
         }
 
-		mesh_ = App::this_->GetOrCreateModelMesh(name);
-		mesh_->SetData(data, indexes);
+		mesh_ = Mesh::GetOrCreate<ConverterMesh>(name);
+		mesh_->SetMeshData(data, indexes);
     }
 
     MeshConverter::~MeshConverter()

@@ -122,7 +122,7 @@ set (INCLUDE_DIRS_ONLY include)
 
 setup_library()
 if(UNIX)
-    if(NOT APPLE)
+    if(NOT APPLE AND NOT ANDROID)
         target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} rt)
     else()
         target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS})

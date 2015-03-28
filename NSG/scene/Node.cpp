@@ -33,7 +33,6 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Constants.h"
 #include "Util.h"
-#include "App.h"
 #include <algorithm>
 #include <iterator>
 
@@ -51,8 +50,6 @@ namespace NSG
           enabled_(true),
           isScaleUniform_(true)
     {
-        if (name_.empty())
-            name_ = GetUniqueName();
     }
 
     Node::~Node()

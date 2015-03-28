@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "FrameBuffer.h"
 #include "Log.h"
 #include "Check.h"
-#include "App.h"
 #include "Texture.h"
 #include "Graphics.h"
 #include "Util.h"
@@ -36,7 +35,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     FrameBuffer::FrameBuffer(const std::string& name, Flags flags)
-        : name_(name),
+        : Object(name),
           originalWidth_(0),
           originalHeight_(0),
           width_(0),
@@ -54,7 +53,6 @@ namespace NSG
 
     FrameBuffer::~FrameBuffer()
     {
-        Invalidate();
     }
 
     bool FrameBuffer::IsValid()
@@ -206,40 +204,37 @@ namespace NSG
 
     void FrameBuffer::ReleaseResources()
     {
-        if (App::this_->GetMainWindow())
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        Graphics::this_->UnboundTextures();
+
+        if (stencilRenderBuffer_)
         {
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            Graphics::this_->UnboundTextures();
-
-            if (stencilRenderBuffer_)
-            {
-                glDeleteRenderbuffers(1, &stencilRenderBuffer_);
-                stencilRenderBuffer_ = 0;
-            }
-
-            if (depthStencilRenderBuffer_)
-            {
-                glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
-                depthStencilRenderBuffer_ = 0;
-            }
-
-            if (colorRenderbuffer_)
-            {
-                glDeleteRenderbuffers(1, &colorRenderbuffer_);
-                colorRenderbuffer_ = 0;
-            }
-
-            CHECK_ASSERT(framebuffer_, __FILE__, __LINE__);
-
-            glDeleteFramebuffers(1, &framebuffer_);
-
-            framebuffer_ = 0;
-
-            Graphics::this_->SetFrameBuffer(0);
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+            glDeleteRenderbuffers(1, &stencilRenderBuffer_);
+            stencilRenderBuffer_ = 0;
         }
+
+        if (depthStencilRenderBuffer_)
+        {
+            glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
+            depthStencilRenderBuffer_ = 0;
+        }
+
+        if (colorRenderbuffer_)
+        {
+            glDeleteRenderbuffers(1, &colorRenderbuffer_);
+            colorRenderbuffer_ = 0;
+        }
+
+        CHECK_ASSERT(framebuffer_, __FILE__, __LINE__);
+
+        glDeleteFramebuffers(1, &framebuffer_);
+
+        framebuffer_ = 0;
+
+        Graphics::this_->SetFrameBuffer(0);
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     void FrameBuffer::SetSize(unsigned width, unsigned height)

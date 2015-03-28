@@ -26,34 +26,36 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include "Log.h"
 #include "Check.h"
-#include "App.h"
 #include "Graphics.h"
 #include "VertexArrayObj.h"
 #include "InstanceBuffer.h"
 #include "Util.h"
 #include "Camera.h"
+#include "Shape.h"
 #include "InstanceData.h"
+#include "ModelMesh.h"
+#include "ResourceXMLNode.h"
 #include "pugixml.hpp"
 #include <sstream>
 
 namespace NSG
 {
+    MapAndVector<std::string, Mesh> Mesh::meshes_;
+
     Mesh::Mesh(const std::string& name, bool dynamic)
-        : boundingSphereRadius_(0),
+        : Object(name),
+          boundingSphereRadius_(0),
           isStatic_(!dynamic),
-          name_(name),
-          graphics_(*Graphics::this_),
           areTangentsCalculated_(false),
           serializable_(true)
     {
-		CHECK_ASSERT(!dynamic && "dynamic buffers fail (I do not why!!!!)", __FILE__, __LINE__);
+        CHECK_ASSERT(!dynamic && "dynamic buffers fail (I do not why!!!!)", __FILE__, __LINE__);
         if (name_.empty())
             name_ = GetUniqueName("Mesh");
     }
 
     Mesh::~Mesh()
     {
-        Invalidate();
     }
 
     void Mesh::SetDynamic(bool dynamic)
@@ -64,7 +66,7 @@ namespace NSG
 
     bool Mesh::IsValid()
     {
-        return !vertexsData_.empty();
+        return Graphics::this_ && !vertexsData_.empty();
     }
 
     void Mesh::AllocateResources()
@@ -120,16 +122,16 @@ namespace NSG
         bb_ = BoundingBox();
         boundingSphereRadius_ = 0;
 
-		vertexsData_.clear();
-		indexes_.clear();
+        vertexsData_.clear();
+        indexes_.clear();
 
-		pVBuffer_ = nullptr;
+        pVBuffer_ = nullptr;
         pIBuffer_ = nullptr;
         pIWirefameBuffer_ = nullptr;
         areTangentsCalculated_ = false;
 
-		for (auto& node : sceneNodes_)
-			node->OnDirty(); // due text meshes can change with window resize
+        for (auto& node : sceneNodes_)
+            node->OnDirty(); // due text meshes can change with window resize
     }
 
     void Mesh::Save(pugi::xml_node& node)
@@ -156,6 +158,10 @@ namespace NSG
             ss << GetSolidDrawMode();
             child.append_attribute("solidDrawMode") = ss.str().c_str();
         }
+
+        if (shape_)
+            shape_->Save(child);
+
         {
             pugi::xml_node vertexes = child.append_child("Vertexes");
 
@@ -235,6 +241,10 @@ namespace NSG
         indexes_.clear();
 
         name_ = node.attribute("name").as_string();
+
+        pugi::xml_node shapeNode = node.child("Shape");
+        if (shapeNode)
+            GetShape()->Load(shapeNode);
 
         pugi::xml_node vertexesNode = node.child("Vertexes");
         if (vertexesNode)
@@ -352,15 +362,15 @@ namespace NSG
 
     void Mesh::AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal)
     {
-		IndexType vidx = (IndexType)vertexsData_.size();
+        IndexType vidx = (IndexType)vertexsData_.size();
 
         vertexsData_.push_back(v0);
         vertexsData_.push_back(v1);
         vertexsData_.push_back(v2);
         vertexsData_.push_back(v3);
 
-		CHECK_ASSERT(vertexsData_.size() <= std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
-		
+        CHECK_ASSERT(vertexsData_.size() <= std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
+
         indexes_.push_back(vidx);
         indexes_.push_back(vidx + 1);
         indexes_.push_back(vidx + 2);
@@ -405,15 +415,15 @@ namespace NSG
     const VertexData& Mesh::GetTriangleVertex(size_t triangleIdx, size_t vertexIndex) const
     {
         CHECK_ASSERT(vertexIndex < 3, __FILE__, __LINE__);
-		if (GetSolidDrawMode() == GL_TRIANGLES)
-		{
-			CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
-			CHECK_ASSERT(triangleIdx < indexes_.size() / 3, __FILE__, __LINE__);
-			return vertexsData_.at(indexes_.at(triangleIdx * 3 + vertexIndex));
-		}
+        if (GetSolidDrawMode() == GL_TRIANGLES)
+        {
+            CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
+            CHECK_ASSERT(triangleIdx < indexes_.size() / 3, __FILE__, __LINE__);
+            return vertexsData_.at(indexes_.at(triangleIdx * 3 + vertexIndex));
+        }
         else
         {
-			CHECK_ASSERT(indexes_.empty(), __FILE__, __LINE__);
+            CHECK_ASSERT(indexes_.empty(), __FILE__, __LINE__);
             CHECK_ASSERT(GetSolidDrawMode() == GL_TRIANGLE_FAN, __FILE__, __LINE__);
             if (vertexIndex == 0)
                 return vertexsData_.at(0);
@@ -421,13 +431,74 @@ namespace NSG
         }
     }
 
-	void Mesh::SetSkeleton(PSkeleton skeleton) 
-	{ 
-		if (skeleton)
-		{
-			TRACE_LOG("Setting skeleton for mesh " << name_);
-		}
+    void Mesh::SetSkeleton(PSkeleton skeleton)
+    {
+        if (skeleton)
+        {
+            TRACE_LOG("Setting skeleton for mesh " << name_);
+        }
 
-		skeleton_ = skeleton; 
-	}
+        skeleton_ = skeleton;
+    }
+
+    std::vector<PMesh> Mesh::GetMeshes()
+    {
+        return meshes_.GetObjs();
+    }
+
+    PMesh Mesh::GetMesh(const std::string& name)
+    {
+        return meshes_.Get(name);
+    }
+
+    std::vector<PMesh> Mesh::LoadMeshes(PResource resource, const pugi::xml_node& node)
+    {
+        std::vector<PMesh> result;
+        pugi::xml_node meshes = node.child("Meshes");
+        if (meshes)
+        {
+            pugi::xml_node child = meshes.child("Mesh");
+            while (child)
+            {
+                std::string name = child.attribute("name").as_string();
+                auto mesh = Mesh::GetOrCreate<ModelMesh>(name);
+                auto xmlResource = Resource::Create<ResourceXMLNode>(name);
+                xmlResource->Set(resource, mesh, "Meshes", name);
+                mesh->Set(xmlResource);
+                result.push_back(mesh);
+                child = child.next_sibling("Mesh");
+            }
+        }
+        return result;
+    }
+
+    void Mesh::SaveMeshes(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Meshes");
+        auto meshes = Mesh::GetMeshes();
+        for (auto& obj : meshes)
+            obj->Save(child);
+    }
+
+    void Mesh::SetMeshData(const VertexsData& vertexsData, const Indexes& indexes)
+    {
+        if (vertexsData_ != vertexsData || indexes_ != indexes)
+        {
+            vertexsData_ = vertexsData;
+            indexes_ = indexes;
+            Invalidate();
+        }
+    }
+
+    PShape Mesh::GetShape()
+    {
+        if (!shape_)
+        {
+            shape_ = std::make_shared<Shape>(name_);
+            shape_->SetType(SH_CONVEX_TRIMESH);
+            shape_->SetMesh(shared_from_this());
+        }
+        return shape_;
+    }
+
 }

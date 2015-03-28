@@ -24,35 +24,32 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if SDL || EMSCRIPTEN
+#if SDL
 #include "Types.h"
 #include "Window.h"
-#include "AppConfiguration.h"
 #include <string>
-struct SDL_Surface;
-struct SDL_Window;
 namespace NSG
 {
     class SDLWindow : public Window
     {
     public:
-        ~SDLWindow();
-        #if !defined(EMSCRIPTEN)
-        SDL_Window* GetSDLWindow() const override { return win_; }
-        SDL_GLContext GetSDLContext() const override { return context_; }
-        #endif
-        void RenderFrame() override;
-        void Destroy() override;
-        void ViewChanged(int width, int height) override;
-    private:
         SDLWindow(const std::string& name);
         SDLWindow(const std::string& name, int x, int y, int width, int height);
-        bool Initialize(int x, int y, int width, int height);
-        #if !defined(EMSCRIPTEN)
-        SDL_Window* win_;
-        SDL_GLContext context_;
-        #endif
-        friend class Window;
+        ~SDLWindow();
+        void RenderFrame() override;
+        void Destroy() override;
+        void HandleEvents() override;
+        int Run() override;
+		void EnterBackground() override;
+		void EnterForeground() override;
+		void RestoreContext();
+    private:
+        SDLWindow* GetWindowFromID(uint32_t windowID) const;
+        SDLWindow* GetCurrentWindow() const;
+        void Initialize(int x, int y, int width, int height);
+        void Close() override;
+        void ViewChanged(int width, int height) override;
+        uint32_t windowID_;
     };
 }
 #endif

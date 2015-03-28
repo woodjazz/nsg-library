@@ -34,12 +34,13 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Buffer.h"
 #include "BoundingBox.h"
+#include "MapAndVector.h"
 #include <string>
 #include <set>
 
 namespace NSG
 {
-	class Mesh : public Object
+	class Mesh : public std::enable_shared_from_this<Mesh>, public Object
     {
     public:
         virtual ~Mesh();
@@ -56,7 +57,6 @@ namespace NSG
 		const VertexsData& GetVertexsData() const { return vertexsData_; }
 		const Indexes& GetIndexes(bool solid) const { return solid ? indexes_ : indexesWireframe_; }
         void Save(pugi::xml_node& node);
-        virtual void Load(const pugi::xml_node& node);
         void SetSerializable(bool serializable) { serializable_ = serializable; }
         bool IsSerializable() const { return serializable_; }
         PSkeleton GetSkeleton() const { return skeleton_; }
@@ -72,7 +72,27 @@ namespace NSG
         void AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal);
 		void AverageNormals(size_t indexBase, bool isQuad);
         const VertexData& GetTriangleVertex(size_t triangleIdx, size_t vertexIndex) const;
-    protected:
+		template <typename T> static std::shared_ptr<T> GetOrCreate(const std::string& name)
+        {
+            return meshes_.GetOrCreateClass<T>(name);
+        }
+		template <typename T> static std::shared_ptr<T> Create(const std::string& name = GetUniqueName())
+        {
+            return meshes_.CreateClass<T>(name);
+        }
+
+		template <typename T> static std::shared_ptr<T> Get(const std::string& name)
+        {
+            return meshes_.GetClass<T>(name);
+        }
+		static std::vector<PMesh> LoadMeshes(PResource resource, const pugi::xml_node& node);
+		static void SaveMeshes(pugi::xml_node& node);
+		static std::vector<PMesh> GetMeshes();
+		static PMesh GetMesh(const std::string& name);
+		void SetMeshData(const VertexsData& vertexsData, const Indexes& indexes);
+        virtual PShape GetShape();
+	protected:
+		virtual void Load(const pugi::xml_node& node);
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
@@ -88,11 +108,11 @@ namespace NSG
         BoundingBox bb_;
         float boundingSphereRadius_;
         bool isStatic_;
-        std::string name_;
-        Graphics& graphics_;
         bool areTangentsCalculated_;
         bool serializable_;
         PSkeleton skeleton_;
         std::set<SceneNode*> sceneNodes_;
+        PShape shape_;
+        static MapAndVector<std::string, Mesh> meshes_;
     };
 }

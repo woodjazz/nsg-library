@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "SceneNode.h"
-#include "App.h"
 #include "Check.h"
 #include "Technique.h"
 #include "Graphics.h"
@@ -45,8 +44,8 @@ namespace NSG
 {
     SceneNode::SceneNode(const std::string& name)
         : Node(name),
+          signalMeshSet_(new SignalEmpty()),
           signalCollision_(new Signal<const ContactPoint & >()),
-          app_(*App::this_),
           layer_(RenderLayer::DEFAULT_LAYER),
           octant_(nullptr),
           occludee_(false),
@@ -106,6 +105,8 @@ namespace NSG
                 if (scene)
                     scene->UpdateOctree(this);
             }
+
+			signalMeshSet_->Run();
         }
     }
 
@@ -256,14 +257,14 @@ namespace NSG
         if (attribute)
         {
             std::string name = attribute.as_string();
-            SetMaterial(app_.GetMaterial(name));
+            SetMaterial(Material::Get(name));
         }
 
         attribute = node.attribute("meshName");
         if (attribute)
         {
             std::string name = attribute.as_string();
-            SetMesh(app_.GetMesh(name));
+            SetMesh(Mesh::GetMesh(name));
         }
 
         pugi::xml_node childRigidBody = node.child("RigidBody");
@@ -369,5 +370,4 @@ namespace NSG
     {
         SetFlags(flags_ & ~(int)flags);
     }
-
 }

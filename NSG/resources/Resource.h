@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
+#include "MapAndVector.h"
 #include <string>
 
 namespace NSG
@@ -34,23 +35,41 @@ namespace NSG
 	class Resource : public std::enable_shared_from_this<Resource>, public Object
 	{
 	public:
-		static PResource CreateFrom(const pugi::xml_node& node);
+		static PResource CreateFrom(PResource resource, const pugi::xml_node& node);
 		virtual ~Resource();
 		const char* const GetData() const { return buffer_.c_str(); }
 		size_t GetBytes() const { return buffer_.size(); }
         void ReleaseResources() override;
 		const std::string& GetBuffer() const { return buffer_; }
-		virtual void Load(const pugi::xml_node& node) {}
 		void SaveExternal(pugi::xml_node& node, const Path& path, const Path& outputDir);
 		void Save(pugi::xml_node& node);
 		const std::string& GetName() const { return name_; }
 		void SetSerializable(bool serializable);
 		bool IsSerializable() const;
 		void SetName(const std::string& name);
+		std::vector<PScene> Load();
+		template <typename T> static std::shared_ptr<T> GetOrCreate(const std::string& name)
+        {
+            return resources_.GetOrCreateClass<T>(name);
+        }
+		template <typename T> static std::shared_ptr<T> Create(const std::string& name)
+		{
+			return resources_.CreateClass<T>(name);
+		}
+		template <typename T> static std::shared_ptr<T> Get(const std::string& name)
+        {
+            return resources_.GetClass<T>(name);
+        }
+		static PResource Get(const std::string& name);
+        static std::vector<PResource> GetResources();
+		static std::vector<PResource> LoadResources(PResource resource, const pugi::xml_node& node);
+        static void SaveResources(pugi::xml_node& node);
+		static void SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir);
 	protected:
 		Resource(const std::string& name);
 		std::string buffer_;
-		std::string name_;
 		bool serializable_;
+	private:
+		static MapAndVector<std::string, Resource> resources_;
 	};
 }

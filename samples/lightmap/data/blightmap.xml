@@ -6,6 +6,7 @@
 	</Resources>
 	<Meshes>
 		<Mesh name="Cube" wireFrameDrawMode="4" solidDrawMode="4">
+			<Shape type="7" margin="0.06" scale="[    1.000,    1.000,    1.000]" />
 			<Vertexes>
 				<VertexData position="[   -0.332,   -0.251,   -1.000]" normal="[   -0.177,    0.065,   -0.085]" uv0="[    2.727,    2.660]" uv1="[    0.838,    0.828]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
 				<VertexData position="[   -0.332,   -1.000,   -1.000]" normal="[   -0.177,    0.065,   -0.085]" uv0="[    3.479,    2.660]" uv1="[    0.952,    0.828]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
@@ -252,7 +253,7 @@
 		<SceneNode name="Scene" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,   -0.707,   -0.000,   -0.000]" scale="[    1.000,    1.000,    1.000]">
 			<SceneNode name="Lamp.001" nodeType="Light" type="0" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.00111111" spotCutOff="75" ambient="[    0.000,    0.000,    0.000,    0.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[   -2.713,   -3.542,   -0.480]" orientation="[    0.571,    0.169,    0.272,    0.756]" />
 			<SceneNode name="Cube" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Material" meshName="Cube">
-				<RigidBody mass="0" phyShape="7" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" margin="0.06" />
+				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" />
 			</SceneNode>
 			<SceneNode name="Lamp" nodeType="Light" type="0" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.00111111" spotCutOff="75" ambient="[    0.000,    0.000,    0.000,    0.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    1.756,   -1.977,    1.814]" orientation="[    0.571,    0.169,    0.272,    0.756]" />
 			<SceneNode name="Camera" nodeType="Camera" fovy="0.610865" zNear="0.1" zFar="100" viewportFactor="[    0.000,    0.000,    1.000,    1.000]" isOrtho="0" position="[    7.481,   -6.508,    5.344]" orientation="[    0.782,    0.482,    0.213,    0.334]" />

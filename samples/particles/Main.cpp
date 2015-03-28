@@ -29,30 +29,33 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    App app;
 	auto window = Window::Create();
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
 	camera->SetPosition(Vertex3(0, 8, 15));
     auto control = std::make_shared<CameraControl>(camera);
+    
+    auto planeMesh = Mesh::Create<BoxMesh>();
+    planeMesh->Set(20, 0.1f, 20);
+    auto floorObj = scene->CreateChild<SceneNode>();
+    floorObj->SetMesh(planeMesh);
+    floorObj->SetMaterial(Material::Create());
+    floorObj->GetMaterial()->SetColor(Color(1, 0, 0, 1));
+    auto rb = floorObj->GetOrCreateRigidBody();
+    auto shape = rb->GetShape();
+    shape->SetType(SH_TRIMESH);
+
 #if 1
-	auto resource = app.GetOrCreateResourceFile("data/spark.png");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/spark.png");
 	auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 	auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
 	ps->GetParticleMaterial()->SetDiffuseMap(texture);
-    auto meshEmitter(app.CreateBoxMesh());
+	auto meshEmitter(Mesh::Create<BoxMesh>());
     ps->SetMesh(meshEmitter);
     ps->SetPosition(Vertex3(0, 10, 0));
-	ps->SetMaterial(app.CreateMaterial());
+	ps->SetMaterial(Material::Create());
 	ps->GetMaterial()->SetSolid(false);
 #endif
-	auto planeMesh = app.CreateBoxMesh(20, 0.1f, 20);
-    auto floorObj = scene->CreateChild<SceneNode>();
-	floorObj->SetMesh(planeMesh);
-	floorObj->SetMaterial(app.CreateMaterial());
-	floorObj->GetMaterial()->SetColor(Color(1, 0, 0, 1));
-	floorObj->GetOrCreateRigidBody()->SetShape(SH_TRIMESH);
-
     //auto light = scene->GetOrCreateChild<Light>("light");
     //light->SetPosition(Vertex3(0, 0.0, 5.0));
 
@@ -66,6 +69,6 @@ int NSG_MAIN(int argc, char* argv[])
 		scene->Render();
 	});
 
-    return app.Run();
+    return Window::RunApp();
 }
 

@@ -30,8 +30,8 @@ static void Test01()
 {
 	auto scene = std::make_shared<Scene>();
 
-    auto sphereMesh(App::this_->CreateSphereMesh());
-    auto boxMesh(App::this_->CreateBoxMesh());
+	auto sphereMesh(Mesh::Create<SphereMesh>());
+	auto boxMesh(Mesh::Create<BoxMesh>());
 
 	auto node1s = scene->CreateChild<SceneNode>();
     node1s->SetMesh(sphereMesh);
@@ -83,8 +83,8 @@ static void Test02()
 {
 	auto scene = std::make_shared<Scene>("scene2");
 
-    auto sphereMesh(App::this_->CreateSphereMesh());
-    auto boxMesh(App::this_->CreateBoxMesh());
+	auto sphereMesh(Mesh::Create<SphereMesh>());
+	auto boxMesh(Mesh::Create<BoxMesh>());
 
 	auto node1s = scene->GetOrCreateChild<SceneNode>("node 1");
     node1s->SetMesh(sphereMesh);
@@ -133,7 +133,7 @@ static void Test03()
 	auto scene = std::make_shared<Scene>("scene3");
 
     {
-        auto sphereMesh(App::this_->CreateSphereMesh());
+		auto sphereMesh(Mesh::Create<SphereMesh>());
 		auto node1s = scene->GetOrCreateChild<SceneNode>("node 1");
 		node1s->SetMesh(sphereMesh);
 
@@ -162,7 +162,8 @@ static void Test04()
 
     {
         const float RADIUS = 0.5f;
-        auto sphereMesh(App::this_->CreateSphereMesh(RADIUS, 64));
+		auto sphereMesh(Mesh::Create<SphereMesh>());
+		sphereMesh->Set(RADIUS, 64);
         std::vector<PSceneNode> nodes;
         for (int i = 0; i < 100; i++)
         {
@@ -235,7 +236,8 @@ static void Test05()
 
 	{
 		const float RADIUS = 0.5f;
-		auto sphereMesh(App::this_->CreateSphereMesh(RADIUS, 64));
+		auto sphereMesh(Mesh::Create<SphereMesh>());
+		sphereMesh->Set(RADIUS, 64);
 		auto node = scene->GetOrCreateChild<SceneNode>("0");
 		node->SetPosition(Vertex3(0, 0, 0));
 		const float SCALE = 0.1f;
@@ -255,7 +257,8 @@ static void Test05()
 static void Test06()
 {
     auto scene = std::make_shared<Scene>();
-	auto quad = App::this_->CreateQuadMesh(0.5f);
+	auto quad = Mesh::Create<QuadMesh>();
+	quad->Set(0.5f);
 	auto nodeLU = scene->CreateChild<SceneNode>();
 	nodeLU->SetMesh(quad);
 	nodeLU->SetPosition(Vector3(-0.5f, 0.5f, 0));
@@ -311,7 +314,7 @@ static void Test06()
 
 static void Test07()
 {
-    auto xml = App::this_->GetOrCreateResourceFile("data/AnonymousPro132.xml");
+	auto xml = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro132.xml");
     auto atlas = std::make_shared<FontAtlas>(xml);
     
     auto textCenter = atlas->GetOrCreateMesh("A", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
@@ -334,7 +337,7 @@ static void Test07()
 	nodeLeftBottom->SetMesh(textLeftBottom);
 	nodeRightBottom->SetMesh(textRightBottom);
 	
-	auto material = App::this_->CreateMaterial();
+	auto material = Material::Create();
 	material->SetTextMap(atlas->GetTexture());
 
 	nodeCenter->SetMaterial(material);
@@ -389,7 +392,7 @@ static void Test07()
 
 static void Test08()
 {
-	auto xml = App::this_->GetOrCreateResourceFile("data/AnonymousPro132.xml");
+	auto xml = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro132.xml");
 	auto atlas = std::make_shared<FontAtlas>(xml);
 
 	auto textCenter = atlas->GetOrCreateMesh("A", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
@@ -414,7 +417,7 @@ static void Test08()
 	nodeLeftBottom->SetMesh(textLeftBottom);
 	nodeRightBottom->SetMesh(textRightBottom);
 
-	auto material = App::this_->CreateMaterial();
+	auto material = Material::Create();
 	material->SetTextMap(atlas->GetTexture());
 
 	nodeCenter->SetMaterial(material);
@@ -471,9 +474,9 @@ static void Test09()
 {
 	auto scene = std::make_shared<Scene>();
 
-    auto sphereMesh(App::this_->CreateSphereMesh());
-    auto boxMesh(App::this_->CreateBoxMesh());
-	auto material1 = App::this_->CreateMaterial();
+	auto sphereMesh(Mesh::Create<SphereMesh>());
+	auto boxMesh(Mesh::Create<BoxMesh>());
+	auto material1 = Material::Create();
 
 	std::vector<PSceneNode> spheres;
     const int Spheres = 100;
@@ -507,7 +510,7 @@ static void Test09()
 	CHECK_CONDITION(batches.size() == 1, __FILE__, __LINE__);
 	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get(), __FILE__, __LINE__);
 
-	auto material2 = App::this_->CreateMaterial();
+	auto material2 = Material::Create();
 	boxes[0]->SetMaterial(material2);
 	Graphics::this_->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 2, __FILE__, __LINE__);
@@ -537,9 +540,9 @@ static void Test0A()
 	camera->SetFarClip(200);
 	camera->SetGlobalLookAt(Vector3(0, 0, 1));
 
-	auto sphereMesh(App::this_->CreateSphereMesh());
-	auto boxMesh(App::this_->CreateBoxMesh());
-	auto material1 = App::this_->CreateMaterial();
+	auto sphereMesh(Mesh::Create<SphereMesh>());
+	auto boxMesh(Mesh::Create<BoxMesh>());
+	auto material1 = Material::Create();
 
 	const int Spheres = 100;
 	for (int i = 0; i<Spheres; i++)
@@ -571,7 +574,6 @@ static void Test0A()
 
 void Tests()
 {
-	App app;
 	auto window = Window::Create("window", 0, 0, 1, 1);
     Test01();
     Test02();
