@@ -38,8 +38,8 @@ namespace NSG
 
     InstanceBuffer::~InstanceBuffer()
     {
-        if (graphics_.GetVertexBuffer() == this)
-            graphics_.SetVertexBuffer(nullptr);
+        if (Graphics::this_->GetVertexBuffer() == this)
+            Graphics::this_->SetVertexBuffer(nullptr);
     }
 
     void InstanceBuffer::Unbind()
@@ -49,7 +49,7 @@ namespace NSG
 
 	void InstanceBuffer::UpdateData(const std::vector<InstanceData>& data)
 	{
-		graphics_.SetVertexBuffer(this);
+		Graphics::this_->SetVertexBuffer(this);
 
 		if (maxInstances_ >= data.size())
 		{
@@ -67,7 +67,7 @@ namespace NSG
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		CHECK_ASSERT(graphics_.HasInstancedArrays(), __FILE__, __LINE__);
+		CHECK_ASSERT(Graphics::this_->HasInstancedArrays(), __FILE__, __LINE__);
 
 		std::vector<InstanceData> instancesData;
 		auto& nodes = batch.GetNodes();
