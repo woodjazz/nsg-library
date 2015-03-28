@@ -92,7 +92,6 @@ namespace NSG
           activeNode_(nullptr),
           activeScene_(nullptr),
           sceneColor_(-1),
-          graphics_(*Graphics::this_),
           spotLightsReduced_(false),
           directionalLightsReduced_(false),
           pointLightsReduced_(false),
@@ -133,11 +132,11 @@ namespace NSG
 
     bool Program::IsValid()
     {
-        if (material_ && material_->IsReady() && graphics_.GetScene())
+        if (material_ && material_->IsReady() && Graphics::this_->GetScene())
         {
             if (!nBones_ && IsSkinned())
             {
-                auto mesh = graphics_.GetMesh();
+                auto mesh = Graphics::this_->GetMesh();
                 auto skeleton = mesh->GetSkeleton();
                 nBones_ = skeleton->GetBones().size();
             }
@@ -186,7 +185,7 @@ namespace NSG
 
     void Program::SetupLighting(std::string& preDefines)
     {
-        Scene* scene = graphics_.GetScene();
+        Scene* scene = Graphics::this_->GetScene();
 
         lightingEnabled_ = ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_) ||
                            ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_);
@@ -226,7 +225,7 @@ namespace NSG
 
             if (nDirectionalLights_ || nPointLights_ || nSpotLights_)
             {
-                size_t maxVarying = graphics_.GetMaxVaryingVectors();
+                size_t maxVarying = Graphics::this_->GetMaxVaryingVectors();
 
                 size_t defaultNumVaryingVectors = GetNeededVarying();
 
@@ -450,7 +449,7 @@ namespace NSG
         pFShader_ = PFragmentShader(new FragmentShader(fShader.c_str()));
         if (Initialize())
         {
-            graphics_.SetProgram(this);
+            Graphics::this_->SetProgram(this);
             SetUniformLocations();
         }
     }
@@ -466,8 +465,8 @@ namespace NSG
         pFShader_ = nullptr;
         glDeleteProgram(id_);
 
-        if (graphics_.GetProgram() == this)
-            graphics_.SetProgram(nullptr);
+        if (Graphics::this_->GetProgram() == this)
+            Graphics::this_->SetProgram(nullptr);
 
         nBones_ = 0;
         nDirectionalLights_ = 0;
@@ -491,7 +490,7 @@ namespace NSG
         directionalLightsLoc_.clear();
         spotLightsLoc_.clear();
 
-        graphics_.InvalidateVAOFor(this);
+        Graphics::this_->InvalidateVAOFor(this);
     }
 
     std::string Program::TranslateFlags() const
@@ -858,7 +857,7 @@ namespace NSG
         {
             for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
                 if (textureLoc_[index] != -1)
-                    graphics_.SetTexture(index, material_->GetTexture(index).get());
+                    Graphics::this_->SetTexture(index, material_->GetTexture(index).get());
 
             if (materialVariablesNeverSet_ || material_->UniformsNeedUpdate())
             {
@@ -1192,7 +1191,7 @@ namespace NSG
     {
         if (SetSkeletonVariables(mesh->GetSkeleton().get()))
         {
-            Scene* scene = graphics_.GetScene();
+            Scene* scene = Graphics::this_->GetScene();
             SetSceneVariables(scene);
             SetMaterialVariables();
             SetNodeVariables(node);

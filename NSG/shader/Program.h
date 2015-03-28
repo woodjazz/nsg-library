@@ -213,7 +213,6 @@ namespace NSG
 
         PResource vertexShader_;
         PResource fragmentShader_;
-        Graphics& graphics_;
         bool spotLightsReduced_;
         bool directionalLightsReduced_;
         bool pointLightsReduced_;

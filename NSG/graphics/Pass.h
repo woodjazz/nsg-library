@@ -65,7 +65,6 @@ namespace NSG
 		void SetupPass();
     private:
         Technique* technique_;
-        Graphics& graphics_;
         PProgram pProgram_;
         BLEND_MODE blendMode_;
         bool enableDepthTest_;

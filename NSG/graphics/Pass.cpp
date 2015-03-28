@@ -41,7 +41,6 @@ namespace NSG
 {
     Pass::Pass(Technique* technique)
         : technique_(technique),
-          graphics_(*Graphics::this_),
 		  pProgram_(std::make_shared<Program>(technique->GetMaterial())),
           blendMode_(BLEND_NONE),
           enableDepthTest_(true),
@@ -175,34 +174,34 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        graphics_.SetColorMask(enableColorBuffer_);
-        graphics_.SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
+        Graphics::this_->SetColorMask(enableColorBuffer_);
+        Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
                                  dpfailStencilOp_, dppassStencilOp_, stencilFunc_,
                                  stencilRefValue_, stencilMaskValue_);
 
-        graphics_.SetBlendModeTest(blendMode_);
-        graphics_.EnableDepthTest(enableDepthTest_);
+        Graphics::this_->SetBlendModeTest(blendMode_);
+        Graphics::this_->EnableDepthTest(enableDepthTest_);
 		if (enableDepthTest_)
 		{
-			graphics_.SetDepthMask(enableDepthBuffer_);
-			graphics_.SetDepthFunc(depthFunc_);
+			Graphics::this_->SetDepthMask(enableDepthBuffer_);
+			Graphics::this_->SetDepthFunc(depthFunc_);
 		}
 
-        graphics_.EnableCullFace(enableCullFace_);
+        Graphics::this_->EnableCullFace(enableCullFace_);
         if (enableCullFace_)
         {
-            graphics_.SetCullFace(cullFaceMode_);
-            graphics_.SetFrontFace(frontFaceMode_);
+            Graphics::this_->SetCullFace(cullFaceMode_);
+            Graphics::this_->SetFrontFace(frontFaceMode_);
         }
 
-        graphics_.SetProgram(pProgram_.get());
+        Graphics::this_->SetProgram(pProgram_.get());
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
     void Pass::Draw()
     {
-        graphics_.DrawActiveMesh(this);
+        Graphics::this_->DrawActiveMesh(this);
     }
 
     void Pass::Save(pugi::xml_node& node)

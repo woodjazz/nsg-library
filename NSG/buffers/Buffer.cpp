@@ -34,8 +34,7 @@ namespace NSG
         : type_(type),
           usage_(usage),
           bufferSize_(bufferSize),
-          dynamic_(usage != GL_STATIC_DRAW),
-          graphics_(*Graphics::this_)
+          dynamic_(usage != GL_STATIC_DRAW)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 

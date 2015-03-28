@@ -44,7 +44,6 @@ namespace NSG
 		GLenum usage_;
 		GLsizeiptr bufferSize_;
 		bool dynamic_;
-		Graphics& graphics_;
 	};
 }
 
