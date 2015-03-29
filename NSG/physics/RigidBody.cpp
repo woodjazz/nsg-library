@@ -53,6 +53,7 @@ namespace NSG
           collisionGroup_((int)CollisionMask::ALL),
           collisionMask_((int)CollisionMask::ALL),
           inWorld_(false),
+          trigger_(false),
           gravity_(sceneNode->GetScene()->GetPhysicsWorld()->GetGravity())
     {
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
@@ -77,17 +78,16 @@ namespace NSG
                 IsReady();
             });
         }
-
-        slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window * window)
+        else
         {
-            if (!slotBeginFrame_)
+            slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window * window)
             {
                 slotBeginFrame_ = Graphics::this_->signalBeginFrame_->Connect([this]()
                 {
                     IsReady();
                 });
-            }
-        });
+            });
+        }
     }
 
     RigidBody::~RigidBody()
@@ -96,9 +96,9 @@ namespace NSG
 
     bool RigidBody::IsValid()
     {
-        if(shape_)
+        if (shape_)
         {
-            if(IsStatic() && shape_->GetType() == SH_CONVEX_TRIMESH)
+            if (IsStatic() && shape_->GetType() == SH_CONVEX_TRIMESH)
                 shape_->SetType(SH_TRIMESH);
             return shape_->IsReady();
         }
@@ -180,7 +180,8 @@ namespace NSG
         if (mass_ != mass)
         {
             mass_ = mass;
-            Invalidate();
+            if (body_)
+                ReAddToWorld();
         }
     }
 
@@ -189,10 +190,8 @@ namespace NSG
         if (shape_ != shape)
         {
             shape_ = shape;
-            if(body_)
+            if (body_)
                 UpdateShape();
-            else
-                Invalidate();
             if (shape)
             {
                 slotReleased_ = shape->signalReleased_->Connect([this]()
@@ -210,7 +209,8 @@ namespace NSG
         if (restitution != restitution_)
         {
             restitution_ = restitution;
-            Invalidate();
+            if (body_)
+                body_->setRestitution(restitution);
         }
     }
 
@@ -219,7 +219,8 @@ namespace NSG
         if (friction != friction_)
         {
             friction_ = friction;
-            Invalidate();
+            if (body_)
+                body_->setFriction(friction);
         }
     }
 
@@ -228,7 +229,8 @@ namespace NSG
         if (linearDamp != linearDamp_)
         {
             linearDamp_ = linearDamp;
-            Invalidate();
+            if (body_)
+                body_->setDamping(linearDamp_, angularDamp_);
         }
     }
 
@@ -237,7 +239,8 @@ namespace NSG
         if (angularDamp != angularDamp_)
         {
             angularDamp_ = angularDamp;
-            Invalidate();
+            if (body_)
+                body_->setDamping(linearDamp_, angularDamp_);
         }
     }
 
@@ -330,18 +333,25 @@ namespace NSG
 
     void RigidBody::ReScale()
     {
-        if (body_)
+        if (shape_)
         {
             auto sceneNode(sceneNode_.lock());
             shape_->SetScale(sceneNode->GetGlobalScale());
+        }
+
+        if (body_)
+        {
+            RemoveFromWorld();
             UpdateShape();
+            AddToWorld();
         }
     }
 
     void RigidBody::UpdateShape()
     {
-        btVector3 inertia;
-        shape_->GetCollisionShape()->calculateLocalInertia(mass_, inertia);
+        btVector3 inertia(0.0f, 0.0f, 0.0f);
+        if (mass_ > 0)
+            shape_->GetCollisionShape()->calculateLocalInertia(mass_, inertia);
         body_->setMassProps(mass_, inertia);
         body_->updateInertiaTensor();
         body_->setCollisionShape(shape_->GetCollisionShape().get());
@@ -375,13 +385,13 @@ namespace NSG
         {
             collisionGroup_ = group;
             collisionMask_ = mask;
-            Invalidate();
+            ReAddToWorld();
         }
     }
 
     void RigidBody::Activate()
     {
-        if (!IsStatic() && IsReady())
+        if (!IsStatic() && body_)
             body_->activate(true);
     }
 
@@ -398,6 +408,12 @@ namespace NSG
         SetAngularVelocity(VECTOR3_ZERO);
     }
 
+    void RigidBody::ReAddToWorld()
+    {
+        RemoveFromWorld();
+        AddToWorld();
+    }
+
     void RigidBody::AddToWorld()
     {
         if (!inWorld_ && body_)
@@ -405,7 +421,19 @@ namespace NSG
             auto world = owner_.lock();
             CHECK_ASSERT(world, __FILE__, __LINE__);
             CHECK_ASSERT(body_, __FILE__, __LINE__);
+            int flags = body_->getCollisionFlags();
+            if (trigger_)
+                flags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+            else
+                flags &= ~btCollisionObject::CF_NO_CONTACT_RESPONSE;
             world->addRigidBody(body_.get(), (int)collisionGroup_, (int)collisionMask_);
+            if (mass_ > 0.0f)
+                Activate();
+            else
+            {
+                SetLinearVelocity(VECTOR3_ZERO);
+                SetAngularVelocity(VECTOR3_ZERO);
+            }
             inWorld_ = true;
         }
     }
@@ -421,6 +449,16 @@ namespace NSG
                 world->removeRigidBody(body_.get());
                 inWorld_ = false;
             }
+        }
+    }
+
+    void RigidBody::SetTrigger(bool enable)
+    {
+        if(trigger_ != enable)
+        {
+            trigger_ = enable;
+            RemoveFromWorld();
+            AddToWorld();
         }
     }
 }

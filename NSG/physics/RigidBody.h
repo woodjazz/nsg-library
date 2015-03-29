@@ -61,8 +61,10 @@ namespace NSG
         void Activate();
         void ResetForces();
 		void Reset();
-		void AddToWorld();
-		void RemoveFromWorld();
+        void ReAddToWorld();
+        void AddToWorld();
+        void RemoveFromWorld();
+        void SetTrigger(bool enable);
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -84,6 +86,7 @@ namespace NSG
 		int collisionGroup_;
 		int collisionMask_;
 		bool inWorld_;
+        bool trigger_;
 		Vector3 gravity_;
         Vector3 linearVelocity_;
         Vector3 angularVelocity_;
