@@ -90,7 +90,8 @@ namespace NSG
 		static std::vector<PMesh> GetMeshes();
 		static PMesh GetMesh(const std::string& name);
 		void SetMeshData(const VertexsData& vertexsData, const Indexes& indexes);
-        virtual PShape GetShape();
+        PShape GetShape();
+        virtual PhysicsShape GetShapeType() const {return SH_CONVEX_TRIMESH; } // assume rigidbody is dynamicby default 
 	protected:
 		virtual void Load(const pugi::xml_node& node);
         bool IsValid() override;

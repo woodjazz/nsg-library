@@ -24,7 +24,7 @@ install:
 
 before_script:
   # GET externals
-  - git submodule update --init --recursive
+  - travis_retry git submodule update --init --recursive
 
 script:
   - chmod +x travis_script.sh

@@ -69,6 +69,7 @@ namespace NSG
         void ReleaseResources() override;
         void getWorldTransform(btTransform& worldTrans) const override;
         void setWorldTransform(const btTransform& worldTrans) override;
+        void UpdateShape();
 
         std::shared_ptr<btRigidBody> body_;
 		PWeakSceneNode sceneNode_;

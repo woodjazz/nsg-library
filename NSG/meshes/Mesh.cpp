@@ -495,10 +495,9 @@ namespace NSG
         if (!shape_)
         {
             shape_ = std::make_shared<Shape>(name_);
-            shape_->SetType(SH_CONVEX_TRIMESH);
+            shape_->SetType(GetShapeType()); 
             shape_->SetMesh(shared_from_this());
         }
         return shape_;
     }
-
 }

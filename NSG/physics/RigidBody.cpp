@@ -96,7 +96,13 @@ namespace NSG
 
     bool RigidBody::IsValid()
     {
-        return shape_ && shape_->IsReady();
+        if(shape_)
+        {
+            if(IsStatic() && shape_->GetType() == SH_CONVEX_TRIMESH)
+                shape_->SetType(SH_TRIMESH);
+            return shape_->IsReady();
+        }
+        return false;
     }
 
     void RigidBody::AllocateResources()
@@ -183,7 +189,10 @@ namespace NSG
         if (shape_ != shape)
         {
             shape_ = shape;
-            Invalidate();
+            if(body_)
+                UpdateShape();
+            else
+                Invalidate();
             if (shape)
             {
                 slotReleased_ = shape->signalReleased_->Connect([this]()
@@ -325,12 +334,17 @@ namespace NSG
         {
             auto sceneNode(sceneNode_.lock());
             shape_->SetScale(sceneNode->GetGlobalScale());
-            btVector3 inertia;
-            shape_->GetCollisionShape()->calculateLocalInertia(mass_, inertia);
-            body_->setMassProps(mass_, inertia);
-            body_->updateInertiaTensor();
-            body_->setCollisionShape(shape_->GetCollisionShape().get());
+            UpdateShape();
         }
+    }
+
+    void RigidBody::UpdateShape()
+    {
+        btVector3 inertia;
+        shape_->GetCollisionShape()->calculateLocalInertia(mass_, inertia);
+        body_->setMassProps(mass_, inertia);
+        body_->updateInertiaTensor();
+        body_->setCollisionShape(shape_->GetCollisionShape().get());
     }
 
     void RigidBody::Load(const pugi::xml_node& node)

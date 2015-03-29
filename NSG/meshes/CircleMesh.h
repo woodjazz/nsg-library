@@ -40,6 +40,7 @@ namespace NSG
 		size_t GetNumberOfTriangles() const override;
         bool IsValid() override;
         void AllocateResources() override;
+        PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
 	private:
 		float radius_;
 		int res_;

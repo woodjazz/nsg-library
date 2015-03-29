@@ -34,6 +34,7 @@ namespace NSG
 		QuadMesh(const std::string& name);
 		~QuadMesh();
 		void Set(float size = 2);
+		PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
 	private:
 		float size_;
 	};

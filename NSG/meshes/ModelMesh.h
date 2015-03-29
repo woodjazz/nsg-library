@@ -40,6 +40,7 @@ namespace NSG
 		size_t GetNumberOfTriangles() const override;
 		void SetFaceMode(GLenum face_mode) { face_mode_ = face_mode; }
 		void Set(PResource resource);
+		PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
 	private:
 		void Load(PResource resource, const pugi::xml_node& node) override;
         bool IsValid() override;

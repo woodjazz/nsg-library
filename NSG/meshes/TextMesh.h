@@ -52,6 +52,7 @@ namespace NSG
         virtual size_t GetNumberOfTriangles() const override;
         HorizontalAlignment GetTextHorizontalAlignment() const { return hAlignment_; }
         VerticalAlignment GetTextVerticalAlignment() const { return vAlignment_; }
+        PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
     private:
         void AllocateResources() override;
         bool IsValid() override;

@@ -42,6 +42,7 @@ namespace NSG
         void SetScale(const Vector3& scale);
         void SetMesh(PMesh mesh);
         void SetType(PhysicsShape type);
+        PhysicsShape GetType() const { return type_; }
         std::shared_ptr<btCollisionShape> GetCollisionShape() const { return shape_; }
         void Load(const pugi::xml_node& node);
         void Save(pugi::xml_node& node);
