@@ -43,6 +43,7 @@ namespace NSG
           flags_(flags),
           colorTexture_(std::make_shared<Texture>(name + "ColorBuffer", GL_RGBA)),
           depthTexture_(std::make_shared<Texture>(name + "DepthBuffer", GL_DEPTH_COMPONENT)),
+          stencilTexture_(std::make_shared<Texture>(name + "StencilBuffer", GL_DEPTH_COMPONENT)),
           framebuffer_(0),
           colorRenderbuffer_(0),
           depthStencilRenderBuffer_(0),
@@ -86,6 +87,8 @@ namespace NSG
             if (Graphics::this_->HasDepthTexture())
             {
                 depthTexture_->SetSize(width_, height_);
+                if (flags_ & Flag::STENCIL)
+                    stencilTexture_->SetSize(width_, height_);
             }
             else
             {
@@ -142,7 +145,7 @@ namespace NSG
             {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
                 if (flags_ & Flag::STENCIL)
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, stencilTexture_->GetID(), 0);
             }
             else
             {
@@ -245,7 +248,7 @@ namespace NSG
         {
             originalWidth_ = width;
             originalHeight_ = height;
-            
+
             if (!Graphics::this_->IsTextureSizeCorrect(width, height))
                 GetPowerOfTwoValues(width, height);
 

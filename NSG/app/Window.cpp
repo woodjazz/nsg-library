@@ -113,8 +113,7 @@ namespace NSG
     {
         CHECK_ASSERT(!frameBuffer_, __FILE__, __LINE__);
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
-        frameBufferFlags |= FrameBuffer::DEPTH;
-        frameBufferFlags |= FrameBuffer::STENCIL;
+        //frameBufferFlags |= FrameBuffer::STENCIL;
         frameBuffer_ = std::make_shared<FrameBuffer>("GraphicsFrameBuffer", frameBufferFlags);
         frameBuffer_->SetWindow(this);
         CHECK_ASSERT(!showFrameBuffer_, __FILE__, __LINE__);

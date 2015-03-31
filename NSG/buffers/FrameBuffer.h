@@ -65,6 +65,7 @@ namespace NSG
 		Flags flags_;
         PTexture colorTexture_;
         PTexture depthTexture_;
+        PTexture stencilTexture_;
         GLuint framebuffer_;
         GLuint colorRenderbuffer_;
         GLuint depthStencilRenderBuffer_;
