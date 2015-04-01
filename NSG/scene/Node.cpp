@@ -72,7 +72,7 @@ namespace NSG
 
     void Node::RemoveFromParent()
     {
-        PNode parent = parent_.lock();
+        auto parent = parent_.lock();
         if(parent)
             parent->RemoveChild(this);
     }

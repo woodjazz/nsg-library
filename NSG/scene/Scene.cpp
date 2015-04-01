@@ -36,6 +36,7 @@ namespace NSG
 		  window_(nullptr)
     {
         orthoCamera_->EnableOrtho();
+        orthoCamera_->SetNearClip(0.f);
 
         for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)
             octree_[i] = std::make_shared<Octree>();
@@ -218,6 +219,7 @@ namespace NSG
 
     void Scene::Render()
     {
+        orthoCamera_->SetWindow(nullptr);
         Graphics::this_->SetScene(this);
         Camera* lastCameraUsed = orthoCamera_.get(); // default camera is ortho
         for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)

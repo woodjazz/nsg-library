@@ -38,6 +38,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 2));
     camera->EnableOrtho();
+    camera->SetWindow(nullptr);
     auto control = std::make_shared<CameraControl>(camera);
 
     auto nodeCenter = scene->GetOrCreateChild<SceneNode>("nodeCenter");

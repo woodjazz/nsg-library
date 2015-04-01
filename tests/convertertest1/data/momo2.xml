@@ -11272,7 +11272,7 @@ GUU/yn9P1o8p/T9aLhdDKKf5T+n60eU/p+tFwuhlOT74pfKf0/WlWNgckcD3qW1Yaauf/9k=
 				</SceneNode>
 			</SceneNode>
 			<SceneNode name="MeshMomo" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Material-material" meshName="momo" />
-			<SceneNode name="Camera" nodeType="Camera" fovy="0.643167" zNear="0.1" zFar="100" viewportFactor="[    0.000,    0.000,    1.000,    1.000]" isOrtho="0" position="[   -0.723,   -1.956,    0.936]" orientation="[    0.804,    0.565,   -0.106,   -0.151]" />
+			<SceneNode name="Camera" nodeType="Camera" fovy="0.643167" zNear="0.1" zFar="100" viewportFactor="[    0.000,    0.000,    1.000,    1.000]" isOrtho="0" orthoScale="2" position="[   -0.723,   -1.956,    0.936]" orientation="[    0.804,    0.565,   -0.106,   -0.151]" />
 			<SceneNode name="Sun" nodeType="Light" type="1" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0" spotCutOff="45" ambient="[    1.000,    1.000,    1.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    1.035,   -0.346,    2.359]" orientation="[    0.834,    0.552,    0.000,    0.000]" />
 		</SceneNode>
 		<Animations>

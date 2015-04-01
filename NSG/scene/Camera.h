@@ -48,7 +48,7 @@ namespace NSG
 		static Matrix4 GetInverseView();
 		void SetViewportFactor(const Vector4& viewportFactor);
 		const Vector4& GetViewportFactor() const { return viewportFactor_; }
-		void SetOrtho(float left, float right, float bottom, float top);
+		void SetOrthoScale(float orthoScale);
         bool IsOrtho() const { return isOrtho_; }
         //XYZ are in normalized device coordinates (-1, 1)
         Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const; 
@@ -91,7 +91,6 @@ namespace NSG
 		float zFar_;
 		Vector4 viewportFactor_;
 		bool isOrtho_;
-		Vector4 orthoCoords_;
 		unsigned viewWidth_;
 		unsigned viewHeight_;
 		float aspectRatio_;
@@ -100,5 +99,6 @@ namespace NSG
 		SignalViewChanged::PSlot slotViewChanged_;
 		Window* window_;
 		SignalWindow::PSlot slotWindowCreated_;
+		float orthoScale_;
 	};
 }

@@ -45,43 +45,43 @@ namespace NSG
           fovy_(glm::radians(45.0f)),
           zNear_(0.1f),
           zFar_(250),
-		  viewportFactor_(0, 0, 1, 1),
+          viewportFactor_(0, 0, 1, 1),
           isOrtho_(false),
-          orthoCoords_(-1.0f, 1.0f, -1.0f, 1.0f),
           viewWidth_(0),
           viewHeight_(0),
           aspectRatio_(1),
           cameraIsDirty_(false),
-          window_(nullptr)
+          window_(nullptr),
+          orthoScale_(2.f)
     {
         SetInheritScale(false);
         UpdateProjection();
-		if (Graphics::this_)
-		{
-			auto window = Graphics::this_->GetWindow();
-			if (window)
-				SetWindow(window);
-			Graphics::this_->SetCamera(this);
-		}
-
-        slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window* window)
+        if (Graphics::this_)
         {
-			if (!window_)
-				SetWindow(window);
+            auto window = Graphics::this_->GetWindow();
+            if (window)
+                SetWindow(window);
+            Graphics::this_->SetCamera(this);
+        }
+
+        slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window * window)
+        {
+            if (!window_)
+                SetWindow(window);
         });
     }
 
     Camera::~Camera()
     {
-		if (Graphics::this_ && Graphics::this_->GetCamera() == this)
-			Graphics::this_->SetCamera(nullptr);
+        if (Graphics::this_ && Graphics::this_->GetCamera() == this)
+            Graphics::this_->SetCamera(nullptr);
     }
 
-	RenderLayer Camera::SetLayer(RenderLayer layer)
-	{
-		std::swap(layer, layer_);
-		return layer;
-	}
+    RenderLayer Camera::SetLayer(RenderLayer layer)
+    {
+        std::swap(layer, layer_);
+        return layer;
+    }
 
     void Camera::SetWindow(Window* window)
     {
@@ -186,22 +186,22 @@ namespace NSG
         }
     }
 
-    void Camera::SetOrtho(float left, float right, float bottom, float top)
+    void Camera::SetOrthoScale(float orthoScale)
     {
-        if (orthoCoords_.x != left || orthoCoords_.y != right || orthoCoords_.z != bottom || orthoCoords_.w != top)
+        if(orthoScale != orthoScale_)
         {
-            orthoCoords_ = Vector4(left, right, bottom, top);
+            orthoScale_ = orthoScale;
             UpdateProjection();
         }
     }
 
     void Camera::SetViewportFactor(const Vector4& viewportFactor)
     {
-        if(viewportFactor_ != viewportFactor)
+        if (viewportFactor_ != viewportFactor)
         {
             viewportFactor_ = viewportFactor;
-			if (Graphics::this_->GetCamera() == this)
-				Graphics::this_->SetViewportFactor(viewportFactor);
+            if (Graphics::this_->GetCamera() == this)
+                Graphics::this_->SetViewportFactor(viewportFactor);
         }
     }
 
@@ -209,7 +209,9 @@ namespace NSG
     {
         if (isOrtho_)
         {
-            matProjection_ = glm::ortho(orthoCoords_.x, orthoCoords_.y, orthoCoords_.z, orthoCoords_.w, 0.0f, zFar_);
+            auto width = orthoScale_;
+            auto height = orthoScale_ / aspectRatio_;
+            matProjection_ = glm::ortho(-width*0.5f, width*0.5f, -height*0.5f, height*0.5f, zNear_, zFar_);
         }
         else
         {
@@ -440,7 +442,7 @@ namespace NSG
 
         {
             std::stringstream ss;
-			ss << viewportFactor_;
+            ss << viewportFactor_;
             node.append_attribute("viewportFactor") = ss.str().c_str();
         }
 
@@ -448,6 +450,12 @@ namespace NSG
             std::stringstream ss;
             ss << isOrtho_;
             node.append_attribute("isOrtho") = ss.str().c_str();
+        }
+
+        {
+            std::stringstream ss;
+            ss << orthoScale_;
+            node.append_attribute("orthoScale") = ss.str().c_str();
         }
 
         {
@@ -475,8 +483,9 @@ namespace NSG
         fovy_ = node.attribute("fovy").as_float();
         zNear_ = node.attribute("zNear").as_float();
         zFar_ = node.attribute("zFar").as_float();
-		viewportFactor_ = GetVertex4(node.attribute("viewportFactor").as_string());
+        viewportFactor_ = GetVertex4(node.attribute("viewportFactor").as_string());
         isOrtho_ = node.attribute("isOrtho").as_bool();
+        orthoScale_ = node.attribute("orthoScale").as_float();
 
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);

@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<App>
+	<Resources />
+	<Meshes>
+		<Mesh name="Cube.001" wireFrameDrawMode="4" solidDrawMode="4">
+			<Shape type="7" margin="0.04" scale="[    1.000,    1.000,    1.000]" />
+			<Vertexes>
+				<VertexData position="[   13.700,    0.000,    0.300]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   12.000,    0.000,    2.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    0.000,    0.000,    2.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    0.000,    0.000,    0.300]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.165,    0.286,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   14.000,    0.000,    0.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   13.700,    0.000,    0.300]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    0.000,    0.000,    0.300]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.165,    0.286,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    0.000,    0.000,    0.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.161,    0.282,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   13.700,    0.000,    0.300]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   14.000,    0.000,    0.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   28.000,    0.000,    0.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   28.000,    0.000,    0.300]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.141,    0.267,    1.000,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+			</Vertexes>
+			<Indexes>0 1 2 0 2 3 4 5 6 4 6 7 8 9 10 8 10 11 </Indexes>
+		</Mesh>
+		<Mesh name="Cube" wireFrameDrawMode="4" solidDrawMode="4">
+			<Vertexes>
+				<VertexData position="[    1.000,    0.000,    1.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.031,    1.000,    0.047,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    0.000,    1.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.031,    1.000,    0.047,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[   -1.000,    0.000,   -1.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.031,    1.000,    0.047,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+				<VertexData position="[    1.000,    0.000,   -1.000]" normal="[    0.000,   -1.000,    0.000]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    0.031,    1.000,    0.047,    1.000]" bonesID="[    0.000,    0.000,    0.000,    0.000]" bonesWeight="[    0.000,    0.000,    0.000,    0.000]" />
+			</Vertexes>
+			<Indexes>0 1 2 0 2 3 </Indexes>
+		</Mesh>
+	</Meshes>
+	<Materials>
+		<Material name="Level1" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" shininess="1" color="[    1.000,    1.000,    1.000,    1.000]">
+			<Technique>
+				<Passes>
+					<Pass blendMode="0" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305" depthFunc="1">
+						<Program flags="00000000000000000000000000000010" />
+					</Pass>
+				</Passes>
+			</Technique>
+		</Material>
+		<Material name="Player" ambient="[    0.000,    0.000,    0.000,    1.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" shininess="1" color="[    1.000,    1.000,    1.000,    1.000]">
+			<Technique>
+				<Passes>
+					<Pass blendMode="0" enableDepthTest="1" enableStencilTest="0" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="1" enableDepthBuffer="1" drawMode="0" enableCullFace="1" cullFaceMode="1029" frontFaceMode="2305" depthFunc="1">
+						<Program flags="00000000000000000000000000000010" />
+					</Pass>
+				</Passes>
+			</Technique>
+		</Material>
+	</Materials>
+	<Scene>
+		<SceneNode name="Scene" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,   -0.707,   -0.000,   -0.000]" scale="[    1.000,    1.000,    1.000]">
+			<SceneNode name="Level1" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Level1" meshName="Cube.001">
+				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" />
+			</SceneNode>
+			<SceneNode name="Camera" nodeType="Camera" fovy="0.0645772" zNear="0.1" zFar="100" viewportFactor="[    0.000,    0.000,    1.000,    1.000]" isOrtho="1" orthoScale="7" position="[    0.000,  -10.000,    2.700]" orientation="[    0.707,    0.707,    0.000,    0.000]">
+				<SceneNode name="Player" nodeType="SceneNode" position="[   -3.000,    1.300,  -10.000]" orientation="[   -0.707,    0.707,    0.000,    0.000]" scale="[    0.125,    1.000,    0.125]" materialName="Player" meshName="Cube" />
+			</SceneNode>
+		</SceneNode>
+		<Animations />
+		<Skeletons />
+		<Physics gravity="[    0.000,   -9.800,    0.000]" />
+	</Scene>
+</App>

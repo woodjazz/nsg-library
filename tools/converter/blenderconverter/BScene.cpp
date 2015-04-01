@@ -41,10 +41,10 @@ misrepresented as being the original software.
 namespace BlenderConverter
 {
     using namespace NSG;
-	BScene::BScene(const Path& path, const Path& outputDir, bool embedResources)
+    BScene::BScene(const Path& path, const Path& outputDir, bool embedResources)
         : path_(path),
           outputDir_(outputDir),
-		  embedResources_(embedResources)
+          embedResources_(embedResources)
     {
     }
 
@@ -57,57 +57,57 @@ namespace BlenderConverter
         bParse::bBlenderFile obj(path_.GetFullAbsoluteFilePath().c_str());
         obj.parse(false);
         bParse::bMain* data = obj.getMain();
-		auto materials = LoadMaterials(data);
-		CreateScenes(data);
-		CreateAnimations(data);
+        auto materials = LoadMaterials(data);
+        CreateScenes(data);
+        CreateAnimations(data);
         return true;
     }
 
-	void BScene::CreateScenes(bParse::bMain* data)
-	{
-		bParse::bListBasePtr* it = data->getScene();
-		auto n = it->size();
-		for (int i = 0; i < n; i++)
-		{
-			armatureLinker_.clear();
-			const Blender::Scene* bscene = (const Blender::Scene*)it->at(i);
-			auto scene = CreateScene(bscene);
-			scenes_.push_back(scene);
-			bscenes_.push_back(bscene);
-			const Blender::Base* base = (const Blender::Base*)bscene->base.first;
-			while (base)
-			{
-				const Blender::Object* obj = base->object;
-				ConvertObject(obj, scene);
-				base = base->next;
-			}
-			for (auto& objArmature : armatureLinker_)
-				CreateSkeleton(scene, objArmature);
-		}
-	}
-
-	PScene BScene::CreateScene(const Blender::Scene* bscene)
-	{
-		auto scene = std::make_shared<Scene>(B_IDNAME(bscene));
-		scene->SetOrientation(glm::angleAxis<float>(-PI / 2.f, Vertex3(1, 0, 0)));
-		const Blender::World* world = bscene->world;
-		scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
-		Color ambient(world->ambr, world->ambg, world->ambb, 1);
-		scene->SetAmbientColor(ambient);
-		return scene;
-	}
-
-	std::vector<NSG::PMaterial> BScene::LoadMaterials(bParse::bMain* data)
+    void BScene::CreateScenes(bParse::bMain* data)
     {
-		std::vector<PMaterial> result;
+        bParse::bListBasePtr* it = data->getScene();
+        auto n = it->size();
+        for (int i = 0; i < n; i++)
+        {
+            armatureLinker_.clear();
+            const Blender::Scene* bscene = (const Blender::Scene*)it->at(i);
+            auto scene = CreateScene(bscene);
+            scenes_.push_back(scene);
+            bscenes_.push_back(bscene);
+            const Blender::Base* base = (const Blender::Base*)bscene->base.first;
+            while (base)
+            {
+                const Blender::Object* obj = base->object;
+                ConvertObject(obj, scene);
+                base = base->next;
+            }
+            for (auto& objArmature : armatureLinker_)
+                CreateSkeleton(scene, objArmature);
+        }
+    }
+
+    PScene BScene::CreateScene(const Blender::Scene* bscene)
+    {
+        auto scene = std::make_shared<Scene>(B_IDNAME(bscene));
+        scene->SetOrientation(glm::angleAxis<float>(-PI / 2.f, Vertex3(1, 0, 0)));
+        const Blender::World* world = bscene->world;
+        scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
+        Color ambient(world->ambr, world->ambg, world->ambb, 1);
+        scene->SetAmbientColor(ambient);
+        return scene;
+    }
+
+    std::vector<NSG::PMaterial> BScene::LoadMaterials(bParse::bMain* data)
+    {
+        std::vector<PMaterial> result;
         bParse::bListBasePtr* it = data->getMat();
         int n = it->size();
         for (int i = 0; i < n; i++)
         {
             auto material = (Blender::Material*)it->at(i);
-			result.push_back(LoadMaterial(material));
+            result.push_back(LoadMaterial(material));
         }
-		return result;
+        return result;
     }
 
     PTexture BScene::CreateTexture(const Blender::Image* ima)
@@ -116,23 +116,23 @@ namespace BlenderConverter
         if (!ima->packedfile)
         {
             Path path;
-			path.SetPath(path_.GetPath());
-			path.SetFileName(imageName);
-			auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
+            path.SetPath(path_.GetPath());
+            path.SetFileName(imageName);
+            auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
             return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
         else
         {
-			auto resource = Resource::GetOrCreate<ResourceConverter>(imageName);
-			resource->SetData((const char*)ima->packedfile->data, ima->packedfile->size);
-			return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+            auto resource = Resource::GetOrCreate<ResourceConverter>(imageName);
+            resource->SetData((const char*)ima->packedfile->data, ima->packedfile->size);
+            return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
     }
 
     PMaterial BScene::LoadMaterial(const Blender::Material* mt)
     {
         std::string name = B_IDNAME(mt);
-		auto material = Material::GetOrCreate(name);
+        auto material = Material::GetOrCreate(name);
         auto technique = material->GetTechnique();
         auto pass = technique->GetPass(0);
         auto program = pass->GetProgram();
@@ -167,48 +167,59 @@ namespace BlenderConverter
                     const Blender::Image* ima = mtex->tex->ima;
                     if (!ima) continue;
                     auto texture = CreateTexture(ima);
-					if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_COL))
-						material->SetLightMap(texture);
-					else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
-						material->SetNormalMap(texture);
-					else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
-						material->SetSpecularMap(texture);
-					else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
-						material->SetAOMap(texture);
-					else if ((mtex->mapto & MAP_DISPLACE) || (mtex->maptoneg & MAP_DISPLACE))
-						material->SetDisplacementMap(texture);
+                    if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_COL))
+                        material->SetLightMap(texture);
+                    else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
+                        material->SetNormalMap(texture);
+                    else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
+                        material->SetSpecularMap(texture);
+                    else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
+                        material->SetAOMap(texture);
+                    else if ((mtex->mapto & MAP_DISPLACE) || (mtex->maptoneg & MAP_DISPLACE))
+                        material->SetDisplacementMap(texture);
                     else if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
                         material->SetDiffuseMap(texture);
                 }
             }
         }
 
-		return material;
+        return material;
     }
 
-    void BScene::ConvertObject(const Blender::Object* obj, PSceneNode sceneNode)
+    void BScene::ConvertObject(const Blender::Object* obj, PSceneNode parent)
     {
         if (obj)
         {
             if (obj->type == OB_MESH && obj->parent != 0 && obj->parent->type == OB_ARMATURE)
                 armatureLinker_.push_back(obj);
+            
+            if (obj->parent)
+            {
+                PSceneNode root = parent->GetScene();
+                if (!root)
+                    root = parent;
 
+                auto parentName = B_IDNAME(obj->parent);
+                parent = root->GetChild<SceneNode>(parentName, true);
+
+            }
+            
             switch (obj->type)
             {
                 case OB_EMPTY:
-                    CreateSceneNode(obj, sceneNode);
+                    CreateSceneNode(obj, parent);
                     break;
                 case OB_LAMP:
-                    CreateLight(obj, sceneNode);
+                    CreateLight(obj, parent);
                     break;
                 case OB_CAMERA:
-                    CreateCamera(obj, sceneNode);
+                    CreateCamera(obj, parent);
                     break;
                 case OB_MESH:
-                    CreateMesh(obj, sceneNode);
+                    CreateMesh(obj, parent);
                     break;
                 case OB_ARMATURE:   // SceneNode + Skeleton
-                    CreateSkeletonBones(obj, sceneNode);
+                    CreateSkeletonBones(obj, parent);
                     break;
                 case OB_CURVE:
                     break;
@@ -218,133 +229,133 @@ namespace BlenderConverter
         }
     }
 
-	void BScene::GetFrames(const Blender::bAction* action, std::vector<float> &fra)
-	{
-		const Blender::FCurve* fcu = (const Blender::FCurve*)action->curves.first;
-		for (; fcu; fcu = fcu->next) 
-		{
-			for (int i = 0; i < fcu->totvert; i++) 
-			{
-				float f = fcu->bezt[i].vec[1][0];
-				if (std::find(fra.begin(), fra.end(), f) == fra.end())
-					fra.push_back(f);
-			}
-		}
-		std::sort(fra.begin(), fra.end()); // keep the keys in ascending order
-	}
-
-	float BScene::GetTracks(const Blender::bAction* action, float animfps, BTracks& tracks)
-	{
-		std::string name(B_IDNAME(action));
-		float start, end;
-		GetActionStartEnd(action, start, end);
-		float trackLength = (end - start) / animfps;
-
-		const Blender::FCurve* bfc = (const Blender::FCurve*)action->curves.first;
-
-		while (bfc)
-		{
-			PTrackData trackData;
-			std::string rnap(bfc->rna_path);
-			std::string chan_name;
-			std::string transform_name;
-
-			// Pose action
-			if (rnap.substr(0, 10) == "pose.bones")
-			{
-				size_t i = rnap.rfind('\"');
-				chan_name = rnap.substr(12, i - 12);
-				transform_name = rnap.substr(i + 3, rnap.length() - i + 3);
-			}
-			else
-			{
-				transform_name = rnap;
-				chan_name = "NSGMainObjectChannel";
-			}
-
-			auto it = tracks.find(chan_name);
-			if (it == tracks.end())
-				trackData = tracks[chan_name] = std::make_shared<TrackData>();
-			else
-				trackData = it->second;
-
-			if (bfc->bezt)
-			{
-				SPLINE_CHANNEL_CODE code = SPLINE_CHANNEL_CODE::NONE;
-				if (transform_name == "rotation_quaternion")
-				{
-					if (bfc->array_index == 0) code = SC_ROT_QUAT_W;
-					else if (bfc->array_index == 1) code = SC_ROT_QUAT_X;
-					else if (bfc->array_index == 2) code = SC_ROT_QUAT_Y;
-					else if (bfc->array_index == 3) code = SC_ROT_QUAT_Z;
-				}
-				else if (transform_name == "rotation_euler")// && obj->rotmode == ROT_MODE_EUL)
-				{
-					if (bfc->array_index == 0) code = SC_ROT_EULER_X;
-					else if (bfc->array_index == 1) code = SC_ROT_EULER_Y;
-					else if (bfc->array_index == 2) code = SC_ROT_EULER_Z;
-				}
-				else if (transform_name == "location")
-				{
-					if (bfc->array_index == 0) code = SC_LOC_X;
-					else if (bfc->array_index == 1) code = SC_LOC_Y;
-					else if (bfc->array_index == 2) code = SC_LOC_Z;
-				}
-				else if (transform_name == "scale")
-				{
-					if (bfc->array_index == 0) code = SC_SCL_X;
-					else if (bfc->array_index == 1) code = SC_SCL_Y;
-					else if (bfc->array_index == 2) code = SC_SCL_Z;
-				}
-
-				// ignore any other codes
-				if (code != -1 && bfc->totvert > 0)
-				{
-					auto spline = ConvertSpline(bfc->bezt, code, bfc->bezt->ipo, bfc->totvert, -start, 1.0f / animfps, 0, 1);
-					trackData->keyframes.push_back(spline);
-				}
-			}
-
-			if (bfc->next == 0 || bfc->next->prev != bfc)
-				break;
-
-			bfc = bfc->next;
-		}
-
-		return trackLength;
-	}
-
-	void BScene::CreateAnimations(bParse::bMain* data)
-	{
-		CHECK_ASSERT(scenes_.size(), __FILE__, __LINE__);
-		CHECK_ASSERT(scenes_.size() == bscenes_.size(), __FILE__, __LINE__);
-		const Blender::Scene* firstBScene(bscenes_.at(0));
-		PScene firstScene(scenes_.at(0));
-		float animfps = firstBScene->r.frs_sec / firstBScene->r.frs_sec_base;
-		bParse::bListBasePtr* it = data->getAction();
-		auto n = it->size();
-		for (int i = 0; i<n; i++)
-		{
-			const Blender::bAction* action = (const Blender::bAction*)it->at(i);
-			CreateAnimation(action, firstBScene, firstScene);
-		}
-	}
-
-	void BScene::CreateAnimation(const Blender::bAction* action, const Blender::Scene* bscene, PScene scene)
+    void BScene::GetFrames(const Blender::bAction* action, std::vector<float>& fra)
     {
-		float animfps = bscene->r.frs_sec / bscene->r.frs_sec_base;
-		std::string name(B_IDNAME(action));
-		if (!scene->HasAnimation(name))
-		{
-			auto anim = scene->GetOrCreateAnimation(name);
-			BTracks tracks;
-			auto length = GetTracks(action, animfps, tracks);
-			ConvertTracks(scene, action, anim, tracks, length);
-			anim->SetLength(length);
-		}
+        const Blender::FCurve* fcu = (const Blender::FCurve*)action->curves.first;
+        for (; fcu; fcu = fcu->next)
+        {
+            for (int i = 0; i < fcu->totvert; i++)
+            {
+                float f = fcu->bezt[i].vec[1][0];
+                if (std::find(fra.begin(), fra.end(), f) == fra.end())
+                    fra.push_back(f);
+            }
+        }
+        std::sort(fra.begin(), fra.end()); // keep the keys in ascending order
     }
 
-	void BScene::ConvertTracks(PScene scene, const Blender::bAction* action, PAnimation anim, BTracks& tracks, float length)
+    float BScene::GetTracks(const Blender::bAction* action, float animfps, BTracks& tracks)
+    {
+        std::string name(B_IDNAME(action));
+        float start, end;
+        GetActionStartEnd(action, start, end);
+        float trackLength = (end - start) / animfps;
+
+        const Blender::FCurve* bfc = (const Blender::FCurve*)action->curves.first;
+
+        while (bfc)
+        {
+            PTrackData trackData;
+            std::string rnap(bfc->rna_path);
+            std::string chan_name;
+            std::string transform_name;
+
+            // Pose action
+            if (rnap.substr(0, 10) == "pose.bones")
+            {
+                size_t i = rnap.rfind('\"');
+                chan_name = rnap.substr(12, i - 12);
+                transform_name = rnap.substr(i + 3, rnap.length() - i + 3);
+            }
+            else
+            {
+                transform_name = rnap;
+                chan_name = "NSGMainObjectChannel";
+            }
+
+            auto it = tracks.find(chan_name);
+            if (it == tracks.end())
+                trackData = tracks[chan_name] = std::make_shared<TrackData>();
+            else
+                trackData = it->second;
+
+            if (bfc->bezt)
+            {
+                SPLINE_CHANNEL_CODE code = SPLINE_CHANNEL_CODE::NONE;
+                if (transform_name == "rotation_quaternion")
+                {
+                    if (bfc->array_index == 0) code = SC_ROT_QUAT_W;
+                    else if (bfc->array_index == 1) code = SC_ROT_QUAT_X;
+                    else if (bfc->array_index == 2) code = SC_ROT_QUAT_Y;
+                    else if (bfc->array_index == 3) code = SC_ROT_QUAT_Z;
+                }
+                else if (transform_name == "rotation_euler")// && obj->rotmode == ROT_MODE_EUL)
+                {
+                    if (bfc->array_index == 0) code = SC_ROT_EULER_X;
+                    else if (bfc->array_index == 1) code = SC_ROT_EULER_Y;
+                    else if (bfc->array_index == 2) code = SC_ROT_EULER_Z;
+                }
+                else if (transform_name == "location")
+                {
+                    if (bfc->array_index == 0) code = SC_LOC_X;
+                    else if (bfc->array_index == 1) code = SC_LOC_Y;
+                    else if (bfc->array_index == 2) code = SC_LOC_Z;
+                }
+                else if (transform_name == "scale")
+                {
+                    if (bfc->array_index == 0) code = SC_SCL_X;
+                    else if (bfc->array_index == 1) code = SC_SCL_Y;
+                    else if (bfc->array_index == 2) code = SC_SCL_Z;
+                }
+
+                // ignore any other codes
+                if (code != -1 && bfc->totvert > 0)
+                {
+                    auto spline = ConvertSpline(bfc->bezt, code, bfc->bezt->ipo, bfc->totvert, -start, 1.0f / animfps, 0, 1);
+                    trackData->keyframes.push_back(spline);
+                }
+            }
+
+            if (bfc->next == 0 || bfc->next->prev != bfc)
+                break;
+
+            bfc = bfc->next;
+        }
+
+        return trackLength;
+    }
+
+    void BScene::CreateAnimations(bParse::bMain* data)
+    {
+        CHECK_ASSERT(scenes_.size(), __FILE__, __LINE__);
+        CHECK_ASSERT(scenes_.size() == bscenes_.size(), __FILE__, __LINE__);
+        const Blender::Scene* firstBScene(bscenes_.at(0));
+        PScene firstScene(scenes_.at(0));
+        float animfps = firstBScene->r.frs_sec / firstBScene->r.frs_sec_base;
+        bParse::bListBasePtr* it = data->getAction();
+        auto n = it->size();
+        for (int i = 0; i < n; i++)
+        {
+            const Blender::bAction* action = (const Blender::bAction*)it->at(i);
+            CreateAnimation(action, firstBScene, firstScene);
+        }
+    }
+
+    void BScene::CreateAnimation(const Blender::bAction* action, const Blender::Scene* bscene, PScene scene)
+    {
+        float animfps = bscene->r.frs_sec / bscene->r.frs_sec_base;
+        std::string name(B_IDNAME(action));
+        if (!scene->HasAnimation(name))
+        {
+            auto anim = scene->GetOrCreateAnimation(name);
+            BTracks tracks;
+            auto length = GetTracks(action, animfps, tracks);
+            ConvertTracks(scene, action, anim, tracks, length);
+            anim->SetLength(length);
+        }
+    }
+
+    void BScene::ConvertTracks(PScene scene, const Blender::bAction* action, PAnimation anim, BTracks& tracks, float length)
     {
         for (auto& btrack : tracks)
         {
@@ -366,34 +377,34 @@ namespace BlenderConverter
         }
     }
 
-	AnimationChannelMask BScene::ConvertChannel(const Blender::bAction* action, PTrackData trackData, AnimationTrack& track, float timeFrameLength)
+    AnimationChannelMask BScene::ConvertChannel(const Blender::bAction* action, PTrackData trackData, AnimationTrack& track, float timeFrameLength)
     {
         AnimationChannelMask mask = 0;
-		float inc = timeFrameLength;
+        float inc = timeFrameLength;
 
         if (trackData->keyframes.size())
-			inc = timeFrameLength / trackData->keyframes[0]->getNumVerts();
+            inc = timeFrameLength / trackData->keyframes[0]->getNumVerts();
 
-		float start, end;
-		GetActionStartEnd(action, start, end);
-		float totalFramesLength = end - start;
+        float start, end;
+        GetActionStartEnd(action, start, end);
+        float totalFramesLength = end - start;
 
-		std::vector<float> frames;
-		GetFrames(action, frames);
-		std::vector<float> framesTime;
-		for (auto&f : frames)
-		{
-			float t = timeFrameLength * (f / totalFramesLength);
-			framesTime.push_back(t);
-		}
-		if (framesTime.size())
-			framesTime[0] = 0;
-		if (framesTime.size() > 1)
-			framesTime[framesTime.size() - 1] = timeFrameLength;
-
-		for (auto t : framesTime)
+        std::vector<float> frames;
+        GetFrames(action, frames);
+        std::vector<float> framesTime;
+        for (auto& f : frames)
         {
-			float delta = t / timeFrameLength;
+            float t = timeFrameLength * (f / totalFramesLength);
+            framesTime.push_back(t);
+        }
+        if (framesTime.size())
+            framesTime[0] = 0;
+        if (framesTime.size() > 1)
+            framesTime[framesTime.size() - 1] = timeFrameLength;
+
+        for (auto t : framesTime)
+        {
+            float delta = t / timeFrameLength;
             AnimationKeyFrame keyframe;
             keyframe.time_ = t;
             Vector3 pos;
@@ -456,15 +467,15 @@ namespace BlenderConverter
                 CHECK_ASSERT(q == QUATERNION_IDENTITY, __FILE__, __LINE__);
                 q = Quaternion(eulerAngles);
             }
-			q = glm::normalize(q);
-			scale = glm::normalize(scale);
+            q = glm::normalize(q);
+            scale = glm::normalize(scale);
 
-			Matrix4 transform = glm::translate(glm::mat4(), pos) * glm::mat4_cast(q) * glm::scale(glm::mat4(1.0f), scale);
-			Matrix4 totalTransform = track.node_.lock()->GetTransform() * transform;
-			DecomposeMatrix(totalTransform, keyframe.position_, keyframe.rotation_, keyframe.scale_);
+            Matrix4 transform = glm::translate(glm::mat4(), pos) * glm::mat4_cast(q) * glm::scale(glm::mat4(1.0f), scale);
+            Matrix4 totalTransform = track.node_.lock()->GetTransform() * transform;
+            DecomposeMatrix(totalTransform, keyframe.position_, keyframe.rotation_, keyframe.scale_);
             track.keyFrames_.push_back(keyframe);
         }
-		
+
         for (auto& kf : track.keyFrames_)
         {
             if (glm::epsilonNotEqual(kf.position_, VECTOR3_ZERO, Vector3(0.0001f)) != glm::bvec3(false))
@@ -522,7 +533,7 @@ namespace BlenderConverter
     void BScene::GetActionStartEnd(const Blender::bAction* action, float& start, float& end)
     {
         start = std::numeric_limits<float>::max();
-		end = -start;
+        end = -start;
         float tstart, tend;
         Blender::FCurve* bfc = (Blender::FCurve*)action->curves.first;
         while (bfc)
@@ -540,8 +551,8 @@ namespace BlenderConverter
 
     void BScene::GetSplineStartEnd(const Blender::BezTriple* bez, int totvert, float& start, float& end)
     {
-		start = std::numeric_limits<float>::max();
-		end = -start;
+        start = std::numeric_limits<float>::max();
+        end = -start;
         const Blender::BezTriple* bezt = bez;
         for (int c = 0; c < totvert; c++, bezt++)
         {
@@ -560,13 +571,23 @@ namespace BlenderConverter
         Vector3 pos;
         Vector3 scale;
         DecomposeMatrix(m, pos, q, scale);
-        sceneNode->SetPosition(pos);
-        sceneNode->SetOrientation(q);
-        sceneNode->SetScale(scale);
+
+        Matrix4 parentinv = ToMatrix(obj->parentinv);
+        Quaternion parent_q;
+        Vector3 parent_pos;
+        Vector3 parent_scale;
+        DecomposeMatrix(parentinv, parent_pos, parent_q, parent_scale);
+        
+        sceneNode->SetPosition(parent_pos + parent_q * (parent_scale * pos));
+        sceneNode->SetOrientation(parent_q * q);
+        sceneNode->SetScale(parent_scale * scale);
     }
 
     void BScene::LoadPhysics(const Blender::Object* obj, PSceneNode sceneNode)
     {
+        if (obj->body_type == OB_BODY_TYPE_NO_COLLISION)
+            return;
+
         PhysicsShape shapeType = PhysicsShape::SH_UNKNOWN;
         int boundtype = obj->collision_boundtype;
 
@@ -666,31 +687,31 @@ namespace BlenderConverter
     {
         auto sceneNode = CreateSceneNode(obj, parent);
         const Blender::bArmature* ar = static_cast<const Blender::bArmature*>(obj->data);
-		//CHECK_ASSERT(ar->flag & ARM_RESTPOS && "Armature has to be in rest position. Go to blender and change it.", __FILE__, __LINE__);
-		std::string armatureName = B_IDNAME(ar);
-		armatureBones_.clear();
+        //CHECK_ASSERT(ar->flag & ARM_RESTPOS && "Armature has to be in rest position. Go to blender and change it.", __FILE__, __LINE__);
+        std::string armatureName = B_IDNAME(ar);
+        armatureBones_.clear();
         // create bone lists && transforms
         const Blender::Bone* bone = static_cast<const Blender::Bone*>(ar->bonebase.first);
         while (bone)
         {
             if (!bone->parent)
-				BuildBoneTree(armatureName, bone, sceneNode);
+                BuildBoneTree(armatureName, bone, sceneNode);
             bone = bone->next;
         }
     }
 
-	void BScene::BuildBoneTree(const std::string& armatureName, const Blender::Bone* cur, PSceneNode parent)
+    void BScene::BuildBoneTree(const std::string& armatureName, const Blender::Bone* cur, PSceneNode parent)
     {
-		auto& list = armatureBones_[armatureName];
+        auto& list = armatureBones_[armatureName];
 
-		auto it = std::find_if(list.begin(), list.end(), [&](PWeakNode node)
-		{
-			auto p = node.lock();
-			return p == parent;
-		});
+        auto it = std::find_if(list.begin(), list.end(), [&](PWeakNode node)
+        {
+            auto p = node.lock();
+            return p == parent;
+        });
 
-		if (it == list.end())
-			list.push_back(parent);
+        if (it == list.end())
+            list.push_back(parent);
 
         Matrix4 parBind = IDENTITY_MATRIX;
         if (cur->parent)
@@ -711,7 +732,7 @@ namespace BlenderConverter
         Blender::Bone* chi = static_cast<Blender::Bone*>(cur->childbase.first);
         while (chi)
         {
-			BuildBoneTree(armatureName, chi, bone);
+            BuildBoneTree(armatureName, chi, bone);
             chi = chi->next;
         }
     }
@@ -726,9 +747,12 @@ namespace BlenderConverter
         if (bcamera->type == CAM_ORTHO)
             camera->EnableOrtho();
 
+        camera->SetOrthoScale(bcamera->ortho_scale);
+
         camera->SetNearClip(bcamera->clipsta);
         camera->SetFarClip(bcamera->clipend);
-		camera->SetFOV(bcamera->lens);
+        camera->SetFOV(bcamera->lens);
+
         //isMainCamera = sc_->camera == obj;
     }
 
@@ -781,119 +805,119 @@ namespace BlenderConverter
         LoadPhysics(obj, sceneNode);
     }
 
-	const Blender::Object* BScene::GetAssignedArmature(const Blender::Object *obj) const
-	{
-		Blender::Object* ob_arm = nullptr;
-
-		if (obj->parent && obj->partype == PARSKEL && obj->parent->type == OB_ARMATURE) 
-			ob_arm = obj->parent;
-		else 
-		{
-			const Blender::ModifierData* mod = (const Blender::ModifierData*)obj->modifiers.first;
-			for (; mod; mod = mod->next) 
-				if (mod->type == eModifierType_Armature) 
-					ob_arm = ((const Blender::ArmatureModifierData*)mod)->object;
-		}
-		return ob_arm;
-	}
-
-	void BScene::GetBoneIndexByDeformGroupIndex(const Blender::Object* obj, const Blender::Object* obAr, std::vector<std::pair<int, std::string>>& list)
-	{
-		list.clear();
-		int idx = 0;
-		const Blender::bDeformGroup* def = (const Blender::bDeformGroup*)obj->defbase.first;
-		while(def)
-		{
-			std::pair<int, std::string> data = { -1, def->name };
-			if (IsBoneDefGroup(obAr, def))
-				data.first = idx++;
-			list.push_back(data);
-			def = def->next;
-		}
-	}
-
-	void BScene::AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, VertexsData& vertexes)
+    const Blender::Object* BScene::GetAssignedArmature(const Blender::Object* obj) const
     {
-		const Blender::Object* obAr = GetAssignedArmature(obj);
-		if (me->dvert && obAr)
+        Blender::Object* ob_arm = nullptr;
+
+        if (obj->parent && obj->partype == PARSKEL && obj->parent->type == OB_ARMATURE)
+            ob_arm = obj->parent;
+        else
         {
-			std::vector<std::pair<int, std::string>> jointList;
-			GetBoneIndexByDeformGroupIndex(obj, obAr, jointList);
-			const Blender::bDeformGroup* dg = (const Blender::bDeformGroup*)obj->defbase.first;
+            const Blender::ModifierData* mod = (const Blender::ModifierData*)obj->modifiers.first;
+            for (; mod; mod = mod->next)
+                if (mod->type == eModifierType_Armature)
+                    ob_arm = ((const Blender::ArmatureModifierData*)mod)->object;
+        }
+        return ob_arm;
+    }
+
+    void BScene::GetBoneIndexByDeformGroupIndex(const Blender::Object* obj, const Blender::Object* obAr, std::vector<std::pair<int, std::string>>& list)
+    {
+        list.clear();
+        int idx = 0;
+        const Blender::bDeformGroup* def = (const Blender::bDeformGroup*)obj->defbase.first;
+        while (def)
+        {
+            std::pair<int, std::string> data = { -1, def->name };
+            if (IsBoneDefGroup(obAr, def))
+                data.first = idx++;
+            list.push_back(data);
+            def = def->next;
+        }
+    }
+
+    void BScene::AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, VertexsData& vertexes)
+    {
+        const Blender::Object* obAr = GetAssignedArmature(obj);
+        if (me->dvert && obAr)
+        {
+            std::vector<std::pair<int, std::string>> jointList;
+            GetBoneIndexByDeformGroupIndex(obj, obAr, jointList);
+            const Blender::bDeformGroup* dg = (const Blender::bDeformGroup*)obj->defbase.first;
             while (dg)
             {
-				if (IsBoneDefGroup(obAr, dg))
-				{
-					const Blender::MDeformVert* dvert = me->dvert;
-					for (int n = 0; n < me->totvert; n++)
-					{
-						float sumw = 0.0f;
-						std::map<int, float> boneWeightPerVertex;
-						const Blender::MDeformVert& dv = dvert[n];
-						int nWeights = glm::clamp(dv.totweight, 0, (int)MAX_BONES_PER_VERTEX);
-						for (int w = 0; w < nWeights; w++)
-						{
-							const Blender::MDeformWeight& deform = dv.dw[w];
-							if (deform.def_nr >= jointList.size())
-								continue; // it looks like we can have out of bound indexes in blender
-							else if (deform.def_nr >= 0)
-							{
-								int joint_index = jointList[deform.def_nr].first;
-								if (joint_index != -1 && deform.weight > 0.0f)
-								{
-									if (boneWeightPerVertex.size() == MAX_BONES_PER_VERTEX && boneWeightPerVertex.end() == boneWeightPerVertex.find(joint_index))
-									{
-										TRACE_LOG("Warning detected vertex with more than " << MAX_BONES_PER_VERTEX << " bones assigned. New bones will be ignored!!!");
-									}
-									else
-									{
-										boneWeightPerVertex[joint_index] += deform.weight;
-										sumw += deform.weight;
-									}
-								}
-							}
-						}
-						if (sumw > 0.0f)
-						{
-							float invsumw = 1.0f / sumw;
-							int idx = 0;
-							for (auto& bw : boneWeightPerVertex)
-							{
-								float boneIndex(bw.first);
-								vertexes[n].bonesID_[idx] = boneIndex;
-								vertexes[n].bonesWeight_[idx] = bw.second * invsumw;
-								++idx;
-								if (idx > MAX_BONES_PER_VERTEX)
-									break;
-							}
-						}
-					}
-				}
+                if (IsBoneDefGroup(obAr, dg))
+                {
+                    const Blender::MDeformVert* dvert = me->dvert;
+                    for (int n = 0; n < me->totvert; n++)
+                    {
+                        float sumw = 0.0f;
+                        std::map<int, float> boneWeightPerVertex;
+                        const Blender::MDeformVert& dv = dvert[n];
+                        int nWeights = glm::clamp(dv.totweight, 0, (int)MAX_BONES_PER_VERTEX);
+                        for (int w = 0; w < nWeights; w++)
+                        {
+                            const Blender::MDeformWeight& deform = dv.dw[w];
+                            if (deform.def_nr >= jointList.size())
+                                continue; // it looks like we can have out of bound indexes in blender
+                            else if (deform.def_nr >= 0)
+                            {
+                                int joint_index = jointList[deform.def_nr].first;
+                                if (joint_index != -1 && deform.weight > 0.0f)
+                                {
+                                    if (boneWeightPerVertex.size() == MAX_BONES_PER_VERTEX && boneWeightPerVertex.end() == boneWeightPerVertex.find(joint_index))
+                                    {
+                                        TRACE_LOG("Warning detected vertex with more than " << MAX_BONES_PER_VERTEX << " bones assigned. New bones will be ignored!!!");
+                                    }
+                                    else
+                                    {
+                                        boneWeightPerVertex[joint_index] += deform.weight;
+                                        sumw += deform.weight;
+                                    }
+                                }
+                            }
+                        }
+                        if (sumw > 0.0f)
+                        {
+                            float invsumw = 1.0f / sumw;
+                            int idx = 0;
+                            for (auto& bw : boneWeightPerVertex)
+                            {
+                                float boneIndex(bw.first);
+                                vertexes[n].bonesID_[idx] = boneIndex;
+                                vertexes[n].bonesWeight_[idx] = bw.second * invsumw;
+                                ++idx;
+                                if (idx > MAX_BONES_PER_VERTEX)
+                                    break;
+                            }
+                        }
+                    }
+                }
                 dg = dg->next;
             }
         }
     }
 
-	const void* BScene::FindByString(const Blender::ListBase* listbase, const char* id, int offset) const
-	{
-		const Blender::Link* link = (const Blender::Link*)listbase->first;
-		const char* id_iter;
-		while(link) 
-		{
-			id_iter = ((const char*)link) + offset;
-			if (id[0] == id_iter[0] && strcmp(id, id_iter) == 0)
-				return link;
-			link = link->next;
-		}
-		return nullptr;
-	}
+    const void* BScene::FindByString(const Blender::ListBase* listbase, const char* id, int offset) const
+    {
+        const Blender::Link* link = (const Blender::Link*)listbase->first;
+        const char* id_iter;
+        while (link)
+        {
+            id_iter = ((const char*)link) + offset;
+            if (id[0] == id_iter[0] && strcmp(id, id_iter) == 0)
+                return link;
+            link = link->next;
+        }
+        return nullptr;
+    }
 
-	const Blender::bPoseChannel* BScene::GetPoseChannelByName(const Blender::bPose* pose, const char* name) const
+    const Blender::bPoseChannel* BScene::GetPoseChannelByName(const Blender::bPose* pose, const char* name) const
     {
         if (!name || (name[0] == '\0'))
             return nullptr;
 
-		return (const Blender::bPoseChannel*)FindByString(&(pose)->chanbase, name, offsetof(Blender::bPoseChannel, name));
+        return (const Blender::bPoseChannel*)FindByString(&(pose)->chanbase, name, offsetof(Blender::bPoseChannel, name));
     }
 
     const Blender::Bone* BScene::GetBoneFromDefGroup(const Blender::Object* obj, const Blender::bDeformGroup* def) const
@@ -907,60 +931,60 @@ namespace BlenderConverter
         return GetBoneFromDefGroup(obj, def) != nullptr;
     }
 
-	void BScene::CreateSkeleton(PScene scene, const Blender::Object* obj)
-	{
-		const Blender::Object* obAr = GetAssignedArmature(obj);
-		CHECK_ASSERT(obAr, __FILE__, __LINE__);
-		CHECK_ASSERT(obj->type == OB_MESH, __FILE__, __LINE__);
-		const Blender::Mesh* me = (Blender::Mesh*)obj->data;
-		auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
-		CHECK_ASSERT(mesh, __FILE__, __LINE__);
-		
-		const Blender::bArmature* arm = static_cast<const Blender::bArmature*>(obAr->data);
-		std::string armatureName = B_IDNAME(arm);
-		if (!(arm->flag & ARM_RESTPOS))
-		{
-			TRACE_LOG("!!! Cannot create skeleton: " << armatureName << ". Armature has to be in rest position. Go to blender and change it.");
-			return;
-		}
+    void BScene::CreateSkeleton(PScene scene, const Blender::Object* obj)
+    {
+        const Blender::Object* obAr = GetAssignedArmature(obj);
+        CHECK_ASSERT(obAr, __FILE__, __LINE__);
+        CHECK_ASSERT(obj->type == OB_MESH, __FILE__, __LINE__);
+        const Blender::Mesh* me = (Blender::Mesh*)obj->data;
+        auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
+        CHECK_ASSERT(mesh, __FILE__, __LINE__);
 
-		auto skeleton(std::make_shared<Skeleton>(mesh));
-		PSceneNode armatureNode = scene->GetChild<SceneNode>(B_IDNAME(obAr), true);
+        const Blender::bArmature* arm = static_cast<const Blender::bArmature*>(obAr->data);
+        std::string armatureName = B_IDNAME(arm);
+        if (!(arm->flag & ARM_RESTPOS))
+        {
+            TRACE_LOG("!!! Cannot create skeleton: " << armatureName << ". Armature has to be in rest position. Go to blender and change it.");
+            return;
+        }
 
-		std::vector<NSG::PWeakNode> boneList;
-		std::vector<std::pair<int, std::string>> jointList;
-		GetBoneIndexByDeformGroupIndex(obj, obAr, jointList);
-		for (auto& joint : jointList)
-		{
-			if (joint.first != -1)
-			{
-				auto bone = armatureNode->GetChild<SceneNode>(joint.second, true);
-				boneList.push_back(bone);
-			}
-		}
-		skeleton->SetRoot(armatureNode);
-		mesh->SetSkeleton(skeleton);
-		skeleton->SetBones(boneList);
-		MarkProgramAsSkinableNodes(mesh.get());
-		CreateOffsetMatrices(obj, armatureNode);
-	}
+        auto skeleton(std::make_shared<Skeleton>(mesh));
+        PSceneNode armatureNode = scene->GetChild<SceneNode>(B_IDNAME(obAr), true);
 
-	void BScene::CreateOffsetMatrices(const Blender::Object* obj, PSceneNode armatureNode)
-	{
-		const Blender::Object* obAr = GetAssignedArmature(obj);
-		CHECK_ASSERT(obAr, __FILE__, __LINE__);
-		const Blender::bPose* pose = obAr->pose;
+        std::vector<NSG::PWeakNode> boneList;
+        std::vector<std::pair<int, std::string>> jointList;
+        GetBoneIndexByDeformGroupIndex(obj, obAr, jointList);
+        for (auto& joint : jointList)
+        {
+            if (joint.first != -1)
+            {
+                auto bone = armatureNode->GetChild<SceneNode>(joint.second, true);
+                boneList.push_back(bone);
+            }
+        }
+        skeleton->SetRoot(armatureNode);
+        mesh->SetSkeleton(skeleton);
+        skeleton->SetBones(boneList);
+        MarkProgramAsSkinableNodes(mesh.get());
+        CreateOffsetMatrices(obj, armatureNode);
+    }
+
+    void BScene::CreateOffsetMatrices(const Blender::Object* obj, PSceneNode armatureNode)
+    {
+        const Blender::Object* obAr = GetAssignedArmature(obj);
+        CHECK_ASSERT(obAr, __FILE__, __LINE__);
+        const Blender::bPose* pose = obAr->pose;
         const Blender::bDeformGroup* def = (const Blender::bDeformGroup*)obj->defbase.first;
         while (def)
         {
             if (IsBoneDefGroup(obAr, def))
             {
-				const Blender::bPoseChannel* pchan = GetPoseChannelByName(pose, def->name);
-				PSceneNode bone = armatureNode->GetChild<SceneNode>(pchan->bone->name, true);
+                const Blender::bPoseChannel* pchan = GetPoseChannelByName(pose, def->name);
+                PSceneNode bone = armatureNode->GetChild<SceneNode>(pchan->bone->name, true);
 
-				Matrix4 offsetMatrix = Matrix4(glm::inverse(ToMatrix(obj->obmat) * ToMatrix(pchan->bone->arm_mat)));
-				Matrix4 bindShapeMatrix = armatureNode->GetTransform();
-				bone->SetBoneOffsetMatrix(offsetMatrix * bindShapeMatrix);
+                Matrix4 offsetMatrix = Matrix4(glm::inverse(ToMatrix(obj->obmat) * ToMatrix(pchan->bone->arm_mat)));
+                Matrix4 bindShapeMatrix = armatureNode->GetTransform();
+                bone->SetBoneOffsetMatrix(offsetMatrix * bindShapeMatrix);
             }
             def = def->next;
         }
@@ -1030,8 +1054,12 @@ namespace BlenderConverter
                 {
                     int li = indexBase + i;
                     int vi = me->mloop[li].v;
-                    Color color(me->mloopcol[li].r, me->mloopcol[li].g, me->mloopcol[li].b, me->mloopcol[li].a);
-                    vertexData[vi].color_ = color;
+                    unsigned r = glm::clamp<unsigned>(me->mloopcol[li].r, 0, 255);
+                    unsigned g = glm::clamp<unsigned>(me->mloopcol[li].g, 0, 255);
+                    unsigned b = glm::clamp<unsigned>(me->mloopcol[li].b, 0, 255);
+                    unsigned a = glm::clamp<unsigned>(me->mloopcol[li].a, 0, 255);
+                    Color color(r, g, b, a);
+                    vertexData[vi].color_ = color / 255.f;
                 }
             }
 
@@ -1108,16 +1136,16 @@ namespace BlenderConverter
         outputFile.SetName("b" + path_.GetName());
         outputFile.SetExtension("xml");
         pugi::xml_document doc;
-		pugi::xml_node appNode = doc.append_child("App");
-		if (embedResources_)
+        pugi::xml_node appNode = doc.append_child("App");
+        if (embedResources_)
             Resource::SaveResources(appNode);
-		else
+        else
             Resource::SaveResourcesExternally(appNode, path_, outputDir_);
         Mesh::SaveMeshes(appNode);
         Material::SaveMaterials(appNode);
-		for (auto& scene: scenes_)
-			scene->Save(appNode);
-		return SaveDocument(outputFile, doc, compress);
+        for (auto& scene : scenes_)
+            scene->Save(appNode);
+        return SaveDocument(outputFile, doc, compress);
     }
 
 }
