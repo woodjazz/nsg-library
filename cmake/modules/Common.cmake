@@ -343,6 +343,7 @@ endmacro (setup_sample)
 ##################################################################################
 ##################################################################################
 macro (setup_test)
+    #set(IS_EXECUTABLE_A_BUNDLE 1)
     setup_executable()
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tests")
     add_test(${PROJECT_NAME} ${PROJECT_NAME})

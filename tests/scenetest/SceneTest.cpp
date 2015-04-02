@@ -404,6 +404,7 @@ static void Test08()
 	auto scene = std::make_shared<Scene>("scene");
 	auto camera = scene->CreateChild<Camera>();
 	camera->EnableOrtho();
+    camera->SetWindow(nullptr);
 
 	auto nodeCenter = scene->GetOrCreateChild<SceneNode>("nodeCenter");
 	auto nodeLeftTop = scene->GetOrCreateChild<SceneNode>("nodeLeftTop");

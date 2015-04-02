@@ -563,7 +563,6 @@ namespace BlenderConverter
         }
     }
 
-
     void BScene::ExtractGeneral(const Blender::Object* obj, PSceneNode sceneNode)
     {
         Matrix4 m = ToMatrix(obj->obmat);

@@ -211,7 +211,7 @@ namespace NSG
         {
             auto width = orthoScale_;
             auto height = orthoScale_ / aspectRatio_;
-            matProjection_ = glm::ortho(-width*0.5f, width*0.5f, -height*0.5f, height*0.5f, zNear_, zFar_);
+            matProjection_ = glm::ortho(-width*0.5f, width*0.5f, -height*0.5f, height*0.5f, 0.f, zFar_);
         }
         else
         {
