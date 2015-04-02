@@ -48,7 +48,7 @@ namespace NSG
         {
         }
 
-        bool HasSlots() const { return !slots_.empty() || runSlots_.empty(); }
+        bool HasSlots() const { return !slots_.empty() || !runSlots_.empty(); }
 
         PSlot Connect(CallbackFunction callback)
         {

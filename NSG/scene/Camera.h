@@ -50,6 +50,7 @@ namespace NSG
 		const Vector4& GetViewportFactor() const { return viewportFactor_; }
 		void SetOrthoScale(float orthoScale);
         bool IsOrtho() const { return isOrtho_; }
+        void SetSensorFit(CameraSensorFit sensorFit);
         //XYZ are in normalized device coordinates (-1, 1)
         Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const; 
         //Returned XYZ values are in normalized device coordinates (-1, 1)
@@ -77,6 +78,7 @@ namespace NSG
 		void Save(pugi::xml_node& node) const override;
 		void Load(const pugi::xml_node& node) override;
 	private:
+		float CalculateAspectRatio() const;
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
@@ -100,5 +102,6 @@ namespace NSG
 		Window* window_;
 		SignalWindow::PSlot slotWindowCreated_;
 		float orthoScale_;
+		CameraSensorFit sensorFit_;
 	};
 }

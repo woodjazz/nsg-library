@@ -3520,7 +3520,7 @@
 				<SceneNode name="Cube" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Green" meshName="Cube" />
 			</SceneNode>
 			<SceneNode name="Lamp" nodeType="Light" type="0" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.00111111" spotCutOff="75" ambient="[    0.000,    0.000,    0.000,    0.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    1.542,    0.200,    4.878]" orientation="[    1.000,    0.000,    0.000,    0.000]" />
-			<SceneNode name="Camera" nodeType="Camera" fovy="0.610865" zNear="0.1" zFar="100" viewportFactor="[    0.000,    0.000,    1.000,    1.000]" isOrtho="0" orthoScale="7.31429" position="[    0.000,   14.306,    7.820]" orientation="[   -0.000,    0.000,    0.517,    0.856]" />
+			<SceneNode name="Camera" nodeType="Camera" fovy="0.610865" zNear="0.1" zFar="100" viewportFactor="[    0.000,    0.000,    1.000,    1.000]" isOrtho="0" orthoScale="7.31429" sensorFit="0" position="[    0.000,   14.306,    7.820]" orientation="[   -0.000,    0.000,    0.517,    0.856]" />
 		</SceneNode>
 		<Animations>
 			<Animation name="ArmatureAction.001" length="10.375">

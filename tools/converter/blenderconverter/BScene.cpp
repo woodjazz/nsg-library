@@ -746,6 +746,13 @@ namespace BlenderConverter
         if (bcamera->type == CAM_ORTHO)
             camera->EnableOrtho();
 
+        if(bcamera->sensor_fit == '\x02')
+            camera->SetSensorFit(CameraSensorFit::VERTICAL);
+        else if(bcamera->sensor_fit == '\x01')
+            camera->SetSensorFit(CameraSensorFit::HORIZONTAL);
+        else
+            camera->SetSensorFit(CameraSensorFit::AUTOMATIC);
+
         camera->SetOrthoScale(bcamera->ortho_scale);
 
         camera->SetNearClip(bcamera->clipsta);

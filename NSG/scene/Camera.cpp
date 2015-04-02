@@ -52,7 +52,8 @@ namespace NSG
           aspectRatio_(1),
           cameraIsDirty_(false),
           window_(nullptr),
-          orthoScale_(2.f)
+          orthoScale_(2.f),
+          sensorFit_(CameraSensorFit::HORIZONTAL)
     {
         SetInheritScale(false);
         UpdateProjection();
@@ -104,16 +105,26 @@ namespace NSG
         }
     }
 
+    float Camera::CalculateAspectRatio() const
+    {
+        float aspect = 1;
+        if (viewWidth_ > 0 && viewHeight_ > 0)
+        {
+            if (sensorFit_ == CameraSensorFit::VERTICAL)
+                aspect = static_cast<float>(viewHeight_) / viewWidth_;
+            else
+                aspect = static_cast<float>(viewWidth_) / viewHeight_;
+        }
+        return aspect;
+    }
+
     void Camera::SetAspectRatio(unsigned width, unsigned height)
     {
         if (viewWidth_ != width || viewHeight_ != height)
         {
             viewWidth_ = width;
             viewHeight_ = height;
-            float aspect = 1;
-            if (height > 0)
-                aspect = static_cast<float>(width) / height;
-            SetAspectRatio(aspect);
+            SetAspectRatio(CalculateAspectRatio());
         }
     }
 
@@ -188,9 +199,19 @@ namespace NSG
 
     void Camera::SetOrthoScale(float orthoScale)
     {
-        if(orthoScale != orthoScale_)
+        if (orthoScale != orthoScale_)
         {
             orthoScale_ = orthoScale;
+            UpdateProjection();
+        }
+    }
+
+    void Camera::SetSensorFit(CameraSensorFit sensorFit)
+    {
+        if (sensorFit != sensorFit_)
+        {
+            sensorFit_ = sensorFit;
+            SetAspectRatio(CalculateAspectRatio());
             UpdateProjection();
         }
     }
@@ -210,8 +231,13 @@ namespace NSG
         if (isOrtho_)
         {
             auto width = orthoScale_;
-            auto height = orthoScale_ / aspectRatio_;
-            matProjection_ = glm::ortho(-width*0.5f, width*0.5f, -height*0.5f, height*0.5f, 0.f, zFar_);
+            auto height = orthoScale_ ;
+            if (sensorFit_ == CameraSensorFit::VERTICAL)
+                width /= aspectRatio_;
+            else
+                height /= aspectRatio_;
+
+            matProjection_ = glm::ortho(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, 0.f, zFar_);
         }
         else
         {
@@ -221,8 +247,6 @@ namespace NSG
         }
 
         UpdateViewProjection();
-
-        SetUniformsNeedUpdate();
     }
 
     void Camera::UpdateViewProjection() const
@@ -236,12 +260,14 @@ namespace NSG
         matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 
         frustum_ = PFrustum(new Frustum(this));
+        
+        SetUniformsNeedUpdate();
     }
 
     const PFrustum Camera::GetFrustum() const
     {
         if (cameraIsDirty_)
-            UpdateProjection();
+            UpdateViewProjection();
 
         return frustum_;
     }
@@ -249,7 +275,7 @@ namespace NSG
     const Frustum* Camera::GetFrustumPointer() const
     {
         if (cameraIsDirty_)
-            UpdateProjection();
+            UpdateViewProjection();
 
         return frustum_.get();
 
@@ -258,7 +284,7 @@ namespace NSG
     const Matrix4& Camera::GetMatViewProjection() const
     {
         if (cameraIsDirty_)
-            UpdateProjection();
+            UpdateViewProjection();
 
         return matViewProjection_;
     }
@@ -292,7 +318,7 @@ namespace NSG
     const Matrix4& Camera::GetMatProjection() const
     {
         if (cameraIsDirty_)
-            UpdateProjection();
+            UpdateViewProjection();
 
         return matProjection_;
     }
@@ -337,7 +363,7 @@ namespace NSG
     const Matrix4& Camera::GetView() const
     {
         if (cameraIsDirty_)
-            UpdateProjection();
+            UpdateViewProjection();
 
         return matView_;
     }
@@ -345,7 +371,7 @@ namespace NSG
     const Matrix4& Camera::GetInverseViewMatrix() const
     {
         if (cameraIsDirty_)
-            UpdateProjection();
+            UpdateViewProjection();
 
         return matViewInverse_;
     }
@@ -353,7 +379,7 @@ namespace NSG
     const Matrix4& Camera::GetViewProjectionMatrix() const
     {
         if (cameraIsDirty_)
-            UpdateProjection();
+            UpdateViewProjection();
 
         return matViewProjection_;
     }
@@ -361,7 +387,7 @@ namespace NSG
     const Matrix4& Camera::GetViewProjectionInverseMatrix() const
     {
         if (cameraIsDirty_)
-            UpdateProjection();
+            UpdateViewProjection();
 
         return matViewProjectionInverse_;
     }
@@ -460,6 +486,13 @@ namespace NSG
 
         {
             std::stringstream ss;
+            ss << (int)sensorFit_;
+            node.append_attribute("sensorFit") = ss.str().c_str();
+        }
+
+
+        {
+            std::stringstream ss;
             ss << GetPosition();
             node.append_attribute("position") = ss.str().c_str();
         }
@@ -486,6 +519,7 @@ namespace NSG
         viewportFactor_ = GetVertex4(node.attribute("viewportFactor").as_string());
         isOrtho_ = node.attribute("isOrtho").as_bool();
         orthoScale_ = node.attribute("orthoScale").as_float();
+        sensorFit_ = (CameraSensorFit)node.attribute("sensorFit").as_int();
 
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);

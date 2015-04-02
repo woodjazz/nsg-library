@@ -399,4 +399,11 @@ namespace NSG
         GEQUAL, 
         ALWAYS        
     };
+
+    enum class CameraSensorFit //the same as in Blender
+    {
+        AUTOMATIC,
+        HORIZONTAL,
+        VERTICAL
+    };
 }
