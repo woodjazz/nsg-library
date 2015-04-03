@@ -42,7 +42,7 @@ namespace NSG
         MAX_PLANES
     };
 
-    class  Frustum
+    class Frustum
     {
     public:
         Frustum(const Camera* camera);

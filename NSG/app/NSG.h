@@ -74,6 +74,7 @@ misrepresented as being the original software.
 #include "Program.h"
 #include "Ray.h"
 #include "CameraControl.h"
+#include "PlayerControl.h"
 #include "Animation.h"
 #include "AnimationState.h"
 #include "PointOnSphere.h"

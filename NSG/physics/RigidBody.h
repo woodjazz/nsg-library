@@ -40,6 +40,7 @@ namespace NSG
         RigidBody(PSceneNode sceneNode);
         ~RigidBody();
 		void SetGravity(const Vector3& gravity);
+        void SetKinematic(bool enable);
         void SetMass(float mass);
         void SetShape(PShape shape);
         PShape GetShape() const { return shape_; }
@@ -94,6 +95,7 @@ namespace NSG
         SignalEmpty::PSlot slotMeshSet_;
         SignalWindow::PSlot slotWindowCreated_;
         SignalEmpty::PSlot slotBeginFrame_;
+        bool kinematic_;
     };
 }
 

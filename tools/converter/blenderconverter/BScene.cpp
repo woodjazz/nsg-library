@@ -606,7 +606,7 @@ namespace BlenderConverter
                 boundtype = OB_BOUND_CONVEX_HULL;
         }
 
-        Blender::Object* parent = obj->parent;
+/*        Blender::Object* parent = obj->parent;
         while (parent && parent->parent)
             parent = parent->parent;
 
@@ -615,7 +615,7 @@ namespace BlenderConverter
 
         if (!boundtype)
             return;
-
+*/
         auto shape = sceneNode->GetMesh()->GetShape();
         auto rigBody = sceneNode->GetOrCreateRigidBody();
         rigBody->SetShape(shape);
@@ -623,6 +623,9 @@ namespace BlenderConverter
         rigBody->SetAngularDamp(obj->rdamping);
         shape->SetMargin(obj->margin);
         shape->SetScale(sceneNode->GetGlobalScale());
+
+        if(obj->body_type == OB_BODY_TYPE_CHARACTER)
+            rigBody->SetKinematic(true);
 
         if (obj->type == OB_MESH)
         {

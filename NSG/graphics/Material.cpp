@@ -47,6 +47,20 @@ namespace NSG
         program->SetFlags(flags);
     }
 
+    void Material::EnableProgramFlags(unsigned passIndex, const ProgramFlags& flags)
+    {
+        auto pass = technique_->GetPass(passIndex);
+        auto program = pass->GetProgram();
+        program->EnableFlags(flags);
+    }
+    
+    void Material::DisableProgramFlags(unsigned passIndex, const ProgramFlags& flags)
+    {
+        auto pass = technique_->GetPass(passIndex);
+        auto program = pass->GetProgram();
+        program->DisableFlags(flags);
+    }
+
     PMaterial Material::Clone(const std::string& name)
     {
         auto material = std::make_shared<Material>(name);
@@ -469,7 +483,7 @@ namespace NSG
             {
                 std::string name = child.attribute("name").as_string();
                 auto material(Material::GetOrCreate(name));
-				auto xmlResource = Resource::Create<ResourceXMLNode>(name);
+                auto xmlResource = Resource::Create<ResourceXMLNode>(name);
                 xmlResource->Set(resource, material, "Materials", name);
                 xmlResource->IsReady(); //force load resources for textures
                 material->Set(xmlResource);

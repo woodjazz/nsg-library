@@ -55,7 +55,9 @@ namespace NSG
           orthoScale_(2.f),
           sensorFit_(CameraSensorFit::HORIZONTAL)
     {
+        frustum_ = std::make_shared<Frustum>(this);
         SetInheritScale(false);
+        CalculateOrthoProjection();
         UpdateProjection();
         if (Graphics::this_)
         {
@@ -226,18 +228,35 @@ namespace NSG
         }
     }
 
+    void Camera::CalculateOrthoProjection() const
+    {
+        auto width = orthoScale_;
+        auto height = orthoScale_ ;
+        if (sensorFit_ == CameraSensorFit::VERTICAL)
+            width /= aspectRatio_;
+        else
+            height /= aspectRatio_;
+
+        orthoProjection_.left_ = -width * 0.5f;
+        orthoProjection_.right_ = width * 0.5f;
+        orthoProjection_.bottom_ = -height * 0.5f;
+        orthoProjection_.top_ = height * 0.5f;
+        orthoProjection_.near_ = 0;
+        orthoProjection_.far_ = zFar_;
+    }
+
     void Camera::UpdateProjection() const
     {
         if (isOrtho_)
         {
-            auto width = orthoScale_;
-            auto height = orthoScale_ ;
-            if (sensorFit_ == CameraSensorFit::VERTICAL)
-                width /= aspectRatio_;
-            else
-                height /= aspectRatio_;
+            CalculateOrthoProjection();
 
-            matProjection_ = glm::ortho(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, 0.f, zFar_);
+            matProjection_ = glm::ortho(orthoProjection_.left_,
+                                        orthoProjection_.right_,
+                                        orthoProjection_.bottom_,
+                                        orthoProjection_.top_,
+                                        orthoProjection_.near_,
+                                        orthoProjection_.far_);
         }
         else
         {
@@ -259,8 +278,9 @@ namespace NSG
         matViewProjection_ = matProjection_ * matView_;
         matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 
-        frustum_ = PFrustum(new Frustum(this));
-        
+        auto tmp = std::make_shared<Frustum>(this);
+        frustum_.swap(tmp);
+
         SetUniformsNeedUpdate();
     }
 

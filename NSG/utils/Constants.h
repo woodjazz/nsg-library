@@ -48,6 +48,7 @@ namespace NSG
     static const Quaternion QUATERNION_IDENTITY;
 
     static const Color COLOR_BLACK(0, 0, 0, 1);
+    static const Color COLOR_RED(1, 0, 0, 1);
 
     static const size_t MAX_NODES_IN_BATCH = 1000;
     static const float PRECISION = 0.01f;

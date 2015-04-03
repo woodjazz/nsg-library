@@ -406,4 +406,14 @@ namespace NSG
         HORIZONTAL,
         VERTICAL
     };
+
+    struct OrthoProjection
+    {
+        float left_;
+        float right_;
+        float bottom_;
+        float top_;
+        float near_;
+        float far_;
+    };
 }

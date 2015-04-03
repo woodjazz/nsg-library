@@ -3376,6 +3376,7 @@
 			<Indexes>0 1 2 0 2 3 4 5 6 4 6 7 8 9 10 8 10 11 12 13 14 15 16 17 </Indexes>
 		</Mesh>
 		<Mesh name="Cube" wireFrameDrawMode="4" solidDrawMode="4">
+			<Shape type="7" margin="0.06" scale="[    1.000,    1.000,    1.000]" />
 			<Vertexes>
 				<VertexData position="[    1.000,    1.000,   -1.000]" normal="[   -0.260,   -0.148,   -0.706]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    1.000,    2.000,    3.000]" bonesWeight="[    0.046,    0.045,    0.840,    0.068]" />
 				<VertexData position="[    1.000,   -1.000,   -1.000]" normal="[   -0.260,   -0.148,   -0.706]" uv0="[    0.000,    0.000]" uv1="[    0.000,    0.000]" color="[    1.000,    1.000,    1.000,    1.000]" bonesID="[    0.000,    1.000,    2.000,    0.000]" bonesWeight="[    0.066,    0.053,    0.881,    0.000]" />
@@ -3498,16 +3499,16 @@
 	<Scene>
 		<SceneNode name="Scene" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,   -0.707,   -0.000,   -0.000]" scale="[    1.000,    1.000,    1.000]">
 			<SceneNode name="Plane" nodeType="SceneNode" position="[    0.000,    0.000,   -1.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    8.089,    8.089,    8.089]" materialName="Floor" meshName="Plane.001">
-				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" />
+				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" trigger="false" kinematic="false" />
 			</SceneNode>
 			<SceneNode name="Earth" nodeType="SceneNode" position="[   -4.126,   -0.084,    6.636]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Earth" meshName="Earth">
-				<RigidBody mass="1" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" />
+				<RigidBody mass="1" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" trigger="false" kinematic="false" />
 			</SceneNode>
 			<SceneNode name="Ramp2" nodeType="SceneNode" position="[   -4.126,    5.276,    0.000]" orientation="[    0.000,    0.000,    0.000,    1.000]" scale="[    1.000,    1.000,    1.000]" materialName="Red" meshName="Ramp">
-				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" />
+				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" trigger="false" kinematic="false" />
 			</SceneNode>
 			<SceneNode name="Ramp1" nodeType="SceneNode" position="[   -4.126,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Red" meshName="Ramp">
-				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" />
+				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" trigger="false" kinematic="false" />
 			</SceneNode>
 			<SceneNode name="Sun" nodeType="Light" type="1" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.0016" spotCutOff="45" ambient="[    0.000,    0.000,    0.000,    0.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[  -11.827,    1.163,    1.972]" orientation="[    0.708,    0.000,   -0.707,    0.000]" />
 			<SceneNode name="Spot" nodeType="Light" type="2" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.0016" spotCutOff="45" ambient="[    0.000,    0.000,    0.000,    0.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    1.054,    0.480,    8.547]" orientation="[    1.000,    0.000,    0.000,    0.000]" />
@@ -3517,7 +3518,9 @@
 				</SceneNode>
 				<SceneNode name="Bone.003" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    0.707,    0.000,    0.000,   -0.707]" scale="[    1.000,    1.000,    1.000]" />
 				<SceneNode name="Bone.004" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" />
-				<SceneNode name="Cube" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Green" meshName="Cube" />
+				<SceneNode name="Cube" nodeType="SceneNode" position="[    0.000,    0.000,    0.000]" orientation="[    1.000,    0.000,    0.000,    0.000]" scale="[    1.000,    1.000,    1.000]" materialName="Green" meshName="Cube">
+					<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />
+				</SceneNode>
 			</SceneNode>
 			<SceneNode name="Lamp" nodeType="Light" type="0" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.00111111" spotCutOff="75" ambient="[    0.000,    0.000,    0.000,    0.000]" diffuse="[    1.000,    1.000,    1.000,    1.000]" specular="[    1.000,    1.000,    1.000,    1.000]" position="[    1.542,    0.200,    4.878]" orientation="[    1.000,    0.000,    0.000,    0.000]" />
 			<SceneNode name="Camera" nodeType="Camera" fovy="0.610865" zNear="0.1" zFar="100" viewportFactor="[    0.000,    0.000,    1.000,    1.000]" isOrtho="0" orthoScale="7.31429" sensorFit="0" position="[    0.000,   14.306,    7.820]" orientation="[   -0.000,    0.000,    0.517,    0.856]" />

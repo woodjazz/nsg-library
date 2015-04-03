@@ -45,6 +45,7 @@ namespace NSG
         void Define(const Vector3& normal, const Vector3& point);
         float Distance(const Vector3& point) const;
         Side SideOfPlane(const Vector3& point) const;
+        const Vector4& GetNormalD() const { return normald_; }
     };
 
 }

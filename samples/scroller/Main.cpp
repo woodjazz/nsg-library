@@ -33,15 +33,94 @@ int NSG_MAIN(int argc, char* argv[])
     auto scenes = resource->Load();
     auto scene = scenes.at(0);
     auto camera = scene->GetChild<Camera>("Camera", false);
-    auto player = scene->GetChild<SceneNode>("Player", false);
+    auto frustum = camera->GetFrustum();
+    auto player = camera->GetChild<SceneNode>("Player", false);
     auto window = Window::Create();
+    float deltaTime = 0;
+    auto controller = std::make_shared<PlayerControl>();
+    auto& orthoProjection = camera->GetOrthoProjection();
+    auto cameraHalfWidth = (orthoProjection.right_ - orthoProjection.left_) / 2;
+    auto cameraHalfHeight = (orthoProjection.top_ - orthoProjection.bottom_) / 2;
+    auto& bbPlayer = player->GetWorldBoundingBox();
+    auto playerHalfWidth = bbPlayer.Size().x * 0.5f;
+    auto playerHalfHeight = bbPlayer.Size().y * 0.5f;
+    auto horizontalLimit = cameraHalfWidth - playerHalfWidth;
+    auto verticalLimit = cameraHalfHeight - playerHalfHeight;
+    bool playerDestroyed = false;
+    auto playerRigidBody = player->GetRigidBody();
+    playerRigidBody->HandleCollisions(true);
+    auto material = player->GetMaterial();
+    material->GetTechnique()->GetPass(0)->SetBlendMode(BLEND_ALPHA);
 
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
+    auto static slotCollision = player->signalCollision_->Connect([&](const ContactPoint & contactInfo)
     {
-        scene->Update(deltaTime);
-        auto pos = camera->GetPosition();
-        pos.x += deltaTime;
-        camera->SetPosition(pos);
+        playerDestroyed = true;
+    });
+
+    auto leftSlot = controller->signalLeft_->Connect([&]()
+    {
+        if (!playerDestroyed)
+        {
+            auto pos = player->GetPosition();
+            pos.x -= deltaTime;
+            if (pos.x > -horizontalLimit)
+                player->SetPosition(pos);
+        }
+    });
+
+    auto rightSlot = controller->signalRight_->Connect([&]()
+    {
+        if (!playerDestroyed)
+        {
+            auto pos = player->GetPosition();
+            pos.x += deltaTime;
+            if (pos.x < horizontalLimit)
+                player->SetPosition(pos);
+        }
+    });
+
+    auto forwardSlot = controller->signalForward_->Connect([&]()
+    {
+        if (!playerDestroyed)
+        {
+            auto pos = player->GetPosition();
+            pos.y += deltaTime;
+            if (pos.y < verticalLimit)
+                player->SetPosition(pos);
+        }
+    });
+
+    auto backwardSlot = controller->signalBackward_->Connect([&]()
+    {
+        if (!playerDestroyed)
+        {
+            auto pos = player->GetPosition();
+            pos.y -= deltaTime;
+            if (pos.y > -verticalLimit)
+                player->SetPosition(pos);
+        }
+    });
+
+    float alpha = 1;
+    float alphaAdd = 0.1f;
+
+    auto updateSlot = window->signalUpdate_->Connect([&](float dt)
+    {
+        if (!playerDestroyed)
+        {
+            deltaTime = dt;
+            scene->Update(dt);
+            auto pos = camera->GetPosition();
+            pos.x += dt;
+            camera->SetPosition(pos);
+        }
+        else
+        {
+            alpha += alphaAdd;
+            if (alpha > 1 || alpha < 0)
+                alphaAdd *= -1;
+            material->SetColor(Color(1, 1, 1, alpha));
+        }
 
     });
 

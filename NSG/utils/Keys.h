@@ -43,6 +43,8 @@ misrepresented as being the original software.
 #define     NSG_KEY_DELETE      SDLK_DELETE
 #define     NSG_KEY_RIGHT       SDLK_RIGHT
 #define     NSG_KEY_LEFT        SDLK_LEFT
+#define     NSG_KEY_UP        	SDLK_UP
+#define     NSG_KEY_DOWN        SDLK_DOWN
 #define     NSG_KEY_HOME        SDLK_HOME
 #define     NSG_KEY_END         SDLK_END
 

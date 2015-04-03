@@ -39,6 +39,8 @@ namespace NSG
         Material(const std::string& name);
         ~Material();
         void SetProgramFlags(unsigned passIndex, const ProgramFlags& flags);
+        void EnableProgramFlags(unsigned passIndex, const ProgramFlags& flags);
+        void DisableProgramFlags(unsigned passIndex, const ProgramFlags& flags);
         PMaterial Clone(const std::string& name = GetUniqueName("Clone"));
         void SetName(const std::string& name) {name_ = name;}
         const std::string& GetName() const { return name_;  }

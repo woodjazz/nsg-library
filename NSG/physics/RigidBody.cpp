@@ -54,7 +54,8 @@ namespace NSG
           collisionMask_((int)CollisionMask::ALL),
           inWorld_(false),
           trigger_(false),
-          gravity_(sceneNode->GetScene()->GetPhysicsWorld()->GetGravity())
+          gravity_(sceneNode->GetScene()->GetPhysicsWorld()->GetGravity()),
+          kinematic_(false)
     {
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
         auto mesh = sceneNode->GetMesh();
@@ -182,6 +183,15 @@ namespace NSG
             mass_ = mass;
             if (body_)
                 ReAddToWorld();
+        }
+    }
+
+    void RigidBody::SetKinematic(bool enable)
+    {
+        if (enable != kinematic_)
+        {
+            kinematic_ = enable;
+            ReAddToWorld();
         }
     }
 
@@ -365,6 +375,8 @@ namespace NSG
         friction_ = node.attribute("friction").as_float();
         linearDamp_ = node.attribute("linearDamp").as_float();
         angularDamp_ = node.attribute("angularDamp").as_float();
+        trigger_ = node.attribute("trigger").as_bool();
+        kinematic_ = node.attribute("kinematic").as_bool();
         Invalidate();
     }
 
@@ -378,6 +390,8 @@ namespace NSG
         child.append_attribute("friction").set_value(friction_);
         child.append_attribute("linearDamp").set_value(linearDamp_);
         child.append_attribute("angularDamp").set_value(angularDamp_);
+        child.append_attribute("trigger").set_value(trigger_);
+        child.append_attribute("kinematic").set_value(kinematic_);
     }
     void RigidBody::SetCollisionMask(int group, int mask)
     {
@@ -422,10 +436,20 @@ namespace NSG
             CHECK_ASSERT(world, __FILE__, __LINE__);
             CHECK_ASSERT(body_, __FILE__, __LINE__);
             int flags = body_->getCollisionFlags();
+
             if (trigger_)
                 flags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
             else
                 flags &= ~btCollisionObject::CF_NO_CONTACT_RESPONSE;
+
+            if (kinematic_)
+                flags |= btCollisionObject::CF_KINEMATIC_OBJECT;
+            else
+                flags &= ~btCollisionObject::CF_KINEMATIC_OBJECT;
+
+            body_->setCollisionFlags(flags);
+            body_->forceActivationState(kinematic_ ? DISABLE_DEACTIVATION : ISLAND_SLEEPING);
+
             world->addRigidBody(body_.get(), (int)collisionGroup_, (int)collisionMask_);
             if (mass_ > 0.0f)
                 Activate();
@@ -454,7 +478,7 @@ namespace NSG
 
     void RigidBody::SetTrigger(bool enable)
     {
-        if(trigger_ != enable)
+        if (trigger_ != enable)
         {
             trigger_ = enable;
             RemoveFromWorld();

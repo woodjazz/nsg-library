@@ -77,7 +77,9 @@ namespace NSG
 		float GetFov() const { return fovy_; }
 		void Save(pugi::xml_node& node) const override;
 		void Load(const pugi::xml_node& node) override;
+		const OrthoProjection& GetOrthoProjection() const { return orthoProjection_; } 
 	private:
+		void CalculateOrthoProjection() const;
 		float CalculateAspectRatio() const;
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;
@@ -103,5 +105,6 @@ namespace NSG
 		SignalWindow::PSlot slotWindowCreated_;
 		float orthoScale_;
 		CameraSensorFit sensorFit_;
+		mutable OrthoProjection orthoProjection_;
 	};
 }
