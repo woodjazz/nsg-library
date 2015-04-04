@@ -83,7 +83,7 @@ int NSG_MAIN(int argc, char* argv[])
     animation->AddTrack(track);
     animation->SetLength(8);
 
-    //scene->PlayAnimation(animation, false);
+    scene->PlayAnimation(animation, false);
 
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
