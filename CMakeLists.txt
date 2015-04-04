@@ -165,20 +165,6 @@ set(LIBRARIES_2_LINK NSG) #reset libraries to links since NSG will have all the 
 ###########################
 
 if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
-
-	###########################
-	# assimp
-	###########################
-	mark_as_disable_and_internal(BUILD_SHARED_LIB)
-	mark_as_enable(ASSIMP_ENABLE_BOOST_WORKAROUND)
-	mark_as_disable_and_internal(BUILD_SHARED_LIBS)
-	mark_as_disable_and_internal(ASSIMP_BUILD_ASSIMP_TOOLS)
-	mark_as_disable_and_internal(ASSIMP_BUILD_TESTS)
-	mark_as_disable_and_internal(ASSIMP_BUILD_SAMPLES)
-	include_directories(${EXTERNALS_DIR}/assimp/include)
-	add_subdirectory(${EXTERNALS_DIR}/assimp)
-	set_property(TARGET assimp PROPERTY FOLDER "tools")
-	#set_property(TARGET zlibstatic PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 	
 	###########################
 	# converter

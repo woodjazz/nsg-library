@@ -8,14 +8,6 @@ add_subdirectory(blenderserialize)
 list(APPEND LIBRARIES_2_LINK blenderserialize)
 
 ###########################
-# assimpconverter
-###########################
-
-include_directories(assimpconverter)
-add_subdirectory(assimpconverter)
-list(APPEND LIBRARIES_2_LINK assimpconverter)
-
-###########################
 # blenderconverter
 ###########################
 
