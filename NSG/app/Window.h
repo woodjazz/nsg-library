@@ -51,6 +51,7 @@ namespace NSG
         void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
+        void OnJoystickDown(int joystickID, unsigned button);
 		virtual void RenderFrame() = 0;
         virtual int Run() = 0;
         virtual void EnterBackground();
@@ -97,6 +98,7 @@ namespace NSG
         SignalUpdate::PSignal signalUpdate_;
         SignalRender::PSignal signalRender_;
         SignalDropFile::PSignal signalDropFile_;
+        SignalJoystickDown::PSignal signalJoystickDown_;
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);

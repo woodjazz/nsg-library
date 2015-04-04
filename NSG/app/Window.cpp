@@ -69,6 +69,7 @@ namespace NSG
           signalUpdate_(new Signal<float>()),
           signalRender_(new Signal<>()),
           signalDropFile_(new Signal<const std::string & >()),
+          signalJoystickDown_(new SignalJoystickDown()),
           name_(name),
           isClosed_(false),
           minimized_(false),
@@ -254,6 +255,11 @@ namespace NSG
     void Window::OnChar(unsigned int character)
     {
         signalChar_->Run(character);
+    }
+
+    void Window::OnJoystickDown(int joystickID, unsigned button)
+    {
+        signalJoystickDown_->Run(joystickID, button);
     }
 
     void Window::EnterBackground()

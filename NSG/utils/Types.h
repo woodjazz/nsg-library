@@ -346,6 +346,7 @@ namespace NSG
     typedef Signal<int> SignalButtonMouse;
     typedef Signal<> SignalEmpty;
     typedef Signal<Window*> SignalWindow;
+    typedef Signal<int, unsigned> SignalJoystickDown;
     
     
     enum MaterialTexture

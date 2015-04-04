@@ -128,18 +128,36 @@ namespace NSG
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
 
+    void SDLWindow::OpenJoystick(int index)
+    {
+        SDL_Joystick* joystick = SDL_JoystickOpen(index);
+        if (!joystick)
+        {
+            TRACE_LOG("Cannot open joystick number:" << index);
+        }
+    }
+
+    void SDLWindow::OpenJoysticks()
+    {
+        int size = SDL_NumJoysticks();
+        for (int i = 0; i < size; ++i)
+            OpenJoystick(i);
+    }
+
     void SDLWindow::Initialize(int x, int y, int width, int height)
     {
         static std::once_flag onceFlag_;
         std::call_once(onceFlag_, [&]()
         {
             #if EMSCRIPTEN
-            int flags = 0;
+            int flags = SDL_INIT_JOYSTICK;
             #else
-            int flags = SDL_INIT_EVENTS;
+            int flags = SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER;
             #endif
 
             CHECK_CONDITION(0 == SDL_Init(flags), __FILE__, __LINE__);
+
+            OpenJoysticks();
 
             #if defined(IS_TARGET_MOBILE)
             SDL_SetEventFilter(EventWatch, this);
@@ -248,7 +266,7 @@ namespace NSG
         #if !defined(EMSCRIPTEN)
         SDL_SetWindowData(SDL_GetWindowFromID(windowID_), InternalPointer, this);
         #endif
-       
+
     }
 
     void SDLWindow::Close()
@@ -493,6 +511,29 @@ namespace NSG
                 window->OnMultiGesture(event.mgesture.timestamp, -1 + 2 * x, 1 + -2 * y, event.mgesture.dTheta, event.mgesture.dDist, (int)event.mgesture.numFingers);
             }
             #endif
+            else if (event.type == SDL_JOYDEVICEADDED)
+            {
+                auto which = event.jdevice.which;
+                TRACE_LOG("Joystick number: " << which << " has been added.");
+                OpenJoystick(which);
+            }
+            else if (event.type == SDL_JOYDEVICEREMOVED)
+            {
+                auto which = event.jdevice.which;
+                TRACE_LOG("Joystick number: " << which << " has been removed.");
+            }
+            else if (event.type == SDL_JOYBUTTONDOWN)
+            {
+                auto which = event.jdevice.which;
+                if (!SDL_IsGameController(which))
+                {
+                    SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                    if (!window) continue;
+                    auto joystickID = event.jbutton.which;
+                    auto button = event.jbutton.button;
+                    window->OnJoystickDown(joystickID, button);
+                }
+            }
         }
     }
 

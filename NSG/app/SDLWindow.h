@@ -44,6 +44,8 @@ namespace NSG
 		void EnterForeground() override;
 		void RestoreContext();
     private:
+        void OpenJoystick(int index);
+        void OpenJoysticks();
         SDLWindow* GetWindowFromID(uint32_t windowID) const;
         SDLWindow* GetCurrentWindow() const;
         void Initialize(int x, int y, int width, int height);
