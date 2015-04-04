@@ -49,8 +49,6 @@ int NSG_MAIN(int argc, char* argv[])
     bool playerDestroyed = false;
     auto playerRigidBody = player->GetRigidBody();
     playerRigidBody->HandleCollisions(true);
-    auto material = player->GetMaterial();
-    material->GetTechnique()->GetPass(0)->SetBlendMode(BLEND_ALPHA);
 
     auto static slotCollision = player->signalCollision_->Connect([&](const ContactPoint & contactInfo)
     {
@@ -116,6 +114,7 @@ int NSG_MAIN(int argc, char* argv[])
         }
         else
         {
+            auto material = player->GetMaterial();
             alpha += alphaAdd;
             if (alpha > 1 || alpha < 0)
                 alphaAdd *= -1;
