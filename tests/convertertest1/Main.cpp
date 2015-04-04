@@ -29,18 +29,17 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/momo2.xml");
-    resource->Load();
-    auto scenes = resource->Load();
-    CHECK_CONDITION(scenes.size() == 1, __FILE__, __LINE__);
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo1.xml");
+	auto scenes = resource->Load();
+	CHECK_CONDITION(scenes.size() == 1, __FILE__, __LINE__);
 	auto scene = scenes.at(0);
-    auto object = scene->GetChild<SceneNode>("Bone.main", true);
-    CHECK_CONDITION(object, __FILE__, __LINE__);
-    auto animations = scene->GetAnimationsFor(object);
-	CHECK_CONDITION(animations.size() == 1, __FILE__, __LINE__);
+	auto object = scene->GetChild<SceneNode>("Bone.main", true);
+	CHECK_CONDITION(object, __FILE__, __LINE__);
+	auto animations = scene->GetAnimationsFor(object);
+	CHECK_CONDITION(animations.size() == 37, __FILE__, __LINE__);
 	{
 		auto animations = scene->GetAnimations();
-		CHECK_CONDITION(animations.size() == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(animations.size() == 47, __FILE__, __LINE__);
 	}
 
 }

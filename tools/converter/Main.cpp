@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "tclap/CmdLine.h"
 #include "NSG.h"
-#include "SceneConverter.h"
 #include "TrueTypeConverter.h"
 #include "BScene.h"
 #include "bBlenderFile.h"
@@ -172,7 +171,7 @@ int NSG_MAIN(int argc, char* argv[])
         TCLAP::ValueArg<int> sArg("s", "sChar", "Starting character to bake. By default is 32.", false, 32, &charConstraint);
         TCLAP::ValueArg<int> eArg("e", "eChar", "Final character to bake. By default is 127.", false, 127, &charConstraint);
 
-		TCLAP::SwitchArg bArg("b", "embed", "Embed resources in xml. If not set then the resources are written to an external file.", false);
+        TCLAP::SwitchArg bArg("b", "embed", "Embed resources in xml. If not set then the resources are written to an external file.", false);
         TCLAP::SwitchArg zArg("z", "compress", "Compress the file.", false);
 
         cmd.add(iArg);
@@ -182,7 +181,7 @@ int NSG_MAIN(int argc, char* argv[])
         cmd.add(fArg);
         cmd.add(sArg);
         cmd.add(eArg);
-		cmd.add(bArg);
+        cmd.add(bArg);
         cmd.add(zArg);
 
         cmd.parse(argc, argv);
@@ -195,11 +194,11 @@ int NSG_MAIN(int argc, char* argv[])
 
         if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
         {
-			auto window = Window::Create("window", 0, 0, 1, 1);
-			using namespace BlenderConverter;
-			BScene scene(inputFile, outputDir, bArg.getValue());
-			if (scene.Load() && scene.Save(zArg.getValue()))
-				return 0;
+            auto window = Window::Create("window", 0, 0, 1, 1);
+            using namespace BlenderConverter;
+            BScene scene(inputFile, outputDir, bArg.getValue());
+            if (scene.Load() && scene.Save(zArg.getValue()))
+                return 0;
         }
         else if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
         {
@@ -215,10 +214,7 @@ int NSG_MAIN(int argc, char* argv[])
         }
         else
         {
-			auto window = Window::Create("window", 0, 0, 1, 1);
-			SceneConverter scene(inputFile, outputDir, bArg.getValue());
-			if (scene.Load() && scene.Save(zArg.getValue()))
-                return 0;
+            return 0;
         }
     }
     catch (TCLAP::ArgException& e)

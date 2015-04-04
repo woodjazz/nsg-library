@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 
 	auto window = Window::Create();
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/duck.xml");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/bduck.xml");
 	auto scenes = resource->Load();
 	auto scene = scenes.at(0);
     auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");
@@ -39,8 +39,9 @@ int NSG_MAIN(int argc, char* argv[])
     objBB.max_ *= 1.75f;
     objBB.min_ *= 1.75f;
     auto camera = scene->GetOrCreateChild<Camera>("camera1");
-    camera->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.max_.z));
-    camera->SetGlobalLookAt(objPos);
+    //camera->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.max_.z));
+    //camera->SetGlobalLookAt(objPos);
+    auto control = std::make_shared<CameraControl>(camera);
 
     auto animation = scene->GetOrCreateAnimation("anim0");
     AnimationTrack track;
@@ -82,7 +83,7 @@ int NSG_MAIN(int argc, char* argv[])
     animation->AddTrack(track);
     animation->SetLength(8);
 
-    scene->PlayAnimation(animation, false);
+    //scene->PlayAnimation(animation, false);
 
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {

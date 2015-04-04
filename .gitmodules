@@ -19,9 +19,6 @@
 [submodule "assimp"]
 	path = assimp
 	url = https://github.com/assimp/assimp
-[submodule "externals/assimp"]
-	path = externals/assimp
-	url = https://github.com/assimp/assimp
 [submodule "externals/freetype2"]
 	path = externals/freetype2
 	url = http://git.savannah.gnu.org/r/freetype/freetype2.git

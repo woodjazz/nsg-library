@@ -28,17 +28,33 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    auto window = Window::Create();
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo2.xml");
-	auto scenes = resource->Load();
-	CHECK_CONDITION(scenes.size() == 1, __FILE__, __LINE__);
-	auto scene = scenes.at(0);
-	auto object = scene->GetChild<SceneNode>("Bone.main", true);
-	CHECK_CONDITION(object, __FILE__, __LINE__);
-	auto animations = scene->GetAnimationsFor(object);
-	CHECK_CONDITION(animations.size() == 37, __FILE__, __LINE__);
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml.lz4");
+    auto scenes = resource->Load();
+    CHECK_CONDITION(scenes.size() == 1, __FILE__, __LINE__);
+    auto scene = scenes.at(0);
+    auto object = scene->GetChild<SceneNode>("Bone", true);
+    CHECK_CONDITION(object, __FILE__, __LINE__);
+    auto plane = scene->GetChild<SceneNode>("Plane", false);
+    CHECK_CONDITION(plane, __FILE__, __LINE__);
+    auto camera = scene->GetChild<Camera>("Camera", false);
+    CHECK_CONDITION(camera, __FILE__, __LINE__);
+    auto lamp = scene->GetChild<Light>("Lamp", false);
+    CHECK_CONDITION(lamp, __FILE__, __LINE__);
+    auto ball = scene->GetChild<SceneNode>("Earth", false);
+    CHECK_CONDITION(ball, __FILE__, __LINE__);
+    auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);
+    CHECK_CONDITION(ramp1, __FILE__, __LINE__);
+    auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
+    CHECK_CONDITION(ramp2, __FILE__, __LINE__);
+	auto animations = scene->GetAnimations();
+	CHECK_CONDITION(animations.size() == 1, __FILE__, __LINE__);
 	{
-		auto animations = scene->GetAnimations();
-		CHECK_CONDITION(animations.size() == 47, __FILE__, __LINE__);
+		auto animations = scene->GetAnimationsFor(plane);
+		CHECK_CONDITION(animations.size() == 0, __FILE__, __LINE__);
 	}
+	{
+		auto animations = scene->GetAnimationsFor(object);
+		CHECK_CONDITION(animations.size() == 1, __FILE__, __LINE__);
+	}
+
 }

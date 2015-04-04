@@ -374,7 +374,7 @@ namespace NSG
         std::string::size_type bytes = 0;
 		std::string smallBuffer;
 		smallBuffer.resize(HeaderSize);
-		auto decodedBytes = LZ4_decompress_safe_partial(&buffer[0], &smallBuffer[0], buffer.size(), smallBuffer.size(), smallBuffer.size());
+		LZ4_decompress_safe_partial(&buffer[0], &smallBuffer[0], buffer.size(), smallBuffer.size(), smallBuffer.size());
 		{
 			std::stringstream ss(smallBuffer);
 			ss >> bytes;

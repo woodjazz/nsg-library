@@ -1,5 +1,5 @@
 setup_sample()
-CONVERT_TOOL(art/duck.dae data)	
+CONVERT_TOOL(art/duck.blend data)	
 
 
 

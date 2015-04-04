@@ -28,10 +28,9 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    auto window = Window::Create();
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo1.xml");
-	auto scenes = resource->Load();
-	CHECK_CONDITION(scenes.size() == 1, __FILE__, __LINE__);
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo3.xml.lz4");
+    auto scenes = resource->Load();
+    CHECK_CONDITION(scenes.size() == 1, __FILE__, __LINE__);
 	auto scene = scenes.at(0);
 	auto object = scene->GetChild<SceneNode>("Bone.main", true);
 	CHECK_CONDITION(object, __FILE__, __LINE__);
@@ -41,5 +40,4 @@ int NSG_MAIN(int argc, char* argv[])
 		auto animations = scene->GetAnimations();
 		CHECK_CONDITION(animations.size() == 47, __FILE__, __LINE__);
 	}
-
 }
