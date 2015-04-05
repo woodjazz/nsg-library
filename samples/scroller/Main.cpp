@@ -55,46 +55,14 @@ int NSG_MAIN(int argc, char* argv[])
         playerDestroyed = true;
     });
 
-    auto leftSlot = controller->signalLeft_->Connect([&]()
+    auto moveSlot = controller->signalMoved_->Connect([&](float x, float y)
     {
         if (!playerDestroyed)
         {
             auto pos = player->GetPosition();
-            pos.x -= deltaTime;
-            if (pos.x > -horizontalLimit)
-                player->SetPosition(pos);
-        }
-    });
-
-    auto rightSlot = controller->signalRight_->Connect([&]()
-    {
-        if (!playerDestroyed)
-        {
-            auto pos = player->GetPosition();
-            pos.x += deltaTime;
-            if (pos.x < horizontalLimit)
-                player->SetPosition(pos);
-        }
-    });
-
-    auto forwardSlot = controller->signalForward_->Connect([&]()
-    {
-        if (!playerDestroyed)
-        {
-            auto pos = player->GetPosition();
-            pos.y += deltaTime;
-            if (pos.y < verticalLimit)
-                player->SetPosition(pos);
-        }
-    });
-
-    auto backwardSlot = controller->signalBackward_->Connect([&]()
-    {
-        if (!playerDestroyed)
-        {
-            auto pos = player->GetPosition();
-            pos.y -= deltaTime;
-            if (pos.y > -verticalLimit)
+            pos.x += x * deltaTime;
+            pos.y += y * deltaTime;
+            if (pos.x > -horizontalLimit && pos.x < horizontalLimit && pos.y < verticalLimit && pos.y > -verticalLimit)
                 player->SetPosition(pos);
         }
     });

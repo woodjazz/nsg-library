@@ -281,7 +281,7 @@ namespace NSG
     struct ContactPoint
     {
         SceneNode* collider_;
-		Vector3 normalB_;
+        Vector3 normalB_;
         float appliedImpulse_;
         float appliedImpulseLateral1_;
         float appliedImpulseLateral2_;
@@ -325,6 +325,19 @@ namespace NSG
         Memory
     };
 
+    enum class JoystickAxis
+    {
+        UNKNOWN = -1,
+        FIRST = 0,
+        LEFTX = FIRST,
+        LEFTY,
+        RIGHTX,
+        RIGHTY,
+        TRIGGERLEFT,
+        TRIGGERRIGHT,
+        LAST
+    };
+
     typedef Signal<int, int> SignalViewChanged;
     typedef Signal<float, float> SignalMouseMoved;
     typedef Signal<int, float, float> SignalMouseDown;
@@ -347,8 +360,11 @@ namespace NSG
     typedef Signal<> SignalEmpty;
     typedef Signal<Window*> SignalWindow;
     typedef Signal<int, unsigned> SignalJoystickDown;
-    
-    
+    typedef Signal<int, unsigned> SignalJoystickUp;
+    typedef Signal<int, JoystickAxis, float> SignalJoystickAxisMotion;
+    typedef Signal<float, float> SignalPlayerMoved;
+
+
     enum MaterialTexture
     {
         DIFFUSE_MAP,
@@ -391,14 +407,14 @@ namespace NSG
 
     enum class DepthFunc
     {
-        NEVER, 
-        LESS, 
-        EQUAL, 
-        LEQUAL, 
-        GREATER, 
-        NOTEQUAL, 
-        GEQUAL, 
-        ALWAYS        
+        NEVER,
+        LESS,
+        EQUAL,
+        LEQUAL,
+        GREATER,
+        NOTEQUAL,
+        GEQUAL,
+        ALWAYS
     };
 
     enum class CameraSensorFit //the same as in Blender

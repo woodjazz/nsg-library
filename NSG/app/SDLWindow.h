@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Window.h"
 #include <string>
+#include <map>
 namespace NSG
 {
     class SDLWindow : public Window
@@ -44,7 +45,9 @@ namespace NSG
 		void EnterForeground() override;
 		void RestoreContext();
     private:
+        JoystickAxis ConvertAxis(int axis) const;
         void OpenJoystick(int index);
+        void CloseJoystick(int index);
         void OpenJoysticks();
         SDLWindow* GetWindowFromID(uint32_t windowID) const;
         SDLWindow* GetCurrentWindow() const;
@@ -52,6 +55,15 @@ namespace NSG
         void Close() override;
         void ViewChanged(int width, int height) override;
         uint32_t windowID_;
+        struct JoystickState
+        {
+            int deviceIndex;
+            void* joystick_;
+            void* pad_;
+            int instanceID_;
+            JoystickState() : deviceIndex(-1), joystick_(nullptr), pad_(nullptr), instanceID_(-1){}; 
+        };
+        std::map<int, JoystickState> joysticks_;
     };
 }
 #endif

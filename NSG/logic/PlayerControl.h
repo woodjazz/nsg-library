@@ -28,40 +28,39 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class PlayerControl
-	{
-	public:
-		PlayerControl();
-		~PlayerControl();
-		void SetWindow(Window* window);
-		SignalEmpty::PSignal signalLeft_;
-		SignalEmpty::PSignal signalRight_;
-		SignalEmpty::PSignal signalForward_;
-		SignalEmpty::PSignal signalBackward_;
-	private:
-		void OnKey(int key, int action, int modifier);
-		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
-		void OnMousewheel(float x, float y);
-		void OnMouseUp(int button, float x, float y);
-		void OnMouseDown(int button, float x, float y);
-		void OnMousemoved(float x, float y);
-		void OnLeft();
-		void OnRight();
-		void OnForward();
-		void OnBackward();
-		void OnUpdate(float deltaTime);
-		SignalMouseMoved::PSlot slotMouseMoved_;
-		SignalMouseDown::PSlot slotMouseDown_;
-		SignalMouseUp::PSlot slotMouseUp_;
-		SignalMouseWheel::PSlot slotMouseWheel_;
-		SignalMultiGesture::PSlot slotMultiGesture_;
-		SignalKey::PSlot slotKey_;
-		SignalUpdate::PSlot slotUpdate_;
-		Window* window_;
-		SignalWindow::PSlot slotWindowCreated_;
-		bool leftDown_;
-		bool rightDown_;
-		bool forwardDown_;
-		bool backwardDown_;
-	};
+    class PlayerControl
+    {
+    public:
+        PlayerControl();
+        ~PlayerControl();
+        void SetWindow(Window* window);
+        SignalPlayerMoved::PSignal signalMoved_;
+    private:
+        void OnKey(int key, int action, int modifier);
+        void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
+        void OnMousewheel(float x, float y);
+        void OnMouseUp(int button, float x, float y);
+        void OnMouseDown(int button, float x, float y);
+        void OnMousemoved(float x, float y);
+        void OnUpdate(float deltaTime);
+        SignalMouseMoved::PSlot slotMouseMoved_;
+        SignalMouseDown::PSlot slotMouseDown_;
+        SignalMouseUp::PSlot slotMouseUp_;
+        SignalMouseWheel::PSlot slotMouseWheel_;
+        SignalMultiGesture::PSlot slotMultiGesture_;
+        SignalKey::PSlot slotKey_;
+        SignalUpdate::PSlot slotUpdate_;
+        SignalJoystickDown::PSlot slotJoystickDown_;
+        SignalJoystickUp::PSlot slotJoystickUp_;
+        SignalJoystickAxisMotion::PSlot slotJoystickAxisMotion_;
+
+        Window* window_;
+        SignalWindow::PSlot slotWindowCreated_;
+        float leftHorizontalAxis_;
+        float leftVerticalAxis_;
+        bool left_;
+        bool right_;
+        bool forward_;
+        bool backward_;
+    };
 }

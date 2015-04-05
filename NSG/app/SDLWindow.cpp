@@ -112,12 +112,14 @@ namespace NSG
     {
         const AppConfiguration& conf = Window::GetAppConfiguration();
         Initialize(conf.x_, conf.y_, conf.width_, conf.height_);
+        TRACE_PRINTF("Window %s created\n", name_.c_str());
     }
 
     SDLWindow::SDLWindow(const std::string& name, int x, int y, int width, int height)
         : Window(name)
     {
         Initialize(x, y, width, height);
+        TRACE_PRINTF("Window %s created\n", name_.c_str());
     }
 
     SDLWindow::~SDLWindow()
@@ -128,12 +130,48 @@ namespace NSG
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
 
-    void SDLWindow::OpenJoystick(int index)
+    void SDLWindow::OpenJoystick(int deviceIndex)
     {
-        SDL_Joystick* joystick = SDL_JoystickOpen(index);
-        if (!joystick)
+        JoystickState state;
+        state.deviceIndex = deviceIndex;
+        state.joystick_ = SDL_JoystickOpen(deviceIndex);
+        if (!state.joystick_)
         {
-            TRACE_LOG("Cannot open joystick number:" << index);
+            TRACE_LOG("Cannot open joystick number:" << deviceIndex);
+        }
+        #if !defined(EMSCRIPTEN)
+        else if (SDL_IsGameController(deviceIndex))
+        {
+            state.pad_ = SDL_GameControllerOpen(deviceIndex);
+            if (!state.pad_)
+            {
+                TRACE_LOG("Cannot open game controller number:" << deviceIndex);
+            }
+        }
+        state.instanceID_ = SDL_JoystickInstanceID(static_cast<SDL_Joystick*>(state.joystick_));
+        #else
+        state.instanceID_ = deviceIndex;
+        #endif
+        TRACE_LOG("Joystick number: " << deviceIndex << " has been added.");
+        joysticks_[state.instanceID_] = state;
+    }
+
+    void SDLWindow::CloseJoystick(int deviceIndex)
+    {
+        for (auto it : joysticks_)
+        {
+            auto& state = it.second;
+            if (state.deviceIndex == deviceIndex)
+            {
+                #if !defined(EMSCRIPTEN)
+                if (SDL_IsGameController(state.deviceIndex))
+                    SDL_GameControllerClose(static_cast<SDL_GameController*>(state.pad_));
+                #endif
+                SDL_JoystickClose((SDL_Joystick*)state.joystick_);
+                joysticks_.erase(state.instanceID_);
+                TRACE_LOG("Joystick number: " << deviceIndex << " has been removed.");
+                break;
+            }
         }
     }
 
@@ -191,7 +229,7 @@ namespace NSG
 
         #if EMSCRIPTEN
         {
-            CHECK_CONDITION( 0 == SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE), __FILE__, __LINE__);
+            CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE), __FILE__, __LINE__);
             isMainWindow_ = true;
             Window::SetMainWindow(this);
             emscripten_set_resize_callback(nullptr, nullptr, false, EmscriptenResizeCallback);
@@ -299,7 +337,7 @@ namespace NSG
         if (width_ != width || height_ != height)
         {
             #if EMSCRIPTEN
-            SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE);
+            CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE), __FILE__, __LINE__);
             //emscripten_set_canvas_size(width, height);
             #endif
             Window::ViewChanged(width, height);
@@ -357,6 +395,46 @@ namespace NSG
         return static_cast<SDLWindow*>(mainWindow_);
         #else
         return static_cast<SDLWindow*>(SDL_GetWindowData(SDL_GL_GetCurrentWindow(), InternalPointer));
+        #endif
+    }
+
+    JoystickAxis SDLWindow::ConvertAxis(int axis) const
+    {
+        #if !defined(EMSCRIPTEN)
+        switch(axis)
+        {
+            case SDL_CONTROLLER_AXIS_LEFTX:
+                return JoystickAxis::LEFTX;
+
+            case SDL_CONTROLLER_AXIS_LEFTY:
+                return JoystickAxis::LEFTY;
+
+            case SDL_CONTROLLER_AXIS_RIGHTX:
+                return JoystickAxis::RIGHTX;
+
+            case SDL_CONTROLLER_AXIS_RIGHTY:
+                return JoystickAxis::RIGHTY;
+
+            case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+                return JoystickAxis::TRIGGERLEFT;
+
+            case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+                return JoystickAxis::TRIGGERRIGHT;
+
+            default:
+            {
+                TRACE_LOG("Unknown joystick axis: " << axis);
+                return JoystickAxis::UNKNOWN;
+            }
+        }
+        #else
+            if(axis >= (int)JoystickAxis::FIRST && axis < (int)JoystickAxis::LAST)
+                return (JoystickAxis)axis;
+            else
+            {
+                TRACE_LOG("Unknown joystick axis: " << axis);
+                return JoystickAxis::UNKNOWN;
+            }
         #endif
     }
 
@@ -511,27 +589,83 @@ namespace NSG
                 window->OnMultiGesture(event.mgesture.timestamp, -1 + 2 * x, 1 + -2 * y, event.mgesture.dTheta, event.mgesture.dDist, (int)event.mgesture.numFingers);
             }
             #endif
+            #if !defined(EMSCRIPTEN)
             else if (event.type == SDL_JOYDEVICEADDED)
             {
                 auto which = event.jdevice.which;
-                TRACE_LOG("Joystick number: " << which << " has been added.");
                 OpenJoystick(which);
             }
             else if (event.type == SDL_JOYDEVICEREMOVED)
             {
                 auto which = event.jdevice.which;
-                TRACE_LOG("Joystick number: " << which << " has been removed.");
+                CloseJoystick(which);
             }
+            else if (event.type == SDL_CONTROLLERBUTTONDOWN)
+            {
+                auto& state = joysticks_.find(event.cbutton.which)->second;
+                CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto button = event.cbutton.button;
+                window->OnJoystickDown(state.instanceID_, button);
+            }
+            else if (event.type == SDL_CONTROLLERBUTTONUP)
+            {
+                auto& state = joysticks_.find(event.cbutton.which)->second;
+                CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto button = event.cbutton.button;
+                window->OnJoystickUp(state.instanceID_, button);
+            }
+            else if (event.type == SDL_CONTROLLERAXISMOTION)
+            {
+                auto& state = joysticks_.find(event.caxis.which)->second;
+                CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto axis = ConvertAxis(event.caxis.axis);
+                float value = (float)event.caxis.value;
+                if(std::abs(value) < 5000) value = 0;
+                auto position = glm::clamp(value / 32767.0f, -1.0f, 1.0f);
+                window->OnJoystickAxisMotion(state.instanceID_, axis, position);
+            }
+            #endif
+
             else if (event.type == SDL_JOYBUTTONDOWN)
             {
-                auto which = event.jdevice.which;
-                if (!SDL_IsGameController(which))
+                auto& state = joysticks_.find(event.jbutton.which)->second;
+                if (!state.pad_)
                 {
                     SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
                     if (!window) continue;
-                    auto joystickID = event.jbutton.which;
                     auto button = event.jbutton.button;
-                    window->OnJoystickDown(joystickID, button);
+                    window->OnJoystickDown(state.instanceID_, button);
+                }
+            }
+            else if (event.type == SDL_JOYBUTTONUP)
+            {
+                auto& state = joysticks_.find(event.jbutton.which)->second;
+                if (!state.pad_)
+                {
+                    SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                    if (!window) continue;
+                    auto button = event.jbutton.button;
+                    window->OnJoystickUp(state.instanceID_, button);
+                }
+            }
+            else if (event.type == SDL_JOYAXISMOTION)
+            {
+                auto& state = joysticks_.find(event.jaxis.which)->second;
+                if (!state.pad_)
+                {
+                    SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                    if (!window) continue;
+                    auto axis = ConvertAxis(event.jaxis.axis);
+                    float value = (float)event.jaxis.value;
+                    if(std::abs(value) < 5000) value = 0;
+                    auto position = glm::clamp(value / 32767.0f, -1.0f, 1.0f);
+                    window->OnJoystickAxisMotion(state.instanceID_, axis, position);
                 }
             }
         }

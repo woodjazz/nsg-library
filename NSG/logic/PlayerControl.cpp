@@ -31,15 +31,14 @@ misrepresented as being the original software.
 namespace NSG
 {
     PlayerControl::PlayerControl()
-        : signalLeft_(new SignalEmpty()),
-          signalRight_(new SignalEmpty()),
-          signalForward_(new SignalEmpty()),
-          signalBackward_(new SignalEmpty()),
+        : signalMoved_(new SignalPlayerMoved()),
           window_(nullptr),
-          leftDown_(false),
-          rightDown_(false),
-          forwardDown_(false),
-          backwardDown_(false)
+          leftHorizontalAxis_(0),
+          leftVerticalAxis_(0),
+          left_(false),
+          right_(false),
+          forward_(false),
+          backward_(false)
     {
         if (Graphics::this_)
         {
@@ -100,6 +99,39 @@ namespace NSG
                 {
                     OnKey(key, action, modifier);
                 });
+
+                slotJoystickDown_ = window->signalJoystickDown_->Connect([&](int joystickID, unsigned button)
+                {
+
+                });
+
+                slotJoystickUp_ = window->signalJoystickUp_->Connect([&](int joystickID, unsigned button)
+                {
+
+                });
+
+                slotJoystickAxisMotion_ = window->signalJoystickAxisMotion_->Connect([&](int joystickID, JoystickAxis axis, float position)
+                {
+                    switch (axis)
+                    {
+                        case JoystickAxis::LEFTX:
+                            leftHorizontalAxis_ = position;
+                            break;
+                        case JoystickAxis::LEFTY:
+                            leftVerticalAxis_ = -position;
+                            break;
+                        case JoystickAxis::RIGHTX:
+                            break;
+                        case JoystickAxis::RIGHTY:
+                            break;
+                        case JoystickAxis::TRIGGERLEFT:
+                            break;
+                        case JoystickAxis::TRIGGERRIGHT:
+                            break;
+                        default:
+                            break;
+                    }
+                });
             }
             else
             {
@@ -110,6 +142,10 @@ namespace NSG
                 slotMouseWheel_ = nullptr;
                 slotMultiGesture_ = nullptr;
                 slotKey_ = nullptr;
+                slotJoystickDown_ = nullptr;
+                slotJoystickUp_ = nullptr;
+                slotJoystickAxisMotion_ = nullptr;
+
             }
         }
     }
@@ -120,35 +156,26 @@ namespace NSG
 
     void PlayerControl::OnUpdate(float deltaTime)
     {
-        if (leftDown_)
-            OnLeft();
-        if (rightDown_)
-            OnRight();
-        if (forwardDown_)
-            OnForward();
-        if (backwardDown_)
-            OnBackward();
+        if (forward_ || backward_ || right_ || left_)
+        {
+            if (forward_)
+                signalMoved_->Run(0, 1);
+            if (backward_)
+                signalMoved_->Run(0, -1);
+            if (right_)
+                signalMoved_->Run(1, 0);
+            if (left_)
+                signalMoved_->Run(-1, 0);
+        }
+        else
+        {
+            leftHorizontalAxis_ = glm::clamp(leftHorizontalAxis_, -1.f, 1.f);
+            leftVerticalAxis_ = glm::clamp(leftVerticalAxis_, -1.f, 1.f);
+            if (leftHorizontalAxis_ || leftVerticalAxis_)
+                signalMoved_->Run(leftHorizontalAxis_, leftVerticalAxis_);
+        }
     }
 
-    void PlayerControl::OnLeft()
-    {
-        signalLeft_->Run();
-    }
-
-    void PlayerControl::OnRight()
-    {
-        signalRight_->Run();
-    }
-
-    void PlayerControl::OnForward()
-    {
-        signalForward_->Run();
-    }
-
-    void PlayerControl::OnBackward()
-    {
-        signalBackward_->Run();
-    }
 
     void PlayerControl::OnMouseDown(int button, float x, float y)
     {
@@ -173,28 +200,28 @@ namespace NSG
             case NSG_KEY_UP:
             case NSG_KEY_W:
                 {
-                    forwardDown_ = action ? true : false;
+                    forward_ = action ? true : false;
                     break;
                 }
 
             case NSG_KEY_DOWN:
             case NSG_KEY_S:
                 {
-                    backwardDown_ = action ? true : false;
+                    backward_ = action ? true : false;
                     break;
                 }
 
             case NSG_KEY_LEFT:
             case NSG_KEY_A:
                 {
-                    leftDown_ = action ? true : false;
+                    left_ = action ? true : false;
                     break;
                 }
 
             case NSG_KEY_RIGHT:
             case NSG_KEY_D:
                 {
-                    rightDown_ = action ? true : false;
+                    right_ = action ? true : false;
                     break;
                 }
 

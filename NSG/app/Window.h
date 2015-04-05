@@ -52,6 +52,8 @@ namespace NSG
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
         void OnJoystickDown(int joystickID, unsigned button);
+        void OnJoystickUp(int joystickID, unsigned button);
+        void OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position);
 		virtual void RenderFrame() = 0;
         virtual int Run() = 0;
         virtual void EnterBackground();
@@ -99,6 +101,8 @@ namespace NSG
         SignalRender::PSignal signalRender_;
         SignalDropFile::PSignal signalDropFile_;
         SignalJoystickDown::PSignal signalJoystickDown_;
+        SignalJoystickUp::PSignal signalJoystickUp_;
+        SignalJoystickAxisMotion::PSignal signalJoystickAxisMotion_;
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);

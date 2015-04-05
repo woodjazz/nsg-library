@@ -70,6 +70,8 @@ namespace NSG
           signalRender_(new Signal<>()),
           signalDropFile_(new Signal<const std::string & >()),
           signalJoystickDown_(new SignalJoystickDown()),
+          signalJoystickUp_(new SignalJoystickUp()),
+          signalJoystickAxisMotion_(new SignalJoystickAxisMotion()),
           name_(name),
           isClosed_(false),
           minimized_(false),
@@ -80,7 +82,6 @@ namespace NSG
 
     {
         CHECK_CONDITION(Window::AllowWindowCreation(), __FILE__, __LINE__);
-        TRACE_PRINTF("Window %s created\n", name_.c_str());
     }
 
     Window::~Window()
@@ -260,6 +261,16 @@ namespace NSG
     void Window::OnJoystickDown(int joystickID, unsigned button)
     {
         signalJoystickDown_->Run(joystickID, button);
+    }
+
+    void Window::OnJoystickUp(int joystickID, unsigned button)
+    {
+        signalJoystickUp_->Run(joystickID, button);
+    }
+
+    void Window::OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position)
+    {
+        signalJoystickAxisMotion_->Run(joystickID, axis, position);
     }
 
     void Window::EnterBackground()
