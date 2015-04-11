@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -86,25 +86,25 @@ namespace NSG
 
     Window::~Window()
     {
-        TRACE_PRINTF("Window %s terminated\n", name_.c_str());
+        TRACE_PRINTF("Window %s terminated.\n", name_.c_str());
     }
 
-    PWindow Window::Create(const std::string& name)
+    PWindow Window::Create(const std::string& name, WindowFlags flags)
     {
         if (Window::AllowWindowCreation())
         {
-            auto window = std::make_shared<SDLWindow>(name);
+            auto window = std::make_shared<SDLWindow>(name, flags);
             Window::AddWindow(window);
             return window;
         }
         return nullptr;
     }
 
-    PWindow Window::Create(const std::string& name, int x, int y, int width, int height)
+    PWindow Window::Create(const std::string& name, int x, int y, int width, int height, WindowFlags flags)
     {
         if (Window::AllowWindowCreation())
         {
-			auto window = std::make_shared<SDLWindow>(name, x, y, width, height);
+			auto window = std::make_shared<SDLWindow>(name, x, y, width, height, flags);
             Window::AddWindow(window);
             return window;
         }
@@ -149,7 +149,7 @@ namespace NSG
 
     void Window::Close()
     {
-        TRACE_PRINTF("Closing %s window...", name_.c_str());
+        TRACE_PRINTF("Closing %s window.\n", name_.c_str());
 
         if (Window::mainWindow_ == this)
         {

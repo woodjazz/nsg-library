@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -31,8 +31,8 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/blightmap.xml");
-	auto scenes = resource->Load();
-	auto scene = scenes.at(0);
+	AppData data(resource);
+	auto scene = data.scenes_.at(0);
 	auto material = Material::Get("Material");
 
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");

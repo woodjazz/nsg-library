@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -59,6 +59,8 @@ namespace BlenderConverter
 		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray);
 		void AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
 		void CreateSkeleton(NSG::PScene scene, const Blender::Object* obj);
+		std::vector<NSG::PSound> LoadSounds(bParse::bMain* data);
+		NSG::PSound LoadSound(Blender::bSound* sound);
 		const Blender::Material* GetMaterial(const Blender::Object* ob, int index) const;
 		std::vector<NSG::PMaterial> LoadMaterials(bParse::bMain* data);
 		NSG::PMaterial LoadMaterial(const Blender::Material* mt);
@@ -100,5 +102,6 @@ namespace BlenderConverter
 		bool embedResources_;
 		std::vector<NSG::PScene> scenes_;
 		std::vector<const Blender::Scene*> bscenes_;
+		std::vector<NSG::PSound> sounds_;
     };
 }

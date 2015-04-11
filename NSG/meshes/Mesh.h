@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -63,7 +63,6 @@ namespace NSG
 		void SetSkeleton(PSkeleton skeleton);
         const std::string& GetName() const { return name_; }
         void SetName(const std::string& name) { name_ = name; }
-		void SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights);
         void AddSceneNode(SceneNode* node);
         void RemoveSceneNode(SceneNode* node);
         std::set<SceneNode*>& GetSceneNodes() { return sceneNodes_; }

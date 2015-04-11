@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -76,7 +76,8 @@ int NSG_MAIN(int argc, char* argv[])
     }
 
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/nice_music.ogg");
-    auto music = std::make_shared<Music>(resource);
+    auto music = std::make_shared<Music>();
+	music->Set(resource);
     music->Play();
 
     auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)

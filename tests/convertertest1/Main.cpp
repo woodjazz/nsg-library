@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -28,11 +28,11 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    auto window = Window::Create();
+    auto window = Window::Create("sdhsdj", (int)WindowFlag::HIDDEN);
     auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo1.xml");
-	auto scenes = resource->Load();
-	CHECK_CONDITION(scenes.size() == 1, __FILE__, __LINE__);
-	auto scene = scenes.at(0);
+	AppData data(resource);
+	CHECK_CONDITION(data.scenes_.size() == 1, __FILE__, __LINE__);
+	auto scene = data.scenes_.at(0);
 	auto object = scene->GetChild<SceneNode>("Bone.main", true);
 	CHECK_CONDITION(object, __FILE__, __LINE__);
 	auto animations = scene->GetAnimationsFor(object);

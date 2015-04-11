@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -26,19 +26,19 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
+#include "AppData.h"
 #include "MapAndVector.h"
 #include <string>
 
 namespace NSG
 {
-	class Path;
 	class Resource : public std::enable_shared_from_this<Resource>, public Object
 	{
 	public:
 		static PResource CreateFrom(PResource resource, const pugi::xml_node& node);
 		virtual ~Resource();
 		const char* const GetData() const { return buffer_.c_str(); }
-		size_t GetBytes() const { return buffer_.size(); }
+		int GetBytes() const;
         void ReleaseResources() override;
 		const std::string& GetBuffer() const { return buffer_; }
 		void SaveExternal(pugi::xml_node& node, const Path& path, const Path& outputDir);
@@ -47,7 +47,6 @@ namespace NSG
 		void SetSerializable(bool serializable);
 		bool IsSerializable() const;
 		void SetName(const std::string& name);
-		std::vector<PScene> Load();
 		template <typename T> static std::shared_ptr<T> GetOrCreate(const std::string& name)
         {
             return resources_.GetOrCreateClass<T>(name);

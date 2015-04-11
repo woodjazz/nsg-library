@@ -1,7 +1,7 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------
 #This file is part of nsg-library.
-#http://nsg-library.googlecode.com/
+#http://github.com/woodjazz/nsg-library
 #
 #Copyright (c) 2014-2015 Néstor Silveira Gorski
 #
@@ -36,5 +36,5 @@ cd ..
 cmake -E make_directory $1
 cd $1
 
-cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DEMS_DEBUG_LEVEL=4 -DALLOW_MEMORY_GROWTH=1 -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
-#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DALLOW_MEMORY_GROWTH=1 -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
+cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DEMS_DEBUG_LEVEL=4 -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
+#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"

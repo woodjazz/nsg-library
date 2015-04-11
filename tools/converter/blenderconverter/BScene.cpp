@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -58,6 +58,7 @@ namespace BlenderConverter
         obj.parse(false);
         bParse::bMain* data = obj.getMain();
         auto materials = LoadMaterials(data);
+        sounds_ = LoadSounds(data);
         CreateScenes(data);
         CreateAnimations(data);
         return true;
@@ -95,6 +96,42 @@ namespace BlenderConverter
         Color ambient(world->ambr, world->ambg, world->ambb, 1);
         scene->SetAmbientColor(ambient);
         return scene;
+    }
+
+    std::vector<NSG::PSound> BScene::LoadSounds(bParse::bMain* data)
+    {
+        std::vector<PSound> result;
+        bParse::bListBasePtr* it = data->getSound();
+        int n = it->size();
+        for (int i = 0; i < n; i++)
+        {
+            auto sound = (Blender::bSound*)it->at(i);
+            result.push_back(LoadSound(sound));
+        }
+        return result;
+    }
+
+	NSG::PSound BScene::LoadSound(Blender::bSound* sound)
+    {
+		std::string soundName = B_IDNAME(sound);
+		if (!sound->packedfile)
+		{
+			Path path;
+			path.SetPath(path_.GetPath());
+			path.SetFileName(sound->name);
+			auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
+			auto sound = Sound::Create(soundName);
+			sound->Set(resource);
+			return sound;
+		}
+		else
+		{
+			auto resource = Resource::GetOrCreate<ResourceConverter>(sound->name);
+			resource->SetData((const char*)sound->packedfile->data, sound->packedfile->size);
+			auto sound = Sound::Create(soundName);
+			sound->Set(resource);
+			return sound;
+		}
     }
 
     std::vector<NSG::PMaterial> BScene::LoadMaterials(bParse::bMain* data)
@@ -331,7 +368,7 @@ namespace BlenderConverter
         CHECK_ASSERT(scenes_.size() == bscenes_.size(), __FILE__, __LINE__);
         const Blender::Scene* firstBScene(bscenes_.at(0));
         PScene firstScene(scenes_.at(0));
-        float animfps = firstBScene->r.frs_sec / firstBScene->r.frs_sec_base;
+        //float animfps = firstBScene->r.frs_sec / firstBScene->r.frs_sec_base;
         bParse::bListBasePtr* it = data->getAction();
         auto n = it->size();
         for (int i = 0; i < n; i++)
@@ -1150,6 +1187,7 @@ namespace BlenderConverter
             Resource::SaveResources(appNode);
         else
             Resource::SaveResourcesExternally(appNode, path_, outputDir_);
+        Sound::SaveSounds(appNode);
         Mesh::SaveMeshes(appNode);
         Material::SaveMaterials(appNode);
         for (auto& scene : scenes_)

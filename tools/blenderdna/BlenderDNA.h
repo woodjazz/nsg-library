@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-// Updated by Néstor Silveira Gorski for nsg-library (http://nsg-library.googlecode.com/)
+// Updated by Néstor Silveira Gorski for nsg-library (http://github.com/woodjazz/nsg-library)
 #pragma once
 #include "NSG.h"
 namespace Blender

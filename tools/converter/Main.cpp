@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -194,7 +194,7 @@ int NSG_MAIN(int argc, char* argv[])
 
         if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
         {
-            auto window = Window::Create("window", 0, 0, 1, 1);
+            auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
             using namespace BlenderConverter;
             BScene scene(inputFile, outputDir, bArg.getValue());
             if (scene.Load() && scene.Save(zArg.getValue()))

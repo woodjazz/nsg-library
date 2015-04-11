@@ -176,7 +176,7 @@ void bDNA::initCmpFlags(bDNA *memDNA)
 	// this ptr should be the file data
 
 
-	assert(!m_Names.size() == 0 && "SDNA empty!");
+	assert(m_Names.size() && "SDNA empty!");
 	mCMPFlags.resize(mStructs.size(), FDF_NONE);
 
 
@@ -275,7 +275,7 @@ void bDNA::initCmpFlags(bDNA *memDNA)
 
 
 static int name_is_array(char* name, int* dim1, int* dim2) {
-	int len = strlen(name);
+	auto len = strlen(name);
 	/*fprintf(stderr,"[%s]",name);*/
 	/*if (len >= 1) {
 	if (name[len-1] != ']')
@@ -518,7 +518,7 @@ void bDNA::init(char *data, int len, bool swap)
 int bDNA::getArraySize(char* string)
 {
 	int ret = 1;
-	int len = strlen(string);
+	auto len = strlen(string);
 
 	
 	char* next = 0;

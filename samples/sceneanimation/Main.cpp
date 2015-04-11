@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -25,17 +25,12 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-//#define DAE_FILE
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    #ifdef DAE_FILE
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
-    #else
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml.lz4");
-    #endif
-	auto scenes = resource->Load();
-    auto scene = scenes.at(0);
+	AppData data(resource);
+	auto scene = data.scenes_.at(0);
     scene->SetAmbientColor(Color(0.0f));
 
     auto object = scene->GetChild<SceneNode>("Bone", true);

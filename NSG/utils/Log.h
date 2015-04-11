@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -47,9 +47,6 @@ misrepresented as being the original software.
 #define TRACE_PRINTF(format, ...) {\
         __android_log_print(ANDROID_LOG_INFO, "nsg-library", format, ##__VA_ARGS__);\
     }
-
-extern int AndroidPrintMessage(const char* format, ...);
-#define printf AndroidPrintMessage
 
 #elif _MSC_VER
 

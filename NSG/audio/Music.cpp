@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -45,12 +45,10 @@ namespace NSG
     }
 #endif
 
-	Music::Music(PResource resource)
-		: resource_(resource),
-          isReady_(false),
+	Music::Music(const std::string& name)
+		: Object(name),
           isPlaying_(false)
     {
-        OpenAudio();
     }
 
     Music::~Music()
@@ -67,39 +65,45 @@ namespace NSG
         return isPlaying_;
     }
 
-    bool Music::IsReady()
+    bool Music::IsValid()
     {
-        if (resource_->IsReady() && !isReady_)
+        return resource_ && resource_->IsReady();
+    }
+
+    void Music::Set(PResource resource)
+    {
+        if(resource_ != resource)
         {
+            resource_ = resource;
+            Invalidate();
+        }
+    }
+
+    void Music::AllocateResources()
+    {
 #ifdef SDL
             SDL_RWops* assetHandle = SDL_RWFromConstMem(resource_->GetData(), int(resource_->GetBytes()));
-
 #if EMSCRIPTEN
             music_ = Mix_LoadMUS_RW(assetHandle);
             SDL_FreeRW(assetHandle);
 #else
             music_ = Mix_LoadMUS_RW(assetHandle, 1);
 #endif
-
             Mix_HookMusicFinished(MusicDone);
-
-            if (!music_)
-            {
-				TRACE_LOG("Unable to read " << resource_->GetName() << " !!!");
-            }
-
-            isReady_ = music_ != nullptr;
+            CHECK_CONDITION(music_, __FILE__, __LINE__);
 #endif
-        }
+    }
 
-        return isReady_;
+    void Music::ReleaseResources()
+    {
+        if (resource_)
+            return resource_->Invalidate();
     }
 
     bool Music::Play(bool loop)
     {
         if (IsReady())
         {
-
 #ifdef SDL
             Stop();
             Mix_PlayMusic(music_, loop ? -1 : 0);

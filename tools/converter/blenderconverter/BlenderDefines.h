@@ -24,7 +24,7 @@
   3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-// Updated by Néstor Silveira Gorski for nsg-library (http://nsg-library.googlecode.com/)
+// Updated by Néstor Silveira Gorski for nsg-library (http://github.com/woodjazz/nsg-library)
 #pragma once
 #define ACT_FORCE_LOCAL                          1
 #define ACT_TORQUE_LOCAL                         2

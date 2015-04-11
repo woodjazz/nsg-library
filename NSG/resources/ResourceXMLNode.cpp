@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -93,7 +93,8 @@ namespace NSG
         decoded_binary.resize(bytes);
         base64::base64_decodestate state;
         base64::base64_init_decodestate(&state);
-        int decoded_length = base64::base64_decode_block(buffer.c_str(), bytes, &decoded_binary[0], &state);
+		CHECK_ASSERT(bytes < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        auto decoded_length = base64::base64_decode_block(buffer.c_str(), (int)bytes, &decoded_binary[0], &state);
         decoded_binary.resize(decoded_length);
         SetData(decoded_binary.c_str(), decoded_binary.size());
     }
@@ -112,7 +113,7 @@ namespace NSG
             CHECK_ASSERT(node, __FILE__, __LINE__);
             auto obj = obj_.lock();
             if (obj)
-                obj->Load(resource_, node);
+                obj->LoadFrom(resource_, node);
             else
                 Load(node);
         }

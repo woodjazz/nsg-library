@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -192,22 +192,6 @@ namespace NSG
 
         if (lightingEnabled_)
         {
-            if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
-            {
-                preDefines += "#define PER_PIXEL_LIGHTING\n";
-                if ((int)ProgramFlag::NORMALMAP & flags_)
-                    preDefines += "#define NORMALMAP\n";
-                if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
-                    preDefines += "#define DISPLACEMENTMAP\n";
-                if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
-                {
-                    TRACE_LOG("Program name: " << name_ << " has per vertex and per pixel flags ON. Disabling per vertex!!!");
-                    flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
-                }
-            }
-            else
-                preDefines += "#define PER_VERTEX_LIGHTING\n";
-
             auto& directionalLigths = scene->GetLights(LightType::DIRECTIONAL);
             nDirectionalLights_ = directionalLigths.size();
 
@@ -300,17 +284,31 @@ namespace NSG
                         ss << "const int NUM_SPOT_LIGHTS = " << nSpotLights_ << ";\n";
                         preDefines += ss.str();
                     }
+
+					if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
+					{
+						preDefines += "#define PER_PIXEL_LIGHTING\n";
+						if ((int)ProgramFlag::NORMALMAP & flags_)
+							preDefines += "#define NORMALMAP\n";
+						if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
+							preDefines += "#define DISPLACEMENTMAP\n";
+						if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
+						{
+							TRACE_LOG("Program name: " << name_ << " has per vertex and per pixel flags ON. Disabling per vertex!!!");
+							flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
+						}
+					}
+					else
+						preDefines += "#define PER_VERTEX_LIGHTING\n";
                 }
             }
             else
             {
                 lightingEnabled_ = false;
-                TRACE_LOG("No lights found => Disabling lighting!!!")
+				flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
+				flags_ &= ~(int)ProgramFlag::PER_PIXEL_LIGHTING;
+                TRACE_LOG("No lights found for " << name_ << " => Disabling lighting!!!")
             }
-        }
-        else
-        {
-            TRACE_LOG("Neither PER_PIXEL_LIGHTING nor PER_VERTEX_LIGHTING have been found => Lighting is disabled!!!");
         }
     }
 
@@ -855,7 +853,7 @@ namespace NSG
     {
         if (material_)
         {
-            for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+            for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
                 if (textureLoc_[index] != -1)
                     Graphics::this_->SetTexture(index, material_->GetTexture(index).get());
 

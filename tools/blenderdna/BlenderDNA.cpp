@@ -13,7 +13,7 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 //////////////////////////////////////////////////////////////////////////////////////////
-// Updated by Néstor Silveira Gorski for nsg-library (http://nsg-library.googlecode.com/)
+// Updated by Néstor Silveira Gorski for nsg-library (http://github.com/woodjazz/nsg-library)
 // Added: CalcDependencyLevel
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,13 +61,13 @@ namespace Blender
             return 0;
         }
 
-        hgString getName(size_t i)
+        hgString getName(int i)
         {
             if (i >= 0 && i < m_names.size())
                 return m_names.at(i);
             return "NULL";
         }
-        hgString getType(size_t i)
+        hgString getType(int i)
         {
             if (i >= 0 && i < m_types.size())
                 return m_types.at(i);
@@ -177,7 +177,7 @@ namespace Blender
         len = m_structs.capacity();
         m_structType.resize(m_types.size());
 
-        for (size_t i = 0; i < len; i++)
+        for (short i = 0; i < len; i++)
         {
             m_structs.push_back(strc);
 
@@ -265,12 +265,12 @@ namespace Blender
 
         #ifdef _DEBUG
         char comment[256];
-        fprintf(fp, "// %i DNA structure %i, %i\n", index, typ, len);
+        fprintf(fp, "// %zu DNA structure %i, %i\n", index, typ, len);
         #endif
 
         fprintf(fp, "struct %s\n{\n", type.c_str());
 
-        int padding = 0;
+        //int padding = 0;
 
         for (short el = 0; el < len; el++, strc += 2)
         {
@@ -279,7 +279,7 @@ namespace Blender
 
 
 
-            int arrlen = dna->getArraySize(dn.c_str());
+            //int arrlen = dna->getArraySize(dn.c_str());
 
             char newname[64];
             char newtype[64];

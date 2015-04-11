@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -34,8 +34,8 @@ namespace NSG
     class SDLWindow : public Window
     {
     public:
-        SDLWindow(const std::string& name);
-        SDLWindow(const std::string& name, int x, int y, int width, int height);
+        SDLWindow(const std::string& name, WindowFlags flags);
+        SDLWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
         ~SDLWindow();
         void RenderFrame() override;
         void Destroy() override;
@@ -45,13 +45,16 @@ namespace NSG
 		void EnterForeground() override;
 		void RestoreContext();
     private:
+        void Show() override;
+        void Hide() override;
+        void Raise() override;
         JoystickAxis ConvertAxis(int axis) const;
         void OpenJoystick(int index);
         void CloseJoystick(int index);
         void OpenJoysticks();
         SDLWindow* GetWindowFromID(uint32_t windowID) const;
         SDLWindow* GetCurrentWindow() const;
-        void Initialize(int x, int y, int width, int height);
+        void Initialize(int x, int y, int width, int height, WindowFlags flags);
         void Close() override;
         void ViewChanged(int width, int height) override;
         uint32_t windowID_;
@@ -64,6 +67,7 @@ namespace NSG
             JoystickState() : deviceIndex(-1), joystick_(nullptr), pad_(nullptr), instanceID_(-1){}; 
         };
         std::map<int, JoystickState> joysticks_;
+        int flags_;
     };
 }
 #endif

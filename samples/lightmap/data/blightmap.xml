@@ -4,6 +4,7 @@
 		<Resource name="data/wall_COLOR.png" />
 		<Resource name="data/lightmap.png" />
 	</Resources>
+	<Sounds />
 	<Meshes>
 		<Mesh name="Cube" wireFrameDrawMode="4" solidDrawMode="4">
 			<Shape type="7" margin="0.06" scale="[    1.000,    1.000,    1.000]" />

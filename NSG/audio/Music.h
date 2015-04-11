@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -25,26 +25,29 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Object.h"
+#include "Util.h"
 #include "Singleton.h"
 
 namespace NSG
 {
-	class Path;
-	class Music : public Singleton<Music>
+	class Music : public Singleton<Music>, public Object
     {
     public:
-		Music(PResource resource);
+		Music(const std::string& name  = GetUniqueName("Music"));
         ~Music();
         bool Play(bool loop = true);
 		void Stop();
 		void Pause();
 		void Resume();
         bool IsPlaying() const;
-        bool IsReady();
         bool IsPaused() const;
+        void Set(PResource resource);
     private:
-        PResource resource_;
-        bool isReady_;
+        bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
         bool isPlaying_;
+        PResource resource_;
     };
 }

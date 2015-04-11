@@ -6,6 +6,7 @@
 		<Resource name="data/wall_NRM.png" />
 		<Resource name="data/wall_DISP.png" />
 	</Resources>
+	<Sounds />
 	<Meshes>
 		<Mesh name="Plane.001" wireFrameDrawMode="4" solidDrawMode="4">
 			<Shape type="7" margin="0.04" scale="[    8.089,    8.089,    8.089]" />

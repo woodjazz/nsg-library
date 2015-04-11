@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -78,6 +78,12 @@ namespace NSG
     {
         if (Graphics::this_ && Graphics::this_->GetCamera() == this)
             Graphics::this_->SetCamera(nullptr);
+    }
+
+    void Camera::UnRegisterWindow()
+    {
+        slotWindowCreated_ = nullptr;
+        SetWindow(nullptr);
     }
 
     RenderLayer Camera::SetLayer(RenderLayer layer)

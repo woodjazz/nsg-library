@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -30,9 +30,12 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    auto music = std::make_shared<Music>(std::make_shared<ResourceFile>("data/nice_music.ogg"));
-	auto sound = std::make_shared<Sound>(std::make_shared<ResourceFile>("data/PlayerFist.wav"));
-	auto soundExplo = std::make_shared<Sound>(std::make_shared<ResourceFile>("data/BigExplosion.wav"));
+    auto music = std::make_shared<Music>();
+	music->Set(std::make_shared<ResourceFile>("data/nice_music.ogg"));
+	auto sound = Sound::Create();
+	sound->Set(std::make_shared<ResourceFile>("data/PlayerFist.wav"));
+	auto soundExplo = Sound::Create();
+	soundExplo->Set(std::make_shared<ResourceFile>("data/BigExplosion.wav"));
 
     CHECK_CONDITION(!music->IsPlaying(), __FILE__, __LINE__);
     music->Play(false);

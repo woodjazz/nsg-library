@@ -104,7 +104,9 @@ macro (setup_common)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
     elseif(EMSCRIPTEN)
-        add_definitions(-s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH})
+        add_definitions(-s ALLOW_MEMORY_GROWTH=1)
+        add_definitions(-s NO_EXIT_RUNTIME=1)
+        #add_definitions(-s ASYNCIFY=1)
         set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
         set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
         set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g${EMS_DEBUG_LEVEL} -Wno-warn-absolute-paths -Wno-logical-op-parentheses -D_DEBUG")
@@ -250,7 +252,7 @@ macro (setup_executable)
 
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -o ${PROJECT_NAME}.html -g${EMS_DEBUG_LEVEL} -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --embed-file data 
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -o ${PROJECT_NAME}.html --embed-file data 
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMENT "Generating HTML with Emscripten" VERBATIM)
 

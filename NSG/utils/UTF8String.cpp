@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 
 #include "UTF8String.h"
+#include "Check.h"
 
 namespace NSG
 {
@@ -175,7 +176,9 @@ namespace NSG
         
         const char* src = buffer + byteOffset;
         unsigned ret = DecodeUTF8(src);
-        byteOffset = src - buffer;
+		auto bytesDiff = src - buffer;
+		CHECK_ASSERT(bytesDiff < std::numeric_limits<unsigned>::max(), __FILE__, __LINE__);
+        byteOffset = (unsigned)(src - buffer);
         
         return ret;
     }

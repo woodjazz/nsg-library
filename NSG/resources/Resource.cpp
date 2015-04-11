@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "ResourceXMLNode.h"
 #include "Texture.h"
+#include "Sound.h"
 #include "Log.h"
 #include "Check.h"
 #include "Util.h"
@@ -142,7 +143,8 @@ namespace NSG
         std::string encoded_data;
         encoded_data.resize(2 * buffer_.size());
 
-        int numchars = base64::base64_encode_block(&buffer_[0], buffer_.size(), &encoded_data[0], &state);
+		CHECK_ASSERT(buffer_.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        auto numchars = base64::base64_encode_block(&buffer_[0], (int)buffer_.size(), &encoded_data[0], &state);
         numchars += base64::base64_encode_blockend(&encoded_data[0] + numchars, &state);
         encoded_data.resize(numchars);
 
@@ -206,34 +208,9 @@ namespace NSG
             obj->SaveExternal(child, path, outputDir);
     }
 
-    std::vector<PScene> Resource::Load()
-    {
-        CHECK_CONDITION(IsReady(), __FILE__, __LINE__);
-        std::vector<PScene> scenes;
-        pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_buffer((void*)GetData(), GetBytes());
-        if (result)
-        {
-            pugi::xml_node appNode = doc.child("App");
-            auto resources = Resource::LoadResources(shared_from_this(), appNode);
-            auto meshes = Mesh::LoadMeshes(shared_from_this(), appNode);
-            auto materials = Material::LoadMaterials(shared_from_this(), appNode);
-            pugi::xml_node child = appNode.child("Scene");
-            while (child)
-            {
-                auto scene = std::make_shared<Scene>("scene");
-                scene->Load(child);
-                scenes.push_back(scene);
-                child = child.next_sibling("Scene");
-            }
-        }
-        else
-        {
-            TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
-            TRACE_LOG("Error description: " << result.description());
-            TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
-            CHECK_ASSERT(false, __FILE__, __LINE__);
-        }
-        return scenes;
-    }
+	int Resource::GetBytes() const 
+	{ 
+		CHECK_ASSERT(buffer_.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+		return (int)buffer_.size(); 
+	}
 }

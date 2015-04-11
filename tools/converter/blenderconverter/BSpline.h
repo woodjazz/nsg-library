@@ -25,7 +25,7 @@
 -------------------------------------------------------------------------------
 */
 //////////////////////////////////////////////////////////////////////////////////////////
-// Updated by Néstor Silveira Gorski for nsg-library (http://nsg-library.googlecode.com/)
+// Updated by Néstor Silveira Gorski for nsg-library (http://github.com/woodjazz/nsg-library)
 //////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once

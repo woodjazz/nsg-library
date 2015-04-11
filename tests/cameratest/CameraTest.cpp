@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -46,7 +46,6 @@ static void FrustumTest()
 	}
 
 	PCamera camera = scene->GetOrCreateChild<Camera>("camera");
-
 	camera->SetGlobalLookAt(Vector3(0, 0, -1));
 
 	{
@@ -305,6 +304,7 @@ static void Test03()
 
 		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
 		camera->EnableOrtho();
+		camera->SetAspectRatio(1);
 
 		{
 			Vertex3 p0(0, 0, -1);
@@ -461,7 +461,7 @@ static void Test05()
 
 void CameraTest()
 {
-	auto window = Window::Create("window", 0, 0, 1, 1);
+	auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
 	FrustumTest();
 	Test01();
 	Test02();

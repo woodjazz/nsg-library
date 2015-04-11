@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -171,20 +171,25 @@ namespace NSG
     {
         if (node == this)
             return BoundingBox();
-
         BoundingBox bb(GetWorldBoundingBox());
-
-        for (auto& obj : children_)
-            bb.Merge(dynamic_cast<SceneNode*>(obj.get())->GetWorldBoundingBoxBut(node));
-
+		for (auto& obj : children_)
+		{
+			auto child = dynamic_cast<SceneNode*>(obj.get());
+			if (child)
+				bb.Merge(child->GetWorldBoundingBoxBut(node));
+		}
         return bb;
     }
 
     void SceneNode::GetMaterials(std::vector<PMaterial>& materials) const
     {
         materials.push_back(material_);
-        for (auto& obj : children_)
-            dynamic_cast<SceneNode*>(obj.get())->GetMaterials(materials);
+		for (auto& obj : children_)
+		{
+			auto child = dynamic_cast<SceneNode*>(obj.get());
+			if (child)
+				child->GetMaterials(materials);
+		}
     }
 
     void SceneNode::Save(pugi::xml_node& node) const
@@ -234,9 +239,12 @@ namespace NSG
     {
         for (auto& obj : children_)
         {
-            pugi::xml_node child = node.append_child("SceneNode");
-            auto sceneNode = std::dynamic_pointer_cast<SceneNode>(obj);
-            sceneNode->Save(child);
+			auto sceneNode = std::dynamic_pointer_cast<SceneNode>(obj);
+			if (sceneNode)
+			{
+				pugi::xml_node child = node.append_child("SceneNode");
+				sceneNode->Save(child);
+			}
         }
     }
 
@@ -333,8 +341,12 @@ namespace NSG
             batch.Draw();
         }
 
-        for (auto& obj : children_)
-            dynamic_cast<SceneNode*>(obj.get())->DrawWithChildren();
+		for (auto& obj : children_)
+		{
+			auto child = dynamic_cast<SceneNode*>(obj.get());
+			if (child)
+				child->DrawWithChildren();
+		}
     }
 
     RenderLayer SceneNode::SetLayer(RenderLayer layer)

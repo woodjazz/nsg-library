@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -35,11 +35,15 @@ misrepresented as being the original software.
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <thread>
 #ifndef WIN32
 #include <unistd.h>
 #include <cerrno>
 #else
 #include "windows.h"
+#endif
+#if EMSCRIPTEN
+#include "emscripten.h"
 #endif
 
 namespace NSG
@@ -349,22 +353,23 @@ namespace NSG
         return color;
     }
 
-	static size_t HeaderSize = 128;
+    static size_t HeaderSize = 128;
     std::string CompressBuffer(const std::string& buf)
     {
-		std::string buffer;
-		{
-			std::stringstream ss;
-			ss << buf.size() << " ";
-			buffer = ss.str();
-		}
-		buffer.resize(HeaderSize);
-		buffer += buf;
+        std::string buffer;
+        {
+            std::stringstream ss;
+            ss << buf.size() << " ";
+            buffer = ss.str();
+        }
+        buffer.resize(HeaderSize);
+        buffer += buf;
         std::string compressBuffer;
-        compressBuffer.resize(LZ4_compressBound(buffer.size()));
-        auto bufferSize = LZ4_compress(buffer.c_str(), &compressBuffer[0], buffer.size());
-		CHECK_ASSERT(bufferSize >= 0, __FILE__, __LINE__);
-		compressBuffer.resize(bufferSize);
+        CHECK_ASSERT(buffer.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        compressBuffer.resize(LZ4_compressBound((int)buffer.size()));
+        auto bufferSize = LZ4_compress(buffer.c_str(), &compressBuffer[0], (int)buffer.size());
+        CHECK_ASSERT(bufferSize >= 0, __FILE__, __LINE__);
+        compressBuffer.resize(bufferSize);
         return compressBuffer;
     }
 
@@ -372,19 +377,22 @@ namespace NSG
     std::string DecompressBuffer(const std::string& buffer)
     {
         std::string::size_type bytes = 0;
-		std::string smallBuffer;
-		smallBuffer.resize(HeaderSize);
-		LZ4_decompress_safe_partial(&buffer[0], &smallBuffer[0], buffer.size(), smallBuffer.size(), smallBuffer.size());
-		{
-			std::stringstream ss(smallBuffer);
-			ss >> bytes;
-		}
-		bytes += smallBuffer.size();
+        std::string smallBuffer;
+        smallBuffer.resize(HeaderSize);
+        CHECK_ASSERT(buffer.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        CHECK_ASSERT(smallBuffer.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        LZ4_decompress_safe_partial(&buffer[0], &smallBuffer[0], (int)buffer.size(), (int)smallBuffer.size(), (int)smallBuffer.size());
+        {
+            std::stringstream ss(smallBuffer);
+            ss >> bytes;
+        }
+        bytes += smallBuffer.size();
         std::string outputBuffer;
         outputBuffer.resize(bytes);
-		int totalBytes = LZ4_decompress_safe(&buffer[0], &outputBuffer[0], buffer.size(), bytes);
+        CHECK_ASSERT(bytes < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        int totalBytes = LZ4_decompress_safe(&buffer[0], &outputBuffer[0], (int)buffer.size(), (int)bytes);
         CHECK_ASSERT(totalBytes == bytes, __FILE__, __LINE__);
-		outputBuffer.erase(outputBuffer.begin(), outputBuffer.begin() + smallBuffer.size());
+        outputBuffer.erase(outputBuffer.begin(), outputBuffer.begin() + smallBuffer.size());
         return outputBuffer;
     }
 
@@ -393,21 +401,21 @@ namespace NSG
     {
         if (compress)
         {
-			Path filename(path);
-			filename.AddExtension("lz4");
-			TRACE_LOG("Saving file: " << filename.GetFullAbsoluteFilePath());
-			struct XMLWriter : pugi::xml_writer
-			{
-				std::string buffer_;
-				void write(const void* data, size_t size) override
-				{
-					const char* m = (const char*)data;
-					buffer_.insert(buffer_.end(), &m[0], &m[size]);
-				}
-			} writer;
+            Path filename(path);
+            filename.AddExtension("lz4");
+            TRACE_LOG("Saving file: " << filename.GetFullAbsoluteFilePath());
+            struct XMLWriter : pugi::xml_writer
+            {
+                std::string buffer_;
+                void write(const void* data, size_t size) override
+                {
+                    const char* m = (const char*)data;
+                    buffer_.insert(buffer_.end(), &m[0], &m[size]);
+                }
+            } writer;
             doc.save(writer);
             auto compressedBuffer = CompressBuffer(writer.buffer_);
-			std::ofstream os(filename.GetFullAbsoluteFilePath(), std::ios::binary);
+            std::ofstream os(filename.GetFullAbsoluteFilePath(), std::ios::binary);
             if (os.is_open())
             {
                 os.write(&compressedBuffer[0], compressedBuffer.size());
@@ -416,6 +424,29 @@ namespace NSG
             return false;
         }
         else
-			return doc.save_file(path.GetFullAbsoluteFilePath().c_str());
+            return doc.save_file(path.GetFullAbsoluteFilePath().c_str());
+    }
+
+    #if 0
+    void Sleep(unsigned milliseconds)
+    {
+        #if EMSCRIPTEN
+        emscripten_sleep(milliseconds);
+        #else
+        std::this_thread::sleep_for(Milliseconds(milliseconds));
+        #endif
+    }
+    #endif
+
+    int ToInt(const std::string& value)
+    {
+        return ToInt(value.c_str());
+    }
+
+    int ToInt(const char* value)
+    {
+        if (!value)
+            return 0;
+        return strtol(value, 0, 10);
     }
 }

@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -82,7 +82,7 @@ namespace NSG
 		Mesh::ReleaseResources();
 	}
 
-	void ModelMesh::Load(PResource resource, const pugi::xml_node& node)
+	void ModelMesh::LoadFrom(PResource resource, const pugi::xml_node& node)
 	{
 		//SetFaceMode(node.attribute("wireFrameDrawMode").as_int()); // redundant
 		SetFaceMode(node.attribute("solidDrawMode").as_int());

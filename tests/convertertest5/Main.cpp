@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -29,9 +29,9 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");
-    auto scenes = resource->Load();
-    CHECK_CONDITION(scenes.size() == 1, __FILE__, __LINE__);
-    auto scene = scenes.at(0);
+    AppData data(resource);
+	CHECK_CONDITION(data.scenes_.size() == 1, __FILE__, __LINE__);
+	auto scene = data.scenes_.at(0);
     auto object = scene->GetChild<SceneNode>("Bone", true);
     CHECK_CONDITION(object, __FILE__, __LINE__);
     auto plane = scene->GetChild<SceneNode>("Plane", false);

@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -71,4 +71,7 @@ namespace NSG
 	bool SaveDocument(const Path& path, const pugi::xml_document& doc, bool compress);
 	std::string CompressBuffer(const std::string& buf);
 	std::string DecompressBuffer(const std::string& buffer);
+    int ToInt(const std::string& value);
+    int ToInt(const char* value);
+
 }

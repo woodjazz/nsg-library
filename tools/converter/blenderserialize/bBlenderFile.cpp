@@ -63,7 +63,7 @@ void bBlenderFile::parseData()
         printf ("File chunk size = %d\n", ChunkUtils::getOffset(mFlags));
     }
 
-    const bool swap = (mFlags & FD_ENDIAN_SWAP) != 0;
+    //const bool swap = (mFlags & FD_ENDIAN_SWAP) != 0;
 
 
 

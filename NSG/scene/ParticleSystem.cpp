@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -107,8 +107,9 @@ namespace NSG
         auto remainingTime = end_ - start_ - currentTime_;
         auto remainingFrames = remainingTime / deltaTime;
         auto remainingParticles = amount_ - generated_;
+		CHECK_ASSERT(remainingFrames < std::numeric_limits<float>::max(), __FILE__, __LINE__);
         if (remainingFrames <= 0)
-            return remainingParticles;
+            return (float)remainingParticles;
         return remainingParticles / remainingFrames;
     }
 
@@ -221,7 +222,8 @@ namespace NSG
             auto& vertexes = mesh->GetConstVertexsData();
             if (distribution_ == ParticleSystemDistribution::RANDOM)
             {
-                std::uniform_real_distribution<float> dis(0, vertexes.size());
+				CHECK_ASSERT(vertexes.size() < std::numeric_limits<float>::max(), __FILE__, __LINE__);
+				std::uniform_real_distribution<float> dis(0, (float)vertexes.size());
                 currentVertex_ = (size_t)dis(randGenerator_);
             }
             else

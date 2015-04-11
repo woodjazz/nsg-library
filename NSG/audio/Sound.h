@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -25,27 +25,42 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Object.h"
+#include "Util.h"
+#include "MapAndVector.h"
 
 struct Mix_Chunk;
 
 namespace NSG
 {
-	class Path;
-    class Sound
+    class Sound : public Object
     {
     public:
-		Sound(PResource resource);
+        static PSound Create(const std::string& name = GetUniqueName("Sound"));
+        static PSound GetOrCreate(const std::string& name = GetUniqueName("Sound"));
+        static PSound Get(const std::string& name);
+        static std::vector<PSound> GetSounds();
+		Sound(const std::string& name);
         ~Sound();
-        bool Play(bool loop = false);
-		void Stop();
-		void Pause();
-		void Resume();
-        bool IsPlaying() const;
-        bool IsReady();
+        void Set(PResource resource);
+        PResource GetResource() const { return resource_; }
+        virtual bool Play(bool loop = false);
+		virtual void Stop();
+		virtual void Pause();
+		virtual void Resume();
+        virtual bool IsPlaying() const;
+        static std::vector<PSound> LoadSounds(PResource resource, const pugi::xml_node& node);
+        static void SaveSounds(pugi::xml_node& node);
+        void Set(PResourceXMLNode xmlResource);
     private:
+        void Save(pugi::xml_node& node);
+        bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
         PResource resource_;
-        bool isReady_;
         Mix_Chunk* sound_;
         int channel_;
+        PResourceXMLNode xmlResource_;
+        static MapAndVector<std::string, Sound> sounds_;
     };
 }

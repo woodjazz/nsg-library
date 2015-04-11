@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -36,7 +36,7 @@ namespace NSG
 		virtual ~Object();
 		void Invalidate();
 		bool IsReady();
-		virtual void Load(PResource resource, const pugi::xml_node& node) {}
+		virtual void LoadFrom(PResource resource, const pugi::xml_node& node) {}
 		static void InvalidateAll();
 		SignalEmpty::PSignal signalAllocated_;
 		SignalEmpty::PSignal signalReleased_;

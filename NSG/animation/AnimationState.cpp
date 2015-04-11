@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -74,6 +74,14 @@ namespace NSG
 
         SetTime(time);
     }
+
+	bool AnimationState::HasEnded() const
+	{
+		if (looped_)
+			return false;
+
+		return timePosition_ >= animation_->GetLength();
+	}
 
     void AnimationState::SetTime(float time)
     {

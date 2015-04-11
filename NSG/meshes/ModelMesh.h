@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -42,7 +42,7 @@ namespace NSG
 		void Set(PResource resource);
 		PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
 	private:
-		void Load(PResource resource, const pugi::xml_node& node) override;
+		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
         bool IsValid() override;
 		void ReleaseResources() override;
 		PResource resource_;

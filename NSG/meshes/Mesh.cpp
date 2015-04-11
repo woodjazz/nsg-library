@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -323,34 +323,7 @@ namespace NSG
         }
     }
 
-    void Mesh::SetBlendData(const std::vector<std::vector<unsigned>>& blendIndices, const std::vector<std::vector<float>>& blendWeights)
-    {
-        CHECK_ASSERT(blendIndices.size() == blendWeights.size(), __FILE__, __LINE__);
-        CHECK_ASSERT(vertexsData_.size() == blendWeights.size(), __FILE__, __LINE__);
-        size_t n = vertexsData_.size();
-        for (size_t i = 0; i < n; i++)
-        {
-            {
-                Vector4 bonesID;
-                size_t nBones = blendIndices[i].size();
-                CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
-                for (size_t j = 0; j < nBones; j++)
-                    bonesID[j] = float(blendIndices[i][j]);
-                vertexsData_[i].bonesID_ = bonesID;
-            }
-
-            {
-                Vector4 bonesWeight;
-                size_t nBones = blendWeights[i].size();
-                CHECK_ASSERT(nBones > 0 && nBones < 5, __FILE__, __LINE__);
-                for (size_t j = 0; j < nBones; j++)
-                    bonesWeight[j] = blendWeights[i][j];
-                vertexsData_[i].bonesWeight_ = bonesWeight;
-            }
-        }
-    }
-
-    void Mesh::AddSceneNode(SceneNode* node)
+	void Mesh::AddSceneNode(SceneNode* node)
     {
         sceneNodes_.insert(node);
     }
@@ -385,7 +358,9 @@ namespace NSG
 
     void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal)
     {
-        size_t vidx = vertexsData_.size();
+        auto idx0 = vertexsData_.size();
+		CHECK_ASSERT(idx0 + 2 < std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
+		IndexType vidx = (IndexType)idx0;
         vertexsData_.push_back(v0);
         vertexsData_.push_back(v1);
         vertexsData_.push_back(v2);

@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -278,6 +278,15 @@ namespace NSG
         ALL = -1
     };
 
+    enum class WindowFlag
+    {
+        NONE = 0,
+        SHOWN = 1 << 0,
+        HIDDEN = 1 << 1,
+    };
+
+    typedef FlagSet<WindowFlag> WindowFlags;
+
     struct ContactPoint
     {
         SceneNode* collider_;
@@ -363,6 +372,9 @@ namespace NSG
     typedef Signal<int, unsigned> SignalJoystickUp;
     typedef Signal<int, JoystickAxis, float> SignalJoystickAxisMotion;
     typedef Signal<float, float> SignalPlayerMoved;
+    typedef Signal<std::string> SignalHTTPRequestOnLoad;
+    typedef Signal<int, std::string> SignalHTTPRequestOnError;
+    typedef Signal<unsigned> SignalHTTPRequestOnProgress;
 
 
     enum MaterialTexture
@@ -432,5 +444,13 @@ namespace NSG
         float top_;
         float near_;
         float far_;
+    };
+
+    enum class HTTPRequestStatus
+    {
+        NONE,
+        SUCCESSFUL,
+        FAILED,
+        IN_PROGRESS
     };
 }

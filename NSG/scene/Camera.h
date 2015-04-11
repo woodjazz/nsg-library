@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -77,7 +77,8 @@ namespace NSG
 		float GetFov() const { return fovy_; }
 		void Save(pugi::xml_node& node) const override;
 		void Load(const pugi::xml_node& node) override;
-		const OrthoProjection& GetOrthoProjection() const { return orthoProjection_; } 
+		const OrthoProjection& GetOrthoProjection() const { return orthoProjection_; }
+		void UnRegisterWindow();
 	private:
 		void CalculateOrthoProjection() const;
 		float CalculateAspectRatio() const;

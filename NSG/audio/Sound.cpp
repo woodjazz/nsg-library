@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -26,18 +26,21 @@ misrepresented as being the original software.
 #include "Sound.h"
 #include "Audio.h"
 #include "ResourceFile.h"
+#include "ResourceXMLNode.h"
 #include "Util.h"
 #include "Path.h"
 #include "Check.h"
 #ifdef SDL
 #include "SDL_mixer.h"
 #endif
+#include "pugixml.hpp"
 
 namespace NSG
 {
-	Sound::Sound(PResource resource)
-        : resource_(resource),
-          isReady_(false),
+    MapAndVector<std::string, Sound> Sound::sounds_;
+
+	Sound::Sound(const std::string& name)
+        : Object(name),
           sound_(nullptr),
           channel_(-1)
     {
@@ -47,40 +50,69 @@ namespace NSG
     Sound::~Sound()
     {
         Stop();
-#ifdef SDL        
-        Mix_FreeChunk(sound_);
+#ifdef SDL
+        if(sound_)        
+            Mix_FreeChunk(sound_);
 #endif        
         CloseAudio();
+    }
+
+    PSound Sound::Create(const std::string& name)
+    {
+        return sounds_.Create(name);
+    }
+
+    PSound Sound::GetOrCreate(const std::string& name)
+    {
+        return sounds_.GetOrCreate(name);
+    }
+
+    PSound Sound::Get(const std::string& name)
+    {
+        return sounds_.Get(name);
+    }
+
+    std::vector<PSound> Sound::GetSounds()
+    {
+        return sounds_.GetObjs();
+    }
+
+    void Sound::Set(PResource resource)
+    {
+        if(resource_ != resource)
+        {
+            resource_ = resource;
+            Invalidate();
+        }
+    }
+
+    bool Sound::IsValid()
+    {
+        return resource_ && resource_->IsReady();
+    }
+
+    void Sound::AllocateResources()
+    {
+#ifdef SDL        
+        SDL_RWops* assetHandle = SDL_RWFromConstMem(resource_->GetData(), int(resource_->GetBytes()));
+        sound_ = Mix_LoadWAV_RW(assetHandle, 1);
+		CHECK_CONDITION(sound_, __FILE__, __LINE__);
+#endif        
+    }
+
+    void Sound::ReleaseResources()
+    {
+        if (resource_)
+            return resource_->Invalidate();
     }
 
     bool Sound::IsPlaying() const
     {
 #ifdef SDL        
-        return Mix_Playing(channel_) ? true : false;
+        return sound_ && Mix_Playing(channel_) ? true : false;
 #else
         return false;
 #endif        
-    }
-
-    bool Sound::IsReady()
-    {
-        if (resource_->IsReady() && !isReady_)
-        {
-#ifdef SDL
-            SDL_RWops* assetHandle = SDL_RWFromConstMem(resource_->GetData(), int(resource_->GetBytes()));
-
-            sound_ = Mix_LoadWAV_RW(assetHandle, 1);
-
-            if (!sound_)
-            {
-				TRACE_LOG("Unable to read " << resource_->GetName() << " !!!");
-            }
-
-            isReady_ = sound_ != nullptr;
-#endif
-        }
-
-        return isReady_;
     }
 
     bool Sound::Play(bool loop)
@@ -126,5 +158,57 @@ namespace NSG
             Mix_Resume(channel_);
         }
 #endif
+    }
+
+    std::vector<PSound> Sound::LoadSounds(PResource resource, const pugi::xml_node& node)
+    {
+        std::vector<PSound> result;
+        pugi::xml_node objs = node.child("Sounds");
+        if (objs)
+        {
+            pugi::xml_node child = objs.child("Sound");
+            while (child)
+            {
+                std::string name = child.attribute("name").as_string();
+                auto sound(Sound::GetOrCreate(name));
+                std::string resourceName = child.attribute("resource").as_string();
+                auto res = Resource::Get(resourceName);
+                if (!res)
+                {
+                    auto newRes = Resource::Create<ResourceXMLNode>(resourceName);
+                    newRes->Set(resource, nullptr, "Resources", resourceName);
+                    sound->Set(newRes);
+                }
+                else
+                    sound->Set(res);
+                result.push_back(sound);
+                child = child.next_sibling("Sound");
+            }
+        }
+        return result;
+    }
+
+    void Sound::Save(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Sound");
+        child.append_attribute("name").set_value(name_.c_str());
+        child.append_attribute("resource") = resource_->GetName().c_str();
+    }
+
+    void Sound::SaveSounds(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Sounds");
+        auto sounds = Sound::GetSounds();
+        for (auto& obj : sounds)
+            obj->Save(child);
+    }
+
+    void Sound::Set(PResourceXMLNode xmlResource)
+    {
+        if (xmlResource != xmlResource_)
+        {
+            xmlResource_ = xmlResource;
+            Invalidate();
+        }
     }
 }

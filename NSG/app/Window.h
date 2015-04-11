@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -35,8 +35,8 @@ namespace NSG
     class Window : public Tick, public std::enable_shared_from_this<Window>
     {
     public:
-		static PWindow Create(const std::string& name = GetUniqueName("Window"));
-        static PWindow Create(const std::string& name, int x, int y, int width, int height);
+		static PWindow Create(const std::string& name = GetUniqueName("Window"), WindowFlags flags = (int)WindowFlag::SHOWN);
+        static PWindow Create(const std::string& name, int x, int y, int width, int height, WindowFlags flags = (int)WindowFlag::SHOWN);
         virtual ~Window();
         float GetDeltaTime() const;
         void InitializeTicks() override;
@@ -44,6 +44,9 @@ namespace NSG
         void DoTick(float delta) override;
         void EndTicks() override;
         virtual void ViewChanged(int width, int height);
+        virtual void Show() = 0;
+        virtual void Hide() = 0;
+        virtual void Raise() = 0;
         void OnMouseMove(float x, float y);
         void OnMouseWheel(float x, float y);
         void OnMouseDown(int button, float x, float y);

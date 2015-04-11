@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -61,7 +61,7 @@ namespace NSG
             window->ViewChanged(keyEvent->windowInnerWidth, keyEvent->windowInnerHeight);
         return false;
     }
-    #else
+    #elif defined(IS_TARGET_MOBILE)
     static int EventWatch(void* userdata, SDL_Event* event)
     {
         SDLWindow* window = static_cast<SDLWindow*>(userdata);
@@ -107,18 +107,20 @@ namespace NSG
     #endif
     const char* InternalPointer = "InternalPointer";
 
-    SDLWindow::SDLWindow(const std::string& name)
-        : Window(name)
+    SDLWindow::SDLWindow(const std::string& name, WindowFlags flags)
+        : Window(name),
+          flags_(0)
     {
         const AppConfiguration& conf = Window::GetAppConfiguration();
-        Initialize(conf.x_, conf.y_, conf.width_, conf.height_);
+        Initialize(conf.x_, conf.y_, conf.width_, conf.height_, flags);
         TRACE_PRINTF("Window %s created\n", name_.c_str());
     }
 
-    SDLWindow::SDLWindow(const std::string& name, int x, int y, int width, int height)
-        : Window(name)
+    SDLWindow::SDLWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags)
+        : Window(name),
+          flags_(0)
     {
-        Initialize(x, y, width, height);
+        Initialize(x, y, width, height, flags);
         TRACE_PRINTF("Window %s created\n", name_.c_str());
     }
 
@@ -182,15 +184,15 @@ namespace NSG
             OpenJoystick(i);
     }
 
-    void SDLWindow::Initialize(int x, int y, int width, int height)
+    void SDLWindow::Initialize(int x, int y, int width, int height, WindowFlags flags)
     {
         static std::once_flag onceFlag_;
         std::call_once(onceFlag_, [&]()
         {
             #if EMSCRIPTEN
-            int flags = SDL_INIT_JOYSTICK;
+            int flags = 0;
             #else
-            int flags = SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER;
+            int flags = SDL_INIT_EVENTS;
             #endif
 
             CHECK_CONDITION(0 == SDL_Init(flags), __FILE__, __LINE__);
@@ -202,7 +204,13 @@ namespace NSG
             #endif
         });
 
-        CHECK_CONDITION(0 == SDL_InitSubSystem(SDL_INIT_VIDEO), __FILE__, __LINE__);
+        #if EMSCRIPTEN
+        flags_ = SDL_INIT_JOYSTICK | SDL_INIT_VIDEO;
+        #else
+        flags_ = SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_VIDEO;
+        #endif
+
+        CHECK_CONDITION(0 == SDL_InitSubSystem(flags_), __FILE__, __LINE__);
 
         SetSize(width, height);
 
@@ -236,18 +244,25 @@ namespace NSG
         }
         #else
         {
-            Uint32 flags;
+            Uint32 sdlFlags = 0;
+
+            if (flags & (int)WindowFlag::SHOWN)
+                sdlFlags |= SDL_WINDOW_SHOWN;
+
+            if (flags & (int)WindowFlag::HIDDEN)
+                sdlFlags |= SDL_WINDOW_HIDDEN;
+
             #if IOS || ANDROID
             {
-                flags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+                sdlFlags |= SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL;
             }
             #else
             {
-                flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+                sdlFlags |= SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
             }
             #endif
 
-            auto win = SDL_CreateWindow(name_.c_str(), x, y, width, height, flags);
+            auto win = SDL_CreateWindow(name_.c_str(), x, y, width, height, sdlFlags);
             CHECK_CONDITION(win, __FILE__, __LINE__);
             windowID_ = SDL_GetWindowID(win);
 
@@ -310,6 +325,7 @@ namespace NSG
     void SDLWindow::Close()
     {
         Window::Close();
+        SDL_QuitSubSystem(flags_);
         #if EMSCRIPTEN
         emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
         #endif
@@ -401,7 +417,7 @@ namespace NSG
     JoystickAxis SDLWindow::ConvertAxis(int axis) const
     {
         #if !defined(EMSCRIPTEN)
-        switch(axis)
+        switch (axis)
         {
             case SDL_CONTROLLER_AXIS_LEFTX:
                 return JoystickAxis::LEFTX;
@@ -422,19 +438,19 @@ namespace NSG
                 return JoystickAxis::TRIGGERRIGHT;
 
             default:
-            {
-                TRACE_LOG("Unknown joystick axis: " << axis);
-                return JoystickAxis::UNKNOWN;
-            }
+                {
+                    TRACE_LOG("Unknown joystick axis: " << axis);
+                    return JoystickAxis::UNKNOWN;
+                }
         }
         #else
-            if(axis >= (int)JoystickAxis::FIRST && axis < (int)JoystickAxis::LAST)
-                return (JoystickAxis)axis;
-            else
-            {
-                TRACE_LOG("Unknown joystick axis: " << axis);
-                return JoystickAxis::UNKNOWN;
-            }
+        if (axis >= (int)JoystickAxis::FIRST && axis < (int)JoystickAxis::LAST)
+            return (JoystickAxis)axis;
+        else
+        {
+            TRACE_LOG("Unknown joystick axis: " << axis);
+            return JoystickAxis::UNKNOWN;
+        }
         #endif
     }
 
@@ -626,7 +642,7 @@ namespace NSG
                 if (!window) continue;
                 auto axis = ConvertAxis(event.caxis.axis);
                 float value = (float)event.caxis.value;
-                if(std::abs(value) < 5000) value = 0;
+                if (std::abs(value) < 5000) value = 0;
                 auto position = glm::clamp(value / 32767.0f, -1.0f, 1.0f);
                 window->OnJoystickAxisMotion(state.instanceID_, axis, position);
             }
@@ -663,7 +679,7 @@ namespace NSG
                     if (!window) continue;
                     auto axis = ConvertAxis(event.jaxis.axis);
                     float value = (float)event.jaxis.value;
-                    if(std::abs(value) < 5000) value = 0;
+                    if (std::abs(value) < 5000) value = 0;
                     auto position = glm::clamp(value / 32767.0f, -1.0f, 1.0f);
                     window->OnJoystickAxisMotion(state.instanceID_, axis, position);
                 }
@@ -682,5 +698,28 @@ namespace NSG
         #endif
         return 0;
     }
+
+    void SDLWindow::Show()
+    {
+        #if !defined(EMSCRIPTEN)
+        SDL_ShowWindow(SDL_GetWindowFromID(windowID_));
+        #endif
+    }
+
+    void SDLWindow::Hide()
+    {
+        #if !defined(EMSCRIPTEN)
+        SDL_HideWindow(SDL_GetWindowFromID(windowID_));
+        #endif
+
+    }
+
+    void SDLWindow::Raise()
+    {
+        #if !defined(EMSCRIPTEN)
+        SDL_RaiseWindow(SDL_GetWindowFromID(windowID_));
+        #endif
+    }
+
 }
 #endif

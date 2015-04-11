@@ -334,7 +334,7 @@ namespace NSG
         technique_->Save(child);
     }
 
-    void Material::Load(PResource resource, const pugi::xml_node& node)
+    void Material::LoadFrom(PResource resource, const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
 

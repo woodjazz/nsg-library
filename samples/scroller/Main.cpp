@@ -1,7 +1,7 @@
 /*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
-http://nsg-library.googlecode.com/
+http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2015 Néstor Silveira Gorski
 
@@ -30,8 +30,12 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto resource = Resource::GetOrCreate<ResourceFile>("data/bscroller.xml");
-    auto scenes = resource->Load();
-    auto scene = scenes.at(0);
+    AppData data(resource);
+    auto soundMusic = Sound::Get("nice_music.ogg.004");
+    Music music;
+    music.Set(soundMusic->GetResource());
+    music.Play();
+	auto scene = data.scenes_.at(0);
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto frustum = camera->GetFrustum();
     auto player = camera->GetChild<SceneNode>("Player", false);
@@ -50,8 +54,10 @@ int NSG_MAIN(int argc, char* argv[])
     auto playerRigidBody = player->GetRigidBody();
     playerRigidBody->HandleCollisions(true);
 
+    auto sound = Sound::Get("BigExplosion.wav.001");
     auto static slotCollision = player->signalCollision_->Connect([&](const ContactPoint & contactInfo)
     {
+        sound->Play();
         playerDestroyed = true;
     });
 
