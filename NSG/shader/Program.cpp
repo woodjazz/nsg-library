@@ -59,7 +59,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     Program::Program(Material* material)
-        : Object((material ? material->GetName() + "Program" : GetUniqueName("Program"))),
+        : Object((material ? GetUniqueName(material->GetName() + "Program") : GetUniqueName("Program"))),
           material_(material),
           flags_((int)ProgramFlag::NONE),
           id_(0),

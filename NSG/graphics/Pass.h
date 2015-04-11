@@ -63,6 +63,7 @@ namespace NSG
 		bool IsTransparent() const;
 		bool IsText() const;
 		void SetupPass();
+        void Invalidate();
     private:
         Technique* technique_;
         PProgram pProgram_;

@@ -52,6 +52,7 @@ namespace NSG
 		void CopyPasses(const PASSES& passes);
 		bool IsTransparent() const;
 		bool IsText() const;
+		void Invalidate();
 	private:
 		Material* material_;
 		PASSES passes_;

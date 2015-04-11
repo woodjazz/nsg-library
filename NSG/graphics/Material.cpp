@@ -415,13 +415,20 @@ namespace NSG
     bool Material::IsBatched()
     {
         if (IsReady())
+        {
             return isBatched_;
+        }
         return false;
     }
 
     void Material::BachedNodeHasChanged()
     {
-        lastBatch_.Clear();
+        if(!lastBatch_.IsEmpty())
+        {
+            lastBatch_.Clear();
+            isBatched_ = false; //disable batching since the scenenode is changing dynamically
+            technique_->Invalidate();
+        }
     }
 
     void Material::UpdateBatchBuffer(const Batch& batch)

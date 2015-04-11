@@ -336,4 +336,9 @@ namespace NSG
         SetFrontFace((FrontFaceMode)node.attribute("frontFaceMode").as_int());
         SetDepthFunc((DepthFunc)node.attribute("depthFunc").as_int());
     }
+
+    void Pass::Invalidate()
+    {
+        pProgram_->Invalidate();
+    }
 }

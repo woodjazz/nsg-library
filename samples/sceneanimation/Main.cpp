@@ -47,20 +47,6 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto ballRigidBody = ball->GetOrCreateRigidBody();
 
-    #ifdef DAE_FILE
-    auto planeRigidBody = plane->GetOrCreateRigidBody();
-    planeRigidBody->SetShape(SH_TRIMESH);
-
-    auto ramp1RigidBody = ramp1->GetOrCreateRigidBody();
-    ramp1RigidBody->SetShape(SH_CONVEX_TRIMESH);
-
-    auto ramp2RigidBody = ramp2->GetOrCreateRigidBody();
-    ramp2RigidBody->SetShape(SH_CONVEX_TRIMESH);
-
-    ballRigidBody->SetMass(1);
-    ballRigidBody->SetShape(SH_SPHERE);
-    #endif
-
     {
         auto animations = scene->GetAnimationsFor(object);
         auto animation = animations[0];

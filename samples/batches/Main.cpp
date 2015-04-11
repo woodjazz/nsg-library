@@ -36,14 +36,14 @@ int NSG_MAIN(int argc, char* argv[])
     const int ROWS = 11;
     PSceneNode earth[COLS][ROWS];
 
-    auto scene = std::make_shared<Scene>("scene000");
+    auto scene = std::make_shared<Scene>();
 	auto sphereMesh(Mesh::Create<SphereMesh>());
 	sphereMesh->Set(3, 24);
 
     auto pEarthTexture1(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg")));
 	auto pEarthTexture2(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/jup0vss1.jpg")));
-	auto pMaterial1(Material::GetOrCreate("earth1", (int)ProgramFlag::PER_PIXEL_LIGHTING));
-	auto pMaterial2(Material::GetOrCreate("earth2", (int)ProgramFlag::PER_PIXEL_LIGHTING));
+	auto pMaterial1(Material::Create("earth1", (int)ProgramFlag::PER_PIXEL_LIGHTING));
+	auto pMaterial2(Material::Create("earth2", (int)ProgramFlag::PER_PIXEL_LIGHTING));
     pMaterial1->SetDiffuseMap(pEarthTexture1);
     pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
@@ -54,7 +54,7 @@ int NSG_MAIN(int argc, char* argv[])
     pMaterial2->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
     pMaterial2->SetShininess(100);
 
-    auto camera = scene->GetOrCreateChild<Camera>("camera");
+    auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
 
     const float STEP = 8.0f;
@@ -63,10 +63,10 @@ int NSG_MAIN(int argc, char* argv[])
     {
         for (int c = 0; c < COLS; c++)
         {
-            earth[c][r] = scene->GetOrCreateChild<SceneNode>(GetUniqueName());
+            earth[c][r] = scene->CreateChild<SceneNode>();
+            earth[c][r]->SetMaterial(pMaterial1);
             earth[c][r]->SetPosition(position);
 			earth[c][r]->SetMesh(sphereMesh);
-            earth[c][r]->SetMaterial(pMaterial1);
             std::swap(pMaterial1, pMaterial2);
             position.x += STEP;
         }
@@ -77,7 +77,7 @@ int NSG_MAIN(int argc, char* argv[])
     Vertex3 camPos(COLS / 2 * STEP, -(ROWS) / 2 * STEP, 75);
     Vertex3 lighPos(Vertex2(camPos), -5);
 
-    auto light = scene->GetOrCreateChild<Light>("light");
+    auto light = scene->CreateChild<Light>();
     light->SetPosition(lighPos);
 
     camera->SetPosition(camPos);

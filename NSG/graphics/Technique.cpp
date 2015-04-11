@@ -151,4 +151,10 @@ namespace NSG
 		return false;
 	}
 
+    void Technique::Invalidate()
+    {
+        for (auto& pass : passes_)
+            pass->Invalidate();
+    }
+
 }

@@ -46,6 +46,7 @@ namespace NSG
 		const std::vector<SceneNode*>& GetNodes() const { return nodes_; }
 		bool AllowInstancing() const;
 		void Clear();
+		bool IsEmpty() const { return !material_; }
 	private:
         Material* material_;
         Mesh* mesh_;
