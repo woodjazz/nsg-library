@@ -98,7 +98,7 @@ static int Test03()
 void Tests()
 {
 	Test01();
-    #ifndef IS_OSX
+    #if 0
     Test02();
     #endif
 	Test03();
