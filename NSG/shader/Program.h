@@ -126,8 +126,7 @@ namespace NSG
         GLuint projectionLoc_;
         GLuint sceneColorAmbientLoc_;
         GLuint eyeWorldPosLoc_;
-        GLuint u_uOffsetLoc_;
-        GLuint u_vOffsetLoc_;
+        GLuint u_uvTransformLoc_;
 
 		GLuint textureLoc_[MaterialTexture::MAX_TEXTURES_MAPS];
 

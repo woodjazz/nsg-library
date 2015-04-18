@@ -28,8 +28,7 @@ namespace NSG
           shininess_(1),
           parallaxScale_(0.05f),
           color_(1, 1, 1, 1),
-          u0Offset_(1, 0, 0, 0),
-          v0Offset_(0, 1, 0, 0),
+          uvTransform_(1, 1, 0, 0),
           serializable_(true),
           blendFilterMode_(BlendFilterMode::ADDITIVE),
           isBatched_(false)
@@ -136,12 +135,11 @@ namespace NSG
         }
     }
 
-	void Material::SetUVTransform(const Vector4& u0Offset, const Vector4& v0Offset)
+	void Material::SetUVTransform(const Vector4& uvTransform)
     {
-		if (u0Offset != u0Offset_ || v0Offset != v0Offset_)
+		if (uvTransform != uvTransform_)
         {
-			u0Offset_ = u0Offset;
-			v0Offset_ = v0Offset;
+			uvTransform_ = uvTransform;
             SetUniformsNeedUpdate();
         }
     }

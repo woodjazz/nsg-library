@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 
     auto window = Window::Create();
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/explo.jpg");
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/explo1.png");
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
@@ -42,17 +42,39 @@ int NSG_MAIN(int argc, char* argv[])
     auto program = pass->GetProgram();
     program->EnableFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::SPHERICAL_BILLBOARD);
     auto sprite = scene->CreateChild<SceneNode>();
-	sprite->SetMesh(mesh);
-	sprite->SetMaterial(material);
-	Vector4 uOffset(0.25f, 0, 0, 0);
-	Vector4 vOffset(0, 0.25f, 0, 0);
-
-	auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
-	{
-		//uOffset.w += deltaTime;
-		material->SetUVTransform(uOffset, vOffset);
-		
-	});
+    sprite->SetMesh(mesh);
+    sprite->SetMaterial(material);
+    auto texSize = 1 / 7.f;
+    Vector4 uvTransform(texSize, texSize, 0, 0);
+    material->SetUVTransform(uvTransform);
+    control->AutoZoom();
+    auto totalTime = 0.f;
+    auto fps = 1 / 24.f;
+    Color color(1);
+    auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
+    {
+        if (totalTime > fps)
+        {
+            totalTime = 0;
+            if (uvTransform.z >= 1)
+            {
+                uvTransform.z = 0;
+                uvTransform.w += texSize;
+                if (uvTransform.w >= 1)
+                {
+                    uvTransform.w = 0;
+                    color.w = 1;
+                }
+            }
+            material->SetUVTransform(uvTransform);
+            uvTransform.z += texSize;
+            if (uvTransform.w >= 0.95f-texSize)
+                color.w -= texSize;
+            material->SetColor(color);
+        }
+        else
+            totalTime += deltaTime;
+    });
 
     auto renderSlot = window->signalRender_->Connect([&]()
     {

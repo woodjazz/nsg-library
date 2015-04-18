@@ -103,7 +103,7 @@ namespace NSG
 		static std::vector<PMaterial> LoadMaterials(PResource resource, const pugi::xml_node& node);
 		static void SaveMaterials(pugi::xml_node& node);
         void Set(PResourceXMLNode xmlResource);
-		void SetUVTransform(const Vector4& u0Offset, const Vector4& v0Offset);
+		void SetUVTransform(const Vector4& uvTransform);
     private:
 		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();
@@ -117,8 +117,7 @@ namespace NSG
         float shininess_;
         float parallaxScale_; //used with displacement map
         Color color_;
-        Vector4 u0Offset_; // u offset for texture 0
-        Vector4 v0Offset_; // v offset for texture 0
+        Vector4 uvTransform_; // uv transform for texture 0
         PTechnique technique_;
         bool serializable_;
         BlendFilterMode blendFilterMode_;
