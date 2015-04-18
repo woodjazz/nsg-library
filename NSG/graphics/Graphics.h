@@ -84,6 +84,11 @@ namespace NSG
         bool HasNonPowerOfTwo() const { return has_texture_non_power_of_two_ext_; }
         bool HasInstancedArrays() const { return has_instanced_arrays_ext_; }
         bool HasPackedDepthStencil() const { return has_packed_depth_stencil_ext_; }
+        bool HasTextureCompressionDXT1() const { return has_texture_compression_dxt1_ext_; }
+        bool HasTextureCompressionDXT3() const { return has_texture_compression_dxt3_ext_; }
+        bool HasTextureCompressionDXT5() const { return has_texture_compression_dxt5_ext_; }
+        bool HasTextureCompressionETC() const { return has_compressed_ETC1_RGB8_texture_ext_; }
+        bool HasTextureCompressionPVRTC() const { return has_texture_compression_pvrtc_ext_; }
 		void SetBuffers(bool solid);
         void UpdateBatchBuffer(const Batch& batch);
         void SetInstanceAttrPointers(Program* program);
@@ -140,6 +145,11 @@ namespace NSG
         bool has_texture_non_power_of_two_ext_;
         bool has_instanced_arrays_ext_;
         bool has_packed_depth_stencil_ext_;
+        bool has_texture_compression_dxt1_ext_;
+        bool has_texture_compression_dxt3_ext_;
+        bool has_texture_compression_dxt5_ext_;
+        bool has_compressed_ETC1_RGB8_texture_ext_;
+        bool has_texture_compression_pvrtc_ext_;
         UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
         CullFaceMode cullFaceMode_;
         FrontFaceMode frontFaceMode_;

@@ -307,10 +307,10 @@ namespace NSG
         return name + ss.str();
     }
 
-    void GetPowerOfTwoValues(unsigned& width, unsigned& height)
+    void GetPowerOfTwoValues(int& width, int& height)
     {
-        unsigned new_width = 1;
-        unsigned new_height = 1;
+        int new_width = 1;
+        int new_height = 1;
 
         while (new_width < width)
             new_width *= 2;
@@ -322,7 +322,7 @@ namespace NSG
         height = new_height;
     }
 
-    bool IsPowerOfTwo(unsigned value)
+    bool IsPowerOfTwo(int value)
     {
         return (!(value & (value - 1)) && value);
     }

@@ -334,4 +334,7 @@ namespace NSG
 	class Object;
 	typedef std::shared_ptr<Object> PObject;
 	typedef std::weak_ptr<Object> PWeakObject;
+
+	class Image;
+	typedef std::shared_ptr<Image> PImage;
 }

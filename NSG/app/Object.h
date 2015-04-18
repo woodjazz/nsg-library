@@ -38,6 +38,7 @@ namespace NSG
 		bool IsReady();
 		virtual void LoadFrom(PResource resource, const pugi::xml_node& node) {}
 		static void InvalidateAll();
+		const std::string& GetName() const { return name_; }
 		SignalEmpty::PSignal signalAllocated_;
 		SignalEmpty::PSignal signalReleased_;
 	protected:

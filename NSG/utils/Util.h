@@ -63,8 +63,8 @@ namespace NSG
 	std::string ToString(const Matrix4& m);
 	Quaternion GetQuaternion(const std::string& buffer);
 	std::string GetUniqueName(const std::string& name = "");
-	void GetPowerOfTwoValues(unsigned& width, unsigned& height);
-	bool IsPowerOfTwo(unsigned value);
+	void GetPowerOfTwoValues(int& width, int& height);
+	bool IsPowerOfTwo(int value);
 	bool IsZeroLength(const Vector3& obj);
 	GLushort Transform(GLubyte selected[4]);
 	Color Transform(GLushort id);

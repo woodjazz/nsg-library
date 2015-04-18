@@ -29,19 +29,17 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Texture : public Object
+    class Texture : public Object
     {
     public:
         Texture(PResource resource, const TextureFlags& flags = (int)TextureFlag::NONE);
         Texture(const std::string& name, GLint format);
         virtual ~Texture();
-		GLuint GetID() const;
-		GLsizei GetWidth() const;
-		GLsizei GetHeight() const;
-		GLint GetFormat() const;
-		int GetChannels() const;
+        GLuint GetID() const;
+        GLsizei GetWidth() const;
+        GLsizei GetHeight() const;
         void Save(pugi::xml_node& node);
-		static PTexture CreateFrom(PResource resource, const pugi::xml_node& node);
+        static PTexture CreateFrom(PResource resource, const pugi::xml_node& node);
         void SetSerializable(bool serializable);
         bool IsSerializable() const;
         void SetFlags(const TextureFlags& flags);
@@ -49,22 +47,20 @@ namespace NSG
         void SetWrapMode(TextureWrapMode mode);
         void SetFilterMode(TextureFilterMode mode);
         PResource GetResource() const { return pResource_;}
-		static int SaveAsPNG(PResource resource, const Path& outputDir);
         void SetSize(GLsizei width, GLsizei height);
-		void SetName(const std::string& name) { name_ = name; }
+        void SetName(const std::string& name) { name_ = name; }
     private:
-        virtual bool IsValid() override;
-        virtual void AllocateResources() override;
-        virtual void ReleaseResources() override;
-		static const unsigned char* GetImageData(bool fromKnownImgFormat, PResource resource, bool& allocated, GLint& format, GLsizei& width, GLsizei& height, int& channels);
+        bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
     protected:
-        bool fromKnownImgFormat_; // true if it is a known file format (png, bmp, jpeg,...)
-		TextureFlags flags_;
+        PImage image_;
+        TextureFlags flags_;
         GLuint texture_;
         PResource pResource_;
         GLsizei width_;
         GLsizei height_;
-        GLint format_;
+        GLint format_;       
         GLenum type_;
         int channels_;
         bool serializable_;

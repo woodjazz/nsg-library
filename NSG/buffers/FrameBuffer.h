@@ -48,20 +48,20 @@ namespace NSG
         PTexture GetColorTexture() const { return colorTexture_; }
         PTexture GetDepthTexture() const { return depthTexture_; }
         GLuint GetId() const { return framebuffer_; }
-        void SetSize(unsigned width, unsigned height);
+        void SetSize(int width, int height);
         void SetWindow(Window* window);
-		unsigned GetWidth() const { return width_; }
-		unsigned GetHeight() const { return height_; }
+		int GetWidth() const { return width_; }
+		int GetHeight() const { return height_; }
         void SetColorTexture(PTexture texture);
         void SetDepthTexture(PTexture texture);
     private:
 		bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-        unsigned originalWidth_;
-        unsigned originalHeight_;
-        unsigned width_;
-		unsigned height_;
+        int originalWidth_;
+		int originalHeight_;
+		int width_;
+		int height_;
 		Flags flags_;
         PTexture colorTexture_;
         PTexture depthTexture_;

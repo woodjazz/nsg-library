@@ -170,4 +170,11 @@ vec4 GetClipPos(vec4 worldPos)
 	#endif
 }
 
+uniform vec4 u_uOffset;
+uniform vec4 u_vOffset;
+vec2 GetTexCoord(vec2 texCoord)
+{
+    return vec2(dot(texCoord, u_uOffset.xy) + u_uOffset.w, dot(texCoord, u_vOffset.xy) + u_vOffset.w);
+}
+
 #endif

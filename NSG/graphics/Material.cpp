@@ -28,6 +28,8 @@ namespace NSG
           shininess_(1),
           parallaxScale_(0.05f),
           color_(1, 1, 1, 1),
+          u0Offset_(1, 0, 0, 0),
+          v0Offset_(0, 1, 0, 0),
           serializable_(true),
           blendFilterMode_(BlendFilterMode::ADDITIVE),
           isBatched_(false)
@@ -53,7 +55,7 @@ namespace NSG
         auto program = pass->GetProgram();
         program->EnableFlags(flags);
     }
-    
+
     void Material::DisableProgramFlags(unsigned passIndex, const ProgramFlags& flags)
     {
         auto pass = technique_->GetPass(passIndex);
@@ -133,6 +135,17 @@ namespace NSG
             SetUniformsNeedUpdate();
         }
     }
+
+	void Material::SetUVTransform(const Vector4& u0Offset, const Vector4& v0Offset)
+    {
+		if (u0Offset != u0Offset_ || v0Offset != v0Offset_)
+        {
+			u0Offset_ = u0Offset;
+			v0Offset_ = v0Offset;
+            SetUniformsNeedUpdate();
+        }
+    }
+
 
     bool Material::SetTexture(size_t index, PTexture texture)
     {
@@ -423,7 +436,7 @@ namespace NSG
 
     void Material::BachedNodeHasChanged()
     {
-        if(!lastBatch_.IsEmpty())
+        if (!lastBatch_.IsEmpty())
         {
             lastBatch_.Clear();
             isBatched_ = false; //disable batching since the scenenode is changing dynamically

@@ -55,7 +55,7 @@ namespace NSG
 
     VertexBuffer::~VertexBuffer()
     {
-        if (Graphics::this_->GetVertexBuffer() == this)
+		if (Graphics::this_ && Graphics::this_->GetVertexBuffer() == this)
             Graphics::this_->SetVertexBuffer(nullptr);
     }
 

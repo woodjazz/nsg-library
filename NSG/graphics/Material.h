@@ -36,7 +36,7 @@ namespace NSG
     class Material : public Object, UniformsUpdate
     {
     public:
-        Material(const std::string& name);
+        Material(const std::string& name = GetUniqueName("Material"));
         ~Material();
         void SetProgramFlags(unsigned passIndex, const ProgramFlags& flags);
         void EnableProgramFlags(unsigned passIndex, const ProgramFlags& flags);
@@ -103,6 +103,7 @@ namespace NSG
 		static std::vector<PMaterial> LoadMaterials(PResource resource, const pugi::xml_node& node);
 		static void SaveMaterials(pugi::xml_node& node);
         void Set(PResourceXMLNode xmlResource);
+		void SetUVTransform(const Vector4& u0Offset, const Vector4& v0Offset);
     private:
 		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();
@@ -116,6 +117,8 @@ namespace NSG
         float shininess_;
         float parallaxScale_; //used with displacement map
         Color color_;
+        Vector4 u0Offset_; // u offset for texture 0
+        Vector4 v0Offset_; // v offset for texture 0
         PTechnique technique_;
         bool serializable_;
         BlendFilterMode blendFilterMode_;

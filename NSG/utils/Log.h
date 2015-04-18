@@ -82,6 +82,23 @@ misrepresented as being the original software.
         fflush(stdout);\
     }
 
+#elif EMSCRIPTEN
+#include <emscripten.h>
+#define TRACE_LOG(msg) {\
+        std::stringstream stream;\
+        stream << msg;\
+        std::string cmsg = stream.str();\
+        emscripten_log(EM_LOG_CONSOLE, cmsg.c_str());\
+        printf("%s\n",cmsg.c_str());\
+        fflush(stdout);\
+    }
+
+#define TRACE_PRINTF(format, ...) {\
+        emscripten_log(EM_LOG_CONSOLE, format, ##__VA_ARGS__);\
+        printf(format, ##__VA_ARGS__);\
+        fflush(stdout);\
+    }
+
 #else
 
 #define TRACE_LOG(msg) {\

@@ -10,23 +10,23 @@ static const char* VS_GLSL = \
 "			v_color = u_material.color * a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
 "			#if defined(FLIP_Y)\n"\
-"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"				v_texcoord0 = GetTexCoord(vec2(a_texcoord0.x, 1.0 - a_texcoord0.y));\n"\
 "			#else\n"\
-"				v_texcoord0 = a_texcoord0;\n"\
+"				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#endif\n"\
 "		#elif defined(BLUR) || defined(BLEND) || defined(WAVE)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
 "			#if defined(FLIP_Y)\n"\
-"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"				v_texcoord0 = GetTexCoord(vec2(a_texcoord0.x, 1.0 - a_texcoord0.y));\n"\
 "			#else\n"\
-"				v_texcoord0 = a_texcoord0;\n"\
+"				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#endif\n"\
 "		#elif defined(SHOW_TEXTURE0)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
 "			#if defined(FLIP_Y)\n"\
-"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"				v_texcoord0 = GetTexCoord(vec2(a_texcoord0.x, 1.0 - a_texcoord0.y));\n"\
 "			#else\n"\
-"				v_texcoord0 = a_texcoord0;\n"\
+"				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#endif\n"\
 "		#elif defined(STENCIL)\n"\
 "			gl_Position = GetClipPos();\n"\
@@ -34,9 +34,9 @@ static const char* VS_GLSL = \
 "			v_color = u_material.color * a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
 "			#if defined(FLIP_Y)\n"\
-"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"				v_texcoord0 = GetTexCoord(vec2(a_texcoord0.x, 1.0 - a_texcoord0.y));\n"\
 "			#else\n"\
-"				v_texcoord0 = a_texcoord0;\n"\
+"				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#endif\n"\
 "		#elif defined(PER_VERTEX_LIGHTING)\n"\
 "			vec4 worldPos = GetWorldPos();\n"\
@@ -45,9 +45,9 @@ static const char* VS_GLSL = \
 "		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);\n"\
 "		    v_color = a_color * totalLight;\n"\
 "			#if defined(FLIP_Y)\n"\
-"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"				v_texcoord0 = GetTexCoord(vec2(a_texcoord0.x, 1.0 - a_texcoord0.y));\n"\
 "			#else\n"\
-"				v_texcoord0 = a_texcoord0;\n"\
+"				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#endif\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
@@ -81,9 +81,9 @@ static const char* VS_GLSL = \
 "			#endif\n"\
 "			v_color = a_color;\n"\
 "			#if defined(FLIP_Y)\n"\
-"				v_texcoord0 = vec2(a_texcoord0.x, 1.0 - a_texcoord0.y);\n"\
+"				v_texcoord0 = GetTexCoord(vec2(a_texcoord0.x, 1.0 - a_texcoord0.y));\n"\
 "			#else\n"\
-"				v_texcoord0 = a_texcoord0;\n"\
+"				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#endif\n"\
 "			gl_Position = GetClipPos(worldPos);\n"\
 "		#elif defined(LIGHTMAP) // lightmap without lighting\n"\

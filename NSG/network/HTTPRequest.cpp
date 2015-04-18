@@ -125,7 +125,6 @@ namespace NSG
         }
     }
 
-#define JAVASCRIPT_INJECT
     void HTTPRequest::Request(bool post, const Form& form)
     {
         std::string postData;
@@ -144,7 +143,7 @@ namespace NSG
 
         HTTPRequestData* requestData = new HTTPRequestData{this, postData};
 
-        #if EMSCRIPTEN && !defined(JAVASCRIPT_INJECT)
+        #if EMSCRIPTEN
         {
             std::stringstream url;
             url << protocol_ << "://" << host_ << ":" << port_ << path_;
@@ -157,67 +156,6 @@ namespace NSG
                                  &HTTPRequest::OnLoad,
                                  &HTTPRequest::OnError,
                                  &HTTPRequest::OnProgress);
-        }
-        #elif defined(EMSCRIPTEN)
-        {
-            std::stringstream url;
-            url << protocol_ << "://" << host_ << ":" << port_ << path_;
-
-            std::string requestType;
-            if (post)
-                requestType = "POST";
-            else
-                requestType = "GET";
-
-            EM_ASM_INT
-            (
-            {
-                var request = Pointer_stringify($0);
-                var url = Pointer_stringify($1);
-                var post_params = Pointer_stringify($2);
-                var user = $3;
-                var onreadystatechange = $4;
-                var xhr = new XMLHttpRequest();
-                xhr.open(request, url, true);
-                xhr.responseType = 'arraybuffer';
-
-                xhr.onreadystatechange = function()
-                {
-                    if(xhr.readyState == 4 && xhr.response)
-                    {
-                        var byteArray = new Uint8Array(xhr.response);
-                        var buffer = _malloc(byteArray.length);
-                        HEAPU8.set(byteArray, buffer);
-                        Runtime.dynCall('viiiii', onreadystatechange, [user, xhr.readyState, xhr.status, buffer, byteArray.length]);
-                        _free(buffer);
-                    }
-                    else
-                    {
-                        var buffer = "";
-                        var length = 0;
-                        Runtime.dynCall('viiiii', onreadystatechange, [user, xhr.readyState, xhr.status, buffer, length]);                        
-                    }
-
-                };
-
-                if (request != "POST")
-                {
-                    xhr.send(null);
-                }
-                else
-                {
-                    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                    xhr.setRequestHeader("Content-length", post_params.length);
-                    xhr.setRequestHeader("Connection", "close");
-                    xhr.send(post_params);
-                }
-            },
-            requestType.c_str(),
-            url.str().c_str(),
-            requestData->postData_.c_str(),
-            requestData,
-            &HTTPRequest::OnReadyStateChange
-            );
         }
         #else
         {
@@ -282,8 +220,9 @@ namespace NSG
                     auto ri = mg_get_request_info(connection);
                     if (bytesRead < 0 || mg_strncasecmp(ri->uri, "200", 3) != 0)
                     {
-                        mg_close_connection(connection);
-                        onError_(ToInt(ri->uri), ri->http_version);
+						auto httpError = ToInt(ri->uri);
+						mg_close_connection(connection);
+						onError_(httpError, response);
                     }
                     else
                     {
@@ -324,12 +263,6 @@ namespace NSG
         if (totalSize)
             progress *= bytesLoaded / totalSize;
         requestData->obj_->onProgress_(progress);
-    }
-
-    void HTTPRequest::OnReadyStateChange(void* arg, int readyState, int status, char* buffer, unsigned bytes)
-    {
-        TRACE_LOG("OnReadyStateChange: " << readyState << " " << status << " " << buffer);
-        //printf("progress %d/%d\n", done, total);
     }
 
     #endif

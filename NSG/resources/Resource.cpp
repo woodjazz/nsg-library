@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "Path.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Image.h"
 #include "pugixml.hpp"
 #include "b64/encode.h"
 #include "b64/decode.h"
@@ -98,7 +99,8 @@ namespace NSG
         auto texture = Material::GetTextureWithResource(shared_from_this());
         if (texture)
         {
-            if (!Texture::SaveAsPNG(shared_from_this(), outputDir))
+			Image image(shared_from_this());
+			if (!image.SaveAsPNG(outputDir))
             {
                 TRACE_LOG("!!! Cannot save file: " << name_ << " in " << outputDir.GetPath());
             }

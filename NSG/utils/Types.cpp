@@ -36,7 +36,7 @@ namespace NSG
 
     bool BlurFilter::operator != (const BlurFilter& obj) const
     {
-    	return blurDir_ != obj.blurDir_ || blurRadius_ != obj.blurRadius_ || sigma_ != obj.sigma_;
+        return blurDir_ != obj.blurDir_ || blurRadius_ != obj.blurRadius_ || sigma_ != obj.sigma_;
     }
 
     WaveFilter::WaveFilter()
@@ -47,7 +47,6 @@ namespace NSG
 
     bool WaveFilter::operator != (const WaveFilter& obj) const
     {
-    	return factor_ != obj.factor_ || offset_ != obj.offset_;
+        return factor_ != obj.factor_ || offset_ != obj.offset_;
     }
-
 }

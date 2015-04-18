@@ -157,6 +157,12 @@ static const char* TRANSFORMS_GLSL = \
 "	    return u_viewProjection * worldPos;\n"\
 "	#endif\n"\
 "}\n"\
+"uniform vec4 u_uOffset;\n"\
+"uniform vec4 u_vOffset;\n"\
+"vec2 GetTexCoord(vec2 texCoord)\n"\
+"{\n"\
+"    return vec2(dot(texCoord, u_uOffset.xy) + u_uOffset.w, dot(texCoord, u_vOffset.xy) + u_vOffset.w);\n"\
+"}\n"\
 "#endif\n"\
 ;
 }

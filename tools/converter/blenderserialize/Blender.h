@@ -596,14 +596,14 @@ struct FreestyleLineStyle;
 
 
 
-// 0 DNA structure 12, 2
+// zu DNA structure 0, 12
 struct Link
 {
     Link    *next;// 1 type, name 12, 0.
     Link    *prev;// 2 type, name 12, 1.
 };
 
-// 1 DNA structure 13, 3
+// zu DNA structure 1, 13
 struct LinkData
 {
     LinkData    *next;// 1 type, name 13, 0.
@@ -611,28 +611,28 @@ struct LinkData
     void        *data;// 3 type, name 11, 2.
 };
 
-// 2 DNA structure 14, 2
+// zu DNA structure 2, 14
 struct ListBase
 {
     void    *first;// 1 type, name 11, 3.
     void    *last; // 2 type, name 11, 4.
 };
 
-// 3 DNA structure 15, 2
+// zu DNA structure 3, 15
 struct vec2s
 {
     short    x;// 1 type, name 2, 5.
     short    y;// 2 type, name 2, 6.
 };
 
-// 4 DNA structure 16, 2
+// zu DNA structure 4, 16
 struct vec2f
 {
     float    x;// 1 type, name 7, 5.
     float    y;// 2 type, name 7, 6.
 };
 
-// 5 DNA structure 17, 3
+// zu DNA structure 5, 17
 struct vec3f
 {
     float    x;// 1 type, name 7, 5.
@@ -640,7 +640,7 @@ struct vec3f
     float    z;// 3 type, name 7, 7.
 };
 
-// 6 DNA structure 18, 4
+// zu DNA structure 6, 18
 struct rcti
 {
     int    xmin;// 1 type, name 4, 8.
@@ -649,7 +649,7 @@ struct rcti
     int    ymax;// 4 type, name 4, 11.
 };
 
-// 7 DNA structure 19, 4
+// zu DNA structure 7, 19
 struct rctf
 {
     float    xmin;// 1 type, name 7, 8.
@@ -658,7 +658,7 @@ struct rctf
     float    ymax;// 4 type, name 7, 11.
 };
 
-// 8 DNA structure 22, 10
+// zu DNA structure 8, 22
 struct ID
 {
     void          *next;      // 1 type, name 11, 0.
@@ -673,7 +673,7 @@ struct ID
     IDProperty    *properties;// 10 type, name 21, 30.
 };
 
-// 9 DNA structure 26, 6
+// zu DNA structure 9, 26
 struct PreviewImage
 {
     int           w[2];                // 1 type, name 4, 38.
@@ -684,7 +684,7 @@ struct PreviewImage
     void          *gputexture[2];      // Note: using void* on undefined DNA type: GPUTexture
 };
 
-// 10 DNA structure 28, 6
+// zu DNA structure 10, 28
 struct IpoDriver
 {
     Object    *ob;      // 1 type, name 29, 44.
@@ -695,7 +695,7 @@ struct IpoDriver
     char      name[128];// 6 type, name 0, 47.
 };
 
-// 11 DNA structure 34, 15
+// zu DNA structure 11, 34
 struct KeyBlock
 {
     KeyBlock    *next;     // 1 type, name 34, 0.
@@ -715,7 +715,7 @@ struct KeyBlock
     float       slidermax; // 15 type, name 7, 74.
 };
 
-// 12 DNA structure 37, 6
+// zu DNA structure 12, 37
 struct TextLine
 {
     TextLine    *next;  // 1 type, name 37, 0.
@@ -726,7 +726,7 @@ struct TextLine
     int         blen;   // 6 type, name 4, 87.
 };
 
-// 13 DNA structure 25, 3
+// zu DNA structure 13, 25
 struct PackedFile
 {
     int     size; // 1 type, name 4, 101.
@@ -734,7 +734,7 @@ struct PackedFile
     void    *data;// 3 type, name 11, 2.
 };
 
-// 14 DNA structure 39, 4
+// zu DNA structure 14, 39
 struct GPUDOFSettings
 {
     float    focus_distance;// 1 type, name 7, 103.
@@ -743,7 +743,7 @@ struct GPUDOFSettings
     float    sensor;        // 4 type, name 7, 106.
 };
 
-// 15 DNA structure 40, 6
+// zu DNA structure 15, 40
 struct GPUSSAOSettings
 {
     float    factor;      // 1 type, name 7, 107.
@@ -754,7 +754,7 @@ struct GPUSSAOSettings
     int      pad;         // 6 type, name 4, 66.
 };
 
-// 16 DNA structure 41, 4
+// zu DNA structure 16, 41
 struct GPUFXSettings
 {
     GPUDOFSettings     *dof;   // 1 type, name 39, 112.
@@ -763,7 +763,7 @@ struct GPUFXSettings
     char               pad[7]; // 4 type, name 0, 115.
 };
 
-// 17 DNA structure 43, 14
+// zu DNA structure 17, 43
 struct ImageUser
 {
     Scene    *scene;     // 1 type, name 44, 131.
@@ -782,13 +782,13 @@ struct ImageUser
     int      pad2;       // 14 type, name 4, 29.
 };
 
-// 18 DNA structure 45, 1
+// zu DNA structure 18, 45
 struct RenderSlot
 {
     char    name[64];// 1 type, name 0, 19.
 };
 
-// 19 DNA structure 51, 69
+// zu DNA structure 19, 51
 struct MTex
 {
     short     texco;           // 1 type, name 2, 174.
@@ -862,7 +862,7 @@ struct MTex
     float     blendfac;        // 69 type, name 7, 240.
 };
 
-// 20 DNA structure 53, 6
+// zu DNA structure 20, 53
 struct CBData
 {
     float    r;  // 1 type, name 7, 198.
@@ -873,7 +873,7 @@ struct CBData
     int      cur;// 6 type, name 4, 63.
 };
 
-// 21 DNA structure 55, 17
+// zu DNA structure 21, 55
 struct EnvMap
 {
     Object    *object;     // 1 type, name 29, 178.
@@ -895,7 +895,7 @@ struct EnvMap
     short     lastsize;    // 17 type, name 2, 258.
 };
 
-// 22 DNA structure 57, 25
+// zu DNA structure 22, 57
 struct PointDensity
 {
     short           flag;               // 1 type, name 2, 18.
@@ -925,7 +925,7 @@ struct PointDensity
     CurveMapping    *falloff_curve;     // 25 type, name 58, 280.
 };
 
-// 23 DNA structure 59, 16
+// zu DNA structure 23, 59
 struct VoxelData
 {
     int       resol[3];         // 1 type, name 4, 281.
@@ -946,7 +946,7 @@ struct VoxelData
     int       ok;               // 16 type, name 4, 138.
 };
 
-// 24 DNA structure 60, 4
+// zu DNA structure 24, 60
 struct OceanTex
 {
     Object    *object;     // 1 type, name 29, 178.
@@ -955,7 +955,7 @@ struct OceanTex
     int       pad;         // 4 type, name 4, 66.
 };
 
-// 25 DNA structure 62, 13
+// zu DNA structure 25, 62
 struct TexMapping
 {
     float     loc[3];   // 1 type, name 7, 341.
@@ -973,7 +973,7 @@ struct TexMapping
     Object    *ob;      // 13 type, name 29, 44.
 };
 
-// 26 DNA structure 65, 18
+// zu DNA structure 26, 65
 struct VolumeSettings
 {
     float    density;            // 1 type, name 7, 409.
@@ -996,7 +996,7 @@ struct VolumeSettings
     float    ms_spread;          // 18 type, name 7, 426.
 };
 
-// 27 DNA structure 66, 4
+// zu DNA structure 27, 66
 struct GameSettings
 {
     int    flag;            // 1 type, name 4, 18.
@@ -1005,7 +1005,7 @@ struct GameSettings
     int    pad1;            // 4 type, name 4, 68.
 };
 
-// 28 DNA structure 67, 4
+// zu DNA structure 28, 67
 struct TexPaintSlot
 {
     Image    *ima;   // 1 type, name 46, 248.
@@ -1014,7 +1014,7 @@ struct TexPaintSlot
     int      pad;    // 4 type, name 4, 66.
 };
 
-// 29 DNA structure 72, 20
+// zu DNA structure 29, 72
 struct MetaElem
 {
     MetaElem    *next;  // 1 type, name 72, 0.
@@ -1039,7 +1039,7 @@ struct MetaElem
     float       *imat;  // 20 type, name 7, 561.
 };
 
-// 30 DNA structure 32, 16
+// zu DNA structure 30, 32
 struct BezTriple
 {
     float    vec[3][3];// 1 type, name 7, 572.
@@ -1060,7 +1060,7 @@ struct BezTriple
     char     pad[4];   // 16 type, name 0, 585.
 };
 
-// 31 DNA structure 31, 7
+// zu DNA structure 31, 31
 struct BPoint
 {
     float    vec[4];// 1 type, name 7, 586.
@@ -1072,7 +1072,7 @@ struct BPoint
     float    pad;   // 7 type, name 7, 66.
 };
 
-// 32 DNA structure 75, 22
+// zu DNA structure 32, 75
 struct Nurb
 {
     Nurb         *next;        // 1 type, name 75, 0.
@@ -1099,7 +1099,7 @@ struct Nurb
     int          charidx;      // 22 type, name 4, 600.
 };
 
-// 33 DNA structure 76, 5
+// zu DNA structure 33, 76
 struct CharInfo
 {
     short    kern;  // 1 type, name 2, 601.
@@ -1109,7 +1109,7 @@ struct CharInfo
     short    pad2;  // 5 type, name 2, 29.
 };
 
-// 34 DNA structure 77, 4
+// zu DNA structure 34, 77
 struct TextBox
 {
     float    x;// 1 type, name 7, 5.
@@ -1118,7 +1118,7 @@ struct TextBox
     float    h;// 4 type, name 7, 603.
 };
 
-// 35 DNA structure 91, 8
+// zu DNA structure 35, 91
 struct TFace
 {
     void     *tpage;  // 1 type, name 11, 690.
@@ -1131,7 +1131,7 @@ struct TFace
     short    unwrap;  // 8 type, name 2, 695.
 };
 
-// 36 DNA structure 89, 7
+// zu DNA structure 36, 89
 struct MFace
 {
     int      v1;    // 1 type, name 4, 696.
@@ -1143,7 +1143,7 @@ struct MFace
     char     flag;  // 7 type, name 0, 18.
 };
 
-// 37 DNA structure 93, 5
+// zu DNA structure 37, 93
 struct MEdge
 {
     int      v1;     // 1 type, name 4, 696.
@@ -1153,14 +1153,14 @@ struct MEdge
     short    flag;   // 5 type, name 2, 18.
 };
 
-// 38 DNA structure 99, 2
+// zu DNA structure 38, 99
 struct MDeformWeight
 {
     int      def_nr;// 1 type, name 4, 703.
     float    weight;// 2 type, name 7, 574.
 };
 
-// 39 DNA structure 94, 3
+// zu DNA structure 39, 94
 struct MDeformVert
 {
     MDeformWeight    *dw;      // 1 type, name 99, 704.
@@ -1168,7 +1168,7 @@ struct MDeformVert
     int              flag;     // 3 type, name 4, 18.
 };
 
-// 40 DNA structure 92, 4
+// zu DNA structure 40, 92
 struct MVert
 {
     float    co[3];  // 1 type, name 7, 706.
@@ -1177,7 +1177,7 @@ struct MVert
     char     bweight;// 4 type, name 0, 702.
 };
 
-// 41 DNA structure 95, 4
+// zu DNA structure 41, 95
 struct MCol
 {
     char    a;// 1 type, name 0, 241.
@@ -1186,7 +1186,7 @@ struct MCol
     char    b;// 4 type, name 0, 200.
 };
 
-// 42 DNA structure 84, 5
+// zu DNA structure 42, 84
 struct MPoly
 {
     int      loopstart;// 1 type, name 4, 708.
@@ -1196,14 +1196,14 @@ struct MPoly
     char     pad;      // 5 type, name 0, 66.
 };
 
-// 43 DNA structure 86, 2
+// zu DNA structure 43, 86
 struct MLoop
 {
     int    v;// 1 type, name 4, 709.
     int    e;// 2 type, name 4, 710.
 };
 
-// 44 DNA structure 85, 6
+// zu DNA structure 44, 85
 struct MTexPoly
 {
     Image    *tpage;// 1 type, name 46, 690.
@@ -1214,14 +1214,14 @@ struct MTexPoly
     short    pad;   // 6 type, name 2, 66.
 };
 
-// 45 DNA structure 87, 2
+// zu DNA structure 45, 87
 struct MLoopUV
 {
     float    uv[2];// 1 type, name 7, 711.
     int      flag; // 2 type, name 4, 18.
 };
 
-// 46 DNA structure 88, 4
+// zu DNA structure 46, 88
 struct MLoopCol
 {
     char    r;// 1 type, name 0, 198.
@@ -1230,14 +1230,14 @@ struct MLoopCol
     char    a;// 4 type, name 0, 241.
 };
 
-// 47 DNA structure 83, 2
+// zu DNA structure 47, 83
 struct MSelect
 {
     int    index;// 1 type, name 4, 430.
     int    type; // 2 type, name 4, 16.
 };
 
-// 48 DNA structure 90, 7
+// zu DNA structure 48, 90
 struct MTFace
 {
     float    uv[4][2];// 1 type, name 7, 691.
@@ -1249,38 +1249,38 @@ struct MTFace
     short    unwrap;  // 7 type, name 2, 695.
 };
 
-// 49 DNA structure 100, 1
+// zu DNA structure 49, 100
 struct MFloatProperty
 {
     float    f;// 1 type, name 7, 712.
 };
 
-// 50 DNA structure 101, 1
+// zu DNA structure 50, 101
 struct MIntProperty
 {
     int    i;// 1 type, name 4, 713.
 };
 
-// 51 DNA structure 102, 2
+// zu DNA structure 51, 102
 struct MStringProperty
 {
     char    s[255];// 1 type, name 0, 714.
     char    s_len; // 2 type, name 0, 715.
 };
 
-// 52 DNA structure 103, 1
+// zu DNA structure 52, 103
 struct OrigSpaceFace
 {
     float    uv[4][2];// 1 type, name 7, 691.
 };
 
-// 53 DNA structure 104, 1
+// zu DNA structure 53, 104
 struct OrigSpaceLoop
 {
     float    uv[2];// 1 type, name 7, 711.
 };
 
-// 54 DNA structure 105, 4
+// zu DNA structure 54, 105
 struct MDisps
 {
     int      totdisp;   // 1 type, name 4, 716.
@@ -1289,7 +1289,7 @@ struct MDisps
     int      *hidden;   // 4 type, name 4, 719.
 };
 
-// 55 DNA structure 106, 4
+// zu DNA structure 55, 106
 struct MultiresCol
 {
     float    a;// 1 type, name 7, 241.
@@ -1298,7 +1298,7 @@ struct MultiresCol
     float    b;// 4 type, name 7, 200.
 };
 
-// 56 DNA structure 108, 5
+// zu DNA structure 56, 108
 struct MultiresFace
 {
     int     v[4];  // 1 type, name 4, 720.
@@ -1308,14 +1308,14 @@ struct MultiresFace
     char    pad[2];// 5 type, name 0, 187.
 };
 
-// 57 DNA structure 109, 2
+// zu DNA structure 57, 109
 struct MultiresEdge
 {
     int    v[2];// 1 type, name 4, 722.
     int    mid; // 2 type, name 4, 721.
 };
 
-// 58 DNA structure 110, 10
+// zu DNA structure 58, 110
 struct MultiresLevel
 {
     MultiresLevel      *next;    // 1 type, name 110, 0.
@@ -1330,13 +1330,13 @@ struct MultiresLevel
     MVert              *verts;   // 10 type, name 92, 726.
 };
 
-// 59 DNA structure 111, 1
+// zu DNA structure 59, 111
 struct MRecast
 {
     int    i;// 1 type, name 4, 713.
 };
 
-// 60 DNA structure 112, 3
+// zu DNA structure 60, 112
 struct GridPaintMask
 {
     float    *data;// 1 type, name 7, 2.
@@ -1344,28 +1344,28 @@ struct GridPaintMask
     int      pad;  // 3 type, name 4, 66.
 };
 
-// 61 DNA structure 113, 2
+// zu DNA structure 61, 113
 struct MVertSkin
 {
     float    radius[3];// 1 type, name 7, 737.
     int      flag;     // 2 type, name 4, 18.
 };
 
-// 62 DNA structure 114, 2
+// zu DNA structure 62, 114
 struct FreestyleEdge
 {
     char    flag;  // 1 type, name 0, 18.
     char    pad[3];// 2 type, name 0, 350.
 };
 
-// 63 DNA structure 115, 2
+// zu DNA structure 63, 115
 struct FreestyleFace
 {
     char    flag;  // 1 type, name 0, 18.
     char    pad[3];// 2 type, name 0, 350.
 };
 
-// 64 DNA structure 116, 9
+// zu DNA structure 64, 116
 struct ModifierData
 {
     ModifierData    *next;     // 1 type, name 116, 0.
@@ -1379,21 +1379,21 @@ struct ModifierData
     char            *error;    // 9 type, name 0, 739.
 };
 
-// 65 DNA structure 153, 2
+// zu DNA structure 65, 153
 struct MDefInfluence
 {
     int      vertex;// 1 type, name 4, 847.
     float    weight;// 2 type, name 7, 574.
 };
 
-// 66 DNA structure 154, 2
+// zu DNA structure 66, 154
 struct MDefCell
 {
     int    offset;      // 1 type, name 4, 134.
     int    totinfluence;// 2 type, name 4, 848.
 };
 
-// 67 DNA structure 188, 3
+// zu DNA structure 67, 188
 struct EditLatt
 {
     Lattice    *latt;  // 1 type, name 189, 998.
@@ -1401,7 +1401,7 @@ struct EditLatt
     char       pad[4]; // 3 type, name 0, 585.
 };
 
-// 68 DNA structure 190, 5
+// zu DNA structure 68, 190
 struct bDeformGroup
 {
     bDeformGroup    *next;   // 1 type, name 190, 0.
@@ -1411,7 +1411,7 @@ struct bDeformGroup
     char            pad[7];  // 5 type, name 0, 115.
 };
 
-// 69 DNA structure 73, 3
+// zu DNA structure 69, 73
 struct BoundBox
 {
     float    vec[8][3];// 1 type, name 7, 1015.
@@ -1419,7 +1419,7 @@ struct BoundBox
     int      pad;      // 3 type, name 4, 66.
 };
 
-// 70 DNA structure 191, 5
+// zu DNA structure 70, 191
 struct LodLevel
 {
     LodLevel    *next;   // 1 type, name 191, 0.
@@ -1429,7 +1429,7 @@ struct LodLevel
     float       distance;// 5 type, name 7, 1017.
 };
 
-// 71 DNA structure 204, 14
+// zu DNA structure 71, 204
 struct ObHook
 {
     ObHook    *next;          // 1 type, name 204, 0.
@@ -1448,7 +1448,7 @@ struct ObHook
     float     force;          // 14 type, name 7, 819.
 };
 
-// 72 DNA structure 205, 11
+// zu DNA structure 72, 205
 struct DupliObject
 {
     DupliObject       *next;           // 1 type, name 205, 0.
@@ -1464,7 +1464,7 @@ struct DupliObject
     ParticleSystem    *particle_system;// 11 type, name 157, 1133.
 };
 
-// 73 DNA structure 199, 41
+// zu DNA structure 73, 199
 struct PartDeflect
 {
     int       flag;          // 1 type, name 4, 18.
@@ -1510,7 +1510,7 @@ struct PartDeflect
     Object    *f_source;     // 41 type, name 29, 1170.
 };
 
-// 74 DNA structure 207, 6
+// zu DNA structure 74, 207
 struct EffectorWeights
 {
     Group    *group;        // 1 type, name 69, 520.
@@ -1521,7 +1521,7 @@ struct EffectorWeights
     int      pad;           // 6 type, name 4, 66.
 };
 
-// 75 DNA structure 208, 5
+// zu DNA structure 75, 208
 struct PTCacheExtra
 {
     PTCacheExtra    *next;  // 1 type, name 208, 0.
@@ -1531,13 +1531,13 @@ struct PTCacheExtra
     void            *data;  // 5 type, name 11, 2.
 };
 
-// 76 DNA structure 211, 1
+// zu DNA structure 76, 211
 struct SBVertex
 {
     float    vec[4];// 1 type, name 7, 586.
 };
 
-// 77 DNA structure 198, 30
+// zu DNA structure 77, 198
 struct BulletSoftBody
 {
     int      flag;                // 1 type, name 4, 18.
@@ -1572,13 +1572,13 @@ struct BulletSoftBody
     float    margin;              // 30 type, name 7, 1074.
 };
 
-// 78 DNA structure 215, 1
+// zu DNA structure 78, 215
 struct FluidVertexVelocity
 {
     float    vel[3];// 1 type, name 7, 1272.
 };
 
-// 79 DNA structure 162, 54
+// zu DNA structure 79, 162
 struct FluidsimSettings
 {
     FluidsimModifierData    *fmd;                 // 1 type, name 161, 1273.
@@ -1637,7 +1637,7 @@ struct FluidsimSettings
     float                   animRate;             // 54 type, name 7, 1320.
 };
 
-// 80 DNA structure 217, 8
+// zu DNA structure 80, 217
 struct Base
 {
     Base      *next;  // 1 type, name 217, 0.
@@ -1650,7 +1650,7 @@ struct Base
     Object    *object;// 8 type, name 29, 178.
 };
 
-// 81 DNA structure 218, 13
+// zu DNA structure 81, 218
 struct AviCodecData
 {
     void    *lpFormat;        // 1 type, name 11, 1383.
@@ -1668,7 +1668,7 @@ struct AviCodecData
     char    avicodecname[128];// 13 type, name 0, 1394.
 };
 
-// 82 DNA structure 219, 5
+// zu DNA structure 82, 219
 struct QuicktimeCodecData
 {
     void    *cdParms;        // 1 type, name 11, 1395.
@@ -1678,7 +1678,7 @@ struct QuicktimeCodecData
     char    qtcodecname[128];// 5 type, name 0, 1398.
 };
 
-// 83 DNA structure 220, 17
+// zu DNA structure 83, 220
 struct QuicktimeCodecSettings
 {
     int      codecType;           // 1 type, name 4, 1399.
@@ -1700,7 +1700,7 @@ struct QuicktimeCodecSettings
     int      pad1;                // 17 type, name 4, 68.
 };
 
-// 84 DNA structure 221, 17
+// zu DNA structure 84, 221
 struct FFMpegCodecData
 {
     int           type;           // 1 type, name 4, 16.
@@ -1722,7 +1722,7 @@ struct FFMpegCodecData
     IDProperty    *properties;    // 17 type, name 21, 30.
 };
 
-// 85 DNA structure 222, 9
+// zu DNA structure 85, 222
 struct AudioData
 {
     int      mixrate;       // 1 type, name 4, 1428.
@@ -1736,7 +1736,7 @@ struct AudioData
     float    pad2;          // 9 type, name 7, 29.
 };
 
-// 86 DNA structure 230, 9
+// zu DNA structure 86, 230
 struct RenderProfile
 {
     RenderProfile    *next;            // 1 type, name 230, 0.
@@ -1750,7 +1750,7 @@ struct RenderProfile
     float            pad2;             // 9 type, name 7, 29.
 };
 
-// 87 DNA structure 231, 7
+// zu DNA structure 87, 231
 struct GameDome
 {
     short    res;      // 1 type, name 2, 773.
@@ -1762,7 +1762,7 @@ struct GameDome
     Text     *warptext;// 7 type, name 38, 1570.
 };
 
-// 88 DNA structure 232, 5
+// zu DNA structure 88, 232
 struct GameFraming
 {
     float    col[3];// 1 type, name 7, 1571.
@@ -1772,7 +1772,7 @@ struct GameFraming
     char     pad3;  // 5 type, name 0, 517.
 };
 
-// 89 DNA structure 233, 15
+// zu DNA structure 89, 233
 struct RecastData
 {
     float    cellsize;            // 1 type, name 7, 1572.
@@ -1792,7 +1792,7 @@ struct RecastData
     short    pad2;                // 15 type, name 2, 29.
 };
 
-// 90 DNA structure 235, 6
+// zu DNA structure 90, 235
 struct TimeMarker
 {
     TimeMarker    *next;   // 1 type, name 235, 0.
@@ -1803,7 +1803,7 @@ struct TimeMarker
     Object        *camera; // 6 type, name 29, 1603.
 };
 
-// 91 DNA structure 236, 8
+// zu DNA structure 91, 236
 struct Paint
 {
     Brush           *brush;             // 1 type, name 237, 952.
@@ -1816,7 +1816,7 @@ struct Paint
     int             symmetry_flags;     // 8 type, name 4, 1609.
 };
 
-// 92 DNA structure 240, 6
+// zu DNA structure 92, 240
 struct ParticleBrushData
 {
     short    size;    // 1 type, name 2, 101.
@@ -1827,7 +1827,7 @@ struct ParticleBrushData
     float    strength;// 6 type, name 7, 750.
 };
 
-// 93 DNA structure 245, 5
+// zu DNA structure 93, 245
 struct TransformOrientation
 {
     TransformOrientation    *next;    // 1 type, name 245, 0.
@@ -1837,7 +1837,7 @@ struct TransformOrientation
     int                     pad;      // 5 type, name 4, 66.
 };
 
-// 94 DNA structure 246, 26
+// zu DNA structure 94, 246
 struct UnifiedPaintSettings
 {
     int           size;                     // 1 type, name 4, 101.
@@ -1868,7 +1868,7 @@ struct UnifiedPaintSettings
     void          *colorspace;              // Note: using void* on undefined DNA type: ColorSpace
 };
 
-// 95 DNA structure 248, 13
+// zu DNA structure 95, 248
 struct MeshStatVis
 {
     char     type;             // 1 type, name 0, 16.
@@ -1886,7 +1886,7 @@ struct MeshStatVis
     float    sharp_max;        // 13 type, name 7, 1674.
 };
 
-// 96 DNA structure 250, 8
+// zu DNA structure 96, 250
 struct bStats
 {
     int    totobj;     // 1 type, name 4, 1747.
@@ -1899,7 +1899,7 @@ struct bStats
     int    totface;    // 8 type, name 4, 678.
 };
 
-// 97 DNA structure 251, 4
+// zu DNA structure 97, 251
 struct UnitSettings
 {
     float    scale_length;   // 1 type, name 7, 1753.
@@ -1908,7 +1908,7 @@ struct UnitSettings
     short    flag;           // 4 type, name 2, 18.
 };
 
-// 98 DNA structure 252, 4
+// zu DNA structure 98, 252
 struct PhysicsSettings
 {
     float    gravity[3];      // 1 type, name 7, 1756.
@@ -1917,7 +1917,7 @@ struct PhysicsSettings
     int      rt;              // 4 type, name 4, 56.
 };
 
-// 99 DNA structure 253, 4
+// zu DNA structure 99, 253
 struct DisplaySafeAreas
 {
     float    title[2];        // 1 type, name 7, 1758.
@@ -1926,7 +1926,7 @@ struct DisplaySafeAreas
     float    action_center[2];// 4 type, name 7, 1761.
 };
 
-// 100 DNA structure 261, 42
+// zu DNA structure 100, 261
 struct RegionView3D
 {
     float                winmat[4][4];      // 1 type, name 7, 1800.
@@ -1973,7 +1973,7 @@ struct RegionView3D
     void                 *compositor;       // Note: using void* on undefined DNA type: GPUFX
 };
 
-// 101 DNA structure 279, 3
+// zu DNA structure 101, 279
 struct SpaceTimeCache
 {
     SpaceTimeCache    *next; // 1 type, name 279, 0.
@@ -1981,7 +1981,7 @@ struct SpaceTimeCache
     float             *array;// 3 type, name 7, 1921.
 };
 
-// 102 DNA structure 283, 5
+// zu DNA structure 102, 283
 struct MaskSpaceInfo
 {
     Mask    *mask;       // 1 type, name 284, 1931.
@@ -1991,7 +1991,7 @@ struct MaskSpaceInfo
     char    pad3[5];     // 5 type, name 0, 1871.
 };
 
-// 103 DNA structure 285, 18
+// zu DNA structure 103, 285
 struct FileSelectParams
 {
     char     title[96];        // 1 type, name 0, 1934.
@@ -2014,7 +2014,7 @@ struct FileSelectParams
     char     fp_str[8];        // 18 type, name 0, 1948.
 };
 
-// 104 DNA structure 290, 6
+// zu DNA structure 104, 290
 struct FSMenuEntry
 {
     FSMenuEntry    *next;    // 1 type, name 290, 0.
@@ -2025,7 +2025,7 @@ struct FSMenuEntry
     short          pad[2];   // 6 type, name 2, 187.
 };
 
-// 105 DNA structure 301, 7
+// zu DNA structure 105, 301
 struct ConsoleLine
 {
     ConsoleLine    *next;    // 1 type, name 301, 0.
@@ -2037,7 +2037,7 @@ struct ConsoleLine
     int            type;     // 7 type, name 4, 16.
 };
 
-// 106 DNA structure 306, 7
+// zu DNA structure 106, 306
 struct uiFont
 {
     uiFont    *next;         // 1 type, name 306, 0.
@@ -2049,7 +2049,7 @@ struct uiFont
     short     hinting;       // 7 type, name 2, 2045.
 };
 
-// 107 DNA structure 307, 12
+// zu DNA structure 107, 307
 struct uiFontStyle
 {
     short    uifont_id;  // 1 type, name 2, 2043.
@@ -2066,7 +2066,7 @@ struct uiFontStyle
     float    shadowcolor;// 12 type, name 7, 2054.
 };
 
-// 108 DNA structure 309, 10
+// zu DNA structure 108, 309
 struct uiWidgetColors
 {
     char     outline[4];  // 1 type, name 0, 2069.
@@ -2081,7 +2081,7 @@ struct uiWidgetColors
     short    alpha_check; // 10 type, name 2, 2078.
 };
 
-// 109 DNA structure 310, 8
+// zu DNA structure 109, 310
 struct uiWidgetStateColors
 {
     char     inner_anim[4];      // 1 type, name 0, 2079.
@@ -2094,7 +2094,7 @@ struct uiWidgetStateColors
     float    pad;                // 8 type, name 7, 66.
 };
 
-// 110 DNA structure 311, 5
+// zu DNA structure 110, 311
 struct uiPanelColors
 {
     char     header[4];  // 1 type, name 0, 2085.
@@ -2104,7 +2104,7 @@ struct uiPanelColors
     int      pad;        // 5 type, name 4, 66.
 };
 
-// 111 DNA structure 312, 4
+// zu DNA structure 111, 312
 struct uiGradientColors
 {
     char    gradient[4];     // 1 type, name 0, 2089.
@@ -2113,7 +2113,7 @@ struct uiGradientColors
     int     pad2;            // 4 type, name 4, 29.
 };
 
-// 112 DNA structure 315, 5
+// zu DNA structure 112, 315
 struct ThemeWireColor
 {
     char     solid[4]; // 1 type, name 0, 2300.
@@ -2123,7 +2123,7 @@ struct ThemeWireColor
     short    pad;      // 5 type, name 2, 66.
 };
 
-// 113 DNA structure 317, 4
+// zu DNA structure 113, 317
 struct bAddon
 {
     bAddon        *next;     // 1 type, name 317, 0.
@@ -2132,7 +2132,7 @@ struct bAddon
     IDProperty    *prop;     // 4 type, name 21, 2322.
 };
 
-// 114 DNA structure 318, 5
+// zu DNA structure 114, 318
 struct bPathCompare
 {
     bPathCompare    *next;    // 1 type, name 318, 0.
@@ -2142,7 +2142,7 @@ struct bPathCompare
     char            pad[7];   // 5 type, name 0, 115.
 };
 
-// 115 DNA structure 319, 5
+// zu DNA structure 115, 319
 struct SolidLight
 {
     int      flag;   // 1 type, name 4, 18.
@@ -2152,7 +2152,7 @@ struct SolidLight
     float    vec[4]; // 5 type, name 7, 586.
 };
 
-// 116 DNA structure 320, 8
+// zu DNA structure 116, 320
 struct WalkNavigation
 {
     float    mouse_speed;      // 1 type, name 7, 2325.
@@ -2165,7 +2165,7 @@ struct WalkNavigation
     short    pad[3];           // 8 type, name 2, 350.
 };
 
-// 117 DNA structure 324, 7
+// zu DNA structure 117, 324
 struct ScrEdge
 {
     ScrEdge    *next; // 1 type, name 324, 0.
@@ -2177,7 +2177,7 @@ struct ScrEdge
     int        pad;   // 7 type, name 4, 66.
 };
 
-// 118 DNA structure 325, 20
+// zu DNA structure 118, 325
 struct Panel
 {
     Panel        *next;        // 1 type, name 325, 0.
@@ -2202,7 +2202,7 @@ struct Panel
     void         *activedata;  // 20 type, name 11, 2475.
 };
 
-// 119 DNA structure 328, 3
+// zu DNA structure 119, 328
 struct PanelCategoryStack
 {
     PanelCategoryStack    *next;     // 1 type, name 328, 0.
@@ -2210,7 +2210,7 @@ struct PanelCategoryStack
     char                  idname[64];// 3 type, name 0, 2476.
 };
 
-// 120 DNA structure 329, 15
+// zu DNA structure 120, 329
 struct uiList
 {
     uiList        *next;            // 1 type, name 329, 0.
@@ -2230,7 +2230,7 @@ struct uiList
     void          *dyn_data;        // Note: using void* on undefined DNA type: uiListDyn
 };
 
-// 121 DNA structure 332, 5
+// zu DNA structure 121, 332
 struct uiPreview
 {
     uiPreview    *next;         // 1 type, name 332, 0.
@@ -2240,7 +2240,7 @@ struct uiPreview
     short        pad1[3];       // 5 type, name 2, 2488.
 };
 
-// 122 DNA structure 337, 12
+// zu DNA structure 122, 337
 struct FileGlobal
 {
     char        subvstr[4];            // 1 type, name 0, 2515.
@@ -2257,7 +2257,7 @@ struct FileGlobal
     char        filename[1024];        // 12 type, name 0, 2041.
 };
 
-// 123 DNA structure 338, 3
+// zu DNA structure 123, 338
 struct StripElem
 {
     char    name[256];  // 1 type, name 0, 1961.
@@ -2265,7 +2265,7 @@ struct StripElem
     int     orig_height;// 3 type, name 4, 2526.
 };
 
-// 124 DNA structure 339, 4
+// zu DNA structure 124, 339
 struct StripCrop
 {
     int    top;   // 1 type, name 4, 1977.
@@ -2274,14 +2274,14 @@ struct StripCrop
     int    right; // 4 type, name 4, 2528.
 };
 
-// 125 DNA structure 340, 2
+// zu DNA structure 125, 340
 struct StripTransform
 {
     int    xofs;// 1 type, name 4, 2529.
     int    yofs;// 2 type, name 4, 2530.
 };
 
-// 126 DNA structure 341, 5
+// zu DNA structure 126, 341
 struct StripColorBalance
 {
     float    lift[3]; // 1 type, name 7, 2531.
@@ -2291,7 +2291,7 @@ struct StripColorBalance
     int      pad;     // 5 type, name 4, 66.
 };
 
-// 127 DNA structure 342, 9
+// zu DNA structure 127, 342
 struct StripProxy
 {
     char     dir[768];        // 1 type, name 0, 2534.
@@ -2305,7 +2305,7 @@ struct StripProxy
     char     pad[6];          // 9 type, name 0, 752.
 };
 
-// 128 DNA structure 346, 5
+// zu DNA structure 128, 346
 struct MetaStack
 {
     MetaStack    *next;        // 1 type, name 346, 0.
@@ -2315,7 +2315,7 @@ struct MetaStack
     int          disp_range[2];// 5 type, name 4, 2579.
 };
 
-// 129 DNA structure 347, 4
+// zu DNA structure 129, 347
 struct WipeVars
 {
     float    edgeWidth;// 1 type, name 7, 2589.
@@ -2324,7 +2324,7 @@ struct WipeVars
     short    wipetype; // 4 type, name 2, 2591.
 };
 
-// 130 DNA structure 348, 6
+// zu DNA structure 130, 348
 struct GlowVars
 {
     float    fMini;   // 1 type, name 7, 2592.
@@ -2335,7 +2335,7 @@ struct GlowVars
     int      bNoComp; // 6 type, name 4, 2597.
 };
 
-// 131 DNA structure 349, 8
+// zu DNA structure 131, 349
 struct TransformVars
 {
     float    ScalexIni;    // 1 type, name 7, 2598.
@@ -2348,14 +2348,14 @@ struct TransformVars
     int      uniform_scale;// 8 type, name 4, 2604.
 };
 
-// 132 DNA structure 350, 2
+// zu DNA structure 132, 350
 struct SolidColorVars
 {
     float    col[3];// 1 type, name 7, 1571.
     float    pad;   // 2 type, name 7, 66.
 };
 
-// 133 DNA structure 351, 5
+// zu DNA structure 133, 351
 struct SpeedControlVars
 {
     float    *frameMap;     // 1 type, name 7, 2605.
@@ -2365,14 +2365,14 @@ struct SpeedControlVars
     int      lastValidFrame;// 5 type, name 4, 2607.
 };
 
-// 134 DNA structure 352, 2
+// zu DNA structure 134, 352
 struct GaussianBlurVars
 {
     float    size_x;// 1 type, name 7, 2608.
     float    size_y;// 2 type, name 7, 2609.
 };
 
-// 135 DNA structure 353, 9
+// zu DNA structure 135, 353
 struct SequenceModifierData
 {
     SequenceModifierData    *next;          // 1 type, name 353, 0.
@@ -2386,7 +2386,7 @@ struct SequenceModifierData
     Mask                    *mask_id;       // 9 type, name 284, 2612.
 };
 
-// 136 DNA structure 282, 6
+// zu DNA structure 136, 282
 struct SequencerScopes
 {
     void     *reference_ibuf;   // Note: using void* on undefined DNA type: ImBuf
@@ -2397,7 +2397,7 @@ struct SequencerScopes
     void     *histogram_ibuf;   // Note: using void* on undefined DNA type: ImBuf
 };
 
-// 137 DNA structure 359, 6
+// zu DNA structure 137, 359
 struct Effect
 {
     Effect    *next;  // 1 type, name 359, 0.
@@ -2408,7 +2408,7 @@ struct Effect
     short     rt;     // 6 type, name 2, 56.
 };
 
-// 138 DNA structure 360, 8
+// zu DNA structure 138, 360
 struct BuildEff
 {
     BuildEff    *next;  // 1 type, name 360, 0.
@@ -2421,7 +2421,7 @@ struct BuildEff
     float       sfra;   // 8 type, name 7, 135.
 };
 
-// 139 DNA structure 361, 45
+// zu DNA structure 139, 361
 struct PartEff
 {
     PartEff     *next;           // 1 type, name 361, 0.
@@ -2471,7 +2471,7 @@ struct PartEff
     Group       *group;          // 45 type, name 69, 520.
 };
 
-// 140 DNA structure 363, 16
+// zu DNA structure 140, 363
 struct WaveEff
 {
     WaveEff    *next;   // 1 type, name 363, 0.
@@ -2492,7 +2492,7 @@ struct WaveEff
     float      lifetime;// 16 type, name 7, 810.
 };
 
-// 141 DNA structure 275, 5
+// zu DNA structure 141, 275
 struct TreeStoreElem
 {
     short    type;// 1 type, name 2, 16.
@@ -2502,7 +2502,7 @@ struct TreeStoreElem
     ID       *id; // 5 type, name 22, 2014.
 };
 
-// 142 DNA structure 364, 3
+// zu DNA structure 142, 364
 struct TreeStore
 {
     int              totelem; // 1 type, name 4, 70.
@@ -2510,7 +2510,7 @@ struct TreeStore
     TreeStoreElem    *data;   // 3 type, name 275, 2.
 };
 
-// 143 DNA structure 365, 7
+// zu DNA structure 143, 365
 struct bProperty
 {
     bProperty    *next;   // 1 type, name 365, 0.
@@ -2522,7 +2522,7 @@ struct bProperty
     void         *poin;   // 7 type, name 11, 2655.
 };
 
-// 144 DNA structure 366, 5
+// zu DNA structure 144, 366
 struct bNearSensor
 {
     char     name[64]; // 1 type, name 0, 19.
@@ -2532,7 +2532,7 @@ struct bNearSensor
     int      pad;      // 5 type, name 4, 66.
 };
 
-// 145 DNA structure 367, 6
+// zu DNA structure 145, 367
 struct bMouseSensor
 {
     short    type;        // 1 type, name 2, 16.
@@ -2543,7 +2543,7 @@ struct bMouseSensor
     char     matname[64]; // 6 type, name 0, 2659.
 };
 
-// 146 DNA structure 368, 4
+// zu DNA structure 146, 368
 struct bTouchSensor
 {
     char        name[64];// 1 type, name 0, 19.
@@ -2552,7 +2552,7 @@ struct bTouchSensor
     float       pad;     // 4 type, name 7, 66.
 };
 
-// 147 DNA structure 369, 6
+// zu DNA structure 147, 369
 struct bKeyboardSensor
 {
     short    key;           // 1 type, name 2, 2661.
@@ -2563,7 +2563,7 @@ struct bKeyboardSensor
     char     toggleName[64];// 6 type, name 0, 2665.
 };
 
-// 148 DNA structure 370, 5
+// zu DNA structure 148, 370
 struct bPropertySensor
 {
     int     type;        // 1 type, name 4, 16.
@@ -2573,7 +2573,7 @@ struct bPropertySensor
     char    maxvalue[64];// 5 type, name 0, 2667.
 };
 
-// 149 DNA structure 371, 3
+// zu DNA structure 149, 371
 struct bActuatorSensor
 {
     int     type;    // 1 type, name 4, 16.
@@ -2581,7 +2581,7 @@ struct bActuatorSensor
     char    name[64];// 3 type, name 0, 19.
 };
 
-// 150 DNA structure 372, 4
+// zu DNA structure 150, 372
 struct bDelaySensor
 {
     short    delay;   // 1 type, name 2, 2668.
@@ -2590,7 +2590,7 @@ struct bDelaySensor
     short    pad;     // 4 type, name 2, 66.
 };
 
-// 151 DNA structure 373, 6
+// zu DNA structure 151, 373
 struct bCollisionSensor
 {
     char     name[64];        // 1 type, name 0, 19.
@@ -2601,7 +2601,7 @@ struct bCollisionSensor
     short    pad2;            // 6 type, name 2, 29.
 };
 
-// 152 DNA structure 374, 5
+// zu DNA structure 152, 374
 struct bRadarSensor
 {
     char     name[64];// 1 type, name 0, 19.
@@ -2611,7 +2611,7 @@ struct bRadarSensor
     short    axis;    // 5 type, name 2, 768.
 };
 
-// 153 DNA structure 375, 3
+// zu DNA structure 153, 375
 struct bRandomSensor
 {
     char    name[64];// 1 type, name 0, 19.
@@ -2619,7 +2619,7 @@ struct bRandomSensor
     int     delay;   // 3 type, name 4, 2668.
 };
 
-// 154 DNA structure 376, 7
+// zu DNA structure 154, 376
 struct bRaySensor
 {
     char     name[64];    // 1 type, name 0, 19.
@@ -2631,7 +2631,7 @@ struct bRaySensor
     int      axisflag;    // 7 type, name 4, 2672.
 };
 
-// 155 DNA structure 377, 4
+// zu DNA structure 155, 377
 struct bArmatureSensor
 {
     char     posechannel[64];// 1 type, name 0, 2673.
@@ -2640,7 +2640,7 @@ struct bArmatureSensor
     float    value;          // 4 type, name 7, 772.
 };
 
-// 156 DNA structure 378, 3
+// zu DNA structure 156, 378
 struct bMessageSensor
 {
     Object    *fromObject;// 1 type, name 29, 2675.
@@ -2648,7 +2648,7 @@ struct bMessageSensor
     char      body[64];   // 3 type, name 0, 2677.
 };
 
-// 157 DNA structure 379, 18
+// zu DNA structure 157, 379
 struct bSensor
 {
     bSensor        *next;   // 1 type, name 379, 0.
@@ -2671,7 +2671,7 @@ struct bSensor
     short          pad;     // 18 type, name 2, 66.
 };
 
-// 158 DNA structure 381, 11
+// zu DNA structure 158, 381
 struct bJoystickSensor
 {
     char     name[64];   // 1 type, name 0, 19.
@@ -2687,13 +2687,13 @@ struct bJoystickSensor
     int      precision;  // 11 type, name 4, 2690.
 };
 
-// 159 DNA structure 382, 1
+// zu DNA structure 159, 382
 struct bExpressionCont
 {
     char    str[128];// 1 type, name 0, 2691.
 };
 
-// 160 DNA structure 383, 4
+// zu DNA structure 160, 383
 struct bPythonCont
 {
     Text    *text;     // 1 type, name 38, 1976.
@@ -2702,7 +2702,7 @@ struct bPythonCont
     int     flag;      // 4 type, name 4, 18.
 };
 
-// 161 DNA structure 380, 18
+// zu DNA structure 161, 380
 struct bController
 {
     bController    *next;     // 1 type, name 380, 0.
@@ -2725,7 +2725,7 @@ struct bController
     int            state_mask;// 18 type, name 4, 2697.
 };
 
-// 162 DNA structure 385, 3
+// zu DNA structure 162, 385
 struct bAddObjectActuator
 {
     int       time;// 1 type, name 4, 784.
@@ -2733,7 +2733,7 @@ struct bAddObjectActuator
     Object    *ob; // 3 type, name 29, 44.
 };
 
-// 163 DNA structure 386, 15
+// zu DNA structure 163, 386
 struct bActionActuator
 {
     bAction    *act;         // 1 type, name 193, 2698.
@@ -2753,7 +2753,7 @@ struct bActionActuator
     float      layer_weight; // 15 type, name 7, 2705.
 };
 
-// 164 DNA structure 387, 8
+// zu DNA structure 164, 387
 struct Sound3D
 {
     float    min_gain;          // 1 type, name 7, 2706.
@@ -2766,7 +2766,7 @@ struct Sound3D
     float    cone_outer_gain;   // 8 type, name 7, 2713.
 };
 
-// 165 DNA structure 389, 14
+// zu DNA structure 165, 389
 struct bEditObjectActuator
 {
     int       time;          // 1 type, name 4, 784.
@@ -2785,7 +2785,7 @@ struct bEditObjectActuator
     int       pad;           // 14 type, name 4, 66.
 };
 
-// 166 DNA structure 390, 5
+// zu DNA structure 166, 390
 struct bSceneActuator
 {
     short     type;   // 1 type, name 2, 16.
@@ -2795,7 +2795,7 @@ struct bSceneActuator
     Object    *camera;// 5 type, name 29, 1603.
 };
 
-// 167 DNA structure 391, 5
+// zu DNA structure 167, 391
 struct bPropertyActuator
 {
     int       pad;      // 1 type, name 4, 66.
@@ -2805,7 +2805,7 @@ struct bPropertyActuator
     Object    *ob;      // 5 type, name 29, 44.
 };
 
-// 168 DNA structure 392, 13
+// zu DNA structure 168, 392
 struct bObjectActuator
 {
     short     flag;              // 1 type, name 2, 18.
@@ -2823,7 +2823,7 @@ struct bObjectActuator
     Object    *reference;        // 13 type, name 29, 2727.
 };
 
-// 169 DNA structure 393, 10
+// zu DNA structure 169, 393
 struct bIpoActuator
 {
     short    flag;         // 1 type, name 2, 18.
@@ -2838,7 +2838,7 @@ struct bIpoActuator
     short    pad4;         // 10 type, name 2, 1499.
 };
 
-// 170 DNA structure 394, 8
+// zu DNA structure 170, 394
 struct bCameraActuator
 {
     Object    *ob;    // 1 type, name 29, 44.
@@ -2851,7 +2851,7 @@ struct bCameraActuator
     float     pad2;   // 8 type, name 7, 29.
 };
 
-// 171 DNA structure 395, 12
+// zu DNA structure 171, 395
 struct bConstraintActuator
 {
     short    type;       // 1 type, name 2, 16.
@@ -2868,7 +2868,7 @@ struct bConstraintActuator
     char     matprop[64];// 12 type, name 0, 2735.
 };
 
-// 172 DNA structure 396, 9
+// zu DNA structure 172, 396
 struct bGroupActuator
 {
     short    flag;    // 1 type, name 2, 18.
@@ -2882,7 +2882,7 @@ struct bGroupActuator
     short    butend;  // 9 type, name 2, 2737.
 };
 
-// 173 DNA structure 397, 7
+// zu DNA structure 173, 397
 struct bRandomActuator
 {
     int      seed;        // 1 type, name 4, 756.
@@ -2894,7 +2894,7 @@ struct bRandomActuator
     char     propname[64];// 7 type, name 0, 2658.
 };
 
-// 174 DNA structure 398, 7
+// zu DNA structure 174, 398
 struct bMessageActuator
 {
     char      toPropName[64];// 1 type, name 0, 2743.
@@ -2906,7 +2906,7 @@ struct bMessageActuator
     char      body[64];      // 7 type, name 0, 2677.
 };
 
-// 175 DNA structure 399, 6
+// zu DNA structure 175, 399
 struct bGameActuator
 {
     short    flag;           // 1 type, name 2, 18.
@@ -2917,13 +2917,13 @@ struct bGameActuator
     char     loadaniname[64];// 6 type, name 0, 2747.
 };
 
-// 176 DNA structure 400, 1
+// zu DNA structure 176, 400
 struct bVisibilityActuator
 {
     int    flag;// 1 type, name 4, 18.
 };
 
-// 177 DNA structure 401, 6
+// zu DNA structure 177, 401
 struct bTwoDFilterActuator
 {
     char     pad[4];   // 1 type, name 0, 585.
@@ -2934,7 +2934,7 @@ struct bTwoDFilterActuator
     Text     *text;    // 6 type, name 38, 1976.
 };
 
-// 178 DNA structure 402, 4
+// zu DNA structure 178, 402
 struct bParentActuator
 {
     char      pad[2];// 1 type, name 0, 187.
@@ -2943,14 +2943,14 @@ struct bParentActuator
     Object    *ob;   // 4 type, name 29, 44.
 };
 
-// 179 DNA structure 403, 2
+// zu DNA structure 179, 403
 struct bStateActuator
 {
     int    type;// 1 type, name 4, 16.
     int    mask;// 2 type, name 4, 1877.
 };
 
-// 180 DNA structure 404, 8
+// zu DNA structure 180, 404
 struct bArmatureActuator
 {
     char      posechannel[64];// 1 type, name 0, 2673.
@@ -2963,7 +2963,7 @@ struct bArmatureActuator
     Object    *subtarget;     // 8 type, name 29, 2751.
 };
 
-// 181 DNA structure 405, 11
+// zu DNA structure 181, 405
 struct bSteeringActuator
 {
     char      pad[5];      // 1 type, name 0, 2752.
@@ -2979,7 +2979,7 @@ struct bSteeringActuator
     Object    *navmesh;    // 11 type, name 29, 2758.
 };
 
-// 182 DNA structure 406, 7
+// zu DNA structure 182, 406
 struct bMouseActuator
 {
     short    type;          // 1 type, name 2, 16.
@@ -2991,7 +2991,7 @@ struct bMouseActuator
     float    limit_y[2];    // 7 type, name 7, 2763.
 };
 
-// 183 DNA structure 384, 10
+// zu DNA structure 183, 384
 struct bActuator
 {
     bActuator    *next;   // 1 type, name 384, 0.
@@ -3006,7 +3006,7 @@ struct bActuator
     Object       *ob;     // 10 type, name 29, 44.
 };
 
-// 184 DNA structure 407, 6
+// zu DNA structure 184, 407
 struct GroupObject
 {
     GroupObject    *next;   // 1 type, name 407, 0.
@@ -3017,14 +3017,14 @@ struct GroupObject
     char           pad[6];  // 6 type, name 0, 752.
 };
 
-// 185 DNA structure 411, 2
+// zu DNA structure 185, 411
 struct bMotionPathVert
 {
     float    co[3];// 1 type, name 7, 706.
     int      flag; // 2 type, name 4, 18.
 };
 
-// 186 DNA structure 197, 5
+// zu DNA structure 186, 197
 struct bMotionPath
 {
     bMotionPathVert    *points;    // 1 type, name 411, 2808.
@@ -3034,7 +3034,7 @@ struct bMotionPath
     int                flag;       // 5 type, name 4, 18.
 };
 
-// 187 DNA structure 196, 16
+// zu DNA structure 187, 196
 struct bAnimVizSettings
 {
     int      ghost_sf;     // 1 type, name 4, 2811.
@@ -3055,13 +3055,13 @@ struct bAnimVizSettings
     int      path_ac;      // 16 type, name 4, 2825.
 };
 
-// 188 DNA structure 413, 1
+// zu DNA structure 188, 413
 struct bIKParam
 {
     int    iksolver;// 1 type, name 4, 2856.
 };
 
-// 189 DNA structure 414, 12
+// zu DNA structure 189, 414
 struct bItasc
 {
     int      iksolver; // 1 type, name 4, 2856.
@@ -3078,7 +3078,7 @@ struct bItasc
     float    dampeps;  // 12 type, name 7, 2868.
 };
 
-// 190 DNA structure 418, 5
+// zu DNA structure 190, 418
 struct bConstraintChannel
 {
     bConstraintChannel    *next;   // 1 type, name 418, 0.
@@ -3088,7 +3088,7 @@ struct bConstraintChannel
     char                  name[30];// 5 type, name 0, 2883.
 };
 
-// 191 DNA structure 419, 14
+// zu DNA structure 191, 419
 struct bConstraint
 {
     bConstraint    *next;    // 1 type, name 419, 0.
@@ -3107,7 +3107,7 @@ struct bConstraint
     float          rot_error;// 14 type, name 7, 2889.
 };
 
-// 192 DNA structure 420, 9
+// zu DNA structure 192, 420
 struct bConstraintTarget
 {
     bConstraintTarget    *next;        // 1 type, name 420, 0.
@@ -3121,7 +3121,7 @@ struct bConstraintTarget
     short                rotOrder;     // 9 type, name 2, 2893.
 };
 
-// 193 DNA structure 422, 15
+// zu DNA structure 193, 422
 struct bKinematicConstraint
 {
     Object    *tar;             // 1 type, name 29, 2890.
@@ -3141,7 +3141,7 @@ struct bKinematicConstraint
     float     dist;             // 15 type, name 7, 358.
 };
 
-// 194 DNA structure 423, 10
+// zu DNA structure 194, 423
 struct bSplineIKConstraint
 {
     Object    *tar;        // 1 type, name 29, 2890.
@@ -3156,7 +3156,7 @@ struct bSplineIKConstraint
     float     bulge_smooth;// 10 type, name 7, 2910.
 };
 
-// 195 DNA structure 424, 6
+// zu DNA structure 195, 424
 struct bTrackToConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3167,7 +3167,7 @@ struct bTrackToConstraint
     char      subtarget[64];// 6 type, name 0, 814.
 };
 
-// 196 DNA structure 425, 4
+// zu DNA structure 196, 425
 struct bRotateLikeConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3176,7 +3176,7 @@ struct bRotateLikeConstraint
     char      subtarget[64];// 4 type, name 0, 814.
 };
 
-// 197 DNA structure 426, 4
+// zu DNA structure 197, 426
 struct bLocateLikeConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3185,7 +3185,7 @@ struct bLocateLikeConstraint
     char      subtarget[64];// 4 type, name 0, 814.
 };
 
-// 198 DNA structure 427, 4
+// zu DNA structure 198, 427
 struct bSizeLikeConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3194,21 +3194,21 @@ struct bSizeLikeConstraint
     char      subtarget[64];// 4 type, name 0, 814.
 };
 
-// 199 DNA structure 428, 2
+// zu DNA structure 199, 428
 struct bSameVolumeConstraint
 {
     int      flag;  // 1 type, name 4, 18.
     float    volume;// 2 type, name 7, 1197.
 };
 
-// 200 DNA structure 429, 2
+// zu DNA structure 200, 429
 struct bTransLikeConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
     char      subtarget[64];// 2 type, name 0, 814.
 };
 
-// 201 DNA structure 430, 10
+// zu DNA structure 201, 430
 struct bMinMaxConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3223,7 +3223,7 @@ struct bMinMaxConstraint
     char      subtarget[64];// 10 type, name 0, 814.
 };
 
-// 202 DNA structure 431, 10
+// zu DNA structure 202, 431
 struct bActionConstraint
 {
     Object     *tar;         // 1 type, name 29, 2890.
@@ -3238,7 +3238,7 @@ struct bActionConstraint
     char       subtarget[64];// 10 type, name 0, 814.
 };
 
-// 203 DNA structure 432, 4
+// zu DNA structure 203, 432
 struct bLockTrackConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3247,7 +3247,7 @@ struct bLockTrackConstraint
     char      subtarget[64];// 4 type, name 0, 814.
 };
 
-// 204 DNA structure 433, 4
+// zu DNA structure 204, 433
 struct bDampTrackConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3256,7 +3256,7 @@ struct bDampTrackConstraint
     char      subtarget[64];// 4 type, name 0, 814.
 };
 
-// 205 DNA structure 434, 6
+// zu DNA structure 205, 434
 struct bFollowPathConstraint
 {
     Object    *tar;      // 1 type, name 29, 2890.
@@ -3267,7 +3267,7 @@ struct bFollowPathConstraint
     short     upflag;    // 6 type, name 2, 1059.
 };
 
-// 206 DNA structure 435, 10
+// zu DNA structure 206, 435
 struct bStretchToConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3282,7 +3282,7 @@ struct bStretchToConstraint
     char      subtarget[64];// 10 type, name 0, 814.
 };
 
-// 207 DNA structure 436, 16
+// zu DNA structure 207, 436
 struct bRigidBodyJointConstraint
 {
     Object    *tar;       // 1 type, name 29, 2890.
@@ -3303,7 +3303,7 @@ struct bRigidBodyJointConstraint
     short     pad2;       // 16 type, name 2, 29.
 };
 
-// 208 DNA structure 437, 3
+// zu DNA structure 208, 437
 struct bClampToConstraint
 {
     Object    *tar; // 1 type, name 29, 2890.
@@ -3311,7 +3311,7 @@ struct bClampToConstraint
     int       flag2;// 3 type, name 4, 566.
 };
 
-// 209 DNA structure 438, 5
+// zu DNA structure 209, 438
 struct bChildOfConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3321,7 +3321,7 @@ struct bChildOfConstraint
     char      subtarget[64];// 5 type, name 0, 814.
 };
 
-// 210 DNA structure 439, 18
+// zu DNA structure 210, 439
 struct bTransformConstraint
 {
     Object    *tar;             // 1 type, name 29, 2890.
@@ -3344,7 +3344,7 @@ struct bTransformConstraint
     float     to_max_scale[3];  // 18 type, name 7, 2946.
 };
 
-// 211 DNA structure 440, 5
+// zu DNA structure 211, 440
 struct bPivotConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3354,7 +3354,7 @@ struct bPivotConstraint
     short     flag;         // 5 type, name 2, 18.
 };
 
-// 212 DNA structure 441, 8
+// zu DNA structure 212, 441
 struct bLocLimitConstraint
 {
     float    xmin; // 1 type, name 7, 8.
@@ -3367,7 +3367,7 @@ struct bLocLimitConstraint
     short    flag2;// 8 type, name 2, 566.
 };
 
-// 213 DNA structure 442, 8
+// zu DNA structure 213, 442
 struct bRotLimitConstraint
 {
     float    xmin; // 1 type, name 7, 8.
@@ -3380,7 +3380,7 @@ struct bRotLimitConstraint
     short    flag2;// 8 type, name 2, 566.
 };
 
-// 214 DNA structure 443, 8
+// zu DNA structure 214, 443
 struct bSizeLimitConstraint
 {
     float    xmin; // 1 type, name 7, 8.
@@ -3393,7 +3393,7 @@ struct bSizeLimitConstraint
     short    flag2;// 8 type, name 2, 566.
 };
 
-// 215 DNA structure 444, 7
+// zu DNA structure 215, 444
 struct bDistLimitConstraint
 {
     Object    *tar;         // 1 type, name 29, 2890.
@@ -3405,7 +3405,7 @@ struct bDistLimitConstraint
     int       pad;          // 7 type, name 4, 66.
 };
 
-// 216 DNA structure 445, 7
+// zu DNA structure 216, 445
 struct bShrinkwrapConstraint
 {
     Object    *target;      // 1 type, name 29, 878.
@@ -3417,7 +3417,7 @@ struct bShrinkwrapConstraint
     char      pad[4];       // 7 type, name 0, 585.
 };
 
-// 217 DNA structure 446, 7
+// zu DNA structure 217, 446
 struct bFollowTrackConstraint
 {
     MovieClip    *clip;       // 1 type, name 257, 1792.
@@ -3429,7 +3429,7 @@ struct bFollowTrackConstraint
     Object       *depth_ob;   // 7 type, name 29, 2954.
 };
 
-// 218 DNA structure 447, 3
+// zu DNA structure 218, 447
 struct bCameraSolverConstraint
 {
     MovieClip    *clip;// 1 type, name 257, 1792.
@@ -3437,7 +3437,7 @@ struct bCameraSolverConstraint
     int          pad;  // 3 type, name 4, 66.
 };
 
-// 219 DNA structure 448, 6
+// zu DNA structure 219, 448
 struct bObjectSolverConstraint
 {
     MovieClip    *clip;       // 1 type, name 257, 1792.
@@ -3448,7 +3448,7 @@ struct bObjectSolverConstraint
     Object       *camera;     // 6 type, name 29, 1603.
 };
 
-// 220 DNA structure 449, 10
+// zu DNA structure 220, 449
 struct bActionModifier
 {
     bActionModifier    *next;      // 1 type, name 449, 0.
@@ -3463,7 +3463,7 @@ struct bActionModifier
     Object             *ob;        // 10 type, name 29, 44.
 };
 
-// 221 DNA structure 451, 11
+// zu DNA structure 221, 451
 struct bNodeStack
 {
     float    vec[4];    // 1 type, name 7, 586.
@@ -3479,13 +3479,13 @@ struct bNodeStack
     short    pad[2];    // 11 type, name 2, 187.
 };
 
-// 222 DNA structure 298, 1
+// zu DNA structure 222, 298
 struct bNodeInstanceKey
 {
     int    value;// 1 type, name 4, 772.
 };
 
-// 223 DNA structure 454, 8
+// zu DNA structure 223, 454
 struct bNodeLink
 {
     bNodeLink      *next;    // 1 type, name 454, 0.
@@ -3498,7 +3498,7 @@ struct bNodeLink
     int            pad;      // 8 type, name 4, 66.
 };
 
-// 224 DNA structure 464, 4
+// zu DNA structure 224, 464
 struct bNodeSocketValueInt
 {
     int    subtype;// 1 type, name 4, 17.
@@ -3507,7 +3507,7 @@ struct bNodeSocketValueInt
     int    max;    // 4 type, name 4, 2729.
 };
 
-// 225 DNA structure 465, 4
+// zu DNA structure 225, 465
 struct bNodeSocketValueFloat
 {
     int      subtype;// 1 type, name 4, 17.
@@ -3516,14 +3516,14 @@ struct bNodeSocketValueFloat
     float    max;    // 4 type, name 7, 2729.
 };
 
-// 226 DNA structure 466, 2
+// zu DNA structure 226, 466
 struct bNodeSocketValueBoolean
 {
     char    value; // 1 type, name 0, 772.
     char    pad[3];// 2 type, name 0, 350.
 };
 
-// 227 DNA structure 467, 4
+// zu DNA structure 227, 467
 struct bNodeSocketValueVector
 {
     int      subtype; // 1 type, name 4, 17.
@@ -3532,13 +3532,13 @@ struct bNodeSocketValueVector
     float    max;     // 4 type, name 7, 2729.
 };
 
-// 228 DNA structure 468, 1
+// zu DNA structure 228, 468
 struct bNodeSocketValueRGBA
 {
     float    value[4];// 1 type, name 7, 3043.
 };
 
-// 229 DNA structure 469, 3
+// zu DNA structure 229, 469
 struct bNodeSocketValueString
 {
     int     subtype;    // 1 type, name 4, 17.
@@ -3546,14 +3546,14 @@ struct bNodeSocketValueString
     char    value[1024];// 3 type, name 0, 3044.
 };
 
-// 230 DNA structure 470, 2
+// zu DNA structure 230, 470
 struct NodeFrame
 {
     short    flag;      // 1 type, name 2, 18.
     short    label_size;// 2 type, name 2, 3045.
 };
 
-// 231 DNA structure 471, 6
+// zu DNA structure 231, 471
 struct NodeImageAnim
 {
     int      frames;// 1 type, name 4, 133.
@@ -3564,7 +3564,7 @@ struct NodeImageAnim
     short    pad;   // 6 type, name 2, 66.
 };
 
-// 232 DNA structure 472, 6
+// zu DNA structure 232, 472
 struct ColorCorrectionData
 {
     float    saturation;// 1 type, name 7, 300.
@@ -3575,7 +3575,7 @@ struct ColorCorrectionData
     int      pad;       // 6 type, name 4, 66.
 };
 
-// 233 DNA structure 474, 5
+// zu DNA structure 233, 474
 struct NodeBokehImage
 {
     float    angle;       // 1 type, name 7, 797.
@@ -3585,7 +3585,7 @@ struct NodeBokehImage
     float    lensshift;   // 5 type, name 7, 3060.
 };
 
-// 234 DNA structure 475, 6
+// zu DNA structure 234, 475
 struct NodeBoxMask
 {
     float    x;       // 1 type, name 7, 5.
@@ -3596,7 +3596,7 @@ struct NodeBoxMask
     int      pad;     // 6 type, name 4, 66.
 };
 
-// 235 DNA structure 476, 6
+// zu DNA structure 235, 476
 struct NodeEllipseMask
 {
     float    x;       // 1 type, name 7, 5.
@@ -3607,14 +3607,14 @@ struct NodeEllipseMask
     int      pad;     // 6 type, name 4, 66.
 };
 
-// 236 DNA structure 477, 2
+// zu DNA structure 236, 477
 struct NodeImageLayer
 {
     int    pass_index;// 1 type, name 4, 3061.
     int    pass_flag; // 2 type, name 4, 3062.
 };
 
-// 237 DNA structure 478, 16
+// zu DNA structure 237, 478
 struct NodeBlurData
 {
     short    sizex;          // 1 type, name 2, 2467.
@@ -3635,7 +3635,7 @@ struct NodeBlurData
     int      image_in_height;// 16 type, name 4, 3070.
 };
 
-// 238 DNA structure 479, 9
+// zu DNA structure 238, 479
 struct NodeDBlurData
 {
     float    center_x;// 1 type, name 7, 3071.
@@ -3649,7 +3649,7 @@ struct NodeDBlurData
     char     pad;     // 9 type, name 0, 66.
 };
 
-// 239 DNA structure 480, 4
+// zu DNA structure 239, 480
 struct NodeBilateralBlurData
 {
     float    sigma_color;// 1 type, name 7, 3075.
@@ -3658,7 +3658,7 @@ struct NodeBilateralBlurData
     short    pad;        // 4 type, name 2, 66.
 };
 
-// 240 DNA structure 481, 3
+// zu DNA structure 240, 481
 struct NodeHueSat
 {
     float    hue;// 1 type, name 7, 3077.
@@ -3666,7 +3666,7 @@ struct NodeHueSat
     float    val;// 3 type, name 7, 14.
 };
 
-// 241 DNA structure 485, 9
+// zu DNA structure 241, 485
 struct NodeChroma
 {
     float    t1;       // 1 type, name 7, 3084.
@@ -3680,7 +3680,7 @@ struct NodeChroma
     short    channel;  // 9 type, name 2, 3091.
 };
 
-// 242 DNA structure 486, 8
+// zu DNA structure 242, 486
 struct NodeTwoXYs
 {
     short    x1;    // 1 type, name 2, 3092.
@@ -3693,27 +3693,27 @@ struct NodeTwoXYs
     float    fac_y2;// 8 type, name 7, 3099.
 };
 
-// 243 DNA structure 487, 2
+// zu DNA structure 243, 487
 struct NodeTwoFloats
 {
     float    x;// 1 type, name 7, 5.
     float    y;// 2 type, name 7, 6.
 };
 
-// 244 DNA structure 488, 2
+// zu DNA structure 244, 488
 struct NodeGeometry
 {
     char    uvname[64]; // 1 type, name 0, 180.
     char    colname[64];// 2 type, name 0, 3100.
 };
 
-// 245 DNA structure 489, 1
+// zu DNA structure 245, 489
 struct NodeVertexCol
 {
     char    name[64];// 1 type, name 0, 19.
 };
 
-// 246 DNA structure 490, 12
+// zu DNA structure 246, 490
 struct NodeDefocus
 {
     char     bktype;  // 1 type, name 0, 3101.
@@ -3730,14 +3730,14 @@ struct NodeDefocus
     float    pad_f1;  // 12 type, name 7, 3107.
 };
 
-// 247 DNA structure 491, 2
+// zu DNA structure 247, 491
 struct NodeScriptDict
 {
     void    *dict;// 1 type, name 11, 3108.
     void    *node;// 2 type, name 11, 3109.
 };
 
-// 248 DNA structure 492, 13
+// zu DNA structure 248, 492
 struct NodeGlare
 {
     char     quality;  // 1 type, name 0, 1444.
@@ -3755,7 +3755,7 @@ struct NodeGlare
     float    pad_f1;   // 13 type, name 7, 3107.
 };
 
-// 249 DNA structure 493, 8
+// zu DNA structure 249, 493
 struct NodeTonemap
 {
     float    key;   // 1 type, name 7, 2661.
@@ -3768,7 +3768,7 @@ struct NodeTonemap
     int      type;  // 8 type, name 4, 16.
 };
 
-// 250 DNA structure 494, 4
+// zu DNA structure 250, 494
 struct NodeLensDist
 {
     short    jit; // 1 type, name 2, 3116.
@@ -3777,7 +3777,7 @@ struct NodeLensDist
     short    pad; // 4 type, name 2, 66.
 };
 
-// 251 DNA structure 495, 6
+// zu DNA structure 251, 495
 struct NodeColorBalance
 {
     float    slope[3]; // 1 type, name 7, 3119.
@@ -3788,7 +3788,7 @@ struct NodeColorBalance
     float    gain[3];  // 6 type, name 7, 2533.
 };
 
-// 252 DNA structure 496, 6
+// zu DNA structure 252, 496
 struct NodeColorspill
 {
     short    limchan; // 1 type, name 2, 3121.
@@ -3799,27 +3799,27 @@ struct NodeColorspill
     float    uspillb; // 6 type, name 7, 3126.
 };
 
-// 253 DNA structure 497, 2
+// zu DNA structure 253, 497
 struct NodeDilateErode
 {
     char    falloff;// 1 type, name 0, 808.
     char    pad[7]; // 2 type, name 0, 115.
 };
 
-// 254 DNA structure 498, 2
+// zu DNA structure 254, 498
 struct NodeMask
 {
     int    size_x;// 1 type, name 4, 2608.
     int    size_y;// 2 type, name 4, 2609.
 };
 
-// 255 DNA structure 511, 1
+// zu DNA structure 255, 511
 struct NodeShaderAttribute
 {
     char    name[64];// 1 type, name 0, 19.
 };
 
-// 256 DNA structure 512, 4
+// zu DNA structure 256, 512
 struct NodeShaderVectTransform
 {
     int    type;        // 1 type, name 4, 16.
@@ -3828,19 +3828,19 @@ struct NodeShaderVectTransform
     int    pad;         // 4 type, name 4, 66.
 };
 
-// 257 DNA structure 513, 1
+// zu DNA structure 257, 513
 struct TexNodeOutput
 {
     char    name[64];// 1 type, name 0, 19.
 };
 
-// 258 DNA structure 514, 1
+// zu DNA structure 258, 514
 struct NodeKeyingScreenData
 {
     char    tracking_object[64];// 1 type, name 0, 3145.
 };
 
-// 259 DNA structure 515, 12
+// zu DNA structure 259, 515
 struct NodeKeyingData
 {
     float    screen_balance;       // 1 type, name 7, 3146.
@@ -3857,14 +3857,14 @@ struct NodeKeyingData
     int      blur_post;            // 12 type, name 4, 3157.
 };
 
-// 260 DNA structure 516, 2
+// zu DNA structure 260, 516
 struct NodeTrackPosData
 {
     char    tracking_object[64];// 1 type, name 0, 3145.
     char    track_name[64];     // 2 type, name 0, 3158.
 };
 
-// 261 DNA structure 517, 3
+// zu DNA structure 261, 517
 struct NodeTranslateData
 {
     char    wrap_axis;// 1 type, name 0, 3159.
@@ -3872,7 +3872,7 @@ struct NodeTranslateData
     char    pad[6];   // 3 type, name 0, 752.
 };
 
-// 262 DNA structure 518, 6
+// zu DNA structure 262, 518
 struct NodePlaneTrackDeformData
 {
     char     tracking_object[64]; // 1 type, name 0, 3145.
@@ -3883,7 +3883,7 @@ struct NodePlaneTrackDeformData
     float    motion_blur_shutter; // 6 type, name 7, 3162.
 };
 
-// 263 DNA structure 519, 5
+// zu DNA structure 263, 519
 struct NodeShaderScript
 {
     int     mode;             // 1 type, name 4, 351.
@@ -3893,7 +3893,7 @@ struct NodeShaderScript
     char    *bytecode;        // 5 type, name 0, 3164.
 };
 
-// 264 DNA structure 520, 3
+// zu DNA structure 264, 520
 struct NodeShaderTangent
 {
     int     direction_type;// 1 type, name 4, 3165.
@@ -3901,27 +3901,27 @@ struct NodeShaderTangent
     char    uv_map[64];    // 3 type, name 0, 3166.
 };
 
-// 265 DNA structure 521, 2
+// zu DNA structure 265, 521
 struct NodeShaderNormalMap
 {
     int     space;     // 1 type, name 4, 2892.
     char    uv_map[64];// 2 type, name 0, 3166.
 };
 
-// 266 DNA structure 522, 1
+// zu DNA structure 266, 522
 struct NodeShaderUVMap
 {
     char    uv_map[64];// 1 type, name 0, 3166.
 };
 
-// 267 DNA structure 523, 2
+// zu DNA structure 267, 523
 struct NodeSunBeams
 {
     float    source[2]; // 1 type, name 7, 3167.
     float    ray_length;// 2 type, name 7, 3168.
 };
 
-// 268 DNA structure 524, 4
+// zu DNA structure 268, 524
 struct CurveMapPoint
 {
     float    x;     // 1 type, name 7, 5.
@@ -3930,7 +3930,7 @@ struct CurveMapPoint
     short    shorty;// 4 type, name 2, 3169.
 };
 
-// 269 DNA structure 525, 12
+// zu DNA structure 269, 525
 struct CurveMap
 {
     short            totpoint;         // 1 type, name 2, 1176.
@@ -3947,7 +3947,7 @@ struct CurveMap
     float            premul_ext_out[2];// 12 type, name 7, 3178.
 };
 
-// 270 DNA structure 293, 13
+// zu DNA structure 270, 293
 struct Histogram
 {
     int      channels;      // 1 type, name 4, 2869.
@@ -3965,7 +3965,7 @@ struct Histogram
     float    co[2][2];      // 13 type, name 7, 3194.
 };
 
-// 271 DNA structure 226, 8
+// zu DNA structure 271, 226
 struct ColorManagedViewSettings
 {
     int             flag;              // 1 type, name 4, 18.
@@ -3978,19 +3978,19 @@ struct ColorManagedViewSettings
     void            *pad2;             // 8 type, name 11, 1637.
 };
 
-// 272 DNA structure 227, 1
+// zu DNA structure 272, 227
 struct ColorManagedDisplaySettings
 {
     char    display_device[64];// 1 type, name 0, 3214.
 };
 
-// 273 DNA structure 50, 1
+// zu DNA structure 273, 50
 struct ColorManagedColorspaceSettings
 {
     char    name[64];// 1 type, name 0, 19.
 };
 
-// 274 DNA structure 526, 4
+// zu DNA structure 274, 526
 struct BrushClone
 {
     Image    *image;   // 1 type, name 46, 788.
@@ -3999,7 +3999,7 @@ struct BrushClone
     float    pad;      // 4 type, name 7, 66.
 };
 
-// 275 DNA structure 528, 4
+// zu DNA structure 275, 528
 struct PaletteColor
 {
     PaletteColor    *next; // 1 type, name 528, 0.
@@ -4008,7 +4008,7 @@ struct PaletteColor
     float           value; // 4 type, name 7, 772.
 };
 
-// 276 DNA structure 530, 10
+// zu DNA structure 276, 530
 struct CustomDataLayer
 {
     int     type;        // 1 type, name 4, 16.
@@ -4023,13 +4023,13 @@ struct CustomDataLayer
     void    *data;       // 10 type, name 11, 2.
 };
 
-// 277 DNA structure 531, 1
+// zu DNA structure 277, 531
 struct CustomDataExternal
 {
     char    filename[1024];// 1 type, name 0, 2041.
 };
 
-// 278 DNA structure 97, 8
+// zu DNA structure 278, 97
 struct CustomData
 {
     CustomDataLayer       *layers;    // 1 type, name 530, 3269.
@@ -4042,7 +4042,7 @@ struct CustomData
     CustomDataExternal    *external;  // 8 type, name 531, 3275.
 };
 
-// 279 DNA structure 532, 6
+// zu DNA structure 279, 532
 struct HairKey
 {
     float    co[3];      // 1 type, name 7, 706.
@@ -4053,7 +4053,7 @@ struct HairKey
     float    world_co[3];// 6 type, name 7, 3276.
 };
 
-// 280 DNA structure 533, 5
+// zu DNA structure 280, 533
 struct ParticleKey
 {
     float    co[3]; // 1 type, name 7, 706.
@@ -4063,7 +4063,7 @@ struct ParticleKey
     float    time;  // 5 type, name 7, 784.
 };
 
-// 281 DNA structure 536, 3
+// zu DNA structure 281, 536
 struct ParticleSpring
 {
     float    rest_length;      // 1 type, name 7, 3281.
@@ -4071,7 +4071,7 @@ struct ParticleSpring
     int      delete_flag;      // 3 type, name 4, 3283.
 };
 
-// 282 DNA structure 537, 7
+// zu DNA structure 282, 537
 struct ChildParticle
 {
     int      num;    // 1 type, name 4, 3284.
@@ -4083,7 +4083,7 @@ struct ChildParticle
     float    rt;     // 7 type, name 7, 56.
 };
 
-// 283 DNA structure 538, 8
+// zu DNA structure 283, 538
 struct ParticleTarget
 {
     ParticleTarget    *next;   // 1 type, name 538, 0.
@@ -4096,7 +4096,7 @@ struct ParticleTarget
     float             duration;// 8 type, name 7, 2669.
 };
 
-// 284 DNA structure 539, 7
+// zu DNA structure 284, 539
 struct ParticleDupliWeight
 {
     ParticleDupliWeight    *next;// 1 type, name 539, 0.
@@ -4108,7 +4108,7 @@ struct ParticleDupliWeight
     short                  rt;   // 7 type, name 2, 56.
 };
 
-// 285 DNA structure 541, 17
+// zu DNA structure 285, 541
 struct SPHFluidSettings
 {
     float    radius;             // 1 type, name 7, 261.
@@ -4130,7 +4130,7 @@ struct SPHFluidSettings
     short    pad[3];             // 17 type, name 2, 350.
 };
 
-// 286 DNA structure 142, 46
+// zu DNA structure 286, 142
 struct ClothSimSettings
 {
     void               *cache;           // Note: using void* on undefined DNA type: LinkNode
@@ -4181,7 +4181,7 @@ struct ClothSimSettings
     EffectorWeights    *effector_weights;// 46 type, name 207, 1267.
 };
 
-// 287 DNA structure 143, 15
+// zu DNA structure 287, 143
 struct ClothCollSettings
 {
     void        *collision_list;// Note: using void* on undefined DNA type: LinkNode
@@ -4201,7 +4201,7 @@ struct ClothCollSettings
     short       pad2[3];        // 15 type, name 2, 3487.
 };
 
-// 288 DNA structure 550, 6
+// zu DNA structure 288, 550
 struct bGPDspoint
 {
     float    x;       // 1 type, name 7, 5.
@@ -4212,7 +4212,7 @@ struct bGPDspoint
     int      flag;    // 6 type, name 4, 18.
 };
 
-// 289 DNA structure 551, 8
+// zu DNA structure 289, 551
 struct bGPDstroke
 {
     bGPDstroke    *next;    // 1 type, name 551, 0.
@@ -4225,7 +4225,7 @@ struct bGPDstroke
     double        inittime; // 8 type, name 8, 3489.
 };
 
-// 290 DNA structure 562, 18
+// zu DNA structure 290, 562
 struct wmKeyMapItem
 {
     wmKeyMapItem    *next;            // 1 type, name 562, 0.
@@ -4248,7 +4248,7 @@ struct wmKeyMapItem
     void            *ptr;             // Note: using void* on undefined DNA type: PointerRNA
 };
 
-// 291 DNA structure 564, 4
+// zu DNA structure 291, 564
 struct wmKeyMapDiffItem
 {
     wmKeyMapDiffItem    *next;       // 1 type, name 564, 0.
@@ -4257,7 +4257,7 @@ struct wmKeyMapDiffItem
     wmKeyMapItem        *add_item;   // 4 type, name 562, 3562.
 };
 
-// 292 DNA structure 567, 11
+// zu DNA structure 292, 567
 struct FModifier
 {
     FModifier    *next;    // 1 type, name 567, 0.
@@ -4273,7 +4273,7 @@ struct FModifier
     float        blendout; // 11 type, name 7, 2963.
 };
 
-// 293 DNA structure 568, 5
+// zu DNA structure 293, 568
 struct FMod_Generator
 {
     float    *coefficients;// 1 type, name 7, 3577.
@@ -4283,7 +4283,7 @@ struct FMod_Generator
     int      flag;         // 5 type, name 4, 18.
 };
 
-// 294 DNA structure 569, 6
+// zu DNA structure 294, 569
 struct FMod_FunctionGenerator
 {
     float    amplitude;       // 1 type, name 7, 583.
@@ -4294,7 +4294,7 @@ struct FMod_FunctionGenerator
     int      flag;            // 6 type, name 4, 18.
 };
 
-// 295 DNA structure 570, 5
+// zu DNA structure 295, 570
 struct FCM_EnvelopeData
 {
     float    min; // 1 type, name 7, 2728.
@@ -4304,7 +4304,7 @@ struct FCM_EnvelopeData
     short    f2;  // 5 type, name 2, 578.
 };
 
-// 296 DNA structure 571, 5
+// zu DNA structure 296, 571
 struct FMod_Envelope
 {
     FCM_EnvelopeData    *data;  // 1 type, name 570, 2.
@@ -4314,7 +4314,7 @@ struct FMod_Envelope
     float               max;    // 5 type, name 7, 2729.
 };
 
-// 297 DNA structure 572, 4
+// zu DNA structure 297, 572
 struct FMod_Cycles
 {
     short    before_mode;  // 1 type, name 2, 3584.
@@ -4323,14 +4323,14 @@ struct FMod_Cycles
     short    after_cycles; // 4 type, name 2, 3587.
 };
 
-// 298 DNA structure 573, 2
+// zu DNA structure 298, 573
 struct FMod_Python
 {
     Text          *script;// 1 type, name 38, 2009.
     IDProperty    *prop;  // 2 type, name 21, 2322.
 };
 
-// 299 DNA structure 575, 6
+// zu DNA structure 299, 575
 struct FMod_Noise
 {
     float    size;        // 1 type, name 7, 101.
@@ -4341,7 +4341,7 @@ struct FMod_Noise
     short    modification;// 6 type, name 2, 3590.
 };
 
-// 300 DNA structure 576, 5
+// zu DNA structure 300, 576
 struct FMod_Stepped
 {
     float    step_size;  // 1 type, name 7, 3591.
@@ -4351,7 +4351,7 @@ struct FMod_Stepped
     int      flag;       // 5 type, name 4, 18.
 };
 
-// 301 DNA structure 577, 6
+// zu DNA structure 301, 577
 struct DriverTarget
 {
     ID       *id;           // 1 type, name 22, 2014.
@@ -4362,7 +4362,7 @@ struct DriverTarget
     int      idtype;        // 6 type, name 4, 3595.
 };
 
-// 302 DNA structure 580, 3
+// zu DNA structure 302, 580
 struct FPoint
 {
     float    vec[2];// 1 type, name 7, 3601.
@@ -4370,14 +4370,14 @@ struct FPoint
     int      pad;   // 3 type, name 4, 66.
 };
 
-// 303 DNA structure 582, 2
+// zu DNA structure 303, 582
 struct AnimMapPair
 {
     char    from[128];// 1 type, name 0, 3605.
     char    to[128];  // 2 type, name 0, 3606.
 };
 
-// 304 DNA structure 586, 11
+// zu DNA structure 304, 586
 struct KS_Path
 {
     KS_Path    *next;         // 1 type, name 586, 0.
@@ -4393,7 +4393,7 @@ struct KS_Path
     short      keyingoverride;// 11 type, name 2, 3618.
 };
 
-// 305 DNA structure 588, 5
+// zu DNA structure 305, 588
 struct AnimOverride
 {
     AnimOverride    *next;      // 1 type, name 588, 0.
@@ -4403,7 +4403,7 @@ struct AnimOverride
     float           value;      // 5 type, name 7, 772.
 };
 
-// 306 DNA structure 590, 5
+// zu DNA structure 306, 590
 struct BoidRule
 {
     BoidRule    *next;   // 1 type, name 590, 0.
@@ -4413,7 +4413,7 @@ struct BoidRule
     char        name[32];// 5 type, name 0, 1563.
 };
 
-// 307 DNA structure 535, 4
+// zu DNA structure 307, 535
 struct BoidData
 {
     float    health;  // 1 type, name 7, 3640.
@@ -4422,7 +4422,7 @@ struct BoidData
     short    mode;    // 4 type, name 2, 351.
 };
 
-// 308 DNA structure 129, 26
+// zu DNA structure 308, 129
 struct SmokeFlowSettings
 {
     SmokeModifierData    *smd;            // 1 type, name 127, 3663.
@@ -4453,7 +4453,7 @@ struct SmokeFlowSettings
     int                  flags;           // 26 type, name 4, 89.
 };
 
-// 309 DNA structure 130, 6
+// zu DNA structure 309, 130
 struct SmokeCollSettings
 {
     SmokeModifierData    *smd;      // 1 type, name 127, 3663.
@@ -4464,7 +4464,7 @@ struct SmokeCollSettings
     short                pad;       // 6 type, name 2, 66.
 };
 
-// 310 DNA structure 260, 3
+// zu DNA structure 310, 260
 struct MovieClipUser
 {
     int      framenr;    // 1 type, name 4, 132.
@@ -4472,7 +4472,7 @@ struct MovieClipUser
     short    render_flag;// 3 type, name 2, 3734.
 };
 
-// 311 DNA structure 600, 5
+// zu DNA structure 311, 600
 struct MovieClipProxy
 {
     char     dir[768];       // 1 type, name 0, 2534.
@@ -4482,7 +4482,7 @@ struct MovieClipProxy
     short    build_tc_flag;  // 5 type, name 2, 3736.
 };
 
-// 312 DNA structure 605, 3
+// zu DNA structure 312, 605
 struct MovieReconstructedCamera
 {
     int      framenr;  // 1 type, name 4, 132.
@@ -4490,7 +4490,7 @@ struct MovieReconstructedCamera
     float    mat[4][4];// 3 type, name 7, 343.
 };
 
-// 313 DNA structure 606, 14
+// zu DNA structure 313, 606
 struct MovieTrackingCamera
 {
     void     *intrinsics;     // 1 type, name 11, 3755.
@@ -4509,7 +4509,7 @@ struct MovieTrackingCamera
     float    division_k2;     // 14 type, name 7, 3766.
 };
 
-// 314 DNA structure 603, 6
+// zu DNA structure 314, 603
 struct MovieTrackingMarker
 {
     float    pos[2];               // 1 type, name 7, 3767.
@@ -4520,7 +4520,7 @@ struct MovieTrackingMarker
     int      flag;                 // 6 type, name 4, 18.
 };
 
-// 315 DNA structure 604, 26
+// zu DNA structure 315, 604
 struct MovieTrackingTrack
 {
     MovieTrackingTrack     *next;              // 1 type, name 604, 0.
@@ -4551,7 +4551,7 @@ struct MovieTrackingTrack
     float                  pad;                // 26 type, name 7, 66.
 };
 
-// 316 DNA structure 607, 3
+// zu DNA structure 316, 607
 struct MovieTrackingPlaneMarker
 {
     float    corners[4][2];// 1 type, name 7, 3784.
@@ -4559,7 +4559,7 @@ struct MovieTrackingPlaneMarker
     int      flag;         // 3 type, name 4, 18.
 };
 
-// 317 DNA structure 608, 12
+// zu DNA structure 317, 608
 struct MovieTrackingPlaneTrack
 {
     MovieTrackingPlaneTrack     *next;         // 1 type, name 608, 0.
@@ -4576,7 +4576,7 @@ struct MovieTrackingPlaneTrack
     int                         last_marker;   // 12 type, name 4, 3774.
 };
 
-// 318 DNA structure 609, 24
+// zu DNA structure 318, 609
 struct MovieTrackingSettings
 {
     int      flag;                       // 1 type, name 4, 18.
@@ -4605,7 +4605,7 @@ struct MovieTrackingSettings
     int      pad3;                       // 24 type, name 4, 517.
 };
 
-// 319 DNA structure 610, 11
+// zu DNA structure 319, 610
 struct MovieTrackingStabilization
 {
     int                   flag;      // 1 type, name 4, 18.
@@ -4621,7 +4621,7 @@ struct MovieTrackingStabilization
     float                 scale;     // 11 type, name 7, 954.
 };
 
-// 320 DNA structure 611, 5
+// zu DNA structure 320, 611
 struct MovieTrackingReconstruction
 {
     int                         flag;       // 1 type, name 4, 18.
@@ -4631,13 +4631,13 @@ struct MovieTrackingReconstruction
     MovieReconstructedCamera    *cameras;   // 5 type, name 605, 3815.
 };
 
-// 321 DNA structure 613, 1
+// zu DNA structure 321, 613
 struct MovieTrackingStats
 {
     char    message[256];// 1 type, name 0, 3819.
 };
 
-// 322 DNA structure 614, 9
+// zu DNA structure 322, 614
 struct MovieTrackingDopesheetChannel
 {
     MovieTrackingDopesheetChannel    *next;       // 1 type, name 614, 0.
@@ -4651,7 +4651,7 @@ struct MovieTrackingDopesheetChannel
     int                              total_frames;// 9 type, name 4, 3823.
 };
 
-// 323 DNA structure 615, 6
+// zu DNA structure 323, 615
 struct MovieTrackingDopesheetCoverageSegment
 {
     MovieTrackingDopesheetCoverageSegment    *next;      // 1 type, name 615, 0.
@@ -4662,7 +4662,7 @@ struct MovieTrackingDopesheetCoverageSegment
     int                                      pad;        // 6 type, name 4, 66.
 };
 
-// 324 DNA structure 177, 24
+// zu DNA structure 324, 177
 struct DynamicPaintBrushSettings
 {
     DynamicPaintModifierData    *pmd;             // 1 type, name 175, 3869.
@@ -4691,7 +4691,7 @@ struct DynamicPaintBrushSettings
     float                       smudge_strength;  // 24 type, name 7, 3885.
 };
 
-// 325 DNA structure 619, 7
+// zu DNA structure 325, 619
 struct MaskParent
 {
     int      id_type;                  // 1 type, name 4, 3889.
@@ -4703,7 +4703,7 @@ struct MaskParent
     float    parent_corners_orig[4][2];// 7 type, name 7, 3893.
 };
 
-// 326 DNA structure 620, 3
+// zu DNA structure 326, 620
 struct MaskSplinePointUW
 {
     float    u;   // 1 type, name 7, 3894.
@@ -4711,7 +4711,7 @@ struct MaskSplinePointUW
     int      flag;// 3 type, name 4, 18.
 };
 
-// 327 DNA structure 623, 7
+// zu DNA structure 327, 623
 struct MaskLayerShape
 {
     MaskLayerShape    *next;   // 1 type, name 623, 0.
@@ -4723,7 +4723,7 @@ struct MaskLayerShape
     char              pad[7];  // 7 type, name 0, 115.
 };
 
-// 328 DNA structure 202, 19
+// zu DNA structure 328, 202
 struct RigidBodyOb
 {
     void     *physics_object; // 1 type, name 11, 3915.
@@ -4747,7 +4747,7 @@ struct RigidBodyOb
     float    pad1;            // 19 type, name 7, 68.
 };
 
-// 329 DNA structure 203, 30
+// zu DNA structure 329, 203
 struct RigidBodyCon
 {
     Object    *ob1;                     // 1 type, name 29, 3926.
@@ -4782,7 +4782,7 @@ struct RigidBodyCon
     void      *physics_constraint;      // 30 type, name 11, 3951.
 };
 
-// 330 DNA structure 625, 14
+// zu DNA structure 330, 625
 struct FreestyleLineSet
 {
     FreestyleLineSet      *next;             // 1 type, name 625, 0.
@@ -4801,7 +4801,7 @@ struct FreestyleLineSet
     FreestyleLineStyle    *linestyle;        // 14 type, name 626, 3958.
 };
 
-// 331 DNA structure 627, 5
+// zu DNA structure 331, 627
 struct FreestyleModuleConfig
 {
     FreestyleModuleConfig    *next;       // 1 type, name 627, 0.
@@ -4811,7 +4811,7 @@ struct FreestyleModuleConfig
     short                    pad[3];      // 5 type, name 2, 350.
 };
 
-// 332 DNA structure 628, 7
+// zu DNA structure 332, 628
 struct LineStyleModifier
 {
     LineStyleModifier    *next;    // 1 type, name 628, 0.
@@ -4823,7 +4823,7 @@ struct LineStyleModifier
     int                  blend;    // 7 type, name 4, 1797.
 };
 
-// 333 DNA structure 20, 4
+// zu DNA structure 333, 20
 struct IDPropertyData
 {
     void        *pointer;// 1 type, name 11, 12.
@@ -4832,7 +4832,7 @@ struct IDPropertyData
     int         val2;    // 4 type, name 4, 15.
 };
 
-// 334 DNA structure 23, 7
+// zu DNA structure 334, 23
 struct Library
 {
     ID            id;            // 1 type, name 22, 31.
@@ -4844,7 +4844,7 @@ struct Library
     PackedFile    *packedfile;   // 7 type, name 25, 37.
 };
 
-// 335 DNA structure 54, 7
+// zu DNA structure 335, 54
 struct ColorBand
 {
     short     tot;        // 1 type, name 2, 242.
@@ -4856,7 +4856,7 @@ struct ColorBand
     CBData    data[32];   // 7 type, name 53, 247.
 };
 
-// 336 DNA structure 64, 75
+// zu DNA structure 336, 64
 struct Lamp
 {
     ID              id;                     // 1 type, name 22, 31.
@@ -4936,7 +4936,7 @@ struct Lamp
     bNodeTree       *nodetree;              // 75 type, name 61, 335.
 };
 
-// 337 DNA structure 70, 5
+// zu DNA structure 337, 70
 struct VFont
 {
     ID            id;         // 1 type, name 22, 31.
@@ -4946,7 +4946,7 @@ struct VFont
     PackedFile    *temp_pf;   // 5 type, name 25, 549.
 };
 
-// 338 DNA structure 78, 4
+// zu DNA structure 338, 78
 struct EditNurb
 {
     ListBase    nurbs;    // 1 type, name 14, 604.
@@ -4955,13 +4955,13 @@ struct EditNurb
     char        pad[4];   // 4 type, name 0, 585.
 };
 
-// 339 DNA structure 107, 1
+// zu DNA structure 339, 107
 struct MultiresColFace
 {
     MultiresCol    col[4];// 1 type, name 106, 692.
 };
 
-// 340 DNA structure 117, 6
+// zu DNA structure 340, 117
 struct MappingInfoModifierData
 {
     ModifierData    modifier;        // 1 type, name 116, 740.
@@ -4972,7 +4972,7 @@ struct MappingInfoModifierData
     int             texmapping;      // 6 type, name 4, 745.
 };
 
-// 341 DNA structure 118, 7
+// zu DNA structure 341, 118
 struct SubsurfModifierData
 {
     ModifierData    modifier;    // 1 type, name 116, 740.
@@ -4984,7 +4984,7 @@ struct SubsurfModifierData
     void            *mCache;     // 7 type, name 11, 749.
 };
 
-// 342 DNA structure 119, 5
+// zu DNA structure 342, 119
 struct LatticeModifierData
 {
     ModifierData    modifier;// 1 type, name 116, 740.
@@ -4994,7 +4994,7 @@ struct LatticeModifierData
     char            pad[4];  // 5 type, name 0, 585.
 };
 
-// 343 DNA structure 120, 5
+// zu DNA structure 343, 120
 struct CurveModifierData
 {
     ModifierData    modifier;// 1 type, name 116, 740.
@@ -5004,7 +5004,7 @@ struct CurveModifierData
     char            pad[6];  // 5 type, name 0, 752.
 };
 
-// 344 DNA structure 121, 6
+// zu DNA structure 344, 121
 struct BuildModifierData
 {
     ModifierData    modifier; // 1 type, name 116, 740.
@@ -5015,7 +5015,7 @@ struct BuildModifierData
     int             seed;     // 6 type, name 4, 756.
 };
 
-// 345 DNA structure 122, 5
+// zu DNA structure 345, 122
 struct MaskModifierData
 {
     ModifierData    modifier;  // 1 type, name 116, 740.
@@ -5025,7 +5025,7 @@ struct MaskModifierData
     int             flag;      // 5 type, name 4, 18.
 };
 
-// 346 DNA structure 123, 13
+// zu DNA structure 346, 123
 struct ArrayModifierData
 {
     ModifierData    modifier;   // 1 type, name 116, 740.
@@ -5043,7 +5043,7 @@ struct ArrayModifierData
     int             count;      // 13 type, name 4, 767.
 };
 
-// 347 DNA structure 124, 5
+// zu DNA structure 347, 124
 struct MirrorModifierData
 {
     ModifierData    modifier;  // 1 type, name 116, 740.
@@ -5053,7 +5053,7 @@ struct MirrorModifierData
     Object          *mirror_ob;// 5 type, name 29, 770.
 };
 
-// 348 DNA structure 125, 3
+// zu DNA structure 348, 125
 struct EdgeSplitModifierData
 {
     ModifierData    modifier;   // 1 type, name 116, 740.
@@ -5061,7 +5061,7 @@ struct EdgeSplitModifierData
     int             flags;      // 3 type, name 4, 89.
 };
 
-// 349 DNA structure 126, 13
+// zu DNA structure 349, 126
 struct BevelModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5079,7 +5079,7 @@ struct BevelModifierData
     char            defgrp_name[64];// 13 type, name 0, 780.
 };
 
-// 350 DNA structure 127, 6
+// zu DNA structure 350, 127
 struct SmokeModifierData
 {
     ModifierData           modifier;// 1 type, name 116, 740.
@@ -5090,7 +5090,7 @@ struct SmokeModifierData
     int                    type;    // 6 type, name 4, 16.
 };
 
-// 351 DNA structure 131, 11
+// zu DNA structure 351, 131
 struct DisplaceModifierData
 {
     ModifierData    modifier;        // 1 type, name 116, 740.
@@ -5106,7 +5106,7 @@ struct DisplaceModifierData
     int             pad;             // 11 type, name 4, 66.
 };
 
-// 352 DNA structure 132, 12
+// zu DNA structure 352, 132
 struct UVProjectModifierData
 {
     ModifierData    modifier;        // 1 type, name 116, 740.
@@ -5123,7 +5123,7 @@ struct UVProjectModifierData
     int             pad;             // 12 type, name 4, 66.
 };
 
-// 353 DNA structure 133, 11
+// zu DNA structure 353, 133
 struct DecimateModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5139,7 +5139,7 @@ struct DecimateModifierData
     int             pad2;           // 11 type, name 4, 29.
 };
 
-// 354 DNA structure 134, 5
+// zu DNA structure 354, 134
 struct SmoothModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5149,7 +5149,7 @@ struct SmoothModifierData
     short           repeat;         // 5 type, name 2, 800.
 };
 
-// 355 DNA structure 135, 8
+// zu DNA structure 355, 135
 struct CastModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5162,7 +5162,7 @@ struct CastModifierData
     short           type;           // 8 type, name 2, 16.
 };
 
-// 356 DNA structure 136, 21
+// zu DNA structure 356, 136
 struct WaveModifierData
 {
     ModifierData    modifier;        // 1 type, name 116, 740.
@@ -5188,7 +5188,7 @@ struct WaveModifierData
     float           pad1;            // 21 type, name 7, 68.
 };
 
-// 357 DNA structure 137, 7
+// zu DNA structure 357, 137
 struct ArmatureModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5200,7 +5200,7 @@ struct ArmatureModifierData
     char            defgrp_name[64];// 7 type, name 0, 780.
 };
 
-// 358 DNA structure 138, 14
+// zu DNA structure 358, 138
 struct HookModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5219,13 +5219,13 @@ struct HookModifierData
     char            name[64];       // 14 type, name 0, 19.
 };
 
-// 359 DNA structure 139, 1
+// zu DNA structure 359, 139
 struct SoftbodyModifierData
 {
     ModifierData    modifier;// 1 type, name 116, 740.
 };
 
-// 360 DNA structure 147, 13
+// zu DNA structure 360, 147
 struct CollisionModifierData
 {
     ModifierData    modifier;     // 1 type, name 116, 740.
@@ -5243,7 +5243,7 @@ struct CollisionModifierData
     void            *bvhtree;     // Note: using void* on undefined DNA type: BVHTree
 };
 
-// 361 DNA structure 149, 7
+// zu DNA structure 361, 149
 struct SurfaceModifierData
 {
     ModifierData       modifier;// 1 type, name 116, 740.
@@ -5255,7 +5255,7 @@ struct SurfaceModifierData
     int                numverts;// 7 type, name 4, 838.
 };
 
-// 362 DNA structure 152, 4
+// zu DNA structure 362, 152
 struct BooleanModifierData
 {
     ModifierData    modifier; // 1 type, name 116, 740.
@@ -5264,7 +5264,7 @@ struct BooleanModifierData
     int             pad;      // 4 type, name 4, 66.
 };
 
-// 363 DNA structure 155, 22
+// zu DNA structure 363, 155
 struct MeshDeformModifierData
 {
     ModifierData     modifier;       // 1 type, name 116, 740.
@@ -5291,7 +5291,7 @@ struct MeshDeformModifierData
     void             (*bindfunc)();  // 22 type, name 11, 863.
 };
 
-// 364 DNA structure 156, 8
+// zu DNA structure 364, 156
 struct ParticleSystemModifierData
 {
     ModifierData      modifier; // 1 type, name 116, 740.
@@ -5304,7 +5304,7 @@ struct ParticleSystemModifierData
     short             pad;      // 8 type, name 2, 66.
 };
 
-// 365 DNA structure 158, 8
+// zu DNA structure 365, 158
 struct ParticleInstanceModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5317,7 +5317,7 @@ struct ParticleInstanceModifierData
     float           random_position;// 8 type, name 7, 869.
 };
 
-// 366 DNA structure 159, 6
+// zu DNA structure 366, 159
 struct ExplodeModifierData
 {
     ModifierData    modifier;  // 1 type, name 116, 740.
@@ -5328,7 +5328,7 @@ struct ExplodeModifierData
     char            uvname[64];// 6 type, name 0, 180.
 };
 
-// 367 DNA structure 160, 8
+// zu DNA structure 367, 160
 struct MultiresModifierData
 {
     ModifierData    modifier; // 1 type, name 116, 740.
@@ -5341,7 +5341,7 @@ struct MultiresModifierData
     char            pad[2];   // 8 type, name 0, 187.
 };
 
-// 368 DNA structure 161, 3
+// zu DNA structure 368, 161
 struct FluidsimModifierData
 {
     ModifierData        modifier;    // 1 type, name 116, 740.
@@ -5349,7 +5349,7 @@ struct FluidsimModifierData
     PointCache          *point_cache;// 3 type, name 144, 823.
 };
 
-// 369 DNA structure 163, 12
+// zu DNA structure 369, 163
 struct ShrinkwrapModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5366,7 +5366,7 @@ struct ShrinkwrapModifierData
     char            pad[2];         // 12 type, name 0, 187.
 };
 
-// 370 DNA structure 164, 8
+// zu DNA structure 370, 164
 struct SimpleDeformModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5379,13 +5379,13 @@ struct SimpleDeformModifierData
     char            pad[2];         // 8 type, name 0, 187.
 };
 
-// 371 DNA structure 165, 1
+// zu DNA structure 371, 165
 struct ShapeKeyModifierData
 {
     ModifierData    modifier;// 1 type, name 116, 740.
 };
 
-// 372 DNA structure 166, 13
+// zu DNA structure 372, 166
 struct SolidifyModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5403,7 +5403,7 @@ struct SolidifyModifierData
     short           mat_ofs_rim;    // 13 type, name 2, 896.
 };
 
-// 373 DNA structure 167, 10
+// zu DNA structure 373, 167
 struct ScrewModifierData
 {
     ModifierData    modifier;    // 1 type, name 116, 740.
@@ -5418,7 +5418,7 @@ struct ScrewModifierData
     short           flag;        // 10 type, name 2, 18.
 };
 
-// 374 DNA structure 168, 29
+// zu DNA structure 374, 168
 struct OceanModifierData
 {
     ModifierData    modifier;         // 1 type, name 116, 740.
@@ -5452,7 +5452,7 @@ struct OceanModifierData
     int             pad;              // 29 type, name 4, 66.
 };
 
-// 375 DNA structure 171, 15
+// zu DNA structure 375, 171
 struct WarpModifierData
 {
     ModifierData    modifier;        // 1 type, name 116, 740.
@@ -5472,7 +5472,7 @@ struct WarpModifierData
     char            pad[6];          // 15 type, name 0, 752.
 };
 
-// 376 DNA structure 172, 16
+// zu DNA structure 376, 172
 struct WeightVGEditModifierData
 {
     ModifierData    modifier;                 // 1 type, name 116, 740.
@@ -5493,7 +5493,7 @@ struct WeightVGEditModifierData
     int             pad_i1;                   // 16 type, name 4, 937.
 };
 
-// 377 DNA structure 173, 16
+// zu DNA structure 377, 173
 struct WeightVGMixModifierData
 {
     ModifierData    modifier;                 // 1 type, name 116, 740.
@@ -5514,7 +5514,7 @@ struct WeightVGMixModifierData
     int             pad_i1;                   // 16 type, name 4, 937.
 };
 
-// 378 DNA structure 174, 16
+// zu DNA structure 378, 174
 struct WeightVGProximityModifierData
 {
     ModifierData    modifier;                 // 1 type, name 116, 740.
@@ -5535,7 +5535,7 @@ struct WeightVGProximityModifierData
     short           pad_s1;                   // 16 type, name 2, 950.
 };
 
-// 379 DNA structure 175, 5
+// zu DNA structure 379, 175
 struct DynamicPaintModifierData
 {
     ModifierData                  modifier;// 1 type, name 116, 740.
@@ -5545,7 +5545,7 @@ struct DynamicPaintModifierData
     int                           pad;     // 5 type, name 4, 66.
 };
 
-// 380 DNA structure 178, 8
+// zu DNA structure 380, 178
 struct RemeshModifierData
 {
     ModifierData    modifier;   // 1 type, name 116, 740.
@@ -5558,7 +5558,7 @@ struct RemeshModifierData
     char            pad;        // 8 type, name 0, 66.
 };
 
-// 381 DNA structure 179, 5
+// zu DNA structure 381, 179
 struct SkinModifierData
 {
     ModifierData    modifier;        // 1 type, name 116, 740.
@@ -5568,7 +5568,7 @@ struct SkinModifierData
     char            pad[2];          // 5 type, name 0, 187.
 };
 
-// 382 DNA structure 180, 5
+// zu DNA structure 382, 180
 struct TriangulateModifierData
 {
     ModifierData    modifier;   // 1 type, name 116, 740.
@@ -5578,7 +5578,7 @@ struct TriangulateModifierData
     int             pad;        // 5 type, name 4, 66.
 };
 
-// 383 DNA structure 181, 7
+// zu DNA structure 383, 181
 struct LaplacianSmoothModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5590,7 +5590,7 @@ struct LaplacianSmoothModifierData
     short           repeat;         // 7 type, name 2, 800.
 };
 
-// 384 DNA structure 182, 11
+// zu DNA structure 384, 182
 struct UVWarpModifierData
 {
     ModifierData    modifier;        // 1 type, name 116, 740.
@@ -5606,7 +5606,7 @@ struct UVWarpModifierData
     char            uvlayer_name[64];// 11 type, name 0, 743.
 };
 
-// 385 DNA structure 183, 18
+// zu DNA structure 385, 183
 struct MeshCacheModifierData
 {
     ModifierData    modifier;      // 1 type, name 116, 740.
@@ -5629,7 +5629,7 @@ struct MeshCacheModifierData
     char            filepath[1024];// 18 type, name 0, 35.
 };
 
-// 386 DNA structure 184, 8
+// zu DNA structure 386, 184
 struct LaplacianDeformModifierData
 {
     ModifierData    modifier;           // 1 type, name 116, 740.
@@ -5642,7 +5642,7 @@ struct LaplacianDeformModifierData
     short           pad[3];             // 8 type, name 2, 350.
 };
 
-// 387 DNA structure 185, 9
+// zu DNA structure 387, 185
 struct WireframeModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5656,7 +5656,7 @@ struct WireframeModifierData
     short           pad[2];         // 9 type, name 2, 187.
 };
 
-// 388 DNA structure 186, 17
+// zu DNA structure 388, 186
 struct DataTransferModifierData
 {
     ModifierData    modifier;            // 1 type, name 116, 740.
@@ -5678,7 +5678,7 @@ struct DataTransferModifierData
     int             flags;               // 17 type, name 4, 89.
 };
 
-// 389 DNA structure 187, 9
+// zu DNA structure 389, 187
 struct NormalEditModifierData
 {
     ModifierData    modifier;       // 1 type, name 116, 740.
@@ -5692,7 +5692,7 @@ struct NormalEditModifierData
     float           offset[3];      // 9 type, name 7, 762.
 };
 
-// 390 DNA structure 189, 27
+// zu DNA structure 390, 189
 struct Lattice
 {
     ID             id;        // 1 type, name 22, 31.
@@ -5724,7 +5724,7 @@ struct Lattice
     EditLatt       *editlatt; // 27 type, name 188, 1014.
 };
 
-// 391 DNA structure 209, 9
+// zu DNA structure 391, 209
 struct PTCacheMem
 {
     PTCacheMem    *next;     // 1 type, name 209, 0.
@@ -5738,7 +5738,7 @@ struct PTCacheMem
     ListBase      extradata; // 9 type, name 14, 1179.
 };
 
-// 392 DNA structure 144, 23
+// zu DNA structure 392, 144
 struct PointCache
 {
     PointCache     *next;         // 1 type, name 144, 0.
@@ -5766,7 +5766,7 @@ struct PointCache
     void           (*free_edit)();// 23 type, name 11, 1194.
 };
 
-// 393 DNA structure 200, 54
+// zu DNA structure 393, 200
 struct SoftBody
 {
     int                totpoint;            // 1 type, name 4, 1176.
@@ -5825,7 +5825,7 @@ struct SoftBody
     int                last_frame;          // 54 type, name 4, 1271.
 };
 
-// 394 DNA structure 239, 13
+// zu DNA structure 394, 239
 struct ImagePaintSettings
 {
     Paint    paint;              // 1 type, name 236, 1610.
@@ -5843,7 +5843,7 @@ struct ImagePaintSettings
     float    dither;             // 13 type, name 7, 1619.
 };
 
-// 395 DNA structure 241, 15
+// zu DNA structure 395, 241
 struct ParticleEditSettings
 {
     short                flag;         // 1 type, name 2, 18.
@@ -5863,7 +5863,7 @@ struct ParticleEditSettings
     Object               *shape_object;// 15 type, name 29, 1630.
 };
 
-// 396 DNA structure 242, 9
+// zu DNA structure 396, 242
 struct Sculpt
 {
     Paint     paint;               // 1 type, name 236, 1610.
@@ -5877,13 +5877,13 @@ struct Sculpt
     void      *pad2;               // 9 type, name 11, 1637.
 };
 
-// 397 DNA structure 243, 1
+// zu DNA structure 397, 243
 struct UvSculpt
 {
     Paint    paint;// 1 type, name 236, 1610.
 };
 
-// 398 DNA structure 244, 7
+// zu DNA structure 398, 244
 struct VPaint
 {
     Paint          paint;       // 1 type, name 236, 1610.
@@ -5895,7 +5895,7 @@ struct VPaint
     void           *paintcursor;// 7 type, name 11, 1615.
 };
 
-// 399 DNA structure 268, 6
+// zu DNA structure 399, 268
 struct SpaceLink
 {
     SpaceLink    *next;          // 1 type, name 268, 0.
@@ -5906,7 +5906,7 @@ struct SpaceLink
     short        blockhandler[8];// 6 type, name 2, 1841.
 };
 
-// 400 DNA structure 271, 8
+// zu DNA structure 400, 271
 struct SpaceInfo
 {
     SpaceLink    *next;          // 1 type, name 268, 0.
@@ -5919,7 +5919,7 @@ struct SpaceInfo
     char         pad[7];         // 8 type, name 0, 115.
 };
 
-// 401 DNA structure 286, 16
+// zu DNA structure 401, 286
 struct SpaceFile
 {
     SpaceLink           *next;              // 1 type, name 268, 0.
@@ -5940,7 +5940,7 @@ struct SpaceFile
     short               system_bookmarknr;  // 16 type, name 2, 1960.
 };
 
-// 402 DNA structure 295, 10
+// zu DNA structure 402, 295
 struct Script
 {
     ID      id;                 // 1 type, name 22, 31.
@@ -5955,7 +5955,7 @@ struct Script
     char    scriptarg[256];     // 10 type, name 0, 2008.
 };
 
-// 403 DNA structure 296, 10
+// zu DNA structure 403, 296
 struct SpaceScript
 {
     SpaceLink    *next;     // 1 type, name 268, 0.
@@ -5970,7 +5970,7 @@ struct SpaceScript
     void         *but_refs; // 10 type, name 11, 2010.
 };
 
-// 404 DNA structure 297, 7
+// zu DNA structure 404, 297
 struct bNodeTreePath
 {
     bNodeTreePath       *next;         // 1 type, name 297, 0.
@@ -5982,7 +5982,7 @@ struct bNodeTreePath
     char                node_name[64]; // 7 type, name 0, 2013.
 };
 
-// 405 DNA structure 300, 10
+// zu DNA structure 405, 300
 struct SpaceLogic
 {
     SpaceLink    *next;          // 1 type, name 268, 0.
@@ -5997,7 +5997,7 @@ struct SpaceLogic
     bGPdata      *gpd;           // 10 type, name 195, 1031.
 };
 
-// 406 DNA structure 303, 7
+// zu DNA structure 406, 303
 struct SpaceUserPref
 {
     SpaceLink    *next;      // 1 type, name 268, 0.
@@ -6009,7 +6009,7 @@ struct SpaceUserPref
     char         filter[64]; // 7 type, name 0, 2032.
 };
 
-// 407 DNA structure 323, 6
+// zu DNA structure 407, 323
 struct ScrVert
 {
     ScrVert    *next;   // 1 type, name 323, 0.
@@ -6020,7 +6020,7 @@ struct ScrVert
     short      editflag;// 6 type, name 2, 688.
 };
 
-// 408 DNA structure 343, 13
+// zu DNA structure 408, 343
 struct Strip
 {
     Strip                             *next;              // 1 type, name 343, 0.
@@ -6038,7 +6038,7 @@ struct Strip
     ColorManagedColorspaceSettings    colorspace_settings;// 13 type, name 50, 171.
 };
 
-// 409 DNA structure 357, 3
+// zu DNA structure 409, 357
 struct BrightContrastModifierData
 {
     SequenceModifierData    modifier;// 1 type, name 353, 740.
@@ -6046,13 +6046,13 @@ struct BrightContrastModifierData
     float                   contrast;// 3 type, name 7, 299.
 };
 
-// 410 DNA structure 358, 1
+// zu DNA structure 410, 358
 struct SequencerMaskModifierData
 {
     SequenceModifierData    modifier;// 1 type, name 353, 740.
 };
 
-// 411 DNA structure 388, 13
+// zu DNA structure 411, 388
 struct bSoundActuator
 {
     short      flag;   // 1 type, name 2, 18.
@@ -6070,7 +6070,7 @@ struct bSoundActuator
     short      pad6[1];// 13 type, name 2, 2717.
 };
 
-// 412 DNA structure 345, 18
+// zu DNA structure 412, 345
 struct bSound
 {
     ID            id;              // 1 type, name 22, 31.
@@ -6093,7 +6093,7 @@ struct bSound
     void          *spinlock;       // 18 type, name 11, 2769.
 };
 
-// 413 DNA structure 408, 28
+// zu DNA structure 413, 408
 struct Bone
 {
     Bone          *next;         // 1 type, name 408, 0.
@@ -6126,7 +6126,7 @@ struct Bone
     short         pad[1];        // 28 type, name 2, 246.
 };
 
-// 414 DNA structure 277, 8
+// zu DNA structure 414, 277
 struct bDopeSheet
 {
     ID          *source;      // 1 type, name 22, 1016.
@@ -6139,7 +6139,7 @@ struct bDopeSheet
     int         pad;          // 8 type, name 4, 66.
 };
 
-// 415 DNA structure 417, 8
+// zu DNA structure 415, 417
 struct bActionChannel
 {
     bActionChannel    *next;             // 1 type, name 417, 0.
@@ -6152,7 +6152,7 @@ struct bActionChannel
     int               temp;              // 8 type, name 4, 2445.
 };
 
-// 416 DNA structure 421, 7
+// zu DNA structure 416, 421
 struct bPythonConstraint
 {
     Text          *text;        // 1 type, name 38, 1976.
@@ -6164,7 +6164,7 @@ struct bPythonConstraint
     char          subtarget[64];// 7 type, name 0, 814.
 };
 
-// 417 DNA structure 450, 22
+// zu DNA structure 417, 450
 struct bActionStrip
 {
     bActionStrip    *next;            // 1 type, name 450, 0.
@@ -6191,7 +6191,7 @@ struct bActionStrip
     ListBase        modifiers;        // 22 type, name 14, 1037.
 };
 
-// 418 DNA structure 452, 25
+// zu DNA structure 418, 452
 struct bNodeSocket
 {
     bNodeSocket        *next;         // 1 type, name 452, 0.
@@ -6221,7 +6221,7 @@ struct bNodeSocket
     bNodeStack         ns;            // 25 type, name 451, 2987.
 };
 
-// 419 DNA structure 458, 3
+// zu DNA structure 419, 458
 struct bNodeInstanceHashEntry
 {
     bNodeInstanceKey    key;// 1 type, name 298, 2661.
@@ -6229,7 +6229,7 @@ struct bNodeInstanceHashEntry
     short               pad;// 3 type, name 2, 66.
 };
 
-// 420 DNA structure 292, 18
+// zu DNA structure 420, 292
 struct Scopes
 {
     int          ok;             // 1 type, name 4, 138.
@@ -6252,14 +6252,14 @@ struct Scopes
     int          pad;            // 18 type, name 4, 66.
 };
 
-// 421 DNA structure 529, 2
+// zu DNA structure 421, 529
 struct PaintCurvePoint
 {
     BezTriple    bez;     // 1 type, name 32, 3262.
     float        pressure;// 2 type, name 7, 3263.
 };
 
-// 422 DNA structure 527, 4
+// zu DNA structure 422, 527
 struct PaintCurve
 {
     ID                 id;        // 1 type, name 22, 31.
@@ -6268,7 +6268,7 @@ struct PaintCurve
     int                add_index; // 4 type, name 4, 3265.
 };
 
-// 423 DNA structure 534, 5
+// zu DNA structure 423, 534
 struct BoidParticle
 {
     Object      *ground;   // 1 type, name 29, 3279.
@@ -6278,7 +6278,7 @@ struct BoidParticle
     float       rt;        // 5 type, name 7, 56.
 };
 
-// 424 DNA structure 552, 6
+// zu DNA structure 424, 552
 struct bGPDframe
 {
     bGPDframe    *next;   // 1 type, name 552, 0.
@@ -6289,7 +6289,7 @@ struct bGPDframe
     short        key_type;// 6 type, name 2, 3492.
 };
 
-// 425 DNA structure 553, 13
+// zu DNA structure 425, 553
 struct bGPDlayer
 {
     bGPDlayer    *next;         // 1 type, name 553, 0.
@@ -6307,7 +6307,7 @@ struct bGPDlayer
     char         info[128];     // 13 type, name 0, 3500.
 };
 
-// 426 DNA structure 554, 6
+// zu DNA structure 426, 554
 struct ReportList
 {
     ListBase    list;        // 1 type, name 14, 3504.
@@ -6318,7 +6318,7 @@ struct ReportList
     void        *reporttimer;// Note: using void* on undefined DNA type: wmTimer
 };
 
-// 427 DNA structure 557, 7
+// zu DNA structure 427, 557
 struct wmKeyConfig
 {
     wmKeyConfig    *next;       // 1 type, name 557, 0.
@@ -6330,7 +6330,7 @@ struct wmKeyConfig
     int            flag;        // 7 type, name 4, 18.
 };
 
-// 428 DNA structure 288, 14
+// zu DNA structure 428, 288
 struct wmOperator
 {
     wmOperator        *next;       // 1 type, name 288, 0.
@@ -6349,7 +6349,7 @@ struct wmOperator
     short             pad[3];      // 14 type, name 2, 350.
 };
 
-// 429 DNA structure 574, 3
+// zu DNA structure 429, 574
 struct FMod_Limits
 {
     rctf    rect;// 1 type, name 19, 3588.
@@ -6357,7 +6357,7 @@ struct FMod_Limits
     int     pad; // 3 type, name 4, 66.
 };
 
-// 430 DNA structure 578, 7
+// zu DNA structure 430, 578
 struct DriverVar
 {
     DriverVar       *next;      // 1 type, name 578, 0.
@@ -6369,7 +6369,7 @@ struct DriverVar
     float           curval;     // 7 type, name 7, 60.
 };
 
-// 431 DNA structure 579, 7
+// zu DNA structure 431, 579
 struct ChannelDriver
 {
     ListBase    variables;      // 1 type, name 14, 3598.
@@ -6381,7 +6381,7 @@ struct ChannelDriver
     int         flag;           // 7 type, name 4, 18.
 };
 
-// 432 DNA structure 581, 17
+// zu DNA structure 432, 581
 struct FCurve
 {
     FCurve           *next;           // 1 type, name 581, 0.
@@ -6403,7 +6403,7 @@ struct FCurve
     float            pad;             // 17 type, name 7, 66.
 };
 
-// 433 DNA structure 583, 4
+// zu DNA structure 433, 583
 struct AnimMapper
 {
     AnimMapper    *next;   // 1 type, name 583, 0.
@@ -6412,7 +6412,7 @@ struct AnimMapper
     ListBase      mappings;// 4 type, name 14, 3607.
 };
 
-// 434 DNA structure 585, 6
+// zu DNA structure 434, 585
 struct NlaTrack
 {
     NlaTrack    *next;   // 1 type, name 585, 0.
@@ -6423,7 +6423,7 @@ struct NlaTrack
     char        name[64];// 6 type, name 0, 19.
 };
 
-// 435 DNA structure 587, 12
+// zu DNA structure 435, 587
 struct KeyingSet
 {
     KeyingSet    *next;           // 1 type, name 587, 0.
@@ -6440,14 +6440,14 @@ struct KeyingSet
     char         pad[6];          // 12 type, name 0, 752.
 };
 
-// 436 DNA structure 589, 2
+// zu DNA structure 436, 589
 struct IdAdtTemplate
 {
     ID          id;  // 1 type, name 22, 31.
     AnimData    *adt;// 2 type, name 36, 75.
 };
 
-// 437 DNA structure 591, 6
+// zu DNA structure 437, 591
 struct BoidRuleGoalAvoid
 {
     BoidRule    rule;       // 1 type, name 590, 3631.
@@ -6458,7 +6458,7 @@ struct BoidRuleGoalAvoid
     int         channels;   // 6 type, name 4, 2869.
 };
 
-// 438 DNA structure 592, 3
+// zu DNA structure 438, 592
 struct BoidRuleAvoidCollision
 {
     BoidRule    rule;      // 1 type, name 590, 3631.
@@ -6466,7 +6466,7 @@ struct BoidRuleAvoidCollision
     float       look_ahead;// 3 type, name 7, 3635.
 };
 
-// 439 DNA structure 593, 8
+// zu DNA structure 439, 593
 struct BoidRuleFollowLeader
 {
     BoidRule    rule;      // 1 type, name 590, 3631.
@@ -6479,7 +6479,7 @@ struct BoidRuleFollowLeader
     int         queue_size;// 8 type, name 4, 3637.
 };
 
-// 440 DNA structure 594, 5
+// zu DNA structure 440, 594
 struct BoidRuleAverageSpeed
 {
     BoidRule    rule;  // 1 type, name 590, 3631.
@@ -6489,7 +6489,7 @@ struct BoidRuleAverageSpeed
     float       rt;    // 5 type, name 7, 56.
 };
 
-// 441 DNA structure 595, 3
+// zu DNA structure 441, 595
 struct BoidRuleFight
 {
     BoidRule    rule;         // 1 type, name 590, 3631.
@@ -6497,7 +6497,7 @@ struct BoidRuleFight
     float       flee_distance;// 3 type, name 7, 3639.
 };
 
-// 442 DNA structure 543, 23
+// zu DNA structure 442, 543
 struct BoidSettings
 {
     int         options;            // 1 type, name 4, 3632.
@@ -6525,7 +6525,7 @@ struct BoidSettings
     ListBase    states;             // 23 type, name 14, 3662.
 };
 
-// 443 DNA structure 128, 62
+// zu DNA structure 443, 128
 struct SmokeDomainSettings
 {
     SmokeModifierData    *smd;                // 1 type, name 127, 3663.
@@ -6592,7 +6592,7 @@ struct SmokeDomainSettings
     float                flame_smoke_color[3];// 62 type, name 7, 3714.
 };
 
-// 444 DNA structure 599, 15
+// zu DNA structure 444, 599
 struct Speaker
 {
     ID          id;                // 1 type, name 22, 31.
@@ -6612,7 +6612,7 @@ struct Speaker
     short       pad1[3];           // 15 type, name 2, 2488.
 };
 
-// 445 DNA structure 305, 15
+// zu DNA structure 445, 305
 struct MovieClipScopes
 {
     short                  ok;                  // 1 type, name 2, 138.
@@ -6632,7 +6632,7 @@ struct MovieClipScopes
     float                  slide_scale[2];      // 15 type, name 7, 3753.
 };
 
-// 446 DNA structure 617, 50
+// zu DNA structure 446, 617
 struct DynamicPaintSurface
 {
     DynamicPaintSurface           *next;                  // 1 type, name 617, 0.
@@ -6687,7 +6687,7 @@ struct DynamicPaintSurface
     char                          output_name2[64];       // 50 type, name 0, 3868.
 };
 
-// 447 DNA structure 176, 7
+// zu DNA structure 447, 176
 struct DynamicPaintCanvasSettings
 {
     DynamicPaintModifierData    *pmd;      // 1 type, name 175, 3869.
@@ -6699,7 +6699,7 @@ struct DynamicPaintCanvasSettings
     char                        error[64]; // 7 type, name 0, 3872.
 };
 
-// 448 DNA structure 622, 9
+// zu DNA structure 448, 622
 struct MaskSpline
 {
     MaskSpline         *next;         // 1 type, name 622, 0.
@@ -6713,7 +6713,7 @@ struct MaskSpline
     MaskSplinePoint    *points_deform;// 9 type, name 621, 3901.
 };
 
-// 449 DNA structure 258, 14
+// zu DNA structure 449, 258
 struct RigidBodyWorld
 {
     EffectorWeights    *effector_weights;    // 1 type, name 207, 1267.
@@ -6732,14 +6732,14 @@ struct RigidBodyWorld
     void               *physics_world;       // 14 type, name 11, 3914.
 };
 
-// 450 DNA structure 629, 2
+// zu DNA structure 450, 629
 struct LineStyleColorModifier_AlongStroke
 {
     LineStyleModifier    modifier;   // 1 type, name 628, 740.
     ColorBand            *color_ramp;// 2 type, name 54, 3966.
 };
 
-// 451 DNA structure 630, 4
+// zu DNA structure 451, 630
 struct LineStyleAlphaModifier_AlongStroke
 {
     LineStyleModifier    modifier;// 1 type, name 628, 740.
@@ -6748,7 +6748,7 @@ struct LineStyleAlphaModifier_AlongStroke
     int                  pad;     // 4 type, name 4, 66.
 };
 
-// 452 DNA structure 631, 6
+// zu DNA structure 452, 631
 struct LineStyleThicknessModifier_AlongStroke
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6759,7 +6759,7 @@ struct LineStyleThicknessModifier_AlongStroke
     int                  pad;      // 6 type, name 4, 66.
 };
 
-// 453 DNA structure 632, 4
+// zu DNA structure 453, 632
 struct LineStyleColorModifier_DistanceFromCamera
 {
     LineStyleModifier    modifier;   // 1 type, name 628, 740.
@@ -6768,7 +6768,7 @@ struct LineStyleColorModifier_DistanceFromCamera
     float                range_max;  // 4 type, name 7, 3970.
 };
 
-// 454 DNA structure 633, 6
+// zu DNA structure 454, 633
 struct LineStyleAlphaModifier_DistanceFromCamera
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6779,7 +6779,7 @@ struct LineStyleAlphaModifier_DistanceFromCamera
     int                  pad;      // 6 type, name 4, 66.
 };
 
-// 455 DNA structure 634, 8
+// zu DNA structure 455, 634
 struct LineStyleThicknessModifier_DistanceFromCamera
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6792,7 +6792,7 @@ struct LineStyleThicknessModifier_DistanceFromCamera
     int                  pad;      // 8 type, name 4, 66.
 };
 
-// 456 DNA structure 635, 5
+// zu DNA structure 456, 635
 struct LineStyleColorModifier_DistanceFromObject
 {
     LineStyleModifier    modifier;   // 1 type, name 628, 740.
@@ -6802,7 +6802,7 @@ struct LineStyleColorModifier_DistanceFromObject
     float                range_max;  // 5 type, name 7, 3970.
 };
 
-// 457 DNA structure 636, 7
+// zu DNA structure 457, 636
 struct LineStyleAlphaModifier_DistanceFromObject
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6814,7 +6814,7 @@ struct LineStyleAlphaModifier_DistanceFromObject
     int                  pad;      // 7 type, name 4, 66.
 };
 
-// 458 DNA structure 637, 9
+// zu DNA structure 458, 637
 struct LineStyleThicknessModifier_DistanceFromObject
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6828,7 +6828,7 @@ struct LineStyleThicknessModifier_DistanceFromObject
     int                  pad;      // 9 type, name 4, 66.
 };
 
-// 459 DNA structure 638, 4
+// zu DNA structure 459, 638
 struct LineStyleColorModifier_Material
 {
     LineStyleModifier    modifier;   // 1 type, name 628, 740.
@@ -6837,7 +6837,7 @@ struct LineStyleColorModifier_Material
     int                  mat_attr;   // 4 type, name 4, 3971.
 };
 
-// 460 DNA structure 639, 4
+// zu DNA structure 460, 639
 struct LineStyleAlphaModifier_Material
 {
     LineStyleModifier    modifier;// 1 type, name 628, 740.
@@ -6846,7 +6846,7 @@ struct LineStyleAlphaModifier_Material
     int                  mat_attr;// 4 type, name 4, 3971.
 };
 
-// 461 DNA structure 640, 6
+// zu DNA structure 461, 640
 struct LineStyleThicknessModifier_Material
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6857,7 +6857,7 @@ struct LineStyleThicknessModifier_Material
     int                  mat_attr; // 6 type, name 4, 3971.
 };
 
-// 462 DNA structure 641, 3
+// zu DNA structure 462, 641
 struct LineStyleGeometryModifier_Sampling
 {
     LineStyleModifier    modifier;// 1 type, name 628, 740.
@@ -6865,7 +6865,7 @@ struct LineStyleGeometryModifier_Sampling
     int                  pad;     // 3 type, name 4, 66.
 };
 
-// 463 DNA structure 642, 3
+// zu DNA structure 463, 642
 struct LineStyleGeometryModifier_BezierCurve
 {
     LineStyleModifier    modifier;// 1 type, name 628, 740.
@@ -6873,7 +6873,7 @@ struct LineStyleGeometryModifier_BezierCurve
     int                  pad;     // 3 type, name 4, 66.
 };
 
-// 464 DNA structure 643, 5
+// zu DNA structure 464, 643
 struct LineStyleGeometryModifier_SinusDisplacement
 {
     LineStyleModifier    modifier;  // 1 type, name 628, 740.
@@ -6883,7 +6883,7 @@ struct LineStyleGeometryModifier_SinusDisplacement
     int                  pad;       // 5 type, name 4, 66.
 };
 
-// 465 DNA structure 644, 5
+// zu DNA structure 465, 644
 struct LineStyleGeometryModifier_SpatialNoise
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6893,7 +6893,7 @@ struct LineStyleGeometryModifier_SpatialNoise
     int                  flags;    // 5 type, name 4, 89.
 };
 
-// 466 DNA structure 645, 7
+// zu DNA structure 466, 645
 struct LineStyleGeometryModifier_PerlinNoise1D
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6905,7 +6905,7 @@ struct LineStyleGeometryModifier_PerlinNoise1D
     int                  pad1;     // 7 type, name 4, 68.
 };
 
-// 467 DNA structure 646, 7
+// zu DNA structure 467, 646
 struct LineStyleGeometryModifier_PerlinNoise2D
 {
     LineStyleModifier    modifier; // 1 type, name 628, 740.
@@ -6917,7 +6917,7 @@ struct LineStyleGeometryModifier_PerlinNoise2D
     int                  pad1;     // 7 type, name 4, 68.
 };
 
-// 468 DNA structure 647, 3
+// zu DNA structure 468, 647
 struct LineStyleGeometryModifier_BackboneStretcher
 {
     LineStyleModifier    modifier;       // 1 type, name 628, 740.
@@ -6925,7 +6925,7 @@ struct LineStyleGeometryModifier_BackboneStretcher
     int                  pad;            // 3 type, name 4, 66.
 };
 
-// 469 DNA structure 648, 3
+// zu DNA structure 469, 648
 struct LineStyleGeometryModifier_TipRemover
 {
     LineStyleModifier    modifier;  // 1 type, name 628, 740.
@@ -6933,7 +6933,7 @@ struct LineStyleGeometryModifier_TipRemover
     int                  pad;       // 3 type, name 4, 66.
 };
 
-// 470 DNA structure 649, 3
+// zu DNA structure 470, 649
 struct LineStyleGeometryModifier_Polygonalization
 {
     LineStyleModifier    modifier;// 1 type, name 628, 740.
@@ -6941,7 +6941,7 @@ struct LineStyleGeometryModifier_Polygonalization
     int                  pad;     // 3 type, name 4, 66.
 };
 
-// 471 DNA structure 650, 3
+// zu DNA structure 471, 650
 struct LineStyleGeometryModifier_GuidingLines
 {
     LineStyleModifier    modifier;// 1 type, name 628, 740.
@@ -6949,7 +6949,7 @@ struct LineStyleGeometryModifier_GuidingLines
     int                  pad;     // 3 type, name 4, 66.
 };
 
-// 472 DNA structure 651, 7
+// zu DNA structure 472, 651
 struct LineStyleGeometryModifier_Blueprint
 {
     LineStyleModifier    modifier;       // 1 type, name 628, 740.
@@ -6961,7 +6961,7 @@ struct LineStyleGeometryModifier_Blueprint
     int                  random_backbone;// 7 type, name 4, 3981.
 };
 
-// 473 DNA structure 652, 5
+// zu DNA structure 473, 652
 struct LineStyleGeometryModifier_2DOffset
 {
     LineStyleModifier    modifier;// 1 type, name 628, 740.
@@ -6971,7 +6971,7 @@ struct LineStyleGeometryModifier_2DOffset
     float                y;       // 5 type, name 7, 6.
 };
 
-// 474 DNA structure 653, 9
+// zu DNA structure 474, 653
 struct LineStyleGeometryModifier_2DTransform
 {
     LineStyleModifier    modifier;// 1 type, name 628, 740.
@@ -6985,7 +6985,7 @@ struct LineStyleGeometryModifier_2DTransform
     int                  pad;     // 9 type, name 4, 66.
 };
 
-// 475 DNA structure 654, 5
+// zu DNA structure 475, 654
 struct LineStyleThicknessModifier_Calligraphy
 {
     LineStyleModifier    modifier;     // 1 type, name 628, 740.
@@ -6995,7 +6995,7 @@ struct LineStyleThicknessModifier_Calligraphy
     int                  pad;          // 5 type, name 4, 66.
 };
 
-// 476 DNA structure 21, 10
+// zu DNA structure 476, 21
 struct IDProperty
 {
     IDProperty        *next;   // 1 type, name 21, 0.
@@ -7010,7 +7010,7 @@ struct IDProperty
     int               totallen;// 10 type, name 4, 23.
 };
 
-// 477 DNA structure 30, 21
+// zu DNA structure 477, 30
 struct IpoCurve
 {
     IpoCurve     *next;    // 1 type, name 30, 0.
@@ -7036,7 +7036,7 @@ struct IpoCurve
     IpoDriver    *driver;  // 21 type, name 28, 61.
 };
 
-// 478 DNA structure 35, 15
+// zu DNA structure 478, 35
 struct Key
 {
     ID          id;         // 1 type, name 22, 31.
@@ -7056,7 +7056,7 @@ struct Key
     int         uidgen;     // 15 type, name 4, 84.
 };
 
-// 479 DNA structure 38, 14
+// zu DNA structure 479, 38
 struct Text
 {
     ID          id;       // 1 type, name 22, 31.
@@ -7075,7 +7075,7 @@ struct Text
     double      mtime;    // 14 type, name 8, 100.
 };
 
-// 480 DNA structure 42, 21
+// zu DNA structure 480, 42
 struct Camera
 {
     ID                id;            // 1 type, name 22, 31.
@@ -7101,7 +7101,7 @@ struct Camera
     char              pad[7];        // 21 type, name 0, 115.
 };
 
-// 481 DNA structure 52, 63
+// zu DNA structure 481, 52
 struct Tex
 {
     ID              id;           // 1 type, name 22, 31.
@@ -7169,7 +7169,7 @@ struct Tex
     char            pad[7];       // 63 type, name 0, 115.
 };
 
-// 482 DNA structure 63, 9
+// zu DNA structure 482, 63
 struct ColorMapping
 {
     ColorBand    coba;          // 1 type, name 54, 346.
@@ -7183,7 +7183,7 @@ struct ColorMapping
     int          pad[3];        // 9 type, name 4, 350.
 };
 
-// 483 DNA structure 140, 13
+// zu DNA structure 483, 140
 struct ClothModifierData
 {
     ModifierData         modifier;          // 1 type, name 116, 740.
@@ -7201,7 +7201,7 @@ struct ClothModifierData
     void                 *solver_result;    // Note: using void* on undefined DNA type: ClothSolverResult
 };
 
-// 484 DNA structure 216, 77
+// zu DNA structure 484, 216
 struct World
 {
     ID              id;                  // 1 type, name 22, 31.
@@ -7283,7 +7283,7 @@ struct World
     ListBase        gpumaterial;         // 77 type, name 14, 548.
 };
 
-// 485 DNA structure 225, 16
+// zu DNA structure 485, 225
 struct ImageFormatData
 {
     char                           imtype;          // 1 type, name 0, 1442.
@@ -7304,7 +7304,7 @@ struct ImageFormatData
     ColorManagedDisplaySettings    display_settings;// 16 type, name 227, 1454.
 };
 
-// 486 DNA structure 259, 15
+// zu DNA structure 486, 259
 struct BGpic
 {
     BGpic            *next;   // 1 type, name 259, 0.
@@ -7324,7 +7324,7 @@ struct BGpic
     char             pad[6];  // 15 type, name 0, 752.
 };
 
-// 487 DNA structure 314, 183
+// zu DNA structure 487, 314
 struct ThemeSpace
 {
     char                back[4];                       // 1 type, name 0, 2086.
@@ -7512,7 +7512,7 @@ struct ThemeSpace
     char                paint_curve_handle[4];         // 183 type, name 0, 2299.
 };
 
-// 488 DNA structure 344, 52
+// zu DNA structure 488, 344
 struct Sequence
 {
     Sequence     *next;          // 1 type, name 344, 0.
@@ -7569,7 +7569,7 @@ struct Sequence
     ListBase     modifiers;      // 52 type, name 14, 1037.
 };
 
-// 489 DNA structure 354, 3
+// zu DNA structure 489, 354
 struct ColorBalanceModifierData
 {
     SequenceModifierData    modifier;      // 1 type, name 353, 740.
@@ -7577,7 +7577,7 @@ struct ColorBalanceModifierData
     float                   color_multiply;// 3 type, name 7, 2614.
 };
 
-// 490 DNA structure 69, 4
+// zu DNA structure 490, 69
 struct Group
 {
     ID          id;          // 1 type, name 22, 31.
@@ -7586,7 +7586,7 @@ struct Group
     float       dupli_ofs[3];// 4 type, name 7, 2772.
 };
 
-// 491 DNA structure 415, 7
+// zu DNA structure 491, 415
 struct bActionGroup
 {
     bActionGroup      *next;    // 1 type, name 415, 0.
@@ -7598,7 +7598,7 @@ struct bActionGroup
     ThemeWireColor    cs;       // 7 type, name 315, 2871.
 };
 
-// 492 DNA structure 459, 5
+// zu DNA structure 492, 459
 struct bNodePreview
 {
     bNodeInstanceHashEntry    hash_entry;// 1 type, name 458, 3012.
@@ -7608,7 +7608,7 @@ struct bNodePreview
     int                       pad;       // 5 type, name 4, 66.
 };
 
-// 493 DNA structure 540, 19
+// zu DNA structure 493, 540
 struct ParticleData
 {
     ParticleKey     state;      // 1 type, name 533, 1116.
@@ -7632,7 +7632,7 @@ struct ParticleData
     short           alive;      // 19 type, name 2, 3297.
 };
 
-// 494 DNA structure 542, 142
+// zu DNA structure 494, 542
 struct ParticleSettings
 {
     ID                  id;                 // 1 type, name 22, 31.
@@ -7779,7 +7779,7 @@ struct ParticleSettings
     short               pad5[3];            // 142 type, name 2, 3411.
 };
 
-// 495 DNA structure 195, 7
+// zu DNA structure 495, 195
 struct bGPdata
 {
     ID          id;           // 1 type, name 22, 31.
@@ -7791,7 +7791,7 @@ struct bGPdata
     void        *sbuffer;     // 7 type, name 11, 3503.
 };
 
-// 496 DNA structure 565, 11
+// zu DNA structure 496, 565
 struct wmKeyMap
 {
     wmKeyMap    *next;       // 1 type, name 565, 0.
@@ -7807,7 +7807,7 @@ struct wmKeyMap
     void        *modal_items;// 11 type, name 11, 3569.
 };
 
-// 497 DNA structure 616, 7
+// zu DNA structure 497, 616
 struct MovieTrackingDopesheet
 {
     int         ok;               // 1 type, name 4, 138.
@@ -7819,7 +7819,7 @@ struct MovieTrackingDopesheet
     int         pad;              // 7 type, name 4, 66.
 };
 
-// 498 DNA structure 284, 9
+// zu DNA structure 498, 284
 struct Mask
 {
     ID          id;         // 1 type, name 22, 31.
@@ -7833,7 +7833,7 @@ struct Mask
     int         pad;        // 9 type, name 4, 66.
 };
 
-// 499 DNA structure 621, 5
+// zu DNA structure 499, 621
 struct MaskSplinePoint
 {
     BezTriple            bezt;  // 1 type, name 32, 3895.
@@ -7843,7 +7843,7 @@ struct MaskSplinePoint
     MaskParent           parent;// 5 type, name 619, 3285.
 };
 
-// 500 DNA structure 624, 14
+// zu DNA structure 500, 624
 struct MaskLayer
 {
     MaskLayer          *next;         // 1 type, name 624, 0.
@@ -7862,7 +7862,7 @@ struct MaskLayer
     char               restrictflag;  // 14 type, name 0, 1099.
 };
 
-// 501 DNA structure 224, 8
+// zu DNA structure 501, 224
 struct FreestyleConfig
 {
     ListBase    modules;             // 1 type, name 14, 3960.
@@ -7875,7 +7875,7 @@ struct FreestyleConfig
     ListBase    linesets;            // 8 type, name 14, 3965.
 };
 
-// 502 DNA structure 33, 7
+// zu DNA structure 502, 33
 struct Ipo
 {
     ID          id;       // 1 type, name 22, 31.
@@ -7887,7 +7887,7 @@ struct Ipo
     short       pad;      // 7 type, name 2, 66.
 };
 
-// 503 DNA structure 46, 40
+// zu DNA structure 503, 46
 struct Image
 {
     ID                                id;                 // 1 type, name 22, 31.
@@ -7932,7 +7932,7 @@ struct Image
     RenderSlot                        render_slots[8];    // 40 type, name 45, 173.
 };
 
-// 504 DNA structure 74, 19
+// zu DNA structure 504, 74
 struct MetaBall
 {
     ID          id;        // 1 type, name 22, 31.
@@ -7956,7 +7956,7 @@ struct MetaBall
     MetaElem    *lastelem; // 19 type, name 72, 571.
 };
 
-// 505 DNA structure 80, 70
+// zu DNA structure 505, 80
 struct Curve
 {
     ID          id;             // 1 type, name 22, 31.
@@ -8031,7 +8031,7 @@ struct Curve
     char        pad2[2];        // 70 type, name 0, 656.
 };
 
-// 506 DNA structure 98, 14
+// zu DNA structure 506, 98
 struct Multires
 {
     ListBase      levels;       // 1 type, name 14, 727.
@@ -8050,7 +8050,7 @@ struct Multires
     char          *edge_creases;// 14 type, name 0, 736.
 };
 
-// 507 DNA structure 223, 14
+// zu DNA structure 507, 223
 struct SceneRenderLayer
 {
     SceneRenderLayer    *next;               // 1 type, name 223, 0.
@@ -8069,7 +8069,7 @@ struct SceneRenderLayer
     FreestyleConfig     freestyleConfig;     // 14 type, name 224, 1441.
 };
 
-// 508 DNA structure 228, 13
+// zu DNA structure 508, 228
 struct BakeData
 {
     ImageFormatData    im_format;        // 1 type, name 225, 1455.
@@ -8087,7 +8087,7 @@ struct BakeData
     char               cage[64];         // 13 type, name 0, 1460.
 };
 
-// 509 DNA structure 234, 36
+// zu DNA structure 509, 234
 struct GameData
 {
     GameFraming    framing;              // 1 type, name 232, 1585.
@@ -8128,7 +8128,7 @@ struct GameData
     float          pad2;                 // 36 type, name 7, 29.
 };
 
-// 510 DNA structure 294, 33
+// zu DNA structure 510, 294
 struct SpaceText
 {
     SpaceLink    *next;          // 1 type, name 268, 0.
@@ -8166,7 +8166,7 @@ struct SpaceText
     float        scroll_accum[2];// 33 type, name 7, 2000.
 };
 
-// 511 DNA structure 302, 14
+// zu DNA structure 511, 302
 struct SpaceConsole
 {
     SpaceLink    *next;          // 1 type, name 268, 0.
@@ -8185,7 +8185,7 @@ struct SpaceConsole
     int          sel_end;        // 14 type, name 4, 2030.
 };
 
-// 512 DNA structure 254, 11
+// zu DNA structure 512, 254
 struct Editing
 {
     ListBase    *seqbasep;         // 1 type, name 14, 2580.
@@ -8201,7 +8201,7 @@ struct Editing
     rctf        over_border;       // 11 type, name 19, 2588.
 };
 
-// 513 DNA structure 409, 27
+// zu DNA structure 513, 409
 struct bArmature
 {
     ID          id;             // 1 type, name 22, 31.
@@ -8233,7 +8233,7 @@ struct bArmature
     int         pathac;         // 27 type, name 4, 2807.
 };
 
-// 514 DNA structure 412, 40
+// zu DNA structure 514, 412
 struct bPoseChannel
 {
     bPoseChannel    *next;         // 1 type, name 412, 0.
@@ -8278,7 +8278,7 @@ struct bPoseChannel
     void            *temp;         // 40 type, name 11, 2848.
 };
 
-// 515 DNA structure 194, 16
+// zu DNA structure 515, 194
 struct bPose
 {
     ListBase            chanbase;          // 1 type, name 14, 2849.
@@ -8299,7 +8299,7 @@ struct bPose
     char                proxy_act_bone[64];// 16 type, name 0, 2859.
 };
 
-// 516 DNA structure 482, 4
+// zu DNA structure 516, 482
 struct NodeImageFile
 {
     char               name[1024];// 1 type, name 0, 34.
@@ -8308,7 +8308,7 @@ struct NodeImageFile
     int                efra;      // 4 type, name 4, 1245.
 };
 
-// 517 DNA structure 483, 6
+// zu DNA structure 517, 483
 struct NodeImageMultiFile
 {
     char               base_path[1024];// 1 type, name 0, 3078.
@@ -8319,7 +8319,7 @@ struct NodeImageMultiFile
     int                pad;            // 6 type, name 4, 66.
 };
 
-// 518 DNA structure 484, 7
+// zu DNA structure 518, 484
 struct NodeImageMultiFileSocket
 {
     short              use_render_format;// 1 type, name 2, 3081.
@@ -8331,7 +8331,7 @@ struct NodeImageMultiFileSocket
     char               pad2[2];          // 7 type, name 0, 656.
 };
 
-// 519 DNA structure 58, 11
+// zu DNA structure 519, 58
 struct CurveMapping
 {
     int         flag;             // 1 type, name 4, 18.
@@ -8347,7 +8347,7 @@ struct CurveMapping
     float       sample[3];        // 11 type, name 7, 3187.
 };
 
-// 520 DNA structure 238, 5
+// zu DNA structure 520, 238
 struct Palette
 {
     ID          id;          // 1 type, name 22, 31.
@@ -8357,7 +8357,7 @@ struct Palette
     int         pad;         // 5 type, name 4, 66.
 };
 
-// 521 DNA structure 584, 25
+// zu DNA structure 521, 584
 struct NlaStrip
 {
     NlaStrip      *next;          // 1 type, name 584, 0.
@@ -8387,7 +8387,7 @@ struct NlaStrip
     int           pad2;           // 25 type, name 4, 29.
 };
 
-// 522 DNA structure 36, 12
+// zu DNA structure 522, 36
 struct AnimData
 {
     bAction       *action;       // 1 type, name 193, 1028.
@@ -8404,7 +8404,7 @@ struct AnimData
     float         act_influence; // 12 type, name 7, 3630.
 };
 
-// 523 DNA structure 596, 14
+// zu DNA structure 523, 596
 struct BoidState
 {
     BoidState    *next;         // 1 type, name 596, 0.
@@ -8423,7 +8423,7 @@ struct BoidState
     float        falloff;       // 14 type, name 7, 808.
 };
 
-// 524 DNA structure 612, 10
+// zu DNA structure 524, 612
 struct MovieTrackingObject
 {
     MovieTrackingObject            *next;         // 1 type, name 612, 0.
@@ -8438,7 +8438,7 @@ struct MovieTrackingObject
     int                            keyframe2;     // 10 type, name 4, 3799.
 };
 
-// 525 DNA structure 68, 137
+// zu DNA structure 525, 68
 struct Material
 {
     ID                id;               // 1 type, name 22, 31.
@@ -8580,7 +8580,7 @@ struct Material
     ListBase          gpumaterial;      // 137 type, name 14, 548.
 };
 
-// 526 DNA structure 308, 18
+// zu DNA structure 526, 308
 struct uiStyle
 {
     uiStyle        *next;         // 1 type, name 308, 0.
@@ -8603,7 +8603,7 @@ struct uiStyle
     short          pad;           // 18 type, name 2, 66.
 };
 
-// 527 DNA structure 473, 6
+// zu DNA structure 527, 473
 struct NodeColorCorrection
 {
     ColorCorrectionData    master;       // 1 type, name 472, 3051.
@@ -8614,14 +8614,14 @@ struct NodeColorCorrection
     float                  endmidtones;  // 6 type, name 7, 3056.
 };
 
-// 528 DNA structure 499, 2
+// zu DNA structure 528, 499
 struct NodeTexBase
 {
     TexMapping      tex_mapping;  // 1 type, name 62, 3127.
     ColorMapping    color_mapping;// 2 type, name 63, 3128.
 };
 
-// 529 DNA structure 237, 57
+// zu DNA structure 529, 237
 struct Brush
 {
     ID              id;                       // 1 type, name 22, 31.
@@ -8683,7 +8683,7 @@ struct Brush
     float           mask_stencil_dimension[2];// 57 type, name 7, 3258.
 };
 
-// 530 DNA structure 157, 51
+// zu DNA structure 530, 157
 struct ParticleSystem
 {
     ParticleSystem        *next;               // 1 type, name 157, 0.
@@ -8739,7 +8739,7 @@ struct ParticleSystem
     float                 _pad;                // 51 type, name 7, 288.
 };
 
-// 531 DNA structure 269, 26
+// zu DNA structure 531, 269
 struct View2D
 {
     rctf                 tot;          // 1 type, name 19, 242.
@@ -8770,7 +8770,7 @@ struct View2D
     void                 *smooth_timer;// Note: using void* on undefined DNA type: wmTimer
 };
 
-// 532 DNA structure 304, 29
+// zu DNA structure 532, 304
 struct SpaceClip
 {
     SpaceLink          *next;           // 1 type, name 268, 0.
@@ -8804,7 +8804,7 @@ struct SpaceClip
     MaskSpaceInfo      mask_info;       // 29 type, name 283, 1975.
 };
 
-// 533 DNA structure 322, 23
+// zu DNA structure 533, 322
 struct bScreen
 {
     ID          id;                 // 1 type, name 22, 31.
@@ -8832,7 +8832,7 @@ struct bScreen
     void        *context;           // 23 type, name 11, 2456.
 };
 
-// 534 DNA structure 333, 23
+// zu DNA structure 534, 333
 struct ScrArea
 {
     ScrArea      *next;            // 1 type, name 333, 0.
@@ -8860,21 +8860,21 @@ struct ScrArea
     ListBase     actionzones;      // 23 type, name 14, 2497.
 };
 
-// 535 DNA structure 355, 2
+// zu DNA structure 535, 355
 struct CurvesModifierData
 {
     SequenceModifierData    modifier;     // 1 type, name 353, 740.
     CurveMapping            curve_mapping;// 2 type, name 58, 2615.
 };
 
-// 536 DNA structure 356, 2
+// zu DNA structure 536, 356
 struct HueCorrectModifierData
 {
     SequenceModifierData    modifier;     // 1 type, name 353, 740.
     CurveMapping            curve_mapping;// 2 type, name 58, 2615.
 };
 
-// 537 DNA structure 193, 9
+// zu DNA structure 537, 193
 struct bAction
 {
     ID          id;           // 1 type, name 22, 31.
@@ -8888,7 +8888,7 @@ struct bAction
     int         pad;          // 9 type, name 4, 66.
 };
 
-// 538 DNA structure 500, 5
+// zu DNA structure 538, 500
 struct NodeTexSky
 {
     NodeTexBase    base;            // 1 type, name 499, 1764.
@@ -8898,13 +8898,13 @@ struct NodeTexSky
     float          ground_albedo;   // 5 type, name 7, 3132.
 };
 
-// 539 DNA structure 502, 1
+// zu DNA structure 539, 502
 struct NodeTexChecker
 {
     NodeTexBase    base;// 1 type, name 499, 1764.
 };
 
-// 540 DNA structure 503, 5
+// zu DNA structure 540, 503
 struct NodeTexBrick
 {
     NodeTexBase    base;       // 1 type, name 499, 1764.
@@ -8914,7 +8914,7 @@ struct NodeTexBrick
     float          squash;     // 5 type, name 7, 3138.
 };
 
-// 541 DNA structure 505, 3
+// zu DNA structure 541, 505
 struct NodeTexGradient
 {
     NodeTexBase    base;         // 1 type, name 499, 1764.
@@ -8922,13 +8922,13 @@ struct NodeTexGradient
     int            pad;          // 3 type, name 4, 66.
 };
 
-// 542 DNA structure 506, 1
+// zu DNA structure 542, 506
 struct NodeTexNoise
 {
     NodeTexBase    base;// 1 type, name 499, 1764.
 };
 
-// 543 DNA structure 507, 3
+// zu DNA structure 543, 507
 struct NodeTexVoronoi
 {
     NodeTexBase    base;    // 1 type, name 499, 1764.
@@ -8936,7 +8936,7 @@ struct NodeTexVoronoi
     int            pad;     // 3 type, name 4, 66.
 };
 
-// 544 DNA structure 508, 3
+// zu DNA structure 544, 508
 struct NodeTexMusgrave
 {
     NodeTexBase    base;         // 1 type, name 499, 1764.
@@ -8944,7 +8944,7 @@ struct NodeTexMusgrave
     int            pad;          // 3 type, name 4, 66.
 };
 
-// 545 DNA structure 509, 3
+// zu DNA structure 545, 509
 struct NodeTexWave
 {
     NodeTexBase    base;     // 1 type, name 499, 1764.
@@ -8952,7 +8952,7 @@ struct NodeTexWave
     int            pad;      // 3 type, name 4, 66.
 };
 
-// 546 DNA structure 510, 3
+// zu DNA structure 546, 510
 struct NodeTexMagic
 {
     NodeTexBase    base; // 1 type, name 499, 1764.
@@ -8960,7 +8960,7 @@ struct NodeTexMagic
     int            pad;  // 3 type, name 4, 66.
 };
 
-// 547 DNA structure 556, 33
+// zu DNA structure 547, 556
 struct wmWindow
 {
     wmWindow       *next;         // 1 type, name 556, 0.
@@ -8998,7 +8998,7 @@ struct wmWindow
     ListBase       gesture;       // 33 type, name 14, 3551.
 };
 
-// 548 DNA structure 626, 45
+// zu DNA structure 548, 626
 struct FreestyleLineStyle
 {
     ID           id;                 // 1 type, name 22, 31.
@@ -9048,7 +9048,7 @@ struct FreestyleLineStyle
     ListBase     geometry_modifiers; // 45 type, name 14, 4019.
 };
 
-// 549 DNA structure 82, 49
+// zu DNA structure 549, 82
 struct Mesh
 {
     ID             id;          // 1 type, name 22, 31.
@@ -9102,7 +9102,7 @@ struct Mesh
     Multires       *mr;         // 49 type, name 98, 689.
 };
 
-// 550 DNA structure 249, 76
+// zu DNA structure 550, 249
 struct ToolSettings
 {
     VPaint                  *vpaint;                                // 1 type, name 244, 1675.
@@ -9183,7 +9183,7 @@ struct ToolSettings
     MeshStatVis             statvis;                                // 76 type, name 248, 1746.
 };
 
-// 551 DNA structure 291, 27
+// zu DNA structure 551, 291
 struct SpaceImage
 {
     SpaceLink        *next;           // 1 type, name 268, 0.
@@ -9215,7 +9215,7 @@ struct SpaceImage
     MaskSpaceInfo    mask_info;       // 27 type, name 283, 1975.
 };
 
-// 552 DNA structure 455, 47
+// zu DNA structure 552, 455
 struct bNode
 {
     bNode         *next;         // 1 type, name 455, 0.
@@ -9267,7 +9267,7 @@ struct bNode
     void          *block;        // Note: using void* on undefined DNA type: uiBlock
 };
 
-// 553 DNA structure 501, 6
+// zu DNA structure 553, 501
 struct NodeTexImage
 {
     NodeTexBase    base;            // 1 type, name 499, 1764.
@@ -9278,7 +9278,7 @@ struct NodeTexImage
     int            interpolation;   // 6 type, name 4, 2603.
 };
 
-// 554 DNA structure 504, 4
+// zu DNA structure 554, 504
 struct NodeTexEnvironment
 {
     NodeTexBase    base;       // 1 type, name 499, 1764.
@@ -9287,7 +9287,7 @@ struct NodeTexEnvironment
     int            projection; // 4 type, name 4, 3134.
 };
 
-// 555 DNA structure 267, 55
+// zu DNA structure 555, 267
 struct View3D
 {
     SpaceLink        *next;               // 1 type, name 268, 0.
@@ -9347,7 +9347,7 @@ struct View3D
     bGPdata          *gpd;                // 55 type, name 195, 1031.
 };
 
-// 556 DNA structure 272, 22
+// zu DNA structure 556, 272
 struct SpaceButs
 {
     SpaceLink    *next;               // 1 type, name 268, 0.
@@ -9374,7 +9374,7 @@ struct SpaceButs
     void         *texuser;            // 22 type, name 11, 1908.
 };
 
-// 557 DNA structure 278, 11
+// zu DNA structure 557, 278
 struct SpaceNla
 {
     SpaceLink     *next;          // 1 type, name 268, 0.
@@ -9390,7 +9390,7 @@ struct SpaceNla
     View2D        v2d;            // 11 type, name 269, 1896.
 };
 
-// 558 DNA structure 61, 36
+// zu DNA structure 558, 61
 struct bNodeTree
 {
     ID                   id;               // 1 type, name 22, 31.
@@ -9431,7 +9431,7 @@ struct bNodeTree
     void                 *udh;             // 36 type, name 11, 3041.
 };
 
-// 559 DNA structure 276, 14
+// zu DNA structure 559, 276
 struct SpaceIpo
 {
     SpaceLink     *next;          // 1 type, name 268, 0.
@@ -9450,7 +9450,7 @@ struct SpaceIpo
     int           around;         // 14 type, name 4, 1854.
 };
 
-// 560 DNA structure 280, 9
+// zu DNA structure 560, 280
 struct SpaceTime
 {
     SpaceLink    *next;        // 1 type, name 268, 0.
@@ -9464,7 +9464,7 @@ struct SpaceTime
     int          flag;         // 9 type, name 4, 18.
 };
 
-// 561 DNA structure 281, 21
+// zu DNA structure 561, 281
 struct SpaceSeq
 {
     SpaceLink          *next;          // 1 type, name 268, 0.
@@ -9490,7 +9490,7 @@ struct SpaceSeq
     SequencerScopes    scopes;         // 21 type, name 282, 1930.
 };
 
-// 562 DNA structure 273, 16
+// zu DNA structure 562, 273
 struct SpaceOops
 {
     SpaceLink        *next;            // 1 type, name 268, 0.
@@ -9511,7 +9511,7 @@ struct SpaceOops
     void             *treehash;        // 16 type, name 11, 1916.
 };
 
-// 563 DNA structure 299, 29
+// zu DNA structure 563, 299
 struct SpaceNode
 {
     SpaceLink    *next;          // 1 type, name 268, 0.
@@ -9545,7 +9545,7 @@ struct SpaceNode
     bGPdata      *gpd;           // 29 type, name 195, 1031.
 };
 
-// 564 DNA structure 416, 13
+// zu DNA structure 564, 416
 struct SpaceAction
 {
     SpaceLink     *next;          // 1 type, name 268, 0.
@@ -9563,7 +9563,7 @@ struct SpaceAction
     float         timeslide;      // 13 type, name 7, 2881.
 };
 
-// 565 DNA structure 602, 13
+// zu DNA structure 565, 602
 struct MovieTracking
 {
     MovieTrackingSettings          settings;        // 1 type, name 609, 3828.
@@ -9581,7 +9581,7 @@ struct MovieTracking
     MovieTrackingDopesheet         dopesheet;       // 13 type, name 616, 3836.
 };
 
-// 566 DNA structure 321, 115
+// zu DNA structure 566, 321
 struct UserDef
 {
     int               versionfile;                // 1 type, name 4, 2331.
@@ -9701,7 +9701,7 @@ struct UserDef
     WalkNavigation    walk_navigation;            // 115 type, name 320, 2438.
 };
 
-// 567 DNA structure 555, 21
+// zu DNA structure 567, 555
 struct wmWindowManager
 {
     ID             id;                 // 1 type, name 22, 31.
@@ -9727,7 +9727,7 @@ struct wmWindowManager
     char           par[7];             // 21 type, name 0, 3527.
 };
 
-// 568 DNA structure 229, 119
+// zu DNA structure 568, 229
 struct RenderData
 {
     ImageFormatData           im_format;               // 1 type, name 225, 1455.
@@ -9851,7 +9851,7 @@ struct RenderData
     int                       pad;                     // 119 type, name 4, 66.
 };
 
-// 569 DNA structure 257, 19
+// zu DNA structure 569, 257
 struct MovieClip
 {
     ID                                id;                 // 1 type, name 22, 31.
@@ -9875,7 +9875,7 @@ struct MovieClip
     ColorManagedColorspaceSettings    colorspace_settings;// 19 type, name 50, 171.
 };
 
-// 570 DNA structure 335, 31
+// zu DNA structure 570, 335
 struct ARegion
 {
     ARegion        *next;                 // 1 type, name 335, 0.
@@ -9911,7 +9911,7 @@ struct ARegion
     void           *regiondata;           // 31 type, name 11, 2514.
 };
 
-// 571 DNA structure 29, 134
+// zu DNA structure 571, 29
 struct Object
 {
     ID                  id;                    // 1 type, name 22, 31.
@@ -10050,7 +10050,7 @@ struct Object
     LodLevel            *currentlod;           // 134 type, name 191, 1126.
 };
 
-// 572 DNA structure 313, 29
+// zu DNA structure 572, 313
 struct ThemeUI
 {
     uiWidgetColors         wcol_regular;     // 1 type, name 309, 2092.
@@ -10084,7 +10084,7 @@ struct ThemeUI
     char                   zaxis[4];         // 29 type, name 0, 2119.
 };
 
-// 573 DNA structure 44, 49
+// zu DNA structure 573, 44
 struct Scene
 {
     ID                                id;                           // 1 type, name 22, 31.
@@ -10138,7 +10138,7 @@ struct Scene
     RigidBodyWorld                    *rigidbody_world;             // 49 type, name 258, 1795.
 };
 
-// 574 DNA structure 316, 24
+// zu DNA structure 574, 316
 struct bTheme
 {
     bTheme            *next;            // 1 type, name 316, 0.

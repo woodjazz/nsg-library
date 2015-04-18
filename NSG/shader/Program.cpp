@@ -80,6 +80,8 @@ namespace NSG
           projectionLoc_(-1),
           sceneColorAmbientLoc_(-1),
           eyeWorldPosLoc_(-1),
+          u_uOffsetLoc_(-1),
+          u_vOffsetLoc_(-1),
           blendMode_loc_(-1),
           nBones_(0),
           nDirectionalLights_(0),
@@ -668,6 +670,8 @@ namespace NSG
         projectionLoc_  = GetUniformLocation("u_projection");
         sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
         eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
+        u_uOffsetLoc_ = GetUniformLocation("u_uOffset");
+        u_vOffsetLoc_ = GetUniformLocation("u_vOffset");
         for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
         {
             std::stringstream ss;
@@ -897,6 +901,11 @@ namespace NSG
                 if (wavesFilterLoc_.offset_ != -1)
                     glUniform1f(wavesFilterLoc_.offset_, material_->waveFilter_.offset_);
 
+                if (u_uOffsetLoc_ != -1)
+                    glUniform4fv(u_uOffsetLoc_, 1, &material_->u0Offset_[0]);
+
+                if (u_vOffsetLoc_ != -1)
+                    glUniform4fv(u_vOffsetLoc_, 1, &material_->v0Offset_[0]);
             }
         }
     }

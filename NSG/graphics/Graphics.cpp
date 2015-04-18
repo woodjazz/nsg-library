@@ -110,6 +110,11 @@ namespace NSG
           has_texture_non_power_of_two_ext_(false),
           has_instanced_arrays_ext_(false),
           has_packed_depth_stencil_ext_(false),
+          has_texture_compression_dxt1_ext_(false),
+          has_texture_compression_dxt3_ext_(false),
+          has_texture_compression_dxt5_ext_(false),
+          has_compressed_ETC1_RGB8_texture_ext_(false),
+          has_texture_compression_pvrtc_ext_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT),
           maxVaryingVectors_(0),
@@ -144,10 +149,58 @@ namespace NSG
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
+
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTexturesCombined_);
         TRACE_LOG("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = " << maxTexturesCombined_);
         CHECK_CONDITION(maxTexturesCombined_ >= 8, __FILE__, __LINE__);
         textures_ = std::vector<Texture*>(maxTexturesCombined_, nullptr);
+
+        #if 0
+        {
+            GLint numCompressedTexturesFormats = 0;
+            glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &numCompressedTexturesFormats);
+            if (numCompressedTexturesFormats)
+            {
+                GLint* compressedFormat = new int[numCompressedTexturesFormats];
+                glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, compressedFormat);
+                delete[] compressedFormat;
+            }
+        }
+        #endif
+
+        if (CheckExtension("EXT_texture_compression_dxt1"))
+        {
+            has_texture_compression_dxt1_ext_ = true;
+            TRACE_LOG("Has extension: EXT_texture_compression_dxt1");
+        }
+        
+        if (CheckExtension("WEBGL_compressed_texture_s3tc"))
+        {
+            has_texture_compression_dxt1_ext_ = true;
+            has_texture_compression_dxt3_ext_ = true;
+            has_texture_compression_dxt5_ext_ = true;
+            TRACE_LOG("Has extension: WEBGL_compressed_texture_s3tc");
+        }
+
+        if (CheckExtension("EXT_texture_compression_s3tc"))
+        {
+            has_texture_compression_dxt1_ext_ = true;
+            has_texture_compression_dxt3_ext_ = true;
+            has_texture_compression_dxt5_ext_ = true;
+            TRACE_LOG("Has extension: EXT_texture_compression_s3tc");
+        }
+
+        if (CheckExtension("OES_compressed_ETC1_RGB8_texture"))
+        {
+            has_compressed_ETC1_RGB8_texture_ext_ = true;
+            TRACE_LOG("Has extension: OES_compressed_ETC1_RGB8_texture");
+        }
+
+        if (CheckExtension("IMG_texture_compression_pvrtc"))
+        {
+            has_texture_compression_pvrtc_ext_ = true;
+            TRACE_LOG("Has extension: IMG_texture_compression_pvrtc");
+        }
 
         if (CheckExtension("EXT_discard_framebuffer"))
         {
@@ -919,6 +972,9 @@ namespace NSG
 
     void Graphics::SetInstanceAttrPointers(Program* program)
     {
+        if(!HasInstancedArrays())
+            return;
+        
         CHECK_ASSERT(program->GetMaterial()->IsBatched(), __FILE__, __LINE__);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);

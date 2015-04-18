@@ -453,4 +453,21 @@ namespace NSG
         FAILED,
         IN_PROGRESS
     };
+
+    enum class TextureFormat
+    {
+        UNKNOWN,
+        ALPHA,
+        RGB,
+        RGBA,
+        DEPTH,
+        DXT1,
+        DXT3,
+        DXT5,
+        ETC1,
+        PVRTC_RGB_2BPP,
+        PVRTC_RGBA_2BPP,
+        PVRTC_RGB_4BPP,
+        PVRTC_RGBA_4BPP
+    };
 }

@@ -56,7 +56,7 @@ namespace NSG
 
 	IndexBuffer::~IndexBuffer()
 	{
-        if(Graphics::this_->GetIndexBuffer() == this)
+		if (Graphics::this_ && Graphics::this_->GetIndexBuffer() == this)
 			Graphics::this_->SetIndexBuffer(nullptr);
 	}
 

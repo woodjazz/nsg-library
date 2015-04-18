@@ -48,7 +48,6 @@ cmake %SOURCE_FOLDER% -G "Unix Makefiles" -DBUILD_PROJECT="all" -DANDROID_TOOLCH
 ::set PATH=%PATH%;%ANDROID_NDK%/prebuilt/common/scan-build
 ::scan-build --use-analyzer %ANDROID_NDK%/toolchains/llvm-3.4/prebuilt/windows-x86_64/bin %ANDROID_NDK%/prebuilt/windows-x86_64/bin/make.exe %2
 
-
 @echo "*** BUILDING %2 ***"
 %ANDROID_NDK%/prebuilt/windows/bin/make.exe %2
 

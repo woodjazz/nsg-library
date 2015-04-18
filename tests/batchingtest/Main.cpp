@@ -30,7 +30,9 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    auto window = Window::Create("window", 0, 0, 1, 1);
+    auto window = Window::Create("window", 0, 0, 10, 10);
+	if (!Graphics::this_->HasInstancedArrays())
+		return 0;
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
@@ -52,7 +54,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
     {
         static float angle(1);
-        if(angle > 4)
+        if(angle > 100)
         {
             CHECK_CONDITION(!material->IsBatched(), __FILE__, __LINE__);
             window = nullptr;

@@ -48,7 +48,6 @@ namespace NSG
         static void OnLoad(unsigned int id, void* arg, void* buffer, unsigned bytes);
         static void OnError(unsigned int id, void* arg, int httpError, const char* statusDescription);
         static void OnProgress(unsigned int id, void* arg, int bytesLoaded, int totalSize);
-        static void OnReadyStateChange(void* arg, int readyState, int status, char* buffer, unsigned bytes);
         #endif
         std::string url_;
         std::string protocol_;

@@ -41,9 +41,9 @@ namespace NSG
           width_(0),
           height_(0),
           flags_(flags),
-          colorTexture_(std::make_shared<Texture>(name + "ColorBuffer", GL_RGBA)),
-          depthTexture_(std::make_shared<Texture>(name + "DepthBuffer", GL_DEPTH_COMPONENT)),
-          stencilTexture_(std::make_shared<Texture>(name + "StencilBuffer", GL_DEPTH_COMPONENT)),
+		  colorTexture_(std::make_shared<Texture>(name + "ColorBuffer", GL_RGBA)),
+		  depthTexture_(std::make_shared<Texture>(name + "DepthBuffer", GL_DEPTH_COMPONENT)),
+		  stencilTexture_(std::make_shared<Texture>(name + "StencilBuffer", GL_DEPTH_COMPONENT)),
           framebuffer_(0),
           colorRenderbuffer_(0),
           depthStencilRenderBuffer_(0),
@@ -240,7 +240,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-    void FrameBuffer::SetSize(unsigned width, unsigned height)
+    void FrameBuffer::SetSize(int width, int height)
     {
         CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
 
