@@ -44,8 +44,8 @@ namespace NSG
 {
     SceneNode::SceneNode(const std::string& name)
         : Node(name),
-          signalMeshSet_(new SignalEmpty()),
           signalCollision_(new Signal<const ContactPoint & >()),
+          signalMeshSet_(new SignalEmpty()),
           layer_(RenderLayer::DEFAULT_LAYER),
           octant_(nullptr),
           occludee_(false),
@@ -106,7 +106,7 @@ namespace NSG
                     scene->UpdateOctree(this);
             }
 
-			signalMeshSet_->Run();
+            signalMeshSet_->Run();
         }
     }
 
@@ -172,24 +172,24 @@ namespace NSG
         if (node == this)
             return BoundingBox();
         BoundingBox bb(GetWorldBoundingBox());
-		for (auto& obj : children_)
-		{
-			auto child = dynamic_cast<SceneNode*>(obj.get());
-			if (child)
-				bb.Merge(child->GetWorldBoundingBoxBut(node));
-		}
+        for (auto& obj : children_)
+        {
+            auto child = dynamic_cast<SceneNode*>(obj.get());
+            if (child)
+                bb.Merge(child->GetWorldBoundingBoxBut(node));
+        }
         return bb;
     }
 
     void SceneNode::GetMaterials(std::vector<PMaterial>& materials) const
     {
         materials.push_back(material_);
-		for (auto& obj : children_)
-		{
-			auto child = dynamic_cast<SceneNode*>(obj.get());
-			if (child)
-				child->GetMaterials(materials);
-		}
+        for (auto& obj : children_)
+        {
+            auto child = dynamic_cast<SceneNode*>(obj.get());
+            if (child)
+                child->GetMaterials(materials);
+        }
     }
 
     void SceneNode::Save(pugi::xml_node& node) const
@@ -239,12 +239,12 @@ namespace NSG
     {
         for (auto& obj : children_)
         {
-			auto sceneNode = std::dynamic_pointer_cast<SceneNode>(obj);
-			if (sceneNode)
-			{
-				pugi::xml_node child = node.append_child("SceneNode");
-				sceneNode->Save(child);
-			}
+            auto sceneNode = std::dynamic_pointer_cast<SceneNode>(obj);
+            if (sceneNode)
+            {
+                pugi::xml_node child = node.append_child("SceneNode");
+                sceneNode->Save(child);
+            }
         }
     }
 
@@ -341,12 +341,12 @@ namespace NSG
             batch.Draw();
         }
 
-		for (auto& obj : children_)
-		{
-			auto child = dynamic_cast<SceneNode*>(obj.get());
-			if (child)
-				child->DrawWithChildren();
-		}
+        for (auto& obj : children_)
+        {
+            auto child = dynamic_cast<SceneNode*>(obj.get());
+            if (child)
+                child->DrawWithChildren();
+        }
     }
 
     RenderLayer SceneNode::SetLayer(RenderLayer layer)
