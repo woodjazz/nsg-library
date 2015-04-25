@@ -30,7 +30,6 @@ static void Test01()
 {
 	{
 		Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
-		TRACE_LOG(path);
 		CHECK_CONDITION(!path.IsPathRelative(), __FILE__, __LINE__);
 	}
 #if WIN32
@@ -51,7 +50,6 @@ static void Test01()
 
 	{
 		Path path("sjhdjshd/sdhsdjhsd/kskd.txt");
-		TRACE_LOG(path);
 		CHECK_CONDITION(path.IsPathRelative(), __FILE__, __LINE__);
 	}
 

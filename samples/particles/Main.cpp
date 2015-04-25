@@ -45,7 +45,6 @@ int NSG_MAIN(int argc, char* argv[])
     auto shape = rb->GetShape();
     shape->SetType(SH_TRIMESH);
 
-#if 1
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/spark.png");
 	auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 	auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
@@ -55,20 +54,6 @@ int NSG_MAIN(int argc, char* argv[])
     ps->SetPosition(Vertex3(0, 10, 0));
 	ps->SetMaterial(Material::Create());
 	ps->GetMaterial()->SetSolid(false);
-#endif
-    //auto light = scene->GetOrCreateChild<Light>("light");
-    //light->SetPosition(Vertex3(0, 0.0, 5.0));
-
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
-    {
-        scene->Update(deltaTime);
-    });
-
-	auto renderSlot = window->signalRender_->Connect([&]()
-	{
-		scene->Render();
-	});
-
-    return Window::RunApp();
+	return Engine().Run();
 }
 

@@ -42,14 +42,14 @@ namespace NSG
         #ifdef SDL
         {
             if (SDL_InitSubSystem(SDL_INIT_AUDIO))
-                TRACE_LOG("SDL_INIT_AUDIO Error: " << SDL_GetError() << std::endl);
+                TRACE_PRINTF("SDL_INIT_AUDIO Error: %s", SDL_GetError());
 
             int audio_rate = MIX_DEFAULT_FREQUENCY;
             Uint16 audio_format = MIX_DEFAULT_FORMAT;
             int audio_channels = 2;
 
             if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, 4096))
-                TRACE_LOG("Unable to open audio!");
+				TRACE_PRINTF("Unable to open audio!");
         }
         #endif
     }

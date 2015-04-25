@@ -93,7 +93,7 @@ namespace NSG
         Vector3 angularVelocity_;
         SignalEmpty::PSlot slotReleased_;
         SignalEmpty::PSlot slotMeshSet_;
-        SignalWindow::PSlot slotWindowCreated_;
+        SignalEngine::PSlot slotEngineCreated_;
         SignalEmpty::PSlot slotBeginFrame_;
         bool kinematic_;
     };

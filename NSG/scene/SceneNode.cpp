@@ -196,42 +196,17 @@ namespace NSG
     {
         if (!IsSerializable())
             return;
-
-        {
-            std::stringstream ss;
-            ss << GetName();
-            node.append_attribute("name") = ss.str().c_str();
-        }
-
-        node.append_attribute("nodeType") = "SceneNode";
-
-        {
-            std::stringstream ss;
-            ss << GetPosition();
-            node.append_attribute("position") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << GetOrientation();
-            node.append_attribute("orientation") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << GetScale();
-            node.append_attribute("scale") = ss.str().c_str();
-        }
-
+		node.append_attribute("name").set_value(GetName().c_str());
+        node.append_attribute("nodeType").set_value("SceneNode");
+		node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
+		node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
+		node.append_attribute("scale").set_value(ToString(GetScale()).c_str());
         if (material_)
-            node.append_attribute("materialName") = material_->GetName().c_str();
-
+            node.append_attribute("materialName").set_value(material_->GetName().c_str());
         if (mesh_)
-            node.append_attribute("meshName") = mesh_->GetName().c_str();
-
+            node.append_attribute("meshName").set_value(mesh_->GetName().c_str());
         if (rigidBody_)
             rigidBody_->Save(node);
-
         SaveChildren(node);
     }
 

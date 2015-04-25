@@ -24,6 +24,10 @@
 
 // DXT decompression based on the Squish library, modified for Urho3D
 
+// NSG-library: changed all (unsigned long) to (unsigned int): this is because 
+// (unsigned long) is 64 bits on OSX and Linux but it is 32 bits on Windows. 
+// (unsigned int) is 32 bits on all platforms.
+
 namespace NSG
 {
 
@@ -304,10 +308,10 @@ namespace NSG
 	{ 47, 183, -47, -183 } };
 
 	// lsb: hgfedcba ponmlkji msb: hgfedcba ponmlkji due to endianness
-	static unsigned long ModifyPixel(int red, int green, int blue, int x, int y, unsigned long modBlock, int modTable)
+	static unsigned int ModifyPixel(int red, int green, int blue, int x, int y, unsigned int modBlock, int modTable)
 	{
 		int index = x * 4 + y, pixelMod;
-		unsigned long mostSig = modBlock << 1;
+		unsigned int mostSig = modBlock << 1;
 		if (index < 8)    //hgfedcba
 			pixelMod = mod[modTable][((modBlock >> (index + 24)) & 0x1) + ((mostSig >> (index + 8)) & 0x2)];
 		else    // ponmlkj
@@ -322,7 +326,7 @@ namespace NSG
 
 	static void DecompressETC(unsigned char* pDestData, const void* pSrcData)
 	{
-		unsigned long blockTop, blockBot, *input = (unsigned long*)pSrcData, *output;
+		unsigned int blockTop, blockBot, *input = (unsigned int*)pSrcData, *output;
 		unsigned char red1, green1, blue1, red2, green2, blue2;
 		bool bFlip, bDiff;
 		int modtable1, modtable2;
@@ -330,7 +334,7 @@ namespace NSG
 		blockTop = *(input++);
 		blockBot = *(input++);
 
-		output = (unsigned long*)pDestData;
+		output = (unsigned int*)pDestData;
 		// check flipbit
 		bFlip = (blockTop & ETC_FLIP) != 0;
 		bDiff = (blockTop & ETC_DIFF) != 0;

@@ -135,7 +135,7 @@ namespace NSG
         glGenTextures(1, &texture_);
         Graphics::this_->SetTexture(0, this);
 
-        if(image_)
+        if (image_)
         {
             width_ = image_->GetWidth();
             height_ = image_->GetHeight();
@@ -144,7 +144,7 @@ namespace NSG
 
         if (flags_ & (int)TextureFlag::INVERT_Y)
         {
-            if(!image_->FlipVertical())
+            if (!image_->FlipVertical())
             {
                 TRACE_PRINTF("Cannot flip vertically image = %s!!!\n", image_->GetName().c_str());
             }
@@ -153,18 +153,8 @@ namespace NSG
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)wrapMode_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)wrapMode_);
 
-        if (!Graphics::this_->IsTextureSizeCorrect(width_, height_))
-        {
-            if(image_)
-            {
-                CHECK_CONDITION(!image_->IsCompressed() && "Resize not supported for compressed images!!!", __FILE__, __LINE__);
-                image_->MakePowerOf2Size();
-                width_ = image_->GetWidth();
-                height_ = image_->GetHeight();
-            }
-            else
-                GetPowerOfTwoValues(width_, height_);
-        }
+        CHECK_ASSERT(Graphics::this_->IsTextureSizeCorrect(width_, height_), __FILE__, __LINE__);
+        CHECK_ASSERT(Graphics::this_->GetMaxTextureSize() >= width_ && Graphics::this_->GetMaxTextureSize() >= height_, __FILE__, __LINE__);
 
         if (image_ && image_->IsCompressed())
         {
@@ -205,7 +195,7 @@ namespace NSG
         mipmapLevels_ = 0;
         if (flags_ & (int)TextureFlag::GENERATE_MIPMAPS)
         {
-            if(!image_ || !image_->IsCompressed())
+            if (!image_ || !image_->IsCompressed())
             {
                 // calculate mipmap levels based on texture size
                 unsigned maxSize = std::max(width_, height_);
@@ -287,11 +277,14 @@ namespace NSG
 
     void Texture::SetSize(GLsizei width, GLsizei height)
     {
+        CHECK_ASSERT(!image_ && "SetSize only can be applied for non images!!!", __FILE__, __LINE__);
         CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
         if (width_ != width || height_ != height)
         {
             width_ = width;
             height_ = height;
+            if (!Graphics::this_->IsTextureSizeCorrect(width_, height_))
+                GetPowerOfTwoValues(width_, height_);
             Invalidate();
         }
     }

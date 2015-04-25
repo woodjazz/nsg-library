@@ -60,7 +60,7 @@ namespace NSG
             return memBlock;
         }
         TRACE_PRINTF("Allocation of %lu from heap has FAILED.(bad_alloc)\n", newSize);
-        throw std::bad_alloc();
+        return nullptr;
     }
 
     void ReleaseMemoryFromHeap(void* ptr)

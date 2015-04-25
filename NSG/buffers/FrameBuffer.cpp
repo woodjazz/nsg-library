@@ -93,7 +93,7 @@ namespace NSG
             else
             {
                 depthTexture_->SetSize(0, 0);
-                TRACE_LOG("Warning: We are trying to use a depth texture when graphics does not support it!!!");
+                TRACE_PRINTF("Warning: We are trying to use a depth texture when graphics does not support it!!!");
                 // clean out the flag that is not supported by the driver
                 flags_ &= ~Flag::DEPTH_USE_TEXTURE;
                 #if IOS
@@ -109,7 +109,7 @@ namespace NSG
 
     void FrameBuffer::AllocateResources()
     {
-        TRACE_LOG("Framebuffer width=" << width_ << " height=" << height_);
+        TRACE_PRINTF("Framebuffer width=%d, height=%d", width_, height_);
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         glGenFramebuffers(1, &framebuffer_);
@@ -198,7 +198,7 @@ namespace NSG
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (GL_FRAMEBUFFER_COMPLETE != status)
         {
-            TRACE_LOG("Frame buffer failed with error = 0x" << std::hex << status << " in file = " << __FILE__ << " line = " << __LINE__);
+			TRACE_PRINTF("Frame buffer failed with error = 0x%x in file = %s line = ", status, __FILE__, __LINE__);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
 

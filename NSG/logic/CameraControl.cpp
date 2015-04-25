@@ -32,12 +32,14 @@ misrepresented as being the original software.
 #include "PointOnSphere.h"
 #include "Keys.h"
 #include "Window.h"
+#include "Engine.h"
 
 namespace NSG
 {
 	CameraControl::CameraControl(PCamera camera)
         : camera_(camera),
-		window_(nullptr)
+		window_(nullptr),
+		engine_(nullptr)
     {
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
         lastX_ = lastY_ = 0;
@@ -60,6 +62,14 @@ namespace NSG
 			if (!window_)
 				SetWindow(window);
 		});
+
+		SetEngine(Engine::GetPtr());
+
+		slotEngineCreated_ = Engine::signalCreated_->Connect([this](Engine * engine)
+		{
+			if (!engine_)
+				SetEngine(engine);
+		});
     }
 
     CameraControl::~CameraControl()
@@ -67,17 +77,35 @@ namespace NSG
 
     }
 
+	void CameraControl::SetEngine(Engine* engine)
+	{
+		if (engine_ != engine)
+		{
+			engine_ = engine;
+
+			if (engine)
+			{
+				slotUpdate_ = engine->signalUpdate_->Connect([&](float deltaTime)
+				{
+					OnUpdate(deltaTime);
+				});
+			}
+		}
+		else
+		{
+			slotUpdate_ = nullptr;
+		}
+	}
+
+
 	void CameraControl::SetWindow(Window* window)
 	{
 		if (window_ != window)
 		{
+			window_ = window;
+
 			if (window)
 			{
-				slotUpdate_ = window->signalUpdate_->Connect([&](float deltaTime)
-				{
-					OnUpdate(deltaTime);
-				});
-
 				slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
 				{
 					OnMousemoved(x, y);
@@ -116,7 +144,6 @@ namespace NSG
 				slotMouseWheel_ = nullptr;
 				slotMultiGesture_ = nullptr;
 				slotKey_ = nullptr;
-				slotUpdate_ = nullptr;
 			}
 		}
 	}

@@ -80,7 +80,8 @@ int NSG_MAIN(int argc, char* argv[])
 	music->Set(resource);
     music->Play();
 
-    auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
+	Engine engine;
+    auto slotUpdate = engine.signalUpdate_->Connect([&](float deltaTime)
     {
         {
             static float delta1 = 0;
@@ -112,11 +113,6 @@ int NSG_MAIN(int argc, char* argv[])
         }
     });
 
-	auto renderSlot = window->signalRender_->Connect([&]()
-	{
-		scene->Render();
-	});
-
-    return Window::RunApp();
+    return engine.Run();
 }
 

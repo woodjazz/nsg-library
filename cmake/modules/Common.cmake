@@ -104,15 +104,23 @@ macro (setup_common)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
     elseif(EMSCRIPTEN)
-        add_definitions(-s ALLOW_MEMORY_GROWTH=1)
-        add_definitions(-s NO_EXIT_RUNTIME=1)
-        #add_definitions(-s ASYNCIFY=1)
+        message(STATUS "detected EMSCRIPTEN compiler")
         set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
         set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
         set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g${EMS_DEBUG_LEVEL} -Wno-warn-absolute-paths -Wno-logical-op-parentheses -D_DEBUG")
         set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g${EMS_DEBUG_LEVEL} -Wno-warn-absolute-paths -Wno-logical-op-parentheses -D_DEBUG")
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-        
+    endif()
+
+    message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
+    if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+        message(STATUS "CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}")
+        message(STATUS "CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}")
+    else()
+        message(STATUS "CMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG}")
+        message(STATUS "CMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS_DEBUG}")
+        message(STATUS "CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}")
+        message(STATUS "CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}")
     endif()
 
     if(APPLE)
@@ -252,7 +260,7 @@ macro (setup_executable)
 
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -o ${PROJECT_NAME}.html --embed-file data 
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMENT "Generating HTML with Emscripten" VERBATIM)
 
@@ -308,6 +316,12 @@ macro (setup_tool)
     setup_executable()
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
 endmacro (setup_tool)
+
+macro (setup_app_tool)
+    set(IS_EXECUTABLE_A_BUNDLE 1)   
+    setup_executable()
+    set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
+endmacro (setup_app_tool)
 
 ##################################################################################
 ##################################################################################

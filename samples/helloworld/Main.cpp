@@ -70,11 +70,6 @@ int NSG_MAIN(int argc, char* argv[])
 
     //control->AutoZoom();
 
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-		scene->Render();
-    });
-
     SceneNode* lastNode = nullptr;
     auto slotMouseDown = scene->signalNodeMouseDown_->Connect([&](SceneNode * node, int button, float x, float y)
     {
@@ -91,6 +86,6 @@ int NSG_MAIN(int argc, char* argv[])
 		}
     });
 
-    return Window::RunApp();
+    return Engine().Run();
 }
 

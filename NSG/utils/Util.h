@@ -51,17 +51,20 @@ namespace NSG
 	        ret <<= 1;
 	    return ret;
 	}
-	std::istream& operator >> (std::istream& s, Vertex2& obj);
-	std::istream& operator >> (std::istream& s , Vertex3& obj);
-	std::istream& operator >> (std::istream& s , Vertex4& obj);
-	std::istream& operator >> (std::istream& s, Matrix4& obj);
-	std::istream& operator >> (std::istream& s, Quaternion& obj);
 	Vertex2 GetVertex2(const std::string& buffer);
 	Vertex3 GetVertex3(const std::string& buffer);
 	Vertex4 GetVertex4(const std::string& buffer);
-	Matrix4 GetMatrix4(const std::string& buffer);
-	std::string ToString(const Matrix4& m);
 	Quaternion GetQuaternion(const std::string& buffer);
+	Matrix4 GetMatrix4(const std::string& buffer);
+
+	std::string ToString(const Vertex2& obj);
+	std::string ToString(const Vertex3& obj);
+	std::string ToString(const Vertex4& obj);
+	std::string ToString(const Quaternion& obj);
+	std::string ToString(const Matrix4& m);
+	std::string ToString(int obj);
+	std::string ToString(size_t obj);
+	
 	std::string GetUniqueName(const std::string& name = "");
 	void GetPowerOfTwoValues(int& width, int& height);
 	bool IsPowerOfTwo(int value);

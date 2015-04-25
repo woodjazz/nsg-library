@@ -86,8 +86,7 @@ namespace NSG
     static const bool DEFAULT_CULL_FACE_ENABLE = false;
 
     Graphics::Graphics()
-        : signalBeginFrame_(new SignalEmpty()),
-          currentFbo_(0),  //the default framebuffer (except for IOS)
+        : currentFbo_(0),  //the default framebuffer (except for IOS)
           vertexArrayObj_(nullptr),
           vertexBuffer_(nullptr),
           indexBuffer_(nullptr),
@@ -123,7 +122,8 @@ namespace NSG
           maxFragmentUniformVectors_(0),
           maxVertexAttribs_(0),
           depthFunc_(DepthFunc::LESS),
-          viewportFactor_(0, 0, 1, 1)
+          viewportFactor_(0, 0, 1, 1),
+          maxTextureSize_(64)
     {
 
         #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -139,19 +139,20 @@ namespace NSG
         }
         #endif
 
-        TRACE_LOG("GL_VENDOR = " << (const char*)glGetString(GL_VENDOR));
-        TRACE_LOG("GL_RENDERER = " << (const char*)glGetString(GL_RENDERER));
-        TRACE_LOG("GL_VERSION = " << (const char*)glGetString(GL_VERSION));
-        TRACE_LOG("GL_SHADING_LANGUAGE_VERSION = " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-        TRACE_LOG("GL_EXTENSIONS = " << (const char*)glGetString(GL_EXTENSIONS));
+        TRACE_PRINTF("GL_VENDOR = %s", (const char*)glGetString(GL_VENDOR));
+		TRACE_PRINTF("GL_RENDERER = %s", (const char*)glGetString(GL_RENDERER));
+		TRACE_PRINTF("GL_VERSION = %s", (const char*)glGetString(GL_VERSION));
+		TRACE_PRINTF("GL_SHADING_LANGUAGE_VERSION = %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+		TRACE_PRINTF("GL_EXTENSIONS = %s", (const char*)glGetString(GL_EXTENSIONS));
 
         viewport_ = Recti(0);
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
-
-
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize_);
+        CHECK_ASSERT(maxTextureSize_ >= 64, __FILE__, __LINE__);
+		TRACE_PRINTF("GL_MAX_TEXTURE_SIZE = %d", maxTextureSize_);
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTexturesCombined_);
-        TRACE_LOG("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = " << maxTexturesCombined_);
+		TRACE_PRINTF("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = %d", maxTexturesCombined_);
         CHECK_CONDITION(maxTexturesCombined_ >= 8, __FILE__, __LINE__);
         textures_ = std::vector<Texture*>(maxTexturesCombined_, nullptr);
 
@@ -171,15 +172,15 @@ namespace NSG
         if (CheckExtension("EXT_texture_compression_dxt1"))
         {
             has_texture_compression_dxt1_ext_ = true;
-            TRACE_LOG("Has extension: EXT_texture_compression_dxt1");
+			TRACE_PRINTF("Has extension: EXT_texture_compression_dxt1");
         }
-        
+
         if (CheckExtension("WEBGL_compressed_texture_s3tc"))
         {
             has_texture_compression_dxt1_ext_ = true;
             has_texture_compression_dxt3_ext_ = true;
             has_texture_compression_dxt5_ext_ = true;
-            TRACE_LOG("Has extension: WEBGL_compressed_texture_s3tc");
+			TRACE_PRINTF("Has extension: WEBGL_compressed_texture_s3tc");
         }
 
         if (CheckExtension("EXT_texture_compression_s3tc"))
@@ -187,61 +188,61 @@ namespace NSG
             has_texture_compression_dxt1_ext_ = true;
             has_texture_compression_dxt3_ext_ = true;
             has_texture_compression_dxt5_ext_ = true;
-            TRACE_LOG("Has extension: EXT_texture_compression_s3tc");
+			TRACE_PRINTF("Has extension: EXT_texture_compression_s3tc");
         }
 
         if (CheckExtension("OES_compressed_ETC1_RGB8_texture"))
         {
             has_compressed_ETC1_RGB8_texture_ext_ = true;
-            TRACE_LOG("Has extension: OES_compressed_ETC1_RGB8_texture");
+			TRACE_PRINTF("Has extension: OES_compressed_ETC1_RGB8_texture");
         }
 
         if (CheckExtension("IMG_texture_compression_pvrtc"))
         {
             has_texture_compression_pvrtc_ext_ = true;
-            TRACE_LOG("Has extension: IMG_texture_compression_pvrtc");
+			TRACE_PRINTF("Has extension: IMG_texture_compression_pvrtc");
         }
 
         if (CheckExtension("EXT_discard_framebuffer"))
         {
             has_discard_framebuffer_ext_ = true;
-            TRACE_LOG("Using extension: EXT_discard_framebuffer");
+			TRACE_PRINTF("Using extension: EXT_discard_framebuffer");
         }
 
         if (CheckExtension("OES_vertex_array_object") || CheckExtension("ARB_vertex_array_object"))
         {
             has_vertex_array_object_ext_ = true;
-            TRACE_LOG("Using extension: vertex_array_object");
+			TRACE_PRINTF("Using extension: vertex_array_object");
         }
 
         if (CheckExtension("EXT_map_buffer_range"))
         {
             has_map_buffer_range_ext_ = true;
-            TRACE_LOG("Using extension: EXT_map_buffer_range");
+			TRACE_PRINTF("Using extension: EXT_map_buffer_range");
         }
 
         if (CheckExtension("GL_OES_depth_texture"))
         {
             has_depth_texture_ext_ = true;
-            TRACE_LOG("Using extension: GL_OES_depth_texture");
+			TRACE_PRINTF("Using extension: GL_OES_depth_texture");
         }
 
         if (CheckExtension("GL_OES_depth24"))
         {
             has_depth_component24_ext_ = true;
-            TRACE_LOG("Using extension: GL_OES_depth24");
+			TRACE_PRINTF("Using extension: GL_OES_depth24");
         }
 
         if (CheckExtension("GL_EXT_packed_depth_stencil") || CheckExtension("GL_OES_packed_depth_stencil"))
         {
             has_packed_depth_stencil_ext_ = true;
-            TRACE_LOG("Using extension: packed_depth_stencil");
+			TRACE_PRINTF("Using extension: packed_depth_stencil");
         }
 
         if (CheckExtension("GL_ARB_texture_non_power_of_two"))
         {
             has_texture_non_power_of_two_ext_ = true;
-            TRACE_LOG("Using extension: GL_ARB_texture_non_power_of_two");
+			TRACE_PRINTF("Using extension: GL_ARB_texture_non_power_of_two");
         }
 
         #if !defined(EMSCRIPTEN)
@@ -255,13 +256,13 @@ namespace NSG
                 if (maxVertexAtts >= attributesNeeded)
                 {
                     has_instanced_arrays_ext_ = true;
-                    TRACE_LOG("Using extension: instanced_arrays");
+					TRACE_PRINTF("Using extension: instanced_arrays");
                 }
                 else
                 {
-                    TRACE_LOG("Has extension: instanced_arrays");
-                    TRACE_LOG("Needed " << attributesNeeded << " but graphics only supports " << maxVertexAtts << " attributes");
-                    TRACE_LOG("Disabling extension: instanced_arrays");
+					TRACE_PRINTF("Has extension: instanced_arrays");
+					TRACE_PRINTF("Needed %d but graphics only supports %d attributes", attributesNeeded, maxVertexAtts);
+					TRACE_PRINTF("Disabling extension: instanced_arrays");
                 }
             }
         }
@@ -273,7 +274,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-                TRACE_LOG("GL_MAX_VARYING_VECTORS = " << maxVaryingVectors_);
+				TRACE_PRINTF("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
             }
             else
             {
@@ -283,13 +284,13 @@ namespace NSG
                 if (status == GL_NO_ERROR)
                 {
                     maxVaryingVectors_ /= 4;
-                    TRACE_LOG("GL_MAX_VARYING_VECTORS = " << maxVaryingVectors_);
+					TRACE_PRINTF("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 8;
-                    TRACE_LOG("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to " << maxVaryingVectors_);
+					TRACE_PRINTF("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to %d", maxVaryingVectors_);
 
                 }
             }
@@ -300,7 +301,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-                TRACE_LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = " << maxVertexUniformVectors_);
+				TRACE_PRINTF("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
             }
             else
             {
@@ -309,13 +310,13 @@ namespace NSG
                 status = glGetError();
                 if (status == GL_NO_ERROR)
                 {
-                    TRACE_LOG("GL_MAX_VERTEX_UNIFORM_VECTORS = " << maxVertexUniformVectors_);
+					TRACE_PRINTF("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 128;
-                    TRACE_LOG("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to " << maxVertexUniformVectors_);
+					TRACE_PRINTF("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to %d", maxVertexUniformVectors_);
                 }
             }
         }
@@ -325,7 +326,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-                TRACE_LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = " << maxFragmentUniformVectors_);
+				TRACE_PRINTF("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
             }
             else
             {
@@ -334,20 +335,20 @@ namespace NSG
                 status = glGetError();
                 if (status == GL_NO_ERROR)
                 {
-                    TRACE_LOG("GL_MAX_FRAGMENT_UNIFORM_VECTORS = " << maxFragmentUniformVectors_);
+					TRACE_PRINTF("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 128;
-                    TRACE_LOG("*** Unknown GL_MAX_FRAGMENT_UNIFORM_VECTORS ***. Setting value to " << maxFragmentUniformVectors_);
+					TRACE_PRINTF("*** Unknown GL_MAX_FRAGMENT_UNIFORM_VECTORS ***. Setting value to %d", maxFragmentUniformVectors_);
                 }
             }
         }
 
         {
             glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs_);
-            TRACE_LOG("GL_MAX_VERTEX_ATTRIBS = " << maxVertexAttribs_);
+			TRACE_PRINTF("GL_MAX_VERTEX_ATTRIBS = %d", maxVertexAttribs_);
         }
 
         // Set up texture data read/write alignment
@@ -972,9 +973,9 @@ namespace NSG
 
     void Graphics::SetInstanceAttrPointers(Program* program)
     {
-        if(!HasInstancedArrays())
+        if (!HasInstancedArrays())
             return;
-        
+
         CHECK_ASSERT(program->GetMaterial()->IsBatched(), __FILE__, __LINE__);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -1226,10 +1227,43 @@ namespace NSG
         }
     }
 
-    void Graphics::DrawActiveMesh(Pass* pass)
+    void Graphics::SetupPass(Pass* pass)
     {
         CHECK_ASSERT(pass, __FILE__, __LINE__);
-        pass->SetupPass();
+        
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+        auto& data = pass->GetData();
+
+        SetColorMask(data.enableColorBuffer_);
+        SetStencilTest(data.enableStencilTest_, data.stencilMask_, data.sfailStencilOp_,
+                       data.dpfailStencilOp_, data.dppassStencilOp_, data.stencilFunc_,
+                       data.stencilRefValue_, data.stencilMaskValue_);
+
+		SetBlendModeTest(data.blendMode_);
+		EnableDepthTest(data.enableDepthTest_);
+        if (data.enableDepthTest_)
+        {
+            SetDepthMask(data.enableDepthBuffer_);
+            SetDepthFunc(data.depthFunc_);
+        }
+
+        EnableCullFace(data.enableCullFace_);
+        if (data.enableCullFace_)
+        {
+            SetCullFace(data.cullFaceMode_);
+            SetFrontFace(data.frontFaceMode_);
+        }
+
+        SetProgram(data.pProgram_.get());
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
+
+
+    void Graphics::DrawActiveMesh(Pass* pass)
+    {
+        SetupPass(pass);
 
         if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady())// || (!activeNode_ || !activeNode_->IsReady()))
             return;
@@ -1266,8 +1300,7 @@ namespace NSG
 
     void Graphics::DrawInstancedActiveMesh(Pass* pass, const Batch& batch)
     {
-        CHECK_ASSERT(pass, __FILE__, __LINE__);
-        pass->SetupPass();
+        SetupPass(pass);
 
         CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
 
@@ -1423,10 +1456,7 @@ namespace NSG
 
     bool Graphics::IsTextureSizeCorrect(unsigned width, unsigned height)
     {
-        int max_supported_size = 0;
-        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_supported_size);
-        CHECK_ASSERT(max_supported_size >= 64, __FILE__, __LINE__);
-        if (width > (unsigned)max_supported_size || height > (unsigned)max_supported_size)
+        if (width > (unsigned)maxTextureSize_ || height > (unsigned)maxTextureSize_)
             return false;
         return HasNonPowerOfTwo() || (IsPowerOfTwo(width) && IsPowerOfTwo(height));
     }
@@ -1460,8 +1490,7 @@ namespace NSG
 
     bool Graphics::BeginFrameRender()
     {
-        signalBeginFrame_->Run();
-        if (activeWindow_->BeginFrameRender())
+        if (activeWindow_ && activeWindow_->BeginFrameRender())
         {
             ClearAllBuffers();
             return true;
@@ -1477,6 +1506,34 @@ namespace NSG
 
     void Graphics::EndFrameRender()
     {
-        activeWindow_->EndFrameRender();
+        if (activeWindow_)
+            activeWindow_->EndFrameRender();
     }
+
+    bool Graphics::NeedsDecompress(TextureFormat format) const
+    {
+        switch (format)
+        {
+            case TextureFormat::DXT1:
+                return !HasTextureCompressionDXT1();
+            case TextureFormat::DXT3:
+                return !HasTextureCompressionDXT3();
+            case TextureFormat::DXT5:
+                return !HasTextureCompressionDXT5();
+            case TextureFormat::ETC1:
+                return !HasTextureCompressionETC();
+            case TextureFormat::PVRTC_RGB_2BPP:
+            case TextureFormat::PVRTC_RGBA_2BPP:
+            case TextureFormat::PVRTC_RGB_4BPP:
+            case TextureFormat::PVRTC_RGBA_4BPP:
+                return !HasTextureCompressionPVRTC();
+            case TextureFormat::RGBA:
+                return false;
+            default:
+                CHECK_CONDITION(!"Unknown texture format!!!", __FILE__, __LINE__);
+                break;
+        }
+        return false;
+    }
+
 }

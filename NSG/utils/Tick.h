@@ -34,8 +34,8 @@ namespace NSG
 		Tick(size_t fps);
 		~Tick();
 		void Initialize();
-    protected:
 		void PerformTicks();
+    protected:
 		virtual void InitializeTicks() = 0;
 		virtual void BeginTicks() = 0;
 		virtual void DoTick(float delta) = 0;

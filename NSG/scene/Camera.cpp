@@ -466,69 +466,17 @@ namespace NSG
         if (!IsSerializable())
             return;
 
-        {
-            std::stringstream ss;
-            ss << GetName();
-            node.append_attribute("name") = ss.str().c_str();
-        }
-
-        node.append_attribute("nodeType") = "Camera";
-
-        {
-            std::stringstream ss;
-            ss << fovy_;
-            node.append_attribute("fovy") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << zNear_;
-            node.append_attribute("zNear") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << zFar_;
-            node.append_attribute("zFar") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << viewportFactor_;
-            node.append_attribute("viewportFactor") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << isOrtho_;
-            node.append_attribute("isOrtho") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << orthoScale_;
-            node.append_attribute("orthoScale") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << (int)sensorFit_;
-            node.append_attribute("sensorFit") = ss.str().c_str();
-        }
-
-
-        {
-            std::stringstream ss;
-            ss << GetPosition();
-            node.append_attribute("position") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << GetOrientation();
-            node.append_attribute("orientation") = ss.str().c_str();
-        }
-
+		node.append_attribute("name").set_value(GetName().c_str());
+		node.append_attribute("nodeType").set_value("Camera");
+		node.append_attribute("fovy").set_value(fovy_);
+		node.append_attribute("zNear").set_value(zNear_);
+		node.append_attribute("zFar").set_value(zFar_);
+		node.append_attribute("viewportFactor").set_value(ToString(viewportFactor_).c_str());
+		node.append_attribute("isOrtho").set_value(isOrtho_);
+		node.append_attribute("orthoScale").set_value(orthoScale_);
+		node.append_attribute("sensorFit").set_value((int)sensorFit_);
+		node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
+		node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
         SaveChildren(node);
     }
 

@@ -57,8 +57,11 @@ int NSG_MAIN(int argc, char* argv[])
     auto sound = Sound::Get("BigExplosion.wav.001");
     auto static slotCollision = player->signalCollision_->Connect([&](const ContactPoint & contactInfo)
     {
-        sound->Play();
-        playerDestroyed = true;
+        if(!playerDestroyed)
+        {
+            sound->Play();
+            playerDestroyed = true;
+        }
     });
 
     auto moveSlot = controller->signalMoved_->Connect([&](float x, float y)
@@ -76,12 +79,12 @@ int NSG_MAIN(int argc, char* argv[])
     float alpha = 1;
     float alphaAdd = 0.1f;
 
-    auto updateSlot = window->signalUpdate_->Connect([&](float dt)
+	Engine engine;
+	auto updateSlot = engine.signalUpdate_->Connect([&](float dt)
     {
         if (!playerDestroyed)
         {
             deltaTime = dt;
-            scene->Update(dt);
             auto pos = camera->GetPosition();
             pos.x += dt;
             camera->SetPosition(pos);
@@ -97,10 +100,5 @@ int NSG_MAIN(int argc, char* argv[])
 
     });
 
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-    });
-
-    return Window::RunApp();
+    return engine.Run();
 }

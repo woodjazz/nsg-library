@@ -36,15 +36,18 @@ namespace NSG
         const unsigned char* GetData() const { return imgData_; }
         unsigned GetCompressedDataSize() const;
         bool FlipVertical();
-        void MakePowerOf2Size();
-        static void MakePowerOf2Size(const unsigned char*& imgData, int& width, int& height, int channels);
+        void Reduce(int size);
+        void Resize2PowerOf2();
+        static void Resize2PowerOf2(const unsigned char*& imgData, int& width, int& height, int channels);
         bool IsCompressed() const { return compressed_; }
         int GetWidth() const { return width_; }
         int GetHeight() const { return height_; }
-        int SaveAsPNG(const Path& outputDir);
+        bool SaveAsPNG(const Path& outputDir);
 		GLint ConvertFormat2GL() const;
+        void ReadResource();
+        TextureFormat GetFormat() const { return format_; }
+        void Decompress();
 	private:
-        bool NeedsDecompress() const;
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;

@@ -49,7 +49,6 @@ namespace NSG
 
     Sound::~Sound()
     {
-        Stop();
 #ifdef SDL
         if(sound_)        
             Mix_FreeChunk(sound_);

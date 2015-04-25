@@ -92,7 +92,7 @@ namespace NSG
 		TRACE_PRINTF("Creating pool: object size=%lu objs/chunk=%lu\n", OBJECT_SIZE, OBJECTS_PER_CHUNK);
 		void* p = std::malloc(ChunkSize);
 		if (!p)
-			throw std::bad_alloc();
+			exit(1);
 		begin_ = p;
 		end_ = (char*)p + ChunkSize;
 

@@ -59,6 +59,8 @@ namespace NSG
 
     Scene::~Scene()
     {
+        if(window_ && window_->GetScene() == this)
+            window_->SetScene(nullptr);
     }
 
     void Scene::SetWindow(Window* window)
@@ -67,6 +69,9 @@ namespace NSG
 		{
 			if (window)
 			{
+                if(!window->GetScene())
+                    window->SetScene(this);
+
 				slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
 				{
 					if (signalNodeMouseMoved_->HasSlots())
@@ -110,11 +115,15 @@ namespace NSG
 			}
 			else
 			{
+                if(window_->GetScene() == this)
+                    window_->SetScene(nullptr);
 				slotMouseMoved_ = nullptr;
 				slotMouseDown_ = nullptr;
 				slotMouseUp_ = nullptr;
 				slotMouseWheel_ = nullptr;
 			}
+
+            window_ = window;
 		}
     }
 
@@ -127,7 +136,7 @@ namespace NSG
         }
     }
 
-    void Scene::Update(float deltaTime)
+    void Scene::UpdateAll(float deltaTime)
     {
         physicsWorld_->StepSimulation(deltaTime);
         UpdateAnimations(deltaTime);
@@ -257,11 +266,7 @@ namespace NSG
     void Scene::SavePhysics(pugi::xml_node& node) const
     {
         pugi::xml_node child = node.append_child("Physics");
-        {
-            std::stringstream ss;
-            ss << physicsWorld_->GetGravity();
-            child.append_attribute("gravity") = ss.str().c_str();
-        }
+		child.append_attribute("gravity").set_value(ToString(physicsWorld_->GetGravity()).c_str());
     }
 
     void Scene::LoadPhysics(const pugi::xml_node& node)

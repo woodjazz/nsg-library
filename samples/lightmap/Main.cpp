@@ -34,19 +34,7 @@ int NSG_MAIN(int argc, char* argv[])
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
 	auto material = Material::Get("Material");
-
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");
 	auto control = std::make_shared<CameraControl>(camera);
-    
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
-    {
-        scene->Update(deltaTime);
-    });
-
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-    });
-
-    return Window::RunApp();
+	return Engine().Run();
 }

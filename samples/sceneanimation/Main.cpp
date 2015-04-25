@@ -61,16 +61,6 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto window = Window::Create();
     
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
-    {
-        scene->Update(deltaTime);
-    });
-
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-    });
-
     control->slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
     {
         if (button == NSG_BUTTON_LEFT)
@@ -92,6 +82,5 @@ int NSG_MAIN(int argc, char* argv[])
         }
 
     });
-
-    return Window::RunApp();
+	return Engine().Run();
 }

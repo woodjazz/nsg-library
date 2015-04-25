@@ -511,6 +511,8 @@ namespace Blender
                 fprintf(bfp, "#ifndef _%s_h_\n", specname);
                 fprintf(bfp, "#define _%s_h_\n", specname);
 
+                fprintf(bfp, "// This file has been generated with blenderdna tool.\n");
+                fprintf(bfp, "// This file has to be re-generated every time you use a new version of Blender.\n");
                 fprintf(bfp, "// Generated from a %s(%i) file.\n\n", specname, version);
 
                 if (blender)

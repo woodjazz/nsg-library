@@ -75,15 +75,8 @@ namespace NSG
 				PNode bone = obj.lock();
                 pugi::xml_node childBone = childBones.append_child("Bone");
 				childBone.append_attribute("boneName") = bone->GetName().c_str();
-
-				{
-					const Matrix4& offset = bone->GetBoneOffsetMatrix();
-
-					std::stringstream ss;
-					ss << ToString(offset);
-					childBone.append_attribute("offsetMatrix") = ss.str().c_str();
-				}
-
+				const Matrix4& offset = bone->GetBoneOffsetMatrix();
+				childBone.append_attribute("offsetMatrix").set_value(ToString(offset).c_str());
             }
         }
     }

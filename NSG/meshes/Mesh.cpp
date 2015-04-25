@@ -138,100 +138,33 @@ namespace NSG
     {
         if (!serializable_)
             return;
-
         pugi::xml_node child = node.append_child("Mesh");
-
-        {
-            std::stringstream ss;
-            ss << name_;
-            child.append_attribute("name") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << GetWireFrameDrawMode();
-            child.append_attribute("wireFrameDrawMode") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << GetSolidDrawMode();
-            child.append_attribute("solidDrawMode") = ss.str().c_str();
-        }
-
+		child.append_attribute("name").set_value(name_.c_str());
+		child.append_attribute("wireFrameDrawMode").set_value(GetWireFrameDrawMode());
+		child.append_attribute("solidDrawMode").set_value(GetSolidDrawMode());
         if (shape_)
             shape_->Save(child);
-
+        pugi::xml_node vertexes = child.append_child("Vertexes");
+		for (auto& obj : vertexsData_)
+		{
+			pugi::xml_node vertexData = vertexes.append_child("VertexData");
+			vertexData.append_attribute("position").set_value(ToString(obj.position_).c_str());
+			vertexData.append_attribute("normal").set_value(ToString(obj.normal_).c_str());
+			vertexData.append_attribute("uv0").set_value(ToString(obj.uv_[0]).c_str());
+			vertexData.append_attribute("uv1").set_value(ToString(obj.uv_[1]).c_str());
+			vertexData.append_attribute("color").set_value(ToString(obj.color_).c_str());
+			// Do not export tangents since they are calculated
+			vertexData.append_attribute("bonesID").set_value(ToString(obj.bonesID_).c_str());
+			vertexData.append_attribute("bonesWeight").set_value(ToString(obj.bonesWeight_).c_str());
+		}
+        if (indexes_.size())
         {
-            pugi::xml_node vertexes = child.append_child("Vertexes");
-
-            for (auto& obj : vertexsData_)
-            {
-                pugi::xml_node vertexData = vertexes.append_child("VertexData");
-
-                {
-                    std::stringstream ss;
-                    ss << obj.position_;
-                    vertexData.append_attribute("position") = ss.str().c_str();
-                }
-
-                {
-                    std::stringstream ss;
-                    ss << obj.normal_;
-                    vertexData.append_attribute("normal") = ss.str().c_str();
-                }
-
-                {
-                    std::stringstream ss;
-                    ss << obj.uv_[0];
-                    vertexData.append_attribute("uv0") = ss.str().c_str();
-                }
-
-                {
-                    std::stringstream ss;
-                    ss << obj.uv_[1];
-                    vertexData.append_attribute("uv1") = ss.str().c_str();
-                }
-
-                {
-                    std::stringstream ss;
-                    ss << obj.color_;
-                    vertexData.append_attribute("color") = ss.str().c_str();
-                }
-
-                /*
-                // Do not export tangents since they are calculated
-                {
-                    std::stringstream ss;
-                    ss << obj.tangent_;
-                    vertexData.append_attribute("tangent") = ss.str().c_str();
-                }
-                */
-
-                {
-                    std::stringstream ss;
-                    ss << obj.bonesID_;
-                    vertexData.append_attribute("bonesID") = ss.str().c_str();
-                }
-
-                {
-                    std::stringstream ss;
-                    ss << obj.bonesWeight_;
-                    vertexData.append_attribute("bonesWeight") = ss.str().c_str();
-                }
-
-
-            }
-
-            if (indexes_.size())
-            {
-                CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
-                pugi::xml_node indexesNode = child.append_child("Indexes");
-                std::stringstream ss;
-                for (auto& obj : indexes_)
-                    ss << obj << " ";
-                indexesNode.append_child(pugi::node_pcdata).set_value(ss.str().c_str());
-            }
+            CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
+            pugi::xml_node indexesNode = child.append_child("Indexes");
+            std::string s;
+            for (auto& obj : indexes_)
+                s += ToString(obj) + " ";
+            indexesNode.append_child(pugi::node_pcdata).set_value(s.c_str());
         }
     }
 
@@ -270,15 +203,17 @@ namespace NSG
             if (indexesNode)
             {
                 std::string data = indexesNode.child_value();
-                std::stringstream ss;
-                ss << data;
-                int index;
-                for (;;)
-                {
-                    ss >> index;
-                    if (ss.eof()) break;
-                    indexes_.push_back(index);
-                }
+				string token;
+				for_each(data.begin(), data.end(), [&](char c) 
+				{
+					if (!isspace(c))
+						token += c;
+					else if (!token.empty())
+					{
+						indexes_.push_back(ToInt(token.c_str()));
+						token.clear();
+					}
+				});
             }
         }
     }
@@ -410,7 +345,7 @@ namespace NSG
     {
         if (skeleton)
         {
-            TRACE_LOG("Setting skeleton for mesh " << name_);
+			TRACE_PRINTF("Setting skeleton for mesh %s", name_.c_str());
         }
 
         skeleton_ = skeleton;

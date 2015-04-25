@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
-#include <windows.h>
 
 namespace NSG 
 {

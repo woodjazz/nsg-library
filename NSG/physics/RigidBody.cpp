@@ -32,7 +32,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "PhysicsWorld.h"
 #include "Graphics.h"
-#include "Window.h"
+#include "Engine.h"
 #include "pugixml.hpp"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "hull.h"
@@ -72,18 +72,18 @@ namespace NSG
                 SetShape(nullptr);
         });
 
-        if (Graphics::this_)
+        if (Engine::GetPtr())
         {
-            slotBeginFrame_ = Graphics::this_->signalBeginFrame_->Connect([this]()
+			slotBeginFrame_ = Engine::GetPtr()->signalBeginFrame_->Connect([this]()
             {
                 IsReady();
             });
         }
         else
         {
-            slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window * window)
+			slotEngineCreated_ = Engine::signalCreated_->Connect([this](Engine * engine)
             {
-                slotBeginFrame_ = Graphics::this_->signalBeginFrame_->Connect([this]()
+				slotBeginFrame_ = engine->signalBeginFrame_->Connect([this]()
                 {
                     IsReady();
                 });
@@ -140,7 +140,7 @@ namespace NSG
             shape_->Invalidate();
         }
 
-        slotBeginFrame_ = Graphics::this_->signalBeginFrame_->Connect([this]()
+        slotBeginFrame_ = Engine::GetPtr()->signalBeginFrame_->Connect([this]()
         {
             IsReady();
         });

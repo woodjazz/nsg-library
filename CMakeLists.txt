@@ -12,13 +12,6 @@ endif()
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules) # Set CMake modules search path
-include (Common) # Include NSG cmake common module
-setup_common() #has to be called before anything
-
-set(USE_SDL ON)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 set(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DEPENDENCIES_DIR ${ROOT_SOURCE_DIR}/dependencies)
 set(EXTERNALS_DIR ${ROOT_SOURCE_DIR}/externals)
@@ -29,6 +22,13 @@ set(ROOT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(DEPENDENCIES_BINARY_DIR ${ROOT_BINARY_DIR}/dependencies)
 set(EXTERNALS_BYNARY_DIR ${ROOT_BINARY_DIR}/externals)
 set(LIBRARIES_FOLDER_NAME "LIBRARIES")
+
+set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules) # Set CMake modules search path
+include (Common) # Include NSG cmake common module
+setup_common() #has to be called before anything
+
+set(USE_SDL ON)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ###########################
 # CLEAN_DATA_FILES
@@ -62,6 +62,7 @@ set_property(TARGET LZ4 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 ###########################
 set(PUGIXML_INCLUDE_DIR ${EXTERNALS_DIR}/pugixml/src)
 include_directories(${PUGIXML_INCLUDE_DIR})
+add_definitions(-DPUGIXML_NO_EXCEPTIONS)
 add_subdirectory(${EXTERNALS_DIR})
 list(APPEND LIBRARIES_2_LINK pugixml)
 set_property(TARGET pugixml PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
@@ -175,6 +176,11 @@ set(LIBRARIES_2_LINK NSG) #reset libraries to links since NSG will have all the 
 ###########################
 
 if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
+
+	###########################
+	# blenderdna
+	###########################
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools/blenderdna)
 	
 	###########################
 	# converter
@@ -190,7 +196,6 @@ endif()
 ###########################
 include (ConvertTool) 
 include (CopyTool)
-include (BlenderDNATool) 
 set(SAMPLES_DIR ${ROOT_SOURCE_DIR}/samples)
 SUBDIRLIST(SUBDIRS ${SAMPLES_DIR})
 FOREACH(subdir ${SUBDIRS})

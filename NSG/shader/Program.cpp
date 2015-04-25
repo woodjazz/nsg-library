@@ -160,7 +160,7 @@ namespace NSG
                     ReduceShaderComplexity(GL_FRAGMENT_SHADER);
                     ConfigureShaders(vShader, fShader);
                 }
-                TRACE_LOG("Shader for material " << name_ << " is valid.");
+				TRACE_PRINTF("Shader for material %s is valid.", name_.c_str());
                 return true;
             }
         }
@@ -216,7 +216,7 @@ namespace NSG
 
                 if (maxVarying < defaultNumVaryingVectors)
                 {
-                    TRACE_LOG("Cannot use lighting because max varying vectors is " << maxVarying << " and the default shader needs at least " << defaultNumVaryingVectors << "!!!");
+					TRACE_PRINTF("Cannot use lighting because max varying vectors is %u and the default shader needs at least %u!!!", maxVarying, defaultNumVaryingVectors);
                     lightingEnabled_ = false;
                 }
 
@@ -227,7 +227,7 @@ namespace NSG
                 {
                     if (nSpotLights_)
                     {
-                        TRACE_LOG("Not enough varying vectors => disabling spot lights!!!");
+						TRACE_PRINTF("Not enough varying vectors => disabling spot lights!!!");
                         nSpotLights_ = 0;
                         spotLightsReduced_ = true;
                     }
@@ -238,7 +238,7 @@ namespace NSG
                 {
                     if (nDirectionalLights_)
                     {
-                        TRACE_LOG("Not enough varying vectors => disabling directional lights!!!");
+						TRACE_PRINTF("Not enough varying vectors => disabling directional lights!!!");
                         nDirectionalLights_ = 0;
                         directionalLightsReduced_ = true;
                     }
@@ -248,7 +248,7 @@ namespace NSG
                 if (remainingVaryingVectors < nPointLights_)
                 {
                     CHECK_ASSERT(nPointLights_, __FILE__, __LINE__);
-                    TRACE_LOG("Not enough varying vectors => setting maximum number of point lights to " << remainingVaryingVectors << " before was " << nPointLights_);
+                    TRACE_PRINTF("Not enough varying vectors => setting maximum number of point lights to %u before was %u", remainingVaryingVectors, nPointLights_);
                     nPointLights_ = remainingVaryingVectors;
                     pointLightsReduced_ = true;
                 }
@@ -268,23 +268,9 @@ namespace NSG
                     if (nSpotLights_)
                         preDefines += "#define HAS_SPOT_LIGHTS\n";
 
-                    {
-                        std::stringstream ss;
-                        ss << "const int NUM_DIRECTIONAL_LIGHTS = " << nDirectionalLights_ << ";\n";
-                        preDefines += ss.str();
-                    }
-
-                    {
-                        std::stringstream ss;
-                        ss << "const int NUM_POINT_LIGHTS = " << nPointLights_ << ";\n";
-                        preDefines += ss.str();
-                    }
-
-                    {
-                        std::stringstream ss;
-                        ss << "const int NUM_SPOT_LIGHTS = " << nSpotLights_ << ";\n";
-                        preDefines += ss.str();
-                    }
+					preDefines += "const int NUM_DIRECTIONAL_LIGHTS = " + ToString(nDirectionalLights_) + ";\n";
+					preDefines += "const int NUM_POINT_LIGHTS = " + ToString(nPointLights_) + ";\n";
+					preDefines += "const int NUM_SPOT_LIGHTS = " + ToString(nSpotLights_) + ";\n";
 
 					if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
 					{
@@ -295,7 +281,7 @@ namespace NSG
 							preDefines += "#define DISPLACEMENTMAP\n";
 						if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
 						{
-							TRACE_LOG("Program name: " << name_ << " has per vertex and per pixel flags ON. Disabling per vertex!!!");
+							TRACE_PRINTF("Program name: %s has per vertex and per pixel flags ON. Disabling per vertex!!!", name_.c_str());
 							flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
 						}
 					}
@@ -308,7 +294,7 @@ namespace NSG
                 lightingEnabled_ = false;
 				flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
 				flags_ &= ~(int)ProgramFlag::PER_PIXEL_LIGHTING;
-                TRACE_LOG("No lights found for " << name_ << " => Disabling lighting!!!")
+				TRACE_PRINTF("No lights found for %s => Disabling lighting!!!", name_.c_str());
             }
         }
     }
@@ -319,17 +305,9 @@ namespace NSG
         fBuffer += "uniform sampler2D u_texture1;\n";
 
         if (material_)
-        {
             for (size_t index = 2; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-            {
                 if (material_->GetTexture(index))
-                {
-                    std::stringstream ss;
-                    ss << "uniform sampler2D u_texture" << index << ";\n";
-                    fBuffer += ss.str();
-                }
-            }
-        }
+					fBuffer += "uniform sampler2D u_texture" + ToString(index) + ";\n";
     }
 
     void Program::ConfigureShaders(std::string& vertexShader, std::string& fragmentShader)
@@ -351,9 +329,7 @@ namespace NSG
 
         if (nBones_)
         {
-            std::stringstream ss;
-            ss << "const int NUM_BONES = " << nBones_ << ";\n";
-            preDefines += ss.str();
+			preDefines += "const int NUM_BONES = " + ToString(nBones_) + ";\n";
             flags_ |= (int)ProgramFlag::SKINNED;
             preDefines += "#define SKINNED\n";
         }
@@ -530,12 +506,7 @@ namespace NSG
             if ((int)ProgramFlag::UNLIT & flags_)
                 ss += " UNLIT";
             if ((int)ProgramFlag::SKINNED & flags_)
-            {
-                ss += " SKINNED";
-                std::stringstream s;
-                s << nBones_;
-                ss += " NUM_BONES=" + s.str();
-            }
+                ss += " SKINNED NUM_BONES=" + ToString(nBones_);
             if ((int)ProgramFlag::SPECULARMAP & flags_)
                 ss += " SPECULARMAP";
             if ((int)ProgramFlag::AOMAP & flags_)
@@ -571,13 +542,13 @@ namespace NSG
                 std::string log;
                 log.resize(logLength);
                 glGetShaderInfoLog(id, logLength, &logLength, &log[0]);
-                TRACE_LOG(log);
+				TRACE_PRINTF(log.c_str());
             }
         }
         glDeleteShader(id);
         //glReleaseShaderCompiler(); // fails on osx
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        TRACE_LOG("Checking " << (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << " shader for material " << name_ << " with flags =" << TranslateFlags() << ":" << (compile_status == GL_TRUE ? "IS OK" : "HAS FAILED"));
+        TRACE_PRINTF("Checking %s shader for material %s with flags = %s: %s", (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT"), name_.c_str(), TranslateFlags().c_str(), (compile_status == GL_TRUE ? "IS OK" : "HAS FAILED"));
 
         return compile_status == GL_TRUE;
     }
@@ -588,61 +559,60 @@ namespace NSG
 
         if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing DISPLACEMENTMAP");
+			TRACE_PRINTF("Reducing complexity: removing DISPLACEMENTMAP");
             flags_ &= ~(int)ProgramFlag::DISPLACEMENTMAP;
         }
         else if ((int)ProgramFlag::SPECULARMAP & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing SPECULARMAP");
+			TRACE_PRINTF("Reducing complexity: removing SPECULARMAP");
             flags_ &= ~(int)ProgramFlag::SPECULARMAP;
         }
         else if ((int)ProgramFlag::AOMAP & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing SPECULARMAP");
+			TRACE_PRINTF("Reducing complexity: removing SPECULARMAP");
             flags_ &= ~(int)ProgramFlag::AOMAP;
         }
         else if ((int)ProgramFlag::NORMALMAP & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing NORMALMAP");
+			TRACE_PRINTF("Reducing complexity: removing NORMALMAP");
             flags_ &= ~(int)ProgramFlag::NORMALMAP;
         }
         else if (GL_FRAGMENT_SHADER == type && (int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing PER_PIXEL_LIGHTING, adding PER_VERTEX_LIGHTING");
+			TRACE_PRINTF("Reducing complexity: removing PER_PIXEL_LIGHTING, adding PER_VERTEX_LIGHTING");
             flags_ &= ~(int)ProgramFlag::PER_PIXEL_LIGHTING;
             flags_ |= (int)ProgramFlag::PER_VERTEX_LIGHTING;
         }
         else if (GL_VERTEX_SHADER == type && material_->GetDiffuseMap() != nullptr && (int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing PER_VERTEX_LIGHTING, adding UNLIT");
+			TRACE_PRINTF("Reducing complexity: removing PER_VERTEX_LIGHTING, adding UNLIT");
             flags_ &= ~(int)ProgramFlag::PER_VERTEX_LIGHTING;
             flags_ |= (int)ProgramFlag::UNLIT;
         }
         else if ((int)ProgramFlag::PER_PIXEL_LIGHTING & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing PER_PIXEL_LIGHTING, changing to VERTEX_COLOR");
+			TRACE_PRINTF("Reducing complexity: removing PER_PIXEL_LIGHTING, changing to VERTEX_COLOR");
             flags_ = (int)ProgramFlag::NONE;
         }
         else if ((int)ProgramFlag::PER_VERTEX_LIGHTING & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing PER_VERTEX_LIGHTING, changing to VERTEX_COLOR");
+			TRACE_PRINTF("Reducing complexity: removing PER_VERTEX_LIGHTING, changing to VERTEX_COLOR");
             flags_ = (int)ProgramFlag::NONE;
         }
         else if ((int)ProgramFlag::UNLIT & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing UNLIT, changing to VERTEX_COLOR");
+			TRACE_PRINTF("Reducing complexity: removing UNLIT, changing to VERTEX_COLOR");
             flags_ = (int)ProgramFlag::NONE;
         }
         else if ((int)ProgramFlag::SKINNED & flags_)
         {
-            TRACE_LOG("Reducing complexity: removing SKINNED");
+			TRACE_PRINTF("Reducing complexity: removing SKINNED");
             flags_ &= ~(int)ProgramFlag::SKINNED;
             nBones_ = 0;
         }
         else
         {
-            TRACE_LOG("!!! Cannot reduce complexity");
-            throw std::runtime_error("!!! Cannot reduce complexity");
+			TRACE_PRINTF("!!! Cannot reduce complexity");
         }
     }
 
@@ -671,11 +641,7 @@ namespace NSG
         eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
         u_uvTransformLoc_ = GetUniformLocation("u_uvTransform");
         for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
-        {
-            std::stringstream ss;
-            ss << "u_texture" << index;
-            textureLoc_[index] = GetUniformLocation(ss.str().c_str());
-        }
+			textureLoc_[index] = GetUniformLocation("u_texture" + ToString(index));
         materialLoc_.color_ = GetUniformLocation("u_material.color");
         materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
         materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
@@ -685,58 +651,52 @@ namespace NSG
 
         for (size_t i = 0; i < nBones_; i++)
         {
-            std::stringstream ss;
-            ss << "u_bones[" << i << "]";
-            GLuint boneLoc = GetUniformLocation(ss.str().c_str());
+			GLuint boneLoc = GetUniformLocation("u_bones[" + ToString(i) + "]");
             CHECK_ASSERT(boneLoc != -1, __FILE__, __LINE__);
             bonesBaseLoc_.push_back(boneLoc);
         }
 
-        for (unsigned idx = 0; idx < nDirectionalLights_; idx++)
+        for (int idx = 0; idx < nDirectionalLights_; idx++)
         {
-            std::stringstream lightIndex;
-            lightIndex << "u_directionalLight[" << idx << "]";
-
+            std::string lightIndex = "u_directionalLight[" + ToString(idx) + "]";
             DirectionalLightLoc directionalLightLoc;
-            directionalLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
-            directionalLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
-            directionalLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
-            directionalLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
-            directionalLightLoc.direction_ = GetUniformLocation(lightIndex.str() + ".direction");
+            directionalLightLoc.enabled_ = GetUniformLocation(lightIndex + ".enabled");
+            directionalLightLoc.base_.ambient_ = GetUniformLocation(lightIndex + ".base.ambient");
+            directionalLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex + ".base.diffuse");
+            directionalLightLoc.base_.specular_ = GetUniformLocation(lightIndex + ".base.specular");
+            directionalLightLoc.direction_ = GetUniformLocation(lightIndex + ".direction");
             directionalLightsLoc_.push_back(directionalLightLoc);
         }
 
-        for (unsigned idx = 0; idx < nPointLights_; idx++)
+        for (int idx = 0; idx < nPointLights_; idx++)
         {
-            std::stringstream lightIndex;
-            lightIndex << "u_pointLights[" << idx << "]";
+            std::string lightIndex= "u_pointLights[" + ToString(idx) + "]";
             PointLightLoc pointLightLoc;
-            pointLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
-            pointLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
-            pointLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
-            pointLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
-            pointLightLoc.position_ = GetUniformLocation(lightIndex.str() + ".position");
-            pointLightLoc.atten_.constant_ = GetUniformLocation(lightIndex.str() + ".atten.constant");
-            pointLightLoc.atten_.linear_ = GetUniformLocation(lightIndex.str() + ".atten.linear");
-            pointLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex.str() + ".atten.quadratic");
+            pointLightLoc.enabled_ = GetUniformLocation(lightIndex + ".enabled");
+            pointLightLoc.base_.ambient_ = GetUniformLocation(lightIndex + ".base.ambient");
+            pointLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex + ".base.diffuse");
+            pointLightLoc.base_.specular_ = GetUniformLocation(lightIndex + ".base.specular");
+            pointLightLoc.position_ = GetUniformLocation(lightIndex + ".position");
+            pointLightLoc.atten_.constant_ = GetUniformLocation(lightIndex + ".atten.constant");
+            pointLightLoc.atten_.linear_ = GetUniformLocation(lightIndex + ".atten.linear");
+            pointLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex + ".atten.quadratic");
             pointLightsLoc_.push_back(pointLightLoc);
         }
 
-        for (unsigned idx = 0; idx < nSpotLights_; idx++)
+        for (int idx = 0; idx < nSpotLights_; idx++)
         {
-            std::stringstream lightIndex;
-            lightIndex << "u_spotLights[" << idx << "]";
+            std::string lightIndex = "u_spotLights[" + ToString(idx) + "]";
             SpotLightLoc spotLightLoc;
-            spotLightLoc.enabled_ = GetUniformLocation(lightIndex.str() + ".enabled");
-            spotLightLoc.base_.ambient_ = GetUniformLocation(lightIndex.str() + ".base.ambient");
-            spotLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex.str() + ".base.diffuse");
-            spotLightLoc.base_.specular_ = GetUniformLocation(lightIndex.str() + ".base.specular");
-            spotLightLoc.position_ = GetUniformLocation(lightIndex.str() + ".position");
-            spotLightLoc.atten_.constant_ = GetUniformLocation(lightIndex.str() + ".atten.constant");
-            spotLightLoc.atten_.linear_ = GetUniformLocation(lightIndex.str() + ".atten.linear");
-            spotLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex.str() + ".atten.quadratic");
-            spotLightLoc.direction_ = GetUniformLocation(lightIndex.str() + ".direction");
-            spotLightLoc.cutOff_ = GetUniformLocation(lightIndex.str() + ".cutOff");
+            spotLightLoc.enabled_ = GetUniformLocation(lightIndex + ".enabled");
+            spotLightLoc.base_.ambient_ = GetUniformLocation(lightIndex + ".base.ambient");
+            spotLightLoc.base_.diffuse_ = GetUniformLocation(lightIndex + ".base.diffuse");
+            spotLightLoc.base_.specular_ = GetUniformLocation(lightIndex + ".base.specular");
+            spotLightLoc.position_ = GetUniformLocation(lightIndex + ".position");
+            spotLightLoc.atten_.constant_ = GetUniformLocation(lightIndex + ".atten.constant");
+            spotLightLoc.atten_.linear_ = GetUniformLocation(lightIndex + ".atten.linear");
+            spotLightLoc.atten_.quadratic_ = GetUniformLocation(lightIndex + ".atten.quadratic");
+            spotLightLoc.direction_ = GetUniformLocation(lightIndex + ".direction");
+            spotLightLoc.cutOff_ = GetUniformLocation(lightIndex + ".cutOff");
             spotLightsLoc_.push_back(spotLightLoc);
         }
 
@@ -759,7 +719,7 @@ namespace NSG
     bool Program::Initialize()
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        TRACE_LOG("Creating program for material " << name_);
+		TRACE_PRINTF("Creating program for material %s", name_.c_str());
         id_ = glCreateProgram();
         // Bind vertex attribute locations to ensure they are the same in all shaders
         glBindAttribLocation(id_, (int)AttributesLoc::POSITION, "a_position");
@@ -790,14 +750,14 @@ namespace NSG
                 std::string log;
                 log.resize(logLength);
                 glGetProgramInfoLog(id_, logLength, &logLength, &log[0]);
-                TRACE_LOG("Error in Program Creation: " << log);
+				TRACE_PRINTF("Error in Program Creation: %s", log.c_str());
                 //TRACE_LOG("VS: " << pVShader_->GetSource());
                 //TRACE_LOG("FS: " << pFShader_->GetSource());
             }
-            TRACE_LOG("Linking program for material " << name_ << " HAS FAILED!!!");
+			TRACE_PRINTF("Linking program for material %s HAS FAILED!!!", name_.c_str());
             return false;
         }
-        TRACE_LOG("Program for material " << name_ << " OK.");
+		TRACE_PRINTF("Program for material %s OK.", name_.c_str());
         CHECK_GL_STATUS(__FILE__, __LINE__);
         return true;
     }
@@ -917,7 +877,7 @@ namespace NSG
             size_t nBones = bones.size();
             if (nBones > nBones_)
             {
-                TRACE_LOG("Invalidating program " << name_ << " for material " << material_->GetName() << " since number of bones (in the shader) has increased. Before nBones = " << nBones_ << ", now is " << nBones << ".");
+				TRACE_PRINTF("Invalidating program %s for material %s  since number of bones (in the shader) has increased. Before nBones = %d , now is %d.", name_.c_str(), material_->GetName().c_str(), nBones_, nBones);
                 Invalidate();
                 nBones_ = nBones;
                 return false;
@@ -1032,7 +992,7 @@ namespace NSG
             {
                 if (nDirectionalLights_ > dirLights.size() || !directionalLightsReduced_)
                 {
-                    TRACE_LOG("Invalidating program due number of directionals light has changed!!!");
+					TRACE_PRINTF("Invalidating program due number of directionals light has changed!!!");
                     Invalidate();
                     return false;
                 }
@@ -1044,7 +1004,7 @@ namespace NSG
             {
                 if (nPointLights_ > pointLigths.size() || !pointLightsReduced_)
                 {
-                    TRACE_LOG("Invalidating program due number of points light has changed!!!");
+					TRACE_PRINTF("Invalidating program due number of points light has changed!!!");
                     Invalidate();
                     return false;
                 }
@@ -1056,7 +1016,7 @@ namespace NSG
             {
                 if (nSpotLights_ > spotLigths.size() || !spotLightsReduced_)
                 {
-                    TRACE_LOG("Invalidating program due number of spot light has changed!!!");
+					TRACE_PRINTF("Invalidating program due number of spot light has changed!!!");
                     Invalidate();
                     return false;
                 }

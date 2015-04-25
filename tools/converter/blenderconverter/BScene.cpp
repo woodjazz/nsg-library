@@ -405,7 +405,7 @@ namespace BlenderConverter
 
             if (!track.node_.lock())
             {
-                TRACE_LOG("Warning: skipping animation track " << channelName << " whose scene node was not found");
+				TRACE_PRINTF("Warning: skipping animation track %s whose scene node was not found", channelName.c_str());
                 continue;
             }
 
@@ -913,7 +913,7 @@ namespace BlenderConverter
                                 {
                                     if (boneWeightPerVertex.size() == MAX_BONES_PER_VERTEX && boneWeightPerVertex.end() == boneWeightPerVertex.find(joint_index))
                                     {
-                                        TRACE_LOG("Warning detected vertex with more than " << MAX_BONES_PER_VERTEX << " bones assigned. New bones will be ignored!!!");
+										TRACE_PRINTF("Warning detected vertex with more than %d bones assigned. New bones will be ignored!!!", MAX_BONES_PER_VERTEX);
                                     }
                                     else
                                     {
@@ -925,11 +925,11 @@ namespace BlenderConverter
                         }
                         if (sumw > 0.0f)
                         {
-                            float invsumw = 1.0f / sumw;
+                            auto invsumw = 1.0f / sumw;
                             int idx = 0;
                             for (auto& bw : boneWeightPerVertex)
                             {
-                                float boneIndex(bw.first);
+                                auto boneIndex(bw.first);
                                 vertexes[n].bonesID_[idx] = boneIndex;
                                 vertexes[n].bonesWeight_[idx] = bw.second * invsumw;
                                 ++idx;
@@ -990,7 +990,7 @@ namespace BlenderConverter
         std::string armatureName = B_IDNAME(arm);
         if (!(arm->flag & ARM_RESTPOS))
         {
-            TRACE_LOG("!!! Cannot create skeleton: " << armatureName << ". Armature has to be in rest position. Go to blender and change it.");
+			TRACE_PRINTF("!!! Cannot create skeleton: %s. Armature has to be in rest position. Go to blender and change it.", armatureName.c_str());
             return;
         }
 
@@ -1082,7 +1082,7 @@ namespace BlenderConverter
             // skip if face is not a triangle || quad
             if (nloops < 3 || nloops > 4)
             {
-                TRACE_LOG("Only triangles or quads are converted! (loops = " << nloops << ")");
+                TRACE_PRINTF("Only triangles or quads are converted! (loops = %d)", nloops);
                 continue;
             }
 

@@ -36,29 +36,29 @@ static int Test01()
 
     auto onLoad0 = [&](const std::string & data)
     {
-    	TRACE_LOG("HTTP OnLoad0: " << data);
+		TRACE_PRINTF("HTTP OnLoad0: %s", data.c_str());
     };
 
 	auto onLoad1 = [&](const std::string & data)
 	{
-		TRACE_LOG("HTTP OnLoad1: " << data.size() << " " << data);
+		TRACE_PRINTF("HTTP OnLoad1: %d %s", data.size(), data.c_str());
 		window = nullptr;
 	};
 
     auto onError = [&](int httpError, const std::string & description)
     {
-    	TRACE_LOG("HTTP Error: " << httpError << ". " << description);
+		TRACE_PRINTF("HTTP Error: %d. %s", httpError, description.c_str());
 		CHECK_CONDITION(false, __FILE__, __LINE__);
     };
 
     auto onProgress = [&](unsigned percentage)
     {
-    	TRACE_LOG("HTTP Progress: " << percentage << "%. ");
+		TRACE_PRINTF("HTTP Progress: %d", percentage);
     };
 
     HTTPRequest postRequest("http://nsg-datacollector.appspot.com/store", form, onLoad0, onError, onProgress);
 	HTTPRequest getRequest("http://nsg-datacollector.appspot.com/retrieve", onLoad1, onError, onProgress);
-    return Window::RunApp();
+    return Engine().Run();
 }
 
 static int Test02()
@@ -74,24 +74,24 @@ static int Test02()
 
     auto onError0 = [&](int httpError, const std::string & description)
     {
-        TRACE_LOG("HTTP Error: " << httpError << ". " << description);
+		TRACE_PRINTF("HTTP Error: %d. %s", httpError, description.c_str());
         window0 = nullptr;
     };
 
     auto onError1 = [&](int httpError, const std::string & description)
     {
-        TRACE_LOG("HTTP Error: " << httpError << ". " << description);
+		TRACE_PRINTF("HTTP Error: %d. %s", httpError, description.c_str());
         window1 = nullptr;
     };
 
     auto onProgress = [&](unsigned percentage)
     {
-        TRACE_LOG("HTTP Progress: " << percentage << "%. ");
+		TRACE_PRINTF("HTTP Progress: %d", percentage);
     };
 
     HTTPRequest request0("http://nsg-datacollector.appspot11111.com/storexasas", form, onLoad, onError0, onProgress);
     HTTPRequest request1("http://nsg-datacollector.appspot.com/retrievesasa", onLoad, onError1, onProgress);
-    return Window::RunApp();
+	return Engine().Run();
 }
 
 void Tests()

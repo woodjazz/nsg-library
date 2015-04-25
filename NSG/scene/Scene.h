@@ -48,7 +48,7 @@ namespace NSG
 		const std::vector<PWeakLight>& GetLights(LightType type) const;
         void AddCamera(PCamera camera);
 		void AddParticleSystem(PParticleSystem ps);
-        void Update(float deltaTime);
+        void UpdateAll(float deltaTime);
 		void Render();
         void NeedUpdate(SceneNode* obj);
         void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;

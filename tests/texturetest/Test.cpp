@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-static int Test01()
+static void Test01()
 {
 	auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
@@ -41,15 +41,10 @@ static int Test01()
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-		window = nullptr;
-    });
-    return Window::RunApp();
+	Engine().RenderFrame();
 }
 
-static int Test02()
+static void Test02()
 {
 	auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
@@ -64,15 +59,10 @@ static int Test02()
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-        window = nullptr;
-    });
-    return Window::RunApp();
+	Engine().RenderFrame();
 }
 
-static int Test03()
+static void Test03()
 {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
@@ -87,19 +77,62 @@ static int Test03()
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-        window = nullptr;
-    });
-    return Window::RunApp();
+	Engine().RenderFrame();
+}
+
+static void Test04()
+{
+	auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
+
+	{
+		auto resource = Resource::Create<ResourceFile>("data/stonediffuse.dds");
+		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		auto image = std::make_shared<Image>(resource);
+		image->ReadResource();
+		CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat(), __FILE__, __LINE__);
+		image->Decompress();
+		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
+		CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+	}
+
+	{
+		auto resource = Resource::Create<ResourceFile>("data/tex_etc1.ktx");
+		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		auto image = std::make_shared<Image>(resource);
+		image->ReadResource();
+		CHECK_CONDITION(TextureFormat::ETC1 == image->GetFormat(), __FILE__, __LINE__);
+		image->Decompress();
+		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
+		CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+	}
+
+	{
+		auto resource = Resource::Create<ResourceFile>("data/tex_pvr.pvr");
+		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		auto image = std::make_shared<Image>(resource);
+		image->ReadResource();
+		CHECK_CONDITION(TextureFormat::PVRTC_RGBA_2BPP == image->GetFormat(), __FILE__, __LINE__);
+		image->Decompress();
+		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
+		CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+	}
+
+	{
+		auto resource = Resource::Create<ResourceFile>("data/tex_s3tc.dds");
+		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		auto image = std::make_shared<Image>(resource);
+		image->ReadResource();
+		CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat(), __FILE__, __LINE__);
+		image->Decompress();
+		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
+		CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+	}
 }
 
 void Tests()
 {
+	Test04();
 	Test01();
-    #if 0
     Test02();
-    #endif
 	Test03();
 }

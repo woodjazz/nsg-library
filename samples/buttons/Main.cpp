@@ -78,11 +78,6 @@ int NSG_MAIN(int argc, char* argv[])
 		button1->GetMaterial()->SetColor(Color(1, 1, 1, 1));
 	});
 
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-		scene->Render();
-    });
-
-    return Window::RunApp();
+    return Engine().Run();
 }
 

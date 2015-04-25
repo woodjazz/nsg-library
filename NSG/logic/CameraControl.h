@@ -34,6 +34,7 @@ namespace NSG
 		CameraControl(PCamera camera);
 		~CameraControl();
 		void SetWindow(Window* window);
+		void SetEngine(Engine* engine);
 		void AutoZoom();
 		void OnUpdate(float deltaTime);
 		void OnKey(int key, int action, int modifier);
@@ -62,6 +63,8 @@ namespace NSG
 		PCamera camera_;
 		bool updateOrientation_;
 		Window* window_;
+		Engine* engine_;
 		SignalWindow::PSlot slotWindowCreated_;
+		SignalEngine::PSlot slotEngineCreated_;
 	};
 }

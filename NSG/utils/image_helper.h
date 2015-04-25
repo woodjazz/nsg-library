@@ -28,6 +28,22 @@ up_scale_image
     int resampled_width, int resampled_height
 );
 
+/**
+    This function downscales an image.
+    Used for creating MIPmaps,
+    the incoming image should be a
+    power-of-two sized.
+**/
+int
+    mipmap_image
+    (
+        const unsigned char* const orig,
+        int width, int height, int channels,
+        unsigned char* resampled,
+        int block_size_x, int block_size_y
+    );
+
+
 #ifdef __cplusplus
 }
 #endif

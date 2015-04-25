@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Tick.h"
 #include "MapAndVector.h"
 #include "Util.h"
 #include <string>
@@ -32,17 +31,13 @@ misrepresented as being the original software.
 struct SDL_Window;
 namespace NSG
 {
-    class Window : public Tick, public std::enable_shared_from_this<Window>
+    class Window : public std::enable_shared_from_this<Window>
     {
     public:
 		static PWindow Create(const std::string& name = GetUniqueName("Window"), WindowFlags flags = (int)WindowFlag::SHOWN);
         static PWindow Create(const std::string& name, int x, int y, int width, int height, WindowFlags flags = (int)WindowFlag::SHOWN);
         virtual ~Window();
         float GetDeltaTime() const;
-        void InitializeTicks() override;
-        void BeginTicks() override;
-        void DoTick(float delta) override;
-        void EndTicks() override;
         virtual void ViewChanged(int width, int height);
         virtual void Show() = 0;
         virtual void Hide() = 0;
@@ -58,7 +53,6 @@ namespace NSG
         void OnJoystickUp(int joystickID, unsigned button);
         void OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position);
 		virtual void RenderFrame() = 0;
-        virtual int Run() = 0;
         virtual void EnterBackground();
         virtual void EnterForeground();
         void InvalidateContext();
@@ -81,15 +75,17 @@ namespace NSG
         bool BeginFrameRender();
         void EndFrameRender();
         PFrameBuffer GetFrameBuffer() const { return frameBuffer_; }
+        void SetScene(Scene* scene);
+        Scene* GetScene() const { return scene_; }
         static bool AllowWindowCreation();
-        static void NotifyOneWindow2Remove() { ++nWindows2Remove_;  }
+		static void NotifyOneWindow2Remove();
         static std::vector<PWeakWindow>& GetWindows() { return windows_; }
         static void SetMainWindow(Window* window);
         static void AddWindow(PWindow window);
+        static void UpdateScenes(float delta);
 		static bool RenderWindows();
-        static const AppConfiguration& GetAppConfiguration() { return conf_; }
-        static int RunApp();
         static Window* GetMainWindow() { return mainWindow_; }
+        static void HandleEvents();
 
         static SignalWindow::PSignal signalWindowCreated_;
         SignalViewChanged::PSignal signalViewChanged_;
@@ -100,8 +96,6 @@ namespace NSG
         SignalKey::PSignal signalKey_;
         SignalChar::PSignal signalChar_;
         SignalMultiGesture::PSignal signalMultiGesture_;
-        SignalUpdate::PSignal signalUpdate_;
-        SignalRender::PSignal signalRender_;
         SignalDropFile::PSignal signalDropFile_;
         SignalJoystickDown::PSignal signalJoystickDown_;
         SignalJoystickUp::PSignal signalJoystickUp_;
@@ -109,18 +103,18 @@ namespace NSG
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
+        void OnCreated();
         std::string name_;
-        float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
         bool isClosed_;
         bool minimized_;
         bool isMainWindow_;
         int width_;
         int height_;
         bool filtersEnabled_;
+        Scene* scene_; //scene to render in this window
 		static std::vector<PWeakWindow> windows_;
         static Window* mainWindow_;
     private:
-        virtual void HandleEvents() {}
         void AddFilter(PFilter filter);
         void CreateFrameBuffer();
         std::vector<PFilter> filters_;
@@ -129,6 +123,5 @@ namespace NSG
         static int nWindows2Remove_;
         static PGraphics graphics_;
         static std::once_flag onceFlag_;
-        static AppConfiguration conf_;
     };
 }

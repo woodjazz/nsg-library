@@ -39,10 +39,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Pass::Pass(Technique* technique)
-        : technique_(technique),
-		  pProgram_(std::make_shared<Program>(technique->GetMaterial())),
-          blendMode_(BLEND_NONE),
+    PassData::PassData()
+        : blendMode_(BLEND_NONE),
           enableDepthTest_(true),
           enableStencilTest_(false),
           stencilMask_(~GLuint(0)),
@@ -60,6 +58,13 @@ namespace NSG
           frontFaceMode_(FrontFaceMode::DEFAULT),
           depthFunc_(DepthFunc::LESS)
     {
+
+    }
+
+    Pass::Pass(Technique* technique)
+        : technique_(technique)
+    {
+        data_.pProgram_ = std::make_shared<Program>(technique->GetMaterial());
     }
 
     Pass::~Pass()
@@ -69,134 +74,88 @@ namespace NSG
     PPass Pass::Clone(Material* material) const
     {
         auto pass = std::make_shared<Pass>(technique_);
-        pass->pProgram_ = pProgram_->Clone(material);
-        pass->blendMode_ = blendMode_;
-        pass->enableDepthTest_ = enableDepthTest_;
-        pass->enableStencilTest_ = enableStencilTest_;
-        pass->stencilMask_ = stencilMask_;
-        pass->sfailStencilOp_ = sfailStencilOp_;
-        pass->dpfailStencilOp_ = dpfailStencilOp_;
-        pass->dppassStencilOp_ = dppassStencilOp_;
-        pass->stencilFunc_ = stencilFunc_;
-        pass->stencilRefValue_ = stencilRefValue_;
-        pass->stencilMaskValue_ = stencilMaskValue_;
-        pass->enableColorBuffer_ = enableColorBuffer_;
-        pass->enableDepthBuffer_ = enableDepthBuffer_;
-        pass->drawMode_ = drawMode_;
-        pass->enableCullFace_ = enableCullFace_;
-        pass->cullFaceMode_ = cullFaceMode_;
-        pass->frontFaceMode_ = frontFaceMode_;
-        pass->depthFunc_ = depthFunc_;
+        pass->data_ = data_;
+        pass->data_.pProgram_ = data_.pProgram_->Clone(material);
         return pass;
     }
 
     void Pass::SetBlendMode(BLEND_MODE mode)
     {
-        blendMode_ = mode;
+        data_.blendMode_ = mode;
     }
 
     void Pass::EnableColorBuffer(bool enable)
     {
-        enableColorBuffer_ = enable;
+        data_.enableColorBuffer_ = enable;
     }
 
     void Pass::EnableDepthBuffer(bool enable)
     {
-        enableDepthBuffer_ = enable;
+        data_.enableDepthBuffer_ = enable;
     }
 
     void Pass::EnableDepthTest(bool enable)
     {
-        enableDepthTest_ = enable;
+        data_.enableDepthTest_ = enable;
     }
 
     void Pass::EnableStencilTest(bool enable)
     {
-        enableStencilTest_ = enable;
+        data_.enableStencilTest_ = enable;
     }
 
     void Pass::SetDepthFunc(DepthFunc depthFunc)
     {
-        depthFunc_ = depthFunc;
+        data_.depthFunc_ = depthFunc;
     }
 
     void Pass::SetStencilMask(GLuint mask)
     {
-        stencilMask_ = mask;
+        data_.stencilMask_ = mask;
     }
 
     void Pass::SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass)
     {
-        sfailStencilOp_ = sfail;
-        dpfailStencilOp_ = dpfail;
-        dppassStencilOp_ = dppass;
+        data_.sfailStencilOp_ = sfail;
+        data_.dpfailStencilOp_ = dpfail;
+        data_.dppassStencilOp_ = dppass;
     }
 
     void Pass::SetStencilFunc(GLenum func, GLint ref, GLuint mask)
     {
-        stencilFunc_ = func;
-        stencilRefValue_ = ref;
-        stencilMaskValue_ = mask;
+        data_.stencilFunc_ = func;
+        data_.stencilRefValue_ = ref;
+        data_.stencilMaskValue_ = mask;
     }
 
     void Pass::SetDrawMode(DrawMode mode)
     {
-        drawMode_ = mode;
+        data_.drawMode_ = mode;
     }
 
     void Pass::EnableCullFace(bool enable)
     {
-        enableCullFace_ = enable;
+        data_.enableCullFace_ = enable;
     }
 
     void Pass::SetCullFace(CullFaceMode mode)
     {
-        cullFaceMode_ = mode;
+        data_.cullFaceMode_ = mode;
     }
 
     void Pass::SetFrontFace(FrontFaceMode mode)
     {
-        frontFaceMode_ = mode;
+        data_.frontFaceMode_ = mode;
     }
 
-	bool Pass::IsTransparent() const
-	{
-		return blendMode_ == BLEND_MODE::BLEND_ALPHA;
-	}
-
-	bool Pass::IsText() const
-	{
-		return pProgram_->GetFlags() & (int)ProgramFlag::TEXT ? true: false;
-	}
-
-
-    void Pass::SetupPass()
+    bool Pass::IsTransparent() const
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        return data_.blendMode_ == BLEND_MODE::BLEND_ALPHA;
+    }
 
-        Graphics::this_->SetColorMask(enableColorBuffer_);
-        Graphics::this_->SetStencilTest(enableStencilTest_, stencilMask_, sfailStencilOp_,
-                                 dpfailStencilOp_, dppassStencilOp_, stencilFunc_,
-                                 stencilRefValue_, stencilMaskValue_);
-
-        Graphics::this_->SetBlendModeTest(blendMode_);
-        Graphics::this_->EnableDepthTest(enableDepthTest_);
-		if (enableDepthTest_)
-		{
-			Graphics::this_->SetDepthMask(enableDepthBuffer_);
-			Graphics::this_->SetDepthFunc(depthFunc_);
-		}
-
-        Graphics::this_->EnableCullFace(enableCullFace_);
-        if (enableCullFace_)
-        {
-            Graphics::this_->SetCullFace(cullFaceMode_);
-            Graphics::this_->SetFrontFace(frontFaceMode_);
-        }
-
-        Graphics::this_->SetProgram(pProgram_.get());
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+    bool Pass::IsText() const
+    {
+        return data_.pProgram_->GetFlags() & (int)ProgramFlag::TEXT ? true : false;
     }
 
     void Pass::Draw()
@@ -208,119 +167,33 @@ namespace NSG
     {
         pugi::xml_node child = node.append_child("Pass");
 
-        if (pProgram_)
-            pProgram_->Save(child);
+        if (data_.pProgram_)
+            data_.pProgram_->Save(child);
 
-        {
-            std::stringstream ss;
-            ss << blendMode_;
-            child.append_attribute("blendMode") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << enableDepthTest_;
-            child.append_attribute("enableDepthTest") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << enableStencilTest_;
-            child.append_attribute("enableStencilTest") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << stencilMask_;
-            child.append_attribute("stencilMask") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << sfailStencilOp_;
-            child.append_attribute("sfailStencilOp") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << dpfailStencilOp_;
-            child.append_attribute("dpfailStencilOp") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << dppassStencilOp_;
-            child.append_attribute("dppassStencilOp") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << stencilFunc_;
-            child.append_attribute("stencilFunc") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << stencilRefValue_;
-            child.append_attribute("stencilRefValue") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << stencilMaskValue_;
-            child.append_attribute("stencilMaskValue") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << enableColorBuffer_;
-            child.append_attribute("enableColorBuffer") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << enableDepthBuffer_;
-            child.append_attribute("enableDepthBuffer") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << (int)drawMode_;
-            child.append_attribute("drawMode") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << enableCullFace_;
-            child.append_attribute("enableCullFace") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << (int)cullFaceMode_;
-            child.append_attribute("cullFaceMode") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << (int)frontFaceMode_;
-            child.append_attribute("frontFaceMode") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << (int)depthFunc_;
-            child.append_attribute("depthFunc") = ss.str().c_str();
-        }
-
-
+        child.append_attribute("blendMode").set_value((int)data_.blendMode_);
+        child.append_attribute("enableDepthTest").set_value(data_.enableDepthTest_);
+        child.append_attribute("enableStencilTest").set_value(data_.enableStencilTest_);
+        child.append_attribute("stencilMask").set_value(data_.stencilMask_);
+        child.append_attribute("sfailStencilOp").set_value(data_.sfailStencilOp_);
+        child.append_attribute("dpfailStencilOp").set_value(data_.dpfailStencilOp_);
+        child.append_attribute("dppassStencilOp").set_value(data_.dppassStencilOp_);
+        child.append_attribute("stencilFunc").set_value(data_.stencilFunc_);
+        child.append_attribute("stencilRefValue").set_value(data_.stencilRefValue_);
+        child.append_attribute("stencilMaskValue").set_value(data_.stencilMaskValue_);
+        child.append_attribute("enableColorBuffer").set_value(data_.enableColorBuffer_);
+        child.append_attribute("enableDepthBuffer").set_value(data_.enableDepthBuffer_);
+        child.append_attribute("drawMode").set_value((int)data_.drawMode_);
+        child.append_attribute("enableCullFace").set_value(data_.enableCullFace_);
+        child.append_attribute("cullFaceMode").set_value((int)data_.cullFaceMode_);
+        child.append_attribute("frontFaceMode").set_value((int)data_.frontFaceMode_);
+        child.append_attribute("depthFunc").set_value((int)data_.depthFunc_);
     }
 
     void Pass::Load(const pugi::xml_node& node, Material* material)
     {
         pugi::xml_node programChild = node.child("Program");
-		std::string flags = programChild.attribute("flags").as_string();
-		pProgram_->SetFlags(flags);
+        std::string flags = programChild.attribute("flags").as_string();
+        data_.pProgram_->SetFlags(flags);
 
         SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
         EnableDepthTest(node.attribute("enableDepthTest").as_bool());
@@ -339,6 +212,6 @@ namespace NSG
 
     void Pass::Invalidate()
     {
-        pProgram_->Invalidate();
+        data_.pProgram_->Invalidate();
     }
 }

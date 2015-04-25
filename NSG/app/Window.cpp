@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Window.h"
+#include "Engine.h"
 #include "AppConfiguration.h"
 #include "SignalSlots.h"
 #include "TextMesh.h"
@@ -54,11 +55,9 @@ namespace NSG
     int Window::nWindows2Remove_ = 0;
     PGraphics Window::graphics_;
     std::once_flag Window::onceFlag_;
-    AppConfiguration Window::conf_;
 
     Window::Window(const std::string& name)
-        : Tick(Window::GetAppConfiguration().fps_),
-          signalViewChanged_(new Signal<int, int>()),
+        : signalViewChanged_(new Signal<int, int>()),
           signalMouseMoved_(new Signal<float, float>()),
           signalMouseDown_(new Signal<int, float, float>()),
           signalMouseUp_(new Signal<int, float, float>()),
@@ -66,8 +65,6 @@ namespace NSG
           signalKey_(new Signal<int, int, int>()),
           signalChar_(new Signal<unsigned int>()),
           signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
-          signalUpdate_(new Signal<float>()),
-          signalRender_(new Signal<>()),
           signalDropFile_(new Signal<const std::string & >()),
           signalJoystickDown_(new SignalJoystickDown()),
           signalJoystickUp_(new SignalJoystickUp()),
@@ -78,7 +75,8 @@ namespace NSG
           isMainWindow_(true),
           width_(0),
           height_(0),
-          filtersEnabled_(true)
+          filtersEnabled_(true),
+          scene_(nullptr)
 
     {
         CHECK_CONDITION(Window::AllowWindowCreation(), __FILE__, __LINE__);
@@ -104,7 +102,7 @@ namespace NSG
     {
         if (Window::AllowWindowCreation())
         {
-			auto window = std::make_shared<SDLWindow>(name, x, y, width, height, flags);
+            auto window = std::make_shared<SDLWindow>(name, x, y, width, height, flags);
             Window::AddWindow(window);
             return window;
         }
@@ -165,12 +163,7 @@ namespace NSG
         Destroy();
     }
 
-    float Window::GetDeltaTime() const
-    {
-        return deltaTime_;
-    }
-
-    void Window::InitializeTicks()
+    void Window::OnCreated()
     {
         std::call_once(onceFlag_, [&]()
         {
@@ -179,34 +172,14 @@ namespace NSG
         });
 
         CreateFrameBuffer(); // used when filters are enabled
-		signalWindowCreated_->Run(this);
-    }
-
-    void Window::BeginTicks()
-    {
-    }
-
-    void Window::DoTick(float delta)
-    {
-        deltaTime_ = delta;
-        signalUpdate_->Run(deltaTime_);
-    }
-
-    void Window::EndTicks()
-    {
-        if (Graphics::this_->BeginFrameRender())
-        {
-            signalRender_->Run();
-            UniformsUpdate::ClearAllUpdates();
-            Graphics::this_->EndFrameRender();
-        }
+        signalWindowCreated_->Run(this);
     }
 
     void Window::SetSize(int width, int height)
     {
         if (width_ != width || height_ != height)
         {
-            TRACE_LOG("WindowChanged: " << width << "," << height);
+            TRACE_PRINTF("WindowChanged: %d,%d",width, height);
             width_ = width;
             height_ = height;
 
@@ -278,7 +251,7 @@ namespace NSG
         minimized_ = true;
         if (Window::mainWindow_ == this)
         {
-            if (Music::this_ && Window::GetAppConfiguration().pauseMusicOnBackground_)
+            if (Music::this_ && Engine::GetAppConfiguration().pauseMusicOnBackground_)
                 Music::this_->Pause();
         }
     }
@@ -287,7 +260,7 @@ namespace NSG
     {
         if (Window::mainWindow_ == this)
         {
-            if (Music::this_ && Window::GetAppConfiguration().pauseMusicOnBackground_)
+			if (Music::this_ && Engine::GetAppConfiguration().pauseMusicOnBackground_)
                 Music::this_->Resume();
         }
 
@@ -411,14 +384,23 @@ namespace NSG
         windows_.push_back(window);
     }
 
-    bool Window::RenderWindows()
+    void Window::UpdateScenes(float delta)
     {
-        mainWindow_->HandleEvents();
         for (auto& obj : windows_)
         {
-            PWindow window(obj.lock());
+            auto window(obj.lock());
+			if (window && window->scene_)
+                window->scene_->UpdateAll(delta);
+        }
+    }
+
+    bool Window::RenderWindows()
+    {
+        for (auto& obj : windows_)
+        {
+            auto window(obj.lock());
             if (!window || window->IsClosed())
-                break;
+                continue;
             if (!window->IsMinimized())
                 window->RenderFrame();
         }
@@ -445,11 +427,22 @@ namespace NSG
         return true;
     }
 
-    int Window::RunApp()
+    void Window::HandleEvents()
     {
-        if (mainWindow_)
-            return mainWindow_->Run();
-        return 0;
+        #if SDL
+        SDLWindow::HandleEvents();
+        #else
+        CHEKC_ASSERT(!"So far only support for SDL...!!!", __FILE__, __LINE__);
+        #endif
     }
 
+    void Window::SetScene(Scene* scene)
+    {
+        scene_ = scene;
+    }
+
+	void Window::NotifyOneWindow2Remove() 
+	{ 
+		++nWindows2Remove_; 
+	}
 }

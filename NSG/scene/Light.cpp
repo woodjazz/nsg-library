@@ -91,74 +91,18 @@ namespace NSG
 
     void Light::Save(pugi::xml_node& node) const
     {
-        {
-            std::stringstream ss;
-            ss << GetName();
-            node.append_attribute("name") = ss.str().c_str();
-        }
-
-        node.append_attribute("nodeType") = "Light";
-
-        {
-            std::stringstream ss;
-            ss << (int)type_;
-            node.append_attribute("type") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << attenuation_.constant;
-            node.append_attribute("attenuationConstant") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << attenuation_.linear;
-            node.append_attribute("attenuationLinear") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << attenuation_.quadratic;
-            node.append_attribute("attenuationQuadratic") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << spotCutOff_;
-            node.append_attribute("spotCutOff") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << ambient_;
-            node.append_attribute("ambient") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << diffuse_;
-            node.append_attribute("diffuse") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << specular_;
-            node.append_attribute("specular") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << GetPosition();
-            node.append_attribute("position") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << GetOrientation();
-            node.append_attribute("orientation") = ss.str().c_str();
-        }
-
+		node.append_attribute("name").set_value(GetName().c_str());
+        node.append_attribute("nodeType").set_value("Light");
+		node.append_attribute("type").set_value((int)type_);
+		node.append_attribute("attenuationConstant").set_value(attenuation_.constant);
+		node.append_attribute("attenuationLinear").set_value(attenuation_.linear);
+		node.append_attribute("attenuationQuadratic").set_value(attenuation_.quadratic);
+		node.append_attribute("spotCutOff").set_value(spotCutOff_);
+		node.append_attribute("ambient").set_value(ToString(ambient_).c_str());
+		node.append_attribute("diffuse").set_value(ToString(diffuse_).c_str());
+		node.append_attribute("specular").set_value(ToString(specular_).c_str());
+		node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
+		node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
         SaveChildren(node);
     }
 

@@ -37,31 +37,13 @@ misrepresented as being the original software.
 #include <android/log.h>
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", ## __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", ##__VA_ARGS__))
-#define TRACE_LOG(msg) {\
-        std::stringstream stream; \
-        stream << msg; \
-        std::string cmsg = stream.str(); \
-        __android_log_print(ANDROID_LOG_INFO, "nsg-library", "%s", cmsg.c_str());\
-    }
-
 #define TRACE_PRINTF(format, ...) {\
         __android_log_print(ANDROID_LOG_INFO, "nsg-library", format, ##__VA_ARGS__);\
     }
 
-#elif _MSC_VER
+#elif _WIN32
 
-#include "windows.h"
-
-#define TRACE_LOG(msg) {\
-        std::stringstream stream; \
-        stream << msg; \
-        std::string cmsg = stream.str(); \
-        printf("%s\n",cmsg.c_str());\
-        fflush(stdout);\
-        OutputDebugString(cmsg.c_str());\
-        OutputDebugString("\n");\
-    }
-
+#include <windows.h>    
 #define TRACE_PRINTF(format, ...) {\
         printf(format, __VA_ARGS__);\
         fflush(stdout);\
@@ -69,30 +51,14 @@ misrepresented as being the original software.
 
 #elif __APPLE__
 
-#include <Foundation/NSString.h>
-#define TRACE_LOG(msg) {\
-        std::stringstream stream;\
-        stream << msg;\
-        std::string cmsg = stream.str();\
-        NSLog(@"%@", [NSString stringWithUTF8String: cmsg.c_str()]);\
-    }
-
 #define TRACE_PRINTF(format, ...) {\
         printf(format, ##__VA_ARGS__);\
         fflush(stdout);\
     }
 
 #elif EMSCRIPTEN
-#include <emscripten.h>
-#define TRACE_LOG(msg) {\
-        std::stringstream stream;\
-        stream << msg;\
-        std::string cmsg = stream.str();\
-        emscripten_log(EM_LOG_CONSOLE, cmsg.c_str());\
-        printf("%s\n",cmsg.c_str());\
-        fflush(stdout);\
-    }
 
+#include <emscripten.h>
 #define TRACE_PRINTF(format, ...) {\
         emscripten_log(EM_LOG_CONSOLE, format, ##__VA_ARGS__);\
         printf(format, ##__VA_ARGS__);\
@@ -101,14 +67,6 @@ misrepresented as being the original software.
 
 #else
 
-#define TRACE_LOG(msg) {\
-        std::stringstream stream; \
-        stream << msg; \
-        std::string cmsg = stream.str(); \
-        printf("%s\n",cmsg.c_str());\
-        fflush(stdout);\
-    }
-
 #define TRACE_PRINTF(format, ...) {\
         printf(format, ##__VA_ARGS__);\
         fflush(stdout);\
@@ -116,7 +74,6 @@ misrepresented as being the original software.
 
 #endif
 #else
-#define TRACE_LOG(msg) ((void)0);
 #define TRACE_PRINTF(format, ...) ((void)0);
 #endif
 

@@ -39,8 +39,7 @@ namespace NSG
         ~SDLWindow();
         void RenderFrame() override;
         void Destroy() override;
-        void HandleEvents() override;
-        int Run() override;
+        static void HandleEvents();
 		void EnterBackground() override;
 		void EnterForeground() override;
 		void RestoreContext();
@@ -48,12 +47,12 @@ namespace NSG
         void Show() override;
         void Hide() override;
         void Raise() override;
-        JoystickAxis ConvertAxis(int axis) const;
+        static JoystickAxis ConvertAxis(int axis);
         void OpenJoystick(int index);
         void CloseJoystick(int index);
         void OpenJoysticks();
-        SDLWindow* GetWindowFromID(uint32_t windowID) const;
-        SDLWindow* GetCurrentWindow() const;
+        static SDLWindow* GetWindowFromID(uint32_t windowID);
+        static SDLWindow* GetCurrentWindow();
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
         void Close() override;
         void ViewChanged(int width, int height) override;

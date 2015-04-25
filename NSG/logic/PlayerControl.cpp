@@ -27,12 +27,14 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Keys.h"
 #include "Window.h"
+#include "Engine.h"
 
 namespace NSG
 {
     PlayerControl::PlayerControl()
         : signalMoved_(new SignalPlayerMoved()),
           window_(nullptr),
+		  engine_(nullptr),
           leftHorizontalAxis_(0),
           leftVerticalAxis_(0),
           left_(false),
@@ -52,6 +54,15 @@ namespace NSG
             if (!window_)
                 SetWindow(window);
         });
+
+		SetEngine(Engine::GetPtr());
+
+		slotEngineCreated_ = Engine::signalCreated_->Connect([this](Engine * engine)
+		{
+			if (!engine_)
+				SetEngine(engine);
+		});
+
     }
 
     PlayerControl::~PlayerControl()
@@ -59,17 +70,34 @@ namespace NSG
 
     }
 
+	void PlayerControl::SetEngine(Engine* engine)
+	{
+		if (engine_ != engine)
+		{
+			engine_ = engine;
+
+			if (engine)
+			{
+				slotUpdate_ = engine->signalUpdate_->Connect([&](float deltaTime)
+				{
+					OnUpdate(deltaTime);
+				});
+			}
+		}
+		else
+		{
+			slotUpdate_ = nullptr;
+		}
+	}
+
     void PlayerControl::SetWindow(Window* window)
     {
         if (window_ != window)
         {
+			window_ = window;
+
             if (window)
             {
-                slotUpdate_ = window->signalUpdate_->Connect([&](float deltaTime)
-                {
-                    OnUpdate(deltaTime);
-                });
-
                 slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
                 {
                     OnMousemoved(x, y);
@@ -135,7 +163,6 @@ namespace NSG
             }
             else
             {
-                slotUpdate_ = nullptr;
                 slotMouseMoved_ = nullptr;
                 slotMouseDown_ = nullptr;
                 slotMouseUp_ = nullptr;
@@ -145,7 +172,6 @@ namespace NSG
                 slotJoystickDown_ = nullptr;
                 slotJoystickUp_ = nullptr;
                 slotJoystickAxisMotion_ = nullptr;
-
             }
         }
     }

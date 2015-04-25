@@ -34,6 +34,7 @@ namespace NSG
         PlayerControl();
         ~PlayerControl();
         void SetWindow(Window* window);
+		void SetEngine(Engine* engine);
         SignalPlayerMoved::PSignal signalMoved_;
     private:
         void OnKey(int key, int action, int modifier);
@@ -55,7 +56,9 @@ namespace NSG
         SignalJoystickAxisMotion::PSlot slotJoystickAxisMotion_;
 
         Window* window_;
+		Engine* engine_;
         SignalWindow::PSlot slotWindowCreated_;
+		SignalEngine::PSlot slotEngineCreated_;
         float leftHorizontalAxis_;
         float leftVerticalAxis_;
         bool left_;

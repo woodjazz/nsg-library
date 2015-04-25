@@ -1,5 +1,7 @@
 #ifndef _Blender_h_
 #define _Blender_h_
+// This file has been generated with blenderdna tool.
+// This file has to be re-generated every time you use a new version of Blender.
 // Generated from a Blender(274) file.
 
 #ifdef near

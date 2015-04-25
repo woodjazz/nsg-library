@@ -52,29 +52,10 @@ namespace NSG
     {
 		pugi::xml_node child = node.append_child("KeyFrame");
 
-        {
-            std::stringstream ss;
-            ss << time_;
-            child.append_attribute("time") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << position_;
-            child.append_attribute("position") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << rotation_;
-            child.append_attribute("rotation") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << scale_;
-            child.append_attribute("scale") = ss.str().c_str();
-        }
+        child.append_attribute("time").set_value(time_);
+        child.append_attribute("position").set_value(ToString(position_).c_str());
+        child.append_attribute("rotation").set_value(ToString(rotation_).c_str());
+        child.append_attribute("scale").set_value(ToString(scale_).c_str());
     }
 
 	void AnimationKeyFrame::Load(const pugi::xml_node& node)
@@ -167,14 +148,8 @@ namespace NSG
     void Animation::Save(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Animation");
-        child.append_attribute("name") = name_.c_str();
-
-        {
-            std::stringstream ss;
-            ss << length_;
-            child.append_attribute("length") = ss.str().c_str();
-        }
-
+        child.append_attribute("name").set_value(name_.c_str());
+		child.append_attribute("length").set_value(length_);
         if (tracks_.size())
         {
 			pugi::xml_node childTracks = child.append_child("Tracks");

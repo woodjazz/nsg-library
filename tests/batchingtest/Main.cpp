@@ -29,7 +29,6 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-
     auto window = Window::Create("window", 0, 0, 10, 10);
 	if (!Graphics::this_->HasInstancedArrays())
 		return 0;
@@ -51,23 +50,11 @@ int NSG_MAIN(int argc, char* argv[])
     node1->SetPosition(Vertex3(-20, 0, 0));
     CHECK_CONDITION(material->IsBatched(), __FILE__, __LINE__);
 	control->AutoZoom();
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
-    {
-        static float angle(1);
-        if(angle > 100)
-        {
-            CHECK_CONDITION(!material->IsBatched(), __FILE__, __LINE__);
-            window = nullptr;
-        }
-        node1->SetOrientation(glm::angleAxis(angle, Vertex3(0, 0, 1)) * glm::angleAxis(angle, Vertex3(0, 1, 0)));
-        ++angle;
-    });
-
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-    });
-
-    return Window::RunApp();
-
+	Engine engine;
+    engine.RenderFrame();
+    const float ANGLE = 10;
+	node1->SetOrientation(glm::angleAxis(ANGLE, Vertex3(0, 0, 1)));
+	engine.RenderFrame();
+    CHECK_CONDITION(!material->IsBatched(), __FILE__, __LINE__);
+	return 0;
 }

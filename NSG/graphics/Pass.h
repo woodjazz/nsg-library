@@ -36,36 +36,8 @@ namespace pugi
 
 namespace NSG
 {
-    class Pass : UniformsUpdate
+    struct PassData
     {
-    public:
-        Pass(Technique* technique);
-        virtual ~Pass();
-        void SetBlendMode(BLEND_MODE mode);
-        void EnableColorBuffer(bool enable);
-        void EnableDepthBuffer(bool enable);
-        void EnableDepthTest(bool enable);
-        void EnableStencilTest(bool enable);
-        void SetDepthFunc(DepthFunc depthFunc);
-        void SetStencilMask(GLuint mask);
-        void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
-        void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
-        void SetDrawMode(DrawMode mode);
-        DrawMode GetDrawMode() const { return drawMode_; }
-        void EnableCullFace(bool enable);
-        void SetCullFace(CullFaceMode mode);
-        void SetFrontFace(FrontFaceMode mode);
-		PProgram GetProgram() const { return pProgram_; }
-        virtual void Draw();
-        void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node, Material* material);
-        PPass Clone(Material* material) const;
-		bool IsTransparent() const;
-		bool IsText() const;
-		void SetupPass();
-        void Invalidate();
-    private:
-        Technique* technique_;
         PProgram pProgram_;
         BLEND_MODE blendMode_;
         bool enableDepthTest_;
@@ -84,5 +56,39 @@ namespace NSG
         CullFaceMode cullFaceMode_;
         FrontFaceMode frontFaceMode_;
         DepthFunc depthFunc_;
+        PassData();
+    };
+
+    class Pass : UniformsUpdate
+    {
+    public:
+        Pass(Technique* technique);
+        virtual ~Pass();
+        void SetBlendMode(BLEND_MODE mode);
+        void EnableColorBuffer(bool enable);
+        void EnableDepthBuffer(bool enable);
+        void EnableDepthTest(bool enable);
+        void EnableStencilTest(bool enable);
+        void SetDepthFunc(DepthFunc depthFunc);
+        void SetStencilMask(GLuint mask);
+        void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
+        void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
+        void SetDrawMode(DrawMode mode);
+		DrawMode GetDrawMode() const { return data_.drawMode_; }
+        void EnableCullFace(bool enable);
+        void SetCullFace(CullFaceMode mode);
+        void SetFrontFace(FrontFaceMode mode);
+		PProgram GetProgram() const { return data_.pProgram_; }
+        virtual void Draw();
+        void Save(pugi::xml_node& node);
+        void Load(const pugi::xml_node& node, Material* material);
+        PPass Clone(Material* material) const;
+		bool IsTransparent() const;
+		bool IsText() const;
+        void Invalidate();
+        const PassData& GetData() const { return data_; }
+    private:
+        Technique* technique_;
+        PassData data_;
     };
 }

@@ -119,9 +119,9 @@ namespace NSG
         }
         else
         {
-            TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
-            TRACE_LOG("Error description: " << result.description());
-            TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
+			TRACE_PRINTF("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
+			TRACE_PRINTF("Error description: %s", result.description());
+			TRACE_PRINTF("Error offset: %d", result.offset);
             CHECK_ASSERT(false, __FILE__, __LINE__);
         }
     }

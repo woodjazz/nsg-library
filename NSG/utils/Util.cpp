@@ -35,12 +35,14 @@ misrepresented as being the original software.
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstdio>
 #include <thread>
 #ifndef WIN32
 #include <unistd.h>
 #include <cerrno>
 #else
-#include "windows.h"
+#include <Windows.h>
+#define snprintf _snprintf
 #endif
 #if EMSCRIPTEN
 #include "emscripten.h"
@@ -116,161 +118,108 @@ namespace NSG
         return false;
     }
 
-    std::istream& operator >> (std::istream& s, Vertex2& obj)
-    {
-        char ch(0);
-        s >> ch;
-        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
-        s >> obj.x;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.y;
-        s >> ch;
-        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
-
-        return s;
-    }
-
-    std::istream& operator >> (std::istream& s, Vertex3& obj)
-    {
-        char ch(0);
-        s >> ch;
-        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
-        s >> obj.x;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.y;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.z;
-        s >> ch;
-        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
-
-        return s;
-    }
-
-    std::istream& operator >> (std::istream& s, Vertex4& obj)
-    {
-        char ch(0);
-        s >> ch;
-        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
-        s >> obj.x;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.y;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.z;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.w;
-        s >> ch;
-        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
-
-        return s;
-    }
-
     Vertex2 GetVertex2(const std::string& buffer)
     {
-        std::stringstream ss;
-        ss << buffer;
         Vertex2 obj;
-        ss >> obj;
+        sscanf(buffer.c_str(), "[%f,%f]", &obj.x, &obj.y);
         return obj;
     }
 
-
     Vertex3 GetVertex3(const std::string& buffer)
     {
-        std::stringstream ss;
-        ss << buffer;
         Vertex3 obj;
-        ss >> obj;
+        sscanf(buffer.c_str(), "[%f,%f,%f]", &obj.x, &obj.y, &obj.z);
         return obj;
     }
 
     Vertex4 GetVertex4(const std::string& buffer)
     {
-        std::stringstream ss;
-        ss << buffer;
         Vertex4 obj;
-        ss >> obj;
+        sscanf(buffer.c_str(), "[%f,%f,%f,%f]", &obj.x, &obj.y, &obj.z, &obj.w);
+        return obj;
+    }
+
+    Quaternion GetQuaternion(const std::string& buffer)
+    {
+        Quaternion obj;
+        sscanf(buffer.c_str(), "[%f,%f,%f,%f]", &obj.w, &obj.x, &obj.y, &obj.z);
         return obj;
     }
 
     Matrix4 GetMatrix4(const std::string& buffer)
     {
-        std::stringstream ss;
-        ss << buffer;
-        Matrix4 obj;
-        ss >> obj;
-        return obj;
+        const int MaxBuffer = 100;
+        char buffer0[MaxBuffer];
+        char buffer1[MaxBuffer];
+        char buffer2[MaxBuffer];
+        char buffer3[MaxBuffer];
+        sscanf(buffer.c_str(), "[ %s %s %s %s ]", buffer0, buffer1, buffer2, buffer3);
+		return Matrix4(GetVertex4(buffer0), GetVertex4(buffer1), GetVertex4(buffer2), GetVertex4(buffer3));
+    }
+
+           std::string ToString(const Vertex2& obj)
+    {
+        using namespace std;
+        const int MaxBuffer = 100;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "[%f,%f]", obj.x, obj.y);
+        return buffer;
+    }
+
+    std::string ToString(const Vertex3& obj)
+    {
+        using namespace std;
+        const int MaxBuffer = 100;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "[%f,%f,%f]", obj.x, obj.y, obj.z);
+        return buffer;
+    }
+
+    std::string ToString(const Vertex4& obj)
+    {
+        using namespace std;
+        const int MaxBuffer = 100;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "[%f,%f,%f,%f]", obj.x, obj.y, obj.z, obj.w);
+        return buffer;
+    }
+
+    std::string ToString(const Quaternion& obj)
+    {
+        using namespace std;
+        const int MaxBuffer = 100;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "[%f,%f,%f,%f]", obj.w, obj.x, obj.y, obj.z);
+        return buffer;
     }
 
     std::string ToString(const Matrix4& m)
     {
-        std::stringstream ss;
-        ss << '[';
-        ss << glm::column(m, 0);
-        ss << glm::column(m, 1);
-        ss << glm::column(m, 2);
-        ss << glm::column(m, 3);
-        ss << ']';
-
-        return ss.str();
+        using namespace std;
+        const int MaxBuffer = 400;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "[ %s %s %s %s ]", ToString(glm::column(m, 0)).c_str(), ToString(glm::column(m, 1)).c_str(), ToString(glm::column(m, 2)).c_str(), ToString(glm::column(m, 3)).c_str());
+        return buffer;
     }
 
-    std::istream& operator >> (std::istream& s, Matrix4& obj)
+    std::string ToString(int obj)
     {
-        char ch(0);
-        s >> ch;
-        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
-        Vector4 col0;
-        s >> col0;
-        Vector4 col1;
-        s >> col1;
-        Vector4 col2;
-        s >> col2;
-        Vector4 col3;
-        s >> col3;
-        s >> ch;
-        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
-
-        obj = Matrix4(col0, col1, col2, col3);
-
-        return s;
+        using namespace std;
+        const int MaxBuffer = 50;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "%d", obj);
+        return buffer;
     }
 
+	std::string ToString(size_t obj)
+	{
+		using namespace std;
+		const int MaxBuffer = 50;
+		char buffer[MaxBuffer];
+		snprintf(buffer, MaxBuffer, "%lu", obj);
+		return buffer;
+	}
 
-    std::istream& operator >> (std::istream& s, Quaternion& obj)
-    {
-        char ch(0);
-        s >> ch;
-        CHECK_ASSERT(ch == '[', __FILE__, __LINE__);
-        s >> obj.w;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.x;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.y;
-        s >> ch;
-        CHECK_ASSERT(ch == ',', __FILE__, __LINE__);
-        s >> obj.z;
-        s >> ch;
-        CHECK_ASSERT(ch == ']', __FILE__, __LINE__);
-
-        return s;
-    }
-
-    Quaternion GetQuaternion(const std::string& buffer)
-    {
-        std::stringstream ss;
-        ss << buffer;
-        Quaternion obj;
-        ss >> obj;
-        return obj;
-    }
 
     bool SetCurrentDir(const std::string& path)
     {
@@ -278,9 +227,9 @@ namespace NSG
         {
             #ifdef WIN32
             {
-                if (SetCurrentDirectory(path.c_str()) == FALSE)
+                if (::SetCurrentDirectory(path.c_str()) == FALSE)
                 {
-                    TRACE_LOG("Failed to change directory to " << path << " with error = " << GetLastError());
+					TRACE_PRINTF("Failed to change directory to %s with error = %d", path.c_str(), GetLastError());
                     return false;
                 }
             }
@@ -288,7 +237,7 @@ namespace NSG
             {
                 if (chdir(path.c_str()) != 0)
                 {
-                    TRACE_LOG("Failed to change directory to " << path << " with error = " << errno);
+                    TRACE_PRINTF("Failed to change directory to %s with error = %d", path.c_str(), errno);
                     return false;
                 }
             }
@@ -300,11 +249,10 @@ namespace NSG
     std::string GetUniqueName(const std::string& name)
     {
         static int counter = 0;
-        std::stringstream ss;
-        if (name.empty())
-            ss << "GeneratedName";
-        ss << counter++;
-        return name + ss.str();
+        const int MaxBuffer = 100;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "Gen%d", counter++);
+        return buffer;
     }
 
     void GetPowerOfTwoValues(int& width, int& height)
@@ -356,12 +304,7 @@ namespace NSG
     static size_t HeaderSize = 128;
     std::string CompressBuffer(const std::string& buf)
     {
-        std::string buffer;
-        {
-            std::stringstream ss;
-            ss << buf.size() << " ";
-            buffer = ss.str();
-        }
+		std::string buffer = ToString(buf.size()) + " ";
         buffer.resize(HeaderSize);
         buffer += buf;
         std::string compressBuffer;
@@ -376,16 +319,12 @@ namespace NSG
 
     std::string DecompressBuffer(const std::string& buffer)
     {
-        std::string::size_type bytes = 0;
         std::string smallBuffer;
         smallBuffer.resize(HeaderSize);
         CHECK_ASSERT(buffer.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
         CHECK_ASSERT(smallBuffer.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
         LZ4_decompress_safe_partial(&buffer[0], &smallBuffer[0], (int)buffer.size(), (int)smallBuffer.size(), (int)smallBuffer.size());
-        {
-            std::stringstream ss(smallBuffer);
-            ss >> bytes;
-        }
+        std::string::size_type bytes = ToInt(smallBuffer);
         bytes += smallBuffer.size();
         std::string outputBuffer;
         outputBuffer.resize(bytes);
@@ -403,7 +342,7 @@ namespace NSG
         {
             Path filename(path);
             filename.AddExtension("lz4");
-            TRACE_LOG("Saving file: " << filename.GetFullAbsoluteFilePath());
+			TRACE_PRINTF("Saving file: %s", filename.GetFullAbsoluteFilePath().c_str());
             struct XMLWriter : pugi::xml_writer
             {
                 std::string buffer_;

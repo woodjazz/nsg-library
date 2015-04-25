@@ -67,9 +67,8 @@ int NSG_MAIN(int argc, char* argv[])
 	CreateObject(Mesh::Create<RectangleMesh>(), Color(1, 0, 1, 1), Vector3(20, 0, 0));
 	CreateObject(Mesh::Create<RoundedRectangleMesh>(), Color(1, 1, 1, 1), Vector3(30, 0, 0));
 	CreateObject(Mesh::Create<SphereMesh>(), Color(0, 1, 1, 1), Vector3(40, 0, 0));
-	
 	control->AutoZoom();
-	auto renderSlot = window->signalRender_->Connect([&]() { scene->Render();});
-    return Window::RunApp();
+	return Engine().Run();
+
 }
 

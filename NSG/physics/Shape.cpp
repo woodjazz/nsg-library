@@ -226,11 +226,7 @@ namespace NSG
         pugi::xml_node child = node.append_child("Shape");
         child.append_attribute("type").set_value((int)type_);
         child.append_attribute("margin").set_value(margin_);
-        {
-            std::stringstream ss;
-            ss << scale_;
-            child.append_attribute("scale") = ss.str().c_str();
-        }
+		child.append_attribute("scale").set_value(ToString(scale_).c_str());
     }
 }
 

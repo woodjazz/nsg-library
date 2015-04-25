@@ -86,7 +86,8 @@ int NSG_MAIN(int argc, char* argv[])
 
 	control->AutoZoom();
 
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
+	Engine engine;
+    auto updateSlot = engine.signalUpdate_->Connect([&](float deltaTime)
     {
         static float x_angle(0);
         static float y_angle(0);
@@ -99,10 +100,5 @@ int NSG_MAIN(int argc, char* argv[])
         y_angle += glm::pi<float>() / 10.0f * deltaTime;
     });
 
-	auto renderSlot = window->signalRender_->Connect([&]()
-	{
-		scene->Render();
-	});
-
-    return Window::RunApp();
+    return engine.Run();
 };

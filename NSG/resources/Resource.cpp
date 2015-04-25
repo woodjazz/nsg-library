@@ -100,9 +100,10 @@ namespace NSG
         if (texture)
         {
 			Image image(shared_from_this());
+			CHECK_CONDITION(image.IsReady(), __FILE__, __LINE__);
 			if (!image.SaveAsPNG(outputDir))
             {
-                TRACE_LOG("!!! Cannot save file: " << name_ << " in " << outputDir.GetPath());
+                TRACE_PRINTF("!!! Cannot save file: %s in %s", name_.c_str(), outputDir.GetPath().c_str());
             }
             else
             {
@@ -115,7 +116,7 @@ namespace NSG
             if (os.is_open())
                 os.write(&buffer_[0], buffer_.size());
             else
-                TRACE_LOG("!!! Cannot save file: " << newPath.GetFilePath());
+				TRACE_PRINTF("!!! Cannot save file: %s", newPath.GetFilePath().c_str());
         }
 
         {

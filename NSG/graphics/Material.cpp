@@ -135,11 +135,11 @@ namespace NSG
         }
     }
 
-	void Material::SetUVTransform(const Vector4& uvTransform)
+    void Material::SetUVTransform(const Vector4& uvTransform)
     {
-		if (uvTransform != uvTransform_)
+        if (uvTransform != uvTransform_)
         {
-			uvTransform_ = uvTransform;
+            uvTransform_ = uvTransform;
             SetUniformsNeedUpdate();
         }
     }
@@ -292,6 +292,7 @@ namespace NSG
                 texture_[index]->Invalidate();
     }
 
+    static const char* TEXTURE_NAME = "Texture";
     void Material::Save(pugi::xml_node& node)
     {
         if (!serializable_)
@@ -305,43 +306,18 @@ namespace NSG
         {
             if (texture_[index] && texture_[index]->IsSerializable())
             {
-                std::stringstream ss;
-                ss << "Texture" << index;
-                pugi::xml_node childTexture = child.append_child(ss.str().c_str());
+				std::string s(TEXTURE_NAME);
+				s += ToString(index);
+                pugi::xml_node childTexture = child.append_child(s.c_str());
                 texture_[index]->Save(childTexture);
             }
         }
 
-        {
-            std::stringstream ss;
-            ss << ambient_;
-            child.append_attribute("ambient") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << diffuse_;
-            child.append_attribute("diffuse") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << specular_;
-            child.append_attribute("specular") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << shininess_;
-            child.append_attribute("shininess") = ss.str().c_str();
-        }
-
-        {
-            std::stringstream ss;
-            ss << color_;
-            child.append_attribute("color") = ss.str().c_str();
-        }
-
+        child.append_attribute("ambient").set_value(ToString(ambient_).c_str());
+        child.append_attribute("diffuse").set_value(ToString(diffuse_).c_str());
+        child.append_attribute("specular").set_value(ToString(specular_).c_str());
+        child.append_attribute("shininess").set_value(shininess_);
+        child.append_attribute("color").set_value(ToString(color_).c_str());
         technique_->Save(child);
     }
 
@@ -352,9 +328,9 @@ namespace NSG
         for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
         {
             texture_[index] = nullptr;
-            std::stringstream ss;
-            ss << "Texture" << index;
-            pugi::xml_node childTexture = node.child(ss.str().c_str());
+			std::string s(TEXTURE_NAME);
+			s += ToString(index);
+            pugi::xml_node childTexture = node.child(s.c_str());
             if (childTexture)
                 texture_[index] = Texture::CreateFrom(resource, childTexture);
         }

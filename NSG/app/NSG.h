@@ -91,5 +91,6 @@ misrepresented as being the original software.
 #include "Button.h"
 #include "FrameBuffer.h"
 #include "HTTPRequest.h"
-
+#include "Engine.h"
+#include "Image.h"
 

@@ -24,6 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#if 0
+#if defined(_WIN32) && !defined(__SYMBIAN32__) // Windows specific
+// Disable WIN32_LEAN_AND_MEAN.
+// This makes windows.h always include winsock2.h
+#ifdef WIN32_LEAN_AND_MEAN
+#undef WIN32_LEAN_AND_MEAN
+#endif
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0400 // To make it link in VS2005
+#include <windows.h>
+#endif
+#endif
 
 #define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
@@ -347,6 +359,8 @@ namespace NSG
         LAST
     };
 
+	class Engine;
+
     typedef Signal<int, int> SignalViewChanged;
     typedef Signal<float, float> SignalMouseMoved;
     typedef Signal<int, float, float> SignalMouseDown;
@@ -375,7 +389,7 @@ namespace NSG
     typedef Signal<std::string> SignalHTTPRequestOnLoad;
     typedef Signal<int, std::string> SignalHTTPRequestOnError;
     typedef Signal<unsigned> SignalHTTPRequestOnProgress;
-
+    typedef Signal<Engine*> SignalEngine;
 
     enum MaterialTexture
     {

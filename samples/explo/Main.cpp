@@ -2,18 +2,14 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-
 Copyright (c) 2014-2015 Néstor Silveira Gorski
-
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
-
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
-
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
@@ -29,6 +25,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
+	Engine engine;
     auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/explo1.png");
     auto scene = std::make_shared<Scene>();
@@ -51,7 +48,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto totalTime = 0.f;
     auto fps = 1 / 24.f;
     Color color(1);
-    auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
+    auto slotUpdate = engine.signalUpdate_->Connect([&](float deltaTime)
     {
         if (totalTime > fps)
         {
@@ -76,10 +73,5 @@ int NSG_MAIN(int argc, char* argv[])
             totalTime += deltaTime;
     });
 
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-    });
-
-    return Window::RunApp();
+	return engine.Run();
 }

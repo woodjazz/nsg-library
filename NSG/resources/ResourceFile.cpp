@@ -55,11 +55,11 @@ namespace NSG
                 buffer_.resize((int)filelength);
 				SDL_RWread(context, &buffer_[0], buffer_.size(), 1);
                 SDL_RWclose(context);
-                TRACE_LOG(name_ << " has been loaded with size=" << buffer_.size());
+				TRACE_PRINTF("%s has been loaded with size=%u", name_.c_str(), buffer_.size());
             }
             else
             {
-                TRACE_LOG("Cannot load " << name_ << " with error " << SDL_GetError());
+				TRACE_PRINTF("Cannot load %s with error %s", name_.c_str(), SDL_GetError());
             }
         }
         #else

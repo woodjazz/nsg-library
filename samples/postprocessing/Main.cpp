@@ -68,7 +68,8 @@ int NSG_MAIN(int argc, char* argv[])
 	sphereNode->SetMesh(Mesh::Create<SphereMesh>());
     sphereNode->SetMaterial(materialSphere);
 
-	auto slotUpdate = window->signalUpdate_->Connect([&](float deltaTime)
+	Engine engine;
+	auto slotUpdate = engine.signalUpdate_->Connect([&](float deltaTime)
 	{
 		static float y_angle = 0;
 		y_angle += glm::pi<float>() / 10.0f * deltaTime;
@@ -84,10 +85,5 @@ int NSG_MAIN(int argc, char* argv[])
 		blurFilter->GetMaterial()->SetFilterBlur(dataBlur);
 	});
 
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-    });
-
-    return Window::RunApp();
+    return engine.Run();
 };

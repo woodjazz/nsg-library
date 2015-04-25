@@ -1,1 +1,1 @@
-setup_tool()
+setup_app_tool()

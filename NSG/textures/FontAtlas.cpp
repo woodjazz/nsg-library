@@ -90,15 +90,14 @@ namespace NSG
 
     void FontAtlas::ParseXML()
     {
-        TRACE_LOG("FontAtlas::Parsing: " << xmlResource_->GetName());
-
+		TRACE_PRINTF("FontAtlas::Parsing: %s", xmlResource_->GetName().c_str());
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer((void*)xmlResource_->GetData(), xmlResource_->GetBytes());
         if (!result)
         {
-            TRACE_LOG("XML parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]");
-            TRACE_LOG("Error description: " << result.description());
-            TRACE_LOG("Error offset: " << result.offset << " (error at [..." << (result.offset) << "]");
+			TRACE_PRINTF("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
+			TRACE_PRINTF("Error description: %s", result.description());
+			TRACE_PRINTF("Error offset: %d", result.offset);
             CHECK_ASSERT(false, __FILE__, __LINE__);
         }
         else
@@ -112,19 +111,13 @@ namespace NSG
                 charInfo.width = node.attribute("width").as_int();
 
                 {
-                    std::stringstream ss;
-                    ss << node.attribute("offset").value();
-                    ss >> charInfo.offset.x;
-                    ss >> charInfo.offset.y;
+                    std::string s = node.attribute("offset").value();
+					std::sscanf(s.c_str(), "%f %f", &charInfo.offset.x, &charInfo.offset.y);
                 }
 
                 {
-                    std::stringstream ss;
-                    ss << node.attribute("rect").value();
-                    ss >> charInfo.rect.x;
-                    ss >> charInfo.rect.y;
-                    ss >> charInfo.rect.z;
-                    ss >> charInfo.rect.w;
+                    std::string s = node.attribute("rect").value();
+					std::sscanf(s.c_str(), "%f %f %f %f", &charInfo.rect.x, &charInfo.rect.y, &charInfo.rect.z, &charInfo.rect.w);
                 }
 
                 const char* code = node.attribute("code").value();
@@ -134,7 +127,7 @@ namespace NSG
                 node = node.next_sibling("Char");
             }
 
-            TRACE_LOG("FontAtlas::Parsing done.");
+			TRACE_PRINTF("FontAtlas::Parsing done.");
         }
     }
 

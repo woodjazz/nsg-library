@@ -31,7 +31,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    // Keeps OpenGL's status
+    // Keeps OpenGL's context
     class Graphics : public Singleton<Graphics>
     {
     public:
@@ -116,8 +116,10 @@ namespace NSG
         void EndFrameRender();
 		void UnboundTextures();
         void SetViewportFactor(const Vector4& viewportFactor);
-        SignalEmpty::PSignal signalBeginFrame_;
+        int GetMaxTextureSize() const { return maxTextureSize_; }
+        bool NeedsDecompress(TextureFormat format) const;
     private:
+        void SetupPass(Pass* pass);
         void SetUpViewport();
         Recti viewport_;
         GLint systemFbo_;
@@ -175,5 +177,6 @@ namespace NSG
         GLint maxVertexAttribs_;
         DepthFunc depthFunc_;
         Vector4 viewportFactor_;
+        int maxTextureSize_;
     };
 }

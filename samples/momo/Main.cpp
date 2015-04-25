@@ -33,26 +33,13 @@ int NSG_MAIN(int argc, char* argv[])
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo.xml.lz4");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
-
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");
 	auto control = std::make_shared<CameraControl>(camera);
-    
     {
         auto object = scene->GetChild<SceneNode>("Bone.main", true);
         auto animations = scene->GetAnimationsFor(object);
         auto animation = animations[0];
         animation->Play(true);
     }
-
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
-    {
-        scene->Update(deltaTime);
-    });
-
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-    });
-
-    return Window::RunApp();
+	return Engine().Run();
 }

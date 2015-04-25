@@ -85,17 +85,6 @@ int NSG_MAIN(int argc, char* argv[])
 
     scene->PlayAnimation(animation, false);
 
-    auto updateSlot = window->signalUpdate_->Connect([&](float deltaTime)
-    {
-        scene->Update(deltaTime);
-    });
-
-    auto renderSlot = window->signalRender_->Connect([&]()
-    {
-        scene->Render();
-    });
-
-
-    return Window::RunApp();
+	return Engine().Run();
 }
 

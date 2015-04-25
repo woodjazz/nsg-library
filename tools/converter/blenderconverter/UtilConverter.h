@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Blender.h"
 #include <string>
 
 #define B_IDNAME(x) ((x) && (x)->id.name[0] != '0' ? (x)->id.name + 2 : "")

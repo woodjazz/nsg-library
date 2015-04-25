@@ -31,6 +31,11 @@ misrepresented as being the original software.
 #include "emscripten.h"
 #endif
 
+#if defined(_WIN32)
+#include <winsock.h>
+#endif
+
+
 namespace NSG
 {
     struct InitializeComms
@@ -145,10 +150,9 @@ namespace NSG
 
         #if EMSCRIPTEN
         {
-            std::stringstream url;
-            url << protocol_ << "://" << host_ << ":" << port_ << path_;
+            std::string url = protocol_ + "://" + host_ + ":" + ToString(port_) + path_;
             requestHandle_ = emscripten_async_wget2_data(
-                                 url.str().c_str(),
+                                 url.c_str(),
                                  post ? "POST" : "GET",
                                  requestData->postData_.c_str(),
                                  requestData,
@@ -167,12 +171,10 @@ namespace NSG
                 if (post)
                 {
                     requestType = "POST";
-                    std::stringstream ss;
-                    ss << "content-type:application/x-www-form-urlencoded;\r\n";
-                    ss << "Content-Length: " <<  requestData->postData_.size() << "\r\n";
-                    ss << "\r\n";
-                    ss << requestData->postData_;
-                    headersStr = ss.str();
+					headersStr = "content-type:application/x-www-form-urlencoded;\r\n";
+					headersStr += "Content-Length: " + ToString(requestData->postData_.size()) + "\r\n";
+					headersStr += "\r\n";
+					headersStr += requestData->postData_;
                 }
                 else
                 {

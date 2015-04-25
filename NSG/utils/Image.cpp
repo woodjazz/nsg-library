@@ -81,7 +81,7 @@ namespace NSG
 
     bool Image::IsValid()
     {
-        if (resource_->IsReady())
+        if (Graphics::this_ && resource_->IsReady())
         {
             auto dataSize = resource_->GetBytes();
             return dataSize > 4; // at least we have to read the type of image
@@ -89,32 +89,7 @@ namespace NSG
         return false;
     }
 
-    bool Image::NeedsDecompress() const
-    {
-        switch (format_)
-        {
-            case TextureFormat::DXT1:
-                return !Graphics::this_->HasTextureCompressionDXT1();
-            case TextureFormat::DXT3:
-                return !Graphics::this_->HasTextureCompressionDXT3();
-            case TextureFormat::DXT5:
-                return !Graphics::this_->HasTextureCompressionDXT5();
-            case TextureFormat::ETC1:
-                return !Graphics::this_->HasTextureCompressionETC();
-            case TextureFormat::PVRTC_RGB_2BPP:
-            case TextureFormat::PVRTC_RGBA_2BPP:
-            case TextureFormat::PVRTC_RGB_4BPP:
-            case TextureFormat::PVRTC_RGBA_4BPP:
-                return !Graphics::this_->HasTextureCompressionPVRTC();
-
-            default:
-                CHECK_CONDITION(!"Unknown DTX format!!!", __FILE__, __LINE__);
-                break;
-        }
-        return false;
-    }
-
-    void Image::AllocateResources()
+    void Image::ReadResource()
     {
         auto data = resource_->GetData();
         if (memcmp(&data[0], "DDS ", 4) == 0)
@@ -125,41 +100,57 @@ namespace NSG
             ReadPVR();
         else
             ReadGeneric();
+    }
 
-        if (compressed_ && NeedsDecompress())
+    void Image::Decompress()
+    {
+        CHECK_CONDITION(compressed_, __FILE__, __LINE__);
+        CHECK_CONDITION(depth_ == 1, __FILE__, __LINE__);
+        channels_ = 4;
+        imgDataSize_ = width_ * height_ * channels_;
+        unsigned char* newData = (unsigned char*)malloc(imgDataSize_);
+		TRACE_PRINTF("Decompressing %s", resource_->GetName().c_str());
+        switch (format_)
         {
-            CHECK_CONDITION(depth_ == 1, __FILE__, __LINE__);
-            channels_ = 4;
-            unsigned char* newData = (unsigned char*)malloc(width_ * height_ * channels_);
-            TRACE_LOG("Decompressing " << resource_->GetName());
-            switch (format_)
-            {
-                case TextureFormat::DXT1:
-                case TextureFormat::DXT3:
-                case TextureFormat::DXT5:
-                    DecompressImageDXT(newData, imgData_, width_, height_, depth_, format_);
-                    break;
-                case TextureFormat::ETC1:
-                    DecompressImageETC(newData, imgData_, width_, height_);
-                    break;
-                case TextureFormat::PVRTC_RGB_2BPP:
-                case TextureFormat::PVRTC_RGBA_2BPP:
-                case TextureFormat::PVRTC_RGB_4BPP:
-                case TextureFormat::PVRTC_RGBA_4BPP:
-                    DecompressImagePVRTC(newData, imgData_, width_, height_, format_);
-                    break;
-                default:
-                    CHECK_CONDITION(!"Cannot decompress unknown format!!!", __FILE__, __LINE__);
-                    break;
-            }
-            if (allocated_)
-                free((void*)imgData_);
-            imgData_ = newData;
-            allocated_ = true;
-            compressed_ = false;
-            numCompressedLevels_ = 0;
-            format_ = TextureFormat::RGBA;
+            case TextureFormat::DXT1:
+            case TextureFormat::DXT3:
+            case TextureFormat::DXT5:
+                DecompressImageDXT(newData, imgData_, width_, height_, depth_, format_);
+                break;
+            case TextureFormat::ETC1:
+                DecompressImageETC(newData, imgData_, width_, height_);
+                break;
+            case TextureFormat::PVRTC_RGB_2BPP:
+            case TextureFormat::PVRTC_RGBA_2BPP:
+            case TextureFormat::PVRTC_RGB_4BPP:
+            case TextureFormat::PVRTC_RGBA_4BPP:
+                DecompressImagePVRTC(newData, imgData_, width_, height_, format_);
+                break;
+            default:
+                CHECK_CONDITION(!"Cannot decompress unknown format!!!", __FILE__, __LINE__);
+                break;
         }
+        if (allocated_)
+            free((void*)imgData_);
+        imgData_ = newData;
+        allocated_ = true;
+        compressed_ = false;
+        numCompressedLevels_ = 0;
+        format_ = TextureFormat::RGBA;
+    }
+
+    void Image::AllocateResources()
+    {
+        ReadResource();
+
+        if (compressed_ && Graphics::this_->NeedsDecompress(format_))
+            Decompress();
+
+        if (!compressed_ && !Graphics::this_->IsTextureSizeCorrect(width_, height_))
+            Resize2PowerOf2();
+
+        if (Graphics::this_->GetMaxTextureSize() < width_ || Graphics::this_->GetMaxTextureSize() < height_)
+            Reduce(Graphics::this_->GetMaxTextureSize());
     }
 
     void Image::ReleaseResources()
@@ -180,7 +171,7 @@ namespace NSG
             imgData_ = jpgd::decompress_jpeg_image_from_memory(data, dataSize, &width_, &height_, &channels_, 4);
             if (!imgData_)
             {
-                TRACE_LOG("Resource=" << resource_->GetName() << " failed with reason: " << stbi_failure_reason());
+				TRACE_PRINTF("Resource=%s failed with reason:%s", resource_->GetName().c_str(), stbi_failure_reason());
                 CHECK_CONDITION(!"Failed to read generic image!!!", __FILE__, __LINE__);
             }
         }
@@ -721,7 +712,7 @@ namespace NSG
         return true;
     }
 
-    void Image::MakePowerOf2Size(const unsigned char*& imgData, int& width, int& height, int channels)
+    void Image::Resize2PowerOf2(const unsigned char*& imgData, int& width, int& height, int channels)
     {
         int new_width = width;
         int new_height = height;
@@ -735,28 +726,55 @@ namespace NSG
         height = new_height;
     }
 
-    void Image::MakePowerOf2Size()
+    void Image::Resize2PowerOf2()
     {
         CHECK_CONDITION(!compressed_ && "Resize not supported for compressed images!!!", __FILE__, __LINE__);
-        Image::MakePowerOf2Size(imgData_, width_, height_, channels_);
+        Image::Resize2PowerOf2(imgData_, width_, height_, channels_);
+		TRACE_PRINTF("Image %s has been resized to power of two", name_.c_str());
     }
 
-    int Image::SaveAsPNG(const Path& outputDir)
+    void Image::Reduce(int size)
     {
-        CHECK_CONDITION_ARGS(IsReady() && "Resource must be ready at this point!!!", resource_->GetName(), __FILE__, __LINE__);
-        CHECK_ASSERT(!compressed_ && "Save for compressed image is not supported!!!", __FILE__, __LINE__);
+        CHECK_CONDITION(!compressed_ && "Reduce not supported for compressed images!!!", __FILE__, __LINE__);
 
+        if (!IsPowerOfTwo(width_) || !IsPowerOfTwo(height_))
+            Resize2PowerOf2();
+
+        int reduceBlockX = 1;
+        int reduceBlockY = 1;
+        if (width_ > size)
+            reduceBlockX = width_ / size;
+        if (height_ > size)
+            reduceBlockY = height_ / size;
+        if (reduceBlockX > 1 || reduceBlockY > 1)
+        {
+            auto newWidth = width_ / reduceBlockX;
+            auto newHeight = height_ / reduceBlockY;
+            unsigned char* newImgData = (unsigned char*)malloc( channels_ * newWidth * newHeight);
+            mipmap_image(imgData_, width_, height_, channels_, newImgData, reduceBlockX, reduceBlockY);
+            free((void*)imgData_);
+            width_ = newWidth;
+            height_ = newHeight;
+            imgData_ = newImgData;
+            TRACE_PRINTF("Image %s has been reduced to %d", name_.c_str(), size);
+        }
+    }
+
+    bool Image::SaveAsPNG(const Path& outputDir)
+    {
+        CHECK_CONDITION_ARGS(imgData_ != nullptr && "Resource must be ready at this point!!!", resource_->GetName(), __FILE__, __LINE__);
+        CHECK_ASSERT(!compressed_ && "Save for compressed image is not supported!!!", __FILE__, __LINE__);
         Path oPath;
         oPath.SetPath(outputDir.GetPath());
         oPath.SetName(Path(resource_->GetName()).GetName());
         oPath.SetExtension("png");
-
         int result = stbi_write_png(oPath.GetFullAbsoluteFilePath().c_str(), width_, height_, channels_, imgData_, 0);
         if (!result)
         {
-            TRACE_LOG("Error " << std::strerror(errno) << " writting file " << oPath.GetFilePath());
+			TRACE_PRINTF("Error %s writting file %s", std::strerror(errno), oPath.GetFilePath().c_str());
+            return false;
         }
-        return result;
+        return true;
     }
 
 }
