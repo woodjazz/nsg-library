@@ -81,7 +81,7 @@ int NSG_MAIN(int argc, char* argv[])
     music->Play();
 
 	Engine engine;
-    auto slotUpdate = engine.SignalUpdate()->Connect([&](float deltaTime)
+    auto slotUpdate = engine.SigUpdate()->Connect([&](float deltaTime)
     {
         {
             static float delta1 = 0;

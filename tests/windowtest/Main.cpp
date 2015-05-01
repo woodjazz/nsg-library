@@ -44,7 +44,7 @@ static void Test1()
 	window2 = nullptr;
 
 	Engine engine;
-    auto updateSlot = engine.SignalUpdate()->Connect([&](float deltaTime)
+    auto updateSlot = engine.SigUpdate()->Connect([&](float deltaTime)
     {
     	static float totalTime = 0;
     	totalTime += deltaTime;

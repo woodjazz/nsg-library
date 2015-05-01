@@ -80,7 +80,7 @@ int NSG_MAIN(int argc, char* argv[])
     float alphaAdd = 0.1f;
 
 	Engine engine;
-	auto updateSlot = engine.SignalUpdate()->Connect([&](float dt)
+	auto updateSlot = engine.SigUpdate()->Connect([&](float dt)
     {
         if (!playerDestroyed)
         {

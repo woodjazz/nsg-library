@@ -69,7 +69,7 @@ int NSG_MAIN(int argc, char* argv[])
     sphereNode->SetMaterial(materialSphere);
 
 	Engine engine;
-	auto slotUpdate = engine.SignalUpdate()->Connect([&](float deltaTime)
+	auto slotUpdate = engine.SigUpdate()->Connect([&](float deltaTime)
 	{
 		static float y_angle = 0;
 		y_angle += glm::pi<float>() / 10.0f * deltaTime;

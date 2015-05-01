@@ -87,7 +87,7 @@ int NSG_MAIN(int argc, char* argv[])
 	control->AutoZoom();
 
 	Engine engine;
-    auto updateSlot = engine.SignalUpdate()->Connect([&](float deltaTime)
+    auto updateSlot = engine.SigUpdate()->Connect([&](float deltaTime)
     {
         static float x_angle(0);
         static float y_angle(0);

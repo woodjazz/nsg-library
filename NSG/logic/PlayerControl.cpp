@@ -78,7 +78,7 @@ namespace NSG
 
             if (engine)
             {
-                slotUpdate_ = engine->SignalUpdate()->Connect([&](float deltaTime)
+                slotUpdate_ = engine->SigUpdate()->Connect([&](float deltaTime)
                 {
                     OnUpdate(deltaTime);
                 });

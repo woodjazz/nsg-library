@@ -45,7 +45,7 @@ namespace NSG
         : Tick(Engine::conf_.fps_),
           deltaTime_(0),
           signalBeginFrame_(new SignalEmpty),
-          signalUpdate_(new Signal<float>)
+          signalUpdate_(new SignalUpdate)
     {
         CHECK_ASSERT(!Engine::this_, __FILE__, __LINE__);
         Engine::this_ = this;

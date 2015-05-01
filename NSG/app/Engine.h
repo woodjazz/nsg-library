@@ -42,7 +42,7 @@ namespace NSG
         static Engine* GetPtr() { return Engine::this_; }
         static SignalEngine::PSignal SignalReady();
         SignalEmpty::PSignal SignalBeginFrame() { return signalBeginFrame_; }
-        SignalUpdate::PSignal SignalUpdate() { return signalUpdate_; }
+        SignalUpdate::PSignal SigUpdate() { return signalUpdate_; }
     private:
         void InitializeTicks() override;
         void BeginTicks() override;
