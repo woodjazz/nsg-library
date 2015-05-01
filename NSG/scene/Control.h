@@ -55,9 +55,9 @@ namespace NSG
 		void OnSceneSet() override;
 		bool pushed_;
 		bool mouseEntered_;
-		SignalNodeMouseDown::PSlot slotNodeMouseDown_;
-		SignalMouseUp::PSlot slotMouseUp_;
-		SignalMouseMoved::PSlot slotMouseMoved_;
+		SignalNodeMouseButton::PSlot slotNodeMouseDown_;
+		SignalMouseButton::PSlot slotMouseUp_;
+		SignalFloatFloat::PSlot slotMouseMoved_;
 		HorizontalAlignment hAlign_;
 		VerticalAlignment vAlign_;
 		float leftMargin_;

@@ -162,7 +162,7 @@ namespace NSG
         {
             if (window)
             {
-                slotMouseMoved_ = window->SignalMouseMoved()->Connect([&](float x, float y)
+                slotMouseMoved_ = window->SignalFloatFloat()->Connect([&](float x, float y)
                 {
                     if (signalMouseEnter_->HasSlots() || signalMouseLeave_->HasSlots())
                     {

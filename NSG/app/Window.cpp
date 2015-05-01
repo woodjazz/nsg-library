@@ -65,12 +65,12 @@ namespace NSG
           filtersEnabled_(true),
           scene_(nullptr),
           signalViewChanged_(new Signal<int, int>()),
-          signalMouseMoved_(new Signal<float, float>()),
+          SignalFloatFloat_(new Signal<float, float>()),
           signalMouseDown_(new Signal<int, float, float>()),
           signalMouseUp_(new Signal<int, float, float>()),
           signalMouseWheel_(new Signal<float, float>()),
           signalKey_(new Signal<int, int, int>()),
-          signalChar_(new Signal<unsigned int>()),
+          SignalUnsigned_(new Signal<unsigned int>()),
           signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
           signalDropFile_(new Signal<const std::string & >()),
 		  signalJoystickDown_(new SignalJoystickButton),
@@ -197,7 +197,7 @@ namespace NSG
 
     void Window::OnMouseMove(float x, float y)
     {
-        signalMouseMoved_->Run(x, y);
+        SignalFloatFloat_->Run(x, y);
     }
 
     void Window::OnMouseDown(int button, float x, float y)
@@ -227,7 +227,7 @@ namespace NSG
 
     void Window::OnChar(unsigned int character)
     {
-        signalChar_->Run(character);
+        SignalUnsigned_->Run(character);
     }
 
     void Window::OnJoystickDown(int joystickID, unsigned button)

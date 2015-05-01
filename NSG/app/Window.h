@@ -88,12 +88,12 @@ namespace NSG
         static void HandleEvents();
         static SignalWindow::PSignal SignalReady();
 		SignalSizeChanged::PSignal SignalSizeChanged() { return signalViewChanged_; }
-        SignalMouseMoved::PSignal SignalMouseMoved() { return signalMouseMoved_; }
-        SignalMouseDown::PSignal SignalMouseDown() { return signalMouseDown_; }
-        SignalMouseUp::PSignal SignalMouseUp() { return signalMouseUp_; }
-        SignalMouseWheel::PSignal SignalMouseWheel() { return signalMouseWheel_; }
+        SignalFloatFloat::PSignal SignalFloatFloat() { return SignalFloatFloat_; }
+        SignalMouseButton::PSignal SignalMouseDown() { return signalMouseDown_; }
+        SignalMouseButton::PSignal SignalMouseUp() { return signalMouseUp_; }
+        SignalFloatFloat::PSignal SignalMouseWheel() { return signalMouseWheel_; }
 		SignalKey::PSignal SignalKey() { return signalKey_; }
-		SignalChar::PSignal SignalChar() { return signalChar_; }
+		SignalUnsigned::PSignal SignalUnsigned() { return SignalUnsigned_; }
         SignalMultiGesture::PSignal SignalMultiGesture() { return signalMultiGesture_; }
         SignalDropFile::PSignal SignalDropFile() { return signalDropFile_; }
         SignalJoystickButton::PSignal SignalJoystickDown() { return signalJoystickDown_; }
@@ -120,12 +120,12 @@ namespace NSG
         PFrameBuffer frameBuffer_;
         PShowTexture showFrameBuffer_;
 		SignalSizeChanged::PSignal signalViewChanged_;
-        SignalMouseMoved::PSignal signalMouseMoved_;
-        SignalMouseDown::PSignal signalMouseDown_;
-        SignalMouseUp::PSignal signalMouseUp_;
-        SignalMouseWheel::PSignal signalMouseWheel_;
+        SignalFloatFloat::PSignal SignalFloatFloat_;
+        SignalMouseButton::PSignal signalMouseDown_;
+        SignalMouseButton::PSignal signalMouseUp_;
+        SignalFloatFloat::PSignal signalMouseWheel_;
         SignalKey::PSignal signalKey_;
-        SignalChar::PSignal signalChar_;
+        SignalUnsigned::PSignal SignalUnsigned_;
         SignalMultiGesture::PSignal signalMultiGesture_;
         SignalDropFile::PSignal signalDropFile_;
         SignalJoystickButton::PSignal signalJoystickDown_;

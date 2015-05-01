@@ -43,10 +43,10 @@ namespace NSG
 		void OnMouseUp(int button, float x, float y);
 		void OnMouseDown(int button, float x, float y);
 		void OnMousemoved(float x, float y);
-		SignalMouseMoved::PSlot slotMouseMoved_;
-		SignalMouseDown::PSlot slotMouseDown_;
-		SignalMouseUp::PSlot slotMouseUp_;
-		SignalMouseWheel::PSlot slotMouseWheel_;
+		SignalFloatFloat::PSlot slotMouseMoved_;
+		SignalMouseButton::PSlot slotMouseDown_;
+		SignalMouseButton::PSlot slotMouseUp_;
+		SignalFloatFloat::PSlot slotMouseWheel_;
 		SignalMultiGesture::PSlot slotMultiGesture_;
 		SignalKey::PSlot slotKey_;
 		SignalUpdate::PSlot slotUpdate_;

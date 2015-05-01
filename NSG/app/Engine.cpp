@@ -43,8 +43,8 @@ namespace NSG
 
     Engine::Engine()
         : Tick(Engine::conf_.fps_),
-          signalBeginFrame_(new SignalEmpty),
           deltaTime_(0),
+          signalBeginFrame_(new SignalEmpty),
           signalUpdate_(new Signal<float>)
     {
         CHECK_ASSERT(!Engine::this_, __FILE__, __LINE__);
