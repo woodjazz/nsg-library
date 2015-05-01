@@ -361,27 +361,27 @@ namespace NSG
 
 	class Engine;
 
-	typedef Signal<int, int> SignalSizeChanged;
-	typedef Signal<float, float> SignalFloatFloat;
-	typedef Signal<int, float, float> SignalMouseButton;
-    typedef Signal<int, int, int> SignalKey;
-    typedef Signal<unsigned int> SignalUnsigned;
-    typedef Signal<int, float, float, float, float, int> SignalMultiGesture;
-    typedef Signal<float> SignalUpdate;
-    typedef Signal<const ContactPoint&> SignalCollision;
-    typedef Signal<const std::string&> SignalDropFile;
-    typedef Signal<SceneNode*, float, float> SignalNodeMouseMoved;
-    typedef Signal<SceneNode*, int, float, float> SignalNodeMouseButton;
-    typedef Signal<SceneNode*, int, int, int> SignalNodeKey;
-    typedef Signal<SceneNode*, unsigned int> SignalNodeChar;
-    typedef Signal<int> SignalButtonMouse;
-    typedef Signal<> SignalEmpty;
-    typedef Signal<Window*> SignalWindow;
-    typedef Signal<int, unsigned> SignalJoystickButton;
-    typedef Signal<int, JoystickAxis, float> SignalJoystickAxisMotion;
-    typedef Signal<std::string> SignalHTTPRequestOnLoad;
-    typedef Signal<int, std::string> SignalHTTPRequestOnError;
-    typedef Signal<Engine*> SignalEngine;
+	struct SignalSizeChanged : Signal<int, int> {};
+	struct SignalFloatFloat : Signal<float, float> {};
+	struct SignalMouseButton : Signal<int, float, float> {};
+    struct SignalKey : Signal<int, int, int> {};
+    struct SignalUnsigned : Signal<unsigned int> {};
+    struct SignalMultiGesture : Signal<int, float, float, float, float, int> {};
+    struct SignalUpdate : Signal<float> {};
+    struct SignalCollision : Signal<const ContactPoint&> {};
+    struct SignalDropFile : Signal<const std::string&> {};
+    struct SignalNodeMouseMoved : Signal<SceneNode*, float, float> {};
+    struct SignalNodeMouseButton : Signal<SceneNode*, int, float, float> {};
+    struct SignalNodeKey : Signal<SceneNode*, int, int, int> {};
+    struct SignalNodeChar : Signal<SceneNode*, unsigned int> {};
+    struct SignalButtonMouse : Signal<int> {};
+    struct SignalEmpty : Signal<> {};
+    struct SignalWindow : Signal<Window*> {};
+    struct SignalJoystickButton : Signal<int, unsigned> {};
+    struct SignalJoystickAxisMotion : Signal<int, JoystickAxis, float> {};
+    struct SignalHTTPRequestOnLoad : Signal<std::string> {};
+    struct SignalHTTPRequestOnError : Signal<int, std::string> {};
+    struct SignalEngine : Signal<Engine*> {};
 
     enum MaterialTexture
     {
