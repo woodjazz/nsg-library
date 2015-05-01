@@ -75,11 +75,11 @@ namespace NSG
                 file.read(&buffer_[0], filelength);
                 CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
                 file.close();
-                TRACE_LOG(name_ << " has been loaded with size=" << buffer_.size());
+                TRACE_PRINTF("%s has been loaded with size=%d", name_.c_str(), buffer_.size());
             }
             else
             {
-                TRACE_LOG("Cannot load " << name_);
+                TRACE_PRINTF("Cannot load %s", name_.c_str());
             }
         }
         #endif

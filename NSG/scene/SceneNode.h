@@ -66,13 +66,13 @@ namespace NSG
 		void Draw();
 		void DrawWithChildren();
 		PRigidBody GetRigidBody() const { return rigidBody_; }
-		SignalCollision::PSignal signalCollision_;
+		SignalCollision::PSignal SignalCollision() { return signalCollision_; }
+		SignalEmpty::PSignal SignalMeshSet() { return signalMeshSet_; }
 		const SceneNodeFlags& GetFlags() const { return flags_; }
         void SetFlags(const SceneNodeFlags& flags);
         void EnableFlags(const SceneNodeFlags& flags);
         void DisableFlags(const SceneNodeFlags& flags);
 		bool AllowRayQuery() const { return flags_ & (int)SceneNodeFlag::ALLOW_RAY_QUERY; }
-		SignalEmpty::PSignal signalMeshSet_;
 	protected:
 		PMaterial material_;
 		PMesh mesh_;
@@ -85,5 +85,8 @@ namespace NSG
 		mutable bool worldBBNeedsUpdate_;
 		bool serializable_;
 		SceneNodeFlags flags_;
+		SignalEmpty::PSignal signalMeshSet_;
+		SignalCollision::PSignal signalCollision_;
+
 	};
 }

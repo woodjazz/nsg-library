@@ -26,14 +26,14 @@ namespace NSG
 {
     Scene::Scene(const std::string& name)
         : SceneNode(name),
-          signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
-          signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
-          signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
-          signalNodeMouseWheel_(new Signal<SceneNode *, float, float>()),
           ambient_(0.3f, 0.3f, 0.3f, 1),
           orthoCamera_(std::make_shared<Camera>("SceneOrthoCamera")),
           physicsWorld_(new PhysicsWorld),
-		  window_(nullptr)
+		  window_(nullptr),
+          signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
+          signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
+          signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
+          signalNodeMouseWheel_(new Signal<SceneNode *, float, float>())
     {
         orthoCamera_->EnableOrtho();
         orthoCamera_->SetNearClip(0.f);
@@ -50,7 +50,7 @@ namespace NSG
 				SetWindow(window);
 		}
 
-		slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window* window)
+		slotWindowCreated_ = Window::SignalReady()->Connect([this](Window* window)
 		{
 			if (!window_)
 				SetWindow(window);
@@ -72,7 +72,7 @@ namespace NSG
                 if(!window->GetScene())
                     window->SetScene(this);
 
-				slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
+				slotMouseMoved_ = window->SignalMouseMoved()->Connect([&](float x, float y)
 				{
 					if (signalNodeMouseMoved_->HasSlots())
 					{
@@ -82,7 +82,7 @@ namespace NSG
 					}
 				});
 
-				slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
+				slotMouseDown_ = window->SignalMouseDown()->Connect([&](int button, float x, float y)
 				{
 					if (signalNodeMouseDown_->HasSlots())
 					{
@@ -92,7 +92,7 @@ namespace NSG
 					}
 				});
 
-				slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
+				slotMouseUp_ = window->SignalMouseUp()->Connect([&](int button, float x, float y)
 				{
 					if (signalNodeMouseUp_->HasSlots())
 					{
@@ -102,7 +102,7 @@ namespace NSG
 					}
 				});
 
-				slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
+				slotMouseWheel_ = window->SignalMouseWheel()->Connect([&](float x, float y)
 				{
 					if (signalNodeMouseWheel_->HasSlots())
 					{

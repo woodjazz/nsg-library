@@ -45,11 +45,11 @@ namespace NSG
 		void SetBottomScreenMargin(float margin);
 		////////////////////////////////////////////////////////////////////////////////////
 		void SetWindow(Window* window);
-		SignalButtonMouse::PSignal signalPush_;
-		SignalButtonMouse::PSignal signalPop_;
-		SignalButtonMouse::PSignal signalClicked_;
-		SignalEmpty::PSignal signalMouseEnter_;
-		SignalEmpty::PSignal signalMouseLeave_;
+		SignalButtonMouse::PSignal SignalPush() { return signalPush_; }
+		SignalButtonMouse::PSignal SignalPop() { return signalPop_; }
+		SignalButtonMouse::PSignal SignalClicked() { return signalClicked_; }
+		SignalEmpty::PSignal SignalMouseEnter() { return signalMouseEnter_; }
+		SignalEmpty::PSignal SignalMouseLeave() { return signalMouseLeave_; }
 	private:
 		void Align();
 		void OnSceneSet() override;
@@ -65,6 +65,11 @@ namespace NSG
 		float topMargin_;
 		float bottomMargin_;
 		Window* window_;
+		SignalButtonMouse::PSignal signalPush_;
+		SignalButtonMouse::PSignal signalPop_;
+		SignalButtonMouse::PSignal signalClicked_;
+		SignalEmpty::PSignal signalMouseEnter_;
+		SignalEmpty::PSignal signalMouseLeave_;
 		SignalWindow::PSlot slotWindowCreated_;
 	};
 }

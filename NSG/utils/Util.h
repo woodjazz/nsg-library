@@ -42,8 +42,6 @@ namespace NSG
 
 	Vector3 Lerp(const Vector3& lhs, const Vector3& rhs, float t);
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
-	bool NSGCopyFile(const Path& source, const Path& target);
-    bool SetCurrentDir(const std::string& pathName);
 	inline unsigned NextPowerOfTwo(unsigned value)
 	{
 	    unsigned ret = 1;
@@ -64,14 +62,12 @@ namespace NSG
 	std::string ToString(const Matrix4& m);
 	std::string ToString(int obj);
 	std::string ToString(size_t obj);
-	
 	std::string GetUniqueName(const std::string& name = "");
 	void GetPowerOfTwoValues(int& width, int& height);
 	bool IsPowerOfTwo(int value);
 	bool IsZeroLength(const Vector3& obj);
 	GLushort Transform(GLubyte selected[4]);
 	Color Transform(GLushort id);
-	bool SaveDocument(const Path& path, const pugi::xml_document& doc, bool compress);
 	std::string CompressBuffer(const std::string& buf);
 	std::string DecompressBuffer(const std::string& buffer);
     int ToInt(const std::string& value);

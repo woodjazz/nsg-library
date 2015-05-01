@@ -542,7 +542,7 @@ namespace NSG
                 std::string log;
                 log.resize(logLength);
                 glGetShaderInfoLog(id, logLength, &logLength, &log[0]);
-				TRACE_PRINTF(log.c_str());
+				TRACE_PRINTF("%s", log.c_str());
             }
         }
         glDeleteShader(id);
@@ -555,8 +555,6 @@ namespace NSG
 
     void Program::ReduceShaderComplexity(GLenum type)
     {
-        //TRACE_LOG("!!!Shader does not compile. Type=" << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment"));
-
         if ((int)ProgramFlag::DISPLACEMENTMAP & flags_)
         {
 			TRACE_PRINTF("Reducing complexity: removing DISPLACEMENTMAP");
@@ -751,8 +749,8 @@ namespace NSG
                 log.resize(logLength);
                 glGetProgramInfoLog(id_, logLength, &logLength, &log[0]);
 				TRACE_PRINTF("Error in Program Creation: %s", log.c_str());
-                //TRACE_LOG("VS: " << pVShader_->GetSource());
-                //TRACE_LOG("FS: " << pFShader_->GetSource());
+                //TRACE_PRINTF("VS: %s", pVShader_->GetSource());
+                //TRACE_PRINTF("FS: %s" << pFShader_->GetSource());
             }
 			TRACE_PRINTF("Linking program for material %s HAS FAILED!!!", name_.c_str());
             return false;

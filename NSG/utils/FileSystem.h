@@ -25,33 +25,21 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Tick.h"
-#include "AppConfiguration.h"
-
+#include <string>
 namespace NSG
 {
-    class Engine : public Tick
+    struct FileSystem
     {
-    public:
-        Engine();
-        ~Engine();
-        int Run();
-        bool RenderFrame();
-        float GetDeltaTime() const { return deltaTime_; }
-        static const AppConfiguration& GetAppConfiguration() { return conf_; }
-        static Engine* GetPtr() { return Engine::this_; }
-        static SignalEngine::PSignal SignalReady();
-        SignalEmpty::PSignal SignalBeginFrame() { return signalBeginFrame_; }
-        SignalUpdate::PSignal SignalUpdate() { return signalUpdate_; }
-    private:
-        void InitializeTicks() override;
-        void BeginTicks() override;
-        void DoTick(float delta) override;
-        void EndTicks() override;
-        float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
-        SignalEmpty::PSignal signalBeginFrame_;
-        SignalUpdate::PSignal signalUpdate_;
-        static AppConfiguration conf_;
-        static Engine* this_;
+        /// Where the application can write personal files
+        static std::string GetPreferencesPath();
+        static std::string GetPreferencesPath(const std::string& org, const std::string& app);
+        static SignalEmpty::PSignal SignalReady();
+        static SignalEmpty::PSignal SignalSaved();
+        static void Initialize();
+        static bool Save();
+        static bool SetCurrentDir(const std::string& pathName);
+        // copy file
+        static bool Copy(const Path& source, const Path& target);
+        static bool SaveDocument(const Path& path, const pugi::xml_document& doc, bool compress);
     };
 }

@@ -62,7 +62,7 @@ namespace NSG
         if (mesh)
             SetShape(mesh->GetShape());
 
-        slotMeshSet_ = sceneNode->signalMeshSet_->Connect([this]()
+        slotMeshSet_ = sceneNode->SignalMeshSet()->Connect([this]()
         {
             auto node = sceneNode_.lock();
             auto mesh = node->GetMesh();
@@ -74,16 +74,16 @@ namespace NSG
 
         if (Engine::GetPtr())
         {
-			slotBeginFrame_ = Engine::GetPtr()->signalBeginFrame_->Connect([this]()
+			slotBeginFrame_ = Engine::GetPtr()->SignalBeginFrame()->Connect([this]()
             {
                 IsReady();
             });
         }
         else
         {
-			slotEngineCreated_ = Engine::signalCreated_->Connect([this](Engine * engine)
+			slotEngineCreated_ = Engine::SignalReady()->Connect([this](Engine * engine)
             {
-				slotBeginFrame_ = engine->signalBeginFrame_->Connect([this]()
+				slotBeginFrame_ = engine->SignalBeginFrame()->Connect([this]()
                 {
                     IsReady();
                 });
@@ -140,7 +140,7 @@ namespace NSG
             shape_->Invalidate();
         }
 
-        slotBeginFrame_ = Engine::GetPtr()->signalBeginFrame_->Connect([this]()
+        slotBeginFrame_ = Engine::GetPtr()->SignalBeginFrame()->Connect([this]()
         {
             IsReady();
         });
@@ -204,7 +204,7 @@ namespace NSG
                 UpdateShape();
             if (shape)
             {
-                slotReleased_ = shape->signalReleased_->Connect([this]()
+                slotReleased_ = shape->SignalReleased()->Connect([this]()
                 {
                     Invalidate();
                 });

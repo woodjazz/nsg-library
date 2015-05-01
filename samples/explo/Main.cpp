@@ -48,7 +48,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto totalTime = 0.f;
     auto fps = 1 / 24.f;
     Color color(1);
-    auto slotUpdate = engine.signalUpdate_->Connect([&](float deltaTime)
+    auto slotUpdate = engine.SignalUpdate()->Connect([&](float deltaTime)
     {
         if (totalTime > fps)
         {

@@ -32,9 +32,9 @@ misrepresented as being the original software.
 namespace NSG
 {
     PlayerControl::PlayerControl()
-        : signalMoved_(new SignalPlayerMoved()),
+        : signalMoved_(new SignalPlayerMoved),
           window_(nullptr),
-		  engine_(nullptr),
+          engine_(nullptr),
           leftHorizontalAxis_(0),
           leftVerticalAxis_(0),
           left_(false),
@@ -49,19 +49,19 @@ namespace NSG
                 SetWindow(window);
         }
 
-        slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window * window)
+        slotWindowCreated_ = Window::SignalReady()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
         });
 
-		SetEngine(Engine::GetPtr());
+        SetEngine(Engine::GetPtr());
 
-		slotEngineCreated_ = Engine::signalCreated_->Connect([this](Engine * engine)
-		{
-			if (!engine_)
-				SetEngine(engine);
-		});
+        slotEngineCreated_ = Engine::SignalReady()->Connect([this](Engine * engine)
+        {
+            if (!engine_)
+                SetEngine(engine);
+        });
 
     }
 
@@ -70,75 +70,75 @@ namespace NSG
 
     }
 
-	void PlayerControl::SetEngine(Engine* engine)
-	{
-		if (engine_ != engine)
-		{
-			engine_ = engine;
+    void PlayerControl::SetEngine(Engine* engine)
+    {
+        if (engine_ != engine)
+        {
+            engine_ = engine;
 
-			if (engine)
-			{
-				slotUpdate_ = engine->signalUpdate_->Connect([&](float deltaTime)
-				{
-					OnUpdate(deltaTime);
-				});
-			}
-		}
-		else
-		{
-			slotUpdate_ = nullptr;
-		}
-	}
+            if (engine)
+            {
+                slotUpdate_ = engine->SignalUpdate()->Connect([&](float deltaTime)
+                {
+                    OnUpdate(deltaTime);
+                });
+            }
+        }
+        else
+        {
+            slotUpdate_ = nullptr;
+        }
+    }
 
     void PlayerControl::SetWindow(Window* window)
     {
         if (window_ != window)
         {
-			window_ = window;
+            window_ = window;
 
             if (window)
             {
-                slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
+                slotMouseMoved_ = window->SignalMouseMoved()->Connect([&](float x, float y)
                 {
                     OnMousemoved(x, y);
                 });
 
-                slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
+                slotMouseDown_ = window->SignalMouseDown()->Connect([&](int button, float x, float y)
                 {
                     OnMouseDown(button, x, y);
                 });
 
-                slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
+                slotMouseUp_ = window->SignalMouseUp()->Connect([&](int button, float x, float y)
                 {
                     OnMouseUp(button, x, y);
                 });
 
-                slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
+                slotMouseWheel_ = window->SignalMouseWheel()->Connect([&](float x, float y)
                 {
                     OnMousewheel(x, y);
                 });
 
-                slotMultiGesture_ = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+                slotMultiGesture_ = window->SignalMultiGesture()->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
                 {
                     OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
                 });
 
-                slotKey_ = window->signalKey_->Connect([&](int key, int action, int modifier)
+                slotKey_ = window->SignalKey()->Connect([&](int key, int action, int modifier)
                 {
                     OnKey(key, action, modifier);
                 });
 
-                slotJoystickDown_ = window->signalJoystickDown_->Connect([&](int joystickID, unsigned button)
+                slotJoystickDown_ = window->SignalJoystickDown()->Connect([&](int joystickID, unsigned button)
                 {
 
                 });
 
-                slotJoystickUp_ = window->signalJoystickUp_->Connect([&](int joystickID, unsigned button)
+                slotJoystickUp_ = window->SignalJoystickUp()->Connect([&](int joystickID, unsigned button)
                 {
 
                 });
 
-                slotJoystickAxisMotion_ = window->signalJoystickAxisMotion_->Connect([&](int joystickID, JoystickAxis axis, float position)
+                slotJoystickAxisMotion_ = window->SignalJoystickAxisMotion()->Connect([&](int joystickID, JoystickAxis axis, float position)
                 {
                     switch (axis)
                     {

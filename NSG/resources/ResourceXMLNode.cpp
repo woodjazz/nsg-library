@@ -49,7 +49,7 @@ namespace NSG
             {
                 if (resource)
                 {
-                    slotReleased_ = resource->signalReleased_->Connect([this]()
+                    slotReleased_ = resource->SignalReleased()->Connect([this]()
                     {
                         Invalidate();
                     });

@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
-Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
+Copyright (c) 2014-2015 Néstor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -23,35 +23,46 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Types.h"
-#include "Tick.h"
-#include "AppConfiguration.h"
 
-namespace NSG
+#include "NSG.h"
+using namespace NSG;
+
+static int Test0()
 {
-    class Engine : public Tick
+    auto prefPath = FileSystem::GetPreferencesPath();
+    Path filePath;
+    filePath.SetPath(prefPath);
+    filePath.SetFileName("data.txt");
+    TRACE_PRINTF("%s\n", filePath.GetFullAbsoluteFilePath().c_str());
+    auto fsSlot = FileSystem::SignalReady()->Connect([&]()
     {
-    public:
-        Engine();
-        ~Engine();
-        int Run();
-        bool RenderFrame();
-        float GetDeltaTime() const { return deltaTime_; }
-        static const AppConfiguration& GetAppConfiguration() { return conf_; }
-        static Engine* GetPtr() { return Engine::this_; }
-        static SignalEngine::PSignal SignalReady();
-        SignalEmpty::PSignal SignalBeginFrame() { return signalBeginFrame_; }
-        SignalUpdate::PSignal SignalUpdate() { return signalUpdate_; }
-    private:
-        void InitializeTicks() override;
-        void BeginTicks() override;
-        void DoTick(float delta) override;
-        void EndTicks() override;
-        float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
-        SignalEmpty::PSignal signalBeginFrame_;
-        SignalUpdate::PSignal signalUpdate_;
-        static AppConfiguration conf_;
-        static Engine* this_;
-    };
+		int counter = 0;
+		{
+			std::ifstream ifs(filePath.GetFullAbsoluteFilePath().c_str());
+			if (ifs.is_open())
+				ifs >> counter;
+		}
+		TRACE_PRINTF("Counter = %d\n", counter);
+		{
+			std::ofstream ofs(filePath.GetFullAbsoluteFilePath().c_str(), std::ios::out);
+			ofs << counter + 1;
+		}
+		//FileSystem::Save();
+    });
+
+    bool saved = false;
+    auto saveSlot = FileSystem::SignalSaved()->Connect([&]()
+    {
+    	saved = true;
+    });
+    
+    Engine().Run();
+    CHECK_CONDITION(saved, __FILE__, __LINE__);
+    return 0;
+}
+
+int NSG_MAIN(int argc, char* argv[])
+{
+    Test0();
+    return 0;
 }

@@ -314,22 +314,18 @@ namespace NSG
         }
         #endif
 
-        Window::OnCreated();
+		Window::OnReady();
         Graphics::this_->SetWindow(this);
 
         #if !defined(EMSCRIPTEN)
         SDL_SetWindowData(SDL_GetWindowFromID(windowID_), InternalPointer, this);
         #endif
-
     }
 
     void SDLWindow::Close()
     {
         Window::Close();
         SDL_QuitSubSystem(flags_);
-        #if EMSCRIPTEN
-        emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
-        #endif
     }
 
     void SDLWindow::Destroy()
@@ -449,7 +445,7 @@ namespace NSG
             return (JoystickAxis)axis;
         else
         {
-            TRACE_LOG("Unknown joystick axis: " << axis);
+            TRACE_PRINTF("Unknown joystick axis: %d", axis);
             return JoystickAxis::UNKNOWN;
         }
         #endif

@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
+#include <string>
 namespace NSG 
 {
 	struct AppConfiguration
@@ -38,6 +38,8 @@ namespace NSG
 		int swapInterval_; // See https://wiki.libsdl.org/SDL_GL_SetSwapInterval
 		bool showStatistics_;
 		bool pauseMusicOnBackground_;
+		std::string orgName_;
+		std::string appName_;
 		AppConfiguration();
 	};
 }

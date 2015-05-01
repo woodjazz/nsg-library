@@ -54,14 +54,14 @@ int NSG_MAIN(int argc, char* argv[])
     }
 
 	ballRigidBody->HandleCollisions(true);
-	auto static slotCollision = ball->signalCollision_->Connect([&](const ContactPoint & contactInfo)
+	auto static slotCollision = ball->SignalCollision()->Connect([&](const ContactPoint & contactInfo)
 	{
 		ballRigidBody->SetLinearVelocity(4.f * contactInfo.normalB_);
 	});
 
     auto window = Window::Create();
     
-    control->slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
+    control->slotMouseDown_ = window->SignalMouseDown()->Connect([&](int button, float x, float y)
     {
         if (button == NSG_BUTTON_LEFT)
         {

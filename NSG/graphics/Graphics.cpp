@@ -782,7 +782,6 @@ namespace NSG
     {
         if (force || viewport_ != viewport)
         {
-            //TRACE_LOG("viewport=" << viewport);
             glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
             viewport_ = viewport;
         }

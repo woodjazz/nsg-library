@@ -27,23 +27,25 @@ misrepresented as being the original software.
 #include "UniformsUpdate.h"
 #include "Graphics.h"
 #include "Window.h"
+#include "FileSystem.h"
 #if EMSCRIPTEN
 #include "SDL.h"
 #include <emscripten.h>
+#include <emscripten/bind.h>
 #include <html5.h>
 #endif
+#include <thread>
 
 namespace NSG
 {
-    SignalEngine::PSignal Engine::signalCreated_(new SignalEngine);
     AppConfiguration Engine::conf_;
     Engine* Engine::this_ = nullptr;
 
     Engine::Engine()
         : Tick(Engine::conf_.fps_),
-          signalBeginFrame_(new SignalEmpty()),
-          signalUpdate_(new SignalUpdate),
-          deltaTime_(0)
+          signalBeginFrame_(new SignalEmpty),
+          deltaTime_(0),
+          signalUpdate_(new Signal<float>)
     {
         CHECK_ASSERT(!Engine::this_, __FILE__, __LINE__);
         Engine::this_ = this;
@@ -57,7 +59,7 @@ namespace NSG
 
     void Engine::InitializeTicks()
     {
-        Engine::signalCreated_->Run(this);
+        Engine::SignalReady()->Run(this);
     }
 
     void Engine::BeginTicks()
@@ -79,7 +81,7 @@ namespace NSG
 
     bool Engine::RenderFrame()
     {
-        if (Graphics::this_->BeginFrameRender())
+        if (Graphics::this_ && Graphics::this_->BeginFrameRender())
         {
             signalBeginFrame_->Run();
             Window::RenderWindows();
@@ -90,23 +92,45 @@ namespace NSG
         return false;
     }
 
-    bool Engine::RunFrame()
-    {
-        Engine::this_->PerformTicks();
-        return Window::GetMainWindow() != nullptr;
-    }
-
     int Engine::Run()
     {
+        FileSystem::Initialize();
         Tick::Initialize();
         #if EMSCRIPTEN
-        SDL_StartTextInput();
-        emscripten_set_main_loop([]() {Engine::RunFrame();}, 0, 1);
-        emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+        {
+            SDL_StartTextInput();
+            auto saveSlot = FileSystem::SignalSaved()->Connect([]
+            {
+                emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+            });
+            bool saved = false;
+
+            auto runframe = [](void* arg)
+            {
+                bool& saved = *(bool*)arg;
+                Engine::GetPtr()->PerformTicks();
+                if (!Window::GetMainWindow() && !saved)
+                    saved = FileSystem::Save();
+            };
+            emscripten_set_main_loop_arg(runframe, &saved, 0, 1);
+        }
         #else
-        while (Engine::RunFrame());
+        {
+            for (;;)
+            {
+                PerformTicks();
+                if (!Window::GetMainWindow())
+                    break;
+            }
+            FileSystem::Save();
+        }
         #endif
         return 0;
     }
 
+    SignalEngine::PSignal Engine::SignalReady()
+    {
+        static SignalEngine::PSignal signalReady(new SignalEngine);
+        return signalReady;
+    }
 }

@@ -41,7 +41,7 @@ misrepresented as being the original software.
 #include <unistd.h>
 #include <cerrno>
 #else
-#include <Windows.h>
+#include <windows.h>
 #define snprintf _snprintf
 #endif
 #if EMSCRIPTEN
@@ -101,21 +101,6 @@ namespace NSG
         // prevent zero scale
         if (IsZeroLength(scale))
             scale = Vector3(1);
-    }
-
-    bool NSGCopyFile(const Path& source, const Path& target)
-    {
-        std::ifstream is(source.GetFullAbsoluteFilePath(), std::ios::binary);
-        if (is.is_open())
-        {
-            std::ofstream os(target.GetFullAbsoluteFilePath(), std::ios::binary);
-            if (os.is_open())
-            {
-                os << is.rdbuf();
-                return true;
-            }
-        }
-        return false;
     }
 
     Vertex2 GetVertex2(const std::string& buffer)
@@ -211,39 +196,17 @@ namespace NSG
         return buffer;
     }
 
-	std::string ToString(size_t obj)
-	{
-		using namespace std;
-		const int MaxBuffer = 50;
-		char buffer[MaxBuffer];
-		snprintf(buffer, MaxBuffer, "%lu", obj);
-		return buffer;
-	}
-
-
-    bool SetCurrentDir(const std::string& path)
+    std::string ToString(size_t obj)
     {
-        if (!path.empty())
-        {
-            #ifdef WIN32
-            {
-                if (::SetCurrentDirectory(path.c_str()) == FALSE)
-                {
-					TRACE_PRINTF("Failed to change directory to %s with error = %d", path.c_str(), GetLastError());
-                    return false;
-                }
-            }
-            #else
-            {
-                if (chdir(path.c_str()) != 0)
-                {
-                    TRACE_PRINTF("Failed to change directory to %s with error = %d", path.c_str(), errno);
-                    return false;
-                }
-            }
-            #endif
-        }
-        return true;
+        using namespace std;
+        const int MaxBuffer = 50;
+        char buffer[MaxBuffer];
+        #if !defined(WIN32)
+        snprintf(buffer, MaxBuffer, "%u", obj);
+        #else
+        snprintf(buffer, MaxBuffer, "%lu", obj);
+        #endif
+        return buffer;
     }
 
     std::string GetUniqueName(const std::string& name)
@@ -333,37 +296,6 @@ namespace NSG
         CHECK_ASSERT(totalBytes == bytes, __FILE__, __LINE__);
         outputBuffer.erase(outputBuffer.begin(), outputBuffer.begin() + smallBuffer.size());
         return outputBuffer;
-    }
-
-
-    bool SaveDocument(const Path& path, const pugi::xml_document& doc, bool compress)
-    {
-        if (compress)
-        {
-            Path filename(path);
-            filename.AddExtension("lz4");
-			TRACE_PRINTF("Saving file: %s", filename.GetFullAbsoluteFilePath().c_str());
-            struct XMLWriter : pugi::xml_writer
-            {
-                std::string buffer_;
-                void write(const void* data, size_t size) override
-                {
-                    const char* m = (const char*)data;
-                    buffer_.insert(buffer_.end(), &m[0], &m[size]);
-                }
-            } writer;
-            doc.save(writer);
-            auto compressedBuffer = CompressBuffer(writer.buffer_);
-            std::ofstream os(filename.GetFullAbsoluteFilePath(), std::ios::binary);
-            if (os.is_open())
-            {
-                os.write(&compressedBuffer[0], compressedBuffer.size());
-                return true;
-            }
-            return false;
-        }
-        else
-            return doc.save_file(path.GetFullAbsoluteFilePath().c_str());
     }
 
     #if 0

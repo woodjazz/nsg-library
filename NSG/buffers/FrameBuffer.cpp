@@ -198,7 +198,7 @@ namespace NSG
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (GL_FRAMEBUFFER_COMPLETE != status)
         {
-			TRACE_PRINTF("Frame buffer failed with error = 0x%x in file = %s line = ", status, __FILE__, __LINE__);
+			TRACE_PRINTF("Frame buffer failed with error = 0x%x in file = %s line = %d", status, __FILE__, __LINE__);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
 
@@ -266,7 +266,7 @@ namespace NSG
             if (window)
             {
                 SetSize(window->GetWidth(), window->GetHeight());
-                slotViewChanged_ = window->signalViewChanged_->Connect([&](int width, int height)
+                slotViewChanged_ = window->SignalSizeChanged()->Connect([&](int width, int height)
                 {
                     SetSize(width, height);
                 });

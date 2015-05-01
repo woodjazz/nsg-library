@@ -86,24 +86,23 @@ namespace NSG
 		static bool RenderWindows();
         static Window* GetMainWindow() { return mainWindow_; }
         static void HandleEvents();
-
-        static SignalWindow::PSignal signalWindowCreated_;
-        SignalViewChanged::PSignal signalViewChanged_;
-        SignalMouseMoved::PSignal signalMouseMoved_;
-        SignalMouseDown::PSignal signalMouseDown_;
-        SignalMouseUp::PSignal signalMouseUp_;
-        SignalMouseWheel::PSignal signalMouseWheel_;
-        SignalKey::PSignal signalKey_;
-        SignalChar::PSignal signalChar_;
-        SignalMultiGesture::PSignal signalMultiGesture_;
-        SignalDropFile::PSignal signalDropFile_;
-        SignalJoystickDown::PSignal signalJoystickDown_;
-        SignalJoystickUp::PSignal signalJoystickUp_;
-        SignalJoystickAxisMotion::PSignal signalJoystickAxisMotion_;
+        static SignalWindow::PSignal SignalReady();
+		SignalSizeChanged::PSignal SignalSizeChanged() { return signalViewChanged_; }
+        SignalMouseMoved::PSignal SignalMouseMoved() { return signalMouseMoved_; }
+        SignalMouseDown::PSignal SignalMouseDown() { return signalMouseDown_; }
+        SignalMouseUp::PSignal SignalMouseUp() { return signalMouseUp_; }
+        SignalMouseWheel::PSignal SignalMouseWheel() { return signalMouseWheel_; }
+		SignalKey::PSignal SignalKey() { return signalKey_; }
+		SignalChar::PSignal SignalChar() { return signalChar_; }
+        SignalMultiGesture::PSignal SignalMultiGesture() { return signalMultiGesture_; }
+        SignalDropFile::PSignal SignalDropFile() { return signalDropFile_; }
+        SignalJoystickButton::PSignal SignalJoystickDown() { return signalJoystickDown_; }
+		SignalJoystickButton::PSignal SignalJoystickUp() { return signalJoystickUp_; }
+        SignalJoystickAxisMotion::PSignal SignalJoystickAxisMotion() { return signalJoystickAxisMotion_; }
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
-        void OnCreated();
+        void OnReady();
         std::string name_;
         bool isClosed_;
         bool minimized_;
@@ -120,6 +119,18 @@ namespace NSG
         std::vector<PFilter> filters_;
         PFrameBuffer frameBuffer_;
         PShowTexture showFrameBuffer_;
+		SignalSizeChanged::PSignal signalViewChanged_;
+        SignalMouseMoved::PSignal signalMouseMoved_;
+        SignalMouseDown::PSignal signalMouseDown_;
+        SignalMouseUp::PSignal signalMouseUp_;
+        SignalMouseWheel::PSignal signalMouseWheel_;
+        SignalKey::PSignal signalKey_;
+        SignalChar::PSignal signalChar_;
+        SignalMultiGesture::PSignal signalMultiGesture_;
+        SignalDropFile::PSignal signalDropFile_;
+        SignalJoystickButton::PSignal signalJoystickDown_;
+		SignalJoystickButton::PSignal signalJoystickUp_;
+        SignalJoystickAxisMotion::PSignal signalJoystickAxisMotion_;
         static int nWindows2Remove_;
         static PGraphics graphics_;
         static std::once_flag onceFlag_;

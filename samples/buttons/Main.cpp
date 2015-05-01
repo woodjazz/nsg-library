@@ -53,27 +53,27 @@ int NSG_MAIN(int argc, char* argv[])
 	button1->SetBottomScreenMargin(0.1f);
 	button1->SetLeftScreenMargin(0.1f);
 
-	auto slotButtonClicked = button1->signalClicked_->Connect([&](int button)
+	auto slotButtonClicked = button1->SignalClicked()->Connect([&](int button)
     {
 		button1->GetMaterial()->SetColor(Color(1, 0, 0, 1));
     });
 
-	auto slotButtonPush = button1->signalPush_->Connect([&](int button)
+	auto slotButtonPush = button1->SignalPush()->Connect([&](int button)
 	{
 		button1->SetText("(Click)");
 	});
 
-	auto slotButtonPop = button1->signalPop_->Connect([&](int button)
+	auto slotButtonPop = button1->SignalPop()->Connect([&](int button)
 	{
 		button1->SetText("(Hello)");
 	});
 
-	auto slotMouseEnter = button1->signalMouseEnter_->Connect([&]()
+	auto slotMouseEnter = button1->SignalMouseEnter()->Connect([&]()
 	{
 		button1->GetMaterial()->SetColor(Color(0,1,0,1));
 	});
 
-	auto slotMouseLeave = button1->signalMouseLeave_->Connect([&]()
+	auto slotMouseLeave = button1->SignalMouseLeave()->Connect([&]()
 	{
 		button1->GetMaterial()->SetColor(Color(1, 1, 1, 1));
 	});

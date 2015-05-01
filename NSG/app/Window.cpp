@@ -49,7 +49,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    SignalWindow::PSignal Window::signalWindowCreated_(new SignalWindow());
     std::vector<PWeakWindow> Window::windows_;
     Window* Window::mainWindow_ = nullptr;
     int Window::nWindows2Remove_ = 0;
@@ -57,7 +56,15 @@ namespace NSG
     std::once_flag Window::onceFlag_;
 
     Window::Window(const std::string& name)
-        : signalViewChanged_(new Signal<int, int>()),
+        : name_(name),
+          isClosed_(false),
+          minimized_(false),
+          isMainWindow_(true),
+          width_(0),
+          height_(0),
+          filtersEnabled_(true),
+          scene_(nullptr),
+          signalViewChanged_(new Signal<int, int>()),
           signalMouseMoved_(new Signal<float, float>()),
           signalMouseDown_(new Signal<int, float, float>()),
           signalMouseUp_(new Signal<int, float, float>()),
@@ -66,17 +73,9 @@ namespace NSG
           signalChar_(new Signal<unsigned int>()),
           signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
           signalDropFile_(new Signal<const std::string & >()),
-          signalJoystickDown_(new SignalJoystickDown()),
-          signalJoystickUp_(new SignalJoystickUp()),
-          signalJoystickAxisMotion_(new SignalJoystickAxisMotion()),
-          name_(name),
-          isClosed_(false),
-          minimized_(false),
-          isMainWindow_(true),
-          width_(0),
-          height_(0),
-          filtersEnabled_(true),
-          scene_(nullptr)
+		  signalJoystickDown_(new SignalJoystickButton),
+		  signalJoystickUp_(new SignalJoystickButton),
+		  signalJoystickAxisMotion_(new Signal<int, JoystickAxis, float>)
 
     {
         CHECK_CONDITION(Window::AllowWindowCreation(), __FILE__, __LINE__);
@@ -163,7 +162,7 @@ namespace NSG
         Destroy();
     }
 
-    void Window::OnCreated()
+    void Window::OnReady()
     {
         std::call_once(onceFlag_, [&]()
         {
@@ -172,14 +171,14 @@ namespace NSG
         });
 
         CreateFrameBuffer(); // used when filters are enabled
-        signalWindowCreated_->Run(this);
+        Window::SignalReady()->Run(this);
     }
 
     void Window::SetSize(int width, int height)
     {
         if (width_ != width || height_ != height)
         {
-            TRACE_PRINTF("WindowChanged: %d,%d",width, height);
+            TRACE_PRINTF("WindowChanged: %d,%d", width, height);
             width_ = width;
             height_ = height;
 
@@ -233,17 +232,17 @@ namespace NSG
 
     void Window::OnJoystickDown(int joystickID, unsigned button)
     {
-        signalJoystickDown_->Run(joystickID, button);
+        SignalJoystickDown()->Run(joystickID, button);
     }
 
     void Window::OnJoystickUp(int joystickID, unsigned button)
     {
-        signalJoystickUp_->Run(joystickID, button);
+        SignalJoystickUp()->Run(joystickID, button);
     }
 
     void Window::OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position)
     {
-        signalJoystickAxisMotion_->Run(joystickID, axis, position);
+        SignalJoystickAxisMotion()->Run(joystickID, axis, position);
     }
 
     void Window::EnterBackground()
@@ -260,7 +259,7 @@ namespace NSG
     {
         if (Window::mainWindow_ == this)
         {
-			if (Music::this_ && Engine::GetAppConfiguration().pauseMusicOnBackground_)
+            if (Music::this_ && Engine::GetAppConfiguration().pauseMusicOnBackground_)
                 Music::this_->Resume();
         }
 
@@ -364,7 +363,7 @@ namespace NSG
         {
             if (windows_.size())
             {
-                TRACE_LOG("Only one window is allowed for this platform!!!");
+                TRACE_PRINTF("Only one window is allowed for this platform!!!");
                 return false;
             }
         }
@@ -389,7 +388,7 @@ namespace NSG
         for (auto& obj : windows_)
         {
             auto window(obj.lock());
-			if (window && window->scene_)
+            if (window && window->scene_)
                 window->scene_->UpdateAll(delta);
         }
     }
@@ -441,8 +440,15 @@ namespace NSG
         scene_ = scene;
     }
 
-	void Window::NotifyOneWindow2Remove() 
-	{ 
-		++nWindows2Remove_; 
-	}
+    void Window::NotifyOneWindow2Remove()
+    {
+        ++nWindows2Remove_;
+    }
+
+    SignalWindow::PSignal Window::SignalReady()
+    {
+        static SignalWindow::PSignal signalReady(new SignalWindow);
+        return signalReady;
+    }
+
 }

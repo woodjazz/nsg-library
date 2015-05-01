@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "NSG.h"
 using namespace NSG;
+#include <fstream>
 
 static void Test01()
 {

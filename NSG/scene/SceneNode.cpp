@@ -44,13 +44,13 @@ namespace NSG
 {
     SceneNode::SceneNode(const std::string& name)
         : Node(name),
-          signalCollision_(new Signal<const ContactPoint & >()),
-          signalMeshSet_(new SignalEmpty()),
           layer_(RenderLayer::DEFAULT_LAYER),
           octant_(nullptr),
           occludee_(false),
           worldBBNeedsUpdate_(true),
-          serializable_(true)
+          serializable_(true),
+          signalMeshSet_(new SignalEmpty()),
+          signalCollision_(new Signal<const ContactPoint & >())
     {
         #if 0
         auto scene = GetScene();
@@ -196,11 +196,11 @@ namespace NSG
     {
         if (!IsSerializable())
             return;
-		node.append_attribute("name").set_value(GetName().c_str());
+        node.append_attribute("name").set_value(GetName().c_str());
         node.append_attribute("nodeType").set_value("SceneNode");
-		node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
-		node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
-		node.append_attribute("scale").set_value(ToString(GetScale()).c_str());
+        node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
+        node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
+        node.append_attribute("scale").set_value(ToString(GetScale()).c_str());
         if (material_)
             node.append_attribute("materialName").set_value(material_->GetName().c_str());
         if (mesh_)

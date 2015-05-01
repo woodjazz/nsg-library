@@ -93,4 +93,5 @@ misrepresented as being the original software.
 #include "HTTPRequest.h"
 #include "Engine.h"
 #include "Image.h"
+#include "FileSystem.h"
 

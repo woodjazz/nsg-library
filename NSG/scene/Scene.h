@@ -69,10 +69,10 @@ namespace NSG
         void UpdateOctree(SceneNode* node);
         void RemoveFromOctree(SceneNode* node);
         SceneNode* GetClosestNode(float screenX, float screenY) const;
-        SignalNodeMouseMoved::PSignal signalNodeMouseMoved_;
-        SignalNodeMouseDown::PSignal signalNodeMouseDown_;
-        SignalNodeMouseUp::PSignal signalNodeMouseUp_;
-        SignalNodeMouseWheel::PSignal signalNodeMouseWheel_;
+        SignalNodeMouseMoved::PSignal SignalNodeMouseMoved() { return signalNodeMouseMoved_; }
+        SignalNodeMouseDown::PSignal SignalNodeMouseDown() { return signalNodeMouseDown_; }
+        SignalNodeMouseUp::PSignal SignalNodeMouseUp() { return signalNodeMouseUp_; }
+        SignalNodeMouseWheel::PSignal SignalNodeMouseWheel() { return signalNodeMouseWheel_; }
     protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
@@ -97,11 +97,15 @@ namespace NSG
         typedef std::map<std::string, PAnimationState> AnimationStateMap;
         AnimationStateMap animationStateMap_;
         PPhysicsWorld physicsWorld_;
+        Window* window_;
+        SignalNodeMouseMoved::PSignal signalNodeMouseMoved_;
+        SignalNodeMouseDown::PSignal signalNodeMouseDown_;
+        SignalNodeMouseUp::PSignal signalNodeMouseUp_;
+        SignalNodeMouseWheel::PSignal signalNodeMouseWheel_;
 		SignalMouseMoved::PSlot slotMouseMoved_;
 		SignalMouseDown::PSlot slotMouseDown_;
 		SignalMouseUp::PSlot slotMouseUp_;
 		SignalMouseWheel::PSlot slotMouseWheel_;
-		Window* window_;
 		SignalWindow::PSlot slotWindowCreated_;
     };
 }

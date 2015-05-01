@@ -55,7 +55,7 @@ int NSG_MAIN(int argc, char* argv[])
     playerRigidBody->HandleCollisions(true);
 
     auto sound = Sound::Get("BigExplosion.wav.001");
-    auto static slotCollision = player->signalCollision_->Connect([&](const ContactPoint & contactInfo)
+    auto static slotCollision = player->SignalCollision()->Connect([&](const ContactPoint & contactInfo)
     {
         if(!playerDestroyed)
         {
@@ -64,7 +64,7 @@ int NSG_MAIN(int argc, char* argv[])
         }
     });
 
-    auto moveSlot = controller->signalMoved_->Connect([&](float x, float y)
+    auto moveSlot = controller->SignalMoved()->Connect([&](float x, float y)
     {
         if (!playerDestroyed)
         {
@@ -80,7 +80,7 @@ int NSG_MAIN(int argc, char* argv[])
     float alphaAdd = 0.1f;
 
 	Engine engine;
-	auto updateSlot = engine.signalUpdate_->Connect([&](float dt)
+	auto updateSlot = engine.SignalUpdate()->Connect([&](float dt)
     {
         if (!playerDestroyed)
         {

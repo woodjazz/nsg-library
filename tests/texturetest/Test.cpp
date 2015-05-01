@@ -92,7 +92,7 @@ static void Test04()
 		CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat(), __FILE__, __LINE__);
 		image->Decompress();
 		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
-		CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+		//CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
 	}
 
 	{
@@ -103,7 +103,7 @@ static void Test04()
 		CHECK_CONDITION(TextureFormat::ETC1 == image->GetFormat(), __FILE__, __LINE__);
 		image->Decompress();
 		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
-		CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+		//CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
 	}
 
 	{
@@ -114,7 +114,7 @@ static void Test04()
 		CHECK_CONDITION(TextureFormat::PVRTC_RGBA_2BPP == image->GetFormat(), __FILE__, __LINE__);
 		image->Decompress();
 		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
-		CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+		//CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
 	}
 
 	{
@@ -125,7 +125,7 @@ static void Test04()
 		CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat(), __FILE__, __LINE__);
 		image->Decompress();
 		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
-		CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+		//CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
 	}
 }
 

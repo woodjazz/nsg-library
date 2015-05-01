@@ -85,14 +85,14 @@ namespace NSG
     void Path::SetPath(const std::string& path)
     {
         filePath_ = path + "/";
-        if(HasName())
+        if (HasName())
         {
             filePath_ += name_;
-            if(HasExtension())
+            if (HasExtension())
                 filePath_ += "." + ext_;
         }
         ReDoState();
- 
+
     }
 
     void Path::SetName(const std::string& name)
@@ -107,11 +107,11 @@ namespace NSG
         ReDoState();
     }
 
-	void Path::AddExtension(const std::string& ext)
-	{
-		filePath_ += "." + ext;
-		ReDoState();
-	}
+    void Path::AddExtension(const std::string& ext)
+    {
+        filePath_ += "." + ext;
+        ReDoState();
+    }
 
 
     void Path::SetFileName(const std::string& fileName)
@@ -174,8 +174,8 @@ namespace NSG
     void Path::RemoveCurrentDirSymbol(std::string& path)
     {
         std::string::size_type pos = path.find("./");
-        if(pos != std::string::npos)
-            Path::RemoveCurrentDirSymbol(path.erase(pos, pos+2));
+        if (pos != std::string::npos)
+            Path::RemoveCurrentDirSymbol(path.erase(pos, pos + 2));
     }
 
     std::string Path::ExtractFilename(const std::string& filePath, bool extension)
@@ -339,9 +339,9 @@ namespace NSG
         return false;
     }
 
-	bool Path::Exists() const
-	{
-		std::ifstream is(GetFullAbsoluteFilePath(), std::ios::binary);
-		return is.is_open();
-	}
+    bool Path::Exists() const
+    {
+        std::ifstream is(GetFullAbsoluteFilePath(), std::ios::binary);
+        return is.is_open();
+    }
 }

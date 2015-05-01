@@ -36,10 +36,10 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	CameraControl::CameraControl(PCamera camera)
+    CameraControl::CameraControl(PCamera camera)
         : camera_(camera),
-		window_(nullptr),
-		engine_(nullptr)
+          window_(nullptr),
+          engine_(nullptr)
     {
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
         lastX_ = lastY_ = 0;
@@ -50,26 +50,26 @@ namespace NSG
         shiftKeyDown_ = false;
         SetSphereCenter(true);
 
-		if (Graphics::this_)
-		{
-			auto window = Graphics::this_->GetWindow();
-			if (window)
-				SetWindow(window);
-		}
+        if (Graphics::this_)
+        {
+            auto window = Graphics::this_->GetWindow();
+            if (window)
+                SetWindow(window);
+        }
 
-		slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window* window)
-		{
-			if (!window_)
-				SetWindow(window);
-		});
+        slotWindowCreated_ = Window::SignalReady()->Connect([this](Window * window)
+        {
+            if (!window_)
+                SetWindow(window);
+        });
 
-		SetEngine(Engine::GetPtr());
+        SetEngine(Engine::GetPtr());
 
-		slotEngineCreated_ = Engine::signalCreated_->Connect([this](Engine * engine)
-		{
-			if (!engine_)
-				SetEngine(engine);
-		});
+        slotEngineCreated_ = Engine::SignalReady()->Connect([this](Engine * engine)
+        {
+            if (!engine_)
+                SetEngine(engine);
+        });
     }
 
     CameraControl::~CameraControl()
@@ -77,76 +77,76 @@ namespace NSG
 
     }
 
-	void CameraControl::SetEngine(Engine* engine)
-	{
-		if (engine_ != engine)
-		{
-			engine_ = engine;
+    void CameraControl::SetEngine(Engine* engine)
+    {
+        if (engine_ != engine)
+        {
+            engine_ = engine;
 
-			if (engine)
-			{
-				slotUpdate_ = engine->signalUpdate_->Connect([&](float deltaTime)
-				{
-					OnUpdate(deltaTime);
-				});
-			}
-		}
-		else
-		{
-			slotUpdate_ = nullptr;
-		}
-	}
+            if (engine)
+            {
+                slotUpdate_ = engine->SignalUpdate()->Connect([&](float deltaTime)
+                {
+                    OnUpdate(deltaTime);
+                });
+            }
+        }
+        else
+        {
+            slotUpdate_ = nullptr;
+        }
+    }
 
 
-	void CameraControl::SetWindow(Window* window)
-	{
-		if (window_ != window)
-		{
-			window_ = window;
+    void CameraControl::SetWindow(Window* window)
+    {
+        if (window_ != window)
+        {
+            window_ = window;
 
-			if (window)
-			{
-				slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
-				{
-					OnMousemoved(x, y);
-				});
+            if (window)
+            {
+                slotMouseMoved_ = window->SignalMouseMoved()->Connect([&](float x, float y)
+                {
+                    OnMousemoved(x, y);
+                });
 
-				slotMouseDown_ = window->signalMouseDown_->Connect([&](int button, float x, float y)
-				{
-					OnMouseDown(button, x, y);
-				});
+                slotMouseDown_ = window->SignalMouseDown()->Connect([&](int button, float x, float y)
+                {
+                    OnMouseDown(button, x, y);
+                });
 
-				slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
-				{
-					OnMouseUp(button, x, y);
-				});
+                slotMouseUp_ = window->SignalMouseUp()->Connect([&](int button, float x, float y)
+                {
+                    OnMouseUp(button, x, y);
+                });
 
-				slotMouseWheel_ = window->signalMouseWheel_->Connect([&](float x, float y)
-				{
-					OnMousewheel(x, y);
-				});
+                slotMouseWheel_ = window->SignalMouseWheel()->Connect([&](float x, float y)
+                {
+                    OnMousewheel(x, y);
+                });
 
-				slotMultiGesture_ = window->signalMultiGesture_->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-				{
-					OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
-				});
+                slotMultiGesture_ = window->SignalMultiGesture()->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+                {
+                    OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
+                });
 
-				slotKey_ = window->signalKey_->Connect([&](int key, int action, int modifier)
-				{
-					OnKey(key, action, modifier);
-				});
-			}
-			else
-			{
-				slotMouseMoved_ = nullptr;
-				slotMouseDown_ = nullptr;
-				slotMouseUp_ = nullptr;
-				slotMouseWheel_ = nullptr;
-				slotMultiGesture_ = nullptr;
-				slotKey_ = nullptr;
-			}
-		}
-	}
+                slotKey_ = window->SignalKey()->Connect([&](int key, int action, int modifier)
+                {
+                    OnKey(key, action, modifier);
+                });
+            }
+            else
+            {
+                slotMouseMoved_ = nullptr;
+                slotMouseDown_ = nullptr;
+                slotMouseUp_ = nullptr;
+                slotMouseWheel_ = nullptr;
+                slotMultiGesture_ = nullptr;
+                slotKey_ = nullptr;
+            }
+        }
+    }
 
     void CameraControl::OnMousemoved(float x, float y)
     {
@@ -196,7 +196,7 @@ namespace NSG
             if (!close)
             {
                 //animate
-				float factor = 3 * deltaTime;
+                float factor = 3 * deltaTime;
                 camera_->SetOrientation(glm::slerp(currentOrientation, targetOrientation, factor));
             }
             else
@@ -209,7 +209,6 @@ namespace NSG
 
     void CameraControl::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
     {
-        //TRACE_LOG("x=" << x << " y=" << y << " dTheta=" << dTheta << " dDist=" << dDist << " num=" << numFingers);
         if (numFingers == 2)
         {
             float factor = dDist * timestamp / 10.0f;
@@ -327,7 +326,7 @@ namespace NSG
         Vertex3 newCenter;
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
-		if (camera_->GetScene()->GetClosestRayNodeIntersection(camera_->GetLayer(), ray, closest))
+        if (camera_->GetScene()->GetClosestRayNodeIntersection(camera_->GetLayer(), ray, closest))
         {
             if (centerObj)
             {

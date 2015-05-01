@@ -30,19 +30,17 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    SignalEmpty::PSignal Object::signalInvalidateAll_(new Signal<>());
-
     Object::Object(const std::string& name)
-        : signalAllocated_(new Signal<>()),
-          signalReleased_(new Signal<>()),
-          name_(name),
+        : name_(name),
           isValid_(false),
-          resourcesAllocated_(false)
+          resourcesAllocated_(false),
+          signalAllocated_(new SignalEmpty),
+          signalReleased_(new SignalEmpty)
     {
         if (name_.empty())
             name_ = GetUniqueName("Object");
 
-        slotInvalidateAll_ = Object::signalInvalidateAll_->Connect([this]()
+        slotInvalidateAll_ = Object::SignalInvalidateAll()->Connect([this]()
         {
             Invalidate();
         });
@@ -59,20 +57,20 @@ namespace NSG
         {
             ReleaseResources();
             resourcesAllocated_ = false;
-			TRACE_PRINTF("--->Released resources for %s\n", GetNameType().c_str());
+            TRACE_PRINTF("--->Released resources for %s\n", GetNameType().c_str());
             signalReleased_->Run();
         }
     }
 
-	std::string Object::GetType() const 
-	{ 
-		return typeid(*this).name(); 
-	}
-	
-	std::string Object::GetNameType() const 
-	{ 
-		return name_ + "->" + GetType(); 
-	}
+    std::string Object::GetType() const
+    {
+        return typeid(*this).name();
+    }
+
+    std::string Object::GetNameType() const
+    {
+        return name_ + "->" + GetType();
+    }
 
     bool Object::IsReady()
     {
@@ -85,15 +83,21 @@ namespace NSG
                 CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
                 AllocateResources();
                 resourcesAllocated_ = true;
-				TRACE_PRINTF("--->Allocated resources for %s\n", GetNameType().c_str());
+                TRACE_PRINTF("--->Allocated resources for %s\n", GetNameType().c_str());
                 signalAllocated_->Run();
             }
         }
         return isValid_;
     }
 
+    SignalEmpty::PSignal Object::SignalInvalidateAll()
+    {
+        static SignalEmpty::PSignal signalInvalidateAll(new SignalEmpty);
+        return signalInvalidateAll;
+    }
+
     void Object::InvalidateAll()
     {
-        Object::signalInvalidateAll_->Run();
+        SignalInvalidateAll()->Run();
     }
 }

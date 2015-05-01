@@ -37,33 +37,33 @@ namespace NSG
 {
     Control::Control(const std::string& name)
         : SceneNode(name),
-          signalPush_(new Signal<int>()),
-          signalPop_(new Signal<int>()),
-          signalClicked_(new Signal<int>()),
-          signalMouseEnter_(new Signal<>()),
-          signalMouseLeave_(new Signal<>()),
           pushed_(false),
           mouseEntered_(false),
-		  hAlign_(HorizontalAlignment::CENTER_ALIGNMENT),
-		  vAlign_(VerticalAlignment::MIDDLE_ALIGNMENT),
+          hAlign_(HorizontalAlignment::CENTER_ALIGNMENT),
+          vAlign_(VerticalAlignment::MIDDLE_ALIGNMENT),
           leftMargin_(0),
           rightMargin_(0),
           topMargin_(0),
           bottomMargin_(0),
-		  window_(nullptr)
+          window_(nullptr),
+          signalPush_(new SignalButtonMouse),
+          signalPop_(new SignalButtonMouse),
+          signalClicked_(new SignalButtonMouse),
+          signalMouseEnter_(new SignalEmpty),
+          signalMouseLeave_(new SignalEmpty)
     {
-		if (Graphics::this_)
-		{
-			auto window = Graphics::this_->GetWindow();
-			if (window)
-				SetWindow(window);
-		}
+        if (Graphics::this_)
+        {
+            auto window = Graphics::this_->GetWindow();
+            if (window)
+                SetWindow(window);
+        }
 
-		slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window* window)
-		{
-			if (!window_)
-				SetWindow(window);
-		});
+        slotWindowCreated_ = Window::SignalReady()->Connect([this](Window * window)
+        {
+            if (!window_)
+                SetWindow(window);
+        });
 
     }
 
@@ -80,16 +80,16 @@ namespace NSG
             if (hAlign_ == CENTER_ALIGNMENT)
                 position.x = 0;
             else if (hAlign_ == RIGHT_ALIGNMENT)
-                position.x = 1 - rightMargin_ - bb.Size().x/2.f;
+                position.x = 1 - rightMargin_ - bb.Size().x / 2.f;
             else
-                position.x = -1 + leftMargin_ + bb.Size().x/2.f;
+                position.x = -1 + leftMargin_ + bb.Size().x / 2.f;
 
             if (vAlign_ == MIDDLE_ALIGNMENT)
                 position.y = 0;
             else if (vAlign_ == TOP_ALIGNMENT)
-                position.y = 1 - topMargin_ - bb.Size().y/2.f;
+                position.y = 1 - topMargin_ - bb.Size().y / 2.f;
             else
-                position.y = -1 + bottomMargin_ + bb.Size().y/2.f;
+                position.y = -1 + bottomMargin_ + bb.Size().y / 2.f;
 
             SetPosition(position);
         }
@@ -97,7 +97,7 @@ namespace NSG
 
     void Control::SetScreenAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign)
     {
-        if(hAlign_ != hAlign || vAlign_ != vAlign)
+        if (hAlign_ != hAlign || vAlign_ != vAlign)
         {
             hAlign_ = hAlign;
             vAlign_ = vAlign;
@@ -107,7 +107,7 @@ namespace NSG
 
     void Control::SetLeftScreenMargin(float margin)
     {
-        if(leftMargin_ != margin)
+        if (leftMargin_ != margin)
         {
             leftMargin_ = margin;
             Align();
@@ -116,7 +116,7 @@ namespace NSG
 
     void Control::SetRightScreenMargin(float margin)
     {
-        if(rightMargin_ != margin)
+        if (rightMargin_ != margin)
         {
             rightMargin_ = margin;
             Align();
@@ -125,7 +125,7 @@ namespace NSG
 
     void Control::SetTopScreenMargin(float margin)
     {
-        if(topMargin_ != margin)
+        if (topMargin_ != margin)
         {
             topMargin_ = margin;
             Align();
@@ -134,7 +134,7 @@ namespace NSG
 
     void Control::SetBottomScreenMargin(float margin)
     {
-        if(bottomMargin_ != margin)
+        if (bottomMargin_ != margin)
         {
             bottomMargin_ = margin;
             Align();
@@ -145,7 +145,7 @@ namespace NSG
     void Control::OnSceneSet()
     {
         auto scene = GetScene();
-        slotNodeMouseDown_ = scene->signalNodeMouseDown_->Connect([&](SceneNode * node, int button, float x, float y)
+        slotNodeMouseDown_ = scene->SignalNodeMouseDown()->Connect([&](SceneNode * node, int button, float x, float y)
         {
             if (node == this)
             {
@@ -158,55 +158,55 @@ namespace NSG
 
     void Control::SetWindow(Window* window)
     {
-		if (window_ != window)
-		{
-			if (window)
-			{
-				slotMouseMoved_ = window->signalMouseMoved_->Connect([&](float x, float y)
-				{
-					if (signalMouseEnter_->HasSlots() || signalMouseLeave_->HasSlots())
-					{
-						auto scene = GetScene();
-						SceneNode* node = scene->GetClosestNode(x, y);
-						if (node == this)
-						{
-							if (!mouseEntered_)
-							{
-								mouseEntered_ = true;
-								signalMouseEnter_->Run();
-							}
-						}
-						else
-						{
-							if (mouseEntered_)
-							{
-								mouseEntered_ = false;
-								signalMouseLeave_->Run();
-							}
-						}
-					}
-				});
+        if (window_ != window)
+        {
+            if (window)
+            {
+                slotMouseMoved_ = window->SignalMouseMoved()->Connect([&](float x, float y)
+                {
+                    if (signalMouseEnter_->HasSlots() || signalMouseLeave_->HasSlots())
+                    {
+                        auto scene = GetScene();
+                        SceneNode* node = scene->GetClosestNode(x, y);
+                        if (node == this)
+                        {
+                            if (!mouseEntered_)
+                            {
+                                mouseEntered_ = true;
+                                signalMouseEnter_->Run();
+                            }
+                        }
+                        else
+                        {
+                            if (mouseEntered_)
+                            {
+                                mouseEntered_ = false;
+                                signalMouseLeave_->Run();
+                            }
+                        }
+                    }
+                });
 
-				slotMouseUp_ = window->signalMouseUp_->Connect([&](int button, float x, float y)
-				{
-					if (pushed_)
-					{
-						pushed_ = false;
-						signalPop_->Run(button);
-						if (signalClicked_->HasSlots())
-						{
-							auto scene = GetScene();
-							SceneNode* node = scene->GetClosestNode(x, y);
-							if (node == this)
-								signalClicked_->Run(button);
-						}
-					}
-				});
-			}
-			else
-			{
-				slotMouseUp_ = nullptr;
-			}
-		}
+                slotMouseUp_ = window->SignalMouseUp()->Connect([&](int button, float x, float y)
+                {
+                    if (pushed_)
+                    {
+                        pushed_ = false;
+                        signalPop_->Run(button);
+                        if (signalClicked_->HasSlots())
+                        {
+                            auto scene = GetScene();
+                            SceneNode* node = scene->GetClosestNode(x, y);
+                            if (node == this)
+                                signalClicked_->Run(button);
+                        }
+                    }
+                });
+            }
+            else
+            {
+                slotMouseUp_ = nullptr;
+            }
+        }
     }
 }

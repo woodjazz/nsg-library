@@ -63,7 +63,7 @@ namespace NSG
 		typedef std::map<int, CharInfo> CharsMap;
         CharsMap charsMap_;
         MapAndVector<std::string, TextMesh> meshes_;
-        SignalViewChanged::PSlot slotViewChanged_;
+        SignalSizeChanged::PSlot slotViewChanged_;
 	};
 
 }

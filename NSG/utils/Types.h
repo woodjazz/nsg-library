@@ -361,35 +361,33 @@ namespace NSG
 
 	class Engine;
 
-    typedef Signal<int, int> SignalViewChanged;
-    typedef Signal<float, float> SignalMouseMoved;
-    typedef Signal<int, float, float> SignalMouseDown;
-    typedef Signal<int, float, float> SignalMouseUp;
-    typedef Signal<float, float> SignalMouseWheel;
-    typedef Signal<int, int, int> SignalKey;
-    typedef Signal<unsigned int> SignalChar;
-    typedef Signal<int, float, float, float, float, int> SignalMultiGesture;
-    typedef Signal<float> SignalUpdate;
-    typedef Signal<> SignalRender;
-    typedef Signal<const ContactPoint&> SignalCollision;
-    typedef Signal<const std::string&> SignalDropFile;
-    typedef Signal<SceneNode*, float, float> SignalNodeMouseMoved;
-    typedef Signal<SceneNode*, int, float, float> SignalNodeMouseDown;
-    typedef Signal<SceneNode*, int, float, float> SignalNodeMouseUp;
-    typedef Signal<SceneNode*, float, float> SignalNodeMouseWheel;
-    typedef Signal<SceneNode*, int, int, int> SignalNodeKey;
-    typedef Signal<SceneNode*, unsigned int> SignalNodeChar;
-    typedef Signal<int> SignalButtonMouse;
-    typedef Signal<> SignalEmpty;
-    typedef Signal<Window*> SignalWindow;
-    typedef Signal<int, unsigned> SignalJoystickDown;
-    typedef Signal<int, unsigned> SignalJoystickUp;
-    typedef Signal<int, JoystickAxis, float> SignalJoystickAxisMotion;
-    typedef Signal<float, float> SignalPlayerMoved;
-    typedef Signal<std::string> SignalHTTPRequestOnLoad;
-    typedef Signal<int, std::string> SignalHTTPRequestOnError;
-    typedef Signal<unsigned> SignalHTTPRequestOnProgress;
-    typedef Signal<Engine*> SignalEngine;
+	using SignalSizeChanged = Signal<int, int>;
+	using SignalMouseMoved = Signal<float, float>;
+	using SignalMouseDown = Signal<int, float, float>;
+    using SignalMouseUp = Signal<int, float, float>;
+    using SignalMouseWheel = Signal<float, float>;
+    using SignalKey = Signal<int, int, int>;
+    using SignalChar = Signal<unsigned int>;
+    using SignalMultiGesture = Signal<int, float, float, float, float, int>;
+    using SignalUpdate = Signal<float>;
+    using SignalCollision = Signal<const ContactPoint&>;
+    using SignalDropFile = Signal<const std::string&>;
+    using SignalNodeMouseMoved = Signal<SceneNode*, float, float>;
+    using SignalNodeMouseDown = Signal<SceneNode*, int, float, float>;
+    using SignalNodeMouseUp = Signal<SceneNode*, int, float, float>;
+    using SignalNodeMouseWheel = Signal<SceneNode*, float, float>;
+    using SignalNodeKey = Signal<SceneNode*, int, int, int>;
+    using SignalNodeChar = Signal<SceneNode*, unsigned int>;
+    using SignalButtonMouse = Signal<int>;
+    using SignalEmpty = Signal<>;
+    using SignalWindow = Signal<Window*>;
+    using SignalJoystickButton = Signal<int, unsigned>;
+    using SignalJoystickAxisMotion = Signal<int, JoystickAxis, float>;
+    using SignalPlayerMoved = Signal<float, float>;
+    using SignalHTTPRequestOnLoad = Signal<std::string>;
+    using SignalHTTPRequestOnError = Signal<int, std::string>;
+    using SignalHTTPRequestOnProgress = Signal<unsigned>;
+    using SignalEngine = Signal<Engine*>;
 
     enum MaterialTexture
     {

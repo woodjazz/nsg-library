@@ -70,7 +70,7 @@ namespace NSG
         GLuint colorRenderbuffer_;
         GLuint depthStencilRenderBuffer_;
 		GLuint stencilRenderBuffer_;
-        SignalViewChanged::PSlot slotViewChanged_;
+		SignalSizeChanged::PSlot slotViewChanged_;
         Window* window_;
     };
 }

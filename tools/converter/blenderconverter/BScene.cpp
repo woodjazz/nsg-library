@@ -1192,7 +1192,7 @@ namespace BlenderConverter
         Material::SaveMaterials(appNode);
         for (auto& scene : scenes_)
             scene->Save(appNode);
-        return SaveDocument(outputFile, doc, compress);
+        return FileSystem::SaveDocument(outputFile, doc, compress);
     }
 
 }

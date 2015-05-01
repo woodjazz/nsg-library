@@ -101,7 +101,7 @@ namespace NSG
 		float aspectRatio_;
 		mutable PFrustum frustum_;
 		mutable bool cameraIsDirty_;
-		SignalViewChanged::PSlot slotViewChanged_;
+		SignalSizeChanged::PSlot slotViewChanged_;
 		Window* window_;
 		SignalWindow::PSlot slotWindowCreated_;
 		float orthoScale_;

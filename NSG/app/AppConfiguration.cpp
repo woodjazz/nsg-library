@@ -55,7 +55,9 @@ namespace NSG
           height_(WindowHeight),
           vertical_sync_(true),
           showStatistics_(false),
-          pauseMusicOnBackground_(true)
+          pauseMusicOnBackground_(true),
+          orgName_("woodjazz"),
+          appName_("nsg")
     {
     };
 }

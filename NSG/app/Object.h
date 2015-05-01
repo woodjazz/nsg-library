@@ -39,12 +39,12 @@ namespace NSG
 		virtual void LoadFrom(PResource resource, const pugi::xml_node& node) {}
 		static void InvalidateAll();
 		const std::string& GetName() const { return name_; }
-		SignalEmpty::PSignal signalAllocated_;
-		SignalEmpty::PSignal signalReleased_;
+		SignalEmpty::PSignal SignalAllocated() {return signalAllocated_; }
+		SignalEmpty::PSignal SignalReleased() {return signalReleased_; }
 	protected:
 		std::string name_;
 	private:
-		static SignalEmpty::PSignal signalInvalidateAll_;
+		static SignalEmpty::PSignal SignalInvalidateAll();
 		virtual bool IsValid() { return true; }
 		virtual void AllocateResources() {}
 		virtual void ReleaseResources()	{}
@@ -53,5 +53,8 @@ namespace NSG
 		bool isValid_;
 		bool resourcesAllocated_;
 		SignalEmpty::PSlot slotInvalidateAll_;
+		SignalEmpty::PSignal signalAllocated_;
+		SignalEmpty::PSignal signalReleased_;
+
 	};
 }

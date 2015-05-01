@@ -67,7 +67,7 @@ namespace NSG
             Graphics::this_->SetCamera(this);
         }
 
-        slotWindowCreated_ = Window::signalWindowCreated_->Connect([this](Window * window)
+		slotWindowCreated_ = Window::SignalReady()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
@@ -100,7 +100,7 @@ namespace NSG
             if (window)
             {
                 SetAspectRatio(window->GetWidth(), window->GetHeight());
-                slotViewChanged_ = window->signalViewChanged_->Connect([this](int width, int height)
+				slotViewChanged_ = window->SignalSizeChanged()->Connect([this](int width, int height)
                 {
                     SetAspectRatio(width, height);
                 });

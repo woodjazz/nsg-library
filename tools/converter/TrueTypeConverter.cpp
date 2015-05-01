@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "ResourceConverter.h"
 #include "Check.h"
+#include "FileSystem.h"
 #include "pugixml.hpp"
 #include "stb_image.h"
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -117,7 +118,7 @@ namespace NSG
                 }
             }
 
-			return SaveDocument(outputFile, doc, compress);
+			return FileSystem::SaveDocument(outputFile, doc, compress);
         }
 
     }

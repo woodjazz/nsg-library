@@ -109,7 +109,7 @@ macro (setup_common)
         set( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wno-warn-absolute-paths -Wno-logical-op-parentheses")
         set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g${EMS_DEBUG_LEVEL} -Wno-warn-absolute-paths -Wno-logical-op-parentheses -D_DEBUG")
         set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g${EMS_DEBUG_LEVEL} -Wno-warn-absolute-paths -Wno-logical-op-parentheses -D_DEBUG")
-        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind -std=c++11 -stdlib=libc++")
     endif()
 
     message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
@@ -260,7 +260,7 @@ macro (setup_executable)
 
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMENT "Generating HTML with Emscripten" VERBATIM)
 
