@@ -54,7 +54,7 @@ int NSG_MAIN(int argc, char* argv[])
     }
 
 	ballRigidBody->HandleCollisions(true);
-	auto static slotCollision = ball->SignalCollision()->Connect([&](const ContactPoint & contactInfo)
+	auto static slotCollision = ball->SigCollision()->Connect([&](const ContactPoint & contactInfo)
 	{
 		ballRigidBody->SetLinearVelocity(4.f * contactInfo.normalB_);
 	});

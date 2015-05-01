@@ -55,7 +55,7 @@ int NSG_MAIN(int argc, char* argv[])
     playerRigidBody->HandleCollisions(true);
 
     auto sound = Sound::Get("BigExplosion.wav.001");
-    auto static slotCollision = player->SignalCollision()->Connect([&](const ContactPoint & contactInfo)
+    auto static slotCollision = player->SigCollision()->Connect([&](const ContactPoint & contactInfo)
     {
         if(!playerDestroyed)
         {
