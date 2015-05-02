@@ -51,7 +51,7 @@ static int Test0()
     });
 
     bool saved = false;
-    auto saveSlot = FileSystem::SignalSaved()->Connect([&]()
+    auto saveSlot = FileSystem::SigSaved()->Connect([&]()
     {
     	saved = true;
     });
