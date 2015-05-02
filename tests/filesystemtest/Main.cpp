@@ -34,7 +34,7 @@ static int Test0()
     filePath.SetPath(prefPath);
     filePath.SetFileName("data.txt");
     TRACE_PRINTF("%s\n", filePath.GetFullAbsoluteFilePath().c_str());
-    auto fsSlot = FileSystem::SignalReady()->Connect([&]()
+    auto fsSlot = FileSystem::SigReady()->Connect([&]()
     {
 		int counter = 0;
 		{

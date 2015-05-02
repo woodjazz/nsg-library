@@ -33,8 +33,8 @@ namespace NSG
         /// Where the application can write personal files
         static std::string GetPreferencesPath();
         static std::string GetPreferencesPath(const std::string& org, const std::string& app);
-        static SignalEmpty::PSignal SignalReady();
-        static SignalEmpty::PSignal SignalSaved();
+        static SignalEmpty::PSignal SigReady();
+        static SignalEmpty::PSignal SigSaved();
         static void Initialize();
         static bool Save();
         static bool SetCurrentDir(const std::string& pathName);

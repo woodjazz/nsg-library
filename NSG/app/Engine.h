@@ -40,8 +40,8 @@ namespace NSG
         float GetDeltaTime() const { return deltaTime_; }
         static const AppConfiguration& GetAppConfiguration() { return conf_; }
         static Engine* GetPtr() { return Engine::this_; }
-        static SignalEngine::PSignal SignalReady();
-        SignalEmpty::PSignal SignalBeginFrame() { return signalBeginFrame_; }
+        static SignalEngine::PSignal SigReady();
+        SignalEmpty::PSignal SigBeginFrame() { return signalBeginFrame_; }
         SignalUpdate::PSignal SigUpdate() { return signalUpdate_; }
     private:
         void InitializeTicks() override;

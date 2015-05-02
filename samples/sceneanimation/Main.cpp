@@ -61,7 +61,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto window = Window::Create();
     
-    control->slotMouseDown_ = window->SignalMouseDown()->Connect([&](int button, float x, float y)
+    control->slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
     {
         if (button == NSG_BUTTON_LEFT)
         {

@@ -59,7 +59,7 @@ namespace NSG
 
     void Engine::InitializeTicks()
     {
-        Engine::SignalReady()->Run(this);
+        Engine::SigReady()->Run(this);
     }
 
     void Engine::BeginTicks()
@@ -128,7 +128,7 @@ namespace NSG
         return 0;
     }
 
-    SignalEngine::PSignal Engine::SignalReady()
+    SignalEngine::PSignal Engine::SigReady()
     {
         static SignalEngine::PSignal signalReady(new SignalEngine);
         return signalReady;

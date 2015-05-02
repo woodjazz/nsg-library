@@ -121,7 +121,7 @@ namespace NSG
             }
         }
         #else
-        FileSystem::SignalReady()->Run();
+        FileSystem::SigReady()->Run();
         #endif
     }
 
@@ -139,19 +139,19 @@ namespace NSG
         }
         #else
         {
-            FileSystem::SignalSaved()->Run();
+            FileSystem::SigSaved()->Run();
         }
         #endif
         return true;
     }
 
-    SignalEmpty::PSignal FileSystem::SignalReady()
+    SignalEmpty::PSignal FileSystem::SigReady()
     {
         static SignalEmpty::PSignal signalReady(new SignalEmpty);
         return signalReady;
     }
 
-    SignalEmpty::PSignal FileSystem::SignalSaved()
+    SignalEmpty::PSignal FileSystem::SigSaved()
     {
         static SignalEmpty::PSignal signalSaved(new SignalEmpty);
         return signalSaved;

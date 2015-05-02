@@ -138,7 +138,7 @@ namespace NSG
             Invalidate();
             if (mesh)
             {
-                slotReleased_ = mesh->SignalReleased()->Connect([this]()
+                slotReleased_ = mesh->SigReleased()->Connect([this]()
                 {
                     Invalidate();
                 });

@@ -59,7 +59,7 @@ namespace NSG
                 SetWindow(window);
         }
 
-        slotWindowCreated_ = Window::SignalReady()->Connect([this](Window * window)
+        slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
@@ -145,7 +145,7 @@ namespace NSG
     void Control::OnSceneSet()
     {
         auto scene = GetScene();
-        slotNodeMouseDown_ = scene->SignalNodeMouseDown()->Connect([&](SceneNode * node, int button, float x, float y)
+        slotNodeMouseDown_ = scene->SigNodeMouseDown()->Connect([&](SceneNode * node, int button, float x, float y)
         {
             if (node == this)
             {
@@ -162,7 +162,7 @@ namespace NSG
         {
             if (window)
             {
-                slotMouseMoved_ = window->SignalFloatFloat()->Connect([&](float x, float y)
+                slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
                 {
                     if (signalMouseEnter_->HasSlots() || signalMouseLeave_->HasSlots())
                     {
@@ -187,7 +187,7 @@ namespace NSG
                     }
                 });
 
-                slotMouseUp_ = window->SignalMouseUp()->Connect([&](int button, float x, float y)
+                slotMouseUp_ = window->SigMouseUp()->Connect([&](int button, float x, float y)
                 {
                     if (pushed_)
                     {

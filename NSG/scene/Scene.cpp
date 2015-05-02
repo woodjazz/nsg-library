@@ -50,7 +50,7 @@ namespace NSG
 				SetWindow(window);
 		}
 
-		slotWindowCreated_ = Window::SignalReady()->Connect([this](Window* window)
+		slotWindowCreated_ = Window::SigReady()->Connect([this](Window* window)
 		{
 			if (!window_)
 				SetWindow(window);
@@ -72,7 +72,7 @@ namespace NSG
                 if(!window->GetScene())
                     window->SetScene(this);
 
-				slotMouseMoved_ = window->SignalFloatFloat()->Connect([&](float x, float y)
+				slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
 				{
 					if (signalNodeMouseMoved_->HasSlots())
 					{
@@ -82,7 +82,7 @@ namespace NSG
 					}
 				});
 
-				slotMouseDown_ = window->SignalMouseDown()->Connect([&](int button, float x, float y)
+				slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
 				{
 					if (signalNodeMouseDown_->HasSlots())
 					{
@@ -92,7 +92,7 @@ namespace NSG
 					}
 				});
 
-				slotMouseUp_ = window->SignalMouseUp()->Connect([&](int button, float x, float y)
+				slotMouseUp_ = window->SigMouseUp()->Connect([&](int button, float x, float y)
 				{
 					if (signalNodeMouseUp_->HasSlots())
 					{
@@ -102,7 +102,7 @@ namespace NSG
 					}
 				});
 
-				slotMouseWheel_ = window->SignalMouseWheel()->Connect([&](float x, float y)
+				slotMouseWheel_ = window->SigMouseWheel()->Connect([&](float x, float y)
 				{
 					if (signalNodeMouseWheel_->HasSlots())
 					{

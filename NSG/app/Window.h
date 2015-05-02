@@ -86,19 +86,19 @@ namespace NSG
 		static bool RenderWindows();
         static Window* GetMainWindow() { return mainWindow_; }
         static void HandleEvents();
-        static SignalWindow::PSignal SignalReady();
-		SignalSizeChanged::PSignal SignalSizeChanged() { return signalViewChanged_; }
-        SignalFloatFloat::PSignal SignalFloatFloat() { return SignalFloatFloat_; }
-        SignalMouseButton::PSignal SignalMouseDown() { return signalMouseDown_; }
-        SignalMouseButton::PSignal SignalMouseUp() { return signalMouseUp_; }
-        SignalFloatFloat::PSignal SignalMouseWheel() { return signalMouseWheel_; }
-		SignalKey::PSignal SignalKey() { return signalKey_; }
-		SignalUnsigned::PSignal SignalUnsigned() { return SignalUnsigned_; }
-        SignalMultiGesture::PSignal SignalMultiGesture() { return signalMultiGesture_; }
-        SignalDropFile::PSignal SignalDropFile() { return signalDropFile_; }
-        SignalJoystickButton::PSignal SignalJoystickDown() { return signalJoystickDown_; }
-		SignalJoystickButton::PSignal SignalJoystickUp() { return signalJoystickUp_; }
-        SignalJoystickAxisMotion::PSignal SignalJoystickAxisMotion() { return signalJoystickAxisMotion_; }
+        static SignalWindow::PSignal SigReady();
+		SignalSizeChanged::PSignal SigSizeChanged() { return signalViewChanged_; }
+        SignalFloatFloat::PSignal SigFloatFloat() { return signalFloatFloat_; }
+        SignalMouseButton::PSignal SigMouseDown() { return signalMouseDown_; }
+        SignalMouseButton::PSignal SigMouseUp() { return signalMouseUp_; }
+        SignalFloatFloat::PSignal SigMouseWheel() { return signalMouseWheel_; }
+		SignalKey::PSignal SigKey() { return signalKey_; }
+		SignalUnsigned::PSignal SigUnsigned() { return signalUnsigned_; }
+        SignalMultiGesture::PSignal SigMultiGesture() { return signalMultiGesture_; }
+        SignalDropFile::PSignal SigDropFile() { return signalDropFile_; }
+        SignalJoystickButton::PSignal SigJoystickDown() { return signalJoystickDown_; }
+		SignalJoystickButton::PSignal SigJoystickUp() { return signalJoystickUp_; }
+        SignalJoystickAxisMotion::PSignal SigJoystickAxisMotion() { return signalJoystickAxisMotion_; }
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
@@ -120,12 +120,12 @@ namespace NSG
         PFrameBuffer frameBuffer_;
         PShowTexture showFrameBuffer_;
 		SignalSizeChanged::PSignal signalViewChanged_;
-        SignalFloatFloat::PSignal SignalFloatFloat_;
+        SignalFloatFloat::PSignal signalFloatFloat_;
         SignalMouseButton::PSignal signalMouseDown_;
         SignalMouseButton::PSignal signalMouseUp_;
         SignalFloatFloat::PSignal signalMouseWheel_;
         SignalKey::PSignal signalKey_;
-        SignalUnsigned::PSignal SignalUnsigned_;
+        SignalUnsigned::PSignal signalUnsigned_;
         SignalMultiGesture::PSignal signalMultiGesture_;
         SignalDropFile::PSignal signalDropFile_;
         SignalJoystickButton::PSignal signalJoystickDown_;

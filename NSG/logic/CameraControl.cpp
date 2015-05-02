@@ -57,7 +57,7 @@ namespace NSG
                 SetWindow(window);
         }
 
-        slotWindowCreated_ = Window::SignalReady()->Connect([this](Window * window)
+        slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
@@ -65,7 +65,7 @@ namespace NSG
 
         SetEngine(Engine::GetPtr());
 
-        slotEngineCreated_ = Engine::SignalReady()->Connect([this](Engine * engine)
+        slotEngineCreated_ = Engine::SigReady()->Connect([this](Engine * engine)
         {
             if (!engine_)
                 SetEngine(engine);
@@ -106,32 +106,32 @@ namespace NSG
 
             if (window)
             {
-                slotMouseMoved_ = window->SignalFloatFloat()->Connect([&](float x, float y)
+                slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
                 {
                     OnMousemoved(x, y);
                 });
 
-                slotMouseDown_ = window->SignalMouseDown()->Connect([&](int button, float x, float y)
+                slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
                 {
                     OnMouseDown(button, x, y);
                 });
 
-                slotMouseUp_ = window->SignalMouseUp()->Connect([&](int button, float x, float y)
+                slotMouseUp_ = window->SigMouseUp()->Connect([&](int button, float x, float y)
                 {
                     OnMouseUp(button, x, y);
                 });
 
-                slotMouseWheel_ = window->SignalMouseWheel()->Connect([&](float x, float y)
+                slotMouseWheel_ = window->SigMouseWheel()->Connect([&](float x, float y)
                 {
                     OnMousewheel(x, y);
                 });
 
-                slotMultiGesture_ = window->SignalMultiGesture()->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+                slotMultiGesture_ = window->SigMultiGesture()->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
                 {
                     OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
                 });
 
-                slotKey_ = window->SignalKey()->Connect([&](int key, int action, int modifier)
+                slotKey_ = window->SigKey()->Connect([&](int key, int action, int modifier)
                 {
                     OnKey(key, action, modifier);
                 });

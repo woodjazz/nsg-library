@@ -65,12 +65,12 @@ namespace NSG
           filtersEnabled_(true),
           scene_(nullptr),
           signalViewChanged_(new Signal<int, int>()),
-          SignalFloatFloat_(new Signal<float, float>()),
+          signalFloatFloat_(new Signal<float, float>()),
           signalMouseDown_(new Signal<int, float, float>()),
           signalMouseUp_(new Signal<int, float, float>()),
           signalMouseWheel_(new Signal<float, float>()),
           signalKey_(new Signal<int, int, int>()),
-          SignalUnsigned_(new Signal<unsigned int>()),
+          signalUnsigned_(new Signal<unsigned int>()),
           signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
           signalDropFile_(new Signal<const std::string & >()),
 		  signalJoystickDown_(new SignalJoystickButton),
@@ -171,7 +171,7 @@ namespace NSG
         });
 
         CreateFrameBuffer(); // used when filters are enabled
-        Window::SignalReady()->Run(this);
+        Window::SigReady()->Run(this);
     }
 
     void Window::SetSize(int width, int height)
@@ -197,7 +197,7 @@ namespace NSG
 
     void Window::OnMouseMove(float x, float y)
     {
-        SignalFloatFloat_->Run(x, y);
+        signalFloatFloat_->Run(x, y);
     }
 
     void Window::OnMouseDown(int button, float x, float y)
@@ -227,22 +227,22 @@ namespace NSG
 
     void Window::OnChar(unsigned int character)
     {
-        SignalUnsigned_->Run(character);
+        signalUnsigned_->Run(character);
     }
 
     void Window::OnJoystickDown(int joystickID, unsigned button)
     {
-        SignalJoystickDown()->Run(joystickID, button);
+        SigJoystickDown()->Run(joystickID, button);
     }
 
     void Window::OnJoystickUp(int joystickID, unsigned button)
     {
-        SignalJoystickUp()->Run(joystickID, button);
+        SigJoystickUp()->Run(joystickID, button);
     }
 
     void Window::OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position)
     {
-        SignalJoystickAxisMotion()->Run(joystickID, axis, position);
+        SigJoystickAxisMotion()->Run(joystickID, axis, position);
     }
 
     void Window::EnterBackground()
@@ -445,7 +445,7 @@ namespace NSG
         ++nWindows2Remove_;
     }
 
-    SignalWindow::PSignal Window::SignalReady()
+    SignalWindow::PSignal Window::SigReady()
     {
         static SignalWindow::PSignal signalReady(new SignalWindow);
         return signalReady;

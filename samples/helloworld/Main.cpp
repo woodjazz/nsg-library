@@ -71,13 +71,13 @@ int NSG_MAIN(int argc, char* argv[])
     //control->AutoZoom();
 
     SceneNode* lastNode = nullptr;
-    auto slotMouseDown = scene->SignalNodeMouseDown()->Connect([&](SceneNode * node, int button, float x, float y)
+    auto slotMouseDown = scene->SigNodeMouseDown()->Connect([&](SceneNode * node, int button, float x, float y)
     {
         lastNode = node;
         node->SetMaterial(activeMaterial);
     });
 
-    auto slotMouseUp = window->SignalMouseUp()->Connect([&](int button, float x, float y)
+    auto slotMouseUp = window->SigMouseUp()->Connect([&](int button, float x, float y)
     {
 		if (lastNode)
 		{

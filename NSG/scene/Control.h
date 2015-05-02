@@ -45,11 +45,11 @@ namespace NSG
 		void SetBottomScreenMargin(float margin);
 		////////////////////////////////////////////////////////////////////////////////////
 		void SetWindow(Window* window);
-		SignalButtonMouse::PSignal SignalPush() { return signalPush_; }
-		SignalButtonMouse::PSignal SignalPop() { return signalPop_; }
-		SignalButtonMouse::PSignal SignalClicked() { return signalClicked_; }
-		SignalEmpty::PSignal SignalMouseEnter() { return signalMouseEnter_; }
-		SignalEmpty::PSignal SignalMouseLeave() { return signalMouseLeave_; }
+		SignalButtonMouse::PSignal SigPush() { return signalPush_; }
+		SignalButtonMouse::PSignal SigPop() { return signalPop_; }
+		SignalButtonMouse::PSignal SigClicked() { return signalClicked_; }
+		SignalEmpty::PSignal SigMouseEnter() { return signalMouseEnter_; }
+		SignalEmpty::PSignal SigMouseLeave() { return signalMouseLeave_; }
 	private:
 		void Align();
 		void OnSceneSet() override;

@@ -41,7 +41,7 @@ namespace NSG
         {
             SetViewSize(window->GetWidth(), window->GetHeight());
 
-			slotViewChanged_ = window->SignalSizeChanged()->Connect([&](int width, int height)
+			slotViewChanged_ = window->SigSizeChanged()->Connect([&](int width, int height)
             {
                 SetViewSize(width, height);
             });

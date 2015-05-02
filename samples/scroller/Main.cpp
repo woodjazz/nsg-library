@@ -64,7 +64,7 @@ int NSG_MAIN(int argc, char* argv[])
         }
     });
 
-    auto moveSlot = controller->SignalMoved()->Connect([&](float x, float y)
+    auto moveSlot = controller->SigMoved()->Connect([&](float x, float y)
     {
         if (!playerDestroyed)
         {

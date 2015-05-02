@@ -40,7 +40,7 @@ namespace NSG
         if (name_.empty())
             name_ = GetUniqueName("Object");
 
-        slotInvalidateAll_ = Object::SignalInvalidateAll()->Connect([this]()
+        slotInvalidateAll_ = Object::SigInvalidateAll()->Connect([this]()
         {
             Invalidate();
         });
@@ -90,7 +90,7 @@ namespace NSG
         return isValid_;
     }
 
-    SignalEmpty::PSignal Object::SignalInvalidateAll()
+    SignalEmpty::PSignal Object::SigInvalidateAll()
     {
         static SignalEmpty::PSignal signalInvalidateAll(new SignalEmpty);
         return signalInvalidateAll;
@@ -98,6 +98,6 @@ namespace NSG
 
     void Object::InvalidateAll()
     {
-        SignalInvalidateAll()->Run();
+        SigInvalidateAll()->Run();
     }
 }

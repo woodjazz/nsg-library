@@ -35,7 +35,7 @@ namespace NSG
         ~PlayerControl();
         void SetWindow(Window* window);
 		void SetEngine(Engine* engine);
-		SignalFloatFloat::PSignal SignalMoved() { return signalMoved_; }
+		SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
     private:
         void OnKey(int key, int action, int modifier);
         void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);

@@ -69,10 +69,10 @@ namespace NSG
         void UpdateOctree(SceneNode* node);
         void RemoveFromOctree(SceneNode* node);
         SceneNode* GetClosestNode(float screenX, float screenY) const;
-        SignalNodeMouseMoved::PSignal SignalNodeMouseMoved() { return signalNodeMouseMoved_; }
-        SignalNodeMouseButton::PSignal SignalNodeMouseDown() { return signalNodeMouseDown_; }
-        SignalNodeMouseButton::PSignal SignalNodeMouseUp() { return signalNodeMouseUp_; }
-        SignalNodeMouseMoved::PSignal SignalNodeMouseWheel() { return signalNodeMouseWheel_; }
+        SignalNodeMouseMoved::PSignal SigNodeMouseMoved() { return signalNodeMouseMoved_; }
+        SignalNodeMouseButton::PSignal SigNodeMouseDown() { return signalNodeMouseDown_; }
+        SignalNodeMouseButton::PSignal SigNodeMouseUp() { return signalNodeMouseUp_; }
+        SignalNodeMouseMoved::PSignal SigNodeMouseWheel() { return signalNodeMouseWheel_; }
     protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
