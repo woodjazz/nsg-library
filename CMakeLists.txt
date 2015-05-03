@@ -205,6 +205,18 @@ FOREACH(subdir ${SUBDIRS})
 ENDFOREACH()
 
 ###########################
+# demos
+###########################
+include (ConvertTool) 
+include (CopyTool)
+set(DEMOS_DIR ${ROOT_SOURCE_DIR}/demos)
+SUBDIRLIST(SUBDIRS ${DEMOS_DIR})
+FOREACH(subdir ${SUBDIRS})
+	IF(${BUILD_PROJECT} STREQUAL "all"  OR ${BUILD_PROJECT} STREQUAL "demos/${subdir}")
+    	ADD_SUBDIRECTORY(${DEMOS_DIR}/${subdir})
+	ENDIF()
+ENDFOREACH()
+###########################
 # tests
 ###########################
 #if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)

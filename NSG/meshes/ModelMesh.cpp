@@ -43,7 +43,7 @@ namespace NSG
 
     GLenum ModelMesh::GetWireFrameDrawMode() const
     {
-        return face_mode_;
+        return GL_LINES;
     }
 
     GLenum ModelMesh::GetSolidDrawMode() const

@@ -179,7 +179,7 @@ namespace BlenderConverter
         material->SetSpecularColor(Color(mt->specr, mt->specg, mt->specb, mt->alpha));
         material->SetAmbientColor(Color(mt->ambr, mt->ambg, mt->ambb, mt->alpha));
 
-        pass->EnableDepthBuffer(mt->mode & MA_ZTRA ? true : false);
+        pass->EnableDepthBuffer(true);// *** FIXME ***//mt->mode & MA_ZTRA ? true : false);
         if (mt->game.alpha_blend & GEMAT_ALPHA)
             pass->SetBlendMode(BLEND_ALPHA);
         else
@@ -1079,12 +1079,7 @@ namespace BlenderConverter
             int nloops = curpoly.totloop;
             int indexBase = curpoly.loopstart;
 
-            // skip if face is not a triangle || quad
-            if (nloops < 3 || nloops > 4)
-            {
-                TRACE_PRINTF("Only triangles or quads are converted! (loops = %d)", nloops);
-                continue;
-            }
+            CHECK_CONDITION(nloops > 2 && nloops < 5 && "Only triangles or quads are converted!", __FILE__, __LINE__);
 
             for (int i = 0; i < nloops; i++)
             {
@@ -1113,7 +1108,7 @@ namespace BlenderConverter
             for (int i = 0; i < nloops; i++)
                 index[i] = me->mloop[indexBase + i].v;
 
-            bool isQuad = curpoly.totloop == 4;
+            bool isQuad = nloops == 4;
             bool calcFaceNormal = !(curpoly.flag & ME_SMOOTH);
 
             if (isQuad)
