@@ -36,8 +36,8 @@ static void Test01()
     auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
-	material->SetProgramFlags(0, (int)ProgramFlag::UNLIT);
-    material->SetDiffuseMap(texture);
+	material->SetLightingMode(LightingMode::UNLIT);
+	material->SetTexture(texture);
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
@@ -54,8 +54,8 @@ static void Test02()
     auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
-    material->SetProgramFlags(0, (int)ProgramFlag::UNLIT);
-    material->SetDiffuseMap(texture);
+	material->SetLightingMode(LightingMode::UNLIT);
+	material->SetTexture(texture);
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
@@ -72,8 +72,8 @@ static void Test03()
     auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
-    material->SetProgramFlags(0, (int)ProgramFlag::UNLIT);
-    material->SetDiffuseMap(texture);
+	material->SetLightingMode(LightingMode::UNLIT);
+	material->SetTexture(texture);
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);

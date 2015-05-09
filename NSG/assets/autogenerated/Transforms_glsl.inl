@@ -99,7 +99,7 @@ static const char* TRANSFORMS_GLSL = \
 "	    return u_view * GetModelMatrix();\n"\
 "	#endif\n"\
 "}\n"\
-"#ifdef HAS_LIGHTS\n"\
+"#if defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)\n"\
 "	mat3 GetNormalMatrix()\n"\
 "	{\n"\
 "	    //The normal matrix is used to allow non-uniform scales (sx != sy != sz) in the active node.\n"\
@@ -121,7 +121,7 @@ static const char* TRANSFORMS_GLSL = \
 "	    	return normalize((GetNormalMatrix() * a_normal));\n"\
 "	    #endif\n"\
 "	}\n"\
-"	#if defined(NORMALMAP) || defined(DISPLACEMENTMAP)\n"\
+"	#if defined(NORMALMAP)\n"\
 "		vec3 GetWorldTangent()\n"\
 "		{\n"\
 "		    #if defined(SKINNED)\n"\
@@ -160,7 +160,11 @@ static const char* TRANSFORMS_GLSL = \
 "uniform vec4 u_uvTransform;\n"\
 "vec2 GetTexCoord(vec2 texCoord)\n"\
 "{\n"\
-"    return texCoord.xy * u_uvTransform.xy + u_uvTransform.zw;\n"\
+"	#if defined(FLIP_Y)\n"\
+"		return vec2(texCoord.x, 1.0 - texCoord.y) * u_uvTransform.xy + u_uvTransform.zw;\n"\
+"	#else\n"\
+"		return texCoord.xy * u_uvTransform.xy + u_uvTransform.zw;\n"\
+"	#endif\n"\
 "}\n"\
 "#endif\n"\
 ;

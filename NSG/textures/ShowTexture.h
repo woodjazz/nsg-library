@@ -39,7 +39,6 @@ namespace NSG
 		void Show();
 	private:
         PMaterial material_;
-        PProgram program_;
 		PMesh mesh_;
 		PSceneNode node_;
 	};

@@ -18,13 +18,12 @@ static const char* COMMON_GLSL = \
 "#endif   \n"\
 "varying vec4 v_color;\n"\
 "varying vec2 v_texcoord0; \n"\
-"#ifdef HAS_LIGHTS\n"\
+"#if defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)\n"\
 "	varying vec3 v_normal;\n"\
 "	varying vec3 v_tangent;\n"\
 "	varying vec3 v_bitangent;\n"\
 "	varying vec2 v_texcoord1;\n"\
 "	varying vec3 v_vertexToEye;\n"\
-"	varying vec3 v_vertexToEyeInTangentSpace;\n"\
 "	struct Attenuation\n"\
 "	{\n"\
 "	    float constant;\n"\
@@ -39,38 +38,33 @@ static const char* COMMON_GLSL = \
 "	};\n"\
 "	uniform vec4 u_sceneAmbientColor;\n"\
 "	uniform vec3 u_eyeWorldPos;\n"\
-"	#ifdef HAS_DIRECTIONAL_LIGHTS\n"\
+"	#if defined(HAS_DIRECTIONAL_LIGHT)\n"\
 "		struct DirectionalLight\n"\
 "		{\n"\
-"		    int enabled;\n"\
 "		    BaseLight base;\n"\
 "		    vec3 direction;\n"\
 "		};\n"\
-"		uniform DirectionalLight u_directionalLight[NUM_DIRECTIONAL_LIGHTS];\n"\
-"	#endif\n"\
-"	#ifdef HAS_POINT_LIGHTS\n"\
-"		varying vec3 v_lightDirection[NUM_POINT_LIGHTS];\n"\
+"		uniform DirectionalLight u_directionalLight;\n"\
+"	#elif defined(HAS_POINT_LIGHT)\n"\
+"		varying vec3 v_lightDirection;\n"\
 "		struct PointLight\n"\
 "		{\n"\
-"		    int enabled;\n"\
 "		    BaseLight base;\n"\
 "		    vec3 position;\n"\
 "		    Attenuation atten;\n"\
 "		};\n"\
-"		uniform PointLight u_pointLights[NUM_POINT_LIGHTS];\n"\
-"	#endif\n"\
-"	#ifdef HAS_SPOT_LIGHTS\n"\
-"		varying vec3 v_light2Pixel[NUM_SPOT_LIGHTS];\n"\
+"		uniform PointLight u_pointLight;\n"\
+"	#elif defined(HAS_SPOT_LIGHT)\n"\
+"		varying vec3 v_light2Pixel;\n"\
 "		struct SpotLight\n"\
 "		{\n"\
-"		    int enabled;\n"\
 "		    BaseLight base;\n"\
 "		    vec3 position;\n"\
 "		    vec3 direction;\n"\
 "		    Attenuation atten;\n"\
 "		    float cutOff; // 0.5f * cosine(cutOff)\n"\
 "		};\n"\
-"		uniform SpotLight u_spotLights[NUM_SPOT_LIGHTS];\n"\
+"		uniform SpotLight u_spotLight;\n"\
 "	#endif\n"\
 "#elif defined(LIGHTMAP)\n"\
 "	varying vec2 v_texcoord1;\n"\
@@ -82,7 +76,6 @@ static const char* COMMON_GLSL = \
 "    vec4 diffuse;\n"\
 "    vec4 specular;\n"\
 "    float shininess;\n"\
-"    float parallaxScale;\n"\
 "};\n"\
 "uniform Material u_material;\n"\
 ;

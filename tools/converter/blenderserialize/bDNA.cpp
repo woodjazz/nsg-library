@@ -21,7 +21,7 @@ subject to the following restrictions:
 #include <stdio.h>
 
 //this define will force traversal of structures, to check backward (and forward) compatibility
-//#define TEST_BACKWARD_FORWARD_COMPATIBILITY
+#define TEST_BACKWARD_FORWARD_COMPATIBILITY
 
 
 using namespace bParse;
@@ -235,8 +235,8 @@ void bDNA::initCmpFlags(bDNA *memDNA)
 					for (int j=0; j<elementLength; j++, curStruct+=2, oldStruct+=2)
 					{
 						// type the same
-						//const char* typeFileDNA = mTypes[oldStruct[0]];
-						//const char* typeMemDNA = mTypes[curStruct[0]];
+						const char* typeFileDNA = mTypes[oldStruct[0]];
+						const char* typeMemDNA = mTypes[curStruct[0]];
 						if (strcmp(mTypes[oldStruct[0]], memDNA->mTypes[curStruct[0]])!=0)
 						{
 							isSame=false;

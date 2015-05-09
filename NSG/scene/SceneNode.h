@@ -63,8 +63,6 @@ namespace NSG
 		virtual void Save(pugi::xml_node& node) const;
 		void SaveChildren(pugi::xml_node& node) const;
 		void LoadChildren(const pugi::xml_node& node);
-		void Draw();
-		void DrawWithChildren();
 		PRigidBody GetRigidBody() const { return rigidBody_; }
 		SignalCollision::PSignal SigCollision() { return signalCollision_; }
 		SignalEmpty::PSignal SigMeshSet() { return signalMeshSet_; }

@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Singleton.h"
 #include <map>
+#include <set>
 
 namespace NSG
 {
@@ -100,26 +101,19 @@ namespace NSG
         void SetMesh(Mesh* mesh) { activeMesh_ = mesh; }
         const Mesh* GetMesh() const { return activeMesh_; }
 		void SetNode(SceneNode* node) { activeNode_ = node; }
-		void ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const;
-		void SortBackToFront(std::vector<SceneNode*>& nodes) const;
-        void SortFrontToBack(std::vector<SceneNode*>& nodes) const;
-		void RenderVisibleSceneNodes();
         bool IsTextureSizeCorrect(unsigned width, unsigned height);
-        void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
         GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
         GLint GetMaxTexturesCombined() const { return maxTexturesCombined_; }
         GLint GetMaxVertexUniformVectors() const { return maxVertexUniformVectors_; }
         GLint GetMaxFragmentUniformVectors() const { return maxFragmentUniformVectors_; }
         GLint GetMaxVertexAttribs() const { return maxVertexAttribs_; }
-        bool BeginFrameRender();
-		void Render(Camera* camera);
-        void EndFrameRender();
 		void UnboundTextures();
         void SetViewportFactor(const Vector4& viewportFactor);
         int GetMaxTextureSize() const { return maxTextureSize_; }
         bool NeedsDecompress(TextureFormat format) const;
+		void SetupPass(Pass* pass, Material* material, Light* light);
     private:
-        void SetupPass(Pass* pass);
+		PProgram GetOrCreateProgram(Mesh* mesh, Material* material, Light* light);
         void SetUpViewport();
         Recti viewport_;
         GLint systemFbo_;
@@ -178,5 +172,8 @@ namespace NSG
         DepthFunc depthFunc_;
         Vector4 viewportFactor_;
         int maxTextureSize_;
+        typedef std::map<std::string, PProgram> Programs;
+        Programs programs_;
+        PRenderer renderer_;
     };
 }

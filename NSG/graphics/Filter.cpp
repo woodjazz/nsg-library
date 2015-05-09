@@ -37,7 +37,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Filter::Filter(const std::string& name, PTexture input, ProgramFlags flags)
+	Filter::Filter(const std::string& name, PTexture input)
         : pMaterial_(Material::GetOrCreate(name)),
           pMesh_(Mesh::Create<QuadMesh>()),
 		  frameBuffer_(std::make_shared<FrameBuffer>(name, FrameBuffer::Flag::COLOR | FrameBuffer::Flag::COLOR_USE_TEXTURE)),
@@ -45,9 +45,9 @@ namespace NSG
           node_(std::make_shared<SceneNode>(name))
     {
 		//frameBuffer_->SetColorTexture(input);
-    	pMaterial_->SetTexture(0, input);
+		pMaterial_->SetTexture(input);
+		pMaterial_->SetLightingMode(LightingMode::UNLIT);
         technique_ = pMaterial_->GetTechnique().get();
-		technique_->GetPass(0)->GetProgram()->SetFlags(flags);
 		auto window = Graphics::this_->GetWindow();
 		if (window)
 			SetWindow(window);
@@ -62,19 +62,14 @@ namespace NSG
 		frameBuffer_->SetWindow(window);
 	}
 
-	PProgram Filter::GetProgram() const
-	{
-		return technique_->GetPass(0)->GetProgram();
-	}
-
     void Filter::SetInputTexture(PTexture input)
     {
-        pMaterial_->SetTexture(0, input);
+		pMaterial_->SetTexture(input);
     }
 
 	PTexture Filter::GetInputTexture() const
 	{
-		return pMaterial_->GetTexture(0);
+		return pMaterial_->GetTexture(MaterialTexture::DIFFUSE_MAP);
 	}
 
     void Filter::Draw()
@@ -84,12 +79,14 @@ namespace NSG
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
+		Pass pass;
 		Graphics::this_->SetFrameBuffer(frameBuffer_.get());
 		Camera* pCurrent = Graphics::this_->GetCamera();
 		Graphics::this_->SetCamera(nullptr);
-		Batch batch(technique_->GetMaterial(), pMesh_.get());
-		batch.Add(node_.get());
-		batch.Draw();
+		Graphics::this_->SetNode(node_.get());
+		Graphics::this_->SetMesh(pMesh_.get());
+		Graphics::this_->SetupPass(&pass, pMaterial_.get(), nullptr);
+		Graphics::this_->DrawActiveMesh(&pass);
 		Graphics::this_->SetCamera(pCurrent);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);

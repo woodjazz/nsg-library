@@ -170,25 +170,20 @@ namespace BlenderConverter
     {
         std::string name = B_IDNAME(mt);
         auto material = Material::GetOrCreate(name);
-        auto technique = material->GetTechnique();
-        auto pass = technique->GetPass(0);
-        auto program = pass->GetProgram();
-        ProgramFlags flags = (int)ProgramFlag::PER_PIXEL_LIGHTING;
-        program->SetFlags(flags);
+        material->SetLightingMode(LightingMode::PERPIXEL);
         material->SetDiffuseColor(Color(mt->r, mt->g, mt->b, mt->alpha));
         material->SetSpecularColor(Color(mt->specr, mt->specg, mt->specb, mt->alpha));
         material->SetAmbientColor(Color(mt->ambr, mt->ambg, mt->ambb, mt->alpha));
 
-        pass->EnableDepthBuffer(true);// *** FIXME ***//mt->mode & MA_ZTRA ? true : false);
         if (mt->game.alpha_blend & GEMAT_ALPHA)
-            pass->SetBlendMode(BLEND_ALPHA);
+            material->SetBlendMode(BLEND_MODE::ALPHA);
         else
-            pass->SetBlendMode(BLEND_NONE);
+            material->SetBlendMode(BLEND_MODE::NONE);
 
         if (mt->mode & MA_WIRE)
-            pass->SetDrawMode(DrawMode::WIREFRAME);
+            material->SetFillMode(FillMode::WIREFRAME);
         else
-            pass->SetDrawMode(DrawMode::SOLID);
+            material->SetFillMode(FillMode::SOLID);
 
         // textures
         if (mt->mtex != 0)
@@ -204,18 +199,82 @@ namespace BlenderConverter
                     const Blender::Image* ima = mtex->tex->ima;
                     if (!ima) continue;
                     auto texture = CreateTexture(ima);
-                    if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_COL))
-                        material->SetLightMap(texture);
-                    else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
-                        material->SetNormalMap(texture);
-                    else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
-                        material->SetSpecularMap(texture);
-                    else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
-                        material->SetAOMap(texture);
-                    else if ((mtex->mapto & MAP_DISPLACE) || (mtex->maptoneg & MAP_DISPLACE))
-                        material->SetDisplacementMap(texture);
-                    else if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
-                        material->SetDiffuseMap(texture);
+					if (mtex->uvname)
+						texture->SetUVName(mtex->uvname);
+
+					switch (mtex->blendtype)
+					{
+                        case MTEX_BLEND:
+							texture->SetBlendType(TextureBlend::MIX);
+                            break;
+                        case MTEX_MUL:
+							texture->SetBlendType(TextureBlend::MUL);
+                            break;
+                        case MTEX_ADD:
+							texture->SetBlendType(TextureBlend::ADD);
+                            break;
+                        case MTEX_SUB:
+							texture->SetBlendType(TextureBlend::SUB);
+                            break;
+                        case MTEX_DIV:
+							texture->SetBlendType(TextureBlend::DIV);
+                            break;
+                        case MTEX_DARK:
+							texture->SetBlendType(TextureBlend::DARK);
+                            break;
+                        case MTEX_DIFF:
+							texture->SetBlendType(TextureBlend::DIFF);
+                            break;
+                        case MTEX_LIGHT:
+							texture->SetBlendType(TextureBlend::LIGHT);
+                            break;
+                        case MTEX_SCREEN:
+							texture->SetBlendType(TextureBlend::SCREEN);
+                            break;
+                        case MTEX_OVERLAY:
+							texture->SetBlendType(TextureBlend::OVERLAY);
+                            break;
+                        case MTEX_BLEND_HUE:
+							texture->SetBlendType(TextureBlend::BLEND_HUE);
+                            break;
+                        case MTEX_BLEND_SAT:
+							texture->SetBlendType(TextureBlend::BLEND_SAT);
+                            break;
+                        case MTEX_BLEND_VAL:
+							texture->SetBlendType(TextureBlend::BLEND_VAL);
+                            break;
+                        case MTEX_BLEND_COLOR:
+							texture->SetBlendType(TextureBlend::BLEND_COLOR);
+                            break;
+                        default:
+                            break;
+					}
+
+					if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_EMIT))
+					{
+						texture->SetMapType(TextureType::EMIT);
+						material->SetTexture(texture);
+					}
+					else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
+					{
+						texture->SetMapType(TextureType::NORM);
+						material->SetTexture(texture);
+					}
+					else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
+					{
+						texture->SetMapType(TextureType::SPEC);
+						material->SetTexture(texture);
+					}
+					else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
+					{
+						texture->SetMapType(TextureType::AMB);
+						material->SetTexture(texture);
+					}
+					else if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
+					{
+						texture->SetMapType(TextureType::COL);
+						material->SetTexture(texture);
+					}
                 }
             }
         }
@@ -1011,7 +1070,6 @@ namespace BlenderConverter
         skeleton->SetRoot(armatureNode);
         mesh->SetSkeleton(skeleton);
         skeleton->SetBones(boneList);
-        MarkProgramAsSkinableNodes(mesh.get());
         CreateOffsetMatrices(obj, armatureNode);
     }
 
@@ -1036,21 +1094,6 @@ namespace BlenderConverter
         }
     }
 
-    void BScene::MarkProgramAsSkinableNodes(const Mesh* mesh)
-    {
-        auto& nodes = mesh->GetConstSceneNodes();
-
-        for (auto obj : nodes)
-        {
-            PMaterial material = obj->GetMaterial();
-            if (material)
-            {
-                Technique* technique = material->GetTechnique().get();
-                technique->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SKINNED);
-            }
-        }
-    }
-
     void BScene::ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
     {
         CHECK_ASSERT(!me->mface && "Legacy conversion is not allowed", __FILE__, __LINE__);
@@ -1058,7 +1101,11 @@ namespace BlenderConverter
 
         // UV-Layer-Data
         Blender::MLoopUV* muvs[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        int totlayer = GetUVLayersBMmesh(me, muvs);
+		char* uvNames[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		int totlayer = GetUVLayersBMmesh(me, muvs, uvNames);
+		for (int i = 0; i < MAX_UVS; i++)
+			if (uvNames[i])
+				mesh->SetUVName(i, uvNames[i]);
 
         int nVertexes = me->totvert;
         int nuvs = glm::clamp(totlayer, 0, 2);
@@ -1079,7 +1126,12 @@ namespace BlenderConverter
             int nloops = curpoly.totloop;
             int indexBase = curpoly.loopstart;
 
-            CHECK_CONDITION(nloops > 2 && nloops < 5 && "Only triangles or quads are converted!", __FILE__, __LINE__);
+            // skip if face is not a triangle || quad
+            if (nloops < 3 || nloops > 4)
+            {
+                TRACE_PRINTF("*** Only triangles or quads are converted! (loops = %d)!!!\n", nloops);
+                continue;
+            }
 
             for (int i = 0; i < nloops; i++)
             {
@@ -1118,7 +1170,7 @@ namespace BlenderConverter
         }
     }
 
-    int BScene::GetUVLayersBMmesh(const Blender::Mesh* mesh, Blender::MLoopUV** uvEightLayerArray)
+    int BScene::GetUVLayersBMmesh(const Blender::Mesh* mesh, Blender::MLoopUV** uvEightLayerArray, char** uvNames)
     {
         CHECK_ASSERT(mesh, __FILE__, __LINE__);
 
@@ -1128,11 +1180,15 @@ namespace BlenderConverter
         {
             for (int i = 0; i < mesh->ldata.totlayer && validLayers < 8; i++)
             {
+				Blender::CustomDataLayer& layer = layers[i];
                 if (layers[i].type == CD_MLOOPUV && uvEightLayerArray)
                 {
-                    Blender::MLoopUV* mtf = (Blender::MLoopUV*)layers[i].data;
-                    if (mtf)
-                        uvEightLayerArray[validLayers++] = mtf;
+					Blender::MLoopUV* mtf = (Blender::MLoopUV*)layer.data;
+					if (mtf)
+					{
+						uvNames[validLayers] = layer.name;
+						uvEightLayerArray[validLayers++] = mtf;
+					}
                 }
             }
         }

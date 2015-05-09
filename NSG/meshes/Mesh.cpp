@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "InstanceData.h"
 #include "ModelMesh.h"
 #include "ResourceXMLNode.h"
+#include "Skeleton.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -139,24 +140,31 @@ namespace NSG
         if (!serializable_)
             return;
         pugi::xml_node child = node.append_child("Mesh");
-		child.append_attribute("name").set_value(name_.c_str());
-		child.append_attribute("wireFrameDrawMode").set_value(GetWireFrameDrawMode());
-		child.append_attribute("solidDrawMode").set_value(GetSolidDrawMode());
+        child.append_attribute("name").set_value(name_.c_str());
+        child.append_attribute("wireFrameDrawMode").set_value(GetWireFrameDrawMode());
+        child.append_attribute("solidDrawMode").set_value(GetSolidDrawMode());
+        for (int i = 0; i < MAX_UVS; i++)
+        {
+            std::string attName = "uv" + ToString(i) + "Name";
+            child.append_attribute(attName.c_str()).set_value(uvNames_[i].c_str());
+        }
+
         if (shape_)
             shape_->Save(child);
+
         pugi::xml_node vertexes = child.append_child("Vertexes");
-		for (auto& obj : vertexsData_)
-		{
-			pugi::xml_node vertexData = vertexes.append_child("VertexData");
-			vertexData.append_attribute("position").set_value(ToString(obj.position_).c_str());
-			vertexData.append_attribute("normal").set_value(ToString(obj.normal_).c_str());
-			vertexData.append_attribute("uv0").set_value(ToString(obj.uv_[0]).c_str());
-			vertexData.append_attribute("uv1").set_value(ToString(obj.uv_[1]).c_str());
-			vertexData.append_attribute("color").set_value(ToString(obj.color_).c_str());
-			// Do not export tangents since they are calculated
-			vertexData.append_attribute("bonesID").set_value(ToString(obj.bonesID_).c_str());
-			vertexData.append_attribute("bonesWeight").set_value(ToString(obj.bonesWeight_).c_str());
-		}
+        for (auto& obj : vertexsData_)
+        {
+            pugi::xml_node vertexData = vertexes.append_child("VertexData");
+            vertexData.append_attribute("position").set_value(ToString(obj.position_).c_str());
+            vertexData.append_attribute("normal").set_value(ToString(obj.normal_).c_str());
+            vertexData.append_attribute("uv0").set_value(ToString(obj.uv_[0]).c_str());
+            vertexData.append_attribute("uv1").set_value(ToString(obj.uv_[1]).c_str());
+            vertexData.append_attribute("color").set_value(ToString(obj.color_).c_str());
+            // Do not export tangents since they are calculated
+            vertexData.append_attribute("bonesID").set_value(ToString(obj.bonesID_).c_str());
+            vertexData.append_attribute("bonesWeight").set_value(ToString(obj.bonesWeight_).c_str());
+        }
         if (indexes_.size())
         {
             CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
@@ -174,6 +182,12 @@ namespace NSG
         indexes_.clear();
 
         name_ = node.attribute("name").as_string();
+
+        for (int i = 0; i < MAX_UVS; i++)
+        {
+            std::string attName = "uv" + ToString(i) + "Name";
+            uvNames_[i] = node.attribute(attName.c_str()).as_string();
+        }
 
         pugi::xml_node shapeNode = node.child("Shape");
         if (shapeNode)
@@ -203,17 +217,17 @@ namespace NSG
             if (indexesNode)
             {
                 std::string data = indexesNode.child_value();
-				string token;
-				for_each(data.begin(), data.end(), [&](char c) 
-				{
-					if (!isspace(c))
-						token += c;
-					else if (!token.empty())
-					{
-						indexes_.push_back(ToInt(token.c_str()));
-						token.clear();
-					}
-				});
+                string token;
+                for_each(data.begin(), data.end(), [&](char c)
+                {
+                    if (!isspace(c))
+                        token += c;
+                    else if (!token.empty())
+                    {
+                        indexes_.push_back(ToInt(token.c_str()));
+                        token.clear();
+                    }
+                });
             }
         }
     }
@@ -258,7 +272,7 @@ namespace NSG
         }
     }
 
-	void Mesh::AddSceneNode(SceneNode* node)
+    void Mesh::AddSceneNode(SceneNode* node)
     {
         sceneNodes_.insert(node);
     }
@@ -294,8 +308,8 @@ namespace NSG
     void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal)
     {
         auto idx0 = vertexsData_.size();
-		CHECK_ASSERT(idx0 + 2 < std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
-		IndexType vidx = (IndexType)idx0;
+        CHECK_ASSERT(idx0 + 2 < std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
+        IndexType vidx = (IndexType)idx0;
         vertexsData_.push_back(v0);
         vertexsData_.push_back(v1);
         vertexsData_.push_back(v2);
@@ -345,7 +359,7 @@ namespace NSG
     {
         if (skeleton)
         {
-			TRACE_PRINTF("Setting skeleton for mesh %s", name_.c_str());
+            TRACE_PRINTF("Setting skeleton for mesh %s", name_.c_str());
         }
 
         skeleton_ = skeleton;
@@ -405,9 +419,31 @@ namespace NSG
         if (!shape_)
         {
             shape_ = std::make_shared<Shape>(name_);
-            shape_->SetType(GetShapeType()); 
+            shape_->SetType(GetShapeType());
             shape_->SetMesh(shared_from_this());
         }
         return shape_;
+    }
+
+    void Mesh::SetUVName(int index, const std::string& name)
+    {
+        CHECK_CONDITION(index >= 0 && index < MAX_UVS, __FILE__, __LINE__);
+        uvNames_[index] = name;
+    }
+
+	size_t Mesh::FillShaderDefines(std::string& defines)
+    {
+        if (skeleton_)
+        {
+            const std::vector<PWeakNode>& bones = skeleton_->GetBones();
+            auto nBones = bones.size();
+            if (nBones)
+            {
+                defines += "const int NUM_BONES = " + ToString(nBones) + ";\n";
+                defines += "#define SKINNED\n";
+                return nBones;
+            }
+        }
+        return 0;
     }
 }

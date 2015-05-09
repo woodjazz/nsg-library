@@ -79,17 +79,11 @@ namespace NSG
         RenderFrame();
     }
 
-    bool Engine::RenderFrame()
+    void Engine::RenderFrame()
     {
-        if (Graphics::this_ && Graphics::this_->BeginFrameRender())
-        {
-            signalBeginFrame_->Run();
-            Window::RenderWindows();
-            UniformsUpdate::ClearAllUpdates();
-            Graphics::this_->EndFrameRender();
-            return true;
-        }
-        return false;
+		signalBeginFrame_->Run();
+		Window::RenderWindows();
+		UniformsUpdate::ClearAllUpdates();
     }
 
     int Engine::Run()

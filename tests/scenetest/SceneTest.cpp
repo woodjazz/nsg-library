@@ -44,37 +44,37 @@ static void Test01()
 	auto camera = scene->CreateChild<Camera>();
 
     std::vector<SceneNode*> visibles;
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 0, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, -10));
 
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1b->SetPosition(Vertex3(0, 0, -100));
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, 1));
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, 0.8f));
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
 
 	camera->SetGlobalLookAt(Vector3(0, 0, 1));
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, -0.8f));
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     camera->SetPosition(Vertex3(0, 0, 1));
 
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 0, __FILE__, __LINE__);
 
 }
@@ -504,30 +504,30 @@ static void Test09()
 	camera->SetFarClip(200);
 
     std::vector<SceneNode*> visibles;
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Boxes, __FILE__, __LINE__);
 	std::vector<PBatch> batches;
-	Graphics::this_->GenerateBatches(visibles, batches);
+	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 1, __FILE__, __LINE__);
 	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get(), __FILE__, __LINE__);
 
 	auto material2 = Material::Create();
 	boxes[0]->SetMaterial(material2);
-	Graphics::this_->GenerateBatches(visibles, batches);
+	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 2, __FILE__, __LINE__);
 	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get(), __FILE__, __LINE__);
 	CHECK_CONDITION(batches[1]->GetMesh() == boxMesh.get(), __FILE__, __LINE__);
 	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial(), __FILE__, __LINE__);
 
     camera->SetGlobalLookAt(Vector3(0, 0, 1));
-    scene->GetVisibleNodes(camera.get(), visibles);
+    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Spheres, __FILE__, __LINE__);
-	Graphics::this_->GenerateBatches(visibles, batches);
+	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 1, __FILE__, __LINE__);
 	CHECK_CONDITION(batches[0]->GetMesh() == sphereMesh.get(), __FILE__, __LINE__);
 	for (int i = 0; i < Spheres / 2; i++)
 		spheres[i]->SetMaterial(material2);
-	Graphics::this_->GenerateBatches(visibles, batches);
+	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 2, __FILE__, __LINE__);
 	CHECK_CONDITION(batches[0]->GetMesh() == sphereMesh.get(), __FILE__, __LINE__);
 	CHECK_CONDITION(batches[1]->GetMesh() == sphereMesh.get(), __FILE__, __LINE__);
@@ -563,12 +563,12 @@ static void Test0A()
 	}
 
 	std::vector<SceneNode*> visibles;
-	scene->GetVisibleNodes(camera.get(), visibles);
+	scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Spheres + Boxes, __FILE__, __LINE__);
-	Graphics::this_->SortBackToFront(visibles);
+	Renderer::GetPtr()->SortBackToFront(visibles);
 	CHECK_CONDITION(visibles[0]->GetMesh().get() == sphereMesh.get(), __FILE__, __LINE__);
 	CHECK_CONDITION(visibles[0]->GetPosition().z > 100, __FILE__, __LINE__);
-	Graphics::this_->SortFrontToBack(visibles);
+	Renderer::GetPtr()->SortFrontToBack(visibles);
 	CHECK_CONDITION(visibles[0]->GetMesh().get() == boxMesh.get(), __FILE__, __LINE__);
 	CHECK_CONDITION(visibles[0]->GetPosition().z < 1.01f, __FILE__, __LINE__);
 }

@@ -36,7 +36,6 @@ int NSG_MAIN(int argc, char* argv[])
     auto object = scene->GetChild<SceneNode>("Bone", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
     plane->GetMaterial()->SetShininess(10);
-    plane->GetMaterial()->SetDisplacementMap(nullptr);
 
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);

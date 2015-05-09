@@ -32,12 +32,11 @@ namespace NSG
 	class Filter
 	{
 	public:
-		Filter(const std::string& name, PTexture input, ProgramFlags flags = (int)ProgramFlag::UNLIT | (int)ProgramFlag::FLIP_Y);
+		Filter(const std::string& name, PTexture input);
 		~Filter();
 		void Draw();
 		PMaterial GetMaterial() const { return pMaterial_; }
 		PTexture GetTexture() const;
-		PProgram GetProgram() const;
 		void SetInputTexture(PTexture input);
 		PTexture GetInputTexture() const;
 		void SetWindow(Window* window);

@@ -79,6 +79,7 @@ namespace NSG
 		void Load(const pugi::xml_node& node) override;
 		const OrthoProjection& GetOrthoProjection() const { return orthoProjection_; }
 		void UnRegisterWindow();
+		static SignalCamera::PSignal SignalBeingDestroy();
 	private:
 		void CalculateOrthoProjection() const;
 		float CalculateAspectRatio() const;

@@ -40,7 +40,7 @@ int NSG_MAIN(int argc, char* argv[])
 	box->SetPosition(Vertex3(0, 0, -5));
 	box->SetMesh(Mesh::Create<BoxMesh>());
 	box->SetMaterial(Material::GetOrCreate());
-	box->GetMaterial()->SetSolid(false);
+	box->GetMaterial()->SetFillMode(FillMode::WIREFRAME);
 	box->GetMaterial()->SetColor(Color(1, 0, 1, 1));
 
     auto button1 = scene->CreateChild<Button>();

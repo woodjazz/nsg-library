@@ -53,6 +53,8 @@ namespace NSG
 		void SetType(LightType type);
 		void Save(pugi::xml_node& node) const override;
 		void Load(const pugi::xml_node& node) override;
+		void FillShaderDefines(std::string& defines);
+		static SignalLight::PSignal SignalBeingDestroy();
 	private:
 		LightType type_;
 		Color ambient_;

@@ -38,8 +38,9 @@ misrepresented as being the original software.
 #include "ShowTexture.h"
 #include "SDLWindow.h"
 #include "Keys.h"
-
+#include "Texture.h"
 #include "UTF8String.h"
+#include "Renderer.h"
 #include <algorithm>
 #include <thread>
 
@@ -150,6 +151,7 @@ namespace NSG
 
         if (Window::mainWindow_ == this)
         {
+			Graphics::this_->ResetCachedState();
             // destroy other windows
             auto windows = Window::GetWindows();
             for (auto& obj : windows)
@@ -279,12 +281,13 @@ namespace NSG
     PFilter Window::AddBlurFilter()
     {
         PFilter blur;
-        ProgramFlags flags = (int)ProgramFlag::BLUR | (int)ProgramFlag::FLIP_Y;
         std::string name = GetUniqueName("FilterBlur");
         if (filters_.empty())
-            blur = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture(), flags);
+            blur = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
         else
-            blur = std::make_shared<Filter>(name, filters_.back()->GetTexture(), flags);
+            blur = std::make_shared<Filter>(name, filters_.back()->GetTexture());
+		blur->GetMaterial()->SetShaderCommand(ShaderCommand::BLUR);
+		blur->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(blur);
         return blur;
     }
@@ -293,19 +296,24 @@ namespace NSG
     {
         CHECK_ASSERT(filters_.size() > 0, __FILE__, __LINE__);
         PFilter blend;
-        ProgramFlags flags = (int)ProgramFlag::BLEND | (int)ProgramFlag::FLIP_Y;
         std::string name = GetUniqueName("FilterBlend");
         size_t n = filters_.size();
         if (n > 1)
         {
-            blend = std::make_shared<Filter>(name, filters_[n - 2]->GetTexture(), flags);
-            blend->GetMaterial()->SetTexture(1, filters_[n - 1]->GetTexture());
+            blend = std::make_shared<Filter>(name, filters_[n - 2]->GetTexture());
+			auto texture = filters_[n - 1]->GetTexture();
+			texture->SetMapType(TextureType::NORM);
+			blend->GetMaterial()->SetTexture(texture);
         }
         else
         {
-            blend = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture(), flags);
-            blend->GetMaterial()->SetTexture(1, filters_[0]->GetTexture());
+            blend = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
+			auto texture = filters_[0]->GetTexture();
+			texture->SetMapType(TextureType::NORM);
+			blend->GetMaterial()->SetTexture(texture);
         }
+		blend->GetMaterial()->SetShaderCommand(ShaderCommand::BLEND);
+		blend->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(blend);
         return blend;
     }
@@ -313,31 +321,15 @@ namespace NSG
     PFilter Window::AddWaveFilter()
     {
         PFilter wave;
-        ProgramFlags flags = (int)ProgramFlag::WAVE | (int)ProgramFlag::FLIP_Y;
         std::string name = GetUniqueName("FilterWave");
         if (filters_.empty())
-            wave = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture(),  flags);
+            wave = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
         else
-            wave = std::make_shared<Filter>(name, filters_.back()->GetTexture(),  flags);
+            wave = std::make_shared<Filter>(name, filters_.back()->GetTexture());
+		wave->GetMaterial()->SetShaderCommand(ShaderCommand::WAVE);
+		wave->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(wave);
         return wave;
-    }
-
-
-    PFilter Window::AddUserFilter(PResource fragmentShader)
-    {
-        PFilter filter;
-
-        if (filters_.empty())
-            filter = std::make_shared<Filter>("UserFilter", frameBuffer_->GetColorTexture());
-        else
-            filter = std::make_shared<Filter>("UserFilter", filters_.back()->GetTexture());
-
-        filter->GetProgram()->SetFragmentShader(fragmentShader);
-
-        AddFilter(filter);
-
-        return filter;
     }
 
     void Window::AddFilter(PFilter filter)
@@ -390,6 +382,16 @@ namespace NSG
             auto window(obj.lock());
             if (window && window->scene_)
                 window->scene_->UpdateAll(delta);
+        }
+    }
+
+    void Window::RenderFrame()
+    {
+        if(BeginFrameRender())
+        {
+            Renderer::GetPtr()->Render(this, scene_);
+            EndFrameRender();
+            SwapWindowBuffers();
         }
     }
 

@@ -45,16 +45,14 @@ namespace NSG
 		PPass GetPass(unsigned idx);
 		void Save(pugi::xml_node& node);
 		void Load(const pugi::xml_node& node);
-		void Draw(Camera* camera);
-		void Draw();
-		void Draw(const Batch& batch);
 		Material* GetMaterial() { return material_; }
 		void CopyPasses(const PASSES& passes);
-		bool IsTransparent() const;
-		bool IsText() const;
-		void Invalidate();
+		LightingMode GetLightingMode() const { return lightingMode_; }
+		void SetLightingMode(LightingMode mode) { lightingMode_ = mode; }
+		void FillShaderDefines(std::string& defines, const Light* light);
 	private:
 		Material* material_;
 		PASSES passes_;
+		LightingMode lightingMode_;
 	};
 }

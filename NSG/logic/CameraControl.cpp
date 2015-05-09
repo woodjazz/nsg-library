@@ -340,7 +340,7 @@ namespace NSG
         else
         {
             BoundingBox bb;
-            if (!camera_->GetScene()->GetVisibleBoundingBox(camera_.get(), bb))
+			if (!camera_->GetScene()->GetVisibleBoundingBox(RenderLayer::DEFAULT_LAYER, camera_.get(), bb))
                 bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_.get());
             newCenter = ray.GetPoint(glm::distance(bb.Center(), camera_->GetGlobalPosition()));
             //newCenter = bb.Center();

@@ -40,8 +40,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     PassData::PassData()
-        : blendMode_(BLEND_NONE),
-          enableDepthTest_(true),
+        : enableDepthTest_(true),
           enableStencilTest_(false),
           stencilMask_(~GLuint(0)),
           sfailStencilOp_(GL_KEEP),
@@ -52,36 +51,38 @@ namespace NSG
           stencilMaskValue_(~GLuint(0)),
           enableColorBuffer_(true),
           enableDepthBuffer_(true),
-          drawMode_(DrawMode::SOLID),
           enableCullFace_(true),
           cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT),
-          depthFunc_(DepthFunc::LESS)
+          depthFunc_(DepthFunc::LESS),
+          blendMode_(BLEND_MODE::NONE)
     {
 
     }
 
-    Pass::Pass(Technique* technique)
-        : technique_(technique)
+    Pass::Pass()
     {
-        data_.pProgram_ = std::make_shared<Program>(technique->GetMaterial());
     }
 
     Pass::~Pass()
     {
     }
 
-    PPass Pass::Clone(Material* material) const
+    PPass Pass::Clone() const
     {
-        auto pass = std::make_shared<Pass>(technique_);
+        auto pass = std::make_shared<Pass>();
         pass->data_ = data_;
-        pass->data_.pProgram_ = data_.pProgram_->Clone(material);
         return pass;
     }
 
     void Pass::SetBlendMode(BLEND_MODE mode)
     {
         data_.blendMode_ = mode;
+    }
+
+    BLEND_MODE Pass::GetBlendMode() const
+    {
+        return data_.blendMode_;
     }
 
     void Pass::EnableColorBuffer(bool enable)
@@ -128,11 +129,6 @@ namespace NSG
         data_.stencilMaskValue_ = mask;
     }
 
-    void Pass::SetDrawMode(DrawMode mode)
-    {
-        data_.drawMode_ = mode;
-    }
-
     void Pass::EnableCullFace(bool enable)
     {
         data_.enableCullFace_ = enable;
@@ -148,27 +144,12 @@ namespace NSG
         data_.frontFaceMode_ = mode;
     }
 
-    bool Pass::IsTransparent() const
-    {
-        return data_.blendMode_ == BLEND_MODE::BLEND_ALPHA;
-    }
-
-    bool Pass::IsText() const
-    {
-        return data_.pProgram_->GetFlags() & (int)ProgramFlag::TEXT ? true : false;
-    }
-
-    void Pass::Draw()
-    {
-        Graphics::this_->DrawActiveMesh(this);
-    }
-
     void Pass::Save(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Pass");
 
-        if (data_.pProgram_)
-            data_.pProgram_->Save(child);
+//        if (data_.pProgram_)
+//            data_.pProgram_->Save(child);
 
         child.append_attribute("blendMode").set_value((int)data_.blendMode_);
         child.append_attribute("enableDepthTest").set_value(data_.enableDepthTest_);
@@ -182,7 +163,6 @@ namespace NSG
         child.append_attribute("stencilMaskValue").set_value(data_.stencilMaskValue_);
         child.append_attribute("enableColorBuffer").set_value(data_.enableColorBuffer_);
         child.append_attribute("enableDepthBuffer").set_value(data_.enableDepthBuffer_);
-        child.append_attribute("drawMode").set_value((int)data_.drawMode_);
         child.append_attribute("enableCullFace").set_value(data_.enableCullFace_);
         child.append_attribute("cullFaceMode").set_value((int)data_.cullFaceMode_);
         child.append_attribute("frontFaceMode").set_value((int)data_.frontFaceMode_);
@@ -191,9 +171,9 @@ namespace NSG
 
     void Pass::Load(const pugi::xml_node& node, Material* material)
     {
-        pugi::xml_node programChild = node.child("Program");
-        std::string flags = programChild.attribute("flags").as_string();
-        data_.pProgram_->SetFlags(flags);
+//        pugi::xml_node programChild = node.child("Program");
+//        std::string flags = programChild.attribute("flags").as_string();
+//        data_.pProgram_->SetFlags(flags);
 
         SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
         EnableDepthTest(node.attribute("enableDepthTest").as_bool());
@@ -203,15 +183,9 @@ namespace NSG
         SetStencilFunc(node.attribute("stencilFunc").as_int(), node.attribute("stencilRefValue").as_int(), node.attribute("stencilMaskValue").as_int());
         EnableColorBuffer(node.attribute("enableColorBuffer").as_bool());
         EnableDepthBuffer(node.attribute("enableDepthBuffer").as_bool());
-        SetDrawMode((DrawMode)node.attribute("drawMode").as_int());
         EnableCullFace(node.attribute("enableCullFace").as_bool());
         SetCullFace((CullFaceMode)node.attribute("cullFaceMode").as_int());
         SetFrontFace((FrontFaceMode)node.attribute("frontFaceMode").as_int());
         SetDepthFunc((DepthFunc)node.attribute("depthFunc").as_int());
-    }
-
-    void Pass::Invalidate()
-    {
-        data_.pProgram_->Invalidate();
     }
 }

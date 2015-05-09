@@ -37,8 +37,10 @@ misrepresented as being the original software.
 namespace NSG
 {
     Technique::Technique(Material* material)
-    : material_(material)
+    : material_(material),
+    lightingMode_(LightingMode::VERTEXCOLOR)
     {
+        GetPass(0); // force default pass creation
     }
 
     Technique::~Technique()
@@ -56,7 +58,7 @@ namespace NSG
     PPass Technique::GetPass(unsigned idx) 
     { 
         if(passes_.size() <= idx)
-			AddPass(std::make_shared<Pass>(this));
+			AddPass(std::make_shared<Pass>());
 
         return passes_.at(idx); 
     }
@@ -66,43 +68,10 @@ namespace NSG
         return passes_.size();
     }
 
-    void Technique::Draw(Camera* camera)
-    {
-        Graphics::this_->SetCamera(camera);
-        Draw();
-    }
-
-    void Technique::Draw()
-    {
-        for(auto& pass: passes_)
-            pass->Draw();
-    }
-
-	void Technique::Draw(const Batch& batch)
-	{
-		auto graphics = Graphics::this_;
-		graphics->SetMesh(batch.GetMesh());
-		if (batch.AllowInstancing())
-		{
-			graphics->SetNode(nullptr);
-			graphics->DrawInstancedActiveMesh(GetPass(0).get(), batch);
-		}
-		else
-		{
-			auto& nodes = batch.GetNodes();
-			for (auto& node : nodes)
-			{
-				SceneNode* sn = (SceneNode*)node;
-				graphics->SetNode(sn);
-				for (auto& pass : passes_)
-					graphics->DrawActiveMesh(pass.get());
-			}
-		}
-	}
-
     void Technique::Save(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Technique");
+        child.append_attribute("lightingMode").set_value((int)lightingMode_);
         if (passes_.size())
         {
             pugi::xml_node childPasses = child.append_child("Passes");
@@ -113,6 +82,7 @@ namespace NSG
 
     void Technique::Load(const pugi::xml_node& node)
     {
+        SetLightingMode((LightingMode)node.attribute("lightingMode").as_int());
 		passes_.clear();
         pugi::xml_node childPasses = node.child("Passes");
         if (childPasses)
@@ -120,7 +90,7 @@ namespace NSG
             pugi::xml_node childPass = childPasses.child("Pass");
             while (childPass)
             {
-                auto pass = std::make_shared<Pass>(this);
+                auto pass = std::make_shared<Pass>();
                 AddPass(pass);
                 pass->Load(childPass, GetMaterial());
                 childPass = childPass.next_sibling("Pass");
@@ -132,29 +102,39 @@ namespace NSG
     {
         passes_.clear();
         for (auto& pass : passes)
-			AddPass(pass->Clone(material_));
+			AddPass(pass->Clone());
     }
 
-	bool Technique::IsTransparent() const
-	{
-		for (auto& pass : passes_)
-			if (pass->IsTransparent())
-				return true;
-		return false;
-	}
-
-	bool Technique::IsText() const
-	{
-		for (auto& pass : passes_)
-			if (pass->IsText())
-				return true;
-		return false;
-	}
-
-    void Technique::Invalidate()
+    void Technique::FillShaderDefines(std::string& defines, const Light* light)
     {
-        for (auto& pass : passes_)
-            pass->Invalidate();
+        switch(lightingMode_)
+        {
+            case LightingMode::VERTEXCOLOR:
+				defines += "#define VERTEXCOLOR\n";
+                break;
+            case LightingMode::UNLIT:
+				defines += "#define UNLIT\n";
+                break;
+            case LightingMode::PERVERTEX:
+            {
+                if(light)
+				    defines += "#define PER_VERTEX_LIGHTING\n";
+                else
+                    defines += "#define UNLIT\n";
+                break;
+            }
+            case LightingMode::PERPIXEL:
+            {
+                if(light)
+				    defines += "#define PER_PIXEL_LIGHTING\n";
+                else
+                    defines += "#define UNLIT\n";
+                break;
+            }
+            default:
+                CHECK_ASSERT(!"Unkwown lighting mode!!!", __FILE__, __LINE__);
+                break;
+        }
     }
 
 }

@@ -48,12 +48,12 @@ int NSG_MAIN(int argc, char* argv[])
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/spark.png");
 	auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 	auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
-	ps->GetParticleMaterial()->SetDiffuseMap(texture);
+	ps->GetParticleMaterial()->SetTexture(texture);
 	auto meshEmitter(Mesh::Create<BoxMesh>());
     ps->SetMesh(meshEmitter);
     ps->SetPosition(Vertex3(0, 10, 0));
 	ps->SetMaterial(Material::Create());
-	ps->GetMaterial()->SetSolid(false);
+	ps->GetMaterial()->SetFillMode(FillMode::WIREFRAME);
 	return Engine().Run();
 }
 

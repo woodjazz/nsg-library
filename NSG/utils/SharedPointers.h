@@ -337,4 +337,7 @@ namespace NSG
 
 	class Image;
 	typedef std::shared_ptr<Image> PImage;
+
+	class Renderer;
+	typedef std::shared_ptr<Renderer> PRenderer;
 }

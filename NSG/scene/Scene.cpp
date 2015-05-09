@@ -29,7 +29,7 @@ namespace NSG
           ambient_(0.3f, 0.3f, 0.3f, 1),
           orthoCamera_(std::make_shared<Camera>("SceneOrthoCamera")),
           physicsWorld_(new PhysicsWorld),
-		  window_(nullptr),
+          window_(nullptr),
           signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
           signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
           signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
@@ -42,89 +42,107 @@ namespace NSG
         for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)
             octree_[i] = std::make_shared<Octree>();
 
-		if (Graphics::this_)
-		{
-			Graphics::this_->SetScene(this);
-			auto window = Graphics::this_->GetWindow();
-			if (window)
-				SetWindow(window);
-		}
+        if (Graphics::this_)
+        {
+            Graphics::this_->SetScene(this);
+            auto window = Graphics::this_->GetWindow();
+            if (window)
+                SetWindow(window);
+        }
 
-		slotWindowCreated_ = Window::SigReady()->Connect([this](Window* window)
-		{
-			if (!window_)
-				SetWindow(window);
-		});
+        slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
+        {
+            if (!window_)
+                SetWindow(window);
+        });
+
+        slotLightBeingDestroy_ = Light::SignalBeingDestroy()->Connect([this](Light * light)
+        {
+			lights_.erase(std::remove(lights_.begin(), lights_.end(), light));
+        });
+
+        slotCameraBeingDestroy_ = Camera::SignalBeingDestroy()->Connect([this](Camera * camera)
+        {
+            cameras_.erase(std::remove(cameras_.begin(), cameras_.end(), camera));
+        });
+
+        slotPSBeingDestroy_ = ParticleSystem::SignalBeingDestroy()->Connect([this](ParticleSystem * ps)
+        {
+            particleSystems_.erase(std::remove(particleSystems_.begin(), particleSystems_.end(), ps));
+        });
     }
 
     Scene::~Scene()
     {
-        if(window_ && window_->GetScene() == this)
+		slotLightBeingDestroy_ = nullptr;
+		slotCameraBeingDestroy_ = nullptr;
+		slotPSBeingDestroy_ = nullptr;
+        if (window_ && window_->GetScene() == this)
             window_->SetScene(nullptr);
     }
 
     void Scene::SetWindow(Window* window)
     {
-		if (window_ != window)
-		{
-			if (window)
-			{
-                if(!window->GetScene())
+        if (window_ != window)
+        {
+            if (window)
+            {
+                if (!window->GetScene())
                     window->SetScene(this);
 
-				slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
-				{
-					if (signalNodeMouseMoved_->HasSlots())
-					{
-						SceneNode* node = GetClosestNode(x, y);
-						if (node)
-							signalNodeMouseMoved_->Run(node, x, y);
-					}
-				});
+                slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
+                {
+                    if (signalNodeMouseMoved_->HasSlots())
+                    {
+                        SceneNode* node = GetClosestNode(x, y);
+                        if (node)
+                            signalNodeMouseMoved_->Run(node, x, y);
+                    }
+                });
 
-				slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
-				{
-					if (signalNodeMouseDown_->HasSlots())
-					{
-						SceneNode* node = GetClosestNode(x, y);
-						if (node)
-							signalNodeMouseDown_->Run(node, button, x, y);
-					}
-				});
+                slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
+                {
+                    if (signalNodeMouseDown_->HasSlots())
+                    {
+                        SceneNode* node = GetClosestNode(x, y);
+                        if (node)
+                            signalNodeMouseDown_->Run(node, button, x, y);
+                    }
+                });
 
-				slotMouseUp_ = window->SigMouseUp()->Connect([&](int button, float x, float y)
-				{
-					if (signalNodeMouseUp_->HasSlots())
-					{
-						SceneNode* node = GetClosestNode(x, y);
-						if (node)
-							signalNodeMouseUp_->Run(node, button, x, y);
-					}
-				});
+                slotMouseUp_ = window->SigMouseUp()->Connect([&](int button, float x, float y)
+                {
+                    if (signalNodeMouseUp_->HasSlots())
+                    {
+                        SceneNode* node = GetClosestNode(x, y);
+                        if (node)
+                            signalNodeMouseUp_->Run(node, button, x, y);
+                    }
+                });
 
-				slotMouseWheel_ = window->SigMouseWheel()->Connect([&](float x, float y)
-				{
-					if (signalNodeMouseWheel_->HasSlots())
-					{
-						SceneNode* node = GetClosestNode(x, y);
-						if (node)
-							signalNodeMouseWheel_->Run(node, x, y);
-					}
-				});
+                slotMouseWheel_ = window->SigMouseWheel()->Connect([&](float x, float y)
+                {
+                    if (signalNodeMouseWheel_->HasSlots())
+                    {
+                        SceneNode* node = GetClosestNode(x, y);
+                        if (node)
+                            signalNodeMouseWheel_->Run(node, x, y);
+                    }
+                });
 
-			}
-			else
-			{
-                if(window_->GetScene() == this)
+            }
+            else
+            {
+                if (window_->GetScene() == this)
                     window_->SetScene(nullptr);
-				slotMouseMoved_ = nullptr;
-				slotMouseDown_ = nullptr;
-				slotMouseUp_ = nullptr;
-				slotMouseWheel_ = nullptr;
-			}
+                slotMouseMoved_ = nullptr;
+                slotMouseDown_ = nullptr;
+                slotMouseUp_ = nullptr;
+                slotMouseWheel_ = nullptr;
+            }
 
             window_ = window;
-		}
+        }
     }
 
     void Scene::SetAmbientColor(Color ambient)
@@ -195,67 +213,58 @@ namespace NSG
         return false;
     }
 
-    void Scene::GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const
+	void Scene::GetVisibleNodes(RenderLayer layer, const Camera* camera, std::vector<SceneNode*>& visibles) const
     {
+		if (!camera)
+			camera = orthoCamera_.get();
+
         for (auto& obj : needUpdate_)
             octree_[(int)obj->GetLayer()]->InsertUpdate(obj);
         needUpdate_.clear();
         FrustumOctreeQuery query(visibles, camera);
-        octree_[(int)camera->GetLayer()]->Execute(query);
+		octree_[(int)layer]->Execute(query);
     }
 
-	std::vector<Camera*> Scene::GetCameras(RenderLayer layer) const
-	{
-		std::vector<Camera*> result;
-
-		auto it = cameras_.begin();
-		while (it != cameras_.end())
-		{
-			auto camera = (*it).lock();
-			if (!camera)
-			{
-				it = cameras_.erase(it); //remove unused camera from list
-				continue;
-			}
-			else if (camera->GetLayer() == layer)
-			{
-				result.push_back(camera.get());
-			}
-			++it;
-		}
-
-		return result;
-	}
+    std::vector<Camera*> Scene::GetCameras(RenderLayer layer) const
+    {
+        std::vector<Camera*> result;
+		for (auto camera : cameras_)
+			if (camera->GetLayer() == layer)
+                result.push_back(camera);
+        return result;
+    }
 
     void Scene::Render()
     {
+#if 0
         Graphics::this_->SetScene(this);
         Camera* lastCameraUsed = orthoCamera_.get(); // default camera is ortho
         for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)
         {
             if (octree_[i]->GetDrawables()) //Check if there is something to draw in the current layer
             {
-				auto cameras = GetCameras((RenderLayer)i);
-				if (cameras.empty())
-				{
-                    if(i >= (int)RenderLayer::GUI_LAYER0)
+                auto cameras = GetCameras((RenderLayer)i);
+                if (cameras.empty())
+                {
+                    if (i >= (int)RenderLayer::GUI_LAYER0)
                         lastCameraUsed = orthoCamera_.get(); // if there is not camera for GUI make sure ortho is the default
 
-					//if there is not camera for the layer then use the last one
-					auto oldLayer = lastCameraUsed->SetLayer((RenderLayer)i);
-					Graphics::this_->Render(lastCameraUsed);
-					lastCameraUsed->SetLayer(oldLayer);
-				}
-				else
-				{
-					for (auto& camera : cameras)
-					{
+                    //if there is not camera for the layer then use the last one
+                    auto oldLayer = lastCameraUsed->SetLayer((RenderLayer)i);
+                    Graphics::this_->Render(lastCameraUsed);
+                    lastCameraUsed->SetLayer(oldLayer);
+                }
+                else
+                {
+                    for (auto& camera : cameras)
+                    {
                         lastCameraUsed = camera;
-						Graphics::this_->Render(camera);
-					}
-				}
+                        Graphics::this_->Render(camera);
+                    }
+                }
             }
         }
+#endif
     }
 
     void Scene::NeedUpdate(SceneNode* obj)
@@ -266,7 +275,7 @@ namespace NSG
     void Scene::SavePhysics(pugi::xml_node& node) const
     {
         pugi::xml_node child = node.append_child("Physics");
-		child.append_attribute("gravity").set_value(ToString(physicsWorld_->GetGravity()).c_str());
+        child.append_attribute("gravity").set_value(ToString(physicsWorld_->GetGravity()).c_str());
     }
 
     void Scene::LoadPhysics(const pugi::xml_node& node)
@@ -361,10 +370,10 @@ namespace NSG
         SavePhysics(scene);
     }
 
-    bool Scene::GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const
+	bool Scene::GetVisibleBoundingBox(RenderLayer layer, const Camera* camera, BoundingBox& bb) const
     {
         std::vector<SceneNode*> visibles;
-        GetVisibleNodes(camera, visibles);
+		GetVisibleNodes(layer, camera, visibles);
         if (!visibles.empty())
         {
             bb = BoundingBox();
@@ -377,20 +386,20 @@ namespace NSG
 
     PAnimation Scene::GetOrCreateAnimation(const std::string& name)
     {
-		auto it = animations_.find(name);
-		if (it == animations_.end())
-		{
-			auto animation = std::make_shared<Animation>(name);
-			animations_[name] = animation;
-			return animation;
-		}
-		return it->second;
+        auto it = animations_.find(name);
+        if (it == animations_.end())
+        {
+            auto animation = std::make_shared<Animation>(name);
+            animations_[name] = animation;
+            return animation;
+        }
+        return it->second;
     }
 
     std::vector<PAnimation> Scene::GetAnimationsFor(PNode node) const
     {
         std::vector<PAnimation> result;
-		for (auto& animation : animations_)
+        for (auto& animation : animations_)
         {
             auto& tracks = animation.second->GetTracks();
             for (auto& track : tracks)
@@ -408,12 +417,12 @@ namespace NSG
 
     bool Scene::HasAnimation(const std::string& name) const
     {
-		return animations_.find(name) != animations_.end();
+        return animations_.find(name) != animations_.end();
     }
 
     bool Scene::PlayAnimation(const std::string& name, bool looped)
     {
-		PAnimation animation = animations_.find(name)->second;
+        PAnimation animation = animations_.find(name)->second;
         if (animation)
         {
             PlayAnimation(animation, looped);
@@ -440,32 +449,28 @@ namespace NSG
 
     void Scene::UpdateAnimations(float deltaTime)
     {
-		auto it = animationStateMap_.begin();
-		while (it != animationStateMap_.end())
+        auto it = animationStateMap_.begin();
+        while (it != animationStateMap_.end())
         {
-			auto& animState = it->second;
-			if (!animState->HasEnded())
-			{
-				animState->AddTime(deltaTime);
-				animState->Update();
-				++it;
-			}
-			else
-			{
-				it = animationStateMap_.erase(it);
-			}
-				
+            auto& animState = it->second;
+            if (!animState->HasEnded())
+            {
+                animState->AddTime(deltaTime);
+                animState->Update();
+                ++it;
+            }
+            else
+            {
+                it = animationStateMap_.erase(it);
+            }
+
         }
     }
 
     void Scene::UpdateParticleSystems(float deltaTime)
     {
-        for (auto& obj : particleSystems_)
-        {
-            auto ps = obj.lock();
-            if (ps)
-                ps->Update(deltaTime);
-        }
+        for (auto ps : particleSystems_)
+			ps->Update(deltaTime);
     }
 
     bool Scene::SetAnimationSpeed(const std::string& name, float speed)
@@ -481,59 +486,28 @@ namespace NSG
         return true;
     }
 
-    bool Scene::HasLight(PLight light) const
+    void Scene::AddLight(Light* light)
     {
-        auto itType = lights_.find(light->GetType());
-        if (itType != lights_.end())
+        lights_.push_back(light);
+
+        // we want the lights sorted by type for rendering/batching purposes
+        std::sort(lights_.begin(), lights_.end(), [&](const Light * a, const Light * b) -> bool
         {
-            auto& lights = itType->second;
-            auto it = std::find_if(lights.begin(), lights.end(), [&](PWeakLight obj)
-            {
-                auto p = obj.lock();
-                return p == light;
-            });
-
-            return it != lights.end();
-        }
-
-        return false;
+            return (int)a->GetType() < (int)b->GetType();
+        });
     }
 
-    void Scene::AddLight(PLight light)
+    const std::vector<Light*>& Scene::GetLights() const
     {
-        if (!HasLight(light))
-            lights_[light->GetType()].push_back(light);
+        return lights_;
     }
 
-    const std::vector<PWeakLight>& Scene::GetLights(LightType type) const
-    {
-        return lights_[type];
-    }
-
-    void Scene::ChangeLightType(PLight light, LightType fromType)
-    {
-        auto itType = lights_.find(fromType);
-        if (itType != lights_.end())
-        {
-            auto& lights = itType->second;
-            auto it = std::find_if(lights.begin(), lights.end(), [&](PWeakLight obj)
-            {
-                auto p = obj.lock();
-                return p == light;
-            });
-
-            CHECK_CONDITION(it != lights.end(), __FILE__, __LINE__);
-            lights.erase(it);
-            AddLight(light);
-        }
-    }
-
-    void Scene::AddCamera(PCamera camera)
+    void Scene::AddCamera(Camera* camera)
     {
         cameras_.push_back(camera);
     }
 
-    void Scene::AddParticleSystem(PParticleSystem ps)
+    void Scene::AddParticleSystem(ParticleSystem* ps)
     {
         particleSystems_.push_back(ps);
     }
@@ -561,5 +535,10 @@ namespace NSG
         }
 
         return nullptr;
+    }
+
+    unsigned Scene::GetDrawablesNumber(RenderLayer layer) const
+    {
+        return octree_[(int)layer]->GetDrawables();
     }
 }

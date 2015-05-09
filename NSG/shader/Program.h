@@ -29,6 +29,8 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "Object.h"
 #include "Constants.h"
+#include "MapAndVector.h"
+#include <string>
 
 namespace NSG
 {
@@ -36,10 +38,8 @@ namespace NSG
     class Program : public Object
     {
     public:
-		Program(Material* material);
+		Program(const std::string& defines);
         virtual ~Program();
-        void SetVertexShader(PResource resource);
-        void SetFragmentShader(PResource resource);
         bool Initialize();
         GLuint GetAttributeLocation(const std::string& name);
         GLuint GetUniformLocation(const std::string& name);
@@ -53,33 +53,26 @@ namespace NSG
         GLuint GetAttBonesWeightLoc() const { return att_bonesWeightLoc_; }
         GLuint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
         GLuint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
-        void SetVariables(Mesh* mesh, Node* node);
+        void Set(Mesh* mesh);
+        void Set(Node* node);
+        void Set(Material* material);
+        void Set(Light* light);
+        void SetVariables();
         GLuint GetId() const { return id_; }
-        void Save(pugi::xml_node& node);
-        const ProgramFlags& GetFlags() const { return flags_; }
-        void SetFlags(const ProgramFlags& flags);
-        void EnableFlags(const ProgramFlags& flags);
-        void DisableFlags(const ProgramFlags& flags);
-        PProgram Clone(Material* material) const;
         Material* GetMaterial() const { return material_; }
-        bool IsSkinned() const;
         const std::string& GetName() const { return name_; }
+		void SetNumberBones(size_t nBones);
     private:
-        std::string TranslateFlags() const;
-        size_t GetNeededVarying() const;
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-        void SetSceneVariables(Scene* scene);
+        void SetSceneVariables();
         void SetCameraVariables();
-        void SetNodeVariables(Node* node);
+        void SetNodeVariables();
         void SetMaterialVariables();
-		bool SetSkeletonVariables(Skeleton* skeleton);
-		void DefineSamplers(std::string& fBuffer);
-		void SetupLighting(std::string& preDefines);
+		void SetSkeletonVariables();
 		void SetUniformLocations();
 		bool ShaderCompiles(GLenum type, const std::string& buffer) const;
-		void ReduceShaderComplexity(GLenum type);
 		void ConfigureShaders(std::string& vertexShader, std::string& fragmentShader);
 
         struct BaseLightLoc
@@ -89,11 +82,10 @@ namespace NSG
             GLuint specular_;
         };
 
-        void SetBaseLightVariables(const BaseLightLoc& baseLoc, const Light* light);
-        bool SetLightVariables(Scene* scene);
+        void SetBaseLightVariables(const BaseLightLoc& baseLoc);
+        void SetLightVariables();
 
-        Material* material_;
-        ProgramFlags flags_;
+        std::string defines_;
         GLuint id_;
 
         PVertexShader pVShader_;
@@ -137,14 +129,12 @@ namespace NSG
             GLuint diffuse_;
             GLuint specular_;
             GLuint shininess_;
-            GLuint parallaxScale_;
         };
 
         MaterialLoc materialLoc_;
 
         struct DirectionalLightLoc
         {
-            GLuint enabled_;
             BaseLightLoc base_;
             GLuint direction_;
         };
@@ -158,7 +148,6 @@ namespace NSG
 
         struct PointLightLoc
         {
-            GLuint enabled_;
             BaseLightLoc base_;
             GLuint position_;
             AttenuationLoc atten_;
@@ -166,7 +155,6 @@ namespace NSG
 
         struct SpotLightLoc
         {
-			GLuint enabled_;
             BaseLightLoc base_;
             GLuint position_;
             AttenuationLoc atten_;
@@ -174,9 +162,9 @@ namespace NSG
             GLuint cutOff_;
         };
 
-        std::vector<PointLightLoc> pointLightsLoc_;
-        std::vector<DirectionalLightLoc> directionalLightsLoc_;
-        std::vector<SpotLightLoc> spotLightsLoc_;
+        PointLightLoc pointLightLoc_;
+        DirectionalLightLoc directionalLightLoc_;
+        SpotLightLoc spotLightLoc_;
 
         GLuint blendMode_loc_;
         
@@ -197,9 +185,6 @@ namespace NSG
         /////////////////////////////////////
 
 		size_t nBones_;
-        size_t nDirectionalLights_;
-        size_t nPointLights_;
-        size_t nSpotLights_;
         Camera* activeCamera_;
         bool viewVariablesNeverSet_;
         bool materialVariablesNeverSet_;
@@ -208,15 +193,9 @@ namespace NSG
         Scene* activeScene_;
         Color sceneColor_;
 
-        std::vector<const Light*> activeDirectionalLights_;
-		std::vector<const Light*> activePointLights_;
-		std::vector<const Light*> activeSpotLights_;
-
-        PResource vertexShader_;
-        PResource fragmentShader_;
-        bool spotLightsReduced_;
-        bool directionalLightsReduced_;
-        bool pointLightsReduced_;
-		bool lightingEnabled_;
+        Mesh* mesh_;
+        Node* node_;
+        Material* material_;
+        Light* light_;
     };
 }

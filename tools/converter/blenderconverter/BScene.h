@@ -56,7 +56,7 @@ namespace BlenderConverter
         void CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
         void CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
 		void ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
-		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray);
+		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray, char** uvNames);
 		void AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
 		void CreateSkeleton(NSG::PScene scene, const Blender::Object* obj);
 		std::vector<NSG::PSound> LoadSounds(bParse::bMain* data);
@@ -83,7 +83,6 @@ namespace BlenderConverter
 		PBSpline ConvertSpline(const Blender::BezTriple* bez, SPLINE_CHANNEL_CODE access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor);
 		NSG::AnimationChannelMask ConvertChannel(const Blender::bAction* action, PTrackData trackData, NSG::AnimationTrack& track, float timeFrameLength);
 		void LoadPhysics(const Blender::Object* obj, NSG::PSceneNode sceneNode);
-		void MarkProgramAsSkinableNodes(const NSG::Mesh* mesh);
 		const void* FindByString(const Blender::ListBase* listbase, const char* id, int offset) const;
 		const Blender::bPoseChannel* GetPoseChannelByName(const Blender::bPose* pose, const char* name) const;
 		const Blender::Bone* GetBoneFromDefGroup(const Blender::Object* obj, const Blender::bDeformGroup* def) const;

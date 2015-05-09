@@ -39,7 +39,6 @@ namespace NSG
 		Batch(const Batch&) = delete;
 		//Batch& operator = (const Batch&) = delete;
     	bool IsReady();
-		void Draw();
 		void Add(SceneNode* node);
 		Mesh* GetMesh() const { return mesh_; }
 		Material* GetMaterial() const { return material_; }

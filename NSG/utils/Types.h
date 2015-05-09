@@ -72,13 +72,53 @@ namespace NSG
 
     enum class LightType {POINT, DIRECTIONAL, SPOT};
 
-    typedef enum
+	enum class BLEND_MODE
     {
-        BLEND_NONE,
-        BLEND_ALPHA,
-        BLEND_MULTIPLICATIVE,
-        BLEND_ADDITIVE
-    } BLEND_MODE ;
+        NONE,
+        ALPHA,
+        MULTIPLICATIVE,
+        ADDITIVE
+    };
+
+    enum class TextureBlend
+    {
+        NONE,
+        MIX,
+        MUL,
+        ADD,
+        SUB,
+        DIV,
+        DARK,
+        DIFF,
+        LIGHT,
+        SCREEN,
+        OVERLAY,
+        BLEND_HUE,
+        BLEND_SAT,
+        BLEND_VAL,
+		BLEND_COLOR
+    };
+
+    enum class TextureType
+    {
+        UNKNOWN,
+        COL,
+        NORM,
+        COLSPEC,
+        COLMIR,
+        VARS,
+        REF,
+        SPEC,
+        EMIT,
+        ALPHA,
+        HAR,
+        RAYMIRR,
+        TRANSLU,
+        AMB,
+        DISPLACE,
+        WARP,
+        LAYER
+    };
 
     typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
     typedef enum {TOP_ALIGNMENT, MIDDLE_ALIGNMENT, BOTTOM_ALIGNMENT} VerticalAlignment;
@@ -199,32 +239,6 @@ namespace NSG
         float distance_;
         SceneNode* node_;
     };
-
-    enum class ProgramFlag
-    {
-        NONE = 0, // vertex color by default
-        PER_VERTEX_LIGHTING = 1 << 0,
-        PER_PIXEL_LIGHTING = 1 << 1,
-        BLEND = 1 << 2,
-        BLUR = 1 << 3,
-        TEXT = 1 << 4,
-        SHOW_TEXTURE0 = 1 << 5,
-        STENCIL = 1 << 6,
-        NORMALMAP = 1 << 7,
-        LIGHTMAP = 1 << 8,
-        UNLIT = 1 << 9,
-        SKINNED = 1 << 10,
-        SPECULARMAP = 1 << 11,
-        AOMAP = 1 << 12,
-        DISPLACEMENTMAP = 1 << 13,
-        DIFFUSEMAP = 1 << 14,
-        SPHERICAL_BILLBOARD = 1 << 15,
-        CYLINDRICAL_BILLBOARD = 1 << 16,
-        FLIP_Y = 1 << 17,
-        WAVE = 1 << 18
-    };
-
-    typedef FlagSet<ProgramFlag> ProgramFlags;
 
     enum class TextureFlag
     {
@@ -370,15 +384,17 @@ namespace NSG
     struct SignalHTTPRequestOnLoad : Signal<std::string> {};
     struct SignalHTTPRequestOnError : Signal<int, std::string> {};
     struct SignalEngine : Signal<Engine*> {};
+    struct SignalLight : Signal<Light*> {};
+    struct SignalCamera : Signal<Camera*> {};
+    struct SignalParticleSystem : Signal<ParticleSystem*> {};
 
     enum MaterialTexture
     {
-        DIFFUSE_MAP,
+		DIFFUSE_MAP,
         NORMAL_MAP,
         LIGHT_MAP,
         SPECULAR_MAP,
         AO_MAP,
-        DISPLACEMENT_MAP,
         MAX_TEXTURES_MAPS
     };
 
@@ -397,7 +413,6 @@ namespace NSG
     enum class RenderLayer
     {
         DEFAULT_LAYER,
-        PARTICLES_LAYER,
         GUI_LAYER0,
         GUI_LAYER1,
         MAX_LAYERS
@@ -463,5 +478,37 @@ namespace NSG
         PVRTC_RGBA_2BPP,
         PVRTC_RGB_4BPP,
         PVRTC_RGBA_4BPP
+    };
+
+    enum class FillMode
+    {
+        SOLID,
+        WIREFRAME,
+        POINT
+    };
+
+    enum class LightingMode
+    {
+        VERTEXCOLOR,
+        UNLIT,
+        PERVERTEX,
+        PERPIXEL
+    };
+
+    enum class ShaderCommand
+    {
+        LIGHTING,
+        TEXT,
+        BLEND,
+        BLUR,
+        WAVE,
+        SHOW_TEXTURE0
+    };
+
+    enum class BillboardType
+    {
+        NONE,
+        SPHERICAL,
+        CYLINDRICAL
     };
 }

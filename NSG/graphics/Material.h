@@ -38,31 +38,10 @@ namespace NSG
     public:
         Material(const std::string& name = GetUniqueName("Material"));
         ~Material();
-        void SetProgramFlags(unsigned passIndex, const ProgramFlags& flags);
-        void EnableProgramFlags(unsigned passIndex, const ProgramFlags& flags);
-        void DisableProgramFlags(unsigned passIndex, const ProgramFlags& flags);
         PMaterial Clone(const std::string& name = GetUniqueName("Clone"));
-        void SetName(const std::string& name) {name_ = name;}
-        const std::string& GetName() const { return name_;  }
-		bool SetTexture(size_t index, PTexture texture);
-        void SetDiffuseMap(PTexture texture);
-        void SetNormalMap(PTexture texture);
-        void SetLightMap(PTexture texture);
-        void SetSpecularMap(PTexture texture);
-        void SetAOMap(PTexture texture);
-        void SetDisplacementMap(PTexture texture);
+		bool SetTexture(PTexture texture);
 		void SetTextMap(PTexture texture);
-		PTexture GetTexture(size_t index) const 
-		{ 
-			CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__); 
-			return texture_[index]; 
-		}
-		PTexture GetDiffuseMap() const { return texture_[MaterialTexture::DIFFUSE_MAP]; }
-		PTexture GetNormalMap() const { return texture_[MaterialTexture::NORMAL_MAP]; }
-		PTexture GetLightMap() const { return texture_[MaterialTexture::LIGHT_MAP]; }
-		PTexture GetSpecularMap() const { return texture_[MaterialTexture::SPECULAR_MAP]; }
-		PTexture GetAOMap() const { return texture_[MaterialTexture::AO_MAP]; }
-		PTexture GetDisplacementMap() const { return texture_[MaterialTexture::DISPLACEMENT_MAP]; }
+		PTexture GetTexture(MaterialTexture index) const; 
         void SetColor(Color color);
         Color GetColor() const { return color_; }
         void SetDiffuseColor(Color diffuse);
@@ -73,8 +52,6 @@ namespace NSG
         Color GetAmbientColor() const { return ambient_; }
         void SetShininess(float shininess);
         float GetShininess() const { return shininess_; }
-        void SetParallaxScale(float parallaxScale);
-        float GetParallaxScale() const { return parallaxScale_; }
         void SetUniformValue(const char* name, int value);
         int GetUniformValue(const char* name) const;
         PTechnique GetTechnique() { return technique_; }
@@ -90,13 +67,13 @@ namespace NSG
         PTexture GetTextureWith(PResource resource) const;
 		PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
 		bool IsTransparent() const;
-		void SetSolid(bool solid);
+		void SetFillMode(FillMode fillMode) { fillMode_ = fillMode; }
+        FillMode GetFillMode() const { return fillMode_; }
 		bool IsBatched();
 		void UpdateBatchBuffer(const Batch& batch);
 		void BachedNodeHasChanged();
-		bool IsText() const;
-		static PMaterial Create(const std::string& name = GetUniqueName("Material"), const ProgramFlags& flags = (int)ProgramFlag::NONE);
-		static PMaterial GetOrCreate(const std::string& name = GetUniqueName("Material"), const ProgramFlags& flags = (int)ProgramFlag::NONE);
+		static PMaterial Create(const std::string& name = GetUniqueName("Material"));
+		static PMaterial GetOrCreate(const std::string& name = GetUniqueName("Material"));
 		static PMaterial Get(const std::string& name);
 		static std::vector<PMaterial> GetMaterials();
 		static PTexture GetTextureWithResource(PResource resource);
@@ -104,6 +81,14 @@ namespace NSG
 		static void SaveMaterials(pugi::xml_node& node);
         void Set(PResourceXMLNode xmlResource);
 		void SetUVTransform(const Vector4& uvTransform);
+        void SetBlendMode(BLEND_MODE mode) { blendMode_ = mode; }
+        BLEND_MODE GetBlendMode() const { return blendMode_; }
+        void SetLightingMode(LightingMode mode);
+        bool HasLightMap() const;
+        void FillShaderDefines(std::string& defines, const Light* light);
+        void SetShaderCommand(ShaderCommand command) { shadercommand_ = command; }
+        void SetBillboardType(BillboardType type) { billboardType_ = type; }
+        void FlipYTextureCoords(bool enable) { flipYTextureCoords_ = enable; }
     private:
 		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();
@@ -115,7 +100,6 @@ namespace NSG
         Color diffuse_;
         Color specular_;
         float shininess_;
-        float parallaxScale_; //used with displacement map
         Color color_;
         Vector4 uvTransform_; // uv transform for texture 0
         PTechnique technique_;
@@ -126,8 +110,13 @@ namespace NSG
 		PInstanceBuffer instanceBuffer_;
 		Batch lastBatch_;
 		bool isBatched_;
+        FillMode fillMode_;
+        BLEND_MODE blendMode_;
+        ShaderCommand shadercommand_;
+        BillboardType billboardType_;
+        bool flipYTextureCoords_;
         PResourceXMLNode xmlResource_;
-		static MapAndVector<std::string, Material> materials_;
+ 		static MapAndVector<std::string, Material> materials_;
         friend class Program;
     };
 }

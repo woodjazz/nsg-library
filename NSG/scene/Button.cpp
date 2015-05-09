@@ -45,12 +45,10 @@ namespace NSG
     {
         SetMesh(Mesh::Create<RectangleMesh>());
 		SetMaterial(Material::GetOrCreate(name_));
-        auto pass = material_->GetTechnique()->GetPass(0);
-        pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
+		material_->SetBlendMode(BLEND_MODE::ALPHA);
         SetupLayer();
-        auto textPass = textMaterial_->GetTechnique()->GetPass(0);
-        textPass->SetDepthFunc(DepthFunc::LEQUAL);
         textMaterial_->SetColor(COLOR_BLACK);
+		textMaterial_->SetShaderCommand(ShaderCommand::TEXT);
     }
 
     Button::~Button()
@@ -112,8 +110,8 @@ namespace NSG
 
     void Button::SetupLayer()
     {
-        SceneNode::SetLayer(RenderLayer::GUI_LAYER0);
+		SceneNode::SetLayer(RenderLayer::GUI_LAYER0);
         if (textNode_)
-            textNode_->SetLayer(RenderLayer::GUI_LAYER1);
+			textNode_->SetLayer(RenderLayer::GUI_LAYER1);
     }
 }

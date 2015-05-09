@@ -295,43 +295,14 @@ namespace NSG
         signalCollision_->Run(contactInfo);
     }
 
-    void SceneNode::Draw()
-    {
-        auto material = material_.get();
-        if (material)
-        {
-            Batch batch(material, mesh_.get());
-            batch.Add(this);
-            batch.Draw();
-        }
-    }
-
-    void SceneNode::DrawWithChildren()
-    {
-        auto material = material_.get();
-        if (material)
-        {
-            Batch batch(material, mesh_.get());
-            batch.Add(this);
-            batch.Draw();
-        }
-
-        for (auto& obj : children_)
-        {
-            auto child = dynamic_cast<SceneNode*>(obj.get());
-            if (child)
-                child->DrawWithChildren();
-        }
-    }
-
     RenderLayer SceneNode::SetLayer(RenderLayer layer)
     {
         if (layer_ != layer)
         {
-            std::swap(layer, layer_);
             auto scene = GetScene();
             if (scene)
-            {
+           {
+			   std::swap(layer, layer_);
                 scene->RemoveFromOctree(this);
                 if (mesh_)
                     scene->UpdateOctree(this);

@@ -47,6 +47,7 @@ misrepresented as being the original software.
 #include "FrameBuffer.h"
 #include "ShowTexture.h"
 #include "Filter.h"
+#include "Renderer.h"
 
 
 #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -77,7 +78,7 @@ namespace NSG
     static const bool DEFAULT_DEPTH_MASK = true;
     static const GLuint DEFAULT_STENCIL_MASK = ~GLuint(0);
 
-    static const BLEND_MODE DEFAULT_BLEND_MODE = BLEND_NONE;
+    static const BLEND_MODE DEFAULT_BLEND_MODE = BLEND_MODE::NONE;
     static GLenum DEFAULT_BLEND_SFACTOR = GL_ONE;
     static GLenum DEFAULT_BLEND_DFACTOR = GL_ZERO;
 
@@ -140,19 +141,19 @@ namespace NSG
         #endif
 
         TRACE_PRINTF("GL_VENDOR = %s", (const char*)glGetString(GL_VENDOR));
-		TRACE_PRINTF("GL_RENDERER = %s", (const char*)glGetString(GL_RENDERER));
-		TRACE_PRINTF("GL_VERSION = %s", (const char*)glGetString(GL_VERSION));
-		TRACE_PRINTF("GL_SHADING_LANGUAGE_VERSION = %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-		TRACE_PRINTF("GL_EXTENSIONS = %s", (const char*)glGetString(GL_EXTENSIONS));
+        TRACE_PRINTF("GL_RENDERER = %s", (const char*)glGetString(GL_RENDERER));
+        TRACE_PRINTF("GL_VERSION = %s", (const char*)glGetString(GL_VERSION));
+        TRACE_PRINTF("GL_SHADING_LANGUAGE_VERSION = %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+        TRACE_PRINTF("GL_EXTENSIONS = %s", (const char*)glGetString(GL_EXTENSIONS));
 
         viewport_ = Recti(0);
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize_);
         CHECK_ASSERT(maxTextureSize_ >= 64, __FILE__, __LINE__);
-		TRACE_PRINTF("GL_MAX_TEXTURE_SIZE = %d", maxTextureSize_);
+        TRACE_PRINTF("GL_MAX_TEXTURE_SIZE = %d", maxTextureSize_);
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTexturesCombined_);
-		TRACE_PRINTF("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = %d", maxTexturesCombined_);
+        TRACE_PRINTF("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = %d", maxTexturesCombined_);
         CHECK_CONDITION(maxTexturesCombined_ >= 8, __FILE__, __LINE__);
         textures_ = std::vector<Texture*>(maxTexturesCombined_, nullptr);
 
@@ -172,7 +173,7 @@ namespace NSG
         if (CheckExtension("EXT_texture_compression_dxt1"))
         {
             has_texture_compression_dxt1_ext_ = true;
-			TRACE_PRINTF("Has extension: EXT_texture_compression_dxt1");
+            TRACE_PRINTF("Has extension: EXT_texture_compression_dxt1");
         }
 
         if (CheckExtension("WEBGL_compressed_texture_s3tc"))
@@ -180,7 +181,7 @@ namespace NSG
             has_texture_compression_dxt1_ext_ = true;
             has_texture_compression_dxt3_ext_ = true;
             has_texture_compression_dxt5_ext_ = true;
-			TRACE_PRINTF("Has extension: WEBGL_compressed_texture_s3tc");
+            TRACE_PRINTF("Has extension: WEBGL_compressed_texture_s3tc");
         }
 
         if (CheckExtension("EXT_texture_compression_s3tc"))
@@ -188,61 +189,61 @@ namespace NSG
             has_texture_compression_dxt1_ext_ = true;
             has_texture_compression_dxt3_ext_ = true;
             has_texture_compression_dxt5_ext_ = true;
-			TRACE_PRINTF("Has extension: EXT_texture_compression_s3tc");
+            TRACE_PRINTF("Has extension: EXT_texture_compression_s3tc");
         }
 
         if (CheckExtension("OES_compressed_ETC1_RGB8_texture"))
         {
             has_compressed_ETC1_RGB8_texture_ext_ = true;
-			TRACE_PRINTF("Has extension: OES_compressed_ETC1_RGB8_texture");
+            TRACE_PRINTF("Has extension: OES_compressed_ETC1_RGB8_texture");
         }
 
         if (CheckExtension("IMG_texture_compression_pvrtc"))
         {
             has_texture_compression_pvrtc_ext_ = true;
-			TRACE_PRINTF("Has extension: IMG_texture_compression_pvrtc");
+            TRACE_PRINTF("Has extension: IMG_texture_compression_pvrtc");
         }
 
         if (CheckExtension("EXT_discard_framebuffer"))
         {
             has_discard_framebuffer_ext_ = true;
-			TRACE_PRINTF("Using extension: EXT_discard_framebuffer");
+            TRACE_PRINTF("Using extension: EXT_discard_framebuffer");
         }
 
         if (CheckExtension("OES_vertex_array_object") || CheckExtension("ARB_vertex_array_object"))
         {
             has_vertex_array_object_ext_ = true;
-			TRACE_PRINTF("Using extension: vertex_array_object");
+            TRACE_PRINTF("Using extension: vertex_array_object");
         }
 
         if (CheckExtension("EXT_map_buffer_range"))
         {
             has_map_buffer_range_ext_ = true;
-			TRACE_PRINTF("Using extension: EXT_map_buffer_range");
+            TRACE_PRINTF("Using extension: EXT_map_buffer_range");
         }
 
         if (CheckExtension("GL_OES_depth_texture"))
         {
             has_depth_texture_ext_ = true;
-			TRACE_PRINTF("Using extension: GL_OES_depth_texture");
+            TRACE_PRINTF("Using extension: GL_OES_depth_texture");
         }
 
         if (CheckExtension("GL_OES_depth24"))
         {
             has_depth_component24_ext_ = true;
-			TRACE_PRINTF("Using extension: GL_OES_depth24");
+            TRACE_PRINTF("Using extension: GL_OES_depth24");
         }
 
         if (CheckExtension("GL_EXT_packed_depth_stencil") || CheckExtension("GL_OES_packed_depth_stencil"))
         {
             has_packed_depth_stencil_ext_ = true;
-			TRACE_PRINTF("Using extension: packed_depth_stencil");
+            TRACE_PRINTF("Using extension: packed_depth_stencil");
         }
 
         if (CheckExtension("GL_ARB_texture_non_power_of_two"))
         {
             has_texture_non_power_of_two_ext_ = true;
-			TRACE_PRINTF("Using extension: GL_ARB_texture_non_power_of_two");
+            TRACE_PRINTF("Using extension: GL_ARB_texture_non_power_of_two");
         }
 
         #if !defined(EMSCRIPTEN)
@@ -256,13 +257,13 @@ namespace NSG
                 if (maxVertexAtts >= attributesNeeded)
                 {
                     has_instanced_arrays_ext_ = true;
-					TRACE_PRINTF("Using extension: instanced_arrays");
+                    TRACE_PRINTF("Using extension: instanced_arrays");
                 }
                 else
                 {
-					TRACE_PRINTF("Has extension: instanced_arrays");
-					TRACE_PRINTF("Needed %d but graphics only supports %d attributes", attributesNeeded, maxVertexAtts);
-					TRACE_PRINTF("Disabling extension: instanced_arrays");
+                    TRACE_PRINTF("Has extension: instanced_arrays");
+                    TRACE_PRINTF("Needed %d but graphics only supports %d attributes", attributesNeeded, maxVertexAtts);
+                    TRACE_PRINTF("Disabling extension: instanced_arrays");
                 }
             }
         }
@@ -274,7 +275,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-				TRACE_PRINTF("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
+                TRACE_PRINTF("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
             }
             else
             {
@@ -284,13 +285,13 @@ namespace NSG
                 if (status == GL_NO_ERROR)
                 {
                     maxVaryingVectors_ /= 4;
-					TRACE_PRINTF("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
+                    TRACE_PRINTF("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 8;
-					TRACE_PRINTF("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to %d", maxVaryingVectors_);
+                    TRACE_PRINTF("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to %d", maxVaryingVectors_);
 
                 }
             }
@@ -301,7 +302,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-				TRACE_PRINTF("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
+                TRACE_PRINTF("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
             }
             else
             {
@@ -310,13 +311,13 @@ namespace NSG
                 status = glGetError();
                 if (status == GL_NO_ERROR)
                 {
-					TRACE_PRINTF("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
+                    TRACE_PRINTF("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 128;
-					TRACE_PRINTF("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to %d", maxVertexUniformVectors_);
+                    TRACE_PRINTF("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to %d", maxVertexUniformVectors_);
                 }
             }
         }
@@ -326,7 +327,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-				TRACE_PRINTF("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
+                TRACE_PRINTF("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
             }
             else
             {
@@ -335,25 +336,27 @@ namespace NSG
                 status = glGetError();
                 if (status == GL_NO_ERROR)
                 {
-					TRACE_PRINTF("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
+                    TRACE_PRINTF("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 128;
-					TRACE_PRINTF("*** Unknown GL_MAX_FRAGMENT_UNIFORM_VECTORS ***. Setting value to %d", maxFragmentUniformVectors_);
+                    TRACE_PRINTF("*** Unknown GL_MAX_FRAGMENT_UNIFORM_VECTORS ***. Setting value to %d", maxFragmentUniformVectors_);
                 }
             }
         }
 
         {
             glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs_);
-			TRACE_PRINTF("GL_MAX_VERTEX_ATTRIBS = %d", maxVertexAttribs_);
+            TRACE_PRINTF("GL_MAX_VERTEX_ATTRIBS = %d", maxVertexAttribs_);
         }
 
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        renderer_ = std::make_shared<Renderer>(this);
     }
 
     Graphics::~Graphics()
@@ -369,6 +372,8 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
+		programs_.clear();
+
         viewport_ = Recti(0);
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
@@ -645,7 +650,7 @@ namespace NSG
         {
             switch (blendMode)
             {
-                case BLEND_NONE:
+                case BLEND_MODE::NONE:
                     glDisable(GL_BLEND);
                     if (blendSFactor_ != GL_ONE || blendDFactor_ != GL_ZERO)
                     {
@@ -655,7 +660,7 @@ namespace NSG
                     }
                     break;
 
-                case BLEND_MULTIPLICATIVE:
+                case BLEND_MODE::MULTIPLICATIVE:
                     glEnable(GL_BLEND);
                     if (blendSFactor_ != GL_ZERO || blendDFactor_ != GL_SRC_COLOR)
                     {
@@ -665,7 +670,7 @@ namespace NSG
                     }
                     break;
 
-                case BLEND_ADDITIVE:
+                case BLEND_MODE::ADDITIVE:
                     glEnable(GL_BLEND);
                     if (blendSFactor_ != GL_ONE || blendDFactor_ != GL_ONE)
                     {
@@ -675,7 +680,7 @@ namespace NSG
                     }
                     break;
 
-                case BLEND_ALPHA:
+                case BLEND_MODE::ALPHA:
                     glEnable(GL_BLEND);
                     if (blendSFactor_ != GL_SRC_ALPHA || blendDFactor_ != GL_ONE_MINUS_SRC_ALPHA)
                     {
@@ -853,19 +858,15 @@ namespace NSG
         {
             if (program)
             {
-                if (program->IsReady())
-                    glUseProgram(program->GetId());
-                else
+                if (!program->IsReady())
                     return false;
+                glUseProgram(program->GetId());
             }
             else
                 glUseProgram(0);
-
             activeProgram_ = program;
-
-            return true;
         }
-        return false;
+        return true;
     }
 
     void Graphics::SetViewportFactor(const Vector4& viewportFactor)
@@ -1226,10 +1227,10 @@ namespace NSG
         }
     }
 
-    void Graphics::SetupPass(Pass* pass)
+    void Graphics::SetupPass(Pass* pass, Material* material, Light* light)
     {
         CHECK_ASSERT(pass, __FILE__, __LINE__);
-        
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         auto& data = pass->GetData();
@@ -1239,8 +1240,8 @@ namespace NSG
                        data.dpfailStencilOp_, data.dppassStencilOp_, data.stencilFunc_,
                        data.stencilRefValue_, data.stencilMaskValue_);
 
-		SetBlendModeTest(data.blendMode_);
-		EnableDepthTest(data.enableDepthTest_);
+        SetBlendModeTest(pass->GetBlendMode());
+        EnableDepthTest(data.enableDepthTest_);
         if (data.enableDepthTest_)
         {
             SetDepthMask(data.enableDepthBuffer_);
@@ -1253,30 +1254,52 @@ namespace NSG
             SetCullFace(data.cullFaceMode_);
             SetFrontFace(data.frontFaceMode_);
         }
-
-        SetProgram(data.pProgram_.get());
-
+        auto program = GetOrCreateProgram(activeMesh_, material, light);
+		program->Set(activeMesh_);
+        program->Set(activeNode_);
+        program->Set(material);
+		program->Set(light);
+        CHECK_CONDITION(SetProgram(program.get()), __FILE__, __LINE__);
+        program->SetVariables();
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
+    PProgram Graphics::GetOrCreateProgram(Mesh* mesh, Material* material, Light* light)
+    {
+        std::string defines;
+
+		material->FillShaderDefines(defines, light);
+		size_t nBones = 0;
+
+		if(mesh)
+			nBones = mesh->FillShaderDefines(defines);
+
+        if (light)
+            light->FillShaderDefines(defines);
+
+        PProgram program;
+        auto it = programs_.find(defines);
+
+        if (it != programs_.end())
+            program = it->second;
+        else
+        {
+            program = std::make_shared<Program>(defines);
+            programs_.insert(Programs::value_type(defines, program));
+        }
+
+        program->SetNumberBones(nBones);
+        return program;
+    }
 
     void Graphics::DrawActiveMesh(Pass* pass)
     {
-        SetupPass(pass);
-
-        if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady())// || (!activeNode_ || !activeNode_->IsReady()))
+        if (!activeMesh_->IsReady())
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        activeProgram_->SetVariables(activeMesh_, activeNode_);
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        if (!activeProgram_)
-            return; // the program has been invalidated (due some shader needs to be recompiled)
-
-        bool solid = pass->GetDrawMode() == DrawMode::SOLID;
+        bool solid = activeProgram_->GetMaterial()->GetFillMode() == FillMode::SOLID;
         SetBuffers(solid);
         CHECK_GL_STATUS(__FILE__, __LINE__);
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
@@ -1299,21 +1322,14 @@ namespace NSG
 
     void Graphics::DrawInstancedActiveMesh(Pass* pass, const Batch& batch)
     {
-        SetupPass(pass);
-
         CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
 
-        if (!activeMesh_->IsReady() || !activeProgram_ || !activeProgram_->IsReady())
+        if (!activeMesh_->IsReady())
             return;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        activeProgram_->SetVariables(activeMesh_, nullptr);
-
-        if (!activeProgram_)
-            return; // the program has been invalidated (due some shader needs to be recompiled)
-
-        bool solid = pass->GetDrawMode() == DrawMode::SOLID;
+        bool solid = activeProgram_->GetMaterial()->GetFillMode() == FillMode::SOLID;
         activeProgram_->GetMaterial()->UpdateBatchBuffer(batch);
         SetBuffers(solid);
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
@@ -1336,122 +1352,6 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-    void Graphics::ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const
-    {
-        CHECK_ASSERT(transparent.empty(), __FILE__, __LINE__);
-
-        for (auto& node : nodes)
-        {
-            auto material = node->GetMaterial();
-            if (material && material->IsTransparent())
-                transparent.push_back(node);
-        }
-
-        // remove tranparent from nodes
-        nodes.erase(std::remove_if(nodes.begin(), nodes.end(),
-        [&](SceneNode * node) {return transparent.end() != std::find(transparent.begin(), transparent.end(), node); }),
-        nodes.end());
-    }
-
-    void Graphics::SortBackToFront(std::vector<SceneNode*>& nodes) const
-    {
-        Vector3 cameraPos;
-        if (activeCamera_)
-            cameraPos = activeCamera_->GetGlobalPosition();
-        std::sort(nodes.begin(), nodes.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
-        {
-            auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
-            auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
-            return db < da;
-        });
-    }
-
-    void Graphics::SortFrontToBack(std::vector<SceneNode*>& nodes) const
-    {
-        Vector3 cameraPos;
-        if (activeCamera_)
-            cameraPos = activeCamera_->GetGlobalPosition();
-        std::sort(nodes.begin(), nodes.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
-        {
-            auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
-            auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
-            return da < db;
-        });
-    }
-
-
-    void Graphics::GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches)
-    {
-        batches.clear();
-
-        struct MeshNode
-        {
-            PMesh mesh_;
-            SceneNode* node_;
-        };
-
-        struct MaterialData
-        {
-            PMaterial material_;
-            std::vector<MeshNode> data_;
-        };
-
-        std::sort(visibles.begin(), visibles.end(), [](const SceneNode * a, const SceneNode * b) -> bool
-        {
-            return a->GetMaterial().get() < b->GetMaterial().get();
-        });
-
-        std::vector<MaterialData> materials;
-        PMaterial usedMaterial;
-        for (auto& node : visibles)
-        {
-            PMaterial material = node->GetMaterial();
-            if (!material) continue;
-            auto mesh = node->GetMesh();
-            if (usedMaterial != material)
-            {
-                usedMaterial = material;
-                MaterialData materialData;
-                materialData.material_ = material;
-                materialData.data_.push_back({mesh, node});
-                if (!materials.empty())
-                {
-                    MaterialData& lastMaterialData = materials.back();
-                    std::sort(lastMaterialData.data_.begin(), lastMaterialData.data_.end(), [](const MeshNode & a, const MeshNode & b) -> bool
-                    {
-                        return a.mesh_.get() < b.mesh_.get();
-                    });
-                }
-                materials.push_back(materialData);
-            }
-            else
-            {
-                MaterialData& lastMaterial = materials.back();
-                lastMaterial.data_.push_back({mesh, node});
-            }
-        }
-
-        for (auto& material : materials)
-        {
-            PMesh usedMesh;
-            for (auto& obj : material.data_)
-            {
-                bool limitReached = batches.size() && batches.back()->GetNodes().size() >= MAX_NODES_IN_BATCH;
-                if (obj.mesh_ != usedMesh || !obj.mesh_ || limitReached)
-                {
-                    usedMesh = obj.mesh_;
-                    auto batch(std::make_shared<Batch>(material.material_.get(), usedMesh.get()));
-                    batch->Add(obj.node_);
-                    batches.push_back(batch);
-                }
-                else
-                {
-                    auto& lastBatch = batches.back();
-                    lastBatch->Add(obj.node_);
-                }
-            }
-        }
-    }
 
     bool Graphics::IsTextureSizeCorrect(unsigned width, unsigned height)
     {
@@ -1460,54 +1360,6 @@ namespace NSG
         return HasNonPowerOfTwo() || (IsPowerOfTwo(width) && IsPowerOfTwo(height));
     }
 
-    void Graphics::RenderVisibleSceneNodes()
-    {
-        std::vector<SceneNode*> visibles;
-        activeScene_->GetVisibleNodes(activeCamera_, visibles);
-        if (!visibles.empty())
-        {
-            std::vector<SceneNode*> transparent;
-            ExtractTransparent(visibles, transparent);
-            if (!visibles.empty())
-            {
-                // First draw non-transparent nodes
-                SortFrontToBack(visibles);
-                std::vector<PBatch> allBatches;
-                GenerateBatches(visibles, allBatches);
-                for (auto& batch : allBatches)
-                    batch->Draw();
-            }
-            if (!transparent.empty())
-            {
-                // Transparent nodes cannot be batched
-                SortBackToFront(transparent);
-                for (auto& node : transparent)
-                    node->Draw();
-            }
-        }
-    }
-
-    bool Graphics::BeginFrameRender()
-    {
-        if (activeWindow_ && activeWindow_->BeginFrameRender())
-        {
-            ClearAllBuffers();
-            return true;
-        }
-        return false;
-    }
-
-    void Graphics::Render(Camera* camera)
-    {
-        SetCamera(camera);
-        RenderVisibleSceneNodes();
-    }
-
-    void Graphics::EndFrameRender()
-    {
-        if (activeWindow_)
-            activeWindow_->EndFrameRender();
-    }
 
     bool Graphics::NeedsDecompress(TextureFormat format) const
     {

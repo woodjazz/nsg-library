@@ -59,12 +59,6 @@ namespace NSG
 		return material_->IsReady() && mesh_->IsReady();
     }
 
-	void Batch::Draw()
-	{
-		if (IsReady())
-			material_->GetTechnique()->Draw(*this);
-	}
-
 	void Batch::Add(SceneNode* node)
 	{
 		nodes_.push_back(node);

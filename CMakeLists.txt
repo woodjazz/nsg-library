@@ -169,7 +169,7 @@ FOREACH(subdir ${SUBDIRS})
    include_directories(${ROOT_SOURCE_DIR}/NSG/${subdir})
 ENDFOREACH()
 add_subdirectory(NSG)
-set(LIBRARIES_2_LINK NSG) #reset libraries to links since NSG will have all the dependencies already set 
+set(LIBRARIES_2_LINK NSG) #reset libraries to link: NSG will have all the dependencies already set 
 
 ###########################
 # Converter
@@ -204,18 +204,6 @@ FOREACH(subdir ${SUBDIRS})
 	ENDIF()
 ENDFOREACH()
 
-###########################
-# demos
-###########################
-include (ConvertTool) 
-include (CopyTool)
-set(DEMOS_DIR ${ROOT_SOURCE_DIR}/demos)
-SUBDIRLIST(SUBDIRS ${DEMOS_DIR})
-FOREACH(subdir ${SUBDIRS})
-	IF(${BUILD_PROJECT} STREQUAL "all"  OR ${BUILD_PROJECT} STREQUAL "demos/${subdir}")
-    	ADD_SUBDIRECTORY(${DEMOS_DIR}/${subdir})
-	ENDIF()
-ENDFOREACH()
 ###########################
 # tests
 ###########################

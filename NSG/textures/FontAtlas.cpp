@@ -26,6 +26,7 @@ namespace NSG
         path.SetExtension("png");
         auto textureResource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
         texture_ = std::make_shared<Texture>(textureResource);
+		texture_->SetMapType(TextureType::COL);
         auto window = Graphics::this_->GetWindow();
         if (window)
             SetWindow(window);

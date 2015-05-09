@@ -128,15 +128,15 @@ namespace NSG
         {
             PLight light = std::dynamic_pointer_cast<Light>(node);
             if (light)
-                scene->AddLight(light);
+                scene->AddLight(light.get());
             else
             {
                 PCamera camera = std::dynamic_pointer_cast<Camera>(node);
-                if (camera) scene->AddCamera(camera);
+                if (camera) scene->AddCamera(camera.get());
 				else
 				{
 					auto ps = std::dynamic_pointer_cast<ParticleSystem>(node);
-					if (ps) scene->AddParticleSystem(ps);
+					if (ps) scene->AddParticleSystem(ps.get());
 				}
             }
             node->OnSceneSet();

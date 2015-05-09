@@ -26,40 +26,22 @@ namespace NSG
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
           shininess_(1),
-          parallaxScale_(0.05f),
           color_(1, 1, 1, 1),
           uvTransform_(1, 1, 0, 0),
           serializable_(true),
           blendFilterMode_(BlendFilterMode::ADDITIVE),
-          isBatched_(false)
+          isBatched_(false),
+          fillMode_(FillMode::SOLID),
+          blendMode_(BLEND_MODE::NONE),
+          shadercommand_(ShaderCommand::LIGHTING),
+          billboardType_(BillboardType::NONE),
+          flipYTextureCoords_(false)
     {
         technique_ = std::make_shared<Technique>(this);
-        SetProgramFlags(0, (int)ProgramFlag::NONE); // in order to force program creation
     }
 
     Material::~Material()
     {
-    }
-
-    void Material::SetProgramFlags(unsigned passIndex, const ProgramFlags& flags)
-    {
-        auto pass = technique_->GetPass(passIndex);
-        auto program = pass->GetProgram();
-        program->SetFlags(flags);
-    }
-
-    void Material::EnableProgramFlags(unsigned passIndex, const ProgramFlags& flags)
-    {
-        auto pass = technique_->GetPass(passIndex);
-        auto program = pass->GetProgram();
-        program->EnableFlags(flags);
-    }
-
-    void Material::DisableProgramFlags(unsigned passIndex, const ProgramFlags& flags)
-    {
-        auto pass = technique_->GetPass(passIndex);
-        auto program = pass->GetProgram();
-        program->DisableFlags(flags);
     }
 
     PMaterial Material::Clone(const std::string& name)
@@ -71,13 +53,20 @@ namespace NSG
         material->diffuse_ = diffuse_;
         material->specular_ = specular_;
         material->shininess_ = shininess_;
-        material->parallaxScale_ = parallaxScale_;
         material->color_ = color_;
         material->technique_->CopyPasses(technique_->GetConstPasses());
         material->serializable_ = serializable_;
         material->blendFilterMode_ = blendFilterMode_;
         material->blurFilter_ = blurFilter_;
         material->waveFilter_ = waveFilter_;
+        material->instanceBuffer_ = instanceBuffer_;
+        material->lastBatch_ = lastBatch_;
+        material->isBatched_ = isBatched_;
+        material->fillMode_ = fillMode_;
+        material->blendMode_ = blendMode_;
+        material->shadercommand_ = shadercommand_;
+        material->xmlResource_ = xmlResource_;
+
         return material;
     }
 
@@ -126,15 +115,6 @@ namespace NSG
         }
     }
 
-    void Material::SetParallaxScale(float parallaxScale)
-    {
-        if (parallaxScale_ != parallaxScale)
-        {
-            parallaxScale_ = parallaxScale;
-            SetUniformsNeedUpdate();
-        }
-    }
-
     void Material::SetUVTransform(const Vector4& uvTransform)
     {
         if (uvTransform != uvTransform_)
@@ -144,9 +124,31 @@ namespace NSG
         }
     }
 
-
-    bool Material::SetTexture(size_t index, PTexture texture)
+    bool Material::SetTexture(PTexture texture)
     {
+        auto type = texture->GetMapType();
+        CHECK_ASSERT(type != TextureType::UNKNOWN, __FILE__, __LINE__);
+        MaterialTexture index = MaterialTexture::DIFFUSE_MAP;
+        switch (type)
+        {
+            case TextureType::COL:
+                index = MaterialTexture::DIFFUSE_MAP;
+                break;
+            case TextureType::NORM:
+                index = MaterialTexture::NORMAL_MAP;
+                break;
+            case TextureType::SPEC:
+                index = MaterialTexture::SPECULAR_MAP;
+                break;
+            case TextureType::EMIT:
+                index = MaterialTexture::LIGHT_MAP;
+                break;
+            case TextureType::AMB:
+                index = MaterialTexture::AO_MAP;
+                break;
+            default:
+                break;
+        }
         CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__);
         if (texture_[index] != texture)
         {
@@ -158,96 +160,28 @@ namespace NSG
         return false;
     }
 
-
-    void Material::SetDiffuseMap(PTexture texture)
+    PTexture Material::GetTexture(MaterialTexture index) const
     {
-        if (SetTexture(MaterialTexture::DIFFUSE_MAP, texture))
-        {
-            if (texture)
-                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::DIFFUSEMAP);
-            else
-                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::DIFFUSEMAP);
-        }
+        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__);
+        return texture_[index];
     }
 
-    void Material::SetNormalMap(PTexture texture)
-    {
-        if (SetTexture(MaterialTexture::NORMAL_MAP, texture))
-        {
-            if (texture)
-                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::NORMALMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
-            else
-                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::NORMALMAP);
-        }
-    }
-
-    void Material::SetLightMap(PTexture texture)
-    {
-        if (SetTexture(MaterialTexture::LIGHT_MAP, texture))
-        {
-            if (texture)
-                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::LIGHTMAP);
-            else
-                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::LIGHTMAP);
-        }
-    }
-
-    void Material::SetSpecularMap(PTexture texture)
-    {
-        if (SetTexture(MaterialTexture::SPECULAR_MAP, texture))
-        {
-            if (texture)
-                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::SPECULARMAP | (int)ProgramFlag::PER_PIXEL_LIGHTING);
-            else
-                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::SPECULARMAP);
-        }
-    }
-
-    void Material::SetAOMap(PTexture texture)
-    {
-        if (SetTexture(MaterialTexture::AO_MAP, texture))
-        {
-            if (texture)
-                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::AOMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
-            else
-                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::AOMAP);
-        }
-    }
-
-    void Material::SetDisplacementMap(PTexture texture)
-    {
-        if (SetTexture(MaterialTexture::DISPLACEMENT_MAP, texture))
-        {
-            if (texture)
-            {
-                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::DISPLACEMENTMAP  | (int)ProgramFlag::PER_PIXEL_LIGHTING);
-                // Do not generate mipmaps for displacement map
-                TextureFlags flags = texture->GetFlags();
-                flags &= ~(int)TextureFlag::GENERATE_MIPMAPS;
-                texture->SetFlags(flags);
-                texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
-            }
-            else
-                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::DISPLACEMENTMAP);
-        }
-    }
 
     void Material::SetTextMap(PTexture texture)
     {
-        if (SetTexture(MaterialTexture::DIFFUSE_MAP, texture))
+        if (SetTexture(texture))
         {
+
             if (texture)
             {
-                auto pass = technique_->GetPass(0);
-                pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
-                technique_->GetPass(0)->GetProgram()->EnableFlags((int)ProgramFlag::TEXT);
+                SetBlendMode(BLEND_MODE::ALPHA);
+                SetShaderCommand(ShaderCommand::TEXT);
                 texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
             }
             else
             {
-                auto pass = technique_->GetPass(0);
-                pass->SetBlendMode(BLEND_MODE::BLEND_NONE);
-                technique_->GetPass(0)->GetProgram()->DisableFlags((int)ProgramFlag::TEXT);
+                SetBlendMode(BLEND_MODE::NONE);
+                SetShaderCommand(ShaderCommand::LIGHTING);
             }
         }
     }
@@ -306,8 +240,8 @@ namespace NSG
         {
             if (texture_[index] && texture_[index]->IsSerializable())
             {
-				std::string s(TEXTURE_NAME);
-				s += ToString(index);
+                std::string s(TEXTURE_NAME);
+                s += ToString(index);
                 pugi::xml_node childTexture = child.append_child(s.c_str());
                 texture_[index]->Save(childTexture);
             }
@@ -318,6 +252,8 @@ namespace NSG
         child.append_attribute("specular").set_value(ToString(specular_).c_str());
         child.append_attribute("shininess").set_value(shininess_);
         child.append_attribute("color").set_value(ToString(color_).c_str());
+        child.append_attribute("fillMode").set_value(ToString((int)fillMode_).c_str());
+        child.append_attribute("blendMode").set_value(ToString((int)blendMode_).c_str());
         technique_->Save(child);
     }
 
@@ -328,8 +264,8 @@ namespace NSG
         for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
         {
             texture_[index] = nullptr;
-			std::string s(TEXTURE_NAME);
-			s += ToString(index);
+            std::string s(TEXTURE_NAME);
+            s += ToString(index);
             pugi::xml_node childTexture = node.child(s.c_str());
             if (childTexture)
                 texture_[index] = Texture::CreateFrom(resource, childTexture);
@@ -340,6 +276,8 @@ namespace NSG
         SetSpecularColor(GetVertex4(node.attribute("specular").as_string()));
         SetShininess(node.attribute("shininess").as_float());
         SetColor(GetVertex4(node.attribute("color").as_string()));
+        SetFillMode((FillMode)node.attribute("fillMode").as_int());
+        SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
 
         pugi::xml_node childTechnique = node.child("Technique");
         if (childTechnique)
@@ -386,17 +324,7 @@ namespace NSG
 
     bool Material::IsTransparent() const
     {
-        return technique_->IsTransparent();
-    }
-
-    bool Material::IsText() const
-    {
-        return technique_->IsText();
-    }
-
-    void Material::SetSolid(bool solid)
-    {
-        technique_->GetPass(0)->SetDrawMode(solid ? DrawMode::SOLID : DrawMode::WIREFRAME);
+		return blendMode_ == BLEND_MODE::ALPHA || billboardType_ != BillboardType::NONE || shadercommand_ == ShaderCommand::TEXT;
     }
 
     bool Material::IsBatched()
@@ -414,7 +342,6 @@ namespace NSG
         {
             lastBatch_.Clear();
             isBatched_ = false; //disable batching since the scenenode is changing dynamically
-            technique_->Invalidate();
         }
     }
 
@@ -427,20 +354,14 @@ namespace NSG
         }
     }
 
-    PMaterial Material::Create(const std::string& name, const ProgramFlags& flags)
+    PMaterial Material::Create(const std::string& name)
     {
-        auto material = materials_.Create(name);
-        if ((int)ProgramFlag::NONE != flags)
-            material->SetProgramFlags(0, flags);
-        return material;
+        return materials_.Create(name);
     }
 
-    PMaterial Material::GetOrCreate(const std::string& name, const ProgramFlags& flags)
+    PMaterial Material::GetOrCreate(const std::string& name)
     {
-        auto material = materials_.GetOrCreate(name);
-        if ((int)ProgramFlag::NONE != flags)
-            material->SetProgramFlags(0, flags);
-        return material;
+        return materials_.GetOrCreate(name);
     }
 
     PMaterial Material::Get(const std::string& name)
@@ -505,5 +426,89 @@ namespace NSG
         }
     }
 
+    void Material::SetLightingMode(LightingMode mode)
+    {
+        technique_->SetLightingMode(mode);
+    }
 
+    bool Material::HasLightMap() const
+    {
+        return nullptr != GetTexture(MaterialTexture::LIGHT_MAP);
+    }
+
+    void Material::FillShaderDefines(std::string& defines, const Light* light)
+    {
+        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+        {
+            auto texture = GetTexture((MaterialTexture)index);
+            if (texture)
+            {
+                auto type = texture->GetMapType();
+                CHECK_ASSERT(TextureType::UNKNOWN != type, __FILE__, __LINE__);
+                switch (type)
+                {
+                    case TextureType::COL:
+                        defines += "#define DIFFUSEMAP\n";
+                        break;
+                    case TextureType::NORM:
+                        defines += "#define NORMALMAP\n";
+                        break;
+                    case TextureType::SPEC:
+                        defines += "#define SPECULARMAP\n";
+                        break;
+                    case TextureType::EMIT:
+                        defines += "#define LIGHTMAP\n";
+                        break;
+                    case TextureType::AMB:
+                        defines += "#define AOMAP\n";
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        if (IsBatched())
+            defines += "#define INSTANCED\n";
+
+        switch (shadercommand_)
+        {
+            case ShaderCommand::LIGHTING:
+                technique_->FillShaderDefines(defines, light);
+                break;
+            case ShaderCommand::TEXT:
+                defines += "#define TEXT\n";
+                break;
+            case ShaderCommand::BLEND:
+                defines += "#define BLEND\n";
+                break;
+            case ShaderCommand::BLUR:
+                defines += "#define BLUR\n";
+                break;
+            case ShaderCommand::WAVE:
+                defines += "#define WAVE\n";
+                break;
+            case ShaderCommand::SHOW_TEXTURE0:
+                defines += "#define SHOW_TEXTURE0\n";
+                break;
+        }
+
+        switch (billboardType_)
+        {
+            case BillboardType::NONE:
+                break;
+            case BillboardType::SPHERICAL:
+                defines += "#define SPHERICAL_BILLBOARD\n";
+                break;
+            case BillboardType::CYLINDRICAL:
+                defines += "#define CYLINDRICAL_BILLBOARD\n";
+                break;
+            default:
+                CHECK_ASSERT(!"Unknown billboard type!!!", __FILE__, __LINE__);
+                break;
+        }
+
+        if(flipYTextureCoords_)
+            defines += "#define FLIP_Y\n";
+    }
 }

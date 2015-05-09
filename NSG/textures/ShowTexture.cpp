@@ -43,7 +43,6 @@ namespace NSG
           node_(std::make_shared<SceneNode>("NSGShowTexture"))
     {
         auto pass = material_->GetTechnique()->GetPass(0);
-        program_ = pass->GetProgram();
         material_->SetSerializable(false);
         pass->EnableDepthTest(false);
     }
@@ -54,20 +53,21 @@ namespace NSG
 
     void ShowTexture::SetColortexture(PTexture texture)
     {
-        program_->SetFlags((int)ProgramFlag::SHOW_TEXTURE0 | (int)ProgramFlag::FLIP_Y);
-        material_->SetTexture(0, texture);
+		material_->SetTexture(texture);
+		material_->SetShaderCommand(ShaderCommand::SHOW_TEXTURE0);
+		material_->FlipYTextureCoords(true);
     }
 
     void ShowTexture::SetNormal(PTexture texture)
     {
-        program_->SetFlags((int)ProgramFlag::SHOW_TEXTURE0);
-        material_->SetTexture(0, texture);
+		material_->SetTexture(texture);
+		material_->SetShaderCommand(ShaderCommand::SHOW_TEXTURE0);
     }
 
     void ShowTexture::SetFont(PTexture texture)
     {
-        program_->SetFlags((int)ProgramFlag::TEXT);
-        material_->SetTexture(0, texture);
+		material_->SetTexture(texture);
+		material_->SetShaderCommand(ShaderCommand::TEXT);
     }
 
     void ShowTexture::Show()
@@ -78,10 +78,11 @@ namespace NSG
 
             Camera* pCurrent = Graphics::this_->GetCamera();
             Graphics::this_->SetCamera(nullptr);
-
+			Pass pass;
             Graphics::this_->SetNode(node_.get());
             Graphics::this_->SetMesh(mesh_.get());
-            material_->GetTechnique()->Draw();
+			Graphics::this_->SetupPass(&pass, material_.get(), nullptr);
+			Graphics::this_->DrawActiveMesh(&pass);
 
             Graphics::this_->SetCamera(pCurrent);
 

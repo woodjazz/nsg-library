@@ -67,7 +67,7 @@ namespace NSG
             Graphics::this_->SetCamera(this);
         }
 
-		slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
+        slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
@@ -76,6 +76,7 @@ namespace NSG
 
     Camera::~Camera()
     {
+        SignalBeingDestroy()->Run(this);
         if (Graphics::this_ && Graphics::this_->GetCamera() == this)
             Graphics::this_->SetCamera(nullptr);
     }
@@ -100,7 +101,7 @@ namespace NSG
             if (window)
             {
                 SetAspectRatio(window->GetWidth(), window->GetHeight());
-				slotViewChanged_ = window->SigSizeChanged()->Connect([this](int width, int height)
+                slotViewChanged_ = window->SigSizeChanged()->Connect([this](int width, int height)
                 {
                     SetAspectRatio(width, height);
                 });
@@ -466,17 +467,17 @@ namespace NSG
         if (!IsSerializable())
             return;
 
-		node.append_attribute("name").set_value(GetName().c_str());
-		node.append_attribute("nodeType").set_value("Camera");
-		node.append_attribute("fovy").set_value(fovy_);
-		node.append_attribute("zNear").set_value(zNear_);
-		node.append_attribute("zFar").set_value(zFar_);
-		node.append_attribute("viewportFactor").set_value(ToString(viewportFactor_).c_str());
-		node.append_attribute("isOrtho").set_value(isOrtho_);
-		node.append_attribute("orthoScale").set_value(orthoScale_);
-		node.append_attribute("sensorFit").set_value((int)sensorFit_);
-		node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
-		node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
+        node.append_attribute("name").set_value(GetName().c_str());
+        node.append_attribute("nodeType").set_value("Camera");
+        node.append_attribute("fovy").set_value(fovy_);
+        node.append_attribute("zNear").set_value(zNear_);
+        node.append_attribute("zFar").set_value(zFar_);
+        node.append_attribute("viewportFactor").set_value(ToString(viewportFactor_).c_str());
+        node.append_attribute("isOrtho").set_value(isOrtho_);
+        node.append_attribute("orthoScale").set_value(orthoScale_);
+        node.append_attribute("sensorFit").set_value((int)sensorFit_);
+        node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
+        node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
         SaveChildren(node);
     }
 
@@ -499,4 +500,11 @@ namespace NSG
         SetOrientation(orientation);
         LoadChildren(node);
     }
+
+    SignalCamera::PSignal Camera::SignalBeingDestroy()
+    {
+        static SignalCamera::PSignal sig(new SignalCamera);
+        return sig;
+    }
+
 }

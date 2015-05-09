@@ -49,6 +49,14 @@ namespace NSG
         PResource GetResource() const { return pResource_;}
         void SetSize(GLsizei width, GLsizei height);
         void SetName(const std::string& name) { name_ = name; }
+        void SetUVName(const std::string& name) { uvName_ = name; }
+        std::string TranslateFlags() const;
+        void SetBlendType(TextureBlend blendType) { blendType_ = blendType; }
+        TextureBlend GetBlendType() const { return blendType_;}
+        std::string TranslateBlendType() const;
+        void SetMapType(TextureType mapType) { mapType_ = mapType; }
+        TextureType GetMapType() const { return mapType_; }
+        std::string TranslateMapType() const;
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -67,5 +75,8 @@ namespace NSG
         TextureWrapMode wrapMode_;
         int mipmapLevels_;
         TextureFilterMode filterMode_;
+        std::string uvName_;
+        TextureBlend blendType_;
+        TextureType mapType_;
     };
 }

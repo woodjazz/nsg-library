@@ -36,7 +36,7 @@ namespace NSG
         Engine();
         ~Engine();
         int Run();
-        bool RenderFrame();
+        void RenderFrame();
         float GetDeltaTime() const { return deltaTime_; }
         static const AppConfiguration& GetAppConfiguration() { return conf_; }
         static Engine* GetPtr() { return Engine::this_; }

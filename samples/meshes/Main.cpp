@@ -44,7 +44,7 @@ void CreateObject(PMesh mesh, Color color, const Vector3& pos)
 		obj->SetPosition(pos + Vector3(5, 0, 0));
 		auto material = Material::GetOrCreate();
 		material->SetColor(color);
-		material->SetSolid(false);
+		material->SetFillMode(FillMode::WIREFRAME);
 		obj->SetMesh(mesh);
 		obj->SetMaterial(material);
 	}
@@ -68,7 +68,8 @@ int NSG_MAIN(int argc, char* argv[])
 	CreateObject(Mesh::Create<RoundedRectangleMesh>(), Color(1, 1, 1, 1), Vector3(30, 0, 0));
 	CreateObject(Mesh::Create<SphereMesh>(), Color(0, 1, 1, 1), Vector3(40, 0, 0));
 	control->AutoZoom();
-	return Engine().Run();
-
+	auto r = Engine().Run();
+	scene = nullptr;
+	return r;
 }
 

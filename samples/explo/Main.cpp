@@ -33,11 +33,9 @@ int NSG_MAIN(int argc, char* argv[])
     auto control = std::make_shared<CameraControl>(camera);
     auto mesh = Mesh::Create<QuadMesh>();
     auto material = std::make_shared<Material>();
-    material->SetDiffuseMap(std::make_shared<Texture>(resource));
-    auto pass = material->GetTechnique()->GetPass(0);
-    pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
-    auto program = pass->GetProgram();
-    program->EnableFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::SPHERICAL_BILLBOARD);
+	material->SetTexture(std::make_shared<Texture>(resource));
+	material->SetLightingMode(LightingMode::UNLIT);
+	material->SetBillboardType(BillboardType::SPHERICAL);
     auto sprite = scene->CreateChild<SceneNode>();
     sprite->SetMesh(mesh);
     sprite->SetMaterial(material);

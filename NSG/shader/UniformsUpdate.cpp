@@ -44,11 +44,11 @@ namespace NSG
 
     void UniformsUpdate::ClearAllUpdates()
     {
-        UniformObjs& uniformObjs = Graphics::this_->GetUniformObjs();
-
-        for (auto& obj : uniformObjs)
-        {
-            obj->needUpdate_ = false;
-        }
+		if (Graphics::this_)
+		{
+			UniformObjs& uniformObjs = Graphics::this_->GetUniformObjs();
+			for (auto& obj : uniformObjs)
+				obj->needUpdate_ = false;
+		}
     }
 }

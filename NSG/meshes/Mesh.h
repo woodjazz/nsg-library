@@ -91,6 +91,8 @@ namespace NSG
 		void SetMeshData(const VertexsData& vertexsData, const Indexes& indexes);
         PShape GetShape();
         virtual PhysicsShape GetShapeType() const {return SH_CONVEX_TRIMESH; } // assume rigidbody is dynamicby default 
+        void SetUVName(int index, const std::string& name);
+		size_t FillShaderDefines(std::string& defines);
 	protected:
 		virtual void Load(const pugi::xml_node& node);
         bool IsValid() override;
@@ -114,5 +116,6 @@ namespace NSG
         std::set<SceneNode*> sceneNodes_;
         PShape shape_;
         static MapAndVector<std::string, Mesh> meshes_;
+        std::string uvNames_[MAX_UVS];
     };
 }

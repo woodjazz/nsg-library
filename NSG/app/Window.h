@@ -52,7 +52,8 @@ namespace NSG
         void OnJoystickDown(int joystickID, unsigned button);
         void OnJoystickUp(int joystickID, unsigned button);
         void OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position);
-		virtual void RenderFrame() = 0;
+		void RenderFrame();
+		virtual void SwapWindowBuffers() = 0;
         virtual void EnterBackground();
         virtual void EnterForeground();
         void InvalidateContext();
@@ -68,7 +69,6 @@ namespace NSG
         PFilter AddBlurFilter();
         PFilter AddBlendFilter();
         PFilter AddWaveFilter();
-        PFilter AddUserFilter(PResource fragmentShader);
         const std::vector<PFilter>& GetFilters() const { return filters_; }
         bool HasFilters() const { return !filters_.empty() && filtersEnabled_; }
         void EnableFilters(bool enable);

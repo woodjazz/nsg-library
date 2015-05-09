@@ -94,4 +94,5 @@ misrepresented as being the original software.
 #include "Engine.h"
 #include "Image.h"
 #include "FileSystem.h"
+#include "Renderer.h"
 

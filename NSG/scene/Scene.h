@@ -43,21 +43,20 @@ namespace NSG
         void SetWindow(Window* window);
         void SetAmbientColor(Color ambient);
         const Color& GetAmbientColor() const { return ambient_; }
-		void AddLight(PLight light);
-        void ChangeLightType(PLight light, LightType fromType);
-		const std::vector<PWeakLight>& GetLights(LightType type) const;
-        void AddCamera(PCamera camera);
-		void AddParticleSystem(PParticleSystem ps);
+		void AddLight(Light* light);
+		const std::vector<Light*>& GetLights() const;
+        void AddCamera(Camera* camera);
+		void AddParticleSystem(ParticleSystem* ps);
         void UpdateAll(float deltaTime);
 		void Render();
         void NeedUpdate(SceneNode* obj);
-        void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
+		void GetVisibleNodes(RenderLayer layer, const Camera* camera, std::vector<SceneNode*>& visibles) const;
 		void Save(pugi::xml_node& node) const override;
         void Load(const pugi::xml_node& node) override;
         bool GetFastRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<SceneNode*>& nodes) const;
         bool GetPreciseRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<RayNodeResult>& result) const;
 		bool GetClosestRayNodeIntersection(RenderLayer layer, const Ray& ray, RayNodeResult& closest) const;
-        bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
+		bool GetVisibleBoundingBox(RenderLayer layer, const Camera* camera, BoundingBox& bb) const;
 		const std::map<std::string, PAnimation>& GetAnimations() const { return animations_; }
         PAnimation GetOrCreateAnimation(const std::string& name);
         std::vector<PAnimation> GetAnimationsFor(PNode node) const;
@@ -73,7 +72,10 @@ namespace NSG
         SignalNodeMouseButton::PSignal SigNodeMouseDown() { return signalNodeMouseDown_; }
         SignalNodeMouseButton::PSignal SigNodeMouseUp() { return signalNodeMouseUp_; }
         SignalNodeMouseMoved::PSignal SigNodeMouseWheel() { return signalNodeMouseWheel_; }
-    protected:
+        unsigned GetDrawablesNumber(RenderLayer layer) const;
+        std::vector<Camera*> GetCameras(RenderLayer layer) const;
+		PCamera GetOrthoCamera() const { return orthoCamera_; }
+	protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
 		void LoadSkeletons(const pugi::xml_node& node);
@@ -83,14 +85,12 @@ namespace NSG
     private:
         void UpdateAnimations(float deltaTime);
         void UpdateParticleSystems(float deltaTime);
-		bool HasLight(PLight light) const;
-		std::vector<Camera*> GetCameras(RenderLayer layer) const;
     private:
-		mutable std::map<LightType, std::vector<PWeakLight>> lights_;
-		std::vector<PWeakParticleSystem> particleSystems_;
+        std::vector<Camera*> cameras_;
+		std::vector<Light*> lights_;
+		std::vector<ParticleSystem*> particleSystems_;
         Color ambient_;
         PCamera orthoCamera_;
-		mutable std::vector<PWeakCamera> cameras_;
 		POctree octree_[(int)RenderLayer::MAX_LAYERS];
         mutable std::set<SceneNode*> needUpdate_;
 		std::map<std::string, PAnimation> animations_;
@@ -107,5 +107,8 @@ namespace NSG
 		SignalMouseButton::PSlot slotMouseUp_;
 		SignalFloatFloat::PSlot slotMouseWheel_;
 		SignalWindow::PSlot slotWindowCreated_;
+        SignalLight::PSlot slotLightBeingDestroy_;
+		SignalCamera::PSlot slotCameraBeingDestroy_;
+		SignalParticleSystem::PSlot slotPSBeingDestroy_;
     };
 }

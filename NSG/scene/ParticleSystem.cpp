@@ -79,18 +79,19 @@ namespace NSG
 		particleMesh_->Set(1.f);
         particleMaterial_ = std::make_shared<Material>(GetUniqueName(name + "Particle"));
         particleMaterial_->SetColor(Color(0, 1, 0, 1));
+		particleMaterial_->SetLightingMode(LightingMode::UNLIT);
 		auto pass = particleMaterial_->GetTechnique()->GetPass(0);
-		pass->SetBlendMode(BLEND_MODE::BLEND_ALPHA);
+		particleMaterial_->SetBlendMode(BLEND_MODE::ALPHA);
+		particleMaterial_->SetBillboardType(BillboardType::SPHERICAL);
 		pass->EnableDepthBuffer(false);
-		auto program = pass->GetProgram();
-		program->EnableFlags((int)ProgramFlag::UNLIT | (int)ProgramFlag::SPHERICAL_BILLBOARD);
-        SetLayer(RenderLayer::PARTICLES_LAYER);
+		SetLayer(RenderLayer::DEFAULT_LAYER);
         DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
 		particles_.reserve(amount_);
     }
 
     ParticleSystem::~ParticleSystem()
     {
+        SignalBeingDestroy()->Run(this);
     }
 
 	void ParticleSystem::SetParticleMaterial(PMaterial material)
@@ -279,5 +280,12 @@ namespace NSG
 
         particle->SetVelocity(velocity);
     }
+
+    SignalParticleSystem::PSignal ParticleSystem::SignalBeingDestroy()
+    {
+        static SignalParticleSystem::PSignal sig(new SignalParticleSystem);
+        return sig;
+    }
+
 
 }

@@ -106,7 +106,8 @@ mat4 GetViewWorldMatrix()
 	#endif
 }
 
-#ifdef HAS_LIGHTS
+#if defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)
+
 	mat3 GetNormalMatrix()
 	{
 	    //The normal matrix is used to allow non-uniform scales (sx != sy != sz) in the active node.
@@ -130,7 +131,7 @@ mat4 GetViewWorldMatrix()
 	    #endif
 	}
 
-	#if defined(NORMALMAP) || defined(DISPLACEMENTMAP)
+	#if defined(NORMALMAP)
 		vec3 GetWorldTangent()
 		{
 		    #if defined(SKINNED)
@@ -173,7 +174,11 @@ vec4 GetClipPos(vec4 worldPos)
 uniform vec4 u_uvTransform;
 vec2 GetTexCoord(vec2 texCoord)
 {
-    return texCoord.xy * u_uvTransform.xy + u_uvTransform.zw;
+	#if defined(FLIP_Y)
+		return vec2(texCoord.x, 1.0 - texCoord.y) * u_uvTransform.xy + u_uvTransform.zw;
+	#else
+		return texCoord.xy * u_uvTransform.xy + u_uvTransform.zw;
+	#endif
 }
 
 #endif

@@ -140,7 +140,7 @@ namespace NSG
         state.joystick_ = SDL_JoystickOpen(deviceIndex);
         if (!state.joystick_)
         {
-			TRACE_PRINTF("Cannot open joystick number: %d", deviceIndex);
+            TRACE_PRINTF("Cannot open joystick number: %d", deviceIndex);
         }
         #if !defined(EMSCRIPTEN)
         else if (SDL_IsGameController(deviceIndex))
@@ -148,14 +148,14 @@ namespace NSG
             state.pad_ = SDL_GameControllerOpen(deviceIndex);
             if (!state.pad_)
             {
-				TRACE_PRINTF("Cannot open game controller number: %d", deviceIndex);
+                TRACE_PRINTF("Cannot open game controller number: %d", deviceIndex);
             }
         }
         state.instanceID_ = SDL_JoystickInstanceID(static_cast<SDL_Joystick*>(state.joystick_));
         #else
         state.instanceID_ = deviceIndex;
         #endif
-		TRACE_PRINTF("Joystick number: %d has been added.", deviceIndex);
+        TRACE_PRINTF("Joystick number: %d has been added.", deviceIndex);
         joysticks_[state.instanceID_] = state;
     }
 
@@ -172,7 +172,7 @@ namespace NSG
                 #endif
                 SDL_JoystickClose((SDL_Joystick*)state.joystick_);
                 joysticks_.erase(state.instanceID_);
-				TRACE_PRINTF("Joystick number: %d has been removed.", deviceIndex);
+                TRACE_PRINTF("Joystick number: %d has been removed.", deviceIndex);
                 break;
             }
         }
@@ -314,7 +314,7 @@ namespace NSG
         }
         #endif
 
-		Window::OnReady();
+        Window::OnReady();
         Graphics::this_->SetWindow(this);
 
         #if !defined(EMSCRIPTEN)
@@ -357,11 +357,8 @@ namespace NSG
         }
     }
 
-    void SDLWindow::RenderFrame()
+    void SDLWindow::SwapWindowBuffers()
     {
-        Graphics::this_->SetWindow(this);
-        if(scene_)
-            scene_->Render();
         #if !defined(EMSCRIPTEN)
         SDL_GL_SwapWindow(SDL_GetWindowFromID(windowID_));
         #endif
@@ -379,7 +376,7 @@ namespace NSG
         if (!SDL_GL_GetCurrentContext())
         {
             // On Android the context may be lost behind the scenes as the application is minimized
-			TRACE_PRINTF("OpenGL context has been lost. Restoring!!!");
+            TRACE_PRINTF("OpenGL context has been lost. Restoring!!!");
             auto win = SDL_GetWindowFromID(windowID_);
             auto context = SDL_GL_CreateContext(win);
             SDL_GL_MakeCurrent(win, context);
@@ -436,7 +433,7 @@ namespace NSG
 
             default:
                 {
-					TRACE_PRINTF("Unknown joystick axis: %d", axis);
+                    TRACE_PRINTF("Unknown joystick axis: %d", axis);
                     return JoystickAxis::UNKNOWN;
                 }
         }
@@ -605,41 +602,41 @@ namespace NSG
             #if !defined(EMSCRIPTEN)
             else if (event.type == SDL_JOYDEVICEADDED)
             {
-				SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-				if (!window) continue;
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
                 auto which = event.jdevice.which;
                 window->OpenJoystick(which);
             }
             else if (event.type == SDL_JOYDEVICEREMOVED)
             {
-				SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-				if (!window) continue;
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
                 auto which = event.jdevice.which;
                 window->CloseJoystick(which);
             }
             else if (event.type == SDL_CONTROLLERBUTTONDOWN)
             {
-				SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-				if (!window) continue;
-				auto& state = window->joysticks_.find(event.cbutton.which)->second;
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto& state = window->joysticks_.find(event.cbutton.which)->second;
                 CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
                 auto button = event.cbutton.button;
                 window->OnJoystickDown(state.instanceID_, button);
             }
             else if (event.type == SDL_CONTROLLERBUTTONUP)
             {
-				SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-				if (!window) continue;
-				auto& state = window->joysticks_.find(event.cbutton.which)->second;
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto& state = window->joysticks_.find(event.cbutton.which)->second;
                 CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
                 auto button = event.cbutton.button;
                 window->OnJoystickUp(state.instanceID_, button);
             }
             else if (event.type == SDL_CONTROLLERAXISMOTION)
             {
-				SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-				if (!window) continue;
-				auto& state = window->joysticks_.find(event.caxis.which)->second;
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto& state = window->joysticks_.find(event.caxis.which)->second;
                 CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
                 auto axis = ConvertAxis(event.caxis.axis);
                 float value = (float)event.caxis.value;
@@ -651,9 +648,9 @@ namespace NSG
 
             else if (event.type == SDL_JOYBUTTONDOWN)
             {
-				SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-				if (!window) continue;
-				auto& state = window->joysticks_.find(event.jbutton.which)->second;
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto& state = window->joysticks_.find(event.jbutton.which)->second;
                 if (!state.pad_)
                 {
                     auto button = event.jbutton.button;
@@ -662,9 +659,9 @@ namespace NSG
             }
             else if (event.type == SDL_JOYBUTTONUP)
             {
-				SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-				if (!window) continue;
-				auto& state = window->joysticks_.find(event.jbutton.which)->second;
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto& state = window->joysticks_.find(event.jbutton.which)->second;
                 if (!state.pad_)
                 {
                     auto button = event.jbutton.button;
@@ -673,9 +670,9 @@ namespace NSG
             }
             else if (event.type == SDL_JOYAXISMOTION)
             {
-				SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-				if (!window) continue;
-				auto& state = window->joysticks_.find(event.jaxis.which)->second;
+                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                if (!window) continue;
+                auto& state = window->joysticks_.find(event.jaxis.which)->second;
                 if (!state.pad_)
                 {
                     auto axis = ConvertAxis(event.jaxis.axis);

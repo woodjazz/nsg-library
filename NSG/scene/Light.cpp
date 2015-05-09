@@ -26,6 +26,7 @@ namespace NSG
 
     Light::~Light()
     {
+        SignalBeingDestroy()->Run(this);
     }
 
     void Light::SetAmbientColor(Color ambient)
@@ -80,29 +81,25 @@ namespace NSG
     {
         if (type_ != type)
         {
-            LightType oldType = type_;
             type_ = type;
-            auto scene = GetScene();
-            if (scene)
-                scene->ChangeLightType(std::dynamic_pointer_cast<Light>(shared_from_this()), oldType);
-            SetUniformsNeedUpdate();
+            //SetUniformsNeedUpdate();
         }
     }
 
     void Light::Save(pugi::xml_node& node) const
     {
-		node.append_attribute("name").set_value(GetName().c_str());
+        node.append_attribute("name").set_value(GetName().c_str());
         node.append_attribute("nodeType").set_value("Light");
-		node.append_attribute("type").set_value((int)type_);
-		node.append_attribute("attenuationConstant").set_value(attenuation_.constant);
-		node.append_attribute("attenuationLinear").set_value(attenuation_.linear);
-		node.append_attribute("attenuationQuadratic").set_value(attenuation_.quadratic);
-		node.append_attribute("spotCutOff").set_value(spotCutOff_);
-		node.append_attribute("ambient").set_value(ToString(ambient_).c_str());
-		node.append_attribute("diffuse").set_value(ToString(diffuse_).c_str());
-		node.append_attribute("specular").set_value(ToString(specular_).c_str());
-		node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
-		node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
+        node.append_attribute("type").set_value((int)type_);
+        node.append_attribute("attenuationConstant").set_value(attenuation_.constant);
+        node.append_attribute("attenuationLinear").set_value(attenuation_.linear);
+        node.append_attribute("attenuationQuadratic").set_value(attenuation_.quadratic);
+        node.append_attribute("spotCutOff").set_value(spotCutOff_);
+        node.append_attribute("ambient").set_value(ToString(ambient_).c_str());
+        node.append_attribute("diffuse").set_value(ToString(diffuse_).c_str());
+        node.append_attribute("specular").set_value(ToString(specular_).c_str());
+        node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
+        node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
         SaveChildren(node);
     }
 
@@ -150,5 +147,21 @@ namespace NSG
         SetOrientation(orientation);
 
         LoadChildren(node);
+    }
+
+    void Light::FillShaderDefines(std::string& defines)
+    {
+        if (LightType::POINT == type_)
+            defines += "#define HAS_POINT_LIGHT\n";
+        else if (LightType::DIRECTIONAL == type_)
+            defines += "#define HAS_DIRECTIONAL_LIGHT\n";
+        else
+            defines += "#define HAS_SPOT_LIGHT\n";
+    }
+
+    SignalLight::PSignal Light::SignalBeingDestroy()
+    {
+        static SignalLight::PSignal sig(new SignalLight);
+        return sig;
     }
 }

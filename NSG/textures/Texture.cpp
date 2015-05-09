@@ -51,7 +51,9 @@ namespace NSG
           serializable_(false),
           wrapMode_(TextureWrapMode::REPEAT),
           mipmapLevels_(0),
-          filterMode_(TextureFilterMode::BILINEAR)
+          filterMode_(TextureFilterMode::BILINEAR),
+          blendType_(TextureBlend::NONE),
+          mapType_(TextureType::COL)
     {
         switch (format_)
         {
@@ -88,7 +90,9 @@ namespace NSG
           serializable_(true),
           wrapMode_(TextureWrapMode::REPEAT),
           mipmapLevels_(0),
-          filterMode_(TextureFilterMode::BILINEAR)
+          filterMode_(TextureFilterMode::BILINEAR),
+          blendType_(TextureBlend::NONE),
+          mapType_(TextureType::COL)
     {
     }
 
@@ -254,6 +258,9 @@ namespace NSG
     {
         std::string flags = node.attribute("flags").as_string();
         std::string resourceName = node.attribute("resource").as_string();
+        std::string uvName = node.attribute("uvName").as_string();
+        TextureBlend blendType = (TextureBlend)node.attribute("blend").as_int();
+        TextureType mapType = (TextureType)node.attribute("type").as_int();
         auto res = Resource::Get(resourceName);
         PTexture texture;
         if (!res)
@@ -265,14 +272,36 @@ namespace NSG
         else
             texture = std::make_shared<Texture>(res);
         texture->SetName(resourceName);
+        texture->SetUVName(uvName);
         texture->SetFlags(flags);
+        texture->SetBlendType(blendType);
+        texture->SetMapType(mapType);
         return texture;
+    }
+
+    std::string Texture::TranslateFlags() const
+    {
+        std::string ss;
+
+        if ((int)TextureFlag::GENERATE_MIPMAPS & flags_)
+            ss = " GENERATE_MIPMAPS" + ss;
+
+        if ((int)TextureFlag::INVERT_Y & flags_)
+            ss = " INVERT_Y" + ss;
+
+        return ss;
     }
 
     void Texture::Save(pugi::xml_node& node)
     {
         node.append_attribute("flags") = flags_.to_string().c_str();
+        node.append_attribute("flagNames") = TranslateFlags().c_str();
         node.append_attribute("resource") = pResource_->GetName().c_str();
+        node.append_attribute("uvName") = uvName_.c_str();
+        node.append_attribute("blend") = ToString((int)blendType_).c_str();
+        node.append_attribute("type") = ToString((int)mapType_).c_str();
+        node.append_attribute("blendType") = TranslateBlendType().c_str();
+        node.append_attribute("mapType") = TranslateMapType().c_str();
     }
 
     void Texture::SetSize(GLsizei width, GLsizei height)
@@ -314,5 +343,125 @@ namespace NSG
             filterMode_ = mode;
             Invalidate();
         }
+    }
+
+    std::string Texture::TranslateBlendType() const
+    {
+        std::string s;
+        switch (blendType_)
+        {
+            case TextureBlend::NONE:
+                s = "NONE";
+                break;
+            case TextureBlend::MIX:
+                s = "MIX";
+                break;
+            case TextureBlend::MUL:
+                s = "MUL";
+                break;
+            case TextureBlend::ADD:
+                s = "ADD";
+                break;
+            case TextureBlend::SUB:
+                s = "SUB";
+                break;
+            case TextureBlend::DIV:
+                s = "DIV";
+                break;
+            case TextureBlend::DARK:
+                s = "DARK";
+                break;
+            case TextureBlend::DIFF:
+                s = "DIFF";
+                break;
+            case TextureBlend::LIGHT:
+                s = "LIGHT";
+                break;
+            case TextureBlend::SCREEN:
+                s = "SCREEN";
+                break;
+            case TextureBlend::OVERLAY:
+                s = "OVERLAY";
+                break;
+            case TextureBlend::BLEND_HUE:
+                s = "BLEND_HUE";
+                break;
+            case TextureBlend::BLEND_SAT:
+                s = "BLEND_SAT";
+                break;
+            case TextureBlend::BLEND_VAL:
+                s = "BLEND_VAL";
+                break;
+            case TextureBlend::BLEND_COLOR:
+                s = "BLEND_COLOR";
+                break;
+            default:
+                break;
+        }
+        return s;
+    }
+
+    std::string Texture::TranslateMapType() const
+    {
+        std::string s;
+
+        switch (mapType_)
+        {
+            case TextureType::UNKNOWN:
+                s = "UNKNOWN";
+                break;
+            case TextureType::COL:
+                s = "COL";
+                break;
+            case TextureType::NORM:
+                s = "NORM";
+                break;
+            case TextureType::COLSPEC:
+                s = "COLSPEC";
+                break;
+            case TextureType::COLMIR:
+                s = "COLMIR";
+                break;
+            case TextureType::VARS:
+                s = "VARS";
+                break;
+            case TextureType::REF:
+                s = "REF";
+                break;
+            case TextureType::SPEC:
+                s = "SPEC";
+                break;
+            case TextureType::EMIT:
+                s = "EMIT";
+                break;
+            case TextureType::ALPHA:
+                s = "ALPHA";
+                break;
+            case TextureType::HAR:
+                s = "HAR";
+                break;
+            case TextureType::RAYMIRR:
+                s = "RAYMIRR";
+                break;
+            case TextureType::TRANSLU:
+                s = "TRANSLU";
+                break;
+            case TextureType::AMB:
+                s = "AMB";
+                break;
+            case TextureType::DISPLACE:
+                s = "DISPLACE";
+                break;
+            case TextureType::WARP:
+                s = "WARP";
+                break;
+            case TextureType::LAYER:
+                s = "LAYER";
+                break;
+            default:
+                break;
+        }
+
+        return s;
     }
 }
