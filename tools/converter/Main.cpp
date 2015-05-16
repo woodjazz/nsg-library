@@ -152,6 +152,7 @@ int NSG_MAIN(int argc, char* argv[])
         static const char* VERSION = "1.0";
 
         TCLAP::CmdLine cmd("NSG Converter", ' ', VERSION);
+		cmd.setExceptionHandling(false);
 
         IFileConstraint iConstraintFile;
         TCLAP::ValueArg<std::string> iArg("i", "input", "Input file to be converted", false, "", &iConstraintFile);
@@ -192,30 +193,34 @@ int NSG_MAIN(int argc, char* argv[])
         Path outputDir;
         outputDir.SetPath(oArg.getValue());
 
-        if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
-        {
-            auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
-            using namespace BlenderConverter;
-            BScene scene(inputFile, outputDir, bArg.getValue());
-            if (scene.Load() && scene.Save(zArg.getValue()))
-                return 0;
-        }
-        else if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
-        {
-            int fontPixelsHeight = fArg.getValue();
-            int bitmapWidth = wArg.getValue();
-            int bitmapHeight = hArg.getValue();
-            int sChar = sArg.getValue();
-            int eChar = eArg.getValue();
-
-            TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
-            if (obj.Load() && obj.Save(outputDir, zArg.getValue()))
-                return 0;
-        }
-        else
-        {
-            return 0;
-        }
+		if (outputDir.HasPath() && inputFile.HasExtension())
+		{
+			if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
+			{
+				auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
+				using namespace BlenderConverter;
+				BScene scene(inputFile, outputDir, bArg.getValue());
+				scene.Load();
+				CHECK_CONDITION(scene.Save(zArg.getValue()), __FILE__, __LINE__);
+			}
+			else if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
+			{
+				int fontPixelsHeight = fArg.getValue();
+				int bitmapWidth = wArg.getValue();
+				int bitmapHeight = hArg.getValue();
+				int sChar = sArg.getValue();
+				int eChar = eArg.getValue();
+				TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
+				obj.Load();
+				CHECK_CONDITION(obj.Save(outputDir, zArg.getValue()), __FILE__, __LINE__);
+			}
+			else
+			{
+				TRACE_PRINTF("Cannot convert file. Unknown file extension!!!\n");
+				return -1;
+			}
+		}
+        return 0;
     }
     catch (TCLAP::ArgException& e)
     {
@@ -230,6 +235,10 @@ int NSG_MAIN(int argc, char* argv[])
 
         std::cerr << endl << "error: " << pWhat << std::endl;
     }
+	catch (TCLAP::ExitException& e)
+	{
+		return e.getExitStatus();
+	}
     catch (...)
     {
         std::cerr << endl << "*** UNKNOWN EXCEPTION (2) *** " << endl;

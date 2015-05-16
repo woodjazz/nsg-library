@@ -72,7 +72,7 @@ namespace NSG
 
     enum class LightType {POINT, DIRECTIONAL, SPOT};
 
-	enum class BLEND_MODE
+    enum class BLEND_MODE
     {
         NONE,
         ALPHA,
@@ -96,7 +96,7 @@ namespace NSG
         BLEND_HUE,
         BLEND_SAT,
         BLEND_VAL,
-		BLEND_COLOR
+        BLEND_COLOR
     };
 
     enum class TextureType
@@ -201,10 +201,11 @@ namespace NSG
 
     enum class CullFaceMode
     {
-        DEFAULT = GL_BACK,
-        BACK = GL_BACK,
-        FRONT = GL_FRONT,
-        FRONT_AND_BACK = GL_FRONT_AND_BACK
+        DEFAULT,
+		BACK = DEFAULT,
+        FRONT,
+        FRONT_AND_BACK,
+        DISABLED
     };
 
     enum class FrontFaceMode
@@ -361,11 +362,11 @@ namespace NSG
         LAST
     };
 
-	class Engine;
+    class Engine;
 
-	struct SignalSizeChanged : Signal<int, int> {};
-	struct SignalFloatFloat : Signal<float, float> {};
-	struct SignalMouseButton : Signal<int, float, float> {};
+    struct SignalSizeChanged : Signal<int, int> {};
+    struct SignalFloatFloat : Signal<float, float> {};
+    struct SignalMouseButton : Signal<int, float, float> {};
     struct SignalKey : Signal<int, int, int> {};
     struct SignalUnsigned : Signal<unsigned int> {};
     struct SignalMultiGesture : Signal<int, float, float, float, float, int> {};
@@ -390,7 +391,7 @@ namespace NSG
 
     enum MaterialTexture
     {
-		DIFFUSE_MAP,
+        DIFFUSE_MAP,
         NORMAL_MAP,
         LIGHT_MAP,
         SPECULAR_MAP,
@@ -408,14 +409,6 @@ namespace NSG
     {
         LINEARY,
         RANDOM
-    };
-
-    enum class RenderLayer
-    {
-        DEFAULT_LAYER,
-        GUI_LAYER0,
-        GUI_LAYER1,
-        MAX_LAYERS
     };
 
     enum class SceneNodeFlag
@@ -495,9 +488,18 @@ namespace NSG
         PERPIXEL
     };
 
-    enum class ShaderCommand
+    enum class PassType
     {
-        LIGHTING,
+        DEFAULT,
+        AMBIENT
+    };
+
+    enum class RenderPass
+    {
+        VERTEXCOLOR,
+        UNLIT,
+        PERVERTEX,
+        PERPIXEL,
         TEXT,
         BLEND,
         BLUR,

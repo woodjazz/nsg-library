@@ -153,7 +153,7 @@ namespace NSG
 				theta_ += PI;
 		}
 
-		CHECK_ASSERT(glm::distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION, __FILE__, __LINE__);
+		//CHECK_ASSERT(glm::distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION, __FILE__, __LINE__);
     }
 
 

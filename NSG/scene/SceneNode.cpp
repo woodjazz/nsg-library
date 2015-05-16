@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "SceneNode.h"
 #include "Check.h"
-#include "Technique.h"
 #include "Graphics.h"
 #include "Material.h"
 #include "ModelMesh.h"
@@ -44,12 +43,12 @@ namespace NSG
 {
     SceneNode::SceneNode(const std::string& name)
         : Node(name),
-          layer_(RenderLayer::DEFAULT_LAYER),
           octant_(nullptr),
           occludee_(false),
           worldBBNeedsUpdate_(true),
           serializable_(true),
           signalMeshSet_(new SignalEmpty()),
+          signalMaterialSet_(new SignalEmpty()),
           signalCollision_(new Signal<const ContactPoint & >())
     {
         #if 0
@@ -76,6 +75,7 @@ namespace NSG
         if (material_ != material)
         {
             material_ = material;
+            signalMaterialSet_->Run();
         }
     }
 
@@ -113,9 +113,7 @@ namespace NSG
     PRigidBody SceneNode::GetOrCreateRigidBody()
     {
         if (!rigidBody_)
-        {
             rigidBody_ = std::make_shared<RigidBody>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
-        }
         return rigidBody_;
     }
 
@@ -293,22 +291,6 @@ namespace NSG
     void SceneNode::OnCollision(const ContactPoint& contactInfo)
     {
         signalCollision_->Run(contactInfo);
-    }
-
-    RenderLayer SceneNode::SetLayer(RenderLayer layer)
-    {
-        if (layer_ != layer)
-        {
-            auto scene = GetScene();
-            if (scene)
-           {
-			   std::swap(layer, layer_);
-                scene->RemoveFromOctree(this);
-                if (mesh_)
-                    scene->UpdateOctree(this);
-            }
-        }
-        return layer;
     }
 
     void SceneNode::SetFlags(const SceneNodeFlags& flags)

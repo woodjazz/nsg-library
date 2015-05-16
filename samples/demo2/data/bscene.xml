@@ -1757,16 +1757,11 @@
 		</Mesh>
 	</Meshes>
 	<Materials>
-		<Material name="Material" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[1.000000,1.000000,1.000000,1.000000]" shininess="1" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="0" blendMode="0">
+		<Material name="Material" shadeless="false" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[1.000000,1.000000,1.000000,1.000000]" shininess="1" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="0" blendMode="0" renderPass="PERPIXEL">
 			<Texture4 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/AO.png" uvName="UVMap0" blend="1" type="13" blendType="MIX" mapType="AMB" />
-			<Technique lightingMode="3">
-				<Passes>
-					<Pass blendMode="0" enableDepthTest="true" enableStencilTest="false" stencilMask="4294967295" sfailStencilOp="7680" dpfailStencilOp="7680" dppassStencilOp="7680" stencilFunc="519" stencilRefValue="0" stencilMaskValue="4294967295" enableColorBuffer="true" enableDepthBuffer="true" enableCullFace="true" cullFaceMode="1029" frontFaceMode="2305" depthFunc="1" />
-				</Passes>
-			</Technique>
 		</Material>
 	</Materials>
-	<Scene>
+	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="Camera">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
 			<SceneNode name="Cube" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material" meshName="Cube">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />

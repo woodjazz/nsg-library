@@ -34,7 +34,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto mesh = Mesh::Create<QuadMesh>();
     auto material = std::make_shared<Material>();
 	material->SetTexture(std::make_shared<Texture>(resource));
-	material->SetLightingMode(LightingMode::UNLIT);
+	material->SetRenderPass(RenderPass::UNLIT);
 	material->SetBillboardType(BillboardType::SPHERICAL);
     auto sprite = scene->CreateChild<SceneNode>();
     sprite->SetMesh(mesh);

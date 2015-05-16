@@ -34,7 +34,6 @@ namespace NSG
 	public:
 		Camera(const std::string& name);
 		~Camera();
-		RenderLayer SetLayer(RenderLayer layer);
 		void SetWindow(Window* window);
 		void EnableOrtho();
 		void DisableOrtho();

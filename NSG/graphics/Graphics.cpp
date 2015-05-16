@@ -36,7 +36,6 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include "Scene.h"
 #include "Constants.h"
-#include "Technique.h"
 #include "Pass.h"
 #include "Util.h"
 #include "SceneNode.h"
@@ -96,9 +95,7 @@ namespace NSG
           enabledAttributes_(0),
           lastMesh_(nullptr),
           lastProgram_(nullptr),
-          lastNode_(nullptr),
           activeMesh_(nullptr),
-          activeNode_(nullptr),
           activeScene_(nullptr),
           activeCamera_(nullptr),
           activeWindow_(nullptr),
@@ -385,9 +382,7 @@ namespace NSG
         vaoMap_.clear();
         lastMesh_ = nullptr;
         lastProgram_ = nullptr;
-        lastNode_ = nullptr;
         activeMesh_ = nullptr;
-        activeNode_ = nullptr;
         activeScene_ = nullptr;
         activeCamera_ = nullptr;
         activeWindow_ = nullptr;
@@ -737,8 +732,22 @@ namespace NSG
     {
         if (mode != cullFaceMode_)
         {
-            glCullFace((GLenum)mode);
             cullFaceMode_ = mode;
+            switch(mode)
+            {
+                case CullFaceMode::BACK:
+                    glCullFace(GL_BACK);
+                    break;
+                case CullFaceMode::FRONT:
+                    glCullFace(GL_FRONT);
+                    break;
+                case CullFaceMode::FRONT_AND_BACK:
+                    glCullFace(GL_FRONT_AND_BACK);
+                    break;
+                default:
+                    CHECK_ASSERT(!"Unknown CullFaceMode!!!", __FILE__, __LINE__);
+                    break;
+            }
         }
     }
 
@@ -1227,7 +1236,7 @@ namespace NSG
         }
     }
 
-    void Graphics::SetupPass(Pass* pass, Material* material, Light* light)
+    void Graphics::SetupPass(Pass* pass, SceneNode* sceneNode, Material* material, Light* light)
     {
         CHECK_ASSERT(pass, __FILE__, __LINE__);
 
@@ -1248,15 +1257,19 @@ namespace NSG
             SetDepthFunc(data.depthFunc_);
         }
 
-        EnableCullFace(data.enableCullFace_);
-        if (data.enableCullFace_)
+        auto cullFaceMode = material->GetCullFaceMode();
+        if (cullFaceMode != CullFaceMode::DISABLED)
         {
-            SetCullFace(data.cullFaceMode_);
+            EnableCullFace(true);
+            SetCullFace(cullFaceMode);
             SetFrontFace(data.frontFaceMode_);
         }
-        auto program = GetOrCreateProgram(activeMesh_, material, light);
+        else
+            EnableCullFace(false);
+
+        auto program = GetOrCreateProgram(pass, activeMesh_, material, light);
 		program->Set(activeMesh_);
-        program->Set(activeNode_);
+        program->Set(sceneNode);
         program->Set(material);
 		program->Set(light);
         CHECK_CONDITION(SetProgram(program.get()), __FILE__, __LINE__);
@@ -1264,11 +1277,10 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-    PProgram Graphics::GetOrCreateProgram(Mesh* mesh, Material* material, Light* light)
+    PProgram Graphics::GetOrCreateProgram(Pass* pass, Mesh* mesh, Material* material, Light* light)
     {
         std::string defines;
-
-		material->FillShaderDefines(defines, light);
+		material->FillShaderDefines(defines, pass->GetType(), light, mesh);
 		size_t nBones = 0;
 
 		if(mesh)
@@ -1314,7 +1326,6 @@ namespace NSG
         SetVertexArrayObj(nullptr);
 
         lastMesh_ = activeMesh_;
-        lastNode_ = activeNode_;
         lastProgram_ = activeProgram_;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
@@ -1346,7 +1357,6 @@ namespace NSG
         SetVertexArrayObj(nullptr);
 
         lastMesh_ = activeMesh_;
-        lastNode_ = activeNode_;
         lastProgram_ = activeProgram_;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);

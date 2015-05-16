@@ -1,9 +1,27 @@
 //Remember to rebuild with CMake if this file changes
 #if defined(COMPILEVS) && !defined(HAS_USER_VERTEX_SHADER)
 
+	// use always gl_Position = GetClipPos() between different passes
+	// to avoid variation and z-fighting issues.
+	// For example do not use:
+	//		gl_Position = GetClipPos(); for AMBIENT pass
+	//		gl_Position = GetClipPos(worldPos); for PER_PIXEL_LIGHTING pass
+	// since it can produce different results and cause z-fighting between passes
 	void main()
 	{
-		#if defined(TEXT)
+		#if defined AMBIENT
+
+			gl_Position = GetClipPos();
+			v_color = u_material.color * a_color;
+			v_texcoord0 = GetTexCoord(a_texcoord0);
+
+			#if defined(AOMAP0) || defined(LIGHTMAP0)
+				v_texcoord0 = GetTexCoord(a_texcoord0);
+			#elif defined(AOMAP1) || defined(LIGHTMAP1)
+				v_texcoord1 = GetTexCoord(a_texcoord1);
+			#endif
+
+		#elif defined(TEXT)
 
 			v_color = u_material.color * a_color;
 			gl_Position = GetClipPos();
@@ -25,14 +43,6 @@
 			gl_Position = GetClipPos();
 			v_texcoord0 = GetTexCoord(a_texcoord0);
 
-		#elif defined(LIGHTMAP) // lightmap without lighting
-
-			v_color = u_material.color * a_color;
-			v_texcoord0 = GetTexCoord(a_texcoord0);
-			v_texcoord1 = GetTexCoord(a_texcoord1);
-			
-			gl_Position = GetClipPos();
-
 		#elif defined(PER_VERTEX_LIGHTING)
 
 			vec4 worldPos = GetWorldPos();
@@ -41,12 +51,7 @@
 		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);
 		    v_color = a_color * totalLight;
 			v_texcoord0 = GetTexCoord(a_texcoord0);
-			
-			#if defined(AOMAP)
-				v_texcoord1 = GetTexCoord(a_texcoord1);
-			#endif
-
-			gl_Position = GetClipPos(worldPos);
+			gl_Position = GetClipPos();
 
 		#elif defined(PER_PIXEL_LIGHTING)
 
@@ -75,12 +80,7 @@
 
 			v_color = a_color;
 			v_texcoord0 = GetTexCoord(a_texcoord0);
-
-			#if defined(AOMAP)
-				v_texcoord1 = GetTexCoord(a_texcoord1);
-			#endif
-
-			gl_Position = GetClipPos(worldPos);
+			gl_Position = GetClipPos();
 
 		#else // Vertex color by default
 			v_color = u_material.color * a_color;

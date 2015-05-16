@@ -1,23 +1,66 @@
 //Remember to rebuild with CMake if this file changes
+
+#if defined(COMPILEFS)
+vec4 GetAmbientIntensity()
+{
+    #if defined(AOMAP0)
+        #if defined(AOMAP_CHANNELS1)
+            vec4 intensity = vec4(texture2D(u_texture4, v_texcoord0).a);
+        #else
+            vec4 intensity = texture2D(u_texture4, v_texcoord0);
+        #endif
+    #elif defined(AOMAP1)
+        #if defined(AOMAP_CHANNELS1)
+            vec4 intensity = vec4(texture2D(u_texture4, v_texcoord1).a);
+        #else
+            vec4 intensity = texture2D(u_texture4, v_texcoord1);
+        #endif
+    #else
+        vec4 intensity = u_sceneAmbientColor * u_material.ambient;
+    #endif
+
+    #if defined(LIGHTMAP0)
+        #if defined(LIGHTMAP_CHANNELS1)
+            intensity *= vec4(texture2D(u_texture2, v_texcoord0).a);
+        #else
+            intensity *= texture2D(u_texture2, v_texcoord0);
+        #endif
+    #elif defined(LIGHTMAP1)
+        #if defined(LIGHTMAP_CHANNELS1)
+            intensity *= vec4(texture2D(u_texture2, v_texcoord1).a);
+        #else
+            intensity *= texture2D(u_texture2, v_texcoord1);
+        #endif
+    #endif
+
+    return intensity;
+}
+
+vec4 GetAmbientLight()
+{
+    #ifdef DIFFUSEMAP
+        vec4 diffColor = u_material.diffuse * texture2D(u_texture0, v_texcoord0);
+    #else
+        vec4 diffColor = u_material.diffuse;
+    #endif
+
+    return GetAmbientIntensity() * diffColor;
+}
+#endif
+
 #if defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)
 
 vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 normal)
 {
-    #if defined(AOMAP) && defined(COMPILEFS)
-    vec4 color = texture2D(u_texture4, v_texcoord1);
-    #else
-    vec4 color = u_material.ambient * base.ambient;
-    #endif
-
     float diffuseFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);
-    color = max(color, diffuseFactor * base.diffuse * u_material.diffuse);
+    vec4 color = diffuseFactor * base.diffuse * u_material.diffuse;
     vec3 lightReflect = normalize(reflect(lightDirection, normal));
     float specularFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);
     specularFactor = pow(specularFactor, u_material.shininess);
     #if defined SPECULARMAP && defined(COMPILEFS)
-    color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);
+        color += specularFactor * base.specular * u_material.specular * texture2D(u_texture3, v_texcoord0);
     #else
-    color += specularFactor * base.specular * u_material.specular;
+        color += specularFactor * base.specular * u_material.specular;
     #endif
 
     return color;

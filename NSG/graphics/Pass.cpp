@@ -34,7 +34,6 @@ misrepresented as being the original software.
 #include "Program.h"
 #include "pugixml.hpp"
 #include "Batch.h"
-#include "Technique.h"
 #include <sstream>
 
 namespace NSG
@@ -51,8 +50,6 @@ namespace NSG
           stencilMaskValue_(~GLuint(0)),
           enableColorBuffer_(true),
           enableDepthBuffer_(true),
-          enableCullFace_(true),
-          cullFaceMode_(CullFaceMode::DEFAULT),
           frontFaceMode_(FrontFaceMode::DEFAULT),
           depthFunc_(DepthFunc::LESS),
           blendMode_(BLEND_MODE::NONE)
@@ -61,6 +58,7 @@ namespace NSG
     }
 
     Pass::Pass()
+        : type_(PassType::DEFAULT)
     {
     }
 
@@ -68,11 +66,9 @@ namespace NSG
     {
     }
 
-    PPass Pass::Clone() const
+    void Pass::SetType(PassType type)
     {
-        auto pass = std::make_shared<Pass>();
-        pass->data_ = data_;
-        return pass;
+        type_ = type;
     }
 
     void Pass::SetBlendMode(BLEND_MODE mode)
@@ -129,63 +125,8 @@ namespace NSG
         data_.stencilMaskValue_ = mask;
     }
 
-    void Pass::EnableCullFace(bool enable)
-    {
-        data_.enableCullFace_ = enable;
-    }
-
-    void Pass::SetCullFace(CullFaceMode mode)
-    {
-        data_.cullFaceMode_ = mode;
-    }
-
     void Pass::SetFrontFace(FrontFaceMode mode)
     {
         data_.frontFaceMode_ = mode;
-    }
-
-    void Pass::Save(pugi::xml_node& node)
-    {
-        pugi::xml_node child = node.append_child("Pass");
-
-//        if (data_.pProgram_)
-//            data_.pProgram_->Save(child);
-
-        child.append_attribute("blendMode").set_value((int)data_.blendMode_);
-        child.append_attribute("enableDepthTest").set_value(data_.enableDepthTest_);
-        child.append_attribute("enableStencilTest").set_value(data_.enableStencilTest_);
-        child.append_attribute("stencilMask").set_value(data_.stencilMask_);
-        child.append_attribute("sfailStencilOp").set_value(data_.sfailStencilOp_);
-        child.append_attribute("dpfailStencilOp").set_value(data_.dpfailStencilOp_);
-        child.append_attribute("dppassStencilOp").set_value(data_.dppassStencilOp_);
-        child.append_attribute("stencilFunc").set_value(data_.stencilFunc_);
-        child.append_attribute("stencilRefValue").set_value(data_.stencilRefValue_);
-        child.append_attribute("stencilMaskValue").set_value(data_.stencilMaskValue_);
-        child.append_attribute("enableColorBuffer").set_value(data_.enableColorBuffer_);
-        child.append_attribute("enableDepthBuffer").set_value(data_.enableDepthBuffer_);
-        child.append_attribute("enableCullFace").set_value(data_.enableCullFace_);
-        child.append_attribute("cullFaceMode").set_value((int)data_.cullFaceMode_);
-        child.append_attribute("frontFaceMode").set_value((int)data_.frontFaceMode_);
-        child.append_attribute("depthFunc").set_value((int)data_.depthFunc_);
-    }
-
-    void Pass::Load(const pugi::xml_node& node, Material* material)
-    {
-//        pugi::xml_node programChild = node.child("Program");
-//        std::string flags = programChild.attribute("flags").as_string();
-//        data_.pProgram_->SetFlags(flags);
-
-        SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
-        EnableDepthTest(node.attribute("enableDepthTest").as_bool());
-        EnableStencilTest(node.attribute("enableStencilTest").as_bool());
-        SetStencilMask(node.attribute("stencilMask").as_int());
-        SetStencilOp(node.attribute("sfailStencilOp").as_int(), node.attribute("dpfailStencilOp").as_int(), node.attribute("dppassStencilOp").as_int());
-        SetStencilFunc(node.attribute("stencilFunc").as_int(), node.attribute("stencilRefValue").as_int(), node.attribute("stencilMaskValue").as_int());
-        EnableColorBuffer(node.attribute("enableColorBuffer").as_bool());
-        EnableDepthBuffer(node.attribute("enableDepthBuffer").as_bool());
-        EnableCullFace(node.attribute("enableCullFace").as_bool());
-        SetCullFace((CullFaceMode)node.attribute("cullFaceMode").as_int());
-        SetFrontFace((FrontFaceMode)node.attribute("frontFaceMode").as_int());
-        SetDepthFunc((DepthFunc)node.attribute("depthFunc").as_int());
     }
 }

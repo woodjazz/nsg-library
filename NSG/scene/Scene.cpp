@@ -26,8 +26,9 @@ namespace NSG
 {
     Scene::Scene(const std::string& name)
         : SceneNode(name),
+          mainCamera_(nullptr),
           ambient_(0.3f, 0.3f, 0.3f, 1),
-          orthoCamera_(std::make_shared<Camera>("SceneOrthoCamera")),
+          octree_(std::make_shared<Octree>()),
           physicsWorld_(new PhysicsWorld),
           window_(nullptr),
           signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
@@ -35,13 +36,6 @@ namespace NSG
           signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
           signalNodeMouseWheel_(new Signal<SceneNode *, float, float>())
     {
-        orthoCamera_->EnableOrtho();
-        orthoCamera_->SetNearClip(0.f);
-        orthoCamera_->UnRegisterWindow();
-
-        for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)
-            octree_[i] = std::make_shared<Octree>();
-
         if (Graphics::this_)
         {
             Graphics::this_->SetScene(this);
@@ -58,11 +52,13 @@ namespace NSG
 
         slotLightBeingDestroy_ = Light::SignalBeingDestroy()->Connect([this](Light * light)
         {
-			lights_.erase(std::remove(lights_.begin(), lights_.end(), light));
+            lights_.erase(std::remove(lights_.begin(), lights_.end(), light));
         });
 
         slotCameraBeingDestroy_ = Camera::SignalBeingDestroy()->Connect([this](Camera * camera)
         {
+            if(mainCamera_ == camera)
+                mainCamera_ = nullptr;
             cameras_.erase(std::remove(cameras_.begin(), cameras_.end(), camera));
         });
 
@@ -74,9 +70,9 @@ namespace NSG
 
     Scene::~Scene()
     {
-		slotLightBeingDestroy_ = nullptr;
-		slotCameraBeingDestroy_ = nullptr;
-		slotPSBeingDestroy_ = nullptr;
+        slotLightBeingDestroy_ = nullptr;
+        slotCameraBeingDestroy_ = nullptr;
+        slotPSBeingDestroy_ = nullptr;
         if (window_ && window_->GetScene() == this)
             window_->SetScene(nullptr);
     }
@@ -161,18 +157,18 @@ namespace NSG
         UpdateParticleSystems(deltaTime);
     }
 
-    bool Scene::GetFastRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<SceneNode*>& nodes) const
+    bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const
     {
         RayOctreeQuery query(nodes, ray);
-        octree_[(int)layer]->Execute(query);
+        octree_->Execute(query);
         return !nodes.empty();
     }
 
-    bool Scene::GetPreciseRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<RayNodeResult>& result) const
+    bool Scene::GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const
     {
         std::vector<SceneNode*> tmpNodes;
         RayOctreeQuery query(tmpNodes, ray);
-        octree_[(int)layer]->Execute(query);
+        octree_->Execute(query);
         result.clear();
         float maxDistance = ray.GetMaxDistance();
         for (auto& obj : tmpNodes)
@@ -187,10 +183,10 @@ namespace NSG
         return !result.empty();
     }
 
-    bool Scene::GetClosestRayNodeIntersection(RenderLayer layer, const Ray& ray, RayNodeResult& closest) const
+    bool Scene::GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const
     {
         std::vector<RayNodeResult> results;
-        if (GetPreciseRayNodesIntersection(layer, ray, results))
+        if (GetPreciseRayNodesIntersection(ray, results))
         {
             int closestIdx = -1;
             int idx = 0;
@@ -213,58 +209,18 @@ namespace NSG
         return false;
     }
 
-	void Scene::GetVisibleNodes(RenderLayer layer, const Camera* camera, std::vector<SceneNode*>& visibles) const
+    void Scene::GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const
     {
-		if (!camera)
-			camera = orthoCamera_.get();
-
         for (auto& obj : needUpdate_)
-            octree_[(int)obj->GetLayer()]->InsertUpdate(obj);
+            octree_->InsertUpdate(obj);
         needUpdate_.clear();
         FrustumOctreeQuery query(visibles, camera);
-		octree_[(int)layer]->Execute(query);
+        octree_->Execute(query);
     }
 
-    std::vector<Camera*> Scene::GetCameras(RenderLayer layer) const
+    std::vector<Camera*> Scene::GetCameras() const
     {
-        std::vector<Camera*> result;
-		for (auto camera : cameras_)
-			if (camera->GetLayer() == layer)
-                result.push_back(camera);
-        return result;
-    }
-
-    void Scene::Render()
-    {
-#if 0
-        Graphics::this_->SetScene(this);
-        Camera* lastCameraUsed = orthoCamera_.get(); // default camera is ortho
-        for (int i = 0; i < (int)RenderLayer::MAX_LAYERS; i++)
-        {
-            if (octree_[i]->GetDrawables()) //Check if there is something to draw in the current layer
-            {
-                auto cameras = GetCameras((RenderLayer)i);
-                if (cameras.empty())
-                {
-                    if (i >= (int)RenderLayer::GUI_LAYER0)
-                        lastCameraUsed = orthoCamera_.get(); // if there is not camera for GUI make sure ortho is the default
-
-                    //if there is not camera for the layer then use the last one
-                    auto oldLayer = lastCameraUsed->SetLayer((RenderLayer)i);
-                    Graphics::this_->Render(lastCameraUsed);
-                    lastCameraUsed->SetLayer(oldLayer);
-                }
-                else
-                {
-                    for (auto& camera : cameras)
-                    {
-                        lastCameraUsed = camera;
-                        Graphics::this_->Render(camera);
-                    }
-                }
-            }
-        }
-#endif
+        return cameras_;
     }
 
     void Scene::NeedUpdate(SceneNode* obj)
@@ -352,9 +308,13 @@ namespace NSG
 
     void Scene::Load(const pugi::xml_node& node)
     {
+        SetAmbientColor(GetVertex4(node.attribute("ambient").as_string()));
+        std::string mainCameraName = node.attribute("mainCamera").as_string();
         pugi::xml_node sceneNode = node.child("SceneNode");
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
         SceneNode::Load(sceneNode);
+		if (!mainCameraName.empty())
+			SetMainCamera(GetChild<Camera>(mainCameraName, true));
         LoadAnimations(node);
         LoadSkeletons(node);
         LoadPhysics(node);
@@ -363,6 +323,11 @@ namespace NSG
     void Scene::Save(pugi::xml_node& node) const
     {
         pugi::xml_node scene = node.append_child("Scene");
+        scene.append_attribute("ambient").set_value(ToString(ambient_).c_str());
+        std::string mainCameraName;
+        if(mainCamera_)
+            mainCameraName = mainCamera_->GetName();
+        scene.append_attribute("mainCamera").set_value(mainCameraName.c_str());
         pugi::xml_node sceneNode = scene.append_child("SceneNode");
         SceneNode::Save(sceneNode);
         SaveAnimations(scene);
@@ -370,10 +335,10 @@ namespace NSG
         SavePhysics(scene);
     }
 
-	bool Scene::GetVisibleBoundingBox(RenderLayer layer, const Camera* camera, BoundingBox& bb) const
+    bool Scene::GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const
     {
         std::vector<SceneNode*> visibles;
-		GetVisibleNodes(layer, camera, visibles);
+        GetVisibleNodes(camera, visibles);
         if (!visibles.empty())
         {
             bb = BoundingBox();
@@ -460,17 +425,14 @@ namespace NSG
                 ++it;
             }
             else
-            {
                 it = animationStateMap_.erase(it);
-            }
-
         }
     }
 
     void Scene::UpdateParticleSystems(float deltaTime)
     {
         for (auto ps : particleSystems_)
-			ps->Update(deltaTime);
+            ps->Update(deltaTime);
     }
 
     bool Scene::SetAnimationSpeed(const std::string& name, float speed)
@@ -505,6 +467,8 @@ namespace NSG
     void Scene::AddCamera(Camera* camera)
     {
         cameras_.push_back(camera);
+        if(!mainCamera_)
+            mainCamera_ = camera;
     }
 
     void Scene::AddParticleSystem(ParticleSystem* ps)
@@ -514,31 +478,42 @@ namespace NSG
 
     void Scene::UpdateOctree(SceneNode* node)
     {
-        octree_[(int)node->GetLayer()]->InsertUpdate(node);
+        octree_->InsertUpdate(node);
     }
 
     void Scene::RemoveFromOctree(SceneNode* node)
     {
         needUpdate_.erase(node);
-        octree_[(int)node->GetLayer()]->Remove(node);
+        octree_->Remove(node);
     }
 
     SceneNode* Scene::GetClosestNode(float screenX, float screenY) const
     {
         Ray ray = Camera::GetRay(screenX, screenY);
         RayNodeResult closest{ 0, nullptr };
-        for (int i = (int)RenderLayer::MAX_LAYERS - 1; i >= 0; i--)
-        {
-            GetClosestRayNodeIntersection((RenderLayer)i, ray, closest);
-            if (closest.node_)
-                return closest.node_;
-        }
-
+        GetClosestRayNodeIntersection(ray, closest);
+        if (closest.node_)
+            return closest.node_;
         return nullptr;
     }
 
-    unsigned Scene::GetDrawablesNumber(RenderLayer layer) const
+    unsigned Scene::GetDrawablesNumber() const
     {
-        return octree_[(int)layer]->GetDrawables();
+        return octree_->GetDrawables();
+    }
+
+	PCamera Scene::GetMainCamera() const
+    { 
+		if (mainCamera_)
+		{
+			auto p = mainCamera_->shared_from_this();
+			return std::dynamic_pointer_cast<Camera>(p);
+		}
+        return nullptr; 
+    }
+
+    void Scene::SetMainCamera(PCamera camera)
+    {
+        mainCamera_ = camera.get();
     }
 }

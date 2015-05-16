@@ -42,6 +42,10 @@ misrepresented as being the original software.
 #include <regex>
 #include <mutex>
 #include <cctype>
+#include <time.h>
+#include <sys/types.h> 
+#include <sys/stat.h> 
+
 
 namespace NSG
 {
@@ -60,7 +64,8 @@ namespace NSG
     Path::Path(const std::string& filePath)
         : filePath_(filePath)
     {
-        ReDoState();
+		if (!filePath.empty())
+			ReDoState();
     }
 
     Path::Path(const Path& obj)
@@ -74,7 +79,6 @@ namespace NSG
           ext_(obj.ext_),
           isAbsolutePath_(obj.isAbsolutePath_)
     {
-
     }
 
     Path::~Path()
@@ -84,15 +88,17 @@ namespace NSG
 
     void Path::SetPath(const std::string& path)
     {
-        filePath_ = path + "/";
-        if (HasName())
-        {
-            filePath_ += name_;
-            if (HasExtension())
-                filePath_ += "." + ext_;
-        }
-        ReDoState();
-
+		if (!path.empty())
+		{
+			filePath_ = path + "/";
+			if (HasName())
+			{
+				filePath_ += name_;
+				if (HasExtension())
+					filePath_ += "." + ext_;
+			}
+			ReDoState();
+		}
     }
 
     void Path::SetName(const std::string& name)
@@ -171,8 +177,17 @@ namespace NSG
         return path;
     }
 
+	void Path::RemoveChar(std::string& path, char ch)
+	{
+		std::string::size_type pos = path.find(ch);
+		if (pos != std::string::npos)
+			Path::RemoveChar(path.erase(pos, pos + 2), ch);
+	}
+
+
     void Path::RemoveCurrentDirSymbol(std::string& path)
     {
+        return;
         std::string::size_type pos = path.find("./");
         if (pos != std::string::npos)
             Path::RemoveCurrentDirSymbol(path.erase(pos, pos + 2));
@@ -344,4 +359,38 @@ namespace NSG
         std::ifstream is(GetFullAbsoluteFilePath(), std::ios::binary);
         return is.is_open();
     }
+
+	std::string Path::GetModificationTime() const
+	{
+#if defined WIN32 && !defined __GNUC__
+		struct _stat fileStat;
+		int err = _stat(fullFilePath_.c_str(), &fileStat);
+#else
+        struct stat fileStat; 
+        int err = stat(fullFilePath_.c_str(), &fileStat ); 
+#endif        
+		if (0 != err)
+		{
+			perror("Problem getting information");
+			switch (errno)
+			{
+			case ENOENT:
+				TRACE_PRINTF("File %s not found.\n", fullFilePath_.c_str());
+				break;
+			case EINVAL:
+				TRACE_PRINTF("Invalid parameter to _stat.\n");
+				break;
+			default:
+				/* Should never be reached. */
+				TRACE_PRINTF("Unexpected error in _stat.\n");
+			}
+			return "";
+		}
+		auto mtime = fileStat.st_mtime;
+		const char* dateTime = ctime((time_t*)&mtime);
+		std::string result(dateTime);
+		Path::RemoveChar(result, '\n');
+		return result;
+    }
+
 }

@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Graphics.h"
 #include "Check.h"
-#include "Technique.h"
 #include "Pass.h"
 #include "RectangleMesh.h"
 

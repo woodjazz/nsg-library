@@ -15,8 +15,12 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DEPENDENCIES_DIR ${ROOT_SOURCE_DIR}/dependencies)
 set(EXTERNALS_DIR ${ROOT_SOURCE_DIR}/externals)
-set(TOOLS_SOURCE_DIR ${ROOT_SOURCE_DIR}/tools)
-set(CONVERTER_TOOL_SOURCE_DIR ${TOOLS_SOURCE_DIR}/converter/blenderserialize)
+set(TOOLS_DIR ${ROOT_SOURCE_DIR}/tools)
+set(CONVERTER_TOOL_SOURCE_DIR ${TOOLS_DIR}/blenderserialize)
+set(BLENDERDNA_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/tools/blenderdna/${CMAKE_CFG_INTDIR}/blenderdna)
+set(CONVERT_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/tools/converter/${CMAKE_CFG_INTDIR}/converter)
+
+
 
 set(ROOT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(DEPENDENCIES_BINARY_DIR ${ROOT_BINARY_DIR}/dependencies)
@@ -172,7 +176,7 @@ add_subdirectory(NSG)
 set(LIBRARIES_2_LINK NSG) #reset libraries to link: NSG will have all the dependencies already set 
 
 ###########################
-# Converter
+# tools
 ###########################
 
 if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
@@ -180,16 +184,37 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 	###########################
 	# blenderdna
 	###########################
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools/blenderdna)
+	include (GenerateDNA) 
+	add_subdirectory(${TOOLS_DIR}/blenderdna)
+
+	##################################
+	# blenderserialize
+	##################################
+	include_directories(${TOOLS_DIR}/blenderserialize)
+	add_subdirectory(${TOOLS_DIR}/blenderserialize)
+	list(APPEND LIBRARIES_2_LINK blenderserialize)
+
+	##################################
+	# common
+	##################################
+	include_directories(${TOOLS_DIR}/common)
+	add_subdirectory(${TOOLS_DIR}/common)
+	list(APPEND LIBRARIES_2_LINK common)
 	
 	###########################
 	# converter
 	###########################
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools/converter)
-	set(CONVERT_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/tools/converter/${CMAKE_CFG_INTDIR}/converter)
+	add_subdirectory(${TOOLS_DIR}/converter)
+
+	###########################
+	# viewer
+	###########################
+	add_subdirectory(${TOOLS_DIR}/viewer)
+
+	list(REMOVE_ITEM LIBRARIES_2_LINK blenderserialize)
+	list(REMOVE_ITEM LIBRARIES_2_LINK common)
 
 endif()
-
 
 ###########################
 # samples

@@ -216,7 +216,8 @@ namespace NSG
         SetSize(width, height);
 
         const int DOUBLE_BUFFER = 1;
-        const int DEPTH_SIZE = 24;
+        const int MIN_DEPTH_SIZE = 24;
+        const int MAX_DEPTH_SIZE = 24;
         const int RED_SIZE = 8;
         const int GREEN_SIZE = 8;
         const int BLUE_SIZE = 8;
@@ -229,7 +230,7 @@ namespace NSG
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CONTEXT_MINOR_VERSION);
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, DOUBLE_BUFFER);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, DEPTH_SIZE);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, MAX_DEPTH_SIZE);
         SDL_GL_SetAttribute(SDL_GL_RED_SIZE, RED_SIZE);
         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, GREEN_SIZE);
         SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, BLUE_SIZE);
@@ -264,7 +265,7 @@ namespace NSG
             #endif
 
             auto win = SDL_CreateWindow(name_.c_str(), x, y, width, height, sdlFlags);
-            CHECK_CONDITION(win, __FILE__, __LINE__);
+            CHECK_CONDITION(win && "failed SDL_CreateWindow", __FILE__, __LINE__);
             windowID_ = SDL_GetWindowID(win);
 
             if (Window::mainWindow_)
@@ -288,22 +289,31 @@ namespace NSG
 
         int value = 0;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
+        TRACE_PRINTF("CONTEXT_MAJOR_VERSION=%d\n", value);
         CHECK_ASSERT(value >= CONTEXT_MAJOR_VERSION, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
+        TRACE_PRINTF("GL_CONTEXT_MINOR_VERSION=%d\n", value);
         CHECK_ASSERT(value >= CONTEXT_MINOR_VERSION, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
+        TRACE_PRINTF("GL_DOUBLEBUFFER=%d\n", value);
         CHECK_ASSERT(value == DOUBLE_BUFFER, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-        CHECK_ASSERT(value >= DEPTH_SIZE, __FILE__, __LINE__);
+        TRACE_PRINTF("GL_DEPTH_SIZE=%d\n", value);
+        CHECK_ASSERT(value >= MIN_DEPTH_SIZE && value <= MAX_DEPTH_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
+        TRACE_PRINTF("GL_RED_SIZE=%d\n", value);
         CHECK_ASSERT(value == RED_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
+        TRACE_PRINTF("GL_GREEN_SIZE=%d\n", value);
         CHECK_ASSERT(value == GREEN_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
+        TRACE_PRINTF("GL_BLUE_SIZE=%d\n", value);
         CHECK_ASSERT(value == BLUE_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &value);
+        TRACE_PRINTF("GL_ALPHA_SIZE=%d\n", value);
         CHECK_ASSERT(value == ALPHA_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
+        TRACE_PRINTF("GL_STENCIL_SIZE=%d\n", value);
         CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
 
         #if defined(IS_WINDOWS) || defined(IS_LINUX)

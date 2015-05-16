@@ -73,6 +73,8 @@ namespace NSG
         void getWorldTransform(btTransform& worldTrans) const override;
         void setWorldTransform(const btTransform& worldTrans) override;
         void UpdateShape();
+        void SetMaterialPhysicsSlot();
+        void SetMaterialPhysics();
 
         std::shared_ptr<btRigidBody> body_;
 		PWeakSceneNode sceneNode_;
@@ -93,6 +95,8 @@ namespace NSG
         Vector3 angularVelocity_;
         SignalEmpty::PSlot slotReleased_;
         SignalEmpty::PSlot slotMeshSet_;
+        SignalEmpty::PSlot slotMaterialSet_;
+        SignalEmpty::PSlot slotMaterialPhysicsSet_;
         SignalEngine::PSlot slotEngineCreated_;
         SignalEmpty::PSlot slotBeginFrame_;
         bool kinematic_;

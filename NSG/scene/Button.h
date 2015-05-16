@@ -41,7 +41,6 @@ namespace NSG
 		PMaterial GetTextMaterial() const { return textMaterial_;}
 		PSceneNode GetTextNode() const { return textNode_; }
 	private:
-		void SetupLayer();
 		void SetResources();
         PSceneNode textNode_;
 		PMaterial textMaterial_;

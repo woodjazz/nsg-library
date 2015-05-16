@@ -22,7 +22,7 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
-*/    
+*/
 #include "AppData.h"
 #include "Resource.h"
 #include "Texture.h"
@@ -43,27 +43,48 @@ namespace NSG
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer((void*)resource->GetData(), resource->GetBytes());
         if (result)
-        {
-            pugi::xml_node appNode = doc.child("App");
-            resources_ = Resource::LoadResources(resource, appNode);
-			sounds_ = Sound::LoadSounds(resource, appNode);
-            meshes_ = Mesh::LoadMeshes(resource, appNode);
-            materials_ = Material::LoadMaterials(resource, appNode);
-            pugi::xml_node child = appNode.child("Scene");
-            while (child)
-            {
-                auto scene = std::make_shared<Scene>("scene");
-                scene->Load(child);
-                scenes_.push_back(scene);
-                child = child.next_sibling("Scene");
-            }
-        }
+			Load(doc, resource);
         else
         {
-			TRACE_PRINTF("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
-			TRACE_PRINTF("Error description: %s", result.description());
-			TRACE_PRINTF("Error offset: %d", result.offset);
+            TRACE_PRINTF("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
+            TRACE_PRINTF("Error description: %s", result.description());
+            TRACE_PRINTF("Error offset: %d", result.offset);
             CHECK_ASSERT(false, __FILE__, __LINE__);
         }
     }
+
+    AppData::AppData(const pugi::xml_document& doc)
+    {
+		auto resource = Resource::Create<Resource>();
+		struct XMLWriter : pugi::xml_writer
+		{
+			std::string buffer_;
+			void write(const void* data, size_t size) override
+			{
+				const char* m = (const char*)data;
+				buffer_.insert(buffer_.end(), &m[0], &m[size]);
+			}
+		} writer;
+		doc.save(writer);
+		resource->SetBuffer(writer.buffer_);
+		Load(doc, resource);
+    }
+
+	void AppData::Load(const pugi::xml_document& doc, PResource resource)
+    {
+        pugi::xml_node appNode = doc.child("App");
+        resources_ = Resource::LoadResources(resource, appNode);
+        sounds_ = Sound::LoadSounds(resource, appNode);
+        meshes_ = Mesh::LoadMeshes(resource, appNode);
+        materials_ = Material::LoadMaterials(resource, appNode);
+        pugi::xml_node child = appNode.child("Scene");
+        while (child)
+        {
+            auto scene = std::make_shared<Scene>("scene");
+            scene->Load(child);
+            scenes_.push_back(scene);
+            child = child.next_sibling("Scene");
+        }
+    }
+
 }

@@ -439,11 +439,26 @@ namespace NSG
             auto nBones = bones.size();
             if (nBones)
             {
-                defines += "const int NUM_BONES = " + ToString(nBones) + ";\n";
-                defines += "#define SKINNED\n";
+                defines += "NUM_BONES " + ToString(nBones) + "\n";
+                defines += "SKINNED\n";
                 return nBones;
             }
         }
+        return 0;
+    }
+
+	const std::string& Mesh::GetUVName(int index) const 
+	{ 
+		CHECK_ASSERT(index >= 0 && index < MAX_UVS, __FILE__, __LINE__);
+		return uvNames_[index]; 
+	}
+
+    int Mesh::GetUVIndex(const std::string& name) const
+    {
+        for(int i=0; i<MAX_UVS; i++)
+            if(uvNames_[i] == name)
+                return i;
+        CHECK_ASSERT(!"UV not found!!!", __FILE__, __LINE__);
         return 0;
     }
 }

@@ -6,7 +6,10 @@ static const char* FS_GLSL = \
 "#if defined(COMPILEFS) && !defined(HAS_USER_FRAGMENT_SHADER)\n"\
 "	void main()\n"\
 "	{\n"\
-"		#if defined(TEXT)\n"\
+"		#if defined(AMBIENT)\n"\
+"			\n"\
+"			gl_FragColor = GetAmbientLight();\n"\
+"		#elif defined(TEXT)\n"\
 "			gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).a);\n"\
 "		#elif defined(BLEND)\n"\
 "			gl_FragColor = Blend();\n"\
@@ -21,13 +24,6 @@ static const char* FS_GLSL = \
 "				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
 "			#else\n"\
 "				gl_FragColor = v_color;\n"\
-"			#endif\n"\
-"		#elif defined(LIGHTMAP) // lightmap without lighting\n"\
-"			\n"\
-"			#ifdef DIFFUSEMAP\n"\
-"				gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, v_texcoord0);\n"\
-"			#else\n"\
-"				gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1);\n"\
 "			#endif\n"\
 "		#elif defined(PER_VERTEX_LIGHTING)\n"\
 "			#ifdef DIFFUSEMAP\n"\

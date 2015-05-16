@@ -63,7 +63,6 @@ misrepresented as being the original software.
 #include "RectangleMesh.h"
 #include "ShowTexture.h"
 #include "ResourceFile.h"
-#include "Technique.h"
 #include "Pass.h"
 #include "AppConfiguration.h"
 #include "Sound.h"

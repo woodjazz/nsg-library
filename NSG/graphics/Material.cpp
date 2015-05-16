@@ -5,7 +5,6 @@
 #include "Texture.h"
 #include "Scene.h"
 #include "Graphics.h"
-#include "Technique.h"
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
@@ -33,11 +32,14 @@ namespace NSG
           isBatched_(false),
           fillMode_(FillMode::SOLID),
           blendMode_(BLEND_MODE::NONE),
-          shadercommand_(ShaderCommand::LIGHTING),
+          renderPass_(RenderPass::VERTEXCOLOR),
           billboardType_(BillboardType::NONE),
-          flipYTextureCoords_(false)
+          flipYTextureCoords_(false),
+          shadeless_(false),
+          cullFaceMode_(CullFaceMode::DEFAULT),
+          friction_(0.5f), // same as Blender
+          signalPhysicsSet_(new SignalEmpty())
     {
-        technique_ = std::make_shared<Technique>(this);
     }
 
     Material::~Material()
@@ -54,7 +56,6 @@ namespace NSG
         material->specular_ = specular_;
         material->shininess_ = shininess_;
         material->color_ = color_;
-        material->technique_->CopyPasses(technique_->GetConstPasses());
         material->serializable_ = serializable_;
         material->blendFilterMode_ = blendFilterMode_;
         material->blurFilter_ = blurFilter_;
@@ -64,9 +65,13 @@ namespace NSG
         material->isBatched_ = isBatched_;
         material->fillMode_ = fillMode_;
         material->blendMode_ = blendMode_;
-        material->shadercommand_ = shadercommand_;
+        material->renderPass_ = renderPass_;
+		material->billboardType_ = billboardType_;
+		material->flipYTextureCoords_ = flipYTextureCoords_;
         material->xmlResource_ = xmlResource_;
-
+		material->shadeless_ = shadeless_;
+		material->cullFaceMode_ = cullFaceMode_;
+        material->friction_ = friction_;
         return material;
     }
 
@@ -171,17 +176,16 @@ namespace NSG
     {
         if (SetTexture(texture))
         {
-
             if (texture)
             {
                 SetBlendMode(BLEND_MODE::ALPHA);
-                SetShaderCommand(ShaderCommand::TEXT);
+                SetRenderPass(RenderPass::TEXT);
                 texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
             }
             else
             {
                 SetBlendMode(BLEND_MODE::NONE);
-                SetShaderCommand(ShaderCommand::LIGHTING);
+                SetRenderPass(RenderPass::PERVERTEX);
             }
         }
     }
@@ -211,7 +215,7 @@ namespace NSG
 
     void Material::AllocateResources()
     {
-        isBatched_ = Graphics::this_->HasInstancedArrays() && technique_->GetNumPasses() == 1 && !IsTransparent();
+        isBatched_ = Graphics::this_->HasInstancedArrays() && !IsTransparent();
         if (isBatched_)
             instanceBuffer_ = std::make_shared<InstanceBuffer>();
     }
@@ -235,7 +239,10 @@ namespace NSG
         pugi::xml_node child = node.append_child("Material");
 
         child.append_attribute("name").set_value(name_.c_str());
-
+		child.append_attribute("shadeless").set_value(shadeless_);
+        child.append_attribute("cullFaceMode").set_value(ToString(cullFaceMode_));
+        child.append_attribute("friction").set_value(friction_);
+        
         for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
         {
             if (texture_[index] && texture_[index]->IsSerializable())
@@ -252,14 +259,17 @@ namespace NSG
         child.append_attribute("specular").set_value(ToString(specular_).c_str());
         child.append_attribute("shininess").set_value(shininess_);
         child.append_attribute("color").set_value(ToString(color_).c_str());
-        child.append_attribute("fillMode").set_value(ToString((int)fillMode_).c_str());
-        child.append_attribute("blendMode").set_value(ToString((int)blendMode_).c_str());
-        technique_->Save(child);
+        child.append_attribute("fillMode").set_value((int)fillMode_);
+        child.append_attribute("blendMode").set_value((int)blendMode_);
+        child.append_attribute("renderPass").set_value(ToString(renderPass_));
     }
 
     void Material::LoadFrom(PResource resource, const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
+		shadeless_ = node.attribute("shadeless").as_bool();
+        cullFaceMode_ = ToCullFaceMode(node.attribute("cullFaceMode").as_string());
+        SetFriction(node.attribute("friction").as_float());
 
         for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
         {
@@ -278,10 +288,7 @@ namespace NSG
         SetColor(GetVertex4(node.attribute("color").as_string()));
         SetFillMode((FillMode)node.attribute("fillMode").as_int());
         SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
-
-        pugi::xml_node childTechnique = node.child("Technique");
-        if (childTechnique)
-            technique_->Load(childTechnique);
+        SetRenderPass(ToRenderPass(node.attribute("renderPass").as_string()));
     }
 
     void Material::SetFilterBlendMode(BlendFilterMode mode)
@@ -324,7 +331,12 @@ namespace NSG
 
     bool Material::IsTransparent() const
     {
-		return blendMode_ == BLEND_MODE::ALPHA || billboardType_ != BillboardType::NONE || shadercommand_ == ShaderCommand::TEXT;
+        return blendMode_ == BLEND_MODE::ALPHA || billboardType_ != BillboardType::NONE || renderPass_ == RenderPass::TEXT;
+    }
+
+    bool Material::IsLighted() const
+    {
+        return renderPass_ == RenderPass::PERVERTEX || renderPass_ == RenderPass::PERPIXEL;
     }
 
     bool Material::IsBatched()
@@ -426,41 +438,86 @@ namespace NSG
         }
     }
 
-    void Material::SetLightingMode(LightingMode mode)
-    {
-        technique_->SetLightingMode(mode);
-    }
-
     bool Material::HasLightMap() const
     {
         return nullptr != GetTexture(MaterialTexture::LIGHT_MAP);
     }
 
-    void Material::FillShaderDefines(std::string& defines, const Light* light)
+    void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh)
     {
+        bool ambientaPass = PassType::AMBIENT == passType;
+
+        if (ambientaPass)
+            defines += "AMBIENT\n";
+        else
+        {
+            switch (renderPass_)
+            {
+                case RenderPass::VERTEXCOLOR:
+                    defines += "VERTEXCOLOR\n";
+                    break;
+                case RenderPass::UNLIT:
+                    defines += "UNLIT\n";
+                    break;
+                case RenderPass::PERVERTEX:
+                    defines += "PER_VERTEX_LIGHTING\n";
+                    break;
+                case RenderPass::PERPIXEL:
+                    defines += "PER_PIXEL_LIGHTING\n";
+                    break;
+                case RenderPass::TEXT:
+                    defines += "TEXT\n";
+                    break;
+                case RenderPass::BLEND:
+                    defines += "BLEND\n";
+                    break;
+                case RenderPass::BLUR:
+                    defines += "BLUR\n";
+                    break;
+                case RenderPass::WAVE:
+                    defines += "WAVE\n";
+                    break;
+                case RenderPass::SHOW_TEXTURE0:
+                    defines += "SHOW_TEXTURE0\n";
+                    break;
+            }
+        }
+
         for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
         {
             auto texture = GetTexture((MaterialTexture)index);
             if (texture)
             {
+                int uvIndex = mesh->GetUVIndex(texture->GetUVName());
                 auto type = texture->GetMapType();
                 CHECK_ASSERT(TextureType::UNKNOWN != type, __FILE__, __LINE__);
+                auto channels = texture->GetChannels();
                 switch (type)
                 {
                     case TextureType::COL:
-                        defines += "#define DIFFUSEMAP\n";
+                        defines += "DIFFUSEMAP\n";
                         break;
                     case TextureType::NORM:
-                        defines += "#define NORMALMAP\n";
+                        if(!ambientaPass)
+                            defines += "NORMALMAP\n";
                         break;
                     case TextureType::SPEC:
-                        defines += "#define SPECULARMAP\n";
+                        if (!ambientaPass)
+                            defines += "SPECULARMAP\n";
                         break;
                     case TextureType::EMIT:
-                        defines += "#define LIGHTMAP\n";
+                        if(ambientaPass)
+                        {
+                            defines += "LIGHTMAP" + ToString(uvIndex) + "\n";
+                            defines += "LIGHTMAP_CHANNELS" + ToString(channels) + "\n";
+                        }
                         break;
                     case TextureType::AMB:
-                        defines += "#define AOMAP\n";
+                        if(ambientaPass)
+                        {
+                            defines += "AOMAP" + ToString(uvIndex) + "\n";
+                            defines += "AOMAP_CHANNELS" + ToString(channels) + "\n";
+                        }
                         break;
                     default:
                         break;
@@ -469,46 +526,41 @@ namespace NSG
         }
 
         if (IsBatched())
-            defines += "#define INSTANCED\n";
+            defines += "INSTANCED\n";
 
-        switch (shadercommand_)
+        if (!ambientaPass)
         {
-            case ShaderCommand::LIGHTING:
-                technique_->FillShaderDefines(defines, light);
-                break;
-            case ShaderCommand::TEXT:
-                defines += "#define TEXT\n";
-                break;
-            case ShaderCommand::BLEND:
-                defines += "#define BLEND\n";
-                break;
-            case ShaderCommand::BLUR:
-                defines += "#define BLUR\n";
-                break;
-            case ShaderCommand::WAVE:
-                defines += "#define WAVE\n";
-                break;
-            case ShaderCommand::SHOW_TEXTURE0:
-                defines += "#define SHOW_TEXTURE0\n";
-                break;
+            switch (billboardType_)
+            {
+                case BillboardType::NONE:
+                    break;
+                case BillboardType::SPHERICAL:
+                    defines += "SPHERICAL_BILLBOARD\n";
+                    break;
+                case BillboardType::CYLINDRICAL:
+                    defines += "CYLINDRICAL_BILLBOARD\n";
+                    break;
+                default:
+                    CHECK_ASSERT(!"Unknown billboard type!!!", __FILE__, __LINE__);
+                    break;
+            }
         }
 
-        switch (billboardType_)
-        {
-            case BillboardType::NONE:
-                break;
-            case BillboardType::SPHERICAL:
-                defines += "#define SPHERICAL_BILLBOARD\n";
-                break;
-            case BillboardType::CYLINDRICAL:
-                defines += "#define CYLINDRICAL_BILLBOARD\n";
-                break;
-            default:
-                CHECK_ASSERT(!"Unknown billboard type!!!", __FILE__, __LINE__);
-                break;
-        }
+        if (flipYTextureCoords_)
+            defines += "FLIP_Y\n";
+    }
 
-        if(flipYTextureCoords_)
-            defines += "#define FLIP_Y\n";
+    void Material::SetShadeless(bool shadeless)
+    {
+        shadeless_ = shadeless;
+    }
+
+    void Material::SetFriction(float friction)
+    {
+        if(friction_ != friction)
+        {
+            friction_ = friction;
+            signalPhysicsSet_->Run();
+        }
     }
 }

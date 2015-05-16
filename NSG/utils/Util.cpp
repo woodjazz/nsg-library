@@ -139,10 +139,10 @@ namespace NSG
         char buffer2[MaxBuffer];
         char buffer3[MaxBuffer];
         sscanf(buffer.c_str(), "[ %s %s %s %s ]", buffer0, buffer1, buffer2, buffer3);
-		return Matrix4(GetVertex4(buffer0), GetVertex4(buffer1), GetVertex4(buffer2), GetVertex4(buffer3));
+        return Matrix4(GetVertex4(buffer0), GetVertex4(buffer1), GetVertex4(buffer2), GetVertex4(buffer3));
     }
 
-           std::string ToString(const Vertex2& obj)
+    std::string ToString(const Vertex2& obj)
     {
         using namespace std;
         const int MaxBuffer = 100;
@@ -267,7 +267,7 @@ namespace NSG
     static size_t HeaderSize = 128;
     std::string CompressBuffer(const std::string& buf)
     {
-		std::string buffer = ToString(buf.size()) + " ";
+        std::string buffer = ToString(buf.size()) + " ";
         buffer.resize(HeaderSize);
         buffer += buf;
         std::string compressBuffer;
@@ -319,5 +319,60 @@ namespace NSG
         if (!value)
             return 0;
         return strtol(value, 0, 10);
+    }
+
+    static const char* RenderPassStr[] =
+    {
+        "VERTEXCOLOR",
+        "UNLIT",
+        "PERVERTEX", 
+        "PERPIXEL", 
+        "TEXT", 
+        "BLEND", 
+        "BLUR", 
+        "WAVE", 
+        "SHOW_TEXTURE0"
+    };
+
+    const char* ToString(RenderPass obj)
+    {
+        auto idx = (int)obj;
+        CHECK_ASSERT(idx >= 0 && idx < sizeof(RenderPassStr)/sizeof(char*), __FILE__, __LINE__);
+		return RenderPassStr[idx];
+    }
+
+    RenderPass ToRenderPass(const char* value)
+    {
+        auto n = sizeof(RenderPassStr)/sizeof(char*);
+        for(int i=0; i<n; i++)
+            if(strcmp(RenderPassStr[i], value) == 0)
+                return (RenderPass)i;
+        CHECK_ASSERT(!"Failed to translate RenderPass string!!!", __FILE__, __LINE__);
+        return RenderPass::VERTEXCOLOR;
+    }
+
+    static const char* CullFaceModeStr[] =
+    {
+        "BACK",
+        "FRONT",
+        "FRONT_AND_BACK", 
+        "DISABLED"
+    };
+
+    const char* ToString(CullFaceMode obj)
+    {
+        auto idx = (int)obj;
+        CHECK_ASSERT(idx >= 0 && idx < sizeof(CullFaceModeStr)/sizeof(char*), __FILE__, __LINE__);
+        return CullFaceModeStr[idx];
+    }
+
+    CullFaceMode ToCullFaceMode(const char* value)
+    {
+        auto n = sizeof(CullFaceModeStr)/sizeof(char*);
+        for(int i=0; i<n; i++)
+            if(strcmp(CullFaceModeStr[i], value) == 0)
+                return (CullFaceMode)i;
+        CHECK_ASSERT(!"Failed to translate CullFaceMode string!!!", __FILE__, __LINE__);
+        return CullFaceMode::DEFAULT;
     }
 }

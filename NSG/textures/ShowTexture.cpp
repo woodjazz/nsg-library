@@ -33,7 +33,6 @@ misrepresented as being the original software.
 #include "Program.h"
 #include "Node.h"
 #include "Util.h"
-#include "Technique.h"
 
 namespace NSG
 {
@@ -42,9 +41,9 @@ namespace NSG
           mesh_(std::make_shared<QuadMesh>(GetUniqueName("NSGShowTexture"))),
           node_(std::make_shared<SceneNode>("NSGShowTexture"))
     {
-        auto pass = material_->GetTechnique()->GetPass(0);
+        //auto pass = material_->GetTechnique()->GetPass(0);
         material_->SetSerializable(false);
-        pass->EnableDepthTest(false);
+        //pass->EnableDepthTest(false);
     }
 
     ShowTexture::~ShowTexture()
@@ -54,20 +53,20 @@ namespace NSG
     void ShowTexture::SetColortexture(PTexture texture)
     {
 		material_->SetTexture(texture);
-		material_->SetShaderCommand(ShaderCommand::SHOW_TEXTURE0);
+		material_->SetRenderPass(RenderPass::SHOW_TEXTURE0);
 		material_->FlipYTextureCoords(true);
     }
 
     void ShowTexture::SetNormal(PTexture texture)
     {
 		material_->SetTexture(texture);
-		material_->SetShaderCommand(ShaderCommand::SHOW_TEXTURE0);
+		material_->SetRenderPass(RenderPass::SHOW_TEXTURE0);
     }
 
     void ShowTexture::SetFont(PTexture texture)
     {
 		material_->SetTexture(texture);
-		material_->SetShaderCommand(ShaderCommand::TEXT);
+		material_->SetRenderPass(RenderPass::TEXT);
     }
 
     void ShowTexture::Show()
@@ -79,9 +78,9 @@ namespace NSG
             Camera* pCurrent = Graphics::this_->GetCamera();
             Graphics::this_->SetCamera(nullptr);
 			Pass pass;
-            Graphics::this_->SetNode(node_.get());
+			pass.EnableDepthTest(false);
             Graphics::this_->SetMesh(mesh_.get());
-			Graphics::this_->SetupPass(&pass, material_.get(), nullptr);
+			Graphics::this_->SetupPass(&pass, node_.get(), material_.get(), nullptr);
 			Graphics::this_->DrawActiveMesh(&pass);
 
             Graphics::this_->SetCamera(pCurrent);

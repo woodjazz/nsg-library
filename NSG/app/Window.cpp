@@ -286,7 +286,7 @@ namespace NSG
             blur = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
         else
             blur = std::make_shared<Filter>(name, filters_.back()->GetTexture());
-		blur->GetMaterial()->SetShaderCommand(ShaderCommand::BLUR);
+		blur->GetMaterial()->SetRenderPass(RenderPass::BLUR);
 		blur->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(blur);
         return blur;
@@ -294,7 +294,7 @@ namespace NSG
 
     PFilter Window::AddBlendFilter()
     {
-        CHECK_ASSERT(filters_.size() > 0, __FILE__, __LINE__);
+        //CHECK_ASSERT(filters_.size() > 0, __FILE__, __LINE__);
         PFilter blend;
         std::string name = GetUniqueName("FilterBlend");
         size_t n = filters_.size();
@@ -305,14 +305,17 @@ namespace NSG
 			texture->SetMapType(TextureType::NORM);
 			blend->GetMaterial()->SetTexture(texture);
         }
-        else
+		else 
         {
             blend = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
-			auto texture = filters_[0]->GetTexture();
-			texture->SetMapType(TextureType::NORM);
-			blend->GetMaterial()->SetTexture(texture);
+			if (n == 1)
+			{
+				auto texture = filters_[0]->GetTexture();
+				texture->SetMapType(TextureType::NORM);
+				blend->GetMaterial()->SetTexture(texture);
+			}
         }
-		blend->GetMaterial()->SetShaderCommand(ShaderCommand::BLEND);
+		blend->GetMaterial()->SetRenderPass(RenderPass::BLEND);
 		blend->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(blend);
         return blend;
@@ -326,7 +329,7 @@ namespace NSG
             wave = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
         else
             wave = std::make_shared<Filter>(name, filters_.back()->GetTexture());
-		wave->GetMaterial()->SetShaderCommand(ShaderCommand::WAVE);
+		wave->GetMaterial()->SetRenderPass(RenderPass::WAVE);
 		wave->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(wave);
         return wave;

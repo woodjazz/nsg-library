@@ -47,6 +47,7 @@ namespace NSG
         void ReadResource();
         TextureFormat GetFormat() const { return format_; }
         void Decompress();
+        int GetChannels() const { return channels_; }
 	private:
         bool IsValid() override;
         void AllocateResources() override;

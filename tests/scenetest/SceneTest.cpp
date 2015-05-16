@@ -44,37 +44,37 @@ static void Test01()
 	auto camera = scene->CreateChild<Camera>();
 
     std::vector<SceneNode*> visibles;
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 0, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, -10));
 
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1b->SetPosition(Vertex3(0, 0, -100));
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, 1));
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, 0.8f));
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
 
 	camera->SetGlobalLookAt(Vector3(0, 0, 1));
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     node1s->SetPosition(Vertex3(0, 0, -0.8f));
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
     camera->SetPosition(Vertex3(0, 0, 1));
 
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 0, __FILE__, __LINE__);
 
 }
@@ -98,34 +98,34 @@ static void Test02()
     Vertex3 origin(0);
     Vector3 direction1s(node1s->GetGlobalPosition() - origin);
     Ray ray(origin, direction1s);
-	CHECK_CONDITION(scene->GetFastRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, nodes), __FILE__, __LINE__);
+	CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
     CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
     CHECK_CONDITION(nodes[0] == node1s.get(), __FILE__, __LINE__);
 
     {
         Ray ray(origin, direction1s, 140);
-		CHECK_CONDITION(!scene->GetFastRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, nodes), __FILE__, __LINE__);
+		CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
     }
 
     {
         Ray ray(origin, direction1s, 141);
-		CHECK_CONDITION(scene->GetFastRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, nodes), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
         CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
         CHECK_CONDITION(nodes[0] == node1s.get(), __FILE__, __LINE__);
     }
 
 
     ray = Ray(origin, -direction1s);
-	CHECK_CONDITION(!scene->GetFastRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, nodes), __FILE__, __LINE__);
+	CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
 
     Vector3 direction1b(node1b->GetGlobalPosition() - origin);
     ray = Ray(origin, direction1b);
-	CHECK_CONDITION(scene->GetFastRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, nodes), __FILE__, __LINE__);
+	CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
     CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
     CHECK_CONDITION(nodes[0] == node1b.get(), __FILE__, __LINE__);
 
     ray = Ray(origin, -direction1b);
-	CHECK_CONDITION(!scene->GetFastRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, nodes), __FILE__, __LINE__);
+	CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
 }
 
 static void Test03()
@@ -141,7 +141,7 @@ static void Test03()
         Vector3 direction1s(node1s->GetGlobalPosition() - origin);
         Ray ray(origin, direction1s);
         std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
         CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
         CHECK_CONDITION(result[0].node_ == node1s.get(), __FILE__, __LINE__);
         CHECK_CONDITION(glm::abs(result[0].distance_ - 99) < 0.1f, __FILE__, __LINE__);
@@ -149,7 +149,7 @@ static void Test03()
         direction1s = node1s->GetGlobalPosition() - Vector3(0.45f, 0, 0) - origin;
         ray = Ray(origin, direction1s);
 
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
         CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
         CHECK_CONDITION(result[0].node_ == node1s.get(), __FILE__, __LINE__);
         CHECK_CONDITION(result[0].distance_ > 99, __FILE__, __LINE__);
@@ -179,19 +179,19 @@ static void Test04()
         Vector3 direction1s(Vector3(0, 0, -1));
         Ray ray(origin, direction1s);
         RayNodeResult closest;
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "0", __FILE__, __LINE__);
         CHECK_CONDITION(glm::abs(closest.distance_ - (99 + RADIUS)) < 0.01f, __FILE__, __LINE__);
 
         ray = Ray(Vertex3(0, 0, -101), -direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "99", __FILE__, __LINE__);
         CHECK_CONDITION(glm::abs(closest.distance_ - (1 + RADIUS)) < 0.01f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, 100);
         direction1s = Vertex3(0, 0, -50) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
         float d = glm::length(direction1s) - RADIUS;
         CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
@@ -199,7 +199,7 @@ static void Test04()
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
         d = glm::length(direction1s) - RADIUS;
         CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
@@ -207,7 +207,7 @@ static void Test04()
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50.49f) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
         d = glm::length(direction1s) - 0.01f;
         CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
@@ -215,7 +215,7 @@ static void Test04()
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50.51f) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "51", __FILE__, __LINE__);
         d = glm::length(direction1s) - 0.01f;
         CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
@@ -223,7 +223,7 @@ static void Test04()
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -49.51f) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
         d = glm::length(direction1s) - 0.01f;
         CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
@@ -248,7 +248,7 @@ static void Test05()
 		Vector3 direction1s(Vector3(0, 0, -1));
 		Ray ray(origin, direction1s);
 		RayNodeResult closest;
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
 		CHECK_CONDITION(closest.node_->GetName() == "0", __FILE__, __LINE__);
 		CHECK_CONDITION(glm::abs(closest.distance_ - (1 - RADIUS * SCALE)) < 0.01f, __FILE__, __LINE__);
 	}
@@ -275,13 +275,13 @@ static void Test06()
 	{
 		Ray ray = Camera::GetRay(0, 0);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(!scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(!scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 	}
 
 	{
 		Ray ray = Camera::GetRay(-0.5f, 0.5f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeLU.get(), __FILE__, __LINE__);
 	}
@@ -289,7 +289,7 @@ static void Test06()
 	{
 		Ray ray = Camera::GetRay(0.5f, 0.5f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeRU.get(), __FILE__, __LINE__);
 	}
@@ -297,7 +297,7 @@ static void Test06()
 	{
 		Ray ray = Camera::GetRay(-0.5f, -0.5f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeLB.get(), __FILE__, __LINE__);
 	}
@@ -305,7 +305,7 @@ static void Test06()
 	{
 		Ray ray = Camera::GetRay(0.5f, -0.5f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeRB.get(), __FILE__, __LINE__);
 	}
@@ -351,7 +351,7 @@ static void Test07()
     {
         Ray ray = Camera::GetRay(0, 0.f);
         std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
         CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
         CHECK_CONDITION(result[0].node_ == nodeCenter.get(), __FILE__, __LINE__);
     }
@@ -359,7 +359,7 @@ static void Test07()
 	{
 		Ray ray = Camera::GetRay(-0.9f, 0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeLeftTop.get(), __FILE__, __LINE__);
 	}
@@ -367,7 +367,7 @@ static void Test07()
 	{
 		Ray ray = Camera::GetRay(0.9f, 0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeRightTop.get(), __FILE__, __LINE__);
 	}
@@ -375,7 +375,7 @@ static void Test07()
 	{
 		Ray ray = Camera::GetRay(-0.9f, -0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeLeftBottom.get(), __FILE__, __LINE__);
 	}
@@ -383,7 +383,7 @@ static void Test07()
 	{
 		Ray ray = Camera::GetRay(0.9f, -0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeRightBottom.get(), __FILE__, __LINE__);
 	}
@@ -433,7 +433,7 @@ static void Test08()
 	{
 		Ray ray = Camera::GetRay(0, 0.f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeCenter.get(), __FILE__, __LINE__);
 	}
@@ -441,7 +441,7 @@ static void Test08()
 	{
 		Ray ray = Camera::GetRay(-0.9f, 0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeLeftTop.get(), __FILE__, __LINE__);
 	}
@@ -449,7 +449,7 @@ static void Test08()
 	{
 		Ray ray = Camera::GetRay(0.9f, 0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeRightTop.get(), __FILE__, __LINE__);
 	}
@@ -457,7 +457,7 @@ static void Test08()
 	{
 		Ray ray = Camera::GetRay(-0.9f, -0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeLeftBottom.get(), __FILE__, __LINE__);
 	}
@@ -465,7 +465,7 @@ static void Test08()
 	{
 		Ray ray = Camera::GetRay(0.9f, -0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(RenderLayer::DEFAULT_LAYER, ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
 		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
 		CHECK_CONDITION(result[0].node_ == nodeRightBottom.get(), __FILE__, __LINE__);
 	}
@@ -504,7 +504,7 @@ static void Test09()
 	camera->SetFarClip(200);
 
     std::vector<SceneNode*> visibles;
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Boxes, __FILE__, __LINE__);
 	std::vector<PBatch> batches;
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
@@ -520,7 +520,7 @@ static void Test09()
 	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial(), __FILE__, __LINE__);
 
     camera->SetGlobalLookAt(Vector3(0, 0, 1));
-    scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+    scene->GetVisibleNodes(camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Spheres, __FILE__, __LINE__);
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 1, __FILE__, __LINE__);
@@ -563,7 +563,7 @@ static void Test0A()
 	}
 
 	std::vector<SceneNode*> visibles;
-	scene->GetVisibleNodes(RenderLayer::DEFAULT_LAYER, camera.get(), visibles);
+	scene->GetVisibleNodes(camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Spheres + Boxes, __FILE__, __LINE__);
 	Renderer::GetPtr()->SortBackToFront(visibles);
 	CHECK_CONDITION(visibles[0]->GetMesh().get() == sphereMesh.get(), __FILE__, __LINE__);

@@ -36,7 +36,7 @@ static void Test01()
     auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
-	material->SetLightingMode(LightingMode::UNLIT);
+	material->SetRenderPass(RenderPass::UNLIT);
 	material->SetTexture(texture);
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
@@ -54,7 +54,7 @@ static void Test02()
     auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
-	material->SetLightingMode(LightingMode::UNLIT);
+	material->SetRenderPass(RenderPass::UNLIT);
 	material->SetTexture(texture);
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
@@ -72,7 +72,7 @@ static void Test03()
     auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
-	material->SetLightingMode(LightingMode::UNLIT);
+	material->SetRenderPass(RenderPass::UNLIT);
 	material->SetTexture(texture);
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);

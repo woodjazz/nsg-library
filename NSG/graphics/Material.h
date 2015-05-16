@@ -54,7 +54,6 @@ namespace NSG
         float GetShininess() const { return shininess_; }
         void SetUniformValue(const char* name, int value);
         int GetUniformValue(const char* name) const;
-        PTechnique GetTechnique() { return technique_; }
         void Save(pugi::xml_node& node);
         void SetSerializable(bool serializable) { serializable_ = serializable; }
         bool IsSerializable() const { return serializable_; }
@@ -67,6 +66,7 @@ namespace NSG
         PTexture GetTextureWith(PResource resource) const;
 		PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
 		bool IsTransparent() const;
+        bool IsLighted() const;
 		void SetFillMode(FillMode fillMode) { fillMode_ = fillMode; }
         FillMode GetFillMode() const { return fillMode_; }
 		bool IsBatched();
@@ -83,12 +83,19 @@ namespace NSG
 		void SetUVTransform(const Vector4& uvTransform);
         void SetBlendMode(BLEND_MODE mode) { blendMode_ = mode; }
         BLEND_MODE GetBlendMode() const { return blendMode_; }
-        void SetLightingMode(LightingMode mode);
         bool HasLightMap() const;
-        void FillShaderDefines(std::string& defines, const Light* light);
-        void SetShaderCommand(ShaderCommand command) { shadercommand_ = command; }
+        void FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh);
+        void SetRenderPass(RenderPass pass) { renderPass_ = pass; }
+        RenderPass GetRenderPass() const { return renderPass_; }
         void SetBillboardType(BillboardType type) { billboardType_ = type; }
         void FlipYTextureCoords(bool enable) { flipYTextureCoords_ = enable; }
+        void SetShadeless(bool shadeless); // If true, makes this material insensitive to light (but AMBIENT pass applies)
+        bool IsShadeless() const { return shadeless_; }
+        void SetCullFaceMode(CullFaceMode mode) { cullFaceMode_ = mode; }
+        CullFaceMode GetCullFaceMode() const { return cullFaceMode_; }
+        void SetFriction(float friction);
+        float GetFriction() const { return friction_; }
+        SignalEmpty::PSignal SigPhysicsSet() { return signalPhysicsSet_; }
     private:
 		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();
@@ -102,7 +109,6 @@ namespace NSG
         float shininess_;
         Color color_;
         Vector4 uvTransform_; // uv transform for texture 0
-        PTechnique technique_;
         bool serializable_;
         BlendFilterMode blendFilterMode_;
         BlurFilter blurFilter_;
@@ -112,10 +118,14 @@ namespace NSG
 		bool isBatched_;
         FillMode fillMode_;
         BLEND_MODE blendMode_;
-        ShaderCommand shadercommand_;
+        RenderPass renderPass_;
         BillboardType billboardType_;
         bool flipYTextureCoords_;
         PResourceXMLNode xmlResource_;
+        bool shadeless_;
+        CullFaceMode cullFaceMode_;
+        float friction_; // rigidbody friction
+        SignalEmpty::PSignal signalPhysicsSet_;
  		static MapAndVector<std::string, Material> materials_;
         friend class Program;
     };

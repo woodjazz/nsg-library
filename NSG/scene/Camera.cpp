@@ -55,10 +55,10 @@ namespace NSG
           orthoScale_(2.f),
           sensorFit_(CameraSensorFit::HORIZONTAL)
     {
-        frustum_ = std::make_shared<Frustum>(this);
         SetInheritScale(false);
         CalculateOrthoProjection();
         UpdateProjection();
+        frustum_ = std::make_shared<Frustum>(matViewProjection_);
         if (Graphics::this_)
         {
             auto window = Graphics::this_->GetWindow();
@@ -85,12 +85,6 @@ namespace NSG
     {
         slotWindowCreated_ = nullptr;
         SetWindow(nullptr);
-    }
-
-    RenderLayer Camera::SetLayer(RenderLayer layer)
-    {
-        std::swap(layer, layer_);
-        return layer;
     }
 
     void Camera::SetWindow(Window* window)
@@ -285,7 +279,7 @@ namespace NSG
         matViewProjection_ = matProjection_ * matView_;
         matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 
-        auto tmp = std::make_shared<Frustum>(this);
+        auto tmp = std::make_shared<Frustum>(matViewProjection_);
         frustum_.swap(tmp);
 
         SetUniformsNeedUpdate();
@@ -499,6 +493,10 @@ namespace NSG
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
         LoadChildren(node);
+        
+        SetInheritScale(false);
+        CalculateOrthoProjection();
+        UpdateProjection();
     }
 
     SignalCamera::PSignal Camera::SignalBeingDestroy()

@@ -340,4 +340,7 @@ namespace NSG
 
 	class Renderer;
 	typedef std::shared_ptr<Renderer> PRenderer;
+
+	struct AppData;
+	typedef std::shared_ptr<AppData> PAppData;
 }

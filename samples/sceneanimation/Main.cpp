@@ -70,7 +70,7 @@ int NSG_MAIN(int argc, char* argv[])
         {
             Ray ray = camera->GetScreenRay(x, y);
             RayNodeResult closest;
-			if (scene->GetClosestRayNodeIntersection(RenderLayer::DEFAULT_LAYER, ray, closest))
+			if (scene->GetClosestRayNodeIntersection(ray, closest))
             {
                 Vertex3 pos = ray.GetPoint(closest.distance_);
                 pos.y = 7;

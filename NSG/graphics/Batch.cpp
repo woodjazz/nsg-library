@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "Batch.h"
 #include "Material.h"
-#include "Technique.h"
 #include "Mesh.h"
 #include "SceneNode.h"
 #include "Graphics.h"

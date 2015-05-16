@@ -3,7 +3,11 @@
 
 	void main()
 	{
-		#if defined(TEXT)
+		#if defined(AMBIENT)
+			
+			gl_FragColor = GetAmbientLight();
+
+		#elif defined(TEXT)
 
 			gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).a);
 
@@ -29,14 +33,6 @@
 				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
 			#else
 				gl_FragColor = v_color;
-			#endif
-
-		#elif defined(LIGHTMAP) // lightmap without lighting
-			
-			#ifdef DIFFUSEMAP
-				gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1) * texture2D(u_texture0, v_texcoord0);
-			#else
-				gl_FragColor = v_color * texture2D(u_texture2, v_texcoord1);
 			#endif
 
 		#elif defined(PER_VERTEX_LIGHTING)

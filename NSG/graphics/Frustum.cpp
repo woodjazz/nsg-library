@@ -29,9 +29,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Frustum::Frustum(const Camera* camera)
+    Frustum::Frustum(const Matrix4& VP)
     {
-        const Matrix4& VP = camera->GetMatViewProjection();
         const float* m = glm::value_ptr(VP);
         float t;
 

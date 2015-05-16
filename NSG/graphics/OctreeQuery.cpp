@@ -42,7 +42,6 @@ namespace NSG
 
     FrustumOctreeQuery::FrustumOctreeQuery(std::vector<SceneNode*>& result, const Camera* camera)
         : OctreeQuery(result),
-          camera_(camera),
           frustum_(*camera->GetFrustumPointer())
     {
     }
@@ -59,9 +58,6 @@ namespace NSG
     {
         for (auto& obj : objs)
         {
-            if(camera_->GetLayer() != obj->GetLayer())
-                continue;
-
             if (obj->GetMesh())
             {
                 if (inside || frustum_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)

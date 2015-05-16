@@ -56,7 +56,7 @@ namespace NSG
     {
         TRACE_PRINTF("Ready...\n");
         isFSReady = true;
-        FileSystem::SignalReady()->Run();
+        FileSystem::SigReady()->Run();
     }
 
     EMSCRIPTEN_BINDINGS(FSReady)
@@ -69,7 +69,7 @@ namespace NSG
     {
         TRACE_PRINTF("Saved...\n");
         isFSSaved = true;
-        FileSystem::SignalSaved()->Run();
+        FileSystem::SigSaved()->Run();
     }
 
     EMSCRIPTEN_BINDINGS(FSSaved)

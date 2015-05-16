@@ -33,12 +33,10 @@ namespace NSG
 	public:
 		Light(const std::string& name);
 		~Light();
-		void SetAmbientColor(Color ambient);
-		const Color& GetAmbientColor() const { return ambient_; }
-		void SetDiffuseColor(Color diffuse);
-		const Color& GetDiffuseColor() const { return diffuse_; }
-		void SetSpecularColor(Color specular);
-		const Color& GetSpecularColor() const { return specular_; }
+		void SetEnergy(float energy);
+		void SetColor(Color color);
+		void EnableDiffuseColor(bool enable);
+		void EnableSpecularColor(bool enable);
 		void SetAttenuation(float constant, float linear, float quadratic);
 		struct Attenuation
 		{
@@ -55,12 +53,29 @@ namespace NSG
 		void Load(const pugi::xml_node& node) override;
 		void FillShaderDefines(std::string& defines);
 		static SignalLight::PSignal SignalBeingDestroy();
+		bool IsVisible(const SceneNode* node) const;
+		const Color& GetDiffuseColor() const { return diffuseColor_; }
+		const Color& GetSpecularColor() const { return specularColor_; }
+		void SetDistance(float distance);
+		PFrustum GetFrustum() const;
 	private:
+		void OnDirty() const override;
+		void UpdateFrustum() const;
+		void CalculateColor();
 		LightType type_;
-		Color ambient_;
-        Color diffuse_;
-        Color specular_;
+		float energy_;
+		Color color_;
+		bool diffuse_;
+		bool specular_;
         Attenuation attenuation_;
         float spotCutOff_; // angle in degrees
+        Color diffuseColor_; // calculated
+        Color specularColor_; // calculated
+        float distance_;
+        mutable bool frustumDirty_;
+		mutable Matrix4 matView_;
+		mutable Matrix4 matProjection_;
+		mutable Matrix4 matViewProjection_;
+        mutable PFrustum frustum_;
 	};
 }

@@ -16,7 +16,13 @@
 varying vec4 v_color;
 varying vec2 v_texcoord0; 
 
-#if defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)
+#if defined(AMBIENT)
+
+	#if defined(AOMAP1) || defined(LIGHTMAP1)
+		varying vec2 v_texcoord1;
+	#endif
+
+#elif defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)
 
 	varying vec3 v_normal;
 	varying vec3 v_tangent;
@@ -33,12 +39,10 @@ varying vec2 v_texcoord0;
 
 	struct BaseLight
 	{
-	    vec4 ambient;
 	    vec4 diffuse;
 	    vec4 specular;
 	};
 
-	uniform vec4 u_sceneAmbientColor;
 	uniform vec3 u_eyeWorldPos;
 
 	#if defined(HAS_DIRECTIONAL_LIGHT)
@@ -76,10 +80,6 @@ varying vec2 v_texcoord0;
 
 	#endif
 
-#elif defined(LIGHTMAP)
-
-	varying vec2 v_texcoord1;
-
 #endif
 
 struct Material
@@ -92,4 +92,4 @@ struct Material
 };
 
 uniform Material u_material;
-
+uniform vec4 u_sceneAmbientColor;

@@ -32,7 +32,6 @@ namespace NSG
         : SceneNode(name),
           age_(0)
     {
-		SetLayer(RenderLayer::DEFAULT_LAYER);
         DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
     }
 

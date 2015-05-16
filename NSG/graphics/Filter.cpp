@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Camera.h"
 #include "Check.h"
-#include "Technique.h"
 #include "Pass.h"
 #include "Graphics.h"
 #include "Program.h"
@@ -46,8 +45,7 @@ namespace NSG
     {
 		//frameBuffer_->SetColorTexture(input);
 		pMaterial_->SetTexture(input);
-		pMaterial_->SetLightingMode(LightingMode::UNLIT);
-        technique_ = pMaterial_->GetTechnique().get();
+		pMaterial_->SetRenderPass(RenderPass::UNLIT);
 		auto window = Graphics::this_->GetWindow();
 		if (window)
 			SetWindow(window);
@@ -80,12 +78,12 @@ namespace NSG
 		CHECK_GL_STATUS(__FILE__, __LINE__);
 
 		Pass pass;
+		pass.EnableDepthTest(false);
 		Graphics::this_->SetFrameBuffer(frameBuffer_.get());
 		Camera* pCurrent = Graphics::this_->GetCamera();
 		Graphics::this_->SetCamera(nullptr);
-		Graphics::this_->SetNode(node_.get());
 		Graphics::this_->SetMesh(pMesh_.get());
-		Graphics::this_->SetupPass(&pass, pMaterial_.get(), nullptr);
+		Graphics::this_->SetupPass(&pass, node_.get(), pMaterial_.get(), nullptr);
 		Graphics::this_->DrawActiveMesh(&pass);
 		Graphics::this_->SetCamera(pCurrent);
 

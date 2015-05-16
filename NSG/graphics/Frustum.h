@@ -45,7 +45,7 @@ namespace NSG
     class Frustum
     {
     public:
-        Frustum(const Camera* camera);
+        Frustum(const Matrix4& VP);
         Intersection IsSphereInside(const Vertex3& center, float radius) const;
         Intersection IsInside(const BoundingBox& box) const;
         bool IsVisible(const Node& node, Mesh& mesh) const;

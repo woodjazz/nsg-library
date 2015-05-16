@@ -93,7 +93,7 @@ namespace NSG
         #if EMSCRIPTEN
         {
             SDL_StartTextInput();
-            auto saveSlot = FileSystem::SignalSaved()->Connect([]
+            auto saveSlot = FileSystem::SigSaved()->Connect([]
             {
                 emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
             });

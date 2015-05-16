@@ -41,6 +41,8 @@ namespace NSG
 		void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
 	private:
 		void ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const;
+		void ExtractLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
+		void GetVisibleFromLight(const Light* light, std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
 		void RenderVisibleSceneNodes(std::vector<SceneNode*>& visibles);
 		void Draw(Batch* batch, Pass* pass, Light* light);
 		static Renderer* this_;

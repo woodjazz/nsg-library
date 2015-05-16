@@ -62,6 +62,14 @@ namespace NSG
 	std::string ToString(const Matrix4& m);
 	std::string ToString(int obj);
 	std::string ToString(size_t obj);
+	const char* ToString(RenderPass obj);
+	const char* ToString(CullFaceMode obj);
+
+    int ToInt(const std::string& value);
+    int ToInt(const char* value);
+    RenderPass ToRenderPass(const char* value);
+    CullFaceMode ToCullFaceMode(const char* value);
+
 	std::string GetUniqueName(const std::string& name = "");
 	void GetPowerOfTwoValues(int& width, int& height);
 	bool IsPowerOfTwo(int value);
@@ -70,7 +78,5 @@ namespace NSG
 	Color Transform(GLushort id);
 	std::string CompressBuffer(const std::string& buf);
 	std::string DecompressBuffer(const std::string& buffer);
-    int ToInt(const std::string& value);
-    int ToInt(const char* value);
 
 }

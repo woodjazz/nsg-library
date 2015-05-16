@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Graphics.h"
 #include "Check.h"
-#include "Technique.h"
 #include "Pass.h"
 #include "RectangleMesh.h"
 
@@ -46,9 +45,8 @@ namespace NSG
         SetMesh(Mesh::Create<RectangleMesh>());
 		SetMaterial(Material::GetOrCreate(name_));
 		material_->SetBlendMode(BLEND_MODE::ALPHA);
-        SetupLayer();
         textMaterial_->SetColor(COLOR_BLACK);
-		textMaterial_->SetShaderCommand(ShaderCommand::TEXT);
+		textMaterial_->SetRenderPass(RenderPass::TEXT);
     }
 
     Button::~Button()
@@ -76,8 +74,6 @@ namespace NSG
         }
         else
             textNode_  = nullptr;
-
-        SetupLayer();
     }
 
     void Button::SetTextAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign)
@@ -106,12 +102,5 @@ namespace NSG
             atlas_ = atlas;
             SetResources();
         }
-    }
-
-    void Button::SetupLayer()
-    {
-		SceneNode::SetLayer(RenderLayer::GUI_LAYER0);
-        if (textNode_)
-			textNode_->SetLayer(RenderLayer::GUI_LAYER1);
     }
 }

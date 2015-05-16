@@ -100,7 +100,6 @@ namespace NSG
         UniformObjs& GetUniformObjs() { return uniformObjs_; }
         void SetMesh(Mesh* mesh) { activeMesh_ = mesh; }
         const Mesh* GetMesh() const { return activeMesh_; }
-		void SetNode(SceneNode* node) { activeNode_ = node; }
         bool IsTextureSizeCorrect(unsigned width, unsigned height);
         GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
         GLint GetMaxTexturesCombined() const { return maxTexturesCombined_; }
@@ -111,9 +110,9 @@ namespace NSG
         void SetViewportFactor(const Vector4& viewportFactor);
         int GetMaxTextureSize() const { return maxTextureSize_; }
         bool NeedsDecompress(TextureFormat format) const;
-		void SetupPass(Pass* pass, Material* material, Light* light);
+		void SetupPass(Pass* pass, SceneNode* sceneNode, Material* material, Light* light);
     private:
-		PProgram GetOrCreateProgram(Mesh* mesh, Material* material, Light* light);
+		PProgram GetOrCreateProgram(Pass* pass, Mesh* mesh, Material* material, Light* light);
         void SetUpViewport();
         Recti viewport_;
         GLint systemFbo_;
@@ -127,9 +126,7 @@ namespace NSG
         unsigned enabledAttributes_; //positions' bits for enabled attributes
         const Mesh* lastMesh_; // last mesh drawn
         Program* lastProgram_; // last used program
-		SceneNode* lastNode_; // last used node
         Mesh* activeMesh_; // mesh that is going to be drawn
-        SceneNode* activeNode_; //node that is going to be used to draw
         Scene* activeScene_;
         Camera* activeCamera_;
         Window* activeWindow_;

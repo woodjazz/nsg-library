@@ -39,8 +39,6 @@ namespace NSG
 	public:
 		SceneNode(const std::string& name);
 		~SceneNode();
-		virtual RenderLayer SetLayer(RenderLayer layer);
-		RenderLayer GetLayer() const { return layer_; }
 		PMaterial GetMaterial() const { return material_; }
 		void SetMaterial(PMaterial material);
 		void SetMesh(PMesh mesh);
@@ -66,6 +64,7 @@ namespace NSG
 		PRigidBody GetRigidBody() const { return rigidBody_; }
 		SignalCollision::PSignal SigCollision() { return signalCollision_; }
 		SignalEmpty::PSignal SigMeshSet() { return signalMeshSet_; }
+		SignalEmpty::PSignal SigMaterialSet() { return signalMaterialSet_; }
 		const SceneNodeFlags& GetFlags() const { return flags_; }
         void SetFlags(const SceneNodeFlags& flags);
         void EnableFlags(const SceneNodeFlags& flags);
@@ -74,7 +73,6 @@ namespace NSG
 	protected:
 		PMaterial material_;
 		PMesh mesh_;
-		RenderLayer layer_;
 	private:
 		PRigidBody rigidBody_;
 		mutable Octant* octant_;
@@ -84,6 +82,7 @@ namespace NSG
 		bool serializable_;
 		SceneNodeFlags flags_;
 		SignalEmpty::PSignal signalMeshSet_;
+		SignalEmpty::PSignal signalMaterialSet_;
 		SignalCollision::PSignal signalCollision_;
 
 	};

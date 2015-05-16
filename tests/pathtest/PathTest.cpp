@@ -78,6 +78,13 @@ static void Test01()
 		CHECK_CONDITION(path.GetFilename() == "kskd.txt.zip", __FILE__, __LINE__);
 	}
 
+	{
+		Path path("data/testfile.txt");
+		auto mtime = path.GetModificationTime();
+		CHECK_CONDITION(!mtime.empty(), __FILE__, __LINE__);
+		TRACE_PRINTF("%s", mtime.c_str());
+	}
+
 }
 
 void Tests()

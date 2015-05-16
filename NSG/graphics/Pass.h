@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "UniformsUpdate.h"
 #include "Object.h"
-#include <vector>
+#include <string>
 
 namespace pugi
 {
@@ -50,8 +50,6 @@ namespace NSG
         GLuint stencilMaskValue_;
         bool enableColorBuffer_;
         bool enableDepthBuffer_;
-        bool enableCullFace_;
-        CullFaceMode cullFaceMode_;
         FrontFaceMode frontFaceMode_;
         DepthFunc depthFunc_;
         PassData();
@@ -65,6 +63,8 @@ namespace NSG
     public:
         Pass();
         virtual ~Pass();
+        void SetType(PassType type);
+        PassType GetType() const { return type_; }
         void SetBlendMode(BLEND_MODE mode);
         BLEND_MODE GetBlendMode() const;
         void EnableColorBuffer(bool enable);
@@ -75,14 +75,10 @@ namespace NSG
         void SetStencilMask(GLuint mask);
         void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
         void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
-        void EnableCullFace(bool enable);
-        void SetCullFace(CullFaceMode mode);
         void SetFrontFace(FrontFaceMode mode);
-        void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node, Material* material);
-        PPass Clone() const;
         const PassData& GetData() const { return data_; }
     private:
         PassData data_;
+        PassType type_;
     };
 }

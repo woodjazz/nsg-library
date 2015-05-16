@@ -46,7 +46,6 @@ namespace NSG
         virtual Intersection TestOctant(const BoundingBox& box, bool inside) override;
         virtual void Test(const std::vector<SceneNode*>& objs, bool inside) override;
     private:
-        const Camera* camera_;
         Frustum frustum_;
     };
 

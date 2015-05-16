@@ -36,5 +36,8 @@ namespace NSG
 		std::vector<PMaterial> materials_;
 		std::vector<PScene> scenes_;
 		AppData(PResource resource);
+		AppData(const pugi::xml_document& doc);
+	private:
+		void Load(const pugi::xml_document& doc, PResource resource);
 	};
 }

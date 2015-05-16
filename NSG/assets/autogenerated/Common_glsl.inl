@@ -18,7 +18,11 @@ static const char* COMMON_GLSL = \
 "#endif   \n"\
 "varying vec4 v_color;\n"\
 "varying vec2 v_texcoord0; \n"\
-"#if defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)\n"\
+"#if defined(AMBIENT)\n"\
+"	#if defined(AOMAP1) || defined(LIGHTMAP1)\n"\
+"		varying vec2 v_texcoord1;\n"\
+"	#endif\n"\
+"#elif defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)\n"\
 "	varying vec3 v_normal;\n"\
 "	varying vec3 v_tangent;\n"\
 "	varying vec3 v_bitangent;\n"\
@@ -32,11 +36,9 @@ static const char* COMMON_GLSL = \
 "	};\n"\
 "	struct BaseLight\n"\
 "	{\n"\
-"	    vec4 ambient;\n"\
 "	    vec4 diffuse;\n"\
 "	    vec4 specular;\n"\
 "	};\n"\
-"	uniform vec4 u_sceneAmbientColor;\n"\
 "	uniform vec3 u_eyeWorldPos;\n"\
 "	#if defined(HAS_DIRECTIONAL_LIGHT)\n"\
 "		struct DirectionalLight\n"\
@@ -66,8 +68,6 @@ static const char* COMMON_GLSL = \
 "		};\n"\
 "		uniform SpotLight u_spotLight;\n"\
 "	#endif\n"\
-"#elif defined(LIGHTMAP)\n"\
-"	varying vec2 v_texcoord1;\n"\
 "#endif\n"\
 "struct Material\n"\
 "{\n"\
@@ -78,5 +78,6 @@ static const char* COMMON_GLSL = \
 "    float shininess;\n"\
 "};\n"\
 "uniform Material u_material;\n"\
+"uniform vec4 u_sceneAmbientColor;\n"\
 ;
 }

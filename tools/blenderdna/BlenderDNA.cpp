@@ -34,7 +34,6 @@ subject to the following restrictions:
 
 namespace Blender
 {
-
     typedef std::string hgString;
 
     // ----------------------------------------------------------------------------
@@ -255,7 +254,7 @@ namespace Blender
     }
 
     // ----------------------------------------------------------------------------
-	void dumpClass(FILE* fp, DNA* dna, short* strc, size_t max0, size_t max1, size_t index)
+    void dumpClass(FILE* fp, DNA* dna, short* strc, size_t max0, size_t max1, size_t index)
     {
         hgString type = dna->getType(strc[0]);
 

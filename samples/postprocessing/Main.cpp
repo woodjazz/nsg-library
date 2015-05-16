@@ -44,6 +44,8 @@ int NSG_MAIN(int argc, char* argv[])
         frameBuffer->SetWindow(nullptr);
         frameBuffer->SetSize(FrameBufferWidth, FrameBufferHeight);
     }
+
+
     auto waveFilter = window->AddWaveFilter();
     {
         auto frameBuffer = waveFilter->GetFrameBuffer();
@@ -55,7 +57,7 @@ int NSG_MAIN(int argc, char* argv[])
 	scene->CreateChild<Light>();
 
     auto materialBox = Material::GetOrCreate("material1");
-	materialBox->SetLightingMode(LightingMode::PERPIXEL);
+	materialBox->SetRenderPass(RenderPass::PERPIXEL);
 	materialBox->SetTexture(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/wall.jpg")));
 	auto boxNode = scene->CreateChild<SceneNode>();
     boxNode->SetPosition(Vertex3(3, -2, 0));
@@ -63,7 +65,7 @@ int NSG_MAIN(int argc, char* argv[])
     boxNode->SetMaterial(materialBox);
 
 	auto materialSphere = Material::GetOrCreate("material2");
-	materialSphere->SetLightingMode(LightingMode::PERPIXEL);
+	materialSphere->SetRenderPass(RenderPass::PERPIXEL);
 	materialSphere->SetTexture(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/stone.jpg")));
     auto sphereNode = scene->CreateChild<SceneNode>();
     sphereNode->SetPosition(Vertex3(-3, 2, 0));

@@ -92,6 +92,8 @@ namespace NSG
         PShape GetShape();
         virtual PhysicsShape GetShapeType() const {return SH_CONVEX_TRIMESH; } // assume rigidbody is dynamicby default 
         void SetUVName(int index, const std::string& name);
+		const std::string& GetUVName(int index) const;
+        int GetUVIndex(const std::string& name) const;
 		size_t FillShaderDefines(std::string& defines);
 	protected:
 		virtual void Load(const pugi::xml_node& node);

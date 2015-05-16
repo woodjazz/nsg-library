@@ -141,6 +141,7 @@ namespace NSG
 
         if (image_)
         {
+			channels_ = image_->GetChannels();
             width_ = image_->GetWidth();
             height_ = image_->GetHeight();
             format_ = image_->ConvertFormat2GL();

@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Object.h"
 #include "AppData.h"
 #include "MapAndVector.h"
+#include "Util.h"
 #include <string>
 
 namespace NSG
@@ -37,6 +38,7 @@ namespace NSG
 	public:
 		static PResource CreateFrom(PResource resource, const pugi::xml_node& node);
 		virtual ~Resource();
+		void SetBuffer(const std::string& buffer) { buffer_ = buffer; }
 		const char* const GetData() const { return buffer_.c_str(); }
 		int GetBytes() const;
         void ReleaseResources() override;
@@ -51,7 +53,7 @@ namespace NSG
         {
             return resources_.GetOrCreateClass<T>(name);
         }
-		template <typename T> static std::shared_ptr<T> Create(const std::string& name)
+		template <typename T> static std::shared_ptr<T> Create(const std::string& name = GetUniqueName())
 		{
 			return resources_.CreateClass<T>(name);
 		}
@@ -64,8 +66,9 @@ namespace NSG
 		static std::vector<PResource> LoadResources(PResource resource, const pugi::xml_node& node);
         static void SaveResources(pugi::xml_node& node);
 		static void SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir);
-	protected:
 		Resource(const std::string& name);
+	protected:
+		
 		std::string buffer_;
 		bool serializable_;
 	private:

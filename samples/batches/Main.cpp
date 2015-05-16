@@ -43,9 +43,9 @@ int NSG_MAIN(int argc, char* argv[])
     auto pEarthTexture1(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg")));
 	auto pEarthTexture2(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/jup0vss1.jpg")));
 	auto pMaterial1(Material::Create("earth1"));
-	pMaterial1->SetLightingMode(LightingMode::PERPIXEL);
+	pMaterial1->SetRenderPass(RenderPass::PERPIXEL);
 	auto pMaterial2(Material::Create("earth2"));
-	pMaterial2->SetLightingMode(LightingMode::PERPIXEL);
+	pMaterial2->SetRenderPass(RenderPass::PERPIXEL);
 	pMaterial1->SetTexture(pEarthTexture1);
     pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));

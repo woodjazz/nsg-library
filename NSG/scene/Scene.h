@@ -50,13 +50,13 @@ namespace NSG
         void UpdateAll(float deltaTime);
 		void Render();
         void NeedUpdate(SceneNode* obj);
-		void GetVisibleNodes(RenderLayer layer, const Camera* camera, std::vector<SceneNode*>& visibles) const;
+		void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
 		void Save(pugi::xml_node& node) const override;
         void Load(const pugi::xml_node& node) override;
-        bool GetFastRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<SceneNode*>& nodes) const;
-        bool GetPreciseRayNodesIntersection(RenderLayer layer, const Ray& ray, std::vector<RayNodeResult>& result) const;
-		bool GetClosestRayNodeIntersection(RenderLayer layer, const Ray& ray, RayNodeResult& closest) const;
-		bool GetVisibleBoundingBox(RenderLayer layer, const Camera* camera, BoundingBox& bb) const;
+        bool GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const;
+        bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
+		bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const;
+		bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
 		const std::map<std::string, PAnimation>& GetAnimations() const { return animations_; }
         PAnimation GetOrCreateAnimation(const std::string& name);
         std::vector<PAnimation> GetAnimationsFor(PNode node) const;
@@ -72,9 +72,10 @@ namespace NSG
         SignalNodeMouseButton::PSignal SigNodeMouseDown() { return signalNodeMouseDown_; }
         SignalNodeMouseButton::PSignal SigNodeMouseUp() { return signalNodeMouseUp_; }
         SignalNodeMouseMoved::PSignal SigNodeMouseWheel() { return signalNodeMouseWheel_; }
-        unsigned GetDrawablesNumber(RenderLayer layer) const;
-        std::vector<Camera*> GetCameras(RenderLayer layer) const;
-		PCamera GetOrthoCamera() const { return orthoCamera_; }
+        unsigned GetDrawablesNumber() const;
+        std::vector<Camera*> GetCameras() const;
+		PCamera GetMainCamera() const;
+        void SetMainCamera(PCamera camera);
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
@@ -86,12 +87,12 @@ namespace NSG
         void UpdateAnimations(float deltaTime);
         void UpdateParticleSystems(float deltaTime);
     private:
+        Camera* mainCamera_;
         std::vector<Camera*> cameras_;
 		std::vector<Light*> lights_;
 		std::vector<ParticleSystem*> particleSystems_;
         Color ambient_;
-        PCamera orthoCamera_;
-		POctree octree_[(int)RenderLayer::MAX_LAYERS];
+		POctree octree_;
         mutable std::set<SceneNode*> needUpdate_;
 		std::map<std::string, PAnimation> animations_;
         typedef std::map<std::string, PAnimationState> AnimationStateMap;

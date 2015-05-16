@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "RigidBody.h"
 #include "Scene.h"
+#include "Material.h"
 #include "SceneNode.h"
 #include "Mesh.h"
 #include "Shape.h"
@@ -40,6 +41,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    static const float DEFAULT_FRICTION = 0.5f;
+
     RigidBody::RigidBody(PSceneNode sceneNode)
         : Object(sceneNode->GetName() + "RigidBody"),
           sceneNode_(sceneNode),
@@ -47,7 +50,7 @@ namespace NSG
           mass_(0), //static by default
           handleCollision_(false),
           restitution_(0),
-          friction_(0.5f),
+          friction_(DEFAULT_FRICTION),
           linearDamp_(0),
           angularDamp_(0),
           collisionGroup_((int)CollisionMask::ALL),
@@ -72,18 +75,27 @@ namespace NSG
                 SetShape(nullptr);
         });
 
+        slotMaterialSet_ = sceneNode->SigMaterialSet()->Connect([this]()
+        {
+            SetMaterialPhysics();
+            SetMaterialPhysicsSlot();
+        });
+
+        SetMaterialPhysics();
+        SetMaterialPhysicsSlot();
+
         if (Engine::GetPtr())
         {
-			slotBeginFrame_ = Engine::GetPtr()->SigBeginFrame()->Connect([this]()
+            slotBeginFrame_ = Engine::GetPtr()->SigBeginFrame()->Connect([this]()
             {
                 IsReady();
             });
         }
         else
         {
-			slotEngineCreated_ = Engine::SigReady()->Connect([this](Engine * engine)
+            slotEngineCreated_ = Engine::SigReady()->Connect([this](Engine * engine)
             {
-				slotBeginFrame_ = engine->SigBeginFrame()->Connect([this]()
+                slotBeginFrame_ = engine->SigBeginFrame()->Connect([this]()
                 {
                     IsReady();
                 });
@@ -93,6 +105,33 @@ namespace NSG
 
     RigidBody::~RigidBody()
     {
+    }
+
+    void RigidBody::SetMaterialPhysicsSlot()
+    {
+        auto node = sceneNode_.lock();
+        auto material = node->GetMaterial();
+        if (material)
+        {
+            slotMaterialPhysicsSet_ = material->SigPhysicsSet()->Connect([this]()
+            {
+                SetMaterialPhysics();
+            });
+        }
+        else
+            slotMaterialPhysicsSet_ = nullptr;
+    }
+
+    void RigidBody::SetMaterialPhysics()
+    {
+        auto node = sceneNode_.lock();
+        auto material = node->GetMaterial();
+        if (material)
+        {
+            SetFriction(material->GetFriction());
+        }
+        else
+            SetFriction(DEFAULT_FRICTION);
     }
 
     bool RigidBody::IsValid()

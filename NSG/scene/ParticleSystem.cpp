@@ -30,7 +30,6 @@ misrepresented as being the original software.
 #include "SphereMesh.h"
 #include "QuadMesh.h"
 #include "Material.h"
-#include "Technique.h"
 #include "Pass.h"
 #include "Program.h"
 #include "RigidBody.h"
@@ -79,12 +78,9 @@ namespace NSG
 		particleMesh_->Set(1.f);
         particleMaterial_ = std::make_shared<Material>(GetUniqueName(name + "Particle"));
         particleMaterial_->SetColor(Color(0, 1, 0, 1));
-		particleMaterial_->SetLightingMode(LightingMode::UNLIT);
-		auto pass = particleMaterial_->GetTechnique()->GetPass(0);
+		particleMaterial_->SetRenderPass(RenderPass::UNLIT);
 		particleMaterial_->SetBlendMode(BLEND_MODE::ALPHA);
 		particleMaterial_->SetBillboardType(BillboardType::SPHERICAL);
-		pass->EnableDepthBuffer(false);
-		SetLayer(RenderLayer::DEFAULT_LAYER);
         DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
 		particles_.reserve(amount_);
     }

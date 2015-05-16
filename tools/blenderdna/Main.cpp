@@ -85,7 +85,8 @@ int NSG_MAIN(int argc, char* argv[])
     {
         static const char* VERSION = "1.0";
 
-        TCLAP::CmdLine cmd("Blender generator", ' ', VERSION);
+        TCLAP::CmdLine cmd("Blender DNA generator", ' ', VERSION);
+		cmd.setExceptionHandling(false);
 
         IFileConstraint iConstraintFile;
         TCLAP::ValueArg<std::string> iArg("i", "input", "Input file", true, "", &iConstraintFile);
@@ -119,11 +120,13 @@ int NSG_MAIN(int argc, char* argv[])
 
         std::cerr << endl << "error: " << pWhat << std::endl;
     }
+	catch (TCLAP::ExitException& e)
+	{
+		return e.getExitStatus();
+	}
     catch (...)
     {
         std::cerr << endl << "*** UNKNOWN EXCEPTION (2) *** " << endl;
     }
-
     return -1;
-
 }

@@ -50,6 +50,7 @@ namespace NSG
         void SetSize(GLsizei width, GLsizei height);
         void SetName(const std::string& name) { name_ = name; }
         void SetUVName(const std::string& name) { uvName_ = name; }
+        const std::string& GetUVName() const { return uvName_; }
         std::string TranslateFlags() const;
         void SetBlendType(TextureBlend blendType) { blendType_ = blendType; }
         TextureBlend GetBlendType() const { return blendType_;}
@@ -57,6 +58,7 @@ namespace NSG
         void SetMapType(TextureType mapType) { mapType_ = mapType; }
         TextureType GetMapType() const { return mapType_; }
         std::string TranslateMapType() const;
+        int GetChannels() const { return channels_; }
     private:
         bool IsValid() override;
         void AllocateResources() override;
