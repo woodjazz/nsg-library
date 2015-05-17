@@ -57,7 +57,7 @@ int NSG_MAIN(int argc, char* argv[])
 			camera = scene->GetMainCamera();
 			if (!camera)
 				camera = scene->CreateChild<Camera>();
-			control = std::make_shared<CameraControl>(camera);
+			//control = std::make_shared<CameraControl>(camera);
 		}
     };
 

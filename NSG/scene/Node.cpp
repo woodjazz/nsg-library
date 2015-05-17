@@ -319,7 +319,7 @@ namespace NSG
 
         if (length > 0)
         {
-            // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+            // we are using glm::lookAt that generates a view matrix (for a camera) so we have to invert the result
             Matrix4 m = glm::inverse(glm::lookAt(position, lookAtPosition, up));
 
             PNode parent = parent_.lock();
@@ -342,7 +342,7 @@ namespace NSG
 
         if (length > 0)
         {
-            // we are using glm::lookAt that generates a view matrix (for a camera) some we have to invert the result
+            // we are using glm::lookAt that generates a view matrix (for a camera) so we have to invert the result
             Matrix4 m = glm::inverse(glm::lookAt(position_, lookAtPosition, up));
             SetOrientation(glm::quat_cast(m));
         }
@@ -418,6 +418,7 @@ namespace NSG
         globalModelInv_ = glm::inverse(globalModel_);
         globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
         lookAtDirection_ = globalOrientation_ * VECTOR3_FORWARD;
+        upDirection_ = globalOrientation_ * VECTOR3_UP;
 
         if (updateChildren)
         {
@@ -463,6 +464,12 @@ namespace NSG
     {
         Update();
         return lookAtDirection_;
+    }
+
+    const Vertex3& Node::GetUpDirection() const
+    {
+        Update();
+        return upDirection_;
     }
 
     bool Node::IsPointInsideBB(const Vertex3& point) const

@@ -869,8 +869,12 @@ namespace BlenderConverter
         if (bcamera->type == CAM_ORTHO)
             camera->EnableOrtho();
 
+        float fov = 2.f * atan(0.5f * bcamera->sensor_x / bcamera->lens);
         if(bcamera->sensor_fit == '\x02')
+        {
             camera->SetSensorFit(CameraSensorFit::VERTICAL);
+            fov = 2.f * atan(0.5f * bcamera->sensor_y / bcamera->lens);
+        }
         else if(bcamera->sensor_fit == '\x01')
             camera->SetSensorFit(CameraSensorFit::HORIZONTAL);
         else
@@ -880,9 +884,8 @@ namespace BlenderConverter
 
         camera->SetNearClip(bcamera->clipsta);
         camera->SetFarClip(bcamera->clipend);
-        camera->SetFOV(bcamera->lens);
-
-        //isMainCamera = sc_->camera == obj;
+        
+        camera->SetFOV(glm::degrees(fov));
     }
 
     void BScene::CreateLight(const Blender::Object* obj, PSceneNode parent)

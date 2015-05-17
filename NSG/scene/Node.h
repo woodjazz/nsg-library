@@ -67,6 +67,7 @@ namespace NSG
         Quaternion GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up);
         void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
         const Vertex3& GetLookAtDirection() const;
+        const Vertex3& GetUpDirection() const;
         void SetInheritScale(bool inherit);
         bool IsPointInsideBB(const Vertex3& point) const;
         PNode GetChild(size_t idx) const { return children_.at(idx); }
@@ -152,11 +153,12 @@ namespace NSG
         mutable Matrix4 boneOffsetMatrix_;
         Vertex3 position_;
         Quaternion q_;
-        Vertex3 scale_;
+        Vector3 scale_;
         mutable Vertex3 globalPosition_;
         mutable Quaternion globalOrientation_;
-        mutable Vertex3 globalScale_;
-        mutable Vertex3 lookAtDirection_;
+        mutable Vector3 globalScale_;
+        mutable Vector3 lookAtDirection_;
+        mutable Vector3 upDirection_;
         bool inheritScale_;
         mutable bool dirty_;
         bool enabled_;

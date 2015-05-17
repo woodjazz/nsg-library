@@ -56,7 +56,6 @@ namespace NSG
           sensorFit_(CameraSensorFit::HORIZONTAL)
     {
         SetInheritScale(false);
-        CalculateOrthoProjection();
         UpdateProjection();
         frustum_ = std::make_shared<Frustum>(matViewProjection_);
         if (Graphics::this_)
@@ -262,8 +261,18 @@ namespace NSG
         else
         {
             CHECK_ASSERT(zNear_ > 0, __FILE__, __LINE__);
+            
+#if 0
+            float tan_fovy = tan(fovy_*0.5);
+            float right  =  tan_fovy * aspectRatio_ * zNear_;
+            float left   = -right;
+            float top    =  tan_fovy * zNear_;
+            float bottom =  -top;
+            matProjection_ = glm::frustum(left, right, bottom, top, zNear_, zFar_);
+#else
 
             matProjection_ = glm::perspective(fovy_, aspectRatio_, zNear_, zFar_);
+#endif
         }
 
         UpdateViewProjection();
@@ -272,10 +281,16 @@ namespace NSG
     void Camera::UpdateViewProjection() const
     {
         cameraIsDirty_ = false;
-
+#if 0
         matViewInverse_ = GetGlobalModelMatrix();
         matView_ = glm::inverse(matViewInverse_);
-
+#else
+        auto eye = GetGlobalPosition();
+        auto center = eye + GetLookAtDirection();
+        auto up = GetUpDirection();
+        matView_ = glm::lookAt(eye, center, up);
+        matViewInverse_ = glm::inverse(matView_);
+#endif
         matViewProjection_ = matProjection_ * matView_;
         matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 
@@ -493,9 +508,7 @@ namespace NSG
         Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
         LoadChildren(node);
-        
-        SetInheritScale(false);
-        CalculateOrthoProjection();
+
         UpdateProjection();
     }
 
