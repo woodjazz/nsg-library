@@ -269,20 +269,16 @@ namespace NSG
             pointLightLoc_.base_.diffuse_ = GetUniformLocation("u_pointLight.base.diffuse");
             pointLightLoc_.base_.specular_ = GetUniformLocation("u_pointLight.base.specular");
             pointLightLoc_.position_ = GetUniformLocation("u_pointLight.position");
-            pointLightLoc_.atten_.constant_ = GetUniformLocation("u_pointLight.atten.constant");
-            pointLightLoc_.atten_.linear_ = GetUniformLocation("u_pointLight.atten.linear");
-            pointLightLoc_.atten_.quadratic_ = GetUniformLocation("u_pointLight.atten.quadratic");
+            pointLightLoc_.invRange_ = GetUniformLocation("u_pointLight.invRange");
         }
 
         {
             spotLightLoc_.base_.diffuse_ = GetUniformLocation("u_spotLight.base.diffuse");
             spotLightLoc_.base_.specular_ = GetUniformLocation("u_spotLight.base.specular");
             spotLightLoc_.position_ = GetUniformLocation("u_spotLight.position");
-            spotLightLoc_.atten_.constant_ = GetUniformLocation("u_spotLight.atten.constant");
-            spotLightLoc_.atten_.linear_ = GetUniformLocation("u_spotLight.atten.linear");
-            spotLightLoc_.atten_.quadratic_ = GetUniformLocation("u_spotLight.atten.quadratic");
             spotLightLoc_.direction_ = GetUniformLocation("u_spotLight.direction");
             spotLightLoc_.cutOff_ = GetUniformLocation("u_spotLight.cutOff");
+            spotLightLoc_.invRange_ = GetUniformLocation("u_spotLight.invRange");
         }
 
         blendMode_loc_ = GetUniformLocation("u_blendMode");
@@ -588,16 +584,8 @@ namespace NSG
                     glUniform3fv(loc.position_, 1, &position[0]);
                 }
 
-                const Light::Attenuation& attenuation = light_->GetAttenuation();
-
-                if (loc.atten_.constant_ != -1)
-                    glUniform1f(loc.atten_.constant_, attenuation.constant);
-
-                if (loc.atten_.linear_  != -1)
-                    glUniform1f(loc.atten_.linear_, attenuation.linear);
-
-                if (loc.atten_.quadratic_ != -1)
-                    glUniform1f(loc.atten_.quadratic_, attenuation.quadratic);
+                if (loc.invRange_ != -1)
+                    glUniform1f(loc.invRange_, light_->GetInvRange());
             }
             else
             {
@@ -610,23 +598,6 @@ namespace NSG
                 {
                     const Vertex3& position = light_->GetGlobalPosition();
                     glUniform3fv(loc.position_, 1, &position[0]);
-                }
-                if (loc.atten_.constant_ != -1)
-                {
-                    const Light::Attenuation& attenuation = light_->GetAttenuation();
-                    glUniform1f(loc.atten_.constant_, attenuation.constant);
-                }
-
-                if (loc.atten_.linear_  != -1)
-                {
-                    const Light::Attenuation& attenuation = light_->GetAttenuation();
-                    glUniform1f(loc.atten_.linear_, attenuation.linear);
-                }
-
-                if (loc.atten_.quadratic_ != -1)
-                {
-                    const Light::Attenuation& attenuation = light_->GetAttenuation();
-                    glUniform1f(loc.atten_.quadratic_, attenuation.quadratic);
                 }
 
                 if (loc.direction_ != -1)
@@ -641,6 +612,9 @@ namespace NSG
                     float value = glm::cos(glm::radians(cutOff));
                     glUniform1f(loc.cutOff_, value);
                 }
+
+                if (loc.invRange_ != -1)
+                    glUniform1f(loc.invRange_, light_->GetInvRange());
             }
         }
     }

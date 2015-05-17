@@ -138,27 +138,20 @@ namespace NSG
             GLuint direction_;
         };
 
-        struct AttenuationLoc
-        {
-            GLuint constant_;
-            GLuint linear_;
-            GLuint quadratic_;
-        };
-
         struct PointLightLoc
         {
             BaseLightLoc base_;
             GLuint position_;
-            AttenuationLoc atten_;
+            GLuint invRange_;
         };
 
         struct SpotLightLoc
         {
             BaseLightLoc base_;
             GLuint position_;
-            AttenuationLoc atten_;
             GLuint direction_;
             GLuint cutOff_;
+            GLuint invRange_;
         };
 
         PointLightLoc pointLightLoc_;

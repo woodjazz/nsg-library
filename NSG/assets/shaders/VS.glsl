@@ -74,7 +74,7 @@
 
 			#elif defined(HAS_SPOT_LIGHT)
 
-				v_light2Pixel = worldPos.xyz - u_spotLight.position;
+				v_lightDirection = worldPos.xyz - u_spotLight.position;
 					
 			#endif
 

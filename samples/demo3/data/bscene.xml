@@ -1757,17 +1757,17 @@
 		</Mesh>
 	</Meshes>
 	<Materials>
-		<Material name="Material" shadeless="false" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[1.000000,1.000000,1.000000,1.000000]" shininess="1" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="0" blendMode="0" renderPass="PERPIXEL">
+		<Material name="Material" shadeless="false" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.640000,0.640000,0.640000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="0" blendMode="0" renderPass="PERPIXEL">
 			<Texture4 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/AO.png" uvName="UVMap1" blend="1" type="13" blendType="MIX" mapType="AMB" />
 		</Material>
 	</Materials>
 	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="Camera">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
-			<SceneNode name="Point" nodeType="Light" type="0" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" attenuationConstant="1" attenuationLinear="0" attenuationQuadratic="0.0016" spotCutOff="45" position="[1.980730,0.128676,2.243989]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" />
+			<SceneNode name="Point" nodeType="Light" type="0" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[1.980730,0.128676,2.243989]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" />
 			<SceneNode name="Cube" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material" meshName="Cube">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />
 			</SceneNode>
-			<SceneNode name="Camera" nodeType="Camera" fovy="0.610865" zNear="0.1" zFar="100" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="7.31429" sensorFit="0" position="[7.481132,-6.507640,5.343665]" orientation="[0.781600,0.481707,0.212922,0.334251]" />
+			<SceneNode name="Camera" nodeType="Camera" fovy="0.857556" zNear="0.1" zFar="100" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="7.31429" sensorFit="0" position="[7.481132,-6.507640,5.343665]" orientation="[0.781600,0.481707,0.212922,0.334251]" />
 		</SceneNode>
 		<Animations />
 		<Skeletons />

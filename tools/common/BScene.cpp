@@ -901,7 +901,6 @@ namespace BlenderConverter
         light->SetColor(Color(la->r, la->g, la->b, 1.f));
 		light->EnableDiffuseColor(!(la->mode & LA_NO_DIFF));
 		light->EnableSpecularColor(!(la->mode & LA_NO_SPEC));
-        light->SetAttenuation(1.f, la->att1 / la->dist, la->att2 / (la->dist * la->dist));
         LightType type = LightType::POINT;
         if (la->type != LA_LOCAL)
             type = la->type == LA_SPOT ? LightType::SPOT : LightType::DIRECTIONAL;

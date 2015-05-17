@@ -30,13 +30,6 @@ varying vec2 v_texcoord0;
 	varying vec2 v_texcoord1;
 	varying vec3 v_vertexToEye;
 
-	struct Attenuation
-	{
-	    float constant;
-	    float linear;
-	    float quadratic;
-	};
-
 	struct BaseLight
 	{
 	    vec4 diffuse;
@@ -61,20 +54,20 @@ varying vec2 v_texcoord0;
 		{
 		    BaseLight base;
 		    vec3 position;
-		    Attenuation atten;
+		    float invRange;
 		};
 		uniform PointLight u_pointLight;
 
 	#elif defined(HAS_SPOT_LIGHT)
 
-		varying vec3 v_light2Pixel;
+		varying vec3 v_lightDirection;
 		struct SpotLight
 		{
 		    BaseLight base;
 		    vec3 position;
 		    vec3 direction;
-		    Attenuation atten;
 		    float cutOff; // 0.5f * cosine(cutOff)
+		    float invRange;
 		};
 		uniform SpotLight u_spotLight;
 

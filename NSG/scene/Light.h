@@ -37,14 +37,6 @@ namespace NSG
 		void SetColor(Color color);
 		void EnableDiffuseColor(bool enable);
 		void EnableSpecularColor(bool enable);
-		void SetAttenuation(float constant, float linear, float quadratic);
-		struct Attenuation
-		{
-		    float constant;
-		    float linear;
-		    float quadratic;
-		};
-		const Attenuation& GetAttenuation() const { return attenuation_; }
 		void SetSpotCutOff(float spotCutOff); // angle in degrees
 		float GetSpotCutOff() const { return spotCutOff_; }
 		LightType GetType() const { return type_; }
@@ -58,6 +50,7 @@ namespace NSG
 		const Color& GetSpecularColor() const { return specularColor_; }
 		void SetDistance(float distance);
 		PFrustum GetFrustum() const;
+		float GetInvRange() const { return invRange_; }
 	private:
 		void OnDirty() const override;
 		void UpdateFrustum() const;
@@ -67,11 +60,11 @@ namespace NSG
 		Color color_;
 		bool diffuse_;
 		bool specular_;
-        Attenuation attenuation_;
         float spotCutOff_; // angle in degrees
         Color diffuseColor_; // calculated
         Color specularColor_; // calculated
         float distance_;
+        float invRange_;
         mutable bool frustumDirty_;
 		mutable Matrix4 matView_;
 		mutable Matrix4 matProjection_;

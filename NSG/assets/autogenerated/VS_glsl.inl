@@ -58,7 +58,7 @@ static const char* VS_GLSL = \
 "			#ifdef HAS_POINT_LIGHT\n"\
 "				v_lightDirection = worldPos.xyz - u_pointLight.position;\n"\
 "			#elif defined(HAS_SPOT_LIGHT)\n"\
-"				v_light2Pixel = worldPos.xyz - u_spotLight.position;\n"\
+"				v_lightDirection = worldPos.xyz - u_spotLight.position;\n"\
 "					\n"\
 "			#endif\n"\
 "			v_color = a_color;\n"\

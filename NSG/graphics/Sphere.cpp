@@ -37,14 +37,14 @@ namespace NSG
 
     Sphere::Sphere(const SceneNode& sceneNode)
     {
-    	auto mesh = sceneNode.GetMesh();
-    	CHECK_ASSERT(mesh && mesh->IsReady(), __FILE__, __LINE__);
-	    center_ = sceneNode.GetGlobalPosition();
-		radius_ = mesh->GetBoundingSphereRadius();
-	    Vector3 scale = sceneNode.GetGlobalScale();
-	    float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
-	    radius_ *= maxScale;
-	}
+        auto mesh = sceneNode.GetMesh();
+        CHECK_ASSERT(mesh && mesh->IsReady(), __FILE__, __LINE__);
+        center_ = sceneNode.GetGlobalPosition();
+        radius_ = mesh->GetBoundingSphereRadius();
+        Vector3 scale = sceneNode.GetGlobalScale();
+        float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
+        radius_ *= maxScale;
+    }
 
     Intersection Sphere::IsInside(const Sphere& sphere) const
     {
@@ -55,6 +55,79 @@ namespace NSG
             return Intersection::INSIDE;
         else
             return Intersection::INTERSECTS;
+    }
+
+    Intersection Sphere::IsInside(const BoundingBox& box) const
+    {
+        float radiusSquared = radius_ * radius_;
+        float distSquared = 0;
+        float temp;
+        Vector3 min = box.min_;
+        Vector3 max = box.max_;
+
+        if (center_.x < min.x)
+        {
+            temp = center_.x - min.x;
+            distSquared += temp * temp;
+        }
+        else if (center_.x > max.x)
+        {
+            temp = center_.x - max.x;
+            distSquared += temp * temp;
+        }
+        if (center_.y < min.y)
+        {
+            temp = center_.y - min.y;
+            distSquared += temp * temp;
+        }
+        else if (center_.y > max.y)
+        {
+            temp = center_.y - max.y;
+            distSquared += temp * temp;
+        }
+        if (center_.z < min.z)
+        {
+            temp = center_.z - min.z;
+            distSquared += temp * temp;
+        }
+        else if (center_.z > max.z)
+        {
+            temp = center_.z - max.z;
+            distSquared += temp * temp;
+        }
+
+        if (distSquared >= radiusSquared)
+            return Intersection::OUTSIDE;
+
+        min -= center_;
+        max -= center_;
+
+        Vector3 tempVec = min; // - - -
+        if (glm::length2(tempVec) >= radiusSquared)
+            return Intersection::INTERSECTS;
+        tempVec.x = max.x; // + - -
+        if (glm::length2(tempVec) >= radiusSquared)
+            return Intersection::INTERSECTS;
+        tempVec.y = max.y; // + + -
+        if (glm::length2(tempVec) >= radiusSquared)
+            return Intersection::INTERSECTS;
+        tempVec.x = min.x; // - + -
+        if (glm::length2(tempVec) >= radiusSquared)
+            return Intersection::INTERSECTS;
+        tempVec.z = max.z; // - + +
+        if (glm::length2(tempVec) >= radiusSquared)
+            return Intersection::INTERSECTS;
+        tempVec.y = min.y; // - - +
+        if (glm::length2(tempVec) >= radiusSquared)
+            return Intersection::INTERSECTS;
+        tempVec.x = max.x; // + - +
+        if (glm::length2(tempVec) >= radiusSquared)
+            return Intersection::INTERSECTS;
+        tempVec.y = max.y; // + + +
+        if (glm::length2(tempVec) >= radiusSquared)
+            return Intersection::INTERSECTS;
+
+        return Intersection::INSIDE;
     }
 
 }

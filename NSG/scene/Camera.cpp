@@ -112,10 +112,10 @@ namespace NSG
         float aspect = 1;
         if (viewWidth_ > 0 && viewHeight_ > 0)
         {
-            if (sensorFit_ == CameraSensorFit::VERTICAL)
-                aspect = static_cast<float>(viewHeight_) / viewWidth_;
-            else
-                aspect = static_cast<float>(viewWidth_) / viewHeight_;
+            //if (sensorFit_ == CameraSensorFit::VERTICAL)
+            //    aspect = static_cast<float>(viewHeight_) / viewWidth_;
+            //else
+            aspect = static_cast<float>(viewWidth_) / viewHeight_;
         }
         return aspect;
     }
@@ -261,18 +261,18 @@ namespace NSG
         else
         {
             CHECK_ASSERT(zNear_ > 0, __FILE__, __LINE__);
-            
-#if 0
-            float tan_fovy = tan(fovy_*0.5);
+
+            #if 0
+            float tan_fovy = tan(fovy_ * 0.5);
             float right  =  tan_fovy * aspectRatio_ * zNear_;
             float left   = -right;
             float top    =  tan_fovy * zNear_;
             float bottom =  -top;
             matProjection_ = glm::frustum(left, right, bottom, top, zNear_, zFar_);
-#else
+            #else
 
             matProjection_ = glm::perspective(fovy_, aspectRatio_, zNear_, zFar_);
-#endif
+            #endif
         }
 
         UpdateViewProjection();
@@ -281,16 +281,16 @@ namespace NSG
     void Camera::UpdateViewProjection() const
     {
         cameraIsDirty_ = false;
-#if 0
+        #if 0
         matViewInverse_ = GetGlobalModelMatrix();
         matView_ = glm::inverse(matViewInverse_);
-#else
+        #else
         auto eye = GetGlobalPosition();
         auto center = eye + GetLookAtDirection();
         auto up = GetUpDirection();
         matView_ = glm::lookAt(eye, center, up);
         matViewInverse_ = glm::inverse(matView_);
-#endif
+        #endif
         matViewProjection_ = matProjection_ * matView_;
         matViewProjectionInverse_ = glm::inverse(matViewProjection_);
 

@@ -28,12 +28,6 @@ static const char* COMMON_GLSL = \
 "	varying vec3 v_bitangent;\n"\
 "	varying vec2 v_texcoord1;\n"\
 "	varying vec3 v_vertexToEye;\n"\
-"	struct Attenuation\n"\
-"	{\n"\
-"	    float constant;\n"\
-"	    float linear;\n"\
-"	    float quadratic;\n"\
-"	};\n"\
 "	struct BaseLight\n"\
 "	{\n"\
 "	    vec4 diffuse;\n"\
@@ -53,18 +47,18 @@ static const char* COMMON_GLSL = \
 "		{\n"\
 "		    BaseLight base;\n"\
 "		    vec3 position;\n"\
-"		    Attenuation atten;\n"\
+"		    float invRange;\n"\
 "		};\n"\
 "		uniform PointLight u_pointLight;\n"\
 "	#elif defined(HAS_SPOT_LIGHT)\n"\
-"		varying vec3 v_light2Pixel;\n"\
+"		varying vec3 v_lightDirection;\n"\
 "		struct SpotLight\n"\
 "		{\n"\
 "		    BaseLight base;\n"\
 "		    vec3 position;\n"\
 "		    vec3 direction;\n"\
-"		    Attenuation atten;\n"\
 "		    float cutOff; // 0.5f * cosine(cutOff)\n"\
+"		    float invRange;\n"\
 "		};\n"\
 "		uniform SpotLight u_spotLight;\n"\
 "	#endif\n"\

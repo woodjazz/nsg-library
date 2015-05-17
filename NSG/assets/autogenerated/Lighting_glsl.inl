@@ -68,30 +68,24 @@ static const char* LIGHTING_GLSL = \
 "}\n"\
 "#endif\n"\
 "#if defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)\n"\
-"vec4 CalcPointLight(BaseLight base, vec3 lightDirection, Attenuation attenuation, vec3 vertexToEye, vec3 normal)\n"\
+"vec4 CalcPointLight(BaseLight base, vec3 lightDirection, float invRange, vec3 vertexToEye, vec3 normal)\n"\
 "{\n"\
-"    float distance = length(lightDirection);\n"\
+"    float lightDist = length(lightDirection * invRange);\n"\
 "    lightDirection = normalize(lightDirection);\n"\
 "    vec4 color = CalcLight(base, vertexToEye, lightDirection, normal);\n"\
-"    float attenuationFactor =  attenuation.constant + attenuation.linear * distance + attenuation.quadratic * distance * distance;\n"\
-"    return color / attenuationFactor;\n"\
+"    float atten = clamp(1.0 - lightDist * lightDist, 0.0, 1.0);\n"\
+"    return color * atten;\n"\
 "}\n"\
 "#endif\n"\
 "#ifdef HAS_SPOT_LIGHT\n"\
-"vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, Attenuation attenuation, vec3 vertexToEye, vec3 normal, float cutOff)\n"\
+"vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, float invRange, vec3 vertexToEye, vec3 normal, float cutOff)\n"\
 "{\n"\
 "    lightDirection = normalize(lightDirection);\n"\
+"    vec4 color = CalcPointLight(base, light2Pixel, invRange, vertexToEye, normal);\n"\
 "    light2Pixel = normalize(light2Pixel);\n"\
 "    float spotFactor = dot(light2Pixel, lightDirection);\n"\
-"    if (spotFactor > cutOff)\n"\
-"    {\n"\
-"        vec4 color = CalcPointLight(base, light2Pixel, attenuation, vertexToEye, normal);\n"\
-"        return color * (1.0 - (1.0 - spotFactor) * 1.0 / (1.0 - cutOff));\n"\
-"    }\n"\
-"    else\n"\
-"    {\n"\
-"        return vec4(0.0);\n"\
-"    }\n"\
+"    float spotAtten = clamp((spotFactor - cutOff) / (1.0 - cutOff), 0.0, 1.0);\n"\
+"    return color * spotAtten;\n"\
 "}\n"\
 "#endif\n"\
 "vec4 CalcFSTotalLight(vec3 vertexToEye, vec3 normal)\n"\
@@ -99,9 +93,9 @@ static const char* LIGHTING_GLSL = \
 "    #if defined(HAS_DIRECTIONAL_LIGHT)\n"\
 "        return u_sceneAmbientColor + CalcDirectionalLight(u_directionalLight.base, u_directionalLight.direction, vertexToEye, normal);\n"\
 "    #elif defined(HAS_POINT_LIGHT)\n"\
-"        return u_sceneAmbientColor + CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.atten, vertexToEye, normal);\n"\
+"        return u_sceneAmbientColor + CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.invRange, vertexToEye, normal);\n"\
 "    #elif defined(HAS_SPOT_LIGHT)\n"\
-"        return u_sceneAmbientColor + CalcSpotLight(u_spotLight.base, v_light2Pixel, u_spotLight.direction, u_spotLight.atten, vertexToEye, normal, u_spotLight.cutOff);\n"\
+"        return u_sceneAmbientColor + CalcSpotLight(u_spotLight.base, v_lightDirection, u_spotLight.direction, u_spotLight.invRange, vertexToEye, normal, u_spotLight.cutOff);\n"\
 "    #endif\n"\
 "}\n"\
 "vec4 CalcVSTotalLight(vec3 worldPos, vec3 vertexToEye, vec3 normal)\n"\
@@ -109,9 +103,9 @@ static const char* LIGHTING_GLSL = \
 "    #if defined(HAS_DIRECTIONAL_LIGHT)\n"\
 "        return u_sceneAmbientColor + CalcDirectionalLight(u_directionalLight.base, u_directionalLight.direction, vertexToEye, normal);\n"\
 "    #elif defined(HAS_POINT_LIGHT)\n"\
-"        return u_sceneAmbientColor + CalcPointLight(u_pointLight.base, worldPos - u_pointLight.position, u_pointLight.atten, vertexToEye, normal);\n"\
+"        return u_sceneAmbientColor + CalcPointLight(u_pointLight.base, worldPos - u_pointLight.position, u_pointLight.invRange, vertexToEye, normal);\n"\
 "    #elif defined(HAS_SPOT_LIGHT)\n"\
-"        return u_sceneAmbientColor + CalcSpotLight(u_spotLight.base, worldPos - u_spotLight.position, u_spotLight.direction, u_spotLight.atten, vertexToEye, normal, u_spotLight.cutOff);\n"\
+"        return u_sceneAmbientColor + CalcSpotLight(u_spotLight.base, worldPos - u_spotLight.position, u_spotLight.direction, u_spotLight.invRange, vertexToEye, normal, u_spotLight.cutOff);\n"\
 "    #endif\n"\
 "}\n"\
 "#endif\n"\

@@ -26,11 +26,9 @@ namespace NSG
           diffuseColor_(1),
           specularColor_(1),
           distance_(30),
+          invRange_(1.f/distance_),
           frustumDirty_(false)
     {
-        attenuation_.constant = 1;
-        attenuation_.linear = 0;
-        attenuation_.quadratic = 0;
     }
 
     Light::~Light()
@@ -78,17 +76,6 @@ namespace NSG
         }
     }
 
-    void Light::SetAttenuation(float constant, float linear, float quadratic)
-    {
-        if (attenuation_.constant != constant || attenuation_.linear != linear || attenuation_.quadratic != quadratic)
-        {
-            attenuation_.constant = constant;
-            attenuation_.linear = linear;
-            attenuation_.quadratic = quadratic;
-            SetUniformsNeedUpdate();
-        }
-    }
-
     void Light::SetSpotCutOff(float spotCutOff)
     {
         if (spotCutOff_ != spotCutOff)
@@ -118,9 +105,6 @@ namespace NSG
         node.append_attribute("color").set_value(ToString(color_).c_str());
         node.append_attribute("diffuse").set_value(diffuse_);
         node.append_attribute("specular").set_value(specular_);
-        node.append_attribute("attenuationConstant").set_value(attenuation_.constant);
-        node.append_attribute("attenuationLinear").set_value(attenuation_.linear);
-        node.append_attribute("attenuationQuadratic").set_value(attenuation_.quadratic);
         node.append_attribute("spotCutOff").set_value(spotCutOff_);
         node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
         node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
@@ -151,12 +135,6 @@ namespace NSG
         SetColor(GetVertex4(node.attribute("color").as_string()));
         EnableDiffuseColor(node.attribute("diffuse").as_bool());
         EnableSpecularColor(node.attribute("specular").as_bool());
-        {
-            float constant = node.attribute("attenuationConstant").as_float();
-            float linear = node.attribute("attenuationLinear").as_float();
-            float quadratic = node.attribute("attenuationQuadratic").as_float();
-            SetAttenuation(constant, linear, quadratic);
-        }
         SetSpotCutOff(node.attribute("spotCutOff").as_float());
         Vertex3 position = GetVertex3(node.attribute("position").as_string());
         SetPosition(position);
@@ -203,9 +181,9 @@ namespace NSG
                 }
                 case LightType::POINT:
                     {
-                        Sphere sphereNode(*node);
-                        Sphere sphereLight(GetGlobalPosition(), distance_ * 0.5f);
-                        visible = sphereLight.IsInside(sphereNode) != Intersection::OUTSIDE;
+                        auto& bb = node->GetWorldBoundingBox();
+                        Sphere sphereLight(GetGlobalPosition(), distance_);
+                        visible = sphereLight.IsInside(bb) != Intersection::OUTSIDE;
                         break;
                     }
                 case LightType::DIRECTIONAL:
@@ -227,6 +205,7 @@ namespace NSG
     void Light::SetDistance(float distance)
     {
         distance_ = distance;
+        invRange_ = 1.0f / std::max(distance_, glm::epsilon<float>());
         OnDirty();
     }
 
@@ -253,6 +232,4 @@ namespace NSG
             UpdateFrustum();
         return frustum_;
     }
-
-
 }

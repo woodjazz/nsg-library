@@ -74,32 +74,25 @@ vec4 CalcDirectionalLight(BaseLight base, vec3 lightDirection, vec3 vertexToEye,
 #endif
 
 #if defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)
-vec4 CalcPointLight(BaseLight base, vec3 lightDirection, Attenuation attenuation, vec3 vertexToEye, vec3 normal)
+vec4 CalcPointLight(BaseLight base, vec3 lightDirection, float invRange, vec3 vertexToEye, vec3 normal)
 {
-    float distance = length(lightDirection);
+    float lightDist = length(lightDirection * invRange);
     lightDirection = normalize(lightDirection);
     vec4 color = CalcLight(base, vertexToEye, lightDirection, normal);
-    float attenuationFactor =  attenuation.constant + attenuation.linear * distance + attenuation.quadratic * distance * distance;
-    return color / attenuationFactor;
+    float atten = clamp(1.0 - lightDist * lightDist, 0.0, 1.0);
+    return color * atten;
 }
 #endif
 
 #ifdef HAS_SPOT_LIGHT
-vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, Attenuation attenuation, vec3 vertexToEye, vec3 normal, float cutOff)
+vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, float invRange, vec3 vertexToEye, vec3 normal, float cutOff)
 {
     lightDirection = normalize(lightDirection);
+    vec4 color = CalcPointLight(base, light2Pixel, invRange, vertexToEye, normal);
     light2Pixel = normalize(light2Pixel);
     float spotFactor = dot(light2Pixel, lightDirection);
-
-    if (spotFactor > cutOff)
-    {
-        vec4 color = CalcPointLight(base, light2Pixel, attenuation, vertexToEye, normal);
-        return color * (1.0 - (1.0 - spotFactor) * 1.0 / (1.0 - cutOff));
-    }
-    else
-    {
-        return vec4(0.0);
-    }
+    float spotAtten = clamp((spotFactor - cutOff) / (1.0 - cutOff), 0.0, 1.0);
+    return color * spotAtten;
 }
 #endif
 
@@ -111,11 +104,11 @@ vec4 CalcFSTotalLight(vec3 vertexToEye, vec3 normal)
 
     #elif defined(HAS_POINT_LIGHT)
 
-        return u_sceneAmbientColor + CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.atten, vertexToEye, normal);
+        return u_sceneAmbientColor + CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.invRange, vertexToEye, normal);
 
     #elif defined(HAS_SPOT_LIGHT)
 
-        return u_sceneAmbientColor + CalcSpotLight(u_spotLight.base, v_light2Pixel, u_spotLight.direction, u_spotLight.atten, vertexToEye, normal, u_spotLight.cutOff);
+        return u_sceneAmbientColor + CalcSpotLight(u_spotLight.base, v_lightDirection, u_spotLight.direction, u_spotLight.invRange, vertexToEye, normal, u_spotLight.cutOff);
 
     #endif
 }
@@ -128,11 +121,11 @@ vec4 CalcVSTotalLight(vec3 worldPos, vec3 vertexToEye, vec3 normal)
 
     #elif defined(HAS_POINT_LIGHT)
 
-        return u_sceneAmbientColor + CalcPointLight(u_pointLight.base, worldPos - u_pointLight.position, u_pointLight.atten, vertexToEye, normal);
+        return u_sceneAmbientColor + CalcPointLight(u_pointLight.base, worldPos - u_pointLight.position, u_pointLight.invRange, vertexToEye, normal);
 
     #elif defined(HAS_SPOT_LIGHT)
 
-        return u_sceneAmbientColor + CalcSpotLight(u_spotLight.base, worldPos - u_spotLight.position, u_spotLight.direction, u_spotLight.atten, vertexToEye, normal, u_spotLight.cutOff);
+        return u_sceneAmbientColor + CalcSpotLight(u_spotLight.base, worldPos - u_spotLight.position, u_spotLight.direction, u_spotLight.invRange, vertexToEye, normal, u_spotLight.cutOff);
 
     #endif
 }

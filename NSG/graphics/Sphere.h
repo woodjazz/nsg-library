@@ -34,6 +34,7 @@ namespace NSG
 		Sphere(const Vector3& center, float radius);
 		Sphere(const SceneNode& sceneNode);
 		Intersection IsInside(const Sphere& sphere) const;
+        Intersection IsInside(const BoundingBox& box) const;
 	private:
 		Vector3 center_;
 		float radius_;
