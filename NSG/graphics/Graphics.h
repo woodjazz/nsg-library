@@ -119,6 +119,7 @@ namespace NSG
         Recti viewport_;
         GLint systemFbo_;
         FrameBuffer* currentFbo_;
+        TextureTarget currentColorTarget_;
         VertexArrayObj* vertexArrayObj_;
         Buffer* vertexBuffer_;
         Buffer* indexBuffer_;

@@ -394,6 +394,41 @@ static void Test08()
     }
 }
 
+static void Test09()
+{
+    Node dirPositiveX;
+    Node dirNegativeX;
+    Node dirPositiveY;
+    Node dirNegativeY;
+    Node dirPositiveZ;
+    Node dirNegativeZ;
+    dirPositiveX.SetLocalLookAt(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
+    dirNegativeX.SetLocalLookAt(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
+    dirPositiveY.SetLocalLookAt(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
+    dirNegativeY.SetLocalLookAt(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
+    dirPositiveZ.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
+    dirNegativeZ.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
+
+    CHECK_CONDITION(glm::distance(Vector3(1.0f, 0.0f, 0.0f), dirPositiveX.GetLookAtDirection()) < 0.001f, __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, -1.0f, 0.0f), dirPositiveX.GetUpDirection()) < 0.001f, __FILE__, __LINE__);
+
+    CHECK_CONDITION(glm::distance(Vector3(-1.0f, 0.0f, 0.0f), dirNegativeX.GetLookAtDirection()) < 0.001f, __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, -1.0f, 0.0f), dirNegativeX.GetUpDirection()) < 0.001f, __FILE__, __LINE__);
+
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, 1.0f, 0.0f), dirPositiveY.GetLookAtDirection()) < 0.001f, __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, 0.0f, -1.0f), dirPositiveY.GetUpDirection()) < 0.001f, __FILE__, __LINE__);
+
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, -1.0f, 0.0f), dirNegativeY.GetLookAtDirection()) < 0.001f, __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, 0.0f, 1.0f), dirNegativeY.GetUpDirection()) < 0.001f, __FILE__, __LINE__);
+
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, 0.0f, 1.0f), dirPositiveZ.GetLookAtDirection()) < 0.001f, __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, -1.0f, 0.0f), dirPositiveZ.GetUpDirection()) < 0.001f, __FILE__, __LINE__);
+
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, 0.0f, -1.0f), dirNegativeZ.GetLookAtDirection()) < 0.001f, __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(Vector3(0.0f, -1.0f, 0.0f), dirNegativeZ.GetUpDirection()) < 0.001f, __FILE__, __LINE__);
+
+}
+
 void NodeTest()
 {
     Test01();
@@ -404,5 +439,6 @@ void NodeTest()
     Test06();
     Test07();
     Test08();
+    Test09();
 
 }

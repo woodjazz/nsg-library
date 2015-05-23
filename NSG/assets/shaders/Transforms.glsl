@@ -206,8 +206,7 @@ vec2 GetTexCoord(vec2 texCoord)
 		float DecodeColor2Depth(vec3 depth)
 		{
 			const float DISTANCE = 255.0;
-			const float PRECISION_ERROR = 1.0/DISTANCE;
-			return DISTANCE - (depth.x * DISTANCE + depth.y) + PRECISION_ERROR;
+			return DISTANCE - (depth.x * DISTANCE + depth.y);
 		}
 
 	#endif

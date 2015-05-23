@@ -31,7 +31,7 @@ using namespace NSG;
 
 int NSG_MAIN(int argc, char* argv[])
 {
-    auto window = Window::Create();
+    auto window = Window::Create("Viewer", 0, 0, 600, 600);
     PAppData data;
     PCamera camera;
     PCameraControl control;

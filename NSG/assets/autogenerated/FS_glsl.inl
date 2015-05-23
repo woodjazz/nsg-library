@@ -12,7 +12,7 @@ static const char* FS_GLSL = \
 "		#elif defined(SHADOW)\n"\
 "			gl_FragColor = vec4(EncodeDepth2Color(v_color.z), 1.0);\n"\
 "		#elif defined(SHADOWCUBE)\n"\
-"			vec3 lightToVertex = vec3(v_color) - u_eyeWorldPos;\n"\
+"			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
 "    		float lightToPixelDistance = clamp(length(lightToVertex) * u_pointLight.invRange, 0.0, 1.0);\n"\
 "    		gl_FragColor = vec4(EncodeDepth2Color(lightToPixelDistance), 1.0);\n"\
 "		#elif defined(TEXT)\n"\

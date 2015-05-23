@@ -87,6 +87,7 @@ namespace NSG
 
     Graphics::Graphics()
         : currentFbo_(0),  //the default framebuffer (except for IOS)
+          currentColorTarget_(TextureTarget::UNKNOWN),
           vertexArrayObj_(nullptr),
           vertexBuffer_(nullptr),
           indexBuffer_(nullptr),
@@ -225,11 +226,11 @@ namespace NSG
             TRACE_PRINTF("Using extension: GL_OES_depth_texture");
         }
 
-		if (CheckExtension("GL_ARB_depth_texture"))
-		{
-			has_depth_texture_ext_ = true;
-			TRACE_PRINTF("Using extension: GL_ARB_depth_texture");
-		}
+        if (CheckExtension("GL_ARB_depth_texture"))
+        {
+            has_depth_texture_ext_ = true;
+            TRACE_PRINTF("Using extension: GL_ARB_depth_texture");
+        }
 
 
         if (CheckExtension("GL_OES_depth24"))
@@ -376,7 +377,7 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
-		programs_.clear();
+        programs_.clear();
 
         viewport_ = Recti(0);
 
@@ -431,27 +432,32 @@ namespace NSG
             SetTexture(i, nullptr);
     }
 
-	void Graphics::SetFrameBuffer(FrameBuffer* buffer)
-	{
-		if (buffer != currentFbo_)
-		{
-			currentFbo_ = buffer;
-			if (buffer == nullptr)
-				glBindFramebuffer(GL_FRAMEBUFFER, systemFbo_);
-			else
-			{
-				glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
-				buffer->AttachTarget(buffer->GetDefaultTextureTarget());
-			}
-			SetUpViewport();
-		}
-	}
+    void Graphics::SetFrameBuffer(FrameBuffer* buffer)
+    {
+        if (buffer != currentFbo_)
+        {
+            currentFbo_ = buffer;
+            if (buffer == nullptr)
+            {
+                currentColorTarget_ = TextureTarget::UNKNOWN;
+                glBindFramebuffer(GL_FRAMEBUFFER, systemFbo_);
+            }
+            else
+            {
+                currentColorTarget_ = buffer->GetDefaultTextureTarget();
+                glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
+                buffer->AttachTarget(currentColorTarget_);
+            }
+            SetUpViewport();
+        }
+    }
 
 
     void Graphics::SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget)
     {
-        if (buffer != currentFbo_)
+        if (buffer != currentFbo_ || currentColorTarget_ != colorTarget)
         {
+            currentColorTarget_ = colorTarget;
             currentFbo_ = buffer;
             if (buffer == nullptr)
                 glBindFramebuffer(GL_FRAMEBUFFER, systemFbo_);
@@ -760,7 +766,7 @@ namespace NSG
         if (mode != cullFaceMode_)
         {
             cullFaceMode_ = mode;
-            switch(mode)
+            switch (mode)
             {
                 case CullFaceMode::BACK:
                     glCullFace(GL_BACK);
@@ -812,7 +818,7 @@ namespace NSG
             {
                 glActiveTexture(GL_TEXTURE0); //default
                 activeTexture_ = 0;
-				glBindTexture(textures_[index]->GetTarget(), 0);
+                glBindTexture(textures_[index]->GetTarget(), 0);
             }
 
             textures_[index] = nullptr;
@@ -1297,29 +1303,29 @@ namespace NSG
             EnableCullFace(false);
 
         auto program = GetOrCreateProgram(pass, activeMesh_, material, light);
-		program->Set(activeMesh_);
+        program->Set(activeMesh_);
         program->Set(sceneNode);
         program->Set(material);
-		program->Set(light);
-		bool ready = SetProgram(program.get());
-		if (ready)
-			program->SetVariables(shadowPass);
+        program->Set(light);
+        bool ready = SetProgram(program.get());
+        if (ready)
+            program->SetVariables(shadowPass);
         CHECK_GL_STATUS(__FILE__, __LINE__);
-		return ready;
+        return ready;
     }
 
     PProgram Graphics::GetOrCreateProgram(const Pass* pass, Mesh* mesh, Material* material, const Light* light)
     {
         std::string defines;
         auto passType = pass->GetType();
-		material->FillShaderDefines(defines, passType, light, mesh);
-		size_t nBones = 0;
+        material->FillShaderDefines(defines, passType, light, mesh);
+        size_t nBones = 0;
 
-		if(mesh)
-			nBones = mesh->FillShaderDefines(defines);
+        if (mesh)
+            nBones = mesh->FillShaderDefines(defines);
 
         if (light)
-            light->FillShaderDefines(defines, passType);
+            light->FillShaderDefines(defines, passType, material);
 
         PProgram program;
         auto it = programs_.find(defines);

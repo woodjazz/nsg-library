@@ -13,7 +13,7 @@
 
 		#elif defined(SHADOWCUBE)
 
-			vec3 lightToVertex = vec3(v_color) - u_eyeWorldPos;
+			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
     		float lightToPixelDistance = clamp(length(lightToVertex) * u_pointLight.invRange, 0.0, 1.0);
     		gl_FragColor = vec4(EncodeDepth2Color(lightToPixelDistance), 1.0);
 

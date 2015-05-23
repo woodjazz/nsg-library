@@ -42,9 +42,11 @@ namespace NSG
         dirPositiveX_.SetLocalLookAt(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeX_.SetLocalLookAt(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirPositiveY_.SetLocalLookAt(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
-        dirNegativeY_.SetLocalLookAt(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
-        dirPositiveZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
-        dirNegativeZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
+        dirNegativeY_.SetLocalLookAt(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
+        dirPositiveZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f));
+        dirNegativeZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f));
+        Quaternion q(glm::angleAxis(glm::radians(180.f), Vertex3(0, 0, 1)));
+        dirNegativeZ_.SetOrientation(q * dirNegativeZ_.GetOrientation());
     }
 
     Light::~Light()
@@ -158,7 +160,7 @@ namespace NSG
         LoadChildren(node);
     }
 
-    void Light::FillShaderDefines(std::string& defines, PassType passType) const
+    void Light::FillShaderDefines(std::string& defines, PassType passType, Material* material) const
     {
         bool shadowPass =  PassType::SHADOW == passType;
         if (!shadowPass)
@@ -172,7 +174,7 @@ namespace NSG
                 defines += "HAS_SPOT_LIGHT\n";
             }
 
-            if (DoShadows())
+            if (DoShadows() && material->ReceiveShadows())
             {
                 if (LightType::POINT == type_)
                     defines += "CUBESHADOWMAP\n";

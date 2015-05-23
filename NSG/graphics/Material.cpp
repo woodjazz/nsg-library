@@ -39,7 +39,8 @@ namespace NSG
           cullFaceMode_(CullFaceMode::DEFAULT),
           friction_(0.5f), // same as Blender
           signalPhysicsSet_(new SignalEmpty()),
-          castShadow_(true)
+          castShadow_(true),
+          receiveShadows_(true)
     {
     }
 
@@ -73,6 +74,8 @@ namespace NSG
 		material->shadeless_ = shadeless_;
 		material->cullFaceMode_ = cullFaceMode_;
         material->friction_ = friction_;
+        material->castShadow_ = castShadow_;
+        material->receiveShadows_ = receiveShadows_;
         return material;
     }
 
@@ -242,6 +245,7 @@ namespace NSG
         child.append_attribute("name").set_value(name_.c_str());
 		child.append_attribute("shadeless").set_value(shadeless_);
         child.append_attribute("castShadow").set_value(castShadow_);
+        child.append_attribute("receiveShadows").set_value(receiveShadows_);
         child.append_attribute("cullFaceMode").set_value(ToString(cullFaceMode_));
         child.append_attribute("friction").set_value(friction_);
         
@@ -271,6 +275,7 @@ namespace NSG
         name_ = node.attribute("name").as_string();
 		shadeless_ = node.attribute("shadeless").as_bool();
         castShadow_ = node.attribute("castShadow").as_bool();
+        receiveShadows_ = node.attribute("receiveShadows").as_bool();
         cullFaceMode_ = ToCullFaceMode(node.attribute("cullFaceMode").as_string());
         SetFriction(node.attribute("friction").as_float());
 

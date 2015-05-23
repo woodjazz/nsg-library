@@ -26,7 +26,7 @@
 		#elif defined(SHADOWCUBE)
 
 			gl_Position = GetClipPos();
-			v_color = GetWorldPos();
+			v_worldPos = GetWorldPos().xyz;
 
 		#elif defined(TEXT)
 

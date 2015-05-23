@@ -98,6 +98,8 @@ namespace NSG
         SignalEmpty::PSignal SigPhysicsSet() { return signalPhysicsSet_; }
         void CastShadow(bool shadow) { castShadow_ = shadow; }
         bool CastShadow() const { return castShadow_; }
+        void ReceiveShadows(bool shadow) { receiveShadows_ = shadow; }
+        bool ReceiveShadows() const { return receiveShadows_; }
     private:
 		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();
@@ -129,6 +131,7 @@ namespace NSG
         float friction_; // rigidbody friction
         SignalEmpty::PSignal signalPhysicsSet_;
         bool castShadow_;
+        bool receiveShadows_;
  		static MapAndVector<std::string, Material> materials_;
         friend class Program;
     };

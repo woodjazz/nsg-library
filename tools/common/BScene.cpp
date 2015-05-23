@@ -187,8 +187,10 @@ namespace BlenderConverter
 
 		bool shadeless = mt->mode & MA_SHLESS ? true : false;
 		material->SetShadeless(shadeless);
-		bool castShadow = mt->mode & MA_SHADOW ? true : false;
-		material->CastShadow(castShadow);
+		bool receiveShadow = mt->mode & MA_SHADOW ? true : false;
+		material->ReceiveShadows(receiveShadow);
+        bool castShadow = mt->mode2 & 1 ? true : false;
+        material->CastShadow(castShadow);
 
         if (mt->game.alpha_blend & GEMAT_ALPHA)
             material->SetBlendMode(BLEND_MODE::ALPHA);

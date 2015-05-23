@@ -96,15 +96,16 @@ static const char* LIGHTING_GLSL = \
 "        #if defined(CUBESHADOWMAP)\n"\
 "            float CalcShadowCubeFactor(vec3 lightDirection)\n"\
 "            {\n"\
-"                float lightToPixelDistance = DecodeColor2Depth(textureCube(u_texture5, lightDirection).xyz) / u_pointLight.invRange;\n"\
-"                float distance = length(lightDirection);\n"\
-"                return lightToPixelDistance < distance ? 0.0 : 1.0;\n"\
+"                const float PRECISION_ERROR = 0.0000001f;\n"\
+"                float sampledDistance = PRECISION_ERROR + DecodeColor2Depth(textureCube(u_texture5, lightDirection).xyz) / u_pointLight.invRange;\n"\
+"                return length(lightDirection) < sampledDistance ? 1.0 : 0.0;\n"\
 "            }\n"\
 "        #elif defined(SHADOWMAP)\n"\
 "            float CalcShadowFactor()\n"\
 "            {\n"\
+"                const float PRECISION_ERROR = 1.0/255.0;\n"\
 "                vec3 encodedDepth = texture2DProj(u_texture5, v_lightSpacePos).xyz;\n"\
-"                return DecodeColor2Depth(encodedDepth) < v_lightSpacePos.z ? 0.0 : 1.0;\n"\
+"                return DecodeColor2Depth(encodedDepth) + PRECISION_ERROR < v_lightSpacePos.z ? 0.0 : 1.0;\n"\
 "            }\n"\
 "        #endif\n"\
 "        vec4 CalcTotalLight(vec3 vertexToEye, vec3 normal)\n"\
@@ -116,7 +117,7 @@ static const char* LIGHTING_GLSL = \
 "                    return CalcDirectionalLight(u_directionalLight.base, u_directionalLight.direction, vertexToEye, normal);\n"\
 "                #endif                    \n"\
 "            #elif defined(HAS_POINT_LIGHT)\n"\
-"                #if 0//defined(CUBESHADOWMAP)\n"\
+"                #if defined(CUBESHADOWMAP)\n"\
 "                    return CalcShadowCubeFactor(v_lightDirection) * CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.invRange, vertexToEye, normal);\n"\
 "                #else\n"\
 "                    return CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.invRange, vertexToEye, normal);\n"\

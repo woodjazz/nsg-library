@@ -122,17 +122,18 @@
 
             float CalcShadowCubeFactor(vec3 lightDirection)
             {
-                float lightToPixelDistance = DecodeColor2Depth(textureCube(u_texture5, lightDirection).xyz) / u_pointLight.invRange;
-                float distance = length(lightDirection);
-                return lightToPixelDistance < distance ? 0.0 : 1.0;
+                const float PRECISION_ERROR = 0.0000001f;
+                float sampledDistance = PRECISION_ERROR + DecodeColor2Depth(textureCube(u_texture5, lightDirection).xyz) / u_pointLight.invRange;
+                return length(lightDirection) < sampledDistance ? 1.0 : 0.0;
             }
 
         #elif defined(SHADOWMAP)
 
             float CalcShadowFactor()
             {
+                const float PRECISION_ERROR = 1.0/255.0;
                 vec3 encodedDepth = texture2DProj(u_texture5, v_lightSpacePos).xyz;
-                return DecodeColor2Depth(encodedDepth) < v_lightSpacePos.z ? 0.0 : 1.0;
+                return DecodeColor2Depth(encodedDepth) + PRECISION_ERROR < v_lightSpacePos.z ? 0.0 : 1.0;
             }
 
         #endif
@@ -149,7 +150,7 @@
 
             #elif defined(HAS_POINT_LIGHT)
 
-                #if 0//defined(CUBESHADOWMAP)
+                #if defined(CUBESHADOWMAP)
                     return CalcShadowCubeFactor(v_lightDirection) * CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.invRange, vertexToEye, normal);
                 #else
                     return CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.invRange, vertexToEye, normal);

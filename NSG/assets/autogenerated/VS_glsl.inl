@@ -24,7 +24,7 @@ static const char* VS_GLSL = \
 "			v_color = GetClipPos();\n"\
 "		#elif defined(SHADOWCUBE)\n"\
 "			gl_Position = GetClipPos();\n"\
-"			v_color = GetWorldPos();\n"\
+"			v_worldPos = GetWorldPos().xyz;\n"\
 "		#elif defined(TEXT)\n"\
 "			v_color = u_material.color * a_color;\n"\
 "			gl_Position = GetClipPos();\n"\

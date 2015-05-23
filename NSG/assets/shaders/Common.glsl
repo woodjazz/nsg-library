@@ -24,6 +24,7 @@ varying vec2 v_texcoord0;
 
 #else
 
+	varying vec3 v_worldPos;
 	varying vec3 v_normal;
 	varying vec3 v_tangent;
 	varying vec3 v_bitangent;

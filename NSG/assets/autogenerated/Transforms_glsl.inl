@@ -186,8 +186,7 @@ static const char* TRANSFORMS_GLSL = \
 "		float DecodeColor2Depth(vec3 depth)\n"\
 "		{\n"\
 "			const float DISTANCE = 255.0;\n"\
-"			const float PRECISION_ERROR = 1.0/DISTANCE;\n"\
-"			return DISTANCE - (depth.x * DISTANCE + depth.y) + PRECISION_ERROR;\n"\
+"			return DISTANCE - (depth.x * DISTANCE + depth.y);\n"\
 "		}\n"\
 "	#endif\n"\
 "#endif\n"\

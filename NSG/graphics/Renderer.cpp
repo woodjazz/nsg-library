@@ -248,7 +248,8 @@ namespace NSG
     {
         auto frameBuffer = Graphics::this_->GetFrameBuffer();
         auto shadowFrameBuffer = light->GetShadowFrameBuffer();
-        shadowFrameBuffer->SetSize(window_->GetWidth(), window_->GetHeight());
+        auto maxSize = std::max(window_->GetWidth(), window_->GetHeight());
+        shadowFrameBuffer->SetSize(maxSize, maxSize);
         if (shadowFrameBuffer->IsReady())
         {
 			graphics_->SetFrameBuffer(shadowFrameBuffer);
@@ -264,7 +265,8 @@ namespace NSG
     {
         auto frameBuffer = Graphics::this_->GetFrameBuffer();
         auto shadowFrameBuffer = light->GetShadowFrameBuffer();
-        shadowFrameBuffer->SetSize(window_->GetWidth(), window_->GetHeight());
+        auto maxSize = std::max(window_->GetWidth(), window_->GetHeight());
+        shadowFrameBuffer->SetSize(maxSize, maxSize);
         if (shadowFrameBuffer->IsReady())
         {
             for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++)
@@ -277,6 +279,7 @@ namespace NSG
                 GenerateBatches(visiblesFromLightFace, batches);
                 graphics_->SetFrameBuffer(shadowFrameBuffer, face);
                 graphics_->ClearBuffers(true, true, false);
+                if(i == 5)
                 for (auto& batch : batches)
                     if (batch->GetMaterial()->CastShadow())
                         Draw(batch.get(), shadowPass_.get(), light);

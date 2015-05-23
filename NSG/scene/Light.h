@@ -43,7 +43,7 @@ namespace NSG
 		void SetType(LightType type);
 		void Save(pugi::xml_node& node) const override;
 		void Load(const pugi::xml_node& node) override;
-		void FillShaderDefines(std::string& defines, PassType passType) const;
+		void FillShaderDefines(std::string& defines, PassType passType, Material* material) const;
 		static SignalLight::PSignal SignalBeingDestroy();
 		bool IsVisible(const SceneNode* node) const;
 		bool IsVisibleFromCurrentLightFace(const SceneNode* node) const;

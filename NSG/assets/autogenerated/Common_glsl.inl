@@ -23,6 +23,7 @@ static const char* COMMON_GLSL = \
 "		varying vec2 v_texcoord1;\n"\
 "	#endif\n"\
 "#else\n"\
+"	varying vec3 v_worldPos;\n"\
 "	varying vec3 v_normal;\n"\
 "	varying vec3 v_tangent;\n"\
 "	varying vec3 v_bitangent;\n"\
