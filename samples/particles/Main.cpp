@@ -46,7 +46,7 @@ int NSG_MAIN(int argc, char* argv[])
     shape->SetType(SH_TRIMESH);
 
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/spark.png");
-	auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+	auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 	auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
 	ps->GetParticleMaterial()->SetTexture(texture);
 	auto meshEmitter(Mesh::Create<BoxMesh>());

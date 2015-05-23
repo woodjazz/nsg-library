@@ -58,7 +58,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto materialBox = Material::GetOrCreate("material1");
 	materialBox->SetRenderPass(RenderPass::PERPIXEL);
-	materialBox->SetTexture(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/wall.jpg")));
+	materialBox->SetTexture(std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>("data/wall.jpg")));
 	auto boxNode = scene->CreateChild<SceneNode>();
     boxNode->SetPosition(Vertex3(3, -2, 0));
 	boxNode->SetMesh(Mesh::Create<BoxMesh>());
@@ -66,7 +66,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto materialSphere = Material::GetOrCreate("material2");
 	materialSphere->SetRenderPass(RenderPass::PERPIXEL);
-	materialSphere->SetTexture(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/stone.jpg")));
+	materialSphere->SetTexture(std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>("data/stone.jpg")));
     auto sphereNode = scene->CreateChild<SceneNode>();
     sphereNode->SetPosition(Vertex3(-3, 2, 0));
 	sphereNode->SetMesh(Mesh::Create<SphereMesh>());

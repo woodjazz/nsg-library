@@ -56,11 +56,14 @@ namespace BlenderConverter
     {
         bParse::bBlenderFile obj(path_.GetFullAbsoluteFilePath().c_str());
         obj.parse(false);
-        bParse::bMain* data = obj.getMain();
-        auto materials = LoadMaterials(data);
-        sounds_ = LoadSounds(data);
-        CreateScenes(data);
-        CreateAnimations(data);
+		if (obj.ok())
+		{
+			bParse::bMain* data = obj.getMain();
+			auto materials = LoadMaterials(data);
+			sounds_ = LoadSounds(data);
+			CreateScenes(data);
+			CreateAnimations(data);
+		}
     }
 
     void BScene::CreateScenes(bParse::bMain* data)
@@ -155,13 +158,13 @@ namespace BlenderConverter
             path.SetPath(path_.GetPath());
             path.SetFileName(imageName);
             auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
-            return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+            return std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
         else
         {
             auto resource = Resource::GetOrCreate<ResourceConverter>(imageName);
             resource->SetData((const char*)ima->packedfile->data, ima->packedfile->size);
-            return std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+            return std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
     }
 
@@ -184,6 +187,8 @@ namespace BlenderConverter
 
 		bool shadeless = mt->mode & MA_SHLESS ? true : false;
 		material->SetShadeless(shadeless);
+		bool castShadow = mt->mode & MA_SHADOW ? true : false;
+		material->CastShadow(castShadow);
 
         if (mt->game.alpha_blend & GEMAT_ALPHA)
             material->SetBlendMode(BLEND_MODE::ALPHA);
@@ -315,7 +320,7 @@ namespace BlenderConverter
             if (obj->type == OB_MESH && obj->parent != 0 && obj->parent->type == OB_ARMATURE)
                 armatureLinker_.push_back(obj);
             
-            if (obj->parent)
+			if (obj->type >= 0 && obj->parent)
             {
                 auto parentName = B_IDNAME(obj->parent);
 				parent = scene->GetChild<SceneNode>(parentName, true);
@@ -723,17 +728,7 @@ namespace BlenderConverter
                 boundtype = OB_BOUND_CONVEX_HULL;
         }
 
-/*        Blender::Object* parent = obj->parent;
-        while (parent && parent->parent)
-            parent = parent->parent;
-
-        if (parent && (obj->gameflag & OB_CHILD) == 0)
-            boundtype = 0;
-
-        if (!boundtype)
-            return;
-*/
-        auto shape = sceneNode->GetMesh()->GetShape();
+		auto shape = sceneNode->GetMesh()->GetShape();
         auto rigBody = sceneNode->GetOrCreateRigidBody();
         rigBody->SetShape(shape);
         rigBody->SetLinearDamp(obj->damping);
@@ -806,8 +801,12 @@ namespace BlenderConverter
     {
         auto sceneNode = CreateSceneNode(obj, parent);
         const Blender::bArmature* ar = static_cast<const Blender::bArmature*>(obj->data);
-        //CHECK_ASSERT(ar->flag & ARM_RESTPOS && "Armature has to be in rest position. Go to blender and change it.", __FILE__, __LINE__);
-        std::string armatureName = B_IDNAME(ar);
+		std::string armatureName = B_IDNAME(ar);
+		if (!(ar->flag & ARM_RESTPOS))
+		{
+			TRACE_PRINTF("!!! Cannot create skeleton: %s. Armature has to be in rest position. Go to blender and change it.", armatureName.c_str());
+			return;
+		}
         armatureBones_.clear();
         // create bone lists && transforms
         const Blender::Bone* bone = static_cast<const Blender::Bone*>(ar->bonebase.first);
@@ -894,6 +893,7 @@ namespace BlenderConverter
         auto light = parent->CreateChild<Light>(B_IDNAME(obj));
         ExtractGeneral(obj, light);
         Blender::Lamp* la = static_cast<Blender::Lamp*>(obj->data);
+        light->EnableShadows(la->mode & LA_SHAD_BUF || la->mode & LA_SHAD_RAY);
 		if (la->mode & LA_NEG)
 			light->SetEnergy(-la->energy);
 		else 
@@ -920,12 +920,14 @@ namespace BlenderConverter
         const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
         std::string meshName = B_IDNAME(me);
         auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
+		bool meshOk = true;
         if (!mesh)
         {
             mesh = Mesh::GetOrCreate<ModelMesh>(B_IDNAME(me));
-            ConvertMesh(obj, me, mesh);
+			meshOk = ConvertMesh(obj, me, mesh);
         }
-        sceneNode->SetMesh(mesh);
+		if (meshOk)
+			sceneNode->SetMesh(mesh);
         SetMaterial(obj, sceneNode);
         LoadPhysics(obj, sceneNode);
     }
@@ -1114,11 +1116,12 @@ namespace BlenderConverter
         }
     }
 
-    void BScene::ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
+    bool BScene::ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
     {
         CHECK_ASSERT(!me->mface && "Legacy conversion is not allowed", __FILE__, __LINE__);
-        CHECK_ASSERT(me->mvert && me->mpoly, __FILE__, __LINE__);
-
+		if (!me->mvert || !me->mpoly)
+			return false;
+		
         // UV-Layer-Data
         Blender::MLoopUV* muvs[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		char* uvNames[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
@@ -1188,6 +1191,8 @@ namespace BlenderConverter
             else
                 mesh->AddTriangle(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], calcFaceNormal);
         }
+
+		return true;
     }
 
     int BScene::GetUVLayersBMmesh(const Blender::Mesh* mesh, Blender::MLoopUV** uvEightLayerArray, char** uvNames)

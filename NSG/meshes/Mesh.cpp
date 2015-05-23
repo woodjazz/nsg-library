@@ -200,15 +200,15 @@ namespace NSG
             while (vertexNode)
             {
                 VertexData obj;
-                obj.position_ = GetVertex3(vertexNode.attribute("position").as_string());
-                obj.normal_ = GetVertex3(vertexNode.attribute("normal").as_string());
-                obj.uv_[0] = GetVertex2(vertexNode.attribute("uv0").as_string());
-                obj.uv_[1] = GetVertex2(vertexNode.attribute("uv1").as_string());
-                obj.color_ =  GetVertex4(vertexNode.attribute("color").as_string());
+                obj.position_ = ToVertex3(vertexNode.attribute("position").as_string());
+                obj.normal_ = ToVertex3(vertexNode.attribute("normal").as_string());
+                obj.uv_[0] = ToVertex2(vertexNode.attribute("uv0").as_string());
+                obj.uv_[1] = ToVertex2(vertexNode.attribute("uv1").as_string());
+                obj.color_ =  ToVertex4(vertexNode.attribute("color").as_string());
                 // Do not import tangents since they are calculated
-                //obj.tangent_ =  GetVertex3(vertexNode.attribute("tangent").as_string());
-                obj.bonesID_ =  GetVertex4(vertexNode.attribute("bonesID").as_string());
-                obj.bonesWeight_ =  GetVertex4(vertexNode.attribute("bonesWeight").as_string());
+                //obj.tangent_ =  ToVertex3(vertexNode.attribute("tangent").as_string());
+                obj.bonesID_ =  ToVertex4(vertexNode.attribute("bonesID").as_string());
+                obj.bonesWeight_ =  ToVertex4(vertexNode.attribute("bonesWeight").as_string());
                 vertexsData_.push_back(obj);
                 vertexNode = vertexNode.next_sibling("VertexData");
             }
@@ -431,6 +431,15 @@ namespace NSG
         uvNames_[index] = name;
     }
 
+    size_t Mesh::GetMaxPlatformBones(size_t nBones) const
+    {
+        static const size_t MAX_BONES = 64;
+        // set a maximum value per platform to avoid shader variations
+        if(nBones <= MAX_BONES)
+            return MAX_BONES;
+        return nBones;
+    }
+
 	size_t Mesh::FillShaderDefines(std::string& defines)
     {
         if (skeleton_)
@@ -439,7 +448,7 @@ namespace NSG
             auto nBones = bones.size();
             if (nBones)
             {
-                defines += "NUM_BONES " + ToString(nBones) + "\n";
+                defines += "MAX_BONES " + ToString(GetMaxPlatformBones(nBones)) + "\n";
                 defines += "SKINNED\n";
                 return nBones;
             }

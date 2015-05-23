@@ -56,7 +56,7 @@ namespace BlenderConverter
 		void CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent, const Blender::Scene* bscene);
         void CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
         void CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
-		void ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
+		bool ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
 		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray, char** uvNames);
 		void AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
 		void CreateSkeleton(NSG::PScene scene, const Blender::Object* obj);

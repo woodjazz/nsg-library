@@ -1,6 +1,6 @@
 #include "FontAtlas.h"
 #include "Check.h"
-#include "Texture.h"
+#include "Texture2D.h"
 #include "TextMesh.h"
 #include "ResourceFile.h"
 #include "Mesh.h"
@@ -25,7 +25,7 @@ namespace NSG
         Path path(xmlResource->GetName());
         path.SetExtension("png");
         auto textureResource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
-        texture_ = std::make_shared<Texture>(textureResource);
+        texture_ = std::make_shared<Texture2D>(textureResource);
 		texture_->SetMapType(TextureType::COL);
         auto window = Graphics::this_->GetWindow();
         if (window)

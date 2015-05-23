@@ -24,13 +24,15 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <string>
-#include <algorithm>
 #include "Types.h"
 #include "Check.h"
+#include "StringConverter.h"
 #include "LinearMath/btTransform.h"
 #include "LinearMath/btVector3.h"
 #include "LinearMath/btQuaternion.h"
+
+#include <string>
+#include <algorithm>
 
 namespace NSG
 {
@@ -49,27 +51,6 @@ namespace NSG
 	        ret <<= 1;
 	    return ret;
 	}
-	Vertex2 GetVertex2(const std::string& buffer);
-	Vertex3 GetVertex3(const std::string& buffer);
-	Vertex4 GetVertex4(const std::string& buffer);
-	Quaternion GetQuaternion(const std::string& buffer);
-	Matrix4 GetMatrix4(const std::string& buffer);
-
-	std::string ToString(const Vertex2& obj);
-	std::string ToString(const Vertex3& obj);
-	std::string ToString(const Vertex4& obj);
-	std::string ToString(const Quaternion& obj);
-	std::string ToString(const Matrix4& m);
-	std::string ToString(int obj);
-	std::string ToString(size_t obj);
-	const char* ToString(RenderPass obj);
-	const char* ToString(CullFaceMode obj);
-
-    int ToInt(const std::string& value);
-    int ToInt(const char* value);
-    RenderPass ToRenderPass(const char* value);
-    CullFaceMode ToCullFaceMode(const char* value);
-
 	std::string GetUniqueName(const std::string& name = "");
 	void GetPowerOfTwoValues(int& width, int& height);
 	bool IsPowerOfTwo(int value);
@@ -78,5 +59,4 @@ namespace NSG
 	Color Transform(GLushort id);
 	std::string CompressBuffer(const std::string& buf);
 	std::string DecompressBuffer(const std::string& buffer);
-
 }

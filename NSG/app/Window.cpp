@@ -74,9 +74,9 @@ namespace NSG
           signalUnsigned_(new Signal<unsigned int>()),
           signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
           signalDropFile_(new Signal<const std::string & >()),
-		  signalJoystickDown_(new SignalJoystickButton),
-		  signalJoystickUp_(new SignalJoystickButton),
-		  signalJoystickAxisMotion_(new Signal<int, JoystickAxis, float>)
+          signalJoystickDown_(new SignalJoystickButton),
+          signalJoystickUp_(new SignalJoystickButton),
+          signalJoystickAxisMotion_(new Signal<int, JoystickAxis, float>)
 
     {
         CHECK_CONDITION(Window::AllowWindowCreation(), __FILE__, __LINE__);
@@ -114,11 +114,20 @@ namespace NSG
         CHECK_ASSERT(!frameBuffer_, __FILE__, __LINE__);
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
         //frameBufferFlags |= FrameBuffer::STENCIL;
-        frameBuffer_ = std::make_shared<FrameBuffer>("GraphicsFrameBuffer", frameBufferFlags);
+		frameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFrameBuffer"), frameBufferFlags);
         frameBuffer_->SetWindow(this);
-        CHECK_ASSERT(!showFrameBuffer_, __FILE__, __LINE__);
-        showFrameBuffer_ = std::make_shared<ShowTexture>();
-        showFrameBuffer_->SetNormal(frameBuffer_->GetColorTexture());
+        CHECK_ASSERT(!showMap_, __FILE__, __LINE__);
+        showMap_ = std::make_shared<ShowTexture>();
+        showMap_->SetNormal(frameBuffer_->GetColorTexture());
+    }
+
+    void Window::ShowMap(PTexture texture)
+    {
+        showTexture_ = texture;
+        if (texture)
+            showMap_->SetColortexture(texture);
+        else
+            showMap_->SetNormal(frameBuffer_->GetColorTexture());
     }
 
     bool Window::BeginFrameRender()
@@ -127,21 +136,23 @@ namespace NSG
         {
             if (!frameBuffer_->IsReady())
                 return false;
-            Graphics::this_->SetFrameBuffer(frameBuffer_.get());
+			Graphics::this_->SetFrameBuffer(frameBuffer_.get());
         }
         else
-            Graphics::this_->SetFrameBuffer(nullptr);
+			Graphics::this_->SetFrameBuffer(nullptr);
         return true;
     }
 
     void Window::EndFrameRender()
     {
-        if (HasFilters())
-        {
+        auto hasFilters = HasFilters();
+        if (hasFilters)
             for (auto& filter : filters_)
                 filter->Draw();
-            Graphics::this_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
-            showFrameBuffer_->Show();
+        if (hasFilters || showTexture_)
+        {
+			Graphics::this_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
+            showMap_->Show();
         }
     }
 
@@ -151,7 +162,7 @@ namespace NSG
 
         if (Window::mainWindow_ == this)
         {
-			Graphics::this_->ResetCachedState();
+            Graphics::this_->ResetCachedState();
             // destroy other windows
             auto windows = Window::GetWindows();
             for (auto& obj : windows)
@@ -286,8 +297,8 @@ namespace NSG
             blur = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
         else
             blur = std::make_shared<Filter>(name, filters_.back()->GetTexture());
-		blur->GetMaterial()->SetRenderPass(RenderPass::BLUR);
-		blur->GetMaterial()->FlipYTextureCoords(true);
+        blur->GetMaterial()->SetRenderPass(RenderPass::BLUR);
+        blur->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(blur);
         return blur;
     }
@@ -301,22 +312,22 @@ namespace NSG
         if (n > 1)
         {
             blend = std::make_shared<Filter>(name, filters_[n - 2]->GetTexture());
-			auto texture = filters_[n - 1]->GetTexture();
-			texture->SetMapType(TextureType::NORM);
-			blend->GetMaterial()->SetTexture(texture);
+            auto texture = filters_[n - 1]->GetTexture();
+            texture->SetMapType(TextureType::NORM);
+            blend->GetMaterial()->SetTexture(texture);
         }
-		else 
+        else
         {
             blend = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
-			if (n == 1)
-			{
-				auto texture = filters_[0]->GetTexture();
-				texture->SetMapType(TextureType::NORM);
-				blend->GetMaterial()->SetTexture(texture);
-			}
+            if (n == 1)
+            {
+                auto texture = filters_[0]->GetTexture();
+                texture->SetMapType(TextureType::NORM);
+                blend->GetMaterial()->SetTexture(texture);
+            }
         }
-		blend->GetMaterial()->SetRenderPass(RenderPass::BLEND);
-		blend->GetMaterial()->FlipYTextureCoords(true);
+        blend->GetMaterial()->SetRenderPass(RenderPass::BLEND);
+        blend->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(blend);
         return blend;
     }
@@ -329,8 +340,8 @@ namespace NSG
             wave = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
         else
             wave = std::make_shared<Filter>(name, filters_.back()->GetTexture());
-		wave->GetMaterial()->SetRenderPass(RenderPass::WAVE);
-		wave->GetMaterial()->FlipYTextureCoords(true);
+        wave->GetMaterial()->SetRenderPass(RenderPass::WAVE);
+        wave->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(wave);
         return wave;
     }
@@ -339,7 +350,7 @@ namespace NSG
     {
         filter->SetWindow(this);
         filters_.push_back(filter);
-        showFrameBuffer_->SetColortexture(filter->GetTexture());
+        showMap_->SetColortexture(filter->GetTexture());
     }
 
     void Window::EnableFilters(bool enable)
@@ -390,7 +401,7 @@ namespace NSG
 
     void Window::RenderFrame()
     {
-        if(BeginFrameRender())
+        if (BeginFrameRender())
         {
             Renderer::GetPtr()->Render(this, scene_);
             EndFrameRender();

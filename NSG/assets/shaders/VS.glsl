@@ -9,17 +9,24 @@
 	// since it can produce different results and cause z-fighting between passes
 	void main()
 	{
-		#if defined AMBIENT
+		#if defined(AMBIENT)
 
-			gl_Position = GetClipPos();
 			v_color = u_material.color * a_color;
+			gl_Position = GetClipPos();
 			v_texcoord0 = GetTexCoord(a_texcoord0);
-
-			#if defined(AOMAP0) || defined(LIGHTMAP0)
-				v_texcoord0 = GetTexCoord(a_texcoord0);
-			#elif defined(AOMAP1) || defined(LIGHTMAP1)
+			#if defined(AOMAP1) || defined(LIGHTMAP1)
 				v_texcoord1 = GetTexCoord(a_texcoord1);
 			#endif
+
+		#elif defined(SHADOW)
+
+			gl_Position = GetClipPos();
+			v_color = GetClipPos();
+
+		#elif defined(SHADOWCUBE)
+
+			gl_Position = GetClipPos();
+			v_color = GetWorldPos();
 
 		#elif defined(TEXT)
 
@@ -48,7 +55,7 @@
 			vec4 worldPos = GetWorldPos();
 		    vec3 normal = GetWorldNormal();
 		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
-		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);
+		    vec4 totalLight = CalcTotalLight(worldPos.xyz, vertexToEye, normal);
 		    v_color = a_color * totalLight;
 			v_texcoord0 = GetTexCoord(a_texcoord0);
 			gl_Position = GetClipPos();
@@ -66,6 +73,17 @@
 			    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);
 			    v_bitangent = cross(v_tangent, v_normal);
 			    // v_normal, v_tangent and v_bitangent are in world coordinates
+			#endif
+
+			#if defined(SHADOWMAP)
+				const mat4 normalizeMat = mat4(0.5, 0.0, 0.0, 0.0,
+			                              0.0, 0.5, 0.0, 0.0,
+			                              0.0, 0.0, 1.0, 0.0,
+			                              0.5, 0.5, 0.0, 1.0);
+
+				// Normalize texture coords from -1..1 to 0..1
+				v_lightSpacePos = normalizeMat * GetShadowClipPos();
+
 			#endif
 
 			#ifdef HAS_POINT_LIGHT

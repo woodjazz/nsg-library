@@ -26,7 +26,8 @@ misrepresented as being the original software.
 #include "FrameBuffer.h"
 #include "Log.h"
 #include "Check.h"
-#include "Texture.h"
+#include "Texture2D.h"
+#include "TextureCube.h"
 #include "Graphics.h"
 #include "Util.h"
 #include "Window.h"
@@ -41,15 +42,18 @@ namespace NSG
           width_(0),
           height_(0),
           flags_(flags),
-		  colorTexture_(std::make_shared<Texture>(name + "ColorBuffer", GL_RGBA)),
-		  depthTexture_(std::make_shared<Texture>(name + "DepthBuffer", GL_DEPTH_COMPONENT)),
-		  stencilTexture_(std::make_shared<Texture>(name + "StencilBuffer", GL_DEPTH_COMPONENT)),
+          depthTexture_(std::make_shared<Texture2D>(name + "DepthBuffer", GL_DEPTH_COMPONENT)),
+          stencilTexture_(std::make_shared<Texture2D>(name + "StencilBuffer", GL_DEPTH_COMPONENT)),
           framebuffer_(0),
           colorRenderbuffer_(0),
           depthStencilRenderBuffer_(0),
           stencilRenderBuffer_(0),
           window_(nullptr)
     {
+        if (Flag::COLOR_CUBE_TEXTURE & flags_)
+            colorTexture_ = std::make_shared<TextureCube>(name + "ColorCubeBuffer", GL_RGBA);
+        else
+            colorTexture_ = std::make_shared<Texture2D>(name + "ColorBuffer", GL_RGBA);
     }
 
     FrameBuffer::~FrameBuffer()
@@ -107,6 +111,14 @@ namespace NSG
         return (!(flags_ & Flag::COLOR_USE_TEXTURE) || colorTexture_->IsReady()) && (!(flags_ & Flag::DEPTH_USE_TEXTURE) || depthTexture_->IsReady());
     }
 
+    TextureTarget FrameBuffer::GetDefaultTextureTarget() const
+    {
+        if (Flag::COLOR_CUBE_TEXTURE & flags_)
+            return TextureTarget::TEXTURE_CUBE_MAP_POSITIVE_X;
+        else
+            return TextureTarget::TEXTURE_2D;
+    }
+
     void FrameBuffer::AllocateResources()
     {
         TRACE_PRINTF("Framebuffer width=%d, height=%d", width_, height_);
@@ -114,70 +126,37 @@ namespace NSG
 
         glGenFramebuffers(1, &framebuffer_);
 
-        Graphics::this_->SetFrameBuffer(this);
+        Graphics::this_->SetFrameBuffer(this, GetDefaultTextureTarget());
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        if (flags_ & Flag::COLOR)
+        if (flags_ & Flag::COLOR && !(flags_ & Flag::COLOR_USE_TEXTURE))
         {
-            if (flags_ & Flag::COLOR_USE_TEXTURE)
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture_->GetID(), 0);
-            else
+            glGenRenderbuffers(1, &colorRenderbuffer_);
+            glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
+            #if defined(GLES2)
             {
-                glGenRenderbuffers(1, &colorRenderbuffer_);
-                glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
-                #if defined(GLES2)
-                {
-                    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width_, height_);
-                }
-                #else
-                {
-                    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width_, height_);
-                }
-                #endif
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width_, height_);
             }
+            #else
+            {
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width_, height_);
+            }
+            #endif
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
         }
 
-        if (flags_ & Flag::DEPTH)
+        if (flags_ & Flag::DEPTH && !(flags_ & Flag::DEPTH_USE_TEXTURE))
         {
-            if (flags_ & Flag::DEPTH_USE_TEXTURE)
+            glGenRenderbuffers(1, &depthStencilRenderBuffer_);
+            glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
+            if (flags_ & Flag::STENCIL)
             {
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
-                if (flags_ & Flag::STENCIL)
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, stencilTexture_->GetID(), 0);
-            }
-            else
-            {
-                glGenRenderbuffers(1, &depthStencilRenderBuffer_);
-                glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
-                if (flags_ & Flag::STENCIL)
+                if (Graphics::this_->HasPackedDepthStencil())
                 {
-                    if (Graphics::this_->HasPackedDepthStencil())
-                    {
-                        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
-                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-                    }
-                    else
-                    {
-                        if (Graphics::this_->HasDepthComponent24())
-                        {
-                            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
-                            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-                        }
-                        else
-                        {
-                            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
-                            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-                        }
-
-                        glGenRenderbuffers(1, &stencilRenderBuffer_);
-                        glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderBuffer_);
-
-                        glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width_, height_);
-                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRenderBuffer_);
-                    }
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                 }
                 else
                 {
@@ -191,6 +170,25 @@ namespace NSG
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                     }
+
+                    glGenRenderbuffers(1, &stencilRenderBuffer_);
+                    glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderBuffer_);
+
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width_, height_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRenderBuffer_);
+                }
+            }
+            else
+            {
+                if (Graphics::this_->HasDepthComponent24())
+                {
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                }
+                else
+                {
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                 }
             }
         }
@@ -198,7 +196,7 @@ namespace NSG
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (GL_FRAMEBUFFER_COMPLETE != status)
         {
-			TRACE_PRINTF("Frame buffer failed with error = 0x%x in file = %s line = %d", status, __FILE__, __LINE__);
+            TRACE_PRINTF("Frame buffer failed with error = 0x%x in file = %s line = %d", status, __FILE__, __LINE__);
             CHECK_ASSERT(!"Frame buffer failed", __FILE__, __LINE__);
         }
 
@@ -294,5 +292,23 @@ namespace NSG
             depthTexture_ = texture;
             Invalidate();
         }
+    }
+
+    void FrameBuffer::AttachTarget(TextureTarget colorTexTarget)
+    {
+        if (flags_ & Flag::COLOR_USE_TEXTURE)
+        {
+            CHECK_ASSERT(colorTexTarget != TextureTarget::UNKNOWN, __FILE__, __LINE__);
+            CHECK_ASSERT(this == Graphics::this_->GetFrameBuffer(), __FILE__, __LINE__);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLenum)colorTexTarget, colorTexture_->GetID(), 0);
+        }
+
+        if (flags_ & Flag::DEPTH_USE_TEXTURE)
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture_->GetID(), 0);
+            if (flags_ & Flag::STENCIL)
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, stencilTexture_->GetID(), 0);
+        }
+
     }
 }

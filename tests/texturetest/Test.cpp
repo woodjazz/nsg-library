@@ -33,7 +33,7 @@ static void Test01()
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
     auto resource = Resource::GetOrCreate<ResourceFile>("data/stonediffuse.dds");
-    auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+    auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
 	material->SetRenderPass(RenderPass::UNLIT);
@@ -51,7 +51,7 @@ static void Test02()
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
     auto resource = Resource::GetOrCreate<ResourceFile>("data/tex_etc1.ktx");
-    auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+    auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
 	material->SetRenderPass(RenderPass::UNLIT);
@@ -69,7 +69,7 @@ static void Test03()
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
     auto resource = Resource::GetOrCreate<ResourceFile>("data/tex_pvr.pvr");
-    auto texture = std::make_shared<Texture>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+    auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
 	material->SetRenderPass(RenderPass::UNLIT);

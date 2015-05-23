@@ -8,7 +8,13 @@ static const char* FS_GLSL = \
 "	{\n"\
 "		#if defined(AMBIENT)\n"\
 "			\n"\
-"			gl_FragColor = GetAmbientLight();\n"\
+"			gl_FragColor = v_color * GetAmbientLight();\n"\
+"		#elif defined(SHADOW)\n"\
+"			gl_FragColor = vec4(EncodeDepth2Color(v_color.z), 1.0);\n"\
+"		#elif defined(SHADOWCUBE)\n"\
+"			vec3 lightToVertex = vec3(v_color) - u_eyeWorldPos;\n"\
+"    		float lightToPixelDistance = clamp(length(lightToVertex) * u_pointLight.invRange, 0.0, 1.0);\n"\
+"    		gl_FragColor = vec4(EncodeDepth2Color(lightToPixelDistance), 1.0);\n"\
 "		#elif defined(TEXT)\n"\
 "			gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).a);\n"\
 "		#elif defined(BLEND)\n"\
@@ -45,7 +51,7 @@ static const char* FS_GLSL = \
 "				vec3 normal = normalize(v_normal);\n"\
 "			#endif\n"\
 "    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
-"    		vec4 totalLight = CalcFSTotalLight(vertexToEye, normal);\n"\
+"    		vec4 totalLight = CalcTotalLight(vertexToEye, normal);\n"\
 "			#ifdef DIFFUSEMAP\n"\
 "	    		gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord0);\n"\
 "	    	#else\n"\

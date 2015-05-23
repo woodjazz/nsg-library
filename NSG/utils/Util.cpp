@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "Path.h"
 #include "pugixml.hpp"
 #include "lz4.h"
-#include <string>
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -103,111 +102,6 @@ namespace NSG
             scale = Vector3(1);
     }
 
-    Vertex2 GetVertex2(const std::string& buffer)
-    {
-        Vertex2 obj;
-        sscanf(buffer.c_str(), "[%f,%f]", &obj.x, &obj.y);
-        return obj;
-    }
-
-    Vertex3 GetVertex3(const std::string& buffer)
-    {
-        Vertex3 obj;
-        sscanf(buffer.c_str(), "[%f,%f,%f]", &obj.x, &obj.y, &obj.z);
-        return obj;
-    }
-
-    Vertex4 GetVertex4(const std::string& buffer)
-    {
-        Vertex4 obj;
-        sscanf(buffer.c_str(), "[%f,%f,%f,%f]", &obj.x, &obj.y, &obj.z, &obj.w);
-        return obj;
-    }
-
-    Quaternion GetQuaternion(const std::string& buffer)
-    {
-        Quaternion obj;
-        sscanf(buffer.c_str(), "[%f,%f,%f,%f]", &obj.w, &obj.x, &obj.y, &obj.z);
-        return obj;
-    }
-
-    Matrix4 GetMatrix4(const std::string& buffer)
-    {
-        const int MaxBuffer = 100;
-        char buffer0[MaxBuffer];
-        char buffer1[MaxBuffer];
-        char buffer2[MaxBuffer];
-        char buffer3[MaxBuffer];
-        sscanf(buffer.c_str(), "[ %s %s %s %s ]", buffer0, buffer1, buffer2, buffer3);
-        return Matrix4(GetVertex4(buffer0), GetVertex4(buffer1), GetVertex4(buffer2), GetVertex4(buffer3));
-    }
-
-    std::string ToString(const Vertex2& obj)
-    {
-        using namespace std;
-        const int MaxBuffer = 100;
-        char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f]", obj.x, obj.y);
-        return buffer;
-    }
-
-    std::string ToString(const Vertex3& obj)
-    {
-        using namespace std;
-        const int MaxBuffer = 100;
-        char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f,%f]", obj.x, obj.y, obj.z);
-        return buffer;
-    }
-
-    std::string ToString(const Vertex4& obj)
-    {
-        using namespace std;
-        const int MaxBuffer = 100;
-        char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f,%f,%f]", obj.x, obj.y, obj.z, obj.w);
-        return buffer;
-    }
-
-    std::string ToString(const Quaternion& obj)
-    {
-        using namespace std;
-        const int MaxBuffer = 100;
-        char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f,%f,%f]", obj.w, obj.x, obj.y, obj.z);
-        return buffer;
-    }
-
-    std::string ToString(const Matrix4& m)
-    {
-        using namespace std;
-        const int MaxBuffer = 400;
-        char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[ %s %s %s %s ]", ToString(glm::column(m, 0)).c_str(), ToString(glm::column(m, 1)).c_str(), ToString(glm::column(m, 2)).c_str(), ToString(glm::column(m, 3)).c_str());
-        return buffer;
-    }
-
-    std::string ToString(int obj)
-    {
-        using namespace std;
-        const int MaxBuffer = 50;
-        char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "%d", obj);
-        return buffer;
-    }
-
-    std::string ToString(size_t obj)
-    {
-        using namespace std;
-        const int MaxBuffer = 50;
-        char buffer[MaxBuffer];
-        #if !defined(WIN32)
-        snprintf(buffer, MaxBuffer, "%u", obj);
-        #else
-        snprintf(buffer, MaxBuffer, "%lu", obj);
-        #endif
-        return buffer;
-    }
 
     std::string GetUniqueName(const std::string& name)
     {
@@ -309,70 +203,6 @@ namespace NSG
     }
     #endif
 
-    int ToInt(const std::string& value)
-    {
-        return ToInt(value.c_str());
-    }
 
-    int ToInt(const char* value)
-    {
-        if (!value)
-            return 0;
-        return strtol(value, 0, 10);
-    }
 
-    static const char* RenderPassStr[] =
-    {
-        "VERTEXCOLOR",
-        "UNLIT",
-        "PERVERTEX", 
-        "PERPIXEL", 
-        "TEXT", 
-        "BLEND", 
-        "BLUR", 
-        "WAVE", 
-        "SHOW_TEXTURE0"
-    };
-
-    const char* ToString(RenderPass obj)
-    {
-        auto idx = (int)obj;
-        CHECK_ASSERT(idx >= 0 && idx < sizeof(RenderPassStr)/sizeof(char*), __FILE__, __LINE__);
-		return RenderPassStr[idx];
-    }
-
-    RenderPass ToRenderPass(const char* value)
-    {
-        auto n = sizeof(RenderPassStr)/sizeof(char*);
-        for(int i=0; i<n; i++)
-            if(strcmp(RenderPassStr[i], value) == 0)
-                return (RenderPass)i;
-        CHECK_ASSERT(!"Failed to translate RenderPass string!!!", __FILE__, __LINE__);
-        return RenderPass::VERTEXCOLOR;
-    }
-
-    static const char* CullFaceModeStr[] =
-    {
-        "BACK",
-        "FRONT",
-        "FRONT_AND_BACK", 
-        "DISABLED"
-    };
-
-    const char* ToString(CullFaceMode obj)
-    {
-        auto idx = (int)obj;
-        CHECK_ASSERT(idx >= 0 && idx < sizeof(CullFaceModeStr)/sizeof(char*), __FILE__, __LINE__);
-        return CullFaceModeStr[idx];
-    }
-
-    CullFaceMode ToCullFaceMode(const char* value)
-    {
-        auto n = sizeof(CullFaceModeStr)/sizeof(char*);
-        for(int i=0; i<n; i++)
-            if(strcmp(CullFaceModeStr[i], value) == 0)
-                return (CullFaceMode)i;
-        CHECK_ASSERT(!"Failed to translate CullFaceMode string!!!", __FILE__, __LINE__);
-        return CullFaceMode::DEFAULT;
-    }
 }

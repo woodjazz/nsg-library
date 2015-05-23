@@ -102,6 +102,7 @@ namespace NSG
         void ReleaseResources() override;
         void CalculateTangents();
         Mesh(const std::string& name, bool dynamic = false);
+        size_t GetMaxPlatformBones(size_t nBones) const;
     protected:
         VertexsData vertexsData_;
         Indexes indexes_; //for solid object

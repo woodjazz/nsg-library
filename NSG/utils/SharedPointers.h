@@ -141,6 +141,10 @@ namespace NSG
     class Texture;
     typedef std::shared_ptr<Texture> PTexture;
 
+    class Texture2D;
+    typedef std::shared_ptr<Texture2D> PTexture2D;
+    
+
     class Material;
     typedef std::shared_ptr<Material> PMaterial;
     typedef std::weak_ptr<Material> PWeakMaterial;

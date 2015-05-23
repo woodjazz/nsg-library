@@ -225,6 +225,13 @@ namespace NSG
             TRACE_PRINTF("Using extension: GL_OES_depth_texture");
         }
 
+		if (CheckExtension("GL_ARB_depth_texture"))
+		{
+			has_depth_texture_ext_ = true;
+			TRACE_PRINTF("Using extension: GL_ARB_depth_texture");
+		}
+
+
         if (CheckExtension("GL_OES_depth24"))
         {
             has_depth_component24_ext_ = true;
@@ -424,15 +431,35 @@ namespace NSG
             SetTexture(i, nullptr);
     }
 
-    void Graphics::SetFrameBuffer(FrameBuffer* buffer)
+	void Graphics::SetFrameBuffer(FrameBuffer* buffer)
+	{
+		if (buffer != currentFbo_)
+		{
+			currentFbo_ = buffer;
+			if (buffer == nullptr)
+				glBindFramebuffer(GL_FRAMEBUFFER, systemFbo_);
+			else
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
+				buffer->AttachTarget(buffer->GetDefaultTextureTarget());
+			}
+			SetUpViewport();
+		}
+	}
+
+
+    void Graphics::SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget)
     {
         if (buffer != currentFbo_)
         {
+            currentFbo_ = buffer;
             if (buffer == nullptr)
                 glBindFramebuffer(GL_FRAMEBUFFER, systemFbo_);
             else
+            {
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
-            currentFbo_ = buffer;
+                buffer->AttachTarget(colorTarget);
+            }
             SetUpViewport();
         }
     }
@@ -770,13 +797,13 @@ namespace NSG
             {
                 glActiveTexture(GL_TEXTURE0 + index);
                 textures_[index] = texture;
-                glBindTexture(GL_TEXTURE_2D, texture->GetID());
+                glBindTexture(texture->GetTarget(), texture->GetID());
                 activeTexture_ = index;
             }
             else if (textures_[index] != texture)
             {
                 textures_[index] = texture;
-                glBindTexture(GL_TEXTURE_2D, texture->GetID());
+                glBindTexture(texture->GetTarget(), texture->GetID());
             }
         }
         else
@@ -785,7 +812,7 @@ namespace NSG
             {
                 glActiveTexture(GL_TEXTURE0); //default
                 activeTexture_ = 0;
-                glBindTexture(GL_TEXTURE_2D, 0);
+				glBindTexture(textures_[index]->GetTarget(), 0);
             }
 
             textures_[index] = nullptr;
@@ -1236,7 +1263,7 @@ namespace NSG
         }
     }
 
-    void Graphics::SetupPass(Pass* pass, SceneNode* sceneNode, Material* material, Light* light)
+    bool Graphics::SetupPass(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light)
     {
         CHECK_ASSERT(pass, __FILE__, __LINE__);
 
@@ -1257,6 +1284,8 @@ namespace NSG
             SetDepthFunc(data.depthFunc_);
         }
 
+        auto shadowPass = PassType::SHADOW == pass->GetType();
+        //auto cullFaceMode = shadowPass ? CullFaceMode::FRONT : material->GetCullFaceMode();
         auto cullFaceMode = material->GetCullFaceMode();
         if (cullFaceMode != CullFaceMode::DISABLED)
         {
@@ -1272,22 +1301,25 @@ namespace NSG
         program->Set(sceneNode);
         program->Set(material);
 		program->Set(light);
-        CHECK_CONDITION(SetProgram(program.get()), __FILE__, __LINE__);
-        program->SetVariables();
+		bool ready = SetProgram(program.get());
+		if (ready)
+			program->SetVariables(shadowPass);
         CHECK_GL_STATUS(__FILE__, __LINE__);
+		return ready;
     }
 
-    PProgram Graphics::GetOrCreateProgram(Pass* pass, Mesh* mesh, Material* material, Light* light)
+    PProgram Graphics::GetOrCreateProgram(const Pass* pass, Mesh* mesh, Material* material, const Light* light)
     {
         std::string defines;
-		material->FillShaderDefines(defines, pass->GetType(), light, mesh);
+        auto passType = pass->GetType();
+		material->FillShaderDefines(defines, passType, light, mesh);
 		size_t nBones = 0;
 
 		if(mesh)
 			nBones = mesh->FillShaderDefines(defines);
 
         if (light)
-            light->FillShaderDefines(defines);
+            light->FillShaderDefines(defines, passType);
 
         PProgram program;
         auto it = programs_.find(defines);
@@ -1304,7 +1336,7 @@ namespace NSG
         return program;
     }
 
-    void Graphics::DrawActiveMesh(Pass* pass)
+    void Graphics::DrawActiveMesh()
     {
         if (!activeMesh_->IsReady())
             return;
@@ -1331,7 +1363,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
-    void Graphics::DrawInstancedActiveMesh(Pass* pass, const Batch& batch)
+    void Graphics::DrawInstancedActiveMesh(const Batch& batch)
     {
         CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
 

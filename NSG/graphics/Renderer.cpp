@@ -33,6 +33,8 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Node.h"
 #include "Program.h"
+#include "FrameBuffer.h"
+#include "Window.h"
 
 namespace NSG
 {
@@ -42,10 +44,26 @@ namespace NSG
         : graphics_(graphics),
           window_(nullptr),
           scene_(nullptr),
-          camera_(nullptr)
+          camera_(nullptr),
+          ambientPass_(std::make_shared<Pass>()),
+          lightPass_(std::make_shared<Pass>()),
+          transparentPass_(std::make_shared<Pass>()),
+          shadowPass_(std::make_shared<Pass>())
     {
+
         CHECK_ASSERT(!Renderer::this_, __FILE__, __LINE__);
         Renderer::this_ = this;
+
+        ambientPass_->SetType(PassType::AMBIENT);
+
+        lightPass_->EnableDepthBuffer(false);
+        lightPass_->SetBlendMode(BLEND_MODE::ADDITIVE);
+        lightPass_->SetDepthFunc(DepthFunc::LEQUAL);
+
+        transparentPass_->EnableDepthBuffer(false);
+        transparentPass_->SetBlendMode(BLEND_MODE::ALPHA);
+
+        shadowPass_->SetType(PassType::SHADOW);
     }
 
     Renderer::~Renderer()
@@ -88,11 +106,19 @@ namespace NSG
     }
 
 
-    void Renderer::GetVisibleFromLight(const Light* light, std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
+    void Renderer::GetVisibleFromLight(const Light* light, const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
     {
         CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
         for (auto& node : nodes)
             if (light->IsVisible(node))
+                result.push_back(node);
+    }
+
+    void Renderer::GetVisiblesFromCurrentLightFace(const Light* light, const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
+    {
+        CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
+        for (auto& node : nodes)
+            if (light->IsVisibleFromCurrentLightFace(node))
                 result.push_back(node);
     }
 
@@ -149,7 +175,7 @@ namespace NSG
         for (auto& node : visibles)
         {
             PMaterial material = node->GetMaterial();
-            if (!material) 
+            if (!material)
                 continue;
             auto mesh = node->GetMesh();
             if (usedMaterial != material)
@@ -197,24 +223,137 @@ namespace NSG
         }
     }
 
-    void Renderer::Draw(Batch* batch, Pass* pass, Light* light)
+    void Renderer::Draw(Batch* batch, const Pass* pass, const Light* light)
     {
         graphics_->SetMesh(batch->GetMesh());
-        if (batch->AllowInstancing())
+        if (graphics_->SetupPass(pass, nullptr, batch->GetMaterial(), light))
         {
-            graphics_->SetupPass(pass, nullptr, batch->GetMaterial(), light);
-            graphics_->DrawInstancedActiveMesh(pass, *batch);
-        }
-        else
-        {
-            graphics_->SetupPass(pass, nullptr, batch->GetMaterial(), light);
-            auto& nodes = batch->GetNodes();
-            for (auto& node : nodes)
+            if (batch->AllowInstancing())
+                graphics_->DrawInstancedActiveMesh(*batch);
+            else
             {
-                auto program = graphics_->GetProgram();
-                program->Set(node);
-                program->SetNodeVariables();
-                graphics_->DrawActiveMesh(pass);
+                auto& nodes = batch->GetNodes();
+                for (auto& node : nodes)
+                {
+                    auto program = graphics_->GetProgram();
+                    program->Set(node);
+                    program->SetNodeVariables();
+                    graphics_->DrawActiveMesh();
+                }
+            }
+        }
+    }
+
+    void Renderer::GenerateShadowMap(const Light* light, const std::vector<PBatch>& batches)
+    {
+        auto frameBuffer = Graphics::this_->GetFrameBuffer();
+        auto shadowFrameBuffer = light->GetShadowFrameBuffer();
+        shadowFrameBuffer->SetSize(window_->GetWidth(), window_->GetHeight());
+        if (shadowFrameBuffer->IsReady())
+        {
+			graphics_->SetFrameBuffer(shadowFrameBuffer);
+            graphics_->ClearBuffers(true, true, false);
+            for (auto& batch : batches)
+                if (batch->GetMaterial()->CastShadow())
+                    Draw(batch.get(), shadowPass_.get(), light);
+            graphics_->SetFrameBuffer(frameBuffer);
+        }
+    }
+
+    void Renderer::GenerateCubeShadowMap(Light* light, const std::vector<SceneNode*>& visiblesFromLight)
+    {
+        auto frameBuffer = Graphics::this_->GetFrameBuffer();
+        auto shadowFrameBuffer = light->GetShadowFrameBuffer();
+        shadowFrameBuffer->SetSize(window_->GetWidth(), window_->GetHeight());
+        if (shadowFrameBuffer->IsReady())
+        {
+            for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++)
+            {
+                TextureTarget face = (TextureTarget)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+                light->SetCurrentCubeShadowMapFace(face);
+                std::vector<SceneNode*> visiblesFromLightFace;
+                GetVisiblesFromCurrentLightFace(light, visiblesFromLight, visiblesFromLightFace);
+                std::vector<PBatch> batches;         
+                GenerateBatches(visiblesFromLightFace, batches);
+                graphics_->SetFrameBuffer(shadowFrameBuffer, face);
+                graphics_->ClearBuffers(true, true, false);
+                for (auto& batch : batches)
+                    if (batch->GetMaterial()->CastShadow())
+                        Draw(batch.get(), shadowPass_.get(), light);
+            }
+            graphics_->SetFrameBuffer(frameBuffer);
+        }
+    }
+
+    void Renderer::RenderOpaqueNodes(std::vector<SceneNode*>& opaques)
+    {
+        if (opaques.empty())
+            return;
+
+        SortFrontToBack(opaques);
+        std::vector<PBatch> batches;
+        GenerateBatches(opaques, batches);
+
+        std::vector<SceneNode*> lightedAndOpaque;
+        ExtractLighted(opaques, lightedAndOpaque);
+
+        std::map<const Light*, std::vector<PBatch>> lightLitBatches;
+
+        if (!lightedAndOpaque.empty())
+        {
+            auto lights = scene_->GetLights();
+            for (auto light : lights)
+            {
+                std::vector<SceneNode*> visiblesFromLight;
+                GetVisibleFromLight(light, lightedAndOpaque, visiblesFromLight);
+                if (!visiblesFromLight.empty())
+                {
+                    std::vector<PBatch>& litBatches = lightLitBatches[light];
+                    // Generate lit batches
+                    GenerateBatches(visiblesFromLight, litBatches);
+
+                    if(light->DoShadows())
+                    {
+                        // Generate shadow maps
+                        if(light->GetType() == LightType::POINT)
+                            GenerateCubeShadowMap((Light*)light, visiblesFromLight);
+                        else
+                            GenerateShadowMap(light, litBatches);
+                    }
+                }
+            }
+        }
+
+        // Ambient pass
+        for (auto& batch : batches)
+            Draw(batch.get(), ambientPass_.get(), nullptr);
+
+        // Per light pass
+        for (auto lightBatches : lightLitBatches)
+        {
+            auto light = lightBatches.first;
+            std::vector<PBatch>& litBatches = lightBatches.second;
+            for (auto& batch : litBatches)
+                Draw(batch.get(), lightPass_.get(), light);
+        }
+    }
+
+    void Renderer::RenderTransparentNodes(std::vector<SceneNode*>& transparent)
+    {
+        if (transparent.empty())
+            return;
+
+        // Transparent nodes cannot be batched
+        SortBackToFront(transparent);
+        for (auto& node : transparent)
+        {
+            auto sceneNode = (SceneNode*)node;
+            auto material = sceneNode->GetMaterial().get();
+            if (material)
+            {
+                graphics_->SetMesh(sceneNode->GetMesh().get());
+                if (graphics_->SetupPass(transparentPass_.get(), sceneNode, material, nullptr))
+                    graphics_->DrawActiveMesh();
             }
         }
     }
@@ -224,70 +363,8 @@ namespace NSG
     {
         std::vector<SceneNode*> transparent;
         ExtractTransparent(visibles, transparent);
-        std::vector<SceneNode*> lightedAndOpaque;
-        ExtractLighted(visibles, lightedAndOpaque);
-        if (!lightedAndOpaque.empty())
-        {
-            // Draw lighted opaque objects
-			SortFrontToBack(lightedAndOpaque);
-            std::vector<PBatch> batches;
-            GenerateBatches(lightedAndOpaque, batches);
-            Pass pass;
-            pass.SetType(PassType::AMBIENT);
-            for (auto& batch : batches)
-                Draw(batch.get(), &pass, nullptr);
-			auto lights = scene_->GetLights();
-			if (!lights.empty())
-			{
-				pass.SetType(PassType::DEFAULT);
-				pass.SetBlendMode(BLEND_MODE::ADDITIVE);
-				pass.SetDepthFunc(DepthFunc::LEQUAL);
-				//pass.EnableDepthBuffer(false);
-				for (auto light : lights)
-                {
-                    std::vector<SceneNode*> visiblesFromLight;
-                    GetVisibleFromLight(light, lightedAndOpaque, visiblesFromLight);
-                    std::vector<PBatch> batches;
-                    GenerateBatches(visiblesFromLight, batches);
-					for (auto& batch : batches)
-						Draw(batch.get(), &pass, light);
-                }
-			}
-        }
-
-		if (!visibles.empty())
-		{
-			// Draw unlit opaque objects
-			SortFrontToBack(visibles);
-			Pass pass;
-			pass.SetType(PassType::DEFAULT);
-			pass.SetBlendMode(BLEND_MODE::ADDITIVE);
-			std::vector<PBatch> batches;
-			GenerateBatches(visibles, batches);
-			for (auto& batch : batches)
-				Draw(batch.get(), &pass, nullptr);
-		}
-
-        if (!transparent.empty())
-        {
-			// Draw transparent objects
-			Pass pass;
-            pass.EnableDepthBuffer(false);
-            pass.SetBlendMode(BLEND_MODE::ALPHA);
-            // Transparent nodes cannot be batched
-            SortBackToFront(transparent);
-            for (auto& node : transparent)
-            {
-                auto sceneNode = (SceneNode*)node;
-                auto material = sceneNode->GetMaterial().get();
-                if (material)
-                {
-                    graphics_->SetMesh(sceneNode->GetMesh().get());
-                    graphics_->SetupPass(&pass, sceneNode, material, nullptr);
-                    graphics_->DrawActiveMesh(&pass);
-                }
-            }
-        }
+        RenderOpaqueNodes(visibles);
+        RenderTransparentNodes(transparent);
     }
 
     void Renderer::Render(Window* window, Scene* scene)
@@ -296,19 +373,16 @@ namespace NSG
         scene_ = scene;
         graphics_->SetWindow(window);
         graphics_->ClearAllBuffers();
-        if (scene)
-        {
-            graphics_->SetScene(scene);
-            if (scene->GetDrawablesNumber())
-            {
-                camera_ = scene->GetMainCamera().get();
-                graphics_->SetCamera(camera_);
-                std::vector<SceneNode*> visibles;
-                scene->GetVisibleNodes(camera_, visibles);
-                if (!visibles.empty())
-                    RenderVisibleSceneNodes(visibles);
-            }
-        }
-    }
 
+        if (!scene || scene->GetDrawablesNumber() == 0)
+            return;
+
+        graphics_->SetScene(scene);
+        camera_ = scene->GetMainCamera().get();
+        graphics_->SetCamera(camera_);
+        std::vector<SceneNode*> visibles;
+        scene->GetVisibleNodes(camera_, visibles);
+        if (!visibles.empty())
+            RenderVisibleSceneNodes(visibles);
+    }
 }

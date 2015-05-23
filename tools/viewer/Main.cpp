@@ -53,11 +53,14 @@ int NSG_MAIN(int argc, char* argv[])
 				bscene.GenerateXML(doc);
 			}
 			data = std::make_shared<AppData>(doc);
-			auto scene = data->scenes_.at(0);
-			camera = scene->GetMainCamera();
-			if (!camera)
-				camera = scene->CreateChild<Camera>();
-			//control = std::make_shared<CameraControl>(camera);
+			if (!data->scenes_.empty())
+			{
+				auto scene = data->scenes_.at(0);
+				camera = scene->GetMainCamera();
+				if (!camera)
+					camera = scene->CreateChild<Camera>();
+				control = std::make_shared<CameraControl>(camera);
+			}
 		}
     };
 

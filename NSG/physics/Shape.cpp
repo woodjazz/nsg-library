@@ -215,16 +215,16 @@ namespace NSG
 
     void Shape::Load(const pugi::xml_node& node)
     {
-        type_ = (PhysicsShape)node.attribute("type").as_int();
+        type_ = ToPhysicsShape(node.attribute("type").as_string());
         margin_ = node.attribute("margin").as_float();
-        scale_ = GetVertex3(node.attribute("scale").as_string());
+        scale_ = ToVertex3(node.attribute("scale").as_string());
         Invalidate();
     }
 
     void Shape::Save(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Shape");
-        child.append_attribute("type").set_value((int)type_);
+        child.append_attribute("type").set_value(ToString(type_));
         child.append_attribute("margin").set_value(margin_);
 		child.append_attribute("scale").set_value(ToString(scale_).c_str());
     }

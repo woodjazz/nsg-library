@@ -494,18 +494,18 @@ namespace NSG
     {
         name_ = node.attribute("name").as_string();
 
-        Vertex3 position = GetVertex3(node.attribute("position").as_string());
+        Vertex3 position = ToVertex3(node.attribute("position").as_string());
         SetPosition(position);
 
         fovy_ = node.attribute("fovy").as_float();
         zNear_ = node.attribute("zNear").as_float();
         zFar_ = node.attribute("zFar").as_float();
-        viewportFactor_ = GetVertex4(node.attribute("viewportFactor").as_string());
+        viewportFactor_ = ToVertex4(node.attribute("viewportFactor").as_string());
         isOrtho_ = node.attribute("isOrtho").as_bool();
         orthoScale_ = node.attribute("orthoScale").as_float();
         sensorFit_ = (CameraSensorFit)node.attribute("sensorFit").as_int();
 
-        Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
+        Quaternion orientation = ToQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
         LoadChildren(node);
 

@@ -34,5 +34,26 @@ int NSG_MAIN(int argc, char* argv[])
 	auto scene = data.scenes_.at(0);
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);
-	return Engine().Run();
+	auto point1Light = scene->GetLights()[0];
+	auto point2Light = scene->GetLights()[1];
+	auto spotLight = scene->GetLights()[2];
+	auto dir = spotLight->GetLookAtDirection();
+
+	Engine engine;
+#if 1
+	auto updateSlot = engine.SigUpdate()->Connect([&](float deltaTime)
+	{
+		auto pos = spotLight->GetGlobalPosition();
+		//spotLight->SetGlobalPosition(pos - Vector3(deltaTime) * dir);
+
+		auto pos1 = point2Light->GetGlobalPosition();
+		//point2Light->SetGlobalPosition(pos1 + Vector3(0, deltaTime, 0));
+	});
+#else
+	//auto pos = spotLight->GetGlobalPosition();
+	//spotLight->SetGlobalPosition(pos - Vector3(2) * dir);
+
+#endif
+	//window->ShowMap(point1Light->GetShadowMap());
+	return engine.Run();
 }

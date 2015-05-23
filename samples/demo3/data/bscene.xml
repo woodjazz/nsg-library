@@ -6,7 +6,7 @@
 	<Sounds />
 	<Meshes>
 		<Mesh name="Cube" wireFrameDrawMode="1" solidDrawMode="4" uv0Name="UVMap0" uv1Name="UVMap1">
-			<Shape type="7" margin="0.06" scale="[1.000000,1.000000,1.000000]" />
+			<Shape type="SH_TRIMESH" margin="0.06" scale="[1.000000,1.000000,1.000000]" />
 			<Vertexes>
 				<VertexData position="[-0.750000,-0.750000,-1.000000]" normal="[-0.321114,-0.321114,-0.747891]" uv0="[0.079314,1.037012]" uv1="[0.706939,0.051994]" color="[1.000000,1.000000,1.000000,1.000000]" bonesID="[0.000000,0.000000,0.000000,0.000000]" bonesWeight="[0.000000,0.000000,0.000000,0.000000]" />
 				<VertexData position="[-0.750000,-1.000000,-1.000000]" normal="[-0.321114,-0.321114,-0.747891]" uv0="[0.079314,1.074606]" uv1="[0.669731,0.051994]" color="[1.000000,1.000000,1.000000,1.000000]" bonesID="[0.000000,0.000000,0.000000,0.000000]" bonesWeight="[0.000000,0.000000,0.000000,0.000000]" />
@@ -1757,13 +1757,13 @@
 		</Mesh>
 	</Meshes>
 	<Materials>
-		<Material name="Material" shadeless="false" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.640000,0.640000,0.640000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="0" blendMode="0" renderPass="PERPIXEL">
-			<Texture4 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/AO.png" uvName="UVMap1" blend="1" type="13" blendType="MIX" mapType="AMB" />
+		<Material name="Material" shadeless="false" castShadow="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.640000,0.640000,0.640000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL">
+			<Texture4 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/AO.png" uvName="UVMap1" blendType="MIX" mapType="AMB" />
 		</Material>
 	</Materials>
 	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="Camera">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
-			<SceneNode name="Point" nodeType="Light" type="0" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[1.980730,0.128676,2.243989]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" />
+			<SceneNode name="Point" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[1.980730,0.128676,2.243989]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" shadows="true" />
 			<SceneNode name="Cube" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material" meshName="Cube">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />
 			</SceneNode>

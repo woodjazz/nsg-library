@@ -2,7 +2,7 @@
 #include "Mesh.h"
 #include "Check.h"
 #include "Camera.h"
-#include "Texture.h"
+#include "Texture2D.h"
 #include "Scene.h"
 #include "Graphics.h"
 #include "Pass.h"
@@ -38,7 +38,8 @@ namespace NSG
           shadeless_(false),
           cullFaceMode_(CullFaceMode::DEFAULT),
           friction_(0.5f), // same as Blender
-          signalPhysicsSet_(new SignalEmpty())
+          signalPhysicsSet_(new SignalEmpty()),
+          castShadow_(true)
     {
     }
 
@@ -49,7 +50,7 @@ namespace NSG
     PMaterial Material::Clone(const std::string& name)
     {
         auto material = std::make_shared<Material>(name);
-        for (size_t index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+        for (size_t index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
             material->texture_[index] = texture_[index];
         material->ambient_ = ambient_;
         material->diffuse_ = diffuse_;
@@ -154,7 +155,7 @@ namespace NSG
             default:
                 break;
         }
-        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__);
+        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MATERIAL_MAPS, __FILE__, __LINE__);
         if (texture_[index] != texture)
         {
             texture_[index] = texture;
@@ -167,7 +168,7 @@ namespace NSG
 
     PTexture Material::GetTexture(MaterialTexture index) const
     {
-        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_TEXTURES_MAPS, __FILE__, __LINE__);
+        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MATERIAL_MAPS, __FILE__, __LINE__);
         return texture_[index];
     }
 
@@ -205,7 +206,7 @@ namespace NSG
         bool isReady = true;
         if (xmlResource_)
             isReady = xmlResource_->IsReady();
-        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+        for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
             if (texture_[index])
                 isReady = isReady && texture_[index]->IsReady();
         if (isReady)
@@ -225,7 +226,7 @@ namespace NSG
         instanceBuffer_ = nullptr;
         lastBatch_.Clear();
 
-        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+		for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
             if (texture_[index])
                 texture_[index]->Invalidate();
     }
@@ -240,10 +241,11 @@ namespace NSG
 
         child.append_attribute("name").set_value(name_.c_str());
 		child.append_attribute("shadeless").set_value(shadeless_);
+        child.append_attribute("castShadow").set_value(castShadow_);
         child.append_attribute("cullFaceMode").set_value(ToString(cullFaceMode_));
         child.append_attribute("friction").set_value(friction_);
         
-        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+		for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
         {
             if (texture_[index] && texture_[index]->IsSerializable())
             {
@@ -259,8 +261,8 @@ namespace NSG
         child.append_attribute("specular").set_value(ToString(specular_).c_str());
         child.append_attribute("shininess").set_value(shininess_);
         child.append_attribute("color").set_value(ToString(color_).c_str());
-        child.append_attribute("fillMode").set_value((int)fillMode_);
-        child.append_attribute("blendMode").set_value((int)blendMode_);
+        child.append_attribute("fillMode").set_value(ToString(fillMode_));
+        child.append_attribute("blendMode").set_value(ToString(blendMode_));
         child.append_attribute("renderPass").set_value(ToString(renderPass_));
     }
 
@@ -268,26 +270,27 @@ namespace NSG
     {
         name_ = node.attribute("name").as_string();
 		shadeless_ = node.attribute("shadeless").as_bool();
+        castShadow_ = node.attribute("castShadow").as_bool();
         cullFaceMode_ = ToCullFaceMode(node.attribute("cullFaceMode").as_string());
         SetFriction(node.attribute("friction").as_float());
 
-        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+		for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
         {
             texture_[index] = nullptr;
             std::string s(TEXTURE_NAME);
             s += ToString(index);
             pugi::xml_node childTexture = node.child(s.c_str());
             if (childTexture)
-                texture_[index] = Texture::CreateFrom(resource, childTexture);
+                texture_[index] = Texture2D::CreateFrom(resource, childTexture);
         }
 
-        SetAmbientColor(GetVertex4(node.attribute("ambient").as_string()));
-        SetDiffuseColor(GetVertex4(node.attribute("diffuse").as_string()));
-        SetSpecularColor(GetVertex4(node.attribute("specular").as_string()));
+        SetAmbientColor(ToVertex4(node.attribute("ambient").as_string()));
+        SetDiffuseColor(ToVertex4(node.attribute("diffuse").as_string()));
+        SetSpecularColor(ToVertex4(node.attribute("specular").as_string()));
         SetShininess(node.attribute("shininess").as_float());
-        SetColor(GetVertex4(node.attribute("color").as_string()));
-        SetFillMode((FillMode)node.attribute("fillMode").as_int());
-        SetBlendMode((BLEND_MODE)node.attribute("blendMode").as_int());
+        SetColor(ToVertex4(node.attribute("color").as_string()));
+        SetFillMode(ToFillMode(node.attribute("fillMode").as_string()));
+        SetBlendMode(ToBlendMode(node.attribute("blendMode").as_string()));
         SetRenderPass(ToRenderPass(node.attribute("renderPass").as_string()));
     }
 
@@ -321,7 +324,7 @@ namespace NSG
 
     PTexture Material::GetTextureWith(PResource resource) const
     {
-        for (size_t i = 0; i < MaterialTexture::MAX_TEXTURES_MAPS; i++)
+		for (size_t i = 0; i < MaterialTexture::MAX_MATERIAL_MAPS; i++)
         {
             if (texture_[i] && resource == texture_[i]->GetResource())
                 return texture_[i];
@@ -336,7 +339,7 @@ namespace NSG
 
     bool Material::IsLighted() const
     {
-        return renderPass_ == RenderPass::PERVERTEX || renderPass_ == RenderPass::PERPIXEL;
+        return renderPass_ == RenderPass::PERPIXEL || renderPass_ == RenderPass::PERVERTEX || renderPass_ == RenderPass::VERTEXCOLOR;
     }
 
     bool Material::IsBatched()
@@ -446,9 +449,17 @@ namespace NSG
     void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh)
     {
         bool ambientaPass = PassType::AMBIENT == passType;
+        bool shadowPass =  PassType::SHADOW == passType;
 
         if (ambientaPass)
             defines += "AMBIENT\n";
+        else if(shadowPass)
+        {
+            if(light->GetType() == LightType::POINT)
+                defines += "SHADOWCUBE\n";
+            else
+                defines += "SHADOW\n";
+        }
         else
         {
             switch (renderPass_)
@@ -483,52 +494,55 @@ namespace NSG
             }
         }
 
-        for (int index = 0; index < MaterialTexture::MAX_TEXTURES_MAPS; index++)
+        if(!shadowPass)
         {
-            auto texture = GetTexture((MaterialTexture)index);
-            if (texture)
+    		for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
             {
-                int uvIndex = mesh->GetUVIndex(texture->GetUVName());
-                auto type = texture->GetMapType();
-                CHECK_ASSERT(TextureType::UNKNOWN != type, __FILE__, __LINE__);
-                auto channels = texture->GetChannels();
-                switch (type)
+                auto texture = GetTexture((MaterialTexture)index);
+                if (texture)
                 {
-                    case TextureType::COL:
-                        defines += "DIFFUSEMAP\n";
-                        break;
-                    case TextureType::NORM:
-                        if(!ambientaPass)
-                            defines += "NORMALMAP\n";
-                        break;
-                    case TextureType::SPEC:
-                        if (!ambientaPass)
-                            defines += "SPECULARMAP\n";
-                        break;
-                    case TextureType::EMIT:
-                        if(ambientaPass)
-                        {
-                            defines += "LIGHTMAP" + ToString(uvIndex) + "\n";
-                            defines += "LIGHTMAP_CHANNELS" + ToString(channels) + "\n";
-                        }
-                        break;
-                    case TextureType::AMB:
-                        if(ambientaPass)
-                        {
-                            defines += "AOMAP" + ToString(uvIndex) + "\n";
-                            defines += "AOMAP_CHANNELS" + ToString(channels) + "\n";
-                        }
-                        break;
-                    default:
-                        break;
+                    int uvIndex = mesh->GetUVIndex(texture->GetUVName());
+                    auto type = texture->GetMapType();
+                    CHECK_ASSERT(TextureType::UNKNOWN != type, __FILE__, __LINE__);
+                    auto channels = texture->GetChannels();
+                    switch (type)
+                    {
+                        case TextureType::COL:
+                            defines += "DIFFUSEMAP\n";
+                            break;
+                        case TextureType::NORM:
+                            if(!ambientaPass)
+                                defines += "NORMALMAP\n";
+                            break;
+                        case TextureType::SPEC:
+                            if (!ambientaPass)
+                                defines += "SPECULARMAP\n";
+                            break;
+                        case TextureType::EMIT:
+                            if(ambientaPass)
+                            {
+                                defines += "LIGHTMAP" + ToString(uvIndex) + "\n";
+                                defines += "LIGHTMAP_CHANNELS" + ToString(channels) + "\n";
+                            }
+                            break;
+                        case TextureType::AMB:
+                            if(ambientaPass)
+                            {
+                                defines += "AOMAP" + ToString(uvIndex) + "\n";
+                                defines += "AOMAP_CHANNELS" + ToString(channels) + "\n";
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }
-
+        
         if (IsBatched())
             defines += "INSTANCED\n";
 
-        if (!ambientaPass)
+        if (!ambientaPass && !shadowPass)
         {
             switch (billboardType_)
             {

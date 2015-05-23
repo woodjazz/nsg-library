@@ -70,14 +70,21 @@ namespace NSG
     typedef glm::mat3 Matrix3;
     typedef glm::vec4 Color;
 
-    enum class LightType {POINT, DIRECTIONAL, SPOT};
+    enum class LightType 
+	{
+		POINT, 
+		DIRECTIONAL, 
+		SPOT,
+		MAX_INDEX
+	};
 
     enum class BLEND_MODE
     {
         NONE,
         ALPHA,
         MULTIPLICATIVE,
-        ADDITIVE
+        ADDITIVE,
+		MAX_INDEX
     };
 
     enum class TextureBlend
@@ -96,7 +103,8 @@ namespace NSG
         BLEND_HUE,
         BLEND_SAT,
         BLEND_VAL,
-        BLEND_COLOR
+        BLEND_COLOR,
+		MAX_INDEX
     };
 
     enum class TextureType
@@ -117,7 +125,8 @@ namespace NSG
         AMB,
         DISPLACE,
         WARP,
-        LAYER
+        LAYER,
+		MAX_INDEX
     };
 
     typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
@@ -205,7 +214,8 @@ namespace NSG
 		BACK = DEFAULT,
         FRONT,
         FRONT_AND_BACK,
-        DISABLED
+        DISABLED,
+		MAX_INDEX
     };
 
     enum class FrontFaceMode
@@ -283,7 +293,8 @@ namespace NSG
         SH_CAPSULE,
         SH_SPHERE,
         SH_CONVEX_TRIMESH,
-        SH_TRIMESH
+        SH_TRIMESH,
+		MAX_INDEX
     };
 
     enum class CollisionMask
@@ -396,7 +407,9 @@ namespace NSG
         LIGHT_MAP,
         SPECULAR_MAP,
         AO_MAP,
-        MAX_TEXTURES_MAPS
+        MAX_MATERIAL_MAPS,
+        SHADOW_MAP = MAX_MATERIAL_MAPS,
+        MAX_MAPS
     };
 
     enum ParticleSystemEmitFrom
@@ -477,7 +490,8 @@ namespace NSG
     {
         SOLID,
         WIREFRAME,
-        POINT
+        POINT,
+		MAX_INDEX
     };
 
     enum class LightingMode
@@ -491,7 +505,8 @@ namespace NSG
     enum class PassType
     {
         DEFAULT,
-        AMBIENT
+        AMBIENT,
+        SHADOW
     };
 
     enum class RenderPass
@@ -504,7 +519,9 @@ namespace NSG
         BLEND,
         BLUR,
         WAVE,
-        SHOW_TEXTURE0
+        SHOW_TEXTURE0,
+        SHOW_DEPTH,
+		MAX_INDEX
     };
 
     enum class BillboardType
@@ -512,5 +529,28 @@ namespace NSG
         NONE,
         SPHERICAL,
         CYLINDRICAL
+    };
+
+    enum class CubeMapFace
+    {
+        FACE_POSITIVE_X = 0,
+        FACE_NEGATIVE_X,
+        FACE_POSITIVE_Y,
+        FACE_NEGATIVE_Y,
+        FACE_POSITIVE_Z,
+        FACE_NEGATIVE_Z,
+        MAX_CUBEMAP_FACES
+    };
+
+    enum class TextureTarget
+    {
+        UNKNOWN = -1,
+        TEXTURE_2D = GL_TEXTURE_2D,
+        TEXTURE_CUBE_MAP_POSITIVE_X = GL_TEXTURE_CUBE_MAP_POSITIVE_X, 
+        TEXTURE_CUBE_MAP_NEGATIVE_X = GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 
+        TEXTURE_CUBE_MAP_POSITIVE_Y = GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 
+        TEXTURE_CUBE_MAP_NEGATIVE_Y = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 
+        TEXTURE_CUBE_MAP_POSITIVE_Z = GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 
+        TEXTURE_CUBE_MAP_NEGATIVE_Z = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
     };
 }

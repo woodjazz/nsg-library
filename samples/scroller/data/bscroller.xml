@@ -5394,7 +5394,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
 	</Sounds>
 	<Meshes>
 		<Mesh name="Cube.001" wireFrameDrawMode="1" solidDrawMode="4" uv0Name="" uv1Name="">
-			<Shape type="7" margin="0.04" scale="[1.000000,1.000000,1.000000]" />
+			<Shape type="SH_TRIMESH" margin="0.04" scale="[1.000000,1.000000,1.000000]" />
 			<Vertexes>
 				<VertexData position="[13.700000,0.000000,0.300000]" normal="[0.000000,-1.000000,0.000000]" uv0="[0.000000,0.000000]" uv1="[0.000000,0.000000]" color="[0.141176,0.266667,1.000000,1.000000]" bonesID="[0.000000,0.000000,0.000000,0.000000]" bonesWeight="[0.000000,0.000000,0.000000,0.000000]" />
 				<VertexData position="[12.000000,0.000000,2.000000]" normal="[0.000000,-1.000000,0.000000]" uv0="[0.000000,0.000000]" uv1="[0.000000,0.000000]" color="[0.141176,0.266667,1.000000,1.000000]" bonesID="[0.000000,0.000000,0.000000,0.000000]" bonesWeight="[0.000000,0.000000,0.000000,0.000000]" />
@@ -5412,7 +5412,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
 			<Indexes>0 1 2 0 2 3 4 5 6 4 6 7 8 9 10 8 10 11 </Indexes>
 		</Mesh>
 		<Mesh name="Cube" wireFrameDrawMode="1" solidDrawMode="4" uv0Name="" uv1Name="">
-			<Shape type="1" margin="0.04" scale="[0.125000,0.125000,0.125000]" />
+			<Shape type="SH_BOX" margin="0.04" scale="[0.125000,0.125000,0.125000]" />
 			<Vertexes>
 				<VertexData position="[1.000000,0.000000,1.000000]" normal="[0.000000,-1.000000,0.000000]" uv0="[0.000000,0.000000]" uv1="[0.000000,0.000000]" color="[0.031373,1.000000,0.047059,1.000000]" bonesID="[0.000000,0.000000,0.000000,0.000000]" bonesWeight="[0.000000,0.000000,0.000000,0.000000]" />
 				<VertexData position="[-1.000000,0.000000,1.000000]" normal="[0.000000,-1.000000,0.000000]" uv0="[0.000000,0.000000]" uv1="[0.000000,0.000000]" color="[0.031373,1.000000,0.047059,1.000000]" bonesID="[0.000000,0.000000,0.000000,0.000000]" bonesWeight="[0.000000,0.000000,0.000000,0.000000]" />
@@ -5423,8 +5423,8 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
 		</Mesh>
 	</Meshes>
 	<Materials>
-		<Material name="Level1" shadeless="false" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="0" blendMode="0" renderPass="PERPIXEL" />
-		<Material name="Player" shadeless="false" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="0" blendMode="1" renderPass="PERPIXEL" />
+		<Material name="Level1" shadeless="false" castShadow="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />
+		<Material name="Player" shadeless="false" castShadow="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="ALPHA" renderPass="PERPIXEL" />
 	</Materials>
 	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="Camera">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">

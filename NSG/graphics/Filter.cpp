@@ -43,7 +43,6 @@ namespace NSG
           name_(name),
           node_(std::make_shared<SceneNode>(name))
     {
-		//frameBuffer_->SetColorTexture(input);
 		pMaterial_->SetTexture(input);
 		pMaterial_->SetRenderPass(RenderPass::UNLIT);
 		auto window = Graphics::this_->GetWindow();
@@ -83,8 +82,8 @@ namespace NSG
 		Camera* pCurrent = Graphics::this_->GetCamera();
 		Graphics::this_->SetCamera(nullptr);
 		Graphics::this_->SetMesh(pMesh_.get());
-		Graphics::this_->SetupPass(&pass, node_.get(), pMaterial_.get(), nullptr);
-		Graphics::this_->DrawActiveMesh(&pass);
+		if(Graphics::this_->SetupPass(&pass, node_.get(), pMaterial_.get(), nullptr))
+			Graphics::this_->DrawActiveMesh();
 		Graphics::this_->SetCamera(pCurrent);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);

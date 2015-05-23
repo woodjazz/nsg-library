@@ -12,15 +12,19 @@ static const char* VS_GLSL = \
 "	// since it can produce different results and cause z-fighting between passes\n"\
 "	void main()\n"\
 "	{\n"\
-"		#if defined AMBIENT\n"\
-"			gl_Position = GetClipPos();\n"\
+"		#if defined(AMBIENT)\n"\
 "			v_color = u_material.color * a_color;\n"\
+"			gl_Position = GetClipPos();\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
-"			#if defined(AOMAP0) || defined(LIGHTMAP0)\n"\
-"				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
-"			#elif defined(AOMAP1) || defined(LIGHTMAP1)\n"\
+"			#if defined(AOMAP1) || defined(LIGHTMAP1)\n"\
 "				v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
 "			#endif\n"\
+"		#elif defined(SHADOW)\n"\
+"			gl_Position = GetClipPos();\n"\
+"			v_color = GetClipPos();\n"\
+"		#elif defined(SHADOWCUBE)\n"\
+"			gl_Position = GetClipPos();\n"\
+"			v_color = GetWorldPos();\n"\
 "		#elif defined(TEXT)\n"\
 "			v_color = u_material.color * a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
@@ -39,7 +43,7 @@ static const char* VS_GLSL = \
 "			vec4 worldPos = GetWorldPos();\n"\
 "		    vec3 normal = GetWorldNormal();\n"\
 "		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);\n"\
-"		    vec4 totalLight = CalcVSTotalLight(worldPos.xyz, vertexToEye, normal);\n"\
+"		    vec4 totalLight = CalcTotalLight(worldPos.xyz, vertexToEye, normal);\n"\
 "		    v_color = a_color * totalLight;\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			gl_Position = GetClipPos();\n"\
@@ -54,6 +58,14 @@ static const char* VS_GLSL = \
 "			    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);\n"\
 "			    v_bitangent = cross(v_tangent, v_normal);\n"\
 "			    // v_normal, v_tangent and v_bitangent are in world coordinates\n"\
+"			#endif\n"\
+"			#if defined(SHADOWMAP)\n"\
+"				const mat4 normalizeMat = mat4(0.5, 0.0, 0.0, 0.0,\n"\
+"			                              0.0, 0.5, 0.0, 0.0,\n"\
+"			                              0.0, 0.0, 1.0, 0.0,\n"\
+"			                              0.5, 0.5, 0.0, 1.0);\n"\
+"				// Normalize texture coords from -1..1 to 0..1\n"\
+"				v_lightSpacePos = normalizeMat * GetShadowClipPos();\n"\
 "			#endif\n"\
 "			#ifdef HAS_POINT_LIGHT\n"\
 "				v_lightDirection = worldPos.xyz - u_pointLight.position;\n"\

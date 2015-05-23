@@ -118,8 +118,7 @@ void bFile::parseHeader()
 
 	if (strncmp(header, m_headerString, 6)!=0)
 	{
-		memcpy(header, m_headerString, SIZEOFBLENDERHEADER);
-		printf ("Invalid %s file...\n",header);
+		printf ("Invalid header file!!!\n");
 		return;
 	}
 

@@ -54,7 +54,7 @@ int NSG_MAIN(int argc, char* argv[])
         //earth->SetEnabled(false);
 
 		auto earthResource = Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg");
-        auto pEarthTexture = std::make_shared<Texture>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+        auto pEarthTexture = std::make_shared<Texture2D>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 		auto pMaterial(Material::GetOrCreate("earth"));
 		pMaterial->SetRenderPass(RenderPass::PERPIXEL);
 		pMaterial->SetTexture(pEarthTexture);

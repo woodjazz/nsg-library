@@ -52,19 +52,25 @@ namespace NSG
 
         slotLightBeingDestroy_ = Light::SignalBeingDestroy()->Connect([this](Light * light)
         {
-            lights_.erase(std::remove(lights_.begin(), lights_.end(), light));
+			auto it = std::find(lights_.begin(), lights_.end(), light);
+			if (it != lights_.end())
+				lights_.erase(it);
         });
 
         slotCameraBeingDestroy_ = Camera::SignalBeingDestroy()->Connect([this](Camera * camera)
         {
             if(mainCamera_ == camera)
                 mainCamera_ = nullptr;
-            cameras_.erase(std::remove(cameras_.begin(), cameras_.end(), camera));
+			auto it = std::find(cameras_.begin(), cameras_.end(), camera);
+			if (it != cameras_.end())
+				cameras_.erase(it);
         });
 
         slotPSBeingDestroy_ = ParticleSystem::SignalBeingDestroy()->Connect([this](ParticleSystem * ps)
         {
-            particleSystems_.erase(std::remove(particleSystems_.begin(), particleSystems_.end(), ps));
+			auto it = std::find(particleSystems_.begin(), particleSystems_.end(), ps);
+			if (it != particleSystems_.end())
+				particleSystems_.erase(it);
         });
     }
 
@@ -237,7 +243,7 @@ namespace NSG
     void Scene::LoadPhysics(const pugi::xml_node& node)
     {
         pugi::xml_node child = node.child("Physics");
-        Vertex3 gravity = GetVertex3(child.attribute("gravity").as_string());
+        Vertex3 gravity = ToVertex3(child.attribute("gravity").as_string());
         physicsWorld_->SetGravity(gravity);
     }
 
@@ -308,7 +314,7 @@ namespace NSG
 
     void Scene::Load(const pugi::xml_node& node)
     {
-        SetAmbientColor(GetVertex4(node.attribute("ambient").as_string()));
+        SetAmbientColor(ToVertex4(node.attribute("ambient").as_string()));
         std::string mainCameraName = node.attribute("mainCamera").as_string();
         pugi::xml_node sceneNode = node.child("SceneNode");
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);

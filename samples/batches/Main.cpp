@@ -40,8 +40,8 @@ int NSG_MAIN(int argc, char* argv[])
 	auto sphereMesh(Mesh::Create<SphereMesh>());
 	sphereMesh->Set(3, 24);
 
-    auto pEarthTexture1(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg")));
-	auto pEarthTexture2(std::make_shared<Texture>(Resource::GetOrCreate<ResourceFile>("data/jup0vss1.jpg")));
+    auto pEarthTexture1(std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg")));
+	auto pEarthTexture2(std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>("data/jup0vss1.jpg")));
 	auto pMaterial1(Material::Create("earth1"));
 	pMaterial1->SetRenderPass(RenderPass::PERPIXEL);
 	auto pMaterial2(Material::Create("earth2"));
@@ -50,11 +50,13 @@ int NSG_MAIN(int argc, char* argv[])
     pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
     pMaterial1->SetShininess(10);
+	pMaterial1->SetAmbientColor(Color(0));
 
 	pMaterial2->SetTexture(pEarthTexture2);
     pMaterial2->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial2->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
     pMaterial2->SetShininess(100);
+	pMaterial2->SetAmbientColor(Color(0));
 
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
@@ -77,9 +79,11 @@ int NSG_MAIN(int argc, char* argv[])
     }
 
     Vertex3 camPos(COLS / 2 * STEP, -(ROWS) / 2 * STEP, 75);
-    Vertex3 lighPos(Vertex2(camPos), -5);
+    Vertex3 lighPos(Vertex2(camPos), 5);
 
     auto light = scene->CreateChild<Light>();
+	//light->SetType(LightType::SPOT);
+	//light->SetLocalLookAt(VECTOR3_RIGHT);
     light->SetPosition(lighPos);
 
     camera->SetPosition(camPos);
@@ -100,7 +104,14 @@ int NSG_MAIN(int argc, char* argv[])
 
         x_angle += glm::pi<float>() / 10.0f * deltaTime;
         y_angle += glm::pi<float>() / 10.0f * deltaTime;
+
+		static float distance = 0;
+		static float step = 15;
+		light->SetDistance(distance);
+		distance += step * deltaTime;
+		if (distance > 50 || distance < 0)
+			step *= -1;
     });
 
-    return engine.Run();
+	return engine.Run();
 };

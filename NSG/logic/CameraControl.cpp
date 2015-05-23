@@ -48,7 +48,7 @@ namespace NSG
         leftButtonDown_ = false;
         altKeyDown_ = false;
         shiftKeyDown_ = false;
-        SetSphereCenter(true);
+        //SetSphereCenter(true);
 
         if (Graphics::this_)
         {

@@ -56,8 +56,8 @@ namespace NSG
         void Set(Mesh* mesh);
         void Set(Node* node);
         void Set(Material* material);
-        void Set(Light* light);
-        void SetVariables();
+        void Set(const Light* light);
+        void SetVariables(bool shadowPass);
         GLuint GetId() const { return id_; }
         Material* GetMaterial() const { return material_; }
         const std::string& GetName() const { return name_; }
@@ -69,6 +69,7 @@ namespace NSG
         void ReleaseResources() override;
         void SetSceneVariables();
         void SetCameraVariables();
+        void SetShadowVariables();
         void SetMaterialVariables();
 		void SetSkeletonVariables();
 		void SetUniformLocations();
@@ -114,12 +115,13 @@ namespace NSG
         GLuint normalMatrixLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
+        GLuint lightViewProjectionLoc_;
         GLuint projectionLoc_;
         GLuint sceneColorAmbientLoc_;
         GLuint eyeWorldPosLoc_;
         GLuint u_uvTransformLoc_;
 
-		GLuint textureLoc_[MaterialTexture::MAX_TEXTURES_MAPS];
+		GLuint textureLoc_[MaterialTexture::MAX_MAPS];
 
         struct MaterialLoc
         {
@@ -188,6 +190,6 @@ namespace NSG
         Mesh* mesh_;
         Node* node_;
         Material* material_;
-        Light* light_;
+        const Light* light_;
     };
 }

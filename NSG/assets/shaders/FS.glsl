@@ -5,7 +5,17 @@
 	{
 		#if defined(AMBIENT)
 			
-			gl_FragColor = GetAmbientLight();
+			gl_FragColor = v_color * GetAmbientLight();
+
+		#elif defined(SHADOW)
+
+			gl_FragColor = vec4(EncodeDepth2Color(v_color.z), 1.0);
+
+		#elif defined(SHADOWCUBE)
+
+			vec3 lightToVertex = vec3(v_color) - u_eyeWorldPos;
+    		float lightToPixelDistance = clamp(length(lightToVertex) * u_pointLight.invRange, 0.0, 1.0);
+    		gl_FragColor = vec4(EncodeDepth2Color(lightToPixelDistance), 1.0);
 
 		#elif defined(TEXT)
 
@@ -60,7 +70,7 @@
 			#endif
 
     		vec3 vertexToEye = normalize(v_vertexToEye);
-    		vec4 totalLight = CalcFSTotalLight(vertexToEye, normal);
+    		vec4 totalLight = CalcTotalLight(vertexToEye, normal);
 
 			#ifdef DIFFUSEMAP
 	    		gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord0);

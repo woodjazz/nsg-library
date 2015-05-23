@@ -22,7 +22,7 @@ varying vec2 v_texcoord0;
 		varying vec2 v_texcoord1;
 	#endif
 
-#elif defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)
+#else
 
 	varying vec3 v_normal;
 	varying vec3 v_tangent;
@@ -30,13 +30,15 @@ varying vec2 v_texcoord0;
 	varying vec2 v_texcoord1;
 	varying vec3 v_vertexToEye;
 
+	#if defined(SHADOWMAP)
+		varying vec4 v_lightSpacePos;
+	#endif
+
 	struct BaseLight
 	{
 	    vec4 diffuse;
 	    vec4 specular;
 	};
-
-	uniform vec3 u_eyeWorldPos;
 
 	#if defined(HAS_DIRECTIONAL_LIGHT)
 
@@ -47,7 +49,7 @@ varying vec2 v_texcoord0;
 		};
 		uniform DirectionalLight u_directionalLight;
 
-	#elif defined(HAS_POINT_LIGHT)
+	#elif defined(HAS_POINT_LIGHT) || defined(SHADOWCUBE)
 
 		varying vec3 v_lightDirection;
 		struct PointLight
@@ -86,3 +88,4 @@ struct Material
 
 uniform Material u_material;
 uniform vec4 u_sceneAmbientColor;
+uniform vec3 u_eyeWorldPos;

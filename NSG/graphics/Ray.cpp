@@ -211,8 +211,8 @@ namespace NSG
 				// multiply per scale to have correct distance
 				Vector3 scale = node->GetGlobalScale();
 				CHECK_ASSERT(glm::abs(scale.x) > glm::epsilon<float>(), __FILE__, __LINE__);
-				CHECK_ASSERT(scale.x == scale.y && scale.x == scale.z, __FILE__, __LINE__);
-				nearest *= scale.x;
+				auto maxScale = std::max(std::max(scale.x, scale.y), scale.z);
+				nearest *= maxScale;
 			}
         }
         return nearest;

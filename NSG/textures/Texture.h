@@ -32,14 +32,11 @@ namespace NSG
     class Texture : public Object
     {
     public:
-        Texture(PResource resource, const TextureFlags& flags = (int)TextureFlag::NONE);
-        Texture(const std::string& name, GLint format);
         virtual ~Texture();
         GLuint GetID() const;
         GLsizei GetWidth() const;
         GLsizei GetHeight() const;
         void Save(pugi::xml_node& node);
-        static PTexture CreateFrom(PResource resource, const pugi::xml_node& node);
         void SetSerializable(bool serializable);
         bool IsSerializable() const;
         void SetFlags(const TextureFlags& flags);
@@ -54,11 +51,14 @@ namespace NSG
         std::string TranslateFlags() const;
         void SetBlendType(TextureBlend blendType) { blendType_ = blendType; }
         TextureBlend GetBlendType() const { return blendType_;}
-        std::string TranslateBlendType() const;
         void SetMapType(TextureType mapType) { mapType_ = mapType; }
         TextureType GetMapType() const { return mapType_; }
-        std::string TranslateMapType() const;
         int GetChannels() const { return channels_; }
+        virtual GLenum GetTarget() const = 0;
+        virtual void Define() = 0;
+    protected:
+        Texture(PResource resource, const TextureFlags& flags);
+        Texture(const std::string& name, GLint format);
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -70,7 +70,7 @@ namespace NSG
         PResource pResource_;
         GLsizei width_;
         GLsizei height_;
-        GLint format_;       
+        GLint format_;
         GLenum type_;
         int channels_;
         bool serializable_;

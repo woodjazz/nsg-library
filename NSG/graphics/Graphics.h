@@ -74,9 +74,11 @@ namespace NSG
         Camera* GetCamera() const { return activeCamera_; }
         void SetWindow(Window* window);
         Window* GetWindow() const { return activeWindow_; }
-        void SetFrameBuffer(FrameBuffer* buffer);
-		void DrawActiveMesh(Pass* pass);
-		void DrawInstancedActiveMesh(Pass* pass, const Batch& batch);
+		void SetFrameBuffer(FrameBuffer* buffer);
+        void SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
+        FrameBuffer* GetFrameBuffer() const { return currentFbo_; }
+		void DrawActiveMesh();
+		void DrawInstancedActiveMesh(const Batch& batch);
         void DiscardFramebuffer();
         bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
         bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
@@ -110,9 +112,9 @@ namespace NSG
         void SetViewportFactor(const Vector4& viewportFactor);
         int GetMaxTextureSize() const { return maxTextureSize_; }
         bool NeedsDecompress(TextureFormat format) const;
-		void SetupPass(Pass* pass, SceneNode* sceneNode, Material* material, Light* light);
+		bool SetupPass(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light);
     private:
-		PProgram GetOrCreateProgram(Pass* pass, Mesh* mesh, Material* material, Light* light);
+		PProgram GetOrCreateProgram(const Pass* pass, Mesh* mesh, Material* material, const Light* light);
         void SetUpViewport();
         Recti viewport_;
         GLint systemFbo_;

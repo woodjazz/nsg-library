@@ -8472,13 +8472,13 @@
 		</Mesh>
 	</Meshes>
 	<Materials>
-		<Material name="blinn3" shadeless="false" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.640000,0.640000,0.640000,1.000000]" specular="[0.000000,0.000000,0.000000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="0" blendMode="0" renderPass="PERPIXEL">
-			<Texture0 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/duckCM.png" uvName="" blend="1" type="1" blendType="MIX" mapType="COL" />
+		<Material name="blinn3" shadeless="false" castShadow="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.640000,0.640000,0.640000,1.000000]" specular="[0.000000,0.000000,0.000000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL">
+			<Texture0 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/duckCM.png" uvName="" blendType="MIX" mapType="COL" />
 		</Material>
 	</Materials>
 	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="camera1">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
-			<SceneNode name="directionalLight1" nodeType="Light" type="1" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="false" spotCutOff="45" position="[1.486540,2.921790,1.836720]" orientation="[0.051520,0.141421,0.383785,0.911073]" distance="2500" />
+			<SceneNode name="directionalLight1" nodeType="Light" type="DIRECTIONAL" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="false" spotCutOff="45" position="[1.486540,2.921790,1.836720]" orientation="[0.051520,0.141421,0.383785,0.911073]" distance="2500" shadows="true" />
 			<SceneNode name="camera1" nodeType="Camera" fovy="0.950019" zNear="1" zFar="10000" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="6" sensorFit="0" position="[4.001130,4.310780,4.632640]" orientation="[0.331429,0.160219,0.404668,0.837095]" />
 			<SceneNode name="LOD3sp" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,0.707107,0.000000,0.000000]" scale="[0.010000,0.010000,0.010000]" materialName="blinn3" meshName="LOD3spShape" />
 		</SceneNode>

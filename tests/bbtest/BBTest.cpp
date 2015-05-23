@@ -109,7 +109,6 @@ static void Test01()
 		bb.Transform(node);
 		CHECK_CONDITION(bb.Center() == Vertex3(2), __FILE__, __LINE__);
 	}
-
 }
 
 void BBTest()

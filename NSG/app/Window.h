@@ -77,6 +77,7 @@ namespace NSG
         PFrameBuffer GetFrameBuffer() const { return frameBuffer_; }
         void SetScene(Scene* scene);
         Scene* GetScene() const { return scene_; }
+        void ShowMap(PTexture texture);
         static bool AllowWindowCreation();
 		static void NotifyOneWindow2Remove();
         static std::vector<PWeakWindow>& GetWindows() { return windows_; }
@@ -118,7 +119,7 @@ namespace NSG
         void CreateFrameBuffer();
         std::vector<PFilter> filters_;
         PFrameBuffer frameBuffer_;
-        PShowTexture showFrameBuffer_;
+        PShowTexture showMap_;
 		SignalSizeChanged::PSignal signalViewChanged_;
         SignalFloatFloat::PSignal signalFloatFloat_;
         SignalMouseButton::PSignal signalMouseDown_;
@@ -131,6 +132,7 @@ namespace NSG
         SignalJoystickButton::PSignal signalJoystickDown_;
 		SignalJoystickButton::PSignal signalJoystickUp_;
         SignalJoystickAxisMotion::PSignal signalJoystickAxisMotion_;
+        PTexture showTexture_;
         static int nWindows2Remove_;
         static PGraphics graphics_;
         static std::once_flag onceFlag_;

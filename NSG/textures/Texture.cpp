@@ -147,55 +147,25 @@ namespace NSG
             format_ = image_->ConvertFormat2GL();
         }
 
-        if (flags_ & (int)TextureFlag::INVERT_Y)
+        if (image_ && flags_ & (int)TextureFlag::INVERT_Y)
         {
             if (!image_->FlipVertical())
-            {
                 TRACE_PRINTF("Cannot flip vertically image = %s!!!\n", image_->GetName().c_str());
-            }
         }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)wrapMode_);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)wrapMode_);
+		if (GetTarget() == GL_TEXTURE_CUBE_MAP)
+		{
+			auto value = std::max(width_, height_);
+			width_ = height_ = value;
+		}
 
         CHECK_ASSERT(Graphics::this_->IsTextureSizeCorrect(width_, height_), __FILE__, __LINE__);
         CHECK_ASSERT(Graphics::this_->GetMaxTextureSize() >= width_ && Graphics::this_->GetMaxTextureSize() >= height_, __FILE__, __LINE__);
 
-        if (image_ && image_->IsCompressed())
-        {
-            glCompressedTexImage2D(GL_TEXTURE_2D,
-                                   0,
-                                   format_,
-                                   width_,
-                                   height_,
-                                   0,
-                                   image_->GetCompressedDataSize(),
-                                   image_->GetData());
-        }
-        else if (image_)
-        {
-            glTexImage2D(GL_TEXTURE_2D,
-                         0,
-                         format_,
-                         width_,
-                         height_,
-                         0,
-                         format_,
-                         type_,
-                         image_->GetData());
-        }
-        else
-        {
-            glTexImage2D(GL_TEXTURE_2D,
-                         0,
-                         format_,
-                         width_,
-                         height_,
-                         0,
-                         format_,
-                         type_,
-                         nullptr);
-        }
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)wrapMode_);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)wrapMode_);
+
+        Define();
 
         mipmapLevels_ = 0;
         if (flags_ & (int)TextureFlag::GENERATE_MIPMAPS)
@@ -209,7 +179,7 @@ namespace NSG
                     maxSize >>= 1;
                     ++mipmapLevels_;
                 }
-                glGenerateMipmap(GL_TEXTURE_2D);
+                glGenerateMipmap(GetTarget());
             }
         }
 
@@ -217,26 +187,26 @@ namespace NSG
         {
             case TextureFilterMode::NEAREST:
                 {
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                    glTexParameteri(GetTarget(), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                    glTexParameteri(GetTarget(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                     break;
                 }
             case TextureFilterMode::BILINEAR:
                 {
                     if (mipmapLevels_ < 2)
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GetTarget(), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                     else
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                        glTexParameteri(GetTarget(), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+                    glTexParameteri(GetTarget(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                     break;
                 }
             case TextureFilterMode::TRILINEAR:
                 {
                     if (mipmapLevels_ < 2)
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GetTarget(), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                     else
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                        glTexParameteri(GetTarget(), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                    glTexParameteri(GetTarget(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                     break;
                 }
             default:
@@ -253,31 +223,6 @@ namespace NSG
         texture_ = 0;
         if (image_)
             return image_->Invalidate();
-    }
-
-    PTexture Texture::CreateFrom(PResource resource, const pugi::xml_node& node)
-    {
-        std::string flags = node.attribute("flags").as_string();
-        std::string resourceName = node.attribute("resource").as_string();
-        std::string uvName = node.attribute("uvName").as_string();
-        TextureBlend blendType = (TextureBlend)node.attribute("blend").as_int();
-        TextureType mapType = (TextureType)node.attribute("type").as_int();
-        auto res = Resource::Get(resourceName);
-        PTexture texture;
-        if (!res)
-        {
-            auto newRes = Resource::Create<ResourceXMLNode>(resourceName);
-            texture = std::make_shared<Texture>(newRes);
-            newRes->Set(resource, nullptr, "Resources", resourceName);
-        }
-        else
-            texture = std::make_shared<Texture>(res);
-        texture->SetName(resourceName);
-        texture->SetUVName(uvName);
-        texture->SetFlags(flags);
-        texture->SetBlendType(blendType);
-        texture->SetMapType(mapType);
-        return texture;
     }
 
     std::string Texture::TranslateFlags() const
@@ -299,16 +244,21 @@ namespace NSG
         node.append_attribute("flagNames") = TranslateFlags().c_str();
         node.append_attribute("resource") = pResource_->GetName().c_str();
         node.append_attribute("uvName") = uvName_.c_str();
-        node.append_attribute("blend") = ToString((int)blendType_).c_str();
-        node.append_attribute("type") = ToString((int)mapType_).c_str();
-        node.append_attribute("blendType") = TranslateBlendType().c_str();
-        node.append_attribute("mapType") = TranslateMapType().c_str();
+        node.append_attribute("blendType") = ToString(blendType_);
+        node.append_attribute("mapType") = ToString(mapType_);
     }
 
     void Texture::SetSize(GLsizei width, GLsizei height)
     {
         CHECK_ASSERT(!image_ && "SetSize only can be applied for non images!!!", __FILE__, __LINE__);
         CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
+
+        if (GetTarget() == GL_TEXTURE_CUBE_MAP)
+        {
+            auto value = std::max(width, height);
+            width = height = value;
+        }
+
         if (width_ != width || height_ != height)
         {
             width_ = width;
@@ -344,125 +294,5 @@ namespace NSG
             filterMode_ = mode;
             Invalidate();
         }
-    }
-
-    std::string Texture::TranslateBlendType() const
-    {
-        std::string s;
-        switch (blendType_)
-        {
-            case TextureBlend::NONE:
-                s = "NONE";
-                break;
-            case TextureBlend::MIX:
-                s = "MIX";
-                break;
-            case TextureBlend::MUL:
-                s = "MUL";
-                break;
-            case TextureBlend::ADD:
-                s = "ADD";
-                break;
-            case TextureBlend::SUB:
-                s = "SUB";
-                break;
-            case TextureBlend::DIV:
-                s = "DIV";
-                break;
-            case TextureBlend::DARK:
-                s = "DARK";
-                break;
-            case TextureBlend::DIFF:
-                s = "DIFF";
-                break;
-            case TextureBlend::LIGHT:
-                s = "LIGHT";
-                break;
-            case TextureBlend::SCREEN:
-                s = "SCREEN";
-                break;
-            case TextureBlend::OVERLAY:
-                s = "OVERLAY";
-                break;
-            case TextureBlend::BLEND_HUE:
-                s = "BLEND_HUE";
-                break;
-            case TextureBlend::BLEND_SAT:
-                s = "BLEND_SAT";
-                break;
-            case TextureBlend::BLEND_VAL:
-                s = "BLEND_VAL";
-                break;
-            case TextureBlend::BLEND_COLOR:
-                s = "BLEND_COLOR";
-                break;
-            default:
-                break;
-        }
-        return s;
-    }
-
-    std::string Texture::TranslateMapType() const
-    {
-        std::string s;
-
-        switch (mapType_)
-        {
-            case TextureType::UNKNOWN:
-                s = "UNKNOWN";
-                break;
-            case TextureType::COL:
-                s = "COL";
-                break;
-            case TextureType::NORM:
-                s = "NORM";
-                break;
-            case TextureType::COLSPEC:
-                s = "COLSPEC";
-                break;
-            case TextureType::COLMIR:
-                s = "COLMIR";
-                break;
-            case TextureType::VARS:
-                s = "VARS";
-                break;
-            case TextureType::REF:
-                s = "REF";
-                break;
-            case TextureType::SPEC:
-                s = "SPEC";
-                break;
-            case TextureType::EMIT:
-                s = "EMIT";
-                break;
-            case TextureType::ALPHA:
-                s = "ALPHA";
-                break;
-            case TextureType::HAR:
-                s = "HAR";
-                break;
-            case TextureType::RAYMIRR:
-                s = "RAYMIRR";
-                break;
-            case TextureType::TRANSLU:
-                s = "TRANSLU";
-                break;
-            case TextureType::AMB:
-                s = "AMB";
-                break;
-            case TextureType::DISPLACE:
-                s = "DISPLACE";
-                break;
-            case TextureType::WARP:
-                s = "WARP";
-                break;
-            case TextureType::LAYER:
-                s = "LAYER";
-                break;
-            default:
-                break;
-        }
-
-        return s;
     }
 }

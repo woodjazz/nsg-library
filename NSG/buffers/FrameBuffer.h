@@ -40,7 +40,8 @@ namespace NSG
             DEPTH = 1 << 1,
             STENCIL = 1 << 2,
             COLOR_USE_TEXTURE = 1 << 3,
-            DEPTH_USE_TEXTURE = 1 << 4
+            DEPTH_USE_TEXTURE = 1 << 4,
+            COLOR_CUBE_TEXTURE = 1 << 5
         };
         typedef FlagSet<Flag> Flags;
 		FrameBuffer(const std::string& name, Flags flags);
@@ -54,6 +55,8 @@ namespace NSG
 		int GetHeight() const { return height_; }
         void SetColorTexture(PTexture texture);
         void SetDepthTexture(PTexture texture);
+        void AttachTarget(TextureTarget colorTexTarget);
+		TextureTarget GetDefaultTextureTarget() const;
     private:
 		bool IsValid() override;
         void AllocateResources() override;

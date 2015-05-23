@@ -225,13 +225,13 @@ namespace NSG
     {
         name_ = node.attribute("name").as_string();
 
-        Vertex3 position = GetVertex3(node.attribute("position").as_string());
+        Vertex3 position = ToVertex3(node.attribute("position").as_string());
         SetPosition(position);
 
-        Quaternion orientation = GetQuaternion(node.attribute("orientation").as_string());
+        Quaternion orientation = ToQuaternion(node.attribute("orientation").as_string());
         SetOrientation(orientation);
 
-        Vertex3 scale = GetVertex3(node.attribute("scale").as_string());
+        Vertex3 scale = ToVertex3(node.attribute("scale").as_string());
         SetScale(scale);
 
         pugi::xml_attribute attribute = node.attribute("materialName");

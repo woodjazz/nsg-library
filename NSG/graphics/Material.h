@@ -96,13 +96,15 @@ namespace NSG
         void SetFriction(float friction);
         float GetFriction() const { return friction_; }
         SignalEmpty::PSignal SigPhysicsSet() { return signalPhysicsSet_; }
+        void CastShadow(bool shadow) { castShadow_ = shadow; }
+        bool CastShadow() const { return castShadow_; }
     private:
 		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();
         bool IsValid() override;
 		void AllocateResources() override;
 		void ReleaseResources() override;
-        PTexture texture_[MaterialTexture::MAX_TEXTURES_MAPS];
+        PTexture texture_[MaterialTexture::MAX_MATERIAL_MAPS];
         Color ambient_;
         Color diffuse_;
         Color specular_;
@@ -126,6 +128,7 @@ namespace NSG
         CullFaceMode cullFaceMode_;
         float friction_; // rigidbody friction
         SignalEmpty::PSignal signalPhysicsSet_;
+        bool castShadow_;
  		static MapAndVector<std::string, Material> materials_;
         friend class Program;
     };

@@ -4,11 +4,7 @@ namespace NSG
 static const char* TRANSFORMS_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#ifdef COMPILEVS\n"\
-"/////////////////////////////////////////////////////////////////\n"\
-"/////////////////////////////////////////////////////////////////\n"\
 "// Vertex shader specific\n"\
-"/////////////////////////////////////////////////////////////////\n"\
-"/////////////////////////////////////////////////////////////////\n"\
 "attribute vec3 a_position;\n"\
 "attribute vec2 a_texcoord0;\n"\
 "attribute vec2 a_texcoord1;\n"\
@@ -63,7 +59,7 @@ static const char* TRANSFORMS_GLSL = \
 "	}\n"\
 "#endif	\n"\
 "#if defined(SKINNED)\n"\
-"	uniform mat4 u_bones[NUM_BONES];\n"\
+"	uniform mat4 u_bones[MAX_BONES];\n"\
 "	mat4 GetSkinnedMatrix()\n"\
 "	{\n"\
 "	    return u_bones[int(a_boneIDs[0])] * a_weights[0] +\n"\
@@ -75,6 +71,7 @@ static const char* TRANSFORMS_GLSL = \
 "uniform mat4 u_model;\n"\
 "uniform mat3 u_normalMatrix;\n"\
 "uniform mat4 u_viewProjection;\n"\
+"uniform mat4 u_lightViewProjection;\n"\
 "uniform mat4 u_view;\n"\
 "uniform mat4 u_projection;\n"\
 "mat4 GetModelMatrix()\n"\
@@ -157,6 +154,10 @@ static const char* TRANSFORMS_GLSL = \
 "	    return u_viewProjection * worldPos;\n"\
 "	#endif\n"\
 "}\n"\
+"vec4 GetShadowClipPos()\n"\
+"{\n"\
+"	return u_lightViewProjection * GetModelMatrix() * vec4(a_position, 1.0);\n"\
+"}\n"\
 "uniform vec4 u_uvTransform;\n"\
 "vec2 GetTexCoord(vec2 texCoord)\n"\
 "{\n"\
@@ -166,6 +167,29 @@ static const char* TRANSFORMS_GLSL = \
 "		return texCoord.xy * u_uvTransform.xy + u_uvTransform.zw;\n"\
 "	#endif\n"\
 "}\n"\
+"#elif defined(COMPILEFS)\n"\
+"	#if defined(SHADOW) || defined(SHADOWCUBE)\n"\
+"		// Input depth [-1..1] (NDC space)\n"\
+"		// Output color [[0..1], [0..1], [0..1]]\n"\
+"		vec3 EncodeDepth2Color(float depth)\n"\
+"		{\n"\
+"			const float DISTANCE = 255.0;\n"\
+"			float value = DISTANCE - depth;\n"\
+"			float v = floor(value);\n"\
+"			float f = value - v;\n"\
+"			float vn = v * 1.0/DISTANCE;\n"\
+"			return vec3(vn, f, 0.0);\n"\
+"		}\n"\
+"	#elif defined(SHADOWMAP) || defined(CUBESHADOWMAP)		\n"\
+"		// Input color [[0..1], [0..1], [0..1]]\n"\
+"		// Output depth [-1..1] (NDC space)\n"\
+"		float DecodeColor2Depth(vec3 depth)\n"\
+"		{\n"\
+"			const float DISTANCE = 255.0;\n"\
+"			const float PRECISION_ERROR = 1.0/DISTANCE;\n"\
+"			return DISTANCE - (depth.x * DISTANCE + depth.y) + PRECISION_ERROR;\n"\
+"		}\n"\
+"	#endif\n"\
 "#endif\n"\
 ;
 }

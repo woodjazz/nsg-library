@@ -100,7 +100,7 @@ namespace NSG
                 std::string boneName = child.attribute("boneName").as_string();
                 PNode bone = scene->GetChild<Node>(boneName, true);
                 CHECK_ASSERT(bone, __FILE__, __LINE__);
-				bone->SetBoneOffsetMatrix(GetMatrix4(child.attribute("offsetMatrix").as_string()));
+				bone->SetBoneOffsetMatrix(ToMatrix4(child.attribute("offsetMatrix").as_string()));
                 bones_.push_back(bone);
                 child = child.next_sibling("Bone");
             }

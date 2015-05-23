@@ -39,16 +39,26 @@ namespace NSG
 		void SortBackToFront(std::vector<SceneNode*>& nodes) const;
 		void SortFrontToBack(std::vector<SceneNode*>& nodes) const;
 		void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
+		const Window* GetWindow() const { return window_; }
 	private:
+		void GenerateShadowMap(const Light* light, const std::vector<PBatch>& batches);
+		void GenerateCubeShadowMap(Light* light, const std::vector<SceneNode*>& visiblesFromLight);
+		void RenderOpaqueNodes(std::vector<SceneNode*>& opaques);
+		void RenderTransparentNodes(std::vector<SceneNode*>& transparent);
 		void ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const;
 		void ExtractLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
-		void GetVisibleFromLight(const Light* light, std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
+		void GetVisibleFromLight(const Light* light, const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
+		void GetVisiblesFromCurrentLightFace(const Light* light, const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
 		void RenderVisibleSceneNodes(std::vector<SceneNode*>& visibles);
-		void Draw(Batch* batch, Pass* pass, Light* light);
+		void Draw(Batch* batch, const Pass* pass, const Light* light);
 		static Renderer* this_;
 		Graphics* graphics_;
 		Window* window_;
 		Scene* scene_;
 		Camera* camera_;
+		PPass ambientPass_;
+		PPass lightPass_;
+		PPass transparentPass_;
+		PPass shadowPass_;
 	};
 }

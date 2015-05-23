@@ -22,18 +22,20 @@ static const char* COMMON_GLSL = \
 "	#if defined(AOMAP1) || defined(LIGHTMAP1)\n"\
 "		varying vec2 v_texcoord1;\n"\
 "	#endif\n"\
-"#elif defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)\n"\
+"#else\n"\
 "	varying vec3 v_normal;\n"\
 "	varying vec3 v_tangent;\n"\
 "	varying vec3 v_bitangent;\n"\
 "	varying vec2 v_texcoord1;\n"\
 "	varying vec3 v_vertexToEye;\n"\
+"	#if defined(SHADOWMAP)\n"\
+"		varying vec4 v_lightSpacePos;\n"\
+"	#endif\n"\
 "	struct BaseLight\n"\
 "	{\n"\
 "	    vec4 diffuse;\n"\
 "	    vec4 specular;\n"\
 "	};\n"\
-"	uniform vec3 u_eyeWorldPos;\n"\
 "	#if defined(HAS_DIRECTIONAL_LIGHT)\n"\
 "		struct DirectionalLight\n"\
 "		{\n"\
@@ -41,7 +43,7 @@ static const char* COMMON_GLSL = \
 "		    vec3 direction;\n"\
 "		};\n"\
 "		uniform DirectionalLight u_directionalLight;\n"\
-"	#elif defined(HAS_POINT_LIGHT)\n"\
+"	#elif defined(HAS_POINT_LIGHT) || defined(SHADOWCUBE)\n"\
 "		varying vec3 v_lightDirection;\n"\
 "		struct PointLight\n"\
 "		{\n"\
@@ -73,5 +75,6 @@ static const char* COMMON_GLSL = \
 "};\n"\
 "uniform Material u_material;\n"\
 "uniform vec4 u_sceneAmbientColor;\n"\
+"uniform vec3 u_eyeWorldPos;\n"\
 ;
 }

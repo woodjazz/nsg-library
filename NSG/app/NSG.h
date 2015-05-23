@@ -48,7 +48,7 @@ misrepresented as being the original software.
 #include "QuadMesh.h"
 #include "Camera.h"
 #include "TextMesh.h"
-#include "Texture.h"
+#include "Texture2D.h"
 #include "Light.h"
 #include "Graphics.h"
 #include "Material.h"

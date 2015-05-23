@@ -1,10 +1,6 @@
 //Remember to rebuild with CMake if this file changes
 #ifdef COMPILEVS
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
 // Vertex shader specific
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
 attribute vec3 a_position;
 attribute vec2 a_texcoord0;
 attribute vec2 a_texcoord1;
@@ -66,7 +62,7 @@ attribute vec4 a_weights;
 #endif	
 
 #if defined(SKINNED)
-	uniform mat4 u_bones[NUM_BONES];
+	uniform mat4 u_bones[MAX_BONES];
 	mat4 GetSkinnedMatrix()
 	{
 	    return u_bones[int(a_boneIDs[0])] * a_weights[0] +
@@ -79,6 +75,7 @@ attribute vec4 a_weights;
 uniform mat4 u_model;
 uniform mat3 u_normalMatrix;
 uniform mat4 u_viewProjection;
+uniform mat4 u_lightViewProjection;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 
@@ -171,6 +168,11 @@ vec4 GetClipPos(vec4 worldPos)
 	#endif
 }
 
+vec4 GetShadowClipPos()
+{
+	return u_lightViewProjection * GetModelMatrix() * vec4(a_position, 1.0);
+}
+
 uniform vec4 u_uvTransform;
 vec2 GetTexCoord(vec2 texCoord)
 {
@@ -180,5 +182,34 @@ vec2 GetTexCoord(vec2 texCoord)
 		return texCoord.xy * u_uvTransform.xy + u_uvTransform.zw;
 	#endif
 }
+
+#elif defined(COMPILEFS)
+
+	#if defined(SHADOW) || defined(SHADOWCUBE)
+
+		// Input depth [-1..1] (NDC space)
+		// Output color [[0..1], [0..1], [0..1]]
+		vec3 EncodeDepth2Color(float depth)
+		{
+			const float DISTANCE = 255.0;
+			float value = DISTANCE - depth;
+			float v = floor(value);
+			float f = value - v;
+			float vn = v * 1.0/DISTANCE;
+			return vec3(vn, f, 0.0);
+		}
+
+	#elif defined(SHADOWMAP) || defined(CUBESHADOWMAP)		
+
+		// Input color [[0..1], [0..1], [0..1]]
+		// Output depth [-1..1] (NDC space)
+		float DecodeColor2Depth(vec3 depth)
+		{
+			const float DISTANCE = 255.0;
+			const float PRECISION_ERROR = 1.0/DISTANCE;
+			return DISTANCE - (depth.x * DISTANCE + depth.y) + PRECISION_ERROR;
+		}
+
+	#endif
 
 #endif

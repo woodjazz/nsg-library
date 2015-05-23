@@ -61,9 +61,9 @@ namespace NSG
 	void AnimationKeyFrame::Load(const pugi::xml_node& node)
 	{
 		time_ = node.attribute("time").as_float();
-		position_ = GetVertex3(node.attribute("position").as_string());
-		rotation_ = GetQuaternion(node.attribute("rotation").as_string());
-		scale_ = GetVertex3(node.attribute("scale").as_string());
+		position_ = ToVertex3(node.attribute("position").as_string());
+		rotation_ = ToQuaternion(node.attribute("rotation").as_string());
+		scale_ = ToVertex3(node.attribute("scale").as_string());
 	}
 
     void AnimationTrack::GetKeyFrameIndex(float time, size_t& index) const

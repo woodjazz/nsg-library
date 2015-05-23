@@ -33,7 +33,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto control = std::make_shared<CameraControl>(camera);
     auto mesh = Mesh::Create<QuadMesh>();
     auto material = std::make_shared<Material>();
-	material->SetTexture(std::make_shared<Texture>(resource));
+	material->SetTexture(std::make_shared<Texture2D>(resource));
 	material->SetRenderPass(RenderPass::UNLIT);
 	material->SetBillboardType(BillboardType::SPHERICAL);
     auto sprite = scene->CreateChild<SceneNode>();
