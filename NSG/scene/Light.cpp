@@ -41,12 +41,10 @@ namespace NSG
 
         dirPositiveX_.SetLocalLookAt(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeX_.SetLocalLookAt(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
-        dirPositiveY_.SetLocalLookAt(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
+        dirPositiveY_.SetLocalLookAt(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
         dirNegativeY_.SetLocalLookAt(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
-        dirPositiveZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f));
-        dirNegativeZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f));
-        Quaternion q(glm::angleAxis(glm::radians(180.f), Vertex3(0, 0, 1)));
-        dirNegativeZ_.SetOrientation(q * dirNegativeZ_.GetOrientation());
+        dirPositiveZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
+        dirNegativeZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
     }
 
     Light::~Light()
@@ -277,7 +275,7 @@ namespace NSG
                 SetGlobalOrientation(dirPositiveZ_.GetOrientation());
                 break;
             case TextureTarget::TEXTURE_CUBE_MAP_NEGATIVE_Z:
-                SetGlobalOrientation(dirNegativeY_.GetOrientation());
+                SetGlobalOrientation(dirNegativeZ_.GetOrientation());
                 break;
             default:
                 CHECK_ASSERT(!"Incorrect cube shadowmap face!!!", __FILE__, __LINE__);

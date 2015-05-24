@@ -279,7 +279,6 @@ namespace NSG
                 GenerateBatches(visiblesFromLightFace, batches);
                 graphics_->SetFrameBuffer(shadowFrameBuffer, face);
                 graphics_->ClearBuffers(true, true, false);
-                if(i == 5)
                 for (auto& batch : batches)
                     if (batch->GetMaterial()->CastShadow())
                         Draw(batch.get(), shadowPass_.get(), light);
