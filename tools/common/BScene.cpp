@@ -44,8 +44,10 @@ namespace BlenderConverter
     BScene::BScene(const Path& path, const Path& outputDir, bool embedResources)
         : path_(path),
           outputDir_(outputDir),
-          embedResources_(embedResources)
+          embedResources_(embedResources),
+          defaultMaterial_(Material::Create("__DefaultBlenderMaterial__"))
     {
+        defaultMaterial_->SetRenderPass(RenderPass::PERPIXEL);
     }
 
     BScene::~BScene()
@@ -895,11 +897,17 @@ namespace BlenderConverter
         auto light = parent->CreateChild<Light>(B_IDNAME(obj));
         ExtractGeneral(obj, light);
         Blender::Lamp* la = static_cast<Blender::Lamp*>(obj->data);
-        light->EnableShadows(la->mode & LA_SHAD_BUF || la->mode & LA_SHAD_RAY);
+        
+        if(la->type == LA_SPOT)
+            light->EnableShadows(la->mode & LA_SHAD_RAY || la->mode & LA_SHAD_BUF);
+        else
+            light->EnableShadows(la->mode & LA_SHAD_RAY);
+        
 		if (la->mode & LA_NEG)
 			light->SetEnergy(-la->energy);
 		else 
 			light->SetEnergy(la->energy);
+        
         light->SetColor(Color(la->r, la->g, la->b, 1.f));
 		light->EnableDiffuseColor(!(la->mode & LA_NO_DIFF));
 		light->EnableSpecularColor(!(la->mode & LA_NO_SPEC));
@@ -1155,6 +1163,7 @@ namespace BlenderConverter
             if (nloops < 3 || nloops > 4)
             {
                 TRACE_PRINTF("*** Only triangles or quads are converted! (loops = %d)!!!\n", nloops);
+                TRACE_PRINTF("*** To solve it: triangulate the object with a modifier!!!\n")
                 continue;
             }
 
@@ -1251,7 +1260,10 @@ namespace BlenderConverter
         const Blender::Material* mt = GetMaterial(obj, 0);
         std::string name = B_IDNAME(mt);
         auto material = Material::Get(name);
-        sceneNode->SetMaterial(material);
+        if(material)
+            sceneNode->SetMaterial(material);
+        else
+            sceneNode->SetMaterial(defaultMaterial_);
     }
 
     bool BScene::Save(bool compress)

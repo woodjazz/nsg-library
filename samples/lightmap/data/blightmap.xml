@@ -194,7 +194,8 @@
 		</Mesh>
 	</Meshes>
 	<Materials>
-		<Material name="Material" shadeless="true" castShadow="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL">
+		<Material name="__DefaultBlenderMaterial__" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="[1.000000,1.000000,1.000000,1.000000]" diffuse="[1.000000,1.000000,1.000000,1.000000]" specular="[1.000000,1.000000,1.000000,1.000000]" shininess="1" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />
+		<Material name="Material" shadeless="true" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL">
 			<Texture0 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/wall_COLOR.png.png" uvName="UVMap1" blendType="MIX" mapType="COL" />
 			<Texture2 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/lightmap.png" uvName="UVMap2" blendType="MIX" mapType="EMIT" />
 		</Material>

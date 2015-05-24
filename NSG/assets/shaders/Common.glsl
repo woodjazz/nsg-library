@@ -57,7 +57,6 @@ varying vec2 v_texcoord0;
 		{
 		    BaseLight base;
 		    vec3 position;
-		    float invRange;
 		};
 		uniform PointLight u_pointLight;
 
@@ -70,7 +69,6 @@ varying vec2 v_texcoord0;
 		    vec3 position;
 		    vec3 direction;
 		    float cutOff; // 0.5f * cosine(cutOff)
-		    float invRange;
 		};
 		uniform SpotLight u_spotLight;
 
@@ -90,3 +88,4 @@ struct Material
 uniform Material u_material;
 uniform vec4 u_sceneAmbientColor;
 uniform vec3 u_eyeWorldPos;
+uniform float u_lightInvRange;

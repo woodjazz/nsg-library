@@ -84,6 +84,7 @@ namespace NSG
 
         void SetBaseLightVariables(const BaseLightLoc& baseLoc);
         void SetLightVariables();
+        void SetLightShadowVariables();
 
         std::string defines_;
         GLuint id_;
@@ -144,7 +145,6 @@ namespace NSG
         {
             BaseLightLoc base_;
             GLuint position_;
-            GLuint invRange_;
         };
 
         struct SpotLightLoc
@@ -153,12 +153,12 @@ namespace NSG
             GLuint position_;
             GLuint direction_;
             GLuint cutOff_;
-            GLuint invRange_;
         };
 
         PointLightLoc pointLightLoc_;
         DirectionalLightLoc directionalLightLoc_;
         SpotLightLoc spotLightLoc_;
+        GLuint lightInvRangeLoc_;
 
         GLuint blendMode_loc_;
         

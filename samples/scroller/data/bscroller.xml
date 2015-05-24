@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <App>
 	<Resources>
-		<Resource name="Gen2">
+		<Resource name="Gen3">
 			<data dataSize="153025">UklGRiS6AQBXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQC6AQCJ/eH8VPzX+5D7
 zfuS+xj7+vrE+rj6uPpa+3r7vPpN+0T76Poh++z6/voF+337O/z4+5P7jPs/+/L69/pg+yH7
 D/uw+zD7m/pp+ob6Lftn+9r6p/qQ+oz5nvl/+iH7OPtf+v34vvdn97r3u/fJ9yf45vdM9zv3
@@ -2101,7 +2101,7 @@ EAAPAA8ADwAPAAwACwALAAoACgAKAAoACAAIAAgABwAHAAcABwAHAAUABQAFAAMAAwACAAIA
 AgABAAEAAQAAAAAA
 </data>
 		</Resource>
-		<Resource name="Gen3">
+		<Resource name="Gen4">
 			<data dataSize="207884">T2dnUwACAAAAAAAAAACdSgAAAAAAAAwojEgBHgF2b3JiaXMAAAAAAiJWAAAAAAAAFS4BAAAA
 AACpAU9nZ1MAAAAAAAAAAAAAnUoAAAEAAAC+y3QLEC3//////////////////xsDdm9yYmlz
 HQAAAFhpcGguT3JnIGxpYlZvcmJpcyBJIDIwMDQwNjI5AAAAAAEFdm9yYmlzIkJDVgEAQAAA
@@ -4952,7 +4952,7 @@ cKBQplxVdQP38+ecdwfL5wB9hyv2vDuyn6ccH53f+Ot9YvZw8nE4mXvOMaZZn37+PH0y+3n1
 3nDy3XH3eXzyc4Ne62Rcfwvq4eT9/Ln3gHE/H+Znv8Lt0Hvo5QI=
 </data>
 		</Resource>
-		<Resource name="Gen4">
+		<Resource name="Gen5">
 			<data dataSize="31447">UklGRtRaAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YXRYAACd/6f/wf/h/+f/
 9//P/4X/ff+R/8H/7//d/8v/i/9h/3H/cf+N/5v/q/+3/63/y//f/5v/bf9r/2X/h/+T/33/
 Yf9R/4v/pf/L/9H/v/+r/43/w//3/zsAcwBjAG0ASQANAB0ALQArADsATwBNADEAOQAzACsA
@@ -5388,9 +5388,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
 		</Resource>
 	</Resources>
 	<Sounds>
-		<Sound name="BigExplosion.wav.001" resource="Gen2" />
-		<Sound name="nice_music.ogg.004" resource="Gen3" />
-		<Sound name="PlayerFist.wav.001" resource="Gen4" />
+		<Sound name="BigExplosion.wav.001" resource="Gen3" />
+		<Sound name="nice_music.ogg.004" resource="Gen4" />
+		<Sound name="PlayerFist.wav.001" resource="Gen5" />
 	</Sounds>
 	<Meshes>
 		<Mesh name="Cube.001" wireFrameDrawMode="1" solidDrawMode="4" uv0Name="" uv1Name="">
@@ -5423,8 +5423,9 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
 		</Mesh>
 	</Meshes>
 	<Materials>
-		<Material name="Level1" shadeless="false" castShadow="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />
-		<Material name="Player" shadeless="false" castShadow="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="ALPHA" renderPass="PERPIXEL" />
+		<Material name="__DefaultBlenderMaterial__" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="[1.000000,1.000000,1.000000,1.000000]" diffuse="[1.000000,1.000000,1.000000,1.000000]" specular="[1.000000,1.000000,1.000000,1.000000]" shininess="1" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />
+		<Material name="Level1" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />
+		<Material name="Player" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.800000,0.800000,0.800000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="ALPHA" renderPass="PERPIXEL" />
 	</Materials>
 	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="Camera">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">

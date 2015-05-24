@@ -253,6 +253,10 @@ namespace NSG
         CHECK_ASSERT(!image_ && "SetSize only can be applied for non images!!!", __FILE__, __LINE__);
         CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
 
+        auto maxSize = Graphics::this_->GetMaxTextureSize();
+        width = glm::clamp(width, 0, maxSize);
+        height = glm::clamp(height, 0, maxSize);
+
         if (GetTarget() == GL_TEXTURE_CUBE_MAP)
         {
             auto value = std::max(width, height);

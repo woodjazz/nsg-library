@@ -50,7 +50,6 @@ static const char* COMMON_GLSL = \
 "		{\n"\
 "		    BaseLight base;\n"\
 "		    vec3 position;\n"\
-"		    float invRange;\n"\
 "		};\n"\
 "		uniform PointLight u_pointLight;\n"\
 "	#elif defined(HAS_SPOT_LIGHT)\n"\
@@ -61,7 +60,6 @@ static const char* COMMON_GLSL = \
 "		    vec3 position;\n"\
 "		    vec3 direction;\n"\
 "		    float cutOff; // 0.5f * cosine(cutOff)\n"\
-"		    float invRange;\n"\
 "		};\n"\
 "		uniform SpotLight u_spotLight;\n"\
 "	#endif\n"\
@@ -77,5 +75,6 @@ static const char* COMMON_GLSL = \
 "uniform Material u_material;\n"\
 "uniform vec4 u_sceneAmbientColor;\n"\
 "uniform vec3 u_eyeWorldPos;\n"\
+"uniform float u_lightInvRange;\n"\
 ;
 }

@@ -103,5 +103,6 @@ namespace BlenderConverter
 		std::vector<NSG::PScene> scenes_;
 		std::vector<const Blender::Scene*> bscenes_;
 		std::vector<NSG::PSound> sounds_;
+        NSG::PMaterial defaultMaterial_;
     };
 }

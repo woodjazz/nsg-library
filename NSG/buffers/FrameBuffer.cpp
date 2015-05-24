@@ -242,6 +242,10 @@ namespace NSG
     {
         CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
 
+        auto maxSize = Graphics::this_->GetMaxTextureSize();
+        width = glm::clamp(width, 0, maxSize);
+        height = glm::clamp(height, 0, maxSize);
+
         if (originalWidth_ != width || originalHeight_ != height)
         {
             originalWidth_ = width;

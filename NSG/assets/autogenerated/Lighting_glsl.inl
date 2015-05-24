@@ -72,9 +72,9 @@ static const char* LIGHTING_GLSL = \
 "    }\n"\
 "    #endif\n"\
 "    #if defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)\n"\
-"    vec4 CalcPointLight(BaseLight base, vec3 lightDirection, float invRange, vec3 vertexToEye, vec3 normal)\n"\
+"    vec4 CalcPointLight(BaseLight base, vec3 lightDirection, vec3 vertexToEye, vec3 normal)\n"\
 "    {\n"\
-"        float lightDist = length(lightDirection * invRange);\n"\
+"        float lightDist = length(lightDirection * u_lightInvRange);\n"\
 "        lightDirection = normalize(lightDirection);\n"\
 "        vec4 color = CalcLight(base, vertexToEye, lightDirection, normal);\n"\
 "        float atten = clamp(1.0 - lightDist * lightDist, 0.0, 1.0);\n"\
@@ -82,10 +82,10 @@ static const char* LIGHTING_GLSL = \
 "    }\n"\
 "    #endif\n"\
 "    #ifdef HAS_SPOT_LIGHT\n"\
-"    vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, float invRange, vec3 vertexToEye, vec3 normal, float cutOff)\n"\
+"    vec4 CalcSpotLight(BaseLight base, vec3 light2Pixel, vec3 lightDirection, vec3 vertexToEye, vec3 normal, float cutOff)\n"\
 "    {\n"\
 "        lightDirection = normalize(lightDirection);\n"\
-"        vec4 color = CalcPointLight(base, light2Pixel, invRange, vertexToEye, normal);\n"\
+"        vec4 color = CalcPointLight(base, light2Pixel, vertexToEye, normal);\n"\
 "        light2Pixel = normalize(light2Pixel);\n"\
 "        float spotFactor = dot(light2Pixel, lightDirection);\n"\
 "        float spotAtten = clamp((spotFactor - cutOff) / (1.0 - cutOff), 0.0, 1.0);\n"\
@@ -96,14 +96,14 @@ static const char* LIGHTING_GLSL = \
 "        #if defined(CUBESHADOWMAP)\n"\
 "            float CalcShadowCubeFactor(vec3 lightDirection)\n"\
 "            {\n"\
-"                const float PRECISION_ERROR = 0.0000001f;\n"\
-"                float sampledDistance = PRECISION_ERROR + DecodeColor2Depth(textureCube(u_texture5, lightDirection).xyz) / u_pointLight.invRange;\n"\
-"                return length(lightDirection) < sampledDistance ? 1.0 : 0.0;\n"\
+"                float PRECISION_ERROR = u_lightInvRange;\n"\
+"                float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, lightDirection).xyz) / u_lightInvRange;\n"\
+"                return sampledDistance + PRECISION_ERROR < length(lightDirection) ? 0.0 : 1.0;\n"\
 "            }\n"\
 "        #elif defined(SHADOWMAP)\n"\
 "            float CalcShadowFactor()\n"\
 "            {\n"\
-"                const float PRECISION_ERROR = 1.0/255.0;\n"\
+"                float PRECISION_ERROR = u_lightInvRange;\n"\
 "                vec3 encodedDepth = texture2DProj(u_texture5, v_lightSpacePos).xyz;\n"\
 "                return DecodeColor2Depth(encodedDepth) + PRECISION_ERROR < v_lightSpacePos.z ? 0.0 : 1.0;\n"\
 "            }\n"\
@@ -111,22 +111,22 @@ static const char* LIGHTING_GLSL = \
 "        vec4 CalcTotalLight(vec3 vertexToEye, vec3 normal)\n"\
 "        {\n"\
 "            #if defined(HAS_DIRECTIONAL_LIGHT)\n"\
-"                #if 0//defined(SHADOWMAP)\n"\
+"                #if defined(SHADOWMAP)\n"\
 "                    return CalcShadowFactor() * CalcDirectionalLight(u_directionalLight.base, u_directionalLight.direction, vertexToEye, normal);\n"\
 "                #else\n"\
 "                    return CalcDirectionalLight(u_directionalLight.base, u_directionalLight.direction, vertexToEye, normal);\n"\
 "                #endif                    \n"\
 "            #elif defined(HAS_POINT_LIGHT)\n"\
 "                #if defined(CUBESHADOWMAP)\n"\
-"                    return CalcShadowCubeFactor(v_lightDirection) * CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.invRange, vertexToEye, normal);\n"\
+"                    return CalcShadowCubeFactor(v_lightDirection) * CalcPointLight(u_pointLight.base, v_lightDirection, vertexToEye, normal);\n"\
 "                #else\n"\
-"                    return CalcPointLight(u_pointLight.base, v_lightDirection, u_pointLight.invRange, vertexToEye, normal);\n"\
+"                    return CalcPointLight(u_pointLight.base, v_lightDirection, vertexToEye, normal);\n"\
 "                #endif\n"\
 "            #elif defined(HAS_SPOT_LIGHT)\n"\
 "                #if defined(SHADOWMAP)\n"\
-"                    return CalcShadowFactor() * CalcSpotLight(u_spotLight.base, v_lightDirection, u_spotLight.direction, u_spotLight.invRange, vertexToEye, normal, u_spotLight.cutOff);\n"\
+"                    return CalcShadowFactor() * CalcSpotLight(u_spotLight.base, v_lightDirection, u_spotLight.direction, vertexToEye, normal, u_spotLight.cutOff);\n"\
 "                #else\n"\
-"                    return CalcSpotLight(u_spotLight.base, v_lightDirection, u_spotLight.direction, u_spotLight.invRange, vertexToEye, normal, u_spotLight.cutOff);\n"\
+"                    return CalcSpotLight(u_spotLight.base, v_lightDirection, u_spotLight.direction, vertexToEye, normal, u_spotLight.cutOff);\n"\
 "                #endif\n"\
 "            #endif\n"\
 "        }\n"\
@@ -136,9 +136,9 @@ static const char* LIGHTING_GLSL = \
 "            #if defined(HAS_DIRECTIONAL_LIGHT)\n"\
 "                return CalcDirectionalLight(u_directionalLight.base, u_directionalLight.direction, vertexToEye, normal);\n"\
 "            #elif defined(HAS_POINT_LIGHT)\n"\
-"                return CalcPointLight(u_pointLight.base, worldPos - u_pointLight.position, u_pointLight.invRange, vertexToEye, normal);\n"\
+"                return CalcPointLight(u_pointLight.base, worldPos - u_pointLight.position, vertexToEye, normal);\n"\
 "            #elif defined(HAS_SPOT_LIGHT)\n"\
-"                return CalcSpotLight(u_spotLight.base, worldPos - u_spotLight.position, u_spotLight.direction, u_spotLight.invRange, vertexToEye, normal, u_spotLight.cutOff);\n"\
+"                return CalcSpotLight(u_spotLight.base, worldPos - u_spotLight.position, u_spotLight.direction, vertexToEye, normal, u_spotLight.cutOff);\n"\
 "            #endif\n"\
 "        }\n"\
 "    #endif    \n"\

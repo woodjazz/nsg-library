@@ -30,6 +30,7 @@ static void Test01()
 {
 	auto Encode = [](float depth) -> Vector3
 	{
+        depth = 0.5f * depth + 0.5f;
 	    Vector3 ret;
 	    depth *= 255.0f;
 	    ret.x = std::floor(depth);
@@ -45,14 +46,21 @@ static void Test01()
 	{
 	    const Vector3 dotValues = Vector3(1.0f, 1.0f / 255.0f, 1.0f / (255.0f * 255.0f));
 	    auto ret = glm::dot(depth, dotValues);
+        ret = 2.0 * (ret - 0.5);
 		return ret;
 	};
 
 	float depth = -0.765f;
 	CHECK_CONDITION(std::abs(depth - Decode(Encode(depth))) < 0.0001f, __FILE__, __LINE__);
+    
+    depth = 0.765f;
+    CHECK_CONDITION(std::abs(depth - Decode(Encode(depth))) < 0.0001f, __FILE__, __LINE__);
 
 	depth = -0.01265f;
 	CHECK_CONDITION(std::abs(depth - Decode(Encode(depth))) < 0.0001f, __FILE__, __LINE__);
+    
+    depth = 0.01265f;
+    CHECK_CONDITION(std::abs(depth - Decode(Encode(depth))) < 0.0001f, __FILE__, __LINE__);
 
 	auto Encode1 = [](float depth)->Vector3
 	{

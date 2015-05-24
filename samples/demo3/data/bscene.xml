@@ -1757,13 +1757,14 @@
 		</Mesh>
 	</Meshes>
 	<Materials>
-		<Material name="Material" shadeless="false" castShadow="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.640000,0.640000,0.640000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL">
+		<Material name="__DefaultBlenderMaterial__" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="[1.000000,1.000000,1.000000,1.000000]" diffuse="[1.000000,1.000000,1.000000,1.000000]" specular="[1.000000,1.000000,1.000000,1.000000]" shininess="1" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />
+		<Material name="Material" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="[0.000000,0.000000,0.000000,1.000000]" diffuse="[0.640000,0.640000,0.640000,1.000000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL">
 			<Texture4 flags="00000000000000000000000000000011" flagNames=" INVERT_Y GENERATE_MIPMAPS" resource="data/AO.png" uvName="UVMap1" blendType="MIX" mapType="AMB" />
 		</Material>
 	</Materials>
 	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="Camera">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
-			<SceneNode name="Point" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[1.980730,0.128676,2.243989]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" shadows="true" />
+			<SceneNode name="Point" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[1.980730,0.128676,2.243989]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" shadows="false" />
 			<SceneNode name="Cube" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material" meshName="Cube">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />
 			</SceneNode>

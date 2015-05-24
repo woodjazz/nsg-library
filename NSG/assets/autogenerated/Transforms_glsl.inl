@@ -171,23 +171,48 @@ static const char* TRANSFORMS_GLSL = \
 "	#if defined(SHADOW) || defined(SHADOWCUBE)\n"\
 "		// Input depth [-1..1] (NDC space)\n"\
 "		// Output color [[0..1], [0..1], [0..1]]\n"\
+"		#if 1\n"\
 "		vec3 EncodeDepth2Color(float depth)\n"\
 "		{\n"\
-"			const float DISTANCE = 255.0;\n"\
+"			float DISTANCE = 1.0/u_lightInvRange;\n"\
 "			float value = DISTANCE - depth;\n"\
 "			float v = floor(value);\n"\
 "			float f = value - v;\n"\
 "			float vn = v * 1.0/DISTANCE;\n"\
 "			return vec3(vn, f, 0.0);\n"\
 "		}\n"\
+"		#else\n"\
+"		vec3 EncodeDepth2Color(float depth)\n"\
+"		{\n"\
+"			depth = 0.5 * depth + 0.5;\n"\
+"		    vec3 ret;\n"\
+"		    depth *= 255.0;\n"\
+"		    ret.x = floor(depth);\n"\
+"		    depth = (depth - ret.x) * 255.0;\n"\
+"		    ret.y = floor(depth);\n"\
+"		    ret.z = (depth - ret.y);\n"\
+"		    ret.xy *= 1.0 / 255.0;\n"\
+"		    return ret;\n"\
+"		}\n"\
+"		#endif\n"\
 "	#elif defined(SHADOWMAP) || defined(CUBESHADOWMAP)		\n"\
 "		// Input color [[0..1], [0..1], [0..1]]\n"\
 "		// Output depth [-1..1] (NDC space)\n"\
+"		#if 1\n"\
 "		float DecodeColor2Depth(vec3 depth)\n"\
 "		{\n"\
-"			const float DISTANCE = 255.0;\n"\
+"			float DISTANCE = 1.0/u_lightInvRange;\n"\
 "			return DISTANCE - (depth.x * DISTANCE + depth.y);\n"\
 "		}\n"\
+"		#else\n"\
+"		float DecodeColor2Depth(vec3 depth)\n"\
+"		{\n"\
+"		    const vec3 dotValues = vec3(1.0, 1.0 / 255.0, 1.0 / (255.0 * 255.0));\n"\
+"		    float value = dot(depth, dotValues);\n"\
+"		    value = 2.0 * (value - 0.5);\n"\
+"		    return value;\n"\
+"		}\n"\
+"		#endif\n"\
 "	#endif\n"\
 "#endif\n"\
 ;

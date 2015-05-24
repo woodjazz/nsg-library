@@ -189,25 +189,50 @@ vec2 GetTexCoord(vec2 texCoord)
 
 		// Input depth [-1..1] (NDC space)
 		// Output color [[0..1], [0..1], [0..1]]
+		#if 1
 		vec3 EncodeDepth2Color(float depth)
 		{
-			const float DISTANCE = 255.0;
+			float DISTANCE = 1.0/u_lightInvRange;
 			float value = DISTANCE - depth;
 			float v = floor(value);
 			float f = value - v;
 			float vn = v * 1.0/DISTANCE;
 			return vec3(vn, f, 0.0);
 		}
+		#else
+		vec3 EncodeDepth2Color(float depth)
+		{
+			depth = 0.5 * depth + 0.5;
+		    vec3 ret;
+		    depth *= 255.0;
+		    ret.x = floor(depth);
+		    depth = (depth - ret.x) * 255.0;
+		    ret.y = floor(depth);
+		    ret.z = (depth - ret.y);
+		    ret.xy *= 1.0 / 255.0;
+		    return ret;
+		}
+		#endif
 
 	#elif defined(SHADOWMAP) || defined(CUBESHADOWMAP)		
 
 		// Input color [[0..1], [0..1], [0..1]]
 		// Output depth [-1..1] (NDC space)
+		#if 1
 		float DecodeColor2Depth(vec3 depth)
 		{
-			const float DISTANCE = 255.0;
+			float DISTANCE = 1.0/u_lightInvRange;
 			return DISTANCE - (depth.x * DISTANCE + depth.y);
 		}
+		#else
+		float DecodeColor2Depth(vec3 depth)
+		{
+		    const vec3 dotValues = vec3(1.0, 1.0 / 255.0, 1.0 / (255.0 * 255.0));
+		    float value = dot(depth, dotValues);
+		    value = 2.0 * (value - 0.5);
+		    return value;
+		}
+		#endif
 
 	#endif
 

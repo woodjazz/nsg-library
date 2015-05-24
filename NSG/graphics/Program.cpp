@@ -84,6 +84,7 @@ namespace NSG
           sceneColorAmbientLoc_(-1),
           eyeWorldPosLoc_(-1),
           u_uvTransformLoc_(-1),
+          lightInvRangeLoc_(-1),
           blendMode_loc_(-1),
           nBones_(0),
           activeCamera_(nullptr),
@@ -263,6 +264,8 @@ namespace NSG
             bonesBaseLoc_.push_back(boneLoc);
         }
 
+        lightInvRangeLoc_ = GetUniformLocation("u_lightInvRange");
+
         {
             directionalLightLoc_.base_.diffuse_ = GetUniformLocation("u_directionalLight.base.diffuse");
             directionalLightLoc_.base_.specular_ = GetUniformLocation("u_directionalLight.base.specular");
@@ -273,7 +276,6 @@ namespace NSG
             pointLightLoc_.base_.diffuse_ = GetUniformLocation("u_pointLight.base.diffuse");
             pointLightLoc_.base_.specular_ = GetUniformLocation("u_pointLight.base.specular");
             pointLightLoc_.position_ = GetUniformLocation("u_pointLight.position");
-            pointLightLoc_.invRange_ = GetUniformLocation("u_pointLight.invRange");
         }
 
         {
@@ -282,7 +284,6 @@ namespace NSG
             spotLightLoc_.position_ = GetUniformLocation("u_spotLight.position");
             spotLightLoc_.direction_ = GetUniformLocation("u_spotLight.direction");
             spotLightLoc_.cutOff_ = GetUniformLocation("u_spotLight.cutOff");
-            spotLightLoc_.invRange_ = GetUniformLocation("u_spotLight.invRange");
         }
 
         blendMode_loc_ = GetUniformLocation("u_blendMode");
@@ -580,6 +581,33 @@ namespace NSG
         }
     }
 
+    void Program::SetLightShadowVariables()
+    {
+        if (light_)
+        {
+            if (light_->UniformsNeedUpdate())
+            {
+                if (LightType::DIRECTIONAL == light_->GetType())
+                {
+                    if (lightInvRangeLoc_ != -1)
+                        glUniform1f(lightInvRangeLoc_, 1.f/255.f); // FIXME
+                }
+                else if (LightType::POINT == light_->GetType())
+                {
+                    if (lightInvRangeLoc_ != -1)
+                        glUniform1f(lightInvRangeLoc_, light_->GetInvRange());
+                }
+                else
+                {
+                    CHECK_ASSERT(LightType::SPOT == light_->GetType(), __FILE__, __LINE__);
+
+                    if (lightInvRangeLoc_ != -1)
+                        glUniform1f(lightInvRangeLoc_, light_->GetInvRange());
+                }
+            }
+        }
+    }
+
     void Program::SetLightVariables()
     {
         if (light_)
@@ -613,6 +641,9 @@ namespace NSG
                         const Vertex3& direction = light_->GetLookAtDirection();
                         glUniform3fv(loc.direction_, 1, &direction[0]);
                     }
+
+                    if (lightInvRangeLoc_ != -1)
+                        glUniform1f(lightInvRangeLoc_, 1.f/255.f); // FIXME
                 }
                 else if (LightType::POINT == light_->GetType())
                 {
@@ -626,8 +657,8 @@ namespace NSG
                         glUniform3fv(loc.position_, 1, &position[0]);
                     }
 
-                    if (loc.invRange_ != -1)
-                        glUniform1f(loc.invRange_, light_->GetInvRange());
+                    if (lightInvRangeLoc_ != -1)
+                        glUniform1f(lightInvRangeLoc_, light_->GetInvRange());
                 }
                 else
                 {
@@ -655,8 +686,8 @@ namespace NSG
                         glUniform1f(loc.cutOff_, value);
                     }
 
-                    if (loc.invRange_ != -1)
-                        glUniform1f(loc.invRange_, light_->GetInvRange());
+                    if (lightInvRangeLoc_ != -1)
+                        glUniform1f(lightInvRangeLoc_, light_->GetInvRange());
                 }
             }
         }
@@ -668,6 +699,7 @@ namespace NSG
         {
             SetSkeletonVariables();
             SetNodeVariables();
+            SetLightShadowVariables();
             SetShadowVariables();
         }
         else
