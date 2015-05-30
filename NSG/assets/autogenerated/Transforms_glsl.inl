@@ -154,10 +154,12 @@ static const char* TRANSFORMS_GLSL = \
 "	    return u_viewProjection * worldPos;\n"\
 "	#endif\n"\
 "}\n"\
-"vec4 GetShadowClipPos()\n"\
-"{\n"\
-"	return u_lightViewProjection * GetModelMatrix() * vec4(a_position, 1.0);\n"\
-"}\n"\
+"#if defined(SHADOWMAP)\n"\
+"	vec4 GetShadowClipPos()\n"\
+"	{\n"\
+"		return u_lightViewProjection * GetModelMatrix() * vec4(a_position, 1.0);\n"\
+"	}\n"\
+"#endif\n"\
 "uniform vec4 u_uvTransform;\n"\
 "vec2 GetTexCoord(vec2 texCoord)\n"\
 "{\n"\
@@ -168,51 +170,26 @@ static const char* TRANSFORMS_GLSL = \
 "	#endif\n"\
 "}\n"\
 "#elif defined(COMPILEFS)\n"\
-"	#if defined(SHADOW) || defined(SHADOWCUBE)\n"\
-"		// Input depth [-1..1] (NDC space)\n"\
+"	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS)\n"\
+"		// Input depth [0..1]\n"\
 "		// Output color [[0..1], [0..1], [0..1]]\n"\
-"		#if 1\n"\
-"		vec3 EncodeDepth2Color(float depth)\n"\
+"		vec4 EncodeDepth2Color(float depth)\n"\
 "		{\n"\
-"			float DISTANCE = 1.0/u_lightInvRange;\n"\
-"			float value = DISTANCE - depth;\n"\
-"			float v = floor(value);\n"\
-"			float f = value - v;\n"\
-"			float vn = v * 1.0/DISTANCE;\n"\
-"			return vec3(vn, f, 0.0);\n"\
+"			const vec4 bit_shift = vec4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);\n"\
+"			const vec4 bit_mask  = vec4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);\n"\
+"			vec4 res = fract(depth * bit_shift);\n"\
+"			res -= res.xxyz * bit_mask;\n"\
+"			return res;\n"\
 "		}\n"\
-"		#else\n"\
-"		vec3 EncodeDepth2Color(float depth)\n"\
-"		{\n"\
-"			depth = 0.5 * depth + 0.5;\n"\
-"		    vec3 ret;\n"\
-"		    depth *= 255.0;\n"\
-"		    ret.x = floor(depth);\n"\
-"		    depth = (depth - ret.x) * 255.0;\n"\
-"		    ret.y = floor(depth);\n"\
-"		    ret.z = (depth - ret.y);\n"\
-"		    ret.xy *= 1.0 / 255.0;\n"\
-"		    return ret;\n"\
-"		}\n"\
-"		#endif\n"\
 "	#elif defined(SHADOWMAP) || defined(CUBESHADOWMAP)		\n"\
 "		// Input color [[0..1], [0..1], [0..1]]\n"\
-"		// Output depth [-1..1] (NDC space)\n"\
-"		#if 1\n"\
-"		float DecodeColor2Depth(vec3 depth)\n"\
+"		// Output depth [0..1]\n"\
+"		float DecodeColor2Depth(vec4 rgba_depth)\n"\
 "		{\n"\
-"			float DISTANCE = 1.0/u_lightInvRange;\n"\
-"			return DISTANCE - (depth.x * DISTANCE + depth.y);\n"\
+"			const vec4 bit_shift = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);\n"\
+"			float depth = dot(rgba_depth, bit_shift);\n"\
+"			return depth;\n"\
 "		}\n"\
-"		#else\n"\
-"		float DecodeColor2Depth(vec3 depth)\n"\
-"		{\n"\
-"		    const vec3 dotValues = vec3(1.0, 1.0 / 255.0, 1.0 / (255.0 * 255.0));\n"\
-"		    float value = dot(depth, dotValues);\n"\
-"		    value = 2.0 * (value - 0.5);\n"\
-"		    return value;\n"\
-"		}\n"\
-"		#endif\n"\
 "	#endif\n"\
 "#endif\n"\
 ;

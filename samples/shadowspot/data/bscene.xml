@@ -4466,7 +4466,7 @@
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
 			<SceneNode name="Spot.001" nodeType="Light" type="SPOT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="65" position="[5.706674,-4.277210,4.877243]" orientation="[0.881950,-0.005451,0.366172,-0.296738]" distance="30" shadows="true" />
 			<SceneNode name="Plane.001" nodeType="SceneNode" position="[-3.021927,3.817513,-2.505336]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[8.980767,8.980767,8.980767]" materialName="Plane" meshName="Plane.001" />
-			<SceneNode name="Point.001" nodeType="Light" type="POINT" energy="5" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[-4.946265,-0.444748,1.251580]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="4.21" shadows="true" />
+			<SceneNode name="Point.001" nodeType="Light" type="POINT" energy="5" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[-4.946265,-0.444748,1.251580]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="4.21" shadows="false" />
 			<SceneNode name="Cone" nodeType="SceneNode" position="[-6.048291,-0.855162,1.028362]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="cone" meshName="Cone" />
 			<SceneNode name="Spot" nodeType="Light" type="SPOT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="30" position="[-3.038399,5.497410,5.801635]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" shadows="true" />
 			<SceneNode name="SmallPlane" nodeType="SceneNode" position="[-4.707199,5.497410,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[2.662255,2.662255,2.662255]" materialName="SmallPlane" meshName="Plane" />
@@ -4475,7 +4475,7 @@
 			<SceneNode name="Cube" nodeType="SceneNode" position="[-0.176500,-0.148361,0.056115]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="cube" meshName="Cube">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />
 			</SceneNode>
-			<SceneNode name="Point" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="65" position="[2.447535,-0.169647,2.592222]" orientation="[0.570948,0.169076,0.272171,0.755880]" distance="8.59" shadows="true" />
+			<SceneNode name="Point" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="65" position="[2.447535,-0.169647,2.592222]" orientation="[0.570948,0.169076,0.272171,0.755880]" distance="8.59" shadows="false" />
 			<SceneNode name="Camera" nodeType="Camera" fovy="0.763987" zNear="0.1" zFar="100" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="13.3143" sensorFit="1" position="[5.154012,3.907469,17.348133]" orientation="[0.678731,0.072168,0.227025,0.694677]" />
 		</SceneNode>
 		<Animations />

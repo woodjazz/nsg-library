@@ -68,11 +68,11 @@ namespace NSG
         material->fillMode_ = fillMode_;
         material->blendMode_ = blendMode_;
         material->renderPass_ = renderPass_;
-		material->billboardType_ = billboardType_;
-		material->flipYTextureCoords_ = flipYTextureCoords_;
+        material->billboardType_ = billboardType_;
+        material->flipYTextureCoords_ = flipYTextureCoords_;
         material->xmlResource_ = xmlResource_;
-		material->shadeless_ = shadeless_;
-		material->cullFaceMode_ = cullFaceMode_;
+        material->shadeless_ = shadeless_;
+        material->cullFaceMode_ = cullFaceMode_;
         material->friction_ = friction_;
         material->castShadow_ = castShadow_;
         material->receiveShadows_ = receiveShadows_;
@@ -229,7 +229,7 @@ namespace NSG
         instanceBuffer_ = nullptr;
         lastBatch_.Clear();
 
-		for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+        for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
             if (texture_[index])
                 texture_[index]->Invalidate();
     }
@@ -243,13 +243,13 @@ namespace NSG
         pugi::xml_node child = node.append_child("Material");
 
         child.append_attribute("name").set_value(name_.c_str());
-		child.append_attribute("shadeless").set_value(shadeless_);
+        child.append_attribute("shadeless").set_value(shadeless_);
         child.append_attribute("castShadow").set_value(castShadow_);
         child.append_attribute("receiveShadows").set_value(receiveShadows_);
         child.append_attribute("cullFaceMode").set_value(ToString(cullFaceMode_));
         child.append_attribute("friction").set_value(friction_);
-        
-		for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+
+        for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
         {
             if (texture_[index] && texture_[index]->IsSerializable())
             {
@@ -273,13 +273,13 @@ namespace NSG
     void Material::LoadFrom(PResource resource, const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
-		shadeless_ = node.attribute("shadeless").as_bool();
+        shadeless_ = node.attribute("shadeless").as_bool();
         castShadow_ = node.attribute("castShadow").as_bool();
         receiveShadows_ = node.attribute("receiveShadows").as_bool();
         cullFaceMode_ = ToCullFaceMode(node.attribute("cullFaceMode").as_string());
         SetFriction(node.attribute("friction").as_float());
 
-		for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+        for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
         {
             texture_[index] = nullptr;
             std::string s(TEXTURE_NAME);
@@ -329,7 +329,7 @@ namespace NSG
 
     PTexture Material::GetTextureWith(PResource resource) const
     {
-		for (size_t i = 0; i < MaterialTexture::MAX_MATERIAL_MAPS; i++)
+        for (size_t i = 0; i < MaterialTexture::MAX_MATERIAL_MAPS; i++)
         {
             if (texture_[i] && resource == texture_[i]->GetResource())
                 return texture_[i];
@@ -457,16 +457,9 @@ namespace NSG
         bool shadowPass =  PassType::SHADOW == passType;
 
         if (ambientaPass)
-            defines += "AMBIENT\n";
-        else if(shadowPass)
         {
-            if(light->GetType() == LightType::POINT)
-                defines += "SHADOWCUBE\n";
-            else
-                defines += "SHADOW\n";
-        }
-        else
-        {
+            defines += "AMBIENT_PASS\n";
+
             switch (renderPass_)
             {
                 case RenderPass::VERTEXCOLOR:
@@ -474,12 +467,6 @@ namespace NSG
                     break;
                 case RenderPass::UNLIT:
                     defines += "UNLIT\n";
-                    break;
-                case RenderPass::PERVERTEX:
-                    defines += "PER_VERTEX_LIGHTING\n";
-                    break;
-                case RenderPass::PERPIXEL:
-                    defines += "PER_PIXEL_LIGHTING\n";
                     break;
                 case RenderPass::TEXT:
                     defines += "TEXT\n";
@@ -498,10 +485,32 @@ namespace NSG
                     break;
             }
         }
-
-        if(!shadowPass)
+        else if (shadowPass)
         {
-    		for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+            if (light->GetType() == LightType::POINT)
+                defines += "SHADOWCUBE_PASS\n";
+            else
+                defines += "SHADOW_PASS\n";
+        }
+        else // LIT_PASS
+        {
+            switch (renderPass_)
+            {
+                case RenderPass::PERVERTEX:
+                    defines += "PER_VERTEX_LIGHTING\n";
+                    break;
+                case RenderPass::PERPIXEL:
+                    defines += "PER_PIXEL_LIGHTING\n";
+                    break;
+                default:
+                    CHECK_ASSERT(!"INCORRECT LIT PASS!!!", __FILE__, __LINE__);
+                    break;
+            }
+        }
+
+        if (!shadowPass)
+        {
+            for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
             {
                 auto texture = GetTexture((MaterialTexture)index);
                 if (texture)
@@ -516,7 +525,7 @@ namespace NSG
                             defines += "DIFFUSEMAP\n";
                             break;
                         case TextureType::NORM:
-                            if(!ambientaPass)
+                            if (!ambientaPass)
                                 defines += "NORMALMAP\n";
                             break;
                         case TextureType::SPEC:
@@ -524,14 +533,14 @@ namespace NSG
                                 defines += "SPECULARMAP\n";
                             break;
                         case TextureType::EMIT:
-                            if(ambientaPass)
+                            if (ambientaPass)
                             {
                                 defines += "LIGHTMAP" + ToString(uvIndex) + "\n";
                                 defines += "LIGHTMAP_CHANNELS" + ToString(channels) + "\n";
                             }
                             break;
                         case TextureType::AMB:
-                            if(ambientaPass)
+                            if (ambientaPass)
                             {
                                 defines += "AOMAP" + ToString(uvIndex) + "\n";
                                 defines += "AOMAP_CHANNELS" + ToString(channels) + "\n";
@@ -543,7 +552,7 @@ namespace NSG
                 }
             }
         }
-        
+
         if (IsBatched())
             defines += "INSTANCED\n";
 
@@ -576,7 +585,7 @@ namespace NSG
 
     void Material::SetFriction(float friction)
     {
-        if(friction_ != friction)
+        if (friction_ != friction)
         {
             friction_ = friction;
             signalPhysicsSet_->Run();

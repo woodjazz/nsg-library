@@ -47,7 +47,6 @@ namespace NSG
 		void SetOctant(Octant* octant) const { octant_ = octant; }
 		const BoundingBox& GetWorldBoundingBox() const;
 		BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const;
-		bool IsOccludee() const { return occludee_; }
 		Octant* GetOctant() const { return octant_; }
 		virtual void OnDirty() const override;
 		void OnScaleChange() override;
@@ -77,7 +76,6 @@ namespace NSG
 		PRigidBody rigidBody_;
 		mutable Octant* octant_;
 		mutable BoundingBox worldBB_;
-		bool occludee_;
 		mutable bool worldBBNeedsUpdate_;
 		bool serializable_;
 		SceneNodeFlags flags_;

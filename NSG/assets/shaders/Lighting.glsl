@@ -122,8 +122,8 @@
 
             float CalcShadowCubeFactor(vec3 lightDirection)
             {
-                float PRECISION_ERROR = u_lightInvRange;
-                float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, lightDirection).xyz) / u_lightInvRange;
+                const float PRECISION_ERROR = 0.0;//0.0001;
+                float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, lightDirection)) / u_lightInvRange;
                 return sampledDistance + PRECISION_ERROR < length(lightDirection) ? 0.0 : 1.0;
             }
 
@@ -131,9 +131,11 @@
 
             float CalcShadowFactor()
             {
-                float PRECISION_ERROR = u_lightInvRange;
-                vec3 encodedDepth = texture2DProj(u_texture5, v_lightSpacePos).xyz;
-                return DecodeColor2Depth(encodedDepth) + PRECISION_ERROR < v_lightSpacePos.z ? 0.0 : 1.0;
+                const float PRECISION_ERROR = 0.0;//-0.0001;
+                vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1
+                coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1
+                vec4 encodedDepth = texture2D(u_texture5, coords.xy);
+                return DecodeColor2Depth(encodedDepth) + PRECISION_ERROR < coords.z ? 0.0 : 1.0;
             }
 
         #endif

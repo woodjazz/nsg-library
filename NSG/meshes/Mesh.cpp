@@ -433,10 +433,16 @@ namespace NSG
 
     size_t Mesh::GetMaxPlatformBones(size_t nBones) const
     {
-        static const size_t MAX_BONES = 64;
+        static const size_t MAX_BONES0 = 64;
+        static const size_t MAX_BONES1 = 48;
+        static const size_t MAX_BONES2 = 32;
         // set a maximum value per platform to avoid shader variations
-        if(nBones <= MAX_BONES)
-            return MAX_BONES;
+        if(nBones <= MAX_BONES2)
+            return MAX_BONES2;
+        else if(nBones <= MAX_BONES1)
+            return MAX_BONES1;
+        else if(nBones <= MAX_BONES0)
+            return MAX_BONES0;
         return nBones;
     }
 

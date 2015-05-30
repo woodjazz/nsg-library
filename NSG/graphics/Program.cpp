@@ -31,6 +31,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Light.h"
 #include "Camera.h"
+#include "ShadowCamera.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "Skeleton.h"
@@ -360,22 +361,25 @@ namespace NSG
 
     void Program::SetSceneVariables()
     {
-        Scene* scene = Graphics::this_->GetScene();
-
-        if (sceneColorAmbientLoc_ != -1)
+        if(node_)
         {
-            if (scene)
-            {
-                if (activeScene_ != scene || scene->UniformsNeedUpdate())
-                    glUniform4fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
-            }
-            else if (activeScene_ != scene || sceneColor_ == Color(-1))
-            {
-                sceneColor_ = Color(0, 0, 0, 1);
-                glUniform4fv(sceneColorAmbientLoc_, 1, &sceneColor_[0]);
-            }
+            Scene* scene = node_->GetScene().get();
 
-            activeScene_ = scene;
+            if (sceneColorAmbientLoc_ != -1)
+            {
+                if (scene)
+                {
+                    if (activeScene_ != scene || scene->UniformsNeedUpdate())
+                        glUniform4fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
+                }
+                else if (activeScene_ != scene || sceneColor_ == Color(-1))
+                {
+                    sceneColor_ = Color(0, 0, 0, 1);
+                    glUniform4fv(sceneColorAmbientLoc_, 1, &sceneColor_[0]);
+                }
+
+                activeScene_ = scene;
+            }
         }
     }
 
@@ -516,19 +520,19 @@ namespace NSG
 
                 if (viewProjectionLoc_ != -1)
                 {
-                    const Matrix4& m = Camera::GetMatViewProj();
+					const Matrix4& m = camera->GetMatViewProjection();
                     glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
                 if (viewLoc_ != -1)
                 {
-                    const Matrix4& m = Camera::GetViewMatrix();
+					const Matrix4& m = camera->GetView();
                     glUniformMatrix4fv(viewLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
                 if (projectionLoc_ != -1)
                 {
-                    const Matrix4& m = Camera::GetProjectionMatrix();
+					const Matrix4& m = camera->GetMatProjection();
                     glUniformMatrix4fv(projectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
@@ -543,26 +547,6 @@ namespace NSG
             }
 
             activeCamera_ = camera;
-        }
-    }
-
-    void Program::SetShadowVariables()
-    {
-        CHECK_ASSERT(light_, __FILE__, __LINE__);
-        if (viewProjectionLoc_ != -1)
-        {
-			if (viewVariablesNeverSet_ || light_->UniformsNeedUpdate())
-            {
-                viewVariablesNeverSet_ = false;
-                const Matrix4& m = light_->GetMatViewProj();
-                glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
-
-                if (eyeWorldPosLoc_ != -1)
-                {
-                    Vertex3 position = light_->GetGlobalPosition();
-                    glUniform3fv(eyeWorldPosLoc_, 1, &position[0]);
-                }
-            }
         }
     }
 
@@ -614,9 +598,11 @@ namespace NSG
         {
             if(light_->DoShadows())
             {
+				auto shadowCamera = Renderer::GetPtr()->GetShadowCamera();
+
                 if (lightViewProjectionLoc_ != -1)
                 {
-                    const Matrix4& m = light_->GetMatViewProj();
+					const Matrix4& m = shadowCamera->GetMatViewProjection();
                     glUniformMatrix4fv(lightViewProjectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
@@ -700,7 +686,7 @@ namespace NSG
             SetSkeletonVariables();
             SetNodeVariables();
             SetLightShadowVariables();
-            SetShadowVariables();
+            SetCameraVariables();
         }
         else
         {
@@ -718,7 +704,7 @@ namespace NSG
         mesh_ = mesh;
     }
 
-    void Program::Set(Node* node)
+    void Program::Set(SceneNode* node)
     {
         if (node_ != node)
         {
@@ -741,8 +727,9 @@ namespace NSG
     {
         if (light_ != light)
         {
-            light->SetUniformsNeedUpdate();
-            light_ = light;
+			light_ = light;
+			if (light)
+				light->SetUniformsNeedUpdate();
         }
     }
 

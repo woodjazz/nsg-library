@@ -42,16 +42,25 @@ namespace NSG
         MAX_PLANES
     };
 
+    static const int NUM_FRUSTUM_VERTICES = 8;
+
     class Frustum
     {
     public:
         Frustum(const Matrix4& VP);
+		Intersection IsPointInside(const Vector3& point) const;
         Intersection IsSphereInside(const Vertex3& center, float radius) const;
         Intersection IsInside(const BoundingBox& box) const;
         bool IsVisible(const Node& node, Mesh& mesh) const;
 		const Plane& GetPlane(FrustumPlane idx) { return planes_[idx]; }
+        const Vector3* GetVertices() const { return vertices_; }
+        std::vector<Vector3> GetVerticesTransform(const Matrix4& m) const;
     private:
+        void Define();
+        Vector3 IntersectionPoint(const Plane& a, const Plane& b, const Plane& c);
+        Matrix4 m_;
         Plane planes_[FrustumPlane::MAX_PLANES];
+        Vector3 vertices_[NUM_FRUSTUM_VERTICES];
     };
 
 }

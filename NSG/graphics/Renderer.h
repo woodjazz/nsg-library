@@ -40,17 +40,21 @@ namespace NSG
 		void SortFrontToBack(std::vector<SceneNode*>& nodes) const;
 		void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
 		const Window* GetWindow() const { return window_; }
+		const ShadowCamera* GetShadowCamera() const { return shadowCamera_.get(); }
 	private:
-		void GenerateShadowMap(const Light* light, const std::vector<PBatch>& batches);
-		void GenerateCubeShadowMap(Light* light, const std::vector<SceneNode*>& visiblesFromLight);
-		void RenderOpaqueNodes(std::vector<SceneNode*>& opaques);
-		void RenderTransparentNodes(std::vector<SceneNode*>& transparent);
+		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
+		void GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters);
+		void GenerateCubeShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
+		void GenerateShadowMap(const Light* light, const std::vector<SceneNode*>& drawables);
 		void ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const;
-		void ExtractLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
-		void GetVisibleFromLight(const Light* light, const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
-		void GetVisiblesFromCurrentLightFace(const Light* light, const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
-		void RenderVisibleSceneNodes(std::vector<SceneNode*>& visibles);
+		void GetLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
 		void Draw(Batch* batch, const Pass* pass, const Light* light);
+    	void AmbientPass(std::vector<SceneNode*>& nodes);
+	    void GenerateShadowMaps();
+	    void LitPass(std::vector<SceneNode*>& nodes);
+	    void TransparentPass(std::vector<SceneNode*>& transparent);
+	    void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
+
 		static Renderer* this_;
 		Graphics* graphics_;
 		Window* window_;
@@ -60,5 +64,6 @@ namespace NSG
 		PPass lightPass_;
 		PPass transparentPass_;
 		PPass shadowPass_;
+		PShadowCamera shadowCamera_;
 	};
 }

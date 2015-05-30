@@ -50,13 +50,13 @@ namespace NSG
           viewWidth_(0),
           viewHeight_(0),
           aspectRatio_(1),
-          cameraIsDirty_(false),
           window_(nullptr),
           orthoScale_(2.f),
-          sensorFit_(CameraSensorFit::HORIZONTAL)
+          sensorFit_(CameraSensorFit::HORIZONTAL),
+		  isDirty_(true)
     {
         SetInheritScale(false);
-        UpdateProjection();
+        UpdateViewProjection();
         frustum_ = std::make_shared<Frustum>(matViewProjection_);
         if (Graphics::this_)
         {
@@ -75,9 +75,12 @@ namespace NSG
 
     Camera::~Camera()
     {
-        SignalBeingDestroy()->Run(this);
-        if (Graphics::this_ && Graphics::this_->GetCamera() == this)
-            Graphics::this_->SetCamera(nullptr);
+		if (Graphics::this_)
+		{
+			SignalBeingDestroy()->Run(this);
+			if (Graphics::this_->GetCamera() == this)
+				Graphics::this_->SetCamera(nullptr);
+		}
     }
 
     void Camera::UnRegisterWindow()
@@ -136,7 +139,7 @@ namespace NSG
         if (aspectRatio_ != aspect)
         {
             aspectRatio_ = aspect;
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -145,7 +148,7 @@ namespace NSG
         if (!isOrtho_)
         {
             isOrtho_ = true;
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -154,7 +157,7 @@ namespace NSG
         if (isOrtho_)
         {
             isOrtho_ = false;
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -164,7 +167,7 @@ namespace NSG
         if (fovy_ != fovy)
         {
             fovy_ = fovy;
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -177,7 +180,7 @@ namespace NSG
         if (fovy_ != fovy)
         {
             fovy_ = fovy;
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -186,7 +189,7 @@ namespace NSG
         if (zNear_ != zNear)
         {
             zNear_ = zNear;
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -195,7 +198,7 @@ namespace NSG
         if (zFar_ != zFar)
         {
             zFar_ = zFar;
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -204,7 +207,7 @@ namespace NSG
         if (orthoScale != orthoScale_)
         {
             orthoScale_ = orthoScale;
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -214,7 +217,7 @@ namespace NSG
         {
             sensorFit_ = sensorFit;
             SetAspectRatio(CalculateAspectRatio());
-            UpdateProjection();
+			isDirty_ = true;
         }
     }
 
@@ -275,12 +278,11 @@ namespace NSG
             #endif
         }
 
-        UpdateViewProjection();
+		SetUniformsNeedUpdate();
     }
 
     void Camera::UpdateViewProjection() const
     {
-        cameraIsDirty_ = false;
         #if 0
         matViewInverse_ = GetGlobalModelMatrix();
         matView_ = glm::inverse(matViewInverse_);
@@ -300,148 +302,83 @@ namespace NSG
         SetUniformsNeedUpdate();
     }
 
+	void Camera::Update() const
+	{
+		//if (isDirty_)
+		{
+			UpdateProjection();
+			UpdateViewProjection();
+		}
+	}
+
+
     const PFrustum Camera::GetFrustum() const
     {
-        if (cameraIsDirty_)
-            UpdateViewProjection();
-
+		Update();
         return frustum_;
     }
 
     const Frustum* Camera::GetFrustumPointer() const
     {
-        if (cameraIsDirty_)
-            UpdateViewProjection();
-
+		Update();
         return frustum_.get();
 
     }
 
     const Matrix4& Camera::GetMatViewProjection() const
     {
-        if (cameraIsDirty_)
-            UpdateViewProjection();
-
+		Update();
         return matViewProjection_;
     }
 
 
-    const Matrix4& Camera::GetMatViewProj()
-    {
-        if (Graphics::this_->GetCamera())
-        {
-            return Graphics::this_->GetCamera()->GetMatViewProjection();
-        }
-        else
-        {
-            return IDENTITY_MATRIX;
-        }
-    }
-
-    Matrix4 Camera::GetModelViewProjection(const Node* pNode)
-    {
-        if (Graphics::this_->GetCamera())
-        {
-            return Graphics::this_->GetCamera()->GetMatViewProjection() * pNode->GetGlobalModelMatrix();
-        }
-        else
-        {
-            // if no Camera then position is in screen coordinates
-            return pNode->GetGlobalModelMatrix();
-        }
-    }
-
     const Matrix4& Camera::GetMatProjection() const
     {
-        if (cameraIsDirty_)
-            UpdateViewProjection();
-
-        return matProjection_;
-    }
-
-    Matrix4 Camera::GetInverseView()
-    {
-        if (Graphics::this_->GetCamera())
-        {
-            return Graphics::this_->GetCamera()->GetInverseViewMatrix();
-        }
-        else
-        {
-            return IDENTITY_MATRIX;
-        }
-    }
-
-    const Matrix4& Camera::GetViewMatrix()
-    {
-        if (Graphics::this_->GetCamera())
-        {
-            return Graphics::this_->GetCamera()->GetView();
-        }
-        else
-        {
-            return IDENTITY_MATRIX;
-        }
-
-    }
-
-    const Matrix4& Camera::GetProjectionMatrix()
-    {
-        if (Graphics::this_->GetCamera())
-        {
-            return Graphics::this_->GetCamera()->GetMatProjection();
-        }
-        else
-        {
-            return IDENTITY_MATRIX;
-        }
+		Update();
+		return matProjection_;
     }
 
     const Matrix4& Camera::GetView() const
     {
-        if (cameraIsDirty_)
-            UpdateViewProjection();
-
-        return matView_;
+		Update();
+		return matView_;
     }
 
     const Matrix4& Camera::GetInverseViewMatrix() const
     {
-        if (cameraIsDirty_)
-            UpdateViewProjection();
-
+		Update();
         return matViewInverse_;
     }
 
     const Matrix4& Camera::GetViewProjectionMatrix() const
     {
-        if (cameraIsDirty_)
-            UpdateViewProjection();
-
+		Update();
         return matViewProjection_;
     }
 
     const Matrix4& Camera::GetViewProjectionInverseMatrix() const
     {
-        if (cameraIsDirty_)
-            UpdateViewProjection();
-
+		Update();
         return matViewProjectionInverse_;
     }
 
     Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
     {
+		Update();
         Vertex4 worldCoord = GetViewProjectionInverseMatrix() * Vertex4(screenXYZ, 1);
         return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
     }
 
     Vertex3 Camera::WorldToScreen(const Vertex3& worldXYZ) const
     {
+		Update();
         Vertex4 screenCoord = GetViewProjectionMatrix() * Vertex4(worldXYZ, 1);
         return Vertex3(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w);
     }
 
     Ray Camera::GetScreenRay(float screenX, float screenY) const
     {
+		Update();
         Vertex3 nearPoint(screenX, screenY, -1); //in normalized device coordinates (Z goes from near = -1 to far = 1)
         Vertex3 farPoint(screenX, screenY, 0); //in normalized device coordinates
 
@@ -463,13 +400,21 @@ namespace NSG
 
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
     {
+		Update();
         return GetFrustum()->IsVisible(node, mesh);
     }
 
     void Camera::OnDirty() const
     {
-        cameraIsDirty_ = true;
+        isDirty_ = true;
     }
+
+	const OrthoProjection& Camera::GetOrthoProjection() const
+	{ 
+		Update();
+		return orthoProjection_; 
+	}
+
 
     void Camera::Save(pugi::xml_node& node) const
     {
@@ -509,7 +454,7 @@ namespace NSG
         SetOrientation(orientation);
         LoadChildren(node);
 
-        UpdateProjection();
+		isDirty_ = true;
     }
 
     SignalCamera::PSignal Camera::SignalBeingDestroy()
@@ -517,5 +462,4 @@ namespace NSG
         static SignalCamera::PSignal sig(new SignalCamera);
         return sig;
     }
-
 }

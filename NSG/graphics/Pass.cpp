@@ -58,7 +58,7 @@ namespace NSG
     }
 
     Pass::Pass()
-        : type_(PassType::DEFAULT)
+        : type_(PassType::AMBIENT)
     {
     }
 

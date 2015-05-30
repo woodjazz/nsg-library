@@ -43,8 +43,6 @@ namespace NSG
 		void SetFarClip(float zFar);
 		void SetAspectRatio(unsigned width, unsigned height);
 		void SetAspectRatio(float aspect);
-		static Matrix4 GetModelViewProjection(const Node* pNode);
-		static Matrix4 GetInverseView();
 		void SetViewportFactor(const Vector4& viewportFactor);
 		const Vector4& GetViewportFactor() const { return viewportFactor_; }
 		void SetOrthoScale(float orthoScale);
@@ -58,10 +56,7 @@ namespace NSG
 		//XY are in normalized device coordinates (-1, 1)
         Ray GetScreenRay(float screenX, float screenY) const;
 		static Ray GetRay(float screenX, float screenY);
-		static const Matrix4& GetViewMatrix();
 		const Matrix4& GetView() const;
-		static const Matrix4& GetMatViewProj();
-		static const Matrix4& GetProjectionMatrix();
 		const Matrix4& GetMatViewProjection() const;
 		const Matrix4& GetInverseViewMatrix() const;
 		const Matrix4& GetViewProjectionMatrix() const;
@@ -76,7 +71,7 @@ namespace NSG
 		float GetFov() const { return fovy_; }
 		void Save(pugi::xml_node& node) const override;
 		void Load(const pugi::xml_node& node) override;
-		const OrthoProjection& GetOrthoProjection() const { return orthoProjection_; }
+		const OrthoProjection& GetOrthoProjection() const;
 		void UnRegisterWindow();
 		static SignalCamera::PSignal SignalBeingDestroy();
 	private:
@@ -86,6 +81,7 @@ namespace NSG
 		void UpdateProjection() const;
 		void UpdateViewProjection() const;
 		void UpdateFrustum();
+		void Update() const;
 		mutable Matrix4 matView_;
 		mutable Matrix4 matViewInverse_;
 		mutable Matrix4 matProjection_;
@@ -100,12 +96,12 @@ namespace NSG
 		unsigned viewHeight_;
 		float aspectRatio_;
 		mutable PFrustum frustum_;
-		mutable bool cameraIsDirty_;
 		SignalSizeChanged::PSlot slotViewChanged_;
 		Window* window_;
 		SignalWindow::PSlot slotWindowCreated_;
 		float orthoScale_;
 		CameraSensorFit sensorFit_;
 		mutable OrthoProjection orthoProjection_;
+		mutable bool isDirty_;
 	};
 }

@@ -168,6 +168,9 @@ namespace NSG
 	class CameraControl;
 	typedef std::shared_ptr<CameraControl> PCameraControl;
 
+	class ShadowCamera;
+	typedef std::shared_ptr<ShadowCamera> PShadowCamera;
+
 	class BoxMesh;
 	typedef std::shared_ptr<BoxMesh> PBoxMesh;
 

@@ -232,7 +232,7 @@ ENDFOREACH()
 ###########################
 # tests
 ###########################
-#if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
+if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	enable_testing()
 	#include( CTest )
 	set(TEST_DIR ${ROOT_SOURCE_DIR}/tests)
@@ -242,5 +242,5 @@ ENDFOREACH()
 	   		ADD_SUBDIRECTORY(${TEST_DIR}/${subdir})
 	   	ENDIF()
 	ENDFOREACH()
-#endif()
+endif()
 

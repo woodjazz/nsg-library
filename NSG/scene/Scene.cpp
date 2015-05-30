@@ -38,7 +38,6 @@ namespace NSG
     {
         if (Graphics::this_)
         {
-            Graphics::this_->SetScene(this);
             auto window = Graphics::this_->GetWindow();
             if (window)
                 SetWindow(window);
@@ -231,7 +230,8 @@ namespace NSG
 
     void Scene::NeedUpdate(SceneNode* obj)
     {
-        needUpdate_.insert(obj);
+        if(obj->GetMesh() != nullptr)
+            needUpdate_.insert(obj);
     }
 
     void Scene::SavePhysics(pugi::xml_node& node) const
@@ -505,7 +505,7 @@ namespace NSG
 
     unsigned Scene::GetDrawablesNumber() const
     {
-        return octree_->GetDrawables();
+        return octree_->GetNumDrawables();
     }
 
 	PCamera Scene::GetMainCamera() const
@@ -521,5 +521,10 @@ namespace NSG
     void Scene::SetMainCamera(PCamera camera)
     {
         mainCamera_ = camera.get();
+    }
+
+    const std::vector<SceneNode*>& Scene::GetDrawables() const
+    {
+        return octree_->GetDrawables();
     }
 }

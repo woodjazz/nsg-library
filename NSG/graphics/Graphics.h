@@ -68,9 +68,7 @@ namespace NSG
         Buffer* GetIndexBuffer() const { return indexBuffer_; }
         bool SetProgram(Program* program);
         Program* GetProgram() const { return activeProgram_; }
-        void SetScene(Scene* scene) { activeScene_ = scene; }
-        Scene* GetScene() const { return activeScene_; }
-        void SetCamera(Camera* camera);
+        Camera* SetCamera(Camera* camera);
         Camera* GetCamera() const { return activeCamera_; }
         void SetWindow(Window* window);
         Window* GetWindow() const { return activeWindow_; }
@@ -130,7 +128,6 @@ namespace NSG
         const Mesh* lastMesh_; // last mesh drawn
         Program* lastProgram_; // last used program
         Mesh* activeMesh_; // mesh that is going to be drawn
-        Scene* activeScene_;
         Camera* activeCamera_;
         Window* activeWindow_;
         bool has_discard_framebuffer_ext_;

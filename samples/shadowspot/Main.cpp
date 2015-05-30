@@ -36,17 +36,32 @@ int NSG_MAIN(int argc, char* argv[])
     auto control = std::make_shared<CameraControl>(camera);
 	auto point1Light = scene->GetLights()[0];
 	auto point2Light = scene->GetLights()[1];
-	auto spotLight = scene->GetLights()[2];
-	auto dir = spotLight->GetLookAtDirection();
+	auto spot1Light = scene->GetLights()[2];
+	//spot1Light->SetDistance(60.f);
+	auto spot2Light = scene->GetLights()[3];
+	//spot2Light->SetDistance(60.f);
+	//spot2Light->SetSpotCutOff(75.f);
+	auto dir1 = spot1Light->GetLookAtDirection();
+	auto dir2 = spot2Light->GetLookAtDirection();
 
 	Engine engine;
-#if 1
+#if 0
 	auto updateSlot = engine.SigUpdate()->Connect([&](float deltaTime)
 	{
-		auto pos = spotLight->GetGlobalPosition();
-		//spotLight->SetGlobalPosition(pos - Vector3(deltaTime) * dir);
+		auto pos1 = spot1Light->GetGlobalPosition();
+		auto pos2 = spot2Light->GetGlobalPosition();
+		//spot1Light->SetGlobalPosition(pos1 - Vector3(deltaTime) * dir1);
+		//spot2Light->SetGlobalPosition(pos2 - Vector3(deltaTime) * dir2);
 
-		auto pos1 = point2Light->GetGlobalPosition();
+		static float angle = 0;
+		angle += glm::pi<float>() / 15.0f * deltaTime;
+		spot1Light->SetOrientation(glm::angleAxis(angle, Vertex3(0, 1, 0)));
+
+		spot1Light->SetOrientation(glm::angleAxis(angle, Vertex3(0, 1, 0)));
+		spot2Light->SetOrientation(glm::angleAxis(angle, Vertex3(-1, 1, 0)));
+
+
+		//auto pos1 = point2Light->GetGlobalPosition();
 		//point2Light->SetGlobalPosition(pos1 + Vector3(0, deltaTime, 0));
 	});
 #else

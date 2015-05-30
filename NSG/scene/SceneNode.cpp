@@ -44,19 +44,12 @@ namespace NSG
     SceneNode::SceneNode(const std::string& name)
         : Node(name),
           octant_(nullptr),
-          occludee_(false),
           worldBBNeedsUpdate_(true),
           serializable_(true),
           signalMeshSet_(new SignalEmpty()),
           signalMaterialSet_(new SignalEmpty()),
           signalCollision_(new Signal<const ContactPoint & >())
     {
-        #if 0
-        auto scene = GetScene();
-        if (scene)
-            scene->UpdateOctree(this);
-        #endif
-
         flags_ = (int)SceneNodeFlag::ALLOW_RAY_QUERY;
     }
 
@@ -91,7 +84,6 @@ namespace NSG
 
             if (!mesh)
             {
-                occludee_ = false;
                 auto scene = GetScene();
                 if (scene)
                     scene->RemoveFromOctree(this);
@@ -99,7 +91,6 @@ namespace NSG
             else
             {
                 mesh->AddSceneNode(this);
-                occludee_ = true;
                 worldBBNeedsUpdate_ = true;
                 auto scene = GetScene();
                 if (scene)

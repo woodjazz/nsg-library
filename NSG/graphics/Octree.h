@@ -25,6 +25,7 @@
 #include "Types.h"
 #include "BoundingBox.h"
 #include <vector>
+#include <set>
 
 namespace NSG
 {
@@ -87,9 +88,11 @@ namespace NSG
         void InsertUpdate(SceneNode* obj);
         void Remove(SceneNode* obj);
         void Execute(OctreeQuery& query);
-        unsigned GetDrawables() const { return numDrawables_; }
+        unsigned GetNumDrawables() const { return numDrawables_; }
+		const std::vector<SceneNode*>& GetDrawables() const { return allDrawables_; }
     private:
-        // Subdivision level.
-        unsigned numLevels_;
+        unsigned numLevels_; // Subdivision level.
+        std::vector<SceneNode*> allDrawables_;
+        std::set<SceneNode*> allDrawablesSet_;
     };
 }

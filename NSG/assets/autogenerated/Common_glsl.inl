@@ -18,7 +18,7 @@ static const char* COMMON_GLSL = \
 "#endif   \n"\
 "varying vec4 v_color;\n"\
 "varying vec2 v_texcoord0; \n"\
-"#if defined(AMBIENT)\n"\
+"#if defined(AMBIENT_PASS)\n"\
 "	#if defined(AOMAP1) || defined(LIGHTMAP1)\n"\
 "		varying vec2 v_texcoord1;\n"\
 "	#endif\n"\
@@ -30,7 +30,7 @@ static const char* COMMON_GLSL = \
 "	varying vec2 v_texcoord1;\n"\
 "	varying vec3 v_vertexToEye;\n"\
 "	#if defined(SHADOWMAP)\n"\
-"		varying vec4 v_lightSpacePos;\n"\
+"		varying vec4 v_shadowClipPos;\n"\
 "	#endif\n"\
 "	struct BaseLight\n"\
 "	{\n"\
@@ -44,7 +44,7 @@ static const char* COMMON_GLSL = \
 "		    vec3 direction;\n"\
 "		};\n"\
 "		uniform DirectionalLight u_directionalLight;\n"\
-"	#elif defined(HAS_POINT_LIGHT) || defined(SHADOWCUBE)\n"\
+"	#elif defined(HAS_POINT_LIGHT) || defined(SHADOWCUBE_PASS)\n"\
 "		varying vec3 v_lightDirection;\n"\
 "		struct PointLight\n"\
 "		{\n"\

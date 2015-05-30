@@ -504,9 +504,9 @@ namespace NSG
 
     enum class PassType
     {
-        DEFAULT,
         AMBIENT,
-        SHADOW
+        SHADOW,
+        LIT
     };
 
     enum class RenderPass

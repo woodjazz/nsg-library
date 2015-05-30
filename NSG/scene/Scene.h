@@ -76,6 +76,7 @@ namespace NSG
         std::vector<Camera*> GetCameras() const;
 		PCamera GetMainCamera() const;
         void SetMainCamera(PCamera camera);
+        const std::vector<SceneNode*>& GetDrawables() const;
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);

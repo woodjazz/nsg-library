@@ -32,19 +32,10 @@ namespace NSG
           invRange_(1.f / distance_),
           shadows_(true),
           width_(0),
-          height_(0),
-          frustumDirty_(false),
-          viewProjectionDirty_(false)
+          height_(0)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
-
-        dirPositiveX_.SetLocalLookAt(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
-        dirNegativeX_.SetLocalLookAt(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
-        dirPositiveY_.SetLocalLookAt(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
-        dirNegativeY_.SetLocalLookAt(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
-        dirPositiveZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
-        dirNegativeZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
     }
 
     Light::~Light()
@@ -97,7 +88,6 @@ namespace NSG
         if (spotCutOff_ != spotCutOff)
         {
             spotCutOff_ = spotCutOff;
-            OnDirty();
             SetUniformsNeedUpdate();
         }
     }
@@ -160,8 +150,8 @@ namespace NSG
 
     void Light::FillShaderDefines(std::string& defines, PassType passType, Material* material) const
     {
-        bool shadowPass =  PassType::SHADOW == passType;
-        if (!shadowPass)
+        bool litPass =  PassType::LIT == passType;
+        if (litPass)
         {
             if (LightType::POINT == type_)
                 defines += "HAS_POINT_LIGHT\n";
@@ -188,52 +178,6 @@ namespace NSG
         return sig;
     }
 
-    bool Light::IsVisible(const SceneNode* node) const
-    {
-        auto mesh = node->GetMesh();
-        auto material = node->GetMaterial();
-        if (!mesh || !mesh->IsReady() || !material || !material->IsReady())
-            return false;
-
-        bool visible = false;
-
-        if (!material->IsShadeless())
-        {
-            switch (type_)
-            {
-                case LightType::SPOT:
-                    {
-                        auto frustum = GetFrustum();
-                        visible = frustum->IsVisible(*node, *mesh);
-                        break;
-                    }
-                case LightType::POINT:
-                    {
-                        auto& bb = node->GetWorldBoundingBox();
-                        Sphere sphereLight(GetGlobalPosition(), distance_);
-                        visible = sphereLight.IsInside(bb) != Intersection::OUTSIDE;
-                        break;
-                    }
-                case LightType::DIRECTIONAL:
-                    visible = true;
-                    break;
-                default:
-                    break;
-            }
-        }
-        return visible;
-    }
-
-    bool Light::IsVisibleFromCurrentLightFace(const SceneNode* node) const
-    {
-        CHECK_ASSERT(type_ == LightType::POINT, __FILE__, __LINE__);
-        auto mesh = node->GetMesh();
-        auto material = node->GetMaterial();
-        if (!mesh || !mesh->IsReady() || !material || !material->IsReady() || material->IsShadeless())
-            return false;
-        return GetFrustum()->IsVisible(*node, *mesh);
-    }
-
     void Light::CalculateColor()
     {
         diffuseColor_ = diffuse_ ? color_ * energy_ : COLOR_BLACK;
@@ -244,100 +188,7 @@ namespace NSG
     {
         distance_ = distance;
         invRange_ = 1.0f / std::max(distance_, glm::epsilon<float>());
-        OnDirty();
         SetUniformsNeedUpdate();
-    }
-
-    void Light::OnDirty() const
-    {
-        viewProjectionDirty_ = true;
-        if (LightType::DIRECTIONAL != type_)
-            frustumDirty_ = true;
-    }
-
-    void Light::SetCurrentCubeShadowMapFace(TextureTarget target)
-    {
-        switch (target)
-        {
-            case TextureTarget::TEXTURE_CUBE_MAP_POSITIVE_X:
-                SetGlobalOrientation(dirPositiveX_.GetOrientation());
-                break;
-            case TextureTarget::TEXTURE_CUBE_MAP_NEGATIVE_X:
-                SetGlobalOrientation(dirNegativeX_.GetOrientation());
-                break;
-            case TextureTarget::TEXTURE_CUBE_MAP_POSITIVE_Y:
-                SetGlobalOrientation(dirPositiveY_.GetOrientation());
-                break;
-            case TextureTarget::TEXTURE_CUBE_MAP_NEGATIVE_Y:
-                SetGlobalOrientation(dirNegativeY_.GetOrientation());
-                break;
-            case TextureTarget::TEXTURE_CUBE_MAP_POSITIVE_Z:
-                SetGlobalOrientation(dirPositiveZ_.GetOrientation());
-                break;
-            case TextureTarget::TEXTURE_CUBE_MAP_NEGATIVE_Z:
-                SetGlobalOrientation(dirNegativeZ_.GetOrientation());
-                break;
-            default:
-                CHECK_ASSERT(!"Incorrect cube shadowmap face!!!", __FILE__, __LINE__);
-                break;
-        }
-    }
-
-    void Light::UpdateViewProjection() const
-    {
-        viewProjectionDirty_ = false;
-        matView_ = glm::inverse(GetGlobalModelMatrix());
-
-        if (LightType::SPOT == type_)
-            matProjection_ = glm::perspective(glm::radians(spotCutOff_), 1.f, 0.001f, distance_);
-        else if (LightType::POINT == type_)
-            matProjection_ = glm::perspective(glm::radians(90.f), 1.f, 0.001f, distance_);
-        else
-        {
-            auto left = -width_ * 0.5f;
-            auto right = width_ * 0.5f;
-            auto bottom = -height_ * 0.5f;
-            auto top = height_ * 0.5f;
-            auto nearP = 0.f;
-            auto farP = distance_;
-
-            matProjection_ = glm::ortho(left, right, bottom, top, nearP, farP);
-
-        }
-
-        matViewProjection_ = matProjection_ * matView_;
-        SetUniformsNeedUpdate();
-    }
-
-    void Light::UpdateFrustum() const
-    {
-        frustumDirty_ = false;
-        auto tmp = std::make_shared<Frustum>(GetMatViewProj());
-        frustum_.swap(tmp);
-        SetUniformsNeedUpdate();
-    }
-
-    const Matrix4& Light::GetMatViewProj() const
-    {
-        auto window = Renderer::GetPtr()->GetWindow();
-        auto width = window->GetWidth();
-        auto height = window->GetHeight();
-        if (width_ != width || height_ != height)
-        {
-            width_ = width;
-            height_ = height;
-            viewProjectionDirty_ = true;
-        }
-        if (viewProjectionDirty_)
-            UpdateViewProjection();
-        return matViewProjection_;
-    }
-
-    PFrustum Light::GetFrustum() const
-    {
-        if (frustumDirty_)
-            UpdateFrustum();
-        return frustum_;
     }
 
     bool Light::DoShadows() const
@@ -345,8 +196,8 @@ namespace NSG
         return shadows_;
     }
 
-    PTexture Light::GetShadowMap() const
-    {
-        return shadowFrameBuffer_->GetColorTexture();
-    }
+	PTexture Light::GetShadowMap() const
+	{ 
+		return shadowFrameBuffer_->GetColorTexture(); 
+	}
 }

@@ -16,7 +16,7 @@
 varying vec4 v_color;
 varying vec2 v_texcoord0; 
 
-#if defined(AMBIENT)
+#if defined(AMBIENT_PASS)
 
 	#if defined(AOMAP1) || defined(LIGHTMAP1)
 		varying vec2 v_texcoord1;
@@ -32,7 +32,7 @@ varying vec2 v_texcoord0;
 	varying vec3 v_vertexToEye;
 
 	#if defined(SHADOWMAP)
-		varying vec4 v_lightSpacePos;
+		varying vec4 v_shadowClipPos;
 	#endif
 
 	struct BaseLight
@@ -50,7 +50,7 @@ varying vec2 v_texcoord0;
 		};
 		uniform DirectionalLight u_directionalLight;
 
-	#elif defined(HAS_POINT_LIGHT) || defined(SHADOWCUBE)
+	#elif defined(HAS_POINT_LIGHT) || defined(SHADOWCUBE_PASS)
 
 		varying vec3 v_lightDirection;
 		struct PointLight

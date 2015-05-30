@@ -97,7 +97,6 @@ namespace NSG
           lastMesh_(nullptr),
           lastProgram_(nullptr),
           activeMesh_(nullptr),
-          activeScene_(nullptr),
           activeCamera_(nullptr),
           activeWindow_(nullptr),
           has_discard_framebuffer_ext_(false),
@@ -391,7 +390,6 @@ namespace NSG
         lastMesh_ = nullptr;
         lastProgram_ = nullptr;
         activeMesh_ = nullptr;
-        activeScene_ = nullptr;
         activeCamera_ = nullptr;
         activeWindow_ = nullptr;
 
@@ -917,8 +915,9 @@ namespace NSG
         SetUpViewport();
     }
 
-    void Graphics::SetCamera(Camera* camera)
+    Camera* Graphics::SetCamera(Camera* camera)
     {
+        auto current = activeCamera_;
         if (activeCamera_ != camera)
         {
             activeCamera_ = camera;
@@ -928,6 +927,7 @@ namespace NSG
                 viewportFactor_ = Vector4(0, 0, 1, 1);
             SetUpViewport();
         }
+        return current;
     }
 
     void Graphics::SetWindow(Window* window)

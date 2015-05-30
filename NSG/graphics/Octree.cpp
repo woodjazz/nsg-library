@@ -121,11 +121,10 @@ namespace NSG
     {
         const BoundingBox& box = obj->GetWorldBoundingBox();
 
-        // If root octant, insert all non-occludees here, so that octant occlusion does not hide the drawable.
-        // Also if drawable is outside the root octant bounds, insert to root
+        // If drawable is outside the root octant bounds, insert to root
         bool insertHere;
         if (this == root_)
-            insertHere = !obj->IsOccludee() || cullingBox_.IsInside(box) != Intersection::INSIDE || CheckFit(box);
+            insertHere = cullingBox_.IsInside(box) != Intersection::INSIDE || CheckFit(box);
         else
             insertHere = CheckFit(box);
 
@@ -267,20 +266,31 @@ namespace NSG
 
         const BoundingBox& box = obj->GetWorldBoundingBox();
         // Skip if still fits the current octant
-        if (octant && obj->IsOccludee() && octant->GetCullingBox().IsInside(box) == Intersection::INSIDE && octant->CheckFit(box))
+        //if (octant && obj->IsOccludee() && octant->GetCullingBox().IsInside(box) == Intersection::INSIDE && octant->CheckFit(box))
+        if (octant && octant->GetCullingBox().IsInside(box) == Intersection::INSIDE && octant->CheckFit(box))
             return;
 
         Insert(obj);
 
         // Verify that the obj will be culled correctly
         CHECK_ASSERT((octant = obj->GetOctant()) && (octant == this || octant->GetCullingBox().IsInside(box) == Intersection::INSIDE), __FILE__, __LINE__);
+
+		if (allDrawablesSet_.end() == allDrawablesSet_.find(obj))
+		{
+			allDrawablesSet_.insert(obj);
+			allDrawables_.push_back(obj);
+		}
     }
 
     void Octree::Remove(SceneNode* obj)
     {
         Octant* octant = obj->GetOctant();
         if (octant)
+        {
             octant->Remove(obj);
+			allDrawablesSet_.erase(obj);
+			allDrawables_.erase(std::remove(allDrawables_.begin(), allDrawables_.end(), obj), allDrawables_.end());
+        }
     }
 
     void Octree::Execute(OctreeQuery& query)

@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "BoundingBox.h"
+#include "Frustum.h"
 #include "Node.h"
 #include "Util.h"
 namespace NSG
@@ -74,6 +75,22 @@ namespace NSG
     {
     }
 
+    BoundingBox::BoundingBox(const Frustum& frustum)
+        : min_(0),
+          max_(0),
+          defined_(false)
+
+    {
+        const Vertex3* vertices = frustum.GetVertices();
+        for (int i = 0; i < NUM_FRUSTUM_VERTICES; i++)
+            Merge(vertices[i]);
+    }
+
+    BoundingBox::BoundingBox(const std::vector<Vector3>& vertices)
+    {
+        for(auto& v: vertices)
+            Merge(v);
+    }
 
     BoundingBox::~BoundingBox()
     {
@@ -82,16 +99,20 @@ namespace NSG
     void BoundingBox::Transform(const Node& node)
     {
         const Matrix4& transform = node.GetGlobalModelMatrix();
-        Vector3 newCenter = Vector3(transform * Vector4(Center(), 1));
-		Vector3 oldEdge = Size() * 0.5f;
+        Transform(transform);
+    }
 
-		Vector3 newEdge = Vector3(
-			glm::abs(transform[0][0]) * oldEdge.x + glm::abs(transform[1][0]) * oldEdge.y + glm::abs(transform[2][0]) * oldEdge.z,
-			glm::abs(transform[0][1]) * oldEdge.x + glm::abs(transform[1][1]) * oldEdge.y + glm::abs(transform[2][1]) * oldEdge.z,
-			glm::abs(transform[0][2]) * oldEdge.x + glm::abs(transform[1][2]) * oldEdge.y + glm::abs(transform[2][2]) * oldEdge.z
-			);
+    void BoundingBox::Transform(const Matrix4& m)
+    {
+        Vector3 newCenter = Vector3(m * Vector4(Center(), 1));
+        Vector3 oldEdge = Size() * 0.5f;
 
-		BoundingBox obj(newCenter - newEdge, newCenter + newEdge);
+        Vector3 newEdge = Vector3(glm::abs(m[0][0]) * oldEdge.x + glm::abs(m[1][0]) * oldEdge.y + glm::abs(m[2][0]) * oldEdge.z,
+                                  glm::abs(m[0][1]) * oldEdge.x + glm::abs(m[1][1]) * oldEdge.y + glm::abs(m[2][1]) * oldEdge.z,
+                                  glm::abs(m[0][2]) * oldEdge.x + glm::abs(m[1][2]) * oldEdge.y + glm::abs(m[2][2]) * oldEdge.z
+                                 );
+
+        BoundingBox obj(newCenter - newEdge, newCenter + newEdge);
         min_ = obj.min_;
         max_ = obj.max_;
     }
@@ -193,7 +214,7 @@ namespace NSG
     std::ostream& operator << (std::ostream& s , const BoundingBox& obj)
     {
         s << obj.min_ << " - " << obj.max_;
-        
+
         return s;
     }
 

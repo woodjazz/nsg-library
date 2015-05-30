@@ -9,101 +9,102 @@
 	// since it can produce different results and cause z-fighting between passes
 	void main()
 	{
-		#if defined(AMBIENT)
+		#if defined(AMBIENT_PASS)
 
-			v_color = u_material.color * a_color;
-			gl_Position = GetClipPos();
-			v_texcoord0 = GetTexCoord(a_texcoord0);
-			#if defined(AOMAP1) || defined(LIGHTMAP1)
-				v_texcoord1 = GetTexCoord(a_texcoord1);
+			#if defined(TEXT)
+
+				v_color = u_material.color * a_color;
+				gl_Position = GetClipPos();
+				v_texcoord0 = GetTexCoord(a_texcoord0);
+
+			#elif defined(BLUR) || defined(BLEND) || defined(WAVE)
+
+				gl_Position = vec4(a_position, 1.0);
+				v_texcoord0 = GetTexCoord(a_texcoord0);
+
+			#elif defined(SHOW_TEXTURE0)
+
+				gl_Position = vec4(a_position, 1.0);
+				v_texcoord0 = GetTexCoord(a_texcoord0);
+
+			#elif defined(UNLIT)
+
+				v_color = u_material.color * a_color;
+				gl_Position = GetClipPos();
+				v_texcoord0 = GetTexCoord(a_texcoord0);
+
+			#elif defined(VERTEXCOLOR)
+				
+				v_color = u_material.color * a_color;
+				gl_Position = GetClipPos();
+
+			#else // AMBIENT
+				
+				v_color = u_material.color * a_color;
+				gl_Position = GetClipPos();
+				v_texcoord0 = GetTexCoord(a_texcoord0);
+				#if defined(AOMAP1) || defined(LIGHTMAP1)
+					v_texcoord1 = GetTexCoord(a_texcoord1);
+				#endif
+
 			#endif
 
-		#elif defined(SHADOW)
+		#elif defined(SHADOW_PASS)
 
 			gl_Position = GetClipPos();
-			v_color = GetClipPos();
 
-		#elif defined(SHADOWCUBE)
+		#elif defined(SHADOWCUBE_PASS)
 
 			gl_Position = GetClipPos();
 			v_worldPos = GetWorldPos().xyz;
 
-		#elif defined(TEXT)
+		#else // LIT_PASS
 
-			v_color = u_material.color * a_color;
-			gl_Position = GetClipPos();
-			v_texcoord0 = GetTexCoord(a_texcoord0);
+			#if defined(PER_VERTEX_LIGHTING)
 
-		#elif defined(BLUR) || defined(BLEND) || defined(WAVE)
+				vec4 worldPos = GetWorldPos();
+			    vec3 normal = GetWorldNormal();
+			    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
+			    vec4 totalLight = CalcTotalLight(worldPos.xyz, vertexToEye, normal);
+			    v_color = a_color * totalLight;
+				v_texcoord0 = GetTexCoord(a_texcoord0);
+				gl_Position = GetClipPos();
 
-			gl_Position = vec4(a_position, 1.0);
-			v_texcoord0 = GetTexCoord(a_texcoord0);
+			#else // PER_PIXEL_LIGHTING
 
-		#elif defined(SHOW_TEXTURE0)
+				//Lighting is calculated in world space
 
-			gl_Position = vec4(a_position, 1.0);
-			v_texcoord0 = GetTexCoord(a_texcoord0);
+				vec4 worldPos = GetWorldPos();
+				v_vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
+				v_normal = GetWorldNormal();
+				
+				#if defined(NORMALMAP)
+					v_tangent = GetWorldTangent(); // Transform the tangent vector to world space (and pass it to the fragment shader).
+				    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);
+				    v_bitangent = cross(v_tangent, v_normal);
+				    // v_normal, v_tangent and v_bitangent are in world coordinates
+				#endif
 
-		#elif defined(UNLIT)
+				#if defined(SHADOWMAP)
+					v_shadowClipPos = GetShadowClipPos();
+				#endif
 
-			v_color = u_material.color * a_color;
-			gl_Position = GetClipPos();
-			v_texcoord0 = GetTexCoord(a_texcoord0);
+				#ifdef HAS_POINT_LIGHT
 
-		#elif defined(PER_VERTEX_LIGHTING)
+					v_lightDirection = worldPos.xyz - u_pointLight.position;
 
-			vec4 worldPos = GetWorldPos();
-		    vec3 normal = GetWorldNormal();
-		    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
-		    vec4 totalLight = CalcTotalLight(worldPos.xyz, vertexToEye, normal);
-		    v_color = a_color * totalLight;
-			v_texcoord0 = GetTexCoord(a_texcoord0);
-			gl_Position = GetClipPos();
+				#elif defined(HAS_SPOT_LIGHT)
 
-		#elif defined(PER_PIXEL_LIGHTING)
+					v_lightDirection = worldPos.xyz - u_spotLight.position;
+						
+				#endif
 
-			//Lighting is calculated in world space
-
-			vec4 worldPos = GetWorldPos();
-			v_vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
-			v_normal = GetWorldNormal();
-			
-			#if defined(NORMALMAP)
-				v_tangent = GetWorldTangent(); // Transform the tangent vector to world space (and pass it to the fragment shader).
-			    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);
-			    v_bitangent = cross(v_tangent, v_normal);
-			    // v_normal, v_tangent and v_bitangent are in world coordinates
-			#endif
-
-			#if defined(SHADOWMAP)
-				const mat4 normalizeMat = mat4(0.5, 0.0, 0.0, 0.0,
-			                              0.0, 0.5, 0.0, 0.0,
-			                              0.0, 0.0, 1.0, 0.0,
-			                              0.5, 0.5, 0.0, 1.0);
-
-				// Normalize texture coords from -1..1 to 0..1
-				v_lightSpacePos = normalizeMat * GetShadowClipPos();
+				v_color = a_color;
+				v_texcoord0 = GetTexCoord(a_texcoord0);
+				gl_Position = GetClipPos();
 
 			#endif
 
-			#ifdef HAS_POINT_LIGHT
-
-				v_lightDirection = worldPos.xyz - u_pointLight.position;
-
-			#elif defined(HAS_SPOT_LIGHT)
-
-				v_lightDirection = worldPos.xyz - u_spotLight.position;
-					
-			#endif
-
-			v_color = a_color;
-			v_texcoord0 = GetTexCoord(a_texcoord0);
-			gl_Position = GetClipPos();
-
-		#else // Vertex color by default
-			v_color = u_material.color * a_color;
-			gl_Position = GetClipPos();
-			
 		#endif
 	}
 #endif

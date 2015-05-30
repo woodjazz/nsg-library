@@ -54,7 +54,7 @@ namespace NSG
         GLuint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
         GLuint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
         void Set(Mesh* mesh);
-        void Set(Node* node);
+        void Set(SceneNode* node);
         void Set(Material* material);
         void Set(const Light* light);
         void SetVariables(bool shadowPass);
@@ -69,7 +69,6 @@ namespace NSG
         void ReleaseResources() override;
         void SetSceneVariables();
         void SetCameraVariables();
-        void SetShadowVariables();
         void SetMaterialVariables();
 		void SetSkeletonVariables();
 		void SetUniformLocations();
@@ -188,7 +187,7 @@ namespace NSG
         Color sceneColor_;
 
         Mesh* mesh_;
-        Node* node_;
+        SceneNode* node_;
         Material* material_;
         const Light* light_;
     };

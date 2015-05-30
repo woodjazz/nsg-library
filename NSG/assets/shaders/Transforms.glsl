@@ -168,10 +168,12 @@ vec4 GetClipPos(vec4 worldPos)
 	#endif
 }
 
-vec4 GetShadowClipPos()
-{
-	return u_lightViewProjection * GetModelMatrix() * vec4(a_position, 1.0);
-}
+#if defined(SHADOWMAP)
+	vec4 GetShadowClipPos()
+	{
+		return u_lightViewProjection * GetModelMatrix() * vec4(a_position, 1.0);
+	}
+#endif
 
 uniform vec4 u_uvTransform;
 vec2 GetTexCoord(vec2 texCoord)
@@ -185,54 +187,29 @@ vec2 GetTexCoord(vec2 texCoord)
 
 #elif defined(COMPILEFS)
 
-	#if defined(SHADOW) || defined(SHADOWCUBE)
+	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS)
 
-		// Input depth [-1..1] (NDC space)
+		// Input depth [0..1]
 		// Output color [[0..1], [0..1], [0..1]]
-		#if 1
-		vec3 EncodeDepth2Color(float depth)
+		vec4 EncodeDepth2Color(float depth)
 		{
-			float DISTANCE = 1.0/u_lightInvRange;
-			float value = DISTANCE - depth;
-			float v = floor(value);
-			float f = value - v;
-			float vn = v * 1.0/DISTANCE;
-			return vec3(vn, f, 0.0);
+			const vec4 bit_shift = vec4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);
+			const vec4 bit_mask  = vec4(0.0, 1.0/256.0, 1.0/256.0, 1.0/256.0);
+			vec4 res = fract(depth * bit_shift);
+			res -= res.xxyz * bit_mask;
+			return res;
 		}
-		#else
-		vec3 EncodeDepth2Color(float depth)
-		{
-			depth = 0.5 * depth + 0.5;
-		    vec3 ret;
-		    depth *= 255.0;
-		    ret.x = floor(depth);
-		    depth = (depth - ret.x) * 255.0;
-		    ret.y = floor(depth);
-		    ret.z = (depth - ret.y);
-		    ret.xy *= 1.0 / 255.0;
-		    return ret;
-		}
-		#endif
 
 	#elif defined(SHADOWMAP) || defined(CUBESHADOWMAP)		
 
 		// Input color [[0..1], [0..1], [0..1]]
-		// Output depth [-1..1] (NDC space)
-		#if 1
-		float DecodeColor2Depth(vec3 depth)
+		// Output depth [0..1]
+		float DecodeColor2Depth(vec4 rgba_depth)
 		{
-			float DISTANCE = 1.0/u_lightInvRange;
-			return DISTANCE - (depth.x * DISTANCE + depth.y);
+			const vec4 bit_shift = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);
+			float depth = dot(rgba_depth, bit_shift);
+			return depth;
 		}
-		#else
-		float DecodeColor2Depth(vec3 depth)
-		{
-		    const vec3 dotValues = vec3(1.0, 1.0 / 255.0, 1.0 / (255.0 * 255.0));
-		    float value = dot(depth, dotValues);
-		    value = 2.0 * (value - 0.5);
-		    return value;
-		}
-		#endif
 
 	#endif
 

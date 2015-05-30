@@ -30,8 +30,14 @@ misrepresented as being the original software.
 namespace NSG
 {
     Frustum::Frustum(const Matrix4& VP)
+    : m_(VP)
     {
-        const float* m = glm::value_ptr(VP);
+        Define();
+    }
+
+    void Frustum::Define()
+    {
+        const float* m = glm::value_ptr(m_);
         float t;
 
         Vector4& left = planes_[PLANE_LEFT].normald_;
@@ -86,6 +92,39 @@ namespace NSG
         farP[3] = m[15] - m[14];
         t = glm::length(Vector3(farP));
         farP /= t;
+
+        const Plane& Near = planes_[PLANE_NEAR];
+        const Plane& Far = planes_[PLANE_FAR];
+        const Plane& Left = planes_[PLANE_LEFT];
+        const Plane& Right = planes_[PLANE_RIGHT];
+        const Plane& Top = planes_[PLANE_UP];
+        const Plane& Bottom = planes_[PLANE_DOWN];
+
+        vertices_[0] = IntersectionPoint(Near, Left, Bottom);
+        vertices_[1] = IntersectionPoint(Near, Right, Bottom);
+        vertices_[2] = IntersectionPoint(Near, Right, Top);
+        vertices_[3] = IntersectionPoint(Near, Left, Top);
+
+        vertices_[4] = IntersectionPoint(Far, Left, Bottom);
+        vertices_[5] = IntersectionPoint(Far, Right, Bottom);
+        vertices_[6] = IntersectionPoint(Far, Right, Top);
+        vertices_[7] = IntersectionPoint(Far, Left, Top);
+    }
+
+    std::vector<Vector3> Frustum::GetVerticesTransform(const Matrix4& m) const
+    {
+        std::vector<Vector3> result;
+        for(int i=0; i<NUM_FRUSTUM_VERTICES; i++)
+            result.push_back(Vector3(m * Vector4(vertices_[i], 1)));
+        return result;
+    }
+
+    Intersection Frustum::IsPointInside(const Vector3& point) const
+    {
+		for (int i = 0; i < FrustumPlane::MAX_PLANES; i++)
+            if (planes_[i].Distance(point) < 0.f)
+                return Intersection::OUTSIDE;
+        return Intersection::INSIDE;
     }
 
     Intersection Frustum::IsSphereInside(const Vertex3& center, float radius) const
@@ -174,4 +213,21 @@ namespace NSG
         return false;
     }
 
+    Vector3 Frustum::IntersectionPoint(const Plane& a, const Plane& b, const Plane& c)
+    {
+        Vector3 n1(a.GetNormalD());
+        Vector3 n2(b.GetNormalD());
+        Vector3 n3(c.GetNormalD());
+        float d1(a.GetNormalD().w);
+        float d2(b.GetNormalD().w);
+        float d3(c.GetNormalD().w);
+
+        float f = -glm::dot(n1, glm::cross(n2, n3));
+
+        Vector3 v1 = d1 * glm::cross(n2, n3);
+        Vector3 v2 = d2 * glm::cross(n3, n1);
+        Vector3 v3 = d3 * glm::cross(n1, n2);
+
+        return (v1 + v2 + v3) / f;
+    }
 }
