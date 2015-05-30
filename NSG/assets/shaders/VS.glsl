@@ -49,11 +49,11 @@
 
 			#endif
 
-		#elif defined(SHADOW_PASS)
+		#elif defined(SHADOWDIR_PASS)
 
 			gl_Position = GetClipPos();
 
-		#elif defined(SHADOWCUBE_PASS)
+		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
 			gl_Position = GetClipPos();
 			v_worldPos = GetWorldPos().xyz;

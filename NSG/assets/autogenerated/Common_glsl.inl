@@ -38,6 +38,7 @@ static const char* COMMON_GLSL = \
 "	    vec4 specular;\n"\
 "	};\n"\
 "	#if defined(HAS_DIRECTIONAL_LIGHT)\n"\
+"		varying vec3 v_lightDirection;\n"\
 "		struct DirectionalLight\n"\
 "		{\n"\
 "		    BaseLight base;\n"\

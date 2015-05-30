@@ -40,9 +40,9 @@ static const char* VS_GLSL = \
 "					v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
 "				#endif\n"\
 "			#endif\n"\
-"		#elif defined(SHADOW_PASS)\n"\
+"		#elif defined(SHADOWDIR_PASS)\n"\
 "			gl_Position = GetClipPos();\n"\
-"		#elif defined(SHADOWCUBE_PASS)\n"\
+"		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_worldPos = GetWorldPos().xyz;\n"\
 "		#else // LIT_PASS\n"\

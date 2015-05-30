@@ -43,11 +43,11 @@
 
 			#endif
 
-		#elif defined(SHADOW_PASS)
+		#elif defined(SHADOWDIR_PASS)
 
 			gl_FragColor = EncodeDepth2Color(gl_FragCoord.z);
 
-		#elif defined(SHADOWCUBE_PASS)
+		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
 			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
     		float lightToPixelDistance = clamp(length(lightToVertex) * u_lightInvRange, 0.0, 1.0);

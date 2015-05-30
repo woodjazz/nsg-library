@@ -94,20 +94,31 @@ static const char* LIGHTING_GLSL = \
 "    #endif\n"\
 "    #if defined(COMPILEFS)\n"\
 "        #if defined(CUBESHADOWMAP)\n"\
-"            float CalcShadowCubeFactor(vec3 lightDirection)\n"\
+"            float CalcShadowCubeFactor()\n"\
 "            {\n"\
-"                const float PRECISION_ERROR = 0.0;//0.0001;\n"\
-"                float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, lightDirection)) / u_lightInvRange;\n"\
-"                return sampledDistance + PRECISION_ERROR < length(lightDirection) ? 0.0 : 1.0;\n"\
+"                float lengthLightDirection = length(v_lightDirection);\n"\
+"                float totalError = 0.000125 * lengthLightDirection;\n"\
+"                float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, v_lightDirection)) / u_lightInvRange;\n"\
+"                return sampledDistance + totalError < lengthLightDirection ? 0.0 : 1.0;\n"\
 "            }\n"\
 "        #elif defined(SHADOWMAP)\n"\
 "            float CalcShadowFactor()\n"\
 "            {\n"\
-"                const float PRECISION_ERROR = 0.0;//-0.0001;\n"\
-"                vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
-"                coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
-"                vec4 encodedDepth = texture2D(u_texture5, coords.xy);\n"\
-"                return DecodeColor2Depth(encodedDepth) + PRECISION_ERROR < coords.z ? 0.0 : 1.0;\n"\
+"                #if defined(HAS_DIRECTIONAL_LIGHT)\n"\
+"                    float PRECISION_ERROR = 0.0;\n"\
+"                    vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
+"                    coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
+"                    vec4 encodedDepth = texture2D(u_texture5, coords.xy);\n"\
+"                    return DecodeColor2Depth(encodedDepth) + PRECISION_ERROR < coords.z ? 0.0 : 1.0;\n"\
+"                #else\n"\
+"                    float lengthLightDirection = length(v_lightDirection);\n"\
+"                    float totalError = 0.000125 * lengthLightDirection;\n"\
+"                    float lightToPixelDistance = clamp(lengthLightDirection * u_lightInvRange, 0.0, 1.0);\n"\
+"                    vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
+"                    coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
+"                    float sampledDistance = DecodeColor2Depth(texture2D(u_texture5, coords.xy));\n"\
+"                    return sampledDistance + totalError < lightToPixelDistance ? 0.0 : 1.0;\n"\
+"                    #endif\n"\
 "            }\n"\
 "        #endif\n"\
 "        vec4 CalcTotalLight(vec3 vertexToEye, vec3 normal)\n"\
@@ -120,7 +131,7 @@ static const char* LIGHTING_GLSL = \
 "                #endif                    \n"\
 "            #elif defined(HAS_POINT_LIGHT)\n"\
 "                #if defined(CUBESHADOWMAP)\n"\
-"                    return CalcShadowCubeFactor(v_lightDirection) * CalcPointLight(u_pointLight.base, v_lightDirection, vertexToEye, normal);\n"\
+"                    return CalcShadowCubeFactor() * CalcPointLight(u_pointLight.base, v_lightDirection, vertexToEye, normal);\n"\
 "                #else\n"\
 "                    return CalcPointLight(u_pointLight.base, v_lightDirection, vertexToEye, normal);\n"\
 "                #endif\n"\

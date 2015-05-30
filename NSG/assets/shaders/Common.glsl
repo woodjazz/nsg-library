@@ -43,6 +43,7 @@ varying vec2 v_texcoord0;
 
 	#if defined(HAS_DIRECTIONAL_LIGHT)
 
+		varying vec3 v_lightDirection;
 		struct DirectionalLight
 		{
 		    BaseLight base;
