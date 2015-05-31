@@ -41,6 +41,7 @@ namespace NSG
 		bool GetVisibles(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
 		bool GetVisiblesFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
 	private:
+		void CalculateOrthoProjection() const override;
         Node dirPositiveX_;
         Node dirNegativeX_;
         Node dirPositiveY_;

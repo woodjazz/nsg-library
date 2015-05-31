@@ -55,6 +55,7 @@ namespace NSG
 		const Plane& GetPlane(FrustumPlane idx) { return planes_[idx]; }
         const Vector3* GetVertices() const { return vertices_; }
         std::vector<Vector3> GetVerticesTransform(const Matrix4& m) const;
+        const Matrix4& GetMatrix() const { return m_; }
     private:
         void Define();
         Vector3 IntersectionPoint(const Plane& a, const Plane& b, const Plane& c);

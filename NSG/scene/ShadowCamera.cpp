@@ -34,7 +34,7 @@ namespace NSG
 {
     ShadowCamera::ShadowCamera(const std::string& name)
         : Camera(name),
-        type_(LightType::POINT)
+          type_(LightType::POINT)
     {
         dirPositiveX_.SetLocalLookAt(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeX_.SetLocalLookAt(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
@@ -42,7 +42,7 @@ namespace NSG
         dirNegativeY_.SetLocalLookAt(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
         dirPositiveZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
-		SetWindow(nullptr);
+        SetWindow(nullptr);
     }
 
     ShadowCamera::~ShadowCamera()
@@ -61,9 +61,9 @@ namespace NSG
             SetFarClip(light->GetDistance());
             SetFOV(light->GetSpotCutOff());
             SetAspectRatio(1.0);
-			DisableOrtho();
+            DisableOrtho();
         }
-        else if(LightType::POINT == type_)
+        else if (LightType::POINT == type_)
         {
             SetPosition(light->GetGlobalPosition());
             SetOrientation(light->GetGlobalOrientation());
@@ -71,20 +71,57 @@ namespace NSG
             SetFarClip(light->GetDistance());
             SetFOV(90.f);
             SetAspectRatio(1.0);
-			DisableOrtho();
+            DisableOrtho();
         }
         else
         {
-            auto frustum = camera->GetFrustum();
-            BoundingBox bb(frustum->GetVerticesTransform(camera->GetView()));
-            SetPosition(bb.Center());
+            float extrusionDistance = camera->GetZFar();
+            //Vector3 pos = camera->GetGlobalPosition() - extrusionDistance * light->GetLookAtDirection();
+            SetPosition(VECTOR3_ZERO);
             SetOrientation(light->GetGlobalOrientation());
-            SetNearClip(0.f);
-            SetFarClip(light->GetDistance());
-            auto size = std::max(window->GetWidth(), window->GetHeight());
-            SetOrthoScale(size);
-            SetAspectRatio(1.0);
-			EnableOrtho();
+            //BoundingBox viewBox(Vector3(-1), Vector3(1));
+            //viewBox.Transform(GetGlobalModelInvMatrix() * camera->GetViewProjectionInverseMatrix());
+            //viewBox.Transform(camera->GetViewProjectionInverseMatrix());
+            BoundingBox viewBox(camera->GetFrustum()->GetVerticesTransform(GetView()));
+            EnableOrtho();
+
+            orthoProjection_.left_ = viewBox.min_.x;
+            orthoProjection_.right_ = viewBox.max_.x;
+            orthoProjection_.bottom_ = viewBox.min_.y;
+            orthoProjection_.top_ = viewBox.max_.y;
+            orthoProjection_.near_ = viewBox.min_.z;
+            orthoProjection_.far_ = viewBox.max_.z;
+       
+
+
+
+
+            // Set initial position & rotation
+            Vector3 pos = viewBox.Center();
+            //pos.z -= (viewBox.max_.z - viewBox.min_.z) * 0.5f;
+            //pos -= extrusionDistance * light->GetLookAtDirection();
+            SetPosition(pos);
+            //SetLocalLookAt(light->GetLookAtDirection(), VECTOR3_UP);
+            //SetOrientation(light->GetGlobalOrientation());
+
+            Vector3 center = viewBox.Center();
+            // Center shadow camera to the view space bounding box
+            Quaternion rot(GetOrientation());
+            Vector3 adjust(center.x, center.y, 0.0f);
+            Translate(rot * adjust, TransformSpace::TS_WORLD);
+
+            #if 0
+            // If the shadow map viewport is known, snap to whole texels
+            if (shadowMapWidth > 0.0f)
+            {
+                Vector3 viewPos(glm::inverse(rot) * GetPosition());
+                // Take into account that shadow map border will not be used
+                float invActualSize = 1.0f / (shadowMapWidth - 2.0f);
+                Vector2 texelSize(viewSize.x * invActualSize, viewSize.y * invActualSize);
+                Vector3 snap(-fmodf(viewPos.x, texelSize.x), -fmodf(viewPos.y, texelSize.y), 0.0f);
+                Translate(rot * snap, TransformSpace::TS_WORLD);
+            }
+            #endif
         }
     }
 
@@ -162,23 +199,27 @@ namespace NSG
         return GetFrustumPointer()->IsVisible(*node, *mesh);
     }
 
-	bool ShadowCamera::GetVisibles(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
-	{
-		CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
-		for (auto& node : nodes)
-			if (IsVisible(node))
-				result.push_back(node);
+    bool ShadowCamera::GetVisibles(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
+    {
+        CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
+        for (auto& node : nodes)
+            if (IsVisible(node))
+                result.push_back(node);
         return !result.empty();
-	}
+    }
 
-	bool ShadowCamera::GetVisiblesFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
-	{
+    bool ShadowCamera::GetVisiblesFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
+    {
         CHECK_ASSERT(type_ == LightType::POINT, __FILE__, __LINE__);
-		CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
-		for (auto& node : nodes)
-			if (IsVisibleFromCurrentFace(node))
-				result.push_back(node);
+        CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
+        for (auto& node : nodes)
+            if (IsVisibleFromCurrentFace(node))
+                result.push_back(node);
         return !result.empty();
-	}
+    }
+
+    void ShadowCamera::CalculateOrthoProjection() const
+    {
+    }
 
 }
