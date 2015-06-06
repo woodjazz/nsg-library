@@ -216,7 +216,7 @@ int NSG_MAIN(int argc, char* argv[])
 			}
 			else
 			{
-				TRACE_PRINTF("Cannot convert file. Unknown file extension!!!\n");
+				LOGE("Cannot convert file. Unknown file extension");
 				return -1;
 			}
 		}

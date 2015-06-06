@@ -82,7 +82,7 @@ static void Test01()
 		Path path("data/testfile.txt");
 		auto mtime = path.GetModificationTime();
 		CHECK_CONDITION(!mtime.empty(), __FILE__, __LINE__);
-		TRACE_PRINTF("%s", mtime.c_str());
+		LOGI("%s", mtime.c_str());
 	}
 
 }

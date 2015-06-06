@@ -42,6 +42,7 @@ namespace NSG
 		BoundingBox(const Frustum& frustum);
 		BoundingBox(const std::vector<Vector3>& vertices);
 		~BoundingBox();
+		void Clip(const BoundingBox& box);
 	    void Merge(const Vector3& point);
 	    void Merge(const BoundingBox& box);
 	    void Transform(const Node& node);

@@ -54,7 +54,7 @@
 			<SceneNode name="Cube" nodeType="SceneNode" position="[0.000000,0.000000,1.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material.001" meshName="Cube">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />
 			</SceneNode>
-			<SceneNode name="Lamp" nodeType="Light" type="DIRECTIONAL" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="90" position="[2.671049,2.611947,8.842250]" orientation="[0.700785,0.414077,0.434440,-0.385619]" distance="30" shadows="true" />
+			<SceneNode name="Lamp" nodeType="Light" type="DIRECTIONAL" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="90" position="[2.671049,2.611947,8.842250]" orientation="[0.700785,0.414077,0.434440,-0.385619]" distance="30" shadows="true" shadowClipStart="0.1" shadowClipEnd="30" onlyShadow="false" shadowColor="[0.000000,0.000000,0.000000,1.000000]" shadowBias="0.000125" />
 			<SceneNode name="Camera" nodeType="Camera" fovy="0.857556" zNear="0.1" zFar="25" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="7.31429" sensorFit="0" position="[7.481132,-6.507640,5.343665]" orientation="[0.773988,0.493261,0.185593,0.350986]" />
 		</SceneNode>
 		<Animations />

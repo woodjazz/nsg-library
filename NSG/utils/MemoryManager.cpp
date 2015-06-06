@@ -50,7 +50,7 @@ namespace NSG
     void* AllocateMemoryFromHeap(std::size_t count)
     {
         size_t newSize = sizeof(MemHeader) + count;
-        //TRACE_PRINTF("Allocating %u from heap.\n", newSize);
+        //LOGI("Allocating %u from heap.", newSize);
         void* p = std::malloc(newSize);
         if (p)
         {
@@ -59,7 +59,7 @@ namespace NSG
             void* memBlock = (char*)p + sizeof(MemHeader);
             return memBlock;
         }
-        TRACE_PRINTF("Allocation of %lu from heap has FAILED.(bad_alloc)\n", newSize);
+        LOGE("Allocation of %lu from heap has FAILED.(bad_alloc)", newSize);
         return nullptr;
     }
 
@@ -69,7 +69,7 @@ namespace NSG
         MemHeader* header = (MemHeader*)memObj;
 		if (header->poolPointer_ == &AllocateMemoryFromHeap)
         {
-            //TRACE_PRINTF("Releasing memory to heap\n");
+            //LOGI("Releasing memory to heap");
             std::free(memObj);
         }
     }
@@ -256,7 +256,7 @@ void operator delete[](void* ptr) noexcept
 #else
 //void AtExit()
 //{
-//	TRACE_PRINTF("*** AtExit called ***\n");
+//	LOGI("*** AtExit called ***");
 //}
 
 namespace NSG

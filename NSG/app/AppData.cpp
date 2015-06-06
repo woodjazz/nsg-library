@@ -46,10 +46,9 @@ namespace NSG
 			Load(doc, resource);
         else
         {
-            TRACE_PRINTF("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
-            TRACE_PRINTF("Error description: %s", result.description());
-            TRACE_PRINTF("Error offset: %d", result.offset);
-            CHECK_ASSERT(false, __FILE__, __LINE__);
+            LOGE("XML parsed with errors, attr value: [%s].", doc.child("node").attribute("attr").value());
+            LOGE("Error description: %s.", result.description());
+            LOGE("Error offset: %d.", result.offset);
         }
     }
 

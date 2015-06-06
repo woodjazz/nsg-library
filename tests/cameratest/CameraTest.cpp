@@ -28,168 +28,168 @@ using namespace NSG;
 
 static void FrustumTest()
 {
-	PScene scene = std::make_shared<Scene>("scene000");
+    PScene scene = std::make_shared<Scene>("scene000");
 
-	{
-		Vertex3 p0(0, 0, -1);
-		Vertex3 p1(0, 1, -1);
-		Vertex3 p2(1, 0, -1);
-		Vector3 v1 = p1 - p0;
-		Vector3 v2 = p2 - p0;
-		Vector3 normal = glm::normalize(glm::cross(v1, v2));
-		float d = -glm::dot(normal, p0);
-		CHECK_CONDITION(normal == Vector3(0, 0, -1), __FILE__, __LINE__);
-		CHECK_CONDITION(d == -1, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(normal, p0) + d == 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(normal, p1) + d == 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(normal, p2) + d == 0, __FILE__, __LINE__);
-	}
+    {
+        Vertex3 p0(0, 0, -1);
+        Vertex3 p1(0, 1, -1);
+        Vertex3 p2(1, 0, -1);
+        Vector3 v1 = p1 - p0;
+        Vector3 v2 = p2 - p0;
+        Vector3 normal = glm::normalize(glm::cross(v1, v2));
+        float d = -glm::dot(normal, p0);
+        CHECK_CONDITION(normal == Vector3(0, 0, -1), __FILE__, __LINE__);
+        CHECK_CONDITION(d == -1, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(normal, p0) + d == 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(normal, p1) + d == 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(normal, p2) + d == 0, __FILE__, __LINE__);
+    }
 
-	PCamera camera = scene->GetOrCreateChild<Camera>("camera");
-	camera->SetGlobalLookAt(Vector3(0, 0, -1));
+    PCamera camera = scene->GetOrCreateChild<Camera>("camera");
+    camera->SetGlobalLookAt(Vector3(0, 0, -1));
 
-	{
-		PFrustum frustum = camera->GetFrustum();
-		const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
-		const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
-		const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
-		const Plane& upPlane = frustum->GetPlane(FrustumPlane::PLANE_UP);
-		const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
-		const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
+    {
+        PFrustum frustum = camera->GetFrustum();
+        const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
+        const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
+        const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
+        const Plane& upPlane = frustum->GetPlane(FrustumPlane::PLANE_UP);
+        const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
+        const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-		CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
-		{
-			Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-			float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
-			CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
-		}
+        {
+            Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
+            float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
+            CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
+        }
 
-		{
-			Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-			float dot = glm::dot(farPlane.normald_, farPlanePoint);
-			CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
-		}
+        {
+            Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
+            float dot = glm::dot(farPlane.normald_, farPlanePoint);
+            CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
+        }
 
-	}
+    }
 
-	camera->SetPosition(Vertex3(0, 0, 100));
-	camera->SetGlobalLookAt(Vector3(0, 0, -1));
+    camera->SetPosition(Vertex3(0, 0, 100));
+    camera->SetGlobalLookAt(Vector3(0, 0, -1));
 
-	{
-		PFrustum frustum = camera->GetFrustum();
-		const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
-		const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
-		const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
-		const Plane& upPlane = frustum->GetPlane(FrustumPlane::PLANE_UP);
-		const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
-		const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
+    {
+        PFrustum frustum = camera->GetFrustum();
+        const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
+        const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
+        const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
+        const Plane& upPlane = frustum->GetPlane(FrustumPlane::PLANE_UP);
+        const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
+        const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-		CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
-		{
-			Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-			float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
-			CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
-		}
+        {
+            Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
+            float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
+            CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
+        }
 
-		{
-			Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-			float dot = glm::dot(farPlane.normald_, farPlanePoint);
-			CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
-		}
-
-
-	}
-
-	camera->SetPosition(Vertex3(10, 0, 1));
-	camera->SetGlobalLookAt(Vector3(10, 0, -1));
-
-	{
-		PFrustum frustum = camera->GetFrustum();
-		const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
-		const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
-		const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
-		const Plane& upPlane = frustum->GetPlane(FrustumPlane::PLANE_UP);
-		const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
-		const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
-
-		CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-
-		{
-			Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-			float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
-			CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
-		}
-
-		{
-			Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-			float dot = glm::dot(farPlane.normald_, farPlanePoint);
-			CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
-		}
-
-	}
+        {
+            Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
+            float dot = glm::dot(farPlane.normald_, farPlanePoint);
+            CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
+        }
 
 
-	camera->SetPosition(Vertex3(0, 0, -1));
-	camera->SetGlobalLookAt(Vector3(0, 0, 1));
+    }
 
-	{
-		PFrustum frustum = camera->GetFrustum();
-		const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
-		const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
-		const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
-		const Plane& upPlane = frustum->GetPlane(FrustumPlane::PLANE_UP);
-		const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
-		const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
+    camera->SetPosition(Vertex3(10, 0, 1));
+    camera->SetGlobalLookAt(Vector3(10, 0, -1));
 
-		CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+    {
+        PFrustum frustum = camera->GetFrustum();
+        const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
+        const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
+        const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
+        const Plane& upPlane = frustum->GetPlane(FrustumPlane::PLANE_UP);
+        const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
+        const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-		{
-			Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZNear()), 1);
-			float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
-			CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
-		}
+        CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
-		{
-			Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZFar()), 1);
-			float dot = glm::dot(farPlane.normald_, farPlanePoint);
-			CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
-		}
+        {
+            Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
+            float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
+            CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
+        }
 
-	}
+        {
+            Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
+            float dot = glm::dot(farPlane.normald_, farPlanePoint);
+            CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
+        }
+
+    }
+
+
+    camera->SetPosition(Vertex3(0, 0, -1));
+    camera->SetGlobalLookAt(Vector3(0, 0, 1));
+
+    {
+        PFrustum frustum = camera->GetFrustum();
+        const Plane& nearPlane = frustum->GetPlane(FrustumPlane::PLANE_NEAR);
+        const Plane& leftPlane = frustum->GetPlane(FrustumPlane::PLANE_LEFT);
+        const Plane& rightPlane = frustum->GetPlane(FrustumPlane::PLANE_RIGHT);
+        const Plane& upPlane = frustum->GetPlane(FrustumPlane::PLANE_UP);
+        const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
+        const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
+
+        CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+
+        {
+            Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZNear()), 1);
+            float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
+            CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
+        }
+
+        {
+            Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZFar()), 1);
+            float dot = glm::dot(farPlane.normald_, farPlanePoint);
+            CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
+        }
+
+    }
 }
 
 static void Test01()
 {
-	PScene scene = std::make_shared<Scene>("scene000");
+    PScene scene = std::make_shared<Scene>("scene000");
 
-	PSphereMesh sphere(Mesh::Create<SphereMesh>());
-	sphere->Set(1, 100);
+    PSphereMesh sphere(Mesh::Create<SphereMesh>());
+    sphere->Set(1, 100);
     {
 
         Node node;
-		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
+        PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFOV(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
@@ -204,7 +204,7 @@ static void Test01()
         node.SetPosition(Vertex3(20));
         node.SetScale(Vector3(100));
 
-		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
+        PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFOV(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
@@ -216,17 +216,17 @@ static void Test01()
 
     {
         Node node;
-		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
+        PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFOV(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(250);
         camera->SetPosition(Vertex3(0, 0, 10));
-		camera->SetGlobalLookAt(Vertex3(0));
+        camera->SetGlobalLookAt(Vertex3(0));
         PFrustum frustum = camera->GetFrustum();
         CHECK_CONDITION(frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetPosition(Vertex3(0, 0, -1.1f));
-		camera->SetGlobalLookAt(Vertex3(0, 0, -2));
-		frustum = camera->GetFrustum();
+        camera->SetGlobalLookAt(Vertex3(0, 0, -2));
+        frustum = camera->GetFrustum();
         CHECK_CONDITION(!frustum->IsVisible(node, *sphere), __FILE__, __LINE__);
     }
 
@@ -235,7 +235,7 @@ static void Test01()
         Node node;
         node.SetPosition(Vertex3(0, 0, -40));
 
-		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
+        PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFOV(100);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(1000);
@@ -248,7 +248,7 @@ static void Test01()
         Node node;
         node.SetPosition(Vertex3(1.1f, 0, -1.1f));
 
-		PCamera camera = scene->GetOrCreateChild<Camera>("camera");
+        PCamera camera = scene->GetOrCreateChild<Camera>("camera");
         camera->SetFOV(170);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(1000);
@@ -257,18 +257,18 @@ static void Test01()
         CHECK_CONDITION(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         node.SetPosition(Vertex3(0, 0, -40));
         CHECK_CONDITION(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
-		camera->SetGlobalLookAt(Vertex3(-1, 0, 0));
+        camera->SetGlobalLookAt(Vertex3(-1, 0, 0));
         CHECK_CONDITION(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
-		camera->SetGlobalLookAt(Vertex3(0, 0, 1));
+        camera->SetGlobalLookAt(Vertex3(0, 0, 1));
         CHECK_CONDITION(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetPosition(Vertex3(0, 0, -4));
-		node.SetPosition(Vertex3(0, 0, -1));
+        node.SetPosition(Vertex3(0, 0, -1));
         CHECK_CONDITION(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetFarClip(1.9f);
         CHECK_CONDITION(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
         camera->SetFarClip(4);
         CHECK_CONDITION(camera->IsVisible(node, *sphere), __FILE__, __LINE__);
-		node.SetPosition(Vertex3(-1, 0, -1));
+        node.SetPosition(Vertex3(-1, 0, -1));
         node.SetScale(Vector3(0.1f));
         CHECK_CONDITION(!camera->IsVisible(node, *sphere), __FILE__, __LINE__);
     }
@@ -277,195 +277,231 @@ static void Test01()
 static void Test02()
 {
     {
-		PBoxMesh box(Mesh::Create<BoxMesh>());
-		box->Set(2, 4, 2);
+        PBoxMesh box(Mesh::Create<BoxMesh>());
+        box->Set(2, 4, 2);
         Node node;
-		PScene scene = std::make_shared<Scene>("scene000");
+        PScene scene = std::make_shared<Scene>("scene000");
 
-		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
+        PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
         camera->SetFOV(179);
-		camera->SetNearClip(0.1f);
-		camera->SetFarClip(10);
-		camera->SetPosition(Vertex3(1, 0, 0));
-		CHECK_CONDITION(camera->IsVisible(node, *box), __FILE__, __LINE__);
-		camera->SetPosition(Vertex3(0, 0, -1.1f));
-		CHECK_CONDITION(!camera->IsVisible(node, *box), __FILE__, __LINE__);
+        camera->SetNearClip(0.1f);
+        camera->SetFarClip(10);
+        camera->SetPosition(Vertex3(1, 0, 0));
+        CHECK_CONDITION(camera->IsVisible(node, *box), __FILE__, __LINE__);
+        camera->SetPosition(Vertex3(0, 0, -1.1f));
+        CHECK_CONDITION(!camera->IsVisible(node, *box), __FILE__, __LINE__);
         node.SetOrientation(glm::angleAxis(glm::pi<float>() / 2, Vertex3(1, 0, 0)));
-		CHECK_CONDITION(camera->IsVisible(node, *box), __FILE__, __LINE__);
+        CHECK_CONDITION(camera->IsVisible(node, *box), __FILE__, __LINE__);
         node.SetPosition(Vertex3(1, 0, 2));
-		CHECK_CONDITION(!camera->IsVisible(node, *box), __FILE__, __LINE__);
+        CHECK_CONDITION(!camera->IsVisible(node, *box), __FILE__, __LINE__);
     }
 }
 
 static void Test03()
 {
-	{
-		PScene scene = std::make_shared<Scene>("scene000");
+    {
+        PScene scene = std::make_shared<Scene>("scene000");
 
-		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
-		camera->EnableOrtho();
-		camera->SetAspectRatio(1);
+        PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
+        camera->EnableOrtho();
+        camera->SetAspectRatio(1);
 
-		{
-			Vertex3 p0(0, 0, -1);
-			Vertex3 worldPoint = camera->ScreenToWorld(p0);
-			Vertex3 screenPoint = camera->WorldToScreen(worldPoint);
-			CHECK_CONDITION(glm::distance(screenPoint, p0) < PRECISION, __FILE__, __LINE__);
-		}
-
-
-
-		{
-			Vertex3 p0(-1, 0, -10);
-			Vertex3 screenPoint = camera->WorldToScreen(p0);
-			CHECK_CONDITION(glm::abs(-1 - screenPoint.x) < glm::epsilon<float>(), __FILE__, __LINE__);
-			Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
-			CHECK_CONDITION(glm::distance(worldPos, p0) < PRECISION, __FILE__, __LINE__);
-		}
-
-		{
-			Vertex3 p0(-1, 1, -10);
-			Vertex3 screenPoint = camera->WorldToScreen(p0);
-			CHECK_CONDITION(glm::abs(-1 - screenPoint.x) < glm::epsilon<float>(), __FILE__, __LINE__);
-			CHECK_CONDITION(glm::abs(1 - screenPoint.y) < glm::epsilon<float>(), __FILE__, __LINE__);
-			Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
-			CHECK_CONDITION(glm::distance(worldPos, p0) < PRECISION, __FILE__, __LINE__);
-		}
-
-		camera->DisableOrtho();
-
-		{
-			Vertex3 p0(0, 0, -1);
-			Vertex3 worldPoint = camera->ScreenToWorld(p0);
-			Vertex3 screenPoint = camera->WorldToScreen(worldPoint);
-			CHECK_CONDITION(glm::distance(screenPoint, p0) < PRECISION, __FILE__, __LINE__);
-		}
-
-		{
-			Vertex3 p0(-1, 0, -110.3f);
-			Vertex3 screenPoint = camera->WorldToScreen(p0);
-			CHECK_CONDITION(screenPoint.x < 0 && screenPoint.x > -0.5f, __FILE__, __LINE__);
-			Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
-			CHECK_CONDITION(glm::distance(worldPos, p0) < 0.05f, __FILE__, __LINE__);
-		}
-
-		{
-			Vertex3 p0(-1, 1, -10);
-			Vertex3 screenPoint = camera->WorldToScreen(p0);
-			CHECK_CONDITION(screenPoint.x < 0 && screenPoint.x > -0.5f, __FILE__, __LINE__);
-			//CHECK_CONDITION(screenPoint.y > 0 && screenPoint.y < 0.5f, __FILE__, __LINE__);
-			Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
-			CHECK_CONDITION(glm::distance(worldPos, p0) < 0.1f, __FILE__, __LINE__);
-		}
+        {
+            Vertex3 p0(0, 0, -1);
+            Vertex3 worldPoint = camera->ScreenToWorld(p0);
+            Vertex3 screenPoint = camera->WorldToScreen(worldPoint);
+            CHECK_CONDITION(glm::distance(screenPoint, p0) < PRECISION, __FILE__, __LINE__);
+        }
 
 
-		{
-			Vertex3 p0(1, 0, -10);
-			Vertex3 screenPoint = camera->WorldToScreen(p0);
-			CHECK_CONDITION(screenPoint.x > 0 && screenPoint.x < 0.5f, __FILE__, __LINE__);
-			Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
-			CHECK_CONDITION(glm::distance(worldPos, p0) < 0.05f, __FILE__, __LINE__);
-		}
 
-		{
-			Vertex3 p0(1, 0, 10); // behind the screen
-			Vertex3 screenPoint = camera->WorldToScreen(p0);
-			//CHECK_CONDITION(screenPoint.x > 0 && screenPoint.x < 0.5f, __FILE__, __LINE__);
-			Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
-			CHECK_CONDITION(glm::distance(worldPos, p0) < 0.1f, __FILE__, __LINE__);
-		}
+        {
+            Vertex3 p0(-1, 0, -10);
+            Vertex3 screenPoint = camera->WorldToScreen(p0);
+            CHECK_CONDITION(glm::abs(-1 - screenPoint.x) < glm::epsilon<float>(), __FILE__, __LINE__);
+            Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
+            CHECK_CONDITION(glm::distance(worldPos, p0) < PRECISION, __FILE__, __LINE__);
+        }
+
+        {
+            Vertex3 p0(-1, 1, -10);
+            Vertex3 screenPoint = camera->WorldToScreen(p0);
+            CHECK_CONDITION(glm::abs(-1 - screenPoint.x) < glm::epsilon<float>(), __FILE__, __LINE__);
+            CHECK_CONDITION(glm::abs(1 - screenPoint.y) < glm::epsilon<float>(), __FILE__, __LINE__);
+            Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
+            CHECK_CONDITION(glm::distance(worldPos, p0) < PRECISION, __FILE__, __LINE__);
+        }
+
+        camera->DisableOrtho();
+
+        {
+            Vertex3 p0(0, 0, -1);
+            Vertex3 worldPoint = camera->ScreenToWorld(p0);
+            Vertex3 screenPoint = camera->WorldToScreen(worldPoint);
+            CHECK_CONDITION(glm::distance(screenPoint, p0) < PRECISION, __FILE__, __LINE__);
+        }
+
+        {
+            Vertex3 p0(-1, 0, -110.3f);
+            Vertex3 screenPoint = camera->WorldToScreen(p0);
+            CHECK_CONDITION(screenPoint.x < 0 && screenPoint.x > -0.5f, __FILE__, __LINE__);
+            Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
+            CHECK_CONDITION(glm::distance(worldPos, p0) < 0.05f, __FILE__, __LINE__);
+        }
+
+        {
+            Vertex3 p0(-1, 1, -10);
+            Vertex3 screenPoint = camera->WorldToScreen(p0);
+            CHECK_CONDITION(screenPoint.x < 0 && screenPoint.x > -0.5f, __FILE__, __LINE__);
+            //CHECK_CONDITION(screenPoint.y > 0 && screenPoint.y < 0.5f, __FILE__, __LINE__);
+            Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
+            CHECK_CONDITION(glm::distance(worldPos, p0) < 0.1f, __FILE__, __LINE__);
+        }
 
 
-	}
+        {
+            Vertex3 p0(1, 0, -10);
+            Vertex3 screenPoint = camera->WorldToScreen(p0);
+            CHECK_CONDITION(screenPoint.x > 0 && screenPoint.x < 0.5f, __FILE__, __LINE__);
+            Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
+            CHECK_CONDITION(glm::distance(worldPos, p0) < 0.05f, __FILE__, __LINE__);
+        }
+
+        {
+            Vertex3 p0(1, 0, 10); // behind the screen
+            Vertex3 screenPoint = camera->WorldToScreen(p0);
+            //CHECK_CONDITION(screenPoint.x > 0 && screenPoint.x < 0.5f, __FILE__, __LINE__);
+            Vertex3 worldPos = camera->ScreenToWorld(screenPoint);
+            CHECK_CONDITION(glm::distance(worldPos, p0) < 0.1f, __FILE__, __LINE__);
+        }
+
+
+    }
 }
 
 static void Test04()
 {
-#if 1
-	PScene scene = std::make_shared<Scene>("scene000");
+    #if 1
+    PScene scene = std::make_shared<Scene>("scene000");
 
-	PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
-	Vertex3 position(0, 0, 0);
-	camera->SetPosition(position);
+    PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
+    Vertex3 position(0, 0, 0);
+    camera->SetPosition(position);
 
-	{
-		Ray ray = camera->GetScreenRay(0, 0);
-		CHECK_CONDITION(glm::distance(ray.GetDirection(), VECTOR3_FORWARD) < glm::epsilon<float>(), __FILE__, __LINE__);
-		CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 0.5f, __FILE__, __LINE__);
-	}
+    {
+        Ray ray = camera->GetScreenRay(0, 0);
+        CHECK_CONDITION(glm::distance(ray.GetDirection(), VECTOR3_FORWARD) < glm::epsilon<float>(), __FILE__, __LINE__);
+        CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 0.5f, __FILE__, __LINE__);
+    }
 
-	{
-		Ray ray = camera->GetScreenRay(-0.9f, 0);
-		CHECK_CONDITION(ray.GetOrigin().x < 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().x < 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().y == 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().z < 0, __FILE__, __LINE__);
-	}
+    {
+        Ray ray = camera->GetScreenRay(-0.9f, 0);
+        CHECK_CONDITION(ray.GetOrigin().x < 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().x < 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().y == 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().z < 0, __FILE__, __LINE__);
+    }
 
-	{
-		Ray ray = camera->GetScreenRay(1, 0);
-		CHECK_CONDITION(ray.GetOrigin().x > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().x > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().y == 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().z < 0, __FILE__, __LINE__);
-	}
+    {
+        Ray ray = camera->GetScreenRay(1, 0);
+        CHECK_CONDITION(ray.GetOrigin().x > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().x > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().y == 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().z < 0, __FILE__, __LINE__);
+    }
 
-	{
-		Ray ray = camera->GetScreenRay(0, 1);
-		CHECK_CONDITION(ray.GetOrigin().x == 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetOrigin().y > 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().x == 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().y > 0.3f, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().z < -0.9f, __FILE__, __LINE__);
-	}
+    {
+        Ray ray = camera->GetScreenRay(0, 1);
+        CHECK_CONDITION(ray.GetOrigin().x == 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetOrigin().y > 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().x == 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().y > 0.3f, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().z < -0.9f, __FILE__, __LINE__);
+    }
 
-	{
-		Ray ray = camera->GetScreenRay(0, -1);
-		CHECK_CONDITION(ray.GetOrigin().y < 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().x == 0, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().y < 0.3f, __FILE__, __LINE__);
-		CHECK_CONDITION(ray.GetDirection().z < -0.9f, __FILE__, __LINE__);
-	}
+    {
+        Ray ray = camera->GetScreenRay(0, -1);
+        CHECK_CONDITION(ray.GetOrigin().y < 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().x == 0, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().y < 0.3f, __FILE__, __LINE__);
+        CHECK_CONDITION(ray.GetDirection().z < -0.9f, __FILE__, __LINE__);
+    }
 
-	{
-		camera->SetGlobalLookAt(position + Vector3(-1, 0, 0));
-		Ray ray = camera->GetScreenRay(0, 0);
-		CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 1, __FILE__, __LINE__);
-		CHECK_CONDITION(glm::distance(ray.GetDirection(), -VECTOR3_RIGHT) < 0.05f, __FILE__, __LINE__);
-	}
-#endif
+    {
+        camera->SetGlobalLookAt(position + Vector3(-1, 0, 0));
+        Ray ray = camera->GetScreenRay(0, 0);
+        CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 1, __FILE__, __LINE__);
+        CHECK_CONDITION(glm::distance(ray.GetDirection(), -VECTOR3_RIGHT) < 0.05f, __FILE__, __LINE__);
+    }
+    #endif
 }
 
 static void Test05()
 {
-	{
-		PBoxMesh box(Mesh::Create<BoxMesh>());
-		box->Set(1, 1, 1);
-		CHECK_CONDITION(box->IsReady(), __FILE__, __LINE__);
-		PScene scene = std::make_shared<Scene>("scene000");
+    {
+        PBoxMesh box(Mesh::Create<BoxMesh>());
+        box->Set(1, 1, 1);
+        CHECK_CONDITION(box->IsReady(), __FILE__, __LINE__);
+        PScene scene = std::make_shared<Scene>("scene000");
 
-		PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
-		camera->SetNearClip(0.1f);
-		camera->SetFarClip(250);
-		camera->SetPosition(Vertex3(0, 0, -4));
-		camera->SetGlobalLookAt(-VECTOR3_FORWARD);
-		BoundingBox bb = box->GetBB();
-		CHECK_CONDITION(camera->GetFrustum()->IsInside(bb) == Intersection::INSIDE, __FILE__, __LINE__);
-		camera->SetPosition(Vertex3(0, 0, -250));
-		CHECK_CONDITION(camera->GetFrustum()->IsInside(bb) == Intersection::INTERSECTS, __FILE__, __LINE__);
-		camera->SetPosition(Vertex3(0, 0, -400));
-		CHECK_CONDITION(camera->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE, __FILE__, __LINE__);
-	}
+        PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
+        camera->SetNearClip(0.1f);
+        camera->SetFarClip(250);
+        camera->SetPosition(Vertex3(0, 0, -4));
+        camera->SetGlobalLookAt(-VECTOR3_FORWARD);
+        BoundingBox bb = box->GetBB();
+        CHECK_CONDITION(camera->GetFrustum()->IsInside(bb) == Intersection::INSIDE, __FILE__, __LINE__);
+        camera->SetPosition(Vertex3(0, 0, -250));
+        CHECK_CONDITION(camera->GetFrustum()->IsInside(bb) == Intersection::INTERSECTS, __FILE__, __LINE__);
+        camera->SetPosition(Vertex3(0, 0, -400));
+        CHECK_CONDITION(camera->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE, __FILE__, __LINE__);
+    }
+}
+
+static void Test06()
+{
+#if 0
+	PScene scene = std::make_shared<Scene>();
+	PCamera camera = scene->CreateChild<Camera>();
+    camera->SetNearClip(0.1f);
+    camera->SetFarClip(250);
+    camera->SetPosition(Vertex3(0, 0, -4));
+    camera->SetGlobalLookAt(-VECTOR3_FORWARD);
+	camera->EnableOrtho();
+
+	BoundingBox viewBox0(*camera->GetFrustum());
+
+	Vector4 corner0(Vector3(-1), 1);
+	Vector4 corner1(Vector3(1), 1);
+
+	auto c0 = camera->GetViewProjectionInverseMatrix() * corner0;
+	auto c1 = camera->GetViewProjectionInverseMatrix() * corner1;
+
+	c0.x /= c0.w;
+	c0.y /= c0.w;
+	c0.z /= c0.w;
+
+	c1.x /= c1.w;
+	c1.y /= c1.w;
+	c1.z /= c1.w;
+
+    BoundingBox viewBox1(Vector3(-1), Vector3(1));
+    viewBox1.Transform(camera->GetViewProjectionInverseMatrix());
+
+    CHECK_CONDITION(glm::distance(viewBox0.min_, viewBox1.min_) < 0.05f, __FILE__, __LINE__);
+    CHECK_CONDITION(glm::distance(viewBox0.max_, viewBox1.max_) < 0.05f, __FILE__, __LINE__);
+#endif
 }
 
 
 void CameraTest()
 {
-	auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
-	FrustumTest();
-	Test01();
-	Test02();
-	Test03();
-	Test04();
-	Test05();
+    auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
+    FrustumTest();
+    Test01();
+    Test02();
+    Test03();
+    Test04();
+    Test05();
+    Test06();
 }

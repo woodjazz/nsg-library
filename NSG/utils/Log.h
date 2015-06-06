@@ -25,55 +25,94 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
-
 #include "Types.h"
 #include <stdio.h>
 #include <sstream>
 #include <string>
 
+#if _WIN32
+#include <windows.h>
+#endif
+
 #ifdef ANDROID
 
 #include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "nsg-library", ## __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "nsg-library", ##__VA_ARGS__))
-#define TRACE_PRINTF(format, ...) {\
-        __android_log_print(ANDROID_LOG_INFO, "nsg-library", format, ##__VA_ARGS__);\
+
+#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+
+#define LOGI(format, ...) {\
+        __android_log_print(ANDROID_LOG_INFO, "nsg-library", "*Info*" format "\n", ##__VA_ARGS__);\
     }
 
-#elif _WIN32
+#else //(defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 
-#include <windows.h>    
-#define TRACE_PRINTF(format, ...) {\
-        printf(format, __VA_ARGS__);\
-        fflush(stdout);\
+#define LOGI(format, ...) ((void)0);
+
+#endif
+
+
+#define LOGW(format, ...) {\
+        __android_log_print(ANDROID_LOG_WARN, "nsg-library", "*Warning*" format "\n", ##__VA_ARGS__);\
     }
 
-#elif __APPLE__
-
-#define TRACE_PRINTF(format, ...) {\
-        printf(format, ##__VA_ARGS__);\
-        fflush(stdout);\
+#define LOGE(format, ...) {\
+        __android_log_print(ANDROID_LOG_ERROR, "nsg-library", "*Error*" format "\n", ##__VA_ARGS__);\
     }
 
 #elif EMSCRIPTEN
 
 #include <emscripten.h>
-#define TRACE_PRINTF(format, ...) {\
+
+#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+
+#define LOGI(format, ...) {\
         emscripten_log(EM_LOG_CONSOLE, format, ##__VA_ARGS__);\
-        printf(format, ##__VA_ARGS__);\
+        printf("*Info*" format "\n", ##__VA_ARGS__);\
         fflush(stdout);\
     }
 
+#else //(defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+
+#define LOGI(format, ...) ((void)0);
+
+#endif
+
+#define LOGW(format, ...) {\
+        emscripten_log(EM_LOG_WARN, format, ##__VA_ARGS__);\
+        printf("*Warning*" format "\n", ##__VA_ARGS__);\
+        fflush(stdout);\
+    }
+
+#define LOGE(format, ...) {\
+        emscripten_log(EM_LOG_ERROR, format, ##__VA_ARGS__);\
+        printf("*Error*" format "\n", ##__VA_ARGS__);\
+        fflush(stdout);\
+    }
+
+#else //(defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+
+#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+
+#define LOGI(format, ...) {\
+        printf("*Info*" format "\n", ##__VA_ARGS__);\
+        fflush(stdout);\
+    }
 #else
 
-#define TRACE_PRINTF(format, ...) {\
-        printf(format, ##__VA_ARGS__);\
+#define LOGI(format, ...) ((void)0);
+
+#endif
+
+#define LOGW(format, ...) {\
+        printf("*Warning*" format "\n", ##__VA_ARGS__);\
+        fflush(stdout);\
+    }
+
+#define LOGE(format, ...) {\
+        printf("*Error*" format "\n", ##__VA_ARGS__);\
         fflush(stdout);\
     }
 
 #endif
-#else
-#define TRACE_PRINTF(format, ...) ((void)0);
-#endif
+
 

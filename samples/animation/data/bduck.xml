@@ -8479,7 +8479,7 @@
 	</Materials>
 	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="camera1">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
-			<SceneNode name="directionalLight1" nodeType="Light" type="DIRECTIONAL" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="false" spotCutOff="45" position="[1.486540,2.921790,1.836720]" orientation="[0.051520,0.141421,0.383785,0.911073]" distance="2500" shadows="false" />
+			<SceneNode name="directionalLight1" nodeType="Light" type="DIRECTIONAL" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="false" spotCutOff="45" position="[1.486540,2.921790,1.836720]" orientation="[0.051520,0.141421,0.383785,0.911073]" distance="2500" shadows="false" shadowClipStart="0.1" shadowClipEnd="30" onlyShadow="false" shadowColor="[0.000000,0.000000,0.000000,1.000000]" shadowBias="0.000125" />
 			<SceneNode name="camera1" nodeType="Camera" fovy="0.950019" zNear="1" zFar="10000" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="6" sensorFit="0" position="[4.001130,4.310780,4.632640]" orientation="[0.331429,0.160219,0.404668,0.837095]" />
 			<SceneNode name="LOD3sp" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,0.707107,0.000000,0.000000]" scale="[0.010000,0.010000,0.010000]" materialName="blinn3" meshName="LOD3spShape" />
 		</SceneNode>

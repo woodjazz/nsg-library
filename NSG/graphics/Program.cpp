@@ -86,6 +86,7 @@ namespace NSG
           eyeWorldPosLoc_(-1),
           u_uvTransformLoc_(-1),
           lightInvRangeLoc_(-1),
+          shadowMapInvSize_(-1),
           blendMode_loc_(-1),
           nBones_(0),
           activeCamera_(nullptr),
@@ -129,7 +130,7 @@ namespace NSG
             pos1 = defines_.find('\n', pos0);
         } ;
 
-        TRACE_PRINTF("Shader variation:\n%s", defines_.c_str());
+        LOGI("Shader variation:\n%s", defines_.c_str());
 
         std::string vBuffer = preDefines + "#define COMPILEVS\n";
         vBuffer += COMMON_GLSL;
@@ -214,13 +215,13 @@ namespace NSG
                 std::string log;
                 log.resize(logLength);
                 glGetShaderInfoLog(id, logLength, &logLength, &log[0]);
-                TRACE_PRINTF("%s", log.c_str());
+                LOGE("%s", log.c_str());
             }
         }
         glDeleteShader(id);
         //glReleaseShaderCompiler(); // fails on osx
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        TRACE_PRINTF("Checking %s shader for material %s: %s", (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT"), name_.c_str(), (compile_status == GL_TRUE ? "IS OK" : "HAS FAILED"));
+        LOGI("Checking %s shader for material %s: %s", (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT"), name_.c_str(), (compile_status == GL_TRUE ? "IS OK" : "HAS FAILED"));
 
         return compile_status == GL_TRUE;
     }
@@ -266,11 +267,15 @@ namespace NSG
         }
 
         lightInvRangeLoc_ = GetUniformLocation("u_lightInvRange");
+        shadowMapInvSize_ = GetUniformLocation("u_shadowMapInvSize");
+        shadowColor_ = GetUniformLocation("u_shadowColor");
+        shadowBias_ = GetUniformLocation("u_shadowBias");
 
         {
             directionalLightLoc_.base_.diffuse_ = GetUniformLocation("u_directionalLight.base.diffuse");
             directionalLightLoc_.base_.specular_ = GetUniformLocation("u_directionalLight.base.specular");
             directionalLightLoc_.direction_ = GetUniformLocation("u_directionalLight.direction");
+            directionalLightLoc_.position_ = GetUniformLocation("u_directionalLight.position");
         }
 
         {
@@ -306,7 +311,7 @@ namespace NSG
     bool Program::Initialize()
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        TRACE_PRINTF("Creating program for material %s", name_.c_str());
+        LOGI("Creating program for material %s", name_.c_str());
         id_ = glCreateProgram();
         // Bind vertex attribute locations to ensure they are the same in all shaders
         glBindAttribLocation(id_, (int)AttributesLoc::POSITION, "a_position");
@@ -337,14 +342,14 @@ namespace NSG
                 std::string log;
                 log.resize(logLength);
                 glGetProgramInfoLog(id_, logLength, &logLength, &log[0]);
-                TRACE_PRINTF("Error in Program Creation: %s", log.c_str());
-                //TRACE_PRINTF("VS: %s", pVShader_->GetSource());
-                //TRACE_PRINTF("FS: %s" << pFShader_->GetSource());
+                LOGE("Program creation failed: %s", log.c_str());
+                //LOGI("VS: %s", pVShader_->GetSource());
+                //LOGI("FS: %s" << pFShader_->GetSource());
             }
-            TRACE_PRINTF("Linking program for material %s HAS FAILED!!!", name_.c_str());
+            LOGE("Linking program for material %s HAS FAILED", name_.c_str());
             return false;
         }
-        TRACE_PRINTF("Program for material %s OK.", name_.c_str());
+        LOGI("Program for material %s OK.", name_.c_str());
         CHECK_GL_STATUS(__FILE__, __LINE__);
         return true;
     }
@@ -574,7 +579,11 @@ namespace NSG
                 if (LightType::DIRECTIONAL == light_->GetType())
                 {
                     if (lightInvRangeLoc_ != -1)
-                        glUniform1f(lightInvRangeLoc_, 1.f/255.f); // FIXME
+                    {
+                        auto shadowCamera = Renderer::GetPtr()->GetShadowCamera();
+						float invRange = 1.f / (shadowCamera->GetZFar() - shadowCamera->GetZNear());
+                        glUniform1f(lightInvRangeLoc_, invRange);
+                    }
                 }
                 else if (LightType::POINT == light_->GetType())
                 {
@@ -596,8 +605,28 @@ namespace NSG
     {
         if (light_)
         {
-            if(light_->DoShadows())
+			if (light_->DoShadows() && light_->GetShadowMap()->IsReady())
             {
+                if (shadowColor_ != -1)
+                {
+                    const Color& color = light_->GetShadowColor();
+                    glUniform4fv(shadowColor_, 1, &color[0]);
+                }
+
+                if (shadowBias_ != -1)
+                {
+                    auto bias = light_->GetBias();
+                    glUniform1f(shadowBias_, bias);
+                }
+
+				if (shadowMapInvSize_ != -1)
+				{
+					auto shadowMap = light_->GetShadowMap();
+					float width = (float)shadowMap->GetWidth();
+					CHECK_ASSERT(width > 0, __FILE__, __LINE__);
+					glUniform1f(shadowMapInvSize_, 1.f / width);
+				}
+
 				auto shadowCamera = Renderer::GetPtr()->GetShadowCamera();
 
                 if (lightViewProjectionLoc_ != -1)
@@ -620,7 +649,15 @@ namespace NSG
                 {
                     const DirectionalLightLoc& loc = directionalLightLoc_;
 
+                    auto shadowCamera = Renderer::GetPtr()->GetShadowCamera();
+
                     SetBaseLightVariables(loc.base_);
+
+                    if (loc.position_ != -1)
+                    {
+                        const Vertex3& position = shadowCamera->GetPosition();
+                        glUniform3fv(loc.position_, 1, &position[0]);
+                    }
 
                     if (loc.direction_ != -1)
                     {
@@ -629,7 +666,10 @@ namespace NSG
                     }
 
                     if (lightInvRangeLoc_ != -1)
-                        glUniform1f(lightInvRangeLoc_, 1.f/255.f); // FIXME
+                    {
+						float invRange = 1.f / (shadowCamera->GetZFar() - shadowCamera->GetZNear());
+                        glUniform1f(lightInvRangeLoc_, invRange);
+                    }
                 }
                 else if (LightType::POINT == light_->GetType())
                 {

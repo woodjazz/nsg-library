@@ -39,25 +39,30 @@ namespace bParse
 
 namespace BlenderConverter
 {
+	class BGroup;
     class BScene
     {
     public:
 		BScene(const NSG::Path& path, const NSG::Path& outputDir, bool embedResources);
         ~BScene();
-        void Load();
+        bool Load();
 		bool Save(bool compress);
 		void GenerateXML(pugi::xml_document& doc);
     private:
         void ExtractGeneral(const Blender::Object* obj, NSG::PSceneNode sceneNode);
-		void ConvertObject(const Blender::Object* obj, NSG::PScene scene, const Blender::Scene* bscene);
+		NSG::PSceneNode ConvertObject(const Blender::Object* obj, NSG::PScene scene, const Blender::Scene* bscene);
 		NSG::PSceneNode CreateSceneNode(const Blender::Object* obj, NSG::PSceneNode parent);
-		void CreateSkeletonBones(const Blender::Object* obj, NSG::PSceneNode parent);
+		NSG::PSceneNode CreateSkeletonBones(const Blender::Object* obj, NSG::PSceneNode parent);
 		void BuildBoneTree(const std::string& armatureName, const Blender::Bone* cur, NSG::PSceneNode parent);
-		void CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent, const Blender::Scene* bscene);
-        void CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
-        void CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
+		void ConvertGroups(bParse::bMain* data, NSG::PScene scene, const Blender::Scene* bscene);
+		void ConvertGroupInstances(bParse::bMain* data, NSG::PScene scene, const Blender::Scene* bscene);
+		NSG::PSceneNode CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent, const Blender::Scene* bscene);
+        NSG::PSceneNode CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
+		NSG::PSceneNode CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
+		bool ConvertMeshLegacy(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
 		bool ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
 		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray, char** uvNames);
+		int GetUVLayersBMmeshLegacy(const Blender::Mesh* mesh, Blender::MTFace** eightLayerArray, char** uvNames, Blender::MCol** oneMCol);
 		void AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
 		void CreateSkeleton(NSG::PScene scene, const Blender::Object* obj);
 		std::vector<NSG::PSound> LoadSounds(bParse::bMain* data);
@@ -94,6 +99,7 @@ namespace BlenderConverter
 		void GetFrames(const Blender::bAction* action, std::vector<float> &fra);
 		NSG::PScene CreateScene(const Blender::Scene* bscene);
 		void CreateScenes(bParse::bMain* data);
+		void ConvertGroupInstances(const std::string& groupName, NSG::PSceneNode parent);
     private:
         NSG::Path path_;
         NSG::Path outputDir_;
@@ -104,5 +110,8 @@ namespace BlenderConverter
 		std::vector<const Blender::Scene*> bscenes_;
 		std::vector<NSG::PSound> sounds_;
         NSG::PMaterial defaultMaterial_;
+        typedef std::shared_ptr<BGroup> PBGroup;
+        typedef std::map<std::string, PBGroup> Groups;
+        Groups groups_;
     };
 }

@@ -305,8 +305,8 @@ namespace NSG
             // Generate shadow maps
             if (light->GetType() == LightType::POINT)
                 GenerateCubeShadowMap(light, shadowCasters);
-            else if (LightType::DIRECTIONAL == light->GetType())
-                Generate2DShadowMap(light, shadowCasters);
+			else if (LightType::DIRECTIONAL == light->GetType())
+				Generate2DShadowMap(light, shadowCasters);
             else
             {
                 auto intersection = camera_->GetFrustum()->IsPointInside(light->GetGlobalPosition());
@@ -341,7 +341,9 @@ namespace NSG
         auto lights = scene_->GetLights();
         for (auto light : lights)
         {
-            shadowCamera_->Setup(light, window_, camera_);
+            if(light->GetOnlyShadow())
+                continue;
+			shadowCamera_->Setup(light, window_, camera_);
             std::vector<SceneNode*> litNodes;
             GetLighted(nodes, litNodes);
             std::vector<PBatch> batches;

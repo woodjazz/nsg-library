@@ -16,13 +16,18 @@ static const char* COMMON_GLSL = \
 "	#define mediump\n"\
 "	#define highp\n"\
 "#endif   \n"\
-"varying vec4 v_color;\n"\
-"varying vec2 v_texcoord0; \n"\
 "#if defined(AMBIENT_PASS)\n"\
+"	uniform vec4 u_sceneAmbientColor;\n"\
+"	varying vec4 v_color;\n"\
+"	varying vec2 v_texcoord0;\n"\
 "	#if defined(AOMAP1) || defined(LIGHTMAP1)\n"\
 "		varying vec2 v_texcoord1;\n"\
 "	#endif\n"\
-"#else\n"\
+"#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
+"	varying vec3 v_worldPos;\n"\
+"#else // LIT_PASS\n"\
+"	varying vec4 v_color;\n"\
+"	varying vec2 v_texcoord0;\n"\
 "	varying vec3 v_worldPos;\n"\
 "	varying vec3 v_normal;\n"\
 "	varying vec3 v_tangent;\n"\
@@ -31,6 +36,9 @@ static const char* COMMON_GLSL = \
 "	varying vec3 v_vertexToEye;\n"\
 "	#if defined(SHADOWMAP)\n"\
 "		varying vec4 v_shadowClipPos;\n"\
+"		uniform float u_shadowMapInvSize;\n"\
+"	#elif defined(CUBESHADOWMAP)\n"\
+"		uniform float u_shadowMapInvSize;\n"\
 "	#endif\n"\
 "	struct BaseLight\n"\
 "	{\n"\
@@ -38,14 +46,17 @@ static const char* COMMON_GLSL = \
 "	    vec4 specular;\n"\
 "	};\n"\
 "	#if defined(HAS_DIRECTIONAL_LIGHT)\n"\
+"		uniform vec4 u_shadowColor;\n"\
 "		varying vec3 v_lightDirection;\n"\
 "		struct DirectionalLight\n"\
 "		{\n"\
 "		    BaseLight base;\n"\
 "		    vec3 direction;\n"\
+"		    vec3 position; // really is the shadow camera position\n"\
 "		};\n"\
 "		uniform DirectionalLight u_directionalLight;\n"\
-"	#elif defined(HAS_POINT_LIGHT) || defined(SHADOWCUBE_PASS)\n"\
+"	#elif defined(HAS_POINT_LIGHT)\n"\
+"		uniform vec4 u_shadowColor;\n"\
 "		varying vec3 v_lightDirection;\n"\
 "		struct PointLight\n"\
 "		{\n"\
@@ -54,6 +65,7 @@ static const char* COMMON_GLSL = \
 "		};\n"\
 "		uniform PointLight u_pointLight;\n"\
 "	#elif defined(HAS_SPOT_LIGHT)\n"\
+"		uniform vec4 u_shadowColor;\n"\
 "		varying vec3 v_lightDirection;\n"\
 "		struct SpotLight\n"\
 "		{\n"\
@@ -64,6 +76,7 @@ static const char* COMMON_GLSL = \
 "		};\n"\
 "		uniform SpotLight u_spotLight;\n"\
 "	#endif\n"\
+"	uniform float u_shadowBias;\n"\
 "#endif\n"\
 "struct Material\n"\
 "{\n"\
@@ -74,7 +87,6 @@ static const char* COMMON_GLSL = \
 "    float shininess;\n"\
 "};\n"\
 "uniform Material u_material;\n"\
-"uniform vec4 u_sceneAmbientColor;\n"\
 "uniform vec3 u_eyeWorldPos;\n"\
 "uniform float u_lightInvRange;\n"\
 ;

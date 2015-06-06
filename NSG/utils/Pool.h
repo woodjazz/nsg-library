@@ -89,7 +89,7 @@ namespace NSG
         : freeList_(nullptr),
           allocatedObjs_(0)
     {
-		TRACE_PRINTF("Creating pool: object size=%lu objs/chunk=%lu\n", OBJECT_SIZE, OBJECTS_PER_CHUNK);
+		LOGI("Creating pool: object size=%lu objs/chunk=%lu", OBJECT_SIZE, OBJECTS_PER_CHUNK);
 		void* p = std::malloc(ChunkSize);
 		if (!p)
 			exit(1);
@@ -114,14 +114,14 @@ namespace NSG
     template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>
     Pool<OBJECT_SIZE, OBJECTS_PER_CHUNK>::~Pool()
     {
-        TRACE_PRINTF("Destroying pool: object size=%lu objs/chunk=%lu\n", OBJECT_SIZE, OBJECTS_PER_CHUNK);
+        LOGI("Destroying pool: object size=%lu objs/chunk=%lu", OBJECT_SIZE, OBJECTS_PER_CHUNK);
         std::free(begin_);
     }
 
     template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>
     void Pool<OBJECT_SIZE, OBJECTS_PER_CHUNK>::LogStatus()
     {
-        TRACE_PRINTF("Pool Status: object size=%lu  objs/chunk=%ld still allocated objs=%lu\n", OBJECT_SIZE, OBJECTS_PER_CHUNK, allocatedObjs_);
+        LOGI("Pool Status: object size=%lu  objs/chunk=%ld still allocated objs=%lu", OBJECT_SIZE, OBJECTS_PER_CHUNK, allocatedObjs_);
     }
 
     template< size_t OBJECT_SIZE, size_t OBJECTS_PER_CHUNK>

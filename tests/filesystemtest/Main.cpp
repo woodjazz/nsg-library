@@ -33,7 +33,7 @@ static int Test0()
     Path filePath;
     filePath.SetPath(prefPath);
     filePath.SetFileName("data.txt");
-    TRACE_PRINTF("%s\n", filePath.GetFullAbsoluteFilePath().c_str());
+    LOGI("%s\n", filePath.GetFullAbsoluteFilePath().c_str());
     auto fsSlot = FileSystem::SigReady()->Connect([&]()
     {
 		int counter = 0;
@@ -42,7 +42,7 @@ static int Test0()
 			if (ifs.is_open())
 				ifs >> counter;
 		}
-		TRACE_PRINTF("Counter = %d\n", counter);
+		LOGI("Counter = %d\n", counter);
 		{
 			std::ofstream ofs(filePath.GetFullAbsoluteFilePath().c_str(), std::ios::out);
 			ofs << counter + 1;

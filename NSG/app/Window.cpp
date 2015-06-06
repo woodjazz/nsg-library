@@ -84,7 +84,7 @@ namespace NSG
 
     Window::~Window()
     {
-        TRACE_PRINTF("Window %s terminated.\n", name_.c_str());
+        LOGI("Window %s terminated.", name_.c_str());
     }
 
     PWindow Window::Create(const std::string& name, WindowFlags flags)
@@ -158,7 +158,7 @@ namespace NSG
 
     void Window::Close()
     {
-        TRACE_PRINTF("Closing %s window.\n", name_.c_str());
+        LOGI("Closing %s window.", name_.c_str());
 
         if (Window::mainWindow_ == this)
         {
@@ -191,7 +191,7 @@ namespace NSG
     {
         if (width_ != width || height_ != height)
         {
-            TRACE_PRINTF("WindowChanged: %d,%d", width, height);
+            LOGI("WindowChanged: %d,%d", width, height);
             width_ = width;
             height_ = height;
 
@@ -369,7 +369,7 @@ namespace NSG
         {
             if (windows_.size())
             {
-                TRACE_PRINTF("Only one window is allowed for this platform!!!");
+                LOGW("Only one window is allowed for this platform.");
                 return false;
             }
         }

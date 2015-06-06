@@ -150,7 +150,7 @@ namespace NSG
         if (image_ && flags_ & (int)TextureFlag::INVERT_Y)
         {
             if (!image_->FlipVertical())
-                TRACE_PRINTF("Cannot flip vertically image = %s!!!\n", image_->GetName().c_str());
+                LOGE("Cannot flip vertically image = %s", image_->GetName().c_str());
         }
 
 		if (GetTarget() == GL_TEXTURE_CUBE_MAP)
@@ -162,8 +162,8 @@ namespace NSG
         CHECK_ASSERT(Graphics::this_->IsTextureSizeCorrect(width_, height_), __FILE__, __LINE__);
         CHECK_ASSERT(Graphics::this_->GetMaxTextureSize() >= width_ && Graphics::this_->GetMaxTextureSize() >= height_, __FILE__, __LINE__);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)wrapMode_);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)wrapMode_);
+        glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_S, (int)wrapMode_);
+        glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_T, (int)wrapMode_);
 
         Define();
 

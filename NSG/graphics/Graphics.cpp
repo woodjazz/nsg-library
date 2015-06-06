@@ -137,20 +137,20 @@ namespace NSG
         }
         #endif
 
-        TRACE_PRINTF("GL_VENDOR = %s", (const char*)glGetString(GL_VENDOR));
-        TRACE_PRINTF("GL_RENDERER = %s", (const char*)glGetString(GL_RENDERER));
-        TRACE_PRINTF("GL_VERSION = %s", (const char*)glGetString(GL_VERSION));
-        TRACE_PRINTF("GL_SHADING_LANGUAGE_VERSION = %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-        TRACE_PRINTF("GL_EXTENSIONS = %s", (const char*)glGetString(GL_EXTENSIONS));
+        LOGI("GL_VENDOR = %s", (const char*)glGetString(GL_VENDOR));
+        LOGI("GL_RENDERER = %s", (const char*)glGetString(GL_RENDERER));
+        LOGI("GL_VERSION = %s", (const char*)glGetString(GL_VERSION));
+        LOGI("GL_SHADING_LANGUAGE_VERSION = %s", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+        LOGI("GL_EXTENSIONS = %s", (const char*)glGetString(GL_EXTENSIONS));
 
         viewport_ = Recti(0);
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize_);
         CHECK_ASSERT(maxTextureSize_ >= 64, __FILE__, __LINE__);
-        TRACE_PRINTF("GL_MAX_TEXTURE_SIZE = %d", maxTextureSize_);
+        LOGI("GL_MAX_TEXTURE_SIZE = %d", maxTextureSize_);
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTexturesCombined_);
-        TRACE_PRINTF("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = %d", maxTexturesCombined_);
+        LOGI("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = %d", maxTexturesCombined_);
         CHECK_CONDITION(maxTexturesCombined_ >= 8, __FILE__, __LINE__);
         textures_ = std::vector<Texture*>(maxTexturesCombined_, nullptr);
 
@@ -170,7 +170,7 @@ namespace NSG
         if (CheckExtension("EXT_texture_compression_dxt1"))
         {
             has_texture_compression_dxt1_ext_ = true;
-            TRACE_PRINTF("Has extension: EXT_texture_compression_dxt1");
+            LOGI("Has extension: EXT_texture_compression_dxt1");
         }
 
         if (CheckExtension("WEBGL_compressed_texture_s3tc"))
@@ -178,7 +178,7 @@ namespace NSG
             has_texture_compression_dxt1_ext_ = true;
             has_texture_compression_dxt3_ext_ = true;
             has_texture_compression_dxt5_ext_ = true;
-            TRACE_PRINTF("Has extension: WEBGL_compressed_texture_s3tc");
+            LOGI("Has extension: WEBGL_compressed_texture_s3tc");
         }
 
         if (CheckExtension("EXT_texture_compression_s3tc"))
@@ -186,68 +186,68 @@ namespace NSG
             has_texture_compression_dxt1_ext_ = true;
             has_texture_compression_dxt3_ext_ = true;
             has_texture_compression_dxt5_ext_ = true;
-            TRACE_PRINTF("Has extension: EXT_texture_compression_s3tc");
+            LOGI("Has extension: EXT_texture_compression_s3tc");
         }
 
         if (CheckExtension("OES_compressed_ETC1_RGB8_texture"))
         {
             has_compressed_ETC1_RGB8_texture_ext_ = true;
-            TRACE_PRINTF("Has extension: OES_compressed_ETC1_RGB8_texture");
+            LOGI("Has extension: OES_compressed_ETC1_RGB8_texture");
         }
 
         if (CheckExtension("IMG_texture_compression_pvrtc"))
         {
             has_texture_compression_pvrtc_ext_ = true;
-            TRACE_PRINTF("Has extension: IMG_texture_compression_pvrtc");
+            LOGI("Has extension: IMG_texture_compression_pvrtc");
         }
 
         if (CheckExtension("EXT_discard_framebuffer"))
         {
             has_discard_framebuffer_ext_ = true;
-            TRACE_PRINTF("Using extension: EXT_discard_framebuffer");
+            LOGI("Using extension: EXT_discard_framebuffer");
         }
 
         if (CheckExtension("OES_vertex_array_object") || CheckExtension("ARB_vertex_array_object"))
         {
             has_vertex_array_object_ext_ = true;
-            TRACE_PRINTF("Using extension: vertex_array_object");
+            LOGI("Using extension: vertex_array_object");
         }
 
         if (CheckExtension("EXT_map_buffer_range"))
         {
             has_map_buffer_range_ext_ = true;
-            TRACE_PRINTF("Using extension: EXT_map_buffer_range");
+            LOGI("Using extension: EXT_map_buffer_range");
         }
 
         if (CheckExtension("GL_OES_depth_texture"))
         {
             has_depth_texture_ext_ = true;
-            TRACE_PRINTF("Using extension: GL_OES_depth_texture");
+            LOGI("Using extension: GL_OES_depth_texture");
         }
 
         if (CheckExtension("GL_ARB_depth_texture"))
         {
             has_depth_texture_ext_ = true;
-            TRACE_PRINTF("Using extension: GL_ARB_depth_texture");
+            LOGI("Using extension: GL_ARB_depth_texture");
         }
 
 
         if (CheckExtension("GL_OES_depth24"))
         {
             has_depth_component24_ext_ = true;
-            TRACE_PRINTF("Using extension: GL_OES_depth24");
+            LOGI("Using extension: GL_OES_depth24");
         }
 
         if (CheckExtension("GL_EXT_packed_depth_stencil") || CheckExtension("GL_OES_packed_depth_stencil"))
         {
             has_packed_depth_stencil_ext_ = true;
-            TRACE_PRINTF("Using extension: packed_depth_stencil");
+            LOGI("Using extension: packed_depth_stencil");
         }
 
         if (CheckExtension("GL_ARB_texture_non_power_of_two"))
         {
             has_texture_non_power_of_two_ext_ = true;
-            TRACE_PRINTF("Using extension: GL_ARB_texture_non_power_of_two");
+            LOGI("Using extension: GL_ARB_texture_non_power_of_two");
         }
 
         #if !defined(EMSCRIPTEN)
@@ -261,13 +261,13 @@ namespace NSG
                 if (maxVertexAtts >= attributesNeeded)
                 {
                     has_instanced_arrays_ext_ = true;
-                    TRACE_PRINTF("Using extension: instanced_arrays");
+                    LOGI("Using extension: instanced_arrays");
                 }
                 else
                 {
-                    TRACE_PRINTF("Has extension: instanced_arrays");
-                    TRACE_PRINTF("Needed %d but graphics only supports %d attributes", attributesNeeded, maxVertexAtts);
-                    TRACE_PRINTF("Disabling extension: instanced_arrays");
+                    LOGW("Has extension: instanced_arrays");
+                    LOGW("Needed %d but graphics only supports %d attributes", attributesNeeded, maxVertexAtts);
+                    LOGI("Disabling extension: instanced_arrays");
                 }
             }
         }
@@ -279,7 +279,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-                TRACE_PRINTF("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
+                LOGI("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
             }
             else
             {
@@ -289,13 +289,13 @@ namespace NSG
                 if (status == GL_NO_ERROR)
                 {
                     maxVaryingVectors_ /= 4;
-                    TRACE_PRINTF("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
+                    LOGI("GL_MAX_VARYING_VECTORS = %d", maxVaryingVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 8;
-                    TRACE_PRINTF("*** Unknown GL_MAX_VARYING_VECTORS ***. Setting value to %d", maxVaryingVectors_);
+                    LOGW("Unknown GL_MAX_VARYING_VECTORS. Setting value to %d", maxVaryingVectors_);
 
                 }
             }
@@ -306,7 +306,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-                TRACE_PRINTF("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
+                LOGI("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
             }
             else
             {
@@ -315,13 +315,13 @@ namespace NSG
                 status = glGetError();
                 if (status == GL_NO_ERROR)
                 {
-                    TRACE_PRINTF("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
+                    LOGI("GL_MAX_VERTEX_UNIFORM_VECTORS = %d", maxVertexUniformVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 128;
-                    TRACE_PRINTF("*** Unknown GL_MAX_VERTEX_UNIFORM_VECTORS ***. Setting value to %d", maxVertexUniformVectors_);
+                    LOGW("Unknown GL_MAX_VERTEX_UNIFORM_VECTORS. Setting value to %d", maxVertexUniformVectors_);
                 }
             }
         }
@@ -331,7 +331,7 @@ namespace NSG
             GLenum status = glGetError();
             if (status == GL_NO_ERROR)
             {
-                TRACE_PRINTF("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
+                LOGI("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
             }
             else
             {
@@ -340,20 +340,20 @@ namespace NSG
                 status = glGetError();
                 if (status == GL_NO_ERROR)
                 {
-                    TRACE_PRINTF("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
+                    LOGI("GL_MAX_FRAGMENT_UNIFORM_VECTORS = %d", maxFragmentUniformVectors_);
                 }
                 else
                 #endif
                 {
                     maxVaryingVectors_ = 128;
-                    TRACE_PRINTF("*** Unknown GL_MAX_FRAGMENT_UNIFORM_VECTORS ***. Setting value to %d", maxFragmentUniformVectors_);
+                    LOGW("Unknown GL_MAX_FRAGMENT_UNIFORM_VECTORS. Setting value to %d", maxFragmentUniformVectors_);
                 }
             }
         }
 
         {
             glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs_);
-            TRACE_PRINTF("GL_MAX_VERTEX_ATTRIBS = %d", maxVertexAttribs_);
+            LOGI("GL_MAX_VERTEX_ATTRIBS = %d", maxVertexAttribs_);
         }
 
         // Set up texture data read/write alignment

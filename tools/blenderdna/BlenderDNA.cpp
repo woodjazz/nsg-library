@@ -447,7 +447,7 @@ namespace Blender
         FILE* fp = fopen(filePath.GetFullAbsoluteFilePath().c_str(), "rb");
         if (!fp)
         {
-            TRACE_PRINTF("File loading failed %s\n", filePath.GetFullAbsoluteFilePath().c_str());
+            LOGE("File loading failed %s", filePath.GetFullAbsoluteFilePath().c_str());
             return 1;
         }
 
@@ -465,7 +465,7 @@ namespace Blender
 
         if (!blender && !bullet)
         {
-            TRACE_PRINTF("Invalid header, compressed file ?\n");
+            LOGE("Invalid header, compressed file?");
             delete []buf;
             return 1;
         }
@@ -505,7 +505,7 @@ namespace Blender
             if (bfp)
             {
                 const char* specname = "Blender";
-                TRACE_PRINTF("Writing %s header from file version %i...\n", specname, version);
+                LOGI("Writing %s header from file version %i...", specname, version);
 
                 fprintf(bfp, "#ifndef _%s_h_\n", specname);
                 fprintf(bfp, "#define _%s_h_\n", specname);
@@ -559,7 +559,7 @@ namespace Blender
             bfp = fopen(outputCpp.GetFullAbsoluteFilePath().c_str(), "wb");
             if (bfp)
             {
-                TRACE_PRINTF("Writing %s bit DNA...\n", (is64Bit ? "64" : "32"));
+                LOGI("Writing %s bit DNA...", (is64Bit ? "64" : "32"));
 
                 fprintf(bfp, "unsigned char DNAstr[]={\n    ");
 

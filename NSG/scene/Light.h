@@ -47,6 +47,8 @@ namespace NSG
 		static SignalLight::PSignal SignalBeingDestroy();
 		const Color& GetDiffuseColor() const { return diffuseColor_; }
 		const Color& GetSpecularColor() const { return specularColor_; }
+		void SetShadowColor(Color color);
+		const Color& GetShadowColor() const { return shadowColor_; }
 		void SetDistance(float distance);
 		float GetDistance() const { return distance_; }
 		float GetInvRange() const { return invRange_; }
@@ -54,8 +56,17 @@ namespace NSG
 		bool DoShadows() const;
 		FrameBuffer* GetShadowFrameBuffer() const { return shadowFrameBuffer_.get(); }
 		PTexture GetShadowMap() const;
+		float GetShadowClipStart() const { return shadowClipStart_; }
+		float GetShadowClipEnd() const { return shadowClipEnd_; }
+		void SetShadowClipStart(float value);
+		void SetShadowClipEnd(float value);
+		void SetOnlyShadow(bool onlyShadow) { onlyShadow_ = onlyShadow; }
+		bool GetOnlyShadow() const { return onlyShadow_; }
+		void SetBias(float shadowBias) { shadowBias_ = shadowBias; }
+		float GetBias() const { return shadowBias_; }
 	private:
 		void CalculateColor();
+		void CalculateInvRange();
 		LightType type_;
 		float energy_;
 		Color color_;
@@ -64,11 +75,16 @@ namespace NSG
         float spotCutOff_; // angle in degrees
         Color diffuseColor_; // calculated
         Color specularColor_; // calculated
+        Color shadowColor_;
         float distance_;
-        float invRange_;
+        float invRange_; // calculated
         bool shadows_;
+        float shadowClipStart_;
+        float shadowClipEnd_;
+        bool onlyShadow_;
         mutable int width_; // renderer window's width
 		mutable int height_; // renderer window's height
         PFrameBuffer shadowFrameBuffer_;
+        float shadowBias_; // Bias is used to add a slight offset distance between an object and the shadows cast by it.
 	};
 }

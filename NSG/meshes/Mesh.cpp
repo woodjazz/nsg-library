@@ -284,44 +284,55 @@ namespace NSG
 
     void Mesh::AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal)
     {
-        IndexType vidx = (IndexType)vertexsData_.size();
+		if (vertexsData_.size() + 4 <= std::numeric_limits<IndexType>::max())
+		{
+			IndexType vidx = (IndexType)vertexsData_.size();
 
-        vertexsData_.push_back(v0);
-        vertexsData_.push_back(v1);
-        vertexsData_.push_back(v2);
-        vertexsData_.push_back(v3);
+			vertexsData_.push_back(v0);
+			vertexsData_.push_back(v1);
+			vertexsData_.push_back(v2);
+			vertexsData_.push_back(v3);
 
-        CHECK_ASSERT(vertexsData_.size() <= std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
+			indexes_.push_back(vidx);
+			indexes_.push_back(vidx + 1);
+			indexes_.push_back(vidx + 2);
+			indexes_.push_back(vidx);
+			indexes_.push_back(vidx + 2);
+			indexes_.push_back(vidx + 3);
 
-        indexes_.push_back(vidx);
-        indexes_.push_back(vidx + 1);
-        indexes_.push_back(vidx + 2);
-        indexes_.push_back(vidx);
-        indexes_.push_back(vidx + 2);
-        indexes_.push_back(vidx + 3);
-
-        if (calcFaceNormal)
-            AverageNormals(vidx, true);
-        Invalidate();
+			if (calcFaceNormal)
+				AverageNormals(vidx, true);
+			Invalidate();
+		}
+		else
+		{
+			LOGW("Too many vertices. Limit is %d", std::numeric_limits<IndexType>::max());
+		}
     }
 
     void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal)
     {
         auto idx0 = vertexsData_.size();
-        CHECK_ASSERT(idx0 + 2 < std::numeric_limits<IndexType>::max(), __FILE__, __LINE__);
-        IndexType vidx = (IndexType)idx0;
-        vertexsData_.push_back(v0);
-        vertexsData_.push_back(v1);
-        vertexsData_.push_back(v2);
-        indexes_.push_back(vidx);
-        indexes_.push_back(vidx + 1);
-        indexes_.push_back(vidx + 2);
+		if (idx0 + 2 <= std::numeric_limits<IndexType>::max())
+		{
+			IndexType vidx = (IndexType)idx0;
+			vertexsData_.push_back(v0);
+			vertexsData_.push_back(v1);
+			vertexsData_.push_back(v2);
+			indexes_.push_back(vidx);
+			indexes_.push_back(vidx + 1);
+			indexes_.push_back(vidx + 2);
 
-        if (calcFaceNormal)
-            AverageNormals(vidx, false);
+			if (calcFaceNormal)
+				AverageNormals(vidx, false);
 
-        Invalidate();
-    }
+			Invalidate();
+		}
+		else
+		{
+			LOGW("Too many vertices. Limit is %d", std::numeric_limits<IndexType>::max());
+		}
+	}
 
     void Mesh::AverageNormals(size_t vIndexBase, bool isQuad)
     {
@@ -359,7 +370,7 @@ namespace NSG
     {
         if (skeleton)
         {
-            TRACE_PRINTF("Setting skeleton for mesh %s", name_.c_str());
+            LOGI("Setting skeleton for mesh %s", name_.c_str());
         }
 
         skeleton_ = skeleton;

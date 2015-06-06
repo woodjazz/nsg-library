@@ -3480,8 +3480,8 @@
 			<SceneNode name="Ramp1" nodeType="SceneNode" position="[-4.126361,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Red" meshName="Ramp">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" trigger="false" kinematic="false" />
 			</SceneNode>
-			<SceneNode name="Sun" nodeType="Light" type="DIRECTIONAL" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[-11.827162,1.162737,1.971714]" orientation="[0.707618,0.000000,-0.706595,0.000000]" distance="25" shadows="true" />
-			<SceneNode name="Spot" nodeType="Light" type="SPOT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[1.054080,0.480208,8.547157]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" shadows="true" />
+			<SceneNode name="Sun" nodeType="Light" type="DIRECTIONAL" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[-11.827162,1.162737,1.971714]" orientation="[0.707618,0.000000,-0.706595,0.000000]" distance="25" shadows="true" shadowClipStart="0.1" shadowClipEnd="25" onlyShadow="false" shadowColor="[0.000000,0.000000,0.000000,1.000000]" shadowBias="0.000125" />
+			<SceneNode name="Spot" nodeType="Light" type="SPOT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="45" position="[1.054080,0.480208,8.547157]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="25" shadows="true" shadowClipStart="0.5" shadowClipEnd="25" onlyShadow="false" shadowColor="[0.000000,0.000000,0.000000,1.000000]" shadowBias="0.000125" />
 			<SceneNode name="Armature" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]">
 				<SceneNode name="Bone" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,0.707107,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]">
 					<SceneNode name="Bone.002" nodeType="SceneNode" position="[0.000000,1.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" />
@@ -3492,7 +3492,7 @@
 					<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />
 				</SceneNode>
 			</SceneNode>
-			<SceneNode name="Lamp" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="75" position="[1.542231,0.200450,4.877756]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="30" shadows="true" />
+			<SceneNode name="Lamp" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="75" position="[1.542231,0.200450,4.877756]" orientation="[1.000000,0.000000,0.000000,0.000000]" distance="30" shadows="true" shadowClipStart="0.1" shadowClipEnd="30" onlyShadow="false" shadowColor="[0.000000,0.000000,0.000000,1.000000]" shadowBias="0.000125" />
 			<SceneNode name="Camera" nodeType="Camera" fovy="0.857556" zNear="0.1" zFar="100" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="7.31429" sensorFit="0" position="[0.000000,14.306017,7.820033]" orientation="[-0.000000,0.000000,0.516961,0.856009]" />
 		</SceneNode>
 		<Animations>

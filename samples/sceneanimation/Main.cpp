@@ -38,8 +38,10 @@ int NSG_MAIN(int argc, char* argv[])
     plane->GetMaterial()->SetShininess(10);
 
     auto camera = scene->GetChild<Camera>("Camera", false);
+	camera->SetFarClip(20);
     auto control = std::make_shared<CameraControl>(camera);
-    auto lamp = scene->GetChild<Light>("Lamp", false);
+    auto sun = scene->GetChild<Light>("Sun", false);
+	sun->EnableShadows(true);
     auto ball = scene->GetChild<SceneNode>("Earth", false);
     auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);
     auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);

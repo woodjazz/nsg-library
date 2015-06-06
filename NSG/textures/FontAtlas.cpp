@@ -91,15 +91,14 @@ namespace NSG
 
     void FontAtlas::ParseXML()
     {
-		TRACE_PRINTF("FontAtlas::Parsing: %s", xmlResource_->GetName().c_str());
+		LOGI("FontAtlas::Parsing: %s", xmlResource_->GetName().c_str());
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer((void*)xmlResource_->GetData(), xmlResource_->GetBytes());
         if (!result)
         {
-			TRACE_PRINTF("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
-			TRACE_PRINTF("Error description: %s", result.description());
-			TRACE_PRINTF("Error offset: %d", result.offset);
-            CHECK_ASSERT(false, __FILE__, __LINE__);
+			LOGE("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
+			LOGE("Error description: %s", result.description());
+			LOGE("Error offset: %d", result.offset);
         }
         else
         {
@@ -128,7 +127,7 @@ namespace NSG
                 node = node.next_sibling("Char");
             }
 
-			TRACE_PRINTF("FontAtlas::Parsing done.");
+			LOGI("FontAtlas::Parsing done.");
         }
     }
 

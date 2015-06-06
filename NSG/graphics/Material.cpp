@@ -490,7 +490,7 @@ namespace NSG
             if (light->GetType() == LightType::POINT)
                 defines += "SHADOWCUBE_PASS\n";
             else if (light->GetType() == LightType::DIRECTIONAL)
-                defines += "SHADOWDIR_PASS\n";
+                defines += "SHADOW_PASS\n";
             else
                 defines += "SHADOW_PASS\n";
         }

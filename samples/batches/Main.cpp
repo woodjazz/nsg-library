@@ -108,6 +108,7 @@ int NSG_MAIN(int argc, char* argv[])
 		static float distance = 0;
 		static float step = 15;
 		light->SetDistance(distance);
+		light->SetShadowClipEnd(distance);
 		distance += step * deltaTime;
 		if (distance > 50 || distance < 0)
 			step *= -1;

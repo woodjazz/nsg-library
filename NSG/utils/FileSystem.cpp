@@ -54,7 +54,7 @@ namespace NSG
     static bool isFSInitializing = false;
     static void FSReady()
     {
-        TRACE_PRINTF("Ready...\n");
+        LOGI("Ready...");
         isFSReady = true;
         FileSystem::SigReady()->Run();
     }
@@ -67,7 +67,7 @@ namespace NSG
     static bool isFSSaved = false;
     static void FSSaved()
     {
-        TRACE_PRINTF("Saved...\n");
+        LOGI("Saved...");
         isFSSaved = true;
         FileSystem::SigSaved()->Run();
     }
@@ -106,7 +106,7 @@ namespace NSG
             if (!isFSInitializing)
             {
                 isFSInitializing = true;
-                //TRACE_PRINTF("Begin InitializeFS\n");
+                //LOGI("Begin InitializeFS");
                 auto& conf = Engine::GetPtr()->GetAppConfiguration();
                 std::string org = conf.orgName_;
                 std::string app = conf.appName_;
@@ -165,7 +165,7 @@ namespace NSG
             {
                 if (::SetCurrentDirectory(path.c_str()) == FALSE)
                 {
-                    TRACE_PRINTF("Failed to change directory to %s with error = %d", path.c_str(), GetLastError());
+                    LOGE("Failed to change directory to %s with error = %d", path.c_str(), GetLastError());
                     return false;
                 }
             }
@@ -173,7 +173,7 @@ namespace NSG
             {
                 if (chdir(path.c_str()) != 0)
                 {
-                    TRACE_PRINTF("Failed to change directory to %s with error = %d", path.c_str(), errno);
+                    LOGE("Failed to change directory to %s with error = %d", path.c_str(), errno);
                     return false;
                 }
             }
@@ -203,7 +203,7 @@ namespace NSG
         {
             Path filename(path);
             filename.AddExtension("lz4");
-            TRACE_PRINTF("Saving file: %s", filename.GetFullAbsoluteFilePath().c_str());
+            LOGI("Saving file: %s", filename.GetFullAbsoluteFilePath().c_str());
             struct XMLWriter : pugi::xml_writer
             {
                 std::string buffer_;

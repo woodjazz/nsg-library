@@ -109,7 +109,7 @@ namespace NSG
         channels_ = 4;
         imgDataSize_ = width_ * height_ * channels_;
         unsigned char* newData = (unsigned char*)malloc(imgDataSize_);
-		TRACE_PRINTF("Decompressing %s", resource_->GetName().c_str());
+		LOGI("Decompressing %s", resource_->GetName().c_str());
         switch (format_)
         {
             case TextureFormat::DXT1:
@@ -171,8 +171,7 @@ namespace NSG
             imgData_ = jpgd::decompress_jpeg_image_from_memory(data, dataSize, &width_, &height_, &channels_, 4);
             if (!imgData_)
             {
-				TRACE_PRINTF("Resource=%s failed with reason:%s", resource_->GetName().c_str(), stbi_failure_reason());
-                CHECK_CONDITION(!"Failed to read generic image!!!", __FILE__, __LINE__);
+				LOGE("Resource=%s failed with reason:%s", resource_->GetName().c_str(), stbi_failure_reason());
             }
         }
 
@@ -730,7 +729,7 @@ namespace NSG
     {
         CHECK_CONDITION(!compressed_ && "Resize not supported for compressed images!!!", __FILE__, __LINE__);
         Image::Resize2PowerOf2(imgData_, width_, height_, channels_);
-		TRACE_PRINTF("Image %s has been resized to power of two", name_.c_str());
+		LOGI("Image %s has been resized to power of two", name_.c_str());
     }
 
     void Image::Reduce(int size)
@@ -756,7 +755,7 @@ namespace NSG
             width_ = newWidth;
             height_ = newHeight;
             imgData_ = newImgData;
-            TRACE_PRINTF("Image %s has been reduced to %d", name_.c_str(), size);
+            LOGI("Image %s has been reduced to %d", name_.c_str(), size);
         }
     }
 
@@ -771,7 +770,7 @@ namespace NSG
         int result = stbi_write_png(oPath.GetFullAbsoluteFilePath().c_str(), width_, height_, channels_, imgData_, 0);
         if (!result)
         {
-			TRACE_PRINTF("Error %s writting file %s", std::strerror(errno), oPath.GetFilePath().c_str());
+			LOGE("Error %s writting file %s", std::strerror(errno), oPath.GetFilePath().c_str());
             return false;
         }
         return true;

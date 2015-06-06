@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "BScene.h"
+#include "BGroup.h"
 #include "BlenderDefines.h"
 #include "UtilConverter.h"
 #include "pugixml.hpp"
@@ -38,6 +39,35 @@ misrepresented as being the original software.
 #define snprintf _snprintf
 #endif
 
+#ifdef WIN32
+void _cdecl TranslateSEtoCE(unsigned int code, PEXCEPTION_POINTERS pep)
+{
+    switch (code)
+    {
+        case EXCEPTION_ACCESS_VIOLATION:
+			throw std::runtime_error("EXCEPTION_ACCESS_VIOLATION");
+			break;
+        case EXCEPTION_INT_DIVIDE_BY_ZERO:
+			throw std::runtime_error("EXCEPTION_INT_DIVIDE_BY_ZERO");
+			break;
+		case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+			throw std::runtime_error("EXCEPTION_FLT_DIVIDE_BY_ZERO");
+			break;
+		case EXCEPTION_FLT_OVERFLOW:
+			throw std::runtime_error("EXCEPTION_FLT_OVERFLOW");
+			break;
+		case EXCEPTION_FLT_UNDERFLOW:
+			throw std::runtime_error("EXCEPTION_FLT_UNDERFLOW");
+			break;
+		case EXCEPTION_STACK_OVERFLOW:
+			throw std::runtime_error("EXCEPTION_STACK_OVERFLOW");
+			break;
+		default:
+            throw std::runtime_error("Windows Exception");
+    }
+}
+#endif
+
 namespace BlenderConverter
 {
     using namespace NSG;
@@ -48,24 +78,42 @@ namespace BlenderConverter
           defaultMaterial_(Material::Create("__DefaultBlenderMaterial__"))
     {
         defaultMaterial_->SetRenderPass(RenderPass::PERPIXEL);
+
+        #ifdef WIN32
+        _set_se_translator(TranslateSEtoCE);
+        #endif
     }
 
     BScene::~BScene()
     {
     }
 
-    void BScene::Load()
+    bool BScene::Load()
     {
-        bParse::bBlenderFile obj(path_.GetFullAbsoluteFilePath().c_str());
-        obj.parse(false);
-		if (obj.ok())
-		{
-			bParse::bMain* data = obj.getMain();
-			auto materials = LoadMaterials(data);
-			sounds_ = LoadSounds(data);
-			CreateScenes(data);
-			CreateAnimations(data);
-		}
+        try
+        {
+            bParse::bBlenderFile obj(path_.GetFullAbsoluteFilePath().c_str());
+            obj.parse(false);
+            if (obj.ok())
+            {
+                bParse::bMain* data = obj.getMain();
+                auto materials = LoadMaterials(data);
+                sounds_ = LoadSounds(data);
+                CreateScenes(data);
+                CreateAnimations(data);
+				return true;
+            }
+        }
+        catch (std::exception& e)
+        {
+            LOGE("EXCEPTION %s", e.what());
+        }
+        catch (...)
+        {
+            LOGE("UNKNOWN EXCEPTION");
+        }
+
+		return false;
     }
 
     void BScene::CreateScenes(bParse::bMain* data)
@@ -83,9 +131,12 @@ namespace BlenderConverter
             while (base)
             {
                 const Blender::Object* obj = base->object;
-				ConvertObject(obj, scene, bscene);
+                if (!(obj->restrictflag & OB_RESTRICT_RENDER)) // object-level restrictions in OUTLINER
+                    ConvertObject(obj, scene, bscene);
                 base = base->next;
             }
+            ConvertGroups(data, scene, bscene);
+            ConvertGroupInstances(data, scene, bscene);
             for (auto& objArmature : armatureLinker_)
                 CreateSkeleton(scene, objArmature);
         }
@@ -96,9 +147,12 @@ namespace BlenderConverter
         auto scene = std::make_shared<Scene>(B_IDNAME(bscene));
         scene->SetOrientation(glm::angleAxis<float>(-PI / 2.f, Vertex3(1, 0, 0)));
         const Blender::World* world = bscene->world;
-        scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
-        Color ambient(world->ambr, world->ambg, world->ambb, 1);
-        scene->SetAmbientColor(ambient);
+		if (world)
+		{
+			scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
+			Color ambient(world->ambr, world->ambg, world->ambb, 1);
+			scene->SetAmbientColor(ambient);
+		}
         return scene;
     }
 
@@ -115,27 +169,27 @@ namespace BlenderConverter
         return result;
     }
 
-	NSG::PSound BScene::LoadSound(Blender::bSound* sound)
+    NSG::PSound BScene::LoadSound(Blender::bSound* sound)
     {
-		std::string soundName = B_IDNAME(sound);
-		if (!sound->packedfile)
-		{
-			Path path;
-			path.SetPath(path_.GetPath());
-			path.SetFileName(sound->name);
-			auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
-			auto sound = Sound::Create(soundName);
-			sound->Set(resource);
-			return sound;
-		}
-		else
-		{
-			auto resource = Resource::GetOrCreate<ResourceConverter>(sound->name);
-			resource->SetData((const char*)sound->packedfile->data, sound->packedfile->size);
-			auto sound = Sound::Create(soundName);
-			sound->Set(resource);
-			return sound;
-		}
+        std::string soundName = B_IDNAME(sound);
+        if (!sound->packedfile)
+        {
+            Path path;
+            path.SetPath(path_.GetPath());
+            path.SetFileName(sound->name);
+            auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
+            auto sound = Sound::Create(soundName);
+            sound->Set(resource);
+            return sound;
+        }
+        else
+        {
+            auto resource = Resource::GetOrCreate<ResourceConverter>(sound->name);
+            resource->SetData((const char*)sound->packedfile->data, sound->packedfile->size);
+            auto sound = Sound::Create(soundName);
+            sound->Set(resource);
+            return sound;
+        }
     }
 
     std::vector<NSG::PMaterial> BScene::LoadMaterials(bParse::bMain* data)
@@ -179,7 +233,7 @@ namespace BlenderConverter
         auto specularIntensity = mt->spec;
         material->SetSpecularColor(Color(specularIntensity * mt->specr, specularIntensity * mt->specg, specularIntensity * mt->specb, mt->alpha));
         material->SetAmbientColor(Color(mt->ambr, mt->ambg, mt->ambb, mt->alpha));
-        
+
         material->SetShininess(mt->har);
 
         if (mt->mode & MA_WIRE)
@@ -187,10 +241,10 @@ namespace BlenderConverter
         else
             material->SetFillMode(FillMode::SOLID);
 
-		bool shadeless = mt->mode & MA_SHLESS ? true : false;
-		material->SetShadeless(shadeless);
-		bool receiveShadow = mt->mode & MA_SHADOW ? true : false;
-		material->ReceiveShadows(receiveShadow);
+        bool shadeless = mt->mode & MA_SHLESS ? true : false;
+        material->SetShadeless(shadeless);
+        bool receiveShadow = mt->mode & MA_SHADOW ? true : false;
+        material->ReceiveShadows(receiveShadow);
         bool castShadow = mt->mode2 & 1 ? true : false;
         material->CastShadow(castShadow);
 
@@ -203,19 +257,22 @@ namespace BlenderConverter
             material->SetCullFaceMode(CullFaceMode::BACK);
         else if (mt->game.flag & GEMAT_INVISIBLE)
             material->SetCullFaceMode(CullFaceMode::FRONT_AND_BACK);
-        else 
+        else
             material->SetCullFaceMode(CullFaceMode::DISABLED);
 
-        if (mt->game.flag & GEMAT_TEXT)
+		//if (mt->mode & MA_VERTEXCOL)
+		//	material->SetRenderPass(RenderPass::VERTEXCOLOR);
+        
+		if (mt->game.flag & GEMAT_TEXT)
             material->SetRenderPass(RenderPass::TEXT);
         else
             material->SetRenderPass(RenderPass::PERPIXEL);
 
-        if(mt->game.face_orientation & GEMAT_HALO)
+        if (mt->game.face_orientation & GEMAT_HALO)
             material->SetBillboardType(BillboardType::SPHERICAL);
-        else if(mt->game.face_orientation & GEMAT_BILLBOARD)
+        else if (mt->game.face_orientation & GEMAT_BILLBOARD)
             material->SetBillboardType(BillboardType::CYLINDRICAL);
-        else 
+        else
             material->SetBillboardType(BillboardType::NONE);
 
         // textures
@@ -232,82 +289,82 @@ namespace BlenderConverter
                     const Blender::Image* ima = mtex->tex->ima;
                     if (!ima) continue;
                     auto texture = CreateTexture(ima);
-					if (mtex->uvname)
-						texture->SetUVName(mtex->uvname);
+                    if (mtex->uvname)
+                        texture->SetUVName(mtex->uvname);
 
-					switch (mtex->blendtype)
-					{
+                    switch (mtex->blendtype)
+                    {
                         case MTEX_BLEND:
-							texture->SetBlendType(TextureBlend::MIX);
+                            texture->SetBlendType(TextureBlend::MIX);
                             break;
                         case MTEX_MUL:
-							texture->SetBlendType(TextureBlend::MUL);
+                            texture->SetBlendType(TextureBlend::MUL);
                             break;
                         case MTEX_ADD:
-							texture->SetBlendType(TextureBlend::ADD);
+                            texture->SetBlendType(TextureBlend::ADD);
                             break;
                         case MTEX_SUB:
-							texture->SetBlendType(TextureBlend::SUB);
+                            texture->SetBlendType(TextureBlend::SUB);
                             break;
                         case MTEX_DIV:
-							texture->SetBlendType(TextureBlend::DIV);
+                            texture->SetBlendType(TextureBlend::DIV);
                             break;
                         case MTEX_DARK:
-							texture->SetBlendType(TextureBlend::DARK);
+                            texture->SetBlendType(TextureBlend::DARK);
                             break;
                         case MTEX_DIFF:
-							texture->SetBlendType(TextureBlend::DIFF);
+                            texture->SetBlendType(TextureBlend::DIFF);
                             break;
                         case MTEX_LIGHT:
-							texture->SetBlendType(TextureBlend::LIGHT);
+                            texture->SetBlendType(TextureBlend::LIGHT);
                             break;
                         case MTEX_SCREEN:
-							texture->SetBlendType(TextureBlend::SCREEN);
+                            texture->SetBlendType(TextureBlend::SCREEN);
                             break;
                         case MTEX_OVERLAY:
-							texture->SetBlendType(TextureBlend::OVERLAY);
+                            texture->SetBlendType(TextureBlend::OVERLAY);
                             break;
                         case MTEX_BLEND_HUE:
-							texture->SetBlendType(TextureBlend::BLEND_HUE);
+                            texture->SetBlendType(TextureBlend::BLEND_HUE);
                             break;
                         case MTEX_BLEND_SAT:
-							texture->SetBlendType(TextureBlend::BLEND_SAT);
+                            texture->SetBlendType(TextureBlend::BLEND_SAT);
                             break;
                         case MTEX_BLEND_VAL:
-							texture->SetBlendType(TextureBlend::BLEND_VAL);
+                            texture->SetBlendType(TextureBlend::BLEND_VAL);
                             break;
                         case MTEX_BLEND_COLOR:
-							texture->SetBlendType(TextureBlend::BLEND_COLOR);
+                            texture->SetBlendType(TextureBlend::BLEND_COLOR);
                             break;
                         default:
                             break;
-					}
+                    }
 
-					if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_EMIT))
-					{
-						texture->SetMapType(TextureType::EMIT);
-						material->SetTexture(texture);
-					}
-					else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
-					{
-						texture->SetMapType(TextureType::NORM);
-						material->SetTexture(texture);
-					}
-					else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
-					{
-						texture->SetMapType(TextureType::SPEC);
-						material->SetTexture(texture);
-					}
-					else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
-					{
-						texture->SetMapType(TextureType::AMB);
-						material->SetTexture(texture);
-					}
-					else if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
-					{
-						texture->SetMapType(TextureType::COL);
-						material->SetTexture(texture);
-					}
+                    if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_EMIT))
+                    {
+                        texture->SetMapType(TextureType::EMIT);
+                        material->SetTexture(texture);
+                    }
+                    else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
+                    {
+                        texture->SetMapType(TextureType::NORM);
+                        material->SetTexture(texture);
+                    }
+                    else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
+                    {
+                        texture->SetMapType(TextureType::SPEC);
+                        material->SetTexture(texture);
+                    }
+                    else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
+                    {
+                        texture->SetMapType(TextureType::AMB);
+                        material->SetTexture(texture);
+                    }
+                    else if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
+                    {
+                        texture->SetMapType(TextureType::COL);
+                        material->SetTexture(texture);
+                    }
                 }
             }
         }
@@ -315,37 +372,122 @@ namespace BlenderConverter
         return material;
     }
 
-	void BScene::ConvertObject(const Blender::Object* obj, PScene scene, const Blender::Scene* bscene)
+    void BScene::ConvertGroups(bParse::bMain* data, PScene scene, const Blender::Scene* bscene)
     {
-		PSceneNode parent = scene;
+        bParse::bListBasePtr* it = data->getGroup();
+        int n = it->size();
+        for (int i = 0; i < n; i++)
+        {
+            auto bgroup = (Blender::Group*)it->at(i);
+            auto groupName = B_IDNAME(bgroup);
+            auto group = std::make_shared<BGroup>(groupName);
+            auto result = groups_.insert(Groups::value_type(groupName, group));
+			if (!result.second)
+			{
+				LOGW("Insert for group=%s failed!!!\n", groupName);
+				continue;
+			}
+            auto bgobj = (Blender::GroupObject*)bgroup->gobject.first;
+            while (bgobj)
+            {
+                Blender::Object* bobj = bgobj->ob;
+                if (bobj)
+                {
+                    auto objName = B_IDNAME(bobj);
+                    // is object a group-instance?
+                    if ((bobj->transflag & OB_DUPLIGROUP) && bobj->dup_group != 0)
+                    {
+                        auto groupNode = ConvertObject(bobj, scene, bscene);
+                        // Owning group
+                        Blender::Group* bgobj = bobj->dup_group;
+                        std::string instGroupName(B_IDNAME(bgobj));
+                        if (groupNode)
+                            group->AddGroup(instGroupName, groupNode);
+                    }
+                    else
+                    {
+                        auto sceneNode = scene->GetChild<SceneNode>(objName, true);
+						if (sceneNode)
+							group->AddSceneNode(sceneNode);
+                    }
+                }
+                bgobj = bgobj->next;
+            }
+        }
+    }
 
+    void BScene::ConvertGroupInstances(const std::string& groupName, PSceneNode parent)
+    {
+        auto it = groups_.find(groupName);
+        if (it != groups_.end())
+        {
+            PBGroup bgroup = it->second;
+            bgroup->CreateObjects(parent);
+            auto& groupInstances = bgroup->GetGroupInstances();
+            for (auto& groupInstance : groupInstances)
+                ConvertGroupInstances(groupInstance.name, groupInstance.node);
+        }
+
+    }
+
+    void BScene::ConvertGroupInstances(bParse::bMain* data, PScene scene, const Blender::Scene* bscene)
+    {
+        std::vector<const Blender::Object*> groups;
+        const Blender::Base* base = (const Blender::Base*)bscene->base.first;
+        while (base)
+        {
+            const Blender::Object* bobj = base->object;
+            if (!(bobj->restrictflag & OB_RESTRICT_RENDER)) // object-level restrictions in OUTLINER
+            {
+                if ((bobj->transflag & OB_DUPLIGROUP) && bobj->dup_group != 0)
+                    groups.push_back(bobj);
+            }
+            base = base->next;
+        }
+
+        for (auto& group : groups)
+        {
+			std::string nodeName = B_IDNAME(group);
+			auto instancedGroup = scene->GetChild<SceneNode>(nodeName, true);
+            const Blender::Group* bgobj = group->dup_group; // Owning group
+            std::string groupName(B_IDNAME(bgobj));
+			ConvertGroupInstances(groupName, instancedGroup);
+        }
+    }
+
+    PSceneNode BScene::ConvertObject(const Blender::Object* obj, PScene scene, const Blender::Scene* bscene)
+    {
+        PSceneNode parent = scene;
+        PSceneNode sceneNode;
         if (obj)
         {
             if (obj->type == OB_MESH && obj->parent != 0 && obj->parent->type == OB_ARMATURE)
                 armatureLinker_.push_back(obj);
-            
-			if (obj->type >= 0 && obj->parent)
+
+            if (obj->type >= 0 && obj->parent)
             {
                 auto parentName = B_IDNAME(obj->parent);
-				parent = scene->GetChild<SceneNode>(parentName, true);
+                parent = scene->GetChild<SceneNode>(parentName, true);
+				if (!parent)
+					parent = scene;
             }
-            
+
             switch (obj->type)
             {
                 case OB_EMPTY:
-                    CreateSceneNode(obj, parent);
+                    sceneNode = CreateSceneNode(obj, parent);
                     break;
                 case OB_LAMP:
-                    CreateLight(obj, parent);
+                    sceneNode = CreateLight(obj, parent);
                     break;
                 case OB_CAMERA:
-                    CreateCamera(obj, parent, bscene);
+                    sceneNode = CreateCamera(obj, parent, bscene);
                     break;
                 case OB_MESH:
-                    CreateMesh(obj, parent);
+                    sceneNode = CreateMesh(obj, parent);
                     break;
                 case OB_ARMATURE:   // SceneNode + Skeleton
-                    CreateSkeletonBones(obj, parent);
+                    sceneNode = CreateSkeletonBones(obj, parent);
                     break;
                 case OB_CURVE:
                     break;
@@ -353,6 +495,8 @@ namespace BlenderConverter
                     break;
             }
         }
+
+        return sceneNode;
     }
 
     void BScene::GetFrames(const Blender::bAction* action, std::vector<float>& fra)
@@ -494,7 +638,7 @@ namespace BlenderConverter
 
             if (!track.node_.lock())
             {
-				TRACE_PRINTF("Warning: skipping animation track %s whose scene node was not found", channelName.c_str());
+                LOGW("Warning: skipping animation track %s whose scene node was not found", channelName.c_str());
                 continue;
             }
 
@@ -702,7 +846,7 @@ namespace BlenderConverter
         Vector3 parent_pos;
         Vector3 parent_scale;
         DecomposeMatrix(parentinv, parent_pos, parent_q, parent_scale);
-        
+
         sceneNode->SetPosition(parent_pos + parent_q * (parent_scale * pos));
         sceneNode->SetOrientation(parent_q * q);
         sceneNode->SetScale(parent_scale * scale);
@@ -711,6 +855,10 @@ namespace BlenderConverter
     void BScene::LoadPhysics(const Blender::Object* obj, PSceneNode sceneNode)
     {
         if (obj->body_type == OB_BODY_TYPE_NO_COLLISION)
+            return;
+
+        auto mesh = sceneNode->GetMesh();
+        if (!mesh)
             return;
 
         PhysicsShape shapeType = PhysicsShape::SH_UNKNOWN;
@@ -732,15 +880,15 @@ namespace BlenderConverter
                 boundtype = OB_BOUND_CONVEX_HULL;
         }
 
-		auto shape = sceneNode->GetMesh()->GetShape();
         auto rigBody = sceneNode->GetOrCreateRigidBody();
+        auto shape = mesh->GetShape();
         rigBody->SetShape(shape);
-        rigBody->SetLinearDamp(obj->damping);
-        rigBody->SetAngularDamp(obj->rdamping);
         shape->SetMargin(obj->margin);
         shape->SetScale(sceneNode->GetGlobalScale());
+        rigBody->SetLinearDamp(obj->damping);
+        rigBody->SetAngularDamp(obj->rdamping);
 
-        if(obj->body_type == OB_BODY_TYPE_CHARACTER)
+        if (obj->body_type == OB_BODY_TYPE_CHARACTER)
             rigBody->SetKinematic(true);
 
         if (obj->type == OB_MESH)
@@ -801,16 +949,16 @@ namespace BlenderConverter
         return sceneNode;
     }
 
-    void BScene::CreateSkeletonBones(const Blender::Object* obj, PSceneNode parent)
+    PSceneNode BScene::CreateSkeletonBones(const Blender::Object* obj, PSceneNode parent)
     {
         auto sceneNode = CreateSceneNode(obj, parent);
         const Blender::bArmature* ar = static_cast<const Blender::bArmature*>(obj->data);
-		std::string armatureName = B_IDNAME(ar);
-		if (!(ar->flag & ARM_RESTPOS))
-		{
-			TRACE_PRINTF("!!! Cannot create skeleton: %s. Armature has to be in rest position. Go to blender and change it.", armatureName.c_str());
-			return;
-		}
+        std::string armatureName = B_IDNAME(ar);
+        if (!(ar->flag & ARM_RESTPOS))
+        {
+            LOGE("Cannot create skeleton: %s. Armature has to be in rest position. Go to blender and change it.", armatureName.c_str());
+            return nullptr;
+        }
         armatureBones_.clear();
         // create bone lists && transforms
         const Blender::Bone* bone = static_cast<const Blender::Bone*>(ar->bonebase.first);
@@ -820,6 +968,8 @@ namespace BlenderConverter
                 BuildBoneTree(armatureName, bone, sceneNode);
             bone = bone->next;
         }
+
+        return sceneNode;
     }
 
     void BScene::BuildBoneTree(const std::string& armatureName, const Blender::Bone* cur, PSceneNode parent)
@@ -859,26 +1009,26 @@ namespace BlenderConverter
         }
     }
 
-	void BScene::CreateCamera(const Blender::Object* obj, PSceneNode parent, const Blender::Scene* bscene)
+    PSceneNode BScene::CreateCamera(const Blender::Object* obj, PSceneNode parent, const Blender::Scene* bscene)
     {
         CHECK_ASSERT(obj->data, __FILE__, __LINE__);
         auto camera = parent->CreateChild<Camera>(B_IDNAME(obj));
         ExtractGeneral(obj, camera);
         Blender::Camera* bcamera = static_cast<Blender::Camera*>(obj->data);
 
-		if (bscene->camera == obj)
-			camera->GetScene()->SetMainCamera(camera);
+        if (bscene->camera == obj)
+            camera->GetScene()->SetMainCamera(camera);
 
         if (bcamera->type == CAM_ORTHO)
             camera->EnableOrtho();
 
         float fov = 2.f * atan(0.5f * bcamera->sensor_x / bcamera->lens);
-        if(bcamera->sensor_fit == '\x02')
+        if (bcamera->sensor_fit == '\x02')
         {
             camera->SetSensorFit(CameraSensorFit::VERTICAL);
             fov = 2.f * atan(0.5f * bcamera->sensor_y / bcamera->lens);
         }
-        else if(bcamera->sensor_fit == '\x01')
+        else if (bcamera->sensor_fit == '\x01')
             camera->SetSensorFit(CameraSensorFit::HORIZONTAL);
         else
             camera->SetSensorFit(CameraSensorFit::AUTOMATIC);
@@ -887,30 +1037,47 @@ namespace BlenderConverter
 
         camera->SetNearClip(bcamera->clipsta);
         camera->SetFarClip(bcamera->clipend);
-        
+
         camera->SetFOV(glm::degrees(fov));
+
+        return camera;
     }
 
-    void BScene::CreateLight(const Blender::Object* obj, PSceneNode parent)
+    PSceneNode BScene::CreateLight(const Blender::Object* obj, PSceneNode parent)
     {
         CHECK_ASSERT(obj->data, __FILE__, __LINE__);
         auto light = parent->CreateChild<Light>(B_IDNAME(obj));
         ExtractGeneral(obj, light);
         Blender::Lamp* la = static_cast<Blender::Lamp*>(obj->data);
-        
-        if(la->type == LA_SPOT)
-            light->EnableShadows(la->mode & LA_SHAD_RAY || la->mode & LA_SHAD_BUF);
+
+        light->SetShadowColor(Color(la->shdwr, la->shdwg, la->shdwb, 1.f));
+        light->SetOnlyShadow(la->mode & LA_ONLYSHADOW ? true : false);
+
+        if (la->type == LA_SPOT)
+        {
+            bool bufferedShadows = la->mode & LA_SHAD_BUF ? true : false;
+            bool rayTracedShadows = la->mode & LA_SHAD_RAY ? true : false;
+            light->EnableShadows(bufferedShadows || rayTracedShadows);
+            if (bufferedShadows)
+            {
+                light->SetShadowClipStart(la->clipsta);
+                light->SetShadowClipEnd(la->clipend);
+            }
+            // TODO: CHECK IF THIS IS A GOOD APROXIMATION
+            //float bias = la->bias * std::powf(1.f / (la->clipend - la->clipsta), 2.45f);
+            //light->SetBias(bias);
+        }
         else
-            light->EnableShadows(la->mode & LA_SHAD_RAY);
-        
-		if (la->mode & LA_NEG)
-			light->SetEnergy(-la->energy);
-		else 
-			light->SetEnergy(la->energy);
-        
+            light->EnableShadows(la->mode & LA_SHAD_RAY ? true : false);
+
+        if (la->mode & LA_NEG)
+            light->SetEnergy(-la->energy);
+        else
+            light->SetEnergy(la->energy);
+
         light->SetColor(Color(la->r, la->g, la->b, 1.f));
-		light->EnableDiffuseColor(!(la->mode & LA_NO_DIFF));
-		light->EnableSpecularColor(!(la->mode & LA_NO_SPEC));
+        light->EnableDiffuseColor(!(la->mode & LA_NO_DIFF));
+        light->EnableSpecularColor(!(la->mode & LA_NO_SPEC));
         LightType type = LightType::POINT;
         if (la->type != LA_LOCAL)
             type = la->type == LA_SPOT ? LightType::SPOT : LightType::DIRECTIONAL;
@@ -919,9 +1086,10 @@ namespace BlenderConverter
         light->SetSpotCutOff(cutoff > 128 ? 128 : cutoff);
         light->SetDistance(la->dist);
         //falloff = 128.f * la->spotblend;
+        return light;
     }
 
-    void BScene::CreateMesh(const Blender::Object* obj, PSceneNode parent)
+    PSceneNode BScene::CreateMesh(const Blender::Object* obj, PSceneNode parent)
     {
         CHECK_ASSERT(obj->data, __FILE__, __LINE__);
 
@@ -930,16 +1098,17 @@ namespace BlenderConverter
         const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
         std::string meshName = B_IDNAME(me);
         auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
-		bool meshOk = true;
+        bool meshOk = true;
         if (!mesh)
         {
             mesh = Mesh::GetOrCreate<ModelMesh>(B_IDNAME(me));
-			meshOk = ConvertMesh(obj, me, mesh);
+            meshOk = ConvertMesh(obj, me, mesh);
         }
-		if (meshOk)
-			sceneNode->SetMesh(mesh);
+        if (meshOk)
+            sceneNode->SetMesh(mesh);
         SetMaterial(obj, sceneNode);
         LoadPhysics(obj, sceneNode);
+        return sceneNode;
     }
 
     const Blender::Object* BScene::GetAssignedArmature(const Blender::Object* obj) const
@@ -1004,7 +1173,7 @@ namespace BlenderConverter
                                 {
                                     if (boneWeightPerVertex.size() == MAX_BONES_PER_VERTEX && boneWeightPerVertex.end() == boneWeightPerVertex.find(joint_index))
                                     {
-										TRACE_PRINTF("Warning detected vertex with more than %d bones assigned. New bones will be ignored!!!", MAX_BONES_PER_VERTEX);
+                                        LOGW("Detected vertex with more than %d bones assigned. New bones will be ignored.", MAX_BONES_PER_VERTEX);
                                     }
                                     else
                                     {
@@ -1021,7 +1190,7 @@ namespace BlenderConverter
                             for (auto& bw : boneWeightPerVertex)
                             {
                                 auto boneIndex(bw.first);
-                                vertexes[n].bonesID_[idx] = boneIndex;
+                                vertexes[n].bonesID_[idx] = (float)boneIndex;
                                 vertexes[n].bonesWeight_[idx] = bw.second * invsumw;
                                 ++idx;
                                 if (idx > MAX_BONES_PER_VERTEX)
@@ -1071,17 +1240,26 @@ namespace BlenderConverter
     void BScene::CreateSkeleton(PScene scene, const Blender::Object* obj)
     {
         const Blender::Object* obAr = GetAssignedArmature(obj);
+        if (!obAr)
+        {
+            LOGW("Failed to get armature.");
+            return;
+        }
         CHECK_ASSERT(obAr, __FILE__, __LINE__);
         CHECK_ASSERT(obj->type == OB_MESH, __FILE__, __LINE__);
         const Blender::Mesh* me = (Blender::Mesh*)obj->data;
         auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
-        CHECK_ASSERT(mesh, __FILE__, __LINE__);
+        if (!mesh)
+        {
+            LOGW("Trying to create skeleton without mesh.");
+            return;
+        }
 
         const Blender::bArmature* arm = static_cast<const Blender::bArmature*>(obAr->data);
         std::string armatureName = B_IDNAME(arm);
         if (!(arm->flag & ARM_RESTPOS))
         {
-			TRACE_PRINTF("!!! Cannot create skeleton: %s. Armature has to be in rest position. Go to blender and change it.", armatureName.c_str());
+            LOGE("Cannot create skeleton: %s. Armature has to be in rest position. Go to blender and change it.", armatureName.c_str());
             return;
         }
 
@@ -1126,19 +1304,135 @@ namespace BlenderConverter
         }
     }
 
+    bool BScene::ConvertMeshLegacy(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
+    {
+        CHECK_ASSERT(me->mface && "This is not legacy data!!!", __FILE__, __LINE__);
+
+        if (!me->mvert)
+            return false;
+
+        Blender::MTFace* mtface[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+        char* uvNames[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+        Blender::MCol* mcol = nullptr;
+        int totlayer = GetUVLayersBMmeshLegacy(me, mtface, uvNames, &mcol);
+        for (int i = 0; i < MAX_UVS; i++)
+            if (uvNames[i])
+                mesh->SetUVName(i, uvNames[i]);
+
+        int nVertexes = me->totvert;
+        int nuvs = glm::clamp(totlayer, 0, 2);
+
+        VertexsData vertexData(nVertexes);
+        for (int i = 0; i < nVertexes; i++)
+        {
+            vertexData[i].position_ = Vertex3(me->mvert[i].co[0], me->mvert[i].co[1], me->mvert[i].co[2]);
+            vertexData[i].normal_ = glm::normalize(Vertex3(me->mvert[i].no[0], me->mvert[i].no[1], me->mvert[i].no[2]));
+        }
+
+        AssignBonesAndWeights(obj, me, vertexData);
+
+        bool hasColorVertex = mcol != nullptr;
+
+        for (int fi = 0; fi < me->totface; fi++)
+        {
+            const Blender::MFace& curface = me->mface[fi];
+
+            bool isQuad = curface.v4 != 0;
+
+            // skip if face is not a triangle || quad
+            if (!curface.v3)
+            {
+                LOGW("Skipping face: Only triangles or quads are converted.");
+                LOGI("To solve it: triangulate the object with a modifier.")
+                continue;
+            }
+
+            for (int i = 0; i < nuvs; i++)
+            {
+                const Blender::MTFace* face = mtface[i];
+                if (face)
+                {
+                    vertexData[curface.v1].uv_[i] = Vertex2(face[fi].uv[0][0], face[fi].uv[0][1]);
+                    vertexData[curface.v2].uv_[i] = Vertex2(face[fi].uv[1][0], face[fi].uv[1][1]);
+                    vertexData[curface.v3].uv_[i] = Vertex2(face[fi].uv[2][0], face[fi].uv[2][1]);
+                    if (isQuad)
+                        vertexData[curface.v4].uv_[i] = Vertex2(face[fi].uv[3][0], face[fi].uv[3][1]);
+                }
+            }
+
+            if (hasColorVertex)
+            {
+                {
+                    unsigned r = glm::clamp<unsigned>(mcol[0].r, 0, 255);
+                    unsigned g = glm::clamp<unsigned>(mcol[0].g, 0, 255);
+                    unsigned b = glm::clamp<unsigned>(mcol[0].b, 0, 255);
+                    unsigned a = glm::clamp<unsigned>(mcol[0].a, 0, 255);
+                    Color color(r, g, b, a);
+                    vertexData[curface.v1].color_ = color / 255.f;
+                }
+                {
+                    unsigned r = glm::clamp<unsigned>(mcol[1].r, 0, 255);
+                    unsigned g = glm::clamp<unsigned>(mcol[1].g, 0, 255);
+                    unsigned b = glm::clamp<unsigned>(mcol[1].b, 0, 255);
+                    unsigned a = glm::clamp<unsigned>(mcol[1].a, 0, 255);
+                    Color color(r, g, b, a);
+                    vertexData[curface.v2].color_ = color / 255.f;
+                }
+                {
+                    unsigned r = glm::clamp<unsigned>(mcol[2].r, 0, 255);
+                    unsigned g = glm::clamp<unsigned>(mcol[2].g, 0, 255);
+                    unsigned b = glm::clamp<unsigned>(mcol[2].b, 0, 255);
+                    unsigned a = glm::clamp<unsigned>(mcol[2].a, 0, 255);
+                    Color color(r, g, b, a);
+                    vertexData[curface.v3].color_ = color / 255.f;
+                }
+                if (isQuad)
+                {
+                    unsigned r = glm::clamp<unsigned>(mcol[3].r, 0, 255);
+                    unsigned g = glm::clamp<unsigned>(mcol[3].g, 0, 255);
+                    unsigned b = glm::clamp<unsigned>(mcol[3].b, 0, 255);
+                    unsigned a = glm::clamp<unsigned>(mcol[3].a, 0, 255);
+                    Color color(r, g, b, a);
+                    vertexData[curface.v4].color_ = color / 255.f;
+                }
+            }
+
+			int index[4];
+			index[0] = curface.v1;
+			index[1] = curface.v2;
+			index[2] = curface.v3;
+			index[3] = curface.v4;
+
+			bool calcFaceNormal = !(curface.flag & ME_SMOOTH);
+
+            if (isQuad)
+                mesh->AddQuad(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], vertexData[index[3]], calcFaceNormal);
+            else
+                mesh->AddTriangle(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], calcFaceNormal);
+
+			if (mcol)
+				mcol += 4;
+        }
+
+        return true;
+    }
+
+
     bool BScene::ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
     {
-        CHECK_ASSERT(!me->mface && "Legacy conversion is not allowed", __FILE__, __LINE__);
-		if (!me->mvert || !me->mpoly)
-			return false;
-		
+        if (me->mface)
+            return ConvertMeshLegacy(obj, me, mesh);
+
+        if (!me->mvert || !me->mpoly)
+            return false;
+
         // UV-Layer-Data
         Blender::MLoopUV* muvs[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-		char* uvNames[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-		int totlayer = GetUVLayersBMmesh(me, muvs, uvNames);
-		for (int i = 0; i < MAX_UVS; i++)
-			if (uvNames[i])
-				mesh->SetUVName(i, uvNames[i]);
+        char* uvNames[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+        int totlayer = GetUVLayersBMmesh(me, muvs, uvNames);
+        for (int i = 0; i < MAX_UVS; i++)
+            if (uvNames[i])
+                mesh->SetUVName(i, uvNames[i]);
 
         int nVertexes = me->totvert;
         int nuvs = glm::clamp(totlayer, 0, 2);
@@ -1162,8 +1456,8 @@ namespace BlenderConverter
             // skip if face is not a triangle || quad
             if (nloops < 3 || nloops > 4)
             {
-                TRACE_PRINTF("*** Only triangles or quads are converted! (loops = %d)!!!\n", nloops);
-                TRACE_PRINTF("*** To solve it: triangulate the object with a modifier!!!\n")
+                LOGW("Skipping polygon: Only triangles or quads are converted! (loops = %d).", nloops);
+                LOGI("To solve it: triangulate the object with a modifier.")
                 continue;
             }
 
@@ -1203,7 +1497,7 @@ namespace BlenderConverter
                 mesh->AddTriangle(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], calcFaceNormal);
         }
 
-		return true;
+        return true;
     }
 
     int BScene::GetUVLayersBMmesh(const Blender::Mesh* mesh, Blender::MLoopUV** uvEightLayerArray, char** uvNames)
@@ -1216,20 +1510,60 @@ namespace BlenderConverter
         {
             for (int i = 0; i < mesh->ldata.totlayer && validLayers < 8; i++)
             {
-				Blender::CustomDataLayer& layer = layers[i];
+                Blender::CustomDataLayer& layer = layers[i];
                 if (layers[i].type == CD_MLOOPUV && uvEightLayerArray)
                 {
-					Blender::MLoopUV* mtf = (Blender::MLoopUV*)layer.data;
-					if (mtf)
-					{
-						uvNames[validLayers] = layer.name;
-						uvEightLayerArray[validLayers++] = mtf;
-					}
+                    Blender::MLoopUV* mtf = (Blender::MLoopUV*)layer.data;
+                    if (mtf)
+                    {
+                        uvNames[validLayers] = layer.name;
+                        uvEightLayerArray[validLayers++] = mtf;
+                    }
                 }
             }
         }
         return validLayers;
     }
+
+    int BScene::GetUVLayersBMmeshLegacy(const Blender::Mesh* mesh, Blender::MTFace** eightLayerArray, char** uvNames, Blender::MCol** oneMCol)
+    {
+        CHECK_ASSERT(mesh, __FILE__, __LINE__);
+
+        int validLayers = 0;
+
+        Blender::CustomDataLayer* layers = (Blender::CustomDataLayer*)mesh->fdata.layers;
+        if (layers)
+        {
+            for (int i = 0; i < mesh->fdata.totlayer && validLayers < 8; i++)
+            {
+                Blender::CustomDataLayer& layer = layers[i];
+                if (layer.type == CD_MTFACE && eightLayerArray)
+                {
+                    Blender::MTFace* mtf = (Blender::MTFace*)layers[i].data;
+                    if (mtf)
+                    {
+                        uvNames[validLayers] = layer.name;
+                        eightLayerArray[validLayers++] = mtf;
+                    }
+                }
+                else if (layer.type == CD_MCOL)
+                {
+                    if (oneMCol && !(*oneMCol))
+                        *oneMCol = static_cast<Blender::MCol*>(layer.data);
+                }
+            }
+        }
+        else
+        {
+            if (eightLayerArray && mesh->mtface)
+                eightLayerArray[validLayers++] = mesh->mtface;
+            if (oneMCol && mesh->mcol)
+                *oneMCol = mesh->mcol;
+        }
+
+        return validLayers;
+    }
+
 
     const Blender::Material* BScene::GetMaterial(const Blender::Object* ob, int index) const
     {
@@ -1260,7 +1594,7 @@ namespace BlenderConverter
         const Blender::Material* mt = GetMaterial(obj, 0);
         std::string name = B_IDNAME(mt);
         auto material = Material::Get(name);
-        if(material)
+        if (material)
             sceneNode->SetMaterial(material);
         else
             sceneNode->SetMaterial(defaultMaterial_);
@@ -1272,11 +1606,11 @@ namespace BlenderConverter
         outputFile.SetName("b" + path_.GetName());
         outputFile.SetExtension("xml");
         pugi::xml_document doc;
-		GenerateXML(doc);
+        GenerateXML(doc);
         return FileSystem::SaveDocument(outputFile, doc, compress);
     }
 
-	void BScene::GenerateXML(pugi::xml_document& doc)
+    void BScene::GenerateXML(pugi::xml_document& doc)
     {
         pugi::xml_node appNode = doc.append_child("App");
         if (embedResources_)

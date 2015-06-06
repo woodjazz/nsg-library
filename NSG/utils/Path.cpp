@@ -375,14 +375,14 @@ namespace NSG
 			switch (errno)
 			{
 			case ENOENT:
-				TRACE_PRINTF("File %s not found.\n", fullFilePath_.c_str());
+				LOGE("File %s not found.", fullFilePath_.c_str());
 				break;
 			case EINVAL:
-				TRACE_PRINTF("Invalid parameter to _stat.\n");
+				LOGE("Invalid parameter to _stat.");
 				break;
 			default:
 				/* Should never be reached. */
-				TRACE_PRINTF("Unexpected error in _stat.\n");
+				LOGE("Unexpected error in _stat.");
 			}
 			return "";
 		}

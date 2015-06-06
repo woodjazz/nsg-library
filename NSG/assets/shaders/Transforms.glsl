@@ -187,7 +187,7 @@ vec2 GetTexCoord(vec2 texCoord)
 
 #elif defined(COMPILEFS)
 
-	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) || defined(SHADOWDIR_PASS)
+	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) 
 
 		// Input depth [0..1]
 		// Output color [[0..1], [0..1], [0..1]]

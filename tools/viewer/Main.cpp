@@ -46,21 +46,28 @@ int NSG_MAIN(int argc, char* argv[])
 
 		if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
 		{
+			bool loadOk = false;
 			pugi::xml_document doc;
 			{
 				using namespace BlenderConverter;
 				BScene bscene(inputFile, "", true);
-				bscene.Load();
-				bscene.GenerateXML(doc);
+				if (bscene.Load())
+				{
+					bscene.GenerateXML(doc);
+					loadOk = true;
+				}
 			}
-			data = std::make_shared<AppData>(doc);
-			if (!data->scenes_.empty())
+			if (loadOk)
 			{
-				auto scene = data->scenes_.at(0);
-				camera = scene->GetMainCamera();
-				if (!camera)
-					camera = scene->CreateChild<Camera>();
-				control = std::make_shared<CameraControl>(camera);
+				data = std::make_shared<AppData>(doc);
+				if (!data->scenes_.empty())
+				{
+					auto scene = data->scenes_.at(0);
+					camera = scene->GetMainCamera();
+					if (!camera)
+						camera = scene->CreateChild<Camera>();
+					control = std::make_shared<CameraControl>(camera);
+				}
 			}
 		}
     };

@@ -70,35 +70,35 @@ namespace NSG
         {
             case SDL_APP_TERMINATING:
                 {
-                    TRACE_PRINTF("SDL_APP_TERMINATING");
+                    LOGI("SDL_APP_TERMINATING");
                     SDL_Quit();
                     std::exit(0);
                     return 0;
                 }
             case SDL_APP_LOWMEMORY:
                 {
-                    TRACE_PRINTF("SDL_APP_LOWMEMORY\n");
+                    LOGW("SDL_APP_LOWMEMORY");
                     return 0;
                 }
             case SDL_APP_WILLENTERBACKGROUND:
                 {
-                    TRACE_PRINTF("SDL_APP_WILLENTERBACKGROUND\n");
+                    LOGI("SDL_APP_WILLENTERBACKGROUND");
                     return 0;
                 }
             case SDL_APP_DIDENTERBACKGROUND:
                 {
-                    TRACE_PRINTF("SDL_APP_DIDENTERBACKGROUND\n");
+                    LOGI("SDL_APP_DIDENTERBACKGROUND");
                     window->EnterBackground();
                     return 0;
                 }
             case SDL_APP_WILLENTERFOREGROUND:
                 {
-                    TRACE_PRINTF("SDL_APP_WILLENTERFOREGROUND\n");
+                    LOGI("SDL_APP_WILLENTERFOREGROUND");
                     return 0;
                 }
             case SDL_APP_DIDENTERFOREGROUND:
                 {
-                    TRACE_PRINTF("SDL_APP_DIDENTERFOREGROUND\n");
+                    LOGI("SDL_APP_DIDENTERFOREGROUND");
                     window->EnterForeground();
                     return 0;
                 }
@@ -114,7 +114,7 @@ namespace NSG
     {
         const AppConfiguration& conf = Engine::GetAppConfiguration();
         Initialize(conf.x_, conf.y_, conf.width_, conf.height_, flags);
-        TRACE_PRINTF("Window %s created\n", name_.c_str());
+        LOGI("Window %s created.", name_.c_str());
     }
 
     SDLWindow::SDLWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags)
@@ -122,7 +122,7 @@ namespace NSG
           flags_(0)
     {
         Initialize(x, y, width, height, flags);
-        TRACE_PRINTF("Window %s created\n", name_.c_str());
+        LOGI("Window %s created.", name_.c_str());
     }
 
     SDLWindow::~SDLWindow()
@@ -140,7 +140,7 @@ namespace NSG
         state.joystick_ = SDL_JoystickOpen(deviceIndex);
         if (!state.joystick_)
         {
-            TRACE_PRINTF("Cannot open joystick number: %d", deviceIndex);
+            LOGW("Cannot open joystick number: %d", deviceIndex);
         }
         #if !defined(EMSCRIPTEN)
         else if (SDL_IsGameController(deviceIndex))
@@ -148,14 +148,14 @@ namespace NSG
             state.pad_ = SDL_GameControllerOpen(deviceIndex);
             if (!state.pad_)
             {
-                TRACE_PRINTF("Cannot open game controller number: %d", deviceIndex);
+                LOGW("Cannot open game controller number: %d", deviceIndex);
             }
         }
         state.instanceID_ = SDL_JoystickInstanceID(static_cast<SDL_Joystick*>(state.joystick_));
         #else
         state.instanceID_ = deviceIndex;
         #endif
-        TRACE_PRINTF("Joystick number: %d has been added.", deviceIndex);
+        LOGI("Joystick number: %d has been added.", deviceIndex);
         joysticks_[state.instanceID_] = state;
     }
 
@@ -172,7 +172,7 @@ namespace NSG
                 #endif
                 SDL_JoystickClose((SDL_Joystick*)state.joystick_);
                 joysticks_.erase(state.instanceID_);
-                TRACE_PRINTF("Joystick number: %d has been removed.", deviceIndex);
+                LOGI("Joystick number: %d has been removed.", deviceIndex);
                 break;
             }
         }
@@ -289,31 +289,31 @@ namespace NSG
 
         int value = 0;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
-        TRACE_PRINTF("CONTEXT_MAJOR_VERSION=%d\n", value);
+        LOGI("CONTEXT_MAJOR_VERSION=%d", value);
         CHECK_ASSERT(value >= CONTEXT_MAJOR_VERSION, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
-        TRACE_PRINTF("GL_CONTEXT_MINOR_VERSION=%d\n", value);
+        LOGI("GL_CONTEXT_MINOR_VERSION=%d", value);
         CHECK_ASSERT(value >= CONTEXT_MINOR_VERSION, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
-        TRACE_PRINTF("GL_DOUBLEBUFFER=%d\n", value);
+        LOGI("GL_DOUBLEBUFFER=%d", value);
         CHECK_ASSERT(value == DOUBLE_BUFFER, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-        TRACE_PRINTF("GL_DEPTH_SIZE=%d\n", value);
+        LOGI("GL_DEPTH_SIZE=%d", value);
         CHECK_ASSERT(value >= MIN_DEPTH_SIZE && value <= MAX_DEPTH_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
-        TRACE_PRINTF("GL_RED_SIZE=%d\n", value);
+        LOGI("GL_RED_SIZE=%d", value);
         CHECK_ASSERT(value == RED_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
-        TRACE_PRINTF("GL_GREEN_SIZE=%d\n", value);
+        LOGI("GL_GREEN_SIZE=%d", value);
         CHECK_ASSERT(value == GREEN_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
-        TRACE_PRINTF("GL_BLUE_SIZE=%d\n", value);
+        LOGI("GL_BLUE_SIZE=%d", value);
         CHECK_ASSERT(value == BLUE_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &value);
-        TRACE_PRINTF("GL_ALPHA_SIZE=%d\n", value);
+        LOGI("GL_ALPHA_SIZE=%d", value);
         CHECK_ASSERT(value == ALPHA_SIZE, __FILE__, __LINE__);
         SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
-        TRACE_PRINTF("GL_STENCIL_SIZE=%d\n", value);
+        LOGI("GL_STENCIL_SIZE=%d", value);
         CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
 
         #if defined(IS_WINDOWS) || defined(IS_LINUX)
@@ -386,7 +386,7 @@ namespace NSG
         if (!SDL_GL_GetCurrentContext())
         {
             // On Android the context may be lost behind the scenes as the application is minimized
-            TRACE_PRINTF("OpenGL context has been lost. Restoring!!!");
+            LOGI("OpenGL context has been lost. Restoring!!!");
             auto win = SDL_GetWindowFromID(windowID_);
             auto context = SDL_GL_CreateContext(win);
             SDL_GL_MakeCurrent(win, context);
@@ -443,7 +443,7 @@ namespace NSG
 
             default:
                 {
-                    TRACE_PRINTF("Unknown joystick axis: %d", axis);
+                    LOGW("Unknown joystick axis: %d", axis);
                     return JoystickAxis::UNKNOWN;
                 }
         }
@@ -452,7 +452,7 @@ namespace NSG
             return (JoystickAxis)axis;
         else
         {
-            TRACE_PRINTF("Unknown joystick axis: %d", axis);
+            LOGW("Unknown joystick axis: %d", axis);
             return JoystickAxis::UNKNOWN;
         }
         #endif
@@ -470,23 +470,23 @@ namespace NSG
                 switch (event.window.event)
                 {
                     case SDL_WINDOWEVENT_CLOSE:
-                        TRACE_PRINTF("SDL_WINDOWEVENT_CLOSE\n");
+                        LOGI("SDL_WINDOWEVENT_CLOSE");
                         window->Close();
                         break;
                     case SDL_WINDOWEVENT_MINIMIZED:
-                        TRACE_PRINTF("SDL_WINDOWEVENT_MINIMIZED\n");
+                        LOGI("SDL_WINDOWEVENT_MINIMIZED");
                         window->EnterBackground();
                         break;
                     case SDL_WINDOWEVENT_MAXIMIZED:
-                        TRACE_PRINTF("SDL_WINDOWEVENT_MAXIMIZED\n");
+                        LOGI("SDL_WINDOWEVENT_MAXIMIZED");
                         window->EnterForeground();
                         break;
                     case SDL_WINDOWEVENT_SIZE_CHANGED:
-                        TRACE_PRINTF("SDL_WINDOWEVENT_SIZE_CHANGED\n");
+                        LOGI("SDL_WINDOWEVENT_SIZE_CHANGED");
                         window->ViewChanged(event.window.data1, event.window.data2);
                         break;
                     case SDL_WINDOWEVENT_RESTORED:
-                        TRACE_PRINTF("SDL_WINDOWEVENT_RESTORED\n");
+                        LOGI("SDL_WINDOWEVENT_RESTORED");
                         window->RestoreContext();
                         window->EnterForeground();
                         break;
@@ -511,7 +511,11 @@ namespace NSG
                 #if ANDROID
                 {
                     if (key == SDLK_AC_BACK)
+                    {
+                        Graphics::this_->ResetCachedState();
                         window->Close();
+                        exit(0);
+                    }
                 }
                 #endif
 

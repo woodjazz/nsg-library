@@ -40,8 +40,6 @@ static const char* VS_GLSL = \
 "					v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
 "				#endif\n"\
 "			#endif\n"\
-"		#elif defined(SHADOWDIR_PASS)\n"\
-"			gl_Position = GetClipPos();\n"\
 "		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_worldPos = GetWorldPos().xyz;\n"\
@@ -73,6 +71,8 @@ static const char* VS_GLSL = \
 "					v_lightDirection = worldPos.xyz - u_pointLight.position;\n"\
 "				#elif defined(HAS_SPOT_LIGHT)\n"\
 "					v_lightDirection = worldPos.xyz - u_spotLight.position;\n"\
+"				#elif defined(HAS_DIRECTIONAL_LIGHT)\n"\
+"					v_lightDirection = worldPos.xyz - u_directionalLight.position;\n"\
 "						\n"\
 "				#endif\n"\
 "				v_color = a_color;\n"\

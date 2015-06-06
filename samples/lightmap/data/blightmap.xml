@@ -202,11 +202,11 @@
 	</Materials>
 	<Scene ambient="[0.000000,0.000000,0.000000,1.000000]" mainCamera="Camera">
 		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
-			<SceneNode name="Lamp.001" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="75" position="[-2.712601,-3.541882,-0.480346]" orientation="[0.570948,0.169076,0.272171,0.755880]" distance="3" shadows="true" />
+			<SceneNode name="Lamp.001" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="75" position="[-2.712601,-3.541882,-0.480346]" orientation="[0.570948,0.169076,0.272171,0.755880]" distance="3" shadows="true" shadowClipStart="0.1" shadowClipEnd="3" onlyShadow="false" shadowColor="[0.000000,0.000000,0.000000,1.000000]" shadowBias="0.000125" />
 			<SceneNode name="Cube" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material" meshName="Cube">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.0254" angularDamp="0.159" trigger="false" kinematic="false" />
 			</SceneNode>
-			<SceneNode name="Lamp" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="75" position="[1.755773,-1.977254,1.814385]" orientation="[0.570948,0.169076,0.272171,0.755880]" distance="3" shadows="true" />
+			<SceneNode name="Lamp" nodeType="Light" type="POINT" energy="1" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="75" position="[1.755773,-1.977254,1.814385]" orientation="[0.570948,0.169076,0.272171,0.755880]" distance="3" shadows="true" shadowClipStart="0.1" shadowClipEnd="3" onlyShadow="false" shadowColor="[0.000000,0.000000,0.000000,1.000000]" shadowBias="0.000125" />
 			<SceneNode name="Camera" nodeType="Camera" fovy="0.857556" zNear="0.1" zFar="100" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="7.31429" sensorFit="0" position="[7.481132,-6.507640,5.343665]" orientation="[0.781600,0.481707,0.212922,0.334251]" />
 		</SceneNode>
 		<Animations />

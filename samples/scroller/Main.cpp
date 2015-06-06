@@ -36,9 +36,12 @@ int NSG_MAIN(int argc, char* argv[])
     music.Set(soundMusic->GetResource());
     music.Play();
 	auto scene = data.scenes_.at(0);
+    scene->SetAmbientColor(Color(0.5f, 0.5f, 0.5f, 1.0f));
+	scene->GetChild<SceneNode>("Level1", false)->GetMaterial()->SetAmbientColor(COLOR_WHITE);
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto frustum = camera->GetFrustum();
     auto player = camera->GetChild<SceneNode>("Player", false);
+	player->GetMaterial()->SetAmbientColor(COLOR_WHITE);
     auto window = Window::Create();
     float deltaTime = 0;
     auto controller = std::make_shared<PlayerControl>();

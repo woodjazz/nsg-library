@@ -88,7 +88,7 @@ namespace NSG
 
     BoundingBox::BoundingBox(const std::vector<Vector3>& vertices)
     {
-        for(auto& v: vertices)
+        for (auto& v : vertices)
             Merge(v);
     }
 
@@ -107,10 +107,10 @@ namespace NSG
         Vector3 newCenter = Vector3(m * Vector4(Center(), 1));
         Vector3 oldEdge = Size() * 0.5f;
 
-        Vector3 newEdge = Vector3(glm::abs(m[0][0]) * oldEdge.x + glm::abs(m[1][0]) * oldEdge.y + glm::abs(m[2][0]) * oldEdge.z,
-                                  glm::abs(m[0][1]) * oldEdge.x + glm::abs(m[1][1]) * oldEdge.y + glm::abs(m[2][1]) * oldEdge.z,
-                                  glm::abs(m[0][2]) * oldEdge.x + glm::abs(m[1][2]) * oldEdge.y + glm::abs(m[2][2]) * oldEdge.z
-                                 );
+        Vector3 newEdge(glm::abs(m[0][0]) * oldEdge.x + glm::abs(m[1][0]) * oldEdge.y + glm::abs(m[2][0]) * oldEdge.z,
+                        glm::abs(m[0][1]) * oldEdge.x + glm::abs(m[1][1]) * oldEdge.y + glm::abs(m[2][1]) * oldEdge.z,
+                        glm::abs(m[0][2]) * oldEdge.x + glm::abs(m[1][2]) * oldEdge.y + glm::abs(m[2][2]) * oldEdge.z
+                       );
 
         BoundingBox obj(newCenter - newEdge, newCenter + newEdge);
         min_ = obj.min_;
@@ -187,16 +187,32 @@ namespace NSG
 
     bool BoundingBox::IsInside(const Vertex3& point) const
     {
-        if (point.x < min_.x || point.x > max_.x ||
+        return !(point.x < min_.x || point.x > max_.x ||
                 point.y < min_.y || point.y > max_.y ||
-                point.z < min_.z || point.z > max_.z)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+                point.z < min_.z || point.z > max_.z);
+    }
+
+    void BoundingBox::Clip(const BoundingBox& box)
+    {
+        if (box.min_.x > min_.x)
+            min_.x = box.min_.x;
+        if (box.max_.x < max_.x)
+            max_.x = box.max_.x;
+        if (box.min_.y > min_.y)
+            min_.y = box.min_.y;
+        if (box.max_.y < max_.y)
+            max_.y = box.max_.y;
+        if (box.min_.z > min_.z)
+            min_.z = box.min_.z;
+        if (box.max_.z < max_.z)
+            max_.z = box.max_.z;
+
+        if (min_.x > max_.x)
+            std::swap(min_.x, max_.x);
+        if (min_.y > max_.y)
+            std::swap(min_.y, max_.y);
+        if (min_.z > max_.z)
+            std::swap(min_.z, max_.z);
     }
 
     void BoundingBox::GetVertices(Vertex3 vertices[8]) const

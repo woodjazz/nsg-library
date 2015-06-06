@@ -28,14 +28,20 @@ namespace NSG
           spotCutOff_(45),
           diffuseColor_(1),
           specularColor_(1),
+          shadowColor_(0, 0, 0, 1),
           distance_(30),
           invRange_(1.f / distance_),
           shadows_(true),
+          shadowClipStart_(0.1f), // same minimum as blender
+          shadowClipEnd_(30.f), // same as distance_
+          onlyShadow_(false),
           width_(0),
-          height_(0)
+          height_(0),
+          shadowBias_(0.000125f)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
+		CalculateInvRange();
     }
 
     Light::~Light()
@@ -59,6 +65,15 @@ namespace NSG
         {
             color_ = color;
             CalculateColor();
+            SetUniformsNeedUpdate();
+        }
+    }
+
+    void Light::SetShadowColor(Color color)
+    {
+        if (shadowColor_ != color)
+        {
+            shadowColor_ = color;
             SetUniformsNeedUpdate();
         }
     }
@@ -127,6 +142,13 @@ namespace NSG
         node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
         node.append_attribute("distance").set_value(distance_);
         node.append_attribute("shadows").set_value(shadows_);
+        node.append_attribute("shadowClipStart").set_value(shadowClipStart_);
+        node.append_attribute("shadowClipEnd").set_value(shadowClipEnd_);
+        node.append_attribute("onlyShadow").set_value(onlyShadow_);
+		node.append_attribute("shadowColor").set_value(ToString(shadowColor_).c_str());
+        node.append_attribute("shadowBias").set_value(shadowBias_);
+        
+        
         SaveChildren(node);
     }
 
@@ -145,6 +167,11 @@ namespace NSG
         SetOrientation(orientation);
         SetDistance(node.attribute("distance").as_float());
         EnableShadows(node.attribute("shadows").as_bool());
+        SetShadowClipStart(node.attribute("shadowClipStart").as_float());
+        SetShadowClipEnd(node.attribute("shadowClipEnd").as_float());
+        SetOnlyShadow(node.attribute("onlyShadow").as_bool());
+		SetShadowColor(ToVertex4(node.attribute("shadowColor").as_string()));
+        SetBias(node.attribute("shadowBias").as_float());
         LoadChildren(node);
     }
 
@@ -187,7 +214,7 @@ namespace NSG
     void Light::SetDistance(float distance)
     {
         distance_ = distance;
-        invRange_ = 1.0f / std::max(distance_, glm::epsilon<float>());
+		CalculateInvRange();
         SetUniformsNeedUpdate();
     }
 
@@ -200,4 +227,22 @@ namespace NSG
 	{ 
 		return shadowFrameBuffer_->GetColorTexture(); 
 	}
+
+	void Light::CalculateInvRange()
+	{
+		invRange_ = 1.f / std::max((shadowClipEnd_ - shadowClipStart_), glm::epsilon<float>());
+	}
+
+	void Light::SetShadowClipStart(float value) 
+	{ 
+		shadowClipStart_ = value;
+		CalculateInvRange();
+	}
+	
+	void Light::SetShadowClipEnd(float value) 
+	{ 
+		shadowClipEnd_ = value;
+		CalculateInvRange();
+	}
+
 }

@@ -103,7 +103,7 @@ namespace NSG
 			CHECK_CONDITION(image.IsReady(), __FILE__, __LINE__);
 			if (!image.SaveAsPNG(outputDir))
             {
-                TRACE_PRINTF("!!! Cannot save file: %s in %s", name_.c_str(), outputDir.GetPath().c_str());
+                LOGE("Cannot save file: %s in %s", name_.c_str(), outputDir.GetPath().c_str());
             }
             else
             {
@@ -116,7 +116,7 @@ namespace NSG
             if (os.is_open())
                 os.write(&buffer_[0], buffer_.size());
             else
-				TRACE_PRINTF("!!! Cannot save file: %s", newPath.GetFilePath().c_str());
+				LOGE("Cannot save file: %s", newPath.GetFilePath().c_str());
         }
 
         {

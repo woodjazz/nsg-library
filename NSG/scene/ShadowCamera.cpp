@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Light.h"
 #include "Window.h"
 #include "Frustum.h"
+#include "Texture.h"
 #include "Material.h"
 #include "Sphere.h"
 
@@ -57,8 +58,8 @@ namespace NSG
         {
             SetPosition(light->GetGlobalPosition());
             SetOrientation(light->GetGlobalOrientation());
-            SetNearClip(0.002f);
-            SetFarClip(light->GetDistance());
+            SetNearClip(light->GetShadowClipStart());
+            SetFarClip(light->GetShadowClipEnd());
             SetFOV(light->GetSpotCutOff());
             SetAspectRatio(1.0);
             DisableOrtho();
@@ -67,53 +68,56 @@ namespace NSG
         {
             SetPosition(light->GetGlobalPosition());
             SetOrientation(light->GetGlobalOrientation());
-            SetNearClip(0.002f);
-            SetFarClip(light->GetDistance());
+            SetNearClip(light->GetShadowClipStart());
+            SetFarClip(light->GetShadowClipEnd());
             SetFOV(90.f);
             SetAspectRatio(1.0);
             DisableOrtho();
         }
         else
         {
-            float extrusionDistance = camera->GetZFar();
-            //Vector3 pos = camera->GetGlobalPosition() - extrusionDistance * light->GetLookAtDirection();
-            SetPosition(VECTOR3_ZERO);
-            SetOrientation(light->GetGlobalOrientation());
-            //BoundingBox viewBox(Vector3(-1), Vector3(1));
-            //viewBox.Transform(GetGlobalModelInvMatrix() * camera->GetViewProjectionInverseMatrix());
-            //viewBox.Transform(camera->GetViewProjectionInverseMatrix());
-            BoundingBox viewBox(camera->GetFrustum()->GetVerticesTransform(GetView()));
             EnableOrtho();
-
-            orthoProjection_.left_ = viewBox.min_.x;
-            orthoProjection_.right_ = viewBox.max_.x;
-            orthoProjection_.bottom_ = viewBox.min_.y;
-            orthoProjection_.top_ = viewBox.max_.y;
-            orthoProjection_.near_ = viewBox.min_.z;
-            orthoProjection_.far_ = viewBox.max_.z;
-       
-
-
-
-
-            // Set initial position & rotation
-            Vector3 pos = viewBox.Center();
-            //pos.z -= (viewBox.max_.z - viewBox.min_.z) * 0.5f;
-            //pos -= extrusionDistance * light->GetLookAtDirection();
+            float extrusionDistance = camera->GetZFar();
+            Vector3 pos = camera->GetGlobalPosition() - extrusionDistance * light->GetLookAtDirection();
             SetPosition(pos);
-            //SetLocalLookAt(light->GetLookAtDirection(), VECTOR3_UP);
-            //SetOrientation(light->GetGlobalOrientation());
+            SetOrientation(light->GetGlobalOrientation());
+            
+            BoundingBox cameraViewBox(camera->GetFrustum()->GetVerticesTransform(GetView()));
+			Vector2 viewSize(cameraViewBox.max_.x - cameraViewBox.min_.x, cameraViewBox.max_.y - cameraViewBox.min_.y);
+			SetNearClip(0.f);
+            auto farZ = cameraViewBox.max_.z - cameraViewBox.min_.z;
+			SetFarClip(farZ);
 
-            Vector3 center = viewBox.Center();
+            //The bigger issue is that this produces a shadow frustum that continuously changes 
+            //size and position as the camera moves around. This leads to shadows "swimming", 
+            //which is a very distracting artifact. 
+            //In order to fix this, it's common to do the following additional two steps:
+
+			{
+                //STEP 1: Quantize size to reduce swimming
+				const float QUANTIZE = 0.5f;
+				const float MIN_VIEW_SIZE = 3.f;
+				viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
+				viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
+				viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
+				viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
+                // TODO: Don't allow the shadow frustum to change size as the camera rotates.
+			}
+            
+            SetAspectRatio(viewSize.x, viewSize.y);
+			SetOrthoScale(viewSize.x);
+
+            Vector3 center = cameraViewBox.Center();
             // Center shadow camera to the view space bounding box
             Quaternion rot(GetOrientation());
             Vector3 adjust(center.x, center.y, 0.0f);
             Translate(rot * adjust, TransformSpace::TS_WORLD);
 
-            #if 0
-            // If the shadow map viewport is known, snap to whole texels
+			float shadowMapWidth = (float)light->GetShadowMap()->GetWidth();
             if (shadowMapWidth > 0.0f)
             {
+				//STEP 2: Discretize the position of the frustum
+				//Snap to whole texels
                 Vector3 viewPos(glm::inverse(rot) * GetPosition());
                 // Take into account that shadow map border will not be used
                 float invActualSize = 1.0f / (shadowMapWidth - 2.0f);
@@ -121,7 +125,6 @@ namespace NSG
                 Vector3 snap(-fmodf(viewPos.x, texelSize.x), -fmodf(viewPos.y, texelSize.y), 0.0f);
                 Translate(rot * snap, TransformSpace::TS_WORLD);
             }
-            #endif
         }
     }
 
@@ -217,9 +220,4 @@ namespace NSG
                 result.push_back(node);
         return !result.empty();
     }
-
-    void ShadowCamera::CalculateOrthoProjection() const
-    {
-    }
-
 }

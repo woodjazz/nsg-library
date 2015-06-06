@@ -170,7 +170,7 @@ static const char* TRANSFORMS_GLSL = \
 "	#endif\n"\
 "}\n"\
 "#elif defined(COMPILEFS)\n"\
-"	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) || defined(SHADOWDIR_PASS)\n"\
+"	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) \n"\
 "		// Input depth [0..1]\n"\
 "		// Output color [[0..1], [0..1], [0..1]]\n"\
 "		vec4 EncodeDepth2Color(float depth)\n"\

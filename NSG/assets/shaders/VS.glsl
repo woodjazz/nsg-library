@@ -49,10 +49,6 @@
 
 			#endif
 
-		#elif defined(SHADOWDIR_PASS)
-
-			gl_Position = GetClipPos();
-
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
 			gl_Position = GetClipPos();
@@ -96,6 +92,10 @@
 				#elif defined(HAS_SPOT_LIGHT)
 
 					v_lightDirection = worldPos.xyz - u_spotLight.position;
+
+				#elif defined(HAS_DIRECTIONAL_LIGHT)
+
+					v_lightDirection = worldPos.xyz - u_directionalLight.position;
 						
 				#endif
 

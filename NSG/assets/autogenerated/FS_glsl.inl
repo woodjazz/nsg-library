@@ -30,8 +30,6 @@ static const char* FS_GLSL = \
 "				\n"\
 "				gl_FragColor = v_color * GetAmbientLight();\n"\
 "			#endif\n"\
-"		#elif defined(SHADOWDIR_PASS)\n"\
-"			gl_FragColor = EncodeDepth2Color(gl_FragCoord.z);\n"\
 "		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
 "    		float lightToPixelDistance = clamp(length(lightToVertex) * u_lightInvRange, 0.0, 1.0);\n"\

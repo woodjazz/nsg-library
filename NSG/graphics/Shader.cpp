@@ -55,8 +55,8 @@ namespace NSG
 				std::string log;
 				log.resize(logLength);
 				glGetShaderInfoLog(id_, logLength, &logLength, &log[0]);
-				TRACE_PRINTF("!!!Error in Shader Creation: %s", log.c_str());
-				//TRACE_PRINTF("%s", source);
+				LOGE("Shader creation failed: %s", log.c_str());
+				//LOGI("%s", source);
 			}
 		}
         CHECK_GL_STATUS(__FILE__, __LINE__);

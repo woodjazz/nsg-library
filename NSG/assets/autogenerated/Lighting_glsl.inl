@@ -4,51 +4,53 @@ namespace NSG
 static const char* LIGHTING_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#if defined(COMPILEFS)\n"\
-"    vec4 GetAmbientIntensity()\n"\
-"    {\n"\
-"        #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)\n"\
-"            vec4 intensity = u_sceneAmbientColor * u_material.ambient;\n"\
-"        #else\n"\
-"            #if defined(AOMAP0)\n"\
-"                #if defined(AOMAP_CHANNELS1)\n"\
-"                    vec4 intensity = vec4(texture2D(u_texture4, v_texcoord0).a);\n"\
-"                #else\n"\
-"                    vec4 intensity = texture2D(u_texture4, v_texcoord0);\n"\
-"                #endif\n"\
-"            #elif defined(AOMAP1)\n"\
-"                #if defined(AOMAP_CHANNELS1)\n"\
-"                    vec4 intensity = vec4(texture2D(u_texture4, v_texcoord1).a);\n"\
-"                #else\n"\
-"                    vec4 intensity = texture2D(u_texture4, v_texcoord1);\n"\
-"                #endif\n"\
+"    #if defined(AMBIENT_PASS)\n"\
+"        vec4 GetAmbientIntensity()\n"\
+"        {\n"\
+"            #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)\n"\
+"                vec4 intensity = u_sceneAmbientColor * u_material.ambient;\n"\
 "            #else\n"\
-"                vec4 intensity = vec4(1.0);\n"\
-"            #endif\n"\
-"            #if defined(LIGHTMAP0)\n"\
-"                #if defined(LIGHTMAP_CHANNELS1)\n"\
-"                    intensity *= vec4(texture2D(u_texture2, v_texcoord0).a);\n"\
+"                #if defined(AOMAP0)\n"\
+"                    #if defined(AOMAP_CHANNELS1)\n"\
+"                        vec4 intensity = vec4(texture2D(u_texture4, v_texcoord0).a);\n"\
+"                    #else\n"\
+"                        vec4 intensity = texture2D(u_texture4, v_texcoord0);\n"\
+"                    #endif\n"\
+"                #elif defined(AOMAP1)\n"\
+"                    #if defined(AOMAP_CHANNELS1)\n"\
+"                        vec4 intensity = vec4(texture2D(u_texture4, v_texcoord1).a);\n"\
+"                    #else\n"\
+"                        vec4 intensity = texture2D(u_texture4, v_texcoord1);\n"\
+"                    #endif\n"\
 "                #else\n"\
-"                    intensity *= texture2D(u_texture2, v_texcoord0);\n"\
+"                    vec4 intensity = vec4(1.0);\n"\
 "                #endif\n"\
-"            #elif defined(LIGHTMAP1)\n"\
-"                #if defined(LIGHTMAP_CHANNELS1)\n"\
-"                    intensity *= vec4(texture2D(u_texture2, v_texcoord1).a);\n"\
-"                #else\n"\
-"                    intensity *= texture2D(u_texture2, v_texcoord1);\n"\
+"                #if defined(LIGHTMAP0)\n"\
+"                    #if defined(LIGHTMAP_CHANNELS1)\n"\
+"                        intensity *= vec4(texture2D(u_texture2, v_texcoord0).a);\n"\
+"                    #else\n"\
+"                        intensity *= texture2D(u_texture2, v_texcoord0);\n"\
+"                    #endif\n"\
+"                #elif defined(LIGHTMAP1)\n"\
+"                    #if defined(LIGHTMAP_CHANNELS1)\n"\
+"                        intensity *= vec4(texture2D(u_texture2, v_texcoord1).a);\n"\
+"                    #else\n"\
+"                        intensity *= texture2D(u_texture2, v_texcoord1);\n"\
+"                    #endif\n"\
 "                #endif\n"\
 "            #endif\n"\
-"        #endif\n"\
-"        return intensity;\n"\
-"    }\n"\
-"    vec4 GetAmbientLight()\n"\
-"    {\n"\
-"        #ifdef DIFFUSEMAP\n"\
-"            vec4 diffColor = u_material.diffuse * texture2D(u_texture0, v_texcoord0);\n"\
-"        #else\n"\
-"            vec4 diffColor = u_material.diffuse;\n"\
-"        #endif\n"\
-"        return GetAmbientIntensity() * diffColor;\n"\
-"    }\n"\
+"            return intensity;\n"\
+"        }\n"\
+"        vec4 GetAmbientLight()\n"\
+"        {\n"\
+"            #ifdef DIFFUSEMAP\n"\
+"                vec4 diffColor = u_material.diffuse * texture2D(u_texture0, v_texcoord0);\n"\
+"            #else\n"\
+"                vec4 diffColor = u_material.diffuse;\n"\
+"            #endif\n"\
+"            return GetAmbientIntensity() * diffColor;\n"\
+"        }\n"\
+"    #endif\n"\
 "#endif\n"\
 "#if defined(HAS_DIRECTIONAL_LIGHT) || defined(HAS_POINT_LIGHT) || defined(HAS_SPOT_LIGHT)\n"\
 "    vec4 CalcLight(BaseLight base, vec3 vertexToEye, vec3 lightDirection, vec3 normal)\n"\
@@ -94,31 +96,41 @@ static const char* LIGHTING_GLSL = \
 "    #endif\n"\
 "    #if defined(COMPILEFS)\n"\
 "        #if defined(CUBESHADOWMAP)\n"\
-"            float CalcShadowCubeFactor()\n"\
+"            vec3 FixCubeLookup(vec3 v) \n"\
+"            {\n"\
+"                // To eliminate the edge seams\n"\
+"                // Since the extension ARB_seamless_cube_map is not always available.\n"\
+"                // From http://the-witness.net/news/2012/02/seamless-cube-map-filtering \n"\
+"                float cube_size = 1.0/u_shadowMapInvSize;\n"\
+"                float M = max(max(abs(v.x), abs(v.y)), abs(v.z)); \n"\
+"                float scale = (cube_size - 1.0) / cube_size; \n"\
+"                if (abs(v.x) != M) v.x *= scale; \n"\
+"                if (abs(v.y) != M) v.y *= scale; \n"\
+"                if (abs(v.z) != M) v.z *= scale; \n"\
+"                return v; \n"\
+"            }\n"\
+"            vec4 CalcShadowCubeFactor()\n"\
 "            {\n"\
 "                float lengthLightDirection = length(v_lightDirection);\n"\
-"                float totalError = 0.000125 * lengthLightDirection;\n"\
-"                float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, v_lightDirection)) / u_lightInvRange;\n"\
-"                return sampledDistance + totalError < lengthLightDirection ? 0.0 : 1.0;\n"\
+"                float totalError = u_shadowBias * lengthLightDirection;\n"\
+"                float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, FixCubeLookup(v_lightDirection))) / u_lightInvRange;\n"\
+"                return sampledDistance + totalError < lengthLightDirection ? u_shadowColor : vec4(1.0);\n"\
 "            }\n"\
 "        #elif defined(SHADOWMAP)\n"\
-"            float CalcShadowFactor()\n"\
+"            vec4 CalcShadowFactor()\n"\
 "            {\n"\
-"                #if defined(HAS_DIRECTIONAL_LIGHT)\n"\
-"                    float PRECISION_ERROR = 0.0;\n"\
-"                    vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
-"                    coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
-"                    vec4 encodedDepth = texture2D(u_texture5, coords.xy);\n"\
-"                    return DecodeColor2Depth(encodedDepth) + PRECISION_ERROR < coords.z ? 0.0 : 1.0;\n"\
-"                #else\n"\
-"                    float lengthLightDirection = length(v_lightDirection);\n"\
-"                    float totalError = 0.000125 * lengthLightDirection;\n"\
-"                    float lightToPixelDistance = clamp(lengthLightDirection * u_lightInvRange, 0.0, 1.0);\n"\
-"                    vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
-"                    coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
-"                    float sampledDistance = DecodeColor2Depth(texture2D(u_texture5, coords.xy));\n"\
-"                    return sampledDistance + totalError < lightToPixelDistance ? 0.0 : 1.0;\n"\
-"                    #endif\n"\
+"                float lengthLightDirection = length(v_lightDirection);\n"\
+"                float totalError = u_shadowBias * lengthLightDirection;\n"\
+"                float lightToPixelDistance = clamp(lengthLightDirection * u_lightInvRange, 0.0, 1.0);\n"\
+"                vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
+"                coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
+"                // Take four samples and average them\n"\
+"                float sampledDistance = DecodeColor2Depth(texture2D(u_texture5, coords.xy));\n"\
+"                sampledDistance += DecodeColor2Depth(texture2D(u_texture5, coords.xy + vec2(u_shadowMapInvSize, 0.0)));\n"\
+"                sampledDistance += DecodeColor2Depth(texture2D(u_texture5, coords.xy + vec2(0.0, u_shadowMapInvSize)));\n"\
+"                sampledDistance += DecodeColor2Depth(texture2D(u_texture5, coords.xy + vec2(u_shadowMapInvSize)));\n"\
+"                sampledDistance *= 0.25;\n"\
+"                return sampledDistance + totalError < lightToPixelDistance ? u_shadowColor : vec4(1.0);\n"\
 "            }\n"\
 "        #endif\n"\
 "        vec4 CalcTotalLight(vec3 vertexToEye, vec3 normal)\n"\

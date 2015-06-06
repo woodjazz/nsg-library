@@ -55,11 +55,11 @@ namespace NSG
                 buffer_.resize((int)filelength);
 				SDL_RWread(context, &buffer_[0], buffer_.size(), 1);
                 SDL_RWclose(context);
-				TRACE_PRINTF("%s has been loaded with size=%u", name_.c_str(), buffer_.size());
+				LOGI("%s has been loaded with size=%u", name_.c_str(), buffer_.size());
             }
             else
             {
-				TRACE_PRINTF("Cannot load %s with error %s", name_.c_str(), SDL_GetError());
+				LOGE("Cannot load %s with error %s", name_.c_str(), SDL_GetError());
             }
         }
         #else
@@ -75,11 +75,11 @@ namespace NSG
                 file.read(&buffer_[0], filelength);
                 CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
                 file.close();
-                TRACE_PRINTF("%s has been loaded with size=%d", name_.c_str(), buffer_.size());
+                LOGI("%s has been loaded with size=%d", name_.c_str(), buffer_.size());
             }
             else
             {
-                TRACE_PRINTF("Cannot load %s", name_.c_str());
+                LOGE("Cannot load %s", name_.c_str());
             }
         }
         #endif
@@ -90,7 +90,7 @@ namespace NSG
 
     void ResourceFile::ReleaseResources()
     {
-        TRACE_PRINTF("Releasing memory for file: %s\n", name_.c_str());
+        LOGI("Releasing memory for file: %s", name_.c_str());
         Resource::ReleaseResources();
     }
 }

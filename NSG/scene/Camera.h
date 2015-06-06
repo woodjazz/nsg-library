@@ -74,8 +74,8 @@ namespace NSG
 		const OrthoProjection& GetOrthoProjection() const;
 		void UnRegisterWindow();
 		static SignalCamera::PSignal SignalBeingDestroy();
-	protected:
-		virtual void CalculateOrthoProjection() const;
+	private:
+		void CalculateOrthoProjection() const;
 		float CalculateAspectRatio() const;
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;

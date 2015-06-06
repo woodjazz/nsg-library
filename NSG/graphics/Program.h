@@ -138,6 +138,7 @@ namespace NSG
         {
             BaseLightLoc base_;
             GLuint direction_;
+            GLuint position_;
         };
 
         struct PointLightLoc
@@ -158,6 +159,9 @@ namespace NSG
         DirectionalLightLoc directionalLightLoc_;
         SpotLightLoc spotLightLoc_;
         GLuint lightInvRangeLoc_;
+        GLuint shadowMapInvSize_;
+        GLuint shadowColor_;
+        GLuint shadowBias_;
 
         GLuint blendMode_loc_;
         

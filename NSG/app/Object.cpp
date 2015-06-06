@@ -57,7 +57,7 @@ namespace NSG
         {
             ReleaseResources();
             resourcesAllocated_ = false;
-            TRACE_PRINTF("--->Released resources for %s\n", GetNameType().c_str());
+            LOGI("Released resources for %s.", GetNameType().c_str());
             signalReleased_->Run();
         }
     }
@@ -83,7 +83,7 @@ namespace NSG
                 CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
                 AllocateResources();
                 resourcesAllocated_ = true;
-                TRACE_PRINTF("--->Allocated resources for %s\n", GetNameType().c_str());
+                LOGI("Allocated resources for %s.", GetNameType().c_str());
                 signalAllocated_->Run();
             }
         }

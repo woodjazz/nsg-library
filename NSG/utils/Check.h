@@ -51,7 +51,7 @@ misrepresented as being the original software.
         char buffer[1024];\
         const char* format = "Assert" #f " has failed in file %s line %d\n";\
         snprintf(buffer, 1024, format, file, line);\
-        TRACE_PRINTF("%s", buffer);\
+        LOGE("%s", buffer);\
         FORCE_BREAKPOINT();\
         exit(1);\
     }
@@ -63,7 +63,7 @@ misrepresented as being the original software.
             char buffer[1024];\
             const char* format = "GL has failed with status = 0x%x in file %s line %d\n";\
             snprintf(buffer, 1024, format, status, file, line);\
-            TRACE_PRINTF("%s", buffer);\
+            LOGE("%s", buffer);\
             FORCE_BREAKPOINT();\
             exit(1);\
         }\
@@ -77,7 +77,7 @@ misrepresented as being the original software.
         char buffer[1024];\
         const char* format = "Assert" #f " has failed in file %s line %d\n";\
         snprintf(buffer, 1024, format, file, line);\
-        TRACE_PRINTF("%s", buffer);\
+        LOGE("%s", buffer);\
         FORCE_BREAKPOINT();\
         exit(1);\
     }
@@ -86,7 +86,7 @@ misrepresented as being the original software.
         char buffer[1024];\
         const char* format = "Assert" #f "(" #args ") has failed in file %s line %d\n";\
         snprintf(buffer, 1024, format, file, line);\
-        TRACE_PRINTF("%s", buffer);\
+        LOGE("%s", buffer);\
         FORCE_BREAKPOINT();\
         exit(1);\
     }
