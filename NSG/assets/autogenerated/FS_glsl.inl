@@ -20,15 +20,15 @@ static const char* FS_GLSL = \
 "				gl_FragColor = texture2D(u_texture0, v_texcoord0);\n"\
 "			#elif defined(UNLIT)\n"\
 "				#ifdef DIFFUSEMAP\n"\
-"					gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
+"					gl_FragColor = u_material.color * texture2D(u_texture0, v_texcoord0);\n"\
 "				#else\n"\
-"					gl_FragColor = v_color;\n"\
+"					gl_FragColor = u_material.color;\n"\
 "				#endif\n"\
 "			#elif defined(VERTEXCOLOR)\n"\
 "				gl_FragColor = v_color;\n"\
 "			#else // AMBIENT\n"\
 "				\n"\
-"				gl_FragColor = v_color * GetAmbientLight();\n"\
+"				gl_FragColor = GetAmbientLight();\n"\
 "			#endif\n"\
 "		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
@@ -57,9 +57,9 @@ static const char* FS_GLSL = \
 "	    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
 "	    		vec4 totalLight = CalcTotalLight(vertexToEye, normal);\n"\
 "				#ifdef DIFFUSEMAP\n"\
-"		    		gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord0);\n"\
+"		    		gl_FragColor = totalLight * texture2D(u_texture0, v_texcoord0);\n"\
 "		    	#else\n"\
-"		    		gl_FragColor = v_color * totalLight;\n"\
+"		    		gl_FragColor = totalLight;\n"\
 "		    	#endif\n"\
 "		    #endif\n"\
 "		#endif	    \n"\

@@ -41,6 +41,7 @@ namespace NSG
 		void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
 		const Window* GetWindow() const { return window_; }
 		const ShadowCamera* GetShadowCamera() const { return shadowCamera_.get(); }
+		const Scene* GetScene() const { return scene_; }
 	private:
 		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
 		void GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters);

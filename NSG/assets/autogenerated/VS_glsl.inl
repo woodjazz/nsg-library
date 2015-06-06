@@ -24,16 +24,14 @@ static const char* VS_GLSL = \
 "				gl_Position = vec4(a_position, 1.0);\n"\
 "				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#elif defined(UNLIT)\n"\
-"				v_color = u_material.color * a_color;\n"\
 "				gl_Position = GetClipPos();\n"\
 "				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#elif defined(VERTEXCOLOR)\n"\
 "				\n"\
-"				v_color = u_material.color * a_color;\n"\
+"				v_color = a_color;\n"\
 "				gl_Position = GetClipPos();\n"\
 "			#else // AMBIENT\n"\
-"				\n"\
-"				v_color = u_material.color * a_color;\n"\
+"			\n"\
 "				gl_Position = GetClipPos();\n"\
 "				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "				#if defined(AOMAP1) || defined(LIGHTMAP1)\n"\
@@ -49,7 +47,7 @@ static const char* VS_GLSL = \
 "			    vec3 normal = GetWorldNormal();\n"\
 "			    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);\n"\
 "			    vec4 totalLight = CalcTotalLight(worldPos.xyz, vertexToEye, normal);\n"\
-"			    v_color = a_color * totalLight;\n"\
+"			    v_color = totalLight;\n"\
 "				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "				gl_Position = GetClipPos();\n"\
 "			#else // PER_PIXEL_LIGHTING\n"\
@@ -75,7 +73,6 @@ static const char* VS_GLSL = \
 "					v_lightDirection = worldPos.xyz - u_directionalLight.position;\n"\
 "						\n"\
 "				#endif\n"\
-"				v_color = a_color;\n"\
 "				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "				gl_Position = GetClipPos();\n"\
 "			#endif\n"\

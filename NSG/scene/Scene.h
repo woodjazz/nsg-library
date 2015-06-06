@@ -42,7 +42,9 @@ namespace NSG
         ~Scene();
         void SetWindow(Window* window);
         void SetAmbientColor(Color ambient);
+        void SetHorizonColor(Color horizon);
         const Color& GetAmbientColor() const { return ambient_; }
+        const Color& GetHorizonColor() const { return horizon_; }
 		void AddLight(Light* light);
 		const std::vector<Light*>& GetLights() const;
         void AddCamera(Camera* camera);
@@ -93,6 +95,7 @@ namespace NSG
 		std::vector<Light*> lights_;
 		std::vector<ParticleSystem*> particleSystems_;
         Color ambient_;
+        Color horizon_;
 		POctree octree_;
         mutable std::set<SceneNode*> needUpdate_;
 		std::map<std::string, PAnimation> animations_;

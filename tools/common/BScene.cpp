@@ -152,6 +152,8 @@ namespace BlenderConverter
 			scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
 			Color ambient(world->ambr, world->ambg, world->ambb, 1);
 			scene->SetAmbientColor(ambient);
+            Color horizon(world->horr, world->horg, world->horb, 1);
+            scene->SetHorizonColor(horizon);
 		}
         return scene;
     }
@@ -228,11 +230,14 @@ namespace BlenderConverter
     {
         std::string name = B_IDNAME(mt);
         auto material = Material::GetOrCreate(name);
+        Color color(mt->r, mt->g, mt->b, mt->alpha);
+        material->SetColor(color);
         auto diffuseIntensity = mt->ref;
-        material->SetDiffuseColor(Color(diffuseIntensity * mt->r, diffuseIntensity * mt->g, diffuseIntensity * mt->b, mt->alpha));
+        material->SetDiffuseColor(diffuseIntensity * color);
         auto specularIntensity = mt->spec;
         material->SetSpecularColor(Color(specularIntensity * mt->specr, specularIntensity * mt->specg, specularIntensity * mt->specb, mt->alpha));
-        material->SetAmbientColor(Color(mt->ambr, mt->ambg, mt->ambb, mt->alpha));
+        auto ambientIntensity = mt->amb;
+        material->SetAmbientIntensity(ambientIntensity);
 
         material->SetShininess(mt->har);
 
@@ -259,12 +264,13 @@ namespace BlenderConverter
             material->SetCullFaceMode(CullFaceMode::FRONT_AND_BACK);
         else
             material->SetCullFaceMode(CullFaceMode::DISABLED);
-
-		//if (mt->mode & MA_VERTEXCOL)
-		//	material->SetRenderPass(RenderPass::VERTEXCOLOR);
         
 		if (mt->game.flag & GEMAT_TEXT)
             material->SetRenderPass(RenderPass::TEXT);
+        else if (mt->mode & MA_VERTEXCOLP)
+            material->SetRenderPass(RenderPass::VERTEXCOLOR);
+        else if(shadeless)
+            material->SetRenderPass(RenderPass::UNLIT);
         else
             material->SetRenderPass(RenderPass::PERPIXEL);
 
@@ -1058,17 +1064,16 @@ namespace BlenderConverter
             bool bufferedShadows = la->mode & LA_SHAD_BUF ? true : false;
             bool rayTracedShadows = la->mode & LA_SHAD_RAY ? true : false;
             light->EnableShadows(bufferedShadows || rayTracedShadows);
-            if (bufferedShadows)
-            {
-                light->SetShadowClipStart(la->clipsta);
-                light->SetShadowClipEnd(la->clipend);
-            }
-            // TODO: CHECK IF THIS IS A GOOD APROXIMATION
-            //float bias = la->bias * std::powf(1.f / (la->clipend - la->clipsta), 2.45f);
-            //light->SetBias(bias);
         }
         else
             light->EnableShadows(la->mode & LA_SHAD_RAY ? true : false);
+
+        light->SetShadowClipStart(la->clipsta);
+        light->SetShadowClipEnd(la->clipend);
+        
+        // TODO: CHECK IF THIS IS A GOOD APROXIMATION
+        float bias = la->bias * std::powf(1.f / (la->clipend - la->clipsta), 2.45f);
+        light->SetBias(bias);
 
         if (la->mode & LA_NEG)
             light->SetEnergy(-la->energy);

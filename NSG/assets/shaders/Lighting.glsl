@@ -60,12 +60,10 @@
         vec4 GetAmbientLight()
         {
             #ifdef DIFFUSEMAP
-                vec4 diffColor = u_material.diffuse * texture2D(u_texture0, v_texcoord0);
+                return GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);
             #else
-                vec4 diffColor = u_material.diffuse;
+                return GetAmbientIntensity();
             #endif
-
-            return GetAmbientIntensity() * diffColor;
         }
 
     #endif

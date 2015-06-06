@@ -59,7 +59,8 @@ namespace NSG
             SetPosition(light->GetGlobalPosition());
             SetOrientation(light->GetGlobalOrientation());
             SetNearClip(light->GetShadowClipStart());
-            SetFarClip(light->GetShadowClipEnd());
+            auto farZ = glm::clamp(light->GetShadowClipEnd(), light->GetShadowClipStart(), light->GetDistance());
+            SetFarClip(farZ);
             SetFOV(light->GetSpotCutOff());
             SetAspectRatio(1.0);
             DisableOrtho();
@@ -69,7 +70,8 @@ namespace NSG
             SetPosition(light->GetGlobalPosition());
             SetOrientation(light->GetGlobalOrientation());
             SetNearClip(light->GetShadowClipStart());
-            SetFarClip(light->GetShadowClipEnd());
+            auto farZ = glm::clamp(light->GetShadowClipEnd(), light->GetShadowClipStart(), light->GetDistance());
+            SetFarClip(farZ);
             SetFOV(90.f);
             SetAspectRatio(1.0);
             DisableOrtho();
@@ -81,31 +83,31 @@ namespace NSG
             Vector3 pos = camera->GetGlobalPosition() - extrusionDistance * light->GetLookAtDirection();
             SetPosition(pos);
             SetOrientation(light->GetGlobalOrientation());
-            
-            BoundingBox cameraViewBox(camera->GetFrustum()->GetVerticesTransform(GetView()));
-			Vector2 viewSize(cameraViewBox.max_.x - cameraViewBox.min_.x, cameraViewBox.max_.y - cameraViewBox.min_.y);
-			SetNearClip(0.f);
-            auto farZ = cameraViewBox.max_.z - cameraViewBox.min_.z;
-			SetFarClip(farZ);
 
-            //The bigger issue is that this produces a shadow frustum that continuously changes 
-            //size and position as the camera moves around. This leads to shadows "swimming", 
-            //which is a very distracting artifact. 
+            BoundingBox cameraViewBox(camera->GetFrustum()->GetVerticesTransform(GetView()));
+            Vector2 viewSize(cameraViewBox.max_.x - cameraViewBox.min_.x, cameraViewBox.max_.y - cameraViewBox.min_.y);
+            SetNearClip(0.f);
+            auto farZ = cameraViewBox.max_.z - cameraViewBox.min_.z;
+            SetFarClip(farZ);
+
+            //The bigger issue is that this produces a shadow frustum that continuously changes
+            //size and position as the camera moves around. This leads to shadows "swimming",
+            //which is a very distracting artifact.
             //In order to fix this, it's common to do the following additional two steps:
 
-			{
+            {
                 //STEP 1: Quantize size to reduce swimming
-				const float QUANTIZE = 0.5f;
-				const float MIN_VIEW_SIZE = 3.f;
-				viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
-				viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
-				viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
-				viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
+                const float QUANTIZE = 0.5f;
+                const float MIN_VIEW_SIZE = 3.f;
+                viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
+                viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
+                viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
+                viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
                 // TODO: Don't allow the shadow frustum to change size as the camera rotates.
-			}
-            
+            }
+
             SetAspectRatio(viewSize.x, viewSize.y);
-			SetOrthoScale(viewSize.x);
+            SetOrthoScale(viewSize.x);
 
             Vector3 center = cameraViewBox.Center();
             // Center shadow camera to the view space bounding box
@@ -113,11 +115,11 @@ namespace NSG
             Vector3 adjust(center.x, center.y, 0.0f);
             Translate(rot * adjust, TransformSpace::TS_WORLD);
 
-			float shadowMapWidth = (float)light->GetShadowMap()->GetWidth();
+            float shadowMapWidth = (float)light->GetShadowMap()->GetWidth();
             if (shadowMapWidth > 0.0f)
             {
-				//STEP 2: Discretize the position of the frustum
-				//Snap to whole texels
+                //STEP 2: Discretize the position of the frustum
+                //Snap to whole texels
                 Vector3 viewPos(glm::inverse(rot) * GetPosition());
                 // Take into account that shadow map border will not be used
                 float invActualSize = 1.0f / (shadowMapWidth - 2.0f);

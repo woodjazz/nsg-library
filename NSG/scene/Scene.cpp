@@ -28,6 +28,7 @@ namespace NSG
         : SceneNode(name),
           mainCamera_(nullptr),
           ambient_(0.3f, 0.3f, 0.3f, 1),
+          horizon_(0.f, 0.f, 0.f, 1.f),
           octree_(std::make_shared<Octree>()),
           physicsWorld_(new PhysicsWorld),
           window_(nullptr),
@@ -151,6 +152,15 @@ namespace NSG
         if (ambient_ != ambient)
         {
             ambient_ = ambient;
+            SetUniformsNeedUpdate();
+        }
+    }
+
+    void Scene::SetHorizonColor(Color horizon)
+    {
+        if (horizon_ != horizon)
+        {
+            horizon_ = horizon;
             SetUniformsNeedUpdate();
         }
     }
@@ -315,6 +325,7 @@ namespace NSG
     void Scene::Load(const pugi::xml_node& node)
     {
         SetAmbientColor(ToVertex4(node.attribute("ambient").as_string()));
+        SetHorizonColor(ToVertex4(node.attribute("horizon").as_string()));
         std::string mainCameraName = node.attribute("mainCamera").as_string();
         pugi::xml_node sceneNode = node.child("SceneNode");
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
@@ -330,6 +341,7 @@ namespace NSG
     {
         pugi::xml_node scene = node.append_child("Scene");
         scene.append_attribute("ambient").set_value(ToString(ambient_).c_str());
+        scene.append_attribute("horizon").set_value(ToString(horizon_).c_str());
         std::string mainCameraName;
         if(mainCamera_)
             mainCameraName = mainCamera_->GetName();

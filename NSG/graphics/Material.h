@@ -48,8 +48,8 @@ namespace NSG
         Color GetDiffuseColor() const { return diffuse_; }
         void SetSpecularColor(Color specular);
         Color GetSpecularColor() const { return specular_; }
-        void SetAmbientColor(Color ambient);
-        Color GetAmbientColor() const { return ambient_; }
+        void SetAmbientIntensity(float ambient);
+        float GetAmbientIntensity() const { return ambient_; }
         void SetShininess(float shininess);
         float GetShininess() const { return shininess_; }
         void SetUniformValue(const char* name, int value);
@@ -107,7 +107,7 @@ namespace NSG
 		void AllocateResources() override;
 		void ReleaseResources() override;
         PTexture texture_[MaterialTexture::MAX_MATERIAL_MAPS];
-        Color ambient_;
+        float ambient_; // ambient intensity
         Color diffuse_;
         Color specular_;
         float shininess_;

@@ -21,7 +21,7 @@ namespace NSG
 
     Material::Material(const std::string& name)
         : Object(name),
-          ambient_(1, 1, 1, 1),
+          ambient_(1),
           diffuse_(1, 1, 1, 1),
           specular_(1, 1, 1, 1),
           shininess_(1),
@@ -106,7 +106,7 @@ namespace NSG
         }
     }
 
-    void Material::SetAmbientColor(Color ambient)
+    void Material::SetAmbientIntensity(float ambient)
     {
         if (ambient_ != ambient)
         {
@@ -260,7 +260,7 @@ namespace NSG
             }
         }
 
-        child.append_attribute("ambient").set_value(ToString(ambient_).c_str());
+        child.append_attribute("ambient").set_value(ambient_);
         child.append_attribute("diffuse").set_value(ToString(diffuse_).c_str());
         child.append_attribute("specular").set_value(ToString(specular_).c_str());
         child.append_attribute("shininess").set_value(shininess_);
@@ -289,7 +289,7 @@ namespace NSG
                 texture_[index] = Texture2D::CreateFrom(resource, childTexture);
         }
 
-        SetAmbientColor(ToVertex4(node.attribute("ambient").as_string()));
+        SetAmbientIntensity(node.attribute("ambient").as_float());
         SetDiffuseColor(ToVertex4(node.attribute("diffuse").as_string()));
         SetSpecularColor(ToVertex4(node.attribute("specular").as_string()));
         SetShininess(node.attribute("shininess").as_float());
@@ -344,7 +344,7 @@ namespace NSG
 
     bool Material::IsLighted() const
     {
-        return renderPass_ == RenderPass::PERPIXEL || renderPass_ == RenderPass::PERVERTEX || renderPass_ == RenderPass::VERTEXCOLOR;
+        return !shadeless_ && (renderPass_ == RenderPass::PERPIXEL || renderPass_ == RenderPass::PERVERTEX);
     }
 
     bool Material::IsBatched()

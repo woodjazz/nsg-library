@@ -251,7 +251,7 @@ namespace NSG
         sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
         eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
         u_uvTransformLoc_ = GetUniformLocation("u_uvTransform");
-		for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
+        for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
             textureLoc_[index] = GetUniformLocation("u_texture" + ToString(index));
         materialLoc_.color_ = GetUniformLocation("u_material.color");
         materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
@@ -299,7 +299,7 @@ namespace NSG
         wavesFilterLoc_.factor_ = GetUniformLocation("u_waveFactor");
         wavesFilterLoc_.offset_ = GetUniformLocation("u_waveOffset");
 
-		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
+        for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
         {
             if (textureLoc_[index] != -1)
                 glUniform1i(textureLoc_[index], index); //set fixed locations for samplers
@@ -366,25 +366,22 @@ namespace NSG
 
     void Program::SetSceneVariables()
     {
-        if(node_)
+        if (sceneColorAmbientLoc_ != -1)
         {
-            Scene* scene = node_->GetScene().get();
-
-            if (sceneColorAmbientLoc_ != -1)
+            auto scene = Renderer::GetPtr()->GetScene();
+            
+            if (scene)
             {
-                if (scene)
-                {
-                    if (activeScene_ != scene || scene->UniformsNeedUpdate())
-                        glUniform4fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
-                }
-                else if (activeScene_ != scene || sceneColor_ == Color(-1))
-                {
-                    sceneColor_ = Color(0, 0, 0, 1);
-                    glUniform4fv(sceneColorAmbientLoc_, 1, &sceneColor_[0]);
-                }
-
-                activeScene_ = scene;
+                if (activeScene_ != scene || scene->UniformsNeedUpdate())
+                    glUniform4fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
             }
+            else if (activeScene_ != scene || sceneColor_ == Color(-1))
+            {
+                sceneColor_ = Color(0, 0, 0, 1);
+                glUniform4fv(sceneColorAmbientLoc_, 1, &sceneColor_[0]);
+            }
+
+            activeScene_ = scene;
         }
     }
 
@@ -412,7 +409,7 @@ namespace NSG
     {
         if (material_)
         {
-			for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+            for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
             {
                 if (textureLoc_[index] != -1)
                 {
@@ -429,7 +426,7 @@ namespace NSG
                     glUniform4fv(materialLoc_.color_, 1, &material_->color_[0]);
 
                 if (materialLoc_.ambient_ != -1)
-                    glUniform4fv(materialLoc_.ambient_, 1, &material_->ambient_[0]);
+                    glUniform1f(materialLoc_.ambient_, material_->ambient_);
 
                 if (materialLoc_.diffuse_ != -1)
                     glUniform4fv(materialLoc_.diffuse_, 1, &material_->diffuse_[0]);
@@ -525,19 +522,19 @@ namespace NSG
 
                 if (viewProjectionLoc_ != -1)
                 {
-					const Matrix4& m = camera->GetMatViewProjection();
+                    const Matrix4& m = camera->GetMatViewProjection();
                     glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
                 if (viewLoc_ != -1)
                 {
-					const Matrix4& m = camera->GetView();
+                    const Matrix4& m = camera->GetView();
                     glUniformMatrix4fv(viewLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
                 if (projectionLoc_ != -1)
                 {
-					const Matrix4& m = camera->GetMatProjection();
+                    const Matrix4& m = camera->GetMatProjection();
                     glUniformMatrix4fv(projectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
@@ -581,7 +578,7 @@ namespace NSG
                     if (lightInvRangeLoc_ != -1)
                     {
                         auto shadowCamera = Renderer::GetPtr()->GetShadowCamera();
-						float invRange = 1.f / (shadowCamera->GetZFar() - shadowCamera->GetZNear());
+                        float invRange = 1.f / (shadowCamera->GetZFar() - shadowCamera->GetZNear());
                         glUniform1f(lightInvRangeLoc_, invRange);
                     }
                 }
@@ -605,7 +602,7 @@ namespace NSG
     {
         if (light_)
         {
-			if (light_->DoShadows() && light_->GetShadowMap()->IsReady())
+            if (light_->DoShadows() && light_->GetShadowMap()->IsReady())
             {
                 if (shadowColor_ != -1)
                 {
@@ -619,28 +616,28 @@ namespace NSG
                     glUniform1f(shadowBias_, bias);
                 }
 
-				if (shadowMapInvSize_ != -1)
-				{
-					auto shadowMap = light_->GetShadowMap();
-					float width = (float)shadowMap->GetWidth();
-					CHECK_ASSERT(width > 0, __FILE__, __LINE__);
-					glUniform1f(shadowMapInvSize_, 1.f / width);
-				}
+                if (shadowMapInvSize_ != -1)
+                {
+                    auto shadowMap = light_->GetShadowMap();
+                    float width = (float)shadowMap->GetWidth();
+                    CHECK_ASSERT(width > 0, __FILE__, __LINE__);
+                    glUniform1f(shadowMapInvSize_, 1.f / width);
+                }
 
-				auto shadowCamera = Renderer::GetPtr()->GetShadowCamera();
+                auto shadowCamera = Renderer::GetPtr()->GetShadowCamera();
 
                 if (lightViewProjectionLoc_ != -1)
                 {
-					const Matrix4& m = shadowCamera->GetMatViewProjection();
+                    const Matrix4& m = shadowCamera->GetMatViewProjection();
                     glUniformMatrix4fv(lightViewProjectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
-				int index = (int)MaterialTexture::SHADOW_MAP;
-				if (textureLoc_[index] != -1)
-				{
-					auto shadowMap = light_->GetShadowMap().get();
-					Graphics::this_->SetTexture(index, shadowMap);
-				}
+                int index = (int)MaterialTexture::SHADOW_MAP;
+                if (textureLoc_[index] != -1)
+                {
+                    auto shadowMap = light_->GetShadowMap().get();
+                    Graphics::this_->SetTexture(index, shadowMap);
+                }
             }
 
             if (light_->UniformsNeedUpdate())
@@ -667,7 +664,7 @@ namespace NSG
 
                     if (lightInvRangeLoc_ != -1)
                     {
-						float invRange = 1.f / (shadowCamera->GetZFar() - shadowCamera->GetZNear());
+                        float invRange = 1.f / (shadowCamera->GetZFar() - shadowCamera->GetZNear());
                         glUniform1f(lightInvRangeLoc_, invRange);
                     }
                 }
@@ -721,7 +718,7 @@ namespace NSG
 
     void Program::SetVariables(bool shadowPass)
     {
-        if(shadowPass)
+        if (shadowPass)
         {
             SetSkeletonVariables();
             SetNodeVariables();
@@ -767,9 +764,9 @@ namespace NSG
     {
         if (light_ != light)
         {
-			light_ = light;
-			if (light)
-				light->SetUniformsNeedUpdate();
+            light_ = light;
+            if (light)
+                light->SetUniformsNeedUpdate();
         }
     }
 

@@ -44,11 +44,10 @@ static const char* LIGHTING_GLSL = \
 "        vec4 GetAmbientLight()\n"\
 "        {\n"\
 "            #ifdef DIFFUSEMAP\n"\
-"                vec4 diffColor = u_material.diffuse * texture2D(u_texture0, v_texcoord0);\n"\
+"                return GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);\n"\
 "            #else\n"\
-"                vec4 diffColor = u_material.diffuse;\n"\
+"                return GetAmbientIntensity();\n"\
 "            #endif\n"\
-"            return GetAmbientIntensity() * diffColor;\n"\
 "        }\n"\
 "    #endif\n"\
 "#endif\n"\

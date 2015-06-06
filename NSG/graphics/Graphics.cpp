@@ -500,11 +500,8 @@ namespace NSG
 
     void Graphics::ClearAllBuffers()
     {
-        SetClearColor(Color(0, 0, 0, 1));
         SetColorMask(true);
-        SetClearDepth(1);
         SetDepthMask(true);
-        SetClearStencil(0);
         SetStencilMask(~GLuint(0));
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
@@ -516,21 +513,18 @@ namespace NSG
         {
             mask |= GL_COLOR_BUFFER_BIT;
             SetColorMask(true);
-            SetClearColor(Color(0, 0, 0, 1));
         }
 
         if (depth)
         {
             mask |= GL_DEPTH_BUFFER_BIT;
             SetDepthMask(true);
-            SetClearDepth(1);
         }
 
         if (stencil)
         {
             mask |= GL_STENCIL_BUFFER_BIT;
             SetStencilMask(~GLuint(0));
-            SetClearStencil(0);
         }
 
         glClear(mask);

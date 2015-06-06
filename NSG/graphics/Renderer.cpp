@@ -235,18 +235,21 @@ namespace NSG
         if (shadowFrameBuffer->IsReady())
         {
             graphics_->SetFrameBuffer(shadowFrameBuffer);
+            auto lastCamera = Graphics::this_->SetCamera(shadowCamera_.get());
             graphics_->ClearBuffers(true, true, false);
             std::vector<PBatch> batches;
             GenerateBatches(shadowCasters, batches);
             for (auto& batch : batches)
                 if (batch->GetMaterial()->CastShadow())
                     Draw(batch.get(), shadowPass_.get(), light);
+            Graphics::this_->SetCamera(lastCamera);
             graphics_->SetFrameBuffer(frameBuffer);
         }
     }
 
     void Renderer::GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters)
     {
+        auto lastCamera = Graphics::this_->SetCamera(shadowCamera_.get());
         std::vector<SceneNode*> visiblesFromLightFace;
         shadowCamera_->GetVisiblesFromCurrentFace(shadowCasters, visiblesFromLightFace);
         std::vector<PBatch> batches;
@@ -255,6 +258,7 @@ namespace NSG
         for (auto& batch : batches)
             if (batch->GetMaterial()->CastShadow())
                 Draw(batch.get(), shadowPass_.get(), light);
+        Graphics::this_->SetCamera(lastCamera);
     }
 
     void Renderer::SetShadowFrameBufferSize(FrameBuffer* frameBuffer)
@@ -291,6 +295,7 @@ namespace NSG
                     GenerateShadowMapCubeFace(light, shadowCasters);
                 }
             }
+            
             graphics_->SetFrameBuffer(frameBuffer);
         }
     }
@@ -301,7 +306,6 @@ namespace NSG
         shadowCamera_->Setup(light, window_, camera_);
         if (shadowCamera_->GetVisibles(drawables, shadowCasters))
         {
-            auto lastCamera = Graphics::this_->SetCamera(shadowCamera_.get());
             // Generate shadow maps
             if (light->GetType() == LightType::POINT)
                 GenerateCubeShadowMap(light, shadowCasters);
@@ -315,7 +319,7 @@ namespace NSG
                 else if (Intersection::OUTSIDE != camera_->GetFrustum()->IsInside(BoundingBox(*shadowCamera_->GetFrustum())))
                     Generate2DShadowMap(light, shadowCasters);
             }
-            Graphics::this_->SetCamera(lastCamera);
+            
         }
     }
 
@@ -377,10 +381,11 @@ namespace NSG
     {
         window_ = window;
         scene_ = scene;
-        graphics_->SetWindow(window);
+        graphics_->SetWindow(window); 
         graphics_->ClearAllBuffers();
         if (!scene || scene->GetDrawablesNumber() == 0)
             return;
+        graphics_->SetClearColor(scene->GetHorizonColor());
         camera_ = scene->GetMainCamera().get();
         graphics_->SetCamera(camera_);
         std::vector<SceneNode*> visibles;

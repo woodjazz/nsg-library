@@ -59,6 +59,7 @@ int NSG_MAIN(int argc, char* argv[])
 			}
 			if (loadOk)
 			{
+				Object::InvalidateAll();
 				data = std::make_shared<AppData>(doc);
 				if (!data->scenes_.empty())
 				{

@@ -28,9 +28,9 @@
 			#elif defined(UNLIT)
 
 				#ifdef DIFFUSEMAP
-					gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
+					gl_FragColor = u_material.color * texture2D(u_texture0, v_texcoord0);
 				#else
-					gl_FragColor = v_color;
+					gl_FragColor = u_material.color;
 				#endif
 
 			#elif defined(VERTEXCOLOR)
@@ -39,7 +39,7 @@
 
 			#else // AMBIENT
 				
-				gl_FragColor = v_color * GetAmbientLight();
+				gl_FragColor = GetAmbientLight();
 
 			#endif
 
@@ -79,9 +79,9 @@
 	    		vec4 totalLight = CalcTotalLight(vertexToEye, normal);
 
 				#ifdef DIFFUSEMAP
-		    		gl_FragColor = v_color * totalLight * texture2D(u_texture0, v_texcoord0);
+		    		gl_FragColor = totalLight * texture2D(u_texture0, v_texcoord0);
 		    	#else
-		    		gl_FragColor = v_color * totalLight;
+		    		gl_FragColor = totalLight;
 		    	#endif
 
 		    #endif

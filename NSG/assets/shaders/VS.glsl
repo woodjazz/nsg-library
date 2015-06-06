@@ -29,18 +29,16 @@
 
 			#elif defined(UNLIT)
 
-				v_color = u_material.color * a_color;
 				gl_Position = GetClipPos();
 				v_texcoord0 = GetTexCoord(a_texcoord0);
 
 			#elif defined(VERTEXCOLOR)
 				
-				v_color = u_material.color * a_color;
+				v_color = a_color;
 				gl_Position = GetClipPos();
 
 			#else // AMBIENT
-				
-				v_color = u_material.color * a_color;
+			
 				gl_Position = GetClipPos();
 				v_texcoord0 = GetTexCoord(a_texcoord0);
 				#if defined(AOMAP1) || defined(LIGHTMAP1)
@@ -62,7 +60,7 @@
 			    vec3 normal = GetWorldNormal();
 			    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
 			    vec4 totalLight = CalcTotalLight(worldPos.xyz, vertexToEye, normal);
-			    v_color = a_color * totalLight;
+			    v_color = totalLight;
 				v_texcoord0 = GetTexCoord(a_texcoord0);
 				gl_Position = GetClipPos();
 
@@ -99,7 +97,6 @@
 						
 				#endif
 
-				v_color = a_color;
 				v_texcoord0 = GetTexCoord(a_texcoord0);
 				gl_Position = GetClipPos();
 

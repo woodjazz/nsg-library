@@ -187,7 +187,7 @@ namespace NSG
         bool materialVariablesNeverSet_;
 		Skeleton* activeSkeleton_;
         Node* activeNode_;
-        Scene* activeScene_;
+        const Scene* activeScene_;
         Color sceneColor_;
 
         Mesh* mesh_;

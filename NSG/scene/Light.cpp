@@ -230,7 +230,8 @@ namespace NSG
 
 	void Light::CalculateInvRange()
 	{
-		invRange_ = 1.f / std::max((shadowClipEnd_ - shadowClipStart_), glm::epsilon<float>());
+        float range = glm::clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
+		invRange_ = 1.f / std::max(range, glm::epsilon<float>());
 	}
 
 	void Light::SetShadowClipStart(float value) 

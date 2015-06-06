@@ -101,7 +101,7 @@
 struct Material
 {
 	vec4 color;
-    vec4 ambient;
+    float ambient;
     vec4 diffuse;
     vec4 specular;
     float shininess;
