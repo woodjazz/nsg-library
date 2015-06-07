@@ -27,10 +27,6 @@
 				gl_Position = vec4(a_position, 1.0);
 				v_texcoord0 = GetTexCoord(a_texcoord0);
 
-			#elif defined(UNLIT)
-
-				gl_Position = GetClipPos();
-				v_texcoord0 = GetTexCoord(a_texcoord0);
 
 			#elif defined(VERTEXCOLOR)
 				

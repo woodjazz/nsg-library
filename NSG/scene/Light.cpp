@@ -41,7 +41,7 @@ namespace NSG
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
-		CalculateInvRange();
+        CalculateInvRange();
     }
 
     Light::~Light()
@@ -123,6 +123,7 @@ namespace NSG
             }
 
             type_ = type;
+            CalculateInvRange();
             OnDirty();
             SetUniformsNeedUpdate();
         }
@@ -145,10 +146,10 @@ namespace NSG
         node.append_attribute("shadowClipStart").set_value(shadowClipStart_);
         node.append_attribute("shadowClipEnd").set_value(shadowClipEnd_);
         node.append_attribute("onlyShadow").set_value(onlyShadow_);
-		node.append_attribute("shadowColor").set_value(ToString(shadowColor_).c_str());
+        node.append_attribute("shadowColor").set_value(ToString(shadowColor_).c_str());
         node.append_attribute("shadowBias").set_value(shadowBias_);
-        
-        
+
+
         SaveChildren(node);
     }
 
@@ -170,7 +171,7 @@ namespace NSG
         SetShadowClipStart(node.attribute("shadowClipStart").as_float());
         SetShadowClipEnd(node.attribute("shadowClipEnd").as_float());
         SetOnlyShadow(node.attribute("onlyShadow").as_bool());
-		SetShadowColor(ToVertex4(node.attribute("shadowColor").as_string()));
+        SetShadowColor(ToVertex4(node.attribute("shadowColor").as_string()));
         SetBias(node.attribute("shadowBias").as_float());
         LoadChildren(node);
     }
@@ -214,7 +215,7 @@ namespace NSG
     void Light::SetDistance(float distance)
     {
         distance_ = distance;
-		CalculateInvRange();
+        CalculateInvRange();
         SetUniformsNeedUpdate();
     }
 
@@ -223,27 +224,35 @@ namespace NSG
         return shadows_;
     }
 
-	PTexture Light::GetShadowMap() const
-	{ 
-		return shadowFrameBuffer_->GetColorTexture(); 
-	}
+    PTexture Light::GetShadowMap() const
+    {
+        return shadowFrameBuffer_->GetColorTexture();
+    }
 
-	void Light::CalculateInvRange()
-	{
-        float range = glm::clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
-		invRange_ = 1.f / std::max(range, glm::epsilon<float>());
-	}
+    void Light::CalculateInvRange()
+    {
+        if (LightType::SPOT == type_)
+        {
+            auto range = glm::clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
+            invRange_ = 1.f / std::max(range, glm::epsilon<float>());
+        }
+        else if (LightType::POINT == type_)
+            invRange_ = 1.f / std::max(distance_, glm::epsilon<float>());
+        else
+            invRange_ = glm::epsilon<float>();
 
-	void Light::SetShadowClipStart(float value) 
-	{ 
-		shadowClipStart_ = value;
-		CalculateInvRange();
-	}
-	
-	void Light::SetShadowClipEnd(float value) 
-	{ 
-		shadowClipEnd_ = value;
-		CalculateInvRange();
-	}
+    }
+
+    void Light::SetShadowClipStart(float value)
+    {
+        shadowClipStart_ = value;
+        CalculateInvRange();
+    }
+
+    void Light::SetShadowClipEnd(float value)
+    {
+        shadowClipEnd_ = value;
+        CalculateInvRange();
+    }
 
 }

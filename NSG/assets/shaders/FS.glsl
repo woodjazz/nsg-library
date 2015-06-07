@@ -25,19 +25,11 @@
 
 				gl_FragColor = texture2D(u_texture0, v_texcoord0);
 
-			#elif defined(UNLIT)
-
-				#ifdef DIFFUSEMAP
-					gl_FragColor = u_material.color * texture2D(u_texture0, v_texcoord0);
-				#else
-					gl_FragColor = u_material.color;
-				#endif
-
 			#elif defined(VERTEXCOLOR)
 
 				gl_FragColor = v_color;
 
-			#else // AMBIENT
+			#else // AMBIENT OR UNLIT
 				
 				gl_FragColor = GetAmbientLight();
 

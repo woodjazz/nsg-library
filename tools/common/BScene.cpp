@@ -1064,13 +1064,12 @@ namespace BlenderConverter
             bool bufferedShadows = la->mode & LA_SHAD_BUF ? true : false;
             bool rayTracedShadows = la->mode & LA_SHAD_RAY ? true : false;
             light->EnableShadows(bufferedShadows || rayTracedShadows);
+            light->SetShadowClipStart(la->clipsta);
+            light->SetShadowClipEnd(la->clipend);
         }
         else
             light->EnableShadows(la->mode & LA_SHAD_RAY ? true : false);
 
-        light->SetShadowClipStart(la->clipsta);
-        light->SetShadowClipEnd(la->clipend);
-        
         // TODO: CHECK IF THIS IS A GOOD APROXIMATION
         float bias = la->bias * std::powf(1.f / (la->clipend - la->clipsta), 2.45f);
         light->SetBias(bias);

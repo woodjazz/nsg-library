@@ -23,9 +23,6 @@ static const char* VS_GLSL = \
 "			#elif defined(SHOW_TEXTURE0)\n"\
 "				gl_Position = vec4(a_position, 1.0);\n"\
 "				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
-"			#elif defined(UNLIT)\n"\
-"				gl_Position = GetClipPos();\n"\
-"				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			#elif defined(VERTEXCOLOR)\n"\
 "				\n"\
 "				v_color = a_color;\n"\

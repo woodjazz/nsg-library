@@ -18,15 +18,9 @@ static const char* FS_GLSL = \
 "				gl_FragColor = Wave();\n"\
 "			#elif defined(SHOW_TEXTURE0)\n"\
 "				gl_FragColor = texture2D(u_texture0, v_texcoord0);\n"\
-"			#elif defined(UNLIT)\n"\
-"				#ifdef DIFFUSEMAP\n"\
-"					gl_FragColor = u_material.color * texture2D(u_texture0, v_texcoord0);\n"\
-"				#else\n"\
-"					gl_FragColor = u_material.color;\n"\
-"				#endif\n"\
 "			#elif defined(VERTEXCOLOR)\n"\
 "				gl_FragColor = v_color;\n"\
-"			#else // AMBIENT\n"\
+"			#else // AMBIENT OR UNLIT\n"\
 "				\n"\
 "				gl_FragColor = GetAmbientLight();\n"\
 "			#endif\n"\

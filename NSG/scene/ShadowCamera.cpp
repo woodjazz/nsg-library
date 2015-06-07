@@ -69,9 +69,8 @@ namespace NSG
         {
             SetPosition(light->GetGlobalPosition());
             SetOrientation(light->GetGlobalOrientation());
-            SetNearClip(light->GetShadowClipStart());
-            auto farZ = glm::clamp(light->GetShadowClipEnd(), light->GetShadowClipStart(), light->GetDistance());
-            SetFarClip(farZ);
+            SetNearClip(0.1f);
+            SetFarClip(light->GetDistance());
             SetFOV(90.f);
             SetAspectRatio(1.0);
             DisableOrtho();

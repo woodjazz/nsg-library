@@ -8,7 +8,11 @@ static const char* LIGHTING_GLSL = \
 "        vec4 GetAmbientIntensity()\n"\
 "        {\n"\
 "            #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)\n"\
-"                vec4 intensity = u_sceneAmbientColor * u_material.ambient;\n"\
+"                #if defined(UNLIT)\n"\
+"                    vec4 intensity = u_material.color;\n"\
+"                #else\n"\
+"                    vec4 intensity = u_sceneAmbientColor * u_material.ambient;\n"\
+"                #endif\n"\
 "            #else\n"\
 "                #if defined(AOMAP0)\n"\
 "                    #if defined(AOMAP_CHANNELS1)\n"\

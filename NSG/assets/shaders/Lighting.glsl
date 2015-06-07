@@ -8,7 +8,15 @@
         {
             #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)
 
-                vec4 intensity = u_sceneAmbientColor * u_material.ambient;
+                #if defined(UNLIT)
+
+                    vec4 intensity = u_material.color;
+
+                #else
+
+                    vec4 intensity = u_sceneAmbientColor * u_material.ambient;
+
+                #endif
 
             #else
 
