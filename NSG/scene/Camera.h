@@ -43,9 +43,11 @@ namespace NSG
 		void SetFarClip(float zFar);
 		void SetAspectRatio(unsigned width, unsigned height);
 		void SetAspectRatio(float aspect);
+		float GetAspectRatio() const { return aspectRatio_; }
 		void SetViewportFactor(const Vector4& viewportFactor);
 		const Vector4& GetViewportFactor() const { return viewportFactor_; }
 		void SetOrthoScale(float orthoScale);
+		float GetOrthoScale() const { return orthoScale_; }
         bool IsOrtho() const { return isOrtho_; }
         void SetSensorFit(CameraSensorFit sensorFit);
         //XYZ are in normalized device coordinates (-1, 1)

@@ -40,6 +40,8 @@ namespace NSG
 		bool IsVisibleFromCurrentFace(const SceneNode* node) const;
 		bool GetVisibles(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
 		bool GetVisiblesFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
+		void QuantizeDirLightShadowCamera(const Light* light, const BoundingBox& viewBox);
+		void FinalizeShadowCamera(const Light* light, const Camera* camera, std::vector<SceneNode*> shadowCasters);
 	private:
         Node dirPositiveX_;
         Node dirNegativeX_;

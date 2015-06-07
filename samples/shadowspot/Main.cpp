@@ -70,6 +70,6 @@ int NSG_MAIN(int argc, char* argv[])
 	//spotLight->SetGlobalPosition(pos - Vector3(2) * dir);
 
 #endif
-	//window->ShowMap(point1Light->GetShadowMap());
+	//window->ShowMap(spot1Light->GetShadowMap());
 	return engine.Run();
 }

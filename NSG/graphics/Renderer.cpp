@@ -59,7 +59,7 @@ namespace NSG
 
         ambientPass_->SetType(PassType::AMBIENT);
 
-		lightPass_->SetType(PassType::LIT);
+        lightPass_->SetType(PassType::LIT);
         lightPass_->EnableDepthBuffer(false);
         lightPass_->SetBlendMode(BLEND_MODE::ADDITIVE);
         lightPass_->SetDepthFunc(DepthFunc::LEQUAL);
@@ -270,7 +270,7 @@ namespace NSG
         #else
         auto maxSize = std::max(window_->GetWidth(), window_->GetHeight());
         #endif
-		frameBuffer->SetSize(maxSize, maxSize);
+        frameBuffer->SetSize(maxSize, maxSize);
     }
 
     void Renderer::GenerateCubeShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters)
@@ -295,7 +295,7 @@ namespace NSG
                     GenerateShadowMapCubeFace(light, shadowCasters);
                 }
             }
-            
+
             graphics_->SetFrameBuffer(frameBuffer);
         }
     }
@@ -306,11 +306,12 @@ namespace NSG
         shadowCamera_->Setup(light, window_, camera_);
         if (shadowCamera_->GetVisibles(drawables, shadowCasters))
         {
+            shadowCamera_->FinalizeShadowCamera(light, camera_, shadowCasters);
             // Generate shadow maps
             if (light->GetType() == LightType::POINT)
                 GenerateCubeShadowMap(light, shadowCasters);
-			else if (LightType::DIRECTIONAL == light->GetType())
-				Generate2DShadowMap(light, shadowCasters);
+            else if (LightType::DIRECTIONAL == light->GetType())
+                Generate2DShadowMap(light, shadowCasters);
             else
             {
                 auto intersection = camera_->GetFrustum()->IsPointInside(light->GetGlobalPosition());
@@ -319,7 +320,7 @@ namespace NSG
                 else if (Intersection::OUTSIDE != camera_->GetFrustum()->IsInside(BoundingBox(*shadowCamera_->GetFrustum())))
                     Generate2DShadowMap(light, shadowCasters);
             }
-            
+
         }
     }
 
@@ -345,9 +346,15 @@ namespace NSG
         auto lights = scene_->GetLights();
         for (auto light : lights)
         {
-            if(light->GetOnlyShadow())
+            if (light->GetOnlyShadow())
                 continue;
-			shadowCamera_->Setup(light, window_, camera_);
+            {
+                shadowCamera_->Setup(light, window_, camera_);
+                std::vector<SceneNode*> shadowCasters;
+                shadowCamera_->Setup(light, window_, camera_);
+                if (shadowCamera_->GetVisibles(nodes, shadowCasters))
+                    shadowCamera_->FinalizeShadowCamera(light, camera_, shadowCasters);
+            }
             std::vector<SceneNode*> litNodes;
             GetLighted(nodes, litNodes);
             std::vector<PBatch> batches;
@@ -381,7 +388,7 @@ namespace NSG
     {
         window_ = window;
         scene_ = scene;
-        graphics_->SetWindow(window); 
+        graphics_->SetWindow(window);
         graphics_->ClearAllBuffers();
         if (!scene || scene->GetDrawablesNumber() == 0)
             return;

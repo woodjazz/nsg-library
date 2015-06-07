@@ -80,8 +80,8 @@ namespace NSG
             EnableOrtho();
             float extrusionDistance = camera->GetZFar();
             Vector3 pos = camera->GetGlobalPosition() - extrusionDistance * light->GetLookAtDirection();
-            SetPosition(pos);
-            SetOrientation(light->GetGlobalOrientation());
+            SetGlobalPosition(pos);
+            SetGlobalOrientation(light->GetGlobalOrientation());
 
             BoundingBox cameraViewBox(camera->GetFrustum()->GetVerticesTransform(GetView()));
             Vector2 viewSize(cameraViewBox.max_.x - cameraViewBox.min_.x, cameraViewBox.max_.y - cameraViewBox.min_.y);
@@ -89,44 +89,143 @@ namespace NSG
             auto farZ = cameraViewBox.max_.z - cameraViewBox.min_.z;
             SetFarClip(farZ);
 
-            //The bigger issue is that this produces a shadow frustum that continuously changes
-            //size and position as the camera moves around. This leads to shadows "swimming",
-            //which is a very distracting artifact.
-            //In order to fix this, it's common to do the following additional two steps:
-
-            {
-                //STEP 1: Quantize size to reduce swimming
-                const float QUANTIZE = 0.5f;
-                const float MIN_VIEW_SIZE = 3.f;
-                viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
-                viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
-                viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
-                viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
-                // TODO: Don't allow the shadow frustum to change size as the camera rotates.
-            }
-
-            SetAspectRatio(viewSize.x, viewSize.y);
-            SetOrthoScale(viewSize.x);
-
-            Vector3 center = cameraViewBox.Center();
-            // Center shadow camera to the view space bounding box
-            Quaternion rot(GetOrientation());
-            Vector3 adjust(center.x, center.y, 0.0f);
-            Translate(rot * adjust, TransformSpace::TS_WORLD);
-
-            float shadowMapWidth = (float)light->GetShadowMap()->GetWidth();
-            if (shadowMapWidth > 0.0f)
-            {
-                //STEP 2: Discretize the position of the frustum
-                //Snap to whole texels
-                Vector3 viewPos(glm::inverse(rot) * GetPosition());
-                // Take into account that shadow map border will not be used
-                float invActualSize = 1.0f / (shadowMapWidth - 2.0f);
-                Vector2 texelSize(viewSize.x * invActualSize, viewSize.y * invActualSize);
-                Vector3 snap(-fmodf(viewPos.x, texelSize.x), -fmodf(viewPos.y, texelSize.y), 0.0f);
-                Translate(rot * snap, TransformSpace::TS_WORLD);
-            }
+            QuantizeDirLightShadowCamera(light, cameraViewBox);
         }
+    }
+
+    void ShadowCamera::QuantizeDirLightShadowCamera(const Light* light, const BoundingBox& viewBox)
+    {
+        float minX = viewBox.min_.x;
+        float minY = viewBox.min_.y;
+        float maxX = viewBox.max_.x;
+        float maxY = viewBox.max_.y;
+
+        Vector2 center((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
+        Vector2 viewSize(maxX - minX, maxY - minY);
+
+        //The bigger issue is that this produces a shadow frustum that continuously changes
+        //size and position as the camera moves around. This leads to shadows "swimming",
+        //which is a very distracting artifact.
+        //In order to fix this, it's common to do the following additional two steps:
+
+        {
+            //STEP 1: Quantize size to reduce swimming
+            const float QUANTIZE = 0.5f;
+            const float MIN_VIEW_SIZE = 3.f;
+            viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
+            viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
+            viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
+            viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
+            // TODO: Don't allow the shadow frustum to change size as the camera rotates.
+        }
+
+        // Center shadow camera to the view space bounding box
+        Quaternion rot(GetGlobalOrientation());
+        Vector3 adjust(center.x, center.y, 0.0f);
+        Translate(rot * adjust, TS_WORLD);
+
+        SetAspectRatio(viewSize.x, viewSize.y);
+        SetOrthoScale(viewSize.x);
+
+        float shadowMapWidth = (float)light->GetShadowMap()->GetWidth();
+        if (shadowMapWidth > 0.0f)
+        {
+            //STEP 2: Discretize the position of the frustum
+            //Snap to whole texels
+            Vector3 viewPos(glm::inverse(rot) * GetPosition());
+            // Take into account that shadow map border will not be used
+            float invActualSize = 1.0f / (shadowMapWidth - 2.0f);
+            Vector2 texelSize(viewSize.x * invActualSize, viewSize.y * invActualSize);
+            Vector3 snap(-fmodf(viewPos.x, texelSize.x), -fmodf(viewPos.y, texelSize.y), 0.0f);
+            Translate(rot * snap, TransformSpace::TS_WORLD);
+        }
+    }
+
+    void ShadowCamera::FinalizeShadowCamera(const Light* light, const Camera* camera, std::vector<SceneNode*> shadowCasters)
+    {
+        LightType type = light->GetType();
+
+        if (type == LightType::DIRECTIONAL)
+        {
+#if 0
+            BoundingBox shadowBox;
+            shadowBox.max_.y = GetOrthoScale() * 0.5f;
+            shadowBox.max_.x = GetAspectRatio() * shadowBox.max_.y;
+            shadowBox.min_.y = -shadowBox.max_.y;
+            shadowBox.min_.x = -shadowBox.max_.x;
+#else
+            BoundingBox shadowBox;
+            for (auto& caster : shadowCasters)
+                shadowBox.Merge(caster->GetWorldBoundingBox());
+            shadowBox.Transform(GetView());
+#endif
+
+            // Requantize and snap to shadow map texels
+            QuantizeDirLightShadowCamera(light, shadowBox);
+        }
+        #if 0
+        BoundingBox cameraViewBox;
+        for (auto& caster : shadowCasters)
+            cameraViewBox.Merge(caster->GetWorldBoundingBox());
+
+        //cameraViewBox.Transform(GetFrustum()->GetMatrix());
+
+        auto farCorner1 = glm::inverse(GetGlobalOrientation()) * Vector3(cameraViewBox.min_.x, cameraViewBox.max_.y, cameraViewBox.max_.z);
+        auto farCorner2 = glm::inverse(GetGlobalOrientation()) * Vector3(cameraViewBox.max_.x, cameraViewBox.min_.y, cameraViewBox.max_.z);
+        auto origin = glm::inverse(GetGlobalOrientation()) * cameraViewBox.Center();
+        auto nearposition = glm::inverse(GetGlobalOrientation()) * Vector3(origin.x, origin.y, cameraViewBox.min_.z);
+        auto farposition = glm::inverse(GetGlobalOrientation()) * Vector3(origin.x, origin.y, cameraViewBox.max_.z);
+        //auto position = Vector3(origin.x, origin.y, cameraViewBox.min_.z);
+        auto direction = farposition - nearposition;
+        SetGlobalPosition(nearposition);
+        SetGlobalLookAt(glm::normalize(direction));
+
+
+
+        Vector2 viewSize(glm::abs(farCorner2.x - farCorner1.x), glm::abs(farCorner2.y - farCorner1.y));
+        SetNearClip(0.f);
+        auto farZ = glm::length(direction);//cameraViewBox.max_.z - cameraViewBox.min_.z;
+        SetFarClip(farZ);
+
+        //The bigger issue is that this produces a shadow frustum that continuously changes
+        //size and position as the camera moves around. This leads to shadows "swimming",
+        //which is a very distracting artifact.
+        //In order to fix this, it's common to do the following additional two steps:
+
+        {
+            //STEP 1: Quantize size to reduce swimming
+            const float QUANTIZE = 0.5f;
+            const float MIN_VIEW_SIZE = 3.f;
+            viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
+            viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
+            viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
+            viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
+            // TODO: Don't allow the shadow frustum to change size as the camera rotates.
+        }
+
+        SetAspectRatio(viewSize.x, viewSize.y);
+        SetOrthoScale(viewSize.x);
+        /*
+                Vector3 center = cameraViewBox.Center();
+                // Center shadow camera to the view space bounding box
+                Quaternion rot(GetGlobalOrientation());
+                Vector3 adjust(center.x, center.y, 0.0f);
+                Translate(rot * adjust, TransformSpace::TS_WORLD);
+
+                float shadowMapWidth = (float)light->GetShadowMap()->GetWidth();
+                if (shadowMapWidth > 0.0f)
+                {
+                    //STEP 2: Discretize the position of the frustum
+                    //Snap to whole texels
+                    Vector3 viewPos(glm::inverse(rot) * GetGlobalPosition());
+                    // Take into account that shadow map border will not be used
+                    float invActualSize = 1.0f / (shadowMapWidth - 2.0f);
+                    Vector2 texelSize(viewSize.x * invActualSize, viewSize.y * invActualSize);
+                    Vector3 snap(-fmodf(viewPos.x, texelSize.x), -fmodf(viewPos.y, texelSize.y), 0.0f);
+                    Translate(rot * snap, TransformSpace::TS_WORLD);
+                }
+         */
+        #endif
     }
 
     void ShadowCamera::SetCurrentCubeShadowMapFace(TextureTarget target)
