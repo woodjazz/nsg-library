@@ -76,21 +76,24 @@ namespace NSG
         Renderer::this_ = nullptr;
     }
 
-    void Renderer::ExtractTransparent(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& transparent) const
+    void Renderer::ExtractTransparent()
     {
-        CHECK_ASSERT(transparent.empty(), __FILE__, __LINE__);
+        transparent_.clear();
 
-        for (auto& node : nodes)
+        for (auto& node : visibles_)
         {
             auto material = node->GetMaterial();
             if (material && material->IsTransparent())
-                transparent.push_back(node);
+                transparent_.push_back(node);
         }
 
-        // remove tranparent from nodes
-        nodes.erase(std::remove_if(nodes.begin(), nodes.end(),
-        [&](SceneNode * node) {return transparent.end() != std::find(transparent.begin(), transparent.end(), node); }),
-        nodes.end());
+        auto condition = [&](SceneNode * node)
+        {
+            return transparent_.end() != std::find(transparent_.begin(), transparent_.end(), node);
+		};
+
+        // remove tranparent from visibles_
+        visibles_.erase(std::remove_if(visibles_.begin(), visibles_.end(), condition), visibles_.end());
     }
 
     void Renderer::GetLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
@@ -105,12 +108,12 @@ namespace NSG
         }
     }
 
-    void Renderer::SortBackToFront(std::vector<SceneNode*>& nodes) const
+	void Renderer::SortTransparentBackToFront()
     {
         Vector3 cameraPos;
         if (camera_)
             cameraPos = camera_->GetGlobalPosition();
-        std::sort(nodes.begin(), nodes.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+		std::sort(transparent_.begin(), transparent_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
             auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
             auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
@@ -118,12 +121,12 @@ namespace NSG
         });
     }
 
-    void Renderer::SortFrontToBack(std::vector<SceneNode*>& nodes) const
+	void Renderer::SortSolidFrontToBack()
     {
         Vector3 cameraPos;
         if (camera_)
             cameraPos = camera_->GetGlobalPosition();
-        std::sort(nodes.begin(), nodes.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+		std::sort(visibles_.begin(), visibles_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
             auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
             auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
@@ -251,7 +254,7 @@ namespace NSG
     {
         auto lastCamera = Graphics::this_->SetCamera(shadowCamera_.get());
         std::vector<SceneNode*> visiblesFromLightFace;
-        shadowCamera_->GetVisiblesFromCurrentFace(shadowCasters, visiblesFromLightFace);
+        shadowCamera_->GetVisiblesShadowCastersFromCurrentFace(shadowCasters, visiblesFromLightFace);
         std::vector<PBatch> batches;
         GenerateBatches(visiblesFromLightFace, batches);
         graphics_->ClearBuffers(true, true, false);
@@ -304,9 +307,8 @@ namespace NSG
     {
         std::vector<SceneNode*> shadowCasters;
         shadowCamera_->Setup(light, window_, camera_);
-        if (shadowCamera_->GetVisibles(drawables, shadowCasters))
+        if (shadowCamera_->GetVisibleShadowCasters(drawables, shadowCasters))
         {
-            shadowCamera_->FinalizeShadowCamera(light, camera_, shadowCasters);
             // Generate shadow maps
             if (light->GetType() == LightType::POINT)
                 GenerateCubeShadowMap(light, shadowCasters);
@@ -320,14 +322,13 @@ namespace NSG
                 else if (Intersection::OUTSIDE != camera_->GetFrustum()->IsInside(BoundingBox(*shadowCamera_->GetFrustum())))
                     Generate2DShadowMap(light, shadowCasters);
             }
-
         }
     }
 
-    void Renderer::AmbientPass(std::vector<SceneNode*>& nodes)
+    void Renderer::AmbientPass()
     {
         std::vector<PBatch> batches;
-        GenerateBatches(nodes, batches);
+        GenerateBatches(visibles_, batches);
         for (auto& batch : batches)
             Draw(batch.get(), ambientPass_.get(), nullptr);
     }
@@ -341,22 +342,16 @@ namespace NSG
                 GenerateShadowMap(light, drawables);
     }
 
-    void Renderer::LitPass(std::vector<SceneNode*>& nodes)
+    void Renderer::LitPass()
     {
         auto lights = scene_->GetLights();
         for (auto light : lights)
         {
             if (light->GetOnlyShadow())
                 continue;
-            {
-                shadowCamera_->Setup(light, window_, camera_);
-                std::vector<SceneNode*> shadowCasters;
-                shadowCamera_->Setup(light, window_, camera_);
-                if (shadowCamera_->GetVisibles(nodes, shadowCasters))
-                    shadowCamera_->FinalizeShadowCamera(light, camera_, shadowCasters);
-            }
+            shadowCamera_->Setup(light, window_, camera_);
             std::vector<SceneNode*> litNodes;
-            GetLighted(nodes, litNodes);
+            GetLighted(visibles_, litNodes);
             std::vector<PBatch> batches;
             GenerateBatches(litNodes, batches);
             for (auto& batch : batches)
@@ -364,13 +359,13 @@ namespace NSG
         }
     }
 
-    void Renderer::TransparentPass(std::vector<SceneNode*>& transparent)
+    void Renderer::TransparentPass()
     {
-        if (transparent.empty())
+        if (transparent_.empty())
             return;
         // Transparent nodes cannot be batched
-        SortBackToFront(transparent);
-        for (auto& node : transparent)
+		SortTransparentBackToFront();
+        for (auto& node : transparent_)
         {
             auto sceneNode = (SceneNode*)node;
             auto material = sceneNode->GetMaterial().get();
@@ -383,7 +378,6 @@ namespace NSG
         }
     }
 
-
     void Renderer::Render(Window* window, Scene* scene)
     {
         window_ = window;
@@ -392,20 +386,20 @@ namespace NSG
         graphics_->ClearAllBuffers();
         if (!scene || scene->GetDrawablesNumber() == 0)
             return;
-        graphics_->SetClearColor(scene->GetHorizonColor());
         camera_ = scene->GetMainCamera().get();
         graphics_->SetCamera(camera_);
-        std::vector<SceneNode*> visibles;
-        scene->GetVisibleNodes(camera_, visibles);
-        if (!visibles.empty())
+        scene->GetVisibleNodes(camera_, visibles_);
+        if (!visibles_.empty())
         {
-            std::vector<SceneNode*> transparent;
-            ExtractTransparent(visibles, transparent);
-            SortFrontToBack(visibles);
-            AmbientPass(visibles);
+            ExtractTransparent();
+            SortSolidFrontToBack();
+            graphics_->SetClearColor(scene->GetHorizonColor());
+            AmbientPass();
+            graphics_->SetClearColor(COLOR_WHITE);
             GenerateShadowMaps();
-            LitPass(visibles);
-            TransparentPass(transparent);
+            graphics_->SetClearColor(scene->GetHorizonColor());
+            LitPass();
+            TransparentPass();
         }
     }
 }

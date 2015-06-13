@@ -41,6 +41,7 @@ namespace NSG
 		void SetHalfHorizontalFov(float hhfov); // in radians
 		void SetNearClip(float zNear);
 		void SetFarClip(float zFar);
+		void EnableAutoAspectRatio(bool enable) { autoAspectRatio_ = enable; }
 		void SetAspectRatio(unsigned width, unsigned height);
 		void SetAspectRatio(float aspect);
 		float GetAspectRatio() const { return aspectRatio_; }
@@ -67,6 +68,7 @@ namespace NSG
 		const PFrustum GetFrustum() const;
 		const Frustum* GetFrustumPointer() const;
 		bool IsVisible(const Node& node, Mesh& mesh) const;
+		bool IsVisible(const SceneNode& node) const;
 		void OnDirty() const override;
 		float GetZNear() const { return zNear_; }
 		float GetZFar() const { return zFar_; }
@@ -105,5 +107,6 @@ namespace NSG
 		CameraSensorFit sensorFit_;
 		mutable OrthoProjection orthoProjection_;
 		mutable bool isDirty_;
+		bool autoAspectRatio_;
 	};
 }

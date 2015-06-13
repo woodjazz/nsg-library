@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "StringConverter.h"
+#include "BoundingBox.h"
 #ifndef WIN32
 #include <unistd.h>
 #include <cerrno>
@@ -93,6 +94,22 @@ namespace NSG
         char buffer[MaxBuffer];
         snprintf(buffer, MaxBuffer, "[%f,%f,%f,%f]", obj.x, obj.y, obj.z, obj.w);
         return buffer;
+    }
+
+    std::string ToString(const BoundingBox& obj)
+    {
+        using namespace std;
+        const int MaxBuffer = 100;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "[%f,%f,%f][%f,%f,%f]", obj.min_.x, obj.min_.y, obj.min_.z, obj.max_.x, obj.max_.y, obj.max_.z);
+        return buffer;
+    }
+
+    BoundingBox ToBoundigBox(const std::string& buffer)
+    {
+        BoundingBox obj;
+        sscanf(buffer.c_str(), "[%f,%f,%f][%f,%f,%f]", &obj.min_.x, &obj.min_.y, &obj.min_.z, &obj.max_.x, &obj.max_.y, &obj.max_.z);
+        return obj;
     }
 
     Vertex4 ToVertex4(const std::string& buffer)

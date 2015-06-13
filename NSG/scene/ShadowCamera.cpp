@@ -30,12 +30,15 @@ misrepresented as being the original software.
 #include "Texture.h"
 #include "Material.h"
 #include "Sphere.h"
+#include "Scene.h"
+#include "Ray.h"
 
 namespace NSG
 {
     ShadowCamera::ShadowCamera(const std::string& name)
         : Camera(name),
-          type_(LightType::POINT)
+          type_(LightType::POINT),
+          light_(nullptr)
     {
         dirPositiveX_.SetLocalLookAt(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeX_.SetLocalLookAt(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
@@ -43,7 +46,7 @@ namespace NSG
         dirNegativeY_.SetLocalLookAt(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
         dirPositiveZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeZ_.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
-        SetWindow(nullptr);
+        EnableAutoAspectRatio(false);
     }
 
     ShadowCamera::~ShadowCamera()
@@ -54,6 +57,7 @@ namespace NSG
     void ShadowCamera::Setup(const Light* light, const Window* window, const Camera* camera)
     {
         type_ = light->GetType();
+        light_ = light;
         if (LightType::SPOT == type_)
         {
             SetPosition(light->GetGlobalPosition());
@@ -77,31 +81,84 @@ namespace NSG
         }
         else
         {
-            EnableOrtho();
-            float extrusionDistance = camera->GetZFar();
-            Vector3 pos = camera->GetGlobalPosition() - extrusionDistance * light->GetLookAtDirection();
-            SetGlobalPosition(pos);
-            SetGlobalOrientation(light->GetGlobalOrientation());
-
-            BoundingBox cameraViewBox(camera->GetFrustum()->GetVerticesTransform(GetView()));
-            Vector2 viewSize(cameraViewBox.max_.x - cameraViewBox.min_.x, cameraViewBox.max_.y - cameraViewBox.min_.y);
-            SetNearClip(0.f);
-            auto farZ = cameraViewBox.max_.z - cameraViewBox.min_.z;
-            SetFarClip(farZ);
-
-            QuantizeDirLightShadowCamera(light, cameraViewBox);
+            SetupDirCamera(light, camera);
         }
     }
 
-    void ShadowCamera::QuantizeDirLightShadowCamera(const Light* light, const BoundingBox& viewBox)
-    {
-        float minX = viewBox.min_.x;
-        float minY = viewBox.min_.y;
-        float maxX = viewBox.max_.x;
-        float maxY = viewBox.max_.y;
+	BoundingBox ShadowCamera::GetViewBoxAndAdjustPosition(const Frustum* frustum, const Scene* scene)
+	{
+		BoundingBox frustumVolume(*frustum);
+		auto& drawables = scene->GetDrawables();
+		BoundingBox shadowCasters;
+		for (auto& drawable : drawables)
+			if (drawable->GetMaterial()->IsShadowCaster() && frustum->IsVisible(*drawable))
+				shadowCasters.Merge(drawable->GetWorldBoundingBox());
+		if (shadowCasters.IsDefined())
+			frustumVolume.Clip(shadowCasters);
 
-        Vector2 center((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
-        Vector2 viewSize(maxX - minX, maxY - minY);
+		BoundingBox cameraViewBox(frustumVolume);
+		cameraViewBox.Transform(GetView());
+
+		if (std::abs(cameraViewBox.max_.z) > 0)
+		{
+			Vector3 pos = GetGlobalPosition();
+			Vector3 dir = GetLookAtDirection();
+			// Adjust camera position
+			// This is needed because I use the length of 
+			// v_lightDirection ( = worldPos.xyz - u_directionalLight.position)
+			// to quantize depth (similar to shadow cube map)
+			// In this way we do not loose precission
+			// See CalcShadowFactor() in lighting.glsl
+			SetGlobalPosition(pos - cameraViewBox.max_.z * dir);
+			cameraViewBox = BoundingBox(frustumVolume);
+			cameraViewBox.Transform(GetView()); 
+			// after moving the shadow cam position: the zNear has to be almost zero
+			CHECK_ASSERT(std::abs(cameraViewBox.max_.z) <= 0.1, __FILE__, __LINE__);
+		}
+
+		return cameraViewBox;
+	}
+
+    void ShadowCamera::SetupDirCamera(const Light* light, const Camera* camera)
+    {
+		EnableOrtho();
+		auto lightDirection = light->GetLookAtDirection();
+        auto lightOrientation = light->GetGlobalOrientation();
+        SetGlobalOrientation(lightOrientation);
+        float extrusionDistance = camera->GetZFar() - camera->GetZNear();
+		auto camDirection = camera->GetLookAtDirection();
+		auto camPos = camera->GetGlobalPosition();
+		auto camNearPos = camPos + camera->GetZNear() * camDirection;
+		Vector3 pos = camNearPos - extrusionDistance * lightDirection;
+        SetGlobalPosition(pos);
+
+		auto camFrustum = camera->GetFrustum().get();
+		auto scene = camera->GetScene().get();
+		BoundingBox vb(GetViewBoxAndAdjustPosition(camFrustum, scene));
+		auto zFar = -vb.min_.z;
+        SetNearClip(0);
+        SetFarClip(zFar);
+		QuantizeDirLightShadowCamera(vb);
+
+		{
+			// Recalculate zFar in order not to miss any object between camFrustum and light.
+			// Light Frustum Intersected with Scene to Calculate Near=0 and Far Planes
+			// See https://msdn.microsoft.com/en-us/library/windows/desktop/ee416324%28v=vs.85%29.aspx
+			auto pos = GetGlobalPosition();
+			float extrusionDistance = 5000.f;
+			SetGlobalPosition(pos - extrusionDistance * lightDirection);
+			SetFarClip(extrusionDistance + zFar);
+			auto shadowCamFrustum = GetFrustum().get();
+			BoundingBox vb1(GetViewBoxAndAdjustPosition(shadowCamFrustum, scene));
+			auto zFar = -vb1.min_.z;
+			SetFarClip(zFar);
+		}
+    }
+
+    void ShadowCamera::QuantizeDirLightShadowCamera(const BoundingBox& viewBox)
+    {
+        Vector2 center(viewBox.Center());
+        Vector2 viewSize(viewBox.Size());
 
         //The bigger issue is that this produces a shadow frustum that continuously changes
         //size and position as the camera moves around. This leads to shadows "swimming",
@@ -127,7 +184,7 @@ namespace NSG
         SetAspectRatio(viewSize.x, viewSize.y);
         SetOrthoScale(viewSize.x);
 
-        float shadowMapWidth = (float)light->GetShadowMap()->GetWidth();
+        float shadowMapWidth = (float)light_->GetShadowMap()->GetWidth();
         if (shadowMapWidth > 0.0f)
         {
             //STEP 2: Discretize the position of the frustum
@@ -139,93 +196,6 @@ namespace NSG
             Vector3 snap(-fmodf(viewPos.x, texelSize.x), -fmodf(viewPos.y, texelSize.y), 0.0f);
             Translate(rot * snap, TransformSpace::TS_WORLD);
         }
-    }
-
-    void ShadowCamera::FinalizeShadowCamera(const Light* light, const Camera* camera, std::vector<SceneNode*> shadowCasters)
-    {
-        LightType type = light->GetType();
-
-        if (type == LightType::DIRECTIONAL)
-        {
-#if 0
-            BoundingBox shadowBox;
-            shadowBox.max_.y = GetOrthoScale() * 0.5f;
-            shadowBox.max_.x = GetAspectRatio() * shadowBox.max_.y;
-            shadowBox.min_.y = -shadowBox.max_.y;
-            shadowBox.min_.x = -shadowBox.max_.x;
-#else
-            BoundingBox shadowBox;
-            for (auto& caster : shadowCasters)
-                shadowBox.Merge(caster->GetWorldBoundingBox());
-            shadowBox.Transform(GetView());
-#endif
-
-            // Requantize and snap to shadow map texels
-            QuantizeDirLightShadowCamera(light, shadowBox);
-        }
-        #if 0
-        BoundingBox cameraViewBox;
-        for (auto& caster : shadowCasters)
-            cameraViewBox.Merge(caster->GetWorldBoundingBox());
-
-        //cameraViewBox.Transform(GetFrustum()->GetMatrix());
-
-        auto farCorner1 = glm::inverse(GetGlobalOrientation()) * Vector3(cameraViewBox.min_.x, cameraViewBox.max_.y, cameraViewBox.max_.z);
-        auto farCorner2 = glm::inverse(GetGlobalOrientation()) * Vector3(cameraViewBox.max_.x, cameraViewBox.min_.y, cameraViewBox.max_.z);
-        auto origin = glm::inverse(GetGlobalOrientation()) * cameraViewBox.Center();
-        auto nearposition = glm::inverse(GetGlobalOrientation()) * Vector3(origin.x, origin.y, cameraViewBox.min_.z);
-        auto farposition = glm::inverse(GetGlobalOrientation()) * Vector3(origin.x, origin.y, cameraViewBox.max_.z);
-        //auto position = Vector3(origin.x, origin.y, cameraViewBox.min_.z);
-        auto direction = farposition - nearposition;
-        SetGlobalPosition(nearposition);
-        SetGlobalLookAt(glm::normalize(direction));
-
-
-
-        Vector2 viewSize(glm::abs(farCorner2.x - farCorner1.x), glm::abs(farCorner2.y - farCorner1.y));
-        SetNearClip(0.f);
-        auto farZ = glm::length(direction);//cameraViewBox.max_.z - cameraViewBox.min_.z;
-        SetFarClip(farZ);
-
-        //The bigger issue is that this produces a shadow frustum that continuously changes
-        //size and position as the camera moves around. This leads to shadows "swimming",
-        //which is a very distracting artifact.
-        //In order to fix this, it's common to do the following additional two steps:
-
-        {
-            //STEP 1: Quantize size to reduce swimming
-            const float QUANTIZE = 0.5f;
-            const float MIN_VIEW_SIZE = 3.f;
-            viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
-            viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
-            viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
-            viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
-            // TODO: Don't allow the shadow frustum to change size as the camera rotates.
-        }
-
-        SetAspectRatio(viewSize.x, viewSize.y);
-        SetOrthoScale(viewSize.x);
-        /*
-                Vector3 center = cameraViewBox.Center();
-                // Center shadow camera to the view space bounding box
-                Quaternion rot(GetGlobalOrientation());
-                Vector3 adjust(center.x, center.y, 0.0f);
-                Translate(rot * adjust, TransformSpace::TS_WORLD);
-
-                float shadowMapWidth = (float)light->GetShadowMap()->GetWidth();
-                if (shadowMapWidth > 0.0f)
-                {
-                    //STEP 2: Discretize the position of the frustum
-                    //Snap to whole texels
-                    Vector3 viewPos(glm::inverse(rot) * GetGlobalPosition());
-                    // Take into account that shadow map border will not be used
-                    float invActualSize = 1.0f / (shadowMapWidth - 2.0f);
-                    Vector2 texelSize(viewSize.x * invActualSize, viewSize.y * invActualSize);
-                    Vector3 snap(-fmodf(viewPos.x, texelSize.x), -fmodf(viewPos.y, texelSize.y), 0.0f);
-                    Translate(rot * snap, TransformSpace::TS_WORLD);
-                }
-         */
-        #endif
     }
 
     void ShadowCamera::SetCurrentCubeShadowMapFace(TextureTarget target)
@@ -257,66 +227,65 @@ namespace NSG
         }
     }
 
-    bool ShadowCamera::IsVisible(const SceneNode* node) const
+    bool ShadowCamera::IsVisibleShadowCaster(const SceneNode* node) const
     {
         auto mesh = node->GetMesh();
         auto material = node->GetMaterial();
-        if (!mesh || !mesh->IsReady() || !material || !material->IsReady())
+        if (!mesh || !mesh->IsReady() || !material || !material->IsReady() ||
+                material->IsShadeless() || !material->CastShadow())
             return false;
 
         bool visible = false;
 
-        if (!material->IsShadeless())
+        switch (type_)
         {
-            switch (type_)
-            {
-                case LightType::SPOT:
-                    {
-                        visible = GetFrustumPointer()->IsVisible(*node, *mesh);
-                        break;
-                    }
-                case LightType::POINT:
-                    {
-                        auto& bb = node->GetWorldBoundingBox();
-                        Sphere sphereLight(GetGlobalPosition(), GetZFar());
-                        visible = sphereLight.IsInside(bb) != Intersection::OUTSIDE;
-                        break;
-                    }
-                case LightType::DIRECTIONAL:
-                    visible = true;
+            case LightType::SPOT:
+                {
+                    visible = GetFrustumPointer()->IsVisible(*node, *mesh);
                     break;
-                default:
+                }
+            case LightType::POINT:
+                {
+                    auto& bb = node->GetWorldBoundingBox();
+                    Sphere sphereLight(GetGlobalPosition(), GetZFar());
+                    visible = sphereLight.IsInside(bb) != Intersection::OUTSIDE;
                     break;
-            }
+                }
+            case LightType::DIRECTIONAL:
+                visible = true;
+                break;
+            default:
+                break;
         }
         return visible;
     }
 
-    bool ShadowCamera::IsVisibleFromCurrentFace(const SceneNode* node) const
+    bool ShadowCamera::IsVisibleShadowCasterFromCurrentFace(const SceneNode* node) const
     {
         CHECK_ASSERT(type_ == LightType::POINT, __FILE__, __LINE__);
         auto mesh = node->GetMesh();
         auto material = node->GetMaterial();
-        if (!mesh || !mesh->IsReady() || !material || !material->IsReady() || material->IsShadeless())
+        if (!mesh || !mesh->IsReady() || !material || !material->IsReady() ||
+                material->IsShadeless() || !material->CastShadow())
             return false;
         return GetFrustumPointer()->IsVisible(*node, *mesh);
     }
 
-    bool ShadowCamera::GetVisibles(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
+    bool ShadowCamera::GetVisibleShadowCasters(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
     {
         CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
         for (auto& node : nodes)
-            if (IsVisible(node))
+            if (IsVisibleShadowCaster(node))
                 result.push_back(node);
         return !result.empty();
     }
 
-    bool ShadowCamera::GetVisiblesFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
+    bool ShadowCamera::GetVisiblesShadowCastersFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
     {
         CHECK_ASSERT(type_ == LightType::POINT, __FILE__, __LINE__);
         CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
         for (auto& node : nodes)
-            if (IsVisibleFromCurrentFace(node))
+            if (IsVisibleShadowCasterFromCurrentFace(node))
                 result.push_back(node);
         return !result.empty();
     }

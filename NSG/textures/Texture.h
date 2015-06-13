@@ -41,6 +41,7 @@ namespace NSG
         bool IsSerializable() const;
         void SetFlags(const TextureFlags& flags);
         TextureFlags GetFlags() const { return flags_; }
+        TextureWrapMode GetWrapMode() const { return wrapMode_;}
         void SetWrapMode(TextureWrapMode mode);
         void SetFilterMode(TextureFilterMode mode);
         PResource GetResource() const { return pResource_;}

@@ -30,7 +30,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     Frustum::Frustum(const Matrix4& VP)
-    : m_(VP)
+        : m_(VP)
     {
         Define();
     }
@@ -100,28 +100,68 @@ namespace NSG
         const Plane& Top = planes_[PLANE_UP];
         const Plane& Bottom = planes_[PLANE_DOWN];
 
-        vertices_[0] = IntersectionPoint(Near, Left, Bottom);
+        vertices_[0] = IntersectionPoint(Near, Right, Top);
         vertices_[1] = IntersectionPoint(Near, Right, Bottom);
-        vertices_[2] = IntersectionPoint(Near, Right, Top);
+        vertices_[2] = IntersectionPoint(Near, Left, Bottom);
         vertices_[3] = IntersectionPoint(Near, Left, Top);
 
-        vertices_[4] = IntersectionPoint(Far, Left, Bottom);
+        vertices_[4] = IntersectionPoint(Far, Right, Top);
         vertices_[5] = IntersectionPoint(Far, Right, Bottom);
-        vertices_[6] = IntersectionPoint(Far, Right, Top);
+        vertices_[6] = IntersectionPoint(Far, Left, Bottom);
         vertices_[7] = IntersectionPoint(Far, Left, Top);
+
+        BuildFaces();
+    }
+
+    void Frustum::BuildFaces()
+    {
+        faces_[FrustumFace::FACE_RIGHT].vertices[0] = vertices_[0];
+        faces_[FrustumFace::FACE_RIGHT].vertices[1] = vertices_[4];
+        faces_[FrustumFace::FACE_RIGHT].vertices[2] = vertices_[5];
+        faces_[FrustumFace::FACE_RIGHT].vertices[3] = vertices_[1];
+
+        faces_[FrustumFace::FACE_LEFT].vertices[0] = vertices_[7];
+        faces_[FrustumFace::FACE_LEFT].vertices[1] = vertices_[3];
+        faces_[FrustumFace::FACE_LEFT].vertices[2] = vertices_[2];
+        faces_[FrustumFace::FACE_LEFT].vertices[3] = vertices_[6];
+
+        faces_[FrustumFace::FACE_TOP].vertices[0] = vertices_[7];
+        faces_[FrustumFace::FACE_TOP].vertices[1] = vertices_[4];
+        faces_[FrustumFace::FACE_TOP].vertices[2] = vertices_[0];
+        faces_[FrustumFace::FACE_TOP].vertices[3] = vertices_[3];
+
+        faces_[FrustumFace::FACE_BOTTOM].vertices[0] = vertices_[1];
+        faces_[FrustumFace::FACE_BOTTOM].vertices[1] = vertices_[6];
+        faces_[FrustumFace::FACE_BOTTOM].vertices[2] = vertices_[6];
+        faces_[FrustumFace::FACE_BOTTOM].vertices[3] = vertices_[2];
+
+        faces_[FrustumFace::FACE_FAR].vertices[0] = vertices_[4];
+        faces_[FrustumFace::FACE_FAR].vertices[1] = vertices_[7];
+        faces_[FrustumFace::FACE_FAR].vertices[2] = vertices_[6];
+        faces_[FrustumFace::FACE_FAR].vertices[3] = vertices_[5];
+
+        faces_[FrustumFace::FACE_NEAR].vertices[0] = vertices_[3];
+        faces_[FrustumFace::FACE_NEAR].vertices[1] = vertices_[0];
+        faces_[FrustumFace::FACE_NEAR].vertices[2] = vertices_[1];
+        faces_[FrustumFace::FACE_NEAR].vertices[3] = vertices_[2];
+    }
+
+    Frustum::Face Frustum::GetFace(FrustumFace index) const
+    {
+        return faces_[index];
     }
 
     std::vector<Vector3> Frustum::GetVerticesTransform(const Matrix4& m) const
     {
         std::vector<Vector3> result;
-        for(int i=0; i<NUM_FRUSTUM_VERTICES; i++)
+        for (int i = 0; i < NUM_FRUSTUM_VERTICES; i++)
             result.push_back(Vector3(m * Vector4(vertices_[i], 1)));
         return result;
     }
 
     Intersection Frustum::IsPointInside(const Vector3& point) const
     {
-		for (int i = 0; i < FrustumPlane::MAX_PLANES; i++)
+        for (int i = 0; i < FrustumPlane::MAX_PLANES; i++)
             if (planes_[i].Distance(point) < 0.f)
                 return Intersection::OUTSIDE;
         return Intersection::INSIDE;
@@ -188,6 +228,14 @@ namespace NSG
 
         // we must be partly in then otherwise
         return Intersection::INTERSECTS;
+    }
+
+    bool Frustum::IsVisible(const SceneNode& node) const
+    {
+        auto mesh = node.GetMesh();
+        if(mesh)
+            return IsVisible(node, *mesh);
+        return false;
     }
 
     bool Frustum::IsVisible(const Node& node, Mesh& mesh) const

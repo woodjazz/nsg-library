@@ -9,7 +9,9 @@
 #include "Frustum.h"
 #include "Renderer.h"
 #include "Window.h"
+#include "Graphics.h"
 #include "Sphere.h"
+#include "Texture.h"
 #include "FrameBuffer.h"
 #include "pugixml.hpp"
 #include <assert.h>
@@ -37,16 +39,19 @@ namespace NSG
           onlyShadow_(false),
           width_(0),
           height_(0),
-          shadowBias_(0.000125f)
+          shadowBias_(0.001f)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
+        CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap()->GetWrapMode(), __FILE__, __LINE__);
+		shadowFrameBuffer_->EnableAutoSize(false);
         CalculateInvRange();
     }
 
     Light::~Light()
     {
-        SignalBeingDestroy()->Run(this);
+		if (Graphics::this_)
+			SignalBeingDestroy()->Run(this);
     }
 
     void Light::SetEnergy(float energy)
@@ -114,14 +119,14 @@ namespace NSG
             if (type == LightType::POINT)
             {
                 FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
-                shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("Light2DFrameBuffer"), flags);
+                shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
             }
             else if (type_ == LightType::POINT)
             {
                 FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
-                shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
+                shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("Light2DFrameBuffer"), flags);
             }
-
+            CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap()->GetWrapMode(), __FILE__, __LINE__);
             type_ = type;
             CalculateInvRange();
             OnDirty();

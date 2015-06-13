@@ -100,6 +100,7 @@ namespace NSG
         bool CastShadow() const { return castShadow_; }
         void ReceiveShadows(bool shadow) { receiveShadows_ = shadow; }
         bool ReceiveShadows() const { return receiveShadows_; }
+        bool IsShadowCaster() const { return !shadeless_ && castShadow_; }
     private:
 		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();

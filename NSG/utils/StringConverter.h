@@ -43,6 +43,9 @@ namespace NSG
 	std::string ToString(const Matrix4& m);
 	Matrix4 ToMatrix4(const std::string& buffer);
 
+	std::string ToString(const BoundingBox& obj);
+	BoundingBox ToBoundigBox(const std::string& buffer);
+
 	std::string ToString(int obj);
 	int ToInt(const char* value);
 	int ToInt(const std::string& value);

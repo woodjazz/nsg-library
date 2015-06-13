@@ -68,9 +68,9 @@
         vec4 GetAmbientLight()
         {
             #ifdef DIFFUSEMAP
-                return GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);
+                return u_material.diffuse * GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);
             #else
-                return GetAmbientIntensity();
+                return u_material.diffuse * GetAmbientIntensity();
             #endif
         }
 
@@ -144,12 +144,24 @@
                 return v; 
             }
 
+#if 0
+            vec2 GetShadowOffsets(vec3 N, vec3 L) 
+            { 
+                //Being N the surface normal and L the light direction
+
+                float cos_alpha = saturate(dot(N, L)); 
+                float offset_scale_N = sqrt(1 - cos_alpha*cos_alpha); 
+                // sin(acos(L·N)) 
+                float offset_scale_L = offset_scale_N / cos_alpha; 
+                // tan(acos(L·N)) 
+                return vec2(offset_scale_N, min(2.0, offset_scale_L)); 
+            }
+#endif
             vec4 CalcShadowCubeFactor()
             {
                 float lengthLightDirection = length(v_lightDirection);
-                float totalError = u_shadowBias * lengthLightDirection;
                 float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, FixCubeLookup(v_lightDirection))) / u_lightInvRange;
-                return sampledDistance + totalError < lengthLightDirection ? u_shadowColor : vec4(1.0);
+                return sampledDistance + u_shadowBias < lengthLightDirection ? u_shadowColor : vec4(1.0);
             }
 
         #elif defined(SHADOWMAP)
@@ -157,8 +169,8 @@
             vec4 CalcShadowFactor()
             {
                 float lengthLightDirection = length(v_lightDirection);
-                float totalError = u_shadowBias * lengthLightDirection;
                 float lightToPixelDistance = clamp(lengthLightDirection * u_lightInvRange, 0.0, 1.0);
+                #if 1
                 vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1
                 coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1
                 // Take four samples and average them
@@ -167,7 +179,10 @@
                 sampledDistance += DecodeColor2Depth(texture2D(u_texture5, coords.xy + vec2(0.0, u_shadowMapInvSize)));
                 sampledDistance += DecodeColor2Depth(texture2D(u_texture5, coords.xy + vec2(u_shadowMapInvSize)));
                 sampledDistance *= 0.25;
-                return sampledDistance + totalError < lightToPixelDistance ? u_shadowColor : vec4(1.0);
+                #else
+                float sampledDistance = DecodeColor2Depth(texture2DProj(u_texture5, v_shadowClipPos));
+                #endif
+                return sampledDistance + u_shadowBias < lightToPixelDistance ? u_shadowColor : vec4(1.0);
             }
 
         #endif

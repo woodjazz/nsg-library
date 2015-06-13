@@ -48,9 +48,9 @@ static const char* LIGHTING_GLSL = \
 "        vec4 GetAmbientLight()\n"\
 "        {\n"\
 "            #ifdef DIFFUSEMAP\n"\
-"                return GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);\n"\
+"                return u_material.diffuse * GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);\n"\
 "            #else\n"\
-"                return GetAmbientIntensity();\n"\
+"                return u_material.diffuse * GetAmbientIntensity();\n"\
 "            #endif\n"\
 "        }\n"\
 "    #endif\n"\
@@ -112,19 +112,32 @@ static const char* LIGHTING_GLSL = \
 "                if (abs(v.z) != M) v.z *= scale; \n"\
 "                return v; \n"\
 "            }\n"\
+"#if 0\n"\
+"            vec2 GetShadowOffsets(vec3 N, vec3 L) \n"\
+"            { \n"\
+"                //Being N the surface normal and L the light direction\n"\
+"                float cos_alpha = saturate(dot(N, L)); \n"\
+"                float offset_scale_N = sqrt(1 - cos_alpha*cos_alpha); \n"\
+"                // sin(acos(L\n"\
+"N)) \n"\
+"                float offset_scale_L = offset_scale_N / cos_alpha; \n"\
+"                // tan(acos(L\n"\
+"N)) \n"\
+"                return vec2(offset_scale_N, min(2.0, offset_scale_L)); \n"\
+"            }\n"\
+"#endif\n"\
 "            vec4 CalcShadowCubeFactor()\n"\
 "            {\n"\
 "                float lengthLightDirection = length(v_lightDirection);\n"\
-"                float totalError = u_shadowBias * lengthLightDirection;\n"\
 "                float sampledDistance = DecodeColor2Depth(textureCube(u_texture5, FixCubeLookup(v_lightDirection))) / u_lightInvRange;\n"\
-"                return sampledDistance + totalError < lengthLightDirection ? u_shadowColor : vec4(1.0);\n"\
+"                return sampledDistance + u_shadowBias < lengthLightDirection ? u_shadowColor : vec4(1.0);\n"\
 "            }\n"\
 "        #elif defined(SHADOWMAP)\n"\
 "            vec4 CalcShadowFactor()\n"\
 "            {\n"\
 "                float lengthLightDirection = length(v_lightDirection);\n"\
-"                float totalError = u_shadowBias * lengthLightDirection;\n"\
 "                float lightToPixelDistance = clamp(lengthLightDirection * u_lightInvRange, 0.0, 1.0);\n"\
+"                #if 1\n"\
 "                vec4 coords = v_shadowClipPos / v_shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
 "                coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
 "                // Take four samples and average them\n"\
@@ -133,7 +146,10 @@ static const char* LIGHTING_GLSL = \
 "                sampledDistance += DecodeColor2Depth(texture2D(u_texture5, coords.xy + vec2(0.0, u_shadowMapInvSize)));\n"\
 "                sampledDistance += DecodeColor2Depth(texture2D(u_texture5, coords.xy + vec2(u_shadowMapInvSize)));\n"\
 "                sampledDistance *= 0.25;\n"\
-"                return sampledDistance + totalError < lightToPixelDistance ? u_shadowColor : vec4(1.0);\n"\
+"                #else\n"\
+"                float sampledDistance = DecodeColor2Depth(texture2DProj(u_texture5, v_shadowClipPos));\n"\
+"                #endif\n"\
+"                return sampledDistance + u_shadowBias < lightToPixelDistance ? u_shadowColor : vec4(1.0);\n"\
 "            }\n"\
 "        #endif\n"\
 "        vec4 CalcTotalLight(vec3 vertexToEye, vec3 normal)\n"\

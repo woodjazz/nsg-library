@@ -48,7 +48,8 @@ namespace NSG
           colorRenderbuffer_(0),
           depthStencilRenderBuffer_(0),
           stencilRenderBuffer_(0),
-          window_(nullptr)
+          window_(nullptr),
+		  autoSize_(true)
     {
         if (Flag::COLOR_CUBE_TEXTURE & flags_)
             colorTexture_ = std::make_shared<TextureCube>(name + "ColorCubeBuffer", GL_RGBA);
@@ -268,7 +269,8 @@ namespace NSG
                 SetSize(window->GetWidth(), window->GetHeight());
                 slotViewChanged_ = window->SigSizeChanged()->Connect([&](int width, int height)
                 {
-                    SetSize(width, height);
+					if (autoSize_)
+						SetSize(width, height);
                 });
             }
             else

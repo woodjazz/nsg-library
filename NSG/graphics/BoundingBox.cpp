@@ -96,11 +96,27 @@ namespace NSG
     {
     }
 
+	const BoundingBox& BoundingBox::operator = (const BoundingBox& obj)
+	{
+		if (this != &obj)
+		{
+			min_ = obj.min_;
+			max_ = obj.max_;
+			defined_ = obj.defined_;
+		}
+		return *this;
+	}
+
     void BoundingBox::Transform(const Node& node)
     {
         const Matrix4& transform = node.GetGlobalModelMatrix();
         Transform(transform);
     }
+
+	void BoundingBox::Transform(const Vector3& position, const Quaternion& q)
+	{
+		Transform(glm::translate(glm::mat4(), position) * glm::mat4_cast(q));
+	}
 
     void BoundingBox::Transform(const Matrix4& m)
     {
@@ -140,6 +156,12 @@ namespace NSG
             max_.z = point.z;
     }
 
+    void BoundingBox::Merge(const std::vector<Vector3>& points)
+    {
+        for(auto&point : points)
+            Merge(point);
+    }
+
     void BoundingBox::Merge(const BoundingBox& box)
     {
         if (!defined_)
@@ -164,7 +186,6 @@ namespace NSG
             max_.z = box.max_.z;
     }
 
-
     Intersection BoundingBox::IsInside(const BoundingBox& box) const
     {
         if (box.max_.x < min_.x || box.min_.x > max_.x ||
@@ -188,8 +209,8 @@ namespace NSG
     bool BoundingBox::IsInside(const Vertex3& point) const
     {
         return !(point.x < min_.x || point.x > max_.x ||
-                point.y < min_.y || point.y > max_.y ||
-                point.z < min_.z || point.z > max_.z);
+                 point.y < min_.y || point.y > max_.y ||
+                 point.z < min_.z || point.z > max_.z);
     }
 
     void BoundingBox::Clip(const BoundingBox& box)

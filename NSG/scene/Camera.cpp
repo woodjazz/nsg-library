@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Ray.h"
 #include "Program.h"
+#include "Constants.h"
 #include "Scene.h"
 #include "FrameBuffer.h"
 #include "Window.h"
@@ -53,10 +54,11 @@ namespace NSG
           window_(nullptr),
           orthoScale_(2.f),
           sensorFit_(CameraSensorFit::HORIZONTAL),
-		  isDirty_(true)
+		  isDirty_(true),
+		  autoAspectRatio_(true)
     {
         SetInheritScale(false);
-        UpdateViewProjection();
+        Update();
         frustum_ = std::make_shared<Frustum>(matViewProjection_);
         if (Graphics::this_)
         {
@@ -99,7 +101,8 @@ namespace NSG
                 SetAspectRatio(window->GetWidth(), window->GetHeight());
                 slotViewChanged_ = window->SigSizeChanged()->Connect([this](int width, int height)
                 {
-                    SetAspectRatio(width, height);
+					if (autoAspectRatio_)
+						SetAspectRatio(width, height);
                 });
             }
             else
@@ -163,6 +166,7 @@ namespace NSG
 
     void Camera::SetFOV(float fovy)
     {
+        fovy = glm::clamp(fovy, 0.0f, CAMERA_MAX_FOV);
         fovy = glm::radians(fovy);
         if (fovy_ != fovy)
         {
@@ -186,6 +190,7 @@ namespace NSG
 
     void Camera::SetNearClip(float zNear)
     {
+        //zNear = std::max(zNear, CAMERA_MIN_NEARCLIP);
         if (zNear_ != zNear)
         {
             zNear_ = zNear;
@@ -195,6 +200,7 @@ namespace NSG
 
     void Camera::SetFarClip(float zFar)
     {
+        //zFar = std::max(zFar, CAMERA_MIN_NEARCLIP);
         if (zFar_ != zFar)
         {
             zFar_ = zFar;
@@ -244,7 +250,7 @@ namespace NSG
         orthoProjection_.right_ = width * 0.5f;
         orthoProjection_.bottom_ = -height * 0.5f;
         orthoProjection_.top_ = height * 0.5f;
-        orthoProjection_.near_ = 0;
+        orthoProjection_.near_ = zNear_;
         orthoProjection_.far_ = zFar_;
     }
 
@@ -304,7 +310,7 @@ namespace NSG
 
 	void Camera::Update() const
 	{
-		//if (isDirty_)
+		if (isDirty_)
 		{
 			UpdateProjection();
 			UpdateViewProjection();
@@ -403,6 +409,12 @@ namespace NSG
 		Update();
         return GetFrustum()->IsVisible(node, mesh);
     }
+
+	bool Camera::IsVisible(const SceneNode& node) const
+	{
+		Update();
+		return GetFrustum()->IsVisible(node);
+	}
 
     void Camera::OnDirty() const
     {

@@ -484,7 +484,7 @@ namespace NSG
         for(int i=0; i<MAX_UVS; i++)
             if(uvNames_[i] == name)
                 return i;
-        CHECK_ASSERT(!"UV not found!!!", __FILE__, __LINE__);
+        LOGE("UV not found!!!");
         return 0;
     }
 }

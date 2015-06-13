@@ -460,17 +460,62 @@ static void Test05()
 
 static void Test06()
 {
-#if 0
+
 	PScene scene = std::make_shared<Scene>();
 	PCamera camera = scene->CreateChild<Camera>();
-    camera->SetNearClip(0.1f);
-    camera->SetFarClip(250);
-    camera->SetPosition(Vertex3(0, 0, -4));
-    camera->SetGlobalLookAt(-VECTOR3_FORWARD);
 	camera->EnableOrtho();
+    camera->SetNearClip(0);
+    camera->SetFarClip(5);
+	camera->SetAspectRatio(1);
+	camera->SetOrthoScale(10);
+	camera->SetPosition(Vertex3(0, 0, 1));
+	//camera->SetGlobalLookAt(VECTOR3_FORWARD);
 
-	BoundingBox viewBox0(*camera->GetFrustum());
+	{
+		auto vertices = camera->GetFrustum()->GetVertices();
+		auto vertex0 = vertices[0];
+		CHECK_CONDITION(glm::distance(vertex0, Vector3(5, 5, 1)) < 0.05f, __FILE__, __LINE__);
+		auto vertex1 = vertices[1];
+		CHECK_CONDITION(glm::distance(vertex1, Vector3(5, -5, 1)) < 0.05f, __FILE__, __LINE__);
+		auto vertex2 = vertices[2];
+		CHECK_CONDITION(glm::distance(vertex2, Vector3(-5, -5, 1)) < 0.05f, __FILE__, __LINE__);
+		auto vertex3 = vertices[3];
+		CHECK_CONDITION(glm::distance(vertex3, Vector3(-5, 5, 1)) < 0.05f, __FILE__, __LINE__);
+		auto vertex4 = vertices[4];
+		CHECK_CONDITION(glm::distance(vertex4, Vector3(5, 5, -4)) < 0.05f, __FILE__, __LINE__);
+		auto vertex5 = vertices[5];
+		CHECK_CONDITION(glm::distance(vertex5, Vector3(5, -5, -4)) < 0.05f, __FILE__, __LINE__);
+		auto vertex6 = vertices[6];
+		CHECK_CONDITION(glm::distance(vertex6, Vector3(-5, -5, -4)) < 0.05f, __FILE__, __LINE__);
+		auto vertex7 = vertices[7];
+		CHECK_CONDITION(glm::distance(vertex7, Vector3(-5, 5, -4)) < 0.05f, __FILE__, __LINE__);
+	}
 
+	{
+		BoundingBox bb(*camera->GetFrustum());
+		Vector3 min(-5, -5, -4);
+		Vector3 max(5, 5, 1);
+		CHECK_CONDITION(glm::distance(bb.min_, min) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(bb.max_, max) < 0.05f, __FILE__, __LINE__);
+	}
+
+	camera->DisableOrtho();
+	camera->SetNearClip(1);
+	camera->SetFarClip(6);
+
+	{
+		BoundingBox bb(*camera->GetFrustum());
+		float x = 2.485f;
+		float y = 2.485f;
+		float z = camera->GetZFar() - camera->GetZNear();
+
+		Vector3 min(-x, -y, -z);
+		Vector3 max(x, y, 0);
+		CHECK_CONDITION(glm::distance(bb.min_, min) < 0.05f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(bb.max_, max) < 0.05f, __FILE__, __LINE__);
+	}
+
+	/*
 	Vector4 corner0(Vector3(-1), 1);
 	Vector4 corner1(Vector3(1), 1);
 
@@ -490,9 +535,37 @@ static void Test06()
 
     CHECK_CONDITION(glm::distance(viewBox0.min_, viewBox1.min_) < 0.05f, __FILE__, __LINE__);
     CHECK_CONDITION(glm::distance(viewBox0.max_, viewBox1.max_) < 0.05f, __FILE__, __LINE__);
-#endif
+	*/
+
 }
 
+static void Test07()
+{
+	PScene scene = std::make_shared<Scene>();
+	PCamera camera = scene->CreateChild<Camera>();
+	camera->EnableOrtho();
+	camera->SetNearClip(0);
+	camera->SetFarClip(5);
+	camera->SetAspectRatio(1);
+	camera->SetOrthoScale(10);
+	camera->SetPosition(Vertex3(0, 0, 1));
+
+	PBoxMesh box(Mesh::Create<BoxMesh>());
+	auto node = scene->CreateChild<SceneNode>();
+	node->SetMesh(box);
+
+	CHECK_CONDITION(camera->IsVisible(*node), __FILE__, __LINE__);
+	node->SetPosition(Vector3(0, 0, 1.95f));
+	CHECK_CONDITION(camera->IsVisible(*node), __FILE__, __LINE__);
+
+	node->SetPosition(Vector3(0, 0, 2));
+	CHECK_CONDITION(!camera->IsVisible(*node), __FILE__, __LINE__);
+	camera->SetNearClip(-1);
+	CHECK_CONDITION(camera->IsVisible(*node), __FILE__, __LINE__);
+	camera->SetNearClip(0);
+	camera->SetPosition(Vertex3(0, 0, 1.1f));
+	CHECK_CONDITION(camera->IsVisible(*node), __FILE__, __LINE__);
+}
 
 void CameraTest()
 {
@@ -504,4 +577,5 @@ void CameraTest()
     Test04();
     Test05();
     Test06();
+	Test07();
 }

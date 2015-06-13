@@ -58,4 +58,7 @@ namespace NSG
 
 	static const size_t MAX_BONES_PER_VERTEX = 4;
     static const int MAX_UVS = 2;
+
+    static const float CAMERA_MIN_NEARCLIP = 0.01f;
+    static const float CAMERA_MAX_FOV = 160.0f;
 }

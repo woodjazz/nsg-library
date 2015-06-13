@@ -50,13 +50,13 @@ int NSG_MAIN(int argc, char* argv[])
     pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
     pMaterial1->SetShininess(10);
-	pMaterial1->SetAmbientColor(Color(0));
+	pMaterial1->SetAmbientIntensity(0);
 
 	pMaterial2->SetTexture(pEarthTexture2);
     pMaterial2->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
     pMaterial2->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
     pMaterial2->SetShininess(100);
-	pMaterial2->SetAmbientColor(Color(0));
+	pMaterial2->SetAmbientIntensity(0);
 
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);

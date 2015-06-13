@@ -45,24 +45,24 @@ void _cdecl TranslateSEtoCE(unsigned int code, PEXCEPTION_POINTERS pep)
     switch (code)
     {
         case EXCEPTION_ACCESS_VIOLATION:
-			throw std::runtime_error("EXCEPTION_ACCESS_VIOLATION");
-			break;
+            throw std::runtime_error("EXCEPTION_ACCESS_VIOLATION");
+            break;
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
-			throw std::runtime_error("EXCEPTION_INT_DIVIDE_BY_ZERO");
-			break;
-		case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-			throw std::runtime_error("EXCEPTION_FLT_DIVIDE_BY_ZERO");
-			break;
-		case EXCEPTION_FLT_OVERFLOW:
-			throw std::runtime_error("EXCEPTION_FLT_OVERFLOW");
-			break;
-		case EXCEPTION_FLT_UNDERFLOW:
-			throw std::runtime_error("EXCEPTION_FLT_UNDERFLOW");
-			break;
-		case EXCEPTION_STACK_OVERFLOW:
-			throw std::runtime_error("EXCEPTION_STACK_OVERFLOW");
-			break;
-		default:
+            throw std::runtime_error("EXCEPTION_INT_DIVIDE_BY_ZERO");
+            break;
+        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+            throw std::runtime_error("EXCEPTION_FLT_DIVIDE_BY_ZERO");
+            break;
+        case EXCEPTION_FLT_OVERFLOW:
+            throw std::runtime_error("EXCEPTION_FLT_OVERFLOW");
+            break;
+        case EXCEPTION_FLT_UNDERFLOW:
+            throw std::runtime_error("EXCEPTION_FLT_UNDERFLOW");
+            break;
+        case EXCEPTION_STACK_OVERFLOW:
+            throw std::runtime_error("EXCEPTION_STACK_OVERFLOW");
+            break;
+        default:
             throw std::runtime_error("Windows Exception");
     }
 }
@@ -101,7 +101,7 @@ namespace BlenderConverter
                 sounds_ = LoadSounds(data);
                 CreateScenes(data);
                 CreateAnimations(data);
-				return true;
+                return true;
             }
         }
         catch (std::exception& e)
@@ -113,7 +113,7 @@ namespace BlenderConverter
             LOGE("UNKNOWN EXCEPTION");
         }
 
-		return false;
+        return false;
     }
 
     void BScene::CreateScenes(bParse::bMain* data)
@@ -147,14 +147,14 @@ namespace BlenderConverter
         auto scene = std::make_shared<Scene>(B_IDNAME(bscene));
         scene->SetOrientation(glm::angleAxis<float>(-PI / 2.f, Vertex3(1, 0, 0)));
         const Blender::World* world = bscene->world;
-		if (world)
-		{
-			scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
-			Color ambient(world->ambr, world->ambg, world->ambb, 1);
-			scene->SetAmbientColor(ambient);
+        if (world)
+        {
+            scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
+            Color ambient(world->ambr, world->ambg, world->ambb, 1);
+            scene->SetAmbientColor(ambient);
             Color horizon(world->horr, world->horg, world->horb, 1);
             scene->SetHorizonColor(horizon);
-		}
+        }
         return scene;
     }
 
@@ -264,12 +264,12 @@ namespace BlenderConverter
             material->SetCullFaceMode(CullFaceMode::FRONT_AND_BACK);
         else
             material->SetCullFaceMode(CullFaceMode::DISABLED);
-        
-		if (mt->game.flag & GEMAT_TEXT)
+
+        if (mt->game.flag & GEMAT_TEXT)
             material->SetRenderPass(RenderPass::TEXT);
         else if (mt->mode & MA_VERTEXCOLP)
             material->SetRenderPass(RenderPass::VERTEXCOLOR);
-        else if(shadeless)
+        else if (shadeless)
             material->SetRenderPass(RenderPass::UNLIT);
         else
             material->SetRenderPass(RenderPass::PERPIXEL);
@@ -282,95 +282,94 @@ namespace BlenderConverter
             material->SetBillboardType(BillboardType::NONE);
 
         // textures
-        if (mt->mtex != 0)
+        for (int i = 0; i < MAX_MTEX; i++)
         {
-            for (int i = 0; i < MAX_MTEX; i++)
+            bool disabled = mt->septex & (1 << i);
+            
+            if (disabled || !mt->mtex[i] || !mt->mtex[i]->tex)
+                continue;
+
+            if (mt->mtex[i]->tex->type == TEX_IMAGE)
             {
-                if (!mt->mtex[i] || !mt->mtex[i]->tex)
-                    continue;
+                const Blender::MTex* mtex = mt->mtex[i];
+                const Blender::Image* ima = mtex->tex->ima;
+                if (!ima) continue;
+                auto texture = CreateTexture(ima);
+                if (mtex->uvname)
+                    texture->SetUVName(mtex->uvname);
 
-                if (mt->mtex[i]->tex->type == TEX_IMAGE)
+                switch (mtex->blendtype)
                 {
-                    const Blender::MTex* mtex = mt->mtex[i];
-                    const Blender::Image* ima = mtex->tex->ima;
-                    if (!ima) continue;
-                    auto texture = CreateTexture(ima);
-                    if (mtex->uvname)
-                        texture->SetUVName(mtex->uvname);
+                    case MTEX_BLEND:
+                        texture->SetBlendType(TextureBlend::MIX);
+                        break;
+                    case MTEX_MUL:
+                        texture->SetBlendType(TextureBlend::MUL);
+                        break;
+                    case MTEX_ADD:
+                        texture->SetBlendType(TextureBlend::ADD);
+                        break;
+                    case MTEX_SUB:
+                        texture->SetBlendType(TextureBlend::SUB);
+                        break;
+                    case MTEX_DIV:
+                        texture->SetBlendType(TextureBlend::DIV);
+                        break;
+                    case MTEX_DARK:
+                        texture->SetBlendType(TextureBlend::DARK);
+                        break;
+                    case MTEX_DIFF:
+                        texture->SetBlendType(TextureBlend::DIFF);
+                        break;
+                    case MTEX_LIGHT:
+                        texture->SetBlendType(TextureBlend::LIGHT);
+                        break;
+                    case MTEX_SCREEN:
+                        texture->SetBlendType(TextureBlend::SCREEN);
+                        break;
+                    case MTEX_OVERLAY:
+                        texture->SetBlendType(TextureBlend::OVERLAY);
+                        break;
+                    case MTEX_BLEND_HUE:
+                        texture->SetBlendType(TextureBlend::BLEND_HUE);
+                        break;
+                    case MTEX_BLEND_SAT:
+                        texture->SetBlendType(TextureBlend::BLEND_SAT);
+                        break;
+                    case MTEX_BLEND_VAL:
+                        texture->SetBlendType(TextureBlend::BLEND_VAL);
+                        break;
+                    case MTEX_BLEND_COLOR:
+                        texture->SetBlendType(TextureBlend::BLEND_COLOR);
+                        break;
+                    default:
+                        break;
+                }
 
-                    switch (mtex->blendtype)
-                    {
-                        case MTEX_BLEND:
-                            texture->SetBlendType(TextureBlend::MIX);
-                            break;
-                        case MTEX_MUL:
-                            texture->SetBlendType(TextureBlend::MUL);
-                            break;
-                        case MTEX_ADD:
-                            texture->SetBlendType(TextureBlend::ADD);
-                            break;
-                        case MTEX_SUB:
-                            texture->SetBlendType(TextureBlend::SUB);
-                            break;
-                        case MTEX_DIV:
-                            texture->SetBlendType(TextureBlend::DIV);
-                            break;
-                        case MTEX_DARK:
-                            texture->SetBlendType(TextureBlend::DARK);
-                            break;
-                        case MTEX_DIFF:
-                            texture->SetBlendType(TextureBlend::DIFF);
-                            break;
-                        case MTEX_LIGHT:
-                            texture->SetBlendType(TextureBlend::LIGHT);
-                            break;
-                        case MTEX_SCREEN:
-                            texture->SetBlendType(TextureBlend::SCREEN);
-                            break;
-                        case MTEX_OVERLAY:
-                            texture->SetBlendType(TextureBlend::OVERLAY);
-                            break;
-                        case MTEX_BLEND_HUE:
-                            texture->SetBlendType(TextureBlend::BLEND_HUE);
-                            break;
-                        case MTEX_BLEND_SAT:
-                            texture->SetBlendType(TextureBlend::BLEND_SAT);
-                            break;
-                        case MTEX_BLEND_VAL:
-                            texture->SetBlendType(TextureBlend::BLEND_VAL);
-                            break;
-                        case MTEX_BLEND_COLOR:
-                            texture->SetBlendType(TextureBlend::BLEND_COLOR);
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_EMIT))
-                    {
-                        texture->SetMapType(TextureType::EMIT);
-                        material->SetTexture(texture);
-                    }
-                    else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
-                    {
-                        texture->SetMapType(TextureType::NORM);
-                        material->SetTexture(texture);
-                    }
-                    else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
-                    {
-                        texture->SetMapType(TextureType::SPEC);
-                        material->SetTexture(texture);
-                    }
-                    else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
-                    {
-                        texture->SetMapType(TextureType::AMB);
-                        material->SetTexture(texture);
-                    }
-                    else if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
-                    {
-                        texture->SetMapType(TextureType::COL);
-                        material->SetTexture(texture);
-                    }
+                if ((mtex->mapto & MAP_EMIT) || (mtex->maptoneg & MAP_EMIT))
+                {
+                    texture->SetMapType(TextureType::EMIT);
+                    material->SetTexture(texture);
+                }
+                else if ((mtex->mapto & MAP_NORM) || (mtex->maptoneg & MAP_NORM))
+                {
+                    texture->SetMapType(TextureType::NORM);
+                    material->SetTexture(texture);
+                }
+                else if ((mtex->mapto & MAP_SPEC) || (mtex->maptoneg & MAP_SPEC))
+                {
+                    texture->SetMapType(TextureType::SPEC);
+                    material->SetTexture(texture);
+                }
+                else if ((mtex->mapto & MAP_AMB) || (mtex->maptoneg & MAP_AMB))
+                {
+                    texture->SetMapType(TextureType::AMB);
+                    material->SetTexture(texture);
+                }
+                else if ((mtex->mapto & MAP_COL) || (mtex->maptoneg & MAP_COL))
+                {
+                    texture->SetMapType(TextureType::COL);
+                    material->SetTexture(texture);
                 }
             }
         }
@@ -388,11 +387,11 @@ namespace BlenderConverter
             auto groupName = B_IDNAME(bgroup);
             auto group = std::make_shared<BGroup>(groupName);
             auto result = groups_.insert(Groups::value_type(groupName, group));
-			if (!result.second)
-			{
-				LOGW("Insert for group=%s failed!!!\n", groupName);
-				continue;
-			}
+            if (!result.second)
+            {
+                LOGW("Insert for group=%s failed!!!\n", groupName);
+                continue;
+            }
             auto bgobj = (Blender::GroupObject*)bgroup->gobject.first;
             while (bgobj)
             {
@@ -413,8 +412,8 @@ namespace BlenderConverter
                     else
                     {
                         auto sceneNode = scene->GetChild<SceneNode>(objName, true);
-						if (sceneNode)
-							group->AddSceneNode(sceneNode);
+                        if (sceneNode)
+                            group->AddSceneNode(sceneNode);
                     }
                 }
                 bgobj = bgobj->next;
@@ -453,11 +452,11 @@ namespace BlenderConverter
 
         for (auto& group : groups)
         {
-			std::string nodeName = B_IDNAME(group);
-			auto instancedGroup = scene->GetChild<SceneNode>(nodeName, true);
+            std::string nodeName = B_IDNAME(group);
+            auto instancedGroup = scene->GetChild<SceneNode>(nodeName, true);
             const Blender::Group* bgobj = group->dup_group; // Owning group
             std::string groupName(B_IDNAME(bgobj));
-			ConvertGroupInstances(groupName, instancedGroup);
+            ConvertGroupInstances(groupName, instancedGroup);
         }
     }
 
@@ -474,8 +473,8 @@ namespace BlenderConverter
             {
                 auto parentName = B_IDNAME(obj->parent);
                 parent = scene->GetChild<SceneNode>(parentName, true);
-				if (!parent)
-					parent = scene;
+                if (!parent)
+                    parent = scene;
             }
 
             switch (obj->type)
@@ -644,7 +643,7 @@ namespace BlenderConverter
 
             if (!track.node_.lock())
             {
-                LOGW("Warning: skipping animation track %s whose scene node was not found", channelName.c_str());
+                LOGW("Skipping animation track %s whose scene node was not found", channelName.c_str());
                 continue;
             }
 
@@ -690,6 +689,9 @@ namespace BlenderConverter
 
             for (auto& spline : trackData->keyframes)
             {
+                if(!spline)
+                    continue;
+                
                 SPLINE_CHANNEL_CODE code = spline->GetCode();
 
                 switch (code)
@@ -1071,7 +1073,7 @@ namespace BlenderConverter
             light->EnableShadows(la->mode & LA_SHAD_RAY ? true : false);
 
         // TODO: CHECK IF THIS IS A GOOD APROXIMATION
-        float bias = la->bias * std::powf(1.f / (la->clipend - la->clipsta), 2.45f);
+        float bias = la->bias * 0.001f;
         light->SetBias(bias);
 
         if (la->mode & LA_NEG)
@@ -1268,7 +1270,13 @@ namespace BlenderConverter
         }
 
         auto skeleton(std::make_shared<Skeleton>(mesh));
-        PSceneNode armatureNode = scene->GetChild<SceneNode>(B_IDNAME(obAr), true);
+        std::string obArName = B_IDNAME(obAr);
+        PSceneNode armatureNode = scene->GetChild<SceneNode>(obArName, true);
+        if(!armatureNode)
+        {
+            LOGE("Cannot find armature node with name = %s", obArName.c_str());
+            return;
+        }
 
         std::vector<NSG::PWeakNode> boneList;
         std::vector<std::pair<int, std::string>> jointList;
@@ -1401,21 +1409,21 @@ namespace BlenderConverter
                 }
             }
 
-			int index[4];
-			index[0] = curface.v1;
-			index[1] = curface.v2;
-			index[2] = curface.v3;
-			index[3] = curface.v4;
+            int index[4];
+            index[0] = curface.v1;
+            index[1] = curface.v2;
+            index[2] = curface.v3;
+            index[3] = curface.v4;
 
-			bool calcFaceNormal = !(curface.flag & ME_SMOOTH);
+            bool calcFaceNormal = !(curface.flag & ME_SMOOTH);
 
             if (isQuad)
                 mesh->AddQuad(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], vertexData[index[3]], calcFaceNormal);
             else
                 mesh->AddTriangle(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], calcFaceNormal);
 
-			if (mcol)
-				mcol += 4;
+            if (mcol)
+                mcol += 4;
         }
 
         return true;

@@ -36,13 +36,15 @@ namespace NSG
 		~ShadowCamera();
 		void Setup(const Light* light, const Window* window, const Camera* camera);
 		void SetCurrentCubeShadowMapFace(TextureTarget target);
-		bool IsVisible(const SceneNode* node) const;
-		bool IsVisibleFromCurrentFace(const SceneNode* node) const;
-		bool GetVisibles(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
-		bool GetVisiblesFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
-		void QuantizeDirLightShadowCamera(const Light* light, const BoundingBox& viewBox);
-		void FinalizeShadowCamera(const Light* light, const Camera* camera, std::vector<SceneNode*> shadowCasters);
+		bool GetVisibleShadowCasters(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
+		bool GetVisiblesShadowCastersFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
 	private:
+		BoundingBox GetViewBoxAndAdjustPosition(const Frustum* frustum, const Scene* scene);
+		void SetupDirCamera(const Light* light, const Camera* camera);
+		bool IsVisibleShadowCaster(const SceneNode* node) const;
+		bool IsVisibleShadowCasterFromCurrentFace(const SceneNode* node) const;
+		void QuantizeDirLightShadowCamera(const BoundingBox& viewBox);
+
         Node dirPositiveX_;
         Node dirNegativeX_;
         Node dirPositiveY_;
@@ -50,5 +52,6 @@ namespace NSG
         Node dirPositiveZ_;
         Node dirNegativeZ_;
         LightType type_;
+        const Light* light_;
 	};
 }

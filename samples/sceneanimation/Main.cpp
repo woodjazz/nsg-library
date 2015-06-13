@@ -36,8 +36,11 @@ int NSG_MAIN(int argc, char* argv[])
     auto object = scene->GetChild<SceneNode>("Bone", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
     plane->GetMaterial()->SetShininess(10);
+	
+	plane->GetMaterial()->CastShadow(true);
 
     auto camera = scene->GetChild<Camera>("Camera", false);
+	//camera->SetNearClip(0.1f);
     auto control = std::make_shared<CameraControl>(camera);
     auto sun = scene->GetChild<Light>("Sun", false);
     sun->EnableShadows(true);
@@ -83,6 +86,6 @@ int NSG_MAIN(int argc, char* argv[])
 
     });
     auto sunLight = scene->GetChild<Light>("Sun", true);
-   //window->ShowMap(sunLight->GetShadowMap());
+	//window->ShowMap(sunLight->GetShadowMap());
     return Engine().Run();
 }

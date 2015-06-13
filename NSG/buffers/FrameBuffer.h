@@ -57,6 +57,7 @@ namespace NSG
         void SetDepthTexture(PTexture texture);
         void AttachTarget(TextureTarget colorTexTarget);
 		TextureTarget GetDefaultTextureTarget() const;
+		void EnableAutoSize(bool enable) { autoSize_ = enable;  }
     private:
 		bool IsValid() override;
         void AllocateResources() override;
@@ -75,5 +76,6 @@ namespace NSG
 		GLuint stencilRenderBuffer_;
 		SignalSizeChanged::PSlot slotViewChanged_;
         Window* window_;
+		bool autoSize_;
     };
 }
