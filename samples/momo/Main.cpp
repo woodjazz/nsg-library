@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 
 	auto window = Window::Create();
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo.xml.lz4");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");
@@ -39,7 +39,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto object = scene->GetChild<SceneNode>("Bone.main", true);
         auto animations = scene->GetAnimationsFor(object);
         auto animation = animations[0];
-        animation->Play(true);
+        //animation->Play(true);
     }
 	return Engine().Run();
 }
