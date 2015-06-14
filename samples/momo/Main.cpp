@@ -39,7 +39,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto object = scene->GetChild<SceneNode>("Bone.main", true);
         auto animations = scene->GetAnimationsFor(object);
         auto animation = animations[0];
-        //animation->Play(true);
+        animation->Play(true);
     }
 	return Engine().Run();
 }

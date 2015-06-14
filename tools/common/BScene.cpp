@@ -285,7 +285,7 @@ namespace BlenderConverter
         for (int i = 0; i < MAX_MTEX; i++)
         {
             bool disabled = mt->septex & (1 << i);
-            
+
             if (disabled || !mt->mtex[i] || !mt->mtex[i]->tex)
                 continue;
 
@@ -466,8 +466,12 @@ namespace BlenderConverter
         PSceneNode sceneNode;
         if (obj)
         {
-            if (obj->type == OB_MESH && obj->parent != 0 && obj->parent->type == OB_ARMATURE)
+            bool isParentArmature = false;
+            if (obj->type == OB_MESH && obj->parent && obj->parent->type == OB_ARMATURE)
+            {
                 armatureLinker_.push_back(obj);
+                isParentArmature = true;
+            }
 
             if (obj->type >= 0 && obj->parent)
             {
@@ -489,7 +493,7 @@ namespace BlenderConverter
                     sceneNode = CreateCamera(obj, parent, bscene);
                     break;
                 case OB_MESH:
-                    sceneNode = CreateMesh(obj, parent);
+                    sceneNode = CreateMesh(obj, parent, isParentArmature);
                     break;
                 case OB_ARMATURE:   // SceneNode + Skeleton
                     sceneNode = CreateSkeletonBones(obj, parent);
@@ -689,9 +693,9 @@ namespace BlenderConverter
 
             for (auto& spline : trackData->keyframes)
             {
-                if(!spline)
+                if (!spline)
                     continue;
-                
+
                 SPLINE_CHANNEL_CODE code = spline->GetCode();
 
                 switch (code)
@@ -841,7 +845,7 @@ namespace BlenderConverter
         }
     }
 
-    void BScene::ExtractGeneral(const Blender::Object* obj, PSceneNode sceneNode)
+    void BScene::ExtractGeneral(const Blender::Object* obj, PSceneNode sceneNode, bool isParentArmature)
     {
         Matrix4 m = ToMatrix(obj->obmat);
         Quaternion q;
@@ -849,10 +853,21 @@ namespace BlenderConverter
         Vector3 scale;
         DecomposeMatrix(m, pos, q, scale);
 
-        Matrix4 parentinv = ToMatrix(obj->parentinv);
         Quaternion parent_q;
         Vector3 parent_pos;
         Vector3 parent_scale;
+        if (isParentArmature)
+        {
+            auto parent = sceneNode->GetParent();
+            Matrix4 parentinv = glm::translate(glm::mat4(), parent->GetPosition()) * glm::mat4_cast(parent->GetOrientation()) * glm::scale(glm::mat4(1.0f), parent->GetScale());
+            parentinv = glm::inverse(parentinv);
+            DecomposeMatrix(parentinv, parent_pos, parent_q, parent_scale);
+            pos = parent_pos + parent_q * (parent_scale * pos);
+            q = parent_q * q;
+            scale = parent_scale * scale;
+        }
+
+        Matrix4 parentinv = ToMatrix(obj->parentinv);
         DecomposeMatrix(parentinv, parent_pos, parent_q, parent_scale);
 
         sceneNode->SetPosition(parent_pos + parent_q * (parent_scale * pos));
@@ -993,9 +1008,15 @@ namespace BlenderConverter
         if (it == list.end())
             list.push_back(parent);
 
+
+        #if 1
         Matrix4 parBind = IDENTITY_MATRIX;
         if (cur->parent)
             parBind = glm::inverse(ToMatrix(cur->parent->arm_mat));
+        #else
+        Matrix4 parBind = glm::translate(glm::mat4(), parent->GetPosition()) * glm::mat4_cast(parent->GetOrientation()) * glm::scale(glm::mat4(1.0f), parent->GetScale());
+        parBind = glm::inverse(parBind);
+        #endif
 
         CHECK_ASSERT(!parent->GetChild<SceneNode>(cur->name, false), __FILE__, __LINE__);
         PSceneNode bone = parent->CreateChild<SceneNode>(cur->name);
@@ -1095,12 +1116,10 @@ namespace BlenderConverter
         return light;
     }
 
-    PSceneNode BScene::CreateMesh(const Blender::Object* obj, PSceneNode parent)
+    PSceneNode BScene::CreateMesh(const Blender::Object* obj, PSceneNode parent, bool isParentArmature)
     {
         CHECK_ASSERT(obj->data, __FILE__, __LINE__);
 
-        auto sceneNode = parent->CreateChild<SceneNode>(B_IDNAME(obj));
-        ExtractGeneral(obj, sceneNode);
         const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
         std::string meshName = B_IDNAME(me);
         auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
@@ -1110,18 +1129,26 @@ namespace BlenderConverter
             mesh = Mesh::GetOrCreate<ModelMesh>(B_IDNAME(me));
             meshOk = ConvertMesh(obj, me, mesh);
         }
-        if (meshOk)
-            sceneNode->SetMesh(mesh);
-        SetMaterial(obj, sceneNode);
-        LoadPhysics(obj, sceneNode);
-        return sceneNode;
+
+        //if (!isParentArmature)
+        {
+            auto sceneNode = parent->CreateChild<SceneNode>(B_IDNAME(obj));
+            ExtractGeneral(obj, sceneNode, isParentArmature);
+            if (meshOk)
+                sceneNode->SetMesh(mesh);
+            SetMaterial(obj, sceneNode);
+            LoadPhysics(obj, sceneNode);
+            return sceneNode;
+        }
+        return nullptr;
     }
 
     const Blender::Object* BScene::GetAssignedArmature(const Blender::Object* obj) const
     {
         Blender::Object* ob_arm = nullptr;
 
-        if (obj->parent && obj->partype == PARSKEL && obj->parent->type == OB_ARMATURE)
+        //if (obj->parent && obj->partype == PARSKEL && obj->parent->type == OB_ARMATURE)
+        if (obj->parent && obj->parent->type == OB_ARMATURE)
             ob_arm = obj->parent;
         else
         {
@@ -1272,7 +1299,7 @@ namespace BlenderConverter
         auto skeleton(std::make_shared<Skeleton>(mesh));
         std::string obArName = B_IDNAME(obAr);
         PSceneNode armatureNode = scene->GetChild<SceneNode>(obArName, true);
-        if(!armatureNode)
+        if (!armatureNode)
         {
             LOGE("Cannot find armature node with name = %s", obArName.c_str());
             return;
