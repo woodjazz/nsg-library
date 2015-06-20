@@ -39,7 +39,9 @@ namespace NSG
     CameraControl::CameraControl(PCamera camera)
         : camera_(camera),
           window_(nullptr),
-          engine_(nullptr)
+          engine_(nullptr),
+          originalPosition_(camera->GetGlobalPosition()),
+          originalOrientation_(camera->GetGlobalOrientation())
     {
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
         lastX_ = lastY_ = 0;
@@ -239,6 +241,35 @@ namespace NSG
 
             case NSG_KEY_S:
                 {
+                    camera_->EnableColorSplits(action ? true : false);
+                    break;
+                }
+
+            case NSG_KEY_1:
+                {
+                    if (shiftKeyDown_)
+                        camera_->SetShadowSplits(1);
+                    break;
+                }
+
+            case NSG_KEY_2:
+                {
+                    if (shiftKeyDown_)
+                        camera_->SetShadowSplits(2);
+                    break;
+                }
+
+            case NSG_KEY_3:
+                {
+                    if (shiftKeyDown_)
+                        camera_->SetShadowSplits(3);
+                    break;
+                }
+
+            case NSG_KEY_4:
+                {
+                    if (shiftKeyDown_)
+                        camera_->SetShadowSplits(4);
                     break;
                 }
 
@@ -274,6 +305,16 @@ namespace NSG
                 {
                     if (action)
                         SetSphereCenter(true);
+                    break;
+                }
+
+            case NSG_KEY_R:
+                {
+                    camera_->SetGlobalPosition(originalPosition_);
+                    camera_->SetGlobalOrientation(originalOrientation_);
+                    lastX_ = lastY_ = 0;
+                    pointOnSphere_ = PPointOnSphere(new PointOnSphere(Vertex3(0), camera_->GetGlobalPosition()));
+                    updateOrientation_ = false;
                     break;
                 }
 
@@ -340,7 +381,7 @@ namespace NSG
         else
         {
             BoundingBox bb;
-			if (!camera_->GetScene()->GetVisibleBoundingBox(camera_.get(), bb))
+            if (!camera_->GetScene()->GetVisibleBoundingBox(camera_.get(), bb))
                 bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_.get());
             newCenter = ray.GetPoint(glm::distance(bb.Center(), camera_->GetGlobalPosition()));
             //newCenter = bb.Center();

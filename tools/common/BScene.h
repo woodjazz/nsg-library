@@ -49,7 +49,7 @@ namespace BlenderConverter
 		bool Save(bool compress);
 		void GenerateXML(pugi::xml_document& doc);
     private:
-        void ExtractGeneral(const Blender::Object* obj, NSG::PSceneNode sceneNode, bool isParentArmature = false);
+        void ExtractGeneral(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		NSG::PSceneNode ConvertObject(const Blender::Object* obj, NSG::PScene scene, const Blender::Scene* bscene);
 		NSG::PSceneNode CreateSceneNode(const Blender::Object* obj, NSG::PSceneNode parent);
 		NSG::PSceneNode CreateSkeletonBones(const Blender::Object* obj, NSG::PSceneNode parent);
@@ -58,7 +58,7 @@ namespace BlenderConverter
 		void ConvertGroupInstances(bParse::bMain* data, NSG::PScene scene, const Blender::Scene* bscene);
 		NSG::PSceneNode CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent, const Blender::Scene* bscene);
         NSG::PSceneNode CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
-		NSG::PSceneNode CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent, bool isParentArmature);
+		NSG::PSceneNode CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
 		bool ConvertMeshLegacy(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
 		bool ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
 		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray, char** uvNames);

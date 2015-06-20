@@ -38,18 +38,18 @@ namespace NSG
 		static Renderer* GetPtr() { return Renderer::this_; }
 		void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
 		const Window* GetWindow() const { return window_; }
-		const ShadowCamera* GetShadowCamera() const { return shadowCamera_.get(); }
 		const Scene* GetScene() const { return scene_; }
 		void SortTransparentBackToFront();
 		void SortSolidFrontToBack();
+		void DrawShadowPass(Batch* batch, const Light* light);
 	private:
+		void Draw(Batch* batch, const Pass* pass, const Light* light);
 		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
 		void GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters);
 		void GenerateCubeShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
-		void GenerateShadowMap(const Light* light, const std::vector<SceneNode*>& drawables);
+		void GenerateShadowMap(Light* light, const std::vector<SceneNode*>& drawables);
 		void ExtractTransparent();
-		void GetLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
-		void Draw(Batch* batch, const Pass* pass, const Light* light);
+		void GetLighted(std::vector<SceneNode*>& result) const;
     	void AmbientPass();
 	    void GenerateShadowMaps();
 	    void LitPass();
@@ -65,7 +65,6 @@ namespace NSG
 		PPass lightPass_;
 		PPass transparentPass_;
 		PPass shadowPass_;
-		PShadowCamera shadowCamera_;
 		std::vector<SceneNode*> visibles_; //visibles not transparent nodes
 		std::vector<SceneNode*> transparent_;
 	};

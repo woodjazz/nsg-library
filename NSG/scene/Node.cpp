@@ -48,7 +48,8 @@ namespace NSG
           inheritScale_(true),
           dirty_(true),
           enabled_(true),
-          isScaleUniform_(true)
+          isScaleUniform_(true),
+          isArmature_(false)
     {
     }
 

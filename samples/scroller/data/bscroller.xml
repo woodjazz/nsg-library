@@ -7408,13 +7408,13 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
 		<Material name="Player" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="1" diffuse="[0.800000,0.000000,0.390027,0.800000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[1.000000,0.000000,0.487534,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="VERTEXCOLOR" />
 	</Materials>
 	<Scene ambient="[0.252943,0.252943,0.252943,1.000000]" horizon="[0.710554,0.611859,0.011543,1.000000]" mainCamera="Camera">
-		<SceneNode name="Scene" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
-			<SceneNode name="Suzanne" nodeType="SceneNode" position="[0.321528,5.163124,2.742778]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material" meshName="Suzanne" />
-			<SceneNode name="Level1" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Level1" meshName="Cube.001">
+		<SceneNode name="Scene" isArmature="false" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
+			<SceneNode name="Suzanne" isArmature="false" nodeType="SceneNode" position="[0.321528,5.163124,2.742778]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material" meshName="Suzanne" />
+			<SceneNode name="Level1" isArmature="false" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Level1" meshName="Cube.001">
 				<RigidBody mass="0" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" trigger="false" kinematic="false" />
 			</SceneNode>
 			<SceneNode name="Camera" nodeType="Camera" fovy="2.41381" zNear="0.1" zFar="100" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="true" orthoScale="6" sensorFit="2" position="[0.000000,-10.000000,3.000000]" orientation="[0.707107,0.707107,0.000000,0.000000]">
-				<SceneNode name="Player" nodeType="SceneNode" position="[-2.366239,1.600000,-10.000000]" orientation="[-0.707107,0.707107,0.000000,0.000000]" scale="[0.125000,0.125000,0.125000]" materialName="Player" meshName="Cube">
+				<SceneNode name="Player" isArmature="false" nodeType="SceneNode" position="[-2.366239,1.600000,-10.000000]" orientation="[-0.707107,0.707107,0.000000,0.000000]" scale="[0.125000,0.125000,0.125000]" materialName="Player" meshName="Cube">
 					<RigidBody mass="1" handleCollision="false" restitution="0" friction="0.5" linearDamp="0.04" angularDamp="0.1" trigger="false" kinematic="true" />
 				</SceneNode>
 			</SceneNode>

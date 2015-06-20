@@ -113,7 +113,10 @@ static void FrustumTest()
     }
 
     camera->SetPosition(Vertex3(10, 0, 1));
-    camera->SetGlobalLookAt(Vector3(10, 0, -1));
+	auto lookAt = Vector3(10, 0, -1);
+	camera->SetGlobalLookAt(lookAt);
+	auto retrievedLookAt = camera->GetLookAtDirection();
+	CHECK_CONDITION(glm::distance(retrievedLookAt, Vector3(0, 0, -1)) < 0.001f, __FILE__, __LINE__);
 
     {
         PFrustum frustum = camera->GetFrustum();

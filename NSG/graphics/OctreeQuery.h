@@ -42,11 +42,11 @@ namespace NSG
     class FrustumOctreeQuery : public OctreeQuery
     {
     public:
-        FrustumOctreeQuery(std::vector<SceneNode*>& result, const Camera* camera);
+        FrustumOctreeQuery(std::vector<SceneNode*>& result, const Frustum* frustum);
         virtual Intersection TestOctant(const BoundingBox& box, bool inside) override;
         virtual void Test(const std::vector<SceneNode*>& objs, bool inside) override;
     private:
-        Frustum frustum_;
+        const Frustum* frustum_;
     };
 
     class  RayOctreeQuery  : public OctreeQuery

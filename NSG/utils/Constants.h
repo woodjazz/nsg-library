@@ -61,4 +61,8 @@ namespace NSG
 
     static const float CAMERA_MIN_NEARCLIP = 0.01f;
     static const float CAMERA_MAX_FOV = 160.0f;
+
+    static const int MAX_SHADOW_SPLITS = 4;
+
+    static const float MAX_WORLD_SIZE = 5000;
 }

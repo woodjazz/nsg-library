@@ -40,17 +40,18 @@ static const char* VS_GLSL = \
 "			v_worldPos = GetWorldPos().xyz;\n"\
 "		#else // LIT_PASS\n"\
 "			#if defined(PER_VERTEX_LIGHTING)\n"\
-"				vec4 worldPos = GetWorldPos();\n"\
+"				v_worldPos = GetWorldPos().xyz;\n"\
 "			    vec3 normal = GetWorldNormal();\n"\
-"			    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);\n"\
-"			    vec4 totalLight = CalcTotalLight(worldPos.xyz, vertexToEye, normal);\n"\
+"			    vec3 vertexToEye = normalize(u_eyeWorldPos - v_worldPos);\n"\
+"			    vec3 world2light = worldPos - u_lightPosition[0];\n"\
+"			    vec4 totalLight = CalcTotalLight(world2light, vertexToEye, normal);\n"\
 "			    v_color = totalLight;\n"\
 "				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "				gl_Position = GetClipPos();\n"\
 "			#else // PER_PIXEL_LIGHTING\n"\
 "				//Lighting is calculated in world space\n"\
-"				vec4 worldPos = GetWorldPos();\n"\
-"				v_vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);\n"\
+"				v_worldPos = GetWorldPos().xyz;\n"\
+"				v_vertexToEye = normalize(u_eyeWorldPos - v_worldPos);\n"\
 "				v_normal = GetWorldNormal();\n"\
 "				\n"\
 "				#if defined(NORMALMAP)\n"\
@@ -58,17 +59,6 @@ static const char* VS_GLSL = \
 "				    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);\n"\
 "				    v_bitangent = cross(v_tangent, v_normal);\n"\
 "				    // v_normal, v_tangent and v_bitangent are in world coordinates\n"\
-"				#endif\n"\
-"				#if defined(SHADOWMAP)\n"\
-"					v_shadowClipPos = GetShadowClipPos();\n"\
-"				#endif\n"\
-"				#ifdef HAS_POINT_LIGHT\n"\
-"					v_lightDirection = worldPos.xyz - u_pointLight.position;\n"\
-"				#elif defined(HAS_SPOT_LIGHT)\n"\
-"					v_lightDirection = worldPos.xyz - u_spotLight.position;\n"\
-"				#elif defined(HAS_DIRECTIONAL_LIGHT)\n"\
-"					v_lightDirection = worldPos.xyz - u_directionalLight.position;\n"\
-"						\n"\
 "				#endif\n"\
 "				v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "				gl_Position = GetClipPos();\n"\

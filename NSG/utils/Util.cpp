@@ -78,11 +78,6 @@ namespace NSG
         return Quaternion(q.w(), q.x(), q.y(), q.z());
     }
 
-    Vector3 Lerp(const Vector3& lhs, const Vector3& rhs, float t)
-    {
-        return lhs * (1.0f - t) + rhs * t;
-    }
-
     void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
     {
         Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));

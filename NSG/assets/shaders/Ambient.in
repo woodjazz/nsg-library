@@ -1,0 +1,5 @@
+#pragma once
+namespace NSG
+{
+static const char* AMBIENT_GLSL = ${shader_string_file};
+}

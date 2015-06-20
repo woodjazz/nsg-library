@@ -51,7 +51,7 @@ namespace NSG
     PMaterial Material::Clone(const std::string& name)
     {
         auto material = std::make_shared<Material>(name);
-        for (size_t index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+		for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
             material->texture_[index] = texture_[index];
         material->ambient_ = ambient_;
         material->diffuse_ = diffuse_;
@@ -106,6 +106,11 @@ namespace NSG
         }
     }
 
+    bool Material::HasSpecularColor() const
+    {
+        return specular_.a && (specular_.r || specular_.g || specular_.b);
+    }
+
     void Material::SetAmbientIntensity(float ambient)
     {
         if (ambient_ != ambient)
@@ -158,7 +163,7 @@ namespace NSG
             default:
                 break;
         }
-        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MATERIAL_MAPS, __FILE__, __LINE__);
+		CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS, __FILE__, __LINE__);
         if (texture_[index] != texture)
         {
             texture_[index] = texture;
@@ -171,7 +176,7 @@ namespace NSG
 
     PTexture Material::GetTexture(MaterialTexture index) const
     {
-        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MATERIAL_MAPS, __FILE__, __LINE__);
+		CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS, __FILE__, __LINE__);
         return texture_[index];
     }
 
@@ -209,7 +214,7 @@ namespace NSG
         bool isReady = true;
         if (xmlResource_)
             isReady = xmlResource_->IsReady();
-        for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
             if (texture_[index])
                 isReady = isReady && texture_[index]->IsReady();
         if (isReady)
@@ -229,7 +234,7 @@ namespace NSG
         instanceBuffer_ = nullptr;
         lastBatch_.Clear();
 
-        for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
             if (texture_[index])
                 texture_[index]->Invalidate();
     }
@@ -249,7 +254,7 @@ namespace NSG
         child.append_attribute("cullFaceMode").set_value(ToString(cullFaceMode_));
         child.append_attribute("friction").set_value(friction_);
 
-        for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
         {
             if (texture_[index] && texture_[index]->IsSerializable())
             {
@@ -279,7 +284,7 @@ namespace NSG
         cullFaceMode_ = ToCullFaceMode(node.attribute("cullFaceMode").as_string());
         SetFriction(node.attribute("friction").as_float());
 
-        for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
         {
             texture_[index] = nullptr;
             std::string s(TEXTURE_NAME);
@@ -329,7 +334,7 @@ namespace NSG
 
     PTexture Material::GetTextureWith(PResource resource) const
     {
-        for (size_t i = 0; i < MaterialTexture::MAX_MATERIAL_MAPS; i++)
+		for (size_t i = 0; i < MaterialTexture::MAX_MAPS; i++)
         {
             if (texture_[i] && resource == texture_[i]->GetResource())
                 return texture_[i];
@@ -496,14 +501,19 @@ namespace NSG
         }
         else // LIT_PASS
         {
+            defines += "LIT_PASS\n";
             switch (renderPass_)
             {
                 case RenderPass::PERVERTEX:
                     defines += "PER_VERTEX_LIGHTING\n";
                     break;
                 case RenderPass::PERPIXEL:
+                {
                     defines += "PER_PIXEL_LIGHTING\n";
+                    if(light->HasSpecularColor() && HasSpecularColor())
+                        defines += "SPECULAR\n";
                     break;
+                }
                 default:
                     CHECK_ASSERT(!"INCORRECT LIT PASS!!!", __FILE__, __LINE__);
                     break;
@@ -512,7 +522,7 @@ namespace NSG
 
         if (!shadowPass)
         {
-            for (int index = 0; index < MaterialTexture::MAX_MATERIAL_MAPS; index++)
+			for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
             {
                 auto texture = GetTexture((MaterialTexture)index);
                 if (texture)

@@ -12,6 +12,7 @@
 #include "Graphics.h"
 #include "Sphere.h"
 #include "Texture.h"
+#include "ShadowCamera.h"
 #include "FrameBuffer.h"
 #include "pugixml.hpp"
 #include <assert.h>
@@ -39,19 +40,24 @@ namespace NSG
           onlyShadow_(false),
           width_(0),
           height_(0),
-          shadowBias_(0.001f)
+          shadowBias_(0.005f)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
-        shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
-        CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap()->GetWrapMode(), __FILE__, __LINE__);
-		shadowFrameBuffer_->EnableAutoSize(false);
+        for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
+        {
+            shadowCamera_[i] = std::make_shared<ShadowCamera>(this);
+            shadowFrameBuffer_[i] = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
+            CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap(i)->GetWrapMode(), __FILE__, __LINE__);
+            shadowFrameBuffer_[i]->EnableAutoSize(false);
+        }
+
         CalculateInvRange();
     }
 
     Light::~Light()
     {
-		if (Graphics::this_)
-			SignalBeingDestroy()->Run(this);
+        if (Graphics::this_)
+            SignalBeingDestroy()->Run(this);
     }
 
     void Light::SetEnergy(float energy)
@@ -116,17 +122,23 @@ namespace NSG
     {
         if (type_ != type)
         {
-            if (type == LightType::POINT)
+            for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
             {
-                FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
-                shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
+                if (type == LightType::POINT)
+                {
+                    FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
+                    shadowFrameBuffer_[i] = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
+                }
+                else if (type_ == LightType::POINT)
+                {
+                    FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
+                    shadowFrameBuffer_[i] = std::make_shared<FrameBuffer>(GetUniqueName("Light2DFrameBuffer"), flags);
+                }
+
+                //GetShadowMap(i)->SetWrapMode(TextureWrapMode::REPEAT);
+                CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap(i)->GetWrapMode(), __FILE__, __LINE__);
             }
-            else if (type_ == LightType::POINT)
-            {
-                FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
-                shadowFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("Light2DFrameBuffer"), flags);
-            }
-            CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap()->GetWrapMode(), __FILE__, __LINE__);
+
             type_ = type;
             CalculateInvRange();
             OnDirty();
@@ -195,7 +207,7 @@ namespace NSG
                 defines += "HAS_SPOT_LIGHT\n";
             }
 
-            if (DoShadows() && material->ReceiveShadows())
+            if (shadows_ && material->ReceiveShadows())
             {
                 if (LightType::POINT == type_)
                     defines += "CUBESHADOWMAP\n";
@@ -217,6 +229,11 @@ namespace NSG
         specularColor_ = specular_ ? color_ * energy_ : COLOR_BLACK;
     }
 
+    bool Light::HasSpecularColor() const
+    {
+        return specularColor_.a && (specularColor_.r || specularColor_.g || specularColor_.b);
+    }
+
     void Light::SetDistance(float distance)
     {
         distance_ = distance;
@@ -229,9 +246,16 @@ namespace NSG
         return shadows_;
     }
 
-    PTexture Light::GetShadowMap() const
+    FrameBuffer* Light::GetShadowFrameBuffer(int idx) const
     {
-        return shadowFrameBuffer_->GetColorTexture();
+        CHECK_ASSERT(idx < MAX_SHADOW_SPLITS, __FILE__, __LINE__);
+        return shadowFrameBuffer_[idx].get();
+    }
+
+    PTexture Light::GetShadowMap(int idx) const
+    {
+        CHECK_ASSERT(idx < MAX_SHADOW_SPLITS, __FILE__, __LINE__);
+        return shadowFrameBuffer_[idx]->GetColorTexture();
     }
 
     void Light::CalculateInvRange()
@@ -260,4 +284,153 @@ namespace NSG
         CalculateInvRange();
     }
 
+    ShadowCamera* Light::GetShadowCamera(int idx) const
+    {
+        CHECK_ASSERT(idx < MAX_SHADOW_SPLITS, __FILE__, __LINE__);
+        return shadowCamera_[idx].get();
+    }
+
+    void Light::Generate2DShadowMap(int split)
+    {
+        auto frameBuffer = Graphics::this_->GetFrameBuffer();
+        auto shadowFrameBuffer = GetShadowFrameBuffer(split);
+        auto splitMapsize = GetShadowFrameBufferSize(split);
+        shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
+        if (shadowFrameBuffer->IsReady())
+        {
+            auto shadowCamera = GetShadowCamera(split);
+            std::vector<SceneNode*> shadowCasters;
+            shadowCamera->GetVisiblesShadowCasters(shadowCasters);
+            Graphics::this_->SetFrameBuffer(shadowFrameBuffer);
+            auto lastCamera = Graphics::this_->SetCamera(shadowCamera);
+            Graphics::this_->ClearBuffers(true, true, false);
+            std::vector<PBatch> batches;
+            Renderer::GetPtr()->GenerateBatches(shadowCasters, batches);
+            for (auto& batch : batches)
+                if (batch->GetMaterial()->CastShadow())
+                    Renderer::GetPtr()->DrawShadowPass(batch.get(), this);
+            Graphics::this_->SetCamera(lastCamera);
+            Graphics::this_->SetFrameBuffer(frameBuffer);
+        }
+    }
+
+    void Light::GenerateShadowMapCubeFace(int split)
+    {
+        auto shadowCamera = GetShadowCamera(split);
+        auto lastCamera = Graphics::this_->SetCamera(shadowCamera);
+        std::vector<SceneNode*> shadowCasters;
+        shadowCamera->GetVisiblesShadowCasters(shadowCasters);
+        std::vector<PBatch> batches;
+        auto renderer = Renderer::GetPtr();
+        renderer->GenerateBatches(shadowCasters, batches);
+        Graphics::this_->ClearBuffers(true, true, false);
+        for (auto& batch : batches)
+            if (batch->GetMaterial()->CastShadow())
+                renderer->DrawShadowPass(batch.get(), this);
+        Graphics::this_->SetCamera(lastCamera);
+    }
+
+    int Light::GetShadowFrameBufferSize(int split) const
+    {
+        CHECK_ASSERT(split < MAX_SHADOW_SPLITS, __FILE__, __LINE__);
+        //static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 1024, 512, 256, 128 };
+        static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 1024, 1024, 1024, 1024 };
+        return SplitMapSize[split];
+    }
+
+    void Light::GenerateCubeShadowMap(int split, const Camera* camera)
+    {
+        auto frameBuffer = Graphics::this_->GetFrameBuffer();
+        auto shadowFrameBuffer = GetShadowFrameBuffer(split);
+        auto splitMapsize = GetShadowFrameBufferSize(split);
+        shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
+        if (shadowFrameBuffer->IsReady())
+        {
+            auto shadowCamera = GetShadowCamera(split);
+            for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++)
+            {
+                TextureTarget face = (TextureTarget)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+                shadowCamera->SetCurrentCubeShadowMapFace(face);
+                auto camFrustum = camera->GetFrustum();
+                auto intersection = camFrustum->IsPointInside(GetGlobalPosition());
+                bool genShadowMap = Intersection::OUTSIDE != intersection ||
+                                    Intersection::OUTSIDE != camFrustum->IsInside(BoundingBox(*shadowCamera->GetFrustum()));
+                if (genShadowMap)
+                {
+                    Graphics::this_->SetFrameBuffer(shadowFrameBuffer, face);
+                    GenerateShadowMapCubeFace(split);
+                }
+            }
+            Graphics::this_->SetFrameBuffer(frameBuffer);
+        }
+    }
+
+    int Light::CalculateSplits(const Camera* camera, float splits[MAX_SHADOW_SPLITS]) const
+    {
+        float camNear = camera->GetZNear();
+        float camFar  = camera->GetZFar();
+        const float ShadowSplitLogFactor = 0.9f;
+        int nSplits = camera->GetShadowSplits();
+        float cascadeCount = (float)camera->GetShadowSplits();
+        float zDistance = camFar - camNear;
+        for (int i = 0; i < nSplits - 1; i++)
+        {
+            float factor = (i + 1.f) / cascadeCount;
+            splits[i] = Lerp(camNear + factor * zDistance,
+                             camNear * powf(camFar / camNear, factor),
+                             ShadowSplitLogFactor);
+        }
+        splits[nSplits - 1] = camFar;
+        return nSplits;
+    }
+
+    void Light::GenerateShadowMaps(const Camera* camera)
+    {
+        switch (type_)
+        {
+            case LightType::POINT:
+                {
+                    std::vector<SceneNode*> shadowCasters;
+                    auto shadowCamera = shadowCamera_[0].get();
+                    shadowCamera->SetupPoint(camera);
+                    GenerateCubeShadowMap(0, camera);
+                }
+                break;
+
+            case LightType::SPOT:
+                {
+                    auto shadowCamera = shadowCamera_[0].get();
+                    shadowCamera->SetupSpot(camera);
+                    auto intersection = camera->GetFrustum()->IsPointInside(GetGlobalPosition());
+                    if (Intersection::OUTSIDE != intersection)
+                        Generate2DShadowMap(0);
+                    else if (Intersection::OUTSIDE != camera->GetFrustum()->IsInside(BoundingBox(*shadowCamera->GetFrustum())))
+                        Generate2DShadowMap(0);
+                }
+                break;
+
+            default: //DIRECTIONAL
+                {
+                    float splits[MAX_SHADOW_SPLITS];
+                    int nSplits = CalculateSplits(camera, splits);
+                    auto farZ = camera->GetZFar();
+                    auto nearSplit = camera->GetZNear();
+                    auto farSplit = farZ;
+                    int split = 0;
+                    while (split < nSplits)
+                    {
+                        if (nearSplit > farZ)
+                            break;
+                        farSplit = std::min(farZ, splits[split]);
+                        auto shadowCamera = shadowCamera_[split].get();
+                        shadowCamera->SetupDirectional(split, camera, nearSplit, farSplit);
+                        nearSplit = farSplit;
+                        ++split;
+                    }
+                    for (int i = 0; i < nSplits; i++)
+                        Generate2DShadowMap(i);
+                }
+                break;
+        }
+    }
 }

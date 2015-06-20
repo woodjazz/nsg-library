@@ -51,11 +51,11 @@
 		#else // LIT_PASS
 
 			#if defined(PER_VERTEX_LIGHTING)
-
-				vec4 worldPos = GetWorldPos();
+				v_worldPos = GetWorldPos().xyz;
 			    vec3 normal = GetWorldNormal();
-			    vec3 vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
-			    vec4 totalLight = CalcTotalLight(worldPos.xyz, vertexToEye, normal);
+			    vec3 vertexToEye = normalize(u_eyeWorldPos - v_worldPos);
+			    vec3 world2light = worldPos - u_lightPosition[0];
+			    vec4 totalLight = CalcTotalLight(world2light, vertexToEye, normal);
 			    v_color = totalLight;
 				v_texcoord0 = GetTexCoord(a_texcoord0);
 				gl_Position = GetClipPos();
@@ -64,8 +64,8 @@
 
 				//Lighting is calculated in world space
 
-				vec4 worldPos = GetWorldPos();
-				v_vertexToEye = normalize(u_eyeWorldPos - worldPos.xyz);
+				v_worldPos = GetWorldPos().xyz;
+				v_vertexToEye = normalize(u_eyeWorldPos - v_worldPos);
 				v_normal = GetWorldNormal();
 				
 				#if defined(NORMALMAP)
@@ -73,24 +73,6 @@
 				    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);
 				    v_bitangent = cross(v_tangent, v_normal);
 				    // v_normal, v_tangent and v_bitangent are in world coordinates
-				#endif
-
-				#if defined(SHADOWMAP)
-					v_shadowClipPos = GetShadowClipPos();
-				#endif
-
-				#ifdef HAS_POINT_LIGHT
-
-					v_lightDirection = worldPos.xyz - u_pointLight.position;
-
-				#elif defined(HAS_SPOT_LIGHT)
-
-					v_lightDirection = worldPos.xyz - u_spotLight.position;
-
-				#elif defined(HAS_DIRECTIONAL_LIGHT)
-
-					v_lightDirection = worldPos.xyz - u_directionalLight.position;
-						
 				#endif
 
 				v_texcoord0 = GetTexCoord(a_texcoord0);

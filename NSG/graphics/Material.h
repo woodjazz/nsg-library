@@ -101,13 +101,14 @@ namespace NSG
         void ReceiveShadows(bool shadow) { receiveShadows_ = shadow; }
         bool ReceiveShadows() const { return receiveShadows_; }
         bool IsShadowCaster() const { return !shadeless_ && castShadow_; }
+        bool HasSpecularColor() const;
     private:
 		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
 		void SetupBlur();
         bool IsValid() override;
 		void AllocateResources() override;
 		void ReleaseResources() override;
-        PTexture texture_[MaterialTexture::MAX_MATERIAL_MAPS];
+		PTexture texture_[MaterialTexture::MAX_MAPS];
         float ambient_; // ambient intensity
         Color diffuse_;
         Color specular_;

@@ -106,9 +106,69 @@ static void Test01()
 
 	depth = 0.01265f;
 	CHECK_CONDITION(std::abs(depth - Decode2(Encode2(depth))) < 0.0001f, __FILE__, __LINE__);
+
+	auto Encode3 = [](float depth) -> Vector4
+	{
+		const Vector4 bit_shift = Vector4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);
+		const Vector4 bit_mask = Vector4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+		Vector4 res = glm::fract(depth * bit_shift);
+		res -= Vector4(res.x, res.x, res.y, res.z) * bit_mask;
+		return res;
+	};
+
+	auto Decode3 = [](Vector4 rgba_depth) -> float
+	{
+		const Vector4 bit_shift = Vector4(1.0 / (256.0*256.0*256.0), 1.0 / (256.0*256.0), 1.0 / 256.0, 1.0);
+		float depth = glm::dot(rgba_depth, bit_shift);
+		return depth;
+	};
+
+	depth = 0.765f;
+	CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.0001f, __FILE__, __LINE__);
+
+	depth = 0.01265f;
+	CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.0001f, __FILE__, __LINE__);
+
+}
+
+static void Test02()
+{
+	auto value = glm::dot(Vector3(1, 0, 0), Vector3(0, 1, 0));
+	CHECK_CONDITION(value <= 0, __FILE__, __LINE__);
+
+	value = glm::dot(Vector3(1, 0, 0), Vector3(0.001f, 1, 0));
+	CHECK_CONDITION(value > 0, __FILE__, __LINE__);
+
+	value = glm::dot(Vector3(-1, 1, 0), glm::normalize(Vector3(1, 1000, 0)));
+	CHECK_CONDITION(value < 1, __FILE__, __LINE__);
+
+	value = glm::dot(Vector3(-1, 1, 0), glm::normalize(Vector3(-1, 1000, 0)));
+	CHECK_CONDITION(value > 1, __FILE__, __LINE__);
+}
+
+static void Test03()
+{
+	Node node;
+	node.SetPosition(Vector3(1, 2, 3));
+	node.SetLocalLookAt(Vector3(1, -2, 10));
+	Vector4 pos(3, -4, -5, 1);
+	auto newPos = node.GetGlobalModelMatrix() * pos;
+	CHECK_CONDITION(newPos.w == 1.0, __FILE__, __LINE__);
+	node.SetScale(Vector3(0.1f, 2.5, 0.45f));
+	newPos = node.GetGlobalModelMatrix() * pos;
+	CHECK_CONDITION(newPos.w == 1.0, __FILE__, __LINE__);
+}
+
+static void Test04()
+{
+	Camera camera;
+	auto pos = camera.GetMatViewProjection() * Vector4(100, 0, -50, 1);
 }
 
 void Tests()
 {
 	Test01();
+	Test02();
+	Test03();
+	Test04();
 }

@@ -38,7 +38,8 @@
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
 			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
-    		float lightToPixelDistance = clamp(length(lightToVertex) * u_lightInvRange, 0.0, 1.0);
+    		//float lightToPixelDistance = clamp(length(lightToVertex) * GetLightInvRange(), 0.0, 1.0);
+    		float lightToPixelDistance = length(lightToVertex) * GetLightInvRange();
     		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
 
     	#else // LIT_PASS
@@ -68,7 +69,8 @@
 				#endif
 
 	    		vec3 vertexToEye = normalize(v_vertexToEye);
-	    		vec4 totalLight = CalcTotalLight(vertexToEye, normal);
+	    		vec3 world2light = v_worldPos - GetLightPosition();
+	    		vec4 totalLight = CalcTotalLight(world2light, vertexToEye, normal);
 
 				#ifdef DIFFUSEMAP
 		    		gl_FragColor = totalLight * texture2D(u_texture0, v_texcoord0);

@@ -1312,6 +1312,7 @@ namespace NSG
     {
         std::string defines;
         auto passType = pass->GetType();
+        activeCamera_->FillShaderDefines(defines, passType);
         material->FillShaderDefines(defines, passType, light, mesh);
         size_t nBones = 0;
 

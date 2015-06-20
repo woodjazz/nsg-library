@@ -115,7 +115,7 @@ namespace NSG
         GLuint normalMatrixLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
-        GLuint lightViewProjectionLoc_;
+        GLuint lightViewProjectionLoc_[MAX_SHADOW_SPLITS];
         GLuint projectionLoc_;
         GLuint sceneColorAmbientLoc_;
         GLuint eyeWorldPosLoc_;
@@ -134,31 +134,13 @@ namespace NSG
 
         MaterialLoc materialLoc_;
 
-        struct DirectionalLightLoc
-        {
-            BaseLightLoc base_;
-            GLuint direction_;
-            GLuint position_;
-        };
-
-        struct PointLightLoc
-        {
-            BaseLightLoc base_;
-            GLuint position_;
-        };
-
-        struct SpotLightLoc
-        {
-            BaseLightLoc base_;
-            GLuint position_;
-            GLuint direction_;
-            GLuint cutOff_;
-        };
-
-        PointLightLoc pointLightLoc_;
-        DirectionalLightLoc directionalLightLoc_;
-        SpotLightLoc spotLightLoc_;
+        GLuint lightDiffuseColorLoc_;
+        GLuint lightSpecularColorLoc_;
         GLuint lightInvRangeLoc_;
+        GLuint lightPositionLoc_[MAX_SHADOW_SPLITS];
+        GLuint lightDirectionLoc_;
+        GLuint lightCutOffLoc_;
+        GLuint shadowCameraZFarLoc_;
         GLuint shadowMapInvSize_;
         GLuint shadowColor_;
         GLuint shadowBias_;
@@ -182,12 +164,8 @@ namespace NSG
         /////////////////////////////////////
 
 		size_t nBones_;
-        Camera* activeCamera_;
-        bool viewVariablesNeverSet_;
-        bool materialVariablesNeverSet_;
 		Skeleton* activeSkeleton_;
         Node* activeNode_;
-        const Scene* activeScene_;
         Color sceneColor_;
 
         Mesh* mesh_;

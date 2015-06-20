@@ -13,90 +13,14 @@
 	#define highp
 #endif   
 
-#if defined(AMBIENT_PASS)
-
-	uniform vec4 u_sceneAmbientColor;
-
-	varying vec4 v_color;
-	varying vec2 v_texcoord0;
-
-	#if defined(AOMAP1) || defined(LIGHTMAP1)
-		varying vec2 v_texcoord1;
-	#endif
-
-#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
-
-	varying vec3 v_worldPos;
-
-#else // LIT_PASS
-
-	varying vec4 v_color;
-	varying vec2 v_texcoord0;
-	varying vec3 v_worldPos;
-	varying vec3 v_normal;
-	varying vec3 v_tangent;
-	varying vec3 v_bitangent;
-	varying vec2 v_texcoord1;
-	varying vec3 v_vertexToEye;
-
-	#if defined(SHADOWMAP)
-
-		varying vec4 v_shadowClipPos;
-		uniform float u_shadowMapInvSize;
-
-	#elif defined(CUBESHADOWMAP)
-
-		uniform float u_shadowMapInvSize;
-
-	#endif
-
-	struct BaseLight
-	{
-	    vec4 diffuse;
-	    vec4 specular;
-	};
-
-	#if defined(HAS_DIRECTIONAL_LIGHT)
-
-		uniform vec4 u_shadowColor;
-		varying vec3 v_lightDirection;
-		struct DirectionalLight
-		{
-		    BaseLight base;
-		    vec3 direction;
-		    vec3 position; // really is the shadow camera position
-		};
-		uniform DirectionalLight u_directionalLight;
-
-	#elif defined(HAS_POINT_LIGHT)
-
-		uniform vec4 u_shadowColor;
-		varying vec3 v_lightDirection;
-		struct PointLight
-		{
-		    BaseLight base;
-		    vec3 position;
-		};
-		uniform PointLight u_pointLight;
-
-	#elif defined(HAS_SPOT_LIGHT)
-
-		uniform vec4 u_shadowColor;
-		varying vec3 v_lightDirection;
-		struct SpotLight
-		{
-		    BaseLight base;
-		    vec3 position;
-		    vec3 direction;
-		    float cutOff; // 0.5f * cosine(cutOff)
-		};
-		uniform SpotLight u_spotLight;
-
-	#endif
-
-	uniform float u_shadowBias;
-
-#endif
+varying vec4 v_color;
+varying vec2 v_texcoord0;
+varying vec2 v_texcoord1;
+varying vec3 v_worldPos;
+varying vec3 v_normal;
+varying vec3 v_tangent;
+varying vec3 v_bitangent;
+varying vec3 v_vertexToEye;
 
 struct Material
 {
@@ -107,6 +31,41 @@ struct Material
     float shininess;
 };
 
+uniform vec4 u_sceneAmbientColor;
 uniform Material u_material;
+// Could be normal camera or shadow camera
 uniform vec3 u_eyeWorldPos;
-uniform float u_lightInvRange;
+// The Z far value in the shadow camera used to know the correct split
+// one coordinate per split (in case of directional light)
+uniform vec4 u_shadowCameraZFar;
+uniform vec4 u_shadowColor;
+uniform float u_shadowBias;
+uniform vec4 u_shadowMapInvSize;
+
+// The light position for each split
+#define MAX_SPLITS 4
+// Split 1 to 3 only applies to directional light and is the shadow camera's position
+uniform vec3 u_lightPosition[MAX_SPLITS]; // (the default split) for directional light is the shadow camera's position
+// one coordinate per split (in case of directional light)
+uniform vec4 u_lightInvRange; 
+uniform vec3 u_lightDirection;
+uniform vec4 u_lightDiffuseColor;
+uniform vec4 u_lightSpecularColor;
+uniform float u_lightCutOff; // 0.5f * cosine(cutOff)
+uniform mat4 u_view;
+
+#ifdef COMPILEVS
+	uniform mat4 u_model;
+	uniform mat3 u_normalMatrix;
+	uniform mat4 u_viewProjection;
+	uniform mat4 u_projection;
+	uniform vec4 u_uvTransform;
+	#if defined(SKINNED)
+		uniform mat4 u_bones[MAX_BONES];
+	#endif
+#else 
+	//COMPILEFS
+	uniform mat4 u_lightViewProjection[MAX_SPLITS];
+#endif
+
+

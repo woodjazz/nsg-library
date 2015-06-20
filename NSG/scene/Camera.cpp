@@ -54,8 +54,10 @@ namespace NSG
           window_(nullptr),
           orthoScale_(2.f),
           sensorFit_(CameraSensorFit::HORIZONTAL),
-		  isDirty_(true),
-		  autoAspectRatio_(true)
+          isDirty_(true),
+          autoAspectRatio_(true),
+          shadowSplits_(MAX_SHADOW_SPLITS),
+          colorSplits_(false)
     {
         SetInheritScale(false);
         Update();
@@ -77,12 +79,12 @@ namespace NSG
 
     Camera::~Camera()
     {
-		if (Graphics::this_)
-		{
-			SignalBeingDestroy()->Run(this);
-			if (Graphics::this_->GetCamera() == this)
-				Graphics::this_->SetCamera(nullptr);
-		}
+        if (Graphics::this_)
+        {
+            SignalBeingDestroy()->Run(this);
+            if (Graphics::this_->GetCamera() == this)
+                Graphics::this_->SetCamera(nullptr);
+        }
     }
 
     void Camera::UnRegisterWindow()
@@ -101,8 +103,8 @@ namespace NSG
                 SetAspectRatio(window->GetWidth(), window->GetHeight());
                 slotViewChanged_ = window->SigSizeChanged()->Connect([this](int width, int height)
                 {
-					if (autoAspectRatio_)
-						SetAspectRatio(width, height);
+                    if (autoAspectRatio_)
+                        SetAspectRatio(width, height);
                 });
             }
             else
@@ -142,7 +144,8 @@ namespace NSG
         if (aspectRatio_ != aspect)
         {
             aspectRatio_ = aspect;
-			isDirty_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -151,7 +154,8 @@ namespace NSG
         if (!isOrtho_)
         {
             isOrtho_ = true;
-			isDirty_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -160,7 +164,8 @@ namespace NSG
         if (isOrtho_)
         {
             isOrtho_ = false;
-			isDirty_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -171,7 +176,8 @@ namespace NSG
         if (fovy_ != fovy)
         {
             fovy_ = fovy;
-			isDirty_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -184,7 +190,8 @@ namespace NSG
         if (fovy_ != fovy)
         {
             fovy_ = fovy;
-			isDirty_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -194,7 +201,8 @@ namespace NSG
         if (zNear_ != zNear)
         {
             zNear_ = zNear;
-			isDirty_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -204,7 +212,8 @@ namespace NSG
         if (zFar_ != zFar)
         {
             zFar_ = zFar;
-			isDirty_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -213,7 +222,8 @@ namespace NSG
         if (orthoScale != orthoScale_)
         {
             orthoScale_ = orthoScale;
-			isDirty_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -223,7 +233,7 @@ namespace NSG
         {
             sensorFit_ = sensorFit;
             SetAspectRatio(CalculateAspectRatio());
-			isDirty_ = true;
+            isDirty_ = true;
         }
     }
 
@@ -237,7 +247,7 @@ namespace NSG
         }
     }
 
-    void Camera::CalculateOrthoProjection() const
+    OrthoProjection Camera::CalculateOrthoProjection(float zNear, float zFar) const
     {
         auto width = orthoScale_;
         auto height = orthoScale_ ;
@@ -246,19 +256,23 @@ namespace NSG
         else
             height /= aspectRatio_;
 
-        orthoProjection_.left_ = -width * 0.5f;
-        orthoProjection_.right_ = width * 0.5f;
-        orthoProjection_.bottom_ = -height * 0.5f;
-        orthoProjection_.top_ = height * 0.5f;
-        orthoProjection_.near_ = zNear_;
-        orthoProjection_.far_ = zFar_;
+        OrthoProjection orthoProjection;
+
+        orthoProjection.left_ = -width * 0.5f;
+        orthoProjection.right_ = width * 0.5f;
+        orthoProjection.bottom_ = -height * 0.5f;
+        orthoProjection.top_ = height * 0.5f;
+        orthoProjection.near_ = zNear;
+        orthoProjection.far_ = zFar;
+
+        return orthoProjection;
     }
 
     void Camera::UpdateProjection() const
     {
         if (isOrtho_)
         {
-            CalculateOrthoProjection();
+            orthoProjection_ = CalculateOrthoProjection(zNear_, zFar_);
 
             matProjection_ = glm::ortho(orthoProjection_.left_,
                                         orthoProjection_.right_,
@@ -284,7 +298,7 @@ namespace NSG
             #endif
         }
 
-		SetUniformsNeedUpdate();
+        SetUniformsNeedUpdate();
     }
 
     void Camera::UpdateViewProjection() const
@@ -308,83 +322,108 @@ namespace NSG
         SetUniformsNeedUpdate();
     }
 
-	void Camera::Update() const
-	{
-		if (isDirty_)
-		{
-			UpdateProjection();
-			UpdateViewProjection();
-		}
-	}
+    void Camera::Update() const
+    {
+        if (isDirty_)
+        {
+            UpdateProjection();
+            UpdateViewProjection();
+            isDirty_ = false;
+        }
+    }
 
 
     const PFrustum Camera::GetFrustum() const
     {
-		Update();
+        Update();
         return frustum_;
+    }
+
+    PFrustum Camera::GetFrustumSplit(float nearSplit, float farSplit) const
+    {
+        Update();
+
+        Matrix4 matProjection;
+        if (isOrtho_)
+        {
+            OrthoProjection orthoProjection = CalculateOrthoProjection(nearSplit, farSplit);
+            matProjection = glm::ortho(orthoProjection.left_,
+                                       orthoProjection.right_,
+                                       orthoProjection.bottom_,
+                                       orthoProjection.top_,
+                                       orthoProjection.near_,
+                                       orthoProjection.far_);
+        }
+        else
+        {
+            CHECK_ASSERT(nearSplit > 0, __FILE__, __LINE__);
+            matProjection = glm::perspective(fovy_, aspectRatio_, nearSplit, farSplit);
+        }
+
+        return std::make_shared<Frustum>(matProjection * matView_);
     }
 
     const Frustum* Camera::GetFrustumPointer() const
     {
-		Update();
+        Update();
         return frustum_.get();
 
     }
 
     const Matrix4& Camera::GetMatViewProjection() const
     {
-		Update();
+        Update();
         return matViewProjection_;
     }
 
 
     const Matrix4& Camera::GetMatProjection() const
     {
-		Update();
-		return matProjection_;
+        Update();
+        return matProjection_;
     }
 
     const Matrix4& Camera::GetView() const
     {
-		Update();
-		return matView_;
+        Update();
+        return matView_;
     }
 
     const Matrix4& Camera::GetInverseViewMatrix() const
     {
-		Update();
+        Update();
         return matViewInverse_;
     }
 
     const Matrix4& Camera::GetViewProjectionMatrix() const
     {
-		Update();
+        Update();
         return matViewProjection_;
     }
 
     const Matrix4& Camera::GetViewProjectionInverseMatrix() const
     {
-		Update();
+        Update();
         return matViewProjectionInverse_;
     }
 
     Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
     {
-		Update();
+        Update();
         Vertex4 worldCoord = GetViewProjectionInverseMatrix() * Vertex4(screenXYZ, 1);
         return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
     }
 
     Vertex3 Camera::WorldToScreen(const Vertex3& worldXYZ) const
     {
-		Update();
+        Update();
         Vertex4 screenCoord = GetViewProjectionMatrix() * Vertex4(worldXYZ, 1);
         return Vertex3(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w);
     }
 
     Ray Camera::GetScreenRay(float screenX, float screenY) const
     {
-		Update();
+        Update();
         Vertex3 nearPoint(screenX, screenY, -1); //in normalized device coordinates (Z goes from near = -1 to far = 1)
         Vertex3 farPoint(screenX, screenY, 0); //in normalized device coordinates
 
@@ -406,26 +445,27 @@ namespace NSG
 
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
     {
-		Update();
+        Update();
         return GetFrustum()->IsVisible(node, mesh);
     }
 
-	bool Camera::IsVisible(const SceneNode& node) const
-	{
-		Update();
-		return GetFrustum()->IsVisible(node);
-	}
+    bool Camera::IsVisible(const SceneNode& node) const
+    {
+        Update();
+        return GetFrustum()->IsVisible(node);
+    }
 
     void Camera::OnDirty() const
     {
         isDirty_ = true;
+        SetUniformsNeedUpdate();
     }
 
-	const OrthoProjection& Camera::GetOrthoProjection() const
-	{ 
-		Update();
-		return orthoProjection_; 
-	}
+    const OrthoProjection& Camera::GetOrthoProjection() const
+    {
+        Update();
+        return orthoProjection_;
+    }
 
 
     void Camera::Save(pugi::xml_node& node) const
@@ -466,12 +506,37 @@ namespace NSG
         SetOrientation(orientation);
         LoadChildren(node);
 
-		isDirty_ = true;
+        isDirty_ = true;
+        SetUniformsNeedUpdate();
     }
 
     SignalCamera::PSignal Camera::SignalBeingDestroy()
     {
         static SignalCamera::PSignal sig(new SignalCamera);
         return sig;
+    }
+
+    void Camera::SetShadowSplits(int splits)
+    {
+        if (shadowSplits_ != splits)
+        {
+            shadowSplits_ = glm::clamp(splits, 1, MAX_SHADOW_SPLITS);
+            SetUniformsNeedUpdate();
+        }
+    }
+
+    void Camera::FillShaderDefines(std::string& defines, PassType passType)
+    {
+        if (PassType::LIT == passType && colorSplits_)
+            defines += "COLOR_SPLITS\n";
+    }
+
+    void Camera::EnableColorSplits(bool enable)
+    {
+        if (colorSplits_ != enable)
+        {
+            colorSplits_ = enable;
+            SetUniformsNeedUpdate();
+        }
     }
 }

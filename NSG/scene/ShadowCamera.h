@@ -32,26 +32,29 @@ namespace NSG
 	class ShadowCamera : public Camera
 	{
 	public:
-		ShadowCamera(const std::string& name);
+		ShadowCamera(const Light* light);
 		~ShadowCamera();
-		void Setup(const Light* light, const Window* window, const Camera* camera);
+		void SetupSpot(const Camera* camera);
+		void SetupPoint(const Camera* camera);
+		void SetupDirectional(int split, const Camera* camera, float nearSplit, float farSplit);
 		void SetCurrentCubeShadowMapFace(TextureTarget target);
-		bool GetVisibleShadowCasters(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
-		bool GetVisiblesShadowCastersFromCurrentFace(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
+		bool GetVisiblesShadowCasters(std::vector<SceneNode*>& result) const;
+		float GetFarSplit() const { return farSplit_; }
+		float GetInvRange() const;
+		const Vector3& GetLightGlobalPosition() const;
 	private:
-		BoundingBox GetViewBoxAndAdjustPosition(const Frustum* frustum, const Scene* scene);
-		void SetupDirCamera(const Light* light, const Camera* camera);
-		bool IsVisibleShadowCaster(const SceneNode* node) const;
-		bool IsVisibleShadowCasterFromCurrentFace(const SceneNode* node) const;
-		void QuantizeDirLightShadowCamera(const BoundingBox& viewBox);
+		BoundingBox GetViewBoxAndAdjustPosition(const Frustum* frustum, bool receivers, bool casters, bool& isEmpty);
+		void QuantizeDirLightShadowCamera(int split, const BoundingBox& viewBox);
 
-        Node dirPositiveX_;
+		const Light* light_;
+		Node dirPositiveX_;
         Node dirNegativeX_;
         Node dirPositiveY_;
         Node dirNegativeY_;
         Node dirPositiveZ_;
         Node dirNegativeZ_;
-        LightType type_;
-        const Light* light_;
+        float nearSplit_;
+        float farSplit_;
+        float viewRange_;
 	};
 }

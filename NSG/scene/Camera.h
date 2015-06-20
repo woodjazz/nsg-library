@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Util.h"
 #include "SceneNode.h"
 
 namespace NSG
@@ -32,7 +33,7 @@ namespace NSG
 	class Camera : public SceneNode
 	{
 	public:
-		Camera(const std::string& name);
+		Camera(const std::string& name = GetUniqueName("Camera"));
 		~Camera();
 		void SetWindow(Window* window);
 		void EnableOrtho();
@@ -67,6 +68,7 @@ namespace NSG
 		const Matrix4& GetMatProjection() const;
 		const PFrustum GetFrustum() const;
 		const Frustum* GetFrustumPointer() const;
+		PFrustum GetFrustumSplit(float nearSplit, float farSplit) const;
 		bool IsVisible(const Node& node, Mesh& mesh) const;
 		bool IsVisible(const SceneNode& node) const;
 		void OnDirty() const override;
@@ -77,9 +79,13 @@ namespace NSG
 		void Load(const pugi::xml_node& node) override;
 		const OrthoProjection& GetOrthoProjection() const;
 		void UnRegisterWindow();
+		void SetShadowSplits(int splits);
+		int GetShadowSplits() const { return shadowSplits_; }
+		void EnableColorSplits(bool enable);
+		void FillShaderDefines(std::string& defines, PassType passType);
 		static SignalCamera::PSignal SignalBeingDestroy();
 	private:
-		void CalculateOrthoProjection() const;
+		OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;
 		float CalculateAspectRatio() const;
 		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
 		void UpdateProjection() const;
@@ -108,5 +114,7 @@ namespace NSG
 		mutable OrthoProjection orthoProjection_;
 		mutable bool isDirty_;
 		bool autoAspectRatio_;
+		int shadowSplits_;
+		bool colorSplits_; // used to debug splits in shader (each split in one color)
 	};
 }

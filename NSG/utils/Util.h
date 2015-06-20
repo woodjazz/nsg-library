@@ -42,7 +42,11 @@ namespace NSG
     btQuaternion ToBtQuaternion(const Quaternion& q);
     Quaternion ToQuaternion(const btQuaternion& q);
 
-	Vector3 Lerp(const Vector3& lhs, const Vector3& rhs, float t);
+    template<typename T>
+	T Lerp(const T& lhs, const T& rhs, float t)
+	{
+		return lhs * (1.0f - t) + rhs * t;
+	}
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
 	inline unsigned NextPowerOfTwo(unsigned value)
 	{

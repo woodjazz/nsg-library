@@ -136,6 +136,8 @@ namespace NSG
         PScene GetScene() const { return scene_.lock(); }
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);
 		Matrix4 GetTransform() const;
+        void SetAsArmature(bool isArmature) { isArmature_ = isArmature; }
+        bool IsArmature() const { return isArmature_; }
     protected:
         std::string name_;
         std::vector<PNode> children_;
@@ -163,5 +165,6 @@ namespace NSG
         mutable bool dirty_;
         bool enabled_;
         mutable bool isScaleUniform_;
+        bool isArmature_;
     };
 }

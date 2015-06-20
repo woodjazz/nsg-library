@@ -66,5 +66,7 @@ namespace NSG
 		Engine* engine_;
 		SignalWindow::PSlot slotWindowCreated_;
 		SignalEngine::PSlot slotEngineCreated_;
+		Vector3 originalPosition_;
+		Quaternion originalOrientation_;
 	};
 }

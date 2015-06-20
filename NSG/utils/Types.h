@@ -404,11 +404,13 @@ namespace NSG
     {
         DIFFUSE_MAP,
         NORMAL_MAP,
+        AO_MAP = NORMAL_MAP,
         LIGHT_MAP,
-        SPECULAR_MAP,
-        AO_MAP,
-        MAX_MATERIAL_MAPS,
-        SHADOW_MAP = MAX_MATERIAL_MAPS,
+        SPECULAR_MAP = LIGHT_MAP,
+        SHADOW_MAP0,
+        SHADOW_MAP1,
+        SHADOW_MAP2,
+        SHADOW_MAP3,
         MAX_MAPS
     };
 

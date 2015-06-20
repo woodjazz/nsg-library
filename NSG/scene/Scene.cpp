@@ -229,9 +229,18 @@ namespace NSG
         for (auto& obj : needUpdate_)
             octree_->InsertUpdate(obj);
         needUpdate_.clear();
-        FrustumOctreeQuery query(visibles, camera);
+        FrustumOctreeQuery query(visibles, camera->GetFrustum().get());
         octree_->Execute(query);
     }
+
+	void Scene::GetVisibleNodes(const Frustum* frustum, std::vector<SceneNode*>& visibles) const
+	{
+		for (auto& obj : needUpdate_)
+			octree_->InsertUpdate(obj);
+		needUpdate_.clear();
+		FrustumOctreeQuery query(visibles, frustum);
+		octree_->Execute(query);
+	}
 
     std::vector<Camera*> Scene::GetCameras() const
     {

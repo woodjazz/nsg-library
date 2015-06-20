@@ -186,6 +186,7 @@ namespace NSG
         if (!IsSerializable())
             return;
         node.append_attribute("name").set_value(GetName().c_str());
+        node.append_attribute("isArmature").set_value(IsArmature());
         node.append_attribute("nodeType").set_value("SceneNode");
         node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
         node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
@@ -215,6 +216,8 @@ namespace NSG
     void SceneNode::Load(const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
+
+        SetAsArmature(node.attribute("isArmature").as_bool());
 
         Vertex3 position = ToVertex3(node.attribute("position").as_string());
         SetPosition(position);

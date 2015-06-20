@@ -53,11 +53,24 @@ misrepresented as being the original software.
 #define     NSG_KEY_D         SDLK_d
 #define     NSG_KEY_E         SDLK_e
 #define     NSG_KEY_F         SDLK_f
+#define     NSG_KEY_M         SDLK_m
 #define     NSG_KEY_W         SDLK_w
+#define     NSG_KEY_R         SDLK_r
 #define     NSG_KEY_S         SDLK_s
 #define     NSG_KEY_Q         SDLK_q
 #define     NSG_KEY_LALT      SDLK_LALT
 #define     NSG_KEY_LSHIFT    SDLK_LSHIFT
+
+#define     NSG_KEY_0		SDLK_0
+#define     NSG_KEY_1		SDLK_1
+#define     NSG_KEY_2		SDLK_2
+#define     NSG_KEY_3		SDLK_3
+#define     NSG_KEY_4		SDLK_4
+#define     NSG_KEY_5		SDLK_5
+#define     NSG_KEY_6		SDLK_6
+#define     NSG_KEY_7		SDLK_7
+#define     NSG_KEY_8		SDLK_8
+#define     NSG_KEY_9		SDLK_9
 
 
 #define     NSG_BUTTON_LEFT     SDL_BUTTON_LEFT

@@ -53,6 +53,7 @@ namespace NSG
 		void Render();
         void NeedUpdate(SceneNode* obj);
 		void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
+		void GetVisibleNodes(const Frustum* frustum, std::vector<SceneNode*>& visibles) const;
 		void Save(pugi::xml_node& node) const override;
         void Load(const pugi::xml_node& node) override;
         bool GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const;
