@@ -56,8 +56,9 @@ namespace NSG
           sensorFit_(CameraSensorFit::HORIZONTAL),
           isDirty_(true),
           autoAspectRatio_(true),
-          shadowSplits_(MAX_SHADOW_SPLITS),
-          colorSplits_(false)
+          shadowSplits_(1),
+          colorSplits_(false),
+          shadowSplitLogFactor_(0.5f)
     {
         SetInheritScale(false);
         Update();
@@ -67,7 +68,8 @@ namespace NSG
             auto window = Graphics::this_->GetWindow();
             if (window)
                 SetWindow(window);
-            Graphics::this_->SetCamera(this);
+            if (!Graphics::this_->GetCamera())
+                Graphics::this_->SetCamera(this);
         }
 
         slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
@@ -370,14 +372,14 @@ namespace NSG
 
     }
 
-    const Matrix4& Camera::GetMatViewProjection() const
+    const Matrix4& Camera::GetViewProjection() const
     {
         Update();
         return matViewProjection_;
     }
 
 
-    const Matrix4& Camera::GetMatProjection() const
+    const Matrix4& Camera::GetProjection() const
     {
         Update();
         return matProjection_;
@@ -389,19 +391,7 @@ namespace NSG
         return matView_;
     }
 
-    const Matrix4& Camera::GetInverseViewMatrix() const
-    {
-        Update();
-        return matViewInverse_;
-    }
-
-    const Matrix4& Camera::GetViewProjectionMatrix() const
-    {
-        Update();
-        return matViewProjection_;
-    }
-
-    const Matrix4& Camera::GetViewProjectionInverseMatrix() const
+    const Matrix4& Camera::GetViewProjectionInverse() const
     {
         Update();
         return matViewProjectionInverse_;
@@ -410,14 +400,14 @@ namespace NSG
     Vertex3 Camera::ScreenToWorld(const Vertex3& screenXYZ) const
     {
         Update();
-        Vertex4 worldCoord = GetViewProjectionInverseMatrix() * Vertex4(screenXYZ, 1);
+        Vertex4 worldCoord = GetViewProjectionInverse() * Vertex4(screenXYZ, 1);
         return Vertex3(worldCoord.x / worldCoord.w, worldCoord.y / worldCoord.w, worldCoord.z / worldCoord.w);
     }
 
     Vertex3 Camera::WorldToScreen(const Vertex3& worldXYZ) const
     {
         Update();
-        Vertex4 screenCoord = GetViewProjectionMatrix() * Vertex4(worldXYZ, 1);
+        Vertex4 screenCoord = GetViewProjection() * Vertex4(worldXYZ, 1);
         return Vertex3(screenCoord.x / screenCoord.w, screenCoord.y / screenCoord.w, screenCoord.z / screenCoord.w);
     }
 
@@ -539,4 +529,15 @@ namespace NSG
             SetUniformsNeedUpdate();
         }
     }
+
+    void Camera::SetShadowSplitLogFactor(float factor)
+    {
+        shadowSplitLogFactor_ = factor;
+    }
+
+    float Camera::GetShadowSplitLogFactor() const
+    {
+        return shadowSplitLogFactor_;
+    }
+
 }

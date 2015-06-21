@@ -81,6 +81,103 @@ namespace NSG
         DisableOrtho();
     }
 
+    BoundingBox ShadowCamera::GetViewBox(const Frustum* frustum, bool receivers, bool casters)
+    {
+        auto scene = light_->GetScene().get();
+        BoundingBox result;
+        std::vector<SceneNode*> visibles;
+        scene->GetVisibleNodes(frustum, visibles);
+        for (auto& visible : visibles)
+        {
+            auto material = visible->GetMaterial().get();
+            if ((receivers && material->ReceiveShadows()) || (casters && material->CastShadow()))
+            {
+                BoundingBox bb(visible->GetWorldBoundingBox());
+                result.Merge(bb);
+            }
+        }
+        return result;
+    }
+
+    #if 1
+    void ShadowCamera::SetupDirectional(int split, const Camera* camera, float nearSplit, float farSplit)
+    {
+        CHECK_ASSERT(!GetParent(), __FILE__, __LINE__);
+        nearSplit_ = nearSplit;
+        farSplit_ = farSplit;
+
+        auto scene = light_->GetScene().get();
+        EnableOrtho();
+        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL, __FILE__, __LINE__);
+        Camera shadowCam;
+        auto orientation = light_->GetGlobalOrientation();
+        auto dir = light_->GetLookAtDirection();
+        auto initialPos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * dir;
+        shadowCam.SetGlobalOrientation(orientation);
+        shadowCam.SetGlobalPosition(initialPos);
+
+        auto camFrustum = camera->GetFrustumSplit(nearSplit, farSplit);
+
+        BoundingBox splitBB(*camFrustum);
+        auto receiversBB = GetViewBox(camFrustum.get(), true, false);
+        if (receiversBB.IsDefined())
+            splitBB.Clip(receiversBB);
+
+        {
+            BoundingBox shadowCamSplit(splitBB);
+            shadowCamSplit.Transform(shadowCam.GetView());
+            auto viewSize = shadowCamSplit.Size();
+            auto viewCenter = shadowCamSplit.Center();
+            Vector3 adjust(viewCenter.x, viewCenter.y, 0);
+            initialPos += orientation * adjust;
+            shadowCam.EnableOrtho();
+            shadowCam.SetPosition(initialPos);
+            shadowCam.SetAspectRatio(viewSize.x / viewSize.y);
+            shadowCam.SetOrthoScale(viewSize.x);
+            shadowCam.SetNearClip(0);
+            shadowCam.SetFarClip(-shadowCamSplit.min_.z);
+        }
+
+        auto shadowCamFrustum = shadowCam.GetFrustum();
+        BoundingBox castersBB = GetViewBox(shadowCamFrustum.get(), false, true);
+        if(castersBB.IsDefined())
+            splitBB.Merge(castersBB);
+
+        splitBB.Transform(shadowCam.GetView());
+        BoundingBox viewBox(splitBB);
+
+        auto nearZ = -viewBox.max_.z;
+        auto finalPos = initialPos + nearZ * dir;
+
+        auto viewCenter = viewBox.Center();
+        Vector3 adjust(viewCenter.x, viewCenter.y, 0);
+        SetPosition(finalPos + orientation * adjust);
+        SetOrientation(orientation);
+
+        auto viewSize = viewBox.Size();
+        #if 0
+        {
+            const float QUANTIZE = 0.5f;
+            const float MIN_VIEW_SIZE = 3.f;
+            viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
+            viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
+            viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
+            viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
+        }
+        #endif
+
+        SetNearClip(0);
+        auto farZ = -viewBox.min_.z - nearZ;
+        SetFarClip(farZ);
+
+        SetAspectRatio(viewSize.x / viewSize.y);
+        SetOrthoScale(viewSize.x);
+        auto c1 = viewSize.x;
+        auto c2 = viewSize.y;
+        auto diagonal = std::sqrt(c1 * c1 + c2 * c2);
+        viewRange_ = std::max(farZ, diagonal);
+    }
+    #else
     void ShadowCamera::SetupDirectional(int split, const Camera* camera, float nearSplit, float farSplit)
     {
         nearSplit_ = nearSplit;
@@ -141,6 +238,7 @@ namespace NSG
             viewRange_ = -1;
         }
     }
+    #endif
 
     BoundingBox ShadowCamera::GetViewBoxAndAdjustPosition(const Frustum* frustum, bool receivers, bool casters, bool& isEmpty)
     {
@@ -186,8 +284,6 @@ namespace NSG
             return frustumVolume;
         }
     }
-
-
     void ShadowCamera::QuantizeDirLightShadowCamera(int split, const BoundingBox& viewBox)
     {
         Vector2 center(viewBox.Center());
@@ -199,6 +295,7 @@ namespace NSG
 
         #if 1
         {
+            #if 1
             //STEP 1: Quantize size to reduce swimming
             const float QUANTIZE = 0.5f;
             const float MIN_VIEW_SIZE = 3.f;
@@ -206,6 +303,7 @@ namespace NSG
             viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));
             viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
             viewSize.y = std::max(viewSize.y * viewSize.y * QUANTIZE, MIN_VIEW_SIZE);
+            #endif
         }
         #else
         {
@@ -234,6 +332,7 @@ namespace NSG
         auto diagonal = std::sqrt(c1 * c1 + c2 * c2);
         viewRange_ = diagonal;
 
+        #if 1
         if (shadowMapWidth > 0)
         {
             //STEP 2: Discretize the position of the frustum
@@ -245,6 +344,7 @@ namespace NSG
             Vector3 snap(-fmodf(viewPos.x, texelSize.x), -fmodf(viewPos.y, texelSize.y), 0.0f);
             Translate(rot * snap, TransformSpace::TS_WORLD);
         }
+        #endif
     }
 
     void ShadowCamera::SetCurrentCubeShadowMapFace(TextureTarget target)
@@ -288,11 +388,11 @@ namespace NSG
         return !result.empty();
     }
 
-    float ShadowCamera::GetInvRange() const
+    float ShadowCamera::GetRange() const
     {
         if (LightType::DIRECTIONAL == light_->GetType())
-            return 1.f / viewRange_;
-        return light_->GetInvRange();
+            return viewRange_;
+        return light_->GetRange();
     }
 
     const Vector3& ShadowCamera::GetLightGlobalPosition() const
@@ -301,4 +401,17 @@ namespace NSG
             return GetGlobalPosition();
         return light_->GetGlobalPosition();
     }
+    #if 0
+    const Matrix4& ShadowCamera::GetProjection() const
+    {
+        projection_ = cropMatrix_ * Camera::GetProjection();
+        return projection_;
+    }
+
+    const Matrix4& ShadowCamera::GetViewProjection() const
+    {
+        viewProjection_ = cropMatrix_ * Camera::GetProjection() * Camera::GetView();
+        return viewProjection_;
+    }
+    #endif
 }

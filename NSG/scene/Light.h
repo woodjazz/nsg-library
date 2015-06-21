@@ -51,7 +51,7 @@ namespace NSG
 		const Color& GetShadowColor() const { return shadowColor_; }
 		void SetDistance(float distance);
 		float GetDistance() const { return distance_; }
-		float GetInvRange() const { return invRange_; }
+		float GetRange() const { return range_; }
 		void EnableShadows(bool enable) { shadows_ = enable; }
 		bool DoShadows() const;
 		PTexture GetShadowMap(int idx) const;
@@ -70,7 +70,7 @@ namespace NSG
 		int CalculateSplits(const Camera* camera, float splits[MAX_SHADOW_SPLITS]) const;
 		FrameBuffer* GetShadowFrameBuffer(int idx) const;
 		void CalculateColor();
-		void CalculateInvRange();
+		void CalculateRange();
 		void Generate2DShadowMap(int split);
 		void GenerateShadowMapCubeFace(int split);
 		int GetShadowFrameBufferSize(int split) const;
@@ -86,13 +86,11 @@ namespace NSG
         Color specularColor_; // calculated
         Color shadowColor_;
         float distance_;
-        float invRange_; // calculated
+        float range_; // calculated
         bool shadows_;
         float shadowClipStart_;
         float shadowClipEnd_;
         bool onlyShadow_;
-        mutable int width_; // renderer window's width
-		mutable int height_; // renderer window's height
         PFrameBuffer shadowFrameBuffer_[MAX_SHADOW_SPLITS];
         float shadowBias_; // Bias is used to add a slight offset distance between an object and the shadows cast by it.
 		PShadowCamera shadowCamera_[MAX_SHADOW_SPLITS];

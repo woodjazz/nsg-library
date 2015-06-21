@@ -33,13 +33,11 @@ namespace NSG
           specularColor_(1),
           shadowColor_(0, 0, 0, 1),
           distance_(30),
-          invRange_(1.f / distance_),
+          range_(distance_),
           shadows_(true),
           shadowClipStart_(0.1f), // same minimum as blender
           shadowClipEnd_(30.f), // same as distance_
           onlyShadow_(false),
-          width_(0),
-          height_(0),
           shadowBias_(0.005f)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
@@ -51,7 +49,7 @@ namespace NSG
             shadowFrameBuffer_[i]->EnableAutoSize(false);
         }
 
-        CalculateInvRange();
+        CalculateRange();
     }
 
     Light::~Light()
@@ -140,7 +138,7 @@ namespace NSG
             }
 
             type_ = type;
-            CalculateInvRange();
+            CalculateRange();
             OnDirty();
             SetUniformsNeedUpdate();
         }
@@ -237,7 +235,7 @@ namespace NSG
     void Light::SetDistance(float distance)
     {
         distance_ = distance;
-        CalculateInvRange();
+        CalculateRange();
         SetUniformsNeedUpdate();
     }
 
@@ -258,30 +256,29 @@ namespace NSG
         return shadowFrameBuffer_[idx]->GetColorTexture();
     }
 
-    void Light::CalculateInvRange()
+    void Light::CalculateRange()
     {
         if (LightType::SPOT == type_)
         {
-            auto range = glm::clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
-            invRange_ = 1.f / std::max(range, glm::epsilon<float>());
+            range_ = glm::clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
         }
         else if (LightType::POINT == type_)
-            invRange_ = 1.f / std::max(distance_, glm::epsilon<float>());
+            range_ = std::max(distance_, glm::epsilon<float>());
         else
-            invRange_ = glm::epsilon<float>();
+            range_ = MAX_WORLD_SIZE;
 
     }
 
     void Light::SetShadowClipStart(float value)
     {
         shadowClipStart_ = value;
-        CalculateInvRange();
+        CalculateRange();
     }
 
     void Light::SetShadowClipEnd(float value)
     {
         shadowClipEnd_ = value;
-        CalculateInvRange();
+        CalculateRange();
     }
 
     ShadowCamera* Light::GetShadowCamera(int idx) const
@@ -333,8 +330,8 @@ namespace NSG
     int Light::GetShadowFrameBufferSize(int split) const
     {
         CHECK_ASSERT(split < MAX_SHADOW_SPLITS, __FILE__, __LINE__);
-        //static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 1024, 512, 256, 128 };
-        static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 1024, 1024, 1024, 1024 };
+        static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 1024, 512, 256, 128 };
+        //static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 1024, 1024, 1024, 1024 };
         return SplitMapSize[split];
     }
 
@@ -369,7 +366,7 @@ namespace NSG
     {
         float camNear = camera->GetZNear();
         float camFar  = camera->GetZFar();
-        const float ShadowSplitLogFactor = 0.9f;
+        float shadowSplitLogFactor = camera->GetShadowSplitLogFactor();
         int nSplits = camera->GetShadowSplits();
         float cascadeCount = (float)camera->GetShadowSplits();
         float zDistance = camFar - camNear;
@@ -378,7 +375,7 @@ namespace NSG
             float factor = (i + 1.f) / cascadeCount;
             splits[i] = Lerp(camNear + factor * zDistance,
                              camNear * powf(camFar / camNear, factor),
-                             ShadowSplitLogFactor);
+                             shadowSplitLogFactor);
         }
         splits[nSplits - 1] = camFar;
         return nSplits;

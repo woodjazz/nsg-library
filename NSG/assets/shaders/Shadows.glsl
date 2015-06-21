@@ -67,8 +67,17 @@
 
     vec4 CalcShadowFactor(vec3 world2light)
     {
+        const vec4 WhiteColor = vec4(1.0);
+        const vec4 RedColor = vec4(1.0, 0.0, 0.0, 1.0);
+        const vec4 GreenColor = vec4(0.0, 1.0, 0.0, 1.0);
+        const vec4 BlueColor = vec4(0.0, 0.0, 1.0, 1.0);
+        const vec4 YellowColor = vec4(1.0, 1.0, 0.0, 1.0);
         vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));
         vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1
+        //if(coords.x >= 1.0 || coords.x <= -1.0 || coords.y >= 1.0 || coords.y <= -1.0)
+        //    return vec4(1.0,0.0,0.0,1.0);
+        //if(coords.z >= 1.0 || coords.z <= -1.0)
+        //    return vec4(0.0,1.0,0.0,1.0);
         coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1
         // Take four samples and average them
         float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));
@@ -81,15 +90,15 @@
         #ifdef COLOR_SPLITS
             int split = GetSplit();
             if(split == 0)
-                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(1.0);
+                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? RedColor : WhiteColor;
             else if(split == 1)
-                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? vec4(0.0, 1.0, 0.0, 1.0) : vec4(1.0);
+                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? GreenColor : WhiteColor;
             else if(split == 2)
-                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? vec4(0.0, 0.0, 1.0, 1.0) : vec4(1.0);
+                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? BlueColor : WhiteColor;
             else
-                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? vec4(0.0, 0.0, 0.0, 1.0) : vec4(1.0);
+                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? YellowColor : WhiteColor;
         #else
-            return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? u_shadowColor : vec4(1.0);
+            return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? u_shadowColor : WhiteColor;
         #endif
     }
 

@@ -172,5 +172,6 @@ namespace NSG
         SceneNode* node_;
         Material* material_;
         const Light* light_;
+        const Camera* lastCamera_;
     };
 }

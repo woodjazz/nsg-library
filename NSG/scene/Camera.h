@@ -30,91 +30,92 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Camera : public SceneNode
-	{
-	public:
-		Camera(const std::string& name = GetUniqueName("Camera"));
-		~Camera();
-		void SetWindow(Window* window);
-		void EnableOrtho();
-		void DisableOrtho();
-		void SetFOV(float fovy); // in degrees
-		void SetHalfHorizontalFov(float hhfov); // in radians
-		void SetNearClip(float zNear);
-		void SetFarClip(float zFar);
-		void EnableAutoAspectRatio(bool enable) { autoAspectRatio_ = enable; }
-		void SetAspectRatio(unsigned width, unsigned height);
-		void SetAspectRatio(float aspect);
-		float GetAspectRatio() const { return aspectRatio_; }
-		void SetViewportFactor(const Vector4& viewportFactor);
-		const Vector4& GetViewportFactor() const { return viewportFactor_; }
-		void SetOrthoScale(float orthoScale);
-		float GetOrthoScale() const { return orthoScale_; }
+    class Camera : public SceneNode
+    {
+    public:
+        Camera(const std::string& name = GetUniqueName("Camera"));
+        ~Camera();
+        void SetWindow(Window* window);
+        void EnableOrtho();
+        void DisableOrtho();
+        void SetFOV(float fovy); // in degrees
+        void SetHalfHorizontalFov(float hhfov); // in radians
+        void SetNearClip(float zNear);
+        void SetFarClip(float zFar);
+        void EnableAutoAspectRatio(bool enable) { autoAspectRatio_ = enable; }
+        void SetAspectRatio(unsigned width, unsigned height);
+        void SetAspectRatio(float aspect);
+        float GetAspectRatio() const { return aspectRatio_; }
+        void SetViewportFactor(const Vector4& viewportFactor);
+        const Vector4& GetViewportFactor() const { return viewportFactor_; }
+        void SetOrthoScale(float orthoScale);
+        float GetOrthoScale() const { return orthoScale_; }
         bool IsOrtho() const { return isOrtho_; }
         void SetSensorFit(CameraSensorFit sensorFit);
         //XYZ are in normalized device coordinates (-1, 1)
-        Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const; 
+        Vertex3 ScreenToWorld(const Vertex3& screenXYZ) const;
         //Returned XYZ values are in normalized device coordinates (-1, 1)
         //Returned Z value is interpreted as a distance from the camera.
         Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
-		//XY are in normalized device coordinates (-1, 1)
+        //XY are in normalized device coordinates (-1, 1)
         Ray GetScreenRay(float screenX, float screenY) const;
-		static Ray GetRay(float screenX, float screenY);
-		const Matrix4& GetView() const;
-		const Matrix4& GetMatViewProjection() const;
-		const Matrix4& GetInverseViewMatrix() const;
-		const Matrix4& GetViewProjectionMatrix() const;
-		const Matrix4& GetViewProjectionInverseMatrix() const;
-		const Matrix4& GetMatProjection() const;
-		const PFrustum GetFrustum() const;
-		const Frustum* GetFrustumPointer() const;
-		PFrustum GetFrustumSplit(float nearSplit, float farSplit) const;
-		bool IsVisible(const Node& node, Mesh& mesh) const;
-		bool IsVisible(const SceneNode& node) const;
-		void OnDirty() const override;
-		float GetZNear() const { return zNear_; }
-		float GetZFar() const { return zFar_; }
-		float GetFov() const { return fovy_; }
-		void Save(pugi::xml_node& node) const override;
-		void Load(const pugi::xml_node& node) override;
-		const OrthoProjection& GetOrthoProjection() const;
-		void UnRegisterWindow();
-		void SetShadowSplits(int splits);
-		int GetShadowSplits() const { return shadowSplits_; }
-		void EnableColorSplits(bool enable);
-		void FillShaderDefines(std::string& defines, PassType passType);
-		static SignalCamera::PSignal SignalBeingDestroy();
-	private:
-		OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;
-		float CalculateAspectRatio() const;
-		void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
-		void UpdateProjection() const;
-		void UpdateViewProjection() const;
-		void UpdateFrustum();
-		void Update() const;
-		mutable Matrix4 matView_;
-		mutable Matrix4 matViewInverse_;
-		mutable Matrix4 matProjection_;
-		mutable Matrix4 matViewProjection_;
-		mutable Matrix4 matViewProjectionInverse_;
-		float fovy_; // in radians
-		float zNear_;
-		float zFar_;
-		Vector4 viewportFactor_;
-		bool isOrtho_;
-		unsigned viewWidth_;
-		unsigned viewHeight_;
-		float aspectRatio_;
-		mutable PFrustum frustum_;
-		SignalSizeChanged::PSlot slotViewChanged_;
-		Window* window_;
-		SignalWindow::PSlot slotWindowCreated_;
-		float orthoScale_;
-		CameraSensorFit sensorFit_;
-		mutable OrthoProjection orthoProjection_;
-		mutable bool isDirty_;
-		bool autoAspectRatio_;
-		int shadowSplits_;
-		bool colorSplits_; // used to debug splits in shader (each split in one color)
-	};
+        static Ray GetRay(float screenX, float screenY);
+        const Matrix4& GetView() const;
+        virtual const Matrix4& GetViewProjection() const;
+        virtual const Matrix4& GetProjection() const;
+        const PFrustum GetFrustum() const;
+        const Frustum* GetFrustumPointer() const;
+        PFrustum GetFrustumSplit(float nearSplit, float farSplit) const;
+        bool IsVisible(const Node& node, Mesh& mesh) const;
+        bool IsVisible(const SceneNode& node) const;
+        void OnDirty() const override;
+        float GetZNear() const { return zNear_; }
+        float GetZFar() const { return zFar_; }
+        float GetFov() const { return fovy_; }
+        void Save(pugi::xml_node& node) const override;
+        void Load(const pugi::xml_node& node) override;
+        const OrthoProjection& GetOrthoProjection() const;
+        void UnRegisterWindow();
+        void SetShadowSplits(int splits);
+        int GetShadowSplits() const { return shadowSplits_; }
+        void EnableColorSplits(bool enable);
+        void FillShaderDefines(std::string& defines, PassType passType);
+        void SetShadowSplitLogFactor(float factor);
+        float GetShadowSplitLogFactor() const;
+        static SignalCamera::PSignal SignalBeingDestroy();
+    private:
+    	const Matrix4& GetViewProjectionInverse() const;
+        OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;
+        float CalculateAspectRatio() const;
+        void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
+        void UpdateProjection() const;
+        void UpdateViewProjection() const;
+        void UpdateFrustum();
+        void Update() const;
+        mutable Matrix4 matView_;
+        mutable Matrix4 matViewInverse_;
+        mutable Matrix4 matProjection_;
+        mutable Matrix4 matViewProjection_;
+        mutable Matrix4 matViewProjectionInverse_;
+        float fovy_; // in radians
+        float zNear_;
+        float zFar_;
+        Vector4 viewportFactor_;
+        bool isOrtho_;
+        unsigned viewWidth_;
+        unsigned viewHeight_;
+        float aspectRatio_;
+        mutable PFrustum frustum_;
+        SignalSizeChanged::PSlot slotViewChanged_;
+        Window* window_;
+        SignalWindow::PSlot slotWindowCreated_;
+        float orthoScale_;
+        CameraSensorFit sensorFit_;
+        mutable OrthoProjection orthoProjection_;
+        mutable bool isDirty_;
+        bool autoAspectRatio_;
+        int shadowSplits_;
+        bool colorSplits_; // used to debug splits in shader (each split in one color)
+        float shadowSplitLogFactor_;
+    };
 }

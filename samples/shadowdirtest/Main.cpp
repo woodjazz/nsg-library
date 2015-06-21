@@ -49,8 +49,8 @@ int NSG_MAIN(int argc, char* argv[])
     scene = std::make_shared<Scene>("scene");
     auto light = scene->CreateChild<Light>();
     light->SetType(LightType::DIRECTIONAL);
-	light->SetShadowColor(COLOR_GREEN);
-	light->SetBias(0.1f);
+	//light->SetShadowColor(COLOR_GREEN);
+	light->SetBias(0.0f);
     auto camera = scene->CreateChild<Camera>();
 #ifdef TEST1
 	light->SetGlobalLookAt(Vector3(-10, -1, 0));
@@ -65,7 +65,7 @@ int NSG_MAIN(int argc, char* argv[])
 	camera->SetFarClip(100);
     auto control = std::make_shared<CameraControl>(camera);
 	auto plane = Mesh::Create<BoxMesh>();
-	plane->Set(200, 0.1f, 200);
+	plane->Set(500, 0.1f, 500);
 	auto floor = CreateObject(plane, COLOR_WHITE, Vector3(0));
 	floor->GetMaterial()->CastShadow(false);
 #ifdef TEST1

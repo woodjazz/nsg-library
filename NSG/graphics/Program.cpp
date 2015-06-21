@@ -101,7 +101,8 @@ namespace NSG
           mesh_(nullptr),
           node_(nullptr),
           material_(nullptr),
-          light_(nullptr)
+          light_(nullptr),
+          lastCamera_(nullptr)
     {
         memset(&textureLoc_, -1, sizeof(textureLoc_));
         memset(&materialLoc_, -1, sizeof(materialLoc_));
@@ -366,7 +367,7 @@ namespace NSG
 
             if (scene)
             {
-                if(scene->UniformsNeedUpdate())
+                if (scene->UniformsNeedUpdate())
                     glUniform4fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
             }
             else if (sceneColor_ == Color(-1))
@@ -505,11 +506,13 @@ namespace NSG
         {
             Camera* camera = Graphics::this_->GetCamera();
 
-            if (camera && camera->UniformsNeedUpdate())
+            if (camera && (camera != lastCamera_ || camera->UniformsNeedUpdate()))
             {
+                lastCamera_ = camera;
+
                 if (viewProjectionLoc_ != -1)
                 {
-                    const Matrix4& m = camera->GetMatViewProjection();
+                    const Matrix4& m = camera->GetViewProjection();
                     glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
@@ -521,7 +524,7 @@ namespace NSG
 
                 if (projectionLoc_ != -1)
                 {
-                    const Matrix4& m = camera->GetMatProjection();
+                    const Matrix4& m = camera->GetProjection();
                     glUniformMatrix4fv(projectionLoc_, 1, GL_FALSE, glm::value_ptr(m));
                 }
 
@@ -556,21 +559,35 @@ namespace NSG
                 Vector4 shadowCameraZFarSplits;
                 const Camera* camera = Graphics::this_->GetCamera();
                 bool uniformsNeedUpdate = camera->UniformsNeedUpdate();
-                int splits = camera->GetShadowSplits();
-                for (int i = 0; i < splits; i++)
+                auto totalRange = 0.f;
+                for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
                 {
                     auto shadowCamera = light_->GetShadowCamera(i);
                     uniformsNeedUpdate |= shadowCamera->UniformsNeedUpdate();
                     shadowCameraZFarSplits[i] = shadowCamera->GetFarSplit();
-                    invRangeSplits[i] = shadowCamera->GetInvRange();
+                    if (light_->GetType() == LightType::DIRECTIONAL)
+                    {
+                        auto ortho = shadowCamera->GetOrthoProjection();
+                        auto range = std::max(ortho.right_ - ortho.left_, ortho.top_ - ortho.bottom_);
+                        range = std::max(range, ortho.far_ - ortho.near_);
+                        totalRange += range;
+                    }
+                    else
+                    {
+                        totalRange = shadowCamera->GetRange();
+                        break;
+                    }
                 }
+                
+                for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
+                    invRangeSplits[i] = 1.f/totalRange;
 
                 if (uniformsNeedUpdate)
                 {
                     glUniform4fv(lightInvRangeLoc_, 1, &invRangeSplits[0]);
                     glUniform4fv(shadowCameraZFarLoc_, 1, &shadowCameraZFarSplits[0]);
-                    LOGI("InvRange = %f %f %f %f", invRangeSplits[0], invRangeSplits[1], invRangeSplits[2], invRangeSplits[3]);
-                    LOGI("zFar = %f %f %f %f", shadowCameraZFarSplits[0], shadowCameraZFarSplits[1], shadowCameraZFarSplits[2], shadowCameraZFarSplits[3]);
+                    //LOGI("InvRange = %f %f %f %f", invRangeSplits[0], invRangeSplits[1], invRangeSplits[2], invRangeSplits[3]);
+                    //LOGI("zFar = %f %f %f %f", shadowCameraZFarSplits[0], shadowCameraZFarSplits[1], shadowCameraZFarSplits[2], shadowCameraZFarSplits[3]);
                 }
             }
         }
@@ -615,7 +632,7 @@ namespace NSG
                     if (lightViewProjectionLoc_[i] != -1)
                     {
                         auto shadowCamera = light_->GetShadowCamera(i);
-                        const Matrix4& m = shadowCamera->GetMatViewProjection();
+                        const Matrix4& m = shadowCamera->GetViewProjection();
                         glUniformMatrix4fv(lightViewProjectionLoc_[i], 1, GL_FALSE, glm::value_ptr(m));
                     }
 
