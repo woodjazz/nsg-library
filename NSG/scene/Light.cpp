@@ -23,6 +23,7 @@ namespace NSG
 {
     Light::Light(const std::string& name)
         : SceneNode(name),
+          range_(-1),
           type_(LightType::POINT),
           energy_(1),
           color_(1),
@@ -33,12 +34,12 @@ namespace NSG
           specularColor_(1),
           shadowColor_(0, 0, 0, 1),
           distance_(30),
-          range_(distance_),
           shadows_(true),
           shadowClipStart_(0.1f), // same minimum as blender
           shadowClipEnd_(30.f), // same as distance_
           onlyShadow_(false),
-          shadowBias_(0.005f)
+          shadowBias_(0.005f),
+          shadowSplits_(1)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
@@ -205,7 +206,7 @@ namespace NSG
                 defines += "HAS_SPOT_LIGHT\n";
             }
 
-            if (shadows_ && material->ReceiveShadows())
+            if (DoShadows() && material->ReceiveShadows())
             {
                 if (LightType::POINT == type_)
                     defines += "CUBESHADOWMAP\n";
@@ -234,14 +235,17 @@ namespace NSG
 
     void Light::SetDistance(float distance)
     {
-        distance_ = distance;
-        CalculateRange();
-        SetUniformsNeedUpdate();
+        if(distance_ != distance)
+        {
+            distance_ = distance;
+            CalculateRange();
+            SetUniformsNeedUpdate();
+        }
     }
 
     bool Light::DoShadows() const
     {
-        return shadows_;
+        return shadows_;// && Graphics::this_->GetWindow()->GetPixelFormat() != PixelFormat::RGB565;
     }
 
     FrameBuffer* Light::GetShadowFrameBuffer(int idx) const
@@ -258,27 +262,52 @@ namespace NSG
 
     void Light::CalculateRange()
     {
+        float range = range_;
         if (LightType::SPOT == type_)
-        {
-            range_ = glm::clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
-        }
+            range = glm::clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
         else if (LightType::POINT == type_)
-            range_ = std::max(distance_, glm::epsilon<float>());
-        else
-            range_ = MAX_WORLD_SIZE;
+            range = std::max(distance_, glm::epsilon<float>());
+        //For directional the range is calculated when we setup the shadow camera.
+        //See ShadowCamera::SetupDirectional
+        if(range != range_)
+        {
+            range_ = range;
+            SetUniformsNeedUpdate();
+        }
+    }
 
+    void Light::SetRange(float range)
+    {
+        CHECK_ASSERT(LightType::DIRECTIONAL == type_ && "SetRange only must be used from ShadowCamera::SetupDirectional!!!", __FILE__, __LINE__);
+        if (range_ != range)
+        {
+            range_ = range;
+            SetUniformsNeedUpdate();
+        }
+    }
+
+    float Light::GetRange() const
+    {
+        CHECK_ASSERT(range_ != -1 && "Light or ShadowCamera range is incorrect!!!", __FILE__, __LINE__);
+        return range_;
     }
 
     void Light::SetShadowClipStart(float value)
     {
-        shadowClipStart_ = value;
-        CalculateRange();
+        if(shadowClipStart_ != value)
+        {
+            shadowClipStart_ = value;
+            CalculateRange();
+        }
     }
 
     void Light::SetShadowClipEnd(float value)
     {
-        shadowClipEnd_ = value;
-        CalculateRange();
+        if(shadowClipEnd_ != value)
+        {
+            shadowClipEnd_ = value;
+            CalculateRange();
+        }
     }
 
     ShadowCamera* Light::GetShadowCamera(int idx) const
@@ -362,17 +391,30 @@ namespace NSG
         }
     }
 
-    int Light::CalculateSplits(const Camera* camera, float splits[MAX_SHADOW_SPLITS]) const
+    int Light::CalculateSplits(const Camera* camera, float splits[MAX_SHADOW_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const
     {
-        float camNear = camera->GetZNear();
-        float camFar  = camera->GetZFar();
+        auto camNear = camera->GetZNear();
+        auto camFar  = camera->GetZFar();
+        auto frustumDepth = camFar - camNear;
         float shadowSplitLogFactor = camera->GetShadowSplitLogFactor();
-        int nSplits = camera->GetShadowSplits();
-        float cascadeCount = (float)camera->GetShadowSplits();
+        int nSplits = camera->GetMaxShadowSplits();
+
+        if (camera->AutomaticSplits())
+        {
+            auto viewBox(receiversViewBox);
+            viewBox.Transform(camera->GetView());
+            viewBox.Clip(camFrustumViewBox);
+            auto receiversDepth = viewBox.Size().z;
+            auto frustumVisibilityFactor = receiversDepth / frustumDepth;
+            frustumVisibilityFactor = glm::clamp(frustumVisibilityFactor, 0.f, 1.f);
+            nSplits = (int)round(frustumVisibilityFactor * nSplits);
+        }
+
+        nSplits = glm::clamp(nSplits, 1, MAX_SHADOW_SPLITS);
         float zDistance = camFar - camNear;
         for (int i = 0; i < nSplits - 1; i++)
         {
-            float factor = (i + 1.f) / cascadeCount;
+            float factor = (i + 1.f) / (float)nSplits;
             splits[i] = Lerp(camNear + factor * zDistance,
                              camNear * powf(camFar / camNear, factor),
                              shadowSplitLogFactor);
@@ -391,6 +433,7 @@ namespace NSG
                     auto shadowCamera = shadowCamera_[0].get();
                     shadowCamera->SetupPoint(camera);
                     GenerateCubeShadowMap(0, camera);
+                    shadowSplits_ = 1;
                 }
                 break;
 
@@ -403,28 +446,34 @@ namespace NSG
                         Generate2DShadowMap(0);
                     else if (Intersection::OUTSIDE != camera->GetFrustum()->IsInside(BoundingBox(*shadowCamera->GetFrustum())))
                         Generate2DShadowMap(0);
+                    shadowSplits_ = 1;
                 }
                 break;
 
             default: //DIRECTIONAL
                 {
-                    float splits[MAX_SHADOW_SPLITS];
-                    int nSplits = CalculateSplits(camera, splits);
                     auto farZ = camera->GetZFar();
                     auto nearSplit = camera->GetZNear();
+                    auto camFrustum = camera->GetFrustum();
+                    BoundingBox camFullFrustumViewBox(*camFrustum);
+                    auto receiversViewBox = Camera::GetViewBox(camFrustum.get(), GetScene().get(), true, false);
+                    float splits[MAX_SHADOW_SPLITS];
+                    shadowSplits_ = CalculateSplits(camera, splits, camFullFrustumViewBox, receiversViewBox);
                     auto farSplit = farZ;
                     int split = 0;
-                    while (split < nSplits)
+                    receiversViewBox.Clip(camFullFrustumViewBox);
+                    // Setup the sahdow camera for each split
+                    while (split < shadowSplits_)
                     {
                         if (nearSplit > farZ)
                             break;
                         farSplit = std::min(farZ, splits[split]);
                         auto shadowCamera = shadowCamera_[split].get();
-                        shadowCamera->SetupDirectional(split, camera, nearSplit, farSplit);
+                        shadowCamera->SetupDirectional(split, camera, nearSplit, farSplit, receiversViewBox);
                         nearSplit = farSplit;
                         ++split;
                     }
-                    for (int i = 0; i < nSplits; i++)
+                    for (int i = 0; i < shadowSplits_; i++)
                         Generate2DShadowMap(i);
                 }
                 break;

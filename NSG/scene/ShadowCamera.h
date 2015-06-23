@@ -32,24 +32,20 @@ namespace NSG
     class ShadowCamera : public Camera
     {
     public:
-        ShadowCamera(const Light* light);
+        ShadowCamera(Light* light);
         ~ShadowCamera();
         void SetupSpot(const Camera* camera);
         void SetupPoint(const Camera* camera);
-        void SetupDirectional(int split, const Camera* camera, float nearSplit, float farSplit);
+        void SetupDirectional(int split, const Camera* camera, float nearSplit, float farSplit, const BoundingBox& receiversFullFrustumViewBox);
         void SetCurrentCubeShadowMapFace(TextureTarget target);
         bool GetVisiblesShadowCasters(std::vector<SceneNode*>& result) const;
         float GetFarSplit() const { return farSplit_; }
-        float GetRange() const;
         const Vector3& GetLightGlobalPosition() const;
-        //const Matrix4& GetViewProjection() const override;
-        //const Matrix4& GetProjection() const override;
+        void SetMaxShadowSplits(int splits) override;
+        int GetMaxShadowSplits() const override;
     private:
-    	BoundingBox GetViewBox(const Frustum* frustum, bool receivers, bool casters);
-        BoundingBox GetViewBoxAndAdjustPosition(const Frustum* frustum, bool receivers, bool casters, bool& isEmpty);
-        void QuantizeDirLightShadowCamera(int split, const BoundingBox& viewBox);
-
-        const Light* light_;
+        void QuantizeAndSetup2ViewBox(int split, const Vector3& initialPos, const BoundingBox& viewBox);
+        Light* light_;
         Node dirPositiveX_;
         Node dirNegativeX_;
         Node dirPositiveY_;
@@ -58,13 +54,5 @@ namespace NSG
         Node dirNegativeZ_;
         float nearSplit_;
         float farSplit_;
-        float viewRange_;
-        #if 0
-        Matrix4 cropMatrix_;
-        mutable Matrix4 viewProjection_;
-        mutable Matrix4 projection_;
-        Vector2 offsetCropMatrix_;
-        Vector2 scaleCropMatrix_;
-        #endif
     };
 }

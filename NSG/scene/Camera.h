@@ -61,8 +61,8 @@ namespace NSG
         Ray GetScreenRay(float screenX, float screenY) const;
         static Ray GetRay(float screenX, float screenY);
         const Matrix4& GetView() const;
-        virtual const Matrix4& GetViewProjection() const;
-        virtual const Matrix4& GetProjection() const;
+        const Matrix4& GetViewProjection() const;
+        const Matrix4& GetProjection() const;
         const PFrustum GetFrustum() const;
         const Frustum* GetFrustumPointer() const;
         PFrustum GetFrustumSplit(float nearSplit, float farSplit) const;
@@ -76,12 +76,20 @@ namespace NSG
         void Load(const pugi::xml_node& node) override;
         const OrthoProjection& GetOrthoProjection() const;
         void UnRegisterWindow();
-        void SetShadowSplits(int splits);
-        int GetShadowSplits() const { return shadowSplits_; }
+        void EnableAutomaticSplits(bool enable) { automaticSplits_ = enable; }
+        bool AutomaticSplits() const { return automaticSplits_; }
+        virtual void SetMaxShadowSplits(int splits);
+        virtual int GetMaxShadowSplits() const { return shadowSplits_; }
         void EnableColorSplits(bool enable);
         void FillShaderDefines(std::string& defines, PassType passType);
-        void SetShadowSplitLogFactor(float factor);
+        // This is a logarithmic factor to make the (shadow) splits.
+        // For 4 splits: 
+        // factor=0 => 25% 50% 75% 100%
+        // factor=0.1 => 22% 45% 69% 100%
+        // factor=1 => 0.5% 3.1% 17% 100%
+        void SetShadowSplitLogFactor(float factor); // between 0-1
         float GetShadowSplitLogFactor() const;
+        static BoundingBox GetViewBox(const Frustum* frustum, const Scene* scene, bool receivers, bool casters);
         static SignalCamera::PSignal SignalBeingDestroy();
     private:
     	const Matrix4& GetViewProjectionInverse() const;
@@ -117,5 +125,6 @@ namespace NSG
         int shadowSplits_;
         bool colorSplits_; // used to debug splits in shader (each split in one color)
         float shadowSplitLogFactor_;
+        bool automaticSplits_;
     };
 }

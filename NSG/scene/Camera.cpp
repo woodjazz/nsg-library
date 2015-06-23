@@ -36,6 +36,7 @@ misrepresented as being the original software.
 #include "SignalSlots.h"
 #include "Log.h"
 #include "Window.h"
+#include "Material.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -56,9 +57,10 @@ namespace NSG
           sensorFit_(CameraSensorFit::HORIZONTAL),
           isDirty_(true),
           autoAspectRatio_(true),
-          shadowSplits_(1),
+          shadowSplits_(MAX_SHADOW_SPLITS),
           colorSplits_(false),
-          shadowSplitLogFactor_(0.5f)
+          shadowSplitLogFactor_(0.5f),
+          automaticSplits_(true)
     {
         SetInheritScale(false);
         Update();
@@ -506,7 +508,7 @@ namespace NSG
         return sig;
     }
 
-    void Camera::SetShadowSplits(int splits)
+    void Camera::SetMaxShadowSplits(int splits)
     {
         if (shadowSplits_ != splits)
         {
@@ -540,4 +542,20 @@ namespace NSG
         return shadowSplitLogFactor_;
     }
 
+    BoundingBox Camera::GetViewBox(const Frustum* frustum, const Scene* scene, bool receivers, bool casters)
+    {
+        BoundingBox result;
+        std::vector<SceneNode*> visibles;
+        scene->GetVisibleNodes(frustum, visibles);
+        for (auto& visible : visibles)
+        {
+            auto material = visible->GetMaterial().get();
+            if ((receivers && material->ReceiveShadows()) || (casters && material->CastShadow()))
+            {
+                BoundingBox bb(visible->GetWorldBoundingBox());
+                result.Merge(bb);
+            }
+        }
+        return result;
+    }
 }

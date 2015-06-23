@@ -248,28 +248,28 @@ namespace NSG
             case NSG_KEY_1:
                 {
                     if (shiftKeyDown_)
-                        camera_->SetShadowSplits(1);
+                        camera_->SetMaxShadowSplits(1);
                     break;
                 }
 
             case NSG_KEY_2:
                 {
                     if (shiftKeyDown_)
-                        camera_->SetShadowSplits(2);
+                        camera_->SetMaxShadowSplits(2);
                     break;
                 }
 
             case NSG_KEY_3:
                 {
                     if (shiftKeyDown_)
-                        camera_->SetShadowSplits(3);
+                        camera_->SetMaxShadowSplits(3);
                     break;
                 }
 
             case NSG_KEY_4:
                 {
                     if (shiftKeyDown_)
-                        camera_->SetShadowSplits(4);
+                        camera_->SetMaxShadowSplits(4);
                     break;
                 }
 

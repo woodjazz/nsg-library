@@ -240,6 +240,15 @@ namespace NSG
         #if EMSCRIPTEN
         {
             CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE), __FILE__, __LINE__);
+            #if 0
+            SDL_Surface* surface = SDL_GetVideoSurface();
+            LOGI("BitsPerPixel=%d", surface->format->BitsPerPixel);
+            LOGI("BytesPerPixel=%d", surface->format->BytesPerPixel);
+            LOGI("Rmask=%d", surface->format->Rmask);
+            LOGI("Gmask=%d", surface->format->Gmask);
+            LOGI("Bmask=%d", surface->format->Bmask);
+            LOGI("Amask=%d", surface->format->Amask);
+            #endif
             isMainWindow_ = true;
             Window::SetMainWindow(this);
             emscripten_set_resize_callback(nullptr, nullptr, false, EmscriptenResizeCallback);
@@ -282,6 +291,27 @@ namespace NSG
             }
             SDL_GL_SetSwapInterval(1);
             SDL_GetWindowSize(win, &width, &height);
+            SDL_DisplayMode mode;
+            SDL_GetCurrentDisplayMode(0, &mode);
+            LOGI("Display format = %s", SDL_GetPixelFormatName(mode.format));
+            switch(mode.format)
+            {
+                case SDL_PIXELFORMAT_RGB888:
+                    SetPixelFormat(PixelFormat::RGB888);
+                    break;
+                case SDL_PIXELFORMAT_RGB565:
+                    SetPixelFormat(PixelFormat::RGB565);
+                    break;
+                case SDL_PIXELFORMAT_RGBA8888:
+                    SetPixelFormat(PixelFormat::RGBA8888);
+                    break;
+                case SDL_PIXELFORMAT_ARGB8888:
+                    SetPixelFormat(PixelFormat::ARGB8888);
+                    break;
+                default:
+                    CHECK_ASSERT(!"Unknown pixel format!!!", __FILE__, __LINE__);
+                    break;
+            }
         }
         #endif
 
@@ -324,8 +354,7 @@ namespace NSG
         }
         #endif
 
-        Window::OnReady();
-        Graphics::this_->SetWindow(this);
+		OnReady();
 
         #if !defined(EMSCRIPTEN)
         SDL_SetWindowData(SDL_GetWindowFromID(windowID_), InternalPointer, this);

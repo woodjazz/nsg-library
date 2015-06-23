@@ -123,11 +123,34 @@ static void Test01()
 		return depth;
 	};
 
-	depth = 0.765f;
+	depth = 0.999f;
 	CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.0001f, __FILE__, __LINE__);
 
 	depth = 0.01265f;
 	CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.0001f, __FILE__, __LINE__);
+
+
+	auto Encode4 = [](float depth) -> Vector4
+	{
+		const Vector4 bit_shift = Vector4(32.0*64.0*32.0, 64.0*32.0, 1.0, 0.0);
+		const Vector4 bit_mask = Vector4(0.0, 1.0 / 64.0, 1.0 / 64.0, 0.0);
+		Vector4 res = glm::fract(depth * bit_shift);
+		res -= Vector4(res.x, res.x, res.y, res.z) * bit_mask;
+		return res;
+	};
+
+	auto Decode4 = [](Vector4 rgba_depth) -> float
+	{
+		const Vector4 bit_shift = Vector4(1.0 / (32.0*64.0*32.0), 1.0 / (64.0*32.0), 1.0, 0.0);
+		float depth = glm::dot(rgba_depth, bit_shift);
+		return depth;
+	};
+
+	depth = 0.999f;
+	CHECK_CONDITION(std::abs(depth - Decode4(Encode4(depth))) < 0.03f, __FILE__, __LINE__);
+
+	depth = 0.01265f;
+	CHECK_CONDITION(std::abs(depth - Decode4(Encode4(depth))) < 0.03f, __FILE__, __LINE__);
 
 }
 
@@ -162,7 +185,7 @@ static void Test03()
 static void Test04()
 {
 	Camera camera;
-	auto pos = camera.GetMatViewProjection() * Vector4(100, 0, -50, 1);
+	auto pos = camera.GetViewProjection() * Vector4(100, 0, -50, 1);
 }
 
 void Tests()

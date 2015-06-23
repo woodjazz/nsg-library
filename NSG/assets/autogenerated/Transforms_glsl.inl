@@ -179,11 +179,11 @@ static const char* TRANSFORMS_GLSL = \
 "	    int GetSplit()\n"\
 "	    {\n"\
 "	        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);\n"\
-"	        if(u_shadowCameraZFar[0] != -1.0 && -viewPos.z <= u_shadowCameraZFar[0])\n"\
+"	        if(-viewPos.z <= u_shadowCameraZFar[0])\n"\
 "	            return 0;\n"\
-"	        else if(u_shadowCameraZFar[1] != -1.0 && -viewPos.z <= u_shadowCameraZFar[1])\n"\
+"	        else if(-viewPos.z <= u_shadowCameraZFar[1])\n"\
 "	            return 1;\n"\
-"	        else if(u_shadowCameraZFar[2] != -1.0 && -viewPos.z <= u_shadowCameraZFar[2])\n"\
+"	        else if(-viewPos.z <= u_shadowCameraZFar[2])\n"\
 "	            return 2;\n"\
 "	        else\n"\
 "	            return 3;\n"\

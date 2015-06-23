@@ -403,7 +403,7 @@ namespace NSG
     {
         if (material_)
         {
-            for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
+			for (int index = 0; index < MaterialTexture::SHADOW_MAP0; index++)
             {
                 if (textureLoc_[index] != -1)
                 {
@@ -555,33 +555,20 @@ namespace NSG
 
             if (lightInvRangeLoc_ != -1 || shadowCameraZFarLoc_ != -1)
             {
+                auto shadowSplits = light_->GetShadowSplits();
                 Vector4 invRangeSplits;
                 Vector4 shadowCameraZFarSplits;
                 const Camera* camera = Graphics::this_->GetCamera();
                 bool uniformsNeedUpdate = camera->UniformsNeedUpdate();
-                auto totalRange = 0.f;
-                for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
+                for (int i = 0; i < shadowSplits; i++)
                 {
                     auto shadowCamera = light_->GetShadowCamera(i);
                     uniformsNeedUpdate |= shadowCamera->UniformsNeedUpdate();
                     shadowCameraZFarSplits[i] = shadowCamera->GetFarSplit();
-                    if (light_->GetType() == LightType::DIRECTIONAL)
-                    {
-                        auto ortho = shadowCamera->GetOrthoProjection();
-                        auto range = std::max(ortho.right_ - ortho.left_, ortho.top_ - ortho.bottom_);
-                        range = std::max(range, ortho.far_ - ortho.near_);
-                        totalRange += range;
-                    }
-                    else
-                    {
-                        totalRange = shadowCamera->GetRange();
-                        break;
-                    }
+					auto range = light_->GetRange();
+                    invRangeSplits[i] = 1.f/range;
                 }
                 
-                for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
-                    invRangeSplits[i] = 1.f/totalRange;
-
                 if (uniformsNeedUpdate)
                 {
                     glUniform4fv(lightInvRangeLoc_, 1, &invRangeSplits[0]);
@@ -598,7 +585,7 @@ namespace NSG
         if (light_)
         {
             const Camera* camera = Graphics::this_->GetCamera();
-            int splits = camera->GetShadowSplits();
+            auto shadowSplits = light_->GetShadowSplits();
 
             if (light_->DoShadows())
             {
@@ -617,7 +604,7 @@ namespace NSG
                 if (shadowMapInvSize_ != -1)
                 {
                     Vector4 shadowMapsInvSize;
-                    for (int i = 0; i < splits; i++)
+                    for (int i = 0; i < shadowSplits; i++)
                     {
                         auto shadowMap = light_->GetShadowMap(i);
                         float width = (float)shadowMap->GetWidth();
@@ -627,7 +614,7 @@ namespace NSG
                     glUniform4fv(shadowMapInvSize_, 1, &shadowMapsInvSize[0]);
                 }
 
-                for (int i = 0; i < splits; i++)
+                for (int i = 0; i < shadowSplits; i++)
                 {
                     if (lightViewProjectionLoc_[i] != -1)
                     {
@@ -645,7 +632,7 @@ namespace NSG
                 }
             }
 
-            for (int i = 0; i < splits; i++)
+			for (int i = 0; i < shadowSplits; i++)
             {
                 if (lightPositionLoc_[i] != -1)
                 {

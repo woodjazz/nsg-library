@@ -1430,4 +1430,14 @@ namespace NSG
         return false;
     }
 
+    GLenum Graphics::GetTexelDataType() const
+    {
+		return GL_UNSIGNED_BYTE;
+    }
+
+    GLenum Graphics::GetTexelFormatType() const
+    {
+		return GL_RGBA;
+    }
+
 }

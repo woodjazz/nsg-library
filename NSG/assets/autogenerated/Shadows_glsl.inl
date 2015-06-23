@@ -61,11 +61,11 @@ static const char* SHADOWS_GLSL = \
 "    }\n"\
 "    vec4 CalcShadowFactor(vec3 world2light)\n"\
 "    {\n"\
-"        const vec4 WhiteColor = vec4(1.0);\n"\
-"        const vec4 RedColor = vec4(1.0, 0.0, 0.0, 1.0);\n"\
-"        const vec4 GreenColor = vec4(0.0, 1.0, 0.0, 1.0);\n"\
-"        const vec4 BlueColor = vec4(0.0, 0.0, 1.0, 1.0);\n"\
-"        const vec4 YellowColor = vec4(1.0, 1.0, 0.0, 1.0);\n"\
+"        const vec4 White = vec4(1.0);\n"\
+"        const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);\n"\
+"        const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);\n"\
+"        const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);\n"\
+"        const vec4 RedOrange = vec4(1.0, 69.0/255.0, 0.0, 1.0);\n"\
 "        vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));\n"\
 "        vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
 "        //if(coords.x >= 1.0 || coords.x <= -1.0 || coords.y >= 1.0 || coords.y <= -1.0)\n"\
@@ -80,18 +80,19 @@ static const char* SHADOWS_GLSL = \
 "        sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(0.0, shadowMapInvSize)));\n"\
 "        sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(shadowMapInvSize)));\n"\
 "        sampledDistance *= 0.25;\n"\
+"        bool inShadow = sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias;\n"\
 "        #ifdef COLOR_SPLITS\n"\
 "            int split = GetSplit();\n"\
 "            if(split == 0)\n"\
-"                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? RedColor : WhiteColor;\n"\
+"                return inShadow ? Red : White;\n"\
 "            else if(split == 1)\n"\
-"                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? GreenColor : WhiteColor;\n"\
+"                return inShadow ? Green : White;\n"\
 "            else if(split == 2)\n"\
-"                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? BlueColor : WhiteColor;\n"\
+"                return inShadow ? Blue : White;\n"\
 "            else\n"\
-"                return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? YellowColor : WhiteColor;\n"\
+"                return inShadow ? RedOrange : White;\n"\
 "        #else\n"\
-"            return sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias ? u_shadowColor : WhiteColor;\n"\
+"            return inShadow ? u_shadowColor : White;\n"\
 "        #endif\n"\
 "    }\n"\
 "#endif\n"\

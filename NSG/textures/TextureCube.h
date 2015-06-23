@@ -32,7 +32,7 @@ namespace NSG
     class TextureCube : public Texture
     {
     public:
-        TextureCube(const std::string& name, GLint format);
+        TextureCube(const std::string& name);
         virtual ~TextureCube();
         GLenum GetTarget() const override;
         void Define() override;

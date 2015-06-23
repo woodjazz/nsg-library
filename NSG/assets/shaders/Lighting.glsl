@@ -6,13 +6,13 @@ vec4 CalcLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)
     vec4 diffuse = dFactor * u_lightDiffuseColor * u_material.diffuse;
     #ifdef SPECULAR
         vec3 lightReflect = normalize(reflect(lightDirection, normal));
-        #if defined SPECULARMAP && defined(COMPILEFS)
-        float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0) * texture2D(u_texture2, v_texcoord0);
-        #else
         float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);
-        #endif
         sFactor = pow(sFactor, u_material.shininess);
-        vec4 specular = sFactor * u_lightSpecularColor * u_material.specular;
+        #if defined SPECULARMAP && defined(COMPILEFS)
+            vec4 specular = sFactor * u_lightSpecularColor * u_material.specular * texture2D(u_texture2, v_texcoord0);
+        #else
+            vec4 specular = sFactor * u_lightSpecularColor * u_material.specular;
+        #endif
         return diffuse + specular;
     #else
         return diffuse;

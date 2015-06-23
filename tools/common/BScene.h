@@ -59,8 +59,8 @@ namespace BlenderConverter
 		NSG::PSceneNode CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent, const Blender::Scene* bscene);
         NSG::PSceneNode CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
 		NSG::PSceneNode CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
-		bool ConvertMeshLegacy(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
-		bool ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh);
+		bool ConvertMeshLegacy(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh, int materialIndex);
+		bool ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, NSG::PModelMesh mesh, int materialIndex);
 		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray, char** uvNames);
 		int GetUVLayersBMmeshLegacy(const Blender::Mesh* mesh, Blender::MTFace** eightLayerArray, char** uvNames, Blender::MCol** oneMCol);
 		void AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
@@ -70,8 +70,8 @@ namespace BlenderConverter
 		const Blender::Material* GetMaterial(const Blender::Object* ob, int index) const;
 		std::vector<NSG::PMaterial> LoadMaterials(bParse::bMain* data);
 		NSG::PMaterial LoadMaterial(const Blender::Material* mt);
-		NSG::PTexture CreateTexture(const Blender::Image* ima);
-		void SetMaterial(const Blender::Object* obj, NSG::PSceneNode sceneNode);
+		NSG::PTexture CreateTexture(const Blender::Image* ima, const std::string& imageName);
+		void SetMaterial(const Blender::Object* obj, NSG::PSceneNode sceneNode, int materialIndex);
 		void LoadAnimData(NSG::PSceneNode sceneNode, const Blender::AnimData* adt, float animfps);
 		void CreateAnimations(bParse::bMain* data);
 		void CreateAnimation(const Blender::bAction* action, const Blender::Scene* bscene, NSG::PScene scene);
@@ -88,7 +88,7 @@ namespace BlenderConverter
 		void GetSplineStartEnd(const Blender::BezTriple* bez, int totvert, float& start, float& end);
 		PBSpline ConvertSpline(const Blender::BezTriple* bez, SPLINE_CHANNEL_CODE access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor);
 		NSG::AnimationChannelMask ConvertChannel(const Blender::bAction* action, PTrackData trackData, NSG::AnimationTrack& track, float timeFrameLength);
-		void LoadPhysics(const Blender::Object* obj, NSG::PSceneNode sceneNode);
+		void LoadPhysics(const Blender::Object* obj, NSG::PSceneNode sceneNode, int materialIndex);
 		const void* FindByString(const Blender::ListBase* listbase, const char* id, int offset) const;
 		const Blender::bPoseChannel* GetPoseChannelByName(const Blender::bPose* pose, const char* name) const;
 		const Blender::Bone* GetBoneFromDefGroup(const Blender::Object* obj, const Blender::bDeformGroup* def) const;
@@ -100,6 +100,7 @@ namespace BlenderConverter
 		NSG::PScene CreateScene(const Blender::Scene* bscene);
 		void CreateScenes(bParse::bMain* data);
 		void ConvertGroupInstances(const std::string& groupName, NSG::PSceneNode parent);
+		bool IsKnownType(const Blender::Object* obj) const;
     private:
         NSG::Path path_;
         NSG::Path outputDir_;

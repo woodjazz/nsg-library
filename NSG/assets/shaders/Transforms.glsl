@@ -200,11 +200,11 @@
 	    int GetSplit()
 	    {
 	        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);
-	        if(u_shadowCameraZFar[0] != -1.0 && -viewPos.z <= u_shadowCameraZFar[0])
+	        if(-viewPos.z <= u_shadowCameraZFar[0])
 	            return 0;
-	        else if(u_shadowCameraZFar[1] != -1.0 && -viewPos.z <= u_shadowCameraZFar[1])
+	        else if(-viewPos.z <= u_shadowCameraZFar[1])
 	            return 1;
-	        else if(u_shadowCameraZFar[2] != -1.0 && -viewPos.z <= u_shadowCameraZFar[2])
+	        else if(-viewPos.z <= u_shadowCameraZFar[2])
 	            return 2;
 	        else
 	            return 3;

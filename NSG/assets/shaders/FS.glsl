@@ -38,7 +38,6 @@
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
 			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
-    		//float lightToPixelDistance = clamp(length(lightToVertex) * GetLightInvRange(), 0.0, 1.0);
     		float lightToPixelDistance = length(lightToVertex) * GetLightInvRange();
     		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
 

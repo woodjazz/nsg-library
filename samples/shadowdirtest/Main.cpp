@@ -57,6 +57,7 @@ int NSG_MAIN(int argc, char* argv[])
 	camera->SetPosition(Vector3(-4.8707f, 5.3978f, 6.8656f));
 	//camera->SetLocalLookAt(Vector3(0, 0, -10));
 	camera->SetOrientation(Quaternion(0.9143f, -0.2679f, -0.2913f, -0.0854f));
+	//camera->SetShadowSplitLogFactor(1.f);
 #else
 	light->SetGlobalLookAt(Vector3(0, -5, -10));
 	camera->SetPosition(Vector3(0, 20, 20));

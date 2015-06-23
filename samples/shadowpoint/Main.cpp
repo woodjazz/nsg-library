@@ -35,6 +35,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);
 	//auto light = scene->GetChild<Light>("Lamp", true);
+	//light->SetBias(1);
 	//window->ShowMap(light->GetShadowMap(0));
 	return Engine().Run();
 }

@@ -555,4 +555,13 @@ namespace NSG
         TEXTURE_CUBE_MAP_POSITIVE_Z = GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 
         TEXTURE_CUBE_MAP_NEGATIVE_Z = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
     };
+
+    enum class PixelFormat
+    {
+        RGB888,
+        RGB565,
+        RGBA8888,
+        ARGB8888,
+        UNKNOWN
+    };
 }

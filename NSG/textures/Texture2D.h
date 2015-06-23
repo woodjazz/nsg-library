@@ -33,7 +33,7 @@ namespace NSG
     {
     public:
         Texture2D(PResource resource, const TextureFlags& flags = (int)TextureFlag::NONE);
-        Texture2D(const std::string& name, GLint format);
+        Texture2D(const std::string& name);
         virtual ~Texture2D();
 		static PTexture CreateFrom(PResource resource, const pugi::xml_node& node);
 		GLenum GetTarget() const override;

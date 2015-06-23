@@ -89,7 +89,7 @@ namespace NSG
         auto condition = [&](SceneNode * node)
         {
             return transparent_.end() != std::find(transparent_.begin(), transparent_.end(), node);
-		};
+        };
 
         // remove tranparent from visibles_
         visibles_.erase(std::remove_if(visibles_.begin(), visibles_.end(), condition), visibles_.end());
@@ -107,12 +107,12 @@ namespace NSG
         }
     }
 
-	void Renderer::SortTransparentBackToFront()
+    void Renderer::SortTransparentBackToFront()
     {
         Vector3 cameraPos;
         if (camera_)
             cameraPos = camera_->GetGlobalPosition();
-		std::sort(transparent_.begin(), transparent_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+        std::sort(transparent_.begin(), transparent_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
             auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
             auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
@@ -120,12 +120,12 @@ namespace NSG
         });
     }
 
-	void Renderer::SortSolidFrontToBack()
+    void Renderer::SortSolidFrontToBack()
     {
         Vector3 cameraPos;
         if (camera_)
             cameraPos = camera_->GetGlobalPosition();
-		std::sort(visibles_.begin(), visibles_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+        std::sort(visibles_.begin(), visibles_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
             auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
             auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
@@ -208,10 +208,10 @@ namespace NSG
         }
     }
 
-	void Renderer::DrawShadowPass(Batch* batch, const Light* light)
-	{
-		Draw(batch, shadowPass_.get(), light);
-	}
+    void Renderer::DrawShadowPass(Batch* batch, const Light* light)
+    {
+        Draw(batch, shadowPass_.get(), light);
+    }
 
     void Renderer::Draw(Batch* batch, const Pass* pass, const Light* light)
     {
@@ -271,7 +271,7 @@ namespace NSG
         if (transparent_.empty())
             return;
         // Transparent nodes cannot be batched
-		SortTransparentBackToFront();
+        SortTransparentBackToFront();
         for (auto& node : transparent_)
         {
             auto sceneNode = (SceneNode*)node;
@@ -300,11 +300,10 @@ namespace NSG
         {
             ExtractTransparent();
             SortSolidFrontToBack();
-            graphics_->SetClearColor(scene->GetHorizonColor());
-            AmbientPass();
             graphics_->SetClearColor(COLOR_WHITE);
             GenerateShadowMaps();
             graphics_->SetClearColor(scene->GetHorizonColor());
+            AmbientPass();
             LitPass();
             TransparentPass();
         }

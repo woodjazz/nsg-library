@@ -38,8 +38,8 @@ namespace NSG
 
     }
 
-    Texture2D::Texture2D(const std::string& name, GLint format)
-        : Texture(name, format)
+    Texture2D::Texture2D(const std::string& name)
+        : Texture(name)
     {
 
     }
@@ -114,7 +114,7 @@ namespace NSG
                          height_,
                          0,
                          format_,
-                         type_,
+						 type_,
                          nullptr);
         }
 

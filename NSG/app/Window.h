@@ -100,6 +100,8 @@ namespace NSG
         SignalJoystickButton::PSignal SigJoystickDown() { return signalJoystickDown_; }
 		SignalJoystickButton::PSignal SigJoystickUp() { return signalJoystickUp_; }
         SignalJoystickAxisMotion::PSignal SigJoystickAxisMotion() { return signalJoystickAxisMotion_; }
+        PixelFormat GetPixelFormat() const { return pixelFormat_; }
+        void SetPixelFormat(PixelFormat value) { pixelFormat_ = value; }
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
@@ -136,5 +138,6 @@ namespace NSG
         static int nWindows2Remove_;
         static PGraphics graphics_;
         static std::once_flag onceFlag_;
+        PixelFormat pixelFormat_;
     };
 }

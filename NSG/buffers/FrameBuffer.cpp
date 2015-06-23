@@ -42,8 +42,8 @@ namespace NSG
           width_(0),
           height_(0),
           flags_(flags),
-          depthTexture_(std::make_shared<Texture2D>(name + "DepthBuffer", GL_DEPTH_COMPONENT)),
-          stencilTexture_(std::make_shared<Texture2D>(name + "StencilBuffer", GL_DEPTH_COMPONENT)),
+		  depthTexture_(std::make_shared<Texture2D>(name + "DepthBuffer")),
+		  stencilTexture_(std::make_shared<Texture2D>(name + "StencilBuffer")),
           framebuffer_(0),
           colorRenderbuffer_(0),
           depthStencilRenderBuffer_(0),
@@ -52,9 +52,9 @@ namespace NSG
 		  autoSize_(true)
     {
         if (Flag::COLOR_CUBE_TEXTURE & flags_)
-            colorTexture_ = std::make_shared<TextureCube>(name + "ColorCubeBuffer", GL_RGBA);
+            colorTexture_ = std::make_shared<TextureCube>(name + "ColorCubeBuffer");
         else
-            colorTexture_ = std::make_shared<Texture2D>(name + "ColorBuffer", GL_RGBA);
+            colorTexture_ = std::make_shared<Texture2D>(name + "ColorBuffer");
     }
 
     FrameBuffer::~FrameBuffer()
@@ -137,7 +137,7 @@ namespace NSG
             glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
             #if defined(GLES2)
             {
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width_, height_);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB565, width_, height_);
             }
             #else
             {

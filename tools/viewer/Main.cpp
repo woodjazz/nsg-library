@@ -37,6 +37,7 @@ int NSG_MAIN(int argc, char* argv[])
     PCamera camera;
     PCameraControl control;
     Path inputFile;
+	std::string lastModification;
 
     auto ConvertFile = [&]()
     {
@@ -76,7 +77,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto slotButtonClicked = window->SigDropFile()->Connect([&](const std::string& file)
     {
     	inputFile = Path(file);
-    	ConvertFile();
+		lastModification.clear();
     });
 
 	Engine engine;
@@ -88,11 +89,8 @@ int NSG_MAIN(int argc, char* argv[])
 		if (inputFile.HasName() && totalTime > FREQUENCY)
     	{
 			totalTime = 0;
-    		static std::string lastModification;
     		auto mtime = inputFile.GetModificationTime();
-    		if(lastModification.empty())
-    			lastModification = mtime;
-    		else if(lastModification != mtime)
+			if (lastModification.empty() || lastModification != mtime)
     		{
     			lastModification = mtime;
     			ConvertFile();

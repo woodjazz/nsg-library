@@ -207,9 +207,9 @@ namespace BlenderConverter
         return result;
     }
 
-    PTexture BScene::CreateTexture(const Blender::Image* ima)
+    PTexture BScene::CreateTexture(const Blender::Image* ima, const std::string& imageName)
     {
-        std::string imageName = B_IDNAME(ima);
+        CHECK_ASSERT(!imageName.empty() && imageName != "", __FILE__, __LINE__);
         if (!ima->packedfile)
         {
             Path path;
@@ -294,7 +294,10 @@ namespace BlenderConverter
                 const Blender::MTex* mtex = mt->mtex[i];
                 const Blender::Image* ima = mtex->tex->ima;
                 if (!ima) continue;
-                auto texture = CreateTexture(ima);
+                std::string imageName = B_IDNAME(ima);
+                if(imageName.empty() || imageName == "")
+                    continue;
+                auto texture = CreateTexture(ima, imageName);
                 if (mtex->uvname)
                     texture->SetUVName(mtex->uvname);
 
@@ -454,19 +457,42 @@ namespace BlenderConverter
         {
             std::string nodeName = B_IDNAME(group);
             auto instancedGroup = scene->GetChild<SceneNode>(nodeName, true);
+            if(!instancedGroup)
+                continue;
             const Blender::Group* bgobj = group->dup_group; // Owning group
             std::string groupName(B_IDNAME(bgobj));
             ConvertGroupInstances(groupName, instancedGroup);
         }
+    }
+    
+    bool BScene::IsKnownType(const Blender::Object* obj) const
+    {
+        switch (obj->type)
+        {
+            case OB_EMPTY:
+                return true;
+            case OB_LAMP:
+                return true;
+            case OB_CAMERA:
+                return true;
+            case OB_MESH:
+                return true;
+            case OB_ARMATURE:
+                return true;
+            case OB_CURVE:
+                return true;
+            default:
+                break;
+        }
+        return false;
     }
 
     PSceneNode BScene::ConvertObject(const Blender::Object* obj, PScene scene, const Blender::Scene* bscene)
     {
         PSceneNode parent = scene;
         PSceneNode sceneNode;
-        if (obj)
+        if (obj && IsKnownType(obj))
         {
-            bool isParentArmature = false;
             if (obj->type == OB_MESH && obj->parent && obj->parent->type == OB_ARMATURE)
                 armatureLinker_.push_back(obj);
 
@@ -585,7 +611,7 @@ namespace BlenderConverter
                 }
 
                 // ignore any other codes
-                if (code != -1 && bfc->totvert > 0)
+                if (code != SPLINE_CHANNEL_CODE::NONE && bfc->totvert > 0)
                 {
                     auto spline = ConvertSpline(bfc->bezt, code, bfc->bezt->ipo, bfc->totvert, -start, 1.0f / animfps, 0, 1);
                     trackData->keyframes.push_back(spline);
@@ -656,10 +682,10 @@ namespace BlenderConverter
     AnimationChannelMask BScene::ConvertChannel(const Blender::bAction* action, PTrackData trackData, AnimationTrack& track, float timeFrameLength)
     {
         AnimationChannelMask mask = 0;
-        float inc = timeFrameLength;
+        //float inc = timeFrameLength;
 
-        if (trackData->keyframes.size())
-            inc = timeFrameLength / trackData->keyframes[0]->getNumVerts();
+        //if (trackData->keyframes.size())
+        //    inc = timeFrameLength / trackData->keyframes[0]->getNumVerts();
 
         float start, end;
         GetActionStartEnd(action, start, end);
@@ -680,6 +706,8 @@ namespace BlenderConverter
 
         for (auto t : framesTime)
         {
+            if(std::isnan(t))
+                continue;
             float delta = t / timeFrameLength;
             AnimationKeyFrame keyframe;
             keyframe.time_ = t;
@@ -872,14 +900,17 @@ namespace BlenderConverter
         sceneNode->SetScale(parent_scale * scale);
     }
 
-    void BScene::LoadPhysics(const Blender::Object* obj, PSceneNode sceneNode)
+    void BScene::LoadPhysics(const Blender::Object* obj, PSceneNode sceneNode, int materialIndex)
     {
         if (obj->body_type == OB_BODY_TYPE_NO_COLLISION)
             return;
 
         auto mesh = sceneNode->GetMesh();
-        if (!mesh)
-            return;
+		if (!mesh)
+		{
+			LOGE("Cannot load physics without mesh.", __FILE__, __LINE__);
+			return;
+		}
 
         PhysicsShape shapeType = PhysicsShape::SH_UNKNOWN;
         int boundtype = obj->collision_boundtype;
@@ -916,7 +947,7 @@ namespace BlenderConverter
             const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
             if (me)
             {
-                const Blender::Material* ma = GetMaterial(obj, 0);
+				const Blender::Material* ma = GetMaterial(obj, materialIndex);
                 if (ma)
                 {
                     rigBody->SetRestitution(ma->reflect);
@@ -1117,24 +1148,37 @@ namespace BlenderConverter
     PSceneNode BScene::CreateMesh(const Blender::Object* obj, PSceneNode parent)
     {
         CHECK_ASSERT(obj->data, __FILE__, __LINE__);
-
         const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
-        std::string meshName = B_IDNAME(me);
-        auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
-        bool meshOk = true;
-        if (!mesh)
-        {
-            mesh = Mesh::GetOrCreate<ModelMesh>(B_IDNAME(me));
-            meshOk = ConvertMesh(obj, me, mesh);
-        }
-
-        auto sceneNode = parent->CreateChild<SceneNode>(B_IDNAME(obj));
-        ExtractGeneral(obj, sceneNode);
-        if (meshOk)
-            sceneNode->SetMesh(mesh);
-        SetMaterial(obj, sceneNode);
-        LoadPhysics(obj, sceneNode);
-        return sceneNode;
+		auto nMaterials = obj->totcol;
+		int materialIndex = 0;
+		PSceneNode firstNode;
+		std::string suffix;
+		do
+		{
+			std::string nodeName = B_IDNAME(obj) + suffix;
+			std::string meshName = B_IDNAME(me) + suffix;
+			auto sceneNode = parent->CreateChild<SceneNode>(nodeName);
+			if (materialIndex == 0)
+			{
+				firstNode = sceneNode;
+				ExtractGeneral(obj, sceneNode);
+			}
+			auto mesh = Mesh::Get<ModelMesh>(meshName);
+			bool meshOk = true;
+			if (!mesh)
+			{
+				mesh = Mesh::Create<ModelMesh>(meshName);
+				meshOk = ConvertMesh(obj, me, mesh, materialIndex);
+			}
+			if (meshOk)
+				sceneNode->SetMesh(mesh);
+			SetMaterial(obj, sceneNode, materialIndex);
+			LoadPhysics(obj, sceneNode, materialIndex);
+			parent = firstNode;
+			++materialIndex;
+			suffix = ToString(materialIndex);
+		} while (nMaterials > materialIndex);
+		return firstNode;
     }
 
     const Blender::Object* BScene::GetAssignedArmature(const Blender::Object* obj) const
@@ -1272,6 +1316,13 @@ namespace BlenderConverter
             LOGW("Failed to get armature.");
             return;
         }
+
+		if (obj->totcol > 1)
+		{
+			LOGE("Cannot create skeleton for mesh with multiple materials");
+			return;
+		}
+
         CHECK_ASSERT(obAr, __FILE__, __LINE__);
         CHECK_ASSERT(obj->type == OB_MESH, __FILE__, __LINE__);
         const Blender::Mesh* me = (Blender::Mesh*)obj->data;
@@ -1337,7 +1388,7 @@ namespace BlenderConverter
         }
     }
 
-    bool BScene::ConvertMeshLegacy(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
+	bool BScene::ConvertMeshLegacy(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh, int materialIndex)
     {
         CHECK_ASSERT(me->mface && "This is not legacy data!!!", __FILE__, __LINE__);
 
@@ -1369,6 +1420,8 @@ namespace BlenderConverter
         for (int fi = 0; fi < me->totface; fi++)
         {
             const Blender::MFace& curface = me->mface[fi];
+			if (curface.mat_nr != materialIndex)
+				continue;
 
             bool isQuad = curface.v4 != 0;
 
@@ -1450,11 +1503,10 @@ namespace BlenderConverter
         return true;
     }
 
-
-    bool BScene::ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh)
+	bool BScene::ConvertMesh(const Blender::Object* obj, const Blender::Mesh* me, PModelMesh mesh, int materialIndex)
     {
         if (me->mface)
-            return ConvertMeshLegacy(obj, me, mesh);
+			return ConvertMeshLegacy(obj, me, mesh, materialIndex);
 
         if (!me->mvert || !me->mpoly)
             return false;
@@ -1483,6 +1535,8 @@ namespace BlenderConverter
         for (int fi = 0; fi < me->totpoly; fi++)
         {
             const Blender::MPoly& curpoly = me->mpoly[fi];
+			if (curpoly.mat_nr != materialIndex)
+				continue;
             int nloops = curpoly.totloop;
             int indexBase = curpoly.loopstart;
 
@@ -1600,7 +1654,7 @@ namespace BlenderConverter
 
     const Blender::Material* BScene::GetMaterial(const Blender::Object* ob, int index) const
     {
-        if (!ob || ob->totcol == 0) return 0;
+        if (!ob || ob->totcol == 0) return nullptr;
 
         index = glm::clamp<int>(index, 0, ob->totcol - 1);
         Blender::Material* ma = nullptr;
@@ -1622,9 +1676,9 @@ namespace BlenderConverter
         return ma;
     }
 
-    void BScene::SetMaterial(const Blender::Object* obj, PSceneNode sceneNode)
+    void BScene::SetMaterial(const Blender::Object* obj, PSceneNode sceneNode, int materialIndex)
     {
-        const Blender::Material* mt = GetMaterial(obj, 0);
+		const Blender::Material* mt = GetMaterial(obj, materialIndex);
         std::string name = B_IDNAME(mt);
         auto material = Material::Get(name);
         if (material)

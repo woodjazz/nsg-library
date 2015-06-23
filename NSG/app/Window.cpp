@@ -76,7 +76,8 @@ namespace NSG
           signalDropFile_(new Signal<const std::string & >()),
           signalJoystickDown_(new SignalJoystickButton),
           signalJoystickUp_(new SignalJoystickButton),
-          signalJoystickAxisMotion_(new Signal<int, JoystickAxis, float>)
+          signalJoystickAxisMotion_(new Signal<int, JoystickAxis, float>),
+          pixelFormat_(PixelFormat::UNKNOWN)
 
     {
         CHECK_CONDITION(Window::AllowWindowCreation(), __FILE__, __LINE__);
@@ -182,7 +183,7 @@ namespace NSG
             CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
             graphics_ = PGraphics(new Graphics);
         });
-
+		graphics_->SetWindow(this);
         CreateFrameBuffer(); // used when filters are enabled
         Window::SigReady()->Run(this);
     }

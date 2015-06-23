@@ -59,7 +59,7 @@ namespace NSG
         virtual void Define() = 0;
     protected:
         Texture(PResource resource, const TextureFlags& flags);
-        Texture(const std::string& name, GLint format);
+        Texture(const std::string& name);
     private:
         bool IsValid() override;
         void AllocateResources() override;

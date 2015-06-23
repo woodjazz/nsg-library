@@ -39,14 +39,14 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Texture::Texture(const std::string& name, GLint format)
+    Texture::Texture(const std::string& name)
         : Object(name),
           flags_((int)TextureFlag::NONE),
           texture_(0),
           width_(0),
           height_(0),
-          format_(format),
-          type_(GL_UNSIGNED_BYTE),
+          format_(Graphics::this_->GetTexelFormatType()),
+          type_(Graphics::this_->GetTexelDataType()),
           channels_(0),
           serializable_(false),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -84,8 +84,8 @@ namespace NSG
           pResource_(resource),
           width_(0),
           height_(0),
-          format_(GL_RGBA),
-          type_(GL_UNSIGNED_BYTE),
+		  format_(Graphics::this_->GetTexelFormatType()),
+          type_(Graphics::this_->GetTexelDataType()),
           channels_(0),
           serializable_(true),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),

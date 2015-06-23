@@ -111,6 +111,8 @@ namespace NSG
         int GetMaxTextureSize() const { return maxTextureSize_; }
         bool NeedsDecompress(TextureFormat format) const;
 		bool SetupPass(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light);
+        GLenum GetTexelDataType() const;
+        GLenum GetTexelFormatType() const;
     private:
 		PProgram GetOrCreateProgram(const Pass* pass, Mesh* mesh, Material* material, const Light* light);
         void SetUpViewport();

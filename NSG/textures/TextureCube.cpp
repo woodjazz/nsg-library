@@ -28,8 +28,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    TextureCube::TextureCube(const std::string& name, GLint format)
-        : Texture(name, format)
+    TextureCube::TextureCube(const std::string& name)
+        : Texture(name)
     {
 		SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
     }
