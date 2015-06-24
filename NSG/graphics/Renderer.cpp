@@ -63,6 +63,7 @@ namespace NSG
         lightPass_->SetBlendMode(BLEND_MODE::ADDITIVE);
         lightPass_->SetDepthFunc(DepthFunc::LEQUAL);
 
+        transparentPass_->SetType(PassType::LIT);
         transparentPass_->EnableDepthBuffer(false);
         transparentPass_->SetBlendMode(BLEND_MODE::ALPHA);
 
@@ -298,12 +299,12 @@ namespace NSG
         scene->GetVisibleNodes(camera_, visibles_);
         if (!visibles_.empty())
         {
-            ExtractTransparent();
-            SortSolidFrontToBack();
             graphics_->SetClearColor(COLOR_WHITE);
             GenerateShadowMaps();
             graphics_->SetClearColor(scene->GetHorizonColor());
             AmbientPass();
+            ExtractTransparent();
+            SortSolidFrontToBack();
             LitPass();
             TransparentPass();
         }

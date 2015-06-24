@@ -6,7 +6,11 @@ static const char* LIGHTING_GLSL = \
 "vec4 CalcLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)\n"\
 "{\n"\
 "    float dFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);\n"\
-"    vec4 diffuse = dFactor * u_lightDiffuseColor * u_material.diffuse;\n"\
+"    #ifdef DIFFUSEMAP\n"\
+"        vec4 diffuse = dFactor * u_lightDiffuseColor;\n"\
+"    #else\n"\
+"        vec4 diffuse = dFactor * u_lightDiffuseColor * u_material.diffuse;\n"\
+"    #endif\n"\
 "    #ifdef SPECULAR\n"\
 "        vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
 "        float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);\n"\

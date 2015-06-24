@@ -510,7 +510,7 @@ namespace NSG
                 case RenderPass::PERPIXEL:
                 {
                     defines += "PER_PIXEL_LIGHTING\n";
-                    if(light->HasSpecularColor() && HasSpecularColor())
+                    if(light && light->HasSpecularColor() && HasSpecularColor())
                         defines += "SPECULAR\n";
                     break;
                 }

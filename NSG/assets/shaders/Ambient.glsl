@@ -5,11 +5,7 @@
         vec4 GetAmbientIntensity()
         {
             #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)
-                #if defined(UNLIT)
-                    vec4 intensity = u_material.color;
-                #else
-                    vec4 intensity = u_sceneAmbientColor * u_material.ambient;
-                #endif
+                vec4 intensity = u_sceneAmbientColor * u_material.ambient;
             #else
                 #if defined(AOMAP0)
                     #if defined(AOMAP_CHANNELS1)
@@ -47,9 +43,17 @@
         vec4 GetAmbientLight()
         {
             #ifdef DIFFUSEMAP
-                return u_material.diffuse * GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);
+                #if defined(UNLIT)
+                    return texture2D(u_texture0, v_texcoord0);
+                #else
+                    return u_material.diffuse.a * GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);
+                #endif
             #else
-                return u_material.diffuse * GetAmbientIntensity();
+                #if defined(UNLIT)
+                    return u_material.diffuse;
+                #else
+                    return u_material.diffuse.a * GetAmbientIntensity();
+                #endif
             #endif
         }
     #endif

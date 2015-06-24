@@ -230,16 +230,31 @@ namespace BlenderConverter
     {
         std::string name = B_IDNAME(mt);
         auto material = Material::GetOrCreate(name);
-        Color color(mt->r, mt->g, mt->b, mt->alpha);
+
+        float alpha = 1.f; //full opaque
+        float alphaForSpecular = 1.f;
+        const int TRANSPARENCY = 0x10000;
+        bool transparent = mt->mode & TRANSPARENCY  && mt->alpha < 1.f ? true: false;
+        if(transparent)
+        {
+            alpha = mt->alpha;
+            alphaForSpecular = mt->spectra;
+        }
+
+        Color color(mt->r, mt->g, mt->b, alpha);
         material->SetColor(color);
         auto diffuseIntensity = mt->ref;
         material->SetDiffuseColor(diffuseIntensity * color);
         auto specularIntensity = mt->spec;
-        material->SetSpecularColor(Color(specularIntensity * mt->specr, specularIntensity * mt->specg, specularIntensity * mt->specb, mt->alpha));
+        material->SetSpecularColor(Color(specularIntensity * mt->specr, specularIntensity * mt->specg, specularIntensity * mt->specb, alphaForSpecular));
         auto ambientIntensity = mt->amb;
         material->SetAmbientIntensity(ambientIntensity);
-
         material->SetShininess(mt->har);
+        
+        if (transparent)//mt->game.alpha_blend & GEMAT_ALPHA)
+            material->SetBlendMode(BLEND_MODE::ALPHA);
+        else
+            material->SetBlendMode(BLEND_MODE::NONE);
 
         if (mt->mode & MA_WIRE)
             material->SetFillMode(FillMode::WIREFRAME);
@@ -253,14 +268,9 @@ namespace BlenderConverter
         bool castShadow = mt->mode2 & 1 ? true : false;
         material->CastShadow(castShadow);
 
-        if (mt->game.alpha_blend & GEMAT_ALPHA)
-            material->SetBlendMode(BLEND_MODE::ALPHA);
-        else
-            material->SetBlendMode(BLEND_MODE::NONE);
-
-        if (mt->game.flag & GEMAT_BACKCULL)
+        if (mt->game.flag & GEMAT_BACKCULL && !transparent)
             material->SetCullFaceMode(CullFaceMode::BACK);
-        else if (mt->game.flag & GEMAT_INVISIBLE)
+        else if (mt->game.flag & GEMAT_INVISIBLE && !transparent)
             material->SetCullFaceMode(CullFaceMode::FRONT_AND_BACK);
         else
             material->SetCullFaceMode(CullFaceMode::DISABLED);

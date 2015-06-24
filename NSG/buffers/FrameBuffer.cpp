@@ -300,6 +300,7 @@ namespace NSG
 
     void FrameBuffer::AttachTarget(TextureTarget colorTexTarget)
     {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
         if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
             CHECK_ASSERT(colorTexTarget != TextureTarget::UNKNOWN, __FILE__, __LINE__);
@@ -313,6 +314,6 @@ namespace NSG
             if (flags_ & Flag::STENCIL)
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, stencilTexture_->GetID(), 0);
         }
-
+        CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 }

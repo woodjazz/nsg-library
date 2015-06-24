@@ -3,7 +3,11 @@
 vec4 CalcLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)
 {
     float dFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);
-    vec4 diffuse = dFactor * u_lightDiffuseColor * u_material.diffuse;
+    #ifdef DIFFUSEMAP
+        vec4 diffuse = dFactor * u_lightDiffuseColor;
+    #else
+        vec4 diffuse = dFactor * u_lightDiffuseColor * u_material.diffuse;
+    #endif
     #ifdef SPECULAR
         vec3 lightReflect = normalize(reflect(lightDirection, normal));
         float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);
