@@ -97,12 +97,14 @@ namespace NSG
           nBones_(0),
           activeSkeleton_(nullptr),
           activeNode_(nullptr),
+		  activeMaterial_(nullptr),
+		  activeLight_(nullptr),
+		  activeCamera_(nullptr),
           sceneColor_(-1),
-          mesh_(nullptr),
+		  skeleton_(nullptr),
           node_(nullptr),
           material_(nullptr),
-          light_(nullptr),
-          lastCamera_(nullptr)
+          light_(nullptr)
     {
         memset(&textureLoc_, -1, sizeof(textureLoc_));
         memset(&materialLoc_, -1, sizeof(materialLoc_));
@@ -162,7 +164,7 @@ namespace NSG
 
     bool Program::IsValid()
     {
-        return material_ && material_->IsReady() && mesh_ && mesh_->IsReady();
+        return material_ && material_->IsReady();
     }
 
     void Program::AllocateResources()
@@ -197,6 +199,9 @@ namespace NSG
 
         activeSkeleton_ = nullptr;
         activeNode_ = nullptr;
+		activeMaterial_ = nullptr;
+		activeLight_ = nullptr;
+		activeCamera_ = nullptr;
         sceneColor_ = Color(-1);
 
         bonesBaseLoc_.clear();
@@ -394,9 +399,22 @@ namespace NSG
                 const Matrix3& m = node_->GetGlobalModelInvTranspMatrix();
                 glUniformMatrix3fv(normalMatrixLoc_, 1, GL_FALSE, glm::value_ptr(m));
             }
-
-            activeNode_ = node_;
         }
+		else if (!node_)
+		{
+			if (modelLoc_ != -1)
+			{
+				static const Matrix4 m(1);
+				glUniformMatrix4fv(modelLoc_, 1, GL_FALSE, glm::value_ptr(m));
+			}
+
+			if (normalMatrixLoc_ != -1)
+			{
+				static const Matrix4 m(1);
+				glUniformMatrix3fv(normalMatrixLoc_, 1, GL_FALSE, glm::value_ptr(m));
+			}
+		}
+
     }
 
     void Program::SetMaterialVariables()
@@ -412,7 +430,7 @@ namespace NSG
                 }
             }
 
-            if (material_->UniformsNeedUpdate())
+			if (activeMaterial_ != material_ || material_->UniformsNeedUpdate())
             {
                 if (materialLoc_.color_ != -1)
                     glUniform4fv(materialLoc_.color_, 1, &material_->color_[0]);
@@ -455,15 +473,13 @@ namespace NSG
 
     void Program::SetSkeletonVariables()
     {
-        auto skeleton = mesh_->GetSkeleton().get();
-
-        if (skeleton)
+        if (skeleton_)
         {
-            const std::vector<PWeakNode>& bones = skeleton->GetBones();
+            const std::vector<PWeakNode>& bones = skeleton_->GetBones();
             size_t nBones = bones.size();
             CHECK_CONDITION(nBones == nBones_ && "This shader has been used with a different number of bones.!!!", __FILE__, __LINE__);
 
-            PNode rootNode = skeleton->GetRoot().lock();
+            PNode rootNode = skeleton_->GetRoot().lock();
             Matrix4 globalInverseModelMatrix(1);
             PNode parent = rootNode->GetParent();
             if (parent)
@@ -481,7 +497,7 @@ namespace NSG
                 GLuint boneLoc = bonesBaseLoc_[idx];
 
                 Node* bone = bones[idx].lock().get();
-                if (activeSkeleton_ != skeleton || bone->UniformsNeedUpdate())
+                if (activeSkeleton_ != skeleton_ || bone->UniformsNeedUpdate())
                 {
                     // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
                     CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
@@ -496,8 +512,7 @@ namespace NSG
 
         }
 
-        activeSkeleton_ = skeleton;
-
+        activeSkeleton_ = skeleton_;
     }
 
     void Program::SetCameraVariables()
@@ -506,10 +521,8 @@ namespace NSG
         {
             Camera* camera = Graphics::this_->GetCamera();
 
-            if (camera && (camera != lastCamera_ || camera->UniformsNeedUpdate()))
+            if (camera && (camera != activeCamera_ || camera->UniformsNeedUpdate()))
             {
-                lastCamera_ = camera;
-
                 if (viewProjectionLoc_ != -1)
                 {
                     const Matrix4& m = camera->GetViewProjection();
@@ -544,7 +557,7 @@ namespace NSG
     {
         if (light_)
         {
-            if (light_->UniformsNeedUpdate())
+			if (activeLight_ != light_ || light_->UniformsNeedUpdate())
             {
                 if (lightDirectionLoc_ != -1)
                 {
@@ -642,7 +655,7 @@ namespace NSG
                 }
             }
 
-            if (light_->UniformsNeedUpdate())
+			if (activeLight_ != light_ || light_->UniformsNeedUpdate())
             {
                 if (lightDiffuseColorLoc_ != -1)
                 {
@@ -685,11 +698,20 @@ namespace NSG
             SetLightVariables();
             SetLightShadowVariables();
         }
+
+		activeNode_ = node_;
+		activeMaterial_ = material_;
+		activeLight_ = light_;
+		activeCamera_ = Graphics::this_->GetCamera();
     }
 
-    void Program::Set(Mesh* mesh)
+    void Program::Set(const Skeleton* skeleton)
     {
-        mesh_ = mesh;
+		if (skeleton_ != skeleton)
+		{
+			skeleton_ = skeleton;
+			Invalidate();
+		}
     }
 
     void Program::Set(SceneNode* node)
@@ -706,8 +728,8 @@ namespace NSG
     {
         if (material_ != material)
         {
-            material->SetUniformsNeedUpdate();
             material_ = material;
+			Invalidate();
         }
     }
 

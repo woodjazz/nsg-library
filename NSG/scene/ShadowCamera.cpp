@@ -149,6 +149,7 @@ namespace NSG
         BoundingBox camLightFullViewBoxRange(receiversFullFrustumViewBox);
         camLightFullViewBoxRange.Transform(GetView());
         auto range = std::max(glm::length(camLightFullViewBoxRange.Size()), glm::length(lightViewBoxRange.Size()));
+		//LOGI("Range=%f", range);
 		light_->SetRange(range);
     }
 
@@ -171,6 +172,7 @@ namespace NSG
 
         auto viewSize = viewBox.Size();
 
+        #if 0
         //The bigger issue is a shadow frustum that continuously changes
         //size and position as the camera moves around. This leads to shadows "swimming",
         //which is a very distracting artifact.
@@ -195,13 +197,13 @@ namespace NSG
             viewSize.x = std::max(viewSize.x * viewSize.x * QUANTIZE, MIN_VIEW_SIZE);
             viewSize.y = viewSize.x;
         }
-
+        #endif
         #endif
 
         SetAspectRatio(viewSize.x / viewSize.y);
         SetOrthoScale(viewSize.x);
 
-        #if 1
+        #if 0
         float shadowMapWidth = (float)light_->GetShadowMap(split)->GetWidth();
         if (shadowMapWidth > 0)
         {

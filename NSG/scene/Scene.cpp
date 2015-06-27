@@ -30,7 +30,6 @@ namespace NSG
           ambient_(0.3f, 0.3f, 0.3f, 1),
           horizon_(0.f, 0.f, 0.f, 1.f),
           octree_(std::make_shared<Octree>()),
-          physicsWorld_(new PhysicsWorld),
           window_(nullptr),
           signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
           signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
@@ -72,10 +71,13 @@ namespace NSG
 			if (it != particleSystems_.end())
 				particleSystems_.erase(it);
         });
+
+        physicsWorld_ = std::make_shared<PhysicsWorld>(this);
     }
 
     Scene::~Scene()
     {
+        physicsWorld_ = nullptr;
         slotLightBeingDestroy_ = nullptr;
         slotCameraBeingDestroy_ = nullptr;
         slotPSBeingDestroy_ = nullptr;
@@ -226,31 +228,26 @@ namespace NSG
 
     void Scene::GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const
     {
-        for (auto& obj : needUpdate_)
+        for (auto& obj : octreeNeedsUpdate_)
             octree_->InsertUpdate(obj);
-        needUpdate_.clear();
+        octreeNeedsUpdate_.clear();
         FrustumOctreeQuery query(visibles, camera->GetFrustum().get());
         octree_->Execute(query);
     }
 
 	void Scene::GetVisibleNodes(const Frustum* frustum, std::vector<SceneNode*>& visibles) const
 	{
-		for (auto& obj : needUpdate_)
+		for (auto& obj : octreeNeedsUpdate_)
 			octree_->InsertUpdate(obj);
-		needUpdate_.clear();
+		octreeNeedsUpdate_.clear();
 		FrustumOctreeQuery query(visibles, frustum);
 		octree_->Execute(query);
 	}
 
-    std::vector<Camera*> Scene::GetCameras() const
-    {
-        return cameras_;
-    }
-
     void Scene::NeedUpdate(SceneNode* obj)
     {
         if(obj->GetMesh() != nullptr)
-            needUpdate_.insert(obj);
+            octreeNeedsUpdate_.insert(obj);
     }
 
     void Scene::SavePhysics(pugi::xml_node& node) const
@@ -510,7 +507,7 @@ namespace NSG
 
     void Scene::RemoveFromOctree(SceneNode* node)
     {
-        needUpdate_.erase(node);
+        octreeNeedsUpdate_.erase(node);
         octree_->Remove(node);
     }
 

@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Keys.h"
 #include "Window.h"
 #include "Engine.h"
+#include "Renderer.h"
 
 namespace NSG
 {
@@ -281,6 +282,8 @@ namespace NSG
 
             case NSG_KEY_D:
                 {
+					Renderer::GetPtr()->EnableDebugPhysics(action != 0);
+                    camera_->SetUniformsNeedUpdate();
                     break;
                 }
 

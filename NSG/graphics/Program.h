@@ -53,7 +53,7 @@ namespace NSG
         GLuint GetAttBonesWeightLoc() const { return att_bonesWeightLoc_; }
         GLuint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
         GLuint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
-        void Set(Mesh* mesh);
+        void Set(const Skeleton* mesh);
         void Set(SceneNode* node);
         void Set(Material* material);
         void Set(const Light* light);
@@ -164,14 +164,16 @@ namespace NSG
         /////////////////////////////////////
 
 		size_t nBones_;
-		Skeleton* activeSkeleton_;
+		const Skeleton* activeSkeleton_;
         Node* activeNode_;
+		Material* activeMaterial_;
+		const Light* activeLight_;
+		const Camera* activeCamera_;
         Color sceneColor_;
-
-        Mesh* mesh_;
+        const Skeleton* skeleton_;
         SceneNode* node_;
         Material* material_;
         const Light* light_;
-        const Camera* lastCamera_;
+		
     };
 }

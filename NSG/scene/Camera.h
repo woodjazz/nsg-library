@@ -68,6 +68,7 @@ namespace NSG
         PFrustum GetFrustumSplit(float nearSplit, float farSplit) const;
         bool IsVisible(const Node& node, Mesh& mesh) const;
         bool IsVisible(const SceneNode& node) const;
+        bool IsVisible(const BoundingBox& bb) const;
         void OnDirty() const override;
         float GetZNear() const { return zNear_; }
         float GetZFar() const { return zFar_; }

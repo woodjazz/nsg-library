@@ -25,13 +25,19 @@ misrepresented as being the original software.
 */
 #include "PhysicsWorld.h"
 #include "RigidBody.h"
+#include "Scene.h"
+#include "Camera.h"
+#include "LinesMesh.h"
 #include "btBulletDynamicsCommon.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
 
 namespace NSG
 {
-    PhysicsWorld::PhysicsWorld()
-		:gravity_(0, -9.81f, 0)
+    PhysicsWorld::PhysicsWorld(const Scene* scene)
+        : scene_(scene),
+          gravity_(0, -9.81f, 0),
+          debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits),
+		  lines_(std::make_shared<LinesMesh>("DebugPhysics"))
     {
         collisionConfiguration_ = new btDefaultCollisionConfiguration();
         pairCache_ = new btDbvtBroadphase();
@@ -40,9 +46,10 @@ namespace NSG
         dispatcher_ = new btCollisionDispatcher(collisionConfiguration_);
         constraintSolver_ = new btSequentialImpulseConstraintSolver();
         dynamicsWorld_ = std::make_shared<btDiscreteDynamicsWorld>(dispatcher_, pairCache_, constraintSolver_, collisionConfiguration_);
-		SetGravity(gravity_);
+        SetGravity(gravity_);
         dynamicsWorld_->setWorldUserInfo(this);
         dynamicsWorld_->setInternalTickCallback(SubstepCallback, static_cast<void*>(this));
+		dynamicsWorld_->setDebugDrawer(this);
     }
 
     PhysicsWorld::~PhysicsWorld()
@@ -50,7 +57,7 @@ namespace NSG
         for (int i = dynamicsWorld_->getNumConstraints() - 1; i >= 0; i--)
             dynamicsWorld_->removeConstraint(dynamicsWorld_->getConstraint(i));
 
-		dynamicsWorld_ = nullptr;
+        dynamicsWorld_ = nullptr;
         delete constraintSolver_;
         delete dispatcher_;
         delete ghostPairCallback_;
@@ -58,14 +65,14 @@ namespace NSG
         delete collisionConfiguration_;
     }
 
-	void PhysicsWorld::SetGravity(const Vector3& gravity)
-	{
-		if (gravity_ != gravity)
-		{
-			gravity_ = gravity;
-			dynamicsWorld_->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
-		}
-	}
+    void PhysicsWorld::SetGravity(const Vector3& gravity)
+    {
+        if (gravity_ != gravity)
+        {
+            gravity_ = gravity;
+            dynamicsWorld_->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
+        }
+    }
 
     void PhysicsWorld::StepSimulation(float timeStep)
     {
@@ -74,8 +81,8 @@ namespace NSG
 
     void PhysicsWorld::SubstepCallback(btDynamicsWorld* dyn, float tick)
     {
-		PhysicsWorld* world = static_cast<PhysicsWorld*>(dyn->getWorldUserInfo());
-		world->Substep(tick);
+        PhysicsWorld* world = static_cast<PhysicsWorld*>(dyn->getWorldUserInfo());
+        world->Substep(tick);
     }
 
     void PhysicsWorld::Substep(float tick)
@@ -86,13 +93,57 @@ namespace NSG
         {
             btPersistentManifold* manifold = dispatcher_->getManifoldByIndexInternal(i);
 
-			RigidBody* colA = static_cast<RigidBody*>(manifold->getBody0()->getUserPointer());
-			RigidBody* colB = static_cast<RigidBody*>(manifold->getBody1()->getUserPointer());
+            RigidBody* colA = static_cast<RigidBody*>(manifold->getBody0()->getUserPointer());
+            RigidBody* colB = static_cast<RigidBody*>(manifold->getBody1()->getUserPointer());
 
             colA->HandleManifold(manifold, colB);
             colB->HandleManifold(manifold, colA);
         }
     }
 
+    bool PhysicsWorld::isVisible(const btVector3& aabbMin, const btVector3& aabbMax)
+    {
+        return scene_->GetMainCamera()->IsVisible(BoundingBox(ToVector3(aabbMin), ToVector3(aabbMax)));
+    }
+    
+    void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
+    {
+		lines_->Add(ToVector3(from), ToVector3(to), Color(ToVector3(color), 1));
+    }
 
+    void PhysicsWorld::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
+    {
+
+    }
+
+    void PhysicsWorld::reportErrorWarning(const char* warningString)
+    {
+        LOGW("Physics:%s", warningString);
+    }
+
+    void PhysicsWorld::draw3dText(const btVector3& location, const char* textString)
+    {
+
+    }
+
+    void PhysicsWorld::setDebugMode(int debugMode)
+    {
+        debugMode_ = debugMode;
+		setDebugMode(debugMode_);
+    }
+
+    int PhysicsWorld::getDebugMode() const
+    {
+        return debugMode_;
+    }
+
+	void PhysicsWorld::DrawDebug()
+	{
+		dynamicsWorld_->debugDrawWorld();
+	}
+
+	void PhysicsWorld::ClearDebugLines()
+	{
+		lines_->Clear();
+	}
 }

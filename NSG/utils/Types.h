@@ -506,7 +506,7 @@ namespace NSG
 
     enum class PassType
     {
-        AMBIENT,
+        DEFAULT,
         SHADOW,
         LIT
     };

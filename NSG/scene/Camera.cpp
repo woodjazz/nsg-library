@@ -447,6 +447,12 @@ namespace NSG
         return GetFrustum()->IsVisible(node);
     }
 
+    bool Camera::IsVisible(const BoundingBox& bb) const
+    {
+        Update();
+        return GetFrustum()->IsInside(bb) != Intersection::OUTSIDE;
+    }
+
     void Camera::OnDirty() const
     {
         isDirty_ = true;

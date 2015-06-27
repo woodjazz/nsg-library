@@ -4454,6 +4454,7 @@
 		</Mesh>
 	</Meshes>
 	<Materials>
+		<Material name="Gen0" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="1" diffuse="[1.000000,1.000000,1.000000,1.000000]" specular="[1.000000,1.000000,1.000000,1.000000]" shininess="1" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="WIREFRAME" blendMode="NONE" renderPass="VERTEXCOLOR" />
 		<Material name="__DefaultBlenderMaterial__" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="1" diffuse="[1.000000,1.000000,1.000000,1.000000]" specular="[1.000000,1.000000,1.000000,1.000000]" shininess="1" color="[1.000000,1.000000,1.000000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />
 		<Material name="cone" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="1" diffuse="[0.045809,0.603733,0.640000,0.800000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="50" color="[0.057261,0.754666,0.800000,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />
 		<Material name="cube" shadeless="false" castShadow="true" receiveShadows="true" cullFaceMode="BACK" friction="0.5" ambient="1" diffuse="[0.640000,0.000000,0.002835,0.800000]" specular="[0.500000,0.500000,0.500000,1.000000]" shininess="300" color="[0.800000,0.000000,0.003544,1.000000]" fillMode="SOLID" blendMode="NONE" renderPass="PERPIXEL" />

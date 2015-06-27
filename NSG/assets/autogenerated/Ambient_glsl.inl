@@ -4,7 +4,7 @@ namespace NSG
 static const char* AMBIENT_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#if defined(COMPILEFS)\n"\
-"    #if defined(AMBIENT_PASS)\n"\
+"    #if defined(AMBIENT)\n"\
 "        vec4 GetAmbientIntensity()\n"\
 "        {\n"\
 "            #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)\n"\
@@ -44,17 +44,10 @@ static const char* AMBIENT_GLSL = \
 "        vec4 GetAmbientLight()\n"\
 "        {\n"\
 "            #ifdef DIFFUSEMAP\n"\
-"                #if defined(UNLIT)\n"\
-"                    return texture2D(u_texture0, v_texcoord0);\n"\
-"                #else\n"\
-"                    return u_material.diffuse.a * GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);\n"\
-"                #endif\n"\
+"                vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
+"                return GetAmbientIntensity() * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuse.a);\n"\
 "            #else\n"\
-"                #if defined(UNLIT)\n"\
-"                    return u_material.diffuse;\n"\
-"                #else\n"\
-"                    return u_material.diffuse.a * GetAmbientIntensity();\n"\
-"                #endif\n"\
+"                return u_material.diffuse.a * GetAmbientIntensity();\n"\
 "            #endif\n"\
 "        }\n"\
 "    #endif\n"\

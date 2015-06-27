@@ -45,7 +45,7 @@ namespace NSG
 		std::shared_ptr<U> CreateClass(const K& key)
 		{
 			std::shared_ptr<U> obj = std::make_shared<U>(key);
-			objs_.push_back(obj);
+			//objs_.push_back(obj);
 			objsMap_[key] = obj;
 			return obj;
 		}
@@ -54,8 +54,14 @@ namespace NSG
 		std::shared_ptr<U> GetOrCreateClass(const K& key)
 		{
 			auto it = objsMap_.find(key);
-			if (it == objsMap_.end() || !it->second.lock())
+			if (it == objsMap_.end())
+                return CreateClass<U>(key);
+            else if(!it->second.lock())
+            {
+                objsMap_.erase(it);
+                //objs_.erase(std::remove(objs_.begin(), objs_.end(), it->second), objs_.end());
 				return CreateClass<U>(key);
+            }
 			else
 				return std::dynamic_pointer_cast<U>(it->second.lock());
 		}
@@ -80,7 +86,7 @@ namespace NSG
         void Add(const K& key, PT obj)
         {
             CHECK_ASSERT(obj, __FILE__, __LINE__);
-            objs_.push_back(obj);
+            //objs_.push_back(obj);
             objsMap_[key] = obj;
         }
 
@@ -97,9 +103,9 @@ namespace NSG
         std::vector<PT> GetObjs() const
         {
 			std::vector<PT> objs;
-			for (auto& obj : objs_)
+			for (auto& obj : objsMap_)
 			{
-				auto p = obj.lock();
+				auto p = obj.second.lock();
 				if (p) objs.push_back(p);
 			}
 			return objs;
@@ -112,11 +118,11 @@ namespace NSG
 
         void Clear()
         {
-        	objs_.clear();
+        	//objs_.clear();
         	objsMap_.clear();
         }
     private:
-        std::vector<PWT> objs_;
+        //std::vector<PWT> objs_;
 		std::unordered_map<K, PWT> objsMap_;
     };
 }

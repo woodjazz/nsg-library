@@ -6,36 +6,38 @@ static const char* FS_GLSL = \
 "#if defined(COMPILEFS) && !defined(HAS_USER_FRAGMENT_SHADER)\n"\
 "	void main()\n"\
 "	{\n"\
-"		#if defined(AMBIENT_PASS)\n"\
-"			\n"\
-"			#if defined(TEXT)\n"\
-"				gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).a);\n"\
-"			#elif defined(BLEND)\n"\
-"				gl_FragColor = Blend();\n"\
-"			#elif defined(BLUR)\n"\
-"				gl_FragColor = Blur();\n"\
-"			#elif defined(WAVE)\n"\
-"				gl_FragColor = Wave();\n"\
-"			#elif defined(SHOW_TEXTURE0)\n"\
+"		#if defined(VERTEXCOLOR)\n"\
+"			gl_FragColor = v_color;\n"\
+"		#elif defined(UNLIT)\n"\
+"            #ifdef DIFFUSEMAP\n"\
 "				gl_FragColor = texture2D(u_texture0, v_texcoord0);\n"\
-"			#elif defined(VERTEXCOLOR)\n"\
-"				gl_FragColor = v_color;\n"\
-"			#else // AMBIENT OR UNLIT\n"\
-"				\n"\
-"				gl_FragColor = GetAmbientLight();\n"\
-"			#endif\n"\
+"            #else\n"\
+"                gl_FragColor = u_material.diffuse;\n"\
+"            #endif\n"\
+"		#elif defined(TEXT)\n"\
+"			gl_FragColor = v_color * vec4(vec3(1.0), texture2D(u_texture0, v_texcoord0).a);\n"\
+"		#elif defined(BLEND)\n"\
+"			gl_FragColor = Blend();\n"\
+"		#elif defined(BLUR)\n"\
+"			gl_FragColor = Blur();\n"\
+"		#elif defined(WAVE)\n"\
+"			gl_FragColor = Wave();\n"\
+"		#elif defined(SHOW_TEXTURE0)\n"\
+"			gl_FragColor = texture2D(u_texture0, v_texcoord0);\n"\
+"		#elif defined(AMBIENT)\n"\
+"			\n"\
+"			gl_FragColor = GetAmbientLight();\n"\
 "		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
 "    		float lightToPixelDistance = length(lightToVertex) * GetLightInvRange();\n"\
 "    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
-"    	#else // LIT_PASS\n"\
-"			#if defined(PER_VERTEX_LIGHTING)\n"\
-"				#ifdef DIFFUSEMAP\n"\
-"					gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
-"				#else\n"\
-"					gl_FragColor = v_color;\n"\
-"				#endif\n"\
-"			#else //PER_PIXEL_LIGHTING\n"\
+"    	#elif defined(PER_VERTEX_LIGHTING)\n"\
+"			#ifdef DIFFUSEMAP\n"\
+"				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
+"			#else\n"\
+"				gl_FragColor = v_color;\n"\
+"			#endif\n"\
+"		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "				//Lighting is calculated in world space\n"\
 "				#ifdef NORMALMAP\n"\
 "					//The normals in the map are stored in tangent/texture space.\n"\
@@ -52,11 +54,11 @@ static const char* FS_GLSL = \
 "	    		vec3 world2light = v_worldPos - GetLightPosition();\n"\
 "	    		vec4 totalLight = CalcTotalLight(world2light, vertexToEye, normal);\n"\
 "				#ifdef DIFFUSEMAP\n"\
-"		    		gl_FragColor = totalLight * texture2D(u_texture0, v_texcoord0);\n"\
+"					vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
+"		    		gl_FragColor = totalLight * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuse.a);\n"\
 "		    	#else\n"\
-"		    		gl_FragColor = totalLight;\n"\
+"		    		gl_FragColor = totalLight * u_material.diffuse;\n"\
 "		    	#endif\n"\
-"		    #endif\n"\
 "		#endif	    \n"\
 "	}	\n"\
 "#endif\n"\

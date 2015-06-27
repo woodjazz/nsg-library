@@ -42,6 +42,7 @@ namespace NSG
 		void SortTransparentBackToFront();
 		void SortSolidFrontToBack();
 		void DrawShadowPass(Batch* batch, const Light* light);
+		void EnableDebugPhysics(bool enable) { debugPhysics_ = enable; }
 	private:
 		void Draw(Batch* batch, const Pass* pass, const Light* light);
 		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
@@ -49,11 +50,12 @@ namespace NSG
 		void GenerateCubeShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
 		void GenerateShadowMap(Light* light, const std::vector<SceneNode*>& drawables);
 		void ExtractTransparent();
-		void GetLighted(std::vector<SceneNode*>& result) const;
-    	void AmbientPass();
-	    void GenerateShadowMaps();
-	    void LitPass();
-	    void TransparentPass();
+		void GetLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
+		void ShadowGenerationPass();
+    	void DefaultOpaquePass();
+	    void LitOpaquePass();
+    	void DefaultTransparentPass();
+	    void LitTransparentPass();
 	    void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
 
 		static Renderer* this_;
@@ -61,11 +63,15 @@ namespace NSG
 		Window* window_;
 		Scene* scene_;
 		Camera* camera_;
-		PPass ambientPass_;
-		PPass lightPass_;
-		PPass transparentPass_;
 		PPass shadowPass_;
+		PPass defaultOpaquePass_;
+		PPass litOpaquePass_;
+		PPass defaultTransparentPass_;
+		PPass litTransparentPass_;
+		PPass debugPass_;
 		std::vector<SceneNode*> visibles_; //visibles not transparent nodes
 		std::vector<SceneNode*> transparent_;
+		bool debugPhysics_;
+		PMaterial debugMaterial_;
 	};
 }

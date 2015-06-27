@@ -50,7 +50,6 @@ namespace NSG
           areTangentsCalculated_(false),
           serializable_(true)
     {
-        CHECK_ASSERT(!dynamic && "dynamic buffers fail (I do not why!!!!)", __FILE__, __LINE__);
         if (name_.empty())
             name_ = GetUniqueName("Mesh");
     }
@@ -77,9 +76,9 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        CHECK_ASSERT(pVBuffer_ == nullptr, __FILE__, __LINE__);
-        CHECK_ASSERT(pIBuffer_ == nullptr, __FILE__, __LINE__);
-        CHECK_ASSERT(pIWirefameBuffer_ == nullptr, __FILE__, __LINE__);
+		CHECK_ASSERT(!isStatic_ || pVBuffer_ == nullptr, __FILE__, __LINE__);
+		CHECK_ASSERT(!isStatic_ || pIBuffer_ == nullptr, __FILE__, __LINE__);
+		CHECK_ASSERT(!isStatic_ || pIWirefameBuffer_ == nullptr, __FILE__, __LINE__);
 
         CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
         CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
@@ -88,16 +87,20 @@ namespace NSG
 
         if (isStatic_)
             pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_STATIC_DRAW));
-        else
-            pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW));
+		else if (!pVBuffer_)
+			pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW));
+		else
+			pVBuffer_->UpdateData(vertexsData_);
 
         if (!indexes_.empty())
         {
             GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
             if (isStatic_)
                 pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_STATIC_DRAW);
-            else
-                pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW);
+			else if (!pIBuffer_)
+				pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW);
+			else
+				pIBuffer_->UpdateData(indexes_);
         }
 
         if (!indexesWireframe_.empty())
@@ -105,9 +108,11 @@ namespace NSG
             GLsizeiptr bytesNeeded = sizeof(IndexType) * indexesWireframe_.size();
             if (isStatic_)
                 pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_STATIC_DRAW);
-            else
-                pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW);
-        }
+			else if (!pIWirefameBuffer_)
+				pIWirefameBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW);
+			else
+				pIWirefameBuffer_->UpdateData(indexesWireframe_);
+		}
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -126,9 +131,13 @@ namespace NSG
         vertexsData_.clear();
         indexes_.clear();
 
-        pVBuffer_ = nullptr;
-        pIBuffer_ = nullptr;
-        pIWirefameBuffer_ = nullptr;
+		if (isStatic_)
+		{
+			pVBuffer_ = nullptr;
+			pIBuffer_ = nullptr;
+			pIWirefameBuffer_ = nullptr;
+		}
+
         areTangentsCalculated_ = false;
 
         for (auto& node : sceneNodes_)

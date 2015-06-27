@@ -98,7 +98,7 @@ namespace NSG
         Color ambient_;
         Color horizon_;
 		POctree octree_;
-        mutable std::set<SceneNode*> needUpdate_;
+        mutable std::set<SceneNode*> octreeNeedsUpdate_;
 		std::map<std::string, PAnimation> animations_;
         typedef std::map<std::string, PAnimationState> AnimationStateMap;
         AnimationStateMap animationStateMap_;

@@ -234,7 +234,7 @@ namespace BlenderConverter
         float alpha = 1.f; //full opaque
         float alphaForSpecular = 1.f;
         const int TRANSPARENCY = 0x10000;
-        bool transparent = mt->mode & TRANSPARENCY  && mt->alpha < 1.f ? true: false;
+        bool transparent = mt->mode & TRANSPARENCY ? true: false;
         if(transparent)
         {
             alpha = mt->alpha;
@@ -918,7 +918,7 @@ namespace BlenderConverter
         auto mesh = sceneNode->GetMesh();
 		if (!mesh)
 		{
-			LOGE("Cannot load physics without mesh.", __FILE__, __LINE__);
+			LOGE("Cannot load physics without mesh.");
 			return;
 		}
 

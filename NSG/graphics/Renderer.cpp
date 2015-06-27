@@ -37,7 +37,8 @@ misrepresented as being the original software.
 #include "Program.h"
 #include "FrameBuffer.h"
 #include "Window.h"
-
+#include "PhysicsWorld.h"
+#include "LinesMesh.h"
 namespace NSG
 {
     Renderer* Renderer::this_ = nullptr;
@@ -47,27 +48,43 @@ namespace NSG
           window_(nullptr),
           scene_(nullptr),
           camera_(nullptr),
-          ambientPass_(std::make_shared<Pass>()),
-          lightPass_(std::make_shared<Pass>()),
-          transparentPass_(std::make_shared<Pass>()),
-          shadowPass_(std::make_shared<Pass>())
+          shadowPass_(std::make_shared<Pass>()),
+          defaultOpaquePass_(std::make_shared<Pass>()),
+          litOpaquePass_(std::make_shared<Pass>()),
+          defaultTransparentPass_(std::make_shared<Pass>()),
+          litTransparentPass_(std::make_shared<Pass>()),
+		  debugPass_(std::make_shared<Pass>()),
+		  debugPhysics_(false),
+		  debugMaterial_(Material::Create("__debugMaterial__"))
     {
 
         CHECK_ASSERT(!Renderer::this_, __FILE__, __LINE__);
         Renderer::this_ = this;
 
-        ambientPass_->SetType(PassType::AMBIENT);
-
-        lightPass_->SetType(PassType::LIT);
-        lightPass_->EnableDepthBuffer(false);
-        lightPass_->SetBlendMode(BLEND_MODE::ADDITIVE);
-        lightPass_->SetDepthFunc(DepthFunc::LEQUAL);
-
-        transparentPass_->SetType(PassType::LIT);
-        transparentPass_->EnableDepthBuffer(false);
-        transparentPass_->SetBlendMode(BLEND_MODE::ALPHA);
-
         shadowPass_->SetType(PassType::SHADOW);
+
+        defaultOpaquePass_->SetType(PassType::DEFAULT);
+
+        litOpaquePass_->SetType(PassType::LIT);
+        litOpaquePass_->EnableDepthBuffer(false);
+        litOpaquePass_->SetBlendMode(BLEND_MODE::ADDITIVE);
+        litOpaquePass_->SetDepthFunc(DepthFunc::LEQUAL);
+
+        defaultTransparentPass_->SetType(PassType::DEFAULT);
+        defaultTransparentPass_->EnableDepthBuffer(false);
+        defaultTransparentPass_->SetBlendMode(BLEND_MODE::ALPHA);
+
+        litTransparentPass_->SetType(PassType::LIT);
+        litTransparentPass_->EnableDepthBuffer(false);
+        litTransparentPass_->SetBlendMode(BLEND_MODE::ALPHA);
+
+		debugPass_->SetType(PassType::DEFAULT);
+		debugPass_->EnableDepthBuffer(false);
+		debugPass_->SetDepthFunc(DepthFunc::LEQUAL);
+		debugPass_->SetBlendMode(BLEND_MODE::ADDITIVE);
+
+		debugMaterial_->SetRenderPass(RenderPass::VERTEXCOLOR);
+		debugMaterial_->SetFillMode(FillMode::WIREFRAME);
     }
 
     Renderer::~Renderer()
@@ -96,11 +113,11 @@ namespace NSG
         visibles_.erase(std::remove_if(visibles_.begin(), visibles_.end(), condition), visibles_.end());
     }
 
-    void Renderer::GetLighted(std::vector<SceneNode*>& result) const
+	void Renderer::GetLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
     {
         CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
 
-        for (auto& node : visibles_)
+        for (auto& node : nodes)
         {
             auto material = node->GetMaterial();
             if (material && material->IsLighted())
@@ -235,15 +252,7 @@ namespace NSG
         }
     }
 
-    void Renderer::AmbientPass()
-    {
-        std::vector<PBatch> batches;
-        GenerateBatches(visibles_, batches);
-        for (auto& batch : batches)
-            Draw(batch.get(), ambientPass_.get(), nullptr);
-    }
-
-    void Renderer::GenerateShadowMaps()
+    void Renderer::ShadowGenerationPass()
     {
         auto lights = scene_->GetLights();
         for (auto light : lights)
@@ -251,7 +260,15 @@ namespace NSG
                 light->GenerateShadowMaps(camera_);
     }
 
-    void Renderer::LitPass()
+    void Renderer::DefaultOpaquePass()
+    {
+        std::vector<PBatch> batches;
+        GenerateBatches(visibles_, batches);
+        for (auto& batch : batches)
+            Draw(batch.get(), defaultOpaquePass_.get(), nullptr);
+    }
+
+    void Renderer::LitOpaquePass()
     {
         auto lights = scene_->GetLights();
         for (auto light : lights)
@@ -259,20 +276,17 @@ namespace NSG
             if (light->GetOnlyShadow())
                 continue;
             std::vector<SceneNode*> litNodes;
-            GetLighted(litNodes);
+            GetLighted(visibles_, litNodes);
             std::vector<PBatch> batches;
             GenerateBatches(litNodes, batches);
             for (auto& batch : batches)
-                Draw(batch.get(), lightPass_.get(), light);
+                Draw(batch.get(), litOpaquePass_.get(), light);
         }
     }
 
-    void Renderer::TransparentPass()
+    void Renderer::DefaultTransparentPass()
     {
-        if (transparent_.empty())
-            return;
         // Transparent nodes cannot be batched
-        SortTransparentBackToFront();
         for (auto& node : transparent_)
         {
             auto sceneNode = (SceneNode*)node;
@@ -280,8 +294,32 @@ namespace NSG
             if (material)
             {
                 graphics_->SetMesh(sceneNode->GetMesh().get());
-                if (graphics_->SetupPass(transparentPass_.get(), sceneNode, material, nullptr))
+                if (graphics_->SetupPass(defaultTransparentPass_.get(), sceneNode, material, nullptr))
                     graphics_->DrawActiveMesh();
+            }
+        }
+    }
+
+    void Renderer::LitTransparentPass()
+    {
+        // Transparent nodes cannot be batched
+		auto lights = scene_->GetLights();
+        for (auto light : lights)
+        {
+            if (light->GetOnlyShadow())
+                continue;
+			std::vector<SceneNode*> litNodes;
+			GetLighted(transparent_, litNodes);
+			for (auto& node : litNodes)
+            {
+                auto sceneNode = (SceneNode*)node;
+                auto material = sceneNode->GetMaterial().get();
+                if (material)
+                {
+                    graphics_->SetMesh(sceneNode->GetMesh().get());
+                    if (graphics_->SetupPass(litTransparentPass_.get(), sceneNode, material, light))
+                        graphics_->DrawActiveMesh();
+                }
             }
         }
     }
@@ -300,13 +338,35 @@ namespace NSG
         if (!visibles_.empty())
         {
             graphics_->SetClearColor(COLOR_WHITE);
-            GenerateShadowMaps();
+            ShadowGenerationPass();
             graphics_->SetClearColor(scene->GetHorizonColor());
-            AmbientPass();
             ExtractTransparent();
-            SortSolidFrontToBack();
-            LitPass();
-            TransparentPass();
+			if (!visibles_.empty())
+			{
+				SortSolidFrontToBack();
+				DefaultOpaquePass();
+				LitOpaquePass();
+			}
+			if (!transparent_.empty())
+			{
+				SortTransparentBackToFront();
+				DefaultTransparentPass();
+				LitTransparentPass();
+			}
+
+            if (debugPhysics_)
+            {
+                auto world = scene_->GetPhysicsWorld();
+                if (world)
+                {
+                    world->DrawDebug();
+                    auto meshLines = world->GetDebugLines();
+                    graphics_->SetMesh(meshLines.get());
+                    if (graphics_->SetupPass(debugPass_.get(), nullptr, debugMaterial_.get(), nullptr))
+                        graphics_->DrawActiveMesh();
+                    world->ClearDebugLines();
+                }
+            }
         }
     }
 }

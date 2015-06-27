@@ -33,21 +33,36 @@ class btGhostPairCallback;
 class btCollisionDispatcher;
 class btSequentialImpulseConstraintSolver;
 class btDiscreteDynamicsWorld;
+#include "LinearMath/btIDebugDraw.h"
 
 namespace NSG
 {
-    class PhysicsWorld
+    class PhysicsWorld : public btIDebugDraw
     {
     public:
-        PhysicsWorld();
+        PhysicsWorld(const Scene* scene);
         ~PhysicsWorld();
         void StepSimulation(float timeStep);
 		void Substep(float tick);
         std::shared_ptr<btDiscreteDynamicsWorld> GetWorld() const { return dynamicsWorld_; }
 		void SetGravity(const Vector3& gravity);
 		const Vector3& GetGravity() const { return gravity_; }
+		///////////////////////////////////////////////////////////////////////////////////////
+		// Bullet btIDebugDraw
+		bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
+		void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
+		void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color);
+		void reportErrorWarning(const char* warningString) override;
+		void draw3dText(const btVector3& location, const char* textString) override;
+		void setDebugMode(int debugMode) override;
+		int	getDebugMode() const override;
+		///////////////////////////////////////////////////////////////////////////////////////
+		void DrawDebug();
+		PLinesMesh GetDebugLines() const { return lines_; }
+		void ClearDebugLines();
     private:
         static void SubstepCallback(btDynamicsWorld* dyn, float tick);
+        const Scene* scene_;
         btDefaultCollisionConfiguration* collisionConfiguration_;
         btDbvtBroadphase* pairCache_;
         btGhostPairCallback* ghostPairCallback_;
@@ -55,5 +70,7 @@ namespace NSG
         btSequentialImpulseConstraintSolver* constraintSolver_;
 		std::shared_ptr<btDiscreteDynamicsWorld> dynamicsWorld_;
 		Vector3 gravity_;
+		int debugMode_;
+		PLinesMesh lines_;
     };
 }

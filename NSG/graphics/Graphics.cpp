@@ -1001,7 +1001,7 @@ namespace NSG
         {
             SetVertexBuffer(vBuffer);
             SetAttributes();
-            if (activeProgram_->GetMaterial()->IsBatched())
+			if (activeProgram_->GetMaterial()->IsBatched() && !vBuffer->IsDynamic())
                 SetInstanceAttrPointers(activeProgram_);
             SetIndexBuffer(activeMesh_->GetIndexBuffer(solid));
         }
@@ -1297,7 +1297,7 @@ namespace NSG
             EnableCullFace(false);
 
         auto program = GetOrCreateProgram(pass, activeMesh_, material, light);
-        program->Set(activeMesh_);
+        program->Set(activeMesh_->GetSkeleton().get());
         program->Set(sceneNode);
         program->Set(material);
         program->Set(light);
@@ -1353,8 +1353,8 @@ namespace NSG
 
         if (!indexes.empty())
             glDrawElements(mode, GLsizei(indexes.size()), GL_UNSIGNED_SHORT, 0);
-        else
-            glDrawArrays(mode, 0, GLsizei(vertexsData.size()));
+		else
+			glDrawArrays(mode, 0, GLsizei(vertexsData.size()));
 
         SetVertexArrayObj(nullptr);
 

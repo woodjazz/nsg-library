@@ -45,6 +45,7 @@ namespace NSG
     public:
         virtual ~Mesh();
 		void SetDynamic(bool dynamic);
+		bool IsStatic() const { return isStatic_; }
         virtual GLenum GetWireFrameDrawMode() const = 0;
         virtual GLenum GetSolidDrawMode() const = 0;
         virtual size_t GetNumberOfTriangles() const = 0;

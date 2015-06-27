@@ -51,7 +51,7 @@ namespace NSG
     PMaterial Material::Clone(const std::string& name)
     {
         auto material = std::make_shared<Material>(name);
-		for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
+        for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
             material->texture_[index] = texture_[index];
         material->ambient_ = ambient_;
         material->diffuse_ = diffuse_;
@@ -163,7 +163,7 @@ namespace NSG
             default:
                 break;
         }
-		CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS, __FILE__, __LINE__);
+        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS, __FILE__, __LINE__);
         if (texture_[index] != texture)
         {
             texture_[index] = texture;
@@ -176,7 +176,7 @@ namespace NSG
 
     PTexture Material::GetTexture(MaterialTexture index) const
     {
-		CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS, __FILE__, __LINE__);
+        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS, __FILE__, __LINE__);
         return texture_[index];
     }
 
@@ -214,7 +214,7 @@ namespace NSG
         bool isReady = true;
         if (xmlResource_)
             isReady = xmlResource_->IsReady();
-		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
+        for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
             if (texture_[index])
                 isReady = isReady && texture_[index]->IsReady();
         if (isReady)
@@ -234,7 +234,7 @@ namespace NSG
         instanceBuffer_ = nullptr;
         lastBatch_.Clear();
 
-		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
+        for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
             if (texture_[index])
                 texture_[index]->Invalidate();
     }
@@ -254,7 +254,7 @@ namespace NSG
         child.append_attribute("cullFaceMode").set_value(ToString(cullFaceMode_));
         child.append_attribute("friction").set_value(friction_);
 
-		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
+        for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
         {
             if (texture_[index] && texture_[index]->IsSerializable())
             {
@@ -284,7 +284,7 @@ namespace NSG
         cullFaceMode_ = ToCullFaceMode(node.attribute("cullFaceMode").as_string());
         SetFriction(node.attribute("friction").as_float());
 
-		for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
+        for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
         {
             texture_[index] = nullptr;
             std::string s(TEXTURE_NAME);
@@ -334,7 +334,7 @@ namespace NSG
 
     PTexture Material::GetTextureWith(PResource resource) const
     {
-		for (size_t i = 0; i < MaterialTexture::MAX_MAPS; i++)
+        for (size_t i = 0; i < MaterialTexture::MAX_MAPS; i++)
         {
             if (texture_[i] && resource == texture_[i]->GetResource())
                 return texture_[i];
@@ -458,13 +458,21 @@ namespace NSG
 
     void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh)
     {
-        bool ambientaPass = PassType::AMBIENT == passType;
-        bool shadowPass =  PassType::SHADOW == passType;
+		defines += "MATERIAL_" + GetName() + "\n"; // just to have a shader variance per material
+        bool shadowPass = PassType::SHADOW == passType;
+		bool defaultPass = PassType::DEFAULT == passType;
 
-        if (ambientaPass)
+        if (shadowPass)
         {
-            defines += "AMBIENT_PASS\n";
-
+            if (light->GetType() == LightType::POINT)
+                defines += "SHADOWCUBE_PASS\n";
+            else if (light->GetType() == LightType::DIRECTIONAL)
+                defines += "SHADOW_PASS\n";
+            else
+                defines += "SHADOW_PASS\n";
+        }
+        else
+        {
             switch (renderPass_)
             {
                 case RenderPass::VERTEXCOLOR:
@@ -488,41 +496,31 @@ namespace NSG
                 case RenderPass::SHOW_TEXTURE0:
                     defines += "SHOW_TEXTURE0\n";
                     break;
-            }
-        }
-        else if (shadowPass)
-        {
-            if (light->GetType() == LightType::POINT)
-                defines += "SHADOWCUBE_PASS\n";
-            else if (light->GetType() == LightType::DIRECTIONAL)
-                defines += "SHADOW_PASS\n";
-            else
-                defines += "SHADOW_PASS\n";
-        }
-        else // LIT_PASS
-        {
-            defines += "LIT_PASS\n";
-            switch (renderPass_)
-            {
                 case RenderPass::PERVERTEX:
-                    defines += "PER_VERTEX_LIGHTING\n";
+					if (defaultPass)
+						defines += "AMBIENT\n";
+					else
+						defines += "PER_VERTEX_LIGHTING\n";
                     break;
                 case RenderPass::PERPIXEL:
-                {
-                    defines += "PER_PIXEL_LIGHTING\n";
-                    if(light && light->HasSpecularColor() && HasSpecularColor())
-                        defines += "SPECULAR\n";
-                    break;
-                }
+                    {
+						if (defaultPass)
+							defines += "AMBIENT\n";
+						else
+						{
+							defines += "PER_PIXEL_LIGHTING\n";
+							if (light && light->HasSpecularColor() && HasSpecularColor())
+								defines += "SPECULAR\n";
+						}
+                        break;
+                    }
                 default:
                     CHECK_ASSERT(!"INCORRECT LIT PASS!!!", __FILE__, __LINE__);
                     break;
-            }
-        }
 
-        if (!shadowPass)
-        {
-			for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
+            }
+
+            for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
             {
                 auto texture = GetTexture((MaterialTexture)index);
                 if (texture)
@@ -537,22 +535,22 @@ namespace NSG
                             defines += "DIFFUSEMAP\n";
                             break;
                         case TextureType::NORM:
-                            if (!ambientaPass)
+							if (!defaultPass)
                                 defines += "NORMALMAP\n";
                             break;
                         case TextureType::SPEC:
-                            if (!ambientaPass)
+							if (!defaultPass)
                                 defines += "SPECULARMAP\n";
                             break;
                         case TextureType::EMIT:
-                            if (ambientaPass)
+							if (defaultPass)
                             {
                                 defines += "LIGHTMAP" + ToString(uvIndex) + "\n";
                                 defines += "LIGHTMAP_CHANNELS" + ToString(channels) + "\n";
                             }
                             break;
                         case TextureType::AMB:
-                            if (ambientaPass)
+							if (defaultPass)
                             {
                                 defines += "AOMAP" + ToString(uvIndex) + "\n";
                                 defines += "AOMAP_CHANNELS" + ToString(channels) + "\n";
@@ -565,25 +563,22 @@ namespace NSG
             }
         }
 
-        if (IsBatched())
+		if (IsBatched() && mesh->IsStatic())
             defines += "INSTANCED\n";
 
-        if (!ambientaPass && !shadowPass)
+        switch (billboardType_)
         {
-            switch (billboardType_)
-            {
-                case BillboardType::NONE:
-                    break;
-                case BillboardType::SPHERICAL:
-                    defines += "SPHERICAL_BILLBOARD\n";
-                    break;
-                case BillboardType::CYLINDRICAL:
-                    defines += "CYLINDRICAL_BILLBOARD\n";
-                    break;
-                default:
-                    CHECK_ASSERT(!"Unknown billboard type!!!", __FILE__, __LINE__);
-                    break;
-            }
+            case BillboardType::NONE:
+                break;
+            case BillboardType::SPHERICAL:
+                defines += "SPHERICAL_BILLBOARD\n";
+                break;
+            case BillboardType::CYLINDRICAL:
+                defines += "CYLINDRICAL_BILLBOARD\n";
+                break;
+            default:
+                CHECK_ASSERT(!"Unknown billboard type!!!", __FILE__, __LINE__);
+                break;
         }
 
         if (flipYTextureCoords_)

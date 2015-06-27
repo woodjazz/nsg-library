@@ -181,6 +181,9 @@ namespace NSG
 	class CircleMesh;
 	typedef std::shared_ptr<CircleMesh> PCircleMesh;
 
+	class LinesMesh;
+	typedef std::shared_ptr<LinesMesh> PLinesMesh;
+
 	class EllipseMesh;
 	typedef std::shared_ptr<EllipseMesh> PEllipseMesh;
 

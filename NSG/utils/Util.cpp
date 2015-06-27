@@ -103,7 +103,10 @@ namespace NSG
         static int counter = 0;
         const int MaxBuffer = 100;
         char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "Gen%d", counter++);
+        if(name == "")
+            snprintf(buffer, MaxBuffer, "Gen%d", counter++);
+        else
+            snprintf(buffer, MaxBuffer, "%s%d", name.c_str(), counter++);
         return buffer;
     }
 

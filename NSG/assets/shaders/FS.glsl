@@ -3,37 +3,41 @@
 
 	void main()
 	{
-		#if defined(AMBIENT_PASS)
-			
-			#if defined(TEXT)
+		#if defined(VERTEXCOLOR)
 
-				gl_FragColor = v_color * vec4(1.0, 1.0, 1.0, texture2D(u_texture0, v_texcoord0).a);
+			gl_FragColor = v_color;
 
-			#elif defined(BLEND)
+		#elif defined(UNLIT)
 
-				gl_FragColor = Blend();
-
-			#elif defined(BLUR)
-
-				gl_FragColor = Blur();
-
-			#elif defined(WAVE)
-
-				gl_FragColor = Wave();
-
-			#elif defined(SHOW_TEXTURE0)
-
+            #ifdef DIFFUSEMAP
 				gl_FragColor = texture2D(u_texture0, v_texcoord0);
+            #else
+                gl_FragColor = u_material.diffuse;
+            #endif
 
-			#elif defined(VERTEXCOLOR)
+		#elif defined(TEXT)
 
-				gl_FragColor = v_color;
+			gl_FragColor = v_color * vec4(vec3(1.0), texture2D(u_texture0, v_texcoord0).a);
 
-			#else // AMBIENT OR UNLIT
-				
-				gl_FragColor = GetAmbientLight();
+		#elif defined(BLEND)
 
-			#endif
+			gl_FragColor = Blend();
+
+		#elif defined(BLUR)
+
+			gl_FragColor = Blur();
+
+		#elif defined(WAVE)
+
+			gl_FragColor = Wave();
+
+		#elif defined(SHOW_TEXTURE0)
+
+			gl_FragColor = texture2D(u_texture0, v_texcoord0);
+
+		#elif defined(AMBIENT)
+			
+			gl_FragColor = GetAmbientLight();
 
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
@@ -41,20 +45,18 @@
     		float lightToPixelDistance = length(lightToVertex) * GetLightInvRange();
     		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
 
-    	#else // LIT_PASS
 
-			#if defined(PER_VERTEX_LIGHTING)
+    	#elif defined(PER_VERTEX_LIGHTING)
 
-				#ifdef DIFFUSEMAP
-					gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
-				#else
-					gl_FragColor = v_color;
-				#endif
+			#ifdef DIFFUSEMAP
+				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
+			#else
+				gl_FragColor = v_color;
+			#endif
 
-			#else //PER_PIXEL_LIGHTING
+		#elif defined(PER_PIXEL_LIGHTING)
 
 				//Lighting is calculated in world space
-
 				#ifdef NORMALMAP
 					//The normals in the map are stored in tangent/texture space.
 					//For better explanation see http://ogldev.atspace.co.uk/www/tutorial26/tutorial26.html
@@ -72,12 +74,11 @@
 	    		vec4 totalLight = CalcTotalLight(world2light, vertexToEye, normal);
 
 				#ifdef DIFFUSEMAP
-		    		gl_FragColor = totalLight * texture2D(u_texture0, v_texcoord0);
+					vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);
+		    		gl_FragColor = totalLight * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuse.a);
 		    	#else
-		    		gl_FragColor = totalLight;
+		    		gl_FragColor = totalLight * u_material.diffuse;
 		    	#endif
-
-		    #endif
 
 		#endif	    
 	}	

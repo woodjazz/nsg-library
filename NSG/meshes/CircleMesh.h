@@ -34,7 +34,6 @@ namespace NSG
 		CircleMesh(const std::string& name);
 		~CircleMesh();
 		void Set(float radius = 1, int res = 8);
-		void SetFilled(bool enable);
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		size_t GetNumberOfTriangles() const override;

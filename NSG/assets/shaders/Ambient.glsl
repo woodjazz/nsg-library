@@ -1,7 +1,7 @@
 //Remember to rebuild with CMake if this file changes
 
 #if defined(COMPILEFS)
-    #if defined(AMBIENT_PASS)
+    #if defined(AMBIENT)
         vec4 GetAmbientIntensity()
         {
             #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)
@@ -43,17 +43,10 @@
         vec4 GetAmbientLight()
         {
             #ifdef DIFFUSEMAP
-                #if defined(UNLIT)
-                    return texture2D(u_texture0, v_texcoord0);
-                #else
-                    return u_material.diffuse.a * GetAmbientIntensity() * texture2D(u_texture0, v_texcoord0);
-                #endif
+                vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);
+                return GetAmbientIntensity() * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuse.a);
             #else
-                #if defined(UNLIT)
-                    return u_material.diffuse;
-                #else
-                    return u_material.diffuse.a * GetAmbientIntensity();
-                #endif
+                return u_material.diffuse.a * GetAmbientIntensity();
             #endif
         }
     #endif

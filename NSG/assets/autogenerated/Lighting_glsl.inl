@@ -6,17 +6,14 @@ static const char* LIGHTING_GLSL = \
 "vec4 CalcLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)\n"\
 "{\n"\
 "    float dFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);\n"\
-"    #ifdef DIFFUSEMAP\n"\
-"        vec4 diffuse = dFactor * u_lightDiffuseColor;\n"\
-"    #else\n"\
-"        vec4 diffuse = dFactor * u_lightDiffuseColor * u_material.diffuse;\n"\
-"    #endif\n"\
+"    vec4 diffuse = dFactor * u_lightDiffuseColor;\n"\
 "    #ifdef SPECULAR\n"\
 "        vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
 "        float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);\n"\
 "        sFactor = pow(sFactor, u_material.shininess);\n"\
 "        #if defined SPECULARMAP && defined(COMPILEFS)\n"\
-"            vec4 specular = sFactor * u_lightSpecularColor * u_material.specular * texture2D(u_texture2, v_texcoord0);\n"\
+"            vec4 specularMap = texture2D(u_texture2, v_texcoord0);\n"\
+"            vec4 specular = sFactor * u_lightSpecularColor * vec4(specularMap.rgb, specularMap.a + u_material.specular.a);\n"\
 "        #else\n"\
 "            vec4 specular = sFactor * u_lightSpecularColor * u_material.specular;\n"\
 "        #endif\n"\
