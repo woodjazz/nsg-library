@@ -24,10 +24,11 @@ varying vec3 v_vertexToEye;
 
 struct Material
 {
-	vec4 color;
-    float ambient;
-    vec4 diffuse;
-    vec4 specular;
+	vec4 diffuseColor;
+	float diffuseIntensity;
+	vec4 specularColor;
+	float specularIntensity;
+    float ambientIntensity;
     float shininess;
 };
 

@@ -78,8 +78,9 @@ namespace NSG
 
             case SH_CAPSULE:
                 {
-                    float c_radius = std::max(halfSize.x, halfSize.y);
-                    shape_ = std::make_shared<btCapsuleShapeZ>(c_radius - 0.05f, (halfSize.z - c_radius - 0.05f) * 2);
+                    //shape_ = std::make_shared<btCapsuleShape>(halfSize.x * 0.5f, std::max(halfSize.y  - halfSize.x, 0.0f));
+                    auto c_radius = std::max(halfSize.x, halfSize.y);
+                    shape_ = std::make_shared<btCapsuleShapeZ>(c_radius - 0.05f, (halfSize.z - 0.05f) * 2 - c_radius);
                     break;
                 }
 

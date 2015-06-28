@@ -56,6 +56,11 @@ namespace NSG
         CloseAudio();
     }
 
+    void Sound::Clear()
+    {
+        sounds_.Clear();
+    }
+
     PSound Sound::Create(const std::string& name)
     {
         return sounds_.Create(name);

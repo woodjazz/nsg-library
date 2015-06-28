@@ -36,6 +36,7 @@ namespace NSG
     class Sound : public Object
     {
     public:
+        static void Clear(); 
         static PSound Create(const std::string& name = GetUniqueName("Sound"));
         static PSound GetOrCreate(const std::string& name = GetUniqueName("Sound"));
         static PSound Get(const std::string& name);

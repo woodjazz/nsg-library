@@ -21,11 +21,12 @@ namespace NSG
 
     Material::Material(const std::string& name)
         : Object(name),
-          ambient_(1),
-          diffuse_(1, 1, 1, 1),
-          specular_(1, 1, 1, 1),
+          diffuseColor_(1, 1, 1, 1),
+          diffuseIntensity_(1),
+          specularColor_(1, 1, 1, 1),
+          specularIntensity_(1),
+          ambientIntensity_(1),
           shininess_(1),
-          color_(1, 1, 1, 1),
           uvTransform_(1, 1, 0, 0),
           serializable_(true),
           blendFilterMode_(BlendFilterMode::ADDITIVE),
@@ -53,11 +54,12 @@ namespace NSG
         auto material = std::make_shared<Material>(name);
         for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
             material->texture_[index] = texture_[index];
-        material->ambient_ = ambient_;
-        material->diffuse_ = diffuse_;
-        material->specular_ = specular_;
+        material->diffuseIntensity_ = diffuseIntensity_;
+        material->specularIntensity_ = specularIntensity_;
+        material->ambientIntensity_ = ambientIntensity_;
+        material->diffuseColor_ = diffuseColor_;
+        material->specularColor_ = specularColor_;
         material->shininess_ = shininess_;
-        material->color_ = color_;
         material->serializable_ = serializable_;
         material->blendFilterMode_ = blendFilterMode_;
         material->blurFilter_ = blurFilter_;
@@ -79,43 +81,52 @@ namespace NSG
         return material;
     }
 
-    void Material::SetColor(Color color)
+    void Material::SetDiffuseColor(Color color)
     {
-        if (color != color_)
+        if (diffuseColor_ != color)
         {
-            color_ = color;
+            diffuseColor_ = color;
             SetUniformsNeedUpdate();
         }
     }
 
-    void Material::SetDiffuseColor(Color diffuse)
+    void Material::SetSpecularColor(Color color)
     {
-        if (diffuse_ != diffuse)
+        if (specularColor_ != color)
         {
-            diffuse_ = diffuse;
-            SetUniformsNeedUpdate();
-        }
-    }
-
-    void Material::SetSpecularColor(Color specular)
-    {
-        if (specular_ != specular)
-        {
-            specular_ = specular;
+            specularColor_ = color;
             SetUniformsNeedUpdate();
         }
     }
 
     bool Material::HasSpecularColor() const
     {
-        return specular_.a && (specular_.r || specular_.g || specular_.b);
+        return specularColor_.a && (specularColor_.r || specularColor_.g || specularColor_.b);
     }
 
-    void Material::SetAmbientIntensity(float ambient)
+    void Material::SetAmbientIntensity(float intensity)
     {
-        if (ambient_ != ambient)
+        if (ambientIntensity_ != intensity)
         {
-            ambient_ = ambient;
+            ambientIntensity_ = intensity;
+            SetUniformsNeedUpdate();
+        }
+    }
+
+    void Material::SetDiffuseIntensity(float intensity)
+    {
+        if (diffuseIntensity_ != intensity)
+        {
+            diffuseIntensity_ = intensity;
+            SetUniformsNeedUpdate();
+        }
+    }
+
+    void Material::SetSpecularIntensity(float intensity)
+    {
+        if (specularIntensity_ != intensity)
+        {
+            specularIntensity_ = intensity;
             SetUniformsNeedUpdate();
         }
     }
@@ -265,11 +276,12 @@ namespace NSG
             }
         }
 
-        child.append_attribute("ambient").set_value(ambient_);
-        child.append_attribute("diffuse").set_value(ToString(diffuse_).c_str());
-        child.append_attribute("specular").set_value(ToString(specular_).c_str());
+        child.append_attribute("ambientIntensity").set_value(ambientIntensity_);
+        child.append_attribute("diffuseIntensity").set_value(diffuseIntensity_);
+        child.append_attribute("specularIntensity").set_value(specularIntensity_);
+        child.append_attribute("diffuse").set_value(ToString(diffuseColor_).c_str());
+        child.append_attribute("specular").set_value(ToString(specularColor_).c_str());
         child.append_attribute("shininess").set_value(shininess_);
-        child.append_attribute("color").set_value(ToString(color_).c_str());
         child.append_attribute("fillMode").set_value(ToString(fillMode_));
         child.append_attribute("blendMode").set_value(ToString(blendMode_));
         child.append_attribute("renderPass").set_value(ToString(renderPass_));
@@ -294,11 +306,12 @@ namespace NSG
                 texture_[index] = Texture2D::CreateFrom(resource, childTexture);
         }
 
-        SetAmbientIntensity(node.attribute("ambient").as_float());
+        SetAmbientIntensity(node.attribute("ambientIntensity").as_float());
+        SetDiffuseIntensity(node.attribute("diffuseIntensity").as_float());
+        SetSpecularIntensity(node.attribute("specularIntensity").as_float());
         SetDiffuseColor(ToVertex4(node.attribute("diffuse").as_string()));
         SetSpecularColor(ToVertex4(node.attribute("specular").as_string()));
         SetShininess(node.attribute("shininess").as_float());
-        SetColor(ToVertex4(node.attribute("color").as_string()));
         SetFillMode(ToFillMode(node.attribute("fillMode").as_string()));
         SetBlendMode(ToBlendMode(node.attribute("blendMode").as_string()));
         SetRenderPass(ToRenderPass(node.attribute("renderPass").as_string()));
@@ -379,6 +392,11 @@ namespace NSG
         }
     }
 
+    void Material::Clear()
+    {
+        materials_.Clear();
+    }
+
     PMaterial Material::Create(const std::string& name)
     {
         return materials_.Create(name);
@@ -423,7 +441,7 @@ namespace NSG
             {
                 std::string name = child.attribute("name").as_string();
                 auto material(Material::GetOrCreate(name));
-                auto xmlResource = Resource::Create<ResourceXMLNode>(name);
+                auto xmlResource = Resource::Create<ResourceXMLNode>(GetUniqueName(name));
                 xmlResource->Set(resource, material, "Materials", name);
                 xmlResource->IsReady(); //force load resources for textures
                 material->Set(xmlResource);
@@ -458,9 +476,9 @@ namespace NSG
 
     void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh)
     {
-		defines += "MATERIAL_" + GetName() + "\n"; // just to have a shader variance per material
+        defines += "MATERIAL_" + GetName() + "\n"; // just to have a shader variance per material
         bool shadowPass = PassType::SHADOW == passType;
-		bool defaultPass = PassType::DEFAULT == passType;
+        bool defaultPass = PassType::DEFAULT == passType;
 
         if (shadowPass)
         {
@@ -497,21 +515,21 @@ namespace NSG
                     defines += "SHOW_TEXTURE0\n";
                     break;
                 case RenderPass::PERVERTEX:
-					if (defaultPass)
-						defines += "AMBIENT\n";
-					else
-						defines += "PER_VERTEX_LIGHTING\n";
+                    if (defaultPass)
+                        defines += "AMBIENT\n";
+                    else
+                        defines += "PER_VERTEX_LIGHTING\n";
                     break;
                 case RenderPass::PERPIXEL:
                     {
-						if (defaultPass)
-							defines += "AMBIENT\n";
-						else
-						{
-							defines += "PER_PIXEL_LIGHTING\n";
-							if (light && light->HasSpecularColor() && HasSpecularColor())
-								defines += "SPECULAR\n";
-						}
+                        if (defaultPass)
+                            defines += "AMBIENT\n";
+                        else
+                        {
+                            defines += "PER_PIXEL_LIGHTING\n";
+                            if (light && light->HasSpecularColor() && HasSpecularColor())
+                                defines += "SPECULAR\n";
+                        }
                         break;
                     }
                 default:
@@ -535,22 +553,22 @@ namespace NSG
                             defines += "DIFFUSEMAP\n";
                             break;
                         case TextureType::NORM:
-							if (!defaultPass)
+                            if (!defaultPass)
                                 defines += "NORMALMAP\n";
                             break;
                         case TextureType::SPEC:
-							if (!defaultPass)
+                            if (!defaultPass)
                                 defines += "SPECULARMAP\n";
                             break;
                         case TextureType::EMIT:
-							if (defaultPass)
+                            if (defaultPass)
                             {
                                 defines += "LIGHTMAP" + ToString(uvIndex) + "\n";
                                 defines += "LIGHTMAP_CHANNELS" + ToString(channels) + "\n";
                             }
                             break;
                         case TextureType::AMB:
-							if (defaultPass)
+                            if (defaultPass)
                             {
                                 defines += "AOMAP" + ToString(uvIndex) + "\n";
                                 defines += "AOMAP_CHANNELS" + ToString(channels) + "\n";
@@ -563,7 +581,7 @@ namespace NSG
             }
         }
 
-		if (IsBatched() && mesh->IsStatic())
+        if (IsBatched() && mesh->IsStatic())
             defines += "INSTANCED\n";
 
         switch (billboardType_)

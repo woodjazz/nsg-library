@@ -49,6 +49,7 @@ namespace NSG
 		void SetSerializable(bool serializable);
 		bool IsSerializable() const;
 		void SetName(const std::string& name);
+		static void Clear();
 		template <typename T> static std::shared_ptr<T> GetOrCreate(const std::string& name)
         {
             return resources_.GetOrCreateClass<T>(name);

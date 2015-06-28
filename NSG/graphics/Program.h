@@ -38,7 +38,7 @@ namespace NSG
     class Program : public Object
     {
     public:
-		Program(const std::string& defines);
+        Program(const std::string& defines);
         virtual ~Program();
         bool Initialize();
         GLuint GetAttributeLocation(const std::string& name);
@@ -61,8 +61,8 @@ namespace NSG
         GLuint GetId() const { return id_; }
         Material* GetMaterial() const { return material_; }
         const std::string& GetName() const { return name_; }
-		void SetNumberBones(size_t nBones);
-		void SetNodeVariables();
+        void SetNumberBones(size_t nBones);
+        void SetNodeVariables();
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -70,10 +70,10 @@ namespace NSG
         void SetSceneVariables();
         void SetCameraVariables();
         void SetMaterialVariables();
-		void SetSkeletonVariables();
-		void SetUniformLocations();
-		bool ShaderCompiles(GLenum type, const std::string& buffer) const;
-		void ConfigureShaders(std::string& vertexShader, std::string& fragmentShader);
+        void SetSkeletonVariables();
+        void SetUniformLocations();
+        bool ShaderCompiles(GLenum type, const std::string& buffer) const;
+        void ConfigureShaders(std::string& vertexShader, std::string& fragmentShader);
 
         struct BaseLightLoc
         {
@@ -121,14 +121,15 @@ namespace NSG
         GLuint eyeWorldPosLoc_;
         GLuint u_uvTransformLoc_;
 
-		GLuint textureLoc_[MaterialTexture::MAX_MAPS];
+        GLuint textureLoc_[MaterialTexture::MAX_MAPS];
 
         struct MaterialLoc
         {
-            GLuint color_;
-            GLuint ambient_;
-            GLuint diffuse_;
-            GLuint specular_;
+            GLuint diffuseColor_;
+            GLuint diffuseIntensity_;
+            GLuint specularColor_;
+            GLuint specularIntensity_;
+            GLuint ambientIntensity_;
             GLuint shininess_;
         };
 
@@ -146,14 +147,14 @@ namespace NSG
         GLuint shadowBias_;
 
         GLuint blendMode_loc_;
-        
+
         struct BlurFilterLoc
         {
             GLuint blurDir_;
             GLuint blurRadius_;
             GLuint sigma_;
         } blurFilterLoc_;
-        
+
         struct WavesFilterLoc
         {
             GLuint factor_;
@@ -163,17 +164,17 @@ namespace NSG
 
         /////////////////////////////////////
 
-		size_t nBones_;
-		const Skeleton* activeSkeleton_;
+        size_t nBones_;
+        const Skeleton* activeSkeleton_;
         Node* activeNode_;
-		Material* activeMaterial_;
-		const Light* activeLight_;
-		const Camera* activeCamera_;
+        Material* activeMaterial_;
+        const Light* activeLight_;
+        const Camera* activeCamera_;
         Color sceneColor_;
         const Skeleton* skeleton_;
         SceneNode* node_;
         Material* material_;
         const Light* light_;
-		
+
     };
 }

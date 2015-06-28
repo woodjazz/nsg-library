@@ -72,6 +72,7 @@ namespace NSG
         void AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal);
 		void AverageNormals(size_t indexBase, bool isQuad);
         const VertexData& GetTriangleVertex(size_t triangleIdx, size_t vertexIndex) const;
+        static void Clear();
 		template <typename T> static std::shared_ptr<T> GetOrCreate(const std::string& name)
         {
             return meshes_.GetOrCreateClass<T>(name);

@@ -26,10 +26,11 @@ static const char* COMMON_GLSL = \
 "varying vec3 v_vertexToEye;\n"\
 "struct Material\n"\
 "{\n"\
-"	vec4 color;\n"\
-"    float ambient;\n"\
-"    vec4 diffuse;\n"\
-"    vec4 specular;\n"\
+"	vec4 diffuseColor;\n"\
+"	float diffuseIntensity;\n"\
+"	vec4 specularColor;\n"\
+"	float specularIntensity;\n"\
+"    float ambientIntensity;\n"\
 "    float shininess;\n"\
 "};\n"\
 "uniform vec4 u_sceneAmbientColor;\n"\

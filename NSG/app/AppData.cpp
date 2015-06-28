@@ -69,6 +69,11 @@ namespace NSG
 		Load(doc, resource);
     }
 
+    AppData::~AppData()
+    {
+        AppData::ClearAll();
+    }
+
 	void AppData::Load(const pugi::xml_document& doc, PResource resource)
     {
         pugi::xml_node appNode = doc.child("App");
@@ -84,6 +89,14 @@ namespace NSG
             scenes_.push_back(scene);
             child = child.next_sibling("Scene");
         }
+    }
+
+    void AppData::ClearAll()
+    {
+        Resource::Clear();
+        Sound::Clear();
+        Mesh::Clear();
+        Material::Clear();
     }
 
 }

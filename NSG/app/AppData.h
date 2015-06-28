@@ -37,6 +37,8 @@ namespace NSG
 		std::vector<PScene> scenes_;
 		AppData(PResource resource);
 		AppData(const pugi::xml_document& doc);
+		~AppData();
+		static void ClearAll();
 	private:
 		void Load(const pugi::xml_document& doc, PResource resource);
 	};

@@ -77,7 +77,7 @@ namespace NSG
 		particleMesh_ = Mesh::Create<QuadMesh>();
 		particleMesh_->Set(1.f);
         particleMaterial_ = std::make_shared<Material>(GetUniqueName(name + "Particle"));
-        particleMaterial_->SetColor(Color(0, 1, 0, 1));
+        particleMaterial_->SetDiffuseColor(Color(0, 1, 0, 1));
 		particleMaterial_->SetRenderPass(RenderPass::UNLIT);
 		particleMaterial_->SetBlendMode(BLEND_MODE::ALPHA);
 		particleMaterial_->SetBillboardType(BillboardType::SPHERICAL);

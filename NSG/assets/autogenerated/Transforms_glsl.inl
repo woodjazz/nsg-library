@@ -197,6 +197,35 @@ static const char* TRANSFORMS_GLSL = \
 "	        return u_lightPosition[GetSplit()];\n"\
 "	    }\n"\
 "	#endif\n"\
+"	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) \n"\
+"		vec4 GetDiffuseColor()\n"\
+"		{\n"\
+"		#ifdef UNLIT\n"\
+"			#ifdef DIFFUSEMAP\n"\
+"				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
+"				return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"			#else\n"\
+"				return u_material.diffuseColor;\n"\
+"			#endif\n"\
+"		#else\n"\
+"			#ifdef DIFFUSEMAP\n"\
+"				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
+"				return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"			#else\n"\
+"				return u_material.diffuseIntensity * u_material.diffuseColor;\n"\
+"			#endif		\n"\
+"		#endif\n"\
+"		}\n"\
+"		vec4 GetSpecularColor()\n"\
+"		{\n"\
+"	    #ifdef SPECULARMAP\n"\
+"	        vec4 specularMap = texture2D(u_texture2, v_texcoord0);\n"\
+"	        return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);\n"\
+"	    #else\n"\
+"	        return u_material.specularIntensity * u_material.specularColor;\n"\
+"	    #endif\n"\
+"		}\n"\
+"    #endif\n"\
 "#endif\n"\
 ;
 }

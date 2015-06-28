@@ -9,11 +9,7 @@
 
 		#elif defined(UNLIT)
 
-            #ifdef DIFFUSEMAP
-				gl_FragColor = texture2D(u_texture0, v_texcoord0);
-            #else
-                gl_FragColor = u_material.diffuse;
-            #endif
+               gl_FragColor = GetDiffuseColor();
 
 		#elif defined(TEXT)
 
@@ -37,7 +33,7 @@
 
 		#elif defined(AMBIENT)
 			
-			gl_FragColor = GetAmbientLight();
+			gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();
 
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
@@ -48,11 +44,7 @@
 
     	#elif defined(PER_VERTEX_LIGHTING)
 
-			#ifdef DIFFUSEMAP
-				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
-			#else
-				gl_FragColor = v_color;
-			#endif
+			gl_FragColor = v_color * GetDiffuseColor();
 
 		#elif defined(PER_PIXEL_LIGHTING)
 
@@ -71,14 +63,7 @@
 
 	    		vec3 vertexToEye = normalize(v_vertexToEye);
 	    		vec3 world2light = v_worldPos - GetLightPosition();
-	    		vec4 totalLight = CalcTotalLight(world2light, vertexToEye, normal);
-
-				#ifdef DIFFUSEMAP
-					vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);
-		    		gl_FragColor = totalLight * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuse.a);
-		    	#else
-		    		gl_FragColor = totalLight * u_material.diffuse;
-		    	#endif
+		    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();
 
 		#endif	    
 	}	

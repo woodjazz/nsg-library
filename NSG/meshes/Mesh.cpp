@@ -385,6 +385,11 @@ namespace NSG
         skeleton_ = skeleton;
     }
 
+    void Mesh::Clear()
+    {
+        meshes_.Clear();
+    }
+
     std::vector<PMesh> Mesh::GetMeshes()
     {
         return meshes_.GetObjs();

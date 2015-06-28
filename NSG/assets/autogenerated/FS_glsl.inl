@@ -9,11 +9,7 @@ static const char* FS_GLSL = \
 "		#if defined(VERTEXCOLOR)\n"\
 "			gl_FragColor = v_color;\n"\
 "		#elif defined(UNLIT)\n"\
-"            #ifdef DIFFUSEMAP\n"\
-"				gl_FragColor = texture2D(u_texture0, v_texcoord0);\n"\
-"            #else\n"\
-"                gl_FragColor = u_material.diffuse;\n"\
-"            #endif\n"\
+"               gl_FragColor = GetDiffuseColor();\n"\
 "		#elif defined(TEXT)\n"\
 "			gl_FragColor = v_color * vec4(vec3(1.0), texture2D(u_texture0, v_texcoord0).a);\n"\
 "		#elif defined(BLEND)\n"\
@@ -26,17 +22,13 @@ static const char* FS_GLSL = \
 "			gl_FragColor = texture2D(u_texture0, v_texcoord0);\n"\
 "		#elif defined(AMBIENT)\n"\
 "			\n"\
-"			gl_FragColor = GetAmbientLight();\n"\
+"			gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();\n"\
 "		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
 "    		float lightToPixelDistance = length(lightToVertex) * GetLightInvRange();\n"\
 "    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
 "    	#elif defined(PER_VERTEX_LIGHTING)\n"\
-"			#ifdef DIFFUSEMAP\n"\
-"				gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
-"			#else\n"\
-"				gl_FragColor = v_color;\n"\
-"			#endif\n"\
+"			gl_FragColor = v_color * GetDiffuseColor();\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "				//Lighting is calculated in world space\n"\
 "				#ifdef NORMALMAP\n"\
@@ -52,13 +44,7 @@ static const char* FS_GLSL = \
 "				#endif\n"\
 "	    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
 "	    		vec3 world2light = v_worldPos - GetLightPosition();\n"\
-"	    		vec4 totalLight = CalcTotalLight(world2light, vertexToEye, normal);\n"\
-"				#ifdef DIFFUSEMAP\n"\
-"					vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
-"		    		gl_FragColor = totalLight * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuse.a);\n"\
-"		    	#else\n"\
-"		    		gl_FragColor = totalLight * u_material.diffuse;\n"\
-"		    	#endif\n"\
+"		    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();\n"\
 "		#endif	    \n"\
 "	}	\n"\
 "#endif\n"\

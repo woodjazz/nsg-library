@@ -222,4 +222,37 @@
 
 	#endif
 
+	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) 
+
+		vec4 GetDiffuseColor()
+		{
+		#ifdef UNLIT
+			#ifdef DIFFUSEMAP
+				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);
+				return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);
+			#else
+				return u_material.diffuseColor;
+			#endif
+		#else
+			#ifdef DIFFUSEMAP
+				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);
+				return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);
+			#else
+				return u_material.diffuseIntensity * u_material.diffuseColor;
+			#endif		
+		#endif
+		}
+
+		vec4 GetSpecularColor()
+		{
+	    #ifdef SPECULARMAP
+	        vec4 specularMap = texture2D(u_texture2, v_texcoord0);
+	        return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);
+	    #else
+	        return u_material.specularIntensity * u_material.specularColor;
+	    #endif
+		}
+
+    #endif
+
 #endif

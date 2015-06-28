@@ -39,17 +39,19 @@ namespace NSG
         Material(const std::string& name = GetUniqueName("Material"));
         ~Material();
         PMaterial Clone(const std::string& name = GetUniqueName("Clone"));
-		bool SetTexture(PTexture texture);
-		void SetTextMap(PTexture texture);
-		PTexture GetTexture(MaterialTexture index) const; 
-        void SetColor(Color color);
-        Color GetColor() const { return color_; }
-        void SetDiffuseColor(Color diffuse);
-        Color GetDiffuseColor() const { return diffuse_; }
-        void SetSpecularColor(Color specular);
-        Color GetSpecularColor() const { return specular_; }
-        void SetAmbientIntensity(float ambient);
-        float GetAmbientIntensity() const { return ambient_; }
+        bool SetTexture(PTexture texture);
+        void SetTextMap(PTexture texture);
+        PTexture GetTexture(MaterialTexture index) const;
+        void SetDiffuseColor(Color color);
+        Color GetDiffuseColor() const { return diffuseColor_; }
+        void SetDiffuseIntensity(float intensity);
+        float GetDiffuseIntensity() const { return diffuseIntensity_; }
+        void SetSpecularColor(Color color);
+        Color GetSpecularColor() const { return specularColor_; }
+        void SetSpecularIntensity(float intensity);
+        float GetSpecularIntensity() const { return specularIntensity_; }
+        void SetAmbientIntensity(float intensity);
+        float GetAmbientIntensity() const { return ambientIntensity_; }
         void SetShininess(float shininess);
         float GetShininess() const { return shininess_; }
         void SetUniformValue(const char* name, int value);
@@ -64,23 +66,24 @@ namespace NSG
         const BlurFilter& GetFilterBlur() const { return blurFilter_; }
         const WaveFilter& GetWaveFilter() const { return waveFilter_; }
         PTexture GetTextureWith(PResource resource) const;
-		PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
-		bool IsTransparent() const;
+        PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
+        bool IsTransparent() const;
         bool IsLighted() const;
-		void SetFillMode(FillMode fillMode) { fillMode_ = fillMode; }
+        void SetFillMode(FillMode fillMode) { fillMode_ = fillMode; }
         FillMode GetFillMode() const { return fillMode_; }
-		bool IsBatched();
-		void UpdateBatchBuffer(const Batch& batch);
-		void BachedNodeHasChanged();
-		static PMaterial Create(const std::string& name = GetUniqueName("Material"));
-		static PMaterial GetOrCreate(const std::string& name = GetUniqueName("Material"));
-		static PMaterial Get(const std::string& name);
-		static std::vector<PMaterial> GetMaterials();
-		static PTexture GetTextureWithResource(PResource resource);
-		static std::vector<PMaterial> LoadMaterials(PResource resource, const pugi::xml_node& node);
-		static void SaveMaterials(pugi::xml_node& node);
+        bool IsBatched();
+        void UpdateBatchBuffer(const Batch& batch);
+        void BachedNodeHasChanged();
+        static void Clear();
+        static PMaterial Create(const std::string& name = GetUniqueName("Material"));
+        static PMaterial GetOrCreate(const std::string& name = GetUniqueName("Material"));
+        static PMaterial Get(const std::string& name);
+        static std::vector<PMaterial> GetMaterials();
+        static PTexture GetTextureWithResource(PResource resource);
+        static std::vector<PMaterial> LoadMaterials(PResource resource, const pugi::xml_node& node);
+        static void SaveMaterials(pugi::xml_node& node);
         void Set(PResourceXMLNode xmlResource);
-		void SetUVTransform(const Vector4& uvTransform);
+        void SetUVTransform(const Vector4& uvTransform);
         void SetBlendMode(BLEND_MODE mode) { blendMode_ = mode; }
         BLEND_MODE GetBlendMode() const { return blendMode_; }
         bool HasLightMap() const;
@@ -103,25 +106,26 @@ namespace NSG
         bool IsShadowCaster() const { return !shadeless_ && castShadow_; }
         bool HasSpecularColor() const;
     private:
-		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
-		void SetupBlur();
+        void LoadFrom(PResource resource, const pugi::xml_node& node) override;
+        void SetupBlur();
         bool IsValid() override;
-		void AllocateResources() override;
-		void ReleaseResources() override;
-		PTexture texture_[MaterialTexture::MAX_MAPS];
-        float ambient_; // ambient intensity
-        Color diffuse_;
-        Color specular_;
+        void AllocateResources() override;
+        void ReleaseResources() override;
+        PTexture texture_[MaterialTexture::MAX_MAPS];
+        Color diffuseColor_;
+        float diffuseIntensity_;
+        Color specularColor_;
+        float specularIntensity_;
+        float ambientIntensity_;
         float shininess_;
-        Color color_;
         Vector4 uvTransform_; // uv transform for texture 0
         bool serializable_;
         BlendFilterMode blendFilterMode_;
         BlurFilter blurFilter_;
         WaveFilter waveFilter_;
-		PInstanceBuffer instanceBuffer_;
-		Batch lastBatch_;
-		bool isBatched_;
+        PInstanceBuffer instanceBuffer_;
+        Batch lastBatch_;
+        bool isBatched_;
         FillMode fillMode_;
         BLEND_MODE blendMode_;
         RenderPass renderPass_;
@@ -134,7 +138,7 @@ namespace NSG
         SignalEmpty::PSignal signalPhysicsSet_;
         bool castShadow_;
         bool receiveShadows_;
- 		static MapAndVector<std::string, Material> materials_;
+        static MapAndVector<std::string, Material> materials_;
         friend class Program;
     };
 }

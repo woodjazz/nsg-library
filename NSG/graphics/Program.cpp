@@ -97,11 +97,11 @@ namespace NSG
           nBones_(0),
           activeSkeleton_(nullptr),
           activeNode_(nullptr),
-		  activeMaterial_(nullptr),
-		  activeLight_(nullptr),
-		  activeCamera_(nullptr),
+          activeMaterial_(nullptr),
+          activeLight_(nullptr),
+          activeCamera_(nullptr),
           sceneColor_(-1),
-		  skeleton_(nullptr),
+          skeleton_(nullptr),
           node_(nullptr),
           material_(nullptr),
           light_(nullptr)
@@ -199,9 +199,9 @@ namespace NSG
 
         activeSkeleton_ = nullptr;
         activeNode_ = nullptr;
-		activeMaterial_ = nullptr;
-		activeLight_ = nullptr;
-		activeCamera_ = nullptr;
+        activeMaterial_ = nullptr;
+        activeLight_ = nullptr;
+        activeCamera_ = nullptr;
         sceneColor_ = Color(-1);
 
         bonesBaseLoc_.clear();
@@ -264,10 +264,11 @@ namespace NSG
         u_uvTransformLoc_ = GetUniformLocation("u_uvTransform");
         for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
             textureLoc_[index] = GetUniformLocation("u_texture" + ToString(index));
-        materialLoc_.color_ = GetUniformLocation("u_material.color");
-        materialLoc_.ambient_ = GetUniformLocation("u_material.ambient");
-        materialLoc_.diffuse_ = GetUniformLocation("u_material.diffuse");
-        materialLoc_.specular_ = GetUniformLocation("u_material.specular");
+        materialLoc_.diffuseColor_ = GetUniformLocation("u_material.diffuseColor");
+        materialLoc_.diffuseIntensity_ = GetUniformLocation("u_material.diffuseIntensity");
+        materialLoc_.specularColor_ = GetUniformLocation("u_material.specularColor");
+        materialLoc_.specularIntensity_ = GetUniformLocation("u_material.specularIntensity");
+        materialLoc_.ambientIntensity_ = GetUniformLocation("u_material.ambientIntensity");
         materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
 
         for (size_t i = 0; i < nBones_; i++)
@@ -400,20 +401,20 @@ namespace NSG
                 glUniformMatrix3fv(normalMatrixLoc_, 1, GL_FALSE, glm::value_ptr(m));
             }
         }
-		else if (!node_)
-		{
-			if (modelLoc_ != -1)
-			{
-				static const Matrix4 m(1);
-				glUniformMatrix4fv(modelLoc_, 1, GL_FALSE, glm::value_ptr(m));
-			}
+        else if (!node_)
+        {
+            if (modelLoc_ != -1)
+            {
+                static const Matrix4 m(1);
+                glUniformMatrix4fv(modelLoc_, 1, GL_FALSE, glm::value_ptr(m));
+            }
 
-			if (normalMatrixLoc_ != -1)
-			{
-				static const Matrix4 m(1);
-				glUniformMatrix3fv(normalMatrixLoc_, 1, GL_FALSE, glm::value_ptr(m));
-			}
-		}
+            if (normalMatrixLoc_ != -1)
+            {
+                static const Matrix4 m(1);
+                glUniformMatrix3fv(normalMatrixLoc_, 1, GL_FALSE, glm::value_ptr(m));
+            }
+        }
 
     }
 
@@ -421,7 +422,7 @@ namespace NSG
     {
         if (material_)
         {
-			for (int index = 0; index < MaterialTexture::SHADOW_MAP0; index++)
+            for (int index = 0; index < MaterialTexture::SHADOW_MAP0; index++)
             {
                 if (textureLoc_[index] != -1)
                 {
@@ -430,19 +431,22 @@ namespace NSG
                 }
             }
 
-			if (activeMaterial_ != material_ || material_->UniformsNeedUpdate())
+            if (activeMaterial_ != material_ || material_->UniformsNeedUpdate())
             {
-                if (materialLoc_.color_ != -1)
-                    glUniform4fv(materialLoc_.color_, 1, &material_->color_[0]);
+                if (materialLoc_.diffuseColor_ != -1)
+                    glUniform4fv(materialLoc_.diffuseColor_, 1, &material_->diffuseColor_[0]);
 
-                if (materialLoc_.ambient_ != -1)
-                    glUniform1f(materialLoc_.ambient_, material_->ambient_);
+                if (materialLoc_.diffuseIntensity_ != -1)
+                    glUniform1f(materialLoc_.diffuseIntensity_, material_->diffuseIntensity_);
 
-                if (materialLoc_.diffuse_ != -1)
-                    glUniform4fv(materialLoc_.diffuse_, 1, &material_->diffuse_[0]);
+                if (materialLoc_.specularColor_ != -1)
+                    glUniform4fv(materialLoc_.specularColor_, 1, &material_->specularColor_[0]);
 
-                if (materialLoc_.specular_ != -1)
-                    glUniform4fv(materialLoc_.specular_, 1, &material_->specular_[0]);
+                if (materialLoc_.specularIntensity_ != -1)
+                    glUniform1f(materialLoc_.specularIntensity_, material_->specularIntensity_);
+
+                if (materialLoc_.ambientIntensity_ != -1)
+                    glUniform1f(materialLoc_.ambientIntensity_, material_->ambientIntensity_);
 
                 if (materialLoc_.shininess_ != -1)
                     glUniform1f(materialLoc_.shininess_, material_->shininess_);
@@ -557,7 +561,7 @@ namespace NSG
     {
         if (light_)
         {
-			if (activeLight_ != light_ || light_->UniformsNeedUpdate())
+            if (activeLight_ != light_ || light_->UniformsNeedUpdate())
             {
                 if (lightDirectionLoc_ != -1)
                 {
@@ -578,10 +582,10 @@ namespace NSG
                     auto shadowCamera = light_->GetShadowCamera(i);
                     uniformsNeedUpdate |= shadowCamera->UniformsNeedUpdate();
                     shadowCameraZFarSplits[i] = shadowCamera->GetFarSplit();
-					auto range = light_->GetRange();
-                    invRangeSplits[i] = 1.f/range;
+                    auto range = light_->GetRange();
+                    invRangeSplits[i] = 1.f / range;
                 }
-                
+
                 if (uniformsNeedUpdate)
                 {
                     glUniform4fv(lightInvRangeLoc_, 1, &invRangeSplits[0]);
@@ -597,7 +601,6 @@ namespace NSG
     {
         if (light_)
         {
-            const Camera* camera = Graphics::this_->GetCamera();
             auto shadowSplits = light_->GetShadowSplits();
 
             if (light_->DoShadows())
@@ -645,7 +648,7 @@ namespace NSG
                 }
             }
 
-			for (int i = 0; i < shadowSplits; i++)
+            for (int i = 0; i < shadowSplits; i++)
             {
                 if (lightPositionLoc_[i] != -1)
                 {
@@ -655,7 +658,7 @@ namespace NSG
                 }
             }
 
-			if (activeLight_ != light_ || light_->UniformsNeedUpdate())
+            if (activeLight_ != light_ || light_->UniformsNeedUpdate())
             {
                 if (lightDiffuseColorLoc_ != -1)
                 {
@@ -699,19 +702,19 @@ namespace NSG
             SetLightShadowVariables();
         }
 
-		activeNode_ = node_;
-		activeMaterial_ = material_;
-		activeLight_ = light_;
-		activeCamera_ = Graphics::this_->GetCamera();
+        activeNode_ = node_;
+        activeMaterial_ = material_;
+        activeLight_ = light_;
+        activeCamera_ = Graphics::this_->GetCamera();
     }
 
     void Program::Set(const Skeleton* skeleton)
     {
-		if (skeleton_ != skeleton)
-		{
-			skeleton_ = skeleton;
-			Invalidate();
-		}
+        if (skeleton_ != skeleton)
+        {
+            skeleton_ = skeleton;
+            Invalidate();
+        }
     }
 
     void Program::Set(SceneNode* node)
@@ -729,7 +732,7 @@ namespace NSG
         if (material_ != material)
         {
             material_ = material;
-			Invalidate();
+            Invalidate();
         }
     }
 

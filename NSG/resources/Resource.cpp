@@ -168,6 +168,11 @@ namespace NSG
         }
     }
 
+    void Resource::Clear()
+    {
+        resources_.Clear();
+    }
+
     PResource Resource::Get(const std::string& name)
     {
         return resources_.Get(name);

@@ -27,7 +27,8 @@ misrepresented as being the original software.
 #include "Types.h"
 #include <memory>
 #include <vector>
-#include <unordered_map>
+//#include <unordered_map>
+#include <map>
 
 namespace NSG
 {
@@ -44,6 +45,7 @@ namespace NSG
 		template<typename U>
 		std::shared_ptr<U> CreateClass(const K& key)
 		{
+			CHECK_CONDITION(!Has(key), __FILE__, __LINE__);
 			std::shared_ptr<U> obj = std::make_shared<U>(key);
 			//objs_.push_back(obj);
 			objsMap_[key] = obj;
@@ -82,14 +84,14 @@ namespace NSG
 				return it->second.lock();
 			return nullptr;
 		}
-
+#if 0
         void Add(const K& key, PT obj)
         {
             CHECK_ASSERT(obj, __FILE__, __LINE__);
             //objs_.push_back(obj);
             objsMap_[key] = obj;
         }
-
+#endif
         PT Create(const K& key)
         {
 			return CreateClass<T>(key);
@@ -123,6 +125,6 @@ namespace NSG
         }
     private:
         //std::vector<PWT> objs_;
-		std::unordered_map<K, PWT> objsMap_;
+		std::map<K, PWT> objsMap_;
     };
 }

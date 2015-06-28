@@ -45,7 +45,7 @@ namespace NSG
         SetMesh(Mesh::Create<RectangleMesh>());
 		SetMaterial(Material::GetOrCreate(name_));
 		material_->SetBlendMode(BLEND_MODE::ALPHA);
-        textMaterial_->SetColor(COLOR_BLACK);
+        textMaterial_->SetDiffuseColor(COLOR_BLACK);
 		textMaterial_->SetRenderPass(RenderPass::TEXT);
     }
 
