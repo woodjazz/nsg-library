@@ -40,7 +40,7 @@ namespace NSG
         const float* m = glm::value_ptr(m_);
         float t;
 
-        Vector4& left = planes_[PLANE_LEFT].normald_;
+		Vector4& left = planes_[PLANE_LEFT].GetNormalDRef();
         left[0] = m[3] + m[0];
         left[1] = m[7] + m[4];
         left[2] = m[11] + m[8];
@@ -49,7 +49,7 @@ namespace NSG
         left /= t;
 
 
-        Vector4& right = planes_[PLANE_RIGHT].normald_;
+		Vector4& right = planes_[PLANE_RIGHT].GetNormalDRef();
         right[0] = m[3] - m[0];
         right[1] = m[7] - m[4];
         right[2] = m[11] - m[8];
@@ -58,7 +58,7 @@ namespace NSG
         right /= t;
 
 
-        Vector4& down = planes_[PLANE_DOWN].normald_;
+		Vector4& down = planes_[PLANE_DOWN].GetNormalDRef();
         down[0] = m[3] + m[1];
         down[1] = m[7] + m[5];
         down[2] = m[11] + m[9];
@@ -67,7 +67,7 @@ namespace NSG
         down /= t;
 
 
-        Vector4& up = planes_[PLANE_UP].normald_;
+		Vector4& up = planes_[PLANE_UP].GetNormalDRef();
         up[0] = m[3] - m[1];
         up[1] = m[7] - m[5];
         up[2] = m[11] - m[9];
@@ -76,7 +76,7 @@ namespace NSG
         up /= t;
 
 
-        Vector4& nearP = planes_[PLANE_NEAR].normald_;
+		Vector4& nearP = planes_[PLANE_NEAR].GetNormalDRef();
         nearP[0] = m[3] + m[2];
         nearP[1] = m[7] + m[6];
         nearP[2] = m[11] + m[10];
@@ -85,7 +85,7 @@ namespace NSG
         nearP /= t;
 
 
-        Vector4& farP = planes_[PLANE_FAR].normald_;
+		Vector4& farP = planes_[PLANE_FAR].GetNormalDRef();
         farP[0] = m[3] - m[2];
         farP[1] = m[7] - m[6];
         farP[2] = m[11] - m[10];

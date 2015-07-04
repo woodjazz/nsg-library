@@ -31,7 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
-    auto mesh = Mesh::Create<QuadMesh>();
+	auto mesh = Mesh::CreateClass<QuadMesh>();
     auto material = std::make_shared<Material>();
 	material->SetTexture(std::make_shared<Texture2D>(resource));
 	material->SetRenderPass(RenderPass::UNLIT);
@@ -45,7 +45,7 @@ int NSG_MAIN(int argc, char* argv[])
     control->AutoZoom();
     auto totalTime = 0.f;
     auto fps = 1 / 24.f;
-    Color color(1);
+    float alpha(1);
     auto slotUpdate = engine.SigUpdate()->Connect([&](float deltaTime)
     {
         if (totalTime > fps)
@@ -58,14 +58,14 @@ int NSG_MAIN(int argc, char* argv[])
                 if (uvTransform.w >= 1)
                 {
                     uvTransform.w = 0;
-                    color.w = 1;
+					alpha = 1;
                 }
             }
             material->SetUVTransform(uvTransform);
             uvTransform.z += texSize;
             if (uvTransform.w >= 0.95f-texSize)
-                color.w -= texSize;
-            material->SetColor(color);
+				alpha -= texSize;
+			material->SetAlpha(alpha);
         }
         else
             totalTime += deltaTime;

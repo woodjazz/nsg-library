@@ -48,18 +48,18 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto earth = scene->CreateChild<SceneNode>();
     {
-		auto pSphereMesh(Mesh::Create<SphereMesh>());
+		auto pSphereMesh(Mesh::CreateClass<SphereMesh>("Sphere"));
 		pSphereMesh->Set(3, 24);
         earth->SetMesh(pSphereMesh);
         //earth->SetEnabled(false);
 
-		auto earthResource = Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg");
+		auto earthResource = Resource::GetOrCreateClass<ResourceFile>("data/Earthmap720x360_grid.jpg");
         auto pEarthTexture = std::make_shared<Texture2D>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 		auto pMaterial(Material::GetOrCreate("earth"));
 		pMaterial->SetRenderPass(RenderPass::PERPIXEL);
 		pMaterial->SetTexture(pEarthTexture);
-        pMaterial->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
-        pMaterial->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
+        pMaterial->SetDiffuseColor(ColorRGB(0.8f, 0.8f, 0.8f));
+		pMaterial->SetSpecularColor(ColorRGB(1.0f, 0.0f, 0.0f));
         pMaterial->SetShininess(10);
         earth->SetMaterial(pMaterial);
         earth->SetPosition(Vertex3(5, 0, 0));
@@ -69,9 +69,9 @@ int NSG_MAIN(int argc, char* argv[])
     {
 		auto pMaterial(Material::GetOrCreate("light"));
 		pMaterial->SetRenderPass(RenderPass::PERPIXEL);
-        pMaterial->SetColor(Color(1, 0, 0, 1));
+		pMaterial->SetDiffuseColor(ColorRGB(1, 0, 0));
         light->SetMaterial(pMaterial);
-		auto pMesh(Mesh::Create<SphereMesh>());
+		auto pMesh(Mesh::CreateClass<SphereMesh>());
 		pMesh->Set(0.2f, 16);
         light->SetMesh(pMesh);
         light->SetPosition(Vertex3(-10.0, 0.0, 5.0));

@@ -29,7 +29,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene0.xml");
+	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/bscene0.xml");
 	AppData data(resource);
 	auto scene0 = data.scenes_.at(0);
 	auto object = scene0->GetChild<SceneNode>("m2triple_LOD.001", true);

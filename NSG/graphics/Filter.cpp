@@ -38,7 +38,7 @@ namespace NSG
 {
 	Filter::Filter(const std::string& name, PTexture input)
         : pMaterial_(Material::GetOrCreate(name)),
-          pMesh_(Mesh::Create<QuadMesh>()),
+		pMesh_(Mesh::CreateClass<QuadMesh>("FilterMesh")),
 		  frameBuffer_(std::make_shared<FrameBuffer>(name, FrameBuffer::Flag::COLOR | FrameBuffer::Flag::COLOR_USE_TEXTURE)),
           name_(name),
           node_(std::make_shared<SceneNode>(name))

@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "bBlenderFile.h"
 #include "ResourceConverter.h"
 #include "NSG.h"
+#include "poly2tri.h"
 #include <cstdio>
 
 #ifdef _MSC_VER
@@ -123,6 +124,7 @@ namespace BlenderConverter
         for (int i = 0; i < n; i++)
         {
             armatureLinker_.clear();
+            physics_.clear();
             const Blender::Scene* bscene = (const Blender::Scene*)it->at(i);
             auto scene = CreateScene(bscene);
             scenes_.push_back(scene);
@@ -139,6 +141,8 @@ namespace BlenderConverter
             ConvertGroupInstances(data, scene, bscene);
             for (auto& objArmature : armatureLinker_)
                 CreateSkeleton(scene, objArmature);
+            for (auto& physic : physics_)
+                LoadPhysics(scene, physic);
         }
     }
 
@@ -179,14 +183,14 @@ namespace BlenderConverter
             Path path;
             path.SetPath(path_.GetPath());
             path.SetFileName(sound->name);
-            auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
+            auto resource = Resource::GetOrCreateClass<ResourceFile>(path.GetFilePath());
             auto sound = Sound::Create(soundName);
             sound->Set(resource);
             return sound;
         }
         else
         {
-            auto resource = Resource::GetOrCreate<ResourceConverter>(sound->name);
+            auto resource = Resource::GetOrCreateClass<ResourceConverter>(sound->name);
             resource->SetData((const char*)sound->packedfile->data, sound->packedfile->size);
             auto sound = Sound::Create(soundName);
             sound->Set(resource);
@@ -215,12 +219,12 @@ namespace BlenderConverter
             Path path;
             path.SetPath(path_.GetPath());
             path.SetFileName(imageName);
-            auto resource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
+            auto resource = Resource::GetOrCreateClass<ResourceFile>(path.GetFilePath());
             return std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
         else
         {
-            auto resource = Resource::GetOrCreate<ResourceConverter>(imageName);
+            auto resource = Resource::GetOrCreateClass<ResourceConverter>(imageName);
             resource->SetData((const char*)ima->packedfile->data, ima->packedfile->size);
             return std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
         }
@@ -241,13 +245,15 @@ namespace BlenderConverter
             alphaForSpecular = mt->spectra;
         }
 
-        Color diffuseColor(mt->r, mt->g, mt->b, alpha);
+        ColorRGB diffuseColor(mt->r, mt->g, mt->b);
         material->SetDiffuseColor(diffuseColor);
+        material->SetAlpha(alpha);
         auto diffuseIntensity = mt->ref;
         material->SetDiffuseIntensity(diffuseIntensity);
 
-        Color specularColor(mt->specr, mt->specg, mt->specb, alphaForSpecular);
+        ColorRGB specularColor(mt->specr, mt->specg, mt->specb);
         material->SetSpecularColor(specularColor);
+        material->SetAlphaForSpecular(alphaForSpecular);
         auto specularIntensity = mt->spec;
         material->SetSpecularIntensity(specularIntensity);
 
@@ -255,10 +261,7 @@ namespace BlenderConverter
         material->SetAmbientIntensity(ambientIntensity);
         material->SetShininess(mt->har);
 
-        if (transparent)//mt->game.alpha_blend & GEMAT_ALPHA)
-            material->SetBlendMode(BLEND_MODE::ALPHA);
-        else
-            material->SetBlendMode(BLEND_MODE::NONE);
+        material->EnableTransparent(transparent);//mt->game.alpha_blend & GEMAT_ALPHA)
 
         if (mt->mode & MA_WIRE)
             material->SetFillMode(FillMode::WIREFRAME);
@@ -509,6 +512,8 @@ namespace BlenderConverter
         {
             if (obj->type == OB_MESH && obj->parent && obj->parent->type == OB_ARMATURE)
                 armatureLinker_.push_back(obj);
+            else if (obj->body_type != OB_BODY_TYPE_NO_COLLISION)
+                physics_.push_back(obj);
 
             if (obj->type >= 0 && obj->parent)
             {
@@ -914,66 +919,9 @@ namespace BlenderConverter
         sceneNode->SetScale(parent_scale * scale);
     }
 
-    void BScene::LoadPhysics(const Blender::Object* obj, PSceneNode sceneNode, int materialIndex)
+    PhysicsShape BScene::GetShapeType(short boundtype) const
     {
-        if (obj->body_type == OB_BODY_TYPE_NO_COLLISION)
-            return;
-
-        auto mesh = sceneNode->GetMesh();
-        if (!mesh)
-        {
-            LOGE("Cannot load physics without mesh.");
-            return;
-        }
-
-        PhysicsShape shapeType = PhysicsShape::SH_UNKNOWN;
-        int boundtype = obj->collision_boundtype;
-
-        if (obj->type != OB_MESH)
-        {
-            if (!(obj->gameflag & OB_ACTOR))
-                boundtype = 0;
-        }
-
-        if (!(obj->gameflag & OB_BOUNDS))
-        {
-            if (obj->body_type == OB_BODY_TYPE_STATIC)
-            {
-                boundtype = OB_BOUND_TRIANGLE_MESH;
-            }
-            else
-                boundtype = OB_BOUND_CONVEX_HULL;
-        }
-
-        auto rigBody = sceneNode->GetOrCreateRigidBody();
-        auto shape = mesh->GetShape();
-        rigBody->SetShape(shape);
-        shape->SetMargin(obj->margin);
-        shape->SetScale(sceneNode->GetGlobalScale());
-        rigBody->SetLinearDamp(obj->damping);
-        rigBody->SetAngularDamp(obj->rdamping);
-
-        if (obj->body_type == OB_BODY_TYPE_CHARACTER)
-            rigBody->SetKinematic(true);
-
-        if (obj->type == OB_MESH)
-        {
-            const Blender::Mesh* me = (const Blender::Mesh*)obj->data;
-            if (me)
-            {
-                const Blender::Material* ma = GetMaterial(obj, materialIndex);
-                if (ma)
-                {
-                    rigBody->SetRestitution(ma->reflect);
-                    rigBody->SetFriction(ma->friction);
-                }
-            }
-        }
-
-        if (obj->body_type == OB_BODY_TYPE_STATIC || boundtype == OB_BOUND_TRIANGLE_MESH)
-            rigBody->SetMass(0);
-        else
-            rigBody->SetMass(obj->mass);
+        PhysicsShape shapeType = PhysicsShape::SH_EMPTY;
 
         switch (boundtype)
         {
@@ -993,19 +941,200 @@ namespace BlenderConverter
                 shapeType = PhysicsShape::SH_CONVEX_TRIMESH;
                 break;
             case OB_BOUND_TRIANGLE_MESH:
-                if (obj->type == OB_MESH)
-                    shapeType = PhysicsShape::SH_TRIMESH;
-                else
-                    shapeType = PhysicsShape::SH_SPHERE;
+                shapeType = PhysicsShape::SH_TRIMESH;
                 break;
             case OB_BOUND_CAPSULE:
                 shapeType = PhysicsShape::SH_CAPSULE;
                 break;
+            default:
+                shapeType = PhysicsShape::SH_EMPTY;
+                break;
         }
 
-        shape->SetType(shapeType);
+        return shapeType;
     }
 
+    PhysicsBody BScene::GetBodyType(char bodyType) const
+    {
+        PhysicsBody type = PhysicsBody::BODY_UNKNOWN;
+
+        switch (bodyType)
+        {
+            case OB_BODY_TYPE_NO_COLLISION:
+                type = PhysicsBody::BODY_NO_COLLISION;
+                break;
+            case OB_BODY_TYPE_STATIC:
+                type = PhysicsBody::BODY_STATIC;
+                break;
+            case OB_BODY_TYPE_DYNAMIC:
+                type = PhysicsBody::BODY_DYNAMIC;
+                break;
+            case OB_BODY_TYPE_RIGID:
+                type = PhysicsBody::BODY_RIGID;
+                break;
+            case OB_BODY_TYPE_SOFT:
+                type = PhysicsBody::BODY_SOFT;
+                break;
+            case OB_BODY_TYPE_OCCLUDER:
+                type = PhysicsBody::BODY_OCCLUDER;
+                break;
+            case OB_BODY_TYPE_SENSOR:
+                type = PhysicsBody::BODY_SENSOR;
+                break;
+            case OB_BODY_TYPE_NAVMESH:
+                type = PhysicsBody::BODY_NAVMESH;
+                break;
+            case OB_BODY_TYPE_CHARACTER:
+                type = PhysicsBody::BODY_CHARACTER;
+                break;
+            default:
+                type = PhysicsBody::BODY_UNKNOWN;
+                break;
+        }
+
+        return type;
+    }
+
+    bool BScene::IsRigidBody(PhysicsBody bodyType) const
+    {
+        switch (bodyType)
+        {
+            case PhysicsBody::BODY_STATIC:
+            case PhysicsBody::BODY_DYNAMIC:
+            case PhysicsBody::BODY_RIGID:
+            case PhysicsBody::BODY_SENSOR:
+            case PhysicsBody::BODY_CHARACTER:
+                return true;
+        }
+        return false;
+    }
+
+    bool BScene::ShapeNeedsMesh(PhysicsShape shapeType) const
+    {
+        return shapeType == PhysicsShape::SH_TRIMESH || shapeType == PhysicsShape::SH_CONVEX_TRIMESH;
+    }
+
+    PSceneNode BScene::GetParentWithRigidBody(PSceneNode sceneNode) const
+    {
+        auto parent = sceneNode->GetParent();
+        while (parent)
+        {
+            auto parentSceneNode = std::dynamic_pointer_cast<SceneNode>(parent);
+            auto rigidBody = parentSceneNode->GetRigidBody();
+            if (rigidBody)
+                return parentSceneNode;
+            parent = parent->GetParent();
+        }
+        return nullptr;
+    }
+
+    void BScene::LoadPhysics(PScene scene, const Blender::Object* obj)
+    {
+        std::string name = B_IDNAME(obj);
+        auto sceneNode = scene->GetChild<SceneNode>(name, true);
+        if (!sceneNode)
+        {
+            LOGE("Cannot find scene node with name %s", name.c_str());
+            return;
+        }
+
+        PMesh mesh = sceneNode->GetMesh();
+        PRigidBody rigBody;
+
+        PhysicsBody bodyType = GetBodyType(obj->body_type);
+        if (IsRigidBody(bodyType))
+        {
+            CHECK_ASSERT(obj->type != OB_MESH || mesh, __FILE__, __LINE__);
+
+            const Blender::RigidBodyOb* rigidbody_object = obj->rigidbody_object;
+            const Blender::RigidBodyCon* rigidbody_constraint = obj->rigidbody_constraint;
+
+            rigBody = sceneNode->GetOrCreateRigidBody();
+            rigBody->SetLinearDamp(obj->damping);
+            rigBody->SetAngularDamp(obj->rdamping);
+
+            rigBody->SetMass(bodyType == PhysicsBody::BODY_STATIC ? 0 : obj->mass);
+            rigBody->SetKinematic(bodyType == PhysicsBody::BODY_DYNAMIC || bodyType == PhysicsBody::BODY_CHARACTER);
+            rigBody->SetTrigger(bodyType == PhysicsBody::BODY_SENSOR);
+
+            const Blender::Material* ma = GetMaterial(obj, 0);
+            if (ma)
+            {
+                rigBody->SetRestitution(ma->reflect);
+                rigBody->SetFriction(ma->friction);
+            }
+
+            Vector3 linearFactor(1);
+            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_X_AXIS)
+                linearFactor.x = 0;
+            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Y_AXIS)
+                linearFactor.y = 0;
+            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Z_AXIS)
+                linearFactor.z = 0;
+
+            rigBody->SetLinearFactor(linearFactor);
+
+            Vector3 angularFactor(1);
+            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_X_ROT_AXIS)
+                angularFactor.x = 0;
+            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Y_ROT_AXIS)
+                angularFactor.y = 0;
+            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Z_ROT_AXIS)
+                angularFactor.z = 0;
+
+            rigBody->SetAngularFactor(angularFactor);
+        }
+
+        PhysicsShape shapeType = GetShapeType(obj->collision_boundtype);
+        bool needsMesh = ShapeNeedsMesh(shapeType);
+        if (needsMesh && !mesh)
+        {
+            LOGE("Cannot create physics shape without mesh");
+            return;
+        }
+
+        if (obj->gameflag & OB_COLLISION)
+        {
+            Vector3 offsetPos;
+            Quaternion offsetRot;
+
+            if (!rigBody)
+            {
+                auto parent = GetParentWithRigidBody(sceneNode);
+                if (parent)
+                {
+                    rigBody = parent->GetRigidBody();
+                    auto m = parent->GetGlobalModelInvMatrix() * sceneNode->GetGlobalModelMatrix();
+                    Vector3 scale;
+                    DecomposeMatrix(m, offsetPos, offsetRot, scale);
+                }
+            }
+
+            if (!rigBody)
+            {
+                LOGE("Cannot create shape for obj %s because rigidbody has not been found", name.c_str());
+                return;
+            }
+
+            auto scale = sceneNode->GetGlobalScale();
+            PShape shape = Shape::GetOrCreate(needsMesh ? ShapeKey(mesh, scale) : ShapeKey(shapeType, scale));
+            if (!needsMesh)
+            {
+                BoundingBox bb;
+                if (mesh)
+                    bb = mesh->GetBB();
+                else
+                {
+                    LOGW("Cannot calculate physics bounding box.");
+                    bb = BoundingBox(-0.5f, 0.5f);
+                }
+                CHECK_ASSERT(bb.IsDefined(), __FILE__, __LINE__);
+                shape->SetBB(bb);
+            }
+            shape->SetMargin(obj->margin);
+            rigBody->AddShape(shape, offsetPos, offsetRot);
+        }
+    }
 
     PSceneNode BScene::CreateSceneNode(const Blender::Object* obj, PSceneNode parent)
     {
@@ -1177,17 +1306,16 @@ namespace BlenderConverter
                 firstNode = sceneNode;
                 ExtractGeneral(obj, sceneNode);
             }
-            auto mesh = Mesh::Get<ModelMesh>(meshName);
+            auto mesh = Mesh::GetClass<ModelMesh>(meshName);
             bool meshOk = true;
             if (!mesh)
             {
-                mesh = Mesh::Create<ModelMesh>(meshName);
+                mesh = Mesh::CreateClass<ModelMesh>(meshName);
                 meshOk = ConvertMesh(obj, me, mesh, materialIndex);
             }
             if (meshOk)
                 sceneNode->SetMesh(mesh);
             SetMaterial(obj, sceneNode, materialIndex);
-            LoadPhysics(obj, sceneNode, materialIndex);
             parent = firstNode;
             ++materialIndex;
             suffix = ToString(materialIndex);
@@ -1341,7 +1469,7 @@ namespace BlenderConverter
         CHECK_ASSERT(obAr, __FILE__, __LINE__);
         CHECK_ASSERT(obj->type == OB_MESH, __FILE__, __LINE__);
         const Blender::Mesh* me = (Blender::Mesh*)obj->data;
-        auto mesh = Mesh::Get<ModelMesh>(B_IDNAME(me));
+        auto mesh = Mesh::GetClass<ModelMesh>(B_IDNAME(me));
         if (!mesh)
         {
             LOGW("Trying to create skeleton without mesh.");
@@ -1555,20 +1683,15 @@ namespace BlenderConverter
             int nloops = curpoly.totloop;
             int indexBase = curpoly.loopstart;
 
-            // skip if face is not a triangle || quad
-            if (nloops < 3 || nloops > 4)
+            if (muvs)
             {
-                LOGW("Skipping polygon: Only triangles or quads are converted! (loops = %d).", nloops);
-                LOGI("To solve it: triangulate the object with a modifier.")
-                continue;
-            }
-
-            for (int i = 0; i < nloops; i++)
-            {
-                int li = indexBase + i;
-                int vi = me->mloop[li].v;
-                for (int j = 0; j < nuvs; j++)
-                    vertexData[vi].uv_[j] = Vertex2(muvs[j][li].uv[0], muvs[j][li].uv[1]);
+                for (int i = 0; i < nloops; i++)
+                {
+                    int li = indexBase + i;
+                    int vi = me->mloop[li].v;
+                    for (int j = 0; j < nuvs; j++)
+                        vertexData[vi].uv_[j] = Vertex2(muvs[j][li].uv[0], muvs[j][li].uv[1]);
+                }
             }
 
             if (hasColorVertex)
@@ -1586,20 +1709,80 @@ namespace BlenderConverter
                 }
             }
 
-            int index[4];
+            std::vector<int> index;
+            index.resize(nloops);
             for (int i = 0; i < nloops; i++)
                 index[i] = me->mloop[indexBase + i].v;
 
-            bool isQuad = nloops == 4;
-            bool calcFaceNormal = !(curpoly.flag & ME_SMOOTH);
+            bool averageFaceNormal = !(curpoly.flag & ME_SMOOTH);
 
-            if (isQuad)
-                mesh->AddQuad(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], vertexData[index[3]], calcFaceNormal);
+            if (nloops == 4)
+                mesh->AddQuad(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], vertexData[index[3]], averageFaceNormal);
+            else if (nloops == 3)
+                mesh->AddTriangle(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], averageFaceNormal);
             else
-                mesh->AddTriangle(vertexData[index[0]], vertexData[index[1]], vertexData[index[2]], calcFaceNormal);
+                Tessellate(mesh, vertexData, index);
+        }
+        return true;
+    }
+
+    struct PointP2T
+    {
+        Vector3 point3D;
+        p2t::Point point2D; // flatten point
+        unsigned int magic;
+        int index;
+    };
+
+    static const unsigned int BLEND_TESS_MAGIC = 0x83ed9ac3;
+    static PointP2T& GetActualPointStructure(p2t::Point& point)
+    {
+        unsigned int pointOffset = offsetof(PointP2T, point2D);
+        PointP2T& pointStruct = *reinterpret_cast< PointP2T* >( reinterpret_cast< char* >( &point ) - pointOffset );
+        if ( pointStruct.magic != static_cast<int>( BLEND_TESS_MAGIC ) )
+            throw std::runtime_error("Point returned by poly2tri was probably not one of ours. This indicates we need a new way to store vertex information");
+        return pointStruct;
+    }
+
+    void BScene::Tessellate(PModelMesh mesh, const VertexsData& vertexData, const std::vector<int>& indexes)
+    {
+        std::vector<PointP2T> points;
+        for (auto index : indexes)
+            points.push_back(PointP2T {vertexData[index].position_, p2t::Point(), BLEND_TESS_MAGIC, index});
+        Plane plane(points[0].point3D, points[1].point3D, points[2].point3D);
+        auto m = GeneratePointTransformMatrix(plane, points[0].point3D);
+        int pointIdx = 0;
+        for (auto& point : points)
+        {
+            //Flatten points
+            Vector4 tmp = m * Vector4(point.point3D, 1);
+            //Flatten points should always belong to XY plane
+            if (std::abs(tmp.z) > 0.00001f)
+            {
+                // But some times they are not.
+                // This is because points in the blender loop are not part of the same plane
+                LOGW("Detected loop where not all their points are coplanar!!!");
+                LOGW("Loop contains %d points. And point %d is not coplanar!!!", points.size(), pointIdx + 1);
+            }
+            point.point2D = p2t::Point(tmp.x, tmp.y);
+            ++pointIdx;
         }
 
-        return true;
+        std::vector<p2t::Point*> pointRefs;
+        for (auto& point : points)
+            pointRefs.push_back(&point.point2D);
+
+        p2t::CDT cdt(pointRefs);
+        cdt.Triangulate();
+        std::vector<p2t::Triangle*> triangles = cdt.GetTriangles();
+        for ( unsigned int i = 0; i < triangles.size( ); ++i )
+        {
+            p2t::Triangle& Triangle = *triangles[ i ];
+            PointP2T& pointA = GetActualPointStructure(*Triangle.GetPoint(0));
+            PointP2T& pointB = GetActualPointStructure(*Triangle.GetPoint(1));
+            PointP2T& pointC = GetActualPointStructure(*Triangle.GetPoint(2));
+            mesh->AddTriangle(vertexData[pointA.index], vertexData[pointB.index], vertexData[pointC.index], plane.GetNormal());
+        }
     }
 
     int BScene::GetUVLayersBMmesh(const Blender::Mesh* mesh, Blender::MLoopUV** uvEightLayerArray, char** uvNames)
@@ -1722,6 +1905,7 @@ namespace BlenderConverter
         Sound::SaveSounds(appNode);
         Mesh::SaveMeshes(appNode);
         Material::SaveMaterials(appNode);
+        Shape::SaveShapes(appNode);
         for (auto& scene : scenes_)
             scene->Save(appNode);
     }

@@ -25,17 +25,15 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include <vector>
 
 namespace NSG
 {
-    struct  Plane
+    class Plane
     {
+	public:
         static const Plane UP;
-
         enum class Side {INPLANE, BEHIND, INFRONT};
-
-        Vector4 normald_;
-
         Plane();
         Plane(const Plane& plane);
         Plane(const Vector3& v0, const Vector3& v1, const Vector3& v2);
@@ -46,6 +44,10 @@ namespace NSG
         float Distance(const Vector3& point) const;
         Side SideOfPlane(const Vector3& point) const;
         const Vector4& GetNormalD() const { return normald_; }
+		Vector4& GetNormalDRef() { return normald_; }
+        Vector3 GetNormal() const { return Vector3(normald_.x, normald_.y, normald_.z); }
+	private:
+		Vector4 normald_;
     };
 
 }

@@ -67,7 +67,7 @@ misrepresented as being the original software.
 
 #define LOGI(format, ...) {\
         emscripten_log(EM_LOG_CONSOLE, format, ##__VA_ARGS__);\
-        printf("*Info*" format "\n", ##__VA_ARGS__);\
+        fprintf(stdout, "*Info*" format "\n", ##__VA_ARGS__);\
         fflush(stdout);\
     }
 
@@ -79,39 +79,56 @@ misrepresented as being the original software.
 
 #define LOGW(format, ...) {\
         emscripten_log(EM_LOG_WARN, format, ##__VA_ARGS__);\
-        printf("*Warning*" format "\n", ##__VA_ARGS__);\
-        fflush(stdout);\
+        fprintf(stderr, "*Warning*" format "\n", ##__VA_ARGS__);\
+        fflush(stderr);\
     }
 
 #define LOGE(format, ...) {\
         emscripten_log(EM_LOG_ERROR, format, ##__VA_ARGS__);\
-        printf("*Error*" format "\n", ##__VA_ARGS__);\
-        fflush(stdout);\
+        fprintf(stderr, "*Error*" format "\n", ##__VA_ARGS__);\
+        fflush(stderr);\
     }
 
 #else //(defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 
-#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+	#if _WIN32
+		#define SHOWINDEBUGWINDOW(format, ...) {\
+					int n = snprintf(nullptr, 0, format "\n", ##__VA_ARGS__);\
+					fflush(stdout);\
+					if(n > 0) {\
+						std::vector<char> buffer(n + 1);\
+						sprintf(&buffer[0], format "\n", ##__VA_ARGS__);\
+						OutputDebugStringA(&buffer[0]);\
+					}\
+				}
+	#else
+		#define SHOWINDEBUGWINDOW(format, ...) ((void)0)
+	#endif
 
-#define LOGI(format, ...) {\
-        printf("*Info*" format "\n", ##__VA_ARGS__);\
-        fflush(stdout);\
-    }
-#else
+	#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 
-#define LOGI(format, ...) ((void)0);
+		#define LOGI(format, ...) {\
+					int n = fprintf(stdout, "*Info*" format "\n", ##__VA_ARGS__);\
+					fflush(stdout);\
+					SHOWINDEBUGWINDOW("*Info*" format, ##__VA_ARGS__);\
+				}
+	#else
 
-#endif
+		#define LOGI(format, ...) ((void)0);
 
-#define LOGW(format, ...) {\
-        printf("*Warning*" format "\n", ##__VA_ARGS__);\
-        fflush(stdout);\
-    }
+	#endif
 
-#define LOGE(format, ...) {\
-        printf("*Error*" format "\n", ##__VA_ARGS__);\
-        fflush(stdout);\
-    }
+	#define LOGW(format, ...) {\
+			fprintf(stderr, "*Warning*" format "\n", ##__VA_ARGS__);\
+			fflush(stderr);\
+			SHOWINDEBUGWINDOW("*Warning*" format, ##__VA_ARGS__);\
+		}
+
+	#define LOGE(format, ...) {\
+			fprintf(stderr, "*Error*" format "\n", ##__VA_ARGS__);\
+			fflush(stderr);\
+			SHOWINDEBUGWINDOW("*Error*" format, ##__VA_ARGS__);\
+		}
 
 #endif
 

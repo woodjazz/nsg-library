@@ -27,20 +27,15 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Object.h"
 #include "Util.h"
-#include "MapAndVector.h"
+#include "WeakFactory.h"
 
 struct Mix_Chunk;
 
 namespace NSG
 {
-    class Sound : public Object
+    class Sound : public Object, public WeakFactory<std::string, Sound>
     {
     public:
-        static void Clear(); 
-        static PSound Create(const std::string& name = GetUniqueName("Sound"));
-        static PSound GetOrCreate(const std::string& name = GetUniqueName("Sound"));
-        static PSound Get(const std::string& name);
-        static std::vector<PSound> GetSounds();
 		Sound(const std::string& name);
         ~Sound();
         void Set(PResource resource);
@@ -62,6 +57,5 @@ namespace NSG
         Mix_Chunk* sound_;
         int channel_;
         PResourceXMLNode xmlResource_;
-        static MapAndVector<std::string, Sound> sounds_;
     };
 }

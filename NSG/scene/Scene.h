@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Light.h"
 #include "BoundingBox.h"
-#include "MapAndVector.h"
 #include "Util.h"
 #include <set>
 #include <map>

@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "InstanceBuffer.h"
 #include "Util.h"
 #include "Camera.h"
-#include "Shape.h"
 #include "InstanceData.h"
 #include "ModelMesh.h"
 #include "ResourceXMLNode.h"
@@ -41,7 +40,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    MapAndVector<std::string, Mesh> Mesh::meshes_;
+	template<> std::map<std::string, PWeakMesh> WeakFactory<std::string, Mesh>::objsMap_ = {};
 
     Mesh::Mesh(const std::string& name, bool dynamic)
         : Object(name),
@@ -158,9 +157,6 @@ namespace NSG
             child.append_attribute(attName.c_str()).set_value(uvNames_[i].c_str());
         }
 
-        if (shape_)
-            shape_->Save(child);
-
         pugi::xml_node vertexes = child.append_child("Vertexes");
         for (auto& obj : vertexsData_)
         {
@@ -198,10 +194,6 @@ namespace NSG
             uvNames_[i] = node.attribute(attName.c_str()).as_string();
         }
 
-        pugi::xml_node shapeNode = node.child("Shape");
-        if (shapeNode)
-            GetShape()->Load(shapeNode);
-
         pugi::xml_node vertexesNode = node.child("Vertexes");
         if (vertexesNode)
         {
@@ -226,7 +218,7 @@ namespace NSG
             if (indexesNode)
             {
                 std::string data = indexesNode.child_value();
-                string token;
+                std::string token;
                 for_each(data.begin(), data.end(), [&](char c)
                 {
                     if (!isspace(c))
@@ -319,7 +311,7 @@ namespace NSG
 		}
     }
 
-    void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal)
+	void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool averageFaceNormal)
     {
         auto idx0 = vertexsData_.size();
 		if (idx0 + 2 <= std::numeric_limits<IndexType>::max())
@@ -332,8 +324,33 @@ namespace NSG
 			indexes_.push_back(vidx + 1);
 			indexes_.push_back(vidx + 2);
 
-			if (calcFaceNormal)
+			if (averageFaceNormal)
 				AverageNormals(vidx, false);
+
+			Invalidate();
+		}
+		else
+		{
+			LOGW("Too many vertices. Limit is %d", std::numeric_limits<IndexType>::max());
+		}
+	}
+
+	void Mesh::AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, const Vector3& normal)
+	{
+		auto idx0 = vertexsData_.size();
+		if (idx0 + 2 <= std::numeric_limits<IndexType>::max())
+		{
+			IndexType vidx = (IndexType)idx0;
+			vertexsData_.push_back(v0);
+			vertexsData_.push_back(v1);
+			vertexsData_.push_back(v2);
+			indexes_.push_back(vidx);
+			indexes_.push_back(vidx + 1);
+			indexes_.push_back(vidx + 2);
+
+			vertexsData_[vidx].normal_ = normal;
+			vertexsData_[vidx + 1].normal_ = normal;
+			vertexsData_[vidx + 2].normal_ = normal;
 
 			Invalidate();
 		}
@@ -385,21 +402,6 @@ namespace NSG
         skeleton_ = skeleton;
     }
 
-    void Mesh::Clear()
-    {
-        meshes_.Clear();
-    }
-
-    std::vector<PMesh> Mesh::GetMeshes()
-    {
-        return meshes_.GetObjs();
-    }
-
-    PMesh Mesh::GetMesh(const std::string& name)
-    {
-        return meshes_.Get(name);
-    }
-
     std::vector<PMesh> Mesh::LoadMeshes(PResource resource, const pugi::xml_node& node)
     {
         std::vector<PMesh> result;
@@ -410,8 +412,8 @@ namespace NSG
             while (child)
             {
                 std::string name = child.attribute("name").as_string();
-                auto mesh = Mesh::GetOrCreate<ModelMesh>(name);
-                auto xmlResource = Resource::Create<ResourceXMLNode>(name);
+                auto mesh = Mesh::GetOrCreateClass<ModelMesh>(name);
+                auto xmlResource = Resource::CreateClass<ResourceXMLNode>(name);
                 xmlResource->Set(resource, mesh, "Meshes", name);
                 mesh->Set(xmlResource);
                 result.push_back(mesh);
@@ -424,7 +426,7 @@ namespace NSG
     void Mesh::SaveMeshes(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Meshes");
-        auto meshes = Mesh::GetMeshes();
+        auto meshes = Mesh::GetObjs();
         for (auto& obj : meshes)
             obj->Save(child);
     }
@@ -437,17 +439,6 @@ namespace NSG
             indexes_ = indexes;
             Invalidate();
         }
-    }
-
-    PShape Mesh::GetShape()
-    {
-        if (!shape_)
-        {
-            shape_ = std::make_shared<Shape>(name_);
-            shape_->SetType(GetShapeType());
-            shape_->SetMesh(shared_from_this());
-        }
-        return shape_;
     }
 
     void Mesh::SetUVName(int index, const std::string& name)
@@ -471,7 +462,7 @@ namespace NSG
         return nBones;
     }
 
-	size_t Mesh::FillShaderDefines(std::string& defines)
+	size_t Mesh::FillShaderDefines(std::string& defines) const
     {
         if (skeleton_)
         {
@@ -501,4 +492,17 @@ namespace NSG
         LOGE("UV not found!!!");
         return 0;
     }
+
+	const BoundingBox& Mesh::GetBB() const 
+	{ 
+        CHECK_CONDITION(((Mesh*)this)->Mesh::IsReady(), __FILE__, __LINE__);
+		return bb_; 
+	}
+
+	float Mesh::GetBoundingSphereRadius() const 
+	{ 
+		CHECK_CONDITION(((Mesh*)this)->IsReady(), __FILE__, __LINE__);
+		return boundingSphereRadius_; 
+	}
+
 }

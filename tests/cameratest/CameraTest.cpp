@@ -57,22 +57,22 @@ static void FrustumTest()
         const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
         const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-        CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(nearPlane.GetNormalD()), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(leftPlane.GetNormalD()), WORLD_X_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(rightPlane.GetNormalD()), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(upPlane.GetNormalD()), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(downPlane.GetNormalD()), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(farPlane.GetNormalD()), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
         {
             Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-            float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
+			float dot = glm::dot(nearPlane.GetNormalD(), nearPlanePoint);
             CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
         }
 
         {
             Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-            float dot = glm::dot(farPlane.normald_, farPlanePoint);
+			float dot = glm::dot(farPlane.GetNormalD(), farPlanePoint);
             CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
         }
 
@@ -90,22 +90,22 @@ static void FrustumTest()
         const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
         const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-        CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(nearPlane.GetNormalD()), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(leftPlane.GetNormalD()), WORLD_X_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(rightPlane.GetNormalD()), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(upPlane.GetNormalD()), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(downPlane.GetNormalD()), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(farPlane.GetNormalD()), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
         {
             Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-            float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
+			float dot = glm::dot(nearPlane.GetNormalD(), nearPlanePoint);
             CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
         }
 
         {
             Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-            float dot = glm::dot(farPlane.normald_, farPlanePoint);
+			float dot = glm::dot(farPlane.GetNormalD(), farPlanePoint);
             CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
         }
 
@@ -127,22 +127,22 @@ static void FrustumTest()
         const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
         const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-        CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(nearPlane.GetNormalD()), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(leftPlane.GetNormalD()), WORLD_X_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(rightPlane.GetNormalD()), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(upPlane.GetNormalD()), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(downPlane.GetNormalD()), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(farPlane.GetNormalD()), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
         {
             Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-            float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
+			float dot = glm::dot(nearPlane.GetNormalD(), nearPlanePoint);
             CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
         }
 
         {
             Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-            float dot = glm::dot(farPlane.normald_, farPlanePoint);
+			float dot = glm::dot(farPlane.GetNormalD(), farPlanePoint);
             CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
         }
 
@@ -161,22 +161,22 @@ static void FrustumTest()
         const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
         const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-        CHECK_CONDITION(glm::dot(Vector3(nearPlane.normald_), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(leftPlane.normald_), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(rightPlane.normald_), WORLD_X_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(upPlane.normald_), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(downPlane.normald_), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::dot(Vector3(farPlane.normald_), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(nearPlane.GetNormalD()), WORLD_Z_COORD) == 1, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(leftPlane.GetNormalD()), -WORLD_X_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(rightPlane.GetNormalD()), WORLD_X_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(upPlane.GetNormalD()), -WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(downPlane.GetNormalD()), WORLD_Y_COORD) > 0, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::dot(Vector3(farPlane.GetNormalD()), -WORLD_Z_COORD) == 1, __FILE__, __LINE__);
 
         {
             Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZNear()), 1);
-            float dot = glm::dot(nearPlane.normald_, nearPlanePoint);
+			float dot = glm::dot(nearPlane.GetNormalD(), nearPlanePoint);
             CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
         }
 
         {
             Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZFar()), 1);
-            float dot = glm::dot(farPlane.normald_, farPlanePoint);
+			float dot = glm::dot(farPlane.GetNormalD(), farPlanePoint);
             CHECK_CONDITION(glm::distance(dot, 0.0f) < 0.02f, __FILE__, __LINE__);
         }
 

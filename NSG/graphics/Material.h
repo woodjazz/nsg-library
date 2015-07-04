@@ -29,11 +29,11 @@ misrepresented as being the original software.
 #include "Object.h"
 #include "Batch.h"
 #include "Util.h"
-#include "MapAndVector.h"
+#include "WeakFactory.h"
 #include "UniformsUpdate.h"
 namespace NSG
 {
-    class Material : public Object, UniformsUpdate
+    class Material : public Object, public WeakFactory<std::string, Material>, UniformsUpdate
     {
     public:
         Material(const std::string& name = GetUniqueName("Material"));
@@ -42,12 +42,12 @@ namespace NSG
         bool SetTexture(PTexture texture);
         void SetTextMap(PTexture texture);
         PTexture GetTexture(MaterialTexture index) const;
-        void SetDiffuseColor(Color color);
-        Color GetDiffuseColor() const { return diffuseColor_; }
+        void SetDiffuseColor(ColorRGB color);
+		Color GetDiffuseColor() const { return diffuseColor_; }
         void SetDiffuseIntensity(float intensity);
         float GetDiffuseIntensity() const { return diffuseIntensity_; }
-        void SetSpecularColor(Color color);
-        Color GetSpecularColor() const { return specularColor_; }
+		void SetSpecularColor(ColorRGB color);
+		Color GetSpecularColor() const { return specularColor_; }
         void SetSpecularIntensity(float intensity);
         float GetSpecularIntensity() const { return specularIntensity_; }
         void SetAmbientIntensity(float intensity);
@@ -67,27 +67,23 @@ namespace NSG
         const WaveFilter& GetWaveFilter() const { return waveFilter_; }
         PTexture GetTextureWith(PResource resource) const;
         PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
+        void SetAlpha(float alpha);
+		void SetAlphaForSpecular(float alphaForSpecular);
         bool IsTransparent() const;
+        void EnableTransparent(bool enable);
         bool IsLighted() const;
         void SetFillMode(FillMode fillMode) { fillMode_ = fillMode; }
         FillMode GetFillMode() const { return fillMode_; }
-        bool IsBatched();
+        bool IsBatched() const;
         void UpdateBatchBuffer(const Batch& batch);
         void BachedNodeHasChanged();
-        static void Clear();
-        static PMaterial Create(const std::string& name = GetUniqueName("Material"));
-        static PMaterial GetOrCreate(const std::string& name = GetUniqueName("Material"));
-        static PMaterial Get(const std::string& name);
-        static std::vector<PMaterial> GetMaterials();
         static PTexture GetTextureWithResource(PResource resource);
         static std::vector<PMaterial> LoadMaterials(PResource resource, const pugi::xml_node& node);
         static void SaveMaterials(pugi::xml_node& node);
         void Set(PResourceXMLNode xmlResource);
         void SetUVTransform(const Vector4& uvTransform);
-        void SetBlendMode(BLEND_MODE mode) { blendMode_ = mode; }
-        BLEND_MODE GetBlendMode() const { return blendMode_; }
         bool HasLightMap() const;
-        void FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh);
+        void FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh) const;
         void SetRenderPass(RenderPass pass) { renderPass_ = pass; }
         RenderPass GetRenderPass() const { return renderPass_; }
         void SetBillboardType(BillboardType type) { billboardType_ = type; }
@@ -112,9 +108,9 @@ namespace NSG
         void AllocateResources() override;
         void ReleaseResources() override;
         PTexture texture_[MaterialTexture::MAX_MAPS];
-        Color diffuseColor_;
+		Color diffuseColor_;
         float diffuseIntensity_;
-        Color specularColor_;
+		Color specularColor_;
         float specularIntensity_;
         float ambientIntensity_;
         float shininess_;
@@ -127,7 +123,9 @@ namespace NSG
         Batch lastBatch_;
         bool isBatched_;
         FillMode fillMode_;
-        BLEND_MODE blendMode_;
+        float alpha_;
+		float alphaForSpecular_;
+        bool isTransparent_;
         RenderPass renderPass_;
         BillboardType billboardType_;
         bool flipYTextureCoords_;
@@ -138,7 +136,6 @@ namespace NSG
         SignalEmpty::PSignal signalPhysicsSet_;
         bool castShadow_;
         bool receiveShadows_;
-        static MapAndVector<std::string, Material> materials_;
         friend class Program;
     };
 }

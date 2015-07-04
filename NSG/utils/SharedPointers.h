@@ -44,7 +44,8 @@ namespace NSG
 
 	class Shape;
 	typedef std::shared_ptr<Shape> PShape;
-
+	typedef std::weak_ptr<Shape> PWeakShape;
+	
 	class PhysicsWorld;
 	typedef std::shared_ptr<PhysicsWorld> PPhysicsWorld;
 	
@@ -87,6 +88,7 @@ namespace NSG
 	
 	class Sound;
 	typedef std::shared_ptr<Sound> PSound;
+	typedef std::weak_ptr<Sound> PWeakSound;
 
 	class Buffer;
 	typedef std::shared_ptr<Buffer> PBuffer;
@@ -127,9 +129,15 @@ namespace NSG
 	
 	class ResourceFile;
 	typedef std::shared_ptr<ResourceFile> PResourceFile;
+	typedef std::weak_ptr<ResourceFile> PWeakResourceFile;
 
 	class ResourceXMLNode;
 	typedef std::shared_ptr<ResourceXMLNode> PResourceXMLNode;
+	typedef std::weak_ptr<ResourceXMLNode> PWeakResourceXMLNode;
+
+	class Resource;
+	typedef std::shared_ptr<Resource> PResource;
+	typedef std::weak_ptr<Resource> PWeakResource;
 	
 	class ShowTexture;
 	typedef std::shared_ptr<ShowTexture> PShowTexture;
@@ -214,7 +222,8 @@ namespace NSG
 
 	class Program;
 	typedef std::shared_ptr<Program> PProgram;
-
+	typedef std::weak_ptr<Program> PWeakProgram;
+	
 	class RectangleMesh;
 	typedef std::shared_ptr<RectangleMesh> PRectangleMesh;
 
@@ -235,7 +244,8 @@ namespace NSG
 
 	class TextMesh;
 	typedef std::shared_ptr<TextMesh> PTextMesh;
-
+	typedef std::weak_ptr<TextMesh> PWeakTextMesh;
+	
 	class VertexBuffer;
 	typedef std::shared_ptr<VertexBuffer> PVertexBuffer;
 
@@ -353,4 +363,8 @@ namespace NSG
 
 	struct AppData;
 	typedef std::shared_ptr<AppData> PAppData;
+
+	class Plane;
+	typedef std::shared_ptr<Plane> PPlane;
+
 }

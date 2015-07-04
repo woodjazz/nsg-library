@@ -195,6 +195,13 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 	list(APPEND LIBRARIES_2_LINK blenderserialize)
 
 	##################################
+	# poly2tri
+	##################################
+	include_directories(${TOOLS_DIR}/poly2tri)
+	add_subdirectory(${TOOLS_DIR}/poly2tri)
+	list(APPEND LIBRARIES_2_LINK poly2tri)
+
+	##################################
 	# common
 	##################################
 	include_directories(${TOOLS_DIR}/common)
@@ -213,6 +220,7 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 
 	list(REMOVE_ITEM LIBRARIES_2_LINK blenderserialize)
 	list(REMOVE_ITEM LIBRARIES_2_LINK common)
+	list(REMOVE_ITEM LIBRARIES_2_LINK poly2tri)
 
 endif()
 

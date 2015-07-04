@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 
 #include "Util.h"
+#include "Plane.h"
 #include "Constants.h"
 #include "Path.h"
 #include "pugixml.hpp"
@@ -80,17 +81,17 @@ namespace NSG
 
     void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
     {
-        Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
+        scale = Vertex3(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
 
-        Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1) / scaling) * m);
+        Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1) / scale) * m);
 
         q = glm::quat_cast(tmp1);
 
         position = Vertex3(m[3]);
 
-        Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
+        //Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
 
-        scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
+        //scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
 
         // prevent zero scale
         if (IsZeroLength(scale))
@@ -103,7 +104,7 @@ namespace NSG
         static int counter = 0;
         const int MaxBuffer = 100;
         char buffer[MaxBuffer];
-        if(name == "")
+        if (name == "")
             snprintf(buffer, MaxBuffer, "Gen%d", counter++);
         else
             snprintf(buffer, MaxBuffer, "%s%d", name.c_str(), counter++);
@@ -190,6 +191,12 @@ namespace NSG
         return outputBuffer;
     }
 
+    bool IsScaleUniform(const Vector3& scale)
+    {
+        return glm::abs(scale.x - scale.y) < PRECISION && glm::abs(scale.x - scale.z) < PRECISION;
+    }
+
+
     #if 0
     void Sleep(unsigned milliseconds)
     {
@@ -200,7 +207,6 @@ namespace NSG
         #endif
     }
     #endif
-
 
 
 }

@@ -35,10 +35,10 @@ int NSG_MAIN(int argc, char* argv[])
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);
 	auto spot1Light = scene->GetLights()[1];
-	spot1Light->SetShadowColor(COLOR_GREEN);
+	spot1Light->SetShadowColor(Color(COLOR_GREEN,1));
 	//spot1Light->SetDistance(60.f);
 	auto spot2Light = scene->GetLights()[2];
-	spot2Light->SetShadowColor(COLOR_RED);
+	spot2Light->SetShadowColor(Color(COLOR_RED,1));
 	//spot2Light->SetOnlyShadow(true);
 	//spot2Light->SetDistance(60.f);
 	//spot2Light->SetSpotCutOff(75.f);

@@ -24,6 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "UtilConverter.h"
+#include "Plane.h"
+#include "Constants.h"
 
 namespace BlenderConverter
 {
@@ -46,5 +48,20 @@ namespace BlenderConverter
 			m[2][0], m[2][1], m[2][2]
 			);
 	}
+
+    Matrix4 GeneratePointTransformMatrix(const Plane& plane, const Vector3& center)
+    {
+        Vector3 normal = plane.GetNormal();
+        Vector3 sideA = VECTOR3_RIGHT;
+        if (std::abs(glm::dot(normal, sideA )) > 0.999f )
+            sideA = VECTOR3_UP;
+        Vector3 sideB(glm::cross(normal,sideA));
+        sideB = glm::normalize(sideB);
+        sideA = glm::cross(sideB, normal);
+        Matrix3 rot(sideA, sideB, normal);
+        Matrix4 result = glm::translate(glm::mat4(), center) * Matrix4(rot);
+        return glm::inverse(result);
+    }
+
 
 }

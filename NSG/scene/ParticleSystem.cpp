@@ -50,7 +50,7 @@ namespace NSG
 
     ParticleSystem::PhysicsParams::PhysicsParams()
         : mass_(1),
-          shape_(SH_SPHERE)
+          shape_(SH_EMPTY)
     {
     };
 
@@ -74,12 +74,11 @@ namespace NSG
           distribution_(ParticleSystemDistribution::RANDOM),
 		  gravity_(0, -9.81f, 0)
     {
-		particleMesh_ = Mesh::Create<QuadMesh>();
+		particleMesh_ = Mesh::CreateClass<QuadMesh>("NSGParticleMesh");
 		particleMesh_->Set(1.f);
         particleMaterial_ = std::make_shared<Material>(GetUniqueName(name + "Particle"));
-        particleMaterial_->SetDiffuseColor(Color(0, 1, 0, 1));
 		particleMaterial_->SetRenderPass(RenderPass::UNLIT);
-		particleMaterial_->SetBlendMode(BLEND_MODE::ALPHA);
+		particleMaterial_->SetAlpha(0);
 		particleMaterial_->SetBillboardType(BillboardType::SPHERICAL);
         DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
 		particles_.reserve(amount_);
@@ -142,9 +141,9 @@ namespace NSG
 			rb->SetGravity(gravity_);
             rb->SetCollisionMask(collisionGroup_, collisionMask_);
             rb->SetMass(physicsParams_.mass_);
-            auto shape = particleMesh_->GetShape();
-            shape->SetType(physicsParams_.shape_);
-            rb->SetShape(shape);
+			auto scale = particle->GetGlobalScale();
+			auto shape = Shape::GetOrCreate(ShapeKey(physicsParams_.shape_, scale));
+			rb->AddShape(shape);
             particle->SetEnabled(false);
             particles_.push_back(particle);
         }

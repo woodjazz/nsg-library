@@ -18,7 +18,7 @@ static const char* VS_GLSL = \
 "			gl_Position = GetClipPos();\n"\
 "		#elif defined(UNLIT)\n"\
 "			\n"\
-"			v_color = a_color;\n"\
+"			//v_color = a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "		#elif defined(TEXT)\n"\

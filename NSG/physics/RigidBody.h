@@ -26,8 +26,9 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
+#include "Constants.h"
 #include "btBulletDynamicsCommon.h"
-#include <vector>
+#include <map>
 using namespace std;
 
 class btDynamicsWorld;
@@ -42,8 +43,7 @@ namespace NSG
 		void SetGravity(const Vector3& gravity);
         void SetKinematic(bool enable);
         void SetMass(float mass);
-        void SetShape(PShape shape);
-        PShape GetShape() const { return shape_; }
+        void AddShape(PShape shape, const Vector3& position = VECTOR3_ZERO, const Quaternion& rotation = QUATERNION_IDENTITY);
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
         void SetLinearVelocity(const Vector3& lv);
         Vector3 GetLinearVelocity() const;
@@ -66,13 +66,16 @@ namespace NSG
         void AddToWorld();
         void RemoveFromWorld();
         void SetTrigger(bool enable);
+        void SetLinearFactor(const Vector3& factor);
+        void SetAngularFactor(const Vector3& factor);
     private:
+		void ReDoShape(const Vector3& newScale, PhysicsShape newType);
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
         void getWorldTransform(btTransform& worldTrans) const override;
         void setWorldTransform(const btTransform& worldTrans) override;
-        void UpdateShape();
+        void UpdateInertia();
         void SetMaterialPhysicsSlot();
         void SetMaterialPhysics();
 
@@ -80,7 +83,15 @@ namespace NSG
 		PWeakSceneNode sceneNode_;
         std::weak_ptr<btDynamicsWorld> owner_;
         float mass_;
-        PShape shape_;
+		std::shared_ptr<btCompoundShape> compoundShape_;
+		struct ShapeData
+		{
+			PShape shape;
+			Vector3 position;
+			Quaternion rotation;
+		};
+		typedef std::map<std::string, ShapeData> Shapes;
+		Shapes shapes_;
         bool handleCollision_;
 		float restitution_;
 		float friction_;
@@ -93,13 +104,15 @@ namespace NSG
 		Vector3 gravity_;
         Vector3 linearVelocity_;
         Vector3 angularVelocity_;
-        SignalEmpty::PSlot slotReleased_;
+		bool kinematic_;
+		Vector3 linearFactor_;
+		Vector3 angularFactor_;
+		SignalEmpty::PSlot slotReleased_;
         SignalEmpty::PSlot slotMeshSet_;
         SignalEmpty::PSlot slotMaterialSet_;
         SignalEmpty::PSlot slotMaterialPhysicsSet_;
         SignalEngine::PSlot slotEngineCreated_;
         SignalEmpty::PSlot slotBeginFrame_;
-        bool kinematic_;
     };
 }
 

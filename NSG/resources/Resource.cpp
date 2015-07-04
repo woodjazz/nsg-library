@@ -42,7 +42,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    MapAndVector<std::string, Resource> Resource::resources_;
+    template<> std::map<std::string, PWeakResource> WeakFactory<std::string, Resource>::objsMap_ = {};
 
     Resource::Resource(const std::string& name)
         : Object(name),
@@ -60,10 +60,10 @@ namespace NSG
         pugi::xml_node dataNode = node.child("data");
 
         if (!dataNode)
-            return Resource::GetOrCreate<ResourceFile>(name);
+			return Resource::GetOrCreateClass<ResourceFile>(name);
         else
         {
-			auto obj = Resource::Create<ResourceXMLNode>(name);
+			auto obj = Resource::CreateClass<ResourceXMLNode>(name);
 			obj->Set(resource, nullptr, "Resources", name);
             return obj;
         }
@@ -168,21 +168,6 @@ namespace NSG
         }
     }
 
-    void Resource::Clear()
-    {
-        resources_.Clear();
-    }
-
-    PResource Resource::Get(const std::string& name)
-    {
-        return resources_.Get(name);
-    }
-
-    std::vector<PResource> Resource::GetResources()
-    {
-        return resources_.GetObjs();
-    }
-
     std::vector<PResource> Resource::LoadResources(PResource resource, const pugi::xml_node& node)
     {
         std::vector<PResource> result;
@@ -203,7 +188,7 @@ namespace NSG
     void Resource::SaveResources(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Resources");
-        auto resources = GetResources();
+        auto resources = Resource::GetObjs();
         for (auto& obj : resources)
             obj->Save(child);
     }
@@ -211,7 +196,7 @@ namespace NSG
     void Resource::SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir)
     {
         pugi::xml_node child = node.append_child("Resources");
-        auto resources = GetResources();
+		auto resources = Resource::GetObjs();
         for (auto& obj : resources)
             obj->SaveExternal(child, path, outputDir);
     }

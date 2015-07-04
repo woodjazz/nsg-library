@@ -72,7 +72,7 @@ namespace NSG
 
     bool ModelMesh::IsValid()
     {
-		return resource_ && resource_->IsReady() && Graphics::this_ && !vertexsData_.empty();
+		return (!resource_ || resource_->IsReady()) && Graphics::this_ && !vertexsData_.empty();
     }
 
 	void ModelMesh::ReleaseResources()

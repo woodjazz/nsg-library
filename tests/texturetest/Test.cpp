@@ -50,9 +50,9 @@ static void Test02()
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/tex_etc1.ktx");
+	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/tex_etc1.ktx");
     auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
-    auto mesh = Mesh::Create<SphereMesh>();
+	auto mesh = Mesh::CreateClass<SphereMesh>();
     auto material = Material::Create();
 	material->SetRenderPass(RenderPass::UNLIT);
 	material->SetTexture(texture);
@@ -68,9 +68,9 @@ static void Test03()
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/tex_pvr.pvr");
+	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/tex_pvr.pvr");
     auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
-    auto mesh = Mesh::Create<SphereMesh>();
+	auto mesh = Mesh::CreateClass<SphereMesh>();
     auto material = Material::Create();
 	material->SetRenderPass(RenderPass::UNLIT);
 	material->SetTexture(texture);
@@ -96,7 +96,7 @@ static void Test04()
 	}
 
 	{
-		auto resource = Resource::Create<ResourceFile>("data/tex_etc1.ktx");
+		auto resource = Resource::CreateClass<ResourceFile>("data/tex_etc1.ktx");
 		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
 		auto image = std::make_shared<Image>(resource);
 		image->ReadResource();
@@ -107,7 +107,7 @@ static void Test04()
 	}
 
 	{
-		auto resource = Resource::Create<ResourceFile>("data/tex_pvr.pvr");
+		auto resource = Resource::CreateClass<ResourceFile>("data/tex_pvr.pvr");
 		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
 		auto image = std::make_shared<Image>(resource);
 		image->ReadResource();

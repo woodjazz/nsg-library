@@ -48,6 +48,7 @@ namespace NSG
           sceneNode_(sceneNode),
           owner_(sceneNode->GetScene()->GetPhysicsWorld()->GetWorld()),
           mass_(0), //static by default
+		  compoundShape_(new btCompoundShape),
           handleCollision_(false),
           restitution_(0),
           friction_(DEFAULT_FRICTION),
@@ -58,24 +59,13 @@ namespace NSG
           inWorld_(false),
           trigger_(false),
           gravity_(sceneNode->GetScene()->GetPhysicsWorld()->GetGravity()),
-          kinematic_(false)
+          kinematic_(false),
+		  linearFactor_(1),
+		  angularFactor_(1)
     {
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
-        auto mesh = sceneNode->GetMesh();
-        if (mesh)
-            SetShape(mesh->GetShape());
 
-        slotMeshSet_ = sceneNode->SigMeshSet()->Connect([this]()
-        {
-            auto node = sceneNode_.lock();
-            auto mesh = node->GetMesh();
-            if (mesh)
-                SetShape(mesh->GetShape());
-            else
-                SetShape(nullptr);
-        });
-
-        slotMaterialSet_ = sceneNode->SigMaterialSet()->Connect([this]()
+		slotMaterialSet_ = sceneNode->SigMaterialSet()->Connect([this]()
         {
             SetMaterialPhysics();
             SetMaterialPhysicsSlot();
@@ -136,21 +126,27 @@ namespace NSG
 
     bool RigidBody::IsValid()
     {
-        if (shape_)
-        {
-            if (IsStatic() && shape_->GetType() == SH_CONVEX_TRIMESH)
-                shape_->SetType(SH_TRIMESH);
-            return shape_->IsReady();
-        }
-        return false;
+		for (auto& shape : shapes_)
+			if (!shape.second.shape->IsReady())
+				return false;
+		return !shapes_.empty();
     }
 
     void RigidBody::AllocateResources()
     {
+        for(auto it : shapes_)
+        {
+            auto shapeData = it.second;
+            btTransform offset;
+            offset.setOrigin(ToBtVector3(shapeData.shape->GetScale() * shapeData.position));
+            offset.setRotation(ToBtQuaternion(shapeData.rotation));
+            compoundShape_->addChildShape(offset, shapeData.shape->GetCollisionShape().get());
+        }
+
         btVector3 inertia(0, 0, 0);
         if (mass_ > 0)
-            shape_->GetCollisionShape()->calculateLocalInertia(mass_, inertia);
-        btRigidBody::btRigidBodyConstructionInfo info(mass_, (IsStatic() ? nullptr : this), shape_->GetCollisionShape().get(), inertia);
+			compoundShape_->calculateLocalInertia(mass_, inertia);
+		btRigidBody::btRigidBodyConstructionInfo info(mass_, (IsStatic() ? nullptr : this), compoundShape_.get(), inertia);
         info.m_restitution = restitution_;
         info.m_friction = friction_;
         info.m_linearDamping = linearDamp_;
@@ -165,18 +161,24 @@ namespace NSG
         body_->setGravity(ToBtVector3(gravity_));
         body_->setLinearVelocity(ToBtVector3(linearVelocity_));
         body_->setAngularVelocity(ToBtVector3(angularVelocity_));
+		body_->setLinearFactor(ToBtVector3(linearFactor_));
+		body_->setAngularFactor(ToBtVector3(angularFactor_));
+
         if (slotBeginFrame_)
             slotBeginFrame_ = nullptr;
     }
 
     void RigidBody::ReleaseResources()
     {
+        auto n = compoundShape_->getNumChildShapes();
+        for(int i=0; i<n; i++)
+            compoundShape_->removeChildShapeByIndex(i);
+
         if (body_)
         {
             body_->setUserPointer(nullptr);
             body_->setMotionState(nullptr);
             RemoveFromWorld();
-            shape_->Invalidate();
         }
 
         slotBeginFrame_ = Engine::GetPtr()->SigBeginFrame()->Connect([this]()
@@ -234,23 +236,22 @@ namespace NSG
         }
     }
 
-    void RigidBody::SetShape(PShape shape)
+	void RigidBody::AddShape(PShape shape, const Vector3& position, const Quaternion& rotation)
     {
-        if (shape_ != shape)
+		auto key = shape->GetName();
+		shapes_[key] = ShapeData{ shape, position, rotation };
+
+#if 0
+        if (shape)
         {
-            shape_ = shape;
-            if (body_)
-                UpdateShape();
-            if (shape)
+            slotReleased_ = shape->SigReleased()->Connect([this]()
             {
-                slotReleased_ = shape->SigReleased()->Connect([this]()
-                {
-                    Invalidate();
-                });
-            }
-            else
-                slotReleased_ = nullptr;
+                Invalidate();
+            });
         }
+        else
+            slotReleased_ = nullptr;
+#endif
     }
 
     void RigidBody::SetRestitution(float restitution)
@@ -380,12 +381,30 @@ namespace NSG
         }
     }
 
+	void RigidBody::ReDoShape(const Vector3& newScale, PhysicsShape newType)
+	{
+#if 0
+		ShapeKey key(shape_->GetName());
+		PMesh mesh;
+		Vector3 scale;
+		PhysicsShape type;
+		key.GetData(mesh, scale, type);
+		PShape newShape;
+		if (mesh)
+			newShape = Shape::GetOrCreate(ShapeKey(mesh, newScale));
+		else
+			newShape = Shape::GetOrCreate(ShapeKey(newType, newScale));
+		SetShape(newShape);
+#endif
+	}
+
     void RigidBody::ReScale()
     {
+#if 0
         if (shape_)
         {
             auto sceneNode(sceneNode_.lock());
-            shape_->SetScale(sceneNode->GetGlobalScale());
+			ReDoShape(sceneNode->GetGlobalScale(), shape_->GetType());
         }
 
         if (body_)
@@ -394,16 +413,16 @@ namespace NSG
             UpdateShape();
             AddToWorld();
         }
+#endif
     }
 
-    void RigidBody::UpdateShape()
+	void RigidBody::UpdateInertia()
     {
         btVector3 inertia(0.0f, 0.0f, 0.0f);
         if (mass_ > 0)
-            shape_->GetCollisionShape()->calculateLocalInertia(mass_, inertia);
+			compoundShape_->calculateLocalInertia(mass_, inertia);
         body_->setMassProps(mass_, inertia);
         body_->updateInertiaTensor();
-        body_->setCollisionShape(shape_->GetCollisionShape().get());
     }
 
     void RigidBody::Load(const pugi::xml_node& node)
@@ -414,23 +433,64 @@ namespace NSG
         friction_ = node.attribute("friction").as_float();
         linearDamp_ = node.attribute("linearDamp").as_float();
         angularDamp_ = node.attribute("angularDamp").as_float();
+		collisionGroup_ = node.attribute("collisionGroup").as_int();
+		collisionMask_ = node.attribute("collisionMask").as_int();
         trigger_ = node.attribute("trigger").as_bool();
+		gravity_ = ToVertex3(node.attribute("gravity").as_string());
+		linearVelocity_ = ToVertex3(node.attribute("linearVelocity").as_string());
+		angularVelocity_ = ToVertex3(node.attribute("angularVelocity").as_string());
+		linearFactor_ = ToVertex3(node.attribute("linearFactor").as_string());
+		angularFactor_ = ToVertex3(node.attribute("angularFactor").as_string());
         kinematic_ = node.attribute("kinematic").as_bool();
+
+		auto shapesNode = node.child("Shapes");
+		if (shapesNode)
+		{
+			auto shapeNode = shapesNode.child("Shape");
+			while (shapeNode)
+			{
+				auto nameAttr = shapeNode.attribute("name");
+				auto shape = Shape::GetOrCreate(ShapeKey(nameAttr.as_string()));
+				auto position = ToVertex3(shapeNode.attribute("position").as_string());
+				auto orientation = ToQuaternion(shapeNode.attribute("orientation").as_string());
+				AddShape(shape, position, orientation);
+				shapeNode = shapeNode.next_sibling("Shape");
+			}
+		}
+
         Invalidate();
     }
 
     void RigidBody::Save(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("RigidBody");
-
         child.append_attribute("mass").set_value(mass_);
         child.append_attribute("handleCollision").set_value(handleCollision_);
         child.append_attribute("restitution").set_value(restitution_);
         child.append_attribute("friction").set_value(friction_);
         child.append_attribute("linearDamp").set_value(linearDamp_);
         child.append_attribute("angularDamp").set_value(angularDamp_);
+		child.append_attribute("collisionGroup").set_value(collisionGroup_);
+		child.append_attribute("collisionMask").set_value(collisionMask_);
         child.append_attribute("trigger").set_value(trigger_);
+		child.append_attribute("gravity").set_value(ToString(gravity_).c_str());
+		child.append_attribute("linearVelocity").set_value(ToString(linearVelocity_).c_str());
+		child.append_attribute("angularVelocity").set_value(ToString(angularVelocity_).c_str());
+		child.append_attribute("linearFactor").set_value(ToString(linearFactor_).c_str());
+		child.append_attribute("angularFactor").set_value(ToString(angularFactor_).c_str());
         child.append_attribute("kinematic").set_value(kinematic_);
+
+		if (!shapes_.empty())
+		{
+			auto shapesNode = child.append_child("Shapes");
+			for (auto& shape : shapes_)
+			{
+				auto shapeNode = shapesNode.append_child("Shape");
+				shapeNode.append_attribute("name").set_value(shape.second.shape->GetName().c_str());
+				shapeNode.append_attribute("position").set_value(ToString(shape.second.position).c_str());
+				shapeNode.append_attribute("orientation").set_value(ToString(shape.second.rotation).c_str());
+			}
+		}
     }
     void RigidBody::SetCollisionMask(int group, int mask)
     {
@@ -459,7 +519,9 @@ namespace NSG
         ResetForces();
         SetLinearVelocity(VECTOR3_ZERO);
         SetAngularVelocity(VECTOR3_ZERO);
-    }
+		SetLinearFactor(VECTOR3_ONE);
+		SetAngularFactor(VECTOR3_ONE);
+	}
 
     void RigidBody::ReAddToWorld()
     {
@@ -524,5 +586,27 @@ namespace NSG
             AddToWorld();
         }
     }
+
+    void RigidBody::SetLinearFactor(const Vector3& factor)
+    {
+		if (linearFactor_ != factor)
+		{
+			linearFactor_ = factor;
+			if (body_)
+				body_->setLinearFactor(ToBtVector3(factor));
+		}
+    }
+
+    void RigidBody::SetAngularFactor(const Vector3& factor)
+    {
+		if (angularFactor_ != factor)
+		{
+			angularFactor_ = factor;
+			if (body_)
+				body_->setAngularFactor(ToBtVector3(factor));
+		}
+    }
+
+
 }
 

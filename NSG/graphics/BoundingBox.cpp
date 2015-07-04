@@ -107,6 +107,13 @@ namespace NSG
 		return *this;
 	}
 
+	bool BoundingBox::operator == (const BoundingBox& obj) const
+	{
+		if (this != &obj)
+			return max_ == obj.max_ && min_ == obj.min_;
+		return true;
+	}
+
     void BoundingBox::Transform(const Node& node)
     {
         const Matrix4& transform = node.GetGlobalModelMatrix();

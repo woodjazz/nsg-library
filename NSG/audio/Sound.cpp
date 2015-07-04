@@ -37,7 +37,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    MapAndVector<std::string, Sound> Sound::sounds_;
+    template<> std::map<std::string, PWeakSound> WeakFactory<std::string, Sound>::objsMap_ = {};
 
 	Sound::Sound(const std::string& name)
         : Object(name),
@@ -54,31 +54,6 @@ namespace NSG
             Mix_FreeChunk(sound_);
 #endif        
         CloseAudio();
-    }
-
-    void Sound::Clear()
-    {
-        sounds_.Clear();
-    }
-
-    PSound Sound::Create(const std::string& name)
-    {
-        return sounds_.Create(name);
-    }
-
-    PSound Sound::GetOrCreate(const std::string& name)
-    {
-        return sounds_.GetOrCreate(name);
-    }
-
-    PSound Sound::Get(const std::string& name)
-    {
-        return sounds_.Get(name);
-    }
-
-    std::vector<PSound> Sound::GetSounds()
-    {
-        return sounds_.GetObjs();
     }
 
     void Sound::Set(PResource resource)
@@ -179,7 +154,7 @@ namespace NSG
                 auto res = Resource::Get(resourceName);
                 if (!res)
                 {
-                    auto newRes = Resource::Create<ResourceXMLNode>(resourceName);
+                    auto newRes = Resource::CreateClass<ResourceXMLNode>(resourceName);
                     newRes->Set(resource, nullptr, "Resources", resourceName);
                     sound->Set(newRes);
                 }
@@ -202,7 +177,7 @@ namespace NSG
     void Sound::SaveSounds(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Sounds");
-        auto sounds = Sound::GetSounds();
+        auto sounds = Sound::GetObjs();
         for (auto& obj : sounds)
             obj->Save(child);
     }

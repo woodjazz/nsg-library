@@ -292,7 +292,7 @@ namespace NSG
 
     void Scene::SaveSkeletons(pugi::xml_node& node) const
     {
-        const std::vector<PMesh>& meshes = Mesh::GetMeshes();
+        const std::vector<PMesh>& meshes = Mesh::GetObjs();
         if (meshes.size())
         {
             pugi::xml_node child = node.append_child("Skeletons");
@@ -314,7 +314,7 @@ namespace NSG
             while (child)
             {
                 std::string meshName = child.attribute("meshName").as_string();
-                auto mesh = Mesh::Get<ModelMesh>(meshName);
+				auto mesh = Mesh::GetClass<ModelMesh>(meshName);
                 CHECK_CONDITION(mesh, __FILE__, __LINE__);
                 if (!mesh->GetSkeleton())
                 {

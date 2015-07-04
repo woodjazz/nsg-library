@@ -88,7 +88,7 @@ namespace BlenderConverter
 		void GetSplineStartEnd(const Blender::BezTriple* bez, int totvert, float& start, float& end);
 		PBSpline ConvertSpline(const Blender::BezTriple* bez, SPLINE_CHANNEL_CODE access, int mode, int totvert, float xoffset, float xfactor, float yoffset, float yfactor);
 		NSG::AnimationChannelMask ConvertChannel(const Blender::bAction* action, PTrackData trackData, NSG::AnimationTrack& track, float timeFrameLength);
-		void LoadPhysics(const Blender::Object* obj, NSG::PSceneNode sceneNode, int materialIndex);
+		void LoadPhysics(NSG::PScene scene, const Blender::Object* obj);
 		const void* FindByString(const Blender::ListBase* listbase, const char* id, int offset) const;
 		const Blender::bPoseChannel* GetPoseChannelByName(const Blender::bPose* pose, const char* name) const;
 		const Blender::Bone* GetBoneFromDefGroup(const Blender::Object* obj, const Blender::bDeformGroup* def) const;
@@ -101,10 +101,17 @@ namespace BlenderConverter
 		void CreateScenes(bParse::bMain* data);
 		void ConvertGroupInstances(const std::string& groupName, NSG::PSceneNode parent);
 		bool IsKnownType(const Blender::Object* obj) const;
+		void Tessellate(NSG::PModelMesh mesh, const NSG::VertexsData& vertexData, const std::vector<int> & indexes);
+		NSG::PhysicsShape GetShapeType(short boundtype) const;
+		NSG::PhysicsBody GetBodyType(char bodyType) const;
+		bool IsRigidBody(NSG::PhysicsBody bodyType) const;
+		bool ShapeNeedsMesh(NSG::PhysicsShape shapeType) const;
+		NSG::PSceneNode GetParentWithRigidBody(NSG::PSceneNode sceneNode) const;
     private:
         NSG::Path path_;
         NSG::Path outputDir_;
 		std::vector<const Blender::Object*> armatureLinker_;
+		std::vector<const Blender::Object*> physics_;
 		std::map<std::string, std::vector<NSG::PWeakNode>> armatureBones_;
 		bool embedResources_;
 		std::vector<NSG::PScene> scenes_;

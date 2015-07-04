@@ -29,7 +29,7 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "Object.h"
 #include "Constants.h"
-#include "MapAndVector.h"
+#include "StrongFactory.h"
 #include <string>
 
 namespace NSG
@@ -63,6 +63,8 @@ namespace NSG
         const std::string& GetName() const { return name_; }
         void SetNumberBones(size_t nBones);
         void SetNodeVariables();
+        static void Clear();
+		static PProgram GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light);
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -175,6 +177,6 @@ namespace NSG
         SceneNode* node_;
         Material* material_;
         const Light* light_;
-
+		static StrongFactory<std::string, Program> programs_;
     };
 }

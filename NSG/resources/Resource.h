@@ -27,13 +27,13 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Object.h"
 #include "AppData.h"
-#include "MapAndVector.h"
+#include "WeakFactory.h"
 #include "Util.h"
 #include <string>
 
 namespace NSG
 {
-	class Resource : public std::enable_shared_from_this<Resource>, public Object
+	class Resource : public WeakFactory<std::string, Resource>, public std::enable_shared_from_this<Resource>, public Object
 	{
 	public:
 		static PResource CreateFrom(PResource resource, const pugi::xml_node& node);
@@ -49,30 +49,12 @@ namespace NSG
 		void SetSerializable(bool serializable);
 		bool IsSerializable() const;
 		void SetName(const std::string& name);
-		static void Clear();
-		template <typename T> static std::shared_ptr<T> GetOrCreate(const std::string& name)
-        {
-            return resources_.GetOrCreateClass<T>(name);
-        }
-		template <typename T> static std::shared_ptr<T> Create(const std::string& name = GetUniqueName())
-		{
-			return resources_.CreateClass<T>(name);
-		}
-		template <typename T> static std::shared_ptr<T> Get(const std::string& name)
-        {
-            return resources_.GetClass<T>(name);
-        }
-		static PResource Get(const std::string& name);
-        static std::vector<PResource> GetResources();
 		static std::vector<PResource> LoadResources(PResource resource, const pugi::xml_node& node);
         static void SaveResources(pugi::xml_node& node);
 		static void SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir);
 		Resource(const std::string& name);
 	protected:
-		
 		std::string buffer_;
 		bool serializable_;
-	private:
-		static MapAndVector<std::string, Resource> resources_;
 	};
 }

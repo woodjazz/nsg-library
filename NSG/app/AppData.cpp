@@ -33,7 +33,9 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Path.h"
 #include "Material.h"
+#include "Shape.h"
 #include "Mesh.h"
+#include "Program.h"
 #include "pugixml.hpp"
 namespace NSG
 {
@@ -54,7 +56,7 @@ namespace NSG
 
     AppData::AppData(const pugi::xml_document& doc)
     {
-		auto resource = Resource::Create<Resource>();
+		auto resource = Resource::Create("AppDataResource");
 		struct XMLWriter : pugi::xml_writer
 		{
 			std::string buffer_;
@@ -81,6 +83,7 @@ namespace NSG
         sounds_ = Sound::LoadSounds(resource, appNode);
         meshes_ = Mesh::LoadMeshes(resource, appNode);
         materials_ = Material::LoadMaterials(resource, appNode);
+        shapes_ = Shape::LoadShapes(resource, appNode);
         pugi::xml_node child = appNode.child("Scene");
         while (child)
         {
@@ -97,6 +100,7 @@ namespace NSG
         Sound::Clear();
         Mesh::Clear();
         Material::Clear();
+        Program::Clear();
     }
 
 }

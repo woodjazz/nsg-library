@@ -523,7 +523,7 @@ namespace NSG
         }
     }
 
-    void Camera::FillShaderDefines(std::string& defines, PassType passType)
+    void Camera::FillShaderDefines(std::string& defines, PassType passType) const
     {
         if (PassType::LIT == passType && colorSplits_)
             defines += "COLOR_SPLITS\n";

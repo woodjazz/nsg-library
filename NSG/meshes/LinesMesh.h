@@ -35,14 +35,15 @@ namespace NSG
 	public:
 		LinesMesh(const std::string& name);
 		~LinesMesh();
-		void Add(const Vector3& start, const Vector3& end, const Color& color = COLOR_WHITE);
+		void Add(const Vector3& start, const Vector3& end, const Color& color = Color(1));
 		void Clear();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		size_t GetNumberOfTriangles() const override;
         bool IsValid() override;
         void AllocateResources() override;
-        PhysicsShape GetShapeType() const override { return SH_UNKNOWN; }
+        PhysicsShape GetShapeType() const override { return SH_EMPTY; }
+		bool IsEmpty() const { return lines_.empty();  }
 	private:
 		struct Data
 		{

@@ -28,13 +28,13 @@ misrepresented as being the original software.
 using namespace NSG;
 PScene scene;
 
-PSceneNode CreateObject(PMesh mesh, Color color, const Vector3& pos)
+PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 {
 	auto obj = scene->CreateChild<SceneNode>();
 	obj->SetGlobalPosition(pos);
-	auto material = Material::GetOrCreate();
+	auto material = Material::Create();
 	material->SetDiffuseColor(color);
-	material->SetSpecularColor(COLOR_BLACK);
+	material->SetSpecularColor(ColorRGB(0));
 	material->SetRenderPass(RenderPass::PERPIXEL);
 	obj->SetMesh(mesh);
 	obj->SetMaterial(material);

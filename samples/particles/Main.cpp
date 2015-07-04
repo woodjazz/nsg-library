@@ -40,16 +40,16 @@ int NSG_MAIN(int argc, char* argv[])
     auto floorObj = scene->CreateChild<SceneNode>();
     floorObj->SetMesh(planeMesh);
     floorObj->SetMaterial(Material::Create());
-    floorObj->GetMaterial()->SetColor(Color(1, 0, 0, 1));
+	floorObj->GetMaterial()->SetRenderPass(RenderPass::UNLIT);
+    floorObj->GetMaterial()->SetDiffuseColor(ColorRGB(1, 0, 0));
     auto rb = floorObj->GetOrCreateRigidBody();
-    auto shape = rb->GetShape();
-    shape->SetType(SH_TRIMESH);
-
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/spark.png");
+	auto shape = Shape::GetOrCreate(ShapeKey(planeMesh, Vector3(1)));
+	rb->AddShape(shape);
+	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/spark.png");
 	auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 	auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
 	ps->GetParticleMaterial()->SetTexture(texture);
-	auto meshEmitter(Mesh::Create<BoxMesh>());
+	auto meshEmitter(Mesh::CreateClass<BoxMesh>());
     ps->SetMesh(meshEmitter);
     ps->SetPosition(Vertex3(0, 10, 0));
 	ps->SetMaterial(Material::Create());

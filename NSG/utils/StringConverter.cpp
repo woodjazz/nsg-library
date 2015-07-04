@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #endif
 
 #include <array>
+#include <cctype>
 
 namespace NSG
 {
@@ -107,9 +108,10 @@ namespace NSG
 
     BoundingBox ToBoundigBox(const std::string& buffer)
     {
-        BoundingBox obj;
-        sscanf(buffer.c_str(), "[%f,%f,%f][%f,%f,%f]", &obj.min_.x, &obj.min_.y, &obj.min_.z, &obj.max_.x, &obj.max_.y, &obj.max_.z);
-        return obj;
+		Vector3 min;
+		Vector3 max;
+        sscanf(buffer.c_str(), "[%f,%f,%f][%f,%f,%f]", &min.x, &min.y, &min.z, &max.x, &max.y, &max.z);
+		return BoundingBox(min, max);
     }
 
     Vertex4 ToVertex4(const std::string& buffer)
@@ -363,5 +365,13 @@ namespace NSG
 	{
 		return ToType<PhysicsShape>(obj, PhysicsShapeStr);
 	}
+
+    std::string RemoveWhiteSpaces(const std::string& str)
+    {
+        std::string result(str);
+        auto f = []( char ch ) { return std::isspace( ch ); };
+        result.erase( std::remove_if( result.begin(), result.end(), f ), result.end() );
+        return result;
+    }
 
 }

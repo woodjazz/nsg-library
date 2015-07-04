@@ -29,7 +29,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 	auto window = Window::Create();
-	auto xml = Resource::GetOrCreate<ResourceFile>("data/GuiAnonymousPro32.xml");
+	auto xml = Resource::GetOrCreateClass<ResourceFile>("data/GuiAnonymousPro32.xml");
     auto atlas = std::make_shared<FontAtlas>(xml);
     auto scene = std::make_shared<Scene>();
 
@@ -38,16 +38,16 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto box = scene->CreateChild<SceneNode>();
 	box->SetPosition(Vertex3(0, 0, -5));
-	box->SetMesh(Mesh::Create<BoxMesh>());
-	box->SetMaterial(Material::GetOrCreate());
+	box->SetMesh(Mesh::CreateClass<BoxMesh>("BoxMesh"));
+	box->SetMaterial(Material::GetOrCreate("Material"));
 	box->GetMaterial()->SetFillMode(FillMode::WIREFRAME);
-	box->GetMaterial()->SetColor(Color(1, 0, 1, 1));
+	box->GetMaterial()->SetDiffuseColor(ColorRGB(1, 0, 1));
 
     auto button1 = scene->CreateChild<Button>();
 	button1->SetScale(0.25f);
 	button1->SetAtlas(atlas);
     button1->SetText("Hello");
-	button1->GetTextMaterial()->SetColor(Color(1, 0.2f, 1, 1));
+	button1->GetTextMaterial()->SetDiffuseColor(ColorRGB(1, 0.2f, 1));
 
 	button1->SetScreenAlignment(HorizontalAlignment::LEFT_ALIGNMENT, VerticalAlignment::BOTTOM_ALIGNMENT);
 	button1->SetBottomScreenMargin(0.1f);
@@ -55,7 +55,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto slotButtonClicked = button1->SigClicked()->Connect([&](int button)
     {
-		button1->GetMaterial()->SetColor(Color(1, 0, 0, 1));
+		button1->GetMaterial()->SetDiffuseColor(ColorRGB(1, 0, 0));
     });
 
 	auto slotButtonPush = button1->SigPush()->Connect([&](int button)
@@ -70,12 +70,12 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto slotMouseEnter = button1->SigMouseEnter()->Connect([&]()
 	{
-		button1->GetMaterial()->SetColor(Color(0,1,0,1));
+		button1->GetMaterial()->SetDiffuseColor(ColorRGB(0, 1, 0));
 	});
 
 	auto slotMouseLeave = button1->SigMouseLeave()->Connect([&]()
 	{
-		button1->GetMaterial()->SetColor(Color(1, 1, 1, 1));
+		button1->GetMaterial()->SetDiffuseColor(ColorRGB(1, 1, 1));
 	});
 
     return Engine().Run();

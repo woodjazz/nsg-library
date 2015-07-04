@@ -37,24 +37,24 @@ int NSG_MAIN(int argc, char* argv[])
     PSceneNode earth[COLS][ROWS];
 
     auto scene = std::make_shared<Scene>();
-	auto sphereMesh(Mesh::Create<SphereMesh>());
+	auto sphereMesh(Mesh::CreateClass<SphereMesh>("Sphere"));
 	sphereMesh->Set(3, 24);
 
-    auto pEarthTexture1(std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>("data/Earthmap720x360_grid.jpg")));
-	auto pEarthTexture2(std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>("data/jup0vss1.jpg")));
+    auto pEarthTexture1(std::make_shared<Texture2D>(Resource::GetOrCreateClass<ResourceFile>("data/Earthmap720x360_grid.jpg")));
+	auto pEarthTexture2(std::make_shared<Texture2D>(Resource::GetOrCreateClass<ResourceFile>("data/jup0vss1.jpg")));
 	auto pMaterial1(Material::Create("earth1"));
 	pMaterial1->SetRenderPass(RenderPass::PERPIXEL);
 	auto pMaterial2(Material::Create("earth2"));
 	pMaterial2->SetRenderPass(RenderPass::PERPIXEL);
 	pMaterial1->SetTexture(pEarthTexture1);
-    pMaterial1->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
-    pMaterial1->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
+	pMaterial1->SetDiffuseColor(ColorRGB(0.8f, 0.8f, 0.8f));
+	pMaterial1->SetSpecularColor(ColorRGB(1.0f, 0.0f, 0.0f));
     pMaterial1->SetShininess(10);
 	pMaterial1->SetAmbientIntensity(0);
 
 	pMaterial2->SetTexture(pEarthTexture2);
-    pMaterial2->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f, 1));
-    pMaterial2->SetSpecularColor(Color(1.0f, 0.0f, 0.0f, 1));
+	pMaterial2->SetDiffuseColor(ColorRGB(0.8f, 0.8f, 0.8f));
+	pMaterial2->SetSpecularColor(ColorRGB(1.0f, 0.0f, 0.0f));
     pMaterial2->SetShininess(100);
 	pMaterial2->SetAmbientIntensity(0);
 

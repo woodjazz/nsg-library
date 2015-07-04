@@ -192,7 +192,7 @@ namespace NSG
         LoadChildren(node);
     }
 
-    void Light::FillShaderDefines(std::string& defines, PassType passType, Material* material) const
+    void Light::FillShaderDefines(std::string& defines, PassType passType, const Material* material) const
     {
         bool litPass =  PassType::LIT == passType;
         if (litPass)
@@ -224,8 +224,8 @@ namespace NSG
 
     void Light::CalculateColor()
     {
-        diffuseColor_ = diffuse_ ? color_ * energy_ : COLOR_BLACK;
-        specularColor_ = specular_ ? color_ * energy_ : COLOR_BLACK;
+        diffuseColor_ = diffuse_ ? color_ * energy_ : Color(0);
+		specularColor_ = specular_ ? color_ * energy_ : Color(0);
     }
 
     bool Light::HasSpecularColor() const

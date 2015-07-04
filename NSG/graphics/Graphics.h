@@ -114,7 +114,6 @@ namespace NSG
         GLenum GetTexelDataType() const;
         GLenum GetTexelFormatType() const;
     private:
-		PProgram GetOrCreateProgram(const Pass* pass, Mesh* mesh, Material* material, const Light* light);
         void SetUpViewport();
         Recti viewport_;
         GLint systemFbo_;
@@ -171,8 +170,6 @@ namespace NSG
         DepthFunc depthFunc_;
         Vector4 viewportFactor_;
         int maxTextureSize_;
-        typedef std::map<std::string, PProgram> Programs;
-        Programs programs_;
         PRenderer renderer_;
     };
 }

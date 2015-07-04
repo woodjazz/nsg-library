@@ -43,7 +43,6 @@ namespace NSG
         PhysicsWorld(const Scene* scene);
         ~PhysicsWorld();
         void StepSimulation(float timeStep);
-		void Substep(float tick);
         std::shared_ptr<btDiscreteDynamicsWorld> GetWorld() const { return dynamicsWorld_; }
 		void SetGravity(const Vector3& gravity);
 		const Vector3& GetGravity() const { return gravity_; }
@@ -61,6 +60,7 @@ namespace NSG
 		PLinesMesh GetDebugLines() const { return lines_; }
 		void ClearDebugLines();
     private:
+		void Substep(float tick);
         static void SubstepCallback(btDynamicsWorld* dyn, float tick);
         const Scene* scene_;
         btDefaultCollisionConfiguration* collisionConfiguration_;

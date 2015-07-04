@@ -50,4 +50,6 @@ namespace BlenderConverter
 		SC_SCL_Y,
 		SC_SCL_Z
 	};
+
+	NSG::Matrix4 GeneratePointTransformMatrix(const NSG::Plane& plane, const NSG::Vector3& center);
 }

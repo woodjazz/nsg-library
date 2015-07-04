@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "SharedPointers.h"
 #include "Path.h"
-#include "MapAndVector.h"
+#include "WeakFactory.h"
 
 namespace NSG
 {

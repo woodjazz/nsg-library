@@ -16,7 +16,7 @@
 
 		#elif defined(UNLIT)
 			
-			v_color = a_color;
+			//v_color = a_color;
 			gl_Position = GetClipPos();
 			v_texcoord0 = GetTexCoord(a_texcoord0);
 

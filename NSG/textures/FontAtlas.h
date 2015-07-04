@@ -28,13 +28,13 @@ misrepresented as being the original software.
 #include "VertexData.h"
 #include "Path.h"
 #include "Object.h"
-#include "MapAndVector.h"
+#include "WeakFactory.h"
 #include <string>
 #include <map>
 
 namespace NSG
 {
-	class FontAtlas : public std::enable_shared_from_this<FontAtlas>, public Object
+	class FontAtlas : public std::enable_shared_from_this<FontAtlas>, public Object, WeakFactory<std::string, TextMesh>
 	{
 	public:
 		FontAtlas(PResourceFile xmlResource);
@@ -62,7 +62,6 @@ namespace NSG
         };
 		typedef std::map<int, CharInfo> CharsMap;
         CharsMap charsMap_;
-        MapAndVector<std::string, TextMesh> meshes_;
         SignalSizeChanged::PSlot slotViewChanged_;
 	};
 

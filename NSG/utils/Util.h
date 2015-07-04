@@ -63,4 +63,5 @@ namespace NSG
 	Color Transform(GLushort id);
 	std::string CompressBuffer(const std::string& buf);
 	std::string DecompressBuffer(const std::string& buffer);
+	bool IsScaleUniform(const Vector3& scale);
 }

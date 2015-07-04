@@ -26,6 +26,8 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
+#include "WeakFactory.h"
+#include "BoundingBox.h"
 #include "btBulletDynamicsCommon.h"
 using namespace std;
 
@@ -33,21 +35,34 @@ class btTriangleMesh;
 class btCollisionShape;
 namespace NSG
 {
-    class Shape : public Object
+    struct ShapeKey : public std::string
+    {
+		ShapeKey(const std::string& key);
+        ShapeKey(PMesh mesh, const Vector3& scale);
+        ShapeKey(PhysicsShape type, const Vector3& scale);
+		void GetData(PMesh& mesh, Vector3& scale, PhysicsShape& type) const;
+    };
+
+    class Shape : public Object, public WeakFactory<ShapeKey, Shape>
     {
     public:
-        Shape(const std::string& name);
+        Shape(const ShapeKey& key);
         ~Shape();
         void SetMargin(float margin);
-        void SetScale(const Vector3& scale);
-        void SetMesh(PMesh mesh);
-        void SetType(PhysicsShape type);
+		void SetBB(const BoundingBox& bb);
         PhysicsShape GetType() const { return type_; }
         std::shared_ptr<btCollisionShape> GetCollisionShape() const { return shape_; }
-        void Load(const pugi::xml_node& node);
+        void LoadFrom(PResource resource, const pugi::xml_node& node);
         void Save(pugi::xml_node& node);
-
+        static std::vector<PShape> LoadShapes(PResource resource, const pugi::xml_node& node);
+		static void SaveShapes(pugi::xml_node& node);
+		const Vector3& GetScale() const { return scale_; }
+		PMesh GetMesh() const { return mesh_.lock(); }
+		void Set(PResourceXMLNode xmlResource);
     private:
+		void SetScale(const Vector3& scale);
+		void SetMesh(PMesh mesh);
+		void SetType(PhysicsShape type);
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
@@ -55,12 +70,14 @@ namespace NSG
         std::shared_ptr<btConvexHullShape> GetConvexHullTriangleMesh() const;
 
         PWeakMesh mesh_;
+		BoundingBox bb_;
         std::shared_ptr<btCollisionShape> shape_;
         std::shared_ptr<btTriangleMesh> triMesh_;
         PhysicsShape type_;
         float margin_;
         Vector3 scale_;
         SignalEmpty::PSlot slotReleased_;
+        PResourceXMLNode xmlResource_;
     };
 }
 

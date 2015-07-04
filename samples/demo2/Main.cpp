@@ -29,7 +29,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");
+	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/bscene.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
     auto camera = scene->GetChild<Camera>("Camera", false);

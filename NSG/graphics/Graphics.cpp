@@ -376,7 +376,7 @@ namespace NSG
 
     void Graphics::ResetCachedState()
     {
-        programs_.clear();
+        Program::Clear();
 
         viewport_ = Recti(0);
 
@@ -1296,7 +1296,7 @@ namespace NSG
         else
             EnableCullFace(false);
 
-        auto program = GetOrCreateProgram(pass, activeMesh_, material, light);
+        auto program = Program::GetOrCreate(pass, activeCamera_, activeMesh_, material, light);
         program->Set(activeMesh_->GetSkeleton().get());
         program->Set(sceneNode);
         program->Set(material);
@@ -1306,35 +1306,6 @@ namespace NSG
             program->SetVariables(shadowPass);
         CHECK_GL_STATUS(__FILE__, __LINE__);
         return ready;
-    }
-
-    PProgram Graphics::GetOrCreateProgram(const Pass* pass, Mesh* mesh, Material* material, const Light* light)
-    {
-        std::string defines;
-        auto passType = pass->GetType();
-        activeCamera_->FillShaderDefines(defines, passType);
-        material->FillShaderDefines(defines, passType, light, mesh);
-        size_t nBones = 0;
-
-        if (mesh)
-            nBones = mesh->FillShaderDefines(defines);
-
-        if (light)
-            light->FillShaderDefines(defines, passType, material);
-
-        PProgram program;
-        auto it = programs_.find(defines);
-
-        if (it != programs_.end())
-            program = it->second;
-        else
-        {
-            program = std::make_shared<Program>(defines);
-            programs_.insert(Programs::value_type(defines, program));
-        }
-
-        program->SetNumberBones(nBones);
-        return program;
     }
 
     void Graphics::DrawActiveMesh()
@@ -1439,5 +1410,4 @@ namespace NSG
     {
 		return GL_RGBA;
     }
-
 }

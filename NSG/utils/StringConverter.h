@@ -75,4 +75,6 @@ namespace NSG
 
 	const char* ToString(PhysicsShape obj);
 	PhysicsShape ToPhysicsShape(const char* obj);
+
+	std::string RemoveWhiteSpaces(const std::string& str);
 }

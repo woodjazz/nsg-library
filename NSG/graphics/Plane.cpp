@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Plane.h"
 #include "Constants.h"
+#include "Util.h"
 
 namespace NSG
 {
@@ -51,30 +52,32 @@ namespace NSG
 
     void Plane::Define(const Vector3& v0, const Vector3& v1, const Vector3& v2)
     {
+		CHECK_ASSERT(glm::distance(v0, v1) > 0.0001f, __FILE__, __LINE__);
+		CHECK_ASSERT(glm::distance(v0, v2) > 0.0001f, __FILE__, __LINE__);
+
         Vector3 dist1 = v1 - v0;
         Vector3 dist2 = v2 - v0;
-		Define(glm::normalize(glm::cross(dist1, dist2)), v1);
+        Define(glm::normalize(glm::cross(dist1, dist2)), v1);
     }
 
     void Plane::Define(const Vector3& normal, const Vector3& point)
     {
         normald_ = Vector4(normal, -glm::dot(normal, point));
-/*		normald_.z = -normald_.z;
-		normald_.w = -normald_.w;*/
     }
+
 
     float Plane::Distance(const Vector3& point) const
     {
         return glm::dot(Vector3(normald_), point) + normald_.w;
     }
 
-	Plane::Side Plane::SideOfPlane(const Vector3& point) const
+    Plane::Side Plane::SideOfPlane(const Vector3& point) const
     {
-		float dotValue = Distance(point);
+        float dotValue = Distance(point);
 
-		if (dotValue > 0)
+        if (dotValue > 0)
             return Side::INFRONT;
-		else if (dotValue < 0)
+        else if (dotValue < 0)
             return Side::BEHIND;
         return Side::INPLANE;
     }

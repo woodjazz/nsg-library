@@ -61,14 +61,15 @@ namespace NSG
     typedef glm::vec4 Rect;
     typedef glm::vec4 Vertex4;
     typedef glm::vec4 Vector4;
-    typedef glm::vec3 Vertex3;
-    typedef glm::vec3 Vector3;
+	typedef glm::vec3 Vertex3;
+	typedef glm::vec3 Vector3;
     typedef glm::vec2 Vertex2;
     typedef glm::vec2 Vector2;
     typedef glm::quat Quaternion;
     typedef glm::mat4 Matrix4;
     typedef glm::mat3 Matrix3;
     typedef glm::vec4 Color;
+	typedef glm::vec3 ColorRGB;
 
     enum class LightType 
 	{
@@ -286,7 +287,7 @@ namespace NSG
 
     enum PhysicsShape
     {
-        SH_UNKNOWN,
+        SH_EMPTY,
         SH_BOX,
         SH_CONE,
         SH_CYLINDER,
@@ -295,6 +296,20 @@ namespace NSG
         SH_CONVEX_TRIMESH,
         SH_TRIMESH,
 		MAX_INDEX
+    };
+
+	enum PhysicsBody
+	{
+        BODY_NO_COLLISION,
+        BODY_STATIC,
+        BODY_DYNAMIC,
+        BODY_RIGID,
+        BODY_SOFT,
+        BODY_OCCLUDER,
+        BODY_SENSOR,
+        BODY_NAVMESH,
+        BODY_CHARACTER,
+		BODY_UNKNOWN
     };
 
     enum class CollisionMask

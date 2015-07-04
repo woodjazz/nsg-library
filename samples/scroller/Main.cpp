@@ -98,7 +98,7 @@ int NSG_MAIN(int argc, char* argv[])
             alpha += alphaAdd;
             if (alpha > 1 || alpha < 0)
                 alphaAdd *= -1;
-            material->SetColor(Color(1, 1, 1, alpha));
+			material->SetAlpha(alpha);
         }
 
     });

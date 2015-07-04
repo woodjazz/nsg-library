@@ -397,7 +397,7 @@ namespace NSG
 
             if (inheritScale_)
             {
-                globalScale_ = parent->globalScale_ * scale_;
+				globalScale_ = parent->globalScale_ * scale_;
             }
             else
             {
@@ -414,7 +414,7 @@ namespace NSG
             globalScale_ = scale_;
         }
 
-        isScaleUniform_ = glm::abs(globalScale_.x - globalScale_.y) < PRECISION && glm::abs(globalScale_.x - globalScale_.z) < PRECISION;
+        isScaleUniform_ = NSG::IsScaleUniform(globalScale_);
         globalModel_ = glm::translate(glm::mat4(), globalPosition_) * glm::mat4_cast(globalOrientation_) * glm::scale(glm::mat4(1.0f), globalScale_);
         globalModelInv_ = glm::inverse(globalModel_);
         globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));

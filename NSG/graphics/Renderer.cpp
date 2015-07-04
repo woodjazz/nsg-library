@@ -58,6 +58,7 @@ namespace NSG
 		  debugMaterial_(Material::Create("__debugMaterial__"))
     {
 
+		debugMaterial_->SetSerializable(false);
         CHECK_ASSERT(!Renderer::this_, __FILE__, __LINE__);
         Renderer::this_ = this;
 
@@ -337,7 +338,7 @@ namespace NSG
         scene->GetVisibleNodes(camera_, visibles_);
         if (!visibles_.empty())
         {
-            graphics_->SetClearColor(COLOR_WHITE);
+            graphics_->SetClearColor(Color(1));
             ShadowGenerationPass();
             graphics_->SetClearColor(scene->GetHorizonColor());
             ExtractTransparent();
@@ -361,10 +362,13 @@ namespace NSG
                 {
                     world->DrawDebug();
                     auto meshLines = world->GetDebugLines();
-                    graphics_->SetMesh(meshLines.get());
-                    if (graphics_->SetupPass(debugPass_.get(), nullptr, debugMaterial_.get(), nullptr))
-                        graphics_->DrawActiveMesh();
-                    world->ClearDebugLines();
+					if (!meshLines->IsEmpty())
+					{
+						graphics_->SetMesh(meshLines.get());
+						if (graphics_->SetupPass(debugPass_.get(), nullptr, debugMaterial_.get(), nullptr))
+							graphics_->DrawActiveMesh();
+						world->ClearDebugLines();
+					}
                 }
             }
         }

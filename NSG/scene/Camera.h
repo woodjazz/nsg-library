@@ -82,7 +82,7 @@ namespace NSG
         virtual void SetMaxShadowSplits(int splits);
         virtual int GetMaxShadowSplits() const { return shadowSplits_; }
         void EnableColorSplits(bool enable);
-        void FillShaderDefines(std::string& defines, PassType passType);
+        void FillShaderDefines(std::string& defines, PassType passType) const;
         // This is a logarithmic factor to make the (shadow) splits.
         // For 4 splits: 
         // factor=0 => 25% 50% 75% 100%

@@ -14,10 +14,9 @@
 #include <sstream>
 #include <algorithm>
 
-
 namespace NSG
 {
-    MapAndVector<std::string, Material> Material::materials_;
+    template<> std::map<std::string, PWeakMaterial> WeakFactory<std::string, Material>::objsMap_ = {};
 
     Material::Material(const std::string& name)
         : Object(name),
@@ -32,7 +31,9 @@ namespace NSG
           blendFilterMode_(BlendFilterMode::ADDITIVE),
           isBatched_(false),
           fillMode_(FillMode::SOLID),
-          blendMode_(BLEND_MODE::NONE),
+          alpha_(1),
+		  alphaForSpecular_(1),
+          isTransparent_(false),
           renderPass_(RenderPass::VERTEXCOLOR),
           billboardType_(BillboardType::NONE),
           flipYTextureCoords_(false),
@@ -68,7 +69,9 @@ namespace NSG
         material->lastBatch_ = lastBatch_;
         material->isBatched_ = isBatched_;
         material->fillMode_ = fillMode_;
-        material->blendMode_ = blendMode_;
+        material->alpha_ = alpha_;
+		material->alphaForSpecular_ = alphaForSpecular_;
+        material->isTransparent_ = isTransparent_;
         material->renderPass_ = renderPass_;
         material->billboardType_ = billboardType_;
         material->flipYTextureCoords_ = flipYTextureCoords_;
@@ -81,20 +84,20 @@ namespace NSG
         return material;
     }
 
-    void Material::SetDiffuseColor(Color color)
+	void Material::SetDiffuseColor(ColorRGB color)
     {
-        if (diffuseColor_ != color)
+		if (diffuseColor_ != Color(color, alpha_))
         {
-            diffuseColor_ = color;
+            diffuseColor_ = Color(color, alpha_);
             SetUniformsNeedUpdate();
         }
     }
 
-    void Material::SetSpecularColor(Color color)
+	void Material::SetSpecularColor(ColorRGB color)
     {
-        if (specularColor_ != color)
+		if (specularColor_ != Color(color, alphaForSpecular_))
         {
-            specularColor_ = color;
+			specularColor_ = Color(color, alphaForSpecular_);
             SetUniformsNeedUpdate();
         }
     }
@@ -191,6 +194,34 @@ namespace NSG
         return texture_[index];
     }
 
+	void Material::SetAlpha(float alpha)
+	{
+		if (alpha_ != alpha)
+		{
+			alpha_ = alpha;
+			diffuseColor_.a = alpha;
+			SetUniformsNeedUpdate();
+		}
+	}
+
+	void Material::SetAlphaForSpecular(float alphaForSpecular)
+	{
+		if (alphaForSpecular_ != alphaForSpecular)
+		{
+			alphaForSpecular_ = alphaForSpecular;
+			specularColor_.a = alphaForSpecular;
+			SetUniformsNeedUpdate();
+		}
+	}
+
+    void Material::EnableTransparent(bool enable)
+    {
+        if(isTransparent_ != enable)
+        {
+            isTransparent_ = enable;
+            SetUniformsNeedUpdate();   
+        }
+    }
 
     void Material::SetTextMap(PTexture texture)
     {
@@ -198,13 +229,14 @@ namespace NSG
         {
             if (texture)
             {
-                SetBlendMode(BLEND_MODE::ALPHA);
+                EnableTransparent(true);
+                SetAlpha(0);
                 SetRenderPass(RenderPass::TEXT);
                 texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
             }
             else
             {
-                SetBlendMode(BLEND_MODE::NONE);
+				EnableTransparent(false);
                 SetRenderPass(RenderPass::PERVERTEX);
             }
         }
@@ -279,11 +311,13 @@ namespace NSG
         child.append_attribute("ambientIntensity").set_value(ambientIntensity_);
         child.append_attribute("diffuseIntensity").set_value(diffuseIntensity_);
         child.append_attribute("specularIntensity").set_value(specularIntensity_);
-        child.append_attribute("diffuse").set_value(ToString(diffuseColor_).c_str());
+        child.append_attribute("diffuse").set_value(ToString(ColorRGB(diffuseColor_)).c_str());
         child.append_attribute("specular").set_value(ToString(specularColor_).c_str());
         child.append_attribute("shininess").set_value(shininess_);
         child.append_attribute("fillMode").set_value(ToString(fillMode_));
-        child.append_attribute("blendMode").set_value(ToString(blendMode_));
+        child.append_attribute("alpha").set_value(alpha_);
+		child.append_attribute("alphaForSpecular").set_value(alphaForSpecular_);
+        child.append_attribute("isTransparent").set_value(isTransparent_);
         child.append_attribute("renderPass").set_value(ToString(renderPass_));
     }
 
@@ -309,11 +343,13 @@ namespace NSG
         SetAmbientIntensity(node.attribute("ambientIntensity").as_float());
         SetDiffuseIntensity(node.attribute("diffuseIntensity").as_float());
         SetSpecularIntensity(node.attribute("specularIntensity").as_float());
-        SetDiffuseColor(ToVertex4(node.attribute("diffuse").as_string()));
-        SetSpecularColor(ToVertex4(node.attribute("specular").as_string()));
+        SetDiffuseColor(ToVertex3(node.attribute("diffuse").as_string()));
+        SetSpecularColor(ToVertex3(node.attribute("specular").as_string()));
         SetShininess(node.attribute("shininess").as_float());
         SetFillMode(ToFillMode(node.attribute("fillMode").as_string()));
-        SetBlendMode(ToBlendMode(node.attribute("blendMode").as_string()));
+        SetAlpha(node.attribute("alpha").as_float());
+		SetAlphaForSpecular(node.attribute("alphaForSpecular").as_float());
+        EnableTransparent(node.attribute("isTransparent").as_bool());
         SetRenderPass(ToRenderPass(node.attribute("renderPass").as_string()));
     }
 
@@ -357,7 +393,7 @@ namespace NSG
 
     bool Material::IsTransparent() const
     {
-        return blendMode_ == BLEND_MODE::ALPHA || billboardType_ != BillboardType::NONE || renderPass_ == RenderPass::TEXT;
+        return isTransparent_ || billboardType_ != BillboardType::NONE || renderPass_ == RenderPass::TEXT;
     }
 
     bool Material::IsLighted() const
@@ -365,9 +401,9 @@ namespace NSG
         return !shadeless_ && (renderPass_ == RenderPass::PERPIXEL || renderPass_ == RenderPass::PERVERTEX);
     }
 
-    bool Material::IsBatched()
+    bool Material::IsBatched() const
     {
-        if (IsReady())
+        if (((Material*)this)->IsReady()) //FIX this awful cast
         {
             return isBatched_;
         }
@@ -392,34 +428,9 @@ namespace NSG
         }
     }
 
-    void Material::Clear()
-    {
-        materials_.Clear();
-    }
-
-    PMaterial Material::Create(const std::string& name)
-    {
-        return materials_.Create(name);
-    }
-
-    PMaterial Material::GetOrCreate(const std::string& name)
-    {
-        return materials_.GetOrCreate(name);
-    }
-
-    PMaterial Material::Get(const std::string& name)
-    {
-        return materials_.Get(name);
-    }
-
-    std::vector<PMaterial> Material::GetMaterials()
-    {
-        return materials_.GetObjs();
-    }
-
     PTexture Material::GetTextureWithResource(PResource resource)
     {
-        auto materials = materials_.GetObjs();
+        auto materials = Material::GetObjs();
         for (auto& material : materials)
         {
             auto texture = material->GetTextureWith(resource);
@@ -441,7 +452,7 @@ namespace NSG
             {
                 std::string name = child.attribute("name").as_string();
                 auto material(Material::GetOrCreate(name));
-                auto xmlResource = Resource::Create<ResourceXMLNode>(GetUniqueName(name));
+                auto xmlResource = Resource::CreateClass<ResourceXMLNode>(GetUniqueName(name));
                 xmlResource->Set(resource, material, "Materials", name);
                 xmlResource->IsReady(); //force load resources for textures
                 material->Set(xmlResource);
@@ -455,7 +466,7 @@ namespace NSG
     void Material::SaveMaterials(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Materials");
-        auto materials = Material::GetMaterials();
+        auto materials = Material::GetObjs();
         for (auto& obj : materials)
             obj->Save(child);
     }
@@ -474,7 +485,7 @@ namespace NSG
         return nullptr != GetTexture(MaterialTexture::LIGHT_MAP);
     }
 
-    void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh)
+    void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh) const
     {
         defines += "MATERIAL_" + GetName() + "\n"; // just to have a shader variance per material
         bool shadowPass = PassType::SHADOW == passType;

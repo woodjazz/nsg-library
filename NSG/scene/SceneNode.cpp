@@ -239,7 +239,7 @@ namespace NSG
         if (attribute)
         {
             std::string name = attribute.as_string();
-            SetMesh(Mesh::GetMesh(name));
+            SetMesh(Mesh::Get(name));
         }
 
         pugi::xml_node childRigidBody = node.child("RigidBody");

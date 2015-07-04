@@ -16,6 +16,8 @@
 
 namespace NSG
 {
+	template<> std::map<std::string, PWeakTextMesh> WeakFactory<std::string, TextMesh>::objsMap_;
+
     FontAtlas::FontAtlas(PResourceFile xmlResource)
         : Object(xmlResource->GetName() + "FontAtlas"),
           xmlResource_(xmlResource),
@@ -24,7 +26,7 @@ namespace NSG
     {
         Path path(xmlResource->GetName());
         path.SetExtension("png");
-        auto textureResource = Resource::GetOrCreate<ResourceFile>(path.GetFilePath());
+        auto textureResource = Resource::GetOrCreateClass<ResourceFile>(path.GetFilePath());
         texture_ = std::make_shared<Texture2D>(textureResource);
 		texture_->SetMapType(TextureType::COL);
         auto window = Graphics::this_->GetWindow();
@@ -56,7 +58,7 @@ namespace NSG
 
     PTextMesh FontAtlas::GetOrCreateMesh(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
     {
-        auto mesh = meshes_.GetOrCreateClass<TextMesh>(text);
+		auto mesh = FontAtlas::GetOrCreateClass<TextMesh>(text);
         mesh->SetAtlas(shared_from_this());
         mesh->SetText(text, hAlign, vAlign);
         return mesh;
@@ -83,7 +85,7 @@ namespace NSG
         {
             viewWidth_ = width;
             viewHeight_ = height;
-            auto objs = meshes_.GetObjs();
+			auto objs = FontAtlas::GetObjs();
             for (auto& obj : objs)
                 obj->Invalidate();
         }

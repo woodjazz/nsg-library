@@ -38,14 +38,14 @@ namespace NSG
 {
     Button::Button(const std::string& name)
         : Control(name),
-		textMaterial_(Material::Create()),
+		textMaterial_(Material::Create(GetUniqueName("TextMaterial"))),
           hAlign_(CENTER_ALIGNMENT),
           vAlign_(MIDDLE_ALIGNMENT)
     {
-        SetMesh(Mesh::Create<RectangleMesh>());
+		SetMesh(Mesh::CreateClass<RectangleMesh>("ButtonMesh"));
 		SetMaterial(Material::GetOrCreate(name_));
-		material_->SetBlendMode(BLEND_MODE::ALPHA);
-        textMaterial_->SetDiffuseColor(COLOR_BLACK);
+		material_->SetAlpha(0);
+        textMaterial_->SetDiffuseColor(ColorRGB(COLOR_BLACK));
 		textMaterial_->SetRenderPass(RenderPass::TEXT);
     }
 

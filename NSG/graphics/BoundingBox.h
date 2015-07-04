@@ -44,6 +44,7 @@ namespace NSG
 		BoundingBox(const std::vector<Vector3>& vertices);
 		~BoundingBox();
 		const BoundingBox& operator = (const BoundingBox& obj);
+		bool operator == (const BoundingBox& obj) const;
 		void Clip(const BoundingBox& box);
 	    void Merge(const Vector3& point);
 	    void Merge(const std::vector<Vector3>& points);

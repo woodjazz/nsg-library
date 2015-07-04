@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Mesh.h"
 #include "BoundingBox.h"
+#include "ResourceXMLNode.h"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "hull.h"
 #include "pugixml.hpp"
@@ -35,12 +36,63 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Shape::Shape(const std::string& name)
-        : Object(name + "Shape"),
-          type_(SH_UNKNOWN),
+    template<> std::map<ShapeKey, PWeakShape> WeakFactory<ShapeKey, Shape>::objsMap_ = {};
+    
+    ShapeKey::ShapeKey(const std::string& key)
+        : std::string(key)
+    {
+
+    }
+
+    ShapeKey::ShapeKey(PMesh mesh, const Vector3& scale)
+        : std::string(ToString(mesh->GetName().size()) + " " + mesh->GetName() + " " + ToString(scale) + " " + ToString(mesh->GetShapeType()))
+    {
+    }
+
+    ShapeKey::ShapeKey(PhysicsShape type, const Vector3& scale)
+        : std::string(ToString(scale) + " " + ToString(type))
+    {
+    }
+
+    void ShapeKey::GetData(PMesh& mesh, Vector3& scale, PhysicsShape& type) const
+    {
+        CHECK_ASSERT(size() > 0, __FILE__, __LINE__);
+        bool hasMesh = !empty() && at(0) != '[';
+        if (hasMesh)
+        {
+            int size;
+            sscanf(c_str(), "%d", &size);
+            string meshName;
+            meshName.resize(size);
+            char typeStr[100];
+            std::string formatStr = "%d %" + ToString(size) + "c [%f, %f, %f] %s";
+            sscanf(c_str(), formatStr.c_str(), &size, meshName.data(), &scale.x, &scale.y, &scale.z, typeStr);
+            mesh = Mesh::Get(meshName);
+            CHECK_ASSERT(mesh && "Mesh not found!!!", __FILE__, __LINE__);
+            type = ToPhysicsShape(typeStr);
+        }
+        else
+        {
+            char typeStr[100];
+            sscanf(c_str(), "[%f, %f, %f] %s", &scale.x, &scale.y, &scale.z, typeStr);
+            type = ToPhysicsShape(typeStr);
+        }
+    }
+
+    Shape::Shape(const ShapeKey& key)
+        : Object(key),
+          type_(SH_EMPTY),
           margin_(.06f),
           scale_(1)
     {
+        PMesh mesh;
+        Vector3 scale;
+        PhysicsShape type;
+        ShapeKey(key).GetData(mesh, scale, type);
+        SetScale(scale);
+        if (mesh)
+            SetMesh(mesh);
+        SetType(type);
     }
 
     Shape::~Shape()
@@ -49,20 +101,46 @@ namespace NSG
 
     bool Shape::IsValid()
     {
-        auto mesh = mesh_.lock();
-        return type_ != SH_UNKNOWN && mesh && mesh->IsReady();
+		if (type_ == PhysicsShape::SH_EMPTY)
+			return true;
+
+        bool isValid = !xmlResource_ || xmlResource_->IsReady();
+        if (isValid)
+        {
+            if (type_ == PhysicsShape::SH_TRIMESH || type_ == PhysicsShape::SH_CONVEX_TRIMESH)
+            {
+                auto mesh = mesh_.lock();
+                CHECK_ASSERT(mesh, __FILE__, __LINE__);
+                if (mesh->IsReady())
+                {
+                    bb_ = mesh->GetBB();
+                    return bb_.IsDefined();
+                }
+                return false;
+            }
+        }
+        return bb_.IsDefined();
     }
 
     void Shape::AllocateResources()
     {
-        const BoundingBox& meshBB = mesh_.lock()->GetBB();
-        Vector3 halfSize(meshBB.Size() / 2.0f);
+        Vector3 halfSize(bb_.Size() / 2.0f);
 
         switch (type_)
         {
             case SH_SPHERE:
-                shape_ = std::make_shared<btSphereShape>(std::max(halfSize.x, std::max(halfSize.y, halfSize.z)));
-                break;
+                {
+                    if (IsScaleUniform(scale_))
+                    {
+                        btVector3 position(0.f, 0.f, 0.f);
+                        btScalar radi = std::max(halfSize.x, std::max(halfSize.y, halfSize.z));
+                        //only way to have non-uniform scaling
+                        shape_ = std::make_shared<btMultiSphereShape>(&position, &radi, 1);
+                    }
+                    else
+                        shape_ = std::make_shared<btSphereShape>(std::max(halfSize.x, std::max(halfSize.y, halfSize.z)));
+                    break;
+                }
 
             case SH_BOX:
                 shape_ = std::make_shared<btBoxShape>(ToBtVector3(halfSize));
@@ -78,7 +156,6 @@ namespace NSG
 
             case SH_CAPSULE:
                 {
-                    //shape_ = std::make_shared<btCapsuleShape>(halfSize.x * 0.5f, std::max(halfSize.y  - halfSize.x, 0.0f));
                     auto c_radius = std::max(halfSize.x, halfSize.y);
                     shape_ = std::make_shared<btCapsuleShapeZ>(c_radius - 0.05f, (halfSize.z - 0.05f) * 2 - c_radius);
                     break;
@@ -95,7 +172,10 @@ namespace NSG
                     break;
                 }
 
-            case SH_UNKNOWN:
+            case SH_EMPTY:
+                shape_ = std::make_shared<btEmptyShape>();
+                break;
+
             default:
                 CHECK_ASSERT(false, __FILE__, __LINE__);
                 break;
@@ -104,10 +184,12 @@ namespace NSG
         CHECK_ASSERT(shape_, __FILE__, __LINE__);
         shape_->setLocalScaling(ToBtVector3(scale_));
         shape_->setMargin(margin_);
+        shape_->setUserPointer(this);
     }
 
     void Shape::ReleaseResources()
     {
+        shape_->setUserPointer(nullptr);
         shape_ = nullptr;
         triMesh_ = nullptr;
     }
@@ -149,6 +231,15 @@ namespace NSG
         }
     }
 
+    void Shape::SetBB(const BoundingBox& bb)
+    {
+        if (!(bb == bb_))
+        {
+            bb_ = bb;
+            Invalidate();
+        }
+    }
+
     void Shape::SetMargin(float margin)
     {
         if (margin != margin_)
@@ -162,6 +253,7 @@ namespace NSG
     void Shape::CreateTriangleMesh()
     {
         auto mesh = mesh_.lock();
+        CHECK_CONDITION(mesh->IsReady(), __FILE__, __LINE__);
         auto vertexData = mesh->GetVertexsData();
         auto indices = mesh->GetIndexes(true);
         triMesh_ = std::make_shared<btTriangleMesh>();
@@ -185,13 +277,15 @@ namespace NSG
     std::shared_ptr<btConvexHullShape> Shape::GetConvexHullTriangleMesh() const
     {
         auto mesh = mesh_.lock();
-        auto vertexData = mesh->GetVertexsData();
+        CHECK_CONDITION(mesh->IsReady(), __FILE__, __LINE__);
+        auto& vertexData = mesh->GetVertexsData();
 
         if (vertexData.size())
         {
             // Build the convex hull from the raw geometry
             StanHull::HullDesc desc;
             desc.SetHullFlag(StanHull::QF_TRIANGLES);
+            //desc.SetHullFlag(StanHull::QF_SKIN_WIDTH);
             //desc.SetHullFlag(StanHull::QF_REVERSE_ORDER);
             desc.mVcount = (unsigned int)vertexData.size();
             desc.mVertices = &(vertexData[0].position_[0]);
@@ -205,29 +299,91 @@ namespace NSG
             CHECK_ASSERT(result.mNumIndices % 3 == 0, __FILE__, __LINE__);
 
             unsigned vertexCount = result.mNumOutputVertices;
-            std::unique_ptr<Vector3> vertexData(new Vector3[vertexCount]);
-            memcpy(vertexData.get(), result.mOutputVertices, vertexCount * sizeof(Vector3));
-            auto shape = std::make_shared<btConvexHullShape>((btScalar*)vertexData.get(), (int)vertexCount, (int)sizeof(Vector3));
+            std::unique_ptr<Vector3> data(new Vector3[vertexCount]);
+            memcpy(data.get(), result.mOutputVertices, vertexCount * sizeof(Vector3));
+            auto shape = std::make_shared<btConvexHullShape>((btScalar*)data.get(), (int)vertexCount, (int)sizeof(Vector3));
             lib.ReleaseResult(result);
             return shape;
         }
         return nullptr;
     }
 
-    void Shape::Load(const pugi::xml_node& node)
+    void Shape::LoadFrom(PResource resource, const pugi::xml_node& node)
     {
+        name_ = node.attribute("name").as_string();
         type_ = ToPhysicsShape(node.attribute("type").as_string());
         margin_ = node.attribute("margin").as_float();
         scale_ = ToVertex3(node.attribute("scale").as_string());
+        auto meshNameAtt = node.attribute("meshName");
+        if (meshNameAtt)
+        {
+            mesh_ = Mesh::Get(meshNameAtt.as_string());
+            bb_ = ToBoundigBox(node.attribute("bb").as_string());
+            //bb_ = mesh_.lock()->GetBB();
+            CHECK_ASSERT(bb_.IsDefined(), __FILE__, __LINE__);
+            CHECK_ASSERT(name_ == ShapeKey(mesh_.lock(), scale_) && "shape key has changed!!!", __FILE__, __LINE__);
+        }
+        else
+        {
+            bb_ = ToBoundigBox(node.attribute("bb").as_string());
+            CHECK_ASSERT(bb_.IsDefined(), __FILE__, __LINE__);
+            CHECK_ASSERT(name_ == ShapeKey(type_, scale_) && "shape key has changed!!!", __FILE__, __LINE__);
+        }
+
         Invalidate();
     }
 
     void Shape::Save(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Shape");
+        child.append_attribute("name").set_value(name_.c_str());
+        auto mesh = mesh_.lock();
+        if (mesh)
+            child.append_attribute("meshName").set_value(mesh->GetName().c_str());
+        child.append_attribute("bb").set_value(ToString(bb_).c_str());
         child.append_attribute("type").set_value(ToString(type_));
         child.append_attribute("margin").set_value(margin_);
-		child.append_attribute("scale").set_value(ToString(scale_).c_str());
+        child.append_attribute("scale").set_value(ToString(scale_).c_str());
+    }
+
+    std::vector<PShape> Shape::LoadShapes(PResource resource, const pugi::xml_node& node)
+    {
+        std::vector<PShape> result;
+        pugi::xml_node objs = node.child("Shapes");
+        if (objs)
+        {
+            pugi::xml_node child = objs.child("Shape");
+            while (child)
+            {
+                std::string name = child.attribute("name").as_string();
+                auto shape(Shape::GetOrCreate(name));
+                auto xmlResource = Resource::CreateClass<ResourceXMLNode>(GetUniqueName(name));
+                xmlResource->Set(resource, shape, "Shapes", name);
+                xmlResource->IsReady(); //force load resources
+                shape->Set(xmlResource);
+                result.push_back(shape);
+                child = child.next_sibling("Shape");
+            }
+        }
+        return result;
+    }
+
+
+    void Shape::SaveShapes(pugi::xml_node& node)
+    {
+        pugi::xml_node child = node.append_child("Shapes");
+        auto objs = Shape::GetObjs();
+        for (auto& obj : objs)
+            obj->Save(child);
+    }
+
+    void Shape::Set(PResourceXMLNode xmlResource)
+    {
+        if (xmlResource != xmlResource_)
+        {
+            xmlResource_ = xmlResource;
+            Invalidate();
+        }
     }
 }
 

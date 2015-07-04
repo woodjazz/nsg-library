@@ -57,10 +57,10 @@ int NSG_MAIN(int argc, char* argv[])
     material->SetTextMap(atlas->GetTexture());
 
     auto focusMaterial = material->Clone();
-    focusMaterial->SetColor(Color(0, 0, 1, 1));
+	focusMaterial->SetDiffuseColor(ColorRGB(0, 0, 1));
 
     auto activeMaterial = material->Clone();
-    activeMaterial->SetColor(Color(1, 0, 0, 1));
+	activeMaterial->SetDiffuseColor(ColorRGB(1, 0, 0));
 
     nodeCenter->SetMaterial(material);
     nodeLeftTop->SetMaterial(material);

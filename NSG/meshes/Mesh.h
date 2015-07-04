@@ -34,13 +34,13 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Buffer.h"
 #include "BoundingBox.h"
-#include "MapAndVector.h"
+#include "WeakFactory.h"
 #include <string>
 #include <set>
 
 namespace NSG
 {
-	class Mesh : public std::enable_shared_from_this<Mesh>, public Object
+	class Mesh : public std::enable_shared_from_this<Mesh>, public Object, public WeakFactory<std::string, Mesh>
     {
     public:
         virtual ~Mesh();
@@ -49,8 +49,8 @@ namespace NSG
         virtual GLenum GetWireFrameDrawMode() const = 0;
         virtual GLenum GetSolidDrawMode() const = 0;
         virtual size_t GetNumberOfTriangles() const = 0;
-        const BoundingBox& GetBB() const { return bb_; }
-        float GetBoundingSphereRadius() const { return boundingSphereRadius_; }
+		const BoundingBox& GetBB() const;
+		float GetBoundingSphereRadius() const;
         VertexBuffer* GetVertexBuffer() const { return pVBuffer_.get(); }
 		IndexBuffer* GetIndexBuffer(bool solid) const { return solid ? pIBuffer_.get() : pIWirefameBuffer_.get(); }
         const VertexsData& GetConstVertexsData() const { return vertexsData_; }
@@ -69,34 +69,18 @@ namespace NSG
         std::set<SceneNode*>& GetSceneNodes() { return sceneNodes_; }
 		const std::set<SceneNode*>& GetConstSceneNodes() const { return sceneNodes_; }
         void AddQuad(const VertexData& v0, const VertexData& v1, const VertexData& v2, const VertexData& v3, bool calcFaceNormal);
-        void AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool calcFaceNormal);
+        void AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, bool averageFaceNormal);
+		void AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, const Vector3& normal);
 		void AverageNormals(size_t indexBase, bool isQuad);
         const VertexData& GetTriangleVertex(size_t triangleIdx, size_t vertexIndex) const;
-        static void Clear();
-		template <typename T> static std::shared_ptr<T> GetOrCreate(const std::string& name)
-        {
-            return meshes_.GetOrCreateClass<T>(name);
-        }
-		template <typename T> static std::shared_ptr<T> Create(const std::string& name = GetUniqueName())
-        {
-            return meshes_.CreateClass<T>(name);
-        }
-
-		template <typename T> static std::shared_ptr<T> Get(const std::string& name)
-        {
-            return meshes_.GetClass<T>(name);
-        }
 		static std::vector<PMesh> LoadMeshes(PResource resource, const pugi::xml_node& node);
 		static void SaveMeshes(pugi::xml_node& node);
-		static std::vector<PMesh> GetMeshes();
-		static PMesh GetMesh(const std::string& name);
 		void SetMeshData(const VertexsData& vertexsData, const Indexes& indexes);
-        PShape GetShape();
-        virtual PhysicsShape GetShapeType() const {return SH_CONVEX_TRIMESH; } // assume rigidbody is dynamicby default 
+		virtual PhysicsShape GetShapeType() const { return SH_CONVEX_TRIMESH; } // assume rigidbody is dynamic by default 
         void SetUVName(int index, const std::string& name);
 		const std::string& GetUVName(int index) const;
         int GetUVIndex(const std::string& name) const;
-		size_t FillShaderDefines(std::string& defines);
+		size_t FillShaderDefines(std::string& defines) const;
 	protected:
 		virtual void Load(const pugi::xml_node& node);
         bool IsValid() override;
@@ -119,8 +103,6 @@ namespace NSG
         bool serializable_;
         PSkeleton skeleton_;
         std::set<SceneNode*> sceneNodes_;
-        PShape shape_;
-        static MapAndVector<std::string, Mesh> meshes_;
         std::string uvNames_[MAX_UVS];
     };
 }
