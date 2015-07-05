@@ -36,6 +36,7 @@ misrepresented as being the original software.
 #include "glm/gtx/spline.hpp"
 #include "glm/gtx/io.hpp"
 #include "glm/gtx/norm.hpp"
+#include "glm/gtx/orthonormalize.hpp"
 #include "SharedPointers.h"
 #include "GLES2Includes.h"
 #include "FlagSet.h"

@@ -104,6 +104,7 @@ namespace NSG
 		if (type_ == PhysicsShape::SH_EMPTY)
 			return true;
 
+        #if 0
         bool isValid = !xmlResource_ || xmlResource_->IsReady();
         if (isValid)
         {
@@ -120,11 +121,14 @@ namespace NSG
             }
         }
         return bb_.IsDefined();
+        #else
+        return !xmlResource_ || xmlResource_->IsReady() && bb_.IsDefined();
+        #endif
     }
 
     void Shape::AllocateResources()
     {
-        Vector3 halfSize(bb_.Size() / 2.0f);
+        Vector3 halfSize(bb_.Size() * 0.5f);
 
         switch (type_)
         {
@@ -147,8 +151,11 @@ namespace NSG
                 break;
 
             case SH_CONE:
-                shape_ = std::make_shared<btConeShapeZ>(std::max(halfSize.x, halfSize.y), 2.f * halfSize.z);
+            {
+                auto c_radius = std::max(halfSize.x, halfSize.z);
+                shape_ = std::make_shared<btConeShape>(c_radius, halfSize.y);
                 break;
+            }
 
             case SH_CYLINDER:
                 shape_ = std::make_shared<btCylinderShapeZ>(ToBtVector3(halfSize));
@@ -156,8 +163,8 @@ namespace NSG
 
             case SH_CAPSULE:
                 {
-                    auto c_radius = std::max(halfSize.x, halfSize.y);
-                    shape_ = std::make_shared<btCapsuleShapeZ>(c_radius - 0.05f, (halfSize.z - 0.05f) * 2 - c_radius);
+                    auto c_radius = std::max(halfSize.x, halfSize.z);
+                    shape_ = std::make_shared<btCapsuleShape>(c_radius - 0.05f, (halfSize.y - 0.05f) * 2 - c_radius);
                     break;
                 }
 
@@ -314,22 +321,12 @@ namespace NSG
         type_ = ToPhysicsShape(node.attribute("type").as_string());
         margin_ = node.attribute("margin").as_float();
         scale_ = ToVertex3(node.attribute("scale").as_string());
+        bb_ = ToBoundigBox(node.attribute("bb").as_string());
+        CHECK_ASSERT(bb_.IsDefined(), __FILE__, __LINE__);
         auto meshNameAtt = node.attribute("meshName");
         if (meshNameAtt)
-        {
             mesh_ = Mesh::Get(meshNameAtt.as_string());
-            bb_ = ToBoundigBox(node.attribute("bb").as_string());
-            //bb_ = mesh_.lock()->GetBB();
-            CHECK_ASSERT(bb_.IsDefined(), __FILE__, __LINE__);
-            CHECK_ASSERT(name_ == ShapeKey(mesh_.lock(), scale_) && "shape key has changed!!!", __FILE__, __LINE__);
-        }
-        else
-        {
-            bb_ = ToBoundigBox(node.attribute("bb").as_string());
-            CHECK_ASSERT(bb_.IsDefined(), __FILE__, __LINE__);
-            CHECK_ASSERT(name_ == ShapeKey(type_, scale_) && "shape key has changed!!!", __FILE__, __LINE__);
-        }
-
+        CHECK_ASSERT((meshNameAtt ? name_ == ShapeKey(mesh_.lock(), scale_) : name_ == ShapeKey(type_, scale_)) && "shape key has changed!!!", __FILE__, __LINE__);
         Invalidate();
     }
 

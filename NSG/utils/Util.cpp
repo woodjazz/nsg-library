@@ -81,6 +81,7 @@ namespace NSG
 
     void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
     {
+#if 1
         scale = Vertex3(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
 
         Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1) / scale) * m);
@@ -89,13 +90,30 @@ namespace NSG
 
         position = Vertex3(m[3]);
 
-        //Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
+        Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
 
-        //scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
+        scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
 
         // prevent zero scale
         if (IsZeroLength(scale))
             scale = Vector3(1);
+#else
+        // extract translation
+        position = Vertex3(m[3]);
+        
+        // extract rotation
+        Matrix3 matr(m);
+        glm::orthonormalize(matr);
+        Quaternion rot(glm::quat_cast(m));
+        if (glm::length2(rot) == 0.0)
+            rot = QUATERNION_IDENTITY;
+        q = rot;
+        
+        // extract scale
+        Matrix3 m1 = glm::inverse(matr) * Matrix3(m);
+        scale = Vertex3(m1[0][0], m1[1][1], m1[2][2]);
+
+#endif
     }
 
 

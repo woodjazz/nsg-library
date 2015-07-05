@@ -267,7 +267,7 @@ namespace NSG
 
     void Material::AllocateResources()
     {
-        isBatched_ = Graphics::this_->HasInstancedArrays() && !IsTransparent();
+        isBatched_ = false;//Graphics::this_->HasInstancedArrays() && !IsTransparent();
         if (isBatched_)
             instanceBuffer_ = std::make_shared<InstanceBuffer>();
     }

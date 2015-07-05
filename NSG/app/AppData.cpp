@@ -100,6 +100,7 @@ namespace NSG
         Sound::Clear();
         Mesh::Clear();
         Material::Clear();
+        Shape::Clear();
         Program::Clear();
     }
 

@@ -891,17 +891,16 @@ namespace BlenderConverter
 
     void BScene::ExtractGeneral(const Blender::Object* obj, PSceneNode sceneNode)
     {
-        Matrix4 m = ToMatrix(obj->obmat);
-        Quaternion q;
-        Vector3 pos;
-        Vector3 scale;
-        DecomposeMatrix(m, pos, q, scale);
+        Quaternion q(Vector3(obj->rot[0], obj->rot[1], obj->rot[2]));
+        Vector3 pos(obj->loc[0], obj->loc[1], obj->loc[2]);
+        Vector3 scale(obj->size[0], obj->size[1], obj->size[2]);
 
-        Quaternion parent_q;
-        Vector3 parent_pos;
-        Vector3 parent_scale;
         if (sceneNode->GetParent()->IsArmature())
         {
+            Quaternion parent_q;
+            Vector3 parent_pos;
+            Vector3 parent_scale;
+
             auto parent = sceneNode->GetParent();
             Matrix4 parentinv = glm::translate(glm::mat4(), parent->GetPosition()) * glm::mat4_cast(parent->GetOrientation()) * glm::scale(glm::mat4(1.0f), parent->GetScale());
             parentinv = glm::inverse(parentinv);
@@ -911,12 +910,10 @@ namespace BlenderConverter
             scale = parent_scale * scale;
         }
 
-        Matrix4 parentinv = ToMatrix(obj->parentinv);
-        DecomposeMatrix(parentinv, parent_pos, parent_q, parent_scale);
+        sceneNode->SetPosition(pos);
+        sceneNode->SetOrientation(q);
+        sceneNode->SetScale(scale);
 
-        sceneNode->SetPosition(parent_pos + parent_q * (parent_scale * pos));
-        sceneNode->SetOrientation(parent_q * q);
-        sceneNode->SetScale(parent_scale * scale);
     }
 
     PhysicsShape BScene::GetShapeType(short boundtype) const
@@ -1046,8 +1043,8 @@ namespace BlenderConverter
         {
             CHECK_ASSERT(obj->type != OB_MESH || mesh, __FILE__, __LINE__);
 
-            const Blender::RigidBodyOb* rigidbody_object = obj->rigidbody_object;
-            const Blender::RigidBodyCon* rigidbody_constraint = obj->rigidbody_constraint;
+            //const Blender::RigidBodyOb* rigidbody_object = obj->rigidbody_object;
+            //const Blender::RigidBodyCon* rigidbody_constraint = obj->rigidbody_constraint;
 
             rigBody = sceneNode->GetOrCreateRigidBody();
             rigBody->SetLinearDamp(obj->damping);
@@ -1118,19 +1115,17 @@ namespace BlenderConverter
 
             auto scale = sceneNode->GetGlobalScale();
             PShape shape = Shape::GetOrCreate(needsMesh ? ShapeKey(mesh, scale) : ShapeKey(shapeType, scale));
-            if (!needsMesh)
-            {
-                BoundingBox bb;
-                if (mesh)
-                    bb = mesh->GetBB();
-                else
-                {
-                    LOGW("Cannot calculate physics bounding box.");
-                    bb = BoundingBox(-0.5f, 0.5f);
-                }
-                CHECK_ASSERT(bb.IsDefined(), __FILE__, __LINE__);
-                shape->SetBB(bb);
+
+            BoundingBox bb;
+            if (needsMesh)
+                bb = mesh->GetBB();
+            else            {
+                //LOGW("Cannot calculate physics bounding box.");
+                bb = BoundingBox(-scale, scale);
             }
+            CHECK_ASSERT(bb.IsDefined(), __FILE__, __LINE__);
+            shape->SetBB(bb);
+
             shape->SetMargin(obj->margin);
             rigBody->AddShape(shape, offsetPos, offsetRot);
         }

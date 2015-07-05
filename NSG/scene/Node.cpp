@@ -385,6 +385,8 @@ namespace NSG
         if (!dirty_ || !enabled_)
             return;
 
+        dirty_ = false;
+        
         PNode parent = parent_.lock();
 
         if (parent)
@@ -392,30 +394,18 @@ namespace NSG
             if (parent->dirty_)
                 parent->Update(false);
 
-            globalPosition_ = parent->globalOrientation_ * (parent->globalScale_ * position_);
-            globalPosition_ += parent->globalPosition_;
-
-            if (inheritScale_)
-            {
-				globalScale_ = parent->globalScale_ * scale_;
-            }
-            else
-            {
-                globalScale_ = scale_;
-            }
-
-            globalOrientation_ = parent->globalOrientation_ * q_;
-
+            globalModel_ = parent->globalModel_ * GetTransform();
+            DecomposeMatrix(globalModel_, globalPosition_, globalOrientation_, globalScale_);
         }
         else
         {
+            globalModel_ = GetTransform();
             globalPosition_ = position_;
             globalOrientation_ = q_;
             globalScale_ = scale_;
         }
 
         isScaleUniform_ = NSG::IsScaleUniform(globalScale_);
-        globalModel_ = glm::translate(glm::mat4(), globalPosition_) * glm::mat4_cast(globalOrientation_) * glm::scale(glm::mat4(1.0f), globalScale_);
         globalModelInv_ = glm::inverse(globalModel_);
         globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
         lookAtDirection_ = globalOrientation_ * VECTOR3_FORWARD;
@@ -432,13 +422,10 @@ namespace NSG
                 ++it;
             }
         }
-
-        dirty_ = false;
     }
 
 	Matrix4 Node::GetTransform() const
 	{
-		Update();
 		return glm::translate(glm::mat4(), position_) * glm::mat4_cast(q_) * glm::scale(glm::mat4(1.0f), scale_);
 	}
 
