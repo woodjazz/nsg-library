@@ -49,18 +49,7 @@
 		#elif defined(PER_PIXEL_LIGHTING)
 
 				//Lighting is calculated in world space
-				#ifdef NORMALMAP
-					//The normals in the map are stored in tangent/texture space.
-					//For better explanation see http://ogldev.atspace.co.uk/www/tutorial26/tutorial26.html
-					//We need to transform them to world space:
-					mat3 TBN = mat3(v_tangent, v_bitangent, v_normal); //Generate a world space transformation matrix using the tangent-bitangent-normal.
-					vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord0).xyz; // Sample the normal from the normal map 
-				    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0); //Normalize from 0..1 to -1..1
-				    vec3 normal = normalize(TBN * bumpMapNormal); //Transform the normal from tangent/texture space to world space using the TBN matrix
-				#else
-					vec3 normal = normalize(v_normal);
-				#endif
-
+				vec3 normal = GetNormal();
 	    		vec3 vertexToEye = normalize(v_vertexToEye);
 	    		vec3 world2light = v_worldPos - GetLightPosition();
 		    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();

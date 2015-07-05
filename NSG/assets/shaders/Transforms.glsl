@@ -119,7 +119,7 @@
 	    #endif
 	}
 
-	#if defined(NORMALMAP)
+	#if defined(NORMALMAP0) || defined(NORMALMAP1)
 		vec3 GetWorldTangent()
 		{
 		    #if defined(SKINNED)
@@ -227,15 +227,21 @@
 		vec4 GetDiffuseColor()
 		{
 		#ifdef UNLIT
-			#ifdef DIFFUSEMAP
+			#if defined(DIFFUSEMAP0)
 				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);
+				return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);
+			#elif defined(DIFFUSEMAP1)
+				vec4 diffuseMap = texture2D(u_texture0, v_texcoord1);
 				return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);
 			#else
 				return u_material.diffuseColor;
 			#endif
 		#else
-			#ifdef DIFFUSEMAP
+			#if defined(DIFFUSEMAP0)
 				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);
+				return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);
+			#elif defined(DIFFUSEMAP1)
+				vec4 diffuseMap = texture2D(u_texture0, v_texcoord1);
 				return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);
 			#else
 				return u_material.diffuseIntensity * u_material.diffuseColor;
@@ -245,12 +251,41 @@
 
 		vec4 GetSpecularColor()
 		{
-	    #ifdef SPECULARMAP
+	    #if defined(SPECULARMAP0)
 	        vec4 specularMap = texture2D(u_texture2, v_texcoord0);
 	        return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);
+	    #elif defined(SPECULARMAP1)
+	        vec4 specularMap = texture2D(u_texture2, v_texcoord1);
+	        return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);	        
 	    #else
 	        return u_material.specularIntensity * u_material.specularColor;
 	    #endif
+		}
+
+		vec3 GetNormal()
+		{
+			#if defined(NORMALMAP0)			
+				//The normals in the map are stored in tangent/texture space.
+				//For better explanation see http://ogldev.atspace.co.uk/www/tutorial26/tutorial26.html
+				//We need to transform them to world space:
+
+				//Generate a world space transformation matrix using the tangent-bitangent-normal.
+				mat3 TBN = mat3(v_tangent, v_bitangent, v_normal);
+				// Sample the normal from the normal map 
+				vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord0).xyz;
+				 //Normalize from 0..1 to -1..1
+			    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0);
+			    //Transform the normal from tangent/texture space to world space using the TBN matrix
+			    return normalize(TBN * bumpMapNormal);
+			#elif defined(NORMALMAP1)	
+				// Same as NORMALMAP0 but with v_texcoord1
+				mat3 TBN = mat3(v_tangent, v_bitangent, v_normal);
+				vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord1).xyz;
+			    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0);
+			    return normalize(TBN * bumpMapNormal);
+			#else
+				return normalize(v_normal);
+			#endif
 		}
 
     #endif

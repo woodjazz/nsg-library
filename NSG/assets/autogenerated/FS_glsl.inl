@@ -31,17 +31,7 @@ static const char* FS_GLSL = \
 "			gl_FragColor = v_color * GetDiffuseColor();\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "				//Lighting is calculated in world space\n"\
-"				#ifdef NORMALMAP\n"\
-"					//The normals in the map are stored in tangent/texture space.\n"\
-"					//For better explanation see http://ogldev.atspace.co.uk/www/tutorial26/tutorial26.html\n"\
-"					//We need to transform them to world space:\n"\
-"					mat3 TBN = mat3(v_tangent, v_bitangent, v_normal); //Generate a world space transformation matrix using the tangent-bitangent-normal.\n"\
-"					vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord0).xyz; // Sample the normal from the normal map \n"\
-"				    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0); //Normalize from 0..1 to -1..1\n"\
-"				    vec3 normal = normalize(TBN * bumpMapNormal); //Transform the normal from tangent/texture space to world space using the TBN matrix\n"\
-"				#else\n"\
-"					vec3 normal = normalize(v_normal);\n"\
-"				#endif\n"\
+"				vec3 normal = GetNormal();\n"\
 "	    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
 "	    		vec3 world2light = v_worldPos - GetLightPosition();\n"\
 "		    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();\n"\

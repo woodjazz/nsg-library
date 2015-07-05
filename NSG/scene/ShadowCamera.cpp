@@ -148,9 +148,13 @@ namespace NSG
         lightViewBoxRange.Transform(GetView());
         BoundingBox camLightFullViewBoxRange(receiversFullFrustumViewBox);
         camLightFullViewBoxRange.Transform(GetView());
-        auto range = std::max(glm::length(camLightFullViewBoxRange.Size()), glm::length(lightViewBoxRange.Size()));
-		//LOGI("Range=%f", range);
-		light_->SetRange(range);
+        auto camBBSize = glm::length(camLightFullViewBoxRange.Size());
+        auto lightBBSize = glm::length(lightViewBoxRange.Size());
+        auto shadowCamPos = GetPosition();
+        if(camBBSize > lightBBSize) // FIXME: I think this is always false (remove camLightFullViewBoxRange)
+            light_->SetRange(camBBSize + shadowCamPos.z - camLightFullViewBoxRange.min_.z);
+        else
+            light_->SetRange(camBBSize + shadowCamPos.z - lightViewBoxRange.min_.z);
     }
 
     void ShadowCamera::QuantizeAndSetup2ViewBox(int split, const Vector3& initialPos, const BoundingBox& viewBox)

@@ -21,6 +21,7 @@ static const char* VS_GLSL = \
 "			//v_color = a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
+"			v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
 "		#elif defined(TEXT)\n"\
 "			v_color = u_material.color * a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
@@ -32,9 +33,7 @@ static const char* VS_GLSL = \
 "		\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
-"			#if defined(AOMAP1) || defined(LIGHTMAP1)\n"\
-"				v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
-"			#endif\n"\
+"			v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
 "		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_worldPos = GetWorldPos().xyz;\n"\
@@ -53,13 +52,14 @@ static const char* VS_GLSL = \
 "			v_vertexToEye = normalize(u_eyeWorldPos - v_worldPos);\n"\
 "			v_normal = GetWorldNormal();\n"\
 "			\n"\
-"			#if defined(NORMALMAP)\n"\
+"			#if defined(NORMALMAP0) || defined(NORMALMAP1)\n"\
 "				v_tangent = GetWorldTangent(); // Transform the tangent vector to world space (and pass it to the fragment shader).\n"\
 "			    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);\n"\
 "			    v_bitangent = cross(v_tangent, v_normal);\n"\
 "			    // v_normal, v_tangent and v_bitangent are in world coordinates\n"\
 "			#endif\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
+"			v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
 "			gl_Position = GetClipPos();\n"\
 "		#endif\n"\
 "	}\n"\

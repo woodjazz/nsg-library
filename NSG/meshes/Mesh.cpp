@@ -486,6 +486,9 @@ namespace NSG
 
     int Mesh::GetUVIndex(const std::string& name) const
     {
+        if(name.empty())
+            return 0;
+        
         for(int i=0; i<MAX_UVS; i++)
             if(uvNames_[i] == name)
                 return i;

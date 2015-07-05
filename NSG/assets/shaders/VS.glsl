@@ -19,6 +19,7 @@
 			//v_color = a_color;
 			gl_Position = GetClipPos();
 			v_texcoord0 = GetTexCoord(a_texcoord0);
+			v_texcoord1 = GetTexCoord(a_texcoord1);
 
 		#elif defined(TEXT)
 
@@ -35,9 +36,7 @@
 		
 			gl_Position = GetClipPos();
 			v_texcoord0 = GetTexCoord(a_texcoord0);
-			#if defined(AOMAP1) || defined(LIGHTMAP1)
-				v_texcoord1 = GetTexCoord(a_texcoord1);
-			#endif
+			v_texcoord1 = GetTexCoord(a_texcoord1);
 
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
@@ -63,7 +62,7 @@
 			v_vertexToEye = normalize(u_eyeWorldPos - v_worldPos);
 			v_normal = GetWorldNormal();
 			
-			#if defined(NORMALMAP)
+			#if defined(NORMALMAP0) || defined(NORMALMAP1)
 				v_tangent = GetWorldTangent(); // Transform the tangent vector to world space (and pass it to the fragment shader).
 			    v_tangent = normalize(v_tangent - dot(v_tangent, v_normal) * v_normal);
 			    v_bitangent = cross(v_tangent, v_normal);
@@ -71,6 +70,7 @@
 			#endif
 
 			v_texcoord0 = GetTexCoord(a_texcoord0);
+			v_texcoord1 = GetTexCoord(a_texcoord1);
 			gl_Position = GetClipPos();
 
 		#endif

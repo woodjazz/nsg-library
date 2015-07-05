@@ -108,7 +108,7 @@ misrepresented as being the original software.
 	#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 
 		#define LOGI(format, ...) {\
-					int n = fprintf(stdout, "*Info*" format "\n", ##__VA_ARGS__);\
+					fprintf(stdout, "*Info*" format "\n", ##__VA_ARGS__);\
 					fflush(stdout);\
 					SHOWINDEBUGWINDOW("*Info*" format, ##__VA_ARGS__);\
 				}

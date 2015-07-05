@@ -110,7 +110,7 @@ static const char* TRANSFORMS_GLSL = \
 "	    	return normalize((GetNormalMatrix() * a_normal));\n"\
 "	    #endif\n"\
 "	}\n"\
-"	#if defined(NORMALMAP)\n"\
+"	#if defined(NORMALMAP0) || defined(NORMALMAP1)\n"\
 "		vec3 GetWorldTangent()\n"\
 "		{\n"\
 "		    #if defined(SKINNED)\n"\
@@ -201,15 +201,21 @@ static const char* TRANSFORMS_GLSL = \
 "		vec4 GetDiffuseColor()\n"\
 "		{\n"\
 "		#ifdef UNLIT\n"\
-"			#ifdef DIFFUSEMAP\n"\
+"			#if defined(DIFFUSEMAP0)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
+"				return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"			#elif defined(DIFFUSEMAP1)\n"\
+"				vec4 diffuseMap = texture2D(u_texture0, v_texcoord1);\n"\
 "				return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
 "			#else\n"\
 "				return u_material.diffuseColor;\n"\
 "			#endif\n"\
 "		#else\n"\
-"			#ifdef DIFFUSEMAP\n"\
+"			#if defined(DIFFUSEMAP0)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
+"				return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"			#elif defined(DIFFUSEMAP1)\n"\
+"				vec4 diffuseMap = texture2D(u_texture0, v_texcoord1);\n"\
 "				return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
 "			#else\n"\
 "				return u_material.diffuseIntensity * u_material.diffuseColor;\n"\
@@ -218,12 +224,39 @@ static const char* TRANSFORMS_GLSL = \
 "		}\n"\
 "		vec4 GetSpecularColor()\n"\
 "		{\n"\
-"	    #ifdef SPECULARMAP\n"\
+"	    #if defined(SPECULARMAP0)\n"\
 "	        vec4 specularMap = texture2D(u_texture2, v_texcoord0);\n"\
 "	        return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);\n"\
+"	    #elif defined(SPECULARMAP1)\n"\
+"	        vec4 specularMap = texture2D(u_texture2, v_texcoord1);\n"\
+"	        return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);	        \n"\
 "	    #else\n"\
 "	        return u_material.specularIntensity * u_material.specularColor;\n"\
 "	    #endif\n"\
+"		}\n"\
+"		vec3 GetNormal()\n"\
+"		{\n"\
+"			#if defined(NORMALMAP0)			\n"\
+"				//The normals in the map are stored in tangent/texture space.\n"\
+"				//For better explanation see http://ogldev.atspace.co.uk/www/tutorial26/tutorial26.html\n"\
+"				//We need to transform them to world space:\n"\
+"				//Generate a world space transformation matrix using the tangent-bitangent-normal.\n"\
+"				mat3 TBN = mat3(v_tangent, v_bitangent, v_normal);\n"\
+"				// Sample the normal from the normal map \n"\
+"				vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord0).xyz;\n"\
+"				 //Normalize from 0..1 to -1..1\n"\
+"			    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0);\n"\
+"			    //Transform the normal from tangent/texture space to world space using the TBN matrix\n"\
+"			    return normalize(TBN * bumpMapNormal);\n"\
+"			#elif defined(NORMALMAP1)	\n"\
+"				// Same as NORMALMAP0 but with v_texcoord1\n"\
+"				mat3 TBN = mat3(v_tangent, v_bitangent, v_normal);\n"\
+"				vec3 bumpMapNormal = texture2D(u_texture1, v_texcoord1).xyz;\n"\
+"			    bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0);\n"\
+"			    return normalize(TBN * bumpMapNormal);\n"\
+"			#else\n"\
+"				return normalize(v_normal);\n"\
+"			#endif\n"\
 "		}\n"\
 "    #endif\n"\
 "#endif\n"\

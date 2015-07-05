@@ -561,15 +561,15 @@ namespace NSG
                     switch (type)
                     {
                         case TextureType::COL:
-                            defines += "DIFFUSEMAP\n";
+                            defines += "DIFFUSEMAP" + ToString(uvIndex) + "\n";
                             break;
                         case TextureType::NORM:
                             if (!defaultPass)
-                                defines += "NORMALMAP\n";
+                                defines += "NORMALMAP" + ToString(uvIndex) + "\n";
                             break;
                         case TextureType::SPEC:
                             if (!defaultPass)
-                                defines += "SPECULARMAP\n";
+                                defines += "SPECULARMAP" + ToString(uvIndex) + "\n";
                             break;
                         case TextureType::EMIT:
                             if (defaultPass)
