@@ -393,7 +393,7 @@ static void Test04()
 
     {
         Ray ray = camera->GetScreenRay(0, 0);
-        CHECK_CONDITION(glm::distance(ray.GetDirection(), VECTOR3_FORWARD) < glm::epsilon<float>(), __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(ray.GetDirection(), VECTOR3_LOOKAT_DIRECTION) < glm::epsilon<float>(), __FILE__, __LINE__);
         CHECK_CONDITION(glm::distance(ray.GetOrigin(), position) < 0.5f, __FILE__, __LINE__);
     }
 
@@ -451,7 +451,7 @@ static void Test05()
         camera->SetNearClip(0.1f);
         camera->SetFarClip(250);
         camera->SetPosition(Vertex3(0, 0, -4));
-        camera->SetGlobalLookAt(-VECTOR3_FORWARD);
+		camera->SetGlobalLookAt(-VECTOR3_LOOKAT_DIRECTION);
         BoundingBox bb = box->GetBB();
         CHECK_CONDITION(camera->GetFrustum()->IsInside(bb) == Intersection::INSIDE, __FILE__, __LINE__);
         camera->SetPosition(Vertex3(0, 0, -250));
@@ -472,7 +472,7 @@ static void Test06()
 	camera->SetAspectRatio(1);
 	camera->SetOrthoScale(10);
 	camera->SetPosition(Vertex3(0, 0, 1));
-	//camera->SetGlobalLookAt(VECTOR3_FORWARD);
+	//camera->SetGlobalLookAt(VECTOR3_LOOKAT_DIRECTION);
 
 	{
 		auto vertices = camera->GetFrustum()->GetVertices();

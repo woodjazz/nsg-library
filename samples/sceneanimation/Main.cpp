@@ -31,7 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");//.lz4");
     AppData data(resource);
     auto scene = data.scenes_.at(0);
-    scene->SetAmbientColor(Color(0.0f));
+    scene->SetAmbientColor(ColorRGB(0.0f));
 
     auto object = scene->GetChild<SceneNode>("Bone", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);

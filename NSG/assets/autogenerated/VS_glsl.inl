@@ -16,24 +16,21 @@ static const char* VS_GLSL = \
 "			\n"\
 "			v_color = a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
-"		#elif defined(UNLIT)\n"\
-"			\n"\
-"			//v_color = a_color;\n"\
-"			gl_Position = GetClipPos();\n"\
-"			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
-"			v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
 "		#elif defined(TEXT)\n"\
-"			v_color = u_material.color * a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "		#elif defined(BLUR) || defined(BLEND) || defined(WAVE) || defined(SHOW_TEXTURE0)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
-"		#elif defined(AMBIENT)\n"\
+"		#elif defined(AMBIENT) || defined(UNLIT)\n"\
 "		\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
+"			#ifdef FOG\n"\
+"				v_worldPos = GetWorldPos().xyz;\n"\
+"				v_depth = -GetCameraPos().z;\n"\
+"			#endif\n"\
 "		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_worldPos = GetWorldPos().xyz;\n"\
@@ -51,6 +48,9 @@ static const char* VS_GLSL = \
 "			v_worldPos = GetWorldPos().xyz;\n"\
 "			v_vertexToEye = normalize(u_eyeWorldPos - v_worldPos);\n"\
 "			v_normal = GetWorldNormal();\n"\
+"			#ifdef FOG\n"\
+"				v_depth = -GetCameraPos().z;\n"\
+"			#endif\n"\
 "			\n"\
 "			#if defined(NORMALMAP0) || defined(NORMALMAP1)\n"\
 "				v_tangent = GetWorldTangent(); // Transform the tangent vector to world space (and pass it to the fragment shader).\n"\

@@ -84,7 +84,7 @@ static void Test03()
 
     {
         Node node;
-        CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION, __FILE__, __LINE__);
 
         Vector3 lookAt = -WORLD_X_COORD;
         node.SetGlobalLookAt(lookAt);
@@ -102,7 +102,7 @@ static void Test03()
 
     {
         Node node;
-        CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION, __FILE__, __LINE__);
 
         Vector3 lookAt = -WORLD_Z_COORD;
         node.SetGlobalLookAt(lookAt);
@@ -120,7 +120,7 @@ static void Test03()
 
     {
         Node node;
-        CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION, __FILE__, __LINE__);
 
         Vector3 lookAt = -WORLD_Z_COORD;
         node.SetPosition(WORLD_Z_COORD);
@@ -139,7 +139,7 @@ static void Test03()
 
     {
         Node node;
-        CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION, __FILE__, __LINE__);
 
         Vector3 lookAt = WORLD_Z_COORD;
         node.SetPosition(-WORLD_Z_COORD);
@@ -158,7 +158,7 @@ static void Test03()
 
     {
         Node node;
-        CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_FORWARD, __FILE__, __LINE__);
+		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION, __FILE__, __LINE__);
 
         Vector3 lookAt = WORLD_Z_COORD;
         node.SetPosition(WORLD_X_COORD + WORLD_Y_COORD + WORLD_Z_COORD);
@@ -369,11 +369,11 @@ static void Test08()
         node->SetOrientation(parent_q * q);
         node->SetScale(parent_scale * scale);
 
-        CHECK_CONDITION(node->GetGlobalPosition() == pos, __FILE__, __LINE__);
-        Vertex3 a1 = glm::eulerAngles(node->GetGlobalOrientation());
-        Vertex3 a2 = glm::eulerAngles(q);
-        CHECK_CONDITION(glm::distance(a1, a2) < 0.01f, __FILE__, __LINE__);
-        CHECK_CONDITION(glm::distance(node->GetGlobalScale(), scale) < 0.01f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(node->GetGlobalPosition(), pos) < 0.0001f, __FILE__, __LINE__);
+		Vertex3 a1 = node->GetGlobalOrientation() * VECTOR3_LOOKAT_DIRECTION;
+		Vertex3 a2 = q * VECTOR3_LOOKAT_DIRECTION;
+		CHECK_CONDITION(glm::distance(a1, a2) < 0.01f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(node->GetGlobalScale(), scale) < 0.0001f, __FILE__, __LINE__);
     }
     
     {
@@ -387,9 +387,9 @@ static void Test08()
         node->SetScale(scale1);
 
         CHECK_CONDITION(node->GetGlobalPosition() == pos, __FILE__, __LINE__);
-        Vertex3 a1 = glm::eulerAngles(node->GetGlobalOrientation());
-        Vertex3 a2 = glm::eulerAngles(q);
-        CHECK_CONDITION(glm::distance(a1, a2) < 0.01f, __FILE__, __LINE__);
+		Vertex3 a1 = node->GetGlobalOrientation() * VECTOR3_LOOKAT_DIRECTION;
+		Vertex3 a2 = q * VECTOR3_LOOKAT_DIRECTION;
+		CHECK_CONDITION(glm::distance(a1, a2) < 0.01f, __FILE__, __LINE__);
         CHECK_CONDITION(glm::distance(node->GetGlobalScale(), scale) < 0.01f, __FILE__, __LINE__);
     }
 }

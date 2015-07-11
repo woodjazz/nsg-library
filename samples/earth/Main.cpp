@@ -33,7 +33,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto window = Window::Create();
     std::deque<Vertex3> camControlPoints;
     auto scene = std::make_shared<Scene>();
-    scene->SetAmbientColor(Color(0.1f, 0.1f, 0.1f, 1));
+    scene->SetAmbientColor(ColorRGB(0.1f));
 
     auto camera = scene->CreateChild<Camera>();
 

@@ -136,6 +136,11 @@
 		return GetModelMatrix() * vec4(a_position, 1.0);
 	}
 
+	vec4 GetCameraPos()
+	{
+		return GetViewWorldMatrix() * vec4(a_position, 1.0);
+	}
+
 	vec4 GetClipPos()
 	{
 		#if defined(SPHERICAL_BILLBOARD)
@@ -223,6 +228,39 @@
 	#endif
 
 	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) 
+
+		float GetFogLinearFactor()
+		{
+		    return clamp((u_fogEnd - v_depth) / (u_fogEnd - u_fogStart), 0.0, 1.0);
+		}
+
+		float GetHeightFogFactor()
+		{
+			float height = clamp(v_worldPos.y, 0.0, abs(v_worldPos.y));
+		    float fogFactor = GetFogLinearFactor();
+		    float heightFogFactor = clamp(height - u_fogHeight, 0.0, height);
+		    heightFogFactor = 1.0 - clamp(exp(-(heightFogFactor * heightFogFactor)), 0.0, 1.0);
+		    return min(heightFogFactor, fogFactor);
+		}
+
+		float GetFogFactor()
+		{
+		    #ifdef FOGHEIGHT
+		        return GetHeightFogFactor();
+		    #else
+		        return GetFogLinearFactor();
+		    #endif
+	    }
+
+		vec3 GetAmbientFog(vec3 color)
+		{
+		    return mix(u_sceneHorizonColor, color, GetFogFactor());
+		}
+
+		vec3 GetLitFog(vec3 color)
+		{
+		    return color * GetFogFactor();
+		}
 
 		vec4 GetDiffuseColor()
 		{

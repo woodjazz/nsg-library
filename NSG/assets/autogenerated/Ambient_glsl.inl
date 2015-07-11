@@ -4,11 +4,15 @@ namespace NSG
 static const char* AMBIENT_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
 "#if defined(COMPILEFS)\n"\
-"    #if defined(AMBIENT)\n"\
+"    #if defined(AMBIENT) || defined(UNLIT)\n"\
 "        vec4 GetAmbientIntensity()\n"\
 "        {\n"\
 "            #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)\n"\
-"                vec4 intensity = u_sceneAmbientColor * u_material.ambientIntensity;\n"\
+"                #if defined(AMBIENT)\n"\
+"                    vec4 intensity = vec4(u_sceneAmbientColor, 1.0) * u_material.ambientIntensity;\n"\
+"                #else\n"\
+"                    vec4 intensity = vec4(1.0);\n"\
+"                #endif\n"\
 "            #else\n"\
 "                #if defined(AOMAP0)\n"\
 "                    #if defined(AOMAP_CHANNELS1)\n"\

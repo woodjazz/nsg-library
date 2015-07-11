@@ -36,7 +36,7 @@ int NSG_MAIN(int argc, char* argv[])
     music.Set(soundMusic->GetResource());
     music.Play();
 	auto scene = data.scenes_.at(0);
-    scene->SetAmbientColor(Color(0.5f, 0.5f, 0.5f, 1.0f));
+    scene->SetAmbientColor(ColorRGB(0.5f));
 	scene->GetChild<SceneNode>("Level1", false)->GetMaterial()->SetAmbientIntensity(1);
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto frustum = camera->GetFrustum();

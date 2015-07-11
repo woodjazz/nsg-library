@@ -74,33 +74,66 @@ namespace NSG
         return btQuaternion(q.x, q.y, q.z, q.w);
     }
 
+    bool IsNaN(const Quaternion& q)
+    {
+        return isnan(q.w) || isnan(q.x) || isnan(q.y) || isnan(q.z);
+    }
+
+    Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection)
+    {
+        Vector3 forward = glm::normalize(direction);
+        Vector3 v = glm::normalize(glm::cross(forward, upDirection));
+        Vector3 up = glm::cross(v, forward);
+        Vector3 right = glm::cross(up, forward);
+
+        Quaternion ret(Matrix3(right, up, forward));
+        CHECK_ASSERT(!IsNaN(ret), __FILE__, __LINE__);
+        return ret;
+    }
+
     Quaternion ToQuaternion(const btQuaternion& q)
     {
         return Quaternion(q.w(), q.x(), q.y(), q.z());
     }
 
+    /// Return the translation part.
+    Vector3 Translation(const Matrix4& m)
+    {
+        return Vector3(m[3]);
+    }
+
+    /// Return the scaling part.
+    Vector3 Scale(const Matrix4& m)
+    {
+        return Vector3(
+                   sqrtf(m[0][0] * m[0][0] + m[0][1] * m[0][1] + m[0][2] * m[0][2]),
+                   sqrtf(m[1][0] * m[1][0] + m[1][1] * m[1][1] + m[1][2] * m[1][2]),
+                   sqrtf(m[2][0] * m[2][0] + m[2][1] * m[2][1] + m[2][2] * m[2][2])
+               );
+    }
+
     void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
     {
-#if 1
-        scale = Vertex3(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
-
-        Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1) / scale) * m);
-
+        #if 1
+        
+		Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
+        Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1) / scaling) * m);
         q = glm::quat_cast(tmp1);
-
         position = Vertex3(m[3]);
-
         Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
-
         scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
-
-        // prevent zero scale
         if (IsZeroLength(scale))
-            scale = Vector3(1);
-#else
+            scale = Vector3(1);// prevent zero scale
+
+        #elif DECOM0
+        Vector3 skew;
+        Vector4 perspective;
+        glm::decompose(m, scale, q, position, skew, perspective);
+
+        #else
         // extract translation
         position = Vertex3(m[3]);
-        
+
         // extract rotation
         Matrix3 matr(m);
         glm::orthonormalize(matr);
@@ -108,12 +141,12 @@ namespace NSG
         if (glm::length2(rot) == 0.0)
             rot = QUATERNION_IDENTITY;
         q = rot;
-        
+
         // extract scale
         Matrix3 m1 = glm::inverse(matr) * Matrix3(m);
         scale = Vertex3(m1[0][0], m1[1][1], m1[2][2]);
 
-#endif
+        #endif
     }
 
 

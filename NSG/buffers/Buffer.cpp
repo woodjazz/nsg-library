@@ -53,9 +53,9 @@ namespace NSG
 
     void Buffer::SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data)
     {
-		CHECK_ASSERT(offset + size <= bufferSize_, __FILE__, __LINE__);
+        CHECK_ASSERT(offset + size <= bufferSize_, __FILE__, __LINE__);
 
-#if !defined(ANDROID) && !defined(EMSCRIPTEN)
+        #if !defined(ANDROID) && !defined(EMSCRIPTEN)
         if (Graphics::this_->HasMapBufferRange())
         {
             void* old_data = glMapBufferRange(type_, offset, size,
@@ -70,7 +70,7 @@ namespace NSG
             CHECK_CONDITION(glUnmapBuffer(type_), __FILE__, __LINE__);
         }
         else
-#endif            
+        #endif
         {
             glBufferSubData(type_, offset, size, data);
         }

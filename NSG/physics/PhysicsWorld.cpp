@@ -33,11 +33,14 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    static const int DEFAULT_FPS = 60;
     PhysicsWorld::PhysicsWorld(const Scene* scene)
         : scene_(scene),
           gravity_(0, -9.81f, 0),
           debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits),
-		  lines_(std::make_shared<LinesMesh>("DebugPhysics"))
+          lines_(std::make_shared<LinesMesh>("DebugPhysics")),
+          fps_(DEFAULT_FPS),
+          maxSubSteps_(0)
     {
         collisionConfiguration_ = new btDefaultCollisionConfiguration();
         pairCache_ = new btDbvtBroadphase();
@@ -49,7 +52,7 @@ namespace NSG
         SetGravity(gravity_);
         dynamicsWorld_->setWorldUserInfo(this);
         dynamicsWorld_->setInternalTickCallback(SubstepCallback, static_cast<void*>(this));
-		dynamicsWorld_->setDebugDrawer(this);
+        dynamicsWorld_->setDebugDrawer(this);
     }
 
     PhysicsWorld::~PhysicsWorld()
@@ -76,7 +79,17 @@ namespace NSG
 
     void PhysicsWorld::StepSimulation(float timeStep)
     {
-        dynamicsWorld_->stepSimulation(timeStep);
+        float internalTimeStep = 1.0f / fps_;
+        int maxSubSteps = (int)(timeStep * fps_) + 1;
+        if (maxSubSteps_ < 0)
+        {
+            internalTimeStep = timeStep;
+            maxSubSteps = 1;
+        }
+        else if (maxSubSteps_ > 0)
+            maxSubSteps = std::min(maxSubSteps, maxSubSteps_);
+
+        dynamicsWorld_->stepSimulation(timeStep, maxSubSteps, internalTimeStep);
     }
 
     void PhysicsWorld::SubstepCallback(btDynamicsWorld* dyn, float tick)
@@ -105,10 +118,10 @@ namespace NSG
     {
         return scene_->GetMainCamera()->IsVisible(BoundingBox(ToVector3(aabbMin), ToVector3(aabbMax)));
     }
-    
+
     void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
     {
-		lines_->Add(ToVector3(from), ToVector3(to), Color(ToVector3(color), 1));
+        lines_->Add(ToVector3(from), ToVector3(to), Color(ToVector3(color), 1));
     }
 
     void PhysicsWorld::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
@@ -129,7 +142,7 @@ namespace NSG
     void PhysicsWorld::setDebugMode(int debugMode)
     {
         debugMode_ = debugMode;
-		setDebugMode(debugMode_);
+        setDebugMode(debugMode_);
     }
 
     int PhysicsWorld::getDebugMode() const
@@ -137,13 +150,24 @@ namespace NSG
         return debugMode_;
     }
 
-	void PhysicsWorld::DrawDebug()
-	{
-		dynamicsWorld_->debugDrawWorld();
-	}
+    void PhysicsWorld::DrawDebug()
+    {
+        dynamicsWorld_->debugDrawWorld();
+    }
 
-	void PhysicsWorld::ClearDebugLines()
-	{
-		lines_->Clear();
-	}
+    void PhysicsWorld::ClearDebugLines()
+    {
+        lines_->Clear();
+    }
+
+    void PhysicsWorld::SetFps(int fps)
+    {
+        fps_ = glm::clamp(fps, 1, 1000);
+    }
+
+    void PhysicsWorld::SetMaxSubSteps(int steps)
+    {
+        maxSubSteps_ = steps;
+    }
+
 }

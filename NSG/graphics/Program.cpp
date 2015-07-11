@@ -87,8 +87,13 @@ namespace NSG
           viewProjectionLoc_(-1),
           projectionLoc_(-1),
           sceneColorAmbientLoc_(-1),
+          u_sceneHorizonColorLoc_(-1),
           eyeWorldPosLoc_(-1),
           u_uvTransformLoc_(-1),
+          u_fogMinIntensityLoc_(-1),
+          u_fogStartLoc_(-1),
+          u_fogEndLoc_(-1),
+          u_fogHeightLoc_(-1),
           lightDiffuseColorLoc_(-1),
           lightSpecularColorLoc_(-1),
           lightInvRangeLoc_(-1),
@@ -205,7 +210,7 @@ namespace NSG
         activeMaterial_ = nullptr;
         activeLight_ = nullptr;
         activeCamera_ = nullptr;
-        sceneColor_ = Color(-1);
+        sceneColor_ = ColorRGB(-1);
 
         bonesBaseLoc_.clear();
 
@@ -263,8 +268,14 @@ namespace NSG
         viewProjectionLoc_ = GetUniformLocation("u_viewProjection");
         projectionLoc_  = GetUniformLocation("u_projection");
         sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
+        u_sceneHorizonColorLoc_ = GetUniformLocation("u_sceneHorizonColor");
         eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
         u_uvTransformLoc_ = GetUniformLocation("u_uvTransform");
+        u_fogMinIntensityLoc_ = GetUniformLocation("u_fogMinIntensity");
+        u_fogStartLoc_ = GetUniformLocation("u_fogStart");
+        u_fogEndLoc_ = GetUniformLocation("u_fogEnd");
+        u_fogHeightLoc_ = GetUniformLocation("u_fogHeight");
+
         for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
             textureLoc_[index] = GetUniformLocation("u_texture" + ToString(index));
         materialLoc_.diffuseColor_ = GetUniformLocation("u_material.diffuseColor");
@@ -370,21 +381,43 @@ namespace NSG
 
     void Program::SetSceneVariables()
     {
+        auto scene = Renderer::GetPtr()->GetScene();
         if (sceneColorAmbientLoc_ != -1)
         {
-            auto scene = Renderer::GetPtr()->GetScene();
-
             if (scene)
             {
                 if (scene->UniformsNeedUpdate())
-                    glUniform4fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
+                    glUniform3fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
             }
-            else if (sceneColor_ == Color(-1))
+            else if (sceneColor_ == ColorRGB(-1))
             {
-                sceneColor_ = Color(0, 0, 0, 1);
-                glUniform4fv(sceneColorAmbientLoc_, 1, &sceneColor_[0]);
+                sceneColor_ = ColorRGB(0);
+                glUniform3fv(sceneColorAmbientLoc_, 1, &sceneColor_[0]);
             }
+        }
 
+        if (scene)
+        {
+            if(u_sceneHorizonColorLoc_)
+                glUniform3fv(u_sceneHorizonColorLoc_, 1, &scene->GetHorizonColor()[0]);
+
+            if (u_fogMinIntensityLoc_ != -1)
+                glUniform1f(u_fogMinIntensityLoc_, scene->GetFogMinIntensity());
+
+            Camera* camera = Graphics::this_->GetCamera();
+
+			if (u_fogStartLoc_ != -1)
+			{
+				auto start = std::max(camera->GetZNear(), scene->GetFogStart());
+				glUniform1f(u_fogStartLoc_, start);
+			}
+			if (u_fogEndLoc_ != -1)
+			{
+				auto end = std::min(camera->GetZFar(), scene->GetFogStart() + scene->GetFogDepth());
+				glUniform1f(u_fogEndLoc_, end);
+			}
+            if (u_fogHeightLoc_ != -1)
+                glUniform1f(u_fogHeightLoc_, scene->GetFogHeight());
         }
     }
 
@@ -763,10 +796,13 @@ namespace NSG
         programs_.Clear();
     }
 
-	PProgram Program::GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light)
+    PProgram Program::GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light)
     {
         std::string defines;
         auto passType = pass->GetType();
+        auto scene = camera->GetScene();
+        if (scene)
+            scene->FillShaderDefines(defines, passType);
         camera->FillShaderDefines(defines, passType);
         material->FillShaderDefines(defines, passType, light, mesh);
         size_t nBones = 0;

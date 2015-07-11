@@ -67,11 +67,16 @@ namespace NSG
     void VertexBuffer::UpdateData(const VertexsData& vertexes)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
         Graphics::this_->SetVertexBuffer(this, true);
-        SetBufferSubData(0, bytes2Set, &vertexes[0]);
-
+        GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
+		if (bytes2Set > bufferSize_)
+		{
+            //rebuild buffer
+			glBufferData(type_, bytes2Set, &vertexes[0], usage_); 
+			bufferSize_ = bytes2Set;
+		}
+        else
+            SetBufferSubData(0, bytes2Set, &vertexes[0]);
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 }

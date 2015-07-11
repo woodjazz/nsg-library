@@ -130,12 +130,9 @@ namespace NSG
         vertexsData_.clear();
         indexes_.clear();
 
-		if (isStatic_)
-		{
-			pVBuffer_ = nullptr;
-			pIBuffer_ = nullptr;
-			pIWirefameBuffer_ = nullptr;
-		}
+		pVBuffer_ = nullptr;
+		pIBuffer_ = nullptr;
+		pIWirefameBuffer_ = nullptr;
 
         areTangentsCalculated_ = false;
 

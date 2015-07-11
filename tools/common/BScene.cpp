@@ -76,7 +76,7 @@ namespace BlenderConverter
         : path_(path),
           outputDir_(outputDir),
           embedResources_(embedResources),
-          defaultMaterial_(Material::Create("__DefaultBlenderMaterial__"))
+          defaultMaterial_(Material::GetOrCreate("__DefaultBlenderMaterial__"))
     {
         defaultMaterial_->SetRenderPass(RenderPass::PERPIXEL);
 
@@ -153,11 +153,20 @@ namespace BlenderConverter
         const Blender::World* world = bscene->world;
         if (world)
         {
-            scene->GetPhysicsWorld()->SetGravity(Vector3(0, -world->gravity, 0));
-            Color ambient(world->ambr, world->ambg, world->ambb, 1);
+			auto physicsWorld = scene->GetPhysicsWorld();
+			physicsWorld->SetGravity(Vector3(0, -world->gravity, 0));
+			physicsWorld->SetFps(bscene->gm.ticrate);
+			physicsWorld->SetMaxSubSteps(bscene->gm.maxphystep);
+            ColorRGB ambient(world->ambr, world->ambg, world->ambb);
             scene->SetAmbientColor(ambient);
-            Color horizon(world->horr, world->horg, world->horb, 1);
+            ColorRGB horizon(world->horr, world->horg, world->horb);
             scene->SetHorizonColor(horizon);
+			bool enableFog = world->mode & WO_MIST;
+			scene->EnableFog(enableFog);
+			scene->SetFogMinIntensity(world->misi);
+			scene->SetFogStart(world->miststa);
+			scene->SetFogDepth(world->mistdist);
+			scene->SetFogHeight(world->misthi);
         }
         return scene;
     }
@@ -895,25 +904,34 @@ namespace BlenderConverter
         Vector3 pos(obj->loc[0], obj->loc[1], obj->loc[2]);
         Vector3 scale(obj->size[0], obj->size[1], obj->size[2]);
 
+		sceneNode->SetPosition(pos);
+		sceneNode->SetOrientation(q);
+		sceneNode->SetScale(scale);
+#if 0
         if (sceneNode->GetParent()->IsArmature())
         {
+			auto parent = sceneNode->GetParent();
+			auto m = glm::inverse(parent->GetTransform()) * sceneNode->GetTransform();
+			DecomposeMatrix(m, pos, q, scale);
+			sceneNode->SetPosition(pos);
+			sceneNode->SetOrientation(q);
+			sceneNode->SetScale(scale);
+
+#if 0
             Quaternion parent_q;
             Vector3 parent_pos;
             Vector3 parent_scale;
 
-            auto parent = sceneNode->GetParent();
+            
             Matrix4 parentinv = glm::translate(glm::mat4(), parent->GetPosition()) * glm::mat4_cast(parent->GetOrientation()) * glm::scale(glm::mat4(1.0f), parent->GetScale());
             parentinv = glm::inverse(parentinv);
             DecomposeMatrix(parentinv, parent_pos, parent_q, parent_scale);
             pos = parent_pos + parent_q * (parent_scale * pos);
             q = parent_q * q;
             scale = parent_scale * scale;
+#endif
         }
-
-        sceneNode->SetPosition(pos);
-        sceneNode->SetOrientation(q);
-        sceneNode->SetScale(scale);
-
+#endif
     }
 
     PhysicsShape BScene::GetShapeType(short boundtype) const
@@ -1117,11 +1135,11 @@ namespace BlenderConverter
             PShape shape = Shape::GetOrCreate(needsMesh ? ShapeKey(mesh, scale) : ShapeKey(shapeType, scale));
 
             BoundingBox bb;
-            if (needsMesh)
+            if (mesh)
                 bb = mesh->GetBB();
             else            {
-                //LOGW("Cannot calculate physics bounding box.");
-                bb = BoundingBox(-scale, scale);
+                LOGW("Cannot calculate physics bounding box.");
+                bb = BoundingBox(-Vector3(1), Vector3(1));
             }
             CHECK_ASSERT(bb.IsDefined(), __FILE__, __LINE__);
             shape->SetBB(bb);
@@ -1181,8 +1199,7 @@ namespace BlenderConverter
         else
         {
             CHECK_ASSERT(parent->IsArmature(), __FILE__, __LINE__);
-            parBind = glm::translate(glm::mat4(), parent->GetPosition()) * glm::mat4_cast(parent->GetOrientation()) * glm::scale(glm::mat4(1.0f), parent->GetScale());
-            parBind = glm::inverse(parBind);
+			parBind = glm::inverse(parent->GetTransform());
         }
 
         CHECK_ASSERT(!parent->GetChild<SceneNode>(cur->name, false), __FILE__, __LINE__);
@@ -1190,8 +1207,10 @@ namespace BlenderConverter
 
         Matrix4 bind = parBind * ToMatrix(cur->arm_mat);
 
-        Quaternion rot; Vector3 loc, scl;
-        DecomposeMatrix(bind, loc, rot, scl);
+        Quaternion rot; 
+		Vector3 loc;
+		Vector3 scl;
+		DecomposeMatrix(bind, loc, rot, scl);
 
         bone->SetPosition(loc);
         bone->SetOrientation(rot);

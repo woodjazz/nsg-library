@@ -29,6 +29,27 @@ misrepresented as being the original software.
 
 using namespace NSG;
 
+static void* LockFile(const char* filename)
+{
+#if _WIN32
+	auto handle = CreateFileA(filename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (INVALID_HANDLE_VALUE != handle)
+		return handle;
+	return nullptr;
+#else
+	return fopen(filename, "r+");
+#endif
+}
+
+static void UnlockFile(void* handle)
+{
+#if _WIN32
+	CloseHandle(handle);
+#else
+	fclose((FILE*)handle);
+#endif
+}
+
 int NSG_MAIN(int argc, char* argv[])
 {
     auto window = Window::Create("Viewer", 0, 0, 600, 600);
@@ -85,15 +106,19 @@ int NSG_MAIN(int argc, char* argv[])
     auto updateSlot = engine.SigUpdate()->Connect([&](float deltaTime)
     {
 		totalTime += deltaTime;
-		const float FREQUENCY = 2; // seconds
+		const float FREQUENCY = 1; // seconds
 		if (inputFile.HasName() && totalTime > FREQUENCY)
     	{
-			totalTime = 0;
-    		auto mtime = inputFile.GetModificationTime();
-			if (lastModification.empty() || lastModification != mtime)
+			if (lastModification.empty() || lastModification != inputFile.GetModificationTime())
     		{
-    			lastModification = mtime;
-    			ConvertFile();
+				auto lock = LockFile(inputFile.GetFullAbsoluteFilePath().c_str());
+				if (lock)
+				{
+					totalTime = 0;
+					ConvertFile();
+					lastModification = inputFile.GetModificationTime();
+					UnlockFile(lock);
+				}
     		}
     	}
     });

@@ -392,5 +392,4 @@ namespace NSG
 		Path::RemoveChar(result, '\n');
 		return result;
     }
-
 }

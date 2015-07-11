@@ -340,7 +340,7 @@ namespace NSG
         {
             graphics_->SetClearColor(Color(1));
             ShadowGenerationPass();
-            graphics_->SetClearColor(scene->GetHorizonColor());
+            graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1));
             ExtractTransparent();
 			if (!visibles_.empty())
 			{

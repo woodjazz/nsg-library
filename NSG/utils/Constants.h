@@ -41,7 +41,8 @@ namespace NSG
 
     static const Vector3 VECTOR3_RIGHT(1, 0, 0);
     static const Vector3 VECTOR3_UP(0, 1, 0);
-    static const Vector3 VECTOR3_FORWARD(0, 0, -1);
+    static const Vector3 VECTOR3_FORWARD(0, 0, 1);
+	static const Vector3 VECTOR3_LOOKAT_DIRECTION(0, 0, -1);
 
     static const Vector3 VECTOR3_ZERO(0);
     static const Vector3 VECTOR3_ONE(1);

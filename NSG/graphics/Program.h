@@ -120,8 +120,14 @@ namespace NSG
         GLuint lightViewProjectionLoc_[MAX_SHADOW_SPLITS];
         GLuint projectionLoc_;
         GLuint sceneColorAmbientLoc_;
+        GLuint u_sceneHorizonColorLoc_;
         GLuint eyeWorldPosLoc_;
         GLuint u_uvTransformLoc_;
+
+        GLuint u_fogMinIntensityLoc_;
+        GLuint u_fogStartLoc_;
+        GLuint u_fogEndLoc_;
+        GLuint u_fogHeightLoc_;
 
         GLuint textureLoc_[MaterialTexture::MAX_MAPS];
 
@@ -172,7 +178,7 @@ namespace NSG
         Material* activeMaterial_;
         const Light* activeLight_;
         const Camera* activeCamera_;
-        Color sceneColor_;
+        ColorRGB sceneColor_;
         const Skeleton* skeleton_;
         SceneNode* node_;
         Material* material_;

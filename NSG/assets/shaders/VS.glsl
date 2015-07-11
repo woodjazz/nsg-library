@@ -14,16 +14,8 @@
 			v_color = a_color;
 			gl_Position = GetClipPos();
 
-		#elif defined(UNLIT)
-			
-			//v_color = a_color;
-			gl_Position = GetClipPos();
-			v_texcoord0 = GetTexCoord(a_texcoord0);
-			v_texcoord1 = GetTexCoord(a_texcoord1);
-
 		#elif defined(TEXT)
 
-			v_color = u_material.color * a_color;
 			gl_Position = GetClipPos();
 			v_texcoord0 = GetTexCoord(a_texcoord0);
 
@@ -32,11 +24,16 @@
 			gl_Position = vec4(a_position, 1.0);
 			v_texcoord0 = GetTexCoord(a_texcoord0);
 
-		#elif defined(AMBIENT)
+		#elif defined(AMBIENT) || defined(UNLIT)
 		
 			gl_Position = GetClipPos();
 			v_texcoord0 = GetTexCoord(a_texcoord0);
 			v_texcoord1 = GetTexCoord(a_texcoord1);
+
+			#ifdef FOG
+				v_worldPos = GetWorldPos().xyz;
+				v_depth = -GetCameraPos().z;
+			#endif
 
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
@@ -61,6 +58,10 @@
 			v_worldPos = GetWorldPos().xyz;
 			v_vertexToEye = normalize(u_eyeWorldPos - v_worldPos);
 			v_normal = GetWorldNormal();
+
+			#ifdef FOG
+				v_depth = -GetCameraPos().z;
+			#endif
 			
 			#if defined(NORMALMAP0) || defined(NORMALMAP1)
 				v_tangent = GetWorldTangent(); // Transform the tangent vector to world space (and pass it to the fragment shader).

@@ -125,6 +125,10 @@ static const char* TRANSFORMS_GLSL = \
 "	{\n"\
 "		return GetModelMatrix() * vec4(a_position, 1.0);\n"\
 "	}\n"\
+"	vec4 GetCameraPos()\n"\
+"	{\n"\
+"		return GetViewWorldMatrix() * vec4(a_position, 1.0);\n"\
+"	}\n"\
 "	vec4 GetClipPos()\n"\
 "	{\n"\
 "		#if defined(SPHERICAL_BILLBOARD)\n"\
@@ -198,6 +202,34 @@ static const char* TRANSFORMS_GLSL = \
 "	    }\n"\
 "	#endif\n"\
 "	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) \n"\
+"		float GetFogLinearFactor()\n"\
+"		{\n"\
+"		    return clamp((u_fogEnd - v_depth) / (u_fogEnd - u_fogStart), 0.0, 1.0);\n"\
+"		}\n"\
+"		float GetHeightFogFactor()\n"\
+"		{\n"\
+"			float height = clamp(v_worldPos.y, 0.0, abs(v_worldPos.y));\n"\
+"		    float fogFactor = GetFogLinearFactor();\n"\
+"		    float heightFogFactor = clamp(height - u_fogHeight, 0.0, height);\n"\
+"		    heightFogFactor = 1.0 - clamp(exp(-(heightFogFactor * heightFogFactor)), 0.0, 1.0);\n"\
+"		    return min(heightFogFactor, fogFactor);\n"\
+"		}\n"\
+"		float GetFogFactor()\n"\
+"		{\n"\
+"		    #ifdef FOGHEIGHT\n"\
+"		        return GetHeightFogFactor();\n"\
+"		    #else\n"\
+"		        return GetFogLinearFactor();\n"\
+"		    #endif\n"\
+"	    }\n"\
+"		vec3 GetAmbientFog(vec3 color)\n"\
+"		{\n"\
+"		    return mix(u_sceneHorizonColor, color, GetFogFactor());\n"\
+"		}\n"\
+"		vec3 GetLitFog(vec3 color)\n"\
+"		{\n"\
+"		    return color * GetFogFactor();\n"\
+"		}\n"\
 "		vec4 GetDiffuseColor()\n"\
 "		{\n"\
 "		#ifdef UNLIT\n"\

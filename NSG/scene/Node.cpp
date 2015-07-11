@@ -380,7 +380,7 @@ namespace NSG
         SetGlobalLookAt(lookAtPosition, up);
     }
 
-    void Node::Update(bool updateChildren) const
+    void Node::Update() const
     {
         if (!dirty_ || !enabled_)
             return;
@@ -391,11 +391,10 @@ namespace NSG
 
         if (parent)
         {
-            if (parent->dirty_)
-                parent->Update(false);
-
-            globalModel_ = parent->globalModel_ * GetTransform();
-            DecomposeMatrix(globalModel_, globalPosition_, globalOrientation_, globalScale_);
+			globalModel_ = parent->GetGlobalModelMatrix() * GetTransform();
+            globalPosition_ = Translation(globalModel_);
+            globalOrientation_ = parent->GetGlobalOrientation() * q_;
+            globalScale_ = Scale(globalModel_);
         }
         else
         {
@@ -408,20 +407,8 @@ namespace NSG
         isScaleUniform_ = NSG::IsScaleUniform(globalScale_);
         globalModelInv_ = glm::inverse(globalModel_);
         globalModelInvTransp_ = glm::transpose(glm::inverse(Matrix3(globalModel_)));
-        lookAtDirection_ = globalOrientation_ * VECTOR3_FORWARD;
+		lookAtDirection_ = globalOrientation_ * VECTOR3_LOOKAT_DIRECTION;
         upDirection_ = globalOrientation_ * VECTOR3_UP;
-
-        if (updateChildren)
-        {
-            auto it = children_.begin();
-            while (it != children_.end())
-            {
-                (*it)->dirty_ = true;
-                (*it)->SetUniformsNeedUpdate();
-                (*it)->Update();
-                ++it;
-            }
-        }
     }
 
 	Matrix4 Node::GetTransform() const

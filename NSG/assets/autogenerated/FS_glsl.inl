@@ -8,10 +8,8 @@ static const char* FS_GLSL = \
 "	{\n"\
 "		#if defined(VERTEXCOLOR)\n"\
 "			gl_FragColor = v_color;\n"\
-"		#elif defined(UNLIT)\n"\
-"               gl_FragColor = GetDiffuseColor();\n"\
 "		#elif defined(TEXT)\n"\
-"			gl_FragColor = v_color * vec4(vec3(1.0), texture2D(u_texture0, v_texcoord0).a);\n"\
+"			gl_FragColor = vec4(vec3(u_material.diffuseColor), GetDiffuseColor().a);\n"\
 "		#elif defined(BLEND)\n"\
 "			gl_FragColor = Blend();\n"\
 "		#elif defined(BLUR)\n"\
@@ -20,9 +18,14 @@ static const char* FS_GLSL = \
 "			gl_FragColor = Wave();\n"\
 "		#elif defined(SHOW_TEXTURE0)\n"\
 "			gl_FragColor = texture2D(u_texture0, v_texcoord0);\n"\
-"		#elif defined(AMBIENT)\n"\
+"		#elif defined(AMBIENT) || defined(UNLIT)\n"\
 "			\n"\
-"			gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();\n"\
+"			#ifdef FOG\n"\
+"				vec4 finalColor = GetAmbientIntensity() * GetDiffuseColor();\n"\
+"				gl_FragColor = vec4(GetAmbientFog(finalColor.rgb), finalColor.a);\n"\
+"			#else\n"\
+"				gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();\n"\
+"			#endif\n"\
 "		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)\n"\
 "			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
 "    		float lightToPixelDistance = length(lightToVertex) * GetLightInvRange();\n"\
@@ -34,7 +37,12 @@ static const char* FS_GLSL = \
 "				vec3 normal = GetNormal();\n"\
 "	    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
 "	    		vec3 world2light = v_worldPos - GetLightPosition();\n"\
-"		    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();\n"\
+"				#ifdef FOG\n"\
+"					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();\n"\
+"					gl_FragColor = vec4(GetLitFog(finalColor.rgb), finalColor.a);\n"\
+"				#else\n"\
+"			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();\n"\
+"			    #endif\n"\
 "		#endif	    \n"\
 "	}	\n"\
 "#endif\n"\

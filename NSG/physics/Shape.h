@@ -60,9 +60,6 @@ namespace NSG
 		PMesh GetMesh() const { return mesh_.lock(); }
 		void Set(PResourceXMLNode xmlResource);
     private:
-		void SetScale(const Vector3& scale);
-		void SetMesh(PMesh mesh);
-		void SetType(PhysicsShape type);
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;

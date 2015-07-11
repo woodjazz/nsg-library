@@ -309,7 +309,7 @@ namespace NSG
 
     bool RigidBody::IsStatic() const
     {
-        return mass_ == 0;
+		return mass_ == 0;
     }
 
     void RigidBody::SetLinearVelocity(const Vector3& lv)
@@ -381,39 +381,32 @@ namespace NSG
         }
     }
 
-	void RigidBody::ReDoShape(const Vector3& newScale, PhysicsShape newType)
+	void RigidBody::ReDoShape(const Vector3& newScale)
 	{
-#if 0
-		ShapeKey key(shape_->GetName());
-		PMesh mesh;
-		Vector3 scale;
-		PhysicsShape type;
-		key.GetData(mesh, scale, type);
-		PShape newShape;
-		if (mesh)
-			newShape = Shape::GetOrCreate(ShapeKey(mesh, newScale));
-		else
-			newShape = Shape::GetOrCreate(ShapeKey(newType, newScale));
-		SetShape(newShape);
-#endif
+		Shapes shapes = shapes_;
+		shapes_.clear();
+		Invalidate();
+		for (auto it: shapes)
+		{
+			auto shape = it.second.shape;
+			auto position = it.second.position;
+			auto rotation = it.second.rotation;
+			PMesh mesh;
+			Vector3 scale;
+			PhysicsShape type;
+			ShapeKey(shape->GetName()).GetData(mesh, scale, type);
+			if(mesh)
+				shape = Shape::GetOrCreate(ShapeKey{mesh, newScale});
+			else
+				shape = Shape::GetOrCreate(ShapeKey{type, newScale});
+			AddShape(shape, position, rotation);
+		}
 	}
 
     void RigidBody::ReScale()
     {
-#if 0
-        if (shape_)
-        {
-            auto sceneNode(sceneNode_.lock());
-			ReDoShape(sceneNode->GetGlobalScale(), shape_->GetType());
-        }
-
-        if (body_)
-        {
-            RemoveFromWorld();
-            UpdateShape();
-            AddToWorld();
-        }
-#endif
+        auto sceneNode(sceneNode_.lock());
+		ReDoShape(sceneNode->GetGlobalScale());
     }
 
 	void RigidBody::UpdateInertia()

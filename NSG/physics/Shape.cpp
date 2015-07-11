@@ -85,14 +85,9 @@ namespace NSG
           margin_(.06f),
           scale_(1)
     {
-        PMesh mesh;
-        Vector3 scale;
-        PhysicsShape type;
-        ShapeKey(key).GetData(mesh, scale, type);
-        SetScale(scale);
-        if (mesh)
-            SetMesh(mesh);
-        SetType(type);
+		PMesh mesh;
+        ShapeKey(key).GetData(mesh, scale_, type_);
+		mesh_ = mesh;
     }
 
     Shape::~Shape()
@@ -104,26 +99,11 @@ namespace NSG
 		if (type_ == PhysicsShape::SH_EMPTY)
 			return true;
 
-        #if 0
-        bool isValid = !xmlResource_ || xmlResource_->IsReady();
-        if (isValid)
-        {
-            if (type_ == PhysicsShape::SH_TRIMESH || type_ == PhysicsShape::SH_CONVEX_TRIMESH)
-            {
-                auto mesh = mesh_.lock();
-                CHECK_ASSERT(mesh, __FILE__, __LINE__);
-                if (mesh->IsReady())
-                {
-                    bb_ = mesh->GetBB();
-                    return bb_.IsDefined();
-                }
-                return false;
-            }
-        }
-        return bb_.IsDefined();
-        #else
-        return !xmlResource_ || xmlResource_->IsReady() && bb_.IsDefined();
-        #endif
+		auto mesh = mesh_.lock();
+		if(mesh)
+			bb_ = mesh->GetBB(); 
+
+        return (!xmlResource_ || xmlResource_->IsReady()) && bb_.IsDefined();
     }
 
     void Shape::AllocateResources()
@@ -134,7 +114,7 @@ namespace NSG
         {
             case SH_SPHERE:
                 {
-                    if (IsScaleUniform(scale_))
+                    if (!IsScaleUniform(scale_))
                     {
                         btVector3 position(0.f, 0.f, 0.f);
                         btScalar radi = std::max(halfSize.x, std::max(halfSize.y, halfSize.z));
@@ -152,8 +132,8 @@ namespace NSG
 
             case SH_CONE:
             {
-                auto c_radius = std::max(halfSize.x, halfSize.z);
-                shape_ = std::make_shared<btConeShape>(c_radius, halfSize.y);
+                auto c_radius = std::max(halfSize.x, halfSize.y);
+                shape_ = std::make_shared<btConeShapeZ>(c_radius, 2*halfSize.z);
                 break;
             }
 
@@ -163,8 +143,8 @@ namespace NSG
 
             case SH_CAPSULE:
                 {
-                    auto c_radius = std::max(halfSize.x, halfSize.z);
-                    shape_ = std::make_shared<btCapsuleShape>(c_radius - 0.05f, (halfSize.y - 0.05f) * 2 - c_radius);
+                    auto c_radius = std::max(halfSize.x, halfSize.y);
+                    shape_ = std::make_shared<btCapsuleShapeZ>(c_radius - 0.05f, (halfSize.z - 0.05f) * 2 - c_radius);
                     break;
                 }
 
@@ -199,43 +179,6 @@ namespace NSG
         shape_->setUserPointer(nullptr);
         shape_ = nullptr;
         triMesh_ = nullptr;
-    }
-
-    void Shape::SetType(PhysicsShape type)
-    {
-        if (type_ != type)
-        {
-            type_ = type;
-            Invalidate();
-        }
-    }
-
-    void Shape::SetScale(const Vector3& scale)
-    {
-        if (scale != scale_)
-        {
-            scale_ = scale;
-            if (shape_)
-                shape_->setLocalScaling(ToBtVector3(scale));
-        }
-    }
-
-    void Shape::SetMesh(PMesh mesh)
-    {
-        if (mesh_.lock() != mesh)
-        {
-            mesh_ = mesh;
-            Invalidate();
-            if (mesh)
-            {
-                slotReleased_ = mesh->SigReleased()->Connect([this]()
-                {
-                    Invalidate();
-                });
-            }
-            else
-                slotReleased_ = nullptr;
-        }
     }
 
     void Shape::SetBB(const BoundingBox& bb)
@@ -364,7 +307,6 @@ namespace NSG
         }
         return result;
     }
-
 
     void Shape::SaveShapes(pugi::xml_node& node)
     {

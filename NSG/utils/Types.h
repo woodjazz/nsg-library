@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "glm/gtx/io.hpp"
 #include "glm/gtx/norm.hpp"
 #include "glm/gtx/orthonormalize.hpp"
+#include "glm/gtx/matrix_decompose.hpp"
 #include "SharedPointers.h"
 #include "GLES2Includes.h"
 #include "FlagSet.h"

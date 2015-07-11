@@ -47,6 +47,11 @@ namespace NSG
 	{
 		return lhs * (1.0f - t) + rhs * t;
 	}
+
+	bool IsNaN(const Quaternion& q);
+	Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection);
+	Vector3 Translation(const Matrix4& m);
+	Vector3 Scale(const Matrix4& m);
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
 	inline unsigned NextPowerOfTwo(unsigned value)
 	{

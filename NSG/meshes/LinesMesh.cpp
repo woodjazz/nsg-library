@@ -49,11 +49,7 @@ namespace NSG
 
     void LinesMesh::Clear()
     {
-        if (!lines_.empty())
-        {
-            lines_.clear();
-            Invalidate();
-        }
+		lines_.clear();
     }
 
     GLenum LinesMesh::GetWireFrameDrawMode() const

@@ -46,6 +46,10 @@ namespace NSG
         std::shared_ptr<btDiscreteDynamicsWorld> GetWorld() const { return dynamicsWorld_; }
 		void SetGravity(const Vector3& gravity);
 		const Vector3& GetGravity() const { return gravity_; }
+		void SetFps(int fps);
+		int GetFps() const { return fps_; }
+		void SetMaxSubSteps(int steps);
+		int GetMaxSubSteps() const { return maxSubSteps_; }
 		///////////////////////////////////////////////////////////////////////////////////////
 		// Bullet btIDebugDraw
 		bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
@@ -72,5 +76,7 @@ namespace NSG
 		Vector3 gravity_;
 		int debugMode_;
 		PLinesMesh lines_;
+		int fps_;
+		int maxSubSteps_;
     };
 }

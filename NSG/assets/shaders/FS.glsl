@@ -7,13 +7,9 @@
 
 			gl_FragColor = v_color;
 
-		#elif defined(UNLIT)
-
-               gl_FragColor = GetDiffuseColor();
-
 		#elif defined(TEXT)
 
-			gl_FragColor = v_color * vec4(vec3(1.0), texture2D(u_texture0, v_texcoord0).a);
+			gl_FragColor = vec4(vec3(u_material.diffuseColor), GetDiffuseColor().a);
 
 		#elif defined(BLEND)
 
@@ -31,9 +27,14 @@
 
 			gl_FragColor = texture2D(u_texture0, v_texcoord0);
 
-		#elif defined(AMBIENT)
+		#elif defined(AMBIENT) || defined(UNLIT)
 			
-			gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();
+			#ifdef FOG
+				vec4 finalColor = GetAmbientIntensity() * GetDiffuseColor();
+				gl_FragColor = vec4(GetAmbientFog(finalColor.rgb), finalColor.a);
+			#else
+				gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();
+			#endif
 
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS)
 
@@ -52,7 +53,12 @@
 				vec3 normal = GetNormal();
 	    		vec3 vertexToEye = normalize(v_vertexToEye);
 	    		vec3 world2light = v_worldPos - GetLightPosition();
-		    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();
+				#ifdef FOG
+					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();
+					gl_FragColor = vec4(GetLitFog(finalColor.rgb), finalColor.a);
+				#else
+			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();
+			    #endif
 
 		#endif	    
 	}	

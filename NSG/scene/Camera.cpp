@@ -432,7 +432,7 @@ namespace NSG
         if (Graphics::this_->GetCamera())
             return Graphics::this_->GetCamera()->GetScreenRay(screenX, screenY);
         else
-            return Ray(Vector3(screenX, screenY, 0), VECTOR3_FORWARD);
+			return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
     }
 
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const

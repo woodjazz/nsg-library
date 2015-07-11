@@ -24,6 +24,7 @@ static const char* COMMON_GLSL = \
 "varying vec3 v_tangent;\n"\
 "varying vec3 v_bitangent;\n"\
 "varying vec3 v_vertexToEye;\n"\
+"varying float v_depth;\n"\
 "struct Material\n"\
 "{\n"\
 "	vec4 diffuseColor;\n"\
@@ -33,7 +34,8 @@ static const char* COMMON_GLSL = \
 "    float ambientIntensity;\n"\
 "    float shininess;\n"\
 "};\n"\
-"uniform vec4 u_sceneAmbientColor;\n"\
+"uniform vec3 u_sceneAmbientColor;\n"\
+"uniform vec3 u_sceneHorizonColor;\n"\
 "uniform Material u_material;\n"\
 "// Could be normal camera or shadow camera\n"\
 "uniform vec3 u_eyeWorldPos;\n"\
@@ -54,6 +56,10 @@ static const char* COMMON_GLSL = \
 "uniform vec4 u_lightSpecularColor;\n"\
 "uniform float u_lightCutOff; // 0.5f * cosine(cutOff)\n"\
 "uniform mat4 u_view;\n"\
+"uniform float u_fogMinIntensity;\n"\
+"uniform float u_fogStart;\n"\
+"uniform float u_fogEnd;\n"\
+"uniform float u_fogHeight;\n"\
 "#ifdef COMPILEVS\n"\
 "	uniform mat4 u_model;\n"\
 "	uniform mat3 u_normalMatrix;\n"\

@@ -34,6 +34,7 @@ void CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 		auto obj = scene->CreateChild<SceneNode>();
 		obj->SetPosition(pos);
 		auto material = Material::Create();
+		material->SetRenderPass(RenderPass::UNLIT);
 		material->SetDiffuseColor(color);
 		obj->SetMesh(mesh);
 		obj->SetMaterial(material);
@@ -43,6 +44,7 @@ void CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 		auto obj = scene->CreateChild<SceneNode>();
 		obj->SetPosition(pos + Vector3(5, 0, 0));
 		auto material = Material::Create();
+		material->SetRenderPass(RenderPass::UNLIT);
 		material->SetDiffuseColor(color);
 		material->SetFillMode(FillMode::WIREFRAME);
 		obj->SetMesh(mesh);

@@ -21,6 +21,7 @@ varying vec3 v_normal;
 varying vec3 v_tangent;
 varying vec3 v_bitangent;
 varying vec3 v_vertexToEye;
+varying float v_depth;
 
 struct Material
 {
@@ -32,7 +33,8 @@ struct Material
     float shininess;
 };
 
-uniform vec4 u_sceneAmbientColor;
+uniform vec3 u_sceneAmbientColor;
+uniform vec3 u_sceneHorizonColor;
 uniform Material u_material;
 // Could be normal camera or shadow camera
 uniform vec3 u_eyeWorldPos;
@@ -54,6 +56,10 @@ uniform vec4 u_lightDiffuseColor;
 uniform vec4 u_lightSpecularColor;
 uniform float u_lightCutOff; // 0.5f * cosine(cutOff)
 uniform mat4 u_view;
+uniform float u_fogMinIntensity;
+uniform float u_fogStart;
+uniform float u_fogEnd;
+uniform float u_fogHeight;
 
 #ifdef COMPILEVS
 	uniform mat4 u_model;

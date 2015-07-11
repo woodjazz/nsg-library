@@ -68,14 +68,16 @@ namespace NSG
 	void IndexBuffer::UpdateData(const Indexes& indexes)
 	{
 		CHECK_GL_STATUS(__FILE__, __LINE__);
-
-		GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
-
         Graphics::this_->SetIndexBuffer(this, true);
-
-		SetBufferSubData(0, bytes2Set, &indexes[0]);
-
+		GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
+		if (bytes2Set > bufferSize_)
+		{
+			//rebuild buffer
+			glBufferData(type_, bytes2Set, &indexes[0], usage_); 
+			bufferSize_ = bytes2Set;
+		}
+		else
+			SetBufferSubData(0, bytes2Set, &indexes[0]);
 		CHECK_GL_STATUS(__FILE__, __LINE__);
-		
 	}
 }

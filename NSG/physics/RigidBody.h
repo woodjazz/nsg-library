@@ -69,7 +69,7 @@ namespace NSG
         void SetLinearFactor(const Vector3& factor);
         void SetAngularFactor(const Vector3& factor);
     private:
-		void ReDoShape(const Vector3& newScale, PhysicsShape newType);
+		void ReDoShape(const Vector3& newScale);
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;

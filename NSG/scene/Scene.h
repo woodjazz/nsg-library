@@ -40,10 +40,10 @@ namespace NSG
 		Scene(const std::string& name = GetUniqueName("scene"));
         ~Scene();
         void SetWindow(Window* window);
-        void SetAmbientColor(Color ambient);
-        void SetHorizonColor(Color horizon);
-        const Color& GetAmbientColor() const { return ambient_; }
-        const Color& GetHorizonColor() const { return horizon_; }
+        void SetAmbientColor(ColorRGB ambient);
+        void SetHorizonColor(ColorRGB horizon);
+        const ColorRGB& GetAmbientColor() const { return ambient_; }
+        const ColorRGB& GetHorizonColor() const { return horizon_; }
 		void AddLight(Light* light);
 		const std::vector<Light*>& GetLights() const;
         void AddCamera(Camera* camera);
@@ -79,6 +79,16 @@ namespace NSG
 		PCamera GetMainCamera() const;
         void SetMainCamera(PCamera camera);
         const std::vector<SceneNode*>& GetDrawables() const;
+		void EnableFog(bool enable);
+		void SetFogMinIntensity(float intensity); // same as density (so far not used by the shader)
+		void SetFogStart(float start);
+		void SetFogDepth(float depth);
+		void SetFogHeight(float height);
+        float GetFogMinIntensity() const; // same as density (so far not used by the shader)
+        float GetFogStart() const;
+        float GetFogDepth() const;
+        float GetFogHeight() const;
+        void FillShaderDefines(std::string& defines, PassType passType) const;
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
@@ -94,8 +104,8 @@ namespace NSG
         std::vector<Camera*> cameras_;
 		std::vector<Light*> lights_;
 		std::vector<ParticleSystem*> particleSystems_;
-        Color ambient_;
-        Color horizon_;
+        ColorRGB ambient_;
+        ColorRGB horizon_;
 		POctree octree_;
         mutable std::set<SceneNode*> octreeNeedsUpdate_;
 		std::map<std::string, PAnimation> animations_;
@@ -115,5 +125,10 @@ namespace NSG
         SignalLight::PSlot slotLightBeingDestroy_;
 		SignalCamera::PSlot slotCameraBeingDestroy_;
 		SignalParticleSystem::PSlot slotPSBeingDestroy_;
+		bool enableFog_;
+		float fogMinIntensity_;
+		float fogStart_;
+		float fogDepth_;
+		float fogHeight_;
     };
 }

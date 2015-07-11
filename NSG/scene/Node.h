@@ -131,7 +131,7 @@ namespace NSG
         // Offset matrix that converts from vertex space to bone space
         void SetBoneOffsetMatrix(const Matrix4& m);
         const Matrix4& GetBoneOffsetMatrix() { return boneOffsetMatrix_; }
-        void Update(bool updateChildren = false) const;
+        void Update() const;
         bool IsScaleUniform() const;
         PScene GetScene() const { return scene_.lock(); }
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);

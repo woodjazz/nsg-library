@@ -32,13 +32,23 @@ PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 {
 	auto obj = scene->CreateChild<SceneNode>();
 	obj->SetGlobalPosition(pos);
-	auto material = Material::Create();
+	auto material = Material::GetOrCreate(mesh->GetName());
 	material->SetDiffuseColor(color);
 	material->SetSpecularColor(ColorRGB(0));
-	material->SetRenderPass(RenderPass::PERPIXEL);
+	//material->SetRenderPass(RenderPass::PERPIXEL);
+	material->SetRenderPass(RenderPass::UNLIT);
 	obj->SetMesh(mesh);
 	obj->SetMaterial(material);
 	return obj;
+}
+
+static void SetFog(PScene scene)
+{
+	scene->SetHorizonColor(ColorRGB(0, 1, 0));
+	scene->EnableFog(true);
+	scene->SetFogDepth(150);
+	scene->SetFogStart(15);
+	//scene->SetFogHeight(0.1f);
 }
 
 #define TEST1
@@ -47,6 +57,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 	auto window = Window::Create();
     scene = std::make_shared<Scene>("scene");
+	//SetFog(scene);
     auto light = scene->CreateChild<Light>();
     light->SetType(LightType::DIRECTIONAL);
 	//light->SetShadowColor(COLOR_GREEN);
@@ -74,13 +85,13 @@ int NSG_MAIN(int argc, char* argv[])
 	{
 		float z = -i * 2.5f;
 		//CreateObject(Mesh::Create<SphereMesh>(), COLOR_RED, Vector3(-1, 1, z));
-		CreateObject(Mesh::Create<BoxMesh>(), COLOR_BLUE, Vector3(1, 1, z));
+		CreateObject(Mesh::GetOrCreate<BoxMesh>("Box"), COLOR_BLUE, Vector3(1, 1, z));
 	}
 
 	for (int i = 25; i < 50; i++)
 	{
 		float z = -i * 2.5f;
-		auto sphere = CreateObject(Mesh::Create<SphereMesh>(), COLOR_RED, Vector3(-1, 1, z));
+		auto sphere = CreateObject(Mesh::GetOrCreate<SphereMesh>("Sphere"), COLOR_RED, Vector3(-1, 1, z));
 		sphere->GetMaterial()->SetSpecularColor(COLOR_WHITE);
 		//CreateObject(Mesh::Create<BoxMesh>(), COLOR_BLUE, Vector3(1, 1, z));
 	}

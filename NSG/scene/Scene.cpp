@@ -27,14 +27,19 @@ namespace NSG
     Scene::Scene(const std::string& name)
         : SceneNode(name),
           mainCamera_(nullptr),
-          ambient_(0.3f, 0.3f, 0.3f, 1),
-          horizon_(0.f, 0.f, 0.f, 1.f),
+          ambient_(0.3f, 0.3f, 0.3f),
+          horizon_(0.f, 0.f, 0.f),
           octree_(std::make_shared<Octree>()),
           window_(nullptr),
           signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
           signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
           signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
-          signalNodeMouseWheel_(new Signal<SceneNode *, float, float>())
+          signalNodeMouseWheel_(new Signal<SceneNode *, float, float>()),
+		  enableFog_(false),
+		  fogMinIntensity_(0),
+		  fogStart_(5),
+		  fogDepth_(25),
+		  fogHeight_(0)
     {
         if (Graphics::this_)
         {
@@ -149,7 +154,7 @@ namespace NSG
         }
     }
 
-    void Scene::SetAmbientColor(Color ambient)
+    void Scene::SetAmbientColor(ColorRGB ambient)
     {
         if (ambient_ != ambient)
         {
@@ -158,7 +163,7 @@ namespace NSG
         }
     }
 
-    void Scene::SetHorizonColor(Color horizon)
+    void Scene::SetHorizonColor(ColorRGB horizon)
     {
         if (horizon_ != horizon)
         {
@@ -254,6 +259,8 @@ namespace NSG
     {
         pugi::xml_node child = node.append_child("Physics");
         child.append_attribute("gravity").set_value(ToString(physicsWorld_->GetGravity()).c_str());
+        child.append_attribute("fps").set_value(physicsWorld_->GetFps());
+        child.append_attribute("maxSubSteps").set_value(physicsWorld_->GetMaxSubSteps());
     }
 
     void Scene::LoadPhysics(const pugi::xml_node& node)
@@ -261,6 +268,8 @@ namespace NSG
         pugi::xml_node child = node.child("Physics");
         Vertex3 gravity = ToVertex3(child.attribute("gravity").as_string());
         physicsWorld_->SetGravity(gravity);
+        physicsWorld_->SetFps(child.attribute("fps").as_int());
+        physicsWorld_->SetMaxSubSteps(child.attribute("maxSubSteps").as_int());
     }
 
     void Scene::SaveAnimations(pugi::xml_node& node) const
@@ -330,8 +339,14 @@ namespace NSG
 
     void Scene::Load(const pugi::xml_node& node)
     {
-        SetAmbientColor(ToVertex4(node.attribute("ambient").as_string()));
-        SetHorizonColor(ToVertex4(node.attribute("horizon").as_string()));
+        SetAmbientColor(ToVertex3(node.attribute("ambient").as_string()));
+        SetHorizonColor(ToVertex3(node.attribute("horizon").as_string()));
+        EnableFog(node.attribute("enableFog").as_bool());
+        SetFogMinIntensity(node.attribute("fogMinIntensity").as_float());
+        SetFogStart(node.attribute("fogStart").as_float());
+        SetFogDepth(node.attribute("fogDepth").as_float());
+        SetFogHeight(node.attribute("fogHeight").as_float());
+
         std::string mainCameraName = node.attribute("mainCamera").as_string();
         pugi::xml_node sceneNode = node.child("SceneNode");
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
@@ -348,6 +363,11 @@ namespace NSG
         pugi::xml_node scene = node.append_child("Scene");
         scene.append_attribute("ambient").set_value(ToString(ambient_).c_str());
         scene.append_attribute("horizon").set_value(ToString(horizon_).c_str());
+        scene.append_attribute("enableFog").set_value(enableFog_);
+		scene.append_attribute("fogMinIntensity").set_value(fogMinIntensity_);
+        scene.append_attribute("fogStart").set_value(fogStart_);
+        scene.append_attribute("fogDepth").set_value(fogDepth_);
+        scene.append_attribute("fogHeight").set_value(fogHeight_);
         std::string mainCameraName;
         if(mainCamera_)
             mainCameraName = mainCamera_->GetName();
@@ -545,4 +565,84 @@ namespace NSG
     {
         return octree_->GetDrawables();
     }
+
+	void Scene::EnableFog(bool enable)
+	{
+		if (enableFog_ != enable)
+		{
+			enableFog_ = enable;
+			SetUniformsNeedUpdate();
+		}
+	}
+
+	void Scene::SetFogMinIntensity(float intensity)
+	{
+		if (fogMinIntensity_ != intensity)
+		{
+			fogMinIntensity_ = intensity;
+			if (enableFog_)
+				SetUniformsNeedUpdate();
+		}
+	}
+
+	void Scene::SetFogStart(float start)
+	{
+		if (fogStart_ != start)
+		{
+			fogStart_ = start;
+			if (enableFog_)
+				SetUniformsNeedUpdate();
+		}
+	}
+
+	void Scene::SetFogDepth(float depth)
+	{
+		if (fogDepth_ != depth)
+		{
+			fogDepth_ = depth;
+			if (enableFog_)
+				SetUniformsNeedUpdate();
+		}
+	}
+
+	void Scene::SetFogHeight(float height)
+	{
+		if (fogHeight_ != height)
+		{
+			fogHeight_ = height;
+			if (enableFog_)
+				SetUniformsNeedUpdate();
+		}
+	}
+
+    void Scene::FillShaderDefines(std::string& defines, PassType passType) const
+    {
+        if (enableFog_ && PassType::SHADOW != passType)
+        {
+            defines += "FOG\n";
+            if(fogHeight_ != 0)
+                defines += "FOGHEIGHT\n";
+        }
+    }
+
+    float Scene::GetFogMinIntensity() const
+    {
+        return fogMinIntensity_;
+    }
+
+    float Scene::GetFogStart() const
+    {
+        return fogStart_;
+    }
+
+    float Scene::GetFogDepth() const
+    {
+        return fogDepth_;
+    }
+
+    float Scene::GetFogHeight() const
+    {
+		return fogHeight_;
+    }
 }
+

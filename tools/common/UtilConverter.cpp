@@ -62,6 +62,4 @@ namespace BlenderConverter
         Matrix4 result = glm::translate(glm::mat4(), center) * Matrix4(rot);
         return glm::inverse(result);
     }
-
-
 }
