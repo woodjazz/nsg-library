@@ -326,6 +326,8 @@ namespace BlenderConverter
                 auto texture = CreateTexture(ima, imageName);
                 if (mtex->uvname)
                     texture->SetUVName(mtex->uvname);
+                
+                texture->SetWrapMode(TextureWrapMode::REPEAT);
 
                 switch (mtex->blendtype)
                 {
@@ -900,38 +902,26 @@ namespace BlenderConverter
 
     void BScene::ExtractGeneral(const Blender::Object* obj, PSceneNode sceneNode)
     {
-        Quaternion q(Vector3(obj->rot[0], obj->rot[1], obj->rot[2]));
-        Vector3 pos(obj->loc[0], obj->loc[1], obj->loc[2]);
-        Vector3 scale(obj->size[0], obj->size[1], obj->size[2]);
-
+        Quaternion q;
+        Vector3 pos;
+        Vector3 scale;
+        
+        if(obj->parent)
+        {
+            auto parentInv = glm::inverse(ToMatrix(obj->parent->obmat));
+            auto m = parentInv * ToMatrix(obj->obmat);
+            DecomposeMatrix(m, pos, q, scale);
+        }
+        else
+        {
+            q = Quaternion(Vector3(obj->rot[0], obj->rot[1], obj->rot[2]));
+            pos = Vector3(obj->loc[0], obj->loc[1], obj->loc[2]);
+            scale = Vector3(obj->size[0], obj->size[1], obj->size[2]);
+        }
+        
 		sceneNode->SetPosition(pos);
 		sceneNode->SetOrientation(q);
 		sceneNode->SetScale(scale);
-#if 0
-        if (sceneNode->GetParent()->IsArmature())
-        {
-			auto parent = sceneNode->GetParent();
-			auto m = glm::inverse(parent->GetTransform()) * sceneNode->GetTransform();
-			DecomposeMatrix(m, pos, q, scale);
-			sceneNode->SetPosition(pos);
-			sceneNode->SetOrientation(q);
-			sceneNode->SetScale(scale);
-
-#if 0
-            Quaternion parent_q;
-            Vector3 parent_pos;
-            Vector3 parent_scale;
-
-            
-            Matrix4 parentinv = glm::translate(glm::mat4(), parent->GetPosition()) * glm::mat4_cast(parent->GetOrientation()) * glm::scale(glm::mat4(1.0f), parent->GetScale());
-            parentinv = glm::inverse(parentinv);
-            DecomposeMatrix(parentinv, parent_pos, parent_q, parent_scale);
-            pos = parent_pos + parent_q * (parent_scale * pos);
-            q = parent_q * q;
-            scale = parent_scale * scale;
-#endif
-        }
-#endif
     }
 
     PhysicsShape BScene::GetShapeType(short boundtype) const

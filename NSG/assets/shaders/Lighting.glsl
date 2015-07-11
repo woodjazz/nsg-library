@@ -1,13 +1,21 @@
 //Remember to rebuild with CMake if this file changes
+#if defined(COMPILEFS) && !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) 
+float GetSpecular(vec3 normal, vec3 eyeVec, vec3 lightDir, float specularPower)
+{
+    vec3 halfVec = normalize(normalize(eyeVec) + lightDir);
+    return pow(max(dot(normal, halfVec), 0.0), specularPower);
+}
+
 
 vec4 CalcLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)
 {
     float dFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);
-    vec4 diffuse = dFactor * u_lightDiffuseColor;
-    #if defined(SPECULAR) && defined(COMPILEFS)
-        vec3 lightReflect = normalize(reflect(lightDirection, normal));
-        float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);
-        sFactor = pow(sFactor, u_material.shininess);
+    vec4 diffuse = dFactor * u_lightDiffuseColor * GetDiffuseColor();
+    #if defined(SPECULAR)
+        //vec3 lightReflect = normalize(reflect(lightDirection, normal));
+        //float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);
+        //sFactor = pow(sFactor, u_material.shininess);
+        float sFactor = GetSpecular(normal, vertexToEye, -lightDirection, u_material.shininess);
         vec4 specular = sFactor * u_lightSpecularColor * GetSpecularColor();
         return diffuse + specular;
     #else
@@ -57,3 +65,4 @@ vec4 CalcTotalLight(vec3 world2light, vec3 vertexToEye, vec3 normal)
         #endif
     #endif
 }
+#endif

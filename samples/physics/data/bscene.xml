@@ -3,7 +3,7 @@
 	<Resources />
 	<Sounds />
 	<Meshes>
-		<Mesh name="Cube.001" wireFrameDrawMode="1" solidDrawMode="4" uv0Name="" uv1Name="">
+		<Mesh name="Cube" wireFrameDrawMode="1" solidDrawMode="4" uv0Name="" uv1Name="">
 			<Vertexes>
 				<VertexData position="[-1.000000,-1.000000,1.000000]" normal="[-0.577350,0.000000,0.000000]" uv0="[0.000000,0.000000]" uv1="[0.000000,0.000000]" color="[1.000000,1.000000,1.000000,1.000000]" bonesID="[0.000000,0.000000,0.000000,0.000000]" bonesWeight="[0.000000,0.000000,0.000000,0.000000]" />
 				<VertexData position="[-1.000000,1.000000,1.000000]" normal="[-0.577350,0.000000,0.000000]" uv0="[0.000000,0.000000]" uv1="[0.000000,0.000000]" color="[1.000000,1.000000,1.000000,1.000000]" bonesID="[0.000000,0.000000,0.000000,0.000000]" bonesWeight="[0.000000,0.000000,0.000000,0.000000]" />
@@ -40,11 +40,11 @@
 	<Shapes />
 	<Scene ambient="[0.969921,0.969921,0.969921]" horizon="[0.010379,0.273786,0.940391]" enableFog="false" fogMinIntensity="0.100000024" fogStart="10.5999994" fogDepth="25" fogHeight="0.899999976" mainCamera="Camera">
 		<SceneNode name="Scene" isArmature="false" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[0.707107,-0.707107,-0.000000,-0.000000]" scale="[1.000000,1.000000,1.000000]">
-			<SceneNode name="CubeParent" isArmature="false" nodeType="SceneNode" position="[0.000000,2.212887,2.866232]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,2.000000]" materialName="Material.003" meshName="Cube.001">
-				<SceneNode name="CubeChild" isArmature="false" nodeType="SceneNode" position="[0.000000,0.000000,0.000000]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material.003" meshName="Cube.001" />
+			<SceneNode name="CubeParent" isArmature="false" nodeType="SceneNode" position="[0.000000,2.212887,5.637794]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material.003" meshName="Cube">
+				<SceneNode name="CubeChild" isArmature="false" nodeType="SceneNode" position="[0.000000,-2.212887,-5.637795]" orientation="[1.000000,0.000000,0.000000,0.000000]" scale="[1.000000,1.000000,1.000000]" materialName="Material.003" meshName="Cube" />
 			</SceneNode>
 			<SceneNode name="Lamp" nodeType="Light" type="DIRECTIONAL" energy="5" color="[1.000000,1.000000,1.000000,1.000000]" diffuse="true" specular="true" spotCutOff="75" position="[4.076245,1.005454,5.903862]" orientation="[0.902577,0.394114,-0.073525,-0.156917]" distance="29.9999828" shadows="true" shadowClipStart="0.100000001" shadowClipEnd="30" onlyShadow="false" shadowColor="[0.000000,0.000000,0.000000,1.000000]" shadowBias="0.00100000005" />
-			<SceneNode name="Camera" nodeType="Camera" fovy="0.857556045" zNear="0.100000001" zFar="100" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="7.31428576" sensorFit="0" position="[17.400126,-11.973591,14.605440]" orientation="[-0.745181,-0.421541,-0.162291,-0.490581]" />
+			<SceneNode name="Camera" nodeType="Camera" fovy="0.857556045" zNear="0.100000001" zFar="100" viewportFactor="[0.000000,0.000000,1.000000,1.000000]" isOrtho="false" orthoScale="7.31428576" sensorFit="0" position="[17.503559,-9.384459,16.296970]" orientation="[-0.726305,-0.379733,-0.166515,-0.548231]" />
 		</SceneNode>
 		<Animations />
 		<Skeletons />

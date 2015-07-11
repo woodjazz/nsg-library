@@ -45,7 +45,7 @@
 
     	#elif defined(PER_VERTEX_LIGHTING)
 
-			gl_FragColor = v_color * GetDiffuseColor();
+			gl_FragColor = v_color;// * GetDiffuseColor();
 
 		#elif defined(PER_PIXEL_LIGHTING)
 
@@ -54,10 +54,10 @@
 	    		vec3 vertexToEye = normalize(v_vertexToEye);
 	    		vec3 world2light = v_worldPos - GetLightPosition();
 				#ifdef FOG
-					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();
+					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal);
 					gl_FragColor = vec4(GetLitFog(finalColor.rgb), finalColor.a);
 				#else
-			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();
+			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal);
 			    #endif
 
 		#endif	    

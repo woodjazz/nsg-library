@@ -3,14 +3,21 @@ namespace NSG
 {
 static const char* LIGHTING_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
+"#if defined(COMPILEFS) && !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) \n"\
+"float GetSpecular(vec3 normal, vec3 eyeVec, vec3 lightDir, float specularPower)\n"\
+"{\n"\
+"    vec3 halfVec = normalize(normalize(eyeVec) + lightDir);\n"\
+"    return pow(max(dot(normal, halfVec), 0.0), specularPower);\n"\
+"}\n"\
 "vec4 CalcLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)\n"\
 "{\n"\
 "    float dFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);\n"\
-"    vec4 diffuse = dFactor * u_lightDiffuseColor;\n"\
-"    #if defined(SPECULAR) && defined(COMPILEFS)\n"\
-"        vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
-"        float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);\n"\
-"        sFactor = pow(sFactor, u_material.shininess);\n"\
+"    vec4 diffuse = dFactor * u_lightDiffuseColor * GetDiffuseColor();\n"\
+"    #if defined(SPECULAR)\n"\
+"        //vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
+"        //float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);\n"\
+"        //sFactor = pow(sFactor, u_material.shininess);\n"\
+"        float sFactor = GetSpecular(normal, vertexToEye, -lightDirection, u_material.shininess);\n"\
 "        vec4 specular = sFactor * u_lightSpecularColor * GetSpecularColor();\n"\
 "        return diffuse + specular;\n"\
 "    #else\n"\
@@ -57,5 +64,6 @@ static const char* LIGHTING_GLSL = \
 "        #endif\n"\
 "    #endif\n"\
 "}\n"\
+"#endif\n"\
 ;
 }

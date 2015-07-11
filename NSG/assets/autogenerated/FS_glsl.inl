@@ -31,17 +31,17 @@ static const char* FS_GLSL = \
 "    		float lightToPixelDistance = length(lightToVertex) * GetLightInvRange();\n"\
 "    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
 "    	#elif defined(PER_VERTEX_LIGHTING)\n"\
-"			gl_FragColor = v_color * GetDiffuseColor();\n"\
+"			gl_FragColor = v_color;// * GetDiffuseColor();\n"\
 "		#elif defined(PER_PIXEL_LIGHTING)\n"\
 "				//Lighting is calculated in world space\n"\
 "				vec3 normal = GetNormal();\n"\
 "	    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
 "	    		vec3 world2light = v_worldPos - GetLightPosition();\n"\
 "				#ifdef FOG\n"\
-"					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();\n"\
+"					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal);\n"\
 "					gl_FragColor = vec4(GetLitFog(finalColor.rgb), finalColor.a);\n"\
 "				#else\n"\
-"			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal) * GetDiffuseColor();\n"\
+"			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal);\n"\
 "			    #endif\n"\
 "		#endif	    \n"\
 "	}	\n"\
