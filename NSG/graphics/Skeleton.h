@@ -32,7 +32,7 @@ namespace NSG
 	class Skeleton
 	{
 	public:
-		Skeleton(PMesh mesh);
+        Skeleton(const std::string& name, PMesh mesh);
 		virtual ~Skeleton();
 		void SetScene(PWeakScene scene) { scene_ = scene; }
 		void SetRoot(PWeakNode root) { root_ = root; }
@@ -42,7 +42,9 @@ namespace NSG
 		void Load(const pugi::xml_node& node);
 		const std::vector<PWeakNode>& GetBones() const { return bones_; }
 		const PWeakNode& GetRoot() const { return root_; }
+		const std::string& GetName() const { return name_; }
 	private:
+        std::string name_;
 		PWeakScene scene_;
 		std::weak_ptr<Mesh> mesh_;
 		PWeakNode root_;

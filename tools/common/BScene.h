@@ -102,11 +102,14 @@ namespace BlenderConverter
 		void ConvertGroupInstances(const std::string& groupName, NSG::PSceneNode parent);
 		bool IsKnownType(const Blender::Object* obj) const;
 		void Tessellate(NSG::PModelMesh mesh, const NSG::VertexsData& vertexData, const std::vector<int> & indexes);
-		NSG::PhysicsShape GetShapeType(short boundtype) const;
+		NSG::PhysicsShape GetShapeType(const Blender::Object* obj) const;
 		NSG::PhysicsBody GetBodyType(char bodyType) const;
-		bool IsRigidBody(NSG::PhysicsBody bodyType) const;
+		bool IsRigidBody(const Blender::Object* obj) const;
+		bool HasCollisionShape(const Blender::Object* obj) const;
+		bool HasPhysics(const Blender::Object* obj) const;
 		bool ShapeNeedsMesh(NSG::PhysicsShape shapeType) const;
 		NSG::PSceneNode GetParentWithRigidBody(NSG::PSceneNode sceneNode) const;
+		NSG::PRigidBody CreateRigidBody(NSG::PSceneNode sceneNode, const Blender::Object* obj) const;
     private:
         NSG::Path path_;
         NSG::Path outputDir_;

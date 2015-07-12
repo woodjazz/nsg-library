@@ -463,6 +463,7 @@ namespace NSG
     {
         if (skeleton_)
         {
+            defines += "SKELETON_" + skeleton_->GetName() + "\n"; // just to have a shader variance per skeleton
             const std::vector<PWeakNode>& bones = skeleton_->GetBones();
             auto nBones = bones.size();
             if (nBones)

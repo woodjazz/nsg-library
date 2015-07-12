@@ -34,8 +34,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Skeleton::Skeleton(PMesh mesh)
-        : mesh_(mesh)
+    Skeleton::Skeleton(const std::string& name, PMesh mesh)
+        : name_(name),
+          mesh_(mesh)
     {
 
     }
@@ -51,7 +52,7 @@ namespace NSG
         unsigned idx = 0;
         for (auto& obj : bones_)
         {
-			PNode bone = obj.lock();
+            PNode bone = obj.lock();
             if (bone->GetName() == name)
             {
                 result = idx;
@@ -65,6 +66,7 @@ namespace NSG
     void Skeleton::Save(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Skeleton");
+        child.append_attribute("name") = name_.c_str();
         child.append_attribute("meshName") = mesh_.lock()->GetName().c_str();
         child.append_attribute("rootName") = root_.lock()->GetName().c_str();
 
@@ -72,20 +74,22 @@ namespace NSG
             pugi::xml_node childBones = child.append_child("Bones");
             for (auto& obj : bones_)
             {
-				PNode bone = obj.lock();
+                PNode bone = obj.lock();
                 pugi::xml_node childBone = childBones.append_child("Bone");
-				childBone.append_attribute("boneName") = bone->GetName().c_str();
-				const Matrix4& offset = bone->GetBoneOffsetMatrix();
-				childBone.append_attribute("offsetMatrix").set_value(ToString(offset).c_str());
+                childBone.append_attribute("boneName") = bone->GetName().c_str();
+                const Matrix4& offset = bone->GetBoneOffsetMatrix();
+                childBone.append_attribute("offsetMatrix").set_value(ToString(offset).c_str());
             }
         }
     }
 
     void Skeleton::Load(const pugi::xml_node& node)
     {
+        std::string name = node.attribute("name").as_string();
+        CHECK_ASSERT(name == name_, __FILE__, __LINE__);
         std::string meshName = node.attribute("meshName").as_string();
-		mesh_ = Mesh::GetClass<ModelMesh>(meshName);
-		CHECK_CONDITION(mesh_.lock(), __FILE__, __LINE__);
+        mesh_ = Mesh::GetClass<ModelMesh>(meshName);
+        CHECK_CONDITION(mesh_.lock(), __FILE__, __LINE__);
         std::string rootName = node.attribute("rootName").as_string();
         PScene scene = scene_.lock();
         root_ = scene->GetChild<Node>(rootName, true);
@@ -100,7 +104,7 @@ namespace NSG
                 std::string boneName = child.attribute("boneName").as_string();
                 PNode bone = scene->GetChild<Node>(boneName, true);
                 CHECK_ASSERT(bone, __FILE__, __LINE__);
-				bone->SetBoneOffsetMatrix(ToMatrix4(child.attribute("offsetMatrix").as_string()));
+                bone->SetBoneOffsetMatrix(ToMatrix4(child.attribute("offsetMatrix").as_string()));
                 bones_.push_back(bone);
                 child = child.next_sibling("Bone");
             }

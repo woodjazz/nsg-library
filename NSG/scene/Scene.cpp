@@ -322,12 +322,13 @@ namespace NSG
             pugi::xml_node child = childSkeletons.child("Skeleton");
             while (child)
             {
+                std::string name = child.attribute("name").as_string();
                 std::string meshName = child.attribute("meshName").as_string();
 				auto mesh = Mesh::GetClass<ModelMesh>(meshName);
                 CHECK_CONDITION(mesh, __FILE__, __LINE__);
                 if (!mesh->GetSkeleton())
                 {
-                    PSkeleton skeleton(new Skeleton(mesh));
+                    PSkeleton skeleton(new Skeleton(name, mesh));
                     skeleton->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
                     skeleton->Load(child);
                     mesh->SetSkeleton(skeleton);

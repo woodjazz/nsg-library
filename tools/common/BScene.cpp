@@ -153,20 +153,20 @@ namespace BlenderConverter
         const Blender::World* world = bscene->world;
         if (world)
         {
-			auto physicsWorld = scene->GetPhysicsWorld();
-			physicsWorld->SetGravity(Vector3(0, -world->gravity, 0));
-			physicsWorld->SetFps(bscene->gm.ticrate);
-			physicsWorld->SetMaxSubSteps(bscene->gm.maxphystep);
+            auto physicsWorld = scene->GetPhysicsWorld();
+            physicsWorld->SetGravity(Vector3(0, -world->gravity, 0));
+            physicsWorld->SetFps(bscene->gm.ticrate);
+            physicsWorld->SetMaxSubSteps(bscene->gm.maxphystep);
             ColorRGB ambient(world->ambr, world->ambg, world->ambb);
             scene->SetAmbientColor(ambient);
             ColorRGB horizon(world->horr, world->horg, world->horb);
             scene->SetHorizonColor(horizon);
-			bool enableFog = world->mode & WO_MIST;
-			scene->EnableFog(enableFog);
-			scene->SetFogMinIntensity(world->misi);
-			scene->SetFogStart(world->miststa);
-			scene->SetFogDepth(world->mistdist);
-			scene->SetFogHeight(world->misthi);
+            bool enableFog = world->mode & WO_MIST;
+            scene->EnableFog(enableFog);
+            scene->SetFogMinIntensity(world->misi);
+            scene->SetFogStart(world->miststa);
+            scene->SetFogDepth(world->mistdist);
+            scene->SetFogHeight(world->misthi);
         }
         return scene;
     }
@@ -326,11 +326,11 @@ namespace BlenderConverter
                 auto texture = CreateTexture(ima, imageName);
                 if (mtex->uvname)
                     texture->SetUVName(mtex->uvname);
-                
-                if(mtex->tex)
+
+                if (mtex->tex)
                 {
                     auto wrapMode = mtex->tex->extend;
-                    switch(wrapMode)
+                    switch (wrapMode)
                     {
                         case TEX_REPEAT:
                             texture->SetWrapMode(TextureWrapMode::REPEAT);
@@ -543,7 +543,8 @@ namespace BlenderConverter
         {
             if (obj->type == OB_MESH && obj->parent && obj->parent->type == OB_ARMATURE)
                 armatureLinker_.push_back(obj);
-            else if (obj->body_type != OB_BODY_TYPE_NO_COLLISION)
+
+            if (obj->body_type != OB_BODY_TYPE_NO_COLLISION)
                 physics_.push_back(obj);
 
             if (obj->type >= 0 && obj->parent)
@@ -925,8 +926,8 @@ namespace BlenderConverter
         Quaternion q;
         Vector3 pos;
         Vector3 scale;
-        
-        if(obj->parent)
+
+        if (obj->parent)
         {
             auto parentInv = glm::inverse(ToMatrix(obj->parent->obmat));
             auto m = parentInv * ToMatrix(obj->obmat);
@@ -938,42 +939,47 @@ namespace BlenderConverter
             pos = Vector3(obj->loc[0], obj->loc[1], obj->loc[2]);
             scale = Vector3(obj->size[0], obj->size[1], obj->size[2]);
         }
-        
-		sceneNode->SetPosition(pos);
-		sceneNode->SetOrientation(q);
-		sceneNode->SetScale(scale);
+
+        sceneNode->SetPosition(pos);
+        sceneNode->SetOrientation(q);
+        sceneNode->SetScale(scale);
     }
 
-    PhysicsShape BScene::GetShapeType(short boundtype) const
+    PhysicsShape BScene::GetShapeType(const Blender::Object* obj) const
     {
         PhysicsShape shapeType = PhysicsShape::SH_EMPTY;
 
-        switch (boundtype)
+        if (HasCollisionShape(obj))
         {
-            case OB_BOUND_BOX:
-                shapeType = PhysicsShape::SH_BOX;
-                break;
-            case OB_BOUND_SPHERE:
-                shapeType = PhysicsShape::SH_SPHERE;
-                break;
-            case OB_BOUND_CONE:
-                shapeType = PhysicsShape::SH_CONE;
-                break;
-            case OB_BOUND_CYLINDER:
-                shapeType = PhysicsShape::SH_CYLINDER;
-                break;
-            case OB_BOUND_CONVEX_HULL:
-                shapeType = PhysicsShape::SH_CONVEX_TRIMESH;
-                break;
-            case OB_BOUND_TRIANGLE_MESH:
-                shapeType = PhysicsShape::SH_TRIMESH;
-                break;
-            case OB_BOUND_CAPSULE:
-                shapeType = PhysicsShape::SH_CAPSULE;
-                break;
-            default:
-                shapeType = PhysicsShape::SH_EMPTY;
-                break;
+            auto boundtype = obj->collision_boundtype;
+
+            switch (boundtype)
+            {
+                case OB_BOUND_BOX:
+                    shapeType = PhysicsShape::SH_BOX;
+                    break;
+                case OB_BOUND_SPHERE:
+                    shapeType = PhysicsShape::SH_SPHERE;
+                    break;
+                case OB_BOUND_CONE:
+                    shapeType = PhysicsShape::SH_CONE;
+                    break;
+                case OB_BOUND_CYLINDER:
+                    shapeType = PhysicsShape::SH_CYLINDER;
+                    break;
+                case OB_BOUND_CONVEX_HULL:
+                    shapeType = PhysicsShape::SH_CONVEX_TRIMESH;
+                    break;
+                case OB_BOUND_TRIANGLE_MESH:
+                    shapeType = PhysicsShape::SH_TRIMESH;
+                    break;
+                case OB_BOUND_CAPSULE:
+                    shapeType = PhysicsShape::SH_CAPSULE;
+                    break;
+                default:
+                    shapeType = PhysicsShape::SH_EMPTY;
+                    break;
+            }
         }
 
         return shapeType;
@@ -1020,8 +1026,15 @@ namespace BlenderConverter
         return type;
     }
 
-    bool BScene::IsRigidBody(PhysicsBody bodyType) const
+    bool BScene::HasPhysics(const Blender::Object* obj) const
     {
+        return IsRigidBody(obj) || HasCollisionShape(obj);
+    }
+
+    bool BScene::IsRigidBody(const Blender::Object* obj) const
+    {
+        PhysicsBody bodyType = GetBodyType(obj->body_type);
+
         switch (bodyType)
         {
             case PhysicsBody::BODY_STATIC:
@@ -1032,6 +1045,11 @@ namespace BlenderConverter
                 return true;
         }
         return false;
+    }
+
+    bool BScene::HasCollisionShape(const Blender::Object* obj) const
+    {
+        return obj->gameflag & OB_BOUNDS;
     }
 
     bool BScene::ShapeNeedsMesh(PhysicsShape shapeType) const
@@ -1053,6 +1071,50 @@ namespace BlenderConverter
         return nullptr;
     }
 
+    PRigidBody BScene::CreateRigidBody(PSceneNode sceneNode, const Blender::Object* obj) const
+    {
+        PhysicsBody bodyType = GetBodyType(obj->body_type);
+        //const Blender::RigidBodyOb* rigidbody_object = obj->rigidbody_object;
+        //const Blender::RigidBodyCon* rigidbody_constraint = obj->rigidbody_constraint;
+
+        auto rigBody = sceneNode->GetOrCreateRigidBody();
+        rigBody->SetLinearDamp(obj->damping);
+        rigBody->SetAngularDamp(obj->rdamping);
+
+        rigBody->SetMass(bodyType == PhysicsBody::BODY_STATIC ? 0 : obj->mass);
+        rigBody->SetKinematic(bodyType == PhysicsBody::BODY_DYNAMIC || bodyType == PhysicsBody::BODY_CHARACTER);
+        rigBody->SetTrigger(bodyType == PhysicsBody::BODY_SENSOR);
+
+        const Blender::Material* ma = GetMaterial(obj, 0);
+        if (ma)
+        {
+            rigBody->SetRestitution(ma->reflect);
+            rigBody->SetFriction(ma->friction);
+        }
+
+        Vector3 linearFactor(1);
+        if (obj->gameflag2 & OB_LOCK_RIGID_BODY_X_AXIS)
+            linearFactor.x = 0;
+        if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Y_AXIS)
+            linearFactor.z = 0;
+        if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Z_AXIS)
+            linearFactor.y = 0;
+
+        rigBody->SetLinearFactor(linearFactor);
+
+        Vector3 angularFactor(1);
+        if (obj->gameflag2 & OB_LOCK_RIGID_BODY_X_ROT_AXIS)
+            angularFactor.x = 0;
+        if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Y_ROT_AXIS)
+            angularFactor.z = 0;
+        if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Z_ROT_AXIS)
+            angularFactor.y = 0;
+
+        rigBody->SetAngularFactor(angularFactor);
+
+        return rigBody;
+    }
+
     void BScene::LoadPhysics(PScene scene, const Blender::Object* obj)
     {
         std::string name = B_IDNAME(obj);
@@ -1064,53 +1126,8 @@ namespace BlenderConverter
         }
 
         PMesh mesh = sceneNode->GetMesh();
-        PRigidBody rigBody;
 
-        PhysicsBody bodyType = GetBodyType(obj->body_type);
-        if (IsRigidBody(bodyType))
-        {
-            CHECK_ASSERT(obj->type != OB_MESH || mesh, __FILE__, __LINE__);
-
-            //const Blender::RigidBodyOb* rigidbody_object = obj->rigidbody_object;
-            //const Blender::RigidBodyCon* rigidbody_constraint = obj->rigidbody_constraint;
-
-            rigBody = sceneNode->GetOrCreateRigidBody();
-            rigBody->SetLinearDamp(obj->damping);
-            rigBody->SetAngularDamp(obj->rdamping);
-
-            rigBody->SetMass(bodyType == PhysicsBody::BODY_STATIC ? 0 : obj->mass);
-            rigBody->SetKinematic(bodyType == PhysicsBody::BODY_DYNAMIC || bodyType == PhysicsBody::BODY_CHARACTER);
-            rigBody->SetTrigger(bodyType == PhysicsBody::BODY_SENSOR);
-
-            const Blender::Material* ma = GetMaterial(obj, 0);
-            if (ma)
-            {
-                rigBody->SetRestitution(ma->reflect);
-                rigBody->SetFriction(ma->friction);
-            }
-
-            Vector3 linearFactor(1);
-            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_X_AXIS)
-                linearFactor.x = 0;
-            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Y_AXIS)
-                linearFactor.y = 0;
-            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Z_AXIS)
-                linearFactor.z = 0;
-
-            rigBody->SetLinearFactor(linearFactor);
-
-            Vector3 angularFactor(1);
-            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_X_ROT_AXIS)
-                angularFactor.x = 0;
-            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Y_ROT_AXIS)
-                angularFactor.y = 0;
-            if (obj->gameflag2 & OB_LOCK_RIGID_BODY_Z_ROT_AXIS)
-                angularFactor.z = 0;
-
-            rigBody->SetAngularFactor(angularFactor);
-        }
-
-        PhysicsShape shapeType = GetShapeType(obj->collision_boundtype);
+        PhysicsShape shapeType = GetShapeType(obj);
         bool needsMesh = ShapeNeedsMesh(shapeType);
         if (needsMesh && !mesh)
         {
@@ -1118,45 +1135,48 @@ namespace BlenderConverter
             return;
         }
 
-        if (obj->gameflag & OB_COLLISION)
+        PRigidBody rigBody;
+
+        if (IsRigidBody(obj))
+            rigBody = CreateRigidBody(sceneNode, obj);
+
+        Vector3 offsetPos;
+        Quaternion offsetRot;
+
+        if (!rigBody)
         {
-            Vector3 offsetPos;
-            Quaternion offsetRot;
-
-            if (!rigBody)
+            auto parent = GetParentWithRigidBody(sceneNode);
+            if (parent)
             {
-                auto parent = GetParentWithRigidBody(sceneNode);
-                if (parent)
-                {
-                    rigBody = parent->GetRigidBody();
-                    auto m = parent->GetGlobalModelInvMatrix() * sceneNode->GetGlobalModelMatrix();
-                    Vector3 scale;
-                    DecomposeMatrix(m, offsetPos, offsetRot, scale);
-                }
+                rigBody = parent->GetRigidBody();
+                auto m = parent->GetGlobalModelInvMatrix() * sceneNode->GetGlobalModelMatrix();
+                Vector3 scale;
+                DecomposeMatrix(m, offsetPos, offsetRot, scale);
             }
-
-            if (!rigBody)
-            {
-                LOGE("Cannot create shape for obj %s because rigidbody has not been found", name.c_str());
-                return;
-            }
-
-            auto scale = sceneNode->GetGlobalScale();
-            PShape shape = Shape::GetOrCreate(needsMesh ? ShapeKey(mesh, scale) : ShapeKey(shapeType, scale));
-
-            BoundingBox bb;
-            if (mesh)
-                bb = mesh->GetBB();
-            else            {
-                LOGW("Cannot calculate physics bounding box.");
-                bb = BoundingBox(-Vector3(1), Vector3(1));
-            }
-            CHECK_ASSERT(bb.IsDefined(), __FILE__, __LINE__);
-            shape->SetBB(bb);
-
-            shape->SetMargin(obj->margin);
-            rigBody->AddShape(shape, offsetPos, offsetRot);
         }
+
+        if (!rigBody)
+        {
+            LOGE("Cannot create shape for obj %s because rigidbody has not been found", name.c_str());
+            return;
+        }
+
+        auto scale = sceneNode->GetGlobalScale();
+        PShape shape = Shape::GetOrCreate(needsMesh ? ShapeKey(mesh, scale) : ShapeKey(shapeType, scale));
+
+        BoundingBox bb;
+        if (mesh)
+            bb = mesh->GetBB();
+        else
+        {
+            LOGW("Cannot calculate physics bounding box.");
+            bb = BoundingBox(-Vector3(1), Vector3(1));
+        }
+        CHECK_ASSERT(bb.IsDefined(), __FILE__, __LINE__);
+        shape->SetBB(bb);
+
+        shape->SetMargin(obj->margin);
+        rigBody->AddShape(shape, offsetPos, offsetRot);
     }
 
     PSceneNode BScene::CreateSceneNode(const Blender::Object* obj, PSceneNode parent)
@@ -1209,7 +1229,7 @@ namespace BlenderConverter
         else
         {
             CHECK_ASSERT(parent->IsArmature(), __FILE__, __LINE__);
-			parBind = glm::inverse(parent->GetTransform());
+            parBind = glm::inverse(parent->GetTransform());
         }
 
         CHECK_ASSERT(!parent->GetChild<SceneNode>(cur->name, false), __FILE__, __LINE__);
@@ -1217,10 +1237,10 @@ namespace BlenderConverter
 
         Matrix4 bind = parBind * ToMatrix(cur->arm_mat);
 
-        Quaternion rot; 
-		Vector3 loc;
-		Vector3 scl;
-		DecomposeMatrix(bind, loc, rot, scl);
+        Quaternion rot;
+        Vector3 loc;
+        Vector3 scl;
+        DecomposeMatrix(bind, loc, rot, scl);
 
         bone->SetPosition(loc);
         bone->SetOrientation(rot);
@@ -1508,7 +1528,7 @@ namespace BlenderConverter
             return;
         }
 
-        auto skeleton(std::make_shared<Skeleton>(mesh));
+        auto skeleton(std::make_shared<Skeleton>(armatureName, mesh));
         std::string obArName = B_IDNAME(obAr);
         PSceneNode armatureNode = scene->GetChild<SceneNode>(obArName, true);
         if (!armatureNode)
@@ -1879,10 +1899,10 @@ namespace BlenderConverter
         if (!ob || ob->totcol == 0) return nullptr;
 
         index = glm::clamp<int>(index, 0, ob->totcol - 1);
-        
-        if(index < 0)
+
+        if (index < 0)
             return nullptr;
-        
+
         Blender::Material* ma = nullptr;
 
         int inObject = ob->matbits && ob->matbits[index] ? 1 : 0;
