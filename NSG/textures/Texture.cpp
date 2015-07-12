@@ -84,7 +84,7 @@ namespace NSG
           pResource_(resource),
           width_(0),
           height_(0),
-		  format_(Graphics::this_->GetTexelFormatType()),
+          format_(Graphics::this_->GetTexelFormatType()),
           type_(Graphics::this_->GetTexelDataType()),
           channels_(0),
           serializable_(true),
@@ -141,7 +141,7 @@ namespace NSG
 
         if (image_)
         {
-			channels_ = image_->GetChannels();
+            channels_ = image_->GetChannels();
             width_ = image_->GetWidth();
             height_ = image_->GetHeight();
             format_ = image_->ConvertFormat2GL();
@@ -153,17 +153,33 @@ namespace NSG
                 LOGE("Cannot flip vertically image = %s", image_->GetName().c_str());
         }
 
-		if (GetTarget() == GL_TEXTURE_CUBE_MAP)
-		{
-			auto value = std::max(width_, height_);
-			width_ = height_ = value;
-		}
+        if (GetTarget() == GL_TEXTURE_CUBE_MAP)
+        {
+            auto value = std::max(width_, height_);
+            width_ = height_ = value;
+        }
 
         CHECK_ASSERT(Graphics::this_->IsTextureSizeCorrect(width_, height_), __FILE__, __LINE__);
         CHECK_ASSERT(Graphics::this_->GetMaxTextureSize() >= width_ && Graphics::this_->GetMaxTextureSize() >= height_, __FILE__, __LINE__);
 
-        glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_S, (int)wrapMode_);
-        glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_T, (int)wrapMode_);
+        switch (wrapMode_)
+        {
+            case TextureWrapMode::CLAMP_TO_EDGE:
+                glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                break;
+            case TextureWrapMode::MIRRORED_REPEAT:
+                glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+                glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                break;
+            case TextureWrapMode::REPEAT:
+                glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_T, GL_REPEAT);
+                break;
+            default:
+                CHECK_ASSERT(false, __FILE__, __LINE__);
+                break;
+        }
 
         Define();
 
@@ -244,6 +260,8 @@ namespace NSG
         node.append_attribute("flagNames") = TranslateFlags().c_str();
         node.append_attribute("resource") = pResource_->GetName().c_str();
         node.append_attribute("uvName") = uvName_.c_str();
+        node.append_attribute("wrapMode") = ToString(wrapMode_);
+        node.append_attribute("filterMode") = ToString(filterMode_);
         node.append_attribute("blendType") = ToString(blendType_);
         node.append_attribute("mapType") = ToString(mapType_);
     }

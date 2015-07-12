@@ -58,6 +58,8 @@ namespace NSG
         std::string flags = node.attribute("flags").as_string();
         std::string resourceName = node.attribute("resource").as_string();
         std::string uvName = node.attribute("uvName").as_string();
+        TextureWrapMode wrapMode = ToTextureWrapMode(node.attribute("wrapMode").as_string());
+        TextureFilterMode filterMode = ToTextureFilterMode(node.attribute("filterMode").as_string());
         TextureBlend blendType = ToTextureBlend(node.attribute("blendType").as_string());
         TextureType mapType = ToTextureType(node.attribute("mapType").as_string());
         auto res = Resource::Get(resourceName);
@@ -73,6 +75,8 @@ namespace NSG
         texture->SetName(resourceName);
         texture->SetUVName(uvName);
         texture->SetFlags(flags);
+        texture->SetWrapMode(wrapMode);
+        texture->SetFilterMode(filterMode);
         texture->SetBlendType(blendType);
         texture->SetMapType(mapType);
         return texture;

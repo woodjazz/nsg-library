@@ -265,16 +265,18 @@ namespace NSG
 
     enum class TextureWrapMode
     {
-        CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE,
-        MIRRORED_REPEAT = GL_MIRRORED_REPEAT,
-        REPEAT = GL_REPEAT
+        CLAMP_TO_EDGE,
+        MIRRORED_REPEAT,
+        REPEAT,
+        MAX_INDEX
     };
 
     enum class TextureFilterMode
     {
         NEAREST,
         BILINEAR,
-        TRILINEAR
+        TRILINEAR,
+        MAX_INDEX
     };
 
     enum class AnimationChannel

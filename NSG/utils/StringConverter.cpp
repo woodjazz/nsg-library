@@ -366,6 +366,40 @@ namespace NSG
 		return ToType<PhysicsShape>(obj, PhysicsShapeStr);
 	}
 
+    static const char* TextureWrapModeStr[] =
+    {
+        "CLAMP_TO_EDGE",
+        "MIRRORED_REPEAT",
+        "REPEAT"
+    };
+
+    const char* ToString(TextureWrapMode obj)
+    {
+        return ToString<TextureWrapMode>(obj, TextureWrapModeStr);
+    }
+
+    TextureWrapMode ToTextureWrapMode(const char* obj)
+    {
+        return ToType<TextureWrapMode>(obj, TextureWrapModeStr);
+    }
+
+    static const char* TextureFilterModeStr[] =
+    {
+        "NEAREST",
+        "BILINEAR",
+        "REPEAT"
+    };
+
+    const char* ToString(TextureFilterMode obj)
+    {
+        return ToString<TextureFilterMode>(obj, TextureFilterModeStr);
+    }
+
+    TextureFilterMode ToTextureFilterMode(const char* obj)
+    {
+        return ToType<TextureFilterMode>(obj, TextureFilterModeStr);
+    }
+
     std::string RemoveWhiteSpaces(const std::string& str)
     {
         std::string result(str);

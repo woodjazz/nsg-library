@@ -76,5 +76,11 @@ namespace NSG
 	const char* ToString(PhysicsShape obj);
 	PhysicsShape ToPhysicsShape(const char* obj);
 
+	const char* ToString(TextureWrapMode obj);
+    TextureWrapMode ToTextureWrapMode(const char* obj);
+
+    const char* ToString(TextureFilterMode obj);
+    TextureFilterMode ToTextureFilterMode(const char* obj);
+
 	std::string RemoveWhiteSpaces(const std::string& str);
 }

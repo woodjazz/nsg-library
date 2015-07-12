@@ -327,7 +327,27 @@ namespace BlenderConverter
                 if (mtex->uvname)
                     texture->SetUVName(mtex->uvname);
                 
-                texture->SetWrapMode(TextureWrapMode::REPEAT);
+                if(mtex->tex)
+                {
+                    auto wrapMode = mtex->tex->extend;
+                    switch(wrapMode)
+                    {
+                        case TEX_REPEAT:
+                            texture->SetWrapMode(TextureWrapMode::REPEAT);
+                            break;
+                        case TEX_CLIP:
+                        case TEX_CLIPCUBE:
+                        case TEX_EXTEND:
+                            texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
+                            break;
+                        case TEX_CHECKER:
+                            texture->SetWrapMode(TextureWrapMode::MIRRORED_REPEAT);
+                            break;
+                        default:
+                            texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
+                            break;
+                    }
+                }
 
                 switch (mtex->blendtype)
                 {
@@ -1859,6 +1879,10 @@ namespace BlenderConverter
         if (!ob || ob->totcol == 0) return nullptr;
 
         index = glm::clamp<int>(index, 0, ob->totcol - 1);
+        
+        if(index < 0)
+            return nullptr;
+        
         Blender::Material* ma = nullptr;
 
         int inObject = ob->matbits && ob->matbits[index] ? 1 : 0;
