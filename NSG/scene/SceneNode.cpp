@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "SceneNode.h"
 #include "Check.h"
+#include "Skeleton.h"
 #include "Graphics.h"
 #include "Material.h"
 #include "ModelMesh.h"
@@ -186,7 +187,8 @@ namespace NSG
         if (!IsSerializable())
             return;
         node.append_attribute("name").set_value(GetName().c_str());
-        node.append_attribute("isArmature").set_value(IsArmature());
+		if (skeleton_)
+			node.append_attribute("skeleton").set_value(skeleton_->GetName().c_str());
         node.append_attribute("nodeType").set_value("SceneNode");
         node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
         node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
@@ -216,8 +218,6 @@ namespace NSG
     void SceneNode::Load(const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
-
-        SetAsArmature(node.attribute("isArmature").as_bool());
 
         Vertex3 position = ToVertex3(node.attribute("position").as_string());
         SetPosition(position);
@@ -250,6 +250,15 @@ namespace NSG
         }
 
         LoadChildren(node);
+
+		auto att = node.attribute("skeleton");
+		if (att)
+		{
+			auto name = att.as_string();
+			auto skeleton = Skeleton::Get(name);
+			CHECK_ASSERT(skeleton, __FILE__, __LINE__);
+			SetSkeleton(skeleton);
+		}
     }
 
     void SceneNode::LoadChildren(const pugi::xml_node& node)
@@ -304,4 +313,52 @@ namespace NSG
     {
         SetFlags(flags_ & ~(int)flags);
     }
+
+	void SceneNode::SetSkeleton(PSkeleton skeleton)
+	{
+		if (skeleton_ != skeleton)
+		{
+			skeleton_ = skeleton;
+			if (skeleton_)
+			{
+				SetArmature(shared_from_this());
+				CHECK_CONDITION(skeleton_->IsReady(), __FILE__, __LINE__);
+				skeleton_->CreateBonesFor(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
+			}
+		}
+	}
+
+	size_t SceneNode::GetMaxPlatformBones(size_t nBones) const
+	{
+		static const size_t MAX_BONES0 = 64;
+		static const size_t MAX_BONES1 = 48;
+		static const size_t MAX_BONES2 = 32;
+		// set a maximum value per platform to avoid shader variations
+		if (nBones <= MAX_BONES2)
+			return MAX_BONES2;
+		else if (nBones <= MAX_BONES1)
+			return MAX_BONES1;
+		else if (nBones <= MAX_BONES0)
+			return MAX_BONES0;
+		return nBones;
+	}
+
+	size_t SceneNode::FillShaderDefines(std::string& defines) const
+	{
+		auto armature = GetArmature();
+		if (armature)
+		{
+			auto skeleton = armature->GetSkeleton();
+			CHECK_CONDITION(skeleton->IsReady(), __FILE__, __LINE__);
+			defines += "SKELETON_" + skeleton->GetName() + "\n"; // just to have a shader variance per skeleton
+			auto nBones = skeleton->GetNumberOfBones();
+			if (nBones)
+			{
+				defines += "MAX_BONES " + ToString(GetMaxPlatformBones(nBones)) + "\n";
+				defines += "SKINNED\n";
+				return nBones;
+			}
+		}
+		return 0;
+	}
 }

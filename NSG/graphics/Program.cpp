@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "ShadowCamera.h"
 #include "Mesh.h"
+#include "SceneNode.h"
 #include "Scene.h"
 #include "Skeleton.h"
 #include "Material.h"
@@ -515,43 +516,31 @@ namespace NSG
     {
         if (skeleton_)
         {
-            const std::vector<PWeakNode>& bones = skeleton_->GetBones();
-            size_t nBones = bones.size();
+			const std::vector<std::string>& names = skeleton_->GetShaderOrder();
+			size_t nBones = names.size();
             CHECK_CONDITION(nBones == nBones_ && "This shader has been used with a different number of bones.!!!", __FILE__, __LINE__);
-
-            PNode rootNode = skeleton_->GetRoot().lock();
+			PNode armatureNode = node_->GetArmature();
+			CHECK_ASSERT(armatureNode, __FILE__, __LINE__);
             Matrix4 globalInverseModelMatrix(1);
-            PNode parent = rootNode->GetParent();
-            if (parent)
-            {
-                // In order to make all the bones relatives to the root's parent.
-                // The model matrix and normal matrix for the active node is premultiplied in the shader (see Program::SetNodeVariables)
-                // See in Transform.glsl: GetModelMatrix() and GetWorldNormal()
-                globalInverseModelMatrix = parent->GetGlobalModelInvMatrix();
-            }
-
+            // In order to make all the bones relatives to the armature.
+            // The model matrix and normal matrix for the active node is premultiplied in the shader (see Program::SetNodeVariables)
+            // See in Transform.glsl: GetModelMatrix() and GetWorldNormal()
+			globalInverseModelMatrix = armatureNode->GetGlobalModelInvMatrix();
             CHECK_GL_STATUS(__FILE__, __LINE__);
-
             for (unsigned idx = 0; idx < nBones; idx++)
             {
                 GLuint boneLoc = bonesBaseLoc_[idx];
-
-                Node* bone = bones[idx].lock().get();
-                if (activeSkeleton_ != skeleton_ || bone->UniformsNeedUpdate())
-                {
-                    // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
-                    CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
-                    const Matrix4& m = bone->GetGlobalModelMatrix();
-                    const Matrix4& offsetMatrix = bone->GetBoneOffsetMatrix();
-                    Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
-                    glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(boneMatrix));
-                }
+				std::string boneName = names[idx];
+				auto bone = armatureNode->GetChild<Node>(boneName, true);
+                // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
+                CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
+                const Matrix4& m = bone->GetGlobalModelMatrix();
+				const Matrix4& offsetMatrix = skeleton_->GetBoneOffsetMatrix(boneName);
+				Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
+                glUniformMatrix4fv(boneLoc, 1, GL_FALSE, glm::value_ptr(boneMatrix));
             }
-
             CHECK_GL_STATUS(__FILE__, __LINE__);
-
         }
-
         activeSkeleton_ = skeleton_;
     }
 
@@ -744,7 +733,7 @@ namespace NSG
         activeCamera_ = Graphics::this_->GetCamera();
     }
 
-    void Program::Set(const Skeleton* skeleton)
+    void Program::SetSkeleton(const Skeleton* skeleton)
     {
         if (skeleton_ != skeleton)
         {
@@ -757,8 +746,15 @@ namespace NSG
     {
         if (node_ != node)
         {
-            if (node)
-                node->SetUniformsNeedUpdate();
+			if (node)
+			{
+				node->SetUniformsNeedUpdate();
+				auto armature = node->GetArmature();
+				if (armature)
+					SetSkeleton(armature->GetSkeleton().get());
+				else
+					SetSkeleton(nullptr);
+			}
             node_ = node;
         }
     }
@@ -796,19 +792,20 @@ namespace NSG
         programs_.Clear();
     }
 
-    PProgram Program::GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light)
+	PProgram Program::GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode)
     {
+		bool allowInstancing = sceneNode == nullptr;
         std::string defines;
         auto passType = pass->GetType();
         auto scene = camera->GetScene();
         if (scene)
             scene->FillShaderDefines(defines, passType);
         camera->FillShaderDefines(defines, passType);
-        material->FillShaderDefines(defines, passType, light, mesh);
+		material->FillShaderDefines(defines, passType, light, mesh, allowInstancing);
         size_t nBones = 0;
 
-        if (mesh)
-            nBones = mesh->FillShaderDefines(defines);
+		if (sceneNode)
+			nBones = sceneNode->FillShaderDefines(defines);
 
         if (light)
             light->FillShaderDefines(defines, passType, material);

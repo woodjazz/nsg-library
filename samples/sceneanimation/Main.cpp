@@ -33,7 +33,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto scene = data.scenes_.at(0);
     scene->SetAmbientColor(ColorRGB(0.0f));
 
-    auto object = scene->GetChild<SceneNode>("Bone", true);
+    auto armature = scene->GetChild<SceneNode>("Armature", true);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
     plane->GetMaterial()->SetShininess(10);
 	
@@ -51,9 +51,8 @@ int NSG_MAIN(int argc, char* argv[])
     auto ballRigidBody = ball->GetOrCreateRigidBody();
 
     {
-        auto animations = scene->GetAnimationsFor(object);
-        auto animation = animations[0];
-        animation->Play(true);
+		auto animation = scene->GetAnimationFor("ArmatureAction.001", armature);
+        scene->PlayAnimation(animation, true);
     }
 
     ballRigidBody->HandleCollisions(true);

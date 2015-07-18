@@ -128,21 +128,19 @@ namespace NSG
         virtual void OnDisable() {}
         virtual void OnScaleChange() {}
         virtual void OnSceneSet() {}
-        // Offset matrix that converts from vertex space to bone space
-        void SetBoneOffsetMatrix(const Matrix4& m);
-        const Matrix4& GetBoneOffsetMatrix() { return boneOffsetMatrix_; }
         void Update() const;
         bool IsScaleUniform() const;
         PScene GetScene() const { return scene_.lock(); }
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);
 		Matrix4 GetTransform() const;
-        void SetAsArmature(bool isArmature) { isArmature_ = isArmature; }
-        bool IsArmature() const { return isArmature_; }
+		PSceneNode GetArmature() const;
+		void SetArmature(PNode armature);
     protected:
         std::string name_;
         std::vector<PNode> children_;
         std::unordered_map<std::string, PWeakNode> childrenHash_;
         PWeakScene scene_;
+		PWeakNode armature_;
     private:
 		void RemoveFromParent();
 		void AddChild(PNode node);
@@ -152,7 +150,6 @@ namespace NSG
         mutable Matrix4 globalModel_;
         mutable Matrix4 globalModelInv_;
         mutable Matrix3 globalModelInvTransp_;
-        mutable Matrix4 boneOffsetMatrix_;
         Vertex3 position_;
         Quaternion q_;
         Vector3 scale_;
@@ -165,6 +162,5 @@ namespace NSG
         mutable bool dirty_;
         bool enabled_;
         mutable bool isScaleUniform_;
-        bool isArmature_;
     };
 }

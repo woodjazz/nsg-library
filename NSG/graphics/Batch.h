@@ -50,5 +50,6 @@ namespace NSG
         Material* material_;
         Mesh* mesh_;
         std::vector<SceneNode*> nodes_;
+		bool allowInstancing_;
     };
 }

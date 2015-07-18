@@ -43,30 +43,32 @@ namespace NSG
     Quaternion ToQuaternion(const btQuaternion& q);
 
     template<typename T>
-	T Lerp(const T& lhs, const T& rhs, float t)
-	{
-		return lhs * (1.0f - t) + rhs * t;
-	}
+    T Lerp(const T& lhs, const T& rhs, float t)
+    {
+        return lhs * (1.0f - t) + rhs * t;
+    }
 
-	bool IsNaN(const Quaternion& q);
-	Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection);
-	Vector3 Translation(const Matrix4& m);
-	Vector3 Scale(const Matrix4& m);
-	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
-	inline unsigned NextPowerOfTwo(unsigned value)
-	{
-	    unsigned ret = 1;
-	    while (ret < value && ret < 0x80000000)
-	        ret <<= 1;
-	    return ret;
-	}
-	std::string GetUniqueName(const std::string& name = "");
-	void GetPowerOfTwoValues(int& width, int& height);
-	bool IsPowerOfTwo(int value);
-	bool IsZeroLength(const Vector3& obj);
-	GLushort Transform(GLubyte selected[4]);
-	Color Transform(GLushort id);
-	std::string CompressBuffer(const std::string& buf);
-	std::string DecompressBuffer(const std::string& buffer);
-	bool IsScaleUniform(const Vector3& scale);
+    bool IsNaN(const Quaternion& q);
+    Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection);
+    Vector3 Translation(const Matrix4& m);
+    Vector3 Scale(const Matrix4& m);
+    void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
+    Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q, const Vertex3& scale);
+
+    inline unsigned NextPowerOfTwo(unsigned value)
+    {
+        unsigned ret = 1;
+        while (ret < value && ret < 0x80000000)
+            ret <<= 1;
+        return ret;
+    }
+    std::string GetUniqueName(const std::string& name = "");
+    void GetPowerOfTwoValues(int& width, int& height);
+    bool IsPowerOfTwo(int value);
+    bool IsZeroLength(const Vector3& obj);
+    GLushort Transform(GLubyte selected[4]);
+    Color Transform(GLushort id);
+    std::string CompressBuffer(const std::string& buf);
+    std::string DecompressBuffer(const std::string& buffer);
+    bool IsScaleUniform(const Vector3& scale);
 }

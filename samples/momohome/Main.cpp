@@ -36,10 +36,9 @@ int NSG_MAIN(int argc, char* argv[])
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");
 	auto control = std::make_shared<CameraControl>(camera);
     {
-        auto object = scene->GetChild<SceneNode>("Bone.main", true);
-        auto animations = scene->GetAnimationsFor(object);
-        auto animation = animations[0];
-        animation->Play(true);
+        auto object = scene->GetChild<SceneNode>("RigMomo", true);
+        auto animation = scene->GetAnimationFor("Momo_Carry", object);
+		scene->PlayAnimation(animation, true);
     }
 	return Engine().Run();
 }

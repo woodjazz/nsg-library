@@ -69,9 +69,14 @@ namespace NSG
         void EnableFlags(const SceneNodeFlags& flags);
         void DisableFlags(const SceneNodeFlags& flags);
 		bool AllowRayQuery() const { return flags_ & (int)SceneNodeFlag::ALLOW_RAY_QUERY; }
+		void SetSkeleton(PSkeleton skeleton);
+		PSkeleton GetSkeleton() const { return skeleton_; }
+		size_t FillShaderDefines(std::string& defines) const;
+		size_t GetMaxPlatformBones(size_t nBones) const;
 	protected:
 		PMaterial material_;
 		PMesh mesh_;
+		PSkeleton skeleton_;
 	private:
 		PRigidBody rigidBody_;
 		mutable Octant* octant_;

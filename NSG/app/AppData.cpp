@@ -36,6 +36,8 @@ misrepresented as being the original software.
 #include "Shape.h"
 #include "Mesh.h"
 #include "Program.h"
+#include "Skeleton.h"
+#include "Animation.h"
 #include "pugixml.hpp"
 namespace NSG
 {
@@ -84,6 +86,9 @@ namespace NSG
         meshes_ = Mesh::LoadMeshes(resource, appNode);
         materials_ = Material::LoadMaterials(resource, appNode);
         shapes_ = Shape::LoadShapes(resource, appNode);
+		skeletons_ = Skeleton::LoadSkeletons(resource, appNode);
+		animations_ = Animation::LoadAnimations(resource, appNode);
+
         pugi::xml_node child = appNode.child("Scene");
         while (child)
         {
@@ -101,6 +106,8 @@ namespace NSG
         Mesh::Clear();
         Material::Clear();
         Shape::Clear();
+		Skeleton::Clear();
+		Animation::Clear();
         Program::Clear();
     }
 

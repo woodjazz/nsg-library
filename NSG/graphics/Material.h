@@ -83,7 +83,7 @@ namespace NSG
         void Set(PResourceXMLNode xmlResource);
         void SetUVTransform(const Vector4& uvTransform);
         bool HasLightMap() const;
-        void FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh) const;
+		void FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh, bool allowInstancing) const;
         void SetRenderPass(RenderPass pass) { renderPass_ = pass; }
         RenderPass GetRenderPass() const { return renderPass_; }
         void SetBillboardType(BillboardType type) { billboardType_ = type; }

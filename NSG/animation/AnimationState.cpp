@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "AnimationState.h"
-#include "Node.h"
+#include "Bone.h"
 #include "Util.h"
 
 namespace NSG
@@ -113,16 +113,16 @@ namespace NSG
             }
 
             const AnimationKeyFrame* keyFrame = &track.keyFrames_[frame];
-			PNode node = track.node_.lock();
+			auto bone = track.node_.lock();
             if (!interpolate)
             {
                 // No interpolation, full weight
                 if (track.channelMask_ & (int)AnimationChannel::POSITION)
-					node->SetPosition(keyFrame->position_);
+					bone->SetPosition(keyFrame->position_);
                 if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-					node->SetOrientation(keyFrame->rotation_);
+					bone->SetOrientation(keyFrame->rotation_);
                 if (track.channelMask_ & (int)AnimationChannel::SCALE)
-					node->SetScale(keyFrame->scale_);
+					bone->SetScale(keyFrame->scale_);
             }
             else
             {
@@ -134,11 +134,11 @@ namespace NSG
 
 				// Interpolation, full weight
                 if (track.channelMask_ & (int)AnimationChannel::POSITION)
-					node->SetPosition(Lerp(keyFrame->position_, nextKeyFrame.position_, t));
+					bone->SetPosition(Lerp(keyFrame->position_, nextKeyFrame.position_, t));
                 if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-					node->SetOrientation(glm::slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t));
+					bone->SetOrientation(glm::slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t));
                 if (track.channelMask_ & (int)AnimationChannel::SCALE)
-					node->SetScale(Lerp(keyFrame->scale_, nextKeyFrame.scale_, t));
+					bone->SetScale(Lerp(keyFrame->scale_, nextKeyFrame.scale_, t));
             }
         }
     }

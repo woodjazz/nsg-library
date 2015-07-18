@@ -272,73 +272,7 @@ namespace NSG
         physicsWorld_->SetMaxSubSteps(child.attribute("maxSubSteps").as_int());
     }
 
-    void Scene::SaveAnimations(pugi::xml_node& node) const
-    {
-        pugi::xml_node child = node.append_child("Animations");
-        for (auto& obj : animations_)
-            obj.second->Save(child);
-    }
-
-    void Scene::LoadAnimations(const pugi::xml_node& node)
-    {
-        pugi::xml_node childAnimations = node.child("Animations");
-        if (childAnimations)
-        {
-            pugi::xml_node child = childAnimations.child("Animation");
-            while (child)
-            {
-                std::string name = child.attribute("name").as_string();
-                if (!HasAnimation(name))
-                {
-                    PAnimation animation = GetOrCreateAnimation(name);
-                    animation->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
-                    animation->Load(child);
-                }
-                child = child.next_sibling("Animation");
-            }
-        }
-    }
-
-    void Scene::SaveSkeletons(pugi::xml_node& node) const
-    {
-        const std::vector<PMesh>& meshes = Mesh::GetObjs();
-        if (meshes.size())
-        {
-            pugi::xml_node child = node.append_child("Skeletons");
-            for (auto& obj : meshes)
-            {
-                PSkeleton skeleton = obj->GetSkeleton();
-                if (skeleton)
-                    skeleton->Save(child);
-            }
-        }
-    }
-
-    void Scene::LoadSkeletons(const pugi::xml_node& node)
-    {
-        pugi::xml_node childSkeletons = node.child("Skeletons");
-        if (childSkeletons)
-        {
-            pugi::xml_node child = childSkeletons.child("Skeleton");
-            while (child)
-            {
-                std::string name = child.attribute("name").as_string();
-                std::string meshName = child.attribute("meshName").as_string();
-				auto mesh = Mesh::GetClass<ModelMesh>(meshName);
-                CHECK_CONDITION(mesh, __FILE__, __LINE__);
-                if (!mesh->GetSkeleton())
-                {
-                    PSkeleton skeleton(new Skeleton(name, mesh));
-                    skeleton->SetScene(std::dynamic_pointer_cast<Scene>(shared_from_this()));
-                    skeleton->Load(child);
-                    mesh->SetSkeleton(skeleton);
-                }
-                child = child.next_sibling("Skeleton");
-            }
-        }
-    }
-
-    void Scene::Load(const pugi::xml_node& node)
+	void Scene::Load(const pugi::xml_node& node)
     {
         SetAmbientColor(ToVertex3(node.attribute("ambient").as_string()));
         SetHorizonColor(ToVertex3(node.attribute("horizon").as_string()));
@@ -347,15 +281,12 @@ namespace NSG
         SetFogStart(node.attribute("fogStart").as_float());
         SetFogDepth(node.attribute("fogDepth").as_float());
         SetFogHeight(node.attribute("fogHeight").as_float());
-
         std::string mainCameraName = node.attribute("mainCamera").as_string();
         pugi::xml_node sceneNode = node.child("SceneNode");
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
         SceneNode::Load(sceneNode);
 		if (!mainCameraName.empty())
 			SetMainCamera(GetChild<Camera>(mainCameraName, true));
-        LoadAnimations(node);
-        LoadSkeletons(node);
         LoadPhysics(node);
     }
 
@@ -375,8 +306,6 @@ namespace NSG
         scene.append_attribute("mainCamera").set_value(mainCameraName.c_str());
         pugi::xml_node sceneNode = scene.append_child("SceneNode");
         SceneNode::Save(sceneNode);
-        SaveAnimations(scene);
-        SaveSkeletons(scene);
         SavePhysics(scene);
     }
 
@@ -394,75 +323,32 @@ namespace NSG
         return false;
     }
 
-    PAnimation Scene::GetOrCreateAnimation(const std::string& name)
+
+	PAnimation Scene::GetAnimationFor(const std::string& name, PSceneNode node) const
     {
-        auto it = animations_.find(name);
-        if (it == animations_.end())
-        {
-            auto animation = std::make_shared<Animation>(name);
-            animations_[name] = animation;
-            return animation;
-        }
-        return it->second;
+		auto animation = Animation::Get(name);
+		if (animation)
+		{
+			auto clone = animation->Clone();
+			if (clone->ResolveFor(node))
+				return clone;
+		}
+		return nullptr;
     }
 
-    std::vector<PAnimation> Scene::GetAnimationsFor(PNode node) const
+    void Scene::PlayAnimation(PAnimation animation, bool looped)
     {
-        std::vector<PAnimation> result;
-        for (auto& animation : animations_)
-        {
-            auto& tracks = animation.second->GetTracks();
-            for (auto& track : tracks)
-            {
-                auto trackNode = track.node_.lock();
-                if (trackNode == node)
-                {
-                    result.push_back(animation.second);
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    bool Scene::HasAnimation(const std::string& name) const
-    {
-        return animations_.find(name) != animations_.end();
-    }
-
-    bool Scene::PlayAnimation(const std::string& name, bool looped)
-    {
-        PAnimation animation = animations_.find(name)->second;
-        if (animation)
-        {
-            PlayAnimation(animation, looped);
-            return true;
-        }
-        return false;
-    }
-
-    void Scene::PlayAnimation(const PAnimation& animation, bool looped)
-    {
-        std::string name = animation->GetName();
-
-        PAnimationState animationState;
-        auto it = animationStateMap_.find(name);
-        if (it != animationStateMap_.end())
-            animationState = it->second;
-        else
-        {
-            animationState = PAnimationState(new AnimationState(animation));
-            animationStateMap_.insert(AnimationStateMap::value_type(name, animationState));
-        }
-        animationState->SetLooped(looped);
+		auto animationState = std::make_shared<AnimationState>(animation);
+		animationState->SetLooped(looped);
+		animationStates_.push_back(animationState);
     }
 
     void Scene::UpdateAnimations(float deltaTime)
     {
-        auto it = animationStateMap_.begin();
-        while (it != animationStateMap_.end())
+		auto it = animationStates_.begin();
+		while (it != animationStates_.end())
         {
-            auto& animState = it->second;
+            auto& animState = *it;
             if (!animState->HasEnded())
             {
                 animState->AddTime(deltaTime);
@@ -470,7 +356,7 @@ namespace NSG
                 ++it;
             }
             else
-                it = animationStateMap_.erase(it);
+				it = animationStates_.erase(it);
         }
     }
 
@@ -478,19 +364,6 @@ namespace NSG
     {
         for (auto ps : particleSystems_)
             ps->Update(deltaTime);
-    }
-
-    bool Scene::SetAnimationSpeed(const std::string& name, float speed)
-    {
-        PAnimationState animationState;
-        auto it = animationStateMap_.find(name);
-        if (it != animationStateMap_.end())
-            animationState = it->second;
-        else
-            return false;
-
-        animationState->SetSpeed(speed);
-        return true;
     }
 
     void Scene::AddLight(Light* light)

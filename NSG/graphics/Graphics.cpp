@@ -975,37 +975,36 @@ namespace NSG
         }
     }
 
-    void Graphics::SetBuffers(bool solid)
-    {
-        VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
-
-        if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
-        {
-            IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer(solid);
-            CHECK_ASSERT(!iBuffer || !iBuffer->IsDynamic(), __FILE__, __LINE__);
-            VAOKey key { activeProgram_, vBuffer, iBuffer };
-            VertexArrayObj* vao(nullptr);
-            auto it = vaoMap_.find(key);
-            if (it != vaoMap_.end())
-            {
-                vao = it->second.get();
-            }
-            else
-            {
-                vao = new VertexArrayObj(activeProgram_, vBuffer, iBuffer);
-                CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, PVertexArrayObj(vao))).second, __FILE__, __LINE__);
-            }
-            vao->Use();
-        }
-        else
-        {
-            SetVertexBuffer(vBuffer);
-            SetAttributes();
-			if (activeProgram_->GetMaterial()->IsBatched() && !vBuffer->IsDynamic())
-                SetInstanceAttrPointers(activeProgram_);
-            SetIndexBuffer(activeMesh_->GetIndexBuffer(solid));
-        }
-    }
+	void Graphics::SetBuffers(bool solid, bool allowInstancing)
+	{
+		VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
+		if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
+		{
+			IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer(solid);
+			CHECK_ASSERT(!iBuffer || !iBuffer->IsDynamic(), __FILE__, __LINE__);
+			VAOKey key{ allowInstancing, activeProgram_, vBuffer, iBuffer };
+			VertexArrayObj* vao(nullptr);
+			auto it = vaoMap_.find(key);
+			if (it != vaoMap_.end())
+			{
+				vao = it->second.get();
+			}
+			else
+			{
+				vao = new VertexArrayObj(allowInstancing, activeProgram_, vBuffer, iBuffer);
+				CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, PVertexArrayObj(vao))).second, __FILE__, __LINE__);
+			}
+			vao->Use();
+		}
+		else
+		{
+			SetVertexBuffer(vBuffer);
+			SetAttributes();
+			if (allowInstancing && activeProgram_->GetMaterial()->IsBatched() && !vBuffer->IsDynamic())
+				SetInstanceAttrPointers(activeProgram_);
+			SetIndexBuffer(activeMesh_->GetIndexBuffer(solid));
+		}
+	}
 
     void Graphics::SetInstanceAttrPointers(Program* program)
     {
@@ -1296,8 +1295,7 @@ namespace NSG
         else
             EnableCullFace(false);
 
-        auto program = Program::GetOrCreate(pass, activeCamera_, activeMesh_, material, light);
-        program->Set(activeMesh_->GetSkeleton().get());
+		auto program = Program::GetOrCreate(pass, activeCamera_, activeMesh_, material, light, sceneNode);
         program->Set(sceneNode);
         program->Set(material);
         program->Set(light);
@@ -1316,7 +1314,7 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
         bool solid = activeProgram_->GetMaterial()->GetFillMode() == FillMode::SOLID;
-        SetBuffers(solid);
+        SetBuffers(solid, false);
         CHECK_GL_STATUS(__FILE__, __LINE__);
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         const VertexsData& vertexsData = activeMesh_->GetVertexsData();
@@ -1346,7 +1344,7 @@ namespace NSG
 
         bool solid = activeProgram_->GetMaterial()->GetFillMode() == FillMode::SOLID;
         activeProgram_->GetMaterial()->UpdateBatchBuffer(batch);
-        SetBuffers(solid);
+        SetBuffers(solid, true);
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         GLsizei instances = (GLsizei)batch.GetNodes().size();
         const Indexes& indexes = activeMesh_->GetIndexes(solid);

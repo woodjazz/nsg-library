@@ -190,6 +190,9 @@ namespace NSG
 
     void CameraControl::OnUpdate(float deltaTime)
     {
+        if (trackNode_ && pointOnSphere_->SetCenter(trackNode_->GetGlobalPosition()))
+            updateOrientation_ = true;
+
         if (updateOrientation_)
         {
             Quaternion targetOrientation = camera_->GetLookAtOrientation(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
@@ -282,7 +285,7 @@ namespace NSG
 
             case NSG_KEY_D:
                 {
-					Renderer::GetPtr()->EnableDebugPhysics(action != 0);
+                    Renderer::GetPtr()->EnableDebugPhysics(action != 0);
                     camera_->SetUniformsNeedUpdate();
                     break;
                 }
@@ -365,6 +368,11 @@ namespace NSG
         }
     }
 
+    void CameraControl::Track(PNode node)
+    {
+        trackNode_ = node;
+    }
+
     void CameraControl::SetSphereCenter(bool centerObj)
     {
         Vertex3 newCenter;
@@ -372,6 +380,7 @@ namespace NSG
         RayNodeResult closest;
         if (camera_->GetScene()->GetClosestRayNodeIntersection(ray, closest))
         {
+            LOGI("CamCenter in %s", closest.node_->GetName().c_str());
             if (centerObj)
             {
                 newCenter = closest.node_->GetGlobalPosition();

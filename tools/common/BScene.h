@@ -27,7 +27,80 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Path.h"
 #include "VertexData.h"
+#ifndef USING_BLENDER_FILES
 #include "Blender.h"
+#else
+namespace Blender
+{
+#include "DNA_ID.h"
+#include "DNA_action_types.h"
+#include "DNA_actuator_types.h"
+#include "DNA_anim_types.h"
+#include "DNA_armature_types.h"
+#include "DNA_boid_types.h"
+#include "DNA_brush_types.h"
+#include "DNA_camera_types.h"
+#include "DNA_cloth_types.h"
+#include "DNA_color_types.h"
+#include "DNA_constraint_types.h"
+#include "DNA_controller_types.h"
+#include "DNA_curve_types.h"
+#include "DNA_customdata_types.h"
+#include "DNA_defs.h"
+#include "DNA_documentation.h"
+#include "DNA_dynamicpaint_types.h"
+#include "DNA_effect_types.h"
+#include "DNA_fileglobal_types.h"
+#include "DNA_freestyle_types.h"
+#include "DNA_genfile.h"
+#include "DNA_gpencil_types.h"
+#include "DNA_gpu_types.h"
+#include "DNA_group_types.h"
+#include "DNA_image_types.h"
+//#include "DNA_ipo_types.h"
+#include "DNA_key_types.h"
+#include "DNA_lamp_types.h"
+#include "DNA_lattice_types.h"
+#include "DNA_linestyle_types.h"
+#include "DNA_listBase.h"
+#include "DNA_material_types.h"
+#include "DNA_mesh_types.h"
+#include "DNA_meshdata_types.h"
+#include "DNA_meta_types.h"
+#include "DNA_modifier_types.h"
+#include "DNA_nla_types.h"
+#include "DNA_node_types.h"
+#include "DNA_object_fluidsim.h"
+#include "DNA_object_force.h"
+#include "DNA_object_types.h"
+#include "DNA_outliner_types.h"
+#include "DNA_packedFile_types.h"
+#include "DNA_particle_types.h"
+#include "DNA_property_types.h"
+#include "DNA_rigidbody_types.h"
+#include "DNA_scene_types.h"
+#include "DNA_screen_types.h"
+#include "DNA_sdna_types.h"
+#include "DNA_sensor_types.h"
+#include "DNA_sequence_types.h"
+#include "DNA_smoke_types.h"
+#include "DNA_sound_types.h"
+#include "DNA_space_types.h"
+#include "DNA_speaker_types.h"
+#include "DNA_text_types.h"
+#include "DNA_texture_types.h"
+#include "DNA_userdef_types.h"
+#include "DNA_vec_types.h"
+#include "DNA_vfont_types.h"
+#include "DNA_view2d_types.h"
+#include "DNA_view3d_types.h"
+#include "DNA_windowmanager_types.h"
+#include "DNA_world_types.h"
+#include "DNA_movieclip_types.h"
+#include "DNA_tracking_types.h"
+#include "DNA_mask_types.h"
+};
+#endif
 #include "BSpline.h"
 #include <vector>
 #include <map>
@@ -52,10 +125,12 @@ namespace BlenderConverter
         void ExtractGeneral(const Blender::Object* obj, NSG::PSceneNode sceneNode);
 		NSG::PSceneNode ConvertObject(const Blender::Object* obj, NSG::PScene scene, const Blender::Scene* bscene);
 		NSG::PSceneNode CreateSceneNode(const Blender::Object* obj, NSG::PSceneNode parent);
-		NSG::PSceneNode CreateSkeletonBones(const Blender::Object* obj, NSG::PSceneNode parent);
-		void BuildBoneTree(const std::string& armatureName, const Blender::Bone* cur, NSG::PSceneNode parent);
+		NSG::PSceneNode CreateSkeletonBones(const Blender::Object* objArmature, NSG::PSceneNode parent, const Blender::Scene* bscene);
+		const Blender::Object* GetMesh(const Blender::Object* objArmature, const Blender::Scene* bscene) const;
+		void BuildBoneTree(const Blender::Bone* cur, NSG::PNode parent, NSG::PSkeleton skeleton);
 		void ConvertGroups(bParse::bMain* data, NSG::PScene scene, const Blender::Scene* bscene);
-		void ConvertGroupInstances(bParse::bMain* data, NSG::PScene scene, const Blender::Scene* bscene);
+		void ConvertGroup(Blender::Group* bgroup, NSG::PScene scene, const Blender::Scene* bscene);
+		void ConvertGroupInstances(NSG::PScene scene, const Blender::Scene* bscene);
 		NSG::PSceneNode CreateCamera(const Blender::Object* obj, NSG::PSceneNode parent, const Blender::Scene* bscene);
         NSG::PSceneNode CreateLight(const Blender::Object* obj, NSG::PSceneNode parent);
 		NSG::PSceneNode CreateMesh(const Blender::Object* obj, NSG::PSceneNode parent);
@@ -64,7 +139,6 @@ namespace BlenderConverter
 		int GetUVLayersBMmesh(const Blender::Mesh* me, Blender::MLoopUV** uvEightLayerArray, char** uvNames);
 		int GetUVLayersBMmeshLegacy(const Blender::Mesh* mesh, Blender::MTFace** eightLayerArray, char** uvNames, Blender::MCol** oneMCol);
 		void AssignBonesAndWeights(const Blender::Object* obj, const Blender::Mesh* me, NSG::VertexsData& vertexes);
-		void CreateSkeleton(NSG::PScene scene, const Blender::Object* obj);
 		std::vector<NSG::PSound> LoadSounds(bParse::bMain* data);
 		NSG::PSound LoadSound(Blender::bSound* sound);
 		const Blender::Material* GetMaterial(const Blender::Object* ob, int index) const;
@@ -75,6 +149,7 @@ namespace BlenderConverter
 		void LoadAnimData(NSG::PSceneNode sceneNode, const Blender::AnimData* adt, float animfps);
 		void CreateAnimations(bParse::bMain* data);
 		void CreateAnimation(const Blender::bAction* action, const Blender::Scene* bscene, NSG::PScene scene);
+		NSG::PScene LoadScene(const Blender::Scene* bscene);
 		struct TrackData
 		{
 			NSG::PAnimationTrack track;
@@ -93,12 +168,12 @@ namespace BlenderConverter
 		const Blender::bPoseChannel* GetPoseChannelByName(const Blender::bPose* pose, const char* name) const;
 		const Blender::Bone* GetBoneFromDefGroup(const Blender::Object* obj, const Blender::bDeformGroup* def) const;
 		bool IsBoneDefGroup(const Blender::Object* obj, const Blender::bDeformGroup* def) const;
-		void CreateOffsetMatrices(const Blender::Object* obj, NSG::PSceneNode armatureNode);
+		void CreateOffsetMatrices(const Blender::Object* obAr, const Blender::Object* objMesh, NSG::PSceneNode armatureNode, NSG::PSkeleton skeleton);
 		const Blender::Object* GetAssignedArmature(const Blender::Object *obj) const;
 		void GetBoneIndexByDeformGroupIndex(const Blender::Object* obj, const Blender::Object* obAr, std::vector<std::pair<int, std::string>>& list);
 		void GetFrames(const Blender::bAction* action, std::vector<float> &fra);
 		NSG::PScene CreateScene(const Blender::Scene* bscene);
-		void CreateScenes(bParse::bMain* data);
+		void LoadScenes(bParse::bMain* data);
 		void ConvertGroupInstances(const std::string& groupName, NSG::PSceneNode parent);
 		bool IsKnownType(const Blender::Object* obj) const;
 		void Tessellate(NSG::PModelMesh mesh, const NSG::VertexsData& vertexData, const std::vector<int> & indexes);
@@ -113,9 +188,7 @@ namespace BlenderConverter
     private:
         NSG::Path path_;
         NSG::Path outputDir_;
-		std::vector<const Blender::Object*> armatureLinker_;
 		std::vector<const Blender::Object*> physics_;
-		std::map<std::string, std::vector<NSG::PWeakNode>> armatureBones_;
 		bool embedResources_;
 		std::vector<NSG::PScene> scenes_;
 		std::vector<const Blender::Scene*> bscenes_;

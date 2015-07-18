@@ -485,7 +485,7 @@ namespace NSG
         return nullptr != GetTexture(MaterialTexture::LIGHT_MAP);
     }
 
-    void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh) const
+	void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh, bool allowInstancing) const
     {
         defines += "MATERIAL_" + GetName() + "\n"; // just to have a shader variance per material
         bool shadowPass = PassType::SHADOW == passType;
@@ -592,7 +592,7 @@ namespace NSG
             }
         }
 
-        if (IsBatched() && mesh->IsStatic())
+		if (IsBatched() && mesh->IsStatic() && allowInstancing)
             defines += "INSTANCED\n";
 
         switch (billboardType_)

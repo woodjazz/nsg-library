@@ -33,13 +33,10 @@ int NSG_MAIN(int argc, char* argv[])
 	AppData data(resource);
 	CHECK_CONDITION(data.scenes_.size() == 1, __FILE__, __LINE__);
 	auto scene = data.scenes_.at(0);
-	auto object = scene->GetChild<SceneNode>("Bone.main", true);
+	auto object = scene->GetChild<SceneNode>("RigMomo", true);
 	CHECK_CONDITION(object, __FILE__, __LINE__);
-	auto animations = scene->GetAnimationsFor(object);
-	CHECK_CONDITION(animations.size() == 37, __FILE__, __LINE__);
-	{
-		auto animations = scene->GetAnimations();
-		CHECK_CONDITION(animations.size() == 47, __FILE__, __LINE__);
-	}
-
+	auto animation = scene->GetAnimationFor("Momo_Carry", object);
+	CHECK_CONDITION(animation, __FILE__, __LINE__);
+	auto animations = Animation::GetObjs();
+	CHECK_CONDITION(animations.size() == 47, __FILE__, __LINE__);
 }

@@ -48,8 +48,7 @@ namespace NSG
           inheritScale_(true),
           dirty_(true),
           enabled_(true),
-          isScaleUniform_(true),
-          isArmature_(false)
+          isScaleUniform_(true)
     {
     }
 
@@ -195,13 +194,6 @@ namespace NSG
                 }
         }
 
-        MarkAsDirty();
-    }
-
-
-    void Node::SetBoneOffsetMatrix(const Matrix4& m)
-    {
-        boneOffsetMatrix_ = m;
         MarkAsDirty();
     }
 
@@ -490,4 +482,17 @@ namespace NSG
         Update();
         return isScaleUniform_;
     }
+
+	void Node::SetArmature(PNode armature)
+	{
+		armature_ = armature;
+		for (auto obj : children_)
+			obj->SetArmature(armature);
+	}
+
+	PSceneNode Node::GetArmature() const 
+	{ 
+		return std::dynamic_pointer_cast<SceneNode>(armature_.lock());
+	}
+
 }

@@ -51,12 +51,14 @@ namespace NSG
 	
 	class Skeleton;
 	typedef std::shared_ptr<Skeleton> PSkeleton;
+	typedef std::weak_ptr<Skeleton> PWeakSkeleton;
 	
 	class AnimationState;
 	typedef std::shared_ptr<AnimationState> PAnimationState;
 
 	class Animation;
 	typedef std::shared_ptr<Animation> PAnimation;
+	typedef std::weak_ptr<Animation> PWeakAnimation;
 	
 	class PointOnSphere;
 	typedef std::shared_ptr<PointOnSphere> PPointOnSphere;
@@ -321,15 +323,13 @@ namespace NSG
 		typedef std::shared_ptr<CheckButtonStyle> PCheckButtonStyle;
 	}
 
-	namespace NaCl 
-	{
-		class NaClURLLoader;
-		typedef std::shared_ptr<NaClURLLoader> PNaClURLLoader;
-	}
-
 	class Node;
 	typedef std::shared_ptr<Node> PNode;
 	typedef std::weak_ptr<Node> PWeakNode;
+
+	class Bone;
+	typedef std::shared_ptr<Bone> PBone;
+	typedef std::weak_ptr<Bone> PWeakBone;
 
 	class Resource;
 	typedef std::shared_ptr<Resource> PResource;

@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
-Copyright (c) 2014-2015 Néstor Silveira Gorski
+Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -35,101 +35,102 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    VertexArrayObj::VertexArrayObj(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer)
-        : Object(program->GetName() + "VertexArrayObj"),
-          vao_(0),
-          program_(program),
-          vBuffer_(vBuffer),
-          iBuffer_(iBuffer)
-    {
-    }
+	VertexArrayObj::VertexArrayObj(bool allowInstancing, Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer)
+		: Object(program->GetName() + "VertexArrayObj"),
+		vao_(0),
+		allowInstancing_(allowInstancing),
+		program_(program),
+		vBuffer_(vBuffer),
+		iBuffer_(iBuffer)
+	{
+	}
 
-    VertexArrayObj::~VertexArrayObj()
-    {
-    }
+	VertexArrayObj::~VertexArrayObj()
+	{
+	}
 
-    bool VertexArrayObj::IsValid()
-    {
-        return program_->IsReady();
-    }
+	bool VertexArrayObj::IsValid()
+	{
+		return program_->IsReady();
+	}
 
-    void VertexArrayObj::AllocateResources()
-    {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+	void VertexArrayObj::AllocateResources()
+	{
+		CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        glGenVertexArrays(1, &vao_);
+		glGenVertexArrays(1, &vao_);
 
-        CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
+		CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
 
 		Graphics::this_->SetVertexArrayObj(this);
 
 		Graphics::this_->SetVertexBuffer(vBuffer_, true);
 
-        GLuint position_loc = program_->GetAttPositionLoc();
-        GLuint texcoord_loc0 = program_->GetAttTextCoordLoc0();
-        GLuint texcoord_loc1 = program_->GetAttTextCoordLoc1();
-        GLuint normal_loc = program_->GetAttNormalLoc();
-        GLuint color_loc = program_->GetAttColorLoc();
-        GLuint tangent_loc = program_->GetAttTangentLoc();
-        GLuint bones_id_loc = program_->GetAttBonesIDLoc();
-        GLuint bones_weight = program_->GetAttBonesWeightLoc();
+		GLuint position_loc = program_->GetAttPositionLoc();
+		GLuint texcoord_loc0 = program_->GetAttTextCoordLoc0();
+		GLuint texcoord_loc1 = program_->GetAttTextCoordLoc1();
+		GLuint normal_loc = program_->GetAttNormalLoc();
+		GLuint color_loc = program_->GetAttColorLoc();
+		GLuint tangent_loc = program_->GetAttTangentLoc();
+		GLuint bones_id_loc = program_->GetAttBonesIDLoc();
+		GLuint bones_weight = program_->GetAttBonesWeightLoc();
 
-        if (position_loc != -1)
-            glEnableVertexAttribArray((int)AttributesLoc::POSITION);
+		if (position_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::POSITION);
 
-        if (normal_loc != -1)
-            glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
+		if (normal_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
 
-        if (texcoord_loc0 != -1)
-            glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD0);
+		if (texcoord_loc0 != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD0);
 
-        if (texcoord_loc1 != -1)
-            glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD1);
+		if (texcoord_loc1 != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD1);
 
-        if (color_loc != -1)
-            glEnableVertexAttribArray((int)AttributesLoc::COLOR);
+		if (color_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::COLOR);
 
-        if (tangent_loc != -1)
-            glEnableVertexAttribArray((int)AttributesLoc::TANGENT);
+		if (tangent_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::TANGENT);
 
-        if (bones_id_loc != -1)
-            glEnableVertexAttribArray((int)AttributesLoc::BONES_ID);
+		if (bones_id_loc != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::BONES_ID);
 
-        if (bones_weight != -1)
-            glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
+		if (bones_weight != -1)
+			glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
 
 		Graphics::this_->SetVertexAttrPointers();
 
 		Graphics::this_->SetIndexBuffer(iBuffer_, true);
 
-        if (program_->GetMaterial()->IsBatched())
+		if (allowInstancing_ && program_->GetMaterial()->IsBatched())
 			Graphics::this_->SetInstanceAttrPointers(program_);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-    }
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+	}
 
-    void VertexArrayObj::ReleaseResources()
-    {
+	void VertexArrayObj::ReleaseResources()
+	{
 		if (Graphics::this_->GetVertexArrayObj() == this)
 			Graphics::this_->SetVertexArrayObj(nullptr);
 
-        glDeleteVertexArrays(1, &vao_);
-        vao_ = 0;
-    }
+		glDeleteVertexArrays(1, &vao_);
+		vao_ = 0;
+	}
 
-    void VertexArrayObj::Use()
-    {
-        if (IsReady())
+	void VertexArrayObj::Use()
+	{
+		if (IsReady())
 			Graphics::this_->SetVertexArrayObj(this);
-    }
+	}
 
-    void VertexArrayObj::Bind()
-    {
-        glBindVertexArray(vao_);
-    }
+	void VertexArrayObj::Bind()
+	{
+		glBindVertexArray(vao_);
+	}
 
-    void VertexArrayObj::Unbind()
-    {
-        glBindVertexArray(0);
-    }
+	void VertexArrayObj::Unbind()
+	{
+		glBindVertexArray(0);
+	}
 }

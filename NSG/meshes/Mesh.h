@@ -60,8 +60,6 @@ namespace NSG
         void Save(pugi::xml_node& node);
         void SetSerializable(bool serializable) { serializable_ = serializable; }
         bool IsSerializable() const { return serializable_; }
-        PSkeleton GetSkeleton() const { return skeleton_; }
-		void SetSkeleton(PSkeleton skeleton);
         const std::string& GetName() const { return name_; }
         void SetName(const std::string& name) { name_ = name; }
         void AddSceneNode(SceneNode* node);
@@ -80,7 +78,6 @@ namespace NSG
         void SetUVName(int index, const std::string& name);
 		const std::string& GetUVName(int index) const;
         int GetUVIndex(const std::string& name) const;
-		size_t FillShaderDefines(std::string& defines) const;
 	protected:
 		virtual void Load(const pugi::xml_node& node);
         bool IsValid() override;
@@ -88,7 +85,6 @@ namespace NSG
         void ReleaseResources() override;
         void CalculateTangents();
         Mesh(const std::string& name, bool dynamic = false);
-        size_t GetMaxPlatformBones(size_t nBones) const;
     protected:
         VertexsData vertexsData_;
         Indexes indexes_; //for solid object

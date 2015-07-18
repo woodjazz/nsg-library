@@ -24,7 +24,9 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Animation.h"
+#include "ResourceXMLNode.h"
 #include "Node.h"
+#include "Bone.h"
 #include "Scene.h"
 #include "Constants.h"
 #include "Util.h"
@@ -34,6 +36,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	template<> std::map<std::string, PAnimation> StrongFactory<std::string, Animation>::objsMap_ = {};
+
     AnimationKeyFrame::AnimationKeyFrame()
         : time_(0),
           scale_(VECTOR3_ONE)
@@ -50,7 +54,7 @@ namespace NSG
 
     void AnimationKeyFrame::Save(pugi::xml_node& node)
     {
-		pugi::xml_node child = node.append_child("KeyFrame");
+        pugi::xml_node child = node.append_child("KeyFrame");
 
         child.append_attribute("time").set_value(time_);
         child.append_attribute("position").set_value(ToString(position_).c_str());
@@ -58,13 +62,19 @@ namespace NSG
         child.append_attribute("scale").set_value(ToString(scale_).c_str());
     }
 
-	void AnimationKeyFrame::Load(const pugi::xml_node& node)
-	{
-		time_ = node.attribute("time").as_float();
-		position_ = ToVertex3(node.attribute("position").as_string());
-		rotation_ = ToQuaternion(node.attribute("rotation").as_string());
-		scale_ = ToVertex3(node.attribute("scale").as_string());
-	}
+    void AnimationKeyFrame::Load(const pugi::xml_node& node)
+    {
+        time_ = node.attribute("time").as_float();
+        position_ = ToVertex3(node.attribute("position").as_string());
+        rotation_ = ToQuaternion(node.attribute("rotation").as_string());
+        scale_ = ToVertex3(node.attribute("scale").as_string());
+    }
+
+    void AnimationKeyFrame::SetPose(PBone bone)
+    {
+        Matrix4 m = bone->GetPose() * ComposeMatrix(position_, rotation_, scale_);
+        DecomposeMatrix(m, position_, rotation_, scale_);
+    }
 
     void AnimationTrack::GetKeyFrameIndex(float time, size_t& index) const
     {
@@ -86,53 +96,82 @@ namespace NSG
     void AnimationTrack::Save(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Track");
-        child.append_attribute("nodeName") = node_.lock()->GetName().c_str();
+        child.append_attribute("nodeName") = nodeName_.c_str();
         child.append_attribute("channelMask") = channelMask_.to_string().c_str();
         if (keyFrames_.size())
         {
-			pugi::xml_node childFrames = child.append_child("KeyFrames");
+            pugi::xml_node childFrames = child.append_child("KeyFrames");
             for (auto& obj : keyFrames_)
-				obj.Save(childFrames);
+                obj.Save(childFrames);
         }
     }
 
-	void AnimationTrack::Load(const pugi::xml_node& node)
-	{
-		std::string nodeName = node.attribute("nodeName").as_string();
-		PScene scene = scene_.lock();
-		if (scene->GetName() == nodeName)
-			node_ = scene;
-		else
-			node_ = scene->GetChild<Node>(nodeName, true);
-        CHECK_ASSERT(node_.lock(), __FILE__, __LINE__);
-		std::string mask = node.attribute("channelMask").as_string();
-		channelMask_ = AnimationChannelMask(mask);
+    void AnimationTrack::Load(const pugi::xml_node& node)
+    {
+        nodeName_ = node.attribute("nodeName").as_string();
+        std::string mask = node.attribute("channelMask").as_string();
+        channelMask_ = AnimationChannelMask(mask);
+        pugi::xml_node childKeyFrames = node.child("KeyFrames");
+        if (childKeyFrames)
+        {
+            pugi::xml_node child = childKeyFrames.child("KeyFrame");
+            while (child)
+            {
+                AnimationKeyFrame keyFrame;
+                keyFrame.Load(child);
+                keyFrames_.push_back(keyFrame);
+                child = child.next_sibling("KeyFrame");
+            }
+        }
+    }
 
-		pugi::xml_node childKeyFrames = node.child("KeyFrames");
-		if (childKeyFrames)
-		{
-			pugi::xml_node child = childKeyFrames.child("KeyFrame");
-			while (child)
-			{
-				AnimationKeyFrame keyFrame;
-				keyFrame.Load(child);
-				keyFrames_.push_back(keyFrame);
-				child = child.next_sibling("KeyFrame");
-			}
-		}
+    void AnimationTrack::ResolveFor(PBone bone)
+    {
+        node_ = bone;
+        for (auto& kf : keyFrames_)
+            kf.SetPose(bone);
+    }
 
-	}
-
-	Animation::Animation(const std::string& name)
-        : name_(name),
-		length_(0)
+    Animation::Animation(const std::string& name)
+        : Object(name),
+          length_(0)
     {
 
     }
 
     Animation::~Animation()
     {
+    }
 
+    bool Animation::IsValid()
+    {
+        return (!resource_ || resource_->IsReady());
+    }
+
+    void Animation::ReleaseResources()
+    {
+        if (resource_)
+            resource_->Invalidate();
+    }
+
+    PAnimation Animation::Clone() const
+    {
+        auto clone = std::make_shared<Animation>(name_);
+        clone->length_ = length_;
+        clone->tracks_ = tracks_;
+        return clone;
+    }
+
+    bool Animation::ResolveFor(PSceneNode node)
+    {
+        for (auto& track : tracks_)
+        {
+            auto bone = node->GetChild<Bone>(track.nodeName_, true);
+			if (!bone)
+				return false;
+            track.ResolveFor(bone);
+        }
+        return !tracks_.empty();
     }
 
     void Animation::SetLength(float length)
@@ -149,48 +188,81 @@ namespace NSG
     {
         pugi::xml_node child = node.append_child("Animation");
         child.append_attribute("name").set_value(name_.c_str());
-		child.append_attribute("length").set_value(length_);
+        child.append_attribute("length").set_value(length_);
         if (tracks_.size())
         {
-			pugi::xml_node childTracks = child.append_child("Tracks");
+            pugi::xml_node childTracks = child.append_child("Tracks");
             for (auto& obj : tracks_)
-				obj.Save(childTracks);
+                obj.Save(childTracks);
         }
     }
 
-	void Animation::Load(const pugi::xml_node& node)
-	{
-		tracks_.clear();
-		length_ = node.attribute("length").as_float();
+    void Animation::Load(const pugi::xml_node& node)
+    {
+        tracks_.clear();
+        length_ = node.attribute("length").as_float();
 
-		pugi::xml_node childTracks = node.child("Tracks");
-		if (childTracks)
-		{
-			pugi::xml_node child = childTracks.child("Track");
-			while (child)
-			{
-				AnimationTrack track;
-				track.scene_ = scene_;
-				track.Load(child);
-				AddTrack(track);
-				child = child.next_sibling("Track");
-			}
-		}
-	}
+        pugi::xml_node childTracks = node.child("Tracks");
+        if (childTracks)
+        {
+            pugi::xml_node child = childTracks.child("Track");
+            while (child)
+            {
+                AnimationTrack track;
+                track.Load(child);
+                AddTrack(track);
+                child = child.next_sibling("Track");
+            }
+        }
+    }
 
     void Animation::AddTrack(const AnimationTrack& track)
     {
         tracks_.push_back(track);
     }
 
-	void Animation::SetScene(PWeakScene scene)
-	{
-		scene_ = scene;
-	}
-
-    void Animation::Play(bool lopped)
+	void Animation::SaveAnimations(pugi::xml_node& node)
     {
-        auto scene = scene_.lock();
-        scene->PlayAnimation(shared_from_this(), lopped);
+        pugi::xml_node child = node.append_child("Animations");
+		auto animations = Animation::GetObjs();
+		for (auto& obj : animations)
+            obj->Save(child);
     }
+
+    void Animation::LoadFrom(PResource resource, const pugi::xml_node& node)
+    {
+		Load(node);
+    }
+
+    std::vector<PAnimation> Animation::LoadAnimations(PResource resource, const pugi::xml_node& node)
+    {
+		std::vector<PAnimation> result;
+        pugi::xml_node meshes = node.child("Animations");
+        if (meshes)
+        {
+            pugi::xml_node child = meshes.child("Animation");
+            while (child)
+            {
+                std::string name = child.attribute("name").as_string();
+                auto animation = Animation::GetOrCreate(name);
+                auto xmlResource = Resource::CreateClass<ResourceXMLNode>(name);
+				xmlResource->Set(resource, animation, "Animations", name);
+				animation->Set(xmlResource);
+				CHECK_CONDITION(animation->IsReady(), __FILE__, __LINE__); //force load
+				result.push_back(animation);
+                child = child.next_sibling("Animation");
+            }
+        }
+        return result;
+    }
+
+	void Animation::Set(PResource resource)
+	{
+		if (resource != resource_)
+		{
+			resource_ = resource;
+			Invalidate();
+		}
+
+	}
 }

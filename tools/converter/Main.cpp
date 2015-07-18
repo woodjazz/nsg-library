@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "NSG.h"
 #include "TrueTypeConverter.h"
 #include "BScene.h"
-#include "bBlenderFile.h"
 #include <fstream>
 #include <cstdint>
 using namespace NSG;

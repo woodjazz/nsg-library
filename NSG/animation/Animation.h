@@ -25,6 +25,8 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Object.h"
+#include "StrongFactory.h"
 
 namespace NSG
 {
@@ -34,42 +36,49 @@ namespace NSG
         Vector3 position_;
         Quaternion rotation_;
         Vector3 scale_;
-		AnimationKeyFrame();
-		AnimationKeyFrame(float time, Node* node);
-		void Save(pugi::xml_node& node);
-		void Load(const pugi::xml_node& node);
+        AnimationKeyFrame();
+        AnimationKeyFrame(float time, Node* node);
+        void Save(pugi::xml_node& node);
+        void Load(const pugi::xml_node& node);
+        void SetPose(PBone bone);
     };
 
     struct AnimationTrack
     {
-		PWeakScene scene_;
-        PWeakNode node_;
+        std::string nodeName_;
+        PWeakNode node_; //not set till the animation is resolved (see Animation::ResolveFor)
         AnimationChannelMask channelMask_;
         std::vector<AnimationKeyFrame> keyFrames_;
         void GetKeyFrameIndex(float time, size_t& index) const;
         void Save(pugi::xml_node& node);
-		void Load(const pugi::xml_node& node);
+        void Load(const pugi::xml_node& node);
+        void ResolveFor(PBone bone);
     };
 
-    class Animation : public std::enable_shared_from_this<Animation>
+	class Animation : public std::enable_shared_from_this<Animation>, public Object, public StrongFactory<std::string, Animation>
     {
     public:
-		Animation(const std::string& name);
+        Animation(const std::string& name);
         ~Animation();
-		const std::string& GetName() const { return name_; }
+        PAnimation Clone() const;
+        bool ResolveFor(PSceneNode node);
+        const std::string& GetName() const { return name_; }
         void SetLength(float length);
-		float GetLength() const { return length_; }
+        float GetLength() const { return length_; }
         void SetTracks(const std::vector<AnimationTrack>& tracks);
         const std::vector<AnimationTrack>& GetTracks() const { return tracks_; }
         void Save(pugi::xml_node& node);
-		void Load(const pugi::xml_node& node);
-		void AddTrack(const AnimationTrack& track);
-		void SetScene(PWeakScene scene);
-        void Play(bool lopped);
+        void Load(const pugi::xml_node& node);
+        void AddTrack(const AnimationTrack& track);
+        static std::vector<PAnimation> LoadAnimations(PResource resource, const pugi::xml_node& node);
+        static void SaveAnimations(pugi::xml_node& node);
+		void Set(PResource resource);
     private:
-        std::string name_;
+        bool IsValid() override;
+        void ReleaseResources() override;
+        void LoadFrom(PResource resource, const pugi::xml_node& node) override;
         float length_;
         std::vector<AnimationTrack> tracks_;
-		PWeakScene scene_;
+		PResource resource_;
     };
 }

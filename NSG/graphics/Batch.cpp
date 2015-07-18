@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
-Copyright (c) 2014-2015 Néstor Silveira Gorski
+Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -34,12 +34,14 @@ misrepresented as being the original software.
 namespace NSG
 {
 	Batch::Batch()
+		:allowInstancing_(true)
 	{
 	}
 
 	Batch::Batch(Material* material, Mesh* mesh)
 		: material_(material),
-		mesh_(mesh)
+		mesh_(mesh),
+		allowInstancing_(true)
 	{
 		CHECK_ASSERT(material_ && mesh_, __FILE__, __LINE__);
 	}
@@ -53,19 +55,20 @@ namespace NSG
 		return material_ == obj.material_ && mesh_ == obj.mesh_ && nodes_ == obj.nodes_;
 	}
 
-    bool Batch::IsReady()
-    {
+	bool Batch::IsReady()
+	{
 		return material_->IsReady() && mesh_->IsReady();
-    }
+	}
 
 	void Batch::Add(SceneNode* node)
 	{
+		allowInstancing_ &= !node->GetArmature();
 		nodes_.push_back(node);
 	}
 
-	bool Batch::AllowInstancing() const 
-	{ 
-		return material_->IsBatched(); 
+	bool Batch::AllowInstancing() const
+	{
+		return allowInstancing_ && material_->IsBatched() && mesh_->IsStatic();
 	}
 
 	void Batch::Clear()
@@ -73,6 +76,7 @@ namespace NSG
 		material_ = nullptr;
 		mesh_ = nullptr;
 		nodes_.clear();
+		allowInstancing_ = true;
 	}
 
 }

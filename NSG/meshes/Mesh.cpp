@@ -34,7 +34,6 @@ misrepresented as being the original software.
 #include "InstanceData.h"
 #include "ModelMesh.h"
 #include "ResourceXMLNode.h"
-#include "Skeleton.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -389,16 +388,6 @@ namespace NSG
         }
     }
 
-    void Mesh::SetSkeleton(PSkeleton skeleton)
-    {
-        if (skeleton)
-        {
-            LOGI("Setting skeleton for mesh %s", name_.c_str());
-        }
-
-        skeleton_ = skeleton;
-    }
-
     std::vector<PMesh> Mesh::LoadMeshes(PResource resource, const pugi::xml_node& node)
     {
         std::vector<PMesh> result;
@@ -444,38 +433,6 @@ namespace NSG
         uvNames_[index] = name;
     }
 
-    size_t Mesh::GetMaxPlatformBones(size_t nBones) const
-    {
-        static const size_t MAX_BONES0 = 64;
-        static const size_t MAX_BONES1 = 48;
-        static const size_t MAX_BONES2 = 32;
-        // set a maximum value per platform to avoid shader variations
-        if(nBones <= MAX_BONES2)
-            return MAX_BONES2;
-        else if(nBones <= MAX_BONES1)
-            return MAX_BONES1;
-        else if(nBones <= MAX_BONES0)
-            return MAX_BONES0;
-        return nBones;
-    }
-
-	size_t Mesh::FillShaderDefines(std::string& defines) const
-    {
-        if (skeleton_)
-        {
-            defines += "SKELETON_" + skeleton_->GetName() + "\n"; // just to have a shader variance per skeleton
-            const std::vector<PWeakNode>& bones = skeleton_->GetBones();
-            auto nBones = bones.size();
-            if (nBones)
-            {
-                defines += "MAX_BONES " + ToString(GetMaxPlatformBones(nBones)) + "\n";
-                defines += "SKINNED\n";
-                return nBones;
-            }
-        }
-        return 0;
-    }
-
 	const std::string& Mesh::GetUVName(int index) const 
 	{ 
 		CHECK_ASSERT(index >= 0 && index < MAX_UVS, __FILE__, __LINE__);
@@ -505,5 +462,4 @@ namespace NSG
 		CHECK_CONDITION(((Mesh*)this)->IsReady(), __FILE__, __LINE__);
 		return boundingSphereRadius_; 
 	}
-
 }

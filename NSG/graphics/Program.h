@@ -53,7 +53,7 @@ namespace NSG
         GLuint GetAttBonesWeightLoc() const { return att_bonesWeightLoc_; }
         GLuint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
         GLuint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
-        void Set(const Skeleton* mesh);
+        void SetSkeleton(const Skeleton* mesh);
         void Set(SceneNode* node);
         void Set(Material* material);
         void Set(const Light* light);
@@ -64,7 +64,7 @@ namespace NSG
         void SetNumberBones(size_t nBones);
         void SetNodeVariables();
         static void Clear();
-		static PProgram GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light);
+		static PProgram GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode);
     private:
         bool IsValid() override;
         void AllocateResources() override;

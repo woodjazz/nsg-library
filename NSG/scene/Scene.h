@@ -59,13 +59,8 @@ namespace NSG
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
 		bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const;
 		bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
-		const std::map<std::string, PAnimation>& GetAnimations() const { return animations_; }
-        PAnimation GetOrCreateAnimation(const std::string& name);
-        std::vector<PAnimation> GetAnimationsFor(PNode node) const;
-        bool HasAnimation(const std::string& name) const;
-        bool PlayAnimation(const std::string& name, bool looped);
-        void PlayAnimation(const PAnimation& animation, bool looped);
-        bool SetAnimationSpeed(const std::string& name, float speed);
+		PAnimation GetAnimationFor(const std::string& name, PSceneNode node) const;
+        void PlayAnimation(PAnimation animation, bool looped);
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
         void UpdateOctree(SceneNode* node);
         void RemoveFromOctree(SceneNode* node);
@@ -92,12 +87,10 @@ namespace NSG
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void LoadAnimations(const pugi::xml_node& node);
-		void LoadSkeletons(const pugi::xml_node& node);
 		void SaveAnimations(pugi::xml_node& node) const;
 		void SavePhysics(pugi::xml_node& node) const;
-		void SaveSkeletons(pugi::xml_node& node) const;
     private:
-        void UpdateAnimations(float deltaTime);
+		void UpdateAnimations(float deltaTime);
         void UpdateParticleSystems(float deltaTime);
     private:
         Camera* mainCamera_;
@@ -108,9 +101,8 @@ namespace NSG
         ColorRGB horizon_;
 		POctree octree_;
         mutable std::set<SceneNode*> octreeNeedsUpdate_;
-		std::map<std::string, PAnimation> animations_;
-        typedef std::map<std::string, PAnimationState> AnimationStateMap;
-        AnimationStateMap animationStateMap_;
+        typedef std::vector<PAnimationState> AnimationStates;
+		AnimationStates animationStates_;
         PPhysicsWorld physicsWorld_;
         Window* window_;
         SignalNodeMouseMoved::PSignal signalNodeMouseMoved_;

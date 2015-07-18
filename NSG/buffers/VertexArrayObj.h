@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
-Copyright (c) 2014-2015 Néstor Silveira Gorski
+Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -28,12 +28,12 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Object.h"
 
-namespace NSG 
+namespace NSG
 {
 	class VertexArrayObj : public Object
 	{
 	public:
-		VertexArrayObj(Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer);
+		VertexArrayObj(bool allowInstancing, Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer);
 		~VertexArrayObj();
 		void Use();
 		void Bind();
@@ -43,6 +43,7 @@ namespace NSG
 		void AllocateResources() override;
 		void ReleaseResources()	override;
 		GLuint vao_; // vertex array object
+		bool allowInstancing_;
 		Program* program_;
 		VertexBuffer* vBuffer_;
 		IndexBuffer* iBuffer_;

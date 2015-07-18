@@ -27,7 +27,7 @@ set(DEPENDENCIES_BINARY_DIR ${ROOT_BINARY_DIR}/dependencies)
 set(EXTERNALS_BYNARY_DIR ${ROOT_BINARY_DIR}/externals)
 set(LIBRARIES_FOLDER_NAME "LIBRARIES")
 
-set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules) # Set CMake modules search path
+set (CMAKE_MODULE_PATH ${ROOT_SOURCE_DIR}/cmake/modules) # Set CMake modules search path
 include (Common) # Include NSG cmake common module
 setup_common() #has to be called before anything
 
@@ -126,7 +126,7 @@ set_property(TARGET bulletLinearMath PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 # SDL
 ###########################
 add_definitions(-DSDL)
-if(NOT EMSCRIPTEN) #EMSCRIPTEN supports/includes SDL 1.2
+if((NOT EMSCRIPTEN) AND (NOT USING_BLENDER_FILES)) #EMSCRIPTEN supports/includes SDL 1.2
 	include (CheckIncludeFiles)	
 	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
 	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
@@ -187,12 +187,19 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 	include (GenerateDNA) 
 	add_subdirectory(${TOOLS_DIR}/blenderdna)
 
-	##################################
-	# blenderserialize
-	##################################
-	include_directories(${TOOLS_DIR}/blenderserialize)
-	add_subdirectory(${TOOLS_DIR}/blenderserialize)
-	list(APPEND LIBRARIES_2_LINK blenderserialize)
+	#set(USING_BLENDER_FILES ON)
+	if(USING_BLENDER_FILES)
+		add_definitions(-DUSING_BLENDER_FILES)
+		include_directories(../makesdna)
+		list(APPEND LIBRARIES_2_LINK bf_dna)
+	else()
+		##################################
+		# blenderserialize
+		##################################
+		include_directories(${TOOLS_DIR}/blenderserialize)
+		add_subdirectory(${TOOLS_DIR}/blenderserialize)
+		list(APPEND LIBRARIES_2_LINK blenderserialize)
+	endif()
 
 	##################################
 	# poly2tri

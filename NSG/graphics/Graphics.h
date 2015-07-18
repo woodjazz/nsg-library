@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
-Copyright (c) 2014-2015 Néstor Silveira Gorski
+Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -32,144 +32,146 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    // Keeps OpenGL's context
-    class Graphics : public Singleton<Graphics>
-    {
-    public:
-        Graphics();
-        ~Graphics();
-        bool CheckExtension(const std::string& name);
-        void ResetCachedState();
-        void SetClearColor(const Color& color);
-        void SetClearDepth(GLclampf depth);
-        void SetClearStencil(GLint clear);
-        void ClearAllBuffers();
-        void ClearBuffers(bool color, bool depth, bool stencil);
-        void ClearStencilBuffer(GLint value = 0);
-        void SetStencilTest(bool enable, GLuint writeMask, GLenum sfail, GLenum dpfail, GLenum dppass, GLenum func, GLint ref, GLuint compareMask);
-        void SetColorMask(bool enable);
-        void SetDepthMask(bool enable);
-        void SetDepthFunc(DepthFunc depthFunc);
-        void SetStencilMask(GLuint mask);
-        void SetBlendModeTest(BLEND_MODE blendMode);
-        void EnableDepthTest(bool enable);
-        void EnableCullFace(bool enable);
-        void SetCullFace(CullFaceMode mode);
-        void SetFrontFace(FrontFaceMode mode);
-        void SetTexture(int index, Texture* texture);
-        void SetViewport(const Recti& viewport, bool force);
-        void InvalidateVAOFor(const Program* program);
-        bool SetBuffers(Mesh* mesh);
-        bool SetVertexArrayObj(VertexArrayObj* obj);
-        VertexArrayObj* GetVertexArrayObj() const { return vertexArrayObj_; }
-        bool SetVertexBuffer(Buffer* buffer, bool force = false);
-        Buffer* GetVertexBuffer() const { return vertexBuffer_; }
-        bool SetIndexBuffer(Buffer* buffer, bool force = false);
-        Buffer* GetIndexBuffer() const { return indexBuffer_; }
-        bool SetProgram(Program* program);
-        Program* GetProgram() const { return activeProgram_; }
-        Camera* SetCamera(Camera* camera);
-        Camera* GetCamera() const { return activeCamera_; }
-        void SetWindow(Window* window);
-        Window* GetWindow() const { return activeWindow_; }
+	// Keeps OpenGL's context
+	class Graphics : public Singleton<Graphics>
+	{
+	public:
+		Graphics();
+		~Graphics();
+		bool CheckExtension(const std::string& name);
+		void ResetCachedState();
+		void SetClearColor(const Color& color);
+		void SetClearDepth(GLclampf depth);
+		void SetClearStencil(GLint clear);
+		void ClearAllBuffers();
+		void ClearBuffers(bool color, bool depth, bool stencil);
+		void ClearStencilBuffer(GLint value = 0);
+		void SetStencilTest(bool enable, GLuint writeMask, GLenum sfail, GLenum dpfail, GLenum dppass, GLenum func, GLint ref, GLuint compareMask);
+		void SetColorMask(bool enable);
+		void SetDepthMask(bool enable);
+		void SetDepthFunc(DepthFunc depthFunc);
+		void SetStencilMask(GLuint mask);
+		void SetBlendModeTest(BLEND_MODE blendMode);
+		void EnableDepthTest(bool enable);
+		void EnableCullFace(bool enable);
+		void SetCullFace(CullFaceMode mode);
+		void SetFrontFace(FrontFaceMode mode);
+		void SetTexture(int index, Texture* texture);
+		void SetViewport(const Recti& viewport, bool force);
+		void InvalidateVAOFor(const Program* program);
+		bool SetBuffers(Mesh* mesh);
+		bool SetVertexArrayObj(VertexArrayObj* obj);
+		VertexArrayObj* GetVertexArrayObj() const { return vertexArrayObj_; }
+		bool SetVertexBuffer(Buffer* buffer, bool force = false);
+		Buffer* GetVertexBuffer() const { return vertexBuffer_; }
+		bool SetIndexBuffer(Buffer* buffer, bool force = false);
+		Buffer* GetIndexBuffer() const { return indexBuffer_; }
+		bool SetProgram(Program* program);
+		Program* GetProgram() const { return activeProgram_; }
+		Camera* SetCamera(Camera* camera);
+		Camera* GetCamera() const { return activeCamera_; }
+		void SetWindow(Window* window);
+		Window* GetWindow() const { return activeWindow_; }
 		void SetFrameBuffer(FrameBuffer* buffer);
-        void SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
-        FrameBuffer* GetFrameBuffer() const { return currentFbo_; }
+		void SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
+		FrameBuffer* GetFrameBuffer() const { return currentFbo_; }
 		void DrawActiveMesh();
 		void DrawInstancedActiveMesh(const Batch& batch);
-        void DiscardFramebuffer();
-        bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
-        bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
-        bool HasDepthTexture() const { return has_depth_texture_ext_; }
-        bool HasDepthComponent24() const { return has_depth_component24_ext_; }
-        bool HasNonPowerOfTwo() const { return has_texture_non_power_of_two_ext_; }
-        bool HasInstancedArrays() const { return has_instanced_arrays_ext_; }
-        bool HasPackedDepthStencil() const { return has_packed_depth_stencil_ext_; }
-        bool HasTextureCompressionDXT1() const { return has_texture_compression_dxt1_ext_; }
-        bool HasTextureCompressionDXT3() const { return has_texture_compression_dxt3_ext_; }
-        bool HasTextureCompressionDXT5() const { return has_texture_compression_dxt5_ext_; }
-        bool HasTextureCompressionETC() const { return has_compressed_ETC1_RGB8_texture_ext_; }
-        bool HasTextureCompressionPVRTC() const { return has_texture_compression_pvrtc_ext_; }
-		void SetBuffers(bool solid);
-        void UpdateBatchBuffer(const Batch& batch);
-        void SetInstanceAttrPointers(Program* program);
-        void SetVertexAttrPointers();
-        void SetAttributes();
-        void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
-        void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
-        UniformObjs& GetUniformObjs() { return uniformObjs_; }
-        void SetMesh(Mesh* mesh) { activeMesh_ = mesh; }
-        const Mesh* GetMesh() const { return activeMesh_; }
-        bool IsTextureSizeCorrect(unsigned width, unsigned height);
-        GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
-        GLint GetMaxTexturesCombined() const { return maxTexturesCombined_; }
-        GLint GetMaxVertexUniformVectors() const { return maxVertexUniformVectors_; }
-        GLint GetMaxFragmentUniformVectors() const { return maxFragmentUniformVectors_; }
-        GLint GetMaxVertexAttribs() const { return maxVertexAttribs_; }
+		void DiscardFramebuffer();
+		bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
+		bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
+		bool HasDepthTexture() const { return has_depth_texture_ext_; }
+		bool HasDepthComponent24() const { return has_depth_component24_ext_; }
+		bool HasNonPowerOfTwo() const { return has_texture_non_power_of_two_ext_; }
+		bool HasInstancedArrays() const { return has_instanced_arrays_ext_; }
+		bool HasPackedDepthStencil() const { return has_packed_depth_stencil_ext_; }
+		bool HasTextureCompressionDXT1() const { return has_texture_compression_dxt1_ext_; }
+		bool HasTextureCompressionDXT3() const { return has_texture_compression_dxt3_ext_; }
+		bool HasTextureCompressionDXT5() const { return has_texture_compression_dxt5_ext_; }
+		bool HasTextureCompressionETC() const { return has_compressed_ETC1_RGB8_texture_ext_; }
+		bool HasTextureCompressionPVRTC() const { return has_texture_compression_pvrtc_ext_; }
+		void SetBuffers(bool solid, bool allowInstancing);
+		void UpdateBatchBuffer(const Batch& batch);
+		void SetInstanceAttrPointers(Program* program);
+		void SetVertexAttrPointers();
+		void SetAttributes();
+		void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
+		void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
+		UniformObjs& GetUniformObjs() { return uniformObjs_; }
+		void SetMesh(Mesh* mesh) { activeMesh_ = mesh; }
+		const Mesh* GetMesh() const { return activeMesh_; }
+		bool IsTextureSizeCorrect(unsigned width, unsigned height);
+		GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
+		GLint GetMaxTexturesCombined() const { return maxTexturesCombined_; }
+		GLint GetMaxVertexUniformVectors() const { return maxVertexUniformVectors_; }
+		GLint GetMaxFragmentUniformVectors() const { return maxFragmentUniformVectors_; }
+		GLint GetMaxVertexAttribs() const { return maxVertexAttribs_; }
 		void UnboundTextures();
-        void SetViewportFactor(const Vector4& viewportFactor);
-        int GetMaxTextureSize() const { return maxTextureSize_; }
-        bool NeedsDecompress(TextureFormat format) const;
+		void SetViewportFactor(const Vector4& viewportFactor);
+		int GetMaxTextureSize() const { return maxTextureSize_; }
+		bool NeedsDecompress(TextureFormat format) const;
 		bool SetupPass(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light);
-        GLenum GetTexelDataType() const;
-        GLenum GetTexelFormatType() const;
-    private:
-        void SetUpViewport();
-        Recti viewport_;
-        GLint systemFbo_;
-        FrameBuffer* currentFbo_;
-        TextureTarget currentColorTarget_;
-        VertexArrayObj* vertexArrayObj_;
-        Buffer* vertexBuffer_;
-        Buffer* indexBuffer_;
-        Program* activeProgram_;
-        std::vector<Texture*> textures_;
-        unsigned activeTexture_;
-        unsigned enabledAttributes_; //positions' bits for enabled attributes
-        const Mesh* lastMesh_; // last mesh drawn
-        Program* lastProgram_; // last used program
-        Mesh* activeMesh_; // mesh that is going to be drawn
-        Camera* activeCamera_;
-        Window* activeWindow_;
-        bool has_discard_framebuffer_ext_;
-        bool has_vertex_array_object_ext_;
-        bool has_map_buffer_range_ext_;
-        bool has_depth_texture_ext_;
-        bool has_depth_component24_ext_;
-        bool has_texture_non_power_of_two_ext_;
-        bool has_instanced_arrays_ext_;
-        bool has_packed_depth_stencil_ext_;
-        bool has_texture_compression_dxt1_ext_;
-        bool has_texture_compression_dxt3_ext_;
-        bool has_texture_compression_dxt5_ext_;
-        bool has_compressed_ETC1_RGB8_texture_ext_;
-        bool has_texture_compression_pvrtc_ext_;
-        UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
-        CullFaceMode cullFaceMode_;
-        FrontFaceMode frontFaceMode_;
-        struct VAOKey
-        {
-            Program* program_;
-            VertexBuffer* vBuffer_;
-            IndexBuffer* iBuffer_;
+		GLenum GetTexelDataType() const;
+		GLenum GetTexelFormatType() const;
+	private:
+		void SetUpViewport();
+		Recti viewport_;
+		GLint systemFbo_;
+		FrameBuffer* currentFbo_;
+		TextureTarget currentColorTarget_;
+		VertexArrayObj* vertexArrayObj_;
+		Buffer* vertexBuffer_;
+		Buffer* indexBuffer_;
+		Program* activeProgram_;
+		std::vector<Texture*> textures_;
+		unsigned activeTexture_;
+		unsigned enabledAttributes_; //positions' bits for enabled attributes
+		const Mesh* lastMesh_; // last mesh drawn
+		Program* lastProgram_; // last used program
+		Mesh* activeMesh_; // mesh that is going to be drawn
+		Camera* activeCamera_;
+		Window* activeWindow_;
+		bool has_discard_framebuffer_ext_;
+		bool has_vertex_array_object_ext_;
+		bool has_map_buffer_range_ext_;
+		bool has_depth_texture_ext_;
+		bool has_depth_component24_ext_;
+		bool has_texture_non_power_of_two_ext_;
+		bool has_instanced_arrays_ext_;
+		bool has_packed_depth_stencil_ext_;
+		bool has_texture_compression_dxt1_ext_;
+		bool has_texture_compression_dxt3_ext_;
+		bool has_texture_compression_dxt5_ext_;
+		bool has_compressed_ETC1_RGB8_texture_ext_;
+		bool has_texture_compression_pvrtc_ext_;
+		UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
+		CullFaceMode cullFaceMode_;
+		FrontFaceMode frontFaceMode_;
+		struct VAOKey
+		{
+			bool allowInstancing;
+			Program* program_;
+			VertexBuffer* vBuffer_;
+			IndexBuffer* iBuffer_;
 
-            bool operator < (const VAOKey& obj) const
-            {
-                return program_ < obj.program_ ||
-                       (!(obj.program_ < program_) && vBuffer_ < obj.vBuffer_) ||
-                       (!(obj.program_ < program_) && !(obj.vBuffer_ < vBuffer_) && iBuffer_ < obj.iBuffer_);
-            };
-        };
-        typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
-        VAOMap vaoMap_;
-        GLint maxVaryingVectors_;
-        GLint maxTexturesCombined_;
-        GLint maxVertexUniformVectors_;
-        GLint maxFragmentUniformVectors_;
-        GLint maxVertexAttribs_;
-        DepthFunc depthFunc_;
-        Vector4 viewportFactor_;
-        int maxTextureSize_;
-        PRenderer renderer_;
-    };
+			bool operator < (const VAOKey& obj) const
+			{
+				return program_ < obj.program_ ||
+					(!(obj.program_ < program_) && vBuffer_ < obj.vBuffer_) ||
+					(!(obj.program_ < program_) && !(obj.vBuffer_ < vBuffer_) && iBuffer_ < obj.iBuffer_) ||
+					(!(obj.program_ < program_) && !(obj.vBuffer_ < vBuffer_) && !(iBuffer_ < obj.iBuffer_)) && (allowInstancing < obj.allowInstancing);
+			};
+		};
+		typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
+		VAOMap vaoMap_;
+		GLint maxVaryingVectors_;
+		GLint maxTexturesCombined_;
+		GLint maxVertexUniformVectors_;
+		GLint maxFragmentUniformVectors_;
+		GLint maxVertexAttribs_;
+		DepthFunc depthFunc_;
+		Vector4 viewportFactor_;
+		int maxTextureSize_;
+		PRenderer renderer_;
+	};
 }

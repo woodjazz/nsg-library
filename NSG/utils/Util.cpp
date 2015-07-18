@@ -115,8 +115,8 @@ namespace NSG
     void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale)
     {
         #if 1
-        
-		Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
+
+        Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
         Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1) / scaling) * m);
         q = glm::quat_cast(tmp1);
         position = Vertex3(m[3]);
@@ -149,6 +149,10 @@ namespace NSG
         #endif
     }
 
+    Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q, const Vertex3& scale)
+    {
+        return glm::translate(glm::mat4(), position) * glm::mat4_cast(q) * glm::scale(glm::mat4(1.0f), scale);
+    }
 
     std::string GetUniqueName(const std::string& name)
     {

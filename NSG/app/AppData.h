@@ -36,6 +36,8 @@ namespace NSG
 		std::vector<PMaterial> materials_;
 		std::vector<PShape> shapes_;
 		std::vector<PScene> scenes_;
+		std::vector<PSkeleton> skeletons_;
+		std::vector<PAnimation> animations_;
 		AppData(PResource resource);
 		AppData(const pugi::xml_document& doc);
 		~AppData();

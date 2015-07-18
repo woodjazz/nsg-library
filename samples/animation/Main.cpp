@@ -43,7 +43,7 @@ int NSG_MAIN(int argc, char* argv[])
     //camera->SetGlobalLookAt(objPos);
     auto control = std::make_shared<CameraControl>(camera);
 
-    auto animation = scene->GetOrCreateAnimation("anim0");
+    auto animation = Animation::Create("anim0");
     AnimationTrack track;
     track.node_ = camera;
     track.channelMask_ = (int)AnimationChannel::POSITION | (int)AnimationChannel::ROTATION;

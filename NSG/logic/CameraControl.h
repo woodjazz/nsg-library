@@ -33,6 +33,7 @@ namespace NSG
 	public:
 		CameraControl(PCamera camera);
 		~CameraControl();
+		void Track(PNode node);
 		void SetWindow(Window* window);
 		void SetEngine(Engine* engine);
 		void AutoZoom();
@@ -68,5 +69,6 @@ namespace NSG
 		SignalEngine::PSlot slotEngineCreated_;
 		Vector3 originalPosition_;
 		Quaternion originalOrientation_;
+		PNode trackNode_;
 	};
 }

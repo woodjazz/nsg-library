@@ -32,7 +32,7 @@ int NSG_MAIN(int argc, char* argv[])
     AppData data(resource);
 	CHECK_CONDITION(data.scenes_.size() == 1, __FILE__, __LINE__);
 	auto scene = data.scenes_.at(0);
-    auto object = scene->GetChild<SceneNode>("Bone", true);
+    auto object = scene->GetChild<SceneNode>("Armature", true);
     CHECK_CONDITION(object, __FILE__, __LINE__);
     auto plane = scene->GetChild<SceneNode>("Plane", false);
     CHECK_CONDITION(plane, __FILE__, __LINE__);
@@ -46,15 +46,14 @@ int NSG_MAIN(int argc, char* argv[])
     CHECK_CONDITION(ramp1, __FILE__, __LINE__);
     auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
     CHECK_CONDITION(ramp2, __FILE__, __LINE__);
-	auto animations = scene->GetAnimations();
+	auto animations = Animation::GetObjs();
 	CHECK_CONDITION(animations.size() == 1, __FILE__, __LINE__);
 	{
-		auto animations = scene->GetAnimationsFor(plane);
-		CHECK_CONDITION(animations.size() == 0, __FILE__, __LINE__);
+		auto animation = scene->GetAnimationFor("ArmatureAction.001", plane);
+		CHECK_CONDITION(!animation, __FILE__, __LINE__);
 	}
 	{
-		auto animations = scene->GetAnimationsFor(object);
-		CHECK_CONDITION(animations.size() == 1, __FILE__, __LINE__);
+		auto animation = scene->GetAnimationFor("ArmatureAction.001", object);
+		CHECK_CONDITION(animation, __FILE__, __LINE__);
 	}
-
 }

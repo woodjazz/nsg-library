@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "FSM.h"
 #include "Types.h"
 #include "SceneNode.h"
+#include "Bone.h"
 #include "Log.h"
 #include "Util.h"
 #include "Constants.h"
