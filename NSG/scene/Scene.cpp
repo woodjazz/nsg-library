@@ -96,8 +96,7 @@ namespace NSG
         {
             if (window)
             {
-                if (!window->GetScene())
-                    window->SetScene(this);
+                window->SetScene(this);
 
                 slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
                 {

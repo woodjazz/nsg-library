@@ -32,8 +32,6 @@ int NSG_MAIN(int argc, char* argv[])
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
-	//auto object = scene0->GetChild<SceneNode>("m2triple_LOD.001", true);
-	//object->GetMaterial()->SetSolid(false);
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);
 	return Engine().Run();
