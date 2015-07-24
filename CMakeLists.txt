@@ -159,7 +159,7 @@ include_directories(${EXTERNALS_DIR}/glm)
 ###########################
 # tclap
 ###########################
-include_directories(${EXTERNALS_DIR}/tclap/include)
+include_directories(${DEPENDENCIES_DIR}/tclap/include)
 
 ###########################
 # NSG

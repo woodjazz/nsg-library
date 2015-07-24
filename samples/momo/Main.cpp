@@ -30,7 +30,8 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 
 	auto window = Window::Create();
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo.xml");
+	//auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo.xml");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/momo.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");

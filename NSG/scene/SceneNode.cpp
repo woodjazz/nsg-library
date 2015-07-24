@@ -270,7 +270,7 @@ namespace NSG
             if (childName.empty())
                 break;
             std::string nodeType = child.attribute("nodeType").as_string();
-            CHECK_ASSERT(!nodeType.empty(), __FILE__, __LINE__);
+            //CHECK_ASSERT(!nodeType.empty(), __FILE__, __LINE__);
             if (nodeType == "Light")
             {
                 Node::CreateChild<Light>(childName, child);
@@ -282,7 +282,7 @@ namespace NSG
             }
             else
             {
-                CHECK_ASSERT(nodeType == "SceneNode", __FILE__, __LINE__);
+                //CHECK_ASSERT(nodeType == "SceneNode", __FILE__, __LINE__);
                 PSceneNode childNode = Node::GetOrCreateChild<SceneNode>(childName);
                 childNode->Load(child);
             }

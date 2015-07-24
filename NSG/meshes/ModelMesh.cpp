@@ -85,7 +85,9 @@ namespace NSG
 	void ModelMesh::LoadFrom(PResource resource, const pugi::xml_node& node)
 	{
 		//SetFaceMode(node.attribute("wireFrameDrawMode").as_int()); // redundant
-		SetFaceMode(node.attribute("solidDrawMode").as_int());
+		auto drawModeAtt = node.attribute("solidDrawMode");
+		if (drawModeAtt)
+			SetFaceMode(node.attribute("solidDrawMode").as_int());
 		Mesh::Load(node);
 	}
 }

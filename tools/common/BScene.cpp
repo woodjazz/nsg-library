@@ -1287,7 +1287,7 @@ namespace BlenderConverter
 		else
 			light->SetEnergy(la->energy);
 
-		light->SetColor(Color(la->r, la->g, la->b, 1.f));
+		light->SetColor(ColorRGB(la->r, la->g, la->b));
 		light->EnableDiffuseColor(!(la->mode & LA_NO_DIFF));
 		light->EnableSpecularColor(!(la->mode & LA_NO_SPEC));
 		LightType type = LightType::POINT;

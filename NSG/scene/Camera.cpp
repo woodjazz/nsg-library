@@ -495,7 +495,9 @@ namespace NSG
         fovy_ = node.attribute("fovy").as_float();
         zNear_ = node.attribute("zNear").as_float();
         zFar_ = node.attribute("zFar").as_float();
-        viewportFactor_ = ToVertex4(node.attribute("viewportFactor").as_string());
+		auto vpFactorAtt = node.attribute("viewportFactor");
+		if (vpFactorAtt)
+			viewportFactor_ = ToVertex4(vpFactorAtt.as_string());
         isOrtho_ = node.attribute("isOrtho").as_bool();
         orthoScale_ = node.attribute("orthoScale").as_float();
         sensorFit_ = (CameraSensorFit)node.attribute("sensorFit").as_int();

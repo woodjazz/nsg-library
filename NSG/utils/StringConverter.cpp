@@ -61,14 +61,14 @@ namespace NSG
         using namespace std;
         const int MaxBuffer = 100;
         char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f]", obj.x, obj.y);
+        snprintf(buffer, MaxBuffer, "[%g,%g]", obj.x, obj.y);
         return buffer;
     }
 
     Vertex2 ToVertex2(const std::string& buffer)
     {
         Vertex2 obj;
-        sscanf(buffer.c_str(), "[%f,%f]", &obj.x, &obj.y);
+        sscanf(buffer.c_str(), "[%g,%g]", &obj.x, &obj.y);
         return obj;
     }
 
@@ -77,14 +77,14 @@ namespace NSG
         using namespace std;
         const int MaxBuffer = 100;
         char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f,%f]", obj.x, obj.y, obj.z);
+        snprintf(buffer, MaxBuffer, "[%g,%g,%g]", obj.x, obj.y, obj.z);
         return buffer;
     }
 
     Vertex3 ToVertex3(const std::string& buffer)
     {
         Vertex3 obj;
-        sscanf(buffer.c_str(), "[%f,%f,%f]", &obj.x, &obj.y, &obj.z);
+        sscanf(buffer.c_str(), "[%g,%g,%g]", &obj.x, &obj.y, &obj.z);
         return obj;
     }
 
@@ -93,7 +93,7 @@ namespace NSG
         using namespace std;
         const int MaxBuffer = 100;
         char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f,%f,%f]", obj.x, obj.y, obj.z, obj.w);
+        snprintf(buffer, MaxBuffer, "[%g,%g,%g,%g]", obj.x, obj.y, obj.z, obj.w);
         return buffer;
     }
 
@@ -102,7 +102,7 @@ namespace NSG
         using namespace std;
         const int MaxBuffer = 100;
         char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f,%f][%f,%f,%f]", obj.min_.x, obj.min_.y, obj.min_.z, obj.max_.x, obj.max_.y, obj.max_.z);
+        snprintf(buffer, MaxBuffer, "[%g,%g,%g][%g,%g,%g]", obj.min_.x, obj.min_.y, obj.min_.z, obj.max_.x, obj.max_.y, obj.max_.z);
         return buffer;
     }
 
@@ -110,14 +110,14 @@ namespace NSG
     {
 		Vector3 min;
 		Vector3 max;
-        sscanf(buffer.c_str(), "[%f,%f,%f][%f,%f,%f]", &min.x, &min.y, &min.z, &max.x, &max.y, &max.z);
+        sscanf(buffer.c_str(), "[%g,%g,%g][%g,%g,%g]", &min.x, &min.y, &min.z, &max.x, &max.y, &max.z);
 		return BoundingBox(min, max);
     }
 
     Vertex4 ToVertex4(const std::string& buffer)
     {
         Vertex4 obj;
-        sscanf(buffer.c_str(), "[%f,%f,%f,%f]", &obj.x, &obj.y, &obj.z, &obj.w);
+        sscanf(buffer.c_str(), "[%g,%g,%g,%g]", &obj.x, &obj.y, &obj.z, &obj.w);
         return obj;
     }
 
@@ -126,14 +126,14 @@ namespace NSG
         using namespace std;
         const int MaxBuffer = 100;
         char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[%f,%f,%f,%f]", obj.w, obj.x, obj.y, obj.z);
+        snprintf(buffer, MaxBuffer, "[%g,%g,%g,%g]", obj.w, obj.x, obj.y, obj.z);
         return buffer;
     }
 
     Quaternion ToQuaternion(const std::string& buffer)
     {
         Quaternion obj;
-        sscanf(buffer.c_str(), "[%f,%f,%f,%f]", &obj.w, &obj.x, &obj.y, &obj.z);
+        sscanf(buffer.c_str(), "[%g,%g,%g,%g]", &obj.w, &obj.x, &obj.y, &obj.z);
         return obj;
     }
 

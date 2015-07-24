@@ -28,7 +28,8 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");//.lz4");
+    //auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");//.lz4");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
     AppData data(resource);
     auto scene = data.scenes_.at(0);
     scene->SetAmbientColor(ColorRGB(0.0f));

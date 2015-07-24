@@ -69,7 +69,7 @@ namespace NSG
         }
     }
 
-    void Light::SetColor(Color color)
+    void Light::SetColor(ColorRGB color)
     {
         if (color_ != color)
         {
@@ -174,7 +174,7 @@ namespace NSG
         name_ = node.attribute("name").as_string();
         SetType(ToLightType(node.attribute("type").as_string()));
         SetEnergy(node.attribute("energy").as_float());
-        SetColor(ToVertex4(node.attribute("color").as_string()));
+        SetColor(ToVertex3(node.attribute("color").as_string()));
         EnableDiffuseColor(node.attribute("diffuse").as_bool());
         EnableSpecularColor(node.attribute("specular").as_bool());
         SetSpotCutOff(node.attribute("spotCutOff").as_float());
@@ -224,13 +224,13 @@ namespace NSG
 
     void Light::CalculateColor()
     {
-        diffuseColor_ = diffuse_ ? color_ * energy_ : Color(0);
-		specularColor_ = specular_ ? color_ * energy_ : Color(0);
+        diffuseColor_ = diffuse_ ? color_ * energy_ : ColorRGB(0);
+		specularColor_ = specular_ ? color_ * energy_ : ColorRGB(0);
     }
 
     bool Light::HasSpecularColor() const
     {
-        return specularColor_.a && (specularColor_.r || specularColor_.g || specularColor_.b);
+        return specularColor_.r || specularColor_.g || specularColor_.b;
     }
 
     void Light::SetDistance(float distance)

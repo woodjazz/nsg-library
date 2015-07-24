@@ -1,0 +1,5 @@
+Plugins:
+	https://github.com/alek-sys/sublimetext_indentxml
+
+	# Anaconda
+  	Anaconda turns your Sublime Text 3 into a full featured Python IDE. Read the plugin documentation on [http://damnwidget.github.io/anaconda](http://damnwidget.github.io/anaconda).	

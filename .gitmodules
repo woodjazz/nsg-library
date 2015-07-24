@@ -37,6 +37,3 @@
 [submodule "externals/pugixml"]
 	path = externals/pugixml
 	url = https://github.com/zeux/pugixml/
-[submodule "externals/tclap"]
-	path = externals/tclap
-	url = git://git.code.sf.net/p/tclap/code

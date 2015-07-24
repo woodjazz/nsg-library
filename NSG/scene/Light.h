@@ -34,7 +34,7 @@ namespace NSG
         Light(const std::string& name);
         ~Light();
         void SetEnergy(float energy);
-        void SetColor(Color color);
+        void SetColor(ColorRGB color);
         void EnableDiffuseColor(bool enable);
         void EnableSpecularColor(bool enable);
         void SetSpotCutOff(float spotCutOff); // angle in degrees
@@ -45,8 +45,8 @@ namespace NSG
         void Load(const pugi::xml_node& node) override;
         void FillShaderDefines(std::string& defines, PassType passType, const Material* material) const;
         static SignalLight::PSignal SignalBeingDestroy();
-        const Color& GetDiffuseColor() const { return diffuseColor_; }
-        const Color& GetSpecularColor() const { return specularColor_; }
+        const ColorRGB& GetDiffuseColor() const { return diffuseColor_; }
+        const ColorRGB& GetSpecularColor() const { return specularColor_; }
         void SetShadowColor(Color color);
         const Color& GetShadowColor() const { return shadowColor_; }
         void SetDistance(float distance);
@@ -82,12 +82,12 @@ namespace NSG
     private:
         LightType type_;
         float energy_;
-        Color color_;
+        ColorRGB color_;
         bool diffuse_;
         bool specular_;
         float spotCutOff_; // angle in degrees
-        Color diffuseColor_; // calculated
-        Color specularColor_; // calculated
+		ColorRGB diffuseColor_; // calculated
+		ColorRGB specularColor_; // calculated
         Color shadowColor_;
         float distance_;
         bool shadows_;

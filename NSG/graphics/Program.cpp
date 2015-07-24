@@ -687,13 +687,13 @@ namespace NSG
             {
                 if (lightDiffuseColorLoc_ != -1)
                 {
-                    const Color& diffuse = light_->GetDiffuseColor();
+					Color diffuse = Color(light_->GetDiffuseColor(), 1);
                     glUniform4fv(lightDiffuseColorLoc_, 1, &diffuse[0]);
                 }
 
                 if (lightSpecularColorLoc_ != -1)
                 {
-                    const Color& specular = light_->GetSpecularColor();
+                    Color specular = Color(light_->GetSpecularColor(), 1);
                     glUniform4fv(lightSpecularColorLoc_, 1, &specular[0]);
                 }
 
