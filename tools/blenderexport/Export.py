@@ -526,7 +526,7 @@ def BuildBonetree(parentEle, bone):
 def ConvertPoseBone(shaderOrderEle, poseBone):
     boneEle = et.SubElement(shaderOrderEle, "Bone")
     boneEle.set("name", poseBone.name)
-    boneEle.set("offsetMatrix", Matrix4ToString(poseBone.matrix))
+    boneEle.set("offsetMatrix", Matrix4ToString(poseBone.matrix.inverted()))
 
 
 def ConvertArmature(armaturesEle, armatureObj):
