@@ -172,20 +172,48 @@ def ConvertUVMaps(meshEle, mesh):
         meshEle.set(key, uv.name)
 
 
-def ConvertBonesWeigths(vertexData, vertex):
+def IsBoneDeformGroup(armatureObj, deformGroup):
+    for bone in armatureObj.pose.bones:
+        if deformGroup.name == bone.name:
+            return True
+    return False
+
+
+def GetBoneIndexByDeformGroup(meshObj, armatureObj):
+    result = []
+    i = 0
+    for deformGroup in meshObj.vertex_groups:
+        data = [-1, deformGroup.name]
+        if IsBoneDeformGroup(armatureObj, deformGroup):
+            data[0] = i
+            i += 1
+        result.append(data)
+    return result
+
+
+def ConvertBonesWeigths(meshObj, vertexData, vertex):
     total_groups = Clamp(len(vertex.groups), 0, 4)
-    bonesID = mathutils.Vector((0.0, 0.0, 0.0, 0.0))
-    bonesWeight = mathutils.Vector((0.0, 0.0, 0.0, 0.0))
-    for i in range(total_groups):
-        group = vertex.groups[i]
-        bonesID[i] = group.group
-        bonesWeight[i] = group.weight
     if total_groups > 0:
+        armatureObj = meshObj.parent
+        assert armatureObj.type == 'ARMATURE'
+        jointList = GetBoneIndexByDeformGroup(meshObj, armatureObj)
+        bonesID = mathutils.Vector((0.0, 0.0, 0.0, 0.0))
+        bonesWeight = mathutils.Vector((0.0, 0.0, 0.0, 0.0))
+        for i in range(total_groups):
+            group = vertex.groups[i]
+            if group.group >= len(jointList):
+                continue
+            joint_index = jointList[group.group][0]
+            if joint_index != -1:
+                bonesID[i] = joint_index
+                bonesWeight[i] = group.weight
+
         vertexData["bonesID"] = Vector4ToString(bonesID)
         vertexData["bonesWeight"] = Vector4ToString(bonesWeight)
 
 
-def ConvertMesh(name, meshesEle, mesh, materialIndex):
+def ConvertMesh(name, meshesEle, meshObj, materialIndex):
+    mesh = meshObj.data
     if len(mesh.vertices) == 0:
         return
     print("Converting mesh " + mesh.name)
@@ -213,7 +241,7 @@ def ConvertMesh(name, meshesEle, mesh, materialIndex):
                 vertexData["normal"] = Vector3ToString(vertex.normal)
             else:
                 vertexData["normal"] = Vector3ToString(face.normal)
-            ConvertBonesWeigths(vertexData, vertex)
+            ConvertBonesWeigths(meshObj, vertexData, vertex)
 
             channels = Clamp(len(mesh.tessface_uv_textures), 0, 2)
             for channel in range(channels):
@@ -377,7 +405,8 @@ def ConvertMaterial(materialsEle, material):
         materialEle.set("billboardType", "NONE")
 
     for index, textureSlot in enumerate(material.texture_slots):
-        ConvertTexture(materialEle, index, textureSlot)
+        if material.use_textures[index]:
+            ConvertTexture(materialEle, index, textureSlot)
 
 
 def ConvertMaterials(appEle):
@@ -434,8 +463,10 @@ def ConvertArmature(armaturesEle, armatureObj):
         meshObj = GetArmatureMeshObj(armatureObj)
         assert meshObj
         shaderOrderEle = et.SubElement(armatureEle, "ShaderOrder")
-        for bone in armatureObj.pose.bones:
-            ConvertPoseBone(shaderOrderEle, bone)
+        for deformGroup in meshObj.vertex_groups:
+            for bone in armatureObj.pose.bones:
+                if deformGroup.name == bone.name:
+                    ConvertPoseBone(shaderOrderEle, bone)
 
         armature = armatureObj.data
         BonesEle = et.SubElement(armatureEle, "Bones")
@@ -510,7 +541,7 @@ def ConvertMeshObject(meshesEle, parentEle, obj):
                 newNodeName, parentEle, obj, None, None, None)
             newMeshName = meshName + "_" + materialSlot.name
             ConvertMesh(
-                newMeshName, meshesEle, GetMesh(meshName), materialIndex)
+                newMeshName, meshesEle, obj, materialIndex)
             sceneNodeEle.set("meshName", newMeshName)
         sceneNodeEle.set("materialName", materialSlot.name)
         materialIndex = materialIndex + 1
@@ -697,8 +728,9 @@ def ConvertAnimation(animationsEle, action, scene):
 
 def ConvertMeshes(appEle):
     meshesEle = et.SubElement(appEle, "Meshes")
-    for mesh in bpy.data.objects.data.meshes:
-        ConvertMesh(mesh.name, meshesEle, mesh, 0)
+    for obj in bpy.data.objects:
+        if obj.type == 'MESH':
+            ConvertMesh(obj.data.name, meshesEle, obj, 0)
     return meshesEle
 
 

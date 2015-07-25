@@ -533,7 +533,7 @@ namespace NSG
 				std::string boneName = names[idx];
 				auto bone = armatureNode->GetChild<Node>(boneName, true);
                 // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
-                //CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
+                CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
                 const Matrix4& m = bone->GetGlobalModelMatrix();
 				const Matrix4& offsetMatrix = skeleton_->GetBoneOffsetMatrix(boneName);
 				Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
