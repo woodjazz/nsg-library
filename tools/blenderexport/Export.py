@@ -168,128 +168,41 @@ def CreateSceneNode(name, parentElem, obj, loc=None, rot=None, sca=None):
 
 def ConvertColors(meshData, mesh):
     total_vc_channels = Clamp(len(mesh.tessface_vertex_colors), 0, 1)
-    for loop in range(total_vc_channels):
-        vc_channel = mesh.tessface_vertex_colors[loop]
-        for poly_num in range(len(mesh.tessfaces)):
-            poly = mesh.tessfaces[poly_num]
-            if len(poly.vertices) == 4:
-                # vertexesEle[poly.vertices[0]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color1))
-                # vertexesEle[poly.vertices[1]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color2))
-                # vertexesEle[poly.vertices[2]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color3))
-                # vertexesEle[poly.vertices[2]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color3))
-                # vertexesEle[poly.vertices[0]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color1))
-                # vertexesEle[poly.vertices[3]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color4))
-
-                meshData[poly.vertices[0]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color1)
-                meshData[poly.vertices[1]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color2)
-                meshData[poly.vertices[2]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color3)
-                meshData[poly.vertices[2]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color3)
-                meshData[poly.vertices[0]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color1)
-                meshData[poly.vertices[3]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color4)
-
-            elif len(poly.vertices) == 3:
-                # vertexesEle[poly.vertices[0]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color1))
-                # vertexesEle[poly.vertices[1]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color2))
-                # vertexesEle[poly.vertices[2]].set(
-                #     "color", ColorToString(vc_channel.data[poly_num].color3))
-
-                meshData[poly.vertices[0]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color1)
-                meshData[poly.vertices[1]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color2)
-                meshData[poly.vertices[2]]["color"] = ColorToString(
-                    vc_channel.data[poly_num].color3)
+    for channel in range(total_vc_channels):
+        vc_channel = mesh.tessface_vertex_colors[channel]
+        for face_num in range(len(mesh.tessfaces)):
+            face = mesh.tessfaces[face_num]
+            nVertex = len(face.vertices)
+            assert nVertex == 4 or nVertex == 3
+            meshData[face.vertices[0]]["color"] = ColorToString(
+                vc_channel.data[face_num].color1)
+            meshData[face.vertices[1]]["color"] = ColorToString(
+                vc_channel.data[face_num].color2)
+            meshData[face.vertices[2]]["color"] = ColorToString(
+                vc_channel.data[face_num].color3)
+            if nVertex == 4:
+                meshData[face.vertices[3]]["color"] = ColorToString(
+                    vc_channel.data[face_num].color4)
 
 
 def ConvertUV(meshData, mesh):
     total_uv_channels = Clamp(len(mesh.tessface_uv_textures), 0, 2)
-    for loop in range(total_uv_channels):
-        key = "uv" + str(loop)
-        uv_channel = mesh.tessface_uv_textures[loop]
-        for poly_num in range(len(mesh.tessfaces)):
-            poly = mesh.tessfaces[poly_num]
-            if len(poly.vertices) == 4:
-                # vertexesEle[poly.vertices[0]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv1))
-                # vertexesEle[poly.vertices[1]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv2))
-                # vertexesEle[poly.vertices[2]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv3))
-                # vertexesEle[poly.vertices[2]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv3))
-                # vertexesEle[poly.vertices[0]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv2))
-                # vertexesEle[poly.vertices[3]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv4))
-
-                meshData[poly.vertices[0]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv1)
-                meshData[poly.vertices[1]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv2)
-                meshData[poly.vertices[2]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv3)
-                meshData[poly.vertices[2]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv3)
-                meshData[poly.vertices[0]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv2)
-                meshData[poly.vertices[3]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv4)
-
-            elif len(poly.vertices) == 3:
-                # vertexesEle[poly.vertices[0]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv1))
-                # vertexesEle[poly.vertices[1]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv2))
-                # vertexesEle[poly.vertices[2]].set(
-                #     key, Vector2ToString(uv_channel.data[poly_num].uv3))
-
-                meshData[poly.vertices[0]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv1)
-                meshData[poly.vertices[1]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv2)
-                meshData[poly.vertices[2]][key] = Vector2ToString(
-                    uv_channel.data[poly_num].uv3)
-
-
-def ConvertNormals(vertexesEle, mesh):
-    for face in mesh.tessfaces:
-        if face.use_smooth:
-            continue
-        normal = face.normal.normalized()
-        if len(face.vertices) == 4:
-            vertexesEle[face.vertices[0]].set(
-                "normal", Vector3ToString(normal))
-            vertexesEle[face.vertices[1]].set(
-                "normal", Vector3ToString(normal))
-            vertexesEle[face.vertices[2]].set(
-                "normal", Vector3ToString(normal))
-            vertexesEle[face.vertices[2]].set(
-                "normal", Vector3ToString(normal))
-            vertexesEle[face.vertices[0]].set(
-                "normal", Vector3ToString(normal))
-            vertexesEle[face.vertices[3]].set(
-                "normal", Vector3ToString(normal))
-        elif len(face.vertices) == 3:
-            vertexesEle[face.vertices[0]].set(
-                "normal", Vector3ToString(normal))
-            vertexesEle[face.vertices[1]].set(
-                "normal", Vector3ToString(normal))
-            vertexesEle[face.vertices[2]].set(
-                "normal", Vector3ToString(normal))
+    for channel in range(total_uv_channels):
+        key = "uv" + str(channel)
+        uv_channel = mesh.tessface_uv_textures[channel]
+        for face_num in range(len(mesh.tessfaces)):
+            face = mesh.tessfaces[face_num]
+            nVertex = len(face.vertices)
+            assert nVertex == 4 or nVertex == 3
+            meshData[face.vertices[0]][key] = Vector2ToString(
+                uv_channel.data[face_num].uv1)
+            meshData[face.vertices[1]][key] = Vector2ToString(
+                uv_channel.data[face_num].uv2)
+            meshData[face.vertices[2]][key] = Vector2ToString(
+                uv_channel.data[face_num].uv3)
+            if nVertex == 4:
+                meshData[face.vertices[3]][key] = Vector2ToString(
+                    uv_channel.data[face_num].uv4)
 
 
 def ConvertUVMaps(meshEle, mesh):
@@ -307,8 +220,6 @@ def ConvertBonesWeigths(vertexData, vertex):
         bonesID[i] = group.group
         bonesWeight[i] = group.weight
     if total_groups > 0:
-        # vertexDataEle.set("bonesID", Vector4ToString(bonesID))
-        # vertexDataEle.set("bonesWeight", Vector4ToString(bonesWeight))
         vertexData["bonesID"] = Vector4ToString(bonesID)
         vertexData["bonesWeight"] = Vector4ToString(bonesWeight)
 
@@ -379,23 +290,71 @@ def ConvertMesh(name, meshesEle, mesh, materialIndex):
     meshEle = et.SubElement(meshesEle, "Mesh")
     meshEle.set("name", name)
     ConvertUVMaps(meshEle, mesh)
-    meshData = []
+    indexes = ""
+    i = 0
     vertexesEle = et.SubElement(meshEle, "Vertexes")
-    for vertex in mesh.vertices:
-        # vertexDataEle = et.SubElement(vertexesEle, "VertexData")
-        position = Vector3ToString(vertex.co)
-        vertexData = {}
-        vertexData["position"] = position
-        # vertexDataEle.set("position", position)
-        vertexData["normal"] = vertex.normal.normalized()
-        # vertexDataEle.set("normal", Vector3ToString(vertex.normal))
-        ConvertBonesWeigths(vertexData, vertex)
-        meshData.append(vertexData)
-    # ConvertNormals(vertexesEle, mesh)
-    ConvertColors(meshData, mesh)
-    ConvertUV(meshData, mesh)
-    GenerateVertexes(meshData, meshEle, mesh, materialIndex, vertexesEle)
-    # for data in meshData:
+    indexesEle = et.SubElement(meshEle, "Indexes")
+    for iface, face in enumerate(mesh.tessfaces):
+        assert len(face.vertices) == 4 or len(face.vertices) == 3
+        if len(face.vertices) == 4:
+            indexes = indexes + '{:d} {:d} {:d} {:d} {:d} {:d} '.format(i, i+1, i+2, i, i+2, i+3)
+        else:
+            indexes = indexes + '{:d} {:d} {:d} '.format(i, i+1, i+2)
+        i += len(face.vertices)
+        vertexNum = 0
+        for ivertex in face.vertices:      
+            vertex = mesh.vertices[ivertex]
+            vertexData = {}
+            vertexData["position"] = Vector3ToString(vertex.co)
+            if face.use_smooth:
+                vertexData["normal"] = Vector3ToString(vertex.normal)
+            else:
+                vertexData["normal"] = Vector3ToString(face.normal)
+            ConvertBonesWeigths(vertexData, vertex)
+
+            channels = Clamp(len(mesh.tessface_uv_textures), 0, 2)
+            for channel in range(channels):
+                uv_channel = mesh.tessface_uv_textures[channel]
+                key = "uv" + str(channel)
+                if vertexNum == 0:
+                    vertexData[key] = Vector2ToString(uv_channel.data[iface].uv1)
+                elif vertexNum == 1:
+                    vertexData[key] = Vector2ToString(uv_channel.data[iface].uv2)
+                elif vertexNum == 2:
+                    vertexData[key] = Vector2ToString(uv_channel.data[iface].uv3)
+                elif vertexNum == 3:
+                    vertexData[key] = Vector2ToString(uv_channel.data[iface].uv4)
+
+            channels = Clamp(len(mesh.tessface_vertex_colors), 0, 1)
+            for channel in range(channels):
+                vc_channel = mesh.tessface_vertex_colors[channel]
+                if vertexNum == 0:
+                    vertexData["color"] = ColorToString(vc_channel.data[iface].color1)
+                elif vertexNum == 1:
+                    vertexData["color"] = ColorToString(vc_channel.data[iface].color2)
+                elif vertexNum == 2:
+                    vertexData["color"] = ColorToString(vc_channel.data[iface].color3)
+                elif vertexNum == 3:
+                    vertexData["color"] = ColorToString(vc_channel.data[iface].color4)
+
+            vertexNum += 1
+            vertexDataEle = et.SubElement(vertexesEle, "VertexData")
+            for k, v in vertexData.items():
+                vertexDataEle.set(k, v)
+    indexesEle.text = indexes
+
+    # for vertex in mesh.vertices:
+    #     position = Vector3ToString(vertex.co)
+    #     vertexData = {}
+    #     vertexData["position"] = position
+    #     vertexData["normal"] = vertex.normal
+    #     ConvertBonesWeigths(vertexData, vertex)
+    #     meshData.append(vertexData)
+    # # ConvertNormals(vertexesEle, mesh)
+    # ConvertColors(meshData, mesh)
+    # ConvertUV(meshData, mesh)
+    # GenerateVertexes(meshData, meshEle, mesh, materialIndex, vertexesEle)
+    # # for data in meshData:
     #    print(data)
 
 
