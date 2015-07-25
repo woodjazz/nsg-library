@@ -166,45 +166,6 @@ def CreateSceneNode(name, parentElem, obj, loc=None, rot=None, sca=None):
     return sceneNodeEle
 
 
-def ConvertColors(meshData, mesh):
-    total_vc_channels = Clamp(len(mesh.tessface_vertex_colors), 0, 1)
-    for channel in range(total_vc_channels):
-        vc_channel = mesh.tessface_vertex_colors[channel]
-        for face_num in range(len(mesh.tessfaces)):
-            face = mesh.tessfaces[face_num]
-            nVertex = len(face.vertices)
-            assert nVertex == 4 or nVertex == 3
-            meshData[face.vertices[0]]["color"] = ColorToString(
-                vc_channel.data[face_num].color1)
-            meshData[face.vertices[1]]["color"] = ColorToString(
-                vc_channel.data[face_num].color2)
-            meshData[face.vertices[2]]["color"] = ColorToString(
-                vc_channel.data[face_num].color3)
-            if nVertex == 4:
-                meshData[face.vertices[3]]["color"] = ColorToString(
-                    vc_channel.data[face_num].color4)
-
-
-def ConvertUV(meshData, mesh):
-    total_uv_channels = Clamp(len(mesh.tessface_uv_textures), 0, 2)
-    for channel in range(total_uv_channels):
-        key = "uv" + str(channel)
-        uv_channel = mesh.tessface_uv_textures[channel]
-        for face_num in range(len(mesh.tessfaces)):
-            face = mesh.tessfaces[face_num]
-            nVertex = len(face.vertices)
-            assert nVertex == 4 or nVertex == 3
-            meshData[face.vertices[0]][key] = Vector2ToString(
-                uv_channel.data[face_num].uv1)
-            meshData[face.vertices[1]][key] = Vector2ToString(
-                uv_channel.data[face_num].uv2)
-            meshData[face.vertices[2]][key] = Vector2ToString(
-                uv_channel.data[face_num].uv3)
-            if nVertex == 4:
-                meshData[face.vertices[3]][key] = Vector2ToString(
-                    uv_channel.data[face_num].uv4)
-
-
 def ConvertUVMaps(meshEle, mesh):
     for index, uv in enumerate(mesh.tessface_uv_textures):
         key = "uv" + str(index) + "Name"
@@ -222,64 +183,6 @@ def ConvertBonesWeigths(vertexData, vertex):
     if total_groups > 0:
         vertexData["bonesID"] = Vector4ToString(bonesID)
         vertexData["bonesWeight"] = Vector4ToString(bonesWeight)
-
-
-def AddVertex(vertexesEle, meshData, i):
-    vertexDataEle = et.SubElement(vertexesEle, "VertexData")
-    vertexDataEle.set("position", meshData[i]["position"])
-    vertexDataEle.set("normal", Vector3ToString(meshData[i]["normal"]))
-    if "uv0" in meshData[i]:
-        vertexDataEle.set("uv0", meshData[i]["uv0"])
-    if "uv1" in meshData[i]:
-        vertexDataEle.set("uv1", meshData[i]["uv1"])
-    if "bonesID" in meshData[i]:
-        vertexDataEle.set("bonesID", meshData[i]["bonesID"])
-    if "bonesWeight" in meshData[i]:
-        vertexDataEle.set("bonesWeight", meshData[i]["bonesWeight"])
-
-
-def AverageNormals(meshData, indexes):
-    normal = VECTOR3_ZERO
-    for i in indexes:
-        normal += meshData[i]["normal"]
-        normal /= len(indexes)
-    return normal
-
-
-def AddQuad(vertexesEle, meshData, i0, i1, i2, i3, i4, i5):
-    AverageNormals(meshData, [i0, i1, i2, i5])
-    AddVertex(vertexesEle, meshData, i0)
-    AddVertex(vertexesEle, meshData, i1)
-    AddVertex(vertexesEle, meshData, i2)
-    AddVertex(vertexesEle, meshData, i3)
-    AddVertex(vertexesEle, meshData, i4)
-    AddVertex(vertexesEle, meshData, i5)
-
-
-def AddTriangle(vertexesEle, meshData, i0, i1, i2):
-    AverageNormals(meshData, [i0, i1, i2])
-    AddVertex(vertexesEle, meshData, i0)
-    AddVertex(vertexesEle, meshData, i1)
-    AddVertex(vertexesEle, meshData, i2)
-
-
-def GenerateVertexes(meshData, meshEle, mesh, materialIndex, vertexesEle):
-    indexesEle = et.SubElement(meshEle, "Indexes")
-    indexes = ""
-    i = 0
-    for face in mesh.tessfaces:
-        if face.material_index == materialIndex:
-            v = face.vertices
-            if len(v) == 4:
-                indexes = indexes + '{:d} {:d} {:d} {:d} {:d} {:d} '.format(
-                    i, i+1, i+2, i+3, i+4, i+5)
-                i = i + 6
-                AddQuad(vertexesEle, meshData, v[0], v[1], v[2], v[0], v[2], v[3])
-            else:
-                indexes = indexes + '{:d} {:d} {:d} '.format(i, i+1, i+2)
-                i = i + 3
-                AddTriangle(vertexesEle, meshData, v[0], v[1], v[2])
-    indexesEle.text = indexes
 
 
 def ConvertMesh(name, meshesEle, mesh, materialIndex):
@@ -302,7 +205,7 @@ def ConvertMesh(name, meshesEle, mesh, materialIndex):
             indexes = indexes + '{:d} {:d} {:d} '.format(i, i+1, i+2)
         i += len(face.vertices)
         vertexNum = 0
-        for ivertex in face.vertices:      
+        for ivertex in face.vertices:
             vertex = mesh.vertices[ivertex]
             vertexData = {}
             vertexData["position"] = Vector3ToString(vertex.co)
@@ -342,20 +245,6 @@ def ConvertMesh(name, meshesEle, mesh, materialIndex):
             for k, v in vertexData.items():
                 vertexDataEle.set(k, v)
     indexesEle.text = indexes
-
-    # for vertex in mesh.vertices:
-    #     position = Vector3ToString(vertex.co)
-    #     vertexData = {}
-    #     vertexData["position"] = position
-    #     vertexData["normal"] = vertex.normal
-    #     ConvertBonesWeigths(vertexData, vertex)
-    #     meshData.append(vertexData)
-    # # ConvertNormals(vertexesEle, mesh)
-    # ConvertColors(meshData, mesh)
-    # ConvertUV(meshData, mesh)
-    # GenerateVertexes(meshData, meshEle, mesh, materialIndex, vertexesEle)
-    # # for data in meshData:
-    #    print(data)
 
 
 def ConvertTexture(materialEle, index, textureSlot):
@@ -526,7 +415,12 @@ def BuildBonetree(parentEle, bone):
 def ConvertPoseBone(shaderOrderEle, poseBone):
     boneEle = et.SubElement(shaderOrderEle, "Bone")
     boneEle.set("name", poseBone.name)
-    boneEle.set("offsetMatrix", Matrix4ToString(poseBone.matrix.inverted()))
+    m = poseBone.matrix.inverted().transposed()
+    # if poseBone.parent:
+    #     # m = poseBone.parent.matrix.inverted() * m
+    #     pass
+    # mat_rot = mathutils.Matrix.Rotation(math.radians(-90.0), 4, 'X')
+    boneEle.set("offsetMatrix", Matrix4ToString(m))
 
 
 def ConvertArmature(armaturesEle, armatureObj):
@@ -542,6 +436,7 @@ def ConvertArmature(armaturesEle, armatureObj):
         shaderOrderEle = et.SubElement(armatureEle, "ShaderOrder")
         for bone in armatureObj.pose.bones:
             ConvertPoseBone(shaderOrderEle, bone)
+
         armature = armatureObj.data
         BonesEle = et.SubElement(armatureEle, "Bones")
         for bone in armature.bones:
@@ -551,8 +446,12 @@ def ConvertArmature(armaturesEle, armatureObj):
 
 def ConvertImage(resourcesEle, image):
     if image.users > 0:
-        resourceEle = et.SubElement(resourcesEle, "Resource")
-        resourceEle.set("name", "data/" + image.name)
+        if image.source == 'FILE':
+            resourceEle = et.SubElement(resourcesEle, "Resource")
+            resourceEle.set("name", "data/" + image.name)
+            imagePath = "../data/" + image.name
+            print("Saving " + imagePath)
+            image.save_render(imagePath)
 
 
 def ConvertResources(appEle):
@@ -736,10 +635,11 @@ def ConverKeyfames(tracksEle, data, convert):
     for nodeName, v0 in data.items():
         trackEle = GetChildEle(tracksEle, "Track", "nodeName", nodeName)
         keyframesEle = et.SubElement(trackEle, "KeyFrames")
-        for frame, transforms in v0.items():
+        for frame in sorted(v0):
             keyframeEle = GetOrCreateChildEle(
                 keyframesEle, "KeyFrame", "time",
                 FloatToString(convert(frame)))
+            transforms = v0[frame]
             loc, rot, sca = ConvertTransform(keyframeEle, transforms)
             keyframeEle.set("position", Vector3ToString(loc))
             keyframeEle.set("rotation", QuaternionToString(rot))
@@ -771,15 +671,10 @@ def ConvertCurve(tracksEle, curve, data):
     channelMask = bin(channelMask)
     channelMask = channelMask[channelMask.find('b') + 1:]
     trackEle.set("channelMask", channelMask)
-    frame0 = int(curve.keyframe_points[0].co[0])
-    value0 = curve.keyframe_points[0].co[1]
-    SetKeyframeData(
-        data, chan_name, frame0, transform_name, index, value0)
-    if len(curve.keyframe_points) > 1:
-        frame1 = int(curve.keyframe_points[1].co[0])
-        value1 = curve.keyframe_points[1].co[1]
-        SetKeyframeData(
-            data, chan_name, frame1, transform_name, index, value1)
+    for ipoint, point in enumerate(curve.keyframe_points):
+        frame = int(curve.keyframe_points[ipoint].co[0])
+        value = curve.keyframe_points[ipoint].co[1]
+        SetKeyframeData(data, chan_name, frame, transform_name, index, value)
 
 
 def ConvertAnimation(animationsEle, action, scene):
