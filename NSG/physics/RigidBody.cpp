@@ -429,7 +429,9 @@ namespace NSG
 		collisionGroup_ = node.attribute("collisionGroup").as_int();
 		collisionMask_ = node.attribute("collisionMask").as_int();
         trigger_ = node.attribute("trigger").as_bool();
-		gravity_ = ToVertex3(node.attribute("gravity").as_string());
+        auto gravityAtt = node.attribute("gravity");
+        if(gravityAtt)
+		  gravity_ = ToVertex3(gravityAtt.as_string());
 		linearVelocity_ = ToVertex3(node.attribute("linearVelocity").as_string());
 		angularVelocity_ = ToVertex3(node.attribute("angularVelocity").as_string());
 		linearFactor_ = ToVertex3(node.attribute("linearFactor").as_string());

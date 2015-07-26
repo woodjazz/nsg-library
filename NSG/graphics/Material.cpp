@@ -301,9 +301,7 @@ namespace NSG
         {
             if (texture_[index] && texture_[index]->IsSerializable())
             {
-                std::string s(TEXTURE_NAME);
-                s += ToString(index);
-                pugi::xml_node childTexture = child.append_child(s.c_str());
+                auto childTexture = child.append_child(TEXTURE_NAME);
                 texture_[index]->Save(childTexture);
             }
         }
@@ -330,14 +328,11 @@ namespace NSG
         cullFaceMode_ = ToCullFaceMode(node.attribute("cullFaceMode").as_string());
         SetFriction(node.attribute("friction").as_float());
 
-        for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
-        {
-            texture_[index] = nullptr;
-            std::string s(TEXTURE_NAME);
-            s += ToString(index);
-            pugi::xml_node childTexture = node.child(s.c_str());
-            if (childTexture)
-                texture_[index] = Texture2D::CreateFrom(resource, childTexture);
+        auto childTexture = node.child(TEXTURE_NAME);
+        while(childTexture)
+        {   
+            SetTexture(Texture2D::CreateFrom(resource, childTexture));
+            childTexture = childTexture.next_sibling(TEXTURE_NAME);
         }
 
         SetAmbientIntensity(node.attribute("ambientIntensity").as_float());

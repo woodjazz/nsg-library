@@ -47,6 +47,7 @@ namespace NSG
     ShapeKey::ShapeKey(PMesh mesh, const Vector3& scale)
         : std::string(ToString(mesh->GetName().size()) + " " + mesh->GetName() + " " + ToString(scale) + " " + ToString(mesh->GetShapeType()))
     {
+        LOGI("ShapeKey=%s", c_str());
     }
 
     ShapeKey::ShapeKey(PhysicsShape type, const Vector3& scale)
@@ -269,7 +270,7 @@ namespace NSG
         auto meshNameAtt = node.attribute("meshName");
         if (meshNameAtt)
             mesh_ = Mesh::Get(meshNameAtt.as_string());
-        CHECK_ASSERT((meshNameAtt ? name_ == ShapeKey(mesh_.lock(), scale_) : name_ == ShapeKey(type_, scale_)) && "shape key has changed!!!", __FILE__, __LINE__);
+        //CHECK_ASSERT((meshNameAtt ? name_ == ShapeKey(mesh_.lock(), scale_) : name_ == ShapeKey(type_, scale_)) && "shape key has changed!!!", __FILE__, __LINE__);
         Invalidate();
     }
 

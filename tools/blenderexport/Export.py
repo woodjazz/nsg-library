@@ -84,64 +84,13 @@ def SensorFitToString(sensorFit):
         return "2"
 
 
-def GetPhysicShapeName(obj):
-    loc, rot, scale = obj.matrix_world.decompose()
-    scaleStr = Vector3ToString(scale)
-    typeStr = BoundTypeToString(obj.game.collision_bounds_type)
-    name = scaleStr + " " + typeStr
-    return name, scaleStr, typeStr
-
-
-def CreatePhysics(sceneNodeEle, obj):
-    if obj and obj.game.physics_type != 'NO_COLLISION':
-        rigidBodyEle = et.SubElement(sceneNodeEle, "RigidBody")
-
-        if obj.game.physics_type == 'STATIC':
-            rigidBodyEle.set("mass", "0")
-        else:
-            rigidBodyEle.set("mass", FloatToString(obj.game.mass))
-
-        if obj.game.physics_type == 'SENSOR':
-            rigidBodyEle.set("trigger", BoolToString(True))
-        else:
-            rigidBodyEle.set("trigger", BoolToString(False))
-
-        if obj.game.physics_type == 'CHARACTER':
-            rigidBodyEle.set("kinematic", BoolToString(True))
-        else:
-            rigidBodyEle.set("kinematic", BoolToString(False))
-
-        rigidBodyEle.set("linearDamp", FloatToString(obj.game.damping))
-        rigidBodyEle.set(
-            "angularDamp", FloatToString(obj.game.rotation_damping))
-
-        linearFactor = mathutils.Vector((1, 1, 1))
-        if obj.game.lock_location_x:
-            linearFactor.x = 0
-        if obj.game.lock_location_y:
-            linearFactor.y = 0
-        if obj.game.lock_location_z:
-            linearFactor.z = 0
-        rigidBodyEle.set("linearFactor", Vector3ToString(linearFactor))
-
-        angularFactor = mathutils.Vector((1, 1, 1))
-        if obj.game.lock_rotation_x:
-            angularFactor.x = 0
-        if obj.game.lock_rotation_y:
-            angularFactor.y = 0
-        if obj.game.lock_rotation_z:
-            angularFactor.z = 0
-        rigidBodyEle.set("angularFactor", Vector3ToString(angularFactor))
-        return rigidBodyEle
-
-
 QUATERNION_IDENTITY = mathutils.Quaternion()
 QUATERNION_IDENTITY.identity()
 VECTOR3_ZERO = mathutils.Vector((0, 0, 0))
 VECTOR3_ONE = mathutils.Vector((1, 1, 1))
 
 
-def CreateSceneNode(name, parentElem, obj, loc=None, rot=None, sca=None):
+def CreateSceneNode(name, parentElem, obj, materialIndex=-1, loc=None, rot=None, sca=None):
     sceneNodeEle = et.SubElement(parentElem, "SceneNode")
     sceneNodeEle.set("name", name)
     if loc:
@@ -161,7 +110,7 @@ def CreateSceneNode(name, parentElem, obj, loc=None, rot=None, sca=None):
         sceneNodeEle.set(
             "scale", Vector3ToString(VECTOR3_ONE))
 
-    CreatePhysics(sceneNodeEle, obj)
+    CreatePhysics(sceneNodeEle, obj, materialIndex)
 
     return sceneNodeEle
 
@@ -191,12 +140,9 @@ def GetBoneIndexByDeformGroup(meshObj, armatureObj):
     return result
 
 
-def ConvertBonesWeigths(meshObj, vertexData, vertex):
+def ConvertBonesWeigths(jointList, vertexData, vertex):
     total_groups = Clamp(len(vertex.groups), 0, 4)
     if total_groups > 0:
-        armatureObj = meshObj.parent
-        assert armatureObj.type == 'ARMATURE'
-        jointList = GetBoneIndexByDeformGroup(meshObj, armatureObj)
         bonesID = mathutils.Vector((0.0, 0.0, 0.0, 0.0))
         bonesWeight = mathutils.Vector((0.0, 0.0, 0.0, 0.0))
         for i in range(total_groups):
@@ -221,11 +167,17 @@ def ConvertMesh(name, meshesEle, meshObj, materialIndex):
     meshEle = et.SubElement(meshesEle, "Mesh")
     meshEle.set("name", name)
     ConvertUVMaps(meshEle, mesh)
+    armatureObj = meshObj.parent
+    jointList = []
+    if armatureObj and armatureObj.type == 'ARMATURE':
+        jointList = GetBoneIndexByDeformGroup(meshObj, armatureObj)
     indexes = ""
     i = 0
     vertexesEle = et.SubElement(meshEle, "Vertexes")
     indexesEle = et.SubElement(meshEle, "Indexes")
     for iface, face in enumerate(mesh.tessfaces):
+        if face.material_index != materialIndex:
+            continue
         assert len(face.vertices) == 4 or len(face.vertices) == 3
         if len(face.vertices) == 4:
             indexes = indexes + '{:d} {:d} {:d} {:d} {:d} {:d} '.format(i, i+1, i+2, i, i+2, i+3)
@@ -241,7 +193,7 @@ def ConvertMesh(name, meshesEle, meshObj, materialIndex):
                 vertexData["normal"] = Vector3ToString(vertex.normal)
             else:
                 vertexData["normal"] = Vector3ToString(face.normal)
-            ConvertBonesWeigths(meshObj, vertexData, vertex)
+            ConvertBonesWeigths(jointList, vertexData, vertex)
 
             channels = Clamp(len(mesh.tessface_uv_textures), 0, 2)
             for channel in range(channels):
@@ -275,14 +227,14 @@ def ConvertMesh(name, meshesEle, meshObj, materialIndex):
     indexesEle.text = indexes
 
 
-def ConvertTexture(materialEle, index, textureSlot):
+def ConvertTexture(materialEle, textureSlot):
     if textureSlot is None:
         return
     texture = textureSlot.texture
     if texture.type != 'IMAGE':
         return
     image = texture.image
-    textureEle = et.SubElement(materialEle, "Texture" + str(index))
+    textureEle = et.SubElement(materialEle, "Texture")
     textureEle.set("uvName", textureSlot.uv_layer)
     textureEle.set("resource", "data/" + image.name)
     if texture.extension == 'REPEAT':
@@ -327,20 +279,20 @@ def ConvertTexture(materialEle, index, textureSlot):
     else:
         textureEle.set("blendType", "MIX")
 
-    if textureSlot.use_map_alpha:
-        textureEle.set("mapType", "ALPHA")
-    elif textureSlot.use_map_ambient:
+    if textureSlot.use_map_ambient:
         textureEle.set("mapType", "AMB")
     elif textureSlot.use_map_color_diffuse or textureSlot.use_map_diffuse:
         textureEle.set("mapType", "COL")
-    elif textureSlot.use_map_emit:
-        textureEle.set("mapType", "EMIT")
     elif textureSlot.use_map_normal:
         textureEle.set("mapType", "NORM")
-    elif textureSlot.use_map_color_reflection:
-        textureEle.set("mapType", "COLMIR")
     elif textureSlot.use_map_color_spec or textureSlot.use_map_specular:
         textureEle.set("mapType", "SPEC")
+    elif textureSlot.use_map_emit:
+        textureEle.set("mapType", "EMIT")
+    elif textureSlot.use_map_color_reflection:
+        textureEle.set("mapType", "COLMIR")
+    elif textureSlot.use_map_alpha:
+        textureEle.set("mapType", "ALPHA")
     else:
         textureEle.set("mapType", "COL")
 
@@ -406,7 +358,7 @@ def ConvertMaterial(materialsEle, material):
 
     for index, textureSlot in enumerate(material.texture_slots):
         if material.use_textures[index]:
-            ConvertTexture(materialEle, index, textureSlot)
+            ConvertTexture(materialEle, textureSlot)
 
 
 def ConvertMaterials(appEle):
@@ -533,12 +485,12 @@ def ConvertMeshObject(meshesEle, parentEle, obj):
         if materialIndex == 0:
             position, rotation, scale = ExtractTransform(obj)
             parentEle = sceneNodeEle = CreateSceneNode(
-                obj.name, parentEle, obj, position, rotation, scale)
+                obj.name, parentEle, obj, materialIndex, position, rotation, scale)
             sceneNodeEle.set("meshName", meshName)
         else:
             newNodeName = obj.name + "_" + materialSlot.name
             sceneNodeEle = CreateSceneNode(
-                newNodeName, parentEle, obj, None, None, None)
+                newNodeName, parentEle, obj, materialIndex, None, None, None)
             newMeshName = meshName + "_" + materialSlot.name
             ConvertMesh(
                 newMeshName, meshesEle, obj, materialIndex)
@@ -556,14 +508,14 @@ def ConvertArmatureObject(armaturesEle, parentEle, armatureObj):
 
     position, rotation, scale = ExtractTransform(armatureObj)
     sceneNodeEle = CreateSceneNode(
-        armatureObj.name, parentEle, armatureObj, position, rotation, scale)
+        armatureObj.name, parentEle, armatureObj, -1, position, rotation, scale)
     sceneNodeEle.set("skeleton", armature.name)
 
 
 def ConvertLampObject(parentEle, obj):
     position, rotation, scale = ExtractTransform(obj)
     sceneNodeEle = CreateSceneNode(
-        obj.name, parentEle, obj, position, rotation, scale)
+        obj.name, parentEle, obj, -1, position, rotation, scale)
     sceneNodeEle.set("nodeType", "Light")
     light = obj.data
     sceneNodeEle.set("type", LightTypeToString(light.type))
@@ -590,7 +542,7 @@ def ConvertLampObject(parentEle, obj):
 def ConvertCameraObject(parentEle, obj):
     position, rotation, scale = ExtractTransform(obj)
     sceneNodeEle = CreateSceneNode(
-        obj.name, parentEle, obj, position, rotation, scale)
+        obj.name, parentEle, obj, -1, position, rotation, scale)
     sceneNodeEle.set("nodeType", "Camera")
     camera = obj.data
     sceneNodeEle.set("zNear", FloatToString(camera.clip_start))
@@ -625,7 +577,7 @@ def ConvertObject(armaturesEle, meshesEle, sceneEle, obj, scene):
         ConvertCameraObject(parentEle, obj)
     else:
         position, rotation, scale = ExtractTransform(obj)
-        CreateSceneNode(obj.name, parentEle, obj, position, rotation, scale)
+        CreateSceneNode(obj.name, parentEle, obj, -1, position, rotation, scale)
 
 
 def GetChannelMask(transform_name):
@@ -727,10 +679,13 @@ def ConvertAnimation(animationsEle, action, scene):
 
 
 def ConvertMeshes(appEle):
+    converted = []
     meshesEle = et.SubElement(appEle, "Meshes")
     for obj in bpy.data.objects:
         if obj.type == 'MESH':
-            ConvertMesh(obj.data.name, meshesEle, obj, 0)
+            if obj.data.name not in converted:
+                ConvertMesh(obj.data.name, meshesEle, obj, 0)
+                converted.append(obj.data.name)
     return meshesEle
 
 
@@ -749,23 +704,133 @@ def ConvertAnimations(appEle, scene):
     return animationsEle
 
 
+def CreatePhysics(sceneNodeEle, obj, materialIndex):
+    if obj and obj.game.physics_type != 'NO_COLLISION':
+        rigidBodyEle = et.SubElement(sceneNodeEle, "RigidBody")
+
+        if materialIndex != -1:
+            materialSlot = obj.material_slots[materialIndex]
+            physics = materialSlot.material.physics
+            rigidBodyEle.set("friction", FloatToString(physics.friction))
+            rigidBodyEle.set("restitution", FloatToString(physics.elasticity))
+
+
+        collisionGroup = 0
+        for i, group in enumerate(obj.game.collision_group):
+            if group:
+                collisionGroup += 1 << i
+        rigidBodyEle.set("collisionGroup", str(collisionGroup))
+
+        collisionMask = 0
+        for i, mask in enumerate(obj.game.collision_mask):
+            if mask:
+                collisionMask += 1 << i
+        rigidBodyEle.set("collisionMask", str(collisionMask))
+
+        if obj.game.physics_type == 'STATIC':
+            rigidBodyEle.set("mass", "0")
+        else:
+            rigidBodyEle.set("mass", FloatToString(obj.game.mass))
+
+        if obj.game.physics_type == 'SENSOR':
+            rigidBodyEle.set("trigger", BoolToString(True))
+        else:
+            rigidBodyEle.set("trigger", BoolToString(False))
+
+        if obj.game.physics_type == 'CHARACTER':
+            rigidBodyEle.set("kinematic", BoolToString(True))
+        else:
+            rigidBodyEle.set("kinematic", BoolToString(False))
+
+        rigidBodyEle.set("linearDamp", FloatToString(obj.game.damping))
+        rigidBodyEle.set(
+            "angularDamp", FloatToString(obj.game.rotation_damping))
+
+        linearFactor = mathutils.Vector((1, 1, 1))
+        if obj.game.lock_location_x:
+            linearFactor.x = 0
+        if obj.game.lock_location_y:
+            linearFactor.y = 0
+        if obj.game.lock_location_z:
+            linearFactor.z = 0
+        rigidBodyEle.set("linearFactor", Vector3ToString(linearFactor))
+
+        angularFactor = mathutils.Vector((1, 1, 1))
+        if obj.game.lock_rotation_x:
+            angularFactor.x = 0
+        if obj.game.lock_rotation_y:
+            angularFactor.y = 0
+        if obj.game.lock_rotation_z:
+            angularFactor.z = 0
+        rigidBodyEle.set("angularFactor", Vector3ToString(angularFactor))
+
+        if obj.game.use_collision_bounds:
+            shapesEle = et.SubElement(rigidBodyEle, "Shapes")
+            shapeEle = et.SubElement(shapesEle, "Shape")
+            name, scaleStr, typeStr = GetPhysicShapeName(obj)
+            shapeEle.set("name", name)
+
+        return rigidBodyEle
+
+
+def GetPhysicShapeName(obj):
+    loc, rot, scale = obj.matrix_world.decompose()
+    scaleStr = Vector3ToString(scale)
+    shapeType = obj.game.collision_bounds_type
+    typeStr = BoundTypeToString(shapeType)
+    if shapeType == 'CONVEX_HULL' or shapeType == 'TRIANGLE_MESH':
+        assert obj.type == 'MESH'
+        name = str(len(obj.data.name)) + " " + obj.data.name + " " + scaleStr + " " + typeStr
+    else:
+        name = scaleStr + " " + typeStr
+    return name, scaleStr, typeStr
+
+
+def MergeBoundingBox(minA, maxA, minB, maxB):
+    if minA.x < minB.x:
+        minB.x = minA.x
+    if minA.y < minB.y:
+        minB.y = minA.y
+    if minA.z < minB.z:
+        minB.z = minA.z
+    if maxA.x > maxB.x:
+        maxB.x = maxA.x
+    if maxA.y > maxB.y:
+        maxB.y = maxA.y
+    if maxA.z > maxB.z:
+        maxB.z = maxA.z
+    return minB, maxB
+
+def GetBoundingBox(obj):
+    bbMin = mathutils.Vector(obj.bound_box[0])
+    bbMax = mathutils.Vector(obj.bound_box[6])
+    for child in obj.children:
+        bbBMin, bbBMax = GetBoundingBox(child)
+        bbMin, bbMax = MergeBoundingBox(bbMin, bbMax, bbBMin, bbBMax)
+    return bbMin, bbMax
+
+
 def ConvertPhysicShape(shapesEle, obj):
-    # print(mathutils.Vector(obj.bound_box[0]))
-    # print(mathutils.Vector(obj.bound_box[7]))
     name, scaleStr, typeStr = GetPhysicShapeName(obj)
     shapeEle = GetChildEle(shapesEle, "Shape", "name", name)
-    if not shapeEle:
+    if shapeEle is None:
         shapeEle = et.SubElement(shapesEle, "Shape")
         shapeEle.set("name", name)
         shapeEle.set("scale", scaleStr)
         shapeEle.set("margin", FloatToString(obj.game.collision_margin))
         shapeEle.set("type", typeStr)
+        shapeType = obj.game.collision_bounds_type
+        if shapeType == 'CONVEX_HULL' or shapeType == 'TRIANGLE_MESH':
+            assert obj.type == 'MESH'
+            shapeEle.set("meshName", obj.data.name)
+        bbMin, bbMax = GetBoundingBox(obj)
+        shapeEle.set("bb", Vector3ToString(bbMin) + Vector3ToString(bbMax))
 
 
 def ConvertPhysicShapes(appEle):
     shapesEle = et.SubElement(appEle, "Shapes")
     for obj in bpy.data.objects:
-        if obj.game.physics_type != 'NO_COLLISION':
+        if obj.game.use_collision_bounds:
             ConvertPhysicShape(shapesEle, obj)
     return shapesEle
 
@@ -804,7 +869,7 @@ def ConvertScene(appEle, scene):
         (1, 0, 0), math.radians(-90.0))
 
     sceneNodeEle = CreateSceneNode(
-        scene.name, sceneEle, None, None, orientation, None)
+        scene.name, sceneEle, None, -1, None, orientation, None)
 
     ConvertPhysicsScene(sceneEle, scene)
 
