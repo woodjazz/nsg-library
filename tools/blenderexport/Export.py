@@ -2,6 +2,7 @@ import bpy
 import mathutils
 import math
 import os
+import base64
 import xml.etree.cElementTree as et
 
 
@@ -110,7 +111,8 @@ def CreateSceneNode(name, parentElem, obj, materialIndex=-1, loc=None, rot=None,
         sceneNodeEle.set(
             "scale", Vector3ToString(VECTOR3_ONE))
 
-    CreatePhysics(sceneNodeEle, obj, materialIndex)
+    if materialIndex < 1:
+        CreatePhysics(sceneNodeEle, obj, materialIndex)
 
     return sceneNodeEle
 
@@ -427,20 +429,30 @@ def ConvertArmature(armaturesEle, armatureObj):
                 BuildBonetree(BonesEle, bone)
 
 
-def ConvertImage(resourcesEle, image):
+def ConvertImage(resourcesEle, image, embed):
     if image.users > 0:
         if image.source == 'FILE':
             resourceEle = et.SubElement(resourcesEle, "Resource")
             resourceEle.set("name", "data/" + image.name)
             imagePath = "../data/" + image.name
             print("Saving " + imagePath)
+            print(image.use_alpha)
             image.save_render(imagePath)
+            if embed:
+                dataEle = et.SubElement(resourceEle, "data")
+                image_file = open(imagePath, "rb")
+                encoded_string = base64.b64encode(image_file.read())
+                string = str(encoded_string[2:-1])
+                dataEle.set("dataSize", str(len(string)))
+                # print(string)
+                dataEle.text = string
+                image_file.close()
 
 
-def ConvertResources(appEle):
+def ConvertResources(appEle, embed):
     resourcesEle = et.SubElement(appEle, "Resources")
     for image in bpy.data.objects.data.images:
-        ConvertImage(resourcesEle, image)
+        ConvertImage(resourcesEle, image, embed)
 
 
 def ExtractTransform(obj):
@@ -475,26 +487,36 @@ def GetMesh(name):
             return mesh
     return None
 
+def GetObjMaterialName(name, obj, materialIndex):
+    if materialIndex > 0:
+        materialSlot = obj.material_slots[materialIndex]
+        return name + "_" + materialSlot.name
+    return name
 
 def ConvertMeshObject(meshesEle, parentEle, obj):
     nMaterials = len(obj.material_slots)
     materialIndex = 0
     while nMaterials > materialIndex:
         materialSlot = obj.material_slots[materialIndex]
-        meshName = obj.data.name
         if materialIndex == 0:
+            meshName = GetObjMaterialName(obj.data.name, obj, materialIndex)
             position, rotation, scale = ExtractTransform(obj)
             parentEle = sceneNodeEle = CreateSceneNode(
                 obj.name, parentEle, obj, materialIndex, position, rotation, scale)
             sceneNodeEle.set("meshName", meshName)
         else:
-            newNodeName = obj.name + "_" + materialSlot.name
+            newNodeName = GetObjMaterialName(obj.name, obj, materialIndex)
             sceneNodeEle = CreateSceneNode(
                 newNodeName, parentEle, obj, materialIndex, None, None, None)
-            newMeshName = meshName + "_" + materialSlot.name
+            meshName = GetObjMaterialName(obj.data.name, obj, materialIndex)
             ConvertMesh(
-                newMeshName, meshesEle, obj, materialIndex)
-            sceneNodeEle.set("meshName", newMeshName)
+                meshName, meshesEle, obj, materialIndex)
+            sceneNodeEle.set("meshName", meshName)
+            if HasRigidBody(obj):
+                shapesEle = parentEle.find("RigidBody").find("Shapes")
+                shapeEle = et.SubElement(shapesEle, "Shape")
+                name, scaleStr, typeStr = GetPhysicShapeName(obj, meshName)
+                shapeEle.set("name", name)
         sceneNodeEle.set("materialName", materialSlot.name)
         materialIndex = materialIndex + 1
 
@@ -560,13 +582,14 @@ def ConvertCameraObject(parentEle, obj):
     sceneNodeEle.set("fovy", FloatToString(fov))
 
 
+
 def ConvertObject(armaturesEle, meshesEle, sceneEle, obj, scene):
     type = obj.type
     print("Converting object type " + type)
     parentEle = sceneEle
     if obj.parent:
         parentEle = GetChildEle(sceneEle, "SceneNode", "name", obj.parent.name)
-
+        assert parentEle is not None
     if type == 'MESH':
         ConvertMeshObject(meshesEle, parentEle, obj)
     elif type == 'ARMATURE':
@@ -704,8 +727,11 @@ def ConvertAnimations(appEle, scene):
     return animationsEle
 
 
+def HasRigidBody(obj):
+    return obj and obj.game.physics_type != 'NO_COLLISION'
+
 def CreatePhysics(sceneNodeEle, obj, materialIndex):
-    if obj and obj.game.physics_type != 'NO_COLLISION':
+    if HasRigidBody(obj):
         rigidBodyEle = et.SubElement(sceneNodeEle, "RigidBody")
 
         if materialIndex != -1:
@@ -767,20 +793,21 @@ def CreatePhysics(sceneNodeEle, obj, materialIndex):
         if obj.game.use_collision_bounds:
             shapesEle = et.SubElement(rigidBodyEle, "Shapes")
             shapeEle = et.SubElement(shapesEle, "Shape")
-            name, scaleStr, typeStr = GetPhysicShapeName(obj)
+            name, scaleStr, typeStr = GetPhysicShapeName(obj, obj.data.name)
             shapeEle.set("name", name)
 
         return rigidBodyEle
 
 
-def GetPhysicShapeName(obj):
+def GetPhysicShapeName(obj, meshName):
     loc, rot, scale = obj.matrix_world.decompose()
     scaleStr = Vector3ToString(scale)
     shapeType = obj.game.collision_bounds_type
     typeStr = BoundTypeToString(shapeType)
     if shapeType == 'CONVEX_HULL' or shapeType == 'TRIANGLE_MESH':
         assert obj.type == 'MESH'
-        name = str(len(obj.data.name)) + " " + obj.data.name + " " + scaleStr + " " + typeStr
+        assert len(meshName) > 0
+        name = str(len(meshName)) + " " + meshName + " " + scaleStr + " " + typeStr
     else:
         name = scaleStr + " " + typeStr
     return name, scaleStr, typeStr
@@ -810,8 +837,8 @@ def GetBoundingBox(obj):
     return bbMin, bbMax
 
 
-def ConvertPhysicShape(shapesEle, obj):
-    name, scaleStr, typeStr = GetPhysicShapeName(obj)
+def CreatePhysicShape(shapesEle, obj, meshName):
+    name, scaleStr, typeStr = GetPhysicShapeName(obj, meshName)
     shapeEle = GetChildEle(shapesEle, "Shape", "name", name)
     if shapeEle is None:
         shapeEle = et.SubElement(shapesEle, "Shape")
@@ -822,9 +849,18 @@ def ConvertPhysicShape(shapesEle, obj):
         shapeType = obj.game.collision_bounds_type
         if shapeType == 'CONVEX_HULL' or shapeType == 'TRIANGLE_MESH':
             assert obj.type == 'MESH'
-            shapeEle.set("meshName", obj.data.name)
+            shapeEle.set("meshName", meshName)
         bbMin, bbMax = GetBoundingBox(obj)
         shapeEle.set("bb", Vector3ToString(bbMin) + Vector3ToString(bbMax))
+
+
+def ConvertPhysicShape(shapesEle, obj):
+    nMaterials = len(obj.material_slots)
+    materialIndex = 0
+    while nMaterials > materialIndex or materialIndex == 0:
+        name = GetObjMaterialName(obj.name, obj, materialIndex)
+        CreatePhysicShape(shapesEle, obj, name)
+        materialIndex = materialIndex + 1
 
 
 def ConvertPhysicShapes(appEle):
@@ -846,7 +882,6 @@ def ConvertPhysicsScene(sceneEle, scene):
 
 
 def ConvertScene(appEle, scene):
-
     print("Converting scene " + scene.name)
     meshesEle = ConvertMeshes(appEle)
     armaturesEle = ConvertSkeletons(appEle)
@@ -896,7 +931,7 @@ def ConvertApp():
     filename = os.path.splitext(
         os.path.basename(bpy.data.filepath))[0]
     appEle = et.Element("App")
-    ConvertResources(appEle)
+    ConvertResources(appEle, False)
     ConvertMaterials(appEle)
     ConvertScenes(appEle)
     tree = et.ElementTree(appEle)
