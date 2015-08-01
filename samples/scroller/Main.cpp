@@ -29,7 +29,8 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/bscroller.xml");
+    //auto resource = Resource::GetOrCreate<ResourceFile>("data/bscroller.xml");
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
     AppData data(resource);
     auto soundMusic = Sound::Get("nice_music.ogg.004");
     Music music;

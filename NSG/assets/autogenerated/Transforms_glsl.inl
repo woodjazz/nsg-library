@@ -235,20 +235,36 @@ static const char* TRANSFORMS_GLSL = \
 "		#ifdef UNLIT\n"\
 "			#if defined(DIFFUSEMAP0)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
-"				return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"				#if defined(USEALPHA)\n"\
+"					return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"				#else\n"\
+"					return vec4(diffuseMap.rgb, diffuseMap.r + diffuseMap.g + diffuseMap.b + u_material.diffuseColor.a);\n"\
+"				#endif\n"\
 "			#elif defined(DIFFUSEMAP1)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord1);\n"\
-"				return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"				#if defined(USEALPHA)\n"\
+"					return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"				#else\n"\
+"					return vec4(diffuseMap.rgb, diffuseMap.r + diffuseMap.g + diffuseMap.b + u_material.diffuseColor.a);\n"\
+"				#endif\n"\
 "			#else\n"\
 "				return u_material.diffuseColor;\n"\
 "			#endif\n"\
 "		#else\n"\
 "			#if defined(DIFFUSEMAP0)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
-"				return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"				#if defined(USEALPHA)\n"\
+"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"				#else\n"\
+"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.r + diffuseMap.g + diffuseMap.b + u_material.diffuseColor.a);\n"\
+"				#endif\n"\
 "			#elif defined(DIFFUSEMAP1)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord1);\n"\
-"				return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"				#if defined(USEALPHA)\n"\
+"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"				#else\n"\
+"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.r + diffuseMap.g + diffuseMap.b + u_material.diffuseColor.a);\n"\
+"				#endif\n"\
 "			#else\n"\
 "				return u_material.diffuseIntensity * u_material.diffuseColor;\n"\
 "			#endif		\n"\
@@ -258,10 +274,18 @@ static const char* TRANSFORMS_GLSL = \
 "		{\n"\
 "	    #if defined(SPECULARMAP0)\n"\
 "	        vec4 specularMap = texture2D(u_texture2, v_texcoord0);\n"\
-"	        return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);\n"\
+"	        #if defined(USEALPHA)\n"\
+"	        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);\n"\
+"	        #else\n"\
+"	        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.r + specularMap.g + specularMap.b + u_material.specularColor.a);\n"\
+"	        #endif\n"\
 "	    #elif defined(SPECULARMAP1)\n"\
 "	        vec4 specularMap = texture2D(u_texture2, v_texcoord1);\n"\
-"	        return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);	        \n"\
+"	        #if defined(USEALPHA)\n"\
+"	        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);\n"\
+"	        #else\n"\
+"	        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.r + specularMap.g + specularMap.b + u_material.specularColor.a);\n"\
+"	        #endif\n"\
 "	    #else\n"\
 "	        return u_material.specularIntensity * u_material.specularColor;\n"\
 "	    #endif\n"\

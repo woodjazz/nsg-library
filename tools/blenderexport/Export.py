@@ -239,6 +239,7 @@ def ConvertTexture(materialEle, textureSlot):
     textureEle = et.SubElement(materialEle, "Texture")
     textureEle.set("uvName", textureSlot.uv_layer)
     textureEle.set("resource", "data/" + image.name)
+    textureEle.set("useAlpha", BoolToString(image.use_alpha))
     if texture.extension == 'REPEAT':
         textureEle.set("wrapMode", "REPEAT")
     elif texture.extend == 'CHECKER':
@@ -442,7 +443,6 @@ def ConvertImage(resourcesEle, image, embed):
             resourceEle.set("name", "data/" + image.name)
             imagePath = "../data/" + image.name
             print("Saving " + imagePath)
-            print(image.use_alpha)
             image.save_render(imagePath)
             if embed:
                 dataEle = et.SubElement(resourceEle, "data")
@@ -455,10 +455,28 @@ def ConvertImage(resourcesEle, image, embed):
                 image_file.close()
 
 
+def ConvertSound(resourcesEle, soundsEle, sound, embed):
+    if sound.users > 0 and sound.packed_file:
+        resourceEle = et.SubElement(resourcesEle, "Resource")
+        resourceName = "data/" + sound.filepath
+        resourceEle.set("name", resourceName)
+        soundPath = "../data/" + sound.filepath
+        print("Saving " + soundPath)
+        soundfile = open(soundPath, "wb")
+        soundfile.write(sound.packed_file.data)
+        soundfile.close()
+        soundEle = et.SubElement(soundsEle, "Sound")
+        soundEle.set("name", sound.name)
+        soundEle.set("resource", resourceName)
+
+
 def ConvertResources(appEle, embed):
     resourcesEle = et.SubElement(appEle, "Resources")
     for image in bpy.data.objects.data.images:
         ConvertImage(resourcesEle, image, embed)
+    soundsEle = et.SubElement(appEle, "Sounds")
+    for sound in bpy.data.objects.data.sounds:
+        ConvertSound(resourcesEle, soundsEle, sound, embed)
 
 
 def ExtractTransform(obj):
@@ -866,7 +884,7 @@ def ConvertPhysicShape(shapesEle, obj):
     nMaterials = len(obj.material_slots)
     materialIndex = 0
     while nMaterials > materialIndex or materialIndex == 0:
-        name = GetObjMaterialName(obj.name, obj, materialIndex)
+        name = GetObjMaterialName(obj.data.name, obj, materialIndex)
         CreatePhysicShape(shapesEle, obj, name)
         materialIndex = materialIndex + 1
 

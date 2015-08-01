@@ -57,6 +57,8 @@ namespace NSG
         int GetChannels() const { return channels_; }
         virtual GLenum GetTarget() const = 0;
         virtual void Define() = 0;
+        void SetUseAlpha(bool useAlpha) { useAlpha_ = useAlpha; }
+        bool GetUseAlpha() const { return useAlpha_; }
     protected:
         Texture(PResource resource, const TextureFlags& flags);
         Texture(const std::string& name);
@@ -81,5 +83,6 @@ namespace NSG
         std::string uvName_;
         TextureBlend blendType_;
         TextureType mapType_;
+        bool useAlpha_;
     };
 }

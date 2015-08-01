@@ -53,7 +53,8 @@ namespace NSG
           mipmapLevels_(0),
           filterMode_(TextureFilterMode::BILINEAR),
           blendType_(TextureBlend::NONE),
-          mapType_(TextureType::COL)
+          mapType_(TextureType::COL),
+          useAlpha_(false)
     {
         switch (format_)
         {
@@ -92,7 +93,8 @@ namespace NSG
           mipmapLevels_(0),
           filterMode_(TextureFilterMode::BILINEAR),
           blendType_(TextureBlend::NONE),
-          mapType_(TextureType::COL)
+          mapType_(TextureType::COL),
+          useAlpha_(false)
     {
     }
 
@@ -264,6 +266,8 @@ namespace NSG
         node.append_attribute("filterMode") = ToString(filterMode_);
         node.append_attribute("blendType") = ToString(blendType_);
         node.append_attribute("mapType") = ToString(mapType_);
+        node.append_attribute("useAlpha").set_value(useAlpha_);
+        
     }
 
     void Texture::SetSize(GLsizei width, GLsizei height)

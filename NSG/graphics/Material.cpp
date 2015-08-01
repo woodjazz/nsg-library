@@ -549,6 +549,8 @@ namespace NSG
                 auto texture = GetTexture((MaterialTexture)index);
                 if (texture)
                 {
+                    if(texture->GetUseAlpha())
+                        defines += "USEALPHA\n";
                     int uvIndex = mesh->GetUVIndex(texture->GetUVName());
                     auto type = texture->GetMapType();
                     CHECK_ASSERT(TextureType::UNKNOWN != type, __FILE__, __LINE__);

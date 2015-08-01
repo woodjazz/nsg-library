@@ -62,6 +62,7 @@ namespace NSG
         TextureFilterMode filterMode = ToTextureFilterMode(node.attribute("filterMode").as_string());
         TextureBlend blendType = ToTextureBlend(node.attribute("blendType").as_string());
         TextureType mapType = ToTextureType(node.attribute("mapType").as_string());
+        bool useAlpha = node.attribute("useAlpha").as_bool();
         auto res = Resource::Get(resourceName);
         PTexture texture;
         if (!res)
@@ -79,6 +80,7 @@ namespace NSG
         texture->SetFilterMode(filterMode);
         texture->SetBlendType(blendType);
         texture->SetMapType(mapType);
+        texture->SetUseAlpha(useAlpha);
         return texture;
     }
 
