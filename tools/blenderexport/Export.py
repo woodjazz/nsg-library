@@ -411,6 +411,9 @@ def ConvertArmature(armaturesEle, armatureObj):
     armatureEle = GetChildEle(armaturesEle, "Skeleton", "name", armature.name)
     if armatureEle is None:
         print("Converting armature " + armature.name)
+        poseStatus = armature.pose_position
+        armature.pose_position = 'REST'
+        bpy.context.scene.update()
         armatureEle = et.SubElement(armaturesEle, "Skeleton")
         armatureEle.set("name", armature.name)
 
@@ -427,6 +430,9 @@ def ConvertArmature(armaturesEle, armatureObj):
         for bone in armature.bones:
             if not bone.parent:
                 BuildBonetree(BonesEle, bone)
+
+        armature.pose_position = poseStatus
+        bpy.context.scene.update()
 
 
 def ConvertImage(resourcesEle, image, embed):
@@ -487,11 +493,13 @@ def GetMesh(name):
             return mesh
     return None
 
+
 def GetObjMaterialName(name, obj, materialIndex):
     if materialIndex > 0:
         materialSlot = obj.material_slots[materialIndex]
         return name + "_" + materialSlot.name
     return name
+
 
 def ConvertMeshObject(meshesEle, parentEle, obj):
     nMaterials = len(obj.material_slots)
@@ -549,7 +557,7 @@ def ConvertLampObject(parentEle, obj):
     sceneNodeEle.set("diffuse", BoolToString(light.use_diffuse))
     sceneNodeEle.set("specular", BoolToString(light.use_specular))
     sceneNodeEle.set("distance", FloatToString(light.distance))
-    sceneNodeEle.set("shadows", BoolToString(light.cycles.cast_shadow))
+    sceneNodeEle.set("shadows", BoolToString(light.shadow_method != 'NOSHADOW'))
     sceneNodeEle.set("shadowColor", ColorToString(light.shadow_color))
     sceneNodeEle.set("onlyShadow", BoolToString(light.use_only_shadow))
     # TODO: CHECK IF THIS IS A GOOD APROXIMATION
@@ -580,7 +588,6 @@ def ConvertCameraObject(parentEle, obj):
     if camera.sensor_fit == 'VERTICAL':
         fov = 2 * math.atan(0.5 * camera.sensor_height / camera.lens)
     sceneNodeEle.set("fovy", FloatToString(fov))
-
 
 
 def ConvertObject(armaturesEle, meshesEle, sceneEle, obj, scene):
@@ -730,6 +737,7 @@ def ConvertAnimations(appEle, scene):
 def HasRigidBody(obj):
     return obj and obj.game.physics_type != 'NO_COLLISION'
 
+
 def CreatePhysics(sceneNodeEle, obj, materialIndex):
     if HasRigidBody(obj):
         rigidBodyEle = et.SubElement(sceneNodeEle, "RigidBody")
@@ -739,7 +747,6 @@ def CreatePhysics(sceneNodeEle, obj, materialIndex):
             physics = materialSlot.material.physics
             rigidBodyEle.set("friction", FloatToString(physics.friction))
             rigidBodyEle.set("restitution", FloatToString(physics.elasticity))
-
 
         collisionGroup = 0
         for i, group in enumerate(obj.game.collision_group):
@@ -827,6 +834,7 @@ def MergeBoundingBox(minA, maxA, minB, maxB):
     if maxA.z > maxB.z:
         maxB.z = maxA.z
     return minB, maxB
+
 
 def GetBoundingBox(obj):
     bbMin = mathutils.Vector(obj.bound_box[0])
