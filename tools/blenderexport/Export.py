@@ -89,6 +89,15 @@ QUATERNION_IDENTITY = mathutils.Quaternion()
 QUATERNION_IDENTITY.identity()
 VECTOR3_ZERO = mathutils.Vector((0, 0, 0))
 VECTOR3_ONE = mathutils.Vector((1, 1, 1))
+DEFAULT_MATERIAL_NAME = "__DefaultBlenderMaterial__"
+
+def ConvertGroup(parentEle, group):
+    print("Converting group " + group.name)
+    for obj in group.objects:
+        if type(obj) is bpy.types.Group:
+            ConvertGroup(parentEle, obj)
+        else:
+            ConvertObject(parentEle, obj)
 
 
 def CreateSceneNode(name, parentElem, obj, materialIndex=-1, loc=None, rot=None, sca=None):
@@ -113,6 +122,9 @@ def CreateSceneNode(name, parentElem, obj, materialIndex=-1, loc=None, rot=None,
 
     if materialIndex < 1:
         CreatePhysics(sceneNodeEle, obj, materialIndex)
+
+    if obj and obj.dupli_type == 'GROUP' and obj.dupli_group:
+            ConvertGroup(sceneNodeEle, obj.dupli_group)
 
     return sceneNodeEle
 
@@ -236,6 +248,8 @@ def ConvertTexture(materialEle, textureSlot):
     if texture.type != 'IMAGE':
         return
     image = texture.image
+    if not image:
+        return
     textureEle = et.SubElement(materialEle, "Texture")
     textureEle.set("uvName", textureSlot.uv_layer)
     textureEle.set("resource", "data/" + image.name)
@@ -520,31 +534,37 @@ def GetObjMaterialName(name, obj, materialIndex):
 
 
 def ConvertMeshObject(meshesEle, parentEle, obj):
+    materialIndex = -1
     nMaterials = len(obj.material_slots)
-    materialIndex = 0
+    if nMaterials > 0:
+        materialIndex = 0
+    position, rotation, scale = ExtractTransform(obj)
+    parentEle = sceneNodeEle = CreateSceneNode(
+        obj.name, parentEle, obj, materialIndex, position, rotation, scale)
+    sceneNodeEle.set("meshName", obj.data.name)
+    if nMaterials > 0:
+        materialSlot = obj.material_slots[0]
+        sceneNodeEle.set("materialName", materialSlot.name)
+    else:
+        sceneNodeEle.set("materialName", DEFAULT_MATERIAL_NAME)
+    materialIndex = 1
     while nMaterials > materialIndex:
         materialSlot = obj.material_slots[materialIndex]
-        if materialIndex == 0:
-            meshName = GetObjMaterialName(obj.data.name, obj, materialIndex)
-            position, rotation, scale = ExtractTransform(obj)
-            parentEle = sceneNodeEle = CreateSceneNode(
-                obj.name, parentEle, obj, materialIndex, position, rotation, scale)
-            sceneNodeEle.set("meshName", meshName)
-        else:
-            newNodeName = GetObjMaterialName(obj.name, obj, materialIndex)
-            sceneNodeEle = CreateSceneNode(
-                newNodeName, parentEle, obj, materialIndex, None, None, None)
-            meshName = GetObjMaterialName(obj.data.name, obj, materialIndex)
-            ConvertMesh(
-                meshName, meshesEle, obj, materialIndex)
-            sceneNodeEle.set("meshName", meshName)
-            if HasRigidBody(obj):
-                shapesEle = parentEle.find("RigidBody").find("Shapes")
+        newNodeName = GetObjMaterialName(obj.name, obj, materialIndex)
+        sceneNodeEle = CreateSceneNode(
+            newNodeName, parentEle, obj, materialIndex, None, None, None)
+        meshName = GetObjMaterialName(obj.data.name, obj, materialIndex)
+        ConvertMesh(
+            meshName, meshesEle, obj, materialIndex)
+        sceneNodeEle.set("meshName", meshName)
+        if HasRigidBody(obj):
+            shapesEle = parentEle.find("RigidBody").find("Shapes")
+            if shapesEle:
                 shapeEle = et.SubElement(shapesEle, "Shape")
                 name, scaleStr, typeStr = GetPhysicShapeName(obj, meshName)
                 shapeEle.set("name", name)
         sceneNodeEle.set("materialName", materialSlot.name)
-        materialIndex = materialIndex + 1
+        materialIndex += 1
 
 
 def ConvertArmatureObject(armaturesEle, parentEle, armatureObj):
@@ -561,11 +581,13 @@ def ConvertArmatureObject(armaturesEle, parentEle, armatureObj):
 
 
 def ConvertLampObject(parentEle, obj):
+    light = obj.data
+    if light.type == 'HEMI':
+        return
     position, rotation, scale = ExtractTransform(obj)
     sceneNodeEle = CreateSceneNode(
         obj.name, parentEle, obj, -1, position, rotation, scale)
     sceneNodeEle.set("nodeType", "Light")
-    light = obj.data
     sceneNodeEle.set("type", LightTypeToString(light.type))
     if light.type == 'SPOT':
         cutoff = math.degrees(light.spot_size)
@@ -574,7 +596,7 @@ def ConvertLampObject(parentEle, obj):
     sceneNodeEle.set("color", ColorToString(light.color))
     sceneNodeEle.set("diffuse", BoolToString(light.use_diffuse))
     sceneNodeEle.set("specular", BoolToString(light.use_specular))
-    sceneNodeEle.set("distance", FloatToString(light.distance))
+    sceneNodeEle.set("distance", FloatToString(light.distance))    
     sceneNodeEle.set("shadows", BoolToString(light.shadow_method != 'NOSHADOW'))
     sceneNodeEle.set("shadowColor", ColorToString(light.shadow_color))
     sceneNodeEle.set("onlyShadow", BoolToString(light.use_only_shadow))
@@ -608,20 +630,17 @@ def ConvertCameraObject(parentEle, obj):
     sceneNodeEle.set("fovy", FloatToString(fov))
 
 
-def ConvertObject(armaturesEle, meshesEle, sceneEle, obj, scene):
-    type = obj.type
-    print("Converting object type " + type)
-    parentEle = sceneEle
-    if obj.parent:
-        parentEle = GetChildEle(sceneEle, "SceneNode", "name", obj.parent.name)
-        assert parentEle is not None
-    if type == 'MESH':
+def ConvertObject(parentEle, obj):
+    print("Converting object " + obj.name + " type " + obj.type)
+    if obj.type == 'MESH':
+        meshesEle = appEle.find("Meshes")
         ConvertMeshObject(meshesEle, parentEle, obj)
-    elif type == 'ARMATURE':
+    elif obj.type == 'ARMATURE':
+        armaturesEle = appEle.find("Skeletons")
         ConvertArmatureObject(armaturesEle, parentEle, obj)
-    elif type == 'LAMP':
+    elif obj.type == 'LAMP':
         ConvertLampObject(parentEle, obj)
-    elif type == 'CAMERA':
+    elif obj.type == 'CAMERA':
         ConvertCameraObject(parentEle, obj)
     else:
         position, rotation, scale = ExtractTransform(obj)
@@ -708,13 +727,14 @@ def ConvertCurve(tracksEle, curve, data):
         SetKeyframeData(data, chan_name, frame, transform_name, index, value)
 
 
-def ConvertAnimation(animationsEle, action, scene):
-    fps = scene.render.fps / scene.render.fps_base
+def ConvertAnimation(animationsEle, action):
+    # fps = scene.render.fps / scene.render.fps_base
+    fps = 24.0
     frame_begin, frame_end = action.frame_range[0], action.frame_range[1]
     trackLength = (frame_end - frame_begin) / fps
 
     def ConvertFrame2Time(frame):
-        return (trackLength / (frame_end - frame_begin)) * frame
+        return frame / fps
 
     animationEle = et.SubElement(animationsEle, "Animation")
     animationEle.set("length", FloatToString(trackLength))
@@ -745,10 +765,10 @@ def ConvertSkeletons(appEle):
     return armaturesEle
 
 
-def ConvertAnimations(appEle, scene):
+def ConvertAnimations(appEle):
     animationsEle = et.SubElement(appEle, "Animations")
     for action in bpy.data.actions:
-        ConvertAnimation(animationsEle, action, scene)
+        ConvertAnimation(animationsEle, action)
     return animationsEle
 
 
@@ -815,7 +835,7 @@ def CreatePhysics(sceneNodeEle, obj, materialIndex):
             angularFactor.z = 0
         rigidBodyEle.set("angularFactor", Vector3ToString(angularFactor))
 
-        if obj.game.use_collision_bounds:
+        if obj.game.use_collision_bounds and obj.data:
             shapesEle = et.SubElement(rigidBodyEle, "Shapes")
             shapeEle = et.SubElement(shapesEle, "Shape")
             name, scaleStr, typeStr = GetPhysicShapeName(obj, obj.data.name)
@@ -881,6 +901,8 @@ def CreatePhysicShape(shapesEle, obj, meshName):
 
 
 def ConvertPhysicShape(shapesEle, obj):
+    if not obj.data:
+        return
     nMaterials = len(obj.material_slots)
     materialIndex = 0
     while nMaterials > materialIndex or materialIndex == 0:
@@ -909,11 +931,6 @@ def ConvertPhysicsScene(sceneEle, scene):
 
 def ConvertScene(appEle, scene):
     print("Converting scene " + scene.name)
-    meshesEle = ConvertMeshes(appEle)
-    armaturesEle = ConvertSkeletons(appEle)
-    ConvertAnimations(appEle, scene)
-    ConvertPhysicShapes(appEle)
-
     sceneEle = et.SubElement(appEle, "Scene")
     if scene.camera is not None:
         sceneEle.set("mainCamera", scene.camera.name)
@@ -939,7 +956,13 @@ def ConvertScene(appEle, scene):
         currentMode = obj.mode
         if currentMode != 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
-        ConvertObject(armaturesEle, meshesEle, sceneNodeEle, obj, scene)
+        parentEle = sceneNodeEle
+        if obj.parent:
+            parentEle = GetChildEle(sceneNodeEle, "SceneNode", "name", obj.parent.name)
+            if parentEle is None:
+                print("Warning parent=" + obj.parent.name + " for " + obj.name + " NOT FOUND!!!")
+                continue
+        ConvertObject(parentEle, obj)
         if currentMode != 'OBJECT':
             bpy.ops.object.mode_set(mode=currentMode)
 
@@ -948,7 +971,7 @@ def ConvertScenes(appEle):
     for scene in bpy.data.objects.data.scenes:
         ConvertScene(appEle, scene)
 
-
+appEle = et.Element("App")
 def ConvertApp():
     # export to blend file location
     basedir = os.path.dirname(bpy.data.filepath)
@@ -956,10 +979,16 @@ def ConvertApp():
         raise Exception("Blend file is not saved")
     filename = os.path.splitext(
         os.path.basename(bpy.data.filepath))[0]
-    appEle = et.Element("App")
+    
+    defaultMaterial = bpy.data.materials.new(DEFAULT_MATERIAL_NAME)
     ConvertResources(appEle, False)
     ConvertMaterials(appEle)
+    ConvertMeshes(appEle)
+    ConvertSkeletons(appEle)
+    ConvertAnimations(appEle)
+    ConvertPhysicShapes(appEle)
     ConvertScenes(appEle)
+    bpy.data.materials.remove(defaultMaterial)
     tree = et.ElementTree(appEle)
     tree.write(basedir + "/../data/" + filename + ".xml")
 

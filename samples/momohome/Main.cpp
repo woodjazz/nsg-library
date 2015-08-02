@@ -31,15 +31,16 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto window = Window::Create();
 	//auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene1.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
+    window->SetScene(scene.get());
 	auto camera = scene->GetOrCreateChild<Camera>("Camera");
 	auto control = std::make_shared<CameraControl>(camera);
     {
         auto object = scene->GetChild<SceneNode>("RigMomo", true);
         auto animation = scene->GetAnimationFor("Momo_Carry", object);
-		scene->PlayAnimation(animation, true);
+		//scene->PlayAnimation(animation, true);
     }
 	return Engine().Run();
 }
