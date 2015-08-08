@@ -69,7 +69,7 @@ namespace NSG
         PTexture texture;
         if (!res)
         {
-			auto newRes = Resource::CreateClass<ResourceXMLNode>(resourceName);
+			auto newRes = Resource::CreateClass<ResourceXMLNode>(GetUniqueName(resourceName));
             texture = std::make_shared<Texture2D>(newRes);
             newRes->Set(resource, nullptr, "Resources", resourceName);
         }

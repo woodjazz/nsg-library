@@ -164,6 +164,9 @@ def ConvertBonesWeigths(jointList, vertexData, vertex):
 
 
 def ConvertMesh(name, meshesEle, meshObj, materialIndex):
+    meshEle = GetChildEle(meshesEle, "Mesh", "name", name)
+    if meshEle is not None:
+        return
     mesh = meshObj.data
     if len(mesh.vertices) == 0:
         return

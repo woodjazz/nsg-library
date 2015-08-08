@@ -97,12 +97,18 @@ namespace NSG
             auto appNode = doc.child("App");
             auto resources = appNode.child(type_.c_str());
             auto node = resources.find_child([this](pugi::xml_node & node) { return node.attribute("name").as_string() == nameAttValue_; });
-            CHECK_ASSERT(node, __FILE__, __LINE__);
-            auto obj = obj_.lock();
-            if (obj)
-                obj->LoadFrom(resource_, node);
+            if(node)
+            {
+                auto obj = obj_.lock();
+                if (obj)
+                    obj->LoadFrom(resource_, node);
+                else
+                    Load(node);
+            }
             else
-                Load(node);
+            {
+                LOGE("Resource with name %s not found", nameAttValue_.c_str());
+            }
         }
         else
         {
