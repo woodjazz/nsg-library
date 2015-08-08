@@ -19,7 +19,7 @@ before_install:
   - export AUDIODEV=null
   # SIMULATE GUI (DISPLAY)
   - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
+  
 
 install:
   - chmod +x travis_install.sh
