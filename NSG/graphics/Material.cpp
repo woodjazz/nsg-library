@@ -16,7 +16,7 @@
 
 namespace NSG
 {
-    template<> std::map<std::string, PWeakMaterial> WeakFactory<std::string, Material>::objsMap_ = {};
+    template<> std::map<std::string, PWeakMaterial> WeakFactory<std::string, Material>::objsMap_ = std::map<std::string, PWeakMaterial>{};
 
     Material::Material(const std::string& name)
         : Object(name),

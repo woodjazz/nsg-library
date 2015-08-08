@@ -39,7 +39,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	template<> std::map<std::string, PWeakMesh> WeakFactory<std::string, Mesh>::objsMap_ = {};
+	template<> std::map<std::string, PWeakMesh> WeakFactory<std::string, Mesh>::objsMap_ = std::map<std::string, PWeakMesh>{};
 
     Mesh::Mesh(const std::string& name, bool dynamic)
         : Object(name),

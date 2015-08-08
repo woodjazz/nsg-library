@@ -37,7 +37,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    template<> std::map<std::string, PWeakSound> WeakFactory<std::string, Sound>::objsMap_ = {};
+    template<> std::map<std::string, PWeakSound> WeakFactory<std::string, Sound>::objsMap_ = std::map<std::string, PWeakSound>{};
 
 	Sound::Sound(const std::string& name)
         : Object(name),

@@ -36,7 +36,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	template<> std::map<std::string, PWeakShape> WeakFactory<std::string, Shape>::objsMap_ = {};
+	template<> std::map<std::string, PWeakShape> WeakFactory<std::string, Shape>::objsMap_ = std::map<std::string, PWeakShape>{};
     
     ShapeKey::ShapeKey(const std::string& key)
         : std::string(key)

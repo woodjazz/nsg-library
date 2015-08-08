@@ -36,7 +36,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    template<> std::map<std::string, PWeakSkeleton> WeakFactory<std::string, Skeleton>::objsMap_ = {};
+    template<> std::map<std::string, PWeakSkeleton> WeakFactory<std::string, Skeleton>::objsMap_ = std::map<std::string, PWeakSkeleton>{};
 
     Skeleton::Skeleton(const std::string& name)
         : Object(name)

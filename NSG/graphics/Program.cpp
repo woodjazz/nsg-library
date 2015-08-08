@@ -67,7 +67,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    template<> std::map<std::string, PProgram> StrongFactory<std::string, Program>::objsMap_ = {};
+    template<> std::map<std::string, PProgram> StrongFactory<std::string, Program>::objsMap_ = std::map<std::string, PProgram>{};
 
     Program::Program(const std::string& defines)
         : Object(GetUniqueName("Program")),

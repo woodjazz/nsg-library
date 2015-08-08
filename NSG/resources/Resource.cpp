@@ -42,7 +42,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    template<> std::map<std::string, PWeakResource> WeakFactory<std::string, Resource>::objsMap_ = {};
+    template<> std::map<std::string, PWeakResource> WeakFactory<std::string, Resource>::objsMap_ = std::map<std::string, PWeakResource>{};
 
     Resource::Resource(const std::string& name)
         : Object(name),
