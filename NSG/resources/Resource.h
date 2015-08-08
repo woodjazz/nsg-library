@@ -36,6 +36,7 @@ namespace NSG
 	class Resource : public WeakFactory<std::string, Resource>, public std::enable_shared_from_this<Resource>, public Object
 	{
 	public:
+		Resource(const std::string& name);
 		static PResource CreateFrom(PResource resource, const pugi::xml_node& node);
 		virtual ~Resource();
 		void SetBuffer(const std::string& buffer) { buffer_ = buffer; }
@@ -52,7 +53,6 @@ namespace NSG
 		static std::vector<PResource> LoadResources(PResource resource, const pugi::xml_node& node);
         static void SaveResources(pugi::xml_node& node);
 		static void SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir);
-		Resource(const std::string& name);
 	protected:
 		std::string buffer_;
 		bool serializable_;

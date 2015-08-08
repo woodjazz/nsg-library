@@ -52,7 +52,13 @@ namespace NSG
           enableDepthBuffer_(true),
           frontFaceMode_(FrontFaceMode::DEFAULT),
           depthFunc_(DepthFunc::LESS),
-          blendMode_(BLEND_MODE::NONE)
+          blendMode_(BLEND_MODE::NONE),
+		  enableScissorTest_(false),
+		  scissorX_(0),
+		  scissorY_(0),
+		  scissorWidth_(0),
+		  scissorHeight_(0),
+		  cullFaceMode_(CullFaceMode::DEFAULT)
     {
 
     }
@@ -101,6 +107,19 @@ namespace NSG
         data_.enableStencilTest_ = enable;
     }
 
+	void Pass::EnableScissorTest(bool enable)
+	{
+		data_.enableScissorTest_ = enable;
+	}
+
+	void Pass::SetScissor(int x, int y, int width, int height)
+	{
+		data_.scissorX_ = x;
+		data_.scissorY_ = x;
+		data_.scissorWidth_ = width;
+		data_.scissorHeight_ = height;
+	}
+	
     void Pass::SetDepthFunc(DepthFunc depthFunc)
     {
         data_.depthFunc_ = depthFunc;
@@ -129,4 +148,9 @@ namespace NSG
     {
         data_.frontFaceMode_ = mode;
     }
+
+	void Pass::SetCullFace(CullFaceMode mode)
+	{
+		data_.cullFaceMode_ = mode;
+	}
 }

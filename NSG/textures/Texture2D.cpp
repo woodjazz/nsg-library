@@ -33,13 +33,15 @@ misrepresented as being the original software.
 namespace NSG
 {
     Texture2D::Texture2D(PResource resource, const TextureFlags& flags)
-        : Texture(resource, flags)
+        : Texture(resource, flags),
+		pixels_(nullptr)
     {
 
     }
 
     Texture2D::Texture2D(const std::string& name)
-        : Texture(name)
+        : Texture(name),
+		pixels_(nullptr)
     {
 
     }
@@ -121,9 +123,19 @@ namespace NSG
                          0,
                          format_,
 						 type_,
-                         nullptr);
+						 pixels_);
         }
 
 		CHECK_GL_STATUS(__FILE__, __LINE__);
     }
+
+	void Texture2D::SetData(unsigned char* pixels)
+	{
+		if (pixels_ != pixels)
+		{
+			CHECK_ASSERT(!image_, __FILE__, __LINE__);
+			pixels_ = pixels;
+			Invalidate();
+		}
+	}
 }

@@ -33,7 +33,7 @@ int NSG_MAIN(int argc, char* argv[])
     // In Blender this corresponds to the first and second mapping defined in the mesh
 
 	{
-		auto resource = Resource::GetOrCreate<ResourceFile>("data/baomap0.xml");
+		auto resource = Resource::GetOrCreate<ResourceFile>("data/aomap0.xml");
 		AppData data(resource);
 		CHECK_CONDITION(data.scenes_.size() == 1, __FILE__, __LINE__);
 		auto scene = data.scenes_.at(0);
@@ -52,7 +52,7 @@ int NSG_MAIN(int argc, char* argv[])
 	}
 
 	{
-		auto resource = Resource::GetOrCreate<ResourceFile>("data/baomap1.xml");
+		auto resource = Resource::GetOrCreate<ResourceFile>("data/aomap1.xml");
 		AppData data(resource);
 		CHECK_CONDITION(data.scenes_.size() == 1, __FILE__, __LINE__);
 		auto scene = data.scenes_.at(0);
@@ -71,7 +71,7 @@ int NSG_MAIN(int argc, char* argv[])
 	}
 
 	{
-		auto resource = Resource::GetOrCreate<ResourceFile>("data/buvmap275.xml");
+		auto resource = Resource::GetOrCreate<ResourceFile>("data/uvmap275.xml");
 		AppData data(resource);
 		CHECK_CONDITION(data.scenes_.size() == 1, __FILE__, __LINE__);
 		auto scene = data.scenes_.at(0);

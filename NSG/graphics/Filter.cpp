@@ -82,7 +82,7 @@ namespace NSG
 		Camera* pCurrent = Graphics::this_->GetCamera();
 		Graphics::this_->SetCamera(nullptr);
 		Graphics::this_->SetMesh(pMesh_.get());
-		if(Graphics::this_->SetupPass(&pass, node_.get(), pMaterial_.get(), nullptr))
+		if(Graphics::this_->SetupProgram(&pass, node_.get(), pMaterial_.get(), nullptr))
 			Graphics::this_->DrawActiveMesh();
 		Graphics::this_->SetCamera(pCurrent);
 

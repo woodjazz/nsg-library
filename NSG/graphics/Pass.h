@@ -52,6 +52,12 @@ namespace NSG
         bool enableDepthBuffer_;
         FrontFaceMode frontFaceMode_;
         DepthFunc depthFunc_;
+		bool enableScissorTest_;
+		int scissorX_;
+		int scissorY_;
+		int scissorWidth_;
+		int scissorHeight_;
+		CullFaceMode cullFaceMode_;
         PassData();
     private:
         BLEND_MODE blendMode_;
@@ -71,11 +77,14 @@ namespace NSG
         void EnableDepthBuffer(bool enable);
         void EnableDepthTest(bool enable);
         void EnableStencilTest(bool enable);
+		void EnableScissorTest(bool enable);
+		void SetScissor(int x, int y, int width, int height);
         void SetDepthFunc(DepthFunc depthFunc);
         void SetStencilMask(GLuint mask);
         void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
         void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
         void SetFrontFace(FrontFaceMode mode);
+		void SetCullFace(CullFaceMode mode);
         const PassData& GetData() const { return data_; }
     private:
         PassData data_;

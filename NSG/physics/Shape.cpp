@@ -36,7 +36,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    template<> std::map<ShapeKey, PWeakShape> WeakFactory<ShapeKey, Shape>::objsMap_ = {};
+	template<> std::map<std::string, PWeakShape> WeakFactory<std::string, Shape>::objsMap_ = {};
     
     ShapeKey::ShapeKey(const std::string& key)
         : std::string(key)
@@ -80,14 +80,14 @@ namespace NSG
         }
     }
 
-    Shape::Shape(const ShapeKey& key)
-        : Object(key),
+	Shape::Shape(const std::string& name)
+        : Object(name),
           type_(SH_EMPTY),
           margin_(.06f),
           scale_(1)
     {
 		PMesh mesh;
-        ShapeKey(key).GetData(mesh, scale_, type_);
+        ShapeKey(name).GetData(mesh, scale_, type_);
 		mesh_ = mesh;
     }
 
@@ -261,15 +261,13 @@ namespace NSG
 
     void Shape::LoadFrom(PResource resource, const pugi::xml_node& node)
     {
-        name_ = node.attribute("name").as_string();
-        type_ = ToPhysicsShape(node.attribute("type").as_string());
-        margin_ = node.attribute("margin").as_float();
-        scale_ = ToVertex3(node.attribute("scale").as_string());
+        CHECK_ASSERT(name_ == node.attribute("name").as_string(), __FILE__, __LINE__);
+		CHECK_ASSERT(type_ == ToPhysicsShape(node.attribute("type").as_string()), __FILE__, __LINE__);
+		CHECK_ASSERT(scale_ == ToVertex3(node.attribute("scale").as_string()), __FILE__, __LINE__);
+		margin_ = node.attribute("margin").as_float();
         bb_ = ToBoundigBox(node.attribute("bb").as_string());
         CHECK_ASSERT(bb_.IsDefined(), __FILE__, __LINE__);
-        auto meshNameAtt = node.attribute("meshName");
-        if (meshNameAtt)
-            mesh_ = Mesh::Get(meshNameAtt.as_string());
+		CHECK_ASSERT(!node.attribute("meshName") || mesh_.lock()->GetName() == node.attribute("meshName").as_string(), __FILE__, __LINE__);
         //CHECK_ASSERT((meshNameAtt ? name_ == ShapeKey(mesh_.lock(), scale_) : name_ == ShapeKey(type_, scale_)) && "shape key has changed!!!", __FILE__, __LINE__);
         Invalidate();
     }

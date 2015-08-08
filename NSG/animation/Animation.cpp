@@ -57,17 +57,29 @@ namespace NSG
         pugi::xml_node child = node.append_child("KeyFrame");
 
         child.append_attribute("time").set_value(time_);
-        child.append_attribute("position").set_value(ToString(position_).c_str());
-        child.append_attribute("rotation").set_value(ToString(rotation_).c_str());
-        child.append_attribute("scale").set_value(ToString(scale_).c_str());
+        if(position_ != VECTOR3_ZERO)
+            child.append_attribute("position").set_value(ToString(position_).c_str());
+        if(rotation_ != QUATERNION_IDENTITY)
+            child.append_attribute("rotation").set_value(ToString(rotation_).c_str());
+        if(scale_ != VECTOR3_ONE)
+            child.append_attribute("scale").set_value(ToString(scale_).c_str());
     }
 
     void AnimationKeyFrame::Load(const pugi::xml_node& node)
     {
         time_ = node.attribute("time").as_float();
-        position_ = ToVertex3(node.attribute("position").as_string());
-        rotation_ = ToQuaternion(node.attribute("rotation").as_string());
-        scale_ = ToVertex3(node.attribute("scale").as_string());
+        position_ = VECTOR3_ZERO;
+        auto posAtt = node.attribute("position");
+        if(posAtt)
+            position_ = ToVertex3(posAtt.as_string());
+        rotation_ = QUATERNION_IDENTITY;
+        auto rotAtt = node.attribute("rotation");
+        if(rotAtt)
+            rotation_ = ToQuaternion(rotAtt.as_string());
+        scale_ = VECTOR3_ONE;
+        auto scaAtt = node.attribute("scale");
+        if(scaAtt)
+            scale_ = ToVertex3(scaAtt.as_string());
     }
 
     void AnimationKeyFrame::SetPose(PBone bone)

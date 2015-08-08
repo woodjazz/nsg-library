@@ -32,52 +32,68 @@ misrepresented as being the original software.
 #include <algorithm>
 #include <sstream>
 
-namespace NSG 
+namespace NSG
 {
-	IndexBuffer::IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage)
-	: Buffer(bufferSize, bytesNeeded, GL_ELEMENT_ARRAY_BUFFER, usage)
-	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+    IndexBuffer::IndexBuffer(GLenum usage)
+        : Buffer(GL_ELEMENT_ARRAY_BUFFER, usage)
+    {
+
+    }
+
+    IndexBuffer::IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage)
+        : Buffer(bufferSize, bytesNeeded, GL_ELEMENT_ARRAY_BUFFER, usage)
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
         CHECK_CONDITION(Graphics::this_->SetIndexBuffer(this), __FILE__, __LINE__);
 
-		glBufferData(type_, bufferSize, nullptr, usage_);
+        glBufferData(type_, bufferSize, nullptr, usage_);
 
-		std::vector<GLubyte> emptyData(bufferSize, 0);
-		SetBufferSubData(0, bufferSize, &emptyData[0]); //created with initialized data to avoid warnings when profiling
+        std::vector<GLubyte> emptyData(bufferSize, 0);
+        SetBufferSubData(0, bufferSize, &emptyData[0]); //created with initialized data to avoid warnings when profiling
 
-		GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
-		CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
+        GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
+        CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
 
-		SetBufferSubData(0, bytes2Set, &indexes[0]);
-		
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
+        SetBufferSubData(0, bytes2Set, &indexes[0]);
 
-	IndexBuffer::~IndexBuffer()
-	{
-		if (Graphics::this_ && Graphics::this_->GetIndexBuffer() == this)
-			Graphics::this_->SetIndexBuffer(nullptr);
-	}
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
 
-	void IndexBuffer::Unbind()
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
+    IndexBuffer::~IndexBuffer()
+    {
+        if (Graphics::this_ && Graphics::this_->GetIndexBuffer() == this)
+            Graphics::this_->SetIndexBuffer(nullptr);
+    }
 
-	void IndexBuffer::UpdateData(const Indexes& indexes)
-	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+    void IndexBuffer::Unbind()
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    void IndexBuffer::UpdateData(const Indexes& indexes)
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
         Graphics::this_->SetIndexBuffer(this, true);
-		GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
-		if (bytes2Set > bufferSize_)
-		{
-			//rebuild buffer
-			glBufferData(type_, bytes2Set, &indexes[0], usage_); 
-			bufferSize_ = bytes2Set;
-		}
-		else
-			SetBufferSubData(0, bytes2Set, &indexes[0]);
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
+        GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
+        if (bytes2Set > bufferSize_)
+        {
+            //rebuild buffer
+            glBufferData(type_, bytes2Set, &indexes[0], usage_);
+            bufferSize_ = bytes2Set;
+        }
+        else
+            SetBufferSubData(0, bytes2Set, &indexes[0]);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
+
+    void IndexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        Graphics::this_->SetIndexBuffer(this, true);
+        glBufferData(type_, size, data, usage_);
+        bufferSize_ = size;
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
+
 }

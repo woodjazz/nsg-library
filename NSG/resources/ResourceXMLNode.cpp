@@ -45,19 +45,6 @@ namespace NSG
     {
         if (resource != resource_ || type_ != type || nameAttValue != nameAttValue_ || obj_.lock() != obj)
         {
-            if (resource_ != resource)
-            {
-                if (resource)
-                {
-                    slotReleased_ = resource->SigReleased()->Connect([this]()
-                    {
-                        Invalidate();
-                    });
-                }
-                else
-                    slotReleased_ = nullptr;
-            }
-
             resource_ = resource;
             type_ = type;
             nameAttValue_ = nameAttValue;

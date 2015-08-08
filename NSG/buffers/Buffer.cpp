@@ -30,6 +30,15 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    Buffer::Buffer(GLenum type, GLenum usage)
+        : type_(type),
+          usage_(usage),
+          bufferSize_(0),
+          dynamic_(usage != GL_STATIC_DRAW)
+    {
+		glGenBuffers(1, &id_);
+    }
+
     Buffer::Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage)
         : type_(type),
           usage_(usage),

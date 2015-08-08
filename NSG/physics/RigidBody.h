@@ -89,6 +89,7 @@ namespace NSG
 			PShape shape;
 			Vector3 position;
 			Quaternion rotation;
+            SignalEmpty::PSlot slotShapeReleased;
 		};
 		typedef std::map<std::string, ShapeData> Shapes;
 		Shapes shapes_;
@@ -107,8 +108,6 @@ namespace NSG
 		bool kinematic_;
 		Vector3 linearFactor_;
 		Vector3 angularFactor_;
-		SignalEmpty::PSlot slotReleased_;
-        SignalEmpty::PSlot slotMeshSet_;
         SignalEmpty::PSlot slotMaterialSet_;
         SignalEmpty::PSlot slotMaterialPhysicsSet_;
         SignalEngine::PSlot slotEngineCreated_;

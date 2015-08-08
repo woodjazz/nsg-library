@@ -135,6 +135,8 @@ namespace NSG
 		Matrix4 GetTransform() const;
 		PSceneNode GetArmature() const;
 		void SetArmature(PNode armature);
+        virtual void Load(const pugi::xml_node& node);
+        virtual void Save(pugi::xml_node& node) const;
     protected:
         std::string name_;
         std::vector<PNode> children_;

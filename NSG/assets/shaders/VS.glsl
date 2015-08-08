@@ -7,6 +7,7 @@
 	//		gl_Position = GetClipPos(); for AMBIENT pass
 	//		gl_Position = GetClipPos(worldPos); for PER_PIXEL_LIGHTING pass
 	// since it can produce different results and cause z-fighting between passes
+
 	void main()
 	{
 		#if defined(VERTEXCOLOR)
@@ -73,6 +74,12 @@
 			v_texcoord0 = GetTexCoord(a_texcoord0);
 			v_texcoord1 = GetTexCoord(a_texcoord1);
 			gl_Position = GetClipPos();
+
+		#elif defined(IMGUI)
+
+			v_color = a_color;
+			v_texcoord0 = a_texcoord0;
+			gl_Position = u_viewProjection * vec4(a_position.xy, 0.0, 1.0);
 
 		#endif
 	}

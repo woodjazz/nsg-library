@@ -29,11 +29,16 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
-        : Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage),
-          vao_(0)
+    VertexBuffer::VertexBuffer(GLenum usage)
+        : Buffer(GL_ARRAY_BUFFER, usage)
     {
-		CHECK_ASSERT(bufferSize >= bytesNeeded, __FILE__, __LINE__);
+
+    }
+
+    VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
+        : Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage)
+    {
+        CHECK_ASSERT(bufferSize >= bytesNeeded, __FILE__, __LINE__);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -55,7 +60,7 @@ namespace NSG
 
     VertexBuffer::~VertexBuffer()
     {
-		if (Graphics::this_ && Graphics::this_->GetVertexBuffer() == this)
+        if (Graphics::this_ && Graphics::this_->GetVertexBuffer() == this)
             Graphics::this_->SetVertexBuffer(nullptr);
     }
 
@@ -69,14 +74,23 @@ namespace NSG
         CHECK_GL_STATUS(__FILE__, __LINE__);
         Graphics::this_->SetVertexBuffer(this, true);
         GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
-		if (bytes2Set > bufferSize_)
-		{
+        if (bytes2Set > bufferSize_)
+        {
             //rebuild buffer
-			glBufferData(type_, bytes2Set, &vertexes[0], usage_); 
-			bufferSize_ = bytes2Set;
-		}
+            glBufferData(type_, bytes2Set, &vertexes[0], usage_);
+            bufferSize_ = bytes2Set;
+        }
         else
             SetBufferSubData(0, bytes2Set, &vertexes[0]);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+    }
+
+    void VertexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+        Graphics::this_->SetVertexBuffer(this, true);
+        glBufferData(type_, size, data, usage_);
+        bufferSize_ = size;
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 }

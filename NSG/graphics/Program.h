@@ -38,7 +38,7 @@ namespace NSG
     class Program : public Object
     {
     public:
-        Program(const std::string& defines);
+		Program(const std::string& defines);
         virtual ~Program();
         bool Initialize();
         GLuint GetAttributeLocation(const std::string& name);
@@ -53,7 +53,7 @@ namespace NSG
         GLuint GetAttBonesWeightLoc() const { return att_bonesWeightLoc_; }
         GLuint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
         GLuint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
-        void SetSkeleton(const Skeleton* mesh);
+		void SetSkeleton(const Skeleton* skeleton);
         void Set(SceneNode* node);
         void Set(Material* material);
         void Set(const Light* light);

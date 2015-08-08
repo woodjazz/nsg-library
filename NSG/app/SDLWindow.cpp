@@ -26,6 +26,9 @@ misrepresented as being the original software.
 #if SDL
 #include "SDLWindow.h"
 #include "SDL.h"
+#ifdef _MSC_VER
+#include "SDL_syswm.h"
+#endif
 #undef main
 #include "Engine.h"
 #include "Graphics.h"
@@ -37,6 +40,7 @@ misrepresented as being the original software.
 #include "Object.h"
 #include "Graphics.h"
 #include "Scene.h"
+#include "imgui.h"
 #include <memory>
 #include <string>
 #include <locale>
@@ -294,7 +298,7 @@ namespace NSG
             SDL_DisplayMode mode;
             SDL_GetCurrentDisplayMode(0, &mode);
             LOGI("Display format = %s", SDL_GetPixelFormatName(mode.format));
-            switch(mode.format)
+            switch (mode.format)
             {
                 case SDL_PIXELFORMAT_RGB888:
                     SetPixelFormat(PixelFormat::RGB888);
@@ -354,7 +358,7 @@ namespace NSG
         }
         #endif
 
-		OnReady();
+        OnReady();
 
         #if !defined(EMSCRIPTEN)
         SDL_SetWindowData(SDL_GetWindowFromID(windowID_), InternalPointer, this);
@@ -536,7 +540,7 @@ namespace NSG
             {
                 SDLWindow* window = GetWindowFromID(event.key.windowID);
                 if (!window) continue;
-                int key = event.key.keysym.sym;
+                int key = event.key.keysym.sym & ~SDLK_SCANCODE_MASK;
                 #if ANDROID
                 {
                     if (key == SDLK_AC_BACK)
@@ -557,7 +561,7 @@ namespace NSG
             {
                 SDLWindow* window = GetWindowFromID(event.key.windowID);
                 if (!window) continue;
-                int key = event.key.keysym.sym;
+                int key = event.key.keysym.sym & ~SDLK_SCANCODE_MASK;
                 //int scancode = event.key.keysym.scancode;
                 int action = NSG_KEY_RELEASE;
                 int modifier = event.key.keysym.mod;
@@ -567,6 +571,7 @@ namespace NSG
             {
                 SDLWindow* window = GetWindowFromID(event.text.windowID);
                 if (!window) continue;
+				window->OnText(event.text.text);
                 UTF8String utf8(event.text.text);
                 unsigned unicode = utf8.AtUTF8(0);
                 if (unicode)
@@ -591,11 +596,13 @@ namespace NSG
                 auto width = window->GetWidth();
                 auto height = window->GetHeight();
                 window->OnMouseUp(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
+
             }
             else if (event.type == SDL_MOUSEMOTION)
             {
                 SDLWindow* window = GetWindowFromID(event.button.windowID);
                 if (!window) continue;
+                window->OnMouseMove(event.motion.x, event.motion.y);
                 float x = (float)event.motion.x;
                 float y = (float)event.motion.y;
                 auto width = window->GetWidth();
@@ -750,5 +757,54 @@ namespace NSG
         #endif
     }
 
+    static const char* ImGuiGetClipboardText()
+    {
+        return SDL_GetClipboardText();
+    }
+
+    static void ImGuiSetClipboardText(const char* text)
+    {
+        SDL_SetClipboardText(text);
+    }
+
+    void SDLWindow::SetupImgui()
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;                 // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
+        io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
+        io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
+        io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
+        io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
+        io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
+        io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
+        io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
+        io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
+        io.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
+        io.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
+        io.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
+        io.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
+        io.KeyMap[ImGuiKey_A] = SDLK_a;
+        io.KeyMap[ImGuiKey_C] = SDLK_c;
+        io.KeyMap[ImGuiKey_V] = SDLK_v;
+        io.KeyMap[ImGuiKey_X] = SDLK_x;
+        io.KeyMap[ImGuiKey_Y] = SDLK_y;
+        io.KeyMap[ImGuiKey_Z] = SDLK_z;
+
+        io.SetClipboardTextFn = ImGuiSetClipboardText;
+        io.GetClipboardTextFn = ImGuiGetClipboardText;
+    }
+
+    void SDLWindow::BeginImguiRender()
+    {
+		ImGuiIO& io = ImGui::GetIO();
+        #ifdef _MSC_VER
+        SDL_SysWMinfo wmInfo;
+        SDL_VERSION(&wmInfo.version);
+        SDL_GetWindowWMInfo(SDL_GetWindowFromID(windowID_), &wmInfo);
+        io.ImeWindowHandle = wmInfo.info.win.window;
+        #endif
+        // Hide OS mouse cursor if ImGui is drawing it
+        SDL_ShowCursor(io.MouseDrawCursor ? 0 : 1);
+    }
 }
 #endif

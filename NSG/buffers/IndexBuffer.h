@@ -33,9 +33,11 @@ namespace NSG
 	class IndexBuffer : public Buffer
 	{
 	public:
+		IndexBuffer(GLenum usage);
 		IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage);
 		~IndexBuffer();
 		void UpdateData(const Indexes& indexes);
+		void SetData(GLsizeiptr size, const GLvoid* data);
 		static void Unbind();
 	};
 }

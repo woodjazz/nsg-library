@@ -480,22 +480,13 @@ namespace NSG
         return nullptr != GetTexture(MaterialTexture::LIGHT_MAP);
     }
 
-	void Material::FillShaderDefines(std::string& defines, PassType passType, const Light* light, const Mesh* mesh, bool allowInstancing) const
+	void Material::FillShaderDefines(std::string& defines, PassType passType, const Mesh* mesh, bool allowInstancing) const
     {
         defines += "MATERIAL_" + GetName() + "\n"; // just to have a shader variance per material
-        bool shadowPass = PassType::SHADOW == passType;
         bool defaultPass = PassType::DEFAULT == passType;
+		bool litPass = PassType::LIT == passType;
 
-        if (shadowPass)
-        {
-            if (light->GetType() == LightType::POINT)
-                defines += "SHADOWCUBE_PASS\n";
-            else if (light->GetType() == LightType::DIRECTIONAL)
-                defines += "SHADOW_PASS\n";
-            else
-                defines += "SHADOW_PASS\n";
-        }
-        else
+		if (defaultPass || litPass)
         {
             switch (renderPass_)
             {
@@ -527,17 +518,11 @@ namespace NSG
                         defines += "PER_VERTEX_LIGHTING\n";
                     break;
                 case RenderPass::PERPIXEL:
-                    {
-                        if (defaultPass)
-                            defines += "AMBIENT\n";
-                        else
-                        {
-                            defines += "PER_PIXEL_LIGHTING\n";
-                            if (light && light->HasSpecularColor() && HasSpecularColor())
-                                defines += "SPECULAR\n";
-                        }
-                        break;
-                    }
+                    if (defaultPass)
+                        defines += "AMBIENT\n";
+                    else
+                        defines += "PER_PIXEL_LIGHTING\n";
+                    break;
                 default:
                     CHECK_ASSERT(!"INCORRECT LIT PASS!!!", __FILE__, __LINE__);
                     break;

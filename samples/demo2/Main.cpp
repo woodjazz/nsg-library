@@ -29,10 +29,24 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
-	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/bscene.xml");
+
+	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/scene.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);
+
+	auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]()
+	{
+		using namespace ImGui;
+		ShowTestWindow();
+		//ShowStyleEditor();
+		//PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 0.3f, 0.3f, 0.5f));
+		static float f = 0.0f;
+		Text("Hello, world!");
+		SliderFloat("float", &f, 0.0f, 1.0f);
+		//PopStyleColor();
+	});
+    
 	return Engine().Run();
 }

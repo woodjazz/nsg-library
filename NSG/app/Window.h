@@ -27,7 +27,6 @@ misrepresented as being the original software.
 #include "Util.h"
 #include <string>
 #include <mutex>
-struct SDL_Window;
 namespace NSG
 {
     class Window : public std::enable_shared_from_this<Window>
@@ -42,12 +41,14 @@ namespace NSG
         virtual void Hide() = 0;
         virtual void Raise() = 0;
         void OnMouseMove(float x, float y);
+		void OnMouseMove(int x, int y);
         void OnMouseWheel(float x, float y);
         void OnMouseDown(int button, float x, float y);
         void OnMouseUp(int button, float x, float y);
         void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
+		void OnText(const std::string& text);
         void OnJoystickDown(int joystickID, unsigned button);
         void OnJoystickUp(int joystickID, unsigned button);
         void OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position);
@@ -62,6 +63,7 @@ namespace NSG
         virtual void Close();
 		bool IsClosed() const { return isClosed_; }
 		bool IsMinimized() const { return minimized_; }
+		static bool AreAllWindowsMinimized();
         virtual void Destroy() {}
         Recti GetViewport() const;
         const std::string& GetName() const { return name_; }
@@ -71,8 +73,6 @@ namespace NSG
         const std::vector<PFilter>& GetFilters() const { return filters_; }
         bool HasFilters() const { return !filters_.empty() && filtersEnabled_; }
         void EnableFilters(bool enable);
-        bool BeginFrameRender();
-        void EndFrameRender();
         PFrameBuffer GetFrameBuffer() const { return frameBuffer_; }
         void SetScene(Scene* scene);
         Scene* GetScene() const { return scene_; }
@@ -89,18 +89,24 @@ namespace NSG
         static SignalWindow::PSignal SigReady();
 		SignalSizeChanged::PSignal SigSizeChanged() { return signalViewChanged_; }
         SignalFloatFloat::PSignal SigFloatFloat() { return signalFloatFloat_; }
+        SignalMouseMoved::PSignal SigMouseMoved() { return signalMouseMoved_; }
         SignalMouseButton::PSignal SigMouseDown() { return signalMouseDown_; }
         SignalMouseButton::PSignal SigMouseUp() { return signalMouseUp_; }
         SignalFloatFloat::PSignal SigMouseWheel() { return signalMouseWheel_; }
 		SignalKey::PSignal SigKey() { return signalKey_; }
 		SignalUnsigned::PSignal SigUnsigned() { return signalUnsigned_; }
+		SignalText::PSignal SigText() { return signalText_; }
         SignalMultiGesture::PSignal SigMultiGesture() { return signalMultiGesture_; }
         SignalDropFile::PSignal SigDropFile() { return signalDropFile_; }
         SignalJoystickButton::PSignal SigJoystickDown() { return signalJoystickDown_; }
 		SignalJoystickButton::PSignal SigJoystickUp() { return signalJoystickUp_; }
         SignalJoystickAxisMotion::PSignal SigJoystickAxisMotion() { return signalJoystickAxisMotion_; }
+        SignalEmpty::PSignal SigDrawIMGUI() { return signalDrawIMGUI_; }
         PixelFormat GetPixelFormat() const { return pixelFormat_; }
         void SetPixelFormat(PixelFormat value) { pixelFormat_ = value; }
+        void RenderFilters();
+        virtual void SetupImgui() = 0;
+        virtual void BeginImguiRender() = 0;
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
@@ -118,21 +124,25 @@ namespace NSG
     private:
         void AddFilter(PFilter filter);
         void CreateFrameBuffer();
+        bool BeginFrameRender();
         std::vector<PFilter> filters_;
         PFrameBuffer frameBuffer_;
         PShowTexture showMap_;
 		SignalSizeChanged::PSignal signalViewChanged_;
         SignalFloatFloat::PSignal signalFloatFloat_;
+        SignalMouseMoved::PSignal signalMouseMoved_;
         SignalMouseButton::PSignal signalMouseDown_;
         SignalMouseButton::PSignal signalMouseUp_;
         SignalFloatFloat::PSignal signalMouseWheel_;
         SignalKey::PSignal signalKey_;
         SignalUnsigned::PSignal signalUnsigned_;
+		SignalText::PSignal signalText_;
         SignalMultiGesture::PSignal signalMultiGesture_;
         SignalDropFile::PSignal signalDropFile_;
         SignalJoystickButton::PSignal signalJoystickDown_;
 		SignalJoystickButton::PSignal signalJoystickUp_;
         SignalJoystickAxisMotion::PSignal signalJoystickAxisMotion_;
+        SignalEmpty::PSignal signalDrawIMGUI_;
         PTexture showTexture_;
         static int nWindows2Remove_;
         static PGraphics graphics_;

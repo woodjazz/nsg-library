@@ -43,10 +43,10 @@ namespace NSG
 		void GetData(PMesh& mesh, Vector3& scale, PhysicsShape& type) const;
     };
 
-    class Shape : public Object, public WeakFactory<ShapeKey, Shape>
+    class Shape : public Object, public WeakFactory<std::string, Shape>
     {
     public:
-        Shape(const ShapeKey& key);
+        Shape(const std::string& name);
         ~Shape();
         void SetMargin(float margin);
 		void SetBB(const BoundingBox& bb);

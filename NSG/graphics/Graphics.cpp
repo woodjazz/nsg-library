@@ -47,6 +47,8 @@ misrepresented as being the original software.
 #include "ShowTexture.h"
 #include "Filter.h"
 #include "Renderer.h"
+#include "GUI.h"
+#include <functional>
 
 
 #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -368,6 +370,16 @@ namespace NSG
         Graphics::this_ = nullptr;
     }
 
+	void Graphics::CreateGUI(Window* mainWindow)
+	{
+		imgui_ = std::make_shared<GUI>(mainWindow);
+	}
+
+	void Graphics::DestroyGUI()
+	{
+		imgui_ = nullptr;
+	}
+
     bool Graphics::CheckExtension(const std::string& name)
     {
         std::string extensions = (const char*)glGetString(GL_EXTENSIONS);
@@ -386,7 +398,7 @@ namespace NSG
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-        vaoMap_.clear();
+        VertexArrayObj::Clear();
         lastMesh_ = nullptr;
         lastProgram_ = nullptr;
         activeMesh_ = nullptr;
@@ -401,6 +413,7 @@ namespace NSG
         SetFrameBuffer(nullptr);
         SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL,
                        DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
+		SetScissorTest();
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -500,6 +513,7 @@ namespace NSG
 
     void Graphics::ClearAllBuffers()
     {
+		SetScissorTest();
         SetColorMask(true);
         SetDepthMask(true);
         SetStencilMask(~GLuint(0));
@@ -508,6 +522,7 @@ namespace NSG
 
     void Graphics::ClearBuffers(bool color, bool depth, bool stencil)
     {
+		SetScissorTest();
         GLbitfield mask(0);
         if (color)
         {
@@ -532,6 +547,7 @@ namespace NSG
 
     void Graphics::ClearStencilBuffer(GLint value)
     {
+		SetScissorTest();
         SetClearStencil(value);
         glClear(GL_STENCIL_BUFFER_BIT);
     }
@@ -580,6 +596,38 @@ namespace NSG
             }
         }
     }
+
+	void Graphics::SetScissorTest(bool enable, GLint x, GLint y, GLsizei width, GLsizei height)
+	{
+		static bool enable_ = false;
+
+		if (enable != enable_)
+		{
+			if (enable)
+				glEnable(GL_SCISSOR_TEST);
+			else
+				glDisable(GL_SCISSOR_TEST);
+
+			enable_ = enable;
+		}
+
+		if (enable)
+		{
+			static GLint x_ = 0;
+			static GLint y_ = 0;
+			static GLsizei width_ = 0;
+			static GLsizei height_ = 0;
+
+			if (x != x_ || y != y_ || width != width_ || height != height_)
+			{
+				glScissor(x, y, width, height);
+				x_ = x;
+				y_ = y;
+				width_ = width;
+				height_ = height;
+			}
+		}
+	}
 
     void Graphics::SetColorMask(bool enable)
     {
@@ -785,6 +833,25 @@ namespace NSG
         }
     }
 
+	void Graphics::SetTexture(int index, GLuint id, GLenum target)
+	{
+		CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
+
+		auto currentTexture = textures_[index];
+		if (activeTexture_ != index)
+		{
+			glActiveTexture(GL_TEXTURE0 + index);
+			textures_[index] = nullptr;
+			glBindTexture(target, id);
+			activeTexture_ = index;
+		}
+		else if (!currentTexture || currentTexture->GetID() != id)
+		{
+			textures_[index] = nullptr;
+			glBindTexture(target, id);
+		}
+	}
+
     void Graphics::SetTexture(int index, Texture* texture)
     {
         CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
@@ -964,42 +1031,18 @@ namespace NSG
         #endif
     }
 
-    void Graphics::InvalidateVAOFor(const Program* program)
-    {
-        auto it = vaoMap_.begin();
-        while (it != vaoMap_.end())
-        {
-            if (it->first.program_ == program)
-                it->second->Invalidate();
-            ++it;
-        }
-    }
-
 	void Graphics::SetBuffers(bool solid, bool allowInstancing)
 	{
 		VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
 		if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
 		{
-			IndexBuffer* iBuffer = activeMesh_->GetIndexBuffer(solid);
-			CHECK_ASSERT(!iBuffer || !iBuffer->IsDynamic(), __FILE__, __LINE__);
-			VAOKey key{ allowInstancing, activeProgram_, vBuffer, iBuffer };
-			VertexArrayObj* vao(nullptr);
-			auto it = vaoMap_.find(key);
-			if (it != vaoMap_.end())
-			{
-				vao = it->second.get();
-			}
-			else
-			{
-				vao = new VertexArrayObj(allowInstancing, activeProgram_, vBuffer, iBuffer);
-				CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, PVertexArrayObj(vao))).second, __FILE__, __LINE__);
-			}
+            auto vao = VertexArrayObj::GetOrCreate(VAOKey{allowInstancing, activeProgram_, activeMesh_, solid});
 			vao->Use();
 		}
 		else
 		{
 			SetVertexBuffer(vBuffer);
-			SetAttributes();
+			SetAttributes(nullptr);
 			if (allowInstancing && activeProgram_->GetMaterial()->IsBatched() && !vBuffer->IsDynamic())
 				SetInstanceAttrPointers(activeProgram_);
 			SetIndexBuffer(activeMesh_->GetIndexBuffer(solid));
@@ -1127,9 +1170,9 @@ namespace NSG
                               reinterpret_cast<void*>(offsetof(VertexData, bonesWeight_)));
     }
 
-    void Graphics::SetAttributes()
+	void Graphics::SetAttributes(SetAttPointersFunction setAttPointersCallBack)
     {
-        if (lastMesh_ != activeMesh_ || lastProgram_ != activeProgram_)
+		if (lastMesh_ != activeMesh_ || lastProgram_ != activeProgram_)
         {
             GLuint position_loc = activeProgram_->GetAttPositionLoc();
             GLuint texcoord_loc0 = activeProgram_->GetAttTextCoordLoc0();
@@ -1139,7 +1182,6 @@ namespace NSG
             GLuint tangent_loc = activeProgram_->GetAttTangentLoc();
             GLuint bones_id_loc = activeProgram_->GetAttBonesIDLoc();
             GLuint bones_weight = activeProgram_->GetAttBonesWeightLoc();
-
 
             unsigned newAttributes = 0;
 
@@ -1240,9 +1282,12 @@ namespace NSG
                 }
             }
 
-            SetVertexAttrPointers();
+			if (setAttPointersCallBack)
+				setAttPointersCallBack();
+			else
+				SetVertexAttrPointers();
 
-            {
+			{
                 /////////////////////////////
                 // Disable unused attributes
                 /////////////////////////////
@@ -1262,49 +1307,80 @@ namespace NSG
         }
     }
 
-    bool Graphics::SetupPass(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light)
+	void Graphics::SetupPass(const Pass* pass)
+	{
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+		auto& data = pass->GetData();
+
+		SetColorMask(data.enableColorBuffer_);
+
+		SetStencilTest(data.enableStencilTest_, data.stencilMask_, data.sfailStencilOp_,
+			data.dpfailStencilOp_, data.dppassStencilOp_, data.stencilFunc_,
+			data.stencilRefValue_, data.stencilMaskValue_);
+
+		SetScissorTest(data.enableScissorTest_,
+			data.scissorX_, data.scissorY_,
+			data.scissorWidth_, data.scissorHeight_);
+
+		SetBlendModeTest(pass->GetBlendMode());
+		EnableDepthTest(data.enableDepthTest_);
+		if (data.enableDepthTest_)
+		{
+			SetDepthMask(data.enableDepthBuffer_);
+			SetDepthFunc(data.depthFunc_);
+		}
+
+		SetFrontFace(data.frontFaceMode_);
+
+		if (data.cullFaceMode_ != CullFaceMode::DISABLED)
+		{
+			EnableCullFace(true);
+			SetCullFace(data.cullFaceMode_);
+		}
+		else
+			EnableCullFace(false);
+
+		CHECK_GL_STATUS(__FILE__, __LINE__);
+
+	}
+
+	bool Graphics::SetupProgram(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light)
     {
-        CHECK_ASSERT(pass, __FILE__, __LINE__);
+		SetupPass(pass);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
-        auto& data = pass->GetData();
-
-        SetColorMask(data.enableColorBuffer_);
-        SetStencilTest(data.enableStencilTest_, data.stencilMask_, data.sfailStencilOp_,
-                       data.dpfailStencilOp_, data.dppassStencilOp_, data.stencilFunc_,
-                       data.stencilRefValue_, data.stencilMaskValue_);
-
-        SetBlendModeTest(pass->GetBlendMode());
-        EnableDepthTest(data.enableDepthTest_);
-        if (data.enableDepthTest_)
-        {
-            SetDepthMask(data.enableDepthBuffer_);
-            SetDepthFunc(data.depthFunc_);
-        }
-
-        auto shadowPass = PassType::SHADOW == pass->GetType();
-        //auto cullFaceMode = shadowPass ? CullFaceMode::FRONT : material->GetCullFaceMode();
-        auto cullFaceMode = material->GetCullFaceMode();
-        if (cullFaceMode != CullFaceMode::DISABLED)
-        {
-            EnableCullFace(true);
-            SetCullFace(cullFaceMode);
-            SetFrontFace(data.frontFaceMode_);
-        }
-        else
-            EnableCullFace(false);
+		if (material)
+		{
+			auto cullFaceMode = material->GetCullFaceMode();
+			if (cullFaceMode != CullFaceMode::DISABLED)
+			{
+				EnableCullFace(true);
+				SetCullFace(cullFaceMode);
+			}
+			else
+				EnableCullFace(false);
+		}
 
 		auto program = Program::GetOrCreate(pass, activeCamera_, activeMesh_, material, light, sceneNode);
         program->Set(sceneNode);
         program->Set(material);
         program->Set(light);
         bool ready = SetProgram(program.get());
-        if (ready)
-            program->SetVariables(shadowPass);
+		if (ready)
+		{
+			auto shadowPass = PassType::SHADOW == pass->GetType();
+			program->SetVariables(shadowPass);
+		}
         CHECK_GL_STATUS(__FILE__, __LINE__);
         return ready;
     }
+
+	void Graphics::DrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices)
+	{
+		glDrawElements(mode, count, type, indices);
+		lastMesh_ = activeMesh_;
+		lastProgram_ = activeProgram_;
+	}
 
     void Graphics::DrawActiveMesh()
     {

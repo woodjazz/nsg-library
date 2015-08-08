@@ -46,8 +46,11 @@ namespace NSG
         CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer((void*)resource->GetData(), resource->GetBytes());
-        if (result)
+		if (result)
+		{
 			Load(doc, resource);
+			resource->Invalidate(); // free mem
+		}
         else
         {
             LOGE("XML parsed with errors, attr value: [%s].", doc.child("node").attribute("attr").value());
@@ -92,7 +95,8 @@ namespace NSG
         pugi::xml_node child = appNode.child("Scene");
         while (child)
         {
-            auto scene = std::make_shared<Scene>("scene");
+			std::string sceneName = child.attribute("name").as_string();
+			auto scene = std::make_shared<Scene>(sceneName);
             scene->Load(child);
             scenes_.push_back(scene);
             child = child.next_sibling("Scene");

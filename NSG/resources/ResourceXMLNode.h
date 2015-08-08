@@ -43,6 +43,5 @@ namespace NSG
 		std::string type_;
 		std::string nameAttValue_;
 		PWeakObject obj_;
-		SignalEmpty::PSlot slotReleased_;
 	};
 }

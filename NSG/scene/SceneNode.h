@@ -56,8 +56,8 @@ namespace NSG
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_;  }
 		void GetMaterials(std::vector<PMaterial>& materials) const;
-		virtual void Load(const pugi::xml_node& node);
-		virtual void Save(pugi::xml_node& node) const;
+		void Load(const pugi::xml_node& node) override;
+		void Save(pugi::xml_node& node) const override;
 		void SaveChildren(pugi::xml_node& node) const;
 		void LoadChildren(const pugi::xml_node& node);
 		PRigidBody GetRigidBody() const { return rigidBody_; }

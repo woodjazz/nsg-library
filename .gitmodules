@@ -37,3 +37,6 @@
 [submodule "externals/pugixml"]
 	path = externals/pugixml
 	url = https://github.com/zeux/pugixml/
+[submodule "externals/imgui"]
+	path = externals/imgui
+	url = https://github.com/ocornut/imgui

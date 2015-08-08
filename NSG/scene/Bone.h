@@ -36,8 +36,8 @@ namespace NSG
 		~Bone();
         void SetPose(const Matrix4& pose) { pose_ = pose; }
         const Matrix4& GetPose() const { return pose_; }
-		void Load(const pugi::xml_node& node);
-		void Save(pugi::xml_node& node) const;
+		void Load(const pugi::xml_node& node) override;
+		void Save(pugi::xml_node& node) const override;
 		PBone Clone() const;
 	private:
 		Matrix4 pose_;

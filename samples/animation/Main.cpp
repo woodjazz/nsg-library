@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 
 	auto window = Window::Create();
-	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/bduck.xml");
+	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/duck.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
     auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");

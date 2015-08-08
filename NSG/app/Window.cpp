@@ -41,6 +41,7 @@ misrepresented as being the original software.
 #include "Texture.h"
 #include "UTF8String.h"
 #include "Renderer.h"
+#include "GUI.h"
 #include <algorithm>
 #include <thread>
 
@@ -67,16 +68,19 @@ namespace NSG
           scene_(nullptr),
           signalViewChanged_(new Signal<int, int>()),
           signalFloatFloat_(new Signal<float, float>()),
+          signalMouseMoved_(new Signal<int, int>()),
           signalMouseDown_(new Signal<int, float, float>()),
           signalMouseUp_(new Signal<int, float, float>()),
           signalMouseWheel_(new Signal<float, float>()),
           signalKey_(new Signal<int, int, int>()),
           signalUnsigned_(new Signal<unsigned int>()),
+		  signalText_(new Signal<std::string>()),
           signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
           signalDropFile_(new Signal<const std::string & >()),
           signalJoystickDown_(new SignalJoystickButton),
           signalJoystickUp_(new SignalJoystickButton),
           signalJoystickAxisMotion_(new Signal<int, JoystickAxis, float>),
+          signalDrawIMGUI_(new Signal<>),
           pixelFormat_(PixelFormat::UNKNOWN)
 
     {
@@ -144,7 +148,7 @@ namespace NSG
         return true;
     }
 
-    void Window::EndFrameRender()
+    void Window::RenderFilters()
     {
         auto hasFilters = HasFilters();
         if (hasFilters)
@@ -163,6 +167,7 @@ namespace NSG
 
         if (Window::mainWindow_ == this)
         {
+			Graphics::this_->DestroyGUI();
             Graphics::this_->ResetCachedState();
             // destroy other windows
             auto windows = Window::GetWindows();
@@ -185,6 +190,8 @@ namespace NSG
         });
 		graphics_->SetWindow(this);
         CreateFrameBuffer(); // used when filters are enabled
+		if (isMainWindow_)
+			graphics_->CreateGUI(this);
         Window::SigReady()->Run(this);
     }
 
@@ -212,6 +219,11 @@ namespace NSG
     void Window::OnMouseMove(float x, float y)
     {
         signalFloatFloat_->Run(x, y);
+    }
+
+    void Window::OnMouseMove(int x, int y)
+    {
+        signalMouseMoved_->Run(x, y);
     }
 
     void Window::OnMouseDown(int button, float x, float y)
@@ -243,6 +255,11 @@ namespace NSG
     {
         signalUnsigned_->Run(character);
     }
+
+	void Window::OnText(const std::string& text)
+	{
+		signalText_->Run(text);
+	}
 
     void Window::OnJoystickDown(int joystickID, unsigned button)
     {
@@ -381,7 +398,9 @@ namespace NSG
     void Window::SetMainWindow(Window* window)
     {
         if (mainWindow_ != window)
+        {
             mainWindow_ = window;
+        }
     }
 
     void Window::AddWindow(PWindow window)
@@ -395,8 +414,11 @@ namespace NSG
         for (auto& obj : windows_)
         {
             auto window(obj.lock());
-            if (window && window->scene_)
-                window->scene_->UpdateAll(delta);
+            if (window)
+            {
+                if(window->scene_)
+                   window->scene_->UpdateAll(delta);
+            }
         }
     }
 
@@ -405,10 +427,22 @@ namespace NSG
         if (BeginFrameRender())
         {
             Renderer::GetPtr()->Render(this, scene_);
-            EndFrameRender();
             SwapWindowBuffers();
         }
     }
+
+	bool Window::AreAllWindowsMinimized()
+	{
+		for (auto& obj : windows_)
+		{
+			auto window(obj.lock());
+			if (!window || window->IsClosed())
+				continue;
+			if (!window->IsMinimized())
+				return false;
+		}
+		return true;
+	}
 
     bool Window::RenderWindows()
     {
@@ -467,5 +501,4 @@ namespace NSG
         static SignalWindow::PSignal signalReady(new SignalWindow);
         return signalReady;
     }
-
 }

@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 
 	auto window = Window::Create();
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/blightmap.xml");
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/lightmap.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
 	auto material = Material::Get("Material");

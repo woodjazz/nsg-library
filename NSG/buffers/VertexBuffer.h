@@ -34,12 +34,11 @@ namespace NSG
 	class VertexBuffer : public Buffer
 	{
 	public:
+		VertexBuffer(GLenum usage);
 		VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage);
 		~VertexBuffer();
 		void UpdateData(const VertexsData& vertexes);
+		void SetData(GLsizeiptr size, const GLvoid* data);
 		static void Unbind();
-		bool HasVAO() const { return vao_ != 0;}
-	private:
-		GLuint vao_; // vertex array object (only used if hardware supports it)
 	};
 }

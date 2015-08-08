@@ -186,13 +186,10 @@ namespace NSG
     {
         if (!IsSerializable())
             return;
-        node.append_attribute("name").set_value(GetName().c_str());
+        Node::Save(node);
 		if (skeleton_)
 			node.append_attribute("skeleton").set_value(skeleton_->GetName().c_str());
         node.append_attribute("nodeType").set_value("SceneNode");
-        node.append_attribute("position").set_value(ToString(GetPosition()).c_str());
-        node.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
-        node.append_attribute("scale").set_value(ToString(GetScale()).c_str());
         if (material_)
             node.append_attribute("materialName").set_value(material_->GetName().c_str());
         if (mesh_)
@@ -217,17 +214,7 @@ namespace NSG
 
     void SceneNode::Load(const pugi::xml_node& node)
     {
-        name_ = node.attribute("name").as_string();
-
-        Vertex3 position = ToVertex3(node.attribute("position").as_string());
-        SetPosition(position);
-
-        Quaternion orientation = ToQuaternion(node.attribute("orientation").as_string());
-        SetOrientation(orientation);
-
-        Vertex3 scale = ToVertex3(node.attribute("scale").as_string());
-        SetScale(scale);
-
+        Node::Load(node);
         pugi::xml_attribute attribute = node.attribute("materialName");
         if (attribute)
         {

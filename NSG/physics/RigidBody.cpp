@@ -48,7 +48,7 @@ namespace NSG
           sceneNode_(sceneNode),
           owner_(sceneNode->GetScene()->GetPhysicsWorld()->GetWorld()),
           mass_(0), //static by default
-		  compoundShape_(new btCompoundShape),
+          compoundShape_(new btCompoundShape),
           handleCollision_(false),
           restitution_(0),
           friction_(DEFAULT_FRICTION),
@@ -60,12 +60,12 @@ namespace NSG
           trigger_(false),
           gravity_(sceneNode->GetScene()->GetPhysicsWorld()->GetGravity()),
           kinematic_(false),
-		  linearFactor_(1),
-		  angularFactor_(1)
+          linearFactor_(1),
+          angularFactor_(1)
     {
         CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
 
-		slotMaterialSet_ = sceneNode->SigMaterialSet()->Connect([this]()
+        slotMaterialSet_ = sceneNode->SigMaterialSet()->Connect([this]()
         {
             SetMaterialPhysics();
             SetMaterialPhysicsSlot();
@@ -126,15 +126,15 @@ namespace NSG
 
     bool RigidBody::IsValid()
     {
-		for (auto& shape : shapes_)
-			if (!shape.second.shape->IsReady())
-				return false;
-		return !shapes_.empty();
+        for (auto& shape : shapes_)
+            if (!shape.second.shape->IsReady())
+                return false;
+        return !shapes_.empty();
     }
 
     void RigidBody::AllocateResources()
     {
-        for(auto it : shapes_)
+        for (auto it : shapes_)
         {
             auto shapeData = it.second;
             btTransform offset;
@@ -145,8 +145,8 @@ namespace NSG
 
         btVector3 inertia(0, 0, 0);
         if (mass_ > 0)
-			compoundShape_->calculateLocalInertia(mass_, inertia);
-		btRigidBody::btRigidBodyConstructionInfo info(mass_, (IsStatic() ? nullptr : this), compoundShape_.get(), inertia);
+            compoundShape_->calculateLocalInertia(mass_, inertia);
+        btRigidBody::btRigidBodyConstructionInfo info(mass_, (IsStatic() ? nullptr : this), compoundShape_.get(), inertia);
         info.m_restitution = restitution_;
         info.m_friction = friction_;
         info.m_linearDamping = linearDamp_;
@@ -161,18 +161,14 @@ namespace NSG
         body_->setGravity(ToBtVector3(gravity_));
         body_->setLinearVelocity(ToBtVector3(linearVelocity_));
         body_->setAngularVelocity(ToBtVector3(angularVelocity_));
-		body_->setLinearFactor(ToBtVector3(linearFactor_));
-		body_->setAngularFactor(ToBtVector3(angularFactor_));
-
-        if (slotBeginFrame_)
-            slotBeginFrame_ = nullptr;
+        body_->setLinearFactor(ToBtVector3(linearFactor_));
+        body_->setAngularFactor(ToBtVector3(angularFactor_));
     }
 
     void RigidBody::ReleaseResources()
     {
-        auto n = compoundShape_->getNumChildShapes();
-        for(int i=0; i<n; i++)
-            compoundShape_->removeChildShapeByIndex(i);
+        while (compoundShape_->getNumChildShapes())
+            compoundShape_->removeChildShapeByIndex(0);
 
         if (body_)
         {
@@ -180,11 +176,6 @@ namespace NSG
             body_->setMotionState(nullptr);
             RemoveFromWorld();
         }
-
-        slotBeginFrame_ = Engine::GetPtr()->SigBeginFrame()->Connect([this]()
-        {
-            IsReady();
-        });
     }
 
     void RigidBody::SyncWithNode()
@@ -236,22 +227,17 @@ namespace NSG
         }
     }
 
-	void RigidBody::AddShape(PShape shape, const Vector3& position, const Quaternion& rotation)
+    void RigidBody::AddShape(PShape shape, const Vector3& position, const Quaternion& rotation)
     {
-		auto key = shape->GetName();
-		shapes_[key] = ShapeData{ shape, position, rotation };
-
-#if 0
-        if (shape)
+        auto key = shape->GetName();
+        
+        auto slotShapeReleased = shape->SigReleased()->Connect([this]()
         {
-            slotReleased_ = shape->SigReleased()->Connect([this]()
-            {
-                Invalidate();
-            });
-        }
-        else
-            slotReleased_ = nullptr;
-#endif
+            Invalidate();
+        });
+
+        shapes_[key] = ShapeData{ shape, position, rotation, slotShapeReleased};
+        Invalidate();
     }
 
     void RigidBody::SetRestitution(float restitution)
@@ -309,7 +295,7 @@ namespace NSG
 
     bool RigidBody::IsStatic() const
     {
-		return mass_ == 0;
+        return mass_ == 0;
     }
 
     void RigidBody::SetLinearVelocity(const Vector3& lv)
@@ -381,39 +367,38 @@ namespace NSG
         }
     }
 
-	void RigidBody::ReDoShape(const Vector3& newScale)
-	{
-		Shapes shapes = shapes_;
-		shapes_.clear();
-		Invalidate();
-		for (auto it: shapes)
-		{
-			auto shape = it.second.shape;
-			auto position = it.second.position;
-			auto rotation = it.second.rotation;
-			PMesh mesh;
-			Vector3 scale;
-			PhysicsShape type;
-			ShapeKey(shape->GetName()).GetData(mesh, scale, type);
-			if(mesh)
-				shape = Shape::GetOrCreate(ShapeKey{mesh, newScale});
-			else
-				shape = Shape::GetOrCreate(ShapeKey{type, newScale});
-			AddShape(shape, position, rotation);
-		}
-	}
+    void RigidBody::ReDoShape(const Vector3& newScale)
+    {
+        Shapes shapes = shapes_;
+        shapes_.clear();
+        for (auto it : shapes)
+        {
+            auto shape = it.second.shape;
+            auto position = it.second.position;
+            auto rotation = it.second.rotation;
+            PMesh mesh;
+            Vector3 scale;
+            PhysicsShape type;
+            ShapeKey(shape->GetName()).GetData(mesh, scale, type);
+            if (mesh)
+                shape = Shape::GetOrCreate(ShapeKey{mesh, newScale});
+            else
+                shape = Shape::GetOrCreate(ShapeKey{type, newScale});
+            AddShape(shape, position, rotation);
+        }
+    }
 
     void RigidBody::ReScale()
     {
         auto sceneNode(sceneNode_.lock());
-		ReDoShape(sceneNode->GetGlobalScale());
+        ReDoShape(sceneNode->GetGlobalScale());
     }
 
-	void RigidBody::UpdateInertia()
+    void RigidBody::UpdateInertia()
     {
         btVector3 inertia(0.0f, 0.0f, 0.0f);
         if (mass_ > 0)
-			compoundShape_->calculateLocalInertia(mass_, inertia);
+            compoundShape_->calculateLocalInertia(mass_, inertia);
         body_->setMassProps(mass_, inertia);
         body_->updateInertiaTensor();
     }
@@ -426,32 +411,32 @@ namespace NSG
         friction_ = node.attribute("friction").as_float();
         linearDamp_ = node.attribute("linearDamp").as_float();
         angularDamp_ = node.attribute("angularDamp").as_float();
-		collisionGroup_ = node.attribute("collisionGroup").as_int();
-		collisionMask_ = node.attribute("collisionMask").as_int();
+        collisionGroup_ = node.attribute("collisionGroup").as_int();
+        collisionMask_ = node.attribute("collisionMask").as_int();
         trigger_ = node.attribute("trigger").as_bool();
         auto gravityAtt = node.attribute("gravity");
-        if(gravityAtt)
-		  gravity_ = ToVertex3(gravityAtt.as_string());
-		linearVelocity_ = ToVertex3(node.attribute("linearVelocity").as_string());
-		angularVelocity_ = ToVertex3(node.attribute("angularVelocity").as_string());
-		linearFactor_ = ToVertex3(node.attribute("linearFactor").as_string());
-		angularFactor_ = ToVertex3(node.attribute("angularFactor").as_string());
+        if (gravityAtt)
+            gravity_ = ToVertex3(gravityAtt.as_string());
+        linearVelocity_ = ToVertex3(node.attribute("linearVelocity").as_string());
+        angularVelocity_ = ToVertex3(node.attribute("angularVelocity").as_string());
+        linearFactor_ = ToVertex3(node.attribute("linearFactor").as_string());
+        angularFactor_ = ToVertex3(node.attribute("angularFactor").as_string());
         kinematic_ = node.attribute("kinematic").as_bool();
 
-		auto shapesNode = node.child("Shapes");
-		if (shapesNode)
-		{
-			auto shapeNode = shapesNode.child("Shape");
-			while (shapeNode)
-			{
-				auto nameAttr = shapeNode.attribute("name");
-				auto shape = Shape::GetOrCreate(ShapeKey(nameAttr.as_string()));
-				auto position = ToVertex3(shapeNode.attribute("position").as_string());
-				auto orientation = ToQuaternion(shapeNode.attribute("orientation").as_string());
-				AddShape(shape, position, orientation);
-				shapeNode = shapeNode.next_sibling("Shape");
-			}
-		}
+        auto shapesNode = node.child("Shapes");
+        if (shapesNode)
+        {
+            auto shapeNode = shapesNode.child("Shape");
+            while (shapeNode)
+            {
+                auto shapeName = shapeNode.attribute("name").as_string();
+                auto shape = Shape::GetOrCreate(shapeName);
+                auto position = ToVertex3(shapeNode.attribute("position").as_string());
+                auto orientation = ToQuaternion(shapeNode.attribute("orientation").as_string());
+                AddShape(shape, position, orientation);
+                shapeNode = shapeNode.next_sibling("Shape");
+            }
+        }
 
         Invalidate();
     }
@@ -465,27 +450,27 @@ namespace NSG
         child.append_attribute("friction").set_value(friction_);
         child.append_attribute("linearDamp").set_value(linearDamp_);
         child.append_attribute("angularDamp").set_value(angularDamp_);
-		child.append_attribute("collisionGroup").set_value(collisionGroup_);
-		child.append_attribute("collisionMask").set_value(collisionMask_);
+        child.append_attribute("collisionGroup").set_value(collisionGroup_);
+        child.append_attribute("collisionMask").set_value(collisionMask_);
         child.append_attribute("trigger").set_value(trigger_);
-		child.append_attribute("gravity").set_value(ToString(gravity_).c_str());
-		child.append_attribute("linearVelocity").set_value(ToString(linearVelocity_).c_str());
-		child.append_attribute("angularVelocity").set_value(ToString(angularVelocity_).c_str());
-		child.append_attribute("linearFactor").set_value(ToString(linearFactor_).c_str());
-		child.append_attribute("angularFactor").set_value(ToString(angularFactor_).c_str());
+        child.append_attribute("gravity").set_value(ToString(gravity_).c_str());
+        child.append_attribute("linearVelocity").set_value(ToString(linearVelocity_).c_str());
+        child.append_attribute("angularVelocity").set_value(ToString(angularVelocity_).c_str());
+        child.append_attribute("linearFactor").set_value(ToString(linearFactor_).c_str());
+        child.append_attribute("angularFactor").set_value(ToString(angularFactor_).c_str());
         child.append_attribute("kinematic").set_value(kinematic_);
 
-		if (!shapes_.empty())
-		{
-			auto shapesNode = child.append_child("Shapes");
-			for (auto& shape : shapes_)
-			{
-				auto shapeNode = shapesNode.append_child("Shape");
-				shapeNode.append_attribute("name").set_value(shape.second.shape->GetName().c_str());
-				shapeNode.append_attribute("position").set_value(ToString(shape.second.position).c_str());
-				shapeNode.append_attribute("orientation").set_value(ToString(shape.second.rotation).c_str());
-			}
-		}
+        if (!shapes_.empty())
+        {
+            auto shapesNode = child.append_child("Shapes");
+            for (auto& shape : shapes_)
+            {
+                auto shapeNode = shapesNode.append_child("Shape");
+                shapeNode.append_attribute("name").set_value(shape.second.shape->GetName().c_str());
+                shapeNode.append_attribute("position").set_value(ToString(shape.second.position).c_str());
+                shapeNode.append_attribute("orientation").set_value(ToString(shape.second.rotation).c_str());
+            }
+        }
     }
     void RigidBody::SetCollisionMask(int group, int mask)
     {
@@ -514,9 +499,9 @@ namespace NSG
         ResetForces();
         SetLinearVelocity(VECTOR3_ZERO);
         SetAngularVelocity(VECTOR3_ZERO);
-		SetLinearFactor(VECTOR3_ONE);
-		SetAngularFactor(VECTOR3_ONE);
-	}
+        SetLinearFactor(VECTOR3_ONE);
+        SetAngularFactor(VECTOR3_ONE);
+    }
 
     void RigidBody::ReAddToWorld()
     {
@@ -584,22 +569,22 @@ namespace NSG
 
     void RigidBody::SetLinearFactor(const Vector3& factor)
     {
-		if (linearFactor_ != factor)
-		{
-			linearFactor_ = factor;
-			if (body_)
-				body_->setLinearFactor(ToBtVector3(factor));
-		}
+        if (linearFactor_ != factor)
+        {
+            linearFactor_ = factor;
+            if (body_)
+                body_->setLinearFactor(ToBtVector3(factor));
+        }
     }
 
     void RigidBody::SetAngularFactor(const Vector3& factor)
     {
-		if (angularFactor_ != factor)
-		{
-			angularFactor_ = factor;
-			if (body_)
-				body_->setAngularFactor(ToBtVector3(factor));
-		}
+        if (angularFactor_ != factor)
+        {
+            angularFactor_ = factor;
+            if (body_)
+                body_->setAngularFactor(ToBtVector3(factor));
+        }
     }
 
 

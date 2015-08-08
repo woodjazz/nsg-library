@@ -39,13 +39,8 @@ namespace NSG
 
     void Bone::Load(const pugi::xml_node& node)
     {
-        Vertex3 position = ToVertex3(node.attribute("position").as_string());
-        SetPosition(position);
-        Quaternion orientation = ToQuaternion(node.attribute("orientation").as_string());
-        SetOrientation(orientation);
-        Vertex3 scale = ToVertex3(node.attribute("scale").as_string());
-        SetScale(scale);
-        SetPose(ComposeMatrix(position, orientation, scale));
+        Node::Load(node);
+        SetPose(ComposeMatrix(GetPosition(), GetOrientation(), GetScale()));
         pugi::xml_node child = node.child("Bone");
         while (child)
         {
@@ -59,10 +54,7 @@ namespace NSG
     void Bone::Save(pugi::xml_node& node) const
     {
         pugi::xml_node child = node.append_child("Bone");
-        child.append_attribute("name").set_value(GetName().c_str());
-        child.append_attribute("position").set_value(ToString(GetPosition()).c_str());
-        child.append_attribute("orientation").set_value(ToString(GetOrientation()).c_str());
-        child.append_attribute("scale").set_value(ToString(GetScale()).c_str());
+        Node::Save(child);
         for (auto childObj : GetChildren())
             std::dynamic_pointer_cast<Bone>(childObj)->Save(child);
     }

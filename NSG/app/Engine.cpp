@@ -76,7 +76,8 @@ namespace NSG
 
     void Engine::EndTicks()
     {
-        RenderFrame();
+		if(!Window::AreAllWindowsMinimized())
+			RenderFrame();
     }
 
     void Engine::RenderFrame()

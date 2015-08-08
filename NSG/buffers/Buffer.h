@@ -37,6 +37,7 @@ namespace NSG
 		void Bind();
 		bool IsDynamic() const { return dynamic_; }
 	protected:
+		Buffer(GLenum type, GLenum usage);
 		Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage = GL_STATIC_DRAW);
 		void SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data);
 		GLenum type_;

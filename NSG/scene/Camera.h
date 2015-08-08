@@ -92,6 +92,7 @@ namespace NSG
         float GetShadowSplitLogFactor() const;
         static BoundingBox GetViewBox(const Frustum* frustum, const Scene* scene, bool receivers, bool casters);
         static SignalCamera::PSignal SignalBeingDestroy();
+		void SetOrthoProjection(OrthoProjection projection);
     private:
     	const Matrix4& GetViewProjectionInverse() const;
         OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;
@@ -127,5 +128,6 @@ namespace NSG
         bool colorSplits_; // used to debug splits in shader (each split in one color)
         float shadowSplitLogFactor_;
         bool automaticSplits_;
+		bool hasUserOrthoProjection_;
     };
 }

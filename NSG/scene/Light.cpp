@@ -194,8 +194,7 @@ namespace NSG
 
     void Light::FillShaderDefines(std::string& defines, PassType passType, const Material* material) const
     {
-        bool litPass =  PassType::LIT == passType;
-        if (litPass)
+		if (PassType::LIT == passType)
         {
             if (LightType::POINT == type_)
                 defines += "HAS_POINT_LIGHT\n";
@@ -213,7 +212,19 @@ namespace NSG
                 else
                     defines += "SHADOWMAP\n";
             }
+
+			if (HasSpecularColor() && material->HasSpecularColor())
+				defines += "SPECULAR\n";
         }
+		else if (PassType::SHADOW == passType)
+		{
+			if (LightType::POINT == type_)
+				defines += "SHADOWCUBE_PASS\n";
+			else if (LightType::DIRECTIONAL == type_)
+				defines += "SHADOW_PASS\n";
+			else
+				defines += "SHADOW_PASS\n";
+		}
     }
 
     SignalLight::PSignal Light::SignalBeingDestroy()

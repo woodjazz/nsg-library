@@ -61,6 +61,10 @@ static const char* VS_GLSL = \
 "			v_texcoord0 = GetTexCoord(a_texcoord0);\n"\
 "			v_texcoord1 = GetTexCoord(a_texcoord1);\n"\
 "			gl_Position = GetClipPos();\n"\
+"		#elif defined(IMGUI)\n"\
+"			v_color = a_color;\n"\
+"			v_texcoord0 = a_texcoord0;\n"\
+"			gl_Position = u_viewProjection * vec4(a_position.xy, 0.0, 1.0);\n"\
 "		#endif\n"\
 "	}\n"\
 "#endif\n"\

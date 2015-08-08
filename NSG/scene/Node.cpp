@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Constants.h"
 #include "Util.h"
+#include "pugixml.hpp"
 #include <algorithm>
 #include <iterator>
 
@@ -495,4 +496,37 @@ namespace NSG
 		return std::dynamic_pointer_cast<SceneNode>(armature_.lock());
 	}
 
+   void Node::Load(const pugi::xml_node& node)
+    {
+        CHECK_ASSERT(name_ == node.attribute("name").as_string(), __FILE__, __LINE__);
+        Vertex3 position(VECTOR3_ZERO);
+        auto posAtt = node.attribute("position");
+        if(posAtt)
+            position = ToVertex3(posAtt.as_string());
+        SetPosition(position);
+        Quaternion orientation(QUATERNION_IDENTITY);
+        auto rotAtt = node.attribute("orientation");
+        if(rotAtt)
+            orientation = ToQuaternion(rotAtt.as_string());
+        SetOrientation(orientation);
+        Vertex3 scale(VECTOR3_ONE);
+        auto scaAtt = node.attribute("scale");
+        if(scaAtt)
+            scale = ToVertex3(scaAtt.as_string());
+        SetScale(scale);
+    }
+
+    void Node::Save(pugi::xml_node& node) const
+    {
+        node.append_attribute("name").set_value(GetName().c_str());
+        auto position = GetPosition();
+        if(position != VECTOR3_ZERO)
+            node.append_attribute("position").set_value(ToString(position).c_str());
+        auto orientation = GetOrientation();
+        if(orientation != QUATERNION_IDENTITY)
+            node.append_attribute("orientation").set_value(ToString(orientation).c_str());
+        auto scale = GetScale();
+        if(scale != VECTOR3_ONE)
+            node.append_attribute("scale").set_value(ToString(scale).c_str());
+    }
 }

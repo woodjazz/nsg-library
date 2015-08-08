@@ -27,25 +27,41 @@ misrepresented as being the original software.
 
 #include "Types.h"
 #include "Object.h"
+#include <string>
+#include <map>
 
 namespace NSG
 {
-	class VertexArrayObj : public Object
+	struct VAOKey
 	{
-	public:
-		VertexArrayObj(bool allowInstancing, Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer);
-		~VertexArrayObj();
-		void Use();
-		void Bind();
-		static void Unbind();
-	private:
-		bool IsValid() override;
-		void AllocateResources() override;
-		void ReleaseResources()	override;
-		GLuint vao_; // vertex array object
-		bool allowInstancing_;
-		Program* program_;
-		VertexBuffer* vBuffer_;
-		IndexBuffer* iBuffer_;
+		bool allowInstancing;
+		Program* program;
+		Mesh* mesh;
+        bool solid;
+		bool operator < (const VAOKey& obj) const;
+		std::string GetName() const;
 	};
+
+    class VertexArrayObj : public Object
+    {
+    public:
+		VertexArrayObj(const VAOKey& key);
+        ~VertexArrayObj();
+        void Use();
+        void Bind();
+        static void Unbind();
+        static PVertexArrayObj GetOrCreate(const VAOKey& key);
+        static void Clear();
+    private:
+        bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources()	override;
+        GLuint vao_; // vertex array object
+        bool allowInstancing_;
+        VAOKey key_;
+        SignalEmpty::PSlot slotProgramReleased_;
+        SignalEmpty::PSlot slotMeshReleased_;
+		typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
+		static VAOMap vaoMap_;
+    };
 }

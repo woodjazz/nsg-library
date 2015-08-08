@@ -60,6 +60,10 @@
 			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal);
 			    #endif
 
+		#elif defined(IMGUI)
+
+			gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);
+
 		#endif	    
 	}	
 

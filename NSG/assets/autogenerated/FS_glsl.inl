@@ -43,6 +43,8 @@ static const char* FS_GLSL = \
 "				#else\n"\
 "			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal);\n"\
 "			    #endif\n"\
+"		#elif defined(IMGUI)\n"\
+"			gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\
 "		#endif	    \n"\
 "	}	\n"\
 "#endif\n"\

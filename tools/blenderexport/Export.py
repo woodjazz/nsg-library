@@ -88,8 +88,10 @@ def SensorFitToString(sensorFit):
 QUATERNION_IDENTITY = mathutils.Quaternion()
 QUATERNION_IDENTITY.identity()
 VECTOR3_ZERO = mathutils.Vector((0, 0, 0))
+VECTOR4_ZERO = mathutils.Vector((0, 0, 0, 0))
 VECTOR3_ONE = mathutils.Vector((1, 1, 1))
 DEFAULT_MATERIAL_NAME = "__DefaultBlenderMaterial__"
+
 
 def ConvertGroup(parentEle, group):
     print("Converting group " + group.name)
@@ -103,29 +105,18 @@ def ConvertGroup(parentEle, group):
 def CreateSceneNode(name, parentElem, obj, materialIndex=-1, loc=None, rot=None, sca=None):
     sceneNodeEle = et.SubElement(parentElem, "SceneNode")
     sceneNodeEle.set("name", name)
-    if loc:
-        sceneNodeEle.set("position", Vector3ToString(loc))
-    else:
-        sceneNodeEle.set(
-            "position", Vector3ToString(VECTOR3_ZERO))
-    if rot:
-        sceneNodeEle.set("orientation", QuaternionToString(rot))
-    else:
-        sceneNodeEle.set(
-            "orientation", QuaternionToString(QUATERNION_IDENTITY))
 
-    if sca:
+    if loc and loc != VECTOR3_ZERO:
+        sceneNodeEle.set("position", Vector3ToString(loc))
+    if rot and rot != QUATERNION_IDENTITY:
+        sceneNodeEle.set("orientation", QuaternionToString(rot))
+    if sca and sca != VECTOR3_ONE:
         sceneNodeEle.set("scale", Vector3ToString(sca))
-    else:
-        sceneNodeEle.set(
-            "scale", Vector3ToString(VECTOR3_ONE))
 
     if materialIndex < 1:
         CreatePhysics(sceneNodeEle, obj, materialIndex)
-
     if obj and obj.dupli_type == 'GROUP' and obj.dupli_group:
             ConvertGroup(sceneNodeEle, obj.dupli_group)
-
     return sceneNodeEle
 
 
@@ -256,7 +247,7 @@ def ConvertTexture(materialEle, textureSlot):
     textureEle.set("useAlpha", BoolToString(image.use_alpha))
     if texture.extension == 'REPEAT':
         textureEle.set("wrapMode", "REPEAT")
-    elif texture.extend == 'CHECKER':
+    elif texture.extension == 'CHECKER':
         textureEle.set("wrapMode", "MIRRORED_REPEAT")
     else:
         textureEle.set("wrapMode", "CLAMP_TO_EDGE")
@@ -378,7 +369,7 @@ def ConvertMaterial(materialsEle, material):
             ConvertTexture(materialEle, textureSlot)
 
 
-def ConvertMaterials(appEle):
+def ConvertMaterials():
     materialsEle = et.SubElement(appEle, "Materials")
     for material in bpy.data.objects.data.materials:
         ConvertMaterial(materialsEle, material)
@@ -402,9 +393,12 @@ def BuildBonetree(parentEle, bone):
     bind = parBind * bone.matrix_local
     loc, rot, sca = bind.decompose()
 
-    boneEle.set("position", Vector3ToString(loc))
-    boneEle.set("orientation", QuaternionToString(rot))
-    boneEle.set("scale", Vector3ToString(sca))
+    if loc != VECTOR3_ZERO:
+        boneEle.set("position", Vector3ToString(loc))
+    if rot != QUATERNION_IDENTITY:
+        boneEle.set("orientation", QuaternionToString(rot))
+    if sca != VECTOR3_ONE:
+        boneEle.set("scale", Vector3ToString(sca))
 
     for child in bone.children:
         BuildBonetree(boneEle, child)
@@ -414,10 +408,6 @@ def ConvertPoseBone(shaderOrderEle, poseBone):
     boneEle = et.SubElement(shaderOrderEle, "Bone")
     boneEle.set("name", poseBone.name)
     m = poseBone.matrix.inverted().transposed()
-    # if poseBone.parent:
-    #     # m = poseBone.parent.matrix.inverted() * m
-    #     pass
-    # mat_rot = mathutils.Matrix.Rotation(math.radians(-90.0), 4, 'X')
     boneEle.set("offsetMatrix", Matrix4ToString(m))
 
 
@@ -451,11 +441,11 @@ def ConvertArmature(armaturesEle, armatureObj):
 
 
 def ConvertImage(resourcesEle, image, embed):
-    if image.users > 0:
+    if image.users > 0 and image.packed_file:
         if image.source == 'FILE':
             resourceEle = et.SubElement(resourcesEle, "Resource")
             resourceEle.set("name", "data/" + image.name)
-            imagePath = "../data/" + image.name
+            imagePath = datadir + "/" + image.name
             print("Saving " + imagePath)
             image.save_render(imagePath)
             if embed:
@@ -474,7 +464,7 @@ def ConvertSound(resourcesEle, soundsEle, sound, embed):
         resourceEle = et.SubElement(resourcesEle, "Resource")
         resourceName = "data/" + sound.filepath
         resourceEle.set("name", resourceName)
-        soundPath = "../data/" + sound.filepath
+        soundPath = datadir + "/" + sound.filepath
         print("Saving " + soundPath)
         soundfile = open(soundPath, "wb")
         soundfile.write(sound.packed_file.data)
@@ -484,7 +474,7 @@ def ConvertSound(resourcesEle, soundsEle, sound, embed):
         soundEle.set("resource", resourceName)
 
 
-def ConvertResources(appEle, embed):
+def ConvertResources(embed):
     resourcesEle = et.SubElement(appEle, "Resources")
     for image in bpy.data.objects.data.images:
         ConvertImage(resourcesEle, image, embed)
@@ -596,7 +586,7 @@ def ConvertLampObject(parentEle, obj):
     sceneNodeEle.set("color", ColorToString(light.color))
     sceneNodeEle.set("diffuse", BoolToString(light.use_diffuse))
     sceneNodeEle.set("specular", BoolToString(light.use_specular))
-    sceneNodeEle.set("distance", FloatToString(light.distance))    
+    sceneNodeEle.set("distance", FloatToString(light.distance))
     sceneNodeEle.set("shadows", BoolToString(light.shadow_method != 'NOSHADOW'))
     sceneNodeEle.set("shadowColor", ColorToString(light.shadow_color))
     sceneNodeEle.set("onlyShadow", BoolToString(light.use_only_shadow))
@@ -691,9 +681,12 @@ def ConverKeyfames(tracksEle, data, convert):
                 FloatToString(convert(frame)))
             transforms = v0[frame]
             loc, rot, sca = ConvertTransform(keyframeEle, transforms)
-            keyframeEle.set("position", Vector3ToString(loc))
-            keyframeEle.set("rotation", QuaternionToString(rot))
-            keyframeEle.set("scale", Vector3ToString(sca))
+            if loc != VECTOR3_ZERO:
+                keyframeEle.set("position", Vector3ToString(loc))
+            if rot != QUATERNION_IDENTITY:
+                keyframeEle.set("rotation", QuaternionToString(rot))
+            if sca != VECTOR3_ONE:
+                keyframeEle.set("scale", Vector3ToString(sca))
 
 
 def SetKeyframeData(data, chan_name, frame, transform_name, index, value):
@@ -746,7 +739,7 @@ def ConvertAnimation(animationsEle, action):
     ConverKeyfames(tracksEle, data, ConvertFrame2Time)
 
 
-def ConvertMeshes(appEle):
+def ConvertMeshes():
     converted = []
     meshesEle = et.SubElement(appEle, "Meshes")
     for obj in bpy.data.objects:
@@ -757,7 +750,7 @@ def ConvertMeshes(appEle):
     return meshesEle
 
 
-def ConvertSkeletons(appEle):
+def ConvertSkeletons():
     armaturesEle = et.SubElement(appEle, "Skeletons")
     for obj in bpy.data.objects:
         if obj.type == 'ARMATURE':
@@ -765,7 +758,7 @@ def ConvertSkeletons(appEle):
     return armaturesEle
 
 
-def ConvertAnimations(appEle):
+def ConvertAnimations():
     animationsEle = et.SubElement(appEle, "Animations")
     for action in bpy.data.actions:
         ConvertAnimation(animationsEle, action)
@@ -911,7 +904,7 @@ def ConvertPhysicShape(shapesEle, obj):
         materialIndex = materialIndex + 1
 
 
-def ConvertPhysicShapes(appEle):
+def ConvertPhysicShapes():
     shapesEle = et.SubElement(appEle, "Shapes")
     for obj in bpy.data.objects:
         if obj.game.use_collision_bounds:
@@ -929,9 +922,10 @@ def ConvertPhysicsScene(sceneEle, scene):
     physicsEle.set("maxSubSteps", str(scene.game_settings.physics_step_max))
 
 
-def ConvertScene(appEle, scene):
+def ConvertScene(scene):
     print("Converting scene " + scene.name)
     sceneEle = et.SubElement(appEle, "Scene")
+    sceneEle.set("name", scene.name)
     if scene.camera is not None:
         sceneEle.set("mainCamera", scene.camera.name)
     sceneEle.set("ambient", ColorToString(scene.world.ambient_color))
@@ -967,29 +961,29 @@ def ConvertScene(appEle, scene):
             bpy.ops.object.mode_set(mode=currentMode)
 
 
-def ConvertScenes(appEle):
+def ConvertScenes():
     for scene in bpy.data.objects.data.scenes:
-        ConvertScene(appEle, scene)
+        ConvertScene(scene)
 
-appEle = et.Element("App")
+
 def ConvertApp():
-    # export to blend file location
-    basedir = os.path.dirname(bpy.data.filepath)
     if not basedir:
         raise Exception("Blend file is not saved")
     filename = os.path.splitext(
         os.path.basename(bpy.data.filepath))[0]
-    
     defaultMaterial = bpy.data.materials.new(DEFAULT_MATERIAL_NAME)
-    ConvertResources(appEle, False)
-    ConvertMaterials(appEle)
-    ConvertMeshes(appEle)
-    ConvertSkeletons(appEle)
-    ConvertAnimations(appEle)
-    ConvertPhysicShapes(appEle)
-    ConvertScenes(appEle)
+    ConvertResources(False)
+    ConvertMaterials()
+    ConvertMeshes()
+    ConvertSkeletons()
+    ConvertAnimations()
+    ConvertPhysicShapes()
+    ConvertScenes()
     bpy.data.materials.remove(defaultMaterial)
     tree = et.ElementTree(appEle)
-    tree.write(basedir + "/../data/" + filename + ".xml")
+    tree.write(datadir + "/" + filename + ".xml")
 
+appEle = et.Element("App")
+basedir = os.path.dirname(bpy.data.filepath)
+datadir = basedir + "/../data"
 ConvertApp()

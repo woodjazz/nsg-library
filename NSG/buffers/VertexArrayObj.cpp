@@ -35,102 +35,148 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	VertexArrayObj::VertexArrayObj(bool allowInstancing, Program* program, VertexBuffer* vBuffer, IndexBuffer* iBuffer)
-		: Object(program->GetName() + "VertexArrayObj"),
-		vao_(0),
-		allowInstancing_(allowInstancing),
-		program_(program),
-		vBuffer_(vBuffer),
-		iBuffer_(iBuffer)
+	bool VAOKey::operator < (const VAOKey& obj) const
 	{
+		return program < obj.program ||
+			(!(obj.program < program) && mesh < obj.mesh) ||
+			(!(obj.program < program) && !(obj.mesh < mesh) && allowInstancing < obj.allowInstancing) ||
+            (!(obj.program < program) && !(obj.mesh < mesh) && !(obj.allowInstancing < allowInstancing) && solid < obj.solid);
 	}
 
-	VertexArrayObj::~VertexArrayObj()
+	std::string VAOKey::GetName() const
 	{
+		if(allowInstancing)
+			return program->GetName() + mesh->GetName() + "_VAOI";
+		else
+			return program->GetName() + mesh->GetName() + "_VAO";
 	}
 
-	bool VertexArrayObj::IsValid()
-	{
-		return program_->IsReady();
-	}
+	VertexArrayObj::VAOMap VertexArrayObj::vaoMap_;
 
-	void VertexArrayObj::AllocateResources()
-	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+    VertexArrayObj::VertexArrayObj(const VAOKey& key)
+        : Object(key.GetName()),
+          vao_(0),
+          key_(key)
+    {
+    }
 
-		glGenVertexArrays(1, &vao_);
+    VertexArrayObj::~VertexArrayObj()
+    {
+    }
 
-		CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
+    bool VertexArrayObj::IsValid()
+    {
+        return key_.program->IsReady() && key_.mesh->IsReady();
+    }
 
-		Graphics::this_->SetVertexArrayObj(this);
+    void VertexArrayObj::AllocateResources()
+    {
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+	
+		auto vBuffer = key_.mesh->GetVertexBuffer();
+		auto iBuffer = key_.mesh->GetIndexBuffer(key_.solid);
+		auto program = key_.program;
+        auto mesh = key_.mesh;
 
-		Graphics::this_->SetVertexBuffer(vBuffer_, true);
+		CHECK_ASSERT(!vBuffer->IsDynamic() && !iBuffer->IsDynamic(), __FILE__, __LINE__);
 
-		GLuint position_loc = program_->GetAttPositionLoc();
-		GLuint texcoord_loc0 = program_->GetAttTextCoordLoc0();
-		GLuint texcoord_loc1 = program_->GetAttTextCoordLoc1();
-		GLuint normal_loc = program_->GetAttNormalLoc();
-		GLuint color_loc = program_->GetAttColorLoc();
-		GLuint tangent_loc = program_->GetAttTangentLoc();
-		GLuint bones_id_loc = program_->GetAttBonesIDLoc();
-		GLuint bones_weight = program_->GetAttBonesWeightLoc();
+        glGenVertexArrays(1, &vao_);
 
-		if (position_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::POSITION);
+        CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
 
-		if (normal_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
+        Graphics::this_->SetVertexArrayObj(this);
 
-		if (texcoord_loc0 != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD0);
+        Graphics::this_->SetVertexBuffer(vBuffer, true);
 
-		if (texcoord_loc1 != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD1);
+        GLuint position_loc = program->GetAttPositionLoc();
+        GLuint texcoord_loc0 = program->GetAttTextCoordLoc0();
+        GLuint texcoord_loc1 = program->GetAttTextCoordLoc1();
+        GLuint normal_loc = program->GetAttNormalLoc();
+        GLuint color_loc = program->GetAttColorLoc();
+        GLuint tangent_loc = program->GetAttTangentLoc();
+        GLuint bones_id_loc = program->GetAttBonesIDLoc();
+        GLuint bones_weight = program->GetAttBonesWeightLoc();
 
-		if (color_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::COLOR);
+        if (position_loc != -1)
+            glEnableVertexAttribArray((int)AttributesLoc::POSITION);
 
-		if (tangent_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::TANGENT);
+        if (normal_loc != -1)
+            glEnableVertexAttribArray((int)AttributesLoc::NORMAL);
 
-		if (bones_id_loc != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::BONES_ID);
+        if (texcoord_loc0 != -1)
+            glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD0);
 
-		if (bones_weight != -1)
-			glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
+        if (texcoord_loc1 != -1)
+            glEnableVertexAttribArray((int)AttributesLoc::TEXTURECOORD1);
 
-		Graphics::this_->SetVertexAttrPointers();
+        if (color_loc != -1)
+            glEnableVertexAttribArray((int)AttributesLoc::COLOR);
 
-		Graphics::this_->SetIndexBuffer(iBuffer_, true);
+        if (tangent_loc != -1)
+            glEnableVertexAttribArray((int)AttributesLoc::TANGENT);
 
-		if (allowInstancing_ && program_->GetMaterial()->IsBatched())
-			Graphics::this_->SetInstanceAttrPointers(program_);
+        if (bones_id_loc != -1)
+            glEnableVertexAttribArray((int)AttributesLoc::BONES_ID);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-	}
+        if (bones_weight != -1)
+            glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
 
-	void VertexArrayObj::ReleaseResources()
-	{
-		if (Graphics::this_->GetVertexArrayObj() == this)
-			Graphics::this_->SetVertexArrayObj(nullptr);
+        Graphics::this_->SetVertexAttrPointers();
 
-		glDeleteVertexArrays(1, &vao_);
-		vao_ = 0;
-	}
+        Graphics::this_->SetIndexBuffer(iBuffer, true);
 
-	void VertexArrayObj::Use()
-	{
-		if (IsReady())
-			Graphics::this_->SetVertexArrayObj(this);
-	}
+        if (key_.allowInstancing && program->GetMaterial()->IsBatched())
+            Graphics::this_->SetInstanceAttrPointers(program);
 
-	void VertexArrayObj::Bind()
-	{
-		glBindVertexArray(vao_);
-	}
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-	void VertexArrayObj::Unbind()
-	{
-		glBindVertexArray(0);
-	}
+        slotProgramReleased_ = program->SigReleased()->Connect([this]()
+        {
+            Invalidate();
+        });
+
+        slotMeshReleased_ = mesh->SigReleased()->Connect([this]()
+        {
+            Invalidate();
+        });
+    }
+
+    void VertexArrayObj::ReleaseResources()
+    {
+        if (Graphics::this_->GetVertexArrayObj() == this)
+            Graphics::this_->SetVertexArrayObj(nullptr);
+        glDeleteVertexArrays(1, &vao_);
+        vao_ = 0;
+    }
+
+    void VertexArrayObj::Use()
+    {
+        if (IsReady())
+            Graphics::this_->SetVertexArrayObj(this);
+    }
+
+    void VertexArrayObj::Bind()
+    {
+        glBindVertexArray(vao_);
+    }
+
+    void VertexArrayObj::Unbind()
+    {
+        glBindVertexArray(0);
+    }
+
+    PVertexArrayObj VertexArrayObj::GetOrCreate(const VAOKey& key)
+    {
+        auto it = vaoMap_.find(key);
+        if (it != vaoMap_.end())
+        	return it->second;
+		auto vao = std::make_shared<VertexArrayObj>(key);
+        CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, vao)).second, __FILE__, __LINE__);
+        return vao;
+    }
+
+    void VertexArrayObj::Clear()
+    {
+    	vaoMap_.clear();
+    }
 }

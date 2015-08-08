@@ -60,7 +60,8 @@ namespace NSG
           shadowSplits_(MAX_SHADOW_SPLITS),
           colorSplits_(false),
           shadowSplitLogFactor_(0.5f),
-          automaticSplits_(true)
+          automaticSplits_(true),
+		  hasUserOrthoProjection_(false)
     {
         SetInheritScale(false);
         Update();
@@ -272,11 +273,23 @@ namespace NSG
         return orthoProjection;
     }
 
+	void Camera::SetOrthoProjection(OrthoProjection projection)
+	{
+		if (memcmp(&orthoProjection_, &projection, sizeof(OrthoProjection)) != 0)
+		{
+			orthoProjection_ = projection;
+			hasUserOrthoProjection_ = true;
+			isDirty_ = true;
+			SetUniformsNeedUpdate();
+		}
+	}
+
     void Camera::UpdateProjection() const
     {
         if (isOrtho_)
         {
-            orthoProjection_ = CalculateOrthoProjection(zNear_, zFar_);
+			if (!hasUserOrthoProjection_)
+				orthoProjection_ = CalculateOrthoProjection(zNear_, zFar_);
 
             matProjection_ = glm::ortho(orthoProjection_.left_,
                                         orthoProjection_.right_,

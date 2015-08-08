@@ -27,8 +27,6 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Constants.h"
 #include "Singleton.h"
-#include <map>
-#include <set>
 
 namespace NSG
 {
@@ -47,6 +45,7 @@ namespace NSG
 		void ClearBuffers(bool color, bool depth, bool stencil);
 		void ClearStencilBuffer(GLint value = 0);
 		void SetStencilTest(bool enable, GLuint writeMask, GLenum sfail, GLenum dpfail, GLenum dppass, GLenum func, GLint ref, GLuint compareMask);
+		void SetScissorTest(bool enable = false, GLint x = 0, GLint y = 0, GLsizei width = 0, GLsizei height = 0);
 		void SetColorMask(bool enable);
 		void SetDepthMask(bool enable);
 		void SetDepthFunc(DepthFunc depthFunc);
@@ -56,9 +55,9 @@ namespace NSG
 		void EnableCullFace(bool enable);
 		void SetCullFace(CullFaceMode mode);
 		void SetFrontFace(FrontFaceMode mode);
+		void SetTexture(int index, GLuint id, GLenum target = GL_TEXTURE_2D);
 		void SetTexture(int index, Texture* texture);
 		void SetViewport(const Recti& viewport, bool force);
-		void InvalidateVAOFor(const Program* program);
 		bool SetBuffers(Mesh* mesh);
 		bool SetVertexArrayObj(VertexArrayObj* obj);
 		VertexArrayObj* GetVertexArrayObj() const { return vertexArrayObj_; }
@@ -75,6 +74,7 @@ namespace NSG
 		void SetFrameBuffer(FrameBuffer* buffer);
 		void SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
 		FrameBuffer* GetFrameBuffer() const { return currentFbo_; }
+		void DrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid * indices);
 		void DrawActiveMesh();
 		void DrawInstancedActiveMesh(const Batch& batch);
 		void DiscardFramebuffer();
@@ -94,7 +94,8 @@ namespace NSG
 		void UpdateBatchBuffer(const Batch& batch);
 		void SetInstanceAttrPointers(Program* program);
 		void SetVertexAttrPointers();
-		void SetAttributes();
+		typedef std::function<void()> SetAttPointersFunction;
+		void SetAttributes(SetAttPointersFunction setAttPointersCallBack);
 		void InsertUniformObj(UniformsUpdate* obj) { uniformObjs_.insert(obj); }
 		void RemoveUniformObj(UniformsUpdate* obj) { uniformObjs_.erase(obj); }
 		UniformObjs& GetUniformObjs() { return uniformObjs_; }
@@ -110,9 +111,12 @@ namespace NSG
 		void SetViewportFactor(const Vector4& viewportFactor);
 		int GetMaxTextureSize() const { return maxTextureSize_; }
 		bool NeedsDecompress(TextureFormat format) const;
-		bool SetupPass(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light);
+		bool SetupProgram(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light);
+		void SetupPass(const Pass* pass);
 		GLenum GetTexelDataType() const;
 		GLenum GetTexelFormatType() const;
+		void CreateGUI(Window* mainWindow);
+		void DestroyGUI();
 	private:
 		void SetUpViewport();
 		Recti viewport_;
@@ -147,23 +151,6 @@ namespace NSG
 		UniformObjs uniformObjs_; // just a repository to keep track which objects need uniform updates
 		CullFaceMode cullFaceMode_;
 		FrontFaceMode frontFaceMode_;
-		struct VAOKey
-		{
-			bool allowInstancing;
-			Program* program_;
-			VertexBuffer* vBuffer_;
-			IndexBuffer* iBuffer_;
-
-			bool operator < (const VAOKey& obj) const
-			{
-				return program_ < obj.program_ ||
-					(!(obj.program_ < program_) && vBuffer_ < obj.vBuffer_) ||
-					(!(obj.program_ < program_) && !(obj.vBuffer_ < vBuffer_) && iBuffer_ < obj.iBuffer_) ||
-					(!(obj.program_ < program_) && !(obj.vBuffer_ < vBuffer_) && !(iBuffer_ < obj.iBuffer_)) && (allowInstancing < obj.allowInstancing);
-			};
-		};
-		typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
-		VAOMap vaoMap_;
 		GLint maxVaryingVectors_;
 		GLint maxTexturesCombined_;
 		GLint maxVertexUniformVectors_;
@@ -173,5 +160,6 @@ namespace NSG
 		Vector4 viewportFactor_;
 		int maxTextureSize_;
 		PRenderer renderer_;
+		PGUI imgui_;
 	};
 }

@@ -367,4 +367,7 @@ namespace NSG
 	class Plane;
 	typedef std::shared_ptr<Plane> PPlane;
 
+	class GUI;
+	typedef std::shared_ptr<GUI> PGUI;
+
 }

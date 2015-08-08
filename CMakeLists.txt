@@ -20,8 +20,6 @@ set(CONVERTER_TOOL_SOURCE_DIR ${TOOLS_DIR}/blenderserialize)
 set(BLENDERDNA_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/tools/blenderdna/${CMAKE_CFG_INTDIR}/blenderdna)
 set(CONVERT_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/tools/converter/${CMAKE_CFG_INTDIR}/converter)
 
-
-
 set(ROOT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(DEPENDENCIES_BINARY_DIR ${ROOT_BINARY_DIR}/dependencies)
 set(EXTERNALS_BYNARY_DIR ${ROOT_BINARY_DIR}/externals)
@@ -41,6 +39,15 @@ add_custom_target(CLEAN_DATA_FILES
    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/CleanDataFiles.cmake
    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
    COMMENT "Deleting all data files"
+)
+
+###########################
+# BUILD_DATA_FILES
+###########################
+add_custom_target(BUILD_DATA_FILES
+   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/BuildDataFiles.cmake
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+   COMMENT "Building data files"
 )
 
 ##################################
@@ -70,6 +77,15 @@ add_definitions(-DPUGIXML_NO_EXCEPTIONS)
 add_subdirectory(${EXTERNALS_DIR})
 list(APPEND LIBRARIES_2_LINK pugixml)
 set_property(TARGET pugixml PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+
+###########################
+# imgui
+###########################
+set(IMGUI_INCLUDE_DIR ${EXTERNALS_DIR}/imgui)
+include_directories(${IMGUI_INCLUDE_DIR})
+list(APPEND LIBRARIES_2_LINK imgui)
+set_property(TARGET imgui PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+
 
 ##################################
 # glew
@@ -235,6 +251,7 @@ endif()
 # samples
 ###########################
 include (ConvertTool) 
+include (ExportBlendTool)
 include (CopyTool)
 set(SAMPLES_DIR ${ROOT_SOURCE_DIR}/samples)
 SUBDIRLIST(SUBDIRS ${SAMPLES_DIR})

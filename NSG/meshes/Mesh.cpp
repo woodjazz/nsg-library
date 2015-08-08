@@ -84,9 +84,9 @@ namespace NSG
         GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
 
         if (isStatic_)
-            pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_STATIC_DRAW));
+            pVBuffer_ = std::make_shared<VertexBuffer>(bytesNeeded, bytesNeeded, vertexsData_, GL_STATIC_DRAW);
 		else if (!pVBuffer_)
-			pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW));
+			pVBuffer_ = std::make_shared<VertexBuffer>(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW);
 		else
 			pVBuffer_->UpdateData(vertexsData_);
 
@@ -113,7 +113,6 @@ namespace NSG
 		}
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
-
         for (auto& vertex : vertexsData_)
         {
             bb_.Merge(vertex.position_);
@@ -419,7 +418,7 @@ namespace NSG
 
     void Mesh::SetMeshData(const VertexsData& vertexsData, const Indexes& indexes)
     {
-        if (vertexsData_ != vertexsData || indexes_ != indexes)
+        //if (vertexsData_ != vertexsData || indexes_ != indexes)
         {
             vertexsData_ = vertexsData;
             indexes_ = indexes;

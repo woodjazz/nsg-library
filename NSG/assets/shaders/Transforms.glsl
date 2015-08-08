@@ -282,6 +282,10 @@
 			#else
 				return u_material.diffuseColor;
 			#endif
+		#elif defined(TEXT)
+			#if defined(DIFFUSEMAP0)
+				return texture2D(u_texture0, v_texcoord0);
+			#endif
 		#else
 			#if defined(DIFFUSEMAP0)
 				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);

@@ -57,6 +57,7 @@ namespace NSG
     	void DefaultTransparentPass();
 	    void LitTransparentPass();
 	    void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
+	    void DebugPhysicsPass();
 
 		static Renderer* this_;
 		Graphics* graphics_;

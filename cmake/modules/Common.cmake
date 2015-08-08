@@ -34,12 +34,15 @@ macro (setup_common)
         add_definitions(-DEMSCRIPTEN)
     elseif(WIN32)
         message(STATUS "detected WINDOWS")
+        set(IS_TARGET_WINDOWS 1)
         add_definitions(-DIS_WINDOWS)
     elseif(CMAKE_SYSTEM_NAME STREQUAL Darwin)
         message(STATUS "detected OSX")
+        set(IS_TARGET_OSX 1)
         add_definitions(-DIS_OSX)
     elseif(UNIX AND NOT APPLE)
         message(STATUS "detected LINUX")
+        set(IS_TARGET_LINUX 1)
         add_definitions(-DIS_LINUX)
     endif()
 
@@ -163,6 +166,7 @@ macro (setup_executable)
     file(GLOB src "*.cpp")
     file(GLOB hdr "*.h")
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
+    set(art_dir ${CMAKE_CURRENT_SOURCE_DIR}/art)
 
     if(ANDROID)
         
@@ -276,7 +280,7 @@ macro (setup_executable)
 
     endif()
 
-    if(EXISTS "${data_dir}")
+    if(EXISTS "${data_dir}" OR EXISTS "${art_dir}")
         
         set(DATA_TARGET ${PROJECT_NAME}dataDir)
 

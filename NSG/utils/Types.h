@@ -397,9 +397,11 @@ namespace NSG
     struct SignalSizeChanged : Signal<int, int> {};
     struct SignalFloatFloat : Signal<float, float> {};
     struct SignalMouseButton : Signal<int, float, float> {};
+    struct SignalMouseMoved : Signal<int, int> {};
     struct SignalKey : Signal<int, int, int> {};
     struct SignalUnsigned : Signal<unsigned int> {};
-    struct SignalMultiGesture : Signal<int, float, float, float, float, int> {};
+	struct SignalText : Signal<std::string> {};
+	struct SignalMultiGesture : Signal<int, float, float, float, float, int> {};
     struct SignalUpdate : Signal<float> {};
     struct SignalCollision : Signal<const ContactPoint&> {};
     struct SignalDropFile : Signal<const std::string&> {};
@@ -407,7 +409,6 @@ namespace NSG
     struct SignalNodeMouseButton : Signal<SceneNode*, int, float, float> {};
     struct SignalNodeKey : Signal<SceneNode*, int, int, int> {};
     struct SignalNodeChar : Signal<SceneNode*, unsigned int> {};
-    struct SignalButtonMouse : Signal<int> {};
     struct SignalEmpty : Signal<> {};
     struct SignalWindow : Signal<Window*> {};
     struct SignalJoystickButton : Signal<int, unsigned> {};

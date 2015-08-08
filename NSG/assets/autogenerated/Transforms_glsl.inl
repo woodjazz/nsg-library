@@ -250,6 +250,10 @@ static const char* TRANSFORMS_GLSL = \
 "			#else\n"\
 "				return u_material.diffuseColor;\n"\
 "			#endif\n"\
+"		#elif defined(TEXT)\n"\
+"			#if defined(DIFFUSEMAP0)\n"\
+"				return texture2D(u_texture0, v_texcoord0);\n"\
+"			#endif\n"\
 "		#else\n"\
 "			#if defined(DIFFUSEMAP0)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\

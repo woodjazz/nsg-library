@@ -80,7 +80,7 @@ namespace NSG
 			Pass pass;
 			pass.EnableDepthTest(false);
             Graphics::this_->SetMesh(mesh_.get());
-			if(Graphics::this_->SetupPass(&pass, node_.get(), material_.get(), nullptr))
+			if (Graphics::this_->SetupProgram(&pass, node_.get(), material_.get(), nullptr))
 				Graphics::this_->DrawActiveMesh();
 
             Graphics::this_->SetCamera(pCurrent);

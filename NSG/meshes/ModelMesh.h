@@ -34,7 +34,6 @@ namespace NSG
 	public:
 		ModelMesh(const std::string& name);
 		~ModelMesh();
-		void SetMeshData(const VertexsData& vertexsData, const Indexes& indexes);
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		size_t GetNumberOfTriangles() const override;

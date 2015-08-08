@@ -47,6 +47,8 @@ namespace NSG
         void Show() override;
         void Hide() override;
         void Raise() override;
+        void SetupImgui() override;
+        void BeginImguiRender() override;
         static JoystickAxis ConvertAxis(int axis);
         void OpenJoystick(int index);
         void CloseJoystick(int index);
