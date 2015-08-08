@@ -36,7 +36,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	template<> std::map<std::string, PAnimation> StrongFactory<std::string, Animation>::objsMap_ = {};
+	template<> std::map<std::string, PAnimation> StrongFactory<std::string, Animation>::objsMap_ = std::map<std::string, PAnimation>{};
 
     AnimationKeyFrame::AnimationKeyFrame()
         : time_(0),
