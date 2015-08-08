@@ -32,7 +32,7 @@ misrepresented as being the original software.
 #include "Window.h"
 #include "Engine.h"
 #include "Pass.h"
-#include "keys.h"
+#include "Keys.h"
 #include "Program.h"
 #include "Camera.h"
 #include "VertexBuffer.h"
