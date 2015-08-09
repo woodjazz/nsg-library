@@ -230,7 +230,7 @@ namespace NSG
     void RigidBody::AddShape(PShape shape, const Vector3& position, const Quaternion& rotation)
     {
         auto key = shape->GetName();
-        
+
         auto slotShapeReleased = shape->SigReleased()->Connect([this]()
         {
             Invalidate();
@@ -431,8 +431,14 @@ namespace NSG
             {
                 auto shapeName = shapeNode.attribute("name").as_string();
                 auto shape = Shape::GetOrCreate(shapeName);
-                auto position = ToVertex3(shapeNode.attribute("position").as_string());
-                auto orientation = ToQuaternion(shapeNode.attribute("orientation").as_string());
+                Vertex3 position(VECTOR3_ZERO);
+                auto posAtt = shapeNode.attribute("position");
+                if (posAtt)
+                    position = ToVertex3(posAtt.as_string());
+                Quaternion orientation(QUATERNION_IDENTITY);
+                auto rotAtt = shapeNode.attribute("orientation");
+                if (rotAtt)
+                    orientation = ToQuaternion(rotAtt.as_string());
                 AddShape(shape, position, orientation);
                 shapeNode = shapeNode.next_sibling("Shape");
             }

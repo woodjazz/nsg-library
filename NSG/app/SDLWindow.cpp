@@ -543,7 +543,7 @@ namespace NSG
                 int key = event.key.keysym.sym & ~SDLK_SCANCODE_MASK;
                 #if ANDROID
                 {
-                    if (key == SDLK_AC_BACK)
+                    if (key == SDL_SCANCODE_AC_BACK)
                     {
                         Graphics::this_->ResetCachedState();
                         window->Close();
@@ -552,9 +552,9 @@ namespace NSG
                 }
                 #endif
 
-                //int scancode = event.key.keysym.scancode;
                 int action = NSG_KEY_PRESS;
                 int modifier = event.key.keysym.mod;
+                //int scancode = event.key.keysym.scancode;
                 window->OnKey(key, action, modifier);
             }
             else if (event.type == SDL_KEYUP)

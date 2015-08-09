@@ -519,6 +519,7 @@ namespace NSG
 			size_t nBones = names.size();
             CHECK_CONDITION(nBones == nBones_ && "This shader has been used with a different number of bones.!!!", __FILE__, __LINE__);
 			PNode armatureNode = node_->GetArmature();
+            CHECK_ASSERT(Graphics::this_->GetMesh()->HasDeformBones(), __FILE__, __LINE__);
 			CHECK_ASSERT(armatureNode, __FILE__, __LINE__);
             Matrix4 globalInverseModelMatrix(1);
             // In order to make all the bones relatives to the armature.

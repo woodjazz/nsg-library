@@ -133,8 +133,6 @@ namespace NSG
         PScene GetScene() const { return scene_.lock(); }
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);
 		Matrix4 GetTransform() const;
-		PSceneNode GetArmature() const;
-		void SetArmature(PNode armature);
         virtual void Load(const pugi::xml_node& node);
         virtual void Save(pugi::xml_node& node) const;
     protected:
@@ -142,7 +140,6 @@ namespace NSG
         std::vector<PNode> children_;
         std::unordered_map<std::string, PWeakNode> childrenHash_;
         PWeakScene scene_;
-		PWeakNode armature_;
     private:
 		void RemoveFromParent();
 		void AddChild(PNode node);

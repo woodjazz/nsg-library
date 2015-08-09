@@ -248,6 +248,22 @@ namespace NSG
 		}
     }
 
+    void SceneNode::SetArmature(PSceneNode armature)
+    {
+        armature_ = armature;
+        for (auto obj : children_)
+        {
+            auto sceneNode = dynamic_pointer_cast<SceneNode>(obj);
+            if(sceneNode->mesh_ && sceneNode->mesh_->HasDeformBones())
+                sceneNode->SetArmature(armature);
+        }
+    }
+
+    PSceneNode SceneNode::GetArmature() const 
+    { 
+        return armature_.lock();
+    }
+
     void SceneNode::LoadChildren(const pugi::xml_node& node)
     {
         pugi::xml_node child = node.child("SceneNode");
@@ -308,9 +324,10 @@ namespace NSG
 			skeleton_ = skeleton;
 			if (skeleton_)
 			{
-				SetArmature(shared_from_this());
+                auto thisSceneNode = std::dynamic_pointer_cast<SceneNode>(shared_from_this());
+				SetArmature(thisSceneNode);
 				CHECK_CONDITION(skeleton_->IsReady(), __FILE__, __LINE__);
-				skeleton_->CreateBonesFor(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
+				skeleton_->CreateBonesFor(thisSceneNode);
 			}
 		}
 	}

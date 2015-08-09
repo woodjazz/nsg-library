@@ -73,11 +73,14 @@ namespace NSG
 		PSkeleton GetSkeleton() const { return skeleton_; }
 		size_t FillShaderDefines(std::string& defines) const;
 		size_t GetMaxPlatformBones(size_t nBones) const;
+		PSceneNode GetArmature() const;
+		void SetArmature(PSceneNode armature);
 	protected:
 		PMaterial material_;
 		PMesh mesh_;
 		PSkeleton skeleton_;
 	private:
+		PWeakSceneNode armature_;
 		PRigidBody rigidBody_;
 		mutable Octant* octant_;
 		mutable BoundingBox worldBB_;

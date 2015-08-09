@@ -46,7 +46,8 @@ namespace NSG
           boundingSphereRadius_(0),
           isStatic_(!dynamic),
           areTangentsCalculated_(false),
-          serializable_(true)
+          serializable_(true),
+          hasDeformBones_(false)
     {
         if (name_.empty())
             name_ = GetUniqueName("Mesh");
@@ -205,6 +206,8 @@ namespace NSG
                 //obj.tangent_ =  ToVertex3(vertexNode.attribute("tangent").as_string());
                 obj.bonesID_ =  ToVertex4(vertexNode.attribute("bonesID").as_string());
                 obj.bonesWeight_ =  ToVertex4(vertexNode.attribute("bonesWeight").as_string());
+                if(!hasDeformBones_ && Vector4(0) != obj.bonesWeight_)
+                    hasDeformBones_ = true;
                 vertexsData_.push_back(obj);
                 vertexNode = vertexNode.next_sibling("VertexData");
             }

@@ -78,6 +78,7 @@ namespace NSG
         void SetUVName(int index, const std::string& name);
 		const std::string& GetUVName(int index) const;
         int GetUVIndex(const std::string& name) const;
+        bool HasDeformBones() const { return hasDeformBones_; }
 	protected:
 		virtual void Load(const pugi::xml_node& node);
         bool IsValid() override;
@@ -100,5 +101,6 @@ namespace NSG
         PSkeleton skeleton_;
         std::set<SceneNode*> sceneNodes_;
         std::string uvNames_[MAX_UVS];
+        bool hasDeformBones_;
     };
 }

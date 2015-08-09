@@ -42,7 +42,7 @@ function(EXPORT_BLEND_TOOL input_file output_dir)
 		    set(TARGET_NAME EXPORT_${PROJECT_NAME}_${INPUTNAME})
 
 			add_custom_target(${TARGET_NAME}
-	   			DEPENDS ${OUTPUT_FILE} 
+	   			DEPENDS ${OUTPUT_FILE} ${INPUTFILE}
 			)
 
 			set_property(TARGET ${TARGET_NAME} PROPERTY FOLDER "EXPORTS")

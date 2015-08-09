@@ -484,18 +484,6 @@ namespace NSG
         return isScaleUniform_;
     }
 
-	void Node::SetArmature(PNode armature)
-	{
-		armature_ = armature;
-		for (auto obj : children_)
-			obj->SetArmature(armature);
-	}
-
-	PSceneNode Node::GetArmature() const 
-	{ 
-		return std::dynamic_pointer_cast<SceneNode>(armature_.lock());
-	}
-
    void Node::Load(const pugi::xml_node& node)
     {
         CHECK_ASSERT(name_ == node.attribute("name").as_string(), __FILE__, __LINE__);
