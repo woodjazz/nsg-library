@@ -29,15 +29,15 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
-	//auto resource = Resource::GetOrCreateClass<ResourceFile>("data/bscene.xml");
-	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/scene.xml");
-	AppData data(resource);
-	auto scene0 = data.scenes_.at(0);
-	auto object = scene0->GetChild<SceneNode>("m2triple_LOD.001", true);
-	//object->GetMaterial()->SetSolid(false);
-    auto camera = scene0->GetChild<Camera>("Camera", false);
+    auto resource = Resource::GetOrCreateClass<ResourceFile>("data/scene.xml");
+    AppData data(resource);
+    auto scene = data.scenes_[0];
+    window->SetScene(scene.get());
+    auto camera = scene->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);
-	window->SetScene(data.scenes_[0].get());
-	auto engine = Engine::Create();
-	return engine->Run();
+    auto armature = scene->GetChild<SceneNode>("RigMomo", true);
+    auto animation = scene->GetAnimationFor("Momo_Run", armature);
+    scene->PlayAnimation(animation, true);
+    auto engine = Engine::Create();
+    return engine->Run();
 }
