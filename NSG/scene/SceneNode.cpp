@@ -83,7 +83,7 @@ namespace NSG
             mesh_ = mesh;
             worldBB_ = BoundingBox();
 
-            if (!mesh)
+            if (!mesh || IsHidden())
             {
                 auto scene = GetScene();
                 if (scene)
@@ -115,21 +115,20 @@ namespace NSG
             rigidBody_->ReScale();
     }
 
-    void SceneNode::OnEnable()
+    void SceneNode::OnHide(bool hide)
     {
-        if (mesh_)
+        if (mesh_ && !hide)
         {
             auto scene = GetScene();
             if (scene)
                 scene->UpdateOctree(this);
         }
-    }
-
-    void SceneNode::OnDisable()
-    {
-        auto scene = GetScene();
-        if (scene)
-            scene->RemoveFromOctree(this);
+        else if (hide)
+        {
+            auto scene = GetScene();
+            if (scene)
+                scene->RemoveFromOctree(this);
+        }
     }
 
     void SceneNode::OnDirty() const
@@ -187,8 +186,8 @@ namespace NSG
         if (!IsSerializable())
             return;
         Node::Save(node);
-		if (skeleton_)
-			node.append_attribute("skeleton").set_value(skeleton_->GetName().c_str());
+        if (skeleton_)
+            node.append_attribute("skeleton").set_value(skeleton_->GetName().c_str());
         node.append_attribute("nodeType").set_value("SceneNode");
         if (material_)
             node.append_attribute("materialName").set_value(material_->GetName().c_str());
@@ -223,8 +222,8 @@ namespace NSG
         }
 
         attribute = node.attribute("hide");
-        if(attribute)
-            SetEnabled(false);
+        if (attribute)
+            Hide(true);
 
         attribute = node.attribute("meshName");
         if (attribute)
@@ -242,14 +241,14 @@ namespace NSG
 
         LoadChildren(node);
 
-		auto att = node.attribute("skeleton");
-		if (att)
-		{
-			auto name = att.as_string();
-			auto skeleton = Skeleton::Get(name);
-			CHECK_ASSERT(skeleton, __FILE__, __LINE__);
-			SetSkeleton(skeleton);
-		}
+        auto att = node.attribute("skeleton");
+        if (att)
+        {
+            auto name = att.as_string();
+            auto skeleton = Skeleton::Get(name);
+            CHECK_ASSERT(skeleton, __FILE__, __LINE__);
+            SetSkeleton(skeleton);
+        }
     }
 
     void SceneNode::SetArmature(PSceneNode armature)
@@ -258,13 +257,13 @@ namespace NSG
         for (auto obj : children_)
         {
             auto sceneNode = dynamic_pointer_cast<SceneNode>(obj);
-            if(sceneNode->mesh_ && sceneNode->mesh_->HasDeformBones())
+            if (sceneNode->mesh_ && sceneNode->mesh_->HasDeformBones())
                 sceneNode->SetArmature(armature);
         }
     }
 
-    PSceneNode SceneNode::GetArmature() const 
-    { 
+    PSceneNode SceneNode::GetArmature() const
+    {
         return armature_.lock();
     }
 
@@ -321,52 +320,52 @@ namespace NSG
         SetFlags(flags_ & ~(int)flags);
     }
 
-	void SceneNode::SetSkeleton(PSkeleton skeleton)
-	{
-		if (skeleton_ != skeleton)
-		{
-			skeleton_ = skeleton;
-			if (skeleton_)
-			{
+    void SceneNode::SetSkeleton(PSkeleton skeleton)
+    {
+        if (skeleton_ != skeleton)
+        {
+            skeleton_ = skeleton;
+            if (skeleton_)
+            {
                 auto thisSceneNode = std::dynamic_pointer_cast<SceneNode>(shared_from_this());
-				SetArmature(thisSceneNode);
-				CHECK_CONDITION(skeleton_->IsReady(), __FILE__, __LINE__);
-				skeleton_->CreateBonesFor(thisSceneNode);
-			}
-		}
-	}
+                SetArmature(thisSceneNode);
+                CHECK_CONDITION(skeleton_->IsReady(), __FILE__, __LINE__);
+                skeleton_->CreateBonesFor(thisSceneNode);
+            }
+        }
+    }
 
-	size_t SceneNode::GetMaxPlatformBones(size_t nBones) const
-	{
-		static const size_t MAX_BONES0 = 64;
-		static const size_t MAX_BONES1 = 48;
-		static const size_t MAX_BONES2 = 32;
-		// set a maximum value per platform to avoid shader variations
-		if (nBones <= MAX_BONES2)
-			return MAX_BONES2;
-		else if (nBones <= MAX_BONES1)
-			return MAX_BONES1;
-		else if (nBones <= MAX_BONES0)
-			return MAX_BONES0;
-		return nBones;
-	}
+    size_t SceneNode::GetMaxPlatformBones(size_t nBones) const
+    {
+        static const size_t MAX_BONES0 = 64;
+        static const size_t MAX_BONES1 = 48;
+        static const size_t MAX_BONES2 = 32;
+        // set a maximum value per platform to avoid shader variations
+        if (nBones <= MAX_BONES2)
+            return MAX_BONES2;
+        else if (nBones <= MAX_BONES1)
+            return MAX_BONES1;
+        else if (nBones <= MAX_BONES0)
+            return MAX_BONES0;
+        return nBones;
+    }
 
-	size_t SceneNode::FillShaderDefines(std::string& defines) const
-	{
-		auto armature = GetArmature();
-		if (armature)
-		{
-			auto skeleton = armature->GetSkeleton();
-			CHECK_CONDITION(skeleton->IsReady(), __FILE__, __LINE__);
-			defines += "SKELETON_" + skeleton->GetName() + "\n"; // just to have a shader variance per skeleton
-			auto nBones = skeleton->GetNumberOfBones();
-			if (nBones)
-			{
-				defines += "MAX_BONES " + ToString(GetMaxPlatformBones(nBones)) + "\n";
-				defines += "SKINNED\n";
-				return nBones;
-			}
-		}
-		return 0;
-	}
+    size_t SceneNode::FillShaderDefines(std::string& defines) const
+    {
+        auto armature = GetArmature();
+        if (armature)
+        {
+            auto skeleton = armature->GetSkeleton();
+            CHECK_CONDITION(skeleton->IsReady(), __FILE__, __LINE__);
+            defines += "SKELETON_" + skeleton->GetName() + "\n"; // just to have a shader variance per skeleton
+            auto nBones = skeleton->GetNumberOfBones();
+            if (nBones)
+            {
+                defines += "MAX_BONES " + ToString(GetMaxPlatformBones(nBones)) + "\n";
+                defines += "SKINNED\n";
+                return nBones;
+            }
+        }
+        return 0;
+    }
 }

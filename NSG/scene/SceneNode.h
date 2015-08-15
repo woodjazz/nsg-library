@@ -51,8 +51,7 @@ namespace NSG
 		virtual void OnDirty() const override;
 		void OnScaleChange() override;
         virtual void OnCollision(const ContactPoint& contactInfo);
-		void OnEnable() override;
-		void OnDisable() override;
+		void OnHide(bool hide) override;
 		void SetSerializable(bool serializable) { serializable_ = serializable; }
 		bool IsSerializable() const { return serializable_;  }
 		void GetMaterials(std::vector<PMaterial>& materials) const;

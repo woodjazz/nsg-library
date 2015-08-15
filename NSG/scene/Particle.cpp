@@ -66,7 +66,7 @@ namespace NSG
 
     void Particle::Enable()
     {
-        SetEnabled(true, false);
+        Hide(true, false);
         auto rb = GetRigidBody();
         rb->SyncWithNode();
         rb->AddToWorld();
@@ -75,7 +75,7 @@ namespace NSG
     void Particle::Disable()
     {
         Reset();
-        SetEnabled(false, false);
+        Hide(false, false);
         auto rb = GetRigidBody();
         rb->RemoveFromWorld();
     }

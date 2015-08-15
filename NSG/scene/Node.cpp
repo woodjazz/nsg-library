@@ -48,7 +48,7 @@ namespace NSG
           globalScale_(1, 1, 1),
           inheritScale_(true),
           dirty_(true),
-          enabled_(true),
+          hide_(false),
           isScaleUniform_(true)
     {
     }
@@ -375,7 +375,7 @@ namespace NSG
 
     void Node::Update() const
     {
-        if (!dirty_ || !enabled_)
+        if (!dirty_ || hide_)
             return;
 
         dirty_ = false;
@@ -461,21 +461,18 @@ namespace NSG
                 child->MarkAsDirty(recursive, scaleChange);
     }
 
-    void Node::SetEnabled(bool enable, bool recursive)
+    void Node::Hide(bool hide, bool recursive)
     {
-        if (enable != enabled_)
+        if (hide != hide_)
         {
-            enabled_ = enable;
+            hide_ = hide;
             SetUniformsNeedUpdate();
-            if (enable)
-                OnEnable();
-            else
-                OnDisable();
+            OnHide(hide);
         }
 
         if (recursive)
             for (auto child : children_)
-                child->SetEnabled(enable, recursive);
+                child->Hide(hide, recursive);
     }
 
     bool Node::IsScaleUniform() const

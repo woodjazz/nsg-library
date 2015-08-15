@@ -144,7 +144,7 @@ namespace NSG
 			auto scale = particle->GetGlobalScale();
 			auto shape = Shape::GetOrCreate(ShapeKey(physicsParams_.shape_, scale));
 			rb->AddShape(shape);
-            particle->SetEnabled(false);
+            particle->Hide(false);
             particles_.push_back(particle);
         }
         Initialize(particle);
@@ -192,7 +192,7 @@ namespace NSG
 			Try2GenerateParticles(deltaTime);
 			for (auto& particle : particles_)
 			{
-				if (particle->IsEnabled())
+				if (!particle->IsHidden())
 				{
 					auto lifeTime = GetLifeTime();
 					auto age = particle->GetAge();

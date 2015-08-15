@@ -250,7 +250,7 @@ namespace NSG
 
     void Scene::NeedUpdate(SceneNode* obj)
     {
-        if(obj->GetMesh() != nullptr)
+        if(obj->GetMesh() != nullptr && !obj->IsHidden())
             octreeNeedsUpdate_.insert(obj);
     }
 

@@ -121,11 +121,10 @@ namespace NSG
         void SetParent(PNode parent);
         PNode GetParent() const;
         void ClearAllChildren();
-        bool IsEnabled() const { return enabled_; }
-        void SetEnabled(bool enable, bool recursive = true);
+        bool IsHidden() const { return hide_; }
+        void Hide(bool hide, bool recursive = true);
         virtual void OnDirty() const {};
-        virtual void OnEnable() {}
-        virtual void OnDisable() {}
+        virtual void OnHide(bool hide) {}
         virtual void OnScaleChange() {}
         virtual void OnSceneSet() {}
         void Update() const;
@@ -159,7 +158,7 @@ namespace NSG
         mutable Vector3 upDirection_;
         bool inheritScale_;
         mutable bool dirty_;
-        bool enabled_;
+        bool hide_;
         mutable bool isScaleUniform_;
     };
 }
