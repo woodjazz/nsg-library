@@ -222,6 +222,10 @@ namespace NSG
             SetMaterial(Material::Get(name));
         }
 
+        attribute = node.attribute("hide");
+        if(attribute)
+            SetEnabled(false);
+
         attribute = node.attribute("meshName");
         if (attribute)
         {

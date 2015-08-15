@@ -113,6 +113,9 @@ def CreateSceneNode(name, parentElem, obj, materialIndex=-1, loc=None, rot=None,
     if sca and sca != VECTOR3_ONE:
         sceneNodeEle.set("scale", Vector3ToString(sca))
 
+    if obj and obj.hide_render:
+        sceneNodeEle.set("hide", BoolToString(True))
+
     if materialIndex < 1:
         CreatePhysics(sceneNodeEle, obj, materialIndex)
     if obj and obj.dupli_type == 'GROUP' and obj.dupli_group:
