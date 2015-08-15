@@ -41,14 +41,4 @@ namespace NSG
 		if(Graphics::GetPtr())
 			Graphics::GetPtr()->RemoveUniformObj(this);
     }
-
-    void UniformsUpdate::ClearAllUpdates()
-    {
-		if (Graphics::GetPtr())
-		{
-			UniformObjs& uniformObjs = Graphics::GetPtr()->GetUniformObjs();
-			for (auto& obj : uniformObjs)
-				obj->needUpdate_ = false;
-		}
-    }
 }

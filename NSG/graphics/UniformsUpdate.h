@@ -33,7 +33,7 @@ namespace NSG
 		virtual ~UniformsUpdate();
 		bool UniformsNeedUpdate() const { return needUpdate_; }
 		void SetUniformsNeedUpdate() const { needUpdate_ = true; }
-		static void ClearAllUpdates();
+		void ClearUniform() { needUpdate_ = false; }
 	private:
 		mutable bool needUpdate_;
 	};

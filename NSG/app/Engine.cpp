@@ -80,7 +80,6 @@ namespace NSG
     {
 		signalBeginFrame_->Run();
 		Window::RenderWindows();
-		UniformsUpdate::ClearAllUpdates();
     }
 
     int Engine::Run()

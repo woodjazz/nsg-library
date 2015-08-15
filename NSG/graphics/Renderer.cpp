@@ -373,6 +373,12 @@ namespace NSG
 
             if(debugPhysics_)
             	DebugPhysicsPass();
+            
+            for(auto& obj: visibles_)
+                obj->ClearUniform();
+            
+            for(auto& obj: transparent_)
+                obj->ClearUniform();
 
             GUI::GetPtr()->Render(window);
         }
