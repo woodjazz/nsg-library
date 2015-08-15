@@ -2,6 +2,9 @@
 set -e
 case "${TRAVIS_OS_NAME}" in
   linux)
+    export AUDIODEV=null
+    # SIMULATE GUI (DISPLAY)
+    export DISPLAY=:99.0
     sh -e /etc/init.d/xvfb start
     # INSTALL gcc 4.8.1 AND g++ 4.8.1
     sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
