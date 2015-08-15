@@ -245,7 +245,7 @@ ENDFOREACH()
 ###########################
 # tests
 ###########################
-if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB AND NOT IS_TARGET_OSX)
+if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	enable_testing()
 	#include( CTest )
 	set(TEST_DIR ${ROOT_SOURCE_DIR}/tests)
