@@ -41,9 +41,9 @@ namespace NSG
 		  fogDepth_(25),
 		  fogHeight_(0)
     {
-        if (Graphics::this_)
+        if (Graphics::GetPtr())
         {
-            auto window = Graphics::this_->GetWindow();
+            auto window = Graphics::GetPtr()->GetWindow();
             if (window)
                 SetWindow(window);
         }
@@ -96,7 +96,7 @@ namespace NSG
         {
             if (window)
             {
-                window->SetScene(this);
+                //window->SetScene(this);
 
                 slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
                 {
@@ -141,8 +141,8 @@ namespace NSG
             }
             else
             {
-                if (window_->GetScene() == this)
-                    window_->SetScene(nullptr);
+                //if (window_->GetScene() == this)
+                //    window_->SetScene(nullptr);
                 slotMouseMoved_ = nullptr;
                 slotMouseDown_ = nullptr;
                 slotMouseUp_ = nullptr;
@@ -326,7 +326,7 @@ namespace NSG
 	PAnimation Scene::GetAnimationFor(const std::string& name, PSceneNode node) const
     {
 		auto animation = Animation::Get(name);
-		if (animation)
+		if (animation && animation->IsReady())
 		{
 			auto clone = animation->Clone();
 			if (clone->ResolveFor(node))

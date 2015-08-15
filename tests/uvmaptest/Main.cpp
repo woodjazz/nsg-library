@@ -32,6 +32,7 @@ int NSG_MAIN(int argc, char* argv[])
     // It is possible to use till 2 uv maps per mesh.
     // In Blender this corresponds to the first and second mapping defined in the mesh
 
+	auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
 	{
 		auto resource = Resource::GetOrCreate<ResourceFile>("data/aomap0.xml");
 		AppData data(resource);
@@ -45,6 +46,7 @@ int NSG_MAIN(int argc, char* argv[])
 		auto uv1Name = mesh->GetUVName(1);
 		CHECK_CONDITION(uv1Name == "UVMap1", __FILE__, __LINE__);
 		auto material = obj->GetMaterial();
+		CHECK_CONDITION(material->IsReady(), __FILE__, __LINE__);
 		auto texture = material->GetTexture(MaterialTexture::AO_MAP);
 		auto uvNameUsedByTexture = texture->GetUVName();
         // This texture uses first uv map defined in the mesh
@@ -64,6 +66,7 @@ int NSG_MAIN(int argc, char* argv[])
 		auto uv1Name = mesh->GetUVName(1);
 		CHECK_CONDITION(uv1Name == "UVMap1", __FILE__, __LINE__);
 		auto material = obj->GetMaterial();
+		CHECK_CONDITION(material->IsReady(), __FILE__, __LINE__);
 		auto texture = material->GetTexture(MaterialTexture::AO_MAP);
 		auto uvNameUsedByTexture = texture->GetUVName();
         // This texture uses second uv map defined in the mesh
@@ -83,6 +86,7 @@ int NSG_MAIN(int argc, char* argv[])
 		auto uv1Name = mesh->GetUVName(1);
 		CHECK_CONDITION(uv1Name == "UVMap2", __FILE__, __LINE__);
 		auto material = obj->GetMaterial();
+		CHECK_CONDITION(material->IsReady(), __FILE__, __LINE__);
 		auto texture = material->GetTexture(MaterialTexture::DIFFUSE_MAP);
 		auto uvNameUsedByTexture = texture->GetUVName();
         // This texture uses second uv map defined in the mesh

@@ -36,55 +36,56 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	Filter::Filter(const std::string& name, PTexture input)
+    Filter::Filter(const std::string& name, PTexture input)
         : pMaterial_(Material::GetOrCreate(name)),
-		pMesh_(Mesh::GetOrCreateClass<QuadMesh>("FilterMesh")),
-		  frameBuffer_(std::make_shared<FrameBuffer>(name, FrameBuffer::Flag::COLOR | FrameBuffer::Flag::COLOR_USE_TEXTURE)),
+          pMesh_(Mesh::GetOrCreateClass<QuadMesh>("FilterMesh")),
+          frameBuffer_(std::make_shared<FrameBuffer>(name, FrameBuffer::Flag::COLOR | FrameBuffer::Flag::COLOR_USE_TEXTURE)),
           name_(name),
-          node_(std::make_shared<SceneNode>(name))
+          node_(std::make_shared<SceneNode>(name)),
+          graphics_(Graphics::GetPtr())
     {
-		pMaterial_->SetTexture(input);
-		pMaterial_->SetRenderPass(RenderPass::UNLIT);
-		auto window = Graphics::this_->GetWindow();
-		if (window)
-			SetWindow(window);
+        pMaterial_->SetTexture(input);
+        pMaterial_->SetRenderPass(RenderPass::UNLIT);
+        auto window = graphics_->GetWindow();
+        if (window)
+            SetWindow(window);
     }
 
     Filter::~Filter()
     {
     }
 
-	void Filter::SetWindow(Window* window)
-	{
-		frameBuffer_->SetWindow(window);
-	}
+    void Filter::SetWindow(Window* window)
+    {
+        frameBuffer_->SetWindow(window);
+    }
 
     void Filter::SetInputTexture(PTexture input)
     {
-		pMaterial_->SetTexture(input);
+        pMaterial_->SetTexture(input);
     }
 
-	PTexture Filter::GetInputTexture() const
-	{
-		return pMaterial_->GetTexture(MaterialTexture::DIFFUSE_MAP);
-	}
+    PTexture Filter::GetInputTexture() const
+    {
+        return pMaterial_->GetTexture(MaterialTexture::DIFFUSE_MAP);
+    }
 
     void Filter::Draw()
     {
         if (!frameBuffer_->IsReady() || !pMesh_->IsReady() || !pMaterial_->IsReady())
             return;
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		Pass pass;
-		pass.EnableDepthTest(false);
-		Graphics::this_->SetFrameBuffer(frameBuffer_.get());
-		Camera* pCurrent = Graphics::this_->GetCamera();
-		Graphics::this_->SetCamera(nullptr);
-		Graphics::this_->SetMesh(pMesh_.get());
-		if(Graphics::this_->SetupProgram(&pass, node_.get(), pMaterial_.get(), nullptr))
-			Graphics::this_->DrawActiveMesh();
-		Graphics::this_->SetCamera(pCurrent);
+        Pass pass;
+        pass.EnableDepthTest(false);
+        graphics_->SetFrameBuffer(frameBuffer_.get());
+        Camera* pCurrent = graphics_->GetCamera();
+        graphics_->SetCamera(nullptr);
+        graphics_->SetMesh(pMesh_.get());
+        if (graphics_->SetupProgram(&pass, node_.get(), pMaterial_.get(), nullptr))
+            graphics_->DrawActiveMesh();
+        graphics_->SetCamera(pCurrent);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }

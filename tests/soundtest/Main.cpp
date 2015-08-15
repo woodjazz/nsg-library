@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-    auto music = std::make_shared<Music>();
+    auto music = Music::Create();
 	music->Set(std::make_shared<ResourceFile>("data/nice_music.ogg"));
 	auto sound = Sound::Create();
 	sound->Set(std::make_shared<ResourceFile>("data/PlayerFist.wav"));

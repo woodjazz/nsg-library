@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #pragma once
 #include "Util.h"
 #include <string>
-#include <mutex>
 namespace NSG
 {
     class Window : public std::enable_shared_from_this<Window>
@@ -121,6 +120,8 @@ namespace NSG
         Scene* scene_; //scene to render in this window
 		static std::vector<PWeakWindow> windows_;
         static Window* mainWindow_;
+		PGraphics graphics_;
+		PRenderer renderer_;
     private:
         void AddFilter(PFilter filter);
         void CreateFrameBuffer();
@@ -145,8 +146,6 @@ namespace NSG
         SignalEmpty::PSignal signalDrawIMGUI_;
         PTexture showTexture_;
         static int nWindows2Remove_;
-        static PGraphics graphics_;
-        static std::once_flag onceFlag_;
         PixelFormat pixelFormat_;
     };
 }

@@ -34,7 +34,6 @@ namespace NSG
 	class Graphics : public Singleton<Graphics>
 	{
 	public:
-		Graphics();
 		~Graphics();
 		bool CheckExtension(const std::string& name);
 		void ResetCachedState();
@@ -113,11 +112,12 @@ namespace NSG
 		bool NeedsDecompress(TextureFormat format) const;
 		bool SetupProgram(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light);
 		void SetupPass(const Pass* pass);
-		GLenum GetTexelDataType() const;
-		GLenum GetTexelFormatType() const;
+		static GLenum GetTexelDataType();
+		static GLenum GetTexelFormatType();
 		void CreateGUI(Window* mainWindow);
 		void DestroyGUI();
 	private:
+		Graphics();
 		void SetUpViewport();
 		Recti viewport_;
 		GLint systemFbo_;
@@ -159,7 +159,7 @@ namespace NSG
 		DepthFunc depthFunc_;
 		Vector4 viewportFactor_;
 		int maxTextureSize_;
-		PRenderer renderer_;
 		PGUI imgui_;
+		friend class Singleton<Graphics>;
 	};
 }

@@ -24,13 +24,13 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Mesh.h"
+#include "ProceduralMesh.h"
 #include "Constants.h"
 #include <vector>
 
 namespace NSG
 {
-	class LinesMesh : public Mesh
+	class LinesMesh : public ProceduralMesh
 	{
 	public:
 		LinesMesh(const std::string& name);
@@ -40,7 +40,6 @@ namespace NSG
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		size_t GetNumberOfTriangles() const override;
-        bool IsValid() override;
         void AllocateResources() override;
         PhysicsShape GetShapeType() const override { return SH_EMPTY; }
 		bool IsEmpty() const { return lines_.empty();  }

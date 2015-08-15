@@ -263,11 +263,30 @@ macro (setup_executable)
         set_target_properties(${PROJECT_NAME} PROPERTIES ENABLE_EXPORTS "1")
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
+        #add_custom_command(
+        #    TARGET ${PROJECT_NAME} POST_BUILD
+        #        COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
+        #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        #        COMMENT "Generating HTML with Emscripten" VERBATIM)
+
+        #add_custom_command(
+        #    TARGET ${PROJECT_NAME} POST_BUILD
+        #        COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --preload-file data 
+        #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        #        COMMENT "Generating HTML with Emscripten" VERBATIM)
+
+        #add_custom_command(
+        #    TARGET ${PROJECT_NAME} POST_BUILD
+        #        COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s TOTAL_MEMORY=999999999 -o ${PROJECT_NAME}.html --preload-file data --pre-js ${EMSCRIPTEN_DIR}/disable_decoding.js
+        #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        #        COMMENT "Generating HTML with Emscripten" VERBATIM)
+
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s TOTAL_MEMORY=99999999 -o ${PROJECT_NAME}.html --pre-js ${EMSCRIPTEN_DIR}/disable_decoding.js
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMENT "Generating HTML with Emscripten" VERBATIM)
+
 
     else()
 
@@ -419,3 +438,18 @@ MACRO(GENERATE_SHADER_HEADER_FILE input_file input_template_file output_file)
     configure_file(${input_template_file} ${output_file})
 ENDMACRO()
 ####################################################################
+
+FUNCTION(CLEAN_DATA_TOOL dir)
+  SUBDIRLIST(SUBDIRS ${CMAKE_SOURCE_DIR}/${dir})
+  FOREACH(subdir ${SUBDIRS})
+    get_filename_component(INPUTDIR "${dir}/${subdir}" ABSOLUTE)
+    set(ARTDATA "${INPUTDIR}/art")
+    #message("${ARTDATA}")
+    if(EXISTS ${ARTDATA})
+      set(FILEDATA "${INPUTDIR}/data")
+      file(REMOVE_RECURSE ${FILEDATA})
+      file(MAKE_DIRECTORY ${FILEDATA})
+    endif()
+  ENDFOREACH()
+ENDFUNCTION(CLEAN_DATA_TOOL)
+

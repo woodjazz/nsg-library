@@ -28,7 +28,6 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Mesh.h"
 #include "BoundingBox.h"
-#include "ResourceXMLNode.h"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "hull.h"
 #include "pugixml.hpp"
@@ -104,7 +103,7 @@ namespace NSG
 		if(mesh)
 			bb_ = mesh->GetBB(); 
 
-        return (!xmlResource_ || xmlResource_->IsReady()) && bb_.IsDefined();
+        return bb_.IsDefined();
     }
 
     void Shape::AllocateResources()
@@ -259,7 +258,7 @@ namespace NSG
         return nullptr;
     }
 
-    void Shape::LoadFrom(PResource resource, const pugi::xml_node& node)
+    void Shape::Load(const pugi::xml_node& node)
     {
         CHECK_ASSERT(name_ == node.attribute("name").as_string(), __FILE__, __LINE__);
 		CHECK_ASSERT(type_ == ToPhysicsShape(node.attribute("type").as_string()), __FILE__, __LINE__);
@@ -285,27 +284,6 @@ namespace NSG
         child.append_attribute("scale").set_value(ToString(scale_).c_str());
     }
 
-    std::vector<PShape> Shape::LoadShapes(PResource resource, const pugi::xml_node& node)
-    {
-        std::vector<PShape> result;
-        pugi::xml_node objs = node.child("Shapes");
-        if (objs)
-        {
-            pugi::xml_node child = objs.child("Shape");
-            while (child)
-            {
-                std::string name = child.attribute("name").as_string();
-                auto shape(Shape::GetOrCreate(name));
-                auto xmlResource = Resource::CreateClass<ResourceXMLNode>(GetUniqueName(name));
-                xmlResource->Set(resource, shape, "Shapes", name);
-                xmlResource->IsReady(); //force load resources
-                shape->Set(xmlResource);
-                result.push_back(shape);
-                child = child.next_sibling("Shape");
-            }
-        }
-        return result;
-    }
 
     void Shape::SaveShapes(pugi::xml_node& node)
     {
@@ -313,15 +291,6 @@ namespace NSG
         auto objs = Shape::GetObjs();
         for (auto& obj : objs)
             obj->Save(child);
-    }
-
-    void Shape::Set(PResourceXMLNode xmlResource)
-    {
-        if (xmlResource != xmlResource_)
-        {
-            xmlResource_ = xmlResource;
-            Invalidate();
-        }
     }
 }
 

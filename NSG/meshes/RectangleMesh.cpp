@@ -31,7 +31,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     RectangleMesh::RectangleMesh(const std::string& name)
-        : Mesh(name)
+        : ProceduralMesh(name)
     {
         Set();
         SetSerializable(false);
@@ -64,11 +64,6 @@ namespace NSG
     size_t RectangleMesh::GetNumberOfTriangles() const
     {
         return 2;
-    }
-
-    bool RectangleMesh::IsValid()
-    {
-        return true;
     }
 
     void RectangleMesh::AllocateResources()

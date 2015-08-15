@@ -26,24 +26,24 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Tick.h"
+#include "Singleton.h"
 #include "AppConfiguration.h"
 
 namespace NSG
 {
-    class Engine : public Tick
+    class Engine : public Tick, public Singleton<Engine>
     {
     public:
-        Engine();
         ~Engine();
         int Run();
         void RenderFrame();
         float GetDeltaTime() const { return deltaTime_; }
         static const AppConfiguration& GetAppConfiguration() { return conf_; }
-        static Engine* GetPtr() { return Engine::this_; }
         static SignalEngine::PSignal SigReady();
         SignalEmpty::PSignal SigBeginFrame() { return signalBeginFrame_; }
         SignalUpdate::PSignal SigUpdate() { return signalUpdate_; }
     private:
+		Engine();
         void InitializeTicks() override;
         void BeginTicks() override;
         void DoTick(float delta) override;
@@ -52,6 +52,6 @@ namespace NSG
         SignalEmpty::PSignal signalBeginFrame_;
         SignalUpdate::PSignal signalUpdate_;
         static AppConfiguration conf_;
-        static Engine* this_;
+		friend class Singleton < Engine > ;
     };
 }

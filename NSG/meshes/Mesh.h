@@ -71,7 +71,6 @@ namespace NSG
 		void AddTriangle(const VertexData& v0, const VertexData& v1, const VertexData& v2, const Vector3& normal);
 		void AverageNormals(size_t indexBase, bool isQuad);
         const VertexData& GetTriangleVertex(size_t triangleIdx, size_t vertexIndex) const;
-		static std::vector<PMesh> LoadMeshes(PResource resource, const pugi::xml_node& node);
 		static void SaveMeshes(pugi::xml_node& node);
 		void SetMeshData(const VertexsData& vertexsData, const Indexes& indexes);
 		virtual PhysicsShape GetShapeType() const { return SH_CONVEX_TRIMESH; } // assume rigidbody is dynamic by default 
@@ -80,7 +79,7 @@ namespace NSG
         int GetUVIndex(const std::string& name) const;
         bool HasDeformBones() const { return hasDeformBones_; }
 	protected:
-		virtual void Load(const pugi::xml_node& node);
+		void Load(const pugi::xml_node& node) override;
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;

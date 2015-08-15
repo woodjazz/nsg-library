@@ -32,21 +32,21 @@ namespace NSG
     {
         needUpdate_ = true;
 
-		if (Graphics::this_)
-			Graphics::this_->InsertUniformObj(this);
+		if (Graphics::GetPtr())
+			Graphics::GetPtr()->InsertUniformObj(this);
     }
 
     UniformsUpdate::~UniformsUpdate()
     {
-		if(Graphics::this_)
-			Graphics::this_->RemoveUniformObj(this);
+		if(Graphics::GetPtr())
+			Graphics::GetPtr()->RemoveUniformObj(this);
     }
 
     void UniformsUpdate::ClearAllUpdates()
     {
-		if (Graphics::this_)
+		if (Graphics::GetPtr())
 		{
-			UniformObjs& uniformObjs = Graphics::this_->GetUniformObjs();
+			UniformObjs& uniformObjs = Graphics::GetPtr()->GetUniformObjs();
 			for (auto& obj : uniformObjs)
 				obj->needUpdate_ = false;
 		}

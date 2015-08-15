@@ -37,5 +37,7 @@ int NSG_MAIN(int argc, char* argv[])
 	//object->GetMaterial()->SetSolid(false);
     auto camera = scene0->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);
-	return Engine().Run();
+	window->SetScene(data.scenes_[0].get());
+	auto engine = Engine::Create();
+	return engine->Run();
 }

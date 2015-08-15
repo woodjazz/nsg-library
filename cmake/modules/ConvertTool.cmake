@@ -35,8 +35,8 @@ function(CONVERT_TOOL input_file output_dir)
 
 	    set(TARGET_NAME CONVERT_${PROJECT_NAME}_${INPUTNAME})
 
-		add_custom_target(${TARGET_NAME} ALL
-   			DEPENDS ${OUTPUT_FILE} 
+		add_custom_target(${TARGET_NAME} 
+   			DEPENDS ${OUTPUT_FILE} ${INPUTFILE}
 		)
 
 		set_property(TARGET ${TARGET_NAME} PROPERTY FOLDER "CONVERTERS")

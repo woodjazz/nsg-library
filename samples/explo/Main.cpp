@@ -25,7 +25,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-	Engine engine;
+	auto engine = Engine::Create();
     auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/explo1.png");
     auto scene = std::make_shared<Scene>();
@@ -46,7 +46,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto totalTime = 0.f;
     auto fps = 1 / 24.f;
     float alpha(1);
-    auto slotUpdate = engine.SigUpdate()->Connect([&](float deltaTime)
+    auto slotUpdate = engine->SigUpdate()->Connect([&](float deltaTime)
     {
         if (totalTime > fps)
         {
@@ -71,5 +71,6 @@ int NSG_MAIN(int argc, char* argv[])
             totalTime += deltaTime;
     });
 
-	return engine.Run();
+	window->SetScene(scene.get());
+	return engine->Run();
 }

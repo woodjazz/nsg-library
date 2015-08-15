@@ -135,6 +135,18 @@ namespace NSG
         {
         	objsMap_.clear();
         }
+
+        static bool AreReady()
+       	{
+			for (auto& obj : objsMap_)
+			{
+				auto p = obj.second.lock();
+				if(p && !p->IsReady())
+					return false;
+			}
+			return true;
+       	}
+       	
     private:
 		static std::map<K, PWT> objsMap_;
     };

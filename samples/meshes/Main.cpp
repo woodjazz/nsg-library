@@ -70,7 +70,8 @@ int NSG_MAIN(int argc, char* argv[])
 	CreateObject(Mesh::Create<RoundedRectangleMesh>(), ColorRGB(1, 1, 1), Vector3(30, 0, 0));
 	CreateObject(Mesh::Create<SphereMesh>(), ColorRGB(0, 1, 1), Vector3(40, 0, 0));
 	control->AutoZoom();
-	auto r = Engine().Run();
+	window->SetScene(scene.get());
+	auto r = Engine::Create()->Run();
 	scene = nullptr;
 	return r;
 }

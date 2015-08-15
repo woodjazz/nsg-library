@@ -54,8 +54,6 @@ namespace NSG
     std::vector<PWeakWindow> Window::windows_;
     Window* Window::mainWindow_ = nullptr;
     int Window::nWindows2Remove_ = 0;
-    PGraphics Window::graphics_;
-    std::once_flag Window::onceFlag_;
 
     Window::Window(const std::string& name)
         : name_(name),
@@ -141,10 +139,10 @@ namespace NSG
         {
             if (!frameBuffer_->IsReady())
                 return false;
-			Graphics::this_->SetFrameBuffer(frameBuffer_.get());
+			graphics_->SetFrameBuffer(frameBuffer_.get());
         }
         else
-			Graphics::this_->SetFrameBuffer(nullptr);
+			graphics_->SetFrameBuffer(nullptr);
         return true;
     }
 
@@ -156,7 +154,7 @@ namespace NSG
                 filter->Draw();
         if (hasFilters || showTexture_)
         {
-			Graphics::this_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
+			graphics_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
             showMap_->Show();
         }
     }
@@ -167,8 +165,8 @@ namespace NSG
 
         if (Window::mainWindow_ == this)
         {
-			Graphics::this_->DestroyGUI();
-            Graphics::this_->ResetCachedState();
+			graphics_->DestroyGUI();
+			graphics_->ResetCachedState();
             // destroy other windows
             auto windows = Window::GetWindows();
             for (auto& obj : windows)
@@ -183,11 +181,8 @@ namespace NSG
 
     void Window::OnReady()
     {
-        std::call_once(onceFlag_, [&]()
-        {
-            CHECK_ASSERT(!graphics_, __FILE__, __LINE__);
-            graphics_ = PGraphics(new Graphics);
-        });
+        graphics_ = Graphics::Create();
+		renderer_ = Renderer::Create();
 		graphics_->SetWindow(this);
         CreateFrameBuffer(); // used when filters are enabled
 		if (isMainWindow_)
@@ -203,9 +198,9 @@ namespace NSG
             width_ = width;
             height_ = height;
 
-            if (Graphics::this_ && Graphics::this_->GetWindow() == this)
+			if (graphics_ && graphics_->GetWindow() == this)
             {
-                Graphics::this_->SetViewport(GetViewport(), true);
+				graphics_->SetViewport(GetViewport(), true);
                 signalViewChanged_->Run(width, height);
             }
         }
@@ -281,8 +276,8 @@ namespace NSG
         minimized_ = true;
         if (Window::mainWindow_ == this)
         {
-            if (Music::this_ && Engine::GetAppConfiguration().pauseMusicOnBackground_)
-                Music::this_->Pause();
+            if (Music::GetPtr() && Engine::GetAppConfiguration().pauseMusicOnBackground_)
+				Music::GetPtr()->Pause();
         }
     }
 
@@ -290,8 +285,8 @@ namespace NSG
     {
         if (Window::mainWindow_ == this)
         {
-            if (Music::this_ && Engine::GetAppConfiguration().pauseMusicOnBackground_)
-                Music::this_->Resume();
+			if (Music::GetPtr() && Engine::GetAppConfiguration().pauseMusicOnBackground_)
+				Music::GetPtr()->Resume();
         }
 
         minimized_ = false;

@@ -31,9 +31,11 @@ namespace NSG
 	class Keyboard : public Singleton<Keyboard>
 	{
 	public:
-		Keyboard();
 		~Keyboard();
 		bool Enable();
 		bool Disable();
+	private:
+		Keyboard();
+		friend class Singleton<Keyboard>;
 	};
 }

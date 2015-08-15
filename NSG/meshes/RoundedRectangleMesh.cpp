@@ -32,7 +32,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     RoundedRectangleMesh::RoundedRectangleMesh(const std::string& name)
-        : Mesh(name)
+        : ProceduralMesh(name)
     {
         Set();
         SetSerializable(false);
@@ -67,11 +67,6 @@ namespace NSG
     size_t RoundedRectangleMesh::GetNumberOfTriangles() const
     {
         return vertexsData_.size() - 2;
-    }
-
-    bool RoundedRectangleMesh::IsValid()
-    {
-        return true;
     }
 
     void RoundedRectangleMesh::AllocateResources()

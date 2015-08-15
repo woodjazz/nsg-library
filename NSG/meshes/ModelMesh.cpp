@@ -61,28 +61,7 @@ namespace NSG
             return 0;
     }
 
-	void ModelMesh::Set(PResource resource)
-    {
-		if (resource != resource_)
-		{
-			resource_ = resource;
-			Invalidate();
-		}
-    }
-
-    bool ModelMesh::IsValid()
-    {
-		return (!resource_ || resource_->IsReady()) && Graphics::this_ && !vertexsData_.empty();
-    }
-
-	void ModelMesh::ReleaseResources()
-	{
-		if (resource_)
-			resource_->Invalidate();
-		Mesh::ReleaseResources();
-	}
-
-	void ModelMesh::LoadFrom(PResource resource, const pugi::xml_node& node)
+	void ModelMesh::Load(const pugi::xml_node& node)
 	{
 		//SetFaceMode(node.attribute("wireFrameDrawMode").as_int()); // redundant
 		auto drawModeAtt = node.attribute("solidDrawMode");

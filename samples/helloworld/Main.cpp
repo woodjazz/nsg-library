@@ -31,8 +31,15 @@ int NSG_MAIN(int argc, char* argv[])
 
 	auto window = Window::Create();
 
-    auto xml = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.xml");
-    auto atlas = std::make_shared<FontAtlas>(xml);
+    auto font = std::make_shared<FontAtlas>();
+
+	auto xmlResource = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.xml");
+	font->Set(xmlResource);
+
+	auto atlasResource = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.png");
+	auto atlasTexture = std::make_shared<Texture2D>(atlasResource);
+	font->SetTexture(atlasTexture);
+
 
     auto scene = std::make_shared<Scene>("scene");
     auto camera = scene->CreateChild<Camera>();
@@ -47,14 +54,14 @@ int NSG_MAIN(int argc, char* argv[])
     auto nodeLeftBottom = scene->GetOrCreateChild<SceneNode>("nodeLeftBottom");
     auto nodeRightBottom = scene->GetOrCreateChild<SceneNode>("nodeRightBottom");
 
-    nodeCenter->SetMesh(atlas->GetOrCreateMesh("C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
-    nodeLeftTop->SetMesh(atlas->GetOrCreateMesh("LT Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT));
-    nodeRightTop->SetMesh(atlas->GetOrCreateMesh("RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT));
-    nodeLeftBottom->SetMesh(atlas->GetOrCreateMesh("LB Hello World!!!", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT));
-    nodeRightBottom->SetMesh(atlas->GetOrCreateMesh("RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT));
+	nodeCenter->SetMesh(font->GetOrCreateMesh("C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
+	nodeLeftTop->SetMesh(font->GetOrCreateMesh("LT Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT));
+	nodeRightTop->SetMesh(font->GetOrCreateMesh("RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT));
+	nodeLeftBottom->SetMesh(font->GetOrCreateMesh("LB Hello World!!!", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT));
+	nodeRightBottom->SetMesh(font->GetOrCreateMesh("RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT));
 
 	auto material = Material::Create();
-    material->SetTextMap(atlas->GetTexture());
+	material->SetTextMap(font->GetTexture());
 
     auto focusMaterial = material->Clone();
 	focusMaterial->SetDiffuseColor(ColorRGB(0, 0, 1));
@@ -86,6 +93,7 @@ int NSG_MAIN(int argc, char* argv[])
 		}
     });
 
-    return Engine().Run();
+	window->SetScene(scene.get());
+	return Engine::Create()->Run();
 }
 

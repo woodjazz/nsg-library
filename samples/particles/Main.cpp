@@ -54,6 +54,7 @@ int NSG_MAIN(int argc, char* argv[])
     ps->SetPosition(Vertex3(0, 10, 0));
 	ps->SetMaterial(Material::Create());
 	ps->GetMaterial()->SetFillMode(FillMode::WIREFRAME);
-	return Engine().Run();
+	window->SetScene(scene.get());
+	return Engine::Create()->Run();
 }
 

@@ -38,23 +38,19 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    AppConfiguration Engine::conf_;
-    Engine* Engine::this_ = nullptr;
+	AppConfiguration Engine::conf_;
 
     Engine::Engine()
-        : Tick(Engine::conf_.fps_),
+        : Tick(conf_.fps_),
           deltaTime_(0),
           signalBeginFrame_(new SignalEmpty),
           signalUpdate_(new SignalUpdate)
     {
-        CHECK_ASSERT(!Engine::this_, __FILE__, __LINE__);
-        Engine::this_ = this;
     }
 
     Engine::~Engine()
     {
-        CHECK_ASSERT(Engine::this_, __FILE__, __LINE__);
-        Engine::this_ = nullptr;
+		Engine::Destroy();
     }
 
     void Engine::InitializeTicks()

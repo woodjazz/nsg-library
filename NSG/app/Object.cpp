@@ -27,6 +27,8 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Util.h"
 #include "SignalSlots.h"
+#include "LoaderXML.h"
+#include "LoaderXMLNode.h"
 
 namespace NSG
 {
@@ -62,6 +64,15 @@ namespace NSG
         }
     }
 
+	void Object::SetLoader(PLoaderXMLNode nodeLoader)
+	{
+		if (nodeLoader_ != nodeLoader)
+		{
+			nodeLoader_ = nodeLoader;
+			Invalidate();
+		}
+	}
+
     std::string Object::GetType() const
     {
         return typeid(*this).name();
@@ -76,7 +87,7 @@ namespace NSG
     {
         if (!isValid_)
         {
-            isValid_ = IsValid();
+			isValid_ = (!nodeLoader_ || nodeLoader_->IsReady()) && IsValid();
 
             if (isValid_)
             {
@@ -100,4 +111,30 @@ namespace NSG
     {
         SigInvalidateAll()->Run();
     }
+
+	void Object::LoadAll(PLoaderXML loader, const char* collectionType, AdderFunction adder)
+    {
+        auto& doc = loader->GetDocument();
+        pugi::xml_node node = doc.child("App");
+        pugi::xml_node collection = node.child(collectionType);
+        if (collection)
+        {
+            pugi::xml_node child = collection.first_child();
+            while (child)
+            {
+                std::string name = child.attribute("name").as_string();
+                adder(name);
+                child = child.next_sibling();
+            }
+        }
+    }
+
+	void Object::SetLoader(PLoaderXML loader, const char* collectionType, PObject obj, const std::string& name)
+	{
+		auto nodeLoader = std::make_shared<LoaderXMLNode>(name);
+		nodeLoader->Set(loader, obj, collectionType, name);
+		obj->SetLoader(nodeLoader);
+
+	}
+
 }

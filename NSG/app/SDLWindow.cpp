@@ -116,7 +116,7 @@ namespace NSG
         : Window(name),
           flags_(0)
     {
-        const AppConfiguration& conf = Engine::GetAppConfiguration();
+        const AppConfiguration& conf = Engine::GetPtr()->GetAppConfiguration();
         Initialize(conf.x_, conf.y_, conf.width_, conf.height_, flags);
         LOGI("Window %s created.", name_.c_str());
     }
@@ -131,8 +131,8 @@ namespace NSG
 
     SDLWindow::~SDLWindow()
     {
-        if (this == Graphics::this_->GetWindow())
-            Graphics::this_->SetWindow(nullptr);
+        if (this == graphics_->GetWindow())
+            graphics_->SetWindow(nullptr);
         Close();
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
@@ -423,7 +423,7 @@ namespace NSG
             auto win = SDL_GetWindowFromID(windowID_);
             auto context = SDL_GL_CreateContext(win);
             SDL_GL_MakeCurrent(win, context);
-            Graphics::this_->ResetCachedState();
+            graphics_->ResetCachedState();
         }
         #endif
     }
@@ -545,7 +545,7 @@ namespace NSG
                 {
                     if (key == SDL_SCANCODE_AC_BACK)
                     {
-                        Graphics::this_->ResetCachedState();
+                        Graphics::GetPtr()->ResetCachedState();
                         window->Close();
                         exit(0);
                     }

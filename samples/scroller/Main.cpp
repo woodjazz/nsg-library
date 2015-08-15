@@ -33,9 +33,9 @@ int NSG_MAIN(int argc, char* argv[])
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scroller.xml");
     AppData data(resource);
     auto soundMusic = Sound::Get("nice_music.ogg.004");
-    Music music;
-    music.Set(soundMusic->GetResource());
-    music.Play();
+	auto music = Music::Create();
+    music->Set(soundMusic->GetResource());
+    music->Play();
 	auto scene = data.scenes_.at(0);
     scene->SetAmbientColor(ColorRGB(0.5f));
 	scene->GetChild<SceneNode>("Level1", false)->GetMaterial()->SetAmbientIntensity(1);
@@ -55,10 +55,14 @@ int NSG_MAIN(int argc, char* argv[])
     auto horizontalLimit = cameraHalfWidth - playerHalfWidth;
     auto verticalLimit = cameraHalfHeight - playerHalfHeight;
     bool playerDestroyed = false;
-    auto playerRigidBody = player->GetRigidBody();
+	auto sound = Sound::Get("BigExplosion.wav.001");
+	sound->Play();
+	auto engine = Engine::Create();
+#if 0
+	auto playerRigidBody = camera->GetRigidBody();
     playerRigidBody->HandleCollisions(true);
 
-    auto sound = Sound::Get("BigExplosion.wav.001");
+    
     auto static slotCollision = player->SigCollision()->Connect([&](const ContactPoint & contactInfo)
     {
         if(!playerDestroyed)
@@ -83,7 +87,6 @@ int NSG_MAIN(int argc, char* argv[])
     float alpha = 1;
     float alphaAdd = 0.1f;
 
-	Engine engine;
 	auto updateSlot = engine.SigUpdate()->Connect([&](float dt)
     {
         if (!playerDestroyed)
@@ -103,6 +106,7 @@ int NSG_MAIN(int argc, char* argv[])
         }
 
     });
-
-    return engine.Run();
+#endif
+	window->SetScene(data.scenes_[0].get());
+    return engine->Run();
 }

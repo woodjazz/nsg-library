@@ -55,7 +55,7 @@ namespace NSG
 
     Light::~Light()
     {
-        if (Graphics::this_)
+        if (Graphics::GetPtr())
             SignalBeingDestroy()->Run(this);
     }
 
@@ -256,7 +256,7 @@ namespace NSG
 
     bool Light::DoShadows() const
     {
-        return shadows_;// && Graphics::this_->GetWindow()->GetPixelFormat() != PixelFormat::RGB565;
+        return shadows_;// && Graphics::GetPtr()->GetWindow()->GetPixelFormat() != PixelFormat::RGB565;
     }
 
     FrameBuffer* Light::GetShadowFrameBuffer(int idx) const
@@ -329,7 +329,7 @@ namespace NSG
 
     void Light::Generate2DShadowMap(int split)
     {
-        auto frameBuffer = Graphics::this_->GetFrameBuffer();
+        auto frameBuffer = Graphics::GetPtr()->GetFrameBuffer();
         auto shadowFrameBuffer = GetShadowFrameBuffer(split);
         auto splitMapsize = GetShadowFrameBufferSize(split);
         shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
@@ -338,33 +338,33 @@ namespace NSG
             auto shadowCamera = GetShadowCamera(split);
             std::vector<SceneNode*> shadowCasters;
             shadowCamera->GetVisiblesShadowCasters(shadowCasters);
-            Graphics::this_->SetFrameBuffer(shadowFrameBuffer);
-            auto lastCamera = Graphics::this_->SetCamera(shadowCamera);
-            Graphics::this_->ClearBuffers(true, true, false);
+            Graphics::GetPtr()->SetFrameBuffer(shadowFrameBuffer);
+            auto lastCamera = Graphics::GetPtr()->SetCamera(shadowCamera);
+            Graphics::GetPtr()->ClearBuffers(true, true, false);
             std::vector<PBatch> batches;
             Renderer::GetPtr()->GenerateBatches(shadowCasters, batches);
             for (auto& batch : batches)
                 if (batch->GetMaterial()->CastShadow())
                     Renderer::GetPtr()->DrawShadowPass(batch.get(), this);
-            Graphics::this_->SetCamera(lastCamera);
-            Graphics::this_->SetFrameBuffer(frameBuffer);
+            Graphics::GetPtr()->SetCamera(lastCamera);
+            Graphics::GetPtr()->SetFrameBuffer(frameBuffer);
         }
     }
 
     void Light::GenerateShadowMapCubeFace(int split)
     {
         auto shadowCamera = GetShadowCamera(split);
-        auto lastCamera = Graphics::this_->SetCamera(shadowCamera);
+        auto lastCamera = Graphics::GetPtr()->SetCamera(shadowCamera);
         std::vector<SceneNode*> shadowCasters;
         shadowCamera->GetVisiblesShadowCasters(shadowCasters);
         std::vector<PBatch> batches;
         auto renderer = Renderer::GetPtr();
         renderer->GenerateBatches(shadowCasters, batches);
-        Graphics::this_->ClearBuffers(true, true, false);
+        Graphics::GetPtr()->ClearBuffers(true, true, false);
         for (auto& batch : batches)
             if (batch->GetMaterial()->CastShadow())
                 renderer->DrawShadowPass(batch.get(), this);
-        Graphics::this_->SetCamera(lastCamera);
+        Graphics::GetPtr()->SetCamera(lastCamera);
     }
 
     int Light::GetShadowFrameBufferSize(int split) const
@@ -377,7 +377,7 @@ namespace NSG
 
     void Light::GenerateCubeShadowMap(int split, const Camera* camera)
     {
-        auto frameBuffer = Graphics::this_->GetFrameBuffer();
+        auto frameBuffer = Graphics::GetPtr()->GetFrameBuffer();
         auto shadowFrameBuffer = GetShadowFrameBuffer(split);
         auto splitMapsize = GetShadowFrameBufferSize(split);
         shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
@@ -394,11 +394,11 @@ namespace NSG
                                     Intersection::OUTSIDE != camFrustum->IsInside(BoundingBox(*shadowCamera->GetFrustum()));
                 if (genShadowMap)
                 {
-                    Graphics::this_->SetFrameBuffer(shadowFrameBuffer, face);
+                    Graphics::GetPtr()->SetFrameBuffer(shadowFrameBuffer, face);
                     GenerateShadowMapCubeFace(split);
                 }
             }
-            Graphics::this_->SetFrameBuffer(frameBuffer);
+            Graphics::GetPtr()->SetFrameBuffer(frameBuffer);
         }
     }
 

@@ -56,7 +56,8 @@ namespace NSG
     VertexArrayObj::VertexArrayObj(const VAOKey& key)
         : Object(key.GetName()),
           vao_(0),
-          key_(key)
+          key_(key),
+          graphics_(Graphics::GetPtr())
     {
     }
 
@@ -78,15 +79,15 @@ namespace NSG
 		auto program = key_.program;
         auto mesh = key_.mesh;
 
-		CHECK_ASSERT(!vBuffer->IsDynamic() && !iBuffer->IsDynamic(), __FILE__, __LINE__);
+		CHECK_ASSERT(!vBuffer->IsDynamic() && (!iBuffer || !iBuffer->IsDynamic()), __FILE__, __LINE__);
 
         glGenVertexArrays(1, &vao_);
 
         CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
 
-        Graphics::this_->SetVertexArrayObj(this);
+        graphics_->SetVertexArrayObj(this);
 
-        Graphics::this_->SetVertexBuffer(vBuffer, true);
+        graphics_->SetVertexBuffer(vBuffer, true);
 
         GLuint position_loc = program->GetAttPositionLoc();
         GLuint texcoord_loc0 = program->GetAttTextCoordLoc0();
@@ -121,12 +122,12 @@ namespace NSG
         if (bones_weight != -1)
             glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
 
-        Graphics::this_->SetVertexAttrPointers();
+        graphics_->SetVertexAttrPointers();
 
-        Graphics::this_->SetIndexBuffer(iBuffer, true);
+        graphics_->SetIndexBuffer(iBuffer, true);
 
         if (key_.allowInstancing && program->GetMaterial()->IsBatched())
-            Graphics::this_->SetInstanceAttrPointers(program);
+            graphics_->SetInstanceAttrPointers(program);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -143,8 +144,8 @@ namespace NSG
 
     void VertexArrayObj::ReleaseResources()
     {
-        if (Graphics::this_->GetVertexArrayObj() == this)
-            Graphics::this_->SetVertexArrayObj(nullptr);
+        if (graphics_->GetVertexArrayObj() == this)
+            graphics_->SetVertexArrayObj(nullptr);
         glDeleteVertexArrays(1, &vao_);
         vao_ = 0;
     }
@@ -152,7 +153,7 @@ namespace NSG
     void VertexArrayObj::Use()
     {
         if (IsReady())
-            Graphics::this_->SetVertexArrayObj(this);
+            graphics_->SetVertexArrayObj(this);
     }
 
     void VertexArrayObj::Bind()

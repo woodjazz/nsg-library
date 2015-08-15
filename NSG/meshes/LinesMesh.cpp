@@ -31,7 +31,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     LinesMesh::LinesMesh(const std::string& name)
-        : Mesh(name, true)
+        : ProceduralMesh(name, true)
     {
         SetSerializable(false);
     }
@@ -65,11 +65,6 @@ namespace NSG
     size_t LinesMesh::GetNumberOfTriangles() const
     {
         return 0;
-    }
-
-    bool LinesMesh::IsValid()
-    {
-        return true;
     }
 
     void LinesMesh::AllocateResources()

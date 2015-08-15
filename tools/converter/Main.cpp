@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "tclap/CmdLine.h"
 #include "NSG.h"
 #include "TrueTypeConverter.h"
-#include "BScene.h"
 #include <fstream>
 #include <cstdint>
 using namespace NSG;
@@ -171,7 +170,6 @@ int NSG_MAIN(int argc, char* argv[])
         TCLAP::ValueArg<int> sArg("s", "sChar", "Starting character to bake. By default is 32.", false, 32, &charConstraint);
         TCLAP::ValueArg<int> eArg("e", "eChar", "Final character to bake. By default is 127.", false, 127, &charConstraint);
 
-        TCLAP::SwitchArg bArg("b", "embed", "Embed resources in xml. If not set then the resources are written to an external file.", false);
         TCLAP::SwitchArg zArg("z", "compress", "Compress the file.", false);
 
         cmd.add(iArg);
@@ -181,7 +179,6 @@ int NSG_MAIN(int argc, char* argv[])
         cmd.add(fArg);
         cmd.add(sArg);
         cmd.add(eArg);
-        cmd.add(bArg);
         cmd.add(zArg);
 
         cmd.parse(argc, argv);
@@ -194,15 +191,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 		if (outputDir.HasPath() && inputFile.HasExtension())
 		{
-			if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "blend")
-			{
-				auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
-				using namespace BlenderConverter;
-				BScene scene(inputFile, outputDir, bArg.getValue());
-				scene.Load();
-				CHECK_CONDITION(scene.Save(zArg.getValue()), __FILE__, __LINE__);
-			}
-			else if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
+			if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
 			{
 				int fontPixelsHeight = fArg.getValue();
 				int bitmapWidth = wArg.getValue();

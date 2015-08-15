@@ -42,10 +42,8 @@ misrepresented as being the original software.
 #include "GUI.h"
 namespace NSG
 {
-    Renderer* Renderer::this_ = nullptr;
-
-    Renderer::Renderer(Graphics* graphics)
-        : graphics_(graphics),
+    Renderer::Renderer()
+        : graphics_(Graphics::GetPtr()),
           window_(nullptr),
           scene_(nullptr),
           camera_(nullptr),
@@ -60,8 +58,6 @@ namespace NSG
     {
 
         debugMaterial_->SetSerializable(false);
-        CHECK_ASSERT(!Renderer::this_, __FILE__, __LINE__);
-        Renderer::this_ = this;
 
         shadowPass_->SetType(PassType::SHADOW);
 
@@ -91,8 +87,7 @@ namespace NSG
 
     Renderer::~Renderer()
     {
-        CHECK_ASSERT(Renderer::this_, __FILE__, __LINE__);
-        Renderer::this_ = nullptr;
+        Renderer::Destroy();
     }
 
     void Renderer::ExtractTransparent()

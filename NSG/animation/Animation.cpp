@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Animation.h"
-#include "ResourceXMLNode.h"
 #include "Node.h"
 #include "Bone.h"
 #include "Scene.h"
@@ -155,17 +154,6 @@ namespace NSG
     {
     }
 
-    bool Animation::IsValid()
-    {
-        return (!resource_ || resource_->IsReady());
-    }
-
-    void Animation::ReleaseResources()
-    {
-        if (resource_)
-            resource_->Invalidate();
-    }
-
     PAnimation Animation::Clone() const
     {
         auto clone = std::make_shared<Animation>(name_);
@@ -240,41 +228,4 @@ namespace NSG
 		for (auto& obj : animations)
             obj->Save(child);
     }
-
-    void Animation::LoadFrom(PResource resource, const pugi::xml_node& node)
-    {
-		Load(node);
-    }
-
-    std::vector<PAnimation> Animation::LoadAnimations(PResource resource, const pugi::xml_node& node)
-    {
-		std::vector<PAnimation> result;
-        pugi::xml_node meshes = node.child("Animations");
-        if (meshes)
-        {
-            pugi::xml_node child = meshes.child("Animation");
-            while (child)
-            {
-                std::string name = child.attribute("name").as_string();
-                auto animation = Animation::GetOrCreate(name);
-                auto xmlResource = Resource::CreateClass<ResourceXMLNode>(name);
-				xmlResource->Set(resource, animation, "Animations", name);
-				animation->Set(xmlResource);
-				CHECK_CONDITION(animation->IsReady(), __FILE__, __LINE__); //force load
-				result.push_back(animation);
-                child = child.next_sibling("Animation");
-            }
-        }
-        return result;
-    }
-
-	void Animation::Set(PResource resource)
-	{
-		if (resource != resource_)
-		{
-			resource_ = resource;
-			Invalidate();
-		}
-
-	}
 }

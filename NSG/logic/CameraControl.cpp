@@ -53,9 +53,9 @@ namespace NSG
         shiftKeyDown_ = false;
         //SetSphereCenter(true);
 
-        if (Graphics::this_)
+        if (Graphics::GetPtr())
         {
-            auto window = Graphics::this_->GetWindow();
+            auto window = Graphics::GetPtr()->GetWindow();
             if (window)
                 SetWindow(window);
         }
@@ -66,7 +66,7 @@ namespace NSG
                 SetWindow(window);
         });
 
-        SetEngine(Engine::GetPtr());
+        SetEngine(Engine::GetPtr().get());
 
         slotEngineCreated_ = Engine::SigReady()->Connect([this](Engine * engine)
         {

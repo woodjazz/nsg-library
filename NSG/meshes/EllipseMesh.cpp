@@ -31,7 +31,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     EllipseMesh::EllipseMesh(const std::string& name)
-        : Mesh(name)
+        : ProceduralMesh(name)
     {
         Set();
         SetSerializable(false);
@@ -65,11 +65,6 @@ namespace NSG
     size_t EllipseMesh::GetNumberOfTriangles() const
     {
         return vertexsData_.size() - 2;
-    }
-
-    bool EllipseMesh::IsValid()
-    {
-        return true;
     }
 
     void EllipseMesh::AllocateResources()

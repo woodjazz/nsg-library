@@ -77,7 +77,7 @@ namespace NSG
 	typedef std::weak_ptr<Scene> PWeakScene;
 
 	class Graphics;
-	typedef std::unique_ptr<Graphics> PGraphics;
+	typedef std::shared_ptr<Graphics> PGraphics;
 
 	class Frustum;
 	typedef std::shared_ptr<Frustum> PFrustum;
@@ -369,5 +369,17 @@ namespace NSG
 
 	class GUI;
 	typedef std::shared_ptr<GUI> PGUI;
+
+	class LoaderXML;
+	typedef std::shared_ptr<LoaderXML> PLoaderXML;
+
+	class LoaderXMLNode;
+	typedef std::shared_ptr<LoaderXMLNode> PLoaderXMLNode;
+
+	class Engine;
+	typedef std::shared_ptr<Engine> PEngine;
+
+	class HTTPRequest;
+	typedef std::shared_ptr<HTTPRequest> PHTTPRequest;
 
 }

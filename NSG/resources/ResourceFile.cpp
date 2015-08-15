@@ -26,71 +26,122 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "Check.h"
 #include "Util.h"
-#include "pugixml.hpp"
 #include <fstream>
 
 namespace NSG
 {
     ResourceFile::ResourceFile(const Path& path)
-		: Resource(path.GetFilePath()),
-		path_(path)
+        : Resource(path.GetFullAbsoluteFilePath()),
+          path_(path)
     {
+        #if defined(EMSCRIPTEN)
+        isLocal_ = false;
+        #else
+        isLocal_ = true;
+        #endif
+
+        onLoad_ = [this](const std::string & data)
+        {
+            LOGI("HTTP Loaded %s with size = %d", name_.c_str(), data.size());
+            buffer_ = data;
+            isLocal_ = true;
+        };
+
+        onError_ = [this](int httpError, const std::string & description)
+        {
+            LOGI("HTTP Failed loading %s: %d. %s", name_.c_str(), httpError, description.c_str());
+        };
+
+        onProgress_ = [this](unsigned percentage)
+        {
+            LOGI("HTTP Progress for %s: %d", name_.c_str(), percentage);
+        };
     }
 
     ResourceFile::~ResourceFile()
     {
     }
 
+    bool ResourceFile::IsValid()
+    {
+        if (!get_ && !isLocal_)
+        {
+            if (path_.IsPathRelative())
+            {
+                #if defined(EMSCRIPTEN)
+                std::string url = emscripten_run_script_string("window.location.href");
+                #else
+                std::string url; //@@@ TO DO
+                CHECK_ASSERT(false, __FILE__, __LINE__);
+                #endif
+                auto filename = path_.GetFilePath();
+                get_ = std::make_shared<HTTPRequest>(Path(url).GetPath() + "/" + filename, onLoad_, onError_, onProgress_);
+            }
+            else
+            {
+                get_ = std::make_shared<HTTPRequest>(path_.GetAbsolutePath(), onLoad_, onError_, onProgress_);
+            }
+
+            get_->StartRequest();
+        }
+        return isLocal_;
+    }
+
     void ResourceFile::AllocateResources()
     {
-        #if !defined(EMSCRIPTEN)
+        if (!get_)
         {
-            SDL_RWops* context = SDL_RWFromFile(name_.c_str(), "rb");
-
-            if (context)
+            #if defined(EMSCRIPTEN)
             {
-                SDL_RWseek(context, 0, RW_SEEK_END);
-                Sint64 filelength = SDL_RWtell(context);
-                SDL_RWseek(context, 0, RW_SEEK_SET);
-                buffer_.resize((int)filelength);
-				SDL_RWread(context, &buffer_[0], buffer_.size(), 1);
-                SDL_RWclose(context);
-				LOGI("%s has been loaded with size=%u", name_.c_str(), buffer_.size());
+                auto filename = path_.GetFilePath();
+                std::ifstream file(filename.c_str(), std::ios::binary);
+                if (file.is_open())
+                {
+                    file.seekg(0, std::ios::end);
+                    std::streampos filelength = file.tellg();
+                    file.seekg(0, std::ios::beg);
+                    buffer_.resize((int)filelength);
+                    file.read(&buffer_[0], filelength);
+                    CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
+                    file.close();
+                    LOGI("%s has been loaded with size=%d", filename.c_str(), buffer_.size());
+                }
+                else
+                {
+                    LOGE("Cannot load %s", filename.c_str());
+                }
             }
-            else
+            #else
             {
-				LOGE("Cannot load %s with error %s", name_.c_str(), SDL_GetError());
+                CHECK_ASSERT(isLocal_, __FILE__, __LINE__);
+                auto filename = path_.GetFilePath();
+                SDL_RWops* context = SDL_RWFromFile(filename.c_str(), "rb");
+                if (context)
+                {
+                    SDL_RWseek(context, 0, RW_SEEK_END);
+                    Sint64 filelength = SDL_RWtell(context);
+                    SDL_RWseek(context, 0, RW_SEEK_SET);
+                    buffer_.resize((int)filelength);
+                    SDL_RWread(context, &buffer_[0], buffer_.size(), 1);
+                    SDL_RWclose(context);
+                    LOGI("%s has been loaded with size=%u", filename.c_str(), buffer_.size());
+                }
+                else
+                {
+                    LOGE("Cannot load %s with error %s", filename.c_str(), SDL_GetError());
+                }
             }
+            #endif
         }
-        #else
-        {
-            std::ifstream file(name_.c_str(), std::ios::binary);
 
-            if (file.is_open())
-            {
-                file.seekg(0, std::ios::end);
-                std::streampos filelength = file.tellg();
-                file.seekg(0, std::ios::beg);
-                buffer_.resize((int)filelength);
-                file.read(&buffer_[0], filelength);
-                CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
-                file.close();
-                LOGI("%s has been loaded with size=%d", name_.c_str(), buffer_.size());
-            }
-            else
-            {
-                LOGE("Cannot load %s", name_.c_str());
-            }
-        }
-        #endif
-
-		if (path_.GetExtension() == "lz4")
-			buffer_ = DecompressBuffer(buffer_);
+        if (path_.GetExtension() == "lz4")
+            buffer_ = DecompressBuffer(buffer_);
     }
 
     void ResourceFile::ReleaseResources()
     {
         LOGI("Releasing memory for file: %s", name_.c_str());
         Resource::ReleaseResources();
+        get_ = nullptr;
     }
 }

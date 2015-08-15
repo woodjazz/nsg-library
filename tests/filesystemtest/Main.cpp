@@ -56,7 +56,7 @@ static int Test0()
     	saved = true;
     });
     
-    Engine().Run();
+	Engine::Create()->Run();
     CHECK_CONDITION(saved, __FILE__, __LINE__);
     return 0;
 }

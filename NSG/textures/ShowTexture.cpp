@@ -39,7 +39,8 @@ namespace NSG
     ShowTexture::ShowTexture()
         : material_(std::make_shared<Material>(GetUniqueName("NSGShowTexture"))),
           mesh_(std::make_shared<QuadMesh>(GetUniqueName("NSGShowTexture"))),
-          node_(std::make_shared<SceneNode>("NSGShowTexture"))
+          node_(std::make_shared<SceneNode>("NSGShowTexture")),
+          graphics_(Graphics::GetPtr())
     {
         //auto pass = material_->GetTechnique()->GetPass(0);
         material_->SetSerializable(false);
@@ -75,15 +76,15 @@ namespace NSG
         {
             CHECK_GL_STATUS(__FILE__, __LINE__);
 
-            Camera* pCurrent = Graphics::this_->GetCamera();
-            Graphics::this_->SetCamera(nullptr);
+            Camera* pCurrent = graphics_->GetCamera();
+            graphics_->SetCamera(nullptr);
 			Pass pass;
 			pass.EnableDepthTest(false);
-            Graphics::this_->SetMesh(mesh_.get());
-			if (Graphics::this_->SetupProgram(&pass, node_.get(), material_.get(), nullptr))
-				Graphics::this_->DrawActiveMesh();
+            graphics_->SetMesh(mesh_.get());
+			if (graphics_->SetupProgram(&pass, node_.get(), material_.get(), nullptr))
+				graphics_->DrawActiveMesh();
 
-            Graphics::this_->SetCamera(pCurrent);
+            graphics_->SetCamera(pCurrent);
 
             CHECK_GL_STATUS(__FILE__, __LINE__);
         }

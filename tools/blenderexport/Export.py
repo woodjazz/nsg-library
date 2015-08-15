@@ -90,7 +90,7 @@ QUATERNION_IDENTITY.identity()
 VECTOR3_ZERO = mathutils.Vector((0, 0, 0))
 VECTOR4_ZERO = mathutils.Vector((0, 0, 0, 0))
 VECTOR3_ONE = mathutils.Vector((1, 1, 1))
-DEFAULT_MATERIAL_NAME = "__DefaultBlenderMaterial__"
+DEFAULT_MATERIAL_NAME = "NSGDefault"
 
 
 def ConvertGroup(parentEle, group):
@@ -159,8 +159,8 @@ def ConvertBonesWeigths(jointList, vertexData, vertex):
                 bonesID[i] = joint_index
                 bonesWeight[i] = group.weight
 
-        vertexData["bonesID"] = Vector4ToString(bonesID)
-        vertexData["bonesWeight"] = Vector4ToString(bonesWeight)
+        vertexData["b"] = Vector4ToString(bonesID)
+        vertexData["w"] = Vector4ToString(bonesWeight)
 
 
 def ConvertMesh(name, meshesEle, meshObj, materialIndex):
@@ -196,17 +196,18 @@ def ConvertMesh(name, meshesEle, meshObj, materialIndex):
         for ivertex in face.vertices:
             vertex = mesh.vertices[ivertex]
             vertexData = {}
-            vertexData["position"] = Vector3ToString(vertex.co)
+            vertexData["p"] = Vector3ToString(vertex.co)
             if face.use_smooth:
-                vertexData["normal"] = Vector3ToString(vertex.normal)
+                vertexData["n"] = Vector3ToString(vertex.normal)
             else:
-                vertexData["normal"] = Vector3ToString(face.normal)
+                vertexData["n"] = Vector3ToString(face.normal)
             ConvertBonesWeigths(jointList, vertexData, vertex)
 
             channels = Clamp(len(mesh.tessface_uv_textures), 0, 2)
+            keys = ("u", "v")
             for channel in range(channels):
                 uv_channel = mesh.tessface_uv_textures[channel]
-                key = "uv" + str(channel)
+                key = keys[channel]
                 if vertexNum == 0:
                     vertexData[key] = Vector2ToString(uv_channel.data[iface].uv1)
                 elif vertexNum == 1:
@@ -220,13 +221,13 @@ def ConvertMesh(name, meshesEle, meshObj, materialIndex):
             for channel in range(channels):
                 vc_channel = mesh.tessface_vertex_colors[channel]
                 if vertexNum == 0:
-                    vertexData["color"] = ColorToString(vc_channel.data[iface].color1)
+                    vertexData["c"] = ColorToString(vc_channel.data[iface].color1)
                 elif vertexNum == 1:
-                    vertexData["color"] = ColorToString(vc_channel.data[iface].color2)
+                    vertexData["c"] = ColorToString(vc_channel.data[iface].color2)
                 elif vertexNum == 2:
-                    vertexData["color"] = ColorToString(vc_channel.data[iface].color3)
+                    vertexData["c"] = ColorToString(vc_channel.data[iface].color3)
                 elif vertexNum == 3:
-                    vertexData["color"] = ColorToString(vc_channel.data[iface].color4)
+                    vertexData["c"] = ColorToString(vc_channel.data[iface].color4)
 
             vertexNum += 1
             vertexDataEle = et.SubElement(vertexesEle, "VertexData")

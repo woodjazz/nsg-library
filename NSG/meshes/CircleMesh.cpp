@@ -31,7 +31,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     CircleMesh::CircleMesh(const std::string& name)
-        : Mesh(name)
+		: ProceduralMesh(name)
     {
         Set();
         SetSerializable(false);
@@ -64,11 +64,6 @@ namespace NSG
     size_t CircleMesh::GetNumberOfTriangles() const
     {
         return vertexsData_.size() - 2;
-    }
-
-    bool CircleMesh::IsValid()
-    {
-        return true;
     }
 
     void CircleMesh::AllocateResources()

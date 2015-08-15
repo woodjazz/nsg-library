@@ -24,7 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Check.h"
+#include <memory>
+#include <mutex>
 
 namespace NSG
 {
@@ -32,11 +33,35 @@ namespace NSG
 	class Singleton
 	{
 	public:
-		static T* this_;
+
+		static std::shared_ptr<T> Create()
+		{
+	        std::call_once(onceFlag_, [&]()
+	        {
+	            this_ = std::shared_ptr<T>(new T);
+	        });
+	        return this_;
+	    }
+
+		static std::shared_ptr<T> GetPtr()
+		{
+	        return this_;
+	    }
+
+	protected:
 		Singleton()
 		{
-			CHECK_ASSERT(Singleton::this_ == nullptr, __FILE__, __LINE__);
-			Singleton::this_ = static_cast<T*>(this);
 		}
+
+		static void Destroy()
+		{
+			this_ = nullptr;
+		}
+
+		static std::shared_ptr<T> this_;
+		static std::once_flag onceFlag_;
 	};
+
+	template<typename T> std::shared_ptr<T> Singleton<T>::this_;
+	template<typename T> std::once_flag Singleton<T>::onceFlag_;
 }

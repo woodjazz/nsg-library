@@ -32,7 +32,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     SphereMesh::SphereMesh(const std::string& name)
-        : Mesh(name)
+        : ProceduralMesh(name)
     {
         Set();
         SetSerializable(false);
@@ -65,11 +65,6 @@ namespace NSG
     size_t SphereMesh::GetNumberOfTriangles() const
     {
         return indexes_.size() / 3;
-    }
-
-    bool SphereMesh::IsValid()
-    {
-        return true;
     }
 
     void SphereMesh::AllocateResources()

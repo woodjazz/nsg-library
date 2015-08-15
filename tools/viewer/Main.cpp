@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-#include "BScene.h"
 
 using namespace NSG;
 
@@ -67,19 +66,7 @@ int NSG_MAIN(int argc, char* argv[])
         data = nullptr;
         auto extension = inputFile.GetExtension();
 
-        if (extension == "blend")
-        {
-            using namespace BlenderConverter;
-            BScene bscene(inputFile, "", true);
-            if (bscene.Load())
-            {
-            	pugi::xml_document doc;
-                bscene.GenerateXML(doc);
-                //Object::InvalidateAll();
-                data = std::make_shared<AppData>(doc);
-            }
-        }
-        else if (extension == "xml" || extension == "lz4")
+        if (extension == "xml" || extension == "lz4")
         {
             data = std::make_shared<AppData>(Resource::GetOrCreate<ResourceFile>(inputFile.GetFullAbsoluteFilePath()));
         }
@@ -100,9 +87,9 @@ int NSG_MAIN(int argc, char* argv[])
         lastModification.clear();
     });
 
-    Engine engine;
+    auto engine = Engine::Create();
     float totalTime = 0;
-    auto updateSlot = engine.SigUpdate()->Connect([&](float deltaTime)
+    auto updateSlot = engine->SigUpdate()->Connect([&](float deltaTime)
     {
         totalTime += deltaTime;
         const float FREQUENCY = 1; // seconds
@@ -122,6 +109,6 @@ int NSG_MAIN(int argc, char* argv[])
         }
     });
 
-    return engine.Run();
+    return engine->Run();
 
 }

@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "Resource.h"
 #include "ResourceFile.h"
-#include "ResourceXMLNode.h"
 #include "Texture.h"
 #include "Sound.h"
 #include "Log.h"
@@ -36,6 +35,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Mesh.h"
 #include "Image.h"
+#include "LoaderXML.h"
 #include "pugixml.hpp"
 #include "b64/encode.h"
 #include "b64/decode.h"
@@ -54,18 +54,35 @@ namespace NSG
     {
     }
 
-    PResource Resource::CreateFrom(PResource resource, const pugi::xml_node& node)
+    void Resource::Load(const pugi::xml_node& node)
     {
         std::string name = node.attribute("name").as_string();
         pugi::xml_node dataNode = node.child("data");
-
         if (!dataNode)
-			return Resource::GetOrCreateClass<ResourceFile>(name);
+        {
+			ResourceFile resFile(name);
+			CHECK_CONDITION(resFile.IsReady(), __FILE__, __LINE__);
+            SetBuffer(resFile.GetBuffer());
+        }
         else
         {
-			auto obj = Resource::CreateClass<ResourceXMLNode>(name);
-			obj->Set(resource, nullptr, "Resources", name);
-            return obj;
+			size_t bytes = dataNode.attribute("dataSize").as_uint();
+			std::string buffer;
+			if (bytes)
+			{
+				const pugi::char_t* data = dataNode.child_value();
+				buffer.resize(bytes);
+				memcpy(&buffer[0], data, bytes);
+			}
+
+			std::string decoded_binary;
+			decoded_binary.resize(bytes);
+			base64::base64_decodestate state;
+			base64::base64_init_decodestate(&state);
+			CHECK_ASSERT(bytes < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+			auto decoded_length = base64::base64_decode_block(buffer.c_str(), (int)bytes, &decoded_binary[0], &state);
+			decoded_binary.resize(decoded_length);
+			SetBuffer(decoded_binary);
         }
     }
 
@@ -166,23 +183,6 @@ namespace NSG
             name_ = name;
             Invalidate(); //name_ has changed = > force reload
         }
-    }
-
-    std::vector<PResource> Resource::LoadResources(PResource resource, const pugi::xml_node& node)
-    {
-        std::vector<PResource> result;
-        pugi::xml_node resources = node.child("Resources");
-        if (resources)
-        {
-            pugi::xml_node child = resources.child("Resource");
-            while (child)
-            {
-                auto obj = Resource::CreateFrom(resource, child);
-                result.push_back(obj);
-                child = child.next_sibling("Resource");
-            }
-        }
-        return result;
     }
 
     void Resource::SaveResources(pugi::xml_node& node)

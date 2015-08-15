@@ -26,35 +26,54 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include <string>
-namespace NSG 
+#include <functional>
+namespace NSG
 {
     class App;
-	class Object
-	{
-	public:
-		Object(const std::string& name);
-		virtual ~Object();
-		void Invalidate();
-		bool IsReady();
-		virtual void LoadFrom(PResource resource, const pugi::xml_node& node) {}
-		static void InvalidateAll();
-		const std::string& GetName() const { return name_; }
-		SignalEmpty::PSignal SigAllocated() {return signalAllocated_; }
-		SignalEmpty::PSignal SigReleased() {return signalReleased_; }
-	protected:
-		std::string name_;
-	private:
-		static SignalEmpty::PSignal SigInvalidateAll();
-		virtual bool IsValid() { return true; }
-		virtual void AllocateResources() {}
-		virtual void ReleaseResources()	{}
-		std::string GetType() const;
-		std::string GetNameType() const;
-		bool isValid_;
-		bool resourcesAllocated_;
-		SignalEmpty::PSlot slotInvalidateAll_;
-		SignalEmpty::PSignal signalAllocated_;
-		SignalEmpty::PSignal signalReleased_;
+    class Object
+    {
+    public:
+        Object(const std::string& name);
+        virtual ~Object();
+        void Invalidate();
+        bool IsReady();
+        virtual void Load(const pugi::xml_node& node) {}
+        static void InvalidateAll();
+        const std::string& GetName() const { return name_; }
+        SignalEmpty::PSignal SigAllocated() {return signalAllocated_; }
+        SignalEmpty::PSignal SigReleased() {return signalReleased_; }
+        void SetLoader(PLoaderXMLNode nodeLoader);
+        template<typename T, typename U>
+        static std::vector<std::shared_ptr<T> > LoadAll(PLoaderXML loader, const char* collectionType)
+        {
+            std::vector<std::shared_ptr<T>> result;
+            auto adder = [&](const std::string& name)
+            {
+	            auto obj = T:: template GetOrCreateClass<U>(name);
+				Object::SetLoader(loader, collectionType, obj, name);
+	            result.push_back(obj);
+            };
+            Object::LoadAll(loader, collectionType, adder);
+            return result;
+        }
+    protected:
+        std::string name_;
+        PLoaderXMLNode nodeLoader_;
+    private:
+    	typedef std::function<void(const std::string&)> AdderFunction;
+    	static void LoadAll(PLoaderXML loader, const char* collectionType, AdderFunction adder);
+		static void SetLoader(PLoaderXML loader, const char* collectionType, PObject obj, const std::string& name);
+        static SignalEmpty::PSignal SigInvalidateAll();
+        virtual bool IsValid() { return true; }
+        virtual void AllocateResources() {}
+        virtual void ReleaseResources()	{}
+        std::string GetType() const;
+        std::string GetNameType() const;
+        bool isValid_;
+        bool resourcesAllocated_;
+        SignalEmpty::PSlot slotInvalidateAll_;
+        SignalEmpty::PSignal signalAllocated_;
+        SignalEmpty::PSignal signalReleased_;
 
-	};
+    };
 }

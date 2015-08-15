@@ -29,7 +29,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     BoxMesh::BoxMesh(const std::string& name)
-        : Mesh(name)
+        : ProceduralMesh(name)
     {
         Set();
         SetSerializable(false);
@@ -66,11 +66,6 @@ namespace NSG
     size_t BoxMesh::GetNumberOfTriangles() const
     {
         return indexes_.size() / 3;
-    }
-
-    bool BoxMesh::IsValid()
-    {
-        return true;
     }
 
     void BoxMesh::AllocateResources()

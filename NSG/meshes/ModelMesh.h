@@ -38,13 +38,9 @@ namespace NSG
 		GLenum GetSolidDrawMode() const override;
 		size_t GetNumberOfTriangles() const override;
 		void SetFaceMode(GLenum face_mode) { face_mode_ = face_mode; }
-		void Set(PResource resource);
 		PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
+		void Load(const pugi::xml_node& node) override;
 	private:
-		void LoadFrom(PResource resource, const pugi::xml_node& node) override;
-        bool IsValid() override;
-		void ReleaseResources() override;
-		PResource resource_;
 		GLenum face_mode_;
 	};
 }

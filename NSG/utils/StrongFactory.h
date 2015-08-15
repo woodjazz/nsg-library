@@ -126,6 +126,15 @@ namespace NSG
         {
         	objsMap_.clear();
         }
+
+        static bool AreReady()
+       	{
+			for (auto& obj : objsMap_)
+				if(!obj.second->IsReady())
+					return false;
+			return true;
+       	}
+
     private:
 		static std::map<K, PT> objsMap_;
     };

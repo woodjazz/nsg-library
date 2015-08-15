@@ -23,17 +23,16 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-
 #include "NSG.h"
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
-	//auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
     auto camera = scene->GetChild<Camera>("Camera", false);
     auto control = std::make_shared<CameraControl>(camera);
-	return Engine().Run();
+	window->SetScene(data.scenes_[0].get());
+	return Engine::Create()->Run();
 }

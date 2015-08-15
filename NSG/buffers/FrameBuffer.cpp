@@ -89,7 +89,7 @@ namespace NSG
 
         if (flags_ & Flag::DEPTH_USE_TEXTURE)
         {
-            if (Graphics::this_->HasDepthTexture())
+            if (Graphics::GetPtr()->HasDepthTexture())
             {
                 depthTexture_->SetSize(width_, height_);
                 if (flags_ & Flag::STENCIL)
@@ -127,7 +127,7 @@ namespace NSG
 
         glGenFramebuffers(1, &framebuffer_);
 
-        Graphics::this_->SetFrameBuffer(this, GetDefaultTextureTarget());
+		Graphics::GetPtr()->SetFrameBuffer(this, GetDefaultTextureTarget());
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -153,7 +153,7 @@ namespace NSG
             glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
             if (flags_ & Flag::STENCIL)
             {
-                if (Graphics::this_->HasPackedDepthStencil())
+				if (Graphics::GetPtr()->HasPackedDepthStencil())
                 {
                     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
                     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
@@ -161,7 +161,7 @@ namespace NSG
                 }
                 else
                 {
-                    if (Graphics::this_->HasDepthComponent24())
+					if (Graphics::GetPtr()->HasDepthComponent24())
                     {
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
@@ -181,7 +181,7 @@ namespace NSG
             }
             else
             {
-                if (Graphics::this_->HasDepthComponent24())
+				if (Graphics::GetPtr()->HasDepthComponent24())
                 {
                     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
                     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
@@ -207,7 +207,7 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        Graphics::this_->UnboundTextures();
+		Graphics::GetPtr()->UnboundTextures();
 
         if (stencilRenderBuffer_)
         {
@@ -233,7 +233,7 @@ namespace NSG
 
         framebuffer_ = 0;
 
-        Graphics::this_->SetFrameBuffer(0);
+		Graphics::GetPtr()->SetFrameBuffer(0);
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
@@ -241,7 +241,7 @@ namespace NSG
     void FrameBuffer::SetSize(int width, int height)
     {
         CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
-        auto maxSize = Graphics::this_->GetMaxTextureSize();
+		auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
         width = glm::clamp(width, 0, maxSize);
         height = glm::clamp(height, 0, maxSize);
 
@@ -250,7 +250,7 @@ namespace NSG
             originalWidth_ = width;
             originalHeight_ = height;
 
-            if (!Graphics::this_->IsTextureSizeCorrect(width, height))
+			if (!Graphics::GetPtr()->IsTextureSizeCorrect(width, height))
                 GetPowerOfTwoValues(width, height);
 
             width_ = width;
@@ -304,7 +304,7 @@ namespace NSG
         if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
             CHECK_ASSERT(colorTexTarget != TextureTarget::UNKNOWN, __FILE__, __LINE__);
-            CHECK_ASSERT(this == Graphics::this_->GetFrameBuffer(), __FILE__, __LINE__);
+			CHECK_ASSERT(this == Graphics::GetPtr()->GetFrameBuffer(), __FILE__, __LINE__);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLenum)colorTexTarget, colorTexture_->GetID(), 0);
         }
 

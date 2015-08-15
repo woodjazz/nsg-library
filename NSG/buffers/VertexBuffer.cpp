@@ -42,7 +42,7 @@ namespace NSG
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
-        CHECK_CONDITION(Graphics::this_->SetVertexBuffer(this), __FILE__, __LINE__);
+        CHECK_CONDITION(graphics_->SetVertexBuffer(this), __FILE__, __LINE__);
 
         glBufferData(type_, bufferSize, nullptr, usage_);
 
@@ -60,8 +60,8 @@ namespace NSG
 
     VertexBuffer::~VertexBuffer()
     {
-        if (Graphics::this_ && Graphics::this_->GetVertexBuffer() == this)
-            Graphics::this_->SetVertexBuffer(nullptr);
+        if (graphics_ && graphics_->GetVertexBuffer() == this)
+            graphics_->SetVertexBuffer(nullptr);
     }
 
     void VertexBuffer::Unbind()
@@ -72,7 +72,7 @@ namespace NSG
     void VertexBuffer::UpdateData(const VertexsData& vertexes)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        Graphics::this_->SetVertexBuffer(this, true);
+        graphics_->SetVertexBuffer(this, true);
         GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
         if (bytes2Set > bufferSize_)
         {
@@ -88,7 +88,7 @@ namespace NSG
     void VertexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
-        Graphics::this_->SetVertexBuffer(this, true);
+        graphics_->SetVertexBuffer(this, true);
         glBufferData(type_, size, data, usage_);
         bufferSize_ = size;
         CHECK_GL_STATUS(__FILE__, __LINE__);

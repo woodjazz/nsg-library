@@ -31,23 +31,23 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Music : public Singleton<Music>, public Object
+    class Music : public Singleton<Music>, public Object
     {
     public:
-		Music(const std::string& name  = GetUniqueName("Music"));
         ~Music();
         bool Play(bool loop = true);
-		void Stop();
-		void Pause();
-		void Resume();
+        void Stop();
+        void Pause();
+        void Resume();
         bool IsPlaying() const;
         bool IsPaused() const;
         void Set(PResource resource);
     private:
+        Music();
         bool IsValid() override;
         void AllocateResources() override;
-        void ReleaseResources() override;
         bool isPlaying_;
         PResource resource_;
+        friend class Singleton<Music>;
     };
 }

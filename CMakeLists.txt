@@ -14,6 +14,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DEPENDENCIES_DIR ${ROOT_SOURCE_DIR}/dependencies)
+set(EMSCRIPTEN_DIR ${ROOT_SOURCE_DIR}/emscripten)
 set(EXTERNALS_DIR ${ROOT_SOURCE_DIR}/externals)
 set(TOOLS_DIR ${ROOT_SOURCE_DIR}/tools)
 set(CONVERTER_TOOL_SOURCE_DIR ${TOOLS_DIR}/blenderserialize)
@@ -33,12 +34,21 @@ set(USE_SDL ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ###########################
-# CLEAN_DATA_FILES
+# CLEAN_SAMPLES_DATA
 ###########################
-add_custom_target(CLEAN_DATA_FILES
-   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/CleanDataFiles.cmake
+add_custom_target(CLEAN_SAMPLES_DATA
+   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/CleanSamplesData.cmake
    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-   COMMENT "Deleting all data files"
+   COMMENT "Deleting all samples data files"
+)
+
+###########################
+# CLEAN_TEST_DATA
+###########################
+add_custom_target(CLEAN_TEST_DATA
+   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/CleanTestData.cmake
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+   COMMENT "Deleting all tests data files"
 )
 
 ###########################
@@ -197,33 +207,6 @@ set(LIBRARIES_2_LINK NSG) #reset libraries to link: NSG will have all the depend
 
 if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 
-	###########################
-	# blenderdna
-	###########################
-	include (GenerateDNA) 
-	add_subdirectory(${TOOLS_DIR}/blenderdna)
-
-	#set(USING_BLENDER_FILES ON)
-	if(USING_BLENDER_FILES)
-		add_definitions(-DUSING_BLENDER_FILES)
-		include_directories(../makesdna)
-		list(APPEND LIBRARIES_2_LINK bf_dna)
-	else()
-		##################################
-		# blenderserialize
-		##################################
-		include_directories(${TOOLS_DIR}/blenderserialize)
-		add_subdirectory(${TOOLS_DIR}/blenderserialize)
-		list(APPEND LIBRARIES_2_LINK blenderserialize)
-	endif()
-
-	##################################
-	# poly2tri
-	##################################
-	include_directories(${TOOLS_DIR}/poly2tri)
-	add_subdirectory(${TOOLS_DIR}/poly2tri)
-	list(APPEND LIBRARIES_2_LINK poly2tri)
-
 	##################################
 	# common
 	##################################
@@ -241,9 +224,7 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 	###########################
 	add_subdirectory(${TOOLS_DIR}/viewer)
 
-	list(REMOVE_ITEM LIBRARIES_2_LINK blenderserialize)
 	list(REMOVE_ITEM LIBRARIES_2_LINK common)
-	list(REMOVE_ITEM LIBRARIES_2_LINK poly2tri)
 
 endif()
 
@@ -264,7 +245,7 @@ ENDFOREACH()
 ###########################
 # tests
 ###########################
-if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
+if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB AND NOT IS_TARGET_OSX)
 	enable_testing()
 	#include( CTest )
 	set(TEST_DIR ${ROOT_SOURCE_DIR}/tests)

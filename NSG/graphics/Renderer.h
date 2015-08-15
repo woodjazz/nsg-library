@@ -24,18 +24,17 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
 #include "Types.h"
+#include "Singleton.h"
 
 namespace NSG
 {
-	class Renderer
+	class Renderer : public Singleton<Renderer>
 	{
 	public:
-		Renderer(Graphics* graphics);
+		Renderer();
 		~Renderer();
 		void Render(Window* window, Scene* scene);
-		static Renderer* GetPtr() { return Renderer::this_; }
 		void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
 		const Window* GetWindow() const { return window_; }
 		const Scene* GetScene() const { return scene_; }
@@ -59,8 +58,7 @@ namespace NSG
 	    void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
 	    void DebugPhysicsPass();
 
-		static Renderer* this_;
-		Graphics* graphics_;
+		PGraphics graphics_;
 		Window* window_;
 		Scene* scene_;
 		Camera* camera_;

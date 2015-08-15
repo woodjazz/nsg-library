@@ -52,13 +52,11 @@ namespace NSG
 		void SetBB(const BoundingBox& bb);
         PhysicsShape GetType() const { return type_; }
         std::shared_ptr<btCollisionShape> GetCollisionShape() const { return shape_; }
-        void LoadFrom(PResource resource, const pugi::xml_node& node);
+        void Load(const pugi::xml_node& node) override;
         void Save(pugi::xml_node& node);
-        static std::vector<PShape> LoadShapes(PResource resource, const pugi::xml_node& node);
 		static void SaveShapes(pugi::xml_node& node);
 		const Vector3& GetScale() const { return scale_; }
 		PMesh GetMesh() const { return mesh_.lock(); }
-		void Set(PResourceXMLNode xmlResource);
     private:
         bool IsValid() override;
         void AllocateResources() override;
@@ -74,7 +72,6 @@ namespace NSG
         float margin_;
         Vector3 scale_;
         SignalEmpty::PSlot slotReleased_;
-        PResourceXMLNode xmlResource_;
     };
 }
 

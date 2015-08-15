@@ -114,7 +114,8 @@ namespace NSG
           skeleton_(nullptr),
           node_(nullptr),
           material_(nullptr),
-          light_(nullptr)
+          light_(nullptr),
+          graphics_(Graphics::GetPtr())
     {
         memset(&textureLoc_, -1, sizeof(textureLoc_));
         memset(&materialLoc_, -1, sizeof(materialLoc_));
@@ -186,7 +187,7 @@ namespace NSG
         pFShader_ = PFragmentShader(new FragmentShader(fShader.c_str()));
         if (Initialize())
         {
-            Graphics::this_->SetProgram(this);
+            graphics_->SetProgram(this);
             SetUniformLocations();
         }
     }
@@ -202,8 +203,8 @@ namespace NSG
         pFShader_ = nullptr;
         glDeleteProgram(id_);
 
-        if (Graphics::this_->GetProgram() == this)
-            Graphics::this_->SetProgram(nullptr);
+        if (graphics_->GetProgram() == this)
+            graphics_->SetProgram(nullptr);
 
         nBones_ = 0;
 
@@ -404,7 +405,7 @@ namespace NSG
             if (u_fogMinIntensityLoc_ != -1)
                 glUniform1f(u_fogMinIntensityLoc_, scene->GetFogMinIntensity());
 
-            Camera* camera = Graphics::this_->GetCamera();
+            Camera* camera = graphics_->GetCamera();
 
 			if (u_fogStartLoc_ != -1)
 			{
@@ -463,7 +464,7 @@ namespace NSG
                 if (textureLoc_[index] != -1)
                 {
                     MaterialTexture type = (MaterialTexture)index;
-                    Graphics::this_->SetTexture(index, material_->GetTexture(type).get());
+                    graphics_->SetTexture(index, material_->GetTexture(type).get());
                 }
             }
 
@@ -519,7 +520,7 @@ namespace NSG
 			size_t nBones = names.size();
             CHECK_CONDITION(nBones == nBones_ && "This shader has been used with a different number of bones.!!!", __FILE__, __LINE__);
 			PNode armatureNode = node_->GetArmature();
-            CHECK_ASSERT(Graphics::this_->GetMesh()->HasDeformBones(), __FILE__, __LINE__);
+            CHECK_ASSERT(graphics_->GetMesh()->HasDeformBones(), __FILE__, __LINE__);
 			CHECK_ASSERT(armatureNode, __FILE__, __LINE__);
             Matrix4 globalInverseModelMatrix(1);
             // In order to make all the bones relatives to the armature.
@@ -548,7 +549,7 @@ namespace NSG
     {
         if (viewLoc_ != -1 || viewProjectionLoc_ != -1 || projectionLoc_ != -1 || eyeWorldPosLoc_ != -1)
         {
-            Camera* camera = Graphics::this_->GetCamera();
+            Camera* camera = graphics_->GetCamera();
 
             if (camera && (camera != activeCamera_ || camera->UniformsNeedUpdate()))
             {
@@ -600,7 +601,7 @@ namespace NSG
                 auto shadowSplits = light_->GetShadowSplits();
                 Vector4 invRangeSplits;
                 Vector4 shadowCameraZFarSplits;
-                const Camera* camera = Graphics::this_->GetCamera();
+                const Camera* camera = graphics_->GetCamera();
                 bool uniformsNeedUpdate = camera->UniformsNeedUpdate();
                 for (int i = 0; i < shadowSplits; i++)
                 {
@@ -668,7 +669,7 @@ namespace NSG
                     if (textureLoc_[index] != -1)
                     {
                         auto shadowMap = light_->GetShadowMap(i).get();
-                        Graphics::this_->SetTexture(index, shadowMap);
+                        graphics_->SetTexture(index, shadowMap);
                     }
                 }
             }
@@ -730,7 +731,7 @@ namespace NSG
         activeNode_ = node_;
         activeMaterial_ = material_;
         activeLight_ = light_;
-        activeCamera_ = Graphics::this_->GetCamera();
+        activeCamera_ = graphics_->GetCamera();
     }
 
     void Program::SetSkeleton(const Skeleton* skeleton)

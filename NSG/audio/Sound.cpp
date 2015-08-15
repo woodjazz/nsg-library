@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "Sound.h"
 #include "Audio.h"
 #include "ResourceFile.h"
-#include "ResourceXMLNode.h"
 #include "Util.h"
 #include "Path.h"
 #include "Check.h"
@@ -77,12 +76,6 @@ namespace NSG
         sound_ = Mix_LoadWAV_RW(assetHandle, 1);
 		CHECK_CONDITION(sound_, __FILE__, __LINE__);
 #endif        
-    }
-
-    void Sound::ReleaseResources()
-    {
-        if (resource_)
-            return resource_->Invalidate();
     }
 
     bool Sound::IsPlaying() const
@@ -139,33 +132,12 @@ namespace NSG
 #endif
     }
 
-    std::vector<PSound> Sound::LoadSounds(PResource resource, const pugi::xml_node& node)
-    {
-        std::vector<PSound> result;
-        pugi::xml_node objs = node.child("Sounds");
-        if (objs)
-        {
-            pugi::xml_node child = objs.child("Sound");
-            while (child)
-            {
-                std::string name = child.attribute("name").as_string();
-                auto sound(Sound::GetOrCreate(name));
-                std::string resourceName = child.attribute("resource").as_string();
-                auto res = Resource::Get(resourceName);
-                if (!res)
-                {
-                    auto newRes = Resource::CreateClass<ResourceXMLNode>(resourceName);
-                    newRes->Set(resource, nullptr, "Resources", resourceName);
-                    sound->Set(newRes);
-                }
-                else
-                    sound->Set(res);
-                result.push_back(sound);
-                child = child.next_sibling("Sound");
-            }
-        }
-        return result;
-    }
+	void Sound::Load(const pugi::xml_node& node)
+	{
+		std::string resourceName = node.attribute("resource").as_string();
+		auto res = Resource::Get(resourceName);
+		Set(res);
+	}
 
     void Sound::Save(pugi::xml_node& node)
     {
@@ -180,14 +152,5 @@ namespace NSG
         auto sounds = Sound::GetObjs();
         for (auto& obj : sounds)
             obj->Save(child);
-    }
-
-    void Sound::Set(PResourceXMLNode xmlResource)
-    {
-        if (xmlResource != xmlResource_)
-        {
-            xmlResource_ = xmlResource;
-            Invalidate();
-        }
     }
 }

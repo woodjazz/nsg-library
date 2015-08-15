@@ -48,5 +48,7 @@ int NSG_MAIN(int argc, char* argv[])
 		//PopStyleColor();
 	});
     
-	return Engine().Run();
+	auto engine = Engine::Create();
+	window->SetScene(data.scenes_[0].get());
+	return engine->Run();
 }

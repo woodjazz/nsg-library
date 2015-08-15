@@ -92,8 +92,8 @@ int NSG_MAIN(int argc, char* argv[])
 
 	control->AutoZoom();
 
-	Engine engine;
-    auto updateSlot = engine.SigUpdate()->Connect([&](float deltaTime)
+	auto engine = Engine::Create();
+    auto updateSlot = engine->SigUpdate()->Connect([&](float deltaTime)
     {
         static float x_angle(0);
         static float y_angle(0);
@@ -114,5 +114,6 @@ int NSG_MAIN(int argc, char* argv[])
 			step *= -1;
     });
 
-	return engine.Run();
+	window->SetScene(scene.get());
+	return engine->Run();
 };

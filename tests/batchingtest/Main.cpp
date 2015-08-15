@@ -30,9 +30,10 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create("window", 0, 0, 10, 10);
-	if (!Graphics::this_->HasInstancedArrays())
+	if (!Graphics::GetPtr()->HasInstancedArrays())
 		return 0;
     auto scene = std::make_shared<Scene>();
+	window->SetScene(scene.get());
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
     auto mesh = Mesh::Create<SphereMesh>();
@@ -50,11 +51,12 @@ int NSG_MAIN(int argc, char* argv[])
     node1->SetPosition(Vertex3(-20, 0, 0));
     CHECK_CONDITION(material->IsBatched(), __FILE__, __LINE__);
 	control->AutoZoom();
-	Engine engine;
-    engine.RenderFrame();
+	auto engine = Engine::Create();
+    engine->RenderFrame();
+	CHECK_CONDITION(material->IsBatched(), __FILE__, __LINE__);
     const float ANGLE = 10;
 	node1->SetOrientation(glm::angleAxis(ANGLE, Vertex3(0, 0, 1)));
-	engine.RenderFrame();
+	engine->RenderFrame();
     CHECK_CONDITION(!material->IsBatched(), __FILE__, __LINE__);
 	return 0;
 }

@@ -34,7 +34,9 @@ misrepresented as being the original software.
 namespace NSG
 {
 	Batch::Batch()
-		:allowInstancing_(true)
+		: material_(nullptr),
+		mesh_(nullptr),
+		allowInstancing_(true)
 	{
 	}
 

@@ -66,13 +66,13 @@ namespace NSG
         SetInheritScale(false);
         Update();
         frustum_ = std::make_shared<Frustum>(matViewProjection_);
-        if (Graphics::this_)
+        if (Graphics::GetPtr())
         {
-            auto window = Graphics::this_->GetWindow();
+            auto window = Graphics::GetPtr()->GetWindow();
             if (window)
                 SetWindow(window);
-            if (!Graphics::this_->GetCamera())
-                Graphics::this_->SetCamera(this);
+            if (!Graphics::GetPtr()->GetCamera())
+                Graphics::GetPtr()->SetCamera(this);
         }
 
         slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
@@ -84,11 +84,11 @@ namespace NSG
 
     Camera::~Camera()
     {
-        if (Graphics::this_)
+        if (Graphics::GetPtr())
         {
             SignalBeingDestroy()->Run(this);
-            if (Graphics::this_->GetCamera() == this)
-                Graphics::this_->SetCamera(nullptr);
+            if (Graphics::GetPtr()->GetCamera() == this)
+                Graphics::GetPtr()->SetCamera(nullptr);
         }
     }
 
@@ -247,8 +247,8 @@ namespace NSG
         if (viewportFactor_ != viewportFactor)
         {
             viewportFactor_ = viewportFactor;
-            if (Graphics::this_->GetCamera() == this)
-                Graphics::this_->SetViewportFactor(viewportFactor);
+            if (Graphics::GetPtr()->GetCamera() == this)
+                Graphics::GetPtr()->SetViewportFactor(viewportFactor);
         }
     }
 
@@ -442,8 +442,8 @@ namespace NSG
 
     Ray Camera::GetRay(float screenX, float screenY)
     {
-        if (Graphics::this_->GetCamera())
-            return Graphics::this_->GetCamera()->GetScreenRay(screenX, screenY);
+        if (Graphics::GetPtr()->GetCamera())
+            return Graphics::GetPtr()->GetCamera()->GetScreenRay(screenX, screenY);
         else
 			return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
     }

@@ -41,9 +41,9 @@ namespace NSG
         HTTPRequest(const std::string& url, const Form& form, OnLoadFunction onLoad, OnErrorFunction onError, OnProgressFunction onProgress); // Post
         HTTPRequest(const std::string& url, OnLoadFunction onLoad, OnErrorFunction onError, OnProgressFunction onProgress); // Get
         ~HTTPRequest();
+        void StartRequest();
+        static void ParseURL(const std::string& url, std::string& protocol, std::string& host, int& port, std::string& path);
     private:
-        void ParseURL();
-        void Request(bool post, const Form& form);
         #if EMSCRIPTEN
         static void OnLoad(unsigned int id, void* arg, void* buffer, unsigned bytes);
         static void OnError(unsigned int id, void* arg, int httpError, const char* statusDescription);
@@ -62,5 +62,7 @@ namespace NSG
         OnLoadFunction onLoad_;
         OnErrorFunction onError_;
         OnProgressFunction onProgress_;
+        Form form_;
+        bool isPost_;
     };
 }

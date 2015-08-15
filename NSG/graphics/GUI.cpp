@@ -43,7 +43,7 @@ namespace NSG
     static GUI* pTHIS = nullptr;
 
 	GUI::GUI(Window* mainWindow)
-        : graphics_(Graphics::this_),
+        : graphics_(Graphics::GetPtr()),
           fontTexture_(std::make_shared<Texture2D>("GUIFontTexture")),
 		  pass_(std::make_shared<Pass>()),
 		  program_(std::make_shared<Program>("IMGUI\n")),

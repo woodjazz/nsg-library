@@ -31,15 +31,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    template<> Keyboard* Singleton<Keyboard>::this_ = nullptr;
-
     Keyboard::Keyboard()
     {
     }
 
     Keyboard::~Keyboard()
     {
-        Keyboard::this_ = nullptr;
     }
 
     bool Keyboard::Enable()

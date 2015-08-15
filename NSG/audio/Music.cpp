@@ -35,18 +35,16 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	template<> Music* Singleton<Music>::this_ = nullptr;
-
 #ifdef SDL
     static Mix_Music* music_ = nullptr;
     static void MusicDone()
     {
-        Music::this_->Stop();
+        Music::GetPtr()->Stop();
     }
 #endif
 
-	Music::Music(const std::string& name)
-		: Object(name),
+	Music::Music()
+		: Object(GetUniqueName("Music")),
           isPlaying_(false)
     {
     }
@@ -92,12 +90,7 @@ namespace NSG
             Mix_HookMusicFinished(MusicDone);
             CHECK_CONDITION(music_, __FILE__, __LINE__);
 #endif
-    }
-
-    void Music::ReleaseResources()
-    {
-        if (resource_)
-            return resource_->Invalidate();
+            resource_->Invalidate(); // free mem
     }
 
     bool Music::Play(bool loop)

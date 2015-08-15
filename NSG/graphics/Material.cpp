@@ -8,7 +8,6 @@
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
-#include "ResourceXMLNode.h"
 #include "InstanceBuffer.h"
 #include "pugixml.hpp"
 #include <sstream>
@@ -75,7 +74,6 @@ namespace NSG
         material->renderPass_ = renderPass_;
         material->billboardType_ = billboardType_;
         material->flipYTextureCoords_ = flipYTextureCoords_;
-        material->xmlResource_ = xmlResource_;
         material->shadeless_ = shadeless_;
         material->cullFaceMode_ = cullFaceMode_;
         material->friction_ = friction_;
@@ -230,7 +228,6 @@ namespace NSG
             if (texture)
             {
                 EnableTransparent(true);
-                SetAlpha(0);
                 SetRenderPass(RenderPass::TEXT);
                 texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
             }
@@ -255,8 +252,6 @@ namespace NSG
     bool Material::IsValid()
     {
         bool isReady = true;
-        if (xmlResource_)
-            isReady = xmlResource_->IsReady();
         for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
             if (texture_[index])
                 isReady = isReady && texture_[index]->IsReady();
@@ -267,7 +262,7 @@ namespace NSG
 
     void Material::AllocateResources()
     {
-        isBatched_ = Graphics::this_->HasInstancedArrays() && !IsTransparent();
+		isBatched_ = Graphics::GetPtr()->HasInstancedArrays() && !IsTransparent();
         if (isBatched_)
             instanceBuffer_ = std::make_shared<InstanceBuffer>();
     }
@@ -319,7 +314,7 @@ namespace NSG
         child.append_attribute("renderPass").set_value(ToString(renderPass_));
     }
 
-    void Material::LoadFrom(PResource resource, const pugi::xml_node& node)
+    void Material::Load(const pugi::xml_node& node)
     {
         name_ = node.attribute("name").as_string();
         shadeless_ = node.attribute("shadeless").as_bool();
@@ -331,7 +326,7 @@ namespace NSG
         auto childTexture = node.child(TEXTURE_NAME);
         while(childTexture)
         {   
-            SetTexture(Texture2D::CreateFrom(resource, childTexture));
+            SetTexture(Texture2D::CreateFrom(childTexture));
             childTexture = childTexture.next_sibling(TEXTURE_NAME);
         }
 
@@ -436,43 +431,12 @@ namespace NSG
         return nullptr;
     }
 
-    std::vector<PMaterial> Material::LoadMaterials(PResource resource, const pugi::xml_node& node)
-    {
-        std::vector<PMaterial> result;
-        pugi::xml_node objs = node.child("Materials");
-        if (objs)
-        {
-            pugi::xml_node child = objs.child("Material");
-            while (child)
-            {
-                std::string name = child.attribute("name").as_string();
-                auto material(Material::GetOrCreate(name));
-                auto xmlResource = Resource::CreateClass<ResourceXMLNode>(GetUniqueName(name));
-                xmlResource->Set(resource, material, "Materials", name);
-                xmlResource->IsReady(); //force load resources for textures
-                material->Set(xmlResource);
-                result.push_back(material);
-                child = child.next_sibling("Material");
-            }
-        }
-        return result;
-    }
-
     void Material::SaveMaterials(pugi::xml_node& node)
     {
         pugi::xml_node child = node.append_child("Materials");
         auto materials = Material::GetObjs();
         for (auto& obj : materials)
             obj->Save(child);
-    }
-
-    void Material::Set(PResourceXMLNode xmlResource)
-    {
-        if (xmlResource != xmlResource_)
-        {
-            xmlResource_ = xmlResource;
-            Invalidate();
-        }
     }
 
     bool Material::HasLightMap() const

@@ -37,5 +37,6 @@ int NSG_MAIN(int argc, char* argv[])
     auto control = std::make_shared<CameraControl>(camera);
     auto sunLight = scene->GetChild<Light>("Sun", true);
     //window->ShowMap(sunLight->GetShadowMap(0));
-	return Engine().Run();
+	window->SetScene(data.scenes_[0].get());
+	return Engine::Create()->Run();
 }

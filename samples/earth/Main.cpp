@@ -78,12 +78,12 @@ int NSG_MAIN(int argc, char* argv[])
     }
 
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/nice_music.ogg");
-    auto music = std::make_shared<Music>();
+    auto music = Music::Create();
 	music->Set(resource);
     music->Play();
 
-	Engine engine;
-    auto slotUpdate = engine.SigUpdate()->Connect([&](float deltaTime)
+	auto engine = Engine::Create();
+    auto slotUpdate = engine->SigUpdate()->Connect([&](float deltaTime)
     {
         {
             static float delta1 = 0;
@@ -115,6 +115,7 @@ int NSG_MAIN(int argc, char* argv[])
         }
     });
 
-    return engine.Run();
+	window->SetScene(scene.get());
+    return engine->Run();
 }
 

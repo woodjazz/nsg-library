@@ -41,7 +41,7 @@ static void Test01()
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
-	Engine().RenderFrame();
+	return Engine::Create()->RenderFrame();
 }
 
 static void Test02()
@@ -59,7 +59,7 @@ static void Test02()
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
-	Engine().RenderFrame();
+	return Engine::Create()->RenderFrame();
 }
 
 static void Test03()
@@ -77,7 +77,7 @@ static void Test03()
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
-	Engine().RenderFrame();
+	return Engine::Create()->RenderFrame();
 }
 
 static void Test04()

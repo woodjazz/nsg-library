@@ -23,14 +23,13 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-
 #include "NSG.h"
+
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
 	auto window = Window::Create();
-	//auto resource = Resource::GetOrCreate<ResourceFile>("data/bmomo.xml");
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
@@ -47,6 +46,7 @@ int NSG_MAIN(int argc, char* argv[])
 		auto animation = scene->GetAnimationFor("Momo_Run", armature);
 		scene->PlayAnimation(animation, true);
 	}
-
-	return Engine().Run();
+	window->SetScene(scene.get());
+	auto engine = Engine::Create();
+	return engine->Run();
 }

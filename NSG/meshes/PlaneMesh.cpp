@@ -30,7 +30,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     PlaneMesh::PlaneMesh(const std::string& name)
-        : Mesh(name)
+        : ProceduralMesh(name)
     {
         Set();
         SetSerializable(false);
@@ -65,11 +65,6 @@ namespace NSG
     size_t PlaneMesh::GetNumberOfTriangles() const
     {
         return indexes_.size() / 3;
-    }
-
-    bool PlaneMesh::IsValid()
-    {
-        return true;
     }
 
     void PlaneMesh::AllocateResources()

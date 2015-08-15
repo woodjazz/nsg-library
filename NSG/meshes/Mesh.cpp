@@ -33,7 +33,6 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "InstanceData.h"
 #include "ModelMesh.h"
-#include "ResourceXMLNode.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -65,7 +64,7 @@ namespace NSG
 
     bool Mesh::IsValid()
     {
-        return Graphics::this_ && !vertexsData_.empty();
+        return Graphics::GetPtr() && !vertexsData_.empty();
     }
 
     void Mesh::AllocateResources()
@@ -157,14 +156,14 @@ namespace NSG
         for (auto& obj : vertexsData_)
         {
             pugi::xml_node vertexData = vertexes.append_child("VertexData");
-            vertexData.append_attribute("position").set_value(ToString(obj.position_).c_str());
-            vertexData.append_attribute("normal").set_value(ToString(obj.normal_).c_str());
-            vertexData.append_attribute("uv0").set_value(ToString(obj.uv_[0]).c_str());
-            vertexData.append_attribute("uv1").set_value(ToString(obj.uv_[1]).c_str());
-            vertexData.append_attribute("color").set_value(ToString(obj.color_).c_str());
             // Do not export tangents since they are calculated
-            vertexData.append_attribute("bonesID").set_value(ToString(obj.bonesID_).c_str());
-            vertexData.append_attribute("bonesWeight").set_value(ToString(obj.bonesWeight_).c_str());
+            vertexData.append_attribute("b").set_value(ToString(obj.bonesID_).c_str());
+            vertexData.append_attribute("c").set_value(ToString(obj.color_).c_str());
+            vertexData.append_attribute("n").set_value(ToString(obj.normal_).c_str());
+            vertexData.append_attribute("p").set_value(ToString(obj.position_).c_str());
+            vertexData.append_attribute("u").set_value(ToString(obj.uv_[0]).c_str());
+            vertexData.append_attribute("v").set_value(ToString(obj.uv_[1]).c_str());
+            vertexData.append_attribute("w").set_value(ToString(obj.bonesWeight_).c_str());
         }
         if (indexes_.size())
         {
@@ -193,23 +192,39 @@ namespace NSG
         pugi::xml_node vertexesNode = node.child("Vertexes");
         if (vertexesNode)
         {
-            pugi::xml_node vertexNode = vertexesNode.child("VertexData");
+            pugi::xml_node vertexNode = vertexesNode.first_child();
             while (vertexNode)
             {
+				// Do not import tangents since they are calculated
+
                 VertexData obj;
-                obj.position_ = ToVertex3(vertexNode.attribute("position").as_string());
-                obj.normal_ = ToVertex3(vertexNode.attribute("normal").as_string());
-                obj.uv_[0] = ToVertex2(vertexNode.attribute("uv0").as_string());
-                obj.uv_[1] = ToVertex2(vertexNode.attribute("uv1").as_string());
-                obj.color_ =  ToVertex4(vertexNode.attribute("color").as_string());
-                // Do not import tangents since they are calculated
-                //obj.tangent_ =  ToVertex3(vertexNode.attribute("tangent").as_string());
-                obj.bonesID_ =  ToVertex4(vertexNode.attribute("bonesID").as_string());
-                obj.bonesWeight_ =  ToVertex4(vertexNode.attribute("bonesWeight").as_string());
-                if(!hasDeformBones_ && Vector4(0) != obj.bonesWeight_)
-                    hasDeformBones_ = true;
+				auto it = vertexNode.attributes_begin();
+				auto itEnd = vertexNode.attributes_end();
+				while (it != itEnd)
+				{
+					auto& att = *it;
+					if (att.name()[0] == 'b')
+						obj.bonesID_ = ToVertex4(att.as_string());
+					else if (att.name()[0] == 'c')
+						obj.color_ = ToVertex4(att.as_string());
+					else if (att.name()[0] == 'n')
+						obj.normal_ = ToVertex3(att.as_string());
+					else if (att.name()[0] == 'p')
+						obj.position_ = ToVertex3(att.as_string());
+					else if (att.name()[0] == 'u')
+						obj.uv_[0] = ToVertex2(att.as_string());
+					else if (att.name()[0] == 'v')
+						obj.uv_[1] = ToVertex2(att.as_string());
+					else if (att.name()[0] == 'w')
+					{
+						obj.bonesWeight_ = ToVertex4(att.as_string());
+						if (!hasDeformBones_ && Vector4(0) != obj.bonesWeight_)
+							hasDeformBones_ = true;
+					}
+					++it;
+				}
                 vertexsData_.push_back(obj);
-                vertexNode = vertexNode.next_sibling("VertexData");
+                vertexNode = vertexNode.next_sibling();
             }
 
             pugi::xml_node indexesNode = node.child("Indexes");
@@ -388,27 +403,6 @@ namespace NSG
                 return vertexsData_.at(0);
             return vertexsData_.at(triangleIdx + vertexIndex);
         }
-    }
-
-    std::vector<PMesh> Mesh::LoadMeshes(PResource resource, const pugi::xml_node& node)
-    {
-        std::vector<PMesh> result;
-        pugi::xml_node meshes = node.child("Meshes");
-        if (meshes)
-        {
-            pugi::xml_node child = meshes.child("Mesh");
-            while (child)
-            {
-                std::string name = child.attribute("name").as_string();
-                auto mesh = Mesh::GetOrCreateClass<ModelMesh>(name);
-                auto xmlResource = Resource::CreateClass<ResourceXMLNode>(name);
-                xmlResource->Set(resource, mesh, "Meshes", name);
-                mesh->Set(xmlResource);
-                result.push_back(mesh);
-                child = child.next_sibling("Mesh");
-            }
-        }
-        return result;
     }
 
     void Mesh::SaveMeshes(pugi::xml_node& node)

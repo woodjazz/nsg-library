@@ -45,17 +45,14 @@ namespace NSG
 		virtual void Pause();
 		virtual void Resume();
         virtual bool IsPlaying() const;
-        static std::vector<PSound> LoadSounds(PResource resource, const pugi::xml_node& node);
+		void Load(const pugi::xml_node& node) override;
         static void SaveSounds(pugi::xml_node& node);
-        void Set(PResourceXMLNode xmlResource);
     private:
         void Save(pugi::xml_node& node);
         bool IsValid() override;
         void AllocateResources() override;
-        void ReleaseResources() override;
-        PResource resource_;
         Mix_Chunk* sound_;
         int channel_;
-        PResourceXMLNode xmlResource_;
+		PResource resource_;
     };
 }

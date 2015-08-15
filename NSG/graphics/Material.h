@@ -68,6 +68,7 @@ namespace NSG
         PTexture GetTextureWith(PResource resource) const;
         PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
         void SetAlpha(float alpha);
+		float GetAlpha() const { return alpha_; }
 		void SetAlphaForSpecular(float alphaForSpecular);
         bool IsTransparent() const;
         void EnableTransparent(bool enable);
@@ -78,9 +79,7 @@ namespace NSG
         void UpdateBatchBuffer(const Batch& batch);
         void BachedNodeHasChanged();
         static PTexture GetTextureWithResource(PResource resource);
-        static std::vector<PMaterial> LoadMaterials(PResource resource, const pugi::xml_node& node);
         static void SaveMaterials(pugi::xml_node& node);
-        void Set(PResourceXMLNode xmlResource);
         void SetUVTransform(const Vector4& uvTransform);
         bool HasLightMap() const;
 		void FillShaderDefines(std::string& defines, PassType passType, const Mesh* mesh, bool allowInstancing) const;
@@ -101,8 +100,8 @@ namespace NSG
         bool ReceiveShadows() const { return receiveShadows_; }
         bool IsShadowCaster() const { return !shadeless_ && castShadow_; }
         bool HasSpecularColor() const;
+		void Load(const pugi::xml_node& node) override;
     private:
-        void LoadFrom(PResource resource, const pugi::xml_node& node) override;
         void SetupBlur();
         bool IsValid() override;
         void AllocateResources() override;
@@ -129,7 +128,6 @@ namespace NSG
         RenderPass renderPass_;
         BillboardType billboardType_;
         bool flipYTextureCoords_;
-        PResourceXMLNode xmlResource_;
         bool shadeless_;
         CullFaceMode cullFaceMode_;
         float friction_; // rigidbody friction

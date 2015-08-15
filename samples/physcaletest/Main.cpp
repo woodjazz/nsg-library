@@ -99,8 +99,7 @@ int NSG_MAIN(int argc, char* argv[])
 			sphere->GetRigidBody()->SyncWithNode();
 		}
 	});
-
-	Engine engine;
-	return engine.Run();
+	window->SetScene(scene.get());
+	return Engine::Create()->Run();
 }
 

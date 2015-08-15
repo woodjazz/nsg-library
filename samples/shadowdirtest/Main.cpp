@@ -123,13 +123,14 @@ int NSG_MAIN(int argc, char* argv[])
 
 	
 
-	Engine engine;
-	auto slotUpdate = engine.SigUpdate()->Connect([&](float deltaTime)
+	auto engine = Engine::Create();
+	auto slotUpdate = engine->SigUpdate()->Connect([&](float deltaTime)
 	{
 		//LOGI("%s", ToString(camera->GetView() * Vector4(0, 0, -50, 1)).c_str());
 		//LOGI("%s", ToString(camera->GetPosition()).c_str());
 		//LOGI("q=%s", ToString(camera->GetOrientation()).c_str());
 	});
-	return engine.Run();
+	window->SetScene(scene.get());
+	return engine->Run();
 }
 

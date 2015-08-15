@@ -40,7 +40,7 @@ namespace NSG
 		void Setup(Window* mainWindow);
 		static void Draw(ImDrawData* draw_data);
 		void InternalDraw(ImDrawData* draw_data);
-		Graphics* graphics_;
+		PGraphics graphics_;
 		PTexture2D fontTexture_;
 		SignalKey::PSlot slotKey_;
 		SignalText::PSlot slotText_;

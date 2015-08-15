@@ -24,11 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Mesh.h"
+#include "ProceduralMesh.h"
 
 namespace NSG
 {
-	class CircleMesh : public Mesh
+	class CircleMesh : public ProceduralMesh
 	{
 	public:
 		CircleMesh(const std::string& name);
@@ -37,7 +37,6 @@ namespace NSG
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
 		size_t GetNumberOfTriangles() const override;
-        bool IsValid() override;
         void AllocateResources() override;
         PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
 	private:

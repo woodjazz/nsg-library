@@ -37,7 +37,6 @@ namespace NSG
 	{
 	public:
 		Resource(const std::string& name);
-		static PResource CreateFrom(PResource resource, const pugi::xml_node& node);
 		virtual ~Resource();
 		void SetBuffer(const std::string& buffer) { buffer_ = buffer; }
 		const char* const GetData() const { return buffer_.c_str(); }
@@ -50,9 +49,9 @@ namespace NSG
 		void SetSerializable(bool serializable);
 		bool IsSerializable() const;
 		void SetName(const std::string& name);
-		static std::vector<PResource> LoadResources(PResource resource, const pugi::xml_node& node);
         static void SaveResources(pugi::xml_node& node);
 		static void SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir);
+		void Load(const pugi::xml_node& node) override;
 	protected:
 		std::string buffer_;
 		bool serializable_;

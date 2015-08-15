@@ -38,11 +38,12 @@ namespace NSG
 		std::vector<PScene> scenes_;
 		std::vector<PSkeleton> skeletons_;
 		std::vector<PAnimation> animations_;
+		AppData();
 		AppData(PResource resource);
-		AppData(const pugi::xml_document& doc);
+		//AppData(const pugi::xml_document& doc);
 		~AppData();
+		void Load(PLoaderXML loader);
 		static void ClearAll();
-	private:
-		void Load(const pugi::xml_document& doc, PResource resource);
+		static bool AreReady();
 	};
 }

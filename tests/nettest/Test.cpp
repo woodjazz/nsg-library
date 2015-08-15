@@ -58,7 +58,10 @@ static int Test01()
 
     HTTPRequest postRequest("http://nsg-datacollector.appspot.com/store", form, onLoad0, onError, onProgress);
 	HTTPRequest getRequest("http://nsg-datacollector.appspot.com/retrieve", onLoad1, onError, onProgress);
-    return Engine().Run();
+	postRequest.StartRequest();
+	getRequest.StartRequest();
+	auto engine = Engine::Create();
+	return engine->Run();
 }
 
 static int Test02()
@@ -91,7 +94,10 @@ static int Test02()
 
     HTTPRequest request0("http://nsg-datacollector.appspot11111.com/storexasas", form, onLoad, onError0, onProgress);
     HTTPRequest request1("http://nsg-datacollector.appspot.com/retrievesasa", onLoad, onError1, onProgress);
-	return Engine().Run();
+	request0.StartRequest();
+	request1.StartRequest();
+	auto engine = Engine::Create();
+	return engine->Run();
 }
 
 void Tests()

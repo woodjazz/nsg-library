@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "Texture2D.h"
 #include "Resource.h"
-#include "ResourceXMLNode.h"
 #include "Util.h"
 #include "Image.h"
 #include "pugixml.hpp"
@@ -55,7 +54,7 @@ namespace NSG
         return GL_TEXTURE_2D;
     }
 
-    PTexture Texture2D::CreateFrom(PResource resource, const pugi::xml_node& node)
+	PTexture Texture2D::CreateFrom(const pugi::xml_node& node)
     {
         std::string flags = node.attribute("flags").as_string();
         std::string resourceName = node.attribute("resource").as_string();
@@ -67,14 +66,7 @@ namespace NSG
         bool useAlpha = node.attribute("useAlpha").as_bool();
         auto res = Resource::Get(resourceName);
         PTexture texture;
-        if (!res)
-        {
-			auto newRes = Resource::CreateClass<ResourceXMLNode>(GetUniqueName(resourceName));
-            texture = std::make_shared<Texture2D>(newRes);
-            newRes->Set(resource, nullptr, "Resources", resourceName);
-        }
-        else
-            texture = std::make_shared<Texture2D>(res);
+        texture = std::make_shared<Texture2D>(res);
         texture->SetName(resourceName);
         texture->SetUVName(uvName);
         texture->SetFlags(flags);

@@ -46,7 +46,6 @@ misrepresented as being the original software.
 #include "FrameBuffer.h"
 #include "ShowTexture.h"
 #include "Filter.h"
-#include "Renderer.h"
 #include "GUI.h"
 #include <functional>
 
@@ -64,8 +63,6 @@ PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
 
 namespace NSG
 {
-    template <> Graphics* Singleton<Graphics>::this_ = nullptr;
-
     static const bool DEFAULT_STENCIL_ENABLE = false;
     static const GLuint DEFAULT_STENCIL_WRITEMASK = ~GLuint(0);
     static const GLenum DEFAULT_STENCIL_SFAIL = GL_KEEP;
@@ -361,13 +358,11 @@ namespace NSG
         // Set up texture data read/write alignment
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        renderer_ = std::make_shared<Renderer>(this);
     }
 
     Graphics::~Graphics()
     {
-        Graphics::this_ = nullptr;
+		Graphics::Destroy();
     }
 
 	void Graphics::CreateGUI(Window* mainWindow)
@@ -1475,12 +1470,12 @@ namespace NSG
         return false;
     }
 
-    GLenum Graphics::GetTexelDataType() const
+    GLenum Graphics::GetTexelDataType()
     {
 		return GL_UNSIGNED_BYTE;
     }
 
-    GLenum Graphics::GetTexelFormatType() const
+    GLenum Graphics::GetTexelFormatType()
     {
 		return GL_RGBA;
     }

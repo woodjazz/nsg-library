@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "AppData.h"
+#include "Object.h"
 #include "Resource.h"
 #include "Texture.h"
 #include "Sound.h"
@@ -34,73 +35,77 @@ misrepresented as being the original software.
 #include "Path.h"
 #include "Material.h"
 #include "Shape.h"
-#include "Mesh.h"
+#include "ModelMesh.h"
 #include "Program.h"
 #include "Skeleton.h"
 #include "Animation.h"
+#include "LoaderXML.h"
+#include "LoaderXMLNode.h"
 #include "pugixml.hpp"
 namespace NSG
 {
-    AppData::AppData(PResource resource)
+    AppData::AppData()
     {
-        CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
-        pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_buffer((void*)resource->GetData(), resource->GetBytes());
-		if (result)
-		{
-			Load(doc, resource);
-			resource->Invalidate(); // free mem
-		}
-        else
-        {
-            LOGE("XML parsed with errors, attr value: [%s].", doc.child("node").attribute("attr").value());
-            LOGE("Error description: %s.", result.description());
-            //LOGE("Error offset: %lu", result.offset);
-        }
+
     }
 
+    AppData::AppData(PResource resource)
+    {
+        auto loader = LoaderXML::GetOrCreate(resource->GetName());
+        loader->Set(resource);
+        Load(loader);
+    }
+    #if 0
     AppData::AppData(const pugi::xml_document& doc)
     {
-		auto resource = Resource::Create("AppDataResource");
-		struct XMLWriter : pugi::xml_writer
-		{
-			std::string buffer_;
-			void write(const void* data, size_t size) override
-			{
-				const char* m = (const char*)data;
-				buffer_.insert(buffer_.end(), &m[0], &m[size]);
-			}
-		} writer;
-		doc.save(writer);
-		resource->SetBuffer(writer.buffer_);
-		Load(doc, resource);
+        auto resource = Resource::Create("AppDataResource");
+        struct XMLWriter : pugi::xml_writer
+        {
+            std::string buffer_;
+            void write(const void* data, size_t size) override
+            {
+                const char* m = (const char*)data;
+                buffer_.insert(buffer_.end(), &m[0], &m[size]);
+            }
+        } writer;
+        doc.save(writer);
+        resource->SetBuffer(writer.buffer_);
+        auto loader = LoaderXML::GetOrCreate(resource->GetName());
+        loader->Set(resource);
+        CHECK_CONDITION(loader->IsReady(), __FILE__, __LINE__);
+        Load(loader);
+        loader->Invalidate(); // free mem
     }
+    #endif
 
     AppData::~AppData()
     {
         AppData::ClearAll();
     }
 
-	void AppData::Load(const pugi::xml_document& doc, PResource resource)
+    void AppData::Load(PLoaderXML loader)
     {
-        pugi::xml_node appNode = doc.child("App");
-        resources_ = Resource::LoadResources(resource, appNode);
-        sounds_ = Sound::LoadSounds(resource, appNode);
-        meshes_ = Mesh::LoadMeshes(resource, appNode);
-        materials_ = Material::LoadMaterials(resource, appNode);
-        shapes_ = Shape::LoadShapes(resource, appNode);
-		skeletons_ = Skeleton::LoadSkeletons(resource, appNode);
-		animations_ = Animation::LoadAnimations(resource, appNode);
+        CHECK_CONDITION(loader->IsReady(), __FILE__, __LINE__);
+        resources_ = Object::LoadAll<Resource, Resource>(loader, "Resources");
+        sounds_ = Object::LoadAll<Sound, Sound>(loader, "Sounds");
+        meshes_ = Object::LoadAll<Mesh, ModelMesh>(loader, "Meshes");
+        materials_ = Object::LoadAll<Material, Material>(loader, "Materials");
+        shapes_ = Object::LoadAll<Shape, Shape>(loader, "Shapes");
+        skeletons_ = Object::LoadAll<Skeleton, Skeleton>(loader, "Skeletons");
+        animations_ = Object::LoadAll<Animation, Animation>(loader, "Animations");
 
+        auto& doc = loader->GetDocument();
+        auto appNode = doc.child("App");
         pugi::xml_node child = appNode.child("Scene");
         while (child)
         {
-			std::string sceneName = child.attribute("name").as_string();
-			auto scene = std::make_shared<Scene>(sceneName);
+            std::string sceneName = child.attribute("name").as_string();
+            auto scene = std::make_shared<Scene>(sceneName);
             scene->Load(child);
             scenes_.push_back(scene);
             child = child.next_sibling("Scene");
         }
+        loader->Invalidate(); // free mem
     }
 
     void AppData::ClearAll()
@@ -110,9 +115,23 @@ namespace NSG
         Mesh::Clear();
         Material::Clear();
         Shape::Clear();
-		Skeleton::Clear();
-		Animation::Clear();
+        Skeleton::Clear();
+        Animation::Clear();
         Program::Clear();
+        LoaderXML::Clear();
     }
+
+    bool AppData::AreReady()
+    {
+        return Resource::AreReady() &&
+               Sound::AreReady() &&
+               Mesh::AreReady() &&
+               Material::AreReady() &&
+               Shape::AreReady() &&
+               Skeleton::AreReady() &&
+               Animation::AreReady() &&
+               LoaderXML::AreReady();
+    }
+
 
 }

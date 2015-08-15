@@ -81,7 +81,7 @@ namespace NSG
 
     bool Image::IsValid()
     {
-        if (Graphics::this_ && resource_->IsReady())
+        if (Graphics::GetPtr() && resource_->IsReady())
         {
             auto dataSize = resource_->GetBytes();
             return dataSize > 4; // at least we have to read the type of image
@@ -143,14 +143,14 @@ namespace NSG
     {
         ReadResource();
 
-        if (compressed_ && Graphics::this_->NeedsDecompress(format_))
+        if (compressed_ && Graphics::GetPtr()->NeedsDecompress(format_))
             Decompress();
 
-        if (!compressed_ && !Graphics::this_->IsTextureSizeCorrect(width_, height_))
+        if (!compressed_ && !Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_))
             Resize2PowerOf2();
 
-        if (Graphics::this_->GetMaxTextureSize() < width_ || Graphics::this_->GetMaxTextureSize() < height_)
-            Reduce(Graphics::this_->GetMaxTextureSize());
+        if (Graphics::GetPtr()->GetMaxTextureSize() < width_ || Graphics::GetPtr()->GetMaxTextureSize() < height_)
+            Reduce(Graphics::GetPtr()->GetMaxTextureSize());
     }
 
     void Image::ReleaseResources()

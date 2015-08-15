@@ -71,10 +71,11 @@ namespace NSG
           #endif
           onLoad_(onLoad),
           onError_(onError),
-          onProgress_(onProgress)
+          onProgress_(onProgress),
+          form_(form),
+          isPost_(true)
     {
-        ParseURL();
-        Request(true, form);
+		HTTPRequest::ParseURL(url, protocol_, host_, port_, path_);
     }
 
     HTTPRequest::HTTPRequest(const std::string& url, OnLoadFunction onLoad, OnErrorFunction onError, OnProgressFunction onProgress)
@@ -84,10 +85,10 @@ namespace NSG
           #endif
           onLoad_(onLoad),
           onError_(onError),
-          onProgress_(onProgress)
+          onProgress_(onProgress),
+          isPost_(false)
     {
-        ParseURL();
-        Request(false, Form());
+        HTTPRequest::ParseURL(url, protocol_, host_, port_, path_);
     }
 
     HTTPRequest::~HTTPRequest()
@@ -100,48 +101,48 @@ namespace NSG
         #endif
     }
 
-    void HTTPRequest::ParseURL()
+    void HTTPRequest::ParseURL(const std::string& url, std::string& protocol, std::string& host, int& port, std::string& path)
     {
-        protocol_ = "http";
-        port_ = 80;
-        path_ = "/";
+        protocol = "http";
+        port = 80;
+        path = "/";
 
-        auto protocolEnd = url_.find("://");
+        auto protocolEnd = url.find("://");
         if (protocolEnd != std::string::npos)
         {
-            protocol_ = url_.substr(0, protocolEnd);
-            host_ = url_.substr(protocolEnd + 3);
+            protocol = url.substr(0, protocolEnd);
+            host = url.substr(protocolEnd + 3);
         }
         else
-            host_ = url_;
+            host = url;
 
-        auto pathStart = host_.find('/');
+        auto pathStart = host.find('/');
         if (pathStart != std::string::npos)
         {
-            path_ = host_.substr(pathStart);
-            host_ = host_.substr(0, pathStart);
+            path = host.substr(pathStart);
+            host = host.substr(0, pathStart);
         }
 
-        auto portStart = host_.find(':');
+        auto portStart = host.find(':');
         if (portStart != std::string::npos)
         {
-            port_ = ToInt(host_.substr(portStart + 1));
-            host_ = host_.substr(0, portStart);
+            port = ToInt(host.substr(portStart + 1));
+            host = host.substr(0, portStart);
         }
     }
 
-    void HTTPRequest::Request(bool post, const Form& form)
+    void HTTPRequest::StartRequest()
     {
         std::string postData;
 
-        if (post)
+		if (isPost_)
         {
-            auto it = form.begin();
-            while (it != form.end())
+            auto it = form_.begin();
+            while (it != form_.end())
             {
                 postData += it->first + "=" + it->second;
                 ++it;
-                if (it != form.end())
+                if (it != form_.end())
                     postData += "&";
             }
         }
@@ -151,9 +152,10 @@ namespace NSG
         #if EMSCRIPTEN
         {
             std::string url = protocol_ + "://" + host_ + ":" + ToString(port_) + path_;
+            LOGI("REQUEST:%s", url.c_str());
             requestHandle_ = emscripten_async_wget2_data(
                                  url.c_str(),
-                                 post ? "POST" : "GET",
+                                 isPost_ ? "POST" : "GET",
                                  requestData->postData_.c_str(),
                                  requestData,
                                  0,
@@ -232,7 +234,7 @@ namespace NSG
                         onLoad_(response);
                     }
                 }
-            }, post, requestData);
+			}, isPost_, requestData);
         }
         #endif
     }

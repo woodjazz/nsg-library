@@ -183,6 +183,7 @@ namespace NSG
         SceneNode* node_;
         Material* material_;
         const Light* light_;
+        PGraphics graphics_;
 		static StrongFactory<std::string, Program> programs_;
     };
 }

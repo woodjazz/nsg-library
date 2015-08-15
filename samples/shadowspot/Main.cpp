@@ -46,7 +46,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto dir1 = spot1Light->GetLookAtDirection();
 	auto dir2 = spot2Light->GetLookAtDirection();
 
-	Engine engine;
+	auto engine = Engine::Create();
 #if 0
 	auto updateSlot = engine.SigUpdate()->Connect([&](float deltaTime)
 	{
@@ -72,5 +72,6 @@ int NSG_MAIN(int argc, char* argv[])
 
 #endif
 	//window->ShowMap(spot1Light->GetShadowMap());
-	return engine.Run();
+	window->SetScene(data.scenes_[0].get());
+	return engine->Run();
 }

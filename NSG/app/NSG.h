@@ -95,4 +95,6 @@ misrepresented as being the original software.
 #include "FileSystem.h"
 #include "Renderer.h"
 #include "imgui.h"
+#include "LoaderXML.h"
+
 

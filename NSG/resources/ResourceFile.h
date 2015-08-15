@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "SharedPointers.h"
 #include "Path.h"
 #include "WeakFactory.h"
+#include "HTTPRequest.h"
 
 namespace NSG
 {
@@ -36,9 +37,15 @@ namespace NSG
 	public:
 		ResourceFile(const Path& path);
 		~ResourceFile();
+	private:
+		bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-	private:
 		Path path_;
+		PHTTPRequest get_;
+        HTTPRequest::OnLoadFunction onLoad_;
+        HTTPRequest::OnErrorFunction onError_;
+        HTTPRequest::OnProgressFunction onProgress_;
+		bool isLocal_;
 	};
 }

@@ -30,7 +30,6 @@ misrepresented as being the original software.
 #include "ModelMesh.h"
 #include "Scene.h"
 #include "Util.h"
-#include "ResourceXMLNode.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -45,17 +44,6 @@ namespace NSG
 
     Skeleton::~Skeleton()
     {
-    }
-
-    bool Skeleton::IsValid()
-    {
-        return (!resource_ || resource_->IsReady());
-    }
-
-    void Skeleton::ReleaseResources()
-    {
-        if (resource_)
-            resource_->Invalidate();
     }
 
     void Skeleton::Save(pugi::xml_node& node)
@@ -127,37 +115,6 @@ namespace NSG
         auto skeletons = Skeleton::GetObjs();
         for (auto& obj : skeletons)
             obj->Save(child);
-    }
-
-    std::vector<PSkeleton> Skeleton::LoadSkeletons(PResource resource, const pugi::xml_node& node)
-    {
-        std::vector<PSkeleton> result;
-        auto skeletonNode = node.child("Skeletons").child("Skeleton");
-        while (skeletonNode)
-        {
-            std::string name = skeletonNode.attribute("name").as_string();
-            auto skeleton(Skeleton::GetOrCreate(name));
-            auto xmlResource = Resource::CreateClass<ResourceXMLNode>(GetUniqueName(name));
-            xmlResource->Set(resource, skeleton, "Skeletons", name);
-            skeleton->Set(xmlResource);
-            result.push_back(skeleton);
-            skeletonNode = skeletonNode.next_sibling("Skeleton");
-        }
-        return result;
-    }
-
-    void Skeleton::LoadFrom(PResource resource, const pugi::xml_node& node)
-    {
-        Load(node);
-    }
-
-    void Skeleton::Set(PResource resource)
-    {
-        if (resource != resource_)
-        {
-            resource_ = resource;
-            Invalidate();
-        }
     }
 
     void Skeleton::AddRootBone(PBone bone)

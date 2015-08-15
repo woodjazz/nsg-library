@@ -315,7 +315,11 @@ static void Test06()
 static void Test07()
 {
 	auto xml = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro132.xml");
-    auto atlas = std::make_shared<FontAtlas>(xml);
+    auto atlas = std::make_shared<FontAtlas>();
+	atlas->Set(xml);
+	auto atlasResource = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro132.png");
+	auto atlasTexture = std::make_shared<Texture2D>(atlasResource);
+	atlas->SetTexture(atlasTexture);
     
     auto textCenter = atlas->GetOrCreateMesh("A", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
     auto textLeftTop = atlas->GetOrCreateMesh("B", LEFT_ALIGNMENT, TOP_ALIGNMENT);
@@ -393,7 +397,12 @@ static void Test07()
 static void Test08()
 {
 	auto xml = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro132.xml");
-	auto atlas = std::make_shared<FontAtlas>(xml);
+	auto atlas = std::make_shared<FontAtlas>();
+	atlas->Set(xml);
+	auto atlasResource = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro132.png");
+	auto atlasTexture = std::make_shared<Texture2D>(atlasResource);
+	atlas->SetTexture(atlasTexture);
+
 
 	auto textCenter = atlas->GetOrCreateMesh("A", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
 	auto textLeftTop = atlas->GetOrCreateMesh("B", LEFT_ALIGNMENT, TOP_ALIGNMENT);

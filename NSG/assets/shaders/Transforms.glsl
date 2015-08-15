@@ -284,7 +284,8 @@
 			#endif
 		#elif defined(TEXT)
 			#if defined(DIFFUSEMAP0)
-				return texture2D(u_texture0, v_texcoord0);
+				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);
+				return vec4(diffuseMap.rgb, diffuseMap.a * u_material.diffuseColor.a);
 			#endif
 		#else
 			#if defined(DIFFUSEMAP0)

@@ -38,5 +38,6 @@ int NSG_MAIN(int argc, char* argv[])
 	//auto light = scene->GetChild<Light>("Lamp", true);
 	//light->SetBias(1);
 	//window->ShowMap(light->GetShadowMap(0));
-	return Engine().Run();
+	window->SetScene(data.scenes_[0].get());
+	return Engine::Create()->Run();
 }

@@ -29,7 +29,6 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Graphics.h"
 #include "ResourceFile.h"
-#include "ResourceXMLNode.h"
 #include "Texture.h"
 #include "Path.h"
 #include "Util.h"
@@ -45,8 +44,8 @@ namespace NSG
           texture_(0),
           width_(0),
           height_(0),
-          format_(Graphics::this_->GetTexelFormatType()),
-          type_(Graphics::this_->GetTexelDataType()),
+          format_(Graphics::GetTexelFormatType()),
+		  type_(Graphics::GetTexelDataType()),
           channels_(0),
           serializable_(false),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -85,8 +84,8 @@ namespace NSG
           pResource_(resource),
           width_(0),
           height_(0),
-          format_(Graphics::this_->GetTexelFormatType()),
-          type_(Graphics::this_->GetTexelDataType()),
+		  format_(Graphics::GetTexelFormatType()),
+		  type_(Graphics::GetTexelDataType()),
           channels_(0),
           serializable_(true),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -139,7 +138,7 @@ namespace NSG
     {
         CHECK_GL_STATUS(__FILE__, __LINE__);
         glGenTextures(1, &texture_);
-        Graphics::this_->SetTexture(0, this);
+		Graphics::GetPtr()->SetTexture(0, this);
 
         if (image_)
         {
@@ -161,8 +160,8 @@ namespace NSG
             width_ = height_ = value;
         }
 
-        CHECK_ASSERT(Graphics::this_->IsTextureSizeCorrect(width_, height_), __FILE__, __LINE__);
-        CHECK_ASSERT(Graphics::this_->GetMaxTextureSize() >= width_ && Graphics::this_->GetMaxTextureSize() >= height_, __FILE__, __LINE__);
+		CHECK_ASSERT(Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_), __FILE__, __LINE__);
+		CHECK_ASSERT(Graphics::GetPtr()->GetMaxTextureSize() >= width_ && Graphics::GetPtr()->GetMaxTextureSize() >= height_, __FILE__, __LINE__);
 
         switch (wrapMode_)
         {
@@ -232,6 +231,9 @@ namespace NSG
                 break;
         }
 
+        if (image_)
+            image_->Invalidate(); // free mem
+
         CHECK_GL_STATUS(__FILE__, __LINE__);
     }
 
@@ -239,8 +241,6 @@ namespace NSG
     {
         glDeleteTextures(1, &texture_);
         texture_ = 0;
-        if (image_)
-            return image_->Invalidate();
     }
 
     std::string Texture::TranslateFlags() const
@@ -248,7 +248,7 @@ namespace NSG
         std::string ss;
 
         if ((int)TextureFlag::GENERATE_MIPMAPS & flags_)
-            ss = " GENERATE_MIPMAPS" + ss;
+            ss = " GENERATE_MIPMAPS";
 
         if ((int)TextureFlag::INVERT_Y & flags_)
             ss = " INVERT_Y" + ss;
@@ -267,7 +267,7 @@ namespace NSG
         node.append_attribute("blendType") = ToString(blendType_);
         node.append_attribute("mapType") = ToString(mapType_);
         node.append_attribute("useAlpha").set_value(useAlpha_);
-        
+
     }
 
     void Texture::SetSize(GLsizei width, GLsizei height)
@@ -275,7 +275,7 @@ namespace NSG
         CHECK_ASSERT(!image_ && "SetSize only can be applied for non images!!!", __FILE__, __LINE__);
         CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
 
-        auto maxSize = Graphics::this_->GetMaxTextureSize();
+        auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
         width = glm::clamp(width, 0, maxSize);
         height = glm::clamp(height, 0, maxSize);
 
@@ -289,7 +289,7 @@ namespace NSG
         {
             width_ = width;
             height_ = height;
-            if (!Graphics::this_->IsTextureSizeCorrect(width_, height_))
+			if (!Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_))
                 GetPowerOfTwoValues(width_, height_);
             Invalidate();
         }

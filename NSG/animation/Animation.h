@@ -55,7 +55,7 @@ namespace NSG
         void ResolveFor(PBone bone);
     };
 
-	class Animation : public std::enable_shared_from_this<Animation>, public Object, public StrongFactory<std::string, Animation>
+	class Animation : public Object, public std::enable_shared_from_this<Animation>, public StrongFactory<std::string, Animation>
     {
     public:
         Animation(const std::string& name);
@@ -68,17 +68,11 @@ namespace NSG
         void SetTracks(const std::vector<AnimationTrack>& tracks);
         const std::vector<AnimationTrack>& GetTracks() const { return tracks_; }
         void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node);
+        void Load(const pugi::xml_node& node) override;
         void AddTrack(const AnimationTrack& track);
-        static std::vector<PAnimation> LoadAnimations(PResource resource, const pugi::xml_node& node);
         static void SaveAnimations(pugi::xml_node& node);
-		void Set(PResource resource);
     private:
-        bool IsValid() override;
-        void ReleaseResources() override;
-        void LoadFrom(PResource resource, const pugi::xml_node& node) override;
         float length_;
         std::vector<AnimationTrack> tracks_;
-		PResource resource_;
     };
 }

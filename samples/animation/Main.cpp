@@ -84,7 +84,7 @@ int NSG_MAIN(int argc, char* argv[])
     animation->SetLength(8);
 
     scene->PlayAnimation(animation, false);
-
-	return Engine().Run();
+	window->SetScene(scene.get());
+	return Engine::Create()->Run();
 }
 

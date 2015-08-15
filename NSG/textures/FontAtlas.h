@@ -37,10 +37,12 @@ namespace NSG
 	class FontAtlas : public std::enable_shared_from_this<FontAtlas>, public Object, WeakFactory<std::string, TextMesh>
 	{
 	public:
-		FontAtlas(PResourceFile xmlResource);
+		FontAtlas(const std::string& name = GetUniqueName("FontAtlas"));
 		~FontAtlas();
+		void Set(PResourceFile xmlResource);
 		void SetWindow(Window* window);
 		void GenerateMeshData(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
+		void SetTexture(PTexture texture);
 		PTexture GetTexture() const { return texture_; }
 		void SetViewSize(int width, int height);
 		PTextMesh GetOrCreateMesh(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
@@ -63,6 +65,7 @@ namespace NSG
 		typedef std::map<int, CharInfo> CharsMap;
         CharsMap charsMap_;
         SignalSizeChanged::PSlot slotViewChanged_;
+        PGraphics graphics_;
 	};
 
 }
