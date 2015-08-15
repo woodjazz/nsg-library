@@ -14,5 +14,9 @@ case "${TRAVIS_OS_NAME}" in
     sudo apt-get install -q -y --no-install-recommends libasound2-dev
     ;;
   osx)
+    wget https://dl.dropboxusercontent.com/u/203889738/gcc/XQuartz.pkg
+    sudo installer -pkg ./XQuartz.pkg -target /
+    # SIMULATE GUI (DISPLAY)
+    sh -e /etc/init.d/xvfb start
     ;;
 esac
