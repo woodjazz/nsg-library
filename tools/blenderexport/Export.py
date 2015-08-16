@@ -384,7 +384,7 @@ def ConvertMaterials():
 
 def GetArmatureMeshObj(armatureObj):
     for obj in bpy.data.objects:
-        if obj.type == 'MESH' and obj.parent == armatureObj:
+        if obj.type == 'MESH' and obj.vertex_groups and obj.parent == armatureObj:
             return obj
     return None
 
@@ -419,6 +419,9 @@ def ConvertPoseBone(shaderOrderEle, poseBone):
 
 
 def ConvertArmature(armaturesEle, armatureObj):
+    meshObj = GetArmatureMeshObj(armatureObj)
+    if meshObj is None:
+        return
     armature = armatureObj.data
     armatureEle = GetChildEle(armaturesEle, "Skeleton", "name", armature.name)
     if armatureEle is None:
@@ -429,8 +432,6 @@ def ConvertArmature(armaturesEle, armatureObj):
         armatureEle = et.SubElement(armaturesEle, "Skeleton")
         armatureEle.set("name", armature.name)
 
-        meshObj = GetArmatureMeshObj(armatureObj)
-        assert meshObj
         shaderOrderEle = et.SubElement(armatureEle, "ShaderOrder")
         for deformGroup in meshObj.vertex_groups:
             for bone in armatureObj.pose.bones:
@@ -874,14 +875,9 @@ def CreatePhysics(sceneNodeEle, obj, materialIndex):
             shapeEle.set("name", name)
             if foundParent:
                 parentObj = GetParentWithName(obj, parentSceneNodeEle.get("name"))
-                t0, r0, s0 = parentObj.matrix_world.inverted().decompose()
-                t1, r1, s1 = obj.matrix_world.decompose()
-                t1 += t0
-                t1.x /= s1.x
-                t1.y /= s1.y
-                t1.z /= s1.z
+                t1, r1, s1 = (parentObj.matrix_world.inverted() * obj.matrix_world).decompose()
                 shapeEle.set("position", Vector3ToString(t1))
-                shapeEle.set("orientation", QuaternionToString(r0 * r1))
+                shapeEle.set("orientation", QuaternionToString(r1))
 
         return rigidBodyEle
 
