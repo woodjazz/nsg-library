@@ -127,20 +127,20 @@ namespace NSG
     bool RigidBody::IsValid()
     {
         for (auto& shape : shapes_)
-            if (!shape.second.shape->IsReady())
+            if (!shape.shape->IsReady())
                 return false;
         return !shapes_.empty();
     }
 
     void RigidBody::AllocateResources()
     {
-        for (auto it : shapes_)
+        for (auto data : shapes_)
         {
-            auto shapeData = it.second;
             btTransform offset;
-            offset.setOrigin(ToBtVector3(shapeData.shape->GetScale() * shapeData.position));
-            offset.setRotation(ToBtQuaternion(shapeData.rotation));
-            compoundShape_->addChildShape(offset, shapeData.shape->GetCollisionShape().get());
+            //offset.setOrigin(ToBtVector3(shapeData.shape->GetScale() * shapeData.position));
+            offset.setOrigin(ToBtVector3(data.position));
+            offset.setRotation(ToBtQuaternion(data.rotation));
+            compoundShape_->addChildShape(offset, data.shape->GetCollisionShape().get());
         }
 
         btVector3 inertia(0, 0, 0);
@@ -236,7 +236,7 @@ namespace NSG
             Invalidate();
         });
 
-        shapes_[key] = ShapeData{ shape, position, rotation, slotShapeReleased};
+        shapes_.push_back(ShapeData{ shape, position, rotation, slotShapeReleased});
         Invalidate();
     }
 
@@ -373,9 +373,9 @@ namespace NSG
         shapes_.clear();
         for (auto it : shapes)
         {
-            auto shape = it.second.shape;
-            auto position = it.second.position;
-            auto rotation = it.second.rotation;
+            auto shape = it.shape;
+            auto position = it.position;
+            auto rotation = it.rotation;
             PMesh mesh;
             Vector3 scale;
             PhysicsShape type;
@@ -472,9 +472,9 @@ namespace NSG
             for (auto& shape : shapes_)
             {
                 auto shapeNode = shapesNode.append_child("Shape");
-                shapeNode.append_attribute("name").set_value(shape.second.shape->GetName().c_str());
-                shapeNode.append_attribute("position").set_value(ToString(shape.second.position).c_str());
-                shapeNode.append_attribute("orientation").set_value(ToString(shape.second.rotation).c_str());
+                shapeNode.append_attribute("name").set_value(shape.shape->GetName().c_str());
+                shapeNode.append_attribute("position").set_value(ToString(shape.position).c_str());
+                shapeNode.append_attribute("orientation").set_value(ToString(shape.rotation).c_str());
             }
         }
     }

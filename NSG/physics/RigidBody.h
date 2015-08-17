@@ -91,7 +91,7 @@ namespace NSG
 			Quaternion rotation;
             SignalEmpty::PSlot slotShapeReleased;
 		};
-		typedef std::map<std::string, ShapeData> Shapes;
+		typedef std::vector<ShapeData> Shapes;
 		Shapes shapes_;
         bool handleCollision_;
 		float restitution_;

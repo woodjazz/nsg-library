@@ -875,9 +875,14 @@ def CreatePhysics(sceneNodeEle, obj, materialIndex):
             shapeEle.set("name", name)
             if foundParent:
                 parentObj = GetParentWithName(obj, parentSceneNodeEle.get("name"))
-                t1, r1, s1 = (parentObj.matrix_world.inverted() * obj.matrix_world).decompose()
-                shapeEle.set("position", Vector3ToString(t1))
-                shapeEle.set("orientation", QuaternionToString(r1))
+                m = parentObj.matrix_world * obj.matrix_local
+                t1, r1, s1 = parentObj.matrix_world.decompose()
+                t2, r2, s2 = obj.matrix_local.decompose()
+                t2.x = t2.x * s1.x
+                t2.y = t2.y * s1.y
+                t2.z = t2.z * s1.z
+                shapeEle.set("position", Vector3ToString(t2))
+                shapeEle.set("orientation", QuaternionToString(r2))
 
         return rigidBodyEle
 
