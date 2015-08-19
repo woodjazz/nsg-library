@@ -34,8 +34,18 @@ int NSG_MAIN(int argc, char* argv[])
     auto scene = data.scenes_[0];
     window->SetScene(scene.get());
     auto camera = scene->GetChild<Camera>("Camera", false);
-    auto control = std::make_shared<CameraControl>(camera);
+    //auto control = std::make_shared<CameraControl>(camera);
+    auto followCamera = std::make_shared<FollowCamera>(camera);
     auto armature = scene->GetChild<SceneNode>("RigMomo", true);
+    auto rigidBody = armature->GetRigidBody();
+    followCamera->Track(armature);
+    followCamera->SetOffset(Vector3(0, 20, -40));
+    auto playerControl = std::make_shared<PlayerControl>();
+    auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float z)
+    {
+        auto f = 10.5f * Vector3(-x, 0.f, z);
+        rigidBody->ApplyForce(f);
+    });
     auto animation = scene->GetAnimationFor("Momo_Run", armature);
     scene->PlayAnimation(animation, true);
     auto engine = Engine::Create();

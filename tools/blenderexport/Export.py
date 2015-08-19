@@ -886,6 +886,12 @@ def CreatePhysics(sceneNodeEle, obj, materialIndex):
                 shapeEle.set("position", Vector3ToString(t2))
                 shapeEle.set("orientation", QuaternionToString(r2))
 
+                if obj.material_slots:
+                    materialSlot = obj.material_slots[0]
+                    physics = materialSlot.material.physics
+                    rigidBodyEle.set("friction", FloatToString(physics.friction))
+                    rigidBodyEle.set("restitution", FloatToString(physics.elasticity))
+
         return rigidBodyEle
 
 

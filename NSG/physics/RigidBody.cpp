@@ -593,6 +593,23 @@ namespace NSG
         }
     }
 
+    void RigidBody::ApplyForce(const Vector3& force)
+    {
+        if (body_ && force != VECTOR3_ZERO)
+        {
+            Activate();
+            body_->applyCentralForce(ToBtVector3(force));
+        }
+    }
+
+    void RigidBody::ApplyImpulse(const Vector3& impulse)
+    {
+        if (body_ && impulse != VECTOR3_ZERO)
+        {
+            Activate();
+            body_->applyCentralImpulse(ToBtVector3(impulse));
+        }
+    }
 
 }
 

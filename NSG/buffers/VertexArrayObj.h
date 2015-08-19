@@ -57,7 +57,6 @@ namespace NSG
         void AllocateResources() override;
         void ReleaseResources()	override;
         GLuint vao_; // vertex array object
-        bool allowInstancing_;
         VAOKey key_;
         SignalEmpty::PSlot slotProgramReleased_;
         SignalEmpty::PSlot slotMeshReleased_;

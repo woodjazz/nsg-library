@@ -73,7 +73,6 @@ namespace NSG
         indexes_.clear();
         indexesWireframe_.clear();
 
-        IndexType idx = 0;
         VertexsData& data = vertexsData_;
         for (auto& line : lines_)
         {

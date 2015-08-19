@@ -68,6 +68,8 @@ namespace NSG
         void SetTrigger(bool enable);
         void SetLinearFactor(const Vector3& factor);
         void SetAngularFactor(const Vector3& factor);
+        void ApplyForce(const Vector3& force);
+        void ApplyImpulse(const Vector3& impulse);
     private:
 		void ReDoShape(const Vector3& newScale);
         bool IsValid() override;
