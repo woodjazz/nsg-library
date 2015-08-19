@@ -59,6 +59,8 @@ namespace NSG
         virtual void Define() = 0;
         void SetUseAlpha(bool useAlpha) { useAlpha_ = useAlpha; }
         bool GetUseAlpha() const { return useAlpha_; }
+        const Vector4& GetUVTransform() const { return uvTransform_; };
+        void SetUVTransform(const Vector4& uvTransform);
     protected:
         Texture(PResource resource, const TextureFlags& flags);
         Texture(const std::string& name);
@@ -84,5 +86,6 @@ namespace NSG
         TextureBlend blendType_;
         TextureType mapType_;
         bool useAlpha_;
+        Vector4 uvTransform_;
     };
 }

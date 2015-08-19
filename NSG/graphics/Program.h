@@ -122,7 +122,6 @@ namespace NSG
         GLuint sceneColorAmbientLoc_;
         GLuint u_sceneHorizonColorLoc_;
         GLuint eyeWorldPosLoc_;
-        GLuint u_uvTransformLoc_;
 
         GLuint u_fogMinIntensityLoc_;
         GLuint u_fogStartLoc_;
@@ -130,6 +129,8 @@ namespace NSG
         GLuint u_fogHeightLoc_;
 
         GLuint textureLoc_[MaterialTexture::MAX_MAPS];
+        GLuint u_uvTransformLoc_[MaterialTexture::MAX_MAPS];
+        
 
         struct MaterialLoc
         {

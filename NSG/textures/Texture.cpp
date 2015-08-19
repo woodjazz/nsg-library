@@ -53,7 +53,8 @@ namespace NSG
           filterMode_(TextureFilterMode::BILINEAR),
           blendType_(TextureBlend::NONE),
           mapType_(TextureType::COL),
-          useAlpha_(false)
+          useAlpha_(false),
+          uvTransform_(1, 1, 0, 0)
     {
         switch (format_)
         {
@@ -93,7 +94,8 @@ namespace NSG
           filterMode_(TextureFilterMode::BILINEAR),
           blendType_(TextureBlend::NONE),
           mapType_(TextureType::COL),
-          useAlpha_(false)
+          useAlpha_(false),
+          uvTransform_(1, 1, 0, 0)
     {
     }
 
@@ -267,6 +269,8 @@ namespace NSG
         node.append_attribute("blendType") = ToString(blendType_);
         node.append_attribute("mapType") = ToString(mapType_);
         node.append_attribute("useAlpha").set_value(useAlpha_);
+        node.append_attribute("uvTransform").set_value(ToString(uvTransform_).c_str());
+        
 
     }
 
@@ -320,5 +324,10 @@ namespace NSG
             filterMode_ = mode;
             Invalidate();
         }
+    }
+
+    void Texture::SetUVTransform(const Vector4& uvTransform)
+    {
+        uvTransform_ = uvTransform;
     }
 }

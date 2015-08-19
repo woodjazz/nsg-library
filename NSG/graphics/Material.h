@@ -80,7 +80,6 @@ namespace NSG
         void BachedNodeHasChanged();
         static PTexture GetTextureWithResource(PResource resource);
         static void SaveMaterials(pugi::xml_node& node);
-        void SetUVTransform(const Vector4& uvTransform);
         bool HasLightMap() const;
 		void FillShaderDefines(std::string& defines, PassType passType, const Mesh* mesh, bool allowInstancing) const;
         void SetRenderPass(RenderPass pass) { renderPass_ = pass; }
@@ -113,7 +112,6 @@ namespace NSG
         float specularIntensity_;
         float ambientIntensity_;
         float shininess_;
-        Vector4 uvTransform_; // uv transform for texture 0
         bool serializable_;
         BlendFilterMode blendFilterMode_;
         BlurFilter blurFilter_;

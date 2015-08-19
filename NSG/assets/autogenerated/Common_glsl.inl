@@ -65,7 +65,9 @@ static const char* COMMON_GLSL = \
 "	uniform mat3 u_normalMatrix;\n"\
 "	uniform mat4 u_viewProjection;\n"\
 "	uniform mat4 u_projection;\n"\
-"	uniform vec4 u_uvTransform;\n"\
+"	uniform vec4 u_uvTransform0; /* DIFFUSEMAP */\n"\
+"	uniform vec4 u_uvTransform1; /* NORMALMAP, AOMAP */	\n"\
+"	uniform vec4 u_uvTransform2; /* LIGHTMAP, SPECULARMAP */\n"\
 "	#if defined(SKINNED)\n"\
 "		uniform mat4 u_bones[MAX_BONES];\n"\
 "	#endif\n"\

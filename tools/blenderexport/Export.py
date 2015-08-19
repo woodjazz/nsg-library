@@ -318,6 +318,8 @@ def ConvertTexture(materialEle, textureSlot):
 
     textureEle.set("flags", "11")
     textureEle.set("flagNames", " INVERT_Y GENERATE_MIPMAPS")
+    uvTransform = mathutils.Vector((textureSlot.scale.x, textureSlot.scale.y, textureSlot.offset.x, textureSlot.offset.y))
+    textureEle.set("uvTransform", Vector4ToString(uvTransform))
 
 
 def ConvertMaterial(materialsEle, material):

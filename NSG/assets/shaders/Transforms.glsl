@@ -163,12 +163,12 @@
 		#endif
 	}
 
-	vec2 GetTexCoord(vec2 texCoord)
+	vec2 GetTexCoord(vec2 texCoord, vec4 uvTransform)
 	{
 		#if defined(FLIP_Y)
-			return vec2(texCoord.x, 1.0 - texCoord.y) * u_uvTransform.xy + u_uvTransform.zw;
+			return vec2(texCoord.x, 1.0 - texCoord.y) * uvTransform.xy + uvTransform.zw;
 		#else
-			return texCoord.xy * u_uvTransform.xy + u_uvTransform.zw;
+			return texCoord.xy * uvTransform.xy + uvTransform.zw;
 		#endif
 	}
 

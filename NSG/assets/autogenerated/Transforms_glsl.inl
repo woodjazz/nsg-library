@@ -149,12 +149,12 @@ static const char* TRANSFORMS_GLSL = \
 "		    return u_viewProjection * worldPos;\n"\
 "		#endif\n"\
 "	}\n"\
-"	vec2 GetTexCoord(vec2 texCoord)\n"\
+"	vec2 GetTexCoord(vec2 texCoord, vec4 uvTransform)\n"\
 "	{\n"\
 "		#if defined(FLIP_Y)\n"\
-"			return vec2(texCoord.x, 1.0 - texCoord.y) * u_uvTransform.xy + u_uvTransform.zw;\n"\
+"			return vec2(texCoord.x, 1.0 - texCoord.y) * uvTransform.xy + uvTransform.zw;\n"\
 "		#else\n"\
-"			return texCoord.xy * u_uvTransform.xy + u_uvTransform.zw;\n"\
+"			return texCoord.xy * uvTransform.xy + uvTransform.zw;\n"\
 "		#endif\n"\
 "	}\n"\
 "#elif defined(COMPILEFS)\n"\

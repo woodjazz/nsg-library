@@ -64,6 +64,7 @@ namespace NSG
         TextureBlend blendType = ToTextureBlend(node.attribute("blendType").as_string());
         TextureType mapType = ToTextureType(node.attribute("mapType").as_string());
         bool useAlpha = node.attribute("useAlpha").as_bool();
+        Vector4 uvTransform = ToVertex4(node.attribute("uvTransform").as_string());
         auto res = Resource::Get(resourceName);
         PTexture texture;
         texture = std::make_shared<Texture2D>(res);
@@ -75,6 +76,7 @@ namespace NSG
         texture->SetBlendType(blendType);
         texture->SetMapType(mapType);
         texture->SetUseAlpha(useAlpha);
+        texture->SetUVTransform(uvTransform);
         return texture;
     }
 

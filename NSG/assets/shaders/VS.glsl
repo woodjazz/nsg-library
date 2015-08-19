@@ -18,18 +18,18 @@
 		#elif defined(TEXT)
 
 			gl_Position = GetClipPos();
-			v_texcoord0 = GetTexCoord(a_texcoord0);
+			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
 
 		#elif defined(BLUR) || defined(BLEND) || defined(WAVE) || defined(SHOW_TEXTURE0)
 
 			gl_Position = vec4(a_position, 1.0);
-			v_texcoord0 = GetTexCoord(a_texcoord0);
+			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
 
 		#elif defined(AMBIENT) || defined(UNLIT)
 		
 			gl_Position = GetClipPos();
-			v_texcoord0 = GetTexCoord(a_texcoord0);
-			v_texcoord1 = GetTexCoord(a_texcoord1);
+			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
+			v_texcoord1 = GetTexCoord(a_texcoord1, u_uvTransform1);
 
 			#ifdef FOG
 				v_worldPos = GetWorldPos().xyz;
@@ -49,7 +49,7 @@
 		    vec3 world2light = worldPos - u_lightPosition[0];
 		    vec4 totalLight = vec4(1.0);//CalcTotalLight(world2light, vertexToEye, normal);
 		    v_color = totalLight;
-			v_texcoord0 = GetTexCoord(a_texcoord0);
+			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
 			gl_Position = GetClipPos();
 
 		#elif defined(PER_PIXEL_LIGHTING)
@@ -71,8 +71,8 @@
 			    // v_normal, v_tangent and v_bitangent are in world coordinates
 			#endif
 
-			v_texcoord0 = GetTexCoord(a_texcoord0);
-			v_texcoord1 = GetTexCoord(a_texcoord1);
+			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
+			v_texcoord1 = GetTexCoord(a_texcoord1, u_uvTransform1);
 			gl_Position = GetClipPos();
 
 		#elif defined(IMGUI)

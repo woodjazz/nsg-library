@@ -91,7 +91,6 @@ namespace NSG
           sceneColorAmbientLoc_(-1),
           u_sceneHorizonColorLoc_(-1),
           eyeWorldPosLoc_(-1),
-          u_uvTransformLoc_(-1),
           u_fogMinIntensityLoc_(-1),
           u_fogStartLoc_(-1),
           u_fogEndLoc_(-1),
@@ -118,6 +117,7 @@ namespace NSG
           graphics_(Graphics::GetPtr())
     {
         memset(&textureLoc_, -1, sizeof(textureLoc_));
+        memset(&u_uvTransformLoc_, -1, sizeof(u_uvTransformLoc_));
         memset(&materialLoc_, -1, sizeof(materialLoc_));
         memset(&blurFilterLoc_, -1, sizeof(blurFilterLoc_));
         memset(&wavesFilterLoc_, -1, sizeof(wavesFilterLoc_));
@@ -271,14 +271,16 @@ namespace NSG
         sceneColorAmbientLoc_ = GetUniformLocation("u_sceneAmbientColor");
         u_sceneHorizonColorLoc_ = GetUniformLocation("u_sceneHorizonColor");
         eyeWorldPosLoc_ = GetUniformLocation("u_eyeWorldPos");
-        u_uvTransformLoc_ = GetUniformLocation("u_uvTransform");
         u_fogMinIntensityLoc_ = GetUniformLocation("u_fogMinIntensity");
         u_fogStartLoc_ = GetUniformLocation("u_fogStart");
         u_fogEndLoc_ = GetUniformLocation("u_fogEnd");
         u_fogHeightLoc_ = GetUniformLocation("u_fogHeight");
 
         for (size_t index = 0; index < MaterialTexture::MAX_MAPS; index++)
+        {
             textureLoc_[index] = GetUniformLocation("u_texture" + ToString(index));
+            u_uvTransformLoc_[index] = GetUniformLocation("u_uvTransform" + ToString(index));
+        }
         materialLoc_.diffuseColor_ = GetUniformLocation("u_material.diffuseColor");
         materialLoc_.diffuseIntensity_ = GetUniformLocation("u_material.diffuseIntensity");
         materialLoc_.specularColor_ = GetUniformLocation("u_material.specularColor");
@@ -464,7 +466,11 @@ namespace NSG
                 if (textureLoc_[index] != -1)
                 {
                     MaterialTexture type = (MaterialTexture)index;
-                    graphics_->SetTexture(index, material_->GetTexture(type).get());
+                    auto texture = material_->GetTexture(type).get();
+                    graphics_->SetTexture(index, texture);
+
+                    if (u_uvTransformLoc_[index] != -1)
+                        glUniform4fv(u_uvTransformLoc_[index], 1, &texture->GetUVTransform()[0]);
                 }
             }
 
@@ -506,8 +512,6 @@ namespace NSG
                 if (wavesFilterLoc_.offset_ != -1)
                     glUniform1f(wavesFilterLoc_.offset_, material_->waveFilter_.offset_);
 
-                if (u_uvTransformLoc_ != -1)
-                    glUniform4fv(u_uvTransformLoc_, 1, &material_->uvTransform_[0]);
             }
         }
     }

@@ -66,7 +66,9 @@ uniform float u_fogHeight;
 	uniform mat3 u_normalMatrix;
 	uniform mat4 u_viewProjection;
 	uniform mat4 u_projection;
-	uniform vec4 u_uvTransform;
+	uniform vec4 u_uvTransform0; /* DIFFUSEMAP */
+	uniform vec4 u_uvTransform1; /* NORMALMAP, AOMAP */	
+	uniform vec4 u_uvTransform2; /* LIGHTMAP, SPECULARMAP */
 	#if defined(SKINNED)
 		uniform mat4 u_bones[MAX_BONES];
 	#endif

@@ -187,7 +187,7 @@ namespace NSG
         SetShadowClipStart(node.attribute("shadowClipStart").as_float());
         SetShadowClipEnd(node.attribute("shadowClipEnd").as_float());
         SetOnlyShadow(node.attribute("onlyShadow").as_bool());
-        SetShadowColor(ToVertex4(node.attribute("shadowColor").as_string()));
+        SetShadowColor(Vector4(ToVertex3(node.attribute("shadowColor").as_string()), 1.0));
         SetBias(node.attribute("shadowBias").as_float());
         LoadChildren(node);
     }
@@ -371,7 +371,7 @@ namespace NSG
     {
         CHECK_ASSERT(split < MAX_SHADOW_SPLITS, __FILE__, __LINE__);
         static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 1024, 512, 256, 128 };
-        //static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 1024, 1024, 1024, 1024 };
+        //static const int SplitMapSize[MAX_SHADOW_SPLITS] = { 4096, 2048, 1024, 512 };
         return SplitMapSize[split];
     }
 

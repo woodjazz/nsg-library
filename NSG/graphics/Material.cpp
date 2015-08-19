@@ -25,7 +25,6 @@ namespace NSG
           specularIntensity_(1),
           ambientIntensity_(1),
           shininess_(1),
-          uvTransform_(1, 1, 0, 0),
           serializable_(true),
           blendFilterMode_(BlendFilterMode::ADDITIVE),
           isBatched_(false),
@@ -137,15 +136,6 @@ namespace NSG
         if (shininess_ != shininess)
         {
             shininess_ = shininess;
-            SetUniformsNeedUpdate();
-        }
-    }
-
-    void Material::SetUVTransform(const Vector4& uvTransform)
-    {
-        if (uvTransform != uvTransform_)
-        {
-            uvTransform_ = uvTransform;
             SetUniformsNeedUpdate();
         }
     }
