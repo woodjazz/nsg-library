@@ -184,14 +184,17 @@ namespace NSG
     {
         if (forward_ || backward_ || right_ || left_)
         {
+            float x  = 0;
+            float y = 0;
             if (forward_)
-                signalMoved_->Run(0, 1);
+                y += 1;
             if (backward_)
-                signalMoved_->Run(0, -1);
+                y -= 1;
             if (right_)
-                signalMoved_->Run(1, 0);
+                x += 1;
             if (left_)
-                signalMoved_->Run(-1, 0);
+                x -= 1;
+            signalMoved_->Run(x, y);
         }
         else
         {
@@ -199,6 +202,8 @@ namespace NSG
             leftVerticalAxis_ = glm::clamp(leftVerticalAxis_, -1.f, 1.f);
             if (leftHorizontalAxis_ || leftVerticalAxis_)
                 signalMoved_->Run(leftHorizontalAxis_, leftVerticalAxis_);
+            else
+                signalMoved_->Run(0, 0);
         }
     }
 

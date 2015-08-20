@@ -62,16 +62,12 @@ static const char* SHADOWS_GLSL = \
 "    vec4 CalcShadowFactor(vec3 world2light)\n"\
 "    {\n"\
 "        const vec4 White = vec4(1.0);\n"\
-"        const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);\n"\
-"        const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);\n"\
-"        const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);\n"\
-"        const vec4 RedOrange = vec4(1.0, 69.0/255.0, 0.0, 1.0);\n"\
 "        vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));\n"\
 "        vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
-"        //if(coords.x >= 1.0 || coords.x <= -1.0 || coords.y >= 1.0 || coords.y <= -1.0)\n"\
-"        //    return vec4(1.0,0.0,0.0,1.0);\n"\
-"        //if(coords.z >= 1.0 || coords.z <= -1.0)\n"\
-"        //    return vec4(0.0,1.0,0.0,1.0);\n"\
+"        if(coords.x >= 1.0 || coords.x <= -1.0 || coords.y >= 1.0 || coords.y <= -1.0)\n"\
+"            return White;\n"\
+"        if(coords.z >= 1.0 || coords.z <= -1.0)\n"\
+"            return White;\n"\
 "        coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
 "        // Take four samples and average them\n"\
 "        float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));\n"\
@@ -82,6 +78,10 @@ static const char* SHADOWS_GLSL = \
 "        sampledDistance *= 0.25;\n"\
 "        bool inShadow = sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias;\n"\
 "        #ifdef COLOR_SPLITS\n"\
+"            const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);\n"\
+"            const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);\n"\
+"            const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);\n"\
+"            const vec4 RedOrange = vec4(1.0, 69.0/255.0, 0.0, 1.0);\n"\
 "            int split = GetSplit();\n"\
 "            if(split == 0)\n"\
 "                return inShadow ? Red : White;\n"\

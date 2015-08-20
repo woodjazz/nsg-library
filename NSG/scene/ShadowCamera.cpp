@@ -91,14 +91,14 @@ namespace NSG
         Camera shadowCam;
         auto orientation = light_->GetGlobalOrientation();
         auto dir = light_->GetLookAtDirection();
-		//Set the initial pos far away in order not to miss any object
-        auto initialPos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * dir; 
+        //Set the initial pos far away in order not to miss any object
+        auto initialPos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * dir;
         shadowCam.SetOrientation(orientation);
         shadowCam.SetPosition(initialPos);
 
         BoundingBox splitBB;
 
-		if (farSplit < camera->GetZFar() || nearSplit > camera->GetZNear())
+        if (farSplit < camera->GetZFar() || nearSplit > camera->GetZNear())
         {
             // We are using a split. We adjust the frustum split with the receivers
             auto camSplitFrustum = camera->GetFrustumSplit(nearSplit, farSplit);
@@ -112,19 +112,19 @@ namespace NSG
             // We are using the whole camera's frustum.
             // No need to recalculate the receivers (already here as a parameter)
             splitBB = BoundingBox(*camera->GetFrustum());
-            if(receiversFullFrustumViewBox.IsDefined())
+            if (receiversFullFrustumViewBox.IsDefined())
                 splitBB.Clip(receiversFullFrustumViewBox);
         }
 
         BoundingBox lightViewBoxRange(splitBB);
 
         {
-			// Setup/Adjust the shadowCam camera to calculate the casters
+            // Setup/Adjust the shadowCam camera to calculate the casters
             BoundingBox shadowCamSplit(splitBB);
             shadowCamSplit.Transform(shadowCam.GetView());
             auto viewSize = shadowCamSplit.Size();
             auto viewCenter = shadowCamSplit.Center();
-			// Center shadowCam to the view space bounding box
+            // Center shadowCam to the view space bounding box
             Vector3 adjust(viewCenter.x, viewCenter.y, 0);
             initialPos += orientation * adjust;
             shadowCam.EnableOrtho();
@@ -135,32 +135,44 @@ namespace NSG
             shadowCam.SetFarClip(-shadowCamSplit.min_.z);
         }
 
-		// Merge casters in order not to miss any between camFrustum and shadowCam
+        
         auto shadowCamFrustum = shadowCam.GetFrustum();
         BoundingBox castersBB = Camera::GetViewBox(shadowCamFrustum.get(), scene, false, true);
+        #if 0
+        // Merge casters in order not to miss any between camFrustum and shadowCam
         if (castersBB.IsDefined())
-            splitBB.Merge(castersBB); 
-
+            splitBB.Merge(castersBB);
         splitBB.Transform(shadowCam.GetView());
+        #else
+            splitBB.Transform(shadowCam.GetView());
+            castersBB.Transform(shadowCam.GetView());
+            // Merge Z axis casters in order not to miss any between camFrustum and shadowCam
+            castersBB.min_.z = std::min(castersBB.min_.z, splitBB.min_.z);
+            castersBB.max_.z = std::max(castersBB.max_.z, splitBB.max_.z);
+            splitBB = castersBB;
+        #endif
         QuantizeAndSetup2ViewBox(split, initialPos, splitBB);
 
         // Calculate the light-shadow range in order to have the best precision in the shader
-        lightViewBoxRange.Transform(GetView());
-        BoundingBox camLightFullViewBoxRange(receiversFullFrustumViewBox);
-        camLightFullViewBoxRange.Transform(GetView());
-        auto camBBSize = glm::length(camLightFullViewBoxRange.Size());
-        auto lightBBSize = glm::length(lightViewBoxRange.Size());
-        auto shadowCamPos = GetPosition();
-        if(camBBSize > lightBBSize) // FIXME: I think this is always false (remove camLightFullViewBoxRange)
-            light_->SetRange(camBBSize + shadowCamPos.z - camLightFullViewBoxRange.min_.z);
-        else
-            light_->SetRange(camBBSize + shadowCamPos.z - lightViewBoxRange.min_.z);
+        //lightViewBoxRange.Transform(GetView());
+        //BoundingBox camLightFullViewBoxRange(receiversFullFrustumViewBox);
+        //camLightFullViewBoxRange.Transform(GetView());
+        //auto camBBSize = glm::length(camLightFullViewBoxRange.Size());
+        //auto lightBBSize = glm::length(lightViewBoxRange.Size());
+        //auto shadowCamPos = GetPosition();
+        //      if(camBBSize > lightBBSize) // FIXME: I think this is always false (remove camLightFullViewBoxRange)
+        //        light_->SetRange(camBBSize + shadowCamPos.z - camLightFullViewBoxRange.min_.z);
+        //  else
+        //light_->SetRange(camBBSize + shadowCamPos.z - lightViewBoxRange.min_.z);
+
+        // Set the light-shadow range in order to have the best precision in the shader
+        light_->SetRange(glm::length(splitBB.Size()));
     }
 
     void ShadowCamera::QuantizeAndSetup2ViewBox(int split, const Vector3& initialPos, const BoundingBox& viewBox)
     {
-		auto orientation = light_->GetGlobalOrientation();
-		auto dir = light_->GetLookAtDirection();
+        auto orientation = light_->GetGlobalOrientation();
+        auto dir = light_->GetLookAtDirection();
 
         auto nearZ = -viewBox.max_.z;
         SetNearClip(0);
@@ -176,7 +188,7 @@ namespace NSG
 
         auto viewSize = viewBox.Size();
 
-        #if 0
+        #if 1
         //The bigger issue is a shadow frustum that continuously changes
         //size and position as the camera moves around. This leads to shadows "swimming",
         //which is a very distracting artifact.
@@ -184,7 +196,7 @@ namespace NSG
         #if 1
         {
             //STEP 1: Quantize size to reduce swimming
-            const float QUANTIZE = 0.5f;
+            const float QUANTIZE = 2.5f;
             const float MIN_VIEW_SIZE = 3.f;
             viewSize.x = ceilf(sqrtf(viewSize.x / QUANTIZE));
             viewSize.y = ceilf(sqrtf(viewSize.y / QUANTIZE));

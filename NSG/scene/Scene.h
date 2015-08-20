@@ -61,6 +61,8 @@ namespace NSG
 		bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
 		PAnimation GetAnimationFor(const std::string& name, PSceneNode node) const;
         void PlayAnimation(PAnimation animation, bool looped);
+        void StopAnimation(PAnimation animation);
+        bool IsPlaying(PAnimation animation) const;
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
         void UpdateOctree(SceneNode* node);
         void RemoveFromOctree(SceneNode* node);

@@ -68,16 +68,12 @@
     vec4 CalcShadowFactor(vec3 world2light)
     {
         const vec4 White = vec4(1.0);
-        const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);
-        const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);
-        const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);
-        const vec4 RedOrange = vec4(1.0, 69.0/255.0, 0.0, 1.0);
         vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));
         vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1
-        //if(coords.x >= 1.0 || coords.x <= -1.0 || coords.y >= 1.0 || coords.y <= -1.0)
-        //    return vec4(1.0,0.0,0.0,1.0);
-        //if(coords.z >= 1.0 || coords.z <= -1.0)
-        //    return vec4(0.0,1.0,0.0,1.0);
+        if(coords.x >= 1.0 || coords.x <= -1.0 || coords.y >= 1.0 || coords.y <= -1.0)
+            return White;
+        if(coords.z >= 1.0 || coords.z <= -1.0)
+            return White;
         coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1
         // Take four samples and average them
         float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));
@@ -88,6 +84,10 @@
         sampledDistance *= 0.25;
         bool inShadow = sampledDistance / GetLightInvRange() < length(world2light) - u_shadowBias;
         #ifdef COLOR_SPLITS
+            const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);
+            const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);
+            const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);
+            const vec4 RedOrange = vec4(1.0, 69.0/255.0, 0.0, 1.0);
             int split = GetSplit();
             if(split == 0)
                 return inShadow ? Red : White;

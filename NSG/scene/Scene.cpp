@@ -342,6 +342,28 @@ namespace NSG
 		animationStates_.push_back(animationState);
     }
 
+    void Scene::StopAnimation(PAnimation animation)
+    {
+        auto it = animationStates_.begin();
+        while (it != animationStates_.end())
+        {
+            auto& animState = *it;
+            if(animation == animState->GetAnimation())
+            {
+                animationStates_.erase(it);
+                break;
+            }
+        }
+    }
+
+    bool Scene::IsPlaying(PAnimation animation) const
+    {
+        for(auto& state : animationStates_)
+            if(animation == state->GetAnimation())
+                return true;
+        return false;
+    }
+
     void Scene::UpdateAnimations(float deltaTime)
     {
 		auto it = animationStates_.begin();

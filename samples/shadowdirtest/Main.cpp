@@ -35,8 +35,8 @@ PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 	auto material = Material::GetOrCreate(mesh->GetName());
 	material->SetDiffuseColor(color);
 	material->SetSpecularColor(ColorRGB(0));
-	//material->SetRenderPass(RenderPass::PERPIXEL);
-	material->SetRenderPass(RenderPass::UNLIT);
+	material->SetRenderPass(RenderPass::PERPIXEL);
+	//material->SetRenderPass(RenderPass::UNLIT);
 	obj->SetMesh(mesh);
 	obj->SetMaterial(material);
 	return obj;
@@ -60,7 +60,7 @@ int NSG_MAIN(int argc, char* argv[])
 	//SetFog(scene);
     auto light = scene->CreateChild<Light>();
     light->SetType(LightType::DIRECTIONAL);
-	//light->SetShadowColor(COLOR_GREEN);
+	light->SetShadowColor(Vector4(COLOR_GREEN,1.f));
 	light->SetBias(0.0f);
     auto camera = scene->CreateChild<Camera>();
 #ifdef TEST1

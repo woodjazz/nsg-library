@@ -29,6 +29,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
+
     auto resource = Resource::GetOrCreateClass<ResourceFile>("data/scene.xml");
     AppData data(resource);
     auto scene = data.scenes_[0];
@@ -38,16 +39,39 @@ int NSG_MAIN(int argc, char* argv[])
     auto followCamera = std::make_shared<FollowCamera>(camera);
     auto armature = scene->GetChild<SceneNode>("RigMomo", true);
     auto rigidBody = armature->GetRigidBody();
+    //rigidBody->SetKinematic(true);
     followCamera->Track(armature);
     followCamera->SetOffset(Vector3(0, 20, -40));
     auto playerControl = std::make_shared<PlayerControl>();
+    auto runAnim = scene->GetAnimationFor("Momo_Run", armature);
+    auto idleAnim = scene->GetAnimationFor("Momo_IdleCapoeira.003", armature);
+    scene->PlayAnimation(idleAnim, true);
     auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float z)
     {
-        auto f = 10.5f * Vector3(-x, 0.f, z);
-        rigidBody->ApplyForce(f);
+        z *= 15;
+        x *= 2;
+        auto rot = armature->GetGlobalOrientation();
+        auto dir = rot * VECTOR3_UP;
+        auto f = -z * dir;
+        rigidBody->SetLinearVelocity(f);
+        rigidBody->SetAngularVelocity(Vector3(0, -x, 0));
+        if(z)
+        {
+            if(!scene->IsPlaying(runAnim))
+            {
+                scene->StopAnimation(idleAnim);
+                scene->PlayAnimation(runAnim, true);
+            }
+        }
+        else if(!scene->IsPlaying(idleAnim))
+        {
+            scene->StopAnimation(runAnim);
+            scene->PlayAnimation(idleAnim, true);
+        }
     });
-    auto animation = scene->GetAnimationFor("Momo_Run", armature);
-    scene->PlayAnimation(animation, true);
+    
+    
+
     auto engine = Engine::Create();
     return engine->Run();
 }

@@ -29,29 +29,30 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	struct AnimationStateTrack : AnimationTrack
-	{
-		size_t currentKeyFrame_;
+    struct AnimationStateTrack : AnimationTrack
+    {
+        size_t currentKeyFrame_;
 
-		AnimationStateTrack(const AnimationTrack& base);
-	};
+        AnimationStateTrack(const AnimationTrack& base);
+    };
 
-	class AnimationState
-	{
-	public:
-		AnimationState(PAnimation animation);
-		~AnimationState();
-		void Update();
-		void SetTime(float time);
-		void AddTime(float delta);
-		void SetLooped(bool looped);
-		void SetSpeed(float speed);
-		bool HasEnded() const;
-	private:
-		PAnimation animation_;
-		float timePosition_;
-		std::vector<AnimationStateTrack> tracks_;
-		bool looped_;
-		float speed_;
-	};
+    class AnimationState
+    {
+    public:
+        AnimationState(PAnimation animation);
+        ~AnimationState();
+        void Update();
+        void SetTime(float time);
+        void AddTime(float delta);
+        void SetLooped(bool looped);
+        void SetSpeed(float speed);
+        bool HasEnded() const;
+        PAnimation GetAnimation() const { return animation_; }
+    private:
+        PAnimation animation_;
+        float timePosition_;
+        std::vector<AnimationStateTrack> tracks_;
+        bool looped_;
+        float speed_;
+    };
 }
