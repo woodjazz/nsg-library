@@ -167,9 +167,8 @@ namespace NSG
         for (auto& track : tracks_)
         {
             auto bone = node->GetChild<Bone>(track.nodeName_, true);
-			if (!bone)
-				return false;
-            track.ResolveFor(bone);
+			if (bone)
+                track.ResolveFor(bone);
         }
         return !tracks_.empty();
     }

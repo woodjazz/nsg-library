@@ -114,6 +114,8 @@ namespace NSG
 
             const AnimationKeyFrame* keyFrame = &track.keyFrames_[frame];
 			auto bone = track.node_.lock();
+            if(!bone)
+                continue;
             if (!interpolate)
             {
                 // No interpolation, full weight

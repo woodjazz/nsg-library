@@ -353,6 +353,7 @@ namespace NSG
                 animationStates_.erase(it);
                 break;
             }
+            ++it;
         }
     }
 

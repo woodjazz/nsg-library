@@ -25,10 +25,11 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Singleton.h"
 
 namespace NSG 
 {
-	struct AppData
+	struct AppData : Singleton<AppData>
 	{
 		std::vector<PResource> resources_;
 		std::vector<PSound> sounds_;
@@ -42,6 +43,7 @@ namespace NSG
 		AppData(PResource resource);
 		//AppData(const pugi::xml_document& doc);
 		~AppData();
+		void Load(PResource resource);
 		void Load(PLoaderXML loader);
 		static void ClearAll();
 		static bool AreReady();

@@ -51,9 +51,7 @@ namespace NSG
 
     AppData::AppData(PResource resource)
     {
-        auto loader = LoaderXML::GetOrCreate(resource->GetName());
-        loader->Set(resource);
-        Load(loader);
+        Load(resource);
     }
     #if 0
     AppData::AppData(const pugi::xml_document& doc)
@@ -80,9 +78,15 @@ namespace NSG
 
     AppData::~AppData()
     {
-        AppData::ClearAll();
+        //AppData::ClearAll();
     }
 
+    void AppData::Load(PResource resource)
+    {
+        auto loader = LoaderXML::GetOrCreate(resource->GetName());
+        loader->Set(resource);
+        Load(loader);
+    }
     void AppData::Load(PLoaderXML loader)
     {
         CHECK_CONDITION(loader->IsReady(), __FILE__, __LINE__);
