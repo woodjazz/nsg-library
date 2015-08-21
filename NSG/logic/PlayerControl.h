@@ -36,6 +36,7 @@ namespace NSG
         void SetWindow(Window* window);
 		void SetEngine(Engine* engine);
 		SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
+        SignalBool::PSignal SigButtonA() { return signalButtonA_; }
     private:
         void OnKey(int key, int action, int modifier);
         void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
@@ -46,6 +47,7 @@ namespace NSG
         void OnUpdate(float deltaTime);
 
         SignalFloatFloat::PSignal signalMoved_;
+        SignalBool::PSignal signalButtonA_;
         SignalFloatFloat::PSlot slotMouseMoved_;
         SignalMouseButton::PSlot slotMouseDown_;
         SignalMouseButton::PSlot slotMouseUp_;

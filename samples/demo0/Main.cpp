@@ -26,6 +26,7 @@ misrepresented as being the original software.
 
 #include "NSG.h"
 float speedFactor = 0;
+float jumpFactor = 0;
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
@@ -53,15 +54,22 @@ int NSG_MAIN(int argc, char* argv[])
         turn = -x;
     });
 
+    bool buttonA = false;
+    auto slotButtonA = playerControl->SigButtonA()->Connect([&](bool pressed)
+    {
+        buttonA = pressed;
+    });
+
     struct State : FSM::State
     {
+        bool loop_;
         float time_;
         PScene scene_;
         PSceneNode player_;
         PRigidBody rigidBody_;
         PAnimation animation_;
         State(const char* animName)
-            : time_(0)
+            : loop_(true), time_(0)
         {
             scene_ = AppData::GetPtr()->scenes_[0];
             player_ = scene_->GetChild<SceneNode>("RigMomo", true);
@@ -70,7 +78,7 @@ int NSG_MAIN(int argc, char* argv[])
         }
         void Begin() override
         {
-            scene_->PlayAnimation(animation_, true);
+            scene_->PlayAnimation(animation_, loop_);
         }
         void Stay() override
         {
@@ -118,7 +126,7 @@ int NSG_MAIN(int argc, char* argv[])
             speedFactor = 3;
         }
     } walkBack;
-    
+
     struct Run : State
     {
         Run() : State("Momo_Run")
@@ -155,11 +163,71 @@ int NSG_MAIN(int argc, char* argv[])
         }
     } turnR;
 
+    struct Jump : State
+    {
+        Jump() : State("Momo_Jump")
+        {
+            loop_ = false;
+        }
+        void Begin() override
+        {
+            State::Begin();
+            jumpFactor = 30;
+        }
+        void End() override
+        {
+            State::End();
+            jumpFactor = 0;
+        }
+    } jump;
+
+    struct Glide : State
+    {
+        Vector3 gravity_;
+        Glide() : State("Momo_Glide")
+        {
+            loop_ = false;
+        }
+        void Begin() override
+        {
+            gravity_ = scene_->GetPhysicsWorld()->GetGravity();
+            rigidBody_->SetGravity(VECTOR3_ZERO);
+            State::Begin();
+        }
+        void End() override
+        {
+            rigidBody_->SetGravity(gravity_);
+            State::End();
+        }
+    } glide;
+
+    struct Fall : State
+    {
+        Fall() : State("Momo_FallUp")
+        {
+        }
+        void Begin() override
+        {
+            State::Begin();
+        }
+        void End() override
+        {
+            State::End();
+        }
+    } fall;
+
+    bool isFalling = false;
     FSM::Machine fsm(idle);
     idle.AddTransition(walk).When([&]() { return speed > 0; });
     idle.AddTransition(walkBack).When([&]() { return speed < 0; });
     idle.AddTransition(turnL).When([&]() { return turn < 0; });
     idle.AddTransition(turnR).When([&]() { return turn > 0; });
+    idle.AddTransition(jump).When([&]() { return buttonA; });
+    idle.AddTransition(fall).When([&]() { return isFalling; });
+    jump.AddTransition(fall).When([&]() { return isFalling; });
+    jump.AddTransition(glide).When([&]() { return jump.time_ > 0.7f; });
+    glide.AddTransition(fall).When([&]() { return glide.time_ > 2.5f; });
+    fall.AddTransition(idle).When([&]() { return !isFalling; });
     turnL.AddTransition(idle).When([&]() { return turn == 0; });
     turnL.AddTransition(turnR).When([&]() { return turn > 0; });
     turnL.AddTransition(walk).When([&]() { return speed > 0; });
@@ -176,9 +244,13 @@ int NSG_MAIN(int argc, char* argv[])
     auto slotUpdate = engine->SigUpdate()->Connect([&](float deltaTime)
     {
         fsm.Update();
-        auto dir = player->GetGlobalOrientation() * VECTOR3_UP;
-        rigidBody->SetLinearVelocity(speedFactor * dir);
+        auto forwardDir = player->GetGlobalOrientation() * VECTOR3_UP;
+        auto upDir = VECTOR3_UP;
+        rigidBody->SetLinearVelocity(speedFactor * forwardDir +  jumpFactor * upDir);
         rigidBody->SetAngularVelocity(Vector3(0, turnFactor * turn, 0));
+        auto v = rigidBody->GetLinearVelocity();
+        isFalling = v.y < 0;
+        //LOGI("%s", ToString(v).c_str());
     });
 
     return engine->Run();

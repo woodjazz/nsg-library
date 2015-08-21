@@ -33,6 +33,7 @@ namespace NSG
 {
     PlayerControl::PlayerControl()
         : signalMoved_(new SignalFloatFloat),
+          signalButtonA_(new SignalBool),
           window_(nullptr),
           engine_(nullptr),
           leftHorizontalAxis_(0),
@@ -98,47 +99,47 @@ namespace NSG
 
             if (window)
             {
-                slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
+                slotMouseMoved_ = window->SigFloatFloat()->Connect([this](float x, float y)
                 {
                     OnMousemoved(x, y);
                 });
 
-                slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
+                slotMouseDown_ = window->SigMouseDown()->Connect([this](int button, float x, float y)
                 {
                     OnMouseDown(button, x, y);
                 });
 
-                slotMouseUp_ = window->SigMouseUp()->Connect([&](int button, float x, float y)
+                slotMouseUp_ = window->SigMouseUp()->Connect([this](int button, float x, float y)
                 {
                     OnMouseUp(button, x, y);
                 });
 
-                slotMouseWheel_ = window->SigMouseWheel()->Connect([&](float x, float y)
+                slotMouseWheel_ = window->SigMouseWheel()->Connect([this](float x, float y)
                 {
                     OnMousewheel(x, y);
                 });
 
-                slotMultiGesture_ = window->SigMultiGesture()->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+                slotMultiGesture_ = window->SigMultiGesture()->Connect([this](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
                 {
                     OnMultiGesture(timestamp, x, y, dTheta, dDist, numFingers);
                 });
 
-                slotKey_ = window->SigKey()->Connect([&](int key, int action, int modifier)
+                slotKey_ = window->SigKey()->Connect([this](int key, int action, int modifier)
                 {
                     OnKey(key, action, modifier);
                 });
 
-                slotJoystickDown_ = window->SigJoystickDown()->Connect([&](int joystickID, unsigned button)
+                slotJoystickDown_ = window->SigJoystickDown()->Connect([this](int joystickID, unsigned button)
                 {
-
+                    signalButtonA_->Run(true);
                 });
 
-                slotJoystickUp_ = window->SigJoystickUp()->Connect([&](int joystickID, unsigned button)
+                slotJoystickUp_ = window->SigJoystickUp()->Connect([this](int joystickID, unsigned button)
                 {
-
+                    signalButtonA_->Run(false);
                 });
 
-                slotJoystickAxisMotion_ = window->SigJoystickAxisMotion()->Connect([&](int joystickID, JoystickAxis axis, float position)
+                slotJoystickAxisMotion_ = window->SigJoystickAxisMotion()->Connect([this](int joystickID, JoystickAxis axis, float position)
                 {
                     switch (axis)
                     {
@@ -253,6 +254,12 @@ namespace NSG
             case NSG_KEY_D:
                 {
                     right_ = action ? true : false;
+                    break;
+                }
+
+            case NSG_KEY_SPACE:
+                {
+                    signalButtonA_->Run(action ? true : false);
                     break;
                 }
 

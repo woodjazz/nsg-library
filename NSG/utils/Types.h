@@ -410,6 +410,7 @@ namespace NSG
     struct SignalNodeKey : Signal<SceneNode*, int, int, int> {};
     struct SignalNodeChar : Signal<SceneNode*, unsigned int> {};
     struct SignalEmpty : Signal<> {};
+    struct SignalBool : Signal<bool> {};
     struct SignalWindow : Signal<Window*> {};
     struct SignalJoystickButton : Signal<int, unsigned> {};
     struct SignalJoystickAxisMotion : Signal<int, JoystickAxis, float> {};

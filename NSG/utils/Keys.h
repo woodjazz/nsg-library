@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #define     NSG_KEY_MOD_CONTROL     SDLK_LCTRL
 #define     NSG_KEY_MOD_ALT         SDLK_LALT
 
+#define     NSG_KEY_SPACE   	SDLK_SPACE
 #define     NSG_KEY_TAB         SDLK_TAB
 #define     NSG_KEY_BACKSPACE   SDLK_BACKSPACE
 #define     NSG_KEY_ENTER       SDLK_RETURN

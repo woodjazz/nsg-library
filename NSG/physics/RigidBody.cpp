@@ -204,7 +204,10 @@ namespace NSG
         {
             gravity_ = gravity;
             if (body_)
+            {
                 body_->setGravity(ToBtVector3(gravity_));
+                Activate();
+            }
         }
     }
 
