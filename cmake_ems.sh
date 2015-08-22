@@ -25,6 +25,7 @@
 
 cd $( dirname $0 ) # Ensure we are in project root directory
 set -e
+source $HOME/emsdk_portable/emsdk_env.sh
 SOURCE_FOLDER="$PWD"
 
 if [ ! -n "$1" ]; then
@@ -36,5 +37,9 @@ cd ..
 cmake -E make_directory $1
 cd $1
 
-cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DEMS_DEBUG_LEVEL=4 -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
-#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
+echo "*** CONFIGURING PROJECTS ***"
+#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DEMS_DEBUG_LEVEL=4 -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
+cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
+
+echo "*** BUILDING $2 ***"
+make $2

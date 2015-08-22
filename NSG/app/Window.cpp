@@ -256,12 +256,12 @@ namespace NSG
 		signalText_->Run(text);
 	}
 
-    void Window::OnJoystickDown(int joystickID, unsigned button)
+    void Window::OnJoystickDown(int joystickID, JoystickButton button)
     {
         SigJoystickDown()->Run(joystickID, button);
     }
 
-    void Window::OnJoystickUp(int joystickID, unsigned button)
+    void Window::OnJoystickUp(int joystickID, JoystickButton button)
     {
         SigJoystickUp()->Run(joystickID, button);
     }

@@ -129,14 +129,16 @@ namespace NSG
                     OnKey(key, action, modifier);
                 });
 
-                slotJoystickDown_ = window->SigJoystickDown()->Connect([this](int joystickID, unsigned button)
+                slotJoystickDown_ = window->SigJoystickDown()->Connect([this](int joystickID, JoystickButton button)
                 {
-                    signalButtonA_->Run(true);
+                    if(JoystickButton::BUTTON_A == button)
+                        signalButtonA_->Run(true);
                 });
 
-                slotJoystickUp_ = window->SigJoystickUp()->Connect([this](int joystickID, unsigned button)
+                slotJoystickUp_ = window->SigJoystickUp()->Connect([this](int joystickID, JoystickButton button)
                 {
-                    signalButtonA_->Run(false);
+                    if(JoystickButton::BUTTON_A == button)
+                        signalButtonA_->Run(false);
                 });
 
                 slotJoystickAxisMotion_ = window->SigJoystickAxisMotion()->Connect([this](int joystickID, JoystickAxis axis, float position)

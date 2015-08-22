@@ -25,232 +25,317 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-float speedFactor = 0;
-float jumpFactor = 0;
+float turn = 0;
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
     auto resource = Resource::GetOrCreateClass<ResourceFile>("data/scene.xml");
     auto data = AppData::Create();
-    data->Load(resource);
-    auto scene = data->scenes_[0];
-    window->SetScene(scene.get());
-    auto camera = scene->GetChild<Camera>("Camera", false);
-    //auto control = std::make_shared<CameraControl>(camera);
-    auto followCamera = std::make_shared<FollowCamera>(camera);
-    auto player = scene->GetChild<SceneNode>("RigMomo", true);
-    auto rigidBody = player->GetRigidBody();
-    followCamera->Track(player);
-    followCamera->SetOffset(Vector3(0, 20, -40));
-    auto playerControl = std::make_shared<PlayerControl>();
+    auto engine = Engine::Create();
+
+    auto scene = std::make_shared<Scene>();
+    auto font = std::make_shared<FontAtlas>();
+    auto loadingNode = scene->CreateChild<SceneNode>();
+    auto loadingMaterial = Material::Create();
+    {
+        auto xmlResource = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.xml");
+        font->Set(xmlResource);
+        auto atlasResource = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.png");
+        auto atlasTexture = std::make_shared<Texture2D>(atlasResource);
+        font->SetTexture(atlasTexture);
+
+        auto camera = scene->CreateChild<Camera>();
+        camera->SetPosition(Vector3(0, 0, 2));
+        camera->EnableOrtho();
+        camera->SetWindow(nullptr);
+        loadingNode->SetMesh(font->GetOrCreateMesh("Loading...", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
+        loadingMaterial->SetTextMap(atlasTexture);
+        loadingNode->SetMaterial(loadingMaterial);
+        window->SetScene(scene.get());
+    }
+    engine->RenderFrame(); // force load
+
+
+    PFollowCamera followCamera;
+    PSceneNode player;
 
     float speed = 0;
-    float turn = 0;
-    float turnFactor = 2;
-    auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float z)
+    bool buttonA = false;
+    bool isFalling = false;
+
+    FSM::Machine fsm;
+
+    auto playerControl = std::make_shared<PlayerControl>();
+
+    auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float y)
     {
-        speed = z;
+        speed = y;
         turn = -x;
     });
 
-    bool buttonA = false;
     auto slotButtonA = playerControl->SigButtonA()->Connect([&](bool pressed)
     {
         buttonA = pressed;
     });
 
-    struct State : FSM::State
+    auto loaded = false;
+    auto allReady = false;
+    auto load = [&]()
     {
-        bool loop_;
-        float time_;
-        PScene scene_;
-        PSceneNode player_;
-        PRigidBody rigidBody_;
-        PAnimation animation_;
-        State(const char* animName)
-            : loop_(true), time_(0)
+        data->Load(resource);
+        auto scene = data->scenes_[0];
+        auto camera = scene->GetChild<Camera>("Camera", false);
+        followCamera = std::make_shared<FollowCamera>(camera);
+        player = scene->GetChild<SceneNode>("RigMomo", true);
+        followCamera->Track(player);
+        followCamera->SetOffset(Vector3(0, 20, -40));
+
+        struct State : FSM::State
         {
-            scene_ = AppData::GetPtr()->scenes_[0];
-            player_ = scene_->GetChild<SceneNode>("RigMomo", true);
-            rigidBody_ = player_->GetRigidBody();
-            animation_ = scene_->GetAnimationFor(animName, player_);
-        }
-        void Begin() override
+            bool loop_;
+            float time_;
+            PScene scene_;
+            PSceneNode player_;
+            PRigidBody rigidBody_;
+            PAnimation animation_;
+            State(const char* animName)
+                : loop_(true), time_(0)
+            {
+                scene_ = AppData::GetPtr()->scenes_[0];
+                player_ = scene_->GetChild<SceneNode>("RigMomo", true);
+                rigidBody_ = player_->GetRigidBody();
+                animation_ = scene_->GetAnimationFor(animName, player_);
+            }
+            void Begin() override
+            {
+                scene_->PlayAnimation(animation_, loop_);
+            }
+            void Stay() override
+            {
+                time_ += Engine::GetPtr()->GetDeltaTime();
+            }
+            void End() override
+            {
+                time_ = 0;
+                scene_->StopAnimation(animation_);
+            }
+        };
+
+        struct Idle : State
         {
-            scene_->PlayAnimation(animation_, loop_);
-        }
-        void Stay() override
+            Idle() : State("Momo_IdleNasty")
+            {
+            }
+            void Begin() override
+            {
+                State::Begin();
+            }
+            void Stay() override
+            {
+                State::Stay();
+                rigidBody_->SetLinearVelocity(VECTOR3_ZERO);
+                rigidBody_->SetAngularVelocity(VECTOR3_ZERO);
+            }
+        } static idle;
+
+        struct Walk : State
         {
-            time_ += Engine::GetPtr()->GetDeltaTime();
-        }
-        void End() override
+            Walk() : State("Momo_Walk")
+            {
+            }
+            void Begin() override
+            {
+                State::Begin();
+            }
+            void Stay() override
+            {
+                State::Stay();
+                auto forwardDir = player_->GetGlobalOrientation() * VECTOR3_UP;
+                rigidBody_->SetLinearVelocity(-5.f * forwardDir);
+                rigidBody_->SetAngularVelocity(Vector3(0, 2.f * turn, 0));
+            }
+        } static walk;
+
+        struct WalkBack : State
         {
-            time_ = 0;
-            scene_->StopAnimation(animation_);
-        }
+            WalkBack() : State("Momo_WalkBack")
+            {
+            }
+            void Begin() override
+            {
+                State::Begin();
+            }
+            void Stay() override
+            {
+                State::Stay();
+                auto forwardDir = player_->GetGlobalOrientation() * VECTOR3_UP;
+                rigidBody_->SetLinearVelocity(3.f * forwardDir);
+                rigidBody_->SetAngularVelocity(Vector3(0, 2.f * turn, 0));
+            }
+        } static walkBack;
+
+        struct Run : State
+        {
+            Run() : State("Momo_Run")
+            {
+            }
+            void Begin() override
+            {
+                State::Begin();
+            }
+            void Stay() override
+            {
+                State::Stay();
+                auto forwardDir = player_->GetGlobalOrientation() * VECTOR3_UP;
+                rigidBody_->SetLinearVelocity(-15.f * forwardDir);
+                rigidBody_->SetAngularVelocity(Vector3(0, 2.f * turn, 0));
+            }
+        } static run;
+
+        struct TurnL : State
+        {
+            TurnL() : State("Momo_Turn.R")
+            {
+            }
+            void Begin() override
+            {
+                State::Begin();
+            }
+            void Stay() override
+            {
+                State::Stay();
+                rigidBody_->SetLinearVelocity(VECTOR3_ZERO);
+                rigidBody_->SetAngularVelocity(Vector3(0, 2.f * turn, 0));
+            }
+        } static turnL;
+
+        struct TurnR : State
+        {
+            TurnR() : State("Momo_Turn.L")
+            {
+            }
+            void Begin() override
+            {
+                State::Begin();
+            }
+            void Stay() override
+            {
+                State::Stay();
+                rigidBody_->SetLinearVelocity(VECTOR3_ZERO);
+                rigidBody_->SetAngularVelocity(Vector3(0, 2.f * turn, 0));
+            }
+        } static turnR;
+
+        struct Jump : State
+        {
+            Jump() : State("Momo_Jump")
+            {
+                loop_ = false;
+            }
+            void Begin() override
+            {
+                State::Begin();
+                rigidBody_->ApplyForce(VECTOR3_UP * 2000.f);
+            }
+            void End() override
+            {
+                State::End();
+            }
+        } static jump;
+
+        struct Glide : State
+        {
+            Vector3 gravity_;
+            Glide() : State("Momo_Glide")
+            {
+            }
+            void Begin() override
+            {
+                gravity_ = scene_->GetPhysicsWorld()->GetGravity();
+                rigidBody_->SetGravity(VECTOR3_ZERO);
+                State::Begin();
+            }
+            void Stay() override
+            {
+                State::Stay();
+                auto forwardDir = player_->GetGlobalOrientation() * VECTOR3_UP;
+                rigidBody_->SetLinearVelocity(-20.f * forwardDir);
+                rigidBody_->SetAngularVelocity(Vector3(0, 2.f * turn, 0));
+            }
+            void End() override
+            {
+                rigidBody_->SetGravity(gravity_);
+                State::End();
+            }
+        } static glide;
+
+        struct Fall : State
+        {
+            float turnFactor_;
+            Fall() : State("Momo_FallUp")
+            {
+            }
+            void Begin() override
+            {
+                State::Begin();
+            }
+            void End() override
+            {
+                State::End();
+            }
+        } static fall;
+
+        fsm.SetInitialState(fall);
+        idle.AddTransition(walk).When([&]() { return speed > 0; });
+        idle.AddTransition(walkBack).When([&]() { return speed < 0; });
+        idle.AddTransition(turnL).When([&]() { return turn < 0; });
+        idle.AddTransition(turnR).When([&]() { return turn > 0; });
+        idle.AddTransition(jump).When([&]() { return buttonA; });
+        jump.AddTransition(glide).When([&]() { return buttonA && isFalling; });
+        jump.AddTransition(fall).When([&]() { return !buttonA && isFalling; });
+        glide.AddTransition(fall).When([&]() { return !buttonA; });
+        fall.AddTransition(idle).When([&]() { return !isFalling; });
+        turnL.AddTransition(idle).When([&]() { return turn == 0; });
+        turnL.AddTransition(turnR).When([&]() { return turn > 0; });
+        turnL.AddTransition(walk).When([&]() { return speed > 0; });
+        turnR.AddTransition(idle).When([&]() { return turn == 0; });
+        turnR.AddTransition(turnL).When([&]() { return turn < 0; });
+        turnR.AddTransition(walk).When([&]() { return speed > 0; });
+        walk.AddTransition(run).When([&]() { return speed > 0 && walk.time_ > 1.3f; });
+        walk.AddTransition(idle).When([&]() { return speed == 0 && walk.time_ > 1; });
+        walk.AddTransition(idle).When([&]() { return speed < 0; });
+        walk.AddTransition(jump).When([&]() { return buttonA; });
+        walkBack.AddTransition(idle).When([&]() { return speed >= 0; });
+        run.AddTransition(walk).When([&]() { return speed == 0 && run.time_ > 1; });
+        run.AddTransition(jump).When([&]() { return buttonA; });
     };
 
-    struct Idle : State
-    {
-        Idle() : State("Momo_IdleNasty")
-        {
-        }
-        void Begin() override
-        {
-            State::Begin();
-            speedFactor = 0;
-        }
-    } idle;
-
-    struct Walk : State
-    {
-        Walk() : State("Momo_Walk")
-        {
-        }
-        void Begin() override
-        {
-            State::Begin();
-            speedFactor = -5;
-        }
-    } walk;
-
-    struct WalkBack : State
-    {
-        WalkBack() : State("Momo_WalkBack")
-        {
-        }
-        void Begin() override
-        {
-            State::Begin();
-            speedFactor = 3;
-        }
-    } walkBack;
-
-    struct Run : State
-    {
-        Run() : State("Momo_Run")
-        {
-        }
-        void Begin() override
-        {
-            State::Begin();
-            speedFactor = -15;
-        }
-    } run;
-
-    struct TurnL : State
-    {
-        TurnL() : State("Momo_Turn.R")
-        {
-        }
-        void Begin() override
-        {
-            State::Begin();
-            speedFactor = 0;
-        }
-    } turnL;
-
-    struct TurnR : State
-    {
-        TurnR() : State("Momo_Turn.L")
-        {
-        }
-        void Begin() override
-        {
-            State::Begin();
-            speedFactor = 0;
-        }
-    } turnR;
-
-    struct Jump : State
-    {
-        Jump() : State("Momo_Jump")
-        {
-            loop_ = false;
-        }
-        void Begin() override
-        {
-            State::Begin();
-            jumpFactor = 30;
-        }
-        void End() override
-        {
-            State::End();
-            jumpFactor = 0;
-        }
-    } jump;
-
-    struct Glide : State
-    {
-        Vector3 gravity_;
-        Glide() : State("Momo_Glide")
-        {
-            loop_ = false;
-        }
-        void Begin() override
-        {
-            gravity_ = scene_->GetPhysicsWorld()->GetGravity();
-            rigidBody_->SetGravity(VECTOR3_ZERO);
-            State::Begin();
-        }
-        void End() override
-        {
-            rigidBody_->SetGravity(gravity_);
-            State::End();
-        }
-    } glide;
-
-    struct Fall : State
-    {
-        Fall() : State("Momo_FallUp")
-        {
-        }
-        void Begin() override
-        {
-            State::Begin();
-        }
-        void End() override
-        {
-            State::End();
-        }
-    } fall;
-
-    bool isFalling = false;
-    FSM::Machine fsm(idle);
-    idle.AddTransition(walk).When([&]() { return speed > 0; });
-    idle.AddTransition(walkBack).When([&]() { return speed < 0; });
-    idle.AddTransition(turnL).When([&]() { return turn < 0; });
-    idle.AddTransition(turnR).When([&]() { return turn > 0; });
-    idle.AddTransition(jump).When([&]() { return buttonA; });
-    idle.AddTransition(fall).When([&]() { return isFalling; });
-    jump.AddTransition(fall).When([&]() { return isFalling; });
-    jump.AddTransition(glide).When([&]() { return jump.time_ > 0.7f; });
-    glide.AddTransition(fall).When([&]() { return glide.time_ > 2.5f; });
-    fall.AddTransition(idle).When([&]() { return !isFalling; });
-    turnL.AddTransition(idle).When([&]() { return turn == 0; });
-    turnL.AddTransition(turnR).When([&]() { return turn > 0; });
-    turnL.AddTransition(walk).When([&]() { return speed > 0; });
-    turnR.AddTransition(idle).When([&]() { return turn == 0; });
-    turnR.AddTransition(turnL).When([&]() { return turn < 0; });
-    turnR.AddTransition(walk).When([&]() { return speed > 0; });
-    walk.AddTransition(run).When([&]() { return speed > 0 && walk.time_ > 1.3f; });
-    walk.AddTransition(idle).When([&]() { return speed == 0 && walk.time_ > 1; });
-    walk.AddTransition(idle).When([&]() { return speed < 0; });
-    walkBack.AddTransition(idle).When([&]() { return speed >= 0; });
-    run.AddTransition(walk).When([&]() { return speed == 0 && run.time_ > 1; });
-
-    auto engine = Engine::Create();
     auto slotUpdate = engine->SigUpdate()->Connect([&](float deltaTime)
     {
-        fsm.Update();
-        auto forwardDir = player->GetGlobalOrientation() * VECTOR3_UP;
-        auto upDir = VECTOR3_UP;
-        rigidBody->SetLinearVelocity(speedFactor * forwardDir +  jumpFactor * upDir);
-        rigidBody->SetAngularVelocity(Vector3(0, turnFactor * turn, 0));
-        auto v = rigidBody->GetLinearVelocity();
-        isFalling = v.y < 0;
-        //LOGI("%s", ToString(v).c_str());
+        if (!loaded)
+        {
+            if (AppData::AreReady())
+            {
+                load();
+                loaded = true;
+            }
+        }
+        else if(!allReady)
+        {
+            allReady = AppData::AreReady();
+            if(allReady)
+                window->SetScene(AppData::GetPtr()->scenes_[0].get());
+        }
+        else
+        {
+            auto rigidBody = player->GetRigidBody();
+            auto v = rigidBody->GetLinearVelocity();
+            isFalling = v.y < 0;
+            fsm.Update();
+            //LOGI("%s", ToString(v).c_str());
+            //LOGI("%f", speed);
+        }
     });
 
     return engine->Run();

@@ -25,49 +25,49 @@ misrepresented as being the original software.
 */
 #include "FSM.h"
 
-namespace NSG 
+namespace NSG
 {
 
-    namespace FSM 
+    namespace FSM
     {
-        
+
         Condition::Condition(State& newState)
-            : pNewState_(&newState), conditionFunc_(nullptr) 
+            : pNewState_(&newState), conditionFunc_(nullptr)
         {
         }
 
-        void Condition::When(CONDITION_FUNC conditionFunc) 
+        void Condition::When(CONDITION_FUNC conditionFunc)
         {
             conditionFunc_ = conditionFunc;
         }
 
-        Condition::RESULT Condition::Evaluate() 
+        Condition::RESULT Condition::Evaluate()
         {
-            if(conditionFunc_)
+            if (conditionFunc_)
                 return RESULT(conditionFunc_(), pNewState_);
 
             return RESULT(true, pNewState_);
         }
 
         State::State()
-        : nextBeginState_(nullptr) 
+            : nextBeginState_(nullptr)
         {
         }
 
-        State::~State() 
+        State::~State()
         {
         }
 
-        Condition& State::AddTransition(State& to) 
+        Condition& State::AddTransition(State& to)
         {
             Condition* pCondition(new Condition(to));
             conditions_.push_back(PCondition(pCondition));
             return *pCondition;
         }
 
-        State* State::Evaluate() 
+        State* State::Evaluate()
         {
-            if(nextBeginState_)
+            if (nextBeginState_)
             {
                 State* next = nextBeginState_;
                 nextBeginState_ = nullptr;
@@ -76,10 +76,10 @@ namespace NSG
             }
             else
             {
-                for (auto &pCondition : conditions_) 
+                for (auto& pCondition : conditions_)
                 {
                     Condition::RESULT result = pCondition->Evaluate();
-                    if(result.first) 
+                    if (result.first)
                     {
                         InternalEnd();
                         nextBeginState_ = result.second;
@@ -91,33 +91,46 @@ namespace NSG
             return this;
         }
 
-        void State::InternalBegin() 
+        void State::InternalBegin()
         {
             Begin();
         }
 
-        void State::InternalEnd() 
+        void State::InternalEnd()
         {
             End();
         }
 
-        Machine::Machine(State& initialState, bool isFirstState) 
-            : pInitialState_(&initialState), pCurrentState_(&initialState) 
+        Machine::Machine()
+            : pInitialState_(nullptr), pCurrentState_(nullptr)
         {
-                if(isFirstState)
-                    pCurrentState_->InternalBegin();
+
         }
 
-        Machine::~Machine() 
+        Machine::Machine(State& initialState, bool isFirstState)
+            : pInitialState_(&initialState), pCurrentState_(&initialState)
+        {
+            if (isFirstState)
+                pCurrentState_->InternalBegin();
+        }
+
+        Machine::~Machine()
         {
         }
 
-        void Machine::Update() 
+        void Machine::SetInitialState(State& initialState)
+        {
+            pInitialState_ = &initialState;
+            pCurrentState_ = &initialState;
+            pCurrentState_->InternalBegin();
+        }
+
+        void Machine::Update()
         {
             State* pNewState = pCurrentState_->Evaluate();
-            if(pNewState == pCurrentState_)
+            if (pNewState == pCurrentState_)
             {
-                if(pCurrentState_->nextBeginState_ == nullptr)
+                if (pCurrentState_->nextBeginState_ == nullptr)
                 {
                     pCurrentState_->Stay();
                 }
@@ -128,26 +141,26 @@ namespace NSG
             }
         }
 
-        void Machine::InternalBegin() 
+        void Machine::InternalBegin()
         {
             Begin();
             pCurrentState_ = pInitialState_;
             pCurrentState_->InternalBegin();
         }
 
-        void Machine::InternalEnd() 
+        void Machine::InternalEnd()
         {
             pCurrentState_->InternalEnd();
             End();
         }
 
-        State* Machine::Evaluate() 
+        State* Machine::Evaluate()
         {
             State* pNewState = this->State::Evaluate();
 
-            if(pNewState == this)
+            if (pNewState == this)
                 Update();
-            
+
             return pNewState;
         }
     }

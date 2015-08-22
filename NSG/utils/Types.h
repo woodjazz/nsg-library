@@ -63,23 +63,23 @@ namespace NSG
     typedef glm::vec4 Rect;
     typedef glm::vec4 Vertex4;
     typedef glm::vec4 Vector4;
-	typedef glm::vec3 Vertex3;
-	typedef glm::vec3 Vector3;
+    typedef glm::vec3 Vertex3;
+    typedef glm::vec3 Vector3;
     typedef glm::vec2 Vertex2;
     typedef glm::vec2 Vector2;
     typedef glm::quat Quaternion;
     typedef glm::mat4 Matrix4;
     typedef glm::mat3 Matrix3;
     typedef glm::vec4 Color;
-	typedef glm::vec3 ColorRGB;
+    typedef glm::vec3 ColorRGB;
 
-    enum class LightType 
-	{
-		POINT, 
-		DIRECTIONAL, 
-		SPOT,
-		MAX_INDEX
-	};
+    enum class LightType
+    {
+        POINT,
+        DIRECTIONAL,
+        SPOT,
+        MAX_INDEX
+    };
 
     enum class BLEND_MODE
     {
@@ -87,7 +87,7 @@ namespace NSG
         ALPHA,
         MULTIPLICATIVE,
         ADDITIVE,
-		MAX_INDEX
+        MAX_INDEX
     };
 
     enum class TextureBlend
@@ -107,7 +107,7 @@ namespace NSG
         BLEND_SAT,
         BLEND_VAL,
         BLEND_COLOR,
-		MAX_INDEX
+        MAX_INDEX
     };
 
     enum class TextureType
@@ -129,7 +129,7 @@ namespace NSG
         DISPLACE,
         WARP,
         LAYER,
-		MAX_INDEX
+        MAX_INDEX
     };
 
     typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
@@ -214,11 +214,11 @@ namespace NSG
     enum class CullFaceMode
     {
         DEFAULT,
-		BACK = DEFAULT,
+        BACK = DEFAULT,
         FRONT,
         FRONT_AND_BACK,
         DISABLED,
-		MAX_INDEX
+        MAX_INDEX
     };
 
     enum class FrontFaceMode
@@ -299,11 +299,11 @@ namespace NSG
         SH_SPHERE,
         SH_CONVEX_TRIMESH,
         SH_TRIMESH,
-		MAX_INDEX
+        MAX_INDEX
     };
 
-	enum PhysicsBody
-	{
+    enum PhysicsBody
+    {
         BODY_NO_COLLISION,
         BODY_STATIC,
         BODY_DYNAMIC,
@@ -313,7 +313,7 @@ namespace NSG
         BODY_SENSOR,
         BODY_NAVMESH,
         BODY_CHARACTER,
-		BODY_UNKNOWN
+        BODY_UNKNOWN
     };
 
     enum class CollisionMask
@@ -392,6 +392,28 @@ namespace NSG
         LAST
     };
 
+    enum class JoystickButton
+    {
+        UNKNOWN = -1,
+        FIRST = 0,
+        BUTTON_A = FIRST,
+        BUTTON_B,
+        BUTTON_X,
+        BUTTON_Y,
+        BUTTON_BACK,
+        BUTTON_GUIDE,
+        BUTTON_START,
+        BUTTON_LEFTSTICK,
+        BUTTON_RIGHTSTICK,
+        BUTTON_LEFTSHOULDER,
+        BUTTON_RIGHTSHOULDER,
+        BUTTON_DPAD_UP,
+        BUTTON_DPAD_DOWN,
+        BUTTON_DPAD_LEFT,
+        BUTTON_DPAD_RIGHT,
+        LAST
+    };
+
     class Engine;
 
     struct SignalSizeChanged : Signal<int, int> {};
@@ -400,8 +422,8 @@ namespace NSG
     struct SignalMouseMoved : Signal<int, int> {};
     struct SignalKey : Signal<int, int, int> {};
     struct SignalUnsigned : Signal<unsigned int> {};
-	struct SignalText : Signal<std::string> {};
-	struct SignalMultiGesture : Signal<int, float, float, float, float, int> {};
+    struct SignalText : Signal<std::string> {};
+    struct SignalMultiGesture : Signal<int, float, float, float, float, int> {};
     struct SignalUpdate : Signal<float> {};
     struct SignalCollision : Signal<const ContactPoint&> {};
     struct SignalDropFile : Signal<const std::string&> {};
@@ -412,7 +434,7 @@ namespace NSG
     struct SignalEmpty : Signal<> {};
     struct SignalBool : Signal<bool> {};
     struct SignalWindow : Signal<Window*> {};
-    struct SignalJoystickButton : Signal<int, unsigned> {};
+    struct SignalJoystickButton : Signal<int, JoystickButton> {};
     struct SignalJoystickAxisMotion : Signal<int, JoystickAxis, float> {};
     struct SignalHTTPRequestOnLoad : Signal<std::string> {};
     struct SignalHTTPRequestOnError : Signal<int, std::string> {};
@@ -514,7 +536,7 @@ namespace NSG
         SOLID,
         WIREFRAME,
         POINT,
-		MAX_INDEX
+        MAX_INDEX
     };
 
     enum class LightingMode
@@ -544,7 +566,7 @@ namespace NSG
         WAVE,
         SHOW_TEXTURE0,
         SHOW_DEPTH,
-		MAX_INDEX
+        MAX_INDEX
     };
 
     enum class BillboardType
@@ -569,11 +591,11 @@ namespace NSG
     {
         UNKNOWN = -1,
         TEXTURE_2D = GL_TEXTURE_2D,
-        TEXTURE_CUBE_MAP_POSITIVE_X = GL_TEXTURE_CUBE_MAP_POSITIVE_X, 
-        TEXTURE_CUBE_MAP_NEGATIVE_X = GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 
-        TEXTURE_CUBE_MAP_POSITIVE_Y = GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 
-        TEXTURE_CUBE_MAP_NEGATIVE_Y = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 
-        TEXTURE_CUBE_MAP_POSITIVE_Z = GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 
+        TEXTURE_CUBE_MAP_POSITIVE_X = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+        TEXTURE_CUBE_MAP_NEGATIVE_X = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+        TEXTURE_CUBE_MAP_POSITIVE_Y = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+        TEXTURE_CUBE_MAP_NEGATIVE_Y = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+        TEXTURE_CUBE_MAP_POSITIVE_Z = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
         TEXTURE_CUBE_MAP_NEGATIVE_Z = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
     };
 

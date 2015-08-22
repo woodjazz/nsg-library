@@ -48,8 +48,8 @@ namespace NSG
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
 		void OnText(const std::string& text);
-        void OnJoystickDown(int joystickID, unsigned button);
-        void OnJoystickUp(int joystickID, unsigned button);
+        void OnJoystickDown(int joystickID, JoystickButton button);
+        void OnJoystickUp(int joystickID, JoystickButton button);
         void OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position);
 		void RenderFrame();
 		virtual void SwapWindowBuffers() = 0;

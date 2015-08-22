@@ -491,6 +491,58 @@ namespace NSG
         #endif
     }
 
+    JoystickButton SDLWindow::ConvertButton(int button)
+    {
+        #if !defined(EMSCRIPTEN)
+        switch (button)
+        {
+            case SDL_CONTROLLER_BUTTON_A:
+                return JoystickButton::BUTTON_A;
+            case SDL_CONTROLLER_BUTTON_B:
+                return JoystickButton::BUTTON_B;
+            case SDL_CONTROLLER_BUTTON_X:
+                return JoystickButton::BUTTON_X;
+            case SDL_CONTROLLER_BUTTON_Y:
+                return JoystickButton::BUTTON_Y;
+            case SDL_CONTROLLER_BUTTON_BACK:
+                return JoystickButton::BUTTON_BACK;
+            case SDL_CONTROLLER_BUTTON_GUIDE:
+                return JoystickButton::BUTTON_GUIDE;
+            case SDL_CONTROLLER_BUTTON_START:
+                return JoystickButton::BUTTON_START;
+            case SDL_CONTROLLER_BUTTON_LEFTSTICK:
+                return JoystickButton::BUTTON_LEFTSTICK;
+            case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
+                return JoystickButton::BUTTON_RIGHTSTICK;
+            case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+                return JoystickButton::BUTTON_LEFTSHOULDER;
+            case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+                return JoystickButton::BUTTON_RIGHTSHOULDER;
+            case SDL_CONTROLLER_BUTTON_DPAD_UP:
+                return JoystickButton::BUTTON_DPAD_UP;
+            case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+                return JoystickButton::BUTTON_DPAD_DOWN;
+            case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+                return JoystickButton::BUTTON_DPAD_LEFT;
+            case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+                return JoystickButton::BUTTON_DPAD_RIGHT;
+            default:
+                {
+                    LOGW("Unknown joystick button: %d", button);
+                    return JoystickButton::UNKNOWN;
+                }
+        }
+        #else
+        if (button >= (int)JoystickButton::FIRST && button < (int)JoystickButton::LAST)
+            return (JoystickButton)button;
+        else
+        {
+            LOGW("Unknown joystick button: %d", button);
+            return JoystickButton::UNKNOWN;
+        }
+        #endif
+    }
+
     void SDLWindow::HandleEvents()
     {
         SDL_Event event;
@@ -571,7 +623,7 @@ namespace NSG
             {
                 SDLWindow* window = GetWindowFromID(event.text.windowID);
                 if (!window) continue;
-				window->OnText(event.text.text);
+                window->OnText(event.text.text);
                 UTF8String utf8(event.text.text);
                 unsigned unicode = utf8.AtUTF8(0);
                 if (unicode)
@@ -670,7 +722,7 @@ namespace NSG
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.cbutton.which)->second;
                 CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
-                auto button = event.cbutton.button;
+                auto button = ConvertButton(event.cbutton.button);
                 window->OnJoystickDown(state.instanceID_, button);
             }
             else if (event.type == SDL_CONTROLLERBUTTONUP)
@@ -679,7 +731,7 @@ namespace NSG
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.cbutton.which)->second;
                 CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
-                auto button = event.cbutton.button;
+                auto button = ConvertButton(event.cbutton.button);
                 window->OnJoystickUp(state.instanceID_, button);
             }
             else if (event.type == SDL_CONTROLLERAXISMOTION)
@@ -703,7 +755,7 @@ namespace NSG
                 auto& state = window->joysticks_.find(event.jbutton.which)->second;
                 if (!state.pad_)
                 {
-                    auto button = event.jbutton.button;
+                    auto button = ConvertButton(event.jbutton.button);
                     window->OnJoystickDown(state.instanceID_, button);
                 }
             }
@@ -714,7 +766,7 @@ namespace NSG
                 auto& state = window->joysticks_.find(event.jbutton.which)->second;
                 if (!state.pad_)
                 {
-                    auto button = event.jbutton.button;
+                    auto button = ConvertButton(event.jbutton.button);
                     window->OnJoystickUp(state.instanceID_, button);
                 }
             }
@@ -796,7 +848,7 @@ namespace NSG
 
     void SDLWindow::BeginImguiRender()
     {
-		ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO& io = ImGui::GetIO();
         #ifdef _MSC_VER
         SDL_SysWMinfo wmInfo;
         SDL_VERSION(&wmInfo.version);

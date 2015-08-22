@@ -77,10 +77,12 @@ namespace NSG
         class Machine : public State 
         {
         public:
+            Machine();
             Machine(State& initialState, bool isFirstState = true);
             virtual ~Machine();
             void Update();
             const State* GetState() const { return pCurrentState_; }
+            void SetInitialState(State& initialState);
         private:
             void InternalBegin();
             void InternalEnd();

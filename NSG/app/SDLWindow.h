@@ -50,6 +50,7 @@ namespace NSG
         void SetupImgui() override;
         void BeginImguiRender() override;
         static JoystickAxis ConvertAxis(int axis);
+        static JoystickButton ConvertButton(int button);
         void OpenJoystick(int index);
         void CloseJoystick(int index);
         void OpenJoysticks();
