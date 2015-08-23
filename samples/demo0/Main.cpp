@@ -223,7 +223,6 @@ int NSG_MAIN(int argc, char* argv[])
 
         struct Fall : State
         {
-            float turnFactor_;
             Fall(PScene scene) : State("Momo_FallUp", scene)
             {
             }
