@@ -263,72 +263,6 @@ namespace NSG
     class VertexShader;
     typedef std::shared_ptr<VertexShader> PVertexShader;
 
-    namespace IMGUI
-    {
-        struct LayoutArea;
-        typedef std::shared_ptr<LayoutArea> PLayoutArea;
-
-        class LayoutManager;
-        typedef std::unique_ptr<LayoutManager> PLayoutManager;
-
-        struct Skin;
-        typedef std::shared_ptr<Skin> PSkin;
-
-        class TextManager;
-        typedef std::unique_ptr<TextManager> PTextManager;
-
-        struct Context;
-        typedef std::unique_ptr<Context> PContext;
-
-        struct State;
-        typedef std::shared_ptr<State> PState;
-
-        class Area;
-        typedef std::shared_ptr<Area> PArea;
-
-        class Title;
-        typedef std::shared_ptr<Title> PTitle;
-
-        class Window;
-        typedef std::shared_ptr<Window> PWindow;
-
-        struct WindowManager;
-        typedef std::shared_ptr<WindowManager> PWindowManager;
-
-        struct Style;
-        typedef std::shared_ptr<Style> PStyle;
-
-        struct ButtonStyle;
-        typedef std::shared_ptr<ButtonStyle> PButtonStyle;
-
-        struct LabelStyle;
-        typedef std::shared_ptr<LabelStyle> PLabelStyle;
-
-        struct TextStyle;
-        typedef std::shared_ptr<TextStyle> PTextStyle;
-
-        struct TitleStyle;
-        typedef std::shared_ptr<TitleStyle> PTitleStyle;
-
-        struct WindowStyle;
-        typedef std::shared_ptr<WindowStyle> PWindowStyle;
-
-        struct AreaStyle;
-        typedef std::shared_ptr<AreaStyle> PAreaStyle;
-
-        struct SliderStyle;
-        typedef std::shared_ptr<SliderStyle> PSliderStyle;
-
-        struct SizerStyle;
-        typedef std::shared_ptr<SizerStyle> PSizerStyle;
-
-        struct LineStyle;
-        typedef std::shared_ptr<LineStyle> PLineStyle;
-
-        struct CheckButtonStyle;
-        typedef std::shared_ptr<CheckButtonStyle> PCheckButtonStyle;
-    }
-
     class Node;
     typedef std::shared_ptr<Node> PNode;
     typedef std::weak_ptr<Node> PWeakNode;
@@ -373,8 +307,8 @@ namespace NSG
     class Plane;
     typedef std::shared_ptr<Plane> PPlane;
 
-    class GUI;
-    typedef std::shared_ptr<GUI> PGUI;
+    class LoaderApp;
+    typedef std::shared_ptr<LoaderApp> PLoaderApp;
 
     class LoaderXML;
     typedef std::shared_ptr<LoaderXML> PLoaderXML;
@@ -387,5 +321,8 @@ namespace NSG
 
     class HTTPRequest;
     typedef std::shared_ptr<HTTPRequest> PHTTPRequest;
+
+    class GUI;
+    typedef std::shared_ptr<GUI> PGUI;
 
 }

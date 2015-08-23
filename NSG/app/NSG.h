@@ -52,13 +52,6 @@ misrepresented as being the original software.
 #include "Light.h"
 #include "Graphics.h"
 #include "Material.h"
-#if 0
-#include "IMGUI.h"
-#include "IMGUISkin.h"
-#include "IMGUIStyle.h"
-#include "IMGUIContext.h"
-#include "IMGUITitle.h"
-#endif
 #include "Filter.h"
 #include "RectangleMesh.h"
 #include "ShowTexture.h"
@@ -95,6 +88,8 @@ misrepresented as being the original software.
 #include "FileSystem.h"
 #include "Renderer.h"
 #include "imgui.h"
+#include "GUI.h"
 #include "LoaderXML.h"
+#include "LoaderApp.h"
 
 

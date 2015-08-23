@@ -24,18 +24,15 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
-#include <memory>
+#include "Types.h"
+#include "NonCopyable.h"
 #include <functional>
 #include <vector>
-#include "NonCopyable.h"
 
-namespace NSG 
+namespace NSG
 {
-
-    namespace FSM 
+    namespace FSM
     {
-
         class State;
         class Condition : NonCopyable
         {
@@ -60,9 +57,9 @@ namespace NSG
             Condition& AddTransition(State& to);
             virtual const State* GetState() const { return this; }
         protected:
-            virtual void Begin(){}
-            virtual void Stay(){}
-            virtual void End(){}
+            virtual void Begin() {}
+            virtual void Stay() {}
+            virtual void End() {}
         private:
             virtual State* Evaluate();
             virtual void InternalBegin();
@@ -74,7 +71,7 @@ namespace NSG
             friend class Machine;
         };
 
-        class Machine : public State 
+        class Machine : public State
         {
         public:
             Machine();
@@ -83,13 +80,16 @@ namespace NSG
             void Update();
             const State* GetState() const { return pCurrentState_; }
             void SetInitialState(State& initialState);
+            void Go();
         private:
+            void InternalGo();
             void InternalBegin();
             void InternalEnd();
             State* Evaluate();
-
             State* pInitialState_;
             State* pCurrentState_;
+            SignalEngine::PSlot slotEngineReady_;
+            SignalUpdate::PSlot slotUpdate_;
         };
     }
 }

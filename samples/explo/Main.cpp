@@ -33,7 +33,8 @@ int NSG_MAIN(int argc, char* argv[])
     auto control = std::make_shared<CameraControl>(camera);
 	auto mesh = Mesh::CreateClass<QuadMesh>();
     auto material = std::make_shared<Material>();
-	material->SetTexture(std::make_shared<Texture2D>(resource));
+    auto texture = std::make_shared<Texture2D>(resource);
+	material->SetTexture(texture);
 	material->SetRenderPass(RenderPass::UNLIT);
 	material->SetBillboardType(BillboardType::SPHERICAL);
     auto sprite = scene->CreateChild<SceneNode>();
@@ -41,7 +42,7 @@ int NSG_MAIN(int argc, char* argv[])
     sprite->SetMaterial(material);
     auto texSize = 1 / 7.f;
     Vector4 uvTransform(texSize, texSize, 0, 0);
-    material->SetUVTransform(uvTransform);
+    texture->SetUVTransform(uvTransform);
     control->AutoZoom();
     auto totalTime = 0.f;
     auto fps = 1 / 24.f;
@@ -61,7 +62,7 @@ int NSG_MAIN(int argc, char* argv[])
 					alpha = 1;
                 }
             }
-            material->SetUVTransform(uvTransform);
+            texture->SetUVTransform(uvTransform);
             uvTransform.z += texSize;
             if (uvTransform.w >= 0.95f-texSize)
 				alpha -= texSize;

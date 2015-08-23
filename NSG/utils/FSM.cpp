@@ -24,13 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "FSM.h"
+#include "Engine.h"
 
 namespace NSG
 {
-
     namespace FSM
     {
-
         Condition::Condition(State& newState)
             : pNewState_(&newState), conditionFunc_(nullptr)
         {
@@ -162,6 +161,29 @@ namespace NSG
                 Update();
 
             return pNewState;
+        }
+
+        void Machine::Go()
+        {
+            if (!Engine::GetPtr())
+            {
+                slotEngineReady_ = Engine::SigReady()->Connect([this](Engine * engine)
+                {
+                    InternalGo();
+                });
+            }
+            else
+            {
+                InternalGo();
+            }
+        }
+
+        void Machine::InternalGo()
+        {
+            slotUpdate_ = Engine::GetPtr()->SigUpdate()->Connect([this](float deltaTime)
+            {
+                Update();
+            });
         }
     }
 }
