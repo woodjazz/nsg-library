@@ -61,7 +61,7 @@ namespace NSG
         Animation(const std::string& name);
         ~Animation();
         PAnimation Clone() const;
-        bool ResolveFor(PSceneNode node);
+        void ResolveFor(PSceneNode node);
         const std::string& GetName() const { return name_; }
         void SetLength(float length);
         float GetLength() const { return length_; }

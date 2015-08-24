@@ -59,10 +59,6 @@ namespace NSG
         bool GetPreciseRayNodesIntersection(const Ray& ray, std::vector<RayNodeResult>& result) const;
 		bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const;
 		bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
-		PAnimation GetAnimationFor(const std::string& name, PSceneNode node) const;
-        void PlayAnimation(PAnimation animation, bool looped);
-        void StopAnimation(PAnimation animation);
-        bool IsPlaying(PAnimation animation) const;
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
         void UpdateOctree(SceneNode* node);
         void RemoveFromOctree(SceneNode* node);
@@ -71,6 +67,7 @@ namespace NSG
         SignalNodeMouseButton::PSignal SigNodeMouseDown() { return signalNodeMouseDown_; }
         SignalNodeMouseButton::PSignal SigNodeMouseUp() { return signalNodeMouseUp_; }
         SignalNodeMouseMoved::PSignal SigNodeMouseWheel() { return signalNodeMouseWheel_; }
+        SignalUpdate::PSignal SigUpdate() { return signalUpdate_; }
         unsigned GetDrawablesNumber() const;
         std::vector<Camera*> GetCameras() const;
 		PCamera GetMainCamera() const;
@@ -92,7 +89,6 @@ namespace NSG
 		void SaveAnimations(pugi::xml_node& node) const;
 		void SavePhysics(pugi::xml_node& node) const;
     private:
-		void UpdateAnimations(float deltaTime);
         void UpdateParticleSystems(float deltaTime);
     private:
         Camera* mainCamera_;
@@ -103,14 +99,13 @@ namespace NSG
         ColorRGB horizon_;
 		POctree octree_;
         mutable std::set<SceneNode*> octreeNeedsUpdate_;
-        typedef std::vector<PAnimationState> AnimationStates;
-		AnimationStates animationStates_;
         PPhysicsWorld physicsWorld_;
         Window* window_;
         SignalNodeMouseMoved::PSignal signalNodeMouseMoved_;
         SignalNodeMouseButton::PSignal signalNodeMouseDown_;
         SignalNodeMouseButton::PSignal signalNodeMouseUp_;
         SignalNodeMouseMoved::PSignal signalNodeMouseWheel_;
+        SignalUpdate::PSignal signalUpdate_;
 		SignalFloatFloat::PSlot slotMouseMoved_;
 		SignalMouseButton::PSlot slotMouseDown_;
 		SignalMouseButton::PSlot slotMouseUp_;

@@ -89,6 +89,5 @@ namespace NSG
 		SignalEmpty::PSignal signalMeshSet_;
 		SignalEmpty::PSignal signalMaterialSet_;
 		SignalCollision::PSignal signalCollision_;
-
 	};
 }

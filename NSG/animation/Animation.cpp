@@ -162,7 +162,7 @@ namespace NSG
         return clone;
     }
 
-    bool Animation::ResolveFor(PSceneNode node)
+    void Animation::ResolveFor(PSceneNode node)
     {
         for (auto& track : tracks_)
         {
@@ -170,7 +170,6 @@ namespace NSG
 			if (bone)
                 track.ResolveFor(bone);
         }
-        return !tracks_.empty();
     }
 
     void Animation::SetLength(float length)

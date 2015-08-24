@@ -29,9 +29,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    struct AnimationTrack;
-    typedef std::shared_ptr<AnimationTrack> PAnimationTrack;
-
     class Worker;
     typedef std::shared_ptr<Worker> PWorker;
 
@@ -59,6 +56,12 @@ namespace NSG
     class Animation;
     typedef std::shared_ptr<Animation> PAnimation;
     typedef std::weak_ptr<Animation> PWeakAnimation;
+
+    class AnimationController;
+    typedef std::shared_ptr<AnimationController> PAnimationController;
+
+    struct AnimationControl;
+    typedef std::shared_ptr<AnimationControl> PAnimationControl;
 
     class PointOnSphere;
     typedef std::shared_ptr<PointOnSphere> PPointOnSphere;

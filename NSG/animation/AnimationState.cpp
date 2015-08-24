@@ -39,7 +39,7 @@ namespace NSG
         : animation_(animation),
           timePosition_(0),
           looped_(false),
-		  speed_(1)
+          weight_(1)
     {
         auto tracks = animation_->GetTracks();
         for (auto& track : tracks)
@@ -52,10 +52,8 @@ namespace NSG
 
     void AnimationState::AddTime(float delta)
     {
-        if (!animation_ || !speed_)
+        if (!animation_)
             return;
-
-        delta *= speed_;
 
         float length = animation_->GetLength();
 
@@ -75,22 +73,29 @@ namespace NSG
         SetTime(time);
     }
 
-	bool AnimationState::HasEnded() const
-	{
-		if (looped_)
-			return false;
-
-		return timePosition_ >= animation_->GetLength();
-	}
+    bool AnimationState::HasEnded() const
+    {
+        if (looped_)
+            return false;
+        return timePosition_ >= animation_->GetLength();
+    }
 
     void AnimationState::SetTime(float time)
     {
         if (!animation_)
             return;
-
-		timePosition_ = glm::clamp(time, 0.0f, animation_->GetLength());
+        timePosition_ = glm::clamp(time, 0.0f, animation_->GetLength());
     }
 
+    float AnimationState::GetLength() const
+    {
+        return animation_ ? animation_->GetLength() : 0;
+    }
+
+    void AnimationState::SetWeight(float weight)
+    {
+        weight_ = glm::clamp(weight, 0.0f, 1.0f);
+    }
 
     void AnimationState::Update()
     {
@@ -113,18 +118,18 @@ namespace NSG
             }
 
             const AnimationKeyFrame* keyFrame = &track.keyFrames_[frame];
-			auto bone = track.node_.lock();
-            if(!bone)
+            auto bone = track.node_.lock();
+            if (!bone)
                 continue;
             if (!interpolate)
             {
                 // No interpolation, full weight
                 if (track.channelMask_ & (int)AnimationChannel::POSITION)
-					bone->SetPosition(keyFrame->position_);
+                    bone->SetPosition(keyFrame->position_);
                 if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-					bone->SetOrientation(keyFrame->rotation_);
+                    bone->SetOrientation(keyFrame->rotation_);
                 if (track.channelMask_ & (int)AnimationChannel::SCALE)
-					bone->SetScale(keyFrame->scale_);
+                    bone->SetScale(keyFrame->scale_);
             }
             else
             {
@@ -134,25 +139,19 @@ namespace NSG
                     timeInterval += animation_->GetLength();
                 float t = timeInterval > 0.0f ? (timePosition_ - keyFrame->time_) / timeInterval : 1.0f;
 
-				// Interpolation, full weight
+                // Interpolation, full weight
                 if (track.channelMask_ & (int)AnimationChannel::POSITION)
-					bone->SetPosition(Lerp(keyFrame->position_, nextKeyFrame.position_, t));
+                    bone->SetPosition(Lerp(keyFrame->position_, nextKeyFrame.position_, t));
                 if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-					bone->SetOrientation(glm::slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t));
+                    bone->SetOrientation(glm::slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t));
                 if (track.channelMask_ & (int)AnimationChannel::SCALE)
-					bone->SetScale(Lerp(keyFrame->scale_, nextKeyFrame.scale_, t));
+                    bone->SetScale(Lerp(keyFrame->scale_, nextKeyFrame.scale_, t));
             }
         }
     }
 
     void AnimationState::SetLooped(bool looped)
     {
-    	looped_ = looped;
+        looped_ = looped;
     }
-
-    void AnimationState::SetSpeed(float speed)
-    {
-        speed_ = speed;
-    }
-
 }

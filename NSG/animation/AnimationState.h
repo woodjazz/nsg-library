@@ -43,16 +43,20 @@ namespace NSG
         ~AnimationState();
         void Update();
         void SetTime(float time);
+        float GetTime() const { return timePosition_; }
+        float GetLength() const;
         void AddTime(float delta);
         void SetLooped(bool looped);
-        void SetSpeed(float speed);
+        bool IsLooped() const { return looped_; }
+        void SetWeight(float weight);
+        float GetWeight() const { return weight_; }
         bool HasEnded() const;
         PAnimation GetAnimation() const { return animation_; }
     private:
         PAnimation animation_;
         float timePosition_;
         std::vector<AnimationStateTrack> tracks_;
-        bool looped_;
-        float speed_;
+        bool looped_;    
+        float weight_; //Blending weight.
     };
 }

@@ -13,7 +13,6 @@
 #include "Skeleton.h"
 #include "ModelMesh.h"
 #include "Animation.h"
-#include "AnimationState.h"
 #include "PhysicsWorld.h"
 #include "ParticleSystem.h"
 #include "Window.h"
@@ -35,6 +34,7 @@ namespace NSG
           signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
           signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
           signalNodeMouseWheel_(new Signal<SceneNode *, float, float>()),
+          signalUpdate_(new Signal<float>()),
 		  enableFog_(false),
 		  fogMinIntensity_(0),
 		  fogStart_(5),
@@ -174,8 +174,8 @@ namespace NSG
     void Scene::UpdateAll(float deltaTime)
     {
         physicsWorld_->StepSimulation(deltaTime);
-        UpdateAnimations(deltaTime);
         UpdateParticleSystems(deltaTime);
+        signalUpdate_->Run(deltaTime);
     }
 
     bool Scene::GetFastRayNodesIntersection(const Ray& ray, std::vector<SceneNode*>& nodes) const
@@ -320,66 +320,6 @@ namespace NSG
             return true;
         }
         return false;
-    }
-
-
-	PAnimation Scene::GetAnimationFor(const std::string& name, PSceneNode node) const
-    {
-		auto animation = Animation::Get(name);
-		if (animation && animation->IsReady())
-		{
-			auto clone = animation->Clone();
-			if (clone->ResolveFor(node))
-				return clone;
-		}
-		return nullptr;
-    }
-
-    void Scene::PlayAnimation(PAnimation animation, bool looped)
-    {
-		auto animationState = std::make_shared<AnimationState>(animation);
-		animationState->SetLooped(looped);
-		animationStates_.push_back(animationState);
-    }
-
-    void Scene::StopAnimation(PAnimation animation)
-    {
-        auto it = animationStates_.begin();
-        while (it != animationStates_.end())
-        {
-            auto& animState = *it;
-            if(animation == animState->GetAnimation())
-            {
-                animationStates_.erase(it);
-                break;
-            }
-            ++it;
-        }
-    }
-
-    bool Scene::IsPlaying(PAnimation animation) const
-    {
-        for(auto& state : animationStates_)
-            if(animation == state->GetAnimation())
-                return true;
-        return false;
-    }
-
-    void Scene::UpdateAnimations(float deltaTime)
-    {
-		auto it = animationStates_.begin();
-		while (it != animationStates_.end())
-        {
-            auto& animState = *it;
-            if (!animState->HasEnded())
-            {
-                animState->AddTime(deltaTime);
-                animState->Update();
-                ++it;
-            }
-            else
-				it = animationStates_.erase(it);
-        }
     }
 
     void Scene::UpdateParticleSystems(float deltaTime)

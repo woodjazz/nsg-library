@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "Octree.h"
 #include "Util.h"
 #include "RigidBody.h"
+#include "AnimationController.h"
 #include "pugixml.hpp"
 #include <thread>
 #include <sstream>
