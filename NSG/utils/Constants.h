@@ -30,7 +30,7 @@ namespace NSG
 {
     static const float PI = glm::pi<float>();
     static const float TWO_PI = 2 * PI;
-
+    static const float EPSILON = 0.000001f;
     static const IndexType MAX_INDEX_VALUE = ~IndexType(0);
 
     static const Matrix4 IDENTITY_MATRIX(1.0f);

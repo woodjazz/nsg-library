@@ -43,6 +43,7 @@ namespace NSG
 		void SetMaterial(PMaterial material);
 		void SetMesh(PMesh mesh);
 		PRigidBody GetOrCreateRigidBody();
+		PAnimationController GetOrCreateAnimationController();
 		PMesh GetMesh() const { return mesh_; }
 		void SetOctant(Octant* octant) const { octant_ = octant; }
 		const BoundingBox& GetWorldBoundingBox() const;
@@ -81,6 +82,7 @@ namespace NSG
 	private:
 		PWeakSceneNode armature_;
 		PRigidBody rigidBody_;
+		PAnimationController animationController_;
 		mutable Octant* octant_;
 		mutable BoundingBox worldBB_;
 		mutable bool worldBBNeedsUpdate_;

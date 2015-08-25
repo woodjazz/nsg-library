@@ -69,6 +69,7 @@ misrepresented as being the original software.
 #include "PlayerControl.h"
 #include "FollowCamera.h"
 #include "Animation.h"
+#include "AnimationController.h"
 #include "AnimationState.h"
 #include "PointOnSphere.h"
 #include "pugixml.hpp"

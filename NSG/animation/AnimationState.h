@@ -32,7 +32,6 @@ namespace NSG
     struct AnimationStateTrack : AnimationTrack
     {
         size_t currentKeyFrame_;
-
         AnimationStateTrack(const AnimationTrack& base);
     };
 
@@ -53,6 +52,7 @@ namespace NSG
         bool HasEnded() const;
         PAnimation GetAnimation() const { return animation_; }
     private:
+        void Blend(AnimationStateTrack& track, float weight);
         PAnimation animation_;
         float timePosition_;
         std::vector<AnimationStateTrack> tracks_;

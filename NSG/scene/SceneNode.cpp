@@ -110,6 +110,13 @@ namespace NSG
         return rigidBody_;
     }
 
+    PAnimationController SceneNode::GetOrCreateAnimationController()
+    {
+        if (!animationController_)
+            animationController_ = std::make_shared<AnimationController>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
+        return animationController_;
+    }
+
     void SceneNode::OnScaleChange()
     {
         if (rigidBody_)

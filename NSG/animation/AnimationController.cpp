@@ -59,7 +59,8 @@ namespace NSG
             auto animation = Animation::Get(name);
             CHECK_CONDITION(animation->IsReady(), __FILE__, __LINE__);
             auto clone = animation->Clone();
-            clone->ResolveFor(sceneNode_);
+            auto sceneNode = sceneNode_.lock();
+            clone->ResolveFor(sceneNode);
             PAnimationControl control = std::make_shared<AnimationControl>();
             control->animation_ = clone;
             animations_[name] = control;
@@ -81,7 +82,7 @@ namespace NSG
         return nullptr;
     }
 
-    PAnimationState AnimationController::Play(const std::string& name, bool looped, float fadeInTime)
+    void AnimationController::Play(const std::string& name, bool looped, float fadeInTime)
     {
         auto control = GetAnimationControl(name);
         control->fadeTime_ = fadeInTime;
@@ -92,28 +93,26 @@ namespace NSG
             animationStates_.push_back(animationState);
         }
         animationState->SetLooped(looped);
-        return animationState;
     }
 
-    PAnimationState AnimationController::PlayCrossFade(const std::string& name, bool looped, float fadeTime)
+    void AnimationController::CrossFade(const std::string& name, bool looped, float fadeTime)
     {
         FadeOthers(name, 0, fadeTime);
-        return Play(name, looped, fadeTime);
+        Play(name, looped, fadeTime);
     }
 
-    void AnimationController::StopAnimation(const std::string& name)
+    void AnimationController::Stop(const std::string& name, float fadeOutTime)
     {
-        auto it = animationStates_.begin();
-        while (it != animationStates_.end())
-        {
-            auto& animState = *it;
-            if (name == animState->GetAnimation()->GetName())
-            {
-                animationStates_.erase(it);
-                break;
-            }
-            ++it;
-        }
+        auto control = GetAnimationControl(name);
+        control->fadeTime_ = fadeOutTime;
+        control->targetWeight_ = 0;
+    }
+
+    void AnimationController::Blend(const std::string& name, float targetWeight, float fadeTime)
+    {
+        auto control = GetAnimationControl(name);
+        control->targetWeight_ = glm::clamp(targetWeight, 0.f, 1.f);
+        control->fadeTime_ = fadeTime;
     }
 
     bool AnimationController::IsPlaying(const std::string& name) const
@@ -122,6 +121,12 @@ namespace NSG
             if (name == state->GetAnimation()->GetName())
                 return true;
         return false;
+    }
+
+    void AnimationController::SetSpeed(const std::string& name, float speed)
+    {
+        auto control = GetAnimationControl(name);
+        control->speed_ = speed;
     }
 
     void AnimationController::FadeOthers(const std::string& name, float targetWeight, float fadeTime)
@@ -140,68 +145,56 @@ namespace NSG
 
     void AnimationController::Update(float deltaTime)
     {
-        // Loop through animations
-        for (auto it : animations_)
+        auto it = animations_.begin();
+        while (it != animations_.end())
         {
-            auto control = it.second;
-            bool remove = false;
+            auto control = it->second;
+            static auto Remove = [&]()
+            {
+                animationStates_.erase(std::remove_if(animationStates_.begin(), animationStates_.end(),
+                [&](PAnimationState obj) { return control->animation_ == obj->GetAnimation(); }),
+                animationStates_.end());
+                it = animations_.erase(it);
+            };
+
             auto state = GetAnimationState(control->animation_);
             if (!state)
-                remove = true;
+            {
+                Remove();
+                continue;
+            }
             else
             {
-                // Advance the animation
                 if (control->speed_ != 0)
                     state->AddTime(control->speed_ * deltaTime);
-
-                float targetWeight = control->targetWeight_;
-                float fadeTime = control->fadeTime_;
-
-                // Process weight fade
-                float currentWeight = state->GetWeight();
+                auto targetWeight = control->targetWeight_;
+                auto fadeTime = control->fadeTime_;
+                auto currentWeight = state->GetWeight();
                 if (currentWeight != targetWeight)
                 {
-                    if (fadeTime > 0)
+                    if (fadeTime > 0) //fading
                     {
-                        float weightDelta = 1.f / fadeTime * deltaTime;
+                        auto delta = 1.f / fadeTime * deltaTime;
                         if (currentWeight < targetWeight)
-                            currentWeight = std::min(currentWeight + weightDelta, targetWeight);
+                            currentWeight = std::min(currentWeight + delta, targetWeight);
                         else if (currentWeight > targetWeight)
-                            currentWeight = std::max(currentWeight - weightDelta, targetWeight);
+                            currentWeight = std::max(currentWeight - delta, targetWeight);
                         state->SetWeight(currentWeight);
                     }
                     else
                         state->SetWeight(targetWeight);
                 }
 
-                // Remove if weight zero and target weight zero
                 if (state->GetWeight() == 0 && (targetWeight == 0 || fadeTime == 0))
-                    remove = true;
+                {
+                    Remove();
+                    continue;
+                }
             }
-
-            if (remove)
-                animationStates_.erase(
-                    std::remove_if(
-                        animationStates_.begin(),
-                        animationStates_.end(),
-                [&](PAnimationState obj) { return control->animation_ == obj->GetAnimation(); }
-                ),
-            animationStates_.end()
-            );
+            ++it;
         }
 
-        auto it = animationStates_.begin();
-        while (it != animationStates_.end())
-        {
-            auto& animState = *it;
-            if (!animState->HasEnded())
-            {
-                animState->AddTime(deltaTime);
-                animState->Update();
-                ++it;
-            }
-            else
-                it = animationStates_.erase(it);
-        }
+        for (auto& state : animationStates_)
+            state->Update();
     }
 }

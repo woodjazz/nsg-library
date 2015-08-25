@@ -39,7 +39,7 @@ namespace NSG
         : animation_(animation),
           timePosition_(0),
           looped_(false),
-          weight_(1)
+          weight_(0)
     {
         auto tracks = animation_->GetTracks();
         for (auto& track : tracks)
@@ -52,21 +52,18 @@ namespace NSG
 
     void AnimationState::AddTime(float delta)
     {
-        if (!animation_)
+        auto length = animation_->GetLength();
+
+        if (delta == 0 || length == 0)
             return;
 
-        float length = animation_->GetLength();
-
-        if (delta == 0.0f || length == 0.0f)
-            return;
-
-        float time = timePosition_ + delta;
+        auto time = timePosition_ + delta;
 
         if (looped_)
         {
             while (time >= length)
                 time -= length;
-            while (time < 0.0f)
+            while (time < 0)
                 time += length;
         }
 
@@ -84,7 +81,7 @@ namespace NSG
     {
         if (!animation_)
             return;
-        timePosition_ = glm::clamp(time, 0.0f, animation_->GetLength());
+        timePosition_ = glm::clamp(time, 0.f, animation_->GetLength());
     }
 
     float AnimationState::GetLength() const
@@ -94,59 +91,63 @@ namespace NSG
 
     void AnimationState::SetWeight(float weight)
     {
-        weight_ = glm::clamp(weight, 0.0f, 1.0f);
+        weight_ = glm::clamp(weight, 0.f, 1.f);
     }
 
     void AnimationState::Update()
     {
         for (auto& track : tracks_)
         {
-            size_t& frame = track.currentKeyFrame_;
-            track.GetKeyFrameIndex(timePosition_, frame);
-
-            size_t nextFrame = frame + 1;
-            bool interpolate = true;
-            if (nextFrame >= track.keyFrames_.size())
-            {
-                if (!looped_)
-                {
-                    nextFrame = frame;
-                    interpolate = false;
-                }
-                else
-                    nextFrame = 0;
-            }
-
-            const AnimationKeyFrame* keyFrame = &track.keyFrames_[frame];
-            auto bone = track.node_.lock();
-            if (!bone)
+            if (Equals(weight_, 0))
                 continue;
-            if (!interpolate)
+            Blend(track, weight_);
+        }
+    }
+
+    void AnimationState::Blend(AnimationStateTrack& track, float weight)
+    {
+        size_t& frame = track.currentKeyFrame_;
+        track.GetKeyFrameIndex(timePosition_, frame);
+        const AnimationKeyFrame* keyFrame = &track.keyFrames_[frame];
+        auto bone = track.node_.lock();
+        if (!bone) return;
+        size_t nextFrame = frame + 1;
+        bool interpolate = true;
+        if (nextFrame >= track.keyFrames_.size())
+        {
+            if (!looped_)
             {
-                // No interpolation, full weight
-                if (track.channelMask_ & (int)AnimationChannel::POSITION)
-                    bone->SetPosition(keyFrame->position_);
-                if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-                    bone->SetOrientation(keyFrame->rotation_);
-                if (track.channelMask_ & (int)AnimationChannel::SCALE)
-                    bone->SetScale(keyFrame->scale_);
+                nextFrame = frame;
+                interpolate = false;
             }
             else
-            {
-                const AnimationKeyFrame& nextKeyFrame = track.keyFrames_[nextFrame];
-                float timeInterval = nextKeyFrame.time_ - keyFrame->time_;
-                if (timeInterval < 0.0f)
-                    timeInterval += animation_->GetLength();
-                float t = timeInterval > 0.0f ? (timePosition_ - keyFrame->time_) / timeInterval : 1.0f;
+                nextFrame = 0;
+        }
+        if (!interpolate)
+        {
+            // No interpolation, blend between old transform & animation
+            if (track.channelMask_ & (int)AnimationChannel::POSITION)
+                bone->SetPosition(Lerp(bone->GetPosition(), keyFrame->position_, weight));
+            if (track.channelMask_ & (int)AnimationChannel::ROTATION)
+                bone->SetOrientation(glm::slerp(bone->GetOrientation(), keyFrame->rotation_, weight));
+            if (track.channelMask_ & (int)AnimationChannel::SCALE)
+                bone->SetScale(Lerp(bone->GetScale(), keyFrame->scale_, weight));
+        }
+        else
+        {
+            const AnimationKeyFrame& nextKeyFrame = track.keyFrames_[nextFrame];
+            auto timeInterval = nextKeyFrame.time_ - keyFrame->time_;
+            if (timeInterval < 0.0f)
+                timeInterval += animation_->GetLength();
+            auto t = timeInterval > 0 ? (timePosition_ - keyFrame->time_) / timeInterval : 1;
 
-                // Interpolation, full weight
-                if (track.channelMask_ & (int)AnimationChannel::POSITION)
-                    bone->SetPosition(Lerp(keyFrame->position_, nextKeyFrame.position_, t));
-                if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-                    bone->SetOrientation(glm::slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t));
-                if (track.channelMask_ & (int)AnimationChannel::SCALE)
-                    bone->SetScale(Lerp(keyFrame->scale_, nextKeyFrame.scale_, t));
-            }
+            // Interpolation, blend between old transform & animation
+            if (track.channelMask_ & (int)AnimationChannel::POSITION)
+                bone->SetPosition(Lerp(bone->GetPosition(), Lerp(keyFrame->position_, nextKeyFrame.position_, t), weight));
+            if (track.channelMask_ & (int)AnimationChannel::ROTATION)
+                bone->SetOrientation(glm::slerp(bone->GetOrientation(), glm::slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t), weight));
+            if (track.channelMask_ & (int)AnimationChannel::SCALE)
+                bone->SetScale(Lerp(bone->GetScale(), Lerp(keyFrame->scale_, nextKeyFrame.scale_, t), weight));
         }
     }
 

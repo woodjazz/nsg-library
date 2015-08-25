@@ -44,10 +44,15 @@ namespace NSG
     public:
         AnimationController(PSceneNode sceneNode);
         ~AnimationController();
-        PAnimationState Play(const std::string& name, bool looped, float fadeInTime = 0);
-        PAnimationState PlayCrossFade(const std::string& name, bool looped, float fadeTime = 0);
-        void StopAnimation(const std::string& name);
+        //Plays an animation without any blending.
+        void Play(const std::string& name, bool looped, float fadeInTime = 0);
+        //Fades the animation with name in over a period of time seconds and fades other animations out.
+        void CrossFade(const std::string& name, bool looped, float fadeTime = 0);
+        void Stop(const std::string& name, float fadeOutTime = 0);
+        // Blends the animation named name towards targetWeight over the next time seconds
+        void Blend(const std::string& name, float targetWeight, float fadeTime);
         bool IsPlaying(const std::string& name) const;
+        void SetSpeed(const std::string& name, float speed);
     private:
         void FadeOthers(const std::string& name, float targetWeight, float fadeTime);
         void Update(float deltaTime);
@@ -57,7 +62,7 @@ namespace NSG
         Animations animations_;
         typedef std::vector<PAnimationState> AnimationStates;
         AnimationStates animationStates_;
-        PSceneNode sceneNode_;
+        PWeakSceneNode sceneNode_;
         SignalUpdate::PSlot slotUpdate_;
     };
 }

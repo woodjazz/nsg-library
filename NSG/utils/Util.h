@@ -25,12 +25,12 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Constants.h"
 #include "Check.h"
 #include "StringConverter.h"
 #include "LinearMath/btTransform.h"
 #include "LinearMath/btVector3.h"
 #include "LinearMath/btQuaternion.h"
-
 #include <string>
 #include <algorithm>
 
@@ -48,6 +48,7 @@ namespace NSG
         return lhs * (1.0f - t) + rhs * t;
     }
 
+    inline bool Equals(float lhs, float rhs) { return lhs + EPSILON >= rhs && lhs - EPSILON <= rhs; }
     bool IsNaN(const Quaternion& q);
     Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection);
     Vector3 Translation(const Matrix4& m);

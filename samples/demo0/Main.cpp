@@ -48,17 +48,19 @@ int NSG_MAIN(int argc, char* argv[])
             PScene scene_;
             PSceneNode player_;
             PRigidBody rigidBody_;
-            PAnimation animation_;
+            PAnimationController controller_;
+            const char* animName_;
             State(const char* animName, PScene scene)
-                : loop_(true), time_(0), scene_(scene)
+                : loop_(true), time_(0), scene_(scene), animName_(animName)
             {
                 player_ = scene_->GetChild<SceneNode>("RigMomo", true);
+                controller_ = player_->GetOrCreateAnimationController();
                 rigidBody_ = player_->GetRigidBody();
-                animation_ = scene_->GetAnimationFor(animName, player_);
             }
             void Begin() override
             {
-                scene_->PlayAnimation(animation_, loop_);
+                //controller_->SetSpeed(animName_, 0.1f);
+                controller_->CrossFade(animName_, loop_, 0.4f);
             }
             void Stay() override
             {
@@ -67,7 +69,7 @@ int NSG_MAIN(int argc, char* argv[])
             void End() override
             {
                 time_ = 0;
-                scene_->StopAnimation(animation_);
+                //controller_->StopAnimation(animName_);
             }
         };
 
