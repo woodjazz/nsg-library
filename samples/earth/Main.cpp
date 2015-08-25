@@ -66,6 +66,7 @@ int NSG_MAIN(int argc, char* argv[])
     }
 
     auto light = scene->CreateChild<Light>();
+    light->EnableShadows(false);
     {
 		auto pMaterial(Material::GetOrCreate("light"));
 		pMaterial->SetRenderPass(RenderPass::PERPIXEL);

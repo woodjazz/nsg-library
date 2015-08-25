@@ -29,24 +29,28 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 
-	auto window = Window::Create();
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
-	AppData data(resource);
-	auto scene = data.scenes_.at(0);
-	auto camera = scene->GetOrCreateChild<Camera>("Camera");
-	auto control = std::make_shared<CameraControl>(camera);
-	{
-		auto armature = scene->GetChild<SceneNode>("RigMomo", true);
-		auto animation = scene->GetAnimationFor("Momo_Walk", armature);
-		scene->PlayAnimation(animation, true);
-		control->Track(armature);
-	}
-	{
-		auto armature = scene->GetChild<SceneNode>("RigMomo.001", true);
-		auto animation = scene->GetAnimationFor("Momo_Run", armature);
-		scene->PlayAnimation(animation, true);
-	}
-	window->SetScene(scene.get());
-	auto engine = Engine::Create();
-	return engine->Run();
+    auto window = Window::Create();
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
+    LoaderApp loader(resource);
+    PCameraControl control;
+    auto slotLoaded = loader.Load()->Connect([&]()
+    {
+        auto scene = loader.GetScene(0);
+        auto camera = scene->GetOrCreateChild<Camera>("Camera");
+        control = std::make_shared<CameraControl>(camera);
+        {
+            auto armature = scene->GetChild<SceneNode>("RigMomo", true);
+            auto controller = armature->GetOrCreateAnimationController();
+            controller->Play("Momo_Walk", true);
+            control->Track(armature);
+        }
+        {
+            auto armature = scene->GetChild<SceneNode>("RigMomo.001", true);
+            auto controller = armature->GetOrCreateAnimationController();
+            controller->Play("Momo_Run", true);
+        }
+        window->SetScene(scene.get());
+    });
+    auto engine = Engine::Create();
+    return engine->Run();
 }

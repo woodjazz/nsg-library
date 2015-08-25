@@ -83,7 +83,8 @@ int NSG_MAIN(int argc, char* argv[])
     animation->AddTrack(track);
     animation->SetLength(8);
 
-    scene->PlayAnimation(animation, false);
+    AnimationController acontrol(camera);
+    acontrol.Play(animation->GetName(), false);
 	window->SetScene(scene.get());
 	return Engine::Create()->Run();
 }

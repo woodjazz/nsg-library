@@ -65,8 +65,8 @@ int NSG_MAIN(int argc, char* argv[])
         control = std::make_shared<CameraControl>(camera);
         {
             auto object = scene->GetChild<SceneNode>("RigMomo", true);
-            auto animation = scene->GetAnimationFor("Momo_Carry", object);
-            scene->PlayAnimation(animation, true);
+            auto controller = object->GetOrCreateAnimationController();
+            controller->Play("Momo_Carry", true);
         }
         window->SetScene(scene.get());
         loaded = true;

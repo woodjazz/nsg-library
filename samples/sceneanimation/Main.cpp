@@ -52,8 +52,8 @@ int NSG_MAIN(int argc, char* argv[])
     auto ballRigidBody = ball->GetOrCreateRigidBody();
 
     {
-		auto animation = scene->GetAnimationFor("ArmatureAction.000", armature);
-        scene->PlayAnimation(animation, true);
+        auto controller = armature->GetOrCreateAnimationController();
+        controller->Play("ArmatureAction.000", true);
     }
 
     ballRigidBody->HandleCollisions(true);
