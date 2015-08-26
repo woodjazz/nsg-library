@@ -36,13 +36,11 @@ namespace NSG
 		void Track(PNode node);
 		void SetOffset(const Vector3& offset);
 	private:
-		void SetEngine(Engine* engine);
+		Vector3 GetDisplacementToAvoidObstruction(const Vector3& dir2Target, const Vector3& hitPoint, const Vector3& hitNormal);
 		void OnUpdate(float deltaTime);
 		PCamera camera_;
-		Engine* engine_;
 		PNode trackNode_;
 		Vector3 offset_;
-		SignalEngine::PSlot slotEngineCreated_;
 		SignalUpdate::PSlot slotUpdate_;
 	};
 }

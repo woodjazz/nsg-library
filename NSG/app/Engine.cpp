@@ -42,9 +42,7 @@ namespace NSG
 
     Engine::Engine()
         : Tick(conf_.fps_),
-          deltaTime_(0),
-          signalBeginFrame_(new SignalEmpty),
-          signalUpdate_(new SignalUpdate)
+          deltaTime_(0)
     {
     }
 
@@ -55,7 +53,6 @@ namespace NSG
 
     void Engine::InitializeTicks()
     {
-        Engine::SigReady()->Run(this);
     }
 
     void Engine::BeginTicks()
@@ -67,7 +64,7 @@ namespace NSG
     {
         deltaTime_ = delta;
         Window::UpdateScenes(delta);
-        signalUpdate_->Run(deltaTime_);
+        Engine::SigUpdate()->Run(delta);
     }
 
     void Engine::EndTicks()
@@ -78,7 +75,7 @@ namespace NSG
 
     void Engine::RenderFrame()
     {
-		signalBeginFrame_->Run();
+		Engine::SigBeginFrame()->Run();
 		Window::RenderWindows();
     }
 
@@ -118,9 +115,15 @@ namespace NSG
         return 0;
     }
 
-    SignalEngine::PSignal Engine::SigReady()
+    SignalUpdate::PSignal Engine::SigUpdate()
     {
-        static SignalEngine::PSignal signalReady(new SignalEngine);
-        return signalReady;
+        static SignalUpdate::PSignal signalUpdate(new SignalUpdate);
+        return signalUpdate;
+    }
+
+    SignalEmpty::PSignal Engine::SigBeginFrame()
+    {
+        static SignalEmpty::PSignal signalBeginFrame(new SignalEmpty);
+        return signalBeginFrame;
     }
 }

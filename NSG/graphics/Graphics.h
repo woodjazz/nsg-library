@@ -116,6 +116,7 @@ namespace NSG
 		static GLenum GetTexelFormatType();
 		void CreateGUI(Window* mainWindow);
 		void DestroyGUI();
+		static SignalWindow::PSignal SigWindow();
 	private:
 		Graphics();
 		void SetUpViewport();

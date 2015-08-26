@@ -118,7 +118,7 @@ namespace NSG
         mutable PFrustum frustum_;
         SignalSizeChanged::PSlot slotViewChanged_;
         Window* window_;
-        SignalWindow::PSlot slotWindowCreated_;
+        SignalWindow::PSlot slotWindow_;
         float orthoScale_;
         CameraSensorFit sensorFit_;
         mutable OrthoProjection orthoProjection_;

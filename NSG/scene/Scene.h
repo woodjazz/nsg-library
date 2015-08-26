@@ -110,7 +110,7 @@ namespace NSG
 		SignalMouseButton::PSlot slotMouseDown_;
 		SignalMouseButton::PSlot slotMouseUp_;
 		SignalFloatFloat::PSlot slotMouseWheel_;
-		SignalWindow::PSlot slotWindowCreated_;
+		SignalWindow::PSlot slotWindow_;
         SignalLight::PSlot slotLightBeingDestroy_;
 		SignalCamera::PSlot slotCameraBeingDestroy_;
 		SignalParticleSystem::PSlot slotPSBeingDestroy_;

@@ -85,7 +85,6 @@ namespace NSG
 		static bool RenderWindows();
         static Window* GetMainWindow() { return mainWindow_; }
         static void HandleEvents();
-        static SignalWindow::PSignal SigReady();
 		SignalSizeChanged::PSignal SigSizeChanged() { return signalViewChanged_; }
         SignalFloatFloat::PSignal SigFloatFloat() { return signalFloatFloat_; }
         SignalMouseMoved::PSignal SigMouseMoved() { return signalMouseMoved_; }

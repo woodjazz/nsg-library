@@ -74,23 +74,10 @@ namespace NSG
         SetMaterialPhysics();
         SetMaterialPhysicsSlot();
 
-        if (Engine::GetPtr())
+        slotBeginFrame_ = Engine::SigBeginFrame()->Connect([this]()
         {
-            slotBeginFrame_ = Engine::GetPtr()->SigBeginFrame()->Connect([this]()
-            {
-                IsReady();
-            });
-        }
-        else
-        {
-            slotEngineCreated_ = Engine::SigReady()->Connect([this](Engine * engine)
-            {
-                slotBeginFrame_ = engine->SigBeginFrame()->Connect([this]()
-                {
-                    IsReady();
-                });
-            });
-        }
+            IsReady();
+        });
     }
 
     RigidBody::~RigidBody()

@@ -36,10 +36,8 @@ namespace NSG
 		SignalEmpty::PSignal Load();
 		PScene GetScene(int idx) const;
 	private:
-		void InternalLoad();
 		PResource resource_;
 		bool loaded_;
-		SignalEngine::PSlot slotEngineReady_;
 		SignalUpdate::PSlot slotUpdate_;
 		SignalEmpty::PSignal signalLoaded_;
 		std::vector<PResource> resources_;

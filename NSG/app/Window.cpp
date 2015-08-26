@@ -187,7 +187,6 @@ namespace NSG
         CreateFrameBuffer(); // used when filters are enabled
 		if (isMainWindow_)
 			graphics_->CreateGUI(this);
-        Window::SigReady()->Run(this);
     }
 
     void Window::SetSize(int width, int height)
@@ -489,11 +488,5 @@ namespace NSG
     void Window::NotifyOneWindow2Remove()
     {
         ++nWindows2Remove_;
-    }
-
-    SignalWindow::PSignal Window::SigReady()
-    {
-        static SignalWindow::PSignal signalReady(new SignalWindow);
-        return signalReady;
     }
 }

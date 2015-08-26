@@ -61,21 +61,15 @@ namespace NSG
           colorSplits_(false),
           shadowSplitLogFactor_(0.5f),
           automaticSplits_(true),
-		  hasUserOrthoProjection_(false)
+          hasUserOrthoProjection_(false)
     {
         SetInheritScale(false);
         Update();
         frustum_ = std::make_shared<Frustum>(matViewProjection_);
-        if (Graphics::GetPtr())
-        {
-            auto window = Graphics::GetPtr()->GetWindow();
-            if (window)
-                SetWindow(window);
-            if (!Graphics::GetPtr()->GetCamera())
-                Graphics::GetPtr()->SetCamera(this);
-        }
-
-        slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
+        auto graphics = Graphics::GetPtr();
+        if (graphics && !graphics->GetCamera())
+            graphics->SetCamera(this);
+        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
@@ -94,7 +88,7 @@ namespace NSG
 
     void Camera::UnRegisterWindow()
     {
-        slotWindowCreated_ = nullptr;
+        slotWindow_ = nullptr;
         SetWindow(nullptr);
     }
 
@@ -273,23 +267,23 @@ namespace NSG
         return orthoProjection;
     }
 
-	void Camera::SetOrthoProjection(OrthoProjection projection)
-	{
-		if (memcmp(&orthoProjection_, &projection, sizeof(OrthoProjection)) != 0)
-		{
-			orthoProjection_ = projection;
-			hasUserOrthoProjection_ = true;
-			isDirty_ = true;
-			SetUniformsNeedUpdate();
-		}
-	}
+    void Camera::SetOrthoProjection(OrthoProjection projection)
+    {
+        if (memcmp(&orthoProjection_, &projection, sizeof(OrthoProjection)) != 0)
+        {
+            orthoProjection_ = projection;
+            hasUserOrthoProjection_ = true;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
+        }
+    }
 
     void Camera::UpdateProjection() const
     {
         if (isOrtho_)
         {
-			if (!hasUserOrthoProjection_)
-				orthoProjection_ = CalculateOrthoProjection(zNear_, zFar_);
+            if (!hasUserOrthoProjection_)
+                orthoProjection_ = CalculateOrthoProjection(zNear_, zFar_);
 
             matProjection_ = glm::ortho(orthoProjection_.left_,
                                         orthoProjection_.right_,
@@ -445,7 +439,7 @@ namespace NSG
         if (Graphics::GetPtr()->GetCamera())
             return Graphics::GetPtr()->GetCamera()->GetScreenRay(screenX, screenY);
         else
-			return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
+            return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
     }
 
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
@@ -508,9 +502,9 @@ namespace NSG
         fovy_ = node.attribute("fovy").as_float();
         zNear_ = node.attribute("zNear").as_float();
         zFar_ = node.attribute("zFar").as_float();
-		auto vpFactorAtt = node.attribute("viewportFactor");
-		if (vpFactorAtt)
-			viewportFactor_ = ToVertex4(vpFactorAtt.as_string());
+        auto vpFactorAtt = node.attribute("viewportFactor");
+        if (vpFactorAtt)
+            viewportFactor_ = ToVertex4(vpFactorAtt.as_string());
         isOrtho_ = node.attribute("isOrtho").as_bool();
         orthoScale_ = node.attribute("orthoScale").as_float();
         sensorFit_ = (CameraSensorFit)node.attribute("sensorFit").as_int();

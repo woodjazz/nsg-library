@@ -37,6 +37,18 @@ class btDiscreteDynamicsWorld;
 
 namespace NSG
 {
+    struct PhysicsRaycastResult
+    {
+        // Hit world position
+        Vector3 position_;
+        // Hit world normal
+        Vector3 normal_;
+        // Hit distance from ray origin
+        float distance_;
+        // Hit RigidBody
+        RigidBody* rigidBody_;
+    };
+
     class PhysicsWorld : public btIDebugDraw
     {
     public:
@@ -44,27 +56,28 @@ namespace NSG
         ~PhysicsWorld();
         void StepSimulation(float timeStep);
         std::shared_ptr<btDiscreteDynamicsWorld> GetWorld() const { return dynamicsWorld_; }
-		void SetGravity(const Vector3& gravity);
-		const Vector3& GetGravity() const { return gravity_; }
-		void SetFps(int fps);
-		int GetFps() const { return fps_; }
-		void SetMaxSubSteps(int steps);
-		int GetMaxSubSteps() const { return maxSubSteps_; }
-		///////////////////////////////////////////////////////////////////////////////////////
-		// Bullet btIDebugDraw
-		bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
-		void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
-		void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color);
-		void reportErrorWarning(const char* warningString) override;
-		void draw3dText(const btVector3& location, const char* textString) override;
-		void setDebugMode(int debugMode) override;
-		int	getDebugMode() const override;
-		///////////////////////////////////////////////////////////////////////////////////////
-		void DrawDebug();
-		PLinesMesh GetDebugLines() const { return lines_; }
-		void ClearDebugLines();
+        void SetGravity(const Vector3& gravity);
+        const Vector3& GetGravity() const { return gravity_; }
+        void SetFps(int fps);
+        int GetFps() const { return fps_; }
+        void SetMaxSubSteps(int steps);
+        int GetMaxSubSteps() const { return maxSubSteps_; }
+        ///////////////////////////////////////////////////////////////////////////////////////
+        // Bullet btIDebugDraw
+        bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
+        void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
+        void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color);
+        void reportErrorWarning(const char* warningString) override;
+        void draw3dText(const btVector3& location, const char* textString) override;
+        void setDebugMode(int debugMode) override;
+        int	getDebugMode() const override;
+        ///////////////////////////////////////////////////////////////////////////////////////
+        void DrawDebug();
+        PLinesMesh GetDebugLines() const { return lines_; }
+        void ClearDebugLines();
+        PhysicsRaycastResult SphereCast(const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
     private:
-		void Substep(float tick);
+        void Substep(float tick);
         static void SubstepCallback(btDynamicsWorld* dyn, float tick);
         const Scene* scene_;
         btDefaultCollisionConfiguration* collisionConfiguration_;
@@ -72,11 +85,11 @@ namespace NSG
         btGhostPairCallback* ghostPairCallback_;
         btCollisionDispatcher* dispatcher_;
         btSequentialImpulseConstraintSolver* constraintSolver_;
-		std::shared_ptr<btDiscreteDynamicsWorld> dynamicsWorld_;
-		Vector3 gravity_;
-		int debugMode_;
-		PLinesMesh lines_;
-		int fps_;
-		int maxSubSteps_;
+        std::shared_ptr<btDiscreteDynamicsWorld> dynamicsWorld_;
+        Vector3 gravity_;
+        int debugMode_;
+        PLinesMesh lines_;
+        int fps_;
+        int maxSubSteps_;
     };
 }

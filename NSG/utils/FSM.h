@@ -82,13 +82,11 @@ namespace NSG
             void SetInitialState(State& initialState);
             void Go();
         private:
-            void InternalGo();
             void InternalBegin();
             void InternalEnd();
             State* Evaluate();
             State* pInitialState_;
             State* pCurrentState_;
-            SignalEngine::PSlot slotEngineReady_;
             SignalUpdate::PSlot slotUpdate_;
         };
     }

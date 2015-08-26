@@ -35,7 +35,6 @@ namespace NSG
 		~CameraControl();
 		void Track(PNode node);
 		void SetWindow(Window* window);
-		void SetEngine(Engine* engine);
 		void AutoZoom();
 		void OnUpdate(float deltaTime);
 		void OnKey(int key, int action, int modifier);
@@ -44,13 +43,6 @@ namespace NSG
 		void OnMouseUp(int button, float x, float y);
 		void OnMouseDown(int button, float x, float y);
 		void OnMousemoved(float x, float y);
-		SignalFloatFloat::PSlot slotMouseMoved_;
-		SignalMouseButton::PSlot slotMouseDown_;
-		SignalMouseButton::PSlot slotMouseUp_;
-		SignalFloatFloat::PSlot slotMouseWheel_;
-		SignalMultiGesture::PSlot slotMultiGesture_;
-		SignalKey::PSlot slotKey_;
-		SignalUpdate::PSlot slotUpdate_;
 	private:
 		void SetPosition(const Vertex3& position);
 		void SetSphereCenter(bool centerObj);
@@ -64,11 +56,16 @@ namespace NSG
 		PCamera camera_;
 		bool updateOrientation_;
 		Window* window_;
-		Engine* engine_;
-		SignalWindow::PSlot slotWindowCreated_;
-		SignalEngine::PSlot slotEngineCreated_;
 		Vector3 originalPosition_;
 		Quaternion originalOrientation_;
 		PNode trackNode_;
+		SignalWindow::PSlot slotWindow_;
+		SignalFloatFloat::PSlot slotMouseMoved_;
+		SignalMouseButton::PSlot slotMouseDown_;
+		SignalMouseButton::PSlot slotMouseUp_;
+		SignalFloatFloat::PSlot slotMouseWheel_;
+		SignalMultiGesture::PSlot slotMultiGesture_;
+		SignalKey::PSlot slotKey_;
+		SignalUpdate::PSlot slotUpdate_;
 	};
 }

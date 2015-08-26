@@ -35,7 +35,6 @@ namespace NSG
         : signalMoved_(new SignalFloatFloat),
           signalButtonA_(new SignalBool),
           window_(nullptr),
-          engine_(nullptr),
           leftHorizontalAxis_(0),
           leftVerticalAxis_(0),
           left_(false),
@@ -43,52 +42,23 @@ namespace NSG
           forward_(false),
           backward_(false)
     {
-        if (Graphics::GetPtr())
-        {
-            auto window = Graphics::GetPtr()->GetWindow();
-            if (window)
-                SetWindow(window);
-        }
-
-        slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
+        auto graphics = Graphics::GetPtr();
+        if(graphics)
+            SetWindow(graphics->GetWindow());
+        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
         });
 
-        SetEngine(Engine::GetPtr().get());
-
-        slotEngineCreated_ = Engine::SigReady()->Connect([this](Engine * engine)
+        slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
         {
-            if (!engine_)
-                SetEngine(engine);
+            OnUpdate(deltaTime);
         });
-
     }
 
     PlayerControl::~PlayerControl()
     {
-
-    }
-
-    void PlayerControl::SetEngine(Engine* engine)
-    {
-        if (engine_ != engine)
-        {
-            engine_ = engine;
-
-            if (engine)
-            {
-                slotUpdate_ = engine->SigUpdate()->Connect([&](float deltaTime)
-                {
-                    OnUpdate(deltaTime);
-                });
-            }
-        }
-        else
-        {
-            slotUpdate_ = nullptr;
-        }
     }
 
     void PlayerControl::SetWindow(Window* window)
@@ -131,13 +101,13 @@ namespace NSG
 
                 slotJoystickDown_ = window->SigJoystickDown()->Connect([this](int joystickID, JoystickButton button)
                 {
-                    if(JoystickButton::BUTTON_A == button)
+                    if (JoystickButton::BUTTON_A == button)
                         signalButtonA_->Run(true);
                 });
 
                 slotJoystickUp_ = window->SigJoystickUp()->Connect([this](int joystickID, JoystickButton button)
                 {
-                    if(JoystickButton::BUTTON_A == button)
+                    if (JoystickButton::BUTTON_A == button)
                         signalButtonA_->Run(false);
                 });
 

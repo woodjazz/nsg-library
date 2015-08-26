@@ -41,14 +41,7 @@ namespace NSG
 		  fogDepth_(25),
 		  fogHeight_(0)
     {
-        if (Graphics::GetPtr())
-        {
-            auto window = Graphics::GetPtr()->GetWindow();
-            if (window)
-                SetWindow(window);
-        }
-
-        slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
+        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);

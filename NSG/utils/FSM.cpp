@@ -165,22 +165,7 @@ namespace NSG
 
         void Machine::Go()
         {
-            if (!Engine::GetPtr())
-            {
-                slotEngineReady_ = Engine::SigReady()->Connect([this](Engine * engine)
-                {
-                    InternalGo();
-                });
-            }
-            else
-            {
-                InternalGo();
-            }
-        }
-
-        void Machine::InternalGo()
-        {
-            slotUpdate_ = Engine::GetPtr()->SigUpdate()->Connect([this](float deltaTime)
+            slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
             {
                 Update();
             });

@@ -40,7 +40,6 @@ namespace NSG
     CameraControl::CameraControl(PCamera camera)
         : camera_(camera),
           window_(nullptr),
-          engine_(nullptr),
           originalPosition_(camera->GetGlobalPosition()),
           originalOrientation_(camera->GetGlobalOrientation())
     {
@@ -53,25 +52,15 @@ namespace NSG
         shiftKeyDown_ = false;
         //SetSphereCenter(true);
 
-        if (Graphics::GetPtr())
-        {
-            auto window = Graphics::GetPtr()->GetWindow();
-            if (window)
-                SetWindow(window);
-        }
-
-        slotWindowCreated_ = Window::SigReady()->Connect([this](Window * window)
+        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
         });
 
-        SetEngine(Engine::GetPtr().get());
-
-        slotEngineCreated_ = Engine::SigReady()->Connect([this](Engine * engine)
+        slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
         {
-            if (!engine_)
-                SetEngine(engine);
+            OnUpdate(deltaTime);
         });
     }
 
@@ -79,27 +68,6 @@ namespace NSG
     {
 
     }
-
-    void CameraControl::SetEngine(Engine* engine)
-    {
-        if (engine_ != engine)
-        {
-            engine_ = engine;
-
-            if (engine)
-            {
-                slotUpdate_ = engine->SigUpdate()->Connect([&](float deltaTime)
-                {
-                    OnUpdate(deltaTime);
-                });
-            }
-        }
-        else
-        {
-            slotUpdate_ = nullptr;
-        }
-    }
-
 
     void CameraControl::SetWindow(Window* window)
     {

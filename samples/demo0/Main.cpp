@@ -37,7 +37,8 @@ int NSG_MAIN(int argc, char* argv[])
         auto camera = scene->GetChild<Camera>("Camera", false);
         static auto followCamera = std::make_shared<FollowCamera>(camera);
         player = scene->GetChild<SceneNode>("RigMomo", true);
-        followCamera->Track(player);
+        auto armature = player->GetArmature();
+        followCamera->Track(armature);
         followCamera->SetOffset(Vector3(0, 20, -40));
         static float turn = 0;
 
@@ -69,7 +70,6 @@ int NSG_MAIN(int argc, char* argv[])
             void End() override
             {
                 time_ = 0;
-                //controller_->StopAnimation(animName_);
             }
         };
 

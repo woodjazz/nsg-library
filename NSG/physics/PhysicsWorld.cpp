@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "RigidBody.h"
 #include "Scene.h"
 #include "Camera.h"
+#include "Ray.h"
 #include "LinesMesh.h"
 #include "btBulletDynamicsCommon.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
@@ -168,6 +169,31 @@ namespace NSG
     void PhysicsWorld::SetMaxSubSteps(int steps)
     {
         maxSubSteps_ = steps;
+    }
+
+    PhysicsRaycastResult PhysicsWorld::SphereCast(const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask)
+    {
+        PhysicsRaycastResult result {VECTOR3_ZERO, VECTOR3_ZERO, 0.f, nullptr};
+
+        btSphereShape shape(radius);
+
+        btCollisionWorld::ClosestConvexResultCallback convexCallback(ToBtVector3(origin), ToBtVector3(origin +
+                maxDistance * direction));
+        convexCallback.m_collisionFilterGroup = (short)0xffff;
+        convexCallback.m_collisionFilterMask = collisionMask;
+
+        dynamicsWorld_->convexSweepTest(&shape, btTransform(btQuaternion::getIdentity(), convexCallback.m_convexFromWorld),
+                                btTransform(btQuaternion::getIdentity(), convexCallback.m_convexToWorld), convexCallback);
+
+        if (convexCallback.hasHit())
+        {
+            result.rigidBody_ = static_cast<RigidBody*>(convexCallback.m_hitCollisionObject->getUserPointer());
+            result.position_ = ToVector3(convexCallback.m_hitPointWorld);
+            result.normal_ = ToVector3(convexCallback.m_hitNormalWorld);
+            result.distance_ = glm::length(result.position_ - origin);
+        }
+        
+        return result;
     }
 
 }

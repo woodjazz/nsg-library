@@ -39,9 +39,8 @@ namespace NSG
         void RenderFrame();
         float GetDeltaTime() const { return deltaTime_; }
         static const AppConfiguration& GetAppConfiguration() { return conf_; }
-        static SignalEngine::PSignal SigReady();
-        SignalEmpty::PSignal SigBeginFrame() { return signalBeginFrame_; }
-        SignalUpdate::PSignal SigUpdate() { return signalUpdate_; }
+        static SignalEmpty::PSignal SigBeginFrame();
+        static SignalUpdate::PSignal SigUpdate();
     private:
 		Engine();
         void InitializeTicks() override;
@@ -49,8 +48,6 @@ namespace NSG
         void DoTick(float delta) override;
         void EndTicks() override;
         float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
-        SignalEmpty::PSignal signalBeginFrame_;
-        SignalUpdate::PSignal signalUpdate_;
         static AppConfiguration conf_;
 		friend class Singleton < Engine > ;
     };

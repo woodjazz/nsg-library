@@ -55,38 +55,22 @@ namespace NSG
     LoaderApp::~LoaderApp()
     {
     }
-
-    SignalEmpty::PSignal LoaderApp::Load()
-    {
-        if (!Engine::GetPtr())
-        {
-            slotEngineReady_ = Engine::SigReady()->Connect([this](Engine * engine)
-            {
-                InternalLoad();
-            });
-        }
-        else
-        {
-            InternalLoad();
-        }
-        return signalLoaded_;
-    }
-
+    
     static bool AreReady()
     {
         return Resource::AreReady() &&
-               Sound::AreReady() &&
-               Mesh::AreReady() &&
-               Material::AreReady() &&
-               Shape::AreReady() &&
-               Skeleton::AreReady() &&
-               Animation::AreReady() &&
-               LoaderXML::AreReady();
+        Sound::AreReady() &&
+        Mesh::AreReady() &&
+        Material::AreReady() &&
+        Shape::AreReady() &&
+        Skeleton::AreReady() &&
+        Animation::AreReady() &&
+        LoaderXML::AreReady();
     }
 
-    void LoaderApp::InternalLoad()
+    SignalEmpty::PSignal LoaderApp::Load()
     {
-        slotUpdate_ = Engine::GetPtr()->SigUpdate()->Connect([this](float deltaTime)
+        slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
         {
             if (!loaded_ && resource_->IsReady())
             {
@@ -121,6 +105,8 @@ namespace NSG
                 slotUpdate_ = nullptr;
             }
         });
+
+        return signalLoaded_;
     }
 
     PScene LoaderApp::GetScene(int idx) const

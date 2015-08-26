@@ -64,6 +64,7 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto window = Window::Create();
 
+#if 0
     control->slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
     {
         if (button == NSG_BUTTON_LEFT)
@@ -85,6 +86,7 @@ int NSG_MAIN(int argc, char* argv[])
         }
 
     });
+#endif
     auto sunLight = scene->GetChild<Light>("Sun", true);
 	//sunLight->SetShadowColor(Color(1, 0, 0, 1));
 	sunLight->SetBias(0.75f);

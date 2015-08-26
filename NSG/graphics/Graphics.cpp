@@ -992,7 +992,10 @@ namespace NSG
         {
             activeWindow_ = window;
             if (window)
+            {
                 SetUpViewport();
+                Graphics::SigWindow()->Run(window);
+            }
         }
     }
 
@@ -1478,5 +1481,11 @@ namespace NSG
     GLenum Graphics::GetTexelFormatType()
     {
 		return GL_RGBA;
+    }
+
+    SignalWindow::PSignal Graphics::SigWindow()
+    {
+        static SignalWindow::PSignal signalWindow(new SignalWindow);
+        return signalWindow;
     }
 }

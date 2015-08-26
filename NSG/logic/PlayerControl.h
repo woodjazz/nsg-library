@@ -34,7 +34,6 @@ namespace NSG
         PlayerControl();
         ~PlayerControl();
         void SetWindow(Window* window);
-		void SetEngine(Engine* engine);
 		SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
         SignalBool::PSignal SigButtonA() { return signalButtonA_; }
     private:
@@ -59,9 +58,7 @@ namespace NSG
 		SignalJoystickButton::PSlot slotJoystickUp_;
         SignalJoystickAxisMotion::PSlot slotJoystickAxisMotion_;
         Window* window_;
-		Engine* engine_;
-        SignalWindow::PSlot slotWindowCreated_;
-		SignalEngine::PSlot slotEngineCreated_;
+        SignalWindow::PSlot slotWindow_;
         float leftHorizontalAxis_;
         float leftVerticalAxis_;
         bool left_;
