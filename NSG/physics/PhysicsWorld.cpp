@@ -174,17 +174,13 @@ namespace NSG
     PhysicsRaycastResult PhysicsWorld::SphereCast(const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask)
     {
         PhysicsRaycastResult result {VECTOR3_ZERO, VECTOR3_ZERO, 0.f, nullptr};
-
         btSphereShape shape(radius);
-
         btCollisionWorld::ClosestConvexResultCallback convexCallback(ToBtVector3(origin), ToBtVector3(origin +
                 maxDistance * direction));
         convexCallback.m_collisionFilterGroup = (short)0xffff;
         convexCallback.m_collisionFilterMask = collisionMask;
-
-        dynamicsWorld_->convexSweepTest(&shape, btTransform(btQuaternion::getIdentity(), convexCallback.m_convexFromWorld),
-                                btTransform(btQuaternion::getIdentity(), convexCallback.m_convexToWorld), convexCallback);
-
+        dynamicsWorld_->convexSweepTest(&shape, btTransform(btQuaternion::getIdentity(), convexCallback.m_convexFromWorld), 
+            btTransform(btQuaternion::getIdentity(), convexCallback.m_convexToWorld), convexCallback);
         if (convexCallback.hasHit())
         {
             result.rigidBody_ = static_cast<RigidBody*>(convexCallback.m_hitCollisionObject->getUserPointer());
@@ -192,8 +188,24 @@ namespace NSG
             result.normal_ = ToVector3(convexCallback.m_hitNormalWorld);
             result.distance_ = glm::length(result.position_ - origin);
         }
-        
         return result;
     }
 
+    PhysicsRaycastResult PhysicsWorld::RayCast(const Vector3& origin, const Vector3& direction, float maxDistance, int collisionMask)
+    {
+        PhysicsRaycastResult result {VECTOR3_ZERO, VECTOR3_ZERO, 0.f, nullptr};
+        btCollisionWorld::ClosestRayResultCallback rayCallback(ToBtVector3(origin), ToBtVector3(origin +
+                maxDistance * direction));
+        rayCallback.m_collisionFilterGroup = (short)0xffff;
+        rayCallback.m_collisionFilterMask = collisionMask;
+        dynamicsWorld_->rayTest(rayCallback.m_rayFromWorld, rayCallback.m_rayToWorld, rayCallback);
+        if (rayCallback.hasHit())
+        {
+            result.position_ = ToVector3(rayCallback.m_hitPointWorld);
+            result.normal_ = ToVector3(rayCallback.m_hitNormalWorld);
+            result.distance_ = glm::length(result.position_ - origin);
+            result.rigidBody_ = static_cast<RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
+        }
+        return result;
+    }
 }

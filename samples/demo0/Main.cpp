@@ -38,8 +38,9 @@ int NSG_MAIN(int argc, char* argv[])
         static auto followCamera = std::make_shared<FollowCamera>(camera);
         player = scene->GetChild<SceneNode>("RigMomo", true);
         auto armature = player->GetArmature();
-        followCamera->Track(armature);
-        followCamera->SetOffset(Vector3(0, 20, -40));
+        followCamera->Track(armature, Vector3(0, 2.5f, 0));
+        followCamera->SetRadius(2);
+        followCamera->SetTargetOffset(Vector3(0, 20, -40));
         static float turn = 0;
 
         struct State : FSM::State

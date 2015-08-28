@@ -76,6 +76,8 @@ namespace NSG
         PLinesMesh GetDebugLines() const { return lines_; }
         void ClearDebugLines();
         PhysicsRaycastResult SphereCast(const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
+        PhysicsRaycastResult RayCast(const Vector3& origin, const Vector3& direction, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
+
     private:
         void Substep(float tick);
         static void SubstepCallback(btDynamicsWorld* dyn, float tick);

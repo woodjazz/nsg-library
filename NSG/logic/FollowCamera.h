@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Constants.h"
 
 namespace NSG
 {
@@ -33,14 +34,18 @@ namespace NSG
 	public:
 		FollowCamera(PCamera camera);
 		~FollowCamera();
-		void Track(PNode node);
-		void SetOffset(const Vector3& offset);
+		void Track(PSceneNode node, const Vector3& offset = VECTOR3_ZERO);
+		void SetTargetOffset(const Vector3& offset);
+		void SetRadius(float radius);
 	private:
-		Vector3 GetDisplacementToAvoidObstruction(const Vector3& dir2Target, const Vector3& hitPoint, const Vector3& hitNormal);
+		Vector3 GetCamPos() const;
+		Vector3 GetDisplacementToAvoidObstruction(const Vector3& dir2Target, const Vector3& hitNormal) const;
 		void OnUpdate(float deltaTime);
 		PCamera camera_;
-		PNode trackNode_;
+		PSceneNode trackNode_;
 		Vector3 offset_;
-		SignalUpdate::PSlot slotUpdate_;
+		Vector3 targetOffset_;
+        SignalUpdate::PSlot slotUpdate_;
+        float radius_;
 	};
 }
