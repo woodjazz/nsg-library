@@ -34,18 +34,20 @@ namespace NSG
 	public:
 		FollowCamera(PCamera camera);
 		~FollowCamera();
-		void Track(PSceneNode node, const Vector3& offset = VECTOR3_ZERO);
-		void SetTargetOffset(const Vector3& offset);
-		void SetRadius(float radius);
+		void Track(PSceneNode track, float distance);
+		void SetCameraPhysicsRadius(float radius);
+		void SetAngle(float angle); // degrees
 	private:
-		Vector3 GetCamPos() const;
 		Vector3 GetDisplacementToAvoidObstruction(const Vector3& dir2Target, const Vector3& hitNormal) const;
 		void OnUpdate(float deltaTime);
+		bool Obstruction(const Vector3& origin, const Vector3& targetPos) const;
+		Vector3 GetBestTargetPoint() const;
 		PCamera camera_;
-		PSceneNode trackNode_;
-		Vector3 offset_;
-		Vector3 targetOffset_;
+		PSceneNode track_;
+		float distance_;
         SignalUpdate::PSlot slotUpdate_;
-        float radius_;
+        float phyRadius_;
+        float angle_;
+        PPhysicsWorld world_;
 	};
 }

@@ -30,13 +30,16 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "PhysicsWorld.h"
 #include "RigidBody.h"
+#include "PointOnSphere.h"
 #include "Util.h"
 
 namespace NSG
 {
     FollowCamera::FollowCamera(PCamera camera)
         : camera_(camera),
-        radius_(1)
+          phyRadius_(1.f),
+          angle_(glm::radians(45.f)),
+          world_(camera_->GetScene()->GetPhysicsWorld())
     {
         slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
         {
@@ -49,65 +52,79 @@ namespace NSG
 
     }
 
-    Vector3 FollowCamera::GetCamPos() const
+    void FollowCamera::SetAngle(float angle)
     {
-        auto pos = camera_->GetGlobalPosition();
-        auto trackPos = trackNode_->GetGlobalPosition() + offset_;
-        auto world = camera_->GetScene()->GetPhysicsWorld();
-        auto distance = glm::length(targetOffset_);
-        PhysicsRaycastResult result = world->SphereCast(trackPos + targetOffset_, -targetOffset_, radius_, distance);
-        if (result.rigidBody_ != trackNode_->GetRigidBody().get() && result.distance_ < distance)
-        {
-            //LOGI("-2-->%s", result.rigidBody_->GetName().c_str());
-            auto direction = trackPos - pos;
-            auto distance = glm::length(direction);
-            result = world->SphereCast(pos, direction, radius_, distance);
-            if (result.rigidBody_ != trackNode_->GetRigidBody().get() && result.distance_ < distance )
-            {
-                //LOGI("-1-->%s", result.rigidBody_->GetName().c_str());
-                return pos + GetDisplacementToAvoidObstruction(direction, result.normal_);
-            }
-            return pos;
-        }
-        return trackPos + targetOffset_;
+        angle_ = glm::radians(angle);
     }
+
+    bool FollowCamera::Obstruction(const Vector3& origin, const Vector3& targetPos) const
+    {
+        auto direction = origin - targetPos;
+        auto distance = glm::length(direction);
+        PhysicsRaycastResult result = world_->SphereCast(targetPos, glm::normalize(direction), phyRadius_, distance);
+        if(result.rigidBody_ && result.rigidBody_ != track_->GetRigidBody().get() && result.distance_ < distance)
+        {
+            //LOGI("%s", result.rigidBody_->GetName().c_str());
+            return true;
+        }
+        return false;
+    }
+
+    Vector3 FollowCamera::GetBestTargetPoint() const
+    {
+        auto camPos = camera_->GetGlobalPosition();
+        auto center = track_->GetGlobalPosition();
+        auto point = center + glm::normalize(camPos - center) * distance_;
+        PointOnSphere sphere(center, point);
+        auto theta = sphere.GetTheta();
+        for(float incTheta =0.f; incTheta < 360.f; incTheta += 1.f)
+        {
+            sphere.SetAngles(theta + incTheta, angle_);
+            auto target = sphere.GetPoint();
+            if(!Obstruction(center, target))
+                return target;
+        }
+        return camPos;
+    }
+
 
     void FollowCamera::OnUpdate(float deltaTime)
     {
-        if (!trackNode_)
+        if (!track_)
             return;
         auto pos = camera_->GetGlobalPosition();
-        auto camPos = GetCamPos();
-        camera_->SetGlobalPosition(Lerp(pos, camPos, deltaTime));
-        camera_->SetGlobalLookAt(trackNode_->GetGlobalPosition());
+        auto target = GetBestTargetPoint();
+        auto center = track_->GetGlobalPosition();
+#if 1
+        auto direction = target - pos;
+        auto distance = glm::length(direction);
+        PhysicsRaycastResult result = world_->SphereCast(pos, glm::normalize(direction), phyRadius_, distance);
+        if(result.rigidBody_ && result.rigidBody_ != track_->GetRigidBody().get() && result.distance_ < distance)
+            target = pos + GetDisplacementToAvoidObstruction(direction, result.normal_);
+#endif
+        camera_->SetGlobalPosition(Lerp(pos, target, deltaTime));
+        camera_->SetGlobalLookAt(center);
 
     }
 
     Vector3 FollowCamera::GetDisplacementToAvoidObstruction(const Vector3& dir2Target, const Vector3& hitNormal) const
     {
         Vector3 reflection = glm::reflect(dir2Target, hitNormal);
-
         Vector3 parallelComponent = glm::dot(reflection, hitNormal) * hitNormal;
-
         Vector3 sliding = reflection - parallelComponent;
-
         return sliding;
     }
 
 
-    void FollowCamera::Track(PSceneNode node, const Vector3& offset)
+    void FollowCamera::Track(PSceneNode track, float distance)
     {
-        trackNode_ = node;
-        offset_ = offset;
+        track_ = track;
+        distance_ = distance;
+
     }
 
-    void FollowCamera::SetTargetOffset(const Vector3& offset)
+    void FollowCamera::SetCameraPhysicsRadius(float radius)
     {
-        targetOffset_ = offset;
-    }
-
-    void FollowCamera::SetRadius(float radius)
-    {
-        radius_ = radius;
+        phyRadius_ = radius;
     }
 }
