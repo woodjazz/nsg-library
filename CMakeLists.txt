@@ -78,10 +78,34 @@ add_subdirectory(${DEPENDENCIES_DIR}/LZ4)
 list(APPEND LIBRARIES_2_LINK LZ4)
 set_property(TARGET LZ4 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
+##################################
+# bullet
+##################################
+include_directories(${EXTERNALS_DIR}/bullet/src)
+add_subdirectory(${EXTERNALS_DIR})
+#mark_as_disable_and_internal(USE_GRAPHICAL_BENCHMARK)
+#mark_as_disable_and_internal(BUILD_BULLET3)
+#mark_as_disable_and_internal(BUILD_BULLET2_DEMOS)
+#mark_as_disable_and_internal(BUILD_EXTRAS)
+#mark_as_disable_and_internal(BUILD_UNIT_TESTS)
+#mark_as_disable_and_internal(BUILD_CPU_DEMOS)
+#mark_as_disable_and_internal(USE_GLUT)
+#add_subdirectory(${EXTERNALS_DIR}/bullet)
+list(APPEND LIBRARIES_2_LINK bulletCollision)
+list(APPEND LIBRARIES_2_LINK bulletDynamics)
+list(APPEND LIBRARIES_2_LINK bulletSoftBody)
+list(APPEND LIBRARIES_2_LINK bulletLinearMath)
+list(APPEND LIBRARIES_2_LINK bulletDynamics)
+list(APPEND LIBRARIES_2_LINK bulletCollision)
+set_property(TARGET bulletCollision PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+set_property(TARGET bulletDynamics PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+set_property(TARGET bulletSoftBody PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+set_property(TARGET bulletLinearMath PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+
 ###########################
 # externals
 ###########################
-add_subdirectory(${EXTERNALS_DIR})
+#add_subdirectory(${EXTERNALS_DIR})
 
 ###########################
 # pugixml
@@ -137,24 +161,6 @@ include_directories(${DEPENDENCIES_DIR}/StanHull)
 add_subdirectory(${DEPENDENCIES_DIR}/StanHull)
 list(APPEND LIBRARIES_2_LINK StanHull) 
 set_property(TARGET StanHull PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-
-##################################
-# bullet
-##################################
-include_directories(${EXTERNALS_DIR}/bullet/src)
-mark_as_disable_and_internal(BUILD_BULLET3)
-mark_as_disable_and_internal(BUILD_BULLET2_DEMOS)
-mark_as_disable_and_internal(BUILD_EXTRAS)
-mark_as_disable_and_internal(BUILD_UNIT_TESTS)
-add_subdirectory(${EXTERNALS_DIR}/bullet)
-list(APPEND LIBRARIES_2_LINK BulletCollision)
-list(APPEND LIBRARIES_2_LINK BulletDynamics)
-list(APPEND LIBRARIES_2_LINK BulletSoftBody)
-list(APPEND LIBRARIES_2_LINK LinearMath)
-#set_property(TARGET bulletCollision PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-#set_property(TARGET bulletDynamics PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-#set_property(TARGET bulletSoftBody PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-#set_property(TARGET bulletLinearMath PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ###########################
 # SDL

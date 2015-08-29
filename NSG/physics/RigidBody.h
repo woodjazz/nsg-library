@@ -57,7 +57,7 @@ namespace NSG
         void SetRollingFriction(float friction);
 		void SetLinearDamp(float linearDamp);
 		void SetAngularDamp(float angularDamp);
-        void Load(const pugi::xml_node& node);
+        void Load(const pugi::xml_node& node) override;
         void Save(pugi::xml_node& node);
 		void SetCollisionMask(int group, int mask);
         void Activate();
