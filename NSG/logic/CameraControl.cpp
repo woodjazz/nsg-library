@@ -52,6 +52,10 @@ namespace NSG
         shiftKeyDown_ = false;
         //SetSphereCenter(true);
 
+        auto graphics = Graphics::GetPtr();
+        if (graphics)
+            SetWindow(graphics->GetWindow());
+
         slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
@@ -206,12 +210,7 @@ namespace NSG
     {
         switch (key)
         {
-            case NSG_KEY_W:
-                {
-                    break;
-                }
-
-            case NSG_KEY_S:
+            case NSG_KEY_G:
                 {
                     camera_->EnableColorSplits(action ? true : false);
                     break;
@@ -245,26 +244,16 @@ namespace NSG
                     break;
                 }
 
-            case NSG_KEY_A:
+            case NSG_KEY_Z:
                 {
                     AutoZoom();
                     break;
                 }
 
-            case NSG_KEY_D:
+            case NSG_KEY_P:
                 {
                     Renderer::GetPtr()->EnableDebugPhysics(action != 0);
                     camera_->SetUniformsNeedUpdate();
-                    break;
-                }
-
-            case NSG_KEY_Q:
-                {
-                    break;
-                }
-
-            case NSG_KEY_E:
-                {
                     break;
                 }
 
@@ -303,7 +292,6 @@ namespace NSG
                     shiftKeyDown_ = action ? true : false;
                     break;
                 }
-
         }
 
     }

@@ -54,11 +54,14 @@ misrepresented as being the original software.
 #define     NSG_KEY_D         SDLK_d
 #define     NSG_KEY_E         SDLK_e
 #define     NSG_KEY_F         SDLK_f
+#define     NSG_KEY_G         SDLK_g
 #define     NSG_KEY_M         SDLK_m
-#define     NSG_KEY_W         SDLK_w
+#define     NSG_KEY_P         SDLK_p
+#define     NSG_KEY_Q         SDLK_q
 #define     NSG_KEY_R         SDLK_r
 #define     NSG_KEY_S         SDLK_s
-#define     NSG_KEY_Q         SDLK_q
+#define     NSG_KEY_W         SDLK_w
+#define     NSG_KEY_Z         SDLK_z
 #define     NSG_KEY_LALT      SDL_SCANCODE_LALT//SDLK_LALT
 #define     NSG_KEY_LSHIFT    SDL_SCANCODE_LSHIFT//SDLK_LSHIFT
 

@@ -114,12 +114,12 @@ namespace NSG
             colB->HandleManifold(manifold, colA);
         }
     }
-
+    #if 0
     bool PhysicsWorld::isVisible(const btVector3& aabbMin, const btVector3& aabbMax)
     {
         return scene_->GetMainCamera()->IsVisible(BoundingBox(ToVector3(aabbMin), ToVector3(aabbMax)));
     }
-
+    #endif
     void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
     {
         lines_->Add(ToVector3(from), ToVector3(to), Color(ToVector3(color), 1));
@@ -179,8 +179,48 @@ namespace NSG
                 maxDistance * direction));
         convexCallback.m_collisionFilterGroup = (short)0xffff;
         convexCallback.m_collisionFilterMask = collisionMask;
-        dynamicsWorld_->convexSweepTest(&shape, btTransform(btQuaternion::getIdentity(), convexCallback.m_convexFromWorld), 
-            btTransform(btQuaternion::getIdentity(), convexCallback.m_convexToWorld), convexCallback);
+        dynamicsWorld_->convexSweepTest(&shape, btTransform(btQuaternion::getIdentity(), convexCallback.m_convexFromWorld),
+                                        btTransform(btQuaternion::getIdentity(), convexCallback.m_convexToWorld), convexCallback);
+        if (convexCallback.hasHit())
+        {
+            result.rigidBody_ = static_cast<RigidBody*>(convexCallback.m_hitCollisionObject->getUserPointer());
+            result.position_ = ToVector3(convexCallback.m_hitPointWorld);
+            result.normal_ = ToVector3(convexCallback.m_hitNormalWorld);
+            result.distance_ = glm::length(result.position_ - origin);
+        }
+        return result;
+    }
+
+    PhysicsRaycastResult PhysicsWorld::SphereCastBut(const RigidBody* rigidBody, const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask)
+    {
+        PhysicsRaycastResult result {VECTOR3_ZERO, VECTOR3_ZERO, 0.f, nullptr};
+        btSphereShape shape(radius);
+
+        struct CallBackBut : btCollisionWorld::ClosestConvexResultCallback
+        {
+            const RigidBody* rigidBody_;
+            CallBackBut(const RigidBody* rigidBody, const btVector3& convexFromWorld, const btVector3& convexToWorld)
+                : btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
+                  rigidBody_(rigidBody)
+            {
+            }
+
+            bool needsCollision(btBroadphaseProxy* proxy0) const override
+            {
+                if(btCollisionWorld::ClosestConvexResultCallback::needsCollision(proxy0))
+                {
+                    btCollisionObject* obj = static_cast<btCollisionObject*>(proxy0->m_clientObject);
+                    return !obj || obj->getUserPointer() != rigidBody_;
+                }
+                return false;
+            }
+        };
+
+        CallBackBut convexCallback(rigidBody, ToBtVector3(origin), ToBtVector3(origin + maxDistance * direction));
+        convexCallback.m_collisionFilterGroup = (short)0xffff;
+        convexCallback.m_collisionFilterMask = collisionMask;
+        dynamicsWorld_->convexSweepTest(&shape, btTransform(btQuaternion::getIdentity(), convexCallback.m_convexFromWorld),
+                                        btTransform(btQuaternion::getIdentity(), convexCallback.m_convexToWorld), convexCallback);
         if (convexCallback.hasHit())
         {
             result.rigidBody_ = static_cast<RigidBody*>(convexCallback.m_hitCollisionObject->getUserPointer());

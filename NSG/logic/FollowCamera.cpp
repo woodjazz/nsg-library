@@ -37,13 +37,13 @@ namespace NSG
 {
     FollowCamera::FollowCamera(PCamera camera)
         : camera_(camera),
-          phyRadius_(1.f),
           angle_(glm::radians(45.f)),
           world_(camera_->GetScene()->GetPhysicsWorld())
     {
         slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
         {
-            OnUpdate(deltaTime);
+            if (track_)
+                OnUpdate(deltaTime);
         });
     }
 
@@ -57,54 +57,45 @@ namespace NSG
         angle_ = glm::radians(angle);
     }
 
-    bool FollowCamera::Obstruction(const Vector3& origin, const Vector3& targetPos) const
+    bool FollowCamera::Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const
     {
-        auto direction = origin - targetPos;
+        auto direction = targetPos - origin;
         auto distance = glm::length(direction);
-        PhysicsRaycastResult result = world_->SphereCast(targetPos, glm::normalize(direction), phyRadius_, distance);
-        if(result.rigidBody_ && result.rigidBody_ != track_->GetRigidBody().get() && result.distance_ < distance)
-        {
-            //LOGI("%s", result.rigidBody_->GetName().c_str());
-            return true;
-        }
-        return false;
+        PhysicsRaycastResult result = world_->SphereCastBut(track_.get(), origin, glm::normalize(direction), radius, distance);
+        return result.rigidBody_ != nullptr;
     }
 
-    Vector3 FollowCamera::GetBestTargetPoint() const
+    Vector3 FollowCamera::GetBestTargetPoint(const Vector3& center, float radius) const
     {
         auto camPos = camera_->GetGlobalPosition();
-        auto center = track_->GetGlobalPosition();
         auto point = center + glm::normalize(camPos - center) * distance_;
         PointOnSphere sphere(center, point);
         auto theta = sphere.GetTheta();
-        for(float incTheta =0.f; incTheta < 360.f; incTheta += 1.f)
+        for (float incTheta = 0.f; incTheta < 360.f; incTheta += 15.f)
         {
-            sphere.SetAngles(theta + incTheta, angle_);
+            sphere.SetAngles(theta + glm::radians(incTheta), angle_);
             auto target = sphere.GetPoint();
-            if(!Obstruction(center, target))
+            if (!Obstruction(center, target, radius))
                 return target;
         }
         return camPos;
     }
 
-
     void FollowCamera::OnUpdate(float deltaTime)
     {
-        if (!track_)
-            return;
         auto pos = camera_->GetGlobalPosition();
-        auto target = GetBestTargetPoint();
-        auto center = track_->GetGlobalPosition();
-#if 1
+        auto bb = track_->GetColliderBoundingBox();
+        auto center = bb.Center();
+        auto size = bb.Size();
+        auto radius = std::min(std::min(size.x, size.y), size.z) * .4f;
+        auto target = GetBestTargetPoint(center, radius);
         auto direction = target - pos;
         auto distance = glm::length(direction);
-        PhysicsRaycastResult result = world_->SphereCast(pos, glm::normalize(direction), phyRadius_, distance);
-        if(result.rigidBody_ && result.rigidBody_ != track_->GetRigidBody().get() && result.distance_ < distance)
+        PhysicsRaycastResult result = world_->SphereCastBut(track_.get(), pos, glm::normalize(direction), radius, distance);
+        if (result.rigidBody_)
             target = pos + GetDisplacementToAvoidObstruction(direction, result.normal_);
-#endif
         camera_->SetGlobalPosition(Lerp(pos, target, deltaTime));
         camera_->SetGlobalLookAt(center);
-
     }
 
     Vector3 FollowCamera::GetDisplacementToAvoidObstruction(const Vector3& dir2Target, const Vector3& hitNormal) const
@@ -115,16 +106,9 @@ namespace NSG
         return sliding;
     }
 
-
-    void FollowCamera::Track(PSceneNode track, float distance)
+    void FollowCamera::Track(PRigidBody track, float distance)
     {
         track_ = track;
         distance_ = distance;
-
-    }
-
-    void FollowCamera::SetCameraPhysicsRadius(float radius)
-    {
-        phyRadius_ = radius;
     }
 }

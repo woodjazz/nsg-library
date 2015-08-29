@@ -52,6 +52,7 @@ namespace NSG
           handleCollision_(false),
           restitution_(0),
           friction_(DEFAULT_FRICTION),
+          rollingFriction_(0),
           linearDamp_(0),
           angularDamp_(0),
           collisionGroup_((int)CollisionMask::ALL),
@@ -247,6 +248,16 @@ namespace NSG
             friction_ = friction;
             if (body_)
                 body_->setFriction(friction);
+        }
+    }
+
+    void RigidBody::SetRollingFriction(float friction)
+    {
+        if (friction != rollingFriction_)
+        {
+            rollingFriction_ = friction;
+            if (body_)
+                body_->setRollingFriction(friction);
         }
     }
 
@@ -599,6 +610,18 @@ namespace NSG
             Activate();
             body_->applyCentralImpulse(ToBtVector3(impulse));
         }
+    }
+
+    BoundingBox RigidBody::GetColliderBoundingBox() const
+    {
+        if (compoundShape_ && body_)
+        {
+            btVector3 aabbMin;
+            btVector3 aabbMax;
+            compoundShape_->getAabb(body_->getWorldTransform(), aabbMin, aabbMax);
+            return BoundingBox(ToVector3(aabbMin), ToVector3(aabbMax));
+        }
+        return BoundingBox();
     }
 
 }

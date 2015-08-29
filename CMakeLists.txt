@@ -79,12 +79,16 @@ list(APPEND LIBRARIES_2_LINK LZ4)
 set_property(TARGET LZ4 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ###########################
+# externals
+###########################
+add_subdirectory(${EXTERNALS_DIR})
+
+###########################
 # pugixml
 ###########################
 set(PUGIXML_INCLUDE_DIR ${EXTERNALS_DIR}/pugixml/src)
 include_directories(${PUGIXML_INCLUDE_DIR})
 add_definitions(-DPUGIXML_NO_EXCEPTIONS)
-add_subdirectory(${EXTERNALS_DIR})
 list(APPEND LIBRARIES_2_LINK pugixml)
 set_property(TARGET pugixml PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
@@ -137,16 +141,20 @@ set_property(TARGET StanHull PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 ##################################
 # bullet
 ##################################
-include_directories(${DEPENDENCIES_DIR}/bullet/src)
-add_subdirectory(${DEPENDENCIES_DIR}/bullet)
-list(APPEND LIBRARIES_2_LINK bulletCollision)
-list(APPEND LIBRARIES_2_LINK bulletDynamics)
-list(APPEND LIBRARIES_2_LINK bulletSoftBody)
-list(APPEND LIBRARIES_2_LINK bulletLinearMath)
-set_property(TARGET bulletCollision PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-set_property(TARGET bulletDynamics PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-set_property(TARGET bulletSoftBody PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-set_property(TARGET bulletLinearMath PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+include_directories(${EXTERNALS_DIR}/bullet/src)
+mark_as_disable_and_internal(BUILD_BULLET3)
+mark_as_disable_and_internal(BUILD_BULLET2_DEMOS)
+mark_as_disable_and_internal(BUILD_EXTRAS)
+mark_as_disable_and_internal(BUILD_UNIT_TESTS)
+add_subdirectory(${EXTERNALS_DIR}/bullet)
+list(APPEND LIBRARIES_2_LINK BulletCollision)
+list(APPEND LIBRARIES_2_LINK BulletDynamics)
+list(APPEND LIBRARIES_2_LINK BulletSoftBody)
+list(APPEND LIBRARIES_2_LINK LinearMath)
+#set_property(TARGET bulletCollision PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+#set_property(TARGET bulletDynamics PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+#set_property(TARGET bulletSoftBody PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+#set_property(TARGET bulletLinearMath PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ###########################
 # SDL

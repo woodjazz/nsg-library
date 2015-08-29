@@ -54,6 +54,7 @@ namespace NSG
         void SyncWithNode();
 		void SetRestitution(float restitution);
 		void SetFriction(float friction);
+        void SetRollingFriction(float friction);
 		void SetLinearDamp(float linearDamp);
 		void SetAngularDamp(float angularDamp);
         void Load(const pugi::xml_node& node);
@@ -67,10 +68,13 @@ namespace NSG
         void RemoveFromWorld();
         void SetTrigger(bool enable);
         void SetLinearFactor(const Vector3& factor);
+        const Vector3& GetLinearFactor() const { return linearFactor_; }
         void SetAngularFactor(const Vector3& factor);
+        const Vector3& GetAngularFactor() const { return angularFactor_; }
         void ApplyForce(const Vector3& force);
         void ApplyImpulse(const Vector3& impulse);
         PSceneNode GetSceneNode() const { return sceneNode_.lock(); }
+        BoundingBox GetColliderBoundingBox() const;
     private:
 		void ReDoShape(const Vector3& newScale);
         bool IsValid() override;
@@ -99,6 +103,7 @@ namespace NSG
         bool handleCollision_;
 		float restitution_;
 		float friction_;
+        float rollingFriction_;
 		float linearDamp_;
 		float angularDamp_;
 		int collisionGroup_;

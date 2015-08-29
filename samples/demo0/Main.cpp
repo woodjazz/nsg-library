@@ -35,10 +35,10 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto scene = loader.GetScene(0);
         auto camera = scene->GetChild<Camera>("Camera", false);
+        static auto control = std::make_shared<CameraControl>(camera);
         static auto followCamera = std::make_shared<FollowCamera>(camera);
         player = scene->GetChild<SceneNode>("RigMomo", true);
-        auto armature = player->GetArmature();
-        followCamera->Track(armature, 40);
+        followCamera->Track(player->GetRigidBody(), 40);
         static float turn = 0;
 
         struct State : FSM::State
@@ -60,7 +60,7 @@ int NSG_MAIN(int argc, char* argv[])
             void Begin() override
             {
                 //controller_->SetSpeed(animName_, 0.1f);
-                controller_->CrossFade(animName_, loop_, 0.4f);
+                controller_->CrossFade(animName_, loop_, 0.1f);
             }
             void Stay() override
             {
@@ -77,10 +77,6 @@ int NSG_MAIN(int argc, char* argv[])
             Idle(PScene scene) : State("Momo_IdleNasty", scene)
             {
             }
-            void Begin() override
-            {
-                State::Begin();
-            }
             void Stay() override
             {
                 State::Stay();
@@ -93,10 +89,6 @@ int NSG_MAIN(int argc, char* argv[])
         {
             Walk(PScene scene) : State("Momo_Walk", scene)
             {
-            }
-            void Begin() override
-            {
-                State::Begin();
             }
             void Stay() override
             {
@@ -112,10 +104,6 @@ int NSG_MAIN(int argc, char* argv[])
             WalkBack(PScene scene) : State("Momo_WalkBack", scene)
             {
             }
-            void Begin() override
-            {
-                State::Begin();
-            }
             void Stay() override
             {
                 State::Stay();
@@ -129,10 +117,6 @@ int NSG_MAIN(int argc, char* argv[])
         {
             Run(PScene scene) : State("Momo_Run", scene)
             {
-            }
-            void Begin() override
-            {
-                State::Begin();
             }
             void Stay() override
             {
@@ -148,10 +132,6 @@ int NSG_MAIN(int argc, char* argv[])
             TurnL(PScene scene) : State("Momo_Turn.R", scene)
             {
             }
-            void Begin() override
-            {
-                State::Begin();
-            }
             void Stay() override
             {
                 State::Stay();
@@ -164,10 +144,6 @@ int NSG_MAIN(int argc, char* argv[])
         {
             TurnR(PScene scene) : State("Momo_Turn.L", scene)
             {
-            }
-            void Begin() override
-            {
-                State::Begin();
             }
             void Stay() override
             {
@@ -189,10 +165,6 @@ int NSG_MAIN(int argc, char* argv[])
                 State::Begin();
                 rigidBody_->ApplyForce(VECTOR3_UP * 2000.f);
                 buttonA = false;
-            }
-            void End() override
-            {
-                State::End();
             }
         } static jump(scene);
 
@@ -231,10 +203,6 @@ int NSG_MAIN(int argc, char* argv[])
             {
                 State::Begin();
                 rigidBody_->SetLinearVelocity(rigidBody_->GetLinearVelocity() - VECTOR3_UP);
-            }
-            void End() override
-            {
-                State::End();
             }
         } static fall(scene);
 
@@ -283,6 +251,7 @@ int NSG_MAIN(int argc, char* argv[])
         {
             buttonA = pressed;
         });
+
     });
 
     auto scene = std::make_shared<Scene>();

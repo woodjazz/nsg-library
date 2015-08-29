@@ -64,7 +64,7 @@ namespace NSG
         int GetMaxSubSteps() const { return maxSubSteps_; }
         ///////////////////////////////////////////////////////////////////////////////////////
         // Bullet btIDebugDraw
-        bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
+        //bool isVisible(const btVector3& aabbMin, const btVector3& aabbMax) override;
         void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
         void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color);
         void reportErrorWarning(const char* warningString) override;
@@ -76,6 +76,7 @@ namespace NSG
         PLinesMesh GetDebugLines() const { return lines_; }
         void ClearDebugLines();
         PhysicsRaycastResult SphereCast(const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
+        PhysicsRaycastResult SphereCastBut(const RigidBody* rigidBody, const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
         PhysicsRaycastResult RayCast(const Vector3& origin, const Vector3& direction, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
 
     private:
