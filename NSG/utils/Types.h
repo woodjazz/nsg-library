@@ -284,7 +284,8 @@ namespace NSG
         NONE = 0,
         POSITION = 1 << 0,
         ROTATION = 1 << 1,
-        SCALE = 1 << 2
+        SCALE = 1 << 2,
+        ALL = POSITION | ROTATION | SCALE
     };
 
     typedef FlagSet<AnimationChannel> AnimationChannelMask;

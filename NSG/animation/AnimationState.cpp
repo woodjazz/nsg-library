@@ -140,6 +140,11 @@ namespace NSG
             if (timeInterval < 0.0f)
                 timeInterval += animation_->GetLength();
             auto t = timeInterval > 0 ? (timePosition_ - keyFrame->time_) / timeInterval : 1;
+            
+            if(bone->GetName() == "forearm.L")
+            {
+                int a=0;
+            }
 
             // Interpolation, blend between old transform & animation
             if (track.channelMask_ & (int)AnimationChannel::POSITION)

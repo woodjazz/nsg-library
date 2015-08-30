@@ -35,7 +35,7 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto scene = loader.GetScene(0);
         auto camera = scene->GetChild<Camera>("Camera", false);
-        static auto control = std::make_shared<CameraControl>(camera);
+        //static auto control = std::make_shared<CameraControl>(camera);
         static auto followCamera = std::make_shared<FollowCamera>(camera);
         player = scene->GetChild<SceneNode>("RigMomo", true);
         followCamera->Track(player->GetRigidBody(), 40);
@@ -60,7 +60,7 @@ int NSG_MAIN(int argc, char* argv[])
             void Begin() override
             {
                 //controller_->SetSpeed(animName_, 0.1f);
-                controller_->CrossFade(animName_, loop_, 0.1f);
+                controller_->CrossFade(animName_, loop_, 0.5f);
             }
             void Stay() override
             {

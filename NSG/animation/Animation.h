@@ -36,6 +36,7 @@ namespace NSG
         Vector3 position_;
         Quaternion rotation_;
         Vector3 scale_;
+        AnimationChannelMask mask_;
         AnimationKeyFrame();
         AnimationKeyFrame(float time, Node* node);
         void Save(pugi::xml_node& node);
@@ -53,6 +54,10 @@ namespace NSG
         void Save(pugi::xml_node& node);
         void Load(const pugi::xml_node& node);
         void ResolveFor(PBone bone);
+        void ResolveKeyFrameGaps();
+        void ResolvePositionGap(Vector3& position, int frame);
+        void ResolveRotationGap(Quaternion& rotation, int frame);
+        void ResolveScaleGap(Vector3& scale, int frame);
     };
 
 	class Animation : public Object, public std::enable_shared_from_this<Animation>, public StrongFactory<std::string, Animation>

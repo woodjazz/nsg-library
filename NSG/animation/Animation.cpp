@@ -39,7 +39,8 @@ namespace NSG
 
     AnimationKeyFrame::AnimationKeyFrame()
         : time_(0),
-          scale_(VECTOR3_ONE)
+          scale_(VECTOR3_ONE),
+          mask_((int)AnimationChannel::NONE)
     {
     }
 
@@ -47,7 +48,8 @@ namespace NSG
         : time_(time),
           position_(node->GetPosition()),
           rotation_(node->GetOrientation()),
-          scale_(node->GetScale())
+          scale_(node->GetScale()),
+          mask_((int)AnimationChannel::ALL)
     {
     }
 
@@ -70,15 +72,24 @@ namespace NSG
         position_ = VECTOR3_ZERO;
         auto posAtt = node.attribute("position");
         if(posAtt)
+        {
             position_ = ToVertex3(posAtt.as_string());
+            mask_ |= (int)AnimationChannel::POSITION;
+        }
         rotation_ = QUATERNION_IDENTITY;
         auto rotAtt = node.attribute("rotation");
         if(rotAtt)
+        {
             rotation_ = ToQuaternion(rotAtt.as_string());
+            mask_ |= (int)AnimationChannel::ROTATION;
+        }
         scale_ = VECTOR3_ONE;
         auto scaAtt = node.attribute("scale");
         if(scaAtt)
+        {
             scale_ = ToVertex3(scaAtt.as_string());
+            mask_ |= (int)AnimationChannel::SCALE;
+        }
     }
 
     void AnimationKeyFrame::SetPose(PBone bone)
@@ -132,6 +143,76 @@ namespace NSG
                 keyFrame.Load(child);
                 keyFrames_.push_back(keyFrame);
                 child = child.next_sibling("KeyFrame");
+            }
+            ResolveKeyFrameGaps();
+        }
+    }
+
+    void AnimationTrack::ResolveKeyFrameGaps()
+    {
+        auto n = keyFrames_.size();
+        if(n > 1)
+        {
+            for(int i=0; i<n; i++)
+            {
+                auto& current = keyFrames_[i];
+                if(!(current.mask_ & (int)AnimationChannel::POSITION))
+                    ResolvePositionGap(current.position_, i+1);
+                if(!(current.mask_ & (int)AnimationChannel::ROTATION))
+                    ResolveRotationGap(current.rotation_, i+1);
+                if(!(current.mask_ & (int)AnimationChannel::SCALE))
+                    ResolveScaleGap(current.scale_, i+1);
+            }
+        }
+    }
+
+    void AnimationTrack::ResolvePositionGap(Vector3& position, int frame)
+    {
+        auto n = keyFrames_.size();
+        if(n > frame)
+        {
+            for(int i=frame; i<n; i++)
+            {
+                auto& current = keyFrames_[i];
+                if(current.mask_ & (int)AnimationChannel::POSITION)
+                {
+                    position = current.position_;
+                    break;
+                }
+            }
+        }
+    }
+
+    void AnimationTrack::ResolveRotationGap(Quaternion& rotation, int frame)
+    {
+        auto n = keyFrames_.size();
+        if(n > frame)
+        {
+            for(int i=frame; i<n; i++)
+            {
+                auto& current = keyFrames_[i];
+                if(current.mask_ & (int)AnimationChannel::ROTATION)
+                {
+                    rotation = current.rotation_;
+                    break;
+                }
+            }
+        }
+    }
+
+    void AnimationTrack::ResolveScaleGap(Vector3& scale, int frame)
+    {
+        auto n = keyFrames_.size();
+        if(n > frame)
+        {
+            for(int i=frame; i<n; i++)
+            {
+                auto& current = keyFrames_[i];
+                if(current.mask_ & (int)AnimationChannel::SCALE)
+                {
+                    scale = current.scale_;
+                    break;
+                }
             }
         }
     }

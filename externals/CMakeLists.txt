@@ -24,7 +24,6 @@ file(GLOB_RECURSE hdr "bullet/src/BulletDynamics/*.h")
 setup_library ()
 target_link_libraries(${PROJECT_NAME} bulletCollision)
 
-
 PROJECT(bulletSoftBody)
 file(GLOB_RECURSE src "bullet/src/BulletSoftBody/*.cpp")
 file(GLOB_RECURSE hdr "bullet/src/BulletSoftBody/*.h")

@@ -41,7 +41,7 @@ int NSG_MAIN(int argc, char* argv[])
         {
             auto armature = scene->GetChild<SceneNode>("RigMomo", true);
             auto controller = armature->GetOrCreateAnimationController();
-            controller->Play("Momo_Walk", true);
+            controller->Play("Momo_IdleNasty", true);
             control->Track(armature);
         }
         {
