@@ -42,13 +42,13 @@ namespace NSG
         static SignalEmpty::PSignal SigBeginFrame();
         static SignalUpdate::PSignal SigUpdate();
     private:
-		Engine();
+        Engine();
         void InitializeTicks() override;
         void BeginTicks() override;
         void DoTick(float delta) override;
         void EndTicks() override;
         float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
         static AppConfiguration conf_;
-		friend class Singleton < Engine > ;
+        friend class Singleton <Engine>;
     };
 }

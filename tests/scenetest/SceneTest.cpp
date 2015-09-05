@@ -64,7 +64,7 @@ static void Test01()
     scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
 
-	camera->SetGlobalLookAt(Vector3(0, 0, 1));
+	camera->SetGlobalLookAtPosition(Vector3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
     CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
 
@@ -529,7 +529,7 @@ static void Test09()
 	CHECK_CONDITION(batches[1]->GetMesh() == boxMesh.get(), __FILE__, __LINE__);
 	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial(), __FILE__, __LINE__);
 
-    camera->SetGlobalLookAt(Vector3(0, 0, 1));
+    camera->SetGlobalLookAtPosition(Vector3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Spheres, __FILE__, __LINE__);
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
@@ -549,7 +549,7 @@ static void Test0A()
 	auto scene = std::make_shared<Scene>();
 	auto camera = scene->CreateChild<Camera>();
 	camera->SetFarClip(200);
-	camera->SetGlobalLookAt(Vector3(0, 0, 1));
+	camera->SetGlobalLookAtPosition(Vector3(0, 0, 1));
 
 	auto sphereMesh(Mesh::Create<SphereMesh>());
 	auto boxMesh(Mesh::Create<BoxMesh>());

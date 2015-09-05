@@ -54,12 +54,12 @@ int NSG_MAIN(int argc, char* argv[])
     scene = std::make_shared<Scene>("scene");
     auto light = scene->CreateChild<Light>();
     light->SetType(LightType::DIRECTIONAL);
-	light->SetGlobalLookAt(Vector3(-10, -1, 0));
+	light->SetGlobalLookAtPosition(Vector3(-10, -1, 0));
 	light->SetShadowColor(Color(COLOR_GREEN, 1.0));
 	light->SetBias(0.0f);
     auto camera = scene->CreateChild<Camera>();
 	camera->SetPosition(Vector3(0, 20, 20));
-	camera->SetLocalLookAt(Vector3(0, -1, -1));
+	camera->SetLocalLookAtPosition(Vector3(0, -1, -1));
 	auto control = std::make_shared<CameraControl>(camera);
 
 	PSceneNode floor;

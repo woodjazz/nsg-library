@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "InstanceData.h"
 #include "ModelMesh.h"
+#include "StringConverter.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -64,7 +65,7 @@ namespace NSG
 
     bool Mesh::IsValid()
     {
-        return Graphics::GetPtr() && !vertexsData_.empty();
+		return Graphics::GetPtr() && Graphics::GetPtr()->GetWindow() && !vertexsData_.empty();
     }
 
     void Mesh::AllocateResources()
@@ -116,7 +117,7 @@ namespace NSG
         for (auto& vertex : vertexsData_)
         {
             bb_.Merge(vertex.position_);
-            boundingSphereRadius_ = std::max(boundingSphereRadius_, glm::length(vertex.position_));
+            boundingSphereRadius_ = std::max(boundingSphereRadius_, Length(vertex.position_));
         }
     }
 
@@ -282,7 +283,7 @@ namespace NSG
 
         for (unsigned int i = 0 ; i < vertexsData_.size() ; i++)
         {
-            glm::normalize(vertexsData_[i].tangent_);
+            Normalize(vertexsData_[i].tangent_);
         }
     }
 

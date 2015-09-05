@@ -64,6 +64,7 @@ namespace NSG
         void SetNumberBones(size_t nBones);
         void SetNodeVariables();
         static void Clear();
+		static PProgram GetOrCreate(const std::string& defines);
 		static PProgram GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode);
     private:
         bool IsValid() override;

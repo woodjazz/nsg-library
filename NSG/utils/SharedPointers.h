@@ -39,12 +39,16 @@ namespace NSG
     class RigidBody;
     typedef std::shared_ptr<RigidBody> PRigidBody;
 
+    class Character;
+    typedef std::shared_ptr<Character> PCharacter;
+
     class Shape;
     typedef std::shared_ptr<Shape> PShape;
     typedef std::weak_ptr<Shape> PWeakShape;
 
     class PhysicsWorld;
     typedef std::shared_ptr<PhysicsWorld> PPhysicsWorld;
+    typedef std::weak_ptr<PhysicsWorld> PWeakPhysicsWorld;
 
     class Skeleton;
     typedef std::shared_ptr<Skeleton> PSkeleton;
@@ -327,5 +331,9 @@ namespace NSG
 
     class GUI;
     typedef std::shared_ptr<GUI> PGUI;
+
+    class Font;
+    typedef std::shared_ptr<Font> PFont;
+    typedef std::weak_ptr<Font> PWeakFont;
 
 }

@@ -87,7 +87,7 @@ static void Test03()
 		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION, __FILE__, __LINE__);
 
         Vector3 lookAt = -WORLD_X_COORD;
-        node.SetGlobalLookAt(lookAt);
+        node.SetGlobalLookAtPosition(lookAt);
 
         CHECK_CONDITION(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
@@ -105,7 +105,7 @@ static void Test03()
 		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION, __FILE__, __LINE__);
 
         Vector3 lookAt = -WORLD_Z_COORD;
-        node.SetGlobalLookAt(lookAt);
+        node.SetGlobalLookAtPosition(lookAt);
 
         CHECK_CONDITION(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
@@ -124,7 +124,7 @@ static void Test03()
 
         Vector3 lookAt = -WORLD_Z_COORD;
         node.SetPosition(WORLD_Z_COORD);
-        node.SetGlobalLookAt(lookAt);
+        node.SetGlobalLookAtPosition(lookAt);
 
         CHECK_CONDITION(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
@@ -143,7 +143,7 @@ static void Test03()
 
         Vector3 lookAt = WORLD_Z_COORD;
         node.SetPosition(-WORLD_Z_COORD);
-        node.SetGlobalLookAt(lookAt);
+        node.SetGlobalLookAtPosition(lookAt);
 
         CHECK_CONDITION(glm::distance(node.GetLookAtDirection(), lookAt) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
 
@@ -162,7 +162,7 @@ static void Test03()
 
         Vector3 lookAt = WORLD_Z_COORD;
         node.SetPosition(WORLD_X_COORD + WORLD_Y_COORD + WORLD_Z_COORD);
-        node.SetGlobalLookAt(lookAt);
+        node.SetGlobalLookAtPosition(lookAt);
 
         Vector3 expectedLookAt = Vector3(-0.7071068f, -0.7071068f, 0);
         Vector3 currentLookAt = node.GetLookAtDirection();
@@ -176,15 +176,15 @@ static void Test03()
         Vector3 expectedVz = -expectedLookAt;
         Vector3 expectedVx = glm::cross(expectedVy, expectedVz);
 
-        CHECK_CONDITION(glm::distance(vx, expectedVx) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-        CHECK_CONDITION(glm::distance(vy, expectedVy) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
-        CHECK_CONDITION(glm::distance(vz, expectedVz) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
+        CHECK_CONDITION(glm::distance(vx, expectedVx) < 0.00001f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vy, expectedVy) < 0.00001f, __FILE__, __LINE__);
+		CHECK_CONDITION(glm::distance(vz, expectedVz) < 0.00001f, __FILE__, __LINE__);
     }
 
     {
         Node node;
         node.SetGlobalPosition(Vector3(0, 5, 5));
-        node.SetGlobalLookAt(VECTOR3_ZERO);
+        node.SetGlobalLookAtPosition(VECTOR3_ZERO);
         Vector3 dir = node.GetLookAtDirection();
         Vector3 expectedDir(glm::normalize(Vector3(0, -1, -1)));
         CHECK_CONDITION(glm::distance(dir, expectedDir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
@@ -193,7 +193,7 @@ static void Test03()
     {
         Node node;
         node.SetGlobalPosition(Vector3(5, 5, 0));
-        node.SetGlobalLookAt(VECTOR3_ZERO);
+        node.SetGlobalLookAtPosition(VECTOR3_ZERO);
         Vector3 dir = node.GetLookAtDirection();
         Vector3 expectedDir(glm::normalize(Vector3(-1, -1, 0)));
         CHECK_CONDITION(glm::distance(dir, expectedDir) < 2 * glm::epsilon<float>(), __FILE__, __LINE__);
@@ -205,14 +205,14 @@ static void Test03()
         PNode node0 = std::make_shared<Node>("node0");
         node0->SetParent(parent);
         node0->SetGlobalPosition(Vector3(0, 5, 5));
-        node0->SetGlobalLookAt(VECTOR3_ZERO);
+        node0->SetGlobalLookAtPosition(VECTOR3_ZERO);
         Vector3 dir0 = node0->GetLookAtDirection();
         Quaternion q0 = node0->GetOrientation();
 
         PNode node1 = std::make_shared<Node>("node1");
         node1->SetParent(parent);
         node1->SetGlobalPosition(Vector3(5, 5, 0));
-        node1->SetGlobalLookAt(VECTOR3_ZERO);
+        node1->SetGlobalLookAtPosition(VECTOR3_ZERO);
         Vector3 dir1 = node1->GetLookAtDirection();
         Quaternion q1 = node1->GetOrientation();
 
@@ -402,12 +402,12 @@ static void Test09()
     Node dirNegativeY;
     Node dirPositiveZ;
     Node dirNegativeZ;
-    dirPositiveX.SetLocalLookAt(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
-    dirNegativeX.SetLocalLookAt(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
-    dirPositiveY.SetLocalLookAt(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
-    dirNegativeY.SetLocalLookAt(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
-    dirPositiveZ.SetLocalLookAt(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
-    dirNegativeZ.SetLocalLookAt(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
+    dirPositiveX.SetLocalLookAtPosition(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
+    dirNegativeX.SetLocalLookAtPosition(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
+    dirPositiveY.SetLocalLookAtPosition(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
+    dirNegativeY.SetLocalLookAtPosition(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
+    dirPositiveZ.SetLocalLookAtPosition(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
+    dirNegativeZ.SetLocalLookAtPosition(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
 
     CHECK_CONDITION(glm::distance(Vector3(1.0f, 0.0f, 0.0f), dirPositiveX.GetLookAtDirection()) < 0.001f, __FILE__, __LINE__);
     CHECK_CONDITION(glm::distance(Vector3(0.0f, -1.0f, 0.0f), dirPositiveX.GetUpDirection()) < 0.001f, __FILE__, __LINE__);

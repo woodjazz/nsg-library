@@ -43,7 +43,7 @@ int NSG_MAIN(int argc, char* argv[])
         camControlPoints.push_back(Vertex3(10.0f, 0.0f, 0.0f));
         camControlPoints.push_back(Vertex3(0.0f, 0.0f, -10.0f));
         camera->SetPosition(Vertex3(0, 0, 10));
-        camera->SetGlobalLookAt(Vertex3(0));
+        camera->SetGlobalLookAtPosition(Vertex3(0));
     }
 
     auto earth = scene->CreateChild<SceneNode>();
@@ -96,7 +96,7 @@ int NSG_MAIN(int argc, char* argv[])
                                    delta1);
 
             camera->SetPosition(position);
-            camera->SetGlobalLookAt(Vertex3(0));
+            camera->SetGlobalLookAtPosition(Vertex3(0));
             delta1 += deltaTime * 0.1f;
             if (delta1 > 1)
             {

@@ -64,15 +64,15 @@ int NSG_MAIN(int argc, char* argv[])
 	light->SetBias(0.0f);
     auto camera = scene->CreateChild<Camera>();
 #ifdef TEST1
-	light->SetGlobalLookAt(Vector3(-10, -1, 0));
+	light->SetGlobalLookAtPosition(Vector3(-10, -1, 0));
 	camera->SetPosition(Vector3(-4.8707f, 5.3978f, 6.8656f));
-	//camera->SetLocalLookAt(Vector3(0, 0, -10));
+	//camera->SetLocalLookAtPosition(Vector3(0, 0, -10));
 	camera->SetOrientation(Quaternion(0.9143f, -0.2679f, -0.2913f, -0.0854f));
 	//camera->SetShadowSplitLogFactor(1.f);
 #else
-	light->SetGlobalLookAt(Vector3(0, -5, -10));
+	light->SetGlobalLookAtPosition(Vector3(0, -5, -10));
 	camera->SetPosition(Vector3(0, 20, 20));
-	camera->SetLocalLookAt(Vector3(0, -1, -1));
+	camera->SetLocalLookAtPosition(Vector3(0, -1, -1));
 #endif
 	camera->SetFarClip(100);
     auto control = std::make_shared<CameraControl>(camera);

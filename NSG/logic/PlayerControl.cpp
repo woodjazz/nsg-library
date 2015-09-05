@@ -171,8 +171,8 @@ namespace NSG
         }
         else
         {
-            leftHorizontalAxis_ = glm::clamp(leftHorizontalAxis_, -1.f, 1.f);
-            leftVerticalAxis_ = glm::clamp(leftVerticalAxis_, -1.f, 1.f);
+            leftHorizontalAxis_ = Clamp(leftHorizontalAxis_, -1.f, 1.f);
+            leftVerticalAxis_ = Clamp(leftVerticalAxis_, -1.f, 1.f);
             if (leftHorizontalAxis_ || leftVerticalAxis_)
                 signalMoved_->Run(leftHorizontalAxis_, leftVerticalAxis_);
             else

@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Util.h"
 #include "Constants.h"
+#include "StringConverter.h"
 #include "Scene.h"
 #include "Keys.h"
 #include "Check.h"
@@ -50,6 +51,7 @@ misrepresented as being the original software.
 #include "TextMesh.h"
 #include "Texture2D.h"
 #include "Light.h"
+#include "ShadowCamera.h"
 #include "Graphics.h"
 #include "Material.h"
 #include "Filter.h"
@@ -76,6 +78,7 @@ misrepresented as being the original software.
 #include "Path.h"
 #include "Skeleton.h"
 #include "RigidBody.h"
+#include "Character.h"
 #include "Shape.h"
 #include "PhysicsWorld.h"
 #include "Window.h"
@@ -92,5 +95,6 @@ misrepresented as being the original software.
 #include "GUI.h"
 #include "LoaderXML.h"
 #include "LoaderApp.h"
+#include "ICollision.h"
 
 

@@ -42,10 +42,10 @@ misrepresented as being the original software.
 #define     NSG_KEY_BACKSPACE   SDLK_BACKSPACE
 #define     NSG_KEY_ENTER       SDLK_RETURN
 #define     NSG_KEY_DELETE      SDLK_DELETE
-#define     NSG_KEY_RIGHT       SDLK_RIGHT
-#define     NSG_KEY_LEFT        SDLK_LEFT
-#define     NSG_KEY_UP        	SDLK_UP
-#define     NSG_KEY_DOWN        SDLK_DOWN
+#define     NSG_KEY_RIGHT       SDL_SCANCODE_RIGHT
+#define     NSG_KEY_LEFT        SDL_SCANCODE_LEFT
+#define     NSG_KEY_UP        	SDL_SCANCODE_UP
+#define     NSG_KEY_DOWN        SDL_SCANCODE_DOWN
 #define     NSG_KEY_HOME        SDLK_HOME
 #define     NSG_KEY_END         SDLK_END
 

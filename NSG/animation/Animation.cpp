@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Constants.h"
 #include "Util.h"
+#include "StringConverter.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <sstream>

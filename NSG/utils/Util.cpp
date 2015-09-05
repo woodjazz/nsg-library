@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Plane.h"
 #include "Constants.h"
 #include "Path.h"
+#include "StringConverter.h"
 #include "pugixml.hpp"
 #include "lz4.h"
 #include <algorithm>
@@ -79,12 +80,36 @@ namespace NSG
         return isnan(q.w) || isnan(q.x) || isnan(q.y) || isnan(q.z);
     }
 
+	bool IsNaN(const Vector3& v)
+	{
+		return isnan(v.x) || isnan(v.y) || isnan(v.z);
+	}
+
     Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection)
     {
-        Vector3 forward = glm::normalize(direction);
-        Vector3 v = glm::normalize(glm::cross(forward, upDirection));
-        Vector3 up = glm::cross(v, forward);
-        Vector3 right = glm::cross(up, forward);
+        Vector3 forward = Normalize(direction);
+        Vector3 v = Normalize(Cross(forward, upDirection));
+		if (IsNaN(v))
+		{
+			auto up1 = upDirection;
+			std::swap(up1.x, up1.y);
+			v = Normalize(Cross(forward, up1));
+			if (IsNaN(v))
+			{
+				up1 = upDirection;
+				std::swap(up1.x, up1.z);
+				v = Normalize(Cross(forward, up1));
+				if (IsNaN(v))
+				{
+					up1 = upDirection;
+					std::swap(up1.y, up1.z);
+					v = Normalize(Cross(forward, up1));
+					CHECK_ASSERT(!IsNaN(v), __FILE__, __LINE__);
+				}
+			}
+		}
+        Vector3 up = Cross(v, forward);
+        Vector3 right = Cross(up, forward);
 
         Quaternion ret(Matrix3(right, up, forward));
         CHECK_ASSERT(!IsNaN(ret), __FILE__, __LINE__);
@@ -116,11 +141,11 @@ namespace NSG
     {
         #if 1
 
-        Vertex3 scaling(glm::length(m[0]), glm::length(m[1]), glm::length(m[2]));
+        Vertex3 scaling(Length(m[0]), Length(m[1]), Length(m[2]));
         Matrix3 tmp1(glm::scale(glm::mat4(1.0f), Vertex3(1) / scaling) * m);
         q = glm::quat_cast(tmp1);
         position = Vertex3(m[3]);
-        Matrix3 tmp2(glm::inverse(tmp1) * Matrix3(m));
+        Matrix3 tmp2(Inverse(tmp1) * Matrix3(m));
         scale = Vertex3(tmp2[0].x, tmp2[1].y, tmp2[2].z);
         if (IsZeroLength(scale))
             scale = Vector3(1);// prevent zero scale
@@ -136,14 +161,14 @@ namespace NSG
 
         // extract rotation
         Matrix3 matr(m);
-        glm::orthonormalize(matr);
+        Orthonormalize(matr);
         Quaternion rot(glm::quat_cast(m));
-        if (glm::length2(rot) == 0.0)
+        if (Length2(rot) == 0.0)
             rot = QUATERNION_IDENTITY;
         q = rot;
 
         // extract scale
-        Matrix3 m1 = glm::inverse(matr) * Matrix3(m);
+        Matrix3 m1 = Inverse(matr) * Matrix3(m);
         scale = Vertex3(m1[0][0], m1[1][1], m1[2][2]);
 
         #endif
@@ -153,6 +178,11 @@ namespace NSG
     {
         return glm::translate(glm::mat4(), position) * glm::mat4_cast(q) * glm::scale(glm::mat4(1.0f), scale);
     }
+
+	Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q)
+	{
+		return glm::translate(glm::mat4(), position) * glm::mat4_cast(q);
+	}
 
     std::string GetUniqueName(const std::string& name)
     {
@@ -186,10 +216,18 @@ namespace NSG
         return (!(value & (value - 1)) && value);
     }
 
+	unsigned NextPowerOfTwo(unsigned value)
+	{
+		unsigned ret = 1;
+		while (ret < value && ret < 0x80000000)
+			ret <<= 1;
+		return ret;
+	}
+
     bool IsZeroLength(const Vector3& obj)
     {
-        auto length = glm::length(obj);
-        return length <= glm::epsilon<float>();
+        auto length = Length(obj);
+        return length <= EPSILON;
     }
 
     GLushort Transform(GLubyte selected[4])
@@ -248,12 +286,184 @@ namespace NSG
 
     bool IsScaleUniform(const Vector3& scale)
     {
-        return glm::abs(scale.x - scale.y) < PRECISION && glm::abs(scale.x - scale.z) < PRECISION;
+        return Abs(scale.x - scale.y) < PRECISION && Abs(scale.x - scale.z) < PRECISION;
     }
 
+    Vector3 GetSlidingVector(const Vector3& dir2Target, const Vector3& hitNormal)
+    {
+        Vector3 reflection = glm::reflect(dir2Target, hitNormal);
+        Vector3 parallelComponent = Dot(reflection, hitNormal) * hitNormal;
+        Vector3 sliding = reflection - parallelComponent;
+        return sliding;
+    }
 
-    #if 0
-    void Sleep(unsigned milliseconds)
+	float Dot(const Vector3& a, const Vector3& b)
+	{
+		return glm::dot(a, b);
+	}
+
+	float Dot(const Quaternion& a, const Quaternion& b)
+	{
+		return glm::dot(a, b);
+	}
+
+    Vector3 Cross(const Vector3& a, const Vector3& b)
+    {
+        return glm::cross(a, b);
+    }
+
+	float Min(float a, float b)
+    {
+        return std::min(a, b);
+    }
+
+    Matrix3 Transpose(const Matrix3& a)
+    {
+        return glm::transpose(a);
+    }
+
+    Matrix3 Inverse(const Matrix3& a)
+    {
+        return glm::inverse(a);
+    }
+
+    Matrix4 Inverse(const Matrix4& a)
+    {
+        return glm::inverse(a);
+    }
+
+    Matrix4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
+    {
+		return glm::ortho(left, right, bottom, top, zNear, zFar);
+    }
+
+    Matrix4 Perspective(float fovyRadians, float aspectRatio, float zNear, float zFar)
+    {
+        return glm::perspective(fovyRadians, aspectRatio, zNear, zFar);
+    }
+
+    Matrix4 LookAt(const Vector3& eye, const Vector3& center, const Vector3& up)
+    {
+        return glm::lookAt(eye, center, up);
+    }
+
+    Quaternion Inverse(const Quaternion& a)
+    {
+        return glm::inverse(a);
+    }
+
+    Quaternion AngleAxis(float radians, const Vector3& axis)
+    {
+        return glm::angleAxis(radians, axis);
+    }
+
+	Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
+	{
+		return a * (1.0f - t) + b * t;
+	}
+
+	float Lerp(float a, float b, float t)
+	{
+		return a * (1.0f - t) + b * t;
+	}
+
+	Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t)
+	{
+		return glm::slerp(a, b, t);
+	}
+
+	float Clamp(float value, float minVal, float maxVal)
+	{
+		return glm::clamp(value, minVal, maxVal);
+	}
+
+	int Clamp(int value, int minVal, int maxVal)
+	{
+		return glm::clamp(value, minVal, maxVal);
+	}
+
+	float Length(const Vector3& value)
+	{
+		return glm::length(value);
+	}
+
+	float Length(const Vector4& value)
+	{
+		return glm::length(value);
+	}
+
+	float Length2(const Vector3& value)
+	{
+		return glm::length2(value);
+	}
+
+	float Radians(float degrees)
+	{
+		return glm::radians(degrees);
+	}
+
+	Vector3 Normalize(const Vector3& value)
+	{
+		return glm::normalize(value);
+	}
+
+	Quaternion Normalize(const Quaternion& value)
+	{
+		return glm::normalize(value);
+	}
+
+    float Distance(const Vector3& a, const Vector3& b)
+    {
+        return glm::distance(a, b);
+    }
+
+    float Distance2(const Vector3& a, const Vector3& b)
+    {
+        return glm::distance2(a, b);
+    }
+
+    float Abs(float value)
+    {
+        return std::abs(value);
+    }
+
+    float Cos(float value)
+    {
+        return std::cos(value);
+    }
+
+    float Floor(float value)
+    {
+        return std::floor(value);
+    }
+
+    Vector3 Floor(Vector3 value)
+    {
+        return glm::floor(value);
+    }
+
+    Vector4 Row(const Matrix4& mat, int index)
+    {
+        return glm::row(mat, index);
+    }
+
+	Vector3 Row(const Matrix3 mat, int index)
+	{
+		return glm::row(mat, index);
+	}
+
+	Vector4 Column(const Matrix4& mat, int index)
+    {
+        return glm::column(mat, index);
+    }
+
+	Vector3 Column(const Matrix3& mat, int index)
+	{
+		return glm::column(mat, index);
+	}
+
+#if 0
+    void SleepMs(unsigned milliseconds)
     {
         #if EMSCRIPTEN
         emscripten_sleep(milliseconds);
@@ -261,7 +471,5 @@ namespace NSG
         std::this_thread::sleep_for(Milliseconds(milliseconds));
         #endif
     }
-    #endif
-
-
+#endif    
 }

@@ -37,7 +37,7 @@ namespace NSG
 
     void Frustum::Define()
     {
-        const float* m = glm::value_ptr(m_);
+        const float* m = GetPointer(m_);
         float t;
 
 		Vector4& left = planes_[PLANE_LEFT].GetNormalDRef();
@@ -45,7 +45,7 @@ namespace NSG
         left[1] = m[7] + m[4];
         left[2] = m[11] + m[8];
         left[3] = m[15] + m[12];
-        t = glm::length(Vector3(left));
+        t = Length(Vector3(left));
         left /= t;
 
 
@@ -54,7 +54,7 @@ namespace NSG
         right[1] = m[7] - m[4];
         right[2] = m[11] - m[8];
         right[3] = m[15] - m[12];
-        t = glm::length(Vector3(right));
+        t = Length(Vector3(right));
         right /= t;
 
 
@@ -63,7 +63,7 @@ namespace NSG
         down[1] = m[7] + m[5];
         down[2] = m[11] + m[9];
         down[3] = m[15] + m[13];
-        t = glm::length(Vector3(down));
+        t = Length(Vector3(down));
         down /= t;
 
 
@@ -72,7 +72,7 @@ namespace NSG
         up[1] = m[7] - m[5];
         up[2] = m[11] - m[9];
         up[3] = m[15] - m[13];
-        t = glm::length(Vector3(up));
+        t = Length(Vector3(up));
         up /= t;
 
 
@@ -81,7 +81,7 @@ namespace NSG
         nearP[1] = m[7] + m[6];
         nearP[2] = m[11] + m[10];
         nearP[3] = m[15] + m[14];
-        t = glm::length(Vector3(nearP));
+        t = Length(Vector3(nearP));
         nearP /= t;
 
 
@@ -90,7 +90,7 @@ namespace NSG
         farP[1] = m[7] - m[6];
         farP[2] = m[11] - m[10];
         farP[3] = m[15] - m[14];
-        t = glm::length(Vector3(farP));
+        t = Length(Vector3(farP));
         farP /= t;
 
         const Plane& Near = planes_[PLANE_NEAR];
@@ -270,11 +270,11 @@ namespace NSG
         float d2(b.GetNormalD().w);
         float d3(c.GetNormalD().w);
 
-        float f = -glm::dot(n1, glm::cross(n2, n3));
+        float f = -Dot(n1, Cross(n2, n3));
 
-        Vector3 v1 = d1 * glm::cross(n2, n3);
-        Vector3 v2 = d2 * glm::cross(n3, n1);
-        Vector3 v3 = d3 * glm::cross(n1, n2);
+        Vector3 v1 = d1 * Cross(n2, n3);
+        Vector3 v2 = d2 * Cross(n3, n1);
+        Vector3 v3 = d3 * Cross(n1, n2);
 
         return (v1 + v2 + v3) / f;
     }

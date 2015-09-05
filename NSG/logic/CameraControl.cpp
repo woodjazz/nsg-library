@@ -151,7 +151,7 @@ namespace NSG
         Vertex3 lookAtPoint = pointOnSphere_->GetCenter();
         Vertex3 position = camera_->GetGlobalPosition();
         Vector3 looAtDir = camera_->GetLookAtDirection();
-        float distance = glm::distance(lookAtPoint, position);
+        float distance = Distance(lookAtPoint, position);
         if (distance < 1)
             distance = 1;
         float factor = y > 0 ? 2.0f : -2.0f;
@@ -169,13 +169,13 @@ namespace NSG
         {
             Quaternion targetOrientation = camera_->GetLookAtOrientation(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
             Quaternion currentOrientation = camera_->GetOrientation();
-            float dot = glm::dot(currentOrientation, targetOrientation);
+            float dot = Dot(currentOrientation, targetOrientation);
             bool close = 1 - dot * dot < PRECISION;
             if (!close)
             {
                 //animate
                 float factor = 3 * deltaTime;
-                camera_->SetOrientation(glm::slerp(currentOrientation, targetOrientation, factor));
+                camera_->SetOrientation(Slerp(currentOrientation, targetOrientation, factor));
             }
             else
             {
@@ -304,7 +304,7 @@ namespace NSG
         {
             pointOnSphere_->IncAngles(PI * relX, PI * relY);
             camera_->SetGlobalPosition(pointOnSphere_->GetPoint());
-            camera_->SetGlobalLookAt(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
+            camera_->SetGlobalLookAtPosition(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
         }
     }
 
@@ -351,7 +351,7 @@ namespace NSG
             BoundingBox bb;
             if (!camera_->GetScene()->GetVisibleBoundingBox(camera_.get(), bb))
                 bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_.get());
-            newCenter = ray.GetPoint(glm::distance(bb.Center(), camera_->GetGlobalPosition()));
+            newCenter = ray.GetPoint(Distance(bb.Center(), camera_->GetGlobalPosition()));
             //newCenter = bb.Center();
         }
 
@@ -365,8 +365,8 @@ namespace NSG
         Vertex3 center = bb.Center();
         Vertex3 position = camera_->GetGlobalPosition();
         Vector3 lookAtDir(WORLD_Z_COORD);
-        if (glm::distance(position, center) > PRECISION)
-            lookAtDir = glm::normalize(position - center);
+        if (Distance(position, center) > PRECISION)
+            lookAtDir = Normalize(position - center);
         float distance = std::max(std::max(bb.Size().x, bb.Size().y), bb.Size().z);
         if (distance < camera_->GetZNear())
             distance = 1 + camera_->GetZNear();

@@ -8,6 +8,7 @@
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
+#include "StringConverter.h"
 #include "InstanceBuffer.h"
 #include "pugixml.hpp"
 #include <sstream>

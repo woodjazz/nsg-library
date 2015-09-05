@@ -74,6 +74,7 @@ namespace NSG
 		void SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
 		FrameBuffer* GetFrameBuffer() const { return currentFbo_; }
 		void DrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid * indices);
+		void DrawArrays(GLenum mode, GLint first, GLsizei count);
 		void DrawActiveMesh();
 		void DrawInstancedActiveMesh(const Batch& batch);
 		void DiscardFramebuffer();

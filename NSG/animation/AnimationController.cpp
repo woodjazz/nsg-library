@@ -111,7 +111,7 @@ namespace NSG
     void AnimationController::Blend(const std::string& name, float targetWeight, float fadeTime)
     {
         auto control = GetAnimationControl(name);
-        control->targetWeight_ = glm::clamp(targetWeight, 0.f, 1.f);
+        control->targetWeight_ = Clamp(targetWeight, 0.f, 1.f);
         control->fadeTime_ = fadeTime;
     }
 
@@ -137,7 +137,7 @@ namespace NSG
             auto other = it.second;
             if (other != control)
             {
-                other->targetWeight_ = glm::clamp(targetWeight, 0.f, 1.f);
+                other->targetWeight_ = Clamp(targetWeight, 0.f, 1.f);
                 other->fadeTime_ = fadeTime;
             }
         }

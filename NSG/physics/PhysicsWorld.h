@@ -37,6 +37,7 @@ class btDiscreteDynamicsWorld;
 
 namespace NSG
 {
+	struct ICollision;
     struct PhysicsRaycastResult
     {
         // Hit world position
@@ -45,8 +46,10 @@ namespace NSG
         Vector3 normal_;
         // Hit distance from ray origin
         float distance_;
-        // Hit RigidBody
-        RigidBody* rigidBody_;
+        // Hit collider
+        ICollision* collider_;
+
+		bool HasCollided() const { return collider_ != nullptr; }
     };
 
     class PhysicsWorld : public btIDebugDraw
@@ -76,7 +79,7 @@ namespace NSG
         PLinesMesh GetDebugLines() const { return lines_; }
         void ClearDebugLines();
         PhysicsRaycastResult SphereCast(const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
-        PhysicsRaycastResult SphereCastBut(const RigidBody* rigidBody, const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
+        PhysicsRaycastResult SphereCastBut(const ICollision* collider, const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
         PhysicsRaycastResult RayCast(const Vector3& origin, const Vector3& direction, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
 
     private:

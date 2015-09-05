@@ -1380,6 +1380,13 @@ namespace NSG
 		lastProgram_ = activeProgram_;
 	}
 
+	void Graphics::DrawArrays(GLenum mode, GLint first, GLsizei count)
+	{
+		glDrawArrays(mode, first, count);
+		lastMesh_ = activeMesh_;
+		lastProgram_ = activeProgram_;
+	}
+
     void Graphics::DrawActiveMesh()
     {
         if (!activeMesh_->IsReady())

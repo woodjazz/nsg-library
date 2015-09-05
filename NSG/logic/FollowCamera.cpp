@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "PhysicsWorld.h"
 #include "RigidBody.h"
+#include "Character.h"
 #include "PointOnSphere.h"
 #include "Util.h"
 
@@ -37,12 +38,13 @@ namespace NSG
 {
     FollowCamera::FollowCamera(PCamera camera)
         : camera_(camera),
-          angle_(glm::radians(45.f)),
+          track_(nullptr),
+          angle_(Radians(45.f)),
           world_(camera_->GetScene()->GetPhysicsWorld())
     {
         slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
         {
-            if (track_)
+            if (track_ && world_.lock())
                 OnUpdate(deltaTime);
         });
     }
@@ -54,26 +56,26 @@ namespace NSG
 
     void FollowCamera::SetAngle(float angle)
     {
-        angle_ = glm::radians(angle);
+        angle_ = Radians(angle);
     }
 
     bool FollowCamera::Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const
     {
         auto direction = targetPos - origin;
-        auto distance = glm::length(direction);
-        PhysicsRaycastResult result = world_->SphereCastBut(track_.get(), origin, glm::normalize(direction), radius, distance);
-        return result.rigidBody_ != nullptr;
+        auto distance = Length(direction);
+        PhysicsRaycastResult result = world_.lock()->SphereCastBut(track_, origin, Normalize(direction), radius, distance);
+        return result.collider_ != nullptr;
     }
 
     Vector3 FollowCamera::GetBestTargetPoint(const Vector3& center, float radius) const
     {
         auto camPos = camera_->GetGlobalPosition();
-        auto point = center + glm::normalize(camPos - center) * distance_;
+        auto point = center + Normalize(camPos - center) * distance_;
         PointOnSphere sphere(center, point);
         auto theta = sphere.GetTheta();
         for (float incTheta = 0.f; incTheta < 360.f; incTheta += 15.f)
         {
-            sphere.SetAngles(theta + glm::radians(incTheta), angle_);
+            sphere.SetAngles(theta + Radians(incTheta), angle_);
             auto target = sphere.GetPoint();
             if (!Obstruction(center, target, radius))
                 return target;
@@ -90,23 +92,15 @@ namespace NSG
         auto radius = std::min(std::min(size.x, size.y), size.z) * .4f;
         auto target = GetBestTargetPoint(center, radius);
         auto direction = target - pos;
-        auto distance = glm::length(direction);
-        PhysicsRaycastResult result = world_->SphereCastBut(track_.get(), pos, glm::normalize(direction), radius, distance);
-        if (result.rigidBody_)
-            target = pos + GetDisplacementToAvoidObstruction(direction, result.normal_);
+        auto distance = Length(direction);
+        PhysicsRaycastResult result = world_.lock()->SphereCastBut(track_, pos, Normalize(direction), radius, distance);
+        if (result.collider_)
+            target = pos + GetSlidingVector(direction, result.normal_);
         camera_->SetGlobalPosition(Lerp(pos, target, deltaTime));
-        camera_->SetGlobalLookAt(center);
+        camera_->SetGlobalLookAtPosition(center);
     }
 
-    Vector3 FollowCamera::GetDisplacementToAvoidObstruction(const Vector3& dir2Target, const Vector3& hitNormal) const
-    {
-        Vector3 reflection = glm::reflect(dir2Target, hitNormal);
-        Vector3 parallelComponent = glm::dot(reflection, hitNormal) * hitNormal;
-        Vector3 sliding = reflection - parallelComponent;
-        return sliding;
-    }
-
-    void FollowCamera::Track(PRigidBody track, float distance)
+	void FollowCamera::Track(ICollision* track, float distance)
     {
         track_ = track;
         distance_ = distance;

@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Texture.h"
 #include "Path.h"
 #include "Util.h"
+#include "StringConverter.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <cerrno>
@@ -280,8 +281,8 @@ namespace NSG
         CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
 
         auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
-        width = glm::clamp(width, 0, maxSize);
-        height = glm::clamp(height, 0, maxSize);
+        width = Clamp(width, 0, maxSize);
+        height = Clamp(height, 0, maxSize);
 
         if (GetTarget() == GL_TEXTURE_CUBE_MAP)
         {

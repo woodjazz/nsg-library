@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "PhysicsWorld.h"
-#include "RigidBody.h"
+#include "ICollision.h"
 #include "Scene.h"
 #include "Camera.h"
 #include "Ray.h"
@@ -107,8 +107,8 @@ namespace NSG
         {
             btPersistentManifold* manifold = dispatcher_->getManifoldByIndexInternal(i);
 
-            RigidBody* colA = static_cast<RigidBody*>(manifold->getBody0()->getUserPointer());
-            RigidBody* colB = static_cast<RigidBody*>(manifold->getBody1()->getUserPointer());
+            ICollision* colA = static_cast<ICollision*>(manifold->getBody0()->getUserPointer());
+            ICollision* colB = static_cast<ICollision*>(manifold->getBody1()->getUserPointer());
 
             colA->HandleManifold(manifold, colB);
             colB->HandleManifold(manifold, colA);
@@ -163,7 +163,7 @@ namespace NSG
 
     void PhysicsWorld::SetFps(int fps)
     {
-        fps_ = glm::clamp(fps, 1, 1000);
+        fps_ = Clamp(fps, 1, 1000);
     }
 
     void PhysicsWorld::SetMaxSubSteps(int steps)
@@ -183,25 +183,25 @@ namespace NSG
                                         btTransform(btQuaternion::getIdentity(), convexCallback.m_convexToWorld), convexCallback);
         if (convexCallback.hasHit())
         {
-            result.rigidBody_ = static_cast<RigidBody*>(convexCallback.m_hitCollisionObject->getUserPointer());
+            result.collider_ = static_cast<ICollision*>(convexCallback.m_hitCollisionObject->getUserPointer());
             result.position_ = ToVector3(convexCallback.m_hitPointWorld);
             result.normal_ = ToVector3(convexCallback.m_hitNormalWorld);
-            result.distance_ = glm::length(result.position_ - origin);
+            result.distance_ = Length(result.position_ - origin);
         }
         return result;
     }
 
-    PhysicsRaycastResult PhysicsWorld::SphereCastBut(const RigidBody* rigidBody, const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask)
+    PhysicsRaycastResult PhysicsWorld::SphereCastBut(const ICollision* collider, const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask)
     {
         PhysicsRaycastResult result {VECTOR3_ZERO, VECTOR3_ZERO, 0.f, nullptr};
         btSphereShape shape(radius);
 
         struct CallBackBut : btCollisionWorld::ClosestConvexResultCallback
         {
-            const RigidBody* rigidBody_;
-            CallBackBut(const RigidBody* rigidBody, const btVector3& convexFromWorld, const btVector3& convexToWorld)
+            const ICollision* collider_;
+            CallBackBut(const ICollision* collider, const btVector3& convexFromWorld, const btVector3& convexToWorld)
                 : btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
-                  rigidBody_(rigidBody)
+                  collider_(collider)
             {
             }
 
@@ -210,23 +210,23 @@ namespace NSG
                 if(btCollisionWorld::ClosestConvexResultCallback::needsCollision(proxy0))
                 {
                     btCollisionObject* obj = static_cast<btCollisionObject*>(proxy0->m_clientObject);
-                    return !obj || obj->getUserPointer() != rigidBody_;
+                    return !obj || obj->getUserPointer() != collider_;
                 }
                 return false;
             }
         };
 
-        CallBackBut convexCallback(rigidBody, ToBtVector3(origin), ToBtVector3(origin + maxDistance * direction));
+        CallBackBut convexCallback(collider, ToBtVector3(origin), ToBtVector3(origin + maxDistance * direction));
         convexCallback.m_collisionFilterGroup = (short)0xffff;
         convexCallback.m_collisionFilterMask = collisionMask;
         dynamicsWorld_->convexSweepTest(&shape, btTransform(btQuaternion::getIdentity(), convexCallback.m_convexFromWorld),
                                         btTransform(btQuaternion::getIdentity(), convexCallback.m_convexToWorld), convexCallback);
         if (convexCallback.hasHit())
         {
-            result.rigidBody_ = static_cast<RigidBody*>(convexCallback.m_hitCollisionObject->getUserPointer());
+            result.collider_ = static_cast<ICollision*>(convexCallback.m_hitCollisionObject->getUserPointer());
             result.position_ = ToVector3(convexCallback.m_hitPointWorld);
             result.normal_ = ToVector3(convexCallback.m_hitNormalWorld);
-            result.distance_ = glm::length(result.position_ - origin);
+            result.distance_ = Length(result.position_ - origin);
         }
         return result;
     }
@@ -243,8 +243,8 @@ namespace NSG
         {
             result.position_ = ToVector3(rayCallback.m_hitPointWorld);
             result.normal_ = ToVector3(rayCallback.m_hitNormalWorld);
-            result.distance_ = glm::length(result.position_ - origin);
-            result.rigidBody_ = static_cast<RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
+            result.distance_ = Length(result.position_ - origin);
+            result.collider_ = static_cast<ICollision*>(rayCallback.m_collisionObject->getUserPointer());
         }
         return result;
     }

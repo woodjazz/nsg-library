@@ -25,13 +25,22 @@
 
 cd $( dirname $0 ) # Ensure we are in project root directory
 set -e
-source $HOME/emsdk_portable/emsdk_env.sh
 SOURCE_FOLDER="$PWD"
 
-if [ ! -n "$1" ]; then
-	echo "Enter build target directory. (directory will be created on the parent directory of the current one"
+if [ ! -n "$HOME_EMSCRIPTEN" ]; then
+	echo "Environment variable HOME_EMSCRIPTEN shall be set."
 	exit 0
 fi
+
+if [ ! -n "$1" ]; then
+	echo "Enter build target directory. (directory will be created on the parent directory of the current one)"
+	exit 0
+fi
+
+cd $HOME_EMSCRIPTEN
+source $HOME_EMSCRIPTEN/emsdk_env.sh
+source "$HOME_EMSCRIPTEN%/emsdk activate"
+cd $SOURCE_FOLDER
 
 cd ..
 cmake -E make_directory $1

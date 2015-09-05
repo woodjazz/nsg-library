@@ -46,7 +46,7 @@ namespace NSG
         : graphics_(Graphics::GetPtr()),
           fontTexture_(std::make_shared<Texture2D>("GUIFontTexture")),
 		  pass_(std::make_shared<Pass>()),
-		  program_(std::make_shared<Program>("IMGUI\n")),
+		  program_(Program::GetOrCreate("IMGUI\n")),
 		  vBuffer_(std::make_shared<VertexBuffer>(GL_STREAM_DRAW)),
 		  iBuffer_(std::make_shared<IndexBuffer>(GL_STREAM_DRAW)),
 		  window_(nullptr)

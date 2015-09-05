@@ -79,6 +79,11 @@ list(APPEND LIBRARIES_2_LINK LZ4)
 set_property(TARGET LZ4 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ##################################
+# fontstash
+##################################
+include_directories(${DEPENDENCIES_DIR}/fontstash)
+
+##################################
 # bullet
 ##################################
 include_directories(${EXTERNALS_DIR}/bullet/src)

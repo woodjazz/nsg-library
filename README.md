@@ -29,7 +29,7 @@ Emscripten
 -------------------------
 Install SDK: http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html
 
-Set environment variable: EMSCRIPTEN
+Set environment variable: HOME_EMSCRIPTEN
 
 -------------------------
 Windows

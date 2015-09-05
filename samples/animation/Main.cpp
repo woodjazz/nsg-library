@@ -40,7 +40,7 @@ int NSG_MAIN(int argc, char* argv[])
     objBB.min_ *= 1.75f;
     auto camera = scene->GetOrCreateChild<Camera>("camera1");
     //camera->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.max_.z));
-    //camera->SetGlobalLookAt(objPos);
+    //camera->SetGlobalLookAtPosition(objPos);
     auto control = std::make_shared<CameraControl>(camera);
 
     auto animation = Animation::Create("anim0");
@@ -57,7 +57,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto node = std::make_shared<Node>("node0");
         node->SetParent(camera->GetParent());
         node->SetGlobalPosition(Vector3(objBB.max_.x, objBB.max_.y, 0));
-        node->SetGlobalLookAt(objPos);
+        node->SetGlobalLookAtPosition(objPos);
         AnimationKeyFrame key(2, node.get());
         track.keyFrames_.push_back(key);
     }
@@ -66,7 +66,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto node = std::make_shared<Node>("node1");
         node->SetParent(camera->GetParent());
         node->SetGlobalPosition(Vector3(0, objBB.max_.y, objBB.min_.z));
-        node->SetGlobalLookAt(objPos);
+        node->SetGlobalLookAtPosition(objPos);
         AnimationKeyFrame key(4, node.get());
         track.keyFrames_.push_back(key);
     }
@@ -75,7 +75,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto node = std::make_shared<Node>("node2");
         node->SetParent(camera->GetParent());
         node->SetGlobalPosition(Vector3(objBB.min_.x, objBB.max_.y, 0));
-        node->SetGlobalLookAt(objPos);
+        node->SetGlobalLookAtPosition(objPos);
         AnimationKeyFrame key(6, node.get());
         track.keyFrames_.push_back(key);
     }

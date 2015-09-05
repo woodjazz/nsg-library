@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Mesh.h"
 #include "BoundingBox.h"
+#include "StringConverter.h"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "hull.h"
 #include "pugixml.hpp"

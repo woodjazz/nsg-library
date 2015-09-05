@@ -23,20 +23,25 @@
 ::-------------------------------------------------------------------------------
 
 @echo off
-pushd %~dp0
-set SOURCE_FOLDER=%CD%
 
-if "%EMSCRIPTEN%" == "" (
-	echo "Environment variable EMSCRIPTEN shall be set."
+pushd %~dp0
+
+if "%HOME_EMSCRIPTEN%" == "" (
+	echo "Environment variable HOME_EMSCRIPTEN shall be set."
 	@exit /b 1
 )
-
-cmd /C emsdk_env
 
 if "%1" == "" (
-	echo "Enter build target directory. (directory will be created on the parent directory of the current one"
+	echo "Enter build target directory. (directory will be created on the parent directory of the current one)"
 	@exit /b 1
 )
+
+set SOURCE_FOLDER=%CD%
+
+cd %HOME_EMSCRIPTEN%
+call "%HOME_EMSCRIPTEN%/emsdk_env.bat"
+call "%HOME_EMSCRIPTEN%/emsdk activate"
+cd %SOURCE_FOLDER%
 
 cd ..
 cmake -E make_directory %1
@@ -48,4 +53,3 @@ cmake %SOURCE_FOLDER% -G "MinGW Makefiles" -DBUILD_PROJECT="all" -DEMS_DEBUG_LEV
 
 @echo "*** BUILDING %2 ***"
 %MINGW_ROOT%/bin/mingw32-make %2
-::%NACL_SDK_ROOT%/tools/make.exe %2

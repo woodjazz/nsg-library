@@ -743,7 +743,7 @@ namespace NSG
                 auto axis = ConvertAxis(event.caxis.axis);
                 float value = (float)event.caxis.value;
                 if (std::abs(value) < 5000) value = 0;
-                auto position = glm::clamp(value / 32767.0f, -1.0f, 1.0f);
+                auto position = Clamp(value / 32767.0f, -1.0f, 1.0f);
                 window->OnJoystickAxisMotion(state.instanceID_, axis, position);
             }
             #endif
@@ -780,7 +780,7 @@ namespace NSG
                     auto axis = ConvertAxis(event.jaxis.axis);
                     float value = (float)event.jaxis.value;
                     if (std::abs(value) < 5000) value = 0;
-                    auto position = glm::clamp(value / 32767.0f, -1.0f, 1.0f);
+                    auto position = Clamp(value / 32767.0f, -1.0f, 1.0f);
                     window->OnJoystickAxisMotion(state.instanceID_, axis, position);
                 }
             }

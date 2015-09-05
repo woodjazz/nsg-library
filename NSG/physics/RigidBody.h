@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
+#include "ICollision.h"
 #include "Constants.h"
 #include "btBulletDynamicsCommon.h"
 #include <map>
@@ -35,7 +36,7 @@ class btDynamicsWorld;
 class btRigidBody;
 namespace NSG
 {
-    class RigidBody : public btMotionState, public Object
+	class RigidBody : public ICollision, public btMotionState, public Object
     {
     public:
         RigidBody(PSceneNode sceneNode);
@@ -48,7 +49,6 @@ namespace NSG
         void SetLinearVelocity(const Vector3& lv);
         Vector3 GetLinearVelocity() const;
         void SetAngularVelocity(const Vector3& av);
-        void HandleManifold(btPersistentManifold* manifold, RigidBody* collider) const;
         void ReScale();
         bool IsStatic() const;
         void SyncWithNode();
@@ -73,9 +73,10 @@ namespace NSG
         const Vector3& GetAngularFactor() const { return angularFactor_; }
         void ApplyForce(const Vector3& force);
         void ApplyImpulse(const Vector3& impulse);
-        PSceneNode GetSceneNode() const { return sceneNode_.lock(); }
-        BoundingBox GetColliderBoundingBox() const;
-    private:
+        BoundingBox GetColliderBoundingBox() const override;
+		SceneNode* GetSceneNode() const override;
+		bool HandleCollision() const override { return handleCollision_; }
+	private:
 		void ReDoShape(const Vector3& newScale);
         bool IsValid() override;
         void AllocateResources() override;

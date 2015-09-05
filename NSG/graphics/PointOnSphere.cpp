@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "PointOnSphere.h"
 #include "Constants.h"
 #include "Check.h"
+#include "Util.h"
 
 namespace NSG
 {
@@ -50,7 +51,7 @@ namespace NSG
 
     PointOnSphere::PointOnSphere(const Vertex3& center, const Vertex3& pointInSphere)
         : center_(center),
-          radius_(glm::distance(center, pointInSphere)),
+          radius_(Distance(center, pointInSphere)),
           theta_(0),
           phi_(0)
     {
@@ -78,9 +79,9 @@ namespace NSG
 
     bool PointOnSphere::SetCenterAndPoint(const Vertex3& center, const Vertex3& pointInSphere)
     {
-		if (glm::distance(pointInSphere, center) > PRECISION)
+		if (Distance(pointInSphere, center) > PRECISION)
     	{
-			if (glm::distance(center, center_) > PRECISION || glm::distance(pointInSphere, point_) > PRECISION)
+			if (Distance(center, center_) > PRECISION || Distance(pointInSphere, point_) > PRECISION)
 			{
 				center_ = center;
 				point_ = pointInSphere;
@@ -95,9 +96,9 @@ namespace NSG
 
     bool PointOnSphere::SetCenter(const Vertex3& center)
     {
-		if (glm::distance(center, point_) > PRECISION)
+		if (Distance(center, point_) > PRECISION)
         {
-			if (glm::distance(center, center_) > PRECISION)
+			if (Distance(center, center_) > PRECISION)
 			{
 				center_ = center;
 				CalculateAnglesAndRadius();
@@ -111,9 +112,9 @@ namespace NSG
 
     bool PointOnSphere::SetPoint(const Vertex3& pointInSphere)
     {
-		if (glm::distance(pointInSphere, center_) > PRECISION)
+		if (Distance(pointInSphere, center_) > PRECISION)
         {
-			if (glm::distance(pointInSphere, point_) > PRECISION)
+			if (Distance(pointInSphere, point_) > PRECISION)
 			{
 				point_ = pointInSphere;
 				CalculateAnglesAndRadius();
@@ -127,8 +128,8 @@ namespace NSG
     void PointOnSphere::CalculateAnglesAndRadius()
     {
         Vector3 rn = point_ - center_;
-        radius_ = glm::length(rn);
-		rn = glm::normalize(rn);
+        radius_ = Length(rn);
+		rn = Normalize(rn);
 
         //calculate phi in order to be in the given point
         float dy = rn.y;
@@ -138,7 +139,7 @@ namespace NSG
         float dx = rn.x;
         float dz = rn.z;
 
-		if (glm::abs(dx) < glm::epsilon<float>())
+		if (Abs(dx) < EPSILON)
 		{
 			if (dz < 0)
 				theta_ = -PI/2;
@@ -153,7 +154,7 @@ namespace NSG
 				theta_ += PI;
 		}
 
-		//CHECK_ASSERT(glm::distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION, __FILE__, __LINE__);
+		//CHECK_ASSERT(Distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION, __FILE__, __LINE__);
     }
 
 
@@ -168,13 +169,13 @@ namespace NSG
         // Apply spherical coordinates
 		Vertex3 currentPoint(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
 
-		CHECK_ASSERT(glm::distance(center_ + radius_ * currentPoint, point_) < 9*PRECISION, __FILE__, __LINE__);
+		CHECK_ASSERT(Distance(center_ + radius_ * currentPoint, point_) < 9*PRECISION, __FILE__, __LINE__);
 
         // Reduce phi slightly to obtain another point on the same longitude line on the sphere.
         const float dt = 1;
         Vertex3 newUpPoint(cos(theta_) * sin(phi_ - dt), cos(phi_ - dt), sin(theta_) * sin(phi_ - dt));
 
-		up_ = glm::normalize(newUpPoint - currentPoint);
+		up_ = Normalize(newUpPoint - currentPoint);
     }
 
 

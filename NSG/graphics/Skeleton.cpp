@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "ModelMesh.h"
 #include "Scene.h"
 #include "Util.h"
+#include "StringConverter.h"
 #include "pugixml.hpp"
 #include <sstream>
 

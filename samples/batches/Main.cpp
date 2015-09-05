@@ -83,12 +83,12 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto light = scene->CreateChild<Light>();
 	//light->SetType(LightType::SPOT);
-	//light->SetLocalLookAt(VECTOR3_RIGHT);
+	//light->SetLocalLookAtPosition(VECTOR3_RIGHT);
     light->SetPosition(lighPos);
 
     camera->SetPosition(camPos);
     Vector3 lookAtPoint(Vertex2(camPos), 0);
-    camera->SetGlobalLookAt(lookAtPoint);
+    camera->SetGlobalLookAtPosition(lookAtPoint);
 
 	control->AutoZoom();
 

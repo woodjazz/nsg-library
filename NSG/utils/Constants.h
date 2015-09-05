@@ -28,7 +28,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    static const float PI = glm::pi<float>();
+	static const float PI = 3.1415926535897932384626433832795028f;
     static const float TWO_PI = 2 * PI;
     static const float EPSILON = 0.000001f;
     static const IndexType MAX_INDEX_VALUE = ~IndexType(0);

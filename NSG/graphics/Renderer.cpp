@@ -129,8 +129,8 @@ namespace NSG
             cameraPos = camera_->GetGlobalPosition();
         std::sort(transparent_.begin(), transparent_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
-            auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
-            auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
+            auto da = Distance2(a->GetGlobalPosition(), cameraPos);
+            auto db = Distance2(b->GetGlobalPosition(), cameraPos);
             return db < da;
         });
     }
@@ -142,8 +142,8 @@ namespace NSG
             cameraPos = camera_->GetGlobalPosition();
         std::sort(visibles_.begin(), visibles_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
-            auto da = glm::distance2(a->GetGlobalPosition(), cameraPos);
-            auto db = glm::distance2(b->GetGlobalPosition(), cameraPos);
+            auto da = Distance2(a->GetGlobalPosition(), cameraPos);
+            auto db = Distance2(b->GetGlobalPosition(), cameraPos);
             return da < db;
         });
     }

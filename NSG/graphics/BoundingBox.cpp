@@ -122,7 +122,7 @@ namespace NSG
 
 	void BoundingBox::Transform(const Vector3& position, const Quaternion& q)
 	{
-		Transform(glm::translate(glm::mat4(), position) * glm::mat4_cast(q));
+		ComposeMatrix(position, q);
 	}
 
     void BoundingBox::Transform(const Matrix4& m)
@@ -130,9 +130,9 @@ namespace NSG
         Vector3 newCenter = Vector3(m * Vector4(Center(), 1));
         Vector3 oldEdge = Size() * 0.5f;
 
-        Vector3 newEdge(glm::abs(m[0][0]) * oldEdge.x + glm::abs(m[1][0]) * oldEdge.y + glm::abs(m[2][0]) * oldEdge.z,
-                        glm::abs(m[0][1]) * oldEdge.x + glm::abs(m[1][1]) * oldEdge.y + glm::abs(m[2][1]) * oldEdge.z,
-                        glm::abs(m[0][2]) * oldEdge.x + glm::abs(m[1][2]) * oldEdge.y + glm::abs(m[2][2]) * oldEdge.z
+        Vector3 newEdge(Abs(m[0][0]) * oldEdge.x + Abs(m[1][0]) * oldEdge.y + Abs(m[2][0]) * oldEdge.z,
+                        Abs(m[0][1]) * oldEdge.x + Abs(m[1][1]) * oldEdge.y + Abs(m[2][1]) * oldEdge.z,
+                        Abs(m[0][2]) * oldEdge.x + Abs(m[1][2]) * oldEdge.y + Abs(m[2][2]) * oldEdge.z
                        );
 
         BoundingBox obj(newCenter - newEdge, newCenter + newEdge);

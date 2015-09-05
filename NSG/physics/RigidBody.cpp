@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "PhysicsWorld.h"
 #include "Graphics.h"
 #include "Engine.h"
+#include "StringConverter.h"
 #include "pugixml.hpp"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "hull.h"
@@ -114,10 +115,14 @@ namespace NSG
 
     bool RigidBody::IsValid()
     {
-        for (auto& shape : shapes_)
-            if (!shape.shape->IsReady())
-                return false;
-        return !shapes_.empty();
+        if (owner_.lock())
+        {
+            for (auto& shape : shapes_)
+                if (!shape.shape->IsReady())
+                    return false;
+            return !shapes_.empty();
+        }
+        return false;
     }
 
     void RigidBody::AllocateResources()
@@ -339,33 +344,9 @@ namespace NSG
         return body_ ? ToVector3(body_->getLinearVelocity()) : linearVelocity_;
     }
 
-    void RigidBody::HandleManifold(btPersistentManifold* manifold, RigidBody* collider) const
+    SceneNode* RigidBody::GetSceneNode() const
     {
-        if (!handleCollision_) return;
-
-        int nrc = manifold->getNumContacts();
-        if (nrc)
-        {
-            for (int j = 0; j < nrc; ++j)
-            {
-                ContactPoint cinf;
-                btManifoldPoint& pt = manifold->getContactPoint(j);
-
-                PSceneNode sceneNode(sceneNode_.lock());
-                cinf.collider_ = collider->sceneNode_.lock().get();
-                cinf.normalB_ = ToVector3(pt.m_normalWorldOnB);
-                cinf.appliedImpulse_ = pt.m_appliedImpulse;
-                cinf.appliedImpulseLateral1_ = pt.m_appliedImpulseLateral1;
-                cinf.appliedImpulseLateral2_ = pt.m_appliedImpulseLateral2;
-                cinf.contactMotion1_ = pt.m_contactMotion1;
-                cinf.contactMotion2_ = pt.m_contactMotion2;
-                cinf.contactCFM1_ = pt.m_contactCFM1;
-                cinf.contactCFM2_ = pt.m_contactCFM2;
-                cinf.lateralFrictionDir1_ = ToVector3(pt.m_lateralFrictionDir1);
-                cinf.lateralFrictionDir2_ = ToVector3(pt.m_lateralFrictionDir2);
-                sceneNode->OnCollision(cinf);
-            }
-        }
+        return sceneNode_.lock().get();
     }
 
     void RigidBody::ReDoShape(const Vector3& newScale)
@@ -408,8 +389,12 @@ namespace NSG
     {
         mass_ = node.attribute("mass").as_float();
         handleCollision_ = node.attribute("handleCollision").as_bool();
-        restitution_ = node.attribute("restitution").as_float();
-        friction_ = node.attribute("friction").as_float();
+        auto restitutionAtt = node.attribute("restitution");
+        if(restitutionAtt)
+            restitution_ = restitutionAtt.as_float();
+        auto frictionAtt = node.attribute("friction");
+        if(frictionAtt)
+            friction_ = frictionAtt.as_float();
         linearDamp_ = node.attribute("linearDamp").as_float();
         angularDamp_ = node.attribute("angularDamp").as_float();
         collisionGroup_ = node.attribute("collisionGroup").as_int();
@@ -479,6 +464,7 @@ namespace NSG
             }
         }
     }
+
     void RigidBody::SetCollisionMask(int group, int mask)
     {
         if (collisionGroup_ != group || collisionMask_ != mask)

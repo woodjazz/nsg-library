@@ -570,6 +570,12 @@ def ConvertMeshObject(meshesEle, parentEle, obj):
                 shapeEle = et.SubElement(shapesEle, "Shape")
                 name, scaleStr, typeStr = GetPhysicShapeName(obj, meshName)
                 shapeEle.set("name", name)
+        elif HasCharacter(obj):
+            shapesEle = parentEle.find("Character").find("Shapes")
+            if shapesEle:
+                shapeEle = et.SubElement(shapesEle, "Shape")
+                name, scaleStr, typeStr = GetPhysicShapeName(obj, meshName)
+                shapeEle.set("name", name)
         sceneNodeEle.set("materialName", materialSlot.name)
         materialIndex += 1
 
@@ -792,8 +798,22 @@ def GetRigidBody(sceneNodeEle):
     return None, None
 
 
+def GetCharacter(sceneNodeEle):
+    character = sceneNodeEle.find("Character")
+    if character is not None:
+        return sceneNodeEle, character
+    parentEle = GetParentEle("SceneNode", "name", sceneNodeEle.get("name"))
+    if parentEle != sceneNodeEle and parentEle is not None:
+        return GetCharacter(parentEle)
+    return None, None
+
+
 def HasRigidBody(obj):
-    return obj and obj.game.physics_type != 'NO_COLLISION'
+    return obj and obj.game.physics_type != 'NO_COLLISION' and obj.game.physics_type != 'CHARACTER'
+
+
+def HasCharacter(obj):
+    return obj and obj.game.physics_type == 'CHARACTER'
 
 
 def GetParentWithName(obj, name):
@@ -806,93 +826,154 @@ def GetParentWithName(obj, name):
         return None
 
 
-def CreatePhysics(sceneNodeEle, obj, materialIndex):
-    if HasRigidBody(obj):
-        foundParent = True
-        parentSceneNodeEle, rigidBodyEle = GetRigidBody(sceneNodeEle)
-        if rigidBodyEle is None:
-            foundParent = False
-            rigidBodyEle = et.SubElement(sceneNodeEle, "RigidBody")
-            if materialIndex != -1:
-                materialSlot = obj.material_slots[materialIndex]
+def CreateRigidBody(sceneNodeEle, obj, materialIndex):
+    foundParent = True
+    parentSceneNodeEle, rigidBodyEle = GetRigidBody(sceneNodeEle)
+    if rigidBodyEle is None:
+        foundParent = False
+        rigidBodyEle = et.SubElement(sceneNodeEle, "RigidBody")
+        if materialIndex != -1:
+            materialSlot = obj.material_slots[materialIndex]
+            physics = materialSlot.material.physics
+            rigidBodyEle.set("friction", FloatToString(physics.friction))
+            rigidBodyEle.set("restitution", FloatToString(physics.elasticity))
+
+        collisionGroup = 0
+        for i, group in enumerate(obj.game.collision_group):
+            if group:
+                collisionGroup += 1 << i
+        rigidBodyEle.set("collisionGroup", str(collisionGroup))
+
+        collisionMask = 0
+        for i, mask in enumerate(obj.game.collision_mask):
+            if mask:
+                collisionMask += 1 << i
+        rigidBodyEle.set("collisionMask", str(collisionMask))
+
+        if obj.game.physics_type == 'STATIC':
+            rigidBodyEle.set("mass", "0")
+        else:
+            rigidBodyEle.set("mass", FloatToString(obj.game.mass))
+
+        if obj.game.physics_type == 'SENSOR':
+            rigidBodyEle.set("trigger", BoolToString(True))
+        else:
+            rigidBodyEle.set("trigger", BoolToString(False))
+
+        if obj.game.physics_type == 'CHARACTER':
+            rigidBodyEle.set("kinematic", BoolToString(True))
+        else:
+            rigidBodyEle.set("kinematic", BoolToString(False))
+
+        rigidBodyEle.set("linearDamp", FloatToString(obj.game.damping))
+        rigidBodyEle.set(
+            "angularDamp", FloatToString(obj.game.rotation_damping))
+
+        linearFactor = mathutils.Vector((1, 1, 1))
+        if obj.game.lock_location_x:
+            linearFactor.x = 0
+        if obj.game.lock_location_y:
+            linearFactor.y = 0
+        if obj.game.lock_location_z:
+            linearFactor.z = 0
+        rigidBodyEle.set("linearFactor", Vector3ToString(linearFactor))
+
+        angularFactor = mathutils.Vector((1, 1, 1))
+        if obj.game.lock_rotation_x:
+            angularFactor.x = 0
+        if obj.game.lock_rotation_y:
+            angularFactor.y = 0
+        if obj.game.lock_rotation_z:
+            angularFactor.z = 0
+        rigidBodyEle.set("angularFactor", Vector3ToString(angularFactor))
+
+    if obj.game.use_collision_bounds and obj.data:
+        shapesEle = rigidBodyEle.find("Shapes")
+        if shapesEle is None:
+            shapesEle = et.SubElement(rigidBodyEle, "Shapes")
+        shapeEle = et.SubElement(shapesEle, "Shape")
+        name, scaleStr, typeStr = GetPhysicShapeName(obj, obj.data.name)
+        shapeEle.set("name", name)
+        if foundParent:
+            parentObj = GetParentWithName(obj, parentSceneNodeEle.get("name"))
+            m = parentObj.matrix_world * obj.matrix_local
+            t1, r1, s1 = parentObj.matrix_world.decompose()
+            t2, r2, s2 = obj.matrix_local.decompose()
+            t2.x = t2.x * s1.x
+            t2.y = t2.y * s1.y
+            t2.z = t2.z * s1.z
+            shapeEle.set("position", Vector3ToString(t2))
+            shapeEle.set("orientation", QuaternionToString(r2))
+
+            if obj.material_slots:
+                materialSlot = obj.material_slots[0]
                 physics = materialSlot.material.physics
                 rigidBodyEle.set("friction", FloatToString(physics.friction))
                 rigidBodyEle.set("restitution", FloatToString(physics.elasticity))
 
-            collisionGroup = 0
-            for i, group in enumerate(obj.game.collision_group):
-                if group:
-                    collisionGroup += 1 << i
-            rigidBodyEle.set("collisionGroup", str(collisionGroup))
+    return rigidBodyEle
 
-            collisionMask = 0
-            for i, mask in enumerate(obj.game.collision_mask):
-                if mask:
-                    collisionMask += 1 << i
-            rigidBodyEle.set("collisionMask", str(collisionMask))
 
-            if obj.game.physics_type == 'STATIC':
-                rigidBodyEle.set("mass", "0")
-            else:
-                rigidBodyEle.set("mass", FloatToString(obj.game.mass))
+def CreateCharacter(sceneNodeEle, obj, materialIndex):
+    foundParent = True
+    parentSceneNodeEle, characterEle = GetCharacter(sceneNodeEle)
+    if characterEle is None:
+        foundParent = False
+        characterEle = et.SubElement(sceneNodeEle, "Character")
+        if materialIndex != -1:
+            materialSlot = obj.material_slots[materialIndex]
+            physics = materialSlot.material.physics
+            characterEle.set("friction", FloatToString(physics.friction))
+            characterEle.set("restitution", FloatToString(physics.elasticity))
 
-            if obj.game.physics_type == 'SENSOR':
-                rigidBodyEle.set("trigger", BoolToString(True))
-            else:
-                rigidBodyEle.set("trigger", BoolToString(False))
+        collisionGroup = 0
+        for i, group in enumerate(obj.game.collision_group):
+            if group:
+                collisionGroup += 1 << i
+        characterEle.set("collisionGroup", str(collisionGroup))
 
-            if obj.game.physics_type == 'CHARACTER':
-                rigidBodyEle.set("kinematic", BoolToString(True))
-            else:
-                rigidBodyEle.set("kinematic", BoolToString(False))
+        collisionMask = 0
+        for i, mask in enumerate(obj.game.collision_mask):
+            if mask:
+                collisionMask += 1 << i
+        characterEle.set("collisionMask", str(collisionMask))
 
-            rigidBodyEle.set("linearDamp", FloatToString(obj.game.damping))
-            rigidBodyEle.set(
-                "angularDamp", FloatToString(obj.game.rotation_damping))
+        characterEle.set("stepHeight", FloatToString(obj.game.step_height))
+        characterEle.set("jumpSpeed", FloatToString(obj.game.jump_speed))
+        characterEle.set("fallSpeed", FloatToString(obj.game.fall_speed))
 
-            linearFactor = mathutils.Vector((1, 1, 1))
-            if obj.game.lock_location_x:
-                linearFactor.x = 0
-            if obj.game.lock_location_y:
-                linearFactor.y = 0
-            if obj.game.lock_location_z:
-                linearFactor.z = 0
-            rigidBodyEle.set("linearFactor", Vector3ToString(linearFactor))
+    if obj.game.use_collision_bounds and obj.data:
+        shapesEle = characterEle.find("Shapes")
+        if shapesEle is None:
+            shapesEle = et.SubElement(characterEle, "Shapes")
+        shapeEle = et.SubElement(shapesEle, "Shape")
+        name, scaleStr, typeStr = GetPhysicShapeName(obj, obj.data.name)
+        shapeEle.set("name", name)
+        if foundParent:
+            parentObj = GetParentWithName(obj, parentSceneNodeEle.get("name"))
+            m = parentObj.matrix_world * obj.matrix_local
+            t1, r1, s1 = parentObj.matrix_world.decompose()
+            t2, r2, s2 = obj.matrix_local.decompose()
+            t2.x = t2.x * s1.x
+            t2.y = t2.y * s1.y
+            t2.z = t2.z * s1.z
+            shapeEle.set("position", Vector3ToString(t2))
+            shapeEle.set("orientation", QuaternionToString(r2))
 
-            angularFactor = mathutils.Vector((1, 1, 1))
-            if obj.game.lock_rotation_x:
-                angularFactor.x = 0
-            if obj.game.lock_rotation_y:
-                angularFactor.y = 0
-            if obj.game.lock_rotation_z:
-                angularFactor.z = 0
-            rigidBodyEle.set("angularFactor", Vector3ToString(angularFactor))
+            if obj.material_slots:
+                materialSlot = obj.material_slots[0]
+                physics = materialSlot.material.physics
+                characterEle.set("friction", FloatToString(physics.friction))
+                characterEle.set("restitution", FloatToString(physics.elasticity))
 
-        if obj.game.use_collision_bounds and obj.data:
-            shapesEle = rigidBodyEle.find("Shapes")
-            if shapesEle is None:
-                shapesEle = et.SubElement(rigidBodyEle, "Shapes")
-            shapeEle = et.SubElement(shapesEle, "Shape")
-            name, scaleStr, typeStr = GetPhysicShapeName(obj, obj.data.name)
-            shapeEle.set("name", name)
-            if foundParent:
-                parentObj = GetParentWithName(obj, parentSceneNodeEle.get("name"))
-                m = parentObj.matrix_world * obj.matrix_local
-                t1, r1, s1 = parentObj.matrix_world.decompose()
-                t2, r2, s2 = obj.matrix_local.decompose()
-                t2.x = t2.x * s1.x
-                t2.y = t2.y * s1.y
-                t2.z = t2.z * s1.z
-                shapeEle.set("position", Vector3ToString(t2))
-                shapeEle.set("orientation", QuaternionToString(r2))
+    return characterEle
 
-                if obj.material_slots:
-                    materialSlot = obj.material_slots[0]
-                    physics = materialSlot.material.physics
-                    rigidBodyEle.set("friction", FloatToString(physics.friction))
-                    rigidBodyEle.set("restitution", FloatToString(physics.elasticity))
 
-        return rigidBodyEle
+def CreatePhysics(sceneNodeEle, obj, materialIndex):
+    if HasRigidBody(obj):
+        CreateRigidBody(sceneNodeEle, obj, materialIndex)
+    elif HasCharacter(obj):
+        CreateCharacter(sceneNodeEle, obj, materialIndex)
 
 
 def GetPhysicShapeName(obj, meshName):

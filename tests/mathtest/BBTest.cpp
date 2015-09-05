@@ -173,7 +173,7 @@ static void Test03()
 {
 	Node node;
 	node.SetPosition(Vector3(1, 2, 3));
-	node.SetLocalLookAt(Vector3(1, -2, 10));
+	node.SetLocalLookAtPosition(Vector3(1, -2, 10));
 	Vector4 pos(3, -4, -5, 1);
 	auto newPos = node.GetGlobalModelMatrix() * pos;
 	CHECK_CONDITION(newPos.w == 1.0, __FILE__, __LINE__);

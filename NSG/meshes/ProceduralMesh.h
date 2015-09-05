@@ -32,6 +32,6 @@ namespace NSG
 	{
 	public:
 		ProceduralMesh(const std::string& name, bool dynamic = false);
-		bool IsValid() override { return true; }
+		bool IsValid() override;
 	};
 }

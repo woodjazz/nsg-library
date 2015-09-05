@@ -81,7 +81,7 @@ namespace NSG
     {
         if (!animation_)
             return;
-        timePosition_ = glm::clamp(time, 0.f, animation_->GetLength());
+        timePosition_ = Clamp(time, 0.f, animation_->GetLength());
     }
 
     float AnimationState::GetLength() const
@@ -91,7 +91,7 @@ namespace NSG
 
     void AnimationState::SetWeight(float weight)
     {
-        weight_ = glm::clamp(weight, 0.f, 1.f);
+        weight_ = Clamp(weight, 0.f, 1.f);
     }
 
     void AnimationState::Update()
@@ -129,7 +129,7 @@ namespace NSG
             if (track.channelMask_ & (int)AnimationChannel::POSITION)
                 bone->SetPosition(Lerp(bone->GetPosition(), keyFrame->position_, weight));
             if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-                bone->SetOrientation(glm::slerp(bone->GetOrientation(), keyFrame->rotation_, weight));
+                bone->SetOrientation(Slerp(bone->GetOrientation(), keyFrame->rotation_, weight));
             if (track.channelMask_ & (int)AnimationChannel::SCALE)
                 bone->SetScale(Lerp(bone->GetScale(), keyFrame->scale_, weight));
         }
@@ -150,7 +150,7 @@ namespace NSG
             if (track.channelMask_ & (int)AnimationChannel::POSITION)
                 bone->SetPosition(Lerp(bone->GetPosition(), Lerp(keyFrame->position_, nextKeyFrame.position_, t), weight));
             if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-                bone->SetOrientation(glm::slerp(bone->GetOrientation(), glm::slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t), weight));
+                bone->SetOrientation(Slerp(bone->GetOrientation(), Slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t), weight));
             if (track.channelMask_ & (int)AnimationChannel::SCALE)
                 bone->SetScale(Lerp(bone->GetScale(), Lerp(keyFrame->scale_, nextKeyFrame.scale_, t), weight));
         }
