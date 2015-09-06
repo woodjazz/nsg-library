@@ -167,12 +167,12 @@ static void Test01()
 
     static auto goal = scene->GetChild<SceneNode>("Obstacle2", false);
     FSM::Machine fsm(forward);
-    forward.AddTransition(turnRight).When([&]() { return nullptr != character->StepCollides(0.1f); });
-    turnRight.AddTransition(forward).When([&]() { return nullptr == character->StepCollides(0.1f); });
+    forward.AddTransition(turnRight).When([&]() { return nullptr != character->StepForwardCollides(0.1f); });
+    turnRight.AddTransition(forward).When([&]() { return nullptr == character->StepForwardCollides(0.1f); });
 
     auto ExitFunc = [&]()
     {
-        auto collider = character->StepCollides(0.1f);
+        auto collider = character->StepForwardCollides(0.1f);
         return collider && goal.get() == collider->GetSceneNode();
     };
 
@@ -211,7 +211,7 @@ static void Test02()
         character->SetForwardSpeed(5 * speed);
         character->SetAngularSpeed(turn * 90);
         if (buttonA)
-            character->Jump();
+            character->SetJumpSpeed(20);
 
     });
 

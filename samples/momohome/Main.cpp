@@ -38,8 +38,8 @@ int NSG_MAIN(int argc, char* argv[])
         static auto control = std::make_shared<CameraControl>(camera);
         static auto followCamera = std::make_shared<FollowCamera>(camera);
         player = scene->GetChild<SceneNode>("RigMomo", true);
-		static auto character = player->GetCharacter();
-		followCamera->Track(player->GetCharacter().get(), 5);
+        static auto character = player->GetCharacter();
+        followCamera->Track(player->GetCharacter().get(), 25);
         static float turn = 0;
 
         struct State : FSM::State
@@ -51,9 +51,9 @@ int NSG_MAIN(int argc, char* argv[])
             PCharacter character_;
             PAnimationController controller_;
             const char* animName_;
-			float deltaTime_;
+            float deltaTime_;
             State(const char* animName, PScene scene)
-				: loop_(true), time_(0), scene_(scene), animName_(animName), deltaTime_(0)
+                : loop_(true), time_(0), scene_(scene), animName_(animName), deltaTime_(0)
             {
                 player_ = scene_->GetChild<SceneNode>("RigMomo", true);
                 controller_ = player_->GetOrCreateAnimationController();
@@ -66,7 +66,7 @@ int NSG_MAIN(int argc, char* argv[])
             }
             void Stay() override
             {
-				deltaTime_ = Engine::GetPtr()->GetDeltaTime();
+                deltaTime_ = Engine::GetPtr()->GetDeltaTime();
                 time_ += Engine::GetPtr()->GetDeltaTime();
             }
             void End() override
@@ -83,7 +83,7 @@ int NSG_MAIN(int argc, char* argv[])
             void Stay() override
             {
                 State::Stay();
-				character_->SetForwardSpeed(0);
+                character_->SetForwardSpeed(0);
                 character_->SetAngularSpeed(0);
             }
         } static idle(scene);
@@ -163,21 +163,29 @@ int NSG_MAIN(int argc, char* argv[])
             void Begin() override
             {
                 State::Begin();
-				character_->Jump();
+                character_->SetJumpSpeed(20);
                 buttonA = false;
+            }
+            void Stay() override
+            {
+                State::Stay();
+                character_->SetJumpSpeed(0);
+            }
+            void End() override
+            {
+                character_->SetJumpSpeed(0);
+                State::End();
             }
         } static jump(scene);
 
         struct Glide : State
         {
-            float gravity_;
             Glide(PScene scene) : State("Momo_Glide", scene)
             {
             }
             void Begin() override
             {
-                gravity_ = character_->GetGravity();
-                character_->SetGravity(0);
+                character_->EnableFly(true);
                 State::Begin();
             }
             void Stay() override
@@ -188,7 +196,7 @@ int NSG_MAIN(int argc, char* argv[])
             }
             void End() override
             {
-                character_->SetGravity(gravity_);
+                character_->EnableFly(false);
                 State::End();
             }
         } static glide(scene);
@@ -206,16 +214,17 @@ int NSG_MAIN(int argc, char* argv[])
 
         static auto IsFalling = [&]()
         {
-			return character->IsFalling();
+            return character->IsFalling();
         };
 
         static float speed = 0;
-        static FSM::Machine fsm(fall);
+        static FSM::Machine fsm(idle);
         idle.AddTransition(walk).When([&]() { return speed > 0; });
         idle.AddTransition(walkBack).When([&]() { return speed < 0; });
         idle.AddTransition(turnL).When([&]() { return turn < 0; });
         idle.AddTransition(turnR).When([&]() { return turn > 0; });
         idle.AddTransition(jump).When([&]() { return buttonA; });
+        idle.AddTransition(fall).When([&]() { return IsFalling(); });
         jump.AddTransition(fall).When([&]() { return IsFalling(); });
         jump.AddTransition(glide).When([&]() { return buttonA; });
         fall.AddTransition(idle).When([&]() { return !IsFalling(); });

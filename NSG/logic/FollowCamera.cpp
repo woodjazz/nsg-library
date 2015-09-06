@@ -73,9 +73,26 @@ namespace NSG
         auto point = center + Normalize(camPos - center) * distance_;
         PointOnSphere sphere(center, point);
         auto theta = sphere.GetTheta();
-        for (float incTheta = 0.f; incTheta < 360.f; incTheta += 15.f)
+        for (float incTheta = 0.f; incTheta < TWO_PI; incTheta += PI15)
         {
-            sphere.SetAngles(theta + Radians(incTheta), angle_);
+            sphere.SetAngles(theta + incTheta, angle_);
+            auto target = sphere.GetPoint();
+            if (!Obstruction(center, target, radius))
+                return target;
+        }
+        if (angle_ + PI10 < PI90)
+        {
+            for (float incTheta = 0.f; incTheta < TWO_PI; incTheta += PI15)
+            {
+                sphere.SetAngles(theta + incTheta, PI90);
+                auto target = sphere.GetPoint();
+                if (!Obstruction(center, target, radius))
+                    return target;
+            }
+        }
+        if (angle_ > PI10)
+        {
+            sphere.SetAngles(theta, 0);
             auto target = sphere.GetPoint();
             if (!Obstruction(center, target, radius))
                 return target;
@@ -100,7 +117,7 @@ namespace NSG
         camera_->SetGlobalLookAtPosition(center);
     }
 
-	void FollowCamera::Track(ICollision* track, float distance)
+    void FollowCamera::Track(ICollision* track, float distance)
     {
         track_ = track;
         distance_ = distance;

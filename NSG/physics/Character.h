@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
-#include "constants.h"
+#include "Constants.h"
 #include "ICollision.h"
 #include "PhysicsWorld.h"
 #include "btBulletDynamicsCommon.h"
@@ -45,13 +45,12 @@ namespace NSG
         void SetRestitution(float restitution);
         void SetFriction(float friction);
         void SetStepHeight(float stepHeight); // [0..1] (a factor of shapeHeight_)
-        void SetJumpAcceleration(float jumpSpeed);
         void SetGravity(float gravity);
         float GetGravity() const { return gravity_; }
-        void Jump();
-        bool IsOnGround() const { return verticalAcceleration_ == 0; };
-        bool IsFalling() const { return verticalAcceleration_ < 0; }
-        bool IsJumping() const { return verticalAcceleration_ > 0; }
+        bool IsOnGround() const;
+        bool IsFalling() const { return verticalMove_ < 0; }
+        bool IsJumping() const { return verticalMove_ > 0; }
+        void SetJumpSpeed(float speed);
         void SetForwardSpeed(float speed);
         void SetAngularSpeed(float speed); // angle in degrees
         BoundingBox GetColliderBoundingBox() const override;
@@ -62,9 +61,10 @@ namespace NSG
         void Save(pugi::xml_node& node);
         SceneNode* GetSceneNode() const override;
         bool HandleCollision() const override { return handleCollision_; }
-        ICollision* StepCollides(float step) const;
+        ICollision* StepForwardCollides(float step) const;
+        void EnableFly(bool enable) { flying_ = enable; }
     private:
-        Vector3 GetGroundPoint(Vector3 origin) const; //point off contact with ground
+        Vector3 GetUnderFeetPoint(Vector3 origin) const; //point off contact with ground
         float GetGroundHeightFrom(const Vector3& pos) const;
         void ApplyGravity(float deltaTime);
         void StepForward(float deltaTime);
@@ -90,8 +90,8 @@ namespace NSG
         float restitution_;
         float friction_;
         float stepHeight_;
-        float jumpAcceleration_;
-        float verticalAcceleration_;
+        float verticalMove_;
+        float jumpSpeed_;
         float forwardSpeed_;
         float angularSpeed_;
         float gravity_;
@@ -106,5 +106,6 @@ namespace NSG
         Vector3 forwardAxis_;
         Vector3 upAxis_;
         Vector3 nodeColliderOffset_;
+        bool flying_;
     };
 }

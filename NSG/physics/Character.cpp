@@ -48,8 +48,8 @@ namespace NSG
           restitution_(0),
           friction_(DEFAULT_FRICTION),
           stepHeight_(0.6f),
-          jumpAcceleration_(1),
-          verticalAcceleration_(0),
+          verticalMove_(0),
+          jumpSpeed_(0),
           forwardSpeed_(0),
           angularSpeed_(0),
           gravity_(9.8f),
@@ -61,7 +61,8 @@ namespace NSG
           shapeHalfHeight_(0),
           shapeSphereRadius_(0),
           forwardAxis_(-VECTOR3_FORWARD),
-          upAxis_(VECTOR3_UP)
+          upAxis_(VECTOR3_UP),
+          flying_(false)
     {
         ghost_->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 
@@ -86,7 +87,7 @@ namespace NSG
         return -MAX_WORLD_SIZE;
     }
 
-    Vector3 Character::GetGroundPoint(Vector3 origin) const
+    Vector3 Character::GetUnderFeetPoint(Vector3 origin) const
     {
         origin.y -= shapeHalfHeight_ + nodeColliderOffset_.y;
         return origin;
@@ -94,20 +95,28 @@ namespace NSG
 
     void Character::ApplyGravity(float deltaTime)
     {
-        verticalAcceleration_ -= gravity_ * deltaTime * deltaTime;
+        if(flying_)
+            return;
+        verticalMove_ += jumpSpeed_ * deltaTime - gravity_ * deltaTime * deltaTime;
         auto worldTrans = ghost_->getWorldTransform();
-        auto groundPoint = GetGroundPoint(ToVector3(worldTrans.getOrigin()));
-        auto targetPos = groundPoint + verticalAcceleration_ * VECTOR3_UP;
-        auto result = Obstruction(groundPoint, targetPos, shapeHalfWidth_);
+        auto feetPoint = GetUnderFeetPoint(ToVector3(worldTrans.getOrigin()));
+        auto targetPos = feetPoint + verticalMove_ * VECTOR3_UP;
+        auto result = Obstruction(feetPoint, targetPos, shapeHalfWidth_);
         if (result.HasCollided())
         {
             auto onGroundPos = result.position_.y + shapeHalfHeight_ + nodeColliderOffset_.y;
             targetPos.y = onGroundPos;
-            verticalAcceleration_ = 0;
+            verticalMove_ = 0;
+            worldTrans.setOrigin(ToBtVector3(targetPos));
+            ghost_->setWorldTransform(worldTrans);
+            SyncNode();
         }
-        worldTrans.setOrigin(ToBtVector3(targetPos));
-        ghost_->setWorldTransform(worldTrans);
-        SyncNode();
+        else if(verticalMove_)
+        {
+            worldTrans.setOrigin(ToBtVector3(targetPos));
+            ghost_->setWorldTransform(worldTrans);
+            SyncNode();
+        }
     }
 
     void Character::updateAction(btCollisionWorld* collisionWorld, btScalar deltaTime)
@@ -116,16 +125,16 @@ namespace NSG
         StepForward(deltaTime);
     }
 
-    ICollision* Character::StepCollides(float step) const
+    ICollision* Character::StepForwardCollides(float step) const
     {
         const auto& worldTrans =  ghost_->getWorldTransform();
         auto position = ToVector3(worldTrans.getOrigin());
-        auto groundPoint = GetGroundPoint(position);
+        auto feetPoint = GetUnderFeetPoint(position);
         auto rot = ToQuaternion(worldTrans.getRotation());
         auto forwardDirection = rot * forwardAxis_;
         auto stepForward = step * forwardDirection;
         float stepUp = stepHeight_ * shapeHeight_;
-        auto bodyCenter = groundPoint + VECTOR3_UP * shapeHalfHeight_;
+        auto bodyCenter = feetPoint + VECTOR3_UP * shapeHalfHeight_;
         auto verticalStep = VECTOR3_UP * stepUp;
         auto sourcePos = bodyCenter + verticalStep;
         auto targetPos = sourcePos + stepForward;
@@ -138,25 +147,29 @@ namespace NSG
         auto worldTrans =  ghost_->getWorldTransform();
         auto rot = ToQuaternion(worldTrans.getRotation());
         auto position = ToVector3(worldTrans.getOrigin());
-        auto groundPoint = GetGroundPoint(position);
+        auto feetPoint = GetUnderFeetPoint(position);
         auto forwardDirection = rot * forwardAxis_;
         auto stepForward = forwardSpeed_ * deltaTime * forwardDirection;
         float stepUp = stepHeight_ * shapeHeight_;
+        if(flying_)
+            stepUp = 0;
         auto verticalStep = VECTOR3_UP * stepUp;
-        auto bodyCenter = groundPoint + VECTOR3_UP * shapeHalfHeight_;
+        auto bodyCenter = feetPoint + VECTOR3_UP * shapeHalfHeight_;
         auto groundHeight = GetGroundHeightFrom(bodyCenter);
         auto sourcePos = bodyCenter + verticalStep;
         auto targetPos = sourcePos + stepForward;
         auto result = Obstruction(sourcePos, targetPos, std::min(stepUp, shapeSphereRadius_));
-        bool steppingUp = false;
         if (result.HasCollided())
         {
             // collided forward ( cannot step up)
             auto dir2Target = targetPos - sourcePos;
             auto sliding = GetSlidingVector(dir2Target, result.normal_);
-            sliding.y = 0;
+            if(!flying_)
+            {
+                sliding.y = 0;
+                position.y = groundHeight + shapeHalfHeight_ + nodeColliderOffset_.y;
+            }
             targetPos = position + sliding;
-            forwardSpeed_ = 0;
         }
         else if (IsOnGround())
         {
@@ -167,14 +180,10 @@ namespace NSG
             else if (groundHeight + stepUp > groundHeight2)
                 targetPos = position + stepForward; // stepping down
             else
-            {
-                steppingUp = true; //stepping up
-                targetPos = position + stepForward + verticalStep;
-            }
+                targetPos = position + stepForward + verticalStep; //stepping up
         }
         else
         {
-            // still falling
             targetPos = position + stepForward;
         }
         worldTrans.setOrigin(ToBtVector3(targetPos));
@@ -184,6 +193,11 @@ namespace NSG
         worldTrans.setBasis(orn);
         ghost_->setWorldTransform(worldTrans);
         SyncNode();
+    }
+
+    bool Character::IsOnGround() const
+    {
+        return verticalMove_ == 0 && !flying_;
     }
 
     void Character::debugDraw(btIDebugDraw* debugDrawer)
@@ -250,12 +264,9 @@ namespace NSG
         }
     }
 
-    void Character::SetJumpAcceleration(float jumpAcceleration)
+    void Character::SetJumpSpeed(float speed)
     {
-        if (jumpAcceleration_ != jumpAcceleration)
-        {
-            jumpAcceleration_ = jumpAcceleration;
-        }
+        jumpSpeed_ = speed;
     }
 
     void Character::SetGravity(float gravity)
@@ -264,12 +275,6 @@ namespace NSG
         {
             gravity_ = gravity;
         }
-    }
-
-    void Character::Jump()
-    {
-        if (verticalAcceleration_ == 0)
-            verticalAcceleration_ = jumpAcceleration_;
     }
 
     void Character::SetForwardSpeed(float speed)
