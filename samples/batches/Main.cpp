@@ -100,10 +100,10 @@ int NSG_MAIN(int argc, char* argv[])
 
         for (int r = 0; r < ROWS; r++)
             for (int c = 0; c < COLS; c++)
-                earth[c][r]->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
+                earth[c][r]->SetOrientation(AngleAxis(y_angle, Vertex3(0, 0, 1)) * AngleAxis(y_angle, Vertex3(0, 1, 0)));
 
-        x_angle += glm::pi<float>() / 10.0f * deltaTime;
-        y_angle += glm::pi<float>() / 10.0f * deltaTime;
+        x_angle += PI / 10.0f * deltaTime;
+        y_angle += PI / 10.0f * deltaTime;
 
 		static float distance = 0;
 		static float step = 15;

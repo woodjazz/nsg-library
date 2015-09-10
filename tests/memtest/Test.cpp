@@ -54,6 +54,17 @@ static void Test02()
 	}
 }
 
+static void Test03()
+{
+	auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
+	auto slotUpdate = Engine::SigUpdate()->Connect([&](float deltaTime)
+	{
+		Camera cam;
+	});
+
+	Engine::Create()->Run();
+}
+
 
 void Tests()
 {
@@ -64,4 +75,5 @@ void Tests()
 		Test02();
 	}
 #endif
+	//Test03();
 }

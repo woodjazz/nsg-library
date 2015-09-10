@@ -40,6 +40,8 @@ misrepresented as being the original software.
 #include "PhysicsWorld.h"
 #include "LinesMesh.h"
 #include "GUI.h"
+#include "Check.h"
+
 namespace NSG
 {
     Renderer::Renderer()

@@ -66,6 +66,7 @@ namespace NSG
         void GenerateShadowMaps(const Camera* camera);
         bool HasSpecularColor() const;
         int GetShadowSplits() const {return shadowSplits_; }
+		float GetInvRange() const { return invRange_; }
     private:
         int CalculateSplits(const Camera* camera, float splits[MAX_SHADOW_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
         FrameBuffer* GetShadowFrameBuffer(int idx) const;
@@ -94,5 +95,6 @@ namespace NSG
         float shadowBias_; // Bias is used to add a slight offset distance between an object and the shadows cast by it.
         PShadowCamera shadowCamera_[MAX_SHADOW_SPLITS];
         int shadowSplits_; //Calculated in the shadow pass
+		float invRange_;
     };
 }

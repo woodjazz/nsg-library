@@ -41,6 +41,7 @@ namespace NSG
         static const AppConfiguration& GetAppConfiguration() { return conf_; }
         static SignalEmpty::PSignal SigBeginFrame();
         static SignalUpdate::PSignal SigUpdate();
+        static void ReleaseMemory();
     private:
         Engine();
         void InitializeTicks() override;

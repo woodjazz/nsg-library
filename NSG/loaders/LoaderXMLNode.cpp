@@ -77,7 +77,13 @@ namespace NSG
 				if (!dataNode && std::dynamic_pointer_cast<Resource>(obj))
 				{
 					if (!resource_)
-						resource_ = std::make_shared<ResourceFile>(name);
+					{
+						auto resourceFile = std::dynamic_pointer_cast<ResourceFile>(loaderXML_->GetResource());
+						CHECK_ASSERT(resourceFile, __FILE__, __LINE__);
+						Path path(resourceFile->GetPath().GetFilePath());
+						path.SetFileName(Path(name).GetFilename());
+						resource_ = std::make_shared<ResourceFile>(path.GetFilePath());
+					}
 					return resource_->IsReady();
 				}
 				return true;

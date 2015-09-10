@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include <stdio.h>
 #include <sstream>
 #include <string>
+#include <stdlib.h>
 
 #if _WIN32
 #include <windows.h>

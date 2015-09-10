@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Image.h"
 #include "StringConverter.h"
+#include "Check.h"
 #include "pugixml.hpp"
 
 namespace NSG

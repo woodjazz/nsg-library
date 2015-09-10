@@ -31,7 +31,7 @@ function(EXPORT_BLEND_TOOL input_file output_dir)
 
 			set(OUTPUT_FILE ${OUTPUTDIR}/${OUTPUTNAME})
 
-		    set(EXPORT_CMD ${BLENDER_EXECUTABLE} ${INPUTFILE} --background --python ${EXPORT_SCRIPT})
+		    set(EXPORT_CMD ${BLENDER_EXECUTABLE} ${INPUTFILE} --background --python ${EXPORT_SCRIPT} -- ${OUTPUTDIR})
 
 	    	add_custom_command(OUTPUT ${OUTPUT_FILE}
 				COMMAND ${EXPORT_CMD}
@@ -39,7 +39,8 @@ function(EXPORT_BLEND_TOOL input_file output_dir)
 				COMMENT "Exporting ${INPUTFILE}"
 			)
 
-		    set(TARGET_NAME EXPORT_${PROJECT_NAME}_${INPUTNAME})
+			string(REGEX REPLACE "[/:.\\-]" "_" OUT_DIR_CONVERTED ${output_dir})
+		    set(TARGET_NAME EXPORT_${PROJECT_NAME}_${INPUTNAME}_${OUT_DIR_CONVERTED})
 
 			add_custom_target(${TARGET_NAME}
 	   			DEPENDS ${OUTPUT_FILE} ${INPUTFILE}

@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Sphere.h"
 #include "Scene.h"
 #include "Ray.h"
+#include "Check.h"
 
 namespace NSG
 {
@@ -39,8 +40,7 @@ namespace NSG
         : Camera(light->GetName() + "ShadowCamera"),
           light_(light),
           nearSplit_(0),
-          farSplit_(MAX_WORLD_SIZE),
-		  range_(-1)
+          farSplit_(MAX_WORLD_SIZE)
     {
         dirPositiveX_.SetLocalLookAtPosition(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeX_.SetLocalLookAtPosition(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
@@ -49,6 +49,8 @@ namespace NSG
         dirPositiveZ_.SetLocalLookAtPosition(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeZ_.SetLocalLookAtPosition(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
         EnableAutoAspectRatio(false);
+        tempCam_.EnableOrtho();
+        tempCam_.SetNearClip(0); // Set near plane in order to view all the scene
     }
 
     ShadowCamera::~ShadowCamera()
@@ -80,23 +82,6 @@ namespace NSG
         DisableOrtho();
     }
 
-	void ShadowCamera::SetRange(float range)
-	{
-		//CHECK_ASSERT(LightType::DIRECTIONAL == type_ && "SetRange only must be used from ShadowCamera::SetupDirectional!!!", __FILE__, __LINE__);
-		if (range_ != range)
-		{
-			range_ = range;
-			SetUniformsNeedUpdate();
-		}
-	}
-
-	float ShadowCamera::GetRange() const
-	{
-		CHECK_ASSERT(range_ != -1 && "Light or ShadowCamera range is incorrect!!!", __FILE__, __LINE__);
-		return range_;
-	}
-
-
     void ShadowCamera::SetupDirectional(int split, const Camera* camera, float nearSplit, float farSplit, const BoundingBox& receiversFullFrustumViewBox)
     {
         CHECK_ASSERT(!GetParent(), __FILE__, __LINE__);
@@ -106,14 +91,13 @@ namespace NSG
         auto scene = light_->GetScene().get();
         EnableOrtho();
         CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL, __FILE__, __LINE__);
-        Camera shadowCam;
-        auto orientation = light_->GetGlobalOrientation();
+        
+		auto orientation = light_->GetGlobalOrientation();
         auto dir = light_->GetLookAtDirection();
         //Set the initial pos far away in order not to miss any object
-        auto initialPos = camera->GetGlobalPosition() - 10000.f * dir;
-        shadowCam.SetOrientation(orientation);
-        shadowCam.SetPosition(initialPos);
-
+		auto initialPos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * dir;
+        tempCam_.SetOrientation(orientation);
+		tempCam_.SetPosition(initialPos);
         BoundingBox splitBB;
 
         if (farSplit < camera->GetZFar() || nearSplit > camera->GetZNear())
@@ -140,7 +124,7 @@ namespace NSG
         {
             // Setup/Adjust the shadowCam camera to calculate the casters
             BoundingBox shadowCamSplit(splitBB);
-            shadowCamSplit.Transform(shadowCam.GetView());
+			shadowCamSplit.Transform(tempCam_.GetView());
             auto viewSize = shadowCamSplit.Size();
             auto viewCenter = shadowCamSplit.Center();
             // Calculate shadowCam's center to the view space bounding box
@@ -148,31 +132,29 @@ namespace NSG
 			auto initialZ = initialPos.z;
             initialPos += orientation * adjust;
 			auto finalZ = initialPos.z;
-            shadowCam.EnableOrtho();
-			shadowCam.SetPosition(initialPos); //Center shadowCam
-            shadowCam.SetAspectRatio(viewSize.x / viewSize.y);
-            shadowCam.SetOrthoScale(viewSize.x);
-			shadowCam.SetNearClip(0); // Set near plane in order to view all the scene
+			tempCam_.SetPosition(initialPos); //Center shadowCam
+			tempCam_.SetAspectRatio(viewSize.x / viewSize.y);
+			tempCam_.SetOrthoScale(viewSize.x);
 			auto offsetZ = finalZ - initialZ;
 			auto farZ = -(shadowCamSplit.min_.z + offsetZ);
-			shadowCam.SetFarClip(farZ); // Set far plane in order to view all the scene
+			tempCam_.SetFarClip(farZ); // Set far plane in order to view all the scene
         }
 
-		splitBB.Transform(shadowCam.GetView()); // transform view box the shadowCam's space
-        auto shadowCamFrustum = shadowCam.GetFrustum();
+		splitBB.Transform(tempCam_.GetView()); // transform view box the shadowCam's space
+		auto shadowCamFrustum = tempCam_.GetFrustum();
 		// Get caster for the current shadowCam's frustum
         BoundingBox castersBB = Camera::GetViewBox(shadowCamFrustum.get(), scene, false, true);
 		if (castersBB.IsDefined())
 		{
 			// If there are casters visibles from current shadowCam's frustum:
-			castersBB.Transform(shadowCam.GetView()); // transform caster's view box the shadowCam's space
+			castersBB.Transform(tempCam_.GetView()); // transform caster's view box the shadowCam's space
 			// Merge Z axis casters in order not to miss any between camFrustum and shadowCam's position
 			castersBB.min_.z = std::min(castersBB.min_.z, splitBB.min_.z);
 			castersBB.max_.z = std::max(castersBB.max_.z, splitBB.max_.z);
 			splitBB = castersBB;
 		}
         QuantizeAndSetup2ViewBox(split, initialPos, splitBB);
-        SetRange(Length(splitBB.Size())); //Sets the shadowCam's range used in the shader (See u_lightInvRange)
+        //SetRange(Length(splitBB.Size())); //Sets the shadowCam's range used in the shader (See u_lightInvRange)
     }
 
     void ShadowCamera::QuantizeAndSetup2ViewBox(int split, const Vector3& initialPos, const BoundingBox& viewBox)

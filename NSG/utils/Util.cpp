@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 
 #include "Util.h"
+#include "Check.h"
 #include "Plane.h"
 #include "Constants.h"
 #include "Path.h"
@@ -297,6 +298,11 @@ namespace NSG
         return sliding;
     }
 
+	float Dot(const Vector4& a, const Vector4& b)
+	{
+		return glm::dot(a, b);
+	}
+
 	float Dot(const Vector3& a, const Vector3& b)
 	{
 		return glm::dot(a, b);
@@ -412,6 +418,16 @@ namespace NSG
 		return glm::normalize(value);
 	}
 
+	float Distance(float a, float b)
+	{
+		return glm::distance(a, b);
+	}
+
+	float Distance(const Vector4& a, const Vector4& b)
+	{
+		return glm::distance(a, b);
+	}
+
     float Distance(const Vector3& a, const Vector3& b)
     {
         return glm::distance(a, b);
@@ -460,6 +476,21 @@ namespace NSG
 	Vector3 Column(const Matrix3& mat, int index)
 	{
 		return glm::column(mat, index);
+	}
+
+	Vector3 CatmullRom(const Vector3& v1, const Vector3& v2, const Vector3& v3, const Vector3& v4, float s)
+	{
+		return glm::catmullRom(v1, v2, v3, v4, s);
+	}
+
+	Vector4 Fract(const Vector4& value)
+	{
+		return glm::fract(value);
+	}
+
+	Vertex3 EulerAngles(const Quaternion& q)
+	{
+		return glm::eulerAngles(q);
 	}
 
 #if 0

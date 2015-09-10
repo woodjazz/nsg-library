@@ -144,7 +144,7 @@ static void Test03()
 		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
         CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
         CHECK_CONDITION(result[0].node_ == node1s.get(), __FILE__, __LINE__);
-        CHECK_CONDITION(glm::abs(result[0].distance_ - 99) < 0.1f, __FILE__, __LINE__);
+        CHECK_CONDITION(Abs(result[0].distance_ - 99) < 0.1f, __FILE__, __LINE__);
 
         direction1s = node1s->GetGlobalPosition() - Vector3(0.45f, 0, 0) - origin;
         ray = Ray(origin, direction1s);
@@ -181,52 +181,52 @@ static void Test04()
         RayNodeResult closest;
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "0", __FILE__, __LINE__);
-        CHECK_CONDITION(glm::abs(closest.distance_ - (99 + RADIUS)) < 0.01f, __FILE__, __LINE__);
+        CHECK_CONDITION(Abs(closest.distance_ - (99 + RADIUS)) < 0.01f, __FILE__, __LINE__);
 
         ray = Ray(Vertex3(0, 0, -101), -direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "99", __FILE__, __LINE__);
-        CHECK_CONDITION(glm::abs(closest.distance_ - (1 + RADIUS)) < 0.01f, __FILE__, __LINE__);
+        CHECK_CONDITION(Abs(closest.distance_ - (1 + RADIUS)) < 0.01f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, 100);
         direction1s = Vertex3(0, 0, -50) - origin;
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
-        float d = glm::length(direction1s) - RADIUS;
-        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
+        float d = Length(direction1s) - RADIUS;
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50) - origin;
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
-        d = glm::length(direction1s) - RADIUS;
-        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
+        d = Length(direction1s) - RADIUS;
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50.49f) - origin;
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
-        d = glm::length(direction1s) - 0.01f;
-        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        d = Length(direction1s) - 0.01f;
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50.51f) - origin;
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "51", __FILE__, __LINE__);
-        d = glm::length(direction1s) - 0.01f;
-        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        d = Length(direction1s) - 0.01f;
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -49.51f) - origin;
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
         CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
-        d = glm::length(direction1s) - 0.01f;
-        CHECK_CONDITION(glm::abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        d = Length(direction1s) - 0.01f;
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
     }
 }
 
@@ -250,7 +250,7 @@ static void Test05()
 		RayNodeResult closest;
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
 		CHECK_CONDITION(closest.node_->GetName() == "0", __FILE__, __LINE__);
-		CHECK_CONDITION(glm::abs(closest.distance_ - (1 - RADIUS * SCALE)) < 0.01f, __FILE__, __LINE__);
+		CHECK_CONDITION(Abs(closest.distance_ - (1 - RADIUS * SCALE)) < 0.01f, __FILE__, __LINE__);
 	}
 }
 

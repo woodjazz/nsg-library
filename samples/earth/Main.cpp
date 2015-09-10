@@ -84,11 +84,11 @@ int NSG_MAIN(int argc, char* argv[])
     music->Play();
 
 	auto engine = Engine::Create();
-    auto slotUpdate = engine->SigUpdate()->Connect([&](float deltaTime)
+	auto slotUpdate = Engine::SigUpdate()->Connect([&](float deltaTime)
     {
         {
             static float delta1 = 0;
-            Vertex3 position = glm::catmullRom(
+			auto position = CatmullRom(
                                    camControlPoints[0],
                                    camControlPoints[1],
                                    camControlPoints[2],
@@ -110,9 +110,9 @@ int NSG_MAIN(int argc, char* argv[])
         {
             static float x_angle = 0;
             static float y_angle = 0;
-            x_angle += glm::pi<float>() / 10.0f * deltaTime;
-            y_angle += glm::pi<float>() / 10.0f * deltaTime;
-            earth->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
+            x_angle += PI / 10.0f * deltaTime;
+            y_angle += PI / 10.0f * deltaTime;
+            earth->SetOrientation(AngleAxis(y_angle, Vertex3(0, 0, 1)) * AngleAxis(y_angle, Vertex3(0, 1, 0)));
         }
     });
 

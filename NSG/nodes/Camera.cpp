@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "Window.h"
 #include "Material.h"
 #include "StringConverter.h"
+#include "Check.h"
 #include "pugixml.hpp"
 #include <sstream>
 

@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "AnimationState.h"
 #include "SceneNode.h"
 #include "Scene.h"
+#include "Check.h"
 
 namespace NSG
 {

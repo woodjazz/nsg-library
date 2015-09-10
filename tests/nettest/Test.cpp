@@ -100,8 +100,41 @@ static int Test02()
 	return engine->Run();
 }
 
+static int Test03()
+{
+	auto window0 = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
+
+	auto onLoad = [&](const std::string & data)
+	{
+		LOGI("HTTP OnLoad0: %s", data.c_str());
+		window0 = nullptr;
+	};
+
+	auto onError = [&](int httpError, const std::string & description)
+	{
+		LOGI("HTTP Error: %d. %s", httpError, description.c_str());
+		CHECK_CONDITION(false, __FILE__, __LINE__);
+	};
+
+	auto onProgress = [&](unsigned percentage)
+	{
+		LOGI("HTTP Progress: %d", percentage);
+	};
+
+	std::string url = "http://localhost:8000/";
+	Path path("data/uvs/scene.xml");
+	auto filename = path.GetFilePath();
+	url += "/" + filename;
+
+	HTTPRequest request(url, onLoad, onError, onProgress);
+	request.StartRequest();
+	auto engine = Engine::Create();
+	return engine->Run();
+}
+
 void Tests()
 {
 	Test01();
     Test02();
+	//Test03();
 }

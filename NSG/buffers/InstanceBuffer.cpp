@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Batch.h"
 #include "SceneNode.h"
 #include "Util.h"
+#include "Check.h"
 
 namespace NSG
 {

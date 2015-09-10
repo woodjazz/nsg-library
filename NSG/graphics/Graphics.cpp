@@ -362,18 +362,18 @@ namespace NSG
 
     Graphics::~Graphics()
     {
-		Graphics::Destroy();
+        Graphics::Destroy();
     }
 
-	void Graphics::CreateGUI(Window* mainWindow)
-	{
-		imgui_ = std::make_shared<GUI>(mainWindow);
-	}
+    void Graphics::CreateGUI(Window* mainWindow)
+    {
+        imgui_ = std::make_shared<GUI>(mainWindow);
+    }
 
-	void Graphics::DestroyGUI()
-	{
-		imgui_ = nullptr;
-	}
+    void Graphics::DestroyGUI()
+    {
+        imgui_ = nullptr;
+    }
 
     bool Graphics::CheckExtension(const std::string& name)
     {
@@ -408,7 +408,7 @@ namespace NSG
         SetFrameBuffer(nullptr);
         SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL,
                        DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
-		SetScissorTest();
+        SetScissorTest();
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 
@@ -508,7 +508,7 @@ namespace NSG
 
     void Graphics::ClearAllBuffers()
     {
-		SetScissorTest();
+        SetScissorTest();
         SetColorMask(true);
         SetDepthMask(true);
         SetStencilMask(~GLuint(0));
@@ -517,7 +517,7 @@ namespace NSG
 
     void Graphics::ClearBuffers(bool color, bool depth, bool stencil)
     {
-		SetScissorTest();
+        SetScissorTest();
         GLbitfield mask(0);
         if (color)
         {
@@ -542,7 +542,7 @@ namespace NSG
 
     void Graphics::ClearStencilBuffer(GLint value)
     {
-		SetScissorTest();
+        SetScissorTest();
         SetClearStencil(value);
         glClear(GL_STENCIL_BUFFER_BIT);
     }
@@ -592,37 +592,37 @@ namespace NSG
         }
     }
 
-	void Graphics::SetScissorTest(bool enable, GLint x, GLint y, GLsizei width, GLsizei height)
-	{
-		static bool enable_ = false;
+    void Graphics::SetScissorTest(bool enable, GLint x, GLint y, GLsizei width, GLsizei height)
+    {
+        static bool enable_ = false;
 
-		if (enable != enable_)
-		{
-			if (enable)
-				glEnable(GL_SCISSOR_TEST);
-			else
-				glDisable(GL_SCISSOR_TEST);
+        if (enable != enable_)
+        {
+            if (enable)
+                glEnable(GL_SCISSOR_TEST);
+            else
+                glDisable(GL_SCISSOR_TEST);
 
-			enable_ = enable;
-		}
+            enable_ = enable;
+        }
 
-		if (enable)
-		{
-			static GLint x_ = 0;
-			static GLint y_ = 0;
-			static GLsizei width_ = 0;
-			static GLsizei height_ = 0;
+        if (enable)
+        {
+            static GLint x_ = 0;
+            static GLint y_ = 0;
+            static GLsizei width_ = 0;
+            static GLsizei height_ = 0;
 
-			if (x != x_ || y != y_ || width != width_ || height != height_)
-			{
-				glScissor(x, y, width, height);
-				x_ = x;
-				y_ = y;
-				width_ = width;
-				height_ = height;
-			}
-		}
-	}
+            if (x != x_ || y != y_ || width != width_ || height != height_)
+            {
+                glScissor(x, y, width, height);
+                x_ = x;
+                y_ = y;
+                width_ = width;
+                height_ = height;
+            }
+        }
+    }
 
     void Graphics::SetColorMask(bool enable)
     {
@@ -828,24 +828,24 @@ namespace NSG
         }
     }
 
-	void Graphics::SetTexture(int index, GLuint id, GLenum target)
-	{
-		CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
+    void Graphics::SetTexture(int index, GLuint id, GLenum target)
+    {
+        CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
 
-		auto currentTexture = textures_[index];
-		if (activeTexture_ != index)
-		{
-			glActiveTexture(GL_TEXTURE0 + index);
-			textures_[index] = nullptr;
-			glBindTexture(target, id);
-			activeTexture_ = index;
-		}
-		else if (!currentTexture || currentTexture->GetID() != id)
-		{
-			textures_[index] = nullptr;
-			glBindTexture(target, id);
-		}
-	}
+        auto currentTexture = textures_[index];
+        if (activeTexture_ != index)
+        {
+            glActiveTexture(GL_TEXTURE0 + index);
+            textures_[index] = nullptr;
+            glBindTexture(target, id);
+            activeTexture_ = index;
+        }
+        else if (!currentTexture || currentTexture->GetID() != id)
+        {
+            textures_[index] = nullptr;
+            glBindTexture(target, id);
+        }
+    }
 
     void Graphics::SetTexture(int index, Texture* texture)
     {
@@ -1029,23 +1029,23 @@ namespace NSG
         #endif
     }
 
-	void Graphics::SetBuffers(bool solid, bool allowInstancing)
-	{
-		VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
-		if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
-		{
+    void Graphics::SetBuffers(bool solid, bool allowInstancing)
+    {
+        VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
+        if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
+        {
             auto vao = VertexArrayObj::GetOrCreate(VAOKey{allowInstancing, activeProgram_, activeMesh_, solid});
-			vao->Use();
-		}
-		else
-		{
-			SetVertexBuffer(vBuffer);
-			SetAttributes(nullptr);
-			if (allowInstancing && activeProgram_->GetMaterial()->IsBatched() && !vBuffer->IsDynamic())
-				SetInstanceAttrPointers(activeProgram_);
-			SetIndexBuffer(activeMesh_->GetIndexBuffer(solid));
-		}
-	}
+            vao->Use();
+        }
+        else
+        {
+            SetVertexBuffer(vBuffer);
+            SetAttributes(nullptr);
+            if (allowInstancing && activeProgram_->GetMaterial()->IsBatched() && !vBuffer->IsDynamic())
+                SetInstanceAttrPointers(activeProgram_);
+            SetIndexBuffer(activeMesh_->GetIndexBuffer(solid));
+        }
+    }
 
     void Graphics::SetInstanceAttrPointers(Program* program)
     {
@@ -1168,9 +1168,9 @@ namespace NSG
                               reinterpret_cast<void*>(offsetof(VertexData, bonesWeight_)));
     }
 
-	void Graphics::SetAttributes(SetAttPointersFunction setAttPointersCallBack)
+    void Graphics::SetAttributes(SetAttPointersFunction setAttPointersCallBack)
     {
-		if (lastMesh_ != activeMesh_ || lastProgram_ != activeProgram_)
+        if (lastMesh_ != activeMesh_ || lastProgram_ != activeProgram_)
         {
             GLuint position_loc = activeProgram_->GetAttPositionLoc();
             GLuint texcoord_loc0 = activeProgram_->GetAttTextCoordLoc0();
@@ -1280,12 +1280,12 @@ namespace NSG
                 }
             }
 
-			if (setAttPointersCallBack)
-				setAttPointersCallBack();
-			else
-				SetVertexAttrPointers();
+            if (setAttPointersCallBack)
+                setAttPointersCallBack();
+            else
+                SetVertexAttrPointers();
 
-			{
+            {
                 /////////////////////////////
                 // Disable unused attributes
                 /////////////////////////////
@@ -1305,87 +1305,88 @@ namespace NSG
         }
     }
 
-	void Graphics::SetupPass(const Pass* pass)
-	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-
-		auto& data = pass->GetData();
-
-		SetColorMask(data.enableColorBuffer_);
-
-		SetStencilTest(data.enableStencilTest_, data.stencilMask_, data.sfailStencilOp_,
-			data.dpfailStencilOp_, data.dppassStencilOp_, data.stencilFunc_,
-			data.stencilRefValue_, data.stencilMaskValue_);
-
-		SetScissorTest(data.enableScissorTest_,
-			data.scissorX_, data.scissorY_,
-			data.scissorWidth_, data.scissorHeight_);
-
-		SetBlendModeTest(pass->GetBlendMode());
-		EnableDepthTest(data.enableDepthTest_);
-		if (data.enableDepthTest_)
-		{
-			SetDepthMask(data.enableDepthBuffer_);
-			SetDepthFunc(data.depthFunc_);
-		}
-
-		SetFrontFace(data.frontFaceMode_);
-
-		if (data.cullFaceMode_ != CullFaceMode::DISABLED)
-		{
-			EnableCullFace(true);
-			SetCullFace(data.cullFaceMode_);
-		}
-		else
-			EnableCullFace(false);
-
-		CHECK_GL_STATUS(__FILE__, __LINE__);
-
-	}
-
-	bool Graphics::SetupProgram(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light)
+    void Graphics::SetupPass(const Pass* pass)
     {
-		SetupPass(pass);
+        CHECK_GL_STATUS(__FILE__, __LINE__);
 
-		if (material)
-		{
-			auto cullFaceMode = material->GetCullFaceMode();
-			if (cullFaceMode != CullFaceMode::DISABLED)
-			{
-				EnableCullFace(true);
-				SetCullFace(cullFaceMode);
-			}
-			else
-				EnableCullFace(false);
-		}
+        auto& data = pass->GetData();
 
-		auto program = Program::GetOrCreate(pass, activeCamera_, activeMesh_, material, light, sceneNode);
+        SetColorMask(data.enableColorBuffer_);
+
+        SetStencilTest(data.enableStencilTest_, data.stencilMask_, data.sfailStencilOp_,
+                       data.dpfailStencilOp_, data.dppassStencilOp_, data.stencilFunc_,
+                       data.stencilRefValue_, data.stencilMaskValue_);
+
+        SetScissorTest(data.enableScissorTest_,
+                       data.scissorX_, data.scissorY_,
+                       data.scissorWidth_, data.scissorHeight_);
+
+        SetBlendModeTest(pass->GetBlendMode());
+        EnableDepthTest(data.enableDepthTest_);
+        if (data.enableDepthTest_)
+        {
+            SetDepthMask(data.enableDepthBuffer_);
+            SetDepthFunc(data.depthFunc_);
+        }
+
+        SetFrontFace(data.frontFaceMode_);
+
+        if (data.cullFaceMode_ != CullFaceMode::DISABLED)
+        {
+            EnableCullFace(true);
+            SetCullFace(data.cullFaceMode_);
+        }
+        else
+            EnableCullFace(false);
+
+        CHECK_GL_STATUS(__FILE__, __LINE__);
+
+    }
+
+    bool Graphics::SetupProgram(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light)
+    {
+        SetupPass(pass);
+
+        if (material)
+        {
+            auto cullFaceMode = material->GetCullFaceMode();
+            if (cullFaceMode != CullFaceMode::DISABLED)
+            {
+                EnableCullFace(true);
+                SetCullFace(cullFaceMode);
+            }
+            else
+                EnableCullFace(false);
+        }
+
+        auto shaderdefines = Program::GetShaderVariation(pass, activeCamera_, activeMesh_, material, light, sceneNode);
+        auto program = Program::GetOrCreate(shaderdefines);
         program->Set(sceneNode);
         program->Set(material);
         program->Set(light);
         bool ready = SetProgram(program.get());
-		if (ready)
-		{
-			auto shadowPass = PassType::SHADOW == pass->GetType();
-			program->SetVariables(shadowPass);
-		}
+        if (ready)
+        {
+            auto shadowPass = PassType::SHADOW == pass->GetType();
+            program->SetVariables(shadowPass);
+        }
         CHECK_GL_STATUS(__FILE__, __LINE__);
         return ready;
     }
 
-	void Graphics::DrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices)
-	{
-		glDrawElements(mode, count, type, indices);
-		lastMesh_ = activeMesh_;
-		lastProgram_ = activeProgram_;
-	}
+    void Graphics::DrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices)
+    {
+        glDrawElements(mode, count, type, indices);
+        lastMesh_ = activeMesh_;
+        lastProgram_ = activeProgram_;
+    }
 
-	void Graphics::DrawArrays(GLenum mode, GLint first, GLsizei count)
-	{
-		glDrawArrays(mode, first, count);
-		lastMesh_ = activeMesh_;
-		lastProgram_ = activeProgram_;
-	}
+    void Graphics::DrawArrays(GLenum mode, GLint first, GLsizei count)
+    {
+        glDrawArrays(mode, first, count);
+        lastMesh_ = activeMesh_;
+        lastProgram_ = activeProgram_;
+    }
 
     void Graphics::DrawActiveMesh()
     {
@@ -1403,8 +1404,8 @@ namespace NSG
 
         if (!indexes.empty())
             glDrawElements(mode, GLsizei(indexes.size()), GL_UNSIGNED_SHORT, 0);
-		else
-			glDrawArrays(mode, 0, GLsizei(vertexsData.size()));
+        else
+            glDrawArrays(mode, 0, GLsizei(vertexsData.size()));
 
         SetVertexArrayObj(nullptr);
 
@@ -1482,12 +1483,12 @@ namespace NSG
 
     GLenum Graphics::GetTexelDataType()
     {
-		return GL_UNSIGNED_BYTE;
+        return GL_UNSIGNED_BYTE;
     }
 
     GLenum Graphics::GetTexelFormatType()
     {
-		return GL_RGBA;
+        return GL_RGBA;
     }
 
     SignalWindow::PSignal Graphics::SigWindow()

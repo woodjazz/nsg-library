@@ -369,9 +369,6 @@ namespace NSG
 
     size_t SceneNode::GetMaxPlatformBones(size_t nBones) const
     {
-        static const size_t MAX_BONES0 = 64;
-        static const size_t MAX_BONES1 = 48;
-        static const size_t MAX_BONES2 = 32;
         // set a maximum value per platform to avoid shader variations
         if (nBones <= MAX_BONES2)
             return MAX_BONES2;
@@ -382,7 +379,7 @@ namespace NSG
         return nBones;
     }
 
-    size_t SceneNode::FillShaderDefines(std::string& defines) const
+    void SceneNode::FillShaderDefines(std::string& defines) const
     {
         auto armature = GetArmature();
         if (armature)
@@ -395,9 +392,7 @@ namespace NSG
             {
                 defines += "MAX_BONES " + ToString(GetMaxPlatformBones(nBones)) + "\n";
                 defines += "SKINNED\n";
-                return nBones;
             }
         }
-        return 0;
     }
 }

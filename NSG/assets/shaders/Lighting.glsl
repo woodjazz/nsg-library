@@ -6,15 +6,11 @@ float GetSpecular(vec3 normal, vec3 eyeVec, vec3 lightDir, float specularPower)
     return pow(max(dot(normal, halfVec), 0.0), specularPower);
 }
 
-
 vec4 CalcLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)
 {
     float dFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);
     vec4 diffuse = dFactor * u_lightDiffuseColor * GetDiffuseColor();
     #if defined(SPECULAR)
-        //vec3 lightReflect = normalize(reflect(lightDirection, normal));
-        //float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);
-        //sFactor = pow(sFactor, u_material.shininess);
         float sFactor = GetSpecular(normal, vertexToEye, -lightDirection, u_material.shininess);
         vec4 specular = sFactor * u_lightSpecularColor * GetSpecularColor();
         return diffuse + specular;
@@ -25,7 +21,7 @@ vec4 CalcLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)
 
 vec4 CalcPointLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)
 {
-    float lightDist = length(lightDirection * u_lightInvRange[0]);
+    float lightDist = length(lightDirection * u_lightInvRange);
     lightDirection = normalize(lightDirection);
     vec4 color = CalcLight(lightDirection, vertexToEye, normal);
     float atten = clamp(1.0 - lightDist * lightDist, 0.0, 1.0);
@@ -45,11 +41,11 @@ vec4 CalcTotalLight(vec3 world2light, vec3 vertexToEye, vec3 normal)
 {
     #if defined(COMPILEFS) && (defined(SHADOWMAP) || defined(CUBESHADOWMAP))
         #if defined(HAS_DIRECTIONAL_LIGHT)
-            return CalcShadowFactor(world2light) * CalcLight(u_lightDirection, vertexToEye, normal);
+            return CalcShadowFactor() * CalcLight(u_lightDirection, vertexToEye, normal);
         #elif defined(HAS_POINT_LIGHT)
             return CalcShadowFactor(world2light) * CalcPointLight(world2light, vertexToEye, normal);
         #elif defined(HAS_SPOT_LIGHT)
-            return CalcShadowFactor(world2light) * CalcSpotLight(world2light, vertexToEye, normal);
+            return CalcShadowFactor() * CalcSpotLight(world2light, vertexToEye, normal);
         #else 
             return vec4(1.0);        
         #endif

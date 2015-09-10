@@ -17,6 +17,7 @@
 #include "ParticleSystem.h"
 #include "Window.h"
 #include "StringConverter.h"
+#include "Check.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
@@ -82,6 +83,13 @@ namespace NSG
         slotPSBeingDestroy_ = nullptr;
         if (window_ && window_->GetScene() == this)
             window_->SetScene(nullptr);
+		auto graphics = Graphics::GetPtr();
+		if (graphics)
+		{
+			auto window = graphics->GetWindow();
+			if (window && window->GetScene() == this)
+				window->SetScene(nullptr);
+		}
     }
 
     void Scene::SetWindow(Window* window)

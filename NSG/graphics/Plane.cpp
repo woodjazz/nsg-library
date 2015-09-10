@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "Plane.h"
 #include "Constants.h"
 #include "Util.h"
+#include "Check.h"
 
 namespace NSG
 {

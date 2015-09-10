@@ -38,8 +38,9 @@ namespace NSG
           shadowClipStart_(0.1f), // same minimum as blender
           shadowClipEnd_(30.f), // same as distance_
           onlyShadow_(false),
-          shadowBias_(0.005f),
-          shadowSplits_(1)
+          shadowBias_(0.4f),
+          shadowSplits_(1),
+		  invRange_(1.f/distance_)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
@@ -256,7 +257,7 @@ namespace NSG
 
     bool Light::DoShadows() const
     {
-        return shadows_;// && Graphics::GetPtr()->GetWindow()->GetPixelFormat() != PixelFormat::RGB565;
+        return shadows_;
     }
 
     FrameBuffer* Light::GetShadowFrameBuffer(int idx) const
@@ -274,11 +275,11 @@ namespace NSG
     void Light::CalculateRange()
     {
 		if (LightType::SPOT == type_)
-			shadowCamera_[0]->SetRange(Clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_));
-        else if (LightType::POINT == type_)
-			shadowCamera_[0]->SetRange(std::max(distance_, EPSILON));
-        //For directional the range is calculated when we setup the shadow camera.
-        //See ShadowCamera::SetupDirectional
+			invRange_ = 1.f/Clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
+		else if (LightType::POINT == type_)
+			invRange_ = 1.f/std::max(distance_, EPSILON);
+		else
+			invRange_ = 1.f/std::numeric_limits<float>::max(); // shall not be used
     }
 
     void Light::SetShadowClipStart(float value)

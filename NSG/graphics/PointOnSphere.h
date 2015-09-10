@@ -45,6 +45,7 @@ namespace NSG
 		const Vertex3& GetCenter() const { return center_; }
 		float GetTheta() const { return theta_; }
 		float GetPhi() const { return phi_; }
+		float GetRadius() const { return radius_; }
 	private:
 		void CalculatePoint();
 		void CalculateUpVector();

@@ -76,7 +76,7 @@ namespace NSG
         VertexsData& data = vertexsData_;
 
         Vertex3 vert;
-        Vertex3 normal(0, 0, 1); // always facing forward
+        Vertex3 normal(0, 1, 0); // always facing up
         Vertex2 texcoord;
 
         // the origin of the plane is the center
@@ -92,7 +92,7 @@ namespace NSG
                 texcoord.y = ((float)iy / ((float)rows_ - 1.f));
 
                 vert.x = texcoord.x * width_ - halfW;
-                vert.y = texcoord.y * height_ - halfH;
+                vert.z = texcoord.y * height_ - halfH;
 
                 VertexData vertexData;
                 vertexData.normal_ = normal;

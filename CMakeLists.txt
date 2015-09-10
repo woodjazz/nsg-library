@@ -79,11 +79,6 @@ list(APPEND LIBRARIES_2_LINK LZ4)
 set_property(TARGET LZ4 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
 ##################################
-# fontstash
-##################################
-include_directories(${DEPENDENCIES_DIR}/fontstash)
-
-##################################
 # bullet
 ##################################
 include_directories(${EXTERNALS_DIR}/bullet/src)
@@ -237,11 +232,6 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 	# converter
 	###########################
 	add_subdirectory(${TOOLS_DIR}/converter)
-
-	###########################
-	# viewer
-	###########################
-	add_subdirectory(${TOOLS_DIR}/viewer)
 
 	list(REMOVE_ITEM LIBRARIES_2_LINK common)
 

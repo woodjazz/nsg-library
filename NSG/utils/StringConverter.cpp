@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "StringConverter.h"
 #include "BoundingBox.h"
 #include "Util.h"
+#include "Check.h"
 #ifndef WIN32
 #include <unistd.h>
 #include <cerrno>

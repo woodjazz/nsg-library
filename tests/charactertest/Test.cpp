@@ -59,7 +59,7 @@ static PCharacter SetupScene(PScene scene)
     std::swap(characterScale.y, characterScale.z);
     auto controllerShape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_BOX, characterScale));
     controllerShape->SetBB(BoundingBox(-1, 1));
-    auto q = glm::angleAxis(glm::radians(90.f), Vertex3(1, 0, 0));
+    auto q = AngleAxis(Radians(90.f), Vertex3(1, 0, 0));
     controller->AddShape(controllerShape, VECTOR3_ZERO, q);
 
     auto materialObstacle = Material::Create();

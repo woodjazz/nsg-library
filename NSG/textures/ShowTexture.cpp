@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "ShowTexture.h"
 #include "Types.h"
+#include "Check.h"
 #include "Material.h"
 #include "QuadMesh.h"
 #include "Camera.h"

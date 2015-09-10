@@ -28,6 +28,16 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Window.h"
 #include "FileSystem.h"
+#include "Resource.h"
+#include "Sound.h"
+#include "Mesh.h"
+#include "Material.h"
+#include "Shape.h"
+#include "Skeleton.h"
+#include "Animation.h"
+#include "Program.h"
+#include "LoaderXML.h"
+
 #if EMSCRIPTEN
 #include "SDL.h"
 #include <emscripten.h>
@@ -71,6 +81,7 @@ namespace NSG
     {
 		if(!Window::AreAllWindowsMinimized())
 			RenderFrame();
+		ISignal::FreeFirst(10);
     }
 
     void Engine::RenderFrame()
@@ -125,5 +136,19 @@ namespace NSG
     {
         static SignalEmpty::PSignal signalBeginFrame(new SignalEmpty);
         return signalBeginFrame;
+    }
+
+    void Engine::ReleaseMemory()
+    {
+        Resource::Clear();
+        Sound::Clear();
+        Mesh::Clear();
+        Material::Clear();
+        Shape::Clear();
+        Skeleton::Clear();
+        Animation::Clear();
+        Program::Clear();
+        LoaderXML::Clear();
+        ISignal::FreeAllDestroyedSlots();
     }
 }

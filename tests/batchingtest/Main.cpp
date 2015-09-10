@@ -55,7 +55,7 @@ int NSG_MAIN(int argc, char* argv[])
     engine->RenderFrame();
 	CHECK_CONDITION(material->IsBatched(), __FILE__, __LINE__);
     const float ANGLE = 10;
-	node1->SetOrientation(glm::angleAxis(ANGLE, Vertex3(0, 0, 1)));
+	node1->SetOrientation(AngleAxis(ANGLE, Vertex3(0, 0, 1)));
 	engine->RenderFrame();
     CHECK_CONDITION(!material->IsBatched(), __FILE__, __LINE__);
 	return 0;

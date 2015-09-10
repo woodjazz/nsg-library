@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Check.h"
 #include <functional>
 #include <algorithm>
 #include <memory>
@@ -32,8 +31,18 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	struct ISignal
+	{
+		ISignal();
+        virtual ~ISignal();
+		static void FreeFirst(int n);
+        static void FreeAtLeastOneDestroyedSlot();
+		static void FreeAllDestroyedSlots();
+		virtual bool FreeSlots() = 0;
+    };
+
     template <typename... PARAMS>
-    class Signal : public std::enable_shared_from_this<Signal<PARAMS...>>
+    class Signal : public ISignal, public std::enable_shared_from_this<Signal<PARAMS...>>
     {
     public:
         typedef std::function<void(PARAMS...)> CallbackFunction;
@@ -41,7 +50,7 @@ namespace NSG
         typedef std::shared_ptr<Signal<PARAMS...>> PSignal;
         class Slot;
         typedef std::shared_ptr<Slot> PSlot;
-		typedef std::weak_ptr<Slot> PWeakSlot;
+        typedef std::weak_ptr<Slot> PWeakSlot;
 
         Signal()
             : running_(false)
@@ -63,38 +72,51 @@ namespace NSG
         void Run(PARAMS... arguments)
         {
             running_ = true;
-			for (auto& slot : slots_)
-			{
-				PSlot obj(slot.lock());
-				if (obj)
-					obj->Execute(arguments...);
-			}
+            for (auto& slot : slots_)
+            {
+                PSlot obj(slot.lock());
+                if (obj)
+                    obj->Execute(arguments...);
+            }
             ExecuteRunSlots(arguments...);
-			slots_.erase(std::remove_if(slots_.begin(), slots_.end(), [&](PWeakSlot slot) { return !slot.lock(); }), slots_.end());
+            FreeSlots(); // release memory removing destroyed slots
             running_ = false;
         }
 
+		bool FreeSlots() override
+		{
+			auto condition = [&](PWeakSlot slot) { return !slot.lock(); };
+			auto it = std::remove_if(slots_.begin(), slots_.end(), condition);
+			if (it != slots_.end())
+			{
+				slots_.erase(it, slots_.end());
+				return true;
+			}
+			return false;
+		}
+
     private:
-        void ExecuteRunSlots(PARAMS... arguments)
+
+		void ExecuteRunSlots(PARAMS... arguments)
         {
             slots_.insert(slots_.end(), runSlots_.begin(), runSlots_.end());
             while (!runSlots_.empty())
             {
                 auto tmp = runSlots_;
                 runSlots_.clear();
-				for (auto& slot : tmp)
-				{
-					PSlot obj(slot.lock());
-					if (obj)
-						obj->Execute(arguments...);
-				}
+                for (auto& slot : tmp)
+                {
+                    PSlot obj(slot.lock());
+                    if (obj)
+                        obj->Execute(arguments...);
+                }
                 ExecuteRunSlots(arguments...);
             }
         }
 
         bool running_;
-		std::vector<PWeakSlot> slots_;
-		std::vector<PWeakSlot> runSlots_; // slots connected while running
+        std::vector<PWeakSlot> slots_;
+        std::vector<PWeakSlot> runSlots_; // slots connected while running
     public:
         class Slot
         {
@@ -113,7 +135,7 @@ namespace NSG
 
             void Execute(PARAMS... arguments)
             {
-                if(enable_)
+                if (enable_)
                     callback_(arguments...);
             }
         private:

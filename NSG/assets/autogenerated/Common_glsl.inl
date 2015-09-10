@@ -43,14 +43,10 @@ static const char* COMMON_GLSL = \
 "// one coordinate per split (in case of directional light)\n"\
 "uniform vec4 u_shadowCameraZFar;\n"\
 "uniform vec4 u_shadowColor;\n"\
-"uniform float u_shadowBias;\n"\
+"uniform float u_shadowBias; // constant bias\n"\
 "uniform vec4 u_shadowMapInvSize;\n"\
-"// The light position for each split\n"\
-"#define MAX_SPLITS 4\n"\
-"// Split 1 to 3 only applies to directional light and is the shadow camera's position\n"\
-"uniform vec3 u_lightPosition[MAX_SPLITS]; // (the default split) for directional light is the shadow camera's position\n"\
-"// one coordinate per split (in case of directional light)\n"\
-"uniform vec4 u_lightInvRange; \n"\
+"uniform vec3 u_lightPosition;\n"\
+"uniform float u_lightInvRange; // only used for point lights\n"\
 "uniform vec3 u_lightDirection;\n"\
 "uniform vec4 u_lightDiffuseColor;\n"\
 "uniform vec4 u_lightSpecularColor;\n"\
@@ -73,6 +69,9 @@ static const char* COMMON_GLSL = \
 "	#endif\n"\
 "#else \n"\
 "	//COMPILEFS\n"\
+"	#define MAX_SPLITS 4		\n"\
+"	uniform mat4 u_lightView[MAX_SPLITS];\n"\
+"	uniform mat4 u_lightProjection[MAX_SPLITS];\n"\
 "	uniform mat4 u_lightViewProjection[MAX_SPLITS];\n"\
 "#endif\n"\
 ;

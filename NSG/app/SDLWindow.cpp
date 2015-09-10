@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "Tick.h"
 #include "Keys.h"
 #include "Log.h"
+#include "Check.h"
 #include "UTF8String.h"
 #include "AppConfiguration.h"
 #include "Object.h"

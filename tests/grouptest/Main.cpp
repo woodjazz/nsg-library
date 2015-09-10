@@ -25,12 +25,13 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-int NSG_MAIN(int argc, char* argv[])
+using namespace NSG;
+static void Test0()
 {
-    using namespace NSG;
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene0.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
+	CHECK_CONDITION(scene->GetChildren().size() == 7, __FILE__, __LINE__);
 	{
 		auto object = scene->GetChild<SceneNode>("Cube", true);
 		CHECK_CONDITION(object, __FILE__, __LINE__);
@@ -67,6 +68,62 @@ int NSG_MAIN(int argc, char* argv[])
 			CHECK_CONDITION(!object1, __FILE__, __LINE__);
 		}
 	}
+}
 
+static void Test1()
+{
+	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene1.xml");
+	AppData data(resource);
+	auto scene = data.scenes_.at(0);
+	CHECK_CONDITION(scene->GetChildren().size() == 11, __FILE__, __LINE__);
+	{
+		auto object = scene->GetChild<SceneNode>("Cube", true);
+		CHECK_CONDITION(object, __FILE__, __LINE__);
+	}
+	{
+		auto object = scene->GetChild<SceneNode>("Sphere", true);
+		CHECK_CONDITION(object, __FILE__, __LINE__);
+	}
+	{
+		auto object = scene->GetChild<SceneNode>("Torus", true);
+		CHECK_CONDITION(object, __FILE__, __LINE__);
+	}
+	{
+		auto object = scene->GetChild<SceneNode>("Plane", true);
+		CHECK_CONDITION(object, __FILE__, __LINE__);
+	}
+	{
+		auto object = scene->GetChild<SceneNode>("InstancedGroup001", true);
+		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object->GetChildren().size() == 2, __FILE__, __LINE__);
+	}
+
+	{
+		auto object = scene->GetChild<SceneNode>("InstancedGroup", true);
+		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object->GetChildren().size() == 3, __FILE__, __LINE__);
+		{
+			auto object1 = object->GetChild<SceneNode>("Cube", true);
+			CHECK_CONDITION(object1, __FILE__, __LINE__);
+		}
+		{
+			auto object1 = object->GetChild<SceneNode>("Sphere", true);
+			CHECK_CONDITION(object1, __FILE__, __LINE__);
+		}
+		{
+			auto object1 = object->GetChild<SceneNode>("Torus", true);
+			CHECK_CONDITION(object1, __FILE__, __LINE__);
+		}
+		{
+			auto object1 = object->GetChild<SceneNode>("Plane", true);
+			CHECK_CONDITION(!object1, __FILE__, __LINE__);
+		}
+	}
+}
+
+int NSG_MAIN(int argc, char* argv[])
+{
+	Test0();
+	Test1();
 	return 0;
 }

@@ -14,9 +14,6 @@ static const char* LIGHTING_GLSL = \
 "    float dFactor = clamp(dot(normal, -lightDirection), 0.0, 1.0);\n"\
 "    vec4 diffuse = dFactor * u_lightDiffuseColor * GetDiffuseColor();\n"\
 "    #if defined(SPECULAR)\n"\
-"        //vec3 lightReflect = normalize(reflect(lightDirection, normal));\n"\
-"        //float sFactor = clamp(dot(vertexToEye, lightReflect), 0.0, 1.0);\n"\
-"        //sFactor = pow(sFactor, u_material.shininess);\n"\
 "        float sFactor = GetSpecular(normal, vertexToEye, -lightDirection, u_material.shininess);\n"\
 "        vec4 specular = sFactor * u_lightSpecularColor * GetSpecularColor();\n"\
 "        return diffuse + specular;\n"\
@@ -26,7 +23,7 @@ static const char* LIGHTING_GLSL = \
 "}\n"\
 "vec4 CalcPointLight(vec3 lightDirection, vec3 vertexToEye, vec3 normal)\n"\
 "{\n"\
-"    float lightDist = length(lightDirection * u_lightInvRange[0]);\n"\
+"    float lightDist = length(lightDirection * u_lightInvRange);\n"\
 "    lightDirection = normalize(lightDirection);\n"\
 "    vec4 color = CalcLight(lightDirection, vertexToEye, normal);\n"\
 "    float atten = clamp(1.0 - lightDist * lightDist, 0.0, 1.0);\n"\
@@ -44,11 +41,11 @@ static const char* LIGHTING_GLSL = \
 "{\n"\
 "    #if defined(COMPILEFS) && (defined(SHADOWMAP) || defined(CUBESHADOWMAP))\n"\
 "        #if defined(HAS_DIRECTIONAL_LIGHT)\n"\
-"            return CalcShadowFactor(world2light) * CalcLight(u_lightDirection, vertexToEye, normal);\n"\
+"            return CalcShadowFactor() * CalcLight(u_lightDirection, vertexToEye, normal);\n"\
 "        #elif defined(HAS_POINT_LIGHT)\n"\
 "            return CalcShadowFactor(world2light) * CalcPointLight(world2light, vertexToEye, normal);\n"\
 "        #elif defined(HAS_SPOT_LIGHT)\n"\
-"            return CalcShadowFactor(world2light) * CalcSpotLight(world2light, vertexToEye, normal);\n"\
+"            return CalcShadowFactor() * CalcSpotLight(world2light, vertexToEye, normal);\n"\
 "        #else \n"\
 "            return vec4(1.0);        \n"\
 "        #endif\n"\

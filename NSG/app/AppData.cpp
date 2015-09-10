@@ -123,6 +123,7 @@ namespace NSG
         Animation::Clear();
         Program::Clear();
         LoaderXML::Clear();
+        ISignal::FreeAllDestroyedSlots();
     }
 
     bool AppData::AreReady()

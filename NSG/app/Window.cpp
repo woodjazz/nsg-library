@@ -24,6 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Window.h"
+#include "Log.h"
+#include "Check.h"
 #include "Engine.h"
 #include "AppConfiguration.h"
 #include "SignalSlots.h"

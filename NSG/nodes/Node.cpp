@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Util.h"
 #include "StringConverter.h"
+#include "Check.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <iterator>

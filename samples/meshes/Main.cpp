@@ -57,8 +57,6 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 	auto window = Window::Create();
     scene = std::make_shared<Scene>("scene");
-    //auto light = scene->CreateChild<Light>();
-    //light->SetType(LightType::DIRECTIONAL);
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
 

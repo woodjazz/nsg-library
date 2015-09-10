@@ -42,15 +42,11 @@ uniform vec3 u_eyeWorldPos;
 // one coordinate per split (in case of directional light)
 uniform vec4 u_shadowCameraZFar;
 uniform vec4 u_shadowColor;
-uniform float u_shadowBias;
+uniform float u_shadowBias; // constant bias
 uniform vec4 u_shadowMapInvSize;
 
-// The light position for each split
-#define MAX_SPLITS 4
-// Split 1 to 3 only applies to directional light and is the shadow camera's position
-uniform vec3 u_lightPosition[MAX_SPLITS]; // (the default split) for directional light is the shadow camera's position
-// one coordinate per split (in case of directional light)
-uniform vec4 u_lightInvRange; 
+uniform vec3 u_lightPosition;
+uniform float u_lightInvRange; // only used for point lights
 uniform vec3 u_lightDirection;
 uniform vec4 u_lightDiffuseColor;
 uniform vec4 u_lightSpecularColor;
@@ -74,6 +70,9 @@ uniform float u_fogHeight;
 	#endif
 #else 
 	//COMPILEFS
+	#define MAX_SPLITS 4		
+	uniform mat4 u_lightView[MAX_SPLITS];
+	uniform mat4 u_lightProjection[MAX_SPLITS];
 	uniform mat4 u_lightViewProjection[MAX_SPLITS];
 #endif
 

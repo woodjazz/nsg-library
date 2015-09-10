@@ -35,7 +35,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     struct ExtraUniforms;
-    class Program : public Object
+    class Program : public Object, public StrongFactory<std::string, Program>
     {
     public:
 		Program(const std::string& defines);
@@ -61,17 +61,15 @@ namespace NSG
         GLuint GetId() const { return id_; }
         Material* GetMaterial() const { return material_; }
         const std::string& GetName() const { return name_; }
-        void SetNumberBones(size_t nBones);
         void SetNodeVariables();
-        static void Clear();
-		static PProgram GetOrCreate(const std::string& defines);
-		static PProgram GetOrCreate(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode);
+		static std::string GetShaderVariation(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode);
     private:
+        Matrix4 AdjustProjection(const Matrix4& m) const;
         bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
         void SetSceneVariables();
-        void SetCameraVariables();
+		void SetCameraVariables(bool shadowPass);
         void SetMaterialVariables();
         void SetSkeletonVariables();
         void SetUniformLocations();
@@ -118,6 +116,8 @@ namespace NSG
         GLuint normalMatrixLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
+        GLuint lightViewLoc_[MAX_SHADOW_SPLITS];
+        GLuint lightProjectionLoc_[MAX_SHADOW_SPLITS];
         GLuint lightViewProjectionLoc_[MAX_SHADOW_SPLITS];
         GLuint projectionLoc_;
         GLuint sceneColorAmbientLoc_;
@@ -148,7 +148,7 @@ namespace NSG
         GLuint lightDiffuseColorLoc_;
         GLuint lightSpecularColorLoc_;
         GLuint lightInvRangeLoc_;
-        GLuint lightPositionLoc_[MAX_SHADOW_SPLITS];
+        GLuint lightPositionLoc_;
         GLuint lightDirectionLoc_;
         GLuint lightCutOffLoc_;
         GLuint shadowCameraZFarLoc_;
@@ -174,7 +174,6 @@ namespace NSG
 
         /////////////////////////////////////
 
-        size_t nBones_;
         const Skeleton* activeSkeleton_;
         Node* activeNode_;
         Material* activeMaterial_;
@@ -186,6 +185,5 @@ namespace NSG
         Material* material_;
         const Light* light_;
         PGraphics graphics_;
-		static StrongFactory<std::string, Program> programs_;
     };
 }

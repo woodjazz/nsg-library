@@ -66,8 +66,11 @@ namespace NSG
 	float Radians(float degrees);
 	Vector3 Normalize(const Vector3& value);
 	Quaternion Normalize(const Quaternion& value);
+	float Distance(float a, float b);
+	float Distance(const Vector4& a, const Vector4& b);
     float Distance(const Vector3& a, const Vector3& b);
     float Distance2(const Vector3& a, const Vector3& b);
+	float Dot(const Vector4& a, const Vector4& b);
 	float Dot(const Vector3& a, const Vector3& b);
 	float Dot(const Quaternion& a, const Quaternion& b);
     Vector3 Cross(const Vector3& a, const Vector3& b);
@@ -93,4 +96,7 @@ namespace NSG
 	Vector3 Row(const Matrix3& mat, int index);
 	Vector4 Column(const Matrix4& mat, int index);
 	Vector3 Column(const Matrix3& mat, int index);
+	Vector3 CatmullRom(const Vector3& v1, const Vector3& v2, const Vector3& v3, const Vector3& v4, float s);
+	Vector4 Fract(const Vector4& value);
+	Vertex3 EulerAngles(const Quaternion& q);
 }

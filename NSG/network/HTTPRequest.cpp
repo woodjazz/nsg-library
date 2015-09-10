@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "HTTPRequest.h"
 #include "Util.h"
+#include "Log.h"
 #include "StringConverter.h"
 #if !defined(EMSCRIPTEN)
 #include "civetweb.h"

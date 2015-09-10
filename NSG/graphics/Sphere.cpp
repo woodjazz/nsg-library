@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "Sphere.h"
 #include "Mesh.h"
 #include "SceneNode.h"
+#include "Check.h"
 
 namespace NSG
 {

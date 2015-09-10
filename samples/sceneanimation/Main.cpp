@@ -89,7 +89,7 @@ int NSG_MAIN(int argc, char* argv[])
 #endif
     auto sunLight = scene->GetChild<Light>("Sun", true);
 	//sunLight->SetShadowColor(Color(1, 0, 0, 1));
-	sunLight->SetBias(0.75f);
+	sunLight->SetBias(.666f);
 	//window->ShowMap(sunLight->GetShadowMap(3));
 	window->SetScene(data.scenes_[0].get());
 	return Engine::Create()->Run();

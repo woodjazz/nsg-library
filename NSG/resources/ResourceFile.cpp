@@ -79,7 +79,7 @@ namespace NSG
             }
             else
             {
-                get_ = std::make_shared<HTTPRequest>(path_.GetAbsolutePath(), onLoad_, onError_, onProgress_);
+                get_ = std::make_shared<HTTPRequest>(path_.GetFullAbsoluteFilePath(), onLoad_, onError_, onProgress_);
             }
 
             get_->StartRequest();

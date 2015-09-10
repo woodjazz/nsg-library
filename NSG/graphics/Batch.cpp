@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Pass.h"
 #include "RigidBody.h"
+#include "Check.h"
 
 namespace NSG
 {

@@ -73,4 +73,9 @@ namespace NSG
     static const int MAX_SHADOW_SPLITS = 4;
 
     static const float MAX_WORLD_SIZE = 5000;
+
+	static const size_t MAX_BONES0 = 64;
+	static const size_t MAX_BONES1 = 48;
+	static const size_t MAX_BONES2 = 32;
+	static const size_t MAX_BONES = MAX_BONES0;
 }

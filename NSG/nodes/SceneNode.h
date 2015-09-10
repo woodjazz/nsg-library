@@ -73,7 +73,7 @@ namespace NSG
 		bool AllowRayQuery() const { return flags_ & (int)SceneNodeFlag::ALLOW_RAY_QUERY; }
 		void SetSkeleton(PSkeleton skeleton);
 		PSkeleton GetSkeleton() const { return skeleton_; }
-		size_t FillShaderDefines(std::string& defines) const;
+		void FillShaderDefines(std::string& defines) const;
 		size_t GetMaxPlatformBones(size_t nBones) const;
 		PSceneNode GetArmature() const;
 		void SetArmature(PSceneNode armature);

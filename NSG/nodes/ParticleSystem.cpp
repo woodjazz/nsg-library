@@ -36,6 +36,7 @@ misrepresented as being the original software.
 #include "Shape.h"
 #include "PhysicsWorld.h"
 #include "AppConfiguration.h"
+#include "Check.h"
 
 namespace NSG
 {

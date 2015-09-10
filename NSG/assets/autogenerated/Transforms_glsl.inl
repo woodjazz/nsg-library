@@ -158,6 +158,25 @@ static const char* TRANSFORMS_GLSL = \
 "		#endif\n"\
 "	}\n"\
 "#elif defined(COMPILEFS)\n"\
+"	#if !defined(AMBIENT_PASS)\n"\
+"	    int GetSplit()\n"\
+"	    {\n"\
+"	        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);\n"\
+"	        if(-viewPos.z <= u_shadowCameraZFar[0])\n"\
+"	            return 0;\n"\
+"	        else if(-viewPos.z <= u_shadowCameraZFar[1])\n"\
+"	            return 1;\n"\
+"	        else if(-viewPos.z <= u_shadowCameraZFar[2])\n"\
+"	            return 2;\n"\
+"	        else\n"\
+"	            return 3;\n"\
+"	    }\n"\
+"	    // Transforms from world to shadow camera space\n"\
+"	    vec4 GetShadowClipPos(vec4 worldPos)\n"\
+"	    {\n"\
+"	        return u_lightViewProjection[GetSplit()] * worldPos;\n"\
+"	    }\n"\
+"	#endif\n"\
 "	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) \n"\
 "		// Input depth [0..1]\n"\
 "		// Output color [[0..1], [0..1], [0..1]]\n"\
@@ -178,28 +197,6 @@ static const char* TRANSFORMS_GLSL = \
 "			float depth = dot(rgba_depth, bit_shift);\n"\
 "			return depth;\n"\
 "		}\n"\
-"	#endif\n"\
-"	#if !defined(AMBIENT_PASS)\n"\
-"	    int GetSplit()\n"\
-"	    {\n"\
-"	        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);\n"\
-"	        if(-viewPos.z <= u_shadowCameraZFar[0])\n"\
-"	            return 0;\n"\
-"	        else if(-viewPos.z <= u_shadowCameraZFar[1])\n"\
-"	            return 1;\n"\
-"	        else if(-viewPos.z <= u_shadowCameraZFar[2])\n"\
-"	            return 2;\n"\
-"	        else\n"\
-"	            return 3;\n"\
-"	    }\n"\
-"	    float GetLightInvRange()\n"\
-"	    {\n"\
-"	    	return u_lightInvRange[GetSplit()];\n"\
-"	    }\n"\
-"	    vec3 GetLightPosition()\n"\
-"	    {\n"\
-"	        return u_lightPosition[GetSplit()];\n"\
-"	    }\n"\
 "	#endif\n"\
 "	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) \n"\
 "		float GetFogLinearFactor()\n"\

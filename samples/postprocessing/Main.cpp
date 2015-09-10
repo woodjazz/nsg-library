@@ -76,8 +76,8 @@ int NSG_MAIN(int argc, char* argv[])
 	auto slotUpdate = engine->SigUpdate()->Connect([&](float deltaTime)
 	{
 		static float y_angle = 0;
-		y_angle += glm::pi<float>() / 10.0f * deltaTime;
-		boxNode->SetOrientation(glm::angleAxis(y_angle, Vertex3(0, 0, 1)) * glm::angleAxis(y_angle, Vertex3(0, 1, 0)));
+		y_angle += PI / 10.0f * deltaTime;
+		boxNode->SetOrientation(AngleAxis(y_angle, Vertex3(0, 0, 1)) * AngleAxis(y_angle, Vertex3(0, 1, 0)));
 
 		static float move = -1;
 		move += deltaTime * TWO_PI * 0.25f;  // 1/4 of a wave cycle per second

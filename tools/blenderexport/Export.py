@@ -2,6 +2,7 @@ import bpy
 import mathutils
 import math
 import os
+import sys
 import base64
 import xml.etree.cElementTree as et
 
@@ -1124,5 +1125,13 @@ def ConvertApp():
 
 appEle = et.Element("App")
 basedir = os.path.dirname(bpy.data.filepath)
-datadir = basedir + "/../data"
+
+argv = sys.argv
+argv = argv[argv.index("--") + 1:]  # get all args after "--"
+if len(argv) > 0:
+    datadir = argv[0]
+else:
+    datadir = basedir + "/../data"
+
+print("Exporting to directory " + datadir)
 ConvertApp()

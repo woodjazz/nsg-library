@@ -40,6 +40,7 @@ namespace NSG
 		void Set(PResource resource);
 		const pugi::xml_document& GetDocument() const { return doc_; }
 		pugi::xml_node GetNode(const std::string& type, const std::string& name) const;
+		PResource GetResource() const { return resource_; }
 	private:
         bool IsValid() override;
         void AllocateResources() override;

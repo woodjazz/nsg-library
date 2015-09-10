@@ -174,6 +174,29 @@
 
 #elif defined(COMPILEFS)
 
+	#if !defined(AMBIENT_PASS)
+
+	    int GetSplit()
+	    {
+	        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);
+	        if(-viewPos.z <= u_shadowCameraZFar[0])
+	            return 0;
+	        else if(-viewPos.z <= u_shadowCameraZFar[1])
+	            return 1;
+	        else if(-viewPos.z <= u_shadowCameraZFar[2])
+	            return 2;
+	        else
+	            return 3;
+	    }
+
+	    // Transforms from world to shadow camera space
+	    vec4 GetShadowClipPos(vec4 worldPos)
+	    {
+	        return u_lightViewProjection[GetSplit()] * worldPos;
+	    }
+
+	#endif
+
 	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) 
 
 		// Input depth [0..1]
@@ -200,32 +223,6 @@
 
 	#endif
 
-	#if !defined(AMBIENT_PASS)
-
-	    int GetSplit()
-	    {
-	        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);
-	        if(-viewPos.z <= u_shadowCameraZFar[0])
-	            return 0;
-	        else if(-viewPos.z <= u_shadowCameraZFar[1])
-	            return 1;
-	        else if(-viewPos.z <= u_shadowCameraZFar[2])
-	            return 2;
-	        else
-	            return 3;
-	    }
-
-	    float GetLightInvRange()
-	    {
-	    	return u_lightInvRange[GetSplit()];
-	    }
-
-	    vec3 GetLightPosition()
-	    {
-	        return u_lightPosition[GetSplit()];
-	    }
-
-	#endif
 
 	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) 
 

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "TextureCube.h"
 #include "Util.h"
+#include "Check.h"
 
 namespace NSG
 {
