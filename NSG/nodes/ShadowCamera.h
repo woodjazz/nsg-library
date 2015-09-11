@@ -43,6 +43,7 @@ namespace NSG
         const Vector3& GetLightGlobalPosition() const;
         void SetMaxShadowSplits(int splits) override;
         int GetMaxShadowSplits() const override;
+        float GetInvRange() const { return invRange_; }
     private:
         void QuantizeAndSetup2ViewBox(int split, const Vector3& initialPos, const BoundingBox& viewBox);
         Light* light_;
@@ -55,5 +56,6 @@ namespace NSG
         float nearSplit_;
         float farSplit_;
 		Camera tempCam_; // temporal camera used for intermediate calculations
+        float invRange_;
     };
 }

@@ -38,7 +38,7 @@ namespace NSG
           shadowClipStart_(0.1f), // same minimum as blender
           shadowClipEnd_(30.f), // same as distance_
           onlyShadow_(false),
-          shadowBias_(0.4f),
+          shadowBias_(0.0f),
           shadowSplits_(1),
 		  invRange_(1.f/distance_)
     {

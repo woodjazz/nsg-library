@@ -195,6 +195,20 @@
 	        return u_lightViewProjection[GetSplit()] * worldPos;
 	    }
 
+	    vec3 GetShadowCamPos()
+	    {
+	    	#if defined(HAS_DIRECTIONAL_LIGHT) || defined(SHADOW_PASS)
+	    		return u_shadowCamPos[GetSplit()];
+	    	#else
+	    		return u_lightPosition;
+	    	#endif
+	    }
+
+	    float GetShadowCamInvRange()
+	    {
+	    	return u_shadowCamInvRange[GetSplit()];
+	    }
+
 	#endif
 
 	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)

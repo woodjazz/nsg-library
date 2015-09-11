@@ -46,7 +46,7 @@
 			v_worldPos = GetWorldPos().xyz;
 		    vec3 normal = GetWorldNormal();
 		    vec3 vertexToEye = normalize(u_eyeWorldPos - v_worldPos);
-		    vec3 world2light = worldPos - u_lightPosition[0];
+		    vec3 world2light = worldPos - u_lightPosition;
 		    vec4 totalLight = vec4(1.0);//CalcTotalLight(world2light, vertexToEye, normal);
 		    v_color = totalLight;
 			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);

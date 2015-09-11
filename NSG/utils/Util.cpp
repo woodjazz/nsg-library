@@ -408,6 +408,16 @@ namespace NSG
 		return glm::radians(degrees);
 	}
 
+    float Degrees(float radians)
+    {
+        return glm::degrees(radians);
+    }
+    
+    float Angle(const Vector3& a, const Vector3& b)
+    {
+        return glm::angle(a, b);
+    }
+
 	Vector3 Normalize(const Vector3& value)
 	{
 		return glm::normalize(value);

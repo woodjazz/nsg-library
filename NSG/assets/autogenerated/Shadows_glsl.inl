@@ -101,21 +101,49 @@ static const char* SHADOWS_GLSL = \
 "        actualBias  = adaptiveFlag != 0 ? actualBias  : zBias;    \n"\
 "    }\n"\
 "#endif\n"\
-"    #ifdef HAS_SPOT_LIGHT\n"\
-"        vec4 CalcShadowFactor(vec3 world2light)\n"\
-"        {\n"\
-"            const vec4 White = vec4(1.0);\n"\
-"            // Transform from eye-space to shadow map texture coordinates\n"\
-"            vec4 coords = GetShadowClipPos(vec4(v_worldPos, 1.0));\n"\
-"            coords /= coords.w; // Normalize from -w..w to -1..1\n"\
-"            coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); // Normalize from -1..1 to 0..1\n"\
-"            // If region is out of shadowcam frustum then not in shadow\n"\
-"            if(clamp(coords.xyz, 0.0, 1.0) != coords.xyz)\n"\
-"                return White;\n"\
-"            float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));\n"\
-"            return sampledDistance / u_lightInvRange < length(world2light) ? u_shadowColor : White;\n"\
-"        }\n"\
-"    #else\n"\
+"    vec4 CalcShadowFactor(vec3 world2light)\n"\
+"    {\n"\
+"        const vec4 White = vec4(1.0);\n"\
+"        // Transform from eye-space to shadow map texture coordinates\n"\
+"        vec4 coords = GetShadowClipPos(vec4(v_worldPos, 1.0));\n"\
+"        coords /= coords.w; // Normalize from -w..w to -1..1\n"\
+"        coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); // Normalize from -1..1 to 0..1\n"\
+"        // If region is out of shadowcam frustum then not in shadow\n"\
+"        if(clamp(coords.xyz, 0.0, 1.0) != coords.xyz)\n"\
+"            return White;\n"\
+"        float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));\n"\
+"       #if 0\n"\
+"        // Take four samples and average them\n"\
+"        float shadowMapInvSize = GetShadowMapInvSize();\n"\
+"        sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(shadowMapInvSize, 0.0)));\n"\
+"        sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(0.0, shadowMapInvSize)));\n"\
+"        sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(shadowMapInvSize)));\n"\
+"        sampledDistance *= 0.25;\n"\
+"        #endif\n"\
+"        #ifdef HAS_DIRECTIONAL_LIGHT\n"\
+"            bool inShadow = sampledDistance / GetShadowCamInvRange() < length(world2light);\n"\
+"        #else\n"\
+"            bool inShadow = sampledDistance / u_lightInvRange < length(world2light);\n"\
+"        #endif\n"\
+"        #ifdef COLOR_SPLITS\n"\
+"            const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);\n"\
+"            const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);\n"\
+"            const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);\n"\
+"            const vec4 RedOrange = vec4(1.0, 69.0/255.0, 0.0, 1.0);\n"\
+"            int split = GetSplit();\n"\
+"            if(split == 0)\n"\
+"                return inShadow ? Red : White;\n"\
+"            else if(split == 1)\n"\
+"                return inShadow ? Green : White;\n"\
+"            else if(split == 2)\n"\
+"                return inShadow ? Blue : White;\n"\
+"            else\n"\
+"                return inShadow ? RedOrange : White;\n"\
+"        #else\n"\
+"            return inShadow ? u_shadowColor : White;\n"\
+"        #endif\n"\
+"    }\n"\
+"    #if 0\n"\
 "        vec4 CalcShadowFactor()\n"\
 "        {\n"\
 "            const vec4 White = vec4(1.0);\n"\

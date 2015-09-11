@@ -40,7 +40,8 @@ namespace NSG
         : Camera(light->GetName() + "ShadowCamera"),
           light_(light),
           nearSplit_(0),
-          farSplit_(MAX_WORLD_SIZE)
+          farSplit_(MAX_WORLD_SIZE),
+          invRange_(0)
     {
         dirPositiveX_.SetLocalLookAtPosition(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeX_.SetLocalLookAtPosition(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
@@ -100,6 +101,7 @@ namespace NSG
 		tempCam_.SetPosition(initialPos);
         BoundingBox splitBB;
 
+#if 0
         if (farSplit < camera->GetZFar() || nearSplit > camera->GetZNear())
         {
             // We are using a split. 
@@ -112,6 +114,7 @@ namespace NSG
                 splitBB.Clip(receiversBB);
         }
         else
+#endif
         {
             // We are using the whole camera's frustum.
             // No need to recalculate the receivers (already here as a parameter)
@@ -153,8 +156,10 @@ namespace NSG
 			castersBB.max_.z = std::max(castersBB.max_.z, splitBB.max_.z);
 			splitBB = castersBB;
 		}
+
         QuantizeAndSetup2ViewBox(split, initialPos, splitBB);
         //SetRange(Length(splitBB.Size())); //Sets the shadowCam's range used in the shader (See u_lightInvRange)
+        invRange_ = 1.f / Length(splitBB.Size());
     }
 
     void ShadowCamera::QuantizeAndSetup2ViewBox(int split, const Vector3& initialPos, const BoundingBox& viewBox)

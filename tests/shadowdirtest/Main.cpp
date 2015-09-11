@@ -54,7 +54,7 @@ static void SetFog(PScene scene)
 #define TEST1
 int NSG_MAIN(int argc, char* argv[])
 {
-	//return 0;
+	return 0;
 
     using namespace NSG;
 	auto window = Window::Create();

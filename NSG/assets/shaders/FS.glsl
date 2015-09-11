@@ -38,16 +38,22 @@
 
 		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)
 
-			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
+			vec3 lightToVertex = v_worldPos - u_lightPosition;
     		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;
     		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
 
     	#elif defined(SHADOW_PASS)
 
+			vec3 lightToVertex = v_worldPos - GetShadowCamPos();
+    		float lightToPixelDistance = length(lightToVertex) * GetShadowCamInvRange();
+    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
+
+    		#if 0
 	        vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));
 	        vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1
 	        coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1
 	        gl_FragColor = EncodeDepth2Color(clamp(coords.z, 0.0, 1.0));
+	        #endif
 
     	#elif defined(PER_VERTEX_LIGHTING)
 
@@ -58,7 +64,7 @@
 				//Lighting is calculated in world space
 				vec3 normal = GetNormal();
 	    		vec3 vertexToEye = normalize(v_vertexToEye);
-	    		vec3 world2light = v_worldPos - u_lightPosition;
+	    		vec3 world2light = v_worldPos - GetShadowCamPos();
 				#ifdef FOG
 					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal);
 					gl_FragColor = vec4(GetLitFog(finalColor.rgb), finalColor.a);

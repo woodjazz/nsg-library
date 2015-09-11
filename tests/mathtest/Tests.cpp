@@ -124,10 +124,20 @@ static void Test01()
 	};
 
 	depth = 0.999f;
-	CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.0001f, __FILE__, __LINE__);
+	CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.000001f, __FILE__, __LINE__);
+    
+    depth = 0.99994f;
+    CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.000001f, __FILE__, __LINE__);
+
 
 	depth = 0.01265f;
 	CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.0001f, __FILE__, __LINE__);
+
+    depth = 0.000022f;
+    CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.000001f, __FILE__, __LINE__);
+
+    depth = 0.000033f;
+    CHECK_CONDITION(std::abs(depth - Decode3(Encode3(depth))) < 0.000001f, __FILE__, __LINE__);
 
 
 	auto Encode4 = [](float depth) -> Vector4

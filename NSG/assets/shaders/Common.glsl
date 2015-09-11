@@ -36,8 +36,7 @@ struct Material
 uniform vec3 u_sceneAmbientColor;
 uniform vec3 u_sceneHorizonColor;
 uniform Material u_material;
-// Could be normal camera or shadow camera
-uniform vec3 u_eyeWorldPos;
+uniform vec3 u_eyeWorldPos; // camera world position
 // The Z far value in the shadow camera used to know the correct split
 // one coordinate per split (in case of directional light)
 uniform vec4 u_shadowCameraZFar;
@@ -46,7 +45,7 @@ uniform float u_shadowBias; // constant bias
 uniform vec4 u_shadowMapInvSize;
 
 uniform vec3 u_lightPosition;
-uniform float u_lightInvRange; // only used for point lights
+uniform float u_lightInvRange; // only used for point and spot lights
 uniform vec3 u_lightDirection;
 uniform vec4 u_lightDiffuseColor;
 uniform vec4 u_lightSpecularColor;
@@ -70,7 +69,9 @@ uniform float u_fogHeight;
 	#endif
 #else 
 	//COMPILEFS
-	#define MAX_SPLITS 4		
+	#define MAX_SPLITS 4	
+	uniform float u_shadowCamInvRange[MAX_SPLITS]; // used only for directional lights
+	uniform vec3 u_shadowCamPos[MAX_SPLITS]; // used only for directional lights
 	uniform mat4 u_lightView[MAX_SPLITS];
 	uniform mat4 u_lightProjection[MAX_SPLITS];
 	uniform mat4 u_lightViewProjection[MAX_SPLITS];

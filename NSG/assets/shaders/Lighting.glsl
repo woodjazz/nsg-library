@@ -41,7 +41,7 @@ vec4 CalcTotalLight(vec3 world2light, vec3 vertexToEye, vec3 normal)
 {
     #if defined(COMPILEFS) && (defined(SHADOWMAP) || defined(CUBESHADOWMAP))
         #if defined(HAS_DIRECTIONAL_LIGHT)
-            return CalcShadowFactor() * CalcLight(u_lightDirection, vertexToEye, normal);
+            return CalcShadowFactor(world2light) * CalcLight(u_lightDirection, vertexToEye, normal);
         #elif defined(HAS_POINT_LIGHT)
             return CalcShadowFactor(world2light) * CalcPointLight(world2light, vertexToEye, normal);
         #elif defined(HAS_SPOT_LIGHT)

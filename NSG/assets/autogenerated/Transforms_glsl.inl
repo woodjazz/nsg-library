@@ -176,6 +176,18 @@ static const char* TRANSFORMS_GLSL = \
 "	    {\n"\
 "	        return u_lightViewProjection[GetSplit()] * worldPos;\n"\
 "	    }\n"\
+"	    vec3 GetShadowCamPos()\n"\
+"	    {\n"\
+"	    	#if defined(HAS_DIRECTIONAL_LIGHT) || defined(SHADOW_PASS)\n"\
+"	    		return u_shadowCamPos[GetSplit()];\n"\
+"	    	#else\n"\
+"	    		return u_lightPosition;\n"\
+"	    	#endif\n"\
+"	    }\n"\
+"	    float GetShadowCamInvRange()\n"\
+"	    {\n"\
+"	    	return u_shadowCamInvRange[GetSplit()];\n"\
+"	    }\n"\
 "	#endif\n"\
 "	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)\n"\
 "		// Input depth [0..1]\n"\
