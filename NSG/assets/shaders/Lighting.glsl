@@ -1,5 +1,5 @@
 //Remember to rebuild with CMake if this file changes
-#if defined(COMPILEFS) && !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) 
+#if defined(COMPILEFS) && !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) && !defined(SHADOW_PASS_SPOT)
 float GetSpecular(vec3 normal, vec3 eyeVec, vec3 lightDir, float specularPower)
 {
     vec3 halfVec = normalize(normalize(eyeVec) + lightDir);
@@ -45,7 +45,7 @@ vec4 CalcTotalLight(vec3 world2light, vec3 vertexToEye, vec3 normal)
         #elif defined(HAS_POINT_LIGHT)
             return CalcShadowFactor(world2light) * CalcPointLight(world2light, vertexToEye, normal);
         #elif defined(HAS_SPOT_LIGHT)
-            return CalcShadowFactor() * CalcSpotLight(world2light, vertexToEye, normal);
+            return CalcShadowFactor(world2light) * CalcSpotLight(world2light, vertexToEye, normal);
         #else 
             return vec4(1.0);        
         #endif

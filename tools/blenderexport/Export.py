@@ -615,7 +615,7 @@ def ConvertLampObject(parentEle, obj):
     sceneNodeEle.set("shadowColor", ColorToString(light.shadow_color))
     sceneNodeEle.set("onlyShadow", BoolToString(light.use_only_shadow))
     # TODO: CHECK IF THIS IS A GOOD APROXIMATION
-    bias = light.shadow_buffer_bias * 0.001
+    bias = light.shadow_buffer_bias * 0.00
     sceneNodeEle.set("shadowBias", FloatToString(bias))
     sceneNodeEle.set(
         "shadowClipStart", FloatToString(light.shadow_buffer_clip_start))

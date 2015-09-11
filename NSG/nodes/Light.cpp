@@ -224,7 +224,7 @@ namespace NSG
 			else if (LightType::DIRECTIONAL == type_)
 				defines += "SHADOW_PASS\n";
 			else
-				defines += "SHADOW_PASS\n";
+				defines += "SHADOW_PASS_SPOT\n";
 		}
     }
 

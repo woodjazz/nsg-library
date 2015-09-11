@@ -26,7 +26,7 @@ static const char* FS_GLSL = \
 "			#else\n"\
 "				gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();\n"\
 "			#endif\n"\
-"		#elif defined(SHADOWCUBE_PASS)\n"\
+"		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)\n"\
 "			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
 "    		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;\n"\
 "    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\

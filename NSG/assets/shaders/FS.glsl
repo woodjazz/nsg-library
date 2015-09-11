@@ -36,7 +36,7 @@
 				gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();
 			#endif
 
-		#elif defined(SHADOWCUBE_PASS)
+		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)
 
 			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
     		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;

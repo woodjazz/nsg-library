@@ -197,7 +197,7 @@
 
 	#endif
 
-	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) 
+	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)
 
 		// Input depth [0..1]
 		// Output color [[0..1], [0..1], [0..1]]
@@ -224,7 +224,7 @@
 	#endif
 
 
-	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) 
+	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) && !defined(SHADOW_PASS_SPOT)
 
 		float GetFogLinearFactor()
 		{

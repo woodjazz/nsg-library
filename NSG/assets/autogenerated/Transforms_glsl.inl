@@ -177,7 +177,7 @@ static const char* TRANSFORMS_GLSL = \
 "	        return u_lightViewProjection[GetSplit()] * worldPos;\n"\
 "	    }\n"\
 "	#endif\n"\
-"	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) \n"\
+"	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)\n"\
 "		// Input depth [0..1]\n"\
 "		// Output color [[0..1], [0..1], [0..1]]\n"\
 "		vec4 EncodeDepth2Color(float depth)\n"\
@@ -198,7 +198,7 @@ static const char* TRANSFORMS_GLSL = \
 "			return depth;\n"\
 "		}\n"\
 "	#endif\n"\
-"	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) \n"\
+"	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) && !defined(SHADOW_PASS_SPOT)\n"\
 "		float GetFogLinearFactor()\n"\
 "		{\n"\
 "		    return clamp((u_fogEnd - v_depth) / (u_fogEnd - u_fogStart), 0.0, 1.0);\n"\

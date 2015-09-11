@@ -109,48 +109,67 @@
     }
 #endif
 
-    vec4 CalcShadowFactor()
-    {
-        const vec4 White = vec4(1.0);
+    #ifdef HAS_SPOT_LIGHT
+        vec4 CalcShadowFactor(vec3 world2light)
+        {
+            const vec4 White = vec4(1.0);
 
-        // Transform from eye-space to shadow map texture coordinates
-        vec4 coords = GetShadowClipPos(vec4(v_worldPos, 1.0));
-        coords /= coords.w; // Normalize from -w..w to -1..1
-        coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); // Normalize from -1..1 to 0..1
-        // If region is out of shadowcam frustum then not in shadow
-        if(clamp(coords.xyz, 0.0, 1.0) != coords.xyz)
-            return White;
+            // Transform from eye-space to shadow map texture coordinates
+            vec4 coords = GetShadowClipPos(vec4(v_worldPos, 1.0));
+            coords /= coords.w; // Normalize from -w..w to -1..1
+            coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); // Normalize from -1..1 to 0..1
+            // If region is out of shadowcam frustum then not in shadow
+            if(clamp(coords.xyz, 0.0, 1.0) != coords.xyz)
+                return White;
 
-        // Take four samples and average them
-        float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));
+            float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));
 
-        #if 0
-        float shadowMapInvSize = GetShadowMapInvSize();
-        sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(shadowMapInvSize, 0.0)));
-        sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(0.0, shadowMapInvSize)));
-        sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(shadowMapInvSize)));
-        sampledDistance *= 0.25;
-        #endif
+            return sampledDistance / u_lightInvRange < length(world2light) ? u_shadowColor : White;
+        }
+    #else
+        vec4 CalcShadowFactor()
+        {
+            const vec4 White = vec4(1.0);
 
-        bool inShadow = sampledDistance < coords.z;// - u_shadowBias;
+            // Transform from eye-space to shadow map texture coordinates
+            vec4 coords = GetShadowClipPos(vec4(v_worldPos, 1.0));
+            coords /= coords.w; // Normalize from -w..w to -1..1
+            coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); // Normalize from -1..1 to 0..1
+            // If region is out of shadowcam frustum then not in shadow
+            if(clamp(coords.xyz, 0.0, 1.0) != coords.xyz)
+                return White;
 
-        #ifdef COLOR_SPLITS
-            const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);
-            const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);
-            const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);
-            const vec4 RedOrange = vec4(1.0, 69.0/255.0, 0.0, 1.0);
-            int split = GetSplit();
-            if(split == 0)
-                return inShadow ? Red : White;
-            else if(split == 1)
-                return inShadow ? Green : White;
-            else if(split == 2)
-                return inShadow ? Blue : White;
-            else
-                return inShadow ? RedOrange : White;
-        #else
-            return inShadow ? u_shadowColor : White;
-        #endif
-    }
+            float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));
+
+            #if 0
+            // Take four samples and average them
+            float shadowMapInvSize = GetShadowMapInvSize();
+            sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(shadowMapInvSize, 0.0)));
+            sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(0.0, shadowMapInvSize)));
+            sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(shadowMapInvSize)));
+            sampledDistance *= 0.25;
+            #endif
+
+            bool inShadow = sampledDistance < coords.z;// - u_shadowBias;
+
+            #ifdef COLOR_SPLITS
+                const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);
+                const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);
+                const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);
+                const vec4 RedOrange = vec4(1.0, 69.0/255.0, 0.0, 1.0);
+                int split = GetSplit();
+                if(split == 0)
+                    return inShadow ? Red : White;
+                else if(split == 1)
+                    return inShadow ? Green : White;
+                else if(split == 2)
+                    return inShadow ? Blue : White;
+                else
+                    return inShadow ? RedOrange : White;
+            #else
+                return inShadow ? u_shadowColor : White;
+            #endif
+        }
+    #endif
 
 #endif
