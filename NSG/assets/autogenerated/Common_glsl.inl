@@ -37,8 +37,7 @@ static const char* COMMON_GLSL = \
 "uniform vec3 u_sceneAmbientColor;\n"\
 "uniform vec3 u_sceneHorizonColor;\n"\
 "uniform Material u_material;\n"\
-"// Could be normal camera or shadow camera\n"\
-"uniform vec3 u_eyeWorldPos;\n"\
+"uniform vec3 u_eyeWorldPos; // camera world position\n"\
 "// The Z far value in the shadow camera used to know the correct split\n"\
 "// one coordinate per split (in case of directional light)\n"\
 "uniform vec4 u_shadowCameraZFar;\n"\
@@ -70,8 +69,8 @@ static const char* COMMON_GLSL = \
 "#else \n"\
 "	//COMPILEFS\n"\
 "	#define MAX_SPLITS 4	\n"\
-"	uniform float u_shadowCamInvRange[MAX_SPLITS];\n"\
-"	uniform vec3 u_shadowCamPos[MAX_SPLITS];	\n"\
+"	uniform float u_shadowCamInvRange[MAX_SPLITS]; // used only for directional lights\n"\
+"	uniform vec3 u_shadowCamPos[MAX_SPLITS]; // used only for directional lights\n"\
 "	uniform mat4 u_lightView[MAX_SPLITS];\n"\
 "	uniform mat4 u_lightProjection[MAX_SPLITS];\n"\
 "	uniform mat4 u_lightViewProjection[MAX_SPLITS];\n"\

@@ -3,7 +3,7 @@ function(EXPORT_BLEND_TOOL input_file output_dir)
 	if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 
 		if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-		  set(BLENDER_EXECUTABLE "/Applications/Blender275/blender.app/Contents/MacOS/blender")
+		  set(BLENDER_EXECUTABLE "/Applications/Blender/blender.app/Contents/MacOS/blender")
 		elseif(WIN32)
 		  set(BLENDER_EXECUTABLE "D:/tmp/Blender-2.75-windows64/blender.exe")
 		endif() 
