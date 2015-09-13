@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Sphere.h"
 #include "Scene.h"
 #include "Ray.h"
+#include "StringConverter.h"
 #include "Check.h"
 
 namespace NSG
@@ -92,21 +93,21 @@ namespace NSG
         auto scene = light_->GetScene().get();
         EnableOrtho();
         CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL, __FILE__, __LINE__);
-        
-		auto orientation = light_->GetGlobalOrientation();
+
+        auto orientation = light_->GetGlobalOrientation();
         auto dir = light_->GetLookAtDirection();
         //Set the initial pos far away in order not to miss any object
-		auto initialPos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * dir;
+        auto initialPos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * dir;
         tempCam_.SetOrientation(orientation);
-		tempCam_.SetPosition(initialPos);
+        tempCam_.SetPosition(initialPos);
         BoundingBox splitBB;
 
-#if 0
+        #if 1
         if (farSplit < camera->GetZFar() || nearSplit > camera->GetZNear())
         {
-            // We are using a split. 
-			// Calculate receivers for the split.
-			// Clip the frustum's split against the receivers.
+            // We are using a split.
+            // Calculate receivers for the split.
+            // Clip the frustum's split against the receivers.
             auto camSplitFrustum = camera->GetFrustumSplit(nearSplit, farSplit);
             splitBB = BoundingBox(*camSplitFrustum);
             auto receiversBB = Camera::GetViewBox(camSplitFrustum.get(), scene, true, false);
@@ -114,11 +115,11 @@ namespace NSG
                 splitBB.Clip(receiversBB);
         }
         else
-#endif
+        #endif
         {
             // We are using the whole camera's frustum.
             // No need to recalculate the receivers (already here as a parameter)
-			// Clip the full frustum against the receivers.
+            // Clip the full frustum against the receivers.
             splitBB = BoundingBox(*camera->GetFrustum());
             if (receiversFullFrustumViewBox.IsDefined())
                 splitBB.Clip(receiversFullFrustumViewBox);
@@ -127,35 +128,35 @@ namespace NSG
         {
             // Setup/Adjust the shadowCam camera to calculate the casters
             BoundingBox shadowCamSplit(splitBB);
-			shadowCamSplit.Transform(tempCam_.GetView());
+            shadowCamSplit.Transform(tempCam_.GetView());
             auto viewSize = shadowCamSplit.Size();
             auto viewCenter = shadowCamSplit.Center();
             // Calculate shadowCam's center to the view space bounding box
             Vector3 adjust(viewCenter.x, viewCenter.y, 0);
-			auto initialZ = initialPos.z;
+            auto initialZ = initialPos.z;
             initialPos += orientation * adjust;
-			auto finalZ = initialPos.z;
-			tempCam_.SetPosition(initialPos); //Center shadowCam
-			tempCam_.SetAspectRatio(viewSize.x / viewSize.y);
-			tempCam_.SetOrthoScale(viewSize.x);
-			auto offsetZ = finalZ - initialZ;
-			auto farZ = -(shadowCamSplit.min_.z + offsetZ);
-			tempCam_.SetFarClip(farZ); // Set far plane in order to view all the scene
+            auto finalZ = initialPos.z;
+            tempCam_.SetPosition(initialPos); //Center shadowCam
+            tempCam_.SetAspectRatio(viewSize.x / viewSize.y);
+            tempCam_.SetOrthoScale(viewSize.x);
+            auto offsetZ = finalZ - initialZ;
+            auto farZ = -(shadowCamSplit.min_.z + offsetZ);
+            tempCam_.SetFarClip(farZ); // Set far plane in order to view all the scene
         }
 
-		splitBB.Transform(tempCam_.GetView()); // transform view box the shadowCam's space
-		auto shadowCamFrustum = tempCam_.GetFrustum();
-		// Get caster for the current shadowCam's frustum
+        splitBB.Transform(tempCam_.GetView()); // transform view box the shadowCam's space
+        auto shadowCamFrustum = tempCam_.GetFrustum();
+        // Get caster for the current shadowCam's frustum
         BoundingBox castersBB = Camera::GetViewBox(shadowCamFrustum.get(), scene, false, true);
-		if (castersBB.IsDefined())
-		{
-			// If there are casters visibles from current shadowCam's frustum:
-			castersBB.Transform(tempCam_.GetView()); // transform caster's view box the shadowCam's space
-			// Merge Z axis casters in order not to miss any between camFrustum and shadowCam's position
-			castersBB.min_.z = std::min(castersBB.min_.z, splitBB.min_.z);
-			castersBB.max_.z = std::max(castersBB.max_.z, splitBB.max_.z);
-			splitBB = castersBB;
-		}
+        if (castersBB.IsDefined())
+        {
+            // If there are casters visibles from current shadowCam's frustum:
+            castersBB.Transform(tempCam_.GetView()); // transform caster's view box the shadowCam's space
+            // Merge Z axis casters in order not to miss any between camFrustum and shadowCam's position
+            castersBB.min_.z = std::min(castersBB.min_.z, splitBB.min_.z);
+            castersBB.max_.z = std::max(castersBB.max_.z, splitBB.max_.z);
+            splitBB = castersBB;
+        }
 
         QuantizeAndSetup2ViewBox(split, initialPos, splitBB);
         //SetRange(Length(splitBB.Size())); //Sets the shadowCam's range used in the shader (See u_lightInvRange)
@@ -264,12 +265,12 @@ namespace NSG
 
         std::vector<SceneNode*> visibles;
         light_->GetScene()->GetVisibleNodes(GetFrustumPointer(), visibles);
-		for (auto& visible : visibles)
-		{
-			auto material = visible->GetMaterial();
-			if (material && material->IsShadowCaster())
-				result.push_back(visible);
-		}
+        for (auto& visible : visibles)
+        {
+            auto material = visible->GetMaterial();
+            if (material && material->IsShadowCaster())
+                result.push_back(visible);
+        }
         return !result.empty();
     }
 

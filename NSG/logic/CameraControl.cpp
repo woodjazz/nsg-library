@@ -301,25 +301,27 @@ namespace NSG
     {
         float relX = (x - lastX_);
         float relY = (y - lastY_);
-		if (altKeyDown_ && shiftKeyDown_)
-		{
-			auto radius = pointOnSphere_->GetRadius();
-			OnMousewheel(0, radius * relY);
-		}
+        if (altKeyDown_ && shiftKeyDown_)
+        {
+            auto radius = pointOnSphere_->GetRadius();
+            OnMousewheel(0, radius * relY);
+        }
         else if (altKeyDown_)
         {
             pointOnSphere_->IncAngles(PI * relX, PI * relY);
             camera_->SetGlobalPosition(pointOnSphere_->GetPoint());
             camera_->SetGlobalLookAtPosition(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
         }
-		else if (shiftKeyDown_)
-		{
-			auto pos = pointOnSphere_->GetPoint();
-			auto rot = camera_->GetGlobalOrientation();
-			auto radius = pointOnSphere_->GetRadius();
-			pos += rot * (radius * Vector3(relX, relY, 0));
-			SetPosition(pos);
-		}
+        else if (shiftKeyDown_)
+        {
+            auto pos = pointOnSphere_->GetPoint();
+            auto rot = camera_->GetGlobalOrientation();
+            auto radius = pointOnSphere_->GetRadius();
+            auto offset = rot * (radius * Vector3(relX, relY, 0));
+            pos += offset;
+            SetPosition(pos);
+            pointOnSphere_->SetCenter(pointOnSphere_->GetCenter() + offset);
+        }
     }
 
     void CameraControl::SetPosition(const Vertex3& position)
@@ -376,17 +378,17 @@ namespace NSG
     {
         BoundingBox bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_.get());
         Vertex3 center = bb.Center();
-		float distance = std::max(std::max(bb.Size().x, bb.Size().y), bb.Size().z);
-		if (distance < camera_->GetZNear())
-			distance = 1 + camera_->GetZNear();
+        float distance = std::max(std::max(bb.Size().x, bb.Size().y), bb.Size().z);
+        if (distance < camera_->GetZNear())
+            distance = 1 + camera_->GetZNear();
         Vertex3 position = camera_->GetGlobalPosition();
-		if (bb.IsInside(position))
-			position = center + VECTOR3_FORWARD * distance;
-		else
-		{
-			auto lookAtDir = Normalize(position - center);
-			position = center + lookAtDir * distance;
-		}
+        if (bb.IsInside(position))
+            position = center + VECTOR3_FORWARD * distance;
+        else
+        {
+            auto lookAtDir = Normalize(position - center);
+            position = center + lookAtDir * distance;
+        }
 
         if (pointOnSphere_->SetCenterAndPoint(center, position))
             camera_->SetGlobalPosition(position);
