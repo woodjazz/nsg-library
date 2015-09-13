@@ -63,7 +63,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto light = scene->CreateChild<Light>();
     light->SetType(LightType::DIRECTIONAL);
 	light->SetShadowColor(Vector4(COLOR_GREEN,1.f));
-	//light->SetBias(0.0000f);
+	//light->SetBias(0.1000f);
     auto camera = scene->CreateChild<Camera>();
 #ifdef TEST1
 	light->SetGlobalLookAtPosition(Vector3(-10, -1, 0));

@@ -38,7 +38,7 @@ namespace NSG
           shadowClipStart_(0.1f), // same minimum as blender
           shadowClipEnd_(30.f), // same as distance_
           onlyShadow_(false),
-          shadowBias_(0.0f),
+          shadowBias_(0),
           shadowSplits_(1),
 		  invRange_(1.f/distance_)
     {
@@ -383,6 +383,7 @@ namespace NSG
 
     int Light::CalculateSplits(const Camera* camera, float splits[MAX_SHADOW_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const
     {
+        return 1; // FIXME @@@
         auto camNear = camera->GetZNear();
         auto camFar  = camera->GetZFar();
         auto frustumDepth = camFar - camNear;
@@ -451,8 +452,9 @@ namespace NSG
                     shadowSplits_ = CalculateSplits(camera, splits, camFullFrustumViewBox, receiversViewBox);
                     auto farSplit = farZ;
                     int split = 0;
+                    // Clip receivers against full frustum.
                     receiversViewBox.Clip(camFullFrustumViewBox);
-                    // Setup the sahdow camera for each split
+                    // Setup the shadow camera for each split
                     while (split < shadowSplits_)
                     {
                         if (nearSplit > farZ)

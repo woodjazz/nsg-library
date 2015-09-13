@@ -87,8 +87,6 @@ namespace NSG
     void ShadowCamera::SetupDirectional(int split, const Camera* camera, float nearSplit, float farSplit, const BoundingBox& receiversFullFrustumViewBox)
     {
         CHECK_ASSERT(!GetParent(), __FILE__, __LINE__);
-        nearSplit_ = nearSplit;
-        farSplit_ = farSplit;
 
         auto scene = light_->GetScene().get();
         EnableOrtho();
@@ -100,6 +98,10 @@ namespace NSG
         auto initialPos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * dir;
         tempCam_.SetOrientation(orientation);
         tempCam_.SetPosition(initialPos);
+
+        nearSplit_ = nearSplit;
+        farSplit_ = farSplit;
+
         BoundingBox splitBB;
 
         #if 1
@@ -119,10 +121,7 @@ namespace NSG
         {
             // We are using the whole camera's frustum.
             // No need to recalculate the receivers (already here as a parameter)
-            // Clip the full frustum against the receivers.
-            splitBB = BoundingBox(*camera->GetFrustum());
-            if (receiversFullFrustumViewBox.IsDefined())
-                splitBB.Clip(receiversFullFrustumViewBox);
+            splitBB = receiversFullFrustumViewBox;
         }
 
         {
@@ -144,7 +143,7 @@ namespace NSG
             tempCam_.SetFarClip(farZ); // Set far plane in order to view all the scene
         }
 
-        splitBB.Transform(tempCam_.GetView()); // transform view box the shadowCam's space
+        splitBB.Transform(tempCam_.GetView()); // transform view box to the shadowCam's space
         auto shadowCamFrustum = tempCam_.GetFrustum();
         // Get caster for the current shadowCam's frustum
         BoundingBox castersBB = Camera::GetViewBox(shadowCamFrustum.get(), scene, false, true);
