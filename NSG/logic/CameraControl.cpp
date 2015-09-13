@@ -323,6 +323,7 @@ namespace NSG
             pointOnSphere_->SetCenter(pointOnSphere_->GetCenter() + offset);
         }
     }
+    
 
     void CameraControl::SetPosition(const Vertex3& position)
     {
