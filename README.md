@@ -1,4 +1,8 @@
 [![Build Status](https://travis-ci.org/woodjazz/nsg-library.svg?branch=master)](https://travis-ci.org/woodjazz/nsg-library)
+<a href="https://scan.coverity.com/projects/woodjazz-nsg-library">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/6406/badge.svg"/>
+</a>
 ---------------------------
 ANDROID
 ---------------------------
