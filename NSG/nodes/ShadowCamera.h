@@ -36,16 +36,15 @@ namespace NSG
         ~ShadowCamera();
         void SetupSpot(const Camera* camera);
         void SetupPoint(const Camera* camera);
-        void SetupDirectional(int split, const Camera* camera, float nearSplit, float farSplit, const BoundingBox& receiversFullFrustumViewBox);
+        void SetupDirectional(const Camera* camera, float nearSplit, float farSplit);
         void SetCurrentCubeShadowMapFace(TextureTarget target);
         bool GetVisiblesShadowCasters(std::vector<SceneNode*>& result) const;
         float GetFarSplit() const { return farSplit_; }
         const Vector3& GetLightGlobalPosition() const;
-        void SetMaxShadowSplits(int splits) override;
-        int GetMaxShadowSplits() const override;
         float GetInvRange() const { return invRange_; }
+		bool IsDisabled() const { return disabled_; }
+		void Disable() { disabled_ = true; }
     private:
-        void QuantizeAndSetup2ViewBox(int split, const Vector3& initialPos, const BoundingBox& viewBox);
         Light* light_;
         Node dirPositiveX_;
         Node dirNegativeX_;
@@ -53,9 +52,8 @@ namespace NSG
         Node dirNegativeY_;
         Node dirPositiveZ_;
         Node dirNegativeZ_;
-        float nearSplit_;
         float farSplit_;
-		Camera tempCam_; // temporal camera used for intermediate calculations
         float invRange_;
+		bool disabled_;
     };
 }

@@ -421,6 +421,7 @@ namespace NSG
     struct SignalSizeChanged : Signal<int, int> {};
     struct SignalFloatFloat : Signal<float, float> {};
     struct SignalMouseButton : Signal<int, float, float> {};
+	struct SignalMouseButtonInt : Signal<int, int, int> {};
     struct SignalMouseMoved : Signal<int, int> {};
     struct SignalKey : Signal<int, int, int> {};
     struct SignalUnsigned : Signal<unsigned int> {};
@@ -444,6 +445,7 @@ namespace NSG
     struct SignalLight : Signal<Light*> {};
     struct SignalCamera : Signal<Camera*> {};
     struct SignalParticleSystem : Signal<ParticleSystem*> {};
+    struct SignalDebugRenderer : Signal<DebugRenderer*> {};
 
     enum MaterialTexture
     {

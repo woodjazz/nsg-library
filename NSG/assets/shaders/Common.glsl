@@ -36,7 +36,7 @@ struct Material
 uniform vec3 u_sceneAmbientColor;
 uniform vec3 u_sceneHorizonColor;
 uniform Material u_material;
-uniform vec3 u_eyeWorldPos; // camera world position
+uniform vec3 u_eyeWorldPos; // camera or shadowCamera world position
 // The Z far value in the shadow camera used to know the correct split
 // one coordinate per split (in case of directional light)
 uniform vec4 u_shadowCameraZFar;
@@ -45,12 +45,12 @@ uniform float u_shadowBias; // constant bias
 uniform vec4 u_shadowMapInvSize;
 
 uniform vec3 u_lightPosition;
-uniform float u_lightInvRange; // only used for point and spot lights
+uniform float u_lightInvRange; // only used for point and spot lights and SHADOW_DIR_PASS
 uniform vec3 u_lightDirection;
 uniform vec4 u_lightDiffuseColor;
 uniform vec4 u_lightSpecularColor;
 uniform float u_lightCutOff; // 0.5f * cosine(cutOff)
-uniform mat4 u_view;
+uniform mat4 u_view; // could be main camera or shadowCamera
 uniform float u_fogMinIntensity;
 uniform float u_fogStart;
 uniform float u_fogEnd;
@@ -59,22 +59,34 @@ uniform float u_fogHeight;
 #ifdef COMPILEVS
 	uniform mat4 u_model;
 	uniform mat3 u_normalMatrix;
-	uniform mat4 u_viewProjection;
-	uniform mat4 u_projection;
+	uniform mat4 u_viewProjection; // could be main camera or shadowCamera
+	uniform mat4 u_projection; // could be main camera or shadowCamera
 	uniform vec4 u_uvTransform0; /* DIFFUSEMAP */
 	uniform vec4 u_uvTransform1; /* NORMALMAP, AOMAP */	
 	uniform vec4 u_uvTransform2; /* LIGHTMAP, SPECULARMAP */
 	#if defined(SKINNED)
 		uniform mat4 u_bones[MAX_BONES];
 	#endif
-#else 
-	//COMPILEFS
-	#define MAX_SPLITS 4	
-	uniform float u_shadowCamInvRange[MAX_SPLITS]; // used only for directional lights
-	uniform vec3 u_shadowCamPos[MAX_SPLITS]; // used only for directional lights
-	uniform mat4 u_lightView[MAX_SPLITS];
-	uniform mat4 u_lightProjection[MAX_SPLITS];
-	uniform mat4 u_lightViewProjection[MAX_SPLITS];
+#else //COMPILEFS
+	
+	#if defined(SPLITS1)
+		#define MAX_SPLITS 1
+	#elif defined(SPLITS2)
+		#define MAX_SPLITS 2
+	#elif defined(SPLITS3)
+		#define MAX_SPLITS 3
+	#elif defined(SPLITS4)
+		#define MAX_SPLITS 5
+	#endif
+
+	#ifdef MAX_SPLITS		
+		uniform mat4 u_cameraView; // main camera's view only used to calculate the split
+		uniform float u_shadowCamInvRange[MAX_SPLITS]; // used only for directional lights
+		uniform vec3 u_shadowCamPos[MAX_SPLITS]; // used only for directional lights
+		uniform mat4 u_lightView[MAX_SPLITS];
+		uniform mat4 u_lightProjection[MAX_SPLITS];
+		uniform mat4 u_lightViewProjection[MAX_SPLITS];
+	#endif
 #endif
 
 

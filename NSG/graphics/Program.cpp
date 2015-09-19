@@ -86,6 +86,7 @@ namespace NSG
           att_normalMatrixCol0Loc_(-1),
           modelLoc_(-1),
           normalMatrixLoc_(-1),
+          cameraViewLoc_(-1),
           viewLoc_(-1),
           viewProjectionLoc_(-1),
           projectionLoc_(-1),
@@ -268,6 +269,7 @@ namespace NSG
 
         modelLoc_ = GetUniformLocation("u_model");
         normalMatrixLoc_ = GetUniformLocation("u_normalMatrix");
+        cameraViewLoc_ = GetUniformLocation("u_cameraView");
         viewLoc_ = GetUniformLocation("u_view");
         viewProjectionLoc_ = GetUniformLocation("u_viewProjection");
         projectionLoc_  = GetUniformLocation("u_projection");
@@ -303,7 +305,7 @@ namespace NSG
         lightInvRangeLoc_ = GetUniformLocation("u_lightInvRange");
         lightPositionLoc_ = GetUniformLocation("u_lightPosition");
 
-        for (int i = 0; i < MAX_SHADOW_SPLITS; i++)
+        for (int i = 0; i < MAX_SPLITS; i++)
         {
             shadowCamInvRangeLoc_[i] = GetUniformLocation("u_shadowCamInvRange[" + ToString(i) + "]");
             shadowCamPosLoc_[i] = GetUniformLocation("u_shadowCamPos[" + ToString(i) + "]");
@@ -588,6 +590,23 @@ namespace NSG
                 }
             }
 
+            if (shadowPass)
+            {
+                if (lightInvRangeLoc_ != -1)
+                {
+                    const ShadowCamera* shadowCam = dynamic_cast<const ShadowCamera*>(camera);
+                    glUniform1f(lightInvRangeLoc_, shadowCam->GetInvRange());
+                }
+            }
+
+
+			if (cameraViewLoc_ != -1)
+            {
+				Camera* camera = graphics_->GetMainCamera();
+                auto& m = camera->GetView();
+				glUniformMatrix4fv(cameraViewLoc_, 1, GL_FALSE, GetPointer(m));
+            }
+
             if (viewLoc_ != -1)
             {
                 auto& m = camera->GetView();
@@ -616,7 +635,7 @@ namespace NSG
         }
     }
 
-    void Program::SetLightShadowVariables()
+	void Program::SetLightShadowVariables(bool shadowPass)
     {
         if (light_)
         {
@@ -629,7 +648,7 @@ namespace NSG
                 }
             }
 
-            if (lightInvRangeLoc_ != -1)
+			if (!shadowPass && lightInvRangeLoc_ != -1)
             {
                 // lightInvRangeLoc_ not used for directional lights
                 CHECK_ASSERT(light_->GetType() != LightType::DIRECTIONAL, __FILE__, __LINE__);
@@ -668,7 +687,10 @@ namespace NSG
                 {
                     auto shadowCamera = light_->GetShadowCamera(i);
                     uniformsNeedUpdate |= shadowCamera->UniformsNeedUpdate();
-                    shadowCameraZFarSplits[i] = shadowCamera->GetFarSplit();
+					if (shadowCamera->IsDisabled())
+						shadowCameraZFarSplits[i] = 0;
+					else
+						shadowCameraZFarSplits[i] = shadowCamera->GetFarSplit();
                 }
 
                 if (uniformsNeedUpdate)
@@ -799,7 +821,7 @@ namespace NSG
         {
             SetSkeletonVariables();
             SetNodeVariables();
-            SetLightShadowVariables();
+            SetLightShadowVariables(true);
             SetCameraVariables(true);
         }
         else
@@ -810,7 +832,7 @@ namespace NSG
             SetNodeVariables();
             SetCameraVariables(false);
             SetLightVariables();
-            SetLightShadowVariables();
+            SetLightShadowVariables(false);
         }
 
         activeNode_ = node_;
@@ -867,7 +889,13 @@ namespace NSG
     std::string Program::GetShaderVariation(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode)
     {
         bool allowInstancing = sceneNode == nullptr;
-        std::string defines;
+        #if defined(IS_TARGET_MOBILE)
+		std::string defines = "IS_TARGET_MOBILE\n";
+        #elif defined(IS_TARGET_WEB)
+		std::string defines = "IS_TARGET_WEB\n";
+        #else
+		std::string defines = "IS_TARGET_DESKTOP\n";
+        #endif
         auto passType = pass->GetType();
         if (camera)
         {
@@ -875,6 +903,9 @@ namespace NSG
             if (scene)
                 scene->FillShaderDefines(defines, passType);
             camera->FillShaderDefines(defines, passType);
+
+			defines += "SPLITS" + ToString(camera->GetMaxShadowSplits()) + "\n";
+
         }
 
         if (material)

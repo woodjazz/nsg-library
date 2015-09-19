@@ -70,7 +70,9 @@ namespace NSG
           signalFloatFloat_(new Signal<float, float>()),
           signalMouseMoved_(new Signal<int, int>()),
           signalMouseDown_(new Signal<int, float, float>()),
+		  signalMouseDownInt_(new Signal<int, int, int>()),
           signalMouseUp_(new Signal<int, float, float>()),
+		  signalMouseUpInt_(new Signal<int, int, int>()),
           signalMouseWheel_(new Signal<float, float>()),
           signalKey_(new Signal<int, int, int>()),
           signalUnsigned_(new Signal<unsigned int>()),
@@ -227,10 +229,20 @@ namespace NSG
         signalMouseDown_->Run(button, x, y);
     }
 
+	void Window::OnMouseDown(int button, int x, int y)
+	{
+		signalMouseDownInt_->Run(button, x, y);
+	}
+
     void Window::OnMouseUp(int button, float x, float y)
     {
         signalMouseUp_->Run(button, x, y);
     }
+
+	void Window::OnMouseUp(int button, int x, int y)
+	{
+		signalMouseUpInt_->Run(button, x, y);
+	}
 
     void Window::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
     {

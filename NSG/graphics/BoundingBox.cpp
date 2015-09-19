@@ -26,6 +26,8 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Frustum.h"
 #include "Node.h"
+#include "Camera.h"
+#include "DebugRenderer.h"
 #include "Util.h"
 namespace NSG
 {
@@ -255,11 +257,28 @@ namespace NSG
         vertices[7] = Vertex3(min_.x, max_.y, max_.z);
     }
 
+    void BoundingBox::Debug(DebugRenderer* debugRenderer, const Color& color)
+    {
+        Vertex3 vertices[8];
+        GetVertices(vertices);
+        debugRenderer->AddLine(vertices[0], vertices[1], color);
+        debugRenderer->AddLine(vertices[0], vertices[2], color);
+        debugRenderer->AddLine(vertices[0], vertices[3], color);
+        debugRenderer->AddLine(vertices[1], vertices[6], color);
+        debugRenderer->AddLine(vertices[1], vertices[7], color);
+        debugRenderer->AddLine(vertices[2], vertices[7], color);
+        debugRenderer->AddLine(vertices[2], vertices[5], color);
+        debugRenderer->AddLine(vertices[3], vertices[6], color);
+        debugRenderer->AddLine(vertices[3], vertices[5], color);
+        debugRenderer->AddLine(vertices[4], vertices[5], color);
+        debugRenderer->AddLine(vertices[4], vertices[6], color);
+        debugRenderer->AddLine(vertices[4], vertices[7], color);
+    }
+
     std::ostream& operator << (std::ostream& s , const BoundingBox& obj)
     {
         s << obj.min_ << " - " << obj.max_;
 
         return s;
     }
-
 }

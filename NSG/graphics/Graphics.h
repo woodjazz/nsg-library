@@ -68,6 +68,8 @@ namespace NSG
 		Program* GetProgram() const { return activeProgram_; }
 		Camera* SetCamera(Camera* camera);
 		Camera* GetCamera() const { return activeCamera_; }
+		void SetMainCamera(Camera* camera) { mainCamera_ = camera; }
+		Camera* GetMainCamera() const { return mainCamera_; }
 		void SetWindow(Window* window);
 		Window* GetWindow() const { return activeWindow_; }
 		void SetFrameBuffer(FrameBuffer* buffer);
@@ -135,8 +137,9 @@ namespace NSG
 		const Mesh* lastMesh_; // last mesh drawn
 		Program* lastProgram_; // last used program
 		Mesh* activeMesh_; // mesh that is going to be drawn
-		Camera* activeCamera_;
+		Camera* activeCamera_; // could be camera or shadowCamera
 		Window* activeWindow_;
+		Camera* mainCamera_; //used only to calculate the shadow camera split
 		bool has_discard_framebuffer_ext_;
 		bool has_vertex_array_object_ext_;
 		bool has_map_buffer_range_ext_;

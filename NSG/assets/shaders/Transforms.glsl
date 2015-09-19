@@ -174,31 +174,83 @@
 
 #elif defined(COMPILEFS)
 
-	#if !defined(AMBIENT_PASS)
+	#if !defined(AMBIENT_PASS) && defined(MAX_SPLITS)
 
 	    int GetSplit()
 	    {
-	        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);
-	        if(-viewPos.z < u_shadowCameraZFar[0])
-	            return 0;
-	        else if(-viewPos.z < u_shadowCameraZFar[1])
-	            return 1;
-	        else if(-viewPos.z < u_shadowCameraZFar[2])
-	            return 2;
-	        else
-	            return 3;
+			#if MAX_SPLITS > 1
+		        vec4 viewPos = u_cameraView * vec4(v_worldPos, 1.0);
+		        if(-viewPos.z < u_shadowCameraZFar[0])
+		            return 0;
+		        else if(-viewPos.z < u_shadowCameraZFar[1])
+		            return 1;
+		        else if(-viewPos.z < u_shadowCameraZFar[2])
+		            return 2;
+		        else if(-viewPos.z < u_shadowCameraZFar[3])
+		            return 3;
+		        else
+		        	return 3;
+		    #else
+		        return 0;
+		    #endif
 	    }
 
-	    // Transforms from world to shadow camera space
-	    vec4 GetShadowClipPos(vec4 worldPos)
+		int GetBestSplit()
+		{
+			#if MAX_SPLITS > 1
+				// Transforms from world to shadow camera space
+		        vec4 coords = u_lightViewProjection[GetSplit()] * vec4(v_worldPos, 1.0);
+		        // Normalize from -w..w to -1..1
+		        coords /= coords.w; 
+		        // Normalize from -1..1 to 0..1
+		        coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); 
+		        if(clamp(coords.xyz, 0.0, 1.0).xy != coords.xy && GetSplit() < 3)
+		        {
+		        	// coord is outside split => pick next one
+		        	vec4 viewPos = u_cameraView * vec4(v_worldPos, 1.0);
+		        	if(-viewPos.z < u_shadowCameraZFar[GetSplit() + 1])
+		            	return GetSplit() + 1;	        	
+		        }
+	    		return GetSplit();
+    		#else
+    			return 0;
+    		#endif
+		}
+
+		vec4 GetSplitColor()
+		{
+            const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);
+            const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);
+            const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);
+            const vec4 Yellow = vec4(1.0, 1.0, 0.0, 1.0);
+            int split = GetBestSplit();
+            if(split == 0)
+                return Red;
+            else if(split == 1)
+                return Green;
+            else if(split == 2)
+                return Blue;
+            else
+                return Yellow;
+        }
+
+		// Transform from world to shadow map texture coordinates
+		vec4 GetTextureCoords(vec4 worldPos)
 	    {
-	        return u_lightViewProjection[GetSplit()] * worldPos;
+	    	// Transforms from world to shadow camera space
+	        vec4 coords = u_lightViewProjection[GetBestSplit()] * worldPos; 
+	        // Normalize from -w..w to -1..1
+	        coords /= coords.w;
+	        // Normalize from -1..1 to 0..1
+	        coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0);
+	        coords.z = clamp(coords.z, 0.0, 1.0);
+			return coords;
 	    }
 
 	    vec3 GetShadowCamPos()
 	    {
-	    	#if defined(HAS_DIRECTIONAL_LIGHT) || defined(SHADOW_PASS)
-	    		return u_shadowCamPos[GetSplit()];
+	    	#if defined(HAS_DIRECTIONAL_LIGHT) || defined(SHADOW_DIR_PASS)
+		        return u_shadowCamPos[GetBestSplit()];
 	    	#else
 	    		return u_lightPosition;
 	    	#endif
@@ -206,12 +258,54 @@
 
 	    float GetShadowCamInvRange()
 	    {
-	    	return u_shadowCamInvRange[GetSplit()];
+	    	return u_shadowCamInvRange[GetBestSplit()];
 	    }
+
+		#if defined(SHADOWMAP) || defined(CUBESHADOWMAP)
+
+		    float GetShadowMapInvSize()
+		    {
+		        return u_shadowMapInvSize[GetBestSplit()];
+		    }
+
+		#endif
+
+		#if defined(CUBESHADOWMAP)
+
+		    vec3 FixCubeLookup(vec3 v) 
+		    {
+		        // To eliminate the edge seams
+		        // Since the extension ARB_seamless_cube_map is not always available.
+		        // From http://the-witness.net/news/2012/02/seamless-cube-map-filtering 
+		        float cube_size = 1.0/u_shadowMapInvSize[0];
+		        float M = max(max(abs(v.x), abs(v.y)), abs(v.z)); 
+		        float scale = (cube_size - 1.0) / cube_size; 
+		        if (abs(v.x) != M) v.x *= scale; 
+		        if (abs(v.y) != M) v.y *= scale; 
+		        if (abs(v.z) != M) v.z *= scale; 
+		        return v; 
+		    }
+
+		#elif defined(SHADOWMAP)
+
+		    vec4 GetTexture2DFromShadowMap(vec2 coord)
+		    {
+		        int split = GetBestSplit();
+		        if(split == 0)
+		            return texture2D(u_texture3, coord);
+		        else if(split == 1)
+		            return texture2D(u_texture4, coord);
+		        else if(split == 2)
+		            return texture2D(u_texture5, coord);
+		        else
+		            return texture2D(u_texture6, coord);
+		    }
+
+		#endif
 
 	#endif
 
-	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)
+	#if defined(SHADOW_DIR_PASS) || defined(SHADOW_POINT_PASS) || defined(SHADOW_SPOT_PASS)
 
 		// Input depth [0..1]
 		// Output color [[0..1], [0..1], [0..1]]
@@ -238,7 +332,7 @@
 	#endif
 
 
-	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) && !defined(SHADOW_PASS_SPOT)
+	#if !defined(SHADOW_DIR_PASS) && !defined(SHADOW_POINT_PASS) && !defined(SHADOW_SPOT_PASS)
 
 		float GetFogLinearFactor()
 		{

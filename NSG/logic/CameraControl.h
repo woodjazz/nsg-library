@@ -67,5 +67,7 @@ namespace NSG
 		SignalMultiGesture::PSlot slotMultiGesture_;
 		SignalKey::PSlot slotKey_;
 		SignalUpdate::PSlot slotUpdate_;
+		bool enableDebugPhysics_;
+		bool enableColorSplits_;
 	};
 }

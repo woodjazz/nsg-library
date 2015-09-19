@@ -96,5 +96,7 @@ misrepresented as being the original software.
 #include "LoaderXML.h"
 #include "LoaderApp.h"
 #include "ICollision.h"
+#include "DebugRenderer.h"
+#include "ShadowMapDebug.h"
 
 

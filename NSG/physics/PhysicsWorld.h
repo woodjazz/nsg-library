@@ -76,12 +76,10 @@ namespace NSG
         int	getDebugMode() const override;
         ///////////////////////////////////////////////////////////////////////////////////////
         void DrawDebug();
-        PLinesMesh GetDebugLines() const { return lines_; }
-        void ClearDebugLines();
         PhysicsRaycastResult SphereCast(const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
         PhysicsRaycastResult SphereCastBut(const ICollision* collider, const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
         PhysicsRaycastResult RayCast(const Vector3& origin, const Vector3& direction, float maxDistance, int collisionMask = (int)CollisionMask::ALL);
-
+        PDebugRenderer GetDebugRenderer() const { return debugRenderer_; }
     private:
         void Substep(float tick);
         static void SubstepCallback(btDynamicsWorld* dyn, float tick);
@@ -94,8 +92,8 @@ namespace NSG
         std::shared_ptr<btDiscreteDynamicsWorld> dynamicsWorld_;
         Vector3 gravity_;
         int debugMode_;
-        PLinesMesh lines_;
         int fps_;
         int maxSubSteps_;
+        PDebugRenderer debugRenderer_;
     };
 }

@@ -216,7 +216,7 @@ namespace NSG
 			io.MousePos = ImVec2((float)x, (float)y);
 		});
 
-		slotMouseDown_ = mainWindow->SigMouseDown()->Connect([&](int button, float x, float y)
+		slotMouseDown_ = mainWindow->SigMouseDownInt()->Connect([&](int button, int x, int y)
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			if (button == NSG_BUTTON_LEFT)
@@ -225,9 +225,10 @@ namespace NSG
 				io.MouseDown[1] = true;
 			else if (button == NSG_BUTTON_MIDDLE)
 				io.MouseDown[2] = true;
+			io.MousePos = ImVec2((float)x, (float)y);
 		});
 
-		slotMouseUp_ = mainWindow->SigMouseUp()->Connect([&](int button, float x, float y)
+		slotMouseUp_ = mainWindow->SigMouseUpInt()->Connect([&](int button, int x, int y)
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			if (button == NSG_BUTTON_LEFT)
@@ -236,6 +237,7 @@ namespace NSG
 				io.MouseDown[1] = false;
 			else if (button == NSG_BUTTON_MIDDLE)
 				io.MouseDown[2] = false;
+			io.MousePos = ImVec2((float)x, (float)y);
 		});
 
 		slotMouseWheel_ = mainWindow->SigMouseWheel()->Connect([&](float x, float y)
@@ -246,5 +248,13 @@ namespace NSG
 			else if (y < 0)
 				io.MouseWheel = -1;
 		});
+
+		slotMultiGesture_ = mainWindow->SigMultiGesture()->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+        {
+        	//ImGuiIO& io = ImGui::GetIO();
+       		//io.MouseDown[0] = numFingers > 0 ? true : false;
+       		//io.MousePos = ImVec2((float)x, (float)y);
+        });
+
     }
 }

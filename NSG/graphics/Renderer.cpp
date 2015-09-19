@@ -41,6 +41,7 @@ misrepresented as being the original software.
 #include "LinesMesh.h"
 #include "GUI.h"
 #include "Check.h"
+#include "DebugRenderer.h"
 
 namespace NSG
 {
@@ -56,7 +57,8 @@ namespace NSG
           litTransparentPass_(std::make_shared<Pass>()),
           debugPass_(std::make_shared<Pass>()),
           debugPhysics_(false),
-          debugMaterial_(Material::Create("__debugMaterial__"))
+          debugMaterial_(Material::Create("NSGDebugMaterial")),
+          debugRenderer_(std::make_shared<DebugRenderer>())
     {
 
         debugMaterial_->SetSerializable(false);
@@ -327,14 +329,28 @@ namespace NSG
         if (world)
         {
             world->DrawDebug();
-            auto meshLines = world->GetDebugLines();
+            auto debugRenderer = world->GetDebugRenderer();
+            auto meshLines = debugRenderer->GetDebugLines();
             if (!meshLines->IsEmpty())
             {
                 graphics_->SetMesh(meshLines.get());
 				if (graphics_->SetupProgram(debugPass_.get(), nullptr, debugMaterial_.get(), nullptr))
                     graphics_->DrawActiveMesh();
-                world->ClearDebugLines();
+                debugRenderer->Clear();
             }
+        }
+    }
+
+    void Renderer::DebugRendererPass()
+    {
+        Renderer::SigDebugRenderer()->Run(debugRenderer_.get());
+        auto meshLines = debugRenderer_->GetDebugLines();
+        if (!meshLines->IsEmpty())
+        {
+            graphics_->SetMesh(meshLines.get());
+            if (graphics_->SetupProgram(debugPass_.get(), nullptr, debugMaterial_.get(), nullptr))
+                graphics_->DrawActiveMesh();
+            debugRenderer_->Clear();
         }
     }
 
@@ -351,6 +367,7 @@ namespace NSG
 		}
         camera_ = scene->GetMainCamera().get();
         graphics_->SetCamera(camera_);
+		graphics_->SetMainCamera(camera_);
         scene->GetVisibleNodes(camera_, visibles_);
         if (!visibles_.empty())
         {
@@ -375,6 +392,8 @@ namespace NSG
 
             if(debugPhysics_)
             	DebugPhysicsPass();
+
+            DebugRendererPass();
             
             for(auto& obj: visibles_)
                 obj->ClearUniform();
@@ -385,4 +404,11 @@ namespace NSG
             GUI::GetPtr()->Render(window);
         }
     }
+
+    SignalDebugRenderer::PSignal Renderer::SigDebugRenderer()
+    {
+        static SignalDebugRenderer::PSignal signalDebugRenderer(new SignalDebugRenderer);
+        return signalDebugRenderer;
+    }
+
 }

@@ -99,7 +99,7 @@ static void Test01()
 //	engine->Run();
 	engine->RenderFrame();
 	auto shadowCam = light->GetShadowCamera(0);
-	CHECK_ASSERT(shadowCam->GetGlobalPosition() == Vector3(0, 5, 0), __FILE__, __LINE__);
+	CHECK_ASSERT(Distance(shadowCam->GetGlobalPosition(), Vector3(0, 5.f, 0)) < 0.001f, __FILE__, __LINE__);
 	CHECK_ASSERT(shadowCam->IsOrtho(), __FILE__, __LINE__);
 	CHECK_ASSERT(shadowCam->GetZNear() == 0, __FILE__, __LINE__);
 	CHECK_ASSERT(shadowCam->GetZFar() == 7, __FILE__, __LINE__);

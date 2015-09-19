@@ -42,7 +42,9 @@ namespace NSG
         : camera_(camera),
           window_(nullptr),
           originalPosition_(camera->GetGlobalPosition()),
-          originalOrientation_(camera->GetGlobalOrientation())
+          originalOrientation_(camera->GetGlobalOrientation()),
+          enableDebugPhysics_(false),
+          enableColorSplits_(false)
     {
         CHECK_ASSERT(camera_, __FILE__, __LINE__);
         lastX_ = lastY_ = 0;
@@ -138,7 +140,11 @@ namespace NSG
         lastY_ = y;
 
         if (button == NSG_BUTTON_LEFT)
+        {
+            if(altKeyDown_)
+                SetSphereCenter(false);
             leftButtonDown_ = true;
+        }
     }
 
     void CameraControl::OnMouseUp(int button, float x, float y)
@@ -212,65 +218,56 @@ namespace NSG
         switch (key)
         {
             case NSG_KEY_G:
+                if (action)
                 {
-                    camera_->EnableColorSplits(action ? true : false);
+                    enableColorSplits_ = !enableColorSplits_;
+                    camera_->EnableColorSplits(enableColorSplits_);
                     break;
                 }
 
             case NSG_KEY_1:
-                {
-                    if (shiftKeyDown_)
-                        camera_->SetMaxShadowSplits(1);
-                    break;
-                }
+                if (shiftKeyDown_)
+                    camera_->SetMaxShadowSplits(1);
+                break;
 
             case NSG_KEY_2:
-                {
-                    if (shiftKeyDown_)
-                        camera_->SetMaxShadowSplits(2);
-                    break;
-                }
+                if (shiftKeyDown_)
+                    camera_->SetMaxShadowSplits(2);
+                break;
 
             case NSG_KEY_3:
-                {
-                    if (shiftKeyDown_)
-                        camera_->SetMaxShadowSplits(3);
-                    break;
-                }
+                if (shiftKeyDown_)
+                    camera_->SetMaxShadowSplits(3);
+                break;
 
             case NSG_KEY_4:
-                {
-                    if (shiftKeyDown_)
-                        camera_->SetMaxShadowSplits(4);
-                    break;
-                }
+                if (shiftKeyDown_)
+                    camera_->SetMaxShadowSplits(4);
+                break;
 
             case NSG_KEY_Z:
-                {
-                    AutoZoom();
-                    break;
-                }
+                AutoZoom();
+                break;
 
             case NSG_KEY_P:
+                if (action)
                 {
-                    Renderer::GetPtr()->EnableDebugPhysics(action != 0);
+                    enableDebugPhysics_ = !enableDebugPhysics_;
+                    Renderer::GetPtr()->EnableDebugPhysics(enableDebugPhysics_);
                     camera_->SetUniformsNeedUpdate();
-                    break;
                 }
+                break;
 
             case NSG_KEY_F:
-                {
-                    if (action)
-                        SetSphereCenter(false);
-                    break;
-                }
+                if (action)
+                    SetSphereCenter(false);
+                break;
+
 
             case NSG_KEY_C:
-                {
-                    if (action)
-                        SetSphereCenter(true);
-                    break;
-                }
+                if (action)
+                    SetSphereCenter(true);
+                break;
 
             case NSG_KEY_R:
                 {
@@ -293,6 +290,8 @@ namespace NSG
                     shiftKeyDown_ = action ? true : false;
                     break;
                 }
+            default:
+                break;
         }
 
     }
@@ -323,7 +322,7 @@ namespace NSG
             pointOnSphere_->SetCenter(pointOnSphere_->GetCenter() + offset);
         }
     }
-    
+
 
     void CameraControl::SetPosition(const Vertex3& position)
     {

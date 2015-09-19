@@ -58,6 +58,7 @@ namespace NSG
 	    Vector3 Size() const { return max_ - min_; }
 	    void GetVertices(Vertex3 vertices[8]) const;
 	    bool IsDefined() const { return defined_; }
+	    void Debug(DebugRenderer* debugRenderer, const Color& color);
 	private:
 		bool defined_;
 	};

@@ -68,14 +68,14 @@ namespace NSG
         int GetShadowSplits() const {return shadowSplits_; }
 		float GetInvRange() const { return invRange_; }
     private:
-        int CalculateSplits(const Camera* camera, float splits[MAX_SHADOW_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
+		int CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
         FrameBuffer* GetShadowFrameBuffer(int idx) const;
         void CalculateColor();
         void CalculateRange();
         void Generate2DShadowMap(int split);
-        void GenerateShadowMapCubeFace(int split);
+        void GenerateShadowMapCubeFace();
         int GetShadowFrameBufferSize(int split) const;
-        void GenerateCubeShadowMap(int split, const Camera* camera);
+        void GenerateCubeShadowMap(const Camera* camera);
     private:
         LightType type_;
         float energy_;
@@ -91,9 +91,9 @@ namespace NSG
         float shadowClipStart_;
         float shadowClipEnd_;
         bool onlyShadow_;
-        PFrameBuffer shadowFrameBuffer_[MAX_SHADOW_SPLITS];
+        PFrameBuffer shadowFrameBuffer_[MAX_SPLITS];
         float shadowBias_; // Bias is used to add a slight offset distance between an object and the shadows cast by it.
-        PShadowCamera shadowCamera_[MAX_SHADOW_SPLITS];
+        PShadowCamera shadowCamera_[MAX_SPLITS];
         int shadowSplits_; //Calculated in the shadow pass
 		float invRange_;
     };

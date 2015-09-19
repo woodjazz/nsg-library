@@ -36,19 +36,20 @@
 				gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();
 			#endif
 
-		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)
+		#elif defined(SHADOW_POINT_PASS) || defined(SHADOW_SPOT_PASS)
 
 			vec3 lightToVertex = v_worldPos - u_lightPosition;
     		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;
     		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
 
-    	#elif defined(SHADOW_PASS)
+    	#elif defined(SHADOW_DIR_PASS)
 
-			vec3 lightToVertex = v_worldPos - GetShadowCamPos();
-    		float lightToPixelDistance = length(lightToVertex) * GetShadowCamInvRange();
-    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
-
-    		#if 0
+    		#if 1
+			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
+    		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;
+   			gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
+   			//gl_FragColor = EncodeDepth2Color(gl_FragDepth);
+    		#else
 	        vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));
 	        vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1
 	        coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1

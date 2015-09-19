@@ -84,7 +84,7 @@ namespace NSG
 
         void SetBaseLightVariables(const BaseLightLoc& baseLoc);
         void SetLightVariables();
-        void SetLightShadowVariables();
+		void SetLightShadowVariables(bool shadowPass);
 
         std::string defines_;
         GLuint id_;
@@ -114,13 +114,14 @@ namespace NSG
         std::vector<GLuint> bonesBaseLoc_;
         GLuint modelLoc_;
         GLuint normalMatrixLoc_;
+        GLuint cameraViewLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
-        GLuint shadowCamInvRangeLoc_[MAX_SHADOW_SPLITS];
-        GLuint shadowCamPosLoc_[MAX_SHADOW_SPLITS];
-        GLuint lightViewLoc_[MAX_SHADOW_SPLITS];
-        GLuint lightProjectionLoc_[MAX_SHADOW_SPLITS];
-        GLuint lightViewProjectionLoc_[MAX_SHADOW_SPLITS];
+        GLuint shadowCamInvRangeLoc_[MAX_SPLITS];
+		GLuint shadowCamPosLoc_[MAX_SPLITS];
+		GLuint lightViewLoc_[MAX_SPLITS];
+		GLuint lightProjectionLoc_[MAX_SPLITS];
+		GLuint lightViewProjectionLoc_[MAX_SPLITS];
         GLuint projectionLoc_;
         GLuint sceneColorAmbientLoc_;
         GLuint u_sceneHorizonColorLoc_;

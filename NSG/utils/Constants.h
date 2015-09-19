@@ -60,6 +60,7 @@ namespace NSG
     static const ColorRGB COLOR_RED(1, 0, 0);
     static const ColorRGB COLOR_GREEN(0, 1, 0);
     static const ColorRGB COLOR_BLUE(0, 0, 1);
+    static const ColorRGB COLOR_YELLOW(1, 1, 1);
 
     static const size_t MAX_NODES_IN_BATCH = 1000;
     static const float PRECISION = 0.01f;
@@ -70,7 +71,7 @@ namespace NSG
     static const float CAMERA_MIN_NEARCLIP = 0.01f;
     static const float CAMERA_MAX_FOV = 160.0f;
 
-    static const int MAX_SHADOW_SPLITS = 4;
+	static const int MAX_SPLITS = 4; // shadow splits
 
     static const float MAX_WORLD_SIZE = 5000;
 

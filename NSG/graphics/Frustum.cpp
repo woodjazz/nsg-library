@@ -25,7 +25,8 @@ misrepresented as being the original software.
 */
 #include "Frustum.h"
 #include "Util.h"
-#include "Camera.h"
+#include "SceneNode.h"
+#include "DebugRenderer.h"
 
 namespace NSG
 {
@@ -111,6 +112,10 @@ namespace NSG
         vertices_[7] = IntersectionPoint(Far, Left, Top);
 
         BuildFaces();
+
+		origin_.x = vertices_[2].x + 0.5f * (vertices_[1].x - vertices_[2].x);
+		origin_.y = vertices_[2].y + 0.5f * (vertices_[3].y - vertices_[2].y);
+		origin_.z = vertices_[2].z;
     }
 
     void Frustum::BuildFaces()
@@ -130,9 +135,9 @@ namespace NSG
         faces_[FrustumFace::FACE_TOP].vertices[2] = vertices_[0];
         faces_[FrustumFace::FACE_TOP].vertices[3] = vertices_[3];
 
-        faces_[FrustumFace::FACE_BOTTOM].vertices[0] = vertices_[1];
-        faces_[FrustumFace::FACE_BOTTOM].vertices[1] = vertices_[6];
-        faces_[FrustumFace::FACE_BOTTOM].vertices[2] = vertices_[6];
+        faces_[FrustumFace::FACE_BOTTOM].vertices[0] = vertices_[6];
+        faces_[FrustumFace::FACE_BOTTOM].vertices[1] = vertices_[5];
+        faces_[FrustumFace::FACE_BOTTOM].vertices[2] = vertices_[1];
         faces_[FrustumFace::FACE_BOTTOM].vertices[3] = vertices_[2];
 
         faces_[FrustumFace::FACE_FAR].vertices[0] = vertices_[4];
@@ -277,5 +282,17 @@ namespace NSG
         Vector3 v3 = d3 * Cross(n1, n2);
 
         return (v1 + v2 + v3) / f;
+    }
+
+	void Frustum::Debug(const Vector3& origin, DebugRenderer* debugRenderer, const Color& color)
+    {
+        for(int i=0; i<NUM_FRUSTUM_FACES; i++)
+        {
+            auto& face = faces_[i];
+			debugRenderer->AddLine(origin + face.vertices[0], origin + face.vertices[1], color);
+			debugRenderer->AddLine(origin + face.vertices[1], origin + face.vertices[2], color);
+			debugRenderer->AddLine(origin + face.vertices[2], origin + face.vertices[3], color);
+			debugRenderer->AddLine(origin + face.vertices[3], origin + face.vertices[0], color);
+        }
     }
 }

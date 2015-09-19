@@ -158,38 +158,122 @@ static const char* TRANSFORMS_GLSL = \
 "		#endif\n"\
 "	}\n"\
 "#elif defined(COMPILEFS)\n"\
-"	#if !defined(AMBIENT_PASS)\n"\
+"	#if !defined(AMBIENT_PASS) && defined(MAX_SPLITS)\n"\
 "	    int GetSplit()\n"\
 "	    {\n"\
-"	        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);\n"\
-"	        if(-viewPos.z < u_shadowCameraZFar[0])\n"\
-"	            return 0;\n"\
-"	        else if(-viewPos.z < u_shadowCameraZFar[1])\n"\
-"	            return 1;\n"\
-"	        else if(-viewPos.z < u_shadowCameraZFar[2])\n"\
-"	            return 2;\n"\
-"	        else\n"\
-"	            return 3;\n"\
+"			#if MAX_SPLITS > 1\n"\
+"		        vec4 viewPos = u_cameraView * vec4(v_worldPos, 1.0);\n"\
+"		        if(-viewPos.z < u_shadowCameraZFar[0])\n"\
+"		            return 0;\n"\
+"		        else if(-viewPos.z < u_shadowCameraZFar[1])\n"\
+"		            return 1;\n"\
+"		        else if(-viewPos.z < u_shadowCameraZFar[2])\n"\
+"		            return 2;\n"\
+"		        else if(-viewPos.z < u_shadowCameraZFar[3])\n"\
+"		            return 3;\n"\
+"		        else\n"\
+"		        	return 3;\n"\
+"		    #else\n"\
+"		        return 0;\n"\
+"		    #endif\n"\
 "	    }\n"\
-"	    // Transforms from world to shadow camera space\n"\
-"	    vec4 GetShadowClipPos(vec4 worldPos)\n"\
+"		int GetBestSplit()\n"\
+"		{\n"\
+"			#if MAX_SPLITS > 1\n"\
+"				// Transforms from world to shadow camera space\n"\
+"		        vec4 coords = u_lightViewProjection[GetSplit()] * vec4(v_worldPos, 1.0);\n"\
+"		        // Normalize from -w..w to -1..1\n"\
+"		        coords /= coords.w; \n"\
+"		        // Normalize from -1..1 to 0..1\n"\
+"		        coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); \n"\
+"		        if(clamp(coords.xyz, 0.0, 1.0).xy != coords.xy && GetSplit() < 3)\n"\
+"		        {\n"\
+"		        	// coord is outside split => pick next one\n"\
+"		        	vec4 viewPos = u_cameraView * vec4(v_worldPos, 1.0);\n"\
+"		        	if(-viewPos.z < u_shadowCameraZFar[GetSplit() + 1])\n"\
+"		            	return GetSplit() + 1;	        	\n"\
+"		        }\n"\
+"	    		return GetSplit();\n"\
+"    		#else\n"\
+"    			return 0;\n"\
+"    		#endif\n"\
+"		}\n"\
+"		vec4 GetSplitColor()\n"\
+"		{\n"\
+"            const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);\n"\
+"            const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);\n"\
+"            const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);\n"\
+"            const vec4 Yellow = vec4(1.0, 1.0, 0.0, 1.0);\n"\
+"            int split = GetBestSplit();\n"\
+"            if(split == 0)\n"\
+"                return Red;\n"\
+"            else if(split == 1)\n"\
+"                return Green;\n"\
+"            else if(split == 2)\n"\
+"                return Blue;\n"\
+"            else\n"\
+"                return Yellow;\n"\
+"        }\n"\
+"		// Transform from world to shadow map texture coordinates\n"\
+"		vec4 GetTextureCoords(vec4 worldPos)\n"\
 "	    {\n"\
-"	        return u_lightViewProjection[GetSplit()] * worldPos;\n"\
+"	    	// Transforms from world to shadow camera space\n"\
+"	        vec4 coords = u_lightViewProjection[GetBestSplit()] * worldPos; \n"\
+"	        // Normalize from -w..w to -1..1\n"\
+"	        coords /= coords.w;\n"\
+"	        // Normalize from -1..1 to 0..1\n"\
+"	        coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0);\n"\
+"	        coords.z = clamp(coords.z, 0.0, 1.0);\n"\
+"			return coords;\n"\
 "	    }\n"\
 "	    vec3 GetShadowCamPos()\n"\
 "	    {\n"\
-"	    	#if defined(HAS_DIRECTIONAL_LIGHT) || defined(SHADOW_PASS)\n"\
-"	    		return u_shadowCamPos[GetSplit()];\n"\
+"	    	#if defined(HAS_DIRECTIONAL_LIGHT) || defined(SHADOW_DIR_PASS)\n"\
+"		        return u_shadowCamPos[GetBestSplit()];\n"\
 "	    	#else\n"\
 "	    		return u_lightPosition;\n"\
 "	    	#endif\n"\
 "	    }\n"\
 "	    float GetShadowCamInvRange()\n"\
 "	    {\n"\
-"	    	return u_shadowCamInvRange[GetSplit()];\n"\
+"	    	return u_shadowCamInvRange[GetBestSplit()];\n"\
 "	    }\n"\
+"		#if defined(SHADOWMAP) || defined(CUBESHADOWMAP)\n"\
+"		    float GetShadowMapInvSize()\n"\
+"		    {\n"\
+"		        return u_shadowMapInvSize[GetBestSplit()];\n"\
+"		    }\n"\
+"		#endif\n"\
+"		#if defined(CUBESHADOWMAP)\n"\
+"		    vec3 FixCubeLookup(vec3 v) \n"\
+"		    {\n"\
+"		        // To eliminate the edge seams\n"\
+"		        // Since the extension ARB_seamless_cube_map is not always available.\n"\
+"		        // From http://the-witness.net/news/2012/02/seamless-cube-map-filtering \n"\
+"		        float cube_size = 1.0/u_shadowMapInvSize[0];\n"\
+"		        float M = max(max(abs(v.x), abs(v.y)), abs(v.z)); \n"\
+"		        float scale = (cube_size - 1.0) / cube_size; \n"\
+"		        if (abs(v.x) != M) v.x *= scale; \n"\
+"		        if (abs(v.y) != M) v.y *= scale; \n"\
+"		        if (abs(v.z) != M) v.z *= scale; \n"\
+"		        return v; \n"\
+"		    }\n"\
+"		#elif defined(SHADOWMAP)\n"\
+"		    vec4 GetTexture2DFromShadowMap(vec2 coord)\n"\
+"		    {\n"\
+"		        int split = GetBestSplit();\n"\
+"		        if(split == 0)\n"\
+"		            return texture2D(u_texture3, coord);\n"\
+"		        else if(split == 1)\n"\
+"		            return texture2D(u_texture4, coord);\n"\
+"		        else if(split == 2)\n"\
+"		            return texture2D(u_texture5, coord);\n"\
+"		        else\n"\
+"		            return texture2D(u_texture6, coord);\n"\
+"		    }\n"\
+"		#endif\n"\
 "	#endif\n"\
-"	#if defined(SHADOW_PASS) || defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS_SPOT)\n"\
+"	#if defined(SHADOW_DIR_PASS) || defined(SHADOW_POINT_PASS) || defined(SHADOW_SPOT_PASS)\n"\
 "		// Input depth [0..1]\n"\
 "		// Output color [[0..1], [0..1], [0..1]]\n"\
 "		vec4 EncodeDepth2Color(float depth)\n"\
@@ -210,7 +294,7 @@ static const char* TRANSFORMS_GLSL = \
 "			return depth;\n"\
 "		}\n"\
 "	#endif\n"\
-"	#if !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) && !defined(SHADOW_PASS_SPOT)\n"\
+"	#if !defined(SHADOW_DIR_PASS) && !defined(SHADOW_POINT_PASS) && !defined(SHADOW_SPOT_PASS)\n"\
 "		float GetFogLinearFactor()\n"\
 "		{\n"\
 "		    return clamp((u_fogEnd - v_depth) / (u_fogEnd - u_fogStart), 0.0, 1.0);\n"\

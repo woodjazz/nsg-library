@@ -45,9 +45,10 @@ namespace NSG
 		SignalKey::PSlot slotKey_;
 		SignalText::PSlot slotText_;
 		SignalMouseMoved::PSlot slotMouseMoved_;
-		SignalMouseButton::PSlot slotMouseDown_;
-		SignalMouseButton::PSlot slotMouseUp_;
+		SignalMouseButtonInt::PSlot slotMouseDown_;
+		SignalMouseButtonInt::PSlot slotMouseUp_;
 		SignalFloatFloat::PSlot slotMouseWheel_;
+		SignalMultiGesture::PSlot slotMultiGesture_;
 		SignalEmpty::PSlot slotTextureAllocated_;
 		SignalEmpty::PSlot slotTextureReleased_;
 		PPass pass_;

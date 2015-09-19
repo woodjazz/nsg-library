@@ -36,7 +36,7 @@
 				v_depth = -GetCameraPos().z;
 			#endif
 
-		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS) || defined(SHADOW_PASS_SPOT)
+		#elif defined(SHADOW_POINT_PASS) || defined(SHADOW_DIR_PASS) || defined(SHADOW_SPOT_PASS)
 
 			gl_Position = GetClipPos();
 			v_worldPos = GetWorldPos().xyz;

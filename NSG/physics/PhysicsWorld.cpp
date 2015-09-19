@@ -28,7 +28,8 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Camera.h"
 #include "Ray.h"
-#include "LinesMesh.h"
+#include "Log.h"
+#include "DebugRenderer.h"
 #include "btBulletDynamicsCommon.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
 
@@ -39,9 +40,9 @@ namespace NSG
         : scene_(scene),
           gravity_(0, -9.81f, 0),
           debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits),
-          lines_(std::make_shared<LinesMesh>("DebugPhysics")),
           fps_(DEFAULT_FPS),
-          maxSubSteps_(0)
+          maxSubSteps_(0),
+		  debugRenderer_(std::make_shared<DebugRenderer>())
     {
         collisionConfiguration_ = new btDefaultCollisionConfiguration();
         pairCache_ = new btDbvtBroadphase();
@@ -122,7 +123,7 @@ namespace NSG
     #endif
     void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
     {
-        lines_->Add(ToVector3(from), ToVector3(to), Color(ToVector3(color), 1));
+        debugRenderer_->AddLine(ToVector3(from), ToVector3(to), Color(ToVector3(color), 1));
     }
 
     void PhysicsWorld::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
@@ -154,11 +155,6 @@ namespace NSG
     void PhysicsWorld::DrawDebug()
     {
         dynamicsWorld_->debugDrawWorld();
-    }
-
-    void PhysicsWorld::ClearDebugLines()
-    {
-        lines_->Clear();
     }
 
     void PhysicsWorld::SetFps(int fps)

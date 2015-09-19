@@ -42,6 +42,8 @@ namespace NSG
 		void SortSolidFrontToBack();
 		void DrawShadowPass(Batch* batch, const Light* light);
 		void EnableDebugPhysics(bool enable) { debugPhysics_ = enable; }
+		PDebugRenderer GetDebugRenderer() const { return debugRenderer_; }
+		static SignalDebugRenderer::PSignal SigDebugRenderer();
 	private:
 		void Draw(Batch* batch, const Pass* pass, const Light* light);
 		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
@@ -57,6 +59,7 @@ namespace NSG
 	    void LitTransparentPass();
 	    void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
 	    void DebugPhysicsPass();
+		void DebugRendererPass();
 
 		PGraphics graphics_;
 		Window* window_;
@@ -72,5 +75,6 @@ namespace NSG
 		std::vector<SceneNode*> transparent_;
 		bool debugPhysics_;
 		PMaterial debugMaterial_;
+		PDebugRenderer debugRenderer_;
 	};
 }

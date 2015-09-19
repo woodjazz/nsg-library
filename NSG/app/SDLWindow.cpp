@@ -67,6 +67,10 @@ namespace NSG
             window->ViewChanged(keyEvent->windowInnerWidth, keyEvent->windowInnerHeight);
         return false;
     }
+    static EM_BOOL EmscripteGamepadCallback(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+    {
+
+    }
     #elif defined(IS_TARGET_MOBILE)
     static int EventWatch(void* userdata, SDL_Event* event)
     {
@@ -257,6 +261,8 @@ namespace NSG
             isMainWindow_ = true;
             Window::SetMainWindow(this);
             emscripten_set_resize_callback(nullptr, nullptr, false, EmscriptenResizeCallback);
+            emscripten_set_gamepadconnected_callback(nullptr, false, EmscripteGamepadCallback);
+            emscripten_set_gamepaddisconnected_callback(nullptr, false, EmscripteGamepadCallback);
         }
         #else
         {
@@ -351,7 +357,7 @@ namespace NSG
         LOGI("GL_STENCIL_SIZE=%d", value);
         CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
 
-        #if defined(IS_WINDOWS) || defined(IS_LINUX)
+        #if defined(IS_TARGET_WINDOWS) || defined(IS_TARGET_LINUX)
         {
             glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
             CHECK_CONDITION(GLEW_OK == glewInit(), __FILE__, __LINE__);
@@ -634,6 +640,7 @@ namespace NSG
             {
                 SDLWindow* window = GetWindowFromID(event.button.windowID);
                 if (!window) continue;
+				window->OnMouseDown(event.button.button, event.button.x, event.button.y);
                 float x = (float)event.button.x;
                 float y = (float)event.button.y;
                 auto width = window->GetWidth();
@@ -644,6 +651,7 @@ namespace NSG
             {
                 SDLWindow* window = GetWindowFromID(event.button.windowID);
                 if (!window) continue;
+				window->OnMouseUp(event.button.button, event.button.x, event.button.y);
                 float x = (float)event.button.x;
                 float y = (float)event.button.y;
                 auto width = window->GetWidth();
@@ -672,25 +680,25 @@ namespace NSG
             {
                 SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
                 if (!window) continue;
-                float x = event.tfinger.x;
-                float y = event.tfinger.y;
-                window->OnMouseDown(0, -1 + 2 * x, 1 + -2 * y);
+                auto x = (int)(event.tfinger.x * window->GetWidth());
+                auto y = (int)(event.tfinger.y * window->GetHeight());
+                window->OnMouseDown(NSG_BUTTON_LEFT, x, y);
             }
             else if (event.type == SDL_FINGERUP)
             {
                 SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
                 if (!window) continue;
-                float x = event.tfinger.x;
-                float y = event.tfinger.y;
-                window->OnMouseUp(0, -1 + 2 * x, 1 + -2 * y);
+                auto x = (int)(event.tfinger.x * window->GetWidth());
+                auto y = (int)(event.tfinger.y * window->GetHeight());
+                window->OnMouseUp(NSG_BUTTON_LEFT, x, y);
             }
             else if (event.type == SDL_FINGERMOTION)
             {
                 SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
                 if (!window) continue;
-                float x = event.tfinger.x;
-                float y = event.tfinger.y;
-                window->OnMouseMove(-1 + 2 * x, 1 + -2 * y);
+                auto x = (int)(event.tfinger.x * window->GetWidth());
+                auto y = (int)(event.tfinger.y * window->GetHeight());
+                window->OnMouseMove(x, y);
             }
             #if defined(IS_TARGET_MOBILE)
             else if (event.type == SDL_MULTIGESTURE)

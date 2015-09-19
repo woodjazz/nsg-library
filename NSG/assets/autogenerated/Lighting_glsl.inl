@@ -3,7 +3,7 @@ namespace NSG
 {
 static const char* LIGHTING_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
-"#if defined(COMPILEFS) && !defined(SHADOW_PASS) && !defined(SHADOWCUBE_PASS) && !defined(SHADOW_PASS_SPOT)\n"\
+"#if defined(COMPILEFS) && !defined(SHADOW_DIR_PASS) && !defined(SHADOW_POINT_PASS) && !defined(SHADOW_SPOT_PASS)\n"\
 "float GetSpecular(vec3 normal, vec3 eyeVec, vec3 lightDir, float specularPower)\n"\
 "{\n"\
 "    vec3 halfVec = normalize(normalize(eyeVec) + lightDir);\n"\

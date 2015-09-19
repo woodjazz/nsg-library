@@ -43,7 +43,9 @@ namespace NSG
 		void OnMouseMove(int x, int y);
         void OnMouseWheel(float x, float y);
         void OnMouseDown(int button, float x, float y);
+		void OnMouseDown(int button, int x, int y);
         void OnMouseUp(int button, float x, float y);
+		void OnMouseUp(int button, int x, int y);
         void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         void OnKey(int key, int action, int modifier);
         void OnChar(unsigned int character);
@@ -89,7 +91,9 @@ namespace NSG
         SignalFloatFloat::PSignal SigFloatFloat() { return signalFloatFloat_; }
         SignalMouseMoved::PSignal SigMouseMoved() { return signalMouseMoved_; }
         SignalMouseButton::PSignal SigMouseDown() { return signalMouseDown_; }
+		SignalMouseButtonInt::PSignal SigMouseDownInt() { return signalMouseDownInt_; }
         SignalMouseButton::PSignal SigMouseUp() { return signalMouseUp_; }
+		SignalMouseButtonInt::PSignal SigMouseUpInt() { return signalMouseUpInt_; }
         SignalFloatFloat::PSignal SigMouseWheel() { return signalMouseWheel_; }
 		SignalKey::PSignal SigKey() { return signalKey_; }
 		SignalUnsigned::PSignal SigUnsigned() { return signalUnsigned_; }
@@ -132,7 +136,9 @@ namespace NSG
         SignalFloatFloat::PSignal signalFloatFloat_;
         SignalMouseMoved::PSignal signalMouseMoved_;
         SignalMouseButton::PSignal signalMouseDown_;
+		SignalMouseButtonInt::PSignal signalMouseDownInt_;
         SignalMouseButton::PSignal signalMouseUp_;
+		SignalMouseButtonInt::PSignal signalMouseUpInt_;
         SignalFloatFloat::PSignal signalMouseWheel_;
         SignalKey::PSignal signalKey_;
         SignalUnsigned::PSignal signalUnsigned_;

@@ -34,6 +34,8 @@ int NSG_MAIN(int argc, char* argv[])
     auto slotLoaded = loader.Load()->Connect([&]()
     {
         auto scene = loader.GetScene(0);
+        auto light = scene->GetChild<Light>("Sun", false);
+        static ShadowMapDebug shadowMapDebug(light);
         auto camera = scene->GetChild<Camera>("Camera", false);
         static auto control = std::make_shared<CameraControl>(camera);
         static auto followCamera = std::make_shared<FollowCamera>(camera);

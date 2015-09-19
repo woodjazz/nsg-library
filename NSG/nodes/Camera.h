@@ -79,8 +79,8 @@ namespace NSG
         void UnRegisterWindow();
         void EnableAutomaticSplits(bool enable) { automaticSplits_ = enable; }
         bool AutomaticSplits() const { return automaticSplits_; }
-        virtual void SetMaxShadowSplits(int splits);
-        virtual int GetMaxShadowSplits() const { return shadowSplits_; }
+        void SetMaxShadowSplits(int splits);
+        int GetMaxShadowSplits() const;
         void EnableColorSplits(bool enable);
         void FillShaderDefines(std::string& defines, PassType passType) const;
         // This is a logarithmic factor to make the (shadow) splits.
@@ -93,6 +93,8 @@ namespace NSG
         static BoundingBox GetViewBox(const Frustum* frustum, const Scene* scene, bool receivers, bool casters);
         static SignalCamera::PSignal SignalBeingDestroy();
 		void SetOrthoProjection(OrthoProjection projection);
+		void DisableUserOrthoProjection() { hasUserOrthoProjection_ = false; }
+        void Debug(DebugRenderer* debugRenderer, const Color& color);
     private:
     	const Matrix4& GetViewProjectionInverse() const;
         OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;

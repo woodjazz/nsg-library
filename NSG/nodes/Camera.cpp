@@ -39,6 +39,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "StringConverter.h"
 #include "Check.h"
+#include "DebugRenderer.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -59,7 +60,7 @@ namespace NSG
           sensorFit_(CameraSensorFit::HORIZONTAL),
           isDirty_(true),
           autoAspectRatio_(true),
-          shadowSplits_(MAX_SHADOW_SPLITS),
+          shadowSplits_(MAX_SPLITS),
           colorSplits_(false),
           shadowSplitLogFactor_(0.5f),
           automaticSplits_(true),
@@ -288,11 +289,11 @@ namespace NSG
                 orthoProjection_ = CalculateOrthoProjection(zNear_, zFar_);
 
             matProjection_ = Ortho(orthoProjection_.left_,
-                                        orthoProjection_.right_,
-                                        orthoProjection_.bottom_,
-                                        orthoProjection_.top_,
-                                        orthoProjection_.near_,
-                                        orthoProjection_.far_);
+                                   orthoProjection_.right_,
+                                   orthoProjection_.bottom_,
+                                   orthoProjection_.top_,
+                                   orthoProjection_.near_,
+                                   orthoProjection_.far_);
         }
         else
         {
@@ -305,7 +306,7 @@ namespace NSG
 
     void Camera::UpdateViewProjection() const
     {
-        #if 0
+        #if 1
         matViewInverse_ = GetGlobalModelMatrix();
         matView_ = Inverse(matViewInverse_);
         #else
@@ -350,11 +351,11 @@ namespace NSG
         {
             OrthoProjection orthoProjection = CalculateOrthoProjection(nearSplit, farSplit);
             matProjection = Ortho(orthoProjection.left_,
-                                       orthoProjection.right_,
-                                       orthoProjection.bottom_,
-                                       orthoProjection.top_,
-                                       orthoProjection.near_,
-                                       orthoProjection.far_);
+                                  orthoProjection.right_,
+                                  orthoProjection.bottom_,
+                                  orthoProjection.top_,
+                                  orthoProjection.near_,
+                                  orthoProjection.far_);
         }
         else
         {
@@ -518,9 +519,18 @@ namespace NSG
     {
         if (shadowSplits_ != splits)
         {
-            shadowSplits_ = Clamp(splits, 1, MAX_SHADOW_SPLITS);
+            shadowSplits_ = Clamp(splits, 1, MAX_SPLITS);
             SetUniformsNeedUpdate();
         }
+    }
+
+    int Camera::GetMaxShadowSplits() const
+    {
+        #ifdef IS_TARGET_MOBILE
+        return 1;
+        #else
+        return shadowSplits_;
+        #endif
     }
 
     void Camera::FillShaderDefines(std::string& defines, PassType passType) const
@@ -556,7 +566,7 @@ namespace NSG
         for (auto& visible : visibles)
         {
             auto material = visible->GetMaterial().get();
-			if (!material) continue;
+            if (!material) continue;
             if ((receivers && material->ReceiveShadows()) || (casters && material->CastShadow()))
             {
                 BoundingBox bb(visible->GetWorldBoundingBox());
@@ -564,5 +574,12 @@ namespace NSG
             }
         }
         return result;
+    }
+
+    void Camera::Debug(DebugRenderer* debugRenderer, const Color& color)
+    {
+        auto& position = GetGlobalPosition();
+        debugRenderer->AddSphere(position, 1.f, color);
+        GetFrustum()->Debug(VECTOR3_ZERO, debugRenderer, color);
     }
 }

@@ -68,7 +68,7 @@ typedef void (GL_APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum, GLsizei, GLe
 extern PFNGLDRAWELEMENTSINSTANCEDPROC glDrawElementsInstancedEXT;
 typedef void (GL_APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum, GLint, GLsizei, GLsizei);
 extern PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstancedEXT;
-#elif defined(IS_OSX)
+#elif defined(IS_TARGET_OSX)
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
 #else

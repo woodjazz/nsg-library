@@ -98,6 +98,7 @@ namespace NSG
           activeMesh_(nullptr),
           activeCamera_(nullptr),
           activeWindow_(nullptr),
+		  mainCamera_(nullptr),
           has_discard_framebuffer_ext_(false),
           has_vertex_array_object_ext_(false),
           has_map_buffer_range_ext_(false),
@@ -399,6 +400,7 @@ namespace NSG
         activeMesh_ = nullptr;
         activeCamera_ = nullptr;
         activeWindow_ = nullptr;
+		mainCamera_ = nullptr;
 
         CHECK_GL_STATUS(__FILE__, __LINE__);
 

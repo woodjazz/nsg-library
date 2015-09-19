@@ -336,4 +336,9 @@ namespace NSG
     typedef std::shared_ptr<Font> PFont;
     typedef std::weak_ptr<Font> PWeakFont;
 
+    class DebugRenderer;
+    typedef std::shared_ptr<DebugRenderer> PDebugRenderer;
+
+    class ShadowMapDebug;
+    typedef std::shared_ptr<ShadowMapDebug> PShadowMapDebug;
 }

@@ -31,7 +31,7 @@ static const char* VS_GLSL = \
 "				v_worldPos = GetWorldPos().xyz;\n"\
 "				v_depth = -GetCameraPos().z;\n"\
 "			#endif\n"\
-"		#elif defined(SHADOWCUBE_PASS) || defined(SHADOW_PASS) || defined(SHADOW_PASS_SPOT)\n"\
+"		#elif defined(SHADOW_POINT_PASS) || defined(SHADOW_DIR_PASS) || defined(SHADOW_SPOT_PASS)\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_worldPos = GetWorldPos().xyz;\n"\
 "		#elif defined(PER_VERTEX_LIGHTING)\n"\
