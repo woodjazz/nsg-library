@@ -18,5 +18,6 @@ case "${TRAVIS_OS_NAME}" in
     sudo installer -pkg ./XQuartz.pkg -target /
     # SIMULATE GUI (DISPLAY)
     #sudo sh -e /opt/X11/bin/Xvfb start
+    sudo Xvfb
     ;;
 esac
