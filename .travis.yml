@@ -1,39 +1,38 @@
-language: 
-  - cpp
-
+env:
+  global:
+  - secure: SLRm6wK21xfzTv4P1nKNTbyex1YIPS2XwVzu8yLdxXMv/9CAtKVynF+h2fOtaYRoxXLwToesPQyqhKZcDszfqGsiodBkGy7ffWJccSPX4yAxcqX8dSy0ClzCKJfT8zAohYWksZWXRiArgPUl2tp4P+NOmi5KyTxnX2K4tpW+J5c=
+  - secure: C+dOMw72PbePCBX8CkdxGKdxouWqQf8J1LdkOhwp8pIKd9aNHEnz7TP235R2+dd7PKkaQCS2DwIcplE7f9s20mKT0TkIpbA/OMqUOL17R5riIGbJIjQSvzcLr7NV1ns48f3439uoOVbCEP5lGfUxevom21gvnBY7i2vuQy/Sla8=
+addons:
+  coverity_scan:
+    project:
+      name: woodjazz/nsg-library
+      description: Build submitted via Travis CI
+    notification_email: silveira.nestor@gmail.com
+    build_command_prepend: mkdir debug; cd debug; cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug";
+    build_command: make; make test
+    branch_pattern: master
+language:
+- cpp
 sudo: required
-
 os:
-  - linux
-  - osx
-
+- linux
+- osx
 matrix:
   allow_failures:
-    - os: osx
-
-# osx_image: xcode61
-
+  - os: osx
 compiler:
-  - gcc
-
+- gcc
 git:
   submodules: false
-
 before_install:
-  - "export AUDIODEV=null"
-  # SIMULATE GUI (DISPLAY)
-  - "export DISPLAY=:99.0"
-  - if [$TRAVIS_OS_NAME == linux]; then "sh -e /etc/init.d/xvfb start"; fi
-  # - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
-
+- export AUDIODEV=null
+- export DISPLAY=:99.0
+- if [$TRAVIS_OS_NAME == "linux"]; then "sh -e /etc/init.d/xvfb start"; fi
 install:
-  - chmod +x travis_install.sh
-  - ./travis_install.sh
-
+- chmod +x travis_install.sh
+- ./travis_install.sh
 before_script:
-  # GET externals
-  - travis_retry git submodule update --init --recursive
-
+- travis_retry git submodule update --init --recursive
 script:
-  - chmod +x travis_script.sh
-  - ./travis_script.sh
+- chmod +x travis_script.sh
+- ./travis_script.sh
