@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/woodjazz/nsg-library.svg?branch=master)](https://travis-ci.org/woodjazz/nsg-library)
-[Windows](https://ci.appveyor.com/api/projects/status/github/woodjazz/nsg-library?branch=master&svg=true)
+[!Windows](https://ci.appveyor.com/api/projects/status/github/woodjazz/nsg-library?branch=master&svg=true)
 <a href="https://scan.coverity.com/projects/woodjazz-nsg-library">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/6406/badge.svg"/>
