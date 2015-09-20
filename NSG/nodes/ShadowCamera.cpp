@@ -176,7 +176,7 @@ namespace NSG
 				viewBox.Transform(camera->GetView()); // Transform worldBox to camera space
 				auto range = Length(viewBox.Size());
                 invRange_ = 1.f / range;
-				auto nearSplit = -viewBox.max_.z;
+				//auto nearSplit = -viewBox.max_.z;
 				farSplit_ = -viewBox.min_.z;
 			}
 

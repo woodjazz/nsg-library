@@ -35,6 +35,7 @@ namespace NSG
 		~LoaderApp();
 		SignalEmpty::PSignal Load();
 		PScene GetScene(int idx) const;
+		std::vector<PAnimation> GetAnimations() const { return animations_; }
 	private:
 		PResource resource_;
 		bool loaded_;

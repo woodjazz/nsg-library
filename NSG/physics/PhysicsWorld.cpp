@@ -37,8 +37,7 @@ namespace NSG
 {
     static const int DEFAULT_FPS = 60;
     PhysicsWorld::PhysicsWorld(const Scene* scene)
-        : scene_(scene),
-          gravity_(0, -9.81f, 0),
+        : gravity_(0, -9.81f, 0),
           debugMode_(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits),
           fps_(DEFAULT_FPS),
           maxSubSteps_(0),

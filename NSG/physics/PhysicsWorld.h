@@ -83,7 +83,6 @@ namespace NSG
     private:
         void Substep(float tick);
         static void SubstepCallback(btDynamicsWorld* dyn, float tick);
-        const Scene* scene_;
         btDefaultCollisionConfiguration* collisionConfiguration_;
         btDbvtBroadphase* pairCache_;
         btGhostPairCallback* ghostPairCallback_;

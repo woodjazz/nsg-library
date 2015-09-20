@@ -85,8 +85,6 @@ namespace NSG
         void FillShaderDefines(std::string& defines, PassType passType) const;
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
-		void LoadAnimations(const pugi::xml_node& node);
-		void SaveAnimations(pugi::xml_node& node) const;
 		void SavePhysics(pugi::xml_node& node) const;
     private:
         void UpdateParticleSystems(float deltaTime);
