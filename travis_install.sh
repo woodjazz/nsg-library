@@ -17,7 +17,6 @@ case "${TRAVIS_OS_NAME}" in
     wget https://dl.dropboxusercontent.com/u/203889738/gcc/XQuartz.pkg
     sudo installer -pkg ./XQuartz.pkg -target /
     # SIMULATE GUI (DISPLAY)
-    #sudo sh -e /opt/X11/bin/Xvfb start
-    Xvfb $DISPLAY >& Xvfb.log &
+    Xvfb $DISPLAY &
     ;;
 esac
