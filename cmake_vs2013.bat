@@ -40,4 +40,4 @@ cd %1
 cmake %SOURCE_FOLDER% -G "Visual Studio 12 Win64"
 
 msbuild nsg-library.sln
-::msbuild RUN_TESTS.vcxproj
+msbuild RUN_TESTS.vcxproj
