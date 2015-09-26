@@ -47,8 +47,9 @@ namespace NSG
           guiCapturedInput_(false),
 		  editorCamera_(std::make_shared<Camera>())
     {
-		CreatePreviewFrameBuffer();
+
         CreateEditorFrameBuffer();
+        CreatePreviewFrameBuffer();
 
 		scenePreview_->CreateChild<Camera>();
 		auto light = scenePreview_->CreateChild<Light>();
@@ -57,6 +58,7 @@ namespace NSG
         auto sphere = Mesh::GetOrCreate<SphereMesh>("NSGEditorSphereMesh");
         sphere->Set(1, 32);
 		previewNode_ = scenePreview_->CreateChild<SceneNode>();
+        previewNode_->SetPosition(Vector3(0, 0, -3));
         previewNode_->SetMesh(sphere);
         SetCamera(editorCamera_);
     }
@@ -189,7 +191,7 @@ namespace NSG
 		{
 			auto texture = GetScenePreview(scene.get(), camera.get());
 			if (texture->IsReady())
-				ImGui::Image((void*)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 0), ImVec2(1, -1));
+				ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 0), ImVec2(1, -1));
 
 		}
 		ImGui::End();
@@ -278,7 +280,7 @@ namespace NSG
                 {
 					auto texture = GetMaterialPreview(material);
                     if (texture->IsReady())
-                        ImGui::Image((void*)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 0), ImVec2(1, -1));
+                        ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 0), ImVec2(1, -1), ImColor(255,255,255,255), ImColor(255,255,255,128));
                     ImGui::TreePop();
                 }
 
@@ -294,7 +296,7 @@ namespace NSG
                             {
 								auto width = std::min(64.f, (float)texture->GetWidth());
 								auto height = std::min(64.f, (float)texture->GetHeight());
-								ImGui::Image((void*)texture->GetID(), ImVec2(width, height), ImVec2(0, 0), ImVec2(1, -1));
+								ImGui::Image((void*)texture->GetID(), ImVec2(width, height), ImVec2(0, 0), ImVec2(1, -1), ImColor(255,255,255,255), ImColor(255,255,255,128));
                                 ImGui::TreePop();
                             }
                         }
