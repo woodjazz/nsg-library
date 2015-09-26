@@ -177,7 +177,7 @@ namespace NSG
         const char* src = buffer + byteOffset;
         unsigned ret = DecodeUTF8(src);
 		auto bytesDiff = src - buffer;
-		CHECK_ASSERT(bytesDiff < std::numeric_limits<unsigned>::max(), __FILE__, __LINE__);
+		CHECK_ASSERT(bytesDiff < std::numeric_limits<unsigned>::max());
         byteOffset = (unsigned)(src - buffer);
         
         return ret;

@@ -37,16 +37,16 @@ int NSG_MAIN(int argc, char* argv[])
 	auto soundExplo = Sound::Create();
 	soundExplo->Set(std::make_shared<ResourceFile>("data/BigExplosion.wav"));
 
-    CHECK_CONDITION(!music->IsPlaying(), __FILE__, __LINE__);
+    CHECK_CONDITION(!music->IsPlaying());
     music->Play(false);
-    CHECK_CONDITION(music->IsPlaying(), __FILE__, __LINE__);
+    CHECK_CONDITION(music->IsPlaying());
     std::this_thread::sleep_for(Seconds(1));
     music->Pause();
     sound->Play();
-    //CHECK_CONDITION(music->IsPaused(), __FILE__, __LINE__);
+    //CHECK_CONDITION(music->IsPaused());
     std::this_thread::sleep_for(Seconds(1));
     music->Resume();
-    //CHECK_CONDITION(!music->IsPaused(), __FILE__, __LINE__);
+    //CHECK_CONDITION(!music->IsPaused());
     soundExplo->Play();
     std::this_thread::sleep_for(Seconds(3));
 

@@ -49,4 +49,16 @@ namespace NSG
     {
         return factor_ != obj.factor_ || offset_ != obj.offset_;
     }
+
+    RayNodeResult::RayNodeResult()
+        : distance_(0),
+          node_(nullptr)
+    {
+    }
+
+	RayNodeResult::RayNodeResult(float distance, SceneNode* node)
+		: distance_(distance),
+		node_(node)
+	{
+	}
 }

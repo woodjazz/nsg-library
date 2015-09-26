@@ -47,7 +47,7 @@ namespace NSG
         {
             shadowCamera_[i] = std::make_shared<ShadowCamera>(this);
             shadowFrameBuffer_[i] = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
-            CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap(i)->GetWrapMode(), __FILE__, __LINE__);
+            CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap(i)->GetWrapMode());
             shadowFrameBuffer_[i]->EnableAutoSize(false);
         }
 
@@ -136,7 +136,7 @@ namespace NSG
                 }
 
                 //GetShadowMap(i)->SetWrapMode(TextureWrapMode::REPEAT);
-                CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap(i)->GetWrapMode(), __FILE__, __LINE__);
+                CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap(i)->GetWrapMode());
             }
 
             type_ = type;
@@ -262,13 +262,13 @@ namespace NSG
 
     FrameBuffer* Light::GetShadowFrameBuffer(int idx) const
     {
-        CHECK_ASSERT(idx < MAX_SPLITS, __FILE__, __LINE__);
+        CHECK_ASSERT(idx < MAX_SPLITS);
         return shadowFrameBuffer_[idx].get();
     }
 
     PTexture Light::GetShadowMap(int idx) const
     {
-        CHECK_ASSERT(idx < MAX_SPLITS, __FILE__, __LINE__);
+        CHECK_ASSERT(idx < MAX_SPLITS);
         return shadowFrameBuffer_[idx]->GetColorTexture();
     }
 
@@ -302,7 +302,7 @@ namespace NSG
 
     ShadowCamera* Light::GetShadowCamera(int idx) const
     {
-        CHECK_ASSERT(idx < MAX_SPLITS, __FILE__, __LINE__);
+        CHECK_ASSERT(idx < MAX_SPLITS);
         return shadowCamera_[idx].get();
     }
 
@@ -318,7 +318,6 @@ namespace NSG
             std::vector<SceneNode*> shadowCasters;
             shadowCamera->GetVisiblesShadowCasters(shadowCasters);
             Graphics::GetPtr()->SetFrameBuffer(shadowFrameBuffer);
-            auto lastCamera = Graphics::GetPtr()->SetCamera(shadowCamera);
             Graphics::GetPtr()->ClearBuffers(true, true, false);
             if(!shadowCamera->IsDisabled())
             {
@@ -326,9 +325,8 @@ namespace NSG
                 Renderer::GetPtr()->GenerateBatches(shadowCasters, batches);
                 for (auto& batch : batches)
                     if (batch->GetMaterial()->CastShadow())
-                        Renderer::GetPtr()->DrawShadowPass(batch.get(), this);
+						Renderer::GetPtr()->DrawShadowPass(batch.get(), this, shadowCamera);
             }
-            Graphics::GetPtr()->SetCamera(lastCamera);
             Graphics::GetPtr()->SetFrameBuffer(frameBuffer);
         }
     }
@@ -336,7 +334,6 @@ namespace NSG
     void Light::GenerateShadowMapCubeFace()
     {
         auto shadowCamera = GetShadowCamera(0);
-        auto lastCamera = Graphics::GetPtr()->SetCamera(shadowCamera);
         std::vector<SceneNode*> shadowCasters;
         shadowCamera->GetVisiblesShadowCasters(shadowCasters);
         std::vector<PBatch> batches;
@@ -345,13 +342,12 @@ namespace NSG
         Graphics::GetPtr()->ClearBuffers(true, true, false);
         for (auto& batch : batches)
             if (batch->GetMaterial()->CastShadow())
-                renderer->DrawShadowPass(batch.get(), this);
-        Graphics::GetPtr()->SetCamera(lastCamera);
+				renderer->DrawShadowPass(batch.get(), this, shadowCamera);
     }
 
     int Light::GetShadowFrameBufferSize(int split) const
     {
-        CHECK_ASSERT(split < MAX_SPLITS, __FILE__, __LINE__);
+        CHECK_ASSERT(split < MAX_SPLITS);
         static const int SplitMapSize[MAX_SPLITS] = { 1024, 512, 256, 128 };
         return SplitMapSize[split];
     }

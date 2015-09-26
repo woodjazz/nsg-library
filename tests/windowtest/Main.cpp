@@ -33,7 +33,7 @@ static void Test0()
 	auto window2 = Window::Create("1", 200, 200, 150, 50, (int)WindowFlag::HIDDEN);
 	auto window3 = Window::Create("2", 300, 300, 150, 50, (int)WindowFlag::HIDDEN);
 	window1 = nullptr;
-	CHECK_CONDITION(Engine::Create()->Run() == 0, __FILE__, __LINE__);
+	CHECK_CONDITION(Engine::Create()->Run() == 0);
 }
 
 static void Test1()
@@ -55,7 +55,7 @@ static void Test1()
 		}
     });
 
-	CHECK_CONDITION(engine->Run() == 0, __FILE__, __LINE__);
+	CHECK_CONDITION(engine->Run() == 0);
 }
 
 int NSG_MAIN(int argc, char* argv[])

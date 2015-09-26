@@ -49,83 +49,83 @@ static void FSMTest0()
 
     Machine machine(initializing);
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     condition1 = true;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
     
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
     condition2 = true;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     condition3 = true;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &error, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &error);
 
     condition3 = false;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &error, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &error);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
     
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 }
 
 static void FSMTest1()
@@ -178,98 +178,98 @@ static void FSMTest1()
 
     Machine machine(initializing);
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
-    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 0 && initializing.nEnd_ == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 0 && initializing.nEnd_ == 0);
 
     machine.Update();
 
-    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 0);
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     condition1 = true;
 
     machine.Update();
     
-    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 1);
   
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
-    CHECK_CONDITION(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 0);
 
     condition2 = true;
 
     machine.Update();
 
-    CHECK_CONDITION(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(busy.nStart_ == 1 && busy.nStay_ == 0 && busy.nEnd_ == 1);
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-
-    machine.Update();
-
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
-
-    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 0 && ready.nEnd_ == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
     machine.Update();
 
-    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 0 && ready.nEnd_ == 0);
+
+    machine.Update();
+
+    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 0);
+
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     condition3 = true;
 
     machine.Update();
     machine.Update();
 
-    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 1);
 
-    CHECK_CONDITION(machine.GetState() == &error, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &error);
 
-    CHECK_CONDITION(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 0);
 
     condition3 = false;
 
     machine.Update();
     machine.Update();
 
-    CHECK_CONDITION(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 1);
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
-    CHECK_CONDITION(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 1, __FILE__, __LINE__);
-
-    machine.Update();
-    machine.Update();
-
-    CHECK_CONDITION(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 2, __FILE__, __LINE__);
-
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-
-    CHECK_CONDITION(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 1);
 
     machine.Update();
+    machine.Update();
 
-    CHECK_CONDITION(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 2, __FILE__, __LINE__);
+    CHECK_CONDITION(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 2);
+
+    CHECK_CONDITION(machine.GetState() == &busy);
+
+    CHECK_CONDITION(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 1);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
-
-    CHECK_CONDITION(ready.nStart_ == 2 && ready.nStay_ == 1 && ready.nEnd_ == 1, __FILE__, __LINE__);
-
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(busy.nStart_ == 2 && busy.nStay_ == 0 && busy.nEnd_ == 2);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
-    CHECK_CONDITION(ready.nStart_ == 2 && ready.nStay_ == 2 && ready.nEnd_ == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(ready.nStart_ == 2 && ready.nStay_ == 1 && ready.nEnd_ == 1);
+
+    CHECK_CONDITION(machine.GetState() == &ready);
+
+    machine.Update();
+
+    CHECK_CONDITION(machine.GetState() == &ready);
+
+    CHECK_CONDITION(ready.nStart_ == 2 && ready.nStay_ == 2 && ready.nEnd_ == 1);
 }
 
 static void FSMTest2()
@@ -304,119 +304,119 @@ static void FSMTest2()
 
     Machine machine(initializing);
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     condition1 = true;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &initializing, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &initializing);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-    CHECK_CONDITION(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
+    CHECK_CONDITION(machine.GetState()->GetState() == &initialize_jobs);
 
     condition2 = true;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     condition3 = true;
     condition2 = false;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-    CHECK_CONDITION(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
+    CHECK_CONDITION(machine.GetState()->GetState() == &initialize_jobs);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-    CHECK_CONDITION(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
+    CHECK_CONDITION(machine.GetState()->GetState() == &do_jobs);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-    CHECK_CONDITION(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
+    CHECK_CONDITION(machine.GetState()->GetState() == &do_jobs);
 
     condition2 = true;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     condition3 = false;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
    
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     condition3 = true;
     condition2 = false;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-    CHECK_CONDITION(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
+    CHECK_CONDITION(machine.GetState()->GetState() == &initialize_jobs);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-    CHECK_CONDITION(machine.GetState()->GetState() == &initialize_jobs, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
+    CHECK_CONDITION(machine.GetState()->GetState() == &initialize_jobs);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState()->GetState() == &do_jobs);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
-    CHECK_CONDITION(machine.GetState()->GetState() == &do_jobs, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
+    CHECK_CONDITION(machine.GetState()->GetState() == &do_jobs);
 
     condition2 = true;
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &busy, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &busy);
 
     machine.Update();
 
-    CHECK_CONDITION(machine.GetState() == &ready, __FILE__, __LINE__);
+    CHECK_CONDITION(machine.GetState() == &ready);
 }
 
 void FSMTest()

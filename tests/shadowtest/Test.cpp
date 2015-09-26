@@ -26,30 +26,10 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-
-static SignalKey::PSlot ShowShadowMaps(PWindow window, PLight light)
-{
-	SignalKey::PSlot slotKey = window->SigKey()->Connect([&](int key, int action, int modifier)
-	{
-		if (NSG_KEY_0 == key && action)
-			window->ShowMap(light->GetShadowMap(0));
-		else if (NSG_KEY_1 == key && action)
-			window->ShowMap(light->GetShadowMap(1));
-		else if (NSG_KEY_2 == key && action)
-			window->ShowMap(light->GetShadowMap(2));
-		else if (NSG_KEY_3 == key && action)
-			window->ShowMap(light->GetShadowMap(3));
-		else
-			window->ShowMap(nullptr);
-	});
-
-	return slotKey;
-}
-
 static PLight SetupScene(PScene scene)
 {
 	auto materialFloor = Material::Create();
-	materialFloor->SetRenderPass(RenderPass::PERPIXEL);
+	materialFloor->SetRenderPass(RenderPass::LIT);
 	materialFloor->SetDiffuseColor(COLOR_BLUE);
 	materialFloor->CastShadow(false);
 	auto boxMesh(Mesh::Create<BoxMesh>());
@@ -61,7 +41,7 @@ static PLight SetupScene(PScene scene)
 	nodeFloor->SetScale(Vertex3(100, 2, 100));
 
 	auto materialBox = Material::Create();
-	materialBox->SetRenderPass(RenderPass::PERPIXEL);
+	materialBox->SetRenderPass(RenderPass::LIT);
 	materialBox->SetDiffuseColor(COLOR_RED);
 
 	auto nodeBox = scene->CreateChild<SceneNode>("Box");
@@ -99,10 +79,10 @@ static void Test01()
 //	engine->Run();
 	engine->RenderFrame();
 	auto shadowCam = light->GetShadowCamera(0);
-	CHECK_ASSERT(Distance(shadowCam->GetGlobalPosition(), Vector3(0, 5.f, 0)) < 0.001f, __FILE__, __LINE__);
-	CHECK_ASSERT(shadowCam->IsOrtho(), __FILE__, __LINE__);
-	CHECK_ASSERT(shadowCam->GetZNear() == 0, __FILE__, __LINE__);
-	CHECK_ASSERT(shadowCam->GetZFar() == 7, __FILE__, __LINE__);
+	CHECK_ASSERT(Distance(shadowCam->GetGlobalPosition(), Vector3(0, 5.f, 0)) < 0.001f);
+	CHECK_ASSERT(shadowCam->IsOrtho());
+	CHECK_ASSERT(shadowCam->GetZNear() == 0);
+	CHECK_ASSERT(shadowCam->GetZFar() == 7);
 }
 
 static void Test02()
@@ -141,7 +121,6 @@ static void Test02()
 		}
 	});
 
-	auto slot = ShowShadowMaps(window, light);
 	auto engine = Engine::Create();
 	engine->Run();
 }

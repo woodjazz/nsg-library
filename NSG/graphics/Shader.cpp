@@ -40,7 +40,7 @@ namespace NSG
 	Shader::Shader(GLenum type, const char* source)
 	: source_(source)
 	{
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 		id_ = glCreateShader(type);
 		glShaderSource(id_, 1, &source, NULL);
 		glCompileShader(id_);
@@ -59,7 +59,7 @@ namespace NSG
 				//LOGI("%s", source);
 			}
 		}
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 	}
 
 	Shader::~Shader()

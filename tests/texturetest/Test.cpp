@@ -86,46 +86,46 @@ static void Test04()
 
 	{
 		auto resource = Resource::Create<ResourceFile>("data/stonediffuse.dds");
-		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		CHECK_CONDITION(resource->IsReady());
 		auto image = std::make_shared<Image>(resource);
 		image->ReadResource();
-		CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat(), __FILE__, __LINE__);
+		CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat());
 		image->Decompress();
-		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
-		//CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat());
+		//CHECK_CONDITION(image->SaveAsPNG("data/"));
 	}
 
 	{
 		auto resource = Resource::CreateClass<ResourceFile>("data/tex_etc1.ktx");
-		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		CHECK_CONDITION(resource->IsReady());
 		auto image = std::make_shared<Image>(resource);
 		image->ReadResource();
-		CHECK_CONDITION(TextureFormat::ETC1 == image->GetFormat(), __FILE__, __LINE__);
+		CHECK_CONDITION(TextureFormat::ETC1 == image->GetFormat());
 		image->Decompress();
-		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
-		//CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat());
+		//CHECK_CONDITION(image->SaveAsPNG("data/"));
 	}
 
 	{
 		auto resource = Resource::CreateClass<ResourceFile>("data/tex_pvr.pvr");
-		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		CHECK_CONDITION(resource->IsReady());
 		auto image = std::make_shared<Image>(resource);
 		image->ReadResource();
-		CHECK_CONDITION(TextureFormat::PVRTC_RGBA_2BPP == image->GetFormat(), __FILE__, __LINE__);
+		CHECK_CONDITION(TextureFormat::PVRTC_RGBA_2BPP == image->GetFormat());
 		image->Decompress();
-		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
-		//CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat());
+		//CHECK_CONDITION(image->SaveAsPNG("data/"));
 	}
 
 	{
 		auto resource = Resource::Create<ResourceFile>("data/tex_s3tc.dds");
-		CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+		CHECK_CONDITION(resource->IsReady());
 		auto image = std::make_shared<Image>(resource);
 		image->ReadResource();
-		CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat(), __FILE__, __LINE__);
+		CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat());
 		image->Decompress();
-		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat(), __FILE__, __LINE__);
-		//CHECK_CONDITION(image->SaveAsPNG("data/"), __FILE__, __LINE__);
+		CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat());
+		//CHECK_CONDITION(image->SaveAsPNG("data/"));
 	}
 }
 

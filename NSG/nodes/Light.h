@@ -92,7 +92,8 @@ namespace NSG
         float shadowClipEnd_;
         bool onlyShadow_;
         PFrameBuffer shadowFrameBuffer_[MAX_SPLITS];
-        float shadowBias_; // Bias is used to add a slight offset distance between an object and the shadows cast by it.
+        // Bias is used to add a slight offset distance between an object and the shadows cast by it.
+        float shadowBias_; // final bias is multiplied by material bias (See Material::shadowBias_)
         PShadowCamera shadowCamera_[MAX_SPLITS];
         int shadowSplits_; //Calculated in the shadow pass
 		float invRange_;

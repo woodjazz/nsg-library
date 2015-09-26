@@ -68,9 +68,9 @@ namespace NSG
 
 	void InstanceBuffer::UpdateBatchBuffer(const Batch& batch)
 	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS();
 
-		CHECK_ASSERT(graphics_->HasInstancedArrays(), __FILE__, __LINE__);
+		CHECK_ASSERT(graphics_->HasInstancedArrays());
 
 		std::vector<InstanceData> instancesData;
 		auto& nodes = batch.GetNodes();
@@ -95,7 +95,7 @@ namespace NSG
 
 		UpdateData(instancesData);
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS();
 	}
 
 }

@@ -72,7 +72,7 @@ namespace NSG
                 std::string url = emscripten_run_script_string("window.location.href");
                 #else
                 std::string url; //@@@ TO DO
-                CHECK_ASSERT(false, __FILE__, __LINE__);
+                CHECK_ASSERT(false);
                 #endif
                 auto filename = path_.GetFilePath();
                 get_ = std::make_shared<HTTPRequest>(Path(url).GetPath() + "/" + filename, onLoad_, onError_, onProgress_);
@@ -102,7 +102,7 @@ namespace NSG
                     file.seekg(0, std::ios::beg);
                     buffer_.resize((int)filelength);
                     file.read(&buffer_[0], filelength);
-                    CHECK_ASSERT(file.gcount() == filelength, __FILE__, __LINE__);
+                    CHECK_ASSERT(file.gcount() == filelength);
                     file.close();
                     LOGI("%s has been loaded with size=%d", filename.c_str(), buffer_.size());
                 }
@@ -113,7 +113,7 @@ namespace NSG
             }
             #else
             {
-                CHECK_ASSERT(isLocal_, __FILE__, __LINE__);
+                CHECK_ASSERT(isLocal_);
                 auto filename = path_.GetFilePath();
                 SDL_RWops* context = SDL_RWFromFile(filename.c_str(), "rb");
                 if (context)

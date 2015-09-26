@@ -88,7 +88,7 @@ namespace NSG
             music_ = Mix_LoadMUS_RW(assetHandle, 1);
 #endif
             Mix_HookMusicFinished(MusicDone);
-            CHECK_CONDITION(music_, __FILE__, __LINE__);
+            CHECK_CONDITION(music_);
 #endif
             resource_->Invalidate(); // free mem
     }

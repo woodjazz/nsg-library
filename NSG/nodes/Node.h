@@ -50,6 +50,8 @@ namespace NSG
         const Vertex3& GetPosition() const { return position_; }
         void SetOrientation(const Quaternion& q);
         const Quaternion& GetOrientation() const { return q_; };
+        const Vector3& GetGUIRotation() const { return guiRotation_; };
+		void SetGUIRotation(const Vector3& guiRotation) { guiRotation_ = guiRotation; };
         void SetScale(const Vertex3& scale);
         void SetScale(float scale);
         const Vertex3& GetScale() const { return scale_; }
@@ -161,5 +163,6 @@ namespace NSG
         mutable bool dirty_;
         bool hide_;
         mutable bool isScaleUniform_;
+        Vector3 guiRotation_;
     };
 }

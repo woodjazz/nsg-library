@@ -31,6 +31,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto window = Window::Create();
     PCameraControl control;
     PLoaderApp loader;
+	PShadowMapDebug shadowDebug;
 
     std::string status;
     auto load = [&](const std::string & file)
@@ -38,6 +39,7 @@ int NSG_MAIN(int argc, char* argv[])
         status = "Loading...";
         Engine::ReleaseMemory();
         control = nullptr;
+		shadowDebug = nullptr;
         auto path = Path(file);
         auto resource = Resource::GetOrCreateClass<ResourceFile>(path.GetFilePath());
         loader = std::make_shared<LoaderApp>(resource);
@@ -51,6 +53,9 @@ int NSG_MAIN(int argc, char* argv[])
                 auto camera = scene->GetMainCamera();
                 if (camera)
                     control = std::make_shared<CameraControl>(camera);
+				auto light = scene->GetChild<Light>("Sun", true);
+				if (light)
+					shadowDebug = std::make_shared<ShadowMapDebug>(light);
             }
             status = "";
         });

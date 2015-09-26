@@ -98,5 +98,6 @@ misrepresented as being the original software.
 #include "ICollision.h"
 #include "DebugRenderer.h"
 #include "ShadowMapDebug.h"
+#include "Editor.h"
 
 

@@ -84,7 +84,7 @@ namespace NSG
 
     void Texture2D::Define()
     {
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS();
 
         if (image_ && image_->IsCompressed())
         {
@@ -122,14 +122,14 @@ namespace NSG
 						 pixels_);
         }
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS();
     }
 
 	void Texture2D::SetData(unsigned char* pixels)
 	{
 		if (pixels_ != pixels)
 		{
-			CHECK_ASSERT(!image_, __FILE__, __LINE__);
+			CHECK_ASSERT(!image_);
 			pixels_ = pixels;
 			Invalidate();
 		}

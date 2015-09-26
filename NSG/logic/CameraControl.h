@@ -31,6 +31,7 @@ namespace NSG
 	class CameraControl
 	{
 	public:
+		CameraControl(PCamera camera, PScene scene);
 		CameraControl(PCamera camera);
 		~CameraControl();
 		void Track(PNode node);
@@ -43,9 +44,11 @@ namespace NSG
 		void OnMouseUp(int button, float x, float y);
 		void OnMouseDown(int button, float x, float y);
 		void OnMousemoved(float x, float y);
+		void Enable(bool enable);
+		PSceneNode SelectObject();
 	private:
 		void SetPosition(const Vertex3& position);
-		void SetSphereCenter(bool centerObj);
+		void RayCastNewCenter(bool centerObj);
 		void Move(float x, float y);
 		float lastX_;
 		float lastY_;
@@ -54,6 +57,7 @@ namespace NSG
 		bool shiftKeyDown_;
 		PPointOnSphere pointOnSphere_;
 		PCamera camera_;
+		PScene scene_;
 		bool updateOrientation_;
 		Window* window_;
 		Vector3 originalPosition_;
@@ -69,5 +73,6 @@ namespace NSG
 		SignalUpdate::PSlot slotUpdate_;
 		bool enableDebugPhysics_;
 		bool enableColorSplits_;
+		bool enabled_;
 	};
 }

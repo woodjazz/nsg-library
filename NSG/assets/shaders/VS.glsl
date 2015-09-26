@@ -5,7 +5,7 @@
 	// to avoid variation and z-fighting issues.
 	// For example do not use:
 	//		gl_Position = GetClipPos(); for AMBIENT pass
-	//		gl_Position = GetClipPos(worldPos); for PER_PIXEL_LIGHTING pass
+	//		gl_Position = GetClipPos(worldPos); for LIT pass
 	// since it can produce different results and cause z-fighting between passes
 
 	void main()
@@ -41,18 +41,7 @@
 			gl_Position = GetClipPos();
 			v_worldPos = GetWorldPos().xyz;
 
-		#elif defined(PER_VERTEX_LIGHTING)
-
-			v_worldPos = GetWorldPos().xyz;
-		    vec3 normal = GetWorldNormal();
-		    vec3 vertexToEye = normalize(u_eyeWorldPos - v_worldPos);
-		    vec3 world2light = worldPos - u_lightPosition;
-		    vec4 totalLight = vec4(1.0);//CalcTotalLight(world2light, vertexToEye, normal);
-		    v_color = totalLight;
-			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
-			gl_Position = GetClipPos();
-
-		#elif defined(PER_PIXEL_LIGHTING)
+		#elif defined(LIT)
 
 			//Lighting is calculated in world space
 

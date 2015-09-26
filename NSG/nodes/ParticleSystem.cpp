@@ -104,7 +104,7 @@ namespace NSG
         auto remainingTime = end_ - start_ - currentTime_;
         auto remainingFrames = remainingTime / deltaTime;
         auto remainingParticles = amount_ - generated_;
-		CHECK_ASSERT(remainingFrames < std::numeric_limits<float>::max(), __FILE__, __LINE__);
+		CHECK_ASSERT(remainingFrames < std::numeric_limits<float>::max());
         if (remainingFrames <= 0)
             return (float)remainingParticles;
         return remainingParticles / remainingFrames;
@@ -135,7 +135,6 @@ namespace NSG
         else
         {
             particle = CreateChild<Particle>(GetUniqueName(name_));
-            particle->SetParticleSystem(this);
             particle->SetMaterial(particleMaterial_);
             particle->SetMesh(particleMesh_);
             auto rb = particle->GetOrCreateRigidBody();
@@ -219,7 +218,7 @@ namespace NSG
             auto& vertexes = mesh->GetConstVertexsData();
             if (distribution_ == ParticleSystemDistribution::RANDOM)
             {
-				CHECK_ASSERT(vertexes.size() < std::numeric_limits<float>::max(), __FILE__, __LINE__);
+				CHECK_ASSERT(vertexes.size() < std::numeric_limits<float>::max());
 				std::uniform_real_distribution<float> dis(0, (float)vertexes.size());
                 currentVertex_ = (size_t)dis(randGenerator_);
             }

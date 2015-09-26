@@ -30,7 +30,7 @@ static PCharacter SetupScene(PScene scene)
 {
     scene->SetAmbientColor(ColorRGB(0.f));
     auto materialFloor = Material::Create();
-    materialFloor->SetRenderPass(RenderPass::PERPIXEL);
+	materialFloor->SetRenderPass(RenderPass::LIT);
     materialFloor->SetDiffuseColor(ColorRGB(0.1f));
     materialFloor->CastShadow(false);
     auto boxMesh(Mesh::Create<BoxMesh>());
@@ -46,7 +46,7 @@ static PCharacter SetupScene(PScene scene)
     body->AddShape(floorShape);
 
     auto materialBox = Material::Create();
-    materialBox->SetRenderPass(RenderPass::PERPIXEL);
+	materialBox->SetRenderPass(RenderPass::LIT);
     materialBox->SetDiffuseColor(COLOR_RED);
 
     auto nodeBox = scene->CreateChild<SceneNode>("Player");
@@ -63,7 +63,7 @@ static PCharacter SetupScene(PScene scene)
     controller->AddShape(controllerShape, VECTOR3_ZERO, q);
 
     auto materialObstacle = Material::Create();
-    materialObstacle->SetRenderPass(RenderPass::PERPIXEL);
+	materialObstacle->SetRenderPass(RenderPass::LIT);
     materialObstacle->SetDiffuseColor(COLOR_RED);
 
     {
@@ -82,7 +82,7 @@ static PCharacter SetupScene(PScene scene)
         auto node = scene->CreateChild<SceneNode>("Obstacle1");
         node->SetMesh(boxMesh);
         node->SetMaterial(materialObstacle);
-        node->SetPosition(Vertex3(14, 1, -10));
+        node->SetPosition(Vertex3(15, 1, -10));
         auto scale = Vector3(2, 10.5f, 2);
         node->SetScale(scale);
         auto body = node->GetOrCreateRigidBody();
@@ -106,7 +106,7 @@ static PCharacter SetupScene(PScene scene)
         auto node = scene->CreateChild<SceneNode>("Obstacle2");
         node->SetMesh(boxMesh);
         node->SetMaterial(materialObstacle);
-        node->SetPosition(Vertex3(10, 1, 10));
+        node->SetPosition(Vertex3(10, 1, 15));
         auto scale = Vector3(2, 10.5f, 2);
         node->SetScale(scale);
         auto body = node->GetOrCreateRigidBody();
@@ -136,7 +136,7 @@ static void Test01()
 {
     static auto scene = std::make_shared<Scene>();
     static auto character = SetupScene(scene);
-    static auto window = Window::Create("0", 0, 0, 10, 10, (int)WindowFlag::HIDDEN);
+	static auto window = Window::Create("0", 0, 0, 10, 10, (int)WindowFlag::HIDDEN);
     window->SetScene(scene.get());
 
     struct GoForward : FSM::State
@@ -150,10 +150,13 @@ static void Test01()
 
     struct TurnRight : FSM::State
     {
+		void Begin() override
+		{
+			character->Rotate(-90);
+		}
         void Stay() override
         {
             character->SetForwardSpeed(0);
-            character->SetAngularSpeed(-90);
         }
     } turnRight;
 
@@ -167,17 +170,18 @@ static void Test01()
 
     static auto goal = scene->GetChild<SceneNode>("Obstacle2", false);
     FSM::Machine fsm(forward);
-    forward.AddTransition(turnRight).When([&]() { return nullptr != character->StepForwardCollides(0.1f); });
-    turnRight.AddTransition(forward).When([&]() { return nullptr == character->StepForwardCollides(0.1f); });
-
     auto ExitFunc = [&]()
     {
-        auto collider = character->StepForwardCollides(0.1f);
+        auto collider = character->StepForwardCollides();
         return collider && goal.get() == collider->GetSceneNode();
     };
 
     turnRight.AddTransition(exit).When([&]() { return ExitFunc(); });
     forward.AddTransition(exit).When([&]() { return ExitFunc(); });
+
+	forward.AddTransition(turnRight).When([&]() { return nullptr != character->StepForwardCollides(); });
+	turnRight.AddTransition(forward).When([&]() { return nullptr == character->StepForwardCollides(); });
+
     fsm.Go();
     Engine::Create()->Run();
 }

@@ -33,7 +33,7 @@ misrepresented as being the original software.
 #include "UniformsUpdate.h"
 namespace NSG
 {
-    class Material : public Object, public WeakFactory<std::string, Material>, UniformsUpdate
+	class Material : public Object, public std::enable_shared_from_this<Material>, public WeakFactory<std::string, Material>, UniformsUpdate
     {
     public:
         Material(const std::string& name = GetUniqueName("Material"));
@@ -70,6 +70,8 @@ namespace NSG
         void SetAlpha(float alpha);
 		float GetAlpha() const { return alpha_; }
 		void SetAlphaForSpecular(float alphaForSpecular);
+        void SetEmitIntensity(float emitIntensity);
+        float GetEmitIntensity() const { return emitIntensity_; }
         bool IsTransparent() const;
         void EnableTransparent(bool enable);
         bool IsLighted() const;
@@ -85,7 +87,9 @@ namespace NSG
         void SetRenderPass(RenderPass pass) { renderPass_ = pass; }
         RenderPass GetRenderPass() const { return renderPass_; }
         void SetBillboardType(BillboardType type) { billboardType_ = type; }
+		BillboardType GetBillboardType() const { return billboardType_;  }
         void FlipYTextureCoords(bool enable) { flipYTextureCoords_ = enable; }
+		bool IsYFlipped() const { return flipYTextureCoords_; }
         void SetShadeless(bool shadeless); // If true, makes this material insensitive to light (but AMBIENT pass applies)
         bool IsShadeless() const { return shadeless_; }
         void SetCullFaceMode(CullFaceMode mode) { cullFaceMode_ = mode; }
@@ -100,7 +104,11 @@ namespace NSG
         bool IsShadowCaster() const { return !shadeless_ && castShadow_; }
         bool HasSpecularColor() const;
 		void Load(const pugi::xml_node& node) override;
+        void SetBias(float shadowBias) { shadowBias_ = shadowBias; }
+        float GetBias() const { return shadowBias_; }
+		bool HasTextures() const;
     private:
+		PTexture ShowPreview(FrameBuffer* frameBuffer, Scene* scene);
         void SetupBlur();
         bool IsValid() override;
         void AllocateResources() override;
@@ -123,6 +131,7 @@ namespace NSG
         float alpha_;
 		float alphaForSpecular_;
         bool isTransparent_;
+        float emitIntensity_;
         RenderPass renderPass_;
         BillboardType billboardType_;
         bool flipYTextureCoords_;
@@ -132,6 +141,7 @@ namespace NSG
         SignalEmpty::PSignal signalPhysicsSet_;
         bool castShadow_;
         bool receiveShadows_;
+        float shadowBias_; // factor to multiply shadow buffer bias with (see Light::shadowBias_)
         friend class Program;
     };
 }

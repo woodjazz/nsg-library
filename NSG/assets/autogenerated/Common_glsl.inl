@@ -33,6 +33,7 @@ static const char* COMMON_GLSL = \
 "	float specularIntensity;\n"\
 "    float ambientIntensity;\n"\
 "    float shininess;\n"\
+"    float emitIntensity;\n"\
 "};\n"\
 "uniform vec3 u_sceneAmbientColor;\n"\
 "uniform vec3 u_sceneHorizonColor;\n"\
@@ -78,7 +79,6 @@ static const char* COMMON_GLSL = \
 "		#define MAX_SPLITS 5\n"\
 "	#endif\n"\
 "	#ifdef MAX_SPLITS		\n"\
-"		uniform mat4 u_cameraView; // main camera's view only used to calculate the split\n"\
 "		uniform float u_shadowCamInvRange[MAX_SPLITS]; // used only for directional lights\n"\
 "		uniform vec3 u_shadowCamPos[MAX_SPLITS]; // used only for directional lights\n"\
 "		uniform mat4 u_lightView[MAX_SPLITS];\n"\

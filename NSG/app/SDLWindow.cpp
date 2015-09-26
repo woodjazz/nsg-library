@@ -205,7 +205,7 @@ namespace NSG
             int flags = SDL_INIT_EVENTS;
             #endif
 
-            CHECK_CONDITION(0 == SDL_Init(flags), __FILE__, __LINE__);
+            CHECK_CONDITION(0 == SDL_Init(flags));
 
             OpenJoysticks();
 
@@ -220,7 +220,7 @@ namespace NSG
         flags_ = SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_VIDEO;
         #endif
 
-        CHECK_CONDITION(0 == SDL_InitSubSystem(flags_), __FILE__, __LINE__);
+        CHECK_CONDITION(0 == SDL_InitSubSystem(flags_));
 
         SetSize(width, height);
 
@@ -248,7 +248,7 @@ namespace NSG
 
         #if EMSCRIPTEN
         {
-            CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE), __FILE__, __LINE__);
+            CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE));
             #if 0
             SDL_Surface* surface = SDL_GetVideoSurface();
             LOGI("BitsPerPixel=%d", surface->format->BitsPerPixel);
@@ -285,7 +285,7 @@ namespace NSG
             #endif
 
             auto win = SDL_CreateWindow(name_.c_str(), x, y, width, height, sdlFlags);
-            CHECK_CONDITION(win && "failed SDL_CreateWindow", __FILE__, __LINE__);
+            CHECK_CONDITION(win && "failed SDL_CreateWindow");
             windowID_ = SDL_GetWindowID(win);
 
             if (Window::mainWindow_)
@@ -320,7 +320,7 @@ namespace NSG
                     SetPixelFormat(PixelFormat::ARGB8888);
                     break;
                 default:
-                    CHECK_ASSERT(!"Unknown pixel format!!!", __FILE__, __LINE__);
+                    CHECK_ASSERT(!"Unknown pixel format!!!");
                     break;
             }
         }
@@ -331,37 +331,37 @@ namespace NSG
         int value = 0;
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
         LOGI("CONTEXT_MAJOR_VERSION=%d", value);
-        CHECK_ASSERT(value >= CONTEXT_MAJOR_VERSION, __FILE__, __LINE__);
+        CHECK_ASSERT(value >= CONTEXT_MAJOR_VERSION);
         SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
         LOGI("GL_CONTEXT_MINOR_VERSION=%d", value);
-        CHECK_ASSERT(value >= CONTEXT_MINOR_VERSION, __FILE__, __LINE__);
+        CHECK_ASSERT(value >= CONTEXT_MINOR_VERSION);
         SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
         LOGI("GL_DOUBLEBUFFER=%d", value);
-        CHECK_ASSERT(value == DOUBLE_BUFFER, __FILE__, __LINE__);
+        CHECK_ASSERT(value == DOUBLE_BUFFER);
         SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
         LOGI("GL_DEPTH_SIZE=%d", value);
-        CHECK_ASSERT(value >= MIN_DEPTH_SIZE && value <= MAX_DEPTH_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value >= MIN_DEPTH_SIZE && value <= MAX_DEPTH_SIZE);
         SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
         LOGI("GL_RED_SIZE=%d", value);
-        CHECK_ASSERT(value == RED_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == RED_SIZE);
         SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
         LOGI("GL_GREEN_SIZE=%d", value);
-        CHECK_ASSERT(value == GREEN_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == GREEN_SIZE);
         SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
         LOGI("GL_BLUE_SIZE=%d", value);
-        CHECK_ASSERT(value == BLUE_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == BLUE_SIZE);
         SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &value);
         LOGI("GL_ALPHA_SIZE=%d", value);
-        CHECK_ASSERT(value == ALPHA_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == ALPHA_SIZE);
         SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
         LOGI("GL_STENCIL_SIZE=%d", value);
-        CHECK_ASSERT(value == STENCIL_SIZE, __FILE__, __LINE__);
+        CHECK_ASSERT(value == STENCIL_SIZE);
 
         #if defined(IS_TARGET_WINDOWS) || defined(IS_TARGET_LINUX)
         {
             glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
-            CHECK_CONDITION(GLEW_OK == glewInit(), __FILE__, __LINE__);
-            CHECK_CONDITION(GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil, __FILE__, __LINE__)
+            CHECK_CONDITION(GLEW_OK == glewInit());
+            CHECK_CONDITION(GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil)
         }
         #endif
 
@@ -377,6 +377,14 @@ namespace NSG
         Window::Close();
         SDL_QuitSubSystem(flags_);
     }
+
+	void SDLWindow::SetContext()
+	{
+		#if !defined(EMSCRIPTEN)
+		auto context = SDL_GL_GetCurrentContext();
+		SDL_GL_MakeCurrent(SDL_GetWindowFromID(windowID_), context);
+		#endif
+	}
 
     void SDLWindow::Destroy()
     {
@@ -400,7 +408,7 @@ namespace NSG
         if (width_ != width || height_ != height)
         {
             #if EMSCRIPTEN
-            CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE), __FILE__, __LINE__);
+            CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE));
             //emscripten_set_canvas_size(width, height);
             #endif
             Window::ViewChanged(width, height);
@@ -730,7 +738,7 @@ namespace NSG
                 SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.cbutton.which)->second;
-                CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
+                CHECK_ASSERT(state.pad_);
                 auto button = ConvertButton(event.cbutton.button);
                 window->OnJoystickDown(state.instanceID_, button);
             }
@@ -739,7 +747,7 @@ namespace NSG
                 SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.cbutton.which)->second;
-                CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
+                CHECK_ASSERT(state.pad_);
                 auto button = ConvertButton(event.cbutton.button);
                 window->OnJoystickUp(state.instanceID_, button);
             }
@@ -748,7 +756,7 @@ namespace NSG
                 SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.caxis.which)->second;
-                CHECK_ASSERT(state.pad_, __FILE__, __LINE__);
+                CHECK_ASSERT(state.pad_);
                 auto axis = ConvertAxis(event.caxis.axis);
                 float value = (float)event.caxis.value;
                 if (std::abs(value) < 5000) value = 0;

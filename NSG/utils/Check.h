@@ -47,45 +47,45 @@ misrepresented as being the original software.
 #endif
 
 #if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
-#define CHECK_ASSERT(f, file, line) if (!(f)) {\
+#define CHECK_ASSERT(f) if (!(f)) {\
         char buffer[1024];\
-        const char* format = "Assert" #f " has failed in file %s line %d\n";\
-        snprintf(buffer, 1024, format, file, line);\
+        const char* format = "Assert" #f " has failed in file %s line %u\n";\
+        snprintf(buffer, 1024, format, __FILE__, __LINE__);\
         LOGE("%s", buffer);\
         FORCE_BREAKPOINT();\
         exit(1);\
     }
 
-#define CHECK_GL_STATUS(file, line) {\
+#define CHECK_GL_STATUS() {\
         GLenum status = glGetError();\
         if(status != GL_NO_ERROR)\
         {\
             char buffer[1024];\
-            const char* format = "GL has failed with status = 0x%x in file %s line %d\n";\
-            snprintf(buffer, 1024, format, status, file, line);\
+            const char* format = "GL has failed with status = 0x%x in file %s line %u\n";\
+            snprintf(buffer, 1024, format, status, __FILE__, __LINE__);\
             LOGE("%s", buffer);\
             FORCE_BREAKPOINT();\
             exit(1);\
         }\
     }
 #else
-#define CHECK_ASSERT(f, file, line) ((void)0)
-#define CHECK_GL_STATUS(file, line) ((void)0)
+#define CHECK_ASSERT(f) ((void)0)
+#define CHECK_GL_STATUS() ((void)0)
 #endif
 
-#define CHECK_CONDITION(f, file, line) if (!(f)) {\
+#define CHECK_CONDITION(f) if (!(f)) {\
         char buffer[1024];\
-        const char* format = "Assert" #f " has failed in file %s line %d\n";\
-        snprintf(buffer, 1024, format, file, line);\
+        const char* format = "Assert" #f " has failed in file %s line %u\n";\
+        snprintf(buffer, 1024, format, __FILE__, __LINE__);\
         LOGE("%s", buffer);\
         FORCE_BREAKPOINT();\
         exit(1);\
     }
 
-#define CHECK_CONDITION_ARGS(f, args, file, line) if (!(f)) {\
+#define CHECK_CONDITION_ARGS(f, args) if (!(f)) {\
         char buffer[1024];\
-        const char* format = "Assert" #f "(" #args ") has failed in file %s line %d\n";\
-        snprintf(buffer, 1024, format, file, line);\
+        const char* format = "Assert" #f "(" #args ") has failed in file %s line %u\n";\
+        snprintf(buffer, 1024, format, __FILE__, __LINE__);\
         LOGE("%s", buffer);\
         FORCE_BREAKPOINT();\
         exit(1);\

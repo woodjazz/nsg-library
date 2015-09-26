@@ -70,7 +70,7 @@ namespace NSG
         resource->SetBuffer(writer.buffer_);
         auto loader = LoaderXML::GetOrCreate(resource->GetName());
         loader->Set(resource);
-        CHECK_CONDITION(loader->IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(loader->IsReady());
         Load(loader);
         loader->Invalidate(); // free mem
     }
@@ -89,7 +89,7 @@ namespace NSG
     }
     void AppData::Load(PLoaderXML loader)
     {
-        CHECK_CONDITION(loader->IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(loader->IsReady());
         resources_ = Object::LoadAll<Resource, Resource>(loader, "Resources");
         sounds_ = Object::LoadAll<Sound, Sound>(loader, "Sounds");
         meshes_ = Object::LoadAll<Mesh, ModelMesh>(loader, "Meshes");

@@ -34,7 +34,7 @@ namespace NSG
 	fixed_(0), 
     fps_(fps)
 	{
-		CHECK_ASSERT(fps_ > 0, __FILE__, __LINE__);
+		CHECK_ASSERT(fps_ > 0);
 	}
 
 	Tick::~Tick()

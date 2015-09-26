@@ -61,13 +61,12 @@ int NSG_MAIN(int argc, char* argv[])
             static int selection = -1;
             static float fadeTime = 1.2f;
             ImGui::SliderFloat("Fade time (s)", &fadeTime, 0.0f, 10.0f);
-            if(ImGui::ListBox("", &selection, itemsGetter, &loader, loader.GetAnimations().size()))
+            if(ImGui::ListBox("", &selection, itemsGetter, &loader, (int)loader.GetAnimations().size()))
             {
                 auto controller = armature->GetOrCreateAnimationController();
                 controller->CrossFade(loader.GetAnimations()[selection]->GetName(), true, fadeTime);
             }
         });
-
     });
 
     auto engine = Engine::Create();

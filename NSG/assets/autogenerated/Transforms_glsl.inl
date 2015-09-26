@@ -6,8 +6,8 @@ static const char* TRANSFORMS_GLSL = \
 "#ifdef COMPILEVS\n"\
 "	// Vertex shader specific\n"\
 "	attribute vec3 a_position;\n"\
-"	attribute vec2 a_texcoord0;\n"\
-"	attribute vec2 a_texcoord1;\n"\
+"	attribute vec2 a_texcoord0; //uses uv0 (See Texture::GetUVName())\n"\
+"	attribute vec2 a_texcoord1; //uses uv1 (See Texture::GetUVName())\n"\
 "	attribute vec3 a_normal;\n"\
 "	attribute vec4 a_color;\n"\
 "	attribute vec3 a_tangent;\n"\
@@ -162,7 +162,7 @@ static const char* TRANSFORMS_GLSL = \
 "	    int GetSplit()\n"\
 "	    {\n"\
 "			#if MAX_SPLITS > 1\n"\
-"		        vec4 viewPos = u_cameraView * vec4(v_worldPos, 1.0);\n"\
+"		        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);\n"\
 "		        if(-viewPos.z < u_shadowCameraZFar[0])\n"\
 "		            return 0;\n"\
 "		        else if(-viewPos.z < u_shadowCameraZFar[1])\n"\
@@ -189,7 +189,7 @@ static const char* TRANSFORMS_GLSL = \
 "		        if(clamp(coords.xyz, 0.0, 1.0).xy != coords.xy && GetSplit() < 3)\n"\
 "		        {\n"\
 "		        	// coord is outside split => pick next one\n"\
-"		        	vec4 viewPos = u_cameraView * vec4(v_worldPos, 1.0);\n"\
+"		        	vec4 viewPos = u_view * vec4(v_worldPos, 1.0);\n"\
 "		        	if(-viewPos.z < u_shadowCameraZFar[GetSplit() + 1])\n"\
 "		            	return GetSplit() + 1;	        	\n"\
 "		        }\n"\

@@ -51,11 +51,10 @@ namespace NSG
 		  iBuffer_(std::make_shared<IndexBuffer>(GL_STREAM_DRAW)),
 		  window_(nullptr)
     {
-    	CHECK_ASSERT(pTHIS == nullptr, __FILE__, __LINE__);
+    	CHECK_ASSERT(pTHIS == nullptr);
 
-		auto currentCamera = graphics_->GetCamera();
 		camera_ = std::make_shared<Camera>("IMGUICamera");
-		graphics_->SetCamera(currentCamera);
+		program_->Set(camera_.get());
 		
 		pass_->SetBlendMode(BLEND_MODE::ALPHA);
 		pass_->EnableScissorTest(false);
@@ -101,7 +100,7 @@ namespace NSG
 
     GUI::~GUI()
     {
-    	CHECK_ASSERT(pTHIS != nullptr, __FILE__, __LINE__);
+    	CHECK_ASSERT(pTHIS != nullptr);
 		ImGui::Shutdown();
         pTHIS = nullptr;
     }
@@ -113,7 +112,7 @@ namespace NSG
 
 	void GUI::InternalDraw(ImDrawData* draw_data)
 	{
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS();
 
 		if (!fontTexture_->IsReady())
 			return;
@@ -124,10 +123,9 @@ namespace NSG
 		camera_->SetWindow(window_);
 		camera_->SetOrthoProjection({ 0, width, height, 0, -1, 1 });
 		graphics_->SetupPass(pass_.get());
-		CHECK_CONDITION(graphics_->SetProgram(program_.get()), __FILE__, __LINE__);
+		CHECK_CONDITION(graphics_->SetProgram(program_.get()));
 		graphics_->SetVertexBuffer(vBuffer_.get());
 		graphics_->SetIndexBuffer(iBuffer_.get());
-		graphics_->SetCamera(camera_.get());
 		program_->SetVariables(false);
 
 		graphics_->SetVertexBuffer(vBuffer_.get());
@@ -160,15 +158,24 @@ namespace NSG
 				}
 				else
 				{
+					GLint wrapS;
+					GLint wrapT;
+					glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &wrapS);
+					glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &wrapT);
 					graphics_->SetTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
+	                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 					graphics_->SetScissorTest(true, (int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 					graphics_->DrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer_offset);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+
 				}
 				idx_buffer_offset += pcmd->ElemCount;
 			}
 		}
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS();
 	}
 
 	void GUI::Draw(ImDrawData* draw_data)
@@ -178,11 +185,12 @@ namespace NSG
 
     void GUI::Render(Window* window)
     {
+    	if(!window)
+    		return;
 		window_ = window;
     	window->BeginImguiRender();
     	auto width = window->GetWidth();
 		auto height = window->GetHeight();
-
 		ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize = ImVec2((float)width, (float)height);
         io.DeltaTime = Engine::GetPtr()->GetDeltaTime();

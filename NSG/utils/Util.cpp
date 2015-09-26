@@ -105,7 +105,7 @@ namespace NSG
 					up1 = upDirection;
 					std::swap(up1.y, up1.z);
 					v = Normalize(Cross(forward, up1));
-					CHECK_ASSERT(!IsNaN(v), __FILE__, __LINE__);
+					CHECK_ASSERT(!IsNaN(v));
 				}
 			}
 		}
@@ -113,7 +113,7 @@ namespace NSG
         Vector3 right = Cross(up, forward);
 
         Quaternion ret(Matrix3(right, up, forward));
-        CHECK_ASSERT(!IsNaN(ret), __FILE__, __LINE__);
+        CHECK_ASSERT(!IsNaN(ret));
         return ret;
     }
 
@@ -258,10 +258,10 @@ namespace NSG
         buffer.resize(HeaderSize);
         buffer += buf;
         std::string compressBuffer;
-        CHECK_ASSERT(buffer.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        CHECK_ASSERT(buffer.size() < std::numeric_limits<int>::max());
         compressBuffer.resize(LZ4_compressBound((int)buffer.size()));
         auto bufferSize = LZ4_compress(buffer.c_str(), &compressBuffer[0], (int)buffer.size());
-        CHECK_ASSERT(bufferSize >= 0, __FILE__, __LINE__);
+        CHECK_ASSERT(bufferSize >= 0);
         compressBuffer.resize(bufferSize);
         return compressBuffer;
     }
@@ -271,16 +271,16 @@ namespace NSG
     {
         std::string smallBuffer;
         smallBuffer.resize(HeaderSize);
-        CHECK_ASSERT(buffer.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
-        CHECK_ASSERT(smallBuffer.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        CHECK_ASSERT(buffer.size() < std::numeric_limits<int>::max());
+        CHECK_ASSERT(smallBuffer.size() < std::numeric_limits<int>::max());
         LZ4_decompress_safe_partial(&buffer[0], &smallBuffer[0], (int)buffer.size(), (int)smallBuffer.size(), (int)smallBuffer.size());
         std::string::size_type bytes = ToInt(smallBuffer);
         bytes += smallBuffer.size();
         std::string outputBuffer;
         outputBuffer.resize(bytes);
-        CHECK_ASSERT(bytes < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+        CHECK_ASSERT(bytes < std::numeric_limits<int>::max());
         int totalBytes = LZ4_decompress_safe(&buffer[0], &outputBuffer[0], (int)buffer.size(), (int)bytes);
-        CHECK_ASSERT(totalBytes == bytes, __FILE__, __LINE__);
+        CHECK_ASSERT(totalBytes == bytes);
         outputBuffer.erase(outputBuffer.begin(), outputBuffer.begin() + smallBuffer.size());
         return outputBuffer;
     }
@@ -412,6 +412,17 @@ namespace NSG
     {
         return glm::degrees(radians);
     }
+
+	Vector3 Radians(const Vector3& degrees)
+	{
+		return glm::radians(degrees);
+	}
+
+	Vector3 Degrees(const Vector3& radians)
+	{
+		return glm::degrees(radians);
+	}
+
     
     float Angle(const Vector3& a, const Vector3& b)
     {

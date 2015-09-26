@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Program.h"
 #include "FrameBuffer.h"
+#include "Renderer.h"
 #include "Node.h"
 
 namespace NSG
@@ -46,6 +47,8 @@ namespace NSG
     {
         pMaterial_->SetTexture(input);
         pMaterial_->SetRenderPass(RenderPass::UNLIT);
+        node_->SetMaterial(pMaterial_);
+        node_->SetMesh(pMesh_);
         auto window = graphics_->GetWindow();
         if (window)
             SetWindow(window);
@@ -74,20 +77,10 @@ namespace NSG
     {
         if (!frameBuffer_->IsReady() || !pMesh_->IsReady() || !pMaterial_->IsReady())
             return;
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
-
         Pass pass;
         pass.EnableDepthTest(false);
         graphics_->SetFrameBuffer(frameBuffer_.get());
-        Camera* pCurrent = graphics_->GetCamera();
-        graphics_->SetCamera(nullptr);
-        graphics_->SetMesh(pMesh_.get());
-        if (graphics_->SetupProgram(&pass, node_.get(), pMaterial_.get(), nullptr))
-            graphics_->DrawActiveMesh();
-        graphics_->SetCamera(pCurrent);
-
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        Renderer::GetPtr()->Render(&pass, nullptr, nullptr, node_.get(), nullptr);
     }
 
     PTexture Filter::GetTexture() const

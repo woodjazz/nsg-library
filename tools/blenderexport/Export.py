@@ -351,6 +351,7 @@ def ConvertMaterial(materialsEle, material):
     materialEle.set("diffuse", ColorToString(material.diffuse_color))
     materialEle.set("specular", ColorToString(material.specular_color))
     materialEle.set("shininess", str(material.specular_hardness))
+    materialEle.set("emitIntensity", str(material.emit))
     if material.type == 'WIRE':
         materialEle.set("fillMode", "WIREFRAME")
     else:
@@ -358,6 +359,7 @@ def ConvertMaterial(materialsEle, material):
     materialEle.set("alpha", FloatToString(alpha))
     materialEle.set("alphaForSpecular", FloatToString(alphaForSpecular))
     materialEle.set("isTransparent", BoolToString(transparent))
+    materialEle.set("shadowBias", FloatToString(material.shadow_buffer_bias))
     if material.game_settings.text:
         materialEle.set("renderPass", "TEXT")
     elif material.use_vertex_color_paint:
@@ -365,7 +367,7 @@ def ConvertMaterial(materialsEle, material):
     elif material.use_shadeless:
         materialEle.set("renderPass", "UNLIT")
     else:
-        materialEle.set("renderPass", "PERPIXEL")
+        materialEle.set("renderPass", "LIT")
     # FIX Engine (Load/Save)
     if material.game_settings.face_orientation == 'HALO':
         materialEle.set("billboardType", "SPHERICAL")
@@ -614,9 +616,7 @@ def ConvertLampObject(parentEle, obj):
     sceneNodeEle.set("shadows", BoolToString(light.shadow_method != 'NOSHADOW'))
     sceneNodeEle.set("shadowColor", ColorToString(light.shadow_color))
     sceneNodeEle.set("onlyShadow", BoolToString(light.use_only_shadow))
-    # TODO: CHECK IF THIS IS A GOOD APROXIMATION
-    bias = light.shadow_buffer_bias * 0.00
-    sceneNodeEle.set("shadowBias", FloatToString(bias))
+    sceneNodeEle.set("shadowBias", FloatToString(light.shadow_buffer_bias))
     sceneNodeEle.set(
         "shadowClipStart", FloatToString(light.shadow_buffer_clip_start))
     sceneNodeEle.set(

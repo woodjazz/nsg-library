@@ -40,7 +40,7 @@ misrepresented as being the original software.
 #include <iterator>
 
 namespace NSG
-{	
+{
     static IdType s_node_id = 1;
 
     Node::Node(const std::string& name)
@@ -63,8 +63,8 @@ namespace NSG
     void Node::SetParent(PNode parent)
     {
         RemoveFromParent();
-		if (parent)
-			parent->AddChild(shared_from_this());
+        if (parent)
+            parent->AddChild(shared_from_this());
         MarkAsDirty();
     }
 
@@ -76,14 +76,14 @@ namespace NSG
     void Node::RemoveFromParent()
     {
         auto parent = parent_.lock();
-        if(parent)
+        if (parent)
             parent->RemoveChild(this);
     }
 
     void Node::ClearAllChildren()
     {
         childrenHash_.clear();
-		for (size_t i = children_.size() - 1; i < children_.size(); --i)
+        for (size_t i = children_.size() - 1; i < children_.size(); --i)
         {
             Node* childNode = children_[i].get();
             childNode->ClearAllChildren();
@@ -99,18 +99,18 @@ namespace NSG
             if (child.get() == node)
             {
                 children_.erase(children_.begin() + idx);
-				auto range = childrenHash_.equal_range(node->name_);
-				auto it = range.first;
-				while(it != range.second)
-				{
+                auto range = childrenHash_.equal_range(node->name_);
+                auto it = range.first;
+                while (it != range.second)
+                {
                     PNode child = it->second.lock();
-					if (!child)
-						it = childrenHash_.erase(it);
-					else if (child.get() == node)
-						it = childrenHash_.erase(it);
+                    if (!child)
+                        it = childrenHash_.erase(it);
+                    else if (child.get() == node)
+                        it = childrenHash_.erase(it);
                     else
                         ++it;
-				}
+                }
                 break;
             }
             ++idx;
@@ -119,7 +119,7 @@ namespace NSG
 
     void Node::AddChild(PNode node)
     {
-        CHECK_ASSERT(node && node.get() != this, __FILE__, __LINE__);
+        CHECK_ASSERT(node && node.get() != this);
         children_.push_back(node);
         childrenHash_.insert(std::make_pair(node->name_, node));
         PNode thisNode = shared_from_this();
@@ -136,11 +136,11 @@ namespace NSG
             {
                 PCamera camera = std::dynamic_pointer_cast<Camera>(node);
                 if (camera) scene->AddCamera(camera.get());
-				else
-				{
-					auto ps = std::dynamic_pointer_cast<ParticleSystem>(node);
-					if (ps) scene->AddParticleSystem(ps.get());
-				}
+                else
+                {
+                    auto ps = std::dynamic_pointer_cast<ParticleSystem>(node);
+                    if (ps) scene->AddParticleSystem(ps.get());
+                }
             }
             node->OnSceneSet();
         }
@@ -308,65 +308,65 @@ namespace NSG
         }
     }
 
-	void Node::SetGlobalLookAtDirection(const Vertex3& direction)
-	{
-		float length = Length(direction);
-		if (length > 0)
-		{
-			auto rot = QuaternionFromLookRotation(-direction, GetUpDirection());
-			PNode parent = parent_.lock();
-			if (parent)
-			{
-				Quaternion q = Inverse(parent->GetGlobalOrientation());
-				SetOrientation(q * rot);
-			}
-			else
-			{
-				SetOrientation(rot);
-			}
-		}
-	}
-
-    void Node::SetGlobalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up)
+    void Node::SetGlobalLookAtDirection(const Vertex3& direction)
     {
-        const Vertex3& position = GetGlobalPosition();
-		auto direction = lookAtPosition - position;
-		float length = Length(direction);
+        float length = Length(direction);
         if (length > 0)
         {
-			auto rot = QuaternionFromLookRotation(-direction, up);
+            auto rot = QuaternionFromLookRotation(-direction, GetUpDirection());
             PNode parent = parent_.lock();
             if (parent)
             {
                 Quaternion q = Inverse(parent->GetGlobalOrientation());
-				SetOrientation(q * rot);
+                SetOrientation(q * rot);
             }
             else
             {
-				SetOrientation(rot);
+                SetOrientation(rot);
+            }
+        }
+    }
+
+    void Node::SetGlobalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up)
+    {
+        const Vertex3& position = GetGlobalPosition();
+        auto direction = lookAtPosition - position;
+        float length = Length(direction);
+        if (length > 0)
+        {
+            auto rot = QuaternionFromLookRotation(-direction, up);
+            PNode parent = parent_.lock();
+            if (parent)
+            {
+                Quaternion q = Inverse(parent->GetGlobalOrientation());
+                SetOrientation(q * rot);
+            }
+            else
+            {
+                SetOrientation(rot);
             }
         }
     }
 
     void Node::SetLocalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up)
     {
-		auto direction = lookAtPosition - position_;
-		float length = Length(direction);
+        auto direction = lookAtPosition - position_;
+        float length = Length(direction);
         if (length > 0)
         {
-			auto rot = QuaternionFromLookRotation(-direction, up);
-			SetOrientation(rot);
+            auto rot = QuaternionFromLookRotation(-direction, up);
+            SetOrientation(rot);
         }
     }
 
     Quaternion Node::GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up)
     {
-		const Vertex3& position = GetGlobalPosition();
-		auto direction = lookAtPosition - position;
-		float length = Length(direction);
+        const Vertex3& position = GetGlobalPosition();
+        auto direction = lookAtPosition - position;
+        float length = Length(direction);
         if (length > 0)
         {
-			auto rot = QuaternionFromLookRotation(-direction, up);
+            auto rot = QuaternionFromLookRotation(-direction, up);
             PNode parent(parent_.lock());
             if (parent)
                 return Inverse(parent->GetGlobalOrientation()) * rot;
@@ -389,12 +389,12 @@ namespace NSG
             return;
 
         dirty_ = false;
-        
+
         PNode parent = parent_.lock();
 
         if (parent)
         {
-			globalModel_ = parent->GetGlobalModelMatrix() * GetTransform();
+            globalModel_ = parent->GetGlobalModelMatrix() * GetTransform();
             globalPosition_ = Translation(globalModel_);
             globalOrientation_ = parent->GetGlobalOrientation() * q_;
             globalScale_ = Scale(globalModel_);
@@ -410,14 +410,14 @@ namespace NSG
         isScaleUniform_ = NSG::IsScaleUniform(globalScale_);
         globalModelInv_ = Inverse(globalModel_);
         globalModelInvTransp_ = Transpose(Inverse(Matrix3(globalModel_)));
-		lookAtDirection_ = globalOrientation_ * VECTOR3_LOOKAT_DIRECTION;
+        lookAtDirection_ = globalOrientation_ * VECTOR3_LOOKAT_DIRECTION;
         upDirection_ = globalOrientation_ * VECTOR3_UP;
     }
 
-	Matrix4 Node::GetTransform() const
-	{
-		return ComposeMatrix(position_, q_, scale_);
-	}
+    Matrix4 Node::GetTransform() const
+    {
+        return ComposeMatrix(position_, q_, scale_);
+    }
 
     const Matrix4& Node::GetGlobalModelMatrix() const
     {
@@ -491,22 +491,22 @@ namespace NSG
         return isScaleUniform_;
     }
 
-   void Node::Load(const pugi::xml_node& node)
+    void Node::Load(const pugi::xml_node& node)
     {
-        CHECK_ASSERT(name_ == node.attribute("name").as_string(), __FILE__, __LINE__);
+        CHECK_ASSERT(name_ == node.attribute("name").as_string());
         Vertex3 position(VECTOR3_ZERO);
         auto posAtt = node.attribute("position");
-        if(posAtt)
+        if (posAtt)
             position = ToVertex3(posAtt.as_string());
         SetPosition(position);
         Quaternion orientation(QUATERNION_IDENTITY);
         auto rotAtt = node.attribute("orientation");
-        if(rotAtt)
+        if (rotAtt)
             orientation = ToQuaternion(rotAtt.as_string());
         SetOrientation(orientation);
         Vertex3 scale(VECTOR3_ONE);
         auto scaAtt = node.attribute("scale");
-        if(scaAtt)
+        if (scaAtt)
             scale = ToVertex3(scaAtt.as_string());
         SetScale(scale);
     }
@@ -515,13 +515,13 @@ namespace NSG
     {
         node.append_attribute("name").set_value(GetName().c_str());
         auto position = GetPosition();
-        if(position != VECTOR3_ZERO)
+        if (position != VECTOR3_ZERO)
             node.append_attribute("position").set_value(ToString(position).c_str());
         auto orientation = GetOrientation();
-        if(orientation != QUATERNION_IDENTITY)
+        if (orientation != QUATERNION_IDENTITY)
             node.append_attribute("orientation").set_value(ToString(orientation).c_str());
         auto scale = GetScale();
-        if(scale != VECTOR3_ONE)
+        if (scale != VECTOR3_ONE)
             node.append_attribute("scale").set_value(ToString(scale).c_str());
     }
 }

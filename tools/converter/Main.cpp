@@ -200,7 +200,7 @@ int NSG_MAIN(int argc, char* argv[])
 				int eChar = eArg.getValue();
 				TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
 				obj.Load();
-				CHECK_CONDITION(obj.Save(outputDir, zArg.getValue()), __FILE__, __LINE__);
+				CHECK_CONDITION(obj.Save(outputDir, zArg.getValue()));
 			}
 			else
 			{

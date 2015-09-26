@@ -7,6 +7,7 @@
             #if !defined(AOMAP0) && !defined(AOMAP1) && !defined(LIGHTMAP0) && !defined(LIGHTMAP1)
                 #if defined(AMBIENT)
                     vec4 intensity = vec4(u_sceneAmbientColor, 1.0) * u_material.ambientIntensity;
+                    intensity += u_material.emitIntensity * u_material.diffuseColor;
                 #else
                     vec4 intensity = vec4(1.0);
                 #endif

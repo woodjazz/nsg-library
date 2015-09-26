@@ -50,7 +50,6 @@ namespace NSG
           fovy_(Radians(45.0f)),
           zNear_(0.1f),
           zFar_(250),
-          viewportFactor_(0, 0, 1, 1),
           isOrtho_(false),
           viewWidth_(0),
           viewHeight_(0),
@@ -69,9 +68,6 @@ namespace NSG
         SetInheritScale(false);
         Update();
         frustum_ = std::make_shared<Frustum>(matViewProjection_);
-        auto graphics = Graphics::GetPtr();
-        if (graphics && !graphics->GetCamera())
-            graphics->SetCamera(this);
         slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
@@ -82,11 +78,7 @@ namespace NSG
     Camera::~Camera()
     {
         if (Graphics::GetPtr())
-        {
-            SignalBeingDestroy()->Run(this);
-            if (Graphics::GetPtr()->GetCamera() == this)
-                Graphics::GetPtr()->SetCamera(nullptr);
-        }
+			SignalBeingDestroy()->Run(this);
     }
 
     void Camera::UnRegisterWindow()
@@ -142,7 +134,7 @@ namespace NSG
 
     void Camera::SetAspectRatio(float aspect)
     {
-        CHECK_ASSERT(aspect != 0, __FILE__, __LINE__);
+        CHECK_ASSERT(aspect != 0);
         if (aspectRatio_ != aspect)
         {
             aspectRatio_ = aspect;
@@ -185,7 +177,7 @@ namespace NSG
 
     void Camera::SetHalfHorizontalFov(float hhfov)
     {
-        CHECK_ASSERT(hhfov != 0, __FILE__, __LINE__);
+        CHECK_ASSERT(hhfov != 0);
 
         float fovy = hhfov / aspectRatio_;
 
@@ -239,16 +231,6 @@ namespace NSG
         }
     }
 
-    void Camera::SetViewportFactor(const Vector4& viewportFactor)
-    {
-        if (viewportFactor_ != viewportFactor)
-        {
-            viewportFactor_ = viewportFactor;
-            if (Graphics::GetPtr()->GetCamera() == this)
-                Graphics::GetPtr()->SetViewportFactor(viewportFactor);
-        }
-    }
-
     OrthoProjection Camera::CalculateOrthoProjection(float zNear, float zFar) const
     {
         auto width = orthoScale_;
@@ -297,7 +279,7 @@ namespace NSG
         }
         else
         {
-            CHECK_ASSERT(zNear_ > 0, __FILE__, __LINE__);
+            CHECK_ASSERT(zNear_ > 0);
             matProjection_ = Perspective(fovy_, aspectRatio_, zNear_, zFar_);
         }
 
@@ -359,7 +341,7 @@ namespace NSG
         }
         else
         {
-            CHECK_ASSERT(nearSplit > 0, __FILE__, __LINE__);
+            CHECK_ASSERT(nearSplit > 0);
             matProjection = Perspective(fovy_, aspectRatio_, nearSplit, farSplit);
         }
 
@@ -426,13 +408,15 @@ namespace NSG
         return Ray(nearWorldCoord, direction);
     }
 
-    Ray Camera::GetRay(float screenX, float screenY)
+    Ray Camera::GetRay(const Camera* camera, float screenX, float screenY)
     {
-        if (Graphics::GetPtr()->GetCamera())
-            return Graphics::GetPtr()->GetCamera()->GetScreenRay(screenX, screenY);
-        else
-            return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
+		return camera->GetScreenRay(screenX, screenY);
     }
+
+	Ray Camera::GetRay(float screenX, float screenY)
+	{
+		return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
+	}
 
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
     {
@@ -475,7 +459,6 @@ namespace NSG
         node.append_attribute("fovy").set_value(fovy_);
         node.append_attribute("zNear").set_value(zNear_);
         node.append_attribute("zFar").set_value(zFar_);
-        node.append_attribute("viewportFactor").set_value(ToString(viewportFactor_).c_str());
         node.append_attribute("isOrtho").set_value(isOrtho_);
         node.append_attribute("orthoScale").set_value(orthoScale_);
         node.append_attribute("sensorFit").set_value((int)sensorFit_);
@@ -494,9 +477,6 @@ namespace NSG
         fovy_ = node.attribute("fovy").as_float();
         zNear_ = node.attribute("zNear").as_float();
         zFar_ = node.attribute("zFar").as_float();
-        auto vpFactorAtt = node.attribute("viewportFactor");
-        if (vpFactorAtt)
-            viewportFactor_ = ToVertex4(vpFactorAtt.as_string());
         isOrtho_ = node.attribute("isOrtho").as_bool();
         orthoScale_ = node.attribute("orthoScale").as_float();
         sensorFit_ = (CameraSensorFit)node.attribute("sensorFit").as_int();
@@ -511,8 +491,8 @@ namespace NSG
 
     SignalCamera::PSignal Camera::SignalBeingDestroy()
     {
-        static SignalCamera::PSignal sig(new SignalCamera);
-        return sig;
+		static SignalCamera::PSignal sig(new SignalCamera);
+		return sig;
     }
 
     void Camera::SetMaxShadowSplits(int splits)

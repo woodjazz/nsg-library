@@ -53,6 +53,7 @@ namespace NSG
         void SetJumpSpeed(float speed);
         void SetForwardSpeed(float speed);
         void SetAngularSpeed(float speed); // angle in degrees
+		void Rotate(float angle); // angle in degrees
         BoundingBox GetColliderBoundingBox() const override;
         void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTime) override;
         void debugDraw(btIDebugDraw* debugDrawer) override;
@@ -61,7 +62,7 @@ namespace NSG
         void Save(pugi::xml_node& node);
         SceneNode* GetSceneNode() const override;
         bool HandleCollision() const override { return handleCollision_; }
-        ICollision* StepForwardCollides(float step) const;
+        ICollision* StepForwardCollides() const;
         void EnableFly(bool enable) { flying_ = enable; }
     private:
         Vector3 GetUnderFeetPoint(Vector3 origin) const; //point off contact with ground
@@ -107,5 +108,13 @@ namespace NSG
         Vector3 upAxis_;
         Vector3 nodeColliderOffset_;
         bool flying_;
+		Vector3 stepForwardSourcePos_;
+		Vector3 stepForwardTargetPos_;
+		Vector3 stepForwardFinalPos_;
+		Vector3 stepForward_;
+		Vector3 minStepForward_;
+		Vector3 bodyCenter_;
+		Vector3 forwardDirection_;
+		
     };
 }

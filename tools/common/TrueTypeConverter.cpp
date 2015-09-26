@@ -53,7 +53,7 @@ namespace NSG
     bool TrueTypeConverter::Load()
     {
 		auto resource = Resource::GetOrCreateClass<ResourceFile>(path_.GetFilePath());
-        CHECK_CONDITION(resource->IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(resource->IsReady());
         const unsigned char* data = (const unsigned char*)resource->GetData();
         //size_t totalBytes = resource->GetBytes();
 
@@ -64,7 +64,7 @@ namespace NSG
         stbtt_BakeFontBitmap(data, 0, (float)fontPixelsHeight_, (unsigned char*)&tempBitmap[0], bitmapWidth_, bitmapHeight_, sChar_, numChars, &cdata_[0]);
 		texture_ = Resource::GetOrCreateClass<ResourceConverter>(path_.GetFilePath() + std::to_string(fontPixelsHeight_));
         texture_->SetData(tempBitmap.c_str(), tempBitmap.size());
-        CHECK_CONDITION(texture_->IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(texture_->IsReady());
         return true;
     }
 

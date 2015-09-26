@@ -49,7 +49,6 @@ namespace NSG
         void AddCamera(Camera* camera);
 		void AddParticleSystem(ParticleSystem* ps);
         void UpdateAll(float deltaTime);
-		void Render();
         void NeedUpdate(SceneNode* obj);
 		void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
 		void GetVisibleNodes(const Frustum* frustum, std::vector<SceneNode*>& visibles) const;
@@ -62,7 +61,7 @@ namespace NSG
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
         void UpdateOctree(SceneNode* node);
         void RemoveFromOctree(SceneNode* node);
-        SceneNode* GetClosestNode(float screenX, float screenY) const;
+		SceneNode* GetClosestNode(const Camera* camera, float screenX, float screenY) const;
         SignalNodeMouseMoved::PSignal SigNodeMouseMoved() { return signalNodeMouseMoved_; }
         SignalNodeMouseButton::PSignal SigNodeMouseDown() { return signalNodeMouseDown_; }
         SignalNodeMouseButton::PSignal SigNodeMouseUp() { return signalNodeMouseUp_; }

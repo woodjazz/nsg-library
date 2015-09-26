@@ -72,18 +72,18 @@ namespace NSG
 
     void VertexArrayObj::AllocateResources()
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 	
 		auto vBuffer = key_.mesh->GetVertexBuffer();
 		auto iBuffer = key_.mesh->GetIndexBuffer(key_.solid);
 		auto program = key_.program;
         auto mesh = key_.mesh;
 
-		CHECK_ASSERT(!vBuffer->IsDynamic() && (!iBuffer || !iBuffer->IsDynamic()), __FILE__, __LINE__);
+		CHECK_ASSERT(!vBuffer->IsDynamic() && (!iBuffer || !iBuffer->IsDynamic()));
 
         glGenVertexArrays(1, &vao_);
 
-        CHECK_ASSERT(vao_ != 0, __FILE__, __LINE__);
+        CHECK_ASSERT(vao_ != 0);
 
         graphics_->SetVertexArrayObj(this);
 
@@ -129,7 +129,7 @@ namespace NSG
         if (key_.allowInstancing && program->GetMaterial()->IsBatched())
             graphics_->SetInstanceAttrPointers(program);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         slotProgramReleased_ = program->SigReleased()->Connect([this]()
         {
@@ -172,7 +172,7 @@ namespace NSG
         if (it != vaoMap_.end())
         	return it->second;
 		auto vao = std::make_shared<VertexArrayObj>(key);
-        CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, vao)).second, __FILE__, __LINE__);
+        CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, vao)).second);
         return vao;
     }
 

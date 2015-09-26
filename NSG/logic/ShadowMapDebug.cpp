@@ -40,7 +40,7 @@ namespace NSG
           window_(nullptr),
           debugRendererEnabled_(false)
     {
-        CHECK_ASSERT(light_, __FILE__, __LINE__);
+        CHECK_ASSERT(light_);
 
         auto graphics = Graphics::GetPtr();
         if (graphics)

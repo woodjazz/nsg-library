@@ -102,8 +102,8 @@ static void QueuedTaskTest0()
     }
 
     int expectedSequence[] = {0,1,2,0,3,3,1};
-    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int), __FILE__, __LINE__);
-    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence), __FILE__, __LINE__);
+    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
+    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
     BaseTask::executedTasks_.clear();
 }
 
@@ -138,8 +138,8 @@ static void QueuedTaskTest1()
     }
 
     int expectedSequence[] = {0,1,2,0,3,3,1};
-    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int), __FILE__, __LINE__);
-    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence), __FILE__, __LINE__);
+    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
+    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
     BaseTask::executedTasks_.clear();
 }
 
@@ -177,8 +177,8 @@ static void QueuedTaskTest2()
     }
 
     int expectedSequence[] = {2};
-    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int), __FILE__, __LINE__);
-    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence), __FILE__, __LINE__);
+    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
+    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
     BaseTask::executedTasks_.clear();
 }
 

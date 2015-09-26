@@ -44,7 +44,7 @@ namespace NSG
 	const char* ToString(T obj, const char* mapping[])
 	{
 		auto idx = (int)obj;
-		CHECK_ASSERT(idx >= 0 && idx < (int)T::MAX_INDEX, __FILE__, __LINE__);
+		CHECK_ASSERT(idx >= 0 && idx < (int)T::MAX_INDEX);
 		return mapping[idx];
 	}
 
@@ -54,7 +54,7 @@ namespace NSG
 		for (int i = 0; i<(int)T::MAX_INDEX; i++)
             if(strcmp(mapping[i], value) == 0)
                 return (T)i;
-        CHECK_ASSERT(!"Failed to translate string!!!", __FILE__, __LINE__);
+        CHECK_ASSERT(!"Failed to translate string!!!");
         return (T)0;
     }
 
@@ -197,8 +197,7 @@ namespace NSG
     {
         "VERTEXCOLOR",
         "UNLIT",
-        "PERVERTEX", 
-        "PERPIXEL", 
+        "LIT", 
         "TEXT", 
         "BLEND", 
         "BLUR", 

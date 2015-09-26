@@ -33,7 +33,7 @@ static void Test01()
 		auto image = std::make_shared<Image>(resource);
 		for (int i = 0; i < 50; i++)
 		{
-			CHECK_CONDITION(image->IsReady(), __FILE__, __LINE__);
+			CHECK_CONDITION(image->IsReady());
 			image->Invalidate();
 		}
 		Resource::Clear();
@@ -47,7 +47,7 @@ static void Test02()
 		auto texture = std::make_shared<Texture2D>(resource);
 		for (int i = 0; i < 1050; i++)
 		{
-			CHECK_CONDITION(texture->IsReady(), __FILE__, __LINE__);
+			CHECK_CONDITION(texture->IsReady());
 			texture->Invalidate();
 		}
 		Resource::Clear();

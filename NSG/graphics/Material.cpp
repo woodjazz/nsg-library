@@ -1,5 +1,5 @@
 #include "Material.h"
-#include "Mesh.h"
+#include "SphereMesh.h"
 #include "Check.h"
 #include "Camera.h"
 #include "Texture2D.h"
@@ -8,6 +8,7 @@
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
+#include "FrameBuffer.h"
 #include "StringConverter.h"
 #include "InstanceBuffer.h"
 #include "pugixml.hpp"
@@ -33,6 +34,7 @@ namespace NSG
           alpha_(1),
 		  alphaForSpecular_(1),
           isTransparent_(false),
+          emitIntensity_(0),
           renderPass_(RenderPass::VERTEXCOLOR),
           billboardType_(BillboardType::NONE),
           flipYTextureCoords_(false),
@@ -41,7 +43,8 @@ namespace NSG
           friction_(0.5f), // same as Blender
           signalPhysicsSet_(new SignalEmpty()),
           castShadow_(true),
-          receiveShadows_(true)
+          receiveShadows_(true),
+          shadowBias_(0)
     {
     }
 
@@ -71,6 +74,7 @@ namespace NSG
         material->alpha_ = alpha_;
 		material->alphaForSpecular_ = alphaForSpecular_;
         material->isTransparent_ = isTransparent_;
+        material->emitIntensity_ = emitIntensity_;
         material->renderPass_ = renderPass_;
         material->billboardType_ = billboardType_;
         material->flipYTextureCoords_ = flipYTextureCoords_;
@@ -79,6 +83,7 @@ namespace NSG
         material->friction_ = friction_;
         material->castShadow_ = castShadow_;
         material->receiveShadows_ = receiveShadows_;
+        material->shadowBias_ = shadowBias_;
         return material;
     }
 
@@ -144,7 +149,7 @@ namespace NSG
     bool Material::SetTexture(PTexture texture)
     {
         auto type = texture->GetMapType();
-        CHECK_ASSERT(type != TextureType::UNKNOWN, __FILE__, __LINE__);
+        CHECK_ASSERT(type != TextureType::UNKNOWN);
         MaterialTexture index = MaterialTexture::DIFFUSE_MAP;
         switch (type)
         {
@@ -166,7 +171,7 @@ namespace NSG
             default:
                 break;
         }
-        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS, __FILE__, __LINE__);
+        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS);
         if (texture_[index] != texture)
         {
             texture_[index] = texture;
@@ -179,7 +184,7 @@ namespace NSG
 
     PTexture Material::GetTexture(MaterialTexture index) const
     {
-        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS, __FILE__, __LINE__);
+        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS);
         return texture_[index];
     }
 
@@ -192,6 +197,15 @@ namespace NSG
 			SetUniformsNeedUpdate();
 		}
 	}
+
+    void Material::SetEmitIntensity(float emitIntensity)
+    {
+        if(emitIntensity != emitIntensity_)
+        {
+            emitIntensity_ = emitIntensity;
+            SetUniformsNeedUpdate();
+        }
+    }
 
 	void Material::SetAlphaForSpecular(float alphaForSpecular)
 	{
@@ -221,11 +235,6 @@ namespace NSG
                 EnableTransparent(true);
                 SetRenderPass(RenderPass::TEXT);
                 texture->SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
-            }
-            else
-            {
-				EnableTransparent(false);
-                SetRenderPass(RenderPass::PERVERTEX);
             }
         }
     }
@@ -298,11 +307,13 @@ namespace NSG
         child.append_attribute("diffuse").set_value(ToString(ColorRGB(diffuseColor_)).c_str());
         child.append_attribute("specular").set_value(ToString(specularColor_).c_str());
         child.append_attribute("shininess").set_value(shininess_);
+        child.append_attribute("emitIntensity").set_value(emitIntensity_);
         child.append_attribute("fillMode").set_value(ToString(fillMode_));
         child.append_attribute("alpha").set_value(alpha_);
 		child.append_attribute("alphaForSpecular").set_value(alphaForSpecular_);
         child.append_attribute("isTransparent").set_value(isTransparent_);
         child.append_attribute("renderPass").set_value(ToString(renderPass_));
+        child.append_attribute("shadowBias").set_value(shadowBias_);
     }
 
     void Material::Load(const pugi::xml_node& node)
@@ -327,11 +338,13 @@ namespace NSG
         SetDiffuseColor(ToVertex3(node.attribute("diffuse").as_string()));
         SetSpecularColor(ToVertex3(node.attribute("specular").as_string()));
         SetShininess(node.attribute("shininess").as_float());
+        SetEmitIntensity(node.attribute("emitIntensity").as_float());
         SetFillMode(ToFillMode(node.attribute("fillMode").as_string()));
         SetAlpha(node.attribute("alpha").as_float());
 		SetAlphaForSpecular(node.attribute("alphaForSpecular").as_float());
         EnableTransparent(node.attribute("isTransparent").as_bool());
         SetRenderPass(ToRenderPass(node.attribute("renderPass").as_string()));
+        SetBias(node.attribute("shadowBias").as_float());
     }
 
     void Material::SetFilterBlendMode(BlendFilterMode mode)
@@ -379,7 +392,7 @@ namespace NSG
 
     bool Material::IsLighted() const
     {
-        return !shadeless_ && (renderPass_ == RenderPass::PERPIXEL || renderPass_ == RenderPass::PERVERTEX);
+        return !shadeless_ && (renderPass_ == RenderPass::LIT);
     }
 
     bool Material::IsBatched() const
@@ -463,23 +476,17 @@ namespace NSG
                 case RenderPass::WAVE:
                     defines += "WAVE\n";
                     break;
-                case RenderPass::SHOW_TEXTURE0:
+				case RenderPass::SHOW_TEXTURE0:
                     defines += "SHOW_TEXTURE0\n";
                     break;
-                case RenderPass::PERVERTEX:
+                case RenderPass::LIT:
                     if (defaultPass)
                         defines += "AMBIENT\n";
                     else
-                        defines += "PER_VERTEX_LIGHTING\n";
-                    break;
-                case RenderPass::PERPIXEL:
-                    if (defaultPass)
-                        defines += "AMBIENT\n";
-                    else
-                        defines += "PER_PIXEL_LIGHTING\n";
+                        defines += "LIT\n";
                     break;
                 default:
-                    CHECK_ASSERT(!"INCORRECT LIT PASS!!!", __FILE__, __LINE__);
+                    CHECK_ASSERT(!"INCORRECT LIT PASS!!!");
                     break;
 
             }
@@ -493,7 +500,7 @@ namespace NSG
                         defines += "USEALPHA\n";
                     int uvIndex = mesh->GetUVIndex(texture->GetUVName());
                     auto type = texture->GetMapType();
-                    CHECK_ASSERT(TextureType::UNKNOWN != type, __FILE__, __LINE__);
+                    CHECK_ASSERT(TextureType::UNKNOWN != type);
                     auto channels = texture->GetChannels();
                     switch (type)
                     {
@@ -543,7 +550,7 @@ namespace NSG
                 defines += "CYLINDRICAL_BILLBOARD\n";
                 break;
             default:
-                CHECK_ASSERT(!"Unknown billboard type!!!", __FILE__, __LINE__);
+                CHECK_ASSERT(!"Unknown billboard type!!!");
                 break;
         }
 
@@ -564,4 +571,12 @@ namespace NSG
             signalPhysicsSet_->Run();
         }
     }
+
+	bool Material::HasTextures() const
+	{
+		for (int i = 0; i < (int)MaterialTexture::MAX_MAPS; i++)
+			if (texture_[i])
+				return true;
+		return false;
+	}
 }

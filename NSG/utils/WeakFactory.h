@@ -46,7 +46,7 @@ namespace NSG
 		template<typename U>
 		static std::shared_ptr<U> CreateClass(const K& key = GetUniqueName(typeid(U).name()))
 		{
-			CHECK_CONDITION(!Has(key), __FILE__, __LINE__);
+			CHECK_CONDITION(!Has(key));
 			auto obj = std::make_shared<U>(key);
 			auto result = objsMap_.insert(typename std::map<K, PWT>::value_type(key, obj));
 			if (!result.second)

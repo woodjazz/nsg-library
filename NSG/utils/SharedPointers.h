@@ -341,4 +341,8 @@ namespace NSG
 
     class ShadowMapDebug;
     typedef std::shared_ptr<ShadowMapDebug> PShadowMapDebug;
+
+    class Editor;
+    typedef std::shared_ptr<Editor> PEditor;
+
 }

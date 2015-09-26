@@ -71,7 +71,7 @@ namespace NSG
     void Skeleton::Load(const pugi::xml_node& node)
     {
         std::string name = node.attribute("name").as_string();
-        CHECK_ASSERT(name == name_, __FILE__, __LINE__);
+        CHECK_ASSERT(name == name_);
 		shaderOrder_.clear();
         offsets_.clear();
         rootBones_.clear();

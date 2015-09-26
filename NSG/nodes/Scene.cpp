@@ -97,43 +97,41 @@ namespace NSG
         {
             if (window)
             {
-                //window->SetScene(this);
-
-                slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
+                slotMouseMoved_ = window->SigFloatFloat()->Connect([this](float x, float y)
                 {
                     if (signalNodeMouseMoved_->HasSlots())
                     {
-                        SceneNode* node = GetClosestNode(x, y);
+						SceneNode* node = GetClosestNode(mainCamera_, x, y);
                         if (node)
                             signalNodeMouseMoved_->Run(node, x, y);
                     }
                 });
 
-                slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
+                slotMouseDown_ = window->SigMouseDown()->Connect([this](int button, float x, float y)
                 {
                     if (signalNodeMouseDown_->HasSlots())
                     {
-                        SceneNode* node = GetClosestNode(x, y);
+						SceneNode* node = GetClosestNode(mainCamera_, x, y);
                         if (node)
                             signalNodeMouseDown_->Run(node, button, x, y);
                     }
                 });
 
-                slotMouseUp_ = window->SigMouseUp()->Connect([&](int button, float x, float y)
+                slotMouseUp_ = window->SigMouseUp()->Connect([this](int button, float x, float y)
                 {
                     if (signalNodeMouseUp_->HasSlots())
                     {
-                        SceneNode* node = GetClosestNode(x, y);
+						SceneNode* node = GetClosestNode(mainCamera_, x, y);
                         if (node)
                             signalNodeMouseUp_->Run(node, button, x, y);
                     }
                 });
 
-                slotMouseWheel_ = window->SigMouseWheel()->Connect([&](float x, float y)
+                slotMouseWheel_ = window->SigMouseWheel()->Connect([this](float x, float y)
                 {
                     if (signalNodeMouseWheel_->HasSlots())
                     {
-                        SceneNode* node = GetClosestNode(x, y);
+						SceneNode* node = GetClosestNode(mainCamera_, x, y);
                         if (node)
                             signalNodeMouseWheel_->Run(node, x, y);
                     }
@@ -283,7 +281,7 @@ namespace NSG
         SetFogHeight(node.attribute("fogHeight").as_float());
         std::string mainCameraName = node.attribute("mainCamera").as_string();
         pugi::xml_node sceneNode = node.child("SceneNode");
-        CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
+        CHECK_ASSERT(sceneNode);
         SceneNode::Load(sceneNode);
 		if (!mainCameraName.empty())
 			SetMainCamera(GetChild<Camera>(mainCameraName, true));
@@ -368,9 +366,9 @@ namespace NSG
         octree_->Remove(node);
     }
 
-    SceneNode* Scene::GetClosestNode(float screenX, float screenY) const
+    SceneNode* Scene::GetClosestNode(const Camera* camera, float screenX, float screenY) const
     {
-        Ray ray = Camera::GetRay(screenX, screenY);
+        Ray ray = Camera::GetRay(camera, screenX, screenY);
         RayNodeResult closest{ 0, nullptr };
         GetClosestRayNodeIntersection(ray, closest);
         if (closest.node_)

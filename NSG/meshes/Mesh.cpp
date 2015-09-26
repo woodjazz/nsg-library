@@ -73,14 +73,14 @@ namespace NSG
         if (!areTangentsCalculated_)
             CalculateTangents();
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
-		CHECK_ASSERT(!isStatic_ || pVBuffer_ == nullptr, __FILE__, __LINE__);
-		CHECK_ASSERT(!isStatic_ || pIBuffer_ == nullptr, __FILE__, __LINE__);
-		CHECK_ASSERT(!isStatic_ || pIWirefameBuffer_ == nullptr, __FILE__, __LINE__);
+		CHECK_ASSERT(!isStatic_ || pVBuffer_ == nullptr);
+		CHECK_ASSERT(!isStatic_ || pIBuffer_ == nullptr);
+		CHECK_ASSERT(!isStatic_ || pIWirefameBuffer_ == nullptr);
 
-        CHECK_ASSERT(!vertexsData_.empty(), __FILE__, __LINE__);
-        CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0, __FILE__, __LINE__);
+        CHECK_ASSERT(!vertexsData_.empty());
+        CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0);
 
         GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
 
@@ -113,7 +113,7 @@ namespace NSG
 				pIWirefameBuffer_->UpdateData(indexesWireframe_);
 		}
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         for (auto& vertex : vertexsData_)
         {
             bb_.Merge(vertex.position_);
@@ -171,7 +171,7 @@ namespace NSG
         }
         if (indexes_.size())
         {
-            CHECK_ASSERT(indexes_.size() % 3 == 0, __FILE__, __LINE__);
+            CHECK_ASSERT(indexes_.size() % 3 == 0);
             pugi::xml_node indexesNode = child.append_child("Indexes");
             std::string s;
             for (auto& obj : indexes_)
@@ -392,17 +392,17 @@ namespace NSG
 
     const VertexData& Mesh::GetTriangleVertex(size_t triangleIdx, size_t vertexIndex) const
     {
-        CHECK_ASSERT(vertexIndex < 3, __FILE__, __LINE__);
+        CHECK_ASSERT(vertexIndex < 3);
         if (GetSolidDrawMode() == GL_TRIANGLES)
         {
-            CHECK_ASSERT(!indexes_.empty(), __FILE__, __LINE__);
-            CHECK_ASSERT(triangleIdx < indexes_.size() / 3, __FILE__, __LINE__);
+            CHECK_ASSERT(!indexes_.empty());
+            CHECK_ASSERT(triangleIdx < indexes_.size() / 3);
             return vertexsData_.at(indexes_.at(triangleIdx * 3 + vertexIndex));
         }
         else
         {
-            CHECK_ASSERT(indexes_.empty(), __FILE__, __LINE__);
-            CHECK_ASSERT(GetSolidDrawMode() == GL_TRIANGLE_FAN, __FILE__, __LINE__);
+            CHECK_ASSERT(indexes_.empty());
+            CHECK_ASSERT(GetSolidDrawMode() == GL_TRIANGLE_FAN);
             if (vertexIndex == 0)
                 return vertexsData_.at(0);
             return vertexsData_.at(triangleIdx + vertexIndex);
@@ -429,13 +429,13 @@ namespace NSG
 
     void Mesh::SetUVName(int index, const std::string& name)
     {
-        CHECK_CONDITION(index >= 0 && index < MAX_UVS, __FILE__, __LINE__);
+        CHECK_CONDITION(index >= 0 && index < MAX_UVS);
         uvNames_[index] = name;
     }
 
 	const std::string& Mesh::GetUVName(int index) const 
 	{ 
-		CHECK_ASSERT(index >= 0 && index < MAX_UVS, __FILE__, __LINE__);
+		CHECK_ASSERT(index >= 0 && index < MAX_UVS);
 		return uvNames_[index]; 
 	}
 
@@ -453,13 +453,13 @@ namespace NSG
 
 	const BoundingBox& Mesh::GetBB() const 
 	{ 
-        CHECK_CONDITION(((Mesh*)this)->Mesh::IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(((Mesh*)this)->Mesh::IsReady());
 		return bb_; 
 	}
 
 	float Mesh::GetBoundingSphereRadius() const 
 	{ 
-		CHECK_CONDITION(((Mesh*)this)->IsReady(), __FILE__, __LINE__);
+		CHECK_CONDITION(((Mesh*)this)->IsReady());
 		return boundingSphereRadius_; 
 	}
 }

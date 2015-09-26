@@ -79,7 +79,7 @@ namespace NSG
 					if (!resource_)
 					{
 						auto resourceFile = std::dynamic_pointer_cast<ResourceFile>(loaderXML_->GetResource());
-						CHECK_ASSERT(resourceFile, __FILE__, __LINE__);
+						CHECK_ASSERT(resourceFile);
 						Path path(resourceFile->GetPath().GetFilePath());
 						path.SetFileName(Path(name).GetFilename());
 						resource_ = std::make_shared<ResourceFile>(path.GetFilePath());

@@ -35,7 +35,6 @@ namespace NSG
 		int width_; ///the width of the window
 		int height_; ///the height of the window
 		bool vertical_sync_;
-		int swapInterval_; // See https://wiki.libsdl.org/SDL_GL_SetSwapInterval
 		bool showStatistics_;
 		bool pauseMusicOnBackground_;
 		std::string orgName_;

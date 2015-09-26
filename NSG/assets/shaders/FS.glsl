@@ -44,23 +44,12 @@
 
     	#elif defined(SHADOW_DIR_PASS)
 
-    		#if 1
 			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
     		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;
    			gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
    			//gl_FragColor = EncodeDepth2Color(gl_FragDepth);
-    		#else
-	        vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));
-	        vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1
-	        coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1
-	        gl_FragColor = EncodeDepth2Color(clamp(coords.z, 0.0, 1.0));
-	        #endif
 
-    	#elif defined(PER_VERTEX_LIGHTING)
-
-			gl_FragColor = v_color;// * GetDiffuseColor();
-
-		#elif defined(PER_PIXEL_LIGHTING)
+		#elif defined(LIT)
 
 				//Lighting is calculated in world space
 				vec3 normal = GetNormal();

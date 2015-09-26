@@ -76,7 +76,7 @@ namespace NSG
             {
                 auto loader = LoaderXML::GetOrCreate(resource_->GetName());
                 loader->Set(resource_);
-                CHECK_CONDITION(loader->IsReady(), __FILE__, __LINE__);
+                CHECK_CONDITION(loader->IsReady());
                 resources_ = Object::LoadAll<Resource, Resource>(loader, "Resources");
                 sounds_ = Object::LoadAll<Sound, Sound>(loader, "Sounds");
                 meshes_ = Object::LoadAll<Mesh, ModelMesh>(loader, "Meshes");
@@ -111,7 +111,7 @@ namespace NSG
 
     PScene LoaderApp::GetScene(int idx) const
     {
-        CHECK_ASSERT(idx < scenes_.size(), __FILE__, __LINE__);
+        CHECK_ASSERT(idx < scenes_.size());
         return scenes_[idx];
     }
 }

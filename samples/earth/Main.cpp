@@ -56,7 +56,7 @@ int NSG_MAIN(int argc, char* argv[])
 		auto earthResource = Resource::GetOrCreateClass<ResourceFile>("data/Earthmap720x360_grid.jpg");
         auto pEarthTexture = std::make_shared<Texture2D>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 		auto pMaterial(Material::GetOrCreate("earth"));
-		pMaterial->SetRenderPass(RenderPass::PERPIXEL);
+		pMaterial->SetRenderPass(RenderPass::LIT);
 		pMaterial->SetTexture(pEarthTexture);
         pMaterial->SetDiffuseColor(ColorRGB(0.8f, 0.8f, 0.8f));
 		pMaterial->SetSpecularColor(ColorRGB(1.0f, 0.0f, 0.0f));
@@ -69,7 +69,7 @@ int NSG_MAIN(int argc, char* argv[])
     light->EnableShadows(false);
     {
 		auto pMaterial(Material::GetOrCreate("light"));
-		pMaterial->SetRenderPass(RenderPass::PERPIXEL);
+		pMaterial->SetRenderPass(RenderPass::LIT);
 		pMaterial->SetDiffuseColor(ColorRGB(1, 0, 0));
         light->SetMaterial(pMaterial);
 		auto pMesh(Mesh::CreateClass<SphereMesh>());

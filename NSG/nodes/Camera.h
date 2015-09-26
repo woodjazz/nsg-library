@@ -46,8 +46,6 @@ namespace NSG
         void SetAspectRatio(unsigned width, unsigned height);
         void SetAspectRatio(float aspect);
         float GetAspectRatio() const { return aspectRatio_; }
-        void SetViewportFactor(const Vector4& viewportFactor);
-        const Vector4& GetViewportFactor() const { return viewportFactor_; }
         void SetOrthoScale(float orthoScale);
         float GetOrthoScale() const { return orthoScale_; }
         bool IsOrtho() const { return isOrtho_; }
@@ -59,7 +57,8 @@ namespace NSG
         Vertex3 WorldToScreen(const Vertex3& worldXYZ) const;
         //XY are in normalized device coordinates (-1, 1)
         Ray GetScreenRay(float screenX, float screenY) const;
-        static Ray GetRay(float screenX, float screenY);
+        static Ray GetRay(const Camera* camera, float screenX, float screenY);
+		static Ray GetRay(float screenX, float screenY);
         const Matrix4& GetView() const;
         const Matrix4& GetViewProjection() const;
         const Matrix4& GetProjection() const;
@@ -99,7 +98,6 @@ namespace NSG
     	const Matrix4& GetViewProjectionInverse() const;
         OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;
         float CalculateAspectRatio() const;
-        void SetScale(const Vertex3& scale); // not implemented (does not make sense for cameras and will make normals wrong)
         void UpdateProjection() const;
         void UpdateViewProjection() const;
         void UpdateFrustum();
@@ -112,7 +110,6 @@ namespace NSG
         float fovy_; // in radians
         float zNear_;
         float zFar_;
-        Vector4 viewportFactor_;
         bool isOrtho_;
         unsigned viewWidth_;
         unsigned viewHeight_;

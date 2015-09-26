@@ -86,7 +86,6 @@ namespace NSG
           att_normalMatrixCol0Loc_(-1),
           modelLoc_(-1),
           normalMatrixLoc_(-1),
-          cameraViewLoc_(-1),
           viewLoc_(-1),
           viewProjectionLoc_(-1),
           projectionLoc_(-1),
@@ -105,6 +104,8 @@ namespace NSG
           lightCutOffLoc_(-1),
           shadowCameraZFarLoc_(-1),
           shadowMapInvSize_(-1),
+          shadowColor_(-1),
+          shadowBias_(-1),
           blendMode_loc_(-1),
           activeSkeleton_(nullptr),
           activeNode_(nullptr),
@@ -116,6 +117,8 @@ namespace NSG
           node_(nullptr),
           material_(nullptr),
           light_(nullptr),
+          camera_(nullptr),
+		  scene_(nullptr),
           graphics_(Graphics::GetPtr())
     {
         memset(&textureLoc_, -1, sizeof(textureLoc_));
@@ -224,7 +227,7 @@ namespace NSG
 
     bool Program::ShaderCompiles(GLenum type, const std::string& buffer) const
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         GLuint id = glCreateShader(type);
         const char* source = buffer.c_str();
         glShaderSource(id, 1, &source, nullptr);
@@ -245,7 +248,7 @@ namespace NSG
         }
         glDeleteShader(id);
         //glReleaseShaderCompiler(); // fails on osx
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         LOGI("Checking %s shader for material %s: %s", (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT"), name_.c_str(), (compile_status == GL_TRUE ? "IS OK" : "HAS FAILED"));
 
         return compile_status == GL_TRUE;
@@ -253,7 +256,7 @@ namespace NSG
 
     void Program::SetUniformLocations()
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         att_positionLoc_ = GetAttributeLocation("a_position");
         att_normalLoc_ = GetAttributeLocation("a_normal");
@@ -269,7 +272,6 @@ namespace NSG
 
         modelLoc_ = GetUniformLocation("u_model");
         normalMatrixLoc_ = GetUniformLocation("u_normalMatrix");
-        cameraViewLoc_ = GetUniformLocation("u_cameraView");
         viewLoc_ = GetUniformLocation("u_view");
         viewProjectionLoc_ = GetUniformLocation("u_viewProjection");
         projectionLoc_  = GetUniformLocation("u_projection");
@@ -292,6 +294,7 @@ namespace NSG
         materialLoc_.specularIntensity_ = GetUniformLocation("u_material.specularIntensity");
         materialLoc_.ambientIntensity_ = GetUniformLocation("u_material.ambientIntensity");
         materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
+        materialLoc_.emitIntensity_ = GetUniformLocation("u_material.emitIntensity");
 
         for (size_t i = 0; i < MAX_BONES; i++)
         {
@@ -334,12 +337,12 @@ namespace NSG
                 glUniform1i(textureLoc_[index], index); //set fixed locations for samplers
         }
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     bool Program::Initialize()
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         LOGI("Creating program for material %s", name_.c_str());
         id_ = glCreateProgram();
         // Bind vertex attribute locations to ensure they are the same in all shaders
@@ -379,7 +382,7 @@ namespace NSG
             return false;
         }
         LOGI("Program for material %s OK.", name_.c_str());
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         return true;
     }
 
@@ -388,20 +391,19 @@ namespace NSG
         return glGetAttribLocation(id_, name.c_str());
     }
 
-    GLuint Program::GetUniformLocation(const std::string& name)
+        GLuint Program::GetUniformLocation(const std::string& name)
     {
         return glGetUniformLocation(id_, name.c_str());
     }
 
     void Program::SetSceneVariables()
     {
-        auto scene = Renderer::GetPtr()->GetScene();
         if (sceneColorAmbientLoc_ != -1)
         {
-            if (scene)
+            if (scene_)
             {
-                if (scene->UniformsNeedUpdate())
-                    glUniform3fv(sceneColorAmbientLoc_, 1, &scene->GetAmbientColor()[0]);
+				if (scene_->UniformsNeedUpdate())
+                    glUniform3fv(sceneColorAmbientLoc_, 1, &scene_->GetAmbientColor()[0]);
             }
             else if (sceneColor_ == ColorRGB(-1))
             {
@@ -410,28 +412,30 @@ namespace NSG
             }
         }
 
-        if (scene)
+		if (scene_)
         {
             if (u_sceneHorizonColorLoc_)
-                glUniform3fv(u_sceneHorizonColorLoc_, 1, &scene->GetHorizonColor()[0]);
+				glUniform3fv(u_sceneHorizonColorLoc_, 1, &scene_->GetHorizonColor()[0]);
 
             if (u_fogMinIntensityLoc_ != -1)
-                glUniform1f(u_fogMinIntensityLoc_, scene->GetFogMinIntensity());
-
-            Camera* camera = graphics_->GetCamera();
+                glUniform1f(u_fogMinIntensityLoc_, scene_->GetFogMinIntensity());
 
             if (u_fogStartLoc_ != -1)
             {
-                auto start = std::max(camera->GetZNear(), scene->GetFogStart());
+                auto start = scene_->GetFogStart();
+                if(camera_)
+                    start = std::max(camera_->GetZNear(), start);
                 glUniform1f(u_fogStartLoc_, start);
             }
             if (u_fogEndLoc_ != -1)
             {
-                auto end = std::min(camera->GetZFar(), scene->GetFogStart() + scene->GetFogDepth());
+                auto end = scene_->GetFogStart() + scene_->GetFogDepth();
+                if(camera_)
+                    end = std::min(camera_->GetZFar(), end);
                 glUniform1f(u_fogEndLoc_, end);
             }
             if (u_fogHeightLoc_ != -1)
-                glUniform1f(u_fogHeightLoc_, scene->GetFogHeight());
+                glUniform1f(u_fogHeightLoc_, scene_->GetFogHeight());
         }
     }
 
@@ -505,6 +509,9 @@ namespace NSG
                 if (materialLoc_.shininess_ != -1)
                     glUniform1f(materialLoc_.shininess_, material_->shininess_);
 
+                if (materialLoc_.emitIntensity_ != -1)
+                    glUniform1f(materialLoc_.emitIntensity_, material_->emitIntensity_);
+
                 if (blendMode_loc_ != -1)
                     glUniform1i(blendMode_loc_, (int)material_->GetFilterBlendMode());
 
@@ -534,27 +541,27 @@ namespace NSG
             const std::vector<std::string>& names = skeleton_->GetShaderOrder();
             size_t nBones = names.size();
             PNode armatureNode = node_->GetArmature();
-            CHECK_ASSERT(graphics_->GetMesh()->HasDeformBones(), __FILE__, __LINE__);
-            CHECK_ASSERT(armatureNode, __FILE__, __LINE__);
+            CHECK_ASSERT(graphics_->GetMesh()->HasDeformBones());
+            CHECK_ASSERT(armatureNode);
             Matrix4 globalInverseModelMatrix(1);
             // In order to make all the bones relatives to the armature.
             // The model matrix and normal matrix for the active node is premultiplied in the shader (see Program::SetNodeVariables)
             // See in Transform.glsl: GetModelMatrix() and GetWorldNormal()
             globalInverseModelMatrix = armatureNode->GetGlobalModelInvMatrix();
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS();
             for (unsigned idx = 0; idx < nBones; idx++)
             {
                 GLuint boneLoc = bonesBaseLoc_[idx];
                 std::string boneName = names[idx];
                 auto bone = armatureNode->GetChild<Node>(boneName, true);
                 // Be careful, bones don't have normal matrix so their scale must be uniform (sx == sy == sz)
-                //CHECK_ASSERT(bone->IsScaleUniform(), __FILE__, __LINE__);
+                //CHECK_ASSERT(bone->IsScaleUniform());
                 const Matrix4& m = bone->GetGlobalModelMatrix();
                 const Matrix4& offsetMatrix = skeleton_->GetBoneOffsetMatrix(boneName);
                 Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
                 glUniformMatrix4fv(boneLoc, 1, GL_FALSE, GetPointer(boneMatrix));
             }
-            CHECK_GL_STATUS(__FILE__, __LINE__);
+            CHECK_GL_STATUS();
         }
         activeSkeleton_ = skeleton_;
     }
@@ -564,7 +571,7 @@ namespace NSG
         Matrix4 m1(m);
         // Add constant depth bias to the projection matrix
         // OpenGL constant bias is unreliable and dependant on depth buffer bitdepth.
-        auto constantBias = 2.f * light_->GetBias();
+        auto constantBias = 2.f * material_->GetBias() * light_->GetBias();
         m1[2][2] += m1[2][3] * constantBias;
         m1[3][2] += m1[3][3] * constantBias;
         return m1;
@@ -572,20 +579,18 @@ namespace NSG
 
     void Program::SetCameraVariables(bool shadowPass)
     {
-        Camera* camera = graphics_->GetCamera();
-
-        if (camera && (camera != activeCamera_ || camera->UniformsNeedUpdate()))
+        if (camera_ && (camera_ != activeCamera_ || camera_->UniformsNeedUpdate()))
         {
             if (viewProjectionLoc_ != -1)
             {
                 if (shadowPass)
                 {
-                    auto m = AdjustProjection(camera->GetProjection()) * camera->GetView();
+                    auto m = AdjustProjection(camera_->GetProjection()) * camera_->GetView();
                     glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, GetPointer(m));
                 }
                 else
                 {
-                    auto& m = camera->GetViewProjection();
+                    auto& m = camera_->GetViewProjection();
                     glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, GetPointer(m));
                 }
             }
@@ -594,22 +599,14 @@ namespace NSG
             {
                 if (lightInvRangeLoc_ != -1)
                 {
-                    const ShadowCamera* shadowCam = dynamic_cast<const ShadowCamera*>(camera);
+                    const ShadowCamera* shadowCam = dynamic_cast<const ShadowCamera*>(camera_);
                     glUniform1f(lightInvRangeLoc_, shadowCam->GetInvRange());
                 }
             }
 
-
-			if (cameraViewLoc_ != -1)
-            {
-				Camera* camera = graphics_->GetMainCamera();
-                auto& m = camera->GetView();
-				glUniformMatrix4fv(cameraViewLoc_, 1, GL_FALSE, GetPointer(m));
-            }
-
             if (viewLoc_ != -1)
             {
-                auto& m = camera->GetView();
+                auto& m = camera_->GetView();
                 glUniformMatrix4fv(viewLoc_, 1, GL_FALSE, GetPointer(m));
             }
 
@@ -617,25 +614,25 @@ namespace NSG
             {
                 if (shadowPass)
                 {
-                    auto m = AdjustProjection(camera->GetProjection());
+                    auto m = AdjustProjection(camera_->GetProjection());
                     glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, GetPointer(m));
                 }
                 else
                 {
-                    auto& m = camera->GetProjection();
+                    auto& m = camera_->GetProjection();
                     glUniformMatrix4fv(projectionLoc_, 1, GL_FALSE, GetPointer(m));
                 }
             }
 
             if (eyeWorldPosLoc_ != -1)
             {
-                auto& position = camera->GetGlobalPosition();
+                auto& position = camera_->GetGlobalPosition();
                 glUniform3fv(eyeWorldPosLoc_, 1, &position[0]);
             }
         }
     }
 
-	void Program::SetLightShadowVariables(bool shadowPass)
+    void Program::SetLightShadowVariables(bool shadowPass)
     {
         if (light_)
         {
@@ -648,10 +645,10 @@ namespace NSG
                 }
             }
 
-			if (!shadowPass && lightInvRangeLoc_ != -1)
+            if (!shadowPass && lightInvRangeLoc_ != -1)
             {
                 // lightInvRangeLoc_ not used for directional lights
-                CHECK_ASSERT(light_->GetType() != LightType::DIRECTIONAL, __FILE__, __LINE__);
+                CHECK_ASSERT(light_->GetType() != LightType::DIRECTIONAL);
                 glUniform1f(lightInvRangeLoc_, light_->GetInvRange());
             }
 
@@ -661,7 +658,7 @@ namespace NSG
                 if (shadowCamInvRangeLoc_[i] != -1)
                 {
                     // shadowCamInvRangeLoc_ only used for directional lights
-                    CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL, __FILE__, __LINE__);
+                    CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
                     auto shadowCamera = light_->GetShadowCamera(i);
                     auto v = shadowCamera->GetInvRange();
                     glUniform1f(shadowCamInvRangeLoc_[i], v);
@@ -671,7 +668,7 @@ namespace NSG
                 if (shadowCamPosLoc_[i] != -1)
                 {
                     // shadowCamPosLoc_ only used for directional lights
-                    CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL, __FILE__, __LINE__);
+                    CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
                     auto shadowCamera = light_->GetShadowCamera(i);
                     auto& position = shadowCamera->GetGlobalPosition();
                     glUniform3fv(shadowCamPosLoc_[i], 1, &position[0]);
@@ -681,16 +678,15 @@ namespace NSG
             if (shadowCameraZFarLoc_ != -1)
             {
                 Vector4 shadowCameraZFarSplits;
-                const Camera* camera = graphics_->GetCamera();
-                bool uniformsNeedUpdate = camera->UniformsNeedUpdate();
+                bool uniformsNeedUpdate = camera_->UniformsNeedUpdate();
                 for (int i = 0; i < shadowSplits; i++)
                 {
                     auto shadowCamera = light_->GetShadowCamera(i);
                     uniformsNeedUpdate |= shadowCamera->UniformsNeedUpdate();
-					if (shadowCamera->IsDisabled())
-						shadowCameraZFarSplits[i] = 0;
-					else
-						shadowCameraZFarSplits[i] = shadowCamera->GetFarSplit();
+                    if (shadowCamera->IsDisabled())
+                        shadowCameraZFarSplits[i] = 0;
+                    else
+                        shadowCameraZFarSplits[i] = shadowCamera->GetFarSplit();
                 }
 
                 if (uniformsNeedUpdate)
@@ -718,7 +714,7 @@ namespace NSG
 
                 if (shadowBias_ != -1)
                 {
-                    auto bias = light_->GetBias();
+                    auto bias = material_->GetBias() * light_->GetBias();
                     glUniform1f(shadowBias_, bias);
                 }
 
@@ -729,7 +725,7 @@ namespace NSG
                     {
                         auto shadowMap = light_->GetShadowMap(i);
                         float width = (float)shadowMap->GetWidth();
-                        //CHECK_ASSERT(width > 0, __FILE__, __LINE__);
+                        //CHECK_ASSERT(width > 0);
                         shadowMapsInvSize[i] = 1.f / width;
                     }
                     glUniform4fv(shadowMapInvSize_, 1, &shadowMapsInvSize[0]);
@@ -740,7 +736,7 @@ namespace NSG
                     if (shadowCamInvRangeLoc_[i] != -1)
                     {
                         // shadowCamInvRangeLoc_ only used for directional lights
-                        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL, __FILE__, __LINE__);
+                        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
                         auto shadowCamera = light_->GetShadowCamera(i);
                         auto v = shadowCamera->GetInvRange();
                         glUniform1f(shadowCamInvRangeLoc_[i], v);
@@ -749,7 +745,7 @@ namespace NSG
                     if (shadowCamPosLoc_[i] != -1)
                     {
                         // shadowCamPosLoc_ only used for directional lights
-                        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL, __FILE__, __LINE__);
+                        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
                         auto shadowCamera = light_->GetShadowCamera(i);
                         auto& position = shadowCamera->GetGlobalPosition();
                         glUniform3fv(shadowCamPosLoc_[i], 1, &position[0]);
@@ -838,7 +834,7 @@ namespace NSG
         activeNode_ = node_;
         activeMaterial_ = material_;
         activeLight_ = light_;
-        activeCamera_ = graphics_->GetCamera();
+        activeCamera_ = camera_;
     }
 
     void Program::SetSkeleton(const Skeleton* skeleton)
@@ -886,26 +882,45 @@ namespace NSG
         }
     }
 
-    std::string Program::GetShaderVariation(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode)
+    void Program::Set(const Camera* camera)
+    {
+        if (camera_ != camera)
+        {
+            camera_ = camera;
+            if (camera)
+                camera->SetUniformsNeedUpdate();
+        }
+    }
+
+	void Program::Set(const Scene* scene)
+	{
+		if (scene_ != scene)
+		{
+			scene_ = scene;
+			if (scene)
+				scene->SetUniformsNeedUpdate();
+		}
+	}
+
+    std::string Program::GetShaderVariation(const Pass* pass, const Scene* scene, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode)
     {
         bool allowInstancing = sceneNode == nullptr;
         #if defined(IS_TARGET_MOBILE)
-		std::string defines = "IS_TARGET_MOBILE\n";
+        std::string defines = "IS_TARGET_MOBILE\n";
         #elif defined(IS_TARGET_WEB)
-		std::string defines = "IS_TARGET_WEB\n";
+        std::string defines = "IS_TARGET_WEB\n";
         #else
-		std::string defines = "IS_TARGET_DESKTOP\n";
+        std::string defines = "IS_TARGET_DESKTOP\n";
         #endif
         auto passType = pass->GetType();
+
+        if (scene)
+            scene->FillShaderDefines(defines, passType);
+
         if (camera)
         {
-            auto scene = camera->GetScene();
-            if (scene)
-                scene->FillShaderDefines(defines, passType);
             camera->FillShaderDefines(defines, passType);
-
-			defines += "SPLITS" + ToString(camera->GetMaxShadowSplits()) + "\n";
-
+            defines += "SPLITS" + ToString(camera->GetMaxShadowSplits()) + "\n";
         }
 
         if (material)
@@ -916,6 +931,7 @@ namespace NSG
 
         if (light)
             light->FillShaderDefines(defines, passType, material);
+
 
         return defines;
     }

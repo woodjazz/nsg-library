@@ -97,7 +97,7 @@ namespace NSG
 
     void Octant::DeleteChild(unsigned index)
     {
-        CHECK_ASSERT(index < NUM_OCTANTS, __FILE__, __LINE__);
+        CHECK_ASSERT(index < NUM_OCTANTS);
         delete children_[index];
         children_[index] = nullptr;
     }
@@ -273,7 +273,7 @@ namespace NSG
         Insert(obj);
 
         // Verify that the obj will be culled correctly
-        CHECK_ASSERT((octant = obj->GetOctant()) && (octant == this || octant->GetCullingBox().IsInside(box) == Intersection::INSIDE), __FILE__, __LINE__);
+        CHECK_ASSERT((octant = obj->GetOctant()) && (octant == this || octant->GetCullingBox().IsInside(box) == Intersection::INSIDE));
 
 		if (allDrawablesSet_.end() == allDrawablesSet_.find(obj))
 		{

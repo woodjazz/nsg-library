@@ -61,7 +61,7 @@ namespace NSG
         if (!dataNode)
         {
 			ResourceFile resFile(name);
-			CHECK_CONDITION(resFile.IsReady(), __FILE__, __LINE__);
+			CHECK_CONDITION(resFile.IsReady());
             SetBuffer(resFile.GetBuffer());
         }
         else
@@ -79,7 +79,7 @@ namespace NSG
 			decoded_binary.resize(bytes);
 			base64::base64_decodestate state;
 			base64::base64_init_decodestate(&state);
-			CHECK_ASSERT(bytes < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+			CHECK_ASSERT(bytes < std::numeric_limits<int>::max());
 			auto decoded_length = base64::base64_decode_block(buffer.c_str(), (int)bytes, &decoded_binary[0], &state);
 			decoded_binary.resize(decoded_length);
 			SetBuffer(decoded_binary);
@@ -117,7 +117,7 @@ namespace NSG
         if (texture)
         {
 			Image image(shared_from_this());
-			CHECK_CONDITION(image.IsReady(), __FILE__, __LINE__);
+			CHECK_CONDITION(image.IsReady());
 			if (!image.SaveAsPNG(outputDir))
             {
                 LOGE("Cannot save file: %s in %s", name_.c_str(), outputDir.GetPath().c_str());
@@ -153,7 +153,7 @@ namespace NSG
         if (!serializable_)
             return;
 
-        CHECK_CONDITION(IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(IsReady());
 
         pugi::xml_node child = node.append_child("Resource");
 
@@ -163,7 +163,7 @@ namespace NSG
         std::string encoded_data;
         encoded_data.resize(2 * buffer_.size());
 
-		CHECK_ASSERT(buffer_.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+		CHECK_ASSERT(buffer_.size() < std::numeric_limits<int>::max());
         auto numchars = base64::base64_encode_block(&buffer_[0], (int)buffer_.size(), &encoded_data[0], &state);
         numchars += base64::base64_encode_blockend(&encoded_data[0] + numchars, &state);
         encoded_data.resize(numchars);
@@ -203,7 +203,7 @@ namespace NSG
 
 	int Resource::GetBytes() const 
 	{ 
-		CHECK_ASSERT(buffer_.size() < std::numeric_limits<int>::max(), __FILE__, __LINE__);
+		CHECK_ASSERT(buffer_.size() < std::numeric_limits<int>::max());
 		return (int)buffer_.size(); 
 	}
 }

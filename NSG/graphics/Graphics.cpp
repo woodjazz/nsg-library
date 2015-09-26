@@ -96,9 +96,7 @@ namespace NSG
           lastMesh_(nullptr),
           lastProgram_(nullptr),
           activeMesh_(nullptr),
-          activeCamera_(nullptr),
           activeWindow_(nullptr),
-		  mainCamera_(nullptr),
           has_discard_framebuffer_ext_(false),
           has_vertex_array_object_ext_(false),
           has_map_buffer_range_ext_(false),
@@ -120,7 +118,6 @@ namespace NSG
           maxFragmentUniformVectors_(0),
           maxVertexAttribs_(0),
           depthFunc_(DepthFunc::LESS),
-          viewportFactor_(0, 0, 1, 1),
           maxTextureSize_(64)
     {
 
@@ -147,11 +144,11 @@ namespace NSG
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize_);
-        CHECK_ASSERT(maxTextureSize_ >= 64, __FILE__, __LINE__);
+        CHECK_ASSERT(maxTextureSize_ >= 64);
         LOGI("GL_MAX_TEXTURE_SIZE = %d", maxTextureSize_);
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTexturesCombined_);
         LOGI("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS = %d", maxTexturesCombined_);
-        CHECK_CONDITION(maxTexturesCombined_ >= 8, __FILE__, __LINE__);
+        CHECK_CONDITION(maxTexturesCombined_ >= 8);
         textures_ = std::vector<Texture*>(maxTexturesCombined_, nullptr);
 
         #if 0
@@ -398,11 +395,9 @@ namespace NSG
         lastMesh_ = nullptr;
         lastProgram_ = nullptr;
         activeMesh_ = nullptr;
-        activeCamera_ = nullptr;
         activeWindow_ = nullptr;
-		mainCamera_ = nullptr;
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         SetClearColor(Color(0, 0, 0, 1));
         SetClearDepth(1);
@@ -412,7 +407,7 @@ namespace NSG
                        DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
         SetScissorTest();
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         SetColorMask(DEFAULT_COLOR_MASK);
         SetDepthMask(DEFAULT_DEPTH_MASK);
@@ -423,7 +418,7 @@ namespace NSG
         EnableCullFace(DEFAULT_CULL_FACE_ENABLE);
         SetCullFace(CullFaceMode::DEFAULT);
         SetFrontFace(FrontFaceMode::DEFAULT);
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         UnboundTextures();
         SetVertexArrayObj(nullptr);
@@ -431,7 +426,7 @@ namespace NSG
         SetIndexBuffer(nullptr);
         SetProgram(nullptr);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     void Graphics::UnboundTextures()
@@ -687,7 +682,7 @@ namespace NSG
                     glDepthFunc(GL_ALWAYS);
                     break;
                 default:
-                    CHECK_ASSERT(false && "Invalid depth function", __FILE__, __LINE__);
+                    CHECK_ASSERT(false && "Invalid depth function");
                     break;
             }
         }
@@ -756,7 +751,7 @@ namespace NSG
                     break;
 
                 default:
-                    CHECK_ASSERT(false && "Undefined blend mode", __FILE__, __LINE__);
+                    CHECK_ASSERT(false && "Undefined blend mode");
                     break;
             }
 
@@ -815,7 +810,7 @@ namespace NSG
                     glCullFace(GL_FRONT_AND_BACK);
                     break;
                 default:
-                    CHECK_ASSERT(!"Unknown CullFaceMode!!!", __FILE__, __LINE__);
+                    CHECK_ASSERT(!"Unknown CullFaceMode!!!");
                     break;
             }
         }
@@ -832,7 +827,7 @@ namespace NSG
 
     void Graphics::SetTexture(int index, GLuint id, GLenum target)
     {
-        CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
+        CHECK_CONDITION(index < maxTexturesCombined_);
 
         auto currentTexture = textures_[index];
         if (activeTexture_ != index)
@@ -851,7 +846,7 @@ namespace NSG
 
     void Graphics::SetTexture(int index, Texture* texture)
     {
-        CHECK_CONDITION(index < maxTexturesCombined_, __FILE__, __LINE__);
+        CHECK_CONDITION(index < maxTexturesCombined_);
 
         if (texture)
         {
@@ -967,27 +962,6 @@ namespace NSG
         return true;
     }
 
-    void Graphics::SetViewportFactor(const Vector4& viewportFactor)
-    {
-        viewportFactor_ = viewportFactor;
-        SetUpViewport();
-    }
-
-    Camera* Graphics::SetCamera(Camera* camera)
-    {
-        auto current = activeCamera_;
-        if (activeCamera_ != camera)
-        {
-            activeCamera_ = camera;
-            if (camera != nullptr)
-                viewportFactor_ = camera->GetViewportFactor();
-            else
-                viewportFactor_ = Vector4(0, 0, 1, 1);
-            SetUpViewport();
-        }
-        return current;
-    }
-
     void Graphics::SetWindow(Window* window)
     {
         if (activeWindow_ != window)
@@ -995,6 +969,7 @@ namespace NSG
             activeWindow_ = window;
             if (window)
             {
+				window->SetContext();
                 SetUpViewport();
                 Graphics::SigWindow()->Run(window);
             }
@@ -1017,7 +992,7 @@ namespace NSG
             height = activeWindow_->GetHeight();
         }
 
-        SetViewport(Recti(width * viewportFactor_.x, height * viewportFactor_.y, width * viewportFactor_.z, height * viewportFactor_.w), false);
+        SetViewport(Recti(0, 0, width, height), false);
     }
 
     void Graphics::DiscardFramebuffer()
@@ -1054,9 +1029,9 @@ namespace NSG
         if (!HasInstancedArrays())
             return;
 
-        CHECK_ASSERT(program->GetMaterial()->IsBatched(), __FILE__, __LINE__);
+        CHECK_ASSERT(program->GetMaterial()->IsBatched());
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         SetVertexBuffer(program->GetMaterial()->GetInstanceBuffer().get());
 
@@ -1107,7 +1082,7 @@ namespace NSG
             glDisableVertexAttribArray((int)AttributesLoc::NORMAL_MATRIX_COL2);
         }
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     void Graphics::SetVertexAttrPointers()
@@ -1309,7 +1284,7 @@ namespace NSG
 
     void Graphics::SetupPass(const Pass* pass)
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         auto& data = pass->GetData();
 
@@ -1341,11 +1316,11 @@ namespace NSG
         else
             EnableCullFace(false);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
     }
 
-    bool Graphics::SetupProgram(const Pass* pass, SceneNode* sceneNode, Material* material, const Light* light)
+    bool Graphics::SetupProgram(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* sceneNode, Material* material, const Light* light)
     {
         SetupPass(pass);
 
@@ -1361,18 +1336,20 @@ namespace NSG
                 EnableCullFace(false);
         }
 
-        auto shaderdefines = Program::GetShaderVariation(pass, activeCamera_, activeMesh_, material, light, sceneNode);
+		auto shaderdefines = Program::GetShaderVariation(pass, scene, camera, activeMesh_, material, light, sceneNode);
         auto program = Program::GetOrCreate(shaderdefines);
         program->Set(sceneNode);
         program->Set(material);
         program->Set(light);
+		program->Set(camera);
+		program->Set(scene);
         bool ready = SetProgram(program.get());
         if (ready)
         {
             auto shadowPass = PassType::SHADOW == pass->GetType();
             program->SetVariables(shadowPass);
         }
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         return ready;
     }
 
@@ -1395,11 +1372,11 @@ namespace NSG
         if (!activeMesh_->IsReady())
             return;
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         bool solid = activeProgram_->GetMaterial()->GetFillMode() == FillMode::SOLID;
         SetBuffers(solid, false);
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         const VertexsData& vertexsData = activeMesh_->GetVertexsData();
         const Indexes& indexes = activeMesh_->GetIndexes(solid);
@@ -1414,17 +1391,17 @@ namespace NSG
         lastMesh_ = activeMesh_;
         lastProgram_ = activeProgram_;
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     void Graphics::DrawInstancedActiveMesh(const Batch& batch)
     {
-        CHECK_ASSERT(has_instanced_arrays_ext_, __FILE__, __LINE__);
+        CHECK_ASSERT(has_instanced_arrays_ext_);
 
         if (!activeMesh_->IsReady())
             return;
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         bool solid = activeProgram_->GetMaterial()->GetFillMode() == FillMode::SOLID;
         activeProgram_->GetMaterial()->UpdateBatchBuffer(batch);
@@ -1445,7 +1422,7 @@ namespace NSG
         lastMesh_ = activeMesh_;
         lastProgram_ = activeProgram_;
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
 
@@ -1477,7 +1454,7 @@ namespace NSG
             case TextureFormat::RGBA:
                 return false;
             default:
-                CHECK_CONDITION(!"Unknown texture format!!!", __FILE__, __LINE__);
+                CHECK_CONDITION(!"Unknown texture format!!!");
                 break;
         }
         return false;

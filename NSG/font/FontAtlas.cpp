@@ -16,12 +16,13 @@
 
 namespace NSG
 {
-	template<> std::map<std::string, PWeakTextMesh> WeakFactory<std::string, TextMesh>::objsMap_;
+    template<> std::map<std::string, PWeakTextMesh> WeakFactory<std::string, TextMesh>::objsMap_;
 
     FontAtlas::FontAtlas(const std::string& name)
         : Object(name),
           viewWidth_(0),
           viewHeight_(0),
+          height_(0),
           graphics_(Graphics::GetPtr())
     {
         auto window = graphics_->GetWindow();
@@ -35,21 +36,21 @@ namespace NSG
 
     void FontAtlas::Set(PResourceFile xmlResource)
     {
-        if(xmlResource_ != xmlResource)
+        if (xmlResource_ != xmlResource)
         {
             xmlResource_ = xmlResource;
             Invalidate();
         }
     }
 
-	void FontAtlas::SetTexture(PTexture texture)
-	{
-		if (texture_ != texture)
-		{
-			texture_ = texture;
-			Invalidate();
-		}
-	}
+    void FontAtlas::SetTexture(PTexture texture)
+    {
+        if (texture_ != texture)
+        {
+            texture_ = texture;
+            Invalidate();
+        }
+    }
 
     void FontAtlas::SetWindow(Window* window)
     {
@@ -57,7 +58,7 @@ namespace NSG
         {
             SetViewSize(window->GetWidth(), window->GetHeight());
 
-			slotViewChanged_ = window->SigSizeChanged()->Connect([&](int width, int height)
+            slotViewChanged_ = window->SigSizeChanged()->Connect([&](int width, int height)
             {
                 SetViewSize(width, height);
             });
@@ -71,7 +72,7 @@ namespace NSG
 
     PTextMesh FontAtlas::GetOrCreateMesh(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
     {
-		auto mesh = FontAtlas::GetOrCreateClass<TextMesh>(text);
+        auto mesh = FontAtlas::GetOrCreateClass<TextMesh>(text);
         mesh->SetAtlas(shared_from_this());
         mesh->SetText(text, hAlign, vAlign);
         return mesh;
@@ -79,8 +80,8 @@ namespace NSG
 
     bool FontAtlas::IsValid()
     {
-		return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_->IsReady() && 
-			texture_ && texture_->IsReady();
+        return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_->IsReady() &&
+               texture_ && texture_->IsReady();
     }
 
     void FontAtlas::AllocateResources()
@@ -99,7 +100,7 @@ namespace NSG
         {
             viewWidth_ = width;
             viewHeight_ = height;
-			auto objs = FontAtlas::GetObjs();
+            auto objs = FontAtlas::GetObjs();
             for (auto& obj : objs)
                 obj->Invalidate();
         }
@@ -107,14 +108,14 @@ namespace NSG
 
     void FontAtlas::ParseXML()
     {
-		LOGI("FontAtlas::Parsing: %s", xmlResource_->GetName().c_str());
+        LOGI("FontAtlas::Parsing: %s", xmlResource_->GetName().c_str());
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_buffer((void*)xmlResource_->GetData(), xmlResource_->GetBytes());
         if (!result)
         {
-			LOGE("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
-			LOGE("Error description: %s", result.description());
-			LOGE("Error offset: %d", result.offset);
+            LOGE("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
+            LOGE("Error description: %s", result.description());
+            LOGE("Error offset: %d", result.offset);
         }
         else
         {
@@ -128,12 +129,12 @@ namespace NSG
 
                 {
                     std::string s = node.attribute("offset").value();
-					std::sscanf(s.c_str(), "%f %f", &charInfo.offset.x, &charInfo.offset.y);
+                    std::sscanf(s.c_str(), "%f %f", &charInfo.offset.x, &charInfo.offset.y);
                 }
 
                 {
                     std::string s = node.attribute("rect").value();
-					std::sscanf(s.c_str(), "%f %f %f %f", &charInfo.rect.x, &charInfo.rect.y, &charInfo.rect.z, &charInfo.rect.w);
+                    std::sscanf(s.c_str(), "%f %f %f %f", &charInfo.rect.x, &charInfo.rect.y, &charInfo.rect.z, &charInfo.rect.w);
                 }
 
                 const char* code = node.attribute("code").value();
@@ -143,7 +144,7 @@ namespace NSG
                 node = node.next_sibling("Char");
             }
 
-			LOGI("FontAtlas::Parsing done.");
+            LOGI("FontAtlas::Parsing done.");
         }
     }
 
@@ -153,7 +154,7 @@ namespace NSG
         indexes.clear();
         screenWidth = screenHeight = 0;
 
-        CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0, __FILE__, __LINE__);
+        CHECK_ASSERT(viewWidth_ > 0 && viewHeight_ > 0);
 
         float sx = 2.0f / viewWidth_;
         float sy = 2.0f / viewHeight_;

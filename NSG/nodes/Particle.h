@@ -34,7 +34,6 @@ namespace NSG
     public:
         Particle(const std::string& name);
         ~Particle();
-        void SetParticleSystem(const ParticleSystem* particleSystem);
         void Update(float deltaTime);
         float GetAge() const { return age_; }
         void Enable();
@@ -42,7 +41,6 @@ namespace NSG
         void SetVelocity(const Vector3& v);
     private:
         void Reset();
-        const ParticleSystem* particleSystem_;
         float age_;
     };
 }

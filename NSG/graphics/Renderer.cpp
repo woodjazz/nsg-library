@@ -39,7 +39,6 @@ misrepresented as being the original software.
 #include "Window.h"
 #include "PhysicsWorld.h"
 #include "LinesMesh.h"
-#include "GUI.h"
 #include "Check.h"
 #include "DebugRenderer.h"
 
@@ -47,7 +46,6 @@ namespace NSG
 {
     Renderer::Renderer()
         : graphics_(Graphics::GetPtr()),
-          window_(nullptr),
           scene_(nullptr),
           camera_(nullptr),
           shadowPass_(std::make_shared<Pass>()),
@@ -116,7 +114,7 @@ namespace NSG
 
     void Renderer::GetLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
     {
-        CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
+        CHECK_ASSERT(result.empty());
 
         for (auto& node : nodes)
         {
@@ -227,17 +225,17 @@ namespace NSG
         }
     }
 
-    void Renderer::DrawShadowPass(Batch* batch, const Light* light)
+    void Renderer::DrawShadowPass(Batch* batch, const Light* light, const ShadowCamera* camera)
     {
-        Draw(batch, shadowPass_.get(), light);
+        Draw(batch, shadowPass_.get(), light, camera);
     }
 
-    void Renderer::Draw(Batch* batch, const Pass* pass, const Light* light)
+    void Renderer::Draw(Batch* batch, const Pass* pass, const Light* light, const Camera* camera)
     {
         graphics_->SetMesh(batch->GetMesh());
         if (batch->AllowInstancing())
         {
-			if (graphics_->SetupProgram(pass, nullptr, batch->GetMaterial(), light))
+            if (graphics_->SetupProgram(pass, scene_, camera, nullptr, batch->GetMaterial(), light))
                 graphics_->DrawInstancedActiveMesh(*batch);
         }
         else
@@ -245,7 +243,7 @@ namespace NSG
             auto& nodes = batch->GetNodes();
             for (auto& node : nodes)
             {
-				if (graphics_->SetupProgram(pass, node, batch->GetMaterial(), light))
+                if (graphics_->SetupProgram(pass, scene_, camera, node, batch->GetMaterial(), light))
                     graphics_->DrawActiveMesh();
             }
         }
@@ -264,7 +262,7 @@ namespace NSG
         std::vector<PBatch> batches;
         GenerateBatches(visibles_, batches);
         for (auto& batch : batches)
-            Draw(batch.get(), defaultOpaquePass_.get(), nullptr);
+            Draw(batch.get(), defaultOpaquePass_.get(), nullptr, camera_);
     }
 
     void Renderer::LitOpaquePass()
@@ -279,7 +277,7 @@ namespace NSG
             std::vector<PBatch> batches;
             GenerateBatches(litNodes, batches);
             for (auto& batch : batches)
-                Draw(batch.get(), litOpaquePass_.get(), light);
+                Draw(batch.get(), litOpaquePass_.get(), light, camera_);
         }
     }
 
@@ -293,7 +291,7 @@ namespace NSG
             if (material)
             {
                 graphics_->SetMesh(sceneNode->GetMesh().get());
-				if (graphics_->SetupProgram(defaultTransparentPass_.get(), sceneNode, material, nullptr))
+                if (graphics_->SetupProgram(defaultTransparentPass_.get(), scene_, camera_, sceneNode, material, nullptr))
                     graphics_->DrawActiveMesh();
             }
         }
@@ -316,7 +314,7 @@ namespace NSG
                 if (material)
                 {
                     graphics_->SetMesh(sceneNode->GetMesh().get());
-					if (graphics_->SetupProgram(litTransparentPass_.get(), sceneNode, material, light))
+                    if (graphics_->SetupProgram(litTransparentPass_.get(), scene_, camera_, sceneNode, material, light))
                         graphics_->DrawActiveMesh();
                 }
             }
@@ -334,7 +332,7 @@ namespace NSG
             if (!meshLines->IsEmpty())
             {
                 graphics_->SetMesh(meshLines.get());
-				if (graphics_->SetupProgram(debugPass_.get(), nullptr, debugMaterial_.get(), nullptr))
+                if (graphics_->SetupProgram(debugPass_.get(), scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
                     graphics_->DrawActiveMesh();
                 debugRenderer->Clear();
             }
@@ -348,60 +346,69 @@ namespace NSG
         if (!meshLines->IsEmpty())
         {
             graphics_->SetMesh(meshLines.get());
-            if (graphics_->SetupProgram(debugPass_.get(), nullptr, debugMaterial_.get(), nullptr))
+            if (graphics_->SetupProgram(debugPass_.get(), scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
                 graphics_->DrawActiveMesh();
             debugRenderer_->Clear();
         }
     }
 
-    void Renderer::Render(Window* window, Scene* scene)
+    void Renderer::Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light)
     {
-        window_ = window;
+        graphics_->SetMesh(node->GetMesh().get());
+		if (graphics_->SetupProgram(pass, scene, camera, node, node->GetMaterial().get(), light))
+            graphics_->DrawActiveMesh();
+    }
+
+	void Renderer::Render(Window* window, Scene* scene)
+	{
+		Render(window, scene, scene->GetMainCamera().get());
+	}
+
+	void Renderer::Render(Window* window, Scene* scene, Camera* camera)
+    {
         scene_ = scene;
+		camera_ = camera;
         graphics_->SetWindow(window);
         graphics_->ClearAllBuffers();
-		if (!scene || scene->GetDrawablesNumber() == 0)
-		{
-			GUI::GetPtr()->Render(window);
-			return;
-		}
-        camera_ = scene->GetMainCamera().get();
-        graphics_->SetCamera(camera_);
-		graphics_->SetMainCamera(camera_);
-        scene->GetVisibleNodes(camera_, visibles_);
-        if (!visibles_.empty())
+        if (scene && scene->GetDrawablesNumber())
         {
-            graphics_->SetClearColor(Color(1));
-            ShadowGenerationPass();
-            graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1));
-            ExtractTransparent();
+            if (camera_)
+                scene->GetVisibleNodes(camera_, visibles_);
+            else
+                visibles_ = scene->GetDrawables();
             if (!visibles_.empty())
             {
-                SortSolidFrontToBack();
-                DefaultOpaquePass();
-                LitOpaquePass();
+                graphics_->SetClearColor(Color(1));
+                ShadowGenerationPass();
+                graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1));
+                ExtractTransparent();
+                if (!visibles_.empty())
+                {
+                    SortSolidFrontToBack();
+                    DefaultOpaquePass();
+                    LitOpaquePass();
+                }
+                if (!transparent_.empty())
+                {
+                    SortTransparentBackToFront();
+                    DefaultTransparentPass();
+                    LitTransparentPass();
+                }
+
+                if (window)
+                    window->RenderFilters();
+
+                if (debugPhysics_)
+                    DebugPhysicsPass();
+
+                DebugRendererPass();
+
+                for (auto& obj : visibles_)
+                    obj->ClearUniform();
+
+                for (auto& obj : transparent_)
+                    obj->ClearUniform();
             }
-            if (!transparent_.empty())
-            {
-                SortTransparentBackToFront();
-                DefaultTransparentPass();
-                LitTransparentPass();
-            }
-
-            window->RenderFilters();
-
-            if(debugPhysics_)
-            	DebugPhysicsPass();
-
-            DebugRendererPass();
-            
-            for(auto& obj: visibles_)
-                obj->ClearUniform();
-            
-            for(auto& obj: transparent_)
-                obj->ClearUniform();
-
-            GUI::GetPtr()->Render(window);
         }
     }
 

@@ -65,6 +65,8 @@ namespace NSG
 	float Length2(const Vector3& value);
 	float Radians(float degrees);
 	float Degrees(float radians);
+	Vector3 Radians(const Vector3& degrees);
+	Vector3 Degrees(const Vector3& radians);
 	float Angle(const Vector3& a, const Vector3& b);
 	Vector3 Normalize(const Vector3& value);
 	Quaternion Normalize(const Quaternion& value);

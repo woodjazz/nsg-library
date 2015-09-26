@@ -54,11 +54,12 @@ namespace NSG
         bool IsPlaying(const std::string& name) const;
         void SetSpeed(const std::string& name, float speed);
     private:
+		typedef std::map<std::string, PAnimationControl> Animations;
+		Animations::iterator Remove(AnimationController::Animations::iterator it, PAnimationControl control);
         void FadeOthers(const std::string& name, float targetWeight, float fadeTime);
         void Update(float deltaTime);
         PAnimationControl GetAnimationControl(const std::string& name);
         PAnimationState GetAnimationState(PAnimation animation);
-        typedef std::map<std::string, PAnimationControl> Animations;
         Animations animations_;
         typedef std::vector<PAnimationState> AnimationStates;
         AnimationStates animationStates_;

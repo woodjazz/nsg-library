@@ -57,12 +57,14 @@ namespace NSG
         void Set(SceneNode* node);
         void Set(Material* material);
         void Set(const Light* light);
+        void Set(const Camera* camera);
+		void Set(const Scene* scene);
         void SetVariables(bool shadowPass);
         GLuint GetId() const { return id_; }
         Material* GetMaterial() const { return material_; }
         const std::string& GetName() const { return name_; }
         void SetNodeVariables();
-		static std::string GetShaderVariation(const Pass* pass, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode);
+		static std::string GetShaderVariation(const Pass* pass, const Scene* scene, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode);
     private:
         Matrix4 AdjustProjection(const Matrix4& m) const;
         bool IsValid() override;
@@ -114,7 +116,6 @@ namespace NSG
         std::vector<GLuint> bonesBaseLoc_;
         GLuint modelLoc_;
         GLuint normalMatrixLoc_;
-        GLuint cameraViewLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
         GLuint shadowCamInvRangeLoc_[MAX_SPLITS];
@@ -144,6 +145,7 @@ namespace NSG
             GLuint specularIntensity_;
             GLuint ambientIntensity_;
             GLuint shininess_;
+            GLuint emitIntensity_;
         };
 
         MaterialLoc materialLoc_;
@@ -187,6 +189,8 @@ namespace NSG
         SceneNode* node_;
         Material* material_;
         const Light* light_;
+		const Camera* camera_;
+		const Scene* scene_;
         PGraphics graphics_;
     };
 }

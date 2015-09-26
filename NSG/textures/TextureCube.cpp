@@ -46,7 +46,7 @@ namespace NSG
 
     void TextureCube::Define()
     {
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS();
 
 		for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++)
 		{
@@ -60,10 +60,10 @@ namespace NSG
 				type_,
 				nullptr);
 
-			CHECK_GL_STATUS(__FILE__, __LINE__);
+			CHECK_GL_STATUS();
 		}
 
-		CHECK_GL_STATUS(__FILE__, __LINE__);
+		CHECK_GL_STATUS();
     }
 
 }

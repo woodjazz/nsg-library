@@ -73,7 +73,7 @@ namespace NSG
                 type_ = GL_UNSIGNED_INT;
                 break;
             default:
-                CHECK_ASSERT(false && "Unknown format!", __FILE__, __LINE__);
+                CHECK_ASSERT(false && "Unknown format!");
                 break;
         }
     }
@@ -129,6 +129,15 @@ namespace NSG
         return serializable_;
     }
 
+    void Texture::FlipY()
+    {
+		if (flags_ & (int)TextureFlag::INVERT_Y)
+			flags_ &= ~(int)TextureFlag::INVERT_Y;
+		else
+            flags_ |= (int)TextureFlag::INVERT_Y;
+		Invalidate();
+    }
+
     bool Texture::IsValid()
     {
         if (image_)
@@ -139,7 +148,7 @@ namespace NSG
 
     void Texture::AllocateResources()
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         glGenTextures(1, &texture_);
 		Graphics::GetPtr()->SetTexture(0, this);
 
@@ -163,8 +172,8 @@ namespace NSG
             width_ = height_ = value;
         }
 
-		CHECK_ASSERT(Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_), __FILE__, __LINE__);
-		CHECK_ASSERT(Graphics::GetPtr()->GetMaxTextureSize() >= width_ && Graphics::GetPtr()->GetMaxTextureSize() >= height_, __FILE__, __LINE__);
+		CHECK_ASSERT(Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_));
+		CHECK_ASSERT(Graphics::GetPtr()->GetMaxTextureSize() >= width_ && Graphics::GetPtr()->GetMaxTextureSize() >= height_);
 
         switch (wrapMode_)
         {
@@ -181,7 +190,7 @@ namespace NSG
                 glTexParameteri(GetTarget(), GL_TEXTURE_WRAP_T, GL_REPEAT);
                 break;
             default:
-                CHECK_ASSERT(false, __FILE__, __LINE__);
+                CHECK_ASSERT(false);
                 break;
         }
 
@@ -230,14 +239,14 @@ namespace NSG
                     break;
                 }
             default:
-                CHECK_ASSERT(false, __FILE__, __LINE__);
+                CHECK_ASSERT(false);
                 break;
         }
 
         if (image_)
             image_->Invalidate(); // free mem
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     void Texture::ReleaseResources()
@@ -277,8 +286,8 @@ namespace NSG
 
     void Texture::SetSize(GLsizei width, GLsizei height)
     {
-        CHECK_ASSERT(!image_ && "SetSize only can be applied for non images!!!", __FILE__, __LINE__);
-        CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
+        CHECK_ASSERT(!image_ && "SetSize only can be applied for non images!!!");
+        CHECK_ASSERT(width >= 0 && height >= 0);
 
         auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
         width = Clamp(width, 0, maxSize);

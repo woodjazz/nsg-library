@@ -109,6 +109,7 @@ namespace NSG
         void RenderFilters();
         virtual void SetupImgui() = 0;
         virtual void BeginImguiRender() = 0;
+		virtual void SetContext() = 0;
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);

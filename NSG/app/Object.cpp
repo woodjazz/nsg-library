@@ -91,7 +91,7 @@ namespace NSG
 
             if (isValid_)
             {
-                CHECK_ASSERT(!resourcesAllocated_, __FILE__, __LINE__);
+                CHECK_ASSERT(!resourcesAllocated_);
                 AllocateResources();
                 resourcesAllocated_ = true;
                 LOGI("Allocated resources for %s.", GetNameType().c_str());

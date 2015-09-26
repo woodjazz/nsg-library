@@ -38,22 +38,24 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    CameraControl::CameraControl(PCamera camera)
+    CameraControl::CameraControl(PCamera camera, PScene scene)
         : camera_(camera),
+          scene_(scene),
           window_(nullptr),
           originalPosition_(camera->GetGlobalPosition()),
           originalOrientation_(camera->GetGlobalOrientation()),
           enableDebugPhysics_(false),
-          enableColorSplits_(false)
+          enableColorSplits_(false),
+          enabled_(true)
     {
-        CHECK_ASSERT(camera_, __FILE__, __LINE__);
+        CHECK_ASSERT(camera_);
+        CHECK_ASSERT(scene_);
         lastX_ = lastY_ = 0;
         pointOnSphere_ = PPointOnSphere(new PointOnSphere(Vertex3(0), camera_->GetGlobalPosition()));
         updateOrientation_ = false;
         leftButtonDown_ = false;
         altKeyDown_ = false;
         shiftKeyDown_ = false;
-        //SetSphereCenter(true);
 
         auto graphics = Graphics::GetPtr();
         if (graphics)
@@ -70,6 +72,12 @@ namespace NSG
             OnUpdate(deltaTime);
         });
     }
+
+	CameraControl::CameraControl(PCamera camera)
+		: CameraControl(camera, camera->GetScene())
+	{
+
+	}
 
     CameraControl::~CameraControl()
     {
@@ -128,6 +136,9 @@ namespace NSG
 
     void CameraControl::OnMousemoved(float x, float y)
     {
+        if (!enabled_)
+            return;
+
         if (leftButtonDown_ && !updateOrientation_)
             Move(x, y);
         lastX_ = x;
@@ -136,25 +147,34 @@ namespace NSG
 
     void CameraControl::OnMouseDown(int button, float x, float y)
     {
+        if (!enabled_)
+            return;
+
         lastX_ = x;
         lastY_ = y;
 
         if (button == NSG_BUTTON_LEFT)
         {
-            if(altKeyDown_)
-                SetSphereCenter(false);
+            if (altKeyDown_)
+                RayCastNewCenter(false);
             leftButtonDown_ = true;
         }
     }
 
     void CameraControl::OnMouseUp(int button, float x, float y)
     {
+        if (!enabled_)
+            return;
+
         if (button == NSG_BUTTON_LEFT)
             leftButtonDown_ = false;
     }
 
     void CameraControl::OnMousewheel(float x, float y)
     {
+        if (!enabled_)
+            return;
+
         Vertex3 lookAtPoint = pointOnSphere_->GetCenter();
         Vertex3 position = camera_->GetGlobalPosition();
         Vector3 looAtDir = camera_->GetLookAtDirection();
@@ -169,6 +189,9 @@ namespace NSG
 
     void CameraControl::OnUpdate(float deltaTime)
     {
+        if (!enabled_)
+            return;
+
         if (trackNode_ && pointOnSphere_->SetCenter(trackNode_->GetGlobalPosition()))
             updateOrientation_ = true;
 
@@ -194,6 +217,9 @@ namespace NSG
 
     void CameraControl::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
     {
+        if (!enabled_)
+            return;
+
         if (numFingers == 2)
         {
             float factor = dDist * timestamp / 10.0f;
@@ -215,6 +241,9 @@ namespace NSG
 
     void CameraControl::OnKey(int key, int action, int modifier)
     {
+        if (!enabled_)
+            return;
+
         switch (key)
         {
             case NSG_KEY_G:
@@ -260,13 +289,13 @@ namespace NSG
 
             case NSG_KEY_F:
                 if (action)
-                    SetSphereCenter(false);
+                    RayCastNewCenter(false);
                 break;
 
 
             case NSG_KEY_C:
                 if (action)
-                    SetSphereCenter(true);
+                    RayCastNewCenter(true);
                 break;
 
             case NSG_KEY_R:
@@ -298,6 +327,9 @@ namespace NSG
 
     void CameraControl::Move(float x, float y)
     {
+        if (!enabled_)
+            return;
+
         float relX = (x - lastX_);
         float relY = (y - lastY_);
         if (altKeyDown_ && shiftKeyDown_)
@@ -330,7 +362,7 @@ namespace NSG
         {
             Vertex3 oldPos = camera_->GetGlobalPosition();
             camera_->SetGlobalPosition(position);
-            BoundingBox bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_.get());
+            BoundingBox bb = scene_->GetWorldBoundingBoxBut(camera_.get());
             if (camera_->GetFrustum()->IsInside(bb) == Intersection::OUTSIDE)
             {
                 pointOnSphere_->SetPoint(oldPos);
@@ -344,12 +376,21 @@ namespace NSG
         trackNode_ = node;
     }
 
-    void CameraControl::SetSphereCenter(bool centerObj)
+    PSceneNode CameraControl::SelectObject()
+    {
+        Ray ray = camera_->GetScreenRay(lastX_, lastY_);
+        RayNodeResult closest;
+        if (scene_->GetClosestRayNodeIntersection(ray, closest))
+            return std::dynamic_pointer_cast<SceneNode>(closest.node_->shared_from_this());
+        return nullptr;
+    }
+
+    void CameraControl::RayCastNewCenter(bool centerObj)
     {
         Vertex3 newCenter;
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
-        if (camera_->GetScene()->GetClosestRayNodeIntersection(ray, closest))
+		if (scene_->GetClosestRayNodeIntersection(ray, closest))
         {
             LOGI("CamCenter in %s", closest.node_->GetName().c_str());
             if (centerObj)
@@ -360,23 +401,15 @@ namespace NSG
             {
                 newCenter = ray.GetPoint(closest.distance_);
             }
-        }
-        else
-        {
-            BoundingBox bb;
-            if (!camera_->GetScene()->GetVisibleBoundingBox(camera_.get(), bb))
-                bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_.get());
-            newCenter = ray.GetPoint(Distance(bb.Center(), camera_->GetGlobalPosition()));
-            //newCenter = bb.Center();
-        }
 
-        if (pointOnSphere_->SetCenter(newCenter))
-            updateOrientation_ = true;
+            if (pointOnSphere_->SetCenter(newCenter))
+                updateOrientation_ = true;
+        }
     }
 
     void CameraControl::AutoZoom()
     {
-        BoundingBox bb = camera_->GetScene()->GetWorldBoundingBoxBut(camera_.get());
+		BoundingBox bb = scene_->GetWorldBoundingBoxBut(camera_.get());
         Vertex3 center = bb.Center();
         float distance = std::max(std::max(bb.Size().x, bb.Size().y), bb.Size().z);
         if (distance < camera_->GetZNear())
@@ -392,5 +425,10 @@ namespace NSG
 
         if (pointOnSphere_->SetCenterAndPoint(center, position))
             camera_->SetGlobalPosition(position);
+    }
+
+    void CameraControl::Enable(bool enable)
+    {
+        enabled_ = enable;
     }
 }

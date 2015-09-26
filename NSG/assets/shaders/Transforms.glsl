@@ -3,8 +3,8 @@
 #ifdef COMPILEVS
 	// Vertex shader specific
 	attribute vec3 a_position;
-	attribute vec2 a_texcoord0;
-	attribute vec2 a_texcoord1;
+	attribute vec2 a_texcoord0; //uses uv0 (See Texture::GetUVName())
+	attribute vec2 a_texcoord1; //uses uv1 (See Texture::GetUVName())
 	attribute vec3 a_normal;
 	attribute vec4 a_color;
 	attribute vec3 a_tangent;
@@ -179,7 +179,7 @@
 	    int GetSplit()
 	    {
 			#if MAX_SPLITS > 1
-		        vec4 viewPos = u_cameraView * vec4(v_worldPos, 1.0);
+		        vec4 viewPos = u_view * vec4(v_worldPos, 1.0);
 		        if(-viewPos.z < u_shadowCameraZFar[0])
 		            return 0;
 		        else if(-viewPos.z < u_shadowCameraZFar[1])
@@ -207,7 +207,7 @@
 		        if(clamp(coords.xyz, 0.0, 1.0).xy != coords.xy && GetSplit() < 3)
 		        {
 		        	// coord is outside split => pick next one
-		        	vec4 viewPos = u_cameraView * vec4(v_worldPos, 1.0);
+		        	vec4 viewPos = u_view * vec4(v_worldPos, 1.0);
 		        	if(-viewPos.z < u_shadowCameraZFar[GetSplit() + 1])
 		            	return GetSplit() + 1;	        	
 		        }

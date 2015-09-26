@@ -46,7 +46,7 @@ namespace NSG
 		mesh_(mesh),
 		allowInstancing_(true)
 	{
-		CHECK_ASSERT(material_ && mesh_, __FILE__, __LINE__);
+		CHECK_ASSERT(material_ && mesh_);
 	}
 
 	Batch::~Batch()

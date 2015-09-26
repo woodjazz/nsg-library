@@ -8,7 +8,7 @@ static const char* VS_GLSL = \
 "	// to avoid variation and z-fighting issues.\n"\
 "	// For example do not use:\n"\
 "	//		gl_Position = GetClipPos(); for AMBIENT pass\n"\
-"	//		gl_Position = GetClipPos(worldPos); for PER_PIXEL_LIGHTING pass\n"\
+"	//		gl_Position = GetClipPos(worldPos); for LIT pass\n"\
 "	// since it can produce different results and cause z-fighting between passes\n"\
 "	void main()\n"\
 "	{\n"\
@@ -34,16 +34,7 @@ static const char* VS_GLSL = \
 "		#elif defined(SHADOW_POINT_PASS) || defined(SHADOW_DIR_PASS) || defined(SHADOW_SPOT_PASS)\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_worldPos = GetWorldPos().xyz;\n"\
-"		#elif defined(PER_VERTEX_LIGHTING)\n"\
-"			v_worldPos = GetWorldPos().xyz;\n"\
-"		    vec3 normal = GetWorldNormal();\n"\
-"		    vec3 vertexToEye = normalize(u_eyeWorldPos - v_worldPos);\n"\
-"		    vec3 world2light = worldPos - u_lightPosition;\n"\
-"		    vec4 totalLight = vec4(1.0);//CalcTotalLight(world2light, vertexToEye, normal);\n"\
-"		    v_color = totalLight;\n"\
-"			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);\n"\
-"			gl_Position = GetClipPos();\n"\
-"		#elif defined(PER_PIXEL_LIGHTING)\n"\
+"		#elif defined(LIT)\n"\
 "			//Lighting is calculated in world space\n"\
 "			v_worldPos = GetWorldPos().xyz;\n"\
 "			v_vertexToEye = normalize(u_eyeWorldPos - v_worldPos);\n"\

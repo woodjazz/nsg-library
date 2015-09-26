@@ -38,9 +38,9 @@ namespace NSG
 		void SetFont(PTexture texture);
 		void Show();
 	private:
-        PMaterial material_;
-		PMesh mesh_;
+		PScene scene_;
+		PMaterial material_;
 		PSceneNode node_;
-		PGraphics graphics_;
+		PMesh mesh_;
 	};
 }

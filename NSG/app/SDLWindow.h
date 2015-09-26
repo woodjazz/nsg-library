@@ -44,6 +44,7 @@ namespace NSG
 		void EnterForeground() override;
 		void RestoreContext();
     private:
+		void SetContext() override;
         void Show() override;
         void Hide() override;
         void Raise() override;

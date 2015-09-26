@@ -39,6 +39,7 @@ namespace NSG
     FollowCamera::FollowCamera(PCamera camera)
         : camera_(camera),
           track_(nullptr),
+          distance_(1),
           angle_(Radians(45.f)),
           world_(camera_->GetScene()->GetPhysicsWorld())
     {

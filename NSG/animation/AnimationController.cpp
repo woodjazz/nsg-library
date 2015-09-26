@@ -58,7 +58,7 @@ namespace NSG
         if (it == animations_.end())
         {
             auto animation = Animation::Get(name);
-            CHECK_CONDITION(animation->IsReady(), __FILE__, __LINE__);
+            CHECK_CONDITION(animation->IsReady());
             auto clone = animation->Clone();
             auto sceneNode = sceneNode_.lock();
             clone->ResolveFor(sceneNode);
@@ -87,11 +87,13 @@ namespace NSG
     {
         auto control = GetAnimationControl(name);
         control->fadeTime_ = fadeInTime;
+		control->targetWeight_ = 1;
         auto animationState = GetAnimationState(control->animation_);
         if (!animationState)
         {
             animationState = std::make_shared<AnimationState>(control->animation_);
             animationStates_.push_back(animationState);
+
         }
         animationState->SetLooped(looped);
     }
@@ -144,24 +146,24 @@ namespace NSG
         }
     }
 
+	AnimationController::Animations::iterator AnimationController::Remove(AnimationController::Animations::iterator it, PAnimationControl control)
+    {
+        animationStates_.erase(std::remove_if(animationStates_.begin(), animationStates_.end(),
+        [&](PAnimationState obj) { return control->animation_ == obj->GetAnimation(); }),
+        animationStates_.end());
+        return animations_.erase(it);
+    };
+
     void AnimationController::Update(float deltaTime)
     {
         auto it = animations_.begin();
         while (it != animations_.end())
         {
             auto control = it->second;
-            static auto Remove = [&]()
-            {
-                animationStates_.erase(std::remove_if(animationStates_.begin(), animationStates_.end(),
-                [&](PAnimationState obj) { return control->animation_ == obj->GetAnimation(); }),
-                animationStates_.end());
-                it = animations_.erase(it);
-            };
-
             auto state = GetAnimationState(control->animation_);
             if (!state)
             {
-                Remove();
+                it = Remove(it , control);
                 continue;
             }
             else
@@ -188,7 +190,7 @@ namespace NSG
 
                 if (state->GetWeight() == 0 && (targetWeight == 0 || fadeTime == 0))
                 {
-                    Remove();
+                    it = Remove(it, control);
                     continue;
                 }
             }

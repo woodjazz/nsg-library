@@ -39,11 +39,6 @@ namespace NSG
     {
     }
 
-    void Particle::SetParticleSystem(const ParticleSystem* particleSystem)
-    {
-        particleSystem_ = particleSystem;
-    }
-
     void Particle::Update(float deltaTime)
     {
         age_ += deltaTime;
@@ -66,7 +61,7 @@ namespace NSG
 
     void Particle::Enable()
     {
-        Hide(true, false);
+        Hide(false, false);
         auto rb = GetRigidBody();
         rb->SyncWithNode();
         rb->AddToWorld();
@@ -75,7 +70,7 @@ namespace NSG
     void Particle::Disable()
     {
         Reset();
-        Hide(false, false);
+        Hide(true, false);
         auto rb = GetRigidBody();
         rb->RemoveFromWorld();
     }

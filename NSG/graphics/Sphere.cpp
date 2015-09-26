@@ -39,7 +39,7 @@ namespace NSG
     Sphere::Sphere(const SceneNode& sceneNode)
     {
         auto mesh = sceneNode.GetMesh();
-        CHECK_ASSERT(mesh && mesh->IsReady(), __FILE__, __LINE__);
+        CHECK_ASSERT(mesh && mesh->IsReady());
         center_ = sceneNode.GetGlobalPosition();
         radius_ = mesh->GetBoundingSphereRadius();
         Vector3 scale = sceneNode.GetGlobalScale();

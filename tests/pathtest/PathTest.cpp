@@ -31,57 +31,57 @@ static void Test01()
 {
 	{
 		Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(!path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(!path.IsPathRelative());
 	}
 #if WIN32
 	{
 		Path path("c:/sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(!path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(!path.IsPathRelative());
 	}
 
 	{
 		Path path("a:\\sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(!path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(!path.IsPathRelative());
 	}
 #endif
 	{
 		Path path("a:sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(path.IsPathRelative());
 	}
 
 	{
 		Path path("sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(path.IsPathRelative(), __FILE__, __LINE__);
+		CHECK_CONDITION(path.IsPathRelative());
 	}
 
 	{
 		Path path("sjhdjshd/sdhsdjhsd/kskd.TXT");
-		CHECK_CONDITION(path.GetFilename() == "kskd.TXT", __FILE__, __LINE__);
-		CHECK_CONDITION(path.GetPath() == "sjhdjshd/sdhsdjhsd", __FILE__, __LINE__);
-		CHECK_CONDITION(path.GetExtension() == "txt", __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetFilename() == "kskd.TXT");
+		CHECK_CONDITION(path.GetPath() == "sjhdjshd/sdhsdjhsd");
+		CHECK_CONDITION(path.GetExtension() == "txt");
 	}
 
 	{
 		Path path("sjhdjshd/data/kskd.TXT");
-		CHECK_CONDITION(!path.AppendDirIfDoesNotExist("data"), __FILE__, __LINE__);
-		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data", __FILE__, __LINE__);
-		CHECK_CONDITION(path.AppendDirIfDoesNotExist("Data"), __FILE__, __LINE__);
-		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data/Data", __FILE__, __LINE__);
+		CHECK_CONDITION(!path.AppendDirIfDoesNotExist("data"));
+		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data");
+		CHECK_CONDITION(path.AppendDirIfDoesNotExist("Data"));
+		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data/Data");
 	}
 
 	{
 		Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(path.GetExtension() == "txt", __FILE__, __LINE__);
-		CHECK_CONDITION(path.GetFilename() == "kskd.txt", __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetExtension() == "txt");
+		CHECK_CONDITION(path.GetFilename() == "kskd.txt");
 		path.AddExtension("zip");
-		CHECK_CONDITION(path.GetExtension() == "zip", __FILE__, __LINE__);
-		CHECK_CONDITION(path.GetFilename() == "kskd.txt.zip", __FILE__, __LINE__);
+		CHECK_CONDITION(path.GetExtension() == "zip");
+		CHECK_CONDITION(path.GetFilename() == "kskd.txt.zip");
 	}
 
 	{
 		Path path("data/testfile.txt");
 		auto mtime = path.GetModificationTime();
-		CHECK_CONDITION(!mtime.empty(), __FILE__, __LINE__);
+		CHECK_CONDITION(!mtime.empty());
 		LOGI("%s", mtime.c_str());
 	}
 

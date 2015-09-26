@@ -32,20 +32,23 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "Graphics.h"
 #include "Program.h"
-#include "Node.h"
+#include "Scene.h"
+#include "SceneNode.h"
+#include "Renderer.h"
 #include "Util.h"
 
 namespace NSG
 {
     ShowTexture::ShowTexture()
-        : material_(std::make_shared<Material>(GetUniqueName("NSGShowTexture"))),
-          mesh_(std::make_shared<QuadMesh>(GetUniqueName("NSGShowTexture"))),
-          node_(std::make_shared<SceneNode>("NSGShowTexture")),
-          graphics_(Graphics::GetPtr())
     {
-        //auto pass = material_->GetTechnique()->GetPass(0);
-        material_->SetSerializable(false);
-        //pass->EnableDepthTest(false);
+        const char* name = "NSGShowTexture";
+        scene_ = std::make_shared<Scene>(name);
+        material_ = std::make_shared<Material>(name);
+        //material->SetSerializable(false);
+        mesh_ = std::make_shared<QuadMesh>(name);
+        node_ = scene_->CreateChild<SceneNode>(name);
+		node_->SetMesh(mesh_);
+		node_->SetMaterial(material_);
     }
 
     ShowTexture::~ShowTexture()
@@ -73,22 +76,8 @@ namespace NSG
 
     void ShowTexture::Show()
     {
-        if (material_->IsReady() && mesh_->IsReady())
-        {
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-
-            Camera* pCurrent = graphics_->GetCamera();
-            graphics_->SetCamera(nullptr);
-			Pass pass;
-			pass.EnableDepthTest(false);
-            graphics_->SetMesh(mesh_.get());
-			if (graphics_->SetupProgram(&pass, node_.get(), material_.get(), nullptr))
-				graphics_->DrawActiveMesh();
-
-            graphics_->SetCamera(pCurrent);
-
-            CHECK_GL_STATUS(__FILE__, __LINE__);
-        }
-
+        Pass pass;
+        pass.EnableDepthTest(false);
+        Renderer::GetPtr()->Render(&pass, scene_.get(), nullptr, node_.get(), nullptr);
     }
 }

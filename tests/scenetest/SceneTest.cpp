@@ -45,37 +45,37 @@ static void Test01()
 
     std::vector<SceneNode*> visibles;
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_CONDITION(visibles.size() == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 0);
 
     node1s->SetPosition(Vertex3(0, 0, -10));
 
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 1);
 
     node1b->SetPosition(Vertex3(0, 0, -100));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 2);
 
     node1s->SetPosition(Vertex3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 1);
 
     node1s->SetPosition(Vertex3(0, 0, 0.8f));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_CONDITION(visibles.size() == 2, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 2);
 
 	camera->SetGlobalLookAtPosition(Vector3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 1);
 
     node1s->SetPosition(Vertex3(0, 0, -0.8f));
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_CONDITION(visibles.size() == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 1);
 
     camera->SetPosition(Vertex3(0, 0, 1));
 
     scene->GetVisibleNodes(camera.get(), visibles);
-    CHECK_CONDITION(visibles.size() == 0, __FILE__, __LINE__);
+    CHECK_CONDITION(visibles.size() == 0);
 
 }
 
@@ -98,34 +98,34 @@ static void Test02()
     Vertex3 origin(0);
     Vector3 direction1s(node1s->GetGlobalPosition() - origin);
     Ray ray(origin, direction1s);
-	CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
-    CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
-    CHECK_CONDITION(nodes[0] == node1s.get(), __FILE__, __LINE__);
+	CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes));
+    CHECK_CONDITION(nodes.size() == 1);
+    CHECK_CONDITION(nodes[0] == node1s.get());
 
     {
         Ray ray(origin, direction1s, 140);
-		CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+		CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes));
     }
 
     {
         Ray ray(origin, direction1s, 141);
-		CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
-        CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
-        CHECK_CONDITION(nodes[0] == node1s.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes));
+        CHECK_CONDITION(nodes.size() == 1);
+        CHECK_CONDITION(nodes[0] == node1s.get());
     }
 
 
     ray = Ray(origin, -direction1s);
-	CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+	CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes));
 
     Vector3 direction1b(node1b->GetGlobalPosition() - origin);
     ray = Ray(origin, direction1b);
-	CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
-    CHECK_CONDITION(nodes.size() == 1, __FILE__, __LINE__);
-    CHECK_CONDITION(nodes[0] == node1b.get(), __FILE__, __LINE__);
+	CHECK_CONDITION(scene->GetFastRayNodesIntersection(ray, nodes));
+    CHECK_CONDITION(nodes.size() == 1);
+    CHECK_CONDITION(nodes[0] == node1b.get());
 
     ray = Ray(origin, -direction1b);
-	CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes), __FILE__, __LINE__);
+	CHECK_CONDITION(!scene->GetFastRayNodesIntersection(ray, nodes));
 }
 
 static void Test03()
@@ -141,18 +141,18 @@ static void Test03()
         Vector3 direction1s(node1s->GetGlobalPosition() - origin);
         Ray ray(origin, direction1s);
         std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-        CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-        CHECK_CONDITION(result[0].node_ == node1s.get(), __FILE__, __LINE__);
-        CHECK_CONDITION(Abs(result[0].distance_ - 99) < 0.1f, __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+        CHECK_CONDITION(result.size() == 1);
+        CHECK_CONDITION(result[0].node_ == node1s.get());
+        CHECK_CONDITION(Abs(result[0].distance_ - 99) < 0.1f);
 
         direction1s = node1s->GetGlobalPosition() - Vector3(0.45f, 0, 0) - origin;
         ray = Ray(origin, direction1s);
 
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-        CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-        CHECK_CONDITION(result[0].node_ == node1s.get(), __FILE__, __LINE__);
-        CHECK_CONDITION(result[0].distance_ > 99, __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+        CHECK_CONDITION(result.size() == 1);
+        CHECK_CONDITION(result[0].node_ == node1s.get());
+        CHECK_CONDITION(result[0].distance_ > 99);
     }
 }
 
@@ -179,54 +179,54 @@ static void Test04()
         Vector3 direction1s(Vector3(0, 0, -1));
         Ray ray(origin, direction1s);
         RayNodeResult closest;
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_CONDITION(closest.node_->GetName() == "0", __FILE__, __LINE__);
-        CHECK_CONDITION(Abs(closest.distance_ - (99 + RADIUS)) < 0.01f, __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
+        CHECK_CONDITION(closest.node_->GetName() == "0");
+        CHECK_CONDITION(Abs(closest.distance_ - (99 + RADIUS)) < 0.01f);
 
         ray = Ray(Vertex3(0, 0, -101), -direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_CONDITION(closest.node_->GetName() == "99", __FILE__, __LINE__);
-        CHECK_CONDITION(Abs(closest.distance_ - (1 + RADIUS)) < 0.01f, __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
+        CHECK_CONDITION(closest.node_->GetName() == "99");
+        CHECK_CONDITION(Abs(closest.distance_ - (1 + RADIUS)) < 0.01f);
 
         origin = Vertex3(5000, 0, 100);
         direction1s = Vertex3(0, 0, -50) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
+        CHECK_CONDITION(closest.node_->GetName() == "50");
         float d = Length(direction1s) - RADIUS;
-        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.01f);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
+        CHECK_CONDITION(closest.node_->GetName() == "50");
         d = Length(direction1s) - RADIUS;
-        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.01f, __FILE__, __LINE__);
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.01f);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50.49f) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
+        CHECK_CONDITION(closest.node_->GetName() == "50");
         d = Length(direction1s) - 0.01f;
-        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -50.51f) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_CONDITION(closest.node_->GetName() == "51", __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
+        CHECK_CONDITION(closest.node_->GetName() == "51");
         d = Length(direction1s) - 0.01f;
-        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f);
 
         origin = Vertex3(5000, 0, -50);
         direction1s = Vertex3(0, 0, -49.51f) - origin;
         ray = Ray(origin, direction1s);
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-        CHECK_CONDITION(closest.node_->GetName() == "50", __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
+        CHECK_CONDITION(closest.node_->GetName() == "50");
         d = Length(direction1s) - 0.01f;
-        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f, __FILE__, __LINE__);
+        CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f);
     }
 }
 
@@ -248,9 +248,9 @@ static void Test05()
 		Vector3 direction1s(Vector3(0, 0, -1));
 		Ray ray(origin, direction1s);
 		RayNodeResult closest;
-		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest), __FILE__, __LINE__);
-		CHECK_CONDITION(closest.node_->GetName() == "0", __FILE__, __LINE__);
-		CHECK_CONDITION(Abs(closest.distance_ - (1 - RADIUS * SCALE)) < 0.01f, __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
+		CHECK_CONDITION(closest.node_->GetName() == "0");
+		CHECK_CONDITION(Abs(closest.distance_ - (1 - RADIUS * SCALE)) < 0.01f);
 	}
 }
 
@@ -275,39 +275,39 @@ static void Test06()
 	{
 		Ray ray = Camera::GetRay(0, 0);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(!scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
+		CHECK_CONDITION(!scene->GetPreciseRayNodesIntersection(ray, result));
 	}
 
 	{
 		Ray ray = Camera::GetRay(-0.5f, 0.5f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeLU.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeLU.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(0.5f, 0.5f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeRU.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeRU.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(-0.5f, -0.5f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeLB.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeLB.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(0.5f, -0.5f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeRB.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeRB.get());
 	}
 
 }
@@ -355,41 +355,41 @@ static void Test07()
     {
         Ray ray = Camera::GetRay(0, 0.f);
         std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-        CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-        CHECK_CONDITION(result[0].node_ == nodeCenter.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+        CHECK_CONDITION(result.size() == 1);
+        CHECK_CONDITION(result[0].node_ == nodeCenter.get());
     }
 
 	{
 		Ray ray = Camera::GetRay(-0.9f, 0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeLeftTop.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeLeftTop.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(0.9f, 0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeRightTop.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeRightTop.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(-0.9f, -0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeLeftBottom.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeLeftBottom.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(0.9f, -0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeRightBottom.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeRightBottom.get());
 	}
 
 }
@@ -443,41 +443,41 @@ static void Test08()
 	{
 		Ray ray = Camera::GetRay(0, 0.f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeCenter.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeCenter.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(-0.9f, 0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeLeftTop.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeLeftTop.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(0.9f, 0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeRightTop.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeRightTop.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(-0.9f, -0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeLeftBottom.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeLeftBottom.get());
 	}
 
 	{
 		Ray ray = Camera::GetRay(0.9f, -0.9f);
 		std::vector<RayNodeResult> result;
-		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result), __FILE__, __LINE__);
-		CHECK_CONDITION(result.size() == 1, __FILE__, __LINE__);
-		CHECK_CONDITION(result[0].node_ == nodeRightBottom.get(), __FILE__, __LINE__);
+		CHECK_CONDITION(scene->GetPreciseRayNodesIntersection(ray, result));
+		CHECK_CONDITION(result.size() == 1);
+		CHECK_CONDITION(result[0].node_ == nodeRightBottom.get());
 	}
 }
 
@@ -515,33 +515,33 @@ static void Test09()
 
     std::vector<SceneNode*> visibles;
     scene->GetVisibleNodes(camera.get(), visibles);
-	CHECK_CONDITION(visibles.size() == Boxes, __FILE__, __LINE__);
+	CHECK_CONDITION(visibles.size() == Boxes);
 	std::vector<PBatch> batches;
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
-	CHECK_CONDITION(batches.size() == 1, __FILE__, __LINE__);
-	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get(), __FILE__, __LINE__);
+	CHECK_CONDITION(batches.size() == 1);
+	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get());
 
 	auto material2 = Material::Create();
 	boxes[0]->SetMaterial(material2);
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
-	CHECK_CONDITION(batches.size() == 2, __FILE__, __LINE__);
-	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get(), __FILE__, __LINE__);
-	CHECK_CONDITION(batches[1]->GetMesh() == boxMesh.get(), __FILE__, __LINE__);
-	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial(), __FILE__, __LINE__);
+	CHECK_CONDITION(batches.size() == 2);
+	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get());
+	CHECK_CONDITION(batches[1]->GetMesh() == boxMesh.get());
+	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial());
 
     camera->SetGlobalLookAtPosition(Vector3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
-	CHECK_CONDITION(visibles.size() == Spheres, __FILE__, __LINE__);
+	CHECK_CONDITION(visibles.size() == Spheres);
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
-	CHECK_CONDITION(batches.size() == 1, __FILE__, __LINE__);
-	CHECK_CONDITION(batches[0]->GetMesh() == sphereMesh.get(), __FILE__, __LINE__);
+	CHECK_CONDITION(batches.size() == 1);
+	CHECK_CONDITION(batches[0]->GetMesh() == sphereMesh.get());
 	for (int i = 0; i < Spheres / 2; i++)
 		spheres[i]->SetMaterial(material2);
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
-	CHECK_CONDITION(batches.size() == 2, __FILE__, __LINE__);
-	CHECK_CONDITION(batches[0]->GetMesh() == sphereMesh.get(), __FILE__, __LINE__);
-	CHECK_CONDITION(batches[1]->GetMesh() == sphereMesh.get(), __FILE__, __LINE__);
-	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial(), __FILE__, __LINE__);
+	CHECK_CONDITION(batches.size() == 2);
+	CHECK_CONDITION(batches[0]->GetMesh() == sphereMesh.get());
+	CHECK_CONDITION(batches[1]->GetMesh() == sphereMesh.get());
+	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial());
 }
 
 static void Test0A()
@@ -575,13 +575,13 @@ static void Test0A()
 #if 0
 	std::vector<SceneNode*> visibles;
 	scene->GetVisibleNodes(camera.get(), visibles);
-	CHECK_CONDITION(visibles.size() == Spheres + Boxes, __FILE__, __LINE__);
+	CHECK_CONDITION(visibles.size() == Spheres + Boxes);
 	Renderer::GetPtr()->SortTransparentBackToFront(visibles);
-	CHECK_CONDITION(visibles[0]->GetMesh().get() == sphereMesh.get(), __FILE__, __LINE__);
-	CHECK_CONDITION(visibles[0]->GetPosition().z > 100, __FILE__, __LINE__);
+	CHECK_CONDITION(visibles[0]->GetMesh().get() == sphereMesh.get());
+	CHECK_CONDITION(visibles[0]->GetPosition().z > 100);
 	Renderer::GetPtr()->SortSolidFrontToBack(visibles);
-	CHECK_CONDITION(visibles[0]->GetMesh().get() == boxMesh.get(), __FILE__, __LINE__);
-	CHECK_CONDITION(visibles[0]->GetPosition().z < 1.01f, __FILE__, __LINE__);
+	CHECK_CONDITION(visibles[0]->GetMesh().get() == boxMesh.get());
+	CHECK_CONDITION(visibles[0]->GetPosition().z < 1.01f);
 #endif
 }
 

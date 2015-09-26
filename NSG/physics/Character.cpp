@@ -31,6 +31,8 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Check.h"
 #include "Engine.h"
+#include "Renderer.h"
+#include "DebugRenderer.h"
 #include "StringConverter.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
 #include "pugixml.hpp"
@@ -125,20 +127,12 @@ namespace NSG
         StepForward(deltaTime);
     }
 
-    ICollision* Character::StepForwardCollides(float step) const
+    ICollision* Character::StepForwardCollides() const
     {
-        const auto& worldTrans =  ghost_->getWorldTransform();
-        auto position = ToVector3(worldTrans.getOrigin());
-        auto feetPoint = GetUnderFeetPoint(position);
-        auto rot = ToQuaternion(worldTrans.getRotation());
-        auto forwardDirection = rot * forwardAxis_;
-        auto stepForward = step * forwardDirection;
-        float stepUp = stepHeight_ * shapeHeight_;
-        auto bodyCenter = feetPoint + VECTOR3_UP * shapeHalfHeight_;
-        auto verticalStep = VECTOR3_UP * stepUp;
-        auto sourcePos = bodyCenter + verticalStep;
-        auto targetPos = sourcePos + stepForward;
-        auto result = Obstruction(sourcePos, targetPos, std::min(stepUp, shapeSphereRadius_));
+		float stepUp = stepHeight_ * shapeHeight_;
+		if (flying_)
+			stepUp = 0;
+		auto result = Obstruction(stepForwardSourcePos_, stepForwardTargetPos_, std::min(stepUp, shapeSphereRadius_));
         return result.collider_;
     }
 
@@ -148,45 +142,50 @@ namespace NSG
         auto rot = ToQuaternion(worldTrans.getRotation());
         auto position = ToVector3(worldTrans.getOrigin());
         auto feetPoint = GetUnderFeetPoint(position);
-        auto forwardDirection = rot * forwardAxis_;
-        auto stepForward = forwardSpeed_ * deltaTime * forwardDirection;
+		forwardDirection_ = rot * forwardAxis_;
+		stepForward_ = forwardSpeed_ * deltaTime * forwardDirection_;
+		minStepForward_ = 1.0f * shapeSphereRadius_ * forwardDirection_;
         float stepUp = stepHeight_ * shapeHeight_;
         if(flying_)
             stepUp = 0;
         auto verticalStep = VECTOR3_UP * stepUp;
-        auto bodyCenter = feetPoint + VECTOR3_UP * shapeHalfHeight_;
-        auto groundHeight = GetGroundHeightFrom(bodyCenter);
-        auto sourcePos = bodyCenter + verticalStep;
-        auto targetPos = sourcePos + stepForward;
-        auto result = Obstruction(sourcePos, targetPos, std::min(stepUp, shapeSphereRadius_));
+		bodyCenter_ = feetPoint + VECTOR3_UP * shapeHalfHeight_;
+		auto groundHeight = GetGroundHeightFrom(bodyCenter_);
+		stepForwardSourcePos_ = bodyCenter_ + verticalStep;
+		stepForwardFinalPos_ = stepForwardSourcePos_ + stepForward_;
+		if (Length(minStepForward_) < Length(stepForward_))
+			stepForwardTargetPos_ = stepForwardFinalPos_;
+		else
+			stepForwardTargetPos_ = stepForwardSourcePos_ + minStepForward_;
+		auto result = Obstruction(stepForwardSourcePos_, stepForwardTargetPos_, std::min(stepUp, shapeSphereRadius_));
         if (result.HasCollided())
         {
             // collided forward ( cannot step up)
-            auto dir2Target = targetPos - sourcePos;
+			auto dir2Target = stepForwardFinalPos_ - stepForwardSourcePos_;
             auto sliding = GetSlidingVector(dir2Target, result.normal_);
             if(!flying_)
             {
                 sliding.y = 0;
                 position.y = groundHeight + shapeHalfHeight_ + nodeColliderOffset_.y;
             }
-            targetPos = position + sliding;
+			stepForwardFinalPos_ = position + sliding;
         }
         else if (IsOnGround())
         {
-            auto groundHeight2 = GetGroundHeightFrom(targetPos);
+			auto groundHeight2 = GetGroundHeightFrom(stepForwardFinalPos_);
             position.y = groundHeight2 + shapeHalfHeight_ + nodeColliderOffset_.y;
             if (std::abs(groundHeight - groundHeight2) < stepUp)
-                targetPos = position + stepForward; // ground is at the same height after stepping
+				stepForwardFinalPos_ = position + stepForward_; // ground is at the same height after stepping
             else if (groundHeight + stepUp > groundHeight2)
-                targetPos = position + stepForward; // stepping down
+				stepForwardFinalPos_ = position + stepForward_; // stepping down
             else
-                targetPos = position + stepForward + verticalStep; //stepping up
+				stepForwardFinalPos_ = position + stepForward_ + verticalStep; //stepping up
         }
         else
         {
-            targetPos = position + stepForward;
+			stepForwardFinalPos_ = position + stepForward_;
         }
-        worldTrans.setOrigin(ToBtVector3(targetPos));
+		worldTrans.setOrigin(ToBtVector3(stepForwardFinalPos_));
         auto orn = worldTrans.getBasis();
         auto incRot = AngleAxis(Radians(angularSpeed_ * deltaTime), upAxis_);
         orn *= btMatrix3x3(ToBtQuaternion(incRot));
@@ -202,7 +201,8 @@ namespace NSG
 
     void Character::debugDraw(btIDebugDraw* debugDrawer)
     {
-
+		auto debugRenderer = Renderer::GetPtr()->GetDebugRenderer();
+		debugRenderer->AddLine(stepForwardSourcePos_, stepForwardTargetPos_, Color(COLOR_RED, 1));
     }
 
     PhysicsRaycastResult Character::Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const
@@ -286,6 +286,17 @@ namespace NSG
     {
         angularSpeed_ = speed;
     }
+
+	void Character::Rotate(float angle)
+	{
+		auto worldTrans = ghost_->getWorldTransform();
+		auto orn = worldTrans.getBasis();
+		auto incRot = AngleAxis(Radians(angle), upAxis_);
+		orn *= btMatrix3x3(ToBtQuaternion(incRot));
+		worldTrans.setBasis(orn);
+		ghost_->setWorldTransform(worldTrans);
+		SyncNode();
+	}
 
     bool Character::IsValid()
     {

@@ -29,10 +29,10 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Material.h"
 #include "ModelMesh.h"
-#include "Scene.h"
-#include "Light.h"
-#include "Camera.h"
 #include "Octree.h"
+#include "Scene.h"
+#include "Camera.h"
+#include "Light.h"
 #include "Util.h"
 #include "RigidBody.h"
 #include "Character.h"
@@ -107,7 +107,7 @@ namespace NSG
 
     PRigidBody SceneNode::GetOrCreateRigidBody()
     {
-        CHECK_ASSERT(character_ == nullptr, __FILE__, __LINE__);
+        CHECK_ASSERT(character_ == nullptr);
         if (!rigidBody_)
             rigidBody_ = std::make_shared<RigidBody>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
         return rigidBody_;
@@ -115,7 +115,7 @@ namespace NSG
 
     PCharacter SceneNode::GetOrCreateCharacter()
     {
-        CHECK_ASSERT(rigidBody_ == nullptr, __FILE__, __LINE__);
+        CHECK_ASSERT(rigidBody_ == nullptr);
         if (!character_)
             character_ = std::make_shared<Character>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
         return character_;
@@ -132,7 +132,7 @@ namespace NSG
     {
         if (rigidBody_)
             rigidBody_->ReScale();
-        else if(character_)
+        else if (character_)
             character_->ReScale();
     }
 
@@ -216,7 +216,7 @@ namespace NSG
             node.append_attribute("meshName").set_value(mesh_->GetName().c_str());
         if (rigidBody_)
             rigidBody_->Save(node);
-        else if(character_)
+        else if (character_)
             character_->Save(node);
         SaveChildren(node);
     }
@@ -261,15 +261,15 @@ namespace NSG
             auto obj = GetOrCreateRigidBody();
             obj->Load(childRigidBody);
         }
-		else
-		{
-			pugi::xml_node childCharacter = node.child("Character");
-			if (childCharacter)
-			{
-				auto obj = GetOrCreateCharacter();
-				obj->Load(childCharacter);
-			}
-		}
+        else
+        {
+            pugi::xml_node childCharacter = node.child("Character");
+            if (childCharacter)
+            {
+                auto obj = GetOrCreateCharacter();
+                obj->Load(childCharacter);
+            }
+        }
 
         LoadChildren(node);
 
@@ -278,7 +278,7 @@ namespace NSG
         {
             auto name = att.as_string();
             auto skeleton = Skeleton::Get(name);
-            CHECK_ASSERT(skeleton, __FILE__, __LINE__);
+            CHECK_ASSERT(skeleton);
             SetSkeleton(skeleton);
         }
     }
@@ -308,7 +308,7 @@ namespace NSG
             if (childName.empty())
                 break;
             std::string nodeType = child.attribute("nodeType").as_string();
-            //CHECK_ASSERT(!nodeType.empty(), __FILE__, __LINE__);
+            //CHECK_ASSERT(!nodeType.empty());
             if (nodeType == "Light")
             {
                 Node::CreateChild<Light>(childName, child);
@@ -320,7 +320,7 @@ namespace NSG
             }
             else
             {
-                //CHECK_ASSERT(nodeType == "SceneNode", __FILE__, __LINE__);
+                //CHECK_ASSERT(nodeType == "SceneNode");
                 PSceneNode childNode = Node::GetOrCreateChild<SceneNode>(childName);
                 childNode->Load(child);
             }
@@ -361,7 +361,7 @@ namespace NSG
             {
                 auto thisSceneNode = std::dynamic_pointer_cast<SceneNode>(shared_from_this());
                 SetArmature(thisSceneNode);
-                CHECK_CONDITION(skeleton_->IsReady(), __FILE__, __LINE__);
+                CHECK_CONDITION(skeleton_->IsReady());
                 skeleton_->CreateBonesFor(thisSceneNode);
             }
         }
@@ -385,7 +385,7 @@ namespace NSG
         if (armature)
         {
             auto skeleton = armature->GetSkeleton();
-            CHECK_CONDITION(skeleton->IsReady(), __FILE__, __LINE__);
+            CHECK_CONDITION(skeleton->IsReady());
             defines += "SKELETON_" + skeleton->GetName() + "\n"; // just to have a shader variance per skeleton
             auto nBones = skeleton->GetNumberOfBones();
             if (nBones)

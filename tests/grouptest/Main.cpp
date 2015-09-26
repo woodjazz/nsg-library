@@ -31,41 +31,41 @@ static void Test0()
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene0.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
-	CHECK_CONDITION(scene->GetChildren().size() == 7, __FILE__, __LINE__);
+	CHECK_CONDITION(scene->GetChildren().size() == 7);
 	{
 		auto object = scene->GetChild<SceneNode>("Cube", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 	}
 	{
 		auto object = scene->GetChild<SceneNode>("Sphere", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 	}
 	{
 		auto object = scene->GetChild<SceneNode>("Torus", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 	}
 	{
 		auto object = scene->GetChild<SceneNode>("Plane", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 	}
 	{
 		auto object = scene->GetChild<SceneNode>("InstancedGroup", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 		{
 			auto object1 = object->GetChild<SceneNode>("Cube", true);
-			CHECK_CONDITION(object1, __FILE__, __LINE__);
+			CHECK_CONDITION(object1);
 		}
 		{
 			auto object1 = object->GetChild<SceneNode>("Sphere", true);
-			CHECK_CONDITION(object1, __FILE__, __LINE__);
+			CHECK_CONDITION(object1);
 		}
 		{
 			auto object1 = object->GetChild<SceneNode>("Torus", true);
-			CHECK_CONDITION(object1, __FILE__, __LINE__);
+			CHECK_CONDITION(object1);
 		}
 		{
 			auto object1 = object->GetChild<SceneNode>("Plane", true);
-			CHECK_CONDITION(!object1, __FILE__, __LINE__);
+			CHECK_CONDITION(!object1);
 		}
 	}
 }
@@ -75,48 +75,48 @@ static void Test1()
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene1.xml");
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
-	CHECK_CONDITION(scene->GetChildren().size() == 11, __FILE__, __LINE__);
+	CHECK_CONDITION(scene->GetChildren().size() == 11);
 	{
 		auto object = scene->GetChild<SceneNode>("Cube", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 	}
 	{
 		auto object = scene->GetChild<SceneNode>("Sphere", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 	}
 	{
 		auto object = scene->GetChild<SceneNode>("Torus", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 	}
 	{
 		auto object = scene->GetChild<SceneNode>("Plane", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
 	}
 	{
 		auto object = scene->GetChild<SceneNode>("InstancedGroup001", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
-		CHECK_CONDITION(object->GetChildren().size() == 2, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
+		CHECK_CONDITION(object->GetChildren().size() == 2);
 	}
 
 	{
 		auto object = scene->GetChild<SceneNode>("InstancedGroup", true);
-		CHECK_CONDITION(object, __FILE__, __LINE__);
-		CHECK_CONDITION(object->GetChildren().size() == 3, __FILE__, __LINE__);
+		CHECK_CONDITION(object);
+		CHECK_CONDITION(object->GetChildren().size() == 3);
 		{
 			auto object1 = object->GetChild<SceneNode>("Cube", true);
-			CHECK_CONDITION(object1, __FILE__, __LINE__);
+			CHECK_CONDITION(object1);
 		}
 		{
 			auto object1 = object->GetChild<SceneNode>("Sphere", true);
-			CHECK_CONDITION(object1, __FILE__, __LINE__);
+			CHECK_CONDITION(object1);
 		}
 		{
 			auto object1 = object->GetChild<SceneNode>("Torus", true);
-			CHECK_CONDITION(object1, __FILE__, __LINE__);
+			CHECK_CONDITION(object1);
 		}
 		{
 			auto object1 = object->GetChild<SceneNode>("Plane", true);
-			CHECK_CONDITION(!object1, __FILE__, __LINE__);
+			CHECK_CONDITION(!object1);
 		}
 	}
 }

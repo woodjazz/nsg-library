@@ -32,10 +32,10 @@ static void Test0()
 	AppData data(resource);
 	auto scene = data.scenes_.at(0);
 	auto parent = scene->GetChild<SceneNode>("CubeParent", false);
-	CHECK_CONDITION(Distance(parent->GetGlobalScale(), Vector3(1, 3, 1)) < 0.001f, __FILE__, __LINE__);
+	CHECK_CONDITION(Distance(parent->GetGlobalScale(), Vector3(1, 3, 1)) < 0.001f);
 	auto child = parent->GetChild<SceneNode>("CubeChild", false);
-	CHECK_CONDITION(Distance(child->GetGlobalScale(), Vector3(1, 3, 1)) < 0.001f, __FILE__, __LINE__);
-	CHECK_CONDITION(Distance(child->GetGlobalPosition(), Vector3(1.963f, 2.111f, -4.177f)) < 0.01f, __FILE__, __LINE__);
+	CHECK_CONDITION(Distance(child->GetGlobalScale(), Vector3(1, 3, 1)) < 0.001f);
+	CHECK_CONDITION(Distance(child->GetGlobalPosition(), Vector3(1.963f, 2.111f, -4.177f)) < 0.01f);
 }
 
 int NSG_MAIN(int argc, char* argv[])

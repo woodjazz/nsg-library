@@ -36,7 +36,7 @@ PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos, const Ve
 	auto material = Material::Create();
 	material->SetDiffuseColor(color);
 	material->SetSpecularColor(ColorRGB(0));
-	material->SetRenderPass(RenderPass::PERPIXEL);
+	material->SetRenderPass(RenderPass::LIT);
 	material->SetFillMode(mode);
 	obj->SetMesh(mesh);
 	obj->SetMaterial(material);
@@ -80,7 +80,7 @@ int NSG_MAIN(int argc, char* argv[])
         auto pos = sphere->GetGlobalPosition();
 		if (Abs(pos.y - 2.1f) < 0.001f)
 		{
-			CHECK_CONDITION(step == 0, __FILE__, __LINE__);
+			CHECK_CONDITION(step == 0);
 			sphere->SetGlobalScale(Vector3(2));
 			sphere->SetGlobalPosition(spherePos);
 			sphere->GetRigidBody()->SyncWithNode();
@@ -88,7 +88,7 @@ int NSG_MAIN(int argc, char* argv[])
 		}
 		else if (Abs(pos.y - 4.1f) < 0.001f)
 		{
-			CHECK_CONDITION(step == 1, __FILE__, __LINE__);
+			CHECK_CONDITION(step == 1);
 			sphere->SetGlobalScale(Vector3(3));
 			sphere->SetGlobalPosition(spherePos);
 			sphere->GetRigidBody()->SyncWithNode();
@@ -96,7 +96,7 @@ int NSG_MAIN(int argc, char* argv[])
 		}
 		else if (Abs(pos.y - 6.1f) < 0.001f)
 		{
-			CHECK_CONDITION(step == 2, __FILE__, __LINE__);
+			CHECK_CONDITION(step == 2);
 			window = nullptr; // exit
 		}
     });

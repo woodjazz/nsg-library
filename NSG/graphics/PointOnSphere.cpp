@@ -154,7 +154,7 @@ namespace NSG
 				theta_ += PI;
 		}
 
-		//CHECK_ASSERT(Distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION, __FILE__, __LINE__);
+		//CHECK_ASSERT(Distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION);
     }
 
 
@@ -169,7 +169,7 @@ namespace NSG
         // Apply spherical coordinates
 		Vertex3 currentPoint(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
 
-		CHECK_ASSERT(Distance(center_ + radius_ * currentPoint, point_) < 9*PRECISION, __FILE__, __LINE__);
+		CHECK_ASSERT(Distance(center_ + radius_ * currentPoint, point_) < 9*PRECISION);
 
         // Reduce phi slightly to obtain another point on the same longitude line on the sphere.
         const float dt = 1;

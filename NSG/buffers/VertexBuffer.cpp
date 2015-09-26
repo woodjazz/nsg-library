@@ -38,11 +38,11 @@ namespace NSG
     VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
         : Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage)
     {
-        CHECK_ASSERT(bufferSize >= bytesNeeded, __FILE__, __LINE__);
+        CHECK_ASSERT(bufferSize >= bytesNeeded);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
-        CHECK_CONDITION(graphics_->SetVertexBuffer(this), __FILE__, __LINE__);
+        CHECK_CONDITION(graphics_->SetVertexBuffer(this));
 
         glBufferData(type_, bufferSize, nullptr, usage_);
 
@@ -51,11 +51,11 @@ namespace NSG
         SetBufferSubData(0, bufferSize, &emptyData[0]); //created with initialized data to avoid warnings when profiling
 
         GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
-        CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
+        CHECK_ASSERT(bytes2Set <= bytesNeeded);
 
         SetBufferSubData(0, bytes2Set, &vertexes[0]);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     VertexBuffer::~VertexBuffer()
@@ -71,7 +71,7 @@ namespace NSG
 
     void VertexBuffer::UpdateData(const VertexsData& vertexes)
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         graphics_->SetVertexBuffer(this, true);
         GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
         if (bytes2Set > bufferSize_)
@@ -82,15 +82,15 @@ namespace NSG
         }
         else
             SetBufferSubData(0, bytes2Set, &vertexes[0]);
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     void VertexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         graphics_->SetVertexBuffer(this, true);
         glBufferData(type_, size, data, usage_);
         bufferSize_ = size;
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 }

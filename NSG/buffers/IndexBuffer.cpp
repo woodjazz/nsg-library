@@ -43,9 +43,9 @@ namespace NSG
     IndexBuffer::IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage)
         : Buffer(bufferSize, bytesNeeded, GL_ELEMENT_ARRAY_BUFFER, usage)
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
-        CHECK_CONDITION(graphics_->SetIndexBuffer(this), __FILE__, __LINE__);
+        CHECK_CONDITION(graphics_->SetIndexBuffer(this));
 
         glBufferData(type_, bufferSize, nullptr, usage_);
 
@@ -53,11 +53,11 @@ namespace NSG
         SetBufferSubData(0, bufferSize, &emptyData[0]); //created with initialized data to avoid warnings when profiling
 
         GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
-        CHECK_ASSERT(bytes2Set <= bytesNeeded, __FILE__, __LINE__);
+        CHECK_ASSERT(bytes2Set <= bytesNeeded);
 
         SetBufferSubData(0, bytes2Set, &indexes[0]);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     IndexBuffer::~IndexBuffer()
@@ -73,7 +73,7 @@ namespace NSG
 
     void IndexBuffer::UpdateData(const Indexes& indexes)
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         graphics_->SetIndexBuffer(this, true);
         GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
         if (bytes2Set > bufferSize_)
@@ -84,16 +84,16 @@ namespace NSG
         }
         else
             SetBufferSubData(0, bytes2Set, &indexes[0]);
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     void IndexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         graphics_->SetIndexBuffer(this, true);
         glBufferData(type_, size, data, usage_);
         bufferSize_ = size;
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
 }

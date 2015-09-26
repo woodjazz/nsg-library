@@ -104,8 +104,8 @@ namespace NSG
 
     void Image::Decompress()
     {
-        CHECK_CONDITION(compressed_, __FILE__, __LINE__);
-        CHECK_CONDITION(depth_ == 1, __FILE__, __LINE__);
+        CHECK_CONDITION(compressed_);
+        CHECK_CONDITION(depth_ == 1);
         channels_ = 4;
         imgDataSize_ = width_ * height_ * channels_;
         unsigned char* newData = (unsigned char*)malloc(imgDataSize_);
@@ -127,7 +127,7 @@ namespace NSG
                 DecompressImagePVRTC(newData, imgData_, width_, height_, format_);
                 break;
             default:
-                CHECK_CONDITION(!"Cannot decompress unknown format!!!", __FILE__, __LINE__);
+                CHECK_CONDITION(!"Cannot decompress unknown format!!!");
                 break;
         }
         if (allocated_)
@@ -177,7 +177,7 @@ namespace NSG
 
         if (imgData_)
         {
-            CHECK_ASSERT((channels_ == 4 || channels_ == 3 || channels_ == 1) && "Incorrect number of channels", __FILE__, __LINE__);
+            CHECK_ASSERT((channels_ == 4 || channels_ == 3 || channels_ == 1) && "Incorrect number of channels");
             compressed_ = false;
             allocated_ = true;
             numCompressedLevels_ = 0;
@@ -188,7 +188,7 @@ namespace NSG
                 format_ = TextureFormat::RGB;
             else
             {
-                CHECK_ASSERT(channels_ == 1, __FILE__, __LINE__);
+                CHECK_ASSERT(channels_ == 1);
                 format_ = TextureFormat::ALPHA;
             }
         }
@@ -199,11 +199,11 @@ namespace NSG
         const unsigned DDS_DATA_START = 4 + sizeof(DDSurfaceDesc2);
         auto data = resource_->GetData();
         auto dataSize = resource_->GetBytes();
-        CHECK_ASSERT(dataSize > DDS_DATA_START, __FILE__, __LINE__);
-        CHECK_ASSERT(memcmp(&data[0], "DDS ", 4) == 0, __FILE__, __LINE__);
+        CHECK_ASSERT(dataSize > DDS_DATA_START);
+        CHECK_ASSERT(memcmp(&data[0], "DDS ", 4) == 0);
         DDSurfaceDesc2 ddsd;
         memcpy(&ddsd, &data[4], sizeof(ddsd));
-        CHECK_CONDITION(ddsd.ddpfPixelFormat_.dwFourCC_ != 0 && "Uncompressed DDS image is not supported.!!!", __FILE__, __LINE__);
+        CHECK_CONDITION(ddsd.ddpfPixelFormat_.dwFourCC_ != 0 && "Uncompressed DDS image is not supported.!!!");
         switch (ddsd.ddpfPixelFormat_.dwFourCC_)
         {
             case FOURCC_DXT1:
@@ -219,7 +219,7 @@ namespace NSG
                 channels_ = 4;
                 break;
             default:
-                CHECK_CONDITION(!"Unrecognized DDS image format.!!!", __FILE__, __LINE__);
+                CHECK_CONDITION(!"Unrecognized DDS image format.!!!");
                 break;
         }
         imgData_ = (unsigned char*)&data[DDS_DATA_START];
@@ -240,9 +240,9 @@ namespace NSG
     {
         auto data = resource_->GetData();
         auto dataSize = resource_->GetBytes();
-        CHECK_ASSERT(memcmp(&data[0], "\253KTX", 4) == 0, __FILE__, __LINE__);
+        CHECK_ASSERT(memcmp(&data[0], "\253KTX", 4) == 0);
         const unsigned KTX_DATA_START = 12;
-        CHECK_ASSERT(dataSize > KTX_DATA_START, __FILE__, __LINE__);
+        CHECK_ASSERT(dataSize > KTX_DATA_START);
         unsigned idx = KTX_DATA_START;
         unsigned endianness;
         memcpy(&endianness, &data[idx], sizeof(endianness));
@@ -278,10 +278,10 @@ namespace NSG
         memcpy(&keyValueBytes, &data[idx], sizeof(keyValueBytes));
         idx += sizeof(keyValueBytes);
 
-        CHECK_CONDITION(endianness == 0x04030201 && "Big-endian KTX files not supported", __FILE__, __LINE__);
-        CHECK_CONDITION(type == 0 && format == 0 && "Uncompressed KTX files not supported", __FILE__, __LINE__);
-        CHECK_CONDITION(faces <= 1 && depth <= 1 && "3D or cube KTX files not supported", __FILE__, __LINE__);
-        CHECK_CONDITION(mipmaps != 0 && "KTX files without explicitly specified mipmap count not supported", __FILE__, __LINE__);
+        CHECK_CONDITION(endianness == 0x04030201 && "Big-endian KTX files not supported");
+        CHECK_CONDITION(type == 0 && format == 0 && "Uncompressed KTX files not supported");
+        CHECK_CONDITION(faces <= 1 && depth <= 1 && "3D or cube KTX files not supported");
+        CHECK_CONDITION(mipmaps != 0 && "KTX files without explicitly specified mipmap count not supported");
 
         format_ = TextureFormat::UNKNOWN;
         switch (internalFormat)
@@ -320,7 +320,7 @@ namespace NSG
                 break;
         }
 
-        CHECK_CONDITION(format_ != TextureFormat::UNKNOWN && "Unsupported texture format in KTX file", __FILE__, __LINE__);
+        CHECK_CONDITION(format_ != TextureFormat::UNKNOWN && "Unsupported texture format in KTX file");
         idx += keyValueBytes;
         imgDataSize_ = dataSize - idx - mipmaps * sizeof(unsigned);
         imgData_ = (unsigned char*)malloc(imgDataSize_);
@@ -337,7 +337,7 @@ namespace NSG
             unsigned levelSize;
             memcpy(&levelSize, &data[idx], sizeof(levelSize));
             idx += sizeof(levelSize);
-            CHECK_CONDITION(levelSize + dataOffset <= imgDataSize_ && "KTX mipmap level data size exceeds file size", __FILE__, __LINE__);
+            CHECK_CONDITION(levelSize + dataOffset <= imgDataSize_ && "KTX mipmap level data size exceeds file size");
             memcpy((void*)&imgData_[dataOffset], &data[idx], levelSize);
             idx += levelSize;
             dataOffset += levelSize;
@@ -350,9 +350,9 @@ namespace NSG
     {
         auto data = resource_->GetData();
         auto dataSize = resource_->GetBytes();
-        CHECK_ASSERT(memcmp(&data[0], "PVR\3", 4) == 0, __FILE__, __LINE__);
+        CHECK_ASSERT(memcmp(&data[0], "PVR\3", 4) == 0);
         const unsigned PVR_DATA_START = 4;
-        CHECK_ASSERT(dataSize > PVR_DATA_START, __FILE__, __LINE__);
+        CHECK_ASSERT(dataSize > PVR_DATA_START);
         unsigned idx = PVR_DATA_START;
         /* unsigned flags = */ idx += sizeof(unsigned);
         unsigned pixelFormatLo;
@@ -380,8 +380,8 @@ namespace NSG
         unsigned metaDataSize;
         memcpy(&metaDataSize, &data[idx], sizeof(metaDataSize));
         idx += sizeof(metaDataSize);
-        CHECK_CONDITION(faces <= 1 && depth <= 1 && "3D or cube PVR files not supported", __FILE__, __LINE__);
-        CHECK_CONDITION(mipmaps != 0 && "PVR files without explicitly specified mipmap count not supported", __FILE__, __LINE__);
+        CHECK_CONDITION(faces <= 1 && depth <= 1 && "3D or cube PVR files not supported");
+        CHECK_CONDITION(mipmaps != 0 && "PVR files without explicitly specified mipmap count not supported");
         format_ = TextureFormat::UNKNOWN;
         switch (pixelFormatLo)
         {
@@ -419,7 +419,7 @@ namespace NSG
                 break;
         }
 
-        CHECK_CONDITION(format_ != TextureFormat::UNKNOWN && "Unsupported texture format in KTX file", __FILE__, __LINE__);
+        CHECK_CONDITION(format_ != TextureFormat::UNKNOWN && "Unsupported texture format in KTX file");
 
         idx += metaDataSize;
         imgDataSize_ = dataSize - idx;
@@ -451,7 +451,7 @@ namespace NSG
             case TextureFormat::PVRTC_RGBA_4BPP:
                 return (width_ * 4 + 7) >> 3;
             default:
-                CHECK_ASSERT(false && "Unknown compressed format!!!", __FILE__, __LINE__);
+                CHECK_ASSERT(false && "Unknown compressed format!!!");
                 return 0;
         }
     }
@@ -472,14 +472,14 @@ namespace NSG
             case TextureFormat::PVRTC_RGBA_4BPP:
                 return (std::max(width_, 8) * std::max(height_, 8) * 4 + 7) >> 3;
             default:
-                CHECK_ASSERT(false && "Unknown compressed format!!!", __FILE__, __LINE__);
+                CHECK_ASSERT(false && "Unknown compressed format!!!");
                 return 0;
         }
     }
 
     Image::CompressedLevel Image::GetCompressedLevel(const unsigned char* data, unsigned dataSize, unsigned index) const
     {
-        CHECK_ASSERT(index < numCompressedLevels_, __FILE__, __LINE__);
+        CHECK_ASSERT(index < numCompressedLevels_);
         CompressedLevel level;
         level.width_ = width_;
         level.height_ = height_;
@@ -504,7 +504,7 @@ namespace NSG
                 level.data_ = data + offset;
                 level.dataSize_ = level.depth_ * level.rows_ * level.rowSize_;
 
-                CHECK_ASSERT(offset + level.dataSize_ <= dataSize, __FILE__, __LINE__);
+                CHECK_ASSERT(offset + level.dataSize_ <= dataSize);
 
                 if (i == index)
                     return level;
@@ -518,7 +518,7 @@ namespace NSG
         }
         else
         {
-            CHECK_ASSERT(format_ > TextureFormat::ETC1, __FILE__, __LINE__);
+            CHECK_ASSERT(format_ > TextureFormat::ETC1);
             level.blockSize_ = format_ < TextureFormat::PVRTC_RGB_4BPP ? 2 : 4;
             unsigned i = 0;
             unsigned offset = 0;
@@ -536,7 +536,7 @@ namespace NSG
                 level.rows_ = dataHeight;
                 level.rowSize_ = level.dataSize_ / level.rows_;
 
-                CHECK_ASSERT(offset + level.dataSize_ <= dataSize, __FILE__, __LINE__);
+                CHECK_ASSERT(offset + level.dataSize_ <= dataSize);
 
                 if (i == index)
                     return level;
@@ -551,7 +551,7 @@ namespace NSG
 
     void Image::FlipBlockVertical(unsigned char* dest, const unsigned char* src, TextureFormat format)
     {
-        CHECK_ASSERT(format == TextureFormat::DXT1 || format == TextureFormat::DXT3 || format == TextureFormat::DXT5, __FILE__, __LINE__);
+        CHECK_ASSERT(format == TextureFormat::DXT1 || format == TextureFormat::DXT3 || format == TextureFormat::DXT5);
 
         switch (format)
         {
@@ -599,7 +599,7 @@ namespace NSG
                 break;
 
             default:
-                CHECK_CONDITION(!"Format not supported!!!", __FILE__, __LINE__);
+                CHECK_CONDITION(!"Format not supported!!!");
                 break;
         }
     }
@@ -649,7 +649,7 @@ namespace NSG
                 break;
                 #endif
             default:
-                CHECK_CONDITION(!"Unknown texture format!!!", __FILE__, __LINE__);
+                CHECK_CONDITION(!"Unknown texture format!!!");
                 break;
         }
         return result;
@@ -667,7 +667,7 @@ namespace NSG
                 for (unsigned i = 0; i < numCompressedLevels_; ++i)
                 {
                     CompressedLevel level = GetCompressedLevel(imgData_, imgDataSize_, i);
-                    CHECK_ASSERT(level.data_ && "Compressed level with no data", __FILE__, __LINE__);
+                    CHECK_ASSERT(level.data_ && "Compressed level with no data");
                     for (unsigned y = 0; y < level.rows_; ++y)
                     {
                         const unsigned char* src = level.data_ + y * level.rowSize_;
@@ -716,7 +716,7 @@ namespace NSG
         int new_width = width;
         int new_height = height;
         GetPowerOfTwoValues(new_width, new_height);
-        CHECK_ASSERT(new_width != width || new_height != height, __FILE__, __LINE__);
+        CHECK_ASSERT(new_width != width || new_height != height);
         unsigned char* resampled = (unsigned char*)malloc(channels * new_width * new_height);
         up_scale_image(imgData, width, height, channels, resampled, new_width, new_height);
         free((void*)imgData); // same as stbi_image_free
@@ -727,14 +727,14 @@ namespace NSG
 
     void Image::Resize2PowerOf2()
     {
-        CHECK_CONDITION(!compressed_ && "Resize not supported for compressed images!!!", __FILE__, __LINE__);
+        CHECK_CONDITION(!compressed_ && "Resize not supported for compressed images!!!");
         Image::Resize2PowerOf2(imgData_, width_, height_, channels_);
 		LOGI("Image %s has been resized to power of two", name_.c_str());
     }
 
     void Image::Reduce(int size)
     {
-        CHECK_CONDITION(!compressed_ && "Reduce not supported for compressed images!!!", __FILE__, __LINE__);
+        CHECK_CONDITION(!compressed_ && "Reduce not supported for compressed images!!!");
 
         if (!IsPowerOfTwo(width_) || !IsPowerOfTwo(height_))
             Resize2PowerOf2();
@@ -761,8 +761,8 @@ namespace NSG
 
     bool Image::SaveAsPNG(const Path& outputDir)
     {
-        CHECK_CONDITION_ARGS(imgData_ != nullptr && "Resource must be ready at this point!!!", resource_->GetName(), __FILE__, __LINE__);
-        CHECK_ASSERT(!compressed_ && "Save for compressed image is not supported!!!", __FILE__, __LINE__);
+        CHECK_CONDITION_ARGS(imgData_ != nullptr && "Resource must be ready at this point!!!", resource_->GetName());
+        CHECK_ASSERT(!compressed_ && "Save for compressed image is not supported!!!");
         Path oPath;
         oPath.SetPath(outputDir.GetPath());
         oPath.SetName(Path(resource_->GetName()).GetName());

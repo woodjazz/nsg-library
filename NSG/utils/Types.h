@@ -253,6 +253,8 @@ namespace NSG
     {
         float distance_;
         SceneNode* node_;
+        RayNodeResult();
+		RayNodeResult(float distance, SceneNode* node);
     };
 
     enum class TextureFlag
@@ -543,14 +545,6 @@ namespace NSG
         MAX_INDEX
     };
 
-    enum class LightingMode
-    {
-        VERTEXCOLOR,
-        UNLIT,
-        PERVERTEX,
-        PERPIXEL
-    };
-
     enum class PassType
     {
         DEFAULT,
@@ -562,14 +556,12 @@ namespace NSG
     {
         VERTEXCOLOR,
         UNLIT,
-        PERVERTEX,
-        PERPIXEL,
+        LIT,
         TEXT,
         BLEND,
         BLUR,
         WAVE,
         SHOW_TEXTURE0,
-        SHOW_DEPTH,
         MAX_INDEX
     };
 

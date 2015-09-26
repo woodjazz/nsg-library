@@ -59,7 +59,7 @@ namespace NSG
 
     void ShadowCamera::SetupPoint(const Camera* camera)
     {
-        CHECK_ASSERT(light_->GetType() == LightType::POINT, __FILE__, __LINE__);
+        CHECK_ASSERT(light_->GetType() == LightType::POINT);
         SetPosition(light_->GetGlobalPosition());
         SetOrientation(light_->GetGlobalOrientation());
         SetNearClip(0.1f);
@@ -71,7 +71,7 @@ namespace NSG
 
     void ShadowCamera::SetupSpot(const Camera* camera)
     {
-        CHECK_ASSERT(light_->GetType() == LightType::SPOT, __FILE__, __LINE__);
+        CHECK_ASSERT(light_->GetType() == LightType::SPOT);
         SetPosition(light_->GetGlobalPosition());
         SetOrientation(light_->GetGlobalOrientation());
         SetNearClip(light_->GetShadowClipStart());
@@ -84,10 +84,10 @@ namespace NSG
 
     void ShadowCamera::SetupDirectional(const Camera* camera, float nearSplit, float farSplit)
     {
-        CHECK_ASSERT(!GetParent(), __FILE__, __LINE__);
+        CHECK_ASSERT(!GetParent());
 
         auto scene = light_->GetScene().get();
-        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL, __FILE__, __LINE__);
+        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
 
 		EnableOrtho();
 		SetAspectRatio(1);
@@ -135,7 +135,7 @@ namespace NSG
 			auto zFar = -shadowBox.min_.z; // from cam point of view: set zFar to more distance z shadowBox
 			auto zNear = -castersBox.max_.z; // from cam point of view: set zNear to closest z caster
 			auto zLength = zFar - zNear;
-			CHECK_ASSERT(zLength > 0, __FILE__, __LINE__);
+			CHECK_ASSERT(zLength > 0);
 
 			SetFarClip(zLength);
 			auto viewSize = castersBox.Size();
@@ -185,7 +185,7 @@ namespace NSG
 
     void ShadowCamera::SetCurrentCubeShadowMapFace(TextureTarget target)
     {
-        CHECK_ASSERT(light_->GetType() == LightType::POINT, __FILE__, __LINE__);
+        CHECK_ASSERT(light_->GetType() == LightType::POINT);
         switch (target)
         {
             case TextureTarget::TEXTURE_CUBE_MAP_POSITIVE_X:
@@ -207,14 +207,14 @@ namespace NSG
                 SetGlobalOrientation(dirNegativeZ_.GetOrientation());
                 break;
             default:
-                CHECK_ASSERT(!"Incorrect cube shadowmap face!!!", __FILE__, __LINE__);
+                CHECK_ASSERT(!"Incorrect cube shadowmap face!!!");
                 break;
         }
     }
 
     bool ShadowCamera::GetVisiblesShadowCasters(std::vector<SceneNode*>& result) const
     {
-        CHECK_ASSERT(result.empty(), __FILE__, __LINE__);
+        CHECK_ASSERT(result.empty());
 
         std::vector<SceneNode*> visibles;
         light_->GetScene()->GetVisibleNodes(GetFrustumPointer(), visibles);

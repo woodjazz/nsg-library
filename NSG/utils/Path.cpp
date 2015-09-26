@@ -43,8 +43,8 @@ misrepresented as being the original software.
 #include <mutex>
 #include <cctype>
 #include <time.h>
-#include <sys/types.h> 
-#include <sys/stat.h> 
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 namespace NSG
@@ -62,10 +62,11 @@ namespace NSG
     }
 
     Path::Path(const std::string& filePath)
-        : filePath_(filePath)
+        : filePath_(filePath),
+          isAbsolutePath_(false)
     {
-		if (!filePath.empty())
-			ReDoState();
+        if (!filePath.empty())
+            ReDoState();
     }
 
     Path::Path(const Path& obj)
@@ -88,17 +89,17 @@ namespace NSG
 
     void Path::SetPath(const std::string& path)
     {
-		if (!path.empty())
-		{
-			filePath_ = path + "/";
-			if (HasName())
-			{
-				filePath_ += name_;
-				if (HasExtension())
-					filePath_ += "." + ext_;
-			}
-			ReDoState();
-		}
+        if (!path.empty())
+        {
+            filePath_ = path + "/";
+            if (HasName())
+            {
+                filePath_ += name_;
+                if (HasExtension())
+                    filePath_ += "." + ext_;
+            }
+            ReDoState();
+        }
     }
 
     void Path::SetName(const std::string& name)
@@ -177,12 +178,12 @@ namespace NSG
         return path;
     }
 
-	void Path::RemoveChar(std::string& path, char ch)
-	{
-		std::string::size_type pos = path.find(ch);
-		if (pos != std::string::npos)
-			Path::RemoveChar(path.erase(pos, pos + 2), ch);
-	}
+    void Path::RemoveChar(std::string& path, char ch)
+    {
+        std::string::size_type pos = path.find(ch);
+        if (pos != std::string::npos)
+            Path::RemoveChar(path.erase(pos, pos + 2), ch);
+    }
 
 
     void Path::RemoveCurrentDirSymbol(std::string& path)
@@ -266,7 +267,7 @@ namespace NSG
         {
             char buffer[MAX_PATH_SIZE];
             DWORD n = ::GetCurrentDirectoryA(sizeof(buffer), buffer);
-            CHECK_CONDITION(n > 0 && n < sizeof(buffer), __FILE__, __LINE__);
+            CHECK_CONDITION(n > 0 && n < sizeof(buffer));
             std::string result(buffer, n);
             if (result[n - 1] != '\\')
                 result.append("/");
@@ -294,7 +295,7 @@ namespace NSG
             std::string path;
             char cwd[MAX_PATH_SIZE];
             getcwd(cwd, sizeof(cwd));
-            CHECK_CONDITION(getcwd(cwd, sizeof(cwd)), __FILE__, __LINE__);
+            CHECK_CONDITION(getcwd(cwd, sizeof(cwd)));
             path = cwd;
             std::string::size_type n = path.size();
             if (n > 0 && path[n - 1] != '/') path.append("/");
@@ -310,7 +311,8 @@ namespace NSG
 
     std::ostream& operator << (std::ostream& s , const Path& obj)
     {
-        s << "IsRelativePath=" << std::boolalpha << obj.IsPathRelative() << "\n";
+        s << "IsRelativePath=" << std::boolalpha << obj.IsPathRelative();
+        s << std::resetiosflags(std::ios_base::basefield) <<"\n";
         s << "FilePath=" << obj.GetFilePath() << "\n";
         s << "FullAbsoluteFilePath=" << obj.GetFullAbsoluteFilePath() << "\n";
         s << "Path=" << obj.GetPath() << "\n";
@@ -360,36 +362,36 @@ namespace NSG
         return is.is_open();
     }
 
-	std::string Path::GetModificationTime() const
-	{
-#if defined WIN32 && !defined __GNUC__
-		struct _stat fileStat;
-		int err = _stat(fullFilePath_.c_str(), &fileStat);
-#else
-        struct stat fileStat; 
-        int err = stat(fullFilePath_.c_str(), &fileStat ); 
-#endif        
-		if (0 != err)
-		{
-			perror("Problem getting information");
-			switch (errno)
-			{
-			case ENOENT:
-				LOGE("File %s not found.", fullFilePath_.c_str());
-				break;
-			case EINVAL:
-				LOGE("Invalid parameter to _stat.");
-				break;
-			default:
-				/* Should never be reached. */
-				LOGE("Unexpected error in _stat.");
-			}
-			return "";
-		}
-		auto mtime = fileStat.st_mtime;
-		const char* dateTime = ctime((time_t*)&mtime);
-		std::string result(dateTime);
-		Path::RemoveChar(result, '\n');
-		return result;
+    std::string Path::GetModificationTime() const
+    {
+        #if defined WIN32 && !defined __GNUC__
+        struct _stat fileStat;
+        int err = _stat(fullFilePath_.c_str(), &fileStat);
+        #else
+        struct stat fileStat;
+        int err = stat(fullFilePath_.c_str(), &fileStat );
+        #endif
+        if (0 != err)
+        {
+            perror("Problem getting information");
+            switch (errno)
+            {
+                case ENOENT:
+                    LOGE("File %s not found.", fullFilePath_.c_str());
+                    break;
+                case EINVAL:
+                    LOGE("Invalid parameter to _stat.");
+                    break;
+                default:
+                    /* Should never be reached. */
+                    LOGE("Unexpected error in _stat.");
+            }
+            return "";
+        }
+        auto mtime = fileStat.st_mtime;
+        const char* dateTime = ctime((time_t*)&mtime);
+        std::string result(dateTime);
+        Path::RemoveChar(result, '\n');
+        return result;
     }
 }

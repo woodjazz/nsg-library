@@ -89,6 +89,7 @@ namespace NSG
     }
 
     BoundingBox::BoundingBox(const std::vector<Vector3>& vertices)
+        : defined_(false)
     {
         for (auto& v : vertices)
             Merge(v);
@@ -98,23 +99,23 @@ namespace NSG
     {
     }
 
-	const BoundingBox& BoundingBox::operator = (const BoundingBox& obj)
-	{
-		if (this != &obj)
-		{
-			min_ = obj.min_;
-			max_ = obj.max_;
-			defined_ = obj.defined_;
-		}
-		return *this;
-	}
+    const BoundingBox& BoundingBox::operator = (const BoundingBox& obj)
+    {
+        if (this != &obj)
+        {
+            min_ = obj.min_;
+            max_ = obj.max_;
+            defined_ = obj.defined_;
+        }
+        return *this;
+    }
 
-	bool BoundingBox::operator == (const BoundingBox& obj) const
-	{
-		if (this != &obj)
-			return max_ == obj.max_ && min_ == obj.min_;
-		return true;
-	}
+    bool BoundingBox::operator == (const BoundingBox& obj) const
+    {
+        if (this != &obj)
+            return max_ == obj.max_ && min_ == obj.min_;
+        return true;
+    }
 
     void BoundingBox::Transform(const Node& node)
     {
@@ -122,10 +123,10 @@ namespace NSG
         Transform(transform);
     }
 
-	void BoundingBox::Transform(const Vector3& position, const Quaternion& q)
-	{
-		ComposeMatrix(position, q);
-	}
+    void BoundingBox::Transform(const Vector3& position, const Quaternion& q)
+    {
+        ComposeMatrix(position, q);
+    }
 
     void BoundingBox::Transform(const Matrix4& m)
     {
@@ -167,7 +168,7 @@ namespace NSG
 
     void BoundingBox::Merge(const std::vector<Vector3>& points)
     {
-        for(auto&point : points)
+        for (auto& point : points)
             Merge(point);
     }
 

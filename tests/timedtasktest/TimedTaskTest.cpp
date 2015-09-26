@@ -82,18 +82,18 @@ static void TimedTaskTest0()
 
     std::this_thread::sleep_for(Milliseconds(700));
 
-    CHECK_CONDITION(p0->counter_ > 1, __FILE__, __LINE__);
-    CHECK_CONDITION(p1->counter_ == 1, __FILE__, __LINE__);
-    CHECK_CONDITION(p2->counter_ == 1, __FILE__, __LINE__);
-    CHECK_CONDITION(p3->counter_ == 2, __FILE__, __LINE__);
-    CHECK_CONDITION(p4->counter_ == 1, __FILE__, __LINE__);
+    CHECK_CONDITION(p0->counter_ > 1);
+    CHECK_CONDITION(p1->counter_ == 1);
+    CHECK_CONDITION(p2->counter_ == 1);
+    CHECK_CONDITION(p3->counter_ == 2);
+    CHECK_CONDITION(p4->counter_ == 1);
 
-    CHECK_CONDITION(tasks.CancelTask(id0), __FILE__, __LINE__);
+    CHECK_CONDITION(tasks.CancelTask(id0));
 
     std::this_thread::sleep_for(Milliseconds(600));
 
-    CHECK_CONDITION(p0->counter_ > 1, __FILE__, __LINE__);
-    CHECK_CONDITION(p4->counter_ == 3, __FILE__, __LINE__);
+    CHECK_CONDITION(p0->counter_ > 1);
+    CHECK_CONDITION(p4->counter_ == 3);
 }
 
 static void TimedTaskTest1()
@@ -171,12 +171,12 @@ static void TimedTaskTest1()
 
     std::this_thread::sleep_for(Milliseconds(250));
 
-    CHECK_CONDITION(p0->counter_ == 1, __FILE__, __LINE__);
-    //CHECK_CONDITION(p1->overdue_, __FILE__, __LINE__);
-    //CHECK_CONDITION(p1->counter_ == 0, __FILE__, __LINE__);
-    //CHECK_CONDITION(p2->overdue_, __FILE__, __LINE__);
-    //CHECK_CONDITION(p2->counter_ == 1, __FILE__, __LINE__);
-    //CHECK_CONDITION(p2->hasException_, __FILE__, __LINE__);
+    CHECK_CONDITION(p0->counter_ == 1);
+    //CHECK_CONDITION(p1->overdue_);
+    //CHECK_CONDITION(p1->counter_ == 0);
+    //CHECK_CONDITION(p2->overdue_);
+    //CHECK_CONDITION(p2->counter_ == 1);
+    //CHECK_CONDITION(p2->hasException_);
 }
 
 void TimedTaskTest()

@@ -57,7 +57,7 @@ static int Test0()
     });
     
 	Engine::Create()->Run();
-    CHECK_CONDITION(saved, __FILE__, __LINE__);
+    CHECK_CONDITION(saved);
     return 0;
 }
 

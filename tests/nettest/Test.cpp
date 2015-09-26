@@ -48,7 +48,7 @@ static int Test01()
     auto onError = [&](int httpError, const std::string & description)
     {
 		LOGI("HTTP Error: %d. %s", httpError, description.c_str());
-		CHECK_CONDITION(false, __FILE__, __LINE__);
+		CHECK_CONDITION(false);
     };
 
     auto onProgress = [&](unsigned percentage)
@@ -72,7 +72,7 @@ static int Test02()
     HTTPRequest::Form form;
     auto onLoad = [&](const std::string & data)
     {
-        CHECK_CONDITION(false, __FILE__, __LINE__);
+        CHECK_CONDITION(false);
     };
 
     auto onError0 = [&](int httpError, const std::string & description)
@@ -113,7 +113,7 @@ static int Test03()
 	auto onError = [&](int httpError, const std::string & description)
 	{
 		LOGI("HTTP Error: %d. %s", httpError, description.c_str());
-		CHECK_CONDITION(false, __FILE__, __LINE__);
+		CHECK_CONDITION(false);
 	};
 
 	auto onProgress = [&](unsigned percentage)

@@ -47,8 +47,12 @@ int NSG_MAIN(int argc, char* argv[])
 	rb->AddShape(shape);
 	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/spark.png");
 	auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+	texture->SetUseAlpha(true);
 	auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
 	ps->GetParticleMaterial()->SetTexture(texture);
+	//ps->GetParticleMaterial()->EnableTransparent(true);
+	//ps->GetParticleMaterial()->SetDiffuseColor(COLOR_GREEN);
+	//ps->GetParticleMaterial()->SetAlpha(0);
 	auto meshEmitter(Mesh::CreateClass<BoxMesh>());
     ps->SetMesh(meshEmitter);
     ps->SetPosition(Vertex3(0, 10, 0));

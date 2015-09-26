@@ -86,7 +86,7 @@ namespace NSG
           pixelFormat_(PixelFormat::UNKNOWN)
 
     {
-        CHECK_CONDITION(Window::AllowWindowCreation(), __FILE__, __LINE__);
+        CHECK_CONDITION(Window::AllowWindowCreation());
     }
 
     Window::~Window()
@@ -118,12 +118,12 @@ namespace NSG
 
     void Window::CreateFrameBuffer()
     {
-        CHECK_ASSERT(!frameBuffer_, __FILE__, __LINE__);
+        CHECK_ASSERT(!frameBuffer_);
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
         //frameBufferFlags |= FrameBuffer::STENCIL;
 		frameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFrameBuffer"), frameBufferFlags);
         frameBuffer_->SetWindow(this);
-        CHECK_ASSERT(!showMap_, __FILE__, __LINE__);
+        CHECK_ASSERT(!showMap_);
         showMap_ = std::make_shared<ShowTexture>();
         showMap_->SetNormal(frameBuffer_->GetColorTexture());
     }
@@ -202,10 +202,9 @@ namespace NSG
             height_ = height;
 
 			if (graphics_ && graphics_->GetWindow() == this)
-            {
 				graphics_->SetViewport(GetViewport(), true);
-                signalViewChanged_->Run(width, height);
-            }
+
+			signalViewChanged_->Run(width, height);
         }
     }
 
@@ -331,7 +330,7 @@ namespace NSG
 
     PFilter Window::AddBlendFilter()
     {
-        //CHECK_ASSERT(filters_.size() > 0, __FILE__, __LINE__);
+        //CHECK_ASSERT(filters_.size() > 0);
         PFilter blend;
         std::string name = GetUniqueName("FilterBlend");
         size_t n = filters_.size();
@@ -413,7 +412,7 @@ namespace NSG
 
     void Window::AddWindow(PWindow window)
     {
-        CHECK_ASSERT(AllowWindowCreation(), __FILE__, __LINE__);
+        CHECK_ASSERT(AllowWindowCreation());
         windows_.push_back(window);
     }
 
@@ -434,7 +433,9 @@ namespace NSG
     {
         if (BeginFrameRender())
         {
-            Renderer::GetPtr()->Render(this, scene_);
+			if (scene_)
+				Renderer::GetPtr()->Render(this, scene_, scene_->GetMainCamera().get());
+            GUI::GetPtr()->Render(this);
             SwapWindowBuffers();
         }
     }
@@ -454,7 +455,8 @@ namespace NSG
 
     bool Window::RenderWindows()
     {
-        for (auto& obj : windows_)
+		auto windows = windows_;
+		for (auto& obj : windows)
         {
             auto window(obj.lock());
             if (!window || window->IsClosed())
@@ -490,7 +492,7 @@ namespace NSG
         #if SDL
         SDLWindow::HandleEvents();
         #else
-        CHEKC_ASSERT(!"So far only support for SDL...!!!", __FILE__, __LINE__);
+        CHEKC_ASSERT(!"So far only support for SDL...!!!");
         #endif
     }
 

@@ -210,7 +210,7 @@ namespace NSG
 			{
 				// multiply per scale to have correct distance
 				Vector3 scale = node->GetGlobalScale();
-				CHECK_ASSERT(Abs(scale.x) > EPSILON, __FILE__, __LINE__);
+				CHECK_ASSERT(Abs(scale.x) > EPSILON);
 				auto maxScale = std::max(std::max(scale.x, scale.y), scale.z);
 				nearest *= maxScale;
 			}

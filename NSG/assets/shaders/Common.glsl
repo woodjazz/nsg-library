@@ -31,6 +31,7 @@ struct Material
 	float specularIntensity;
     float ambientIntensity;
     float shininess;
+    float emitIntensity;
 };
 
 uniform vec3 u_sceneAmbientColor;
@@ -80,7 +81,6 @@ uniform float u_fogHeight;
 	#endif
 
 	#ifdef MAX_SPLITS		
-		uniform mat4 u_cameraView; // main camera's view only used to calculate the split
 		uniform float u_shadowCamInvRange[MAX_SPLITS]; // used only for directional lights
 		uniform vec3 u_shadowCamPos[MAX_SPLITS]; // used only for directional lights
 		uniform mat4 u_lightView[MAX_SPLITS];

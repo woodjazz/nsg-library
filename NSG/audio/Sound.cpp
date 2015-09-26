@@ -74,7 +74,7 @@ namespace NSG
 #ifdef SDL        
         SDL_RWops* assetHandle = SDL_RWFromConstMem(resource_->GetData(), int(resource_->GetBytes()));
         sound_ = Mix_LoadWAV_RW(assetHandle, 1);
-		CHECK_CONDITION(sound_, __FILE__, __LINE__);
+		CHECK_CONDITION(sound_);
 #endif        
     }
 

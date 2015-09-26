@@ -57,7 +57,7 @@ namespace NSG
 
     void ShapeKey::GetData(PMesh& mesh, Vector3& scale, PhysicsShape& type) const
     {
-        CHECK_ASSERT(size() > 0, __FILE__, __LINE__);
+        CHECK_ASSERT(size() > 0);
         bool hasMesh = !empty() && at(0) != '[';
         if (hasMesh)
         {
@@ -69,7 +69,7 @@ namespace NSG
             std::string formatStr = "%d %" + ToString(size) + "c [%f, %f, %f] %s";
             sscanf(c_str(), formatStr.c_str(), &size, meshName.data(), &scale.x, &scale.y, &scale.z, typeStr);
             mesh = Mesh::Get(meshName);
-            CHECK_ASSERT(mesh && "Mesh not found!!!", __FILE__, __LINE__);
+            CHECK_ASSERT(mesh && "Mesh not found!!!");
             type = ToPhysicsShape(typeStr);
         }
         else
@@ -165,11 +165,11 @@ namespace NSG
                 break;
 
             default:
-                CHECK_ASSERT(false, __FILE__, __LINE__);
+                CHECK_ASSERT(false);
                 break;
         }
 
-        CHECK_ASSERT(shape_, __FILE__, __LINE__);
+        CHECK_ASSERT(shape_);
         shape_->setLocalScaling(ToBtVector3(scale_));
         shape_->setMargin(margin_);
         shape_->setUserPointer(this);
@@ -204,12 +204,12 @@ namespace NSG
     void Shape::CreateTriangleMesh()
     {
         auto mesh = mesh_.lock();
-        CHECK_CONDITION(mesh->IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(mesh->IsReady());
         auto vertexData = mesh->GetVertexsData();
         auto indices = mesh->GetIndexes(true);
         triMesh_ = std::make_shared<btTriangleMesh>();
         auto index_count = indices.size();
-        CHECK_ASSERT(index_count % 3 == 0, __FILE__, __LINE__);
+        CHECK_ASSERT(index_count % 3 == 0);
         for (auto i = 0; i < index_count; i += 3)
         {
             auto i0 = indices[i];
@@ -222,13 +222,13 @@ namespace NSG
                 btVector3(vertexData[i2].position_.x, vertexData[i2].position_.y, vertexData[i2].position_.z));
         }
 
-        CHECK_ASSERT(triMesh_->getNumTriangles() > 0, __FILE__, __LINE__);
+        CHECK_ASSERT(triMesh_->getNumTriangles() > 0);
     }
 
     std::shared_ptr<btConvexHullShape> Shape::GetConvexHullTriangleMesh() const
     {
         auto mesh = mesh_.lock();
-        CHECK_CONDITION(mesh->IsReady(), __FILE__, __LINE__);
+        CHECK_CONDITION(mesh->IsReady());
         auto& vertexData = mesh->GetVertexsData();
 
         if (vertexData.size())
@@ -247,7 +247,7 @@ namespace NSG
             StanHull::HullResult result;
             lib.CreateConvexHull(desc, result);
 
-            CHECK_ASSERT(result.mNumIndices % 3 == 0, __FILE__, __LINE__);
+            CHECK_ASSERT(result.mNumIndices % 3 == 0);
 
             unsigned vertexCount = result.mNumOutputVertices;
             std::unique_ptr<Vector3> data(new Vector3[vertexCount]);
@@ -261,14 +261,14 @@ namespace NSG
 
     void Shape::Load(const pugi::xml_node& node)
     {
-        CHECK_ASSERT(name_ == node.attribute("name").as_string(), __FILE__, __LINE__);
-		CHECK_ASSERT(type_ == ToPhysicsShape(node.attribute("type").as_string()), __FILE__, __LINE__);
-		CHECK_ASSERT(scale_ == ToVertex3(node.attribute("scale").as_string()), __FILE__, __LINE__);
+        CHECK_ASSERT(name_ == node.attribute("name").as_string());
+		CHECK_ASSERT(type_ == ToPhysicsShape(node.attribute("type").as_string()));
+		CHECK_ASSERT(scale_ == ToVertex3(node.attribute("scale").as_string()));
 		margin_ = node.attribute("margin").as_float();
         bb_ = ToBoundigBox(node.attribute("bb").as_string());
-        CHECK_ASSERT(bb_.IsDefined(), __FILE__, __LINE__);
-		CHECK_ASSERT(!node.attribute("meshName") || mesh_.lock()->GetName() == node.attribute("meshName").as_string(), __FILE__, __LINE__);
-        //CHECK_ASSERT((meshNameAtt ? name_ == ShapeKey(mesh_.lock(), scale_) : name_ == ShapeKey(type_, scale_)) && "shape key has changed!!!", __FILE__, __LINE__);
+        CHECK_ASSERT(bb_.IsDefined());
+		CHECK_ASSERT(!node.attribute("meshName") || mesh_.lock()->GetName() == node.attribute("meshName").as_string());
+        //CHECK_ASSERT((meshNameAtt ? name_ == ShapeKey(mesh_.lock(), scale_) : name_ == ShapeKey(type_, scale_)) && "shape key has changed!!!");
         Invalidate();
     }
 

@@ -65,7 +65,7 @@ namespace NSG
           linearFactor_(1),
           angularFactor_(1)
     {
-        CHECK_ASSERT(sceneNode, __FILE__, __LINE__);
+        CHECK_ASSERT(sceneNode);
 
         slotMaterialSet_ = sceneNode->SigMaterialSet()->Connect([this]()
         {
@@ -507,8 +507,8 @@ namespace NSG
         if (!inWorld_ && body_)
         {
             auto world = owner_.lock();
-            CHECK_ASSERT(world, __FILE__, __LINE__);
-            CHECK_ASSERT(body_, __FILE__, __LINE__);
+            CHECK_ASSERT(world);
+            CHECK_ASSERT(body_);
             int flags = body_->getCollisionFlags();
 
             if (trigger_)
@@ -543,7 +543,7 @@ namespace NSG
             auto world = owner_.lock();
             if (world)
             {
-                CHECK_ASSERT(body_, __FILE__, __LINE__);
+                CHECK_ASSERT(body_);
                 world->removeRigidBody(body_.get());
                 inWorld_ = false;
             }

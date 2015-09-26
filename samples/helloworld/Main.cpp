@@ -93,6 +93,12 @@ int NSG_MAIN(int argc, char* argv[])
 		}
     });
 
+	auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]()
+	{
+		static bool show_test_window = true;
+		ImGui::ShowTestWindow(&show_test_window);
+	});
+
 	window->SetScene(scene.get());
 	return Engine::Create()->Run();
 }

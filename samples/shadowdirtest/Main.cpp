@@ -35,7 +35,7 @@ PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
     auto material = Material::GetOrCreate(mesh->GetName());
     material->SetDiffuseColor(color);
     //material->SetSpecularColor(ColorRGB(0));
-    material->SetRenderPass(RenderPass::PERPIXEL);
+	material->SetRenderPass(RenderPass::LIT);
     //material->SetRenderPass(RenderPass::UNLIT);
     obj->SetMesh(mesh);
     obj->SetMaterial(material);

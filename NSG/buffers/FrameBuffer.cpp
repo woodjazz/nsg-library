@@ -123,13 +123,13 @@ namespace NSG
     void FrameBuffer::AllocateResources()
     {
         LOGI("Framebuffer width=%d, height=%d", width_, height_);
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         glGenFramebuffers(1, &framebuffer_);
 
 		Graphics::GetPtr()->SetFrameBuffer(this, GetDefaultTextureTarget());
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         if (flags_ & Flag::COLOR && !(flags_ & Flag::COLOR_USE_TEXTURE))
         {
@@ -197,15 +197,15 @@ namespace NSG
         GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (GL_FRAMEBUFFER_COMPLETE != status)
         {
-            LOGE("Frame buffer failed with error = 0x%x in file = %s line = %d", status, __FILE__, __LINE__);
+            LOGE("Frame buffer failed with error = 0x%x", status);
         }
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     void FrameBuffer::ReleaseResources()
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
 		Graphics::GetPtr()->UnboundTextures();
 
@@ -227,7 +227,7 @@ namespace NSG
             colorRenderbuffer_ = 0;
         }
 
-        CHECK_ASSERT(framebuffer_, __FILE__, __LINE__);
+        CHECK_ASSERT(framebuffer_);
 
         glDeleteFramebuffers(1, &framebuffer_);
 
@@ -235,12 +235,12 @@ namespace NSG
 
 		Graphics::GetPtr()->SetFrameBuffer(0);
 
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 
     void FrameBuffer::SetSize(int width, int height)
     {
-        CHECK_ASSERT(width >= 0 && height >= 0, __FILE__, __LINE__);
+        CHECK_ASSERT(width >= 0 && height >= 0);
 		auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
         width = Clamp(width, 0, maxSize);
         height = Clamp(height, 0, maxSize);
@@ -300,11 +300,11 @@ namespace NSG
 
     void FrameBuffer::AttachTarget(TextureTarget colorTexTarget)
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
         if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
-            CHECK_ASSERT(colorTexTarget != TextureTarget::UNKNOWN, __FILE__, __LINE__);
-			CHECK_ASSERT(this == Graphics::GetPtr()->GetFrameBuffer(), __FILE__, __LINE__);
+            CHECK_ASSERT(colorTexTarget != TextureTarget::UNKNOWN);
+			CHECK_ASSERT(this == Graphics::GetPtr()->GetFrameBuffer());
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLenum)colorTexTarget, colorTexture_->GetID(), 0);
         }
 
@@ -314,6 +314,6 @@ namespace NSG
             if (flags_ & Flag::STENCIL)
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, stencilTexture_->GetID(), 0);
         }
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
     }
 }

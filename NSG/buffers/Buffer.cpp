@@ -47,7 +47,7 @@ namespace NSG
           dynamic_(usage != GL_STATIC_DRAW),
 		  graphics_(Graphics::GetPtr())
     {
-        CHECK_GL_STATUS(__FILE__, __LINE__);
+        CHECK_GL_STATUS();
 
         glGenBuffers(1, &id_);
     }
@@ -64,7 +64,7 @@ namespace NSG
 
     void Buffer::SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data)
     {
-        CHECK_ASSERT(offset + size <= bufferSize_, __FILE__, __LINE__);
+        CHECK_ASSERT(offset + size <= bufferSize_);
 
         #if !defined(ANDROID) && !defined(EMSCRIPTEN)
         if (Graphics::GetPtr()->HasMapBufferRange())
@@ -72,13 +72,13 @@ namespace NSG
             void* old_data = glMapBufferRange(type_, offset, size,
                                               GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 
-            CHECK_ASSERT(old_data, __FILE__, __LINE__);
+            CHECK_ASSERT(old_data);
 
             memcpy(old_data, data, size);
 
             glFlushMappedBufferRange(type_, offset, size);
 
-            CHECK_CONDITION(glUnmapBuffer(type_), __FILE__, __LINE__);
+            CHECK_CONDITION(glUnmapBuffer(type_));
         }
         else
         #endif

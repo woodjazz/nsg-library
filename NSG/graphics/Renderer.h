@@ -34,18 +34,18 @@ namespace NSG
 	public:
 		Renderer();
 		~Renderer();
+		void Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light);
+		void Render(Window* window, Scene* scene, Camera* camera);
 		void Render(Window* window, Scene* scene);
 		void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
-		const Window* GetWindow() const { return window_; }
-		const Scene* GetScene() const { return scene_; }
 		void SortTransparentBackToFront();
 		void SortSolidFrontToBack();
-		void DrawShadowPass(Batch* batch, const Light* light);
+		void DrawShadowPass(Batch* batch, const Light* light, const ShadowCamera* camera);
 		void EnableDebugPhysics(bool enable) { debugPhysics_ = enable; }
 		PDebugRenderer GetDebugRenderer() const { return debugRenderer_; }
 		static SignalDebugRenderer::PSignal SigDebugRenderer();
 	private:
-		void Draw(Batch* batch, const Pass* pass, const Light* light);
+		void Draw(Batch* batch, const Pass* pass, const Light* light, const Camera* camera);
 		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
 		void GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters);
 		void GenerateCubeShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
@@ -62,7 +62,6 @@ namespace NSG
 		void DebugRendererPass();
 
 		PGraphics graphics_;
-		Window* window_;
 		Scene* scene_;
 		Camera* camera_;
 		PPass shadowPass_;
