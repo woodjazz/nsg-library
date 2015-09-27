@@ -114,7 +114,7 @@ namespace NSG
         {
 			// Calculate receivers for current split
             auto camSplitFrustum = GetFrustum();
-            BoundingBox shadowBox(*camSplitFrustum);
+            //BoundingBox shadowBox(*camSplitFrustum);
             auto receiversBox = Camera::GetViewBox(camSplitFrustum.get(), scene, true, false);
 			if (!receiversBox.IsDefined())
 			{
@@ -129,22 +129,23 @@ namespace NSG
 				return; // no casters for this split => nothing to do
 			}
 			disabled_ = false;
-			shadowBox.Clip(receiversBox);
+			//shadowBox.Clip(receiversBox);
+            BoundingBox shadowBox(receiversBox);
 			shadowBox.Transform(GetView()); // transform view box to shadowCam's space
             castersBox.Transform(GetView()); // transform casters view box to shadowCam's space
 			auto zFar = -shadowBox.min_.z; // from cam point of view: set zFar to more distance z shadowBox
 			auto zNear = -castersBox.max_.z; // from cam point of view: set zNear to closest z caster
-			auto zLength = zFar - zNear;
-			CHECK_ASSERT(zLength > 0);
+			//auto zLength = zFar - zNear;
+			//CHECK_ASSERT(zLength > 0);
 
-			SetFarClip(zLength);
+            SetNearClip(zNear);
+            SetFarClip(zFar);//zLength);
 			auto viewSize = castersBox.Size();
 			SetAspectRatio(viewSize.x / viewSize.y);
 			SetOrthoScale(viewSize.x);
 			auto viewCenter = castersBox.Center();
             // center and move closer to casters
-            // and in order to avoid  lack of shadows
-			auto adjust = Vector3(viewCenter.x, viewCenter.y, -zNear); 
+            auto adjust = Vector3(viewCenter.x, viewCenter.y, 0);//-zNear);
 			Translate(adjust);
         }
         {

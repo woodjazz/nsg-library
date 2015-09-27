@@ -17,7 +17,7 @@
         vec4 coords = GetTextureCoords(vec4(v_worldPos, 1.0));
         
         //If region is out of shadowcam frustum then not in shadow (White)
-        if(clamp(coords.xyz, 0.0, 1.0).xy != coords.xy)
+        if(clamp(coords.xyz, 0.0, 1.0).xyz != coords.xyz)
             return White;//vec4(1.0, 0.0, 1.0, 1.0);
 
         float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));
@@ -32,8 +32,8 @@
         #endif
 
         #ifdef HAS_DIRECTIONAL_LIGHT
-            bool inShadow = sampledDistance / GetShadowCamInvRange() < length(world2light) - u_shadowBias;
-            //bool inShadow = sampledDistance < coords.z - u_shadowBias;
+            //bool inShadow = sampledDistance / GetShadowCamInvRange() < length(world2light) - u_shadowBias;
+            bool inShadow = sampledDistance < coords.z - u_shadowBias;
         #else
             bool inShadow = sampledDistance / u_lightInvRange < length(world2light) - u_shadowBias;
         #endif

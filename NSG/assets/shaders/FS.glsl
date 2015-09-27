@@ -44,10 +44,10 @@
 
     	#elif defined(SHADOW_DIR_PASS)
 
-			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
-    		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;
-   			gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
-   			//gl_FragColor = EncodeDepth2Color(gl_FragDepth);
+			//vec3 lightToVertex = v_worldPos - u_eyeWorldPos;
+    		//float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;
+   			//gl_FragColor = EncodeDepth2Color(lightToPixelDistance);
+   			gl_FragColor = EncodeDepth2Color(gl_FragDepth);
 
 		#elif defined(LIT)
 

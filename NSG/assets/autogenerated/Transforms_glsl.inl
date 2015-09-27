@@ -179,23 +179,34 @@ static const char* TRANSFORMS_GLSL = \
 "	    }\n"\
 "		int GetBestSplit()\n"\
 "		{\n"\
+"			#if 0\n"\
+"			return GetSplit();\n"\
+"			#else\n"\
 "			#if MAX_SPLITS > 1\n"\
 "				// Transforms from world to shadow camera space\n"\
 "		        vec4 coords = u_lightViewProjection[GetSplit()] * vec4(v_worldPos, 1.0);\n"\
 "		        // Normalize from -w..w to -1..1\n"\
-"		        coords /= coords.w; \n"\
+"		        //coords /= coords.w; \n"\
 "		        // Normalize from -1..1 to 0..1\n"\
-"		        coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); \n"\
-"		        if(clamp(coords.xyz, 0.0, 1.0).xy != coords.xy && GetSplit() < 3)\n"\
+"		        //coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); \n"\
+"		        if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() < 3)\n"\
 "		        {\n"\
 "		        	// coord is outside split => pick next one\n"\
-"		        	vec4 viewPos = u_view * vec4(v_worldPos, 1.0);\n"\
-"		        	if(-viewPos.z < u_shadowCameraZFar[GetSplit() + 1])\n"\
-"		            	return GetSplit() + 1;	        	\n"\
+"		        	coords = u_lightViewProjection[GetSplit() + 1] * vec4(v_worldPos, 1.0);\n"\
+"		        	if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() + 1 < 3)\n"\
+"		        	{		\n"\
+"		        		// coord is outside split => pick next one\n"\
+"		        		coords = u_lightViewProjection[GetSplit() + 2] * vec4(v_worldPos, 1.0);\n"\
+"		        		if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() + 2 < 3)\n"\
+"		        			return 3;\n"\
+"		        		return GetSplit() + 2;\n"\
+"		        	}\n"\
+"		            return GetSplit() + 1;	        	\n"\
 "		        }\n"\
 "	    		return GetSplit();\n"\
 "    		#else\n"\
 "    			return 0;\n"\
+"    		#endif\n"\
 "    		#endif\n"\
 "		}\n"\
 "		vec4 GetSplitColor()\n"\
@@ -223,7 +234,7 @@ static const char* TRANSFORMS_GLSL = \
 "	        coords /= coords.w;\n"\
 "	        // Normalize from -1..1 to 0..1\n"\
 "	        coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0);\n"\
-"	        coords.z = clamp(coords.z, 0.0, 1.0);\n"\
+"	        //coords.z = clamp(coords.z, 0.0, 1.0);\n"\
 "			return coords;\n"\
 "	    }\n"\
 "	    vec3 GetShadowCamPos()\n"\

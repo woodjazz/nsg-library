@@ -31,10 +31,10 @@ static const char* FS_GLSL = \
 "    		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;\n"\
 "    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
 "    	#elif defined(SHADOW_DIR_PASS)\n"\
-"			vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
-"    		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;\n"\
-"   			gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
-"   			//gl_FragColor = EncodeDepth2Color(gl_FragDepth);\n"\
+"			//vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
+"    		//float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;\n"\
+"   			//gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
+"   			gl_FragColor = EncodeDepth2Color(gl_FragDepth);\n"\
 "		#elif defined(LIT)\n"\
 "				//Lighting is calculated in world space\n"\
 "				vec3 normal = GetNormal();\n"\

@@ -17,7 +17,7 @@ static const char* SHADOWS_GLSL = \
 "        vec4 coords = GetTextureCoords(vec4(v_worldPos, 1.0));\n"\
 "        \n"\
 "        //If region is out of shadowcam frustum then not in shadow (White)\n"\
-"        if(clamp(coords.xyz, 0.0, 1.0).xy != coords.xy)\n"\
+"        if(clamp(coords.xyz, 0.0, 1.0).xyz != coords.xyz)\n"\
 "            return White;//vec4(1.0, 0.0, 1.0, 1.0);\n"\
 "        float sampledDistance = DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy));\n"\
 "        #ifndef IS_TARGET_MOBILE\n"\
@@ -29,8 +29,8 @@ static const char* SHADOWS_GLSL = \
 "            sampledDistance *= 0.25;\n"\
 "        #endif\n"\
 "        #ifdef HAS_DIRECTIONAL_LIGHT\n"\
-"            bool inShadow = sampledDistance / GetShadowCamInvRange() < length(world2light) - u_shadowBias;\n"\
-"            //bool inShadow = sampledDistance < coords.z - u_shadowBias;\n"\
+"            //bool inShadow = sampledDistance / GetShadowCamInvRange() < length(world2light) - u_shadowBias;\n"\
+"            bool inShadow = sampledDistance < coords.z - u_shadowBias;\n"\
 "        #else\n"\
 "            bool inShadow = sampledDistance / u_lightInvRange < length(world2light) - u_shadowBias;\n"\
 "        #endif\n"\
