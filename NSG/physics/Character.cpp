@@ -162,13 +162,13 @@ namespace NSG
         {
             // collided forward ( cannot step up)
 			auto dir2Target = stepForwardFinalPos_ - stepForwardSourcePos_;
-            auto sliding = GetSlidingVector(dir2Target, result.normal_);
-            if(!flying_)
-            {
-                sliding.y = 0;
-                position.y = groundHeight + shapeHalfHeight_ + nodeColliderOffset_.y;
-            }
-			stepForwardFinalPos_ = position + sliding;
+            slidingDirection_ = GetSlidingVector(dir2Target, result.normal_);
+            slidingDirection_.y = 0;
+            auto result = Obstruction(stepForwardSourcePos_, stepForwardSourcePos_ + slidingDirection_, 0.25f * shapeSphereRadius_);
+            if (!result.HasCollided())
+                stepForwardFinalPos_ = position + slidingDirection_; //slide
+            else
+                stepForwardFinalPos_ = position; //keep current position
         }
         else if (IsOnGround())
         {
@@ -203,6 +203,9 @@ namespace NSG
     {
 		auto debugRenderer = Renderer::GetPtr()->GetDebugRenderer();
 		debugRenderer->AddLine(stepForwardSourcePos_, stepForwardTargetPos_, Color(COLOR_RED, 1));
+        auto worldTrans =  ghost_->getWorldTransform();
+        auto position = ToVector3(worldTrans.getOrigin());
+        debugRenderer->AddLine(position, position + 10.f * Normalize(slidingDirection_), Color(COLOR_BLUE, 1));
     }
 
     PhysicsRaycastResult Character::Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const

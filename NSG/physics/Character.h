@@ -115,6 +115,7 @@ namespace NSG
 		Vector3 minStepForward_;
 		Vector3 bodyCenter_;
 		Vector3 forwardDirection_;
+        Vector3 slidingDirection_;
 		
     };
 }
