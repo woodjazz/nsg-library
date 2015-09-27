@@ -46,7 +46,7 @@ uniform float u_shadowBias; // constant bias
 uniform vec4 u_shadowMapInvSize;
 
 uniform vec3 u_lightPosition;
-uniform float u_lightInvRange; // only used for point and spot lights and SHADOW_DIR_PASS
+uniform float u_lightInvRange; // only used for point and spot lights
 uniform vec3 u_lightDirection;
 uniform vec4 u_lightDiffuseColor;
 uniform vec4 u_lightSpecularColor;
@@ -81,8 +81,6 @@ uniform float u_fogHeight;
 	#endif
 
 	#ifdef MAX_SPLITS		
-		uniform float u_shadowCamInvRange[MAX_SPLITS]; // used only for directional lights
-		uniform vec3 u_shadowCamPos[MAX_SPLITS]; // used only for directional lights
 		uniform mat4 u_lightView[MAX_SPLITS];
 		uniform mat4 u_lightProjection[MAX_SPLITS];
 		uniform mat4 u_lightViewProjection[MAX_SPLITS];

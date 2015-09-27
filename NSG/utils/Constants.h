@@ -60,7 +60,7 @@ namespace NSG
     static const ColorRGB COLOR_RED(1, 0, 0);
     static const ColorRGB COLOR_GREEN(0, 1, 0);
     static const ColorRGB COLOR_BLUE(0, 0, 1);
-    static const ColorRGB COLOR_YELLOW(1, 1, 1);
+    static const ColorRGB COLOR_YELLOW(1, 1, 0);
 
     static const size_t MAX_NODES_IN_BATCH = 1000;
     static const float PRECISION = 0.01f;

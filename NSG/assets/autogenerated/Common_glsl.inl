@@ -46,7 +46,7 @@ static const char* COMMON_GLSL = \
 "uniform float u_shadowBias; // constant bias\n"\
 "uniform vec4 u_shadowMapInvSize;\n"\
 "uniform vec3 u_lightPosition;\n"\
-"uniform float u_lightInvRange; // only used for point and spot lights and SHADOW_DIR_PASS\n"\
+"uniform float u_lightInvRange; // only used for point and spot lights\n"\
 "uniform vec3 u_lightDirection;\n"\
 "uniform vec4 u_lightDiffuseColor;\n"\
 "uniform vec4 u_lightSpecularColor;\n"\
@@ -79,8 +79,6 @@ static const char* COMMON_GLSL = \
 "		#define MAX_SPLITS 5\n"\
 "	#endif\n"\
 "	#ifdef MAX_SPLITS		\n"\
-"		uniform float u_shadowCamInvRange[MAX_SPLITS]; // used only for directional lights\n"\
-"		uniform vec3 u_shadowCamPos[MAX_SPLITS]; // used only for directional lights\n"\
 "		uniform mat4 u_lightView[MAX_SPLITS];\n"\
 "		uniform mat4 u_lightProjection[MAX_SPLITS];\n"\
 "		uniform mat4 u_lightViewProjection[MAX_SPLITS];\n"\

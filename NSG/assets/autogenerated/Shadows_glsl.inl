@@ -10,7 +10,7 @@ static const char* SHADOWS_GLSL = \
 "        return sampledDistance / u_lightInvRange < length(world2light) - u_shadowBias ? u_shadowColor : vec4(1.0);\n"\
 "    }\n"\
 "#elif defined(SHADOWMAP)\n"\
-"    vec4 CalcShadowFactor(vec3 world2light)\n"\
+"    vec4 CalcShadowFactor()\n"\
 "    {\n"\
 "        const vec4 White = vec4(1.0);\n"\
 "        \n"\
@@ -28,12 +28,7 @@ static const char* SHADOWS_GLSL = \
 "            sampledDistance += DecodeColor2Depth(GetTexture2DFromShadowMap(coords.xy + vec2(shadowMapInvSize)));\n"\
 "            sampledDistance *= 0.25;\n"\
 "        #endif\n"\
-"        #ifdef HAS_DIRECTIONAL_LIGHT\n"\
-"            //bool inShadow = sampledDistance / GetShadowCamInvRange() < length(world2light) - u_shadowBias;\n"\
-"            bool inShadow = sampledDistance < coords.z - u_shadowBias;\n"\
-"        #else\n"\
-"            bool inShadow = sampledDistance / u_lightInvRange < length(world2light) - u_shadowBias;\n"\
-"        #endif\n"\
+"        bool inShadow = sampledDistance < coords.z - u_shadowBias;\n"\
 "        #ifdef COLOR_SPLITS\n"\
 "            return inShadow ? GetSplitColor() : White;\n"\
 "        #else\n"\

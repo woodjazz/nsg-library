@@ -126,8 +126,6 @@ namespace NSG
         memset(&materialLoc_, -1, sizeof(materialLoc_));
         memset(&blurFilterLoc_, -1, sizeof(blurFilterLoc_));
         memset(&wavesFilterLoc_, -1, sizeof(wavesFilterLoc_));
-        memset(&shadowCamInvRangeLoc_, -1, sizeof(shadowCamInvRangeLoc_));
-        memset(&shadowCamPosLoc_, -1, sizeof(shadowCamPosLoc_));
         memset(&lightViewLoc_, -1, sizeof(lightViewLoc_));
         memset(&lightProjectionLoc_, -1, sizeof(lightProjectionLoc_));
         memset(&lightViewProjectionLoc_, -1, sizeof(lightViewProjectionLoc_));
@@ -310,8 +308,6 @@ namespace NSG
 
         for (int i = 0; i < MAX_SPLITS; i++)
         {
-            shadowCamInvRangeLoc_[i] = GetUniformLocation("u_shadowCamInvRange[" + ToString(i) + "]");
-            shadowCamPosLoc_[i] = GetUniformLocation("u_shadowCamPos[" + ToString(i) + "]");
             lightViewLoc_[i] = GetUniformLocation("u_lightView[" + ToString(i) + "]");
             lightProjectionLoc_[i] = GetUniformLocation("u_lightProjection[" + ToString(i) + "]");
             lightViewProjectionLoc_[i] = GetUniformLocation("u_lightViewProjection[" + ToString(i) + "]");
@@ -595,15 +591,6 @@ namespace NSG
                 }
             }
 
-            if (shadowPass)
-            {
-                if (lightInvRangeLoc_ != -1)
-                {
-                    const ShadowCamera* shadowCam = dynamic_cast<const ShadowCamera*>(camera_);
-                    glUniform1f(lightInvRangeLoc_, shadowCam->GetInvRange());
-                }
-            }
-
             if (viewLoc_ != -1)
             {
                 auto& m = camera_->GetView();
@@ -645,38 +632,16 @@ namespace NSG
                 }
             }
 
-            if (!shadowPass && lightInvRangeLoc_ != -1)
+            if (lightInvRangeLoc_ != -1)
             {
-                // lightInvRangeLoc_ not used for directional lights
+                // lightInvRangeLoc_ only used for point and spot lights
                 CHECK_ASSERT(light_->GetType() != LightType::DIRECTIONAL);
                 glUniform1f(lightInvRangeLoc_, light_->GetInvRange());
             }
 
-            auto shadowSplits = light_->GetShadowSplits();
-            for (int i = 0; i < shadowSplits; i++)
-            {
-                if (shadowCamInvRangeLoc_[i] != -1)
-                {
-                    // shadowCamInvRangeLoc_ only used for directional lights
-                    CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
-                    auto shadowCamera = light_->GetShadowCamera(i);
-                    auto v = shadowCamera->GetInvRange();
-                    glUniform1f(shadowCamInvRangeLoc_[i], v);
-                    //LOGI("%d %f", i, 1.f/v);
-                }
-
-                if (shadowCamPosLoc_[i] != -1)
-                {
-                    // shadowCamPosLoc_ only used for directional lights
-                    CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
-                    auto shadowCamera = light_->GetShadowCamera(i);
-                    auto& position = shadowCamera->GetGlobalPosition();
-                    glUniform3fv(shadowCamPosLoc_[i], 1, &position[0]);
-                }
-            }
-
             if (shadowCameraZFarLoc_ != -1)
             {
+                auto shadowSplits = light_->GetShadowSplits();
                 Vector4 shadowCameraZFarSplits;
                 bool uniformsNeedUpdate = camera_->UniformsNeedUpdate();
                 for (int i = 0; i < shadowSplits; i++)
@@ -733,24 +698,6 @@ namespace NSG
 
                 for (int i = 0; i < shadowSplits; i++)
                 {
-                    if (shadowCamInvRangeLoc_[i] != -1)
-                    {
-                        // shadowCamInvRangeLoc_ only used for directional lights
-                        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
-                        auto shadowCamera = light_->GetShadowCamera(i);
-                        auto v = shadowCamera->GetInvRange();
-                        glUniform1f(shadowCamInvRangeLoc_[i], v);
-                    }
-
-                    if (shadowCamPosLoc_[i] != -1)
-                    {
-                        // shadowCamPosLoc_ only used for directional lights
-                        CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
-                        auto shadowCamera = light_->GetShadowCamera(i);
-                        auto& position = shadowCamera->GetGlobalPosition();
-                        glUniform3fv(shadowCamPosLoc_[i], 1, &position[0]);
-                    }
-
                     if (lightViewLoc_[i] != -1)
                     {
                         auto shadowCamera = light_->GetShadowCamera(i);

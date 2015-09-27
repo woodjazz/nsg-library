@@ -118,8 +118,6 @@ namespace NSG
         GLuint normalMatrixLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
-        GLuint shadowCamInvRangeLoc_[MAX_SPLITS];
-		GLuint shadowCamPosLoc_[MAX_SPLITS];
 		GLuint lightViewLoc_[MAX_SPLITS];
 		GLuint lightProjectionLoc_[MAX_SPLITS];
 		GLuint lightViewProjectionLoc_[MAX_SPLITS];

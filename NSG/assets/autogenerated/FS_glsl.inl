@@ -26,20 +26,17 @@ static const char* FS_GLSL = \
 "			#else\n"\
 "				gl_FragColor = GetAmbientIntensity() * GetDiffuseColor();\n"\
 "			#endif\n"\
-"		#elif defined(SHADOW_POINT_PASS) || defined(SHADOW_SPOT_PASS)\n"\
+"		#elif defined(SHADOW_POINT_PASS)\n"\
 "			vec3 lightToVertex = v_worldPos - u_lightPosition;\n"\
 "    		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;\n"\
 "    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
-"    	#elif defined(SHADOW_DIR_PASS)\n"\
-"			//vec3 lightToVertex = v_worldPos - u_eyeWorldPos;\n"\
-"    		//float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;\n"\
-"   			//gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
+"    	#elif defined(SHADOW_DIR_PASS) || defined(SHADOW_SPOT_PASS)\n"\
 "   			gl_FragColor = EncodeDepth2Color(gl_FragDepth);\n"\
 "		#elif defined(LIT)\n"\
 "				//Lighting is calculated in world space\n"\
 "				vec3 normal = GetNormal();\n"\
 "	    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
-"	    		vec3 world2light = v_worldPos - GetShadowCamPos();\n"\
+"	    		vec3 world2light = v_worldPos - u_lightPosition;\n"\
 "				#ifdef FOG\n"\
 "					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal);\n"\
 "					gl_FragColor = vec4(GetLitFog(finalColor.rgb), finalColor.a);\n"\

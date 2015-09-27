@@ -169,53 +169,19 @@ static const char* TRANSFORMS_GLSL = \
 "		            return 1;\n"\
 "		        else if(-viewPos.z < u_shadowCameraZFar[2])\n"\
 "		            return 2;\n"\
-"		        else if(-viewPos.z < u_shadowCameraZFar[3])\n"\
+"		        else \n"\
 "		            return 3;\n"\
-"		        else\n"\
-"		        	return 3;\n"\
 "		    #else\n"\
 "		        return 0;\n"\
 "		    #endif\n"\
 "	    }\n"\
-"		int GetBestSplit()\n"\
-"		{\n"\
-"			#if 0\n"\
-"			return GetSplit();\n"\
-"			#else\n"\
-"			#if MAX_SPLITS > 1\n"\
-"				// Transforms from world to shadow camera space\n"\
-"		        vec4 coords = u_lightViewProjection[GetSplit()] * vec4(v_worldPos, 1.0);\n"\
-"		        // Normalize from -w..w to -1..1\n"\
-"		        //coords /= coords.w; \n"\
-"		        // Normalize from -1..1 to 0..1\n"\
-"		        //coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); \n"\
-"		        if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() < 3)\n"\
-"		        {\n"\
-"		        	// coord is outside split => pick next one\n"\
-"		        	coords = u_lightViewProjection[GetSplit() + 1] * vec4(v_worldPos, 1.0);\n"\
-"		        	if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() + 1 < 3)\n"\
-"		        	{		\n"\
-"		        		// coord is outside split => pick next one\n"\
-"		        		coords = u_lightViewProjection[GetSplit() + 2] * vec4(v_worldPos, 1.0);\n"\
-"		        		if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() + 2 < 3)\n"\
-"		        			return 3;\n"\
-"		        		return GetSplit() + 2;\n"\
-"		        	}\n"\
-"		            return GetSplit() + 1;	        	\n"\
-"		        }\n"\
-"	    		return GetSplit();\n"\
-"    		#else\n"\
-"    			return 0;\n"\
-"    		#endif\n"\
-"    		#endif\n"\
-"		}\n"\
 "		vec4 GetSplitColor()\n"\
 "		{\n"\
 "            const vec4 Red = vec4(1.0, 0.0, 0.0, 1.0);\n"\
 "            const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);\n"\
 "            const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);\n"\
 "            const vec4 Yellow = vec4(1.0, 1.0, 0.0, 1.0);\n"\
-"            int split = GetBestSplit();\n"\
+"            int split = GetSplit();\n"\
 "            if(split == 0)\n"\
 "                return Red;\n"\
 "            else if(split == 1)\n"\
@@ -229,7 +195,7 @@ static const char* TRANSFORMS_GLSL = \
 "		vec4 GetTextureCoords(vec4 worldPos)\n"\
 "	    {\n"\
 "	    	// Transforms from world to shadow camera space\n"\
-"	        vec4 coords = u_lightViewProjection[GetBestSplit()] * worldPos; \n"\
+"	        vec4 coords = u_lightViewProjection[GetSplit()] * worldPos; \n"\
 "	        // Normalize from -w..w to -1..1\n"\
 "	        coords /= coords.w;\n"\
 "	        // Normalize from -1..1 to 0..1\n"\
@@ -237,22 +203,10 @@ static const char* TRANSFORMS_GLSL = \
 "	        //coords.z = clamp(coords.z, 0.0, 1.0);\n"\
 "			return coords;\n"\
 "	    }\n"\
-"	    vec3 GetShadowCamPos()\n"\
-"	    {\n"\
-"	    	#if defined(HAS_DIRECTIONAL_LIGHT) || defined(SHADOW_DIR_PASS)\n"\
-"		        return u_shadowCamPos[GetBestSplit()];\n"\
-"	    	#else\n"\
-"	    		return u_lightPosition;\n"\
-"	    	#endif\n"\
-"	    }\n"\
-"	    float GetShadowCamInvRange()\n"\
-"	    {\n"\
-"	    	return u_shadowCamInvRange[GetBestSplit()];\n"\
-"	    }\n"\
 "		#if defined(SHADOWMAP) || defined(CUBESHADOWMAP)\n"\
 "		    float GetShadowMapInvSize()\n"\
 "		    {\n"\
-"		        return u_shadowMapInvSize[GetBestSplit()];\n"\
+"		        return u_shadowMapInvSize[GetSplit()];\n"\
 "		    }\n"\
 "		#endif\n"\
 "		#if defined(CUBESHADOWMAP)\n"\
@@ -272,7 +226,7 @@ static const char* TRANSFORMS_GLSL = \
 "		#elif defined(SHADOWMAP)\n"\
 "		    vec4 GetTexture2DFromShadowMap(vec2 coord)\n"\
 "		    {\n"\
-"		        int split = GetBestSplit();\n"\
+"		        int split = GetSplit();\n"\
 "		        if(split == 0)\n"\
 "		            return texture2D(u_texture3, coord);\n"\
 "		        else if(split == 1)\n"\

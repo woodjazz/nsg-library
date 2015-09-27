@@ -10,7 +10,7 @@
 
 #elif defined(SHADOWMAP)
 
-    vec4 CalcShadowFactor(vec3 world2light)
+    vec4 CalcShadowFactor()
     {
         const vec4 White = vec4(1.0);
         
@@ -31,12 +31,7 @@
             sampledDistance *= 0.25;
         #endif
 
-        #ifdef HAS_DIRECTIONAL_LIGHT
-            //bool inShadow = sampledDistance / GetShadowCamInvRange() < length(world2light) - u_shadowBias;
-            bool inShadow = sampledDistance < coords.z - u_shadowBias;
-        #else
-            bool inShadow = sampledDistance / u_lightInvRange < length(world2light) - u_shadowBias;
-        #endif
+        bool inShadow = sampledDistance < coords.z - u_shadowBias;
 
         #ifdef COLOR_SPLITS
             return inShadow ? GetSplitColor() : White;

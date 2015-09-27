@@ -40,9 +40,7 @@ namespace NSG
         void SetCurrentCubeShadowMapFace(TextureTarget target);
         bool GetVisiblesShadowCasters(std::vector<SceneNode*>& result) const;
         float GetFarSplit() const { return farSplit_; }
-        const Vector3& GetLightGlobalPosition() const;
-        float GetInvRange() const { return invRange_; }
-		bool IsDisabled() const { return disabled_; }
+ 		bool IsDisabled() const { return disabled_; }
 		void Disable() { disabled_ = true; }
     private:
         Light* light_;
@@ -53,7 +51,6 @@ namespace NSG
         Node dirPositiveZ_;
         Node dirNegativeZ_;
         float farSplit_;
-        float invRange_;
 		bool disabled_;
     };
 }

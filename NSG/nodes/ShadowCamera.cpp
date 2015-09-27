@@ -41,7 +41,6 @@ namespace NSG
         : Camera(light->GetName() + "ShadowCamera"),
           light_(light),
           farSplit_(MAX_WORLD_SIZE),
-          invRange_(0),
 		  disabled_(false)
     {
         dirPositiveX_.SetLocalLookAtPosition(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
@@ -84,6 +83,8 @@ namespace NSG
 
     void ShadowCamera::SetupDirectional(const Camera* camera, float nearSplit, float farSplit)
     {
+        farSplit_ = farSplit;
+
         CHECK_ASSERT(!GetParent());
 
         auto scene = light_->GetScene().get();
@@ -102,19 +103,18 @@ namespace NSG
             auto camSplitFrustum = camera->GetFrustumSplit(nearSplit, farSplit);
             BoundingBox shadowBox(*camSplitFrustum);
             shadowBox.Transform(GetView()); // Transform shadowBox to light space
-            SetNearClip(0.f);
+            SetNearClip(0);//-shadowBox.max_.z);
             SetFarClip(-shadowBox.min_.z);
             auto viewSize = shadowBox.Size();
 			SetAspectRatio(viewSize.x / viewSize.y);
 			SetOrthoScale(viewSize.x);
             auto viewCenter = shadowBox.Center();
-            Vector3 adjust(viewCenter.x, viewCenter.y, 0);
-            Translate(adjust);
+            viewCenter.z = 0;
+            Translate(viewCenter);
         }
         {
 			// Calculate receivers for current split
             auto camSplitFrustum = GetFrustum();
-            //BoundingBox shadowBox(*camSplitFrustum);
             auto receiversBox = Camera::GetViewBox(camSplitFrustum.get(), scene, true, false);
 			if (!receiversBox.IsDefined())
 			{
@@ -129,24 +129,20 @@ namespace NSG
 				return; // no casters for this split => nothing to do
 			}
 			disabled_ = false;
-			//shadowBox.Clip(receiversBox);
-            BoundingBox shadowBox(receiversBox);
-			shadowBox.Transform(GetView()); // transform view box to shadowCam's space
+			receiversBox.Transform(GetView()); // transform receivers view box to shadowCam's space
             castersBox.Transform(GetView()); // transform casters view box to shadowCam's space
-			auto zFar = -shadowBox.min_.z; // from cam point of view: set zFar to more distance z shadowBox
+			auto zFar = -receiversBox.min_.z; // from cam point of view: set zFar to more distance z receiver
 			auto zNear = -castersBox.max_.z; // from cam point of view: set zNear to closest z caster
-			//auto zLength = zFar - zNear;
-			//CHECK_ASSERT(zLength > 0);
 
             SetNearClip(zNear);
-            SetFarClip(zFar);//zLength);
+            SetFarClip(zFar);
 			auto viewSize = castersBox.Size();
 			SetAspectRatio(viewSize.x / viewSize.y);
 			SetOrthoScale(viewSize.x);
 			auto viewCenter = castersBox.Center();
-            // center and move closer to casters
-            auto adjust = Vector3(viewCenter.x, viewCenter.y, 0);//-zNear);
-			Translate(adjust);
+            // center camera
+            viewCenter.z = 0;
+			Translate(viewCenter);
         }
         {
 #if 0
@@ -170,16 +166,6 @@ namespace NSG
 				SetOrthoScale(shadowBoxSize.x);
 			}
 #endif
-
-			{
-				auto camSplitFrustum = GetFrustum();
-				BoundingBox viewBox(*camSplitFrustum);
-				viewBox.Transform(camera->GetView()); // Transform worldBox to camera space
-				auto range = Length(viewBox.Size());
-                invRange_ = 1.f / range;
-				//auto nearSplit = -viewBox.max_.z;
-				farSplit_ = -viewBox.min_.z;
-			}
 
         }
     }
@@ -226,12 +212,5 @@ namespace NSG
                 result.push_back(visible);
         }
         return !result.empty();
-    }
-
-    const Vector3& ShadowCamera::GetLightGlobalPosition() const
-    {
-        if (LightType::DIRECTIONAL == light_->GetType())
-            return GetGlobalPosition();
-        return light_->GetGlobalPosition();
     }
 }

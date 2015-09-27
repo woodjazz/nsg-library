@@ -80,7 +80,7 @@ int NSG_MAIN(int argc, char* argv[])
     #endif
     auto control = std::make_shared<CameraControl>(camera);
     auto plane = Mesh::Create<BoxMesh>();
-    plane->Set(500, 0.1f, 500);
+    plane->Set(60, 0.1f, 500);
     auto floor = CreateObject(plane, ColorRGB(0.058f, 0.58f, 0.98f), Vector3(0));
     floor->GetMaterial()->CastShadow(false);
 	//floor->GetMaterial()->SetAlphaForSpecular(0);

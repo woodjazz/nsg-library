@@ -186,47 +186,12 @@
 		            return 1;
 		        else if(-viewPos.z < u_shadowCameraZFar[2])
 		            return 2;
-		        else if(-viewPos.z < u_shadowCameraZFar[3])
+		        else 
 		            return 3;
-		        else
-		        	return 3;
 		    #else
 		        return 0;
 		    #endif
 	    }
-
-		int GetBestSplit()
-		{
-			#if 0
-			return GetSplit();
-			#else
-			#if MAX_SPLITS > 1
-				// Transforms from world to shadow camera space
-		        vec4 coords = u_lightViewProjection[GetSplit()] * vec4(v_worldPos, 1.0);
-		        // Normalize from -w..w to -1..1
-		        //coords /= coords.w; 
-		        // Normalize from -1..1 to 0..1
-		        //coords  = 0.5 * coords + vec4(0.5, 0.5, 0.5, 0.0); 
-		        if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() < 3)
-		        {
-		        	// coord is outside split => pick next one
-		        	coords = u_lightViewProjection[GetSplit() + 1] * vec4(v_worldPos, 1.0);
-		        	if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() + 1 < 3)
-		        	{		
-		        		// coord is outside split => pick next one
-		        		coords = u_lightViewProjection[GetSplit() + 2] * vec4(v_worldPos, 1.0);
-		        		if(clamp(coords.xyz, -coords.w, coords.w).xyz != coords.xyz && GetSplit() + 2 < 3)
-		        			return 3;
-		        		return GetSplit() + 2;
-		        	}
-		            return GetSplit() + 1;	        	
-		        }
-	    		return GetSplit();
-    		#else
-    			return 0;
-    		#endif
-    		#endif
-		}
 
 		vec4 GetSplitColor()
 		{
@@ -234,7 +199,7 @@
             const vec4 Green = vec4(0.0, 1.0, 0.0, 1.0);
             const vec4 Blue = vec4(0.0, 0.0, 1.0, 1.0);
             const vec4 Yellow = vec4(1.0, 1.0, 0.0, 1.0);
-            int split = GetBestSplit();
+            int split = GetSplit();
             if(split == 0)
                 return Red;
             else if(split == 1)
@@ -249,7 +214,7 @@
 		vec4 GetTextureCoords(vec4 worldPos)
 	    {
 	    	// Transforms from world to shadow camera space
-	        vec4 coords = u_lightViewProjection[GetBestSplit()] * worldPos; 
+	        vec4 coords = u_lightViewProjection[GetSplit()] * worldPos; 
 	        // Normalize from -w..w to -1..1
 	        coords /= coords.w;
 	        // Normalize from -1..1 to 0..1
@@ -258,25 +223,11 @@
 			return coords;
 	    }
 
-	    vec3 GetShadowCamPos()
-	    {
-	    	#if defined(HAS_DIRECTIONAL_LIGHT) || defined(SHADOW_DIR_PASS)
-		        return u_shadowCamPos[GetBestSplit()];
-	    	#else
-	    		return u_lightPosition;
-	    	#endif
-	    }
-
-	    float GetShadowCamInvRange()
-	    {
-	    	return u_shadowCamInvRange[GetBestSplit()];
-	    }
-
 		#if defined(SHADOWMAP) || defined(CUBESHADOWMAP)
 
 		    float GetShadowMapInvSize()
 		    {
-		        return u_shadowMapInvSize[GetBestSplit()];
+		        return u_shadowMapInvSize[GetSplit()];
 		    }
 
 		#endif
@@ -301,7 +252,7 @@
 
 		    vec4 GetTexture2DFromShadowMap(vec2 coord)
 		    {
-		        int split = GetBestSplit();
+		        int split = GetSplit();
 		        if(split == 0)
 		            return texture2D(u_texture3, coord);
 		        else if(split == 1)

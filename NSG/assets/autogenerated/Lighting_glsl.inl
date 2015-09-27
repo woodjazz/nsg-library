@@ -41,11 +41,11 @@ static const char* LIGHTING_GLSL = \
 "{\n"\
 "    #if defined(COMPILEFS) && (defined(SHADOWMAP) || defined(CUBESHADOWMAP))\n"\
 "        #if defined(HAS_DIRECTIONAL_LIGHT)\n"\
-"            return CalcShadowFactor(world2light) * CalcLight(u_lightDirection, vertexToEye, normal);\n"\
+"            return CalcShadowFactor() * CalcLight(u_lightDirection, vertexToEye, normal);\n"\
 "        #elif defined(HAS_POINT_LIGHT)\n"\
 "            return CalcShadowFactor(world2light) * CalcPointLight(world2light, vertexToEye, normal);\n"\
 "        #elif defined(HAS_SPOT_LIGHT)\n"\
-"            return CalcShadowFactor(world2light) * CalcSpotLight(world2light, vertexToEye, normal);\n"\
+"            return CalcShadowFactor() * CalcSpotLight(world2light, vertexToEye, normal);\n"\
 "        #else \n"\
 "            return vec4(1.0);        \n"\
 "        #endif\n"\
