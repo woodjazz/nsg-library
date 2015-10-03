@@ -223,6 +223,12 @@
 			return coords;
 	    }
 
+	    // Transforms from world to shadow camera space
+	    vec4 GetShadowClipPos(vec4 worldPos)
+	    {
+	        return u_lightViewProjection[GetSplit()] * worldPos;
+	    }	    
+
 		#if defined(SHADOWMAP) || defined(CUBESHADOWMAP)
 
 		    float GetShadowMapInvSize()

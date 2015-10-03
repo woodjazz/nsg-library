@@ -67,6 +67,11 @@ namespace NSG
             scene->RemoveFromOctree(this);
     }
 
+    bool SceneNode::CanBeVisible() const
+    {
+        return mesh_ != nullptr;
+    }
+
     void SceneNode::SetMaterial(PMaterial material)
     {
         if (material_ != material)
@@ -165,17 +170,22 @@ namespace NSG
 
     const BoundingBox& SceneNode::GetWorldBoundingBox() const
     {
-        if (worldBBNeedsUpdate_)
+		if (worldBBNeedsUpdate_)
         {
             if (mesh_ && mesh_->IsReady())
             {
                 worldBB_ = mesh_->GetBB();
-                worldBB_.Transform(*this);
+				worldBB_.Transform(*this);
                 worldBBNeedsUpdate_ = false;
             }
         }
         return worldBB_;
     }
+
+	bool SceneNode::IsBillboard() const
+	{
+		return material_ && material_->GetBillboardType() != BillboardType::NONE;
+	}
 
     BoundingBox SceneNode::GetWorldBoundingBoxBut(const SceneNode* node) const
     {
@@ -394,5 +404,12 @@ namespace NSG
                 defines += "SKINNED\n";
             }
         }
+    }
+
+    void SceneNode::ShowGUIProperties(Editor* editor)
+    {
+        Node::ShowGUIProperties(editor);
+        if(material_)
+            material_->ShowGUIProperties(editor);
     }
 }

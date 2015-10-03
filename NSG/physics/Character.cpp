@@ -164,11 +164,16 @@ namespace NSG
 			auto dir2Target = stepForwardFinalPos_ - stepForwardSourcePos_;
             slidingDirection_ = GetSlidingVector(dir2Target, result.normal_);
             slidingDirection_.y = 0;
-            auto result = Obstruction(stepForwardSourcePos_, stepForwardSourcePos_ + slidingDirection_, 0.25f * shapeSphereRadius_);
-            if (!result.HasCollided())
-                stepForwardFinalPos_ = position + slidingDirection_; //slide
-            else
-                stepForwardFinalPos_ = position; //keep current position
+			if (Length(slidingDirection_) > EPSILON)
+			{
+				auto result = Obstruction(stepForwardSourcePos_, stepForwardSourcePos_ + slidingDirection_, 0.25f * shapeSphereRadius_);
+				if (!result.HasCollided())
+					stepForwardFinalPos_ = position + slidingDirection_; //slide
+				else
+					stepForwardFinalPos_ = position; //keep current position
+			}
+			else
+				stepForwardFinalPos_ = position; //keep current position
         }
         else if (IsOnGround())
         {

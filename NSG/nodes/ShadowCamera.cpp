@@ -63,7 +63,7 @@ namespace NSG
         SetOrientation(light_->GetGlobalOrientation());
         SetNearClip(0.1f);
         SetFarClip(light_->GetDistance());
-        SetFOV(90.f);
+        SetFOVDegrees(90.f);
         SetAspectRatio(1.0);
         DisableOrtho();
     }
@@ -76,7 +76,7 @@ namespace NSG
         SetNearClip(light_->GetShadowClipStart());
         auto farZ = Clamp(light_->GetShadowClipEnd(), light_->GetShadowClipStart(), light_->GetDistance());
         SetFarClip(farZ);
-        SetFOV(light_->GetSpotCutOff());
+		SetFOVDegrees(light_->GetSpotCutOff());
         SetAspectRatio(1.0);
         DisableOrtho();
     }

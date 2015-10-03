@@ -17,6 +17,8 @@
 #include "Window.h"
 #include "StringConverter.h"
 #include "Check.h"
+#include "EditorCamera.h"
+#include "EditorLight.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
@@ -36,11 +38,11 @@ namespace NSG
           signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
           signalNodeMouseWheel_(new Signal<SceneNode *, float, float>()),
           signalUpdate_(new Signal<float>()),
-		  enableFog_(false),
-		  fogMinIntensity_(0),
-		  fogStart_(5),
-		  fogDepth_(25),
-		  fogHeight_(0)
+          enableFog_(false),
+          fogMinIntensity_(0),
+          fogStart_(5),
+          fogDepth_(25),
+          fogHeight_(0)
     {
         slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
@@ -50,25 +52,25 @@ namespace NSG
 
         slotLightBeingDestroy_ = Light::SignalBeingDestroy()->Connect([this](Light * light)
         {
-			auto it = std::find(lights_.begin(), lights_.end(), light);
-			if (it != lights_.end())
-				lights_.erase(it);
+            auto it = std::find(lights_.begin(), lights_.end(), light);
+            if (it != lights_.end())
+                lights_.erase(it);
         });
 
         slotCameraBeingDestroy_ = Camera::SignalBeingDestroy()->Connect([this](Camera * camera)
         {
-            if(mainCamera_ == camera)
+            if (mainCamera_ == camera)
                 mainCamera_ = nullptr;
-			auto it = std::find(cameras_.begin(), cameras_.end(), camera);
-			if (it != cameras_.end())
-				cameras_.erase(it);
+            auto it = std::find(cameras_.begin(), cameras_.end(), camera);
+            if (it != cameras_.end())
+                cameras_.erase(it);
         });
 
         slotPSBeingDestroy_ = ParticleSystem::SignalBeingDestroy()->Connect([this](ParticleSystem * ps)
         {
-			auto it = std::find(particleSystems_.begin(), particleSystems_.end(), ps);
-			if (it != particleSystems_.end())
-				particleSystems_.erase(it);
+            auto it = std::find(particleSystems_.begin(), particleSystems_.end(), ps);
+            if (it != particleSystems_.end())
+                particleSystems_.erase(it);
         });
 
         physicsWorld_ = std::make_shared<PhysicsWorld>(this);
@@ -82,13 +84,13 @@ namespace NSG
         slotPSBeingDestroy_ = nullptr;
         if (window_ && window_->GetScene() == this)
             window_->SetScene(nullptr);
-		auto graphics = Graphics::GetPtr();
-		if (graphics)
-		{
-			auto window = graphics->GetWindow();
-			if (window && window->GetScene() == this)
-				window->SetScene(nullptr);
-		}
+        auto graphics = Graphics::GetPtr();
+        if (graphics)
+        {
+            auto window = graphics->GetWindow();
+            if (window && window->GetScene() == this)
+                window->SetScene(nullptr);
+        }
     }
 
     void Scene::SetWindow(Window* window)
@@ -101,7 +103,7 @@ namespace NSG
                 {
                     if (signalNodeMouseMoved_->HasSlots())
                     {
-						SceneNode* node = GetClosestNode(mainCamera_, x, y);
+                        SceneNode* node = GetClosestNode(mainCamera_, x, y);
                         if (node)
                             signalNodeMouseMoved_->Run(node, x, y);
                     }
@@ -111,7 +113,7 @@ namespace NSG
                 {
                     if (signalNodeMouseDown_->HasSlots())
                     {
-						SceneNode* node = GetClosestNode(mainCamera_, x, y);
+                        SceneNode* node = GetClosestNode(mainCamera_, x, y);
                         if (node)
                             signalNodeMouseDown_->Run(node, button, x, y);
                     }
@@ -121,7 +123,7 @@ namespace NSG
                 {
                     if (signalNodeMouseUp_->HasSlots())
                     {
-						SceneNode* node = GetClosestNode(mainCamera_, x, y);
+                        SceneNode* node = GetClosestNode(mainCamera_, x, y);
                         if (node)
                             signalNodeMouseUp_->Run(node, button, x, y);
                     }
@@ -131,7 +133,7 @@ namespace NSG
                 {
                     if (signalNodeMouseWheel_->HasSlots())
                     {
-						SceneNode* node = GetClosestNode(mainCamera_, x, y);
+                        SceneNode* node = GetClosestNode(mainCamera_, x, y);
                         if (node)
                             signalNodeMouseWheel_->Run(node, x, y);
                     }
@@ -193,11 +195,20 @@ namespace NSG
         float maxDistance = ray.GetMaxDistance();
         for (auto& obj : tmpNodes)
         {
-            float distance = ray.HitDistance(obj);
-            if (distance < maxDistance)
+            if (obj->IsBillboard())
             {
+                auto distance = Distance(obj->GetGlobalPosition(), ray.GetOrigin());
                 RayNodeResult r {distance, obj};
                 result.push_back(r);
+            }
+            else
+            {
+                float distance = ray.HitDistance(obj);
+                if (distance < maxDistance)
+                {
+                    RayNodeResult r {distance, obj};
+                    result.push_back(r);
+                }
             }
         }
         return !result.empty();
@@ -238,18 +249,18 @@ namespace NSG
         octree_->Execute(query);
     }
 
-	void Scene::GetVisibleNodes(const Frustum* frustum, std::vector<SceneNode*>& visibles) const
-	{
-		for (auto& obj : octreeNeedsUpdate_)
-			octree_->InsertUpdate(obj);
-		octreeNeedsUpdate_.clear();
-		FrustumOctreeQuery query(visibles, frustum);
-		octree_->Execute(query);
-	}
+    void Scene::GetVisibleNodes(const Frustum* frustum, std::vector<SceneNode*>& visibles) const
+    {
+        for (auto& obj : octreeNeedsUpdate_)
+            octree_->InsertUpdate(obj);
+        octreeNeedsUpdate_.clear();
+        FrustumOctreeQuery query(visibles, frustum);
+        octree_->Execute(query);
+    }
 
     void Scene::NeedUpdate(SceneNode* obj)
     {
-        if(obj->GetMesh() != nullptr && !obj->IsHidden())
+        if (obj->GetMesh() != nullptr && !obj->IsHidden())
             octreeNeedsUpdate_.insert(obj);
     }
 
@@ -270,7 +281,7 @@ namespace NSG
         physicsWorld_->SetMaxSubSteps(child.attribute("maxSubSteps").as_int());
     }
 
-	void Scene::Load(const pugi::xml_node& node)
+    void Scene::Load(const pugi::xml_node& node)
     {
         SetAmbientColor(ToVertex3(node.attribute("ambient").as_string()));
         SetHorizonColor(ToVertex3(node.attribute("horizon").as_string()));
@@ -283,8 +294,8 @@ namespace NSG
         pugi::xml_node sceneNode = node.child("SceneNode");
         CHECK_ASSERT(sceneNode);
         SceneNode::Load(sceneNode);
-		if (!mainCameraName.empty())
-			SetMainCamera(GetChild<Camera>(mainCameraName, true));
+        if (!mainCameraName.empty())
+            SetMainCamera(GetChild<Camera>(mainCameraName, true));
         LoadPhysics(node);
     }
 
@@ -294,12 +305,12 @@ namespace NSG
         scene.append_attribute("ambient").set_value(ToString(ambient_).c_str());
         scene.append_attribute("horizon").set_value(ToString(horizon_).c_str());
         scene.append_attribute("enableFog").set_value(enableFog_);
-		scene.append_attribute("fogMinIntensity").set_value(fogMinIntensity_);
+        scene.append_attribute("fogMinIntensity").set_value(fogMinIntensity_);
         scene.append_attribute("fogStart").set_value(fogStart_);
         scene.append_attribute("fogDepth").set_value(fogDepth_);
         scene.append_attribute("fogHeight").set_value(fogHeight_);
         std::string mainCameraName;
-        if(mainCamera_)
+        if (mainCamera_)
             mainCameraName = mainCamera_->GetName();
         scene.append_attribute("mainCamera").set_value(mainCameraName.c_str());
         pugi::xml_node sceneNode = scene.append_child("SceneNode");
@@ -336,6 +347,9 @@ namespace NSG
         {
             return (int)a->GetType() < (int)b->GetType();
         });
+
+        UpdateOctree(light);
+        light->CreateChild<EditorLight>(GetUniqueName("EditorLight"));
     }
 
     const std::vector<Light*>& Scene::GetLights() const
@@ -346,8 +360,11 @@ namespace NSG
     void Scene::AddCamera(Camera* camera)
     {
         cameras_.push_back(camera);
-        if(!mainCamera_)
+        if (!mainCamera_)
             mainCamera_ = camera;
+        UpdateOctree(camera);
+        auto obj = camera->CreateChild<EditorCamera>(GetUniqueName("EditorCamera"));
+        obj->SetCamera(std::dynamic_pointer_cast<Camera>(camera->shared_from_this()));
     }
 
     void Scene::AddParticleSystem(ParticleSystem* ps)
@@ -357,7 +374,8 @@ namespace NSG
 
     void Scene::UpdateOctree(SceneNode* node)
     {
-        octree_->InsertUpdate(node);
+        if (node->GetMesh())
+            octree_->InsertUpdate(node);
     }
 
     void Scene::RemoveFromOctree(SceneNode* node)
@@ -381,14 +399,14 @@ namespace NSG
         return octree_->GetNumDrawables();
     }
 
-	PCamera Scene::GetMainCamera() const
-    { 
-		if (mainCamera_)
-		{
-			auto p = mainCamera_->shared_from_this();
-			return std::dynamic_pointer_cast<Camera>(p);
-		}
-        return nullptr; 
+    PCamera Scene::GetMainCamera() const
+    {
+        if (mainCamera_)
+        {
+            auto p = mainCamera_->shared_from_this();
+            return std::dynamic_pointer_cast<Camera>(p);
+        }
+        return nullptr;
     }
 
     void Scene::SetMainCamera(PCamera camera)
@@ -401,61 +419,61 @@ namespace NSG
         return octree_->GetDrawables();
     }
 
-	void Scene::EnableFog(bool enable)
-	{
-		if (enableFog_ != enable)
-		{
-			enableFog_ = enable;
-			SetUniformsNeedUpdate();
-		}
-	}
+    void Scene::EnableFog(bool enable)
+    {
+        if (enableFog_ != enable)
+        {
+            enableFog_ = enable;
+            SetUniformsNeedUpdate();
+        }
+    }
 
-	void Scene::SetFogMinIntensity(float intensity)
-	{
-		if (fogMinIntensity_ != intensity)
-		{
-			fogMinIntensity_ = intensity;
-			if (enableFog_)
-				SetUniformsNeedUpdate();
-		}
-	}
+    void Scene::SetFogMinIntensity(float intensity)
+    {
+        if (fogMinIntensity_ != intensity)
+        {
+            fogMinIntensity_ = intensity;
+            if (enableFog_)
+                SetUniformsNeedUpdate();
+        }
+    }
 
-	void Scene::SetFogStart(float start)
-	{
-		if (fogStart_ != start)
-		{
-			fogStart_ = start;
-			if (enableFog_)
-				SetUniformsNeedUpdate();
-		}
-	}
+    void Scene::SetFogStart(float start)
+    {
+        if (fogStart_ != start)
+        {
+            fogStart_ = start;
+            if (enableFog_)
+                SetUniformsNeedUpdate();
+        }
+    }
 
-	void Scene::SetFogDepth(float depth)
-	{
-		if (fogDepth_ != depth)
-		{
-			fogDepth_ = depth;
-			if (enableFog_)
-				SetUniformsNeedUpdate();
-		}
-	}
+    void Scene::SetFogDepth(float depth)
+    {
+        if (fogDepth_ != depth)
+        {
+            fogDepth_ = depth;
+            if (enableFog_)
+                SetUniformsNeedUpdate();
+        }
+    }
 
-	void Scene::SetFogHeight(float height)
-	{
-		if (fogHeight_ != height)
-		{
-			fogHeight_ = height;
-			if (enableFog_)
-				SetUniformsNeedUpdate();
-		}
-	}
+    void Scene::SetFogHeight(float height)
+    {
+        if (fogHeight_ != height)
+        {
+            fogHeight_ = height;
+            if (enableFog_)
+                SetUniformsNeedUpdate();
+        }
+    }
 
     void Scene::FillShaderDefines(std::string& defines, PassType passType) const
     {
         if (enableFog_ && PassType::SHADOW != passType)
         {
             defines += "FOG\n";
-            if(fogHeight_ != 0)
+            if (fogHeight_ != 0)
                 defines += "FOGHEIGHT\n";
         }
     }
@@ -477,7 +495,7 @@ namespace NSG
 
     float Scene::GetFogHeight() const
     {
-		return fogHeight_;
+        return fogHeight_;
     }
 }
 

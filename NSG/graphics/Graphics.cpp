@@ -978,21 +978,18 @@ namespace NSG
 
     void Graphics::SetUpViewport()
     {
-        unsigned width = 0;
-        unsigned height = 0;
-
         if (currentFbo_)
         {
-            width = currentFbo_->GetWidth();
-            height = currentFbo_->GetHeight();
+            auto width = currentFbo_->GetWidth();
+            auto height = currentFbo_->GetHeight();
+            SetViewport(Recti(0, 0, width, height), false);
         }
         else if (activeWindow_)
         {
-            width = activeWindow_->GetWidth();
-            height = activeWindow_->GetHeight();
+            auto width = activeWindow_->GetWidth();
+            auto height = activeWindow_->GetHeight();
+            SetViewport(Recti(0, 0, width, height), false);
         }
-
-        SetViewport(Recti(0, 0, width, height), false);
     }
 
     void Graphics::DiscardFramebuffer()

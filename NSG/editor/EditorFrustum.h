@@ -25,40 +25,18 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "EditorSceneNode.h"
 
 namespace NSG
 {
-	class Editor
-	{
-	public:
-		Editor();
-		~Editor();
+    class EditorFrustum : public EditorSceneNode
+    {
+    public:
+        EditorFrustum(const std::string& name);
+        ~EditorFrustum();
 		void SetCamera(PCamera camera);
-		void SetWindow(PWindow window);
-		void SetScene(PScene scene);
-		void SetNode(PNode node);
-		PTexture GetMaterialPreview(PMaterial material);
 	private:
-		void SetControl();
-		void ShowScene();
-		void ShowHierachy();
-		void OnMouseDown(int button, float x, float y);
-		void ShowInspector();
-		PTexture GetScenePreview(Scene* scene, Camera* camera);
-		void CreatePreviewFrameBuffer();
-		void CreateEditorFrameBuffer();
-		PCameraControl control_;
-		PFrameBuffer previewFrameBuffer_;
-		PFrameBuffer editorFrameBuffer_;
+		SignalEmpty::PSlot slotUpdated_;
 		PWeakCamera camera_;
-		PWeakWindow window_;
-		PWeakScene scene_;
-		PWeakNode node_;
-		SignalMouseButton::PSlot slotMouseDown_;
-		SignalEmpty::PSlot slotDrawGUI_;
-		PScene scenePreview_;
-		PSceneNode previewNode_;
-		bool isSceneHovered_;
-		PCamera editorCamera_;
-	};
+    };
 }

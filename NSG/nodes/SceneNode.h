@@ -39,6 +39,7 @@ namespace NSG
 	public:
 		SceneNode(const std::string& name);
 		~SceneNode();
+		virtual bool CanBeVisible() const;
 		PMaterial GetMaterial() const { return material_; }
 		void SetMaterial(PMaterial material);
 		void SetMesh(PMesh mesh);
@@ -77,6 +78,8 @@ namespace NSG
 		size_t GetMaxPlatformBones(size_t nBones) const;
 		PSceneNode GetArmature() const;
 		void SetArmature(PSceneNode armature);
+		void ShowGUIProperties(Editor* editor) override;
+		bool IsBillboard() const;
 	protected:
 		PMaterial material_;
 		PMesh mesh_;

@@ -135,14 +135,20 @@ namespace NSG
         PScene GetScene() const { return scene_.lock(); }
         void MarkAsDirty(bool recursive = true, bool scaleChange = false);
 		Matrix4 GetTransform() const;
+        void SetTransform(const Matrix4& transform);
         virtual void Load(const pugi::xml_node& node);
         virtual void Save(pugi::xml_node& node) const;
+        SignalEmpty::PSignal SigUpdated() { return signalUpdated_; }
+        virtual void ShowGUIProperties(Editor* editor);
+        void ShowGUIHierarchy(Editor* editor);
     protected:
         std::string name_;
         std::vector<PNode> children_;
         std::unordered_map<std::string, PWeakNode> childrenHash_;
         PWeakScene scene_;
+        SignalEmpty::PSignal signalUpdated_;
     private:
+		int GetSceneChildren() const;
 		void RemoveFromParent();
 		void AddChild(PNode node);
         void RemoveChild(Node* node);

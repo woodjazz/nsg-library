@@ -51,6 +51,7 @@ namespace NSG
     static const Vector3 VECTOR3_FORWARD(0, 0, 1);
     static const Vector3 VECTOR3_LOOKAT_DIRECTION(0, 0, -1);
 
+	static const Vector4 VECTOR4_ZERO(0);
     static const Vector3 VECTOR3_ZERO(0);
     static const Vector3 VECTOR3_ONE(1);
     static const Quaternion QUATERNION_IDENTITY;
@@ -69,7 +70,8 @@ namespace NSG
     static const int MAX_UVS = 2;
 
     static const float CAMERA_MIN_NEARCLIP = 0.01f;
-    static const float CAMERA_MAX_FOV = 160.0f;
+    static const float CAMERA_MAX_FOV_DEGREES = 160.0f;
+	static const float CAMERA_MAX_FOV_RADIANS = CAMERA_MAX_FOV_DEGREES * TWO_PI / 360.f;
 
 	static const int MAX_SPLITS = 4; // shadow splits
 

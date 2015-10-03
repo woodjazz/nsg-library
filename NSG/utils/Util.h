@@ -47,6 +47,7 @@ namespace NSG
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
 	Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q, const Vertex3& scale);
 	Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q);
+	Matrix4 ComposeMatrix(const Quaternion& q);
 	unsigned NextPowerOfTwo(unsigned value);
 	std::string GetUniqueName(const std::string& name = "");
 	void GetPowerOfTwoValues(int& width, int& height);
@@ -103,4 +104,6 @@ namespace NSG
 	Vector3 CatmullRom(const Vector3& v1, const Vector3& v2, const Vector3& v3, const Vector3& v4, float s);
 	Vector4 Fract(const Vector4& value);
 	Vertex3 EulerAngles(const Quaternion& q);
+	Matrix4 GetSphericalBillboardMatrix(Matrix4 m);
+	Matrix4 GetCylindricalBillboardMatrix(Matrix4 m);
 }

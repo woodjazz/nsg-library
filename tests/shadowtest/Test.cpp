@@ -79,10 +79,10 @@ static void Test01()
 //	engine->Run();
 	engine->RenderFrame();
 	auto shadowCam = light->GetShadowCamera(0);
-	CHECK_ASSERT(Distance(shadowCam->GetGlobalPosition(), Vector3(0, 5.f, 0)) < 0.001f);
+	CHECK_ASSERT(Distance(shadowCam->GetGlobalPosition(), Vector3(0, 5009.f, 0)) < 0.001f);
 	CHECK_ASSERT(shadowCam->IsOrtho());
-	CHECK_ASSERT(shadowCam->GetZNear() == 0);
-	CHECK_ASSERT(shadowCam->GetZFar() == 7);
+	CHECK_ASSERT(shadowCam->GetZNear() == 5004);
+	CHECK_ASSERT(shadowCam->GetZFar() == 5011);
 }
 
 static void Test02()

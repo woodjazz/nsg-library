@@ -193,7 +193,7 @@ static void Test01()
 
         Node node;
         PCamera camera = scene->GetOrCreateChild<Camera>("camera");
-        camera->SetFOV(45);
+        camera->SetFOVDegrees(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
         PFrustum frustum = camera->GetFrustum();
@@ -208,7 +208,7 @@ static void Test01()
         node.SetScale(Vector3(100));
 
         PCamera camera = scene->GetOrCreateChild<Camera>("camera");
-        camera->SetFOV(45);
+		camera->SetFOVDegrees(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
         PFrustum frustum = camera->GetFrustum();
@@ -220,7 +220,7 @@ static void Test01()
     {
         Node node;
         PCamera camera = scene->GetOrCreateChild<Camera>("camera");
-        camera->SetFOV(45);
+		camera->SetFOVDegrees(45);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(250);
         camera->SetPosition(Vertex3(0, 0, 10));
@@ -239,7 +239,7 @@ static void Test01()
         node.SetPosition(Vertex3(0, 0, -40));
 
         PCamera camera = scene->GetOrCreateChild<Camera>("camera");
-        camera->SetFOV(100);
+		camera->SetFOVDegrees(100);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(1000);
         CHECK_CONDITION(camera->IsVisible(node, *sphere));
@@ -252,11 +252,11 @@ static void Test01()
         node.SetPosition(Vertex3(1.1f, 0, -1.1f));
 
         PCamera camera = scene->GetOrCreateChild<Camera>("camera");
-        camera->SetFOV(170);
+		camera->SetFOVDegrees(170);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(1000);
         CHECK_CONDITION(camera->IsVisible(node, *sphere));
-        camera->SetFOV(0.0001f);
+		camera->SetFOVDegrees(0.0001f);
         CHECK_CONDITION(!camera->IsVisible(node, *sphere));
         node.SetPosition(Vertex3(0, 0, -40));
         CHECK_CONDITION(camera->IsVisible(node, *sphere));
@@ -286,7 +286,7 @@ static void Test02()
         PScene scene = std::make_shared<Scene>("scene000");
 
         PCamera camera = scene->GetOrCreateChild<Camera>(GetUniqueName("camera"));
-        camera->SetFOV(179);
+		camera->SetFOVDegrees(179);
         camera->SetNearClip(0.1f);
         camera->SetFarClip(10);
         camera->SetPosition(Vertex3(1, 0, 0));

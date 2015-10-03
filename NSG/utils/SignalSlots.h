@@ -31,6 +31,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	bool SignalsAlive();
+
 	struct ISignal
 	{
 		ISignal();

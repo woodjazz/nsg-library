@@ -203,6 +203,11 @@ static const char* TRANSFORMS_GLSL = \
 "	        //coords.z = clamp(coords.z, 0.0, 1.0);\n"\
 "			return coords;\n"\
 "	    }\n"\
+"	    // Transforms from world to shadow camera space\n"\
+"	    vec4 GetShadowClipPos(vec4 worldPos)\n"\
+"	    {\n"\
+"	        return u_lightViewProjection[GetSplit()] * worldPos;\n"\
+"	    }	    \n"\
 "		#if defined(SHADOWMAP) || defined(CUBESHADOWMAP)\n"\
 "		    float GetShadowMapInvSize()\n"\
 "		    {\n"\

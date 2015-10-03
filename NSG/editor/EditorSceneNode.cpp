@@ -23,42 +23,29 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Types.h"
+#include "EditorSceneNode.h"
+#include "Renderer.h"
 
 namespace NSG
 {
-	class Editor
-	{
-	public:
-		Editor();
-		~Editor();
-		void SetCamera(PCamera camera);
-		void SetWindow(PWindow window);
-		void SetScene(PScene scene);
-		void SetNode(PNode node);
-		PTexture GetMaterialPreview(PMaterial material);
-	private:
-		void SetControl();
-		void ShowScene();
-		void ShowHierachy();
-		void OnMouseDown(int button, float x, float y);
-		void ShowInspector();
-		PTexture GetScenePreview(Scene* scene, Camera* camera);
-		void CreatePreviewFrameBuffer();
-		void CreateEditorFrameBuffer();
-		PCameraControl control_;
-		PFrameBuffer previewFrameBuffer_;
-		PFrameBuffer editorFrameBuffer_;
-		PWeakCamera camera_;
-		PWeakWindow window_;
-		PWeakScene scene_;
-		PWeakNode node_;
-		SignalMouseButton::PSlot slotMouseDown_;
-		SignalEmpty::PSlot slotDrawGUI_;
-		PScene scenePreview_;
-		PSceneNode previewNode_;
-		bool isSceneHovered_;
-		PCamera editorCamera_;
-	};
+    EditorSceneNode::EditorSceneNode(const std::string& name)
+        : SceneNode(name)
+    {
+
+    }
+
+    EditorSceneNode::~EditorSceneNode()
+    {
+
+    }
+
+    bool EditorSceneNode::CanBeVisible() const
+    {
+		return RendererContext::EDITOR == Renderer::GetPtr()->GetContext() && SceneNode::CanBeVisible();
+    }
+
+    void EditorSceneNode::ShowGUIProperties(Editor* editor)
+    {
+        GetParent()->ShowGUIProperties(editor);
+    }
 }

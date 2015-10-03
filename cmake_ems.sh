@@ -39,7 +39,7 @@ fi
 
 cd $HOME_EMSCRIPTEN
 source $HOME_EMSCRIPTEN/emsdk_env.sh
-source "$HOME_EMSCRIPTEN%/emsdk activate"
+$HOME_EMSCRIPTEN/emsdk activate
 cd $SOURCE_FOLDER
 
 cd ..

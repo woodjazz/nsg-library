@@ -36,6 +36,8 @@ Install SDK: http://kripken.github.io/emscripten-site/docs/getting_started/downl
 
 Set environment variable: HOME_EMSCRIPTEN
 
+For chrome you will need an HTTP server. For instance: python -m SimpleHTTPServer 8000
+
 -------------------------
 Windows
 -------------------------

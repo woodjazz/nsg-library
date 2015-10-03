@@ -73,15 +73,47 @@ namespace NSG
         });
     }
 
-	CameraControl::CameraControl(PCamera camera)
-		: CameraControl(camera, camera->GetScene())
-	{
+    CameraControl::CameraControl(PCamera camera)
+        : CameraControl(camera, camera->GetScene())
+    {
 
-	}
+    }
 
     CameraControl::~CameraControl()
     {
 
+    }
+
+    bool CameraControl::TransformCoords(float& x, float& y)
+    {
+        if (viewRect_ != VECTOR4_ZERO)
+        {
+            auto width = window_->GetWidth();
+            auto height = window_->GetHeight();
+			auto x1 = x;
+			auto y1 = y;
+			x1 = (x + 1) * 0.5f;
+			y1 = (-y + 1) * 0.5f;
+			auto vWidth = viewRect_[2] - viewRect_[0];
+			auto vHeight = viewRect_[3] - viewRect_[1];
+
+			x1 *= width;
+			y1 *= height;
+
+			if (Clamp(x1, viewRect_[0], viewRect_[2]) != x1)
+				return false;
+
+			if (Clamp(y1, viewRect_[1], viewRect_[3]) != y1)
+				return false;
+
+			x1 = (x1 - viewRect_[0]) / (vWidth);
+			y1 = (y1 - viewRect_[1]) / (vHeight);
+
+			x = -1 + 2 * x1;
+			y = 1 - 2 * y1;
+        }
+
+		return true;
     }
 
     void CameraControl::SetWindow(Window* window)
@@ -94,17 +126,20 @@ namespace NSG
             {
                 slotMouseMoved_ = window->SigFloatFloat()->Connect([&](float x, float y)
                 {
-                    OnMousemoved(x, y);
+					if(TransformCoords(x, y))
+						OnMouseMoved(x, y);
                 });
 
                 slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
                 {
-                    OnMouseDown(button, x, y);
+					if (TransformCoords(x, y))
+						OnMouseDown(button, x, y);
                 });
 
                 slotMouseUp_ = window->SigMouseUp()->Connect([&](int button, float x, float y)
                 {
-                    OnMouseUp(button, x, y);
+					if (TransformCoords(x, y))
+						OnMouseUp(button, x, y);
                 });
 
                 slotMouseWheel_ = window->SigMouseWheel()->Connect([&](float x, float y)
@@ -134,7 +169,7 @@ namespace NSG
         }
     }
 
-    void CameraControl::OnMousemoved(float x, float y)
+    void CameraControl::OnMouseMoved(float x, float y)
     {
         if (!enabled_)
             return;
@@ -376,8 +411,9 @@ namespace NSG
         trackNode_ = node;
     }
 
-    PSceneNode CameraControl::SelectObject()
+    PSceneNode CameraControl::SelectObject(float x, float y)
     {
+		TransformCoords(x, y);
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
         if (scene_->GetClosestRayNodeIntersection(ray, closest))
@@ -390,7 +426,7 @@ namespace NSG
         Vertex3 newCenter;
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
-		if (scene_->GetClosestRayNodeIntersection(ray, closest))
+        if (scene_->GetClosestRayNodeIntersection(ray, closest))
         {
             LOGI("CamCenter in %s", closest.node_->GetName().c_str());
             if (centerObj)
@@ -409,7 +445,7 @@ namespace NSG
 
     void CameraControl::AutoZoom()
     {
-		BoundingBox bb = scene_->GetWorldBoundingBoxBut(camera_.get());
+        BoundingBox bb = scene_->GetWorldBoundingBoxBut(camera_.get());
         Vertex3 center = bb.Center();
         float distance = std::max(std::max(bb.Size().x, bb.Size().y), bb.Size().z);
         if (distance < camera_->GetZNear())
@@ -430,5 +466,10 @@ namespace NSG
     void CameraControl::Enable(bool enable)
     {
         enabled_ = enable;
+    }
+
+    void CameraControl::SetViewRect(Vector4 viewRect)
+    {
+        viewRect_ = viewRect;
     }
 }

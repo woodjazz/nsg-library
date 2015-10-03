@@ -58,7 +58,7 @@ namespace NSG
     {
         for (auto& obj : objs)
         {
-            if (obj->GetMesh())
+			if (obj->CanBeVisible())
             {
                 if (inside || frustum_->IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
                     result_.push_back(obj);
@@ -86,11 +86,28 @@ namespace NSG
         {
             if(!obj->AllowRayQuery())
                 continue;
-            
-            if (obj->GetMesh())
+			if (obj->CanBeVisible())
             {
-                if (inside || ray_.IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
+                if(inside)
                     result_.push_back(obj);
+                else
+                {
+                    auto worldBB = obj->GetWorldBoundingBox();
+                    if(obj->IsBillboard())
+                    {
+						auto size = worldBB.Size();
+						auto maxDistance = std::max(std::max(size.x, size.y), size.z);
+						auto halfDistance = .5f * maxDistance;
+						auto halfExtend = VECTOR3_ONE * halfDistance;
+						auto min = worldBB.Center() - halfExtend;
+						auto max = worldBB.Center() + halfExtend;
+                        worldBB = BoundingBox(min, max);
+                    }
+
+                    if(ray_.IsInside(worldBB) != Intersection::OUTSIDE)
+                        result_.push_back(obj);
+                }
+
             }
         }
     }

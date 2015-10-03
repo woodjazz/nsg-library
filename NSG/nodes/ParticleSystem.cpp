@@ -87,7 +87,8 @@ namespace NSG
 
     ParticleSystem::~ParticleSystem()
     {
-        SignalBeingDestroy()->Run(this);
+		if (SignalsAlive())
+			SignalBeingDestroy()->Run(this);
     }
 
 	void ParticleSystem::SetParticleMaterial(PMaterial material)

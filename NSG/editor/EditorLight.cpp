@@ -23,42 +23,28 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Types.h"
+#include "EditorLight.h"
+#include "EditorFrustum.h"
+#include "CircleMesh.h"
+#include "Material.h"
+#include "Camera.h"
 
 namespace NSG
 {
-	class Editor
-	{
-	public:
-		Editor();
-		~Editor();
-		void SetCamera(PCamera camera);
-		void SetWindow(PWindow window);
-		void SetScene(PScene scene);
-		void SetNode(PNode node);
-		PTexture GetMaterialPreview(PMaterial material);
-	private:
-		void SetControl();
-		void ShowScene();
-		void ShowHierachy();
-		void OnMouseDown(int button, float x, float y);
-		void ShowInspector();
-		PTexture GetScenePreview(Scene* scene, Camera* camera);
-		void CreatePreviewFrameBuffer();
-		void CreateEditorFrameBuffer();
-		PCameraControl control_;
-		PFrameBuffer previewFrameBuffer_;
-		PFrameBuffer editorFrameBuffer_;
-		PWeakCamera camera_;
-		PWeakWindow window_;
-		PWeakScene scene_;
-		PWeakNode node_;
-		SignalMouseButton::PSlot slotMouseDown_;
-		SignalEmpty::PSlot slotDrawGUI_;
-		PScene scenePreview_;
-		PSceneNode previewNode_;
-		bool isSceneHovered_;
-		PCamera editorCamera_;
-	};
+    EditorLight::EditorLight(const std::string& name)
+        : EditorSceneNode(name)
+    {
+		SetMesh(Mesh::Create<CircleMesh>());
+        SetMaterial(Material::GetOrCreate("NSGEditorLight"));
+        material_->SetRenderPass(RenderPass::UNLIT);
+        material_->SetDiffuseColor(COLOR_YELLOW);
+		material_->EnableTransparent(true);
+		material_->SetAlpha(0.25f);
+		material_->SetBillboardType(BillboardType::SPHERICAL);
+    }
+
+    EditorLight::~EditorLight()
+    {
+
+    }
 }

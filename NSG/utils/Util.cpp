@@ -81,34 +81,34 @@ namespace NSG
         return isnan(q.w) || isnan(q.x) || isnan(q.y) || isnan(q.z);
     }
 
-	bool IsNaN(const Vector3& v)
-	{
-		return isnan(v.x) || isnan(v.y) || isnan(v.z);
-	}
+    bool IsNaN(const Vector3& v)
+    {
+        return isnan(v.x) || isnan(v.y) || isnan(v.z);
+    }
 
     Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection)
     {
         Vector3 forward = Normalize(direction);
         Vector3 v = Normalize(Cross(forward, upDirection));
-		if (IsNaN(v))
-		{
-			auto up1 = upDirection;
-			std::swap(up1.x, up1.y);
-			v = Normalize(Cross(forward, up1));
-			if (IsNaN(v))
-			{
-				up1 = upDirection;
-				std::swap(up1.x, up1.z);
-				v = Normalize(Cross(forward, up1));
-				if (IsNaN(v))
-				{
-					up1 = upDirection;
-					std::swap(up1.y, up1.z);
-					v = Normalize(Cross(forward, up1));
-					CHECK_ASSERT(!IsNaN(v));
-				}
-			}
-		}
+        if (IsNaN(v))
+        {
+            auto up1 = upDirection;
+            std::swap(up1.x, up1.y);
+            v = Normalize(Cross(forward, up1));
+            if (IsNaN(v))
+            {
+                up1 = upDirection;
+                std::swap(up1.x, up1.z);
+                v = Normalize(Cross(forward, up1));
+                if (IsNaN(v))
+                {
+                    up1 = upDirection;
+                    std::swap(up1.y, up1.z);
+                    v = Normalize(Cross(forward, up1));
+                    CHECK_ASSERT(!IsNaN(v));
+                }
+            }
+        }
         Vector3 up = Cross(v, forward);
         Vector3 right = Cross(up, forward);
 
@@ -180,10 +180,15 @@ namespace NSG
         return glm::translate(glm::mat4(), position) * glm::mat4_cast(q) * glm::scale(glm::mat4(1.0f), scale);
     }
 
-	Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q)
-	{
-		return glm::translate(glm::mat4(), position) * glm::mat4_cast(q);
-	}
+    Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q)
+    {
+        return glm::translate(glm::mat4(), position) * glm::mat4_cast(q);
+    }
+
+    Matrix4 ComposeMatrix(const Quaternion& q)
+    {
+        return glm::mat4_cast(q);
+    }
 
     std::string GetUniqueName(const std::string& name)
     {
@@ -217,13 +222,13 @@ namespace NSG
         return (!(value & (value - 1)) && value);
     }
 
-	unsigned NextPowerOfTwo(unsigned value)
-	{
-		unsigned ret = 1;
-		while (ret < value && ret < 0x80000000)
-			ret <<= 1;
-		return ret;
-	}
+    unsigned NextPowerOfTwo(unsigned value)
+    {
+        unsigned ret = 1;
+        while (ret < value && ret < 0x80000000)
+            ret <<= 1;
+        return ret;
+    }
 
     bool IsZeroLength(const Vector3& obj)
     {
@@ -298,27 +303,27 @@ namespace NSG
         return sliding;
     }
 
-	float Dot(const Vector4& a, const Vector4& b)
-	{
-		return glm::dot(a, b);
-	}
+    float Dot(const Vector4& a, const Vector4& b)
+    {
+        return glm::dot(a, b);
+    }
 
-	float Dot(const Vector3& a, const Vector3& b)
-	{
-		return glm::dot(a, b);
-	}
+    float Dot(const Vector3& a, const Vector3& b)
+    {
+        return glm::dot(a, b);
+    }
 
-	float Dot(const Quaternion& a, const Quaternion& b)
-	{
-		return glm::dot(a, b);
-	}
+    float Dot(const Quaternion& a, const Quaternion& b)
+    {
+        return glm::dot(a, b);
+    }
 
     Vector3 Cross(const Vector3& a, const Vector3& b)
     {
         return glm::cross(a, b);
     }
 
-	float Min(float a, float b)
+    float Min(float a, float b)
     {
         return std::min(a, b);
     }
@@ -340,7 +345,7 @@ namespace NSG
 
     Matrix4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
     {
-		return glm::ortho(left, right, bottom, top, zNear, zFar);
+        return glm::ortho(left, right, bottom, top, zNear, zFar);
     }
 
     Matrix4 Perspective(float fovyRadians, float aspectRatio, float zNear, float zFar)
@@ -363,91 +368,91 @@ namespace NSG
         return glm::angleAxis(radians, axis);
     }
 
-	Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
-	{
-		return a * (1.0f - t) + b * t;
-	}
+    Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
+    {
+        return a * (1.0f - t) + b * t;
+    }
 
-	float Lerp(float a, float b, float t)
-	{
-		return a * (1.0f - t) + b * t;
-	}
+    float Lerp(float a, float b, float t)
+    {
+        return a * (1.0f - t) + b * t;
+    }
 
-	Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t)
-	{
-		return glm::slerp(a, b, t);
-	}
+    Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t)
+    {
+        return glm::slerp(a, b, t);
+    }
 
-	float Clamp(float value, float minVal, float maxVal)
-	{
-		return glm::clamp(value, minVal, maxVal);
-	}
+    float Clamp(float value, float minVal, float maxVal)
+    {
+        return glm::clamp(value, minVal, maxVal);
+    }
 
-	int Clamp(int value, int minVal, int maxVal)
-	{
-		return glm::clamp(value, minVal, maxVal);
-	}
+    int Clamp(int value, int minVal, int maxVal)
+    {
+        return glm::clamp(value, minVal, maxVal);
+    }
 
-	float Length(const Vector3& value)
-	{
-		return glm::length(value);
-	}
+    float Length(const Vector3& value)
+    {
+        return glm::length(value);
+    }
 
-	float Length(const Vector4& value)
-	{
-		return glm::length(value);
-	}
+    float Length(const Vector4& value)
+    {
+        return glm::length(value);
+    }
 
-	float Length2(const Vector3& value)
-	{
-		return glm::length2(value);
-	}
+    float Length2(const Vector3& value)
+    {
+        return glm::length2(value);
+    }
 
-	float Radians(float degrees)
-	{
-		return glm::radians(degrees);
-	}
+    float Radians(float degrees)
+    {
+        return glm::radians(degrees);
+    }
 
     float Degrees(float radians)
     {
         return glm::degrees(radians);
     }
 
-	Vector3 Radians(const Vector3& degrees)
-	{
-		return glm::radians(degrees);
-	}
+    Vector3 Radians(const Vector3& degrees)
+    {
+        return glm::radians(degrees);
+    }
 
-	Vector3 Degrees(const Vector3& radians)
-	{
-		return glm::degrees(radians);
-	}
+    Vector3 Degrees(const Vector3& radians)
+    {
+        return glm::degrees(radians);
+    }
 
-    
+
     float Angle(const Vector3& a, const Vector3& b)
     {
         return glm::angle(a, b);
     }
 
-	Vector3 Normalize(const Vector3& value)
-	{
-		return glm::normalize(value);
-	}
+    Vector3 Normalize(const Vector3& value)
+    {
+        return glm::normalize(value);
+    }
 
-	Quaternion Normalize(const Quaternion& value)
-	{
-		return glm::normalize(value);
-	}
+    Quaternion Normalize(const Quaternion& value)
+    {
+        return glm::normalize(value);
+    }
 
-	float Distance(float a, float b)
-	{
-		return glm::distance(a, b);
-	}
+    float Distance(float a, float b)
+    {
+        return glm::distance(a, b);
+    }
 
-	float Distance(const Vector4& a, const Vector4& b)
-	{
-		return glm::distance(a, b);
-	}
+    float Distance(const Vector4& a, const Vector4& b)
+    {
+        return glm::distance(a, b);
+    }
 
     float Distance(const Vector3& a, const Vector3& b)
     {
@@ -484,37 +489,52 @@ namespace NSG
         return glm::row(mat, index);
     }
 
-	Vector3 Row(const Matrix3 mat, int index)
-	{
-		return glm::row(mat, index);
-	}
+    Vector3 Row(const Matrix3 mat, int index)
+    {
+        return glm::row(mat, index);
+    }
 
-	Vector4 Column(const Matrix4& mat, int index)
+    Vector4 Column(const Matrix4& mat, int index)
     {
         return glm::column(mat, index);
     }
 
-	Vector3 Column(const Matrix3& mat, int index)
-	{
-		return glm::column(mat, index);
-	}
+    Vector3 Column(const Matrix3& mat, int index)
+    {
+        return glm::column(mat, index);
+    }
 
-	Vector3 CatmullRom(const Vector3& v1, const Vector3& v2, const Vector3& v3, const Vector3& v4, float s)
-	{
-		return glm::catmullRom(v1, v2, v3, v4, s);
-	}
+    Vector3 CatmullRom(const Vector3& v1, const Vector3& v2, const Vector3& v3, const Vector3& v4, float s)
+    {
+        return glm::catmullRom(v1, v2, v3, v4, s);
+    }
 
-	Vector4 Fract(const Vector4& value)
-	{
-		return glm::fract(value);
-	}
+    Vector4 Fract(const Vector4& value)
+    {
+        return glm::fract(value);
+    }
 
-	Vertex3 EulerAngles(const Quaternion& q)
-	{
-		return glm::eulerAngles(q);
-	}
+    Vertex3 EulerAngles(const Quaternion& q)
+    {
+        return glm::eulerAngles(q);
+    }
 
-#if 0
+    Matrix4 GetSphericalBillboardMatrix(Matrix4 m)
+    {
+        m[0] = Vector4(1.0, 0.0, 0.0, m[0][3]);
+        m[1] = Vector4(0.0, 1.0, 0.0, m[1][3]);
+        m[2] = Vector4(0.0, 0.0, 1.0, m[2][3]);
+        return m;
+    }
+
+    Matrix4 GetCylindricalBillboardMatrix(Matrix4 m)
+    {
+        m[0] = Vector4(1.0, 0.0, 0.0, m[0][3]);
+        m[2] = Vector4(0.0, 0.0, 1.0, m[2][3]);
+        return m;
+    }
+
+    #if 0
     void SleepMs(unsigned milliseconds)
     {
         #if EMSCRIPTEN
@@ -523,5 +543,5 @@ namespace NSG
         std::this_thread::sleep_for(Milliseconds(milliseconds));
         #endif
     }
-#endif    
+    #endif
 }

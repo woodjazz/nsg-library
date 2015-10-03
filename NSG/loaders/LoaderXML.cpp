@@ -60,7 +60,7 @@ namespace NSG
         if (!result)
         {
 			LOGE("Cannot load XML %s. Error description: %s", resource_->GetName().c_str(), result.description());
-			LOGE("Error offset: %d", result.offset);
+			LOGE("Error offset: %ld", result.offset);
         }
     }
 

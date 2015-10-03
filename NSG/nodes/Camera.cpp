@@ -40,6 +40,7 @@ misrepresented as being the original software.
 #include "StringConverter.h"
 #include "Check.h"
 #include "DebugRenderer.h"
+#include "imgui.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -66,8 +67,6 @@ namespace NSG
           hasUserOrthoProjection_(false)
     {
         SetInheritScale(false);
-        Update();
-        frustum_ = std::make_shared<Frustum>(matViewProjection_);
         slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
@@ -77,8 +76,8 @@ namespace NSG
 
     Camera::~Camera()
     {
-        if (Graphics::GetPtr())
-			SignalBeingDestroy()->Run(this);
+        if (SignalsAlive())
+            SignalBeingDestroy()->Run(this);
     }
 
     void Camera::UnRegisterWindow()
@@ -163,9 +162,9 @@ namespace NSG
         }
     }
 
-    void Camera::SetFOV(float fovy)
+    void Camera::SetFOVDegrees(float fovy)
     {
-        fovy = Clamp(fovy, 0.0f, CAMERA_MAX_FOV);
+        fovy = Clamp(fovy, 0.0f, CAMERA_MAX_FOV_DEGREES);
         fovy = Radians(fovy);
         if (fovy_ != fovy)
         {
@@ -173,6 +172,27 @@ namespace NSG
             isDirty_ = true;
             SetUniformsNeedUpdate();
         }
+    }
+
+    float Camera::GetFOVDegrees() const
+    {
+        return Degrees(fovy_);
+    }
+
+    void Camera::SetFOVRadians(float fovy)
+    {
+        fovy = Clamp(fovy, 0.0f, CAMERA_MAX_FOV_RADIANS);
+        if (fovy_ != fovy)
+        {
+            fovy_ = fovy;
+            isDirty_ = true;
+            SetUniformsNeedUpdate();
+        }
+    }
+
+    float Camera::GetFOVRadians() const
+    {
+        return fovy_;
     }
 
     void Camera::SetHalfHorizontalFov(float hhfov)
@@ -239,16 +259,13 @@ namespace NSG
             width /= aspectRatio_;
         else
             height /= aspectRatio_;
-
         OrthoProjection orthoProjection;
-
         orthoProjection.left_ = -width * 0.5f;
         orthoProjection.right_ = width * 0.5f;
         orthoProjection.bottom_ = -height * 0.5f;
         orthoProjection.top_ = height * 0.5f;
         orthoProjection.near_ = zNear;
         orthoProjection.far_ = zFar;
-
         return orthoProjection;
     }
 
@@ -269,7 +286,6 @@ namespace NSG
         {
             if (!hasUserOrthoProjection_)
                 orthoProjection_ = CalculateOrthoProjection(zNear_, zFar_);
-
             matProjection_ = Ortho(orthoProjection_.left_,
                                    orthoProjection_.right_,
                                    orthoProjection_.bottom_,
@@ -282,28 +298,17 @@ namespace NSG
             CHECK_ASSERT(zNear_ > 0);
             matProjection_ = Perspective(fovy_, aspectRatio_, zNear_, zFar_);
         }
-
         SetUniformsNeedUpdate();
     }
 
     void Camera::UpdateViewProjection() const
     {
-        #if 1
         matViewInverse_ = GetGlobalModelMatrix();
         matView_ = Inverse(matViewInverse_);
-        #else
-        auto eye = GetGlobalPosition();
-        auto center = eye + GetLookAtDirection();
-        auto up = GetUpDirection();
-        matView_ = LookAt(eye, center, up);
-        matViewInverse_ = Inverse(matView_);
-        #endif
         matViewProjection_ = matProjection_ * matView_;
         matViewProjectionInverse_ = Inverse(matViewProjection_);
-
         auto tmp = std::make_shared<Frustum>(matViewProjection_);
         frustum_.swap(tmp);
-
         SetUniformsNeedUpdate();
     }
 
@@ -311,12 +316,12 @@ namespace NSG
     {
         if (isDirty_)
         {
+            isDirty_ = false;
             UpdateProjection();
             UpdateViewProjection();
-            isDirty_ = false;
+            signalUpdated_->Run();
         }
     }
-
 
     const PFrustum Camera::GetFrustum() const
     {
@@ -352,7 +357,6 @@ namespace NSG
     {
         Update();
         return frustum_.get();
-
     }
 
     const Matrix4& Camera::GetViewProjection() const
@@ -360,7 +364,6 @@ namespace NSG
         Update();
         return matViewProjection_;
     }
-
 
     const Matrix4& Camera::GetProjection() const
     {
@@ -410,13 +413,13 @@ namespace NSG
 
     Ray Camera::GetRay(const Camera* camera, float screenX, float screenY)
     {
-		return camera->GetScreenRay(screenX, screenY);
+        return camera->GetScreenRay(screenX, screenY);
     }
 
-	Ray Camera::GetRay(float screenX, float screenY)
-	{
-		return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
-	}
+    Ray Camera::GetRay(float screenX, float screenY)
+    {
+        return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
+    }
 
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
     {
@@ -438,6 +441,7 @@ namespace NSG
 
     void Camera::OnDirty() const
     {
+        SceneNode::OnDirty();
         isDirty_ = true;
         SetUniformsNeedUpdate();
     }
@@ -453,6 +457,8 @@ namespace NSG
     {
         if (!IsSerializable())
             return;
+
+        Update();
 
         node.append_attribute("name").set_value(GetName().c_str());
         node.append_attribute("nodeType").set_value("Camera");
@@ -491,8 +497,8 @@ namespace NSG
 
     SignalCamera::PSignal Camera::SignalBeingDestroy()
     {
-		static SignalCamera::PSignal sig(new SignalCamera);
-		return sig;
+        static SignalCamera::PSignal sig(new SignalCamera);
+        return sig;
     }
 
     void Camera::SetMaxShadowSplits(int splits)
@@ -558,8 +564,40 @@ namespace NSG
 
     void Camera::Debug(DebugRenderer* debugRenderer, const Color& color)
     {
-        auto& position = GetGlobalPosition();
-        debugRenderer->AddSphere(position, 1.f, color);
         GetFrustum()->Debug(VECTOR3_ZERO, debugRenderer, color);
+    }
+
+    void Camera::ShowGUIProperties(Editor* editor)
+    {
+        SceneNode::ShowGUIProperties(editor);
+        std::string header = "Camera:" + GetName();
+        if (ImGui::CollapsingHeader(header.c_str()))
+        {
+            auto zNear = GetZNear();
+            ImGui::DragFloat("##zNear", &zNear, 1.f, 0.1f, 10000.0f, "zNear %.1f");
+            SetNearClip(zNear);
+
+            auto zFar = GetZFar();
+            ImGui::DragFloat("##zFar", &zFar, 1.f, 0.1f, 10000.0f, "zFar %.1f");
+            SetFarClip(zFar);
+
+            auto isOrtho = IsOrtho();
+            ImGui::Checkbox("Ortho", &isOrtho);
+            isOrtho ? EnableOrtho() : DisableOrtho();
+
+            if (!isOrtho)
+            {
+                auto fov = GetFOVRadians();
+                ImGui::SliderAngle("FOV", &fov, 0.f, CAMERA_MAX_FOV_DEGREES);
+                SetFOVRadians(fov);
+            }
+			else
+			{
+				auto orthoScale = GetOrthoScale();
+				ImGui::DragFloat("##orthoScale", &orthoScale, 1.f, 0.f, MAX_WORLD_SIZE, "Size %.1f");
+				SetOrthoScale(orthoScale);
+			}
+        }
+
     }
 }

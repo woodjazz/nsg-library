@@ -11,13 +11,15 @@
 #include "FrameBuffer.h"
 #include "StringConverter.h"
 #include "InstanceBuffer.h"
+#include "Editor.h"
+#include "imgui.h"
 #include "pugixml.hpp"
 #include <sstream>
 #include <algorithm>
 
 namespace NSG
 {
-    template<> std::map<std::string, PWeakMaterial> WeakFactory<std::string, Material>::objsMap_ = std::map<std::string, PWeakMaterial>{};
+    template<> std::map<std::string, PWeakMaterial> WeakFactory<std::string, Material>::objsMap_ = std::map<std::string, PWeakMaterial> {};
 
     Material::Material(const std::string& name)
         : Object(name),
@@ -32,10 +34,10 @@ namespace NSG
           isBatched_(false),
           fillMode_(FillMode::SOLID),
           alpha_(1),
-		  alphaForSpecular_(1),
+          alphaForSpecular_(1),
           isTransparent_(false),
           emitIntensity_(0),
-          renderPass_(RenderPass::VERTEXCOLOR),
+          renderPass_(RenderPass::LIT),
           billboardType_(BillboardType::NONE),
           flipYTextureCoords_(false),
           shadeless_(false),
@@ -72,7 +74,7 @@ namespace NSG
         material->isBatched_ = isBatched_;
         material->fillMode_ = fillMode_;
         material->alpha_ = alpha_;
-		material->alphaForSpecular_ = alphaForSpecular_;
+        material->alphaForSpecular_ = alphaForSpecular_;
         material->isTransparent_ = isTransparent_;
         material->emitIntensity_ = emitIntensity_;
         material->renderPass_ = renderPass_;
@@ -87,20 +89,20 @@ namespace NSG
         return material;
     }
 
-	void Material::SetDiffuseColor(ColorRGB color)
+    void Material::SetDiffuseColor(ColorRGB color)
     {
-		if (diffuseColor_ != Color(color, alpha_))
+        if (diffuseColor_ != Color(color, alpha_))
         {
             diffuseColor_ = Color(color, alpha_);
             SetUniformsNeedUpdate();
         }
     }
 
-	void Material::SetSpecularColor(ColorRGB color)
+    void Material::SetSpecularColor(ColorRGB color)
     {
-		if (specularColor_ != Color(color, alphaForSpecular_))
+        if (specularColor_ != Color(color, alphaForSpecular_))
         {
-			specularColor_ = Color(color, alphaForSpecular_);
+            specularColor_ = Color(color, alphaForSpecular_);
             SetUniformsNeedUpdate();
         }
     }
@@ -188,41 +190,41 @@ namespace NSG
         return texture_[index];
     }
 
-	void Material::SetAlpha(float alpha)
-	{
-		if (alpha_ != alpha)
-		{
-			alpha_ = alpha;
-			diffuseColor_.a = alpha;
-			SetUniformsNeedUpdate();
-		}
-	}
+    void Material::SetAlpha(float alpha)
+    {
+        if (alpha_ != alpha)
+        {
+            alpha_ = alpha;
+            diffuseColor_.a = alpha;
+            SetUniformsNeedUpdate();
+        }
+    }
 
     void Material::SetEmitIntensity(float emitIntensity)
     {
-        if(emitIntensity != emitIntensity_)
+        if (emitIntensity != emitIntensity_)
         {
             emitIntensity_ = emitIntensity;
             SetUniformsNeedUpdate();
         }
     }
 
-	void Material::SetAlphaForSpecular(float alphaForSpecular)
-	{
-		if (alphaForSpecular_ != alphaForSpecular)
-		{
-			alphaForSpecular_ = alphaForSpecular;
-			specularColor_.a = alphaForSpecular;
-			SetUniformsNeedUpdate();
-		}
-	}
+    void Material::SetAlphaForSpecular(float alphaForSpecular)
+    {
+        if (alphaForSpecular_ != alphaForSpecular)
+        {
+            alphaForSpecular_ = alphaForSpecular;
+            specularColor_.a = alphaForSpecular;
+            SetUniformsNeedUpdate();
+        }
+    }
 
     void Material::EnableTransparent(bool enable)
     {
-        if(isTransparent_ != enable)
+        if (isTransparent_ != enable)
         {
             isTransparent_ = enable;
-            SetUniformsNeedUpdate();   
+            SetUniformsNeedUpdate();
         }
     }
 
@@ -262,7 +264,7 @@ namespace NSG
 
     void Material::AllocateResources()
     {
-		isBatched_ = Graphics::GetPtr()->HasInstancedArrays() && !IsTransparent();
+        isBatched_ = Graphics::GetPtr()->HasInstancedArrays() && !IsTransparent();
         if (isBatched_)
             instanceBuffer_ = std::make_shared<InstanceBuffer>();
     }
@@ -310,7 +312,7 @@ namespace NSG
         child.append_attribute("emitIntensity").set_value(emitIntensity_);
         child.append_attribute("fillMode").set_value(ToString(fillMode_));
         child.append_attribute("alpha").set_value(alpha_);
-		child.append_attribute("alphaForSpecular").set_value(alphaForSpecular_);
+        child.append_attribute("alphaForSpecular").set_value(alphaForSpecular_);
         child.append_attribute("isTransparent").set_value(isTransparent_);
         child.append_attribute("renderPass").set_value(ToString(renderPass_));
         child.append_attribute("shadowBias").set_value(shadowBias_);
@@ -326,8 +328,8 @@ namespace NSG
         SetFriction(node.attribute("friction").as_float());
 
         auto childTexture = node.child(TEXTURE_NAME);
-        while(childTexture)
-        {   
+        while (childTexture)
+        {
             SetTexture(Texture2D::CreateFrom(childTexture));
             childTexture = childTexture.next_sibling(TEXTURE_NAME);
         }
@@ -341,7 +343,7 @@ namespace NSG
         SetEmitIntensity(node.attribute("emitIntensity").as_float());
         SetFillMode(ToFillMode(node.attribute("fillMode").as_string()));
         SetAlpha(node.attribute("alpha").as_float());
-		SetAlphaForSpecular(node.attribute("alphaForSpecular").as_float());
+        SetAlphaForSpecular(node.attribute("alphaForSpecular").as_float());
         EnableTransparent(node.attribute("isTransparent").as_bool());
         SetRenderPass(ToRenderPass(node.attribute("renderPass").as_string()));
         SetBias(node.attribute("shadowBias").as_float());
@@ -448,13 +450,13 @@ namespace NSG
         return nullptr != GetTexture(MaterialTexture::LIGHT_MAP);
     }
 
-	void Material::FillShaderDefines(std::string& defines, PassType passType, const Mesh* mesh, bool allowInstancing) const
+    void Material::FillShaderDefines(std::string& defines, PassType passType, const Mesh* mesh, bool allowInstancing) const
     {
         defines += "MATERIAL_" + GetName() + "\n"; // just to have a shader variance per material
         bool defaultPass = PassType::DEFAULT == passType;
-		bool litPass = PassType::LIT == passType;
+        bool litPass = PassType::LIT == passType;
 
-		if (defaultPass || litPass)
+        if (defaultPass || litPass)
         {
             switch (renderPass_)
             {
@@ -476,7 +478,7 @@ namespace NSG
                 case RenderPass::WAVE:
                     defines += "WAVE\n";
                     break;
-				case RenderPass::SHOW_TEXTURE0:
+                case RenderPass::SHOW_TEXTURE0:
                     defines += "SHOW_TEXTURE0\n";
                     break;
                 case RenderPass::LIT:
@@ -496,7 +498,7 @@ namespace NSG
                 auto texture = GetTexture((MaterialTexture)index);
                 if (texture)
                 {
-                    if(texture->GetUseAlpha())
+                    if (texture->GetUseAlpha())
                         defines += "USEALPHA\n";
                     int uvIndex = mesh->GetUVIndex(texture->GetUVName());
                     auto type = texture->GetMapType();
@@ -536,7 +538,7 @@ namespace NSG
             }
         }
 
-		if (IsBatched() && mesh->IsStatic() && allowInstancing)
+        if (IsBatched() && mesh->IsStatic() && allowInstancing)
             defines += "INSTANCED\n";
 
         switch (billboardType_)
@@ -572,11 +574,120 @@ namespace NSG
         }
     }
 
-	bool Material::HasTextures() const
-	{
-		for (int i = 0; i < (int)MaterialTexture::MAX_MAPS; i++)
-			if (texture_[i])
-				return true;
-		return false;
-	}
+    bool Material::HasTextures() const
+    {
+        for (int i = 0; i < (int)MaterialTexture::MAX_MAPS; i++)
+            if (texture_[i])
+                return true;
+        return false;
+    }
+
+    void Material::ShowGUIProperties(Editor* editor)
+    {
+        std::string header = "Material:" + GetName();
+        if (ImGui::CollapsingHeader(header.c_str()))
+        {
+            if (ImGui::TreeNode("Preview"))
+            {
+                auto texture = editor->GetMaterialPreview(shared_from_this());
+                if (texture && texture->IsReady())
+                    ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 0), ImVec2(1, -1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+                ImGui::TreePop();
+            }
+
+            if (HasTextures() && ImGui::TreeNode("Textures"))
+            {
+                for (int i = 0; i < (int)MaterialTexture::MAX_MAPS; i++)
+                {
+                    auto texture = GetTexture((MaterialTexture)i);
+                    if (texture && texture->IsReady())
+                    {
+                        auto type = texture->GetMapType();
+                        if (ImGui::TreeNode(ToString(type)))
+                        {
+                            auto width = std::min(64.f, (float)texture->GetWidth());
+                            auto height = std::min(64.f, (float)texture->GetHeight());
+                            ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(width, height), ImVec2(0, 0), ImVec2(1, -1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+                            ImGui::TreePop();
+                        }
+                    }
+                }
+                ImGui::TreePop();
+            }
+
+            auto shadeless = IsShadeless();
+            ImGui::Checkbox("Shadeless", &shadeless);
+            SetShadeless(shadeless);
+            ImGui::SameLine();
+
+            auto isTransparent = IsTransparent();
+            ImGui::Checkbox("Transparent", &isTransparent);
+            EnableTransparent(isTransparent);
+
+            ImGui::SameLine();
+            auto isFlipped = IsYFlipped();
+            ImGui::Checkbox("Flip Y", &isFlipped);
+            FlipYTextureCoords(isFlipped);
+
+            auto renderPass = GetRenderPass();
+            ImGui::Combo("Render Pass", (int*)&renderPass, "Vertex Color\0Unlit\0Lit\0Text\0Blend\0Blur\0Wave\0Show Diffuse\0");
+            SetRenderPass(renderPass);
+            auto fillMode = GetFillMode();
+            ImGui::Combo("Fill Mode", (int*)&fillMode, "Solid\0Wireframe\0");
+            SetFillMode(fillMode);
+            auto cullFaceMode = GetCullFaceMode();
+            ImGui::Combo("Culling", (int*)&cullFaceMode, "Back\0Front\0Front and back\0Disabled");
+            SetCullFaceMode(cullFaceMode);
+            auto billboardType = GetBillboardType();
+            ImGui::Combo("Billboard", (int*)&billboardType, "None\0Spherical\0Cylindrical\0");
+            SetBillboardType(billboardType);
+
+            auto ambientIntensity = GetAmbientIntensity();
+            ImGui::SliderFloat("##ambInt", &ambientIntensity, 0.0f, 1.0f, "Ambient Intensity %.3f");
+            SetAmbientIntensity(ambientIntensity);
+
+            auto emitIntensity = GetEmitIntensity();
+            ImGui::SliderFloat("##emitInt", &emitIntensity, 0.0f, 1.0f, "Emit Intensity %.3f");
+            SetEmitIntensity(emitIntensity);
+
+            auto diffuseColor = GetDiffuseColor();
+            ImGui::ColorEdit4("Diffuse", &diffuseColor[0]);
+            SetDiffuseColor(ColorRGB(diffuseColor));
+            SetAlpha(diffuseColor.a);
+
+            auto diffuseIntensity = GetDiffuseIntensity();
+            ImGui::SliderFloat("##difInt", &diffuseIntensity, 0.0f, 1.0f, "Diffuse Intensity %.3f");
+            SetDiffuseIntensity(diffuseIntensity);
+
+            auto specularColor = GetSpecularColor();
+            ImGui::ColorEdit4("Specular", &specularColor[0]);
+            SetSpecularColor(ColorRGB(specularColor));
+            SetAlphaForSpecular(specularColor.a);
+
+            auto specularIntensity = GetSpecularIntensity();
+            ImGui::SliderFloat("##speInt", &specularIntensity, 0.0f, 1.0f, "Specular Intensity %.3f");
+            SetSpecularIntensity(specularIntensity);
+
+            auto shininess = GetShininess();
+            ImGui::SliderFloat("##shinin", &shininess, 0.0f, 511.0f, "Specular Shininess %.0f");
+            SetShininess(shininess);
+
+            auto friction = GetFriction();
+            ImGui::SliderFloat("##rbFric", &friction, 0.0f, 100.0f, "Rigbody Friction %.1f");
+            SetFriction(friction);
+
+            auto castShadow = CastShadow();
+            ImGui::Checkbox("Cast Shadow", &castShadow);
+            CastShadow(castShadow);
+            ImGui::SameLine();
+
+            auto receiveShadows = ReceiveShadows();
+            ImGui::Checkbox("Receive Shadows", &receiveShadows);
+            ReceiveShadows(receiveShadows);
+
+            auto shadowBias = GetBias();
+            ImGui::SliderFloat("##bias", &shadowBias, 0.0f, 10.0f, "Shadow Bias %.3f");
+            SetBias(shadowBias);
+        }
+    }
 }

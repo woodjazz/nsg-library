@@ -15,6 +15,7 @@
 #include "ShadowCamera.h"
 #include "FrameBuffer.h"
 #include "StringConverter.h"
+#include "imgui.h"
 #include "pugixml.hpp"
 #include <assert.h>
 #include <algorithm>
@@ -40,7 +41,7 @@ namespace NSG
           onlyShadow_(false),
           shadowBias_(0),
           shadowSplits_(1),
-		  invRange_(1.f/distance_)
+          invRange_(1.f / distance_)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         for (int i = 0; i < MAX_SPLITS; i++)
@@ -56,7 +57,7 @@ namespace NSG
 
     Light::~Light()
     {
-        if (Graphics::GetPtr())
+        if (SignalsAlive())
             SignalBeingDestroy()->Run(this);
     }
 
@@ -70,6 +71,11 @@ namespace NSG
         }
     }
 
+    float Light::GetEnergy() const
+    {
+        return energy_;
+    }
+
     void Light::SetColor(ColorRGB color)
     {
         if (color_ != color)
@@ -78,6 +84,11 @@ namespace NSG
             CalculateColor();
             SetUniformsNeedUpdate();
         }
+    }
+
+    const ColorRGB& Light::GetColor() const
+    {
+        return color_;
     }
 
     void Light::SetShadowColor(Color color)
@@ -195,7 +206,7 @@ namespace NSG
 
     void Light::FillShaderDefines(std::string& defines, PassType passType, const Material* material) const
     {
-		if (PassType::LIT == passType)
+        if (PassType::LIT == passType)
         {
             if (LightType::POINT == type_)
                 defines += "HAS_POINT_LIGHT\n";
@@ -214,18 +225,18 @@ namespace NSG
                     defines += "SHADOWMAP\n";
             }
 
-			if (HasSpecularColor() && material->HasSpecularColor())
-				defines += "SPECULAR\n";
+            if (HasSpecularColor() && material->HasSpecularColor())
+                defines += "SPECULAR\n";
         }
-		else if (PassType::SHADOW == passType)
-		{
-			if (LightType::POINT == type_)
-				defines += "SHADOW_POINT_PASS\n";
-			else if (LightType::DIRECTIONAL == type_)
-				defines += "SHADOW_DIR_PASS\n";
-			else
-				defines += "SHADOW_SPOT_PASS\n";
-		}
+        else if (PassType::SHADOW == passType)
+        {
+            if (LightType::POINT == type_)
+                defines += "SHADOW_POINT_PASS\n";
+            else if (LightType::DIRECTIONAL == type_)
+                defines += "SHADOW_DIR_PASS\n";
+            else
+                defines += "SHADOW_SPOT_PASS\n";
+        }
     }
 
     SignalLight::PSignal Light::SignalBeingDestroy()
@@ -237,7 +248,7 @@ namespace NSG
     void Light::CalculateColor()
     {
         diffuseColor_ = diffuse_ ? color_ * energy_ : ColorRGB(0);
-		specularColor_ = specular_ ? color_ * energy_ : ColorRGB(0);
+        specularColor_ = specular_ ? color_ * energy_ : ColorRGB(0);
     }
 
     bool Light::HasSpecularColor() const
@@ -247,7 +258,7 @@ namespace NSG
 
     void Light::SetDistance(float distance)
     {
-        if(distance_ != distance)
+        if (distance_ != distance)
         {
             distance_ = distance;
             CalculateRange();
@@ -274,17 +285,17 @@ namespace NSG
 
     void Light::CalculateRange()
     {
-		if (LightType::SPOT == type_)
-			invRange_ = 1.f/Clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
-		else if (LightType::POINT == type_)
-			invRange_ = 1.f/std::max(distance_, EPSILON);
-		else
-			invRange_ = 1.f/std::numeric_limits<float>::max(); // shall not be used
+        if (LightType::SPOT == type_)
+            invRange_ = 1.f / Clamp((shadowClipEnd_ - shadowClipStart_), 0.f, distance_);
+        else if (LightType::POINT == type_)
+            invRange_ = 1.f / std::max(distance_, EPSILON);
+        else
+            invRange_ = 1.f / std::numeric_limits<float>::max(); // shall not be used
     }
 
     void Light::SetShadowClipStart(float value)
     {
-        if(shadowClipStart_ != value)
+        if (shadowClipStart_ != value)
         {
             shadowClipStart_ = value;
             CalculateRange();
@@ -293,7 +304,7 @@ namespace NSG
 
     void Light::SetShadowClipEnd(float value)
     {
-        if(shadowClipEnd_ != value)
+        if (shadowClipEnd_ != value)
         {
             shadowClipEnd_ = value;
             CalculateRange();
@@ -319,13 +330,13 @@ namespace NSG
             shadowCamera->GetVisiblesShadowCasters(shadowCasters);
             Graphics::GetPtr()->SetFrameBuffer(shadowFrameBuffer);
             Graphics::GetPtr()->ClearBuffers(true, true, false);
-            if(!shadowCamera->IsDisabled())
+            if (!shadowCamera->IsDisabled())
             {
                 std::vector<PBatch> batches;
                 Renderer::GetPtr()->GenerateBatches(shadowCasters, batches);
                 for (auto& batch : batches)
                     if (batch->GetMaterial()->CastShadow())
-						Renderer::GetPtr()->DrawShadowPass(batch.get(), this, shadowCamera);
+                        Renderer::GetPtr()->DrawShadowPass(batch.get(), this, shadowCamera);
             }
             Graphics::GetPtr()->SetFrameBuffer(frameBuffer);
         }
@@ -342,7 +353,7 @@ namespace NSG
         Graphics::GetPtr()->ClearBuffers(true, true, false);
         for (auto& batch : batches)
             if (batch->GetMaterial()->CastShadow())
-				renderer->DrawShadowPass(batch.get(), this, shadowCamera);
+                renderer->DrawShadowPass(batch.get(), this, shadowCamera);
     }
 
     int Light::GetShadowFrameBufferSize(int split) const
@@ -381,16 +392,16 @@ namespace NSG
 
     int Light::CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const
     {
-		auto camNear = camera->GetZNear();
-		auto camFar  = camera->GetZFar();
-		auto frustumDepth = camFar - camNear;
-#if 0
-		splits[0] = camNear + frustumDepth * 0.25f;
-		splits[1] = camNear + frustumDepth * 0.5f;
-		splits[2] = camNear + frustumDepth * 0.75f;
-		splits[3] = camFar;
-		return 4;
-#else
+        auto camNear = camera->GetZNear();
+        auto camFar  = camera->GetZFar();
+        auto frustumDepth = camFar - camNear;
+        #if 0
+        splits[0] = camNear + frustumDepth * 0.25f;
+        splits[1] = camNear + frustumDepth * 0.5f;
+        splits[2] = camNear + frustumDepth * 0.75f;
+        splits[3] = camFar;
+        return 4;
+        #else
         float shadowSplitLogFactor = camera->GetShadowSplitLogFactor();
         int nSplits = camera->GetMaxShadowSplits();
 
@@ -416,7 +427,7 @@ namespace NSG
         }
         splits[nSplits - 1] = camFar;
         return nSplits;
-#endif
+        #endif
     }
 
     void Light::GenerateShadowMaps(const Camera* camera)
@@ -464,7 +475,7 @@ namespace NSG
                             break;
                         farSplit = std::min(farZ, splits[split]);
                         auto shadowCamera = shadowCamera_[split].get();
-						shadowCamera->SetupDirectional(camera, nearSplit, farSplit);
+                        shadowCamera->SetupDirectional(camera, nearSplit, farSplit);
                         nearSplit = farSplit;
                         ++split;
                     }
@@ -473,6 +484,59 @@ namespace NSG
                         Generate2DShadowMap(i);
                 }
                 break;
+        }
+    }
+
+    void Light::ShowGUIProperties(Editor* editor)
+    {
+        SceneNode::ShowGUIProperties(editor);
+        std::string header = "Light:" + GetName();
+        if (ImGui::CollapsingHeader(header.c_str()))
+        {
+            auto type = GetType();
+            ImGui::Combo("Type", (int*)&type, "Point\0Directional\0Spot");
+            SetType(type);
+
+            if (type == LightType::SPOT)
+            {
+                auto cutOff = GetSpotCutOff();
+                ImGui::SliderAngle("CutOff", &cutOff, 0.f, 180.f);
+                SetSpotCutOff(cutOff);
+            }
+
+            if (type != LightType::DIRECTIONAL)
+            {
+                auto distance = GetDistance();
+                ImGui::DragFloat("##distance", &distance, 1.f, 0.f, MAX_WORLD_SIZE, "Size %.1f");
+                SetDistance(distance);
+            }
+
+            auto energy = GetEnergy();
+            ImGui::DragFloat("##energy", &energy, 1.f, 0.f, 1000.f, "Energy %.1f");
+            SetEnergy(energy);
+
+            auto color = GetColor();
+            ImGui::ColorEdit3("Color", &color[0]);
+            SetColor(color);
+
+            auto enableDiffuse = diffuse_;
+            ImGui::Checkbox("Diffuse", &enableDiffuse);
+            EnableDiffuseColor(enableDiffuse);
+
+            auto enableSpecular = specular_;
+            ImGui::Checkbox("Specular", &enableSpecular);
+            EnableSpecularColor(enableSpecular);
+
+            auto shadow = DoShadows();
+            ImGui::Checkbox("Shadows", &shadow);
+            EnableShadows(shadow);
+
+            if (shadow)
+            {
+                auto bias = GetBias();
+                ImGui::SliderFloat("##bias", &bias, 0.0f, 5.0f, "Bias %.3f");
+                SetBias(bias);
+            }
         }
     }
 }

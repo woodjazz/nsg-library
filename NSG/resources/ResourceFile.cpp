@@ -42,7 +42,7 @@ namespace NSG
 
         onLoad_ = [this](const std::string & data)
         {
-            LOGI("HTTP Loaded %s with size = %d", name_.c_str(), data.size());
+            LOGI("HTTP Loaded %s with size = %u", name_.c_str(), data.size());
             buffer_ = data;
             isLocal_ = true;
         };

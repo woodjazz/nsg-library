@@ -603,4 +603,10 @@ namespace NSG
         ARGB8888,
         UNKNOWN
     };
+
+    enum class RendererContext
+    {
+        DEFAULT,
+        EDITOR
+    };
 }

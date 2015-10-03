@@ -151,7 +151,7 @@ namespace NSG
         faces_[FrustumFace::FACE_NEAR].vertices[3] = vertices_[2];
     }
 
-    Frustum::Face Frustum::GetFace(FrustumFace index) const
+    const Frustum::Face& Frustum::GetFace(FrustumFace index) const
     {
         return faces_[index];
     }

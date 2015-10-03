@@ -107,6 +107,7 @@ namespace NSG
         void SetBias(float shadowBias) { shadowBias_ = shadowBias; }
         float GetBias() const { return shadowBias_; }
 		bool HasTextures() const;
+        void ShowGUIProperties(Editor* editor);
     private:
 		PTexture ShowPreview(FrameBuffer* frameBuffer, Scene* scene);
         void SetupBlur();

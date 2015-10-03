@@ -52,7 +52,7 @@ int NSG_MAIN(int argc, char* argv[])
 		node->SetMaterial(material);
 		node->SetMesh(mesh);
 		node->SetPosition(Vector3(1, 0, 0));
-		editor.SetSceneNode(node);
+		editor.SetNode(node);
 	}
 
 	{
@@ -62,8 +62,12 @@ int NSG_MAIN(int argc, char* argv[])
 		node->SetMaterial(material);
 		node->SetMesh(mesh);
 		node->SetPosition(Vector3(-1, 0, 0));
-		editor.SetSceneNode(node);
+		editor.SetNode(node);
 	}
+
+    auto light = scene->CreateChild<Light>("light");
+    light->SetType(LightType::DIRECTIONAL);
+	light->SetPosition(Vector3(0, 3, 0));
 
 	return Engine::Create()->Run();
 }

@@ -34,11 +34,13 @@ namespace NSG
         Light(const std::string& name);
         ~Light();
         void SetEnergy(float energy);
+        float GetEnergy() const;
         void SetColor(ColorRGB color);
+        const ColorRGB& GetColor() const;
         void EnableDiffuseColor(bool enable);
         void EnableSpecularColor(bool enable);
         void SetSpotCutOff(float spotCutOff); // angle in degrees
-        float GetSpotCutOff() const { return spotCutOff_; }
+        float GetSpotCutOff() const { return spotCutOff_; } // angle in degrees
         LightType GetType() const { return type_; }
         void SetType(LightType type);
         void Save(pugi::xml_node& node) const override;
@@ -67,6 +69,7 @@ namespace NSG
         bool HasSpecularColor() const;
         int GetShadowSplits() const {return shadowSplits_; }
 		float GetInvRange() const { return invRange_; }
+        void ShowGUIProperties(Editor* editor) override;
     private:
 		int CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
         FrameBuffer* GetShadowFrameBuffer(int idx) const;

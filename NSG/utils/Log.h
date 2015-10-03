@@ -68,9 +68,7 @@ misrepresented as being the original software.
 #if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 
 #define LOGI(format, ...) {\
-        emscripten_log(EM_LOG_CONSOLE, format, ##__VA_ARGS__);\
-        fprintf(stdout, "*Info*" format "\n", ##__VA_ARGS__);\
-        fflush(stdout);\
+        emscripten_log(EM_LOG_CONSOLE, "*Info*" format, ##__VA_ARGS__);\
     }
 
 #else //(defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
@@ -80,15 +78,11 @@ misrepresented as being the original software.
 #endif
 
 #define LOGW(format, ...) {\
-        emscripten_log(EM_LOG_WARN, format, ##__VA_ARGS__);\
-        fprintf(stderr, "*Warning*" format "\n", ##__VA_ARGS__);\
-        fflush(stderr);\
+        emscripten_log(EM_LOG_WARN, "*Warning*" format, ##__VA_ARGS__);\
     }
 
 #define LOGE(format, ...) {\
-        emscripten_log(EM_LOG_ERROR, format, ##__VA_ARGS__);\
-        fprintf(stderr, "*Error*" format "\n", ##__VA_ARGS__);\
-        fflush(stderr);\
+        emscripten_log(EM_LOG_ERROR, "*Error*" format, ##__VA_ARGS__);\
     }
 
 #else //(defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)

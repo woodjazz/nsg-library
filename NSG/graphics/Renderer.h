@@ -44,6 +44,8 @@ namespace NSG
 		void EnableDebugPhysics(bool enable) { debugPhysics_ = enable; }
 		PDebugRenderer GetDebugRenderer() const { return debugRenderer_; }
 		static SignalDebugRenderer::PSignal SigDebugRenderer();
+		RendererContext SetContext(RendererContext context);
+		RendererContext GetContext() const { return context_; }
 	private:
 		void Draw(Batch* batch, const Pass* pass, const Light* light, const Camera* camera);
 		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
@@ -75,5 +77,6 @@ namespace NSG
 		bool debugPhysics_;
 		PMaterial debugMaterial_;
 		PDebugRenderer debugRenderer_;
+		RendererContext context_;
 	};
 }

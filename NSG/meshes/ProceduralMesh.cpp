@@ -35,6 +35,6 @@ namespace NSG
 
 	bool ProceduralMesh::IsValid() 
 	{ 
-		return Graphics::GetPtr() && Graphics::GetPtr()->GetWindow();
+		return Graphics::GetPtr() != nullptr;// && Graphics::GetPtr()->GetWindow();
 	}
 }

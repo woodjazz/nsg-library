@@ -207,6 +207,9 @@ namespace NSG
     class LinesMesh;
     typedef std::shared_ptr<LinesMesh> PLinesMesh;
 
+    class FrustumMesh;
+    typedef std::shared_ptr<FrustumMesh> PFrustumMesh;
+
     class EllipseMesh;
     typedef std::shared_ptr<EllipseMesh> PEllipseMesh;
 
@@ -345,4 +348,9 @@ namespace NSG
     class Editor;
     typedef std::shared_ptr<Editor> PEditor;
 
+    class EditorFrustum;
+    typedef std::shared_ptr<EditorFrustum> PEditorFrustum;
+
+    class EditorCamera;
+    typedef std::shared_ptr<EditorCamera> PEditorCamera;
 }

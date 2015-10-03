@@ -39,14 +39,16 @@ namespace NSG
 		void AutoZoom();
 		void OnUpdate(float deltaTime);
 		void OnKey(int key, int action, int modifier);
+		void Enable(bool enable);
+		PSceneNode SelectObject(float x, float y);
+		void SetViewRect(Vector4 viewRect);
+	private:
+		bool TransformCoords(float& x, float& y);
 		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
 		void OnMousewheel(float x, float y);
 		void OnMouseUp(int button, float x, float y);
 		void OnMouseDown(int button, float x, float y);
-		void OnMousemoved(float x, float y);
-		void Enable(bool enable);
-		PSceneNode SelectObject();
-	private:
+		void OnMouseMoved(float x, float y);
 		void SetPosition(const Vertex3& position);
 		void RayCastNewCenter(bool centerObj);
 		void Move(float x, float y);
@@ -74,5 +76,6 @@ namespace NSG
 		bool enableDebugPhysics_;
 		bool enableColorSplits_;
 		bool enabled_;
+		Vector4 viewRect_;
 	};
 }

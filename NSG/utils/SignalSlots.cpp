@@ -95,6 +95,11 @@ namespace NSG
 	std::set<ISignal*> SigCollector::signals_;
 	std::set<ISignal*>::iterator SigCollector::it_ = signals_.end();
 
+	bool SignalsAlive()
+	{
+		return SigCollector::alive_;
+	}
+
 	ISignal::ISignal()
 	{
 		SigCollector::Insert(this);

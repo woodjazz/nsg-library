@@ -35,6 +35,9 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "StringConverter.h"
 #include "Check.h"
+#include "Editor.h"
+#include "EditorSceneNode.h"
+#include "imgui.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <iterator>
@@ -45,6 +48,7 @@ namespace NSG
 
     Node::Node(const std::string& name)
         : name_(name),
+          signalUpdated_(new SignalEmpty()),
           id_(s_node_id++),
           scale_(1, 1, 1),
           globalScale_(1, 1, 1),
@@ -412,11 +416,19 @@ namespace NSG
         globalModelInvTransp_ = Transpose(Inverse(Matrix3(globalModel_)));
         lookAtDirection_ = globalOrientation_ * VECTOR3_LOOKAT_DIRECTION;
         upDirection_ = globalOrientation_ * VECTOR3_UP;
+        signalUpdated_->Run();
     }
 
     Matrix4 Node::GetTransform() const
     {
+        Update();
         return ComposeMatrix(position_, q_, scale_);
+    }
+
+    void Node::SetTransform(const Matrix4& transform)
+    {
+        DecomposeMatrix(transform, position_, q_, scale_);
+        MarkAsDirty(true, true);
     }
 
     const Matrix4& Node::GetGlobalModelMatrix() const
@@ -523,5 +535,77 @@ namespace NSG
         auto scale = GetScale();
         if (scale != VECTOR3_ONE)
             node.append_attribute("scale").set_value(ToString(scale).c_str());
+    }
+
+    void Node::ShowGUIProperties(Editor* editor)
+    {
+        std::string header = "Node:" + GetName();
+        if (ImGui::CollapsingHeader(header.c_str()))
+        {
+            if (ImGui::TreeNode("Transform"))
+            {
+                auto position = GetPosition();
+                ImGui::DragFloat3("Position", &position[0], 0.1f);
+                SetPosition(position);
+
+                auto guiRotation = GetGUIRotation();
+                auto oldRotation = Radians(guiRotation);
+                ImGui::DragFloat3("Rotation", &guiRotation[0], 1, 0, 360);
+                auto rad = Radians(guiRotation);
+                auto q = GetOrientation();
+                q *= Inverse(Quaternion(oldRotation)) * Quaternion(rad);
+                SetOrientation(q);
+                SetGUIRotation(guiRotation);
+
+                auto scale = GetScale();
+                ImGui::DragFloat3("Scale", &scale[0], 0.1f);
+                SetScale(scale);
+
+                ImGui::TreePop();
+            }
+        }
+    }
+
+	int Node::GetSceneChildren() const
+	{
+		int n = 0;
+		auto& children = GetChildren();
+		for (auto child : children)
+		{
+			if (!dynamic_cast<EditorSceneNode*>(child.get()))
+				++n;
+		}
+		return n;
+	}
+
+    void Node::ShowGUIHierarchy(Editor* editor)
+    {
+        if(dynamic_cast<EditorSceneNode*>(this))
+            return;
+		if (GetSceneChildren() > 0)
+		{
+			if (ImGui::TreeNode(("##" + GetName()).c_str()))
+			{
+				ImGui::SameLine();
+				if (ImGui::SmallButton(GetName().c_str()))
+					editor->SetNode(shared_from_this());
+
+				auto& children = GetChildren();
+				for (auto child : children)
+					child->ShowGUIHierarchy(editor);
+				ImGui::TreePop();
+			}
+			else
+			{
+				ImGui::SameLine();
+				if (ImGui::SmallButton(GetName().c_str()))
+					editor->SetNode(shared_from_this());
+			}
+		}
+		else
+		{
+			if (ImGui::SmallButton(GetName().c_str()))
+				editor->SetNode(shared_from_this());
+		}
     }
 }

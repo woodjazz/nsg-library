@@ -54,6 +54,7 @@ namespace NSG
         origin_ = rhs.origin_;
         direction_ = rhs.direction_;
         maxDistance_ = rhs.maxDistance_;
+		maxDistance_ = rhs.maxDistance_;
         return *this;
     }
 
@@ -195,7 +196,7 @@ namespace NSG
         PMesh mesh = node->GetMesh();
         if (mesh)
         {
-            const Matrix4& m = node->GetGlobalModelInvMatrix();
+			auto& m = node->GetGlobalModelInvMatrix();
             Ray localRay = Transformed(m);
 			size_t n = mesh->GetNumberOfTriangles();
             for(size_t i = 0; i<n; i++)

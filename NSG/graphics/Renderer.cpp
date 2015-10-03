@@ -56,7 +56,8 @@ namespace NSG
           debugPass_(std::make_shared<Pass>()),
           debugPhysics_(false),
           debugMaterial_(Material::Create("NSGDebugMaterial")),
-          debugRenderer_(std::make_shared<DebugRenderer>())
+          debugRenderer_(std::make_shared<DebugRenderer>()),
+		  context_(RendererContext::DEFAULT)
     {
 
         debugMaterial_->SetSerializable(false);
@@ -403,8 +404,8 @@ namespace NSG
 
                 DebugRendererPass();
 
-                for (auto& obj : visibles_)
-                    obj->ClearUniform();
+				for (auto& obj : visibles_)
+					obj->ClearUniform();
 
                 for (auto& obj : transparent_)
                     obj->ClearUniform();
@@ -418,4 +419,10 @@ namespace NSG
         return signalDebugRenderer;
     }
 
+	RendererContext Renderer::SetContext(RendererContext context)
+	{
+		auto old = context_;
+		context_ = context;
+		return old;
+	}
 }

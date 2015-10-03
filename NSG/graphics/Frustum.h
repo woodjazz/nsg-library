@@ -69,7 +69,7 @@ namespace NSG
         std::vector<Vector3> GetVerticesTransform(const Matrix4& m) const;
         const Matrix4& GetMatrix() const { return m_; }
         struct Face { Vector3 vertices[4]; };
-        Face GetFace(FrustumFace index) const;
+        const Face& GetFace(FrustumFace index) const;
 		void Debug(const Vector3& origin, DebugRenderer* debugRenderer, const Color& color);
 		const Vector3& GetOrigin() const { return origin_; }
     private:

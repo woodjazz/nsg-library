@@ -38,7 +38,10 @@ namespace NSG
         void SetWindow(Window* window);
         void EnableOrtho();
         void DisableOrtho();
-        void SetFOV(float fovy); // in degrees
+        void SetFOVDegrees(float fovy);
+        float GetFOVDegrees() const;
+        void SetFOVRadians(float fovy);
+        float GetFOVRadians() const;
         void SetHalfHorizontalFov(float hhfov); // in radians
         void SetNearClip(float zNear);
         void SetFarClip(float zFar);
@@ -94,6 +97,7 @@ namespace NSG
 		void SetOrthoProjection(OrthoProjection projection);
 		void DisableUserOrthoProjection() { hasUserOrthoProjection_ = false; }
         void Debug(DebugRenderer* debugRenderer, const Color& color);
+        void ShowGUIProperties(Editor* editor) override;
     private:
     	const Matrix4& GetViewProjectionInverse() const;
         OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;
