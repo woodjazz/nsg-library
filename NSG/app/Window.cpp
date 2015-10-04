@@ -433,8 +433,7 @@ namespace NSG
     {
         if (BeginFrameRender())
         {
-			if (scene_)
-				Renderer::GetPtr()->Render(this, scene_, scene_->GetMainCamera().get());
+			Renderer::GetPtr()->Render(this, scene_);
             GUI::GetPtr()->Render(this);
             SwapWindowBuffers();
         }

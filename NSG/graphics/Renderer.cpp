@@ -57,7 +57,7 @@ namespace NSG
           debugPhysics_(false),
           debugMaterial_(Material::Create("NSGDebugMaterial")),
           debugRenderer_(std::make_shared<DebugRenderer>()),
-		  context_(RendererContext::DEFAULT)
+          context_(RendererContext::DEFAULT)
     {
 
         debugMaterial_->SetSerializable(false);
@@ -356,19 +356,22 @@ namespace NSG
     void Renderer::Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light)
     {
         graphics_->SetMesh(node->GetMesh().get());
-		if (graphics_->SetupProgram(pass, scene, camera, node, node->GetMaterial().get(), light))
+        if (graphics_->SetupProgram(pass, scene, camera, node, node->GetMaterial().get(), light))
             graphics_->DrawActiveMesh();
     }
 
-	void Renderer::Render(Window* window, Scene* scene)
-	{
-		Render(window, scene, scene->GetMainCamera().get());
-	}
+    void Renderer::Render(Window* window, Scene* scene)
+    {
+        if (scene)
+            Render(window, scene, scene->GetMainCamera().get());
+        else
+            Render(window, nullptr, nullptr);
+    }
 
-	void Renderer::Render(Window* window, Scene* scene, Camera* camera)
+    void Renderer::Render(Window* window, Scene* scene, Camera* camera)
     {
         scene_ = scene;
-		camera_ = camera;
+        camera_ = camera;
         graphics_->SetWindow(window);
         graphics_->ClearAllBuffers();
         if (scene && scene->GetDrawablesNumber())
@@ -404,8 +407,8 @@ namespace NSG
 
                 DebugRendererPass();
 
-				for (auto& obj : visibles_)
-					obj->ClearUniform();
+                for (auto& obj : visibles_)
+                    obj->ClearUniform();
 
                 for (auto& obj : transparent_)
                     obj->ClearUniform();
@@ -419,10 +422,10 @@ namespace NSG
         return signalDebugRenderer;
     }
 
-	RendererContext Renderer::SetContext(RendererContext context)
-	{
-		auto old = context_;
-		context_ = context;
-		return old;
-	}
+    RendererContext Renderer::SetContext(RendererContext context)
+    {
+        auto old = context_;
+        context_ = context;
+        return old;
+    }
 }

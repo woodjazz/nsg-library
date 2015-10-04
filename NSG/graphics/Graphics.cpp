@@ -990,6 +990,9 @@ namespace NSG
             auto height = activeWindow_->GetHeight();
             SetViewport(Recti(0, 0, width, height), false);
         }
+        else
+            SetViewport(Recti(0, 0, 0, 0), false);
+
     }
 
     void Graphics::DiscardFramebuffer()

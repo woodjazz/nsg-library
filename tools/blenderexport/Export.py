@@ -359,7 +359,10 @@ def ConvertMaterial(materialsEle, material):
     materialEle.set("alpha", FloatToString(alpha))
     materialEle.set("alphaForSpecular", FloatToString(alphaForSpecular))
     materialEle.set("isTransparent", BoolToString(transparent))
-    materialEle.set("shadowBias", FloatToString(material.shadow_buffer_bias))
+    if material.shadow_buffer_bias == 0:
+        materialEle.set("shadowBias", "0.001")
+    else:
+        materialEle.set("shadowBias", FloatToString(material.shadow_buffer_bias))
     if material.game_settings.text:
         materialEle.set("renderPass", "TEXT")
     elif material.use_vertex_color_paint:
