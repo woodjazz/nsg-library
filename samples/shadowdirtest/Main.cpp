@@ -34,8 +34,9 @@ PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
     obj->SetGlobalPosition(pos);
     auto material = Material::GetOrCreate(mesh->GetName());
     material->SetDiffuseColor(color);
+    //material->SetBias(.9f);
     //material->SetSpecularColor(ColorRGB(0));
-	material->SetRenderPass(RenderPass::LIT);
+    material->SetRenderPass(RenderPass::LIT);
     //material->SetRenderPass(RenderPass::UNLIT);
     obj->SetMesh(mesh);
     obj->SetMaterial(material);
@@ -59,14 +60,20 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
     auto window = Window::Create();
     scene = std::make_shared<Scene>("scene");
+
+#if 0
+    Editor editor;
+    editor.SetWindow(window);
+    editor.SetScene(scene);
+#endif
     //SetFog(scene);
-    auto light = scene->CreateChild<Light>();
+    auto light = scene->CreateChild<Light>("Light");
     ShadowMapDebug shadowMapDebug(light);
     light->SetType(LightType::DIRECTIONAL);
     light->SetShadowColor(Vector4(COLOR_BLACK, 1.f));
     //light->SetBias(0.1000f);
     auto camera = scene->CreateChild<Camera>();
-	camera->SetFarClip(100);
+    camera->SetFarClip(100);
     #ifdef TEST1
     light->SetGlobalLookAtPosition(Vector3(-10, -1, 0));
     camera->SetPosition(Vector3(6.552f, 13.163f, -3.545f));
@@ -83,17 +90,17 @@ int NSG_MAIN(int argc, char* argv[])
     plane->Set(60, 0.1f, 500);
     auto floor = CreateObject(plane, ColorRGB(0.058f, 0.58f, 0.98f), Vector3(0));
     floor->GetMaterial()->CastShadow(false);
-	//floor->GetMaterial()->SetAlphaForSpecular(0);
+    //floor->GetMaterial()->SetAlphaForSpecular(0);
     #ifdef TEST1
-	const int MAX_OBJS = 50;
-	for (int i = 0; i < MAX_OBJS/2; i++)
+    const int MAX_OBJS = 50;
+    for (int i = 0; i < MAX_OBJS / 2; i++)
     {
         float z = -i * 2.5f;
         CreateObject(Mesh::GetOrCreate<SphereMesh>("Sphere"), COLOR_RED, Vector3(-1, 1, z));
         //CreateObject(Mesh::GetOrCreate<BoxMesh>("Box"), COLOR_BLUE, Vector3(1, 1, z));
     }
 
-	for (int i = MAX_OBJS / 2; i < MAX_OBJS; i++)
+    for (int i = MAX_OBJS / 2; i < MAX_OBJS; i++)
     {
         float z = -i * 2.5f;
         //auto sphere = CreateObject(Mesh::GetOrCreate<SphereMesh>("Sphere"), COLOR_RED, Vector3(-1, 1, z));
@@ -113,33 +120,33 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto debugSlot = Renderer::GetPtr()->SigDebugRenderer()->Connect([&](DebugRenderer * renderer)
     {
-#if 0
+        #if 0
         BoundingBox bb(-1, 1);
 
-		camera1.SetNearClip(5);
-		camera1.SetFarClip(50);
-		camera1.Debug(renderer, Color(1, 0.6f, 0.6f, 1));
-		auto f0 = camera1.GetFrustumSplit(5, 10);
-		auto f1 = camera1.GetFrustumSplit(11, 15);
-		auto f2 = camera1.GetFrustumSplit(16, 20);
-		auto f3 = camera1.GetFrustumSplit(21, 50);
-#if 0
-		BoundingBox b0(*f0);
-		BoundingBox b1(*f1);
-		BoundingBox b2(*f2);
-		BoundingBox b3(*f3);
-		
-		b0.Debug(renderer, Color(1,0,0,1));
-		b1.Debug(renderer, Color(0,1,0,1));
-		b2.Debug(renderer, Color(0,0,1,1));
-		b3.Debug(renderer, Color(1.0f, 69.0f / 255.0f, 0.0f, 1.f));
-#else
-		f0->Debug(VECTOR3_ZERO, renderer, Color(1,0,0,1));
-		f1->Debug(VECTOR3_ZERO, renderer, Color(0,1,0,1));
-		f2->Debug(VECTOR3_ZERO, renderer, Color(0,0,1,1));
-		f3->Debug(VECTOR3_ZERO, renderer, Color(1.0f, 69.0f / 255.0f, 0.0f, 1.f));
-#endif
-#endif
+        camera1.SetNearClip(5);
+        camera1.SetFarClip(50);
+        camera1.Debug(renderer, Color(1, 0.6f, 0.6f, 1));
+        auto f0 = camera1.GetFrustumSplit(5, 10);
+        auto f1 = camera1.GetFrustumSplit(11, 15);
+        auto f2 = camera1.GetFrustumSplit(16, 20);
+        auto f3 = camera1.GetFrustumSplit(21, 50);
+        #if 0
+        BoundingBox b0(*f0);
+        BoundingBox b1(*f1);
+        BoundingBox b2(*f2);
+        BoundingBox b3(*f3);
+
+        b0.Debug(renderer, Color(1, 0, 0, 1));
+        b1.Debug(renderer, Color(0, 1, 0, 1));
+        b2.Debug(renderer, Color(0, 0, 1, 1));
+        b3.Debug(renderer, Color(1.0f, 69.0f / 255.0f, 0.0f, 1.f));
+        #else
+        f0->Debug(VECTOR3_ZERO, renderer, Color(1, 0, 0, 1));
+        f1->Debug(VECTOR3_ZERO, renderer, Color(0, 1, 0, 1));
+        f2->Debug(VECTOR3_ZERO, renderer, Color(0, 0, 1, 1));
+        f3->Debug(VECTOR3_ZERO, renderer, Color(1.0f, 69.0f / 255.0f, 0.0f, 1.f));
+        #endif
+        #endif
         //bb.Debug(renderer, Color(1, 0, 0, 1));
     });
 

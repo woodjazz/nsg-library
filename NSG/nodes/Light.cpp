@@ -39,7 +39,7 @@ namespace NSG
           shadowClipStart_(0.1f), // same minimum as blender
           shadowClipEnd_(30.f), // same as distance_
           onlyShadow_(false),
-          shadowBias_(0),
+          shadowBias_(1),
           shadowSplits_(1),
           invRange_(1.f / distance_)
     {
@@ -534,7 +534,7 @@ namespace NSG
             if (shadow)
             {
                 auto bias = GetBias();
-                ImGui::SliderFloat("##bias", &bias, 0.0f, 5.0f, "Bias %.3f");
+                ImGui::DragFloat("##bias", &bias, 1.f, 0.0f, 5.0f, "Bias %.3f");
                 SetBias(bias);
             }
         }

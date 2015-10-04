@@ -44,14 +44,7 @@
 
     	#elif defined(SHADOW_DIR_PASS) || defined(SHADOW_SPOT_PASS)
 
-    		#if defined(IS_TARGET_WEB)
-		        vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));
-		        vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1
-		        coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1
-		        gl_FragColor = EncodeDepth2Color(clamp(coords.z, 0.0, 1.0));
-  			#else
-	   			gl_FragColor = EncodeDepth2Color(gl_FragDepth);
-	        #endif
+	   		gl_FragColor = EncodeDepth2Color(gl_FragCoord.z);
 
 		#elif defined(LIT)
 

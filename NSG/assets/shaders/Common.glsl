@@ -42,7 +42,7 @@ uniform vec3 u_eyeWorldPos; // camera or shadowCamera world position
 // one coordinate per split (in case of directional light)
 uniform vec4 u_shadowCameraZFar;
 uniform vec4 u_shadowColor;
-uniform float u_shadowBias; // constant bias
+//uniform float u_shadowBias; // constant bias
 uniform vec4 u_shadowMapInvSize;
 
 uniform vec3 u_lightPosition;

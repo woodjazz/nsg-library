@@ -31,14 +31,7 @@ static const char* FS_GLSL = \
 "    		float lightToPixelDistance = length(lightToVertex) * u_lightInvRange;\n"\
 "    		gl_FragColor = EncodeDepth2Color(lightToPixelDistance);\n"\
 "    	#elif defined(SHADOW_DIR_PASS) || defined(SHADOW_SPOT_PASS)\n"\
-"    		#if defined(IS_TARGET_WEB)\n"\
-"		        vec4 shadowClipPos = GetShadowClipPos(vec4(v_worldPos, 1.0));\n"\
-"		        vec4 coords = shadowClipPos / shadowClipPos.w; // Normalize from -w..w to -1..1\n"\
-"		        coords = 0.5 * coords + 0.5; // Normalize from -1..1 to 0..1\n"\
-"		        gl_FragColor = EncodeDepth2Color(clamp(coords.z, 0.0, 1.0));\n"\
-"  			#else\n"\
-"	   			gl_FragColor = EncodeDepth2Color(gl_FragDepth);\n"\
-"	        #endif\n"\
+"	   		gl_FragColor = EncodeDepth2Color(gl_FragCoord.z);\n"\
 "		#elif defined(LIT)\n"\
 "				//Lighting is calculated in world space\n"\
 "				vec3 normal = GetNormal();\n"\

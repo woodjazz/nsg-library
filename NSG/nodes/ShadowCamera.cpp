@@ -133,7 +133,7 @@ namespace NSG
             castersBox.Transform(GetView()); // transform casters view box to shadowCam's space
 			auto zFar = -receiversBox.min_.z; // from cam point of view: set zFar to more distance z receiver
 			auto zNear = -castersBox.max_.z; // from cam point of view: set zNear to closest z caster
-
+            CHECK_ASSERT(zNear < zFar);
             SetNearClip(zNear);
             SetFarClip(zFar);
 			auto viewSize = castersBox.Size();

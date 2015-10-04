@@ -677,12 +677,13 @@ namespace NSG
                     glUniform4fv(shadowColor_, 1, &color[0]);
                 }
 
+#if 0
                 if (shadowBias_ != -1)
                 {
                     auto bias = material_->GetBias() * light_->GetBias();
                     glUniform1f(shadowBias_, bias);
                 }
-
+#endif
                 if (shadowMapInvSize_ != -1)
                 {
                     Vector4 shadowMapsInvSize;

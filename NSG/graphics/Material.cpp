@@ -46,7 +46,7 @@ namespace NSG
           signalPhysicsSet_(new SignalEmpty()),
           castShadow_(true),
           receiveShadows_(true),
-          shadowBias_(0)
+          shadowBias_(0.001f)
     {
     }
 
@@ -686,7 +686,7 @@ namespace NSG
             ReceiveShadows(receiveShadows);
 
             auto shadowBias = GetBias();
-            ImGui::SliderFloat("##bias", &shadowBias, 0.0f, 10.0f, "Shadow Bias %.3f");
+            ImGui::DragFloat("##bias", &shadowBias, 1.f, 0.0f, 10.0f, "Shadow Bias %.3f");
             SetBias(shadowBias);
         }
     }

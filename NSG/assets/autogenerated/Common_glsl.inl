@@ -43,7 +43,7 @@ static const char* COMMON_GLSL = \
 "// one coordinate per split (in case of directional light)\n"\
 "uniform vec4 u_shadowCameraZFar;\n"\
 "uniform vec4 u_shadowColor;\n"\
-"uniform float u_shadowBias; // constant bias\n"\
+"//uniform float u_shadowBias; // constant bias\n"\
 "uniform vec4 u_shadowMapInvSize;\n"\
 "uniform vec3 u_lightPosition;\n"\
 "uniform float u_lightInvRange; // only used for point and spot lights\n"\

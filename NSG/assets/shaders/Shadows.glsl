@@ -5,7 +5,8 @@
     vec4 CalcShadowFactor(vec3 world2light)
     {
         float sampledDistance = DecodeColor2Depth(textureCube(u_texture3, FixCubeLookup(world2light)));
-        return sampledDistance / u_lightInvRange < length(world2light) - u_shadowBias ? u_shadowColor : vec4(1.0);
+        //return sampledDistance / u_lightInvRange < length(world2light) - u_shadowBias ? u_shadowColor : vec4(1.0);
+        return sampledDistance / u_lightInvRange < length(world2light) ? u_shadowColor : vec4(1.0);
     }
 
 #elif defined(SHADOWMAP)
@@ -31,7 +32,8 @@
             sampledDistance *= 0.25;
         #endif
 
-        bool inShadow = sampledDistance < coords.z - u_shadowBias;
+        //bool inShadow = sampledDistance < coords.z - u_shadowBias;
+        bool inShadow = sampledDistance < coords.z;        
 
         #ifdef COLOR_SPLITS
             return inShadow ? GetSplitColor() : White;
