@@ -34,13 +34,16 @@ namespace NSG
     EditorCamera::EditorCamera(const std::string& name)
         : EditorSceneNode(name)
     {
-		SetMesh(Mesh::Create<QuadMesh>());
+        SetMesh(Mesh::Create<QuadMesh>());
         SetMaterial(Material::GetOrCreate("NSGEditorCamera"));
         material_->SetRenderPass(RenderPass::UNLIT);
         material_->SetDiffuseColor(COLOR_RED);
-		material_->EnableTransparent(true);
-		material_->SetAlpha(0.25f);
-		material_->SetBillboardType(BillboardType::SPHERICAL);
+        material_->EnableTransparent(true);
+        material_->SetAlpha(0.25f);
+        material_->SetBillboardType(BillboardType::SPHERICAL);
+        material_->CastShadow(false);
+        material_->ReceiveShadows(false);
+
     }
 
     EditorCamera::~EditorCamera()
@@ -50,8 +53,8 @@ namespace NSG
 
     void EditorCamera::SetCamera(PCamera camera)
     {
-        if(!frustum_)
-			frustum_ = camera->CreateChild<EditorFrustum>(GetUniqueName("EditorFrustum"));
-		frustum_->SetCamera(camera);
+        if (!frustum_)
+            frustum_ = camera->CreateChild<EditorFrustum>(GetUniqueName("EditorFrustum"));
+        frustum_->SetCamera(camera);
     }
 }

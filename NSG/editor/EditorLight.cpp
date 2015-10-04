@@ -34,13 +34,16 @@ namespace NSG
     EditorLight::EditorLight(const std::string& name)
         : EditorSceneNode(name)
     {
-		SetMesh(Mesh::Create<CircleMesh>());
+        SetMesh(Mesh::Create<CircleMesh>());
         SetMaterial(Material::GetOrCreate("NSGEditorLight"));
         material_->SetRenderPass(RenderPass::UNLIT);
         material_->SetDiffuseColor(COLOR_YELLOW);
-		material_->EnableTransparent(true);
-		material_->SetAlpha(0.25f);
-		material_->SetBillboardType(BillboardType::SPHERICAL);
+        material_->EnableTransparent(true);
+        material_->SetAlpha(0.25f);
+        material_->SetBillboardType(BillboardType::SPHERICAL);
+        material_->CastShadow(false);
+        material_->ReceiveShadows(false);
+
     }
 
     EditorLight::~EditorLight()

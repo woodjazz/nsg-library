@@ -37,6 +37,8 @@ namespace NSG
         SetMesh(Mesh::Create<FrustumMesh>());
         SetMaterial(Material::GetOrCreate("NSGEditorFrustum"));
         material_->SetRenderPass(RenderPass::VERTEXCOLOR);
+        material_->CastShadow(false);
+        material_->ReceiveShadows(false);
     }
 
     EditorFrustum::~EditorFrustum()
