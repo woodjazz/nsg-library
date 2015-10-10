@@ -64,6 +64,8 @@ namespace NSG
         bool GetOnlyShadow() const { return onlyShadow_; }
         void SetBias(float shadowBias) { shadowBias_ = shadowBias; }
         float GetBias() const { return shadowBias_; }
+        void SetSlopeScaledBias(float slopeScaledBias) { slopeScaledBias_ = slopeScaledBias; }
+        float GetSlopeScaledBias() const { return slopeScaledBias_; }
         ShadowCamera* GetShadowCamera(int idx) const;
         void GenerateShadowMaps(const Camera* camera);
         bool HasSpecularColor() const;
@@ -97,6 +99,7 @@ namespace NSG
         PFrameBuffer shadowFrameBuffer_[MAX_SPLITS];
         // Bias is used to add a slight offset distance between an object and the shadows cast by it.
         float shadowBias_; // final bias is multiplied by material bias (See Material::shadowBias_)
+        float slopeScaledBias_;
         PShadowCamera shadowCamera_[MAX_SPLITS];
         int shadowSplits_; //Calculated in the shadow pass
 		float invRange_;

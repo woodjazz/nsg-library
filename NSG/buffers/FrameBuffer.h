@@ -77,6 +77,5 @@ namespace NSG
 		SignalSizeChanged::PSlot slotViewChanged_;
         Window* window_;
 		bool autoSize_;
-        bool onlyRedoSize_;
     };
 }

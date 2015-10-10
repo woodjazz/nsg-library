@@ -263,11 +263,11 @@ macro (setup_executable)
         set_target_properties(${PROJECT_NAME} PROPERTIES ENABLE_EXPORTS "1")
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
-        #add_custom_command(
-        #    TARGET ${PROJECT_NAME} POST_BUILD
-        #        COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
-        #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        #        COMMENT "Generating HTML with Emscripten" VERBATIM)
+        add_custom_command(
+            TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                COMMENT "Generating HTML with Emscripten" VERBATIM)
 
         #add_custom_command(
         #    TARGET ${PROJECT_NAME} POST_BUILD
@@ -281,11 +281,11 @@ macro (setup_executable)
         #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         #        COMMENT "Generating HTML with Emscripten" VERBATIM)
 
-        add_custom_command(
-            TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s TOTAL_MEMORY=99999999 -o ${PROJECT_NAME}.html --pre-js ${EMSCRIPTEN_DIR}/disable_decoding.js
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                COMMENT "Generating HTML with Emscripten" VERBATIM)
+        #add_custom_command(
+        #    TARGET ${PROJECT_NAME} POST_BUILD
+        #        COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s TOTAL_MEMORY=99999999 -o ${PROJECT_NAME}.html --pre-js ${EMSCRIPTEN_DIR}/disable_decoding.js
+        #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        #        COMMENT "Generating HTML with Emscripten" VERBATIM)
 
 
     else()

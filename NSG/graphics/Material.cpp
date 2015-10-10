@@ -46,7 +46,8 @@ namespace NSG
           signalPhysicsSet_(new SignalEmpty()),
           castShadow_(true),
           receiveShadows_(true),
-          shadowBias_(0.001f)
+          shadowBias_(0.001f),
+          slopeScaledBias_(0.001f)
     {
     }
 
@@ -86,6 +87,7 @@ namespace NSG
         material->castShadow_ = castShadow_;
         material->receiveShadows_ = receiveShadows_;
         material->shadowBias_ = shadowBias_;
+        material->slopeScaledBias_ = slopeScaledBias_;
         return material;
     }
 
@@ -316,6 +318,7 @@ namespace NSG
         child.append_attribute("isTransparent").set_value(isTransparent_);
         child.append_attribute("renderPass").set_value(ToString(renderPass_));
         child.append_attribute("shadowBias").set_value(shadowBias_);
+        child.append_attribute("slopeScaledBias").set_value(slopeScaledBias_);
     }
 
     void Material::Load(const pugi::xml_node& node)
@@ -347,6 +350,7 @@ namespace NSG
         EnableTransparent(node.attribute("isTransparent").as_bool());
         SetRenderPass(ToRenderPass(node.attribute("renderPass").as_string()));
         SetBias(node.attribute("shadowBias").as_float());
+        SetSlopeScaledBias(node.attribute("slopeScaledBias").as_float());
     }
 
     void Material::SetFilterBlendMode(BlendFilterMode mode)
@@ -591,7 +595,7 @@ namespace NSG
             {
                 auto texture = editor->GetMaterialPreview(shared_from_this());
                 if (texture && texture->IsReady())
-                    ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 0), ImVec2(1, -1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+                    ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
                 ImGui::TreePop();
             }
 
@@ -607,7 +611,7 @@ namespace NSG
                         {
                             auto width = std::min(64.f, (float)texture->GetWidth());
                             auto height = std::min(64.f, (float)texture->GetHeight());
-                            ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(width, height), ImVec2(0, 0), ImVec2(1, -1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+                            ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
                             ImGui::TreePop();
                         }
                     }

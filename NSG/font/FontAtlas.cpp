@@ -22,12 +22,15 @@ namespace NSG
         : Object(name),
           viewWidth_(0),
           viewHeight_(0),
-          height_(0),
-          graphics_(Graphics::GetPtr())
+          height_(0)
     {
-        auto window = graphics_->GetWindow();
-        if (window)
-            SetWindow(window);
+        auto graphics = Graphics::GetPtr();
+        if(graphics)
+        {
+            auto window = graphics->GetWindow();
+            if (window)
+                SetWindow(window);
+        }
     }
 
     FontAtlas::~FontAtlas()

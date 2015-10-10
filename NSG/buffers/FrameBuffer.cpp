@@ -49,8 +49,7 @@ namespace NSG
           depthStencilRenderBuffer_(0),
           stencilRenderBuffer_(0),
           window_(nullptr),
-          autoSize_(true),
-          onlyRedoSize_(false)
+          autoSize_(true)
     {
         if (Flag::COLOR_CUBE_TEXTURE & flags_)
             colorTexture_ = std::make_shared<TextureCube>(name + "ColorCubeBuffer");
@@ -126,17 +125,16 @@ namespace NSG
         LOGI("Framebuffer width=%d, height=%d", width_, height_);
         CHECK_GL_STATUS();
 
-        if (!onlyRedoSize_)
-            glGenFramebuffers(1, &framebuffer_);
+        glGenFramebuffers(1, &framebuffer_);
 
-        Graphics::GetPtr()->SetFrameBuffer(this, GetDefaultTextureTarget());
+		auto graphics = Graphics::GetPtr();
+        auto oldFrameBuffer = graphics->SetFrameBuffer(this, GetDefaultTextureTarget());
 
         CHECK_GL_STATUS();
 
         if (flags_ & Flag::COLOR && !(flags_ & Flag::COLOR_USE_TEXTURE))
         {
-            if (!onlyRedoSize_)
-                glGenRenderbuffers(1, &colorRenderbuffer_);
+            glGenRenderbuffers(1, &colorRenderbuffer_);
             glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer_);
             #if defined(GLES2)
             {
@@ -147,64 +145,52 @@ namespace NSG
                 glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width_, height_);
             }
             #endif
-            if (!onlyRedoSize_)
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer_);
         }
 
         if (flags_ & Flag::DEPTH && !(flags_ & Flag::DEPTH_USE_TEXTURE))
         {
-            if (!onlyRedoSize_)
-                glGenRenderbuffers(1, &depthStencilRenderBuffer_);
+            glGenRenderbuffers(1, &depthStencilRenderBuffer_);
             glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
             if (flags_ & Flag::STENCIL)
             {
-                if (Graphics::GetPtr()->HasPackedDepthStencil())
+				if (graphics->HasPackedDepthStencil())
                 {
                     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
-                    if (!onlyRedoSize_)
-                    {
-                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
-                    }
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                 }
                 else
                 {
-                    if (Graphics::GetPtr()->HasDepthComponent24())
+					if (graphics->HasDepthComponent24())
                     {
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
-                        if(!onlyRedoSize_)
-                            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                     }
                     else
                     {
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
-                        if(!onlyRedoSize_)
-                            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                     }
 
-                    if(!onlyRedoSize_)
-                    {
-                        glGenRenderbuffers(1, &stencilRenderBuffer_);
-                        glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderBuffer_);
+                    glGenRenderbuffers(1, &stencilRenderBuffer_);
+                    glBindRenderbuffer(GL_RENDERBUFFER, stencilRenderBuffer_);
 
-                        glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width_, height_);
-                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRenderBuffer_);
-                    }
+                    glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width_, height_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRenderBuffer_);
                 }
             }
             else
             {
-                if (Graphics::GetPtr()->HasDepthComponent24())
+				if (graphics->HasDepthComponent24())
                 {
                     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
-                    if(!onlyRedoSize_)
-                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                 }
                 else
                 {
                     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width_, height_);
-                    if(!onlyRedoSize_)
-                        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
+                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
                 }
             }
         }
@@ -215,47 +201,44 @@ namespace NSG
             LOGE("Frame buffer failed with error = 0x%x", status);
         }
 
-        onlyRedoSize_ = false;
+        graphics->SetFrameBuffer(oldFrameBuffer);
 
         CHECK_GL_STATUS();
     }
 
     void FrameBuffer::ReleaseResources()
     {
-		if (!onlyRedoSize_)
-		{
-			CHECK_GL_STATUS();
+        CHECK_GL_STATUS();
 
-			Graphics::GetPtr()->UnboundTextures();
+        Graphics::GetPtr()->UnboundTextures();
 
-			if (stencilRenderBuffer_)
-			{
-				glDeleteRenderbuffers(1, &stencilRenderBuffer_);
-				stencilRenderBuffer_ = 0;
-			}
+        if (stencilRenderBuffer_)
+        {
+            glDeleteRenderbuffers(1, &stencilRenderBuffer_);
+            stencilRenderBuffer_ = 0;
+        }
 
-			if (depthStencilRenderBuffer_)
-			{
-				glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
-				depthStencilRenderBuffer_ = 0;
-			}
+        if (depthStencilRenderBuffer_)
+        {
+            glDeleteRenderbuffers(1, &depthStencilRenderBuffer_);
+            depthStencilRenderBuffer_ = 0;
+        }
 
-			if (colorRenderbuffer_)
-			{
-				glDeleteRenderbuffers(1, &colorRenderbuffer_);
-				colorRenderbuffer_ = 0;
-			}
+        if (colorRenderbuffer_)
+        {
+            glDeleteRenderbuffers(1, &colorRenderbuffer_);
+            colorRenderbuffer_ = 0;
+        }
 
-			CHECK_ASSERT(framebuffer_);
+        CHECK_ASSERT(framebuffer_);
 
-			glDeleteFramebuffers(1, &framebuffer_);
+        glDeleteFramebuffers(1, &framebuffer_);
 
-			framebuffer_ = 0;
+        framebuffer_ = 0;
 
-			Graphics::GetPtr()->SetFrameBuffer(0);
+        //Graphics::GetPtr()->SetFrameBuffer(nullptr);
 
-			CHECK_GL_STATUS();
-		}
+        CHECK_GL_STATUS();
     }
 
     void FrameBuffer::SetSize(int width, int height)
@@ -275,7 +258,6 @@ namespace NSG
 
             width_ = width;
             height_ = height;
-			onlyRedoSize_ = IsReady();
             Invalidate();
         }
     }

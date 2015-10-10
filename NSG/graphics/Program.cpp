@@ -564,6 +564,9 @@ namespace NSG
 
     Matrix4 Program::AdjustProjection(const Matrix4& m) const
     {
+        auto slopeScaledBias = material_->GetSlopeScaledBias() * light_->GetSlopeScaledBias();
+        graphics_->SetSlopeScaledBias(slopeScaledBias);
+
         Matrix4 m1(m);
         // Add constant depth bias to the projection matrix
         // OpenGL constant bias is unreliable and dependant on depth buffer bitdepth.

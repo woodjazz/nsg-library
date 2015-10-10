@@ -40,6 +40,7 @@ namespace NSG
           shadowClipEnd_(30.f), // same as distance_
           onlyShadow_(false),
           shadowBias_(1),
+          slopeScaledBias_(1),
           shadowSplits_(1),
           invRange_(1.f / distance_)
     {
@@ -176,7 +177,7 @@ namespace NSG
         node.append_attribute("onlyShadow").set_value(onlyShadow_);
         node.append_attribute("shadowColor").set_value(ToString(shadowColor_).c_str());
         node.append_attribute("shadowBias").set_value(shadowBias_);
-
+        node.append_attribute("slopeScaledBias").set_value(slopeScaledBias_);
 
         SaveChildren(node);
     }
@@ -201,6 +202,7 @@ namespace NSG
         SetOnlyShadow(node.attribute("onlyShadow").as_bool());
         SetShadowColor(Vector4(ToVertex3(node.attribute("shadowColor").as_string()), 1.0));
         SetBias(node.attribute("shadowBias").as_float());
+        SetSlopeScaledBias(node.attribute("slopeScaledBias").as_float());
         LoadChildren(node);
     }
 
@@ -319,17 +321,17 @@ namespace NSG
 
     void Light::Generate2DShadowMap(int split)
     {
-        auto frameBuffer = Graphics::GetPtr()->GetFrameBuffer();
         auto shadowFrameBuffer = GetShadowFrameBuffer(split);
         auto splitMapsize = GetShadowFrameBufferSize(split);
         shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
         if (shadowFrameBuffer->IsReady())
         {
+            auto graphics = Graphics::GetPtr();
             auto shadowCamera = GetShadowCamera(split);
             std::vector<SceneNode*> shadowCasters;
             shadowCamera->GetVisiblesShadowCasters(shadowCasters);
-            Graphics::GetPtr()->SetFrameBuffer(shadowFrameBuffer);
-            Graphics::GetPtr()->ClearBuffers(true, true, false);
+            auto oldFrameBuffer = graphics->SetFrameBuffer(shadowFrameBuffer);
+            graphics->ClearBuffers(true, true, false);
             if (!shadowCamera->IsDisabled())
             {
                 std::vector<PBatch> batches;
@@ -338,7 +340,7 @@ namespace NSG
                     if (batch->GetMaterial()->CastShadow())
                         Renderer::GetPtr()->DrawShadowPass(batch.get(), this, shadowCamera);
             }
-            Graphics::GetPtr()->SetFrameBuffer(frameBuffer);
+            graphics->SetFrameBuffer(oldFrameBuffer);
         }
     }
 
@@ -350,7 +352,8 @@ namespace NSG
         std::vector<PBatch> batches;
         auto renderer = Renderer::GetPtr();
         renderer->GenerateBatches(shadowCasters, batches);
-        Graphics::GetPtr()->ClearBuffers(true, true, false);
+        auto graphics = Graphics::GetPtr();
+        graphics->ClearBuffers(true, true, false);
         for (auto& batch : batches)
             if (batch->GetMaterial()->CastShadow())
                 renderer->DrawShadowPass(batch.get(), this, shadowCamera);
@@ -365,13 +368,13 @@ namespace NSG
 
     void Light::GenerateCubeShadowMap(const Camera* camera)
     {
-        auto frameBuffer = Graphics::GetPtr()->GetFrameBuffer();
         auto shadowFrameBuffer = GetShadowFrameBuffer(0);
         auto splitMapsize = GetShadowFrameBufferSize(0);
         shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
         if (shadowFrameBuffer->IsReady())
         {
             auto shadowCamera = GetShadowCamera(0);
+            auto graphics = Graphics::GetPtr();
             for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++)
             {
                 TextureTarget face = (TextureTarget)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
@@ -382,11 +385,12 @@ namespace NSG
                                     Intersection::OUTSIDE != camFrustum->IsInside(BoundingBox(*shadowCamera->GetFrustum()));
                 if (genShadowMap)
                 {
-                    Graphics::GetPtr()->SetFrameBuffer(shadowFrameBuffer, face);
+                    auto oldFrameBuffer = graphics->SetFrameBuffer(shadowFrameBuffer, face);
                     GenerateShadowMapCubeFace();
+                    graphics->SetFrameBuffer(oldFrameBuffer);
                 }
             }
-            Graphics::GetPtr()->SetFrameBuffer(frameBuffer);
+            
         }
     }
 

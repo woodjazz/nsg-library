@@ -38,8 +38,8 @@ namespace NSG
 		static PTexture CreateFrom(const pugi::xml_node& node);
 		GLenum GetTarget() const override;
 		void Define() override;
-		void SetData(unsigned char* pixels);
+		void SetData(const unsigned char* pixels);
 	private:
-		unsigned char* pixels_;
+		const unsigned char* pixels_;
     };
 }

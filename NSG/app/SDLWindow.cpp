@@ -69,7 +69,7 @@ namespace NSG
     }
     static EM_BOOL EmscripteGamepadCallback(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
     {
-
+        return false;
     }
     #elif defined(IS_TARGET_MOBILE)
     static int EventWatch(void* userdata, SDL_Event* event)

@@ -68,8 +68,8 @@ namespace NSG
 		Program* GetProgram() const { return activeProgram_; }
 		void SetWindow(Window* window);
 		Window* GetWindow() const { return activeWindow_; }
-		void SetFrameBuffer(FrameBuffer* buffer);
-		void SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
+		FrameBuffer* SetFrameBuffer(FrameBuffer* buffer);
+		FrameBuffer* SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
 		FrameBuffer* GetFrameBuffer() const { return currentFbo_; }
 		void DrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid * indices);
 		void DrawArrays(GLenum mode, GLint first, GLsizei count);
@@ -114,6 +114,7 @@ namespace NSG
 		static GLenum GetTexelFormatType();
 		void CreateGUI(Window* mainWindow);
 		void DestroyGUI();
+		void SetSlopeScaledBias(float slopeScaledBias);
 		static SignalWindow::PSignal SigWindow();
 	private:
 		Graphics();
@@ -157,6 +158,7 @@ namespace NSG
 		DepthFunc depthFunc_;
 		int maxTextureSize_;
 		PGUI imgui_;
+		float slopeScaledDepthBias_;
 		friend class Singleton<Graphics>;
 	};
 }

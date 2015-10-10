@@ -40,7 +40,7 @@ set SOURCE_FOLDER=%CD%
 
 cd %HOME_EMSCRIPTEN%
 call "%HOME_EMSCRIPTEN%/emsdk_env.bat"
-call "%HOME_EMSCRIPTEN%/emsdk activate"
+call emsdk activate
 cd %SOURCE_FOLDER%
 
 cd ..

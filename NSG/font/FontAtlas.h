@@ -65,7 +65,6 @@ namespace NSG
 		typedef std::map<int, CharInfo> CharsMap;
         CharsMap charsMap_;
         SignalSizeChanged::PSlot slotViewChanged_;
-        PGraphics graphics_;
 	};
 
 }

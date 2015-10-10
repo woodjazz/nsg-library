@@ -42,16 +42,19 @@ namespace NSG
           pMesh_(Mesh::GetOrCreateClass<QuadMesh>("FilterMesh")),
           frameBuffer_(std::make_shared<FrameBuffer>(name, FrameBuffer::Flag::COLOR | FrameBuffer::Flag::COLOR_USE_TEXTURE)),
           name_(name),
-          node_(std::make_shared<SceneNode>(name)),
-          graphics_(Graphics::GetPtr())
+          node_(std::make_shared<SceneNode>(name))
     {
         pMaterial_->SetTexture(input);
         pMaterial_->SetRenderPass(RenderPass::UNLIT);
         node_->SetMaterial(pMaterial_);
         node_->SetMesh(pMesh_);
-        auto window = graphics_->GetWindow();
-        if (window)
-            SetWindow(window);
+        auto graphics = Graphics::GetPtr();
+        if (graphics)
+        {
+            auto window = graphics->GetWindow();
+            if (window)
+                SetWindow(window);
+        }
     }
 
     Filter::~Filter()
@@ -79,8 +82,10 @@ namespace NSG
             return;
         Pass pass;
         pass.EnableDepthTest(false);
-        graphics_->SetFrameBuffer(frameBuffer_.get());
+        auto graphics = Graphics::GetPtr();
+        auto oldFrameBuffer = graphics->SetFrameBuffer(frameBuffer_.get());
         Renderer::GetPtr()->Render(&pass, nullptr, nullptr, node_.get(), nullptr);
+        graphics->SetFrameBuffer(oldFrameBuffer);
     }
 
     PTexture Filter::GetTexture() const

@@ -142,19 +142,12 @@ namespace NSG
 #undef OFFSETOF
         });
 
-        GLint wrapS;
-        GLint wrapT;
-        glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &wrapS);
-        glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, &wrapT);
-
         for (int n = 0; n < draw_data->CmdListsCount; n++)
         {
             const ImDrawList* cmd_list = draw_data->CmdLists[n];
             const ImDrawIdx* idx_buffer_offset = 0;
-
             vBuffer_->SetData((GLsizeiptr)cmd_list->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&cmd_list->VtxBuffer.front());
             iBuffer_->SetData((GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&cmd_list->IdxBuffer.front());
-
             for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end(); pcmd++)
             {
                 if (pcmd->UserCallback)
@@ -164,18 +157,12 @@ namespace NSG
                 else
                 {
                     graphics_->SetTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
                     graphics_->SetScissorTest(true, (int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
                     graphics_->DrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer_offset);
                 }
                 idx_buffer_offset += pcmd->ElemCount;
             }
         }
-        
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
-
         CHECK_GL_STATUS();
     }
 

@@ -118,7 +118,8 @@ namespace NSG
           maxFragmentUniformVectors_(0),
           maxVertexAttribs_(0),
           depthFunc_(DepthFunc::LESS),
-          maxTextureSize_(64)
+          maxTextureSize_(64),
+          slopeScaledDepthBias_(0)
     {
 
         #if defined(ANDROID) || defined(EMSCRIPTEN)
@@ -425,6 +426,7 @@ namespace NSG
         SetVertexBuffer(nullptr);
         SetIndexBuffer(nullptr);
         SetProgram(nullptr);
+        SetSlopeScaledBias(0);
 
         CHECK_GL_STATUS();
     }
@@ -435,8 +437,9 @@ namespace NSG
             SetTexture(i, nullptr);
     }
 
-    void Graphics::SetFrameBuffer(FrameBuffer* buffer)
+    FrameBuffer* Graphics::SetFrameBuffer(FrameBuffer* buffer)
     {
+        auto old = currentFbo_;
         if (buffer != currentFbo_)
         {
             currentFbo_ = buffer;
@@ -453,11 +456,13 @@ namespace NSG
             }
             SetUpViewport();
         }
+        return old;
     }
 
 
-    void Graphics::SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget)
+    FrameBuffer* Graphics::SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget)
     {
+        auto old = currentFbo_;
         if (buffer != currentFbo_ || currentColorTarget_ != colorTarget)
         {
             currentColorTarget_ = colorTarget;
@@ -471,6 +476,7 @@ namespace NSG
             }
             SetUpViewport();
         }
+        return old;
     }
 
     void Graphics::SetClearColor(const Color& color)
@@ -969,7 +975,7 @@ namespace NSG
             activeWindow_ = window;
             if (window)
             {
-				window->SetContext();
+                window->SetContext();
                 SetUpViewport();
                 Graphics::SigWindow()->Run(window);
             }
@@ -1336,13 +1342,13 @@ namespace NSG
                 EnableCullFace(false);
         }
 
-		auto shaderdefines = Program::GetShaderVariation(pass, scene, camera, activeMesh_, material, light, sceneNode);
+        auto shaderdefines = Program::GetShaderVariation(pass, scene, camera, activeMesh_, material, light, sceneNode);
         auto program = Program::GetOrCreate(shaderdefines);
         program->Set(sceneNode);
         program->Set(material);
         program->Set(light);
-		program->Set(camera);
-		program->Set(scene);
+        program->Set(camera);
+        program->Set(scene);
         bool ready = SetProgram(program.get());
         if (ready)
         {
@@ -1469,6 +1475,24 @@ namespace NSG
     {
         return GL_RGBA;
     }
+
+    void Graphics::SetSlopeScaledBias(float slopeScaledBias)
+    {
+        if (slopeScaledBias != slopeScaledDepthBias_)
+        {
+            if (slopeScaledBias != 0.0f)
+            {
+                float adjustedSlopeScaledBias = slopeScaledBias + 1.0f;
+                glEnable(GL_POLYGON_OFFSET_FILL);
+                glPolygonOffset(adjustedSlopeScaledBias, 0.0f);
+            }
+            else
+                glDisable(GL_POLYGON_OFFSET_FILL);
+
+            slopeScaledDepthBias_ = slopeScaledBias;
+        }
+    }
+
 
     SignalWindow::PSignal Graphics::SigWindow()
     {

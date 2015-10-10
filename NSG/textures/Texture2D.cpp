@@ -125,7 +125,7 @@ namespace NSG
 		CHECK_GL_STATUS();
     }
 
-	void Texture2D::SetData(unsigned char* pixels)
+	void Texture2D::SetData(const unsigned char* pixels)
 	{
 		if (pixels_ != pixels)
 		{

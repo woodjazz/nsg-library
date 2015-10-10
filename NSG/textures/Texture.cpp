@@ -46,7 +46,7 @@ namespace NSG
           width_(0),
           height_(0),
           format_(Graphics::GetTexelFormatType()),
-		  type_(Graphics::GetTexelDataType()),
+          type_(Graphics::GetTexelDataType()),
           channels_(0),
           serializable_(false),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -57,25 +57,6 @@ namespace NSG
           useAlpha_(false),
           uvTransform_(1, 1, 0, 0)
     {
-        switch (format_)
-        {
-            case GL_ALPHA:
-                channels_ = 1;
-                break;
-            case GL_RGB:
-                channels_ = 3;
-                break;
-            case GL_RGBA:
-                channels_ = 4;
-                break;
-            case GL_DEPTH_COMPONENT:
-                channels_ = 0;
-                type_ = GL_UNSIGNED_INT;
-                break;
-            default:
-                CHECK_ASSERT(false && "Unknown format!");
-                break;
-        }
     }
 
     Texture::Texture(PResource resource, const TextureFlags& flags)
@@ -86,8 +67,8 @@ namespace NSG
           pResource_(resource),
           width_(0),
           height_(0),
-		  format_(Graphics::GetTexelFormatType()),
-		  type_(Graphics::GetTexelDataType()),
+          format_(Graphics::GetTexelFormatType()),
+          type_(Graphics::GetTexelDataType()),
           channels_(0),
           serializable_(true),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -131,11 +112,11 @@ namespace NSG
 
     void Texture::FlipY()
     {
-		if (flags_ & (int)TextureFlag::INVERT_Y)
-			flags_ &= ~(int)TextureFlag::INVERT_Y;
-		else
+        if (flags_ & (int)TextureFlag::INVERT_Y)
+            flags_ &= ~(int)TextureFlag::INVERT_Y;
+        else
             flags_ |= (int)TextureFlag::INVERT_Y;
-		Invalidate();
+        Invalidate();
     }
 
     bool Texture::IsValid()
@@ -150,7 +131,7 @@ namespace NSG
     {
         CHECK_GL_STATUS();
         glGenTextures(1, &texture_);
-		Graphics::GetPtr()->SetTexture(0, this);
+        Graphics::GetPtr()->SetTexture(0, this);
 
         if (image_)
         {
@@ -158,12 +139,33 @@ namespace NSG
             width_ = image_->GetWidth();
             height_ = image_->GetHeight();
             format_ = image_->ConvertFormat2GL();
+            if (flags_ & (int)TextureFlag::INVERT_Y)
+            {
+                if (!image_->FlipVertical())
+                    LOGE("Cannot flip vertically image = %s", image_->GetName().c_str());
+            }
         }
-
-        if (image_ && flags_ & (int)TextureFlag::INVERT_Y)
+        else
         {
-            if (!image_->FlipVertical())
-                LOGE("Cannot flip vertically image = %s", image_->GetName().c_str());
+            switch (format_)
+            {
+                case GL_ALPHA:
+                    channels_ = 1;
+                    break;
+                case GL_RGB:
+                    channels_ = 3;
+                    break;
+                case GL_RGBA:
+                    channels_ = 4;
+                    break;
+                case GL_DEPTH_COMPONENT:
+                    channels_ = 0;
+                    type_ = GL_UNSIGNED_INT;
+                    break;
+                default:
+                    CHECK_ASSERT(false && "Unknown format!");
+                    break;
+            }
         }
 
         if (GetTarget() == GL_TEXTURE_CUBE_MAP)
@@ -172,8 +174,8 @@ namespace NSG
             width_ = height_ = value;
         }
 
-		CHECK_ASSERT(Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_));
-		CHECK_ASSERT(Graphics::GetPtr()->GetMaxTextureSize() >= width_ && Graphics::GetPtr()->GetMaxTextureSize() >= height_);
+        CHECK_ASSERT(Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_));
+        CHECK_ASSERT(Graphics::GetPtr()->GetMaxTextureSize() >= width_ && Graphics::GetPtr()->GetMaxTextureSize() >= height_);
 
         switch (wrapMode_)
         {
@@ -280,8 +282,6 @@ namespace NSG
         node.append_attribute("mapType") = ToString(mapType_);
         node.append_attribute("useAlpha").set_value(useAlpha_);
         node.append_attribute("uvTransform").set_value(ToString(uvTransform_).c_str());
-        
-
     }
 
     void Texture::SetSize(GLsizei width, GLsizei height)
@@ -303,8 +303,19 @@ namespace NSG
         {
             width_ = width;
             height_ = height;
-			if (!Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_))
+            if (!Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_))
                 GetPowerOfTwoValues(width_, height_);
+            Invalidate();
+        }
+    }
+
+    void Texture::SetFormat(GLint format)
+    {
+        if (format != format_)
+        {
+            CHECK_ASSERT(format == GL_ALPHA || format == GL_RGB 
+                || format == GL_RGBA || format == GL_DEPTH_COMPONENT);
+            format_ = format;
             Invalidate();
         }
     }

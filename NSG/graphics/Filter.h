@@ -48,6 +48,5 @@ namespace NSG
 		std::string name_;
 		PProgram program_;
 		PSceneNode node_;
-		PGraphics graphics_;
 	};
 }

@@ -106,6 +106,8 @@ namespace NSG
 		void Load(const pugi::xml_node& node) override;
         void SetBias(float shadowBias) { shadowBias_ = shadowBias; }
         float GetBias() const { return shadowBias_; }
+        void SetSlopeScaledBias(float slopeScaledBias) { slopeScaledBias_ = slopeScaledBias; }
+        float GetSlopeScaledBias() const { return slopeScaledBias_; }
 		bool HasTextures() const;
         void ShowGUIProperties(Editor* editor);
     private:
@@ -143,6 +145,7 @@ namespace NSG
         bool castShadow_;
         bool receiveShadows_;
         float shadowBias_; // factor to multiply shadow buffer bias with (see Light::shadowBias_)
+        float slopeScaledBias_;
         friend class Program;
     };
 }

@@ -39,6 +39,7 @@ namespace NSG
         void Save(pugi::xml_node& node);
         void SetSerializable(bool serializable);
         bool IsSerializable() const;
+        void SetFormat(GLint format);
         void SetFlags(const TextureFlags& flags);
         void FlipY();
         TextureFlags GetFlags() const { return flags_; }

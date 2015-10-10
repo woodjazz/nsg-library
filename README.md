@@ -8,7 +8,7 @@
 ANDROID
 ---------------------------
 
-Install SDK,NDK,Java(JDK)
+Install SDK,NDK,Java(JDK 1.7)
 
 For the SDK you will need Android 4.4.2 (API 19)
 
@@ -36,7 +36,7 @@ Install SDK: http://kripken.github.io/emscripten-site/docs/getting_started/downl
 
 Set environment variable: HOME_EMSCRIPTEN
 
-For chrome you will need an HTTP server. For instance: python -m SimpleHTTPServer 8000
+For chrome you will need a HTTP server. For instance: python -m SimpleHTTPServer 8000
 
 -------------------------
 Windows

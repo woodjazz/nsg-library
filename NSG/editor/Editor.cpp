@@ -139,6 +139,7 @@ namespace NSG
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
         previewFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("PreviewFrameBuffer"), frameBufferFlags);
         previewFrameBuffer_->SetSize(128, 128);
+        //previewFrameBuffer_->GetColorTexture()->SetWrapMode(TextureWrapMode::REPEAT);
         //previewFrameBuffer_->GetColorTexture()->SetUVTransform(Vector4(1, -1, 0, 0)); //In order to flip Y
     }
 
@@ -147,6 +148,7 @@ namespace NSG
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
         editorFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("EditorFrameBuffer"), frameBufferFlags);
         editorFrameBuffer_->SetSize(128, 128);
+        //editorFrameBuffer_->GetColorTexture()->SetWrapMode(TextureWrapMode::REPEAT);
     }
 
     void Editor::OnMouseDown(int button, float x, float y)
@@ -199,7 +201,7 @@ namespace NSG
             if (texture && texture->IsReady())
             {
                 ImGui::BeginChild("", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove);
-                ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 0), ImVec2(1, -1));
+                ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
 
                 auto vMin = ImGui::GetItemRectMin();
                 viewRect[0] = vMin.x;
@@ -258,17 +260,15 @@ namespace NSG
         if (previewFrameBuffer_->IsReady())
         {
             auto graphics = Graphics::GetPtr();
-            auto currentFB = graphics->GetFrameBuffer();
             auto angle = 0.2f * Engine::GetPtr()->GetDeltaTime();
             auto q = AngleAxis(angle, Vertex3(0, 1, 0));
             auto rot = previewNode_->GetOrientation();
             previewNode_->SetOrientation(q * rot);
-
             previewNode_->SetMaterial(material);
-            graphics->SetFrameBuffer(previewFrameBuffer_.get());
+            auto oldFrameBuffer = graphics->SetFrameBuffer(previewFrameBuffer_.get());
             auto currentWindow = graphics->GetWindow();
             Renderer::GetPtr()->Render(nullptr, scenePreview_.get());
-            graphics->SetFrameBuffer(currentFB);
+            graphics->SetFrameBuffer(oldFrameBuffer);
             graphics->SetWindow(currentWindow);
             return previewFrameBuffer_->GetColorTexture();
         }
@@ -283,14 +283,13 @@ namespace NSG
         if (editorFrameBuffer_->IsReady())
         {
             auto graphics = Graphics::GetPtr();
-            auto currentFB = graphics->GetFrameBuffer();
-            graphics->SetFrameBuffer(editorFrameBuffer_.get());
+            auto oldFrameBuffer = graphics->SetFrameBuffer(editorFrameBuffer_.get());
             auto currentWindow = graphics->GetWindow();
             auto renderer = Renderer::GetPtr();
             auto context = renderer->SetContext(RendererContext::EDITOR);
             renderer->Render(nullptr, scene, camera);
             renderer->SetContext(context);
-            graphics->SetFrameBuffer(currentFB);
+            graphics->SetFrameBuffer(oldFrameBuffer);
             graphics->SetWindow(currentWindow);
             return editorFrameBuffer_->GetColorTexture();
         }
