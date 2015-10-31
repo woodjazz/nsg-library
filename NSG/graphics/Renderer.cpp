@@ -377,13 +377,15 @@ namespace NSG
         if (scene && scene->GetDrawablesNumber())
         {
             if (camera_)
+            {
                 scene->GetVisibleNodes(camera_, visibles_);
+                graphics_->SetClearColor(Color(1));
+                ShadowGenerationPass();
+            }
             else
                 visibles_ = scene->GetDrawables();
             if (!visibles_.empty())
             {
-                graphics_->SetClearColor(Color(1));
-                ShadowGenerationPass();
                 graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1));
                 ExtractTransparent();
                 if (!visibles_.empty())

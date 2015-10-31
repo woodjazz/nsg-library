@@ -510,6 +510,9 @@ namespace NSG
         float top_;
         float near_;
         float far_;
+
+        OrthoProjection();
+		OrthoProjection(float left, float right, float bottom, float top, float near, float far);
     };
 
     enum class HTTPRequestStatus

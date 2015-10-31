@@ -56,9 +56,20 @@ namespace NSG
     {
     }
 
-	RayNodeResult::RayNodeResult(float distance, SceneNode* node)
-		: distance_(distance),
-		node_(node)
-	{
-	}
+    RayNodeResult::RayNodeResult(float distance, SceneNode* node)
+        : distance_(distance),
+          node_(node)
+    {
+    }
+
+    OrthoProjection::OrthoProjection()
+        : left_(0), right_(0), bottom_(0), top_(0), near_(0), far_(0)
+    {
+    }
+
+    OrthoProjection::OrthoProjection(float left, float right, float bottom, float top, float near, float far)
+        : left_(left), right_(right), bottom_(bottom), top_(top), near_(near), far_(far)
+    {
+
+    }
 }

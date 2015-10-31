@@ -78,7 +78,7 @@ int NSG_MAIN(int argc, char* argv[])
         position.y -= STEP;
     }
 
-    Vertex3 camPos(COLS / 2 * STEP, -(ROWS) / 2 * STEP, 75);
+    Vertex3 camPos(COLS / 2.f * STEP, -(ROWS) / 2.f * STEP, 75);
     Vertex3 lighPos(Vertex2(camPos), 5);
 
     auto light = scene->CreateChild<Light>();

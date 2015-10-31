@@ -266,14 +266,13 @@ namespace NSG
 
         const BoundingBox& box = obj->GetWorldBoundingBox();
         // Skip if still fits the current octant
-        //if (octant && obj->IsOccludee() && octant->GetCullingBox().IsInside(box) == Intersection::INSIDE && octant->CheckFit(box))
         if (octant && octant->GetCullingBox().IsInside(box) == Intersection::INSIDE && octant->CheckFit(box))
             return;
 
         Insert(obj);
 
         // Verify that the obj will be culled correctly
-        CHECK_ASSERT((octant = obj->GetOctant()) && (octant == this || octant->GetCullingBox().IsInside(box) == Intersection::INSIDE));
+        CHECK_ASSERT(obj->GetOctant() == this || obj->GetOctant()->GetCullingBox().IsInside(box) == Intersection::INSIDE);
 
 		if (allDrawablesSet_.end() == allDrawablesSet_.find(obj))
 		{

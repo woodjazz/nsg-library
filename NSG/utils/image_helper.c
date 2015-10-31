@@ -129,7 +129,7 @@ int
                     (necessary for non-square textures!)    */
                 if( block_size_x * (i+1) > width )
                 {
-                    u_block = width - i*block_size_y;
+                    u_block = width - i*block_size_x;
                 }
                 if( block_size_y * (j+1) > height )
                 {

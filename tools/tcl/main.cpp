@@ -165,7 +165,7 @@ std::string Template_writeSource(FILE* fp, char* fileName, bool binary)
             char tmp[256];
 
             sprintf(tmp, "static const size_t %s_SIZE", base.c_str());
-            fprintf(fp, "%s=%d;\n", tmp, buffer.size());
+            fprintf(fp, "%s=%u;\n", tmp, buffer.size());
 
             ret += "extern " + std::string(tmp) + ";\n";
 
@@ -194,7 +194,7 @@ std::string Template_writeSource(FILE* fp, char* fileName, bool binary)
 
         }
         if (!binary) fprintf(fp, ",0x00");
-        fprintf(fp, "\n};// %s %d bytes %s\n", Template_base(fileName).c_str(),
+        fprintf(fp, "\n};// %s %u bytes %s\n", Template_base(fileName).c_str(),
                 binary ? buffer.size() : buffer.size() + 1,
                 binary ? "binary" : "string");
     }

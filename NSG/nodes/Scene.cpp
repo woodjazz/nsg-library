@@ -232,10 +232,11 @@ namespace NSG
                 ++idx;
             }
 
-            closest = results[closestIdx];
-
-            return true;
-
+            if(closestIdx != -1)
+            {
+                closest = results[closestIdx];
+                return true;
+            }
         }
         return false;
     }
@@ -388,8 +389,7 @@ namespace NSG
     {
         Ray ray = Camera::GetRay(camera, screenX, screenY);
         RayNodeResult closest{ 0, nullptr };
-        GetClosestRayNodeIntersection(ray, closest);
-        if (closest.node_)
+        if (GetClosestRayNodeIntersection(ray, closest))
             return closest.node_;
         return nullptr;
     }

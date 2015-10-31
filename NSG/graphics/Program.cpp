@@ -605,7 +605,7 @@ namespace NSG
                 if (shadowPass)
                 {
                     auto m = AdjustProjection(camera_->GetProjection());
-                    glUniformMatrix4fv(viewProjectionLoc_, 1, GL_FALSE, GetPointer(m));
+                    glUniformMatrix4fv(projectionLoc_, 1, GL_FALSE, GetPointer(m));
                 }
                 else
                 {

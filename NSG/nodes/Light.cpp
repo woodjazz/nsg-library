@@ -219,16 +219,19 @@ namespace NSG
                 defines += "HAS_SPOT_LIGHT\n";
             }
 
-            if (DoShadows() && material->ReceiveShadows())
+            if(material)
             {
-                if (LightType::POINT == type_)
-                    defines += "CUBESHADOWMAP\n";
-                else
-                    defines += "SHADOWMAP\n";
-            }
+                if (DoShadows() && material->ReceiveShadows())
+                {
+                    if (LightType::POINT == type_)
+                        defines += "CUBESHADOWMAP\n";
+                    else
+                        defines += "SHADOWMAP\n";
+                }
 
-            if (HasSpecularColor() && material->HasSpecularColor())
-                defines += "SPECULAR\n";
+                if (HasSpecularColor() && material->HasSpecularColor())
+                    defines += "SPECULAR\n";
+            }
         }
         else if (PassType::SHADOW == passType)
         {
@@ -390,7 +393,7 @@ namespace NSG
                     graphics->SetFrameBuffer(oldFrameBuffer);
                 }
             }
-            
+
         }
     }
 
