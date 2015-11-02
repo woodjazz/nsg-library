@@ -118,7 +118,7 @@ namespace NSG
         {
             LOGE("XML parsed with errors, attr value: [%s]", doc.child("node").attribute("attr").value());
             LOGE("Error description: %s", result.description());
-            LOGE("Error offset: %d", result.offset);
+            LOGE("Error offset: %td", result.offset);
         }
         else
         {

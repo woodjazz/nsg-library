@@ -90,10 +90,8 @@ namespace NSG
         {
             auto width = window_->GetWidth();
             auto height = window_->GetHeight();
-			auto x1 = x;
-			auto y1 = y;
-			x1 = (x + 1) * 0.5f;
-			y1 = (-y + 1) * 0.5f;
+			auto x1 = (x + 1) * 0.5f;
+			auto y1 = (-y + 1) * 0.5f;
 			auto vWidth = viewRect_[2] - viewRect_[0];
 			auto vHeight = viewRect_[3] - viewRect_[1];
 

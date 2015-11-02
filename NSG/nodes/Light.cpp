@@ -473,14 +473,13 @@ namespace NSG
                     auto receiversViewBox = Camera::GetViewBox(camFrustum.get(), GetScene().get(), true, false);
                     float splits[MAX_SPLITS];
                     shadowSplits_ = CalculateSplits(camera, splits, camFullFrustumViewBox, receiversViewBox);
-                    auto farSplit = farZ;
                     int split = 0;
                     // Setup the shadow camera for each split
                     while (split < shadowSplits_)
                     {
                         if (nearSplit > farZ)
                             break;
-                        farSplit = std::min(farZ, splits[split]);
+                        auto farSplit = std::min(farZ, splits[split]);
                         auto shadowCamera = shadowCamera_[split].get();
                         shadowCamera->SetupDirectional(camera, nearSplit, farSplit);
                         nearSplit = farSplit;

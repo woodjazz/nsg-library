@@ -186,7 +186,7 @@ namespace NSG
         const int MaxBuffer = 50;
         char buffer[MaxBuffer];
         #if !defined(WIN32)
-        snprintf(buffer, MaxBuffer, "%u", obj);
+        snprintf(buffer, MaxBuffer, "%zu", obj);
         #else
         snprintf(buffer, MaxBuffer, "%lu", obj);
         #endif

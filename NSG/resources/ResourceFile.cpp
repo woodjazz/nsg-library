@@ -42,7 +42,7 @@ namespace NSG
 
         onLoad_ = [this](const std::string & data)
         {
-            LOGI("HTTP Loaded %s with size = %u", name_.c_str(), data.size());
+            LOGI("HTTP Loaded %s with size = %lu", name_.c_str(), data.size());
             buffer_ = data;
             isLocal_ = true;
         };
@@ -124,7 +124,7 @@ namespace NSG
                     buffer_.resize((int)filelength);
                     SDL_RWread(context, &buffer_[0], buffer_.size(), 1);
                     SDL_RWclose(context);
-                    LOGI("%s has been loaded with size=%u", filename.c_str(), buffer_.size());
+                    LOGI("%s has been loaded with size=%lu", filename.c_str(), buffer_.size());
                 }
                 else
                 {

@@ -249,10 +249,7 @@ namespace NSG
 
             CHECK_ASSERT(result.mNumIndices % 3 == 0);
 
-            unsigned vertexCount = result.mNumOutputVertices;
-            std::unique_ptr<Vector3> data(new Vector3[vertexCount]);
-            memcpy(data.get(), result.mOutputVertices, vertexCount * sizeof(Vector3));
-            auto shape = std::make_shared<btConvexHullShape>((btScalar*)data.get(), (int)vertexCount, (int)sizeof(Vector3));
+            auto shape = std::make_shared<btConvexHullShape>((btScalar*)result.mOutputVertices, (int)result.mNumOutputVertices, (int)sizeof(Vector3));
             lib.ReleaseResult(result);
             return shape;
         }
