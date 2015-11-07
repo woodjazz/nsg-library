@@ -497,7 +497,7 @@ namespace NSG
     {
         SceneNode::ShowGUIProperties(editor);
         std::string header = "Light:" + GetName();
-        if (ImGui::CollapsingHeader(header.c_str()))
+		if (ImGui::TreeNode(header.c_str()))
         {
             auto type = GetType();
             ImGui::Combo("Type", (int*)&type, "Point\0Directional\0Spot");
@@ -543,6 +543,7 @@ namespace NSG
                 ImGui::DragFloat("##bias", &bias, 1.f, 0.0f, 5.0f, "Bias %.3f");
                 SetBias(bias);
             }
+			ImGui::TreePop();
         }
     }
 }

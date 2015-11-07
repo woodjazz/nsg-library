@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Path.h"
 #include "Check.h"
+#include "Log.h"
 #if WIN32
 #include <Windows.h>
 #elif defined(EMSCRIPTEN)

@@ -25,14 +25,12 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-using namespace NSG;
-PScene scene;
 
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
 	auto window = Window::Create();
-    scene = std::make_shared<Scene>();
+    auto scene = std::make_shared<Scene>();
 	scene->SetWindow(window.get());
 	window->SetScene(scene.get());
     auto camera = scene->CreateChild<Camera>();

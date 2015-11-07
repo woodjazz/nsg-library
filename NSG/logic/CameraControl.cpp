@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "Engine.h"
 #include "Renderer.h"
 #include "Check.h"
+#include "SharedFromPointer.h"
 
 namespace NSG
 {
@@ -186,7 +187,7 @@ namespace NSG
         lastX_ = x;
         lastY_ = y;
 
-        if (button == NSG_BUTTON_LEFT)
+        if (button == NSG_BUTTON_RIGHT)
         {
             if (altKeyDown_)
                 RayCastNewCenter(false);
@@ -199,7 +200,7 @@ namespace NSG
         if (!enabled_)
             return;
 
-        if (button == NSG_BUTTON_LEFT)
+		if (button == NSG_BUTTON_RIGHT)
             leftButtonDown_ = false;
     }
 
@@ -415,7 +416,7 @@ namespace NSG
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
         if (scene_->GetClosestRayNodeIntersection(ray, closest))
-            return std::dynamic_pointer_cast<SceneNode>(closest.node_->shared_from_this());
+			return std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(closest.node_));
         return nullptr;
     }
 

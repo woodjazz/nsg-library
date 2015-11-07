@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Object.h"
 #include "Check.h"
+#include "Log.h"
 #include "Util.h"
 #include "SignalSlots.h"
 #include "LoaderXML.h"
@@ -64,14 +65,14 @@ namespace NSG
         }
     }
 
-	void Object::SetLoader(PLoaderXMLNode nodeLoader)
-	{
-		if (nodeLoader_ != nodeLoader)
-		{
-			nodeLoader_ = nodeLoader;
-			Invalidate();
-		}
-	}
+    void Object::SetLoader(PLoaderXMLNode nodeLoader)
+    {
+        if (nodeLoader_ != nodeLoader)
+        {
+            nodeLoader_ = nodeLoader;
+            Invalidate();
+        }
+    }
 
     std::string Object::GetType() const
     {
@@ -85,9 +86,15 @@ namespace NSG
 
     bool Object::IsReady()
     {
+        TryReady();
+        return isValid_;
+    }
+
+    void Object::TryReady()
+    {
         if (!isValid_)
         {
-			isValid_ = (!nodeLoader_ || nodeLoader_->IsReady()) && IsValid();
+            isValid_ = (!nodeLoader_ || nodeLoader_->IsReady()) && IsValid();
 
             if (isValid_)
             {
@@ -98,7 +105,6 @@ namespace NSG
                 signalAllocated_->Run();
             }
         }
-        return isValid_;
     }
 
     SignalEmpty::PSignal Object::SigInvalidateAll()
@@ -112,7 +118,7 @@ namespace NSG
         SigInvalidateAll()->Run();
     }
 
-	void Object::LoadAll(PLoaderXML loader, const char* collectionType, AdderFunction adder)
+    void Object::LoadAll(PLoaderXML loader, const char* collectionType, AdderFunction adder)
     {
         auto& doc = loader->GetDocument();
         pugi::xml_node node = doc.child("App");
@@ -129,12 +135,12 @@ namespace NSG
         }
     }
 
-	void Object::SetLoader(PLoaderXML loader, const char* collectionType, PObject obj, const std::string& name)
-	{
-		auto nodeLoader = std::make_shared<LoaderXMLNode>(name);
-		nodeLoader->Set(loader, obj, collectionType, name);
-		obj->SetLoader(nodeLoader);
+    void Object::SetLoader(PLoaderXML loader, const char* collectionType, PObject obj, const std::string& name)
+    {
+        auto nodeLoader = std::make_shared<LoaderXMLNode>(name);
+        nodeLoader->Set(loader, obj, collectionType, name);
+        obj->SetLoader(nodeLoader);
 
-	}
+    }
 
 }

@@ -37,6 +37,7 @@ namespace NSG
         virtual ~Object();
         void Invalidate();
         bool IsReady();
+        void TryReady();
         virtual void Load(const pugi::xml_node& node) {}
         static void InvalidateAll();
         const std::string& GetName() const { return name_; }

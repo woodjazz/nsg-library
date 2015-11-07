@@ -117,9 +117,7 @@ namespace NSG
 
                 slotDrawGUI_ = window->SigDrawIMGUI()->Connect([this]()
                 {
-                    ShowInspector();
-                    ShowScene();
-                    ShowHierachy();
+                    ShowAll();
                 });
             }
             else
@@ -129,11 +127,54 @@ namespace NSG
         }
     }
 
+    void Editor::ShowAll()
+    {
+        static bool no_titlebar = false;
+        static bool no_border = false;
+        static bool no_resize = false;
+        static bool no_move = false;
+        static bool no_scrollbar = false;
+        static bool no_collapse = false;
+        static bool no_menu = true;
+        static bool no_autoresize = true;
+        static float bg_alpha = 0.65f;
+        static bool opened = true;
+
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoSavedSettings;
+        if (no_titlebar)  window_flags |= ImGuiWindowFlags_NoTitleBar;
+        if (!no_border)   window_flags |= ImGuiWindowFlags_ShowBorders;
+        if (no_resize)    window_flags |= ImGuiWindowFlags_NoResize;
+        if (no_move)      window_flags |= ImGuiWindowFlags_NoMove;
+        if (no_scrollbar) window_flags |= ImGuiWindowFlags_NoScrollbar;
+        if (no_collapse)  window_flags |= ImGuiWindowFlags_NoCollapse;
+        if (!no_menu)     window_flags |= ImGuiWindowFlags_MenuBar;
+        if (!no_autoresize) window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+
+        isSceneHovered_ = false;
+        Vector4 viewRect;
+        if (ImGui::Begin("Editor", &opened, ImVec2(128, 128), bg_alpha, window_flags))
+        {
+			//ImGui::SetWindowPos(ImVec2{ 0, 40 }, ImGuiSetCond_Once);
+			ShowHelp();
+			ShowHierachy();
+            ShowInspector();
+            ShowScene();
+        }
+		ImGui::End();
+    }
+
     void Editor::SetNode(PNode node)
     {
         node_ = node;
     }
 
+	Node* Editor::GetNode() const
+	{
+		auto p = node_.lock();
+		if (p)
+			return p.get();
+		return nullptr;
+	}
     void Editor::CreatePreviewFrameBuffer()
     {
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
@@ -163,6 +204,13 @@ namespace NSG
         }
     }
 
+	void Editor::ShowHelp()
+	{
+		//if (ImGui::CollapsingHeader("Help"))
+		{
+		}
+	}
+
     void Editor::ShowScene()
     {
         auto scene = scene_.lock();
@@ -172,35 +220,29 @@ namespace NSG
         if (!camera)
             return;
 
-        static bool no_titlebar = false;
-        static bool no_border = false;
-        static bool no_resize = false;
-        static bool no_move = false;
-        static bool no_scrollbar = true;
-        static bool no_collapse = true;
-        static bool no_menu = true;
-        static bool no_autoresize = true;
-        static float bg_alpha = 0.65f;
-        static bool opened = true;
-
-        ImGuiWindowFlags window_flags = 0;
-        if (no_titlebar)  window_flags |= ImGuiWindowFlags_NoTitleBar;
-        if (!no_border)   window_flags |= ImGuiWindowFlags_ShowBorders;
-        if (no_resize)    window_flags |= ImGuiWindowFlags_NoResize;
-        if (no_move)      window_flags |= ImGuiWindowFlags_NoMove;
-        if (no_scrollbar) window_flags |= ImGuiWindowFlags_NoScrollbar;
-        if (no_collapse)  window_flags |= ImGuiWindowFlags_NoCollapse;
-        if (!no_menu)     window_flags |= ImGuiWindowFlags_MenuBar;
-        if (!no_autoresize) window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
-
         isSceneHovered_ = false;
         Vector4 viewRect;
-        if (ImGui::Begin("Scene", &opened, ImVec2(285, 414), bg_alpha, window_flags))
-        {
+		if (ImGui::CollapsingHeader("Scene"))
+		{
+			if (ImGui::TreeNode("Help"))
+			{
+				ImGui::BulletText(
+					"While in Scene:\n"
+					"- RMB to select\n"
+					"- Hold SHIFT+ALT and move mouse vertically to zoom\n"
+					"- Hold SHIFT+RMB and move mouse to translate camera\n"
+					"- Hold ALT+RMB and move mouse to rotate the camera around selected point\n"
+					"- F to focus on point\n"
+					"- C to center on object\n"
+					"- R to reset\n");
+				ImGui::TreePop();
+			}
+
+			ImGui::BeginChild("", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysAutoResize);
+			ImGui::SetWindowFocus();
             auto texture = GetScenePreview(scene.get(), camera.get());
             if (texture && texture->IsReady())
             {
-                ImGui::BeginChild("", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove);
                 ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
 
                 auto vMin = ImGui::GetItemRectMin();
@@ -212,10 +254,11 @@ namespace NSG
                 viewRect[3] = vMax.y;
 
                 isSceneHovered_ = ImGui::IsItemHovered();
-                ImGui::EndChild();
+             
             }
+			ImGui::EndChild();
         }
-        ImGui::End();
+
         if (control_)
         {
             control_->Enable(isSceneHovered_);
@@ -225,35 +268,24 @@ namespace NSG
 
     void Editor::ShowInspector()
     {
-        static bool no_titlebar = false;
-        static bool no_border = false;
-        static bool no_resize = false;
-        static bool no_move = false;
-        static bool no_scrollbar = false;
-        static bool no_collapse = true;
-        static bool no_menu = false;
-        static bool no_autoresize = false;
-        static float bg_alpha = 0.65f;
-        static bool opened = true;
-
-        ImGuiWindowFlags window_flags = 0;
-        if (no_titlebar)  window_flags |= ImGuiWindowFlags_NoTitleBar;
-        if (!no_border)   window_flags |= ImGuiWindowFlags_ShowBorders;
-        if (no_resize)    window_flags |= ImGuiWindowFlags_NoResize;
-        if (no_move)      window_flags |= ImGuiWindowFlags_NoMove;
-        if (no_scrollbar) window_flags |= ImGuiWindowFlags_NoScrollbar;
-        if (no_collapse)  window_flags |= ImGuiWindowFlags_NoCollapse;
-        if (!no_menu)     window_flags |= ImGuiWindowFlags_MenuBar;
-        if (!no_autoresize) window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
-
-        if (ImGui::Begin("Inspector", &opened, ImVec2(285, 414), bg_alpha, window_flags))
+		if (ImGui::CollapsingHeader("Inspector"))
         {
             auto node = node_.lock();
             if (node)
                 node->ShowGUIProperties(this);
         }
-        ImGui::End();
     }
+
+	void Editor::ShowHierachy()
+	{
+		if (ImGui::CollapsingHeader("Hierachy"))
+		{
+			auto scene = scene_.lock();
+			if (scene)
+				scene->ShowGUIHierarchy(this);
+		}
+	}
+
 
     PTexture Editor::GetMaterialPreview(PMaterial material)
     {
@@ -279,6 +311,8 @@ namespace NSG
     PTexture Editor::GetScenePreview(Scene* scene, Camera* camera)
     {
         auto size = ImGui::GetContentRegionAvail();
+		if (size.x <= 0 || size.y <= 0)
+			size = ImVec2{ 128, 128 };
         editorFrameBuffer_->SetSize((int)size.x, (int)size.y);
         if (editorFrameBuffer_->IsReady())
         {
@@ -294,37 +328,5 @@ namespace NSG
             return editorFrameBuffer_->GetColorTexture();
         }
         return nullptr;
-    }
-
-    void Editor::ShowHierachy()
-    {
-        static bool no_titlebar = false;
-        static bool no_border = false;
-        static bool no_resize = false;
-        static bool no_move = false;
-        static bool no_scrollbar = false;
-        static bool no_collapse = true;
-        static bool no_menu = false;
-        static bool no_autoresize = false;
-        static float bg_alpha = 0.65f;
-        static bool opened = true;
-
-        ImGuiWindowFlags window_flags = 0;
-        if (no_titlebar)  window_flags |= ImGuiWindowFlags_NoTitleBar;
-        if (!no_border)   window_flags |= ImGuiWindowFlags_ShowBorders;
-        if (no_resize)    window_flags |= ImGuiWindowFlags_NoResize;
-        if (no_move)      window_flags |= ImGuiWindowFlags_NoMove;
-        if (no_scrollbar) window_flags |= ImGuiWindowFlags_NoScrollbar;
-        if (no_collapse)  window_flags |= ImGuiWindowFlags_NoCollapse;
-        if (!no_menu)     window_flags |= ImGuiWindowFlags_MenuBar;
-        if (!no_autoresize) window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
-
-        if (ImGui::Begin("Hierachy", &opened, ImVec2(285, 414), bg_alpha, window_flags))
-        {
-            auto scene = scene_.lock();
-            if (scene)
-                scene->ShowGUIHierarchy(this);
-        }
-        ImGui::End();
     }
 }

@@ -53,32 +53,9 @@ namespace NSG
     {
         Load(resource);
     }
-    #if 0
-    AppData::AppData(const pugi::xml_document& doc)
-    {
-        auto resource = Resource::Create("AppDataResource");
-        struct XMLWriter : pugi::xml_writer
-        {
-            std::string buffer_;
-            void write(const void* data, size_t size) override
-            {
-                const char* m = (const char*)data;
-                buffer_.insert(buffer_.end(), &m[0], &m[size]);
-            }
-        } writer;
-        doc.save(writer);
-        resource->SetBuffer(writer.buffer_);
-        auto loader = LoaderXML::GetOrCreate(resource->GetName());
-        loader->Set(resource);
-        CHECK_CONDITION(loader->IsReady());
-        Load(loader);
-        loader->Invalidate(); // free mem
-    }
-    #endif
 
     AppData::~AppData()
     {
-        //AppData::ClearAll();
     }
 
     void AppData::Load(PResource resource)

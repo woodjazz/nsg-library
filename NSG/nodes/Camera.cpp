@@ -571,7 +571,7 @@ namespace NSG
     {
         SceneNode::ShowGUIProperties(editor);
         std::string header = "Camera:" + GetName();
-        if (ImGui::CollapsingHeader(header.c_str()))
+		if (ImGui::TreeNode(header.c_str()))
         {
             auto zNear = GetZNear();
             ImGui::DragFloat("##zNear", &zNear, 1.f, 0.1f, 10000.0f, "zNear %.1f");
@@ -597,6 +597,7 @@ namespace NSG
 				ImGui::DragFloat("##orthoScale", &orthoScale, 1.f, 0.f, MAX_WORLD_SIZE, "Size %.1f");
 				SetOrthoScale(orthoScale);
 			}
+			ImGui::TreePop();
         }
 
     }

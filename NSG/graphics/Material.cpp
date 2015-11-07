@@ -12,6 +12,7 @@
 #include "StringConverter.h"
 #include "InstanceBuffer.h"
 #include "Editor.h"
+#include "SharedFromPointer.h"
 #include "imgui.h"
 #include "pugixml.hpp"
 #include <sstream>
@@ -589,11 +590,11 @@ namespace NSG
     void Material::ShowGUIProperties(Editor* editor)
     {
         std::string header = "Material:" + GetName();
-        if (ImGui::CollapsingHeader(header.c_str()))
+		if (ImGui::TreeNode(header.c_str()))
         {
             if (ImGui::TreeNode("Preview"))
             {
-                auto texture = editor->GetMaterialPreview(shared_from_this());
+                auto texture = editor->GetMaterialPreview(SharedFromPointer(this));
                 if (texture && texture->IsReady())
                     ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
                 ImGui::TreePop();
@@ -692,6 +693,8 @@ namespace NSG
             auto shadowBias = GetBias();
             ImGui::DragFloat("##bias", &shadowBias, 1.f, 0.0f, 10.0f, "Shadow Bias %.3f");
             SetBias(shadowBias);
+
+			ImGui::TreePop();
         }
     }
 }

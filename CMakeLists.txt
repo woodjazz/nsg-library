@@ -232,7 +232,6 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 	# converter
 	###########################
 	add_subdirectory(${TOOLS_DIR}/converter)
-
 	list(REMOVE_ITEM LIBRARIES_2_LINK common)
 
 endif()

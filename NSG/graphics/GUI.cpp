@@ -93,7 +93,7 @@ namespace NSG
             io.Fonts->ClearTexData();
         });
 
-        fontTexture_->IsReady();
+        CHECK_CONDITION(fontTexture_->IsReady());
         pTHIS = this;
         Setup(mainWindow);
     }

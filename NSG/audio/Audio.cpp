@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Audio.h"
 #include "Check.h"
+#include "Log.h"
 #include "Util.h"
 #if EMSCRIPTEN
 #include <emscripten.h>

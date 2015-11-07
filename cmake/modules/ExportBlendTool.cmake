@@ -1,6 +1,6 @@
 function(EXPORT_BLEND_TOOL input_file output_dir)
 
-	if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
+	if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE AND NOT COVERITY)
 
 		if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
 		  set(BLENDER_EXECUTABLE "/Applications/Blender/blender.app/Contents/MacOS/blender")

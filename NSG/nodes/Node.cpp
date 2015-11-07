@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Editor.h"
 #include "EditorSceneNode.h"
+#include "SharedFromPointer.h"
 #include "imgui.h"
 #include "pugixml.hpp"
 #include <algorithm>
@@ -68,7 +69,7 @@ namespace NSG
     {
         RemoveFromParent();
         if (parent)
-            parent->AddChild(shared_from_this());
+            parent->AddChild(SharedFromPointerNode(this));
         MarkAsDirty();
     }
 
@@ -126,7 +127,7 @@ namespace NSG
         CHECK_ASSERT(node && node.get() != this);
         children_.push_back(node);
         childrenHash_.insert(std::make_pair(node->name_, node));
-        PNode thisNode = shared_from_this();
+        PNode thisNode = SharedFromPointerNode(this);
         node->parent_ = thisNode;
         PScene scene = scene_.lock();
         if (!scene) scene = std::dynamic_pointer_cast<Scene>(thisNode);
@@ -539,30 +540,27 @@ namespace NSG
 
     void Node::ShowGUIProperties(Editor* editor)
     {
-        std::string header = "Node:" + GetName();
-        if (ImGui::CollapsingHeader(header.c_str()))
+        std::string header = "Transform:" + GetName();
+		if (ImGui::TreeNode(header.c_str()))
         {
-            if (ImGui::TreeNode("Transform"))
-            {
-                auto position = GetPosition();
-                ImGui::DragFloat3("Position", &position[0], 0.1f);
-                SetPosition(position);
+            auto position = GetPosition();
+            ImGui::DragFloat3("Position", &position[0], 0.1f);
+            SetPosition(position);
 
-                auto guiRotation = GetGUIRotation();
-                auto oldRotation = Radians(guiRotation);
-                ImGui::DragFloat3("Rotation", &guiRotation[0], 1, 0, 360);
-                auto rad = Radians(guiRotation);
-                auto q = GetOrientation();
-                q *= Inverse(Quaternion(oldRotation)) * Quaternion(rad);
-                SetOrientation(q);
-                SetGUIRotation(guiRotation);
+            auto guiRotation = GetGUIRotation();
+            auto oldRotation = Radians(guiRotation);
+            ImGui::DragFloat3("Rotation", &guiRotation[0], 1, 0, 360);
+            auto rad = Radians(guiRotation);
+            auto q = GetOrientation();
+            q *= Inverse(Quaternion(oldRotation)) * Quaternion(rad);
+            SetOrientation(q);
+            SetGUIRotation(guiRotation);
 
-                auto scale = GetScale();
-                ImGui::DragFloat3("Scale", &scale[0], 0.1f);
-                SetScale(scale);
+            auto scale = GetScale();
+            ImGui::DragFloat3("Scale", &scale[0], 0.1f);
+            SetScale(scale);
 
-                ImGui::TreePop();
-            }
+            ImGui::TreePop();
         }
     }
 
@@ -582,13 +580,17 @@ namespace NSG
     {
         if(dynamic_cast<EditorSceneNode*>(this))
             return;
+		auto selectedNode = editor->GetNode();
+		auto name = GetName();
+		if (selectedNode == this)
+			name = "*" + name;
 		if (GetSceneChildren() > 0)
 		{
 			if (ImGui::TreeNode(("##" + GetName()).c_str()))
 			{
 				ImGui::SameLine();
-				if (ImGui::SmallButton(GetName().c_str()))
-					editor->SetNode(shared_from_this());
+				if (ImGui::SmallButton(name.c_str()))
+					editor->SetNode(SharedFromPointerNode(this));
 
 				auto& children = GetChildren();
 				for (auto child : children)
@@ -598,14 +600,14 @@ namespace NSG
 			else
 			{
 				ImGui::SameLine();
-				if (ImGui::SmallButton(GetName().c_str()))
-					editor->SetNode(shared_from_this());
+				if (ImGui::SmallButton(name.c_str()))
+					editor->SetNode(SharedFromPointerNode(this));
 			}
 		}
 		else
 		{
-			if (ImGui::SmallButton(GetName().c_str()))
-				editor->SetNode(shared_from_this());
+			if (ImGui::SmallButton(name.c_str()))
+				editor->SetNode(SharedFromPointerNode(this));
 		}
     }
 }

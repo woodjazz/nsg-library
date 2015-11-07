@@ -23,34 +23,21 @@
 ::-------------------------------------------------------------------------------
 
 @echo off
-
 pushd %~dp0
-
-if "%HOME_EMSCRIPTEN%" == "" (
-	echo "Environment variable HOME_EMSCRIPTEN shall be set."
-	@exit /b 1
-)
-
-if "%1" == "" (
-	echo "Enter build target directory. (directory will be created on the parent directory of the current one)"
-	@exit /b 1
-)
-
 set SOURCE_FOLDER=%CD%
 
-cd %HOME_EMSCRIPTEN%
-call "%HOME_EMSCRIPTEN%/emsdk_env.bat"
-call emsdk activate
-cd %SOURCE_FOLDER%
+if "%1" == "" (
+	echo "Enter build target directory. (directory will be created on the parent directory of the current one"
+	@exit /b 1
+)
+
+call "%VS120COMNTOOLS%/vsvars32.bat"
 
 cd ..
 cmake -E make_directory %1
 cd %1
 
-@echo "*** CONFIGURING PROJECTS ***"
-cmake %SOURCE_FOLDER% -G "MinGW Makefiles" -DBUILD_PROJECT="all" -DEMS_DEBUG_LEVEL=4 -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="%EMSCRIPTEN%/cmake/Modules/Platform/Emscripten.cmake"
-::cmake %SOURCE_FOLDER% -G "MinGW Makefiles" -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="%EMSCRIPTEN%/cmake/Modules/Platform/Emscripten.cmake"
+cmake %SOURCE_FOLDER% -G "Visual Studio 12 Win64" -DCOVERITY="1"
 
-@echo "*** BUILDING %2 ***"
-%MINGW_ROOT%/bin/mingw32-make %2
-python -m SimpleHTTPServer 8000
+::coverity build
+cov-build --dir cov-int msbuild nsg-library.sln

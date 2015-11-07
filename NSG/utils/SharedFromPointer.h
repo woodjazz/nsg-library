@@ -24,44 +24,47 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
+#include <memory>
 
 namespace NSG
 {
-	class Editor
+	template<typename T> std::shared_ptr<Node> SharedFromPointerNode(T* p)
 	{
-	public:
-		Editor();
-		~Editor();
-		void SetCamera(PCamera camera);
-		void SetWindow(PWindow window);
-		void SetScene(PScene scene);
-		void SetNode(PNode node);
-		Node* GetNode() const;
-		PTexture GetMaterialPreview(PMaterial material);
-	private:
-		void SetControl();
-		void ShowHelp();
-		void ShowAll();
-		void ShowScene();
-		void ShowHierachy();
-		void OnMouseDown(int button, float x, float y);
-		void ShowInspector();
-		PTexture GetScenePreview(Scene* scene, Camera* camera);
-		void CreatePreviewFrameBuffer();
-		void CreateEditorFrameBuffer();
-		PCameraControl control_;
-		PFrameBuffer previewFrameBuffer_;
-		PFrameBuffer editorFrameBuffer_;
-		PWeakCamera camera_;
-		PWeakWindow window_;
-		PWeakScene scene_;
-		PWeakNode node_;
-		SignalMouseButton::PSlot slotMouseDown_;
-		SignalEmpty::PSlot slotDrawGUI_;
-		PScene scenePreview_;
-		PSceneNode previewNode_;
-		bool isSceneHovered_;
-		PCamera editorCamera_;
-	};
+		try
+		{
+			return p->shared_from_this();
+		}
+		catch (...)
+		{
+			CHECK_CONDITION(!"shared_from_this has failed!!!");
+		}
+		return nullptr;
+	}
+
+	template<typename T> std::shared_ptr<Resource> SharedFromPointerResource(T* p)
+	{
+		try
+		{
+			return p->shared_from_this();
+		}
+		catch (...)
+		{
+			CHECK_CONDITION(!"shared_from_this has failed!!!");
+		}
+		return nullptr;
+	}
+
+	template<typename T> std::shared_ptr<T> SharedFromPointer(T* p)
+	{
+		try
+		{
+			return p->shared_from_this();
+		}
+		catch (...)
+		{
+			CHECK_CONDITION(!"shared_from_this has failed!!!");
+		}
+		return nullptr;
+	}
+
 }

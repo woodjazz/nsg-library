@@ -19,6 +19,7 @@
 #include "Check.h"
 #include "EditorCamera.h"
 #include "EditorLight.h"
+#include "SharedFromPointer.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <functional>
@@ -365,7 +366,7 @@ namespace NSG
             mainCamera_ = camera;
         UpdateOctree(camera);
         auto obj = camera->CreateChild<EditorCamera>(GetUniqueName("EditorCamera"));
-        obj->SetCamera(std::dynamic_pointer_cast<Camera>(camera->shared_from_this()));
+		obj->SetCamera(std::dynamic_pointer_cast<Camera>(SharedFromPointerNode(camera)));
     }
 
     void Scene::AddParticleSystem(ParticleSystem* ps)
@@ -403,7 +404,7 @@ namespace NSG
     {
         if (mainCamera_)
         {
-            auto p = mainCamera_->shared_from_this();
+			auto p = SharedFromPointerNode(mainCamera_);
             return std::dynamic_pointer_cast<Camera>(p);
         }
         return nullptr;

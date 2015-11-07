@@ -10,6 +10,7 @@
 --                                                                           --
 -------------------------------------------------------------------------------
 */
+#include "Check.h"
 #include <iostream>
 #include <string>
 #include <iomanip>
@@ -103,7 +104,7 @@ void Template_getAsString(const std::string& in, std::vector<char>& dest)
     if (fileSize > 0)
     {
         dest.resize(fileSize);
-        fread(&dest[0], fileSize, 1, fp);
+        CHECK_CONDITION(fread(&dest[0], fileSize, 1, fp) == 1);
     }
     fclose(fp);
 }
@@ -165,7 +166,7 @@ std::string Template_writeSource(FILE* fp, char* fileName, bool binary)
             char tmp[256];
 
             sprintf(tmp, "static const size_t %s_SIZE", base.c_str());
-            fprintf(fp, "%s=%u;\n", tmp, buffer.size());
+			fprintf(fp, "%s=%u;\n", tmp, (unsigned)buffer.size());
 
             ret += "extern " + std::string(tmp) + ";\n";
 
@@ -195,7 +196,7 @@ std::string Template_writeSource(FILE* fp, char* fileName, bool binary)
         }
         if (!binary) fprintf(fp, ",0x00");
         fprintf(fp, "\n};// %s %u bytes %s\n", Template_base(fileName).c_str(),
-                binary ? buffer.size() : buffer.size() + 1,
+			(unsigned)(binary ? buffer.size() : buffer.size() + 1),
                 binary ? "binary" : "string");
     }
 

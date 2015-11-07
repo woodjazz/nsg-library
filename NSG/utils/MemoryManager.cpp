@@ -50,7 +50,7 @@ namespace NSG
     void* AllocateMemoryFromHeap(std::size_t count)
     {
         size_t newSize = sizeof(MemHeader) + count;
-        //LOGI("Allocating %u from heap.", newSize);
+        //LOGI("Allocating %u from heap.", (unsigned)newSize);
         void* p = std::malloc(newSize);
         if (p)
         {

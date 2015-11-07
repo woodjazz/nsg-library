@@ -38,6 +38,7 @@ misrepresented as being the original software.
 #include "Character.h"
 #include "AnimationController.h"
 #include "StringConverter.h"
+#include "SharedFromPointer.h"
 #include "pugixml.hpp"
 #include <thread>
 #include <sstream>
@@ -114,7 +115,7 @@ namespace NSG
     {
         CHECK_ASSERT(character_ == nullptr);
         if (!rigidBody_)
-            rigidBody_ = std::make_shared<RigidBody>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
+			rigidBody_ = std::make_shared<RigidBody>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
         return rigidBody_;
     }
 
@@ -122,14 +123,14 @@ namespace NSG
     {
         CHECK_ASSERT(rigidBody_ == nullptr);
         if (!character_)
-            character_ = std::make_shared<Character>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
+			character_ = std::make_shared<Character>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
         return character_;
     }
 
     PAnimationController SceneNode::GetOrCreateAnimationController()
     {
         if (!animationController_)
-            animationController_ = std::make_shared<AnimationController>(std::dynamic_pointer_cast<SceneNode>(shared_from_this()));
+			animationController_ = std::make_shared<AnimationController>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
         return animationController_;
     }
 
@@ -369,7 +370,7 @@ namespace NSG
             skeleton_ = skeleton;
             if (skeleton_)
             {
-                auto thisSceneNode = std::dynamic_pointer_cast<SceneNode>(shared_from_this());
+				auto thisSceneNode = std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this));
                 SetArmature(thisSceneNode);
                 CHECK_CONDITION(skeleton_->IsReady());
                 skeleton_->CreateBonesFor(thisSceneNode);

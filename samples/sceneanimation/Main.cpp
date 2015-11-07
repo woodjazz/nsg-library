@@ -28,69 +28,47 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    //auto resource = Resource::GetOrCreate<ResourceFile>("data/bscene.xml");//.lz4");
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
-    AppData data(resource);
-    auto scene = data.scenes_.at(0);
-    scene->SetAmbientColor(ColorRGB(0.0f));
-
-    auto armature = scene->GetChild<SceneNode>("Armature", true);
-    auto plane = scene->GetChild<SceneNode>("Plane", false);
-    plane->GetMaterial()->SetShininess(10);
-	
-	plane->GetMaterial()->CastShadow(true);
-
-    auto camera = scene->GetChild<Camera>("Camera", false);
-	//camera->SetNearClip(0.1f);
-    auto control = std::make_shared<CameraControl>(camera);
-    auto sun = scene->GetChild<Light>("Sun", false);
-    sun->EnableShadows(true);
-    auto ball = scene->GetChild<SceneNode>("Earth", false);
-    auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);
-    auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
-
-    auto ballRigidBody = ball->GetOrCreateRigidBody();
-
-    {
-        auto controller = armature->GetOrCreateAnimationController();
-        controller->Play("ArmatureAction.000", true);
-    }
-
-    ballRigidBody->HandleCollisions(true);
-    auto static slotCollision = ball->SigCollision()->Connect([&](const ContactPoint & contactInfo)
-    {
-        ballRigidBody->SetLinearVelocity(4.f * contactInfo.normalB_);
-    });
-
     auto window = Window::Create();
-
-#if 0
-    control->slotMouseDown_ = window->SigMouseDown()->Connect([&](int button, float x, float y)
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
+    LoaderApp loader(resource);
+    auto slotLoaded = loader.Load()->Connect([&]()
     {
-        if (button == NSG_BUTTON_LEFT)
+        auto scene = loader.GetScene(0);
+        scene->SetAmbientColor(ColorRGB(0.0f));
+
+        auto armature = scene->GetChild<SceneNode>("Armature", true);
+        auto plane = scene->GetChild<SceneNode>("Plane", false);
+        plane->GetMaterial()->SetShininess(10);
+
+        plane->GetMaterial()->CastShadow(true);
+
+        auto camera = scene->GetChild<Camera>("Camera", false);
+        //camera->SetNearClip(0.1f);
+        auto control = std::make_shared<CameraControl>(camera);
+        auto sun = scene->GetChild<Light>("Sun", false);
+        sun->EnableShadows(true);
+        auto ball = scene->GetChild<SceneNode>("Earth", false);
+        auto ramp1 = scene->GetChild<SceneNode>("Ramp1", false);
+        auto ramp2 = scene->GetChild<SceneNode>("Ramp2", false);
+
+        static auto ballRigidBody = ball->GetOrCreateRigidBody();
+
         {
-            control->OnMouseDown(button, x, y);
-        }
-        else
-        {
-            Ray ray = camera->GetScreenRay(x, y);
-            RayNodeResult closest;
-            if (scene->GetClosestRayNodeIntersection(ray, closest))
-            {
-                Vertex3 pos = ray.GetPoint(closest.distance_);
-                pos.y = 7;
-                ball->SetGlobalPosition(pos);
-                ballRigidBody->SetLinearVelocity(Vector3(0));
-                ballRigidBody->SyncWithNode();
-            }
+            auto controller = armature->GetOrCreateAnimationController();
+            controller->Play("ArmatureAction.000", true);
         }
 
+        ballRigidBody->HandleCollisions(true);
+        auto static slotCollision = ball->SigCollision()->Connect([&](const ContactPoint & contactInfo)
+        {
+            ballRigidBody->SetLinearVelocity(4.f * contactInfo.normalB_);
+        });
+
+        auto sunLight = scene->GetChild<Light>("Sun", true);
+        //sunLight->SetShadowColor(Color(1, 0, 0, 1));
+        sunLight->SetBias(.666f);
+        //window->ShowMap(sunLight->GetShadowMap(3));
+        window->SetScene(scene.get());
     });
-#endif
-    auto sunLight = scene->GetChild<Light>("Sun", true);
-	//sunLight->SetShadowColor(Color(1, 0, 0, 1));
-	sunLight->SetBias(.666f);
-	//window->ShowMap(sunLight->GetShadowMap(3));
-	window->SetScene(data.scenes_[0].get());
-	return Engine::Create()->Run();
+    return Engine::Create()->Run();
 }

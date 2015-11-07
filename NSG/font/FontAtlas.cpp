@@ -7,6 +7,7 @@
 #include "Graphics.h"
 #include "Window.h"
 #include "UTF8String.h"
+#include "SharedFromPointer.h"
 #include "pugixml.hpp"
 #include <fstream>
 #include <sstream>
@@ -76,7 +77,7 @@ namespace NSG
     PTextMesh FontAtlas::GetOrCreateMesh(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
     {
         auto mesh = FontAtlas::GetOrCreateClass<TextMesh>(text);
-        mesh->SetAtlas(shared_from_this());
+        mesh->SetAtlas(SharedFromPointer(this));
         mesh->SetText(text, hAlign, vAlign);
         return mesh;
     }

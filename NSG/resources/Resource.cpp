@@ -36,6 +36,7 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include "Image.h"
 #include "LoaderXML.h"
+#include "SharedFromPointer.h"
 #include "pugixml.hpp"
 #include "b64/encode.h"
 #include "b64/decode.h"
@@ -113,10 +114,11 @@ namespace NSG
         newPath.SetFileName(Path(name_).GetFilename());
         SetName(newPath.GetFilePath());
 
-        auto texture = Material::GetTextureWithResource(shared_from_this());
+		auto pThis = SharedFromPointer(this);
+		auto texture = Material::GetTextureWithResource(pThis);
         if (texture)
         {
-			Image image(shared_from_this());
+			Image image(pThis);
 			CHECK_CONDITION(image.IsReady());
 			if (!image.SaveAsPNG(outputDir))
             {

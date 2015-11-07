@@ -26,6 +26,7 @@
 #include "BoundingBox.h"
 #include <vector>
 #include <set>
+#include <array>
 
 namespace NSG
 {
@@ -61,7 +62,7 @@ namespace NSG
         /// Drawable objects.
         std::vector<SceneNode*> drawables_;
         /// Child octants.
-        Octant* children_[NUM_OCTANTS];
+        std::array<Octant*, NUM_OCTANTS> children_;
         /// World bounding box center.
         Vector3 center_;
         /// World bounding box half size.

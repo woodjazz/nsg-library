@@ -29,84 +29,86 @@ misrepresented as being the original software.
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-    //auto resource = Resource::GetOrCreate<ResourceFile>("data/bscroller.xml");
+	auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scroller.xml");
-    AppData data(resource);
-    auto soundMusic = Sound::Get("nice_music.ogg.004");
-	auto music = Music::Create();
-    music->Set(soundMusic->GetResource());
-    music->Play();
-	auto scene = data.scenes_.at(0);
-    scene->SetAmbientColor(ColorRGB(0.5f));
-	scene->GetChild<SceneNode>("Level1", false)->GetMaterial()->SetAmbientIntensity(1);
-    auto camera = scene->GetChild<Camera>("Camera", false);
-    auto frustum = camera->GetFrustum();
-    auto player = camera->GetChild<SceneNode>("Player", false);
-	player->GetMaterial()->SetAmbientIntensity(1);
-    auto window = Window::Create();
-    float deltaTime = 0;
-    auto controller = std::make_shared<PlayerControl>();
-    auto& orthoProjection = camera->GetOrthoProjection();
-    auto cameraHalfWidth = (orthoProjection.right_ - orthoProjection.left_) / 2;
-    auto cameraHalfHeight = (orthoProjection.top_ - orthoProjection.bottom_) / 2;
-    auto& bbPlayer = player->GetWorldBoundingBox();
-    auto playerHalfWidth = bbPlayer.Size().x * 0.5f;
-    auto playerHalfHeight = bbPlayer.Size().y * 0.5f;
-    auto horizontalLimit = cameraHalfWidth - playerHalfWidth;
-    auto verticalLimit = cameraHalfHeight - playerHalfHeight;
-    bool playerDestroyed = false;
-	auto sound = Sound::Get("BigExplosion.wav.001");
-	sound->Play();
-	auto engine = Engine::Create();
+	LoaderApp loader(resource);
+	auto slotLoaded = loader.Load()->Connect([&]()
+	{
+		auto soundMusic = Sound::Get("nice_music.ogg.004");
+		auto music = Music::Create();
+		music->Set(soundMusic->GetResource());
+		music->Play();
+		auto scene = loader.GetScene(0);
+		scene->SetAmbientColor(ColorRGB(0.5f));
+		scene->GetChild<SceneNode>("Level1", false)->GetMaterial()->SetAmbientIntensity(1);
+		auto camera = scene->GetChild<Camera>("Camera", false);
+		auto frustum = camera->GetFrustum();
+		auto player = camera->GetChild<SceneNode>("Player", false);
+		player->GetMaterial()->SetAmbientIntensity(1);
+		float deltaTime = 0;
+		auto controller = std::make_shared<PlayerControl>();
+		auto& orthoProjection = camera->GetOrthoProjection();
+		auto cameraHalfWidth = (orthoProjection.right_ - orthoProjection.left_) / 2;
+		auto cameraHalfHeight = (orthoProjection.top_ - orthoProjection.bottom_) / 2;
+		auto& bbPlayer = player->GetWorldBoundingBox();
+		auto playerHalfWidth = bbPlayer.Size().x * 0.5f;
+		auto playerHalfHeight = bbPlayer.Size().y * 0.5f;
+		auto horizontalLimit = cameraHalfWidth - playerHalfWidth;
+		auto verticalLimit = cameraHalfHeight - playerHalfHeight;
+		bool playerDestroyed = false;
+		auto sound = Sound::Get("BigExplosion.wav.001");
+		sound->Play();
 #if 0
-	auto playerRigidBody = camera->GetRigidBody();
-    playerRigidBody->HandleCollisions(true);
+		auto playerRigidBody = camera->GetRigidBody();
+		playerRigidBody->HandleCollisions(true);
 
-    
-    auto static slotCollision = player->SigCollision()->Connect([&](const ContactPoint & contactInfo)
-    {
-        if(!playerDestroyed)
-        {
-            sound->Play();
-            playerDestroyed = true;
-        }
-    });
 
-    auto moveSlot = controller->SigMoved()->Connect([&](float x, float y)
-    {
-        if (!playerDestroyed)
-        {
-            auto pos = player->GetPosition();
-            pos.x += x * deltaTime;
-            pos.y += y * deltaTime;
-            if (pos.x > -horizontalLimit && pos.x < horizontalLimit && pos.y < verticalLimit && pos.y > -verticalLimit)
-                player->SetPosition(pos);
-        }
-    });
+		auto static slotCollision = player->SigCollision()->Connect([&](const ContactPoint & contactInfo)
+		{
+			if(!playerDestroyed)
+			{
+				sound->Play();
+				playerDestroyed = true;
+			}
+		});
 
-    float alpha = 1;
-    float alphaAdd = 0.1f;
+		auto moveSlot = controller->SigMoved()->Connect([&](float x, float y)
+		{
+			if (!playerDestroyed)
+			{
+				auto pos = player->GetPosition();
+				pos.x += x * deltaTime;
+				pos.y += y * deltaTime;
+				if (pos.x > -horizontalLimit && pos.x < horizontalLimit && pos.y < verticalLimit && pos.y > -verticalLimit)
+					player->SetPosition(pos);
+			}
+		});
 
-	auto updateSlot = engine.SigUpdate()->Connect([&](float dt)
-    {
-        if (!playerDestroyed)
-        {
-            deltaTime = dt;
-            auto pos = camera->GetPosition();
-            pos.x += dt;
-            camera->SetPosition(pos);
-        }
-        else
-        {
-            auto material = player->GetMaterial();
-            alpha += alphaAdd;
-            if (alpha > 1 || alpha < 0)
-                alphaAdd *= -1;
-			material->SetAlpha(alpha);
-        }
+		float alpha = 1;
+		float alphaAdd = 0.1f;
 
-    });
+		auto updateSlot = engine.SigUpdate()->Connect([&](float dt)
+		{
+			if (!playerDestroyed)
+			{
+				deltaTime = dt;
+				auto pos = camera->GetPosition();
+				pos.x += dt;
+				camera->SetPosition(pos);
+			}
+			else
+			{
+				auto material = player->GetMaterial();
+				alpha += alphaAdd;
+				if (alpha > 1 || alpha < 0)
+					alphaAdd *= -1;
+				material->SetAlpha(alpha);
+			}
+
+		});
 #endif
-	window->SetScene(data.scenes_[0].get());
+		window->SetScene(scene.get());
+	});
+	auto engine = Engine::Create();
     return engine->Run();
 }

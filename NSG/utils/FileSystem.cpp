@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "FileSystem.h"
 #include "Path.h"
 #include "Check.h"
+#include "Log.h"
 #include "AppConfiguration.h"
 #include "Engine.h"
 #include "Util.h"

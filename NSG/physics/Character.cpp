@@ -70,7 +70,7 @@ namespace NSG
 
         slotBeginFrame_ = Engine::SigBeginFrame()->Connect([this]()
         {
-            IsReady();
+            TryReady();
         });
     }
 

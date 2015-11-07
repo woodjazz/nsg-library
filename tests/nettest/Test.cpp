@@ -41,7 +41,7 @@ static int Test01()
 
 	auto onLoad1 = [&](const std::string & data)
 	{
-		LOGI("HTTP OnLoad1: %d %s", data.size(), data.c_str());
+		LOGI("HTTP OnLoad1: %u %s", data.size(), data.c_str());
 		window = nullptr;
 	};
 
