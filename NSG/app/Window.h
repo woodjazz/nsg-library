@@ -110,6 +110,8 @@ namespace NSG
         virtual void SetupImgui() = 0;
         virtual void BeginImguiRender() = 0;
 		virtual void SetContext() = 0;
+        void SetEditor(Editor* editor);
+        void RemoveEditor(Editor* editor);
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
@@ -153,5 +155,7 @@ namespace NSG
         PTexture showTexture_;
         static int nWindows2Remove_;
         PixelFormat pixelFormat_;
+        Editor* editor_;
+        PGUI gui_;
     };
 }

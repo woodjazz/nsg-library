@@ -25,20 +25,23 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Util.h"
+#include "StrongFactory.h"
+#include <string>
+#include <functional>
 
 struct ImDrawData;
 namespace NSG
 {
-	class GUI
+	class GUI : public StrongFactory<std::string, GUI>
 	{
 	public:
-		GUI(Window* mainWindow);
+		GUI(const std::string& name = GetUniqueName("GUI"));
 		~GUI();
-		void Render(Window* window);
-		static GUI* GetPtr();
+		void Render(Window* window, std::function<void(void)> callback);
+		void SetArea(const Rect& area);
 	private:
-		void Setup(Window* mainWindow);
-		static void Draw(ImDrawData* draw_data);
+		void Setup();
 		void InternalDraw(ImDrawData* draw_data);
 		PGraphics graphics_;
 		PTexture2D fontTexture_;
@@ -57,5 +60,10 @@ namespace NSG
 		PIndexBuffer iBuffer_;
 		PCamera camera_;
 		Window* window_;
+		void* state_;
+		bool configured_;
+		//Area related to the window where the GUI is painted.
+		//Needed to adjust the mouse' coordinates
+		Rect area_;
 	};
 }

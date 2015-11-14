@@ -102,12 +102,14 @@ namespace NSG
             if (p) return p;
             auto obj = std::make_shared<T>(name);
             AddChild(obj);
+			obj->OnCreated();
             return obj;
         }
 		template <typename T> std::shared_ptr<T> CreateChild(const std::string& name = GetUniqueName())
 		{
 			auto obj = std::make_shared<T>(name);
 			AddChild(obj);
+			obj->OnCreated();
 			return obj;
 		}
         template <typename T> std::shared_ptr<T> CreateChild(const std::string& name, const pugi::xml_node& node)
@@ -115,6 +117,7 @@ namespace NSG
             auto obj = std::make_shared<T>(name);
             obj->T::Load(node);
             AddChild(obj);
+			obj->OnCreated();
             return obj;
         }
         
@@ -129,7 +132,7 @@ namespace NSG
         virtual void OnDirty() const {};
         virtual void OnHide(bool hide) {}
         virtual void OnScaleChange() {}
-        virtual void OnSceneSet() {}
+        virtual void OnCreated() {}
         void Update() const;
         bool IsScaleUniform() const;
         PScene GetScene() const { return scene_.lock(); }

@@ -28,22 +28,45 @@ misrepresented as being the original software.
 #include "QuadMesh.h"
 #include "Material.h"
 #include "Camera.h"
+#include "Texture2D.h"
 
+#define X (unsigned char)0xFF,
+#define O (unsigned char)0x00,
 namespace NSG
 {
     EditorCamera::EditorCamera(const std::string& name)
         : EditorSceneNode(name)
     {
-        SetMesh(Mesh::Create<QuadMesh>());
+        SetMesh(Mesh::GetOrCreate<QuadMesh>("NSGEditorCamera"));
         SetMaterial(Material::GetOrCreate("NSGEditorCamera"));
-        material_->SetRenderPass(RenderPass::UNLIT);
-        material_->SetDiffuseColor(COLOR_RED);
+        material_->SetRenderPass(RenderPass::TEXT);
+		material_->SetDiffuseColor(COLOR_DODGER_BLUE);
         material_->EnableTransparent(true);
-        material_->SetAlpha(0.25f);
+		material_->SetAlpha(0.9f);
         material_->SetBillboardType(BillboardType::SPHERICAL);
         material_->CastShadow(false);
         material_->ReceiveShadows(false);
+		
+		const int SIZE = 8;
+		static const unsigned char image[SIZE][SIZE]
+        {
+            {X X X X X X X X},
+            {X O O O O O O X},
+            {X O X X X X O X},
+            {X O X O O O O X},
+            {X O X O O O O X},
+            {X O X X X X O X},
+            {X O O O O O O X},
+            {X X X X X X X X},
+        };
 
+		auto texture = std::make_shared<Texture2D>();
+		texture->SetFormat(GL_ALPHA);
+		texture->SetData(&image[0][0]);
+		texture->SetSize(SIZE, SIZE);
+		texture->SetMapType(TextureType::COL);
+		material_->SetTextMap(texture);
+		texture->SetFilterMode(TextureFilterMode::NEAREST);
     }
 
     EditorCamera::~EditorCamera()
@@ -51,8 +74,9 @@ namespace NSG
 
     }
 
-    void EditorCamera::SetCamera(PCamera camera)
+    void EditorCamera::OnCreated()
     {
+        auto camera = std::dynamic_pointer_cast<Camera>(GetParent());
         if (!frustum_)
             frustum_ = camera->CreateChild<EditorFrustum>(GetUniqueName("EditorFrustum"));
         frustum_->SetCamera(camera);

@@ -17,8 +17,15 @@
 
 		#elif defined(TEXT)
 
+			#if 0
+			mat4 mvp = u_projection * GetSphericalBillboardMatrix(u_view * GetModelMatrix());
+			float w = 0.1 * (mvp * vec4(0.0, 0.0, 0.0, 1.0)).w;
+			gl_Position = mvp * vec4(a_position * w, 1.0);
+			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
+			#else
 			gl_Position = GetClipPos();
 			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
+			#endif
 
 		#elif defined(BLUR) || defined(BLEND) || defined(WAVE) || defined(SHOW_TEXTURE0)
 

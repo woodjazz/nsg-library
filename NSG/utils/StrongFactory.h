@@ -26,6 +26,8 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Util.h"
+#include "Log.h"
+#include "Check.h"
 #include <memory>
 #include <map>
 

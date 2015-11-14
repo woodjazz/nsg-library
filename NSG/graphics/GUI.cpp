@@ -37,23 +37,27 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "StringConverter.h"
+#include <map>
 
 namespace NSG
 {
-    static GUI* pTHIS = nullptr;
+    template<> std::map<std::string, PGUI> StrongFactory<std::string, GUI>::objsMap_ = std::map<std::string, PGUI> {};
 
-    GUI::GUI(Window* mainWindow)
+    GUI::GUI(const std::string& name)
         : graphics_(Graphics::GetPtr()),
-          fontTexture_(std::make_shared<Texture2D>("GUIFontTexture")),
+          fontTexture_(std::make_shared<Texture2D>(name + "GUIFontTexture")),
           pass_(std::make_shared<Pass>()),
           program_(Program::GetOrCreate("IMGUI\n")),
           vBuffer_(std::make_shared<VertexBuffer>(GL_STREAM_DRAW)),
           iBuffer_(std::make_shared<IndexBuffer>(GL_STREAM_DRAW)),
-          window_(nullptr)
+          window_(nullptr),
+          state_(new char[ImGui::GetInternalStateSize()]),
+          configured_(false)
     {
-        CHECK_ASSERT(pTHIS == nullptr);
+        ImGui::SetInternalState(state_, true);
 
-        camera_ = std::make_shared<Camera>("IMGUICamera");
+        camera_ = std::make_shared<Camera>(name + "IMGUICamera");
         program_->Set(camera_.get());
 
         pass_->SetBlendMode(BLEND_MODE::ALPHA);
@@ -63,7 +67,8 @@ namespace NSG
 
         camera_->EnableOrtho();
         ImGuiIO& io = ImGui::GetIO();
-        io.RenderDrawListsFn = GUI::Draw;
+        io.UserData = this;
+        io.RenderDrawListsFn = [](ImDrawData * draw_data) {static_cast<GUI*>(ImGui::GetIO().UserData)->InternalDraw(draw_data); };
 
         unsigned char* pixels;
         int width, height;
@@ -72,8 +77,9 @@ namespace NSG
         fontTexture_->SetWrapMode(TextureWrapMode::REPEAT);
         fontTexture_->SetSize(width, height);
 
-        slotTextureReleased_ = fontTexture_->SigReleased()->Connect([&]()
+        slotTextureReleased_ = fontTexture_->SigReleased()->Connect([this]()
         {
+            ImGui::SetInternalState(state_);
             unsigned char* pixels;
             int width, height;
             ImGuiIO& io = ImGui::GetIO();
@@ -83,8 +89,9 @@ namespace NSG
             fontTexture_->SetSize(width, height);
         });
 
-        slotTextureAllocated_ = fontTexture_->SigAllocated()->Connect([&]()
+        slotTextureAllocated_ = fontTexture_->SigAllocated()->Connect([this]()
         {
+            ImGui::SetInternalState(state_);
             ImGuiIO& io = ImGui::GetIO();
             // Store our identifier
             io.Fonts->TexID = (void*)(intptr_t)fontTexture_->GetID();
@@ -94,20 +101,13 @@ namespace NSG
         });
 
         CHECK_CONDITION(fontTexture_->IsReady());
-        pTHIS = this;
-        Setup(mainWindow);
     }
 
     GUI::~GUI()
     {
-        CHECK_ASSERT(pTHIS != nullptr);
+        ImGui::SetInternalState(state_);
         ImGui::Shutdown();
-        pTHIS = nullptr;
-    }
-
-    GUI* GUI::GetPtr()
-    {
-        return pTHIS;
+        delete[] state_;
     }
 
     void GUI::InternalDraw(ImDrawData* draw_data)
@@ -117,6 +117,7 @@ namespace NSG
         if (!fontTexture_->IsReady())
             return;
 
+        program_->Set(camera_.get());
         auto& io = ImGui::GetIO();
         const float width = io.DisplaySize.x;
         const float height = io.DisplaySize.y;
@@ -166,33 +167,43 @@ namespace NSG
         CHECK_GL_STATUS();
     }
 
-    void GUI::Draw(ImDrawData* draw_data)
-    {
-        pTHIS->InternalDraw(draw_data);
-    }
-
-    void GUI::Render(Window* window)
+    void GUI::Render(Window* window, std::function<void(void)> callback)
     {
         if (!window)
             return;
+        Setup();
+        ImGui::SetInternalState(state_);
         window_ = window;
         window->BeginImguiRender();
-        auto width = window->GetWidth();
-        auto height = window->GetHeight();
         ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)width, (float)height);
+        auto width = (float)window->GetWidth();
+        auto height = (float)window->GetHeight();
+
+        if (area_ != Rect(0))
+            io.DisplaySize = ImVec2{ Clamp(area_.z, 0.f, width), Clamp(area_.w, 0.f, height) };
+        else
+            io.DisplaySize = ImVec2{ width, height };
+
         io.DeltaTime = Engine::GetPtr()->GetDeltaTime();
         ImGui::NewFrame();
-        window->SigDrawIMGUI()->Run();
+        callback();
         ImGui::Render();
     }
 
-    void GUI::Setup(Window* mainWindow)
+    void GUI::Setup()
     {
+        if (configured_)
+            return;
+
+        configured_ = true;
+
+        auto mainWindow = Window::GetMainWindow();
+
         mainWindow->SetupImgui();
 
-        slotKey_ = mainWindow->SigKey()->Connect([&](int key, int action, int modifier)
+        slotKey_ = mainWindow->SigKey()->Connect([this](int key, int action, int modifier)
         {
+            ImGui::SetInternalState(state_);
             ImGuiIO& io = ImGui::GetIO();
             io.KeysDown[key] = action ? true : false;
             io.KeyShift = (modifier & NSG_KEY_MOD_SHIFT) != 0;
@@ -200,20 +211,24 @@ namespace NSG
             io.KeyAlt = (modifier & NSG_KEY_MOD_ALT) != 0;
         });
 
-        slotText_ = mainWindow->SigText()->Connect([&](std::string text)
+        slotText_ = mainWindow->SigText()->Connect([this](std::string text)
         {
+            ImGui::SetInternalState(state_);
             ImGuiIO& io = ImGui::GetIO();
             io.AddInputCharactersUTF8(text.c_str());
         });
 
-        slotMouseMoved_ = mainWindow->SigMouseMoved()->Connect([&](int x, int y)
+        slotMouseMoved_ = mainWindow->SigMouseMoved()->Connect([this](int x, int y)
         {
+            ImGui::SetInternalState(state_);
             ImGuiIO& io = ImGui::GetIO();
-            io.MousePos = ImVec2((float)x, (float)y);
+            io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
+            //LOGI("%s", ToString(area_).c_str());
         });
 
-        slotMouseDown_ = mainWindow->SigMouseDownInt()->Connect([&](int button, int x, int y)
+        slotMouseDown_ = mainWindow->SigMouseDownInt()->Connect([this](int button, int x, int y)
         {
+            ImGui::SetInternalState(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (button == NSG_BUTTON_LEFT)
                 io.MouseDown[0] = true;
@@ -221,11 +236,12 @@ namespace NSG
                 io.MouseDown[1] = true;
             else if (button == NSG_BUTTON_MIDDLE)
                 io.MouseDown[2] = true;
-            io.MousePos = ImVec2((float)x, (float)y);
+            io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
         });
 
-        slotMouseUp_ = mainWindow->SigMouseUpInt()->Connect([&](int button, int x, int y)
+        slotMouseUp_ = mainWindow->SigMouseUpInt()->Connect([this](int button, int x, int y)
         {
+            ImGui::SetInternalState(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (button == NSG_BUTTON_LEFT)
                 io.MouseDown[0] = false;
@@ -233,11 +249,12 @@ namespace NSG
                 io.MouseDown[1] = false;
             else if (button == NSG_BUTTON_MIDDLE)
                 io.MouseDown[2] = false;
-            io.MousePos = ImVec2((float)x, (float)y);
+            io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
         });
 
-        slotMouseWheel_ = mainWindow->SigMouseWheel()->Connect([&](float x, float y)
+        slotMouseWheel_ = mainWindow->SigMouseWheel()->Connect([this](float x, float y)
         {
+            ImGui::SetInternalState(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (y > 0)
                 io.MouseWheel = 1;
@@ -245,12 +262,17 @@ namespace NSG
                 io.MouseWheel = -1;
         });
 
-        slotMultiGesture_ = mainWindow->SigMultiGesture()->Connect([&](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+        slotMultiGesture_ = mainWindow->SigMultiGesture()->Connect([this](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
         {
+            //ImGui::SetInternalState(state_);
             //ImGuiIO& io = ImGui::GetIO();
             //io.MouseDown[0] = numFingers > 0 ? true : false;
-            //io.MousePos = ImVec2((float)x, (float)y);
+            //io.MousePos = io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
         });
+    }
 
+    void GUI::SetArea(const Rect& area)
+    {
+        area_ = area;
     }
 }

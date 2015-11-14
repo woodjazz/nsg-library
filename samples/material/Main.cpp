@@ -33,20 +33,21 @@ int NSG_MAIN(int argc, char* argv[])
     auto scene = std::make_shared<Scene>();
 	scene->SetWindow(window.get());
 	window->SetScene(scene.get());
-    auto camera = scene->CreateChild<Camera>();
+    auto camera = scene->CreateChild<Camera>("Camera");
 	camera->SetPosition(Vector3(0, 0, 10));
 	Editor editor;
 	editor.SetWindow(window);
 	editor.SetScene(scene);
 	//editor.SetCamera(camera);
 	camera->SetWindow(window.get());
+	auto mesh = Mesh::Create<SphereMesh>("sphereMesh");
 	{
-		auto mesh = Mesh::Create<SphereMesh>();
-		auto material = Material::Create();
+		
+		auto material = Material::Create("material1");
 		auto resource = Resource::GetOrCreate<ResourceFile>("data/map.jpg");
 		auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 		material->SetTexture(texture);
-		auto node = scene->CreateChild<SceneNode>();
+		auto node = scene->CreateChild<SceneNode>("node1");
 		node->SetMaterial(material);
 		node->SetMesh(mesh);
 		node->SetPosition(Vector3(1, 0, 0));
@@ -54,18 +55,33 @@ int NSG_MAIN(int argc, char* argv[])
 	}
 
 	{
-		auto mesh = Mesh::Create<BoxMesh>();
-		auto material = Material::Create();
-		auto node = scene->CreateChild<SceneNode>();
+		auto material = Material::Create("material2");
+		auto resourceColor = Resource::GetOrCreate<ResourceFile>("data/wall_COLOR.png");
+		auto textureColor = std::make_shared<Texture2D>(resourceColor, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+		auto resourceNormal = Resource::GetOrCreate<ResourceFile>("data/wall_NRM.png");
+		auto textureNormal = std::make_shared<Texture2D>(resourceNormal, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+		textureNormal->SetMapType(TextureType::NORM);
+		material->SetTexture(textureColor);
+		material->SetTexture(textureNormal);
+		auto node = scene->CreateChild<SceneNode>("node2");
 		node->SetMaterial(material);
 		node->SetMesh(mesh);
 		node->SetPosition(Vector3(-1, 0, 0));
-		editor.SetNode(node);
 	}
 
     auto light = scene->CreateChild<Light>("light");
     light->SetType(LightType::DIRECTIONAL);
 	light->SetPosition(Vector3(0, 3, 0));
+
+	auto editorCamera = editor.GetEditorCamera();
+	editorCamera->SetPosition(Vector3(0, 0, 20));
+
+	auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]()
+	{
+		static bool show_test_window = true;
+		ImGui::ShowTestWindow(&show_test_window);
+	});
+	
 
 	return Engine::Create()->Run();
 }

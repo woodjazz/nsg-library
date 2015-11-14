@@ -34,5 +34,10 @@ namespace NSG
     public:
         EditorLight(const std::string& name);
         ~EditorLight();
+		void OnCreated() override;        
+    private:
+        void ConfigureChild(const Light* light, SceneNode* child);
+        SignalLight::PSlot slotSetType_;
+        PSceneNode child_;
     };
 }

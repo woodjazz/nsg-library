@@ -42,7 +42,8 @@ namespace NSG
           shadowBias_(1),
           slopeScaledBias_(1),
           shadowSplits_(1),
-          invRange_(1.f / distance_)
+          invRange_(1.f / distance_),
+          signalSetType_(new SignalLight)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         for (int i = 0; i < MAX_SPLITS; i++)
@@ -155,6 +156,7 @@ namespace NSG
             CalculateRange();
             OnDirty();
             SetUniformsNeedUpdate();
+            signalSetType_->Run(this);
         }
     }
 
@@ -518,7 +520,7 @@ namespace NSG
             }
 
             auto energy = GetEnergy();
-            ImGui::DragFloat("##energy", &energy, 1.f, 0.f, 1000.f, "Energy %.1f");
+            ImGui::DragFloat("##energy", &energy, 0.1f, 0.f, 1000.f, "Energy %.1f");
             SetEnergy(energy);
 
             auto color = GetColor();

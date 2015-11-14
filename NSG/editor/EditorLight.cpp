@@ -25,29 +25,75 @@ misrepresented as being the original software.
 */
 #include "EditorLight.h"
 #include "EditorFrustum.h"
-#include "CircleMesh.h"
+#include "QuadMesh.h"
+#include "SphereMesh.h"
 #include "Material.h"
+#include "Texture2D.h"
 #include "Camera.h"
+#include "Light.h"
+
+#define X (unsigned char)0xFF,
+#define O (unsigned char)0x00,
 
 namespace NSG
 {
     EditorLight::EditorLight(const std::string& name)
         : EditorSceneNode(name)
     {
-        SetMesh(Mesh::Create<CircleMesh>());
+        SetMesh(Mesh::GetOrCreate<QuadMesh>("NSGEditorCamera"));
         SetMaterial(Material::GetOrCreate("NSGEditorLight"));
         material_->SetRenderPass(RenderPass::UNLIT);
         material_->SetDiffuseColor(COLOR_YELLOW);
         material_->EnableTransparent(true);
-        material_->SetAlpha(0.25f);
+		material_->SetAlpha(0.9f);
         material_->SetBillboardType(BillboardType::SPHERICAL);
         material_->CastShadow(false);
         material_->ReceiveShadows(false);
 
+        const int SIZE = 8;
+        static const unsigned char image[SIZE][SIZE]
+        {
+            {X X X X X X X X},
+            {X O O O O O O X},
+            {X O X O O O O X},
+            {X O X O O O O X},
+            {X O X O O O O X},
+            {X O X X X X O X},
+            {X O O O O O O X},
+            {X X X X X X X X},
+        };
+
+        auto texture = std::make_shared<Texture2D>();
+        texture->SetFormat(GL_ALPHA);
+        texture->SetData(&image[0][0]);
+        texture->SetSize(SIZE, SIZE);
+        texture->SetMapType(TextureType::COL);
+		texture->SetFilterMode(TextureFilterMode::NEAREST);
+        material_->SetTextMap(texture);
     }
 
     EditorLight::~EditorLight()
     {
-
     }
+
+    void EditorLight::OnCreated()
+    {
+        child_ = CreateChild<EditorSceneNode>(GetUniqueName("EditorLight"));
+		auto light = std::dynamic_pointer_cast<Light>(GetParent());
+		ConfigureChild(light.get(), child_.get());
+        slotSetType_ = light->SignalSetType()->Connect([this](Light* light)
+        {
+            ConfigureChild(light, child_.get());
+        });
+    }
+
+    void EditorLight::ConfigureChild(const Light* light, SceneNode* child)
+    {
+		auto distance = light->GetDistance();
+		auto mesh = Mesh::GetOrCreate<SphereMesh>(GetName() + "SphereMesh");
+		mesh->Set(distance);
+		child->SetMesh(mesh);
+		child->SetMaterial(material_);
+    }
+
 }

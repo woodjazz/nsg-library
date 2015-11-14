@@ -589,7 +589,7 @@ namespace NSG
 
     void Material::ShowGUIProperties(Editor* editor)
     {
-        std::string header = "Material:" + GetName();
+		std::string header = "Material:" + GetName();
 		if (ImGui::TreeNode(header.c_str()))
         {
             if (ImGui::TreeNode("Preview"))
@@ -600,23 +600,23 @@ namespace NSG
                 ImGui::TreePop();
             }
 
-            if (HasTextures() && ImGui::TreeNode("Textures"))
+			if (HasTextures() && ImGui::TreeNode("Textures"))
             {
-                for (int i = 0; i < (int)MaterialTexture::MAX_MAPS; i++)
-                {
-                    auto texture = GetTexture((MaterialTexture)i);
-                    if (texture && texture->IsReady())
-                    {
-                        auto type = texture->GetMapType();
-                        if (ImGui::TreeNode(ToString(type)))
-                        {
-                            auto width = std::min(64.f, (float)texture->GetWidth());
-                            auto height = std::min(64.f, (float)texture->GetHeight());
-                            ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-                            ImGui::TreePop();
-                        }
-                    }
-                }
+				for (int i = 0; i < (int)MaterialTexture::MAX_MAPS; i++)
+				{
+					auto texture = GetTexture((MaterialTexture)i);
+					if (texture && texture->IsReady())
+					{
+						auto type = texture->GetMapType();
+						if (ImGui::TreeNode(ToString(type)))
+						{
+							auto width = std::min(64.f, (float)texture->GetWidth());
+							auto height = std::min(64.f, (float)texture->GetHeight());
+							ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+							ImGui::TreePop();
+						}
+					}
+				}
                 ImGui::TreePop();
             }
 
@@ -635,7 +635,7 @@ namespace NSG
             FlipYTextureCoords(isFlipped);
 
             auto renderPass = GetRenderPass();
-            ImGui::Combo("Render Pass", (int*)&renderPass, "Vertex Color\0Unlit\0Lit\0Text\0Blend\0Blur\0Wave\0Show Diffuse\0");
+            ImGui::Combo("Render Pass", (int*)&renderPass, "Vertex Color\0Unlit\0Lit\0Text\0Blend\0Blur\0Wave\0Show Diffuse\0\0");
             SetRenderPass(renderPass);
             auto fillMode = GetFillMode();
             ImGui::Combo("Fill Mode", (int*)&fillMode, "Solid\0Wireframe\0");

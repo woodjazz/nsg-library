@@ -42,6 +42,7 @@ namespace NSG
 		void Enable(bool enable);
 		PSceneNode SelectObject(float x, float y);
 		void SetViewRect(Vector4 viewRect);
+		void SetSelectionContext(RendererContext context) { selectionContext_ = context; }
 	private:
 		bool TransformCoords(float& x, float& y);
 		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
@@ -77,5 +78,7 @@ namespace NSG
 		bool enableColorSplits_;
 		bool enabled_;
 		Vector4 viewRect_;
+		bool selection_;
+		RendererContext selectionContext_;
 	};
 }

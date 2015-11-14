@@ -131,7 +131,7 @@ static void Test04()
 
 static void Test05()
 {
-    auto window = Window::Create();//"hiddenWindow", (int)WindowFlag::HIDDEN);
+    auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
     window->SetScene(scene.get());
     auto camera = scene->CreateChild<Camera>();

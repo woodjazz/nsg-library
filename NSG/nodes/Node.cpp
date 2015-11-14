@@ -147,7 +147,6 @@ namespace NSG
                     if (ps) scene->AddParticleSystem(ps.get());
                 }
             }
-            node->OnSceneSet();
         }
         node->MarkAsDirty();
     }

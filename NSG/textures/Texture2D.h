@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Util.h"
 #include "Texture.h"
 
 namespace NSG
@@ -33,7 +34,7 @@ namespace NSG
     {
     public:
         Texture2D(PResource resource, const TextureFlags& flags = (int)TextureFlag::NONE);
-        Texture2D(const std::string& name);
+        Texture2D(const std::string& name = GetUniqueName("Texture"));
         virtual ~Texture2D();
 		static PTexture CreateFrom(const pugi::xml_node& node);
 		GLenum GetTarget() const override;

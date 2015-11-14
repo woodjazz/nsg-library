@@ -34,7 +34,7 @@ namespace NSG
     EditorFrustum::EditorFrustum(const std::string& name)
         : EditorSceneNode(name)
     {
-        SetMesh(Mesh::Create<FrustumMesh>());
+        SetMesh(Mesh::GetOrCreate<FrustumMesh>("NSGEditorFrustum"));
         SetMaterial(Material::GetOrCreate("NSGEditorFrustum"));
         material_->SetRenderPass(RenderPass::VERTEXCOLOR);
         material_->CastShadow(false);
@@ -46,19 +46,22 @@ namespace NSG
 
     }
 
-	void EditorFrustum::SetCamera(PCamera camera)
-	{
-		camera_ = camera;
-		SetTransform(Inverse(camera->GetTransform()));
-		std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
-		slotUpdated_ = camera->SigUpdated()->Connect([this]()
-		{
-			auto camera = camera_.lock();
-			if (camera)
-			{
-				SetTransform(Inverse(camera->GetTransform()));
-				std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
-			}
-		});
-	}
+    void EditorFrustum::SetCamera(PCamera camera)
+    {
+        camera_ = camera;
+        SetTransform(Inverse(camera->GetTransform()));
+        std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
+        slotUpdated_ = camera->SigUpdated()->Connect([this]()
+        {
+            if(CanBeVisible())
+            {
+                auto camera = camera_.lock();
+                if (camera)
+                {
+                    SetTransform(Inverse(camera->GetTransform()));
+                    std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
+                }
+            }
+        });
+    }
 }

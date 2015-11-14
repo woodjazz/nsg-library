@@ -133,6 +133,12 @@ namespace NSG
         glGenTextures(1, &texture_);
         Graphics::GetPtr()->SetTexture(0, this);
 
+		auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
+		width_ = Clamp(width_, 0, maxSize);
+		height_ = Clamp(height_, 0, maxSize);
+		if (!Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_))
+			GetPowerOfTwoValues(width_, height_);
+
         if (image_)
         {
             channels_ = image_->GetChannels();
@@ -289,10 +295,6 @@ namespace NSG
         CHECK_ASSERT(!image_ && "SetSize only can be applied for non images!!!");
         CHECK_ASSERT(width >= 0 && height >= 0);
 
-        auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
-        width = Clamp(width, 0, maxSize);
-        height = Clamp(height, 0, maxSize);
-
         if (GetTarget() == GL_TEXTURE_CUBE_MAP)
         {
             auto value = std::max(width, height);
@@ -303,8 +305,6 @@ namespace NSG
         {
             width_ = width;
             height_ = height;
-            if (!Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_))
-                GetPowerOfTwoValues(width_, height_);
             Invalidate();
         }
     }

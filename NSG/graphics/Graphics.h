@@ -157,7 +157,6 @@ namespace NSG
 		GLint maxVertexAttribs_;
 		DepthFunc depthFunc_;
 		int maxTextureSize_;
-		PGUI imgui_;
 		float slopeScaledDepthBias_;
 		friend class Singleton<Graphics>;
 	};

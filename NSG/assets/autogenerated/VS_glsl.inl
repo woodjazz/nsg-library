@@ -17,8 +17,15 @@ static const char* VS_GLSL = \
 "			v_color = a_color;\n"\
 "			gl_Position = GetClipPos();\n"\
 "		#elif defined(TEXT)\n"\
+"			#if 0\n"\
+"			mat4 mvp = u_projection * GetSphericalBillboardMatrix(u_view * GetModelMatrix());\n"\
+"			float w = 0.1 * (mvp * vec4(0.0, 0.0, 0.0, 1.0)).w;\n"\
+"			gl_Position = mvp * vec4(a_position * w, 1.0);\n"\
+"			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);\n"\
+"			#else\n"\
 "			gl_Position = GetClipPos();\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);\n"\
+"			#endif\n"\
 "		#elif defined(BLUR) || defined(BLEND) || defined(WAVE) || defined(SHOW_TEXTURE0)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);\n"\

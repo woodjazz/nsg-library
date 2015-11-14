@@ -46,7 +46,7 @@ misrepresented as being the original software.
 #include "FrameBuffer.h"
 #include "ShowTexture.h"
 #include "Filter.h"
-#include "GUI.h"
+#include "imgui.h"
 #include <functional>
 
 
@@ -362,16 +362,6 @@ namespace NSG
     Graphics::~Graphics()
     {
         Graphics::Destroy();
-    }
-
-    void Graphics::CreateGUI(Window* mainWindow)
-    {
-        imgui_ = std::make_shared<GUI>(mainWindow);
-    }
-
-    void Graphics::DestroyGUI()
-    {
-        imgui_ = nullptr;
     }
 
     bool Graphics::CheckExtension(const std::string& name)

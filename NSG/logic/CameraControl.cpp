@@ -47,7 +47,9 @@ namespace NSG
           originalOrientation_(camera->GetGlobalOrientation()),
           enableDebugPhysics_(false),
           enableColorSplits_(false),
-          enabled_(true)
+          enabled_(true),
+		  selection_(false),
+		  selectionContext_(RendererContext::DEFAULT)
     {
         CHECK_ASSERT(camera_);
         CHECK_ASSERT(scene_);
@@ -187,7 +189,7 @@ namespace NSG
         lastX_ = x;
         lastY_ = y;
 
-        if (button == NSG_BUTTON_RIGHT)
+        if (button == NSG_BUTTON_LEFT)
         {
             if (altKeyDown_)
                 RayCastNewCenter(false);
@@ -200,7 +202,7 @@ namespace NSG
         if (!enabled_)
             return;
 
-		if (button == NSG_BUTTON_RIGHT)
+		if (button == NSG_BUTTON_LEFT)
             leftButtonDown_ = false;
     }
 
@@ -356,7 +358,6 @@ namespace NSG
             default:
                 break;
         }
-
     }
 
     void CameraControl::Move(float x, float y)
@@ -371,7 +372,7 @@ namespace NSG
             auto radius = pointOnSphere_->GetRadius();
             OnMousewheel(0, radius * relY);
         }
-        else if (altKeyDown_)
+        else if (altKeyDown_ && selection_)
         {
             pointOnSphere_->IncAngles(PI * relX, PI * relY);
             camera_->SetGlobalPosition(pointOnSphere_->GetPoint());
@@ -388,7 +389,6 @@ namespace NSG
             pointOnSphere_->SetCenter(pointOnSphere_->GetCenter() + offset);
         }
     }
-
 
     void CameraControl::SetPosition(const Vertex3& position)
     {
@@ -412,21 +412,31 @@ namespace NSG
 
     PSceneNode CameraControl::SelectObject(float x, float y)
     {
+		auto oldContext = Renderer::GetPtr()->SetContext(selectionContext_);
 		TransformCoords(x, y);
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
-        if (scene_->GetClosestRayNodeIntersection(ray, closest))
+		auto selection = scene_->GetClosestRayNodeIntersection(ray, closest);
+		Renderer::GetPtr()->SetContext(oldContext);
+		if (selection)
+		{
+			selection_ = selection;
 			return std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(closest.node_));
+		}
         return nullptr;
     }
 
     void CameraControl::RayCastNewCenter(bool centerObj)
     {
+		auto oldContext = Renderer::GetPtr()->SetContext(selectionContext_);
         Vertex3 newCenter;
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
-        if (scene_->GetClosestRayNodeIntersection(ray, closest))
+		auto selection = scene_->GetClosestRayNodeIntersection(ray, closest);
+		Renderer::GetPtr()->SetContext(oldContext);
+		if (selection)
         {
+			selection_ = selection;
             LOGI("CamCenter in %s", closest.node_->GetName().c_str());
             if (centerObj)
             {

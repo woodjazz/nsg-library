@@ -47,6 +47,7 @@ namespace NSG
         void Load(const pugi::xml_node& node) override;
         void FillShaderDefines(std::string& defines, PassType passType, const Material* material) const;
         static SignalLight::PSignal SignalBeingDestroy();
+        SignalLight::PSignal SignalSetType() { return signalSetType_; }
         const ColorRGB& GetDiffuseColor() const { return diffuseColor_; }
         const ColorRGB& GetSpecularColor() const { return specularColor_; }
         void SetShadowColor(Color color);
@@ -70,10 +71,10 @@ namespace NSG
         void GenerateShadowMaps(const Camera* camera);
         bool HasSpecularColor() const;
         int GetShadowSplits() const {return shadowSplits_; }
-		float GetInvRange() const { return invRange_; }
+        float GetInvRange() const { return invRange_; }
         void ShowGUIProperties(Editor* editor) override;
     private:
-		int CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
+        int CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
         FrameBuffer* GetShadowFrameBuffer(int idx) const;
         void CalculateColor();
         void CalculateRange();
@@ -88,8 +89,8 @@ namespace NSG
         bool diffuse_;
         bool specular_;
         float spotCutOff_; // angle in degrees
-		ColorRGB diffuseColor_; // calculated
-		ColorRGB specularColor_; // calculated
+        ColorRGB diffuseColor_; // calculated
+        ColorRGB specularColor_; // calculated
         Color shadowColor_;
         float distance_;
         bool shadows_;
@@ -102,6 +103,7 @@ namespace NSG
         float slopeScaledBias_;
         PShadowCamera shadowCamera_[MAX_SPLITS];
         int shadowSplits_; //Calculated in the shadow pass
-		float invRange_;
+        float invRange_;
+        SignalLight::PSignal signalSetType_;
     };
 }

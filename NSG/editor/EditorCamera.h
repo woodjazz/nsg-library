@@ -34,7 +34,7 @@ namespace NSG
     public:
         EditorCamera(const std::string& name);
         ~EditorCamera();
-		void SetCamera(PCamera camera);
+        void OnCreated() override;
     private:
         PEditorFrustum frustum_;
     };

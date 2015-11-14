@@ -365,8 +365,7 @@ namespace NSG
         if (!mainCamera_)
             mainCamera_ = camera;
         UpdateOctree(camera);
-        auto obj = camera->CreateChild<EditorCamera>(GetUniqueName("EditorCamera"));
-		obj->SetCamera(std::dynamic_pointer_cast<Camera>(SharedFromPointerNode(camera)));
+        camera->CreateChild<EditorCamera>(GetUniqueName("EditorCamera"));
     }
 
     void Scene::AddParticleSystem(ParticleSystem* ps)

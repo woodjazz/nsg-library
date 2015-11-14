@@ -25,7 +25,9 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "GUI.h"
 
+struct ImDrawList;
 namespace NSG
 {
 	class Editor
@@ -39,29 +41,34 @@ namespace NSG
 		void SetNode(PNode node);
 		Node* GetNode() const;
 		PTexture GetMaterialPreview(PMaterial material);
+		PCamera GetEditorCamera() const { return editorCamera_; }
+		void Render();
 	private:
 		void SetControl();
-		void ShowHelp();
-		void ShowAll();
+		void ShowWindows();
+		void ShowGame();
+		void RenderGame();
 		void ShowScene();
 		void ShowHierachy();
 		void OnMouseDown(int button, float x, float y);
 		void ShowInspector();
 		PTexture GetScenePreview(Scene* scene, Camera* camera);
-		void CreatePreviewFrameBuffer();
-		void CreateEditorFrameBuffer();
+		PTexture GetGamePreview(Scene* scene, Camera* camera);
 		PCameraControl control_;
 		PFrameBuffer previewFrameBuffer_;
-		PFrameBuffer editorFrameBuffer_;
+		PFrameBuffer sceneFrameBuffer_;
+		PFrameBuffer gameFrameBuffer_;
 		PWeakCamera camera_;
 		PWeakWindow window_;
 		PWeakScene scene_;
 		PWeakNode node_;
 		SignalMouseButton::PSlot slotMouseDown_;
-		SignalEmpty::PSlot slotDrawGUI_;
 		PScene scenePreview_;
 		PSceneNode previewNode_;
 		bool isSceneHovered_;
 		PCamera editorCamera_;
+		PTexture gTexture_;
+		GUI editorGUI_;
+		GUI gameGUI_;
 	};
 }

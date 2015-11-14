@@ -43,7 +43,9 @@ misrepresented as being the original software.
 #include "Texture.h"
 #include "UTF8String.h"
 #include "Renderer.h"
+#include "Editor.h"
 #include "GUI.h"
+#include "imgui.h"
 #include <algorithm>
 #include <thread>
 
@@ -53,6 +55,22 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	struct GUIDefaultState
+	{
+		void* state_;
+		GUIDefaultState()
+			: state_(ImGui::GetInternalState())
+		{
+		}
+		~GUIDefaultState()
+		{
+			ImGui::SetInternalState(state_);
+			ImGuiIO().Fonts->Clear();
+			ImGui::Shutdown();
+		}
+	};
+	static std::unique_ptr<GUIDefaultState> defaultGUIState(new GUIDefaultState);
+
     std::vector<PWeakWindow> Window::windows_;
     Window* Window::mainWindow_ = nullptr;
     int Window::nWindows2Remove_ = 0;
@@ -70,27 +88,28 @@ namespace NSG
           signalFloatFloat_(new Signal<float, float>()),
           signalMouseMoved_(new Signal<int, int>()),
           signalMouseDown_(new Signal<int, float, float>()),
-		  signalMouseDownInt_(new Signal<int, int, int>()),
+          signalMouseDownInt_(new Signal<int, int, int>()),
           signalMouseUp_(new Signal<int, float, float>()),
-		  signalMouseUpInt_(new Signal<int, int, int>()),
+          signalMouseUpInt_(new Signal<int, int, int>()),
           signalMouseWheel_(new Signal<float, float>()),
           signalKey_(new Signal<int, int, int>()),
           signalUnsigned_(new Signal<unsigned int>()),
-		  signalText_(new Signal<std::string>()),
+          signalText_(new Signal<std::string>()),
           signalMultiGesture_(new Signal<int, float, float, float, float, int>()),
           signalDropFile_(new Signal<const std::string & >()),
           signalJoystickDown_(new SignalJoystickButton),
           signalJoystickUp_(new SignalJoystickButton),
           signalJoystickAxisMotion_(new Signal<int, JoystickAxis, float>),
           signalDrawIMGUI_(new Signal<>),
-          pixelFormat_(PixelFormat::UNKNOWN)
-
+          pixelFormat_(PixelFormat::UNKNOWN),
+          editor_(nullptr)
     {
         CHECK_CONDITION(Window::AllowWindowCreation());
     }
 
     Window::~Window()
     {
+		gui_ = nullptr;
         LOGI("Window %s terminated.", name_.c_str());
     }
 
@@ -121,7 +140,7 @@ namespace NSG
         CHECK_ASSERT(!frameBuffer_);
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
         //frameBufferFlags |= FrameBuffer::STENCIL;
-		frameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFrameBuffer"), frameBufferFlags);
+        frameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFrameBuffer"), frameBufferFlags);
         frameBuffer_->SetWindow(this);
         CHECK_ASSERT(!showMap_);
         showMap_ = std::make_shared<ShowTexture>();
@@ -143,10 +162,10 @@ namespace NSG
         {
             if (!frameBuffer_->IsReady())
                 return false;
-			graphics_->SetFrameBuffer(frameBuffer_.get());
+            graphics_->SetFrameBuffer(frameBuffer_.get());
         }
         else
-			graphics_->SetFrameBuffer(nullptr);
+            graphics_->SetFrameBuffer(nullptr);
         return true;
     }
 
@@ -158,7 +177,7 @@ namespace NSG
                 filter->Draw();
         if (hasFilters || showTexture_)
         {
-			graphics_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
+            graphics_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
             showMap_->Show();
         }
     }
@@ -169,8 +188,8 @@ namespace NSG
 
         if (Window::mainWindow_ == this)
         {
-			graphics_->DestroyGUI();
-			graphics_->ResetCachedState();
+			defaultGUIState = nullptr;
+            graphics_->ResetCachedState();
             // destroy other windows
             auto windows = Window::GetWindows();
             for (auto& obj : windows)
@@ -186,11 +205,9 @@ namespace NSG
     void Window::OnReady()
     {
         graphics_ = Graphics::Create();
-		renderer_ = Renderer::Create();
-		graphics_->SetWindow(this);
+        renderer_ = Renderer::Create();
+        graphics_->SetWindow(this);
         CreateFrameBuffer(); // used when filters are enabled
-		if (isMainWindow_)
-			graphics_->CreateGUI(this);
     }
 
     void Window::SetSize(int width, int height)
@@ -201,10 +218,10 @@ namespace NSG
             width_ = width;
             height_ = height;
 
-			if (graphics_ && graphics_->GetWindow() == this)
-				graphics_->SetViewport(GetViewport(), true);
+            if (graphics_ && graphics_->GetWindow() == this)
+                graphics_->SetViewport(GetViewport(), true);
 
-			signalViewChanged_->Run(width, height);
+            signalViewChanged_->Run(width, height);
         }
     }
 
@@ -228,20 +245,20 @@ namespace NSG
         signalMouseDown_->Run(button, x, y);
     }
 
-	void Window::OnMouseDown(int button, int x, int y)
-	{
-		signalMouseDownInt_->Run(button, x, y);
-	}
+    void Window::OnMouseDown(int button, int x, int y)
+    {
+        signalMouseDownInt_->Run(button, x, y);
+    }
 
     void Window::OnMouseUp(int button, float x, float y)
     {
         signalMouseUp_->Run(button, x, y);
     }
 
-	void Window::OnMouseUp(int button, int x, int y)
-	{
-		signalMouseUpInt_->Run(button, x, y);
-	}
+    void Window::OnMouseUp(int button, int x, int y)
+    {
+        signalMouseUpInt_->Run(button, x, y);
+    }
 
     void Window::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
     {
@@ -263,10 +280,10 @@ namespace NSG
         signalUnsigned_->Run(character);
     }
 
-	void Window::OnText(const std::string& text)
-	{
-		signalText_->Run(text);
-	}
+    void Window::OnText(const std::string& text)
+    {
+        signalText_->Run(text);
+    }
 
     void Window::OnJoystickDown(int joystickID, JoystickButton button)
     {
@@ -289,7 +306,7 @@ namespace NSG
         if (Window::mainWindow_ == this)
         {
             if (Music::GetPtr() && Engine::GetAppConfiguration().pauseMusicOnBackground_)
-				Music::GetPtr()->Pause();
+                Music::GetPtr()->Pause();
         }
     }
 
@@ -297,8 +314,8 @@ namespace NSG
     {
         if (Window::mainWindow_ == this)
         {
-			if (Music::GetPtr() && Engine::GetAppConfiguration().pauseMusicOnBackground_)
-				Music::GetPtr()->Resume();
+            if (Music::GetPtr() && Engine::GetAppConfiguration().pauseMusicOnBackground_)
+                Music::GetPtr()->Resume();
         }
 
         minimized_ = false;
@@ -414,6 +431,7 @@ namespace NSG
     {
         CHECK_ASSERT(AllowWindowCreation());
         windows_.push_back(window);
+        window->gui_ = std::make_shared<GUI>();
     }
 
     void Window::UpdateScenes(float delta)
@@ -423,39 +441,56 @@ namespace NSG
             auto window(obj.lock());
             if (window)
             {
-                if(window->scene_)
-                   window->scene_->UpdateAll(delta);
+                if (window->scene_)
+                    window->scene_->UpdateAll(delta);
             }
         }
+    }
+
+    void Window::SetEditor(Editor* editor)
+    {
+		CHECK_CONDITION(editor_ == nullptr);
+        editor_ = editor;
+    }
+
+    void Window::RemoveEditor(Editor* editor)
+    {
+		CHECK_CONDITION(editor_ == editor);
+        editor_ = nullptr;
     }
 
     void Window::RenderFrame()
     {
         if (BeginFrameRender())
         {
-			Renderer::GetPtr()->Render(this, scene_);
-            GUI::GetPtr()->Render(this);
+            if (editor_)
+                editor_->Render();
+            else
+            {
+                Renderer::GetPtr()->Render(this, scene_);
+				gui_->Render(this, [this](){SigDrawIMGUI()->Run(); });
+            }
             SwapWindowBuffers();
         }
     }
 
-	bool Window::AreAllWindowsMinimized()
-	{
-		for (auto& obj : windows_)
-		{
-			auto window(obj.lock());
-			if (!window || window->IsClosed())
-				continue;
-			if (!window->IsMinimized())
-				return false;
-		}
-		return true;
-	}
+    bool Window::AreAllWindowsMinimized()
+    {
+        for (auto& obj : windows_)
+        {
+            auto window(obj.lock());
+            if (!window || window->IsClosed())
+                continue;
+            if (!window->IsMinimized())
+                return false;
+        }
+        return true;
+    }
 
     bool Window::RenderWindows()
     {
-		auto windows = windows_;
-		for (auto& obj : windows)
+        auto windows = windows_;
+        for (auto& obj : windows)
         {
             auto window(obj.lock());
             if (!window || window->IsClosed())
