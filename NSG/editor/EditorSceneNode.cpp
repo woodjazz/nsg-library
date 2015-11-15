@@ -41,7 +41,7 @@ namespace NSG
 
     bool EditorSceneNode::CanBeVisible() const
     {
-		return RendererContext::EDITOR == Renderer::GetPtr()->GetContext() && SceneNode::CanBeVisible();
+		return Renderer::GetPtr() && RendererContext::EDITOR == Renderer::GetPtr()->GetContext() && SceneNode::CanBeVisible();
     }
 
     void EditorSceneNode::ShowGUIProperties(Editor* editor)

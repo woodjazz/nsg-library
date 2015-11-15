@@ -65,8 +65,8 @@ namespace NSG
 		~GUIDefaultState()
 		{
 			ImGui::SetInternalState(state_);
-			ImGuiIO().Fonts->Clear();
-			ImGui::Shutdown();
+			//ImGuiIO().Fonts->Clear();
+			//ImGui::Shutdown();
 		}
 	};
 	static std::unique_ptr<GUIDefaultState> defaultGUIState(new GUIDefaultState);

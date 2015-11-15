@@ -106,7 +106,7 @@ namespace NSG
     GUI::~GUI()
     {
         ImGui::SetInternalState(state_);
-        ImGui::Shutdown();
+        //ImGui::Shutdown();
         delete[] state_;
     }
 
