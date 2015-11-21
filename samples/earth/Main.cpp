@@ -36,7 +36,6 @@ int NSG_MAIN(int argc, char* argv[])
     scene->SetAmbientColor(ColorRGB(0.1f));
 
     auto camera = scene->CreateChild<Camera>();
-
 	{
         camControlPoints.push_back(Vertex3(-10.0f, 0.0f, 0.0f));
         camControlPoints.push_back(Vertex3(0.0f, 0.0f, 10.0f));
@@ -46,36 +45,70 @@ int NSG_MAIN(int argc, char* argv[])
         camera->SetGlobalLookAtPosition(Vertex3(0));
     }
 
+	auto sphereMesh(Mesh::CreateClass<SphereMesh>());
+	sphereMesh->Set(1.5f, 24);
     auto earth = scene->CreateChild<SceneNode>();
     {
-		auto pSphereMesh(Mesh::CreateClass<SphereMesh>("Sphere"));
-		pSphereMesh->Set(3, 24);
-        earth->SetMesh(pSphereMesh);
-        //earth->SetEnabled(false);
-
-		auto earthResource = Resource::GetOrCreateClass<ResourceFile>("data/Earthmap720x360_grid.jpg");
-        auto pEarthTexture = std::make_shared<Texture2D>(earthResource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
-		auto pMaterial(Material::GetOrCreate("earth"));
-		pMaterial->SetRenderPass(RenderPass::LIT);
-		pMaterial->SetTexture(pEarthTexture);
-        pMaterial->SetDiffuseColor(ColorRGB(0.8f, 0.8f, 0.8f));
-		pMaterial->SetSpecularColor(ColorRGB(1.0f, 0.0f, 0.0f));
-        pMaterial->SetShininess(10);
-        earth->SetMaterial(pMaterial);
+        earth->SetMesh(sphereMesh);
+		auto resource = Resource::GetOrCreateClass<ResourceFile>("data/Earthmap720x360_grid.jpg");
+        auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+		auto material(Material::Create());
+		material->SetRenderPass(RenderPass::LIT);
+		material->SetTexture(texture);
+        material->SetDiffuseColor(ColorRGB(0.8f, 0.8f, 0.8f));
+		material->SetSpecularColor(ColorRGB(1.0f, 0.0f, 0.0f));
+        material->SetShininess(10);
+        earth->SetMaterial(material);
         earth->SetPosition(Vertex3(5, 0, 0));
     }
+
+	auto metalPlanet = scene->CreateChild<SceneNode>();
+	{
+		metalPlanet->SetMesh(sphereMesh);
+		auto resource0 = Resource::GetOrCreateClass<ResourceFile>("data/wall_COLOR.png");
+		auto texture0 = std::make_shared<Texture2D>(resource0, (int)TextureFlag::GENERATE_MIPMAPS);
+		auto resource1 = Resource::GetOrCreateClass<ResourceFile>("data/wall_NRM.png");
+		auto texture1 = std::make_shared<Texture2D>(resource1, (int)TextureFlag::GENERATE_MIPMAPS);
+		texture1->SetMapType(TextureType::NORM);
+		texture0->SetFilterMode(TextureFilterMode::NEAREST);
+		texture1->SetFilterMode(TextureFilterMode::NEAREST);
+		auto material(Material::Create());
+		material->SetRenderPass(RenderPass::LIT);
+		material->SetTexture(texture0);
+		material->SetTexture(texture1);
+		material->SetDiffuseColor(ColorRGB(0.1f, 0.4f, 0.8f));
+		material->SetShininess(0.7f);
+		metalPlanet->SetMaterial(material);
+		metalPlanet->SetPosition(Vertex3(-5, 0, 0));
+	}
+
+	auto transparentPlanet = scene->CreateChild<SceneNode>();
+	{
+		transparentPlanet->SetMesh(sphereMesh);
+		auto resource0 = Resource::GetOrCreateClass<ResourceFile>("data/decalspatches.png");
+		auto texture0 = std::make_shared<Texture2D>(resource0, (int)TextureFlag::GENERATE_MIPMAPS);
+		texture0->SetUseAlpha(true);
+		auto material(Material::Create());
+		material->SetRenderPass(RenderPass::LIT);
+		material->SetDiffuseColor(ColorRGB(0.f, 0.f, 1.f));
+		material->SetAlpha(0);
+		material->EnableTransparent(true);
+		material->SetTexture(texture0);
+		transparentPlanet->SetMaterial(material);
+		transparentPlanet->SetPosition(Vertex3(0, 0, -5));
+	}
 
     auto light = scene->CreateChild<Light>();
     light->EnableShadows(false);
     {
-		auto pMaterial(Material::GetOrCreate("light"));
-		pMaterial->SetRenderPass(RenderPass::LIT);
-		pMaterial->SetDiffuseColor(ColorRGB(1, 0, 0));
-        light->SetMaterial(pMaterial);
-		auto pMesh(Mesh::CreateClass<SphereMesh>());
-		pMesh->Set(0.2f, 16);
-        light->SetMesh(pMesh);
-        light->SetPosition(Vertex3(-10.0, 0.0, 5.0));
+		auto material(Material::Create());
+		material->SetRenderPass(RenderPass::LIT);
+		material->SetDiffuseColor(ColorRGB(1, 0, 0));
+        light->SetMaterial(material);
+		auto mesh(Mesh::CreateClass<SphereMesh>());
+		mesh->Set(0.2f, 16);
+        light->SetMesh(mesh);
+        light->SetPosition(Vertex3(-10, 0, 5));
     }
 
 	auto resource = Resource::GetOrCreate<ResourceFile>("data/nice_music.ogg");
@@ -83,7 +116,6 @@ int NSG_MAIN(int argc, char* argv[])
 	music->Set(resource);
     music->Play();
 
-	auto engine = Engine::Create();
 	auto slotUpdate = Engine::SigUpdate()->Connect([&](float deltaTime)
     {
         {
@@ -96,27 +128,35 @@ int NSG_MAIN(int argc, char* argv[])
                                    delta1);
 
             camera->SetPosition(position);
-            camera->SetGlobalLookAtPosition(Vertex3(0));
+            camera->SetGlobalLookAtPosition(VECTOR3_ZERO);
             delta1 += deltaTime * 0.1f;
             if (delta1 > 1)
             {
                 delta1 = 0;
-                Vertex3 p = camControlPoints.front();
+                auto p = camControlPoints.front();
                 camControlPoints.pop_front();
                 camControlPoints.push_back(p);
             }
         }
 
-        {
-            static float x_angle = 0;
-            static float y_angle = 0;
-            x_angle += PI / 10.0f * deltaTime;
-            y_angle += PI / 10.0f * deltaTime;
-            earth->SetOrientation(AngleAxis(y_angle, Vertex3(0, 0, 1)) * AngleAxis(y_angle, Vertex3(0, 1, 0)));
-        }
+		auto angle = PI10 * deltaTime;
+		earth->Roll(angle);
+		earth->Yaw(angle);
+		metalPlanet->Yaw(angle);
+		metalPlanet->Pitch(angle);
+		transparentPlanet->Roll(angle);
+
+		{
+			static auto factor = 1.f;
+			static auto delta = 0.f;
+			metalPlanet->SetScale(1 + delta);
+			delta += factor * deltaTime;
+			if (delta > 1 || delta < 0)
+				factor *= -1;
+		}
     });
 
 	window->SetScene(scene.get());
-    return engine->Run();
+    return Engine::Create()->Run();
 }
 

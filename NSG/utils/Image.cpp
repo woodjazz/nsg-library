@@ -324,6 +324,7 @@ namespace NSG
         idx += keyValueBytes;
         imgDataSize_ = dataSize - idx - mipmaps * sizeof(unsigned);
         imgData_ = (unsigned char*)malloc(imgDataSize_);
+		CHECK_ASSERT(imgData_);
         width_ = width;
         height_ = height;
         numCompressedLevels_ = mipmaps;
@@ -688,6 +689,7 @@ namespace NSG
         else
         {
             unsigned char* inverted = (unsigned char*)malloc(channels_ * width_ * height_);
+			if (!inverted) return false;
             memcpy(inverted, imgData_, channels_ * width_ * height_);
             for (int j = 0; j * 2 < height_; ++j )
             {

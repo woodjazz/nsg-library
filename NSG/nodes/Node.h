@@ -61,6 +61,12 @@ namespace NSG
         const Vertex3& GetGlobalPosition() const;
         const Quaternion& GetGlobalOrientation() const;
         Vertex3 GetGlobalScale() const;
+        // Rotate around the X axis.
+        void Pitch(float angle, TransformSpace space = TS_LOCAL);
+        // Rotate around the Y axis.
+        void Yaw(float angle, TransformSpace space = TS_LOCAL);
+        // Rotate around the Z axis.
+        void Roll(float angle, TransformSpace space = TS_LOCAL);
         const Matrix4& GetGlobalModelMatrix() const;
         const Matrix3& GetGlobalModelInvTranspMatrix() const;
         const Matrix4& GetGlobalModelInvMatrix() const;

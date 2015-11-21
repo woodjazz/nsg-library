@@ -55,22 +55,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	struct GUIDefaultState
-	{
-		void* state_;
-		GUIDefaultState()
-			: state_(ImGui::GetInternalState())
-		{
-		}
-		~GUIDefaultState()
-		{
-			ImGui::SetInternalState(state_);
-			//ImGuiIO().Fonts->Clear();
-			//ImGui::Shutdown();
-		}
-	};
-	static std::unique_ptr<GUIDefaultState> defaultGUIState(new GUIDefaultState);
-
     std::vector<PWeakWindow> Window::windows_;
     Window* Window::mainWindow_ = nullptr;
     int Window::nWindows2Remove_ = 0;
@@ -188,7 +172,6 @@ namespace NSG
 
         if (Window::mainWindow_ == this)
         {
-			defaultGUIState = nullptr;
             graphics_->ResetCachedState();
             // destroy other windows
             auto windows = Window::GetWindows();
@@ -422,9 +405,7 @@ namespace NSG
     void Window::SetMainWindow(Window* window)
     {
         if (mainWindow_ != window)
-        {
             mainWindow_ = window;
-        }
     }
 
     void Window::AddWindow(PWindow window)
@@ -468,7 +449,8 @@ namespace NSG
             else
             {
                 Renderer::GetPtr()->Render(this, scene_);
-				gui_->Render(this, [this](){SigDrawIMGUI()->Run(); });
+				if (SigDrawIMGUI()->HasSlots())
+					gui_->Render(this, [this]() { SigDrawIMGUI()->Run(); });
             }
             SwapWindowBuffers();
         }

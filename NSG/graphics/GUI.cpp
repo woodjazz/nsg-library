@@ -45,7 +45,8 @@ namespace NSG
     template<> std::map<std::string, PGUI> StrongFactory<std::string, GUI>::objsMap_ = std::map<std::string, PGUI> {};
 
     GUI::GUI(const std::string& name)
-        : graphics_(Graphics::GetPtr()),
+        : Object(name),
+          graphics_(Graphics::GetPtr()),
           fontTexture_(std::make_shared<Texture2D>(name + "GUIFontTexture")),
           pass_(std::make_shared<Pass>()),
           program_(Program::GetOrCreate("IMGUI\n")),
@@ -106,9 +107,14 @@ namespace NSG
     GUI::~GUI()
     {
         ImGui::SetInternalState(state_);
-        //ImGui::Shutdown();
+        ImGui::Shutdown();
         delete[] state_;
     }
+
+	bool GUI::IsValid()
+	{
+		return fontTexture_->IsReady();
+	}
 
     void GUI::InternalDraw(ImDrawData* draw_data)
     {
@@ -169,7 +175,7 @@ namespace NSG
 
     void GUI::Render(Window* window, std::function<void(void)> callback)
     {
-        if (!window)
+        if (!window || !IsReady())
             return;
         Setup();
         ImGui::SetInternalState(state_);

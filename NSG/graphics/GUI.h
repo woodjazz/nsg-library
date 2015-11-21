@@ -27,13 +27,14 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Util.h"
 #include "StrongFactory.h"
+#include "Object.h"
 #include <string>
 #include <functional>
 
 struct ImDrawData;
 namespace NSG
 {
-	class GUI : public StrongFactory<std::string, GUI>
+	class GUI : public Object, public StrongFactory<std::string, GUI>
 	{
 	public:
 		GUI(const std::string& name = GetUniqueName("GUI"));
@@ -41,6 +42,7 @@ namespace NSG
 		void Render(Window* window, std::function<void(void)> callback);
 		void SetArea(const Rect& area);
 	private:
+		bool IsValid() override;
 		void Setup();
 		void InternalDraw(ImDrawData* draw_data);
 		PGraphics graphics_;

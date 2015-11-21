@@ -39,7 +39,8 @@ namespace NSG
     static Mix_Music* music_ = nullptr;
     static void MusicDone()
     {
-        Music::GetPtr()->Stop();
+		if(music_)
+			Music::GetPtr()->Stop();
     }
 #endif
 
@@ -47,13 +48,15 @@ namespace NSG
 		: Object(GetUniqueName("Music")),
           isPlaying_(false)
     {
+        OpenAudio();
     }
 
     Music::~Music()
     {
-        Stop();
+        //Stop();
 #ifdef SDL
         Mix_FreeMusic(music_);
+		music_ = nullptr;
 #endif
         CloseAudio();
     }

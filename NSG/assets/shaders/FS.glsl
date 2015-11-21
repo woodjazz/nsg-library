@@ -52,11 +52,11 @@
 				vec3 normal = GetNormal();
 	    		vec3 vertexToEye = normalize(v_vertexToEye);
 	    		vec3 world2light = v_worldPos - u_lightPosition;
+	    		vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal);
 				#ifdef FOG
-					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal);
-					gl_FragColor = vec4(GetLitFog(finalColor.rgb), finalColor.a);
+					gl_FragColor = vec4(GetLitFog(finalColor.rgb), GetDiffuseColor().a);
 				#else
-			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal);
+			    	gl_FragColor = vec4(finalColor.rgb, GetDiffuseColor().a);
 			    #endif
 
 		#elif defined(IMGUI)

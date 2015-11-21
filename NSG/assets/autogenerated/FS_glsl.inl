@@ -37,11 +37,11 @@ static const char* FS_GLSL = \
 "				vec3 normal = GetNormal();\n"\
 "	    		vec3 vertexToEye = normalize(v_vertexToEye);\n"\
 "	    		vec3 world2light = v_worldPos - u_lightPosition;\n"\
+"	    		vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal);\n"\
 "				#ifdef FOG\n"\
-"					vec4 finalColor = CalcTotalLight(world2light, vertexToEye, normal);\n"\
-"					gl_FragColor = vec4(GetLitFog(finalColor.rgb), finalColor.a);\n"\
+"					gl_FragColor = vec4(GetLitFog(finalColor.rgb), GetDiffuseColor().a);\n"\
 "				#else\n"\
-"			    	gl_FragColor = CalcTotalLight(world2light, vertexToEye, normal);\n"\
+"			    	gl_FragColor = vec4(finalColor.rgb, GetDiffuseColor().a);\n"\
 "			    #endif\n"\
 "		#elif defined(IMGUI)\n"\
 "			gl_FragColor = v_color * texture2D(u_texture0, v_texcoord0);\n"\

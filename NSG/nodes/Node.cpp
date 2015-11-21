@@ -88,7 +88,7 @@ namespace NSG
     void Node::ClearAllChildren()
     {
         childrenHash_.clear();
-        for (size_t i = children_.size() - 1; i < children_.size(); --i)
+        for (auto i = children_.size() - 1; i < children_.size(); --i)
         {
             Node* childNode = children_[i].get();
             childNode->ClearAllChildren();
@@ -203,6 +203,22 @@ namespace NSG
 
         MarkAsDirty();
     }
+
+    void Node::Yaw(float angle, TransformSpace space)
+    {
+        Rotate(AngleAxis(angle, VECTOR3_UP), space);
+    }
+
+    void Node::Pitch(float angle, TransformSpace space)
+    {
+        Rotate(AngleAxis(angle, VECTOR3_RIGHT), space);
+    }
+
+    void Node::Roll(float angle, TransformSpace space)
+    {
+        Rotate(AngleAxis(angle, VECTOR3_FORWARD), space);
+    }
+
 
     void Node::SetPosition(const Vertex3& position)
     {
@@ -540,7 +556,7 @@ namespace NSG
     void Node::ShowGUIProperties(Editor* editor)
     {
         std::string header = "Transform:" + GetName();
-		if (ImGui::TreeNode(header.c_str()))
+        if (ImGui::TreeNode(header.c_str()))
         {
             auto position = GetPosition();
             ImGui::DragFloat3("Position", &position[0], 0.1f);
@@ -563,50 +579,50 @@ namespace NSG
         }
     }
 
-	int Node::GetSceneChildren() const
-	{
-		int n = 0;
-		auto& children = GetChildren();
-		for (auto child : children)
-		{
-			if (!dynamic_cast<EditorSceneNode*>(child.get()))
-				++n;
-		}
-		return n;
-	}
+    int Node::GetSceneChildren() const
+    {
+        int n = 0;
+        auto& children = GetChildren();
+        for (auto child : children)
+        {
+            if (!dynamic_cast<EditorSceneNode*>(child.get()))
+                ++n;
+        }
+        return n;
+    }
 
     void Node::ShowGUIHierarchy(Editor* editor)
     {
-        if(dynamic_cast<EditorSceneNode*>(this))
+        if (dynamic_cast<EditorSceneNode*>(this))
             return;
-		auto selectedNode = editor->GetNode();
-		auto name = GetName();
-		if (selectedNode == this)
-			name = "*" + name;
-		if (GetSceneChildren() > 0)
-		{
-			if (ImGui::TreeNode(("##" + GetName()).c_str()))
-			{
-				ImGui::SameLine();
-				if (ImGui::SmallButton(name.c_str()))
-					editor->SetNode(SharedFromPointerNode(this));
+        auto selectedNode = editor->GetNode();
+        auto name = GetName();
+        if (selectedNode == this)
+            name = "*" + name;
+        if (GetSceneChildren() > 0)
+        {
+            if (ImGui::TreeNode(("##" + GetName()).c_str()))
+            {
+                ImGui::SameLine();
+                if (ImGui::SmallButton(name.c_str()))
+                    editor->SetNode(SharedFromPointerNode(this));
 
-				auto& children = GetChildren();
-				for (auto child : children)
-					child->ShowGUIHierarchy(editor);
-				ImGui::TreePop();
-			}
-			else
-			{
-				ImGui::SameLine();
-				if (ImGui::SmallButton(name.c_str()))
-					editor->SetNode(SharedFromPointerNode(this));
-			}
-		}
-		else
-		{
-			if (ImGui::SmallButton(name.c_str()))
-				editor->SetNode(SharedFromPointerNode(this));
-		}
+                auto& children = GetChildren();
+                for (auto child : children)
+                    child->ShowGUIHierarchy(editor);
+                ImGui::TreePop();
+            }
+            else
+            {
+                ImGui::SameLine();
+                if (ImGui::SmallButton(name.c_str()))
+                    editor->SetNode(SharedFromPointerNode(this));
+            }
+        }
+        else
+        {
+            if (ImGui::SmallButton(name.c_str()))
+                editor->SetNode(SharedFromPointerNode(this));
+        }
     }
 }
