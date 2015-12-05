@@ -30,22 +30,23 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	PointOnSphere::PointOnSphere()
-	: center_(0),
-	radius_(0),
-	theta_(0),
-	phi_(0)
-	{
-
-	}
+    PointOnSphere::PointOnSphere()
+        : center_(0),
+          radius_(0),
+          theta_(0),
+          phi_(0),
+          up_(VECTOR3_UP)
+    {
+    }
 
     PointOnSphere::PointOnSphere(const Vertex3& center, float radius)
         : center_(center),
           radius_(radius),
           theta_(0),
-          phi_(0)
+          phi_(0),
+          up_(VECTOR3_UP)
     {
-        CalculatePoint();
+        initialPoint_ = point_ = CalculatePoint();
         CalculateUpVector();
     }
 
@@ -56,6 +57,7 @@ namespace NSG
           phi_(0)
     {
         SetPoint(pointInSphere);
+		initialPoint_ = point_;
     }
 
     PointOnSphere::~PointOnSphere()
@@ -73,63 +75,63 @@ namespace NSG
         theta_ = theta;
         phi_ = phi;
 
-        CalculatePoint();
+        point_ = CalculatePoint();
         CalculateUpVector();
     }
 
     bool PointOnSphere::SetCenterAndPoint(const Vertex3& center, const Vertex3& pointInSphere)
     {
-		if (Distance(pointInSphere, center) > PRECISION)
-    	{
-			if (Distance(center, center_) > PRECISION || Distance(pointInSphere, point_) > PRECISION)
-			{
-				center_ = center;
-				point_ = pointInSphere;
-				CalculateAnglesAndRadius();
-				CalculateUpVector();
-				return true;
-			}
-    	}
+        if (Distance(pointInSphere, center) > PRECISION)
+        {
+            if (Distance(center, center_) > PRECISION || Distance(pointInSphere, point_) > PRECISION)
+            {
+                center_ = center;
+                point_ = pointInSphere;
+                CalculateAnglesAndRadius();
+                CalculateUpVector();
+                return true;
+            }
+        }
 
-		return false;
+        return false;
     }
 
     bool PointOnSphere::SetCenter(const Vertex3& center)
     {
-		if (Distance(center, point_) > PRECISION)
+        if (Distance(center, point_) > PRECISION)
         {
-			if (Distance(center, center_) > PRECISION)
-			{
-				center_ = center;
-				CalculateAnglesAndRadius();
-				CalculateUpVector();
-				return true;
-			}
+            if (Distance(center, center_) > PRECISION)
+            {
+                center_ = center;
+                CalculateAnglesAndRadius();
+                CalculateUpVector();
+                return true;
+            }
         }
 
-		return false;
+        return false;
     }
 
     bool PointOnSphere::SetPoint(const Vertex3& pointInSphere)
     {
-		if (Distance(pointInSphere, center_) > PRECISION)
+        if (Distance(pointInSphere, center_) > PRECISION)
         {
-			if (Distance(pointInSphere, point_) > PRECISION)
-			{
-				point_ = pointInSphere;
-				CalculateAnglesAndRadius();
-				CalculateUpVector();
-				return true;
-			}
+            if (Distance(pointInSphere, point_) > PRECISION)
+            {
+                point_ = pointInSphere;
+                CalculateAnglesAndRadius();
+                CalculateUpVector();
+                return true;
+            }
         }
-		return false;
+        return false;
     }
 
     void PointOnSphere::CalculateAnglesAndRadius()
     {
         Vector3 rn = point_ - center_;
         radius_ = Length(rn);
-		rn = Normalize(rn);
+        rn = Normalize(rn);
 
         //calculate phi in order to be in the given point
         float dy = rn.y;
@@ -139,44 +141,47 @@ namespace NSG
         float dx = rn.x;
         float dz = rn.z;
 
-		if (Abs(dx) < EPSILON)
-		{
-			if (dz < 0)
-				theta_ = -PI/2;
-			else
-				theta_ = PI / 2;
-		}
-		else
-		{
-			theta_ = atan(dz / dx);
+        if (Abs(dx) < EPSILON)
+        {
+            if (dz < 0)
+                theta_ = -PI / 2;
+            else
+                theta_ = PI / 2;
+        }
+        else
+        {
+            theta_ = atan(dz / dx);
 
-			if (dx < 0)
-				theta_ += PI;
-		}
+            if (dx < 0)
+                theta_ += PI;
+        }
 
-		//CHECK_ASSERT(Distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION);
+        //CHECK_ASSERT(Distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION);
     }
 
 
-    void PointOnSphere::CalculatePoint()
+    Vector3 PointOnSphere::CalculatePoint()
     {
         // Apply spherical coordinates
-		point_ = center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
+        return center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
     }
 
     void PointOnSphere::CalculateUpVector()
     {
         // Apply spherical coordinates
-		Vertex3 currentPoint(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
+        Vertex3 currentPoint(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
 
-		CHECK_ASSERT(Distance(center_ + radius_ * currentPoint, point_) < 9*PRECISION);
+        CHECK_ASSERT(Distance(center_ + radius_ * currentPoint, point_) < 9 * PRECISION);
 
         // Reduce phi slightly to obtain another point on the same longitude line on the sphere.
-        const float dt = 1;
-        Vertex3 newUpPoint(cos(theta_) * sin(phi_ - dt), cos(phi_ - dt), sin(theta_) * sin(phi_ - dt));
+        auto newPhi = phi_ - 1;
+        Vertex3 newUpPoint(cos(theta_) * sin(newPhi), cos(newPhi), sin(theta_) * sin(newPhi));
 
-		up_ = Normalize(newUpPoint - currentPoint);
+        up_ = Normalize(newUpPoint - currentPoint);
     }
 
-
+    Quaternion PointOnSphere::GetOrientation() const
+    {
+		return Rotation(Normalize(initialPoint_ - center_), Normalize(point_ - center_));
+    }
 }

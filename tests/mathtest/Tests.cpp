@@ -227,7 +227,12 @@ static void Test05()
 	auto pos = camera.GetViewProjection() * Vector4(-10, 0, 1, 1);
 	pos = camera.GetViewProjection() * Vector4(0, 0, 100, 1);
 	pos = camera.GetViewProjection() * Vector4(0, 0, 101, 1);
-	
+}
+
+static void Test06()
+{
+	auto q = Rotation(VECTOR3_UP, -VECTOR3_FORWARD);
+	CHECK_CONDITION(Distance(-VECTOR3_FORWARD, q * VECTOR3_UP) < PRECISION);
 }
 
 void Tests()
@@ -237,4 +242,5 @@ void Tests()
 	Test03();
 	Test04();
 	Test05();
+	Test06();
 }

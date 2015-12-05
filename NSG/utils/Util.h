@@ -106,4 +106,5 @@ namespace NSG
 	Vertex3 EulerAngles(const Quaternion& q);
 	Matrix4 GetSphericalBillboardMatrix(Matrix4 m);
 	Matrix4 GetCylindricalBillboardMatrix(Matrix4 m);
+	Quaternion Rotation(const Vector3& a, const Vector3& b);
 }

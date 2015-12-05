@@ -42,19 +42,19 @@ namespace NSG
     {
     }
 
-    void SphereMesh::Set(float radius, int res)
+    void SphereMesh::Set(float radius, int rings)
     {
-        if (radius_ != radius || res_ != res)
+        if (radius_ != radius || rings_ != rings)
         {
             radius_ = radius;
-            res_ = res;
+            rings_ = rings;
             Invalidate();
         }
     }
 
     GLenum SphereMesh::GetWireFrameDrawMode() const
     {
-        return GL_LINES;
+        return GL_LINE_STRIP;
     }
 
     GLenum SphereMesh::GetSolidDrawMode() const
@@ -71,86 +71,75 @@ namespace NSG
     {
         vertexsData_.clear();
         indexes_.clear();
-		indexesWireframe_.clear();
+        indexesWireframe_.clear();
 
         VertexsData& data = vertexsData_;
 
-        int doubleRes = res_ * 2;
-        float polarInc = PI / (res_); // ringAngle
-        float azimInc = TWO_PI / (doubleRes); // segAngle
+        int segments = rings_ * 2;
+        float ringInc = PI / rings_;
+        float segInc = TWO_PI / segments;
 
-        Vertex3 vert;
         Vertex2 tcoord;
 
-        for (float i = 0; i < res_ + 1; i++)
+        for (float ring = 0; ring < rings_ + 1; ring++)
         {
-            float tr = sin( PI - i * polarInc );
-            float ny = cos( PI - i * polarInc );
+			auto alpha = PI - ring * ringInc;
+			auto tr = sin(alpha);
+			auto ny = cos(alpha);
 
-            tcoord.y = i / res_;
+            tcoord.y = ring / rings_;
 
-            for (float j = 0; j <= doubleRes; j++)
+            for (float seg = 0; seg <= segments; seg++)
             {
+				auto beta = seg * segInc;
+                auto nx = tr * sin(beta);
+                auto nz = tr * cos(beta);
 
-                float nx = tr * sin(j * azimInc);
-                float nz = tr * cos(j * azimInc);
-
-                tcoord.x = j / (doubleRes);
+                tcoord.x = seg / segments;
 
                 VertexData vertexData;
                 vertexData.normal_ = Vertex3(nx, ny, nz);
                 vertexData.position_ = vertexData.normal_ * radius_;
-				vertexData.uv_[0] = tcoord;
+                vertexData.uv_[0] = tcoord;
 
                 data.push_back(vertexData);
             }
         }
 
-        int nr = doubleRes + 1;
+        int nr = segments + 1;
 
-        int index1, index2, index3;
+        int index0, index1, index2, index3;
 
         // Triangles
         // Front Face CCW
-        for (int iy = 0; iy < res_; iy++)
+        for (int ring = 0; ring < rings_; ring++)
         {
-            for (int ix = 0; ix < doubleRes; ix++)
+            for (int segment = 0; segment < segments; segment++)
             {
-                // first tri
-                if (iy > 0)
-                {
-                    index1 = (iy + 0) * (nr) + (ix + 0);
-                    index2 = (iy + 0) * (nr) + (ix + 1);
-                    index3 = (iy + 1) * (nr) + (ix + 0);
+				//	i2_____i3
+				//	| \		|
+				//	|	\	|
+				//	|	  \	|
+				//	i0_____i1
+				
+				index0 = nr * (ring + 0) + (segment + 0);
+				index1 = nr * (ring + 0) + (segment + 1);
+				index2 = nr * (ring + 1) + (segment + 0);
+				index3 = nr * (ring + 1) + (segment + 1);
 
-                    indexes_.push_back(index1);
-                    indexes_.push_back(index2);
-                    indexes_.push_back(index3);
+				indexesWireframe_.push_back(index2);
+				indexesWireframe_.push_back(index0);
+				indexesWireframe_.push_back(index1);
 
-					indexesWireframe_.push_back(index1);
-					indexesWireframe_.push_back(index2);
-					indexesWireframe_.push_back(index1);
-					indexesWireframe_.push_back(index3);
-                }
+                // first triangle
+                indexes_.push_back(index0);
+                indexes_.push_back(index1);
+                indexes_.push_back(index2);
 
-                if (iy < res_ - 1 )
-                {
-                    // second tri
-                    index1 = (iy + 0) * (nr) + (ix + 1);
-                    index2 = (iy + 1) * (nr) + (ix + 1);
-                    index3 = (iy + 1) * (nr) + (ix + 0);
-
-                    indexes_.push_back(index1);
-                    indexes_.push_back(index2);
-                    indexes_.push_back(index3);
-
-					/*
-					indexesWireframe_.push_back(index3);
-					indexesWireframe_.push_back(index2);
-					indexesWireframe_.push_back(index2);
-					indexesWireframe_.push_back(index1);
-					*/
-                }
+				// second triangle
+                indexes_.push_back(index1);
+                indexes_.push_back(index3);
+                indexes_.push_back(index2);
             }
         }
 

@@ -203,9 +203,6 @@ static void Test01()
 		CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
 		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
 	}
-
-
-
 }
 
 void Tests()

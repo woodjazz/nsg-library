@@ -52,7 +52,7 @@ namespace NSG
 		const BoundingBox& GetBB() const;
 		float GetBoundingSphereRadius() const;
         VertexBuffer* GetVertexBuffer() const { return pVBuffer_.get(); }
-		IndexBuffer* GetIndexBuffer(bool solid) const { return solid ? pIBuffer_.get() : pIWirefameBuffer_.get(); }
+		IndexBuffer* GetIndexBuffer(bool solid) const { return solid ? pIBuffer_.get() : pIWireBuffer_.get(); }
         const VertexsData& GetConstVertexsData() const { return vertexsData_; }
         const Indexes& GetConstIndexes() const { return indexes_; }
 		const VertexsData& GetVertexsData() const { return vertexsData_; }
@@ -91,7 +91,7 @@ namespace NSG
         Indexes indexesWireframe_; //for wireframe
         PVertexBuffer pVBuffer_;
         PIndexBuffer pIBuffer_; // for solid objects
-		PIndexBuffer pIWirefameBuffer_; // for wireframe
+		PIndexBuffer pIWireBuffer_; // for wireframe
         BoundingBox bb_;
         float boundingSphereRadius_;
         bool isStatic_;

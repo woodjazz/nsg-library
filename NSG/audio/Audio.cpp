@@ -38,13 +38,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	static bool isOpen = false;
+	static int isOpen = 0;
     void OpenAudio()
     {
         #ifdef SDL
-		if(!isOpen)
+		if(isOpen++ == 0)
         {
-			isOpen = true;
             if (SDL_InitSubSystem(SDL_INIT_AUDIO))
                 LOGE("SDL_INIT_AUDIO Error: %s", SDL_GetError());
 
@@ -61,11 +60,10 @@ namespace NSG
     void CloseAudio()
     {
         #ifdef SDL
-		if(isOpen)
+		if(--isOpen == 0)
         {
             Mix_CloseAudio();
             SDL_QuitSubSystem(SDL_INIT_AUDIO);
-			isOpen = false;
         }
         #endif
     }

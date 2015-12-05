@@ -58,6 +58,14 @@ static const char* TRANSFORMS_GLSL = \
 "			return m;\n"\
 "		}\n"\
 "	#endif	\n"\
+"	#if defined(CYLINDRICAL_Z_BILLBOARD)\n"\
+"		mat4 GetCylindricalBillboardMatrix(mat4 m)\n"\
+"		{\n"\
+"			m[0] = vec4(1.0, 0.0, 0.0, m[0][3]);\n"\
+"			m[1] = vec4(0.0, 1.0, 0.0, m[1][3]);\n"\
+"			return m;\n"\
+"		}\n"\
+"	#endif	\n"\
 "	#if defined(SKINNED)\n"\
 "		mat4 GetSkinnedMatrix()\n"\
 "		{\n"\
@@ -84,6 +92,8 @@ static const char* TRANSFORMS_GLSL = \
 "		#if defined(SPHERICAL_BILLBOARD)\n"\
 "		    return GetSphericalBillboardMatrix(u_view * GetModelMatrix());\n"\
 "		#elif defined(CYLINDRICAL_BILLBOARD)\n"\
+"		    return GetCylindricalBillboardMatrix(u_view * GetModelMatrix());\n"\
+"		#elif defined(CYLINDRICAL_Z_BILLBOARD)\n"\
 "		    return GetCylindricalBillboardMatrix(u_view * GetModelMatrix());\n"\
 "		#else\n"\
 "		    return u_view * GetModelMatrix();\n"\
@@ -299,16 +309,16 @@ static const char* TRANSFORMS_GLSL = \
 "			#if defined(DIFFUSEMAP0)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
 "				#if defined(USEALPHA)\n"\
-"					return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"					return vec4(diffuseMap.rgb, diffuseMap.a * u_material.diffuseColor.a);\n"\
 "				#else\n"\
-"					return vec4(diffuseMap.rgb, diffuseMap.r + diffuseMap.g + diffuseMap.b + u_material.diffuseColor.a);\n"\
+"					return vec4(diffuseMap.rgb, (diffuseMap.r + diffuseMap.g + diffuseMap.b) * u_material.diffuseColor.a);\n"\
 "				#endif\n"\
 "			#elif defined(DIFFUSEMAP1)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord1);\n"\
 "				#if defined(USEALPHA)\n"\
-"					return vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"					return vec4(diffuseMap.rgb, diffuseMap.a * u_material.diffuseColor.a);\n"\
 "				#else\n"\
-"					return vec4(diffuseMap.rgb, diffuseMap.r + diffuseMap.g + diffuseMap.b + u_material.diffuseColor.a);\n"\
+"					return vec4(diffuseMap.rgb, (diffuseMap.r + diffuseMap.g + diffuseMap.b) * u_material.diffuseColor.a);\n"\
 "				#endif\n"\
 "			#else\n"\
 "				return u_material.diffuseColor;\n"\
@@ -322,16 +332,16 @@ static const char* TRANSFORMS_GLSL = \
 "			#if defined(DIFFUSEMAP0)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord0);\n"\
 "				#if defined(USEALPHA)\n"\
-"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a * u_material.diffuseColor.a);\n"\
 "				#else\n"\
-"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.r + diffuseMap.g + diffuseMap.b + u_material.diffuseColor.a);\n"\
+"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, (diffuseMap.r + diffuseMap.g + diffuseMap.b) * u_material.diffuseColor.a);\n"\
 "				#endif\n"\
 "			#elif defined(DIFFUSEMAP1)\n"\
 "				vec4 diffuseMap = texture2D(u_texture0, v_texcoord1);\n"\
 "				#if defined(USEALPHA)\n"\
-"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a + u_material.diffuseColor.a);\n"\
+"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.a * u_material.diffuseColor.a);\n"\
 "				#else\n"\
-"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, diffuseMap.r + diffuseMap.g + diffuseMap.b + u_material.diffuseColor.a);\n"\
+"					return u_material.diffuseIntensity * vec4(diffuseMap.rgb, (diffuseMap.r + diffuseMap.g + diffuseMap.b) * u_material.diffuseColor.a);\n"\
 "				#endif\n"\
 "			#else\n"\
 "				return u_material.diffuseIntensity * u_material.diffuseColor;\n"\
@@ -341,18 +351,26 @@ static const char* TRANSFORMS_GLSL = \
 "		vec4 GetSpecularColor()\n"\
 "		{\n"\
 "	    #if defined(SPECULARMAP0)\n"\
-"	        vec4 specularMap = texture2D(u_texture2, v_texcoord0);\n"\
-"	        #if defined(USEALPHA)\n"\
-"	        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);\n"\
-"	        #else\n"\
-"	        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.r + specularMap.g + specularMap.b + u_material.specularColor.a);\n"\
+"			#if defined(SPECULARMAP_CHANNELS1)\n"\
+"	        	return vec4(u_material.specularIntensity * u_material.specularColor * texture2D(u_texture2, v_texcoord0).a);\n"\
+"			#else\n"\
+"		        vec4 specularMap = texture2D(u_texture2, v_texcoord0);\n"\
+"		        #if defined(USEALPHA)\n"\
+"		        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a * u_material.specularColor.a);\n"\
+"		        #else\n"\
+"		        	return u_material.specularIntensity * vec4(specularMap.rgb, (specularMap.r + specularMap.g + specularMap.b) * u_material.specularColor.a);\n"\
+"		        #endif\n"\
 "	        #endif\n"\
 "	    #elif defined(SPECULARMAP1)\n"\
-"	        vec4 specularMap = texture2D(u_texture2, v_texcoord1);\n"\
-"	        #if defined(USEALPHA)\n"\
-"	        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a + u_material.specularColor.a);\n"\
-"	        #else\n"\
-"	        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.r + specularMap.g + specularMap.b + u_material.specularColor.a);\n"\
+"			#if defined(SPECULARMAP_CHANNELS1)\n"\
+"	        	return vec4(u_material.specularIntensity * u_material.specularColor * texture2D(u_texture2, v_texcoord1).a);\n"\
+"			#else		        	\n"\
+"		        vec4 specularMap = texture2D(u_texture2, v_texcoord1);\n"\
+"		        #if defined(USEALPHA)\n"\
+"		        	return u_material.specularIntensity * vec4(specularMap.rgb, specularMap.a * u_material.specularColor.a);\n"\
+"		        #else\n"\
+"		        	return u_material.specularIntensity * vec4(specularMap.rgb, (specularMap.r + specularMap.g + specularMap.b) * u_material.specularColor.a);\n"\
+"		        #endif\n"\
 "	        #endif\n"\
 "	    #else\n"\
 "	        return u_material.specularIntensity * u_material.specularColor;\n"\

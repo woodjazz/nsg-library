@@ -56,7 +56,8 @@ namespace NSG
           inheritScale_(true),
           dirty_(true),
           hide_(false),
-          isScaleUniform_(true)
+          isScaleUniform_(true),
+          userData_(nullptr)
     {
     }
 
@@ -432,6 +433,7 @@ namespace NSG
         globalModelInvTransp_ = Transpose(Inverse(Matrix3(globalModel_)));
         lookAtDirection_ = globalOrientation_ * VECTOR3_LOOKAT_DIRECTION;
         upDirection_ = globalOrientation_ * VECTOR3_UP;
+		rightDirection_ = globalOrientation_ * VECTOR3_RIGHT;
         signalUpdated_->Run();
     }
 
@@ -477,6 +479,12 @@ namespace NSG
         Update();
         return upDirection_;
     }
+
+	const Vertex3& Node::GetRightDirection() const
+	{
+		Update();
+		return rightDirection_;
+	}
 
     bool Node::IsPointInsideBB(const Vertex3& point) const
     {

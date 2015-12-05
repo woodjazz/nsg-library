@@ -521,6 +521,7 @@ namespace NSG
                         case TextureType::SPEC:
                             if (!defaultPass)
                                 defines += "SPECULARMAP" + ToString(uvIndex) + "\n";
+                                defines += "SPECULARMAP_CHANNELS" + ToString(channels) + "\n";
                             break;
                         case TextureType::EMIT:
                             if (defaultPass)
@@ -555,6 +556,9 @@ namespace NSG
                 break;
             case BillboardType::CYLINDRICAL:
                 defines += "CYLINDRICAL_BILLBOARD\n";
+                break;
+            case BillboardType::CYLINDRICAL_Z:
+                defines += "CYLINDRICAL_Z_BILLBOARD\n";
                 break;
             default:
                 CHECK_ASSERT(!"Unknown billboard type!!!");

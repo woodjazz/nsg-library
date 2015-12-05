@@ -63,6 +63,9 @@ namespace NSG
     static const ColorRGB COLOR_BLUE(0, 0, 1);
     static const ColorRGB COLOR_YELLOW(1, 1, 0);
 	static const ColorRGB COLOR_DODGER_BLUE(30/255.f, 144/255.f, 1);
+	static const ColorRGB COLOR_DARK_ORANGE(1.f, 140 / 255.f, 0);
+	static const ColorRGB COLOR_PEACH_PUFF(1.f, 218 / 255.f, 185 / 255.f);
+	static const ColorRGB COLOR_SKY_BLUE(135 / 255.f, 206 / 255.f, 235 / 255.f);
 
     static const size_t MAX_NODES_IN_BATCH = 1000;
     static const float PRECISION = 0.01f;
@@ -82,4 +85,7 @@ namespace NSG
 	static const size_t MAX_BONES1 = 48;
 	static const size_t MAX_BONES2 = 32;
 	static const size_t MAX_BONES = MAX_BONES0;
+
+    static const float PHI = (1.f + sqrt(5.f)) * 0.5f; //golden ratio
+
 }

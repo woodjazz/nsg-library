@@ -32,7 +32,7 @@ namespace NSG
 	{
 	public:
 		SphereMesh(const std::string& name);
-		void Set(float radius = 1, int res = 8);
+		void Set(float radius = 1, int rings = 8);
 		~SphereMesh();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;
@@ -41,7 +41,7 @@ namespace NSG
         PhysicsShape GetShapeType() const override { return SH_SPHERE; }
 	private:
 		float radius_;
-		int res_;
+		int rings_;
 		friend class App;
 	};
 }

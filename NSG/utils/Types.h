@@ -572,7 +572,8 @@ namespace NSG
     {
         NONE,
         SPHERICAL,
-        CYLINDRICAL
+        CYLINDRICAL,
+        CYLINDRICAL_Z
     };
 
     enum class CubeMapFace
@@ -611,5 +612,11 @@ namespace NSG
     {
         DEFAULT,
         EDITOR
+    };
+
+    enum class WireShape
+    {
+        QUAD,
+        TRIANGLE
     };
 }

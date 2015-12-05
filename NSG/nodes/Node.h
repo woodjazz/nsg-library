@@ -77,6 +77,7 @@ namespace NSG
         void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
         const Vertex3& GetLookAtDirection() const;
         const Vertex3& GetUpDirection() const;
+		const Vertex3& GetRightDirection() const;
         void SetInheritScale(bool inherit);
         bool IsPointInsideBB(const Vertex3& point) const;
         PNode GetChild(size_t idx) const { return children_.at(idx); }
@@ -150,6 +151,8 @@ namespace NSG
         SignalEmpty::PSignal SigUpdated() { return signalUpdated_; }
         virtual void ShowGUIProperties(Editor* editor);
         void ShowGUIHierarchy(Editor* editor);
+        void SetUserData(void* p) { userData_ = p; }
+        void* GetUserData() const { return userData_; }
     protected:
         std::string name_;
         std::vector<PNode> children_;
@@ -174,10 +177,12 @@ namespace NSG
         mutable Vector3 globalScale_;
         mutable Vector3 lookAtDirection_;
         mutable Vector3 upDirection_;
+		mutable Vector3 rightDirection_;
         bool inheritScale_;
         mutable bool dirty_;
         bool hide_;
         mutable bool isScaleUniform_;
         Vector3 guiRotation_;
+        void* userData_;
     };
 }

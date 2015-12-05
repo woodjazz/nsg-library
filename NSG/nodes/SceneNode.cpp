@@ -167,6 +167,9 @@ namespace NSG
         auto scene = GetScene();
         if (scene)
             scene->NeedUpdate((SceneNode*)this);
+
+        if(rigidBody_ && rigidBody_->IsKinematic())
+            rigidBody_->SyncWithNode();
     }
 
     const BoundingBox& SceneNode::GetWorldBoundingBox() const

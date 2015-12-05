@@ -544,4 +544,9 @@ namespace NSG
         #endif
     }
     #endif
+
+    Quaternion Rotation(const Vector3& a, const Vector3& b)
+    {
+        return glm::rotation(a, b);
+    }
 }

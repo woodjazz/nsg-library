@@ -84,6 +84,7 @@ namespace NSG
 
     RigidBody::~RigidBody()
     {
+		Invalidate();
     }
 
     void RigidBody::SetMaterialPhysicsSlot()
@@ -532,6 +533,10 @@ namespace NSG
                 SetLinearVelocity(VECTOR3_ZERO);
                 SetAngularVelocity(VECTOR3_ZERO);
             }
+
+            if(kinematic_)
+                SyncWithNode();
+
             inWorld_ = true;
         }
     }

@@ -41,14 +41,15 @@ namespace NSG
 		void IncAngles(float incTheta, float incPhi);
 		void SetAngles(float theta, float phi);
 		const Vector3& GetPoint() const { return point_; }
-		const Vector3& GetUp() const { return up_; }
+		const Vector3& GetUp() const { return up_; } // world up vector
 		const Vertex3& GetCenter() const { return center_; }
 		float GetTheta() const { return theta_; }
 		float GetPhi() const { return phi_; }
 		float GetRadius() const { return radius_; }
+		Quaternion GetOrientation() const;
 	private:
-		void CalculatePoint();
-		void CalculateUpVector();
+		Vector3 CalculatePoint();
+		void CalculateUpVector(); // world up vector
 		void CalculateAnglesAndRadius();
 	private:
 		Vertex3 center_;
@@ -56,6 +57,7 @@ namespace NSG
 		float theta_;
 		float phi_;
 		Vertex3 point_; // point in the sphere's surface
+		Vertex3 initialPoint_;
 		Vector3 up_; //up vector for the camera
 	};
 }

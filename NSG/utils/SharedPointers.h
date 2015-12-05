@@ -245,11 +245,17 @@ namespace NSG
     class RectangleMesh;
     typedef std::shared_ptr<RectangleMesh> PRectangleMesh;
 
+    class TriangleMesh;
+    typedef std::shared_ptr<TriangleMesh> PTriangleMesh;
+
     class RoundedRectangleMesh;
     typedef std::shared_ptr<RoundedRectangleMesh> PRoundedRectangleMesh;
 
     class SphereMesh;
     typedef std::shared_ptr<SphereMesh> PSphereMesh;
+
+    class IcoSphereMesh;
+    typedef std::shared_ptr<IcoSphereMesh> PIcoSphereMesh;
 
     class ModelMesh;
     typedef std::shared_ptr<ModelMesh> PModelMesh;

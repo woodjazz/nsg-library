@@ -43,6 +43,7 @@ namespace NSG
         ~RigidBody();
 		void SetGravity(const Vector3& gravity);
         void SetKinematic(bool enable);
+        bool IsKinematic() const { return kinematic_; }
         void SetMass(float mass);
         void AddShape(PShape shape, const Vector3& position = VECTOR3_ZERO, const Quaternion& rotation = QUATERNION_IDENTITY);
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
