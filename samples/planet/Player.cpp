@@ -38,7 +38,7 @@ Player::Player(PScene scene)
 		explo_->Fire();
 	});
 
-    child_->SetPosition(Vector3(0, 0, 6));
+    child_->SetPosition(Vector3(0, 0, 3));
     child_->SetScale(0.25f);
     child_->SetMesh(Mesh::CreateClass<TriangleMesh>());
     auto material(Material::Create());

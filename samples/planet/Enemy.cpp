@@ -34,7 +34,7 @@ Enemy::Enemy(PScene scene)
     //node_->Pitch(-PI10);
     //node_->Yaw(PI/4.f);
     child_->SetScale(0.25f);
-	child_->SetPosition(Vector3(0, 0, 6));
+	child_->SetPosition(Vector3(0, 0, 3));
     child_->SetMesh(Mesh::CreateClass<TriangleMesh>());
     auto material(Material::Create());
     material->SetDiffuseColor(COLOR_RED);

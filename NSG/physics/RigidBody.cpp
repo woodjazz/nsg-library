@@ -1,4 +1,4 @@
-/*
+wchar_t/*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
