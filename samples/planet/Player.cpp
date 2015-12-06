@@ -33,6 +33,7 @@ Player::Player(PScene scene)
 {
 	slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
 	{
+        body_->HandleCollisions(false);
 		moveSlot_ = nullptr;
 		explo_->Fire();
 	});
@@ -69,6 +70,7 @@ Player::Player(PScene scene)
 
 Player::~Player()
 {
+    node_->SetParent(nullptr);
 }
 
 

@@ -52,12 +52,14 @@ Enemy::Enemy(PScene scene)
 
 	slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
 	{
+        body_->HandleCollisions(false);
 		explo_->Fire();
 	});
 }
 
 Enemy::~Enemy()
 {
+    node_->SetParent(nullptr);
 }
 
 void Enemy::SetPosition(float pitch, float yaw)
