@@ -172,7 +172,7 @@ namespace NSG
 
         if (Window::mainWindow_ == this)
         {
-            graphics_->ResetCachedState();
+            //graphics_->ResetCachedState();
             // destroy other windows
             auto windows = Window::GetWindows();
             for (auto& obj : windows)
