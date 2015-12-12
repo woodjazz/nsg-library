@@ -16,7 +16,7 @@ case "${TRAVIS_OS_NAME}" in
     sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
     sudo apt-get update -qq
     # GET LINUX BUILD DEPENDENCIES
-    sudo apt-get install xorg-dev
+    sudo apt-get install -q -y xorg-dev
     sudo apt-get install libglu1-mesa-dev
     sudo apt-get install -q -y --no-install-recommends libasound2-dev
     ;;
