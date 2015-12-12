@@ -12,8 +12,12 @@ case "${TRAVIS_OS_NAME}" in
     # GET LINUX BUILD DEPENDENCIES
     # sudo apt-get install -y libglu1-mesa-dev
     # sudo apt-get install -q -y --no-install-recommends libasound2-dev
+    sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe restricted multiverse"
+    sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    sudo apt-get update -qq
+    # GET LINUX BUILD DEPENDENCIES
     sudo apt-get install libglu1-mesa-dev
-    sudo apt-get install libxrandr-dev
+    sudo apt-get install -q -y --no-install-recommends libasound2-dev
     ;;
   osx)
     brew install Caskroom/cask/xquartz
