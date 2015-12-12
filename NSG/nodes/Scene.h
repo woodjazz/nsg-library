@@ -44,10 +44,8 @@ namespace NSG
         void SetHorizonColor(ColorRGB horizon);
         const ColorRGB& GetAmbientColor() const { return ambient_; }
         const ColorRGB& GetHorizonColor() const { return horizon_; }
-		void AddLight(Light* light);
-		const std::vector<Light*>& GetLights() const;
-        void AddCamera(Camera* camera);
-		void AddParticleSystem(ParticleSystem* ps);
+        const std::vector<Light*>& GetLights() const;
+        std::vector<Camera*> GetCameras() const;
         void UpdateAll(float deltaTime);
         void NeedUpdate(SceneNode* obj);
 		void GetVisibleNodes(const Camera* camera, std::vector<SceneNode*>& visibles) const;
@@ -59,8 +57,6 @@ namespace NSG
 		bool GetClosestRayNodeIntersection(const Ray& ray, RayNodeResult& closest) const;
 		bool GetVisibleBoundingBox(const Camera* camera, BoundingBox& bb) const;
         PPhysicsWorld GetPhysicsWorld() const { return physicsWorld_; }
-        void UpdateOctree(SceneNode* node);
-        void RemoveFromOctree(SceneNode* node);
 		SceneNode* GetClosestNode(const Camera* camera, float screenX, float screenY) const;
         SignalNodeMouseMoved::PSignal SigNodeMouseMoved() { return signalNodeMouseMoved_; }
         SignalNodeMouseButton::PSignal SigNodeMouseDown() { return signalNodeMouseDown_; }
@@ -68,7 +64,6 @@ namespace NSG
         SignalNodeMouseMoved::PSignal SigNodeMouseWheel() { return signalNodeMouseWheel_; }
         SignalUpdate::PSignal SigUpdate() { return signalUpdate_; }
         unsigned GetDrawablesNumber() const;
-        std::vector<Camera*> GetCameras() const;
 		PCamera GetMainCamera() const;
         void SetMainCamera(PCamera camera);
         const std::vector<SceneNode*>& GetDrawables() const;
@@ -82,9 +77,20 @@ namespace NSG
         float GetFogDepth() const;
         float GetFogHeight() const;
         void FillShaderDefines(std::string& defines, PassType passType) const;
+        PSceneNode CreateOverlay(const std::string& name);
+        PSceneNode GetOverlay(const std::string& name);
+        PSceneNode GetOrCreateOverlay(const std::string& name);
+        void RemoveOverlay(const std::string& name);
+		std::vector<SceneNode*> GetOverlays() const;
+		bool HasOverlays() const { return !overlays_.empty(); }
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void SavePhysics(pugi::xml_node& node) const;
+        void AddLight(Light* light);
+        void AddCamera(Camera* camera);
+        void AddParticleSystem(ParticleSystem* ps);
+        void UpdateOctree(SceneNode* node);
+        void RemoveFromOctree(SceneNode* node);
     private:
         void UpdateParticleSystems(float deltaTime);
     private:
@@ -116,5 +122,9 @@ namespace NSG
 		float fogStart_;
 		float fogDepth_;
 		float fogHeight_;
+		typedef std::map<std::string, PSceneNode> Overlays;
+        Overlays overlays_;
+        friend class Node;
+        friend class SceneNode;
     };
 }

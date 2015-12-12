@@ -30,11 +30,7 @@ struct GameObject : std::enable_shared_from_this<GameObject>
 {
 	GameObject();
 	virtual ~GameObject();
-	SignalEmpty::PSignal SigDestroyed() { return sigDestroyed_; }
-	static Signal<GameObject*>::PSignal SigOneDestroyed();
-
-private:
-	SignalEmpty::PSignal sigDestroyed_;
+	virtual void Destroyed() {};
 };
 
 typedef std::shared_ptr<GameObject> PGameObject;

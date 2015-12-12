@@ -233,7 +233,7 @@ namespace NSG
                 ++idx;
             }
 
-            if(closestIdx != -1)
+            if (closestIdx != -1)
             {
                 closest = results[closestIdx];
                 return true;
@@ -403,7 +403,7 @@ namespace NSG
     {
         if (mainCamera_)
         {
-			auto p = SharedFromPointerNode(mainCamera_);
+            auto p = SharedFromPointerNode(mainCamera_);
             return std::dynamic_pointer_cast<Camera>(p);
         }
         return nullptr;
@@ -497,5 +497,45 @@ namespace NSG
     {
         return fogHeight_;
     }
+
+    PSceneNode Scene::CreateOverlay(const std::string& name)
+    {
+        PSceneNode obj = std::make_shared<SceneNode>(name);
+        auto result = overlays_.insert(Overlays::value_type(name, obj));
+        if (!result.second)
+        {
+            LOGE("Overlay creation failed %s!!!", name.c_str());
+            return nullptr;
+        }
+        return obj;
+    }
+
+    PSceneNode Scene::GetOverlay(const std::string& name)
+    {
+        auto it = overlays_.find(name);
+        if (it != overlays_.end())
+            return it->second;
+        return nullptr;
+    }
+
+    PSceneNode Scene::GetOrCreateOverlay(const std::string& name)
+    {
+        auto obj = GetOverlay(name);
+        if(obj) return obj;
+        return CreateOverlay(name);
+    }
+
+    void Scene::RemoveOverlay(const std::string& name)
+    {
+        overlays_.erase(name);
+    }    
+
+	std::vector<SceneNode*> Scene::GetOverlays() const
+	{
+		std::vector<SceneNode*> result;
+		for (auto it : overlays_)
+			result.push_back(it.second.get());
+		return result;
+	}
 }
 

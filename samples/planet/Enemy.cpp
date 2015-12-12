@@ -25,6 +25,8 @@ misrepresented as being the original software.
 */
 #include "Enemy.h"
 #include "Explo.h"
+#include "Level.h"
+static unsigned s_total = 0;
 Enemy::Enemy(PScene scene)
     : node_(scene->CreateChild<SceneNode>()),
       child_(node_->CreateChild<SceneNode>()),
@@ -53,7 +55,7 @@ Enemy::Enemy(PScene scene)
 	slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
 	{
         body_->HandleCollisions(false);
-		explo_->Fire();
+		explo_->Start();
 	});
 }
 
@@ -68,5 +70,19 @@ void Enemy::SetPosition(float pitch, float yaw)
 	node_->Yaw(yaw);
 }
 
+void Enemy::SetTotal(unsigned total)
+{
+    s_total = total;
+}
 
+void Enemy::Destroyed()
+{
+    CHECK_ASSERT(s_total > 0);
+    auto level = Level::GetCurrent();
+    level->RemoveObject(this);
+    if (--s_total == 0)
+    {
+        Level::Load(level->GetIndex() + 1, Window::GetMainWindow()->shared_from_this());        
+    }
+}
 

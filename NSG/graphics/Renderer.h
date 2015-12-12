@@ -38,8 +38,6 @@ namespace NSG
 		void Render(Window* window, Scene* scene, Camera* camera);
 		void Render(Window* window, Scene* scene);
 		void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
-		void SortTransparentBackToFront();
-		void SortSolidFrontToBack();
 		void DrawShadowPass(Batch* batch, const Light* light, const ShadowCamera* camera);
 		void EnableDebugPhysics(bool enable) { debugPhysics_ = enable; }
 		PDebugRenderer GetDebugRenderer() const { return debugRenderer_; }
@@ -47,6 +45,9 @@ namespace NSG
 		RendererContext SetContext(RendererContext context);
 		RendererContext GetContext() const { return context_; }
 	private:
+		void SortTransparentBackToFront();
+		void SortSolidFrontToBack();
+		void SortOverlaysBackToFront();
 		void Draw(Batch* batch, const Pass* pass, const Light* light, const Camera* camera);
 		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
 		void GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters);
@@ -58,6 +59,7 @@ namespace NSG
     	void DefaultOpaquePass();
 	    void LitOpaquePass();
     	void DefaultTransparentPass();
+    	void OverlaysPass();
 	    void LitTransparentPass();
 	    void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
 	    void DebugPhysicsPass();
@@ -78,5 +80,7 @@ namespace NSG
 		PMaterial debugMaterial_;
 		PDebugRenderer debugRenderer_;
 		RendererContext context_;
+		std::vector<SceneNode*> overlays_;
+		PCamera overlaysCamera_;
 	};
 }

@@ -43,6 +43,12 @@ LevelOver::LevelOver(PWindow window)
     loadingMaterial->SetTextMap(atlasTexture);
     loadingNode->SetMaterial(loadingMaterial);
 	window->SetScene(scene_.get());
+
+    slotKey_ = window->SigKey()->Connect([&](int key, int action, int modifier)
+    {
+        Level::Load(0, window_);
+    });
+
 }
 
 LevelOver::~LevelOver()

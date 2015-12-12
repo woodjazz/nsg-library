@@ -38,22 +38,10 @@ Level0::Level0(PWindow window)
     AddObject(std::make_shared<Sun>(scene_));
     player_ = std::make_shared<Player>(scene_);
 	enemy_ = std::make_shared<Enemy>(scene_);
+	Enemy::SetTotal(1);
 	enemy_->SetPosition(-PI10, 0);
     camera_ = player_->GetCameraNode()->CreateChild<Camera>();
     camera_->SetPosition(Vertex3(0, 0, 10));
-
-	slotPlayerDestroyed_ = player_->SigDestroyed()->Connect([&]()
-	{
-		camera_->SetParent(nullptr);
-		player_ = nullptr;
-		SigFailed()->Run();
-	});
-
-	slotEnemyDestroyed_ = enemy_->SigDestroyed()->Connect([&]()
-	{
-		SigNextLevel()->Run();
-	});
-
 	window->SetScene(scene_.get());
 }
 

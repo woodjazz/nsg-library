@@ -55,7 +55,7 @@ namespace NSG
         RayOctreeQuery(std::vector<SceneNode*>& result, const Ray& ray);
         virtual Intersection TestOctant(const BoundingBox& box, bool inside) override;
         virtual void Test(const std::vector<SceneNode*>& objs, bool inside) override;
-
+    private:
         Ray ray_;
     };
 

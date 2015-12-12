@@ -34,6 +34,7 @@ public:
 	Player(PScene scene);
 	~Player();
 	PNode GetCameraNode() const { return node_; }
+	void Destroyed() override;
 private:
 	PNode node_;
 	PSceneNode child_;
@@ -42,5 +43,4 @@ private:
 	PRigidBody body_;
 	SignalCollision::PSlot slotCollision_;
 	shared_ptr<Explo> explo_;
-	static Signal<Player*> sigDestroyed_;
 };

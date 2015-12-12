@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "GameObject.h"
 
 GameObject::GameObject()
-: sigDestroyed_(new SignalEmpty())
 {
 }
 
@@ -34,8 +33,3 @@ GameObject::~GameObject()
 {
 }
 
-Signal<GameObject*>::PSignal GameObject::SigOneDestroyed()
-{
-	static auto sigDestroyed = std::make_shared<Signal<GameObject*>>();
-	return sigDestroyed;
-}

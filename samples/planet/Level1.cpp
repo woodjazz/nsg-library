@@ -30,8 +30,7 @@ misrepresented as being the original software.
 #include "Player.h"
 
 Level1::Level1(PWindow window)
-	: Level(window),
-	totalEnemies_(0)
+	: Level(window)
 {
 	scene_ = std::make_shared<Scene>("Level1");
 	scene_->SetAmbientColor(ColorRGB(0.1f));
@@ -44,30 +43,10 @@ Level1::Level1(PWindow window)
 	enemy1->SetPosition(PI10, 0);
 	AddObject(enemy0);
 	AddObject(enemy1);
-	totalEnemies_ = 2;
+	Enemy::SetTotal(2);
 	camera_ = player_->GetCameraNode()->CreateChild<Camera>();
 	camera_->SetPosition(Vertex3(0, 0, 10));
-
-	slotPlayerDestroyed_ = player_->SigDestroyed()->Connect([this]()
-	{
-		camera_->SetParent(nullptr);
-		player_ = std::make_shared<Player>(scene_);
-		camera_->SetParent(player_->GetCameraNode());
-		SigFailed()->Run();
-	});
-
-	slotEnemyDestroyed_ = GameObject::SigOneDestroyed()->Connect([this](GameObject* obj)
-	{
-		if (dynamic_cast<Enemy*>(obj) != nullptr)
-		{
-			RemoveObject(obj);
-			if (--totalEnemies_ == 0)
-				SigNextLevel()->Run();
-		}
-	});
-
 	window->SetScene(scene_.get());
-
 }
 
 Level1::~Level1()

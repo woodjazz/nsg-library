@@ -41,7 +41,7 @@ For chrome you will need a HTTP server. For instance: python -m SimpleHTTPServer
 -------------------------
 Windows
 -------------------------
-Install Visual Studio 2013
+Install Visual Studio
 
 -------------------------
 OSX/IOS

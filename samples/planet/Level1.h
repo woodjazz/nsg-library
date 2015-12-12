@@ -40,7 +40,4 @@ private:
 	PScene scene_;
 	PCamera camera_;
 	std::shared_ptr<Player> player_;
-	SignalEmpty::PSlot slotPlayerDestroyed_;
-	Signal<GameObject*>::PSlot slotEnemyDestroyed_;
-	int totalEnemies_;
 };

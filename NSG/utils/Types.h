@@ -46,6 +46,7 @@ misrepresented as being the original software.
 #include <string>
 #include <chrono>
 #include <set>
+#include <map>
 
 #define STRINGIFY(S) #S
 

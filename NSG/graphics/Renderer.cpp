@@ -57,7 +57,8 @@ namespace NSG
           debugPhysics_(false),
           debugMaterial_(Material::Create("NSGDebugMaterial")),
           debugRenderer_(std::make_shared<DebugRenderer>()),
-          context_(RendererContext::DEFAULT)
+          context_(RendererContext::DEFAULT),
+          overlaysCamera_(std::make_shared<Camera>("NSGOverlays"))
     {
 
         debugMaterial_->SetSerializable(false);
@@ -86,6 +87,11 @@ namespace NSG
 
         debugMaterial_->SetRenderPass(RenderPass::VERTEXCOLOR);
         debugMaterial_->SetFillMode(FillMode::WIREFRAME);
+
+        overlaysCamera_->EnableOrtho();
+		overlaysCamera_->SetNearClip(-1000);
+		overlaysCamera_->SetFarClip(1000);
+        overlaysCamera_->UnRegisterWindow();
     }
 
     Renderer::~Renderer()
@@ -137,6 +143,18 @@ namespace NSG
             return db < da;
         });
     }
+
+	void Renderer::SortOverlaysBackToFront()
+	{
+		Vector3 cameraPos(overlaysCamera_->GetGlobalPosition());
+		std::sort(transparent_.begin(), transparent_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+		{
+			auto da = Distance2(a->GetGlobalPosition(), cameraPos);
+			auto db = Distance2(b->GetGlobalPosition(), cameraPos);
+			return db < da;
+		});
+	}
+
 
     void Renderer::SortSolidFrontToBack()
     {
@@ -298,6 +316,21 @@ namespace NSG
         }
     }
 
+    void Renderer::OverlaysPass()
+    {
+        // Overlays nodes cannot be batched
+        for (auto sceneNode : overlays_)
+        {
+            auto material = sceneNode->GetMaterial().get();
+            if (material)
+            {
+                graphics_->SetMesh(sceneNode->GetMesh().get());
+                if (graphics_->SetupProgram(defaultTransparentPass_.get(), scene_, overlaysCamera_.get(), sceneNode, material, nullptr))
+                    graphics_->DrawActiveMesh();
+            }
+        }
+    }
+
     void Renderer::LitTransparentPass()
     {
         // Transparent nodes cannot be batched
@@ -374,47 +407,57 @@ namespace NSG
         camera_ = camera;
         graphics_->SetWindow(window);
         graphics_->ClearAllBuffers();
-        if (scene && scene->GetDrawablesNumber())
+        if (scene)
         {
-            if (camera_)
+            if (scene->GetDrawablesNumber())
             {
-                scene->GetVisibleNodes(camera_, visibles_);
-                graphics_->SetClearColor(Color(1));
-                ShadowGenerationPass();
-            }
-            else
-                visibles_ = scene->GetDrawables();
-            if (!visibles_.empty())
-            {
-                graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1));
-                ExtractTransparent();
+                if (camera_)
+                {
+                    scene->GetVisibleNodes(camera_, visibles_);
+                    graphics_->SetClearColor(Color(1));
+                    ShadowGenerationPass();
+                }
+                else
+                    visibles_ = scene->GetDrawables();
                 if (!visibles_.empty())
                 {
-                    SortSolidFrontToBack();
-                    DefaultOpaquePass();
-                    LitOpaquePass();
+                    graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1)); // will have effect in the next frame (when ClearAllBuffers is called)
+                    ExtractTransparent();
+                    if (!visibles_.empty())
+                    {
+                        SortSolidFrontToBack();
+                        DefaultOpaquePass();
+                        LitOpaquePass();
+                    }
+                    if (!transparent_.empty())
+                    {
+                        SortTransparentBackToFront();
+                        DefaultTransparentPass();
+                        LitTransparentPass();
+                    }
+
+                    if (window)
+                        window->RenderFilters();
+
+                    if (debugPhysics_)
+                        DebugPhysicsPass();
+
+                    DebugRendererPass();
+
+                    for (auto& obj : visibles_)
+                        obj->ClearUniform();
+
+                    for (auto& obj : transparent_)
+                        obj->ClearUniform();
                 }
-                if (!transparent_.empty())
-                {
-                    SortTransparentBackToFront();
-                    DefaultTransparentPass();
-                    LitTransparentPass();
-                }
-
-                if (window)
-                    window->RenderFilters();
-
-                if (debugPhysics_)
-                    DebugPhysicsPass();
-
-                DebugRendererPass();
-
-                for (auto& obj : visibles_)
-                    obj->ClearUniform();
-
-                for (auto& obj : transparent_)
-                    obj->ClearUniform();
             }
+
+			if(scene->HasOverlays())
+			{
+				overlays_ = scene->GetOverlays();
+				SortOverlaysBackToFront();
+				OverlaysPass();
+			}
         }
     }
 

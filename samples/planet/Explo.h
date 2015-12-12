@@ -31,7 +31,7 @@ class Explo
 public:
 	Explo(PSceneNode node);
 	~Explo();
-	void Fire();
+	void Start();
 private:
 	SignalUpdate::PSlot slotUpdate_;
 	float totalTime_;
@@ -41,5 +41,4 @@ private:
 	PTexture2D texture_;
 	PSceneNode sprite_;
 	PSound sound_;
-	bool start_;
 };

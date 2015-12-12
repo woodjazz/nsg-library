@@ -30,8 +30,9 @@ using namespace NSG;
 class LevelOver : public Level
 {
 public:
-	LevelOver(PWindow window);
-	~LevelOver();
+    LevelOver(PWindow window);
+    ~LevelOver();
 private:
-	PScene scene_;
+    PScene scene_;
+    SignalKey::PSlot slotKey_;
 };

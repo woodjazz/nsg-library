@@ -25,6 +25,15 @@ misrepresented as being the original software.
 */
 #include "Player.h"
 #include "Explo.h"
+#include "Level.h"
+
+static unsigned s_lives = 3;
+
+static std::string GetOverlayName(int life)
+{
+	return "Life" + ToString(life);
+}
+
 Player::Player(PScene scene)
     : node_(scene->CreateChild<SceneNode>()),
       child_(node_->CreateChild<SceneNode>()),
@@ -34,13 +43,13 @@ Player::Player(PScene scene)
 	slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
 	{
         body_->HandleCollisions(false);
-		moveSlot_ = nullptr;
-		explo_->Fire();
+		explo_->Start();
 	});
 
     child_->SetPosition(Vector3(0, 0, 3));
     child_->SetScale(0.25f);
-    child_->SetMesh(Mesh::CreateClass<TriangleMesh>());
+	auto mesh = Mesh::GetOrCreate<TriangleMesh>("PlayerMesh");
+    child_->SetMesh(mesh);
     auto material(Material::Create());
     //material->SetFillMode(FillMode::WIREFRAME);
     material->SetDiffuseColor(COLOR_DODGER_BLUE);
@@ -49,7 +58,7 @@ Player::Player(PScene scene)
 
     moveSlot_ = control_.SigMoved()->Connect([this](float x, float y)
     {
-        if (x || y)
+        if (!child_->IsHidden() && (x || y))
         {
             auto dt = Engine::GetPtr()->GetDeltaTime();
             child_->Roll(-x * dt);
@@ -66,6 +75,17 @@ Player::Player(PScene scene)
 	auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, VECTOR3_ONE));
 	body_->AddShape(shape);
 	shape->SetBB(child_->GetWorldBoundingBox());
+
+	for (auto i = 0; i < s_lives; i++)
+	{
+		auto overlay = scene->CreateOverlay(GetOverlayName(i));
+		overlay->SetMaterial(material);
+		overlay->SetMesh(mesh);
+		overlay->SetScale(0.1f);
+		auto bb = overlay->GetWorldBoundingBox();
+		auto size = bb.Size();
+		overlay->SetPosition(Vector3(-1 + size.x/2.f + i * size.x * 1.1f, 1 - size.y, 0));
+	}
 }
 
 Player::~Player()
@@ -73,4 +93,18 @@ Player::~Player()
     node_->SetParent(nullptr);
 }
 
-
+void Player::Destroyed()
+{
+    CHECK_ASSERT(s_lives > 0);
+    if (--s_lives == 0)
+    {
+        s_lives = 3;
+        Level::Load(2, Window::GetMainWindow()->shared_from_this());
+    }
+	else
+	{
+		node_->GetScene()->RemoveOverlay(GetOverlayName(s_lives));
+		child_->Hide(false);
+		body_->HandleCollisions(true);
+	}
+}

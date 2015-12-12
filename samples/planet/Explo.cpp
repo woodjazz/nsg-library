@@ -29,10 +29,11 @@ misrepresented as being the original software.
 static std::random_device rd;
 static std::mt19937 mt(rd());
 static std::uniform_real_distribution<float> dist(0.0, TWO_PI);
+static const auto TEX_SIZE = 1 / 7.f;
+
 Explo::Explo(PSceneNode node)
 	: totalTime_(0),
-	alpha_(1),
-    start_(false)
+	alpha_(1)
 {
     auto mesh = Mesh::GetOrCreate<QuadMesh>("QuadMesh");
 	material_ = Material::Create();
@@ -46,44 +47,8 @@ Explo::Explo(PSceneNode node)
     sprite_->Hide(true);
 	sprite_->SetMesh(mesh);
 	sprite_->SetMaterial(material_);
-	static const auto texSize = 1 / 7.f;
-    uvTransform_ = Vector4(texSize, texSize, 0, 0);
+    uvTransform_ = Vector4(TEX_SIZE, TEX_SIZE, 0, 0);
 	texture_->SetUVTransform(uvTransform_);
-    slotUpdate_ = Engine::GetPtr()->SigUpdate()->Connect([this](float deltaTime)
-    {
-        if(!start_)
-            return;
-
-		const auto fps = 1 / 24.f;
-        if (totalTime_ > fps)
-        {
-            totalTime_ = 0;
-            if (uvTransform_.z >= 1)
-            {
-                uvTransform_.z = 0;
-                uvTransform_.w += texSize;
-                if (uvTransform_.w >= 1)
-                {
-					auto obj = static_cast<GameObject*>(sprite_->GetParent()->GetUserData());
-					auto p = obj->shared_from_this();
-					if (p.use_count() > 1)
-					{
-						p->SigDestroyed()->Run();
-						if (p.use_count() > 1)
-							GameObject::SigOneDestroyed()->Run(obj);
-					}
-					return;
-                }
-            }
-			texture_->SetUVTransform(uvTransform_);
-            uvTransform_.z += texSize;
-            if (uvTransform_.w >= 0.95f-texSize)
-                alpha_ -= texSize;
-            material_->SetAlpha(alpha_);
-        }
-        else
-            totalTime_ += deltaTime;
-    });
 	sound_ = Sound::Create();
 	sound_->Set(Resource::GetOrCreate<ResourceFile>("data/explo.wav"));
 	sound_->TryReady();
@@ -94,10 +59,42 @@ Explo::~Explo()
 
 }
 
-void Explo::Fire()
+void Explo::Start()
 {
+    if(slotUpdate_)
+        return;
+    
     sprite_->GetParent()->Hide(true, false);
     sprite_->Hide(false);
-    start_ = true;
+
+    slotUpdate_ = Engine::GetPtr()->SigUpdate()->Connect([this](float deltaTime)
+    {
+        const auto fps = 1 / 24.f;
+        if (totalTime_ > fps)
+        {
+            totalTime_ = 0;
+            if (uvTransform_.z >= 1)
+            {
+                uvTransform_.z = 0;
+                uvTransform_.w += TEX_SIZE;
+                if (uvTransform_.w >= 1)
+                {
+                    auto obj = static_cast<GameObject*>(sprite_->GetParent()->GetUserData());
+                    auto p = obj->shared_from_this();
+					p->Destroyed();
+                    slotUpdate_ = nullptr;
+                    return;
+                }
+            }
+            texture_->SetUVTransform(uvTransform_);
+            uvTransform_.z += TEX_SIZE;
+            if (uvTransform_.w >= 0.95f-TEX_SIZE)
+                alpha_ -= TEX_SIZE;
+            material_->SetAlpha(alpha_);
+        }
+        else
+            totalTime_ += deltaTime;
+    });
+
     sound_->Play();
 }

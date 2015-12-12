@@ -34,10 +34,13 @@ public:
 	Enemy(PScene scene);
 	~Enemy();
 	void SetPosition(float pitch, float yaw);
+	static void SetTotal(unsigned total);
+	void Destroyed() override;
 private:
 	PNode node_;
 	PSceneNode child_;
 	PRigidBody body_;
 	SignalCollision::PSlot slotCollision_;
 	shared_ptr<Explo> explo_;
+	SignalEmpty::PSlot slotDestroyed_;
 };

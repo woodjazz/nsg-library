@@ -32,24 +32,18 @@ using namespace NSG;
 class Level
 {
 public:
-	static std::shared_ptr<Level> currentLevel_;
-	static int lives_;
     static void Load(int idx, PWindow window);
-    SignalEmpty::PSignal SigFailed() { return sigFailed_; }
-	SignalEmpty::PSignal SigNextLevel() { return sigNextLevel_; }
     int GetIndex() const { return levelIndex_; }
+    static std::shared_ptr<Level> GetCurrent() { return currentLevel_; }
+	void RemoveObject(GameObject* object);
 protected:
     Level(PWindow window);
     virtual ~Level();
     void AddObject(PGameObject object);
-    void RemoveObject(GameObject* object);
 	PWindow window_;
 private:
 	void SetIndex(int idx) { levelIndex_ = idx; }
     std::map<GameObject*, PGameObject> objects_;
-    SignalEmpty::PSignal sigFailed_;
-    SignalEmpty::PSignal sigNextLevel_;
     int levelIndex_;
-	SignalEmpty::PSlot slotNext_;
-	SignalEmpty::PSlot slotOver_;
+    static std::shared_ptr<Level> currentLevel_;
 };

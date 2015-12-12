@@ -60,7 +60,7 @@ LevelResources::LevelResources(PWindow window, std::vector<const char*> resource
         else
         {
             slotDrawGUI_ = nullptr;
-            SigNextLevel()->Run();
+			Level::Load(GetIndex() + 1, window_);
         }
     });
 
@@ -80,7 +80,7 @@ LevelResources::LevelResources(PWindow window, std::vector<const char*> resource
             if (resources_.size() == n)
             {
                 slotUpdate_ = nullptr;
-                SigNextLevel()->Run();
+				Level::Load(GetIndex() + 1, window_);
             }
         }
     });

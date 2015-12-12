@@ -30,27 +30,11 @@ misrepresented as being the original software.
 #include "LevelResources.h"
 
 std::shared_ptr<Level> Level::currentLevel_;
-int Level::lives_ = 3;
 
 Level::Level(PWindow window)
     : window_(window),
-      sigFailed_(new SignalEmpty()),
-      sigNextLevel_(new SignalEmpty()),
       levelIndex_(0)
 {
-    slotNext_ = SigNextLevel()->Connect([&]()
-    {
-        Level::Load(levelIndex_ + 1, window_);
-    });
-
-    slotOver_ = SigFailed()->Connect([&]()
-    {
-        if (--Level::lives_ == 0)
-        {
-            Level::lives_ = 3;
-            Level::Load(2, window_);
-        }
-    });
 }
 
 Level::~Level()

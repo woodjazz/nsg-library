@@ -39,6 +39,5 @@ private:
     PCamera camera_;
     std::shared_ptr<Player> player_;
 	std::shared_ptr<Enemy> enemy_;
-	SignalEmpty::PSlot slotPlayerDestroyed_;
 	SignalEmpty::PSlot slotEnemyDestroyed_;
 };
