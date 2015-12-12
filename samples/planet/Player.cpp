@@ -68,6 +68,21 @@ Player::Player(PScene scene)
         }
     });
 
+    moveLeftStickSlot_ = control_.SigLeftStickMoved()->Connect([this](float x, float y)
+    {
+        if (!child_->IsHidden() && (x || y))
+        {
+            auto angle = Angle(VECTOR3_UP, Normalize(Vector3(x, y, 0)));
+            if(x > 0)
+                angle *= -1;
+            child_->SetOrientation(AngleAxis(angle, VECTOR3_FORWARD));
+            auto dt = Engine::GetPtr()->GetDeltaTime();
+            auto dir = dt * (child_->GetOrientation() * VECTOR3_UP);
+            node_->Pitch(-dir.y);
+            node_->Yaw(dir.x);
+        }
+    });
+
     child_->SetUserData(this);
 
 	body_->SetKinematic(true);

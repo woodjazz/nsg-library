@@ -40,6 +40,7 @@ private:
 	PSceneNode child_;
 	PlayerControl control_;
 	SignalFloatFloat::PSlot moveSlot_;
+	SignalFloatFloat::PSlot moveLeftStickSlot_;
 	PRigidBody body_;
 	SignalCollision::PSlot slotCollision_;
 	shared_ptr<Explo> explo_;

@@ -35,6 +35,7 @@ namespace NSG
         ~PlayerControl();
         void SetWindow(Window* window);
 		SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
+        SignalFloatFloat::PSignal SigLeftStickMoved() { return signalLeftStickMoved_; }        
         SignalBool::PSignal SigButtonA() { return signalButtonA_; }
     private:
         void OnKey(int key, int action, int modifier);
@@ -46,6 +47,7 @@ namespace NSG
         void OnUpdate(float deltaTime);
 
         SignalFloatFloat::PSignal signalMoved_;
+        SignalFloatFloat::PSignal signalLeftStickMoved_;
         SignalBool::PSignal signalButtonA_;
         SignalFloatFloat::PSlot slotMouseMoved_;
         SignalMouseButton::PSlot slotMouseDown_;

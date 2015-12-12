@@ -33,6 +33,7 @@ namespace NSG
 {
     PlayerControl::PlayerControl()
         : signalMoved_(new SignalFloatFloat),
+          signalLeftStickMoved_(new SignalFloatFloat),
           signalButtonA_(new SignalBool),
           window_(nullptr),
           leftHorizontalAxis_(0),
@@ -43,7 +44,7 @@ namespace NSG
           backward_(false)
     {
         auto graphics = Graphics::GetPtr();
-        if(graphics)
+        if (graphics)
             SetWindow(graphics->GetWindow());
         slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
         {
@@ -173,10 +174,7 @@ namespace NSG
         {
             leftHorizontalAxis_ = Clamp(leftHorizontalAxis_, -1.f, 1.f);
             leftVerticalAxis_ = Clamp(leftVerticalAxis_, -1.f, 1.f);
-            if (leftHorizontalAxis_ || leftVerticalAxis_)
-                signalMoved_->Run(leftHorizontalAxis_, leftVerticalAxis_);
-            else
-                signalMoved_->Run(0, 0);
+            signalLeftStickMoved_->Run(leftHorizontalAxis_, leftVerticalAxis_);
         }
     }
 

@@ -13,6 +13,7 @@ addons:
 language:
 - cpp
 sudo: required
+dist: trusty
 os:
 - linux
 - osx
