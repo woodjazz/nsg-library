@@ -40,11 +40,14 @@ namespace NSG
         void SwapWindowBuffers() override;
         void Destroy() override;
         static void HandleEvents();
-		void EnterBackground() override;
-		void EnterForeground() override;
-		void RestoreContext();
+        void EnterBackground() override;
+        void EnterForeground() override;
+        void RestoreContext();
     private:
-		void SetContext() override;
+        #if defined(EMSCRIPTEN)
+        static void HandleGamepad();
+        #endif
+        void SetContext() override;
         void Show() override;
         void Hide() override;
         void Raise() override;
@@ -67,7 +70,7 @@ namespace NSG
             void* joystick_;
             void* pad_;
             int instanceID_;
-            JoystickState() : deviceIndex(-1), joystick_(nullptr), pad_(nullptr), instanceID_(-1){}; 
+            JoystickState() : deviceIndex(-1), joystick_(nullptr), pad_(nullptr), instanceID_(-1) {};
         };
         std::map<int, JoystickState> joysticks_;
         int flags_;

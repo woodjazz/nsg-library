@@ -52,3 +52,4 @@ cmake $SOURCE_FOLDER -G "Unix Makefiles" -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYP
 
 echo "*** BUILDING $2 ***"
 make $2
+python -m SimpleHTTPServer 8000

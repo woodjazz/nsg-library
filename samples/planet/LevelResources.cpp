@@ -72,6 +72,7 @@ LevelResources::LevelResources(PWindow window, std::vector<const char*> resource
             auto idx = resources_.size();
             auto name = resourceNames_.at(idx);
             auto resource = Resource::GetOrCreateClass<ResourceFile>(name);
+            resource_ = resource;
             if (!resource->IsReady())
                 break;
             resources_.push_back(resource);

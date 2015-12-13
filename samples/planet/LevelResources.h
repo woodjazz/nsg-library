@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "NSG.h"
 #include "Level.h"
 #include <vector>
+#include <set>
 using namespace NSG;
 class LevelResources : public Level
 {
@@ -37,6 +38,7 @@ private:
 	SignalUpdate::PSlot slotUpdate_;
 	std::vector<const char*> resourceNames_;
 	static std::vector<PResource> resources_;
+	PResourceFile resource_;
 	SignalEmpty::PSlot slotDrawGUI_;
 	unsigned percentage_;
 	bool loaded_;

@@ -67,7 +67,7 @@ namespace NSG
             window->ViewChanged(keyEvent->windowInnerWidth, keyEvent->windowInnerHeight);
         return false;
     }
-    static EM_BOOL EmscripteGamepadCallback(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+    static EM_BOOL EmscripteGamepadCallback(int eventType, const EmscriptenGamepadEvent* gamepadEvent, void* userData)
     {
         return false;
     }
@@ -328,37 +328,37 @@ namespace NSG
 
         SetSize(width, height);
 
-		if (isMainWindow_)
-		{
-			int value = 0;
-			SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
-			LOGI("CONTEXT_MAJOR_VERSION=%d", value);
-			CHECK_ASSERT(value >= CONTEXT_MAJOR_VERSION);
-			SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
-			LOGI("GL_CONTEXT_MINOR_VERSION=%d", value);
-			CHECK_ASSERT(value >= CONTEXT_MINOR_VERSION);
-			SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
-			LOGI("GL_DOUBLEBUFFER=%d", value);
-			CHECK_ASSERT(value == DOUBLE_BUFFER);
-			SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
-			LOGI("GL_DEPTH_SIZE=%d", value);
-			CHECK_ASSERT(value >= MIN_DEPTH_SIZE && value <= MAX_DEPTH_SIZE);
-			SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
-			LOGI("GL_RED_SIZE=%d", value);
-			CHECK_ASSERT(value == RED_SIZE);
-			SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
-			LOGI("GL_GREEN_SIZE=%d", value);
-			CHECK_ASSERT(value == GREEN_SIZE);
-			SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
-			LOGI("GL_BLUE_SIZE=%d", value);
-			CHECK_ASSERT(value == BLUE_SIZE);
-			SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &value);
-			LOGI("GL_ALPHA_SIZE=%d", value);
-			CHECK_ASSERT(value == ALPHA_SIZE);
-			SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
-			LOGI("GL_STENCIL_SIZE=%d", value);
-			CHECK_ASSERT(value == STENCIL_SIZE);
-		}
+        if (isMainWindow_)
+        {
+            int value = 0;
+            SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
+            LOGI("CONTEXT_MAJOR_VERSION=%d", value);
+            CHECK_ASSERT(value >= CONTEXT_MAJOR_VERSION);
+            SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
+            LOGI("GL_CONTEXT_MINOR_VERSION=%d", value);
+            CHECK_ASSERT(value >= CONTEXT_MINOR_VERSION);
+            SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &value);
+            LOGI("GL_DOUBLEBUFFER=%d", value);
+            CHECK_ASSERT(value == DOUBLE_BUFFER);
+            SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
+            LOGI("GL_DEPTH_SIZE=%d", value);
+            CHECK_ASSERT(value >= MIN_DEPTH_SIZE && value <= MAX_DEPTH_SIZE);
+            SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
+            LOGI("GL_RED_SIZE=%d", value);
+            CHECK_ASSERT(value == RED_SIZE);
+            SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
+            LOGI("GL_GREEN_SIZE=%d", value);
+            CHECK_ASSERT(value == GREEN_SIZE);
+            SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
+            LOGI("GL_BLUE_SIZE=%d", value);
+            CHECK_ASSERT(value == BLUE_SIZE);
+            SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &value);
+            LOGI("GL_ALPHA_SIZE=%d", value);
+            CHECK_ASSERT(value == ALPHA_SIZE);
+            SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &value);
+            LOGI("GL_STENCIL_SIZE=%d", value);
+            CHECK_ASSERT(value == STENCIL_SIZE);
+        }
 
         #if defined(IS_TARGET_WINDOWS) || defined(IS_TARGET_LINUX)
         {
@@ -381,13 +381,13 @@ namespace NSG
         SDL_QuitSubSystem(flags_);
     }
 
-	void SDLWindow::SetContext()
-	{
-		#if !defined(EMSCRIPTEN)
-		auto context = SDL_GL_GetCurrentContext();
-		SDL_GL_MakeCurrent(SDL_GetWindowFromID(windowID_), context);
-		#endif
-	}
+    void SDLWindow::SetContext()
+    {
+        #if !defined(EMSCRIPTEN)
+        auto context = SDL_GL_GetCurrentContext();
+        SDL_GL_MakeCurrent(SDL_GetWindowFromID(windowID_), context);
+        #endif
+    }
 
     void SDLWindow::Destroy()
     {
@@ -561,8 +561,32 @@ namespace NSG
         #endif
     }
 
+    #if defined(EMSCRIPTEN)
+    void SDLWindow::HandleGamepad()
+    {
+        EmscriptenGamepadEvent gamepadState;
+        emscripten_get_gamepad_status(0, &gamepadState);
+        if (gamepadState.connected)
+        {
+            const auto PRECISION_ERROR = 0.15;
+            for (int i = 0; i < gamepadState.numAxes; i++)
+                if (std::abs(gamepadState.axis[i]) < PRECISION_ERROR)
+                    gamepadState.axis[i] = 0;
+            SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+            if (window && gamepadState.numAxes > 1)
+            {
+                window->OnJoystickAxisMotion(gamepadState.index, JoystickAxis::LEFTX, gamepadState.axis[0]);
+                window->OnJoystickAxisMotion(gamepadState.index, JoystickAxis::LEFTY, gamepadState.axis[1]);
+            }
+        }
+    }
+    #endif
+
     void SDLWindow::HandleEvents()
     {
+        #if defined(EMSCRIPTEN)
+        SDLWindow::HandleGamepad();
+        #endif
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -651,7 +675,7 @@ namespace NSG
             {
                 SDLWindow* window = GetWindowFromID(event.button.windowID);
                 if (!window) continue;
-				window->OnMouseDown(event.button.button, event.button.x, event.button.y);
+                window->OnMouseDown(event.button.button, event.button.x, event.button.y);
                 float x = (float)event.button.x;
                 float y = (float)event.button.y;
                 auto width = window->GetWidth();
@@ -662,7 +686,7 @@ namespace NSG
             {
                 SDLWindow* window = GetWindowFromID(event.button.windowID);
                 if (!window) continue;
-				window->OnMouseUp(event.button.button, event.button.x, event.button.y);
+                window->OnMouseUp(event.button.button, event.button.x, event.button.y);
                 float x = (float)event.button.x;
                 float y = (float)event.button.y;
                 auto width = window->GetWidth();
