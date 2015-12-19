@@ -51,6 +51,7 @@ namespace NSG
 	int ToInt(const std::string& value);
 
 	std::string ToString(size_t obj);
+	std::string ToString(float obj);
 
 	const char* ToString(RenderPass obj);
 	RenderPass ToRenderPass(const char* value);

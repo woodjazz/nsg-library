@@ -34,6 +34,7 @@ namespace NSG
         : Resource(path.GetFullAbsoluteFilePath()),
           path_(path)
     {
+		EnableInvalidation();
         #if defined(EMSCRIPTEN)
         isLocal_ = false;
         #else

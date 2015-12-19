@@ -31,26 +31,26 @@ Planet::Planet(PScene scene)
       grid_(planet_->CreateChild<SceneNode>())
 {
 	auto colorTexture = std::make_shared<Texture2D>(
-		Resource::GetOrCreateClass<ResourceFile>("data/earthcolor.jpg"),
+		ResourceFile::GetOrCreate("data/earthcolor.jpg"),
 		(int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y
 		);
 
 	auto specularTexture = std::make_shared<Texture2D>(
-		Resource::GetOrCreateClass<ResourceFile>("data/earthspecular.jpg"),
+		ResourceFile::GetOrCreate("data/earthspecular.jpg"),
 		(int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y
 		);
 
 	specularTexture->SetMapType(TextureType::SPEC);
 
 	auto normalTexture = std::make_shared<Texture2D>(
-		Resource::GetOrCreateClass<ResourceFile>("data/earthnormal.jpg"),
+		Resource::Get("data/earthnormal.jpg"),
 		(int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y
 		);
 
 	normalTexture->SetMapType(TextureType::NORM);
 
 	auto cloudsTexture = std::make_shared<Texture2D>(
-		Resource::GetOrCreateClass<ResourceFile>("data/clouds.jpg"),
+		Resource::Get("data/clouds.jpg"),
 		(int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y
 		);
 

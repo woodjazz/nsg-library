@@ -23,52 +23,27 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#pragma once
-#include "Types.h"
-#include "GUI.h"
+#include "EditorSceneNode.h"
+#include "Renderer.h"
+#include "Editor.h"
 
-struct ImDrawList;
-namespace NSG
+EditorSceneNode::EditorSceneNode(const std::string& name)
+    : SceneNode(name)
 {
-	class Editor
-	{
-	public:
-		Editor();
-		~Editor();
-		void SetCamera(PCamera camera);
-		void SetWindow(PWindow window);
-		void SetScene(PScene scene);
-		void SetNode(PNode node);
-		Node* GetNode() const;
-		PTexture GetMaterialPreview(PMaterial material);
-		PCamera GetEditorCamera() const { return editorCamera_; }
-		void Render();
-	private:
-		void SetControl();
-		void ShowWindows();
-		void ShowGame();
-		void RenderGame();
-		void ShowScene();
-		void ShowHierachy();
-		void OnMouseDown(int button, float x, float y);
-		void ShowInspector();
-		PTexture GetScenePreview(Scene* scene, Camera* camera);
-		PTexture GetGamePreview(Scene* scene, Camera* camera);
-		PCameraControl control_;
-		PFrameBuffer previewFrameBuffer_;
-		PFrameBuffer sceneFrameBuffer_;
-		PFrameBuffer gameFrameBuffer_;
-		PWeakCamera camera_;
-		PWeakWindow window_;
-		PWeakScene scene_;
-		PWeakNode node_;
-		SignalMouseButton::PSlot slotMouseDown_;
-		PScene scenePreview_;
-		PSceneNode previewNode_;
-		bool isSceneHovered_;
-		PCamera editorCamera_;
-		PTexture gTexture_;
-		GUI editorGUI_;
-		GUI gameGUI_;
-	};
+
+}
+
+EditorSceneNode::~EditorSceneNode()
+{
+
+}
+
+bool EditorSceneNode::CanBeVisible() const
+{
+	return Renderer::GetPtr() && RendererContext::EDITOR == Renderer::GetPtr()->GetContext() && SceneNode::CanBeVisible();
+}
+
+void EditorSceneNode::ShowGUIProperties(Editor* editor)
+{
+    editor->ShowGUIProperties(GetParent().get());
 }

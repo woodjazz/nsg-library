@@ -149,8 +149,6 @@ namespace NSG
         virtual void Load(const pugi::xml_node& node);
         virtual void Save(pugi::xml_node& node) const;
         SignalEmpty::PSignal SigUpdated() { return signalUpdated_; }
-        virtual void ShowGUIProperties(Editor* editor);
-        void ShowGUIHierarchy(Editor* editor);
         void SetUserData(void* p) { userData_ = p; }
         void* GetUserData() const { return userData_; }
     protected:
@@ -160,7 +158,6 @@ namespace NSG
         PWeakScene scene_;
         SignalEmpty::PSignal signalUpdated_;
     private:
-		int GetSceneChildren() const;
 		void RemoveFromParent();
 		void AddChild(PNode node);
         void RemoveChild(Node* node);

@@ -24,19 +24,16 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
+#include "EditorTypes.h"
 #include "EditorSceneNode.h"
 
-namespace NSG
+class EditorCamera : public EditorSceneNode
 {
-    class EditorFrustum : public EditorSceneNode
-    {
-    public:
-        EditorFrustum(const std::string& name);
-        ~EditorFrustum();
-		void SetCamera(PCamera camera);
-	private:
-		SignalEmpty::PSlot slotUpdated_;
-		PWeakCamera camera_;
-    };
-}
+public:
+    EditorCamera(const std::string& name);
+    ~EditorCamera();
+    void OnCreated() override;
+private:
+    PEditorFrustum frustum_;
+};
+

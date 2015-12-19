@@ -30,21 +30,20 @@ int NSG_MAIN(int argc, char* argv[])
 {
     auto window = Window::Create();
     PCameraControl control;
-    PLoaderApp loader;
-	PShadowMapDebug shadowDebug;
+    PLoaderXML loader;
+    PShadowMapDebug shadowDebug;
 
     std::string status;
     auto load = [&](const std::string & file)
     {
-        status = "Loading...";
         Engine::ReleaseMemory();
         control = nullptr;
-		shadowDebug = nullptr;
+        shadowDebug = nullptr;
         auto path = Path(file);
         auto resource = Resource::GetOrCreateClass<ResourceFile>(path.GetFilePath());
-        loader = std::make_shared<LoaderApp>(resource);
+        loader = LoaderXML::Create("loader");
         static SignalEmpty::PSlot slotLoaded;
-        slotLoaded = loader->Load()->Connect([&]()
+        slotLoaded = loader->Load(resource)->Connect([&]()
         {
             auto scene = loader->GetScene(0);
             if (scene)
@@ -53,11 +52,17 @@ int NSG_MAIN(int argc, char* argv[])
                 auto camera = scene->GetMainCamera();
                 if (camera)
                     control = std::make_shared<CameraControl>(camera);
-				auto light = scene->GetChild<Light>("Sun", true);
-				if (light)
-					shadowDebug = std::make_shared<ShadowMapDebug>(light);
+                auto light = scene->GetChild<Light>("Sun", true);
+                if (light)
+                    shadowDebug = std::make_shared<ShadowMapDebug>(light);
             }
             status = "";
+        });
+
+        static SignalFloat::PSlot slotProgress;
+        slotProgress = loader->SigProgress()->Connect([&](float percentage)
+        {
+            status = "Loading " + ToString((int)percentage) + "%";
         });
     };
 
@@ -70,23 +75,24 @@ int NSG_MAIN(int argc, char* argv[])
     {
         using namespace ImGui;
 
-		const char* items[] = { 
-			//"fog", 
-			"physics", 
-			"shadowdir",
-			"shadowpoint",
-			"shadowspot",
-			"transparency",
-			//"uvs"
-		};
+        const char* items[] =
+        {
+            //"fog",
+            "physics",
+            "shadowdir",
+            "shadowpoint",
+            "shadowspot",
+            "transparency",
+            //"uvs"
+        };
 
         ImGui::Text("Scenes:");
         static int selection = -1;
-		if (ImGui::ListBox(status.c_str(), &selection, items, sizeof(items)/sizeof(char*)))
-		{
-			std::string file = "data/" + std::string(items[selection]) + "/scene.xml";
-			load(file);
-		}
+        if (ImGui::ListBox(status.c_str(), &selection, items, sizeof(items) / sizeof(char*)))
+        {
+            std::string file = "data/" + std::string(items[selection]) + "/scene.xml";
+            load(file);
+        }
     });
 
     return Engine::Create()->Run();

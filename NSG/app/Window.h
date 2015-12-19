@@ -28,6 +28,11 @@ misrepresented as being the original software.
 #include <string>
 namespace NSG
 {
+	struct IRender
+	{
+		virtual void Render() = 0;
+	};
+
     class Window : public std::enable_shared_from_this<Window>
     {
     public:
@@ -104,14 +109,15 @@ namespace NSG
 		SignalJoystickButton::PSignal SigJoystickUp() { return signalJoystickUp_; }
         SignalJoystickAxisMotion::PSignal SigJoystickAxisMotion() { return signalJoystickAxisMotion_; }
         SignalEmpty::PSignal SigDrawIMGUI() { return signalDrawIMGUI_; }
+        SignalTouchFinger::PSignal SigTouchFinger() { return signalTouchFinger_; }
         PixelFormat GetPixelFormat() const { return pixelFormat_; }
         void SetPixelFormat(PixelFormat value) { pixelFormat_ = value; }
         void RenderFilters();
         virtual void SetupImgui() = 0;
         virtual void BeginImguiRender() = 0;
 		virtual void SetContext() = 0;
-        void SetEditor(Editor* editor);
-        void RemoveEditor(Editor* editor);
+        void SetRender(IRender* render);
+        void RemoveRender(IRender* render);
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
@@ -152,10 +158,11 @@ namespace NSG
 		SignalJoystickButton::PSignal signalJoystickUp_;
         SignalJoystickAxisMotion::PSignal signalJoystickAxisMotion_;
         SignalEmpty::PSignal signalDrawIMGUI_;
+        SignalTouchFinger::PSignal signalTouchFinger_;
         PTexture showTexture_;
         static int nWindows2Remove_;
         PixelFormat pixelFormat_;
-        Editor* editor_;
+		IRender* render_;
         PGUI gui_;
     };
 }

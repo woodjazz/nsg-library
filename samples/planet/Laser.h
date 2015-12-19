@@ -24,20 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "EditorSceneNode.h"
-
-namespace NSG
+#include "NSG.h"
+#include "GameObject.h"
+using namespace NSG;
+class Explo;
+class Laser : public GameObject
 {
-    class EditorLight : public EditorSceneNode
-    {
-    public:
-        EditorLight(const std::string& name);
-        ~EditorLight();
-		void OnCreated() override;        
-    private:
-        void ConfigureChild(const Light* light, SceneNode* child);
-        SignalLight::PSlot slotSetType_;
-        PSceneNode child_;
-    };
-}
+public:
+    Laser(PScene scene);
+    ~Laser();
+    void SetOrientation(const Quaternion& q0, const Quaternion& q1);
+    void SetPosition(const Vector3& position);
+    void Destroyed() override;
+private:
+    PNode node_;
+    PSceneNode child_;
+    PRigidBody body_;
+    int collisionGroup_;
+    int collisionMask_;
+	SignalUpdate::PSlot updateSlot_;
+    float totalTime_;
+};

@@ -26,29 +26,34 @@ misrepresented as being the original software.
 #include "Player.h"
 #include "Explo.h"
 #include "Level.h"
+#include "Laser.h"
 
-static unsigned s_lives = 3;
+static int s_lives = 3;
 
 static std::string GetOverlayName(int life)
 {
-	return "Life" + ToString(life);
+    return "Life" + ToString(life);
 }
 
 Player::Player(PScene scene)
     : node_(scene->CreateChild<SceneNode>()),
       child_(node_->CreateChild<SceneNode>()),
       body_(child_->GetOrCreateRigidBody()),
-      explo_(std::make_shared<Explo>(child_))
+      explo_(std::make_shared<Explo>(child_)),
+      collisionGroup_((int)CollisionMask::PLAYER),
+      collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PLAYER),
+      buttonAPressed_(false),
+      lastShotTime_(0)
 {
-	slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
-	{
+    slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
+    {
         body_->HandleCollisions(false);
-		explo_->Start();
-	});
+        explo_->Start();
+    });
 
     child_->SetPosition(Vector3(0, 0, 3));
     child_->SetScale(0.25f);
-	auto mesh = Mesh::GetOrCreate<TriangleMesh>("PlayerMesh");
+    auto mesh = Mesh::GetOrCreate<TriangleMesh>("PlayerMesh");
     child_->SetMesh(mesh);
     auto material(Material::Create());
     //material->SetFillMode(FillMode::WIREFRAME);
@@ -73,7 +78,7 @@ Player::Player(PScene scene)
         if (!child_->IsHidden() && (x || y))
         {
             auto angle = Angle(VECTOR3_UP, Normalize(Vector3(x, y, 0)));
-            if(x > 0)
+            if (x > 0)
                 angle *= -1;
             child_->SetOrientation(AngleAxis(angle, VECTOR3_FORWARD));
             auto dt = Engine::GetPtr()->GetDeltaTime();
@@ -83,24 +88,46 @@ Player::Player(PScene scene)
         }
     });
 
+    buttonASlot_ =  control_.SigButtonA()->Connect([this](bool down)
+    {
+        buttonAPressed_ = down;
+    });
+
+    updateSlot_ = Engine::SigUpdate()->Connect([this](float deltaTime)
+    {
+        lastShotTime_ += deltaTime;
+        if (buttonAPressed_)
+        {
+            if (lastShotTime_ > 0.2f)
+            {
+                lastShotTime_ = 0;
+                auto obj = std::make_shared<Laser>(node_->GetScene());
+                obj->SetPosition(child_->GetPosition());
+                obj->SetOrientation(node_->GetOrientation(), child_->GetOrientation());
+                Level::GetCurrent()->AddObject(obj);
+            }
+        }
+    });
+
     child_->SetUserData(this);
 
-	body_->SetKinematic(true);
-	body_->HandleCollisions(true);
-	auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, VECTOR3_ONE));
-	body_->AddShape(shape);
-	shape->SetBB(child_->GetWorldBoundingBox());
+    body_->SetKinematic(true);
+    body_->HandleCollisions(true);
+    body_->SetCollisionMask(collisionGroup_, collisionMask_);
+    auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, VECTOR3_ONE));
+    body_->AddShape(shape);
+    shape->SetBB(child_->GetWorldBoundingBox());
 
-	for (auto i = 0; i < s_lives; i++)
-	{
-		auto overlay = scene->CreateOverlay(GetOverlayName(i));
-		overlay->SetMaterial(material);
-		overlay->SetMesh(mesh);
-		overlay->SetScale(0.1f);
-		auto bb = overlay->GetWorldBoundingBox();
-		auto size = bb.Size();
-		overlay->SetPosition(Vector3(-1 + size.x/2.f + i * size.x * 1.1f, 1 - size.y, 0));
-	}
+    for (auto i = 0; i < s_lives; i++)
+    {
+        auto overlay = scene->CreateOverlay(GetOverlayName(i));
+        overlay->SetMaterial(material);
+        overlay->SetMesh(mesh);
+        overlay->SetScale(0.1f);
+        auto bb = overlay->GetWorldBoundingBox();
+        auto size = bb.Size();
+        overlay->SetPosition(Vector3(-1 + size.x / 2.f + i * size.x * 1.1f, 1 - size.y, 0));
+    }
 }
 
 Player::~Player()
@@ -116,10 +143,10 @@ void Player::Destroyed()
         s_lives = 3;
         Level::Load(2, Window::GetMainWindow()->shared_from_this());
     }
-	else
-	{
-		node_->GetScene()->RemoveOverlay(GetOverlayName(s_lives));
-		child_->Hide(false);
-		body_->HandleCollisions(true);
-	}
+    else
+    {
+        node_->GetScene()->RemoveOverlay(GetOverlayName(s_lives));
+        child_->Hide(false);
+        body_->HandleCollisions(true);
+    }
 }

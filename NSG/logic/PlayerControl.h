@@ -59,6 +59,7 @@ namespace NSG
         SignalJoystickButton::PSlot slotJoystickDown_;
 		SignalJoystickButton::PSlot slotJoystickUp_;
         SignalJoystickAxisMotion::PSlot slotJoystickAxisMotion_;
+        SignalTouchFinger::PSlot slotTouchFinger_;
         Window* window_;
         SignalWindow::PSlot slotWindow_;
         float leftHorizontalAxis_;
@@ -67,5 +68,8 @@ namespace NSG
         bool right_;
         bool forward_;
         bool backward_;
+        typedef std::pair<bool, int64_t> FirgerId;
+        FirgerId leftFingerId_;
+        FirgerId rightFingerId_;
     };
 }

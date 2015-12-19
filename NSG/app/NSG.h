@@ -44,6 +44,7 @@ misrepresented as being the original software.
 #include "BoxMesh.h"
 #include "CircleMesh.h"
 #include "EllipseMesh.h"
+#include "CylinderMesh.h"
 #include "SphereMesh.h"
 #include "IcoSphereMesh.h"
 #include "PlaneMesh.h"
@@ -96,10 +97,9 @@ misrepresented as being the original software.
 #include "imgui.h"
 #include "GUI.h"
 #include "LoaderXML.h"
-#include "LoaderApp.h"
 #include "ICollision.h"
 #include "DebugRenderer.h"
 #include "ShadowMapDebug.h"
-#include "Editor.h"
+#include "SharedFromPointer.h"
 
 

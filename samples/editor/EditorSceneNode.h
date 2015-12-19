@@ -23,29 +23,17 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "EditorSceneNode.h"
-#include "Renderer.h"
+#pragma once
+#include "Types.h"
+#include "SceneNode.h"
+using namespace NSG;
 
-namespace NSG
+class Editor;
+class EditorSceneNode : public SceneNode
 {
-    EditorSceneNode::EditorSceneNode(const std::string& name)
-        : SceneNode(name)
-    {
-
-    }
-
-    EditorSceneNode::~EditorSceneNode()
-    {
-
-    }
-
-    bool EditorSceneNode::CanBeVisible() const
-    {
-		return Renderer::GetPtr() && RendererContext::EDITOR == Renderer::GetPtr()->GetContext() && SceneNode::CanBeVisible();
-    }
-
-    void EditorSceneNode::ShowGUIProperties(Editor* editor)
-    {
-        GetParent()->ShowGUIProperties(editor);
-    }
-}
+public:
+    EditorSceneNode(const std::string& name);
+    ~EditorSceneNode();
+	bool CanBeVisible() const override;
+	void ShowGUIProperties(Editor* editor);
+};

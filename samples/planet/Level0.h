@@ -40,4 +40,5 @@ private:
     std::shared_ptr<Player> player_;
 	std::shared_ptr<Enemy> enemy_;
 	SignalEmpty::PSlot slotEnemyDestroyed_;
+	PCameraControl control_;
 };

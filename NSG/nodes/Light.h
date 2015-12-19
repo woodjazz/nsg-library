@@ -72,7 +72,8 @@ namespace NSG
         bool HasSpecularColor() const;
         int GetShadowSplits() const {return shadowSplits_; }
         float GetInvRange() const { return invRange_; }
-        void ShowGUIProperties(Editor* editor) override;
+		bool IsDiffuseEnabled() const { return diffuse_; }
+		bool IsSpecularEnabled() const { return specular_; }
     private:
         int CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
         FrameBuffer* GetShadowFrameBuffer(int idx) const;

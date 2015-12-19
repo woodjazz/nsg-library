@@ -49,6 +49,8 @@ namespace NSG
         : Object(name),
           serializable_(true)
     {
+        // non file resources (loaded directly from memory) shall not be invalidated
+		DisableInvalidation(); 
     }
 
     Resource::~Resource()

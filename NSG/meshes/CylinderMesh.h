@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
-Copyright (c) 2014-2015 NÃ©stor Silveira Gorski
+Copyright (c) 2014-2015 Néstor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -24,18 +24,28 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "EditorSceneNode.h"
+#include "ProceduralMesh.h"
 
 namespace NSG
 {
-    class EditorCamera : public EditorSceneNode
-    {
-    public:
-        EditorCamera(const std::string& name);
-        ~EditorCamera();
-        void OnCreated() override;
-    private:
-        PEditorFrustum frustum_;
-    };
+	class CylinderMesh : public ProceduralMesh
+	{
+	public:
+		CylinderMesh(const std::string& name);
+		~CylinderMesh();
+		void Set(float radius = 0.5f, float height = 1, int rings = 8, bool capped = true);
+		void SetOrientation(const Quaternion& q);
+		GLenum GetWireFrameDrawMode() const override;
+		GLenum GetSolidDrawMode() const override;
+		size_t GetNumberOfTriangles() const override;
+        void AllocateResources() override;
+        PhysicsShape GetShapeType() const override { return SH_CYLINDER; }
+	private:
+		float radius_;
+		float height_;
+		int rings_;
+		bool capped_;
+		Quaternion q_;
+		friend class App;
+	};
 }

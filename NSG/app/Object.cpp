@@ -33,12 +33,13 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    Object::Object(const std::string& name)
-        : name_(name),
-          isValid_(false),
-          resourcesAllocated_(false),
-          signalAllocated_(new SignalEmpty),
-          signalReleased_(new SignalEmpty)
+	Object::Object(const std::string& name)
+		: name_(name),
+		isValid_(false),
+		resourcesAllocated_(false),
+		signalAllocated_(new SignalEmpty),
+		signalReleased_(new SignalEmpty),
+		disableInvalidation_(false)
     {
         if (name_.empty())
             name_ = GetUniqueName("Object");
@@ -55,14 +56,17 @@ namespace NSG
 
     void Object::Invalidate()
     {
-        isValid_ = false;
-        if (resourcesAllocated_)
-        {
-            ReleaseResources();
-            resourcesAllocated_ = false;
-            LOGI("Released resources for %s.", GetNameType().c_str());
-            signalReleased_->Run();
-        }
+		if (!disableInvalidation_)
+		{
+			isValid_ = false;
+			if (resourcesAllocated_)
+			{
+				ReleaseResources();
+				resourcesAllocated_ = false;
+				LOGI("Released resources for %s.", GetNameType().c_str());
+				signalReleased_->Run();
+			}
+		}
     }
 
     void Object::SetLoader(PLoaderXMLNode nodeLoader)
@@ -118,7 +122,7 @@ namespace NSG
         SigInvalidateAll()->Run();
     }
 
-    void Object::LoadAll(PLoaderXML loader, const char* collectionType, AdderFunction adder)
+    void Object::LoadAll(LoaderXML* loader, const char* collectionType, AdderFunction adder)
     {
         auto& doc = loader->GetDocument();
         pugi::xml_node node = doc.child("App");
@@ -135,7 +139,7 @@ namespace NSG
         }
     }
 
-    void Object::SetLoader(PLoaderXML loader, const char* collectionType, PObject obj, const std::string& name)
+    void Object::SetLoader(LoaderXML* loader, const char* collectionType, PObject obj, const std::string& name)
     {
         auto nodeLoader = std::make_shared<LoaderXMLNode>(name);
         nodeLoader->Set(loader, obj, collectionType, name);

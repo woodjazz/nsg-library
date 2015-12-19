@@ -36,10 +36,10 @@ public:
     int GetIndex() const { return levelIndex_; }
     static std::shared_ptr<Level> GetCurrent() { return currentLevel_; }
 	void RemoveObject(GameObject* object);
+	void AddObject(PGameObject object);
 protected:
     Level(PWindow window);
     virtual ~Level();
-    void AddObject(PGameObject object);
 	PWindow window_;
 private:
 	void SetIndex(int idx) { levelIndex_ = idx; }

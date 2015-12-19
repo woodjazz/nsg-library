@@ -75,6 +75,7 @@ void Level::Load(int idx, PWindow window)
             break;
     }
 
+    //Renderer::GetPtr()->EnableDebugPhysics(true);    
     level->SetIndex(idx);
 
     Level::currentLevel_ = level;

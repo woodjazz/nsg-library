@@ -41,7 +41,7 @@ namespace NSG
     {
     }
 
-	void LoaderXMLNode::Set(PLoaderXML loaderXML, PObject obj, const std::string& type, const std::string& nameAttValue)
+	void LoaderXMLNode::Set(LoaderXML* loaderXML, PObject obj, const std::string& type, const std::string& nameAttValue)
     {
 		if (loaderXML_ != loaderXML || type_ != type || nameAttValue != nameAttValue_ || obj_.lock() != obj)
         {
@@ -79,10 +79,16 @@ namespace NSG
 					if (!resource_)
 					{
 						auto resourceFile = std::dynamic_pointer_cast<ResourceFile>(loaderXML_->GetResource());
-						CHECK_ASSERT(resourceFile);
-						Path path(resourceFile->GetPath().GetFilePath());
-						path.SetFileName(Path(name).GetFilename());
-						resource_ = std::make_shared<ResourceFile>(path.GetFilePath());
+						if (resourceFile)
+						{
+							Path path(resourceFile->GetPath().GetFilePath()); //use path of XML file
+							path.SetFileName(Path(name).GetFilename());
+							resource_ = std::make_shared<ResourceFile>(path.GetFilePath());
+						}
+						else
+						{
+							resource_ = std::make_shared<ResourceFile>(name);
+						}
 					}
 					return resource_->IsReady();
 				}

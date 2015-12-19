@@ -26,14 +26,13 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
-#include "AppData.h"
 #include "WeakFactory.h"
 #include "Util.h"
 #include <string>
 
 namespace NSG
 {
-	class Resource : public WeakFactory<std::string, Resource>, public std::enable_shared_from_this<Resource>, public Object
+	class Resource : public Object, public WeakFactory<std::string, Resource>, public std::enable_shared_from_this<Resource>
 	{
 	public:
 		Resource(const std::string& name);

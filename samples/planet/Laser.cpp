@@ -23,69 +23,69 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "Enemy.h"
+#include "Laser.h"
 #include "Explo.h"
 #include "Level.h"
-static unsigned s_total = 0;
-Enemy::Enemy(PScene scene)
+Laser::Laser(PScene scene)
     : node_(scene->CreateChild<SceneNode>()),
       child_(node_->CreateChild<SceneNode>()),
       body_(child_->GetOrCreateRigidBody()),
-      explo_(std::make_shared<Explo>(child_)),
-      collisionGroup_((int)CollisionMask::ENEMY),
-      collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::ENEMY)
+      collisionGroup_((int)CollisionMask::PLAYER),
+      collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PLAYER),
+      totalTime_(0)
 {
-    //node_->Pitch(-PI10);
-    //node_->Yaw(PI/4.f);
-    child_->SetScale(0.25f);
+    const Vector3 Scale(0.03f, 0.15f, 0.03f);
+    child_->SetScale(Scale);
     child_->SetPosition(Vector3(0, 0, 3));
-    child_->SetMesh(Mesh::CreateClass<TriangleMesh>());
+    auto mesh = Mesh::GetOrCreateClass<CylinderMesh>("LaserMesh");
+    child_->SetMesh(mesh);
     auto material(Material::Create());
-    material->SetDiffuseColor(COLOR_RED);
-    //material->SetFillMode(FillMode::WIREFRAME);
-    //material->SetDiffuseColor(COLOR_DODGER_BLUE);
+    material->SetDiffuseColor(COLOR_YELLOW);
     material->SetRenderPass(RenderPass::UNLIT);
     child_->SetMaterial(material);
     child_->SetUserData(this);
 
     body_->SetKinematic(true);
-    body_->HandleCollisions(true);
-    auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, VECTOR3_ONE));
+    //body_->HandleCollisions(true);
+    auto shape = Shape::GetOrCreate(ShapeKey(mesh, Vector3(Scale.x, Scale.z, Scale.y)));
     shape->SetBB(child_->GetWorldBoundingBox());
-    body_->AddShape(shape);
+    body_->AddShape(shape, Vector3(0, Scale.y * 0.5f, 0), AngleAxis(PI90, VECTOR3_RIGHT));
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
 
-    slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
+    updateSlot_ = Engine::SigUpdate()->Connect([this](float dt)
     {
-        body_->HandleCollisions(false);
-        explo_->Start();
+        totalTime_ += dt;
+        if (totalTime_ > 1)
+            Destroyed();
+        else
+        {
+            auto dir = 2 * dt * (child_->GetOrientation() * VECTOR3_UP);
+            node_->Pitch(-dir.y);
+            node_->Yaw(dir.x);
+        }
     });
+
 }
 
-Enemy::~Enemy()
+Laser::~Laser()
 {
     node_->SetParent(nullptr);
 }
 
-void Enemy::SetPosition(float pitch, float yaw)
+void Laser::SetOrientation(const Quaternion& q0, const Quaternion& q1)
 {
-    node_->Pitch(pitch);
-    node_->Yaw(yaw);
+    node_->SetOrientation(q0);
+    child_->SetOrientation(q1);
 }
 
-void Enemy::SetTotal(unsigned total)
+void Laser::SetPosition(const Vector3& position)
 {
-    s_total = total;
+    child_->SetPosition(position);
 }
 
-void Enemy::Destroyed()
+void Laser::Destroyed()
 {
-    CHECK_ASSERT(s_total > 0);
     auto level = Level::GetCurrent();
     level->RemoveObject(this);
-    if (--s_total == 0)
-    {
-        Level::Load(level->GetIndex() + 1, Window::GetMainWindow()->shared_from_this());
-    }
 }
 

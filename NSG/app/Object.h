@@ -35,6 +35,8 @@ namespace NSG
     public:
         Object(const std::string& name);
         virtual ~Object();
+		void DisableInvalidation() { disableInvalidation_ = true; }
+		void EnableInvalidation() { disableInvalidation_ = false; }
         void Invalidate();
         bool IsReady();
         void TryReady();
@@ -45,12 +47,12 @@ namespace NSG
         SignalEmpty::PSignal SigReleased() {return signalReleased_; }
         void SetLoader(PLoaderXMLNode nodeLoader);
         template<typename T, typename U>
-        static std::vector<std::shared_ptr<T> > LoadAll(PLoaderXML loader, const char* collectionType)
+        static std::vector<std::shared_ptr<T>> LoadAll(LoaderXML* loader, const char* collectionType)
         {
             std::vector<std::shared_ptr<T>> result;
             auto adder = [&](const std::string& name)
             {
-	            auto obj = T:: template GetOrCreateClass<U>(name);
+				auto obj = T:: template GetOrCreateClass<U>(name);
 				Object::SetLoader(loader, collectionType, obj, name);
 	            result.push_back(obj);
             };
@@ -62,8 +64,8 @@ namespace NSG
         PLoaderXMLNode nodeLoader_;
     private:
     	typedef std::function<void(const std::string&)> AdderFunction;
-    	static void LoadAll(PLoaderXML loader, const char* collectionType, AdderFunction adder);
-		static void SetLoader(PLoaderXML loader, const char* collectionType, PObject obj, const std::string& name);
+    	static void LoadAll(LoaderXML* loader, const char* collectionType, AdderFunction adder);
+		static void SetLoader(LoaderXML* loader, const char* collectionType, PObject obj, const std::string& name);
         static SignalEmpty::PSignal SigInvalidateAll();
         virtual bool IsValid() { return true; }
         virtual void AllocateResources() {}
@@ -75,6 +77,6 @@ namespace NSG
         SignalEmpty::PSlot slotInvalidateAll_;
         SignalEmpty::PSignal signalAllocated_;
         SignalEmpty::PSignal signalReleased_;
-
+		bool disableInvalidation_;
     };
 }

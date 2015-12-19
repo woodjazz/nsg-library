@@ -84,7 +84,7 @@ namespace NSG
 
     bool FontAtlas::IsValid()
     {
-        return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_->IsReady() &&
+        return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_ && xmlResource_->IsReady() &&
                texture_ && texture_->IsReady();
     }
 

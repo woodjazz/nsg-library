@@ -35,17 +35,17 @@ namespace NSG
 	public:
 		LoaderXMLNode(const std::string& name);
 		~LoaderXMLNode();
-		void Set(PLoaderXML loaderXML, PObject obj, const std::string& type, const std::string& nameAttValue);
+		void Set(LoaderXML* loaderXML, PObject obj, const std::string& type, const std::string& nameAttValue);
 		bool Load();
 	private:
 		bool IsValid() override;
 		void AllocateResources() override;
 		void ReleaseResources() override;
-		PLoaderXML loaderXML_;
+		LoaderXML* loaderXML_;
 		PWeakObject obj_;
 		std::string type_;
 		std::string nameAttValue_;
-		PResourceFile resource_;
+		PResource resource_;
 		pugi::xml_node node_;
 	};
 }

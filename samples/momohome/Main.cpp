@@ -30,8 +30,8 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
     auto window = Window::Create();
     PSceneNode player;
-    LoaderApp loader(Resource::GetOrCreateClass<ResourceFile>("data/scene.xml"));
-    auto slotLoaded = loader.Load()->Connect([&]()
+    LoaderXML loader("loader");
+    auto slotLoaded = loader.Load(Resource::GetOrCreateClass<ResourceFile>("data/scene.xml"))->Connect([&]()
     {
         auto scene = loader.GetScene(0);
         auto light = scene->GetChild<Light>("Sun", false);
@@ -251,6 +251,12 @@ int NSG_MAIN(int argc, char* argv[])
         static auto playerControl = std::make_shared<PlayerControl>();
 
         static auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float y)
+        {
+            speed = y;
+            turn = x;
+        });
+
+        static auto slotStick = playerControl->SigLeftStickMoved()->Connect([&](float x, float y)
         {
             speed = y;
             turn = x;

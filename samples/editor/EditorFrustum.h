@@ -23,38 +23,17 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "LevelResources.h"
-
-LevelResources::LevelResources(PWindow window, std::vector<const char*> resourceNames)
-    : Level(window),
-      scene_(std::make_shared<Scene>())
+#pragma once
+#include "Types.h"
+#include "EditorSceneNode.h"
+using namespace NSG;
+class EditorFrustum : public EditorSceneNode
 {
-    loadingNode_ = scene_->CreateOverlay("loadingNode");
-	loadingNode_->SetMaterialName("loadingMaterial");
-	loadingNode_->SetFont("data/AnonymousPro32.xml", "data/AnonymousPro32.png");
-    window->SetScene(scene_.get());
-
-    auto resource = Resource::Create("LevelResources");
-    std::string data = "<App><Resources>";
-    for (auto name : resourceNames)
-        data += "<Resource name = \"" + std::string(name) + "\"/>";
-    data += "</Resources></App>";
-    resource->SetBuffer(data);
-
-    loader_ = LoaderXML::GetOrCreate("loader");
-
-    slotLoaded_ = loader_->Load(resource)->Connect([this]()
-    {
-        Level::Load(GetIndex() + 1, window_);
-    });
-
-    slotPercentage_ = loader_->SigProgress()->Connect([this](float percentage)
-    {
-        loadingNode_->SetText("Loading " + ToString((int)percentage), CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
-    });
-}
-
-LevelResources::~LevelResources()
-{
-
-}
+public:
+    EditorFrustum(const std::string& name);
+    ~EditorFrustum();
+	void SetCamera(PCamera camera);
+private:
+	SignalEmpty::PSlot slotUpdated_;
+	PWeakCamera camera_;
+};

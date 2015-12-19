@@ -31,8 +31,8 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 	auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scroller.xml");
-	LoaderApp loader(resource);
-	auto slotLoaded = loader.Load()->Connect([&]()
+	LoaderXML loader("loader");
+	auto slotLoaded = loader.Load(resource)->Connect([&]()
 	{
 		auto soundMusic = Sound::Get("nice_music.ogg.004");
 		auto music = Music::Create();

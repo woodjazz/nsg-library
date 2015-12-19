@@ -35,11 +35,9 @@ public:
     LevelResources(PWindow window, std::vector<const char*> resourceNames);
     ~LevelResources();
 private:
-	SignalUpdate::PSlot slotUpdate_;
-	std::vector<const char*> resourceNames_;
-	static std::vector<PResource> resources_;
-	PResourceFile resource_;
-	SignalEmpty::PSlot slotDrawGUI_;
-	unsigned percentage_;
-	bool loaded_;
+	SignalEmpty::PSlot slotLoaded_;
+	SignalFloat::PSlot slotPercentage_;
+	PLoaderXML loader_;
+	PScene scene_;
+	POverlay loadingNode_;
 };

@@ -59,12 +59,11 @@ namespace NSG
     	void DefaultOpaquePass();
 	    void LitOpaquePass();
     	void DefaultTransparentPass();
-    	void OverlaysPass();
 	    void LitTransparentPass();
 	    void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
 	    void DebugPhysicsPass();
 		void DebugRendererPass();
-
+		void RenderOverlays();
 		PGraphics graphics_;
 		Scene* scene_;
 		Camera* camera_;

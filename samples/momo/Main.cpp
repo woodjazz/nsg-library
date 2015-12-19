@@ -31,9 +31,9 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
-    LoaderApp loader(resource);
+    LoaderXML loader("loader");
     PCameraControl control;
-    auto slotLoaded = loader.Load()->Connect([&]()
+    auto slotLoaded = loader.Load(resource)->Connect([&]()
     {
         auto scene = loader.GetScene(0);
         auto camera = scene->GetOrCreateChild<Camera>("Camera");

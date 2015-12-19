@@ -63,7 +63,7 @@ namespace NSG
 
     size_t TriangleMesh::GetNumberOfTriangles() const
     {
-        return 2;
+        return 1;
     }
 
     void TriangleMesh::AllocateResources()

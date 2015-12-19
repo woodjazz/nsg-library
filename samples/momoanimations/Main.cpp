@@ -31,10 +31,10 @@ int NSG_MAIN(int argc, char* argv[])
 
     auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
-    LoaderApp loader(resource);
+    LoaderXML loader("loader");
     PCameraControl control;
     PSceneNode armature;
-    auto slotLoaded = loader.Load()->Connect([&]()
+    auto slotLoaded = loader.Load(resource)->Connect([&]()
     {
         auto scene = loader.GetScene(0);
         auto camera = scene->GetOrCreateChild<Camera>("Camera");
@@ -50,7 +50,7 @@ int NSG_MAIN(int argc, char* argv[])
 
             static auto itemsGetter = [](void* data, int idx, const char** out_text) -> bool
             {
-                LoaderApp* loader = static_cast<LoaderApp*>(data);
+                LoaderXML* loader = static_cast<LoaderXML*>(data);
                 auto animations = loader->GetAnimations();
                 auto name = animations[idx]->GetName().c_str();
                 *out_text = name;

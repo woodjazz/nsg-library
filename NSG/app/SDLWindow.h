@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Window.h"
 #include <string>
 #include <map>
+
 namespace NSG
 {
     class SDLWindow : public Window
@@ -46,7 +47,8 @@ namespace NSG
     private:
         #if defined(EMSCRIPTEN)
         static void HandleGamepad();
-        #endif
+		#endif
+        static void HandleTouchUpEvent();
         void SetContext() override;
         void Show() override;
         void Hide() override;

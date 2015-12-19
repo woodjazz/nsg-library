@@ -37,7 +37,7 @@ Explo::Explo(PSceneNode node)
 {
     auto mesh = Mesh::GetOrCreate<QuadMesh>("QuadMesh");
 	material_ = Material::Create();
-	texture_ = std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>("data/explo.png"));
+	texture_ = std::make_shared<Texture2D>(Resource::Get("data/explo.png"));
     material_->SetTexture(texture_);
     material_->SetRenderPass(RenderPass::UNLIT);
 	material_->EnableTransparent(true);

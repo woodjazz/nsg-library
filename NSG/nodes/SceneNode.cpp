@@ -409,11 +409,4 @@ namespace NSG
             }
         }
     }
-
-    void SceneNode::ShowGUIProperties(Editor* editor)
-    {
-        Node::ShowGUIProperties(editor);
-        if(material_)
-            material_->ShowGUIProperties(editor);
-    }
 }

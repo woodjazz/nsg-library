@@ -31,17 +31,23 @@ class Explo;
 class Player : public GameObject
 {
 public:
-	Player(PScene scene);
-	~Player();
-	PNode GetCameraNode() const { return node_; }
-	void Destroyed() override;
+    Player(PScene scene);
+    ~Player();
+    PNode GetCameraNode() const { return node_; }
+    void Destroyed() override;
 private:
-	PNode node_;
-	PSceneNode child_;
-	PlayerControl control_;
-	SignalFloatFloat::PSlot moveSlot_;
-	SignalFloatFloat::PSlot moveLeftStickSlot_;
-	PRigidBody body_;
-	SignalCollision::PSlot slotCollision_;
-	shared_ptr<Explo> explo_;
+    PNode node_;
+    PSceneNode child_;
+    PlayerControl control_;
+    SignalFloatFloat::PSlot moveSlot_;
+    SignalFloatFloat::PSlot moveLeftStickSlot_;
+    SignalBool::PSlot buttonASlot_;
+    SignalUpdate::PSlot updateSlot_;
+    PRigidBody body_;
+    SignalCollision::PSlot slotCollision_;
+    shared_ptr<Explo> explo_;
+    int collisionGroup_;
+    int collisionMask_;
+	bool buttonAPressed_;
+	float lastShotTime_;
 };

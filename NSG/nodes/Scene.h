@@ -26,11 +26,11 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "SceneNode.h"
+#include "Overlay.h"
 #include "Light.h"
 #include "BoundingBox.h"
 #include "Util.h"
 #include <set>
-#include <map>
 
 namespace NSG
 {
@@ -77,12 +77,11 @@ namespace NSG
         float GetFogDepth() const;
         float GetFogHeight() const;
         void FillShaderDefines(std::string& defines, PassType passType) const;
-        PSceneNode CreateOverlay(const std::string& name);
-        PSceneNode GetOverlay(const std::string& name);
-        PSceneNode GetOrCreateOverlay(const std::string& name);
+        POverlay CreateOverlay(const std::string& name);
+        POverlay GetOverlay(const std::string& name);
+        POverlay GetOrCreateOverlay(const std::string& name);
         void RemoveOverlay(const std::string& name);
-		std::vector<SceneNode*> GetOverlays() const;
-		bool HasOverlays() const { return !overlays_.empty(); }
+		PScene GetOverlays() const { return overlays_; }
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void SavePhysics(pugi::xml_node& node) const;
@@ -122,8 +121,7 @@ namespace NSG
 		float fogStart_;
 		float fogDepth_;
 		float fogHeight_;
-		typedef std::map<std::string, PSceneNode> Overlays;
-        Overlays overlays_;
+        PScene overlays_;
         friend class Node;
         friend class SceneNode;
     };

@@ -325,6 +325,8 @@ namespace NSG
     {
         NONE = 0,
         PARTICLE = 1 << 0,
+        PLAYER = 1 << 1,
+        ENEMY = 1 << 2,
         ALL = -1
     };
 
@@ -421,6 +423,19 @@ namespace NSG
 
     class Engine;
 
+    struct TouchFingerEvent
+    {
+        enum class Type { MOTION, DOWN, UP};
+        Type type;
+        int64_t touchId;
+        int64_t fingerId;
+        float x;
+        float y;
+        float dx;
+        float dy;
+        float pressure;
+    };
+
     struct SignalSizeChanged : Signal<int, int> {};
     struct SignalFloatFloat : Signal<float, float> {};
     struct SignalMouseButton : Signal<int, float, float> {};
@@ -439,6 +454,7 @@ namespace NSG
     struct SignalNodeChar : Signal<SceneNode*, unsigned int> {};
     struct SignalEmpty : Signal<> {};
     struct SignalBool : Signal<bool> {};
+	struct SignalFloat : Signal<float> {};
     struct SignalWindow : Signal<Window*> {};
     struct SignalJoystickButton : Signal<int, JoystickButton> {};
     struct SignalJoystickAxisMotion : Signal<int, JoystickAxis, float> {};
@@ -449,6 +465,7 @@ namespace NSG
     struct SignalCamera : Signal<Camera*> {};
     struct SignalParticleSystem : Signal<ParticleSystem*> {};
     struct SignalDebugRenderer : Signal<DebugRenderer*> {};
+    struct SignalTouchFinger : Signal<const TouchFingerEvent&> {};
 
     enum MaterialTexture
     {

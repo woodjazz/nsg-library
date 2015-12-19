@@ -30,8 +30,8 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
     auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
-    LoaderApp loader(resource);
-    auto slotLoaded = loader.Load()->Connect([&]()
+    LoaderXML loader("loader");
+    auto slotLoaded = loader.Load(resource)->Connect([&]()
     {
         auto scene = loader.GetScene(0);
         scene->SetAmbientColor(ColorRGB(0.0f));

@@ -29,39 +29,36 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "Frustum.h"
 
-namespace NSG
+EditorFrustum::EditorFrustum(const std::string& name)
+    : EditorSceneNode(name)
 {
-    EditorFrustum::EditorFrustum(const std::string& name)
-        : EditorSceneNode(name)
-    {
-        SetMesh(Mesh::GetOrCreate<FrustumMesh>("NSGEditorFrustum"));
-        SetMaterial(Material::GetOrCreate("NSGEditorFrustum"));
-        material_->SetRenderPass(RenderPass::VERTEXCOLOR);
-        material_->CastShadow(false);
-        material_->ReceiveShadows(false);
-    }
+    SetMesh(Mesh::GetOrCreate<FrustumMesh>("NSGEditorFrustum"));
+    SetMaterial(Material::GetOrCreate("NSGEditorFrustum"));
+    material_->SetRenderPass(RenderPass::VERTEXCOLOR);
+    material_->CastShadow(false);
+    material_->ReceiveShadows(false);
+}
 
-    EditorFrustum::~EditorFrustum()
-    {
+EditorFrustum::~EditorFrustum()
+{
 
-    }
+}
 
-    void EditorFrustum::SetCamera(PCamera camera)
+void EditorFrustum::SetCamera(PCamera camera)
+{
+    camera_ = camera;
+    SetTransform(Inverse(camera->GetTransform()));
+    std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
+    slotUpdated_ = camera->SigUpdated()->Connect([this]()
     {
-        camera_ = camera;
-        SetTransform(Inverse(camera->GetTransform()));
-        std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
-        slotUpdated_ = camera->SigUpdated()->Connect([this]()
+        if(CanBeVisible())
         {
-            if(CanBeVisible())
+            auto camera = camera_.lock();
+            if (camera)
             {
-                auto camera = camera_.lock();
-                if (camera)
-                {
-                    SetTransform(Inverse(camera->GetTransform()));
-                    std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
-                }
+                SetTransform(Inverse(camera->GetTransform()));
+                std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
             }
-        });
-    }
+        }
+    });
 }

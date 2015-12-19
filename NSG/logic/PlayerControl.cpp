@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Keys.h"
 #include "Window.h"
 #include "Engine.h"
+#include "Log.h"
 
 namespace NSG
 {
@@ -41,7 +42,9 @@ namespace NSG
           left_(false),
           right_(false),
           forward_(false),
-          backward_(false)
+          backward_(false),
+          leftFingerId_{false, 0},
+          rightFingerId_{false, 0}
     {
         auto graphics = Graphics::GetPtr();
         if (graphics)
@@ -100,10 +103,13 @@ namespace NSG
                     OnKey(key, action, modifier);
                 });
 
+                #ifndef IS_TARGET_MOBILE
+
                 slotJoystickDown_ = window->SigJoystickDown()->Connect([this](int joystickID, JoystickButton button)
                 {
                     if (JoystickButton::BUTTON_A == button)
                         signalButtonA_->Run(true);
+
                 });
 
                 slotJoystickUp_ = window->SigJoystickUp()->Connect([this](int joystickID, JoystickButton button)
@@ -134,9 +140,54 @@ namespace NSG
                             break;
                     }
                 });
+
+                #endif
+
+                slotTouchFinger_ = window->SigTouchFinger()->Connect([this](const TouchFingerEvent & event)
+                {
+                    //LOGW("x=%f y=%f touchId=%lld fingerId=%lld", event.x, event.y, event.touchId, event.fingerId);
+
+                    if (event.type == TouchFingerEvent::Type::DOWN)
+                    {
+                        if (event.x < 0.5f)
+                        {
+                            leftHorizontalAxis_ = leftVerticalAxis_ = 0;
+                            leftFingerId_ = FirgerId{true, event.fingerId};
+                        }
+                        else
+                        {
+                            rightFingerId_ = FirgerId{true, event.fingerId};
+                            signalButtonA_->Run(true);
+                        }
+                    }
+                    else if (event.type == TouchFingerEvent::Type::MOTION)
+                    {
+                        if (leftFingerId_.first && leftFingerId_.second == event.fingerId)
+                        {
+                            leftHorizontalAxis_ += event.dx;
+                            leftVerticalAxis_ -= event.dy;
+                        }
+                    }
+                    else // UP
+                    {
+                        if (leftFingerId_.first && leftFingerId_.second == event.fingerId)
+                        {
+                            leftHorizontalAxis_ = leftVerticalAxis_ = 0;
+                            leftFingerId_ = FirgerId{false, 0};
+                        }
+                        else if (rightFingerId_.first && rightFingerId_.second == event.fingerId)
+                        {
+                            rightFingerId_ = FirgerId{false, 0};
+                            signalButtonA_->Run(false);
+                        }
+                    }
+                });
             }
             else
             {
+                signalMoved_ = nullptr;
+                signalLeftStickMoved_ = nullptr;
+                signalButtonA_ = nullptr;
                 slotMouseMoved_ = nullptr;
                 slotMouseDown_ = nullptr;
                 slotMouseUp_ = nullptr;
@@ -146,6 +197,7 @@ namespace NSG
                 slotJoystickDown_ = nullptr;
                 slotJoystickUp_ = nullptr;
                 slotJoystickAxisMotion_ = nullptr;
+                slotTouchFinger_ = nullptr;
             }
         }
     }

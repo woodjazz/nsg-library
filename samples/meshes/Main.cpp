@@ -28,8 +28,9 @@ misrepresented as being the original software.
 using namespace NSG;
 PScene scene;
 
-void CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
+std::pair<PSceneNode, PSceneNode> CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 {
+	PSceneNode obj1;
 	{
 		auto obj = scene->CreateChild<SceneNode>();
 		obj->SetPosition(pos);
@@ -38,8 +39,10 @@ void CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 		material->SetDiffuseColor(color);
 		obj->SetMesh(mesh);
 		obj->SetMaterial(material);
+		obj1 = obj;
 	}
 
+	PSceneNode obj2;
 	{
 		auto obj = scene->CreateChild<SceneNode>();
 		obj->SetPosition(pos + Vector3(5, 0, 0));
@@ -49,7 +52,10 @@ void CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 		material->SetFillMode(FillMode::WIREFRAME);
 		obj->SetMesh(mesh);
 		obj->SetMaterial(material);
+		obj2 = obj;
 	}
+
+	return std::pair<PSceneNode, PSceneNode>{obj1, obj2};
 }
 
 int NSG_MAIN(int argc, char* argv[])
@@ -60,6 +66,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
 
+
 	CreateObject(Mesh::Create<PlaneMesh>(), ColorRGB(1, 0, 0), Vector3(-20, 0, 0));
 	CreateObject(Mesh::Create<CircleMesh>(), ColorRGB(0, 1, 0), Vector3(-10, 0, 0));
 	CreateObject(Mesh::Create<BoxMesh>(), ColorRGB(0, 0, 1), Vector3(0, 0, 0));
@@ -67,7 +74,9 @@ int NSG_MAIN(int argc, char* argv[])
 	CreateObject(Mesh::Create<RectangleMesh>(), ColorRGB(1, 0, 1), Vector3(20, 0, 0));
 	CreateObject(Mesh::Create<RoundedRectangleMesh>(), ColorRGB(1, 1, 1), Vector3(30, 0, 0));
 	CreateObject(Mesh::Create<SphereMesh>(), ColorRGB(0, 1, 1), Vector3(40, 0, 0));
-	control->AutoZoom();
+	auto obj = CreateObject(Mesh::Create<CylinderMesh>(), ColorRGB(0.5f, 0, 0), Vector3(50, 0, 0));
+	//control->AutoZoom();
+	control->Track(obj.first);
 	window->SetScene(scene.get());
 	auto r = Engine::Create()->Run();
 	scene = nullptr;

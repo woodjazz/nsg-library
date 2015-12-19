@@ -109,7 +109,6 @@ namespace NSG
         void SetSlopeScaledBias(float slopeScaledBias) { slopeScaledBias_ = slopeScaledBias; }
         float GetSlopeScaledBias() const { return slopeScaledBias_; }
 		bool HasTextures() const;
-        void ShowGUIProperties(Editor* editor);
     private:
 		PTexture ShowPreview(FrameBuffer* frameBuffer, Scene* scene);
         void SetupBlur();

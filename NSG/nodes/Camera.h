@@ -97,7 +97,6 @@ namespace NSG
 		void SetOrthoProjection(OrthoProjection projection);
 		void DisableUserOrthoProjection() { hasUserOrthoProjection_ = false; }
         void Debug(DebugRenderer* debugRenderer, const Color& color);
-        void ShowGUIProperties(Editor* editor) override;
     private:
     	const Matrix4& GetViewProjectionInverse() const;
         OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;

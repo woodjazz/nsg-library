@@ -189,6 +189,15 @@ namespace NSG
         return buffer;
     }
 
+	std::string ToString(float obj)
+	{
+		using namespace std;
+		const int MaxBuffer = 50;
+		char buffer[MaxBuffer];
+		snprintf(buffer, MaxBuffer, "%f", obj);
+		return buffer;
+	}
+
     static const char* RenderPassStr[] =
     {
         "VERTEXCOLOR",

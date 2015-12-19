@@ -74,13 +74,13 @@ namespace NSG
         void Run(PARAMS... arguments)
         {
             running_ = true;
+			ExecuteRunSlots(arguments...);
             for (auto& slot : slots_)
             {
                 PSlot obj(slot.lock());
                 if (obj)
                     obj->Execute(arguments...);
             }
-            ExecuteRunSlots(arguments...);
             FreeSlots(); // release memory removing destroyed slots
             running_ = false;
         }
@@ -102,7 +102,7 @@ namespace NSG
 		void ExecuteRunSlots(PARAMS... arguments)
         {
             slots_.insert(slots_.end(), runSlots_.begin(), runSlots_.end());
-            while (!runSlots_.empty())
+            //while (!runSlots_.empty())
             {
                 auto tmp = runSlots_;
                 runSlots_.clear();
@@ -112,7 +112,7 @@ namespace NSG
                     if (obj)
                         obj->Execute(arguments...);
                 }
-                ExecuteRunSlots(arguments...);
+                //ExecuteRunSlots(arguments...);
             }
         }
 

@@ -581,11 +581,37 @@ namespace NSG
         }
     }
     #endif
+    
+    static int64_t s_touchId = 0;
+    void SDLWindow::HandleTouchUpEvent()
+    {
+        //SDL_FINGERUP event does not work. This is just a simulation
+        SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+        const int MaxFingers = 5;
+        TouchFingerEvent touchEvent;
+        touchEvent.type = TouchFingerEvent::Type::UP;
+        touchEvent.touchId = s_touchId;
+        touchEvent.x = 0;
+        touchEvent.y = 0;
+        touchEvent.dx = 0;
+        touchEvent.dy = 0;
+        touchEvent.pressure = 0;
+        for (auto i = 0; i < MaxFingers; i++)
+        {
+            if (!SDL_GetTouchFinger(s_touchId, i))
+            {
+                touchEvent.fingerId = i;
+                window->SigTouchFinger()->Run(touchEvent);
+            }
+        }
+    }
 
     void SDLWindow::HandleEvents()
     {
         #if defined(EMSCRIPTEN)
         SDLWindow::HandleGamepad();
+        #elif defined(IS_TARGET_MOBILE)
+        SDLWindow::HandleTouchUpEvent();
         #endif
         SDL_Event event;
         while (SDL_PollEvent(&event))
@@ -711,29 +737,35 @@ namespace NSG
                 if (!window) continue;
                 window->OnMouseWheel((float)event.wheel.x, (float)event.wheel.y);
             }
-            else if (event.type == SDL_FINGERDOWN)
+            else if (event.type == SDL_FINGERDOWN || event.type == SDL_FINGERDOWN || event.type == SDL_FINGERMOTION)
             {
                 SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
                 if (!window) continue;
                 auto x = (int)(event.tfinger.x * window->GetWidth());
                 auto y = (int)(event.tfinger.y * window->GetHeight());
-                window->OnMouseDown(NSG_BUTTON_LEFT, x, y);
-            }
-            else if (event.type == SDL_FINGERUP)
-            {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-                if (!window) continue;
-                auto x = (int)(event.tfinger.x * window->GetWidth());
-                auto y = (int)(event.tfinger.y * window->GetHeight());
-                window->OnMouseUp(NSG_BUTTON_LEFT, x, y);
-            }
-            else if (event.type == SDL_FINGERMOTION)
-            {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-                if (!window) continue;
-                auto x = (int)(event.tfinger.x * window->GetWidth());
-                auto y = (int)(event.tfinger.y * window->GetHeight());
-                window->OnMouseMove(x, y);
+                TouchFingerEvent touchEvent;
+                touchEvent.type = TouchFingerEvent::Type::MOTION;
+                if(event.type == SDL_FINGERDOWN)
+                {
+                    window->OnMouseDown(NSG_BUTTON_LEFT, x, y);
+                    touchEvent.type = TouchFingerEvent::Type::DOWN;
+                }
+                else if (event.type == SDL_FINGERUP)
+                {
+                    window->OnMouseDown(NSG_BUTTON_LEFT, x, y);
+                    touchEvent.type = TouchFingerEvent::Type::UP;
+                }
+                else
+                    window->OnMouseMove(x, y);
+
+                s_touchId = touchEvent.touchId = event.tfinger.touchId;
+                touchEvent.fingerId = event.tfinger.fingerId;
+                touchEvent.x = event.tfinger.x;
+                touchEvent.y = event.tfinger.y;
+                touchEvent.dx = event.tfinger.dx;
+                touchEvent.dy = event.tfinger.dy;
+                touchEvent.pressure = event.tfinger.pressure;
+                window->SigTouchFinger()->Run(touchEvent);
             }
             #if defined(IS_TARGET_MOBILE)
             else if (event.type == SDL_MULTIGESTURE)

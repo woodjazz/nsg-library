@@ -31,8 +31,8 @@ int NSG_MAIN(int argc, char* argv[])
 
 	PAnimationController acontrol;
     auto window = Window::Create();
-    LoaderApp loader(Resource::GetOrCreateClass<ResourceFile>("data/duck.xml"));
-    auto slotLoaded = loader.Load()->Connect([&]()
+    LoaderXML loader("loader");
+    auto slotLoaded = loader.Load(Resource::GetOrCreateClass<ResourceFile>("data/duck.xml"))->Connect([&]()
     {
         auto scene = loader.GetScene(0);
         auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");

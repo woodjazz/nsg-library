@@ -34,5 +34,6 @@ public:
     ~LevelOver();
 private:
     PScene scene_;
+	PFontAtlas font_;
     SignalKey::PSlot slotKey_;
 };

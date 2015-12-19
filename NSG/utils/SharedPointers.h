@@ -254,6 +254,9 @@ namespace NSG
     class SphereMesh;
     typedef std::shared_ptr<SphereMesh> PSphereMesh;
 
+    class CylinderMesh;
+    typedef std::shared_ptr<CylinderMesh> PCylinderMesh;
+
     class IcoSphereMesh;
     typedef std::shared_ptr<IcoSphereMesh> PIcoSphereMesh;
 
@@ -317,14 +320,8 @@ namespace NSG
     class Renderer;
     typedef std::shared_ptr<Renderer> PRenderer;
 
-    struct AppData;
-    typedef std::shared_ptr<AppData> PAppData;
-
     class Plane;
     typedef std::shared_ptr<Plane> PPlane;
-
-    class LoaderApp;
-    typedef std::shared_ptr<LoaderApp> PLoaderApp;
 
     class LoaderXML;
     typedef std::shared_ptr<LoaderXML> PLoaderXML;
@@ -351,12 +348,6 @@ namespace NSG
     class ShadowMapDebug;
     typedef std::shared_ptr<ShadowMapDebug> PShadowMapDebug;
 
-    class Editor;
-    typedef std::shared_ptr<Editor> PEditor;
-
-    class EditorFrustum;
-    typedef std::shared_ptr<EditorFrustum> PEditorFrustum;
-
-    class EditorCamera;
-    typedef std::shared_ptr<EditorCamera> PEditorCamera;
+    class Overlay;
+    typedef std::shared_ptr<Overlay> POverlay;
 }

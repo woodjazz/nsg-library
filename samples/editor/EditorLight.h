@@ -25,16 +25,16 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "SceneNode.h"
-
-namespace NSG
+#include "EditorSceneNode.h"
+using namespace NSG;
+class EditorLight : public EditorSceneNode
 {
-    class EditorSceneNode : public SceneNode
-    {
-    public:
-        EditorSceneNode(const std::string& name);
-        ~EditorSceneNode();
-		bool CanBeVisible() const override;
-		void ShowGUIProperties(Editor* editor) override;
-    };
-}
+public:
+    EditorLight(const std::string& name);
+    ~EditorLight();
+	void OnCreated() override;        
+private:
+    void ConfigureChild(const Light* light, SceneNode* child);
+    SignalLight::PSlot slotSetType_;
+    PSceneNode child_;
+};

@@ -17,8 +17,6 @@
 #include "Window.h"
 #include "StringConverter.h"
 #include "Check.h"
-#include "EditorCamera.h"
-#include "EditorLight.h"
 #include "SharedFromPointer.h"
 #include "pugixml.hpp"
 #include <algorithm>
@@ -351,7 +349,6 @@ namespace NSG
         });
 
         UpdateOctree(light);
-        light->CreateChild<EditorLight>(GetUniqueName("EditorLight"));
     }
 
     const std::vector<Light*>& Scene::GetLights() const
@@ -365,7 +362,6 @@ namespace NSG
         if (!mainCamera_)
             mainCamera_ = camera;
         UpdateOctree(camera);
-        camera->CreateChild<EditorCamera>(GetUniqueName("EditorCamera"));
     }
 
     void Scene::AddParticleSystem(ParticleSystem* ps)
@@ -498,44 +494,28 @@ namespace NSG
         return fogHeight_;
     }
 
-    PSceneNode Scene::CreateOverlay(const std::string& name)
+    POverlay Scene::CreateOverlay(const std::string& name)
     {
-        PSceneNode obj = std::make_shared<SceneNode>(name);
-        auto result = overlays_.insert(Overlays::value_type(name, obj));
-        if (!result.second)
-        {
-            LOGE("Overlay creation failed %s!!!", name.c_str());
-            return nullptr;
-        }
-        return obj;
+        if(!overlays_)
+            overlays_ = std::make_shared<Scene>(GetUniqueName("NSGOverlays"));
+        return overlays_->CreateChild<Overlay>(name);
     }
 
-    PSceneNode Scene::GetOverlay(const std::string& name)
+	POverlay Scene::GetOrCreateOverlay(const std::string& name)
     {
-        auto it = overlays_.find(name);
-        if (it != overlays_.end())
-            return it->second;
-        return nullptr;
-    }
-
-    PSceneNode Scene::GetOrCreateOverlay(const std::string& name)
-    {
-        auto obj = GetOverlay(name);
-        if(obj) return obj;
-        return CreateOverlay(name);
+        if(!overlays_)
+            overlays_ = std::make_shared<Scene>(GetUniqueName("NSGOverlays"));
+        return overlays_->GetOrCreateChild<Overlay>(name);   
     }
 
     void Scene::RemoveOverlay(const std::string& name)
     {
-        overlays_.erase(name);
+        if(overlays_)
+        {
+            auto overlay = overlays_->GetChild<Overlay>(name, false);
+            if(overlay)
+                overlay->SetParent(nullptr);
+        }            
     }    
-
-	std::vector<SceneNode*> Scene::GetOverlays() const
-	{
-		std::vector<SceneNode*> result;
-		for (auto it : overlays_)
-			result.push_back(it.second.get());
-		return result;
-	}
 }
 

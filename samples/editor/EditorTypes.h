@@ -23,38 +23,14 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "LevelResources.h"
+#pragma once
+#include <memory>
 
-LevelResources::LevelResources(PWindow window, std::vector<const char*> resourceNames)
-    : Level(window),
-      scene_(std::make_shared<Scene>())
-{
-    loadingNode_ = scene_->CreateOverlay("loadingNode");
-	loadingNode_->SetMaterialName("loadingMaterial");
-	loadingNode_->SetFont("data/AnonymousPro32.xml", "data/AnonymousPro32.png");
-    window->SetScene(scene_.get());
+class Editor;
+typedef std::shared_ptr<Editor> PEditor;
 
-    auto resource = Resource::Create("LevelResources");
-    std::string data = "<App><Resources>";
-    for (auto name : resourceNames)
-        data += "<Resource name = \"" + std::string(name) + "\"/>";
-    data += "</Resources></App>";
-    resource->SetBuffer(data);
+class EditorFrustum;
+typedef std::shared_ptr<EditorFrustum> PEditorFrustum;
 
-    loader_ = LoaderXML::GetOrCreate("loader");
-
-    slotLoaded_ = loader_->Load(resource)->Connect([this]()
-    {
-        Level::Load(GetIndex() + 1, window_);
-    });
-
-    slotPercentage_ = loader_->SigProgress()->Connect([this](float percentage)
-    {
-        loadingNode_->SetText("Loading " + ToString((int)percentage), CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
-    });
-}
-
-LevelResources::~LevelResources()
-{
-
-}
+class EditorCamera;
+typedef std::shared_ptr<EditorCamera> PEditorCamera;

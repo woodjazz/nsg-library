@@ -566,39 +566,4 @@ namespace NSG
     {
         GetFrustum()->Debug(VECTOR3_ZERO, debugRenderer, color);
     }
-
-    void Camera::ShowGUIProperties(Editor* editor)
-    {
-        SceneNode::ShowGUIProperties(editor);
-        std::string header = "Camera:" + GetName();
-		if (ImGui::TreeNode(header.c_str()))
-        {
-            auto zNear = GetZNear();
-            ImGui::DragFloat("##zNear", &zNear, 1.f, 0.1f, 10000.0f, "zNear %.1f");
-            SetNearClip(zNear);
-
-            auto zFar = GetZFar();
-            ImGui::DragFloat("##zFar", &zFar, 1.f, 0.1f, 10000.0f, "zFar %.1f");
-            SetFarClip(zFar);
-
-            auto isOrtho = IsOrtho();
-            ImGui::Checkbox("Ortho", &isOrtho);
-            isOrtho ? EnableOrtho() : DisableOrtho();
-
-            if (!isOrtho)
-            {
-                auto fov = GetFOVRadians();
-                ImGui::SliderAngle("FOV", &fov, 0.f, CAMERA_MAX_FOV_DEGREES);
-                SetFOVRadians(fov);
-            }
-			else
-			{
-				auto orthoScale = GetOrthoScale();
-				ImGui::DragFloat("##orthoScale", &orthoScale, 1.f, 0.f, MAX_WORLD_SIZE, "Size %.1f");
-				SetOrthoScale(orthoScale);
-			}
-			ImGui::TreePop();
-        }
-
-    }
 }

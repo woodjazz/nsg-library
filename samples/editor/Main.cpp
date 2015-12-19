@@ -25,6 +25,9 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
+#include "Editor.h"
+#include "EditorCamera.h"
+#include "EditorLight.h"
 
 int NSG_MAIN(int argc, char* argv[])
 {
@@ -40,6 +43,7 @@ int NSG_MAIN(int argc, char* argv[])
 	editor.SetScene(scene);
 	//editor.SetCamera(camera);
 	camera->SetWindow(window.get());
+	camera->CreateChild<EditorCamera>("EditorCamera");
 	auto mesh = Mesh::Create<SphereMesh>("sphereMesh");
 	{
 		
@@ -72,6 +76,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto light = scene->CreateChild<Light>("light");
     light->SetType(LightType::DIRECTIONAL);
 	light->SetPosition(Vector3(0, 3, 0));
+	light->CreateChild<EditorLight>("EditorLight");
 
 	auto editorCamera = editor.GetEditorCamera();
 	editorCamera->SetPosition(Vector3(0, 0, 20));

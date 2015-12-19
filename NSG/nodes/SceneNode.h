@@ -78,7 +78,6 @@ namespace NSG
 		size_t GetMaxPlatformBones(size_t nBones) const;
 		PSceneNode GetArmature() const;
 		void SetArmature(PSceneNode armature);
-		void ShowGUIProperties(Editor* editor) override;
 		bool IsBillboard() const;
 	protected:
 		PMaterial material_;

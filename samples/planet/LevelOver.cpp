@@ -29,19 +29,10 @@ LevelOver::LevelOver(PWindow window)
 	: Level(window)
 {
 	scene_ = std::make_shared<Scene>();
-    auto font = std::make_shared<FontAtlas>();
-    auto loadingNode = scene_->CreateChild<SceneNode>();
-    auto loadingMaterial = Material::Create();
-    font->Set(Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.xml"));
-    auto atlasTexture = std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.png"));
-    font->SetTexture(atlasTexture);
-    auto camera = scene_->CreateChild<Camera>();
-    camera->SetPosition(Vector3(0, 0, 1));
-    camera->EnableOrtho();
-    camera->SetWindow(nullptr);
-    loadingNode->SetMesh(font->GetOrCreateMesh("Over", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
-    loadingMaterial->SetTextMap(atlasTexture);
-    loadingNode->SetMaterial(loadingMaterial);
+	auto loadingNode = scene_->CreateOverlay("loadingNode");
+	loadingNode->SetText("Over", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
+	loadingNode->SetFont("data/AnonymousPro32.xml", "data/AnonymousPro32.png");
+	loadingNode->SetMaterialName("loadingMaterial");
 	window->SetScene(scene_.get());
 
     slotKey_ = window->SigKey()->Connect([&](int key, int action, int modifier)

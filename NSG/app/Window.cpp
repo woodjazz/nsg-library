@@ -43,7 +43,6 @@ misrepresented as being the original software.
 #include "Texture.h"
 #include "UTF8String.h"
 #include "Renderer.h"
-#include "Editor.h"
 #include "GUI.h"
 #include "imgui.h"
 #include <algorithm>
@@ -85,8 +84,9 @@ namespace NSG
           signalJoystickUp_(new SignalJoystickButton),
           signalJoystickAxisMotion_(new Signal<int, JoystickAxis, float>),
           signalDrawIMGUI_(new Signal<>),
+          signalTouchFinger_(new SignalTouchFinger),
           pixelFormat_(PixelFormat::UNKNOWN),
-          editor_(nullptr)
+          render_(nullptr)
     {
         CHECK_CONDITION(Window::AllowWindowCreation());
     }
@@ -428,24 +428,24 @@ namespace NSG
         }
     }
 
-    void Window::SetEditor(Editor* editor)
+    void Window::SetRender(IRender* render)
     {
-		CHECK_CONDITION(editor_ == nullptr);
-        editor_ = editor;
+		CHECK_CONDITION(render_ == nullptr);
+		render_ = render;
     }
 
-    void Window::RemoveEditor(Editor* editor)
+    void Window::RemoveRender(IRender* render)
     {
-		CHECK_CONDITION(editor_ == editor);
-        editor_ = nullptr;
+		CHECK_CONDITION(render_ == render);
+		render_ = nullptr;
     }
 
     void Window::RenderFrame()
     {
         if (BeginFrameRender())
         {
-            if (editor_)
-                editor_->Render();
+            if (render_)
+				render_->Render();
             else
             {
                 Renderer::GetPtr()->Render(this, scene_);
