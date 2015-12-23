@@ -131,21 +131,57 @@ namespace NSG
                 shape_ = std::make_shared<btBoxShape>(ToBtVector3(halfSize));
                 break;
 
-            case SH_CONE:
+            case SH_CONE_Z:
             {
                 auto c_radius = std::max(halfSize.x, halfSize.y);
                 shape_ = std::make_shared<btConeShapeZ>(c_radius, 2*halfSize.z);
                 break;
             }
 
-            case SH_CYLINDER:
+			case SH_CONE_Y:
+			{
+				auto c_radius = std::max(halfSize.x, halfSize.z);
+				shape_ = std::make_shared<btConeShape>(c_radius, 2 * halfSize.y);
+				break;
+			}
+
+			case SH_CONE_X:
+			{
+				auto c_radius = std::max(halfSize.y, halfSize.z);
+				shape_ = std::make_shared<btConeShapeX>(c_radius, 2 * halfSize.x);
+				break;
+			}
+
+            case SH_CYLINDER_Z:
                 shape_ = std::make_shared<btCylinderShapeZ>(ToBtVector3(halfSize));
                 break;
 
-            case SH_CAPSULE:
+			case SH_CYLINDER_Y:
+				shape_ = std::make_shared<btCylinderShape>(ToBtVector3(halfSize));
+				break;
+
+			case SH_CYLINDER_X:
+				shape_ = std::make_shared<btCylinderShapeX>(ToBtVector3(halfSize));
+				break;
+
+            case SH_CAPSULE_Z:
                 {
                     auto c_radius = std::max(halfSize.x, halfSize.y);
                     shape_ = std::make_shared<btCapsuleShapeZ>(c_radius - 0.05f, (halfSize.z - 0.05f) * 2 - c_radius);
+                    break;
+                }
+
+            case SH_CAPSULE_Y:
+                {
+                    auto c_radius = std::max(halfSize.x, halfSize.z);
+                    shape_ = std::make_shared<btCapsuleShape>(c_radius - 0.05f, (halfSize.y - 0.05f) * 2 - c_radius);
+                    break;
+                }
+
+            case SH_CAPSULE_X:
+                {
+                    auto c_radius = std::max(halfSize.y, halfSize.z);
+                    shape_ = std::make_shared<btCapsuleShapeX>(c_radius - 0.05f, (halfSize.x - 0.05f) * 2 - c_radius);
                     break;
                 }
 

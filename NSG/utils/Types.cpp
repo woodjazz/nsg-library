@@ -29,7 +29,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     BlurFilter::BlurFilter()
-        : blurDir_(1, 0),
+        : blurDir_(1, 1),
           sigma_(3.5f)
     {
     }

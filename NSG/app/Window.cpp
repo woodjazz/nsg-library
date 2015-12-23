@@ -122,7 +122,7 @@ namespace NSG
     void Window::CreateFrameBuffer()
     {
         CHECK_ASSERT(!frameBuffer_);
-        FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
+        FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH | FrameBuffer::Flag::DEPTH_USE_TEXTURE));
         //frameBufferFlags |= FrameBuffer::STENCIL;
         frameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFrameBuffer"), frameBufferFlags);
         frameBuffer_->SetWindow(this);
@@ -318,10 +318,16 @@ namespace NSG
     {
         PFilter blur;
         std::string name = GetUniqueName("FilterBlur");
-        if (filters_.empty())
-            blur = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
-        else
-            blur = std::make_shared<Filter>(name, filters_.back()->GetTexture());
+		if (filters_.empty())
+		{
+			blur = std::make_shared<Filter>(name);
+			blur->SetInputTexture(frameBuffer_->GetColorTexture());
+		}
+		else
+		{
+			blur = std::make_shared<Filter>(name);
+			blur->SetInputTexture(filters_.back()->GetTexture());
+		}
         blur->GetMaterial()->SetRenderPass(RenderPass::BLUR);
         blur->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(blur);
@@ -336,14 +342,16 @@ namespace NSG
         size_t n = filters_.size();
         if (n > 1)
         {
-            blend = std::make_shared<Filter>(name, filters_[n - 2]->GetTexture());
+            blend = std::make_shared<Filter>(name);
+			blend->SetInputTexture(filters_[n - 2]->GetTexture());
             auto texture = filters_[n - 1]->GetTexture();
             texture->SetMapType(TextureType::NORM);
             blend->GetMaterial()->SetTexture(texture);
         }
         else
         {
-            blend = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
+            blend = std::make_shared<Filter>(name);
+			blend->SetInputTexture(frameBuffer_->GetColorTexture());
             if (n == 1)
             {
                 auto texture = filters_[0]->GetTexture();
@@ -361,10 +369,16 @@ namespace NSG
     {
         PFilter wave;
         std::string name = GetUniqueName("FilterWave");
-        if (filters_.empty())
-            wave = std::make_shared<Filter>(name, frameBuffer_->GetColorTexture());
-        else
-            wave = std::make_shared<Filter>(name, filters_.back()->GetTexture());
+		if (filters_.empty())
+		{
+			wave = std::make_shared<Filter>(name);
+			wave->SetInputTexture(frameBuffer_->GetColorTexture());
+		}
+		else
+		{
+			wave = std::make_shared<Filter>(name);
+			wave->SetInputTexture(filters_.back()->GetTexture());
+		}
         wave->GetMaterial()->SetRenderPass(RenderPass::WAVE);
         wave->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(wave);

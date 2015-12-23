@@ -41,6 +41,9 @@ misrepresented as being the original software.
 #include "LinesMesh.h"
 #include "Check.h"
 #include "DebugRenderer.h"
+#include "Filter.h"
+#include "ShowTexture.h"
+#include "Texture.h"
 
 namespace NSG
 {
@@ -54,12 +57,21 @@ namespace NSG
           defaultTransparentPass_(std::make_shared<Pass>()),
           litTransparentPass_(std::make_shared<Pass>()),
           debugPass_(std::make_shared<Pass>()),
+          filterPass_(std::make_shared<Pass>()),
           debugPhysics_(false),
           debugMaterial_(Material::Create("NSGDebugMaterial")),
           debugRenderer_(std::make_shared<DebugRenderer>()),
           context_(RendererContext::DEFAULT),
-          overlaysCamera_(std::make_shared<Camera>("NSGOverlays"))
+          overlaysCamera_(std::make_shared<Camera>("NSGOverlays")),
+          filterFrameBuffer_(std::make_shared<FrameBuffer>("NSGFilterFrameBuffer", FrameBuffer::Flag::COLOR | FrameBuffer::Flag::DEPTH | FrameBuffer::Flag::COLOR_USE_TEXTURE | FrameBuffer::Flag::DEPTH_USE_TEXTURE)),
+          blendFilter_(std::make_shared<Filter>("NSGRendererBlendFilter")),
+          blendFinalFilter_(std::make_shared<Filter>("NSGRendererBlendFinalFilter")),
+          showMap_(std::make_shared<ShowTexture>())
     {
+        blendFilter_->GetMaterial()->SetRenderPass(RenderPass::BLEND);
+        blendFilter_->GetMaterial()->FlipYTextureCoords(true);
+        blendFinalFilter_->GetMaterial()->SetRenderPass(RenderPass::BLEND);
+        blendFinalFilter_->GetMaterial()->FlipYTextureCoords(true);
 
         debugMaterial_->SetSerializable(false);
 
@@ -85,6 +97,11 @@ namespace NSG
         debugPass_->SetDepthFunc(DepthFunc::LEQUAL);
         debugPass_->SetBlendMode(BLEND_MODE::ADDITIVE);
 
+        filterPass_->SetType(PassType::DEFAULT);
+        filterPass_->EnableDepthBuffer(false);
+        filterPass_->SetDepthFunc(DepthFunc::LEQUAL);
+        filterPass_->SetBlendMode(BLEND_MODE::ALPHA);
+
         debugMaterial_->SetRenderPass(RenderPass::VERTEXCOLOR);
         debugMaterial_->SetFillMode(FillMode::WIREFRAME);
 
@@ -99,27 +116,41 @@ namespace NSG
         Renderer::Destroy();
     }
 
-    void Renderer::ExtractTransparent()
+    inline std::vector<SceneNode*> Renderer::ExtractTransparent(const std::vector<SceneNode*>& objs)
     {
-        transparent_.clear();
-
-        for (auto& node : visibles_)
+        std::vector<SceneNode*> result;
+        for (auto& node : objs)
         {
             auto material = node->GetMaterial();
             if (material && material->IsTransparent())
-                transparent_.push_back(node);
+                result.push_back(node);
         }
-
-        auto condition = [&](SceneNode * node)
-        {
-            return transparent_.end() != std::find(transparent_.begin(), transparent_.end(), node);
-        };
-
-        // remove tranparent from visibles_
-        visibles_.erase(std::remove_if(visibles_.begin(), visibles_.end(), condition), visibles_.end());
+        return result;
     }
 
-    void Renderer::GetLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
+    inline void Renderer::RemoveFrom(std::vector<SceneNode*>& from, const std::vector<SceneNode*>& objs)
+    {
+        auto condition = [&](SceneNode * node)
+        {
+            return objs.end() != std::find(objs.begin(), objs.end(), node);
+        };
+
+        from.erase(std::remove_if(from.begin(), from.end(), condition), from.end());
+    }
+
+    inline std::vector<SceneNode*> Renderer::ExtractFiltered(const std::vector<SceneNode*>& objs)
+    {
+        std::vector<SceneNode*> result;
+        for (auto& node : objs)
+        {
+            if (node->HasFilter())
+                result.push_back(node);
+        }
+        return result;
+    }
+
+
+    void Renderer::GetLighted(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
     {
         CHECK_ASSERT(result.empty());
 
@@ -131,12 +162,12 @@ namespace NSG
         }
     }
 
-    void Renderer::SortTransparentBackToFront()
+    void Renderer::SortTransparentBackToFront(std::vector<SceneNode*>& objs)
     {
         Vector3 cameraPos;
         if (camera_)
             cameraPos = camera_->GetGlobalPosition();
-        std::sort(transparent_.begin(), transparent_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+        std::sort(objs.begin(), objs.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
             auto da = Distance2(a->GetGlobalPosition(), cameraPos);
             auto db = Distance2(b->GetGlobalPosition(), cameraPos);
@@ -144,10 +175,10 @@ namespace NSG
         });
     }
 
-    void Renderer::SortOverlaysBackToFront()
+    void Renderer::SortOverlaysBackToFront(std::vector<SceneNode*>& objs)
     {
         Vector3 cameraPos(overlaysCamera_->GetGlobalPosition());
-        std::sort(transparent_.begin(), transparent_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+        std::sort(objs.begin(), objs.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
             auto da = Distance2(a->GetGlobalPosition(), cameraPos);
             auto db = Distance2(b->GetGlobalPosition(), cameraPos);
@@ -156,12 +187,12 @@ namespace NSG
     }
 
 
-    void Renderer::SortSolidFrontToBack()
+    void Renderer::SortSolidFrontToBack(std::vector<SceneNode*>& objs)
     {
         Vector3 cameraPos;
         if (camera_)
             cameraPos = camera_->GetGlobalPosition();
-        std::sort(visibles_.begin(), visibles_.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
+        std::sort(objs.begin(), objs.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
             auto da = Distance2(a->GetGlobalPosition(), cameraPos);
             auto db = Distance2(b->GetGlobalPosition(), cameraPos);
@@ -276,15 +307,23 @@ namespace NSG
                 light->GenerateShadowMaps(camera_);
     }
 
-    void Renderer::DefaultOpaquePass()
+    void Renderer::DefaultOpaquePass(std::vector<SceneNode*>& objs)
     {
         std::vector<PBatch> batches;
-        GenerateBatches(visibles_, batches);
+        GenerateBatches(objs, batches);
         for (auto& batch : batches)
             Draw(batch.get(), defaultOpaquePass_.get(), nullptr, camera_);
     }
 
-    void Renderer::LitOpaquePass()
+    void Renderer::FilterPass(std::vector<SceneNode*>& objs)
+    {
+        std::vector<PBatch> batches;
+        GenerateBatches(objs, batches);
+        for (auto& batch : batches)
+            Draw(batch.get(), filterPass_.get(), nullptr, camera_);
+    }
+
+    void Renderer::LitOpaquePass(const std::vector<SceneNode*>& objs)
     {
         auto lights = scene_->GetLights();
         for (auto light : lights)
@@ -292,7 +331,7 @@ namespace NSG
             if (light->GetOnlyShadow())
                 continue;
             std::vector<SceneNode*> litNodes;
-            GetLighted(visibles_, litNodes);
+            GetLighted(objs, litNodes);
             std::vector<PBatch> batches;
             GenerateBatches(litNodes, batches);
             for (auto& batch : batches)
@@ -300,10 +339,10 @@ namespace NSG
         }
     }
 
-    void Renderer::DefaultTransparentPass()
+    void Renderer::DefaultTransparentPass(const std::vector<SceneNode*>& objs)
     {
         // Transparent nodes cannot be batched
-        for (auto& node : transparent_)
+        for (auto& node : objs)
         {
             auto sceneNode = (SceneNode*)node;
             auto material = sceneNode->GetMaterial().get();
@@ -316,7 +355,7 @@ namespace NSG
         }
     }
 
-    void Renderer::LitTransparentPass()
+    void Renderer::LitTransparentPass(const std::vector<SceneNode*>& objs)
     {
         // Transparent nodes cannot be batched
         auto lights = scene_->GetLights();
@@ -325,7 +364,7 @@ namespace NSG
             if (light->GetOnlyShadow())
                 continue;
             std::vector<SceneNode*> litNodes;
-            GetLighted(transparent_, litNodes);
+            GetLighted(objs, litNodes);
             for (auto& node : litNodes)
             {
                 auto sceneNode = (SceneNode*)node;
@@ -391,20 +430,77 @@ namespace NSG
         auto overlays = scene_->GetOverlays();
         if (overlays && overlays->GetDrawablesNumber())
         {
-            overlays->GetVisibleNodes(camera_, visibles_);
-            ExtractTransparent();
-            if (!visibles_.empty())
+            std::vector<SceneNode*> visibles;
+            overlays->GetVisibleNodes(camera_, visibles);
+            auto transparent = ExtractTransparent(visibles);
+            RemoveFrom(visibles, transparent);
+            if (!visibles.empty())
             {
-                SortSolidFrontToBack();
-                DefaultOpaquePass();
-                LitOpaquePass();
+                SortSolidFrontToBack(visibles);
+                DefaultOpaquePass(visibles);
+                LitOpaquePass(visibles);
             }
-            if (!transparent_.empty())
+            if (!transparent.empty())
             {
-                SortTransparentBackToFront();
-                DefaultTransparentPass();
-                LitTransparentPass();
+                SortTransparentBackToFront(transparent);
+                DefaultTransparentPass(transparent);
+                LitTransparentPass(transparent);
             }
+        }
+    }
+
+    void Renderer::RenderFiltered(std::vector<SceneNode*>& filtered, FrameBuffer* targetFrameBuffer)
+    {
+        auto oldFrameBuffer = graphics_->GetFrameBuffer();
+        blendFilter_->GetFrameBuffer()->SetSize(oldFrameBuffer->GetWidth(), oldFrameBuffer->GetHeight());
+        blendFinalFilter_->GetFrameBuffer()->SetSize(oldFrameBuffer->GetWidth(), oldFrameBuffer->GetHeight());
+        filterFrameBuffer_->SetSize(oldFrameBuffer->GetWidth(), oldFrameBuffer->GetHeight());
+        filterFrameBuffer_->SetDepthTexture(oldFrameBuffer->GetDepthTexture());
+
+        if (filterFrameBuffer_->IsReady())
+        {
+            std::vector<Filter*> filters;
+            graphics_->SetFrameBuffer(filterFrameBuffer_.get());
+            do
+            {
+                graphics_->SetClearColor(Color(0, 0, 0, 1));
+                graphics_->ClearBuffers(true, false, false);
+                auto filter = filtered[0]->GetFilter().get();
+                filters.push_back(filter);
+                auto it = std::partition(filtered.begin(), filtered.end(), [&](SceneNode * obj)
+                {
+                    return obj->GetFilter().get() == filter;
+                });
+
+                std::vector<SceneNode*> nodesSameFilter(filtered.begin() , it);
+                FilterPass(nodesSameFilter);
+                filter->SetInputTexture(filterFrameBuffer_->GetColorTexture());
+                filter->Draw();
+                filtered.erase(filtered.begin(), it);
+            }
+            while (filtered.size());
+            //Blend
+            auto n = filters.size();
+            for (size_t i = 0; i < n; i++)
+            {
+                blendFilter_->SetInputTexture(filters[i]->GetTexture());
+                if (i + 1 < n)
+                {
+                    blendFilter_->GetMaterial()->SetTexture(MaterialTexture::NORMAL_MAP, filters[i + 1]->GetTexture());
+                    blendFilter_->Draw();
+                }
+            }
+            if (n > 1)
+                blendFinalFilter_->SetInputTexture(blendFilter_->GetTexture());
+            else
+                blendFinalFilter_->SetInputTexture(filters[0]->GetTexture());
+
+            blendFinalFilter_->GetMaterial()->SetTexture(MaterialTexture::NORMAL_MAP, oldFrameBuffer->GetColorTexture());
+            blendFinalFilter_->Draw();
+            //Draw blended texture over target
+            graphics_->SetFrameBuffer(targetFrameBuffer);
+            showMap_->SetColortexture(blendFinalFilter_->GetTexture());
+            showMap_->Show();
         }
     }
 
@@ -413,48 +509,78 @@ namespace NSG
         scene_ = scene;
         camera_ = camera;
         graphics_->SetWindow(window);
-        graphics_->ClearAllBuffers();
-        if (!scene) 
-			return;
-        if (scene->GetDrawablesNumber())
+
+        if (!scene)
         {
+            graphics_->ClearAllBuffers();
+        }
+        else if(scene->GetDrawablesNumber())
+        {
+            std::vector<SceneNode*> visibles;
+
             if (camera_)
             {
-                scene->GetVisibleNodes(camera_, visibles_);
+                scene->GetVisibleNodes(camera_, visibles);
                 graphics_->SetClearColor(Color(1));
                 ShadowGenerationPass();
             }
             else
-                visibles_ = scene->GetDrawables();
-            if (!visibles_.empty())
+                visibles = scene->GetDrawables();
+            if (!visibles.empty())
             {
-                graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1)); // will have effect in the next frame (when ClearAllBuffers is called)
-                ExtractTransparent();
-                if (!visibles_.empty())
+                for (auto& obj : visibles)
+                    obj->ClearUniform();
+                auto filtered = ExtractFiltered(visibles);
+                auto targetFrameBuffer = graphics_->GetFrameBuffer();
+                if (!filtered.empty())
                 {
-                    SortSolidFrontToBack();
-                    DefaultOpaquePass();
-                    LitOpaquePass();
+                    // we need to render to a framebuffer in order to blend the filters
+                    auto frameBuffer = targetFrameBuffer;
+                    if (!frameBuffer)
+                    {
+                        // no default framebuffer then use the one in the window
+                        CHECK_ASSERT(window);
+                        frameBuffer = window->GetFrameBuffer().get();
+                    }
+                    CHECK_ASSERT(frameBuffer->IsReady());
+                    graphics_->SetFrameBuffer(frameBuffer);
                 }
-                if (!transparent_.empty())
+
+                auto transparent = ExtractTransparent(visibles);
+                RemoveFrom(visibles, transparent);
+
+                graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1));
+                graphics_->ClearAllBuffers();
+
+                if (!visibles.empty())
                 {
-                    SortTransparentBackToFront();
-                    DefaultTransparentPass();
-                    LitTransparentPass();
+                    SortSolidFrontToBack(visibles);
+                    DefaultOpaquePass(visibles);
+                    LitOpaquePass(visibles);
                 }
+                if (!transparent.empty())
+                {
+                    SortTransparentBackToFront(transparent);
+                    DefaultTransparentPass(transparent);
+                    LitTransparentPass(transparent);
+                }
+                if (!filtered.empty())
+                    RenderFiltered(filtered, targetFrameBuffer);
                 if (window)
                     window->RenderFilters();
                 if (debugPhysics_)
                     DebugPhysicsPass();
                 DebugRendererPass();
-                for (auto& obj : visibles_)
-                    obj->ClearUniform();
-                for (auto& obj : transparent_)
-                    obj->ClearUniform();
             }
+            camera_ = overlaysCamera_.get();
+            RenderOverlays();
         }
-        camera_ = overlaysCamera_.get();
-        RenderOverlays();
+        else
+        {
+            graphics_->ClearAllBuffers();
+            camera_ = overlaysCamera_.get();
+            RenderOverlays();
+        }
     }
 
     SignalDebugRenderer::PSignal Renderer::SigDebugRenderer()

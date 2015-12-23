@@ -55,6 +55,8 @@ namespace NSG
             colorTexture_ = std::make_shared<TextureCube>(name + "ColorCubeBuffer");
         else
             colorTexture_ = std::make_shared<Texture2D>(name + "ColorBuffer");
+
+        depthTexture_->SetFormat(GL_DEPTH_COMPONENT);
     }
 
     FrameBuffer::~FrameBuffer()

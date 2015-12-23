@@ -55,15 +55,15 @@ def BoundTypeToString(bound):
     elif bound == 'SPHERE':
         return "SH_SPHERE"
     elif bound == 'CYLINDER':
-        return "SH_CYLINDER"
+        return "SH_CYLINDER_Z"
     elif bound == 'CONE':
-        return "SH_CONE"
+        return "SH_CONE_Z"
     elif bound == 'CONVEX_HULL':
         return "SH_CONVEX_TRIMESH"
     elif bound == 'TRIANGLE_MESH':
         return "SH_TRIMESH"
     elif bound == 'CAPSULE':
-        return "SH_CAPSULE"
+        return "SH_CAPSULE_Z"
     else:
         return "SH_UNKNOWN"
 

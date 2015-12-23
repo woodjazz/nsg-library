@@ -39,14 +39,20 @@ Enemy::Enemy(PScene scene)
     //node_->Yaw(PI/4.f);
     child_->SetScale(0.25f);
     child_->SetPosition(Vector3(0, 0, 3));
-    child_->SetMesh(Mesh::CreateClass<TriangleMesh>());
-    auto material(Material::Create());
+    child_->SetMesh(Mesh::GetOrCreate<TriangleMesh>("EnemyMesh"));
+    auto material(Material::GetOrCreate("EnemyMaterial"));
     material->SetDiffuseColor(COLOR_RED);
     //material->SetFillMode(FillMode::WIREFRAME);
     //material->SetDiffuseColor(COLOR_DODGER_BLUE);
     material->SetRenderPass(RenderPass::UNLIT);
     child_->SetMaterial(material);
     child_->SetUserData(this);
+
+    static auto filter = std::make_shared<Filter>("WaveFilter");
+    filter->GetMaterial()->SetRenderPass(RenderPass::WAVE);
+    filter->GetMaterial()->FlipYTextureCoords(true);
+    //child_->SetFilter(filter);
+
 
     body_->SetKinematic(true);
     body_->HandleCollisions(true);

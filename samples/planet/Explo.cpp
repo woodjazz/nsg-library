@@ -41,7 +41,7 @@ Explo::Explo(PSceneNode node)
     material_->SetTexture(texture_);
     material_->SetRenderPass(RenderPass::UNLIT);
 	material_->EnableTransparent(true);
-    material_->SetBillboardType(BillboardType::CYLINDRICAL_Z);
+    material_->SetBillboardType(BillboardType::SPHERICAL);//BillboardType::CYLINDRICAL_Z);
 	sprite_ = node->CreateChild<SceneNode>();
 	sprite_->Roll(dist(mt));
     sprite_->Hide(true);

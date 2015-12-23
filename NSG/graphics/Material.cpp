@@ -175,16 +175,21 @@ namespace NSG
             default:
                 break;
         }
-        CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS);
-        if (texture_[index] != texture)
-        {
-            texture_[index] = texture;
-            SetUniformsNeedUpdate();
-            Invalidate();
-            return true;
-        }
-        return false;
+		return SetTexture(index, texture);
     }
+
+	bool Material::SetTexture(MaterialTexture index, PTexture texture)
+	{
+		CHECK_ASSERT(index >= 0 && index < MaterialTexture::MAX_MAPS);
+		if (texture_[index] != texture)
+		{
+			texture_[index] = texture;
+			SetUniformsNeedUpdate();
+			Invalidate();
+			return true;
+		}
+		return false;
+	}
 
     PTexture Material::GetTexture(MaterialTexture index) const
     {

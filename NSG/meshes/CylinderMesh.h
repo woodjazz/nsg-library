@@ -39,7 +39,7 @@ namespace NSG
 		GLenum GetSolidDrawMode() const override;
 		size_t GetNumberOfTriangles() const override;
         void AllocateResources() override;
-        PhysicsShape GetShapeType() const override { return SH_CYLINDER; }
+        PhysicsShape GetShapeType() const override { return SH_CYLINDER_Y; }
 	private:
 		float radius_;
 		float height_;

@@ -32,19 +32,19 @@ misrepresented as being the original software.
 #include "Graphics.h"
 #include "Program.h"
 #include "FrameBuffer.h"
+#include "Texture2D.h"
 #include "Renderer.h"
 #include "Node.h"
 
 namespace NSG
 {
-    Filter::Filter(const std::string& name, PTexture input)
+    Filter::Filter(const std::string& name)
         : pMaterial_(Material::GetOrCreate(name)),
           pMesh_(Mesh::GetOrCreateClass<QuadMesh>("FilterMesh")),
           frameBuffer_(std::make_shared<FrameBuffer>(name, FrameBuffer::Flag::COLOR | FrameBuffer::Flag::COLOR_USE_TEXTURE)),
           name_(name),
           node_(std::make_shared<SceneNode>(name))
     {
-        pMaterial_->SetTexture(input);
         pMaterial_->SetRenderPass(RenderPass::UNLIT);
         node_->SetMaterial(pMaterial_);
         node_->SetMesh(pMesh_);
@@ -68,7 +68,15 @@ namespace NSG
 
     void Filter::SetInputTexture(PTexture input)
     {
-        pMaterial_->SetTexture(input);
+		if (input_ != input)
+		{
+			input_ = input;
+			if(input)
+            {
+                CHECK_ASSERT(input->GetMapType() == TextureType::COL);
+				pMaterial_->SetTexture(input);
+            }
+		}
     }
 
     PTexture Filter::GetInputTexture() const
@@ -78,7 +86,7 @@ namespace NSG
 
     void Filter::Draw()
     {
-        if (!frameBuffer_->IsReady() || !pMesh_->IsReady() || !pMaterial_->IsReady())
+        if (input_ == nullptr || !input_->IsReady() || !frameBuffer_->IsReady() || !pMesh_->IsReady() || !pMaterial_->IsReady())
             return;
         Pass pass;
         pass.EnableDepthTest(false);

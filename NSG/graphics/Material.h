@@ -41,6 +41,7 @@ namespace NSG
         PMaterial Clone(const std::string& name = GetUniqueName("Clone"));
         bool SetTexture(PTexture texture);
         void SetTextMap(PTexture texture);
+		bool SetTexture(MaterialTexture index, PTexture texture);
         PTexture GetTexture(MaterialTexture index) const;
         void SetDiffuseColor(ColorRGB color);
 		Color GetDiffuseColor() const { return diffuseColor_; }

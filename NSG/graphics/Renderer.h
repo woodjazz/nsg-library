@@ -45,25 +45,29 @@ namespace NSG
 		RendererContext SetContext(RendererContext context);
 		RendererContext GetContext() const { return context_; }
 	private:
-		void SortTransparentBackToFront();
-		void SortSolidFrontToBack();
-		void SortOverlaysBackToFront();
+		void SortTransparentBackToFront(std::vector<SceneNode*>& objs);
+		void SortSolidFrontToBack(std::vector<SceneNode*>& objs);
+		void SortOverlaysBackToFront(std::vector<SceneNode*>& objs);
 		void Draw(Batch* batch, const Pass* pass, const Light* light, const Camera* camera);
 		void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
 		void GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters);
 		void GenerateCubeShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
 		void GenerateShadowMap(Light* light, const std::vector<SceneNode*>& drawables);
-		void ExtractTransparent();
-		void GetLighted(std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
+		std::vector<SceneNode*> ExtractTransparent(const std::vector<SceneNode*>& objs);
+		std::vector<SceneNode*> ExtractFiltered(const std::vector<SceneNode*>& objs);
+		void RemoveFrom(std::vector<SceneNode*>& from, const std::vector<SceneNode*>& objs);
+		void GetLighted(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const;
 		void ShadowGenerationPass();
-    	void DefaultOpaquePass();
-	    void LitOpaquePass();
-    	void DefaultTransparentPass();
-	    void LitTransparentPass();
+    	void DefaultOpaquePass(std::vector<SceneNode*>& objs);
+	    void LitOpaquePass(const std::vector<SceneNode*>& objs);
+    	void DefaultTransparentPass(const std::vector<SceneNode*>& objs);
+	    void LitTransparentPass(const std::vector<SceneNode*>& objs);
+	    void FilterPass(std::vector<SceneNode*>& objs);
 	    void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
 	    void DebugPhysicsPass();
 		void DebugRendererPass();
 		void RenderOverlays();
+		void RenderFiltered(std::vector<SceneNode*>& filtered, FrameBuffer* targetFrameBuffer);
 		PGraphics graphics_;
 		Scene* scene_;
 		Camera* camera_;
@@ -73,13 +77,16 @@ namespace NSG
 		PPass defaultTransparentPass_;
 		PPass litTransparentPass_;
 		PPass debugPass_;
-		std::vector<SceneNode*> visibles_; //visibles not transparent nodes
-		std::vector<SceneNode*> transparent_;
+		PPass filterPass_;
 		bool debugPhysics_;
 		PMaterial debugMaterial_;
 		PDebugRenderer debugRenderer_;
 		RendererContext context_;
 		std::vector<SceneNode*> overlays_;
 		PCamera overlaysCamera_;
+		PFrameBuffer filterFrameBuffer_;
+		PFilter blendFilter_;
+		PFilter blendFinalFilter_;
+		PShowTexture showMap_;
 	};
 }

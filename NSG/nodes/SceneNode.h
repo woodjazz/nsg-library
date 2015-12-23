@@ -33,68 +33,72 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class Octant;
-	class SceneNode : public Node
-	{
-	public:
-		SceneNode(const std::string& name);
-		~SceneNode();
-		virtual bool CanBeVisible() const;
-		PMaterial GetMaterial() const { return material_; }
-		void SetMaterial(PMaterial material);
-		void SetMesh(PMesh mesh);
-		PRigidBody GetOrCreateRigidBody();
-		PCharacter GetOrCreateCharacter();
-		PRigidBody GetRigidBody() const { return rigidBody_; }
-		PCharacter GetCharacter() const { return character_; }
-		PAnimationController GetOrCreateAnimationController();
-		PMesh GetMesh() const { return mesh_; }
-		void SetOctant(Octant* octant) const { octant_ = octant; }
-		const BoundingBox& GetWorldBoundingBox() const;
-		BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const;
-		Octant* GetOctant() const { return octant_; }
-		virtual void OnDirty() const override;
-		void OnScaleChange() override;
+    class Octant;
+    class SceneNode : public Node
+    {
+    public:
+        SceneNode(const std::string& name);
+        ~SceneNode();
+        virtual bool CanBeVisible() const;
+        PMaterial GetMaterial() const { return material_; }
+        void SetMaterial(PMaterial material);
+        void SetMesh(PMesh mesh);
+        PRigidBody GetOrCreateRigidBody();
+        PCharacter GetOrCreateCharacter();
+        PRigidBody GetRigidBody() const { return rigidBody_; }
+        PCharacter GetCharacter() const { return character_; }
+        PAnimationController GetOrCreateAnimationController();
+        PMesh GetMesh() const { return mesh_; }
+        void SetOctant(Octant* octant) const { octant_ = octant; }
+        const BoundingBox& GetWorldBoundingBox() const;
+        BoundingBox GetWorldBoundingBoxBut(const SceneNode* node) const;
+        Octant* GetOctant() const { return octant_; }
+        virtual void OnDirty() const override;
+        void OnScaleChange() override;
         virtual void OnCollision(const ContactPoint& contactInfo);
-		void OnHide(bool hide) override;
-		void SetSerializable(bool serializable) { serializable_ = serializable; }
-		bool IsSerializable() const { return serializable_;  }
-		void GetMaterials(std::vector<PMaterial>& materials) const;
-		void Load(const pugi::xml_node& node) override;
-		void Save(pugi::xml_node& node) const override;
-		void SaveChildren(pugi::xml_node& node) const;
-		void LoadChildren(const pugi::xml_node& node);
-		SignalCollision::PSignal SigCollision() { return signalCollision_; }
-		SignalEmpty::PSignal SigMeshSet() { return signalMeshSet_; }
-		SignalEmpty::PSignal SigMaterialSet() { return signalMaterialSet_; }
-		const SceneNodeFlags& GetFlags() const { return flags_; }
+        void OnHide(bool hide) override;
+        void SetSerializable(bool serializable) { serializable_ = serializable; }
+        bool IsSerializable() const { return serializable_;  }
+        void GetMaterials(std::vector<PMaterial>& materials) const;
+        void Load(const pugi::xml_node& node) override;
+        void Save(pugi::xml_node& node) const override;
+        void SaveChildren(pugi::xml_node& node) const;
+        void LoadChildren(const pugi::xml_node& node);
+        SignalCollision::PSignal SigCollision() { return signalCollision_; }
+        SignalEmpty::PSignal SigMeshSet() { return signalMeshSet_; }
+        SignalEmpty::PSignal SigMaterialSet() { return signalMaterialSet_; }
+        const SceneNodeFlags& GetFlags() const { return flags_; }
         void SetFlags(const SceneNodeFlags& flags);
         void EnableFlags(const SceneNodeFlags& flags);
         void DisableFlags(const SceneNodeFlags& flags);
-		bool AllowRayQuery() const { return flags_ & (int)SceneNodeFlag::ALLOW_RAY_QUERY; }
-		void SetSkeleton(PSkeleton skeleton);
-		PSkeleton GetSkeleton() const { return skeleton_; }
-		void FillShaderDefines(std::string& defines) const;
-		size_t GetMaxPlatformBones(size_t nBones) const;
-		PSceneNode GetArmature() const;
-		void SetArmature(PSceneNode armature);
-		bool IsBillboard() const;
-	protected:
-		PMaterial material_;
-		PMesh mesh_;
-		PSkeleton skeleton_;
-	private:
-		PWeakSceneNode armature_;
-		PRigidBody rigidBody_;
-		PCharacter character_;
-		PAnimationController animationController_;
-		mutable Octant* octant_;
-		mutable BoundingBox worldBB_;
-		mutable bool worldBBNeedsUpdate_;
-		bool serializable_;
-		SceneNodeFlags flags_;
-		SignalEmpty::PSignal signalMeshSet_;
-		SignalEmpty::PSignal signalMaterialSet_;
-		SignalCollision::PSignal signalCollision_;
-	};
+        bool AllowRayQuery() const { return flags_ & (int)SceneNodeFlag::ALLOW_RAY_QUERY; }
+        void SetSkeleton(PSkeleton skeleton);
+        PSkeleton GetSkeleton() const { return skeleton_; }
+        void FillShaderDefines(std::string& defines) const;
+        size_t GetMaxPlatformBones(size_t nBones) const;
+        PSceneNode GetArmature() const;
+        void SetArmature(PSceneNode armature);
+        bool IsBillboard() const;
+        void SetFilter(PFilter filter) { filter_ = filter; }
+        PFilter GetFilter() const { return filter_; }
+        bool HasFilter() const { return filter_ != nullptr; }
+    protected:
+        PMaterial material_;
+        PMesh mesh_;
+        PSkeleton skeleton_;
+    private:
+        PWeakSceneNode armature_;
+        PRigidBody rigidBody_;
+        PCharacter character_;
+        PAnimationController animationController_;
+        mutable Octant* octant_;
+        mutable BoundingBox worldBB_;
+        mutable bool worldBBNeedsUpdate_;
+        bool serializable_;
+        SceneNodeFlags flags_;
+        SignalEmpty::PSignal signalMeshSet_;
+        SignalEmpty::PSignal signalMaterialSet_;
+        SignalCollision::PSignal signalCollision_;
+        PFilter filter_;
+    };
 }

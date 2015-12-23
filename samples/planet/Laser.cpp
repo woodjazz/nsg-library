@@ -39,24 +39,30 @@ Laser::Laser(PScene scene)
     child_->SetPosition(Vector3(0, 0, 3));
     auto mesh = Mesh::GetOrCreateClass<CylinderMesh>("LaserMesh");
     child_->SetMesh(mesh);
-    auto material(Material::Create());
+    auto material(Material::GetOrCreate("LaserMaterial"));
     material->SetDiffuseColor(COLOR_YELLOW);
+    material->SetEmitIntensity(10);
     material->SetRenderPass(RenderPass::UNLIT);
+	static auto filter = std::make_shared<Filter>("BlurFilter");
+	filter->GetMaterial()->SetRenderPass(RenderPass::BLUR);
+    filter->GetMaterial()->FlipYTextureCoords(true);
+	child_->SetFilter(filter);
+	filter->GetFrameBuffer()->SetSize(64, 64);
     child_->SetMaterial(material);
     child_->SetUserData(this);
 
     body_->SetKinematic(true);
     //body_->HandleCollisions(true);
-    auto shape = Shape::GetOrCreate(ShapeKey(mesh, Vector3(Scale.x, Scale.z, Scale.y)));
+	auto shape = Shape::GetOrCreate(ShapeKey(mesh, Vector3(Scale.x, Scale.y, Scale.z)));
     shape->SetBB(child_->GetWorldBoundingBox());
-    body_->AddShape(shape, Vector3(0, Scale.y * 0.5f, 0), AngleAxis(PI90, VECTOR3_RIGHT));
+	body_->AddShape(shape, Vector3(0, Scale.y * 0.5f, 0));// , AngleAxis(PI90, VECTOR3_RIGHT));
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
 
     updateSlot_ = Engine::SigUpdate()->Connect([this](float dt)
     {
         totalTime_ += dt;
-        if (totalTime_ > 1)
-            Destroyed();
+		if (totalTime_ > 1)
+			Destroyed();
         else
         {
             auto dir = 2 * dt * (child_->GetOrientation() * VECTOR3_UP);

@@ -83,6 +83,7 @@ namespace NSG
 
     Texture::~Texture()
     {
+        Invalidate();
     }
 
     GLuint Texture::GetID() const
