@@ -51,7 +51,7 @@ Enemy::Enemy(PScene scene)
     static auto filter = std::make_shared<Filter>("WaveFilter");
     filter->GetMaterial()->SetRenderPass(RenderPass::WAVE);
     filter->GetMaterial()->FlipYTextureCoords(true);
-    //child_->SetFilter(filter);
+    child_->SetFilter(filter);
 
 
     body_->SetKinematic(true);

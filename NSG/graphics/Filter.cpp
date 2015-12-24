@@ -90,6 +90,7 @@ namespace NSG
             return;
         Pass pass;
         pass.EnableDepthTest(false);
+        pass.EnableDepthBuffer(false);
         auto graphics = Graphics::GetPtr();
         auto oldFrameBuffer = graphics->SetFrameBuffer(frameBuffer_.get());
         Renderer::GetPtr()->Render(&pass, nullptr, nullptr, node_.get(), nullptr);

@@ -49,6 +49,9 @@ namespace NSG
         node_ = scene_->CreateChild<SceneNode>(name);
 		node_->SetMesh(mesh_);
 		node_->SetMaterial(material_);
+        pass_ = std::make_shared<Pass>();
+        pass_->EnableDepthTest(false);
+ 
     }
 
     ShowTexture::~ShowTexture()
@@ -76,8 +79,6 @@ namespace NSG
 
     void ShowTexture::Show()
     {
-        Pass pass;
-        pass.EnableDepthTest(false);
-        Renderer::GetPtr()->Render(&pass, scene_.get(), nullptr, node_.get(), nullptr);
+        Renderer::GetPtr()->Render(pass_.get(), scene_.get(), nullptr, node_.get(), nullptr);
     }
 }

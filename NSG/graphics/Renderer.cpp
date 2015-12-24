@@ -64,15 +64,8 @@ namespace NSG
           context_(RendererContext::DEFAULT),
           overlaysCamera_(std::make_shared<Camera>("NSGOverlays")),
           filterFrameBuffer_(std::make_shared<FrameBuffer>("NSGFilterFrameBuffer", FrameBuffer::Flag::COLOR | FrameBuffer::Flag::DEPTH | FrameBuffer::Flag::COLOR_USE_TEXTURE | FrameBuffer::Flag::DEPTH_USE_TEXTURE)),
-          blendFilter_(std::make_shared<Filter>("NSGRendererBlendFilter")),
-          blendFinalFilter_(std::make_shared<Filter>("NSGRendererBlendFinalFilter")),
           showMap_(std::make_shared<ShowTexture>())
     {
-        blendFilter_->GetMaterial()->SetRenderPass(RenderPass::BLEND);
-        blendFilter_->GetMaterial()->FlipYTextureCoords(true);
-        blendFinalFilter_->GetMaterial()->SetRenderPass(RenderPass::BLEND);
-        blendFinalFilter_->GetMaterial()->FlipYTextureCoords(true);
-
         debugMaterial_->SetSerializable(false);
 
         shadowPass_->SetType(PassType::SHADOW);
@@ -452,18 +445,16 @@ namespace NSG
     void Renderer::RenderFiltered(std::vector<SceneNode*>& filtered, FrameBuffer* targetFrameBuffer)
     {
         auto oldFrameBuffer = graphics_->GetFrameBuffer();
-        blendFilter_->GetFrameBuffer()->SetSize(oldFrameBuffer->GetWidth(), oldFrameBuffer->GetHeight());
-        blendFinalFilter_->GetFrameBuffer()->SetSize(oldFrameBuffer->GetWidth(), oldFrameBuffer->GetHeight());
         filterFrameBuffer_->SetSize(oldFrameBuffer->GetWidth(), oldFrameBuffer->GetHeight());
         filterFrameBuffer_->SetDepthTexture(oldFrameBuffer->GetDepthTexture());
-
         if (filterFrameBuffer_->IsReady())
         {
             std::vector<Filter*> filters;
-            graphics_->SetFrameBuffer(filterFrameBuffer_.get());
+            auto pass = showMap_->GetPass();
             do
             {
-                graphics_->SetClearColor(Color(0, 0, 0, 1));
+                graphics_->SetFrameBuffer(filterFrameBuffer_.get());
+                graphics_->SetClearColor(Color(0, 0, 0, 0));
                 graphics_->ClearBuffers(true, false, false);
                 auto filter = filtered[0]->GetFilter().get();
                 filters.push_back(filter);
@@ -477,29 +468,16 @@ namespace NSG
                 filter->SetInputTexture(filterFrameBuffer_->GetColorTexture());
                 filter->Draw();
                 filtered.erase(filtered.begin(), it);
+                graphics_->SetFrameBuffer(oldFrameBuffer);
+                showMap_->SetColortexture(filter->GetTexture());
+                pass->SetBlendMode(BLEND_MODE::ADDITIVE);
+                showMap_->Show();
             }
             while (filtered.size());
-            //Blend
-            auto n = filters.size();
-            for (size_t i = 0; i < n; i++)
-            {
-                blendFilter_->SetInputTexture(filters[i]->GetTexture());
-                if (i + 1 < n)
-                {
-                    blendFilter_->GetMaterial()->SetTexture(MaterialTexture::NORMAL_MAP, filters[i + 1]->GetTexture());
-                    blendFilter_->Draw();
-                }
-            }
-            if (n > 1)
-                blendFinalFilter_->SetInputTexture(blendFilter_->GetTexture());
-            else
-                blendFinalFilter_->SetInputTexture(filters[0]->GetTexture());
-
-            blendFinalFilter_->GetMaterial()->SetTexture(MaterialTexture::NORMAL_MAP, oldFrameBuffer->GetColorTexture());
-            blendFinalFilter_->Draw();
-            //Draw blended texture over target
+            //Draw texture over target
             graphics_->SetFrameBuffer(targetFrameBuffer);
-            showMap_->SetColortexture(blendFinalFilter_->GetTexture());
+            showMap_->SetColortexture(oldFrameBuffer->GetColorTexture());
+            pass->SetBlendMode(BLEND_MODE::NONE);
             showMap_->Show();
         }
     }
@@ -514,7 +492,7 @@ namespace NSG
         {
             graphics_->ClearAllBuffers();
         }
-        else if(scene->GetDrawablesNumber())
+        else if (scene->GetDrawablesNumber())
         {
             std::vector<SceneNode*> visibles;
 

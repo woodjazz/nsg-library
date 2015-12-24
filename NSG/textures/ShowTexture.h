@@ -37,7 +37,9 @@ namespace NSG
 		void SetNormal(PTexture texture);
 		void SetFont(PTexture texture);
 		void Show();
+		PPass GetPass() const {return pass_; }
 	private:
+		PPass pass_;
 		PScene scene_;
 		PMaterial material_;
 		PSceneNode node_;

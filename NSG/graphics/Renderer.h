@@ -85,8 +85,6 @@ namespace NSG
 		std::vector<SceneNode*> overlays_;
 		PCamera overlaysCamera_;
 		PFrameBuffer filterFrameBuffer_;
-		PFilter blendFilter_;
-		PFilter blendFinalFilter_;
 		PShowTexture showMap_;
 	};
 }
